@@ -170,6 +170,7 @@ public slots:
     void slotNetworkClose();
     void slotNetworkPrint();
     void slotNetworkViewSociomatrix();
+    void slotNetworkViewSociomatrixPlotText();
     bool slotNetworkExportBMP();
     bool slotNetworkExportPNG();
     bool slotNetworkExportPDF();
@@ -462,7 +463,7 @@ private:
     QAction *networkImportPajek, *networkImportGML, *networkImportSM, *networkImportList,
     *networkImportDot , *networkImportDL, *networkImportTwoModeSM;
     QAction *networkViewFileAct, *openTextEditorAct, *networkViewSociomatrixAct,
-    *networkDataSetSelectAct;
+    *networkDataSetSelectAct, *networkViewSociomatrixPlotAct;
 
     QAction *createErdosRenyiRandomNetworkAct, *createGaussianRandomNetworkAct;
     QAction *createLatticeNetworkAct, *createScaleFreeRandomNetworkAct;

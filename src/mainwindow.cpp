@@ -667,6 +667,23 @@ void MainWindow::initActions(){
     connect(networkViewSociomatrixAct, SIGNAL(triggered()),
             this, SLOT(slotNetworkViewSociomatrix()));
 
+
+    networkViewSociomatrixPlotAct = new QAction(QIcon(":/images/sm.png"),
+                                     tr("Plot Adjacency Matrix (text)"),  this);
+    networkViewSociomatrixPlotAct ->setShortcut(Qt::Key_F6);
+    networkViewSociomatrixPlotAct->setStatusTip(tr("Plots the adjacency matrix in a text file using unicode characters."));
+    networkViewSociomatrixPlotAct->setWhatsThis(
+                tr("Plot Adjacency Matrix (text)\n\n"
+                   "Plots the adjacency matrix in a text file using "
+                   "unicode characters. \n\n"
+                   "In every element (i,j) of the \"image\", "
+                   "a black square means actors i and j are connected"
+                   "whereas a white square means they are disconnected."
+                   ));
+    connect(networkViewSociomatrixPlotAct, SIGNAL(triggered()),
+            this, SLOT(slotNetworkViewSociomatrixPlotText()));
+
+
     networkDataSetSelectAct = new QAction(QIcon(":/images/petersengraph.png"),
                                      tr("Create From Known Data Sets"),  this);
     networkDataSetSelectAct ->setShortcut(Qt::Key_F7);
@@ -2262,6 +2279,7 @@ void MainWindow::initMenuBar() {
     networkMenu -> addAction (networkViewFileAct);
     networkMenu -> addSeparator();
     networkMenu -> addAction (networkViewSociomatrixAct);
+    networkMenu -> addAction (networkViewSociomatrixPlotAct);
     networkMenu -> addSeparator();
 
     networkMenu -> addAction (networkDataSetSelectAct);
@@ -5854,21 +5872,42 @@ void MainWindow::slotNetworkExportSM(){
         return;
     }
 
-    slotHelpMessageToUser(USER_MSG_INFO,
-                          tr("Adjacency matrix with floating-point weights"),
-                          tr("Network with floating-point edge weights"),
-                          tr("This social network has some edges with negative weights."
-                             "In theory, an adjacency matrix is a square | V | × | V | matrix "
-                             "such that Aij = 1 when there is an edge from vertex i to vertex j, "
-                             "and Aij = 0 when there is no edge."
-                             "Therefore, an adjacency matrix can not have floating-point weight values. \n"
-                             "Nevertheless @todo"
-                             "If your network had any floating point weights in some edges, "
-                             "these are being truncated to the nearest integer or 1.")
-                          );
+
+    bool saveEdgeWeights=false;
+    if (activeGraph.graphWeighted() )  {
+        switch (
+                slotHelpMessageToUser(USER_MSG_QUESTION,
+                                  tr("Weighted graph. Social network with valued/weighted edges"),
+                                  tr("Social network with valued/weighted edges"),
+                                  tr("This social network includes valued/weighted edges "
+                                     "(the depicted graph is weighted). "
+                                     "Do you want to save the edge weights in the adjacency file?\n"
+                                     "Select Yes if you want to save edge values "
+                                     "in the resulting file. \n"
+                                     "Select No, if you don't want edge values "
+                                     "to be saved. In the later case, all non-zero values will be truncated to 1.")
+                                  )
+
+                )
+        {
+        case QMessageBox::Yes:
+            saveEdgeWeights = true;
+            break;
+        case QMessageBox::No:
+            saveEdgeWeights = false;
+            break;
+        case QMessageBox::Cancel:
+            statusMessage( tr("Save aborted...") );
+            return;
+            break;
+        }
+
+    }
+
+    activeGraph.graphSave(fileName, FILE_ADJACENCY,  saveEdgeWeights ) ;
 
 
-    activeGraph.graphSave(fileName, FILE_ADJACENCY ) ;
+
 
 }
 
@@ -5964,8 +6003,7 @@ bool MainWindow::slotNetworkExportList(){
 
 
 /**
- * @brief MainWindow::slotNetworkFileView
- * Displays the file of the loaded network.
+ * @brief Displays the file of the loaded network.
    Network _must_ be unchanged since last save/load.
    Otherwise it will ask the user to first save the network, then view its file.
  */
@@ -6030,8 +6068,7 @@ void MainWindow::slotNetworkFileView(){
 
 
 /**
- * @brief MainWindow::slotNetworkTextEditor
- * Opens the embedded text editor
+ * @brief Opens the embedded text editor
  */
 void MainWindow::slotNetworkTextEditor(){
     qDebug() << "slotNetworkTextEditor() : ";
@@ -6048,8 +6085,7 @@ void MainWindow::slotNetworkTextEditor(){
 
 
 /**
- * @brief MainWindow::slotNetworkViewSociomatrix
- *  Displays the adjacency matrix of the network.
+ * @brief Displays the adjacency matrix of the network.
  *  It uses a different method for writing the matrix to a file.
  *  While slotNetworkExportSM uses << operator of Matrix class
  *  (via adjacencyMatrix of Graph class), this is using directly the
@@ -6071,6 +6107,29 @@ void MainWindow::slotNetworkViewSociomatrix(){
     ed->show();
     m_textEditors << ed;
     statusMessage(tr("Adjacency matrix saved as ") + fn);
+}
+
+
+
+/**
+ * @brief Displays a text-only plot of the network adjacency matrix
+ */
+void MainWindow::slotNetworkViewSociomatrixPlotText(){
+    if ( !activeNodes() ) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+    int aNodes=activeNodes();
+    statusBar() ->  showMessage ( tr ("creating adjacency adjacency matrix of %1 nodes").arg(aNodes ) );
+    qDebug ("MW: calling Graph::writeAdjacencyMatrix with %i nodes", aNodes);
+    QString fn = appSettings["dataDir"] + "socnetv-report-adjacency-matrix.dat";
+
+    activeGraph.writeAdjacencyMatrixPlotText(fn);
+
+    TextEditor *ed = new TextEditor(fn);
+    ed->show();
+    m_textEditors << ed;
+    statusMessage(tr("Visual form of adjacency matrix saved as ") + fn);
 }
 
 
