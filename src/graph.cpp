@@ -2283,21 +2283,21 @@ void Graph::verticesSelectedCreateCycle(const QList<int> &vList) {
     qDebug()<<"Graph::verticesSelectedCreateCycle() - list:" << vList;
 
     if ( relations() == 1 && edgesEnabled()==0 ) {
-        QString newRelationName = QString::number ( vList.count() ) + tr("-clique");
+        QString newRelationName = QString::number ( vList.count() ) + tr("-cycle");
         relationCurrentRename(newRelationName, true);
     }
 
-    int weight;
+    int weight, j=0;
     for (int i=0; i < vList.count(); ++i ) {
-            for (int j=i+1; j < vList.count(); ++j ) {
-                if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
-                    edgeCreate(vList.value(i), vList.value(j),1.0,
-                               initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
-                }
-                else {
-                    edgeUndirectedSet(vList.value(i), vList.value(j), weight);
-                }
-            }
+        j= ( i == vList.count()-1) ? 0:i+1;
+        if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
+            edgeCreate(vList.value(i), vList.value(j),1.0,
+                       initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
+        }
+        else {
+            edgeUndirectedSet(vList.value(i), vList.value(j), weight);
+        }
+
     }
 }
 
