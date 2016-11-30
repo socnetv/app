@@ -99,5 +99,7 @@
         <file>images/subgraphstar.png</file>
         <file>images/subgraphline.png</file>
         <file>images/subgraphcycle.png</file>
+        <file>images/clustering.png</file>
+        <file>images/adjacencyplot.png</file>
     </qresource>
 </RCC>

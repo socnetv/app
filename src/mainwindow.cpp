@@ -668,7 +668,7 @@ void MainWindow::initActions(){
             this, SLOT(slotNetworkViewSociomatrix()));
 
 
-    networkViewSociomatrixPlotAct = new QAction(QIcon(":/images/sm.png"),
+    networkViewSociomatrixPlotAct = new QAction(QIcon(":/images/adjacencyplot.png"),
                                      tr("Plot Adjacency Matrix (text)"),  this);
     networkViewSociomatrixPlotAct ->setShortcut(Qt::SHIFT + Qt::Key_F6);
     networkViewSociomatrixPlotAct->setStatusTip(tr("Plots the adjacency matrix in a text file using unicode characters."));
@@ -2475,7 +2475,7 @@ void MainWindow::initMenuBar() {
 
     statMenu -> addSeparator();
     clusterAnalysisMenu = new QMenu(tr("Cluster Analysis..."));
-    clusterAnalysisMenu -> setIcon(QIcon(":/images/clusteranalysis.png"));
+    clusterAnalysisMenu -> setIcon(QIcon(":/images/clustering.png"));
     statMenu -> addMenu(clusterAnalysisMenu);
     clusterAnalysisMenu -> addAction (clusteringHierarchicalAct);
     statMenu -> addAction (cliquesAct);
