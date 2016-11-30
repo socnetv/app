@@ -2131,15 +2131,13 @@ int Graph::vertices(const bool dropIsolates, const bool countAll) {
 
 
 /**
- * @brief Graph::verticesListIsolated
- * Returns a list of all isolated vertices inside the graph
- * @return
- *
+ * @brief Returns a list of all isolated vertices inside the graph
  * Used by
  * Graph::adjacencyMatrixCreate()
  * Graph::writeAdjacencyMatrixInvert()
  * Graph::centralityInformation()
  * Graph::graphConnectivity()
+ * @return
  */
 QList<int> Graph::verticesListIsolated(){
     if (!graphModified() && calculatedIsolates ){
@@ -2170,8 +2168,7 @@ QList<int> Graph::verticesListIsolated(){
 
 
 /**
- * @brief Graph::verticesList
- * Returns a list of all vertices numbers inside the graph
+ * @brief Returns a list of all vertices numbers inside the graph
  * @return
  */
 QList<int> Graph::verticesList(){
@@ -2193,8 +2190,7 @@ QList<int> Graph::verticesList(){
 
 
 /**
- * @brief Graph::verticesSet
- * Returns a QSet of all vertices numbers inside the graph
+ * @brief Returns a QSet of all vertices numbers inside the graph
  * @return
  */
 QSet<int> Graph::verticesSet(){
@@ -2217,21 +2213,31 @@ QSet<int> Graph::verticesSet(){
 
 
 
-
 /**
- * @brief Creates a clique (connected subgraph) with all vertices in vList
+ * @brief Creates a subgraph (clique, star, cycle, line) with vertices in vList
+ * Iff vList is empty, then fallbacks to the m_selectedVertices.
  * @param vList
  */
-void Graph::verticesSelectedCreateClique(const QList<int> &vList) {
-    qDebug()<<"Graph::verticesSelectedCreateClique() - list:" << vList;
+void Graph::verticesCreateSubgraph(QList<int> vList,
+                                   const int &type,
+                                   const int &center) {
 
     if ( relations() == 1 && edgesEnabled()==0 ) {
         QString newRelationName = QString::number ( vList.count() ) + tr("-clique");
         relationCurrentRename(newRelationName, true);
     }
 
+    if (vList.isEmpty()) {
+        vList = m_selectedVertices;
+    }
+    qDebug()<<"Graph::verticesCreateSubgraph() - type:" << type
+               << "vList:" << vList;
+
     int weight;
-    for (int i=0; i < vList.count(); ++i ) {
+
+    if (type == SUBGRAPH_CLIQUE) {
+
+        for (int i=0; i < vList.count(); ++i ) {
             for (int j=i+1; j < vList.count(); ++j ) {
                 if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
                     edgeCreate(vList.value(i), vList.value(j),1.0,
@@ -2241,93 +2247,63 @@ void Graph::verticesSelectedCreateClique(const QList<int> &vList) {
                     edgeUndirectedSet(vList.value(i), vList.value(j), weight);
                 }
             }
-    }
-}
-
-
-
-
-/**
- * @brief Creates a star subgraph with all vertices in vList
- * @param vList
- */
-void Graph::verticesSelectedCreateStar(const QList<int> &vList, const int &center) {
-    qDebug()<<"Graph::verticesSelectedCreateStar() - list:" << vList;
-
-    if ( relations() == 1 && edgesEnabled()==0 ) {
-        QString newRelationName = QString::number ( vList.count() ) + tr("-clique");
-        relationCurrentRename(newRelationName, true);
-    }
-
-    int weight;
-    for (int i=0; i < vList.count(); ++i ) {
-            for (int j=i+1; j < vList.count(); ++j ) {
-                if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
-                    edgeCreate(vList.value(i), vList.value(j),1.0,
-                               initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
-                }
-                else {
-                    edgeUndirectedSet(vList.value(i), vList.value(j), weight);
-                }
-            }
-    }
-}
-
-
-
-/**
- * @brief Creates a cycle subgraph with all vertices in vList
- * @param vList
- */
-void Graph::verticesSelectedCreateCycle(const QList<int> &vList) {
-    qDebug()<<"Graph::verticesSelectedCreateCycle() - list:" << vList;
-
-    if ( relations() == 1 && edgesEnabled()==0 ) {
-        QString newRelationName = QString::number ( vList.count() ) + tr("-cycle");
-        relationCurrentRename(newRelationName, true);
-    }
-
-    int weight, j=0;
-    for (int i=0; i < vList.count(); ++i ) {
-        j= ( i == vList.count()-1) ? 0:i+1;
-        if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
-            edgeCreate(vList.value(i), vList.value(j),1.0,
-                       initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
-        }
-        else {
-            edgeUndirectedSet(vList.value(i), vList.value(j), weight);
         }
 
+
     }
-}
+    else if (type == SUBGRAPH_STAR)  {
 
+        for (int j=0; j < vList.count(); ++j ) {
 
-
-/**
- * @brief Creates a line subgraph with all vertices in vList
- * @param vList
- */
-void Graph::verticesSelectedCreateLine(const QList<int> &vList) {
-    qDebug()<<"Graph::verticesSelectedCreateLine() - list:" << vList;
-
-    if ( relations() == 1 && edgesEnabled()==0 ) {
-        QString newRelationName = QString::number ( vList.count() ) + tr("-clique");
-        relationCurrentRename(newRelationName, true);
-    }
-
-    int weight;
-    for (int i=0; i < vList.count(); ++i ) {
-            for (int j=i+1; j < vList.count(); ++j ) {
-                if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
-                    edgeCreate(vList.value(i), vList.value(j),1.0,
-                               initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
-                }
-                else {
-                    edgeUndirectedSet(vList.value(i), vList.value(j), weight);
-                }
+            if ( ! (weight=edgeExists( center, vList.value(j) ) ) ) {
+                edgeCreate(center, vList.value(j),1.0,
+                           initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
             }
+            else {
+                edgeUndirectedSet(center, vList.value(j), weight);
+            }
+
+        }
     }
+    else if (type == SUBGRAPH_CYCLE)  {
+        int j=0;
+        for (int i=0; i < vList.count(); ++i ) {
+            j= ( i == vList.count()-1) ? 0:i+1;
+            if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
+                edgeCreate(vList.value(i), vList.value(j),1.0,
+                           initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
+            }
+            else {
+                edgeUndirectedSet(vList.value(i), vList.value(j), weight);
+            }
+
+        }
+
+
+    }
+    else if (type == SUBGRAPH_LINE)  {
+        int j=0;
+        for (int i=0; i < vList.count(); ++i ) {
+            if ( i == vList.count()-1 ) break;
+            j= i+1;
+            if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
+                edgeCreate(vList.value(i), vList.value(j),1.0,
+                           initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
+            }
+            else {
+                edgeUndirectedSet(vList.value(i), vList.value(j), weight);
+            }
+
+        }
+
+    }
+    else {
+        return;
+    }
+
 }
+
+
 
 
 
@@ -2392,6 +2368,91 @@ bool Graph::graphLoaded() const {
     qDebug() << "Graph::graphLoaded() - " << (( graphFileFormat() != FILE_UNRECOGNIZED ) ? true: false );
     return ( graphFileFormat() != FILE_UNRECOGNIZED ) ? true: false;
 }
+
+
+
+/**
+ * @brief Gets updates on the user-selected vertices and edges from GW and emits
+ * their counts to MW
+ * @param selectedVertices
+ * @param selectedEdges
+ */
+void Graph::graphSelectionChanged(const QList<int> &selectedVertices,
+                                   const QList<SelectedEdge> &selectedEdges) {
+
+    m_selectedVertices = selectedVertices;
+    m_selectedEdges = selectedEdges;
+
+    qDebug() << "Graph::graphSelectionChanged()" << m_selectedVertices;
+
+    emit signalSelectionChanged(m_selectedVertices.count(), m_selectedEdges.count());
+
+}
+
+
+/**
+ * @brief Returns a QList of user-selected vertices
+ * @return
+ */
+QList<int> Graph::graphSelectedVertices() const{
+    return m_selectedVertices;
+}
+
+
+/**
+ * @brief Returns count of user-selected vertices
+ * @return
+ */
+int Graph::graphSelectedVerticesCount() const{
+    return m_selectedVertices.count();
+}
+
+
+/**
+ * @brief Returns min of user-selected vertices
+ * @return
+ */
+int Graph::graphSelectedVerticesMin() const{
+    int min = RAND_MAX;
+    foreach (int i, m_selectedVertices) {
+        if (i < min) min = i;
+    }
+    return min;
+}
+
+
+/**
+ * @brief Returns max of user-selected vertices
+ * @return
+ */
+int Graph::graphSelectedVerticesMax() const{
+    int max = 0;
+    foreach (int i, m_selectedVertices) {
+        if (i > max ) max = i;
+    }
+    return max;
+}
+
+
+
+/**
+ * @brief Returns a QList of user-selected edges in pair<int,int>
+ * @return
+ */
+QList<SelectedEdge> Graph::graphSelectedEdges() const{
+    return m_selectedEdges;
+}
+
+
+/**
+ * @brief Returns count of user-selected edges
+ * @return
+ */
+int Graph::graphSelectedEdgesCount() const {
+    return m_selectedEdges.count();
+}
+
+
 
 
 /**

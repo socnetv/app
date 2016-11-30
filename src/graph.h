@@ -62,22 +62,29 @@ static const int FILE_TWOMODE           = 9;  // .2SM .AFF
 static const int FILE_UNRECOGNIZED      =-1;  // UNRECOGNIZED FILE FORMAT
 
 
-static const int GRAPH_CHANGED_NONE = 0;
-static const int GRAPH_CHANGED_MINOR_OPTIONS = 1;
-static const int GRAPH_CHANGED_VERTICES_METADATA = 2;
-static const int GRAPH_CHANGED_EDGES_METADATA = 3;
-static const int GRAPH_CHANGED_POSITIONS = 4;
-static const int GRAPH_CHANGED_VERTICES = 11;
-static const int GRAPH_CHANGED_EDGES = 12;
-static const int GRAPH_CHANGED_VERTICES_AND_EDGES = 13;
-static const int GRAPH_CHANGED_NEW = 14;
+static const int GRAPH_CHANGED_NONE                = 0;
+static const int GRAPH_CHANGED_MINOR_OPTIONS       = 1;
+static const int GRAPH_CHANGED_VERTICES_METADATA   = 2;
+static const int GRAPH_CHANGED_EDGES_METADATA      = 3;
+static const int GRAPH_CHANGED_POSITIONS           = 4;
+static const int GRAPH_CHANGED_VERTICES            = 11;
+static const int GRAPH_CHANGED_EDGES               = 12;
+static const int GRAPH_CHANGED_VERTICES_AND_EDGES  = 13;
+static const int GRAPH_CHANGED_NEW                 = 14;
 
-static const int CLUSTERING_SINGLE_LINKAGE = 0; //"single-link" or minimum
+static const int CLUSTERING_SINGLE_LINKAGE   = 0; //"single-link" or minimum
 static const int CLUSTERING_COMPLETE_LINKAGE = 1; // "complete-link or maximum
-static const int CLUSTERING_AVERAGE_LINKAGE = 2;
+static const int CLUSTERING_AVERAGE_LINKAGE  = 2;
+
+static const int SUBGRAPH_CLIQUE = 1;
+static const int SUBGRAPH_STAR   = 2;
+static const int SUBGRAPH_CYCLE  = 3;
+static const int SUBGRAPH_LINE   = 4;
 
 
 class QPointF;
+
+
 
 typedef QList<Vertex*> Vertices;
 typedef QHash <QString, int> H_StrToInt;
@@ -89,11 +96,16 @@ typedef QHash<QString, bool> H_StrToBool;
 typedef QList<int> L_int;
 typedef QVector<int> V_int;
 
+
+
 struct ClickedEdge {
     int v1;
     int v2;
 };
 
+
+
+typedef pair<int, int> SelectedEdge;
 
 
 class Distance
@@ -109,10 +121,6 @@ public:
     }
 };
 
-struct Distance1 {
-    int target;
-    int distance;
-};
 
 // implement a min-priority queue
 class CompareDistances {
@@ -265,6 +273,8 @@ signals:
     void signalRelationRenamedToMW(const QString newRelName);
     void signalRelationChangedToGW(int);
     void signalRelationChangedToMW(const int &relIndex=RAND_MAX);
+    void signalSelectionChanged(const int &selectedVertices,
+                                const int &selectedEdges);
 
     /** Signals to GraphicsWidget */
     void drawNode( const int &num, const int &size, const QString &nodeShape,
@@ -424,10 +434,12 @@ public:
     QList<int> verticesList();
     QSet<int> verticesSet();
 
-    void verticesSelectedCreateClique(const QList<int> &verticesList);
-    void verticesSelectedCreateStar(const QList<int> &verticesList, const int &center);
-    void verticesSelectedCreateCycle(const QList<int> &verticesList);
-    void verticesSelectedCreateLine(const QList<int> &verticesList);
+
+
+    void verticesCreateSubgraph(QList<int> vList,
+                                const int &type = SUBGRAPH_CLIQUE,
+                                const int &center = 0);
+
 
     qreal length(const QPointF &a, const QPointF &b);
     qreal length(const QPointF &a);
@@ -480,6 +492,17 @@ public:
     bool graphModified() const ;
     bool graphSaved() const;
     bool graphLoaded() const;
+
+    void graphSelectionChanged(const QList<int> &selectedVertices,
+                               const QList<SelectedEdge> &selectedEdges);
+
+    QList<int> graphSelectedVertices() const;
+    int graphSelectedVerticesCount() const;
+    int graphSelectedVerticesMin() const;
+    int graphSelectedVerticesMax() const;
+
+    QList<SelectedEdge> graphSelectedEdges() const;
+    int graphSelectedEdgesCount() const;
 
     int graphGeodesics();
 
@@ -755,6 +778,8 @@ private:
     QList<int>  triadTypeFreqs; 	//stores triad type frequencies
     QList<int>  m_isolatedVerticesList,m_verticesList, m_graphFileFormatExportSupported;
     QSet<int> m_verticesSet;
+    QList<SelectedEdge> m_selectedEdges;
+    QList<int> m_selectedVertices;
     QHash <int, int> influenceRanges, influenceDomains;
     QHash <int, int> m_vertexPairsNotConnected;
     QHash <int, int> m_vertexPairsUnilaterallyConnected;
