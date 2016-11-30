@@ -40,12 +40,12 @@
 #include <QGraphicsScene>
 #include <QPrinter>
 #include <QMessageBox>
+#include <math.h>
 
 /** SocNetV specific includes*/
 
-#include <math.h>
-#include "graphicswidget.h"
 #include "graph.h"
+#include "graphicswidget.h"
 #include "filteredgesbyweightdialog.h"
 #include "webcrawlerdialog.h"
 #include "nodeeditdialog.h"
@@ -80,6 +80,7 @@ QT_END_NAMESPACE
 
 using namespace std;
 
+
 class PreviewForm;
 class RandErdosRenyiDialog;
 class RandSmallWorldDialog;
@@ -103,7 +104,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    GraphicsWidget *graphicsWidget;
+
 
     MainWindow(const QString &f);
     ~MainWindow();
@@ -125,7 +126,6 @@ public:
 
     int activeEdges();
     int activeNodes();
-    QList<int> selectedNodes();
 
     void createProgressBar(const int &max=0, const QString &msg="Please wait...");
     void destroyProgressBar(int max=0);
@@ -226,7 +226,7 @@ public slots:
     void slotEditRelationRename(QString newName=QString::null);
 
     void slotEditOpenContextMenu(const QPointF & mPos);
-    void slotEditSelectionChanged (const int nodes, const int edges);
+    void slotEditSelectionChanged (const int &selNodes, const int &selEdges);
 
     void slotEditClickOnEmptySpace (const QPointF &p);
 
@@ -408,9 +408,11 @@ signals:
     void signalRelationAddAndChange(const QString &relName, const bool &changeRelation=true);
 
 private:
-    QList<TextEditor *> m_textEditors;
-    QMap<QString,QString> appSettings;
     QGraphicsScene *scene;
+    GraphicsWidget *graphicsWidget;
+    Graph activeGraph;
+
+    QMap<QString,QString> appSettings;
 
     FilterEdgesByWeightDialog m_DialogEdgeFilterByWeight;
     WebCrawlerDialog m_WebCrawlerDialog;
@@ -427,7 +429,9 @@ private:
     QList<QTextCodec *> codecs;
     QString userSelectedCodecName;
     DataSetSelectDialog m_datasetSelectDialog;
-    Graph activeGraph;
+
+    QList<TextEditor *> m_textEditors;
+
     QPrinter *printer;
     QToolBar *toolBar;
 

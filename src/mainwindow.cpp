@@ -3605,6 +3605,9 @@ void MainWindow::initSignalSlots() {
     connect( graphicsWidget, SIGNAL( resized(int, int)),
                 &activeGraph, SLOT( canvasSizeSet(int,int)) ) ;
 
+    connect( graphicsWidget, &GraphicsWidget::setCursor,
+                     this,&MainWindow::setCursor);
+
     connect( graphicsWidget,  &GraphicsWidget::userClickOnEmptySpace,
                      this, &MainWindow::slotEditClickOnEmptySpace ) ;
 
@@ -3629,10 +3632,6 @@ void MainWindow::initSignalSlots() {
     connect( graphicsWidget, SIGNAL(userNodeMoved(const int &, const int &, const int &)),
              this, SLOT( slotEditNodePosition(const int &, const int &, const int &) ) );
 
-
-    connect( graphicsWidget, &GraphicsWidget::userSelectedItems,
-                     this, &MainWindow::slotEditSelectionChanged);
-
     connect( graphicsWidget, SIGNAL(zoomChanged(const int &)),
              zoomSlider, SLOT( setValue(const int &)) );
 
@@ -3655,6 +3654,10 @@ void MainWindow::initSignalSlots() {
 
 
     // Signals between activeGraph and graphicsWidget
+
+    connect( graphicsWidget, &GraphicsWidget::userSelectedItems,
+                     &activeGraph,&Graph::graphSelectionChanged);
+
     connect( &activeGraph,
              SIGNAL( addGuideCircle(const double&, const double&, const double&) ),
              graphicsWidget,
@@ -3784,6 +3787,11 @@ void MainWindow::initSignalSlots() {
 
 
     //SIGNALS BETWEEN ACTIVEGRAPH AND MAINWINDOW
+
+    connect( &activeGraph, &Graph::signalSelectionChanged,
+                     this, &MainWindow::slotEditSelectionChanged);
+
+
     connect( &activeGraph, &Graph::signalNodeClickedInfo ,
              this, &MainWindow::slotEditNodeInfoStatusBar );
 
@@ -6734,7 +6742,8 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
     QMenu *contextMenu = new QMenu(" Menu",this);
     Q_CHECK_PTR( contextMenu );  //displays "out of memory" if needed
 
-    int nodesSelected = selectedNodes().count();
+    int nodesSelected = activeGraph.graphSelectedVerticesCount();
+
     contextMenu -> addAction( "## Selected nodes: "
                               + QString::number(  nodesSelected ) + " ##  ");
 
@@ -6791,19 +6800,6 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
 
 
 
-/**
- * @brief MainWindow::selectedNodes
- * Returns a QList of all selected nodes.
- * Called by MW::slotEditOpenContextMenu, MW::slotEditNodeRemove,
- * MW::slotEditNodePropertiesDialog, MW::slotEditNodeProperties and
- * MW::slotEditNodeOpenContextMenu
- * @return
- */
-QList<int> MainWindow::selectedNodes() {
-    return graphicsWidget->selectedNodes();
-
-}
-
 
 /**
  * @brief MainWindow::slotEditClickOnEmptySpace
@@ -6830,7 +6826,7 @@ void MainWindow::slotEditNodeSelectAll(){
     qDebug() << "MainWindow::slotEditNodeSelectAll()";
     graphicsWidget->selectAll();
     statusMessage( tr("Selected nodes: %1")
-                   .arg( selectedNodes().count() ) );
+                   .arg( activeGraph.graphSelectedVerticesCount()  ) );
 
 }
 
@@ -6971,11 +6967,11 @@ void MainWindow::slotEditNodeRemove() {
     }
 
     // if there are already multiple nodes selected, erase them
-    int nodesSelected = selectedNodes().count();
+    int nodesSelected = activeGraph.graphSelectedVerticesCount();
     if ( nodesSelected > 0) {
         int removeCounter = 0;
         qDebug() << "MW::removeNode() multiple selected to remove";
-        foreach (int nodeNumber, selectedNodes() ) {
+        foreach (int nodeNumber, activeGraph.graphSelectedVertices() ) {
                activeGraph.vertexRemove(nodeNumber);
                ++removeCounter ;
         }
@@ -7028,13 +7024,14 @@ void MainWindow::slotEditNodePropertiesDialog() {
     }
     int min=-1, max=-1, size = appSettings["initNodeSize"].toInt(0, 10);
     int nodeNumber = 0;
+    int selectedNodesCount = activeGraph.graphSelectedVerticesCount();
     QColor color = QColor(appSettings["initNodeColor"]);
     QString shape= appSettings["initNodeShape"];
     QString label="";
     bool ok=false;
 
 
-    if ( selectedNodes().count() == 0) {
+    if ( selectedNodesCount  == 0) {
         min = activeGraph.vertexNumberMin();
         max = activeGraph.vertexNumberMax();
         qDebug() << "MW::slotEditNodePropertiesDialog() - no node selected"
@@ -7059,11 +7056,11 @@ void MainWindow::slotEditNodePropertiesDialog() {
         }
     }
     else   {
-        foreach (nodeNumber, selectedNodes() ) {
+        foreach (nodeNumber, activeGraph.graphSelectedVertices() ) {
             qDebug() << "MW::slotEditNodePropertiesDialog() "
                         "changing properties for selected node "
                      << nodeNumber ;
-            if ( selectedNodes().count() > 1 ) {
+            if ( selectedNodesCount > 1 ) {
                 color = activeGraph.vertexColor( nodeNumber );
                 shape = activeGraph.vertexShape( nodeNumber);
                 size = activeGraph.vertexSize ( nodeNumber);
@@ -7103,6 +7100,9 @@ void MainWindow::slotEditNodePropertiesDialog() {
 void MainWindow::slotEditNodeProperties( const QString label, const int size,
                                      const QString value, const QColor color,
                                      const QString shape) {
+
+    int selectedNodesCount = activeGraph.graphSelectedVerticesCount();
+
     qDebug()<< "MW::slotEditNodeProperties() - new properties: "
             << " label " << label
             << " size " << size
@@ -7110,9 +7110,9 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
             << " color " << color
             << " shape " << shape
                << " vertexClicked " <<activeGraph.vertexClicked()
-                  << " selectedNodes " << selectedNodes().count();
+                  << " selectedNodesCount " << selectedNodesCount;
 
-    if ( selectedNodes().count() == 0 && activeGraph.vertexClicked() != 0) {
+    if ( selectedNodesCount == 0 && activeGraph.vertexClicked() != 0) {
         // no node selected but user entered a node number in a dialog
         if ( label !="" && appSettings["initNodeLabelsVisibility"] != "true")
             slotOptionsNodeLabelsVisibility(true);
@@ -7128,10 +7128,10 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
     else {
         //some nodes are selected
         int nodeNumber = 0;
-        foreach (nodeNumber, selectedNodes() ) {
+        foreach (nodeNumber, activeGraph.graphSelectedVertices() ) {
             qDebug()<< "MW::slotEditNodeProperties() - node " << nodeNumber;
             qDebug()<< "MW::slotEditNodeProperties() - updating label ";
-            if ( selectedNodes().count() > 1 )
+            if ( selectedNodesCount > 1 )
             {
                 activeGraph.vertexLabelSet(
                             nodeNumber,
@@ -7169,7 +7169,10 @@ void MainWindow::slotEditNodeSelectedToClique () {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    if ( selectedNodes().count() == 0 ) {
+
+    int selectedNodesCount = activeGraph.graphSelectedVerticesCount();
+
+    if ( selectedNodesCount == 0 ) {
         slotHelpMessageToUser(USER_MSG_INFO,tr("No nodes selected."),
                               tr("Cannot create new clique. No nodes are selected."),
                               tr("Select some nodes first.")
@@ -7177,10 +7180,10 @@ void MainWindow::slotEditNodeSelectedToClique () {
         return;
     }
 
-    activeGraph.verticesSelectedCreateClique( selectedNodes() );
+    activeGraph.verticesCreateSubgraph(QList<int> (), SUBGRAPH_CLIQUE);
 
     slotHelpMessageToUser(USER_MSG_INFO,tr("Clique created."),
-                          tr("A new clique has been created from ") + QString::number(selectedNodes().count())
+                          tr("A new clique has been created from ") + QString::number(selectedNodesCount)
                           + tr(" nodes")
                           );
 }
@@ -7198,7 +7201,10 @@ void MainWindow::slotEditNodeSelectedToStar() {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    if ( selectedNodes().count() == 0 ) {
+
+    int selectedNodesCount = activeGraph.graphSelectedVerticesCount();
+
+    if ( selectedNodesCount == 0 ) {
         slotHelpMessageToUser(USER_MSG_INFO,tr("No nodes selected."),
                               tr("Cannot create star subgraph. No nodes are selected."),
                               tr("Select some nodes first.")
@@ -7206,11 +7212,27 @@ void MainWindow::slotEditNodeSelectedToStar() {
         return;
     }
     int center;
+    bool ok=false;
 
-    activeGraph.verticesSelectedCreateStar( selectedNodes(), center);
+    int min = activeGraph.graphSelectedVerticesMin();
+    int max = activeGraph.graphSelectedVerticesMax();
+    center=QInputDialog::getInt(
+                this,
+                "Create star subgraph",
+                tr("To create a star subgraph from selected nodes, \n"
+                   "enter the number of the central actor ("
+                   +QString::number(min).toLatin1()+"..."
+                   +QString::number(max).toLatin1()+"):"), min, 1, max , 1, &ok ) ;
+    if (!ok) {
+        statusMessage( "Create star subgraph cancelled." );
+        return;
+    }
+
+    activeGraph.verticesCreateSubgraph(QList<int> (), SUBGRAPH_STAR,center);
 
     slotHelpMessageToUser(USER_MSG_INFO,tr("Star subgraph created."),
-                          tr("A new star subgraph has been created from ") + QString::number(selectedNodes().count())
+                          tr("A new star subgraph has been created from ") +
+                          QString::number( selectedNodesCount )
                           + tr(" nodes")
                           );
 }
@@ -7227,7 +7249,10 @@ void MainWindow::slotEditNodeSelectedToCycle() {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    if ( selectedNodes().count() == 0 ) {
+
+    int selectedNodesCount = activeGraph.graphSelectedVerticesCount();
+
+    if ( selectedNodesCount == 0 ) {
         slotHelpMessageToUser(USER_MSG_INFO,tr("No nodes selected."),
                               tr("Cannot create cycle subgraph. No nodes are selected."),
                               tr("Select some nodes first.")
@@ -7235,10 +7260,11 @@ void MainWindow::slotEditNodeSelectedToCycle() {
         return;
     }
 
-    activeGraph.verticesSelectedCreateCycle( selectedNodes() );
+    activeGraph.verticesCreateSubgraph(QList<int> (),SUBGRAPH_CYCLE);
 
     slotHelpMessageToUser(USER_MSG_INFO,tr("Cycle subgraph created."),
-                          tr("A new cycle subgraph has been created from ") + QString::number(selectedNodes().count())
+                          tr("A new cycle subgraph has been created from ")
+                          + QString::number( selectedNodesCount )
                           + tr(" nodes")
                           );
 }
@@ -7255,7 +7281,10 @@ void MainWindow::slotEditNodeSelectedToLine() {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    if ( selectedNodes().count() == 0 ) {
+
+    int selectedNodesCount = activeGraph.graphSelectedVerticesCount();
+
+    if ( selectedNodesCount == 0 ) {
         slotHelpMessageToUser(USER_MSG_INFO,tr("No nodes selected."),
                               tr("Cannot create line subgraph. No nodes are selected."),
                               tr("Select some nodes first.")
@@ -7263,10 +7292,11 @@ void MainWindow::slotEditNodeSelectedToLine() {
         return;
     }
 
-    activeGraph.verticesSelectedCreateLine( selectedNodes() );
+    activeGraph.verticesCreateSubgraph(QList<int> (),SUBGRAPH_LINE);
 
     slotHelpMessageToUser(USER_MSG_INFO,tr("Line subgraph created."),
-                          tr("A new line subgraph has been created from ") + QString::number(selectedNodes().count())
+                          tr("A new line subgraph has been created from ")
+                          + QString::number( selectedNodesCount )
                           + tr(" nodes")
                           );
 }
@@ -7616,7 +7646,7 @@ void MainWindow::slotEditNodeOpenContextMenu() {
 
     QMenu *nodeContextMenu = new QMenu(QString::number( activeGraph.vertexClicked() ), this);
     Q_CHECK_PTR( nodeContextMenu );  //displays "out of memory" if needed
-    int nodesSelected = selectedNodes().count();
+    int nodesSelected = activeGraph.graphSelectedVerticesCount();
     if ( nodesSelected == 1) {
         nodeContextMenu -> addAction(
                     tr("## NODE ") + QString::number(activeGraph.vertexClicked()) + " ##  "
@@ -7658,30 +7688,30 @@ void MainWindow::slotEditNodeOpenContextMenu() {
  * @param nodes
  * @param edges
  */
-void MainWindow::slotEditSelectionChanged(const int nodes, const int edges) {
+void MainWindow::slotEditSelectionChanged(const int &selNodes, const int &selEdges) {
     qDebug()<< "MW::slotEditSelectionChanged()";
-    rightPanelSelectedNodesLCD->display(nodes);
-    rightPanelSelectedEdgesLCD->display(edges);
+    rightPanelSelectedNodesLCD->display(selNodes);
+    rightPanelSelectedEdgesLCD->display(selEdges);
 
-    if (nodes > 1 ){
+    if (selNodes > 1 ){
         editNodeRemoveAct->setText(tr("Remove ")
-                                   + QString::number(nodes)
+                                   + QString::number(selNodes)
                                    + tr(" nodes"));
         editNodeSelectedToCliqueAct->setEnabled(true);
         editNodeSelectedToCliqueAct->setText(tr("Create a clique from ")
-                                             + QString::number(nodes)
+                                             + QString::number(selNodes)
                                              + tr(" selected nodes"));
         editNodeSelectedToStarAct->setEnabled(true);
         editNodeSelectedToStarAct->setText(tr("Create a star from ")
-                                             + QString::number(nodes)
+                                             + QString::number(selNodes)
                                              + tr(" selected nodes"));
         editNodeSelectedToCycleAct->setEnabled(true);
         editNodeSelectedToCycleAct->setText(tr("Create a cycle from ")
-                                             + QString::number(nodes)
+                                             + QString::number(selNodes)
                                              + tr(" selected nodes"));
         editNodeSelectedToLineAct->setEnabled(true);
         editNodeSelectedToLineAct->setText(tr("Create a line from ")
-                                             + QString::number(nodes)
+                                             + QString::number(selNodes)
                                              + tr(" selected nodes"));
     }
     else {
@@ -7698,8 +7728,8 @@ void MainWindow::slotEditSelectionChanged(const int nodes, const int edges) {
     }
 
     statusMessage(  tr("Selected %1 nodes and %2 edges")
-                     .arg( nodes )
-                     .arg( edges )
+                     .arg( selNodes )
+                     .arg( selEdges )
                      );
 }
 

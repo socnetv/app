@@ -45,6 +45,11 @@ class EdgeLabel;
 typedef QHash<QString, Edge*> H_StrToEdge;
 typedef QHash <long int, Node*> H_NumToNode;
 
+using namespace std;
+
+
+typedef pair<int, int> SelectedEdge;
+
 class GraphicsWidget : public QGraphicsView {
     Q_OBJECT
 public:
@@ -61,7 +66,7 @@ public:
 
     QList<QGraphicsItem *> selectedItems();
     QList<int> selectedNodes();
-    QList<QString> selectedEdges();
+    QList<SelectedEdge> selectedEdges();
 
     void selectAll();
     void selectNone();
@@ -163,12 +168,15 @@ signals:
     void openEdgeMenu();
     void openContextMenu(const QPointF p);
     void userNodeMoved(const int &, const int &, const int &);
-    void userSelectedItems(const int nodes, const int edges);
+    //void userSelectedItems(const int nodes, const int edges);
+    void userSelectedItems(const QList<int> &selectedNodes,
+                           const QList<SelectedEdge> &selectedEdges);
     void userClickedNode(const int &nodeNumber);
     void userClickedEdge(const int &source, const int &target);
     void zoomChanged(const int);
     void rotationChanged(const int);
     void resized(const int, const int);
+    void setCursor(Qt::CursorShape);
 
 
 
@@ -176,7 +184,7 @@ private:
     H_NumToNode nodeHash;	//This is used in drawEdge() method
     H_StrToEdge edgesHash; // helper hash to easily find edges
     QList<int> m_selectedNodes;
-    QList<QString> m_selectedEdges;
+    QList<SelectedEdge> m_selectedEdges;
     int m_curRelation, m_nodeSize;
     int m_currentRotationAngle;
     int m_zoomIndex, markedNodeOrigSize,markedEdgeSourceOrigSize, markedEdgeTargetOrigSize;
