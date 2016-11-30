@@ -3321,6 +3321,8 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
     int columnCount=0;
     int fileLine = 0;
     bool nodeNumberingZero = false, nodesWithLabels= false;
+    //@TODO Always use nodesWithLabels= true
+
     QMap<QString, int> nodeMap;
     // use a minimum priority queue to order Actors<QString key, int value> by their value
     // so that we can create the discovered nodes by either their increasing nodeNumber
