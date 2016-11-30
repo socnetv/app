@@ -232,7 +232,7 @@ void GraphicsWidget::startEdge(Node *node){
                    "Emitting userMiddleClicked() to create edge";
         secondNode=node;
         emit userMiddleClicked(firstNode->nodeNumber(), secondNode->nodeNumber() );
-        ( (MainWindow*)parent() )->setCursor(Qt::ArrowCursor);
+        //( (MainWindow*)parent() )->setCursor(Qt::ArrowCursor);
         emit setCursor(Qt::ArrowCursor);
         secondDoubleClick=false;
     }
@@ -401,7 +401,7 @@ void GraphicsWidget::removeItem( Node *node){
         qDebug() << "GW::removeItem(node) - number: " <<  i
                  << "previously set as source node for a new edge. Unsetting.";
         secondDoubleClick = false;
-        ( (MainWindow*)parent() )->setCursor(Qt::ArrowCursor);
+       //( (MainWindow*)parent() )->setCursor(Qt::ArrowCursor);
         emit setCursor(Qt::ArrowCursor);
     }
     nodeHash.remove(i);
