@@ -233,13 +233,15 @@ void GraphicsWidget::startEdge(Node *node){
         secondNode=node;
         emit userMiddleClicked(firstNode->nodeNumber(), secondNode->nodeNumber() );
         ( (MainWindow*)parent() )->setCursor(Qt::ArrowCursor);
+        emit setCursor(Qt::ArrowCursor);
         secondDoubleClick=false;
     }
     else{
         qDebug()<<"GW::startEdge() - this is the first double click.";
         firstNode=node;
         secondDoubleClick=true;
-        ( (MainWindow*)parent() )->setCursor( Qt::PointingHandCursor);
+        //( (MainWindow*)parent() )->setCursor( Qt::PointingHandCursor);
+        emit setCursor( Qt::PointingHandCursor );
     }
 }
 
@@ -400,6 +402,7 @@ void GraphicsWidget::removeItem( Node *node){
                  << "previously set as source node for a new edge. Unsetting.";
         secondDoubleClick = false;
         ( (MainWindow*)parent() )->setCursor(Qt::ArrowCursor);
+        emit setCursor(Qt::ArrowCursor);
     }
     nodeHash.remove(i);
     scene()->removeItem(node);
@@ -1069,23 +1072,26 @@ void GraphicsWidget::selectNone(){
 
 
 /**
- * @brief GraphicsWidget::getSelectedItems
+ * @brief Emits selected nodes and edges to Graph and MW
  * Called by QGraphicsScene::selectionChanged signal whenever the user
  * makes a selection on the canvas.
- * Counts selected nodes and edges and emits these numbers
- * to MW::slotEditSelectionChanged which displays them on the status bar.
+ * Emits selectedNodes and selectedEdges lists to
+ * Graph::graphSelectionChanged() which then signals to
+ * MW::slotEditSelectionChanged to display counts on app window.
  */
 void GraphicsWidget::getSelectedItems() {
-    int nodes=selectedNodes().count();
-    int edges=selectedEdges().count();
-    qDebug() <<"GW::getSelectedItems() - nodes" << nodes<<"edges"<<edges;
-    //emit selected nodes/edges signal to MW ?
+
+    qDebug() <<"GW::getSelectedItems()";
+
     if (!clickedEdgeExists)
-        emit userSelectedItems(nodes, edges);
+       // emit userSelectedItems(nodes, edges);
+        emit userSelectedItems(selectedNodes(), selectedEdges());
 }
 
+
+
 /**
- * @brief GraphicsWidget::selectedItems
+ * @brief Returns a QList of all selected QGraphicsItem(s)
  * @return a QList of all selected QGraphicsItem(s)
  */
 QList<QGraphicsItem *> GraphicsWidget::selectedItems(){
@@ -1094,9 +1100,9 @@ QList<QGraphicsItem *> GraphicsWidget::selectedItems(){
 }
 
 /**
- * @brief GraphicsWidget::selectedNodes
+ * @brief Returns a QList of selected node numbers
  * Called by GW::getSelectedItems and MW::selectedNodes
- * @return a QList of selected node numbers
+ * @return a QList of integers: the selected node numbers
  */
 QList<int> GraphicsWidget::selectedNodes() {
         m_selectedNodes.clear();
@@ -1110,18 +1116,16 @@ QList<int> GraphicsWidget::selectedNodes() {
 
 
 /**
- * @brief GraphicsWidget::selectedEdges
+ * @brief Returns a QList of selected directed edges structs in the form of v1,v2
  *
- * @return a QList of selected directed edges strings in the form of "a->b"
+ * @return a QList of selected directed edges structs
  */
-QList<QString> GraphicsWidget::selectedEdges() {
+QList<SelectedEdge> GraphicsWidget::selectedEdges() {
         m_selectedEdges.clear();
         foreach (QGraphicsItem *item, scene()->selectedItems()) {
             if (Edge *edge= qgraphicsitem_cast<Edge *>(item) ) {
-                m_selectedEdges.append(
-                            QString::number(edge->sourceNodeNumber())+"->"+
-                            QString::number(edge->targetNodeNumber())
-                            );
+                SelectedEdge selEdge = make_pair( edge->sourceNodeNumber(), edge->targetNodeNumber());
+                m_selectedEdges << selEdge;
             }
         }
         return m_selectedEdges;
