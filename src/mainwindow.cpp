@@ -146,15 +146,19 @@ MainWindow::MainWindow(const QString & m_fileName) {
  */
 MainWindow::~MainWindow() {
     qDebug() << "MW::~MainWindow() Destruct function running...";
+
+    initApp();
     delete printer;
     delete scene;
     delete graphicsWidget;
+
     foreach ( TextEditor *ed, m_textEditors) {
         ed->close();
         delete ed;
-
     }
     m_textEditors.clear();
+
+
     qDebug() << "MW::~MainWindow() Destruct function finished - bye!";
 }
 
@@ -4540,6 +4544,8 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
         ce->ignore();
         break;
     }
+
+    initApp();
 }
 
 
