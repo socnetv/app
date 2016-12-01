@@ -7632,7 +7632,8 @@ void Graph::writeCliqueCensus(
 
 
 /**
- * @brief Graph::graphCliqueAdd
+ * @brief Called from Graph::graphCliques to add a new clique (list of vertices)
+ * Adds clique info to each clique member and updates CLQM matrix.
  * @param list
  * @return
  */
@@ -7674,8 +7675,7 @@ void Graph:: graphCliqueAdd(const QList<int> &clique){
 
 
 /**
- * @brief Graph::graphCliques()
- * Finds all maximal cliques in an undirected (?) graph.
+ * @brief Finds all maximal cliques in an undirected (?) graph.
  * Implements the Bron–Kerbosch algorithm, a recursive backtracking algorithm
  * that searches for all maximal cliques in a given graph G.
  * Given three sets R, P, and X, the algorithm finds the maximal cliques that
@@ -7740,6 +7740,12 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X) {
                  << " R:" << R
                  << " X:" << X ;
         N = vertexNeighborhoodList(v).toSet(); //fixme
+        if (N.count() == 1 && N.contains(v)) {
+            qDebug() << "Graph::graphCliques() - v:" << v
+                     << "has only a tie to itself";
+            ++i;
+            continue;
+        }
         QSet<int> addv; addv.insert(v); // dummy set with just v
         temp = R+addv;
         temp1 = P&N;

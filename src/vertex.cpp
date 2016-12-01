@@ -563,7 +563,7 @@ QHash<int,float>* Vertex::reciprocalEdgesHash(){
  * @return  QList<int>
  */
 QList<int> Vertex::neighborhoodList(){
-    qDebug() << "Vertex::neighborhoodList() - of vertex " << this->name();
+
     m_neighborhoodList.clear();
     float m_weight=0;
     int relation = 0;
