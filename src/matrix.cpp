@@ -823,6 +823,7 @@ Matrix& Matrix::pearsonCorrelationCoefficient(Matrix &AM){
 
     int N = 0;
     float sum = 0;
+    float nom = 0;
     float pcc = 0;
 
     bool rows = true;
