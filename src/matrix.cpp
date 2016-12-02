@@ -815,18 +815,20 @@ bool Matrix::printMatrixConsole(bool debug){
 
 
 
-Matrix& Matrix::pearsonCorrelationCoefficient(Matrix &A){
+Matrix& Matrix::pearsonCorrelationCoefficient(Matrix &AM){
     qDebug()<< "Matrix::pearsonCorrelationCoefficient()";
 
 
-    this->zeroMatrix(n,n);
+
 
     int N = 0;
     float sum = 0;
     float pcc = 0;
 
     bool rows = true;
-    N = A.rows() ;
+    N = AM.rows() ;
+
+    this->zeroMatrix(N,N);
 
     QVector<float> mean (N,0); // holds mean values
     QVector<float> diffSums(N,0);

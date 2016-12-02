@@ -183,7 +183,7 @@ public:
     void lubksb (Matrix &a, const int &n, int indx[], float b[]);
 
 
-    Matrix& pearsonCorrelationCoefficient(Matrix &A);
+    Matrix& pearsonCorrelationCoefficient(Matrix &AM);
 
 
 
