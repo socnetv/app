@@ -815,7 +815,60 @@ bool Matrix::printMatrixConsole(bool debug){
 
 
 
+Matrix& Matrix::pearsonCorrelationCoefficient(Matrix &A){
+    qDebug()<< "Matrix::pearsonCorrelationCoefficient()";
 
+
+    this->zeroMatrix(n,n);
+
+    int N = 0;
+    float sum = 0;
+    float pcc = 0;
+
+    bool rows = true;
+    N = A.rows() ;
+
+    QVector<float> mean (N,0); // holds mean values
+    QVector<float> diffSums(N,0);
+    QVector<float> squareSums(N,0);
+
+    if (rows) {
+
+
+        //compute mean values
+        for (int i = 0 ; i < N ; i++ ) {
+            sum = 0;
+            for (int j = 0 ; j < N ; j++ ) {
+                sum += AM.item(i,j);
+            }
+            mean[i] = sum / N;
+            for (int j = 0 ; j < N ; j++ ) {
+                diffSums [ i ]   +=  ( AM.item(i,j)  - mean[i] ) ;
+                squareSums [ i ] +=  ( AM.item(i,j)  - mean[i] ) *  ( AM.item(i,j)  - mean[i] );
+            }
+
+        }
+
+        for (int i = 0 ; i < N ; i++ ) {
+
+            for (int j = 0 ; j < N ; j++ ) {
+                diffSums [ i ]   +=  ( AM.item(i,j)  - mean[i] ) * ( AM.item(i,j)  - mean[j] )  ;
+            }
+
+
+            for (int j = 0 ; j < N ; j++ ) {
+               pcc =   nom /  ( sqrt ( squareSums[i] ) * sqrt ( squareSums[j] ) );
+            }
+
+        }
+
+    }
+
+
+
+
+
+}
 
 
 

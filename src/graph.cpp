@@ -2902,6 +2902,9 @@ void Graph::edgeUndirectedSet(const long int &v1, const long int &v2,
 }
 
 
+
+
+
 /**
  * @brief Graph::distance
  * Returns the distance between nodes numbered (i-1) and (j-1)
@@ -3134,6 +3137,9 @@ int Graph::graphConnectivity(const bool updateProgress) {
 
     return m_graphConnectivity;
 }
+
+
+
 
 
 
@@ -7464,6 +7470,21 @@ void Graph::writeTriadCensus(
     outText << "300" << "\t\t" <<triadTypeFreqs[15] <<"\n";
 
     outText << "\n\n";
+    outText << "A Triad Census counts all the different types (classes) of observed triads within a network.\n"
+               "The triad types are coded and labeled according to their number of mutual, asymmetric and non-existent (null) dyads.\n"
+               "SocNetV follows the M-A-N labeling scheme, as described by Holland, Leinhardt and Davis in their studies. "
+               "In the M-A-N scheme, each triad type has a label with four characters:\n";
+
+    outText << "The first character is the number of mutual (M) duads in the triad. Possible values: 0, 1, 2, 3.\n"
+               "The second character is the number of asymmetric (A) duads in the triad. Possible values: 0, 1, 2, 3.\n"
+               "The third character is the number of null (N) duads in the triad. Possible values: 0, 1, 2, 3.\n"
+               "The fourth character is infered from features or the nature of the triad, i.e. presence of cycle or transitivity. \n"
+               "Possible values: none, D (\"Down\"), U (\"Up\"), C (\"Cyclic\"), T (\"Transitive\")\n";
+
+
+
+
+
     outText << tr("Triad Census report, \n");
     outText << tr("Created by SocNetV ") << VERSION << ": "
             << actualDateTime.currentDateTime()
@@ -7607,7 +7628,19 @@ void Graph::writeCliqueCensus(
     outText << endl<< endl
             << tr("Hierarchical clustering of overlap matrix: Actors")
             << endl<< endl ;
-   // graphClusteringHierarchical(CLUSTERING_SINGLE_LINKAGE, CLQM); //uncomment when ready.
+   graphClusteringHierarchical(CLUSTERING_SINGLE_LINKAGE, CLQM); //uncomment when ready.
+
+   outText <<"Level" << "\t"<< "Actors" <<endl;
+   QMap<float, V_int>::const_iterator i;
+   for ( i= m_clusters.constBegin() ; i != m_clusters.constEnd(); ++i) {
+        outText << i.key() << "\t" ;
+
+        foreach (int item, i.value() ) {
+            outText << item << " " ;
+        }
+        outText << endl;
+
+    }
 
     emit updateProgressDialog(3 * N / 5);
     outText << endl<< endl
@@ -8030,6 +8063,24 @@ void Graph::graphClusteringHierarchical(const int &method, Matrix &DSM) {
     }
 
 
+
+}
+
+
+
+
+
+
+//The correlation measure of similarity is particularly useful when the data on ties are valued
+// r =\frac{\sum ^n _{i=1}(x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum ^n _{i=1}(x_i - \bar{x})^2} \sqrt{\sum ^n _{i=1}(y_i - \bar{y})^2}}
+
+void Graph::graphSimilarityPearsonCorrelationCoefficient (Matrix &AM,
+                                                          Matrix &PCC,
+                                                          const bool rows){
+    qDebug()<<"Graph::graphSimilarityPearsonCorrelationCoefficient() of matrix AM";
+    AM.printMatrixConsole(true);
+
+    PCC.pearsonCorrelationCoefficient(AM);
 
 }
 

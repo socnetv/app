@@ -650,6 +650,9 @@ public:
     void triadType_examine_MAN_label(int, int, int, Vertex*,  Vertex*, Vertex* );
     //	void eccentr_JordanCenter(); 				// TODO
 
+    void graphSimilarityPearsonCorrelationCoefficient (Matrix &AM,
+                                                       Matrix &PCC,
+                                                       const bool rows);
 
     /* LAYOUTS */
 

@@ -182,6 +182,11 @@ public:
 
     void lubksb (Matrix &a, const int &n, int indx[], float b[]);
 
+
+    Matrix& pearsonCorrelationCoefficient(Matrix &A);
+
+
+
     Matrix& inverseByGaussJordanElimination(Matrix &a);
 
     Matrix& inverse(Matrix &a);
