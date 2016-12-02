@@ -1869,11 +1869,12 @@ void MainWindow::initActions(){
     connect(cliquesAct, SIGNAL(triggered()), this, SLOT(slotCliqueCensus() )  );
 
 
-    clusteringCoefAct = new QAction(QIcon(":/images/clique.png"), tr("Clustering Coefficient"),this);
+    clusteringCoefAct = new QAction(QIcon(":/images/clique.png"), tr("Local and Network Clustering Coefficient"),this);
     clusteringCoefAct -> setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_L);
-    clusteringCoefAct->setStatusTip(tr("Compute the Clustering Coefficient for every actor and the network average."));
-    clusteringCoefAct->setWhatsThis(tr("Clustering Coefficient\n\n "
-                                       "The Clustering Coefficient of an actor quantifies how close "
+    clusteringCoefAct->setStatusTip(tr("Compute the local Clustering Coefficient for every actor and the network average."));
+    clusteringCoefAct->setWhatsThis(tr("Local and Network Clustering Coefficient\n\n "
+                                       "The local Clustering Coefficient  (Watts & Strogatz, 1998) "
+                                       "of an actor quantifies how close "
                                        "the actor and her neighbors are to being a clique. \n "));
     connect(clusteringCoefAct, SIGNAL(triggered()), this, SLOT(slotClusteringCoefficient() )  );
 

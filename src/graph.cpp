@@ -1752,7 +1752,7 @@ ClickedEdge Graph::edgeClicked() {
 
 /**
  * @brief Graph::edgeExists
- * Checks if there is a directed edge (arc) from v1 to v2
+ * Checks if there is a (un)directed edge (arc) from v1 to v2
    Complexity:  O(logN) for index retrieval + O(1) for QList index retrieval + O(logN) for checking edge(v2)
  * @param v1
  * @param v2
@@ -1760,25 +1760,28 @@ ClickedEdge Graph::edgeClicked() {
  * @return zero if arc does not exist or non-zero if arc exists
  */
 float Graph::edgeExists (const long int &v1, const long int &v2, const bool &undirected) {
+    edgeWeightTemp = 0;
+    edgeWeightTemp = m_graph[ index[v1] ]->hasEdgeTo(v2);
 
     if (!undirected) {
         qDebug() << "Graph::edgeExists() - directed" << v1 << "->" << v2
-                 << "=" << m_graph[ index[v1] ]->hasEdgeTo(v2);
-        return m_graph[ index[v1] ]->hasEdgeTo(v2);
+                 << "="<<edgeWeightTemp;
+        return edgeWeightTemp;
+
     }
     else { //undirected
-        qDebug() << "Graph::edgeExists() - undirected" << v1 << " <-> " << v2 << " ? " ;
-       edgeWeightTemp = 0;
-       edgeWeightTemp = m_graph[ index[v1] ]->hasEdgeTo(v2);
-       if  ( edgeWeightTemp!=0  &&
-             (  edgeWeightTemp ==  m_graph[ index[v2] ]->hasEdgeTo(v1)  ) ){
-                qDebug() << "Graph::edgeExists() - undirected" << v1 << "<->" << v2 << "="
-                            <<edgeWeightTemp;
-               return edgeWeightTemp;
+
+       if  ( edgeWeightTemp!=0 ) {
+           edgeReverseWeightTemp = m_graph[ index[v2] ]->hasEdgeTo(v1);
+           if  ( edgeWeightTemp == edgeReverseWeightTemp  ){
+                    qDebug() << "Graph::edgeExists() - undirected" << v1 << "<->" << v2 << "="
+                                <<edgeWeightTemp;
+                   return edgeWeightTemp;
+           }
        }
     }
     qDebug() << "Graph::edgeExists() - undirected" << v1 << "<->" << v2 << "= 0";
-    return 0;
+    return edgeWeightTemp;
 }
 
 
@@ -7743,6 +7746,7 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X) {
         if (N.count() == 1 && N.contains(v)) {
             qDebug() << "Graph::graphCliques() - v:" << v
                      << "has only a tie to itself";
+            //graphCliques( R, P, X );
             ++i;
             continue;
         }
@@ -8115,16 +8119,16 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
 
         it2=reciprocalEdges->cbegin();
         qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
-                 << "Checking if neighbor " << u1
-                 << "is connected to other neighbors of " << v1;
+                 << "Checking if neighbor" << u1
+                 << "is connected to other neighbors of" << v1;
 
         while ( it2 != reciprocalEdges->cend() ){
 
             u2 = it2.key();
 
             qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
-                     << "Other neighbor " << u2
-                     << "Check if there is an edge "
+                     << "Other neighbor" << u2
+                     << "Check if there is an edge"
                      << u1
                      << "[" << index[u1] << "]"
                         << "->" << u2 ;
@@ -8136,6 +8140,7 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
                 continue;
             }
 
+
             if ( edgeExists( u1, u2 ) != 0 )
             {
                 qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
@@ -8145,33 +8150,9 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
                 QString edge = QString::number(u1) + "->" + QString::number(u2);
                 QString revedge = QString::number(u2) + "->" + QString::number(u1);
 
-                if ( ! neighborhoodEdges.contains(edge) &&
-                     ( graphIsSymmetric && ! neighborhoodEdges.contains(revedge) )
-                     )
-                {
-                    neighborhoodEdges.insert(edge, true);
-                    qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
-                             << "Edge added to neighborhoodEdges : " << edge;
-
-                }
-                else {
-                    qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
-                             << "Edge not added, discovered previously : " << edge;
-                }
-            }
-            if ( ! graphIsSymmetric )
-            {
-                if (  edgeExists( u2, u1 ) != 0   )
-                {
-                    qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
-                             << "Graph not symmetric  "
-                             << "Connected neighbors: "
-                             << u2 << " -> " << u1;
-
-                    QString edge = QString::number(u2) + "->" + QString::number(u1);
-
-                    if ( ! neighborhoodEdges.contains(edge) )
-                    {
+                if ( graphIsSymmetric ) {
+                    if ( ! neighborhoodEdges.contains(edge) &&
+                         ! neighborhoodEdges.contains(revedge)  )    {
                         neighborhoodEdges.insert(edge, true);
                         qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
                                  << "Edge added to neighborhoodEdges : " << edge;
@@ -8181,9 +8162,23 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
                         qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
                                  << "Edge not added, discovered previously : " << edge;
                     }
+
+                }
+                else {
+                    if ( ! neighborhoodEdges.contains(edge) ) {
+                        neighborhoodEdges.insert(edge, true);
+                        qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
+                                 << "Edge added to neighborhoodEdges : " << edge;
+                    }
+                    else {
+                        qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
+                                 << "Edge not added, discovered previously : " << edge;
+                    }
+
                 }
 
             }
+
             ++it2;
         }
         ++it1;

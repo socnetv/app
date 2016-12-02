@@ -798,7 +798,7 @@ private:
 
     int m_precision, m_curRelation, m_fileFormat, m_vertexClicked;
     ClickedEdge m_clickedEdge;
-    float edgeWeightTemp;
+    float edgeWeightTemp, edgeReverseWeightTemp;
     float meanDC, varianceDC;
     float meanCC, varianceCC;
     float meanIRCC, varianceIRCC;
