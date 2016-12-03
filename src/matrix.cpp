@@ -815,28 +815,29 @@ bool Matrix::printMatrixConsole(bool debug){
 
 
 
-Matrix& Matrix::pearsonCorrelationCoefficient(Matrix &AM){
-    qDebug()<< "Matrix::pearsonCorrelationCoefficient()";
-
-
-
+/**
+ * @brief  Computes the Pearson Correlation Coefficient of the rows or the columns
+ * of the given matrix AM
+ * @param AM Matrix
+ * @return Matrix nxn with PPC values for every pair of rows/columns of AM
+ */
+Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const bool rows){
+    qDebug()<< "Matrix::pearsonCorrelationCoefficients()";
 
     int N = 0;
     float sum = 0;
-    float nom = 0;
+    float varianceTimesN = 0; // = sqrDeviationsFromMean
+    float covariance = 0;
     float pcc = 0;
 
-    bool rows = true;
     N = AM.rows() ;
 
     this->zeroMatrix(N,N);
 
     QVector<float> mean (N,0); // holds mean values
-    QVector<float> diffSums(N,0);
-    QVector<float> squareSums(N,0);
+    QVector<float> sigma(N,0);
 
     if (rows) {
-
 
         //compute mean values
         for (int i = 0 ; i < N ; i++ ) {
@@ -846,37 +847,39 @@ Matrix& Matrix::pearsonCorrelationCoefficient(Matrix &AM){
             }
             mean[i] = sum / N;
             for (int j = 0 ; j < N ; j++ ) {
-                diffSums [ i ]   +=  ( AM.item(i,j)  - mean[i] ) ;
-                squareSums [ i ] +=  ( AM.item(i,j)  - mean[i] ) *  ( AM.item(i,j)  - mean[i] );
+                varianceTimesN +=  ( AM.item(i,j)  - mean[i] ) *  ( AM.item(i,j)  - mean[i] );
             }
+            sigma[i] = sqrt (varianceTimesN); //actually this is sigma * sqrt (N)
 
         }
 
         for (int i = 0 ; i < N ; i++ ) {
 
-            for (int j = 0 ; j < N ; j++ ) {
-                diffSums [ i ]   +=  ( AM.item(i,j)  - mean[i] ) * ( AM.item(i,j)  - mean[j] )  ;
-            }
+            for (int k = i ; k < N ; k++ ) {
+                covariance = 0;
+                for (int j = 0 ; j < N ; j++ ) {
+                    covariance  +=  ( AM.item(i,j)  - mean[i] ) * ( AM.item(k,j)  - mean[k] ) ;
 
+                }
 
-            for (int j = 0 ; j < N ; j++ ) {
-               pcc =   nom /  ( sqrt ( squareSums[i] ) * sqrt ( squareSums[j] ) );
+                pcc =   covariance   /  ( sigma[i] ) * sqrt ( sigma[k] ) ;
+                setItem(i,k, pcc);
             }
 
         }
 
     }
 
-
-
-
+    return *this;
 
 }
 
 
 
+
+
 /**
- * @brief Matrix::inverseByGaussJordanElimination
+ * @brief
  * Inverts given matrix A by Gauss Jordan elimination
    Input:  matrix A
    Output: matrix A becomes unit matrix

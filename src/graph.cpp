@@ -8071,16 +8071,86 @@ void Graph::graphClusteringHierarchical(const int &method, Matrix &DSM) {
 
 
 
-//The correlation measure of similarity is particularly useful when the data on ties are valued
-// r =\frac{\sum ^n _{i=1}(x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum ^n _{i=1}(x_i - \bar{x})^2} \sqrt{\sum ^n _{i=1}(y_i - \bar{y})^2}}
 
-void Graph::graphSimilarityPearsonCorrelationCoefficient (Matrix &AM,
+
+/**
+ * @brief
+ * Writes Pearson Correlation Coefficients to given file
+ * @param fileName
+ * @param considerWeights
+ */
+void Graph::writeSimilarityPearson(
+        const QString fileName, const bool considerWeights)
+{
+    Q_UNUSED(considerWeights);
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
+        return;
+    }
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
+
+    emit statusMessage ( (tr("Calculating local and network clustering...")) );
+
+    Matrix PCC;
+    graphSimilarityPearsonCorrelationCoefficients(AM, PCC);
+
+    emit statusMessage ( tr("Writing Pearson coefficients to file: ")
+                         + fileName );
+
+    outText.setRealNumberPrecision(m_precision);
+
+//    outText << tr("PEARSON CORRELATION COEFFICIENTS (PCC) REPORT") << endl;
+//    outText << tr("Network name: ")<< graphName()<< endl<<endl;
+
+//    outText << tr("Local PCC  range: -1 < C < 1") << endl<<endl;
+
+
+//    outText << tr("Range: 0 < GCLC < 1\n");
+//    outText << tr("GCLC = 0, when there are no cliques (i.e. acyclic tree).\n");
+//    outText << tr(
+//      "GCLC = 1, when every node and its neighborhood are complete cliques.\n");
+
+    outText <<"\n\n" ;
+    outText << tr("Clustering Coefficient Report,\n");
+    outText << tr("Created by SocNetV ") << VERSION << ": "
+            << actualDateTime.currentDateTime()
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+
+    file.close();
+}
+
+
+
+/**
+ * @brief
+ The Pearson product-moment correlation coefficient (PPMCC or PCC or Pearson's r)
+ is a measure of the linear dependence between two variables X and Y.
+
+ As a normalized version of the covariance, the PPMCC is computed with the formula:
+ r =\frac{\sum ^n _{i=1}(x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum ^n _{i=1}(x_i - \bar{x})^2} \sqrt{\sum ^n _{i=1}(y_i - \bar{y})^2}}
+
+
+ It gives a value between +1 and −1 inclusive, where 1 is total positive linear
+ correlation, 0 is no linear correlation, and −1 is total negative linear correlation.
+
+ The correlation measure of similarity is particularly useful when the data on ties are valued
+
+ * @param AM
+ * @param PCC
+ * @param rows
+ */
+void Graph::graphSimilarityPearsonCorrelationCoefficients (Matrix &AM,
                                                           Matrix &PCC,
-                                                          const bool rows){
-    qDebug()<<"Graph::graphSimilarityPearsonCorrelationCoefficient() of matrix AM";
+                                                          const bool &rows){
+    qDebug()<<"Graph::graphSimilarityPearsonCorrelationCoefficients() - matrix AM";
     AM.printMatrixConsole(true);
 
-    PCC.pearsonCorrelationCoefficient(AM);
+    PCC.pearsonCorrelationCoefficients(AM);
+
+    qDebug()<<"Graph::graphSimilarityPearsonCorrelationCoefficients() - matrix PCC";
+    PCC.printMatrixConsole(true);
 
 }
 

@@ -596,6 +596,7 @@ public:
 
     void writeTriadCensus(const QString, const bool);
 
+    void writeSimilarityPearson(const QString fileName, const bool considerWeights);
 
     /* DISTANCES, CENTRALITIES & PROMINENCE MEASURES */
     int distance(const int, const int,
@@ -650,9 +651,9 @@ public:
     void triadType_examine_MAN_label(int, int, int, Vertex*,  Vertex*, Vertex* );
     //	void eccentr_JordanCenter(); 				// TODO
 
-    void graphSimilarityPearsonCorrelationCoefficient (Matrix &AM,
+    void graphSimilarityPearsonCorrelationCoefficients (Matrix &AM,
                                                        Matrix &PCC,
-                                                       const bool rows);
+                                                       const bool &rows=true);
 
     /* LAYOUTS */
 

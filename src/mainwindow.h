@@ -322,6 +322,7 @@ public slots:
     void slotCliqueCensus();
     void slotClusteringCoefficient();
     void slotTriadCensus();
+    void slotSimilarityPearson();
     void slotCheckSymmetry();
     void slotInvertAdjMatrix();
 
@@ -441,10 +442,10 @@ private:
 
     QProgressDialog *progressDialog;
 
-    QMenu *importSubMenu, *exportSubMenu, *editMenu, *statMenu,  *helpMenu;
-    QMenu *optionsMenu, *colorOptionsMenu, *edgeOptionsMenu, *nodeOptionsMenu, *viewOptionsMenu;
-    QMenu *editNodeMenu, *editEdgeMenu, *centrlMenu, *layoutMenu;
-    QMenu *clusterAnalysisMenu;
+    QMenu *importSubMenu, *exportSubMenu, *editMenu, *analysisMenu, *helpMenu;
+    QMenu *optionsMenu, *colorOptionsMenu, *edgeOptionsMenu, *nodeOptionsMenu;
+    QMenu *editNodeMenu, *editEdgeMenu, *centrlMenu,  *viewOptionsMenu, *layoutMenu;
+    QMenu *distancesMenu, *similarityMenu, *communitiesMenu, *connectivityMenu;
     QMenu *networkMenu, *randomNetworkMenu, *filterMenu, *recentFilesSubMenu;
     QMenu *randomLayoutMenu, *circleLayoutMenu, *levelLayoutMenu, *physicalLayoutMenu;
     QMenu *colorationMenu;
@@ -504,7 +505,7 @@ private:
             *distanceMatrixAct, *geodesicsMatrixAct, *diameterAct, *eccentricityAct;
     QAction *walksAct,*totalWalksAct, *reachabilityMatrixAct, *connectivityAct;
     QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct, *invertAdjMatrixAct;
-    QAction *clusteringHierarchicalAct;
+    QAction *clusteringHierarchicalAct, *similarityPearsonAct;
     QAction *cDegreeAct, *cInDegreeAct, *cClosenessAct, *cInfluenceRangeClosenessAct,
             *cBetweennessAct, *cInformationAct, *cPageRankAct, *cStressAct,
             *cPowerAct, *cEccentAct, *cProximityPrestigeAct;

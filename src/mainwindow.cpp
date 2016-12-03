@@ -1888,6 +1888,20 @@ void MainWindow::initActions(){
                                     "asymmetric and non-existent dyads. \n "));
     connect(triadCensusAct, SIGNAL(triggered()), this, SLOT(slotTriadCensus() )  );
 
+
+    similarityPearsonAct = new QAction(QIcon(":/images/triad.png"), tr("Pearson correlation coefficients"),this);
+    similarityPearsonAct-> setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_P);
+    similarityPearsonAct->setStatusTip(tr("Compute the Pearson correlation coefficient between all pairs of actors."));
+    similarityPearsonAct->setWhatsThis(
+                tr("Pearson correlation coefficients\n\n "
+                   "The Pearson product-moment correlation coefficient (PPMCC or PCC or Pearson's r)"
+                   "is a measure of the linear dependence between two variables X and Y. "
+                   " The correlation measure of similarity is particularly useful when the data on ties are valued\n "));
+    connect(similarityPearsonAct, SIGNAL(triggered()), this, SLOT(slotSimilarityPearson() )  );
+
+
+
+
     cDegreeAct = new QAction(tr("Degree Centrality (DC)"),this);
     cDegreeAct-> setShortcut(Qt::CTRL + Qt::Key_1);
     cDegreeAct
@@ -2457,42 +2471,48 @@ void MainWindow::initMenuBar() {
 
 
     /** menuBar entry: analyze menu */
-    statMenu = menuBar()->addMenu(tr("&Analyze"));
-    statMenu -> addAction (symmetryAct);
-    statMenu -> addAction (invertAdjMatrixAct);
-    //	statMenu -> addAction (netDensity);
+    analysisMenu = menuBar()->addMenu(tr("&Analyze"));
+    analysisMenu -> addAction (symmetryAct);
+    analysisMenu -> addAction (invertAdjMatrixAct);
+    //	analysisMenu -> addAction (netDensity);
 
-    statMenu -> addSeparator();
-    statMenu -> addAction (graphDistanceAct);
-    statMenu -> addAction (averGraphDistanceAct);
+    analysisMenu -> addSeparator();
+    distancesMenu  = new QMenu(tr("Distances..."));
+    distancesMenu -> setIcon(QIcon(":/images/clustering.png"));
+    analysisMenu -> addMenu(distancesMenu);
+    distancesMenu -> addAction (graphDistanceAct);
+    distancesMenu -> addAction (averGraphDistanceAct);
+    distancesMenu -> addAction (distanceMatrixAct);
+    distancesMenu -> addAction (geodesicsMatrixAct);
+    distancesMenu -> addAction (eccentricityAct);
+    distancesMenu -> addAction (diameterAct);
 
-    statMenu -> addAction (distanceMatrixAct);
-    statMenu -> addAction (geodesicsMatrixAct);
-    statMenu -> addAction (eccentricityAct);
-    statMenu -> addAction (diameterAct);
 
+    analysisMenu -> addSeparator();
+    connectivityMenu  = new QMenu(tr("Connectivity..."));
+    connectivityMenu -> setIcon(QIcon(":/images/clustering.png"));
+    analysisMenu -> addMenu(connectivityMenu);
+    connectivityMenu -> addAction(connectivityAct);
+    connectivityMenu -> addAction (walksAct);
+    connectivityMenu -> addAction (totalWalksAct);
+    connectivityMenu -> addAction (reachabilityMatrixAct);
 
-    statMenu -> addSeparator();
-    statMenu -> addAction(connectivityAct);
-    statMenu -> addAction (walksAct);
-    statMenu -> addAction (totalWalksAct);
-    statMenu -> addAction (reachabilityMatrixAct);
+    analysisMenu -> addSeparator();
+    communitiesMenu = new QMenu(tr("Communities / Clustering..."));
+    communitiesMenu -> setIcon(QIcon(":/images/clustering.png"));
+    analysisMenu -> addMenu(communitiesMenu);
+    communitiesMenu -> addAction (cliquesAct);
+    communitiesMenu -> addSeparator();
+    communitiesMenu -> addAction (clusteringCoefAct);
+    communitiesMenu -> addSeparator();
+    communitiesMenu -> addAction (triadCensusAct);
+    communitiesMenu -> addSeparator();
+    communitiesMenu -> addAction (clusteringHierarchicalAct);
 
-    statMenu -> addSeparator();
-    clusterAnalysisMenu = new QMenu(tr("Cluster Analysis..."));
-    clusterAnalysisMenu -> setIcon(QIcon(":/images/clustering.png"));
-    statMenu -> addMenu(clusterAnalysisMenu);
-    clusterAnalysisMenu -> addAction (clusteringHierarchicalAct);
-    statMenu -> addAction (cliquesAct);
-    statMenu -> addAction (clusteringCoefAct);
-
-    statMenu -> addSeparator();
-    statMenu -> addAction (triadCensusAct);
-
-    statMenu->addSeparator();
+    analysisMenu->addSeparator();
     centrlMenu = new QMenu(tr("Centrality and Prestige indices..."));
     centrlMenu -> setIcon(QIcon(":/images/centrality.png"));
-    statMenu->addMenu(centrlMenu);
+    analysisMenu->addMenu(centrlMenu);
     centrlMenu -> addSection(QIcon(":/images/centrality.png"), tr("Centrality"));
 
     centrlMenu -> addAction (cDegreeAct);
@@ -2508,6 +2528,11 @@ void MainWindow::initMenuBar() {
     centrlMenu -> addAction (cPageRankAct);
     centrlMenu -> addAction (cProximityPrestigeAct);
 
+    analysisMenu->addSeparator();
+    similarityMenu = new QMenu(tr("Similarity..."));
+    similarityMenu -> setIcon(QIcon(":/images/similarity.png"));
+    analysisMenu -> addMenu (similarityMenu);
+    similarityMenu -> addAction (similarityPearsonAct);
 
     /** menuBar entry layoutMenu  */
 
@@ -10000,6 +10025,33 @@ void MainWindow::slotClusteringCoefficient (){
 }
 
 
+
+/**
+ * @brief MainWindow::slotSimilarityPearson
+ */
+void MainWindow::slotSimilarityPearson() {
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+    QString fn = appSettings["dataDir"] + "socnetv-report-similarity-pearson.dat";
+    bool considerWeights=true;
+
+    statusMessage(  QString(tr("Computing Pearson Correlation Coefficients. Please wait...")) );
+    progressMsg = tr("Computing Pearson Correlation Coefficients. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
+
+    activeGraph.writeSimilarityPearson( fn, considerWeights);
+
+    destroyProgressBar();
+
+    TextEditor *ed = new TextEditor(fn,this);
+    ed->show();
+    m_textEditors << ed;
+    statusMessage("Pearson Correlation Coefficients saved as: " + fn);
+}
 
 
 /**
