@@ -800,7 +800,7 @@ private:
     H_StrToInt discreteIRCCs, discreteECs, discreteEccentricities;
     H_StrToInt discretePCs, discreteICs,  discretePRPs, discretePPs;
 
-    int m_precision, m_curRelation, m_fileFormat, m_vertexClicked;
+    int m_precision, m_fieldWidth, m_curRelation, m_fileFormat, m_vertexClicked;
     ClickedEdge m_clickedEdge;
     float edgeWeightTemp, edgeReverseWeightTemp;
     float meanDC, varianceDC;

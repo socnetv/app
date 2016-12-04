@@ -4845,7 +4845,13 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     }
 
     emit statusMessage ( tr("Writing betweenness indices to file:") +  fileName );
+
+    QString no=tr("Node"), lab=tr("Label"),
+            ci=tr("BC"), cs=tr("BC'"), csp=tr("%BC'");
+
+    m_precision = 3;
     outText.setRealNumberPrecision(m_precision);
+    m_fieldWidth = 17;
     outText << tr("BETWEENESS CENTRALITY (BC)")<<endl;
     outText << tr("Network name: ")<< graphName()<< endl<<endl;
     outText << tr("The BC index of a node u is the sum of delta (s,t,u) for all s,t in V")<<"\n";
@@ -4855,18 +4861,61 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     outText << tr("BC  range: 0 < BC < ")<<QString::number( maxIndexBC)
             << tr(" (Number of pairs of nodes excluding u)")<<"\n";
     outText << tr("BC' range: 0 < BC'< 1  (C' is 1 when the node falls on all geodesics)\n\n");
-    outText << "Node"<<"\tBC\t\tBC'\t\t%BC'\n";
+
+    outText << qSetFieldWidth(m_fieldWidth) <<fixed<<right;
+    outText << qSetFieldWidth ( 10 - no.size() )
+            << no
+            <<reset << "\t"
+           << qSetFieldWidth ( 0 )
+            << lab
+            <<reset << "\t"
+            << qSetFieldWidth ( m_fieldWidth - ci.size() )
+            << ci
+            <<reset << "\t"
+            << qSetFieldWidth ( m_fieldWidth - cs.size() )
+            << cs
+            <<reset << "\t"
+            << qSetFieldWidth ( m_fieldWidth - csp.size() )
+            << csp;
+
+    outText << qSetFieldWidth(0)<< endl;
+
     QList<Vertex*>::const_iterator it;
+
+
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+        outText << qSetFieldWidth(m_fieldWidth) <<right<<fixed;
+        no  = QString::number( (*it)->name());
+        lab = (*it)->label().simplified();
+        lab = (!lab.isEmpty()) ? lab.left(10) : "-";
+        ci   = QString::number( (*it)->BC(), 'f', m_precision );
+        cs  = QString::number( (*it)->SBC(), 'f', m_precision );
+        csp =  QString::number( (100* ((*it)->SBC())), 'f', m_precision );
+
         if (dropIsolates && (*it)->isIsolated()) {
-            outText << (*it)->name()<<"\t -- \t\t --" <<endl;
         }
         else {
-            outText <<(*it)->name()<<"\t"<<(*it)->BC()
-               << "\t\t"<< (*it)->SBC() << "\t\t"
-               <<  (100* ((*it)->SBC()))<<endl;
         }
+        outText << qSetFieldWidth ( 10 - no.size() )
+                << no
+                <<reset << "\t"
+                << qSetFieldWidth ( 0 )
+                << lab
+                <<reset << "\t"
+                << qSetFieldWidth ( m_fieldWidth - ci.size() )
+                << ci
+                <<reset << "\t"
+                << qSetFieldWidth ( m_fieldWidth - cs.size() )
+                << cs
+                <<reset << "\t"
+                << qSetFieldWidth ( m_fieldWidth - csp.size() )
+                << csp;
+        outText << qSetFieldWidth(0)<< endl;
+
+
     }
+
+    outText << qSetFieldWidth(0);
     if ( minBC ==  maxBC)
         outText << "\n" << tr("All nodes have the same BC score.") << "\n";
     else {
@@ -4875,7 +4924,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
         outText << tr("Min BC' = ") << minBC <<" (node "<< minNodeBC <<  ")  \n";
         outText << tr("BC classes = ") << classesBC<<" \n\n";
     }
-    outText << tr("BC' sum = ") << sumBC<<" \n";
+    outText << tr("BC' Sum = ") << sumBC<<" \n";
     outText << tr("BC' Mean = ") << meanBC<<" \n";
     outText << tr("BC' Variance = ") << varianceBC<<" \n";
 
