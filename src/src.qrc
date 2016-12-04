@@ -101,5 +101,9 @@
         <file>images/subgraphcycle.png</file>
         <file>images/clustering.png</file>
         <file>images/adjacencyplot.png</file>
+        <file>images/similarity.png</file>
+        <file>images/distances.png</file>
+        <file>images/connectivity.png</file>
+        <file>images/hierarchical.png</file>
     </qresource>
 </RCC>

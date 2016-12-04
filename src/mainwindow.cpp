@@ -1829,8 +1829,9 @@ void MainWindow::initActions(){
 
 
 
-    clusteringHierarchicalAct = new QAction(QIcon(":/images/clusteringhierarchical.png"), tr("Hierarchical clustering"),this);
+    clusteringHierarchicalAct = new QAction(QIcon(":/images/hierarchical.png"), tr("Hierarchical clustering"),this);
     clusteringHierarchicalAct-> setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_C);
+
     clusteringHierarchicalAct->setStatusTip(tr("Perform agglomerative cluster analysis of the actors in the social network"));
     clusteringHierarchicalAct->setWhatsThis(
                 tr("Hierarchical clustering\n\n "
@@ -1889,7 +1890,7 @@ void MainWindow::initActions(){
     connect(triadCensusAct, SIGNAL(triggered()), this, SLOT(slotTriadCensus() )  );
 
 
-    similarityPearsonAct = new QAction(QIcon(":/images/triad.png"), tr("Pearson correlation coefficients"),this);
+    similarityPearsonAct = new QAction(QIcon(":/images/similarity.png"), tr("Pearson correlation coefficients"),this);
     similarityPearsonAct-> setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_P);
     similarityPearsonAct->setStatusTip(tr("Compute the Pearson correlation coefficient between all pairs of actors."));
     similarityPearsonAct->setWhatsThis(
@@ -2478,7 +2479,7 @@ void MainWindow::initMenuBar() {
 
     analysisMenu -> addSeparator();
     distancesMenu  = new QMenu(tr("Distances..."));
-    distancesMenu -> setIcon(QIcon(":/images/clustering.png"));
+    distancesMenu -> setIcon(QIcon(":/images/distances.png"));
     analysisMenu -> addMenu(distancesMenu);
     distancesMenu -> addAction (graphDistanceAct);
     distancesMenu -> addAction (averGraphDistanceAct);
@@ -2490,7 +2491,7 @@ void MainWindow::initMenuBar() {
 
     analysisMenu -> addSeparator();
     connectivityMenu  = new QMenu(tr("Connectivity..."));
-    connectivityMenu -> setIcon(QIcon(":/images/clustering.png"));
+    connectivityMenu -> setIcon(QIcon(":/images/connectivity.png"));
     analysisMenu -> addMenu(connectivityMenu);
     connectivityMenu -> addAction(connectivityAct);
     connectivityMenu -> addAction (walksAct);
@@ -9998,8 +9999,9 @@ void MainWindow::slotCliqueCensus(){
 
 
 /**
-*	Writes Clustering Coefficients into a file, then displays it.
-*/
+ * @brief Calls Graph::writeClusteringCoefficient() to write Clustering Coefficients
+ * into a file, and displays it.
+ */
 void MainWindow::slotClusteringCoefficient (){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -10027,7 +10029,9 @@ void MainWindow::slotClusteringCoefficient (){
 
 
 /**
- * @brief MainWindow::slotSimilarityPearson
+ * @brief Calls Graph::writeSimilarityPearson() to write Pearson
+ * Correlation Coefficients into a file, and displays it.
+ *
  */
 void MainWindow::slotSimilarityPearson() {
     if ( !activeNodes()   )  {
