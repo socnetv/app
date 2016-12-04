@@ -516,11 +516,11 @@ public:
     void graphUndirectedSet(const bool &toggle, const bool &signalMW=true);
     bool graphUndirected();
 
-    void adjacencyMatrixCreate(const bool dropIsolates=false,
+    void graphAdjacencyMatrixCreate(const bool dropIsolates=false,
                                const bool considerWeights=true,
                                const bool inverseWeights=false,
                                const bool symmetrize=false );
-    bool adjacencyMatrixInvert(const QString &method);
+    bool graphAdjacencyMatrixInvert(const QString &method);
 
 
     /* PRINT OUT TO FILES*/

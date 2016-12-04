@@ -2136,7 +2136,7 @@ int Graph::vertices(const bool dropIsolates, const bool countAll) {
 /**
  * @brief Returns a list of all isolated vertices inside the graph
  * Used by
- * Graph::adjacencyMatrixCreate()
+ * Graph::graphAdjacencyMatrixCreate()
  * Graph::writeAdjacencyMatrixInvert()
  * Graph::centralityInformation()
  * Graph::graphConnectivity()
@@ -4190,7 +4190,7 @@ void Graph::centralityInformation(const bool considerWeights,
         Otherwise, the TM might be singular, therefore non-invertible. */
     bool dropIsolates=true;
     bool symmetrize=true;
-    adjacencyMatrixCreate(dropIsolates, considerWeights, inverseWeights, symmetrize);
+    graphAdjacencyMatrixCreate(dropIsolates, considerWeights, inverseWeights, symmetrize);
 
     n-=isolatedVertices;
 
@@ -7140,7 +7140,7 @@ void Graph::walksMatrixCreate(const int &maxPower, const bool &updateProgress) {
     bool considerWeights=true;
     bool inverseWeights=false;
     bool symmetrize=false;
-    adjacencyMatrixCreate(dropIsolates, considerWeights, inverseWeights, symmetrize);
+    graphAdjacencyMatrixCreate(dropIsolates, considerWeights, inverseWeights, symmetrize);
     int size = vertices();
 
     XM = AM;   // XM will be the product matrix
@@ -8094,6 +8094,7 @@ void Graph::writeSimilarityPearson(
     emit statusMessage ( (tr("Calculating local and network clustering...")) );
 
     Matrix PCC;
+    graphAdjacencyMatrixCreate();
     graphSimilarityPearsonCorrelationCoefficients(AM, PCC);
 
     emit statusMessage ( tr("Writing Pearson coefficients to file: ")
@@ -8101,19 +8102,20 @@ void Graph::writeSimilarityPearson(
 
     outText.setRealNumberPrecision(m_precision);
 
-//    outText << tr("PEARSON CORRELATION COEFFICIENTS (PCC) REPORT") << endl;
-//    outText << tr("Network name: ")<< graphName()<< endl<<endl;
+    outText << tr("PEARSON CORRELATION COEFFICIENTS (PCC) REPORT") << endl;
+    outText << tr("Network name: ")<< graphName()<< endl<<endl;
 
-//    outText << tr("Local PCC  range: -1 < C < 1") << endl<<endl;
+    outText << tr("Local PCC  range: -1 < C < 1") << endl<<endl;
+
+    outText << PCC;
 
 
-//    outText << tr("Range: 0 < GCLC < 1\n");
-//    outText << tr("GCLC = 0, when there are no cliques (i.e. acyclic tree).\n");
-//    outText << tr(
-//      "GCLC = 1, when every node and its neighborhood are complete cliques.\n");
+    outText << tr("GCLC = 0, when there are no cliques (i.e. acyclic tree).\n");
+    outText << tr(
+      "GCLC = 1, when every node and its neighborhood are complete cliques.\n");
 
     outText <<"\n\n" ;
-    outText << tr("Clustering Coefficient Report,\n");
+    outText << tr("Pearson Correlation Coefficients Report,\n");
     outText << tr("Created by SocNetV ") << VERSION << ": "
             << actualDateTime.currentDateTime()
                .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
@@ -8125,17 +8127,29 @@ void Graph::writeSimilarityPearson(
 
 /**
  * @brief
- The Pearson product-moment correlation coefficient (PPMCC or PCC or Pearson's r)
- is a measure of the linear dependence between two variables X and Y.
-
- As a normalized version of the covariance, the PPMCC is computed with the formula:
- r =\frac{\sum ^n _{i=1}(x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum ^n _{i=1}(x_i - \bar{x})^2} \sqrt{\sum ^n _{i=1}(y_i - \bar{y})^2}}
-
-
- It gives a value between +1 and −1 inclusive, where 1 is total positive linear
- correlation, 0 is no linear correlation, and −1 is total negative linear correlation.
-
- The correlation measure of similarity is particularly useful when the data on ties are valued
+ * The Pearson product-moment correlation coefficient (PPMCC, PCC or Pearson's r)
+ * is a measure of the linear dependence between two variables X and Y.
+ *
+ * As a normalized version of the covariance, the PPMCC is computed with the formula:
+ *  r =\frac{\sum ^n _{i=1}(x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum ^n _{i=1}(x_i - \bar{x})^2} \sqrt{\sum ^n _{i=1}(y_i - \bar{y})^2}}
+ *
+ * It gives a value between +1 and −1 inclusive, where 1 is total positive linear
+ * correlation, 0 is no linear correlation, and −1 is total negative linear correlation.
+ *
+ * In SNA, Pearson correlations can be used to track the similarity between actors,
+ * in terms of structural equivalence.
+ *
+ * This method creates an actor by actor NxN matrix PCC where the (i,j) element
+ * is the Pearson correlation coefficient of actor i and actor j.
+ * If the input matrix is the adjacency matrix, the PCC of two nodes measures
+ * how related (similar, inverse or not related at all) their patterns of ties tend to be.
+ * A positive value means there is strong linear association of the two actors,
+ * while a negative value means the inverse. For instance a value of -1 means
+ * the two actors have exactly opposite ties to other actors, while a value of 1
+ * means the actors have identical patterns of ties to other actors
+ * (they are connected to the same actors).
+ *
+ * The correlation measure of similarity is particularly useful when the data on ties are valued
 
  * @param AM
  * @param PCC
@@ -8144,7 +8158,7 @@ void Graph::writeSimilarityPearson(
 void Graph::graphSimilarityPearsonCorrelationCoefficients (Matrix &AM,
                                                           Matrix &PCC,
                                                           const bool &rows){
-    qDebug()<<"Graph::graphSimilarityPearsonCorrelationCoefficients() - matrix AM";
+    qDebug()<<"Graph::graphSimilarityPearsonCorrelationCoefficients() - input matrix";
     AM.printMatrixConsole(true);
 
     PCC.pearsonCorrelationCoefficients(AM);
@@ -13276,24 +13290,24 @@ void Graph::writeAdjacencyMatrixPlotText (const QString fn) {
  *  and AM(i,j)=0 if i not connected to j
  *
  *  Used in Graph::centralityInformation(), Graph::walksMatrixCreate
- *  and Graph::adjacencyMatrixInvert()
+ *  and Graph::graphAdjacencyMatrixInvert()
  */
-void Graph::adjacencyMatrixCreate(const bool dropIsolates,
+void Graph::graphAdjacencyMatrixCreate(const bool dropIsolates,
                                   const bool considerWeights,
                                   const bool inverseWeights,
                                   const bool symmetrize ){
-    qDebug() << "Graph::adjacencyMatrixCreate()";
+    qDebug() << "Graph::graphAdjacencyMatrixCreate()";
     float m_weight=-1;
     int i=0, j=0;
     if (dropIsolates){
-        qDebug() << "Graph::adjacencyMatrixCreate() - Find and drop possible isolates";
+        qDebug() << "Graph::graphAdjacencyMatrixCreate() - Find and drop possible isolates";
         int m = vertices()- verticesListIsolated().count();
         AM.resize( m , m);
     }
     else
         AM.resize(vertices(), vertices());
     QList<Vertex*>::const_iterator it, it1;
-    //qDebug() << "Graph::adjacencyMatrixCreate() - creating new adjacency matrix ";
+    //qDebug() << "Graph::graphAdjacencyMatrixCreate() - creating new adjacency matrix ";
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() || ( (*it)->isIsolated() && dropIsolates) ) {
             continue;
@@ -13349,8 +13363,8 @@ void Graph::adjacencyMatrixCreate(const bool dropIsolates,
 }
 
 
-bool Graph::adjacencyMatrixInvert(const QString &method){
-    qDebug()<<"Graph::adjacencyMatrixInvert() ";
+bool Graph::graphAdjacencyMatrixInvert(const QString &method){
+    qDebug()<<"Graph::graphAdjacencyMatrixInvert() ";
 
     bool considerWeights=false;
     long int i=0, j=0;
@@ -13359,7 +13373,7 @@ bool Graph::adjacencyMatrixInvert(const QString &method){
     int isolatedVertices = verticesListIsolated().count();
     bool dropIsolates=true; // always drop isolates else AM will be singular
 
-    adjacencyMatrixCreate(dropIsolates, considerWeights);
+    graphAdjacencyMatrixCreate(dropIsolates, considerWeights);
 
     m-=isolatedVertices;
 
@@ -13408,7 +13422,7 @@ void Graph::writeAdjacencyMatrixInvert(const QString &fn,
     outText << "-Social Network Visualizer "<<  VERSION <<endl;
     outText << tr("Network name: ")<< graphName()<< endl<<endl;
     outText << "Inverse Matrix: \n";
-    if (!adjacencyMatrixInvert(method)) {
+    if (!graphAdjacencyMatrixInvert(method)) {
             outText << endl<< " The adjacency matrix is singular.";
             file.close();
             return;

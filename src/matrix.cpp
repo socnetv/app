@@ -846,10 +846,13 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const bool rows){
                 sum += AM.item(i,j);
             }
             mean[i] = sum / N;
+            qDebug() << "mean["<<i+1<<"]" << mean[i];
+            varianceTimesN = 0;
             for (int j = 0 ; j < N ; j++ ) {
                 varianceTimesN +=  ( AM.item(i,j)  - mean[i] ) *  ( AM.item(i,j)  - mean[i] );
             }
             sigma[i] = sqrt (varianceTimesN); //actually this is sigma * sqrt (N)
+            qDebug() << "sigma["<<i+1<<"]" << sigma[i];
 
         }
 
@@ -859,10 +862,12 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const bool rows){
                 covariance = 0;
                 for (int j = 0 ; j < N ; j++ ) {
                     covariance  +=  ( AM.item(i,j)  - mean[i] ) * ( AM.item(k,j)  - mean[k] ) ;
-
                 }
-
-                pcc =   covariance   /  ( sigma[i] ) * sqrt ( sigma[k] ) ;
+                qDebug() << "covariance("<<i+1<<","<<k+1<<") =" << covariance
+                         << "sigma["<<i+1<<"]" << sigma[i]
+                            << "sigma["<<k+1<<"]" << sigma[k];
+                pcc =   covariance   /  (( sigma[i] ) * ( sigma[k] )) ;
+                qDebug() << "pcc("<<i+1<<","<<k+1<<") =" << pcc;
                 setItem(i,k, pcc);
             }
 
