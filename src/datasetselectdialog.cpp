@@ -54,7 +54,7 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
             << "Freeman: EIES network, number of messages, 48 actors"
             << "Freeman: The 34 possible graphs with N=5 (as multirelational), 5 actors"
             << "Mexican Power Network in the 1940s (list format)"
-            << "Knocke: Bureacracies Information & Money Exchange Network, 10 actors, 2 relationships"
+            << "Knoke: Bureaucracies Information & Money Exchange Network, 10 actors, 2 relationships"
             << "Stephenson and Zelen (1989): Network of 40 AIDS patients (sex relationship)"
             << "Stephenson and Zelen (1989): Information Centrality test dataset, 5 actors"
             << "Wasserman and Faust: star, circle and line graphs of 7 actors (multirelational)"
