@@ -822,7 +822,8 @@ bool Matrix::printMatrixConsole(bool debug){
  * @return Matrix nxn with PPC values for every pair of rows/columns of AM
  */
 Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const QString varLocation){
-    qDebug()<< "Matrix::pearsonCorrelationCoefficients()";
+    qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
+            << "varLocation"<< varLocation;
 
     int N = 0;
     float sum = 0;
@@ -830,14 +831,18 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const QString varLoca
     float covariance = 0;
     float pcc = 0;
 
-    N = AM.rows() ;
-
-    this->zeroMatrix(N,N);
-
-    QVector<float> mean (N,0); // holds mean values
-    QVector<float> sigma(N,0);
 
     if (varLocation=="Rows") {
+
+        N = AM.rows() ;
+
+        this->zeroMatrix(N,N);
+
+        QVector<float> mean (N,0); // holds mean values
+        QVector<float> sigma(N,0);
+        qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
+                <<"input matrix";
+        AM.printMatrixConsole(true);
 
         //compute mean values
         for (int i = 0 ; i < N ; i++ ) {
@@ -876,17 +881,30 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const QString varLoca
     }
     else if (varLocation=="Columns") {
 
+
+        N = AM.rows() ;
+
+        this->zeroMatrix(N,N);
+
+        QVector<float> mean (N,0); // holds mean values
+        QVector<float> sigma(N,0);
+
+        qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
+                <<"input matrix";
+        AM.printMatrixConsole(true);
+
+
         //compute mean values
         for (int i = 0 ; i < N ; i++ ) {
             sum = 0;
             for (int j = 0 ; j < N ; j++ ) {
-                sum += AM.item(i,j);
+                sum += AM.item(j,i);
             }
             mean[i] = sum / N;
             qDebug() << "mean["<<i+1<<"]" << mean[i];
             varianceTimesN = 0;
             for (int j = 0 ; j < N ; j++ ) {
-                varianceTimesN +=  ( AM.item(i,j)  - mean[i] ) *  ( AM.item(i,j)  - mean[i] );
+                varianceTimesN +=  ( AM.item(j,i)  - mean[j] ) *  ( AM.item(j,i)  - mean[j] );
             }
             sigma[i] = sqrt (varianceTimesN); //actually this is sigma * sqrt (N)
             qDebug() << "sigma["<<i+1<<"]" << sigma[i];
@@ -898,7 +916,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const QString varLoca
             for (int k = i ; k < N ; k++ ) {
                 covariance = 0;
                 for (int j = 0 ; j < N ; j++ ) {
-                    covariance  +=  ( AM.item(i,j)  - mean[i] ) * ( AM.item(k,j)  - mean[k] ) ;
+                    covariance  +=  ( AM.item(j,i)  - mean[j] ) * ( AM.item(j,k)  - mean[k] ) ;
                 }
                 qDebug() << "covariance("<<i+1<<","<<k+1<<") =" << covariance
                          << "sigma["<<i+1<<"]" << sigma[i]
@@ -912,18 +930,38 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const QString varLoca
 
     }
     else if (varLocation=="Both") {
+        Matrix CM;
+        N = AM.rows() ;
+        int M = N * 2;
+
+        this->zeroMatrix(N,N);
+        CM.zeroMatrix(M,N);
+
+        QVector<float> mean (N,0); // holds mean values
+        QVector<float> sigma(N,0);
+
+        for (int i = 0 ; i < N / 2 ; i++ ) {
+            for (int j = 0 ; j < N  ; j++ ) {
+                CM.setItem(i,j, AM.item(i,j));
+                CM.setItem(i + N/2,j, AM.item(j,i));
+            }
+        }
+        qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
+                <<"input matrix";
+        CM.printMatrixConsole(true);
+
 
         //compute mean values
         for (int i = 0 ; i < N ; i++ ) {
             sum = 0;
             for (int j = 0 ; j < N ; j++ ) {
-                sum += AM.item(i,j);
+                sum += CM.item(j,i);
             }
             mean[i] = sum / N;
             qDebug() << "mean["<<i+1<<"]" << mean[i];
             varianceTimesN = 0;
             for (int j = 0 ; j < N ; j++ ) {
-                varianceTimesN +=  ( AM.item(i,j)  - mean[i] ) *  ( AM.item(i,j)  - mean[i] );
+                varianceTimesN +=  ( CM.item(j,i)  - mean[j] ) *  ( CM.item(j,i)  - mean[j] );
             }
             sigma[i] = sqrt (varianceTimesN); //actually this is sigma * sqrt (N)
             qDebug() << "sigma["<<i+1<<"]" << sigma[i];
@@ -935,7 +973,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const QString varLoca
             for (int k = i ; k < N ; k++ ) {
                 covariance = 0;
                 for (int j = 0 ; j < N ; j++ ) {
-                    covariance  +=  ( AM.item(i,j)  - mean[i] ) * ( AM.item(k,j)  - mean[k] ) ;
+                    covariance  +=  ( CM.item(j,i)  - mean[j] ) * ( CM.item(j,k)  - mean[k] ) ;
                 }
                 qDebug() << "covariance("<<i+1<<","<<k+1<<") =" << covariance
                          << "sigma["<<i+1<<"]" << sigma[i]
@@ -946,7 +984,6 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const QString varLoca
             }
 
         }
-
     }
     else {
 

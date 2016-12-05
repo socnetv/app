@@ -8163,9 +8163,9 @@ void Graph::writeSimilarityPearson(const QString fileName,
 
     outText.setRealNumberPrecision(m_precision);
 
-    outText << tr("PEARSON CORRELATION COEFFICIENTS (PCC) REPORT") << endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-
+    outText << tr("PEARSON CORRELATION COEFFICIENTS (PCC) MATRIX") << endl;
+    outText << tr("Network name: ")<< graphName()<< endl;
+    outText << tr("Input matrix: ")<< matrix << endl<<endl;
     outText << tr("PCC  range: -1 < C < 1") << endl<<endl;
 
     outText << PCC;
@@ -8173,9 +8173,9 @@ void Graph::writeSimilarityPearson(const QString fileName,
     outText << endl;
     outText << tr("PCC = 0, when there is no correlation at all.\n");
     outText << tr(
-      "PCC > 0, when there is positive correlation, i.e. same patterns of ties.\n");
+      "PCC > 0, when there is positive correlation, i.e. +1 means actors with same patterns of ties/distances.\n");
     outText << tr(
-      "PCC < 0, when there is negative correlation, i.e. opposited patterns of ties.\n");
+      "PCC < 0, when there is negative correlation, i.e. -1 for actors with exactly opposite patterns of ties.\n");
     outText <<"\n\n" ;
     outText << tr("Pearson Correlation Coefficients Report,\n");
     outText << tr("Created by SocNetV ") << VERSION << ": "
@@ -8219,11 +8219,11 @@ void Graph::writeSimilarityPearson(const QString fileName,
  */
 void Graph::graphSimilarityPearsonCorrelationCoefficients (Matrix &AM,
                                                           Matrix &PCC,
-                                                          const QString &variables){
-    qDebug()<<"Graph::graphSimilarityPearsonCorrelationCoefficients() - input matrix";
-    AM.printMatrixConsole(true);
+                                                          const QString &varLocation){
+    qDebug()<<"Graph::graphSimilarityPearsonCorrelationCoefficients()";
 
-    PCC.pearsonCorrelationCoefficients(AM);
+
+    PCC.pearsonCorrelationCoefficients(AM, varLocation);
 
     qDebug()<<"Graph::graphSimilarityPearsonCorrelationCoefficients() - matrix PCC";
     PCC.printMatrixConsole(true);

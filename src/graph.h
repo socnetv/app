@@ -656,7 +656,7 @@ public:
 
     void graphSimilarityPearsonCorrelationCoefficients (Matrix &AM,
                                                        Matrix &PCC,
-                                                       const QString &variables="rows");
+                                                       const QString &varLocation="Rows");
 
     /* LAYOUTS */
 
