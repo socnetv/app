@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DataSetSelectDialog</class>
- <widget class="QDialog" name="DataSetSelectDialog">
+ <class>DialogDataSetSelect</class>
+ <widget class="QDialog" name="DialogDataSetSelect">
   <property name="enabled">
    <bool>true</bool>
   </property>

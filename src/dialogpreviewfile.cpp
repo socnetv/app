@@ -3,7 +3,7 @@
  version: 2.2
  Written in Qt
 
-                         previewform.cpp  -  description
+                         dialogpreviewfile.cpp  -  description
                              -------------------
     copyright         : (C) 2005-2016 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -28,9 +28,9 @@
 ********************************************************************************/
 
 #include <QtWidgets>
-#include "previewform.h"
+#include "dialogpreviewfile.h"
 
-PreviewForm::PreviewForm(QWidget *parent) :
+DialogPreviewFile::DialogPreviewFile(QWidget *parent) :
     QDialog(parent)
 {
     encodingComboBox = new QComboBox;
@@ -67,14 +67,14 @@ PreviewForm::PreviewForm(QWidget *parent) :
     resize(600, 400);
 }
 
-void PreviewForm::setCodecList(const QList<QTextCodec *> &list)
+void DialogPreviewFile::setCodecList(const QList<QTextCodec *> &list)
 {
     encodingComboBox->clear();
     foreach (QTextCodec *codec, list)
         encodingComboBox->addItem(codec->name(), codec->mibEnum());
 }
 
-void PreviewForm::setEncodedData(const QByteArray &data,
+void DialogPreviewFile::setEncodedData(const QByteArray &data,
                                  const QString m_fileName,
                                  const int m_format)
 {
@@ -84,12 +84,12 @@ void PreviewForm::setEncodedData(const QByteArray &data,
     updateTextEdit();
 }
 
-void PreviewForm::updateTextEdit()
+void DialogPreviewFile::updateTextEdit()
 {
     int mib = encodingComboBox->itemData(
                       encodingComboBox->currentIndex()).toInt();
     QTextCodec *codec = QTextCodec::codecForMib(mib);
-    qDebug () << " PreviewForm::updateTextEdit() " << codec->name();
+    qDebug () << " DialogPreviewFile::updateTextEdit() " << codec->name();
     QTextStream in(&encodedData);
     in.setAutoDetectUnicode(false);
     in.setCodec(codec);
@@ -98,11 +98,11 @@ void PreviewForm::updateTextEdit()
     textEdit->setPlainText(decodedStr);
 }
 
-void PreviewForm::accept() {
+void DialogPreviewFile::accept() {
     int mib = encodingComboBox->itemData(
                       encodingComboBox->currentIndex()).toInt();
     QTextCodec *codec = QTextCodec::codecForMib(mib);
-    qDebug () << " PreviewForm::accept() returning codec name " << codec->name();
+    qDebug () << " DialogPreviewFile::accept() returning codec name " << codec->name();
     emit loadNetworkFileWithCodec(fileName, codec->name(), format);
     QDialog::accept();
 

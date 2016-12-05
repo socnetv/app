@@ -2,8 +2,8 @@
  SocNetV: Social Network Visualizer
  version: 2.2
  Written in Qt
-
-                         previewform.h  -  description
+ 
+                         dialogdatasetselect.h  -  description
                              -------------------
     copyright         : (C) 2005-2016 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -25,42 +25,34 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-
-#ifndef PREVIEWFORM_H
-#define PREVIEWFORM_H
+#ifndef DIALOGDATASETSELECT_H
+#define DIALOGDATASETSELECT_H
 
 #include <QDialog>
-#include <QList>
+#include "ui_dialogdatasetselect.h"
+ 
 
-class QComboBox;
-class QDialogButtonBox;
-class QLabel;
-class QTextCodec;
-class QTextEdit;
-
-class PreviewForm : public QDialog
+class DialogDataSetSelect: public QDialog
 {
-    Q_OBJECT
+	Q_OBJECT
 public:
-    explicit PreviewForm(QWidget *parent = 0);
-    void setCodecList(const QList<QTextCodec *> &list);
-    void setEncodedData(const QByteArray &data, const QString, const int );
-    QString decodedString() const { return decodedStr; }
+    DialogDataSetSelect (QWidget *parent = 0);
+    ~DialogDataSetSelect();
+public slots:
+	void gatherData();
 signals:
-    void loadNetworkFileWithCodec(const QString, const QString, const int);
+	void userChoices(QString);	
 private slots:
-    void updateTextEdit();
-    void accept();
+    void on_buttonBox_accepted();
+
+    void on_buttonBox_rejected();
 
 private:
-    QByteArray encodedData;
-    QString decodedStr, fileName;
-    int format;
-    QComboBox *encodingComboBox;
-    QLabel *encodingLabel;
-    QTextEdit *textEdit;
-    QDialogButtonBox *buttonBox;
+    Ui::DialogDataSetSelect *ui;
+    QStringList datasets_list, datasets_filenames;
 
 };
 
-#endif // PREVIEWFORM_H
+
+
+#endif

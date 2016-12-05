@@ -48,8 +48,8 @@
 #include "graphicswidget.h"
 #include "dialogfilteredgesbyweight.h"
 #include "webcrawlerdialog.h"
-#include "nodeeditdialog.h"
-#include "datasetselectdialog.h"
+#include "dialognodeedit.h"
+#include "dialogdatasetselect.h"
 
 static const QString VERSION="2.2";
 
@@ -81,13 +81,13 @@ QT_END_NAMESPACE
 using namespace std;
 
 
-class PreviewForm;
+class DialogPreviewFile;
 class DialogRandErdosRenyi;
-class RandSmallWorldDialog;
-class RandScaleFreeDialog;
+class DialogRandSmallWorld;
+class DialogRandScaleFree;
 class DialogPearsonCorrelation;
-class RandRegularDialog;
-class SettingsDialog;
+class DialogRandRegular;
+class DialogSettings;
 class TextEditor;
 
 
@@ -422,18 +422,18 @@ private:
 
     DialogFilterEdgesByWeight m_DialogEdgeFilterByWeight;
     WebCrawlerDialog m_WebCrawlerDialog;
-    DataSetSelectDialog m_datasetSelectDialog;
+    DialogDataSetSelect m_datasetSelectDialog;
 
-    NodeEditDialog *m_nodeEditDialog;
+    DialogNodeEdit *m_nodeEditDialog;
     DialogRandErdosRenyi *m_randErdosRenyiDialog;
-    RandSmallWorldDialog *m_randSmallWorldDialog;
-    RandScaleFreeDialog *m_randScaleFreeDialog;
-    RandRegularDialog *m_randRegularDialog;
-    SettingsDialog *m_settingsDialog;
+    DialogRandSmallWorld *m_randSmallWorldDialog;
+    DialogRandScaleFree *m_randScaleFreeDialog;
+    DialogRandRegular *m_randRegularDialog;
+    DialogSettings *m_settingsDialog;
     DialogPearsonCorrelation *m_pearsonCorrelationDialog;
 
 
-    PreviewForm *previewForm;
+    DialogPreviewFile *m_dialogPreviewFile;
     QList<QTextCodec *> codecs;
     QString userSelectedCodecName;
 

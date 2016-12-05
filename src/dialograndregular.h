@@ -3,9 +3,11 @@
  version: 2.2
  Written in Qt
 
-                         randsmallworlddialog.h  -  description
+                         dialograndregular.h  -  description
                              -------------------
     copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
+    email                : dimitris.kalamaras@gmail.com
+    website:             : http://dimitris.apeiro.gr
     project site         : http://socnetv.org
 
  ***************************************************************************/
@@ -25,21 +27,21 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef RANDSMALLWORLDDIALOG_H
-#define RANDSMALLWORLDDIALOG_H
+#ifndef DIALOGRANDREGULAR_H
+#define DIALOGRANDREGULAR_H
 
 #include <QDialog>
 
-#include "ui_randsmallworlddialog.h"
+#include "ui_dialograndregular.h"
 
-class RandSmallWorldDialog : public QDialog
+class DialogRandRegular : public QDialog
 {
     Q_OBJECT
 public:
-    explicit RandSmallWorldDialog(QWidget *parent = 0);
+    explicit DialogRandRegular(QWidget *parent = 0);
 
 public slots:
-    void checkErrors();
+    void checkErrors(const int &i);
     void gatherData();
     void setModeDirected();
     void setModeUndirected();
@@ -49,16 +51,14 @@ public slots:
 signals:
     void userChoices( const int nodes,
                       const int degree,
-                      const float prob,
                       const QString mode,
                       const bool diag);
 private:
     QString mode;
     int nodes, degree;
-    float bprob;
     bool diag;
-    Ui::RandSmallWorldDialog ui;
+    Ui::DialogRandRegular ui;
 
 };
 
-#endif // RANDSMALLWORLDDIALOG_H
+#endif

@@ -41,15 +41,15 @@ QT += printsupport
 
 INCLUDEPATH  += ./src
 FORMS += src/forms/dialogfilteredgesbyweight.ui \
-        src/forms/webcrawlerdialog.ui \
-        src/forms/nodeeditdialog.ui \
-        src/forms/datasetselectdialog.ui \
-        src/forms/randsmallworlddialog.ui \
-        src/forms/randscalefreedialog.ui \
-        src/forms/dialogranderdosrenyi.ui \
-        src/forms/randregulardialog.ui \
-        src/forms/settingsdialog.ui \
-        src/forms/dialogpearsoncorrelation.ui 
+         src/forms/webcrawlerdialog.ui \
+         src/forms/dialognodeedit.ui \
+         src/forms/dialogdatasetselect.ui \
+         src/forms/dialograndsmallworld.ui \
+         src/forms/dialograndscalefree.ui \
+         src/forms/dialogranderdosrenyi.ui \
+         src/forms/dialograndregular.ui \
+         src/forms/dialogsettings.ui \
+         src/forms/dialogpearsoncorrelation.ui 
 
 HEADERS += src/guide.h \
            src/graphicswidget.h \
@@ -68,15 +68,15 @@ HEADERS += src/guide.h \
 	   src/dialogfilteredgesbyweight.h \
 	   src/webcrawlerdialog.h \
 	   src/webcrawler.h \
-	   src/datasetselectdialog.h \
-    src/previewform.h \
-    src/nodeeditdialog.h \
-    src/dialogranderdosrenyi.h \
-    src/randsmallworlddialog.h \
-    src/randscalefreedialog.h \
-    src/randregulardialog.h \
-    src/settingsdialog.h \
-    src/dialogpearsoncorrelation.h
+	   src/dialogdatasetselect.h \
+	   src/dialogpreviewfile.h \
+	   src/dialognodeedit.h \
+	   src/dialogranderdosrenyi.h \
+	   src/dialograndsmallworld.h \
+	   src/dialograndscalefree.h \
+	   src/dialograndregular.h \
+	   src/dialogsettings.h \
+	   src/dialogpearsoncorrelation.h
 
 SOURCES += src/guide.cpp \
            src/graphicswidget.cpp \
@@ -96,15 +96,15 @@ SOURCES += src/guide.cpp \
 	   src/dialogfilteredgesbyweight.cpp \
 	   src/webcrawlerdialog.cpp \
 	   src/webcrawler.cpp \
-	   src/datasetselectdialog.cpp \
-    src/previewform.cpp \
-    src/nodeeditdialog.cpp \
-    src/dialogranderdosrenyi.cpp \
-    src/randsmallworlddialog.cpp \
-    src/randregulardialog.cpp \
-    src/randscalefreedialog.cpp \
-    src/settingsdialog.cpp \
-    src/dialogpearsoncorrelation.cpp 
+	   src/dialogdatasetselect.cpp \
+	   src/dialogpreviewfile.cpp \
+	   src/dialognodeedit.cpp \
+	   src/dialogranderdosrenyi.cpp \
+	   src/dialograndsmallworld.cpp \
+	   src/dialograndregular.cpp \
+	   src/dialograndscalefree.cpp \
+	   src/dialogsettings.cpp \
+	   src/dialogpearsoncorrelation.cpp 
 
 
 

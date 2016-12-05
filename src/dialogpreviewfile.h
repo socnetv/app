@@ -3,7 +3,7 @@
  version: 2.2
  Written in Qt
 
-                         nodeeditdialog.h  -  description
+                         dialogpreviewfile.h  -  description
                              -------------------
     copyright         : (C) 2005-2016 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -26,42 +26,41 @@
 ********************************************************************************/
 
 
-#ifndef NODEEDITDIALOG_H
-#define NODEEDITDIALOG_H
+#ifndef DIALOGPREVIEWFILE_H
+#define DIALOGPREVIEWFILE_H
 
 #include <QDialog>
+#include <QList>
 
-#include "ui_nodeeditdialog.h"
+class QComboBox;
+class QDialogButtonBox;
+class QLabel;
+class QTextCodec;
+class QTextEdit;
 
-
-class NodeEditDialog : public QDialog
+class DialogPreviewFile : public QDialog
 {
     Q_OBJECT
 public:
-    explicit NodeEditDialog(QWidget *parent = 0,
-                            const QString &l = "",
-                            const int &s = 8,
-                            const QColor &c= QColor("red"),
-                            const QString &sh = "circle");
-public slots:
-    void checkErrors ();
-    void gatherData ();
-    void selectColor();
+    explicit DialogPreviewFile(QWidget *parent = 0);
+    void setCodecList(const QList<QTextCodec *> &list);
+    void setEncodedData(const QByteArray &data, const QString, const int );
+    QString decodedString() const { return decodedStr; }
 signals:
-    void userChoices( const QString, const int, const QString, const QColor, const QString);
-    void nodeEditDialogError(QString);
+    void loadNetworkFileWithCodec(const QString, const QString, const int);
+private slots:
+    void updateTextEdit();
+    void accept();
 
 private:
-    QColor nodeColor;
-    QString nodeShape;
-    QString nodeValue;
-    QString nodeLabel;
-    int nodeSize;
-    QPixmap pixmap;
-    Ui::NodeEditDialog ui;
-
-
+    QByteArray encodedData;
+    QString decodedStr, fileName;
+    int format;
+    QComboBox *encodingComboBox;
+    QLabel *encodingLabel;
+    QTextEdit *textEdit;
+    QDialogButtonBox *buttonBox;
 
 };
 
-#endif // NODEEDITDIALOG_H
+#endif

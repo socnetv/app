@@ -3,7 +3,7 @@
  version: 2.2
  Written in Qt
 
-                         settingsdialog.h  -  description
+                         dialogsettings.h  -  description
                              -------------------
     copyright         : (C) 2005-2016 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -25,24 +25,24 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef SETTINGSDIALOG_H
-#define SETTINGSDIALOG_H
+#ifndef DIALOGSETTINGS_H
+#define DIALOGSETTINGS_H
 
 #include <QDialog>
 #include <QMap>
 
 namespace Ui {
-class SettingsDialog;
+class DialogSettings;
 }
 
-class SettingsDialog : public QDialog
+class DialogSettings : public QDialog
 {
     Q_OBJECT
 
 
 public:
-    explicit SettingsDialog(QMap<QString, QString> &appSettings, QWidget *parent = 0 );
-    ~SettingsDialog();
+    explicit DialogSettings(QMap<QString, QString> &appSettings, QWidget *parent = 0 );
+    ~DialogSettings();
 
 public slots:
     void getDataDir();
@@ -101,11 +101,11 @@ signals:
     void saveSettings();
 private:
      QMap<QString, QString> &m_appSettings ;
-     Ui::SettingsDialog *ui;
+     Ui::DialogSettings *ui;
      QPixmap m_pixmap;
      //QString m_nodeShape;
      QColor m_bgColor, m_nodeColor, m_nodeNumberColor, m_nodeLabelColor;
      QColor m_edgeColor, m_edgeColorNegative, m_edgeWeightNumberColor;
 };
 
-#endif // SETTINGSDIALOG_H
+#endif

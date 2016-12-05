@@ -49,12 +49,12 @@
 #include "dialogfilteredgesbyweight.h"
 #include "guide.h"
 #include "vertex.h"
-#include "previewform.h"
+#include "dialogpreviewfile.h"
 #include "dialogranderdosrenyi.h"
-#include "randsmallworlddialog.h"
-#include "randscalefreedialog.h"
-#include "randregulardialog.h"
-#include "settingsdialog.h"
+#include "dialograndsmallworld.h"
+#include "dialograndscalefree.h"
+#include "dialograndregular.h"
+#include "dialogsettings.h"
 #include "dialogpearsoncorrelation.h"
 
 
@@ -184,11 +184,11 @@ QMap<QString,QString> MainWindow::initSettings(){
     qDebug() << "MW::initSettings - calling slotNetworkAvailableTextCodecs" ;
     slotNetworkAvailableTextCodecs();
 
-    qDebug() << "MW::initSettings - creating PreviewForm object and setting codecs list" ;
-    previewForm = new PreviewForm(this);
-    previewForm->setCodecList(codecs);
+    qDebug() << "MW::initSettings - creating DialogPreviewFile object and setting codecs list" ;
+    m_dialogPreviewFile = new DialogPreviewFile(this);
+    m_dialogPreviewFile->setCodecList(codecs);
 
-    connect (previewForm, &PreviewForm::loadNetworkFileWithCodec,
+    connect (m_dialogPreviewFile, &DialogPreviewFile::loadNetworkFileWithCodec,
              this, &MainWindow::slotNetworkFileLoad );
 
     qDebug() << "MW::initSettings - creating default settings" ;
@@ -363,90 +363,90 @@ void MainWindow::slotOpenSettingsDialog() {
 
     // build dialog
 
-    m_settingsDialog = new SettingsDialog( appSettings, this);
+    m_settingsDialog = new DialogSettings( appSettings, this);
 
-    connect( m_settingsDialog, &SettingsDialog::saveSettings,
+    connect( m_settingsDialog, &DialogSettings::saveSettings,
                      this, &MainWindow::saveSettings);
 
-    connect( m_settingsDialog, &SettingsDialog::setDebugMsgs,
+    connect( m_settingsDialog, &DialogSettings::setDebugMsgs,
                          this, &MainWindow::slotOptionsDebugMessages);
 
-    connect( m_settingsDialog, &SettingsDialog::setProgressBars,
+    connect( m_settingsDialog, &DialogSettings::setProgressBars,
              this, &MainWindow::slotOptionsProgressBarVisibility);
 
-    connect( m_settingsDialog, &SettingsDialog::setAntialiasing,
+    connect( m_settingsDialog, &DialogSettings::setAntialiasing,
              this, &MainWindow::slotOptionsAntialiasing);
 
-    connect( m_settingsDialog, &SettingsDialog::setPrintLogo,
+    connect( m_settingsDialog, &DialogSettings::setPrintLogo,
                  this, &MainWindow::slotOptionsEmbedLogoExporting);
 
-    connect( m_settingsDialog, &SettingsDialog::setBgColor,
+    connect( m_settingsDialog, &DialogSettings::setBgColor,
                      this, &MainWindow::slotOptionsBackgroundColor);
 
-    connect( m_settingsDialog, &SettingsDialog::setBgImage,
+    connect( m_settingsDialog, &DialogSettings::setBgImage,
                      this, &MainWindow::slotOptionsBackgroundImage);
 
-    connect( m_settingsDialog, &SettingsDialog::setToolBar,
+    connect( m_settingsDialog, &DialogSettings::setToolBar,
              this, &MainWindow::slotOptionsToolbarVisibility);
 
-    connect( m_settingsDialog, &SettingsDialog::setStatusBar,
+    connect( m_settingsDialog, &DialogSettings::setStatusBar,
              this, &MainWindow::slotOptionsStatusBarVisibility);
 
-    connect( m_settingsDialog, &SettingsDialog::setLeftPanel,
+    connect( m_settingsDialog, &DialogSettings::setLeftPanel,
              this, &MainWindow::slotOptionsLeftPanelVisibility);
 
-    connect( m_settingsDialog, &SettingsDialog::setRightPanel,
+    connect( m_settingsDialog, &DialogSettings::setRightPanel,
              this, &MainWindow::slotOptionsRightPanelVisibility);
 
     connect(m_settingsDialog, SIGNAL(setNodeColor(QColor)),
             this, SLOT(slotEditNodeColorAll(QColor)) );
 
-    connect( m_settingsDialog, &SettingsDialog::setNodeShape,
+    connect( m_settingsDialog, &DialogSettings::setNodeShape,
              this, &MainWindow::slotEditNodeShape);
 
-    connect( m_settingsDialog, &SettingsDialog::setNodeSize,
+    connect( m_settingsDialog, &DialogSettings::setNodeSize,
              this, &MainWindow::slotEditNodeSizeAll);
 
-    connect( m_settingsDialog, &SettingsDialog::setNodeNumbersVisibility,
+    connect( m_settingsDialog, &DialogSettings::setNodeNumbersVisibility,
              this, &MainWindow::slotOptionsNodeNumbersVisibility);
 
-    connect( m_settingsDialog, &SettingsDialog::setNodeNumbersInside,
+    connect( m_settingsDialog, &DialogSettings::setNodeNumbersInside,
              this, &MainWindow::slotOptionsNodeNumbersInside);
 
-    connect( m_settingsDialog, &SettingsDialog::setNodeNumberColor,
+    connect( m_settingsDialog, &DialogSettings::setNodeNumberColor,
              this, &MainWindow::slotEditNodeNumbersColor);
 
-    connect( m_settingsDialog, &SettingsDialog::setNodeNumberSize,
+    connect( m_settingsDialog, &DialogSettings::setNodeNumberSize,
              this, &MainWindow::slotEditNodeNumberSize);
 
-    connect( m_settingsDialog, &SettingsDialog::setNodeNumberDistance,
+    connect( m_settingsDialog, &DialogSettings::setNodeNumberDistance,
              this, &MainWindow::slotEditNodeNumberDistance);
 
-    connect( m_settingsDialog, &SettingsDialog::setNodeLabelsVisibility,
+    connect( m_settingsDialog, &DialogSettings::setNodeLabelsVisibility,
              this, &MainWindow::slotOptionsNodeLabelsVisibility);
 
-    connect( m_settingsDialog, &SettingsDialog::setNodeLabelSize,
+    connect( m_settingsDialog, &DialogSettings::setNodeLabelSize,
              this, &MainWindow::slotEditNodeLabelSize);
 
-    connect( m_settingsDialog, &SettingsDialog::setNodeLabelColor,
+    connect( m_settingsDialog, &DialogSettings::setNodeLabelColor,
              this, &MainWindow::slotEditNodeLabelsColor);
 
-    connect( m_settingsDialog, &SettingsDialog::setNodeLabelDistance,
+    connect( m_settingsDialog, &DialogSettings::setNodeLabelDistance,
              this, &MainWindow::slotEditNodeLabelDistance);
 
-    connect( m_settingsDialog, &SettingsDialog::setEdgesVisibility,
+    connect( m_settingsDialog, &DialogSettings::setEdgesVisibility,
              this, &MainWindow::slotOptionsEdgesVisibility);
 
-    connect( m_settingsDialog, &SettingsDialog::setEdgeArrowsVisibility,
+    connect( m_settingsDialog, &DialogSettings::setEdgeArrowsVisibility,
              this, &MainWindow::slotOptionsEdgeArrowsVisibility);
 
-    connect( m_settingsDialog, &SettingsDialog::setEdgeColor,
+    connect( m_settingsDialog, &DialogSettings::setEdgeColor,
              this, &MainWindow::slotEditEdgeColorAll);
 
-    connect( m_settingsDialog, &SettingsDialog::setEdgeWeightNumbersVisibility,
+    connect( m_settingsDialog, &DialogSettings::setEdgeWeightNumbersVisibility,
              this, &MainWindow::slotOptionsEdgeWeightNumbersVisibility);
 
-    connect( m_settingsDialog, &SettingsDialog::setEdgeLabelsVisibility,
+    connect( m_settingsDialog, &DialogSettings::setEdgeLabelsVisibility,
              this, &MainWindow::slotOptionsEdgeLabelsVisibility);
 
 
@@ -532,9 +532,11 @@ void MainWindow::initActions(){
 
     networkImportList = new QAction( QIcon(":/images/open.png"), tr("&Edge list"), this);
     networkImportList->setStatusTip(tr("Import an edge list file. "));
-    networkImportList->setWhatsThis(tr("Import edge list\n\n"
-                                "Import a network from an edgelist file. "
-                                " The file can be unvalued or valued (see manual)"
+    networkImportList->setWhatsThis(
+                tr("Import edge list\n\n"
+                   "Import a network from an edgelist file. "
+                   "SocNetV supports EdgeList files with edge weights "
+                   "as well as simple EdgeList files where the edges are non-value (see manual)"
                                 ));
     connect(networkImportList, SIGNAL(triggered()),
             this, SLOT(slotNetworkImportEdgeList()));
@@ -625,8 +627,8 @@ void MainWindow::initActions(){
     networkPrint->setShortcut(Qt::CTRL+Qt::Key_P);
     networkPrint->setStatusTip(tr("Send the currrent social network to the printer"));
     networkPrint->setWhatsThis(tr("Print \n\n"
-                                  "This function prints whatever is viewable on "
-                                  "the canvas. \n"
+                                  "Sends whatever is viewable on "
+                                  "the canvas to your printer. \n"
                                   "To print the whole social network, "
                                   "you might want to zoom-out."));
     connect(networkPrint, SIGNAL(triggered()), this, SLOT(slotNetworkPrint()));
@@ -644,8 +646,8 @@ void MainWindow::initActions(){
     openTextEditorAct ->setShortcut(Qt::SHIFT+Qt::Key_F5);
     openTextEditorAct->setStatusTip(tr("Open a text editor "
                                        "to take notes, copy/paste network data, etc"));
-    openTextEditorAct->setWhatsThis(tr("Open Text Editor\n\n"
-                                       "Opens the SocNetV text editor where you can "
+    openTextEditorAct->setWhatsThis(tr("Text Editor\n\n"
+                                       "Opens a simple text editor where you can "
                                        "copy paste network data, of any supported format, "
                                        "and save to a file. Then you can import that file to SocNetV..."));
     connect(openTextEditorAct, SIGNAL(triggered()), this, SLOT(slotNetworkTextEditor()));
@@ -892,7 +894,8 @@ void MainWindow::initActions(){
     editNodeFindAct->setStatusTip(tr("Find and highlight an actor by number or label. "
                                  "Press Ctrl+F again to undo."));
     editNodeFindAct->setWhatsThis(tr("Find Node\n\n"
-                                     "Finds a node with a given number or label and doubles its size. "
+                                     "Finds a node with a given number or label and "
+                                     "highlights it by doubling its size. "
                                      "Ctrl+F again resizes back the node"));
     connect(editNodeFindAct, SIGNAL(triggered()), this, SLOT(slotEditNodeFind()) );
 
@@ -906,9 +909,11 @@ void MainWindow::initActions(){
     editNodeRemoveAct = new QAction(QIcon(":/images/remove.png"),tr("Remove Node"), this);
     editNodeRemoveAct ->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_Period);
     //Single key shortcuts with backspace or del do no work in Mac http://goo.gl/7hz7Dx
-    editNodeRemoveAct->setStatusTip(tr("Remove a node"));
+    editNodeRemoveAct->setStatusTip(tr("Remove selected node(s). If no nodes are selected, "
+                                       "you will be prompt for a node number. "));
     editNodeRemoveAct->setWhatsThis(tr("Remove Node\n\n"
-                                       "Removes an existing node from the network"));
+                                       "Removes selected node(s) from the network. "
+                                       "If no nodes are selected, you will be prompt for a node number. "));
     connect(editNodeRemoveAct, SIGNAL(triggered()), this, SLOT(slotEditNodeRemove()));
 
     editNodePropertiesAct = new QAction(QIcon(":/images/properties.png"),tr("Selected Node Properties"), this);
@@ -985,7 +990,7 @@ void MainWindow::initActions(){
 
     editNodeSizeAllAct = new QAction(QIcon(":/images/resize.png"), tr("Change All Nodes Size (this session)"),	this);
     editNodeSizeAllAct->setStatusTip(tr("Change the size of all nodes (in this session only)"));
-    editNodeSizeAllAct->setWhatsThis(tr("Nodes Size\n\n"
+    editNodeSizeAllAct->setWhatsThis(tr("Change All Nodes Size\n\n"
                                         "Click to select and apply a new size for all nodes at once. \n"
                                         "This setting will apply to this session only. \n"
                                         "To permanently change it, use Settings & Preferences"));
@@ -993,7 +998,7 @@ void MainWindow::initActions(){
 
     editNodeShapeAll = new QAction(QIcon(":/images/nodeshape.png"), tr("Change All Nodes Shape (this session)"),	this);
     editNodeShapeAll->setStatusTip(tr("Change the shape of all nodes (this session only)"));
-    editNodeShapeAll->setWhatsThis(tr("Nodes Shape\n\n"
+    editNodeShapeAll->setWhatsThis(tr("Change All Nodes Shape\n\n"
                                       "Click to select and apply a new shape for all nodes at once."
                                       "This setting will apply to this session only. \n"
                                       "To permanently change it, use Settings & Preferences"));
@@ -1004,7 +1009,7 @@ void MainWindow::initActions(){
                                          tr("Change All Node Numbers Size (this session)"),	this);
     editNodeNumbersSizeAct->setStatusTip(tr("Change the font size of the numbers of all nodes"
                                             "(in this session only)"));
-    editNodeNumbersSizeAct->setWhatsThis(tr("Node Numbers Size\n\n"
+    editNodeNumbersSizeAct->setWhatsThis(tr("Change Node Numbers Size\n\n"
                                             "Click to select and apply a new font size for all node numbers"
                                             "This setting will apply to this session only. \n"
                                             "To permanently change it, use Settings & Preferences"));
@@ -1052,9 +1057,9 @@ void MainWindow::initActions(){
     editEdgeRemoveAct->setStatusTip(tr("Remove an Edge"));
     editEdgeRemoveAct->setWhatsThis(tr("Remove Edge\n\n"
                                        "Removes an Edge from the network."
-                                       "If an edge has been clicked previously "
+                                       "If an edge has been clicked "
                                        "it is removed. "
-                                       "Otherwise, it asks for source and target "
+                                       "Otherwise, you will be prompted to enter edge source and target "
                                        "nodes"));
     connect(editEdgeRemoveAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeRemove()));
 
@@ -1101,7 +1106,7 @@ void MainWindow::initActions(){
     editEdgeSymmetrizeStrongTiesAct->setStatusTip(tr("Create a new symmetric relation by counting reciprocated ties only (strong ties)."));
     editEdgeSymmetrizeStrongTiesAct->setWhatsThis(
                 tr("Symmetrize Edges by examing Strong Ties\n\n"
-                   "Create a new symmetric relation by keeping strong ties only. \n"
+                   "Creates a new symmetric relation by keeping strong ties only. \n"
                    "That is, a strong tie exists between actor A and actor B \n"
                    "only when both arcs A -> B and B -> A are present. \n"
                    "If the network is multi-relational, it asks you whether \n"
@@ -1111,12 +1116,13 @@ void MainWindow::initActions(){
             this, SLOT(slotEditEdgeSymmetrizeStrongTies()));
 
 
+    //TODO Separate action for Directed/Undirected graph drawing (without changing all existing edges).
     editEdgeUndirectedAllAct= new QAction( tr("Undirected Edges"), this);
     editEdgeUndirectedAllAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_U));
     editEdgeUndirectedAllAct->setStatusTip(tr("Enable to tranform all arcs to undirected edges and hereafter work with undirected edges ."));
     editEdgeUndirectedAllAct->setWhatsThis(
                 tr("Undirected Edges\n\n"
-                   "If you enable this, it tranforms all directed arcs to undirected edges. \n"
+                   "Tranforms all directed arcs to undirected edges. \n"
                    "The result is a undirected and symmetric network."
                    "After that, every new edge you add, will be undirected too."
                    "If you disable this, then all edges become directed again."));
@@ -1151,7 +1157,8 @@ void MainWindow::initActions(){
     editFilterNodesIsolatesAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_F));
     editFilterNodesIsolatesAct -> setStatusTip(tr("Temporarily filter out nodes with no edges"));
     editFilterNodesIsolatesAct -> setWhatsThis(tr("Filter Isolate Nodes\n\n "
-                                             "Enables or disables displaying of isolate nodes. Isolate nodes are those with no edges..."));
+                                             "Enables or disables displaying of isolate nodes. "
+                                                  "Isolate nodes are those with no edges..."));
     connect(editFilterNodesIsolatesAct, SIGNAL(toggled(bool)),
             this, SLOT(slotEditFilterNodesIsolates(bool)));
 
@@ -1180,7 +1187,7 @@ void MainWindow::initActions(){
                                       "Strong ties are depicted as either a single undirected edge "
                                       "or as two reciprocated arcs between two nodes. "
                                        "By selecting this option, all unilateral edges in this relation will be disabled."));
-    connect(editFilterEdgesUnilateralAct , SIGNAL(toggled(bool)),
+    connect(editFilterEdgesUnilateralAct , SIGNAL(triggered(bool)),
             this, SLOT(slotEditFilterEdgesUnilateral(bool)));
 
 
@@ -4024,6 +4031,8 @@ void MainWindow::initApp(){
                 );
     editFilterNodesIsolatesAct->setChecked(false); // re-init orphan nodes menu item
 
+    editFilterEdgesUnilateralAct->setChecked(false);
+
     //editRelationChangeCombo->clear();
 
 
@@ -5345,8 +5354,8 @@ bool MainWindow::slotNetworkFilePreview(const QString &m_fileName,
         qDebug() << "MW::slotNetworkFilePreview() - reading file... " ;
         QByteArray data = file.readAll();
 
-        previewForm->setEncodedData(data,m_fileName, m_fileFormat);
-        previewForm->exec();
+        m_dialogPreviewFile->setEncodedData(data,m_fileName, m_fileFormat);
+        m_dialogPreviewFile->exec();
     }
     return true;
 }
@@ -5376,7 +5385,7 @@ void MainWindow::slotNetworkFileLoadRecent() {
  * @param m_fileFormat
  * @return
  * Main network file loader method
- * Called from previewForm and slotNetworkDataSetRecreate
+ * Called from m_dialogPreviewFile and slotNetworkDataSetRecreate
  * Calls initApp to init to default values.
  * Then calls activeGraph::graphLoad to actually load the network...
  */
@@ -6400,9 +6409,9 @@ void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
 void MainWindow::slotNetworkRandomScaleFreeDialog() {
     qDebug() << "MW::slotNetworkRandomScaleFreeDialog()";
     statusMessage( tr("Generate a random Scale-Free network. "));
-    m_randScaleFreeDialog = new RandScaleFreeDialog(this);
+    m_randScaleFreeDialog = new DialogRandScaleFree(this);
 
-    connect( m_randScaleFreeDialog, &RandScaleFreeDialog::userChoices,
+    connect( m_randScaleFreeDialog, &DialogRandScaleFree::userChoices,
              this, &MainWindow::slotNetworkRandomScaleFree);
 
     m_randScaleFreeDialog->exec();
@@ -6469,9 +6478,9 @@ void MainWindow::slotNetworkRandomSmallWorldDialog()
 {
     qDebug() << "MW::slotNetworkRandomSmallWorldDialog()";
     statusMessage( tr("Generate a random Small-World network. "));
-    m_randSmallWorldDialog = new RandSmallWorldDialog(this);
+    m_randSmallWorldDialog = new DialogRandSmallWorld(this);
 
-    connect( m_randSmallWorldDialog, &RandSmallWorldDialog::userChoices,
+    connect( m_randSmallWorldDialog, &DialogRandSmallWorld::userChoices,
              this, &MainWindow::slotNetworkRandomSmallWorld);
 
 
@@ -6535,9 +6544,9 @@ void MainWindow::slotNetworkRandomRegularDialog()
 {
     qDebug() << "MW::slotRandomRegularDialog()";
     statusMessage( tr("Generate a d-regular random network. "));
-    m_randRegularDialog = new RandRegularDialog(this);
+    m_randRegularDialog = new DialogRandRegular(this);
 
-    connect( m_randRegularDialog, &RandRegularDialog::userChoices,
+    connect( m_randRegularDialog, &DialogRandRegular::userChoices,
              this, &MainWindow::slotNetworkRandomRegular);
 
     m_randRegularDialog->exec();
@@ -7112,9 +7121,9 @@ void MainWindow::slotEditNodePropertiesDialog() {
 
     //@todo add some grouping function here?
 
-    m_nodeEditDialog = new NodeEditDialog(this, label, size, color, shape) ;
+    m_nodeEditDialog = new DialogNodeEdit(this, label, size, color, shape) ;
 
-    connect( m_nodeEditDialog, &NodeEditDialog::userChoices,
+    connect( m_nodeEditDialog, &DialogNodeEdit::userChoices,
              this, &MainWindow::slotEditNodeProperties );
 
     m_nodeEditDialog->exec();
@@ -7126,7 +7135,7 @@ void MainWindow::slotEditNodePropertiesDialog() {
 /**
  * @brief MainWindow::slotEditNodeProperties
  * Applies new (user-defined) values to all selected nodes
- * Called on exit from NodeEditDialog
+ * Called on exit from DialogNodeEdit
  * @param label
  * @param size
  * @param value
@@ -7376,7 +7385,7 @@ void MainWindow::slotEditNodeColorAll(QColor color){
  * @brief MainWindow::slotEditNodeSizeAll
  * Changes the size of nodes to newSize.
  * Calls activeGraph.vertexSizeAllSet to do the work.
- * Called from Edit menu item, SettingsDialog
+ * Called from Edit menu item, DialogSettings
  * If newSize = 0 asks the user a new size for all nodes
  * If normalized = true, changes node sizes according to their plethos
  * @param newSize
@@ -7423,7 +7432,7 @@ void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
  * Then changes the shape of all nodes/vertices accordingly.
  * If vertex is non-zero, changes the shape of that node only.
  * Called when user clicks on Edit -> Node > Change all nodes shapes
- * Called from SettingsDialog when the user has selected a new default node shape
+ * Called from DialogSettings when the user has selected a new default node shape
  * Calls Graph::vertexShapeAllSet(QString)
  * @param shape
  * @param vertex
@@ -7469,7 +7478,7 @@ void MainWindow::slotEditNodeShape(QString shape, const int vertex) {
 /**
  * @brief MainWindow::slotEditNodeNumberSize
  * Changes the size of one or all node numbers.
- * Called from Edit menu option and SettingsDialog
+ * Called from Edit menu option and DialogSettings
  * if newSize=0, asks the user to enter a new node number font size
  * if v1=0, it changes all node numbers
  * @param v1
@@ -7539,7 +7548,7 @@ void MainWindow::slotEditNodeNumbersColor(QColor color){
 /**
  * @brief MainWindow::slotEditNodeNumberDistance
  * Changes the distance of one or all node numbers from their nodes.
- * Called from Edit menu option and SettingsDialog
+ * Called from Edit menu option and DialogSettings
  * if newDistance=0, asks the user to enter a new node number distance
  * if v1=0, it changes all node number distances
  * @param v1
@@ -7573,7 +7582,7 @@ void MainWindow::slotEditNodeNumberDistance(int v1, int newDistance) {
 /**
  * @brief MainWindow::slotEditNodeLabelSize
  * Changes the size of one or all node Labels.
- * Called from Edit menu option and SettingsDialog
+ * Called from Edit menu option and DialogSettings
  * if newSize=0, asks the user to enter a new node Label font size
  * if v1=0, it changes all node Labels
  * @param v1
@@ -7639,7 +7648,7 @@ void MainWindow::slotEditNodeLabelsColor(QColor color){
 /**
  * @brief MainWindow::slotEditNodeLabelDistance
  * Changes the distance of one or all node label from their nodes.
- * Called from Edit menu option and SettingsDialog
+ * Called from Edit menu option and DialogSettings
  * if newDistance=0, asks the user to enter a new node label distance
  * if v1=0, it changes all node label distances
  * @param v1

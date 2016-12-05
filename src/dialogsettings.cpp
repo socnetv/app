@@ -3,7 +3,7 @@
  version: 2.2
  Written in Qt
 
-                         settingsdialog.cpp  -  description
+                         dialogsettings.cpp  -  description
                              -------------------
     copyright         : (C) 2005-2016 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -25,8 +25,8 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#include "settingsdialog.h"
-#include "ui_settingsdialog.h"
+#include "dialogsettings.h"
+#include "ui_dialogsettings.h"
 #include <QFileDialog>
 #include <QColorDialog>
 #include <QSpinBox>
@@ -34,12 +34,12 @@
 #include <QMap>
 #include <QtDebug>
 
-SettingsDialog::SettingsDialog(
+DialogSettings::DialogSettings(
         QMap<QString, QString> &appSettings,
         QWidget *parent) :
     QDialog(parent),
     m_appSettings(appSettings),
-    ui(new Ui::SettingsDialog)
+    ui(new Ui::DialogSettings)
 {
     ui->setupUi(this);
 
@@ -204,116 +204,116 @@ SettingsDialog::SettingsDialog(
      * dialog signals to slots
      */
     connect (ui->dataDirSelectButton, &QToolButton::clicked,
-             this, &SettingsDialog::getDataDir);
+             this, &DialogSettings::getDataDir);
 
     connect (ui->printDebugChkBox, &QCheckBox::stateChanged,
-             this, &SettingsDialog::setDebugMsgs);
+             this, &DialogSettings::setDebugMsgs);
 
     connect (ui->antialiasingChkBox, &QCheckBox::stateChanged,
-             this, &SettingsDialog::setAntialiasing);
+             this, &DialogSettings::setAntialiasing);
 
     connect (ui->printLogoChkBox, &QCheckBox::stateChanged,
-             this, &SettingsDialog::setPrintLogo);
+             this, &DialogSettings::setPrintLogo);
 
     connect (ui->bgColorButton, &QToolButton::clicked,
-             this, &SettingsDialog::getBgColor);
+             this, &DialogSettings::getBgColor);
 
     connect (ui->bgImageSelectButton, &QToolButton::clicked,
-             this, &SettingsDialog::getBgImage);
+             this, &DialogSettings::getBgImage);
 
     connect (ui->progressBarsChkBox, &QCheckBox::stateChanged,
-             this, &SettingsDialog::setProgressBars);
+             this, &DialogSettings::setProgressBars);
 
     connect (ui->showToolBarChkBox, &QCheckBox::stateChanged,
-             this, &SettingsDialog::setToolBar);
+             this, &DialogSettings::setToolBar);
 
     connect (ui->showStatusBarChkBox, &QCheckBox::stateChanged,
-             this, &SettingsDialog::setStatusBar);
+             this, &DialogSettings::setStatusBar);
 
     connect (ui->leftPanelChkBox, &QCheckBox::stateChanged,
-             this, &SettingsDialog::setLeftPanel);
+             this, &DialogSettings::setLeftPanel);
 
     connect (ui->rightPanelChkBox, &QCheckBox::stateChanged,
-             this, &SettingsDialog::setRightPanel);
+             this, &DialogSettings::setRightPanel);
 
     connect (ui->nodeShapeRadioBox, &QRadioButton::clicked,
-             this, &SettingsDialog::getNodeShape);
+             this, &DialogSettings::getNodeShape);
     connect (ui->nodeShapeRadioCircle, &QRadioButton::clicked,
-             this, &SettingsDialog::getNodeShape);
+             this, &DialogSettings::getNodeShape);
     connect (ui->nodeShapeRadioDiamond, &QRadioButton::clicked,
-             this, &SettingsDialog::getNodeShape);
+             this, &DialogSettings::getNodeShape);
     connect (ui->nodeShapeRadioEllipse, &QRadioButton::clicked,
-             this, &SettingsDialog::getNodeShape);
+             this, &DialogSettings::getNodeShape);
     connect (ui->nodeShapeRadioTriangle, &QRadioButton::clicked,
-             this, &SettingsDialog::getNodeShape);
+             this, &DialogSettings::getNodeShape);
     connect (ui->nodeShapeRadioStar, &QRadioButton::clicked,
-             this, &SettingsDialog::getNodeShape);
+             this, &DialogSettings::getNodeShape);
 
 
     connect(ui->nodeSizeSpin, SIGNAL(valueChanged(int)),
             this, SLOT(getNodeSize(int)) );
 
     connect ( ui->buttonBox, &QDialogButtonBox::accepted,
-              this, &SettingsDialog::validateSettings );
+              this, &DialogSettings::validateSettings );
 
     connect (ui->nodeColorBtn, &QToolButton::clicked,
-             this, &SettingsDialog::getNodeColor);
+             this, &DialogSettings::getNodeColor);
 
 
     connect (ui->nodeNumbersChkBox, &QCheckBox::stateChanged,
-                     this, &SettingsDialog::getNodeNumbersVisibility);
+                     this, &DialogSettings::getNodeNumbersVisibility);
     connect (ui->nodeNumbersInsideChkBox, &QCheckBox::stateChanged,
-             this,  &SettingsDialog::getNodeNumbersInside);
+             this,  &DialogSettings::getNodeNumbersInside);
     connect (ui->nodeNumberColorBtn, &QToolButton::clicked,
-             this, &SettingsDialog::getNodeNumberColor);
+             this, &DialogSettings::getNodeNumberColor);
     connect(ui->nodeNumberSizeSpin, SIGNAL(valueChanged(int)),
             this, SLOT(getNodeNumberSize(int)) );
     connect(ui->nodeNumberDistanceSpin, SIGNAL(valueChanged(int)),
             this, SLOT(getNodeNumberDistance(int)) );
 
     connect (ui->nodeLabelsChkBox, &QCheckBox::stateChanged,
-                     this, &SettingsDialog::getNodeLabelsVisibility);
+                     this, &DialogSettings::getNodeLabelsVisibility);
     connect(ui->nodeLabelSizeSpin, SIGNAL(valueChanged(int)),
                 this, SLOT(getNodeLabelSize(int)) );
     connect (ui->nodeLabelColorBtn, &QToolButton::clicked,
-             this, &SettingsDialog::getNodeLabelColor);
+             this, &DialogSettings::getNodeLabelColor);
     connect(ui->nodeLabelDistanceSpin, SIGNAL(valueChanged(int)),
             this, SLOT(getNodeLabelDistance(int)) );
 
 
     connect (ui->edgesChkBox, &QCheckBox::stateChanged,
-                     this, &SettingsDialog::getEdgesVisibility);
+                     this, &DialogSettings::getEdgesVisibility);
     connect (ui->edgeArrowsChkBox, &QCheckBox::stateChanged,
-                     this, &SettingsDialog::getEdgeArrowsVisibility);
+                     this, &DialogSettings::getEdgeArrowsVisibility);
     connect (ui->edgeColorBtn, &QToolButton::clicked,
-             this, &SettingsDialog::getEdgeColor);
+             this, &DialogSettings::getEdgeColor);
     connect (ui->edgeColorNegativeBtn, &QToolButton::clicked,
-             this, &SettingsDialog::getEdgeColorNegative);
+             this, &DialogSettings::getEdgeColorNegative);
     connect (ui->edgeShapeRadioStraightLine, &QRadioButton::clicked,
-             this, &SettingsDialog::getEdgeShape);
+             this, &DialogSettings::getEdgeShape);
     connect (ui->edgeShapeRadioBezier, &QRadioButton::clicked,
-             this, &SettingsDialog::getEdgeShape);
+             this, &DialogSettings::getEdgeShape);
 
     connect (ui->edgeWeightNumbersChkBox, &QCheckBox::stateChanged,
-                     this, &SettingsDialog::getEdgeWeightNumbersVisibility);
+                     this, &DialogSettings::getEdgeWeightNumbersVisibility);
 
 
     connect (ui->edgeLabelsChkBox, &QCheckBox::stateChanged,
-                     this, &SettingsDialog::getEdgeLabelsVisibility);
+                     this, &DialogSettings::getEdgeLabelsVisibility);
 
 }
 
 
 /**
- * @brief SettingsDialog::validateSettings
+ * @brief DialogSettings::validateSettings
  * Validates form data and signals saveSettings to MW
  */
-void SettingsDialog::validateSettings(){
+void DialogSettings::validateSettings(){
     emit saveSettings();
 
 }
 
-void SettingsDialog::getDataDir(){
+void DialogSettings::getDataDir(){
 
     QString m_dataDir = QFileDialog::getExistingDirectory(this, tr("Select a new data dir"),
                                                     ui->dataDirEdit->text(),
@@ -331,10 +331,10 @@ void SettingsDialog::getDataDir(){
 
 
 /**
- * @brief SettingsDialog::getBgColor
+ * @brief DialogSettings::getBgColor
  * Opens a QColorDialog for the user to select a new bg color
  */
-void SettingsDialog::getBgColor(){
+void DialogSettings::getBgColor(){
 
     m_bgColor = QColorDialog::getColor(
                 m_bgColor, this, tr("Select a background color") );
@@ -355,9 +355,9 @@ void SettingsDialog::getBgColor(){
 
 
 /**
- * @brief SettingsDialog::getBgImage
+ * @brief DialogSettings::getBgImage
  */
-void SettingsDialog::getBgImage(){
+void DialogSettings::getBgImage(){
     QString m_bgImage = QFileDialog::getOpenFileName(
                 this, tr("Select a background image "), (m_appSettings)["lastUsedDirPath"],
                 tr("All (*);;PNG (*.png);;JPG (*.jpg)")
@@ -375,10 +375,10 @@ void SettingsDialog::getBgImage(){
 
 
 /**
- * @brief SettingsDialog::getNodeColor
+ * @brief DialogSettings::getNodeColor
  * * Opens a QColorDialog for the user to select a new node color
  */
-void SettingsDialog::getNodeColor(){
+void DialogSettings::getNodeColor(){
     m_nodeColor = QColorDialog::getColor(
                 m_nodeColor, this, tr("Select a color for Nodes") );
     if ( m_nodeColor.isValid()) {
@@ -394,9 +394,9 @@ void SettingsDialog::getNodeColor(){
 
 
 /**
- * @brief SettingsDialog::getNodeShape
+ * @brief DialogSettings::getNodeShape
  */
-void SettingsDialog::getNodeShape(){
+void DialogSettings::getNodeShape(){
 
     QString nodeShape;
     if ( ui->nodeShapeRadioBox->isChecked () ){
@@ -420,35 +420,35 @@ void SettingsDialog::getNodeShape(){
     else {
         m_appSettings["initNodeShape"] = "box";
     }
-    qDebug()<< "SettingsDialog::getNodeShape() - new default shape " << nodeShape;
+    qDebug()<< "DialogSettings::getNodeShape() - new default shape " << nodeShape;
     emit setNodeShape(m_appSettings["initNodeShape"], 0);
 }
 
 
 /**
- * @brief SettingsDialog::getNodeSize
+ * @brief DialogSettings::getNodeSize
  * @param size
  */
-void SettingsDialog::getNodeSize( int size) {
+void DialogSettings::getNodeSize( int size) {
     m_appSettings["initNodeSize"]= QString::number(size);
     emit setNodeSize(size, false);
 }
 
 
 /**
- * @brief SettingsDialog::getNodeNumbersVisibility
+ * @brief DialogSettings::getNodeNumbersVisibility
  * @param toggle
  */
-void SettingsDialog::getNodeNumbersVisibility (bool toggle){
+void DialogSettings::getNodeNumbersVisibility (bool toggle){
     m_appSettings["initNodeNumbersVisibility"]= (toggle) ? "true" : "false";
     emit setNodeNumbersVisibility(toggle);
 }
 
 /**
- * @brief SettingsDialog::getNodeNumbersInside
+ * @brief DialogSettings::getNodeNumbersInside
  * @param toggle
  */
-void SettingsDialog::getNodeNumbersInside(bool toggle) {
+void DialogSettings::getNodeNumbersInside(bool toggle) {
     m_appSettings["initNodeNumbersInside"]= (toggle) ? "true" : "false";
     ui->nodeNumbersChkBox->setChecked(true);
     ui->nodeNumberDistanceSpin->setEnabled(!toggle);
@@ -457,28 +457,28 @@ void SettingsDialog::getNodeNumbersInside(bool toggle) {
 }
 
 /**
- * @brief SettingsDialog::getNodeNumberSize
+ * @brief DialogSettings::getNodeNumberSize
  * @param size
  */
-void SettingsDialog::getNodeNumberSize( const int size) {
+void DialogSettings::getNodeNumberSize( const int size) {
     m_appSettings["initNodeNumberSize"]= QString::number(size);
     emit setNodeNumberSize(0, size, false);
 }
 
 /**
- * @brief SettingsDialog::getNodeNumberDistance
+ * @brief DialogSettings::getNodeNumberDistance
  * @param distance
  */
-void SettingsDialog::getNodeNumberDistance(const int distance) {
+void DialogSettings::getNodeNumberDistance(const int distance) {
     m_appSettings["initNodeNumberDistance"]= QString::number(distance);
     emit setNodeNumberDistance(0, distance);
 }
 
 /**
- * @brief SettingsDialog::getNodeNumberColor
+ * @brief DialogSettings::getNodeNumberColor
  * * Opens a QColorDialog for the user to select a new node number color
  */
-void SettingsDialog::getNodeNumberColor(){
+void DialogSettings::getNodeNumberColor(){
     m_nodeNumberColor = QColorDialog::getColor(
                 m_nodeNumberColor, this, tr("Select color for Node Numbers") );
     if ( m_nodeNumberColor.isValid()) {
@@ -496,20 +496,20 @@ void SettingsDialog::getNodeNumberColor(){
 
 
 /**
- * @brief SettingsDialog::getNodeLabelsVisibility
+ * @brief DialogSettings::getNodeLabelsVisibility
  * @param toggle
  */
-void SettingsDialog::getNodeLabelsVisibility (bool toggle){
+void DialogSettings::getNodeLabelsVisibility (bool toggle){
     m_appSettings["initNodeLabelsVisibility"]= (toggle) ? "true" : "false";
     emit setNodeLabelsVisibility(toggle);
 }
 
 
 /**
- * @brief SettingsDialog::getNodeLabelColor
+ * @brief DialogSettings::getNodeLabelColor
  * * Opens a QColorDialog for the user to select a new node Label color
  */
-void SettingsDialog::getNodeLabelColor(){
+void DialogSettings::getNodeLabelColor(){
     m_nodeLabelColor = QColorDialog::getColor(
                 m_nodeLabelColor, this, tr("Select color for Node Labels") );
     if ( m_nodeLabelColor.isValid()) {
@@ -524,20 +524,20 @@ void SettingsDialog::getNodeLabelColor(){
 }
 
 /**
- * @brief SettingsDialog::getNodeLabelSize
+ * @brief DialogSettings::getNodeLabelSize
  * @param size
  */
-void SettingsDialog::getNodeLabelSize( const int size) {
+void DialogSettings::getNodeLabelSize( const int size) {
     m_appSettings["initNodeLabelSize"]= QString::number(size);
     emit setNodeLabelSize(0, size);
 }
 
 
 /**
- * @brief SettingsDialog::getNodeLabelDistance
+ * @brief DialogSettings::getNodeLabelDistance
  * @param distance
  */
-void SettingsDialog::getNodeLabelDistance(const int distance) {
+void DialogSettings::getNodeLabelDistance(const int distance) {
     m_appSettings["initNodeLabelDistance"]= QString::number(distance);
     emit setNodeLabelDistance(0, distance);
 }
@@ -546,10 +546,10 @@ void SettingsDialog::getNodeLabelDistance(const int distance) {
 
 
 /**
- * @brief SettingsDialog::getEdgesVisibility
+ * @brief DialogSettings::getEdgesVisibility
  * @param toggle
  */
-void SettingsDialog::getEdgesVisibility (const bool &toggle){
+void DialogSettings::getEdgesVisibility (const bool &toggle){
     m_appSettings["initEdgesVisibility"]= (toggle) ? "true" : "false";
     emit setEdgesVisibility(toggle);
 }
@@ -558,10 +558,10 @@ void SettingsDialog::getEdgesVisibility (const bool &toggle){
 
 
 /**
- * @brief SettingsDialog::getEdgeArrowsVisibility
+ * @brief DialogSettings::getEdgeArrowsVisibility
  * @param toggle
  */
-void SettingsDialog::getEdgeArrowsVisibility(const bool &toggle){
+void DialogSettings::getEdgeArrowsVisibility(const bool &toggle){
     m_appSettings["initEdgeArrows"]= (toggle) ? "true" : "false";
     emit setEdgeArrowsVisibility(toggle);
 }
@@ -569,10 +569,10 @@ void SettingsDialog::getEdgeArrowsVisibility(const bool &toggle){
 
 
 /**
- * @brief SettingsDialog::getEdgeColor
+ * @brief DialogSettings::getEdgeColor
  * * Opens a QColorDialog for the user to select a new edge color
  */
-void SettingsDialog::getEdgeColor(){
+void DialogSettings::getEdgeColor(){
     m_edgeColor = QColorDialog::getColor(
                 m_edgeColor, this, tr("Select color for Edges ") );
     if ( m_edgeColor.isValid()) {
@@ -588,10 +588,10 @@ void SettingsDialog::getEdgeColor(){
 
 
 /**
- * @brief SettingsDialog::getEdgeColorNegative
+ * @brief DialogSettings::getEdgeColorNegative
  * * Opens a QColorDialog for the user to select a new edge color
  */
-void SettingsDialog::getEdgeColorNegative(){
+void DialogSettings::getEdgeColorNegative(){
     m_edgeColorNegative = QColorDialog::getColor(
                 m_edgeColorNegative, this, tr("Select color for negative Edges") );
     if ( m_edgeColorNegative.isValid()) {
@@ -608,9 +608,9 @@ void SettingsDialog::getEdgeColorNegative(){
 
 
 /**
- * @brief SettingsDialog::getEdgeShape
+ * @brief DialogSettings::getEdgeShape
  */
-void SettingsDialog::getEdgeShape(){
+void DialogSettings::getEdgeShape(){
 
     if ( ui->edgeShapeRadioStraightLine->isChecked () ){
        m_appSettings["initEdgeShape"]  = "line";
@@ -618,7 +618,7 @@ void SettingsDialog::getEdgeShape(){
     else if ( ui->edgeShapeRadioBezier->isChecked() ){
        m_appSettings["initEdgeShape"]  = "bezier";
     }
-    qDebug()<< "SettingsDialog::getEdgeShape() - new default shape " <<
+    qDebug()<< "DialogSettings::getEdgeShape() - new default shape " <<
                m_appSettings["initEdgeShape"];
     emit setEdgeShape(m_appSettings["initEdgeShape"], 0);
 }
@@ -626,10 +626,10 @@ void SettingsDialog::getEdgeShape(){
 
 
 /**
- * @brief SettingsDialog::getEdgeWeightNumbersVisibility
+ * @brief DialogSettings::getEdgeWeightNumbersVisibility
  * @param toggle
  */
-void SettingsDialog::getEdgeWeightNumbersVisibility(const bool &toggle){
+void DialogSettings::getEdgeWeightNumbersVisibility(const bool &toggle){
     m_appSettings["initEdgeWeightNumbersVisibility"]= (toggle) ? "true" : "false";
     emit setEdgeWeightNumbersVisibility(toggle);
 }
@@ -637,17 +637,17 @@ void SettingsDialog::getEdgeWeightNumbersVisibility(const bool &toggle){
 
 
 /**
- * @brief SettingsDialog::getEdgeLabelsVisibility
+ * @brief DialogSettings::getEdgeLabelsVisibility
  * @param toggle
  */
-void SettingsDialog::getEdgeLabelsVisibility(const bool &toggle){
+void DialogSettings::getEdgeLabelsVisibility(const bool &toggle){
     m_appSettings["initEdgeLabelsVisibility"]= (toggle) ? "true" : "false";
     emit setEdgeLabelsVisibility(toggle);
 }
 
 
 
-SettingsDialog::~SettingsDialog()
+DialogSettings::~DialogSettings()
 {
     delete ui;
 }

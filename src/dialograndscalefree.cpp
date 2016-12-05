@@ -3,7 +3,7 @@
  version: 2.2
  Written in Qt
 
-                         randregulardialog.cpp  -  description
+                         randscalefreeddialog.cpp  -  description
                              -------------------
     copyright         : (C) 2005-2016 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -25,113 +25,104 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
+#include "dialograndscalefree.h"
+
 #include <QDebug>
 #include <QSpinBox>
 #include <QRadioButton>
 #include <QPushButton>
-#include <QDoubleSpinBox>
 #include <QGraphicsColorizeEffect>
-#include <QtMath>
 
-#include "randregulardialog.h"
-
-RandRegularDialog::RandRegularDialog(QWidget *parent) :
+DialogRandScaleFree::DialogRandScaleFree(QWidget *parent) :
     QDialog(parent)
 {
-    qDebug() << "::RandRegularDialog() " ;
+    qDebug() << "DialogRandScaleFree::DialogRandScaleFree() " ;
 
     ui.setupUi(this);
 
-    nodes = 100;
-    degree = 2;
-    mode = "undirected";
+    nodes = 0;
+    initialNodes = 0;
+    mode = "";
     diag = false;
 
     connect ( ui.buttonBox, &QDialogButtonBox::accepted,
-              this, &RandRegularDialog::gatherData );
+              this, &DialogRandScaleFree::gatherData );
 
     ui.buttonBox -> button (QDialogButtonBox::Ok) -> setDefault(true);
 
-    ui.degreeSpinBox-> setEnabled(true);
-    ui.undirectedRadioButton->setChecked(true);
+    (ui.nodesSpinBox )->setFocus();
+
+    ui.initialNodesSpinBox-> setEnabled(true);
+    ui.undirectedRadioButton->setChecked(false);
+    ui.directedRadioButton->setEnabled(true);
+    ui.directedRadioButton->setChecked(true);
+    ui.diagCheckBox->setText("No, set zero");
     ui.diagCheckBox ->setChecked(false);
     ui.diagCheckBox -> setEnabled(false);
 
     connect ( ui.undirectedRadioButton,&QRadioButton::clicked,
-              this, &RandRegularDialog::setModeUndirected );
+              this, &DialogRandScaleFree::setModeUndirected );
     connect ( ui.directedRadioButton,&QRadioButton::clicked,
-              this, &RandRegularDialog::setModeDirected );
+              this, &DialogRandScaleFree::setModeDirected );
 
     connect ( ui.diagCheckBox,&QCheckBox::clicked,
-              this, &RandRegularDialog::setDiag);
-
-    ui.nodesSpinBox->setFocus();
-    ui.nodesSpinBox->setValue(nodes);
-    ui.degreeSpinBox->setValue( degree );
-
-    connect(ui.nodesSpinBox, SIGNAL(valueChanged(int)),
-            this, SLOT(checkErrors(int)));
-
-    connect(ui.degreeSpinBox, SIGNAL(valueChanged(int)),
-            this, SLOT(checkErrors(int)));
-
+              this, &DialogRandScaleFree::setDiag);
 
 }
 
 
-void RandRegularDialog::modifyDegree(int value) {
-    ui.degreeSpinBox->setValue( qCeil ( qLn (value) ));
-    ui.degreeSpinBox->setMaximum( value );
-}
-
-void RandRegularDialog::setModeDirected (){
+void DialogRandScaleFree::setModeDirected (){
     ui.directedRadioButton->setChecked(true) ;
     ui.undirectedRadioButton->setChecked(false) ;
-    ui.degreeLabel->setText("inDegree=outDegree <em>d</em>");
 
 }
 
-void RandRegularDialog::setModeUndirected (){
+void DialogRandScaleFree::setModeUndirected (){
     ui.directedRadioButton->setChecked(false) ;
     ui.undirectedRadioButton->setChecked(true) ;
-    ui.degreeLabel->setText("Degree <em>d</em>");
 }
 
-void RandRegularDialog::setDiag (){
+void DialogRandScaleFree::setDiag (){
     if (ui.diagCheckBox -> isChecked())
         ui.diagCheckBox->setText("Yes, allow");
     else
         ui.diagCheckBox->setText("No, set zero");
 }
 
-void RandRegularDialog::checkErrors(const int &i) {
-    Q_UNUSED(i);
-    qDebug()<< " RandRegularDialog::checkErrors()" ;
-        if ( ( ui.degreeSpinBox->value() * ui.nodesSpinBox->value() )  % 2 !=0 ) {
-             QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
-             effect->setColor(QColor("red"));
-             ui.degreeSpinBox->setGraphicsEffect(effect);
-             ui.nodesSpinBox->setGraphicsEffect(effect);
-             (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
-         }
-         else {
-             ui.degreeSpinBox->setGraphicsEffect(0);
-             ui.nodesSpinBox->setGraphicsEffect(0);
-             (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
-         }
+void DialogRandScaleFree::checkErrors() {
+    qDebug()<< " DialogRandSmallWorld::checkErrors()" ;
+
+    //     if ( !ui.gnpRadioButton->isChecked() &&  !ui.gnmRadioButton->isChecked())
+    //     {
+    //         QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
+    //         effect->setColor(QColor("red"));
+    //         ui.gnpRadioButton->setGraphicsEffect(effect);
+    //         (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+    //     }
+    //     else {
+    //         ui.gnpRadioButton->setGraphicsEffect(0);
+    //         ui.gnmRadioButton->setGraphicsEffect(0);
+    //         (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
+    //     }
+    //gatherData();
 }
 
-void RandRegularDialog::gatherData() {
-    qDebug() << "RandRegularDialog::gatherData() " ;
+void DialogRandScaleFree::gatherData() {
+    qDebug() << "DialogRandScaleFree::gatherData() " ;
     nodes = ui.nodesSpinBox->value();
-    degree= ui.degreeSpinBox->value();
+    power = ui.powerSpinBox->value();
+    initialNodes = ui.initialNodesSpinBox->value();
+    edgesPerStep = ui.edgesPerStepSpinBox ->value();
+    zeroAppeal = ui.zeroAppealSpinBox->value();
     mode = (ui.directedRadioButton->isChecked() ? "digraph" : "graph" );
-    diag = (ui.diagCheckBox -> isChecked() ? true : false);
+ //   diag = (ui.diagCheckBox -> isChecked() ? true : false);
+
     qDebug() << "nodes " << nodes ;
-    qDebug() << "degree" << degree;
+    qDebug() << "initialNodes " << initialNodes;
     qDebug() << "mode " << mode;
     qDebug() << "diag " << diag;
-    emit userChoices(nodes, degree, mode, diag);
+    emit userChoices(nodes, power, initialNodes, edgesPerStep,zeroAppeal, mode);
 
 }
+
 

@@ -3,7 +3,7 @@
  version: 2.2
  Written in Qt
  
-                         datasetselectdialog.cpp  -  description
+                         dialogdatasetselect.cpp  -  description
                              -------------------
     copyright         : (C) 2005-2016 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -27,17 +27,19 @@
 
  
 
-#include "datasetselectdialog.h"
+#include "dialogdatasetselect.h"
 
 #include <QDebug>
 #include <QPushButton>
 
 
-DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
+DialogDataSetSelect::DialogDataSetSelect (QWidget *parent) :
+    QDialog (parent),
+    ui(new Ui::DialogDataSetSelect)
 {
-    ui.setupUi(this);
+    ui->setupUi(this);
 
-    (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
+    (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
 
     datasets_list
             << "Krackhardt: High-tech managers (multirelational), 24 actors"
@@ -83,32 +85,32 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
             << "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek"
             << "Petersen_Graph.paj";
 
-    (ui.selectBox) -> insertItems( 1, datasets_list );
+    (ui->selectBox) -> insertItems( 1, datasets_list );
 }
 
 
 
-void DataSetSelectDialog::gatherData(){
-    qDebug()<< "DataSetSelectDialog: gathering Data!...";
-    int index = (ui.selectBox) -> currentIndex();
+void DialogDataSetSelect::gatherData(){
+    qDebug()<< "DialogDataSetSelect: gathering Data!...";
+    int index = (ui->selectBox) -> currentIndex();
     QString dataset_name = datasets_filenames[index];
-    qDebug()<< "DataSetSelectDialog: user selected: " << dataset_name;
+    qDebug()<< "DialogDataSetSelect: user selected: " << dataset_name;
 	emit userChoices( dataset_name );
 			
 }
 
 
-void DataSetSelectDialog::on_buttonBox_accepted()
+void DialogDataSetSelect::on_buttonBox_accepted()
 {
     this->gatherData();
     this->accept();
 }
 
-void DataSetSelectDialog::on_buttonBox_rejected()
+void DialogDataSetSelect::on_buttonBox_rejected()
 {
     this->reject();
 }
 
-DataSetSelectDialog::~DataSetSelectDialog(){
+DialogDataSetSelect::~DialogDataSetSelect(){
      datasets_list.clear(); datasets_filenames.clear();
 }

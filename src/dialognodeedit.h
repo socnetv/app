@@ -2,8 +2,8 @@
  SocNetV: Social Network Visualizer
  version: 2.2
  Written in Qt
- 
-                         datasetselectdialog.h  -  description
+
+                         dialognodeedit.h  -  description
                              -------------------
     copyright         : (C) 2005-2016 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -25,34 +25,44 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef DATASETSELECTDIALOG_H
-#define DATASETSELECTDIALOG_H
+
+#ifndef DIALOGNODEEDIT_H
+#define DIALOGNODEEDIT_H
 
 #include <QDialog>
-#include "ui_datasetselectdialog.h"
- 
 
-class DataSetSelectDialog: public QDialog
+#include "ui_dialognodeedit.h"
+
+
+class DialogNodeEdit : public QDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	DataSetSelectDialog (QWidget *parent = 0);
-    ~DataSetSelectDialog();
+    explicit DialogNodeEdit(QWidget *parent = 0,
+                            const QString &l = "",
+                            const int &s = 8,
+                            const QColor &c= QColor("red"),
+                            const QString &sh = "circle");
+    ~DialogNodeEdit();
 public slots:
-	void gatherData();
+    void checkErrors ();
+    void gatherData ();
+    void selectColor();
 signals:
-	void userChoices(QString);	
-private slots:
-    void on_buttonBox_accepted();
-
-    void on_buttonBox_rejected();
+    void userChoices( const QString, const int, const QString, const QColor, const QString);
+    void nodeEditDialogError(QString);
 
 private:
-    Ui::DataSetSelectDialog ui;
-    QStringList datasets_list, datasets_filenames;
+    QColor nodeColor;
+    QString nodeShape;
+    QString nodeValue;
+    QString nodeLabel;
+    int nodeSize;
+    QPixmap pixmap;
+    Ui::DialogNodeEdit *ui;
+
+
 
 };
-
-
 
 #endif

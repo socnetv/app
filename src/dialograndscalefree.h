@@ -25,18 +25,18 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef RANDSCALEFREEDIALOG_H
-#define RANDSCALEFREEDIALOG_H
+#ifndef DIALOGRANDSCALEFREE_H
+#define DIALOGRANDSCALEFREE_H
 
 #include <QDialog>
 
-#include "ui_randscalefreedialog.h"
+#include "ui_dialograndscalefree.h"
 
-class RandScaleFreeDialog : public QDialog
+class DialogRandScaleFree : public QDialog
 {
     Q_OBJECT
 public:
-    explicit RandScaleFreeDialog(QWidget *parent = 0);
+    explicit DialogRandScaleFree(QWidget *parent = 0);
 
 public slots:
     void checkErrors();
@@ -60,8 +60,8 @@ private:
     int power;
     float zeroAppeal; // a
     bool diag;
-    Ui::RandScaleFreeDialog ui;
+    Ui::DialogRandScaleFree ui;
 
 };
 
-#endif // RANDSCALEFREEDIALOG_H
+#endif

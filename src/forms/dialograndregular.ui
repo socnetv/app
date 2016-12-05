@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>RandRegularDialog</class>
- <widget class="QDialog" name="RandRegularDialog">
+ <class>DialogRandRegular</class>
+ <widget class="QDialog" name="DialogRandRegular">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -420,7 +420,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>RandRegularDialog</receiver>
+   <receiver>DialogRandRegular</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -436,7 +436,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>RandRegularDialog</receiver>
+   <receiver>DialogRandRegular</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
