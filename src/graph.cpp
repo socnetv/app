@@ -3921,7 +3921,7 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
     H_edges::const_iterator it1;
 
     qDebug() << "dijkstra: Construct a priority queue prQ of all vertices-distances";
-    priority_queue<Distance, vector<Distance>, CompareDistances> prQ;
+    priority_queue<GraphDistance, vector<GraphDistance>, GraphDistancesCompare> prQ;
 
     //set distance of s from s equal to 0
     DM.setItem(s,s,0);
@@ -3935,7 +3935,7 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
             // NOTE: DM(i,j) init to RAND_MAX already done in distanceMatrixCreate
             // Not needed here: DM.setItem(s,v,RAND_MAX);
 //            qDebug() << " push " << v << " to prQ with infinite distance from s";
-//            prQ.push(Distance(v,RAND_MAX));
+//            prQ.push(GraphDistance(v,RAND_MAX));
             //TODO // Previous node in optimal path from source
             //    previous[v]  := undefined
         }
@@ -3943,7 +3943,7 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
     qDebug() << " push source " << s << " to prQ with 0 distance from s";
 
     //crucial: without it the priority prQ would pop arbitrary node at first loop
-    prQ.push(Distance(s,0));
+    prQ.push(GraphDistance(s,0));
 
     qDebug()<<"dijkstra: prQ size "<< prQ.size();
 
@@ -4034,7 +4034,7 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
 
             else if (dist_w > 0 && dist_w < DM.item(s, w)  ) {
 
-                prQ.push(Distance(w,dist_w)); //@FIXME: w might have been already visited?
+                prQ.push(GraphDistance(w,dist_w)); //@FIXME: w might have been already visited?
                 //If so, we might use QMap<int> which is sorted (minimum)
                 // and also provides contain()
                 DM.setItem(s, w, dist_w);

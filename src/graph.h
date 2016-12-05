@@ -108,13 +108,13 @@ struct ClickedEdge {
 typedef pair<int, int> SelectedEdge;
 
 
-class Distance
+class GraphDistance
 {
 public:
     int target;
     int distance;
 
-    Distance(int t, int dist)
+    GraphDistance(int t, int dist)
         : target(t), distance(dist)
     {
 
@@ -123,9 +123,9 @@ public:
 
 
 // implement a min-priority queue
-class CompareDistances {
+class GraphDistancesCompare {
     public:
-    bool operator()(Distance& t1, Distance& t2)
+    bool operator()(GraphDistance& t1, GraphDistance& t2)
     {
        if (t1.distance == t2.distance)
             return t1.target > t2.target;
