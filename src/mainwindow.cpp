@@ -5256,11 +5256,11 @@ void MainWindow::slotNetworkImportEdgeList(){
                                  )
            )
     {
-    case 0:
+    case 1:
         qDebug() << "***  MW::slotNetworkImportEdgeList - Weighted list selected! " ;
         slotNetworkFileChoose( QString::null, FILE_EDGELIST_WEIGHTED, m_checkSelectFileType);
         break;
-    case 1:
+    case 2:
         qDebug() << "***  MW: slotNetworkImportEdgeList - Simple list selected! " ;
         slotNetworkFileChoose( QString::null, FILE_EDGELIST_SIMPLE, m_checkSelectFileType);
         break;
