@@ -48,7 +48,8 @@ FORMS += src/forms/filteredgesbyweightdialog.ui \
         src/forms/randscalefreedialog.ui \
         src/forms/randerdosrenyidialog.ui \
         src/forms/randregulardialog.ui \
-        src/forms/settingsdialog.ui
+        src/forms/settingsdialog.ui \
+        src/forms/pearsoncorrelationdialog.ui 
 
 HEADERS += src/guide.h \
            src/graphicswidget.h \
@@ -74,7 +75,8 @@ HEADERS += src/guide.h \
     src/randsmallworlddialog.h \
     src/randscalefreedialog.h \
     src/randregulardialog.h \
-    src/settingsdialog.h
+    src/settingsdialog.h \
+    src/pearsoncorrelationdialog.h
 
 SOURCES += src/guide.cpp \
            src/graphicswidget.cpp \
@@ -101,7 +103,8 @@ SOURCES += src/guide.cpp \
     src/randsmallworlddialog.cpp \
     src/randregulardialog.cpp \
     src/randscalefreedialog.cpp \
-    src/settingsdialog.cpp
+    src/settingsdialog.cpp \
+    src/pearsoncorrelationdialog.cpp 
 
 
 
