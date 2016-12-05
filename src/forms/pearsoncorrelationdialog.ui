@@ -37,7 +37,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>Select Data Set</string>
+   <string>Pearson Correlations</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -55,7 +55,7 @@
       </size>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SocNetV can compute &lt;span style=&quot; font-weight:600;&quot;&gt;Pearson Product Moment Correlation Coefficients&lt;/span&gt; (PPMCC) between the rows, the columns or both of a social network matrix (adjacency or distance matrix). The result is a &lt;span style=&quot; font-weight:600;&quot;&gt;correlation matrix &lt;/span&gt;containing the correlation coefficients between each variable (i.e. row) and the others.&lt;/p&gt;&lt;p&gt; This might be useful if you want to check the pair-wise similarity of the actors, in terms of their ties.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Compute &lt;span style=&quot; font-weight:600;&quot;&gt;Pearson Product Moment Correlation Coefficients&lt;/span&gt; (PPMCC) between the rows, the columns or both of a social network matrix (adjacency or distance matrix). The result is a &lt;span style=&quot; font-weight:600;&quot;&gt;correlation matrix &lt;/span&gt;containing the correlation coefficients between each variable (i.e. row) and the others. This might be useful if you want to check the pair-wise similarity of the actors, in terms of their ties. &lt;/p&gt;&lt;p&gt;Select input matrix and what &amp;quot;variables&amp;quot; to correlate. For instance, select Adjacency matrix and Rows to correlate the outbound ties between all pairs of actors. Select Both to correlate the both inbound and outbound ties.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
@@ -86,7 +86,7 @@
         <enum>Qt::StrongFocus</enum>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Click to select a data set&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Adjacency:&lt;/span&gt; Use the active network's adjacency matrix as input to correlate ties between all pairs of actors. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Distances:&lt;/span&gt; Use the active network's geodedic distances matrix to correlate distances between all pairs of actors.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
@@ -113,7 +113,7 @@
         <enum>Qt::StrongFocus</enum>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Click to select a data set&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Rows: &lt;/span&gt;Correlate outbound ties (or distances, depending on the selected matrix above) between pairs of actors.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Columns: &lt;/span&gt;Correlate inbound ties (or distances, depending on the selected matrix above) between pairs of actors.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Both: &lt;/span&gt; Correlate both outbound and inbound ties (or distances, depending on the selected matrix above) between pairs of actors.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
