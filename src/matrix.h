@@ -184,7 +184,7 @@ public:
 
 
     Matrix& pearsonCorrelationCoefficients(Matrix &AM,
-                                          const bool rows=true);
+                                          const QString varLocation="Rows");
 
 
 
