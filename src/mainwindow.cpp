@@ -46,16 +46,16 @@
 #include "nodelabel.h"
 #include "edgeweight.h"
 #include "texteditor.h"
-#include "filteredgesbyweightdialog.h"
+#include "dialogfilteredgesbyweight.h"
 #include "guide.h"
 #include "vertex.h"
 #include "previewform.h"
-#include "randerdosrenyidialog.h"
+#include "dialogranderdosrenyi.h"
 #include "randsmallworlddialog.h"
 #include "randscalefreedialog.h"
 #include "randregulardialog.h"
 #include "settingsdialog.h"
-#include "pearsoncorrelationdialog.h"
+#include "dialogpearsoncorrelation.h"
 
 
 
@@ -6299,10 +6299,10 @@ void MainWindow::slotNetworkRandomErdosRenyiDialog(){
 
     statusMessage( tr("Generate a random Erdos-Renyi network. "));
 
-    m_randErdosRenyiDialog = new RandErdosRenyiDialog(
+    m_randErdosRenyiDialog = new DialogRandErdosRenyi(
                 this, appSettings["randomErdosEdgeProbability"].toFloat(0));
 
-    connect( m_randErdosRenyiDialog, &RandErdosRenyiDialog::userChoices,
+    connect( m_randErdosRenyiDialog, &DialogRandErdosRenyi::userChoices,
              this, &MainWindow::slotNetworkRandomErdosRenyi );
 
     m_randErdosRenyiDialog->exec();
@@ -10036,9 +10036,9 @@ void MainWindow::slotClusteringCoefficient (){
  */
 void MainWindow::slotSimilarityPearsonDialog(){
     qDebug()<< "MW::slotSimilarityPearsonDialog()";
-    m_pearsonCorrelationDialog = new PearsonCorrelationDialog(this);
+    m_pearsonCorrelationDialog = new DialogPearsonCorrelation(this);
 
-    connect( m_pearsonCorrelationDialog, &PearsonCorrelationDialog::userChoices,
+    connect( m_pearsonCorrelationDialog, &DialogPearsonCorrelation::userChoices,
              this, &MainWindow::slotSimilarityPearson );
 
     m_pearsonCorrelationDialog->exec();

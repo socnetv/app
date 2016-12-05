@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>FilterEdgesByWeightDialog</class>
- <widget class="QDialog" name="FilterEdgesByWeightDialog">
+ <class>DialogFilterEdgesByWeight</class>
+ <widget class="QDialog" name="DialogFilterEdgesByWeight">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -128,7 +128,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>FilterEdgesByWeightDialog</receiver>
+   <receiver>DialogFilterEdgesByWeight</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -144,7 +144,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>FilterEdgesByWeightDialog</receiver>
+   <receiver>DialogFilterEdgesByWeight</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

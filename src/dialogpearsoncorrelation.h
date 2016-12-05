@@ -3,7 +3,7 @@
  version: 2.2
  Written in Qt
  
-                         pearsoncorrelationdialog.cpp  -  description
+                         pearsoncorrelationdialog.h  -  description
                              -------------------
     copyright         : (C) 2005-2016 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -25,61 +25,34 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
+#ifndef DIALOGPEARSONCORRELATION_H
+#define DIALOGPEARSONCORRELATION_H
+
+#include <QDialog>
+#include "ui_dialogpearsoncorrelation.h"
  
 
-#include "pearsoncorrelationdialog.h"
-
-#include <QDebug>
-#include <QPushButton>
-
-
-PearsonCorrelationDialog::PearsonCorrelationDialog (QWidget *parent) : QDialog (parent)
+class DialogPearsonCorrelation: public QDialog
 {
-    ui.setupUi(this);
+	Q_OBJECT
+public:
+    DialogPearsonCorrelation (QWidget *parent = 0);
+    ~DialogPearsonCorrelation();
+public slots:
+	void gatherData();
+signals:
+    void userChoices(const QString &matrix, const QString &varLocation);
+private slots:
+    void on_buttonBox_accepted();
 
-    (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
+    void on_buttonBox_rejected();
 
-    matrixList
-            << "Adjacency"
-            << "Distances";
+private:
+    Ui::DialogPearsonCorrelation ui;
+    QStringList matrixList, variablesLocationList;
 
-    variablesLocationList
-            << "Rows"
-            << "Columns"
-            << "Both";
-
-    (ui.matrixSelect) -> insertItems( 1, matrixList );
-    (ui.variablesLocationSelect) -> insertItems( 1, variablesLocationList );
-
-}
-
-
-
-void PearsonCorrelationDialog::gatherData(){
-    qDebug()<< "PearsonCorrelationDialog: gathering Data!...";
-    QString matrix = (ui.matrixSelect) ->currentText();
-    QString varLocation = (ui.variablesLocationSelect) ->currentText();
-
-    qDebug()<< "PearsonCorrelationDialog: user selected: "
-            << matrix
-            << varLocation;
-    emit userChoices( matrix, varLocation  );
-			
-}
+};
 
 
-void PearsonCorrelationDialog::on_buttonBox_accepted()
-{
-    this->gatherData();
-    this->accept();
-}
 
-void PearsonCorrelationDialog::on_buttonBox_rejected()
-{
-    this->reject();
-}
-
-PearsonCorrelationDialog::~PearsonCorrelationDialog(){
-     matrixList.clear();
-     variablesLocationList.clear();
-}
+#endif

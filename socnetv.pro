@@ -40,16 +40,16 @@ QT += widgets
 QT += printsupport 
 
 INCLUDEPATH  += ./src
-FORMS += src/forms/filteredgesbyweightdialog.ui \
+FORMS += src/forms/dialogfilteredgesbyweight.ui \
         src/forms/webcrawlerdialog.ui \
         src/forms/nodeeditdialog.ui \
         src/forms/datasetselectdialog.ui \
         src/forms/randsmallworlddialog.ui \
         src/forms/randscalefreedialog.ui \
-        src/forms/randerdosrenyidialog.ui \
+        src/forms/dialogranderdosrenyi.ui \
         src/forms/randregulardialog.ui \
         src/forms/settingsdialog.ui \
-        src/forms/pearsoncorrelationdialog.ui 
+        src/forms/dialogpearsoncorrelation.ui 
 
 HEADERS += src/guide.h \
            src/graphicswidget.h \
@@ -65,18 +65,18 @@ HEADERS += src/guide.h \
            src/texteditor.h \
            src/vertex.h \ 
   	   src/parser.h \
-	   src/filteredgesbyweightdialog.h \
+	   src/dialogfilteredgesbyweight.h \
 	   src/webcrawlerdialog.h \
 	   src/webcrawler.h \
 	   src/datasetselectdialog.h \
     src/previewform.h \
     src/nodeeditdialog.h \
-    src/randerdosrenyidialog.h \
+    src/dialogranderdosrenyi.h \
     src/randsmallworlddialog.h \
     src/randscalefreedialog.h \
     src/randregulardialog.h \
     src/settingsdialog.h \
-    src/pearsoncorrelationdialog.h
+    src/dialogpearsoncorrelation.h
 
 SOURCES += src/guide.cpp \
            src/graphicswidget.cpp \
@@ -93,18 +93,18 @@ SOURCES += src/guide.cpp \
            src/texteditor.cpp \
            src/vertex.cpp \
            src/parser.cpp \
-	   src/filteredgesbyweightdialog.cpp \
+	   src/dialogfilteredgesbyweight.cpp \
 	   src/webcrawlerdialog.cpp \
 	   src/webcrawler.cpp \
 	   src/datasetselectdialog.cpp \
     src/previewform.cpp \
     src/nodeeditdialog.cpp \
-    src/randerdosrenyidialog.cpp \
+    src/dialogranderdosrenyi.cpp \
     src/randsmallworlddialog.cpp \
     src/randregulardialog.cpp \
     src/randscalefreedialog.cpp \
     src/settingsdialog.cpp \
-    src/pearsoncorrelationdialog.cpp 
+    src/dialogpearsoncorrelation.cpp 
 
 
 

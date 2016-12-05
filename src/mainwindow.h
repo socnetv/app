@@ -46,7 +46,7 @@
 
 #include "graph.h"
 #include "graphicswidget.h"
-#include "filteredgesbyweightdialog.h"
+#include "dialogfilteredgesbyweight.h"
 #include "webcrawlerdialog.h"
 #include "nodeeditdialog.h"
 #include "datasetselectdialog.h"
@@ -82,10 +82,10 @@ using namespace std;
 
 
 class PreviewForm;
-class RandErdosRenyiDialog;
+class DialogRandErdosRenyi;
 class RandSmallWorldDialog;
 class RandScaleFreeDialog;
-class PearsonCorrelationDialog;
+class DialogPearsonCorrelation;
 class RandRegularDialog;
 class SettingsDialog;
 class TextEditor;
@@ -420,17 +420,17 @@ private:
 
     QMap<QString,QString> appSettings;
 
-    FilterEdgesByWeightDialog m_DialogEdgeFilterByWeight;
+    DialogFilterEdgesByWeight m_DialogEdgeFilterByWeight;
     WebCrawlerDialog m_WebCrawlerDialog;
     DataSetSelectDialog m_datasetSelectDialog;
 
     NodeEditDialog *m_nodeEditDialog;
-    RandErdosRenyiDialog *m_randErdosRenyiDialog;
+    DialogRandErdosRenyi *m_randErdosRenyiDialog;
     RandSmallWorldDialog *m_randSmallWorldDialog;
     RandScaleFreeDialog *m_randScaleFreeDialog;
     RandRegularDialog *m_randRegularDialog;
     SettingsDialog *m_settingsDialog;
-    PearsonCorrelationDialog *m_pearsonCorrelationDialog;
+    DialogPearsonCorrelation *m_pearsonCorrelationDialog;
 
 
     PreviewForm *previewForm;

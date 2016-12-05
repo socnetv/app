@@ -3,7 +3,7 @@
  version: 2.2
  Written in Qt
  
-                         filteredgesbyweightdialog.h  -  description
+                         pearsoncorrelationdialog.cpp  -  description
                              -------------------
     copyright         : (C) 2005-2016 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -25,28 +25,61 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef FILTEREDGESBYWEIGHTDIALOG_H
-#define FILTEREDGESBYWEIGHTDIALOG_H
-
-
-#include <QDialog>
-
-#include "ui_filteredgesbyweightdialog.h"
  
 
-class FilterEdgesByWeightDialog : public QDialog
+#include "dialogpearsoncorrelation.h"
+
+#include <QDebug>
+#include <QPushButton>
+
+
+DialogPearsonCorrelation::DialogPearsonCorrelation (QWidget *parent) : QDialog (parent)
 {
-	Q_OBJECT
-public:
-	FilterEdgesByWeightDialog (QWidget *parent = 0);
-public slots:
-	void gatherData ();
-signals:
-	void userChoices( float, bool);	
-private:
-	Ui::FilterEdgesByWeightDialog ui;
+    ui.setupUi(this);
 
-};
+    (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
+
+    matrixList
+            << "Adjacency"
+            << "Distances";
+
+    variablesLocationList
+            << "Rows"
+            << "Columns"
+            << "Both";
+
+    (ui.matrixSelect) -> insertItems( 1, matrixList );
+    (ui.variablesLocationSelect) -> insertItems( 1, variablesLocationList );
+
+}
 
 
-#endif 
+
+void DialogPearsonCorrelation::gatherData(){
+    qDebug()<< "DialogPearsonCorrelation: gathering Data!...";
+    QString matrix = (ui.matrixSelect) ->currentText();
+    QString varLocation = (ui.variablesLocationSelect) ->currentText();
+
+    qDebug()<< "DialogPearsonCorrelation: user selected: "
+            << matrix
+            << varLocation;
+    emit userChoices( matrix, varLocation  );
+			
+}
+
+
+void DialogPearsonCorrelation::on_buttonBox_accepted()
+{
+    this->gatherData();
+    this->accept();
+}
+
+void DialogPearsonCorrelation::on_buttonBox_rejected()
+{
+    this->reject();
+}
+
+DialogPearsonCorrelation::~DialogPearsonCorrelation(){
+     matrixList.clear();
+     variablesLocationList.clear();
+}

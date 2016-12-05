@@ -3,7 +3,7 @@
  version: 2.2
  Written in Qt
  
-                         pearsoncorrelationdialog.h  -  description
+                         dialogfilteredgesbyweight.h  -  description
                              -------------------
     copyright         : (C) 2005-2016 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -25,34 +25,28 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef PEARSONCORRELATIONDIALOG_H
-#define PEARSONCORRELATIONDIALOG_H
+#ifndef DIALOGFILTEREDGESBYWEIGHT_H
+#define DIALOGFILTEREDGESBYWEIGHT_H
+
 
 #include <QDialog>
-#include "ui_pearsoncorrelationdialog.h"
+
+#include "ui_dialogfilteredgesbyweight.h"
  
 
-class PearsonCorrelationDialog: public QDialog
+class DialogFilterEdgesByWeight : public QDialog
 {
 	Q_OBJECT
 public:
-    PearsonCorrelationDialog (QWidget *parent = 0);
-    ~PearsonCorrelationDialog();
+    DialogFilterEdgesByWeight (QWidget *parent = 0);
 public slots:
-	void gatherData();
+	void gatherData ();
 signals:
-    void userChoices(const QString &matrix, const QString &varLocation);
-private slots:
-    void on_buttonBox_accepted();
-
-    void on_buttonBox_rejected();
-
+	void userChoices( float, bool);	
 private:
-    Ui::PearsonCorrelationDialog ui;
-    QStringList matrixList, variablesLocationList;
+    Ui::DialogFilterEdgesByWeight ui;
 
 };
 
 
-
-#endif
+#endif 
