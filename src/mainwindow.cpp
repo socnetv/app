@@ -55,6 +55,7 @@
 #include "randscalefreedialog.h"
 #include "randregulardialog.h"
 #include "settingsdialog.h"
+#include "pearsoncorrelationdialog.h"
 
 
 
@@ -1892,13 +1893,14 @@ void MainWindow::initActions(){
 
     similarityPearsonAct = new QAction(QIcon(":/images/similarity.png"), tr("Pearson correlation coefficients"),this);
     similarityPearsonAct-> setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_P);
-    similarityPearsonAct->setStatusTip(tr("Compute the Pearson correlation coefficient between all pairs of actors."));
+    similarityPearsonAct->setStatusTip(tr("Compute Pearson correlation coefficients between pairs of actors."));
     similarityPearsonAct->setWhatsThis(
                 tr("Pearson correlation coefficients\n\n "
                    "The Pearson product-moment correlation coefficient (PPMCC or PCC or Pearson's r)"
                    "is a measure of the linear dependence between two variables X and Y. "
-                   " The correlation measure of similarity is particularly useful when the data on ties are valued\n "));
-    connect(similarityPearsonAct, SIGNAL(triggered()), this, SLOT(slotSimilarityPearson() )  );
+                   " The correlation measure of similarity is particularly useful "
+                   "when the data on ties are valued\n "));
+    connect(similarityPearsonAct, SIGNAL(triggered()), this, SLOT(slotSimilarityPearsonDialog() )  );
 
 
 
@@ -3922,6 +3924,7 @@ void MainWindow::initSignalSlots() {
 
     connect( &m_datasetSelectDialog, SIGNAL( userChoices( QString) ),
              this, SLOT( slotNetworkDataSetRecreate(QString) ) );
+
 
     connect( layoutGuidesAct, SIGNAL(triggered(bool)),
              this, SLOT(slotLayoutGuides(bool)));
@@ -10027,13 +10030,28 @@ void MainWindow::slotClusteringCoefficient (){
 }
 
 
+/**
+ * @brief MainWindow::slotNetworkDataSetSelect
+ * Calls the m_datasetSelectionDialog to display the dataset selection dialog
+ */
+void MainWindow::slotSimilarityPearsonDialog(){
+    qDebug()<< "MW::slotSimilarityPearsonDialog()";
+    m_pearsonCorrelationDialog = new PearsonCorrelationDialog(this);
+
+    connect( m_pearsonCorrelationDialog, &PearsonCorrelationDialog::userChoices,
+             this, &MainWindow::slotSimilarityPearson );
+
+    m_pearsonCorrelationDialog->exec();
+}
+
+
 
 /**
  * @brief Calls Graph::writeSimilarityPearson() to write Pearson
  * Correlation Coefficients into a file, and displays it.
  *
  */
-void MainWindow::slotSimilarityPearson() {
+void MainWindow::slotSimilarityPearson(const QString &matrix, const QString &varLocation) {
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10047,7 +10065,7 @@ void MainWindow::slotSimilarityPearson() {
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.writeSimilarityPearson( fn, considerWeights);
+    activeGraph.writeSimilarityPearson( fn, considerWeights, matrix, varLocation);
 
     destroyProgressBar();
 

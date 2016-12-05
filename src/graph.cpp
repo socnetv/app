@@ -8128,8 +8128,10 @@ void Graph::graphClusteringHierarchical(const int &method, Matrix &DSM) {
  * @param fileName
  * @param considerWeights
  */
-void Graph::writeSimilarityPearson(
-        const QString fileName, const bool considerWeights)
+void Graph::writeSimilarityPearson(const QString fileName,
+                                   const bool considerWeights,
+                                   const QString &matrix,
+                                   const QString &varLocation)
 {
     Q_UNUSED(considerWeights);
     QFile file ( fileName );
@@ -8143,8 +8145,18 @@ void Graph::writeSimilarityPearson(
     emit statusMessage ( (tr("Calculating local and network clustering...")) );
 
     Matrix PCC;
-    graphAdjacencyMatrixCreate();
-    graphSimilarityPearsonCorrelationCoefficients(AM, PCC);
+    if (matrix == "Adjacency") {
+        graphAdjacencyMatrixCreate();
+        graphSimilarityPearsonCorrelationCoefficients(AM, PCC, varLocation);
+    }
+    else if (matrix == "Distances") {
+        distanceMatrixCreate();
+        graphSimilarityPearsonCorrelationCoefficients(DM, PCC, varLocation);
+    }
+    else {
+        return;
+    }
+
 
     emit statusMessage ( tr("Writing Pearson coefficients to file: ")
                          + fileName );
@@ -8154,15 +8166,16 @@ void Graph::writeSimilarityPearson(
     outText << tr("PEARSON CORRELATION COEFFICIENTS (PCC) REPORT") << endl;
     outText << tr("Network name: ")<< graphName()<< endl<<endl;
 
-    outText << tr("Local PCC  range: -1 < C < 1") << endl<<endl;
+    outText << tr("PCC  range: -1 < C < 1") << endl<<endl;
 
     outText << PCC;
 
-
-    outText << tr("GCLC = 0, when there are no cliques (i.e. acyclic tree).\n");
+    outText << endl;
+    outText << tr("PCC = 0, when there is no correlation at all.\n");
     outText << tr(
-      "GCLC = 1, when every node and its neighborhood are complete cliques.\n");
-
+      "PCC > 0, when there is positive correlation, i.e. same patterns of ties.\n");
+    outText << tr(
+      "PCC < 0, when there is negative correlation, i.e. opposited patterns of ties.\n");
     outText <<"\n\n" ;
     outText << tr("Pearson Correlation Coefficients Report,\n");
     outText << tr("Created by SocNetV ") << VERSION << ": "
@@ -8206,7 +8219,7 @@ void Graph::writeSimilarityPearson(
  */
 void Graph::graphSimilarityPearsonCorrelationCoefficients (Matrix &AM,
                                                           Matrix &PCC,
-                                                          const bool &rows){
+                                                          const QString &variables){
     qDebug()<<"Graph::graphSimilarityPearsonCorrelationCoefficients() - input matrix";
     AM.printMatrixConsole(true);
 

@@ -596,7 +596,10 @@ public:
 
     void writeTriadCensus(const QString, const bool);
 
-    void writeSimilarityPearson(const QString fileName, const bool considerWeights);
+    void writeSimilarityPearson(const QString fileName,
+                                const bool considerWeights,
+                                const QString &matrix = "adjacency",
+                                const QString &varLocation="rows");
 
     /* DISTANCES, CENTRALITIES & PROMINENCE MEASURES */
     int distance(const int, const int,
@@ -653,7 +656,7 @@ public:
 
     void graphSimilarityPearsonCorrelationCoefficients (Matrix &AM,
                                                        Matrix &PCC,
-                                                       const bool &rows=true);
+                                                       const QString &variables="rows");
 
     /* LAYOUTS */
 

@@ -85,6 +85,7 @@ class PreviewForm;
 class RandErdosRenyiDialog;
 class RandSmallWorldDialog;
 class RandScaleFreeDialog;
+class PearsonCorrelationDialog;
 class RandRegularDialog;
 class SettingsDialog;
 class TextEditor;
@@ -322,7 +323,7 @@ public slots:
     void slotCliqueCensus();
     void slotClusteringCoefficient();
     void slotTriadCensus();
-    void slotSimilarityPearson();
+
     void slotCheckSymmetry();
     void slotInvertAdjMatrix();
 
@@ -338,6 +339,10 @@ public slots:
     void slotPrestigeDegree();
     void slotPrestigePageRank();
     void slotPrestigeProximity();
+
+    void slotSimilarityPearsonDialog();
+    void slotSimilarityPearson(const QString &matrix,
+                               const QString &varLocation);
 
     //OPTIONS MENU
     void slotOpenSettingsDialog();
@@ -417,19 +422,22 @@ private:
 
     FilterEdgesByWeightDialog m_DialogEdgeFilterByWeight;
     WebCrawlerDialog m_WebCrawlerDialog;
+    DataSetSelectDialog m_datasetSelectDialog;
 
     NodeEditDialog *m_nodeEditDialog;
-
     RandErdosRenyiDialog *m_randErdosRenyiDialog;
     RandSmallWorldDialog *m_randSmallWorldDialog;
     RandScaleFreeDialog *m_randScaleFreeDialog;
     RandRegularDialog *m_randRegularDialog;
     SettingsDialog *m_settingsDialog;
+    PearsonCorrelationDialog *m_pearsonCorrelationDialog;
+
 
     PreviewForm *previewForm;
     QList<QTextCodec *> codecs;
     QString userSelectedCodecName;
-    DataSetSelectDialog m_datasetSelectDialog;
+
+
 
     QList<TextEditor *> m_textEditors;
 
