@@ -41,7 +41,7 @@ public:
 public slots:
 	void gatherData();
 signals:
-	void userChoices(QString);	
+    void userChoices(const QString &matrix, const QString &varLocation);
 private slots:
     void on_buttonBox_accepted();
 

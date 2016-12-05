@@ -40,8 +40,8 @@ PearsonCorrelationDialog::PearsonCorrelationDialog (QWidget *parent) : QDialog (
     (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
 
     matrixList
-            << "Adjacency matrix"
-            << "Distance matrix";
+            << "Adjacency"
+            << "Distances";
 
     variablesLocationList
             << "Rows"
@@ -57,10 +57,13 @@ PearsonCorrelationDialog::PearsonCorrelationDialog (QWidget *parent) : QDialog (
 
 void PearsonCorrelationDialog::gatherData(){
     qDebug()<< "PearsonCorrelationDialog: gathering Data!...";
-    int index = (ui.matrixSelect) -> currentIndex();
+    QString matrix = (ui.matrixSelect) ->currentText();
+    QString varLocation = (ui.variablesLocationSelect) ->currentText();
 
-    qDebug()<< "PearsonCorrelationDialog: user selected: " << index;
-    emit userChoices( "hello" );
+    qDebug()<< "PearsonCorrelationDialog: user selected: "
+            << matrix
+            << varLocation;
+    emit userChoices( matrix, varLocation  );
 			
 }
 
@@ -77,6 +80,6 @@ void PearsonCorrelationDialog::on_buttonBox_rejected()
 }
 
 PearsonCorrelationDialog::~PearsonCorrelationDialog(){
-     matrixSelect.clear();
-     variablesLocationSelect.clear();
+     matrixList.clear();
+     variablesLocationList.clear();
 }
