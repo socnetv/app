@@ -1878,7 +1878,7 @@ void MainWindow::initActions(){
     connect(cliquesAct, SIGNAL(triggered()), this, SLOT(slotCliqueCensus() )  );
 
 
-    clusteringCoefAct = new QAction(QIcon(":/images/clique.png"), tr("Local and Network Clustering Coefficient"),this);
+    clusteringCoefAct = new QAction(QIcon(":/images/clucof.png"), tr("Local and Network Clustering Coefficient"),this);
     clusteringCoefAct -> setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_L);
     clusteringCoefAct->setStatusTip(tr("Compute the local Clustering Coefficient for every actor and the network average."));
     clusteringCoefAct->setWhatsThis(tr("Local and Network Clustering Coefficient\n\n "
