@@ -1737,9 +1737,9 @@ void MainWindow::initActions(){
     distanceMatrixAct->
             setWhatsThis(
                 tr("Distances Matrix\n\n"
-                   "Calculates and displays the matrix of distances between all "
-                   "possible pair of nodes in the social network."
-                   "A distances matrix is a n x n square matrix, in which the "
+                   "Computes the matrix of distances between all "
+                   "pairs of actors/nodes in the social network."
+                   "A distances matrix is a n x n matrix, in which the "
                    "(i,j) element is the distance from node i to node j"
                    "The distance of two nodes is the length of the shortest path between them.")
                 );
@@ -1751,7 +1751,7 @@ void MainWindow::initActions(){
     geodesicsMatrixAct->setWhatsThis(
                 tr(
                     "Geodesics Matrix\n\n"
-                    "Displays a n x n square matrix, where the (i,j) element "
+                    "Displays a n x n matrix, where the (i,j) element "
                     "is the number of geodesics between node i and node j. "
                     "A geodesic of two nodes is the shortest path between them.")
                 );
@@ -1760,14 +1760,18 @@ void MainWindow::initActions(){
 
     diameterAct = new QAction(QIcon(":/images/diameter.png"), tr("Diameter"),this);
     diameterAct -> setShortcut(Qt::CTRL + Qt::Key_D);
-    diameterAct->setStatusTip(tr("Compute the diameter of this social network."));
-    diameterAct->setWhatsThis(tr("Diameter\n\n The Diameter of a network is the maximum graph distance (maximum shortest path length) between any two nodes of the network."));
+    diameterAct->setStatusTip(tr("Compute the network diameter (maximum distance between any actors) ."));
+    diameterAct->setWhatsThis(tr("Diameter\n\n The Diameter of a network is the maximum distance (maximum shortest path length) between any two nodes of the network."));
     connect(diameterAct, SIGNAL(triggered()), this, SLOT(slotDiameter()));
 
     averGraphDistanceAct = new QAction(QIcon(":/images/avdistance.png"), tr("Average Distance"),this);
     averGraphDistanceAct -> setShortcut(Qt::CTRL + Qt::Key_B);
-    averGraphDistanceAct->setStatusTip(tr("The average shortest path length."));
-    averGraphDistanceAct->setWhatsThis(tr("Average Distance\n\n This the average length of all shortest paths (geodesics) between the connected pair of nodes of the network."));
+    averGraphDistanceAct->setStatusTip(tr("Compute the average length of shortest paths for all possible pairs of nodes."));
+    averGraphDistanceAct->setWhatsThis(
+                tr("Average Distance\n\n "
+                   "Computes the average length of shortest paths (geodesics) "
+                   "between all pairs of network actors (vertices in the graph). "
+                   "It is a measure of the efficiency or compactness of the network."));
     connect(averGraphDistanceAct, SIGNAL(triggered()),
             this, SLOT(slotAverageGraphDistance()));
 
@@ -11371,9 +11375,7 @@ void MainWindow::slotHelpCreateTips(){
              "when you left-click on it.");
     tips+=tr("Edge information is displayed on the Status bar, when you left-click on it.");
     tips+=tr("Save your work often, especially when working with large data sets. "
-             "SocNetV alogorithms are faster when working with saved data. "
-             "For most time-consuming metrics, once you compute one, all other "
-             "metric are computed almost instantly.");
+             "SocNetV alogorithms are faster when working with saved data. ");
 
     tips+=tr("The Closeness Centrality (CC) of a node v, is the inverse sum of "
        "the shortest distances between v and every other node. CC is "
@@ -11418,6 +11420,8 @@ void MainWindow::slotHelpCheckUpdates() {
     QDesktopServices::openUrl(QUrl("http://socnetv.org/downloads?app=" + VERSION));
 }
 
+
+
 /**
     Displays the following message!!
 */
@@ -11433,7 +11437,7 @@ QString BUILD="Fri Sep 30 00:32:25 EEST 2016";
                         tr("<p>Website: <a href=\"http://socnetv.org\">http://socnetv.org</a></p>")+
 
                         tr("<p>(C) 2005-2016 by Dimitris V. Kalamaras</p>")+
-                        tr("<p><a href=\"http://socnetv.org/contact\">Contact me</a></p>")+
+                        tr("<p><a href=\"http://socnetv.org/contact\">Have questions? Contact us!</a></p>")+
 
                         tr("<p><b>Fortune cookie: </b><br> \"")  + fortuneCookie[randomCookie]  + "\"" +
 
