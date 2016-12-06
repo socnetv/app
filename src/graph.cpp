@@ -2226,7 +2226,7 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
                                    const int &center) {
 
     if ( relations() == 1 && edgesEnabled()==0 ) {
-        QString newRelationName = QString::number ( vList.count() ) + tr("-clique");
+        QString newRelationName = QString::number ( vList.size() ) + tr("-clique");
         relationCurrentRename(newRelationName, true);
     }
 
@@ -2240,8 +2240,8 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
 
     if (type == SUBGRAPH_CLIQUE) {
 
-        for (int i=0; i < vList.count(); ++i ) {
-            for (int j=i+1; j < vList.count(); ++j ) {
+        for (int i=0; i < vList.size(); ++i ) {
+            for (int j=i+1; j < vList.size(); ++j ) {
                 if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
                     edgeCreate(vList.value(i), vList.value(j),1.0,
                                initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
@@ -2256,7 +2256,7 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
     }
     else if (type == SUBGRAPH_STAR)  {
 
-        for (int j=0; j < vList.count(); ++j ) {
+        for (int j=0; j < vList.size(); ++j ) {
 
             if ( ! (weight=edgeExists( center, vList.value(j) ) ) ) {
                 edgeCreate(center, vList.value(j),1.0,
@@ -2270,8 +2270,8 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
     }
     else if (type == SUBGRAPH_CYCLE)  {
         int j=0;
-        for (int i=0; i < vList.count(); ++i ) {
-            j= ( i == vList.count()-1) ? 0:i+1;
+        for (int i=0; i < vList.size(); ++i ) {
+            j= ( i == vList.size()-1) ? 0:i+1;
             if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
                 edgeCreate(vList.value(i), vList.value(j),1.0,
                            initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
@@ -2286,8 +2286,8 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
     }
     else if (type == SUBGRAPH_LINE)  {
         int j=0;
-        for (int i=0; i < vList.count(); ++i ) {
-            if ( i == vList.count()-1 ) break;
+        for (int i=0; i < vList.size(); ++i ) {
+            if ( i == vList.size()-1 ) break;
             j= i+1;
             if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
                 edgeCreate(vList.value(i), vList.value(j),1.0,
@@ -2388,7 +2388,7 @@ void Graph::graphSelectionChanged(const QList<int> &selectedVertices,
 
     qDebug() << "Graph::graphSelectionChanged()" << m_selectedVertices;
 
-    emit signalSelectionChanged(m_selectedVertices.count(), m_selectedEdges.count());
+    emit signalSelectionChanged(m_selectedVertices.size(), m_selectedEdges.size());
 
 }
 
@@ -2407,7 +2407,7 @@ QList<int> Graph::graphSelectedVertices() const{
  * @return
  */
 int Graph::graphSelectedVerticesCount() const{
-    return m_selectedVertices.count();
+    return m_selectedVertices.size();
 }
 
 
@@ -2452,7 +2452,7 @@ QList<SelectedEdge> Graph::graphSelectedEdges() const{
  * @return
  */
 int Graph::graphSelectedEdgesCount() const {
-    return m_selectedEdges.count();
+    return m_selectedEdges.size();
 }
 
 
@@ -2971,7 +2971,7 @@ float Graph::distanceGraphAverage(const bool considerWeights,
         graphConnectivity();
 
     }
-    //TODO Need a way to ask the user what to with not connected pairs (make either M or drop?)
+
     qDebug() <<"Graph::distanceGraphAverage() - m_vertexPairsNotConnected " <<
                m_vertexPairsNotConnected.count();
     int N=vertices(dropIsolates);//TOFIX
@@ -2980,6 +2980,8 @@ float Graph::distanceGraphAverage(const bool considerWeights,
             return m_graphAverageDistance / ( N * ( N-1.0 ) );
         }
         else {
+            //TODO In not connected nets, it would be nice to ask the user what to do
+            // with unconnected pairs (make M or drop (default?)
             return m_graphAverageDistance / m_graphGeodesicsCount;
         }
     }
