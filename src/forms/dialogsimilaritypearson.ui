@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DialogPearsonCorrelation</class>
- <widget class="QDialog" name="DialogPearsonCorrelation">
+ <class>DialogSimilarityPearson</class>
+ <widget class="QDialog" name="DialogSimilarityPearson">
   <property name="enabled">
    <bool>true</bool>
   </property>

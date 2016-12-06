@@ -49,7 +49,8 @@ FORMS += src/forms/dialogfilteredgesbyweight.ui \
          src/forms/dialogranderdosrenyi.ui \
          src/forms/dialograndregular.ui \
          src/forms/dialogsettings.ui \
-         src/forms/dialogpearsoncorrelation.ui 
+         src/forms/dialogsimilaritypearson.ui \
+         src/forms/dialogsimilaritymatchesexact.ui 
 
 HEADERS += src/guide.h \
            src/graphicswidget.h \
@@ -76,7 +77,8 @@ HEADERS += src/guide.h \
 	   src/dialograndscalefree.h \
 	   src/dialograndregular.h \
 	   src/dialogsettings.h \
-	   src/dialogpearsoncorrelation.h
+	   src/dialogsimilaritypearson.h \
+	   src/dialogsimilaritymatchesexact.h
 
 SOURCES += src/guide.cpp \
            src/graphicswidget.cpp \
@@ -104,7 +106,8 @@ SOURCES += src/guide.cpp \
 	   src/dialograndregular.cpp \
 	   src/dialograndscalefree.cpp \
 	   src/dialogsettings.cpp \
-	   src/dialogpearsoncorrelation.cpp 
+	   src/dialogsimilaritypearson.cpp \
+	   src/dialogsimilaritymatchesexact.cpp
 
 
 

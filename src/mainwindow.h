@@ -85,7 +85,8 @@ class DialogPreviewFile;
 class DialogRandErdosRenyi;
 class DialogRandSmallWorld;
 class DialogRandScaleFree;
-class DialogPearsonCorrelation;
+class DialogSimilarityPearson;
+class DialogSimilarityMatchesExact;
 class DialogRandRegular;
 class DialogSettings;
 class TextEditor;
@@ -340,6 +341,10 @@ public slots:
     void slotPrestigePageRank();
     void slotPrestigeProximity();
 
+    void slotSimilarityMatchesExactDialog();
+    void slotSimilarityMatchesExact(const QString &matrix,
+                                    const QString &varLocation);
+
     void slotSimilarityPearsonDialog();
     void slotSimilarityPearson(const QString &matrix,
                                const QString &varLocation);
@@ -430,7 +435,8 @@ private:
     DialogRandScaleFree *m_randScaleFreeDialog;
     DialogRandRegular *m_randRegularDialog;
     DialogSettings *m_settingsDialog;
-    DialogPearsonCorrelation *m_pearsonCorrelationDialog;
+    DialogSimilarityPearson *m_dialogSimilarityPearson;
+    DialogSimilarityMatchesExact *m_dialogSimilarityExact;
 
 
     DialogPreviewFile *m_dialogPreviewFile;
@@ -514,6 +520,7 @@ private:
     QAction *walksAct,*totalWalksAct, *reachabilityMatrixAct, *connectivityAct;
     QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct, *invertAdjMatrixAct;
     QAction *clusteringHierarchicalAct, *similarityPearsonAct;
+    QAction *similarityExactMatchesAct;
     QAction *cDegreeAct, *cInDegreeAct, *cClosenessAct, *cInfluenceRangeClosenessAct,
             *cBetweennessAct, *cInformationAct, *cPageRankAct, *cStressAct,
             *cPowerAct, *cEccentAct, *cProximityPrestigeAct;

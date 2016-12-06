@@ -3,7 +3,7 @@
  version: 2.2
  Written in Qt
  
-                         pearsoncorrelationdialog.cpp  -  description
+                         dialogsimilaritypearson.cpp  -  description
                              -------------------
     copyright         : (C) 2005-2016 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -27,13 +27,13 @@
 
  
 
-#include "dialogpearsoncorrelation.h"
+#include "dialogsimilaritypearson.h"
 
 #include <QDebug>
 #include <QPushButton>
 
 
-DialogPearsonCorrelation::DialogPearsonCorrelation (QWidget *parent) : QDialog (parent)
+DialogSimilarityPearson::DialogSimilarityPearson (QWidget *parent) : QDialog (parent)
 {
     ui.setupUi(this);
 
@@ -55,12 +55,12 @@ DialogPearsonCorrelation::DialogPearsonCorrelation (QWidget *parent) : QDialog (
 
 
 
-void DialogPearsonCorrelation::gatherData(){
-    qDebug()<< "DialogPearsonCorrelation: gathering Data!...";
+void DialogSimilarityPearson::gatherData(){
+    qDebug()<< "DialogSimilarityPearson: gathering Data!...";
     QString matrix = (ui.matrixSelect) ->currentText();
     QString varLocation = (ui.variablesLocationSelect) ->currentText();
 
-    qDebug()<< "DialogPearsonCorrelation: user selected: "
+    qDebug()<< "DialogSimilarityPearson: user selected: "
             << matrix
             << varLocation;
     emit userChoices( matrix, varLocation  );
@@ -68,18 +68,18 @@ void DialogPearsonCorrelation::gatherData(){
 }
 
 
-void DialogPearsonCorrelation::on_buttonBox_accepted()
+void DialogSimilarityPearson::on_buttonBox_accepted()
 {
     this->gatherData();
     this->accept();
 }
 
-void DialogPearsonCorrelation::on_buttonBox_rejected()
+void DialogSimilarityPearson::on_buttonBox_rejected()
 {
     this->reject();
 }
 
-DialogPearsonCorrelation::~DialogPearsonCorrelation(){
+DialogSimilarityPearson::~DialogSimilarityPearson(){
      matrixList.clear();
      variablesLocationList.clear();
 }

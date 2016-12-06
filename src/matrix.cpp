@@ -819,6 +819,166 @@ bool Matrix::printMatrixConsole(bool debug){
 
 
 /**
+ * @brief  Computes the exact matches ration of the rows or the columns
+ * of the given matrix AM
+ * @param AM Matrix
+ * @return Matrix nxn with SEM values for every pair of rows/columns of AM
+ */
+
+Matrix& Matrix::similarityMatchesExact(Matrix &AM, const QString varLocation){
+    qDebug()<< "Matrix::similarityMatchesExact() -"
+            << "varLocation"<< varLocation;
+
+    int N = 0;
+    float sum = 0;
+    float matchRatio = 0;
+    float matches = 0;
+    float varianceTimesN = 0; // = sqrDeviationsFromMean
+    float covariance = 0;
+    float pcc = 0;
+
+
+    if (varLocation=="Rows") {
+
+        N = AM.rows() ;
+
+        this->zeroMatrix(N,N);
+
+        QVector<float> mean (N,0); // holds mean values
+        QVector<float> sigma(N,0);
+        qDebug()<< "Matrix::similarityMatchesExact() -"
+                <<"input matrix";
+        AM.printMatrixConsole(true);
+
+        for (int i = 0 ; i < N ; i++ ) {
+            sum = 0 ;
+            for (int k = i ; k < N ; k++ ) {
+                matches = 0;
+                for (int j = 0 ; j < N ; j++ ) {
+                    if (AM.item(i,j) == AM.item(k,j) ) {
+                        matches++;
+                    }
+
+                }
+                matchRatio=   matches/  ( ( N  ) ) ;
+                qDebug() << "matches("<<i+1<<","<<k+1<<") =" << matches
+
+                         << "matchRatio("<<i+1<<","<<k+1<<") =" << matchRatio;
+                setItem(i,k, matchRatio);
+                setItem(k,i, matchRatio);
+
+                sum += matchRatio;
+            }
+            //compute mean match value
+            mean[i] = sum / ( N ) ;
+
+        }
+
+    }
+    else if (varLocation=="Columns") {
+
+        N = AM.rows() ;
+
+        this->zeroMatrix(N,N);
+
+        QVector<float> mean (N,0); // holds mean values
+        QVector<float> sigma(N,0);
+        qDebug()<< "Matrix::similarityMatchesExact() -"
+                <<"input matrix";
+        AM.printMatrixConsole(true);
+
+        for (int i = 0 ; i < N ; i++ ) {
+            sum = 0 ;
+            for (int k = i ; k < N ; k++ ) {
+                matches = 0;
+                for (int j = 0 ; j < N ; j++ ) {
+                    if (AM.item(j,i) == AM.item(j,k) ) {
+                        matches++;
+                    }
+
+                }
+                matchRatio=   matches/  ( ( N ) ) ;
+                qDebug() << "matches("<<i+1<<","<<k+1<<") =" << matches
+
+                         << "matchRatio("<<i+1<<","<<k+1<<") =" << matchRatio;
+                setItem(i,k, matchRatio);
+                setItem(k,i, matchRatio);
+
+                sum += matchRatio;
+            }
+            //compute mean match value
+            mean[i] = sum / ( N ) ;
+
+        }
+
+    }
+    else if (varLocation=="Both") {
+        Matrix CM;
+        N = AM.rows() ;
+        int M = N * 2; // CM will have double rows
+
+        this->zeroMatrix(N,N);
+        CM.zeroMatrix(M,N);
+
+        QVector<float> mean (N,0); // holds mean values
+        QVector<float> sigma(N,0);
+
+        for (int i = 0 ; i < N  ; i++ ) {
+            for (int j = 0 ; j < N  ; j++ ) {
+                CM.setItem(j,i, AM.item(i,j));
+                CM.setItem(j + N,i, AM.item(j,i));
+            }
+        }
+        qDebug()<< "Matrix::similarityMatchesExact() -"
+                <<"input matrix";
+        CM.printMatrixConsole(true);
+
+
+        //compute mean values
+        for (int i = 0 ; i < N ; i++ ) {
+            sum = 0;
+            for (int j = 0 ; j < M ; j++ ) {
+                sum += CM.item(j,i);
+            }
+            mean[i] = sum / M;
+            qDebug() << "mean["<<i+1<<"]" << mean[i];
+            varianceTimesN = 0;
+            for (int j = 0 ; j < M ; j++ ) {
+                varianceTimesN +=  ( CM.item(j,i)  - mean[i] ) *  ( CM.item(j,i)  - mean[i] );
+            }
+            sigma[i] = sqrt (varianceTimesN); //actually this is sigma * sqrt (N)
+            qDebug() << "sigma["<<i+1<<"]" << sigma[i];
+
+        }
+
+        for (int i = 0 ; i < N ; i++ ) {
+
+            for (int k = i ; k < N ; k++ ) {
+                covariance = 0;
+                for (int j = 0 ; j < M ; j++ ) {
+                    covariance  +=  ( CM.item(j,i)  - mean[i] ) * ( CM.item(j,k)  - mean[k] ) ;
+                }
+                qDebug() << "covariance("<<i+1<<","<<k+1<<") =" << covariance
+                         << "sigma["<<i+1<<"]" << sigma[i]
+                            << "sigma["<<k+1<<"]" << sigma[k];
+                pcc =   covariance   /  (( sigma[i] ) * ( sigma[k] )) ;
+                qDebug() << "pcc("<<i+1<<","<<k+1<<") =" << pcc;
+                setItem(i,k, pcc);
+                setItem(k,i, pcc);
+            }
+
+        }
+    }
+    else {
+
+    }
+
+
+    return *this;
+
+}
+
+/**
  * @brief  Computes the Pearson Correlation Coefficient of the rows or the columns
  * of the given matrix AM
  * @param AM Matrix
@@ -845,7 +1005,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const QString varLoca
         QVector<float> sigma(N,0);
         qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
                 <<"input matrix";
-        AM.printMatrixConsole(true);
+        //AM.printMatrixConsole(true);
 
         //compute mean values
         for (int i = 0 ; i < N ; i++ ) {
@@ -895,7 +1055,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const QString varLoca
 
         qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
                 <<"input matrix";
-        AM.printMatrixConsole(true);
+        //AM.printMatrixConsole(true);
 
 
         //compute mean values
@@ -953,7 +1113,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const QString varLoca
         }
         qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
                 <<"input matrix";
-        CM.printMatrixConsole(true);
+        //CM.printMatrixConsole(true);
 
 
         //compute mean values

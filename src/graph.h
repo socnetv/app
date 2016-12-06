@@ -596,6 +596,12 @@ public:
 
     void writeTriadCensus(const QString, const bool);
 
+
+    void writeSimilarityMatchesExact(const QString fileName,
+                                const bool considerWeights,
+                                const QString &matrix = "adjacency",
+                                const QString &varLocation="rows");
+
     void writeSimilarityPearson(const QString fileName,
                                 const bool considerWeights,
                                 const QString &matrix = "adjacency",
@@ -653,6 +659,10 @@ public:
     bool graphTriadCensus();
     void triadType_examine_MAN_label(int, int, int, Vertex*,  Vertex*, Vertex* );
     //	void eccentr_JordanCenter(); 				// TODO
+
+    void graphSimilarityMatchesExact(Matrix &AM,
+                                     Matrix &SEM,
+                                     const QString &varLocation="Rows");
 
     void graphSimilarityPearsonCorrelationCoefficients (Matrix &AM,
                                                        Matrix &PCC,

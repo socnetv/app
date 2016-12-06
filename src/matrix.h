@@ -183,6 +183,8 @@ public:
     void lubksb (Matrix &a, const int &n, int indx[], float b[]);
 
 
+    Matrix& similarityMatchesExact(Matrix &AM,
+                           const QString varLocation="Rows");
     Matrix& pearsonCorrelationCoefficients(Matrix &AM,
                                           const QString varLocation="Rows");
 

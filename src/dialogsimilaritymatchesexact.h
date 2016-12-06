@@ -3,7 +3,7 @@
  version: 2.2
  Written in Qt
  
-                         pearsoncorrelationdialog.h  -  description
+                         dialogsimilaritymatchesexact.h  -  description
                              -------------------
     copyright         : (C) 2005-2016 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -25,19 +25,19 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef DIALOGPEARSONCORRELATION_H
-#define DIALOGPEARSONCORRELATION_H
+#ifndef DIALOGSIMILARITYMATCHESEXACT_H
+#define DIALOGSIMILARITYMATCHESEXACT_H
 
 #include <QDialog>
-#include "ui_dialogpearsoncorrelation.h"
+#include "ui_dialogsimilaritymatchesexact.h"
  
 
-class DialogPearsonCorrelation: public QDialog
+class DialogSimilarityMatchesExact: public QDialog
 {
 	Q_OBJECT
 public:
-    DialogPearsonCorrelation (QWidget *parent = 0);
-    ~DialogPearsonCorrelation();
+    DialogSimilarityMatchesExact (QWidget *parent = 0);
+    ~DialogSimilarityMatchesExact();
 public slots:
 	void gatherData();
 signals:
@@ -48,7 +48,7 @@ private slots:
     void on_buttonBox_rejected();
 
 private:
-    Ui::DialogPearsonCorrelation ui;
+    Ui::DialogSimilarityMatchesExact ui;
     QStringList matrixList, variablesLocationList;
 
 };

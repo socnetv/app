@@ -8120,11 +8120,106 @@ void Graph::graphClusteringHierarchical(const int &method, Matrix &DSM) {
 
 
 
+/**
+ * @brief
+ * Writes Exact Matches ratios to given file
+ * @param fileName
+ * @param considerWeights
+ */
+void Graph::writeSimilarityMatchesExact(const QString fileName,
+                            const bool considerWeights,
+                            const QString &matrix,
+                            const QString &varLocation) {
+    Q_UNUSED(considerWeights);
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
+        return;
+    }
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
+
+    emit statusMessage ( (tr("Calculating Exact Match percentages...")) );
+
+    Matrix SEM;
+    if (matrix == "Adjacency") {
+        graphAdjacencyMatrixCreate();
+        graphSimilarityMatchesExact(AM, SEM, varLocation);
+    }
+    else if (matrix == "Distances") {
+        distanceMatrixCreate();
+        graphSimilarityMatchesExact(DM, SEM, varLocation);
+    }
+    else {
+        return;
+    }
+
+    emit statusMessage ( tr("Writing Exact Match percentages to file: ")
+                         + fileName );
+
+    outText.setRealNumberPrecision(m_precision);
+
+    outText << tr("SIMILARITY: EXACT MATCHES (SEM) MATRIX") << endl;
+    outText << tr("Network name: ")<< graphName()<< endl
+            << tr("Input matrix: ")<< matrix << endl
+            << tr("Variables in: ")<< ((varLocation != "Rows" && varLocation != "Columns") ? "Concatenated rows + columns " : varLocation)
+                                                                                            << endl<<endl;
+
+    outText << tr("SEM range: 0 < C < 1") << endl<<endl;
+
+    outText << SEM;
+
+    outText << endl;
+    outText << tr("SEM = 0, when there is no tie/distance profile similary at all.\n");
+    outText << tr(
+      "SEM > 0, when two actors have some exact matches in their ties/distances, \n"
+      "i.e. SEM = 1 means the two actors have their ties to other actors exactly the same all the time.\n");
+
+    outText <<"\n\n" ;
+    outText << tr("Similarity: Exact Matches Report,\n");
+    outText << tr("Created by SocNetV ") << VERSION << ": "
+            << actualDateTime.currentDateTime()
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+
+    file.close();
+
+}
+
+
+
+
+/**
+ * @brief Creates an actor by actor similarity matrix SEM where the (i,j) element
+ * is the ratio of exact tie /distance matches of actors i and j to all other actors.
+ * If the input matrix is the adjacency matrix, the SEM ratio of two nodes measures
+ * the similarity of their tie profiles.
+ * For instance, if element (i,j) = 0.5, it means that actors i and j have
+ * the same ties present or absent to other actors 50% of the time.
+ * This measure of similarity is particularly useful when ties are binary (not valued)
+ *
+ * @param AM
+ * @param SEM
+ * @param rows
+ */
+void Graph::graphSimilarityMatchesExact (Matrix &AM,
+                                         Matrix &SEM,
+                                         const QString &varLocation){
+    qDebug()<<"Graph::graphSimilarityMatchesExact()";
+
+
+    SEM.similarityMatchesExact(AM, varLocation);
+
+    qDebug()<<"Graph::graphSimilarityMatchesExact() - matrix SEM";
+    SEM.printMatrixConsole(true);
+
+}
+
 
 
 /**
  * @brief
- * Writes Pearson Correlation Coefficients to given file
+ * Calls Graph::graphSimilariyPearsonCorrelationCoefficients() and
+ * writes Pearson Correlation Coefficients to given file
  * @param fileName
  * @param considerWeights
  */
@@ -8142,7 +8237,7 @@ void Graph::writeSimilarityPearson(const QString fileName,
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    emit statusMessage ( (tr("Calculating local and network clustering...")) );
+    emit statusMessage ( (tr("Calculating Pearson Correlations...")) );
 
     Matrix PCC;
     if (matrix == "Adjacency") {
@@ -8229,7 +8324,7 @@ void Graph::graphSimilarityPearsonCorrelationCoefficients (Matrix &AM,
     PCC.pearsonCorrelationCoefficients(AM, varLocation);
 
     qDebug()<<"Graph::graphSimilarityPearsonCorrelationCoefficients() - matrix PCC";
-    PCC.printMatrixConsole(true);
+    //PCC.printMatrixConsole(true);
 
 }
 

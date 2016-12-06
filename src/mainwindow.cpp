@@ -55,7 +55,8 @@
 #include "dialograndscalefree.h"
 #include "dialograndregular.h"
 #include "dialogsettings.h"
-#include "dialogpearsoncorrelation.h"
+#include "dialogsimilaritypearson.h"
+#include "dialogsimilaritymatchesexact.h"
 
 
 
@@ -517,7 +518,7 @@ void MainWindow::initActions(){
 
     networkImportDot = new QAction( QIcon(":/images/open.png"), tr("GraphViz (.dot)"), this);
     networkImportDot->setStatusTip(tr("Import dot file"));
-    networkImportDot->setWhatsThis(tr("Import GraphViz \n\n "
+    networkImportDot->setWhatsThis(tr("Import GraphViz \n\n"
                                "Imports a social network from an GraphViz formatted file"));
     connect(networkImportDot, SIGNAL(triggered()),
             this, SLOT(slotNetworkImportDot()));
@@ -544,7 +545,7 @@ void MainWindow::initActions(){
 
     networkImportTwoModeSM = new QAction( QIcon(":/images/open.png"), tr("&Two Mode Sociomatrix"), this);
     networkImportTwoModeSM->setStatusTip(tr("Import two-mode sociomatrix (affiliation network) file"));
-    networkImportTwoModeSM->setWhatsThis(tr("Import Two-Mode Sociomatrix \n\n "
+    networkImportTwoModeSM->setWhatsThis(tr("Import Two-Mode Sociomatrix \n\n"
                                      "Imports a two-mode network from a sociomatrix file. "
                                      "Two-mode networks are described by affiliation "
                                      "network matrices, where A(i,j) codes the "
@@ -582,7 +583,7 @@ void MainWindow::initActions(){
 
     networkExportPDF = new QAction( QIcon(":/images/pdf.png"), tr("&PDF..."), this);
     networkExportPDF->setStatusTip(tr("Export social network to PDF"));
-    networkExportPDF->setWhatsThis(tr("Export PDF\n\n "
+    networkExportPDF->setWhatsThis(tr("Export PDF\n\n"
                                       "Exports the social network to a PDF document"));
     connect(networkExportPDF, SIGNAL(triggered()), this, SLOT(slotNetworkExportPDF()));
 
@@ -1156,7 +1157,7 @@ void MainWindow::initActions(){
     editFilterNodesIsolatesAct -> setChecked(false);
     editFilterNodesIsolatesAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_F));
     editFilterNodesIsolatesAct -> setStatusTip(tr("Temporarily filter out nodes with no edges"));
-    editFilterNodesIsolatesAct -> setWhatsThis(tr("Filter Isolate Nodes\n\n "
+    editFilterNodesIsolatesAct -> setWhatsThis(tr("Filter Isolate Nodes\n\n"
                                              "Enables or disables displaying of isolate nodes. "
                                                   "Isolate nodes are those with no edges..."));
     connect(editFilterNodesIsolatesAct, SIGNAL(toggled(bool)),
@@ -1237,7 +1238,7 @@ void MainWindow::initActions(){
                     "proportional to their Degree Centrality."));
     layoutCircular_DC_Act->
             setWhatsThis(
-                tr( "Degree Centrality Circular Layout\n\n "
+                tr( "Degree Centrality Circular Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their Degree Centrality"
                     "Nodes with higher DC score are closer to the centre."
@@ -1254,7 +1255,7 @@ void MainWindow::initActions(){
                     "proportional to their CC index."));
     layoutCircular_CC_Act->
             setWhatsThis(
-                tr( "Closeness Centrality Circular Layout\n\n "
+                tr( "Closeness Centrality Circular Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their CC index."
                     "Nodes having higher CC score are closer to the centre."
@@ -1274,7 +1275,7 @@ void MainWindow::initActions(){
     layoutCircular_IRCC_Act->
             setWhatsThis(
                 tr(
-                    "Influence Range Closeness Centrality Circular Layout\n\n "
+                    "Influence Range Closeness Centrality Circular Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their IRCC index."
                     "Nodes having higher IRCC score are closer to the centre."
@@ -1291,7 +1292,7 @@ void MainWindow::initActions(){
     layoutCircular_BC_Act->
             setWhatsThis(
                 tr(
-                    "Betweenness Centrality Circular Layout\n\n "
+                    "Betweenness Centrality Circular Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their BC index."
                     "Nodes having higher BC score are closer to the centre."
@@ -1308,7 +1309,7 @@ void MainWindow::initActions(){
     layoutCircular_SC_Act->
             setWhatsThis(
                 tr(
-                    "Stress Centrality Circular Layout\n\n "
+                    "Stress Centrality Circular Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their SC index."
                     "Nodes having higher SC score are closer to the centre."
@@ -1325,7 +1326,7 @@ void MainWindow::initActions(){
     layoutCircular_EC_Act->
             setWhatsThis(
                 tr(
-                    "Eccentricity Centrality Circular Layout\n\n "
+                    "Eccentricity Centrality Circular Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their EC index."
                     "Nodes having higher EC score are closer to the centre."
@@ -1343,7 +1344,7 @@ void MainWindow::initActions(){
     layoutCircular_PC_Act->
             setWhatsThis(
                 tr(
-                    "Power Centrality Circular Layout\n\n "
+                    "Power Centrality Circular Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their PC index."
                     "Nodes having higher PC score are closer to the centre."
@@ -1362,7 +1363,7 @@ void MainWindow::initActions(){
     layoutCircular_IC_Act->
             setWhatsThis(
                 tr(
-                    "Information Centrality Circular Layout\n\n "
+                    "Information Centrality Circular Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their IC index."
                     "Nodes having higher IC score are closer to the centre."
@@ -1380,7 +1381,7 @@ void MainWindow::initActions(){
     layoutCircular_DP_Act->
             setWhatsThis(
                 tr(
-                    "Degree Prestige Circular Layout\n\n "
+                    "Degree Prestige Circular Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their DP index."
                     "Nodes having higher DP score are closer to the centre."
@@ -1398,7 +1399,7 @@ void MainWindow::initActions(){
     layoutCircular_PRP_Act->
             setWhatsThis(
                 tr(
-                    "PageRank Prestige Circular Layout\n\n "
+                    "PageRank Prestige Circular Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their PRP index."
                     "Nodes having higher PRP score are closer to the centre."
@@ -1416,7 +1417,7 @@ void MainWindow::initActions(){
     layoutCircular_PP_Act->
             setWhatsThis(
                 tr(
-                    "Proximity Prestige Circular Layout\n\n "
+                    "Proximity Prestige Circular Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their PP index."
                     "Nodes having higher PP score are closer to the centre."
@@ -1448,7 +1449,7 @@ void MainWindow::initActions(){
     layoutLevel_DC_Act->
              setWhatsThis(
                  tr(
-                     "Degree Centrality Levels Layout\n\n "
+                     "Degree Centrality Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
                      "proportional to their DC index."
                      "Nodes having higher DC score are closer to the top.\n\n"
@@ -1467,7 +1468,7 @@ void MainWindow::initActions(){
     layoutLevel_CC_Act->
              setWhatsThis(
                  tr(
-                     "Closeness Centrality Levels Layout\n\n "
+                     "Closeness Centrality Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
                      "proportional to their CC index."
                      "Nodes having higher CC score are closer to the top.\n\n"
@@ -1488,7 +1489,7 @@ void MainWindow::initActions(){
     layoutLevel_IRCC_Act->
              setWhatsThis(
                  tr(
-                     "Influence Range Closeness Centrality Levels Layout\n\n "
+                     "Influence Range Closeness Centrality Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
                      "proportional to their IRCC index."
                      "Nodes having higher IRCC score are closer to the top.\n\n"
@@ -1506,7 +1507,7 @@ void MainWindow::initActions(){
     layoutLevel_BC_Act->
              setWhatsThis(
                  tr(
-                     "Betweenness Centrality Levels Layout\n\n "
+                     "Betweenness Centrality Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
                      "proportional to their BC index."
                      "Nodes having higher BC score are closer to the top."
@@ -1523,7 +1524,7 @@ void MainWindow::initActions(){
     layoutLevel_SC_Act->
              setWhatsThis(
                  tr(
-                     "Stress Centrality Levels Layout\n\n "
+                     "Stress Centrality Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
                      "proportional to their SC index."
                      "Nodes having higher SC score are closer to the top."
@@ -1540,7 +1541,7 @@ void MainWindow::initActions(){
     layoutLevel_EC_Act->
              setWhatsThis(
                  tr(
-                     "Eccentricity Centrality Levels Layout\n\n "
+                     "Eccentricity Centrality Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
                      "proportional to their EC index."
                      "Nodes having higher EC score are closer to the top."
@@ -1558,7 +1559,7 @@ void MainWindow::initActions(){
     layoutLevel_PC_Act->
              setWhatsThis(
                  tr(
-                     "Power Centrality Levels Layout\n\n "
+                     "Power Centrality Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
                      "proportional to their PC index."
                      "Nodes having higher PC score are closer to the top."
@@ -1577,7 +1578,7 @@ void MainWindow::initActions(){
     layoutLevel_IC_Act->
              setWhatsThis(
                  tr(
-                     "Information Centrality Levels Layout\n\n "
+                     "Information Centrality Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
                      "proportional to their IC index."
                      "Nodes having higher IC score are closer to the top."
@@ -1595,7 +1596,7 @@ void MainWindow::initActions(){
     layoutLevel_DP_Act->
             setWhatsThis(
                 tr(
-                    "Degree Prestige Levels Layout\n\n "
+                    "Degree Prestige Levels Layout\n\n"
                     "Repositions all nodes on horizontal levels of height"
                     "proportional to their DP index."
                     "Nodes having higher DP score are closer to the top."
@@ -1613,7 +1614,7 @@ void MainWindow::initActions(){
     layoutLevel_PRP_Act->
             setWhatsThis(
                 tr(
-                    "PageRank Prestige Levels Layout\n\n "
+                    "PageRank Prestige Levels Layout\n\n"
                     "Repositions all nodes on horizontal levels of height"
                     "proportional to their PRP index."
                     "Nodes having higher PRP score are closer to the top."
@@ -1632,7 +1633,7 @@ void MainWindow::initActions(){
     layoutLevel_PP_Act->
             setWhatsThis(
                 tr(
-                    "Proximity Prestige Levels Layout\n\n "
+                    "Proximity Prestige Levels Layout\n\n"
                     "Repositions all nodes on horizontal levels of height"
                     "proportional to their PP index."
                     "Nodes having higher PP score are closer to the top."
@@ -1678,7 +1679,7 @@ void MainWindow::initActions(){
     nodeSizesByInDegreeAct->setStatusTip(
                 tr("Resizes all nodes according to their InDegree."));
     nodeSizesByInDegreeAct->
-            setWhatsThis(tr("Node sizes by InDegree) \n\n "
+            setWhatsThis(tr("Node sizes by InDegree) \n\n"
                             "This method adjusts the size of each node according "
                             "to its InDegree. The more in-linked a node is, "
                             "the bigger will appear..."));
@@ -1697,7 +1698,7 @@ void MainWindow::initActions(){
     symmetryAct -> setShortcut(Qt::SHIFT + Qt::Key_S);
     symmetryAct->setStatusTip(tr("Check whether the network is symmetric or not"));
     symmetryAct->setWhatsThis(
-                tr("Symmetry\n\n "
+                tr("Symmetry\n\n"
                    "Checks whether the network is symmetric or not. \n"
                    "A network is symmetric when all edges are reciprocal, or, "
                    "in mathematical language, when the adjacency matrix is "
@@ -1720,7 +1721,7 @@ void MainWindow::initActions(){
     graphDistanceAct->setStatusTip(
                 tr("Compute the length of the shortest path (geodesic distance) between two nodes."));
     graphDistanceAct->setWhatsThis(
-                tr("Distance\n\n "
+                tr("Distance\n\n"
                    "In graph theory, the distance (geodesic distance) of two "
                    "nodes is the length (number of edges) of the shortest path "
                    "between them."));
@@ -1773,7 +1774,7 @@ void MainWindow::initActions(){
     eccentricityAct = new QAction(QIcon(":/images/eccentricity.png"), tr("Eccentricity"),this);
     eccentricityAct-> setShortcut(Qt::CTRL +  Qt::SHIFT + Qt::Key_E);
     eccentricityAct->setStatusTip(tr("Compute the Eccentricity indices for each node and group Eccentricity"));
-    eccentricityAct->setWhatsThis(tr("Eccentricity\n\n "
+    eccentricityAct->setWhatsThis(tr("Eccentricity\n\n"
                                      "The eccentricity or association number of each node i is the largest geodesic distance (i,j) between node i and every other node j. Therefore, it reflects how far, at most, is each node from every other node. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
     connect(eccentricityAct, SIGNAL(triggered()), this, SLOT(slotEccentricity()));
 
@@ -1800,27 +1801,27 @@ void MainWindow::initActions(){
     walksAct = new QAction(QIcon(":/images/walk.png"), tr("Walks of a given length"),this);
     walksAct-> setShortcut(Qt::CTRL + Qt::Key_W);
     walksAct->setStatusTip(tr("Compute the number of walks of a given length between any nodes."));
-    walksAct->setWhatsThis(tr("Walks of a given length\n\n "
+    walksAct->setWhatsThis(tr("Walks of a given length\n\n"
                               "A walk is a sequence of alternating vertices and edges "
                               "such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, "
                               "v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, "
                               "where each edge, e<sub>i</sub> is defined as "
                               "e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. "
                               "This function counts the number of walks of a given "
-                              "length between each pair of nodes, by studying the powers of the sociomatrix.\n "));
+                              "length between each pair of nodes, by studying the powers of the sociomatrix.\n"));
     connect(walksAct, SIGNAL(triggered()), this, SLOT(slotWalksOfGivenLength() )  );
 
     totalWalksAct = new QAction(QIcon(":/images/walk.png"), tr("Total Walks"),this);
     totalWalksAct-> setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_W);
     totalWalksAct->setStatusTip(tr("Calculate the total number of walks of every possible length between all nodes"));
-    totalWalksAct->setWhatsThis(tr("Total Walks\n\n "
+    totalWalksAct->setWhatsThis(tr("Total Walks\n\n"
                                    "A walk is a sequence of alternating vertices "
                                    "and edges such as v<sub>0</sub>e<sub>1</sub>, "
                                    "v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, "
                                    "e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> "
                                    "is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. "
                                    "This function counts the number of walks of any length "
-                                   "between each pair of nodes, by studying the powers of the sociomatrix\n "));
+                                   "between each pair of nodes, by studying the powers of the sociomatrix. \n"));
     connect(totalWalksAct, SIGNAL(triggered()), this, SLOT(slotTotalWalks() )  );
 
 
@@ -1832,7 +1833,7 @@ void MainWindow::initActions(){
                                            "the graph where the {i,j} element is 1 if "
                                            "the vertices i and j are reachable. \n\n"
                                            "Actually, this just checks whether the corresponding element "
-                                           "of Distances matrix is not zero.\n "));
+                                           "of Distances matrix is not zero.\n"));
     connect(reachabilityMatrixAct, SIGNAL(triggered()), this, SLOT(slotReachabilityMatrix() )  );
 
 
@@ -1842,7 +1843,7 @@ void MainWindow::initActions(){
 
     clusteringHierarchicalAct->setStatusTip(tr("Perform agglomerative cluster analysis of the actors in the social network"));
     clusteringHierarchicalAct->setWhatsThis(
-                tr("Hierarchical clustering\n\n "
+                tr("Hierarchical clustering\n\n"
                    "Hierarchical clustering (or hierarchical cluster analysis, HCA) "
                    "is a method of cluster analysis which builds a hierarchy "
                    "of clusters, based on their elements dissimilarity. "
@@ -1872,7 +1873,7 @@ void MainWindow::initActions(){
     cliquesAct = new QAction(QIcon(":/images/clique.png"), tr("Clique Census"),this);
     cliquesAct-> setShortcut(Qt::CTRL + Qt::Key_T);
     cliquesAct->setStatusTip(tr("Compute the clique census: find all maximal connected subgraphs."));
-    cliquesAct->setWhatsThis(tr("Clique Census\n\n "
+    cliquesAct->setWhatsThis(tr("Clique Census\n\n"
                                 "Produces the census of network cliques (maximal connected subgraphs), "
                                 "along with disaggregation by actor and co-membership information. "));
     connect(cliquesAct, SIGNAL(triggered()), this, SLOT(slotCliqueCensus() )  );
@@ -1881,34 +1882,66 @@ void MainWindow::initActions(){
     clusteringCoefAct = new QAction(QIcon(":/images/clucof.png"), tr("Local and Network Clustering Coefficient"),this);
     clusteringCoefAct -> setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_L);
     clusteringCoefAct->setStatusTip(tr("Compute the local Clustering Coefficient for every actor and the network average."));
-    clusteringCoefAct->setWhatsThis(tr("Local and Network Clustering Coefficient\n\n "
+    clusteringCoefAct->setWhatsThis(tr("Local and Network Clustering Coefficient\n\n"
                                        "The local Clustering Coefficient  (Watts & Strogatz, 1998) "
                                        "of an actor quantifies how close "
-                                       "the actor and her neighbors are to being a clique. \n "));
+                                       "the actor and her neighbors are to being a clique. \n"));
     connect(clusteringCoefAct, SIGNAL(triggered()), this, SLOT(slotClusteringCoefficient() )  );
 
 
     triadCensusAct = new QAction(QIcon(":/images/triad.png"), tr("Triad Census"),this);
     triadCensusAct-> setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_T);
     triadCensusAct->setStatusTip(tr("Calculate the triad census for all actors."));
-    triadCensusAct->setWhatsThis(tr("Triad Census\n\n "
+    triadCensusAct->setWhatsThis(tr("Triad Census\n\n"
                                     "A triad census counts all the different kinds of observed triads "
                                     "within a network and codes them according to their number of mutual, "
-                                    "asymmetric and non-existent dyads. \n "));
+                                    "asymmetric and non-existent dyads. \n"));
     connect(triadCensusAct, SIGNAL(triggered()), this, SLOT(slotTriadCensus() )  );
 
 
     similarityPearsonAct = new QAction(QIcon(":/images/similarity.png"), tr("Pearson correlation coefficients"),this);
-    similarityPearsonAct-> setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_P);
-    similarityPearsonAct->setStatusTip(tr("Compute Pearson correlation coefficients between pairs of actors."));
+    similarityPearsonAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_P)
+                );
+    similarityPearsonAct->setStatusTip(tr("Compute Pearson Correlation Coefficients between pairs of actors. "
+                                          "Most useful with valued/weighted ties (non-binary). "));
     similarityPearsonAct->setWhatsThis(
-                tr("Pearson correlation coefficients\n\n "
+                tr("Pearson correlation coefficients\n\n"
+                   "Computes a correlation matrix, where the elements are the "
+                   "Pearson correlation coefficients between pairs of actors "
+                   "in terms of their tie profiles or distances (in, out or both). \n\n"
                    "The Pearson product-moment correlation coefficient (PPMCC or PCC or Pearson's r)"
-                   "is a measure of the linear dependence between two variables X and Y. "
-                   " The correlation measure of similarity is particularly useful "
-                   "when the data on ties are valued\n "));
+                   "is a measure of the linear dependence/association between two variables X and Y. \n\n"
+                   "This correlation measure of similarity is particularly useful "
+                   "when ties are valued/weighted denoting strength, cost or probability.\n\n"
+                   "Note that in very sparse networks (very low density), measures such as"
+                   "\"exact matches\", \"correlation\" and \"distance\" "
+                   "will show little variation among the actors, causing "
+                   "difficulty in classifying the actors in structural equivalence classes."));
     connect(similarityPearsonAct, SIGNAL(triggered()), this, SLOT(slotSimilarityPearsonDialog() )  );
 
+
+
+    similarityExactMatchesAct = new QAction(QIcon(":/images/similarity.png"), tr("Exact Matches"),this);
+    similarityExactMatchesAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_E)
+                );
+    similarityExactMatchesAct->setStatusTip(tr("Compute pair-wise actor similarity based on the exact matches of their ties (or distances)."));
+    similarityExactMatchesAct->setWhatsThis(
+                tr("Exact matches\n\n"
+                   "Computes a similarity matrix, where each element (i,j) is "
+                   "the ratio of exact tie matches of actors i and j to all other actors. \n\n"
+                   "For instance, if element (i,j) = 0.5, "
+                   "it means that actors i and j have the same ties present or absent "
+                   "to other actors 50% of the time. \n\n"
+                   "This measure of similarity is particularly useful "
+                   "when ties are binary (not valued).\n\n"
+                   "Note that in very sparse networks (very low density), measures such as"
+                   "\"exact matches\", \"correlation\" and \"distance\" "
+                   "will show little variation among the actors, causing "
+                   "difficulty in classifying the actors in structural equivalence classes."));
+    connect(similarityExactMatchesAct, SIGNAL(triggered()),
+            this, SLOT(slotSimilarityMatchesExactDialog() )  );
 
 
 
@@ -1918,7 +1951,7 @@ void MainWindow::initActions(){
             ->setStatusTip(tr("Compute Degree Centrality indices for every actor and group Degree Centralization."));
     cDegreeAct
             ->setWhatsThis(
-                tr( "Degree Centrality (DC)\n\n "
+                tr( "Degree Centrality (DC)\n\n"
                     "For each node v, the DC index is the number of edges "
                     "attached to it (in undirected graphs) or the total number "
                     "of arcs (outLinks) starting from it (in digraphs).\n"
@@ -1939,7 +1972,7 @@ void MainWindow::initActions(){
                     "Compute Closeness Centrality indices for every actor and group Closeness Centralization."));
     cClosenessAct
             ->setWhatsThis(
-                tr("Closeness Centrality (CC)\n\n "
+                tr("Closeness Centrality (CC)\n\n"
                    "For each node v, CC the inverse sum of "
                    "the shortest distances between v and every other node. CC is "
                    "interpreted as the ability to access information through the "
@@ -1959,7 +1992,7 @@ void MainWindow::initActions(){
                    "to others in its influence range"));
     cInfluenceRangeClosenessAct
             ->setWhatsThis(
-                tr("Influence Range Closeness Centrality (IRCC)\n\n "
+                tr("Influence Range Closeness Centrality (IRCC)\n\n"
                    "For each node v, IRCC is the standardized inverse average distance "
                    "between v and every reachable node.\n"
                    "This improved CC index is optimized for graphs and directed graphs which "
@@ -1973,12 +2006,12 @@ void MainWindow::initActions(){
 
     cBetweennessAct = new QAction(tr("Betweenness Centrality (BC)"), this);
     cBetweennessAct-> setShortcut(Qt::CTRL + Qt::Key_4);
-    cBetweennessAct->setWhatsThis(tr("Betweenness Centrality (BC)\n\n "
+    cBetweennessAct->setWhatsThis(tr("Betweenness Centrality (BC)\n\n"
                                      "For each node v, BC is the ratio of all geodesics between pairs of nodes which run through v. "
                                      "It reflects how often an node lies on the geodesics between the other nodes of the network. "
                                      "It can be interpreted as a measure of control. "
                                      "A node which lies between many others is assumed to have a higher likelihood of being able "
-                                     "to control information flow in the network. \n\n "
+                                     "to control information flow in the network. \n\n"
                                      "Note that betweenness centrality assumes that all geodesics "
                                      "have equal weight or are equally likely to be chosen for the flow of information "
                                      "between any two nodes. This is reasonable only on \"regular\" networks where all "
@@ -1992,7 +2025,7 @@ void MainWindow::initActions(){
     cStressAct = new QAction(tr("Stress Centrality (SC)"), this);
     cStressAct-> setShortcut(Qt::CTRL + Qt::Key_5);
     cStressAct->setStatusTip(tr("Compute Stress Centrality indices for every actor and group Stress Centralization."));
-    cStressAct->setWhatsThis(tr("Stress Centrality (SC)\n\n "
+    cStressAct->setWhatsThis(tr("Stress Centrality (SC)\n\n"
                                 "For each node v, SC is the total number of geodesics between all other nodes which run through v. "
                                 "A node with high SC is considered 'stressed', since it is traversed by a high number of geodesics. "
                                 "When one node falls on all other geodesics between all the remaining (N-1) nodes, "
@@ -2028,12 +2061,12 @@ void MainWindow::initActions(){
     cInformationAct->setEnabled(true);
     cInformationAct->setStatusTip(tr("Compute Information Centrality indices and group Information Centralization"));
     cInformationAct->setWhatsThis(
-                tr("Information Centrality (IC)\n\n "
+                tr("Information Centrality (IC)\n\n"
                    "Information centrality counts all paths between "
                    "nodes weighted by strength of tie and distance. "
                    "This centrality  measure developed by Stephenson and Zelen (1989) "
                    "focuses on how information might flow through many different paths. \n\n"
-                   "This index should be calculated only for  graphs. \n\n "
+                   "This index should be calculated only for  graphs. \n\n"
                    "Note: To compute this index, SocNetV drops all isolated nodes."));
     connect(cInformationAct, SIGNAL(triggered()), this, SLOT(slotCentralityInformation()));
 
@@ -2056,10 +2089,10 @@ void MainWindow::initActions(){
     cProximityPrestigeAct->setStatusTip(tr("Calculate and display Proximity Prestige (digraphs only)"));
     cProximityPrestigeAct
             ->setWhatsThis(
-                tr("Proximity Prestige (PP) \n\n "
+                tr("Proximity Prestige (PP) \n\n"
                    "This index measures how proximate a node v is to the nodes "
                    "in its influence domain I (the influence domain I of a node "
-                   "is the number of other nodes that can reach it).\n "
+                   "is the number of other nodes that can reach it).\n\n"
                    "In PP calculation, proximity is based on distances to rather "
                    "than distances from node v. \n"
                    "To put it simply, in PP what matters is how close are all "
@@ -2192,7 +2225,7 @@ void MainWindow::initActions(){
                 tr("Toggle displaying directional Arrows on edges (this session only)"));
     optionsEdgeArrowsAct->setWhatsThis(
                 tr("Display edge Arrows\n\n"
-                   "Enables or disables displaying of arrows on edges.\n "
+                   "Enables or disables displaying of arrows on edges.\n\n"
                    "Useful if all links are reciprocal (undirected graph).\n"
                    "This setting will apply to this session only. \n"
                    "To permanently change it, use Settings & Preferences"));
@@ -2245,7 +2278,7 @@ void MainWindow::initActions(){
                 tr("Select and display a custom image in the background"
                    "(for this session only)"));
     backgroundImageAct->setWhatsThis(
-                tr("Background image\n\n "
+                tr("Background image\n\n"
                    "Enable to select an image file from your computer, "
                    "which will be displayed in the background instead of plain color."
                    "This setting will apply to this session only. \n"
@@ -2262,7 +2295,7 @@ void MainWindow::initActions(){
                 tr("Open Settings dialog where you can save your preferences "
                    "for all future sessions"));
     openSettingsAct->setWhatsThis(
-                tr("Settings\n\n "
+                tr("Settings\n\n"
                    "Opens the Settings dialog where you can edit and save settings "
                    "permanently for all subsequent sessions."));
     connect(openSettingsAct, SIGNAL(triggered()),
@@ -2543,6 +2576,7 @@ void MainWindow::initMenuBar() {
     similarityMenu -> setIcon(QIcon(":/images/similarity.png"));
     analysisMenu -> addMenu (similarityMenu);
     similarityMenu -> addAction (similarityPearsonAct);
+    similarityMenu -> addAction(similarityExactMatchesAct);
 
     /** menuBar entry layoutMenu  */
 
@@ -3037,7 +3071,7 @@ void MainWindow::initToolBox(){
     toolBoxLayoutForceDirectedSelect->setWhatsThis(
                 tr("Visualize by a Force-Directed layout model.\n\n"
                    "Available models: \n\n"
-                   "Eades model\n "
+                   "Eades model\n"
                    "A spring-gravitational model, where each node is "
                    "regarded as physical object (ring) repeling all other non-adjacent"
                    "nodes, while springs between connected nodes attract them. \n\n"
@@ -3296,7 +3330,7 @@ void MainWindow::initToolBox(){
                    "The value is the proportion of Edges between the vertices \n"
                    "within the neighbourhood of the clicked vertex, \n"
                    "divided by the number of Edges that could possibly exist "
-                   "between them. \n\n "
+                   "between them. \n\n"
                    "This value is automatically calculated only if vertices < 500.\n"
                    "If your network is larger than 500 vertices, compute CluCof "
                    "from the menu Analysis > Clustering Coefficient "));
@@ -3306,7 +3340,7 @@ void MainWindow::initToolBox(){
                    "The value is the proportion of Edges between the vertices \n"
                    "within the neighbourhood of the clicked vertex, \n"
                    "divided by the number of Edges that could possibly exist \n"
-                   "between them. \n\n "
+                   "between them. \n\n"
                    "This value is automatically calculated only if vertices < 500.\n"
                    "If your network is larger than 500 vertices, compute CluCof "
                    "from the menu Analysis > Clustering Coefficient "));
@@ -3321,7 +3355,7 @@ void MainWindow::initToolBox(){
                        "The value is the proportion of Edges between the vertices \n"
                        "within the neighbourhood of the clicked vertex, \n"
                        "divided by the number of Edges that could possibly exist "
-                       "between them. \n\n "
+                       "between them. \n\n"
                        "This value is automatically calculated only if vertices < 500.\n"
                        "If your network is larger than 500 vertices, compute CluCof "
                        "from the menu Analysis > Clustering Coefficient "));
@@ -3332,7 +3366,7 @@ void MainWindow::initToolBox(){
                    "The value is the proportion of Edges between the vertices \n"
                    "within the neighbourhood of the clicked vertex, \n"
                    "divided by the number of Edges that could possibly exist "
-                   "between them. \n\n "
+                   "between them. \n\n"
                    "This value is automatically calculated only if vertices < 500.\n"
                    "If your network is larger than 500 vertices, compute CluCof  \n"
                    "from the menu Analysis > Clustering Coefficient "));
@@ -5251,10 +5285,10 @@ void MainWindow::slotNetworkImportEdgeList(){
                                     "A. Edge lists with edge weights, "
                                     "where each line has exactly 3 columns: "
                                     "source  target  weight, i.e.:\n"
-                                    "1 2 1 \n "
-                                    "2 3 1 \n "
-                                    "3 4 2 \n "
-                                    "4 5 1 \n\n "
+                                    "1 2 1 \n"
+                                    "2 3 1 \n"
+                                    "3 4 2 \n"
+                                    "4 5 1 \n\n"
                                     "B. Simple edge lists without weights, where each line "
                                     "has two or more columns in the form: source, target1, target2, ... , i.e.:\n"
                                     "1 2 3 4 5 6\n"
@@ -6347,7 +6381,7 @@ void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
 
     statusMessage( tr("Creating Erdos-Renyi Random Network. Please wait... ")  );
 
-    progressMsg  = "Creating Erdos-Renyi Random Network. \n "
+    progressMsg  = "Creating Erdos-Renyi Random Network. \n"
                 " Please wait (or disable progress bars from Options -> Settings).";
     createProgressBar( (edges != 0 ? edges:newNodes), progressMsg );
     appSettings["randomErdosEdgeProbability"] = QString::number(eprob);
@@ -6612,7 +6646,7 @@ void MainWindow::slotNetworkRandomRingLattice(){
                        tr("Create ring lattice"),
                        tr("This will create a ring lattice network, "
                           "where each node has degree d:\n d/2 edges to the right "
-                          "and d/2 to the left.\n "
+                          "and d/2 to the left.\n"
                           "Please enter the number of nodes you want:"),
                        100, 4, maxNodes, 1, &ok ) ) ;
     if (!ok) {
@@ -7940,7 +7974,7 @@ void MainWindow::slotEditEdgeAdd(){
 
     weight=QInputDialog::getDouble(
                 this, "Create new edge, Step 3",
-                tr("Source and target nodes accepted. \n "
+                tr("Source and target nodes accepted. \n"
                    "Please, enter the weight of new edge: "),1.0, -100.0, 100.0, 1, &ok);
     if (!ok) {
         statusMessage( "Add edge operation cancelled." );
@@ -8942,7 +8976,7 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
                       "Aij=1-wij if (i,j)=wij \n"
                       "Next, it will compute the inverse matrix C of A. \n"
                       "The computation of the inverse matrix is VERY CPU intensive function."
-                      "because it uses the Gauss-Jordan elimination algorithm.\n\n "
+                      "because it uses the Gauss-Jordan elimination algorithm.\n\n"
                       "Are you sure you want to continue?"), QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
         case QMessageBox::Ok:
             break;
@@ -9103,7 +9137,7 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
                       "Aij=1-wij if (i,j)=wij"
                       "Next, it will compute the inverse matrix C of A."
                       "The computation of the inverse matrix is VERY CPU intensive function."
-                      "because it uses the Gauss-Jordan elimination algorithm.\n\n "
+                      "because it uses the Gauss-Jordan elimination algorithm.\n\n"
                       "Are you sure you want to continue?"), QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
         case QMessageBox::Ok:
             break;
@@ -9282,7 +9316,7 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
                       "Aij=1-wij if (i,j)=wij"
                       "Next, it will compute the inverse matrix C of A."
                       "The computation of the inverse matrix is VERY CPU intensive function."
-                      "because it uses the Gauss-Jordan elimination algorithm.\n\n "
+                      "because it uses the Gauss-Jordan elimination algorithm.\n\n"
                       "Are you sure you want to continue?"), QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
         case QMessageBox::Ok:
             break;
@@ -9833,7 +9867,7 @@ void MainWindow::slotTotalWalks(){
                        "since it will calculate all powers of the sociomatrix up to n-1 "
                        "in order to find out all possible walks. \n\n"
                        "If you need to make a simple reachability test, "
-                       "we advise to use the Reachability Matrix function instead. \n\n "
+                       "we advise to use the Reachability Matrix function instead. \n\n"
                        "Are you sure you want to continue?"),
                     QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
         case QMessageBox::Ok:
@@ -10040,17 +10074,66 @@ void MainWindow::slotClusteringCoefficient (){
 
 
 /**
- * @brief MainWindow::slotNetworkDataSetSelect
- * Calls the m_datasetSelectionDialog to display the dataset selection dialog
+ * @brief Displays the DialogSimilarityMatchesExact dialog.
+ */
+void MainWindow::slotSimilarityMatchesExactDialog() {
+    qDebug()<< "MW::slotSimilarityMatchesExactDialog()";
+
+    m_dialogSimilarityExact = new DialogSimilarityMatchesExact(this);
+
+    connect( m_dialogSimilarityExact, &DialogSimilarityMatchesExact::userChoices,
+             this, &MainWindow::slotSimilarityMatchesExact );
+
+    m_dialogSimilarityExact->exec();
+
+}
+
+
+
+
+/**
+ * @brief Calls Graph::writeSimilarityMatchesExact() to write Exact Matches
+ * similarity matrix into a file, and displays it.
+ *
+ */
+void MainWindow::slotSimilarityMatchesExact(const QString &matrix,
+                                            const QString &varLocation) {
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+    QString fn = appSettings["dataDir"] + "socnetv-report-similarity-exact.dat";
+    bool considerWeights=true;
+
+    statusMessage(  QString(tr("Computing Exact Matches similarity matrix. Please wait...")) );
+    progressMsg = tr("Computing Exact Matches similarity matrix. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
+
+    activeGraph.writeSimilarityMatchesExact( fn, considerWeights, matrix, varLocation);
+
+    destroyProgressBar();
+
+    TextEditor *ed = new TextEditor(fn,this);
+    ed->show();
+    m_textEditors << ed;
+    statusMessage("Exact Matches similarity matrix saved as: " + fn);
+}
+
+
+
+/**
+ * @brief Calls the m_dialogSimilarityPearson to display the Pearson statistics dialog
  */
 void MainWindow::slotSimilarityPearsonDialog(){
     qDebug()<< "MW::slotSimilarityPearsonDialog()";
-    m_pearsonCorrelationDialog = new DialogPearsonCorrelation(this);
+    m_dialogSimilarityPearson = new DialogSimilarityPearson(this);
 
-    connect( m_pearsonCorrelationDialog, &DialogPearsonCorrelation::userChoices,
+    connect( m_dialogSimilarityPearson, &DialogSimilarityPearson::userChoices,
              this, &MainWindow::slotSimilarityPearson );
 
-    m_pearsonCorrelationDialog->exec();
+    m_dialogSimilarityPearson->exec();
 }
 
 
@@ -10060,7 +10143,8 @@ void MainWindow::slotSimilarityPearsonDialog(){
  * Correlation Coefficients into a file, and displays it.
  *
  */
-void MainWindow::slotSimilarityPearson(const QString &matrix, const QString &varLocation) {
+void MainWindow::slotSimilarityPearson(const QString &matrix,
+                                       const QString &varLocation) {
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10493,7 +10577,7 @@ void MainWindow::slotCentralityInformation(){
                       "Aij=1-wij if (i,j)=wij\n"
                       "Next, it will compute the inverse matrix C of A."
                       "The computation of the inverse matrix is a CPU intensive function."
-                      "although it uses LU decomposition.\n\n "
+                      "although it uses LU decomposition.\n\n"
                       "Are you sure you want to continue?"), QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
         case QMessageBox::Ok:
             break;
