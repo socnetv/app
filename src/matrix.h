@@ -47,9 +47,9 @@ static const QString infinity = QString("\xE2\x88\x9E") ;
 
 class QTextStream;
 
-class Row {
+class MatrixRow {
 public:
-    Row (int cols=0) {
+    MatrixRow (int cols=0) {
         cell=new (nothrow) float [m_cols=cols];
 		Q_CHECK_PTR( cell );
         for (int i=0;i<m_cols; i++) {
@@ -57,9 +57,9 @@ public:
         }
 	}
 
-    ~Row() { m_cols=0 ; delete [] cell;}
+    ~MatrixRow() { m_cols=0 ; delete [] cell;}
 	
-    Row& operator =(Row & a) {
+    MatrixRow& operator =(MatrixRow & a) {
         if (this != &a){
             if (a.m_cols!=m_cols) {
                 delete [] cell;
@@ -131,7 +131,7 @@ public:
     //WARNING: this operator is slow! Avoid using it.
     float  operator ()  (const int r, const int c) { return  row[r].column(c);  }
 
-    Row& operator []  (const int &r)  { return row[r]; }
+    MatrixRow& operator []  (const int &r)  { return row[r]; }
 
     void clearItem( int r, int c ) ;
 
@@ -198,7 +198,7 @@ public:
     void multiplyRow(int row, float value);
 
 private:
-    Row *row;
+    MatrixRow *row;
     int m_Actors;
     int m_rows;
     int m_cols;

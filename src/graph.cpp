@@ -8164,8 +8164,11 @@ void Graph::writeSimilarityPearson(const QString fileName,
     outText.setRealNumberPrecision(m_precision);
 
     outText << tr("PEARSON CORRELATION COEFFICIENTS (PCC) MATRIX") << endl;
-    outText << tr("Network name: ")<< graphName()<< endl;
-    outText << tr("Input matrix: ")<< matrix << endl<<endl;
+    outText << tr("Network name: ")<< graphName()<< endl
+            << tr("Input matrix: ")<< matrix << endl
+            << tr("Variables in: ")<< ((varLocation != "Rows" && varLocation != "Columns") ? "Concatenated rows + columns " : varLocation)
+                                                                                            << endl<<endl;
+
     outText << tr("PCC  range: -1 < C < 1") << endl<<endl;
 
     outText << PCC;
@@ -12932,7 +12935,7 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                   "37 8 36" << endl <<
                   "25 10 11 8";
     }
-    else if (fileName == "Knocke_Bureacracies_Network.pajek"){
+    else if (fileName == "Knoke_Bureaucracies_Network.pajek"){
         datasetDescription=tr("In 1978, Knoke & Wood collected data from workers at 95 organizations in Indianapolis. "
                               "Respondents indicated with which other organizations their own organization had any "
                               "of 13 different types of relationships. \n"

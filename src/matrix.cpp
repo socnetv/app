@@ -44,7 +44,7 @@
  * @param Actors
  */
 Matrix::Matrix (int rowDim, int colDim)  : m_rows (rowDim), m_cols(colDim) {
-    row = new (nothrow) Row[ m_rows ];
+    row = new (nothrow) MatrixRow[ m_rows ];
     Q_CHECK_PTR( row );
     for (int i=0;i<m_rows; i++) {
         row[i].resize( m_cols );
@@ -57,14 +57,14 @@ Matrix::Matrix (int rowDim, int colDim)  : m_rows (rowDim), m_cols(colDim) {
 * @brief Matrix::Matrix
 * Copy constructor. Creates a Matrix identical to Matrix b
 * Allows Matrix a=b declaration
-* Every Row object holds max_int=32762
+* Every MatrixRow object holds max_int=32762
 * @param b
 */
 Matrix::Matrix(const Matrix &b) {
     qDebug()<< "Matrix:: constructor";
     m_rows=b.m_rows;
     m_cols=b.m_cols ;
-    row = new Row[m_rows];
+    row = new MatrixRow[m_rows];
     Q_CHECK_PTR( row );
     for (int i=0;i<m_rows; i++) {
         row[i].resize( m_cols );
@@ -101,7 +101,7 @@ void Matrix::clear() {
  * @brief Matrix::resize
  * Resize this matrix to m x n
  * Called before every operation on new matrices.
- * Every Row object holds max_int=32762
+ * Every MatrixRow object holds max_int=32762
  * @param Actors
  */
 void Matrix::resize (const int m, const int n) {
@@ -109,7 +109,7 @@ void Matrix::resize (const int m, const int n) {
     clear();
     m_rows = m;
     m_cols = n;
-    row = new (nothrow) Row [ m_rows  ];
+    row = new (nothrow) MatrixRow [ m_rows  ];
     Q_CHECK_PTR( row );
     qDebug() << "Matrix: resize() -- resizing each row";
     for (int i=0;i<m_rows; i++) {
@@ -186,7 +186,7 @@ void Matrix::identityMatrix(int dim) {
     clear();
     m_rows=dim;
     m_cols=dim;
-    row = new (nothrow) Row [m_rows];
+    row = new (nothrow) MatrixRow [m_rows];
     Q_CHECK_PTR( row );
     //qDebug() << "Matrix: resize() -- resizing each row";
     for (int i=0;i<m_rows; i++) {
@@ -208,12 +208,15 @@ void Matrix::zeroMatrix(const int m, const int n) {
     clear();
     m_rows=m;
     m_cols=n;
-    row = new (nothrow) Row [m_rows];
+    row = new (nothrow) MatrixRow [m_rows];
     Q_CHECK_PTR( row );
     //qDebug() << "Matrix::zeroMatrix - resizing each row";
     for (int i=0;i<m_rows; i++) {
         row[i].resize(m_cols);
-        setItem(i,i, 0);
+        for (int j=0;j<m_cols; j++) {
+            setItem(i,j, 0);
+        }
+
     }
 
 }
@@ -578,10 +581,10 @@ Matrix& Matrix::operator = (Matrix & a) {
             clear();
             m_rows=a.m_rows;
             m_cols=a.m_cols;
-            row=new (nothrow) Row[m_rows];
+            row=new (nothrow) MatrixRow[m_rows];
 			Q_CHECK_PTR( row );
             for (int i=0;i<m_rows; i++) {
-                row[i].resize(m_cols); //every Row object holds max_int=32762
+                row[i].resize(m_cols); //every MatrixRow object holds max_int=32762
 			}
 		}
        for (int i=0;i<m_rows; i++)
@@ -850,7 +853,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const QString varLoca
             for (int j = 0 ; j < N ; j++ ) {
                 sum += AM.item(i,j);
             }
-            mean[i] = sum / N;
+            mean[i] = sum / ( N ) ;
             qDebug() << "mean["<<i+1<<"]" << mean[i];
             varianceTimesN = 0;
             for (int j = 0 ; j < N ; j++ ) {
@@ -874,6 +877,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const QString varLoca
                 pcc =   covariance   /  (( sigma[i] ) * ( sigma[k] )) ;
                 qDebug() << "pcc("<<i+1<<","<<k+1<<") =" << pcc;
                 setItem(i,k, pcc);
+                setItem(k,i, pcc);
             }
 
         }
@@ -904,7 +908,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const QString varLoca
             qDebug() << "mean["<<i+1<<"]" << mean[i];
             varianceTimesN = 0;
             for (int j = 0 ; j < N ; j++ ) {
-                varianceTimesN +=  ( AM.item(j,i)  - mean[j] ) *  ( AM.item(j,i)  - mean[j] );
+                varianceTimesN +=  ( AM.item(j,i)  - mean[i] ) *  ( AM.item(j,i)  - mean[i] );
             }
             sigma[i] = sqrt (varianceTimesN); //actually this is sigma * sqrt (N)
             qDebug() << "sigma["<<i+1<<"]" << sigma[i];
@@ -916,7 +920,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const QString varLoca
             for (int k = i ; k < N ; k++ ) {
                 covariance = 0;
                 for (int j = 0 ; j < N ; j++ ) {
-                    covariance  +=  ( AM.item(j,i)  - mean[j] ) * ( AM.item(j,k)  - mean[k] ) ;
+                    covariance  +=  ( AM.item(j,i)  - mean[i] ) * ( AM.item(j,k)  - mean[k] ) ;
                 }
                 qDebug() << "covariance("<<i+1<<","<<k+1<<") =" << covariance
                          << "sigma["<<i+1<<"]" << sigma[i]
@@ -924,6 +928,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const QString varLoca
                 pcc =   covariance   /  (( sigma[i] ) * ( sigma[k] )) ;
                 qDebug() << "pcc("<<i+1<<","<<k+1<<") =" << pcc;
                 setItem(i,k, pcc);
+                setItem(k,i, pcc);
             }
 
         }
@@ -932,7 +937,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const QString varLoca
     else if (varLocation=="Both") {
         Matrix CM;
         N = AM.rows() ;
-        int M = N * 2;
+        int M = N * 2; // CM will have double rows
 
         this->zeroMatrix(N,N);
         CM.zeroMatrix(M,N);
@@ -940,10 +945,10 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const QString varLoca
         QVector<float> mean (N,0); // holds mean values
         QVector<float> sigma(N,0);
 
-        for (int i = 0 ; i < N / 2 ; i++ ) {
+        for (int i = 0 ; i < N  ; i++ ) {
             for (int j = 0 ; j < N  ; j++ ) {
-                CM.setItem(i,j, AM.item(i,j));
-                CM.setItem(i + N/2,j, AM.item(j,i));
+                CM.setItem(j,i, AM.item(i,j));
+                CM.setItem(j + N,i, AM.item(j,i));
             }
         }
         qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
@@ -954,14 +959,14 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const QString varLoca
         //compute mean values
         for (int i = 0 ; i < N ; i++ ) {
             sum = 0;
-            for (int j = 0 ; j < N ; j++ ) {
+            for (int j = 0 ; j < M ; j++ ) {
                 sum += CM.item(j,i);
             }
-            mean[i] = sum / N;
+            mean[i] = sum / M;
             qDebug() << "mean["<<i+1<<"]" << mean[i];
             varianceTimesN = 0;
-            for (int j = 0 ; j < N ; j++ ) {
-                varianceTimesN +=  ( CM.item(j,i)  - mean[j] ) *  ( CM.item(j,i)  - mean[j] );
+            for (int j = 0 ; j < M ; j++ ) {
+                varianceTimesN +=  ( CM.item(j,i)  - mean[i] ) *  ( CM.item(j,i)  - mean[i] );
             }
             sigma[i] = sqrt (varianceTimesN); //actually this is sigma * sqrt (N)
             qDebug() << "sigma["<<i+1<<"]" << sigma[i];
@@ -972,8 +977,8 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const QString varLoca
 
             for (int k = i ; k < N ; k++ ) {
                 covariance = 0;
-                for (int j = 0 ; j < N ; j++ ) {
-                    covariance  +=  ( CM.item(j,i)  - mean[j] ) * ( CM.item(j,k)  - mean[k] ) ;
+                for (int j = 0 ; j < M ; j++ ) {
+                    covariance  +=  ( CM.item(j,i)  - mean[i] ) * ( CM.item(j,k)  - mean[k] ) ;
                 }
                 qDebug() << "covariance("<<i+1<<","<<k+1<<") =" << covariance
                          << "sigma["<<i+1<<"]" << sigma[i]
@@ -981,6 +986,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const QString varLoca
                 pcc =   covariance   /  (( sigma[i] ) * ( sigma[k] )) ;
                 qDebug() << "pcc("<<i+1<<","<<k+1<<") =" << pcc;
                 setItem(i,k, pcc);
+                setItem(k,i, pcc);
             }
 
         }
