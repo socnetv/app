@@ -78,7 +78,7 @@ DialogDataSetSelect::DialogDataSetSelect (QWidget *parent) :
             << "Freeman_EIES_network_48actors_Messages.dl"
             << "Freeman_34_possible_graphs_with_N_5_multirelational.paj"
             << "Mexican_Power_Network_1940s.lst"
-            << "Knocke_Bureacracies_Network.pajek"
+            << "Knoke_Bureaucracies_Network.pajek"
             << "Stephenson&Zelen_40_AIDS_patients_sex_contact.paj"
             << "Stephenson&Zelen_5actors_6edges_IC_test_dataset.paj"
             << "Wasserman_Faust_7actors_star_circle_line_graphs.paj"
