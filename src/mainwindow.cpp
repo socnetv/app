@@ -1926,19 +1926,23 @@ void MainWindow::initActions(){
 
 
 
-    similarityExactMatchesAct = new QAction(QIcon(":/images/similarity.png"), tr("Exact Matches"),this);
+    similarityExactMatchesAct = new QAction(QIcon(":/images/similarity.png"), tr("Tie/Distance Matches (Exact, Jaccard, Hamming)"),this);
     similarityExactMatchesAct-> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_E)
                 );
-    similarityExactMatchesAct->setStatusTip(tr("Compute pair-wise actor similarity based on the exact matches of their ties (or distances)."));
+    similarityExactMatchesAct->setStatusTip(tr("Compute pair-wise actor similarity based on a measure of their ties (or distances) \"matches\" ."));
     similarityExactMatchesAct->setWhatsThis(
-                tr("Exact matches\n\n"
-                   "Computes a similarity matrix, where each element (i,j) is "
-                   "the ratio of exact tie matches of actors i and j to all other actors. \n\n"
-                   "For instance, if element (i,j) = 0.5, "
+                tr("Matches: Exact, Jaccard, Hamming etc\n\n"
+                   "Computes a pair-wise similarity matrix, where each element (i,j) is "
+                   "the ratio of tie (or distance) matches of actors i and j to all other actors. \n\n"
+                   "SocNetV supports the following matching methods:"
+                   "Exact Matches"
+                   "Positive Matches (Jaccard/Co-citation)"
+                   "Hamming distance"
+                   "For instance, if you select Exact Matches, an element (i,j) = 0.5, "
                    "it means that actors i and j have the same ties present or absent "
                    "to other actors 50% of the time. \n\n"
-                   "This measure of similarity is particularly useful "
+                   "These measures of similarity are particularly useful "
                    "when ties are binary (not valued).\n\n"
                    "Note that in very sparse networks (very low density), measures such as"
                    "\"exact matches\", \"correlation\" and \"distance\" "
