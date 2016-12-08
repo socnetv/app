@@ -827,10 +827,13 @@ bool Matrix::printMatrixConsole(bool debug){
  */
 
 Matrix& Matrix::similarityMatching(Matrix &AM,
-                                   const QString measure,
+                                   const int &measure,
                                    const QString varLocation,
                                    const bool &diagonal,
                                    const bool &considerWeights){
+
+    Q_UNUSED(considerWeights);
+
     qDebug()<< "Matrix::similarityMatching() -"
             <<"measure"<< measure
             << "varLocation"<< varLocation;
@@ -839,10 +842,7 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
     float sum = 0;
     float matchRatio = 0;
     float matches = 0;
-    float varianceTimesN = 0; // = sqrDeviationsFromMean
-    float covariance = 0;
-    float pcc = 0;
-
+    float ties = 0;
 
     if (varLocation=="Rows") {
 
@@ -851,7 +851,7 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
         this->zeroMatrix(N,N);
 
         QVector<float> mean (N,0); // holds mean values
-        QVector<float> sigma(N,0);
+
         qDebug()<< "Matrix::similarityMatching() -"
                 <<"input matrix";
         AM.printMatrixConsole(true);
@@ -860,13 +860,59 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
             sum = 0 ;
             for (int k = i ; k < N ; k++ ) {
                 matches = 0;
+                ties = 0;
+
                 for (int j = 0 ; j < N ; j++ ) {
-                    if (AM.item(i,j) == AM.item(k,j) ) {
-                        matches++;
+
+                    if (!diagonal && (i==j || k==j))
+                        continue;
+
+                    switch (measure) {
+                    case SIMILARITY_MEASURE_SIMPLE :
+                        if (AM.item(i,j) == AM.item(k,j) ) {
+                            matches++;
+                        }
+                        ties++;
+                        break;
+                    case SIMILARITY_MEASURE_JACCARD:
+                        if (AM.item(i,j) == AM.item(k,j)  && AM.item(i,j) != 0) {
+                            matches++;
+                        }
+                        if (AM.item(i,j) != 0  || AM.item(k,j)  ) {
+                           ties++;
+                        }
+
+                        break;
+                    case SIMILARITY_MEASURE_HAMMING:
+                        if (AM.item(i,j) != AM.item(k,j) ) {
+                            matches++;
+                        }
+
+                        break;
+
+                    default:
+                        break;
                     }
 
                 }
-                matchRatio=   matches/  ( ( N  ) ) ;
+
+                switch (measure) {
+                case SIMILARITY_MEASURE_SIMPLE :
+                    matchRatio=   matches/  ( ( ties  ) ) ;
+                    break;
+                case SIMILARITY_MEASURE_JACCARD:
+                    matchRatio=   matches/  ( ( ties ) ) ;
+
+                    break;
+                case SIMILARITY_MEASURE_HAMMING:
+                    matchRatio = matches;
+                    break;
+
+                default:
+                    break;
+                }
+
+
                 qDebug() << "matches("<<i+1<<","<<k+1<<") =" << matches
 
                          << "matchRatio("<<i+1<<","<<k+1<<") =" << matchRatio;
@@ -888,7 +934,7 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
         this->zeroMatrix(N,N);
 
         QVector<float> mean (N,0); // holds mean values
-        QVector<float> sigma(N,0);
+
         qDebug()<< "Matrix::similarityMatching() -"
                 <<"input matrix";
         AM.printMatrixConsole(true);
@@ -897,13 +943,58 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
             sum = 0 ;
             for (int k = i ; k < N ; k++ ) {
                 matches = 0;
+                ties = 0;
+
                 for (int j = 0 ; j < N ; j++ ) {
-                    if (AM.item(j,i) == AM.item(j,k) ) {
-                        matches++;
+
+                    if (!diagonal && (i==j || k==j))
+                        continue;
+
+                    switch (measure) {
+                    case SIMILARITY_MEASURE_SIMPLE :
+                        if (AM.item(j,i) == AM.item(j,k) ) {
+                            matches++;
+                        }
+                        ties++;
+                        break;
+                    case SIMILARITY_MEASURE_JACCARD:
+                        if (AM.item(j,i) == AM.item(j,k)  && AM.item(j,i) != 0) {
+                            matches++;
+                        }
+                        if (AM.item(j,i) != 0  || AM.item(j,k) !=0 ) {
+                           ties++;
+                        }
+
+                        break;
+                    case SIMILARITY_MEASURE_HAMMING:
+                        if (AM.item(j,i) != AM.item(j,k) ) {
+                            matches++;
+                        }
+
+                        break;
+
+                    default:
+                        break;
                     }
 
+
                 }
-                matchRatio=   matches/  ( ( N ) ) ;
+
+                switch (measure) {
+                case SIMILARITY_MEASURE_SIMPLE :
+                    matchRatio=   matches/  ( ( ties  ) ) ;
+                    break;
+                case SIMILARITY_MEASURE_JACCARD:
+                    matchRatio=   matches/  ( ( ties ) ) ;
+
+                    break;
+                case SIMILARITY_MEASURE_HAMMING:
+                    matchRatio = matches;
+                    break;
+
+                default:
+                    break;
+                }
                 qDebug() << "matches("<<i+1<<","<<k+1<<") =" << matches
 
                          << "matchRatio("<<i+1<<","<<k+1<<") =" << matchRatio;
@@ -927,8 +1018,9 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
         CM.zeroMatrix(M,N);
 
         QVector<float> mean (N,0); // holds mean values
-        QVector<float> sigma(N,0);
 
+
+        //create augmented matrix (concatenated rows and columns) from input matrix
         for (int i = 0 ; i < N  ; i++ ) {
             for (int j = 0 ; j < N  ; j++ ) {
                 CM.setItem(j,i, AM.item(i,j));
@@ -940,38 +1032,78 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
         CM.printMatrixConsole(true);
 
 
-        //compute mean values
-        for (int i = 0 ; i < N ; i++ ) {
-            sum = 0;
-            for (int j = 0 ; j < M ; j++ ) {
-                sum += CM.item(j,i);
-            }
-            mean[i] = sum / M;
-            qDebug() << "mean["<<i+1<<"]" << mean[i];
-            varianceTimesN = 0;
-            for (int j = 0 ; j < M ; j++ ) {
-                varianceTimesN +=  ( CM.item(j,i)  - mean[i] ) *  ( CM.item(j,i)  - mean[i] );
-            }
-            sigma[i] = sqrt (varianceTimesN); //actually this is sigma * sqrt (N)
-            qDebug() << "sigma["<<i+1<<"]" << sigma[i];
-
-        }
-
         for (int i = 0 ; i < N ; i++ ) {
 
             for (int k = i ; k < N ; k++ ) {
-                covariance = 0;
+
+                matches = 0;
+                ties = 0;
+
                 for (int j = 0 ; j < M ; j++ ) {
-                    covariance  +=  ( CM.item(j,i)  - mean[i] ) * ( CM.item(j,k)  - mean[k] ) ;
+
+                    if (!diagonal) {
+                        if ( (i==j || k==j ))
+                        continue;
+                        if ( j>=N && ( (i+N)==j || (k+N)==j ))
+                        continue;
+                    }
+                    switch (measure) {
+                    case SIMILARITY_MEASURE_SIMPLE :
+                        if (CM.item(j,i) == CM.item(j,k) ) {
+                            matches++;
+                        }
+                        ties++;
+                        break;
+                    case SIMILARITY_MEASURE_JACCARD:
+                        if (CM.item(j,i) == CM.item(j,k)  && CM.item(j,i) != 0) {
+                            matches++;
+                        }
+                        if (CM.item(j,i) != 0  || CM.item(j,k) !=0 ) {
+                           ties++;
+                        }
+
+                        break;
+                    case SIMILARITY_MEASURE_HAMMING:
+                        if (CM.item(j,i) != CM.item(j,k) ) {
+                            matches++;
+                        }
+
+                        break;
+
+                    default:
+                        break;
+                    }
+
+
                 }
-                qDebug() << "covariance("<<i+1<<","<<k+1<<") =" << covariance
-                         << "sigma["<<i+1<<"]" << sigma[i]
-                            << "sigma["<<k+1<<"]" << sigma[k];
-                pcc =   covariance   /  (( sigma[i] ) * ( sigma[k] )) ;
-                qDebug() << "pcc("<<i+1<<","<<k+1<<") =" << pcc;
-                setItem(i,k, pcc);
-                setItem(k,i, pcc);
+
+                switch (measure) {
+                case SIMILARITY_MEASURE_SIMPLE :
+                    matchRatio=   matches/  ( ( ties  ) ) ;
+                    break;
+                case SIMILARITY_MEASURE_JACCARD:
+                    matchRatio=   matches/  ( ( ties ) ) ;
+
+                    break;
+                case SIMILARITY_MEASURE_HAMMING:
+                    matchRatio = matches;
+                    break;
+
+                default:
+                    break;
+                }
+
+                qDebug() << "matches("<<i+1<<","<<k+1<<") =" << matches
+
+                         << "matchRatio("<<i+1<<","<<k+1<<") =" << matchRatio;
+                setItem(i,k, matchRatio);
+                setItem(k,i, matchRatio);
+
+                sum += matchRatio;
+
             }
+            //compute mean match value
+            mean[i] = sum / ( N ) ;
 
         }
     }
@@ -990,7 +1122,9 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
  * @param AM Matrix
  * @return Matrix nxn with PPC values for every pair of rows/columns of AM
  */
-Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const QString varLocation){
+Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
+                                               const QString &varLocation,
+                                               const bool &diagonal){
     qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
             << "varLocation"<< varLocation;
 
@@ -1017,12 +1151,14 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const QString varLoca
         for (int i = 0 ; i < N ; i++ ) {
             sum = 0;
             for (int j = 0 ; j < N ; j++ ) {
+                if (!diagonal && i==j) continue;
                 sum += AM.item(i,j);
             }
-            mean[i] = sum / ( N ) ;
+            mean[i] = sum / ( (diagonal) ? (float) N : (float) (N-1) ) ;
             qDebug() << "mean["<<i+1<<"]" << mean[i];
             varianceTimesN = 0;
             for (int j = 0 ; j < N ; j++ ) {
+                if (!diagonal && i==j) continue;
                 varianceTimesN +=  ( AM.item(i,j)  - mean[i] ) *  ( AM.item(i,j)  - mean[i] );
             }
             sigma[i] = sqrt (varianceTimesN); //actually this is sigma * sqrt (N)
@@ -1035,6 +1171,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM, const QString varLoca
             for (int k = i ; k < N ; k++ ) {
                 covariance = 0;
                 for (int j = 0 ; j < N ; j++ ) {
+                    if (!diagonal && (i==j || k==j) ) continue;
                     covariance  +=  ( AM.item(i,j)  - mean[i] ) * ( AM.item(k,j)  - mean[k] ) ;
                 }
                 qDebug() << "covariance("<<i+1<<","<<k+1<<") =" << covariance

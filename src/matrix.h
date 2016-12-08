@@ -37,6 +37,8 @@
 
 using namespace std; //or else compiler groans for nothrow
 
+class QTextStream;
+
 
 #ifdef Q_OS_WIN32
 static const QString infinity = QString::number( INFINITY) ;
@@ -45,7 +47,13 @@ static const QString infinity = QString("\xE2\x88\x9E") ;
 #endif
 
 
-class QTextStream;
+static const int SIMILARITY_MEASURE_SIMPLE = 0;
+static const int SIMILARITY_MEASURE_JACCARD = 1;
+static const int SIMILARITY_MEASURE_HAMMING = 2;
+static const int SIMILARITY_MEASURE_COSINE = 3;
+
+
+
 
 class MatrixRow {
 public:
@@ -128,7 +136,7 @@ public:
 
     void setItem(const int r, const int c, const float elem );
 
-    //WARNING: this operator is slow! Avoid using it.
+    //WARNING: operator() is slow! Avoid using it.
     float  operator ()  (const int r, const int c) { return  row[r].column(c);  }
 
     MatrixRow& operator []  (const int &r)  { return row[r]; }
@@ -184,14 +192,15 @@ public:
 
 
     Matrix& similarityMatching(Matrix &AM,
-                               const QString measure="Simple",
-                           const QString varLocation="Rows",
+                               const int &measure,
+                               const QString varLocation="Rows",
                                const bool &diagonal=false,
                                const bool &considerWeights=true);
 
 
     Matrix& pearsonCorrelationCoefficients(Matrix &AM,
-                                          const QString varLocation="Rows");
+                                          const QString &varLocation="Rows",
+                                           const bool &diagonal=false);
 
 
 

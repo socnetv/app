@@ -4833,6 +4833,24 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
+    QString htmlHead = "<html><head>"
+                       "<meta name=\"qrichtext\" content=\"1\" />"
+                       "<meta charset=\"utf-8\" />"
+                       "<style type=\"text/css\">"
+                       "body {font-family:'monospace'; font-size:9pt; font-weight:400; font-style:normal;}"
+                       "p, li { white-space: pre-wrap; }"
+                       "p {margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; "
+                       "-qt-block-indent:0; text-indent:0px;}"
+                       "table {padding: 20px 5px 20px;}"
+                       "th {text-align:center; font-weight: bold;}"
+                       "td {text-align: right; padding: 2px 15px 2px 0;}"
+                       "</style>"
+                       "</head>"
+                       "<body style=\"\">"
+                       "<p style=\"\">";
+    QString htmlEnd = "</body></html>";
+
+
     if (graphModified() || !calculatedCentralities ) {
         qDebug() << "Graph::writeCentralityBetweenness() -"
                     "Graph modified. Recomputing Distances/Centralities."
@@ -4848,108 +4866,135 @@ void Graph::writeCentralityBetweenness(const QString fileName,
 
     emit statusMessage ( tr("Writing betweenness indices to file:") +  fileName );
 
-    QString no=tr("Node"), lab=tr("Label"),
-            ci=tr("BC"), cs=tr("BC'"), csp=tr("%BC'");
-
+    outText << htmlHead;
     m_precision = 3;
+
     outText.setRealNumberPrecision(m_precision);
-    m_fieldWidth = 17;
-    outText << tr("BETWEENESS CENTRALITY (BC)")<<endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-    outText << tr("The BC index of a node u is the sum of delta (s,t,u) for all s,t in V")<<"\n";
+    outText << "<p>";
+    outText << tr("BETWEENESS CENTRALITY (BC)");
+    outText << "</p>";
+
+    outText << "<p>";
+    outText << tr("Network name: ")<< graphName();
+    outText << "</p>";
+
+    outText << "<p>";
+    outText << tr("The BC index of a node u is the sum of delta (s,t,u) for all s,t in V");
     outText << tr("where delta (s,t,u) is the ratio of all geodesics between "
-                  "s and t which run through u. Read the Manual for more.")<<"\n";
-    outText << tr("BC' is the standardized BC.")<<"\n\n";
+                  "s and t which run through u. Read the Manual for more.");
+    outText << "</p>";
+
+    outText << "<p>";
+    outText << tr("BC' is the standardized BC.");
+    outText << "</p>";
+
+    outText << "<p>";
     outText << tr("BC  range: 0 < BC < ")<<QString::number( maxIndexBC)
-            << tr(" (Number of pairs of nodes excluding u)")<<"\n";
-    outText << tr("BC' range: 0 < BC'< 1  (C' is 1 when the node falls on all geodesics)\n\n");
+            << tr(" (Number of pairs of nodes excluding u)");
+    outText << "</p>";
 
-    outText << qSetFieldWidth(m_fieldWidth) <<fixed<<right;
-    outText << qSetFieldWidth ( 10 - no.size() )
-            << no
-            <<reset << "\t"
-           << qSetFieldWidth ( 0 )
-            << lab
-            <<reset << "\t"
-            << qSetFieldWidth ( m_fieldWidth - ci.size() )
-            << ci
-            <<reset << "\t"
-            << qSetFieldWidth ( m_fieldWidth - cs.size() )
-            << cs
-            <<reset << "\t"
-            << qSetFieldWidth ( m_fieldWidth - csp.size() )
-            << csp;
+    outText << "<p>";
+    outText << tr("BC' range: 0 < BC'< 1  (C' is 1 when the node falls on all geodesics)");
+    outText << "</p>";
 
-    outText << qSetFieldWidth(0)<< endl;
+
+    outText << "<table>";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th>"
+            << tr("Node")
+            << "</th><th>"
+            << tr("Label")
+            << "</th><th>"
+            << tr("BC")
+            << "</th><th>"
+            << tr("BC'")
+            << "</th><th>"
+            << tr("%BC")
+            <<"</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody>";
 
     QList<Vertex*>::const_iterator it;
 
-
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
-        outText << qSetFieldWidth(m_fieldWidth) <<right<<fixed;
-        no  = QString::number( (*it)->name());
-        lab = (*it)->label().simplified();
-        lab = (!lab.isEmpty()) ? lab.left(10) : "-";
-        ci   = QString::number( (*it)->BC(), 'f', m_precision );
-        cs  = QString::number( (*it)->SBC(), 'f', m_precision );
-        csp =  QString::number( (100* ((*it)->SBC())), 'f', m_precision );
+        outText << right<<fixed;
+
 
         if (dropIsolates && (*it)->isIsolated()) {
         }
         else {
         }
-        outText << qSetFieldWidth ( 10 - no.size() )
-                << no
-                <<reset << "\t"
-                << qSetFieldWidth ( 0 )
-                << lab
-                <<reset << "\t"
-                << qSetFieldWidth ( m_fieldWidth - ci.size() )
-                << ci
-                <<reset << "\t"
-                << qSetFieldWidth ( m_fieldWidth - cs.size() )
-                << cs
-                <<reset << "\t"
-                << qSetFieldWidth ( m_fieldWidth - csp.size() )
-                << csp;
-        outText << qSetFieldWidth(0)<< endl;
 
-
+        outText << "<tr><td>"
+                << (*it)->name()
+                << "</td><td>"
+                << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                << "</td><td>"
+                << (*it)->BC()
+                << "</td><td>"
+                << (*it)->SBC()
+                << "</td><td>"
+                << (100* ((*it)->SBC()))
+                << "</td></tr>";
     }
 
-    outText << qSetFieldWidth(0);
-    if ( minBC ==  maxBC)
-        outText << "\n" << tr("All nodes have the same BC score.") << "\n";
+    outText << "</tbody></table>";
+
+    if ( minBC ==  maxBC) {
+        outText << "<p>"
+                << tr("All nodes have the same BC score.")
+                << "</p>";
+    }
     else {
-        outText << "\n";
-        outText << tr("Max BC' = ") << maxBC <<" (node "<< maxNodeBC  <<  ")  \n";
-        outText << tr("Min BC' = ") << minBC <<" (node "<< minNodeBC <<  ")  \n";
-        outText << tr("BC classes = ") << classesBC<<" \n\n";
+        outText << "<p>";
+        outText << tr("Max BC' = ") << maxBC <<" (node "<< maxNodeBC  <<  ")";
+        outText << "<br />";
+        outText << tr("Min BC' = ") << minBC <<" (node "<< minNodeBC <<  ")";
+        outText << "<br />";
+        outText << tr("BC classes = ") << classesBC;
+        outText << "</p>";
     }
-    outText << tr("BC' Sum = ") << sumBC<<" \n";
-    outText << tr("BC' Mean = ") << meanBC<<" \n";
-    outText << tr("BC' Variance = ") << varianceBC<<" \n";
 
+    outText << "<p>";
+    outText << tr("BC' Sum = ") << sumBC<<"<br/>";
+    outText << tr("BC' Mean = ") << meanBC<<"<br/>";
+    outText << tr("BC' Variance = ") << varianceBC<<"<br/>";
+    outText << "</p>";
+
+    outText << "<p>";
     if (!considerWeights) {
-        outText << tr("\nGROUP BETWEENESS CENTRALISATION (GBC)\n\n");
-        outText << tr("GBC = ") <<  groupBC <<"\n\n";
 
-        outText << tr("GBC range: 0 < GBC < 1\n");
-        outText << tr("GBC = 0, when all the nodes have exactly the same betweenness index.\n");
+        outText << tr("GROUP BETWEENESS CENTRALISATION (GBC)")
+                << "<br />";
+        outText << tr("GBC = ") <<  groupBC
+                   << "<br />"<< "<br />";
+
+        outText << tr("GBC range: 0 < GBC < 1")
+                   << "<br />";
+        outText << tr("GBC = 0, when all the nodes have exactly the same betweenness index.")
+                   << "<br />";
         outText << tr("GBC = 1, when one node falls on all other geodesics between "
                       "all the remaining (N-1) nodes. "
-                      "This is exactly the situation realised by a star graph.\n");
-        outText << "(Wasserman & Faust, formula 5.13, p. 192)\n\n";
+                      "This is exactly the situation realised by a star graph.")
+                << "<br />"
+                << "(Wasserman & Faust, formula 5.13, p. 192)";
     }
     else
-        outText << tr("Because this graph is weighted, we cannot compute Group Centralization\n")
+        outText << tr("Because this graph is weighted, we cannot compute Group Centralization")
+                << "<br />"
                 << tr("Use variance instead.");
-
-    outText << "\n\n";
-    outText << tr("Betweenness Centrality report, \n");
+    outText << "</p>";
+    outText << "<p>";
+    outText << tr("Betweenness Centrality report, <br />");
     outText << tr("Created by SocNetV ") << VERSION << ": "
             << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << "</p>";
+
+    outText << htmlEnd;
     file.close();
 
 }
@@ -8129,12 +8174,14 @@ void Graph::graphClusteringHierarchical(const int &method, Matrix &DSM) {
  * @param considerWeights
  */
 void Graph::writeSimilarityMatching(const QString fileName,
-                                   const QString &measure,
+                                   const int &measure,
                                    const QString &matrix,
                                    const QString &varLocation,
                                    const bool &diagonal,
                                    const bool &considerWeights) {
+
     Q_UNUSED(considerWeights);
+
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
@@ -8163,26 +8210,66 @@ void Graph::writeSimilarityMatching(const QString fileName,
 
     outText.setRealNumberPrecision(m_precision);
 
-    outText << tr("SIMILARITY MATRIX: MATCHING COEFFICIENTS (SMM)") << endl;
-    outText << tr("Network name: ")<< graphName()<< endl
-            << tr("Input matrix: ")<< matrix << endl
-            << tr("Variables in: ")<< ((varLocation != "Rows" && varLocation != "Columns") ? "Concatenated rows + columns " : varLocation)  << endl
-            << tr("Matching method: ") << measure
-            << tr("Diagonal: ") << ((diagonal) ? "included" : "not included");
+    outText << tr("SIMILARITY MATRIX: MATCHING COEFFICIENTS (SMMC)") << endl<< endl;
 
+    outText << qSetPadChar('.') <<qSetFieldWidth(20)<< left
+            << tr("Network name: ")<< reset<< graphName()<< endl
+            << qSetPadChar('.') <<qSetFieldWidth(20)<< left
+            << tr("Input matrix: ")<< reset<< matrix << endl
+            << qSetPadChar('.') <<qSetFieldWidth(20)<< left
+            << tr("Variables in: ")<< reset<< ((varLocation != "Rows" && varLocation != "Columns") ? "Concatenated rows + columns " : varLocation)  << endl
+            << qSetPadChar('.') <<qSetFieldWidth(20)<< left
+            << tr("Matching measure: ") << reset ;
 
-    outText << tr("SCM range: 0 < C < 1") << endl<<endl;
+    switch (measure) {
+    case SIMILARITY_MEASURE_SIMPLE :
+        outText << "Simple / Exact matching " ;
+        break;
+    case SIMILARITY_MEASURE_JACCARD:
+        outText << "Jaccard Index" ;
+
+        break;
+    case SIMILARITY_MEASURE_HAMMING:
+        outText << "Hamming distance" ;
+        break;
+    default:
+        break;
+    }
+
+    outText << endl
+             << qSetPadChar('.') <<qSetFieldWidth(20)<< left
+            << tr("Diagonal: \t") << reset << ((diagonal) ? "Included" : "Not included") << endl << endl;
+
+    outText << tr("Analysis results") <<endl<<endl;
+    if (measure==SIMILARITY_MEASURE_HAMMING)
+        outText << tr("SMMC range: 0 < C") << endl<<endl;
+    else
+        outText << tr("SMMC range: 0 < C < 1") << endl<<endl;
 
     outText << SCM;
 
     outText << endl;
-    outText << tr("SCM = 0, when there is no tie profile similarity at all.\n");
-    outText << tr(
-      "SCM > 0, when two actors have some matches in their ties/distances, \n"
-      "i.e. SCM = 1 means the two actors have their ties to other actors exactly the same all the time.\n");
 
-    outText <<"\n\n" ;
-    outText << tr("Similarity: Matches Report,\n");
+    if (measure==SIMILARITY_MEASURE_HAMMING) {
+        outText << tr("SMMC = 0, when two actors are absolutely similar (no tie/distance differences).")<<endl;
+        outText << tr(
+          "SMMC > 0, when two actors have some differences in their ties/distances, \n"
+          "i.e. SMMC = 3 means the two actors have 3 differences in their tie/distance profiles to other actors.");
+    }
+    else {
+        outText << tr("SMMC = 0, when there is no tie profile similarity at all.")<<endl;
+        outText << tr(
+          "SMMC > 0, when two actors have some matches in their ties/distances, \n"
+          "i.e. SMMC = 1 means the two actors have their ties to other actors exactly the same all the time.");
+    }
+
+
+
+
+
+    outText << endl<< endl;
+
+    outText << tr("Similarity Matrix by Matching Measure Report,\n");
     outText << tr("Created by SocNetV ") << VERSION << ": "
             << actualDateTime.currentDateTime()
                .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
@@ -8195,8 +8282,9 @@ void Graph::writeSimilarityMatching(const QString fileName,
 
 
 /**
- * @brief Calls Matrix:similarityMatching to compute the similarity matrix  SCM
- * given an input matrix and a matching metod
+ * @brief Calls Matrix:similarityMatching to compute the similarity matrix SCM
+ * of the variables (rows, columns, both) in given input matrix using the
+ * selected matching measure.
  *
  * @param AM
  * @param SCM
@@ -8204,7 +8292,7 @@ void Graph::writeSimilarityMatching(const QString fileName,
  */
 void Graph::graphSimilarityMatching (Matrix &AM,
                                     Matrix &SCM,
-                                    const QString &measure,
+                                    const int &measure,
                                     const QString &varLocation,
                                     const bool &diagonal,
                                     const bool &considerWeights){
@@ -8262,13 +8350,15 @@ void Graph::writeSimilarityPearson(const QString fileName,
 
     outText.setRealNumberPrecision(m_precision);
 
-    outText << tr("PEARSON CORRELATION COEFFICIENTS (PCC) MATRIX") << endl;
+    outText << tr("PEARSON CORRELATION COEFFICIENTS (PCC) MATRIX") << endl<<endl;
+
     outText << tr("Network name: ")<< graphName()<< endl
             << tr("Input matrix: ")<< matrix << endl
             << tr("Variables in: ")<< ((varLocation != "Rows" && varLocation != "Columns") ? "Concatenated rows + columns " : varLocation)
                                                                                             << endl<<endl;
+    outText << tr("Analysis results") <<endl<<endl;
 
-    outText << tr("PCC  range: -1 < C < 1") << endl<<endl;
+    outText << tr("PCC range: -1 < C < 1") << endl;
 
     outText << PCC;
 

@@ -29,6 +29,7 @@ Written in Qt
 #define TEXTEDITOR_H
 
 #include <QMainWindow>
+//#include <QMimeData>
 
 class QAction;
 class QMenu;
@@ -51,7 +52,9 @@ private slots:
 	bool saveAs();
 	void about();
 	void documentWasModified();
-
+//protected:
+//    bool canInsertFromMimeData(const QMimeData *source) const;
+//    void insertFromMimeData(const QMimeData *source) ;
 private:
 	void createActions();
 	void createMenus();

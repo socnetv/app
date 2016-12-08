@@ -598,7 +598,7 @@ public:
 
 
     void writeSimilarityMatching(const QString fileName,
-                                const QString &measure,
+                                const int &measure=SIMILARITY_MEASURE_SIMPLE,
                                 const QString &matrix = "adjacency",
                                 const QString &varLocation="rows",
                                 const bool &diagonal=false,
@@ -664,7 +664,7 @@ public:
 
     void graphSimilarityMatching(Matrix &AM,
                                 Matrix &SEM,
-                                const QString &measure="Simple / Exact matching",
+                                const int &measure=SIMILARITY_MEASURE_SIMPLE,
                                 const QString &varLocation="Rows",
                                 const bool &diagonal=false,
                                 const bool &considerWeights=true);

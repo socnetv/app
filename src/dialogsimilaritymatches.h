@@ -43,7 +43,7 @@ public slots:
 signals:
     void userChoices(const QString &matrix,
                      const QString &varLocation,
-                     const QString &method,
+                     const int &method,
                      const bool &diagonal);
 private slots:
     void on_buttonBox_accepted();

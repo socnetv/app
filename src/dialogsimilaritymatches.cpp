@@ -67,7 +67,7 @@ void DialogSimilarityMatches::gatherData(){
     qDebug()<< "DialogSimilarityMatches: gathering Data!...";
     QString matrix = (ui.matrixSelect) ->currentText();
     QString varLocation = (ui.variablesLocationSelect) ->currentText();
-    QString method = (ui.methodSelect)->currentText();
+    int method = (ui.methodSelect)->currentIndex();
     bool diagonal = (ui.diagonalCheckBox)->isChecked();
 
     qDebug()<< "DialogSimilarityMatches: user selected: "

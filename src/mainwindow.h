@@ -341,10 +341,10 @@ public slots:
     void slotPrestigePageRank();
     void slotPrestigeProximity();
 
-    void slotSimilarityMatchesDialog();
+    void slotSimilarityMatchingDialog();
     void slotSimilarityMatching(const QString &matrix,
                                const QString &varLocation,
-                               const QString &measure,
+                               const int &measure,
                                const bool &diagonal);
 
     void slotSimilarityPearsonDialog();

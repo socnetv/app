@@ -42,7 +42,8 @@ TextEditor::TextEditor(const QString &fileName, QWidget *parent) : QMainWindow(p
 
 	readSettings();
 
-	connect(textEdit->document(), SIGNAL(contentsChanged()), this, SLOT(documentWasModified()));
+    connect(textEdit->document(), SIGNAL(contentsChanged()),
+            this, SLOT(documentWasModified()));
 
     resize( 1024,768 );
 
@@ -208,7 +209,7 @@ void TextEditor::createStatusBar()
 
 void TextEditor::readSettings()
 {
-    QSettings settings("Trolltech", "Application Example");
+    QSettings settings("SocNetV", "TextEditor");
     QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
     QSize size = settings.value("size", QSize(400, 400)).toSize();
     resize(size);
@@ -217,7 +218,7 @@ void TextEditor::readSettings()
 
 void TextEditor::writeSettings()
 {
-    QSettings settings("Trolltech", "Application Example");
+    QSettings settings("SocNetV ", "TextEditor");
     settings.setValue("pos", pos());
     settings.setValue("size", size());
 }
@@ -251,7 +252,7 @@ void TextEditor::loadFile(const QString &fileName)
 
     QTextStream in(&file);
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    textEdit->setPlainText(in.readAll());
+    textEdit->setHtml(in.readAll());
     QApplication::restoreOverrideCursor();
 
     setCurrentFile(fileName);
@@ -273,7 +274,7 @@ bool TextEditor::saveFile(const QString &fileName)
     QTextStream outText(&file);
     outText.setCodec("UTF-8");
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    outText << textEdit->toPlainText();
+    outText << textEdit->toHtml();
     QApplication::restoreOverrideCursor();
 
     setCurrentFile(fileName);
@@ -302,6 +303,25 @@ QString TextEditor::strippedName(const QString &fullFileName)
     return QFileInfo(fullFileName).fileName();
 }
 
+//bool TextEditor::canInsertFromMimeData( const QMimeData *source ) const
+// {
+//     if (source->hasImage())
+//         return true;
+//     else
+//         return QTextEdit::canInsertFromMimeData(source);
+// }
+
+//void TextEditor::insertFromMimeData( const QMimeData *source )
+//{
+//    if (source->hasImage())
+//    {
+//        QImage image = qvariant_cast<QImage>(source->imageData());
+//        QTextCursor cursor = this->textCursor();
+//        QTextDocument *document = this->document();
+//        document->addResource(QTextDocument::ImageResource, QUrl("image"), image);
+//        cursor.insertImage("image");
+//    }
+//}
 void TextEditor::about()
 {
    QMessageBox::about( this, "SocNetV Editor",
