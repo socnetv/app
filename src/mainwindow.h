@@ -86,7 +86,7 @@ class DialogRandErdosRenyi;
 class DialogRandSmallWorld;
 class DialogRandScaleFree;
 class DialogSimilarityPearson;
-class DialogSimilarityMatchesExact;
+class DialogSimilarityMatches;
 class DialogRandRegular;
 class DialogSettings;
 class TextEditor;
@@ -341,9 +341,11 @@ public slots:
     void slotPrestigePageRank();
     void slotPrestigeProximity();
 
-    void slotSimilarityMatchesExactDialog();
-    void slotSimilarityMatchesExact(const QString &matrix,
-                                    const QString &varLocation);
+    void slotSimilarityMatchesDialog();
+    void slotSimilarityMatching(const QString &matrix,
+                               const QString &varLocation,
+                               const QString &measure,
+                               const bool &diagonal);
 
     void slotSimilarityPearsonDialog();
     void slotSimilarityPearson(const QString &matrix,
@@ -436,7 +438,7 @@ private:
     DialogRandRegular *m_randRegularDialog;
     DialogSettings *m_settingsDialog;
     DialogSimilarityPearson *m_dialogSimilarityPearson;
-    DialogSimilarityMatchesExact *m_dialogSimilarityExact;
+    DialogSimilarityMatches *m_dialogSimilarityMatches;
 
 
     DialogPreviewFile *m_dialogPreviewFile;

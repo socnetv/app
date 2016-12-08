@@ -25,31 +25,34 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef DIALOGSIMILARITYMATCHESEXACT_H
-#define DIALOGSIMILARITYMATCHESEXACT_H
+#ifndef DIALOGSIMILARITYMATCHES_H
+#define DIALOGSIMILARITYMATCHES_H
 
 #include <QDialog>
-#include "ui_dialogsimilaritymatchesexact.h"
+#include "ui_dialogsimilaritymatches.h"
  
 
-class DialogSimilarityMatchesExact: public QDialog
+class DialogSimilarityMatches: public QDialog
 {
 	Q_OBJECT
 public:
-    DialogSimilarityMatchesExact (QWidget *parent = 0);
-    ~DialogSimilarityMatchesExact();
+    DialogSimilarityMatches (QWidget *parent = 0);
+    ~DialogSimilarityMatches();
 public slots:
 	void gatherData();
 signals:
-    void userChoices(const QString &matrix, const QString &varLocation);
+    void userChoices(const QString &matrix,
+                     const QString &varLocation,
+                     const QString &method,
+                     const bool &diagonal);
 private slots:
     void on_buttonBox_accepted();
 
     void on_buttonBox_rejected();
 
 private:
-    Ui::DialogSimilarityMatchesExact ui;
-    QStringList matrixList, variablesLocationList;
+    Ui::DialogSimilarityMatches ui;
+    QStringList matrixList, variablesLocationList, methodsList;
 
 };
 

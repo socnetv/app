@@ -8124,14 +8124,16 @@ void Graph::graphClusteringHierarchical(const int &method, Matrix &DSM) {
 
 /**
  * @brief
- * Writes Exact Matches ratios to given file
+ * Writes similarity matrix based on a matching measure to given file
  * @param fileName
  * @param considerWeights
  */
-void Graph::writeSimilarityMatchesExact(const QString fileName,
-                            const bool considerWeights,
-                            const QString &matrix,
-                            const QString &varLocation) {
+void Graph::writeSimilarityMatching(const QString fileName,
+                                   const QString &measure,
+                                   const QString &matrix,
+                                   const QString &varLocation,
+                                   const bool &diagonal,
+                                   const bool &considerWeights) {
     Q_UNUSED(considerWeights);
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
@@ -8141,44 +8143,46 @@ void Graph::writeSimilarityMatchesExact(const QString fileName,
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    emit statusMessage ( (tr("Calculating Exact Match percentages...")) );
+    emit statusMessage ( (tr("Examining pair-wise similarity of actors...")) );
 
-    Matrix SEM;
+    Matrix SCM;
     if (matrix == "Adjacency") {
         graphAdjacencyMatrixCreate();
-        graphSimilarityMatchesExact(AM, SEM, varLocation);
+        graphSimilarityMatching(AM, SCM, measure, varLocation, diagonal, considerWeights);
     }
     else if (matrix == "Distances") {
         distanceMatrixCreate();
-        graphSimilarityMatchesExact(DM, SEM, varLocation);
+        graphSimilarityMatching(DM, SCM, measure, varLocation, diagonal, considerWeights);
     }
     else {
         return;
     }
 
-    emit statusMessage ( tr("Writing Exact Match percentages to file: ")
+    emit statusMessage ( tr("Writing similarity coefficients to file: ")
                          + fileName );
 
     outText.setRealNumberPrecision(m_precision);
 
-    outText << tr("SIMILARITY: EXACT MATCHES (SEM) MATRIX") << endl;
+    outText << tr("SIMILARITY MATRIX: MATCHING COEFFICIENTS (SMM)") << endl;
     outText << tr("Network name: ")<< graphName()<< endl
             << tr("Input matrix: ")<< matrix << endl
-            << tr("Variables in: ")<< ((varLocation != "Rows" && varLocation != "Columns") ? "Concatenated rows + columns " : varLocation)
-                                                                                            << endl<<endl;
+            << tr("Variables in: ")<< ((varLocation != "Rows" && varLocation != "Columns") ? "Concatenated rows + columns " : varLocation)  << endl
+            << tr("Matching method: ") << measure
+            << tr("Diagonal: ") << ((diagonal) ? "included" : "not included");
 
-    outText << tr("SEM range: 0 < C < 1") << endl<<endl;
 
-    outText << SEM;
+    outText << tr("SCM range: 0 < C < 1") << endl<<endl;
+
+    outText << SCM;
 
     outText << endl;
-    outText << tr("SEM = 0, when there is no tie/distance profile similary at all.\n");
+    outText << tr("SCM = 0, when there is no tie profile similarity at all.\n");
     outText << tr(
-      "SEM > 0, when two actors have some exact matches in their ties/distances, \n"
-      "i.e. SEM = 1 means the two actors have their ties to other actors exactly the same all the time.\n");
+      "SCM > 0, when two actors have some matches in their ties/distances, \n"
+      "i.e. SCM = 1 means the two actors have their ties to other actors exactly the same all the time.\n");
 
     outText <<"\n\n" ;
-    outText << tr("Similarity: Exact Matches Report,\n");
+    outText << tr("Similarity: Matches Report,\n");
     outText << tr("Created by SocNetV ") << VERSION << ": "
             << actualDateTime.currentDateTime()
                .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
@@ -8191,28 +8195,26 @@ void Graph::writeSimilarityMatchesExact(const QString fileName,
 
 
 /**
- * @brief Creates an actor by actor similarity matrix SEM where the (i,j) element
- * is the ratio of exact tie /distance matches of actors i and j to all other actors.
- * If the input matrix is the adjacency matrix, the SEM ratio of two nodes measures
- * the similarity of their tie profiles.
- * For instance, if element (i,j) = 0.5, it means that actors i and j have
- * the same ties present or absent to other actors 50% of the time.
- * This measure of similarity is particularly useful when ties are binary (not valued)
+ * @brief Calls Matrix:similarityMatching to compute the similarity matrix  SCM
+ * given an input matrix and a matching metod
  *
  * @param AM
- * @param SEM
+ * @param SCM
  * @param rows
  */
-void Graph::graphSimilarityMatchesExact (Matrix &AM,
-                                         Matrix &SEM,
-                                         const QString &varLocation){
-    qDebug()<<"Graph::graphSimilarityMatchesExact()";
+void Graph::graphSimilarityMatching (Matrix &AM,
+                                    Matrix &SCM,
+                                    const QString &measure,
+                                    const QString &varLocation,
+                                    const bool &diagonal,
+                                    const bool &considerWeights){
+    qDebug()<<"Graph::graphSimilarityMatching()";
 
 
-    SEM.similarityMatchesExact(AM, varLocation);
+    SCM.similarityMatching(AM, measure, varLocation, diagonal, considerWeights);
 
-    qDebug()<<"Graph::graphSimilarityMatchesExact() - matrix SEM";
-    SEM.printMatrixConsole(true);
+    qDebug()<<"Graph::graphSimilarityMatching() - matrix SCM";
+    SCM.printMatrixConsole(true);
 
 }
 

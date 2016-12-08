@@ -56,7 +56,7 @@
 #include "dialograndregular.h"
 #include "dialogsettings.h"
 #include "dialogsimilaritypearson.h"
-#include "dialogsimilaritymatchesexact.h"
+#include "dialogsimilaritymatches.h"
 
 
 
@@ -1949,7 +1949,7 @@ void MainWindow::initActions(){
                    "will show little variation among the actors, causing "
                    "difficulty in classifying the actors in structural equivalence classes."));
     connect(similarityExactMatchesAct, SIGNAL(triggered()),
-            this, SLOT(slotSimilarityMatchesExactDialog() )  );
+            this, SLOT(slotSimilarityMatchesDialog() )  );
 
 
 
@@ -10082,17 +10082,17 @@ void MainWindow::slotClusteringCoefficient (){
 
 
 /**
- * @brief Displays the DialogSimilarityMatchesExact dialog.
+ * @brief Displays the DialogSimilarityMatches dialog.
  */
-void MainWindow::slotSimilarityMatchesExactDialog() {
-    qDebug()<< "MW::slotSimilarityMatchesExactDialog()";
+void MainWindow::slotSimilarityMatchesDialog() {
+    qDebug()<< "MW::slotSimilarityMatchesDialog()";
 
-    m_dialogSimilarityExact = new DialogSimilarityMatchesExact(this);
+    m_dialogSimilarityMatches = new DialogSimilarityMatches(this);
 
-    connect( m_dialogSimilarityExact, &DialogSimilarityMatchesExact::userChoices,
-             this, &MainWindow::slotSimilarityMatchesExact );
+    connect( m_dialogSimilarityMatches, &DialogSimilarityMatches::userChoices,
+             this, &MainWindow::slotSimilarityMatching );
 
-    m_dialogSimilarityExact->exec();
+    m_dialogSimilarityMatches->exec();
 
 }
 
@@ -10100,12 +10100,14 @@ void MainWindow::slotSimilarityMatchesExactDialog() {
 
 
 /**
- * @brief Calls Graph::writeSimilarityMatchesExact() to write Exact Matches
+ * @brief Calls Graph::writeSimilarityMatching() to write Exact Matches
  * similarity matrix into a file, and displays it.
  *
  */
-void MainWindow::slotSimilarityMatchesExact(const QString &matrix,
-                                            const QString &varLocation) {
+void MainWindow::slotSimilarityMatching(const QString &matrix,
+                                       const QString &varLocation,
+                                       const QString &measure,
+                                       const bool &diagonal) {
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10113,20 +10115,20 @@ void MainWindow::slotSimilarityMatchesExact(const QString &matrix,
     QString fn = appSettings["dataDir"] + "socnetv-report-similarity-exact.dat";
     bool considerWeights=true;
 
-    statusMessage(  QString(tr("Computing Exact Matches similarity matrix. Please wait...")) );
-    progressMsg = tr("Computing Exact Matches similarity matrix. \n"
+    statusMessage(  QString(tr("Computing similarity matrix. Please wait...")) );
+    progressMsg = tr("Computing matching similarity matrix. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.writeSimilarityMatchesExact( fn, considerWeights, matrix, varLocation);
+    activeGraph.writeSimilarityMatching( fn, measure, matrix, varLocation, diagonal,considerWeights);
 
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn,this);
     ed->show();
     m_textEditors << ed;
-    statusMessage("Exact Matches similarity matrix saved as: " + fn);
+    statusMessage("Similarity matrix saved as: " + fn);
 }
 
 

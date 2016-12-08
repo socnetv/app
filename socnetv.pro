@@ -50,7 +50,7 @@ FORMS += src/forms/dialogfilteredgesbyweight.ui \
          src/forms/dialograndregular.ui \
          src/forms/dialogsettings.ui \
          src/forms/dialogsimilaritypearson.ui \
-         src/forms/dialogsimilaritymatchesexact.ui 
+         src/forms/dialogsimilaritymatches.ui 
 
 HEADERS += src/guide.h \
            src/graphicswidget.h \
@@ -78,7 +78,7 @@ HEADERS += src/guide.h \
 	   src/dialograndregular.h \
 	   src/dialogsettings.h \
 	   src/dialogsimilaritypearson.h \
-	   src/dialogsimilaritymatchesexact.h
+	   src/dialogsimilaritymatches.h
 
 SOURCES += src/guide.cpp \
            src/graphicswidget.cpp \
@@ -107,7 +107,7 @@ SOURCES += src/guide.cpp \
 	   src/dialograndscalefree.cpp \
 	   src/dialogsettings.cpp \
 	   src/dialogsimilaritypearson.cpp \
-	   src/dialogsimilaritymatchesexact.cpp
+	   src/dialogsimilaritymatches.cpp
 
 
 

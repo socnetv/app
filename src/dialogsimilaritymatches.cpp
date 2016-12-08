@@ -3,7 +3,7 @@
  version: 2.2
  Written in Qt
  
-                         dialogsimilaritymatchesexact.cpp  -  description
+                         dialogsimilaritymatches.cpp  -  description
                              -------------------
     copyright         : (C) 2005-2016 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -27,13 +27,13 @@
 
  
 
-#include "dialogsimilaritymatchesexact.h"
+#include "dialogsimilaritymatches.h"
 
 #include <QDebug>
 #include <QPushButton>
 
 
-DialogSimilarityMatchesExact::DialogSimilarityMatchesExact (QWidget *parent) : QDialog (parent)
+DialogSimilarityMatches::DialogSimilarityMatches (QWidget *parent) : QDialog (parent)
 {
     ui.setupUi(this);
 
@@ -48,38 +48,49 @@ DialogSimilarityMatchesExact::DialogSimilarityMatchesExact (QWidget *parent) : Q
             << "Columns"
             << "Both";
 
-    (ui.matrixSelect) -> insertItems( 1, matrixList );
+    methodsList << "Simple / Exact matching"
+                <<"Jaccard index"
+                <<"Hamming distance";
+
+
+    ui.matrixSelect -> insertItems( 1, matrixList );
     (ui.variablesLocationSelect) -> insertItems( 1, variablesLocationList );
+    (ui.methodSelect) -> insertItems( 1, methodsList );
+
+    (ui.diagonalCheckBox)->setChecked(false);
 
 }
 
 
 
-void DialogSimilarityMatchesExact::gatherData(){
-    qDebug()<< "DialogSimilarityMatchesExact: gathering Data!...";
+void DialogSimilarityMatches::gatherData(){
+    qDebug()<< "DialogSimilarityMatches: gathering Data!...";
     QString matrix = (ui.matrixSelect) ->currentText();
     QString varLocation = (ui.variablesLocationSelect) ->currentText();
+    QString method = (ui.methodSelect)->currentText();
+    bool diagonal = (ui.diagonalCheckBox)->isChecked();
 
-    qDebug()<< "DialogSimilarityMatchesExact: user selected: "
+    qDebug()<< "DialogSimilarityMatches: user selected: "
             << matrix
-            << varLocation;
-    emit userChoices( matrix, varLocation  );
+            << varLocation
+            << method;
+    emit userChoices( matrix, varLocation, method, diagonal  );
 			
 }
 
 
-void DialogSimilarityMatchesExact::on_buttonBox_accepted()
+void DialogSimilarityMatches::on_buttonBox_accepted()
 {
     this->gatherData();
     this->accept();
 }
 
-void DialogSimilarityMatchesExact::on_buttonBox_rejected()
+void DialogSimilarityMatches::on_buttonBox_rejected()
 {
     this->reject();
 }
 
-DialogSimilarityMatchesExact::~DialogSimilarityMatchesExact(){
+DialogSimilarityMatches::~DialogSimilarityMatches(){
      matrixList.clear();
      variablesLocationList.clear();
 }

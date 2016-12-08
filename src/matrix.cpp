@@ -818,15 +818,21 @@ bool Matrix::printMatrixConsole(bool debug){
 
 
 
+
 /**
- * @brief  Computes the exact matches ration of the rows or the columns
- * of the given matrix AM
+ * @brief  Computes the pair-wise matching score of the rows, columns
+ * or both of the given matrix AM, based on the given matching measure
  * @param AM Matrix
- * @return Matrix nxn with SEM values for every pair of rows/columns of AM
+ * @return Matrix nxn with matching scores for every pair of rows/columns of AM
  */
 
-Matrix& Matrix::similarityMatchesExact(Matrix &AM, const QString varLocation){
-    qDebug()<< "Matrix::similarityMatchesExact() -"
+Matrix& Matrix::similarityMatching(Matrix &AM,
+                                   const QString measure,
+                                   const QString varLocation,
+                                   const bool &diagonal,
+                                   const bool &considerWeights){
+    qDebug()<< "Matrix::similarityMatching() -"
+            <<"measure"<< measure
             << "varLocation"<< varLocation;
 
     int N = 0;
@@ -846,7 +852,7 @@ Matrix& Matrix::similarityMatchesExact(Matrix &AM, const QString varLocation){
 
         QVector<float> mean (N,0); // holds mean values
         QVector<float> sigma(N,0);
-        qDebug()<< "Matrix::similarityMatchesExact() -"
+        qDebug()<< "Matrix::similarityMatching() -"
                 <<"input matrix";
         AM.printMatrixConsole(true);
 
@@ -883,7 +889,7 @@ Matrix& Matrix::similarityMatchesExact(Matrix &AM, const QString varLocation){
 
         QVector<float> mean (N,0); // holds mean values
         QVector<float> sigma(N,0);
-        qDebug()<< "Matrix::similarityMatchesExact() -"
+        qDebug()<< "Matrix::similarityMatching() -"
                 <<"input matrix";
         AM.printMatrixConsole(true);
 
@@ -929,7 +935,7 @@ Matrix& Matrix::similarityMatchesExact(Matrix &AM, const QString varLocation){
                 CM.setItem(j + N,i, AM.item(j,i));
             }
         }
-        qDebug()<< "Matrix::similarityMatchesExact() -"
+        qDebug()<< "Matrix::similarityMatching() -"
                 <<"input matrix";
         CM.printMatrixConsole(true);
 
