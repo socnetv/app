@@ -523,7 +523,7 @@ public:
     bool graphAdjacencyMatrixInvert(const QString &method);
 
 
-    /* PRINT OUT TO FILES*/
+    /* REPORT EXPORTS */
 
     void writeDataSetToFile(const QString dir, const QString );
     void writeAdjacencyMatrixTo(QTextStream& os,
