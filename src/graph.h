@@ -885,6 +885,7 @@ private:
 
     QString VERSION, fileName, m_graphName, initEdgeColor, initVertexColor,
         initVertexNumberColor, initVertexLabelColor, initVertexShape;
+    QString htmlHead, htmlEnd;
 
     QDateTime actualDateTime;
 };

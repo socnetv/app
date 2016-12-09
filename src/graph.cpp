@@ -88,7 +88,7 @@ Graph::Graph() {
     calculatedPP=false;
     calculatedPRP=false;
     calculatedTriad=false;
-    m_precision = 5;
+    m_precision = 3;
     m_vertexClicked = 0;
     m_clickedEdge.v1=0;
     m_clickedEdge.v2=0;
@@ -106,6 +106,36 @@ Graph::Graph() {
                                << FILE_ADJACENCY;
 
     randomizeThings();
+
+    htmlHead = QString("<!DOCTYPE html>"
+                       "<html>"
+                       "<head>"
+                       "<meta name=\"qrichtext\" content=\"1\" />"
+                       "<meta charset=\"utf-8\" />"
+                       "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />"
+                       "<meta name=\"generator\" content=\"SocNetV v%1\" />"
+                       "<meta name=\"keywords\" content=\"Social Network Visualizer, SocNetV, report\" />"
+                       "<meta name=\"description\" content=\"Social Network Visualizer (SocNetV) report\" />"
+                       "<style type=\"text/css\">"
+                       "body {font-family:'monospace'; font-size:12px; font-weight:400; font-style:normal;}"
+                       "p, li { white-space: nowrap; }"
+                       "p {margin:10px 0;-qt-block-indent:0; text-indent:0px;}"
+                       "table {margin: 20px 5px; border-spacing: 0px; border-collapse: separate;font-size: 10px;}"
+                       "th {text-align:center; font-weight: bold;}"
+                       "table.stripes tr.odd  { background: #ddd;}"
+                       "table.stripes tr:odd  { background: #ddd;}"
+                       "table.stripes tr.even { background: #fff;}"
+                       "table.stripes tr:even { background: #fff;}"
+                       "td {text-align: right; padding: 2px 9px;}"
+                       ".description {font-style: italic;color: #666;}"
+                       ".info {font-weight: bold;color: #333;}"
+                       ".small {font-style: italic;color: #333; font-size: 90%;}"
+                       "</style>"
+                       "</head>"
+                       "<body style=\"\">"
+                       "<p style=\"\">").arg(VERSION);
+    htmlEnd = "</body></html>";
+
 }
 
 
@@ -4833,24 +4863,6 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    QString htmlHead = "<html><head>"
-                       "<meta name=\"qrichtext\" content=\"1\" />"
-                       "<meta charset=\"utf-8\" />"
-                       "<style type=\"text/css\">"
-                       "body {font-family:'monospace'; font-size:9pt; font-weight:400; font-style:normal;}"
-                       "p, li { white-space: pre-wrap; }"
-                       "p {margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; "
-                       "-qt-block-indent:0; text-indent:0px;}"
-                       "table {padding: 20px 5px 20px;}"
-                       "th {text-align:center; font-weight: bold;}"
-                       "td {text-align: right; padding: 2px 15px 2px 0;}"
-                       "</style>"
-                       "</head>"
-                       "<body style=\"\">"
-                       "<p style=\"\">";
-    QString htmlEnd = "</body></html>";
-
-
     if (graphModified() || !calculatedCentralities ) {
         qDebug() << "Graph::writeCentralityBetweenness() -"
                     "Graph modified. Recomputing Distances/Centralities."
@@ -4866,39 +4878,49 @@ void Graph::writeCentralityBetweenness(const QString fileName,
 
     emit statusMessage ( tr("Writing betweenness indices to file:") +  fileName );
 
+    int rowCount=0;
+
     outText << htmlHead;
-    m_precision = 3;
 
     outText.setRealNumberPrecision(m_precision);
-    outText << "<p>";
+
+    outText << "<h1>";
     outText << tr("BETWEENESS CENTRALITY (BC)");
-    outText << "</p>";
+    outText << "</h1>";
 
-    outText << "<p>";
-    outText << tr("Network name: ")<< graphName();
-    outText << "</p>";
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            << "</p>";
 
-    outText << "<p>";
-    outText << tr("The BC index of a node u is the sum of delta (s,t,u) for all s,t in V");
-    outText << tr("where delta (s,t,u) is the ratio of all geodesics between "
-                  "s and t which run through u. Read the Manual for more.");
-    outText << "</p>";
+    outText << "<p class=\"description\">"
+            << tr("The BC index of a node u is the sum of delta (s,t,u) for all s,t in V ")
+            << "<br />"
+            << tr("where delta (s,t,u) is the ratio of all geodesics between "
+                  "s and t which run through u. Read the Manual for more.")
+            << "<br />"
+            << tr("BC' is the standardized BC.")
+            << "</p>";
 
-    outText << "<p>";
-    outText << tr("BC' is the standardized BC.");
-    outText << "</p>";
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("BC range: ")
+            <<"</span>"
+            << tr("0 &le; BC &le; ")<< maxIndexBC
+            << tr(" (Number of pairs of nodes excluding u)")
+            << "</p>";
 
-    outText << "<p>";
-    outText << tr("BC  range: 0 < BC < ")<<QString::number( maxIndexBC)
-            << tr(" (Number of pairs of nodes excluding u)");
-    outText << "</p>";
-
-    outText << "<p>";
-    outText << tr("BC' range: 0 < BC'< 1  (C' is 1 when the node falls on all geodesics)");
-    outText << "</p>";
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("BC' range: ")
+            <<"</span>"
+            << tr("0 &le; BC' &le; 1  (BC'=1 when the node falls on all geodesics)")
+            << "</p>";
 
 
-    outText << "<table>";
+    outText << "<table class=\"stripes\">";
 
     outText << "<thead>"
             <<"<tr>"
@@ -4920,25 +4942,42 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     QList<Vertex*>::const_iterator it;
 
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
-        outText << right<<fixed;
+        rowCount++;
 
+        outText <<fixed;
 
         if (dropIsolates && (*it)->isIsolated()) {
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                   << (*it)->name()
+                   << "</td><td>"
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td>"
+                   <<"</tr>";
         }
         else {
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                    << (*it)->name()
+                    << "</td><td>"
+                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                    << "</td><td>"
+                    << (*it)->BC()
+                    << "</td><td>"
+                    << (*it)->SBC()
+                    << "</td><td>"
+                    << (100* ((*it)->SBC()))
+                    << "</td>"
+                    <<"</tr>";
+
         }
 
-        outText << "<tr><td>"
-                << (*it)->name()
-                << "</td><td>"
-                << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
-                << "</td><td>"
-                << (*it)->BC()
-                << "</td><td>"
-                << (*it)->SBC()
-                << "</td><td>"
-                << (100* ((*it)->SBC()))
-                << "</td></tr>";
     }
 
     outText << "</tbody></table>";
@@ -4950,51 +4989,90 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     }
     else {
         outText << "<p>";
-        outText << tr("Max BC' = ") << maxBC <<" (node "<< maxNodeBC  <<  ")";
-        outText << "<br />";
-        outText << tr("Min BC' = ") << minBC <<" (node "<< minNodeBC <<  ")";
-        outText << "<br />";
-        outText << tr("BC classes = ") << classesBC;
-        outText << "</p>";
+        outText << "<span class=\"info\">"
+                << tr("Max BC' = ")
+                <<"</span>"
+               << maxBC <<" (node "<< maxNodeBC  <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("Min BC' = ")
+               <<"</span>"
+               << minBC <<" (node "<< minNodeBC <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("BC classes = ")
+               <<"</span>"
+               << classesBC
+               << "</p>";
     }
 
     outText << "<p>";
-    outText << tr("BC' Sum = ") << sumBC<<"<br/>";
-    outText << tr("BC' Mean = ") << meanBC<<"<br/>";
-    outText << tr("BC' Variance = ") << varianceBC<<"<br/>";
+    outText << "<span class=\"info\">"
+            << tr("BC' Sum = ")
+            <<"</span>"
+            << sumBC
+            <<"<br/>"
+           << "<span class=\"info\">"
+            << tr("BC' Mean = ")
+            <<"</span>"
+            << meanBC
+            <<"<br/>"
+            << "<span class=\"info\">"
+            << tr("BC' Variance = ")
+            <<"</span>"
+            << varianceBC
+            <<"<br/>";
     outText << "</p>";
 
-    outText << "<p>";
+
     if (!considerWeights) {
-
+        outText << "<h2>";
         outText << tr("GROUP BETWEENESS CENTRALISATION (GBC)")
-                << "<br />";
-        outText << tr("GBC = ") <<  groupBC
-                   << "<br />"<< "<br />";
+                << "</h2>";
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("GBC = ")
+                <<"</span>"
+                <<  groupBC
+                 << "</p>";
 
-        outText << tr("GBC range: 0 < GBC < 1")
-                   << "<br />";
-        outText << tr("GBC = 0, when all the nodes have exactly the same betweenness index.")
-                   << "<br />";
-        outText << tr("GBC = 1, when one node falls on all other geodesics between "
-                      "all the remaining (N-1) nodes. "
-                      "This is exactly the situation realised by a star graph.")
+        outText << "<p>"
+                << "<span class=\"info\">"
+                << tr("GBC range: ")
+                <<"</span>"
+                <<" 0 &le; GBC &le; 1"
+               << "</p>";
+
+        outText << "<p class=\"description\">"
+                << tr("GBC = 0, when all the nodes have exactly the same betweenness index.")
                 << "<br />"
-                << "(Wasserman & Faust, formula 5.13, p. 192)";
+                << tr("GBC = 1, when one node falls on all other geodesics between "
+                      "all the remaining (N-1) nodes. ")
+                << "<br />"
+                << tr("This is exactly the situation realised by a star graph.")
+                << "<br />"
+                << "(Wasserman & Faust, formula 5.13, p. 192)"
+                << "</p>";
+
     }
     else
-        outText << tr("Because this graph is weighted, we cannot compute Group Centralization")
+        outText << "<p class=\"description\">"
+                << tr("Because this graph is weighted, we cannot compute Group Centralization")
                 << "<br />"
-                << tr("Use variance instead.");
-    outText << "</p>";
-    outText << "<p>";
+                << tr("Use variance instead.")
+                << "</p>";
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
     outText << tr("Betweenness Centrality report, <br />");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualiser</a> v")
+            << VERSION << ": "
             << actualDateTime.currentDateTime()
                .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
     outText << "</p>";
 
     outText << htmlEnd;
+
     file.close();
 
 }
@@ -5023,59 +5101,200 @@ void Graph::writeCentralityStress( const QString fileName,
     }
 
     emit statusMessage ( tr("Writing stress indices to file:") + fileName );
-    outText.setRealNumberPrecision(m_precision);
-    outText << tr("STRESS CENTRALITY (SC)")<<endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-    outText << tr("The SC index of each node u is the sum of sigma(s,t,u): "
-                  "the number of geodesics from s to t through u.")<<"\n";
 
-    outText << tr("SC  range: 0 < SC < ")<<QString::number(maxIndexSC)<<"\n";
-    outText << tr("SC' range: 0 < SC'< 1  (SC'=1 when the node falls on all "
-                  "geodesics)\n\n");
-    outText  << "Node"<<"\tSC\t\tSC'\t\t%SC'\n";
+    int rowCount=0;
+
+    outText << htmlHead;
+
+    outText.setRealNumberPrecision(m_precision);
+
+    outText << "<h1>";
+    outText << tr("STRESS CENTRALITY (SC)");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("The SC index of each node u is the sum of sigma(s,t,u): ")
+            << "<br />"
+            << tr(""
+                  "the number of geodesics from s to t through u.")
+            << "<br />"
+            << tr("SC' is the standardized SC.")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("SC range: ")
+            <<"</span>"
+            << tr("0 &le; SC &le; ")<< maxIndexSC
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("SC' range: ")
+            <<"</span>"
+            << tr("0 &le; SC' &le; 1  (SC'=1 when the node falls on all geodesics)")
+            << "</p>";
+
+
+    outText << "<table class=\"stripes\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th>"
+            << tr("Node")
+            << "</th><th>"
+            << tr("Label")
+            << "</th><th>"
+            << tr("SC")
+            << "</th><th>"
+            << tr("SC'")
+            << "</th><th>"
+            << tr("%SC")
+            <<"</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody>";
+
     QList<Vertex*>::const_iterator it;
+
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+        rowCount++;
+
+        outText <<fixed;
+
         if (dropIsolates && (*it)->isIsolated()) {
-            outText << (*it)->name()<<"\t -- \t\t --" <<endl;
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                   << (*it)->name()
+                   << "</td><td>"
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td>"
+                   <<"</tr>";
         }
         else {
-            outText <<(*it)->name()<<"\t"<<(*it)->SC() << "\t\t"
-               << (*it)->SSC() << "\t\t"
-               <<  (100* ((*it)->SSC()) )<<endl;
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                   << (*it)->name()
+                   << "</td><td>"
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << "</td><td>"
+                   << (*it)->SC()
+                   << "</td><td>"
+                   << (*it)->SSC()
+                   << "</td><td>"
+                   << (100* ((*it)->SSC()))
+                   << "</td>"
+                   <<"</tr>";
         }
     }
 
-    if ( minSC ==  maxSC)
-        outText  << tr("\nAll nodes have the same SC value.\n");
-    else {
-        outText << "\n";
-        outText << tr("Max SC = ") << maxSC <<" (node "<< maxNodeSC  <<  ")  \n";
-        outText << tr("Min SC = ") << minSC <<" (node "<< minNodeSC <<  ")  \n";
-        outText << tr("SC classes = ") << classesSC<<" \n\n";
+    outText << "</tbody></table>";
+
+    if ( minSC ==  maxSC) {
+        outText << "<p>"
+                << tr("All nodes have the same SC score.")
+                << "</p>";
     }
-    outText << tr("SC sum = ") << sumSC<<" \n";
-    outText << tr("SC Mean = ") << meanSC<<" \n";
-    outText << tr("SC Variance = ") << varianceSC<<" \n";
+    else {
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("Max SC' = ")
+                <<"</span>"
+               << maxSC <<" (node "<< maxNodeSC  <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("Min SC' = ")
+               <<"</span>"
+               << minSC <<" (node "<< minNodeSC <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("BC classes = ")
+               <<"</span>"
+               << classesSC
+               << "</p>";
+    }
+
+    outText << "<p>";
+    outText << "<span class=\"info\">"
+            << tr("SC' Sum = ")
+            <<"</span>"
+            << sumSC
+            <<"<br/>"
+           << "<span class=\"info\">"
+            << tr("SC' Mean = ")
+            <<"</span>"
+            << meanSC
+            <<"<br/>"
+            << "<span class=\"info\">"
+            << tr("SC' Variance = ")
+            <<"</span>"
+            << varianceSC
+            <<"<br/>";
+    outText << "</p>";
+
 
 //    if (!considerWeights) {
-//        outText << endl<< tr("GROUP STRESS CENTRALISATION (GSC)")<<"\n";
-//        outText << tr("GSC = ") <<  groupSC<<"\n\n";
+//        outText << "<h2>";
+//        outText << tr("GROUP STRESS CENTRALISATION (GSC)")
+//                << "</h2>";
+//        outText << "<p>";
+//        outText << "<span class=\"info\">"
+//                << tr("GSC = ")
+//                <<"</span>"
+//                <<  groupSC
+//                 << "</p>";
 
-//        outText << tr("GSC range: 0 < GSC < 1\n");
-//        outText << tr("GSC = 0, when all the nodes have exactly the same stress index.\n");
-//        outText << tr("GSC = 1, when one node falls on all other geodesics between "
-//                      "all the remaining (N-1) nodes. "
-//                      "This is exactly the situation realised by a star graph.\n");
+//        outText << "<p>"
+//                << "<span class=\"info\">"
+//                << tr("GSC range: ")
+//                <<"</span>"
+//                <<" 0 &lt; GSC &lt; 1"
+//               << "</p>";
+
+//        outText << "<p class=\"description\">"
+//                << tr("GSC = 0, when all the nodes have exactly the same betweenness index.")
+//                << "<br />"
+//                << tr("GSC = 1, when one node falls on all other geodesics between "
+//                      "all the remaining (N-1) nodes. ")
+//                << "<br />"
+//                << tr("This is exactly the situation realised by a star graph.")
+//                << "<br />"
+//                << "(Wasserman & Faust, formula 5.13, p. 192)"
+//                << "</p>";
+
 //    }
 //    else
-//        outText << tr("Because this graph is weighted, we cannot compute Group Centralization\n")
-//                << tr("Use variance instead.");
+//        outText << "<p class=\"description\">"
+//                << tr("Because this graph is weighted, we cannot compute Group Centralization")
+//                << "<br />"
+//                << tr("Use variance instead.")
+//                << "</p>";
 
-    outText << "\n\n";
-    outText << tr("Stress Centrality report, \n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
+    outText << "<p class=\"small\">";
+    outText << tr("Stress Centrality report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\" >Social Network Visualiser</a> v")
+            << VERSION << ": "
             << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+
+
     file.close();
 
 }
@@ -5109,41 +5328,188 @@ void Graph::writeCentralityEccentricity(const QString fileName,
     }
     emit statusMessage ( QString(tr("Writing eccentricity indices to file:"))
                          .arg(fileName) );
+
+    int rowCount=0;
+
+    outText << htmlHead;
+
     outText.setRealNumberPrecision(m_precision);
-    outText << tr("ECCENTRICITY CENTRALITY (EC)") << endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-    outText << tr("The EC index of a node u is the inverse maximum geodesic distance "
-                  " from u to all other nodes in the network.") << "\n";
 
-    outText << tr("EC range: 0 < EC < 1 (GC=1 => max distance to all other nodes is 1)") << "\n\n";
-    outText << "Node"<<"\tEC=EC'\t\t%EC\n";
+    outText << "<h1>";
+    outText << tr("ECCENTRICITY CENTRALITY (EC)");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("The EC index of a node u is the inverse maximum geodesic distance ")
+            << "<br />"
+            << tr("from u to all other nodes in the network.")
+            << "<br />"
+            << tr("EC is already standardized..")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("EC range: ")
+            <<"</span>"
+            << tr("0 &le; EC &le; 1 ")
+            << tr(" (EC=1 when the actor has ties to all other nodes)")
+            << "</p>";
+
+    outText << "<table class=\"stripes\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th>"
+            << tr("Node")
+            << "</th><th>"
+            << tr("Label")
+            << "</th><th>"
+            << tr("EC=EC'")
+            << "</th><th>"
+            << tr("%EC")
+            <<"</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody>";
+
     QList<Vertex*>::const_iterator it;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if (dropIsolates && (*it)->isIsolated()) {
-            outText << (*it)->name()<<"\t -- \t\t --" <<endl;
-        }
-        else  {
-            outText << (*it)->name()<<"\t"<<(*it)->EC() << "\t\t"
-                <<  (100* ((*it)->SEC()) )<<endl;
-        }
-    }
-    if ( minEC ==  maxEC)
-        outText << tr("\nAll nodes have the same EC value.\n");
-    else {
-        outText << "\n";
-        outText << tr("Max EC = ") << maxEC <<" (node "<< maxNodeEC  <<  ")  \n";
-        outText << tr("Min EC = ") << minEC <<" (node "<< minNodeEC <<  ")  \n";
-        outText << tr("EC classes = ") << classesEC<<" \n\n";
-    }
-    outText << tr("EC sum = ") << sumEC<<" \n";
-    outText << tr("EC Mean = ") << meanEC<<" \n";
-    outText << tr("EC Variance = ") << varianceEC<<" \n";
 
-    outText << "\n\n";
-    outText << tr("Eccentricity Centrality report, \n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
+    for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+        rowCount++;
+
+        outText <<fixed;
+
+        if (dropIsolates && (*it)->isIsolated()) {
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                   << (*it)->name()
+                   << "</td><td>"
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td>"
+                   <<"</tr>";
+        }
+        else {
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                    << (*it)->name()
+                    << "</td><td>"
+                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                    << "</td><td>"
+                    << (*it)->EC()
+                    << "</td><td>"
+                    << (100* ((*it)->SEC()))
+                    << "</td>"
+                    <<"</tr>";
+
+        }
+
+    }
+
+    outText << "</tbody></table>";
+
+    if ( minEC ==  maxEC) {
+        outText << "<p>"
+                << tr("All nodes have the same EC score.")
+                << "</p>";
+    }
+    else {
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("Max EC = ")
+                <<"</span>"
+               << maxEC <<" (node "<< maxNodeEC  <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("Min EC = ")
+               <<"</span>"
+               << minEC <<" (node "<< minNodeEC <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("EC classes = ")
+               <<"</span>"
+               << classesEC
+               << "</p>";
+    }
+
+    outText << "<p>";
+    outText << "<span class=\"info\">"
+            << tr("EC Sum = ")
+            <<"</span>"
+            << sumEC
+            <<"<br/>"
+           << "<span class=\"info\">"
+            << tr("EC Mean = ")
+            <<"</span>"
+            << meanEC
+            <<"<br/>"
+            << "<span class=\"info\">"
+            << tr("EC Variance = ")
+            <<"</span>"
+            << varianceEC
+            <<"<br/>";
+    outText << "</p>";
+
+
+//    if (!considerWeights) {
+//        outText << "<h2>";
+//        outText << tr("GROUP ECCENTRICITY CENTRALISATION (GEC)")
+//                << "</h2>";
+//        outText << "<p>";
+//        outText << "<span class=\"info\">"
+//                << tr("GEC = ")
+//                <<"</span>"
+//                <<  groupEC
+//                 << "</p>";
+
+//        outText << "<p>"
+//                << "<span class=\"info\">"
+//                << tr("GEC range: ")
+//                <<"</span>"
+//                <<" 0 &le; GEC &le; 1"
+//               << "</p>";
+
+//        outText << "<p class=\"description\">"
+//                << tr("GEC = 0, when all the nodes have exactly the same betweenness index.")
+//                << "<br />"
+//                << tr("GEC = 1, when one node falls on all other geodesics between "
+//                      "all the remaining (N-1) nodes. ")
+//                << "<br />"
+//                << tr("This is exactly the situation realised by a star graph.")
+//                << "<br />"
+//                << "(Wasserman & Faust, formula 5.13, p. 192)"
+//                << "</p>";
+
+//    }
+//    else
+//        outText << "<p class=\"description\">"
+//                << tr("Because this graph is weighted, we cannot compute Group Centralization")
+//                << "<br />"
+//                << tr("Use variance instead.")
+//                << "</p>";
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Eccentricity Centrality report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualiser</a> v")
+            << VERSION << ": "
             << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+
     file.close();
 
 }
@@ -5178,62 +5544,197 @@ void Graph::writeCentralityPower(const QString fileName,
     }
     emit statusMessage ( QString(tr("Writing Power indices to file:"))
                          .arg(fileName) );
+
+    int rowCount=0;
+
+    outText << htmlHead;
+
     outText.setRealNumberPrecision(m_precision);
 
-    outText << tr("POWER CENTRALITY (PC)") << endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-    outText << tr("The PC index of a node u is the sum of the sizes of all Nth-order "
-                  "neighbourhoods with weight 1/n.") << "\n";
+    outText << "<h1>";
+    outText << tr("POWER CENTRALITY (PC)");
+    outText << "</h1>";
 
-    outText << tr("PC' is the standardized index: The PC score divided by the total number "
-                  "of nodes in the same component minus 1") << "\n";
-    outText << tr("PC  range: 0 < PC < ") << QString::number(maxIndexPC)
-            << tr(" (star node)")<<"\n";
-    outText << tr("PC' range: 0 < PC'< 1 \n\n");
-    outText << "Node"<<"\tPC\t\tPC'\t\t%PC'\n";
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("The PC index of a node u is the sum of the sizes of all Nth-order ")
+            << tr("neighbourhoods with weight 1/n.")
+            << "<br />"
+            << tr("PC' is the standardized index: The PC score divided by the total number "
+                  "of nodes in the same component minus 1")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("PC range: ")
+            <<"</span>"
+            << tr("0 &le; PC &le; ")<< maxIndexPC
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("PC' range: ")
+            <<"</span>"
+            << tr("0 &le; PC' &le; 1  (PC'=1 when the node is connected to all (star).)")
+            << "</p>";
+
+    outText << "<table class=\"stripes\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th>"
+            << tr("Node")
+            << "</th><th>"
+            << tr("Label")
+            << "</th><th>"
+            << tr("PC")
+            << "</th><th>"
+            << tr("PC'")
+            << "</th><th>"
+            << tr("%PC")
+            <<"</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody>";
+
     QList<Vertex*>::const_iterator it;
+
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+        rowCount++;
+
+        outText <<fixed;
+
         if (dropIsolates && (*it)->isIsolated()) {
-            outText << (*it)->name()<<"\t -- \t\t --" <<endl;
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                   << (*it)->name()
+                   << "</td><td>"
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td>"
+                   <<"</tr>";
         }
         else {
-            outText << (*it)->name()<<"\t"<<(*it)->PC() << "\t\t"
-                << (*it)->SPC() << "\t\t"
-                <<  (100* ((*it)->SPC()))<<endl;
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                    << (*it)->name()
+                    << "</td><td>"
+                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                    << "</td><td>"
+                    << (*it)->PC()
+                    << "</td><td>"
+                    << (*it)->SPC()
+                    << "</td><td>"
+                    << (100* ((*it)->SPC()))
+                    << "</td>"
+                    <<"</tr>";
+
         }
 
     }
-    if ( minPC ==  maxPC)
-        outText << tr("\nAll nodes have the same PC value.\n");
-    else {
-        outText << "\n";
-        outText << tr("Max PC' = ") << maxPC <<" (node "<< maxNodePC  <<  ")  \n";
-        outText << tr("Min PC' = ") << minPC <<" (node "<< minNodePC <<  ")  \n";
-        outText << tr("PC classes = ") << classesPC<<" \n\n";
+
+    outText << "</tbody></table>";
+
+    if ( minPC ==  maxPC) {
+        outText << "<p>"
+                << tr("All nodes have the same PC score.")
+                << "</p>";
     }
-    outText << tr("PC sum = ") << t_sumPC<<" \n";
-    outText << tr("PC' sum = ") << sumPC<<" \n";
-    outText << tr("PC' Mean = ") << meanPC<<" \n";
-    outText << tr("PC' Variance = ") << variancePC<<" \n";
+    else {
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("Max PC' = ")
+                <<"</span>"
+               << maxPC <<" (node "<< maxNodePC  <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("Min PC' = ")
+               <<"</span>"
+               << minPC <<" (node "<< minNodePC <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("PC classes = ")
+               <<"</span>"
+               << classesPC
+               << "</p>";
+    }
+
+    outText << "<p>";
+    outText << "<span class=\"info\">"
+            << tr("PC' Sum = ")
+            <<"</span>"
+            << sumPC
+            <<"<br/>"
+           << "<span class=\"info\">"
+            << tr("PC' Mean = ")
+            <<"</span>"
+            << meanPC
+            <<"<br/>"
+            << "<span class=\"info\">"
+            << tr("PC' Variance = ")
+            <<"</span>"
+            << variancePC
+            <<"<br/>";
+    outText << "</p>";
+
 
     if (!considerWeights) {
-            outText << endl<<"GROUP POWER CENTRALIZATION (GPC)\n\n";
-            outText << "GPC = " << groupPC<<"\n\n";
+        outText << "<h2>";
+        outText << tr("GROUP POWER CENTRALISATION (GPC)")
+                << "</h2>";
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("GPC = ")
+                <<"</span>"
+                <<  groupPC
+                 << "</p>";
 
-            outText << "GPC range: 0 < GPC < 1\n";
-            outText << "GPC = 0, when all in-degrees are equal (i.e. regular lattice).\n";
-            outText << "GPC = 1, when one node is linked to all other nodes (i.e. star).\n";
-    }
-    else {
-        outText << tr("\nBecause the network is weighted, we cannot compute Group Centralization"
-                   "You can use mean or variance instead.\n");
-    }
+        outText << "<p>"
+                << "<span class=\"info\">"
+                << tr("GPC range: ")
+                <<"</span>"
+                <<" 0 &le; GPC &le; 1"
+               << "</p>";
 
-    outText << "\n\n";
-    outText << tr("Power Centrality report, \n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
+        outText << "<p class=\"description\">"
+                << tr("GPC = 0, when all in-degrees are equal (i.e. regular lattice).")
+                << "<br />"
+                << tr("GPC = 1, when one node is linked to all other nodes (i.e. star). ")
+                << "<br />"
+                << "</p>";
+
+    }
+    else
+        outText << "<p class=\"description\">"
+                << tr("Because this graph is weighted, we cannot compute Group Centralization")
+                << "<br />"
+                << tr("Use mean or variance instead.")
+                << "</p>";
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Power Centrality report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualiser</a> v")
+            << VERSION << ": "
             << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+
+
     file.close();
 
 }
