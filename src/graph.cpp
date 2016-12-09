@@ -14628,35 +14628,102 @@ void Graph::writeAdjacencyMatrix (const QString fn) {
     qDebug()<<"Graph::writeAdjacencyMatrix() to : " << fn;
     QFile file( fn );
     if ( !file.open( QIODevice::WriteOnly ) )  {
+        qDebug()<< "Error opening file!";
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
-    QTextStream outText( &file );
-    outText.setCodec("UTF-8");
+
+    QTextStream outText( &file ); outText.setCodec("UTF-8");
+
     int sum=0;
     float weight=0;
-    outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
-    outText << "Network name: "<< graphName() <<" \n";
-    outText << "Adjacency matrix: \n\n";
+    int rowCount=0;
 
     QList<Vertex*>::const_iterator it, it1;
+
+    outText << htmlHead;
+
+    outText << "<h1>";
+    outText << tr("ADJACENCY MATRIX");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            << "</p>";
+
+
+    outText << "<p class=\"description\">"
+            << tr("The adjacency matrix of a social network is a NxN matrix ")
+            << tr("where each element (i,j) is the value of the edge from "
+                  "actor i to actor j, or 0 if no edge exists.")
+            << "<br />"
+            << "</p>";
+
+
+
+    outText << "<table class=\"stripes\">"
+            << "<thead>"
+            << "<tr>";
+
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        outText <<"<th>"
+                << (*it)->name()
+                << "</th>";
+    }
+    outText << "</tr>"
+            << "</thead>"
+            << "<tbody>";
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
         if ( ! (*it)->isEnabled() ) continue;
+
+        rowCount++;
+
+        //outText << fixed;
+
+        outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">";
+
         for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
+
             if ( ! (*it1)->isEnabled() ) continue;
+
             if ( (weight =  edgeExists ( (*it)->name(), (*it1)->name() )  )!=0 ) {
                 sum++;
-                outText <<  (weight) << " "; // TODO make the matrix look symmetric
+                outText <<"<td>"
+                       << (weight)
+                       << "</td>";
             }
-            else
-                outText << "0 ";
+            else {
+                outText <<"<td>"
+                       << 0
+                       << "</td>";
+            }
+
         }
-        outText << endl;
+        outText <<"</tr>";
     }
+    outText << "</tbody></table>";
 
     qDebug("Graph: Found a total of %i edge",sum);
     if ( sum != edgesEnabled() ) qDebug ("Error in edge count found!!!");
     else qDebug("Edge count OK!");
+
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Adjacency matrix report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v")
+            << VERSION << ": "
+            << actualDateTime.currentDateTime()
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << "</p>";
+
+    outText << htmlEnd;
+
 
     file.close();
 }
