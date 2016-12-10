@@ -121,12 +121,18 @@ Graph::Graph() {
                        "p, li { white-space: nowrap; }"
                        "p {margin:10px 0;-qt-block-indent:0; text-indent:0px;}"
                        "table {margin: 20px 5px; border-spacing: 0px; border-collapse: separate;font-size: 10px;}"
-                       "th {text-align:center; font-weight: bold;}"
+                       "table.stripes th {text-align:center; font-weight: bold;}"
                        "table.stripes tr.odd  { background: #ddd;}"
                        "table.stripes tr:odd  { background: #ddd;}"
                        "table.stripes tr.even { background: #fff;}"
                        "table.stripes tr:even { background: #fff;}"
-                       "td {text-align: right; padding: 2px 9px;}"
+                       "table.plot th {text-align: center;font-weight: bold; width: 8px;"
+                       "word-wrap: break-word;white-space: unset; word-break: break-all;"
+                       "vertical-align: bottom;}"
+                       "table.plot td {text-align: center; padding: 0px;"
+                       "width:10px; height:10px;background:#ffe; border-collapse: collapse; "
+                       "border-spacing: 0; border:1px solid #eee;}"
+                       "table.plot td.filled {background: #000;}"
                        ".description {font-style: italic;color: #666;}"
                        ".info {font-weight: bold;color: #333;}"
                        ".small {font-style: italic;color: #333; font-size: 90%;}"
@@ -14686,7 +14692,7 @@ void Graph::writeAdjacencyMatrix (const QString fn) {
         //outText << fixed;
 
         outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">";
-
+        emit updateProgressDialog(rowCount);
         for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
 
             if ( ! (*it1)->isEnabled() ) continue;
@@ -14747,28 +14753,98 @@ void Graph::writeAdjacencyMatrixPlotText (const QString fn) {
     outText.setCodec("UTF-8");
     int sum=0;
     float weight=0;
-    outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
-    outText << "Network name: "<< graphName() <<" \n";
-    outText << "Adjacency matrix visual representation: \n\n";
-    outText << fixed;
+
+
+    int rowCount=0;
+
     QList<Vertex*>::const_iterator it, it1;
+
+    outText << htmlHead;
+
+    outText << "<h1>";
+    outText << tr("ADJACENCY MATRIX PLOT");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            << "</p>";
+
+
+    outText << "<p class=\"description\">"
+            << tr("This a plot of the network's adjacency matrix, a NxN matrix ")
+            << tr("where each element (i,j) is filled if there is an edge from "
+                  "actor i to actor j, or not filled if no edge exists.")
+            << "<br />"
+            << "</p>";
+
+
+
+    outText << "<table class=\"plot\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">";
+
+//    outText << "<thead>"
+//            << "<tr>";
+//    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+//        outText <<"<th>"
+//                << (*it)->name()
+//                << "</th>";
+//    }
+//    outText << "</tr>"
+//            << "</thead>";
+    outText << "<tbody>";
+
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
         if ( ! (*it)->isEnabled() ) continue;
+
+        rowCount++;
+
+        //outText << fixed;
+
+        outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">";
+        emit updateProgressDialog(rowCount);
         for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
+
             if ( ! (*it1)->isEnabled() ) continue;
+
             if ( (weight =  edgeExists ( (*it)->name(), (*it1)->name() )  )!=0 ) {
                 sum++;
-                outText << QString("\xe2\x96\xa0");
+                outText <<"<td class=\"filled\">"
+                         << "&nbsp;&nbsp;"
+                       //<< QString("\xe2\x96\xa0")
+                       << "</td>";
             }
-            else
-                outText << QString("\xe2\x96\xa1");
+            else {
+                outText <<"<td>"
+                          << "&nbsp;&nbsp;"
+                       //<< QString("\xe2\x96\xa1")
+                       << "</td>";
+            }
+
         }
-        outText << endl;
+        outText <<"</tr>";
     }
+    outText << "</tbody></table>";
 
     qDebug("Graph: Found a total of %i edge",sum);
     if ( sum != edgesEnabled() ) qDebug ("Error in edge count found!!!");
     else qDebug("Edge count OK!");
+
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Adjacency matrix report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v")
+            << VERSION << ": "
+            << actualDateTime.currentDateTime()
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+
 
     file.close();
 }

@@ -6237,7 +6237,9 @@ void MainWindow::slotNetworkViewSociomatrix(){
     qDebug ("MW: calling Graph::writeAdjacencyMatrix with %i nodes", aNodes);
     QString fn = appSettings["dataDir"] + "socnetv-report-adjacency-matrix.dat";
 
+    createProgressBar(0,progressMsg);
     activeGraph.writeAdjacencyMatrix(fn) ;
+    destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);
     ed->show();
@@ -6260,7 +6262,11 @@ void MainWindow::slotNetworkViewSociomatrixPlotText(){
     qDebug ("MW: calling Graph::writeAdjacencyMatrix with %i nodes", aNodes);
     QString fn = appSettings["dataDir"] + "socnetv-report-adjacency-matrix.dat";
 
+    createProgressBar(0,progressMsg);
+
     activeGraph.writeAdjacencyMatrixPlotText(fn);
+
+    destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);
     ed->show();
