@@ -529,7 +529,8 @@ public:
     void writeAdjacencyMatrixTo(QTextStream& os,
                                 const bool &saveEdgeWeights=true);
     void writeAdjacencyMatrix(const QString fileName);
-    void writeAdjacencyMatrixPlotText(const QString fileName);
+    void writeAdjacencyMatrixPlotText(const QString fileName,
+                                      const bool &simpler=false);
 
     void writeAdjacencyMatrixInvert(const QString &filename,
                                     const QString &method);
@@ -885,7 +886,7 @@ private:
 
     QString VERSION, fileName, m_graphName, initEdgeColor, initVertexColor,
         initVertexNumberColor, initVertexLabelColor, initVertexShape;
-    QString htmlHead, htmlEnd;
+    QString htmlHead, htmlHeadLight, htmlEnd;
 
     QDateTime actualDateTime;
 };

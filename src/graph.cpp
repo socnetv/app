@@ -118,28 +118,53 @@ Graph::Graph() {
                        "<meta name=\"description\" content=\"Social Network Visualizer (SocNetV) report\" />"
                        "<style type=\"text/css\">"
                        "body {font-family:'monospace'; font-size:12px; font-weight:400; font-style:normal;}"
-                       "p, li { white-space: nowrap; }"
+                       "p, li { white-space: normal; }"
                        "p {margin:10px 0;-qt-block-indent:0; text-indent:0px;}"
-                       "table {margin: 20px 5px; border-spacing: 0px; border-collapse: separate;font-size: 10px;}"
-                       "table.stripes th {text-align:center; font-weight: bold;}"
+                       "table {margin: 20px 5px; white-space: nowrap; border-spacing: 0px; "
+                       "border-collapse: separate;font-size: 10px;}"
+                       "table tr {white-space: normal;}"
+                       "table th {text-align:center;font-weight: bold;"
+                       "background: #000; color: #fff; vertical-align: bottom;}"
+                       "table td {text-align:center; padding: 0.2em 1em;}"
+                       "table.stripes th {}"
                        "table.stripes tr.odd  { background: #ddd;}"
                        "table.stripes tr:odd  { background: #ddd;}"
                        "table.stripes tr.even { background: #fff;}"
                        "table.stripes tr:even { background: #fff;}"
-                       "table.plot th {text-align: center;font-weight: bold; width: 8px;"
-                       "word-wrap: break-word;white-space: unset; word-break: break-all;"
-                       "vertical-align: bottom;}"
-                       "table.plot td {text-align: center; padding: 0px;"
-                       "width:10px; height:10px;background:#ffe; border-collapse: collapse; "
-                       "border-spacing: 0; border:1px solid #eee;}"
+                       "table.plot {}"
+                       "table.plot th {}"
+                       "table.plot td {text-align: center; padding: 0px 3px;"
+                       "border-collapse: collapse; border-spacing: 0; }"
                        "table.plot td.filled {background: #000;}"
+                       ".pre {margin-top:0px; margin-bottom:0px;font-size:1px; line-height: 100%; white-space: nowrap; }"
                        ".description {font-style: italic;color: #666;}"
                        ".info {font-weight: bold;color: #333;}"
                        ".small {font-style: italic;color: #333; font-size: 90%;}"
                        "</style>"
                        "</head>"
-                       "<body style=\"\">"
-                       "<p style=\"\">").arg(VERSION);
+                       "<body style=\"\">").arg(VERSION);
+
+
+    htmlHeadLight = QString("<!DOCTYPE html>"
+                       "<html>"
+                       "<head>"
+                       "<meta name=\"qrichtext\" content=\"1\" />"
+                       "<meta charset=\"utf-8\" />"
+                       "<meta name=\"generator\" content=\"SocNetV v%1\" />"
+                       "<meta name=\"keywords\" content=\"Social Network Visualizer, SocNetV, report\" />"
+                       "<meta name=\"description\" content=\"Social Network Visualizer (SocNetV) report\" />"
+                       "<style type=\"text/css\">"
+                       "body { font-size:12px;white-space: nowrap; }"
+                       "p, li { white-space: normal; }"
+                       "p {margin:10px 0;-qt-block-indent:0; text-indent:0px;}"
+                       ".pre {margin:0px; font-size:1px; line-height: 100%; white-space: nowrap; }"
+                       ".description {font-style: italic;color: #666;}"
+                       ".info {font-weight: bold;color: #333;}"
+                       ".small {font-style: italic;color: #333; font-size: 90%;}"
+                       "</style>"
+                       "</head>"
+                       "<body>").arg(VERSION);
+
     htmlEnd = "</body></html>";
 
 }
@@ -14670,7 +14695,7 @@ void Graph::writeAdjacencyMatrix (const QString fn) {
 
 
 
-    outText << "<table class=\"stripes\">"
+    outText << "<table  border=\"1\" cellspacing=\"0\" cellpadding=\"0\" class=\"stripes\">"
             << "<thead>"
             << "<tr>";
 
@@ -14742,7 +14767,7 @@ void Graph::writeAdjacencyMatrix (const QString fn) {
     This is called by MainWindow::slotViewAdjacencyMatrixPlotText()
     The resulting matrix HAS NO spaces between elements.
 */
-void Graph::writeAdjacencyMatrixPlotText (const QString fn) {
+void Graph::writeAdjacencyMatrixPlotText (const QString fn, const bool &simpler) {
     qDebug()<<"Graph::writeAdjacencyMatrix() to : " << fn;
     QFile file( fn );
     if ( !file.open( QIODevice::WriteOnly ) )  {
@@ -14758,8 +14783,11 @@ void Graph::writeAdjacencyMatrixPlotText (const QString fn) {
     int rowCount=0;
 
     QList<Vertex*>::const_iterator it, it1;
-
-    outText << htmlHead;
+    if (!simpler) {
+        outText << htmlHead;
+    }
+    else
+        outText <<  htmlHeadLight;
 
     outText << "<h1>";
     outText << tr("ADJACENCY MATRIX PLOT");
@@ -14770,6 +14798,11 @@ void Graph::writeAdjacencyMatrixPlotText (const QString fn) {
             << tr("Network name: ")
             <<"</span>"
             << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << vertices()
             << "</p>";
 
 
@@ -14781,53 +14814,68 @@ void Graph::writeAdjacencyMatrixPlotText (const QString fn) {
             << "</p>";
 
 
+    if (!simpler) {
 
-    outText << "<table class=\"plot\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">";
 
-//    outText << "<thead>"
-//            << "<tr>";
-//    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-//        outText <<"<th>"
-//                << (*it)->name()
-//                << "</th>";
-//    }
-//    outText << "</tr>"
-//            << "</thead>";
-    outText << "<tbody>";
+        outText << "<table class=\"plot\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">";
 
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        outText << "<tbody>";
 
-        if ( ! (*it)->isEnabled() ) continue;
+        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
 
-        rowCount++;
+            if ( ! (*it)->isEnabled() ) continue;
 
-        //outText << fixed;
+            rowCount++;
 
-        outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">";
-        emit updateProgressDialog(rowCount);
-        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">";
+            emit updateProgressDialog(rowCount);
+            for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
 
-            if ( ! (*it1)->isEnabled() ) continue;
+                if ( ! (*it1)->isEnabled() ) continue;
 
-            if ( (weight =  edgeExists ( (*it)->name(), (*it1)->name() )  )!=0 ) {
-                sum++;
-                outText <<"<td class=\"filled\">"
-                         << "&nbsp;&nbsp;"
-                       //<< QString("\xe2\x96\xa0")
-                       << "</td>";
+                if ( (weight =  edgeExists ( (*it)->name(), (*it1)->name() )  )!=0 ) {
+                    sum++;
+                    outText <<"<td class=\"filled\">"
+                           << QString("\xe2\x96\xa0")
+                           << "</td>";
+                }
+                else {
+                    outText <<"<td>"
+                              //   << "&nbsp;&nbsp;"
+                           << QString("\xe2\x96\xa1")
+                           << "</td>";
+                }
+
             }
-            else {
-                outText <<"<td>"
-                          << "&nbsp;&nbsp;"
-                       //<< QString("\xe2\x96\xa1")
-                       << "</td>";
-            }
-
+            outText <<"</tr>";
         }
-        outText <<"</tr>";
+        outText << "</tbody></table>";
     }
-    outText << "</tbody></table>";
+    else {
+        outText << "<p class=\"pre\">";
+        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
 
+            if ( ! (*it)->isEnabled() ) continue;
+             rowCount++;
+            emit updateProgressDialog(rowCount);
+            for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
+
+                if ( ! (*it1)->isEnabled() ) continue;
+
+                if ( (weight =  edgeExists ( (*it)->name(), (*it1)->name() )  )!=0 ) {
+                    sum++;
+                    outText << QString("\xe2\x96\xa0") << " ";
+                }
+                else {
+                    outText << QString("\xe2\x96\xa1") << " ";
+
+                }
+
+            }
+            outText << "<br>"<<endl;
+        }
+        outText << "</p>";
+    }
     qDebug("Graph: Found a total of %i edge",sum);
     if ( sum != edgesEnabled() ) qDebug ("Error in edge count found!!!");
     else qDebug("Edge count OK!");

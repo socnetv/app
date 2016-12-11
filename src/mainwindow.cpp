@@ -6235,7 +6235,7 @@ void MainWindow::slotNetworkViewSociomatrix(){
     int aNodes=activeNodes();
     statusBar() ->  showMessage ( QString (tr ("creating adjacency adjacency matrix of %1 nodes")).arg(aNodes) );
     qDebug ("MW: calling Graph::writeAdjacencyMatrix with %i nodes", aNodes);
-    QString fn = appSettings["dataDir"] + "socnetv-report-adjacency-matrix.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-adjacency-matrix.html";
 
     createProgressBar(0,progressMsg);
     activeGraph.writeAdjacencyMatrix(fn) ;
@@ -6257,15 +6257,39 @@ void MainWindow::slotNetworkViewSociomatrixPlotText(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    int aNodes=activeNodes();
-    statusBar() ->  showMessage ( tr ("creating adjacency adjacency matrix of %1 nodes").arg(aNodes ) );
-    qDebug ("MW: calling Graph::writeAdjacencyMatrix with %i nodes", aNodes);
-    QString fn = appSettings["dataDir"] + "socnetv-report-adjacency-matrix.dat";
+    int N=activeNodes();
 
+    statusMessage(tr("Creating plot of adjacency matrix of %1 nodes.").arg(N ));
+
+    qDebug ("MW: calling Graph::writeAdjacencyMatrix with %i nodes", N);
+
+    QString fn = appSettings["dataDir"] + "socnetv-report-adjacency-matrix-plot.html";
+    bool simpler = false;
+    if ( N > 999 ) {
+        float MB = (N * N * 10)/(1024*1024);
+        switch ( slotHelpMessageToUser(
+                     USER_MSG_QUESTION,tr("Very large network to plot!"),
+                     tr("Warning: Really large network"),
+                     tr("To plot a %1 x %1 matrix arranged in HTML table, "
+                        "I will need time to write a very large .html file , circa %2 MB in size. "
+                        "Instead, I can create a simpler / smaller HTML file without table. "
+                        "Press Yes to continue with simpler version, "
+                        "Press No to create large file with HTML table.").arg(N).arg( MB ) ) ) {
+        case QMessageBox::Yes:
+            simpler = true;
+            break;
+        case QMessageBox::No:
+            simpler = false;
+            break;
+        default:
+            return;
+            break;
+        }
+    }
     createProgressBar(0,progressMsg);
 
-    activeGraph.writeAdjacencyMatrixPlotText(fn);
-
+    activeGraph.writeAdjacencyMatrixPlotText(fn, simpler);
+    statusMessage(tr("Plot file created. Please wait to open it..."));
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);
@@ -7537,7 +7561,8 @@ void MainWindow::slotEditNodeNumberSize(int v1, int newSize, const bool prompt) 
     qDebug() << "MW::slotEditNodeNumberSize - newSize " << newSize;
     if (prompt) {
         newSize = QInputDialog::getInt(this, "Change text size",
-                                       tr("Change all node numbers size to: (1-16)"),appSettings["initNodeNumberSize"].toInt(0,10), 1, 16, 1, &ok );
+                                       tr("Change all node numbers size to: (1-16)"),
+                                       appSettings["initNodeNumberSize"].toInt(0,10), 1, 16, 1, &ok );
         if (!ok) {
             statusMessage( tr("Change font size: Aborted.") );
             return;
