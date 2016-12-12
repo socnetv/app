@@ -6152,7 +6152,7 @@ void MainWindow::slotNetworkFileView(){
             qDebug ("Error in open!");
             return;
         }
-        TextEditor *ed = new TextEditor(fileName);
+        TextEditor *ed = new TextEditor(fileName,this,false);
         ed->setWindowTitle(fileNameNoPath.last() );
         ed->show();
         m_textEditors << ed;
@@ -6209,7 +6209,7 @@ void MainWindow::slotNetworkFileView(){
 void MainWindow::slotNetworkTextEditor(){
     qDebug() << "slotNetworkTextEditor() : ";
 
-    TextEditor *ed = new TextEditor("", this);
+    TextEditor *ed = new TextEditor("", this,false);
     ed->setWindowTitle(tr("New Network File"));
     ed->show();
     m_textEditors << ed;
@@ -6241,7 +6241,7 @@ void MainWindow::slotNetworkViewSociomatrix(){
     activeGraph.writeAdjacencyMatrix(fn) ;
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
     statusMessage(tr("Adjacency matrix saved as ") + fn);
@@ -6292,7 +6292,7 @@ void MainWindow::slotNetworkViewSociomatrixPlotText(){
     statusMessage(tr("Plot file created. Please wait to open it..."));
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
     statusMessage(tr("Visual form of adjacency matrix saved as ") + fn);
@@ -9451,7 +9451,7 @@ void MainWindow::slotInvertAdjMatrix(){
     int aNodes=activeNodes();
     statusBar() ->  showMessage ( QString (tr ("inverting adjacency adjacency matrix of %1 nodes")).arg(aNodes) );
     qDebug ("MW: calling Graph::writeAdjacencyMatrixInvert with %i nodes", aNodes);
-    QString fn = appSettings["dataDir"] + "socnetv-report-invert-adjacency-matrix.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-invert-adjacency-matrix.txt";
 
     QTime timer;
     timer.start();
@@ -9459,7 +9459,7 @@ void MainWindow::slotInvertAdjMatrix(){
     int msecs = timer.elapsed();
     statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
 
-    TextEditor *ed = new TextEditor(fn);
+    TextEditor *ed = new TextEditor(fn,this,false);
     ed->setWindowTitle(tr("Inverse adjacency matrix saved as ") + fn);
     ed->show();
     m_textEditors << ed;
@@ -9616,7 +9616,7 @@ void MainWindow::slotDistancesMatrix(){
         return;
     }
     statusMessage( tr("Creating distance matrix. Please wait...") );
-    QString fn = appSettings["dataDir"] + "socnetv-report-distance-matrix.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-distance-matrix.txt";
 
 
     askAboutWeights();
@@ -9633,7 +9633,7 @@ void MainWindow::slotDistancesMatrix(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);
+    TextEditor *ed = new TextEditor(fn,this,false);
     ed->show();
     m_textEditors << ed;
     statusMessage(tr("Distance matrix saved as: ")+fn);
@@ -9652,7 +9652,7 @@ void MainWindow::slotGeodesicsMatrix(){
         return;
     }
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-sigmas-matrix.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-sigmas-matrix.txt";
 
     askAboutWeights();
 
@@ -9667,7 +9667,7 @@ void MainWindow::slotGeodesicsMatrix(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);
+    TextEditor *ed = new TextEditor(fn,this,false);
     ed->show();
     m_textEditors << ed;
     statusMessage(tr("Matrix of geodesic path counts saved as: ") + fn);
@@ -9760,7 +9760,7 @@ void MainWindow::slotEccentricity(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-eccentricity.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-eccentricity.txt";
 
     askAboutWeights();
 
@@ -9774,7 +9774,7 @@ void MainWindow::slotEccentricity(){
                 editFilterNodesIsolatesAct->isChecked());
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);
+    TextEditor *ed = new TextEditor(fn,this,false);
     ed->show();
     m_textEditors << ed;
     statusMessage(tr("Eccentricity report saved as: ") + fn );
@@ -9862,7 +9862,7 @@ void MainWindow::slotWalksOfGivenLength(){
         return;
     }
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-number-of-walks.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-number-of-walks.txt";
      bool ok=false;
 
     int length = QInputDialog::getInt(this, "Number of walks", tr("Select desired length of walk: (2 to %1)").arg(activeNodes()-1),2, 2, activeNodes()-1, 1, &ok );
@@ -9880,7 +9880,7 @@ void MainWindow::slotWalksOfGivenLength(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);
+    TextEditor *ed = new TextEditor(fn,this,false);
     ed->show();
     m_textEditors << ed;
     statusMessage(tr("Number of walks saved as: ") + fn );
@@ -9921,7 +9921,7 @@ void MainWindow::slotTotalWalks(){
             break;
         }
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-total-number-of-walks.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-total-number-of-walks.txt";
     int maxLength=activeNodes()-1;
 
     statusMessage(  QString(tr("Computing Total Walks Matrix. Please wait...")) );
@@ -9933,7 +9933,7 @@ void MainWindow::slotTotalWalks(){
     activeGraph.writeWalksTotalMatrix(fn, maxLength);
     destroyProgressBar(maxLength); // do not check for progress bar
 
-    TextEditor *ed = new TextEditor(fn);
+    TextEditor *ed = new TextEditor(fn,this,false);
     ed->show();
     m_textEditors << ed;
     statusMessage("Total number of walks saved as: " + fn);
@@ -9952,7 +9952,7 @@ void MainWindow::slotReachabilityMatrix(){
         return;
     }
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-reachability-matrix.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-reachability-matrix.txt";
 
     statusMessage(  QString(tr("Computing Reachability Matrix. Please wait...")) );
     progressMsg = tr("Computing Reachability Matrix. \n"
@@ -9964,7 +9964,7 @@ void MainWindow::slotReachabilityMatrix(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);
+    TextEditor *ed = new TextEditor(fn,this,false);
     ed->show();
     m_textEditors << ed;
     statusMessage("Reachability Matrix saved as: " + fn );
@@ -9979,7 +9979,7 @@ void MainWindow::slotClusteringHierarchical(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-clustering-hierarchical.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-clustering-hierarchical.txt";
 
     bool considerWeights=true;
     bool inverseWeights=false;
@@ -10043,7 +10043,7 @@ void MainWindow::slotClusteringHierarchical(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);
+    TextEditor *ed = new TextEditor(fn,this,false);
     ed->show();
     m_textEditors << ed;
     statusMessage("Hierarchical cluster analysis saved as: " + fn);
@@ -10059,7 +10059,7 @@ void MainWindow::slotCliqueCensus(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-clique-census.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-clique-census.html";
     bool considerWeights=true;
 
     statusMessage(  QString(tr("Computing Clique Census. Please wait...")) );
@@ -10072,7 +10072,7 @@ void MainWindow::slotCliqueCensus(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
     statusMessage("Clique Census saved as: " + fn);
@@ -10092,7 +10092,7 @@ void MainWindow::slotClusteringCoefficient (){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-clustering-coefficients.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-clustering-coefficients.txt";
     bool considerWeights=true;
 
     statusMessage(  QString(tr("Computing Clustering Coefficient. Please wait...")) );
@@ -10105,7 +10105,7 @@ void MainWindow::slotClusteringCoefficient (){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this);
+    TextEditor *ed = new TextEditor(fn,this,false);
     ed->show();
     m_textEditors << ed;
     statusMessage("Clustering Coefficients saved as: " + fn);
@@ -10143,7 +10143,7 @@ void MainWindow::slotSimilarityMatching(const QString &matrix,
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-similarity-exact.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-similarity-exact.txt";
     bool considerWeights=true;
 
     statusMessage(  QString(tr("Computing similarity matrix. Please wait...")) );
@@ -10156,7 +10156,7 @@ void MainWindow::slotSimilarityMatching(const QString &matrix,
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this);
+    TextEditor *ed = new TextEditor(fn,this,false);
     ed->show();
     m_textEditors << ed;
     statusMessage("Similarity matrix saved as: " + fn);
@@ -10190,7 +10190,7 @@ void MainWindow::slotSimilarityPearson(const QString &matrix,
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-similarity-pearson.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-similarity-pearson.txt";
     bool considerWeights=true;
 
     statusMessage(  QString(tr("Computing Pearson Correlation Coefficients. Please wait...")) );
@@ -10203,7 +10203,7 @@ void MainWindow::slotSimilarityPearson(const QString &matrix,
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this);
+    TextEditor *ed = new TextEditor(fn,this,false);
     ed->show();
     m_textEditors << ed;
     statusMessage("Pearson Correlation Coefficients saved as: " + fn);
@@ -10219,7 +10219,7 @@ void MainWindow::slotTriadCensus() {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-triad-census.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-triad-census.txt";
     bool considerWeights=true;
 
     statusMessage(  QString(tr("Computing Triad Census. Please wait...")) );
@@ -10232,7 +10232,7 @@ void MainWindow::slotTriadCensus() {
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);
+    TextEditor *ed = new TextEditor(fn,this,false);
     ed->show();
     m_textEditors << ed;
     statusMessage("Triad Census saved as: " + fn);
@@ -10275,7 +10275,7 @@ void MainWindow::slotCentralityDegree(){
         }
 
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-out-degree.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-out-degree.html";
 
     statusMessage(  QString(tr("Computing Degree Centrality. Please wait...")) );
     progressMsg = tr("Computing Degree Centrality. \n"
@@ -10288,7 +10288,7 @@ void MainWindow::slotCentralityDegree(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
     statusMessage(tr("Out-Degree Centralities saved as: ") + fn);
@@ -10376,7 +10376,7 @@ void MainWindow::slotCentralityCloseness(){
 
     askAboutWeights();
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_closeness.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_closeness.html";
 
     statusMessage(  QString(tr("Computing Closeness Centrality. Please wait...")) );
     progressMsg = tr("Computing Closeness Centrality. \n"
@@ -10390,7 +10390,7 @@ void MainWindow::slotCentralityCloseness(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn, this);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
     statusMessage(tr("Closeness Centralities  saved as: ") + fn);
@@ -10410,7 +10410,7 @@ void MainWindow::slotCentralityClosenessInfluenceRange(){
         return;
     }
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_closeness_influence_range.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_closeness_influence_range.html";
 
     askAboutWeights();
 
@@ -10428,7 +10428,7 @@ void MainWindow::slotCentralityClosenessInfluenceRange(){
 
     statusMessage( QString(tr(" displaying file...")));
 
-    TextEditor *ed = new TextEditor(fn);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
     statusMessage(tr("Influence Range Closeness Centrality saved as: ")+fn);
@@ -10445,7 +10445,7 @@ void MainWindow::slotCentralityBetweenness(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_betweenness.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_betweenness.html";
 
     askAboutWeights();
 
@@ -10461,7 +10461,7 @@ void MainWindow::slotCentralityBetweenness(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
     statusMessage(tr("Betweenness Centralities saved as: ")+fn);
@@ -10511,7 +10511,7 @@ void MainWindow::slotPrestigeDegree(){
         }
 
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-degree-prestige.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-degree-prestige.html";
 
     statusMessage(  QString(tr("Computing Degree Prestige . Please wait...")) );
     progressMsg = tr("Computing Degree Prestige. \n"
@@ -10524,7 +10524,7 @@ void MainWindow::slotPrestigeDegree(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
     statusMessage(tr("Degree Prestige (in-degree) saved as: ") + fn);
@@ -10540,7 +10540,7 @@ void MainWindow::slotPrestigePageRank(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-prestige_pagerank.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-prestige_pagerank.html";
 
 
     askAboutWeights();
@@ -10556,7 +10556,7 @@ void MainWindow::slotPrestigePageRank(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
     statusMessage(tr("PageRank Prestige indices saved as: ")+ fn);
@@ -10573,7 +10573,7 @@ void MainWindow::slotPrestigeProximity(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_proximity_prestige.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_proximity_prestige.html";
 
     askAboutWeights();
 
@@ -10589,7 +10589,7 @@ void MainWindow::slotPrestigeProximity(){
 
     statusMessage( QString(tr(" displaying file...")));
 
-    TextEditor *ed = new TextEditor(fn);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
     statusMessage(tr("Proximity Prestige Centralities saved as: ")+ fn);
@@ -10632,7 +10632,7 @@ void MainWindow::slotCentralityInformation(){
             break;
         }
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_information.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_information.html";
     statusMessage(  QString(tr(" Please wait...")));
 
     askAboutWeights();
@@ -10647,7 +10647,7 @@ void MainWindow::slotCentralityInformation(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
     statusMessage(tr("Information Centralities saved as: ")+ fn);
@@ -10666,7 +10666,7 @@ void MainWindow::slotCentralityStress(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_stress.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_stress.html";
 
     askAboutWeights();
 
@@ -10681,7 +10681,7 @@ void MainWindow::slotCentralityStress(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
     statusMessage(tr("Stress Centralities saved as: ")+ fn);
@@ -10700,7 +10700,7 @@ void MainWindow::slotCentralityPower(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_power.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_power.html";
 
     askAboutWeights();
 
@@ -10716,7 +10716,7 @@ void MainWindow::slotCentralityPower(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
     statusMessage(tr("Stress Centralities saved as: ")+ fn);
@@ -10734,7 +10734,7 @@ void MainWindow::slotCentralityEccentricity(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_eccentricity.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_eccentricity.html";
 
     askAboutWeights();
 
@@ -10750,7 +10750,7 @@ void MainWindow::slotCentralityEccentricity(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
 
