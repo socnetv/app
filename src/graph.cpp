@@ -126,6 +126,7 @@ Graph::Graph() {
                        "table th {text-align:center;font-weight: bold;"
                        "background: #000; color: #fff; vertical-align: bottom;}"
                        "table td {text-align:center; padding: 0.2em 1em;}"
+                       "table td.header {background:#000; color:#fff;}"
                        "table.stripes th {}"
                        "table.stripes tr.odd  { background: #ddd;}"
                        "table.stripes tr:odd  { background: #ddd;}"
@@ -8812,64 +8813,129 @@ void Graph::writeCliqueCensus(
     }
 
     long int N = vertices();
-
-    QList<Vertex*>::const_iterator it, it2;
-
-    graphCliques();
-
-    QTextStream outText ( &file ); outText.setCodec("UTF-8");
-
-    emit statusMessage ( tr("Writing clique census to file: ") + fileName );
-
-    outText << tr("CLIQUE CENSUS (CLQs)") << endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-
-
-    outText << tr("%1 maximal cliques found (ordered by size):").arg(m_cliques.count()) << endl<< endl ;
     int cliqueCounter=0;
+    int rowCounter = 0;
     int cliqueSize = 0;
     int actor2 = 0, actor1=0, index1=0, index2=0;
     float numerator = 0;
     QString listString;
 
+    QList<Vertex*>::const_iterator it, it2;
+
+    emit statusMessage ( tr("Computing clique census. Please wait..") );
+
+    graphCliques();
+
+    emit statusMessage ( tr("Writing clique census to file: ") + fileName );
+
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
+
+    outText << htmlHead;
+    outText.setRealNumberPrecision(m_precision);
+
+    outText << "<h1>";
+    outText << tr("CLIQUE CENSUS (CLQs) REPORT");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("A clique is the largest subgroup of actors in the social network who are all "
+                  "directly connected to each other (maximal complete subgraph). <br />"
+                  "SocNetV applies the Bron–Kerbosch algorithm to produce a census of all maximal cliques "
+                  "in the network and reports some useful statistics such as disaggregation by vertex "
+                  "and co-membership information. <br />")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Maximal Cliques found: ")
+            <<"</span>"
+            << m_cliques.count()
+            << "</p>";
+
+    outText << "<table class=\"stripes\">";
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th>"
+            << tr("Clique No")
+            << "</th><th>"
+            << tr("Clique members")
+            << "</th>"
+            <<"</tr>"
+          << "</thead>"
+          <<"<tbody>";
+
     foreach (QList<int> clique, m_cliques) {
+
         ++cliqueCounter;
+
+        outText << "<tr class=" << ((cliqueCounter%2==0) ? "even" :"odd" )<< ">";
+
         listString.truncate(0);
+
         while (!clique.empty()) {
             listString += QString::number (clique.takeFirst());
             if (!clique.empty()) listString += " ";
         }
-        outText << ( (cliqueCounter < 10) ? qSetFieldWidth(7) : qSetFieldWidth(6) )<< right
+        outText <<"<td>"
                 << cliqueCounter
-                << qSetFieldWidth(4) << left << ":"
-                << qSetFieldWidth(0)
+                << "</td><td>"
                 << listString
-                << endl;
+                << "</td>"
+                <<"</tr>";
+
     }
-
-    outText << endl<< endl
-            << tr("Actor by clique analysis: Proportion of clique members adjacent")
-            << endl ;
+    outText << "</tbody></table>";
 
 
-    outText << qSetFieldWidth(0) << endl;
-     outText << qSetFieldWidth(11) << fixed << right << "";
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Actor by clique analysis: ")
+            <<"</span>"
+            << tr("Proportion of clique members adjacent")
+            << "</p>";
+
+
+    outText << "<table class=\"stripes\">";
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th>"
+            << tr("<sub>Actor</sub>/<sup>Clique</sup>")
+            << "</th>";
+
+
     for (int listIndex=0; listIndex<cliqueCounter; listIndex++ ) {
-        outText <<  ( ( (listIndex+1) < 10) ? qSetFieldWidth(10) : qSetFieldWidth(9) )
-                 << fixed
-                 << (listIndex+1);
-    }
-    outText << qSetFieldWidth(7)<< endl;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        actor1 = (*it)->name();
+         outText << "<th>"
+                 << listIndex+1
+                 << "</th>";
+     }
 
-        outText <<  ( (actor1 < 10) ? qSetFieldWidth(7) : qSetFieldWidth(6) ) << fixed
-                 << actor1 << qSetFieldWidth(3) <<"" << qSetFieldWidth(7) << fixed;
+    outText <<"</tr>"
+           << "</thead>"
+           <<"<tbody>";
+
+    rowCounter = 0;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        rowCounter++;
+        actor1 = (*it)->name();
+        outText << "<tr class=" << ((rowCounter%2==0) ? "even" :"odd" )<< ">"
+                <<"<td class=\"header\">"
+                << actor1
+                <<"</td>";
 
         foreach (QList<int> clique, m_cliques) {
             numerator = 0;
+
             if (clique.contains( actor1 )){
-                outText << qSetRealNumberPrecision(3) << "1.000" ;
+                outText <<"<td>"
+                        << "1.000"
+                        <<"</td>";
             }
             else {
                 cliqueSize = clique.size();
@@ -8880,83 +8946,143 @@ void Graph::writeCliqueCensus(
                     }
 
                 }
-                outText << qSetRealNumberPrecision(3) << (numerator/cliqueSize);
+                outText <<"<td>"
+                        << fixed << (numerator/(float) cliqueSize)
+                        <<"</td>";
+
             }
         }
-        outText << endl ;
+        outText <<"</tr>";
 
 
     }
+    outText << "</tbody></table>";
+
     emit updateProgressDialog(N / 5);
 
 
-    outText << endl<< endl
-            << tr("Actor by actor analysis: Co-membership matrix")
-            << endl;
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Actor by actor analysis: ")
+            <<"</span>"
+            << tr(" Co-membership matrix")
+            << "</p>";
 
-    outText << qSetFieldWidth(0) << endl;
-    outText << qSetFieldWidth(11) << fixed << right << "";
+
+    outText << "<table class=\"stripes\">";
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th>"
+            << tr("<sub>Actor</sub>/<sup>Actor</sup>")
+            << "</th>";
+
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         actor1 = (*it)->name();
-        outText <<  ( (actor1 < 10) ? qSetFieldWidth(7) : qSetFieldWidth(6) ) << fixed
-                 << actor1 ;
+        outText << "<th>"
+                << actor1
+                << "</th>";
     }
-    outText << qSetFieldWidth(0) << endl;
 
-    outText << qSetFieldWidth(7)<< endl;
+    outText <<"</tr>"
+           << "</thead>"
+           <<"<tbody>";
+
+    rowCounter=0;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         actor1 = (*it)->name();
         index1 = index[actor1];
-        outText <<  ( (actor1 < 10) ? qSetFieldWidth(7) : qSetFieldWidth(6) ) << fixed
-                 << actor1 << qSetFieldWidth(3) <<"" << qSetFieldWidth(7) << fixed;
+        rowCounter++;
+        outText << "<tr class=" << ((rowCounter%2==0) ? "even" :"odd" )<< ">"
+                <<"<td class=\"header\">"
+                << actor1
+                <<"</td>";
 
         for (it2=m_graph.cbegin(); it2!=m_graph.cend(); ++it2){
             actor2 =  (*it2)->name();
             index2 = index[actor2];
-            outText << qSetRealNumberPrecision(0)<< CLQM.item(index1, index2) ;
+            outText <<"<td>"
+                    << qSetRealNumberPrecision(0)<< CLQM.item(index1, index2)
+                    <<"</td>";
         }
-
-        outText << endl ;
-
-        emit updateProgressDialog(2 * N / 5);
+        outText <<"</tr>";
     }
 
-    outText << endl<< endl
-            << tr("Hierarchical clustering of overlap matrix: Actors")
-            << endl<< endl ;
+    outText << "</tbody></table>";
+
+    emit updateProgressDialog(2 * N / 5);
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Hierarchical clustering of overlap matrix: ")
+            <<"</span>"
+            << tr("Actors")
+            << "</p>";
+
+
    graphClusteringHierarchical(CLUSTERING_SINGLE_LINKAGE, CLQM); //uncomment when ready.
 
-   outText <<"Level" << "\t"<< "Actors" <<endl;
+   outText << "<table class=\"stripes\">";
+   outText << "<thead>"
+           <<"<tr>"
+           <<"<th>"
+           << tr("Level")
+           << "</th>"
+           <<"<th>"
+           << tr("Actors")
+           << "</th>";
+   outText <<"</tr>"
+          << "</thead>"
+          <<"<tbody>";
+
    QMap<float, V_int>::const_iterator i;
    for ( i= m_clusters.constBegin() ; i != m_clusters.constEnd(); ++i) {
-        outText << i.key() << "\t" ;
+       outText << "<tr class=" << ((rowCounter%2==0) ? "even" :"odd" )<< ">"
+               <<"<td class=\"header\">"
+               << i.key()
+               <<"</td>";
 
         foreach (int item, i.value() ) {
-            outText << item << " " ;
+            outText <<"<td>"
+                   << item
+                   <<"</td>";
         }
-        outText << endl;
-
+        outText <<"</tr>";
     }
 
-    emit updateProgressDialog(3 * N / 5);
-    outText << endl<< endl
-            << tr("Clique by clique analysis: Co-membership matrix")
-            << endl<< endl ;
+   outText << "</tbody></table>";
+
+   emit updateProgressDialog(3 * N / 5);
+
+   outText << "<p>"
+           << "<span class=\"info\">"
+           << tr("Clique by clique analysis: ")
+           <<"</span>"
+           << tr("Co-membership matrix")
+           << "</p>";
+
 
     emit updateProgressDialog(4 * N / 5);
 
-    outText << endl<< endl
-            << tr("Hierarchical clustering of overlap matrix: Clique")
-            << endl<< endl ;
+   outText << "<p>"
+           << "<span class=\"info\">"
+           << tr("Hierarchical clustering of overlap matrix: ")
+           <<"</span>"
+           << tr("Clique")
+           << "</p>";
 
 
     emit updateProgressDialog(N);
 
-    outText <<"\n\n" ;
-    outText << tr("Clique Census Report,\n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
-            << actualDateTime.currentDateTime().
-               toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Clique Census Report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualiser</a> v")
+            << VERSION << ": "
+            << actualDateTime.currentDateTime()
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << "</p>";
+
+    outText << htmlEnd;
 
     file.close();
 }
@@ -14697,7 +14823,10 @@ void Graph::writeAdjacencyMatrix (const QString fn) {
 
     outText << "<table  border=\"1\" cellspacing=\"0\" cellpadding=\"0\" class=\"stripes\">"
             << "<thead>"
-            << "<tr>";
+            << "<tr>"
+            << "<th>"
+            << tr("<sub>Actor</sup>/<sup>Actor</sup>")
+            << "</th>";
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         outText <<"<th>"
@@ -14714,10 +14843,12 @@ void Graph::writeAdjacencyMatrix (const QString fn) {
 
         rowCount++;
 
-        //outText << fixed;
-
         outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">";
-        emit updateProgressDialog(rowCount);
+
+        outText <<"<td class=\"header\">"
+               << (*it)->name()
+               << "</td>";
+
         for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
 
             if ( ! (*it1)->isEnabled() ) continue;
@@ -14736,6 +14867,8 @@ void Graph::writeAdjacencyMatrix (const QString fn) {
 
         }
         outText <<"</tr>";
+
+        emit updateProgressDialog(rowCount);
     }
     outText << "</tbody></table>";
 
