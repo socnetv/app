@@ -40,7 +40,8 @@ class TextEditor : public QMainWindow
     Q_OBJECT
 
 public:
-    TextEditor(const QString &fileName , QWidget *parent=0 );
+    TextEditor(const QString &fileName ,
+               QWidget *parent=0 , const bool &format=false);
 
 protected:
 	void closeEvent(QCloseEvent *event);
@@ -70,7 +71,7 @@ private:
 
 	QTextEdit *textEdit;
 	QString curFile;
-
+    bool formatHTML;
 	QMenu *fileMenu;
 	QMenu *editMenu;
 	QMenu *helpMenu;

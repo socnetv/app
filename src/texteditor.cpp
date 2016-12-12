@@ -29,7 +29,9 @@ Written in Qt
 #include <QtWidgets>
 #include "texteditor.h"
 
-TextEditor::TextEditor(const QString &fileName, QWidget *parent) : QMainWindow(parent)
+TextEditor::TextEditor(const QString &fileName, QWidget *parent, const bool &format) :
+    QMainWindow(parent),
+    formatHTML(format)
 {
 	qDebug("TextEditor()");
 	textEdit = new QTextEdit;
@@ -252,7 +254,10 @@ void TextEditor::loadFile(const QString &fileName)
 
     QTextStream in(&file);
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    textEdit->setHtml(in.readAll());
+    if (formatHTML)
+     textEdit->setHtml(in.readAll());
+    else
+     textEdit->setPlainText(in.readAll());
     QApplication::restoreOverrideCursor();
 
     setCurrentFile(fileName);
@@ -274,7 +279,11 @@ bool TextEditor::saveFile(const QString &fileName)
     QTextStream outText(&file);
     outText.setCodec("UTF-8");
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    outText << textEdit->toHtml();
+    if (formatHTML)
+     outText << textEdit->toHtml();
+    else
+     outText << textEdit->toPlainText();
+
     QApplication::restoreOverrideCursor();
 
     setCurrentFile(fileName);
