@@ -4343,14 +4343,33 @@ void Graph::writeCentralityInformation(const QString fileName,
     emit statusMessage ( QString(tr("Writing information centralities to file: "))
                          .arg(fileName) );
     outText.setRealNumberPrecision(m_precision);
-    outText << tr("INFORMATION CENTRALITY (IC)")<<endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-    outText << tr("The IC index measures the information flow through "
-                  "all paths between actors weighted by strength of tie and distance\n");
-    outText << tr("IC' is the standardized IC (IC divided by the sumIC).") <<"\n"
-               << tr ("Warning: To compute this index, SocNetV drops all isolated "
-                      "nodes and symmetrizes (if needed) the adjacency matrix. "
-                      "Read the Manual for more.") << "\n\n";
+
+    int rowCount=0;
+
+    outText << htmlHead;
+
+    outText << "<h1>";
+    outText << tr("INFORMATION CENTRALITY (IC)");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("The IC index measures the information flow through "
+                  "all paths between actors weighted by strength of tie and distance.")
+            << "<br />"
+            << tr("IC' is the standardized IC (IC divided by the sumIC).")
+            << "<br />"
+            << tr ("Warning: To compute this index, SocNetV drops all isolated "
+                  "nodes and symmetrizes (if needed) the adjacency matrix. "
+                  "Read the Manual for more.")
+            << "</p>";
+
 
     outText << tr("IC  range:  0 < IC < inf (this index has no max value)") << "\n";
     outText << tr("IC' range:  0 < IC'< 1 (" )<<"\n\n";
