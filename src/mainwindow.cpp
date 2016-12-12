@@ -5049,7 +5049,8 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
         slotNetworkSaveAs();
         return;
     }
-    fileNameNoPath=fileName.split ("/");
+    QFileInfo fileInfo (fileName);
+    fileNameNoPath = fileInfo.fileName();
 
     if ( activeGraph.graphFileFormatExportSupported( fileFormat ) )
     {
@@ -5127,7 +5128,8 @@ void MainWindow::slotNetworkSaveAs() {
             //fn = QFileInfo(fn).absoluteDir() + QFileInfo(fn).baseName()
         }
         fileName=fn;
-        fileNameNoPath=fileName.split ("/");
+        QFileInfo fileInfo (fileName);
+        fileNameNoPath = fileInfo.fileName();
         setLastPath(fileName); // store this path
         slotNetworkSave(FILE_GRAPHML);
     }
@@ -5135,7 +5137,6 @@ void MainWindow::slotNetworkSaveAs() {
         statusMessage( tr("Saving aborted"));
         return;
     }
-    statusMessage( tr("Ready."));
 }
 
 
@@ -5149,13 +5150,13 @@ void MainWindow::slotNetworkSaveAs() {
 void MainWindow::slotNetworkSaved(const int &status)
 {
     if (status <= 0) {
-        statusMessage( tr("Error! Could not save this file... ")+fileNameNoPath.last()+tr(".") );
+        statusMessage( tr("Error! Could not save this file: %1").arg (fileNameNoPath));
     }
     else {
         networkSave->setIcon(QIcon(":/images/saved.png"));
         networkSave->setEnabled(false);
-        setWindowTitle( fileNameNoPath.last() );
-        statusMessage( tr("Network saved under filename: ")+fileNameNoPath.last()+tr(".") );
+        setWindowTitle( fileNameNoPath );
+        statusMessage( tr("Network saved under filename: %1").arg (fileNameNoPath));
     }
 }
 
@@ -5530,10 +5531,12 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
     if (type > 0) {
         fileName=fName;
         previous_fileName=fileName;
-        fileNameNoPath = fileName.split("/");
+        QFileInfo fileInfo (fileName);
+        fileNameNoPath = fileInfo.fileName();
+
         Q_ASSERT_X( !fileNameNoPath.isEmpty(),  "not empty filename ", "empty filename " );
 
-        setWindowTitle("SocNetV "+ VERSION +" - "+fileNameNoPath.last());
+        setWindowTitle("SocNetV "+ VERSION +" - "+fileNameNoPath);
         setLastPath(fileName); // store this path and file
     }
     else {
@@ -5964,7 +5967,8 @@ void MainWindow::slotNetworkExportPajek()
         }
         fileName=fn;
         setLastPath(fileName);
-        fileNameNoPath=fileName.split ("/");
+        QFileInfo fileInfo (fileName);
+        fileNameNoPath = fileInfo.fileName();
     }
     else  {
         statusMessage( tr("Saving aborted"));
@@ -6001,7 +6005,8 @@ void MainWindow::slotNetworkExportSM(){
         }
         fileName=fn;
         setLastPath(fileName);
-        fileNameNoPath=fileName.split ("/");
+        QFileInfo fileInfo (fileName);
+        fileNameNoPath = fileInfo.fileName();
     }
     else  {
         statusMessage( tr("Saving aborted"));
@@ -6153,10 +6158,12 @@ void MainWindow::slotNetworkFileView(){
             return;
         }
         TextEditor *ed = new TextEditor(fileName,this,false);
-        ed->setWindowTitle(fileNameNoPath.last() );
+        QFileInfo fileInfo (fileName);
+        fileNameNoPath = fileInfo.fileName();
+        ed->setWindowTitle( fileNameNoPath );
         ed->show();
         m_textEditors << ed;
-        statusMessage(  tr("Displaying network data file " )+ fileNameNoPath.last()  );
+        statusMessage(  tr("Displaying network data file " ).arg(fileNameNoPath));
     }
 
     else if (!activeGraph.graphSaved() ) {

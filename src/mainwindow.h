@@ -543,9 +543,9 @@ private:
     enum { MaxRecentFiles = 5 };
     QAction *recentFileActs[MaxRecentFiles];
 
-    QString fileName, previous_fileName, progressMsg;
+    QString fileName, previous_fileName, fileNameNoPath, progressMsg;
     QString settingsFilePath, settingsDir ;
-    QStringList fileNameNoPath, fortuneCookie;
+    QStringList fortuneCookie;
     QStringList tempFileNameNoPath, tips, recentFiles;
     int statusBarDuration, progressCounter;
     int fileType, maxNodes;

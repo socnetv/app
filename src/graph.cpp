@@ -36,6 +36,7 @@
 #include <QHash>
 #include <QColor>
 #include <QTextCodec>
+#include <QFileInfo>
 
 #include <cstdlib>		//allows the use of RAND_MAX macro 
 #include <math.h>
@@ -10688,13 +10689,19 @@ bool Graph::graphSaveToPajekFormat (const QString &fileName, \
                                     int maxWidth, int maxHeight
                                     )
 {
-    qDebug () << " Graph::graphSaveToPajekFormat to file: " << fileName.toUtf8();
+    float weight=0;
+    QFileInfo fileInfo (fileName);
+    QString fileNameNoPath = fileInfo.fileName();
 
     networkName  = (networkName == "") ? graphName().toHtmlEscaped(): networkName;
+    networkName  = (networkName == "unnamed") ? fileNameNoPath.toHtmlEscaped().left(fileNameNoPath.lastIndexOf('.')): networkName;
+
+    qDebug () << " Graph::graphSaveToPajekFormat() - file: " << fileName.toUtf8()
+              << "networkName" << networkName;
+
     maxWidth = (maxWidth == 0) ? canvasWidth:maxWidth ;
     maxHeight= (maxHeight== 0) ? canvasHeight:maxHeight;
 
-    float weight=0;
 
     QFile f( fileName );
     if ( !f.open( QIODevice::WriteOnly ) )  {
@@ -10754,9 +10761,8 @@ bool Graph::graphSaveToPajekFormat (const QString &fileName, \
         }
     }
     f.close();
-    QString fileNameNoPath=fileName.split("/").last();
 
-    emit statusMessage (QString(tr( "File %1 saved" ) ).arg( fileNameNoPath ));
+    emit statusMessage (tr( "File %1 saved" ).arg( fileNameNoPath ));
     return true;
 
 
@@ -10831,14 +10837,21 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
                                       QString networkName,
                                       int maxWidth, int maxHeight)
 {
-    qDebug () << "Graph::graphSaveToGraphMLFormat() - file: " << fileName.toUtf8();
+
 
     float weight=0;
     int source=0, target=0, edgeCount=0, m_size=1, m_labelSize;
     QString m_color, m_labelColor, m_label;
     bool openToken;
 
+    QFileInfo fileInfo (fileName);
+    QString fileNameNoPath = fileInfo.fileName();
+
     networkName  = (networkName == "") ? graphName().toHtmlEscaped(): networkName;
+    networkName  = (networkName == "unnamed") ? fileNameNoPath.toHtmlEscaped().left(fileNameNoPath.lastIndexOf('.')): networkName;
+    qDebug () << "Graph::graphSaveToGraphMLFormat() - file:" << fileName.toUtf8()
+              << "networkName"<< networkName;
+
     maxWidth = (maxWidth == 0) ? canvasWidth:maxWidth ;
     maxHeight= (maxHeight== 0) ? canvasHeight:maxHeight;
 
@@ -11082,8 +11095,8 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
 
     f.close();
     relationSet(relationPrevious, false);
-    QString fileNameNoPath=fileName.split("/").last();
-    emit statusMessage( QString(tr( "File %1 saved" ) ).arg( fileNameNoPath ) );
+
+    emit statusMessage( tr( "File %1 saved" ).arg( fileNameNoPath ) );
 
     return true;
 }
