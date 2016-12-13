@@ -843,7 +843,7 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
     float matchRatio = 0;
     float matches = 0;
     float ties = 0;
-
+    float magn_i=0, magn_k=0;
     if (varLocation=="Rows") {
 
         N = AM.rows() ;
@@ -861,7 +861,7 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
             for (int k = i ; k < N ; k++ ) {
                 matches = 0;
                 ties = 0;
-
+                magn_i=0; magn_k=0;
                 for (int j = 0 ; j < N ; j++ ) {
 
                     if (!diagonal && (i==j || k==j))
@@ -881,15 +881,17 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
                         if (AM.item(i,j) != 0  || AM.item(k,j)  ) {
                            ties++;
                         }
-
                         break;
                     case SIMILARITY_MEASURE_HAMMING:
                         if (AM.item(i,j) != AM.item(k,j) ) {
                             matches++;
                         }
-
                         break;
-
+                    case SIMILARITY_MEASURE_COSINE:
+                        matches += AM.item(i,j) * AM.item(k,j); //compute x * y
+                        magn_i  += AM.item(i,j) * AM.item(i,j); //compute |x|^2
+                        magn_k  += AM.item(k,j) * AM.item(k,j); //compute |y|^2
+                        break;
                     default:
                         break;
                     }
@@ -906,6 +908,17 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
                     break;
                 case SIMILARITY_MEASURE_HAMMING:
                     matchRatio = matches;
+                    break;
+                case SIMILARITY_MEASURE_COSINE:
+                    // sigma(i,j) = cos(theta) = x * y / |x| * |y|
+                    if ( !magn_i  || ! magn_k ) {
+                        // Note that cosine similarity is undefined when
+                        // one or both vertices has degree zero. By convention,
+                        // in this case we take sigma(i,j) = 0
+                        matchRatio = 0;
+                    }
+                    else
+                        matchRatio = matches / sqrt( magn_i  * magn_k );
                     break;
 
                 default:
@@ -944,7 +957,7 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
             for (int k = i ; k < N ; k++ ) {
                 matches = 0;
                 ties = 0;
-
+                magn_i=0; magn_k=0;
                 for (int j = 0 ; j < N ; j++ ) {
 
                     if (!diagonal && (i==j || k==j))
@@ -970,7 +983,11 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
                         if (AM.item(j,i) != AM.item(j,k) ) {
                             matches++;
                         }
-
+                        break;
+                    case SIMILARITY_MEASURE_COSINE:
+                        matches += AM.item(j,i) * AM.item(j,k); //compute x * y
+                        magn_i  += AM.item(j,i) * AM.item(j,i); //compute |x|^2
+                        magn_k  += AM.item(j,k) * AM.item(j,k); //compute |y|^2
                         break;
 
                     default:
@@ -991,7 +1008,17 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
                 case SIMILARITY_MEASURE_HAMMING:
                     matchRatio = matches;
                     break;
-
+                case SIMILARITY_MEASURE_COSINE:
+                    // sigma(i,j) = cos(theta) = x * y / |x| * |y|
+                    if ( !magn_i  || ! magn_k ) {
+                        // Note that cosine similarity is undefined when
+                        // one or both vertices has degree zero. By convention,
+                        // in this case we take sigma(i,j) = 0
+                        matchRatio = 0;
+                    }
+                    else
+                        matchRatio = matches / sqrt( magn_i  * magn_k );
+                    break;
                 default:
                     break;
                 }
@@ -1038,7 +1065,7 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
 
                 matches = 0;
                 ties = 0;
-
+                magn_i=0; magn_k=0;
                 for (int j = 0 ; j < M ; j++ ) {
 
                     if (!diagonal) {
@@ -1061,15 +1088,17 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
                         if (CM.item(j,i) != 0  || CM.item(j,k) !=0 ) {
                            ties++;
                         }
-
                         break;
                     case SIMILARITY_MEASURE_HAMMING:
                         if (CM.item(j,i) != CM.item(j,k) ) {
                             matches++;
                         }
-
                         break;
-
+                    case SIMILARITY_MEASURE_COSINE:
+                        matches += AM.item(j,i) * AM.item(j,k); //compute x * y
+                        magn_i  += AM.item(j,i) * AM.item(j,i); //compute |x|^2
+                        magn_k  += AM.item(j,k) * AM.item(j,k); //compute |y|^2
+                        break;
                     default:
                         break;
                     }
@@ -1088,7 +1117,17 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
                 case SIMILARITY_MEASURE_HAMMING:
                     matchRatio = matches;
                     break;
-
+                case SIMILARITY_MEASURE_COSINE:
+                    // sigma(i,j) = cos(theta) = x * y / |x| * |y|
+                    if ( !magn_i  || ! magn_k ) {
+                        // Note that cosine similarity is undefined when
+                        // one or both vertices has degree zero. By convention,
+                        // in this case we take sigma(i,j) = 0
+                        matchRatio = 0;
+                    }
+                    else
+                        matchRatio = matches / sqrt( magn_i  * magn_k );
+                    break;
                 default:
                     break;
                 }
