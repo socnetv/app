@@ -50,6 +50,7 @@ DialogSimilarityPearson::DialogSimilarityPearson (QWidget *parent) : QDialog (pa
 
     (ui.matrixSelect) -> insertItems( 1, matrixList );
     (ui.variablesLocationSelect) -> insertItems( 1, variablesLocationList );
+    (ui.diagonalCheckBox)->setChecked(false);
 
 }
 
@@ -59,12 +60,11 @@ void DialogSimilarityPearson::gatherData(){
     qDebug()<< "DialogSimilarityPearson: gathering Data!...";
     QString matrix = (ui.matrixSelect) ->currentText();
     QString varLocation = (ui.variablesLocationSelect) ->currentText();
-
+    bool diagonal = (ui.diagonalCheckBox)->isChecked();
     qDebug()<< "DialogSimilarityPearson: user selected: "
             << matrix
             << varLocation;
-    emit userChoices( matrix, varLocation  );
-			
+    emit userChoices( matrix, varLocation,diagonal );
 }
 
 

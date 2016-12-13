@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>500</width>
+    <width>550</width>
     <height>300</height>
    </rect>
   </property>
@@ -21,7 +21,7 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>500</width>
+    <width>550</width>
     <height>300</height>
    </size>
   </property>
@@ -118,6 +118,16 @@
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="diagonalCheckBox">
+     <property name="statusTip">
+      <string>Enable to include matrix diagonal in calculations</string>
+     </property>
+     <property name="text">
+      <string>Include input matrix diagonal</string>
+     </property>
+    </widget>
    </item>
    <item>
     <spacer name="verticalSpacer">
