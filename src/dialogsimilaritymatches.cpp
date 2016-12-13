@@ -50,7 +50,8 @@ DialogSimilarityMatches::DialogSimilarityMatches (QWidget *parent) : QDialog (pa
 
     methodsList << "Simple / Exact matching"
                 <<"Jaccard index"
-                <<"Hamming distance";
+                <<"Hamming distance"
+                <<"Cosine similarity";
 
 
     ui.matrixSelect -> insertItems( 1, matrixList );

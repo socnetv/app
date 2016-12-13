@@ -608,7 +608,8 @@ public:
     void writeSimilarityPearson(const QString fileName,
                                 const bool considerWeights,
                                 const QString &matrix = "adjacency",
-                                const QString &varLocation="rows");
+                                const QString &varLocation="rows",
+                                const bool &diagonal=false);
 
     /* DISTANCES, CENTRALITIES & PROMINENCE MEASURES */
     int distance(const int, const int,
@@ -672,7 +673,8 @@ public:
 
     void graphSimilarityPearsonCorrelationCoefficients (Matrix &AM,
                                                        Matrix &PCC,
-                                                       const QString &varLocation="Rows");
+                                                       const QString &varLocation="Rows",
+                                                        const bool &diagonal=false);
 
     /* LAYOUTS */
 

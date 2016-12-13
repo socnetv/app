@@ -10192,7 +10192,8 @@ void MainWindow::slotSimilarityPearsonDialog(){
  *
  */
 void MainWindow::slotSimilarityPearson(const QString &matrix,
-                                       const QString &varLocation) {
+                                       const QString &varLocation,
+                                       const bool &diagonal) {
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10206,7 +10207,7 @@ void MainWindow::slotSimilarityPearson(const QString &matrix,
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.writeSimilarityPearson( fn, considerWeights, matrix, varLocation);
+    activeGraph.writeSimilarityPearson( fn, considerWeights, matrix, varLocation,diagonal);
 
     destroyProgressBar();
 

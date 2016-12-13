@@ -9578,6 +9578,9 @@ void Graph::writeSimilarityMatching(const QString fileName,
     case SIMILARITY_MEASURE_HAMMING:
         outText << "Hamming distance" ;
         break;
+    case SIMILARITY_MEASURE_COSINE:
+        outText << "Cosine similariy" ;
+        break;
     default:
         break;
     }
@@ -9664,7 +9667,8 @@ void Graph::graphSimilarityMatching (Matrix &AM,
 void Graph::writeSimilarityPearson(const QString fileName,
                                    const bool considerWeights,
                                    const QString &matrix,
-                                   const QString &varLocation)
+                                   const QString &varLocation,
+                                   const bool &diagonal)
 {
     Q_UNUSED(considerWeights);
     QFile file ( fileName );
@@ -9680,11 +9684,11 @@ void Graph::writeSimilarityPearson(const QString fileName,
     Matrix PCC;
     if (matrix == "Adjacency") {
         graphAdjacencyMatrixCreate();
-        graphSimilarityPearsonCorrelationCoefficients(AM, PCC, varLocation);
+        graphSimilarityPearsonCorrelationCoefficients(AM, PCC, varLocation,diagonal);
     }
     else if (matrix == "Distances") {
         distanceMatrixCreate();
-        graphSimilarityPearsonCorrelationCoefficients(DM, PCC, varLocation);
+        graphSimilarityPearsonCorrelationCoefficients(DM, PCC, varLocation,diagonal);
     }
     else {
         return;
@@ -9757,11 +9761,12 @@ void Graph::writeSimilarityPearson(const QString fileName,
  */
 void Graph::graphSimilarityPearsonCorrelationCoefficients (Matrix &AM,
                                                           Matrix &PCC,
-                                                          const QString &varLocation){
+                                                          const QString &varLocation,
+                                                           const bool &diagonal){
     qDebug()<<"Graph::graphSimilarityPearsonCorrelationCoefficients()";
 
 
-    PCC.pearsonCorrelationCoefficients(AM, varLocation);
+    PCC.pearsonCorrelationCoefficients(AM, varLocation,diagonal);
 
     qDebug()<<"Graph::graphSimilarityPearsonCorrelationCoefficients() - matrix PCC";
     //PCC.printMatrixConsole(true);

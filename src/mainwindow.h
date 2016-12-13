@@ -349,7 +349,8 @@ public slots:
 
     void slotSimilarityPearsonDialog();
     void slotSimilarityPearson(const QString &matrix,
-                               const QString &varLocation);
+                               const QString &varLocation,
+                               const bool &diagonal=false);
 
     //OPTIONS MENU
     void slotOpenSettingsDialog();
