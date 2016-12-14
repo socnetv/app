@@ -522,6 +522,8 @@ public:
                                const bool symmetrize=false );
     bool graphAdjacencyMatrixInvert(const QString &method);
 
+    void graphDegreeMatrixCreate();
+
 
     /* REPORT EXPORTS */
 
@@ -534,6 +536,10 @@ public:
 
     void writeAdjacencyMatrixInvert(const QString &filename,
                                     const QString &method);
+
+    void writeLaplacianMatrix(const QString &filename);
+    void writeDegreeMatrix(const QString &filename);
+
     void writeDistanceMatrix(const QString &fn,
                              const bool &considerWeights,
                              const bool &inverseWeights,

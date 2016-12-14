@@ -326,7 +326,9 @@ public slots:
     void slotTriadCensus();
 
     void slotCheckSymmetry();
-    void slotInvertAdjMatrix();
+    void slotAdjacencyMatrixInverse();
+    void slotDegreeMatrix();
+    void slotLaplacianMatrix();
 
     void slotCentralityDegree();
     void slotCentralityCloseness();
@@ -522,6 +524,7 @@ private:
             *distanceMatrixAct, *geodesicsMatrixAct, *diameterAct, *eccentricityAct;
     QAction *walksAct,*totalWalksAct, *reachabilityMatrixAct, *connectivityAct;
     QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct, *invertAdjMatrixAct;
+    QAction *analyzeDegreeMatrixAct, *analyzeLaplacianMatrixAct;
     QAction *clusteringHierarchicalAct, *similarityPearsonAct;
     QAction *similarityExactMatchesAct;
     QAction *cDegreeAct, *cInDegreeAct, *cClosenessAct, *cInfluenceRangeClosenessAct,

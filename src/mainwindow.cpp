@@ -1712,7 +1712,26 @@ void MainWindow::initActions(){
     invertAdjMatrixAct->setStatusTip(tr("Invert the adjacency matrix, if possible"));
     invertAdjMatrixAct->setWhatsThis(tr("Invert  Adjacency Matrix "
                                         "\n\n Inverts the adjacency matrix using linear algebra methods."));
-    connect(invertAdjMatrixAct, SIGNAL(triggered()), this, SLOT(slotInvertAdjMatrix()));
+    connect(invertAdjMatrixAct, SIGNAL(triggered()), this, SLOT(slotAdjacencyMatrixInverse()));
+
+
+    analyzeDegreeMatrixAct = new QAction(
+                QIcon(":/images/symmetry.png"), tr("Degree Matrix"), this);
+    analyzeDegreeMatrixAct -> setShortcut(Qt::SHIFT + Qt::Key_I);
+    analyzeDegreeMatrixAct->setStatusTip(tr("Compute the Degree matrix of the network"));
+    analyzeDegreeMatrixAct->setWhatsThis(tr("Degree Matrix "
+                                        "\n\n Compute the Degree matrix of the network."));
+    connect(analyzeDegreeMatrixAct, SIGNAL(triggered()), this, SLOT(slotDegreeMatrix()));
+
+
+    analyzeLaplacianMatrixAct = new QAction(
+                QIcon(":/images/symmetry.png"), tr("Laplacian Matrix"), this);
+    analyzeLaplacianMatrixAct -> setShortcut(Qt::SHIFT + Qt::Key_I);
+    analyzeLaplacianMatrixAct->setStatusTip(tr("Compute the Laplacian matrix of the network"));
+    analyzeLaplacianMatrixAct->setWhatsThis(tr("Laplacian Matrix "
+                                        "\n\n Compute the Laplacian matrix of the network."));
+    connect(analyzeLaplacianMatrixAct, SIGNAL(triggered()), this, SLOT(slotLaplacianMatrix()));
+
 
     graphDistanceAct = new QAction(
                 QIcon(":/images/distance.png"), tr("Distance"), this
@@ -2524,7 +2543,11 @@ void MainWindow::initMenuBar() {
     /** menuBar entry: analyze menu */
     analysisMenu = menuBar()->addMenu(tr("&Analyze"));
     analysisMenu -> addAction (symmetryAct);
+    analysisMenu -> addSeparator();
     analysisMenu -> addAction (invertAdjMatrixAct);
+    analysisMenu -> addSeparator();
+    analysisMenu -> addAction (analyzeDegreeMatrixAct);
+    analysisMenu -> addAction (analyzeLaplacianMatrixAct);
     //	analysisMenu -> addAction (netDensity);
 
     analysisMenu -> addSeparator();
@@ -9450,7 +9473,11 @@ void MainWindow::slotCheckSymmetry(){
 }
 
 
-void MainWindow::slotInvertAdjMatrix(){
+
+/**
+ * @brief Writes the adjacency matrix inverse
+ */
+void MainWindow::slotAdjacencyMatrixInverse(){
     if ( !activeNodes() ) {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -9471,6 +9498,64 @@ void MainWindow::slotInvertAdjMatrix(){
     ed->show();
     m_textEditors << ed;
     statusMessage(tr("Inverse matrix saved as: ")+fn);
+}
+
+
+
+
+/**
+ * @brief Writes the degree matrix of the graph
+ */
+void MainWindow::slotDegreeMatrix(){
+    if ( !activeNodes() ) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+    int aNodes=activeNodes();
+    statusBar() ->  showMessage ( QString (tr ("Computing degree matrix of %1 nodes")).arg(aNodes) );
+    qDebug ("MW: calling Graph::writeDegreeMatrix with %i nodes", aNodes);
+    QString fn = appSettings["dataDir"] + "socnetv-report-degree-matrix.txt";
+
+    QTime timer;
+    timer.start();
+    activeGraph.writeDegreeMatrix(fn) ;
+    int msecs = timer.elapsed();
+    statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
+
+    TextEditor *ed = new TextEditor(fn,this,false);
+    ed->setWindowTitle(tr("Degree matrix saved as ") + fn);
+    ed->show();
+    m_textEditors << ed;
+    statusMessage(tr("Degree matrix saved as: ")+fn);
+}
+
+
+
+
+/**
+ * @brief Writes the Laplacian matrix of the graph
+ */
+void MainWindow::slotLaplacianMatrix(){
+    if ( !activeNodes() ) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+    int aNodes=activeNodes();
+    statusBar() ->  showMessage ( QString (tr ("Computing Laplacian matrix of %1 nodes")).arg(aNodes) );
+    qDebug ("MW: calling Graph::writeLaplacianMatrix with %i nodes", aNodes);
+    QString fn = appSettings["dataDir"] + "socnetv-report-laplacian-matrix.txt";
+
+    QTime timer;
+    timer.start();
+    activeGraph.writeLaplacianMatrix(fn) ;
+    int msecs = timer.elapsed();
+    statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
+
+    TextEditor *ed = new TextEditor(fn,this,false);
+    ed->setWindowTitle(tr("Laplacian matrix saved as ") + fn);
+    ed->show();
+    m_textEditors << ed;
+    statusMessage(tr("Laplacian matrix saved as: ")+fn);
 }
 
 

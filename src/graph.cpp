@@ -15238,7 +15238,58 @@ void Graph::writeAdjacencyMatrixInvert(const QString &fn,
 
 
 
+/**
+ * @brief Computes the Degree matrix of the graph and writes it to given file
+ * @param fn
+ */
+void Graph::writeDegreeMatrix(const QString &fn) {
+    qDebug("Graph::writeDegreeMatrix() ");
+//    int i=0, j=0;
+//    QList<Vertex*>::const_iterator it, it1;
 
+    graphAdjacencyMatrixCreate();
+
+    QFile file( fn );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        emit statusMessage ( tr("Error. Could not write to ") + fn );
+        return;
+    }
+    QTextStream outText( &file );
+    outText.setCodec("UTF-8");
+
+    outText << AM.degreeMatrix();
+
+    file.close();
+
+}
+
+
+
+
+/**
+ * @brief Computes the Laplacian matrix of the graph and writes it to given file
+ * @param fn
+ */
+void Graph::writeLaplacianMatrix(const QString &fn) {
+    qDebug("Graph::writeLaplacianMatrix() ");
+//    int i=0, j=0;
+//    QList<Vertex*>::const_iterator it, it1;
+
+    graphAdjacencyMatrixCreate();
+
+    QFile file( fn );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        emit statusMessage ( tr("Error. Could not write to ") + fn );
+        return;
+    }
+    QTextStream outText( &file );
+    outText.setCodec("UTF-8");
+
+    outText << AM.laplacianMatrix();
+
+    file.close();
+
+}
 
 
 /**	
