@@ -47,10 +47,10 @@ static const QString infinity = QString("\xE2\x88\x9E") ;
 #endif
 
 
-static const int SIMILARITY_MEASURE_SIMPLE = 0;
+static const int SIMILARITY_MEASURE_SIMPLE  = 0;
 static const int SIMILARITY_MEASURE_JACCARD = 1;
 static const int SIMILARITY_MEASURE_HAMMING = 2;
-static const int SIMILARITY_MEASURE_COSINE = 3;
+static const int SIMILARITY_MEASURE_COSINE  = 3;
 
 
 
@@ -157,13 +157,12 @@ public:
 
     void deleteRowColumn(int i);	/* deletes row i and column i */
 
-    bool printMatrixConsole(bool debug=true);
-
     void identityMatrix (int dim);
 
     void zeroMatrix (const int m, const int n);
 
     void fillMatrix (float value );
+
 
     Matrix& operator =(Matrix & a);
 
@@ -171,13 +170,19 @@ public:
 
     Matrix& operator +(Matrix & b);
 
-    Matrix& operator *(Matrix & b);
+    Matrix& operator -(Matrix & b);
 
-    friend QTextStream& operator <<  (QTextStream& os, Matrix& m);
+    Matrix& operator *(Matrix & b);
 
     void product( Matrix &a, Matrix & b, bool symmetry=false) ;
 
     Matrix & productSym( Matrix &a, Matrix & b)  ;
+
+    void swapRows(int rowA,int rowB);
+
+    void multiplyScalar(const float &f);
+    void multiplyRow(int row, float value);
+
 
     Matrix & pow (int n, bool symmetry=false)  ;
     Matrix & expBySquaring2 (Matrix &Y, Matrix &X, int n, bool symmetry=false);
@@ -190,6 +195,9 @@ public:
 
     void lubksb (Matrix &a, const int &n, int indx[], float b[]);
 
+    Matrix& degreeMatrix();
+
+    Matrix& laplacianMatrix();
 
     Matrix& similarityMatching(Matrix &AM,
                                const int &measure,
@@ -208,10 +216,8 @@ public:
 
     Matrix& inverse(Matrix &a);
 
-    void swapRows(int rowA,int rowB);		/* elementary matrix algebra */
-
-    void multiplyScalar(const float &f);
-    void multiplyRow(int row, float value);
+    friend QTextStream& operator <<  (QTextStream& os, Matrix& m);
+    bool printMatrixConsole(bool debug=true);
 
 private:
     MatrixRow *row;

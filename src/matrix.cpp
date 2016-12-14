@@ -83,9 +83,9 @@ Matrix::~Matrix() {
     delete [] row;
 }
 
+
  /**
- * @brief Matrix::clear
- * clears data
+ * @brief Clears data
  */
 void Matrix::clear() {
     if (m_rows > 0){
@@ -98,8 +98,7 @@ void Matrix::clear() {
 
 
 /**
- * @brief Matrix::resize
- * Resize this matrix to m x n
+ * @brief Resizes this matrix to m x n
  * Called before every operation on new matrices.
  * Every MatrixRow object holds max_int=32762
  * @param Actors
@@ -121,7 +120,7 @@ void Matrix::resize (const int m, const int n) {
 
 
 /**
- * @brief Matrix::findMinMaxValues
+ * @brief finds Min-Max values in current Matrix
  * @param min value in the matrix
  * @param max value
  * Complexity: O(n^2)
@@ -148,9 +147,7 @@ void Matrix::findMinMaxValues (float &min, float & max, bool &hasRealNumbers){
 
 
 /**
- * @brief Matrix::NeighboursNearestFarthest
- *
- * Like Matrix::findMinMaxValues only it skips r==c
+ * @brief Like Matrix::findMinMaxValues only it skips r==c
  *
  * @param min value. If (r,c) = minimum, it mean that neighbors r and c are the nearest in the matrix/network
  * @param max value
@@ -176,9 +173,10 @@ void Matrix::NeighboursNearestFarthest (float &min, float & max,
     }
 }
 
+
+
 /**
- * @brief Matrix::identityMatrix
- * makes this square matrix the identity square matrix I
+ * @brief Makes this square matrix the identity square matrix I
  * @param dim
  */
 void Matrix::identityMatrix(int dim) {
@@ -198,8 +196,7 @@ void Matrix::identityMatrix(int dim) {
 
 
 /**
- * @brief Matrix::zeroMatrix
- * makes this matrix the zero matrix of size mxn
+ * @brief Makes this matrix the zero matrix of size mxn
  * @param m
  * @param n
  */
@@ -223,8 +220,7 @@ void Matrix::zeroMatrix(const int m, const int n) {
 
 
 /**
- * @brief Matrix::item
- * returns the (r,c) matrix element
+ * @brief Returns the (r,c) matrix element
  * @param r
  * @param c
  * @return
@@ -236,8 +232,7 @@ float Matrix::item( int r, int c ){
 
 
 /**
- * @brief Matrix::setItem
- * sets the (r,c) matrix element calling the setColumn method
+ * @brief Sets the (r,c) matrix element calling the setColumn method
  * @param r
  * @param c
  * @param elem
@@ -247,9 +242,9 @@ void Matrix::setItem( const int r, const int c, const float elem ) {
 }
 
 
+
 /**
- * @brief Matrix::clearItem
- * clears the (r,c) matrix element
+ * @brief Clears the (r,c) matrix element
  * @param r
  * @param c
  */
@@ -264,8 +259,8 @@ void Matrix::clearItem( int r, int c ) 	{
 
 
 /**
- * @brief Matrix::deleteRowColumn
- * @param erased
+ * @brief Deletes row and column and shifts rows and cols accordingly
+ * @param erased row/col to delete
  */
 void Matrix::deleteRowColumn(int erased){
     qDebug() << "Matrix:deleteRowColumn() - will delete row and column"
@@ -319,8 +314,7 @@ void Matrix::deleteRowColumn(int erased){
 
 
 /**
- * @brief Matrix::fillMatrix
- * fills a matrix with a given value
+ * @brief Fills a matrix with a given value
  * @param value
  */
 void Matrix::fillMatrix(float value )   {
@@ -332,8 +326,9 @@ void Matrix::fillMatrix(float value )   {
 
 
 /**
- * @brief Matrix::subtractFromI
- * @return
+ * @brief Subtracts this matrix from I and returns
+ *
+ * @return I-this to this matrix
  */
 Matrix& Matrix::subtractFromI ()  {
     for (int i=0;i< rows();i++)
@@ -350,8 +345,7 @@ Matrix& Matrix::subtractFromI ()  {
 
 
 /**
- * @brief Matrix::swapRows
- * Swaps row A with row B of this matrix
+ * @brief Swaps row A with row B of this matrix
  * @param rowA
  * @param rowB
  */
@@ -372,9 +366,7 @@ void Matrix::swapRows(int rowA,int rowB){
 
 
 /**
-* @brief Matrix::multiplyScalar
-  * Scalar Multiplication
-  * Multiplies this by float f and returns the product matrix of the same dim
+* @brief Scalar Multiplication. Multiplies this by float f and returns the product matrix of the same dim
   * Allows to use P.multiplyScalar(f)
   * @param f
 */
@@ -389,8 +381,7 @@ void Matrix::multiplyScalar (const float  & f) {
 
 
 /**
- * @brief Matrix::multiplyRow
- * Multiply every element of row A by value
+ * @brief Multiply every element of row A by value
  * @param row
  * @param value
  */
@@ -407,11 +398,10 @@ void Matrix::multiplyRow(int row, float value) {
 
 
 /**
- * @brief Matrix::product
- * Matrix Multiplication
- * Allows P = product(a * b) where P, a and b are not the same initially.
- * Takes two matrices a and b of the same dimension
- * and returns their product as a reference to the calling object
+ * @brief Matrix Multiplication. Given two matrices a and b of the same dimension
+ * returns their product as a reference to the calling object
+ * Allows P = product(a , b) where P, a and b are not the same initially.
+
  * NOTE: do not use it as B.product(A,B) because it will destroy B on the way.
  * @param a
  * @param b
@@ -440,8 +430,7 @@ void Matrix::product( Matrix &a, Matrix & b, bool symmetry)  {
 
 
 /**
- * @brief Matrix::productSym
- * takes two ( N x N ) matrices (symmetric) and outputs an upper triangular matrix
+ * @brief Takes two ( N x N ) matrices (symmetric) and outputs an upper triangular matrix
  * @param a
  * @param b
  * @return
@@ -471,11 +460,10 @@ Matrix& Matrix::productSym( Matrix &a, Matrix & b)  {
 
 
 /**
- * @brief Matrix::pow
+ * @brief Returns the n-nth power of this matrix
  * @param n
  * @param symmetry
- * @return
- * Returns the n power of this matrix
+ * @return Matrix
  */
 Matrix& Matrix::pow (int n, bool symmetry)  {
     if (rows()!= cols()) {
@@ -486,27 +474,27 @@ Matrix& Matrix::pow (int n, bool symmetry)  {
     Matrix X, Y; //auxilliary matrices
     qDebug()<< "Matrix::pow() - creating X = this";
     X=*this; //X = this
-    X.printMatrixConsole(true);
+    //X.printMatrixConsole(true);
     qDebug()<< "Matrix::pow() - creating Y = I";
     Y.identityMatrix( rows() ); // y=I
-    Y.printMatrixConsole(true);
+    //Y.printMatrixConsole(true);
     return expBySquaring2 (Y, X, n, symmetry);
 
 }
 
 
 /**
- * @brief Matrix::expBySquaring2
+ * @brief Recursive algorithm implementing "Exponentiation by squaring".
+ * Also known as Fast Modulo Multiplication, this algorithm allows
+ * fast computation of a large power n of square matrix X
  * @param Y must be the Identity matrix  on first call
  * @param X the matrix to be powered
  * @param n the power
  * @param symmetry
  * @return Matrix&
- * Recursive algorithm implementing "Exponentiation by squaring".
+
  * On first call, parameters must be: Y=I, X the orginal matrix to power and n the power.
  * Returns the power of matrix X to this object.
- * Also known as Fast Modulo Multiplication, this algorithm allows
- * fast computation of a large power n of square matrix X
  * For n > 4 it is more efficient than naively multiplying the base with itself repeatedly.
  */
 Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
@@ -550,8 +538,7 @@ Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
 }
 
 /**
- * @brief Matrix::sum
- * Matrix addition
+ * @brief Matrix addition
  * Takes two (nxn) matrices and returns their sum as a reference to this
  * Same algorithm as operator +, just different interface.
  * In this case, you use something like: c.sum(a,b)
@@ -568,8 +555,8 @@ void Matrix::sum( Matrix &a, Matrix & b)  {
 
 
 /**
-* @brief Matrix::operator =
-* Assigment allows copying a matrix onto another using b=a where b,a matrices
+* @brief Matrix equality/assignment , operator =
+* Allows copying a matrix onto another using b=a where b,a matrices
 * Equals two matrices.
 * @param a
 * @return
@@ -613,8 +600,7 @@ void Matrix::operator +=(Matrix & b) {
 
 
 /**
-  * @brief Matrix::operator +
-  * Matrix addition: +
+  * @brief Matrix addition, operator +
   * Adds this matrix and B of the same dim and returns the sum S
   * Allows S = A+B
   * @param b
@@ -631,10 +617,26 @@ Matrix& Matrix::operator +(Matrix & b) {
 }
 
 
+/**
+  * @brief Matrix subtraction, operator -
+  * Subtract this matrix - B of the same dim and returns the result S
+  * Allows S = A-B
+  * @param b
+  * @return Matrix S
+*/
+Matrix& Matrix::operator -(Matrix & b) {
+    Matrix *S = new Matrix();
+    S->zeroMatrix(rows(), cols());
+    qDebug()<< "Matrix::operator -";
+    for (int i=0;i< rows();i++)
+        for (int j=0;j<cols();j++)
+            S->setItem(i,j, item(i,j)-b.item(i,j));
+    return *S;
+}
 
-/*
- * @brief Matrix::operator *
- * Matrix Multiplication
+
+/**
+ * @brief Matrix multiplication, operator *
 * Allows P = A * B where A,B of same dimension
 * and returns product as a reference to the calling object
 * NOTE: do not use it as B.product(A,B) because it will destroy B on the way.
@@ -667,154 +669,49 @@ Matrix& Matrix::operator *(Matrix & b) {
 
 
 
+
+
 /**
- * @brief operator <<
- * Outputs matrix m to a text str
- * @param os
- * @param m
- * @return
- */
-QTextStream& operator <<  (QTextStream& os, Matrix& m){
-    qDebug() << "Matrix: << Matrix";
-    int actorNumber=1, fieldWidth = 13;
-    float maxVal, minVal, maxAbsVal, element;
-    bool hasRealNumbers=false;
+  * @brief Returns a diagonal matrix which contains information about the degree
+  * of each graph vertex (row of the adjacency matrix)
+  * Allows S = A.degreeMatrix()
+  * @param b
+  * @return Matrix S
+*/
 
-    m.findMinMaxValues(minVal, maxVal, hasRealNumbers);
+Matrix& Matrix::degreeMatrix() {
+    Matrix *S = new Matrix();
+    S->zeroMatrix(rows(), cols());
+    qDebug()<< "Matrix::degreeMatrix()";
+    float degree=0;
+    for (int i=0;i< rows();i++) {
+        degree = 0;
+        for (int j=0;j<cols();j++) {
+            degree += item(i,j);
 
-    maxAbsVal = ( fabs(minVal) > fabs(maxVal) ) ? fabs(minVal) : fabs(maxVal) ;
-
-
-    os << qSetFieldWidth(0) << endl ;
-
-    os << "- Values:        "
-       << ( (hasRealNumbers) ? ("real numbers (printed decimals 3)") : ("integers only" ) ) << endl;
-
-    os << "- Max value:  ";
-
-    if (maxVal == -1 ||  maxVal==RAND_MAX )
-        os <<  infinity << " (=not connected nodes, in distance matrix)";
-    else
-        os <<   maxVal;
-
-    os << qSetFieldWidth(0) << endl ;
-
-    os << "- Min value:   ";
-
-    if (minVal == -1 ||  minVal==RAND_MAX )
-        os << infinity;
-    else
-        os << minVal;
-
-
-    os << qSetFieldWidth(0) << endl << endl;
-
-    os << qSetFieldWidth(7) << fixed << right << "v"<< qSetFieldWidth(3) << "" ;
-
-    os <<  ( (hasRealNumbers) ? qSetRealNumberPrecision(3) : qSetRealNumberPrecision(0) ) ;
-
-    // Note: In the case of Distance Matrix,
-    // if there is DM(i,j)=RAND_MAX (not connected), we always use fieldWidth  = 13
-    if ( maxAbsVal  > 999)
-        fieldWidth  = 13 ;
-    else if  ( maxAbsVal > 99)
-        fieldWidth  = 10 ;
-    else if ( maxAbsVal > 9   )
-        fieldWidth  = 9 ;
-    else
-        fieldWidth  = 8 ;
-
-    // print first/header row
-    for (int r = 0; r < m.cols(); ++r) {
-        actorNumber = r+1;
-
-        if ( actorNumber > 999)
-            os << qSetFieldWidth(fieldWidth-3) ;
-        else if  ( actorNumber > 99)
-            os << qSetFieldWidth(fieldWidth-2) ;
-        else if ( actorNumber > 9)
-            os << qSetFieldWidth(fieldWidth-1) ;
-        else
-            os << qSetFieldWidth(fieldWidth) ;
-
-        os <<  fixed << actorNumber;
-    }
-
-    os << qSetFieldWidth(0) << endl;
-
-    os << qSetFieldWidth(7)<< endl;
-
-    // print rows
-    for (int r = 0; r < m.rows(); ++r) {
-        actorNumber = r+1;
-
-        if ( actorNumber > 999)
-            os << qSetFieldWidth(4) ;
-        else if  ( actorNumber > 99)
-            os << qSetFieldWidth(5) ;
-        else if ( actorNumber > 9)
-            os << qSetFieldWidth(6) ;
-        else
-            os << qSetFieldWidth(7) ;
-
-
-        os <<  fixed << actorNumber
-            << qSetFieldWidth(3) <<"" ;
-
-        for (int c = 0; c < m.cols(); ++c) {
-            element = m(r,c) ;
-            os << qSetFieldWidth(fieldWidth) << fixed << right;
-            if ( element == -1 || element == RAND_MAX)  // we print infinity symbol instead of -1 (distances matrix).
-                os << fixed << right << qSetFieldWidth(fieldWidth) << INFINITY ; // do not use var "infinity" as it breaks formatting;
-            else {
-                if ( element > 999)
-                    os << qSetFieldWidth(fieldWidth-3) ;
-                else if  ( element > 99)
-                    os << qSetFieldWidth(fieldWidth-2) ;
-                else if ( element > 9)
-                    os << qSetFieldWidth(fieldWidth-1) ;
-                else
-                    os << qSetFieldWidth(fieldWidth) ;
-                os <<  element;
-            }
         }
-        os << qSetFieldWidth(0) << endl;
+        S->setItem(i,i, degree);
     }
-    return os;
+    return *S;
 }
 
 
 
-
 /**
- * @brief Matrix::printMatrixConsole
- * @return
- */
-bool Matrix::printMatrixConsole(bool debug){
-    //qDebug() << "Matrix::printMatrixConsole() debug " << debug ;
-    QTextStream out ( (debug ? stderr : stdout) );
+  * @brief Returns a NxN matrix L = D - A where D is the degree matrix of A
+    * Allows S = A.laplacianMatrix()
+  * @param b
+  * @return Matrix S
+*/
 
-    for (int r = 0; r < rows(); ++r) {
-        for (int c = 0; c < cols(); ++c) {
-
-            if ( item(r,c) < RAND_MAX  ) {
-                out <<  qSetFieldWidth(12) << qSetRealNumberPrecision(3)
-                     <<  forcepoint << fixed<<right
-                        << item(r,c);
-            }
-            else {
-                out <<  qSetFieldWidth(12) << qSetRealNumberPrecision(3)
-                     <<  forcepoint << fixed<<right
-                        << "x";
-            }
-
-//            QTextStream( (debug ? stderr : stdout) )
-//                    << ( (item(r,c) < RAND_MAX ) ? item(r,c) : INFINITY  )<<' ';
-        }
-        out <<qSetFieldWidth(0)<< endl;
-    }
-    return true;
+Matrix& Matrix::laplacianMatrix() {
+    Matrix *S = new Matrix();
+    S->zeroMatrix(rows(), cols());
+    qDebug()<< "Matrix::laplacianMatrix()";
+    *S = (this->degreeMatrix()) - *this;
+    return *S;
 }
+
 
 
 
@@ -1149,7 +1046,6 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
     else {
 
     }
-
 
     return *this;
 
@@ -1548,9 +1444,7 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], float &d) {
 
 
 /**
- * @brief Matrix::lubksb(float **a, int n, int *indx, float b[])
- *
- * Solves the set of n linear equations A·X = b, where A nxn matrix
+ * @brief Solves the set of n linear equations A·X = b, where A nxn matrix
  * decomposed as L·U (L lower triangular and U upper triangular)
  * by forward substitution and  backsubstitution.
  *
@@ -1603,8 +1497,11 @@ void Matrix::lubksb(Matrix &a, const int &n, int indx[], float b[])
     }
 }
 
+
+
 /**
- * @brief Matrix::inverse
+ * @brief Computes and returns the inverse of given matrix a
+ * Allows b.inverse(a)
  * @param a
  * @return
  */
@@ -1642,4 +1539,159 @@ Matrix& Matrix::inverse(Matrix &a)
 
     return *this;
 }
+
+
+
+
+
+
+/**
+ * @brief operator <<
+ * Outputs matrix m to a text str
+ * @param os
+ * @param m
+ * @return
+ */
+QTextStream& operator <<  (QTextStream& os, Matrix& m){
+    qDebug() << "Matrix: << Matrix";
+    int actorNumber=1, fieldWidth = 13;
+    float maxVal, minVal, maxAbsVal, element;
+    bool hasRealNumbers=false;
+
+    m.findMinMaxValues(minVal, maxVal, hasRealNumbers);
+
+    maxAbsVal = ( fabs(minVal) > fabs(maxVal) ) ? fabs(minVal) : fabs(maxVal) ;
+
+
+    os << qSetFieldWidth(0) << endl ;
+
+    os << "- Values:        "
+       << ( (hasRealNumbers) ? ("real numbers (printed decimals 3)") : ("integers only" ) ) << endl;
+
+    os << "- Max value:  ";
+
+    if (maxVal == -1 ||  maxVal==RAND_MAX )
+        os <<  infinity << " (=not connected nodes, in distance matrix)";
+    else
+        os <<   maxVal;
+
+    os << qSetFieldWidth(0) << endl ;
+
+    os << "- Min value:   ";
+
+    if (minVal == -1 ||  minVal==RAND_MAX )
+        os << infinity;
+    else
+        os << minVal;
+
+
+    os << qSetFieldWidth(0) << endl << endl;
+
+    os << qSetFieldWidth(7) << fixed << right << "v"<< qSetFieldWidth(3) << "" ;
+
+    os <<  ( (hasRealNumbers) ? qSetRealNumberPrecision(3) : qSetRealNumberPrecision(0) ) ;
+
+    // Note: In the case of Distance Matrix,
+    // if there is DM(i,j)=RAND_MAX (not connected), we always use fieldWidth  = 13
+    if ( maxAbsVal  > 999)
+        fieldWidth  = 13 ;
+    else if  ( maxAbsVal > 99)
+        fieldWidth  = 10 ;
+    else if ( maxAbsVal > 9   )
+        fieldWidth  = 9 ;
+    else
+        fieldWidth  = 8 ;
+
+    // print first/header row
+    for (int r = 0; r < m.cols(); ++r) {
+        actorNumber = r+1;
+
+        if ( actorNumber > 999)
+            os << qSetFieldWidth(fieldWidth-3) ;
+        else if  ( actorNumber > 99)
+            os << qSetFieldWidth(fieldWidth-2) ;
+        else if ( actorNumber > 9)
+            os << qSetFieldWidth(fieldWidth-1) ;
+        else
+            os << qSetFieldWidth(fieldWidth) ;
+
+        os <<  fixed << actorNumber;
+    }
+
+    os << qSetFieldWidth(0) << endl;
+
+    os << qSetFieldWidth(7)<< endl;
+
+    // print rows
+    for (int r = 0; r < m.rows(); ++r) {
+        actorNumber = r+1;
+
+        if ( actorNumber > 999)
+            os << qSetFieldWidth(4) ;
+        else if  ( actorNumber > 99)
+            os << qSetFieldWidth(5) ;
+        else if ( actorNumber > 9)
+            os << qSetFieldWidth(6) ;
+        else
+            os << qSetFieldWidth(7) ;
+
+
+        os <<  fixed << actorNumber
+            << qSetFieldWidth(3) <<"" ;
+
+        for (int c = 0; c < m.cols(); ++c) {
+            element = m(r,c) ;
+            os << qSetFieldWidth(fieldWidth) << fixed << right;
+            if ( element == -1 || element == RAND_MAX)  // we print infinity symbol instead of -1 (distances matrix).
+                os << fixed << right << qSetFieldWidth(fieldWidth) << INFINITY ; // do not use var "infinity" as it breaks formatting;
+            else {
+                if ( element > 999)
+                    os << qSetFieldWidth(fieldWidth-3) ;
+                else if  ( element > 99)
+                    os << qSetFieldWidth(fieldWidth-2) ;
+                else if ( element > 9)
+                    os << qSetFieldWidth(fieldWidth-1) ;
+                else
+                    os << qSetFieldWidth(fieldWidth) ;
+                os <<  element;
+            }
+        }
+        os << qSetFieldWidth(0) << endl;
+    }
+    return os;
+}
+
+
+
+
+/**
+ * @brief Matrix::printMatrixConsole
+ * @return
+ */
+bool Matrix::printMatrixConsole(bool debug){
+    //qDebug() << "Matrix::printMatrixConsole() debug " << debug ;
+    QTextStream out ( (debug ? stderr : stdout) );
+
+    for (int r = 0; r < rows(); ++r) {
+        for (int c = 0; c < cols(); ++c) {
+
+            if ( item(r,c) < RAND_MAX  ) {
+                out <<  qSetFieldWidth(12) << qSetRealNumberPrecision(3)
+                     <<  forcepoint << fixed<<right
+                        << item(r,c);
+            }
+            else {
+                out <<  qSetFieldWidth(12) << qSetRealNumberPrecision(3)
+                     <<  forcepoint << fixed<<right
+                        << "x";
+            }
+
+//            QTextStream( (debug ? stderr : stdout) )
+//                    << ( (item(r,c) < RAND_MAX ) ? item(r,c) : INFINITY  )<<' ';
+        }
+        out <<qSetFieldWidth(0)<< endl;
+    }
+    return true;
+}
+
 
