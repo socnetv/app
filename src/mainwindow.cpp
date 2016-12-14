@@ -1694,7 +1694,7 @@ void MainWindow::initActions(){
     */
 
     symmetryAct = new QAction(
-                QIcon(":/images/symmetry.png"), tr("Symmetry Test"), this);
+                QIcon(":/images/symmetry-edge.png"), tr("Symmetry Test"), this);
     symmetryAct -> setShortcut(Qt::SHIFT + Qt::Key_S);
     symmetryAct->setStatusTip(tr("Check whether the network is symmetric or not"));
     symmetryAct->setWhatsThis(
@@ -1707,8 +1707,10 @@ void MainWindow::initActions(){
     connect(symmetryAct, SIGNAL(triggered()), this, SLOT(slotCheckSymmetry()));
 
     invertAdjMatrixAct = new QAction(
-                QIcon(":/images/symmetry.png"), tr("Invert Adjacency Matrix"), this);
-    invertAdjMatrixAct -> setShortcut(Qt::SHIFT + Qt::Key_I);
+                QIcon(":/images/invertmatrix.png"), tr("Invert Adjacency Matrix"), this);
+    invertAdjMatrixAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_I)
+                );
     invertAdjMatrixAct->setStatusTip(tr("Invert the adjacency matrix, if possible"));
     invertAdjMatrixAct->setWhatsThis(tr("Invert  Adjacency Matrix "
                                         "\n\n Inverts the adjacency matrix using linear algebra methods."));
@@ -1716,8 +1718,10 @@ void MainWindow::initActions(){
 
 
     analyzeDegreeMatrixAct = new QAction(
-                QIcon(":/images/symmetry.png"), tr("Degree Matrix"), this);
-    analyzeDegreeMatrixAct -> setShortcut(Qt::SHIFT + Qt::Key_I);
+                QIcon(":/images/degreematrix.png"), tr("Degree Matrix"), this);
+    analyzeDegreeMatrixAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_D)
+                );
     analyzeDegreeMatrixAct->setStatusTip(tr("Compute the Degree matrix of the network"));
     analyzeDegreeMatrixAct->setWhatsThis(tr("Degree Matrix "
                                         "\n\n Compute the Degree matrix of the network."));
@@ -1725,8 +1729,10 @@ void MainWindow::initActions(){
 
 
     analyzeLaplacianMatrixAct = new QAction(
-                QIcon(":/images/symmetry.png"), tr("Laplacian Matrix"), this);
-    analyzeLaplacianMatrixAct -> setShortcut(Qt::SHIFT + Qt::Key_I);
+                QIcon(":/images/laplacian.png"), tr("Laplacian Matrix"), this);
+    analyzeLaplacianMatrixAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_L)
+                );
     analyzeLaplacianMatrixAct->setStatusTip(tr("Compute the Laplacian matrix of the network"));
     analyzeLaplacianMatrixAct->setWhatsThis(tr("Laplacian Matrix "
                                         "\n\n Compute the Laplacian matrix of the network."));
@@ -2544,10 +2550,16 @@ void MainWindow::initMenuBar() {
     analysisMenu = menuBar()->addMenu(tr("&Analyze"));
     analysisMenu -> addAction (symmetryAct);
     analysisMenu -> addSeparator();
-    analysisMenu -> addAction (invertAdjMatrixAct);
-    analysisMenu -> addSeparator();
-    analysisMenu -> addAction (analyzeDegreeMatrixAct);
-    analysisMenu -> addAction (analyzeLaplacianMatrixAct);
+    matrixMenu  = new QMenu(tr("Adjacency Matrix and Matrices..."));
+    matrixMenu -> setIcon(QIcon(":/images/sm.png"));
+    analysisMenu -> addMenu (matrixMenu);
+    matrixMenu  -> addAction (networkViewSociomatrixAct);
+    matrixMenu  -> addAction (networkViewSociomatrixPlotAct);
+    matrixMenu  -> addSeparator();
+    matrixMenu  -> addAction (invertAdjMatrixAct);
+    matrixMenu  -> addSeparator();
+    matrixMenu  -> addAction (analyzeDegreeMatrixAct);
+    matrixMenu  -> addAction (analyzeLaplacianMatrixAct);
     //	analysisMenu -> addAction (netDensity);
 
     analysisMenu -> addSeparator();

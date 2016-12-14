@@ -106,5 +106,9 @@
         <file>images/connectivity.png</file>
         <file>images/hierarchical.png</file>
         <file>images/clucof.png</file>
+        <file>images/symmetry-edge.png</file>
+        <file>images/laplacian.png</file>
+        <file>images/degreematrix.png</file>
+        <file>images/invertmatrix.png</file>
     </qresource>
 </RCC>

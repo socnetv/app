@@ -465,6 +465,7 @@ private:
     QMenu *optionsMenu, *colorOptionsMenu, *edgeOptionsMenu, *nodeOptionsMenu;
     QMenu *editNodeMenu, *editEdgeMenu, *centrlMenu,  *viewOptionsMenu, *layoutMenu;
     QMenu *distancesMenu, *similarityMenu, *communitiesMenu, *connectivityMenu;
+    QMenu *matrixMenu;
     QMenu *networkMenu, *randomNetworkMenu, *filterMenu, *recentFilesSubMenu;
     QMenu *randomLayoutMenu, *circleLayoutMenu, *levelLayoutMenu, *physicalLayoutMenu;
     QMenu *colorationMenu;
