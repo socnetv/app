@@ -167,6 +167,7 @@ public:
     float y() const { return m_y; }
 
     QPointF pos () const { return QPointF ( x(), y() ); }
+    void setPos (QPointF &p) { m_x=p.x(); m_y=p.y(); }
 
     //returns displacement vector
     QPointF & disp() { return m_disp; }

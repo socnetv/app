@@ -15593,7 +15593,7 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations){
     QList<Vertex*>::const_iterator v2;
 
     /* apply an inital random layout */
-    layoutRandom();
+   // layoutRandom();
 
     /**
      * compute max spring length as function of canvas area divided by the
@@ -15730,7 +15730,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
 
 
     /* apply an inital random layout */
-    layoutRandom();
+   // layoutRandom();
 
     qDebug() << "Graph: layoutForceDirectedFruchtermanReingold() ";
     qDebug () << "Graph: Setting optimalDistance = "<<  optimalDistance
@@ -16086,7 +16086,10 @@ void Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4) {
 
         qDebug() << "  Final new pos (" <<  newPos.x() << ","
                  << newPos.y()<< ")";
+        (*v1)->setX(  newPos.x() );
+        (*v1)->setY(  newPos.y() );
         emit setNodePos((*v1)->name(),  newPos.x(),  newPos.y());
+        //vertexPosSet();
 
     }
 
@@ -16128,6 +16131,8 @@ void Graph::layoutForceDirected_FR_moveNodes(const qreal &temperature) {
         qDebug()<< " final new pos "
                 <<  newPos.x() << ","
                 << newPos.y()<< ")";
+        (*v1)->setX(  newPos.x() );
+        (*v1)->setY(  newPos.y() );
         emit setNodePos((*v1)->name(),  newPos.x(),  newPos.y());
     }
 }
