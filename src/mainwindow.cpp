@@ -6267,7 +6267,7 @@ void MainWindow::slotNetworkTextEditor(){
  *  It uses a different method for writing the matrix to a file.
  *  While slotNetworkExportSM uses << operator of Matrix class
  *  (via adjacencyMatrix of Graph class), this is using directly the
- *  writeAdjacencyMatrix method of Graph class
+ *  writeMatrixAdjacency method of Graph class
  */
 void MainWindow::slotNetworkViewSociomatrix(){
     if ( !activeNodes() ) {
@@ -6276,11 +6276,11 @@ void MainWindow::slotNetworkViewSociomatrix(){
     }
     int aNodes=activeNodes();
     statusBar() ->  showMessage ( QString (tr ("creating adjacency adjacency matrix of %1 nodes")).arg(aNodes) );
-    qDebug ("MW: calling Graph::writeAdjacencyMatrix with %i nodes", aNodes);
+    qDebug ("MW: calling Graph::writeMatrixAdjacency with %i nodes", aNodes);
     QString fn = appSettings["dataDir"] + "socnetv-report-adjacency-matrix.html";
 
     createProgressBar(0,progressMsg);
-    activeGraph.writeAdjacencyMatrix(fn) ;
+    activeGraph.writeMatrixAdjacency(fn) ;
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn,this,true);
@@ -6303,7 +6303,7 @@ void MainWindow::slotNetworkViewSociomatrixPlotText(){
 
     statusMessage(tr("Creating plot of adjacency matrix of %1 nodes.").arg(N ));
 
-    qDebug ("MW: calling Graph::writeAdjacencyMatrix with %i nodes", N);
+    qDebug ("MW: calling Graph::writeMatrixAdjacency with %i nodes", N);
 
     QString fn = appSettings["dataDir"] + "socnetv-report-adjacency-matrix-plot.html";
     bool simpler = false;
@@ -6330,7 +6330,7 @@ void MainWindow::slotNetworkViewSociomatrixPlotText(){
     }
     createProgressBar(0,progressMsg);
 
-    activeGraph.writeAdjacencyMatrixPlotText(fn, simpler);
+    activeGraph.writeMatrixAdjacencyPlot(fn, simpler);
     statusMessage(tr("Plot file created. Please wait to open it..."));
     destroyProgressBar();
 
@@ -9496,12 +9496,12 @@ void MainWindow::slotAdjacencyMatrixInverse(){
     }
     int aNodes=activeNodes();
     statusBar() ->  showMessage ( QString (tr ("inverting adjacency adjacency matrix of %1 nodes")).arg(aNodes) );
-    qDebug ("MW: calling Graph::writeAdjacencyMatrixInvert with %i nodes", aNodes);
+    qDebug ("MW: calling Graph::writeMatrixAdjacencyInvert with %i nodes", aNodes);
     QString fn = appSettings["dataDir"] + "socnetv-report-invert-adjacency-matrix.txt";
 
     QTime timer;
     timer.start();
-    activeGraph.writeAdjacencyMatrixInvert(fn, QString("lu")) ;
+    activeGraph.writeMatrixAdjacencyInvert(fn, QString("lu")) ;
     int msecs = timer.elapsed();
     statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
 
@@ -9525,16 +9525,17 @@ void MainWindow::slotDegreeMatrix(){
     }
     int aNodes=activeNodes();
     statusBar() ->  showMessage ( QString (tr ("Computing degree matrix of %1 nodes")).arg(aNodes) );
-    qDebug ("MW: calling Graph::writeDegreeMatrix with %i nodes", aNodes);
+    qDebug ("MW: calling Graph::writeMatrixDegreeText with %i nodes", aNodes);
     QString fn = appSettings["dataDir"] + "socnetv-report-degree-matrix.txt";
 
     QTime timer;
     timer.start();
-    activeGraph.writeDegreeMatrix(fn) ;
+    //activeGraph.writeMatrixDegreeText(fn) ;
+    activeGraph.writeMatrix(fn, MATRIX_DEGREE) ;
     int msecs = timer.elapsed();
     statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
 
-    TextEditor *ed = new TextEditor(fn,this,false);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->setWindowTitle(tr("Degree matrix saved as ") + fn);
     ed->show();
     m_textEditors << ed;
@@ -9554,16 +9555,16 @@ void MainWindow::slotLaplacianMatrix(){
     }
     int aNodes=activeNodes();
     statusBar() ->  showMessage ( QString (tr ("Computing Laplacian matrix of %1 nodes")).arg(aNodes) );
-    qDebug ("MW: calling Graph::writeLaplacianMatrix with %i nodes", aNodes);
+    qDebug ("MW: calling Graph::writeMatrixLaplacianPlainText with %i nodes", aNodes);
     QString fn = appSettings["dataDir"] + "socnetv-report-laplacian-matrix.txt";
 
     QTime timer;
     timer.start();
-    activeGraph.writeLaplacianMatrix(fn) ;
+    activeGraph.writeMatrix(fn, MATRIX_LAPLACIAN) ;
     int msecs = timer.elapsed();
     statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
 
-    TextEditor *ed = new TextEditor(fn,this,false);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->setWindowTitle(tr("Laplacian matrix saved as ") + fn);
     ed->show();
     m_textEditors << ed;
@@ -9731,13 +9732,17 @@ void MainWindow::slotDistancesMatrix(){
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.writeDistanceMatrix(fn,
+    /*activeGraph.writeMatrixDistancesPlainText(fn,
+                                    considerWeights, inverseWeights,
+                                    editFilterNodesIsolatesAct->isChecked())*/;
+    activeGraph.writeMatrix(fn,MATRIX_DISTANCES,
                                     considerWeights, inverseWeights,
                                     editFilterNodesIsolatesAct->isChecked());
 
+
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,false);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
     statusMessage(tr("Distance matrix saved as: ")+fn);
@@ -9766,7 +9771,7 @@ void MainWindow::slotGeodesicsMatrix(){
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.writeNumberOfGeodesicsMatrix(fn,
+    activeGraph.writeMatrixNumberOfGeodesicsPlainText(fn,
                                              considerWeights, inverseWeights);
 
     destroyProgressBar();
@@ -10308,7 +10313,7 @@ void MainWindow::slotSimilarityPearson(const QString &matrix,
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,false);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
     statusMessage("Pearson Correlation Coefficients saved as: " + fn);

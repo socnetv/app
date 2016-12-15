@@ -2199,8 +2199,8 @@ int Graph::vertices(const bool dropIsolates, const bool countAll) {
 /**
  * @brief Returns a list of all isolated vertices inside the graph
  * Used by
- * Graph::graphAdjacencyMatrixCreate()
- * Graph::writeAdjacencyMatrixInvert()
+ * Graph::graphMatrixAdjacencyCreate()
+ * Graph::writeMatrixAdjacencyInvert()
  * Graph::centralityInformation()
  * Graph::graphConnectivity()
  * @return
@@ -3210,18 +3210,18 @@ int Graph::graphConnectivity(const bool updateProgress) {
 
 
 /**
- * @brief Graph::writeDistanceMatrix
+ * @brief Graph::writeMatrixDistancesPlainText
  * Writes the matrix of distances to a file
  * @param fn
  * @param considerWeights
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::writeDistanceMatrix (const QString &fn,
+void Graph::writeMatrixDistancesPlainText (const QString &fn,
                                  const bool &considerWeights,
                                  const bool &inverseWeights,
                                  const bool &dropIsolates) {
-    qDebug ("Graph::writeDistanceMatrix()");
+    qDebug ("Graph::writeMatrixDistancesPlainText()");
 
     if ( !calculatedDistances || graphModified() ) {
         emit statusMessage ( tr("Writing Distance Matrix: "
@@ -3229,7 +3229,7 @@ void Graph::writeDistanceMatrix (const QString &fn,
         distanceMatrixCreate(false, considerWeights, inverseWeights, dropIsolates);
     }
 
-    qDebug ("Graph::writeDistanceMatrix() writing to file");
+    qDebug ("Graph::writeMatrixDistancesPlainText() writing to file");
 
     QFile file (fn);
     if ( !file.open( QIODevice::WriteOnly ) )  {
@@ -3254,16 +3254,16 @@ void Graph::writeDistanceMatrix (const QString &fn,
 *  Saves the number of geodesic distances matrix TM to a file
 *
 */
-void Graph::writeNumberOfGeodesicsMatrix(const QString &fn,
+void Graph::writeMatrixNumberOfGeodesicsPlainText(const QString &fn,
                                          const bool &considerWeights,
                                          const bool &inverseWeights) {
-    qDebug ("Graph::writeNumberOfGeodesicsMatrix()");
+    qDebug ("Graph::writeMatrixNumberOfGeodesicsPlainText()");
     if ( !calculatedDistances || graphModified() ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
         distanceMatrixCreate(false, considerWeights, inverseWeights, false);
     }
 
-    qDebug () << "Graph::writeNumberOfGeodesicsMatrix() - Distance matrix created. "
+    qDebug () << "Graph::writeMatrixNumberOfGeodesicsPlainText() - Distance matrix created. "
                  "Writing geoderics matrix to file";
 
     QFile file (fn);
@@ -4255,7 +4255,7 @@ void Graph::centralityInformation(const bool considerWeights,
         Otherwise, the TM might be singular, therefore non-invertible. */
     bool dropIsolates=true;
     bool symmetrize=true;
-    graphAdjacencyMatrixCreate(dropIsolates, considerWeights, inverseWeights, symmetrize);
+    graphMatrixAdjacencyCreate(dropIsolates, considerWeights, inverseWeights, symmetrize);
 
     n-=isolatedVertices;
 
@@ -8457,7 +8457,7 @@ void Graph::walksMatrixCreate(const int &maxPower, const bool &updateProgress) {
     bool considerWeights=true;
     bool inverseWeights=false;
     bool symmetrize=false;
-    graphAdjacencyMatrixCreate(dropIsolates, considerWeights, inverseWeights, symmetrize);
+    graphMatrixAdjacencyCreate(dropIsolates, considerWeights, inverseWeights, symmetrize);
     int size = vertices();
 
     XM = AM;   // XM will be the product matrix
@@ -9540,7 +9540,7 @@ void Graph::writeSimilarityMatching(const QString fileName,
 
     Matrix SCM;
     if (matrix == "Adjacency") {
-        graphAdjacencyMatrixCreate();
+        graphMatrixAdjacencyCreate();
         graphSimilarityMatching(AM, SCM, measure, varLocation, diagonal, considerWeights);
     }
     else if (matrix == "Distances") {
@@ -9683,7 +9683,139 @@ void Graph::writeSimilarityPearson(const QString fileName,
 
     Matrix PCC;
     if (matrix == "Adjacency") {
-        graphAdjacencyMatrixCreate();
+        graphMatrixAdjacencyCreate();
+        graphSimilarityPearsonCorrelationCoefficients(AM, PCC, varLocation,diagonal);
+    }
+    else if (matrix == "Distances") {
+        distanceMatrixCreate();
+        graphSimilarityPearsonCorrelationCoefficients(DM, PCC, varLocation,diagonal);
+    }
+    else {
+        return;
+    }
+
+
+    emit statusMessage ( tr("Writing Pearson coefficients to file: ")
+                         + fileName );
+
+    outText.setRealNumberPrecision(m_precision);
+
+
+    outText << htmlHead;
+
+    outText << "<h1>";
+    outText << tr("PEARSON CORRELATION COEFFICIENTS (PCC) MATRIX");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Input matrix: ")
+            <<"</span>"
+            << matrix
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Variables in: ")
+            <<"</span>"
+            << ((varLocation != "Rows" && varLocation != "Columns") ? "Concatenated rows + columns " : varLocation)
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Analysis results ")
+            <<"</span>"
+            << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("PCC range: ")
+            <<"</span>"
+            << "-1 &lt; C &lt; 1"
+            << "</p>";
+
+
+    PCC.printHTMLTable(outText);
+
+
+    outText << "<p>";
+    outText << "<span class=\"info\">"
+            << tr("PCC = 0 ")
+            <<"</span>"
+            << tr("when there is no correlation at all.")
+            <<"<br/>"
+           << "<span class=\"info\">"
+            << tr("PCC &gt; 0 ")
+            <<"</span>"
+            << tr("when there is positive correlation, "
+                  "i.e. +1 means actors with same patterns of ties/distances.")
+            <<"<br />"
+           << "<span class=\"info\">"
+            << tr("PCC &lt; 0 ")
+            <<"</span>"
+            << tr("when there is negative correlation, "
+                  "i.e. -1 for actors with exactly opposite patterns of ties.")
+            <<"<br/>";
+    outText << "</p>";
+
+
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Pearson Correlation Coefficients Report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v")
+            << VERSION << ": "
+            << actualDateTime.currentDateTime()
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+
+    file.close();
+}
+
+
+
+
+
+
+/**
+ * @brief
+ * Calls Graph::graphSimilariyPearsonCorrelationCoefficients() and
+ * writes Pearson Correlation Coefficients to given file
+ * @param fileName
+ * @param considerWeights
+ */
+void Graph::writeSimilarityPearsonPlainText(const QString fileName,
+                                   const bool considerWeights,
+                                   const QString &matrix,
+                                   const QString &varLocation,
+                                   const bool &diagonal)
+{
+    Q_UNUSED(considerWeights);
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
+        return;
+    }
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
+
+    emit statusMessage ( (tr("Calculating Pearson Correlations...")) );
+
+    Matrix PCC;
+    if (matrix == "Adjacency") {
+        graphMatrixAdjacencyCreate();
         graphSimilarityPearsonCorrelationCoefficients(AM, PCC, varLocation,diagonal);
     }
     else if (matrix == "Distances") {
@@ -9726,7 +9858,6 @@ void Graph::writeSimilarityPearson(const QString fileName,
 
     file.close();
 }
-
 
 
 /**
@@ -10791,7 +10922,7 @@ bool Graph::graphSaveToAdjacencyFormat (const QString &fileName,
     outText.setCodec("UTF-8");
     qDebug("Graph: graphSaveToAdjacencyFormat() for %i vertices", vertices());
 
-    writeAdjacencyMatrixTo(outText, saveEdgeWeights);
+    writeMatrixAdjacencyTo(outText, saveEdgeWeights);
 
     file.close();
     QString fileNameNoPath=fileName.split("/").last();
@@ -14785,10 +14916,134 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
 
 
 
+
+
+
+/**
+    Writes the matrix of G to a specified file fn
+    This is called by MainWindow::slotViewAdjacencyMatrix()
+*/
+void Graph::writeMatrix (const QString &fn,
+                         const int &matrix,
+                         const bool &considerWeights,
+                         const bool &inverseWeights,
+                         const bool &dropIsolates,
+                         const bool &simpler) {
+
+    qDebug()<<"Graph::writeMatrix() to : " << fn
+           << "matrix" << matrix;
+
+    QFile file( fn );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fn );
+        return;
+    }
+
+    QTextStream outText( &file ); outText.setCodec("UTF-8");
+
+
+
+    outText << htmlHead;
+
+    outText << "<h1>";
+
+    switch (matrix) {
+    case MATRIX_ADJACENCY:
+            graphMatrixAdjacencyCreate();
+        outText << tr("ADJACENCY MATRIX REPORT");
+        break;
+    case MATRIX_LAPLACIAN:
+            graphMatrixAdjacencyCreate();
+        outText << tr("LAPLACIAN MATRIX REPORT");
+        break;
+    case MATRIX_DEGREE:
+            graphMatrixAdjacencyCreate();
+        outText << tr("DEGREE MATRIX REPORT");
+        break;
+    case MATRIX_DISTANCES:
+        if ( !calculatedDistances || graphModified() ) {
+            emit statusMessage ( tr("Writing Distance Matrix: "
+                                    "Need to recompute Distances. Please wait...") );
+            distanceMatrixCreate(false, considerWeights, inverseWeights, dropIsolates);
+        }
+        outText << tr("DISTANCES MATRIX REPORT");
+
+        break;
+    case MATRIX_ADJACENCY_INVERT:
+        graphMatrixAdjacencyInvert();
+        outText << tr("INVERSE ADJACENCY MATRIX REPORT");
+        break;
+
+    default:
+        break;
+    }
+
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            << "</p>"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << vertices()
+            << "</p>";
+
+
+    switch (matrix) {
+    case MATRIX_ADJACENCY:
+        outText << "<p class=\"description\">"
+                << tr("The adjacency matrix of a social network is a NxN matrix ")
+                << tr("where each element (i,j) is the value of the edge from "
+                      "actor i to actor j, or 0 if no edge exists.")
+                << "<br />"
+                << "</p>";
+        AM.printHTMLTable(outText);
+        break;
+    case MATRIX_LAPLACIAN:
+        AM.laplacianMatrix().printHTMLTable(outText);
+        break;
+    case MATRIX_DEGREE:
+        AM.degreeMatrix().printHTMLTable(outText);
+        break;
+    case MATRIX_DISTANCES:
+        DM.printHTMLTable(outText);
+        break;
+    case MATRIX_ADJACENCY_INVERT:
+        invAM.printHTMLTable(outText);
+        break;
+    default:
+        break;
+    }
+
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Matrix report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v")
+            << VERSION << ": "
+            << actualDateTime.currentDateTime()
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+
+    file.close();
+}
+
+
+
+
+
 /** 
     Exports the adjacency matrix to a given textstream
 */
-void Graph::writeAdjacencyMatrixTo(QTextStream& os,
+void Graph::writeMatrixAdjacencyTo(QTextStream& os,
                                    const bool &saveEdgeWeights){
     qDebug("Graph: adjacencyMatrix(), writing matrix with %i vertices", vertices());
     QList<Vertex*>::const_iterator it, it1;
@@ -14818,8 +15073,8 @@ void Graph::writeAdjacencyMatrixTo(QTextStream& os,
     Writes the adjacency matrix of G to a specified file fn
     This is called by MainWindow::slotViewAdjacencyMatrix()
 */
-void Graph::writeAdjacencyMatrix (const QString fn) {
-    qDebug()<<"Graph::writeAdjacencyMatrix() to : " << fn;
+void Graph::writeMatrixAdjacency (const QString fn) {
+    qDebug()<<"Graph::writeMatrixAdjacency() to : " << fn;
     QFile file( fn );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
@@ -14937,8 +15192,8 @@ void Graph::writeAdjacencyMatrix (const QString fn) {
     This is called by MainWindow::slotViewAdjacencyMatrixPlotText()
     The resulting matrix HAS NO spaces between elements.
 */
-void Graph::writeAdjacencyMatrixPlotText (const QString fn, const bool &simpler) {
-    qDebug()<<"Graph::writeAdjacencyMatrix() to : " << fn;
+void Graph::writeMatrixAdjacencyPlot (const QString fn, const bool &simpler) {
+    qDebug()<<"Graph::writeMatrixAdjacency() to : " << fn;
     QFile file( fn );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         emit statusMessage ( tr("Error. Could not write to ") + fn );
@@ -15074,24 +15329,24 @@ void Graph::writeAdjacencyMatrixPlotText (const QString fn, const bool &simpler)
  *  and AM(i,j)=0 if i not connected to j
  *
  *  Used in Graph::centralityInformation(), Graph::walksMatrixCreate
- *  and Graph::graphAdjacencyMatrixInvert()
+ *  and Graph::graphMatrixAdjacencyInvert()
  */
-void Graph::graphAdjacencyMatrixCreate(const bool dropIsolates,
+void Graph::graphMatrixAdjacencyCreate(const bool dropIsolates,
                                   const bool considerWeights,
                                   const bool inverseWeights,
                                   const bool symmetrize ){
-    qDebug() << "Graph::graphAdjacencyMatrixCreate()";
+    qDebug() << "Graph::graphMatrixAdjacencyCreate()";
     float m_weight=-1;
     int i=0, j=0;
     if (dropIsolates){
-        qDebug() << "Graph::graphAdjacencyMatrixCreate() - Find and drop possible isolates";
+        qDebug() << "Graph::graphMatrixAdjacencyCreate() - Find and drop possible isolates";
         int m = vertices()- verticesListIsolated().count();
         AM.resize( m , m);
     }
     else
         AM.resize(vertices(), vertices());
     QList<Vertex*>::const_iterator it, it1;
-    //qDebug() << "Graph::graphAdjacencyMatrixCreate() - creating new adjacency matrix ";
+    //qDebug() << "Graph::graphMatrixAdjacencyCreate() - creating new adjacency matrix ";
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() || ( (*it)->isIsolated() && dropIsolates) ) {
             continue;
@@ -15147,8 +15402,8 @@ void Graph::graphAdjacencyMatrixCreate(const bool dropIsolates,
 }
 
 
-bool Graph::graphAdjacencyMatrixInvert(const QString &method){
-    qDebug()<<"Graph::graphAdjacencyMatrixInvert() ";
+bool Graph::graphMatrixAdjacencyInvert(const QString &method){
+    qDebug()<<"Graph::graphMatrixAdjacencyInvert() ";
 
     bool considerWeights=false;
     long int i=0, j=0;
@@ -15157,7 +15412,7 @@ bool Graph::graphAdjacencyMatrixInvert(const QString &method){
     int isolatedVertices = verticesListIsolated().count();
     bool dropIsolates=true; // always drop isolates else AM will be singular
 
-    graphAdjacencyMatrixCreate(dropIsolates, considerWeights);
+    graphMatrixAdjacencyCreate(dropIsolates, considerWeights);
 
     m-=isolatedVertices;
 
@@ -15190,10 +15445,10 @@ bool Graph::graphAdjacencyMatrixInvert(const QString &method){
 
 
 
-void Graph::writeAdjacencyMatrixInvert(const QString &fn,
+void Graph::writeMatrixAdjacencyInvert(const QString &fn,
                                        const QString &method)
 {
-    qDebug("Graph::writeAdjacencyMatrixInvert() ");
+    qDebug("Graph::writeMatrixAdjacencyInvert() ");
     int i=0, j=0;
     QList<Vertex*>::const_iterator it, it1;
     QFile file( fn );
@@ -15206,7 +15461,7 @@ void Graph::writeAdjacencyMatrixInvert(const QString &fn,
     outText << "-Social Network Visualizer "<<  VERSION <<endl;
     outText << tr("Network name: ")<< graphName()<< endl<<endl;
     outText << "Inverse Matrix: \n";
-    if (!graphAdjacencyMatrixInvert(method)) {
+    if (!graphMatrixAdjacencyInvert(method)) {
             outText << endl<< " The adjacency matrix is singular.";
             file.close();
             return;
@@ -15242,12 +15497,12 @@ void Graph::writeAdjacencyMatrixInvert(const QString &fn,
  * @brief Computes the Degree matrix of the graph and writes it to given file
  * @param fn
  */
-void Graph::writeDegreeMatrix(const QString &fn) {
-    qDebug("Graph::writeDegreeMatrix() ");
+void Graph::writeMatrixDegreeText(const QString &fn) {
+    qDebug("Graph::writeMatrixDegreeText() ");
 //    int i=0, j=0;
 //    QList<Vertex*>::const_iterator it, it1;
 
-    graphAdjacencyMatrixCreate();
+    graphMatrixAdjacencyCreate();
 
     QFile file( fn );
     if ( !file.open( QIODevice::WriteOnly ) )  {
@@ -15270,12 +15525,12 @@ void Graph::writeDegreeMatrix(const QString &fn) {
  * @brief Computes the Laplacian matrix of the graph and writes it to given file
  * @param fn
  */
-void Graph::writeLaplacianMatrix(const QString &fn) {
-    qDebug("Graph::writeLaplacianMatrix() ");
+void Graph::writeMatrixLaplacianPlainText(const QString &fn) {
+    qDebug("Graph::writeMatrixLaplacianPlainText() ");
 //    int i=0, j=0;
 //    QList<Vertex*>::const_iterator it, it1;
 
-    graphAdjacencyMatrixCreate();
+    graphMatrixAdjacencyCreate();
 
     QFile file( fn );
     if ( !file.open( QIODevice::WriteOnly ) )  {

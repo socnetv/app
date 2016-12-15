@@ -81,6 +81,12 @@ static const int SUBGRAPH_STAR   = 2;
 static const int SUBGRAPH_CYCLE  = 3;
 static const int SUBGRAPH_LINE   = 4;
 
+static const int MATRIX_ADJACENCY        = 1;
+static const int MATRIX_DISTANCES        = 2;
+static const int MATRIX_DEGREE           = 3;
+static const int MATRIX_LAPLACIAN        = 4;
+static const int MATRIX_ADJACENCY_INVERT = 5;
+
 
 class QPointF;
 
@@ -516,11 +522,11 @@ public:
     void graphUndirectedSet(const bool &toggle, const bool &signalMW=true);
     bool graphUndirected();
 
-    void graphAdjacencyMatrixCreate(const bool dropIsolates=false,
+    void graphMatrixAdjacencyCreate(const bool dropIsolates=false,
                                const bool considerWeights=true,
                                const bool inverseWeights=false,
                                const bool symmetrize=false );
-    bool graphAdjacencyMatrixInvert(const QString &method);
+    bool graphMatrixAdjacencyInvert(const QString &method="lu");
 
     void graphDegreeMatrixCreate();
 
@@ -528,23 +534,31 @@ public:
     /* REPORT EXPORTS */
 
     void writeDataSetToFile(const QString dir, const QString );
-    void writeAdjacencyMatrixTo(QTextStream& os,
+    void writeMatrixAdjacencyTo(QTextStream& os,
                                 const bool &saveEdgeWeights=true);
-    void writeAdjacencyMatrix(const QString fileName);
-    void writeAdjacencyMatrixPlotText(const QString fileName,
+
+    void writeMatrix(const QString &fileName,
+                     const int &matrix=MATRIX_ADJACENCY,
+                     const bool &considerWeights=true,
+                     const bool &inverseWeights=false,
+                     const bool &dropIsolates=false,
+                     const bool &simpler=false);
+
+    void writeMatrixAdjacency(const QString fileName);
+    void writeMatrixAdjacencyPlot(const QString fileName,
                                       const bool &simpler=false);
 
-    void writeAdjacencyMatrixInvert(const QString &filename,
+    void writeMatrixAdjacencyInvert(const QString &filename,
                                     const QString &method);
 
-    void writeLaplacianMatrix(const QString &filename);
-    void writeDegreeMatrix(const QString &filename);
+    void writeMatrixLaplacianPlainText(const QString &filename);
+    void writeMatrixDegreeText(const QString &filename);
 
-    void writeDistanceMatrix(const QString &fn,
+    void writeMatrixDistancesPlainText(const QString &fn,
                              const bool &considerWeights,
                              const bool &inverseWeights,
                              const bool &dropIsolates);
-    void writeNumberOfGeodesicsMatrix(const QString &fn,
+    void writeMatrixNumberOfGeodesicsPlainText(const QString &fn,
                                       const bool &considerWeights,
                                       const bool &inverseWeights);
     void writeEccentricity(const QString, const bool considerWeights,
@@ -616,6 +630,15 @@ public:
                                 const QString &matrix = "adjacency",
                                 const QString &varLocation="rows",
                                 const bool &diagonal=false);
+
+    void writeSimilarityPearsonPlainText(const QString fileName,
+                                const bool considerWeights,
+                                const QString &matrix = "adjacency",
+                                const QString &varLocation="rows",
+                                const bool &diagonal=false);
+
+
+
 
     /* DISTANCES, CENTRALITIES & PROMINENCE MEASURES */
     int distance(const int, const int,
