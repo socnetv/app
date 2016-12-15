@@ -1664,6 +1664,104 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
 
 
 
+
+/**
+ * @brief  * Outputs matrix to a html table
+ * @param os
+ * @param debug
+ * @return
+ */
+bool Matrix::printHTMLTable(QTextStream& os, const bool &debug){
+    qDebug() << "Matrix::printHTMLTable()";
+    int actorNumber=0, rowCount = 0;
+    float maxVal, minVal, maxAbsVal, element;
+    bool hasRealNumbers=false;
+    findMinMaxValues(minVal, maxVal, hasRealNumbers);
+
+    maxAbsVal = ( fabs(minVal) > fabs(maxVal) ) ? fabs(minVal) : fabs(maxVal) ;
+
+
+    os << qSetFieldWidth(0) << endl ;
+
+
+    os << "<p>"
+       << "<span class=\"info\">"
+       << ("Values: ")
+       <<"</span>"
+       << ( (hasRealNumbers) ? ("real numbers (printed decimals 3)") : ("integers only" ) )
+       << "</p>";
+
+    os << "<p>"
+       << "<span class=\"info\">"
+       << ("- Max value: ")
+       <<"</span>"
+       << ( (maxVal == -1 ||  maxVal==RAND_MAX ) ? infinity + " (=not connected nodes, in distance matrix)" : QString::number(maxVal) )
+       << "</p>";
+
+    os << "<p>"
+       << "<span class=\"info\">"
+       << ("- Max value: ")
+       <<"</span>"
+       << ( (minVal == -1 ||  minVal==RAND_MAX ) ? infinity + " (=not connected nodes, in distance matrix)" : QString::number(minVal ) )
+       << "</p>";
+
+
+    os <<  ( (hasRealNumbers) ? qSetRealNumberPrecision(3) : qSetRealNumberPrecision(0) ) ;
+
+    os << "<table  border=\"1\" cellspacing=\"0\" cellpadding=\"0\" class=\"stripes\">"
+            << "<thead>"
+            << "<tr>"
+            << "<th>"
+            << ("<sub>Actor</sup>/<sup>Actor</sup>")
+            << "</th>";
+
+
+    // print first/header row
+    for (int r = 0; r < cols(); ++r) {
+        actorNumber = r+1;
+        os << "<th>"
+                << actorNumber
+                << "</th>";
+
+    }
+    os << "</tr>"
+            << "</thead>"
+            << "<tbody>";
+
+    // print rows
+    rowCount = 0;
+    for (int r = 0; r < rows(); ++r) {
+        actorNumber = r+1;
+        rowCount++;
+        os << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">";
+
+        os <<"<td class=\"header\">"
+               << actorNumber
+               << "</td>";
+
+        for (int c = 0; c < cols(); ++c) {
+            element = item(r,c) ;
+            os << fixed << right;
+            os <<"<td>";
+            if ( element == -1 || element == RAND_MAX)  // we print infinity symbol instead of -1 (distances matrix).
+                os << infinity; // do not use var "infinity" as it breaks formatting;
+            else {
+                os << element ;
+
+
+            }
+            os << "</td>";
+        }
+
+        os <<"</tr>";
+    }
+    os << "</tbody></table>";
+    return true;
+}
+
+
+
+
 /**
  * @brief Matrix::printMatrixConsole
  * @return
