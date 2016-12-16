@@ -1642,8 +1642,8 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
         for (int c = 0; c < m.cols(); ++c) {
             element = m(r,c) ;
             os << qSetFieldWidth(fieldWidth) << fixed << right;
-            if ( element == -1 || element == RAND_MAX)  // we print infinity symbol instead of -1 (distances matrix).
-                os << fixed << right << qSetFieldWidth(fieldWidth) << INFINITY ; // do not use var "infinity" as it breaks formatting;
+            if ( element == -1 || element == RAND_MAX)  // we print inf symbol instead of -1 (distances matrix).
+                os << fixed << right << qSetFieldWidth(fieldWidth) << INFINITY ; // do not use our static var "infinity" as it breaks formatting;
             else {
                 if ( element > 999)
                     os << qSetFieldWidth(fieldWidth-3) ;
@@ -1679,32 +1679,6 @@ bool Matrix::printHTMLTable(QTextStream& os, const bool &debug){
     findMinMaxValues(minVal, maxVal, hasRealNumbers);
 
     maxAbsVal = ( fabs(minVal) > fabs(maxVal) ) ? fabs(minVal) : fabs(maxVal) ;
-
-
-    os << qSetFieldWidth(0) << endl ;
-
-
-    os << "<p>"
-       << "<span class=\"info\">"
-       << ("Values: ")
-       <<"</span>"
-       << ( (hasRealNumbers) ? ("real numbers (printed decimals 3)") : ("integers only" ) )
-       << "</p>";
-
-    os << "<p>"
-       << "<span class=\"info\">"
-       << ("- Max value: ")
-       <<"</span>"
-       << ( (maxVal == -1 ||  maxVal==RAND_MAX ) ? infinity + " (=not connected nodes, in distance matrix)" : QString::number(maxVal) )
-       << "</p>";
-
-    os << "<p>"
-       << "<span class=\"info\">"
-       << ("- Max value: ")
-       <<"</span>"
-       << ( (minVal == -1 ||  minVal==RAND_MAX ) ? infinity + " (=not connected nodes, in distance matrix)" : QString::number(minVal ) )
-       << "</p>";
-
 
     os <<  ( (hasRealNumbers) ? qSetRealNumberPrecision(3) : qSetRealNumberPrecision(0) ) ;
 
@@ -1743,8 +1717,8 @@ bool Matrix::printHTMLTable(QTextStream& os, const bool &debug){
             element = item(r,c) ;
             os << fixed << right;
             os <<"<td>";
-            if ( element == -1 || element == RAND_MAX)  // we print infinity symbol instead of -1 (distances matrix).
-                os << infinity; // do not use var "infinity" as it breaks formatting;
+            if ( element == -1 || element == RAND_MAX)  // print inf symbol instead of -1 (distances matrix).
+                os << infinity;
             else {
                 os << element ;
 
@@ -1756,6 +1730,28 @@ bool Matrix::printHTMLTable(QTextStream& os, const bool &debug){
         os <<"</tr>";
     }
     os << "</tbody></table>";
+
+
+    os << qSetFieldWidth(0) << endl ;
+
+
+    os << "<p>"
+       << "<span class=\"info\">"
+       << ("Values: ")
+       <<"</span>"
+       << ( (hasRealNumbers) ? ("real numbers (printed decimals 3)") : ("integers only" ) )
+       << "<br />"
+       << "<span class=\"info\">"
+       << ("- Max value: ")
+       <<"</span>"
+       << ( (maxVal == -1 ||  maxVal==RAND_MAX ) ? infinity + " (=not connected nodes, in distance matrix)" : QString::number(maxVal) )
+       << "<br />"
+       << "<span class=\"info\">"
+       << ("- Min value: ")
+       <<"</span>"
+       << ( (minVal == -1 ||  minVal==RAND_MAX ) ? infinity + " (=not connected nodes, in distance matrix)" : QString::number(minVal ) )
+       << "</p>";
+
     return true;
 }
 
