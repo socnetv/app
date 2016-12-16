@@ -9724,7 +9724,7 @@ void MainWindow::slotAnalyzeMatrixDistances(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    statusMessage( tr("Creating distance matrix. Please wait...") );
+    statusMessage( tr("Computing distances matrix. Please wait...") );
     QString fn = appSettings["dataDir"] + "socnetv-report-distance-matrix.html";
 
 
@@ -9746,15 +9746,16 @@ void MainWindow::slotAnalyzeMatrixDistances(){
     TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
-    statusMessage(tr("Distance matrix saved as: ")+fn);
+    statusMessage(tr("Distances matrix saved as: ")+fn);
 }
 
 
 
 
 /**
-*  Invokes calculation of the sigmas matrix (the number of geodesic paths between each pair of nodes in the loaded network), then displays it.
-*/
+ * @brief Invokes calculation of the geodedics matrix (the number of shortest paths
+ * between each pair of nodes in the loaded network), then displays it.
+ */
 void MainWindow::slotAnalyzeMatrixGeodesics(){
     qDebug("MW: slotViewNumberOfGeodesics()");
     if ( !activeNodes()   )  {
@@ -9762,25 +9763,30 @@ void MainWindow::slotAnalyzeMatrixGeodesics(){
         return;
     }
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-sigmas-matrix.txt";
+    QString fn = appSettings["dataDir"] + "socnetv-report-sigmas-matrix.html";
 
     askAboutWeights();
 
     statusMessage(  tr("Computing Geodesics Matrix. Please wait...") );
+
     progressMsg = tr("Computing Geodesics Matrix. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.writeMatrixNumberOfGeodesicsPlainText(fn,
-                                             considerWeights, inverseWeights);
+//    activeGraph.writeMatrixNumberOfGeodesicsPlainText(fn,
+//                                             considerWeights, inverseWeights);
+
+    activeGraph.writeMatrix(fn,MATRIX_GEODESICS,
+                                    considerWeights, inverseWeights,
+                                    editFilterNodesIsolatesAct->isChecked());
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,false);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
-    statusMessage(tr("Matrix of geodesic path counts saved as: ") + fn);
+    statusMessage(tr("Geodesics Matrix saved as: ") + fn);
 }
 
 
@@ -10052,7 +10058,7 @@ void MainWindow::slotAnalyzeWalksTotal(){
 
 
 /**
-*	Calls Graph:: writeReachabilityMatrix() to calculate and print
+*	Calls Graph:: writeReachabilityMatrixPlainText() to calculate and print
 *   the Reachability Matrix of the network.
 */
 void MainWindow::slotAnalyzeReachabilityMatrix(){
@@ -10061,7 +10067,7 @@ void MainWindow::slotAnalyzeReachabilityMatrix(){
         return;
     }
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-reachability-matrix.txt";
+    QString fn = appSettings["dataDir"] + "socnetv-report-reachability-matrix.html";
 
     statusMessage(  QString(tr("Computing Reachability Matrix. Please wait...")) );
     progressMsg = tr("Computing Reachability Matrix. \n"
@@ -10069,11 +10075,12 @@ void MainWindow::slotAnalyzeReachabilityMatrix(){
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.writeReachabilityMatrix(fn);
+    //activeGraph.writeReachabilityMatrixPlainText(fn);
+    activeGraph.writeMatrix(fn, MATRIX_REACHABILITY );
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,false);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
     statusMessage("Reachability Matrix saved as: " + fn );

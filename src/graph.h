@@ -86,6 +86,8 @@ static const int MATRIX_DISTANCES        = 2;
 static const int MATRIX_DEGREE           = 3;
 static const int MATRIX_LAPLACIAN        = 4;
 static const int MATRIX_ADJACENCY_INVERT = 5;
+static const int MATRIX_GEODESICS        = 6;
+static const int MATRIX_REACHABILITY     = 7;
 
 
 class QPointF;
@@ -684,7 +686,7 @@ public:
     QList<int> vertexinfluenceRange(int v1);
     QList<int> vertexinfluenceDomain(int v2);
 
-    void writeReachabilityMatrix(const QString &fn, const bool &dropIsolates=false);
+    void writeReachabilityMatrixPlainText(const QString &fn, const bool &dropIsolates=false);
 
 
     float numberOfTriples(int v1);

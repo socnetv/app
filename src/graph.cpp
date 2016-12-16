@@ -8691,8 +8691,8 @@ QList<int> Graph::vertexinfluenceDomain(int v1){
 /**
     Writes the reachability matrix X^R of the graph to a file
 */
-void Graph::writeReachabilityMatrix(const QString &fn, const bool &dropIsolates) {
-    qDebug("Graph::writeReachabilityMatrix() ");
+void Graph::writeReachabilityMatrixPlainText(const QString &fn, const bool &dropIsolates) {
+    qDebug("Graph::writeReachabilityMatrixPlainText() ");
 
     QFile file (fn);
 
@@ -15176,6 +15176,7 @@ void Graph::writeMatrix (const QString &fn,
                          const bool &dropIsolates,
                          const bool &simpler) {
 
+    Q_UNUSED(simpler);
     qDebug()<<"Graph::writeMatrix() - matrix" << matrix
            << "to" << fn;
 
@@ -15190,25 +15191,46 @@ void Graph::writeMatrix (const QString &fn,
 
     switch (matrix) {
     case MATRIX_ADJACENCY:
+        emit statusMessage ( tr("Need to recompute Adjacency Matrix. Please wait...") );
         graphMatrixAdjacencyCreate();
+        emit statusMessage ( tr("Adjacency recomputed. Writing Adjacency Matrix...") );
         break;
     case MATRIX_LAPLACIAN:
+        emit statusMessage ( tr("Need to recompute Adjacency Matrix. Please wait...") );
         graphMatrixAdjacencyCreate();
+        emit statusMessage ( tr("Adjacency recomputed. Writing Laplacian Matrix...") );
         break;
     case MATRIX_DEGREE:
+        emit statusMessage ( tr("Need to recompute Adjacency Matrix. Please wait...") );
         graphMatrixAdjacencyCreate();
+        emit statusMessage ( tr("Adjacency recomputed. Writing Degree Matrix...") );
         break;
     case MATRIX_DISTANCES:
         if ( !calculatedDistances || graphModified() ) {
-            emit statusMessage ( tr("Writing Distance Matrix: "
-                                    "Need to recompute Distances. Please wait...") );
+            emit statusMessage ( tr("Need to recompute Distances. Please wait...") );
             distanceMatrixCreate(false, considerWeights, inverseWeights, dropIsolates);
         }
+        emit statusMessage ( tr("Distances recomputed. Writing Distances Matrix...") );
+        break;
+    case MATRIX_GEODESICS:
+        if ( !calculatedDistances || graphModified() ) {
+            emit statusMessage ( tr("Need to recompute Distances. Please wait...") );
+            distanceMatrixCreate(false, considerWeights, inverseWeights, false);
+        }
+        emit statusMessage ( tr("Distances recomputed. Writing Geodesics Matrix...") );
         break;
     case MATRIX_ADJACENCY_INVERT:
+        emit statusMessage ( tr("Computing Inverse Adjacency Matrix. Please wait...") );
         inverseResult = graphMatrixAdjacencyInvert(QString("lu"));
+        emit statusMessage ( tr("Inverse Adjacency Matrix computed. Writing Matrix...") );
         break;
-
+    case MATRIX_REACHABILITY:
+        if (!calculatedDistances || graphModified()) {
+            emit statusMessage ( tr("Need to recompute Distances. Please wait...") );
+            distanceMatrixCreate(false,false,false,dropIsolates);
+        }
+        emit statusMessage ( tr("Distances recomputed. Writing Reachability Matrix...") );
+        break;
     default:
         break;
     }
@@ -15233,8 +15255,14 @@ void Graph::writeMatrix (const QString &fn,
     case MATRIX_DISTANCES:
         outText << tr("DISTANCES MATRIX REPORT");
         break;
+    case MATRIX_GEODESICS:
+        outText << tr("GEODESICS MATRIX REPORT");
+        break;
     case MATRIX_ADJACENCY_INVERT:
         outText << tr("INVERSE ADJACENCY MATRIX REPORT");
+        break;
+    case MATRIX_REACHABILITY:
+        outText << tr("REACHABILITY MATRIX REPORT");
         break;
 
     default:
@@ -15296,6 +15324,17 @@ void Graph::writeMatrix (const QString &fn,
                 << "</p>";
         DM.printHTMLTable(outText);
         break;
+    case MATRIX_GEODESICS:
+        outText << "<p class=\"description\">"
+                << tr("The geodesics matrix of a social network is a NxN matrix ")
+                << tr("where each element (i,j) is the number of geodesics "
+                      "(shortest paths) from actor i to actor j, "
+                      "or infinity if no shortest path exists.")
+                << "<br />"
+                << "</p>";
+        TM.printHTMLTable(outText);
+        break;
+
     case MATRIX_ADJACENCY_INVERT:
         if (!inverseResult) {
             outText << "<p class=\"description\">"
@@ -15305,6 +15344,20 @@ void Graph::writeMatrix (const QString &fn,
         }else {
             invAM.printHTMLTable(outText);
         }
+        break;
+    case MATRIX_REACHABILITY:
+        outText << "<p class=\"description\">"
+                << tr("The reachability matrix R of a social network is a NxN matrix "
+                      "where each element R(i,j) is 1 if actors j is reachable from i "
+                      "otherwise 0. <br />"
+                      "Two nodes are reachable if there is a walk between them "
+                      "(their geodesic distance is non-zero). <br />"
+                      "Essentially the reachability matrix is a dichotomized "
+                      "geodesics matrix.")
+                << "<br />"
+                << "</p>";
+
+        XRM.printHTMLTable(outText);
         break;
     default:
         break;
