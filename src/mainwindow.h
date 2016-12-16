@@ -284,14 +284,12 @@ public slots:
     void slotFilterNodes();
     void slotEditFilterNodesIsolates(bool checked);
     void slotEditFilterEdgesByWeightDialog();
-    void slotTransformNodes2Edges();
     void slotEditFilterEdgesUnilateral(bool checked);
 
+    void slotEditTransformNodes2Edges();
 
 
     // LAYOUT MENU
-    void slotColorationStrongStructural();
-    void slotColorationRegular();
     void slotLayoutRandom();
     void slotLayoutCircularRandom();
     void slotLayoutCircularByProminenceIndex();
@@ -300,57 +298,62 @@ public slots:
     void slotLayoutLevelByProminenceIndex();
     void slotLayoutLevelByProminenceIndex(QString);
     void slotLayoutGuides(const bool &toggle);
+
     void slotLayoutSpringEmbedder();
     void slotLayoutFruchterman();
     void slotLayoutKamadaKawai();
+
     void slotLayoutNodeSizesByOutDegree(bool);
     void slotLayoutNodeSizesByInDegree(bool);
 
-    //STATISTICS MENU
+    void slotLayoutColorationStrongStructural();
+    void slotLayoutColorationRegular();
+
+    //ANALYSIS MENU
     void askAboutWeights();
-    void slotDistancesMatrix();
-    void slotGeodesicsMatrix();
-    void slotGraphDistance();
-    void slotAverageGraphDistance();
-    void slotDiameter();
-    void slotEccentricity();
+    void slotAnalyzeMatrixDistances();
+    void slotAnalyzeMatrixGeodesics();
+    void slotAnalyzeDistance();
+    void slotAnalyzeDistanceAverage();
+    void slotAnalyzeDiameter();
+    void slotAnalyzeEccentricity();
 
-    void slotWalksOfGivenLength();
-    void slotTotalWalks();
-    void slotReachabilityMatrix();
-    void slotConnectivity();
+    void slotAnalyzeWalksLength();
+    void slotAnalyzeWalksTotal();
+    void slotAnalyzeReachabilityMatrix();
+    void slotAnalyzeConnectivity();
 
-    void slotClusteringHierarchical();
-    void slotCliqueCensus();
-    void slotClusteringCoefficient();
-    void slotTriadCensus();
+    void slotAnalyzeClusteringHierarchical();
+    void slotAnalyzeCliqueCensus();
+    void slotAnalyzeClusteringCoefficient();
+    void slotAnalyzeTriadCensus();
 
-    void slotCheckSymmetry();
-    void slotAdjacencyMatrixInverse();
-    void slotDegreeMatrix();
-    void slotLaplacianMatrix();
+    void slotAnalyzeSymmetryCheck();
+    void slotAnalyzeMatrixAdjacencyInverse();
+    void slotAnalyzeMatrixDegree();
+    void slotAnalyzeMatrixLaplacian();
 
-    void slotCentralityDegree();
-    void slotCentralityCloseness();
-    void slotCentralityClosenessInfluenceRange();
-    void slotCentralityBetweenness();
-    void slotCentralityInformation();
-    void slotCentralityStress();
-    void slotCentralityPower();
-    void slotCentralityEccentricity();
+    void slotAnalyzeCentralityDegree();
+    void slotAnalyzeCentralityCloseness();
+    void slotAnalyzeCentralityClosenessIR();
+    void slotAnalyzeCentralityBetweenness();
+    void slotAnalyzeCentralityInformation();
+    void slotAnalyzeCentralityStress();
+    void slotAnalyzeCentralityPower();
+    void slotAnalyzeCentralityEccentricity();
 
-    void slotPrestigeDegree();
-    void slotPrestigePageRank();
-    void slotPrestigeProximity();
+    void slotAnalyzePrestigeDegree();
+    void slotAnalyzePrestigePageRank();
+    void slotAnalyzePrestigeProximity();
 
-    void slotSimilarityMatchingDialog();
-    void slotSimilarityMatching(const QString &matrix,
+    void slotAnalyzeSimilarityMatchingDialog();
+    void slotAnalyzeSimilarityMatching(const QString &matrix,
                                const QString &varLocation,
                                const int &measure,
                                const bool &diagonal);
 
-    void slotSimilarityPearsonDialog();
-    void slotSimilarityPearson(const QString &matrix,
+    void slotAnalyzeSimilarityPearsonDialog();
+    void slotAnalyzeSimilarityPearson(const QString &matrix,
                                const QString &varLocation,
                                const bool &diagonal=false);
 
@@ -521,11 +524,11 @@ private:
     QAction *openSettingsAct;
     QAction *webCrawlerAct;
 
-    QAction *netDensity, *symmetryAct, *graphDistanceAct, *averGraphDistanceAct,
+    QAction *netDensity, *analyzeSymmetryAct, *graphDistanceAct, *averGraphDistanceAct,
             *distanceMatrixAct, *geodesicsMatrixAct, *diameterAct, *eccentricityAct;
     QAction *walksAct,*totalWalksAct, *reachabilityMatrixAct, *connectivityAct;
-    QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct, *invertAdjMatrixAct;
-    QAction *analyzeDegreeMatrixAct, *analyzeLaplacianMatrixAct;
+    QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct, *analyzeMatrixAdjInvertAct;
+    QAction *analyzeMatrixDegreeAct, *analyzeMatrixLaplacianAct;
     QAction *clusteringHierarchicalAct, *similarityPearsonAct;
     QAction *similarityExactMatchesAct;
     QAction *cDegreeAct, *cInDegreeAct, *cClosenessAct, *cInfluenceRangeClosenessAct,

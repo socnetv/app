@@ -1139,7 +1139,7 @@ void MainWindow::initActions(){
     transformNodes2EdgesAct->setWhatsThis(tr("Transform Nodes EdgesAct\n\n"
                                              "Transforms network so that nodes become Edges and vice versa"));
     connect(transformNodes2EdgesAct, SIGNAL(triggered()),
-            this, SLOT(slotTransformNodes2Edges()));
+            this, SLOT(slotEditTransformNodes2Edges()));
 
 
 
@@ -1200,7 +1200,7 @@ void MainWindow::initActions(){
     strongColorationAct = new QAction ( tr("Strong Structural"), this);
     strongColorationAct -> setStatusTip( tr("Nodes are assigned the same color if they have identical in and out neighborhoods") );
     strongColorationAct -> setWhatsThis( tr("Click this to colorize nodes; Nodes are assigned the same color if they have identical in and out neighborhoods"));
-    connect(strongColorationAct, SIGNAL(triggered() ), this, SLOT(slotColorationStrongStructural()) );
+    connect(strongColorationAct, SIGNAL(triggered() ), this, SLOT(slotLayoutColorationStrongStructural()) );
 
     regularColorationAct = new QAction ( tr("Regular"), this);
     regularColorationAct ->
@@ -1212,7 +1212,7 @@ void MainWindow::initActions(){
                 tr("Click this to colorize nodes; "
                    "Nodes are assigned the same color if they have neighborhoods "
                    "of the same set of colors"));
-    connect(regularColorationAct, SIGNAL(triggered() ), this, SLOT(slotColorationRegular()) );//TODO
+    connect(regularColorationAct, SIGNAL(triggered() ), this, SLOT(slotLayoutColorationRegular()) );//TODO
 
     randLayoutAct = new QAction( tr("Random"),this);
     randLayoutAct -> setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_0);
@@ -1693,50 +1693,52 @@ void MainWindow::initActions(){
     Analysis menu actions
     */
 
-    symmetryAct = new QAction(
+    analyzeSymmetryAct = new QAction(
                 QIcon(":/images/symmetry-edge.png"), tr("Symmetry Test"), this);
-    symmetryAct -> setShortcut(Qt::SHIFT + Qt::Key_S);
-    symmetryAct->setStatusTip(tr("Check whether the network is symmetric or not"));
-    symmetryAct->setWhatsThis(
+    analyzeSymmetryAct -> setShortcut(Qt::SHIFT + Qt::Key_S);
+    analyzeSymmetryAct->setStatusTip(tr("Check whether the network is symmetric or not"));
+    analyzeSymmetryAct->setWhatsThis(
                 tr("Symmetry\n\n"
                    "Checks whether the network is symmetric or not. \n"
                    "A network is symmetric when all edges are reciprocal, or, "
                    "in mathematical language, when the adjacency matrix is "
                    "symmetric.")
                 );
-    connect(symmetryAct, SIGNAL(triggered()), this, SLOT(slotCheckSymmetry()));
+    connect(analyzeSymmetryAct, SIGNAL(triggered()),
+            this, SLOT(slotAnalyzeSymmetryCheck()));
 
-    invertAdjMatrixAct = new QAction(
+    analyzeMatrixAdjInvertAct = new QAction(
                 QIcon(":/images/invertmatrix.png"), tr("Invert Adjacency Matrix"), this);
-    invertAdjMatrixAct -> setShortcut(
+    analyzeMatrixAdjInvertAct -> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_I)
                 );
-    invertAdjMatrixAct->setStatusTip(tr("Invert the adjacency matrix, if possible"));
-    invertAdjMatrixAct->setWhatsThis(tr("Invert  Adjacency Matrix "
+    analyzeMatrixAdjInvertAct->setStatusTip(tr("Invert the adjacency matrix, if possible"));
+    analyzeMatrixAdjInvertAct->setWhatsThis(tr("Invert  Adjacency Matrix "
                                         "\n\n Inverts the adjacency matrix using linear algebra methods."));
-    connect(invertAdjMatrixAct, SIGNAL(triggered()), this, SLOT(slotAdjacencyMatrixInverse()));
+    connect(analyzeMatrixAdjInvertAct, SIGNAL(triggered()),
+            this, SLOT(slotAnalyzeMatrixAdjacencyInverse()));
 
 
-    analyzeDegreeMatrixAct = new QAction(
+    analyzeMatrixDegreeAct = new QAction(
                 QIcon(":/images/degreematrix.png"), tr("Degree Matrix"), this);
-    analyzeDegreeMatrixAct -> setShortcut(
+    analyzeMatrixDegreeAct -> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_D)
                 );
-    analyzeDegreeMatrixAct->setStatusTip(tr("Compute the Degree matrix of the network"));
-    analyzeDegreeMatrixAct->setWhatsThis(tr("Degree Matrix "
+    analyzeMatrixDegreeAct->setStatusTip(tr("Compute the Degree matrix of the network"));
+    analyzeMatrixDegreeAct->setWhatsThis(tr("Degree Matrix "
                                         "\n\n Compute the Degree matrix of the network."));
-    connect(analyzeDegreeMatrixAct, SIGNAL(triggered()), this, SLOT(slotDegreeMatrix()));
+    connect(analyzeMatrixDegreeAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeMatrixDegree()));
 
 
-    analyzeLaplacianMatrixAct = new QAction(
+    analyzeMatrixLaplacianAct = new QAction(
                 QIcon(":/images/laplacian.png"), tr("Laplacian Matrix"), this);
-    analyzeLaplacianMatrixAct -> setShortcut(
+    analyzeMatrixLaplacianAct -> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_L)
                 );
-    analyzeLaplacianMatrixAct->setStatusTip(tr("Compute the Laplacian matrix of the network"));
-    analyzeLaplacianMatrixAct->setWhatsThis(tr("Laplacian Matrix "
+    analyzeMatrixLaplacianAct->setStatusTip(tr("Compute the Laplacian matrix of the network"));
+    analyzeMatrixLaplacianAct->setWhatsThis(tr("Laplacian Matrix "
                                         "\n\n Compute the Laplacian matrix of the network."));
-    connect(analyzeLaplacianMatrixAct, SIGNAL(triggered()), this, SLOT(slotLaplacianMatrix()));
+    connect(analyzeMatrixLaplacianAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeMatrixLaplacian()));
 
 
     graphDistanceAct = new QAction(
@@ -1750,7 +1752,7 @@ void MainWindow::initActions(){
                    "In graph theory, the distance (geodesic distance) of two "
                    "nodes is the length (number of edges) of the shortest path "
                    "between them."));
-    connect(graphDistanceAct, SIGNAL(triggered()), this, SLOT(slotGraphDistance()));
+    connect(graphDistanceAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeDistance()));
 
 
     distanceMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Distances Matrix"),this);
@@ -1768,7 +1770,7 @@ void MainWindow::initActions(){
                    "(i,j) element is the distance from node i to node j"
                    "The distance of two nodes is the length of the shortest path between them.")
                 );
-    connect(distanceMatrixAct, SIGNAL(triggered()), this, SLOT( slotDistancesMatrix() ) );
+    connect(distanceMatrixAct, SIGNAL(triggered()), this, SLOT( slotAnalyzeMatrixDistances() ) );
 
     geodesicsMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesics Matrix"),this);
     geodesicsMatrixAct -> setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_G);
@@ -1781,13 +1783,14 @@ void MainWindow::initActions(){
                     "A geodesic of two nodes is the shortest path between them.")
                 );
     connect(geodesicsMatrixAct, SIGNAL(triggered()),
-            this, SLOT( slotGeodesicsMatrix()) );
+            this, SLOT( slotAnalyzeMatrixGeodesics()) );
 
     diameterAct = new QAction(QIcon(":/images/diameter.png"), tr("Diameter"),this);
     diameterAct -> setShortcut(Qt::CTRL + Qt::Key_D);
     diameterAct->setStatusTip(tr("Compute the network diameter (maximum distance between any actors) ."));
-    diameterAct->setWhatsThis(tr("Diameter\n\n The Diameter of a network is the maximum distance (maximum shortest path length) between any two nodes of the network."));
-    connect(diameterAct, SIGNAL(triggered()), this, SLOT(slotDiameter()));
+    diameterAct->setWhatsThis(tr("Diameter\n\n "
+                                 "The Diameter of a network is the maximum distance (maximum shortest path length) between any two nodes of the network."));
+    connect(diameterAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeDiameter()));
 
     averGraphDistanceAct = new QAction(QIcon(":/images/avdistance.png"), tr("Average Distance"),this);
     averGraphDistanceAct -> setShortcut(Qt::CTRL + Qt::Key_B);
@@ -1798,14 +1801,14 @@ void MainWindow::initActions(){
                    "between all pairs of network actors (vertices in the graph). "
                    "It is a measure of the efficiency or compactness of the network."));
     connect(averGraphDistanceAct, SIGNAL(triggered()),
-            this, SLOT(slotAverageGraphDistance()));
+            this, SLOT(slotAnalyzeDistanceAverage()));
 
     eccentricityAct = new QAction(QIcon(":/images/eccentricity.png"), tr("Eccentricity"),this);
     eccentricityAct-> setShortcut(Qt::CTRL +  Qt::SHIFT + Qt::Key_E);
     eccentricityAct->setStatusTip(tr("Compute the Eccentricity indices for each node and group Eccentricity"));
     eccentricityAct->setWhatsThis(tr("Eccentricity\n\n"
                                      "The eccentricity or association number of each node i is the largest geodesic distance (i,j) between node i and every other node j. Therefore, it reflects how far, at most, is each node from every other node. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
-    connect(eccentricityAct, SIGNAL(triggered()), this, SLOT(slotEccentricity()));
+    connect(eccentricityAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeEccentricity()));
 
 
     connectivityAct = new QAction(QIcon(":/images/distance.png"),  tr("Connectivity"), this);
@@ -1824,7 +1827,7 @@ void MainWindow::initActions(){
                                       "A digraph or a graph is disconnected if "
                                       "at least one node is isolate."
                                       ));
-    connect(connectivityAct, SIGNAL(triggered()), this, SLOT(slotConnectivity()));
+    connect(connectivityAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeConnectivity()));
 
 
     walksAct = new QAction(QIcon(":/images/walk.png"), tr("Walks of a given length"),this);
@@ -1838,7 +1841,7 @@ void MainWindow::initActions(){
                               "e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. "
                               "This function counts the number of walks of a given "
                               "length between each pair of nodes, by studying the powers of the sociomatrix.\n"));
-    connect(walksAct, SIGNAL(triggered()), this, SLOT(slotWalksOfGivenLength() )  );
+    connect(walksAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeWalksLength() )  );
 
     totalWalksAct = new QAction(QIcon(":/images/walk.png"), tr("Total Walks"),this);
     totalWalksAct-> setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_W);
@@ -1851,7 +1854,7 @@ void MainWindow::initActions(){
                                    "is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. "
                                    "This function counts the number of walks of any length "
                                    "between each pair of nodes, by studying the powers of the sociomatrix. \n"));
-    connect(totalWalksAct, SIGNAL(triggered()), this, SLOT(slotTotalWalks() )  );
+    connect(totalWalksAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeWalksTotal() )  );
 
 
     reachabilityMatrixAct = new QAction(QIcon(":/images/walk.png"), tr("Reachability Matrix"),this);
@@ -1863,7 +1866,7 @@ void MainWindow::initActions(){
                                            "the vertices i and j are reachable. \n\n"
                                            "Actually, this just checks whether the corresponding element "
                                            "of Distances matrix is not zero.\n"));
-    connect(reachabilityMatrixAct, SIGNAL(triggered()), this, SLOT(slotReachabilityMatrix() )  );
+    connect(reachabilityMatrixAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeReachabilityMatrix() )  );
 
 
 
@@ -1896,7 +1899,7 @@ void MainWindow::initActions(){
                    "Note that the complexity of agglomerative clustering is O( n^2 log(n) ), "
                    "therefore is too slow for large data sets."
                    ));
-    connect(clusteringHierarchicalAct, SIGNAL(triggered()), this, SLOT(slotClusteringHierarchical() )  );
+    connect(clusteringHierarchicalAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeClusteringHierarchical() )  );
 
 
     cliquesAct = new QAction(QIcon(":/images/clique.png"), tr("Clique Census"),this);
@@ -1905,7 +1908,7 @@ void MainWindow::initActions(){
     cliquesAct->setWhatsThis(tr("Clique Census\n\n"
                                 "Produces the census of network cliques (maximal connected subgraphs), "
                                 "along with disaggregation by actor and co-membership information. "));
-    connect(cliquesAct, SIGNAL(triggered()), this, SLOT(slotCliqueCensus() )  );
+    connect(cliquesAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCliqueCensus() )  );
 
 
     clusteringCoefAct = new QAction(QIcon(":/images/clucof.png"), tr("Local and Network Clustering Coefficient"),this);
@@ -1915,7 +1918,7 @@ void MainWindow::initActions(){
                                        "The local Clustering Coefficient  (Watts & Strogatz, 1998) "
                                        "of an actor quantifies how close "
                                        "the actor and her neighbors are to being a clique. \n"));
-    connect(clusteringCoefAct, SIGNAL(triggered()), this, SLOT(slotClusteringCoefficient() )  );
+    connect(clusteringCoefAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeClusteringCoefficient() )  );
 
 
     triadCensusAct = new QAction(QIcon(":/images/triad.png"), tr("Triad Census"),this);
@@ -1925,7 +1928,7 @@ void MainWindow::initActions(){
                                     "A triad census counts all the different kinds of observed triads "
                                     "within a network and codes them according to their number of mutual, "
                                     "asymmetric and non-existent dyads. \n"));
-    connect(triadCensusAct, SIGNAL(triggered()), this, SLOT(slotTriadCensus() )  );
+    connect(triadCensusAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeTriadCensus() )  );
 
 
     similarityPearsonAct = new QAction(QIcon(":/images/similarity.png"), tr("Pearson correlation coefficients"),this);
@@ -1947,7 +1950,7 @@ void MainWindow::initActions(){
                    "\"exact matches\", \"correlation\" and \"distance\" "
                    "will show little variation among the actors, causing "
                    "difficulty in classifying the actors in structural equivalence classes."));
-    connect(similarityPearsonAct, SIGNAL(triggered()), this, SLOT(slotSimilarityPearsonDialog() )  );
+    connect(similarityPearsonAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeSimilarityPearsonDialog() )  );
 
 
 
@@ -1974,7 +1977,7 @@ void MainWindow::initActions(){
                    "will show little variation among the actors, causing "
                    "difficulty in classifying the actors in structural equivalence classes."));
     connect(similarityExactMatchesAct, SIGNAL(triggered()),
-            this, SLOT(slotSimilarityMatchingDialog() )  );
+            this, SLOT(slotAnalyzeSimilarityMatchingDialog() )  );
 
 
 
@@ -1994,7 +1997,7 @@ void MainWindow::initActions(){
                     "It can also be calculated in weighted graphs. "
                     "In weighted relations, DC is the sum of weights of all "
                     "edges/outLinks attached to v."));
-    connect(cDegreeAct, SIGNAL(triggered()), this, SLOT(slotCentralityDegree()));
+    connect(cDegreeAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityDegree()));
 
 
     cClosenessAct = new QAction(tr("Closeness Centrality (CC)"), this);
@@ -2014,7 +2017,7 @@ void MainWindow::initActions(){
                    "\n\nThis index can be calculated in both graphs and digraphs. "
                    "It can also be calculated in weighted graphs although the weight of "
                    "each edge (v,u) in E is always considered to be 1. "));
-    connect(cClosenessAct, SIGNAL(triggered()), this, SLOT(slotCentralityCloseness()));
+    connect(cClosenessAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityCloseness()));
 
     cInfluenceRangeClosenessAct = new QAction(tr("Influence Range Closeness Centrality (IRCC)"), this);
     cInfluenceRangeClosenessAct-> setShortcut(Qt::CTRL + Qt::Key_3);
@@ -2035,7 +2038,7 @@ void MainWindow::initActions(){
                    "distances from node v to nodes in its influence range J (nodes reachable from v). "
                    "The IRCC formula used is the ratio of the fraction of nodes reachable by v "
                    "(|J|/(n-1)) to the average distance of these nodes from v (sum(d(v,j))/|J|"));
-    connect(cInfluenceRangeClosenessAct, SIGNAL(triggered()), this, SLOT(slotCentralityClosenessInfluenceRange()));
+    connect(cInfluenceRangeClosenessAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityClosenessIR()));
 
     cBetweennessAct = new QAction(tr("Betweenness Centrality (BC)"), this);
     cBetweennessAct-> setShortcut(Qt::CTRL + Qt::Key_4);
@@ -2053,7 +2056,7 @@ void MainWindow::initActions(){
                                      "and digraphs but is usually best suited for undirected graphs. It can also be calculated"
                                      " in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
     cBetweennessAct->setStatusTip(tr("Compute Betweenness Centrality indices and group Betweenness Centralization."));
-    connect(cBetweennessAct, SIGNAL(triggered()), this, SLOT(slotCentralityBetweenness()));
+    connect(cBetweennessAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityBetweenness()));
 
     cStressAct = new QAction(tr("Stress Centrality (SC)"), this);
     cStressAct-> setShortcut(Qt::CTRL + Qt::Key_5);
@@ -2065,7 +2068,7 @@ void MainWindow::initActions(){
                                 "then we have a star graph with maximum Stress Centrality. \n\n"
                                 "This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. "
                                 "It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
-    connect(cStressAct, SIGNAL(triggered()), this, SLOT(slotCentralityStress()));
+    connect(cStressAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityStress()));
 
 
     cEccentAct = new QAction(tr("Eccentricity Centrality (EC)"), this);
@@ -2079,14 +2082,14 @@ void MainWindow::initActions(){
                    "This index can be calculated in both graphs and digraphs "
                    "but is usually best suited for undirected graphs. "
                    "It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
-    connect(cEccentAct, SIGNAL(triggered()), this, SLOT(slotCentralityEccentricity()));
+    connect(cEccentAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityEccentricity()));
 
 
     cPowerAct = new QAction(tr("Power Centrality (PC)"), this);
     cPowerAct-> setShortcut(Qt::CTRL + Qt::Key_7);
     cPowerAct->setStatusTip(tr("Compute Power Centrality indices (aka Gil-Schmidt Power Centrality) for every actor and group Power Centralization"));
     cPowerAct->setWhatsThis(tr("Power Centrality (PC)\n\n For each node v, this index sums its degree (with weight 1), with the size of the 2nd-order neighbourhood (with weight 2), and in general, with the size of the kth order neighbourhood (with weight k). Thus, for each node in the network the most important other nodes are its immediate neighbours and then in decreasing importance the nodes of the 2nd-order neighbourhood, 3rd-order neighbourhood etc. For each node, the sum obtained is normalised by the total numbers of nodes in the same component minus 1. Power centrality has been devised by Gil-Schmidt. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1 (therefore not considered)."));
-    connect(cPowerAct, SIGNAL(triggered()), this, SLOT(slotCentralityPower()));
+    connect(cPowerAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityPower()));
 
 
     cInformationAct = new QAction(tr("Information Centrality (IC)"),	this);
@@ -2101,20 +2104,20 @@ void MainWindow::initActions(){
                    "focuses on how information might flow through many different paths. \n\n"
                    "This index should be calculated only for  graphs. \n\n"
                    "Note: To compute this index, SocNetV drops all isolated nodes."));
-    connect(cInformationAct, SIGNAL(triggered()), this, SLOT(slotCentralityInformation()));
+    connect(cInformationAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityInformation()));
 
     cInDegreeAct = new QAction(tr("Degree Prestige (DP)"),	 this);
     cInDegreeAct->setStatusTip(tr("Compute Degree Prestige (InDegree) indices "));
     cInDegreeAct-> setShortcut(Qt::CTRL + Qt::Key_I);
     cInDegreeAct->setWhatsThis(tr("InDegree (Degree Prestige)\n\n For each node k, this the number of arcs ending at k. Nodes with higher in-degree are considered more prominent among others. In directed graphs, this index measures the prestige of each node/actor. Thus it is called Degree Prestige. Nodes who are prestigious tend to receive many nominations or choices (in-links). The largest the index is, the more prestigious is the node. \n\nThis index can be calculated only for digraphs. In weighted relations, DP is the sum of weights of all arcs/inLinks ending at node v."));
-    connect(cInDegreeAct, SIGNAL(triggered()), this, SLOT(slotPrestigeDegree()));
+    connect(cInDegreeAct, SIGNAL(triggered()), this, SLOT(slotAnalyzePrestigeDegree()));
 
     cPageRankAct = new QAction(tr("PageRank Prestige (PRP)"),	this);
     cPageRankAct-> setShortcut(Qt::CTRL + Qt::Key_K);
     cPageRankAct->setEnabled(true);
     cPageRankAct->setStatusTip(tr("Compute PageRank Prestige indices for every actor"));
     cPageRankAct->setWhatsThis(tr("PageRank Prestige\n\n An importance ranking for each node based on the link structure of the network. PageRank, developed by Page and Brin (1997), focuses on how nodes are connected to each other, treating each edge from a node as a citation/backlink/vote to another. In essence, for each node PageRank counts all backlinks to it, but it does so by not counting all edges equally while it normalizes each edge from a node by the total number of edges from it. PageRank is calculated iteratively and it corresponds to the principal eigenvector of the normalized link matrix. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for directed graphs since it is a prestige measure. It can also be calculated in weighted graphs. In weighted relations, each backlink to a node v from another node u is considered to have weight=1 but it is normalized by the sum of outLinks weights (outDegree) of u. Therefore, nodes with high outLink weights give smaller percentage of their PR to node v."));
-    connect(cPageRankAct, SIGNAL(triggered()), this, SLOT(slotPrestigePageRank()));
+    connect(cPageRankAct, SIGNAL(triggered()), this, SLOT(slotAnalyzePrestigePageRank()));
 
     cProximityPrestigeAct = new QAction(tr("Proximity Prestige (PP)"),	this);
     cProximityPrestigeAct-> setShortcut(Qt::CTRL + Qt::Key_Y);
@@ -2138,7 +2141,7 @@ void MainWindow::initActions(){
                    "to the average distance of that nodes to v: \n"
                    "PP = (I/(N-1))/(sum{d(u,v)}/I) \n"
                    "where the sum is over all nodes in I."));
-    connect(cProximityPrestigeAct, SIGNAL(triggered()), this, SLOT(slotPrestigeProximity()));
+    connect(cProximityPrestigeAct, SIGNAL(triggered()), this, SLOT(slotAnalyzePrestigeProximity()));
 
 
     /**
@@ -2548,7 +2551,7 @@ void MainWindow::initMenuBar() {
 
     /** menuBar entry: analyze menu */
     analysisMenu = menuBar()->addMenu(tr("&Analyze"));
-    analysisMenu -> addAction (symmetryAct);
+    analysisMenu -> addAction (analyzeSymmetryAct);
     analysisMenu -> addSeparator();
     matrixMenu  = new QMenu(tr("Adjacency Matrix and Matrices..."));
     matrixMenu -> setIcon(QIcon(":/images/sm.png"));
@@ -2556,10 +2559,10 @@ void MainWindow::initMenuBar() {
     matrixMenu  -> addAction (networkViewSociomatrixAct);
     matrixMenu  -> addAction (networkViewSociomatrixPlotAct);
     matrixMenu  -> addSeparator();
-    matrixMenu  -> addAction (invertAdjMatrixAct);
+    matrixMenu  -> addAction (analyzeMatrixAdjInvertAct);
     matrixMenu  -> addSeparator();
-    matrixMenu  -> addAction (analyzeDegreeMatrixAct);
-    matrixMenu  -> addAction (analyzeLaplacianMatrixAct);
+    matrixMenu  -> addAction (analyzeMatrixDegreeAct);
+    matrixMenu  -> addAction (analyzeMatrixLaplacianAct);
     //	analysisMenu -> addAction (netDensity);
 
     analysisMenu -> addSeparator();
@@ -4382,22 +4385,22 @@ void MainWindow::toolBoxAnalysisGeodesicsSelectChanged(int selectedIndex) {
     case 0:
         break;
     case 1:
-        slotGraphDistance();
+        slotAnalyzeDistance();
         break;
     case 2:
-        slotAverageGraphDistance();
+        slotAnalyzeDistanceAverage();
         break;
     case 3:
-        slotDistancesMatrix();
+        slotAnalyzeMatrixDistances();
         break;
     case 4:
-        slotGeodesicsMatrix();
+        slotAnalyzeMatrixGeodesics();
         break;
     case 5:
-        slotEccentricity();
+        slotAnalyzeEccentricity();
         break;
     case 6:
-        slotDiameter();
+        slotAnalyzeDiameter();
         break;
     };
 
@@ -4422,19 +4425,19 @@ void MainWindow::toolBoxAnalysisConnectivitySelectChanged(int selectedIndex) {
         break;
     case 1:
         qDebug()<< "connectivity";
-        slotConnectivity();
+        slotAnalyzeConnectivity();
         break;
     case 2:
         qDebug()<< "Walks of given length";
-        slotWalksOfGivenLength();
+        slotAnalyzeWalksLength();
         break;
     case 3:
         qDebug() << "Total Walks selected";
-        slotTotalWalks();
+        slotAnalyzeWalksTotal();
         break;
     case 4:
         qDebug() << "Reachability Matrix";
-        slotReachabilityMatrix();
+        slotAnalyzeReachabilityMatrix();
         break;
     };
 
@@ -4457,15 +4460,15 @@ void MainWindow::toolBoxAnalysisClusterabilitySelectChanged(int selectedIndex) {
         break;
     case 1:
         qDebug()<< "Cliques";
-        slotCliqueCensus();
+        slotAnalyzeCliqueCensus();
         break;
     case 2:
         qDebug()<< "Clustering Coefficient";
-        slotClusteringCoefficient();
+        slotAnalyzeClusteringCoefficient();
         break;
     case 3:
         qDebug() << "Triad Census";
-        slotTriadCensus();
+        slotAnalyzeTriadCensus();
         break;
     };
 
@@ -4488,37 +4491,37 @@ void MainWindow::toolBoxAnalysisProminenceSelectChanged(int selectedIndex) {
     case 0:
         break;
     case 1:
-        slotCentralityDegree();
+        slotAnalyzeCentralityDegree();
         break;
     case 2:
-        slotCentralityCloseness();
+        slotAnalyzeCentralityCloseness();
         break;
     case 3:
-        slotCentralityClosenessInfluenceRange();
+        slotAnalyzeCentralityClosenessIR();
         break;
     case 4:
-        slotCentralityBetweenness();
+        slotAnalyzeCentralityBetweenness();
         break;
     case 5:
-        slotCentralityStress();
+        slotAnalyzeCentralityStress();
         break;
     case 6:
-        slotCentralityEccentricity();
+        slotAnalyzeCentralityEccentricity();
         break;
     case 7:
-        slotCentralityPower();
+        slotAnalyzeCentralityPower();
         break;
     case 8:
-        slotCentralityInformation();
+        slotAnalyzeCentralityInformation();
         break;
     case 9:
-        slotPrestigeDegree();
+        slotAnalyzePrestigeDegree();
         break;
     case 10:
-        slotPrestigePageRank();
+        slotAnalyzePrestigePageRank();
         break;
     case 11:
-        slotPrestigeProximity();
+        slotAnalyzePrestigeProximity();
         break;
     };
 
@@ -8621,9 +8624,9 @@ void MainWindow::slotEditFilterEdgesUnilateral(bool checked) {
 
 /**
 *	Transforms all nodes to edges
-    TODO slotTransformNodes2Edges
+    TODO slotEditTransformNodes2Edges
 */
-void MainWindow::slotTransformNodes2Edges(){
+void MainWindow::slotEditTransformNodes2Edges(){
 
 
 }
@@ -8637,16 +8640,16 @@ void MainWindow::slotTransformNodes2Edges(){
 
 
 /**
-    TODO slotColorationStrongStructural
+    TODO slotLayoutColorationStrongStructural
 */
-void MainWindow::slotColorationStrongStructural() {
+void MainWindow::slotLayoutColorationStrongStructural() {
 }
 
 
 /**
-    TODO slotColorationRegular
+    TODO slotLayoutColorationRegular
 */
-void MainWindow::slotColorationRegular() {
+void MainWindow::slotLayoutColorationRegular() {
 }
 
 
@@ -9464,7 +9467,7 @@ int MainWindow::activeNodes(){
 *	Displays a box informing the user about the symmetry or not of the adjacency matrix
 */
 
-void MainWindow::slotCheckSymmetry(){
+void MainWindow::slotAnalyzeSymmetryCheck(){
     if ( !activeNodes() )   {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -9489,7 +9492,7 @@ void MainWindow::slotCheckSymmetry(){
 /**
  * @brief Writes the adjacency matrix inverse
  */
-void MainWindow::slotAdjacencyMatrixInverse(){
+void MainWindow::slotAnalyzeMatrixAdjacencyInverse(){
     if ( !activeNodes() ) {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -9497,15 +9500,16 @@ void MainWindow::slotAdjacencyMatrixInverse(){
     int aNodes=activeNodes();
     statusBar() ->  showMessage ( QString (tr ("inverting adjacency adjacency matrix of %1 nodes")).arg(aNodes) );
     qDebug ("MW: calling Graph::writeMatrixAdjacencyInvert with %i nodes", aNodes);
-    QString fn = appSettings["dataDir"] + "socnetv-report-invert-adjacency-matrix.txt";
+    QString fn = appSettings["dataDir"] + "socnetv-report-invert-adjacency-matrix.html";
 
     QTime timer;
     timer.start();
-    activeGraph.writeMatrixAdjacencyInvert(fn, QString("lu")) ;
+    //activeGraph.writeMatrixAdjacencyInvert(fn, QString("lu")) ;
+    activeGraph.writeMatrix(fn,MATRIX_ADJACENCY_INVERT) ;
     int msecs = timer.elapsed();
     statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
 
-    TextEditor *ed = new TextEditor(fn,this,false);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->setWindowTitle(tr("Inverse adjacency matrix saved as ") + fn);
     ed->show();
     m_textEditors << ed;
@@ -9518,7 +9522,7 @@ void MainWindow::slotAdjacencyMatrixInverse(){
 /**
  * @brief Writes the degree matrix of the graph
  */
-void MainWindow::slotDegreeMatrix(){
+void MainWindow::slotAnalyzeMatrixDegree(){
     if ( !activeNodes() ) {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -9548,7 +9552,7 @@ void MainWindow::slotDegreeMatrix(){
 /**
  * @brief Writes the Laplacian matrix of the graph
  */
-void MainWindow::slotLaplacianMatrix(){
+void MainWindow::slotAnalyzeMatrixLaplacian(){
     if ( !activeNodes() ) {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -9645,7 +9649,7 @@ void MainWindow::askAboutWeights(){
 *  Displays the graph distance (geodesic distance) between two user-specified nodes
     This is the length of the shortest path between them.
 */
-void MainWindow::slotGraphDistance(){
+void MainWindow::slotAnalyzeDistance(){
     if ( !activeNodes() || !activeEdges()  )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -9714,14 +9718,14 @@ void MainWindow::slotGraphDistance(){
 /**
 *  Invokes calculation of the matrix of geodesic distances for the loaded network, then displays it.
 */
-void MainWindow::slotDistancesMatrix(){
-    qDebug() << "MW::slotDistancesMatrix()";
+void MainWindow::slotAnalyzeMatrixDistances(){
+    qDebug() << "MW::slotAnalyzeMatrixDistances()";
     if ( !activeNodes()    )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     statusMessage( tr("Creating distance matrix. Please wait...") );
-    QString fn = appSettings["dataDir"] + "socnetv-report-distance-matrix.txt";
+    QString fn = appSettings["dataDir"] + "socnetv-report-distance-matrix.html";
 
 
     askAboutWeights();
@@ -9732,9 +9736,6 @@ void MainWindow::slotDistancesMatrix(){
 
     createProgressBar(0,progressMsg);
 
-    /*activeGraph.writeMatrixDistancesPlainText(fn,
-                                    considerWeights, inverseWeights,
-                                    editFilterNodesIsolatesAct->isChecked())*/;
     activeGraph.writeMatrix(fn,MATRIX_DISTANCES,
                                     considerWeights, inverseWeights,
                                     editFilterNodesIsolatesAct->isChecked());
@@ -9754,7 +9755,7 @@ void MainWindow::slotDistancesMatrix(){
 /**
 *  Invokes calculation of the sigmas matrix (the number of geodesic paths between each pair of nodes in the loaded network), then displays it.
 */
-void MainWindow::slotGeodesicsMatrix(){
+void MainWindow::slotAnalyzeMatrixGeodesics(){
     qDebug("MW: slotViewNumberOfGeodesics()");
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -9785,7 +9786,7 @@ void MainWindow::slotGeodesicsMatrix(){
 
 
 /**  Displays the network diameter (largest geodesic) */
-void MainWindow::slotDiameter() {
+void MainWindow::slotAnalyzeDiameter() {
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -9833,7 +9834,7 @@ void MainWindow::slotDiameter() {
 
 
 /**  Displays the  average shortest path length (average graph distance) */
-void MainWindow::slotAverageGraphDistance() {
+void MainWindow::slotAnalyzeDistanceAverage() {
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -9864,7 +9865,7 @@ void MainWindow::slotAverageGraphDistance() {
 /**
 *	Writes Eccentricity indices into a file, then displays it.
 */
-void MainWindow::slotEccentricity(){
+void MainWindow::slotAnalyzeEccentricity(){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -9894,10 +9895,10 @@ void MainWindow::slotEccentricity(){
 
 
 /**
- * @brief MainWindow::slotConnectivity
+ * @brief Reports the network connectivity
  */
-void MainWindow::slotConnectivity(){
-    qDebug () << "MW::slotConnectivity()" ;
+void MainWindow::slotAnalyzeConnectivity(){
+    qDebug () << "MW::slotAnalyzeConnectivity()" ;
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -9911,7 +9912,7 @@ void MainWindow::slotConnectivity(){
 
     int connectivity=activeGraph.graphConnectivity(true);
 
-    qDebug () << "MW::slotConnectivity result " << connectivity;
+    qDebug () << "MW::slotAnalyzeConnectivity result " << connectivity;
 
     destroyProgressBar();
 
@@ -9965,7 +9966,7 @@ void MainWindow::slotConnectivity(){
 *	Calls Graph:: writeNumberOfWalks() to calculate and print
 *   the number of walks of a given length , between each pair of nodes.
 */
-void MainWindow::slotWalksOfGivenLength(){
+void MainWindow::slotAnalyzeWalksLength(){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -9998,11 +9999,10 @@ void MainWindow::slotWalksOfGivenLength(){
 
 
 /**
- * @brief MainWindow::slotTotalWalks
-*  Calls Graph:: writeWalksTotalMatrix() to calculate and print
+ * @brief Calls Graph:: writeWalksTotalMatrix() to calculate and print
 *  the total number of walks of any length , between each pair of nodes.
  */
-void MainWindow::slotTotalWalks(){
+void MainWindow::slotAnalyzeWalksTotal(){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10042,7 +10042,7 @@ void MainWindow::slotTotalWalks(){
     activeGraph.writeWalksTotalMatrix(fn, maxLength);
     destroyProgressBar(maxLength); // do not check for progress bar
 
-    TextEditor *ed = new TextEditor(fn,this,false);
+    TextEditor *ed = new  TextEditor(fn,this,false);
     ed->show();
     m_textEditors << ed;
     statusMessage("Total number of walks saved as: " + fn);
@@ -10055,7 +10055,7 @@ void MainWindow::slotTotalWalks(){
 *	Calls Graph:: writeReachabilityMatrix() to calculate and print
 *   the Reachability Matrix of the network.
 */
-void MainWindow::slotReachabilityMatrix(){
+void MainWindow::slotAnalyzeReachabilityMatrix(){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10081,9 +10081,9 @@ void MainWindow::slotReachabilityMatrix(){
 
 
 /**
- * @brief MainWindow::slotClusteringHierarchical
+ * @brief MainWindow::slotAnalyzeClusteringHierarchical
  */
-void MainWindow::slotClusteringHierarchical(){
+void MainWindow::slotAnalyzeClusteringHierarchical(){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10163,7 +10163,7 @@ void MainWindow::slotClusteringHierarchical(){
 *	Calls Graph:: writeCliqueCensus() to write the number of cliques (triangles)
 *  of each vertex into a file, then displays it.
 */
-void MainWindow::slotCliqueCensus(){
+void MainWindow::slotAnalyzeCliqueCensus(){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10196,7 +10196,7 @@ void MainWindow::slotCliqueCensus(){
  * @brief Calls Graph::writeClusteringCoefficient() to write Clustering Coefficients
  * into a file, and displays it.
  */
-void MainWindow::slotClusteringCoefficient (){
+void MainWindow::slotAnalyzeClusteringCoefficient (){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10224,13 +10224,13 @@ void MainWindow::slotClusteringCoefficient (){
 /**
  * @brief Displays the DialogSimilarityMatches dialog.
  */
-void MainWindow::slotSimilarityMatchingDialog() {
-    qDebug()<< "MW::slotSimilarityMatchingDialog()";
+void MainWindow::slotAnalyzeSimilarityMatchingDialog() {
+    qDebug()<< "MW::slotAnalyzeSimilarityMatchingDialog()";
 
     m_dialogSimilarityMatches = new DialogSimilarityMatches(this);
 
     connect( m_dialogSimilarityMatches, &DialogSimilarityMatches::userChoices,
-             this, &MainWindow::slotSimilarityMatching );
+             this, &MainWindow::slotAnalyzeSimilarityMatching );
 
     m_dialogSimilarityMatches->exec();
 
@@ -10244,7 +10244,7 @@ void MainWindow::slotSimilarityMatchingDialog() {
  * similarity matrix into a file, and displays it.
  *
  */
-void MainWindow::slotSimilarityMatching(const QString &matrix,
+void MainWindow::slotAnalyzeSimilarityMatching(const QString &matrix,
                                        const QString &varLocation,
                                        const int &measure,
                                        const bool &diagonal) {
@@ -10252,7 +10252,7 @@ void MainWindow::slotSimilarityMatching(const QString &matrix,
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-similarity-exact.txt";
+    QString fn = appSettings["dataDir"] + "socnetv-report-similarity-exact.html";
     bool considerWeights=true;
 
     statusMessage(  QString(tr("Computing similarity matrix. Please wait...")) );
@@ -10261,11 +10261,11 @@ void MainWindow::slotSimilarityMatching(const QString &matrix,
 
     createProgressBar(0,progressMsg);
 
+    //activeGraph.writeSimilarityMatchingPlainText( fn, measure, matrix, varLocation, diagonal,considerWeights);
     activeGraph.writeSimilarityMatching( fn, measure, matrix, varLocation, diagonal,considerWeights);
-
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,false);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
     statusMessage("Similarity matrix saved as: " + fn);
@@ -10276,12 +10276,12 @@ void MainWindow::slotSimilarityMatching(const QString &matrix,
 /**
  * @brief Calls the m_dialogSimilarityPearson to display the Pearson statistics dialog
  */
-void MainWindow::slotSimilarityPearsonDialog(){
-    qDebug()<< "MW::slotSimilarityPearsonDialog()";
+void MainWindow::slotAnalyzeSimilarityPearsonDialog(){
+    qDebug()<< "MW::slotAnalyzeSimilarityPearsonDialog()";
     m_dialogSimilarityPearson = new DialogSimilarityPearson(this);
 
     connect( m_dialogSimilarityPearson, &DialogSimilarityPearson::userChoices,
-             this, &MainWindow::slotSimilarityPearson );
+             this, &MainWindow::slotAnalyzeSimilarityPearson );
 
     m_dialogSimilarityPearson->exec();
 }
@@ -10293,14 +10293,14 @@ void MainWindow::slotSimilarityPearsonDialog(){
  * Correlation Coefficients into a file, and displays it.
  *
  */
-void MainWindow::slotSimilarityPearson(const QString &matrix,
+void MainWindow::slotAnalyzeSimilarityPearson(const QString &matrix,
                                        const QString &varLocation,
                                        const bool &diagonal) {
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-similarity-pearson.txt";
+    QString fn = appSettings["dataDir"] + "socnetv-report-similarity-pearson.html";
     bool considerWeights=true;
 
     statusMessage(  QString(tr("Computing Pearson Correlation Coefficients. Please wait...")) );
@@ -10323,7 +10323,7 @@ void MainWindow::slotSimilarityPearson(const QString &matrix,
 /**
 *	Calls Graph to conduct and write a triad census into a file, then displays it.
 */
-void MainWindow::slotTriadCensus() {
+void MainWindow::slotAnalyzeTriadCensus() {
 
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -10352,7 +10352,7 @@ void MainWindow::slotTriadCensus() {
 /**
 *	Writes Out-Degree Centralities into a file, then displays it.
 */
-void MainWindow::slotCentralityDegree(){
+void MainWindow::slotAnalyzeCentralityDegree(){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10410,8 +10410,8 @@ void MainWindow::slotCentralityDegree(){
 /**
 *	Writes Closeness Centralities into a file, then displays it.
 */
-void MainWindow::slotCentralityCloseness(){
-    qDebug() << "MW::slotCentralityCloseness()";
+void MainWindow::slotAnalyzeCentralityCloseness(){
+    qDebug() << "MW::slotAnalyzeCentralityCloseness()";
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10510,11 +10510,11 @@ void MainWindow::slotCentralityCloseness(){
 
 
 /**
- * @brief MainWindow::slotCentralityClosenessInfluenceRange
+ * @brief MainWindow::slotAnalyzeCentralityClosenessIR
 *	Writes Centrality Closeness (based on Influence Range) indices into a file,
 *   then displays it.
  */
-void MainWindow::slotCentralityClosenessInfluenceRange(){
+void MainWindow::slotAnalyzeCentralityClosenessIR(){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10550,7 +10550,7 @@ void MainWindow::slotCentralityClosenessInfluenceRange(){
 /**
 *	Writes Betweenness Centralities into a file, then displays it.
 */
-void MainWindow::slotCentralityBetweenness(){
+void MainWindow::slotAnalyzeCentralityBetweenness(){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10584,7 +10584,7 @@ void MainWindow::slotCentralityBetweenness(){
 /**
 *	Writes Degree Prestige indices (In-Degree Centralities) into a file, then displays it.
 */
-void MainWindow::slotPrestigeDegree(){
+void MainWindow::slotAnalyzePrestigeDegree(){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10645,7 +10645,7 @@ void MainWindow::slotPrestigeDegree(){
 /**
 *	Writes PageRank Prestige indices into a file, then displays it.
 */
-void MainWindow::slotPrestigePageRank(){
+void MainWindow::slotAnalyzePrestigePageRank(){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10675,10 +10675,10 @@ void MainWindow::slotPrestigePageRank(){
 
 
 /**
- * @brief MainWindow::slotPrestigeProximity
+ * @brief MainWindow::slotAnalyzePrestigeProximity
  * Writes Proximity Prestige indices into a file, then displays them.
  */
-void MainWindow::slotPrestigeProximity(){
+void MainWindow::slotAnalyzePrestigeProximity(){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10709,10 +10709,10 @@ void MainWindow::slotPrestigeProximity(){
 
 
 /**
- * @brief MainWindow::slotCentralityInformation
+ * @brief MainWindow::slotAnalyzeCentralityInformation
  * Writes Informational Centralities into a file, then displays it.
  */
-void MainWindow::slotCentralityInformation(){
+void MainWindow::slotAnalyzeCentralityInformation(){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10768,10 +10768,10 @@ void MainWindow::slotCentralityInformation(){
 
 
 /**
- * @brief MainWindow::slotCentralityStress
+ * @brief MainWindow::slotAnalyzeCentralityStress
  * Writes Stress Centralities into a file, then displays it.
  */
-void MainWindow::slotCentralityStress(){
+void MainWindow::slotAnalyzeCentralityStress(){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10802,10 +10802,10 @@ void MainWindow::slotCentralityStress(){
 
 
 /**
- * @brief MainWindow::slotCentralityPower
+ * @brief MainWindow::slotAnalyzeCentralityPower
  * Writes Power Centralities into a file, then displays it.
  */
-void MainWindow::slotCentralityPower(){
+void MainWindow::slotAnalyzeCentralityPower(){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10836,10 +10836,10 @@ void MainWindow::slotCentralityPower(){
 
 
 /**
- * @brief MainWindow::slotCentralityEccentricity
+ * @brief MainWindow::slotAnalyzeCentralityEccentricity
  * Writes Eccentricity Centralities into a file, then displays it.
  */
-void MainWindow::slotCentralityEccentricity(){
+void MainWindow::slotAnalyzeCentralityEccentricity(){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
