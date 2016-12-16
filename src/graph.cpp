@@ -3088,7 +3088,7 @@ int Graph::graphGeodesics()  {
  *
  * Used by
  * MW::slotConnectedness()
- * MW::slotCentralityCloseness()
+ * MW::slotAnalyzeCentralityCloseness()
  * MW::slotLayoutCircularByProminenceIndex(QString )
  * MW::slotLayoutNodeSizesByProminenceIndex(QString )
  * MW::slotLayoutLevelByProminenceIndex(QString )
@@ -4358,6 +4358,11 @@ void Graph::writeCentralityInformation(const QString fileName,
             << tr("Network name: ")
             <<"</span>"
             << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << vertices()
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -4590,6 +4595,11 @@ void Graph::writeCentralityDegree ( const QString fileName,
             << tr("Network name: ")
             <<"</span>"
             << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << vertices()
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -4925,6 +4935,11 @@ void Graph::writeCentralityCloseness(
             << tr("Network name: ")
             <<"</span>"
             << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << vertices()
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -5152,6 +5167,11 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
             << tr("Network name: ")
             <<"</span>"
             << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << vertices()
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -5338,6 +5358,11 @@ void Graph::writeCentralityBetweenness(const QString fileName,
             << tr("Network name: ")
             <<"</span>"
             << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << vertices()
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -5562,6 +5587,11 @@ void Graph::writeCentralityStress( const QString fileName,
             << tr("Network name: ")
             <<"</span>"
             << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << vertices()
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -5751,6 +5781,11 @@ void Graph::writeCentralityEccentricity(const QString fileName,
             << tr("Network name: ")
             <<"</span>"
             << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << vertices()
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -5929,6 +5964,11 @@ void Graph::writeCentralityPower(const QString fileName,
             << tr("Network name: ")
             <<"</span>"
             << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << vertices()
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -6305,6 +6345,11 @@ void Graph::writePrestigeDegree (const QString fileName,
             << tr("Network name: ")
             <<"</span>"
             << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << vertices()
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -6656,6 +6701,11 @@ void Graph::writePrestigeProximity( const QString fileName,
             << tr("Network name: ")
             <<"</span>"
             << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << vertices()
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -7050,6 +7100,11 @@ void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolate
             << tr("Network name: ")
             <<"</span>"
             << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << vertices()
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -8862,6 +8917,11 @@ void Graph::writeCliqueCensus(
             << tr("Network name: ")
             <<"</span>"
             << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << vertices()
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -9514,12 +9574,15 @@ void Graph::graphClusteringHierarchical(const int &method, Matrix &DSM) {
 
 
 /**
- * @brief
- * Writes similarity matrix based on a matching measure to given file
+ * @brief Writes similarity matrix based on a matching measure to given file
  * @param fileName
+ * @param measure
+ * @param matrix
+ * @param varLocation
+ * @param diagonal
  * @param considerWeights
  */
-void Graph::writeSimilarityMatching(const QString fileName,
+void Graph::writeSimilarityMatchingPlainText(const QString fileName,
                                    const int &measure,
                                    const QString &matrix,
                                    const QString &varLocation,
@@ -9630,6 +9693,185 @@ void Graph::writeSimilarityMatching(const QString fileName,
 
 
 
+
+
+
+/**
+ * @brief Writes similarity matrix based on a matching measure to given html file
+ * @param fileName
+ * @param measure
+ * @param matrix
+ * @param varLocation
+ * @param diagonal
+ * @param considerWeights
+ */
+void Graph::writeSimilarityMatching(const QString fileName,
+                                   const int &measure,
+                                   const QString &matrix,
+                                   const QString &varLocation,
+                                   const bool &diagonal,
+                                   const bool &considerWeights) {
+
+    Q_UNUSED(considerWeights);
+
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
+        return;
+    }
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
+
+    emit statusMessage ( (tr("Examining pair-wise similarity of actors...")) );
+
+    Matrix SCM;
+    if (matrix == "Adjacency") {
+        graphMatrixAdjacencyCreate();
+        graphSimilarityMatching(AM, SCM, measure, varLocation, diagonal, considerWeights);
+    }
+    else if (matrix == "Distances") {
+        distanceMatrixCreate();
+        graphSimilarityMatching(DM, SCM, measure, varLocation, diagonal, considerWeights);
+    }
+    else {
+        return;
+    }
+
+    emit statusMessage ( tr("Writing similarity coefficients to file: ")
+                         + fileName );
+
+    outText.setRealNumberPrecision(m_precision);
+
+
+    outText << htmlHead;
+
+    outText << "<h1>";
+    outText << tr("SIMILARITY MATRIX: MATCHING COEFFICIENTS (SMMC)");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << vertices()
+            << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Input matrix: ")
+            <<"</span>"
+            << matrix
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Variables in: ")
+            <<"</span>"
+            << ((varLocation != "Rows" && varLocation != "Columns") ? "Concatenated rows + columns " : varLocation)
+            << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Matching measure: ")
+            <<"</span>";
+    switch (measure) {
+    case SIMILARITY_MEASURE_SIMPLE :
+        outText << "Simple / Exact matching " ;
+        break;
+    case SIMILARITY_MEASURE_JACCARD:
+        outText << "Jaccard Index" ;
+
+        break;
+    case SIMILARITY_MEASURE_HAMMING:
+        outText << "Hamming distance" ;
+        break;
+    case SIMILARITY_MEASURE_COSINE:
+        outText << "Cosine similariy" ;
+        break;
+    default:
+        break;
+    }
+    outText << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Diagonal: ")
+            <<"</span>"
+            << ((diagonal) ? "Included" : "Not included")
+            << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("SMMC range: ")
+            <<"</span>";
+
+    if (measure==SIMILARITY_MEASURE_HAMMING)
+        outText << tr("0 &lt; C") ;
+    else
+        outText << tr("0 &lt; C &lt; 1") ;
+    outText << "</p>";
+
+    outText << "<p>"
+            << "<br />"
+            << "<span class=\"info\">"
+            << tr("Analysis results ")
+            <<"</span>"
+            << "</p>";
+
+    SCM.printHTMLTable(outText);
+
+    outText << "<p class=\"description\">";
+    if (measure==SIMILARITY_MEASURE_HAMMING) {
+        outText << "<span class=\"info\">"
+                << tr("SMMC = 0 ")
+                <<"</span>"
+                << tr("when two actors are absolutely similar (no tie/distance differences).")
+                <<"<br/>"
+                << "<span class=\"info\">"
+                << tr("SMMC &gt; 0 ")
+                <<"</span>"
+                << tr("when two actors have some differences in their ties/distances, "
+                      "i.e. SMMC = 3 means the two actors have 3 differences in their tie/distance profiles to other actors.");
+    }
+    else {
+        outText << "<span class=\"info\">"
+                << tr("SMMC = 0 ")
+                <<"</span>"
+                << tr("when there is no tie profile similarity at all.")
+                <<"<br/>"
+                << "<span class=\"info\">"
+                << tr("SMMC &gt; 0 ")
+                <<"</span>"
+                << tr("when two actors have some matches in their ties/distances, "
+                      "i.e. SMMC = 1 means the two actors have their ties to other actors exactly the same all the time.");
+    }
+    outText << "</p>";
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Similarity Matrix by Matching Measure Report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v")
+            << VERSION << ": "
+            << actualDateTime.currentDateTime()
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+    file.close();
+
+}
+
+
+
 /**
  * @brief Calls Matrix:similarityMatching to compute the similarity matrix SCM
  * of the variables (rows, columns, both) in given input matrix using the
@@ -9658,8 +9900,7 @@ void Graph::graphSimilarityMatching (Matrix &AM,
 
 
 /**
- * @brief
- * Calls Graph::graphSimilariyPearsonCorrelationCoefficients() and
+ * @brief Calls Graph::graphSimilarityPearsonCorrelationCoefficients() and
  * writes Pearson Correlation Coefficients to given file
  * @param fileName
  * @param considerWeights
@@ -9712,6 +9953,11 @@ void Graph::writeSimilarityPearson(const QString fileName,
             << tr("Network name: ")
             <<"</span>"
             << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << vertices()
             << "</p>";
 
 
@@ -9731,23 +9977,23 @@ void Graph::writeSimilarityPearson(const QString fileName,
 
     outText << "<p>"
             << "<span class=\"info\">"
-            << tr("Analysis results ")
-            <<"</span>"
-            << "</p>";
-
-
-    outText << "<p>"
-            << "<span class=\"info\">"
             << tr("PCC range: ")
             <<"</span>"
             << "-1 &lt; C &lt; 1"
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << "<br />"
+            << tr("Analysis results ")
+            <<"</span>"
             << "</p>";
 
 
     PCC.printHTMLTable(outText);
 
 
-    outText << "<p>";
+    outText << "<p class=\"description\">";
     outText << "<span class=\"info\">"
             << tr("PCC = 0 ")
             <<"</span>"
@@ -14930,8 +15176,8 @@ void Graph::writeMatrix (const QString &fn,
                          const bool &dropIsolates,
                          const bool &simpler) {
 
-    qDebug()<<"Graph::writeMatrix() to : " << fn
-           << "matrix" << matrix;
+    qDebug()<<"Graph::writeMatrix() - matrix" << matrix
+           << "to" << fn;
 
     QFile file( fn );
     if ( !file.open( QIODevice::WriteOnly ) )  {
@@ -14940,26 +15186,17 @@ void Graph::writeMatrix (const QString &fn,
         return;
     }
 
-    QTextStream outText( &file ); outText.setCodec("UTF-8");
-
-
-
-    outText << htmlHead;
-
-    outText << "<h1>";
+    bool inverseResult = false;
 
     switch (matrix) {
     case MATRIX_ADJACENCY:
-            graphMatrixAdjacencyCreate();
-        outText << tr("ADJACENCY MATRIX REPORT");
+        graphMatrixAdjacencyCreate();
         break;
     case MATRIX_LAPLACIAN:
-            graphMatrixAdjacencyCreate();
-        outText << tr("LAPLACIAN MATRIX REPORT");
+        graphMatrixAdjacencyCreate();
         break;
     case MATRIX_DEGREE:
-            graphMatrixAdjacencyCreate();
-        outText << tr("DEGREE MATRIX REPORT");
+        graphMatrixAdjacencyCreate();
         break;
     case MATRIX_DISTANCES:
         if ( !calculatedDistances || graphModified() ) {
@@ -14967,11 +15204,36 @@ void Graph::writeMatrix (const QString &fn,
                                     "Need to recompute Distances. Please wait...") );
             distanceMatrixCreate(false, considerWeights, inverseWeights, dropIsolates);
         }
-        outText << tr("DISTANCES MATRIX REPORT");
-
         break;
     case MATRIX_ADJACENCY_INVERT:
-        graphMatrixAdjacencyInvert();
+        inverseResult = graphMatrixAdjacencyInvert(QString("lu"));
+        break;
+
+    default:
+        break;
+    }
+
+
+    QTextStream outText( &file ); outText.setCodec("UTF-8");
+
+    outText << htmlHead;
+
+    outText << "<h1>";
+
+    switch (matrix) {
+    case MATRIX_ADJACENCY:
+        outText << tr("ADJACENCY MATRIX REPORT");
+        break;
+    case MATRIX_LAPLACIAN:
+        outText << tr("LAPLACIAN MATRIX REPORT");
+        break;
+    case MATRIX_DEGREE:
+        outText << tr("DEGREE MATRIX REPORT");
+        break;
+    case MATRIX_DISTANCES:
+        outText << tr("DISTANCES MATRIX REPORT");
+        break;
+    case MATRIX_ADJACENCY_INVERT:
         outText << tr("INVERSE ADJACENCY MATRIX REPORT");
         break;
 
@@ -14986,7 +15248,7 @@ void Graph::writeMatrix (const QString &fn,
             << tr("Network name: ")
             <<"</span>"
             << graphName()
-            << "</p>"
+            <<"<br />"
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
@@ -15005,16 +15267,44 @@ void Graph::writeMatrix (const QString &fn,
         AM.printHTMLTable(outText);
         break;
     case MATRIX_LAPLACIAN:
+        outText << "<p class=\"description\">"
+                << tr("The laplacian matrix L of a social network is a NxN matrix ")
+                << tr("with L = D - A, where D the degree matrix and A the "
+                      "adjacency matrix. The elements of L are:"
+                      "L<sub>i,j</sub> = degree<sub>i<sub>, if i = j, <br />"
+                      "L<sub>i,j</sub> = -1,  if i &ne; j <br />"
+                      "and all other elements zero.")
+                << "<br />"
+                << "</p>";
         AM.laplacianMatrix().printHTMLTable(outText);
         break;
     case MATRIX_DEGREE:
+        outText << "<p class=\"description\">"
+                << tr("The degree matrix of a social network is a NxN matrix ")
+                << tr("where each element (i,i) is the degree of actor i "
+                      "and all other elements are zero.")
+                << "<br />"
+                << "</p>";
         AM.degreeMatrix().printHTMLTable(outText);
         break;
     case MATRIX_DISTANCES:
+        outText << "<p class=\"description\">"
+                << tr("The distances matrix of a social network is a NxN matrix ")
+                << tr("where each element (i,j) is the geodesic distance of "
+                      "actor i to actor j, or infinity if no shortest path exists.")
+                << "<br />"
+                << "</p>";
         DM.printHTMLTable(outText);
         break;
     case MATRIX_ADJACENCY_INVERT:
-        invAM.printHTMLTable(outText);
+        if (!inverseResult) {
+            outText << "<p class=\"description\">"
+                    << tr("The adjacency matrix is singular.")
+                    << "<br />"
+                    << "</p>";
+        }else {
+            invAM.printHTMLTable(outText);
+        }
         break;
     default:
         break;
@@ -15101,6 +15391,11 @@ void Graph::writeMatrixAdjacency (const QString fn) {
             << tr("Network name: ")
             <<"</span>"
             << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << vertices()
             << "</p>";
 
 

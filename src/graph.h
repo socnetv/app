@@ -526,6 +526,7 @@ public:
                                const bool considerWeights=true,
                                const bool inverseWeights=false,
                                const bool symmetrize=false );
+
     bool graphMatrixAdjacencyInvert(const QString &method="lu");
 
     void graphDegreeMatrixCreate();
@@ -618,12 +619,20 @@ public:
     void writeTriadCensus(const QString, const bool);
 
 
+    void writeSimilarityMatchingPlainText(const QString fileName,
+                                const int &measure=SIMILARITY_MEASURE_SIMPLE,
+                                const QString &matrix = "adjacency",
+                                const QString &varLocation="rows",
+                                const bool &diagonal=false,
+                                const bool &considerWeights=true);
+
     void writeSimilarityMatching(const QString fileName,
                                 const int &measure=SIMILARITY_MEASURE_SIMPLE,
                                 const QString &matrix = "adjacency",
                                 const QString &varLocation="rows",
                                 const bool &diagonal=false,
                                 const bool &considerWeights=true);
+
 
     void writeSimilarityPearson(const QString fileName,
                                 const bool considerWeights,
