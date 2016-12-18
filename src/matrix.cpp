@@ -308,7 +308,7 @@ void Matrix::deleteRowColumn(int erased){
         row[i].setSize(m_cols);
     }
     qDebug() << "Matrix:deleteRowColumn() - finished, new matrix:";
-    printMatrixConsole(true); // @TODO comment out to release
+    //printMatrixConsole(true); // @TODO comment out to release
 
 }
 
@@ -402,7 +402,7 @@ void Matrix::multiplyRow(int row, float value) {
  * returns their product as a reference to the calling object
  * Allows P = product(a , b) where P, a and b are not the same initially.
 
- * NOTE: do not use it as B.product(A,B) because it will destroy B on the way.
+ * NOTE: do not use it as B=product(A,B) because it will destroy B on the way.
  * @param a
  * @param b
  * @param symmetry
@@ -501,13 +501,13 @@ Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
     if (n==1) {
         qDebug() <<"Matrix::expBySquaring2() - n = 1. Computing PM = X*Y where "
                    "X = " ;
-        X.printMatrixConsole();
-        qDebug() <<"Matrix::expBySquaring2() - n = 1. And Y = ";
-        Y.printMatrixConsole();
+        //X.printMatrixConsole();
+        //qDebug() <<"Matrix::expBySquaring2() - n = 1. And Y = ";
+        //Y.printMatrixConsole();
         Matrix *PM = new Matrix; PM->zeroMatrix(rows(), cols());
         PM->product(X, Y, symmetry);
-        qDebug()<<"Matrix::expBySquaring2() - n = 1. PM = X*Y ="  ;
-        PM->printMatrixConsole();
+        //qDebug()<<"Matrix::expBySquaring2() - n = 1. PM = X*Y ="  ;
+        //PM->printMatrixConsole();
         return *PM;
     }
     else if ( n%2 == 0 ) { //even
@@ -515,8 +515,8 @@ Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
                << "Computing PM = X * X";
         Matrix PM; PM.zeroMatrix(rows(), cols());
         PM.product(X,X,symmetry);
-        qDebug()<<"Matrix::expBySquaring2() - even n =" << n << ". PM = X * X = " ;
-        PM.printMatrixConsole();
+        //qDebug()<<"Matrix::expBySquaring2() - even n =" << n << ". PM = X * X = " ;
+        //PM.printMatrixConsole();
         return expBySquaring2 ( Y, PM, n/2 );
     }
     else  { //odd
@@ -526,13 +526,13 @@ Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
         PM.zeroMatrix(rows(), cols());
         PM2.zeroMatrix(rows(), cols());
         PM.product(X,Y,symmetry);
-        qDebug()<<"Matrix::expBySquaring2() - odd n =" << n << ". PM = X * Y = " ;
-        PM.printMatrixConsole();
+        //qDebug()<<"Matrix::expBySquaring2() - odd n =" << n << ". PM = X * Y = " ;
+        //PM.printMatrixConsole();
         qDebug()<<"Matrix::expBySquaring2() - odd n =" << n
                << "Now compute PM2 = X * X";
         PM2.product(X,X,symmetry);
-        qDebug()<<"Matrix::expBySquaring2() - odd n =" << n << ". PM2 = X * X = " ;
-        PM2.printMatrixConsole();
+        //qDebug()<<"Matrix::expBySquaring2() - odd n =" << n << ". PM2 = X * X = " ;
+        //PM2.printMatrixConsole();
         return expBySquaring2 ( PM, PM2, (n-1)/2 );
     }
 }
@@ -751,7 +751,7 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
 
         qDebug()<< "Matrix::similarityMatching() -"
                 <<"input matrix";
-        AM.printMatrixConsole(true);
+        //AM.printMatrixConsole(true);
 
         for (int i = 0 ; i < N ; i++ ) {
             sum = 0 ;
@@ -847,7 +847,7 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
 
         qDebug()<< "Matrix::similarityMatching() -"
                 <<"input matrix";
-        AM.printMatrixConsole(true);
+        //AM.printMatrixConsole(true);
 
         for (int i = 0 ; i < N ; i++ ) {
             sum = 0 ;
@@ -953,7 +953,7 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
         }
         qDebug()<< "Matrix::similarityMatching() -"
                 <<"input matrix";
-        CM.printMatrixConsole(true);
+        //CM.printMatrixConsole(true);
 
 
         for (int i = 0 ; i < N ; i++ ) {
