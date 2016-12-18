@@ -9876,7 +9876,7 @@ void MainWindow::slotAnalyzeEccentricity(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-eccentricity.txt";
+    QString fn = appSettings["dataDir"] + "socnetv-report-eccentricity.html";
 
     askAboutWeights();
 
@@ -9890,7 +9890,7 @@ void MainWindow::slotAnalyzeEccentricity(){
                 editFilterNodesIsolatesAct->isChecked());
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,false);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
     statusMessage(tr("Eccentricity report saved as: ") + fn );
@@ -9969,7 +9969,7 @@ void MainWindow::slotAnalyzeConnectivity(){
 
 
 /**
-*	Calls Graph:: writeNumberOfWalks() to calculate and print
+*	Calls Graph:: writeWalksOfLengthMatrixPlainText() to calculate and print
 *   the number of walks of a given length , between each pair of nodes.
 */
 void MainWindow::slotAnalyzeWalksLength(){
@@ -9978,34 +9978,38 @@ void MainWindow::slotAnalyzeWalksLength(){
         return;
     }
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-number-of-walks.txt";
      bool ok=false;
 
-    int length = QInputDialog::getInt(this, "Number of walks", tr("Select desired length of walk: (2 to %1)").arg(activeNodes()-1),2, 2, activeNodes()-1, 1, &ok );
+    int length = QInputDialog::getInt(this, "Number of walks",
+                                      tr("Select desired length of walk: (2 to %1)").arg(activeNodes()-1),2, 2, activeNodes()-1, 1, &ok );
     if (!ok) {
         statusMessage( "Cancelled." );
         return;
     }
-    statusMessage(  QString(tr("Computing Walks of given length Matrix. Please wait...")) );
-    progressMsg = tr("Computing Walks of given length Matrix. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
+
+    QString fn = appSettings["dataDir"] + "socnetv-report-walks-length"+QString::number(length)+".html";
+
+    statusMessage( tr("Computing Walks of length %1 matrix. Please wait...").arg(length) );
+
+    progressMsg = tr("Computing Walks of length %1 matrix. \n"
+            "Please wait (or disable progress bars from Options -> Settings).").arg(length);
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.writeWalksOfLengthMatrix(fn, length);
+    activeGraph.writeMatrixWalks(fn, length);
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,false);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
-    statusMessage(tr("Number of walks saved as: ") + fn );
+    statusMessage(tr("Matrix: Walks of length %1 saved as: ").arg(length) + fn );
 }
 
 
 
 /**
- * @brief Calls Graph:: writeWalksTotalMatrix() to calculate and print
+ * @brief Calls Graph:: writeWalksTotalMatrixPlainText() to calculate and print
 *  the total number of walks of any length , between each pair of nodes.
  */
 void MainWindow::slotAnalyzeWalksTotal(){
@@ -10036,19 +10040,19 @@ void MainWindow::slotAnalyzeWalksTotal(){
             break;
         }
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-total-number-of-walks.txt";
-    int maxLength=activeNodes()-1;
+    QString fn = appSettings["dataDir"] + "socnetv-report-walks-total.txt";
+
 
     statusMessage(  QString(tr("Computing Total Walks Matrix. Please wait...")) );
     progressMsg = tr("Computing Total Walks Matrix. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
-    createProgressBar(maxLength,progressMsg);
+    createProgressBar(activeNodes()-1,progressMsg);
 
-    activeGraph.writeWalksTotalMatrix(fn, maxLength);
-    destroyProgressBar(maxLength); // do not check for progress bar
+    activeGraph.writeMatrixWalks(fn);
+    destroyProgressBar(activeNodes()-1); // do not check for progress bar
 
-    TextEditor *ed = new  TextEditor(fn,this,false);
+    TextEditor *ed = new  TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
     statusMessage("Total number of walks saved as: " + fn);

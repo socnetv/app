@@ -3286,6 +3286,7 @@ void Graph::writeMatrixNumberOfGeodesicsPlainText(const QString &fn,
 }
 
 
+
 /**
  * @brief Graph::writeEccentricity
  * @param fileName
@@ -3310,48 +3311,151 @@ void Graph::writeEccentricity(
         emit statusMessage ( (tr("Calculating shortest paths")) );
         distanceMatrixCreate(true, considerWeights,
                              inverseWeights, dropIsolates);
+
     }
+
+    if (graphConnectivity()) {
+
+    }
+
     emit statusMessage ( tr("Writing eccentricity to file:") + fileName );
 
-    outText << tr("ECCENTRICITY (e)") << endl ;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-    outText << tr("The eccentricity e of a node is the maximum geodesic distance "
-                  " from that node to all other nodes in the network.") ;
-    outText << endl  ;
-    outText << tr("Therefore, e reflects farness: how far, at most, is each "
-                  " node from every other node.") ;
-    outText << endl  ;
-    outText << tr("A node has maximum e when it has distance 1 "
-          "to all other nodes (star node))\n");
+    int rowCount=0;
+    int N = vertices();
+    float eccentr=0;
 
-    outText << endl << endl ;
+    outText << htmlHead;
 
-    outText << tr("Range: 0 < e < ") << vertices()-1 <<" (g-1, "
-             << tr("where g is the number of nodes |V|)");
+    outText.setRealNumberPrecision(m_precision);
 
-    outText << endl << endl ;
-    outText << "Node"<<"\te\t%e\n";
+    outText << "<h1>";
+    outText << tr("ECCENTRICITY (e) REPORT");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("The eccentricity <em>e</em> measures how far, at most, is each "
+                  " node from every other node. <br />"
+                  "In a connected graph, the eccentricity <em>e</em> of a vertex "
+                  "is the maximum geodesic distance between that vertex and all other vertices. <br />"
+                  "In a disconnected graph, the eccentricity <em>e</em> of all vertices "
+                  "is considered to be infinite.")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("e range: ")
+            <<"</span>"
+            << tr("1 &le; e &le; \xE2\x88\x9E")
+            << "</p>";
+
+
+    outText << "<table class=\"stripes\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th>"
+            << tr("Actor")
+            << "</th><th>"
+            << tr("Label")
+            << "</th><th>"
+            << tr("e")
+            << "</th><th>"
+            << tr("%e")
+            <<"</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody>";
+
     QList<Vertex*>::const_iterator it;
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
-        outText << (*it)->name()<<"\t"<<(*it)->eccentricity() << "\t" <<
-                   (100* ((*it)->eccentricity()) / sumEccentricity)<<endl;
-    }
-    if ( minEccentricity ==  maxEccentricity)
-        outText << tr("\nAll nodes have the same e value.\n");
-    else {
-        outText << "\n";
-        outText << tr("Max e = ") << maxEccentricity
-                <<" (node "<< maxNodeEccentricity  <<  ")  \n";
-        outText << tr("Min e = ") << minEccentricity
-                <<" (node "<< minNodeEccentricity <<  ")  \n";
-        outText << tr("e classes = ") << classesEccentricity<<" \n";
+
+        rowCount++;
+        eccentr = (*it)->eccentricity();
+
+        outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                <<"<td>"
+                << (*it)->name()
+                << "</td><td>"
+                << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                << "</td><td>"
+                << ((eccentr == 0) ? "\xE2\x88\x9E" : QString::number(eccentr) )
+                << "</td><td>"
+                << ((eccentr == 0) ? "\xE2\x88\x9E" : QString::number( 100* (eccentr) / sumEccentricity  ) )
+                << "</td>"
+                <<"</tr>";
+
     }
 
-    outText << "\n\n";
-    outText << tr("Eccentricity report, \n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
+    outText << "</tbody></table>";
+
+
+    if ( minEccentricity ==  maxEccentricity) {
+        outText << "<p>"
+                << tr("All nodes have the same eccentricity.")
+                << "</p>";
+    }
+    else {
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("Max e = ")
+                <<"</span>"
+               << maxEccentricity <<" (node "<< maxNodeEccentricity  <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("Min DC' = ")
+               <<"</span>"
+               << minEccentricity <<" (node "<< minNodeEccentricity <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("DC' classes = ")
+               <<"</span>"
+               << classesEccentricity
+               << "</p>";
+    }
+
+    outText << "<p class=\"description\">";
+    outText << "<span class=\"info\">"
+            << tr("e = 1 ")
+            <<"</span>"
+            << tr("when a vertex is connected to all other vertices (star node).")
+            <<"<br/>"
+           << "<span class=\"info\">"
+            << tr("e > 1 ")
+            <<"</span>"
+            << tr("when a vertex is not directly connected to all others. "
+                  "Larger eccentricity means that the actor is farther from others.")
+            <<"<br />"
+           << "<span class=\"info\">"
+            << tr("e = \xE2\x88\x9E ")
+            <<"</span>"
+            << tr("the graph of the network is disconnected.")
+            <<"<br/>";
+    outText << "</p>";
+
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Eccentricity Report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v")
+            << VERSION << ": "
             << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << "</p>";
+
+    outText << htmlEnd;
+
     file.close();
 
 }
@@ -4603,10 +4707,12 @@ void Graph::writeCentralityDegree ( const QString fileName,
             << "</p>";
 
     outText << "<p class=\"description\">"
-            << tr("In undirected graphs, the DC index is the sum of edges attached to a node u. <br />"
-                  "In digraphs, the index is the sum of outbound arcs from node u to all adjacent nodes. <br />"
+            << tr("In undirected networks, the DC index is the sum of edges attached to a node u. <br />"
+                  "In directed networks, the index is the sum of outbound arcs from node u "
+                  "to all adjacent nodes (also called \"outDegree Centrality\"). <br />"
                   "If the network is weighted, the DC score is the sum of weights of outbound "
-                  "edges from node u to all adjacent nodes.")
+                  "edges from node u to all adjacent nodes.<br />"
+                  "Note: To compute inDegree Centrality, use the Degree Prestige measure.")
             << "<br />"
             << tr("DC' is the standardized DC.")
             << "</p>";
@@ -5792,7 +5898,7 @@ void Graph::writeCentralityEccentricity(const QString fileName,
             << tr("The EC index of a node u is the inverse maximum geodesic distance "
                   "from u to all other nodes in the network.")
             << "<br />"
-            << tr("EC is already standardized..")
+            << tr("EC is standardized.")
             << "</p>";
 
     outText << "<p>"
@@ -8484,7 +8590,7 @@ void Graph::randomNetRegularCreate(const int &vert,
  * @return
  */
 int Graph::walksBetween(int v1, int v2, int length) {
-    walksMatrixCreate(length);
+    graphWalksMatrixCreate(length);
     return XM.item(v1-1,v2-1);
 }
 
@@ -8492,7 +8598,7 @@ int Graph::walksBetween(int v1, int v2, int length) {
 
 
 /**
- * @brief Graph::walksMatrixCreate
+ * @brief Graph::graphWalksMatrixCreate
  *  Calculates two matrices:
     Matrix XM=AM^l where the elements denote the number of walks of length l
     between all pairs of vertices
@@ -8505,31 +8611,46 @@ int Graph::walksBetween(int v1, int v2, int length) {
  * @param length
  * @param updateProgress
  */
-void Graph::walksMatrixCreate(const int &maxPower, const bool &updateProgress) {
+void Graph::graphWalksMatrixCreate(const int &maxPower, const bool &updateProgress) {
     qDebug()<<"Graph::walksBetween() - first create the Adjacency Matrix AM";
 
     bool dropIsolates=false;
     bool considerWeights=true;
     bool inverseWeights=false;
     bool symmetrize=false;
-    graphMatrixAdjacencyCreate(dropIsolates, considerWeights, inverseWeights, symmetrize);
     int size = vertices();
 
-    XM = AM;   // XM will be the product matrix
-    XSM = AM;  // XSM is the sum of product matrices
-    Matrix PM; // temp matrix
-    PM.zeroMatrix(size, size);
+    emit statusMessage(tr("Computing adjacency matrix. Please wait..."));
+    graphMatrixAdjacencyCreate(dropIsolates, considerWeights, inverseWeights, symmetrize);
 
-    qDebug()<< "Graph::writeWalksOfLengthMatrix() - XM = AM = " ;
-    XM.printMatrixConsole(true);
-    if (updateProgress)
-        emit updateProgressDialog (1);
-    qDebug()<< "Graph::writeWalksOfLengthMatrix() - "
-               "Calculating sociomatrix powers up to "  << maxPower;
+    if (maxPower>0) {
+        if (updateProgress)
+            emit updateProgressDialog (1);
+        qDebug()<< "Graph::graphWalksMatrixCreate() - "
+                   "Calculating sociomatrix powers up to "  << maxPower;
 
-    XM = AM.pow(maxPower, false);
-    qDebug()<< "Graph::writeWalksOfLengthMatrix() - XM = ";
-    XM.printMatrixConsole(true);
+        XM = AM.pow(maxPower, false);
+
+    }
+    else {
+        XM = AM;   // XM will be the product matrix
+        XSM = AM;  // XSM is the sum of product matrices
+        Matrix PM; // temp matrix
+        PM.zeroMatrix(size, size);
+       for (int i=2; i <= maxPower ; ++i) {
+           PM.product(XM,AM, false);
+           XM=PM;
+           XSM+=XM; // XSM becomes XSM+XM
+           //XSM.sum(XSM,XM);
+           if (updateProgress) {
+               emit updateProgressDialog (i);
+           }
+
+       }
+
+    }
+
+
     emit updateProgressDialog (maxPower);
 
 //    qDebug()<< "AM + AM = ";
@@ -8549,31 +8670,19 @@ void Graph::walksMatrixCreate(const int &maxPower, const bool &updateProgress) {
 //    (XSM).printMatrixConsole(true);
 
 
-     //@TODO  UNCOMMENT
-
-//    for (int i=2; i <= maxPower ; ++i) {
-//        PM.product(XM,AM, false);
-//        XM=PM;
-//        XSM+XM; // XSM becomes XSM+XM
-//        //XSM.sum(XSM,XM);
-//        if (updateProgress) {
-//            emit updateProgressDialog (i);
-//        }
-
-//    }
-
 }
 
 
+
 /**
- * @brief Graph::writeWalksTotalMatrix
+ * @brief Graph::writeWalksTotalMatrixPlainText
  * Writes the total number of walks matrix
  * @param fn
  * @param netName
  * @param length
  */
-void Graph::writeWalksTotalMatrix(const QString &fn, const int &length){
-    qDebug("Graph::writeWalksTotalMatrix() ");
+void Graph::writeWalksTotalMatrixPlainText(const QString &fn){
+    qDebug("Graph::writeWalksTotalMatrixPlainText() ");
 
     QFile file (fn);
     if ( !file.open( QIODevice::WriteOnly ) )  {
@@ -8586,11 +8695,11 @@ void Graph::writeWalksTotalMatrix(const QString &fn, const int &length){
     outText.setCodec("UTF-8");
     outText << "-Social Network Visualizer "<<  VERSION <<endl;
     outText << tr("Network name: ")<< graphName()<<endl<<endl;
-    outText << "Total number of walks of any length less than or equal to "<< length
+    outText << "Total number of walks of any length less than or equal to "<< vertices()-1
         <<" between each pair of nodes \n\n";
     outText << "Warning: Walk counts consider unordered pairs of nodes\n\n";
 
-    walksMatrixCreate(length, true);
+    graphWalksMatrixCreate(0, true);
 
     outText << XSM ;
 
@@ -8600,12 +8709,12 @@ void Graph::writeWalksTotalMatrix(const QString &fn, const int &length){
 
 
 /**
- * @brief Graph::writeWalksOfLengthMatrix
+ * @brief Graph::writeWalksOfLengthMatrixPlainText
  * @param fn
  * @param length
  */
-void Graph::writeWalksOfLengthMatrix(const QString &fn, const int &length){
-    qDebug()<<"Graph::writeWalksOfLengthMatrix() ";
+void Graph::writeWalksOfLengthMatrixPlainText(const QString &fn, const int &length){
+    qDebug()<<"Graph::writeWalksOfLengthMatrixPlainText() ";
 
     QFile file (fn);
     if ( !file.open( QIODevice::WriteOnly ) )  {
@@ -8620,13 +8729,114 @@ void Graph::writeWalksOfLengthMatrix(const QString &fn, const int &length){
     outText << "Network name: "<< graphName()<<" \n";
     outText << "Number of walks of length "<< length <<" between each pair of nodes \n\n";
 
-    walksMatrixCreate(length, true);
-    qDebug()<<"Graph::writeWalksOfLengthMatrix() - Writing XM to file";
+    graphWalksMatrixCreate(length, true);
+    qDebug()<<"Graph::writeWalksOfLengthMatrixPlainText() - Writing XM to file";
     outText << XM ;
 
     file.close();
 }
 
+
+
+/**
+ * @brief Calls graphWalksMatrixCreate() to compute walks and writes the
+ * Walks of given length matrix to a file in HTML.
+ * If length = 0, it writes the Total Walks matrix.
+ * @param fn
+ * @param length
+ * @param simpler
+ */
+void Graph::writeMatrixWalks (const QString &fn,
+                         const int &length,
+                         const bool &simpler) {
+
+    Q_UNUSED(simpler);
+    qDebug()<<"Graph::writeMatrixWalks() - length:" << length
+           << "to file:" << fn;
+
+    QFile file( fn );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fn );
+        return;
+    }
+
+    int N = vertices();
+
+    emit statusMessage(tr("Computing Walks..."));
+    graphWalksMatrixCreate( length, true);
+
+    QTextStream outText( &file ); outText.setCodec("UTF-8");
+
+    outText << htmlHead;
+
+    outText << "<h1>";
+
+    if (length>0) {
+        outText << tr("WALKS OF LENGTH %1 MATRIX").arg(length);
+    }
+    else {
+         outText << tr("TOTAL WALKS MATRIX");
+    }
+
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << vertices()
+            << "</p>";
+
+
+    if (length>0) {
+        outText << "<p class=\"description\">"
+                << tr("The Walks of length %1 matrix is a NxN matrix "
+                      "where each element (i,j) is the number of walks of "
+                      "length %1 between actor i and actor j, "
+                      "or 0 if no walk exists. <br />"
+                      "Warning: Walk counts consider unordered pairs of nodes. ").arg(length)
+                << "</p>";
+    }
+    else {
+        outText << "<p class=\"description\">"
+                << tr("The Total Walks matrix of a social network is a NxN matrix "
+                      "where each element (i,j) is the total number of walks of any "
+                      "length (less than or equal to %1) between actor i and actor j, "
+                      "or 0 if no walk exists. <br />"
+                      "Warning: Walk counts consider unordered pairs of nodes. ").arg(N-1)
+                << "</p>";
+    }
+    emit statusMessage(tr("Writing Walks matrix to file..."));
+    qDebug()<<"Graph::writeMatrixWalks() - Writing XM to file";
+
+
+    if (length > 0) {
+        XM.printHTMLTable(outText);
+    }
+    else {
+         XSM.printHTMLTable(outText);
+    }
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Walks report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v")
+            << VERSION << ": "
+            << actualDateTime.currentDateTime()
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+
+    file.close();
+}
 
 
 
@@ -9893,7 +10103,7 @@ void Graph::graphSimilarityMatching (Matrix &AM,
     SCM.similarityMatching(AM, measure, varLocation, diagonal, considerWeights);
 
     qDebug()<<"Graph::graphSimilarityMatching() - matrix SCM";
-    SCM.printMatrixConsole(true);
+    //SCM.printMatrixConsole(true);
 
 }
 
@@ -15676,7 +15886,7 @@ void Graph::writeMatrixAdjacencyPlot (const QString fn, const bool &simpler) {
  *  where AM(i,j)=1 if i is connected to j
  *  and AM(i,j)=0 if i not connected to j
  *
- *  Used in Graph::centralityInformation(), Graph::walksMatrixCreate
+ *  Used in Graph::centralityInformation(), Graph::graphWalksMatrixCreate
  *  and Graph::graphMatrixAdjacencyInvert()
  */
 void Graph::graphMatrixAdjacencyCreate(const bool dropIsolates,

@@ -678,10 +678,13 @@ public:
 
     /* REACHABILTY AND WALKS */
     int walksBetween(int v1, int v2,int length);
-    void walksMatrixCreate(const int &length,
+    void graphWalksMatrixCreate(const int &length=0,
                                    const bool &updateProgress=false);
-    void writeWalksTotalMatrix(const QString &fn, const int &length);
-    void writeWalksOfLengthMatrix(const QString &fn, const int &length);
+    void writeWalksTotalMatrixPlainText(const QString &fn);
+    void writeWalksOfLengthMatrixPlainText(const QString &fn, const int &length);
+    void writeMatrixWalks (const QString &fn,
+                             const int &length=0,
+                             const bool &simpler=false);
     int reachable(const int &v1, const int &v2) ;
     QList<int> vertexinfluenceRange(int v1);
     QList<int> vertexinfluenceDomain(int v2);
