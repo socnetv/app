@@ -173,6 +173,7 @@ public:
     Matrix& operator -(Matrix & b);
 
     Matrix& operator *(Matrix & b);
+    void operator *=(Matrix & b);
 
     void product( Matrix &a, Matrix & b, bool symmetry=false) ;
 
