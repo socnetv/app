@@ -668,6 +668,41 @@ Matrix& Matrix::operator *(Matrix & b) {
 
 
 
+/**
+ * @brief Matrix multiplication, convenience operator *=
+* Allows A *= B where A,B of same dimension
+* @param b
+* @param symmetry
+* @return
+*/
+void Matrix::operator *=(Matrix & b) {
+
+    qDebug()<< "Matrix::operator *";
+    Matrix *P = new Matrix();
+    P->zeroMatrix(rows(), cols());
+
+    for (int i=0;i< rows();i++) {
+        for (int j=0;j<cols();j++) {
+            P->setItem(i,j,0);
+            for (int k=0;k<m_rows;k++) {
+//                qDebug() << "Matrix::product() - a("<< i+1 << ","<< k+1 << ")="
+//                         << a.item(i,k) << "* b("<< k+1 << ","<< j+1 << ")="
+//                         << b.item(k,j)  << " gives "  << a.item(i,k)*b.item(k,j);
+                    P->setItem(i,j, P->item(i,j) + item(i,k)*b.item(k,j) );
+
+            }
+            qDebug() << "Matrix::operator * - ("<< i+1 << ","<< j+1 << ") = "
+                     << P->item(i,j);
+        }
+    }
+    for (int i=0;i< rows();i++){
+        for (int j=0;j<cols();j++) {
+            setItem(i,j, P->item(i,j) );
+        }
+    }
+}
+
+
 
 
 
