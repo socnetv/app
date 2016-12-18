@@ -8598,60 +8598,79 @@ int Graph::walksBetween(int v1, int v2, int length) {
 
 
 /**
- * @brief Graph::graphWalksMatrixCreate
- *  Calculates two matrices:
-    Matrix XM=AM^l where the elements denote the number of walks of length l
-    between all pairs of vertices
-    Matrix XSM=Sum{AM^n} where the elements denote the total number of walks of
-    any length between pairs of vertices
-
-    NOTE: This function is VERY SLOW on large networks (n>50), since it will
-    calculate all powers of the sociomatrix up to n-1 in order to find out all
-    possible walks.
+ * @brief Computes either the "Walks of given length" or the "Total Walks" matrix.
+ * If length>0, it computes the Walks of given length matrix, XM=AM^l
+ * where each element (i,j) denotes the number of walks of length l between vertex i and j.
+ * If length=0, it computes the Total Walks matrix, XSM=Sum{AM^n} where each (i,j)
+ * denotes the total number of walks of any length between vertices i and j.
+ * NOTE: In the latter case, this function is VERY SLOW on large networks (n>50),
+ * since it will calculate all powers of the sociomatrix up to n-1 in order to find out all
+ * possible walks.
  * @param length
  * @param updateProgress
  */
-void Graph::graphWalksMatrixCreate(const int &maxPower, const bool &updateProgress) {
-    qDebug()<<"Graph::walksBetween() - first create the Adjacency Matrix AM";
+void Graph::graphWalksMatrixCreate(const int &vertices,
+                                   const int &length,
+                                   const bool &updateProgress) {
 
     bool dropIsolates=false;
     bool considerWeights=true;
     bool inverseWeights=false;
     bool symmetrize=false;
-    int size = vertices();
+    int N = vertices;
 
+    qDebug()<<"Graph::graphWalksMatrixCreate() - Create adjacency matrix AM";
     emit statusMessage(tr("Computing adjacency matrix. Please wait..."));
     graphMatrixAdjacencyCreate(dropIsolates, considerWeights, inverseWeights, symmetrize);
 
-    if (maxPower>0) {
+    if (length>0) {
+        qDebug()<< "Graph::graphWalksMatrixCreate() - "
+                   "Calculating sociomatrix power"  << length;
+
         if (updateProgress)
             emit updateProgressDialog (1);
-        qDebug()<< "Graph::graphWalksMatrixCreate() - "
-                   "Calculating sociomatrix powers up to "  << maxPower;
 
-        XM = AM.pow(maxPower, false);
+        emit statusMessage(tr("Computing sociomatrix power %1. Please wait...").arg(length));
+        XM = AM.pow(length, false);
+        emit updateProgressDialog (length);
 
     }
     else {
+        qDebug()<< "Graph::graphWalksMatrixCreate() - "
+                   "Calculating all sociomatrix powers up to"  << N-1;
+
         XM = AM;   // XM will be the product matrix
+//        qDebug() << "Graph::graphWalksMatrixCreate() XM=AM=";
+//        XM.printMatrixConsole();
+
         XSM = AM;  // XSM is the sum of product matrices
-        Matrix PM; // temp matrix
-        PM.zeroMatrix(size, size);
-       for (int i=2; i <= maxPower ; ++i) {
-           PM.product(XM,AM, false);
-           XM=PM;
+//        qDebug() << "Graph::graphWalksMatrixCreate() XSM=AM=";
+//        XSM.printMatrixConsole();
+
+       for (int i=2; i <= (N-1) ; ++i) {
+
+           emit statusMessage(tr("Computing all sociomatrix powers up to %1. "
+                                 "Now computing A^%2. Please wait...").arg(N-1).arg(i));
+
+           XM*=AM;
+//           qDebug() << "Graph::graphWalksMatrixCreate() i"<<i <<"XM=AM^i";
+//           XM.printMatrixConsole();
+
+
            XSM+=XM; // XSM becomes XSM+XM
-           //XSM.sum(XSM,XM);
+//           qDebug() << "Graph::graphWalksMatrixCreate() i"<<i <<"XSM=";
+//           XSM.printMatrixConsole();
+
            if (updateProgress) {
                emit updateProgressDialog (i);
            }
 
        }
-
+       emit updateProgressDialog (N);
     }
 
 
-    emit updateProgressDialog (maxPower);
+
 
 //    qDebug()<< "AM + AM = ";
 //    (AM+AM).printMatrixConsole(true);
@@ -8699,7 +8718,7 @@ void Graph::writeWalksTotalMatrixPlainText(const QString &fn){
         <<" between each pair of nodes \n\n";
     outText << "Warning: Walk counts consider unordered pairs of nodes\n\n";
 
-    graphWalksMatrixCreate(0, true);
+    graphWalksMatrixCreate(vertices(), 0, true);
 
     outText << XSM ;
 
@@ -8729,7 +8748,7 @@ void Graph::writeWalksOfLengthMatrixPlainText(const QString &fn, const int &leng
     outText << "Network name: "<< graphName()<<" \n";
     outText << "Number of walks of length "<< length <<" between each pair of nodes \n\n";
 
-    graphWalksMatrixCreate(length, true);
+    graphWalksMatrixCreate(vertices(), length, true);
     qDebug()<<"Graph::writeWalksOfLengthMatrixPlainText() - Writing XM to file";
     outText << XM ;
 
@@ -8764,7 +8783,7 @@ void Graph::writeMatrixWalks (const QString &fn,
     int N = vertices();
 
     emit statusMessage(tr("Computing Walks..."));
-    graphWalksMatrixCreate( length, true);
+    graphWalksMatrixCreate(N, length, true);
 
     QTextStream outText( &file ); outText.setCodec("UTF-8");
 

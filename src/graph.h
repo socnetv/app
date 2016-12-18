@@ -678,7 +678,7 @@ public:
 
     /* REACHABILTY AND WALKS */
     int walksBetween(int v1, int v2,int length);
-    void graphWalksMatrixCreate(const int &length=0,
+    void graphWalksMatrixCreate(const int &vertices=0, const int &length=0,
                                    const bool &updateProgress=false);
     void writeWalksTotalMatrixPlainText(const QString &fn);
     void writeWalksOfLengthMatrixPlainText(const QString &fn, const int &length);
