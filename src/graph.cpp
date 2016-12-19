@@ -3026,6 +3026,8 @@ float Graph::distanceGraphAverage(const bool considerWeights,
                                   const bool inverseWeights,
                                   const bool dropIsolates){
 
+    Q_UNUSED(considerWeights);
+
     if (!calculatedDistances || graphModified())  {
         qDebug() <<"Graph::distanceGraphAverage() - reachability matrix not created "
                    "or graph modified. Recomputing XRM";
@@ -4470,61 +4472,158 @@ void Graph::writeCentralityInformation(const QString fileName,
             << "</p>";
 
     outText << "<p class=\"description\">"
-            << tr("The IC index measures the information flow through "
-                  "all paths between actors weighted by strength of tie and distance.")
+            << tr("The IC index, introduced by Stephenson and Zelen (1991), measures the "
+                  "information flow through all paths between actors weighted by "
+                  "strength of tie and distance.")
             << "<br />"
             << tr("IC' is the standardized IC (IC divided by the sumIC).")
             << "<br />"
             << tr ("Warning: To compute this index, SocNetV drops all isolated "
-                  "nodes and symmetrizes (if needed) the adjacency matrix. "
+                  "nodes and symmetrizes (if needed) the adjacency matrix. <br />"
                   "Read the Manual for more.")
             << "</p>";
 
 
-    outText << tr("IC  range:  0 < IC < inf (this index has no max value)") << "\n";
-    outText << tr("IC' range:  0 < IC'< 1 (" )<<"\n\n";
-    outText << "Node"<<"\tIC\t\tIC'\t\t%IC'\n";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("IC range: ")
+            <<"</span>"
+            << tr("0 &le; IC &le; \xE2\x88\x9E")
+            << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("IC' range: ")
+            <<"</span>"
+            << tr("0 &le; IC &le; 1")
+            << "</p>";
+
+
+    outText << "<table class=\"stripes\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th>"
+            << tr("Node")
+            << "</th><th>"
+            << tr("Label")
+            << "</th><th>"
+            << tr("IC")
+            << "</th><th>"
+            << tr("IC'")
+            << "</th><th>"
+            << tr("%IC")
+            <<"</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody>";
+
     QList<Vertex*>::const_iterator it;
-    float IC=0, SIC=0;
+
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        IC = (*it)->IC();
-        SIC = (*it)->SIC();
-        outText << (*it)->name()<<"\t"
-                << IC << "\t\t"
-                << SIC  << "\t\t"
-                <<  ( 100* SIC )<<endl;
-        qDebug()<< "Graph::writeCentralityInformation() vertex: "
-                <<  (*it)->name() << " SIC  " << SIC;
+
+        rowCount++;
+
+        outText <<fixed;
+
+        outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                <<"<td>"
+                << (*it)->name()
+                << "</td><td>"
+                << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                << "</td><td>"
+                << (*it)->IC()
+                << "</td><td>"
+                << (*it)->SIC()
+                << "</td><td>"
+                << (100* ((*it)->SIC()))
+                << "</td>"
+                <<"</tr>";
+
     }
-    qDebug ("min %f, max %f", minIC, maxIC);
-    if ( minIC == maxIC )
-        outText << tr("\nAll nodes have the same IC value.\n");
-    else  {
-        outText << "\n";
-        outText << tr("Max IC' = ") << maxIC <<" (node "<< maxNodeIC  <<  ")  \n";
-        outText << tr("Min IC' = ") << minIC <<" (node "<< minNodeIC <<  ")  \n";
-        outText << tr("IC classes = ") << classesIC<<" \n";
+
+
+    outText << "</tbody></table>";
+
+    if ( minIC ==  maxIC) {
+        outText << "<p>"
+                << tr("All nodes have the same IC score.")
+                << "</p>";
     }
-    outText << "\n";
-    outText << tr("IC' sum = ") << sumIC <<  " \n";
-    outText << tr("IC' Mean = ") << meanIC <<  " \n";
-    outText << tr("IC' Variance = ") << varianceIC <<  " \n\n";
+    else {
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("Max IC' = ")
+                <<"</span>"
+               << maxIC <<" (node "<< maxNodeIC  <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("Min IC' = ")
+               <<"</span>"
+               << minIC <<" (node "<< minNodeIC <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("IC classes = ")
+               <<"</span>"
+               << classesIC
+               << "</p>";
+    }
 
-    outText << tr("Since there is no way to compute Group Information Centralization, "
-                  "you can use variance as a general centralization index.")
-            <<" \n\n";
+    outText << "<p>";
+    outText << "<span class=\"info\">"
+            << tr("IC' Sum = ")
+            <<"</span>"
+            << sumIC
+            <<"<br/>"
+           << "<span class=\"info\">"
+            << tr("IC' Mean = ")
+            <<"</span>"
+            << meanIC
+            <<"<br/>"
+            << "<span class=\"info\">"
+            << tr("IC' Variance = ")
+            <<"</span>"
+            << varianceIC
+            <<"<br/>";
+    outText << "</p>";
 
-    outText << tr("Variance = 0, when all nodes have the same IC value, i.e. a "
-                  "complete or a circle graph).\n");
-    outText << tr("Larger values of variance suggest larger variability between the "
-                  "IC' values.\n");
-    outText <<"(Wasserman & Faust, formula 5.20, p. 197)\n\n";
+
+    outText << "<h2>";
+    outText << tr("GROUP INFORMATION CENTRALISATION (GIC)")
+            << "</h2>";
+
+    outText << "<p>"
+            << tr("Since there is no way to compute Group Information Centralization, <br />"
+                  "you can use Variance as a general centralization index. <br /><br />")
+            << "<span class=\"info\">"
+            << tr("Variance = ")
+            <<"</span>"
+            <<  varianceIC
+             << "</p>";
 
 
-    outText << tr("Information Centrality report, \n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
+    outText << "<p class=\"description\">"
+            << tr("Variance = 0, when all nodes have the same IC value, i.e. a "
+                  "complete or a circle graph). <br />")
+            << tr("Larger values of variance suggest larger variability between the "
+                  "IC' values. <br />")
+            <<"(Wasserman & Faust, formula 5.20, p. 197)\n\n"
+            << "</p>";
+
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Information Centrality report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualiser</a> v")
+            << VERSION << ": "
             << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << "</p>";
+
+    outText << htmlEnd;
+
     file.close();
 
 }
@@ -6078,7 +6177,7 @@ void Graph::writeCentralityPower(const QString fileName,
             << "</p>";
 
     outText << "<p class=\"description\">"
-            << tr("The PC index of a node u is the sum of the sizes of all Nth-order "
+            << tr("The PC index, introduced by Gil and Schmidt, of a node u is the sum of the sizes of all Nth-order "
                   "neighbourhoods with weight 1/n.")
             << "<br />"
             << tr("PC' is the standardized index: The PC score divided by the total number "
@@ -8972,7 +9071,7 @@ void Graph::writeClusteringCoefficient(
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    emit statusMessage ( (tr("Calculating local and network clustering...")) );
+    emit statusMessage ( (tr("Computing local and network clustering...")) );
 
     averageCLC= clusteringCoefficient(true);
 
@@ -8981,42 +9080,146 @@ void Graph::writeClusteringCoefficient(
 
     outText.setRealNumberPrecision(m_precision);
 
-    outText << tr("CLUSTERING COEFFICIENT (CLC) REPORT") << endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
+    int rowCount = 0;
 
-    outText << tr("Local CLC  range: 0 < C < 1") << endl<<endl;
-    outText << "Node"<<"\tLocal CLC\n";
+    outText << htmlHead;
+
+    outText << "<h1>";
+    outText << tr("CLUSTERING COEFFICIENT (CLC) REPORT");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << vertices()
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("The local Clustering Coefficient, introduced by Watts and Strogatz (1998) "
+                  "quantifies how close each node and its neighbors are to being a complete subgraph (clique).")
+            << "<br />"
+            << tr("For each node <em>u</em>, the local CLC score is the proportion of actual links between "
+                  "its neighbors divided by the number of links that could possibly exist between them. <br />"
+                  "The CLC index is used to characterize the transitivity of a network. A value close to one "
+                  "indicates that the node is involved in many transitive relations. "
+                  "")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("CLC range: ")
+            <<"</span>"
+            << tr("0 &le; PC &le; 1 ")
+            << "</p>";
+
+    outText << "<table class=\"stripes\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th>"
+            << tr("Node")
+            << "</th><th>"
+            << tr("Label")
+            << "</th><th>"
+            << tr("Local CLC")
+            <<"</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody>";
+
 
 
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        outText << (*it)->name()<<"\t"<<(*it)->CLC() <<endl;
+
+        rowCount++;
+
+        outText <<fixed;
+
+        outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                <<"<td>"
+                << (*it)->name()
+                << "</td><td>"
+                << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                << "</td><td>"
+                << (*it)->CLC()
+                << "</td>"
+                <<"</tr>";
+
     }
 
-    outText << "\nAverage local Clustering Coefficient = "<<  averageCLC<<"\n" ;
+    outText << "</tbody></table>";
 
-    if (  minCLC ==  maxCLC )
-        outText << "\nAll nodes have the same clustering coefficient value.\n";
-    else  {
-        outText << "\nNode "<<  maxNodeCLC
-                << " has the maximum Clustering Coefficient: " <<  maxCLC <<"\n";
-        outText << "\nNode "<<  minNodeCLC
-                << " has the minimum Clustering Coefficient: " <<  minCLC <<"\n";
+    if ( minCLC ==  maxCLC) {
+        outText << "<p>"
+                << tr("All nodes have the same local CLC score.")
+                << "</p>";
+    }
+    else {
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("Max CLC = ")
+                <<"</span>"
+               << maxCLC <<" (node "<< maxNodeCLC  <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("Min CLC = ")
+               <<"</span>"
+               << minCLC <<" (node "<< minNodeCLC <<  ")"
+               << "<br />"
+               << "</p>";
     }
 
-    outText << endl;
-    outText << tr("NETWORK AVERAGE CLUSTERING COEFFICIENT (GCLC)") << endl <<endl;
-    outText << "GCLC = " <<  averageCLC <<"\n\n";
-    outText << tr("Range: 0 < GCLC < 1\n");
-    outText << tr("GCLC = 0, when there are no cliques (i.e. acyclic tree).\n");
-    outText << tr(
-      "GCLC = 1, when every node and its neighborhood are complete cliques.\n");
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("CLC Mean = ")
+            <<"</span>"
+            << averageCLC
+            <<"<br/>"
+            << "<span class=\"info\">"
+            << tr("CLC Variance = ")
+            <<"</span>"
+            << varianceCLC
+            <<"<br/>";
+    outText << "</p>";
 
-    outText <<"\n\n" ;
-    outText << tr("Clustering Coefficient Report,\n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
+
+
+    outText << "<h2>";
+    outText << tr("GROUP / NETWORK AVERAGE CLUSTERING COEFFICIENT (GCLC)")
+            << "</h2>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("GCLC = ")
+            <<"</span>"
+            <<  averageCLC
+             << "</p>";
+
+
+    outText << "<p class=\"description\">"
+            << tr("Range: 0 < GCLC < 1 <br/ >")
+            << tr("GCLC = 0, when there are no cliques (i.e. acyclic tree). <br />")
+            << tr("GCLC = 1, when every node and its neighborhood are complete cliques.")
+            << "</p>";
+
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Clustering Coefficient report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualiser</a> v")
+            << VERSION << ": "
             << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << "</p>";
+
+    outText << htmlEnd;
 
     file.close();
 }
@@ -9038,7 +9241,7 @@ void Graph::writeTriadCensus(
 
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    emit statusMessage ( (tr("Conducting triad census. Please wait....")) );
+    emit statusMessage ( (tr("Computing triad census. Please wait....")) );
     if (graphModified() || !calculatedTriad) {
         if (!graphTriadCensus()){
             qDebug() << "Error in graphTriadCensus(). Exiting...";
@@ -9050,46 +9253,99 @@ void Graph::writeTriadCensus(
     emit statusMessage ( tr("Writing triad census to file: ") +
                          fileName );
 
-    outText << tr("TRIAD CENSUS (TRC)")<<endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-    outText << "Type\t\tCensus\t\tExpected Value" << "\n";
-    outText << "003" << "\t\t" << triadTypeFreqs[0] << "\n";
-    outText << "012" << "\t\t" <<triadTypeFreqs[1] <<"\n";
-    outText << "102" << "\t\t" <<triadTypeFreqs[2] <<"\n";
-    outText << "021D"<< "\t\t" <<triadTypeFreqs[3] <<"\n";
-    outText << "021U"<< "\t\t" <<triadTypeFreqs[4] <<"\n";
-    outText << "021C"<< "\t\t" <<triadTypeFreqs[5] <<"\n";
-    outText << "111D"<< "\t\t" <<triadTypeFreqs[6] <<"\n";
-    outText << "111U"<< "\t\t" <<triadTypeFreqs[7] <<"\n";
-    outText << "030T"<< "\t\t" <<triadTypeFreqs[8] <<"\n";
-    outText << "030C"<< "\t\t" <<triadTypeFreqs[9] <<"\n";
-    outText << "201" << "\t\t" <<triadTypeFreqs[10] <<"\n";
-    outText << "120D"<< "\t\t" <<triadTypeFreqs[11] <<"\n";
-    outText << "120U"<< "\t\t" <<triadTypeFreqs[12] <<"\n";
-    outText << "120C"<< "\t\t" <<triadTypeFreqs[13] <<"\n";
-    outText << "210" << "\t\t" <<triadTypeFreqs[14] <<"\n";
-    outText << "300" << "\t\t" <<triadTypeFreqs[15] <<"\n";
-
-    outText << "\n\n";
-    outText << "A Triad Census counts all the different types (classes) of observed triads within a network.\n"
-               "The triad types are coded and labeled according to their number of mutual, asymmetric and non-existent (null) dyads.\n"
-               "SocNetV follows the M-A-N labeling scheme, as described by Holland, Leinhardt and Davis in their studies. "
-               "In the M-A-N scheme, each triad type has a label with four characters:\n";
-
-    outText << "The first character is the number of mutual (M) duads in the triad. Possible values: 0, 1, 2, 3.\n"
-               "The second character is the number of asymmetric (A) duads in the triad. Possible values: 0, 1, 2, 3.\n"
-               "The third character is the number of null (N) duads in the triad. Possible values: 0, 1, 2, 3.\n"
-               "The fourth character is infered from features or the nature of the triad, i.e. presence of cycle or transitivity. \n"
-               "Possible values: none, D (\"Down\"), U (\"Up\"), C (\"Cyclic\"), T (\"Transitive\")\n";
+    int rowCount = 0;
 
 
+    outText << htmlHead;
+
+    outText << "<h1>";
+    outText << tr("TRIAD CENSUS (TRC) REPORT");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << vertices()
+            << "</p>";
+
+
+    outText << "<p class=\"description\">"
+            << tr("A Triad Census counts all the different types (classes) of observed triads within a network. <br />"
+                  "The triad types are coded and labeled according to their number of mutual, asymmetric and non-existent (null) dyads. <br />"
+                  "SocNetV follows the M-A-N labeling scheme, as described by Holland, Leinhardt and Davis in their studies. <br />"
+                   "In the M-A-N scheme, each triad type has a label with four characters: <br />")
+            << tr("- The first character is the number of mutual (M) duads in the triad. Possible values: 0, 1, 2, 3.<br />"
+                  "- The second character is the number of asymmetric (A) duads in the triad. Possible values: 0, 1, 2, 3.<br />"
+                  "- The third character is the number of null (N) duads in the triad. Possible values: 0, 1, 2, 3.<br />"
+                  "- The fourth character is infered from features or the nature of the triad, i.e. presence of cycle or transitivity. "
+                   "Possible values: none, D (\"Down\"), U (\"Up\"), C (\"Cyclic\"), T (\"Transitive\")")
+            << "<br /></p>";
 
 
 
-    outText << tr("Triad Census report, \n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
+    outText << "<table class=\"stripes\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th>"
+            << tr("Type")
+            << "</th><th>"
+            << tr("Census")
+//            << "</th><th>"
+//            << tr("Expected Value")
+            <<"</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody>";
+
+    QList<QString> triadTypes;
+    triadTypes << "003" ;
+    triadTypes << "012" ;
+    triadTypes << "102" ;
+    triadTypes << "021D";
+    triadTypes << "021U";
+    triadTypes << "021C";
+    triadTypes << "111D";
+    triadTypes << "111U";
+    triadTypes << "030T";
+    triadTypes << "030C";
+    triadTypes << "201" ;
+    triadTypes << "120D";
+    triadTypes << "120U";
+    triadTypes << "120C";
+    triadTypes << "210" ;
+    triadTypes << "300" ;
+
+    for (int i = 0 ; i<=15 ; i++) {
+        rowCount = i + 1;
+        outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                <<"<td>"
+                << triadTypes[i]
+                << "</td><td>"
+                << triadTypeFreqs[i]
+                << "</td>"
+                <<"</tr>";
+    }
+
+    outText << "</tbody></table>";
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Triad Census report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualiser</a> v")
+            << VERSION << ": "
             << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << "</p>";
+
+    outText << htmlEnd;
+
     file.close();
 
 }
@@ -10583,6 +10839,8 @@ float Graph::clusteringCoefficient (const bool updateProgress){
     averageCLC=0;
     maxCLC=0; minCLC=1;
     float temp=0;
+    float x=0;
+    float N = vertices();
     int progressCounter = 0;
     Q_UNUSED(progressCounter );
     QList<Vertex*>::const_iterator vertex;
@@ -10602,8 +10860,18 @@ float Graph::clusteringCoefficient (const bool updateProgress){
             emit updateProgressDialog(++progressCounter);
     }
 
-    averageCLC = averageCLC / vertices();
+    averageCLC = averageCLC / N ;
+
     qDebug() << "Graph::clusteringCoefficient() network average " << averageCLC;
+
+    for ( vertex = m_graph.cbegin(); vertex != m_graph.cend(); ++vertex) {
+        x = (  (*vertex)->CLC()  -  averageCLC  ) ;
+        x *=x;
+        varianceCLC  += x;
+
+    }
+
+    varianceIC  /=  N;
 
     return averageCLC;
 }
@@ -15460,6 +15728,13 @@ void Graph::writeMatrix (const QString &fn,
         }
         emit statusMessage ( tr("Distances recomputed. Writing Reachability Matrix...") );
         break;
+
+    case MATRIX_ADJACENCY_TRANSPOSE:
+        emit statusMessage ( tr("Need to recompute Adjacency Matrix. Please wait...") );
+        graphMatrixAdjacencyCreate();
+        emit statusMessage ( tr("Adjacency recomputed. Writing Adjacency Matrix...") );
+        break;
+
     default:
         break;
     }
@@ -15493,7 +15768,9 @@ void Graph::writeMatrix (const QString &fn,
     case MATRIX_REACHABILITY:
         outText << tr("REACHABILITY MATRIX REPORT");
         break;
-
+    case MATRIX_ADJACENCY_TRANSPOSE:
+        outText << tr("TRANSPOSE OF ADJACENCY MATRIX REPORT");
+        break;
     default:
         break;
     }
@@ -15505,7 +15782,7 @@ void Graph::writeMatrix (const QString &fn,
             << tr("Network name: ")
             <<"</span>"
             << graphName()
-            <<"<br />"
+            <<"-trasposed <br />"
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
@@ -15516,7 +15793,7 @@ void Graph::writeMatrix (const QString &fn,
     switch (matrix) {
     case MATRIX_ADJACENCY:
         outText << "<p class=\"description\">"
-                << tr("The adjacency matrix of a social network is a NxN matrix ")
+                << tr("The adjacency matrix, AM, of a social network is a NxN matrix ")
                 << tr("where each element (i,j) is the value of the edge from "
                       "actor i to actor j, or 0 if no edge exists.")
                 << "<br />"
@@ -15537,7 +15814,7 @@ void Graph::writeMatrix (const QString &fn,
         break;
     case MATRIX_DEGREE:
         outText << "<p class=\"description\">"
-                << tr("The degree matrix of a social network is a NxN matrix ")
+                << tr("The degree matrix D of a social network is a NxN matrix ")
                 << tr("where each element (i,i) is the degree of actor i "
                       "and all other elements are zero.")
                 << "<br />"
@@ -15546,7 +15823,7 @@ void Graph::writeMatrix (const QString &fn,
         break;
     case MATRIX_DISTANCES:
         outText << "<p class=\"description\">"
-                << tr("The distances matrix of a social network is a NxN matrix ")
+                << tr("The distances matrix, DM, of a social network is a NxN matrix ")
                 << tr("where each element (i,j) is the geodesic distance of "
                       "actor i to actor j, or infinity if no shortest path exists.")
                 << "<br />"
@@ -15588,6 +15865,21 @@ void Graph::writeMatrix (const QString &fn,
 
         XRM.printHTMLTable(outText);
         break;
+
+    case MATRIX_ADJACENCY_TRANSPOSE:
+        outText << "<p class=\"description\">"
+                << tr("The adjacency matrix AM of a social network is a NxN matrix "
+                      "where each element (i,j) is the value of the edge from "
+                      "actor i to actor j, or 0 if no edge exists. ")
+                << "<br />"
+                << tr("This is the transpose of the adjacency matrix, AM<sup>T</sup>, "
+                      "a matrix whose (i,j) element is the (j,i) element of AM.")
+                << "</p>";
+
+
+        AM.transpose().printHTMLTable(outText);
+        break;
+
     default:
         break;
     }

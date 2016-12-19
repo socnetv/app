@@ -88,6 +88,7 @@ static const int MATRIX_LAPLACIAN        = 4;
 static const int MATRIX_ADJACENCY_INVERT = 5;
 static const int MATRIX_GEODESICS        = 6;
 static const int MATRIX_REACHABILITY     = 7;
+static const int MATRIX_ADJACENCY_TRANSPOSE = 8;
 
 
 class QPointF;
@@ -890,7 +891,7 @@ private:
     float minIC, maxIC, nomIC, denomIC, sumIC, maxIndexIC;
     float minPRP, maxPRP, nomPRC, denomPRC, t_sumPC, t_sumPRP, sumPRP;
     float minPP, maxPP, nomPP, denomPP, sumPP, groupPP;
-    float minCLC, maxCLC, averageCLC, d_factor;
+    float minCLC, maxCLC, averageCLC,varianceCLC, d_factor;
     int maxNodeCLC, minNodeCLC;
     int classesDP, maxNodeDP, minNodeDP;
     int classesDC, maxNodeDC, minNodeDC;
