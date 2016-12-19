@@ -110,5 +110,6 @@
         <file>images/laplacian.png</file>
         <file>images/degreematrix.png</file>
         <file>images/invertmatrix.png</file>
+        <file>images/transposematrix.png</file>
     </qresource>
 </RCC>

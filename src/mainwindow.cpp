@@ -1720,7 +1720,7 @@ void MainWindow::initActions(){
 
 
     analyzeMatrixAdjTransposeAct = new QAction(
-                QIcon(":/images/invertmatrix.png"), tr("Transpose Adjacency Matrix"), this);
+                QIcon(":/images/transposematrix.png"), tr("Transpose Adjacency Matrix"), this);
     analyzeMatrixAdjTransposeAct -> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_T)
                 );
@@ -1935,13 +1935,13 @@ void MainWindow::initActions(){
     connect(clusteringCoefAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeClusteringCoefficient() )  );
 
 
-    triadCensusAct = new QAction(QIcon(":/images/triad.png"), tr("Triad Census"),this);
+    triadCensusAct = new QAction(QIcon(":/images/triad.png"), tr("Triad Census (M-A-N labeling)"),this);
     triadCensusAct-> setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_T);
     triadCensusAct->setStatusTip(tr("Calculate the triad census for all actors."));
     triadCensusAct->setWhatsThis(tr("Triad Census\n\n"
                                     "A triad census counts all the different kinds of observed triads "
                                     "within a network and codes them according to their number of mutual, "
-                                    "asymmetric and non-existent dyads. \n"));
+                                    "asymmetric and non-existent dyads using the M-A-N labeling scheme. \n"));
     connect(triadCensusAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeTriadCensus() )  );
 
 
