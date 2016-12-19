@@ -15734,6 +15734,11 @@ void Graph::writeMatrix (const QString &fn,
         graphMatrixAdjacencyCreate();
         emit statusMessage ( tr("Adjacency recomputed. Writing Adjacency Matrix...") );
         break;
+    case MATRIX_COCITATION:
+        emit statusMessage ( tr("Need to recompute Adjacency Matrix. Please wait...") );
+        graphMatrixAdjacencyCreate();
+        emit statusMessage ( tr("Adjacency recomputed. Writing Adjacency Matrix...") );
+        break;
 
     default:
         break;
@@ -15770,6 +15775,9 @@ void Graph::writeMatrix (const QString &fn,
         break;
     case MATRIX_ADJACENCY_TRANSPOSE:
         outText << tr("TRANSPOSE OF ADJACENCY MATRIX REPORT");
+        break;
+    case MATRIX_COCITATION:
+        outText << tr("COCITATION MATRIX REPORT");
         break;
     default:
         break;
@@ -15878,6 +15886,19 @@ void Graph::writeMatrix (const QString &fn,
 
 
         AM.transpose().printHTMLTable(outText);
+        break;
+
+    case MATRIX_COCITATION:
+        outText << "<p class=\"description\">"
+                << tr("The Cocitation matrix, C = A * A<sup>T</sup>, is a NxN matrix where "
+                      "each element (i,j) is the number of actors that have "
+                      "outbound ties/links to both actors i and j.")
+                << "<br />"
+                << tr("C is a symmetric matrix.")
+                << "</p>";
+
+
+        AM.cocitation().printHTMLTable(outText);
         break;
 
     default:

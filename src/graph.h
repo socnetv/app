@@ -89,6 +89,7 @@ static const int MATRIX_ADJACENCY_INVERT = 5;
 static const int MATRIX_GEODESICS        = 6;
 static const int MATRIX_REACHABILITY     = 7;
 static const int MATRIX_ADJACENCY_TRANSPOSE = 8;
+static const int MATRIX_COCITATION = 9;
 
 
 class QPointF;

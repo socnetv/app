@@ -219,6 +219,8 @@ public:
 
     Matrix& transpose();
 
+    Matrix& cocitation();
+
     friend QTextStream& operator <<  (QTextStream& os, Matrix& m);
     bool printHTMLTable(QTextStream& os, const bool &debug=false);
     bool printMatrixConsole(bool debug=true);

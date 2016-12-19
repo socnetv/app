@@ -400,7 +400,7 @@ void Matrix::multiplyRow(int row, float value) {
 /**
  * @brief Matrix Multiplication. Given two matrices a and b of the same dimension
  * returns their product as a reference to the calling object
- * Allows P = product(a , b) where P, a and b are not the same initially.
+ * Allows P.product(a , b) where P, a and b are not the same initially.
 
  * NOTE: do not use it as B=product(A,B) because it will destroy B on the way.
  * @param a
@@ -716,13 +716,33 @@ void Matrix::operator *=(Matrix & b) {
 Matrix& Matrix::transpose() {
     Matrix *T = new Matrix();
     T->zeroMatrix(cols(), rows());
-    qDebug()<< "Matrix::degreeMatrix()";
+    qDebug()<< "Matrix::transpose()";
     for (int i=0;i< cols();i++) {
         for (int j=0;j<rows();j++) {
             T->setItem(i,j, item(j,i));
 
         }
     }
+    return *T;
+}
+
+
+
+
+
+/**
+  * @brief Returns the cocitaion of this matrix (C = A * A^T)
+  * Allows T = A.cocitation()
+  * @param b
+  * @return Matrix T
+*/
+
+Matrix& Matrix::cocitation() {
+    Matrix *T = new Matrix();
+
+    //T->zeroMatrix(cols(), rows());
+    qDebug()<< "Matrix::cocitation()";
+    //T->product(this, this->transpose());
     return *T;
 }
 

@@ -1713,8 +1713,8 @@ void MainWindow::initActions(){
                 QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_I)
                 );
     analyzeMatrixAdjInvertAct->setStatusTip(tr("Invert the adjacency matrix, if possible"));
-    analyzeMatrixAdjInvertAct->setWhatsThis(tr("Invert  Adjacency Matrix "
-                                        "\n\n Inverts the adjacency matrix using linear algebra methods."));
+    analyzeMatrixAdjInvertAct->setWhatsThis(tr("Invert  Adjacency Matrix \n\n"
+                                               "Inverts the adjacency matrix using linear algebra methods."));
     connect(analyzeMatrixAdjInvertAct, SIGNAL(triggered()),
             this, SLOT(slotAnalyzeMatrixAdjacencyInverse()));
 
@@ -1725,11 +1725,25 @@ void MainWindow::initActions(){
                 QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_T)
                 );
     analyzeMatrixAdjTransposeAct->setStatusTip(tr("View the transpose of adjacency matrix"));
-    analyzeMatrixAdjTransposeAct->setWhatsThis(tr("Transpose Adjacency Matrix "
-                                        "\n\n Computes and displays the adjacency matrix tranpose."));
+    analyzeMatrixAdjTransposeAct->setWhatsThis(tr("Transpose Adjacency Matrix \n\n"
+                                                  "Computes and displays the adjacency matrix tranpose."));
     connect(analyzeMatrixAdjTransposeAct, SIGNAL(triggered()),
             this, SLOT(slotAnalyzeMatrixAdjacencyTranspose()));
 
+
+    analyzeMatrixAdjCocitationAct = new QAction(
+                QIcon(":/images/transposematrix.png"), tr("Cocitation Matrix"), this);
+    analyzeMatrixAdjCocitationAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_T)
+                );
+    analyzeMatrixAdjCocitationAct->setStatusTip(tr("Compute the Cocitation matrix of this network."));
+    analyzeMatrixAdjCocitationAct->setWhatsThis(tr("Cocitation Matrix \n\n "
+                                                   "Computes and displays the cocitation matrix of the network. "
+                                                   "The Cocitation matrix, C=A*A^T, is a NxN matrix where "
+                                                   "each element (i,j) is the number of actors that have "
+                                                   "outbound ties/links to both actors i and j. "));
+    connect(analyzeMatrixAdjCocitationAct, SIGNAL(triggered()),
+            this, SLOT(slotAnalyzeMatrixAdjacencyCocitation()));
 
 
     analyzeMatrixDegreeAct = new QAction(
@@ -1749,8 +1763,8 @@ void MainWindow::initActions(){
                 QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_L)
                 );
     analyzeMatrixLaplacianAct->setStatusTip(tr("Compute the Laplacian matrix of the network"));
-    analyzeMatrixLaplacianAct->setWhatsThis(tr("Laplacian Matrix "
-                                        "\n\n Compute the Laplacian matrix of the network."));
+    analyzeMatrixLaplacianAct->setWhatsThis(tr("Laplacian Matrix \n\n"
+                                               "Compute the Laplacian matrix of the network."));
     connect(analyzeMatrixLaplacianAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeMatrixLaplacian()));
 
 
@@ -1762,7 +1776,8 @@ void MainWindow::initActions(){
                 tr("Compute the length of the shortest path (geodesic distance) between two nodes."));
     graphDistanceAct->setWhatsThis(
                 tr("Distance\n\n"
-                   "In graph theory, the distance (geodesic distance) of two "
+                   "Computes the geodesic distance between two nodes."
+                   "In graph theory, the geodesic distance of two "
                    "nodes is the length (number of edges) of the shortest path "
                    "between them."));
     connect(graphDistanceAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeDistance()));
@@ -2577,6 +2592,8 @@ void MainWindow::initMenuBar() {
     matrixMenu -> addAction (analyzeMatrixAdjInvertAct);
     matrixMenu -> addSeparator();
     matrixMenu -> addAction(analyzeMatrixAdjTransposeAct);
+    matrixMenu -> addSeparator();
+    matrixMenu -> addAction(analyzeMatrixAdjCocitationAct);
     matrixMenu -> addSeparator();
     matrixMenu -> addAction (analyzeMatrixDegreeAct);
     matrixMenu -> addAction (analyzeMatrixLaplacianAct);
@@ -9563,6 +9580,36 @@ void MainWindow::slotAnalyzeMatrixAdjacencyTranspose(){
     m_textEditors << ed;
     statusMessage(tr("Transpose adjacency matrix saved as: ")+fn);
 }
+
+
+
+
+/**
+ * @brief Writes the cocitation matrix
+ */
+void MainWindow::slotAnalyzeMatrixAdjacencyCocitation(){
+    if ( !activeNodes() ) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+    int aNodes=activeNodes();
+    statusBar() ->  showMessage ( tr ("Computing cocitation matrix of %1 nodes").arg(aNodes) );
+    qDebug ("MW: calling Graph::writeMatrixAdjacencyCocitation with %i nodes", aNodes);
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-cocitation.html";
+
+    QTime timer;
+    timer.start();
+    activeGraph.writeMatrix(fn,MATRIX_COCITATION) ;
+    int msecs = timer.elapsed();
+    statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
+
+    TextEditor *ed = new TextEditor(fn,this,true);
+    ed->setWindowTitle(tr("Cocitation matrix saved as ") + fn);
+    ed->show();
+    m_textEditors << ed;
+    statusMessage(tr("Cocitation matrix saved as: ")+fn);
+}
+
 
 
 

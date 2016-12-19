@@ -331,6 +331,7 @@ public slots:
     void slotAnalyzeSymmetryCheck();
     void slotAnalyzeMatrixAdjacencyInverse();
     void slotAnalyzeMatrixAdjacencyTranspose();
+    void slotAnalyzeMatrixAdjacencyCocitation();
     void slotAnalyzeMatrixDegree();
     void slotAnalyzeMatrixLaplacian();
 
@@ -530,6 +531,7 @@ private:
     QAction *walksAct,*totalWalksAct, *reachabilityMatrixAct, *connectivityAct;
     QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct;
     QAction *analyzeMatrixAdjTransposeAct, *analyzeMatrixAdjInvertAct;
+    QAction *analyzeMatrixAdjCocitationAct;
     QAction *analyzeMatrixDegreeAct, *analyzeMatrixLaplacianAct;
     QAction *clusteringHierarchicalAct, *similarityPearsonAct;
     QAction *similarityExactMatchesAct;
