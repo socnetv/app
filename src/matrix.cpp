@@ -707,6 +707,29 @@ void Matrix::operator *=(Matrix & b) {
 
 
 /**
+  * @brief Returns the transpose of this matrix
+  * Allows T = A.transpose()
+  * @param b
+  * @return Matrix T
+*/
+
+Matrix& Matrix::transpose() {
+    Matrix *T = new Matrix();
+    T->zeroMatrix(cols(), rows());
+    qDebug()<< "Matrix::degreeMatrix()";
+    for (int i=0;i< cols();i++) {
+        for (int j=0;j<rows();j++) {
+            T->setItem(i,j, item(j,i));
+
+        }
+    }
+    return *T;
+}
+
+
+
+
+/**
   * @brief Returns a diagonal matrix which contains information about the degree
   * of each graph vertex (row of the adjacency matrix)
   * Allows S = A.degreeMatrix()

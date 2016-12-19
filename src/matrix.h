@@ -163,6 +163,9 @@ public:
 
     void fillMatrix (float value );
 
+    Matrix& subtractFromI () ;
+
+    void sum(Matrix &a, Matrix &b) ;
 
     Matrix& operator =(Matrix & a);
 
@@ -188,9 +191,6 @@ public:
     Matrix & pow (int n, bool symmetry=false)  ;
     Matrix & expBySquaring2 (Matrix &Y, Matrix &X, int n, bool symmetry=false);
 
-    Matrix& subtractFromI () ;
-
-    void sum(Matrix &a, Matrix &b) ;
 
     bool ludcmp (Matrix &a, const int &n, int indx[], float &d ) ;
 
@@ -216,6 +216,8 @@ public:
     Matrix& inverseByGaussJordanElimination(Matrix &a);
 
     Matrix& inverse(Matrix &a);
+
+    Matrix& transpose();
 
     friend QTextStream& operator <<  (QTextStream& os, Matrix& m);
     bool printHTMLTable(QTextStream& os, const bool &debug=false);

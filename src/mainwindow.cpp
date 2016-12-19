@@ -1719,6 +1719,19 @@ void MainWindow::initActions(){
             this, SLOT(slotAnalyzeMatrixAdjacencyInverse()));
 
 
+    analyzeMatrixAdjTransposeAct = new QAction(
+                QIcon(":/images/invertmatrix.png"), tr("Transpose Adjacency Matrix"), this);
+    analyzeMatrixAdjTransposeAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_T)
+                );
+    analyzeMatrixAdjTransposeAct->setStatusTip(tr("View the transpose of adjacency matrix"));
+    analyzeMatrixAdjTransposeAct->setWhatsThis(tr("Transpose Adjacency Matrix "
+                                        "\n\n Computes and displays the adjacency matrix tranpose."));
+    connect(analyzeMatrixAdjTransposeAct, SIGNAL(triggered()),
+            this, SLOT(slotAnalyzeMatrixAdjacencyTranspose()));
+
+
+
     analyzeMatrixDegreeAct = new QAction(
                 QIcon(":/images/degreematrix.png"), tr("Degree Matrix"), this);
     analyzeMatrixDegreeAct -> setShortcut(
@@ -1913,11 +1926,12 @@ void MainWindow::initActions(){
 
     clusteringCoefAct = new QAction(QIcon(":/images/clucof.png"), tr("Local and Network Clustering Coefficient"),this);
     clusteringCoefAct -> setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_L);
-    clusteringCoefAct->setStatusTip(tr("Compute the local Clustering Coefficient for every actor and the network average."));
+    clusteringCoefAct->setStatusTip(tr("Compute the Watts & Strogatz Clustering Coefficient for every actor and the network average."));
     clusteringCoefAct->setWhatsThis(tr("Local and Network Clustering Coefficient\n\n"
                                        "The local Clustering Coefficient  (Watts & Strogatz, 1998) "
                                        "of an actor quantifies how close "
-                                       "the actor and her neighbors are to being a clique. \n"));
+                                       "the actor and her neighbors are to being a clique and "
+                                       "can be used as an indication of network transitivity. \n"));
     connect(clusteringCoefAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeClusteringCoefficient() )  );
 
 
@@ -2085,10 +2099,11 @@ void MainWindow::initActions(){
     connect(cEccentAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityEccentricity()));
 
 
-    cPowerAct = new QAction(tr("Power Centrality (PC)"), this);
+    cPowerAct = new QAction(tr("Gil and Schmidt Power Centrality (PC)"), this);
     cPowerAct-> setShortcut(Qt::CTRL + Qt::Key_7);
     cPowerAct->setStatusTip(tr("Compute Power Centrality indices (aka Gil-Schmidt Power Centrality) for every actor and group Power Centralization"));
-    cPowerAct->setWhatsThis(tr("Power Centrality (PC)\n\n For each node v, this index sums its degree (with weight 1), with the size of the 2nd-order neighbourhood (with weight 2), and in general, with the size of the kth order neighbourhood (with weight k). Thus, for each node in the network the most important other nodes are its immediate neighbours and then in decreasing importance the nodes of the 2nd-order neighbourhood, 3rd-order neighbourhood etc. For each node, the sum obtained is normalised by the total numbers of nodes in the same component minus 1. Power centrality has been devised by Gil-Schmidt. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1 (therefore not considered)."));
+    cPowerAct->setWhatsThis(tr("Power Centrality (PC)\n\n "
+                               "For each node v, this index sums its degree (with weight 1), with the size of the 2nd-order neighbourhood (with weight 2), and in general, with the size of the kth order neighbourhood (with weight k). Thus, for each node in the network the most important other nodes are its immediate neighbours and then in decreasing importance the nodes of the 2nd-order neighbourhood, 3rd-order neighbourhood etc. For each node, the sum obtained is normalised by the total numbers of nodes in the same component minus 1. Power centrality has been devised by Gil-Schmidt. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1 (therefore not considered)."));
     connect(cPowerAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityPower()));
 
 
@@ -2553,20 +2568,22 @@ void MainWindow::initMenuBar() {
     analysisMenu = menuBar()->addMenu(tr("&Analyze"));
     analysisMenu -> addAction (analyzeSymmetryAct);
     analysisMenu -> addSeparator();
-    matrixMenu  = new QMenu(tr("Adjacency Matrix and Matrices..."));
+    matrixMenu = new QMenu(tr("Adjacency Matrix and Matrices..."));
     matrixMenu -> setIcon(QIcon(":/images/sm.png"));
     analysisMenu -> addMenu (matrixMenu);
-    matrixMenu  -> addAction (networkViewSociomatrixAct);
-    matrixMenu  -> addAction (networkViewSociomatrixPlotAct);
-    matrixMenu  -> addSeparator();
-    matrixMenu  -> addAction (analyzeMatrixAdjInvertAct);
-    matrixMenu  -> addSeparator();
-    matrixMenu  -> addAction (analyzeMatrixDegreeAct);
-    matrixMenu  -> addAction (analyzeMatrixLaplacianAct);
+    matrixMenu -> addAction (networkViewSociomatrixAct);
+    matrixMenu -> addAction (networkViewSociomatrixPlotAct);
+    matrixMenu -> addSeparator();
+    matrixMenu -> addAction (analyzeMatrixAdjInvertAct);
+    matrixMenu -> addSeparator();
+    matrixMenu -> addAction(analyzeMatrixAdjTransposeAct);
+    matrixMenu -> addSeparator();
+    matrixMenu -> addAction (analyzeMatrixDegreeAct);
+    matrixMenu -> addAction (analyzeMatrixLaplacianAct);
     //	analysisMenu -> addAction (netDensity);
 
     analysisMenu -> addSeparator();
-    distancesMenu  = new QMenu(tr("Distances..."));
+    distancesMenu = new QMenu(tr("Distances..."));
     distancesMenu -> setIcon(QIcon(":/images/distances.png"));
     analysisMenu -> addMenu(distancesMenu);
     distancesMenu -> addAction (graphDistanceAct);
@@ -9498,9 +9515,9 @@ void MainWindow::slotAnalyzeMatrixAdjacencyInverse(){
         return;
     }
     int aNodes=activeNodes();
-    statusBar() ->  showMessage ( QString (tr ("inverting adjacency adjacency matrix of %1 nodes")).arg(aNodes) );
+    statusBar() ->  showMessage ( tr ("inverting adjacency adjacency matrix of %1 nodes").arg(aNodes) );
     qDebug ("MW: calling Graph::writeMatrixAdjacencyInvert with %i nodes", aNodes);
-    QString fn = appSettings["dataDir"] + "socnetv-report-invert-adjacency-matrix.html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-adjacency-matrix-inverse.html";
 
     QTime timer;
     timer.start();
@@ -9519,6 +9536,36 @@ void MainWindow::slotAnalyzeMatrixAdjacencyInverse(){
 
 
 
+
+
+/**
+ * @brief Writes the transpose adjacency matrix
+ */
+void MainWindow::slotAnalyzeMatrixAdjacencyTranspose(){
+    if ( !activeNodes() ) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+    int aNodes=activeNodes();
+    statusBar() ->  showMessage ( tr ("Transposing adjacency matrix of %1 nodes").arg(aNodes) );
+    qDebug ("MW: calling Graph::writeMatrixAdjacencyTranspose with %i nodes", aNodes);
+    QString fn = appSettings["dataDir"] + "socnetv-report-adjacency-matrix-transpose.html";
+
+    QTime timer;
+    timer.start();
+    activeGraph.writeMatrix(fn,MATRIX_ADJACENCY_TRANSPOSE) ;
+    int msecs = timer.elapsed();
+    statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
+
+    TextEditor *ed = new TextEditor(fn,this,true);
+    ed->setWindowTitle(tr("Transpose adjacency matrix saved as ") + fn);
+    ed->show();
+    m_textEditors << ed;
+    statusMessage(tr("Transpose adjacency matrix saved as: ")+fn);
+}
+
+
+
 /**
  * @brief Writes the degree matrix of the graph
  */
@@ -9528,9 +9575,9 @@ void MainWindow::slotAnalyzeMatrixDegree(){
         return;
     }
     int aNodes=activeNodes();
-    statusBar() ->  showMessage ( QString (tr ("Computing degree matrix of %1 nodes")).arg(aNodes) );
+    statusBar() ->  showMessage ( tr ("Computing degree matrix of %1 nodes").arg(aNodes) );
     qDebug ("MW: calling Graph::writeMatrixDegreeText with %i nodes", aNodes);
-    QString fn = appSettings["dataDir"] + "socnetv-report-degree-matrix.txt";
+    QString fn = appSettings["dataDir"] + "socnetv-report-degree-matrix.html";
 
     QTime timer;
     timer.start();
@@ -9558,9 +9605,9 @@ void MainWindow::slotAnalyzeMatrixLaplacian(){
         return;
     }
     int aNodes=activeNodes();
-    statusBar() ->  showMessage ( QString (tr ("Computing Laplacian matrix of %1 nodes")).arg(aNodes) );
+    statusBar() ->  showMessage ( tr ("Computing Laplacian matrix of %1 nodes").arg(aNodes) );
     qDebug ("MW: calling Graph::writeMatrixLaplacianPlainText with %i nodes", aNodes);
-    QString fn = appSettings["dataDir"] + "socnetv-report-laplacian-matrix.txt";
+    QString fn = appSettings["dataDir"] + "socnetv-report-laplacian-matrix.html";
 
     QTime timer;
     timer.start();
@@ -10040,7 +10087,7 @@ void MainWindow::slotAnalyzeWalksTotal(){
             break;
         }
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-walks-total.txt";
+    QString fn = appSettings["dataDir"] + "socnetv-report-walks-total.html";
 
 
     statusMessage(  QString(tr("Computing Total Walks Matrix. Please wait...")) );
@@ -10052,7 +10099,7 @@ void MainWindow::slotAnalyzeWalksTotal(){
     activeGraph.writeMatrixWalks(fn);
     destroyProgressBar(activeNodes()-1); // do not check for progress bar
 
-    TextEditor *ed = new  TextEditor(fn,this,true);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
     statusMessage("Total number of walks saved as: " + fn);
@@ -10212,10 +10259,10 @@ void MainWindow::slotAnalyzeClusteringCoefficient (){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-clustering-coefficients.txt";
+    QString fn = appSettings["dataDir"] + "socnetv-report-clustering-coefficient.html";
     bool considerWeights=true;
 
-    statusMessage(  QString(tr("Computing Clustering Coefficient. Please wait...")) );
+    statusMessage(  QString(tr("Computing Clustering Coefficient report. Please wait...")) );
     progressMsg = tr("Computing Clustering Coefficient. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
@@ -10225,10 +10272,10 @@ void MainWindow::slotAnalyzeClusteringCoefficient (){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,false);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
-    statusMessage("Clustering Coefficients saved as: " + fn);
+    statusMessage("Clustering Coefficient report saved as: " + fn);
 }
 
 
@@ -10340,7 +10387,7 @@ void MainWindow::slotAnalyzeTriadCensus() {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-triad-census.txt";
+    QString fn = appSettings["dataDir"] + "socnetv-report-triad-census.html";
     bool considerWeights=true;
 
     statusMessage(  QString(tr("Computing Triad Census. Please wait...")) );
@@ -10353,7 +10400,7 @@ void MainWindow::slotAnalyzeTriadCensus() {
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,false);
+    TextEditor *ed = new TextEditor(fn,this,true);
     ed->show();
     m_textEditors << ed;
     statusMessage("Triad Census saved as: " + fn);
@@ -10371,10 +10418,6 @@ void MainWindow::slotAnalyzeCentralityDegree(){
     bool considerWeights=false;
     if ( activeGraph.graphWeighted()) {
 
-//        QMessageBox::information( this, "Centrality Out-Degree",
-//                                                 tr("Graph edges have weights. \nTake weights into account (Default: No)?"),
-//                                                 tr("Yes"), tr("No"),
-//                                                 0, 1 )
         switch( slotHelpMessageToUser(
                     USER_MSG_QUESTION,
                     tr("Consider weights?") ,

@@ -330,6 +330,7 @@ public slots:
 
     void slotAnalyzeSymmetryCheck();
     void slotAnalyzeMatrixAdjacencyInverse();
+    void slotAnalyzeMatrixAdjacencyTranspose();
     void slotAnalyzeMatrixDegree();
     void slotAnalyzeMatrixLaplacian();
 
@@ -527,7 +528,8 @@ private:
     QAction *netDensity, *analyzeSymmetryAct, *graphDistanceAct, *averGraphDistanceAct,
             *distanceMatrixAct, *geodesicsMatrixAct, *diameterAct, *eccentricityAct;
     QAction *walksAct,*totalWalksAct, *reachabilityMatrixAct, *connectivityAct;
-    QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct, *analyzeMatrixAdjInvertAct;
+    QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct;
+    QAction *analyzeMatrixAdjTransposeAct, *analyzeMatrixAdjInvertAct;
     QAction *analyzeMatrixDegreeAct, *analyzeMatrixLaplacianAct;
     QAction *clusteringHierarchicalAct, *similarityPearsonAct;
     QAction *similarityExactMatchesAct;
