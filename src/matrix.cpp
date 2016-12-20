@@ -366,7 +366,8 @@ void Matrix::swapRows(int rowA,int rowB){
 
 
 /**
-* @brief Scalar Multiplication. Multiplies this by float f and returns the product matrix of the same dim
+* @brief Scalar Multiplication. Multiplies this by float f
+*  and returns the product matrix of the same dim
   * Allows to use P.multiplyScalar(f)
   * @param f
 */
@@ -395,148 +396,6 @@ void Matrix::multiplyRow(int row, float value) {
 
 
 
-
-
-/**
- * @brief Matrix Multiplication. Given two matrices a and b of the same dimension
- * returns their product as a reference to the calling object
- * Allows P.product(a , b) where P, a and b are not the same initially.
-
- * NOTE: do not use it as B=product(A,B) because it will destroy B on the way.
- * @param a
- * @param b
- * @param symmetry
- * @return
- */
-void Matrix::product( Matrix &a, Matrix & b, bool symmetry)  {
-    qDebug()<< "Matrix::product()";
-    for (int i=0;i< rows();i++)
-        for (int j=0;j<cols();j++) {
-            setItem(i,j,0);
-            if (symmetry && i > j ) continue;
-            for (int k=0;k<m_rows;k++) {
-//                qDebug() << "Matrix::product() - a("<< i+1 << ","<< k+1 << ")="
-//                         << a.item(i,k) << "* b("<< k+1 << ","<< j+1 << ")="
-//                         << b.item(k,j)  << " gives "  << a.item(i,k)*b.item(k,j);
-                setItem(i,j, item(i,j)+a.item(i,k)*b.item(k,j));
-            }
-            if (symmetry) {
-                setItem(j,i, item(i,j) );
-            }
-            qDebug() << "Matrix::product() - ("<< i+1 << ","<< j+1 << ") = "
-                     << item(i,j);
-        }
-            qDebug() << "Matrix::product() - this";
-    this->printMatrixConsole();
-}
-
-
-/**
- * @brief Takes two ( N x N ) matrices (symmetric) and outputs an upper triangular matrix
- * @param a
- * @param b
- * @return
- */
-Matrix& Matrix::productSym( Matrix &a, Matrix & b)  {
-    for (int i=0;i<rows();i++)
-        for (int j=0;j<cols();j++) {
-            setItem(i,j,0);
-            if (i>=j) continue;
-            for (int k=0;k<m_rows;k++)
-                if  ( k > j ) {
-                    if (a.item(i,k)!=0 && b.item(j,k)!=0)
-                        setItem(i,j, item(i,j)+a.item(i,k)*b.item(j,k));
-                }
-                else  //k <= j  && i<j
-                    if ( i>k ) {
-                        if (a.item(k,i)!=0 && b.item(k,j)!=0)
-                            setItem(i,j, item(i,j)+a.item(k,i)*b.item(k,j));
-                        }
-                        else {
-                            if (a.item(i,k)!=0 && b.item(k,j)!=0)
-                                setItem(i,j, item(i,j)+a.item(i,k)*b.item(k,j));
-                        }
-        }
-        return *this;
-}
-
-
-/**
- * @brief Returns the n-nth power of this matrix
- * @param n
- * @param symmetry
- * @return Matrix
- */
-Matrix& Matrix::pow (int n, bool symmetry)  {
-    if (rows()!= cols()) {
-        qDebug()<< "Matrix::pow() - Error. This works only for square matrix";
-        return *this;
-    }
-    qDebug()<< "Matrix::pow() ";
-    Matrix X, Y; //auxilliary matrices
-    qDebug()<< "Matrix::pow() - creating X = this";
-    X=*this; //X = this
-    //X.printMatrixConsole(true);
-    qDebug()<< "Matrix::pow() - creating Y = I";
-    Y.identityMatrix( rows() ); // y=I
-    //Y.printMatrixConsole(true);
-    return expBySquaring2 (Y, X, n, symmetry);
-
-}
-
-
-/**
- * @brief Recursive algorithm implementing "Exponentiation by squaring".
- * Also known as Fast Modulo Multiplication, this algorithm allows
- * fast computation of a large power n of square matrix X
- * @param Y must be the Identity matrix  on first call
- * @param X the matrix to be powered
- * @param n the power
- * @param symmetry
- * @return Matrix&
-
- * On first call, parameters must be: Y=I, X the orginal matrix to power and n the power.
- * Returns the power of matrix X to this object.
- * For n > 4 it is more efficient than naively multiplying the base with itself repeatedly.
- */
-Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
-    if (n==1) {
-        qDebug() <<"Matrix::expBySquaring2() - n = 1. Computing PM = X*Y where "
-                   "X = " ;
-        //X.printMatrixConsole();
-        //qDebug() <<"Matrix::expBySquaring2() - n = 1. And Y = ";
-        //Y.printMatrixConsole();
-        Matrix *PM = new Matrix(rows(), cols());
-        PM->product(X, Y, symmetry);
-        //qDebug()<<"Matrix::expBySquaring2() - n = 1. PM = X*Y ="  ;
-        //PM->printMatrixConsole();
-        return *PM;
-    }
-    else if ( n%2 == 0 ) { //even
-        qDebug()<<"Matrix::expBySquaring2() - even n =" << n
-               << "Computing PM = X * X";
-        Matrix PM(rows(), cols());
-        PM.product(X,X,symmetry);
-        //qDebug()<<"Matrix::expBySquaring2() - even n =" << n << ". PM = X * X = " ;
-        //PM.printMatrixConsole();
-        return expBySquaring2 ( Y, PM, n/2 );
-    }
-    else  { //odd
-        qDebug()<<"Matrix::expBySquaring2() - odd n =" << n
-               << "First compute PM = X * Y";
-        Matrix PM(rows(), cols());
-        Matrix PM2(rows(), cols());
-        PM.product(X,Y,symmetry);
-        //qDebug()<<"Matrix::expBySquaring2() - odd n =" << n << ". PM = X * Y = " ;
-        //PM.printMatrixConsole();
-        qDebug()<<"Matrix::expBySquaring2() - odd n =" << n
-               << "Now compute PM2 = X * X";
-        PM2.product(X,X,symmetry);
-        //qDebug()<<"Matrix::expBySquaring2() - odd n =" << n << ". PM2 = X * X = " ;
-        //PM2.printMatrixConsole();
-        return expBySquaring2 ( PM, PM2, (n-1)/2 );
-    }
-}
 
 
 
@@ -615,8 +474,8 @@ void Matrix::operator +=(Matrix & b) {
   * @return Matrix S
 */
 Matrix& Matrix::operator +(Matrix & b) {
-    Matrix *S = new Matrix();
-    S->zeroMatrix(rows(), cols());
+    Matrix *S = new Matrix(rows(), cols());
+    //S->zeroMatrix(rows(), cols());
     qDebug()<< "Matrix::operator +";
     for (int i=0;i< rows();i++)
         for (int j=0;j<cols();j++)
@@ -633,8 +492,8 @@ Matrix& Matrix::operator +(Matrix & b) {
   * @return Matrix S
 */
 Matrix& Matrix::operator -(Matrix & b) {
-    Matrix *S = new Matrix();
-    S->zeroMatrix(rows(), cols());
+    Matrix *S = new Matrix(rows(), cols() );
+    //S->zeroMatrix(rows(), cols());
     qDebug()<< "Matrix::operator -";
     for (int i=0;i< rows();i++)
         for (int j=0;j<cols();j++)
@@ -643,9 +502,11 @@ Matrix& Matrix::operator -(Matrix & b) {
 }
 
 
+
 /**
  * @brief Matrix multiplication, operator *
-* Allows P = A * B where A,B of same dimension
+ * Multiplies (right) this matrix with given matrix b.
+ * Allows P = A * B where A,B of same dimension
 * and returns product as a reference to the calling object
 * NOTE: do not use it as B.product(A,B) because it will destroy B on the way.
 * @param b
@@ -655,9 +516,9 @@ Matrix& Matrix::operator -(Matrix & b) {
 Matrix& Matrix::operator *(Matrix & b) {
 
     qDebug()<< "Matrix::operator *";
-    Matrix *P = new Matrix();
+    Matrix *P = new Matrix(rows(), cols());
 
-    P->zeroMatrix(rows(), cols());
+    //P->zeroMatrix(rows(), cols());
 
     for (int i=0;i< rows();i++)
         for (int j=0;j<cols();j++) {
@@ -669,8 +530,8 @@ Matrix& Matrix::operator *(Matrix & b) {
                     P->setItem(i,j, P->item(i,j) + item(i,k)*b.item(k,j) );
 
             }
-            qDebug() << "Matrix::operator * - ("<< i+1 << ","<< j+1 << ") = "
-                     << P->item(i,j);
+//            qDebug() << "Matrix::operator * - ("<< i+1 << ","<< j+1 << ") = "
+//                     << P->item(i,j);
         }
     return *P;
 }
@@ -678,8 +539,9 @@ Matrix& Matrix::operator *(Matrix & b) {
 
 
 /**
- * @brief Matrix multiplication, convenience operator *=
-* Allows A *= B where A,B of same dimension
+* @brief Multiplies (right) this matrix with given matrix b and returns the product
+* in this matrix.
+* This convenience operator *= allows A *= B where A,B of same dimension
 * @param b
 * @param symmetry
 * @return
@@ -687,8 +549,8 @@ Matrix& Matrix::operator *(Matrix & b) {
 void Matrix::operator *=(Matrix & b) {
 
     qDebug()<< "Matrix::operator *";
-    Matrix *P = new Matrix();
-    P->zeroMatrix(rows(), cols());
+    Matrix *P = new Matrix(rows(), cols());
+    //P->zeroMatrix(rows(), cols());
 
     for (int i=0;i< rows();i++) {
         for (int j=0;j<cols();j++) {
@@ -700,8 +562,8 @@ void Matrix::operator *=(Matrix & b) {
                     P->setItem(i,j, P->item(i,j) + item(i,k)*b.item(k,j) );
 
             }
-            qDebug() << "Matrix::operator * - ("<< i+1 << ","<< j+1 << ") = "
-                     << P->item(i,j);
+//            qDebug() << "Matrix::operator * - ("<< i+1 << ","<< j+1 << ") = "
+//                     << P->item(i,j);
         }
     }
     for (int i=0;i< rows();i++){
@@ -714,17 +576,161 @@ void Matrix::operator *=(Matrix & b) {
 
 
 
+/**
+ * @brief Matrix Multiplication. Given two matrices a and b of the same dimension
+ * computes their product and stores it to the calling object
+ * Allows P.product(a , b) where P, a and b are not the same initially.
+
+ * NOTE: do not use it as B=product(A,B) because it will destroy B on the way.
+ * @param a
+ * @param b
+ * @param symmetry
+ * @return
+ */
+void Matrix::product( Matrix &a, Matrix & b, bool symmetry)  {
+    qDebug()<< "Matrix::product()";
+    for (int i=0;i< rows();i++)
+        for (int j=0;j<cols();j++) {
+            setItem(i,j,0);
+            if (symmetry && i > j ) continue;
+            for (int k=0;k<m_rows;k++) {
+//                qDebug() << "Matrix::product() - a("<< i+1 << ","<< k+1 << ")="
+//                         << a.item(i,k) << "* b("<< k+1 << ","<< j+1 << ")="
+//                         << b.item(k,j)  << " gives "  << a.item(i,k)*b.item(k,j);
+                setItem(i,j, item(i,j)+a.item(i,k)*b.item(k,j));
+            }
+            if (symmetry) {
+                setItem(j,i, item(i,j) );
+            }
+            qDebug() << "Matrix::product() - ("<< i+1 << ","<< j+1 << ") = "
+                     << item(i,j);
+        }
+            qDebug() << "Matrix::product() - this";
+   // this->printMatrixConsole();
+}
+
 
 /**
-  * @brief Returns the transpose of this matrix
+ * @brief Takes two ( N x N ) matrices (symmetric) and outputs an upper triangular matrix
+ * @param a
+ * @param b
+ * @return
+ */
+Matrix& Matrix::productSym( Matrix &a, Matrix & b)  {
+    for (int i=0;i<rows();i++)
+        for (int j=0;j<cols();j++) {
+            setItem(i,j,0);
+            if (i>=j) continue;
+            for (int k=0;k<m_rows;k++)
+                if  ( k > j ) {
+                    if (a.item(i,k)!=0 && b.item(j,k)!=0)
+                        setItem(i,j, item(i,j)+a.item(i,k)*b.item(j,k));
+                }
+                else  //k <= j  && i<j
+                    if ( i>k ) {
+                        if (a.item(k,i)!=0 && b.item(k,j)!=0)
+                            setItem(i,j, item(i,j)+a.item(k,i)*b.item(k,j));
+                        }
+                        else {
+                            if (a.item(i,k)!=0 && b.item(k,j)!=0)
+                                setItem(i,j, item(i,j)+a.item(i,k)*b.item(k,j));
+                        }
+        }
+        return *this;
+}
+
+
+/**
+ * @brief Returns the n-nth power of this matrix
+ * @param n
+ * @param symmetry
+ * @return Matrix
+ */
+Matrix& Matrix::pow (int n, bool symmetry)  {
+    if (rows()!= cols()) {
+        qDebug()<< "Matrix::pow() - Error. This works only for square matrix";
+        return *this;
+    }
+    qDebug()<< "Matrix::pow() ";
+    Matrix X, Y; //auxilliary matrices
+    qDebug()<< "Matrix::pow() - creating X = this";
+    X=*this; //X = this
+    //X.printMatrixConsole(true);
+    qDebug()<< "Matrix::pow() - creating Y = I";
+    Y.identityMatrix( rows() ); // y=I
+    //Y.printMatrixConsole(true);
+    return expBySquaring2 (Y, X, n, symmetry);
+
+}
+
+
+
+/**
+ * @brief Recursive algorithm implementing "Exponentiation by squaring".
+ * Also known as Fast Modulo Multiplication, this algorithm allows
+ * fast computation of a large power n of square matrix X
+ * @param Y must be the Identity matrix  on first call
+ * @param X the matrix to be powered
+ * @param n the power
+ * @param symmetry
+ * @return Matrix&
+
+ * On first call, parameters must be: Y=I, X the orginal matrix to power and n the power.
+ * Returns the power of matrix X to this object.
+ * For n > 4 it is more efficient than naively multiplying the base with itself repeatedly.
+ */
+Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
+    if (n==1) {
+        qDebug() <<"Matrix::expBySquaring2() - n = 1. Computing PM = X*Y where "
+                   "X = " ;
+        //X.printMatrixConsole();
+        //qDebug() <<"Matrix::expBySquaring2() - n = 1. And Y = ";
+        //Y.printMatrixConsole();
+        Matrix *PM = new Matrix(rows(), cols());
+        PM->product(X, Y, symmetry);
+        //qDebug()<<"Matrix::expBySquaring2() - n = 1. PM = X*Y ="  ;
+        //PM->printMatrixConsole();
+        return *PM;
+    }
+    else if ( n%2 == 0 ) { //even
+        qDebug()<<"Matrix::expBySquaring2() - even n =" << n
+               << "Computing PM = X * X";
+        Matrix PM(rows(), cols());
+        PM.product(X,X,symmetry);
+        //qDebug()<<"Matrix::expBySquaring2() - even n =" << n << ". PM = X * X = " ;
+        //PM.printMatrixConsole();
+        return expBySquaring2 ( Y, PM, n/2 );
+    }
+    else  { //odd
+        qDebug()<<"Matrix::expBySquaring2() - odd n =" << n
+               << "First compute PM = X * Y";
+        Matrix PM(rows(), cols());
+        Matrix PM2(rows(), cols());
+        PM.product(X,Y,symmetry);
+        //qDebug()<<"Matrix::expBySquaring2() - odd n =" << n << ". PM = X * Y = " ;
+        //PM.printMatrixConsole();
+        qDebug()<<"Matrix::expBySquaring2() - odd n =" << n
+               << "Now compute PM2 = X * X";
+        PM2.product(X,X,symmetry);
+        //qDebug()<<"Matrix::expBySquaring2() - odd n =" << n << ". PM2 = X * X = " ;
+        //PM2.printMatrixConsole();
+        return expBySquaring2 ( PM, PM2, (n-1)/2 );
+    }
+}
+
+
+
+
+/**
+  * @brief Returns the Transpose of this matrix
   * Allows T = A.transpose()
   * @param b
   * @return Matrix T
 */
 
 Matrix& Matrix::transpose() {
-    Matrix *T = new Matrix();
-    T->zeroMatrix(cols(), rows());
+    Matrix *T = new Matrix(cols(), rows());
+    //T->zeroMatrix(cols(), rows());
     qDebug()<< "Matrix::transpose()";
     for (int i=0;i< cols();i++) {
         for (int j=0;j<rows();j++) {
@@ -740,21 +746,20 @@ Matrix& Matrix::transpose() {
 
 
 /**
-  * @brief Returns the cocitaion of this matrix (C = A * A^T)
+  * @brief Returns the Cocitation Matrix of this matrix (C = A * A^T)
   * Allows T = A.cocitation()
   * @param b
   * @return Matrix T
 */
 
 Matrix& Matrix::cocitation() {
-    Matrix *T = new Matrix();
-
-    T->zeroMatrix(cols(), rows());
-    qDebug()<< "Matrix::cocitation() - this";
+    Matrix *T = new Matrix(cols(), rows());
+    //T->zeroMatrix(cols(), rows());
+    qDebug()<< "Matrix::cocitation() this";
     this->printMatrixConsole();
-    qDebug()<< "Matrix::cocitation() - Transpose";
-    this->transpose().printMatrixConsole(true);
-    T->product(*this, this->transpose());
+    qDebug()<< "Matrix::cocitation() this transpose";
+    this->transpose().printMatrixConsole();
+    T->product(this->transpose(),*this, true);
     return *T;
 }
 
@@ -762,7 +767,8 @@ Matrix& Matrix::cocitation() {
 
 
 /**
-  * @brief Returns a diagonal matrix which contains information about the degree
+  * @brief Returns the Degree Matrix of this matrix.
+  * The Degree Matrix is diagonal matrix which contains information about the degree
   * of each graph vertex (row of the adjacency matrix)
   * Allows S = A.degreeMatrix()
   * @param b
@@ -770,8 +776,8 @@ Matrix& Matrix::cocitation() {
 */
 
 Matrix& Matrix::degreeMatrix() {
-    Matrix *S = new Matrix();
-    S->zeroMatrix(rows(), cols());
+    Matrix *S = new Matrix(rows(), cols());
+    //S->zeroMatrix(rows(), cols());
     qDebug()<< "Matrix::degreeMatrix()";
     float degree=0;
     for (int i=0;i< rows();i++) {
@@ -788,15 +794,16 @@ Matrix& Matrix::degreeMatrix() {
 
 
 /**
-  * @brief Returns a NxN matrix L = D - A where D is the degree matrix of A
-    * Allows S = A.laplacianMatrix()
+  * @brief Returns the Laplacian of this matrix.
+  * The Laplacian is a NxN matrix L = D - A where D is the degree matrix of A
+  * Allows S = A.laplacianMatrix()
   * @param b
   * @return Matrix S
 */
 
 Matrix& Matrix::laplacianMatrix() {
-    Matrix *S = new Matrix();
-    S->zeroMatrix(rows(), cols());
+    Matrix *S = new Matrix(rows(), cols());
+    //S->zeroMatrix(rows(), cols());
     qDebug()<< "Matrix::laplacianMatrix()";
     *S = (this->degreeMatrix()) - *this;
     return *S;
@@ -809,8 +816,7 @@ Matrix& Matrix::laplacianMatrix() {
 
 
 /**
- * @brief
- * Inverts given matrix A by Gauss Jordan elimination
+ * @brief Inverts given matrix A by Gauss Jordan elimination
    Input:  matrix A
    Output: matrix A becomes unit matrix
    *this becomes the invert of A and is returned back.
@@ -898,8 +904,7 @@ Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
 
 
 /**
- * @brief Matrix::ludcmp(Matrix &a, const int &n, int *indx, float *d)
- * Given matrix a, it replaces a by the LU decomposition of a rowwise permutation of itself.
+ * @brief Given matrix a, it replaces a by the LU decomposition of a rowwise permutation of itself.
  * Used in combination with lubksb to solve linear equations or invert a matrix.
  * @param a: input matrix n x n and output arranged as in Knuth's equation (2.3.14)
  * @param n: input size of matrix
@@ -1638,8 +1643,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
 
 
 /**
- * @brief operator <<
- * Outputs matrix m to a text str
+ * @brief Prints matrix m to given textstream
  * @param os
  * @param m
  * @return
@@ -1758,12 +1762,12 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
 
 
 /**
- * @brief  * Outputs matrix to a html table
+ * @brief  Prints this matrix a HTML table
  * @param os
  * @param debug
  * @return
  */
-bool Matrix::printHTMLTable(QTextStream& os, const bool &debug){
+bool Matrix::printHTMLTable(QTextStream& os, const bool markDiag, const bool &plain){
     qDebug() << "Matrix::printHTMLTable()";
     int actorNumber=0, rowCount = 0;
     float maxVal, minVal, maxAbsVal, element;
@@ -1808,7 +1812,7 @@ bool Matrix::printHTMLTable(QTextStream& os, const bool &debug){
         for (int c = 0; c < cols(); ++c) {
             element = item(r,c) ;
             os << fixed << right;
-            os <<"<td>";
+            os <<"<td" << ((markDiag && r==c)? " class=\"diag\">" : ">");
             if ( element == -1 || element == RAND_MAX)  // print inf symbol instead of -1 (distances matrix).
                 os << infinity;
             else {
@@ -1851,7 +1855,7 @@ bool Matrix::printHTMLTable(QTextStream& os, const bool &debug){
 
 
 /**
- * @brief Matrix::printMatrixConsole
+ * @brief  Prints this matrix to stderr or stdout
  * @return
  */
 bool Matrix::printMatrixConsole(bool debug){

@@ -1734,7 +1734,7 @@ void MainWindow::initActions(){
     analyzeMatrixAdjCocitationAct = new QAction(
                 QIcon(":/images/cocitation.png"), tr("Cocitation Matrix"), this);
     analyzeMatrixAdjCocitationAct -> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_T)
+                QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_C)
                 );
     analyzeMatrixAdjCocitationAct->setStatusTip(tr("Compute the Cocitation matrix of this network."));
     analyzeMatrixAdjCocitationAct->setWhatsThis(tr("Cocitation Matrix \n\n "

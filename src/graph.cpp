@@ -128,6 +128,7 @@ Graph::Graph() {
                        "background: #000; color: #fff; vertical-align: bottom;}"
                        "table td {text-align:center; padding: 0.2em 1em;}"
                        "table td.header {background:#000; color:#fff;}"
+                       "table td.diag {background:#aaa;}"
                        "table.stripes th {}"
                        "table.stripes tr.odd  { background: #ddd;}"
                        "table.stripes tr:odd  { background: #ddd;}"
@@ -15827,7 +15828,7 @@ void Graph::writeMatrix (const QString &fn,
                       "and all other elements are zero.")
                 << "<br />"
                 << "</p>";
-        AM.degreeMatrix().printHTMLTable(outText);
+        AM.degreeMatrix().printHTMLTable(outText, true);
         break;
     case MATRIX_DISTANCES:
         outText << "<p class=\"description\">"
@@ -15890,15 +15891,16 @@ void Graph::writeMatrix (const QString &fn,
 
     case MATRIX_COCITATION:
         outText << "<p class=\"description\">"
-                << tr("The Cocitation matrix, C = A * A<sup>T</sup>, is a NxN matrix where "
-                      "each element (i,j) is the number of actors that have "
-                      "outbound ties/links to both actors i and j.")
+                << tr("The Cocitation matrix, C = A<sup>T</sup> * A, is a "
+                      "NxN matrix where each element (i,j) is the number of "
+                      "actors that have outbound ties/links to both actors i and j.")
+                << "<br />"
+                << tr("The diagonal elements, C<sub>ii</sub>, of the Cocitation "
+                      "matrix are equal to the number of inbound edges of i (inDegree).")
                 << "<br />"
                 << tr("C is a symmetric matrix.")
                 << "</p>";
-
-
-        AM.cocitation().printHTMLTable(outText);
+        AM.cocitation().printHTMLTable(outText,true);
         break;
 
     default:

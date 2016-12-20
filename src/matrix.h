@@ -226,7 +226,9 @@ public:
 
 
     friend QTextStream& operator <<  (QTextStream& os, Matrix& m);
-    bool printHTMLTable(QTextStream& os, const bool &debug=false);
+    bool printHTMLTable(QTextStream& os,
+                        const bool markDiag=false,
+                        const bool &plain=false);
     bool printMatrixConsole(bool debug=true);
 
 private:
