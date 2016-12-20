@@ -41,7 +41,7 @@ class QTextStream;
 
 
 #ifdef Q_OS_WIN32
-static const QString infinity = QString::number( INFINITY) ;
+static const QString infinity = QString("\xE2\x88\x9E") ;
 #else
 static const QString infinity = QString("\xE2\x88\x9E") ;
 #endif

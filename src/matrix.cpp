@@ -1739,7 +1739,7 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
             element = m(r,c) ;
             os << qSetFieldWidth(fieldWidth) << fixed << right;
             if ( element == -1 || element == RAND_MAX)  // we print inf symbol instead of -1 (distances matrix).
-                os << fixed << right << qSetFieldWidth(fieldWidth) << INFINITY ; // do not use our static var "infinity" as it breaks formatting;
+                os << fixed << right << qSetFieldWidth(fieldWidth) << infinity ;
             else {
                 if ( element > 999)
                     os << qSetFieldWidth(fieldWidth-3) ;
