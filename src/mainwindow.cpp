@@ -1732,7 +1732,7 @@ void MainWindow::initActions(){
 
 
     analyzeMatrixAdjCocitationAct = new QAction(
-                QIcon(":/images/transposematrix.png"), tr("Cocitation Matrix"), this);
+                QIcon(":/images/cocitation.png"), tr("Cocitation Matrix"), this);
     analyzeMatrixAdjCocitationAct -> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_T)
                 );

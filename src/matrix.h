@@ -165,9 +165,10 @@ public:
 
     Matrix& subtractFromI () ;
 
-    void sum(Matrix &a, Matrix &b) ;
 
     Matrix& operator =(Matrix & a);
+
+    void sum(Matrix &a, Matrix &b) ;
 
     void operator +=(Matrix & b);
 
@@ -192,13 +193,25 @@ public:
     Matrix & expBySquaring2 (Matrix &Y, Matrix &X, int n, bool symmetry=false);
 
 
+    Matrix& degreeMatrix();
+
+    Matrix& laplacianMatrix();
+
+    Matrix& transpose();
+
+    Matrix& cocitation();
+
+
+    Matrix& inverseByGaussJordanElimination(Matrix &a);
+
+    Matrix& inverse(Matrix &a);
+
     bool ludcmp (Matrix &a, const int &n, int indx[], float &d ) ;
 
     void lubksb (Matrix &a, const int &n, int indx[], float b[]);
 
-    Matrix& degreeMatrix();
 
-    Matrix& laplacianMatrix();
+
 
     Matrix& similarityMatching(Matrix &AM,
                                const int &measure,
@@ -211,15 +224,6 @@ public:
                                           const QString &varLocation="Rows",
                                            const bool &diagonal=false);
 
-
-
-    Matrix& inverseByGaussJordanElimination(Matrix &a);
-
-    Matrix& inverse(Matrix &a);
-
-    Matrix& transpose();
-
-    Matrix& cocitation();
 
     friend QTextStream& operator <<  (QTextStream& os, Matrix& m);
     bool printHTMLTable(QTextStream& os, const bool &debug=false);

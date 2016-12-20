@@ -39,8 +39,8 @@
 
 /**
  * @brief Matrix::Matrix
- * Default constructor - creates a Matrix of given size (default 0)
- * Use resize(int) to resize it
+ * Default constructor - creates a Matrix of given dimension (0x0)
+ * Use resize(m,n) or zeromatrix(m,n) to resize it
  * @param Actors
  */
 Matrix::Matrix (int rowDim, int colDim)  : m_rows (rowDim), m_cols(colDim) {
@@ -381,7 +381,7 @@ void Matrix::multiplyScalar (const float  & f) {
 
 
 /**
- * @brief Multiply every element of row A by value
+ * @brief Multiply every element of row by value
  * @param row
  * @param value
  */
@@ -426,6 +426,8 @@ void Matrix::product( Matrix &a, Matrix & b, bool symmetry)  {
             qDebug() << "Matrix::product() - ("<< i+1 << ","<< j+1 << ") = "
                      << item(i,j);
         }
+            qDebug() << "Matrix::product() - this";
+    this->printMatrixConsole();
 }
 
 
@@ -504,7 +506,7 @@ Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
         //X.printMatrixConsole();
         //qDebug() <<"Matrix::expBySquaring2() - n = 1. And Y = ";
         //Y.printMatrixConsole();
-        Matrix *PM = new Matrix; PM->zeroMatrix(rows(), cols());
+        Matrix *PM = new Matrix(rows(), cols());
         PM->product(X, Y, symmetry);
         //qDebug()<<"Matrix::expBySquaring2() - n = 1. PM = X*Y ="  ;
         //PM->printMatrixConsole();
@@ -513,7 +515,7 @@ Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
     else if ( n%2 == 0 ) { //even
         qDebug()<<"Matrix::expBySquaring2() - even n =" << n
                << "Computing PM = X * X";
-        Matrix PM; PM.zeroMatrix(rows(), cols());
+        Matrix PM(rows(), cols());
         PM.product(X,X,symmetry);
         //qDebug()<<"Matrix::expBySquaring2() - even n =" << n << ". PM = X * X = " ;
         //PM.printMatrixConsole();
@@ -522,9 +524,8 @@ Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
     else  { //odd
         qDebug()<<"Matrix::expBySquaring2() - odd n =" << n
                << "First compute PM = X * Y";
-        Matrix PM, PM2;
-        PM.zeroMatrix(rows(), cols());
-        PM2.zeroMatrix(rows(), cols());
+        Matrix PM(rows(), cols());
+        Matrix PM2(rows(), cols());
         PM.product(X,Y,symmetry);
         //qDebug()<<"Matrix::expBySquaring2() - odd n =" << n << ". PM = X * Y = " ;
         //PM.printMatrixConsole();
@@ -537,20 +538,7 @@ Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
     }
 }
 
-/**
- * @brief Matrix addition
- * Takes two (nxn) matrices and returns their sum as a reference to this
- * Same algorithm as operator +, just different interface.
- * In this case, you use something like: c.sum(a,b)
- * @param a
- * @param b
- * @return
- */
-void Matrix::sum( Matrix &a, Matrix & b)  {
-    for (int i=0;i< rows();i++)
-        for (int j=0;j<cols();j++)
-            setItem(i,j, a.item(i,j)+b.item(i,j));
-}
+
 
 
 
@@ -569,16 +557,36 @@ Matrix& Matrix::operator = (Matrix & a) {
             m_rows=a.m_rows;
             m_cols=a.m_cols;
             row=new (nothrow) MatrixRow[m_rows];
-			Q_CHECK_PTR( row );
+            Q_CHECK_PTR( row );
             for (int i=0;i<m_rows; i++) {
                 row[i].resize(m_cols); //every MatrixRow object holds max_int=32762
-			}
-		}
+            }
+        }
        for (int i=0;i<m_rows; i++)
            row[i]=a.row[i];
-	}
-	return *this;
+    }
+    return *this;
 }
+
+
+
+/**
+ * @brief Matrix addition
+ * Takes two (nxn) matrices and returns their sum as a reference to this
+ * Same algorithm as operator +, just different interface.
+ * In this case, you use something like: c.sum(a,b)
+ * @param a
+ * @param b
+ * @return
+ */
+void Matrix::sum( Matrix &a, Matrix & b)  {
+    for (int i=0;i< rows();i++)
+        for (int j=0;j<cols();j++)
+            setItem(i,j, a.item(i,j)+b.item(i,j));
+}
+
+
+
 
 
 /**
@@ -648,13 +656,14 @@ Matrix& Matrix::operator *(Matrix & b) {
 
     qDebug()<< "Matrix::operator *";
     Matrix *P = new Matrix();
+
     P->zeroMatrix(rows(), cols());
 
     for (int i=0;i< rows();i++)
         for (int j=0;j<cols();j++) {
             P->setItem(i,j,0);
             for (int k=0;k<m_rows;k++) {
-//                qDebug() << "Matrix::product() - a("<< i+1 << ","<< k+1 << ")="
+//                qDebug() << "Matrix::operator *() - a("<< i+1 << ","<< k+1 << ")="
 //                         << a.item(i,k) << "* b("<< k+1 << ","<< j+1 << ")="
 //                         << b.item(k,j)  << " gives "  << a.item(i,k)*b.item(k,j);
                     P->setItem(i,j, P->item(i,j) + item(i,k)*b.item(k,j) );
@@ -740,9 +749,12 @@ Matrix& Matrix::transpose() {
 Matrix& Matrix::cocitation() {
     Matrix *T = new Matrix();
 
-    //T->zeroMatrix(cols(), rows());
-    qDebug()<< "Matrix::cocitation()";
-    //T->product(this, this->transpose());
+    T->zeroMatrix(cols(), rows());
+    qDebug()<< "Matrix::cocitation() - this";
+    this->printMatrixConsole();
+    qDebug()<< "Matrix::cocitation() - Transpose";
+    this->transpose().printMatrixConsole(true);
+    T->product(*this, this->transpose());
     return *T;
 }
 
@@ -789,6 +801,311 @@ Matrix& Matrix::laplacianMatrix() {
     *S = (this->degreeMatrix()) - *this;
     return *S;
 }
+
+
+
+
+
+
+
+/**
+ * @brief
+ * Inverts given matrix A by Gauss Jordan elimination
+   Input:  matrix A
+   Output: matrix A becomes unit matrix
+   *this becomes the invert of A and is returned back.
+ * @param A
+ * @return inverse matrix of A
+ */
+Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
+	qDebug()<< "Matrix::inverseByGaussJordanElimination()";
+	int n=A.cols();
+    qDebug()<<"Matrix::inverseByGaussJordanElimination() - build I size " << n
+             << " This will become A^-1 in the end";
+
+    identityMatrix( n );
+
+	int l=0, m_pivotLine=0;
+	float m_pivot=0, temp_pivot=0, elim_coef=0;
+
+    for ( int j=0; j< n; j++) { // for n, it is the last diagonal element of A
+	    l=j+1;
+	    m_pivotLine=-1;
+	    m_pivot = A.item(j,j);
+	    qDebug() << "inverseByGaussJordanElimination() at column " << j+1
+		    << " Initial pivot " << m_pivot ;
+        for ( int i=l; i<n; i++) {
+            temp_pivot = A.item(i,j);
+            if ( qFabs( temp_pivot ) > qFabs ( m_pivot ) ) {
+                qDebug() << " A("<< i+1 << ","<< j+1  << ") = " <<  temp_pivot
+                         << " absolutely larger than current pivot "<< m_pivot
+                         << ". Marking new pivot line: " << i+1;
+                m_pivotLine=i;
+                m_pivot = temp_pivot ;
+            }
+        }
+        if ( m_pivotLine != -1 ) {
+            A.swapRows(m_pivotLine,j);
+            swapRows(m_pivotLine,j);
+        }
+
+
+	    qDebug()<<"   multiplyRow() "<< j+1 << " by value " << 1/m_pivot ;
+        for ( int k=0; k<  rows(); k++) {
+            A.setItem ( j, k,  (1/m_pivot) * A.item (j, k) );
+            setItem ( j, k,  (1/m_pivot) * item (j, k) );
+            qDebug()<<"   A.item("<< j+1 << ","<< k+1 << ") = " <<  A.item(j,k);
+            qDebug()<<"   item("<< j+1 << ","<< k+1 << ") = " <<  item(j,k);
+        }
+
+	    qDebug() << "eliminate variables FromRowsBelow()" << j+1 ;
+        for ( int i=0; i<  rows(); i++) {
+		 qDebug()<<"   Eliminating item("<< i+1 << ","<< j+1 << ") = "
+			 <<  A.item(i,j) << " while at column j="<<j+1;
+		 if ( A.item(i,j)==0 ){
+		    qDebug()<< " ...already eliminated - continue";
+		    continue;
+		}
+		 if ( i == j){
+		     qDebug()<< " ...skip pivotline - continue";
+		    continue;
+		}
+		elim_coef=A.item (i, j);
+        for ( int k=0; k<  cols(); k++) {
+		    qDebug()<<"   A.item("<< i+1 << ","<< k+1 << ") = " <<  A.item(i,k)
+			    << " will be subtracted by " << " A.item ("<< i+1
+			    << ", "<< j+1 << ") x A.item(" << j+1 << ","<<k+1
+			    <<") =" << elim_coef * A.item(j,k) ;
+		    A.setItem ( i, k,   A.item (i, k) -  elim_coef * A.item(j, k)  );
+		    qDebug()<<"   A.item("<< i+1 << ","<< k+1 << ") = " <<  A.item(i,k);
+
+		    qDebug()<<"   item("<< i+1 << ","<< k+1 << ") = " <<  item(i,k)
+			    << " will be subtracted by " << " A.item ("<< i+1
+			    << ", "<< j+1 << ") x item(" << j+1 << ","<<k+1
+			    <<") =" << elim_coef * item(j,k)  <<  " = "
+			    << elim_coef << " x " << item(j,k) ;
+
+		    setItem ( i, k,   item (i, k) -  elim_coef * item(j, k)  );
+		    qDebug()<<"   item("<< i+1 << ","<< k+1 << ") = " <<  item(i,k);
+
+		}
+	    }
+
+	}
+	return *this;
+}
+
+
+
+/**
+ * @brief Matrix::ludcmp(Matrix &a, const int &n, int *indx, float *d)
+ * Given matrix a, it replaces a by the LU decomposition of a rowwise permutation of itself.
+ * Used in combination with lubksb to solve linear equations or invert a matrix.
+ * @param a: input matrix n x n and output arranged as in Knuth's equation (2.3.14)
+ * @param n: input size of matrix
+ * @param indx: output vector, records the row permutation effected by the partial pivoting
+ * @param d: output as ±1 depending on whether the number of row interchanges was even or odd
+ * @return:
+ *
+ * Code adapted from Knuth's Numerical Recipes in C, pp 46
+ *
+ */
+bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], float &d) {
+    qDebug () << "Matrix::ludcmp () - decomposing matrix a to L*U";
+    int i=0, j=0, imax=0, k;
+    float big,temp;
+    //vv=vector<float>(1,n);
+    float *vv;            // vv stores the implicit scaling of each row
+    vv=new (nothrow) float [n];
+    Q_CHECK_PTR( vv );
+
+//    QTextStream stream(stdout);
+//    stream << "a = LU = " << a ;
+
+    d=1.0;               // No row interchanges yet.
+
+    qDebug () << "Matrix::ludcmp() - loop over row to get scaling info" ;
+    for (i=0;i<n;i++) {  // Loop over rows to get the implicit scaling information.
+        qDebug () << "Matrix::ludcmp() - row i " <<  i+1;
+        big=0;
+        for (j=0;j<n;j++) {
+            if ((temp=fabs( a[i][j] ) ) > big)
+                big=temp;
+        }
+        if (big == 0)  //       No nonzero largest element.
+        {
+            qDebug() << "Matrix::ludcmp() - Singular matrix in routine ludcmp";
+            return false;
+        }
+        vv[i]=1.0/big;  //  Save the scaling.
+        qDebug () << "Matrix::ludcmp() - big element in row i " << i+1 << " is "<< big << " row scaling vv[i] " << vv[i];
+    }
+
+    qDebug () << "Matrix::ludcmp() - Start Crout's LOOP over columns";
+
+    for (j=0;j<n;j++) //     This is the loop over columns of Crout’s method.
+    {
+        qDebug () << "Matrix::ludcmp() - COLUMN j " <<  j+1 << " search largest pivot";
+        big=0;  //      Initialize for the search for largest pivot element.
+        imax = j;
+
+        for (i=j;i<n;i++)
+        {
+            if ( ( temp = vv[i] * fabs( a[i][j] ) ) > big)
+            {   //  Is the figure of merit for the pivot better than the best so far?
+                big=temp;
+                imax=i;
+                qDebug () << "Matrix::ludcmp() - found new largest pivot at row " <<  imax+1 << " big " << temp;
+            }
+        }
+
+        qDebug () << "Matrix::ludcmp() - check for row interchange ";
+        if (j != imax) //          Do we need to interchange rows?
+        {
+            qDebug () << "Matrix::ludcmp() - interchanging rows " << imax+1 << " and " << j+1;
+            for ( k=0; k<n; k++ ) { //            Yes, do so...
+                temp=a[imax][k];
+                a[imax][k] = a[j][k];
+                a[j][k] = temp;
+            }
+            d = -(d);  //..and change the parity of d.
+            vv[imax]=vv[j];  //         Also interchange the scale factor.
+            qDebug () << "Matrix::ludcmp() - imax  " << imax+1  << " vv[imax]" << vv[imax] << "new parity d " << d;
+        }
+        indx[j]=imax;
+        qDebug () << "Matrix::ludcmp() - indx[j]=imax=" <<  indx[j] +1;
+        if ( a[j][j] == 0 ) {
+            a[j][j] = TINY; // For some apps, on singular matrices, it is desirable to substitute TINY for zero.
+            qDebug () << "Matrix::ludcmp() - WARNING singular matrix set a[j][j]=TINY ";
+        }
+
+        for (i=j+1;i<n;i++) {
+            //     Now, divide by the pivot element.
+            temp=a[i][j] /=  a[j][j] ;
+            qDebug () << "Matrix::ludcmp() - j " << j+1<< " dividing by pivot " << a.item(j,j) << " temp  = " << temp;
+            for (k=j+1;k<n;k++) {       //reduce remaining submatrix
+                a[i][k] -= ( temp * a[j][k] );
+                qDebug () << "Matrix::ludcmp() - lower a["<< i+1 << "][" << k+1 <<"] = " << a[i][k];
+            }
+        }
+
+
+//           stream << endl << "at j " << j+1 << " matrix a = LU = " << a ;
+    }  // Go back for the next column in the reduction.
+
+
+ //free_vector(vv,1,n);
+    qDebug () << "delete vector vv";
+    delete[] vv;
+
+
+//   stream << "final a = LU = " << a ;
+
+
+    return true;
+
+}
+
+
+
+
+/**
+ * @brief Solves the set of n linear equations A·X = b, where A nxn matrix
+ * decomposed as L·U (L lower triangular and U upper triangular)
+ * by forward substitution and  backsubstitution.
+ *
+ * Given A = L·U we have
+ * A · x = (L · U) · x = L · (U · x) = b
+ * So, this routine first solves
+ * L · y = b
+ * for the vector y by forward substitution and then solves
+ * U · x = y
+ * for the vector x using backsubstitution
+
+ * @param a: input matrix a as the LU decomposition of A, returned by the routine ludcmp
+ * @param n: input size of matrix
+ * @param indx: input vector, records the row permutation, returned by the routine ludcmp
+ * @param b: input array as the right-hand side vector B, and ouput with the solution vector X
+ * @return:
+ *
+ * a, n, and indx are not modified by this routine and can be left in place for
+ * successive calls with different right-hand sides b.
+ * This routine takes into account the possibility that b will begin with many
+ * zero elements, so it is efficient for use in matrix inversion.
+
+* Code adapted from Knuth's Numerical Recipes in C, pp 47
+ *
+ */
+void Matrix::lubksb(Matrix &a, const int &n, int indx[], float b[])
+{
+    qDebug () << "Matrix::lubksb() - ";
+    int i, j, ii=0,ip;
+    float sum;
+    for ( i=0;i<n;i++) {  // When ii is set to a positive value, it will become the
+        ip=indx[i];       // index of the first nonvanishing element of b. We now
+        sum=b[ip];        // do the forward substitution, equation (2.3.6). The
+        b[ip]=b[i];       // only new wrinkle is to unscramble the permutation
+        if (ii != 0 )           // as we go.
+            for ( j=(ii-1);j<=i-1;j++)
+                sum -= a[i][j]*b[j];
+        else if (sum !=0 )     // A nonzero element was encountered, so from now on we
+            ii=i+1;         //  will have to do the sums in the loop above.
+        qDebug() << "Matrix::lubksb() "<< "i " << i  << " ip=indx[i] " << ip <<  " b[ip] " << b[ip] << " b[i] " << b[i] <<  "sum " << sum ;
+        b[i]=sum;
+    }
+    for ( i=(n-1);i>=0;i--) {  // Now we do the backsubstitution, equation (2.3.7).
+        sum=b[i];
+        qDebug() << "Matrix::lubksb() backsubstitution: "<< "i " << i  << " b[i] " << b[i] <<  "sum " << sum ;
+        for ( j=i+1;j<n;j++)
+            sum -= a[i][j]*b[j];
+        b[i]=sum/a[i][i]; //  Store a component of the solution vector X. All done!
+        qDebug() << "Matrix::lubksb() backsubstitution: "<< "i " << i  <<  "sum " << sum << " a[i][i] " << a[i][i]   << " b[i] " << b[i] ;
+    }
+}
+
+
+
+/**
+ * @brief Computes and returns the inverse of given matrix a
+ * Allows b.inverse(a)
+ * @param a
+ * @return
+ */
+Matrix& Matrix::inverse(Matrix &a)
+{
+    int i,j, n=a.rows();
+    float d, col[n];
+
+    int indx[n];
+    qDebug () << "Matrix::inverse() - inverting matrix a - size " << n;
+    if (n==0) {
+        return (*this);
+    }
+    if ( ! ludcmp(a,n,indx,d) )
+    { //  Decompose the matrix just once.
+        qDebug () << "Matrix::inverse() - matrix a singular - RETURN";
+        return *this;
+    }
+
+    qDebug () << "Matrix::inverse() - find inverse by columns";
+    for ( j=0; j<n; j++) {    //    Find inverse by columns.
+        for( i=0; i<n; i++)
+            col[i]=0;
+        col[j]=1.0;
+
+        qDebug () << "Matrix::inverse() - call lubksb";
+        lubksb(a,n,indx,col);
+
+        for( i=0; i<n; i++) {
+             (*this)[i][j] = col[i];
+        }
+
+    }
+        qDebug () << "Matrix::inverse() - finished!";
+
+    return *this;
+}
+
 
 
 
@@ -1129,6 +1446,9 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
 
 }
 
+
+
+
 /**
  * @brief  Computes the Pearson Correlation Coefficient of the rows or the columns
  * of the given matrix AM
@@ -1311,315 +1631,9 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
 
     }
 
-
     return *this;
 
 }
-
-
-
-
-
-/**
- * @brief
- * Inverts given matrix A by Gauss Jordan elimination
-   Input:  matrix A
-   Output: matrix A becomes unit matrix
-   *this becomes the invert of A and is returned back.
- * @param A
- * @return inverse matrix of A
- */
-Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
-	qDebug()<< "Matrix::inverseByGaussJordanElimination()";
-	int n=A.cols();
-    qDebug()<<"Matrix::inverseByGaussJordanElimination() - build I size " << n
-             << " This will become A^-1 in the end";
-
-    identityMatrix( n );
-
-	int l=0, m_pivotLine=0;
-	float m_pivot=0, temp_pivot=0, elim_coef=0;
-
-    for ( int j=0; j< n; j++) { // for n, it is the last diagonal element of A
-	    l=j+1;
-	    m_pivotLine=-1;
-	    m_pivot = A.item(j,j);
-	    qDebug() << "inverseByGaussJordanElimination() at column " << j+1
-		    << " Initial pivot " << m_pivot ;
-        for ( int i=l; i<n; i++) {
-            temp_pivot = A.item(i,j);
-            if ( qFabs( temp_pivot ) > qFabs ( m_pivot ) ) {
-                qDebug() << " A("<< i+1 << ","<< j+1  << ") = " <<  temp_pivot
-                         << " absolutely larger than current pivot "<< m_pivot
-                         << ". Marking new pivot line: " << i+1;
-                m_pivotLine=i;
-                m_pivot = temp_pivot ;
-            }
-        }
-        if ( m_pivotLine != -1 ) {
-            A.swapRows(m_pivotLine,j);
-            swapRows(m_pivotLine,j);
-        }
-
-
-	    qDebug()<<"   multiplyRow() "<< j+1 << " by value " << 1/m_pivot ;
-        for ( int k=0; k<  rows(); k++) {
-            A.setItem ( j, k,  (1/m_pivot) * A.item (j, k) );
-            setItem ( j, k,  (1/m_pivot) * item (j, k) );
-            qDebug()<<"   A.item("<< j+1 << ","<< k+1 << ") = " <<  A.item(j,k);
-            qDebug()<<"   item("<< j+1 << ","<< k+1 << ") = " <<  item(j,k);
-        }
-
-	    qDebug() << "eliminate variables FromRowsBelow()" << j+1 ;
-        for ( int i=0; i<  rows(); i++) {
-		 qDebug()<<"   Eliminating item("<< i+1 << ","<< j+1 << ") = "
-			 <<  A.item(i,j) << " while at column j="<<j+1;
-		 if ( A.item(i,j)==0 ){
-		    qDebug()<< " ...already eliminated - continue";
-		    continue;
-		}
-		 if ( i == j){
-		     qDebug()<< " ...skip pivotline - continue";
-		    continue;
-		}
-		elim_coef=A.item (i, j);
-        for ( int k=0; k<  cols(); k++) {
-		    qDebug()<<"   A.item("<< i+1 << ","<< k+1 << ") = " <<  A.item(i,k)
-			    << " will be subtracted by " << " A.item ("<< i+1
-			    << ", "<< j+1 << ") x A.item(" << j+1 << ","<<k+1
-			    <<") =" << elim_coef * A.item(j,k) ;
-		    A.setItem ( i, k,   A.item (i, k) -  elim_coef * A.item(j, k)  );
-		    qDebug()<<"   A.item("<< i+1 << ","<< k+1 << ") = " <<  A.item(i,k);
-
-		    qDebug()<<"   item("<< i+1 << ","<< k+1 << ") = " <<  item(i,k)
-			    << " will be subtracted by " << " A.item ("<< i+1
-			    << ", "<< j+1 << ") x item(" << j+1 << ","<<k+1
-			    <<") =" << elim_coef * item(j,k)  <<  " = "
-			    << elim_coef << " x " << item(j,k) ;
-
-		    setItem ( i, k,   item (i, k) -  elim_coef * item(j, k)  );
-		    qDebug()<<"   item("<< i+1 << ","<< k+1 << ") = " <<  item(i,k);
-
-		}
-	    }
-
-	}
-	return *this;
-}
-
-
-
-/**
- * @brief Matrix::ludcmp(Matrix &a, const int &n, int *indx, float *d)
- * Given matrix a, it replaces a by the LU decomposition of a rowwise permutation of itself.
- * Used in combination with lubksb to solve linear equations or invert a matrix.
- * @param a: input matrix n x n and output arranged as in Knuth's equation (2.3.14)
- * @param n: input size of matrix
- * @param indx: output vector, records the row permutation effected by the partial pivoting
- * @param d: output as ±1 depending on whether the number of row interchanges was even or odd
- * @return:
- *
- * Code adapted from Knuth's Numerical Recipes in C, pp 46
- *
- */
-bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], float &d) {
-    qDebug () << "Matrix::ludcmp () - decomposing matrix a to L*U";
-    int i=0, j=0, imax=0, k;
-    float big,temp;
-    //vv=vector<float>(1,n);
-    float *vv;            // vv stores the implicit scaling of each row
-    vv=new (nothrow) float [n];
-    Q_CHECK_PTR( vv );
-
-//    QTextStream stream(stdout);
-//    stream << "a = LU = " << a ;
-
-    d=1.0;               // No row interchanges yet.
-
-    qDebug () << "Matrix::ludcmp() - loop over row to get scaling info" ;
-    for (i=0;i<n;i++) {  // Loop over rows to get the implicit scaling information.
-        qDebug () << "Matrix::ludcmp() - row i " <<  i+1;
-        big=0;
-        for (j=0;j<n;j++) {
-            if ((temp=fabs( a[i][j] ) ) > big)
-                big=temp;
-        }
-        if (big == 0)  //       No nonzero largest element.
-        {
-            qDebug() << "Matrix::ludcmp() - Singular matrix in routine ludcmp";
-            return false;
-        }
-        vv[i]=1.0/big;  //  Save the scaling.
-        qDebug () << "Matrix::ludcmp() - big element in row i " << i+1 << " is "<< big << " row scaling vv[i] " << vv[i];
-    }
-
-    qDebug () << "Matrix::ludcmp() - Start Crout's LOOP over columns";
-
-    for (j=0;j<n;j++) //     This is the loop over columns of Crout’s method.
-    {
-        qDebug () << "Matrix::ludcmp() - COLUMN j " <<  j+1 << " search largest pivot";
-        big=0;  //      Initialize for the search for largest pivot element.
-        imax = j;
-
-        for (i=j;i<n;i++)
-        {
-            if ( ( temp = vv[i] * fabs( a[i][j] ) ) > big)
-            {   //  Is the figure of merit for the pivot better than the best so far?
-                big=temp;
-                imax=i;
-                qDebug () << "Matrix::ludcmp() - found new largest pivot at row " <<  imax+1 << " big " << temp;
-            }
-        }
-
-        qDebug () << "Matrix::ludcmp() - check for row interchange ";
-        if (j != imax) //          Do we need to interchange rows?
-        {
-            qDebug () << "Matrix::ludcmp() - interchanging rows " << imax+1 << " and " << j+1;
-            for ( k=0; k<n; k++ ) { //            Yes, do so...
-                temp=a[imax][k];
-                a[imax][k] = a[j][k];
-                a[j][k] = temp;
-            }
-            d = -(d);  //..and change the parity of d.
-            vv[imax]=vv[j];  //         Also interchange the scale factor.
-            qDebug () << "Matrix::ludcmp() - imax  " << imax+1  << " vv[imax]" << vv[imax] << "new parity d " << d;
-        }
-        indx[j]=imax;
-        qDebug () << "Matrix::ludcmp() - indx[j]=imax=" <<  indx[j] +1;
-        if ( a[j][j] == 0 ) {
-            a[j][j] = TINY; // For some apps, on singular matrices, it is desirable to substitute TINY for zero.
-            qDebug () << "Matrix::ludcmp() - WARNING singular matrix set a[j][j]=TINY ";
-        }
-
-        for (i=j+1;i<n;i++) {
-            //     Now, divide by the pivot element.
-            temp=a[i][j] /=  a[j][j] ;
-            qDebug () << "Matrix::ludcmp() - j " << j+1<< " dividing by pivot " << a.item(j,j) << " temp  = " << temp;
-            for (k=j+1;k<n;k++) {       //reduce remaining submatrix
-                a[i][k] -= ( temp * a[j][k] );
-                qDebug () << "Matrix::ludcmp() - lower a["<< i+1 << "][" << k+1 <<"] = " << a[i][k];
-            }
-        }
-
-
-//           stream << endl << "at j " << j+1 << " matrix a = LU = " << a ;
-    }  // Go back for the next column in the reduction.
-
-
- //free_vector(vv,1,n);
-    qDebug () << "delete vector vv";
-    delete[] vv;
-
-
-//   stream << "final a = LU = " << a ;
-
-
-    return true;
-
-}
-
-
-
-
-/**
- * @brief Solves the set of n linear equations A·X = b, where A nxn matrix
- * decomposed as L·U (L lower triangular and U upper triangular)
- * by forward substitution and  backsubstitution.
- *
- * Given A = L·U we have
- * A · x = (L · U) · x = L · (U · x) = b
- * So, this routine first solves
- * L · y = b
- * for the vector y by forward substitution and then solves
- * U · x = y
- * for the vector x using backsubstitution
-
- * @param a: input matrix a as the LU decomposition of A, returned by the routine ludcmp
- * @param n: input size of matrix
- * @param indx: input vector, records the row permutation, returned by the routine ludcmp
- * @param b: input array as the right-hand side vector B, and ouput with the solution vector X
- * @return:
- *
- * a, n, and indx are not modified by this routine and can be left in place for
- * successive calls with different right-hand sides b.
- * This routine takes into account the possibility that b will begin with many
- * zero elements, so it is efficient for use in matrix inversion.
-
-* Code adapted from Knuth's Numerical Recipes in C, pp 47
- *
- */
-void Matrix::lubksb(Matrix &a, const int &n, int indx[], float b[])
-{
-    qDebug () << "Matrix::lubksb() - ";
-    int i, j, ii=0,ip;
-    float sum;
-    for ( i=0;i<n;i++) {  // When ii is set to a positive value, it will become the
-        ip=indx[i];       // index of the first nonvanishing element of b. We now
-        sum=b[ip];        // do the forward substitution, equation (2.3.6). The
-        b[ip]=b[i];       // only new wrinkle is to unscramble the permutation
-        if (ii != 0 )           // as we go.
-            for ( j=(ii-1);j<=i-1;j++)
-                sum -= a[i][j]*b[j];
-        else if (sum !=0 )     // A nonzero element was encountered, so from now on we
-            ii=i+1;         //  will have to do the sums in the loop above.
-        qDebug() << "Matrix::lubksb() "<< "i " << i  << " ip=indx[i] " << ip <<  " b[ip] " << b[ip] << " b[i] " << b[i] <<  "sum " << sum ;
-        b[i]=sum;
-    }
-    for ( i=(n-1);i>=0;i--) {  // Now we do the backsubstitution, equation (2.3.7).
-        sum=b[i];
-        qDebug() << "Matrix::lubksb() backsubstitution: "<< "i " << i  << " b[i] " << b[i] <<  "sum " << sum ;
-        for ( j=i+1;j<n;j++)
-            sum -= a[i][j]*b[j];
-        b[i]=sum/a[i][i]; //  Store a component of the solution vector X. All done!
-        qDebug() << "Matrix::lubksb() backsubstitution: "<< "i " << i  <<  "sum " << sum << " a[i][i] " << a[i][i]   << " b[i] " << b[i] ;
-    }
-}
-
-
-
-/**
- * @brief Computes and returns the inverse of given matrix a
- * Allows b.inverse(a)
- * @param a
- * @return
- */
-Matrix& Matrix::inverse(Matrix &a)
-{
-    int i,j, n=a.rows();
-    float d, col[n];
-
-    int indx[n];
-    qDebug () << "Matrix::inverse() - inverting matrix a - size " << n;
-    if (n==0) {
-        return (*this);
-    }
-    if ( ! ludcmp(a,n,indx,d) )
-    { //  Decompose the matrix just once.
-        qDebug () << "Matrix::inverse() - matrix a singular - RETURN";
-        return *this;
-    }
-
-    qDebug () << "Matrix::inverse() - find inverse by columns";
-    for ( j=0; j<n; j++) {    //    Find inverse by columns.
-        for( i=0; i<n; i++)
-            col[i]=0;
-        col[j]=1.0;
-
-        qDebug () << "Matrix::inverse() - call lubksb";
-        lubksb(a,n,indx,col);
-
-        for( i=0; i<n; i++) {
-             (*this)[i][j] = col[i];
-        }
-
-    }
-        qDebug () << "Matrix::inverse() - finished!";
-
-    return *this;
-}
-
-
-
 
 
 

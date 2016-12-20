@@ -111,5 +111,6 @@
         <file>images/degreematrix.png</file>
         <file>images/invertmatrix.png</file>
         <file>images/transposematrix.png</file>
+        <file>images/cocitation.png</file>
     </qresource>
 </RCC>
