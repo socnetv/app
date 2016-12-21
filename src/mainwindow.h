@@ -279,6 +279,7 @@ public slots:
     void slotEditEdgeColorAll(QColor color=QColor(), const int &threshold=RAND_MAX);
     void slotEditEdgeSymmetrizeAll();
     void slotEditEdgeSymmetrizeStrongTies();
+    void slotEditEdgeSymmetrizeCocitation();
     void slotEditEdgeUndirectedAll(const bool &toggle);
 
     void slotFilterNodes();
@@ -321,7 +322,7 @@ public slots:
     void slotAnalyzeWalksLength();
     void slotAnalyzeWalksTotal();
     void slotAnalyzeReachabilityMatrix();
-    void slotAnalyzeConnectivity();
+    void slotAnalyzeConnectedness();
 
     void slotAnalyzeClusteringHierarchical();
     void slotAnalyzeCliqueCensus();
@@ -517,7 +518,8 @@ private:
     QAction *transformNodes2EdgesAct, *editEdgeSymmetrizeAllAct;
     QAction *editEdgeSymmetrizeStrongTiesAct, *editEdgeUndirectedAllAct;
     QAction *changeBackColorAct, *editNodeColorAll, *editEdgeColorAllAct,
-            *editNodeNumbersColorAct,*editNodeLabelsColorAct;
+            *editNodeNumbersColorAct,*editNodeLabelsColorAct,
+            *editEdgesCocitationAct;
     QAction *optionsEdgeThicknessPerWeightAct, *optionsEdgeWeightNumbersAct, *optionsEdgesVisibilityAct;
     QAction *optionsEdgeArrowsAct, *drawEdgesBezier,*considerEdgeWeightsAct;
     QAction *optionsEdgeLabelsAct;
@@ -528,7 +530,7 @@ private:
 
     QAction *netDensity, *analyzeSymmetryAct, *graphDistanceAct, *averGraphDistanceAct,
             *distanceMatrixAct, *geodesicsMatrixAct, *diameterAct, *eccentricityAct;
-    QAction *walksAct,*totalWalksAct, *reachabilityMatrixAct, *connectivityAct;
+    QAction *walksAct,*totalWalksAct, *reachabilityMatrixAct, *connectednessAct;
     QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct;
     QAction *analyzeMatrixAdjTransposeAct, *analyzeMatrixAdjInvertAct;
     QAction *analyzeMatrixAdjCocitationAct;

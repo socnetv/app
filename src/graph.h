@@ -154,7 +154,7 @@ class GraphDistancesCompare {
     \todo Control Panel Options should be dropped (break the panel layout in laptops).
     \todo - CHECK weighted networks results (IRCC and distance matrix with other combinations)
     \todo - CHECK graphWeighted corner case results, when !graphModified.
-    \todo - CHECK graphConnectivity() algorithm implementation (m_vertexPairsUnilaterallyConnected)
+    \todo - CHECK graphConnectedness() algorithm implementation (m_vertexPairsUnilaterallyConnected)
 
   \bug Create d-regular, undirected, ask for closeness, it says we are on a disconnected graph
   \bug Crash on Graphml files with textlabels instead of nodenumbers (i.e. nets/killer.graphml)
@@ -523,6 +523,8 @@ public:
     void graphSymmetrize();
     void graphSymmetrizeStrongTies(const bool &allRelations=false);
 
+    void graphCocitation();
+
     void graphUndirectedSet(const bool &toggle, const bool &signalMW=true);
     bool graphUndirected();
 
@@ -659,7 +661,7 @@ public:
     int diameter(const bool considerWeights, const bool inverseWeights);
     float distanceGraphAverage(const bool considerWeights,
                                const bool inverseWeights, const bool dropIsolates);
-    int graphConnectivity(const bool updateProgress=false) ;
+    int graphConnectedness(const bool updateProgress=false) ;
 
     void distanceMatrixCreate(const bool &computeCentralities=false,
                               const bool &considerWeights=false,
@@ -918,7 +920,7 @@ private:
     bool initVertexNumberInside, initEdgeWeightNumbers, initEdgeLabels;
     float m_graphAverageDistance, m_graphGeodesicsCount;
     float m_graphDensity;
-    int m_graphConnectivity;
+    int m_graphConnectedness;
     int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
     int timerId,  canvasWidth, canvasHeight;
     bool calculatedEdges;

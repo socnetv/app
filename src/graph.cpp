@@ -2203,7 +2203,7 @@ int Graph::vertices(const bool dropIsolates, const bool countAll) {
  * Graph::graphMatrixAdjacencyCreate()
  * Graph::writeMatrixAdjacencyInvert()
  * Graph::centralityInformation()
- * Graph::graphConnectivity()
+ * Graph::graphConnectedness()
  * @return
  */
 QList<int> Graph::verticesListIsolated(){
@@ -2885,9 +2885,56 @@ void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
 
     graphModifiedSet(GRAPH_CHANGED_EDGES);
     qDebug()<< "Graph::graphSymmetrizeStrongTies()"
-            << "finaly relations"<<relations();
+            << "final relations"<<relations();
 }
 
+
+
+
+
+/**
+ * @brief Graph::graphCocitation
+ * @param allRelations
+ */
+void Graph::graphCocitation(){
+    qDebug()<< "Graph::graphCocitation()"
+            << "initial relations"<<relations();
+    int v1=0, v2=0, i=0, j=0, weight;
+
+    graphMatrixAdjacencyCreate();
+    Matrix *CT = new Matrix (AM.rows(), AM.cols());
+    *CT = AM.cocitation();
+
+    QList<Vertex*>::const_iterator it;
+    QList<Vertex*>::const_iterator it1;
+
+
+    relationAdd("Cocitation",true);
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        v1 = (*it)->name();
+
+        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
+            v2 = (*it)->name();
+            if ( (weight = CT->item(v1, v2) ) != 0 ) {
+                qDebug()<< "Graph::graphCocitation() - creating edge"
+                        << v1 << "<->" << v2
+                        << " - CT(" << i << "," <<  j << ") = " << weight;
+                edgeCreate( v1, v2, weight, initEdgeColor,
+                            EDGE_RECIPROCAL_UNDIRECTED, true, false,
+                            QString::null, false);
+            }
+            j ++;
+        }
+        i ++;
+    }
+
+    m_symmetric=true;
+
+    graphModifiedSet(GRAPH_CHANGED_EDGES);
+    qDebug()<< "Graph::graphCocitation()"
+            << "final relations"<<relations();
+}
 
 
 /**
@@ -3034,7 +3081,7 @@ float Graph::distanceGraphAverage(const bool considerWeights,
                    "or graph modified. Recomputing XRM";
         emit statusMessage ( tr("Computing Average Distance: "
                                 "Need to recompute Distances. Please wait...") );
-        graphConnectivity();
+        graphConnectedness();
 
     }
 
@@ -3078,7 +3125,7 @@ int Graph::graphGeodesics()  {
 
 
 /**
- * @brief Graph::graphConnectivity()
+ * @brief Graph::graphConnectedness()
  * @return int:
 
  * 2: strongly connected digraph (exists path from i to j and vice versa for every i,j)
@@ -3097,21 +3144,21 @@ int Graph::graphGeodesics()  {
  * MW::slotLayoutLevelByProminenceIndex(QString )
  *
  */
-int Graph::graphConnectivity(const bool updateProgress) {
-    qDebug() << "Graph::graphConnectivity() ";
+int Graph::graphConnectedness(const bool updateProgress) {
+    qDebug() << "Graph::graphConnectedness() ";
 
     if (calculatedDistances && !graphModified()) {
-        qDebug()<< "Graph::graphConnectivity() - graph unmodified. Returning:"
-                << m_graphConnectivity;
-        return m_graphConnectivity;
+        qDebug()<< "Graph::graphConnectedness() - graph unmodified. Returning:"
+                << m_graphConnectedness;
+        return m_graphConnectedness;
     }
     //initially if graph is undirected, assume it is connected.
     // if is directed, assume it is strongly connected.
     if ( graphUndirected() ) {
-        m_graphConnectivity = 1;
+        m_graphConnectedness = 1;
     }
     else {
-        m_graphConnectivity = 2;
+        m_graphConnectedness = 2;
     }
 
     distanceMatrixCreate(false, false,false,false);
@@ -3180,30 +3227,30 @@ int Graph::graphConnectivity(const bool updateProgress) {
     if ( graphUndirected() ) {
         if ( m_vertexPairsNotConnected.count()>0) {
             if (isolatedVertices)
-                m_graphConnectivity = -1;
+                m_graphConnectedness = -1;
             else
-                m_graphConnectivity = 0;
+                m_graphConnectedness = 0;
         }
         else
-            m_graphConnectivity = 1;
+            m_graphConnectedness = 1;
 
     }
     else {
         if (m_vertexPairsNotConnected.count()>0) {
             if (isolatedVertices)
-                m_graphConnectivity = -3;
+                m_graphConnectedness = -3;
             else
-                m_graphConnectivity = -4;
+                m_graphConnectedness = -4;
         }
         else if (m_vertexPairsUnilaterallyConnected.count() > 0) {
-            m_graphConnectivity = -2;
+            m_graphConnectedness = -2;
         }
         else
-            m_graphConnectivity = 2;
+            m_graphConnectedness = 2;
     }
 
 
-    return m_graphConnectivity;
+    return m_graphConnectedness;
 }
 
 
@@ -3317,7 +3364,7 @@ void Graph::writeEccentricity(
 
     }
 
-    if (graphConnectivity()) {
+    if (graphConnectedness()) {
 
     }
 
@@ -8919,7 +8966,10 @@ void Graph::writeMatrixWalks (const QString &fn,
                       "where each element (i,j) is the number of walks of "
                       "length %1 between actor i and actor j, "
                       "or 0 if no walk exists. <br />"
-                      "Warning: Walk counts consider unordered pairs of nodes. ").arg(length)
+                      "A walk is a sequence of edges and vertices, where each edge's "
+                      "endpoints are the two vertices adjacent to it. In a walk, "
+                      "vertices and edges may repeat. <br />"
+                      "Warning: Walks count unordered pairs of nodes. ").arg(length)
                 << "</p>";
     }
     else {
@@ -8928,7 +8978,10 @@ void Graph::writeMatrixWalks (const QString &fn,
                       "where each element (i,j) is the total number of walks of any "
                       "length (less than or equal to %1) between actor i and actor j, "
                       "or 0 if no walk exists. <br />"
-                      "Warning: Walk counts consider unordered pairs of nodes. ").arg(N-1)
+                      "A walk is a sequence of edges and vertices, where each edge's "
+                      "endpoints are the two vertices adjacent to it. In a walk, "
+                      "vertices and edges may repeat. <br />"
+                      "Warning: Walks count unordered pairs of nodes. ").arg(N-1)
                 << "</p>";
     }
     emit statusMessage(tr("Writing Walks matrix to file..."));
