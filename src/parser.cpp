@@ -3320,7 +3320,7 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
     QStringList lineElement,edgeElement;
     int columnCount=0;
     int fileLine = 0;
-    bool nodeNumberingZero = false, nodesWithLabels= false;
+    bool nodesWithLabels= false;
     //@TODO Always use nodesWithLabels= true
 
     QMap<QString, int> nodeMap;
@@ -3378,6 +3378,9 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
                            "nodesWithLabels = true";
                 nodesWithLabels = true;
             }
+            if ( edge_source == "0" ) {
+                nodesWithLabels = true;
+            }
         }
 
     }
@@ -3413,16 +3416,7 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
                         << edge_source;
 
                 if ( ! nodeMap.contains(edge_source) ) {
-                    if ( edge_source == "0" && !nodesWithLabels ) {
-                        nodeNumberingZero = true;
-                    }
-                    else if (edge_source == "0" && nodesWithLabels){
-                        errorMessage = tr("Line %1, column %2 has a node with "
-                                          "value 0, although other nodes are "
-                                          "named by strings.")
-                                .arg(fileLine).arg(columnCount);
-                        return false;
-                    }
+
 
                     totalNodes++;
                     Actor sourceActor;
@@ -3457,17 +3451,6 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
                         << edge_target;
 
                 if ( ! nodeMap.contains(edge_target) ) {
-
-                    if ( edge_target == "0" && !nodesWithLabels ) {
-                        nodeNumberingZero = true;
-                    }
-                    else if (edge_target == "0" && nodesWithLabels){
-                        errorMessage = tr("Line %1, column %2 has a node with "
-                                          "value 0, although other nodes are "
-                                          "named by strings.")
-                                .arg(fileLine).arg(columnCount);
-                        return false;
-                    }
 
                     totalNodes++;
                     Actor targetActor;
@@ -3568,7 +3551,6 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
          }
 
      }
-
 
 
     //create edges one by one
