@@ -1983,13 +1983,13 @@ void MainWindow::initActions(){
 
 
 
-    similarityExactMatchesAct = new QAction(QIcon(":/images/similarity.png"), tr("Tie/Distance Matching (Exact, Jaccard, Hamming)"),this);
+    similarityExactMatchesAct = new QAction(QIcon(":/images/similarity.png"), tr("Similarity matrix by measure (Exact, Jaccard, Hamming, Cosine)"),this);
     similarityExactMatchesAct-> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_E)
                 );
-    similarityExactMatchesAct->setStatusTip(tr("Compute pair-wise actor similarity based on a measure of their ties (or distances) \"matches\" ."));
+    similarityExactMatchesAct->setStatusTip(tr("Compute pair-wise actor similarity matrix based on a measure of their ties (or distances) \"matches\" ."));
     similarityExactMatchesAct->setWhatsThis(
-                tr("Matches: Exact, Jaccard, Hamming etc\n\n"
+                tr("Matches: Exact, Jaccard, Hamming, Cosine etc\n\n"
                    "Computes a pair-wise actor similarity matrix, where each element (i,j) is "
                    "the ratio of tie (or distance) matches of actors i and j to all other actors. \n\n"
                    "SocNetV supports the following matching measures:"
