@@ -2156,6 +2156,26 @@ void MainWindow::initActions(){
                    "Note: To compute this index, SocNetV drops all isolated nodes."));
     connect(cInformationAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityInformation()));
 
+
+    cEigenvectorAct = new QAction(tr("Eigenvector Centrality (EVC)"),	this);
+    cEigenvectorAct-> setShortcut(Qt::CTRL + Qt::Key_9);
+    cEigenvectorAct->setEnabled(true);
+    cEigenvectorAct->setStatusTip(tr("Compute Eigenvector Centrality indices and group Eigenvector Centralization"));
+    cEigenvectorAct->setWhatsThis(
+                tr("Eigenvector Centrality (EVC)\n\n"
+                   "Computes the Eigenvector centrality of each node in a social network "
+                   "which is defined as the ith element of the leading eigenvector "
+                   "of the adjacency matrix. The leading eigenvector is the "
+                   "eigenvector corresponding to the largest positive eigevalue."
+                   "The Eigenvector Centrality, proposed by Bonacich (1989), is "
+                   "an extension of the simpler Degree Centrality because it gives "
+                   "each actor a score proportional to the scores of its neighbors. "
+                   "Thus, a node may be important, in terms of its EC, because it "
+                   "has lots of ties or it has fewer ties to important other nodes."));
+    connect(cInformationAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityEigenvector()));
+
+
+
     cInDegreeAct = new QAction(tr("Degree Prestige (DP)"),	 this);
     cInDegreeAct->setStatusTip(tr("Compute Degree Prestige (InDegree) indices "));
     cInDegreeAct-> setShortcut(Qt::CTRL + Qt::Key_I);
@@ -2667,6 +2687,7 @@ void MainWindow::initMenuBar() {
     centrlMenu -> addAction (cEccentAct);
     centrlMenu -> addAction (cPowerAct);
     centrlMenu -> addAction (cInformationAct);
+    centrlMenu -> addAction (cEigenvectorAct);
     centrlMenu -> addSection(QIcon(":/images/prestige.png"), tr("Prestige"));
     centrlMenu -> addAction (cInDegreeAct);
     centrlMenu -> addAction (cPageRankAct);
@@ -11063,6 +11084,65 @@ void MainWindow::slotAnalyzeCentralityInformation(){
     statusMessage(tr("Information Centralities saved as: ")+ fn);
 }
 
+
+
+
+
+
+/**
+ * @brief Writes Eigenvector Centralities into a file, then displays it.
+ */
+void MainWindow::slotAnalyzeCentralityEigenvector(){
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+    if (activeNodes() > 200) {
+        switch(
+               QMessageBox::critical(
+                   this, "Slow function warning",
+                   tr("Please note that this function is <b>SLOW</b> on large "
+                      "networks (n>200), because it uses Power Iteration until it converge."
+
+                      "Are you sure you want to continue?"), QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
+        case QMessageBox::Ok:
+            break;
+
+        case QMessageBox::Cancel:
+            // Cancel was clicked
+            return;
+            break;
+        default:
+            // should never be reached
+            break;
+        }
+    }
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_eigenvector.html";
+    statusMessage(  QString(tr(" Please wait...")));
+
+    askAboutWeights();
+
+    statusMessage(  QString(tr("Computing Eigenvector Centrality. Please wait...")) );
+    progressMsg = tr("Computing Eigenvector Centrality. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
+
+    activeGraph.writeCentralityEigenvector(fn,considerWeights, inverseWeights);
+
+    destroyProgressBar();
+
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
+    statusMessage(tr("Eigenvector Centralities saved as: ")+ fn);
+}
 
 
 

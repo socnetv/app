@@ -602,6 +602,9 @@ public:
     void writeCentralityInformation(const QString,
                                     const bool weigths,
                                     const bool inverseWeights);
+    void writeCentralityEigenvector(const QString,
+                                    const bool weigths,
+                                    const bool inverseWeights);
     void writePrestigeDegree(const QString, const bool weights,
                              const bool dropIsolates);
     void writePrestigeProximity(const QString, const bool weights,
@@ -668,6 +671,8 @@ public:
                               const bool &dropIsolates=false);
     void centralityDegree(const bool weights, const bool dropIsolates=false);
     void centralityInformation(const bool considerWeights=false,
+                               const bool inverseWeights=false);
+    void centralityEigenvector(const bool considerWeights=false,
                                const bool inverseWeights=false);
     void centralityClosenessInfluenceRange(const bool considerWeights=false,
                                            const bool inverseWeights=false,
@@ -878,6 +883,7 @@ private:
     float meanEC, varianceEC;
     float meanPC, variancePC;
     float meanIC, varianceIC;
+    float meanEVC, varianceEVC;
     float meanDP, varianceDP;
     float meanPP, variancePP;
     float meanPRP, variancePRP;
@@ -891,8 +897,10 @@ private:
     float minSC, maxSC, nomSC, denomSC, sumSC, groupSC, maxIndexSC;
     float minEC, maxEC, nomEC, denomEC, sumEC, groupEC, maxIndexEC;
     float minIC, maxIC, nomIC, denomIC, sumIC, maxIndexIC;
+    float minEVC, maxEVC, nomEVC, denomEVC, sumEVC, groupEVC;
     float minPRP, maxPRP, nomPRC, denomPRC, t_sumPC, t_sumPRP, sumPRP;
     float minPP, maxPP, nomPP, denomPP, sumPP, groupPP;
+
     float minCLC, maxCLC, averageCLC,varianceCLC, d_factor;
     int maxNodeCLC, minNodeCLC;
     int classesDP, maxNodeDP, minNodeDP;
@@ -907,6 +915,7 @@ private:
     int classesIC, maxNodeIC, minNodeIC;
     int classesPRP, maxNodePRP, minNodePRP;
     int classesPP, maxNodePP, minNodePP;
+    int classesEVC, maxNodeEVC, minNodeEVC;
     int sizeOfComponent;
 
     /** General & initialisation variables */

@@ -257,14 +257,17 @@ public:
     void setCLC(float clucof)  { m_CLC=clucof; m_hasCLC=true; }
     bool hasCLC() { 	return m_hasCLC; }
 
+    void setEVC (float c){ m_EVC=c;} 	/* Sets vertex Degree Centrality*/
+    void setSEVC (float c ) { m_EVC=c;}	/* Sets standard vertex Degree Centrality*/
+    float EVC() { return m_EVC;}		/* Returns vertex Degree Centrality*/
+    float SEVC() { return m_SEVC;}		/* Returns standard vertex Degree Centrality*/
+
 
     int cliques (const int &ofSize);
 
     void cliqueAdd (const QList<int> &clique);
 
-    void clearCliques() {
-        m_cliques.clear();
-    }
+    void clearCliques() {  m_cliques.clear();    }
 
     //hold all outbound and inboud edges of this vertex.
     H_edges m_outEdges, m_inEdges;
@@ -284,7 +287,8 @@ private:
     float m_delta, m_EC, m_SEC;
     float m_DC, m_SDC, m_DP, m_SDP, m_CC, m_SCC, m_BC, m_SBC, m_IRCC, m_SIRCC, m_SC, m_SSC;
     float m_PC, m_SPC, m_SIC, m_IC, m_SPRC, m_PRC;
-    float m_PP, m_SPP;
+    float m_PP, m_SPP, m_EVC, m_SEVC;
+
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape;
     QPointF m_disp;
 

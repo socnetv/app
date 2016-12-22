@@ -4704,6 +4704,222 @@ void Graph::writeCentralityInformation(const QString fileName,
 
 
 
+
+
+//Writes the eigenvector centralities to a file
+void Graph::writeCentralityEigenvector(const QString fileName,
+                                       const bool considerWeights,
+                                       const bool inverseWeights){
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
+        return;
+    }
+    QTextStream outText ( &file );
+    outText.setCodec("UTF-8");
+    if (graphModified() || !calculatedIC ) {
+            emit statusMessage ( (tr("Calculating EVC scores...")) );
+            centralityEigenvector(considerWeights, inverseWeights);
+    }
+
+    emit statusMessage ( QString(tr("Writing information centralities to file: "))
+                         .arg(fileName) );
+    outText.setRealNumberPrecision(m_precision);
+
+    int rowCount=0;
+
+    outText << htmlHead;
+
+    outText << "<h1>";
+    outText << tr("EIGENVECTOR CENTRALITY (EVC)");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << vertices()
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("The Eigenvector Centrality of each node is the ith element of "
+                  "the leading eigenvector of the adjacency matrix, that is the "
+                  "eigenvector corresponding to the largest positive eigevalue."
+                  "Proposed by Bonacich (1989), the Eigenvector Centrality is "
+                  "an extension of the simpler Degree Centrality because it gives "
+                  "each actor a score proportional to the scores of its neighbors. "
+                  "Thus, a node may be important, in terms of its EC, because it "
+                  "has lots of ties or it has fewer ties to important other nodes.")
+            << "<br />"
+            << tr("EVC' is the standardized EVC (EVC divided by the sumEVC).")
+            << "<br />"
+            << "</p>";
+
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("EVC range: ")
+            <<"</span>"
+            << tr("0 &le; EVC &le; \xE2\x88\x9E")
+            << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("EVC' range: ")
+            <<"</span>"
+            << tr("0 &le; EVC &le; 1")
+            << "</p>";
+
+
+    outText << "<table class=\"stripes\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th>"
+            << tr("Node")
+            << "</th><th>"
+            << tr("Label")
+            << "</th><th>"
+            << tr("EVC")
+            << "</th><th>"
+            << tr("EVC'")
+            << "</th><th>"
+            << tr("%EVC")
+            <<"</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody>";
+
+    QList<Vertex*>::const_iterator it;
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
+        rowCount++;
+
+        outText <<fixed;
+
+        outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                <<"<td>"
+                << (*it)->name()
+                << "</td><td>"
+                << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                << "</td><td>"
+                << (*it)->EVC()
+                << "</td><td>"
+                << (*it)->SEVC()
+                << "</td><td>"
+                << (100* ((*it)->SEVC()))
+                << "</td>"
+                <<"</tr>";
+
+    }
+
+
+    outText << "</tbody></table>";
+
+    if ( minIC ==  maxIC) {
+        outText << "<p>"
+                << tr("All nodes have the same IC score.")
+                << "</p>";
+    }
+    else {
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("Max EVC' = ")
+                <<"</span>"
+               << maxEVC <<" (node "<< maxNodeEVC  <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("Min EVC' = ")
+               <<"</span>"
+               << minEVC <<" (node "<< minNodeEVC <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("EVC classes = ")
+               <<"</span>"
+               << classesEVC
+               << "</p>";
+    }
+
+    outText << "<p>";
+    outText << "<span class=\"info\">"
+            << tr("IC' Sum = ")
+            <<"</span>"
+            << sumEVC
+            <<"<br/>"
+           << "<span class=\"info\">"
+            << tr("IC' Mean = ")
+            <<"</span>"
+            << meanEVC
+            <<"<br/>"
+            << "<span class=\"info\">"
+            << tr("IC' Variance = ")
+            <<"</span>"
+            << varianceEVC
+            <<"<br/>";
+    outText << "</p>";
+
+
+    outText << "<h2>";
+    outText << tr("GROUP EIGENVECTOR CENTRALISATION (GEC)")
+            << "</h2>";
+
+    outText << "<p>"
+            << tr("Since there is no way to compute Group Eigenvector Centralization, <br />"
+                  "you can use Variance as a general centralization index. <br /><br />")
+            << "<span class=\"info\">"
+            << tr("Variance = ")
+            <<"</span>"
+            <<  varianceEVC
+             << "</p>";
+
+
+    outText << "<p class=\"description\">"
+            << tr("Variance = 0, when all nodes have the same EVC value, i.e. a "
+                  "complete or a circle graph). <br />")
+            << tr("Larger values of variance suggest larger variability between the "
+                  "EVC' values. <br />")
+            <<"(Wasserman & Faust, formula 5.20, p. 197)\n\n"
+            << "</p>";
+
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Eigenvector Centrality report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualiser</a> v")
+            << VERSION << ": "
+            << actualDateTime.currentDateTime()
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+    file.close();
+
+}
+
+
+
+/**
+ * @brief Computes Eigenvector centrality
+ * @param considerWeights
+ * @param inverseWeights
+ */
+void Graph::centralityEigenvector(const bool considerWeights,
+                           const bool inverseWeights) {
+
+}
+
+
+
 //Calculates the degree (outDegree) centrality of each vertex - diagonal included
 void Graph::centralityDegree(const bool weights, const bool dropIsolates){
     qDebug("Graph::centralityDegree()");

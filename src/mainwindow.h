@@ -341,6 +341,7 @@ public slots:
     void slotAnalyzeCentralityClosenessIR();
     void slotAnalyzeCentralityBetweenness();
     void slotAnalyzeCentralityInformation();
+    void slotAnalyzeCentralityEigenvector();
     void slotAnalyzeCentralityStress();
     void slotAnalyzeCentralityPower();
     void slotAnalyzeCentralityEccentricity();
@@ -538,8 +539,8 @@ private:
     QAction *clusteringHierarchicalAct, *similarityPearsonAct;
     QAction *similarityExactMatchesAct;
     QAction *cDegreeAct, *cInDegreeAct, *cClosenessAct, *cInfluenceRangeClosenessAct,
-            *cBetweennessAct, *cInformationAct, *cPageRankAct, *cStressAct,
-            *cPowerAct, *cEccentAct, *cProximityPrestigeAct;
+            *cBetweennessAct, *cInformationAct, *cEigenvectorAct, *cPageRankAct,
+            *cStressAct, *cPowerAct, *cEccentAct, *cProximityPrestigeAct;
     QAction *randLayoutAct, *randCircleLayoutAct, *layoutGuidesAct;
     QAction *layoutCircular_DC_Act, *layoutCircular_DP_Act,
     *layoutCircular_CC_Act, *layoutCircular_SC_Act, *layoutCircular_EC_Act,
