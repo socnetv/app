@@ -870,7 +870,7 @@ private:
     /** used in resolveClasses and distanceMatrixCreate() */
     H_StrToInt discreteDPs, discreteDCs, discreteCCs, discreteBCs, discreteSCs;
     H_StrToInt discreteIRCCs, discreteECs, discreteEccentricities;
-    H_StrToInt discretePCs, discreteICs,  discretePRPs, discretePPs;
+    H_StrToInt discretePCs, discreteICs,  discretePRPs, discretePPs, discreteEVCs;
 
     int m_precision, m_fieldWidth, m_curRelation, m_fileFormat, m_vertexClicked;
     ClickedEdge m_clickedEdge;

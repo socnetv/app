@@ -4916,6 +4916,25 @@ void Graph::writeCentralityEigenvector(const QString fileName,
 void Graph::centralityEigenvector(const bool considerWeights,
                            const bool inverseWeights) {
 
+    qDebug("Graph::centralityEigenvector()");
+    if (!graphModified() && calculatedEVC ) {
+        qDebug() << "Graph::centralityEigenvector() - graph not changed - returning";
+        return;
+    }
+
+    float EVC=0, nom=0, denom=0,  SEVC=0;
+    float weight;
+    classesEVC=0;
+    discreteEVCs.clear();
+    sumEVC=0;
+    t_sumEVC=0;
+    maxEVC=0;
+    minEVC=RAND_MAX;
+    varianceEVC=0;
+    meanEVC=0;
+    int N=vertices(dropIsolates);
+
+
 }
 
 
