@@ -179,7 +179,7 @@ public:
     Matrix& operator *(Matrix & b);
     void operator *=(Matrix & b);
 
-    void product( Matrix &a, Matrix & b, bool symmetry=false) ;
+    void product( Matrix &A, Matrix & B, bool symmetry=false) ;
 
     Matrix & productSym( Matrix &a, Matrix & b)  ;
 

@@ -461,8 +461,6 @@ void Matrix::operator +=(Matrix & b) {
     for (int i=0;i< rows();i++)
         for (int j=0;j<cols();j++)
             setItem(i,j, item(i,j)+b.item(i,j));
-
-
 }
 
 
@@ -475,7 +473,6 @@ void Matrix::operator +=(Matrix & b) {
 */
 Matrix& Matrix::operator +(Matrix & b) {
     Matrix *S = new Matrix(rows(), cols());
-    //S->zeroMatrix(rows(), cols());
     qDebug()<< "Matrix::operator +";
     for (int i=0;i< rows();i++)
         for (int j=0;j<cols();j++)
@@ -493,7 +490,6 @@ Matrix& Matrix::operator +(Matrix & b) {
 */
 Matrix& Matrix::operator -(Matrix & b) {
     Matrix *S = new Matrix(rows(), cols() );
-    //S->zeroMatrix(rows(), cols());
     qDebug()<< "Matrix::operator -";
     for (int i=0;i< rows();i++)
         for (int j=0;j<cols();j++)
@@ -508,7 +504,6 @@ Matrix& Matrix::operator -(Matrix & b) {
  * Multiplies (right) this matrix with given matrix b.
  * Allows P = A * B where A,B of same dimension
 * and returns product as a reference to the calling object
-* NOTE: do not use it as B.product(A,B) because it will destroy B on the way.
 * @param b
 * @param symmetry
 * @return
@@ -516,22 +511,24 @@ Matrix& Matrix::operator -(Matrix & b) {
 Matrix& Matrix::operator *(Matrix & b) {
 
     qDebug()<< "Matrix::operator *";
+
     Matrix *P = new Matrix(rows(), cols());
 
-    //P->zeroMatrix(rows(), cols());
+    if ( cols() != b.rows() ) {
+        qDebug()<< "Matrix::product() - ERROR! Non compatible input matrices:"
+                   " this("
+                << rows() << "," << cols()
+                << ") and b(" << b.rows() << ","<< b.cols();
+        return *P;
+    }
 
     for (int i=0;i< rows();i++)
-        for (int j=0;j<cols();j++) {
+        for (int j=0;j<b.cols();j++) {
             P->setItem(i,j,0);
-            for (int k=0;k<m_rows;k++) {
-//                qDebug() << "Matrix::operator *() - a("<< i+1 << ","<< k+1 << ")="
-//                         << a.item(i,k) << "* b("<< k+1 << ","<< j+1 << ")="
-//                         << b.item(k,j)  << " gives "  << a.item(i,k)*b.item(k,j);
+            for (int k=0;k< cols();k++) {
                     P->setItem(i,j, P->item(i,j) + item(i,k)*b.item(k,j) );
 
             }
-//            qDebug() << "Matrix::operator * - ("<< i+1 << ","<< j+1 << ") = "
-//                     << P->item(i,j);
         }
     return *P;
 }
@@ -539,9 +536,9 @@ Matrix& Matrix::operator *(Matrix & b) {
 
 
 /**
-* @brief Multiplies (right) this matrix with given matrix b and returns the product
-* in this matrix.
-* This convenience operator *= allows A *= B where A,B of same dimension
+* @brief Multiplies (right) this m x n matrix with given n x p matrix b
+* and returns the product in the calling matrix which becomes an m x p matrix.
+* This convenience operator *= allows A *= B
 * @param b
 * @param symmetry
 * @return
@@ -549,64 +546,73 @@ Matrix& Matrix::operator *(Matrix & b) {
 void Matrix::operator *=(Matrix & b) {
 
     qDebug()<< "Matrix::operator *";
-    Matrix *P = new Matrix(rows(), cols());
-    //P->zeroMatrix(rows(), cols());
+
+    if ( cols() != b.rows() ) {
+        qDebug()<< "Matrix::product() - ERROR! Non compatible input matrices:"
+                   " this("
+                << rows() << "," << cols()
+                << ") and b(" << b.rows() << ","<< b.cols();
+        return;
+    }
+
+    Matrix *P = new Matrix(rows(), b.cols());
 
     for (int i=0;i< rows();i++) {
-        for (int j=0;j<cols();j++) {
+        for (int j=0;j<b.cols();j++) {
             P->setItem(i,j,0);
-            for (int k=0;k<m_rows;k++) {
-//                qDebug() << "Matrix::product() - a("<< i+1 << ","<< k+1 << ")="
-//                         << a.item(i,k) << "* b("<< k+1 << ","<< j+1 << ")="
-//                         << b.item(k,j)  << " gives "  << a.item(i,k)*b.item(k,j);
+            for (int k=0;k < cols();k++) {
                     P->setItem(i,j, P->item(i,j) + item(i,k)*b.item(k,j) );
-
             }
-//            qDebug() << "Matrix::operator * - ("<< i+1 << ","<< j+1 << ") = "
-//                     << P->item(i,j);
         }
     }
-    for (int i=0;i< rows();i++){
-        for (int j=0;j<cols();j++) {
-            setItem(i,j, P->item(i,j) );
-        }
-    }
+    *this = *P;
 }
 
 
 
 
 /**
- * @brief Matrix Multiplication. Given two matrices a and b of the same dimension
- * computes their product and stores it to the calling object
- * Allows P.product(a , b) where P, a and b are not the same initially.
-
- * NOTE: do not use it as B=product(A,B) because it will destroy B on the way.
- * @param a
- * @param b
+ * @brief Matrix Multiplication. Given two matrices A (mxn) and B (nxp)
+ * computes their product and stores it to the calling matrix which becomes
+ * an m x p matrix
+ * Allows P.product(A, B)
+ * @param A
+ * @param B
  * @param symmetry
- * @return
+ * @return i x k matrix
  */
-void Matrix::product( Matrix &a, Matrix & b, bool symmetry)  {
-    qDebug()<< "Matrix::product()";
-    for (int i=0;i< rows();i++)
-        for (int j=0;j<cols();j++) {
-            setItem(i,j,0);
+void Matrix::product(Matrix &A, Matrix & B, bool symmetry)  {
+    qDebug()<< "Matrix::product() - symmetry" << symmetry;
+
+    if (A.cols() != B.rows() ) {
+        qDebug()<< "Matrix::product() - ERROR! Non compatible input matrices:"
+                   " a("
+                << A.rows() << "," << A.cols()
+                << ") and b(" << B.rows() << ","<< B.cols();
+        return;
+    }
+
+    Matrix *P = new Matrix(A.rows(), B.cols());
+
+    float prod = 0;
+
+    for (int i=0;i< A.rows();i++) {
+        for (int j=0;j<B.cols();j++) {
             if (symmetry && i > j ) continue;
-            for (int k=0;k<m_rows;k++) {
-//                qDebug() << "Matrix::product() - a("<< i+1 << ","<< k+1 << ")="
-//                         << a.item(i,k) << "* b("<< k+1 << ","<< j+1 << ")="
-//                         << b.item(k,j)  << " gives "  << a.item(i,k)*b.item(k,j);
-                setItem(i,j, item(i,j)+a.item(i,k)*b.item(k,j));
+            prod = 0;
+            for (int k=0;k<A.cols();k++) {
+                prod += A.item(i,k)*B.item(k,j);
             }
+            P->setItem(i,j, prod);
             if (symmetry) {
-                setItem(j,i, item(i,j) );
+               P->setItem(j,i, prod );
             }
-            qDebug() << "Matrix::product() - ("<< i+1 << ","<< j+1 << ") = "
-                     << item(i,j);
         }
-            qDebug() << "Matrix::product() - this";
-   // this->printMatrixConsole();
+    }
+//    qDebug() << "Matrix::product() - this";
+    *this = *P;
+
+    //this->printMatrixConsole();
 }
 
 
@@ -1777,6 +1783,45 @@ bool Matrix::printHTMLTable(QTextStream& os, const bool markDiag, const bool &pl
     maxAbsVal = ( fabs(minVal) > fabs(maxVal) ) ? fabs(minVal) : fabs(maxVal) ;
 
     os <<  ( (hasRealNumbers) ? qSetRealNumberPrecision(3) : qSetRealNumberPrecision(0) ) ;
+
+    if (plain) {
+        os << "<pre>";
+
+        // print first/header row
+        os << "<span class=\"header\">" << qSetFieldWidth(5) << right << "A/A";
+        os <<  fixed << qSetFieldWidth(10) << right ;
+        for (int r = 0; r < cols(); ++r) {
+            actorNumber = r+1;
+            os << actorNumber;
+        }
+        os << qSetFieldWidth(0) << "</span>"<< endl;
+
+        for (int r = 0; r < rows(); ++r) {
+            actorNumber = r+1;
+            rowCount++;
+
+            os << "<span class=\"header\">" << qSetFieldWidth(5) << right;
+            os << actorNumber;
+            os << qSetFieldWidth(0) << "</span>";
+
+            for (int c = 0; c < cols(); ++c) {
+                element = item(r,c) ;
+                os << fixed << qSetFieldWidth(10) << right;
+                if ( element == -1 || element == RAND_MAX)  // print inf symbol instead of -1 (distances matrix).
+                    os << infinity;
+                else {
+                    os << element ;
+
+                }
+               // os << "";
+            }
+
+            os << qSetFieldWidth(0) << endl;
+        }
+
+        os << "</pre>";
+        return true;
+    }
 
     os << "<table  border=\"1\" cellspacing=\"0\" cellpadding=\"0\" class=\"stripes\">"
             << "<thead>"
