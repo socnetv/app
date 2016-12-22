@@ -151,7 +151,6 @@ class GraphDistancesCompare {
     \todo Group edge editing: i.e. change weight or color.
     \todo Enrich Node properties dialog
     \todo Update app icons
-    \todo Control Panel Options should be dropped (break the panel layout in laptops).
     \todo - CHECK weighted networks results (IRCC and distance matrix with other combinations)
     \todo - CHECK graphWeighted corner case results, when !graphModified.
     \todo - CHECK graphConnectedness() algorithm implementation (m_vertexPairsUnilaterallyConnected)

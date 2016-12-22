@@ -1778,6 +1778,7 @@ bool Matrix::printHTMLTable(QTextStream& os, const bool markDiag, const bool &pl
     int actorNumber=0, rowCount = 0;
     float maxVal, minVal, maxAbsVal, element;
     bool hasRealNumbers=false;
+
     findMinMaxValues(minVal, maxVal, hasRealNumbers);
 
     maxAbsVal = ( fabs(minVal) > fabs(maxVal) ) ? fabs(minVal) : fabs(maxVal) ;
