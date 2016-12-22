@@ -566,7 +566,7 @@ private:
     int fortuneCookiesCounter;
     //QString VERSION;
 
-    bool markedNodesExist, showProgressBar;
+    bool markedNodesExist;
     bool considerWeights, inverseWeights, askedAboutWeights;
     float randomErdosEdgeProb;
     QString initFileCodec;

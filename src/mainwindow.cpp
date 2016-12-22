@@ -235,6 +235,7 @@ QMap<QString,QString> MainWindow::initSettings(){
     appSettings["initBackgroundColor"]="white"; //"gainsboro";
     appSettings["initBackgroundImage"]="";
     appSettings["printDebug"] = (printDebug) ? "true" : "false";
+    appSettings["viewReportsInSystemBrowser"] = "true";
     appSettings["showProgressBar"] = "true";
     appSettings["showToolBar"] = "true";
     appSettings["showStatusBar"] = "true";
@@ -6340,9 +6341,14 @@ void MainWindow::slotNetworkViewSociomatrix(){
     activeGraph.writeMatrixAdjacency(fn) ;
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
     statusMessage(tr("Adjacency matrix saved as ") + fn);
 }
 
@@ -6391,9 +6397,15 @@ void MainWindow::slotNetworkViewSociomatrixPlotText(){
     statusMessage(tr("Plot file created. Please wait to open it..."));
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage(tr("Visual form of adjacency matrix saved as ") + fn);
 }
 
@@ -8525,8 +8537,8 @@ void MainWindow::slotEditEdgeSymmetrizeAll(){
 
 
 /**
- * @brief Add a new symmetric relation with ties only between pairs of nodes
- * who are cocited by other.
+ * @brief Adds a new symmetric relation with ties only between pairs of nodes
+ * who are cocited by others.
  */
 void MainWindow::slotEditEdgeSymmetrizeCocitation(){
     if ( activeEdges() ==0 )  {
@@ -9585,10 +9597,15 @@ void MainWindow::slotAnalyzeMatrixAdjacencyInverse(){
     int msecs = timer.elapsed();
     statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->setWindowTitle(tr("Inverse adjacency matrix saved as ") + fn);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage(tr("Inverse matrix saved as: ")+fn);
 }
 
@@ -9616,10 +9633,15 @@ void MainWindow::slotAnalyzeMatrixAdjacencyTranspose(){
     int msecs = timer.elapsed();
     statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->setWindowTitle(tr("Transpose adjacency matrix saved as ") + fn);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage(tr("Transpose adjacency matrix saved as: ")+fn);
 }
 
@@ -9645,10 +9667,15 @@ void MainWindow::slotAnalyzeMatrixAdjacencyCocitation(){
     int msecs = timer.elapsed();
     statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->setWindowTitle(tr("Cocitation matrix saved as ") + fn);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage(tr("Cocitation matrix saved as: ")+fn);
 }
 
@@ -9675,10 +9702,15 @@ void MainWindow::slotAnalyzeMatrixDegree(){
     int msecs = timer.elapsed();
     statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->setWindowTitle(tr("Degree matrix saved as ") + fn);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage(tr("Degree matrix saved as: ")+fn);
 }
 
@@ -9704,10 +9736,15 @@ void MainWindow::slotAnalyzeMatrixLaplacian(){
     int msecs = timer.elapsed();
     statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->setWindowTitle(tr("Laplacian matrix saved as ") + fn);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage(tr("Laplacian matrix saved as: ")+fn);
 }
 
@@ -9879,9 +9916,15 @@ void MainWindow::slotAnalyzeMatrixDistances(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage(tr("Distances matrix saved as: ")+fn);
 }
 
@@ -9919,9 +9962,15 @@ void MainWindow::slotAnalyzeMatrixGeodesics(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage(tr("Geodesics Matrix saved as: ") + fn);
 }
 
@@ -10026,9 +10075,15 @@ void MainWindow::slotAnalyzeEccentricity(){
                 editFilterNodesIsolatesAct->isChecked());
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage(tr("Eccentricity report saved as: ") + fn );
 }
 
@@ -10136,9 +10191,15 @@ void MainWindow::slotAnalyzeWalksLength(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage(tr("Matrix: Walks of length %1 saved as: ").arg(length) + fn );
 }
 
@@ -10188,9 +10249,15 @@ void MainWindow::slotAnalyzeWalksTotal(){
     activeGraph.writeMatrixWalks(fn);
     destroyProgressBar(activeNodes()-1); // do not check for progress bar
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage("Total number of walks saved as: " + fn);
 
 }
@@ -10220,9 +10287,15 @@ void MainWindow::slotAnalyzeReachabilityMatrix(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage("Reachability Matrix saved as: " + fn );
 }
 
@@ -10299,9 +10372,15 @@ void MainWindow::slotAnalyzeClusteringHierarchical(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,false);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,false);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage("Hierarchical cluster analysis saved as: " + fn);
 
 }
@@ -10328,9 +10407,15 @@ void MainWindow::slotAnalyzeCliqueCensus(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage("Clique Census saved as: " + fn);
 }
 
@@ -10361,9 +10446,15 @@ void MainWindow::slotAnalyzeClusteringCoefficient (){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage("Clustering Coefficient report saved as: " + fn);
 }
 
@@ -10412,9 +10503,15 @@ void MainWindow::slotAnalyzeSimilarityMatching(const QString &matrix,
     activeGraph.writeSimilarityMatching( fn, measure, matrix, varLocation, diagonal,considerWeights);
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage("Similarity matrix saved as: " + fn);
 }
 
@@ -10460,9 +10557,15 @@ void MainWindow::slotAnalyzeSimilarityPearson(const QString &matrix,
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage("Pearson Correlation Coefficients saved as: " + fn);
 }
 
@@ -10489,9 +10592,15 @@ void MainWindow::slotAnalyzeTriadCensus() {
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage("Triad Census saved as: " + fn);
 }
 
@@ -10541,9 +10650,15 @@ void MainWindow::slotAnalyzeCentralityDegree(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage(tr("Out-Degree Centralities saved as: ") + fn);
 }
 
@@ -10643,9 +10758,15 @@ void MainWindow::slotAnalyzeCentralityCloseness(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage(tr("Closeness Centralities  saved as: ") + fn);
 }
 
@@ -10681,9 +10802,15 @@ void MainWindow::slotAnalyzeCentralityClosenessIR(){
 
     statusMessage( QString(tr(" displaying file...")));
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage(tr("Influence Range Closeness Centrality saved as: ")+fn);
 }
 
@@ -10714,9 +10841,15 @@ void MainWindow::slotAnalyzeCentralityBetweenness(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage(tr("Betweenness Centralities saved as: ")+fn);
 }
 
@@ -10777,9 +10910,15 @@ void MainWindow::slotAnalyzePrestigeDegree(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage(tr("Degree Prestige (in-degree) saved as: ") + fn);
 }
 
@@ -10809,9 +10948,15 @@ void MainWindow::slotAnalyzePrestigePageRank(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage(tr("PageRank Prestige indices saved as: ")+ fn);
 }
 
@@ -10840,11 +10985,17 @@ void MainWindow::slotAnalyzePrestigeProximity(){
                                        editFilterNodesIsolatesAct->isChecked());
     destroyProgressBar();
 
-    statusMessage( QString(tr(" displaying file...")));
+    statusMessage( tr("Displaying file..."));
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage(tr("Proximity Prestige Centralities saved as: ")+ fn);
 }
 
@@ -10900,9 +11051,15 @@ void MainWindow::slotAnalyzeCentralityInformation(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage(tr("Information Centralities saved as: ")+ fn);
 }
 
@@ -10934,9 +11091,15 @@ void MainWindow::slotAnalyzeCentralityStress(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage(tr("Stress Centralities saved as: ")+ fn);
 }
 
@@ -10969,9 +11132,15 @@ void MainWindow::slotAnalyzeCentralityPower(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
     statusMessage(tr("Stress Centralities saved as: ")+ fn);
 }
 
@@ -11003,9 +11172,14 @@ void MainWindow::slotAnalyzeCentralityEccentricity(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn,this,true);
-    ed->show();
-    m_textEditors << ed;
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
 
     statusMessage(tr("Eccentricity Centralities saved as: ")+ fn);
 }
