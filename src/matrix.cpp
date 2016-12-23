@@ -726,6 +726,134 @@ Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
 
 
 
+/**
+ * @brief Calculates the matrix-by-vector product Ax of this matrix
+ * Default product: Ax
+ * if leftMultiply=true then it returns the left product xA
+ * @param in input array/vector
+ * @param out output array
+ * @param leftMultiply
+ */
+void Matrix::productByVector (float in[], float out[], const bool &leftMultiply) {
+    int n = rows();
+    int m = cols();
+
+    for(int i = 0; i < n; i++) {
+         out[i] = 0;
+         for (int j = 0; j < m; j++) {
+             if (leftMultiply) {
+              // dot product of row vector b with j-th column in A
+              out[i] += item (j, i) * in[j];
+             }
+             else {
+               // dot product of i-th row in A with the column vector b
+               out[i] += item (i, j) * in[j];
+             }
+
+         }
+    }
+}
+
+
+/**
+ * @brief Helper function, takes to vectors and returns their
+ * Manhattan distance (also known as l1 norm, Taxicab or L1 distance)
+ * which is the sum of the absolute differences
+ * of their coordinates.
+ * @param x
+ * @param y
+ * @return
+ */
+float Matrix::manhattanDistance(float x[], float y[], int n) {
+    float norm = 0;
+    for(int i = 0; i < n; i++) {
+        norm += fabs (x[i] - y[i]);
+    }
+    return norm;
+}
+
+/**
+ * @brief Implementation of the Power method which computes the
+ * leading eigenvector (eigenvector centrality) of this matrix
+ * and returns it as vector x.
+ * @param n
+ * @param x
+ */
+void Matrix::powerIteration (float x[], float &xsum,
+                             float &xmax, int &xmaxi,
+                             float &xmin, int &xmini,
+                             const float eps, const int &maxIter) {
+    qDebug() << "Matrix::powerIteration() - maxIter"
+             << maxIter
+             <<"initial x"
+            <<x;
+    int n = rows();
+    int m = cols();
+    float norm_sq= 0, norm = 0, distance=0;
+    float *tmp;
+    tmp=new (nothrow) float [n];
+    Q_CHECK_PTR( tmp );
+
+    xsum = 0;
+    int iter = 0;
+            QVector<float> vec(n);
+      do {
+
+        productByVector(x, tmp, false);
+
+        // calculate the Euclideian length, L2 distance, of the resulting vector:
+        // if v = (v1 v2 ... vn), then ||v|| = square_root(v1*v1 + v2*v2 + ... + vn*vn)
+        norm_sq = 0;
+        for (int i = 0; i < n; i++) {
+             norm_sq += tmp[i] * tmp[i];
+        }
+
+        norm = sqrt(norm_sq);
+
+        // normalize to unit vector for next iteration
+        xsum = 0;
+        for(int i = 0; i < n; i++) {
+           tmp[i] = tmp[i] / norm;
+        }
+        distance = manhattanDistance (tmp, x, n);
+
+        vec.clear();
+
+        xmax = 0 ;
+        xmin = RAND_MAX;
+        for(int i = 0; i < n; i++) {
+           vec.append(tmp[i]);
+           x[i] = tmp[i];
+           xsum += x[i];
+           if (x[i] > xmax) {
+               xmax = x[i] ;
+               xmaxi = i+1;
+           }
+           if (x[i] < xmin) {
+               xmin = x[i] ;
+               xmini = i+1;
+           }
+        }
+
+
+        qDebug() << "Matrix::powerIteration() - iteration"
+                 << iter << endl
+                 << "x" << vec  << endl
+                 << "distance from previous x " << distance
+                 << "sum" << xsum
+                 << "xmax" << xmax
+                 << "xmin" << xmin;
+
+        iter ++;
+        if (iter > maxIter)
+            break;
+
+    } while ( distance > eps);
+
+    delete [] tmp;
+}
+
+
 
 /**
   * @brief Returns the Transpose of this matrix

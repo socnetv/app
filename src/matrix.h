@@ -188,10 +188,20 @@ public:
     void multiplyScalar(const float &f);
     void multiplyRow(int row, float value);
 
+    void productByVector (float in[], float out[], const bool &leftMultiply=false);
 
     Matrix & pow (int n, bool symmetry=false)  ;
     Matrix & expBySquaring2 (Matrix &Y, Matrix &X, int n, bool symmetry=false);
 
+    float manhattanDistance(float x[], float y[] , int n);
+
+    void powerIteration (float x[] ,
+                         float &xsum,
+                         float &xmax,
+                         int &xmaxi,
+                         float &xmin,
+                         int &xmini,
+                         const float eps, const int &maxIter);
 
     Matrix& degreeMatrix();
 
