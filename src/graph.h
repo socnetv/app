@@ -603,8 +603,9 @@ public:
                                     const bool weigths,
                                     const bool inverseWeights);
     void writeCentralityEigenvector(const QString,
-                                    const bool weigths,
-                                    const bool inverseWeights);
+                                    const bool &weigths=true,
+                                    const bool &inverseWeights = false,
+                                    const bool &dropIsolates=false);
     void writePrestigeDegree(const QString, const bool weights,
                              const bool dropIsolates);
     void writePrestigeProximity(const QString, const bool weights,
@@ -669,11 +670,13 @@ public:
                               const bool &considerWeights=false,
                               const bool &inverseWeights=true,
                               const bool &dropIsolates=false);
-    void centralityDegree(const bool weights, const bool dropIsolates=false);
+    void centralityDegree(const bool &weights=true,
+                          const bool &dropIsolates=false);
     void centralityInformation(const bool considerWeights=false,
                                const bool inverseWeights=false);
-    void centralityEigenvector(const bool considerWeights=false,
-                               const bool inverseWeights=false);
+    void centralityEigenvector(const bool &considerWeights=false,
+                               const bool &inverseWeights=false,
+                               const bool &dropIsolates=false);
     void centralityClosenessInfluenceRange(const bool considerWeights=false,
                                            const bool inverseWeights=false,
                                            const bool dropIsolates=false);
@@ -897,7 +900,7 @@ private:
     float minSC, maxSC, nomSC, denomSC, sumSC, groupSC, maxIndexSC;
     float minEC, maxEC, nomEC, denomEC, sumEC, groupEC, maxIndexEC;
     float minIC, maxIC, nomIC, denomIC, sumIC, maxIndexIC;
-    float minEVC, maxEVC, nomEVC, denomEVC, sumEVC, groupEVC;
+    float minEVC, maxEVC, nomEVC, denomEVC, sumEVC, sumSEVC, groupEVC;
     float minPRP, maxPRP, nomPRC, denomPRC, t_sumPC, t_sumPRP, sumPRP;
     float minPP, maxPP, nomPP, denomPP, sumPP, groupPP;
 
@@ -935,6 +938,7 @@ private:
     bool calculatedVertices, calculatedVerticesList, calculatedVerticesSet;
     bool calculatedAdjacencyMatrix, calculatedDistances, calculatedCentralities;
     bool calculatedIsolates;
+    bool calculatedEVC;
     bool calculatedDP, calculatedDC, calculatedPP;
     bool calculatedIRCC, calculatedIC, calculatedPRP;
     bool calculatedTriad;

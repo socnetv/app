@@ -258,7 +258,7 @@ public:
     bool hasCLC() { 	return m_hasCLC; }
 
     void setEVC (float c){ m_EVC=c;} 	/* Sets vertex Degree Centrality*/
-    void setSEVC (float c ) { m_EVC=c;}	/* Sets standard vertex Degree Centrality*/
+    void setSEVC (float c ) { m_SEVC=c;}	/* Sets standard vertex Degree Centrality*/
     float EVC() { return m_EVC;}		/* Returns vertex Degree Centrality*/
     float SEVC() { return m_SEVC;}		/* Returns standard vertex Degree Centrality*/
 

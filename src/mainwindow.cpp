@@ -2172,7 +2172,7 @@ void MainWindow::initActions(){
                    "each actor a score proportional to the scores of its neighbors. "
                    "Thus, a node may be important, in terms of its EC, because it "
                    "has lots of ties or it has fewer ties to important other nodes."));
-    connect(cInformationAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityEigenvector()));
+    connect(cEigenvectorAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityEigenvector()));
 
 
 
@@ -11122,13 +11122,15 @@ void MainWindow::slotAnalyzeCentralityEigenvector(){
 
     askAboutWeights();
 
+    bool dropIsolates = false;
+
     statusMessage(  QString(tr("Computing Eigenvector Centrality. Please wait...")) );
     progressMsg = tr("Computing Eigenvector Centrality. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.writeCentralityEigenvector(fn,considerWeights, inverseWeights);
+    activeGraph.writeCentralityEigenvector(fn,considerWeights, inverseWeights, dropIsolates);
 
     destroyProgressBar();
 

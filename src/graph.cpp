@@ -4519,8 +4519,8 @@ void Graph::writeCentralityInformation(const QString fileName,
             centralityInformation(considerWeights, inverseWeights);
     }
 
-    emit statusMessage ( QString(tr("Writing information centralities to file: "))
-                         .arg(fileName) );
+    emit statusMessage ( tr("Writing Information Centralities to file:") + fileName );
+
     outText.setRealNumberPrecision(m_precision);
 
     int rowCount=0;
@@ -4569,7 +4569,7 @@ void Graph::writeCentralityInformation(const QString fileName,
             << "<span class=\"info\">"
             << tr("IC' range: ")
             <<"</span>"
-            << tr("0 &le; IC &le; 1")
+            << tr("0 &le; IC' &le; 1")
             << "</p>";
 
 
@@ -4708,8 +4708,9 @@ void Graph::writeCentralityInformation(const QString fileName,
 
 //Writes the eigenvector centralities to a file
 void Graph::writeCentralityEigenvector(const QString fileName,
-                                       const bool considerWeights,
-                                       const bool inverseWeights){
+                                       const bool &considerWeights,
+                                       const bool &inverseWeights,
+                                       const bool &dropIsolates){
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
@@ -4720,11 +4721,11 @@ void Graph::writeCentralityEigenvector(const QString fileName,
     outText.setCodec("UTF-8");
     if (graphModified() || !calculatedIC ) {
             emit statusMessage ( (tr("Calculating EVC scores...")) );
-            centralityEigenvector(considerWeights, inverseWeights);
+            centralityEigenvector(considerWeights, inverseWeights,dropIsolates);
     }
 
-    emit statusMessage ( QString(tr("Writing information centralities to file: "))
-                         .arg(fileName) );
+    emit statusMessage ( tr("Writing Eigenvector Centralities to file:") + fileName );
+
     outText.setRealNumberPrecision(m_precision);
 
     int rowCount=0;
@@ -4750,12 +4751,12 @@ void Graph::writeCentralityEigenvector(const QString fileName,
     outText << "<p class=\"description\">"
             << tr("The Eigenvector Centrality of each node is the ith element of "
                   "the leading eigenvector of the adjacency matrix, that is the "
-                  "eigenvector corresponding to the largest positive eigevalue."
+                  "eigenvector corresponding to the largest positive eigevalue. <br />"
                   "Proposed by Bonacich (1989), the Eigenvector Centrality is "
                   "an extension of the simpler Degree Centrality because it gives "
                   "each actor a score proportional to the scores of its neighbors. "
-                  "Thus, a node may be important, in terms of its EC, because it "
-                  "has lots of ties or it has fewer ties to important other nodes.")
+                  "Thus, a node may have high EVC score if it has lots of ties or "
+                  "it has ties to other nodes with high EVC.")
             << "<br />"
             << tr("EVC' is the standardized EVC (EVC divided by the sumEVC).")
             << "<br />"
@@ -4775,7 +4776,7 @@ void Graph::writeCentralityEigenvector(const QString fileName,
             << "<span class=\"info\">"
             << tr("EVC' range: ")
             <<"</span>"
-            << tr("0 &le; EVC &le; 1")
+            << tr("0 &le; EVC' &le; 1")
             << "</p>";
 
 
@@ -4825,9 +4826,9 @@ void Graph::writeCentralityEigenvector(const QString fileName,
 
     outText << "</tbody></table>";
 
-    if ( minIC ==  maxIC) {
+    if ( minEVC ==  maxEVC) {
         outText << "<p>"
-                << tr("All nodes have the same IC score.")
+                << tr("All nodes have the same EVC score.")
                 << "</p>";
     }
     else {
@@ -4851,17 +4852,17 @@ void Graph::writeCentralityEigenvector(const QString fileName,
 
     outText << "<p>";
     outText << "<span class=\"info\">"
-            << tr("IC' Sum = ")
+            << tr("EVC' Sum = ")
             <<"</span>"
             << sumEVC
             <<"<br/>"
            << "<span class=\"info\">"
-            << tr("IC' Mean = ")
+            << tr("EVC' Mean = ")
             <<"</span>"
             << meanEVC
             <<"<br/>"
             << "<span class=\"info\">"
-            << tr("IC' Variance = ")
+            << tr("EVC' Variance = ")
             <<"</span>"
             << varianceEVC
             <<"<br/>";
@@ -4913,8 +4914,9 @@ void Graph::writeCentralityEigenvector(const QString fileName,
  * @param considerWeights
  * @param inverseWeights
  */
-void Graph::centralityEigenvector(const bool considerWeights,
-                           const bool inverseWeights) {
+void Graph::centralityEigenvector(const bool &considerWeights,
+                                  const bool &inverseWeights,
+                                  const bool &dropIsolates) {
 
     qDebug("Graph::centralityEigenvector()");
     if (!graphModified() && calculatedEVC ) {
@@ -4922,25 +4924,86 @@ void Graph::centralityEigenvector(const bool considerWeights,
         return;
     }
 
-    float EVC=0, nom=0, denom=0,  SEVC=0;
-    float weight;
+    float nom=0, denom=0,  SEVC=0;
+
     classesEVC=0;
     discreteEVCs.clear();
     sumEVC=0;
-    t_sumEVC=0;
     maxEVC=0;
     minEVC=RAND_MAX;
     varianceEVC=0;
     meanEVC=0;
-    int N=vertices(dropIsolates);
+    QList<Vertex*>::const_iterator it;
 
+    bool symmetrize=false;
+    bool useDegrees=false;
 
+    int N = vertices(dropIsolates);
+
+    float EVC[N];
+
+    emit statusMessage(tr("Computing adjacency matrix. Please wait..."));
+
+    qDebug()<<"Graph::centralityEigenvector() - Create adjacency matrix AM";
+
+    graphMatrixAdjacencyCreate(dropIsolates, considerWeights,
+                               inverseWeights, symmetrize);
+
+    int i = 0;
+    if (useDegrees) {
+
+        emit statusMessage(tr("Computing outDegrees. Please wait..."));
+
+        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
+            if (!(*it)->isIsolated() && dropIsolates) {
+                continue;
+            }
+
+            EVC[i] = (*it)->degreeOut();
+
+            i++;
+        }
+
+    }
+    else {
+       for (int i = 0 ; i < N ; i++) {
+            EVC[i] = 1;
+        }
+
+    }
+
+    emit statusMessage(tr("Computing matrix leading eigenvector. "
+                          "Please wait..."));
+
+    AM.powerIteration(EVC, sumEVC, maxEVC, maxNodeEVC,
+                      minEVC, minNodeEVC,
+                      0.0000001, 500);
+
+    emit statusMessage(tr("Leading eigenvector computed. "
+                          "Analysing centralities. Please wait..."));
+    i = 0;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
+        if (!(*it)->isIsolated() && dropIsolates) {
+            continue;
+        }
+
+        (*it) -> setEVC( EVC[i]);
+        (*it) -> setSEVC( EVC[i] / sumEVC);
+
+        i++;
+    }
+
+    // group eigenvector centralization measure is
+    // S(cmax - c(vi)) divided by the maximum value possible,
+    // where c(vi) is the eigenvector centrality of vertex vi.
 }
 
 
 
 //Calculates the degree (outDegree) centrality of each vertex - diagonal included
-void Graph::centralityDegree(const bool weights, const bool dropIsolates){
+void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
     qDebug("Graph::centralityDegree()");
     if (!graphModified() && calculatedDC ) {
         qDebug() << "Graph::centralityDegree() - graph not changed - returning";
@@ -5429,8 +5492,7 @@ void Graph::writeCentralityCloseness(
                     "and centralities calculated. Writing file...";
     }
 
-    emit statusMessage ( tr("Writing closeness indices to file %1:")
-                         .arg(fileName) );
+    emit statusMessage ( tr("Writing Closeness indices to file:") + fileName );
 
     int rowCount=0;
 
@@ -5660,9 +5722,7 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
 
     centralityClosenessInfluenceRange(considerWeights,inverseWeights, dropIsolates);
 
-    emit statusMessage ( tr("Writing IR closeness indices to file %1:")
-                         .arg(fileName) );
-
+    emit statusMessage ( tr("Writing IR Closeness indices to file:") + fileName );
 
     int rowCount=0;
 
@@ -5853,7 +5913,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
                     "No need to recompute Distances/Centralities. Writing file.";
     }
 
-    emit statusMessage ( tr("Writing betweenness indices to file:") +  fileName );
+    emit statusMessage ( tr("Writing Betweenness indices to file:") +  fileName );
 
     int rowCount=0;
 
@@ -6082,7 +6142,7 @@ void Graph::writeCentralityStress( const QString fileName,
         qDebug() << " graph not modified, and centralities calculated. Returning";
     }
 
-    emit statusMessage ( tr("Writing stress indices to file:") + fileName );
+    emit statusMessage ( tr("Writing Stress indices to file:") + fileName );
 
     int rowCount=0;
 
@@ -6275,8 +6335,8 @@ void Graph::writeCentralityEccentricity(const QString fileName,
     else {
         qDebug() << " graph not modified, and centralities calculated. Returning";
     }
-    emit statusMessage ( QString(tr("Writing eccentricity indices to file:"))
-                         .arg(fileName) );
+
+    emit statusMessage ( tr("Writing Eccentricity indices to file:") + fileName );
 
     int rowCount=0;
 
@@ -6458,8 +6518,8 @@ void Graph::writeCentralityPower(const QString fileName,
     else {
         qDebug() << " graph not modified, and centralities calculated. Returning";
     }
-    emit statusMessage ( QString(tr("Writing Power indices to file:"))
-                         .arg(fileName) );
+
+    emit statusMessage ( tr("Writing Power indices to file:") + fileName );
 
     int rowCount=0;
 
@@ -7195,8 +7255,8 @@ void Graph::writePrestigeProximity( const QString fileName,
 
     emit statusMessage ( (tr("Calculating prestige proximity indices")) );
     prestigeProximity(considerWeights, inverseWeights, dropIsolates);
-    emit statusMessage ( QString(tr("Writing proximity prestige indices to file:"))
-                         .arg(fileName) );
+
+    emit statusMessage ( tr("Writing Proximity Prestige indices to file:") + fileName );
 
     int rowCount=0;
 
@@ -7592,8 +7652,8 @@ void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolate
 
     prestigePageRank(dropIsolates);
 
-    emit statusMessage ( QString(tr("Writing PageRank indices to file: %1"))
-                         .arg(fileName) );
+    emit statusMessage ( tr("Writing PageRank indices to file:") + fileName );
+
     outText.setRealNumberPrecision(m_precision);
 
 
@@ -9147,7 +9207,7 @@ void Graph::writeWalksOfLengthMatrixPlainText(const QString &fn, const int &leng
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
-
+    emit statusMessage ( tr("Writing Walks matrix to file:") + fn );
     QTextStream outText(&file);
     outText.setCodec("UTF-8");
     outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
@@ -9155,7 +9215,7 @@ void Graph::writeWalksOfLengthMatrixPlainText(const QString &fn, const int &leng
     outText << "Number of walks of length "<< length <<" between each pair of nodes \n\n";
 
     graphWalksMatrixCreate(vertices(), length, true);
-    qDebug()<<"Graph::writeWalksOfLengthMatrixPlainText() - Writing XM to file";
+
     outText << XM ;
 
     file.close();
@@ -9243,7 +9303,8 @@ void Graph::writeMatrixWalks (const QString &fn,
                       "Warning: Walks count unordered pairs of nodes. ").arg(N-1)
                 << "</p>";
     }
-    emit statusMessage(tr("Writing Walks matrix to file..."));
+
+    emit statusMessage ( tr("Writing Walks matrix to file:") + fn );
     qDebug()<<"Graph::writeMatrixWalks() - Writing XM to file";
 
 
@@ -12312,8 +12373,47 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
     QString datasetDescription=QString::null;
     qDebug()<< "		... writing dataset ";
 
-
-    if ( fileName == "Krackhardt_High-tech_managers.paj" ) {
+    if ( fileName == "Herschel_Graph.paj") {
+        qDebug()<< "		... to  " << fileName;
+        datasetDescription = tr("The Herschel graph is the smallest nonhamiltonian "
+                                "polyhedral graph. \n"
+                                "It is the unique such graph on 11 nodes, "
+                                "and has 18 edges.");
+        outText << "*Network Herschel" << endl <<
+                   "*Vertices 11" << endl <<
+                   "1 \"1\" ic red	0.48225  0.411308 circle" << endl <<
+                   "2 \"2\" ic red	0.652297 0.591389 circle" << endl <<
+                   "3 \"3\" ic red	0.479571 0.762504 circle"<< endl <<
+                   "4 \"4\" ic red	0.849224 0.41395 circle"<< endl <<
+                   "5 \"5\" ic red  0.48196  0.06	circle"<< endl <<
+                   "6 \"6\" ic red	0.148625 0.413208 circle"<< endl <<
+                   "7 \"7\" ic red	0.654193 0.198133 circle"<< endl <<
+                   "8 \"8\" ic red	0.268771 0.593206 circle"<< endl <<
+                   "9 \"9\" ic red	0.272785 0.19606	circle"<< endl <<
+                   "10 \"10\" ic red 0.834746 0.0533333 circle"<< endl <<
+                   "11 \"11\" ic red 0.134137 0.761837 circle"<< endl <<
+                   "*Arcs "<< endl <<
+                   "*Edges "<< endl <<
+                   "1 3 1 c #616161"<< endl <<
+                   "1 4 1 c #616161"<< endl <<
+                   "1 5 1 c #616161"<< endl <<
+                   "1 6 1 c #616161"<< endl <<
+                   "2 3 1 c #616161"<< endl <<
+                   "2 4 1 c #616161"<< endl <<
+                   "2 7 1 c #616161"<< endl <<
+                   "2 8 1 c #616161"<< endl <<
+                   "3 11 1 c #616161"<< endl <<
+                   "4 10 1 c #616161"<< endl <<
+                   "5 9 1 c #616161"<< endl <<
+                   "5 10 1 c #616161"<< endl <<
+                   "6 9 1 c #616161"<< endl <<
+                   "6 11 1 c #616161"<< endl <<
+                   "7 9 1 c #616161"<< endl <<
+                   "7 10 1 c #616161"<< endl <<
+                   "8 9 1 c #616161"<< endl <<
+                   "8 11 1 c #616161";
+    }
+    else if ( fileName == "Krackhardt_High-tech_managers.paj" ) {
         qDebug()<< "		... to  " << fileName;
         datasetDescription = tr("Krackhardt's High-tech Managers is a famous social network "
                              "of 21 managers of a high-tech US company. \n\n"
