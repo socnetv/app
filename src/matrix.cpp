@@ -764,11 +764,29 @@ void Matrix::productByVector (float in[], float out[], const bool &leftMultiply)
  * @param y
  * @return
  */
-float Matrix::manhattanDistance(float x[], float y[], int n) {
+float Matrix::distanceManhattan(float x[], float y[], int n) {
     float norm = 0;
     for(int i = 0; i < n; i++) {
         norm += fabs (x[i] - y[i]);
     }
+    return norm;
+}
+
+
+/**
+ * @brief Helper function, computes the Euclideian length (also known as L2 distance)
+ * of a vector:
+   if x = (x1 x2 ... xn), then ||x|| = square_root(x1*x1 + x2*x2 + ... + xn*xn)
+ * @param x
+ * @param n
+ * @return
+ */
+float Matrix::distanceEuclidean(float x[], int n) {
+    float norm = 0;
+    for (int i = 0; i < n; i++) {
+         norm += x[i] * x[i];
+    }
+    norm = sqrt(norm);
     return norm;
 }
 
@@ -789,7 +807,7 @@ void Matrix::powerIteration (float x[], float &xsum,
             <<x;
     int n = rows();
     int m = cols();
-    float norm_sq= 0, norm = 0, distance=0;
+    float norm = 0, distance=0;
     float *tmp;
     tmp=new (nothrow) float [n];
     Q_CHECK_PTR( tmp );
@@ -798,24 +816,19 @@ void Matrix::powerIteration (float x[], float &xsum,
     int iter = 0;
             QVector<float> vec(n);
       do {
-
+        // calculate the matrix-by-vector product Ax
         productByVector(x, tmp, false);
 
-        // calculate the Euclideian length, L2 distance, of the resulting vector:
-        // if v = (v1 v2 ... vn), then ||v|| = square_root(v1*v1 + v2*v2 + ... + vn*vn)
-        norm_sq = 0;
-        for (int i = 0; i < n; i++) {
-             norm_sq += tmp[i] * tmp[i];
-        }
-
-        norm = sqrt(norm_sq);
+        // calculate the euclidean length of the resulting vector
+        norm = distanceEuclidean(tmp, n);
 
         // normalize to unit vector for next iteration
         xsum = 0;
         for(int i = 0; i < n; i++) {
            tmp[i] = tmp[i] / norm;
         }
-        distance = manhattanDistance (tmp, x, n);
+        // calculate the manhattan distance between the new and prev vectors
+        distance = distanceManhattan (tmp, x, n);
 
         vec.clear();
 

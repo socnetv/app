@@ -450,8 +450,8 @@ public:
                                 const int &center = 0);
 
 
-    qreal length(const QPointF &a, const QPointF &b);
-    qreal length(const QPointF &a);
+    qreal distanceEuclidean(const QPointF &a, const QPointF &b);
+    qreal distanceEuclidean(const QPointF &a);
     int sign(const qreal &D);
 
     qreal layoutForceDirected_F_rep(const QString model, const qreal &dist,

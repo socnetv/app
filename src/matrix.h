@@ -193,7 +193,8 @@ public:
     Matrix & pow (int n, bool symmetry=false)  ;
     Matrix & expBySquaring2 (Matrix &Y, Matrix &X, int n, bool symmetry=false);
 
-    float manhattanDistance(float x[], float y[] , int n);
+    float distanceManhattan(float x[], float y[] , int n);
+    float distanceEuclidean(float x[], int n);
 
     void powerIteration (float x[] ,
                          float &xsum,
