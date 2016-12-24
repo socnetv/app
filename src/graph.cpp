@@ -4749,16 +4749,18 @@ void Graph::writeCentralityEigenvector(const QString fileName,
             << "</p>";
 
     outText << "<p class=\"description\">"
-            << tr("The Eigenvector Centrality of each node is the ith element of "
+            << tr("The Eigenvector Centrality of each node is the i<sub>th</sub> element of "
                   "the leading eigenvector of the adjacency matrix, that is the "
-                  "eigenvector corresponding to the largest positive eigevalue. <br />"
-                  "Proposed by Bonacich (1989), the Eigenvector Centrality is "
+                  "eigenvector corresponding to the largest positive eigenvalue. <br />"
+                  "Proposed by Bonacich (1972), the Eigenvector Centrality is "
                   "an extension of the simpler Degree Centrality because it gives "
                   "each actor a score proportional to the scores of its neighbors. "
                   "Thus, a node may have high EVC score if it has lots of ties or "
-                  "it has ties to other nodes with high EVC.")
+                  "it has ties to other nodes with high EVC."
+                  "The eigenvector centralities are also known as Gould indices.")
             << "<br />"
-            << tr("EVC' is the standardized EVC (EVC divided by the sumEVC).")
+            << tr("EVC' is the standardized EVC (EVC divided by the sum of all EVCs).")
+            << tr("EVC'' is the scaled EVC (EVC divided by max EVC).")
             << "<br />"
             << "</p>";
 
@@ -4768,7 +4770,7 @@ void Graph::writeCentralityEigenvector(const QString fileName,
             << "<span class=\"info\">"
             << tr("EVC range: ")
             <<"</span>"
-            << tr("0 &le; EVC &le; \xE2\x88\x9E")
+            << tr("0 &le; EVC &lt; 1 (The eigenvector has unit euclidean length) ")
             << "</p>";
 
 
@@ -7479,9 +7481,12 @@ void Graph::prestigePageRank(const bool &dropIsolates){
 
         qDebug()<< "Graph::prestigePageRank() - ITERATION : " << iterations;
 
-        t_sumPRP=0;
+        sumPRP=0;
         maxDelta = 0;
-
+        maxPRP=0;
+        minPRP=RAND_MAX;
+        maxNodePRP = 0;
+        minNodePRP = 0;
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
         {
             sumInLinksPR = 0;
@@ -7544,7 +7549,7 @@ void Graph::prestigePageRank(const bool &dropIsolates){
 
            (*it) -> setPRP ( PRP );
 
-            t_sumPRP+=PRP;
+            sumPRP+=PRP;
 
             qDebug() << "Graph::prestigePageRank() - Node "
                      << (*it)->name()
@@ -7564,33 +7569,23 @@ void Graph::prestigePageRank(const bool &dropIsolates){
         }
         // normalize in every iteration
         qDebug() << "Graph::prestigePageRank() - sumPRP for this iteration " <<
-                    t_sumPRP;
+                    sumPRP;
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
             PRP = (*it)->PRP();
-            SPRP = PRP / t_sumPRP ;
-//            (*it)->setPRP( SPRP ); // ???
 
-            qDebug() << "Graph::prestigePageRank() - Node "
-                     << (*it)->name()
-                        << " normalized SPRP =  " << SPRP;
+            if ( PRP > maxPRP ) {
+                maxPRP = PRP;
+                maxNodePRP=(*it)->name();
+            }
+            if ( PRP < minPRP ) {
+                minPRP = PRP;
+                minNodePRP=(*it)->name();
+            }
+
         }
         iterations++;
     }
 
-    // calculate std and min/max PRPs
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
-    {
-        if (dropIsolates && (*it)->isIsolated()) {
-            continue;
-        }
-        PRP = (*it)->PRP();
-        SPRP = PRP / t_sumPRP ;
-        (*it)->setSPRP( SPRP );
-        sumPRP +=  SPRP;
-        qDebug()<< "Graph::prestigePageRank() vertex: " <<  (*it)->name()
-                << " PR = " << PRP << " standard PR = " << SPRP
-                   << " t_sumPRP " << t_sumPRP;
-    }
 
     if (aVert != 0 )
         meanPRP = sumPRP / aVert ;
@@ -7600,27 +7595,33 @@ void Graph::prestigePageRank(const bool &dropIsolates){
     qDebug() << "sumPRP = " << sumPRP << "  aVert = " << aVert
              << "  meanPRP = " << meanPRP;
 
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
+    // calculate std and min/max PRPs
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
         if (dropIsolates && (*it)->isIsolated()) {
             continue;
         }
-        SPRP=(*it)->SPRP();
-        resolveClasses(SPRP,discretePRPs,classesPRP);
-        if ( SPRP > maxPRP ) {
-            maxPRP = SPRP;
-            maxNodePRP=(*it)->name();
-        }
-        if ( SPRP < minPRP ) {
-            minPRP = SPRP;
-            minNodePRP=(*it)->name();
-        }
 
-        t_variance = ( SPRP  - meanPRP  ) ;
+        PRP=(*it)->PRP();
+
+        resolveClasses(PRP,discretePRPs,classesPRP);
+
+        SPRP = PRP / maxPRP ;
+        (*it)->setSPRP( SPRP );
+
+        qDebug()<< "Graph::prestigePageRank() vertex: " <<  (*it)->name()
+                << " PR = " << PRP << " standard PR = " << SPRP
+                   << " t_sumPRP " << t_sumPRP;
+
+        t_variance = ( PRP  - meanPRP  ) ;
         t_variance *=t_variance;
-        qDebug() << "SPRP " <<  (*it)->SPRP() << "  t_variance "
-                 << SPRP - meanPRP  << " t_variance^2" << t_variance ;
+        qDebug() << "PRP " <<  (*it)->PRP() << "  t_variance "
+                 << PRP - meanPRP  << " t_variance^2" << t_variance ;
         variancePRP  += t_variance;
+
     }
+
+
     qDebug() << "PRP' Variance   " << variancePRP   << " aVert " << aVert ;
     variancePRP  = variancePRP  /  (aVert);
     qDebug() << "PRP' Variance: " << variancePRP   ;
@@ -7693,7 +7694,7 @@ void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolate
                   "Therefore, nodes with high outLink weights give smaller percentage of their PR to node u."
                   )
             << "<br />"
-            << tr("PRP' is the standardized PRP (PRP divided by sumPRP).")
+            << tr("PRP' is the standardized PRP (PRP divided by max PRP).")
             << "</p>";
 
     outText << "<p>"
@@ -7781,17 +7782,17 @@ void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolate
     else {
         outText << "<p>";
         outText << "<span class=\"info\">"
-                << tr("Max PRP' = ")
+                << tr("Max PRP = ")
                 <<"</span>"
                << maxPRP <<" (node "<< maxNodePRP  <<  ")"
                << "<br />"
                << "<span class=\"info\">"
-               << tr("Min PRP' = ")
+               << tr("Min PRP = ")
                <<"</span>"
                << minPRP <<" (node "<< minNodePRP <<  ")"
                << "<br />"
                << "<span class=\"info\">"
-               << tr("PRP' classes = ")
+               << tr("PRP classes = ")
                <<"</span>"
                << classesPRP
                << "</p>";
@@ -7801,20 +7802,15 @@ void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolate
     outText << "<span class=\"info\">"
             << tr("PRP Sum = ")
             <<"</span>"
-            << t_sumPRP
-            <<"<br/>"
-           << "<span class=\"info\">"
-            << tr("PRP' Sum = ")
-            <<"</span>"
             << sumPRP
             <<"<br/>"
            << "<span class=\"info\">"
-            << tr("PRP' Mean = ")
+            << tr("PRP Mean = ")
             <<"</span>"
             << meanPRP
             <<"<br/>"
             << "<span class=\"info\">"
-            << tr("PRP' Variance = ")
+            << tr("PRP Variance = ")
             <<"</span>"
             << variancePRP
             <<"<br/>";
@@ -16946,7 +16942,7 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations){
                 DV.setX( (*v2) -> x() - (*v1)->x());
                 DV.setY( (*v2) -> y() - (*v1)->y());
 
-                dist = length(DV);
+                dist = distanceEuclidean(DV);
 
                 /**
                   *  calculate electric (repulsive) forces between
@@ -17083,7 +17079,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
                 DV.setX( (*v2)->x() - (*v1)->x() );
                 DV.setY( (*v2)->y() - (*v1)->y() );
 
-                dist = length( DV );
+                dist = distanceEuclidean( DV );
 
                 //calculate repulsive force from _near_ vertices
                 f_rep = layoutForceDirected_F_rep( "FR", dist, optimalDistance);
@@ -17327,12 +17323,12 @@ void Graph::compute_angles(const QPointF &DV,
 
 
 /**
- * @brief Graph::length
+ * @brief Computes the euclideian distance between QPointF a and b
  * @param a
  * @param b
- * @return  the euclideian distance of QPointF a and b
+ * @return
  */
-qreal Graph::length (const QPointF & a, const QPointF & b){
+qreal Graph::distanceEuclidean (const QPointF & a, const QPointF & b){
     return qSqrt (
                  ( b.x() - a.x() ) * (b.x() - a.x() ) +
                  ( b.y() - a.y())  * (b.y() - a.y() )
@@ -17341,11 +17337,11 @@ qreal Graph::length (const QPointF & a, const QPointF & b){
 
 
 /**
- * @brief Graph::length
+ * @brief the euclideian distance of QPointF a (where a is difference vector)
  * @param a
- * @return  the euclideian distance of QPointF a (where a is difference vector)
+ * @return
  */
-qreal Graph::length (const QPointF & a){
+qreal Graph::distanceEuclidean (const QPointF & a){
     return qSqrt (
                   a.x()  * a.x()  +
                   a.y() * a.y()
