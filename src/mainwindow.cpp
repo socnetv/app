@@ -3063,6 +3063,7 @@ void MainWindow::initToolBox(){
                        << "Eccentricity Centrality"
                        << "Power Centrality"
                        << "Information Centrality"
+                       << "Eigenvector Centrality"
                        << "Degree Prestige (in-Degree)"
                        << "PageRank Prestige"
                        << "Proximity Prestige";
@@ -3103,13 +3104,19 @@ void MainWindow::initToolBox(){
                    "For instance, you can apply a degree centrality layout. "
                    "For each prominence index, you can select a circular or level layout type."));
     QStringList indicesList;
-    indicesList << "None"<< "Random"
-                << "Degree Centrality" << "Closeness Centrality"
+    indicesList << "None"
+                << "Random"
+                << "Degree Centrality"
+                << "Closeness Centrality"
                 << "Influence Range Closeness Centrality"
                 << "Betweenness Centrality"
-                << "Stress Centrality" << "Eccentricity Centrality"
-                << "Power Centrality" << "Information Centrality"
-                << "Degree Prestige (in-Degree)"  << "PageRank Prestige"
+                << "Stress Centrality"
+                << "Eccentricity Centrality"
+                << "Power Centrality"
+                << "Information Centrality"
+                << "Eigenvector Centrality"
+                << "Degree Prestige (in-Degree)"
+                << "PageRank Prestige"
                 << "Proximity Prestige";
     toolBoxLayoutByIndexSelect->addItems(indicesList);
     toolBoxLayoutByIndexSelect->setMinimumHeight(20);
@@ -4591,12 +4598,15 @@ void MainWindow::toolBoxAnalysisProminenceSelectChanged(int selectedIndex) {
         slotAnalyzeCentralityInformation();
         break;
     case 9:
-        slotAnalyzePrestigeDegree();
+        slotAnalyzeCentralityEigenvector();
         break;
     case 10:
-        slotAnalyzePrestigePageRank();
+        slotAnalyzePrestigeDegree();
         break;
     case 11:
+        slotAnalyzePrestigePageRank();
+        break;
+    case 12:
         slotAnalyzePrestigeProximity();
         break;
     };
@@ -9078,12 +9088,14 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
         userChoice=7;
     else if (prominenceIndexName.contains("Information Centrality"))
         userChoice=8;
-    else if (prominenceIndexName.contains("Degree Prestige"))
+    else if (prominenceIndexName.contains("Eigenvector Centrality"))
         userChoice=9;
-    else if (prominenceIndexName.contains("PageRank Prestige"))
+    else if (prominenceIndexName.contains("Degree Prestige"))
         userChoice=10;
-    else if (prominenceIndexName.contains("Proximity Prestige"))
+    else if (prominenceIndexName.contains("PageRank Prestige"))
         userChoice=11;
+    else if (prominenceIndexName.contains("Proximity Prestige"))
+        userChoice=12;
 
     qDebug() << "MainWindow::slotLayoutCircularByProminenceIndex() "
              << "prominenceIndexName " << prominenceIndexName
@@ -9239,12 +9251,14 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
         userChoice=7;
     else if (prominenceIndexName.contains("Information Centrality"))
         userChoice=8;
-    else if (prominenceIndexName.contains("Degree Prestige"))
+    else if (prominenceIndexName.contains("Eigenvector Centrality"))
         userChoice=9;
-    else if (prominenceIndexName.contains("PageRank Prestige"))
+    else if (prominenceIndexName.contains("Degree Prestige"))
         userChoice=10;
-    else if (prominenceIndexName.contains("Proximity Prestige"))
+    else if (prominenceIndexName.contains("PageRank Prestige"))
         userChoice=11;
+    else if (prominenceIndexName.contains("Proximity Prestige"))
+        userChoice=12;
 
     qDebug() << "MainWindow::slotLayoutNodeSizesByProminenceIndex() "
              << "prominenceIndexName " << prominenceIndexName
@@ -9418,12 +9432,14 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
         userChoice=7;
     else if (prominenceIndexName ==  "Information Centrality")
         userChoice=8;
-    else if (prominenceIndexName == "Degree Prestige")
+    else if (prominenceIndexName.contains("Eigenvector Centrality"))
         userChoice=9;
-    else if (prominenceIndexName ==  "PageRank Prestige")
+    else if (prominenceIndexName == "Degree Prestige")
         userChoice=10;
-    else if (prominenceIndexName ==  "Proximity Prestige")
+    else if (prominenceIndexName ==  "PageRank Prestige")
         userChoice=11;
+    else if (prominenceIndexName ==  "Proximity Prestige")
+        userChoice=12;
 
     qDebug() << "MainWindow::slotLayoutLevelByProminenceIndex() "
              << "prominenceIndexName " << prominenceIndexName
