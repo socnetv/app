@@ -119,17 +119,21 @@ Graph::Graph() {
                        "<meta name=\"description\" content=\"Social Network Visualizer (SocNetV) report\" />"
                        "<style type=\"text/css\">"
                        "body {font-family:'monospace'; font-size:12px; font-weight:400; font-style:normal;}"
+                       "body.waiting * { cursor: progress; }"
                        "p, li { white-space: normal; }"
                        "p {margin:10px 0;-qt-block-indent:0; text-indent:0px;}"
                        "table {margin: 20px 5px; white-space: nowrap; border-spacing: 0px; "
                        "border-collapse: separate;font-size: 10px;}"
                        "table tr {white-space: normal;}"
-                       "table th {text-align:center;font-weight: bold;"
-                       "background: #000; color: #fff; vertical-align: bottom;}"
+                       "table th {cursor:pointer;text-align:center;font-weight: bold;"
+                       "background: #000; color: #fff; vertical-align: bottom; font-size:12px; padding: 3px 6px;}"
                        "table td {text-align:center; padding: 0.2em 1em;}"
-                       "span.header, table td.header {background:#000; color:#fff;}"
+                       "span.header, table td.header {background:#000; color:#fff; font-size:12px; padding: 3px 6px;}"
                        "table td.diag {background:#aaa;}"
                        "table.stripes th {}"
+                       "table.sortable th::after {content: \"\\2195\"; font-size: 16px;color: #777;}"
+                       "table.sortable th.desc::after {content: \"\\2193\"; color: #fff;}"
+                       "table.sortable th.asc::after {content: \"\\2191\"; color: #fff;}"
                        "table.stripes tr.odd  { background: #ddd;}"
                        "table.stripes tr:odd  { background: #ddd;}"
                        "table.stripes tr.even { background: #fff;}"
@@ -144,8 +148,56 @@ Graph::Graph() {
                        ".info {font-weight: bold;color: #333;}"
                        ".small {font-style: italic;color: #333; font-size: 90%;}"
                        "</style>"
+                       "<script type=\"text/javascript\">\n"
+                       "var mytable, asc1=1, asc2=1,asc3=1,asc4=1;asc5=1;\n"
+                       "window.onload = function () {\n"
+                       "mytable = document.getElementById(\"results\");\n"
+                       "}\n"
+                       "function tableSort(tbody, col, asc) {\n"
+                       " document.getElementById(\"socnetv-report\").classList.toggle('waiting'); \n"
+                       " var rows = tbody.rows, \n"
+                       " rlen = rows.length, \n"
+                       " arr = new Array(),\n"
+                       " i, j, cells, clen;\n"
+                       " clen = rows[0].cells.length;\n"
+                       "  for (j = 0; j < clen; j++) {\n"
+                       "    document.getElementById(\"col\"+(j+1).toString()).classList.remove('desc'); \n"
+                       "    document.getElementById(\"col\"+(j+1).toString()).classList.remove('asc'); \n"
+                       "   if ( j == col ) {\n"
+                       "    if (  asc > 0 ) { document.getElementById(\"col\"+(j+1).toString()).classList.add('asc'); }"
+                       "    else { document.getElementById(\"col\"+(j+1).toString()).classList.add('desc'); }"
+                       "   }"
+
+                       "  }\n"
+                       " // fill the array with values from the table\n"
+                       " for (i = 0; i < rlen; i++) {\n"
+                       "  cells = rows[i].cells;\n"
+                       "  clen = cells.length;\n"
+                       "  arr[i] = new Array();\n"
+                       "  for (j = 0; j < clen; j++) {\n"
+                       "   arr[i][j] = cells[j].innerHTML; \n"
+                       "  }\n"
+                       " }\n"
+                       " // sort the array by the specified column (col) and order (asc)\n"
+                       " arr.sort(function (a, b) {\n"
+                       "  var retval=0;\n"
+                       "  var fA=parseFloat(a[col]);\n"
+                       "  var fB=parseFloat(b[col]);\n"
+                       "  if(a[col] != b[col]) {\n"
+                       "    if((fA==a[col]) && (fB==b[col]) ){ retval=( fA > fB ) ? asc : -1*asc; } //numerical\n"
+                       "    else { retval = (a[col] > b[col]) ? asc : -1 * asc; }\n"
+                       "   }"
+                       "   return retval; \n"
+                       " });\n"
+                       " // replace existing rows with new rows created from the sorted array\n"
+                       " for (i = 0; i < rlen; i++) {\n"
+                       "  rows[i].innerHTML = \"<td>\" + arr[i].join(\"</td><td>\") + \"</td>\";\n"
+                       "  }\n"
+                       " document.getElementById(\"socnetv-report\").classList.toggle('waiting'); \n"
+                       "}\n"
+                       "</script>"
                        "</head>"
-                       "<body style=\"\">").arg(VERSION);
+                       "<body id=\"socnetv-report\">").arg(VERSION);
 
 
     htmlHeadLight = QString("<!DOCTYPE html>"
@@ -3435,22 +3487,25 @@ void Graph::writeEccentricity(
             << "</p>";
 
 
-    outText << "<table class=\"stripes\">";
+    outText << "<table class=\"stripes sortable\">";
 
     outText << "<thead>"
             <<"<tr>"
-            <<"<th>"
+            <<"<th onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;\">"
             << tr("Actor")
-            << "</th><th>"
+            << "</th>"
+            << "<th onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;\">"
             << tr("Label")
-            << "</th><th>"
+            << "</th>"
+            <<"<th onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc2 = 1; asc1 = 1;asc4 = 1;\">"
             << tr("e")
-            << "</th><th>"
+            << "</th>"
+            <<"<th onclick=\"tableSort(results, 3, asc4); asc4*= -1; asc2 = 1; asc3 = 1;asc1 = 1;\">"
             << tr("%e")
             <<"</th>"
            <<"</tr>"
           << "</thead>"
-          <<"<tbody>";
+          <<"<tbody  id=\"results\">";
 
     QList<Vertex*>::const_iterator it;
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
@@ -4573,24 +4628,28 @@ void Graph::writeCentralityInformation(const QString fileName,
             << "</p>";
 
 
-    outText << "<table class=\"stripes\">";
+    outText << "<table class=\"stripes sortable\">";
 
     outText << "<thead>"
             <<"<tr>"
-            <<"<th>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("Node")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("Label")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("IC")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
             << tr("IC'")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
             << tr("%IC")
             <<"</th>"
            <<"</tr>"
           << "</thead>"
-          <<"<tbody>";
+          <<"<tbody id=\"results\">";
 
     QList<Vertex*>::const_iterator it;
 
@@ -4782,24 +4841,30 @@ void Graph::writeCentralityEigenvector(const QString fileName,
             << "</p>";
 
 
-    outText << "<table class=\"stripes\">";
+
+    outText << "<table class=\"stripes sortable\">";
 
     outText << "<thead>"
             <<"<tr>"
-            <<"<th>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("Node")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("Label")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("EVC")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
             << tr("EVC'")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
             << tr("%EVC")
             <<"</th>"
            <<"</tr>"
           << "</thead>"
-          <<"<tbody>";
+          <<"<tbody id=\"results\">";
+
 
     QList<Vertex*>::const_iterator it;
 
@@ -4890,7 +4955,6 @@ void Graph::writeCentralityEigenvector(const QString fileName,
                   "complete or a circle graph). <br />")
             << tr("Larger values of variance suggest larger variability between the "
                   "EVC' values. <br />")
-            <<"(Wasserman & Faust, formula 5.20, p. 197)\n\n"
             << "</p>";
 
 
@@ -5205,24 +5269,29 @@ void Graph::writeCentralityDegree ( const QString fileName,
             << "</p>";
 
 
-    outText << "<table class=\"stripes\">";
+    outText << "<table class=\"stripes sortable\">";
 
     outText << "<thead>"
             <<"<tr>"
-            <<"<th>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("Node")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("Label")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("DC")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
             << tr("DC'")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
             << tr("%DC")
             <<"</th>"
            <<"</tr>"
           << "</thead>"
-          <<"<tbody>";
+          <<"<tbody id=\"results\">";
+
 
     QList<Vertex*>::const_iterator it;
 
@@ -5544,24 +5613,29 @@ void Graph::writeCentralityCloseness(
             << "</p>";
 
 
-    outText << "<table class=\"stripes\">";
+    outText << "<table class=\"stripes sortable\">";
 
     outText << "<thead>"
             <<"<tr>"
-            <<"<th>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("Node")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("Label")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("CC")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
             << tr("CC'")
-            << "</th><th>"
-            << tr("%CC")
+            << "</th>"
+            <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
+            << tr("%CC'")
             <<"</th>"
            <<"</tr>"
           << "</thead>"
-          <<"<tbody>";
+          <<"<tbody id=\"results\">";
+
 
     QList<Vertex*>::const_iterator it;
 
@@ -5766,22 +5840,28 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
             << "</p>";
 
 
-    outText << "<table class=\"stripes\">";
+
+    outText << "<table class=\"stripes sortable\">";
 
     outText << "<thead>"
             <<"<tr>"
-            <<"<th>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("Node")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("Label")
-            << "</th><th>"
-            << tr("IRCC=IRCC'")
-            << "</th><th>"
-            << tr("%IRCC")
-            <<"</th>"
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("IRCC")
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
+            << tr("%IRCC'")
+            << "</th>"
            <<"</tr>"
           << "</thead>"
-          <<"<tbody>";
+          <<"<tbody id=\"results\">";
+
+
 
     QList<Vertex*>::const_iterator it;
 
@@ -5964,24 +6044,29 @@ void Graph::writeCentralityBetweenness(const QString fileName,
             << "</p>";
 
 
-    outText << "<table class=\"stripes\">";
+    outText << "<table class=\"stripes sortable\">";
 
     outText << "<thead>"
             <<"<tr>"
-            <<"<th>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("Node")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("Label")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("BC")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
             << tr("BC'")
-            << "</th><th>"
-            << tr("%BC")
+            << "</th>"
+            <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
+            << tr("%BC'")
             <<"</th>"
            <<"</tr>"
           << "</thead>"
-          <<"<tbody>";
+          <<"<tbody id=\"results\">";
+
 
     QList<Vertex*>::const_iterator it;
 
@@ -6189,25 +6274,28 @@ void Graph::writeCentralityStress( const QString fileName,
             << tr("0 &le; SC' &le; 1  (SC'=1 when the node falls on all geodesics)")
             << "</p>";
 
-
-    outText << "<table class=\"stripes\">";
+    outText << "<table class=\"stripes sortable\">";
 
     outText << "<thead>"
             <<"<tr>"
-            <<"<th>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("Node")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("Label")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("SC")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
             << tr("SC'")
-            << "</th><th>"
-            << tr("%SC")
+            << "</th>"
+            <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
+            << tr("%SC'")
             <<"</th>"
            <<"</tr>"
           << "</thead>"
-          <<"<tbody>";
+          <<"<tbody id=\"results\">";
 
     QList<Vertex*>::const_iterator it;
 
@@ -6394,6 +6482,28 @@ void Graph::writeCentralityEccentricity(const QString fileName,
           << "</thead>"
           <<"<tbody>";
 
+
+    outText << "<table class=\"stripes sortable\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Node")
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Label")
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("EC=EC'")
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
+            << tr("%EC'")
+            << "</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody id=\"results\">";
+
+
     QList<Vertex*>::const_iterator it;
 
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
@@ -6567,24 +6677,31 @@ void Graph::writeCentralityPower(const QString fileName,
             << tr("0 &le; PC' &le; 1  (PC'=1 when the node is connected to all (star).)")
             << "</p>";
 
-    outText << "<table class=\"stripes\">";
+
+    outText << "<table class=\"stripes sortable\">";
 
     outText << "<thead>"
             <<"<tr>"
-            <<"<th>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("Node")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("Label")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("PC")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
             << tr("PC'")
-            << "</th><th>"
-            << tr("%PC")
+            << "</th>"
+            <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
+            << tr("%PC'")
             <<"</th>"
            <<"</tr>"
           << "</thead>"
-          <<"<tbody>";
+          <<"<tbody id=\"results\">";
+
+
 
     QList<Vertex*>::const_iterator it;
 
@@ -6742,7 +6859,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
                     " graph not changed - returning";
         return;
     }
-    qDebug()<< "Graph::prestigeDegree() - graph modified. Recomputing...";
+
     float DP=0, SDP=0, nom=0, denom=0;
     float weight;
     classesDP=0;
@@ -6764,6 +6881,10 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
     QHash<int,float> *enabledInEdges = new QHash<int,float>;
     QHash<int,float>::const_iterator hit;
 
+
+    qDebug()<< "Graph::prestigeDegree() - vertices"
+            << vert
+            <<"graph modified. Recomputing...";
 
     for ( it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
@@ -6927,11 +7048,10 @@ void Graph::writePrestigeDegree (const QString fileName,
             << "</p>";
 
     outText << "<p class=\"description\">"
-            << tr("The DP index of a node u is the sum of inbound edges to "
-                  "that node from all adjacent nodes. <br />"
+            << tr("The DP index, also known as InDegree Centrality, of a node u "
+                  "is the sum of inbound edges to that node from all adjacent nodes. <br />"
                   "If the network is weighted, DP is the sum of inbound arc "
-                  "weights (Indegree) to node u from all adjacent nodes. <br />"
-                  "The DP index is also known as InDegree Centrality.")
+                  "weights (Indegree) to node u from all adjacent nodes. ")
             << "<br />"
             << tr("DP' is the standardized DP (divided by N-1).")
             << "</p>";
@@ -6954,24 +7074,29 @@ void Graph::writePrestigeDegree (const QString fileName,
             << "</p>";
 
 
-    outText << "<table class=\"stripes\">";
+    outText << "<table class=\"stripes sortable\">";
 
     outText << "<thead>"
             <<"<tr>"
-            <<"<th>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("Node")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("Label")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("DP")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
             << tr("DP'")
-            << "</th><th>"
-            << tr("%DP")
+            << "</th>"
+            <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
+            << tr("%DP'")
             <<"</th>"
            <<"</tr>"
           << "</thead>"
-          <<"<tbody>";
+          <<"<tbody id=\"results\">";
+
 
     QList<Vertex*>::const_iterator it;
 
@@ -7296,22 +7421,26 @@ void Graph::writePrestigeProximity( const QString fileName,
             << "</p>";
 
 
-    outText << "<table class=\"stripes\">";
+    outText << "<table class=\"stripes sortable\">";
 
     outText << "<thead>"
             <<"<tr>"
-            <<"<th>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("Node")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("Label")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("PP=PP'")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
             << tr("%PP")
-            <<"</th>"
+            << "</th>"
            <<"</tr>"
           << "</thead>"
-          <<"<tbody>";
+          <<"<tbody id=\"results\">";
+
 
     QList<Vertex*>::const_iterator it;
 
@@ -7694,7 +7823,7 @@ void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolate
                   "Therefore, nodes with high outLink weights give smaller percentage of their PR to node u."
                   )
             << "<br />"
-            << tr("PRP' is the standardized PRP (PRP divided by max PRP).")
+            << tr("PRP' is the scaled PRP (PRP divided by max PRP).")
             << "</p>";
 
     outText << "<p>"
@@ -7712,24 +7841,31 @@ void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolate
             << "</p>";
 
 
-    outText << "<table class=\"stripes\">";
+
+    outText << "<table class=\"stripes sortable\">";
 
     outText << "<thead>"
             <<"<tr>"
-            <<"<th>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("Node")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("Label")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("PRP")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
             << tr("PRP'")
-            << "</th><th>"
-            << tr("%PRP")
+            << "</th>"
+            <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
+            << tr("%PRP'")
             <<"</th>"
            <<"</tr>"
           << "</thead>"
-          <<"<tbody>";
+          <<"<tbody id=\"results\">";
+
+
 
     QList<Vertex*>::const_iterator it;
 
@@ -7858,136 +7994,152 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
                                             const bool dropIsolates){
     qDebug() << "Graph::layoutCircularByProminenceIndex - "
                 << "prominenceIndex index = " << prominenceIndex;
-    //first calculate centrality indices if needed
-
-    maxRadius = canvasMaxRadius();
-    if ( prominenceIndex == 1) {
-            if (graphModified() || !calculatedDC )
-                centralityDegree(true, dropIsolates);
-        }
-        else if ( prominenceIndex == 3 ){
-            if (graphModified() || !calculatedIRCC )
-                centralityClosenessInfluenceRange();
-        }
-        else if ( prominenceIndex == 8 ) {
-            if (graphModified() || !calculatedIC )
-                centralityInformation();
-        }
-        else if ( prominenceIndex == 9){
-            if (graphModified() || !calculatedDP )
-                prestigeDegree(true, dropIsolates);
-        }
-        else if ( prominenceIndex == 10 ) {
-            if (graphModified() || !calculatedPRP )
-                prestigePageRank();
-        }
-        else if ( prominenceIndex == 11 ){
-            if (graphModified() || !calculatedPP )
-                prestigeProximity(considerWeights, inverseWeights);
-        }
-        else{
-            if (graphModified() || !calculatedCentralities )
-                distanceMatrixCreate(true, considerWeights,
-                                       inverseWeights, dropIsolates);
-        }
-
     double rad=0;
     double i=0, std=0;
     //offset controls how far from the centre the central nodes be positioned
     float C=0, maxC=0, offset=0.06;
     double new_radius=0, new_x=0, new_y=0;
 
+    emit statusMessage(tr("Computing centrality indices. Please wait..."));
+    //first calculate centrality indices if needed
+
+    maxRadius = canvasMaxRadius();
+    if ( prominenceIndex == 1) {
+        if (graphModified() || !calculatedDC )
+            centralityDegree(true, dropIsolates);
+    }
+    else if ( prominenceIndex == 3 ){
+        if (graphModified() || !calculatedIRCC )
+            centralityClosenessInfluenceRange();
+    }
+    else if ( prominenceIndex == 8 ) {
+        if (graphModified() || !calculatedIC )
+            centralityInformation();
+    }
+    else if ( prominenceIndex == 9 ) {
+        if (graphModified() || !calculatedEVC )
+            centralityEigenvector();
+    }
+    else if ( prominenceIndex == 10){
+        if (graphModified() || !calculatedDP )
+            prestigeDegree(true, dropIsolates);
+    }
+    else if ( prominenceIndex == 11 ) {
+        if (graphModified() || !calculatedPRP )
+            prestigePageRank();
+    }
+    else if ( prominenceIndex == 12 ){
+        if (graphModified() || !calculatedPP )
+            prestigeProximity(considerWeights, inverseWeights);
+    }
+    else{
+        if (graphModified() || !calculatedCentralities )
+            distanceMatrixCreate(true, considerWeights,
+                                 inverseWeights, dropIsolates);
+    }
+
+    emit statusMessage(tr("Applying circular layout based on centrality/prestige score. "
+                          "Please wait..."));
+
+
     int vert=vertices();
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         switch (prominenceIndex) {
-            case 1 : {
-                qDebug("Layout according to DC");
-                C=(*it)->SDC();
-                std= (*it)->SDC();
-                maxC=maxDC;
-                break;
-            }
-            case 2 : {
-                qDebug("Layout according to CC");
-                C=(*it)->CC();
-                std= (*it)->SCC();
-                maxC=maxCC;
-                break;
-            }
-            case 3 : {
-                qDebug("Layout according to IRCC");
-                qDebug() << "Layout according to IRCC C = " << (*it)->IRCC()
-                            << "std = " << (*it)->SIRCC()
-                            << "maxC= " << maxIRCC;
-                C=(*it)->IRCC();
-                std= (*it)->SIRCC();
-                maxC=maxIRCC;
+        case 1 : {
+            qDebug("Layout according to DC");
+            C=(*it)->SDC();
+            std= (*it)->SDC();
+            maxC=maxDC;
+            break;
+        }
+        case 2 : {
+            qDebug("Layout according to CC");
+            C=(*it)->CC();
+            std= (*it)->SCC();
+            maxC=maxCC;
+            break;
+        }
+        case 3 : {
+            qDebug("Layout according to IRCC");
+            qDebug() << "Layout according to IRCC C = " << (*it)->IRCC()
+                     << "std = " << (*it)->SIRCC()
+                     << "maxC= " << maxIRCC;
+            C=(*it)->IRCC();
+            std= (*it)->SIRCC();
+            maxC=maxIRCC;
 
-                break;
-            }
-            case 4 : {
-                qDebug("Layout according to BC");
-                C=(*it)->BC();
-                std= (*it)->SBC();
-                maxC=maxBC;
-                break;
-            }
-            case 5 : {
-                qDebug("Layout according to SC");
-                C=(*it)->SC();
-                std= (*it)->SSC();
-                maxC=maxSC;
-                break;
-            }
-            case 6 : {
-                qDebug("Layout according to EC");
-                C=(*it)->EC();
-                std= (*it)->SEC();
-                maxC=maxEC;
-                break;
-            }
-            case 7 : {
-                qDebug("Layout according to PC");
-                C=(*it)->PC();
-                std= (*it)->SPC();
-                maxC=maxPC;
-                break;
-            }
-            case 8 : {
-                qDebug("Layout according to IC");
-                C=(*it)->IC();
-                std= (*it)->SIC();
-                maxC=maxIC;
-                break;
-            }
-            case 9 : {
-                qDebug("Layout according to DP");
-                C=(*it)->SDP();
-                std= (*it)->SDP();
-                maxC=maxDP;
-                break;
-            }
-            case 10 : {
-                qDebug("Layout according to PRP");
-                C=(*it)->PRP();
-                std= (*it)->SPRP();
-                maxC=maxPRP;
-                break;
-            }
-            case 11 : {
-                qDebug("Layout according to PP");
-                C=(*it)->PP();
-                std= (*it)->SPP();
-                maxC=maxPP;
-                break;
-            }
+            break;
+        }
+        case 4 : {
+            qDebug("Layout according to BC");
+            C=(*it)->BC();
+            std= (*it)->SBC();
+            maxC=maxBC;
+            break;
+        }
+        case 5 : {
+            qDebug("Layout according to SC");
+            C=(*it)->SC();
+            std= (*it)->SSC();
+            maxC=maxSC;
+            break;
+        }
+        case 6 : {
+            qDebug("Layout according to EC");
+            C=(*it)->EC();
+            std= (*it)->SEC();
+            maxC=maxEC;
+            break;
+        }
+        case 7 : {
+            qDebug("Layout according to PC");
+            C=(*it)->PC();
+            std= (*it)->SPC();
+            maxC=maxPC;
+            break;
+        }
+        case 8 : {
+            qDebug("Layout according to IC");
+            C=(*it)->IC();
+            std= (*it)->SIC();
+            maxC=maxIC;
+            break;
+        }
+        case 9 : {
+            qDebug("Layout according to EVC");
+            C=(*it)->EVC();
+            std= (*it)->SEVC();
+            maxC=maxEVC;
+            break;
+        }
+
+        case 10 : {
+            qDebug("Layout according to DP");
+            C=(*it)->SDP();
+            std= (*it)->SDP();
+            maxC=maxDP;
+            break;
+        }
+        case 11 : {
+            qDebug("Layout according to PRP");
+            C=(*it)->PRP();
+            std= (*it)->SPRP();
+            maxC=maxPRP;
+            break;
+        }
+        case 12 : {
+            qDebug("Layout according to PP");
+            C=(*it)->PP();
+            std= (*it)->SPP();
+            maxC=maxPP;
+            break;
+        }
         };
         qDebug () << "Vertice " << (*it)->name() << " at x=" << (*it)->x()
                   << "y= "<< (*it)->y() << ": C" << C << "stdC" << std
                   << "maxradius" <<  maxRadius
-                  << "maxC" << maxC << "C/maxC" << (C/maxC)
-                  << "newradius" << maxRadius - (std/maxC - offset)*maxRadius;
+                  << "newradius" << maxRadius - (std - offset)*maxRadius;
         switch (static_cast<int> (ceil(maxC)) ){
         case 0: {
             qDebug("maxC=0.   Using maxHeight");
@@ -7995,7 +8147,7 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
             break;
         }
         default: {
-            new_radius=(maxRadius- (std/maxC - offset)*maxRadius);
+            new_radius=(maxRadius- (std - offset)*maxRadius);
             break;
         }
         };
@@ -8110,36 +8262,6 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
                                          const bool dropIsolates){
     qDebug("Graph: layoutLevelCentrality...");
 
-    if ( prominenceIndex == 1) {
-            if (graphModified() || !calculatedDC )
-                centralityDegree(true, dropIsolates);
-        }
-        else if ( prominenceIndex == 3 ){
-            if (graphModified() || !calculatedIRCC )
-                centralityClosenessInfluenceRange();
-        }
-        else if ( prominenceIndex == 8 ) {
-            if (graphModified() || !calculatedIC )
-                centralityInformation();
-        }
-        else if ( prominenceIndex == 9){
-            if (graphModified() || !calculatedDP )
-                prestigeDegree(true, dropIsolates);
-        }
-        else if ( prominenceIndex == 10 ) {
-            if (graphModified() || !calculatedPRP )
-                prestigePageRank();
-        }
-        else if ( prominenceIndex == 11 ){
-            if (graphModified() || !calculatedPP )
-                prestigeProximity(considerWeights, inverseWeights);
-        }
-        else{
-            if (graphModified() || !calculatedCentralities )
-                distanceMatrixCreate(true, considerWeights,
-                                       inverseWeights, dropIsolates);
-        }
-
     double i=0, std=0;
     //offset controls how far from the top the central nodes will be
     float C=0, maxC=0, offset=50;
@@ -8148,85 +8270,135 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
     maxHeight-=offset;
     maxWidth-=offset;
     QList<Vertex*>::const_iterator it;
+
+
+    emit statusMessage(tr("Computing centrality/prestige scores. Please wait..."));
+
+    if ( prominenceIndex == 1) {
+        if (graphModified() || !calculatedDC )
+            centralityDegree(true, dropIsolates);
+    }
+    else if ( prominenceIndex == 3 ){
+        if (graphModified() || !calculatedIRCC )
+            centralityClosenessInfluenceRange();
+    }
+    else if ( prominenceIndex == 8 ) {
+        if (graphModified() || !calculatedIC )
+            centralityInformation();
+    }
+    else if ( prominenceIndex == 9){
+        if (graphModified() || !calculatedEVC )
+            centralityEigenvector(true, dropIsolates);
+    }
+
+    else if ( prominenceIndex == 10){
+        if (graphModified() || !calculatedDP )
+            prestigeDegree(true, dropIsolates);
+    }
+    else if ( prominenceIndex == 11 ) {
+        if (graphModified() || !calculatedPRP )
+            prestigePageRank();
+    }
+    else if ( prominenceIndex == 12 ){
+        if (graphModified() || !calculatedPP )
+            prestigeProximity(considerWeights, inverseWeights);
+    }
+    else{
+        if (graphModified() || !calculatedCentralities )
+            distanceMatrixCreate(true, considerWeights,
+                                 inverseWeights, dropIsolates);
+    }
+
+    emit statusMessage(tr("Applying level layout based on centrality/prestige score. "
+                          "Please wait..."));
+
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         switch (prominenceIndex) {
-            case 1 : {
-                qDebug("Layout according to DC");
-                C=(*it)->SDC();
-                std= (*it)->SDC();
-                maxC=maxDC;
-                break;
-            }
-            case 2 : {
-                qDebug("Layout according to CC");
-                C=(*it)->CC();
-                std= (*it)->SCC();
-                maxC=maxCC;
-                break;
-            }
-            case 3 : {
-                qDebug("Layout according to IRCC");
-                C=(*it)->IRCC();
-                std= (*it)->SIRCC();
-                maxC=maxIRCC;
-                break;
-            }
-            case 4 : {
-                qDebug("Layout according to BC");
-                C=(*it)->BC();
-                std= (*it)->SBC();
-                maxC=maxBC;
-                break;
-            }
-            case 5 : {
-                qDebug("Layout according to SC");
-                C=(*it)->SC();
-                std= (*it)->SSC();
-                maxC=maxSC;
-                break;
-            }
-            case 6 : {
-                qDebug("Layout according to EC");
-                C=(*it)->EC();
-                std= (*it)->SEC();
-                maxC=maxEC;
-                break;
-            }
-            case 7 : {
-                qDebug("Layout according to PC");
-                C=(*it)->PC();
-                std= (*it)->SPC();
-                maxC=maxPC;
-                break;
-            }
-            case 8 : {
-                qDebug("Layout according to IC");
-                C=(*it)->IC();
-                std= (*it)->SIC();
-                maxC=maxIC;
-                break;
-            }
-            case 9 : {
-                qDebug("Layout according to DP");
-                C=(*it)->SDP();
-                std= (*it)->SDP();
-                maxC=maxDP;
-                break;
-            }
-            case 10 : {
-                qDebug("Layout according to PRP");
-                C=(*it)->PRP();
-                std= (*it)->SPRP();
-                maxC=maxPRP;
-                break;
-            }
-            case 11 : {
-                qDebug("Layout according to PP");
-                C=(*it)->PP();
-                std= (*it)->SPP();
-                maxC=maxPP;
-                break;
-            }
+        case 1 : {
+            qDebug("Layout according to DC");
+            C=(*it)->SDC();
+            std= (*it)->SDC();
+            maxC=maxDC;
+            break;
+        }
+        case 2 : {
+            qDebug("Layout according to CC");
+            C=(*it)->CC();
+            std= (*it)->SCC();
+            maxC=maxCC;
+            break;
+        }
+        case 3 : {
+            qDebug("Layout according to IRCC");
+            C=(*it)->IRCC();
+            std= (*it)->SIRCC();
+            maxC=maxIRCC;
+            break;
+        }
+        case 4 : {
+            qDebug("Layout according to BC");
+            C=(*it)->BC();
+            std= (*it)->SBC();
+            maxC=maxBC;
+            break;
+        }
+        case 5 : {
+            qDebug("Layout according to SC");
+            C=(*it)->SC();
+            std= (*it)->SSC();
+            maxC=maxSC;
+            break;
+        }
+        case 6 : {
+            qDebug("Layout according to EC");
+            C=(*it)->EC();
+            std= (*it)->SEC();
+            maxC=maxEC;
+            break;
+        }
+        case 7 : {
+            qDebug("Layout according to PC");
+            C=(*it)->PC();
+            std= (*it)->SPC();
+            maxC=maxPC;
+            break;
+        }
+        case 8 : {
+            qDebug("Layout according to IC");
+            C=(*it)->IC();
+            std= (*it)->SIC();
+            maxC=maxIC;
+            break;
+        }
+        case 9 : {
+            qDebug("Layout according to EVC");
+            C=(*it)->EVC();
+            std= (*it)->SEVC();
+            maxC=maxEVC;
+            break;
+        }
+
+        case 10 : {
+            qDebug("Layout according to DP");
+            C=(*it)->SDP();
+            std= (*it)->SDP();
+            maxC=maxDP;
+            break;
+        }
+        case 11 : {
+            qDebug("Layout according to PRP");
+            C=(*it)->PRP();
+            std= (*it)->SPRP();
+            maxC=maxPRP;
+            break;
+        }
+        case 12 : {
+            qDebug("Layout according to PP");
+            C=(*it)->PP();
+            std= (*it)->SPP();
+            maxC=maxPP;
+            break;
+        }
         };
         qDebug()<< "Vertice " << (*it)->name()
                 << " at x="<< (*it)->x() << ", y="<<  (*it)->y()
@@ -8281,6 +8453,7 @@ void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
     float C=0, maxC=0;
     int new_size=0;
 
+    emit statusMessage(tr("Computing centrality/prestige scores. Please wait..."));
     //first calculate centrality indices if needed
     if ( prominenceIndex == 0) {
         // do nothing
@@ -8298,14 +8471,19 @@ void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
             centralityInformation();
     }
     else if ( prominenceIndex == 9){
+        if (graphModified() || !calculatedEVC )
+            centralityEigenvector(true, dropIsolates);
+    }
+
+    else if ( prominenceIndex == 10){
         if (graphModified() || !calculatedDP )
             prestigeDegree(true, dropIsolates);
     }
-    else if ( prominenceIndex == 10 ) {
+    else if ( prominenceIndex == 11 ) {
         if (graphModified() || !calculatedPRP )
             prestigePageRank();
     }
-    else if ( prominenceIndex == 11 ){
+    else if ( prominenceIndex == 12 ){
         if (graphModified() || !calculatedPP )
             prestigeProximity(considerWeights, inverseWeights);
     }
@@ -8314,6 +8492,10 @@ void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
             distanceMatrixCreate(true, considerWeights,
                                    inverseWeights, dropIsolates);
     }
+
+    emit statusMessage(tr("Applying node sizes based on centrality/prestige score. "
+                          "Please wait..."));
+
     QList<Vertex*>::const_iterator it;
     for  (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         switch (prominenceIndex) {
@@ -8321,83 +8503,91 @@ void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
             C=0;maxC=0;
             break;
         }
-            case 1 : {
-                qDebug("VerticesSize according to DC");
-                C=(*it)->SDC();
-                std= (*it)->SDC();
-                maxC=maxDC;
-                break;
-            }
-            case 2 : {
-                qDebug("VerticesSize according to CC");
-                C=(*it)->CC();
-                std= (*it)->SCC();
-                maxC=maxCC;
-                break;
-            }
-            case 3 : {
-                qDebug("VerticesSize according to IRCC");
-                C=(*it)->IRCC();
-                std= (*it)->SIRCC();
-                maxC=maxIRCC;
-                break;
-            }
-            case 4 : {
-                qDebug("VerticesSize according to BC");
-                C=(*it)->BC();
-                std= (*it)->SBC();
-                maxC=maxBC;
-                break;
-            }
-            case 5 : {
-                qDebug("VerticesSize according to SC");
-                C=(*it)->SC();
-                std= (*it)->SSC();
-                maxC=maxSC;
-                break;
-            }
-            case 6 : {
-                qDebug("VerticesSize according to EC");
-                C=(*it)->EC();
-                std= (*it)->SEC();
-                maxC=maxEC;
-                break;
-            }
-            case 7 : {
-                qDebug("VerticesSize according to PC");
-                C=(*it)->PC();
-                std= (*it)->SPC();
-                maxC=maxPC;
-                break;
-            }
-            case 8 : {
-                qDebug("VerticesSize according to IC");
-                C=(*it)->IC();
-                std= (*it)->SIC();
-                maxC=maxIC;
-                break;
-            }
-            case 9 : {
-                qDebug("VerticesSize according to DP");
-                C=(*it)->SDP();
-                std= (*it)->SDP();
-                maxC=maxDP;
-                break;
-            }
-            case 10 : {
-                qDebug("VerticesSize according to PRP");
-                C=(*it)->PRP();
-                std= (*it)->SPRP();
-                maxC=maxPRP;
-                break;
-            }
-            case 11 : {
-                qDebug("VerticesSize according to PP");
-                C=(*it)->PP();
-                std= (*it)->SPP();
-                maxC=maxPP;
-                break;
-            }
+        case 1 : {
+            qDebug("VerticesSize according to DC");
+            C=(*it)->SDC();
+            std= (*it)->SDC();
+            maxC=maxDC;
+            break;
+        }
+        case 2 : {
+            qDebug("VerticesSize according to CC");
+            C=(*it)->CC();
+            std= (*it)->SCC();
+            maxC=maxCC;
+            break;
+        }
+        case 3 : {
+            qDebug("VerticesSize according to IRCC");
+            C=(*it)->IRCC();
+            std= (*it)->SIRCC();
+            maxC=maxIRCC;
+            break;
+        }
+        case 4 : {
+            qDebug("VerticesSize according to BC");
+            C=(*it)->BC();
+            std= (*it)->SBC();
+            maxC=maxBC;
+            break;
+        }
+        case 5 : {
+            qDebug("VerticesSize according to SC");
+            C=(*it)->SC();
+            std= (*it)->SSC();
+            maxC=maxSC;
+            break;
+        }
+        case 6 : {
+            qDebug("VerticesSize according to EC");
+            C=(*it)->EC();
+            std= (*it)->SEC();
+            maxC=maxEC;
+            break;
+        }
+        case 7 : {
+            qDebug("VerticesSize according to PC");
+            C=(*it)->PC();
+            std= (*it)->SPC();
+            maxC=maxPC;
+            break;
+        }
+        case 8 : {
+            qDebug("VerticesSize according to IC");
+            C=(*it)->IC();
+            std= (*it)->SIC();
+            maxC=maxIC;
+            break;
+        }
+        case 9 : {
+            qDebug("Layout according to EVC");
+            C=(*it)->EVC();
+            std= (*it)->SEVC();
+            maxC=maxEVC;
+            break;
+        }
+
+        case 10 : {
+            qDebug("VerticesSize according to DP");
+            C=(*it)->SDP();
+            std= (*it)->SDP();
+            maxC=maxDP;
+            break;
+        }
+        case 11 : {
+            qDebug("VerticesSize according to PRP");
+            C=(*it)->PRP();
+            std= (*it)->SPRP();
+            maxC=maxPRP;
+            break;
+        }
+        case 12 : {
+            qDebug("VerticesSize according to PP");
+            C=(*it)->PP();
+            std= (*it)->SPP();
+            maxC=maxPP;
+            break;
+        }
         };
         qDebug () << "Vertex " << (*it)->name()
                   << ": C=" << C << ", stdC=" << std
@@ -9478,30 +9668,47 @@ void Graph::writeClusteringCoefficient(
                   "its neighbors divided by the number of links that could possibly exist between them. <br />"
                   "The CLC index is used to characterize the transitivity of a network. A value close to one "
                   "indicates that the node is involved in many transitive relations. "
-                  "")
+                  "CLC' is the normalized CLC, divided by maximum CLC found in this network.")
             << "</p>";
 
     outText << "<p>"
             << "<span class=\"info\">"
             << tr("CLC range: ")
             <<"</span>"
-            << tr("0 &le; PC &le; 1 ")
+            << tr("0 &le; CLC &le; 1 ")
             << "</p>";
 
-    outText << "<table class=\"stripes\">";
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("CLC range: ")
+            <<"</span>"
+            << tr("0 &le; CLC' &le; 1 ")
+            << "</p>";
+
+
+    outText << "<table class=\"stripes sortable\">";
 
     outText << "<thead>"
             <<"<tr>"
-            <<"<th>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("Node")
-            << "</th><th>"
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
             << tr("Label")
-            << "</th><th>"
-            << tr("Local CLC")
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("CLC")
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
+            << tr("CLC'")
+            << "</th>"
+            <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
+            << tr("%CLC'")
             <<"</th>"
            <<"</tr>"
           << "</thead>"
-          <<"<tbody>";
+          <<"<tbody id=\"results\">";
+
 
 
 
@@ -9519,6 +9726,10 @@ void Graph::writeClusteringCoefficient(
                 << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
                 << "</td><td>"
                 << (*it)->CLC()
+                << "</td><td>"
+                << (*it)->CLC() / maxCLC
+                << "</td><td>"
+                << 100 * (*it)->CLC() / maxCLC
                 << "</td>"
                 <<"</tr>";
 
