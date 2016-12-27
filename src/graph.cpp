@@ -10152,7 +10152,7 @@ void Graph::writeCliqueCensus(
             << "</p>";
 
 
-   graphClusteringHierarchical(CLUSTERING_SINGLE_LINKAGE, CLQM); //uncomment when ready.
+   //graphClusteringHierarchical(CLUSTERING_SINGLE_LINKAGE, CLQM); //uncomment when ready.
 
    outText << "<table class=\"stripes\">";
    outText << "<thead>"
@@ -10427,10 +10427,11 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
         return;
     }
 
-    distanceMatrixCreate(false, considerWeights, inverseWeights, dropIsolates);
-    Matrix CLM;
-    CLM = DM;
-    graphClusteringHierarchical(method, CLM);
+
+    graphClusteringHierarchical(matrix, similarityMeasure,
+                                method,considerWeights,
+                                inverseWeights,
+                                dropIsolates);
 
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
@@ -10468,14 +10469,19 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
  * @param DSM
 
  */
-void Graph::graphClusteringHierarchical(const int &method, Matrix &DSM) {
-    int N = DSM.rows();
-    qDebug() << "Graph::graphClusteringHierarchical() - type:"
-             << method
-             << "matrix DSM.size:"
-             << N
-             <<"matrix DSM";
-    DSM.printMatrixConsole();
+void Graph::graphClusteringHierarchical(const int &matrix,
+                                        const int &similarityMeasure,
+                                        const int &method,
+                                        const bool &considerWeights,
+                                        const bool &inverseWeights,
+                                        const bool &dropIsolates) {
+    qDebug() << "Graph::graphClusteringHierarchical() - matrix:"
+             << matrix
+             << "similarityMeasure"
+             << similarityMeasure
+             << "method"
+             << method;
+
     float min=RAND_MAX;
     float max=0;
     int imin, jmin, imax, jmax, mergedClusterIndex, deletedClusterIndex ;
@@ -10483,6 +10489,39 @@ void Graph::graphClusteringHierarchical(const int &method, Matrix &DSM) {
 
     QList <int> clusteringLevel;
     QVector<int> clusteredItems;  //to store cluster members at each clustering level
+
+    Matrix DSM;
+
+    switch (matrix) {
+    case MATRIX_ADJACENCY:
+        graphMatrixAdjacencyCreate();
+        DSM=AM;
+        break;
+    case MATRIX_DISTANCES:
+        distanceMatrixCreate(false, considerWeights, inverseWeights, dropIsolates);
+        DSM=DM;
+        break;
+    case MATRIX_ADJACENCY_SIMILARITY:
+        graphMatrixAdjacencyCreate();
+        DSM=AM;
+        break;
+    case MATRIX_DISTANCES_SIMILARITY:
+        distanceMatrixCreate(false, considerWeights, inverseWeights, dropIsolates);
+        DSM=DM;
+        break;
+    default:
+        break;
+    }
+
+    int N = DSM.rows();
+
+
+    qDebug() << "Graph::graphClusteringHierarchical() -"
+             << "matrix DSM.size:"
+             << N
+             <<"matrix DSM";
+    DSM.printMatrixConsole();
+
     clusteredItems.reserve(N);
 
     m_clusters.clear();

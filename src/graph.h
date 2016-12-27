@@ -714,7 +714,12 @@ public:
     int graphCliquesContaining(const int &actor, const int &size=0);
     int graphCliquesOfSize(const int &size );
 
-    void graphClusteringHierarchical(const int &method, Matrix &DSM);
+    void graphClusteringHierarchical(const int &matrix,
+                                     const int &similarityMeasure,
+                                     const int &method,
+                                     const bool &considerWeights,
+                                     const bool &inverseWeights,
+                                     const bool &dropIsolates);
     float clusteringCoefficientLocal(const long int &v1);
     float clusteringCoefficient (const bool updateProgress=false);
 
