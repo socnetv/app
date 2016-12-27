@@ -57,6 +57,7 @@
 #include "dialogsettings.h"
 #include "dialogsimilaritypearson.h"
 #include "dialogsimilaritymatches.h"
+#include "dialogclusteringhierarchical.h"
 
 
 
@@ -1947,7 +1948,7 @@ void MainWindow::initActions(){
                    "Note that the complexity of agglomerative clustering is O( n^2 log(n) ), "
                    "therefore is too slow for large data sets."
                    ));
-    connect(clusteringHierarchicalAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeClusteringHierarchical() )  );
+    connect(clusteringHierarchicalAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeClusteringHierarchicalDialog() )  );
 
 
     cliquesAct = new QAction(QIcon(":/images/clique.png"), tr("Clique Census"),this);
@@ -10337,10 +10338,37 @@ void MainWindow::slotAnalyzeReachabilityMatrix(){
 }
 
 
+
+
 /**
- * @brief MainWindow::slotAnalyzeClusteringHierarchical
+ * @brief Displays the slotAnalyzeClusteringHierarchicalDialog dialog.
  */
-void MainWindow::slotAnalyzeClusteringHierarchical(){
+void MainWindow::slotAnalyzeClusteringHierarchicalDialog() {
+    qDebug()<< "MW::slotAnalyzeClusteringHierarchicalDialog()";
+
+    m_dialogClusteringHierarchical = new DialogClusteringHierarchical(this);
+
+    connect( m_dialogClusteringHierarchical, &DialogClusteringHierarchical::userChoices,
+             this, &MainWindow::slotAnalyzeClusteringHierarchical );
+
+    m_dialogClusteringHierarchical->exec();
+
+}
+
+
+
+/**
+ * @brief Called from DialogClusteringHierarchical with user choices. Calls
+ * Graph::writeClusteringHierarchical() to compute and write HCA and displays the report.
+ * @param matrix
+ * @param similarityMeasure
+ * @param linkageCriterion
+ * @param diagonal
+ */
+void MainWindow::slotAnalyzeClusteringHierarchical(const QString &matrix,
+                                                   const QString &similarityMeasure,
+                                                   const QString &linkageCriterion,
+                                                    const bool &diagonal){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10350,48 +10378,55 @@ void MainWindow::slotAnalyzeClusteringHierarchical(){
     bool considerWeights=true;
     bool inverseWeights=false;
     bool dropIsolates=false;
-    bool ok;
-    int clusteringMethod = 0;
 
-    QStringList clusteringCriteria;
-    clusteringCriteria
-              << tr("Single-linkage (minimum)")
-              << tr("Complete-linkage (maximum)")
-              << tr("Average-linkage (UPGMA)");
+    int m_matrix = 0;
+    int m_linkageCriterion = 0;
+    int m_similarityMeasure = 0;
 
-
-    QString userSelection = QInputDialog::getItem(
-                this,
-                tr("Hierarchical Clustering"),
-                tr("Select a method (criterion) for the hiearchical cluster analysis.\n"
-
-                 "Essentially, this is the criterion by which pairs of clusters \n"
-                   "are going to be combined into larger clusters. \n"
-
-                   "In single-linkage (minimum) clustering the distance between \n"
-                   "two clusters is equal to the shortest distance between any \n"
-                   "members of the clusters. \n"
-
-                   "In complete-linkage the distance between two clusters is equal to the \n"
-                     "longest distance between any members of the clusters. \n"
-                   ),
-
-                clusteringCriteria, 0, false, &ok);
-    if (ok ) {
-        if (userSelection == "Single-linkage (minimum)") {
-            clusteringMethod=CLUSTERING_SINGLE_LINKAGE;
-        }
-        else if (userSelection == "Complete-linkage (maximum)") {
-            clusteringMethod=CLUSTERING_COMPLETE_LINKAGE;
-        }
-        else if (userSelection == "Average-linkage (UPGMA)") {
-            clusteringMethod=CLUSTERING_AVERAGE_LINKAGE;
-       }
-
+    if (matrix.contains("Adjacency similarity", Qt::CaseInsensitive)) {
+        m_matrix = MATRIX_ADJACENCY_SIMILARITY;
+    }
+    else if (matrix.contains("Distances similarity", Qt::CaseInsensitive)) {
+        m_matrix = MATRIX_DISTANCES_SIMILARITY;
+    }
+    else if (matrix.contains("Adjacency", Qt::CaseInsensitive)) {
+        m_matrix = MATRIX_ADJACENCY;
+    }
+    else if (matrix.contains("Distances", Qt::CaseInsensitive)) {
+        m_matrix = MATRIX_DISTANCES;
     }
     else {
-        statusMessage( tr("Aborted."));
-        return;
+        m_matrix = -1;
+    }
+
+    if (similarityMeasure.contains("Exact", Qt::CaseInsensitive)) {
+        m_similarityMeasure = SIMILARITY_MEASURE_SIMPLE;
+    }
+    else if (similarityMeasure.contains("Jaccard", Qt::CaseInsensitive)) {
+        m_similarityMeasure = SIMILARITY_MEASURE_JACCARD;
+    }
+    else if (similarityMeasure.contains("Hamming", Qt::CaseInsensitive)) {
+        m_similarityMeasure = SIMILARITY_MEASURE_HAMMING;
+    }
+    else if (similarityMeasure.contains("Cosine", Qt::CaseInsensitive)) {
+        m_similarityMeasure = SIMILARITY_MEASURE_COSINE;
+    }
+    else if (similarityMeasure.contains("Pearson", Qt::CaseInsensitive)) {
+        m_similarityMeasure = SIMILARITY_MEASURE_PEARSON;
+    }
+    else {
+        m_similarityMeasure = -1;
+    }
+
+
+    if (linkageCriterion == "Single-linkage (minimum)") {
+        m_linkageCriterion=CLUSTERING_SINGLE_LINKAGE;
+    }
+    else if (linkageCriterion == "Complete-linkage (maximum)") {
+        m_linkageCriterion=CLUSTERING_COMPLETE_LINKAGE;
+    }
+    else if (linkageCriterion == "Average-linkage (UPGMA)") {
+        m_linkageCriterion=CLUSTERING_AVERAGE_LINKAGE;
     }
 
 
@@ -10402,7 +10437,9 @@ void MainWindow::slotAnalyzeClusteringHierarchical(){
     createProgressBar(0,progressMsg);
 
     activeGraph.writeClusteringHierarchical(fn,
-                                            clusteringMethod,
+                                            m_matrix,
+                                            m_similarityMeasure,
+                                            m_linkageCriterion,
                                             considerWeights,
                                             inverseWeights,
                                             dropIsolates);
@@ -10421,6 +10458,8 @@ void MainWindow::slotAnalyzeClusteringHierarchical(){
     statusMessage("Hierarchical cluster analysis saved as: " + fn);
 
 }
+
+
 
 /**
 *	Calls Graph:: writeCliqueCensus() to write the number of cliques (triangles)

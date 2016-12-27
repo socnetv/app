@@ -90,6 +90,8 @@ static const int MATRIX_GEODESICS        = 6;
 static const int MATRIX_REACHABILITY     = 7;
 static const int MATRIX_ADJACENCY_TRANSPOSE = 8;
 static const int MATRIX_COCITATION = 9;
+static const int MATRIX_ADJACENCY_SIMILARITY = 10;
+static const int MATRIX_DISTANCES_SIMILARITY = 11;
 
 
 class QPointF;
@@ -615,6 +617,8 @@ public:
 
 
     void writeClusteringHierarchical(const QString &fileName,
+                                     const int &matrix = MATRIX_ADJACENCY,
+                                     const int &similarityMeasure=SIMILARITY_MEASURE_SIMPLE,
                                      const int &method=CLUSTERING_SINGLE_LINKAGE ,
                                      const bool &considerWeights=true,
                                      const bool &inverseWeights=false,

@@ -51,6 +51,7 @@ static const int SIMILARITY_MEASURE_SIMPLE  = 0;
 static const int SIMILARITY_MEASURE_JACCARD = 1;
 static const int SIMILARITY_MEASURE_HAMMING = 2;
 static const int SIMILARITY_MEASURE_COSINE  = 3;
+static const int SIMILARITY_MEASURE_PEARSON = 4;
 
 
 

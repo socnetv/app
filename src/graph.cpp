@@ -10406,6 +10406,8 @@ int Graph::graphCliquesOfSize(const int &size){
 
 
 void Graph::writeClusteringHierarchical(const QString &fileName,
+                                        const int &matrix,
+                                        const int &similarityMeasure,
                                         const int &method,
                                         const bool &considerWeights,
                                         const bool &inverseWeights,

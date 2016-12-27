@@ -87,6 +87,7 @@ class DialogRandSmallWorld;
 class DialogRandScaleFree;
 class DialogSimilarityPearson;
 class DialogSimilarityMatches;
+class DialogClusteringHierarchical;
 class DialogRandRegular;
 class DialogSettings;
 class TextEditor;
@@ -324,7 +325,11 @@ public slots:
     void slotAnalyzeReachabilityMatrix();
     void slotAnalyzeConnectedness();
 
-    void slotAnalyzeClusteringHierarchical();
+    void slotAnalyzeClusteringHierarchicalDialog();
+    void slotAnalyzeClusteringHierarchical(const QString &matrix,
+                                           const QString &similarityMeasure,
+                                           const QString &linkageCriterion,
+                                           const bool &diagonal);
     void slotAnalyzeCliqueCensus();
     void slotAnalyzeClusteringCoefficient();
     void slotAnalyzeTriadCensus();
@@ -449,6 +454,7 @@ private:
     DialogSettings *m_settingsDialog;
     DialogSimilarityPearson *m_dialogSimilarityPearson;
     DialogSimilarityMatches *m_dialogSimilarityMatches;
+    DialogClusteringHierarchical *m_dialogClusteringHierarchical;
 
 
     DialogPreviewFile *m_dialogPreviewFile;
