@@ -3106,9 +3106,6 @@ int Graph::distance(const int i, const int j,
                     const bool inverseWeights){
     qDebug() <<"Graph::distance()";
     if ( !calculatedDistances || graphModified() ) {
-        qDebug() <<"Graph::distance() - graph modified - recomputing DM";
-        emit statusMessage ( tr("Computing Distance: "
-                                "Need to recompute Distances. Please wait...") );
         distanceMatrixCreate(false, considerWeights, inverseWeights, false);
     }
     return DM.item(index[i],index[j]);
@@ -3128,9 +3125,6 @@ int Graph::diameter(const bool considerWeights,
                     const bool inverseWeights){
     qDebug () << "Graph::diameter()" ;
     if ( !calculatedDistances || graphModified() ) {
-        qDebug() <<"Graph::distance() - graphModified(). Recomputing DM";
-        emit statusMessage ( tr("Computing Diameter: "
-                                "Need to recompute Distances. Please wait...") );
         distanceMatrixCreate(false, considerWeights, inverseWeights, false);
     }
     return m_graphDiameter;
@@ -3189,8 +3183,6 @@ float Graph::distanceGraphAverage(const bool considerWeights,
  */
 int Graph::graphGeodesics()  {
     if (!calculatedDistances || graphModified()) {
-        qDebug()<< "Graph::graphGeodesics() - "
-                   "graph modified. Calling distanceMatrixCreate()..." ;
         distanceMatrixCreate(false, false,false,false);
     }
     qDebug()<< "Graph::graphGeodesics() - geodesics:" << m_graphGeodesicsCount;
@@ -3385,7 +3377,6 @@ void Graph::writeMatrixNumberOfGeodesicsPlainText(const QString &fn,
                                          const bool &inverseWeights) {
     qDebug ("Graph::writeMatrixNumberOfGeodesicsPlainText()");
     if ( !calculatedDistances || graphModified() ) {
-        emit statusMessage ( (tr("Calculating shortest paths")) );
         distanceMatrixCreate(false, considerWeights, inverseWeights, false);
     }
 
@@ -3434,7 +3425,6 @@ void Graph::writeEccentricity(
     QTextStream outText ( &file );
     outText.setCodec("UTF-8");
     if ( !calculatedDistances || !calculatedCentralities || graphModified() ) {
-        emit statusMessage ( (tr("Calculating shortest paths")) );
         distanceMatrixCreate(true, considerWeights,
                              inverseWeights, dropIsolates);
 
@@ -3626,11 +3616,16 @@ void Graph::distanceMatrixCreate(const bool &computeCentralities,
              << "considerWeights:"<<considerWeights
              << "inverseWeights:"<<inverseWeights
              << "dropIsolates:" << dropIsolates;
-                ;
+
     if ( !graphModified() && calculatedDistances && !computeCentralities)  {
         qDebug() << "Graph::distanceMatrixCreate() - not modified. Return.";
         return;
     }
+
+    qDebug() << "Graph::distanceMatrixCreate() - Need to compute geodesic distances.";
+
+    emit statusMessage ( tr("Computing geodesic distances. Please wait...") );
+
     //Create a NxN DistanceMatrix. Initialise values to zero.
     m_totalVertices = vertices(false,true);
     qDebug() << "Graph::distanceMatrixCreate() - Resizing Matrices to hold "
@@ -5438,96 +5433,6 @@ void Graph::writeCentralityDegree ( const QString fileName,
 
 
 
-/**
- * @brief Graph::centralityClosenessInfluenceRange
- * Improved node-level centrality closeness index which focuses on the
- * influence range of each node (the set of nodes that are reachable from it)
- * For each node v, this index calculates the fraction of nodes in its influence
- * range and divides it by the average distance of those nodes from v,
- * ignoring nodes that are not reachable from it.
- * @param considerWeights
- * @param inverseWeights
- * @param dropIsolates
- */
-void Graph::centralityClosenessInfluenceRange(const bool considerWeights,
-                                              const bool inverseWeights,
-                                              const bool dropIsolates){
-    qDebug()<< "Graph::centralityClosenessImproved()";
-    if (!graphModified() && calculatedIRCC ) {
-        qDebug() << "Graph::centralityClosenessImproved() - "
-                    " graph not changed - returning";
-        return;
-    }
-
-     if (!calculatedDistances || graphModified()) {
-         qDebug()<< "Graph::centralityClosenessImproved() - "
-                    "call distanceMatrixCreate()";
-         distanceMatrixCreate(false,considerWeights, inverseWeights,inverseWeights);
-     }
-
-    // calculate centralities
-    QList<Vertex*>::const_iterator it;
-    float IRCC=0,SIRCC=0;
-    float Ji=0;
-    classesIRCC=0;
-    discreteIRCCs.clear();
-    sumIRCC=0;
-    maxIRCC=0;
-    minIRCC=vertices(dropIsolates)-1;
-    float V=vertices(dropIsolates);
-    varianceIRCC=0;
-    meanIRCC=0;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        IRCC=0;
-        if (!(*it)->isIsolated()) {
-            // find connected nodes
-            QList<int> influencedVertices = influenceRanges.values(index[(*it)->name()]);
-            Ji=influencedVertices.size();
-            for (int i = 0; i < Ji; ++i) {
-                qDebug() << "Graph:: centralityClosenessImproved - vertex " <<  (*it)->name()
-                         << " is outbound connected to  = " << influencedVertices.at(i) + 1
-                         << " at distance " << DM.item ((*it)->name()-1, influencedVertices.at(i) );
-                IRCC += DM.item ((*it)->name()-1, influencedVertices.at(i) ) ;
-            }
-            qDebug()<< "Graph:: centralityClosenessImproved -  size of vertexinfluenceRangee Ji = " << Ji
-                    << " IRCC=" << IRCC << " divided by Ji=" << Ji << " yields final IRCC =" << IRCC / Ji;
-            // sanity check for IRCC=0 (=> node is disconnected)
-            if (IRCC != 0)  {
-                IRCC /= Ji;
-                IRCC =  ( Ji / (V-1) ) / IRCC;
-            }
-        }
-        sumIRCC += IRCC;
-        (*it) -> setIRCC ( IRCC ) ;
-        (*it) -> setSIRCC ( IRCC ) ;  // IRCC is a ratio, already std
-        resolveClasses(IRCC, discreteIRCCs, classesIRCC);
-        minmax( IRCC, (*it), maxIRCC, minIRCC, maxNodeIRCC, minNodeIRCC) ;
-        qDebug() << "Graph::centralityClosenessImproved - vertex " <<  (*it)->name()
-                 << " has IRCC = "
-                 << Ji / (V-1) << " / " << IRCC << " = " << (*it)->IRCC();
-    }
-
-    meanIRCC = sumIRCC / (float) V;
-    qDebug("Graph::centralityClosenessImproved - sumIRCC = %f, meanIRCC = %f",
-           sumIRCC, meanIRCC);
-
-    if (minIRCC == maxIRCC)
-        maxNodeIRCC=-1;
-
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( ! dropIsolates || ! (*it)->isIsolated()  ) {
-            SIRCC= (*it) -> SIRCC();
-            varianceIRCC += (SIRCC-meanIRCC) * (SIRCC-meanIRCC) ;
-        }
-    }
-    varianceIRCC=varianceIRCC/(float) V;
-
-    calculatedIRCC=true;
-}
-
-
-
-
 
 /**
  * @brief Writes the closeness centralities to a file
@@ -5554,7 +5459,6 @@ void Graph::writeCentralityCloseness(
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if (graphModified() || !calculatedCentralities ) {
-            emit statusMessage ( (tr("Calculating shortest paths")) );
             distanceMatrixCreate(true, considerWeights,
                                  inverseWeights, dropIsolates);
     }
@@ -5780,6 +5684,105 @@ void Graph::writeCentralityCloseness(
 
 
 
+
+/**
+ * @brief Graph::centralityClosenessIR
+ * Improved node-level centrality closeness index which focuses on the
+ * influence range of each node (the set of nodes that are reachable from it)
+ * For each node v, this index calculates the fraction of nodes in its influence
+ * range and divides it by the average distance of those nodes from v,
+ * ignoring nodes that are not reachable from it.
+ * @param considerWeights
+ * @param inverseWeights
+ * @param dropIsolates
+ */
+void Graph::centralityClosenessIR(const bool considerWeights,
+                                              const bool inverseWeights,
+                                              const bool dropIsolates){
+    qDebug()<< "Graph::centralityClosenessIR()";
+    if (!graphModified() && calculatedIRCC ) {
+        qDebug() << "Graph::centralityClosenessIR() - "
+                    " graph not changed - returning";
+        return;
+    }
+
+     if (!calculatedDistances || graphModified()) {
+         distanceMatrixCreate(false,considerWeights,inverseWeights,dropIsolates);
+     }
+
+    // calculate centralities
+    QList<Vertex*>::const_iterator it;
+    float IRCC=0,SIRCC=0;
+    float Ji=0;
+    float dist=0;
+    int i = 0, j = 0;
+    float V=vertices(dropIsolates);
+    classesIRCC=0;
+    discreteIRCCs.clear();
+    sumIRCC=0;
+    maxIRCC=0;
+    minIRCC=vertices(dropIsolates)-1;
+    varianceIRCC=0;
+    meanIRCC=0;
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        IRCC=0;
+        Ji = 0;
+        if (!(*it)->isIsolated()) {
+
+            for ( j=0; j < DM.cols() ; j++) {
+                i = index[(*it)->name()];
+                if (i == j) continue;
+                dist = DM.item ( i , j );
+                if (dist != RAND_MAX ) {
+                    IRCC += dist;
+                    Ji ++; // compute |Ji|
+                }
+            }
+//            qDebug()<< "Graph::centralityClosenessIR() -  vertex"
+//                    << (*it)->name()
+//                    << "actors in influence range Ji" << Ji
+//                    << "actors in network"<< (V-1)
+//                    << "fraction of reachable actors |Ji|/(V-1)="  << Ji/ (V-1)
+//                    << "distance to actors in Ji" << IRCC
+//                    << "average distance to actors in Ji" << IRCC / Ji
+//                    << "IRCC = "
+//                    << Ji / (V-1) << " / " << IRCC / Ji << " = " << ( Ji / (V-1) ) / ( IRCC / Ji);
+
+            // sanity check for IRCC=0 (=> node is disconnected)
+            if (IRCC != 0)  {
+                IRCC /= Ji;
+                IRCC =  ( Ji / (V-1) ) / IRCC;
+            }
+        }
+        sumIRCC += IRCC;
+        (*it) -> setIRCC ( IRCC ) ;
+        (*it) -> setSIRCC ( IRCC ) ;  // IRCC is a ratio, already std
+        resolveClasses(IRCC, discreteIRCCs, classesIRCC);
+        minmax( IRCC, (*it), maxIRCC, minIRCC, maxNodeIRCC, minNodeIRCC) ;
+
+    }
+
+    meanIRCC = sumIRCC / (float) V;
+
+    if (minIRCC == maxIRCC)
+        maxNodeIRCC=-1;
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( ! dropIsolates || ! (*it)->isIsolated()  ) {
+            SIRCC= (*it) -> SIRCC();
+            varianceIRCC += (SIRCC-meanIRCC) * (SIRCC-meanIRCC) ;
+        }
+    }
+    varianceIRCC=varianceIRCC/(float) V;
+
+    calculatedIRCC=true;
+}
+
+
+
+
+
 //Writes the "improved" closeness centrality indices to a file
 void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
                                                    const bool considerWeights,
@@ -5794,9 +5797,9 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    emit statusMessage ( (tr("calculating IRCC indices")) );
+    emit statusMessage ( (tr("Computing IRCC indices")) );
 
-    centralityClosenessInfluenceRange(considerWeights,inverseWeights, dropIsolates);
+    centralityClosenessIR(considerWeights,inverseWeights, dropIsolates);
 
     emit statusMessage ( tr("Writing IR Closeness indices to file:") + fileName );
 
@@ -5823,11 +5826,17 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
             << "</p>";
 
     outText << "<p class=\"description\">"
-            << tr("The IRCC index is the ratio of the fraction of nodes "
-                  "reachable by each node u to the average distance of these nodes from u. <br />"
-                  "This index is optimized for graphs and directed graphs which "
-                  "are not strongly connected. Read the Manual for more."
-                  "(Wasserman & Faust, formula 5.22, p. 201)")
+            << tr("The IRCC index of a node u is the ratio of the fraction of nodes "
+                  "reachable by node u to the average distance of these nodes from u  "
+                  "(Wasserman & Faust, formula 5.22, p. 201)<br />"
+                  "Thus, this metric is similar to Closeness Centrality "
+                  "but it counts only outbound distances from each actor to other reachable nodes. <br />"
+                  "This metric is useful for directed networks which are "
+                  "not strongly connected (thus the ordinary CC index cannot be computed).<br />"
+                  "In undirected networks, the IRCC has the same properties and yields "
+                  "the same results as the ordinary Closeness Centrality.<br />"
+                  "Read the Manual for more. ")
+
             << "<br />"
             << tr("IRCC is standardized.")
             << "</p>";
@@ -5983,11 +5992,6 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if (graphModified() || !calculatedCentralities ) {
-        qDebug() << "Graph::writeCentralityBetweenness() -"
-                    "Graph modified. Recomputing Distances/Centralities."
-                       << "calculatedCentralities " << calculatedCentralities ;
-
-        emit statusMessage ( (tr("Calculating shortest paths")) );
         distanceMatrixCreate(true, considerWeights, inverseWeights, dropIsolates);
     }
     else {
@@ -6222,7 +6226,6 @@ void Graph::writeCentralityStress( const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if (graphModified() || !calculatedCentralities ) {
-        emit statusMessage ( (tr("Calculating shortest paths")) );
         distanceMatrixCreate(true, considerWeights, inverseWeights,dropIsolates);
     }
     else {
@@ -6419,7 +6422,6 @@ void Graph::writeCentralityEccentricity(const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if (graphModified() || !calculatedCentralities ) {
-        emit statusMessage ( (tr("Calculating shortest paths")) );
         distanceMatrixCreate(true, considerWeights, inverseWeights,dropIsolates);
     }
     else {
@@ -6464,23 +6466,6 @@ void Graph::writeCentralityEccentricity(const QString fileName,
             << tr("0 &le; EC &le; 1 ")
             << tr(" (EC=1 when the actor has ties to all other nodes)")
             << "</p>";
-
-    outText << "<table class=\"stripes\">";
-
-    outText << "<thead>"
-            <<"<tr>"
-            <<"<th>"
-            << tr("Node")
-            << "</th><th>"
-            << tr("Label")
-            << "</th><th>"
-            << tr("EC=EC'")
-            << "</th><th>"
-            << tr("%EC")
-            <<"</th>"
-           <<"</tr>"
-          << "</thead>"
-          <<"<tbody>";
 
 
     outText << "<table class=\"stripes sortable\">";
@@ -6624,7 +6609,6 @@ void Graph::writeCentralityPower(const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if (graphModified() || !calculatedCentralities ) {
-        emit statusMessage ( (tr("Calculating shortest paths")) );
         distanceMatrixCreate(true, considerWeights, inverseWeights, dropIsolates);
     }
     else {
@@ -7259,52 +7243,49 @@ void Graph::prestigeProximity( const bool considerWeights,
     }
 
     if (!calculatedDistances || graphModified()) {
-        qDebug()<< "Graph::prestigeProximity() - "
-                   "call distanceMatrixCreate()";
         distanceMatrixCreate(false,considerWeights, inverseWeights,inverseWeights);
     }
-
 
     // calculate centralities
     QList<Vertex*>::const_iterator it;
     float PP=0;
+    float dist=0;
     float Ii=0;
-    int i=0;
+    int i=0, j=0;
+    float V=vertices(dropIsolates);
     classesPP=0;
     discretePPs.clear();
     sumPP=0;
     maxPP=0;
     minPP=vertices(dropIsolates)-1;
-    float V=vertices(dropIsolates);
     variancePP=0;
     meanPP=0;
     H_StrToInt::iterator it2;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        PP=0; i=0;
-        if (!(*it)->isIsolated()){
-            // find connected nodes
-            QList<int> influencerVertices = influenceDomains.values(index[(*it)->name()]);
-            qDebug()<< "Graph::prestigeProximity() - vertex"
-                    << (*it)->name()
-                    <<"influencerVertices"
-                     << influencerVertices;
-            Ii=influencerVertices.size();
-            qDebug()<< "Graph::PP - vertex " <<  (*it)->name()
-                    << " Ii size: " << Ii;
-            for ( i = 0; i < Ii; i++) {
-                qDebug() << "Graph::PP - vertex " <<  (*it)->name()
-                         << " is inbound connected from " << influencerVertices.at(i) + 1
-                         << " at distance " << DM.item (  influencerVertices.at(i), (*it)->name()-1);
-                PP += DM.item (  influencerVertices.at(i), (*it)->name()-1);
-            }
-            qDebug()<< "Graph::PP - "
-                       "size of vertexinfluenceDomain Ii = " << Ii
-                    << " PP=" << PP << " divided by Ii=" << Ii
-                    << " yields graph-dependant PP index =" << PP / Ii;
 
-            qDebug() << "Graph::PP - vertex " <<  (*it)->name()
-                     << " has PP = "
-                     << Ii / (V-1) << " / " << PP / Ii << " = " << ( Ii / (V-1) ) / (PP/Ii);
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        PP=0; i=0; Ii = 0;
+        if (!(*it)->isIsolated()){
+
+            j = index[(*it)->name()];
+            for (i=0; i < DM.rows() ; i++) {
+                if (i == j) continue;
+                dist = DM.item ( i , j );
+                if (dist != RAND_MAX ) {
+                    PP += dist;
+                    Ii ++; // compute |Ii|
+                }
+            }
+
+            qDebug()<< "Graph::prestigeProximity() -  vertex"
+                    << (*it)->name()
+                    << "actors in influence domain Ii" << Ii
+                    << "actors in network"<< (V-1)
+                    << "fraction of actors who reach i |Ii|/(V-1)="  << Ii/ (V-1)
+                    << "distance to actors in Ii" << PP
+                    << "average distance to actors in Ii" << PP/ Ii
+                    << "PP= "
+                    << Ii / (V-1) << " / " << PP / Ii << " = " << ( Ii / (V-1) ) / ( PP / Ii  );
+
 
             // sanity check for PP=0 (=> node is disconnected)
             if (PP != 0)  {
@@ -7409,8 +7390,15 @@ void Graph::writePrestigeProximity( const QString fileName,
 
     outText << "<p class=\"description\">"
             << tr("The PP index of a node u is the ratio of the proportion of "
-                  "nodes who can reach u to the average distance these nodes are from u. "
-                  "Read he Manual for more. <br />")
+                  "nodes who can reach u to the average distance these nodes are from u "
+                  "(Wasserman & Faust, formula 5.25, p. 204)<br />"
+                  "Thus, it is similar to Closeness Centrality but it counts "
+                  "only inbound distances to each actor, thus it is a measure of actor prestige. <br />"
+                  "This metric is useful for directed networks which are "
+                  "not strongly connected (thus the ordinary CC index cannot be computed).<br />"
+                  "In undirected networks, the PP has the same properties and yields "
+                  "the same results as Closeness Centrality.<br />"
+                  "Read the Manual for more. <br />")
             << "</p>";
 
     outText << "<p>"
@@ -8010,7 +7998,7 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
     }
     else if ( prominenceIndex == 3 ){
         if (graphModified() || !calculatedIRCC )
-            centralityClosenessInfluenceRange();
+            centralityClosenessIR();
     }
     else if ( prominenceIndex == 8 ) {
         if (graphModified() || !calculatedIC )
@@ -8280,7 +8268,7 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
     }
     else if ( prominenceIndex == 3 ){
         if (graphModified() || !calculatedIRCC )
-            centralityClosenessInfluenceRange();
+            centralityClosenessIR();
     }
     else if ( prominenceIndex == 8 ) {
         if (graphModified() || !calculatedIC )
@@ -8464,7 +8452,7 @@ void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
     }
     else if ( prominenceIndex == 3 ){
         if (graphModified() || !calculatedIRCC )
-            centralityClosenessInfluenceRange();
+            centralityClosenessIR();
     }
     else if ( prominenceIndex == 8 ) {
         if (graphModified() || !calculatedIC )
@@ -9542,8 +9530,7 @@ int Graph::reachable(const int &v1, const int &v2) {
 QList<int> Graph::vertexinfluenceRange(int v1){
     qDebug() << "Graph::vertexinfluenceRange() ";
     if (!calculatedDistances|| graphModified()) {
-        // Construct a list of influence ranges
-        // for each node
+        // Construct a list of influence ranges for each node
         distanceMatrixCreate(false, false,false,false);
     }
     return influenceRanges.values(v1);
@@ -16324,14 +16311,12 @@ void Graph::writeMatrix (const QString &fn,
         break;
     case MATRIX_DISTANCES:
         if ( !calculatedDistances || graphModified() ) {
-            emit statusMessage ( tr("Need to recompute Distances. Please wait...") );
             distanceMatrixCreate(false, considerWeights, inverseWeights, dropIsolates);
         }
         emit statusMessage ( tr("Distances recomputed. Writing Distances Matrix...") );
         break;
     case MATRIX_GEODESICS:
         if ( !calculatedDistances || graphModified() ) {
-            emit statusMessage ( tr("Need to recompute Distances. Please wait...") );
             distanceMatrixCreate(false, considerWeights, inverseWeights, false);
         }
         emit statusMessage ( tr("Distances recomputed. Writing Geodesics Matrix...") );
@@ -16343,7 +16328,6 @@ void Graph::writeMatrix (const QString &fn,
         break;
     case MATRIX_REACHABILITY:
         if (!calculatedDistances || graphModified()) {
-            emit statusMessage ( tr("Need to recompute Distances. Please wait...") );
             distanceMatrixCreate(false,false,false,dropIsolates);
         }
         emit statusMessage ( tr("Distances recomputed. Writing Reachability Matrix...") );

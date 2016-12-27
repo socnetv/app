@@ -677,7 +677,7 @@ public:
     void centralityEigenvector(const bool &considerWeights=false,
                                const bool &inverseWeights=false,
                                const bool &dropIsolates=false);
-    void centralityClosenessInfluenceRange(const bool considerWeights=false,
+    void centralityClosenessIR(const bool considerWeights=false,
                                            const bool inverseWeights=false,
                                            const bool dropIsolates=false);
 
