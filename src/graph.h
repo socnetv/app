@@ -370,6 +370,9 @@ public:
     bool graphSaveToDotFormat (QString fileName);
     int graphFileFormat() const;
     bool graphFileFormatExportSupported(const int &fileFormat) const;
+    QString graphMatrixTypeToString(const int &matrix) const;
+    QString graphSimilarityMeasureTypeToString(const int &similarityMeasure) const;
+    QString graphClusteringMethodTypeToString(const int &clusteringMethod) const;
 
     /* RELATIONS */
     int relations();
@@ -619,7 +622,7 @@ public:
     void writeClusteringHierarchical(const QString &fileName,
                                      const int &matrix = MATRIX_ADJACENCY,
                                      const int &similarityMeasure=SIMILARITY_MEASURE_SIMPLE,
-                                     const int &method=CLUSTERING_SINGLE_LINKAGE ,
+                                     const int &clusteringMethod=CLUSTERING_SINGLE_LINKAGE ,
                                      const bool &considerWeights=true,
                                      const bool &inverseWeights=false,
                                      const bool &dropIsolates=false);

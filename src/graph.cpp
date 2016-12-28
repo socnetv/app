@@ -10454,16 +10454,35 @@ int Graph::graphCliquesOfSize(const int &size){
 }
 
 
+
+/**
+ * @brief Graph::writeClusteringHierarchical
+ * @param fileName
+ * @param matrix
+ * @param similarityMeasure
+ * @param method
+ * @param considerWeights
+ * @param inverseWeights
+ * @param dropIsolates
+ */
 void Graph::writeClusteringHierarchical(const QString &fileName,
                                         const int &matrix,
                                         const int &similarityMeasure,
-                                        const int &method,
+                                        const int &clusteringMethod,
                                         const bool &considerWeights,
                                         const bool &inverseWeights,
                                         const bool &dropIsolates) {
 
-    qDebug()<< "Graph::writeClusteringHierarchical() - method:"
-            << method
+
+    QTime computationTimer;
+    computationTimer.start();
+
+    qDebug()<< "Graph::writeClusteringHierarchical() - matrix:"
+            << matrix
+            << "similarityMeasure"
+            << similarityMeasure
+            << "clusteringMethod"
+            << clusteringMethod
             << "considerWeights:"<<considerWeights
             << "inverseWeights:"<<inverseWeights
             << "dropIsolates:" << dropIsolates;
@@ -10479,7 +10498,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
     emit statusMessage ( tr("Computing hierarchical clustering. Please wait... "));
     graphClusteringHierarchical(matrix,
                                 similarityMeasure,
-                                method,
+                                clusteringMethod,
                                 considerWeights,
                                 inverseWeights,
                                 dropIsolates);
@@ -10488,9 +10507,54 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
 
     emit statusMessage ( tr("Writing hierarchical cluster analysis to file: ") + fileName );
 
-    outText << tr("HIERARCHICAL CLUSTERING (HCA)") << endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
 
+    outText.setRealNumberPrecision(m_precision);
+    outText.reset();
+
+
+    outText << htmlHead;
+
+    outText << "<h1>";
+    outText << tr("HIERARCHICAL CLUSTERING (HCA)");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+           << graphName()
+           <<"<br />"
+          << "<span class=\"info\">"
+          << tr("Actors: ")
+          <<"</span>"
+         << vertices()
+         << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Input matrix: ")
+            << "</span>"
+            << graphMatrixTypeToString(matrix)
+            << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Similarity measure: ")
+            <<"</span>"
+           << graphSimilarityMeasureTypeToString(similarityMeasure)
+           << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Clustering method/criterion: ")
+            <<"</span>"
+           << graphClusteringMethodTypeToString(clusteringMethod)
+           << "</p>";
+
+    outText << "<pre>";
     outText <<"Level" << "\t"<< "Actors" <<endl;
     QMap<float, V_int>::const_iterator i;
     for ( i= m_clusters.constBegin() ; i != m_clusters.constEnd(); ++i) {
@@ -10502,6 +10566,21 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
          outText << endl;
 
      }
+    outText << "</pre>";
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Hierarchical Cluster Analysis report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+    file.close();
+    qDebug()<< "Graph::writeClusteringHierarchical() - finished";
 
 }
 
@@ -10571,9 +10650,9 @@ void Graph::graphClusteringHierarchical(const int &matrix,
 
 
     qDebug() << "Graph::graphClusteringHierarchical() -"
-             << "matrix DSM.size:"
+             << "initial matrix DSM.size:"
              << N
-             <<"matrix DSM";
+             <<"matrix DSM contents";
     DSM.printMatrixConsole();
 
     clusteredItems.reserve(N);
@@ -10589,21 +10668,6 @@ void Graph::graphClusteringHierarchical(const int &matrix,
     QVector<int> originalItem; // keeps track of the original item indices
     for (int i = 0 ; i< N ; i ++ ) {
         originalItem << i+1;
-    }
-
-    //@TODO
-    switch (method) {
-    case CLUSTERING_SINGLE_LINKAGE: //"single-link":
-
-        break;
-    case CLUSTERING_COMPLETE_LINKAGE: // "complete-link":
-
-        break;
-    case CLUSTERING_AVERAGE_LINKAGE: //mean or "average-link" or UPGMA
-
-        break;
-    default:
-        break;
     }
 
 
@@ -10625,18 +10689,19 @@ void Graph::graphClusteringHierarchical(const int &matrix,
 
         clusteringLevel << min;
         m_clusters.insert( min, clusteredItems);
-        qDebug() << "Graph::graphClusteringHierarchical() -"
+        qDebug() << "Graph::graphClusteringHierarchical() -" << endl
                  << "Clustering seq:"
-                 << seq
-                 << "Level:" << min
-                 << "neareast neighbors: ("<< imin+1 <<","<<jmin+1<<")"
-                 << "minimum/distance:" << min
-                 << "farthest neighbors: ("<< imax+1 <<","<<jmax+1<<")"
-                 << "maximum/distance:" << max
-                  << "Merge neighbors into a single new cluster:"
-                  << mergedClusterIndex +1
-                  <<"and compute distances "
-                     "between the new cluster and the old ones";
+                 << seq << endl
+                 << "Level:" << min << endl
+                 << "Neareast neighbors: ("<< imin+1 <<","<<jmin+1<<")"
+                 << "Minimum/distance:" << min << endl
+                 << "Farthest neighbors: ("<< imax+1 <<","<<jmax+1<<")"
+                 << "Maximum/distance:" << max << endl
+                 << "Merge nearest neighbors into a single new cluster:"
+                 << mergedClusterIndex +1 << endl
+                 << "Then compute distances "
+                     "between the new cluster and the old ones" <<endl
+                 << "clusteredItems" << m_clusters;
 
         //
         //Step 3. Compute distances (or similarities) between
@@ -10644,24 +10709,46 @@ void Graph::graphClusteringHierarchical(const int &matrix,
         //
         for (int i = 0 ; i< clustersLeft; i ++ ) {
             if (i == deletedClusterIndex  ) {
-                qDebug() << "Graph::graphClusteringHierarchical() -"
-                         << "i"<<i+1
-                          << "= deletedClusterIndex"<< deletedClusterIndex +1
-                          <<"SKIP this as it is one of the merged clusters.";
+//                qDebug() << "Graph::graphClusteringHierarchical() -"
+//                         << "i"<<i+1
+//                          << "= deletedClusterIndex"<< deletedClusterIndex +1
+//                          <<"SKIP this as it is one of the merged clusters.";
                 continue;
 
             }
 
             for (int j = 0 ; j< clustersLeft; j ++ ) {
                 if (j == mergedClusterIndex ) {
-                    distanceNewCluster= (DSM.item(i,imin) < DSM.item(i,jmin) ) ? DSM.item(i,imin) : DSM.item(i,jmin);
+
+                    switch (method) {
+                    case CLUSTERING_SINGLE_LINKAGE: //"single-link":
+                        distanceNewCluster= (DSM.item(i,imin) < DSM.item(i,jmin) ) ? DSM.item(i,imin) : DSM.item(i,jmin);
+                        break;
+                    case CLUSTERING_COMPLETE_LINKAGE: // "complete-link":
+                        if (i!=j) {
+                            distanceNewCluster= (DSM.item(i,imin) > DSM.item(i,jmin) ) ? DSM.item(i,imin) : DSM.item(i,jmin);
+                        }
+                        else {
+                            distanceNewCluster = 0;
+                        }
+                        break;
+                    case CLUSTERING_AVERAGE_LINKAGE: //mean or "average-link" or UPGMA
+                        distanceNewCluster= (DSM.item(i,imin) < DSM.item(i,jmin) ) ? DSM.item(i,imin) : DSM.item(i,jmin);
+                        break;
+                    default:
+                        distanceNewCluster= (DSM.item(i,imin) < DSM.item(i,jmin) ) ? DSM.item(i,imin) : DSM.item(i,jmin);
+                        break;
+                    }
+
                     qDebug() << "Graph::graphClusteringHierarchical() -"
                              << "i"<<i+1
                              <<"j"<<j+1
-                             <<"= mergedClusterIndex"<<mergedClusterIndex
-                             << "DSM.item(i,imin)"<<DSM.item(i,imin)
-                                << "DSM.item(i,jmin)"<<DSM.item(i,jmin)
-                             << "distanceNewCluster"<< distanceNewCluster;
+                             <<"== mergedCluster"<<mergedClusterIndex + 1 <<endl
+                             << "  DSM(i,imin)"<<DSM.item(i,imin)
+                             << "DSM(i,jmin)"<<DSM.item(i,jmin)
+                             << "DSM(i,imax)"<<DSM.item(i,imax)
+                             << "DSM(i,jmax)"<<DSM.item(i,jmax)  <<endl
+                             << "  distanceNewCluster"<< distanceNewCluster;
                     DSM.setItem(i, j, distanceNewCluster);
                     DSM.setItem(j, i, distanceNewCluster);
 
@@ -10671,11 +10758,11 @@ void Graph::graphClusteringHierarchical(const int &matrix,
                 }
                 else {
                     if (j == deletedClusterIndex  ) {
-                        qDebug() << "Graph::graphClusteringHierarchical() -"
-                                 << "i"<<i+1
-                                 << "j"<<j+1
-                                 << "= deletedClusterIndex"<< deletedClusterIndex  +1
-                                 <<"SKIP as it is one of the merged clusters";
+//                        qDebug() << "Graph::graphClusteringHierarchical() -"
+//                                 << "i"<<i+1
+//                                 << "j"<<j+1
+//                                 << "= deletedClusterIndex"<< deletedClusterIndex  +1
+//                                 <<"SKIP as it is one of the merged clusters";
 
                         DSM.setItem(i, j, RAND_MAX);
                         DSM.setItem(j, i, RAND_MAX);
@@ -10684,11 +10771,11 @@ void Graph::graphClusteringHierarchical(const int &matrix,
 
                     }
 
-                    qDebug() << "Graph::graphClusteringHierarchical() -"
-                             << "i"<<i+1
-                             << "j"<<j+1
-                             << "!= mergedClusterIndex"<< mergedClusterIndex+1
-                             <<"SKIP as distance to this cluster should remain the same";
+//                    qDebug() << "Graph::graphClusteringHierarchical() -"
+//                             << "i"<<i+1
+//                             << "j"<<j+1
+//                             << "!= mergedClusterIndex"<< mergedClusterIndex+1
+//                             <<"SKIP as distance to this cluster should remain the same";
                     continue;
 
                 }
@@ -10778,23 +10865,8 @@ void Graph::writeSimilarityMatchingPlainText(const QString fileName,
             << qSetPadChar('.') <<qSetFieldWidth(20)<< left
             << tr("Matching measure: ") << reset ;
 
-    switch (measure) {
-    case SIMILARITY_MEASURE_SIMPLE :
-        outText << "Simple / Exact matching " ;
-        break;
-    case SIMILARITY_MEASURE_JACCARD:
-        outText << "Jaccard Index" ;
 
-        break;
-    case SIMILARITY_MEASURE_HAMMING:
-        outText << "Hamming distance" ;
-        break;
-    case SIMILARITY_MEASURE_COSINE:
-        outText << "Cosine similariy" ;
-        break;
-    default:
-        break;
-    }
+    outText << graphSimilarityMeasureTypeToString(measure);
 
     outText << endl
              << qSetPadChar('.') <<qSetFieldWidth(20)<< left
@@ -10822,8 +10894,6 @@ void Graph::writeSimilarityMatchingPlainText(const QString fileName,
           "SMMC > 0, when two actors have some matches in their ties/distances, \n"
           "i.e. SMMC = 1 means the two actors have their ties to other actors exactly the same all the time.");
     }
-
-
 
 
 
@@ -10931,25 +11001,9 @@ void Graph::writeSimilarityMatching(const QString fileName,
     outText << "<p>"
             << "<span class=\"info\">"
             << tr("Matching measure: ")
-            <<"</span>";
-    switch (measure) {
-    case SIMILARITY_MEASURE_SIMPLE :
-        outText << "Simple / Exact matching " ;
-        break;
-    case SIMILARITY_MEASURE_JACCARD:
-        outText << "Jaccard Index" ;
-
-        break;
-    case SIMILARITY_MEASURE_HAMMING:
-        outText << "Hamming distance" ;
-        break;
-    case SIMILARITY_MEASURE_COSINE:
-        outText << "Cosine similariy" ;
-        break;
-    default:
-        break;
-    }
-    outText << "</p>";
+            << "</span>"
+            <<  graphSimilarityMeasureTypeToString(measure)
+            << "</p>";
 
     outText << "<p>"
             << "<span class=\"info\">"
@@ -17744,6 +17798,111 @@ void Graph::layoutForceDirected_FR_moveNodes(const qreal &temperature) {
 }
 
 
+
+/**
+ * @brief Helper method, return the human readable name of matrix type.
+ * @param matrix
+ */
+QString Graph::graphMatrixTypeToString(const int &matrix) const {
+    QString matrixStr;
+
+    switch (matrix) {
+
+    case MATRIX_ADJACENCY :
+        matrixStr = "Adjacency Matrix" ;
+        break;
+    case MATRIX_DISTANCES:
+        matrixStr = "Distances Matrix" ;
+        break;
+    case MATRIX_DEGREE:
+        matrixStr = "Degree Matrix" ;
+        break;
+    case MATRIX_LAPLACIAN:
+        matrixStr = "Laplacian Matrix" ;
+        break;
+    case MATRIX_ADJACENCY_INVERT:
+        matrixStr = "Adjacency Inverse" ;
+        break;
+
+    case MATRIX_GEODESICS:
+        matrixStr = "Geodesics Matrix" ;
+        break;
+    case MATRIX_REACHABILITY:
+        matrixStr = "Reachability Matrix" ;
+        break;
+    case MATRIX_ADJACENCY_TRANSPOSE:
+        matrixStr = "Adjacency Transpose" ;
+        break;
+    case MATRIX_COCITATION:
+        matrixStr = "Cocitation Matrix" ;
+        break;
+    case MATRIX_ADJACENCY_SIMILARITY:
+        matrixStr = "Adjacency Similarity Matrix" ;
+        break;
+    case MATRIX_DISTANCES_SIMILARITY:
+        matrixStr = "Distances Similarity Matrix" ;
+        break;
+    default:
+        matrixStr = "-" ;
+        break;
+    }
+    return matrixStr;
+}
+
+
+/**
+ * @brief Helper method, return the human readable name of similarity measure type.
+ * @param similarityMeasure
+ */
+QString Graph::graphSimilarityMeasureTypeToString(const int &similarityMeasure) const {
+    QString similarityMeasureStr;
+    switch (similarityMeasure) {
+    case SIMILARITY_MEASURE_SIMPLE :
+        similarityMeasureStr = "Simple / Exact matching " ;
+        break;
+    case SIMILARITY_MEASURE_JACCARD:
+        similarityMeasureStr = "Jaccard Index" ;
+        break;
+    case SIMILARITY_MEASURE_HAMMING:
+        similarityMeasureStr = "Hamming distance" ;
+        break;
+    case SIMILARITY_MEASURE_COSINE:
+        similarityMeasureStr = "Cosine similarity" ;
+        break;
+    default:
+        similarityMeasureStr = "-" ;
+        break;
+    }
+    return similarityMeasureStr;
+}
+
+
+/**
+ * @brief  Helper method, return the human readable name of clustering method type.
+ * @return
+ */
+QString Graph::graphClusteringMethodTypeToString(const int &clusteringMethod) const {
+    QString clusteringMethodStr;
+    switch (clusteringMethod) {
+    case CLUSTERING_SINGLE_LINKAGE:
+        clusteringMethodStr = "Single-linkage";
+        break;
+    case CLUSTERING_COMPLETE_LINKAGE:
+        clusteringMethodStr = "Complete-linkage";
+        break;
+    case CLUSTERING_AVERAGE_LINKAGE:
+        clusteringMethodStr = "Average-linkage (UPGMA)";
+        break;
+    default:
+        break;
+    }
+    return clusteringMethodStr;
+}
+
+
+/**
+ * @brief Graph::~Graph
+ */
 Graph::~Graph() {
     clear();
 }

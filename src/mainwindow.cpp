@@ -10368,7 +10368,7 @@ void MainWindow::slotAnalyzeClusteringHierarchical(const QString &matrix,
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-clustering-hierarchical.txt";
+    QString fn = appSettings["dataDir"] + "socnetv-report-clustering-hierarchical.html";
 
     bool considerWeights=true;
     bool inverseWeights=false;
@@ -10445,7 +10445,7 @@ void MainWindow::slotAnalyzeClusteringHierarchical(const QString &matrix,
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
     }
     else {
-        TextEditor *ed = new TextEditor(fn,this,false);
+        TextEditor *ed = new TextEditor(fn,this,true);
         ed->show();
         m_textEditors << ed;
     }
