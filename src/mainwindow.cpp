@@ -2965,7 +2965,7 @@ void MainWindow::initToolBox(){
                 tr("Select a basic graph-theoretic metric to compute, i.e. diameter."));
     toolBoxAnalysisGeodesicsSelect -> setToolTip(
                 tr("Basic graph-theoretic metrics of a social network, "
-                   "such as distances (shortest paths), diameter, ."));
+                   "such as distances (shortest paths), diameter, eccentricity, etc."));
     toolBoxAnalysisGeodesicsSelect -> setWhatsThis(
                 tr("Analyze Distances\n\n"
                    "Compute basic graph-theoretic features of the network "
@@ -9624,16 +9624,15 @@ void MainWindow::slotAnalyzeMatrixAdjacencyInverse(){
         return;
     }
     int aNodes=activeNodes();
-    statusBar() ->  showMessage ( tr ("inverting adjacency adjacency matrix of %1 nodes").arg(aNodes) );
+
+    statusMessage(tr ("inverting adjacency adjacency matrix of %1 nodes").arg(aNodes));
+
     qDebug ("MW: calling Graph::writeMatrixAdjacencyInvert with %i nodes", aNodes);
+
     QString fn = appSettings["dataDir"] + "socnetv-report-adjacency-matrix-inverse.html";
 
-    QTime timer;
-    timer.start();
     //activeGraph.writeMatrixAdjacencyInvert(fn, QString("lu")) ;
     activeGraph.writeMatrix(fn,MATRIX_ADJACENCY_INVERT) ;
-    int msecs = timer.elapsed();
-    statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -9661,15 +9660,14 @@ void MainWindow::slotAnalyzeMatrixAdjacencyTranspose(){
         return;
     }
     int aNodes=activeNodes();
-    statusBar() ->  showMessage ( tr ("Transposing adjacency matrix of %1 nodes").arg(aNodes) );
+
+    statusMessage( tr ("Transposing adjacency matrix of %1 nodes").arg(aNodes) );
+
     qDebug ("MW: calling Graph::writeMatrixAdjacencyTranspose with %i nodes", aNodes);
+
     QString fn = appSettings["dataDir"] + "socnetv-report-adjacency-matrix-transpose.html";
 
-    QTime timer;
-    timer.start();
     activeGraph.writeMatrix(fn,MATRIX_ADJACENCY_TRANSPOSE) ;
-    int msecs = timer.elapsed();
-    statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -9695,15 +9693,14 @@ void MainWindow::slotAnalyzeMatrixAdjacencyCocitation(){
         return;
     }
     int aNodes=activeNodes();
-    statusBar() ->  showMessage ( tr ("Computing cocitation matrix of %1 nodes").arg(aNodes) );
+
+    statusMessage( tr ("Computing Cocitation matrix of %1 nodes").arg(aNodes) );
+
     qDebug ("MW: calling Graph::writeMatrixAdjacencyCocitation with %i nodes", aNodes);
+
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-cocitation.html";
 
-    QTime timer;
-    timer.start();
     activeGraph.writeMatrix(fn,MATRIX_COCITATION) ;
-    int msecs = timer.elapsed();
-    statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -9729,16 +9726,15 @@ void MainWindow::slotAnalyzeMatrixDegree(){
         return;
     }
     int aNodes=activeNodes();
-    statusBar() ->  showMessage ( tr ("Computing degree matrix of %1 nodes").arg(aNodes) );
+
+    statusMessage(tr ("Computing Degree matrix of %1 nodes").arg(aNodes) );
+
     qDebug ("MW: calling Graph::writeMatrixDegreeText with %i nodes", aNodes);
+
     QString fn = appSettings["dataDir"] + "socnetv-report-degree-matrix.html";
 
-    QTime timer;
-    timer.start();
     //activeGraph.writeMatrixDegreeText(fn) ;
     activeGraph.writeMatrix(fn, MATRIX_DEGREE) ;
-    int msecs = timer.elapsed();
-    statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -9764,15 +9760,14 @@ void MainWindow::slotAnalyzeMatrixLaplacian(){
         return;
     }
     int aNodes=activeNodes();
-    statusBar() ->  showMessage ( tr ("Computing Laplacian matrix of %1 nodes").arg(aNodes) );
+
+    statusMessage(tr ("Computing Laplacian matrix of %1 nodes").arg(aNodes) );
+
     qDebug ("MW: calling Graph::writeMatrixLaplacianPlainText with %i nodes", aNodes);
+
     QString fn = appSettings["dataDir"] + "socnetv-report-laplacian-matrix.html";
 
-    QTime timer;
-    timer.start();
     activeGraph.writeMatrix(fn, MATRIX_LAPLACIAN) ;
-    int msecs = timer.elapsed();
-    statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));

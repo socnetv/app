@@ -3145,6 +3145,7 @@ float Graph::distanceGraphAverage(const bool considerWeights,
                                   const bool dropIsolates){
 
     Q_UNUSED(considerWeights);
+    Q_UNUSED(inverseWeights);
 
     if (!calculatedDistances || graphModified())  {
         qDebug() <<"Graph::distanceGraphAverage() - reachability matrix not created "
@@ -3415,6 +3416,10 @@ void Graph::writeEccentricity(
         const QString fileName, const bool considerWeights=false,
         const bool inverseWeights=false, const bool dropIsolates=false)
 {
+
+    QTime computationTimer;
+    computationTimer.start();
+
     qDebug() << "Graph::writeEccentricity";
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
@@ -3566,11 +3571,11 @@ void Graph::writeEccentricity(
 
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
-    outText << tr("Eccentricity Report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v")
-            << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << tr("Eccentricity Report, <br />");    
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
     outText << "</p>";
 
     outText << htmlEnd;
@@ -4556,6 +4561,10 @@ void Graph::centralityInformation(const bool considerWeights,
 void Graph::writeCentralityInformation(const QString fileName,
                                        const bool considerWeights,
                                        const bool inverseWeights){
+
+    QTime computationTimer;
+    computationTimer.start();
+
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
@@ -4742,10 +4751,10 @@ void Graph::writeCentralityInformation(const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Information Centrality report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualiser</a> v")
-            << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
     outText << "</p>";
 
     outText << htmlEnd;
@@ -4765,6 +4774,10 @@ void Graph::writeCentralityEigenvector(const QString fileName,
                                        const bool &considerWeights,
                                        const bool &inverseWeights,
                                        const bool &dropIsolates){
+
+    QTime computationTimer;
+    computationTimer.start();
+
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
@@ -4956,10 +4969,10 @@ void Graph::writeCentralityEigenvector(const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Eigenvector Centrality report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualiser</a> v")
-            << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
     outText << "</p>";
 
     outText << htmlEnd;
@@ -4985,7 +4998,7 @@ void Graph::centralityEigenvector(const bool &considerWeights,
         return;
     }
 
-    float nom=0, denom=0,  SEVC=0;
+    //float nom=0, denom=0,  SEVC=0;
 
     classesEVC=0;
     discreteEVCs.clear();
@@ -5196,8 +5209,11 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
  */
 void Graph::writeCentralityDegree ( const QString fileName,
                                     const bool considerWeights,
-                                    const bool dropIsolates)
-{
+                                    const bool dropIsolates) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
@@ -5418,10 +5434,10 @@ void Graph::writeCentralityDegree ( const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Degree Centrality report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualiser</a> v")
-            << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
     outText << "</p>";
 
     outText << htmlEnd;
@@ -5441,11 +5457,14 @@ void Graph::writeCentralityDegree ( const QString fileName,
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::writeCentralityCloseness(
-        const QString fileName,
-        const bool considerWeights,
-        const bool inverseWeights,
-        const bool dropIsolates) {
+void Graph::writeCentralityCloseness( const QString fileName,
+                                      const bool considerWeights,
+                                      const bool inverseWeights,
+                                      const bool dropIsolates) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
     qDebug() << "Graph::writeCentralityCloseness()"
              << "considerWeights"<<considerWeights
              << "inverseWeights"<<inverseWeights
@@ -5669,10 +5688,10 @@ void Graph::writeCentralityCloseness(
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Closeness Centrality report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualiser</a> v")
-            << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
     outText << "</p>";
 
     outText << htmlEnd;
@@ -5787,8 +5806,11 @@ void Graph::centralityClosenessIR(const bool considerWeights,
 void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
                                                    const bool considerWeights,
                                                    const bool inverseWeights,
-                                                   const bool dropIsolates)
-{
+                                                   const bool dropIsolates) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
@@ -5957,10 +5979,10 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Influence Range Closeness Centrality report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualiser</a> v")
-            << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
     outText << "</p>";
 
     outText << htmlEnd;
@@ -5983,6 +6005,10 @@ void Graph::writeCentralityBetweenness(const QString fileName,
                                         const bool considerWeights,
                                         const bool inverseWeights,
                                        const bool dropIsolates) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
@@ -6198,10 +6224,10 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Betweenness Centrality report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualiser</a> v")
-            << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
     outText << "</p>";
 
     outText << htmlEnd;
@@ -6217,6 +6243,10 @@ void Graph::writeCentralityStress( const QString fileName,
                                    const bool considerWeights,
                                    const bool inverseWeights,
                                    const bool dropIsolates) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
@@ -6387,15 +6417,13 @@ void Graph::writeCentralityStress( const QString fileName,
 
     outText << "<p class=\"small\">";
     outText << tr("Stress Centrality report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\" >Social Network Visualiser</a> v")
-            << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
     outText << "</p>";
 
     outText << htmlEnd;
-
-
 
     file.close();
 
@@ -6413,6 +6441,9 @@ void Graph::writeCentralityEccentricity(const QString fileName,
                                          const bool considerWeights,
                                          const bool inverseWeights,
                                         const bool dropIsolates) {
+    QTime computationTimer;
+    computationTimer.start();
+
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
@@ -6574,10 +6605,10 @@ void Graph::writeCentralityEccentricity(const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Eccentricity Centrality report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualiser</a> v")
-            << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
     outText << "</p>";
 
     outText << htmlEnd;
@@ -6600,6 +6631,10 @@ void Graph::writeCentralityPower(const QString fileName,
                                   const bool considerWeights,
                                   const bool inverseWeights,
                                  const bool dropIsolates) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
@@ -6809,10 +6844,10 @@ void Graph::writeCentralityPower(const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Power Centrality report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualiser</a> v")
-            << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
     outText << "</p>";
 
     outText << htmlEnd;
@@ -6995,8 +7030,10 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
  */
 void Graph::writePrestigeDegree (const QString fileName,
                                  const bool considerWeights,
-                                 const bool dropIsolates)
-{
+                                 const bool dropIsolates) {
+    QTime computationTimer;
+    computationTimer.start();
+
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
@@ -7212,10 +7249,10 @@ void Graph::writePrestigeDegree (const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Degree Prestige report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualiser</a> v")
-            << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
     outText << "</p>";
 
     outText << htmlEnd;
@@ -7351,8 +7388,10 @@ void Graph::prestigeProximity( const bool considerWeights,
 void Graph::writePrestigeProximity( const QString fileName,
                                     const bool considerWeights,
                                     const bool inverseWeights,
-                                    const bool dropIsolates)
-{
+                                    const bool dropIsolates) {
+    QTime computationTimer;
+    computationTimer.start();
+
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
@@ -7514,10 +7553,10 @@ void Graph::writePrestigeProximity( const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Proximity Prestige report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualiser</a> v")
-            << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
     outText << "</p>";
 
     outText << htmlEnd;
@@ -7757,7 +7796,11 @@ void Graph::prestigePageRank(const bool &dropIsolates){
  * @param fileName
  * @param dropIsolates
  */
-void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolates){
+void Graph::writePrestigePageRank(const QString fileName,
+                                  const bool dropIsolates){
+    QTime computationTimer;
+    computationTimer.start();
+
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
@@ -7773,7 +7816,6 @@ void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolate
     emit statusMessage ( tr("Writing PageRank indices to file:") + fileName );
 
     outText.setRealNumberPrecision(m_precision);
-
 
     int rowCount=0;
 
@@ -7852,7 +7894,6 @@ void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolate
            <<"</tr>"
           << "</thead>"
           <<"<tbody id=\"results\">";
-
 
 
     QList<Vertex*>::const_iterator it;
@@ -7943,10 +7984,10 @@ void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolate
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("PageRank Prestige report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualiser</a> v")
-            << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
     outText << "</p>";
 
     outText << htmlEnd;
@@ -7954,8 +7995,6 @@ void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolate
     file.close();
 
 }
-
-
 
 
 
@@ -9406,8 +9445,11 @@ void Graph::writeWalksOfLengthMatrixPlainText(const QString &fn, const int &leng
  * @param simpler
  */
 void Graph::writeMatrixWalks (const QString &fn,
-                         const int &length,
-                         const bool &simpler) {
+                              const int &length,
+                              const bool &simpler) {
+
+    QTime computationTimer;
+    computationTimer.start();
 
     Q_UNUSED(simpler);
     qDebug()<<"Graph::writeMatrixWalks() - length:" << length
@@ -9492,14 +9534,13 @@ void Graph::writeMatrixWalks (const QString &fn,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Walks report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v")
-            << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
     outText << "</p>";
 
     outText << htmlEnd;
-
 
     file.close();
 }
@@ -9606,9 +9647,12 @@ void Graph::writeReachabilityMatrixPlainText(const QString &fn, const bool &drop
  * @param fileName
  * @param considerWeights
  */
-void Graph::writeClusteringCoefficient(
-        const QString fileName, const bool considerWeights)
-{
+void Graph::writeClusteringCoefficient( const QString fileName,
+                                        const bool considerWeights) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
     Q_UNUSED(considerWeights);
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
@@ -9758,7 +9802,6 @@ void Graph::writeClusteringCoefficient(
     outText << "</p>";
 
 
-
     outText << "<h2>";
     outText << tr("GROUP / NETWORK AVERAGE CLUSTERING COEFFICIENT (GCLC)")
             << "</h2>";
@@ -9781,10 +9824,10 @@ void Graph::writeClusteringCoefficient(
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Clustering Coefficient report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualiser</a> v")
-            << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
     outText << "</p>";
 
     outText << htmlEnd;
@@ -9796,9 +9839,12 @@ void Graph::writeClusteringCoefficient(
 
 
 //Writes the triad census to a file
-void Graph::writeTriadCensus(
-        const QString fileName, const bool considerWeights)
-{
+void Graph::writeTriadCensus( const QString fileName,
+                              const bool considerWeights) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
     Q_UNUSED(considerWeights);
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
@@ -9906,10 +9952,10 @@ void Graph::writeTriadCensus(
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Triad Census report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualiser</a> v")
-            << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
     outText << "</p>";
 
     outText << htmlEnd;
@@ -9927,9 +9973,12 @@ void Graph::writeTriadCensus(
  * @param fileName
  * @param considerWeights
  */
-void Graph::writeCliqueCensus(
-        const QString fileName, const bool considerWeights)
-{
+void Graph::writeCliqueCensus( const QString fileName,
+                               const bool considerWeights) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
     qDebug()<< "Graph::writeCliqueCensus() ";
 
     Q_UNUSED(considerWeights);
@@ -10209,10 +10258,10 @@ void Graph::writeCliqueCensus(
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Clique Census Report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualiser</a> v")
-            << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
     outText << "</p>";
 
     outText << htmlEnd;
@@ -10427,9 +10476,11 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
         return;
     }
 
-
-    graphClusteringHierarchical(matrix, similarityMeasure,
-                                method,considerWeights,
+    emit statusMessage ( tr("Computing hierarchical clustering. Please wait... "));
+    graphClusteringHierarchical(matrix,
+                                similarityMeasure,
+                                method,
+                                considerWeights,
                                 inverseWeights,
                                 dropIsolates);
 
@@ -10456,18 +10507,21 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
 
 
 
+
 /**
- * @brief Graph::graphClusteringHierarchical
- * Performs an hierarchical clustering process (Johnson, 1967) on the given
- * NxN distance/dissimilarity or similarity matrix DSM.
-* The method parameter defines how to compute distances (similarities) between
+ * @brief Performs an hierarchical clustering process (Johnson, 1967) on a given
+ * NxN distance/dissimilarity or similarity matrix.
+ * The method parameter defines how to compute distances (similarities) between
  * a new cluster and each of the old ones. Valid values can be:
  * - CLUSTERING_SINGLE_LINKAGE: "single-link" or "connectedness" or "minimum"
  * - CLUSTERING_COMPLETE_LINKAGE: "complete-link" or "diameter" or "maximum"
  * - CLUSTERING_AVERAGE_LINKAGE: "average-link" or UPGMA
+ * @param matrix
+ * @param similarityMeasure
  * @param method
- * @param DSM
-
+ * @param considerWeights
+ * @param inverseWeights
+ * @param dropIsolates
  */
 void Graph::graphClusteringHierarchical(const int &matrix,
                                         const int &similarityMeasure,
@@ -10806,6 +10860,9 @@ void Graph::writeSimilarityMatching(const QString fileName,
                                    const bool &diagonal,
                                    const bool &considerWeights) {
 
+    QTime computationTimer;
+    computationTimer.start();
+
     Q_UNUSED(considerWeights);
 
     QFile file ( fileName );
@@ -10952,10 +11009,10 @@ void Graph::writeSimilarityMatching(const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Similarity Matrix by Matching Measure Report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v")
-            << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
     outText << "</p>";
 
     outText << htmlEnd;
@@ -11003,8 +11060,11 @@ void Graph::writeSimilarityPearson(const QString fileName,
                                    const bool considerWeights,
                                    const QString &matrix,
                                    const QString &varLocation,
-                                   const bool &diagonal)
-{
+                                   const bool &diagonal) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
     Q_UNUSED(considerWeights);
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
@@ -11112,14 +11172,13 @@ void Graph::writeSimilarityPearson(const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Pearson Correlation Coefficients Report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v")
-            << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
     outText << "</p>";
 
     outText << htmlEnd;
-
 
     file.close();
 }
@@ -16321,6 +16380,9 @@ void Graph::writeMatrix (const QString &fn,
                          const bool &dropIsolates,
                          const bool &simpler) {
 
+    QTime computationTimer;
+    computationTimer.start();
+
     Q_UNUSED(simpler);
     qDebug()<<"Graph::writeMatrix() - matrix" << matrix
            << "to" << fn;
@@ -16552,17 +16614,17 @@ void Graph::writeMatrix (const QString &fn,
     }
 
 
+
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Matrix report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v")
-            << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
     outText << "</p>";
 
     outText << htmlEnd;
-
 
     file.close();
 }
@@ -16605,6 +16667,10 @@ void Graph::writeMatrixAdjacencyTo(QTextStream& os,
     This is called by MainWindow::slotViewAdjacencyMatrix()
 */
 void Graph::writeMatrixAdjacency (const QString fn) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
     qDebug()<<"Graph::writeMatrixAdjacency() to : " << fn;
     QFile file( fn );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
@@ -16708,10 +16774,10 @@ void Graph::writeMatrixAdjacency (const QString fn) {
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Adjacency matrix report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v")
-            << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
     outText << "</p>";
 
     outText << htmlEnd;
@@ -16728,8 +16794,12 @@ void Graph::writeMatrixAdjacency (const QString fn) {
     This is called by MainWindow::slotViewAdjacencyMatrixPlotText()
     The resulting matrix HAS NO spaces between elements.
 */
-void Graph::writeMatrixAdjacencyPlot (const QString fn, const bool &simpler) {
-    qDebug()<<"Graph::writeMatrixAdjacency() to : " << fn;
+void Graph::writeMatrixAdjacencyPlot (const QString fn,
+                                      const bool &simpler) {
+    QTime computationTimer;
+    computationTimer.start();
+
+    qDebug()<<"Graph::writeMatrixAdjacencyPlot() to : " << fn;
     QFile file( fn );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         emit statusMessage ( tr("Error. Could not write to ") + fn );
@@ -16844,11 +16914,11 @@ void Graph::writeMatrixAdjacencyPlot (const QString fn, const bool &simpler) {
 
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
-    outText << tr("Adjacency matrix report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v")
-            << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ;
+    outText << tr("Adjacency matrix plot, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
     outText << "</p>";
 
     outText << htmlEnd;

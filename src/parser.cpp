@@ -2209,7 +2209,7 @@ bool Parser::loadGML(){
     bool floatOK= false;
     bool isPlanar = false, graphKey=false, graphicsKey=false,
             edgeKey=false, nodeKey=false, graphicsCenterKey=false;
-
+    Q_UNUSED(isPlanar);
     node_id= QString::null;
     arrows=true;
     bezier=false;
@@ -3036,7 +3036,6 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
     // one or more digits
     QRegularExpression onlyDigitsExp("^\\d+$");
 
-    bool intOK=false;
     bool nodesWithLabels = false;
     bool floatOK = false;
     int fileLine = 1;

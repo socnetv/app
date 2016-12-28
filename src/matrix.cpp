@@ -790,6 +790,7 @@ float Matrix::distanceEuclidean(float x[], int n) {
     return norm;
 }
 
+
 /**
  * @brief Implementation of the Power method which computes the
  * leading eigenvector (eigenvector centrality) of this matrix
@@ -806,7 +807,6 @@ void Matrix::powerIteration (float x[], float &xsum,
              <<"initial x"
             <<x;
     int n = rows();
-    int m = cols();
     float norm = 0, distance=0;
     float *tmp;
     tmp=new (nothrow) float [n];
@@ -814,15 +814,16 @@ void Matrix::powerIteration (float x[], float &xsum,
 
     xsum = 0;
     int iter = 0;
-            QVector<float> vec(n);
-      do {
-        // calculate the matrix-by-vector product Ax
+    QVector<float> vec(n);
+    do {
+        // calculate the matrix-by-vector product Ax and
+        // store the result to vector tmp
         productByVector(x, tmp, false);
 
         // calculate the euclidean length of the resulting vector
         norm = distanceEuclidean(tmp, n);
 
-        // normalize to unit vector for next iteration
+        // normalize tmp to unit vector for next iteration
         xsum = 0;
         for(int i = 0; i < n; i++) {
            tmp[i] = tmp[i] / norm;
@@ -1917,12 +1918,12 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
 bool Matrix::printHTMLTable(QTextStream& os, const bool markDiag, const bool &plain){
     qDebug() << "Matrix::printHTMLTable()";
     int actorNumber=0, rowCount = 0;
-    float maxVal, minVal, maxAbsVal, element;
+    float maxVal, minVal, element;
     bool hasRealNumbers=false;
 
     findMinMaxValues(minVal, maxVal, hasRealNumbers);
 
-    maxAbsVal = ( fabs(minVal) > fabs(maxVal) ) ? fabs(minVal) : fabs(maxVal) ;
+    //maxAbsVal = ( fabs(minVal) > fabs(maxVal) ) ? fabs(minVal) : fabs(maxVal) ;
 
     os <<  ( (hasRealNumbers) ? qSetRealNumberPrecision(3) : qSetRealNumberPrecision(0) ) ;
 

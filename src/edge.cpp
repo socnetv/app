@@ -285,7 +285,7 @@ int Edge::targetNodeNumber() {
  * make the edge weight appear on the centre of the edge
  */
 void Edge::adjust(){
-    qDebug() << "Edge::adjust()";
+   // qDebug() << "Edge::adjust()";
     if (!source || !target)
         return;
     //QLineF line(mapFromItem(source, 0, 0), mapFromItem(target, 0, 0));

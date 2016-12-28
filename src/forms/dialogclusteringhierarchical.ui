@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>550</width>
-    <height>410</height>
+    <height>416</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -55,7 +55,7 @@
       </size>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Hierarchical clustering builds a hierarchy of clusters, based on their elements dissimilarity. This method takes a matrix (adjacency, distances, similarities, etc) as input and uses the Agglomerative approach where each actor starts in its own cluster (Level 0). In each subsequent Level, as we move up the clustering hierarchy, a pair of clusters are merged into a larger cluster, until all actors end up in the same cluster. &lt;/p&gt;&lt;p&gt;To decide which clusters should be combined at each level, a measure of dissimilarity between sets of observations is required. This measure consists of a metric for the distance between actors (i.e. manhattan distance) and a linkage criterion (i.e. single-linkage clustering). &lt;/p&gt;&lt;p&gt;Select an input matrix, a similarity measure (for similarity input matrices) and a clustering method (criterion) for the hiearchical cluster analysis. The latter is the criterion by which pairs of clusters are going to be combined into larger clusters. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Hierarchical clustering builds a hierarchy of clusters, based on their elements dissimilarity. This method takes a matrix (adjacency, distances, similarities, etc) as input and uses the Agglomerative approach where each actor starts in its own cluster (Level 0). In each subsequent Level, as we move up the clustering hierarchy, a pair of clusters are merged into a larger cluster, until all actors end up in the same cluster. &lt;/p&gt;&lt;p&gt;To decide which clusters should be combined at each level, a measure of dissimilarity between sets of observations is required. This measure consists of a metric for the distance between actors (i.e. manhattan distance) and a linkage criterion (i.e. single-linkage clustering). &lt;/p&gt;&lt;p&gt;Select an input matrix, a similarity measure (only if you choose a similarity input matrix) and a clustering method (criterion) for the hiearchical cluster analysis. The latter is the criterion by which pairs of clusters are going to be combined into larger clusters. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
