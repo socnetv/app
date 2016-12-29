@@ -33,29 +33,28 @@
 #include <QPushButton>
 
 
-DialogClusteringHierarchical::DialogClusteringHierarchical (QWidget *parent) : QDialog (parent)
+DialogClusteringHierarchical::DialogClusteringHierarchical (QWidget *parent) :
+    QDialog (parent)
 {
     ui.setupUi(this);
 
     (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
 
-    matrixList
-            << "Adjacency"
-            << "Distances"
-            << "Adjacency Similarity"
-            << "Distances Similarity";
+    matrixList << "Adjacency"
+               << "Distances"
+               << "Adjacency Similarity"
+               << "Distances Similarity";
 
     similarityMeasuresList << "Simple / Exact matching"
-                          <<"Jaccard index"
-                         <<"Hamming distance"
-                        <<"Cosine similarity"
-                          <<"Pearson coefficients";
+                           << "Jaccard index"
+                           << "Hamming distance"
+                           << "Cosine similarity"
+                           << "Pearson coefficients";
 
 
-    linkageCriteriaList
-              << "Single-linkage (minimum)"
-              << "Complete-linkage (maximum)"
-              << "Average-linkage (UPGMA)";
+    linkageCriteriaList << "Single-linkage (minimum)"
+                        << "Complete-linkage (maximum)"
+                        << "Average-linkage (UPGMA)";
 
 
     (ui.matrixSelect) -> insertItems( 1, matrixList );
@@ -67,7 +66,8 @@ DialogClusteringHierarchical::DialogClusteringHierarchical (QWidget *parent) : Q
 
     (ui.diagonalCheckBox)->setChecked(false);
 
-    connect ( ui.matrixSelect, SIGNAL(highlighted(QString)), this, SLOT(matrixChanged(QString)) );
+    connect ( ui.matrixSelect, SIGNAL(highlighted(QString)),
+              this, SLOT(matrixChanged(QString)) );
 
 
 }
@@ -89,7 +89,11 @@ void DialogClusteringHierarchical::matrixChanged(const QString &matrix) {
 void DialogClusteringHierarchical::gatherData(){
     qDebug()<< "DialogClusteringHierarchical: gathering Data!...";
     QString matrix = (ui.matrixSelect) ->currentText();
-    QString similarityMeasure= (ui.similarityMeasureSelect) ->currentText();
+
+    QString similarityMeasure= (( ui.similarityMeasureSelect ->isEnabled() ) ?
+                                    ui.similarityMeasureSelect ->currentText()  :
+                                    "-" );
+
     QString linkageCriterion = (ui.linkageCriterionSelect) ->currentText();
     bool diagonal = (ui.diagonalCheckBox)->isChecked();
     qDebug()<< "DialogClusteringHierarchical: user selected: "

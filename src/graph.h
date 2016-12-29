@@ -876,7 +876,8 @@ private:
     QHash <int, int> m_vertexPairsUnilaterallyConnected;
 
     QMap <int, L_int > m_cliques;
-    QMap <float, V_int> m_clusters;
+    QMap <float, V_int> m_clustersPerLevel;
+    QMap <int, V_int> m_clustersByOrder;
 
     Matrix  TM, DM, sumM, invAM, AM, invM;
     Matrix XM, XSM, XRM, CLQM;
