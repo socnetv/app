@@ -2375,6 +2375,8 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
         for (int j=0; j < vList.size(); ++j ) {
 
             if ( ! (weight=edgeExists( center, vList.value(j) ) ) ) {
+                if ( center == vList.value(j))
+                     continue;
                 edgeCreate(center, vList.value(j),1.0,
                            initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
             }
@@ -3695,24 +3697,23 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
         maxSCC=0; minSCC=RAND_MAX; nomSCC=0; denomSCC=0; groupCC=0; maxNodeSCC=0;
         minNodeSCC=0; sumSCC=0; sumCC=0;
         discreteCCs.clear(); classesSCC=0;
-        maxBC=0; minBC=RAND_MAX; nomBC=0; denomBC=0; groupBC=0; maxNodeBC=0;
-        minNodeBC=0; sumBC=0;
-        discreteBCs.clear(); classesBC=0;
-        maxSC=0; minSC=RAND_MAX; nomSC=0; denomSC=0; groupSC=0; maxNodeSC=0;
-        minNodeSC=0; sumSC=0;
-        discreteSCs.clear(); classesSC=0;
-        maxPC=0; minPC=RAND_MAX; nomPC=0; denomPC=0; groupPC=0; maxNodePC=0;
-        minNodePC=0; sumPC=0;t_sumPC=0;
-        discretePCs.clear(); classesPC=0;
+        maxSBC=0; minSBC=RAND_MAX; nomSBC=0; denomSBC=0; groupSBC=0; maxNodeSBC=0;
+        minNodeSBC=0; sumBC=0; sumSBC=0;
+        discreteBCs.clear(); classesSBC=0;
+        maxSSC=0; minSSC=RAND_MAX; groupSC=0; maxNodeSSC=0;
+        minNodeSSC=0;sumSC=0; sumSSC=0;
+        discreteSCs.clear(); classesSSC=0;
+        maxSPC=0; minSPC=RAND_MAX; nomSPC=0; denomSPC=0; groupSPC=0; maxNodeSPC=0;
+        minNodeSPC=0; sumSPC=0;sumPC=0;
+        discretePCs.clear(); classesSPC=0;
         maxEccentricity=0; minEccentricity=RAND_MAX; maxNodeEccentricity=0;
         minNodeEccentricity=0; sumEccentricity=0; discreteEccentricities.clear();
         classesEccentricity=0;
-        maxPC=0; minPC=RAND_MAX; maxNodePC=0; minNodePC=0; sumPC=0;
+        maxSPC=0; minSPC=RAND_MAX; maxNodeSPC=0; minNodeSPC=0; sumSPC=0;
         float CC=0, BC=0, SC= 0, eccentricity=0, EC=0, PC=0;
         float SCC=0, SBC=0, SSC=0, SEC=0, SPC=0;
         float tempVarianceBC=0, tempVarianceSC=0,tempVarianceEC=0;
         float tempVarianceCC=0, tempVariancePC=0;
-        float t_sumSC=0;
 
         maxEC=0; minEC=RAND_MAX; nomEC=0; denomEC=0; groupEC=0; maxNodeEC=0;
         minNodeEC=0; sumEC=0;
@@ -3822,7 +3823,7 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                 }
 
                 (*it)->setPC( PC );	//Power Centrality is stdized already
-                t_sumPC += PC;   //add to temp sumPC
+                sumPC += PC;   //add to temp sumSPC
                 if ( sizeOfComponent != 1 )
                     SPC = ( 1.0/(sizeOfComponent-1.0) ) * PC;
                 else
@@ -3830,7 +3831,7 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
 
                 (*it)->setSPC( SPC );	//Set std PC
 
-                sumPC += SPC;   //add to sumPC -- used later to compute mean and variance
+                sumSPC += SPC;   //add to sumSPC -- used later to compute mean and variance
 
                 qDebug() << "Visit all vertices in reverse order of their discovery (from s = " << s
                          << " ) to sum dependencies. Initial Stack size has " << Stack.size();
@@ -3884,27 +3885,28 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                 resolveClasses(SEC, discreteECs, classesEC,(*it)->name() );
                 minmax( SEC, (*it), maxEC, minEC, maxNodeEC, minNodeEC) ;
 
-                // Compute classes and min/maxPC
+                // Compute classes and min/maxSPC
                 SPC = (*it)->SPC();  //same as PC
-                resolveClasses(SPC, discretePCs, classesPC,(*it)->name() );
-                minmax( SPC, (*it), maxPC, minPC, maxNodePC, minNodePC) ;
+                resolveClasses(SPC, discretePCs, classesSPC,(*it)->name() );
+                minmax( SPC, (*it), maxSPC, minSPC, maxNodeSPC, minNodeSPC) ;
 
-                // Compute std BC, classes and min/maxBC
+                // Compute std BC, classes and min/maxSBC
                 if (m_symmetric) {
                     qDebug()<< "Betweenness centrality must be divided by"
                             <<" two if the graph is undirected";
                     (*it)->setBC ( (*it)->BC()/2.0);
                 }
                 BC=(*it)->BC();
+                sumBC+=BC;
                 SBC = BC/maxIndexBC;
                 (*it)->setSBC( SBC );
-                resolveClasses(SBC, discreteBCs, classesBC);
-                sumBC+=SBC;
-                minmax( SBC, (*it), maxBC, minBC, maxNodeBC, minNodeBC) ;
+                resolveClasses(SBC, discreteBCs, classesSBC);
+                sumSBC+=SBC;
+                minmax( SBC, (*it), maxSBC, minSBC, maxNodeSBC, minNodeSBC) ;
 
                 // Compute std CC, classes and min/maxSCC
                 CC = (*it)->CC();
-                sumSCC+=CC;
+                sumCC+=CC;
                 SCC = maxIndexCC * CC;
                 (*it)->setSCC (  SCC );
                 resolveClasses(SCC, discreteCCs, classesSCC,(*it)->name() );
@@ -3920,7 +3922,7 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                              << "  divided by 2 (because the graph is symmetric) "
                              << (*it)->SC();
                 }
-                t_sumSC+=SC;
+                sumSC+=SC;
 
                 qDebug() << "vertex " << (*it)->name() << " - "
                          << " EC: "<< (*it)->EC()
@@ -3931,16 +3933,16 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
             }
 
             // calculate mean values and prepare to compute variances
-            meanBC = sumBC /(float) aVertices ;
-            varianceBC=0;
+            meanSBC = sumSBC /(float) aVertices ;
+            varianceSBC=0;
             tempVarianceBC=0;
 
             meanSCC = sumSCC /(float) aVertices ;
             varianceSCC=0;
             tempVarianceCC=0;
 
-            meanPC = sumPC /(float) aVertices ;
-            variancePC=0;
+            meanSPC = sumSPC /(float) aVertices ;
+            varianceSPC=0;
             tempVariancePC=0;
 
             meanEC = sumEC /(float) aVertices ;
@@ -3951,22 +3953,22 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                 if ( dropIsolates && (*it)->isIsolated() ) {
                     continue;
                 }
-                // Compute std SC, classes and min/maxSC
+                // Compute std SC, classes and min/maxSSC
                 SC=(*it)->SC();
-                SSC=SC/t_sumSC;
+                SSC=SC/sumSC;
                 (*it)->setSSC(SSC);
-                resolveClasses(SSC, discreteSCs, classesSC);
-                sumSC+=SSC;
-                minmax( SSC, (*it), maxSC, minSC, maxNodeSC, minNodeSC) ;
+                resolveClasses(SSC, discreteSCs, classesSSC);
+                sumSSC+=SSC;
+                minmax( SSC, (*it), maxSSC, minSSC, maxNodeSSC, minNodeSSC) ;
 
-                //Compute numerator of groupBC
+                //Compute numerator of groupSBC
                 SBC=(*it)->SBC();
-                nomBC +=(maxBC - SBC );
+                nomSBC +=(maxSBC - SBC );
 
                 //calculate BC variance
-                tempVarianceBC = (  SBC  -  meanBC  ) ;
+                tempVarianceBC = (  SBC  -  meanSBC  ) ;
                 tempVarianceBC *=tempVarianceBC;
-                varianceBC  += tempVarianceBC;
+                varianceSBC  += tempVarianceBC;
 
                 //Compute numerator of groupCC
                 nomSCC += maxSCC- (*it)->SCC();
@@ -3976,14 +3978,14 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                 tempVarianceCC *=tempVarianceCC;
                 varianceSCC  += tempVarianceCC;
 
-                //Compute numerator of groupPC
+                //Compute numerator of groupSPC
                 SPC=(*it)->SPC();
-                nomPC +=(maxPC - SPC );
+                nomSPC +=(maxSPC - SPC );
 
                 //calculate PC variance
-                tempVariancePC = (  (*it)->SPC()  -  meanPC  ) ;
+                tempVariancePC = (  (*it)->SPC()  -  meanSPC  ) ;
                 tempVariancePC *=tempVariancePC;
-                variancePC  += tempVariancePC;
+                varianceSPC  += tempVariancePC;
 
                 //calculate EC variance
                 tempVarianceEC = (  (*it)->EC()  -  meanEC  ) ;
@@ -3992,31 +3994,31 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
             }
 
             //compute final variances
-            varianceBC  /=  (float) aVertices;
+            varianceSBC  /=  (float) aVertices;
             varianceSCC  /=  (float) aVertices;
-            variancePC  /=  (float) aVertices;
+            varianceSPC  /=  (float) aVertices;
             varianceEC  /=  (float) aVertices;
 
             // calculate SC mean value and prepare to compute variance
-            meanSC = sumSC /(float) aVertices ;
-            varianceSC=0;
+            meanSSC = sumSSC /(float) aVertices ;
+            varianceSSC=0;
             tempVarianceSC=0;
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
                 if ( dropIsolates && (*it)->isIsolated() ){
                     continue;
                 }
-                tempVarianceSC = (  (*it)->SSC()  -  meanSC  ) ;
+                tempVarianceSC = (  (*it)->SSC()  -  meanSSC  ) ;
                 tempVarianceSC *=tempVarianceSC;
-                varianceSC  += tempVarianceSC;
+                varianceSSC  += tempVarianceSC;
             }
             //calculate final SC variance
-            varianceSC  /=  (float) aVertices;
+            varianceSSC  /=  (float) aVertices;
 
-            denomPC = (  (aVertices-2.0) ) / (2.0 );   //only for connected nets
+            denomSPC = (  (aVertices-2.0) ) / (2.0 );   //only for connected nets
             if (aVertices < 3 )
-                 denomPC = aVertices-1.0;
+                 denomSPC = aVertices-1.0;
             //what if the net is disconnected (isolates exist) ?
-            groupPC = nomPC/denomPC;
+            groupSPC = nomSPC/denomSPC;
 
             denomSCC = ( ( aVertices-1.0) * (aVertices-2.0) ) / (2.0 * aVertices -3.0);
             if (aVertices < 3 )
@@ -4024,10 +4026,10 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
 
             groupCC = nomSCC/denomSCC;	//Calculate group Closeness centrality
 
-            //nomBC*=2.0;
-//            denomBC =   (aVertices-1.0) *  (aVertices-1.0) * (aVertices-2.0);
-            denomBC =   (aVertices-1.0) ;  // Wasserman&Faust - formula 5.14
-            groupBC=nomBC/denomBC;		//Calculate group Betweenness centrality
+            //nomSBC*=2.0;
+//            denomSBC =   (aVertices-1.0) *  (aVertices-1.0) * (aVertices-2.0);
+            denomSBC =   (aVertices-1.0) ;  // Wasserman&Faust - formula 5.14
+            groupSBC=nomSBC/denomSBC;		//Calculate group Betweenness centrality
 
             calculatedCentralities=true;
         }
@@ -4508,8 +4510,9 @@ void Graph::centralityInformation(const bool considerWeights,
         TM.setItem(i,i,weightSum);
     }
 
+    emit statusMessage ( (tr("Computing inverse matrix. This needs time. Please wait...")) );
     invM.inverse(TM);
-
+    emit statusMessage ( (tr("Computing IC scores...")) );
     diagonalEntriesSum = 0;
     rowSum = 0;
     for (j=0; j<n; j++){
@@ -4575,7 +4578,7 @@ void Graph::writeCentralityInformation(const QString fileName,
     QTextStream outText ( &file );
     outText.setCodec("UTF-8");
     if (graphModified() || !calculatedIC ) {
-            emit statusMessage ( (tr("Calculating IC scores...")) );
+            emit statusMessage ( (tr("Computing IC scores...")) );
             centralityInformation(considerWeights, inverseWeights);
     }
 
@@ -4608,7 +4611,7 @@ void Graph::writeCentralityInformation(const QString fileName,
                   "information flow through all paths between actors weighted by "
                   "strength of tie and distance.")
             << "<br />"
-            << tr("IC' is the standardized IC (IC divided by the sumIC).")
+            << tr("IC' is the standardized index (IC divided by the sumIC).")
             << "<br />"
             << tr ("Warning: To compute this index, SocNetV drops all isolated "
                   "nodes and symmetrizes (if needed) the adjacency matrix. <br />"
@@ -4827,7 +4830,7 @@ void Graph::writeCentralityEigenvector(const QString fileName,
                   "it has ties to other nodes with high EVC."
                   "The eigenvector centralities are also known as Gould indices.")
             << "<br />"
-            << tr("EVC' is the standardized EVC (EVC divided by the sum of all EVCs).")
+            << tr("EVC' is the standardized index (EVC divided by the sum of all EVCs).")
             << "<br />"
             << tr("EVC'' is the scaled EVC (EVC divided by max EVC).")
             << "<br />"
@@ -5262,7 +5265,7 @@ void Graph::writeCentralityDegree ( const QString fileName,
                   "edges from node u to all adjacent nodes.<br />"
                   "Note: To compute inDegree Centrality, use the Degree Prestige measure.")
             << "<br />"
-            << tr("DC' is the standardized index (=DC/(N-1) in non-valued nets and DC/sumDC in valued nets).")
+            << tr("DC' is the standardized index (DC divided by N-1 (non-valued nets) or by sumDC (valued nets).")
             << "</p>";
 
     outText << "<p>"
@@ -6066,7 +6069,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
             << tr("where &delta;<sub>(s,t,u)</sub> is the ratio of all geodesics between "
                   "s and t which run through u. Read the Manual for more.")
             << "<br />"
-            << tr("BC' is the standardized BC.")
+            << tr("BC' is the standardized index (BC divided by (N-1)(N-2)/2 in symmetric nets or (N-1)(N-2) otherwise.")
             << "</p>";
 
     outText << "<p>"
@@ -6152,7 +6155,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
 
     outText << "</tbody></table>";
 
-    if ( minBC ==  maxBC) {
+    if ( minSBC ==  maxSBC) {
         outText << "<p>"
                 << tr("All nodes have the same BC score.")
                 << "</p>";
@@ -6160,19 +6163,26 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     else {
         outText << "<p>";
         outText << "<span class=\"info\">"
+                << tr("BC Sum = ")
+                <<"</span>"
+                << sumBC
+                <<"</p>";
+
+        outText << "<p>";
+        outText << "<span class=\"info\">"
                 << tr("Max BC' = ")
                 <<"</span>"
-               << maxBC <<" (node "<< maxNodeBC  <<  ")"
+               << maxSBC <<" (node "<< maxNodeSBC  <<  ")"
                << "<br />"
                << "<span class=\"info\">"
                << tr("Min BC' = ")
                <<"</span>"
-               << minBC <<" (node "<< minNodeBC <<  ")"
+               << minSBC <<" (node "<< minNodeSBC <<  ")"
                << "<br />"
                << "<span class=\"info\">"
                << tr("BC' classes = ")
                <<"</span>"
-               << classesBC
+               << classesSBC
                << "</p>";
     }
 
@@ -6180,17 +6190,17 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     outText << "<span class=\"info\">"
             << tr("BC' Sum = ")
             <<"</span>"
-            << sumBC
+            << sumSBC
             <<"<br/>"
            << "<span class=\"info\">"
             << tr("BC' Mean = ")
             <<"</span>"
-            << meanBC
+            << meanSBC
             <<"<br/>"
             << "<span class=\"info\">"
             << tr("BC' Variance = ")
             <<"</span>"
-            << varianceBC
+            << varianceSBC
             <<"<br/>";
     outText << "</p>";
 
@@ -6203,7 +6213,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
         outText << "<span class=\"info\">"
                 << tr("GBC = ")
                 <<"</span>"
-                <<  groupBC
+                <<  groupSBC
                  << "</p>";
 
         outText << "<p>"
@@ -6301,7 +6311,7 @@ void Graph::writeCentralityStress( const QString fileName,
             << tr("The SC index of each node u is the sum of &sigma;<sub>(s,t,u)</sub>): <br />"
                   "the number of geodesics from s to t through u.")
             << "<br />"
-            << tr("SC' is the standardized SC.")
+            << tr("SC' is the standardized index (SC divided by sumSC).")
             << "</p>";
 
     outText << "<p>"
@@ -6382,7 +6392,7 @@ void Graph::writeCentralityStress( const QString fileName,
 
     outText << "</tbody></table>";
 
-    if ( minSC ==  maxSC) {
+    if ( minSSC ==  maxSSC) {
         outText << "<p>"
                 << tr("All nodes have the same SC score.")
                 << "</p>";
@@ -6390,19 +6400,26 @@ void Graph::writeCentralityStress( const QString fileName,
     else {
         outText << "<p>";
         outText << "<span class=\"info\">"
+                << tr("SC Sum = ")
+                <<"</span>"
+                << sumSC
+                <<"</p>";
+
+        outText << "<p>";
+        outText << "<span class=\"info\">"
                 << tr("Max SC' = ")
                 <<"</span>"
-               << maxSC <<" (node "<< maxNodeSC  <<  ")"
+               << maxSSC <<" (node "<< maxNodeSSC  <<  ")"
                << "<br />"
                << "<span class=\"info\">"
                << tr("Min SC' = ")
                <<"</span>"
-               << minSC <<" (node "<< minNodeSC <<  ")"
+               << minSSC <<" (node "<< minNodeSSC <<  ")"
                << "<br />"
                << "<span class=\"info\">"
                << tr("BC classes = ")
                <<"</span>"
-               << classesSC
+               << classesSSC
                << "</p>";
     }
 
@@ -6410,17 +6427,17 @@ void Graph::writeCentralityStress( const QString fileName,
     outText << "<span class=\"info\">"
             << tr("SC' Sum = ")
             <<"</span>"
-            << sumSC
+            << sumSSC
             <<"<br/>"
            << "<span class=\"info\">"
             << tr("SC' Mean = ")
             <<"</span>"
-            << meanSC
+            << meanSSC
             <<"<br/>"
             << "<span class=\"info\">"
             << tr("SC' Variance = ")
             <<"</span>"
-            << varianceSC
+            << varianceSSC
             <<"<br/>";
     outText << "</p>";
 
@@ -6776,7 +6793,7 @@ void Graph::writeCentralityPower(const QString fileName,
 
     outText << "</tbody></table>";
 
-    if ( minPC ==  maxPC) {
+    if ( minSPC ==  maxSPC) {
         outText << "<p>"
                 << tr("All nodes have the same PC score.")
                 << "</p>";
@@ -6784,19 +6801,26 @@ void Graph::writeCentralityPower(const QString fileName,
     else {
         outText << "<p>";
         outText << "<span class=\"info\">"
+                << tr("PC Sum = ")
+                <<"</span>"
+                << sumPC
+                <<"</p>";
+
+        outText << "<p>";
+        outText << "<span class=\"info\">"
                 << tr("Max PC' = ")
                 <<"</span>"
-               << maxPC <<" (node "<< maxNodePC  <<  ")"
+               << maxSPC <<" (node "<< maxNodeSPC  <<  ")"
                << "<br />"
                << "<span class=\"info\">"
                << tr("Min PC' = ")
                <<"</span>"
-               << minPC <<" (node "<< minNodePC <<  ")"
+               << minSPC <<" (node "<< minNodeSPC <<  ")"
                << "<br />"
                << "<span class=\"info\">"
                << tr("PC classes = ")
                <<"</span>"
-               << classesPC
+               << classesSPC
                << "</p>";
     }
 
@@ -6804,17 +6828,17 @@ void Graph::writeCentralityPower(const QString fileName,
     outText << "<span class=\"info\">"
             << tr("PC' Sum = ")
             <<"</span>"
-            << sumPC
+            << sumSPC
             <<"<br/>"
            << "<span class=\"info\">"
             << tr("PC' Mean = ")
             <<"</span>"
-            << meanPC
+            << meanSPC
             <<"<br/>"
             << "<span class=\"info\">"
             << tr("PC' Variance = ")
             <<"</span>"
-            << variancePC
+            << varianceSPC
             <<"<br/>";
     outText << "</p>";
 
@@ -6827,7 +6851,7 @@ void Graph::writeCentralityPower(const QString fileName,
         outText << "<span class=\"info\">"
                 << tr("GPC = ")
                 <<"</span>"
-                <<  groupPC
+                <<  groupSPC
                  << "</p>";
 
         outText << "<p>"
@@ -7085,7 +7109,7 @@ void Graph::writePrestigeDegree (const QString fileName,
                   "If the network is weighted, DP is the sum of inbound arc "
                   "weights (Indegree) to node u from all adjacent nodes. ")
             << "<br />"
-            << tr("DP' is the standardized DP (divided by N-1).")
+            << tr("DP' is the standardized index (DP divided by N-1).")
             << "</p>";
 
     outText << "<p>"
@@ -8115,14 +8139,14 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
             qDebug("Layout according to BC");
             C=(*it)->BC();
             std= (*it)->SBC();
-            maxC=maxBC;
+            maxC=maxSBC;
             break;
         }
         case 5 : {
             qDebug("Layout according to SC");
             C=(*it)->SC();
             std= (*it)->SSC();
-            maxC=maxSC;
+            maxC=maxSSC;
             break;
         }
         case 6 : {
@@ -8136,7 +8160,7 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
             qDebug("Layout according to PC");
             C=(*it)->PC();
             std= (*it)->SPC();
-            maxC=maxPC;
+            maxC=maxSPC;
             break;
         }
         case 8 : {
@@ -8179,7 +8203,7 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
         qDebug () << "Vertice " << (*it)->name() << " at x=" << (*it)->x()
                   << "y= "<< (*it)->y() << ": C" << C << "stdC" << std
                   << "maxradius" <<  maxRadius
-                  << "newradius" << maxRadius - (std - offset)*maxRadius;
+                  << "newradius" << maxRadius - (std/maxC - offset)*maxRadius;
         switch (static_cast<int> (ceil(maxC)) ){
         case 0: {
             qDebug("maxC=0.   Using maxHeight");
@@ -8187,7 +8211,7 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
             break;
         }
         default: {
-            new_radius=(maxRadius- (std - offset)*maxRadius);
+            new_radius=(maxRadius- (std/maxC - offset)*maxRadius);
             break;
         }
         };
@@ -8379,14 +8403,14 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
             qDebug("Layout according to BC");
             C=(*it)->BC();
             std= (*it)->SBC();
-            maxC=maxBC;
+            maxC=maxSBC;
             break;
         }
         case 5 : {
             qDebug("Layout according to SC");
             C=(*it)->SC();
             std= (*it)->SSC();
-            maxC=maxSC;
+            maxC=maxSSC;
             break;
         }
         case 6 : {
@@ -8400,7 +8424,7 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
             qDebug("Layout according to PC");
             C=(*it)->PC();
             std= (*it)->SPC();
-            maxC=maxPC;
+            maxC=maxSPC;
             break;
         }
         case 8 : {
@@ -8568,14 +8592,14 @@ void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
             qDebug("VerticesSize according to BC");
             C=(*it)->BC();
             std= (*it)->SBC();
-            maxC=maxBC;
+            maxC=maxSBC;
             break;
         }
         case 5 : {
             qDebug("VerticesSize according to SC");
             C=(*it)->SC();
             std= (*it)->SSC();
-            maxC=maxSC;
+            maxC=maxSSC;
             break;
         }
         case 6 : {
@@ -8589,7 +8613,7 @@ void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
             qDebug("VerticesSize according to PC");
             C=(*it)->PC();
             std= (*it)->SPC();
-            maxC=maxPC;
+            maxC=maxSPC;
             break;
         }
         case 8 : {
@@ -10673,6 +10697,7 @@ void Graph::graphClusteringHierarchical(const int &matrix,
 
     m_clusters.clear();
     m_clustersPerLevel.clear();
+    m_clustersByOrder.clear();
 
     //
     //Step 1: Assign each of the N items to its own cluster.
@@ -10702,6 +10727,7 @@ void Graph::graphClusteringHierarchical(const int &matrix,
         clusteredItems = m_clusters[mergedClusterIndex] + m_clusters[deletedClusterIndex] ;
 
         m_clustersPerLevel.insert( min, clusteredItems);
+        m_clustersByOrder.insert( seq+1, clusteredItems);
 
         m_clusters[mergedClusterIndex] = clusteredItems ;
 
@@ -17874,7 +17900,7 @@ QString Graph::graphSimilarityMeasureTypeToString(const int &similarityMeasure) 
     QString similarityMeasureStr;
     switch (similarityMeasure) {
     case SIMILARITY_MEASURE_SIMPLE :
-        similarityMeasureStr = "Simple / Exact matching " ;
+        similarityMeasureStr = "Simple / Exact matching" ;
         break;
     case SIMILARITY_MEASURE_JACCARD:
         similarityMeasureStr = "Jaccard Index" ;

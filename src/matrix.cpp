@@ -1337,6 +1337,9 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
                         magn_i  += AM.item(i,j) * AM.item(i,j); //compute |x|^2
                         magn_k  += AM.item(k,j) * AM.item(k,j); //compute |y|^2
                         break;
+                    case SIMILARITY_MEASURE_EUCLIDEAN:
+                        matches += ( AM.item(i,j) - AM.item(k,j) )*( AM.item(i,j) - AM.item(k,j) ); //compute (x * y)^2
+                        break;
                     default:
                         break;
                     }
@@ -1365,7 +1368,9 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
                     else
                         matchRatio = matches / sqrt( magn_i  * magn_k );
                     break;
-
+                case SIMILARITY_MEASURE_EUCLIDEAN:
+                    matchRatio = sqrt(matches);
+                    break;
                 default:
                     break;
                 }

@@ -894,10 +894,10 @@ private:
     float meanSDC, varianceSDC;
     float meanSCC, varianceSCC;
     float meanIRCC, varianceIRCC;
-    float meanBC, varianceBC;
-    float meanSC, varianceSC;
+    float meanSBC, varianceSBC;
+    float meanSSC, varianceSSC;
     float meanEC, varianceEC;
-    float meanPC, variancePC;
+    float meanSPC, varianceSPC;
     float meanIC, varianceIC;
     float meanEVC, varianceEVC;
     float meanSDP, varianceSDP;
@@ -908,13 +908,13 @@ private:
     float minSDC, maxSDC, sumDC, sumSDC, groupDC;
     float minSCC, maxSCC, nomSCC, denomSCC, sumCC, sumSCC, groupCC, maxIndexCC;
     float minIRCC, maxIRCC, nomIRCC, denomIRCC, sumIRCC, groupIRCC;
-    float minBC, maxBC, nomBC, denomBC, sumBC, groupBC, maxIndexBC;
-    float minPC, maxPC, nomPC, denomPC, t_sumIC, sumPC, groupPC, maxIndexPC;
-    float minSC, maxSC, nomSC, denomSC, sumSC, groupSC, maxIndexSC;
+    float minSBC, maxSBC, nomSBC, denomSBC, sumBC, sumSBC, groupSBC, maxIndexBC;
+    float minSPC, maxSPC, nomSPC, denomSPC, t_sumIC, sumSPC, groupSPC, maxIndexPC;
+    float minSSC, maxSSC, sumSC, sumSSC, groupSC, maxIndexSC;
     float minEC, maxEC, nomEC, denomEC, sumEC, groupEC, maxIndexEC;
     float minIC, maxIC, nomIC, denomIC, sumIC, maxIndexIC;
     float minEVC, maxEVC, nomEVC, denomEVC, sumEVC, sumSEVC, groupEVC;
-    float minPRP, maxPRP, nomPRC, denomPRC, t_sumPC, t_sumPRP, sumPRP;
+    float minPRP, maxPRP, nomPRC, denomPRC, sumPC, t_sumPRP, sumPRP;
     float minPP, maxPP, nomPP, denomPP, sumPP, groupPP;
 
     float minCLC, maxCLC, averageCLC,varianceCLC, d_factor;
@@ -923,9 +923,9 @@ private:
     int classesSDC, maxNodeSDC, minNodeSDC;
     int classesSCC, maxNodeSCC, minNodeSCC;
     int classesIRCC, maxNodeIRCC, minNodeIRCC;
-    int classesBC, maxNodeBC, minNodeBC;
-    int classesPC, maxNodePC, minNodePC;
-    int classesSC, maxNodeSC, minNodeSC;
+    int classesSBC, maxNodeSBC, minNodeSBC;
+    int classesSPC, maxNodeSPC, minNodeSPC;
+    int classesSSC, maxNodeSSC, minNodeSSC;
     int classesEC, maxNodeEC, minNodeEC;
     int classesEccentricity, maxNodeEccentricity, minNodeEccentricity;
     int classesIC, maxNodeIC, minNodeIC;

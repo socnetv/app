@@ -9204,14 +9204,16 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
         switch(
                QMessageBox::critical(
                    this, "Slow function warning",
-                   tr("Please note that this function is <b>VERY SLOW</b> on large "
-                      "networks (n>200), since it will calculate  a (n x n) matrix A with:\n"
-                      "Aii=1+weighted_degree_ni \n"
-                      "Aij=1 if (i,j)=0 \n"
-                      "Aij=1-wij if (i,j)=wij \n"
-                      "Next, it will compute the inverse matrix C of A. \n"
-                      "The computation of the inverse matrix is VERY CPU intensive function."
-                      "because it uses the Gauss-Jordan elimination algorithm.\n\n"
+                   tr("Please note that this function is <b>SLOW</b> on large "
+                      "networks (n>200), since it will calculate  a (n x n) matrix A with: <br>"
+                      "Aii=1+weighted_degree_ni <br>"
+                      "Aij=1 if (i,j)=0 <br>"
+                      "Aij=1-wij if (i,j)=wij <br>"
+                      "Next, it will compute the inverse matrix C of A. "
+                      "The computation of the inverse matrix is a CPU intensive function "
+                      "although it uses LU decomposition. <br>"
+                      "How slow is this? For instance, to compute IC scores of 600 nodes "
+                      "on a modern i7 4790K CPU you will need to wait for 2 minutes at least. <br>"
                       "Are you sure you want to continue?"), QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
         case QMessageBox::Ok:
             break;
@@ -9367,14 +9369,16 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
         switch(
                QMessageBox::critical(
                    this, "Slow function warning",
-                   tr("Please note that this function is <b>VERY SLOW</b> on large "
-                      "networks (n>200), since it will calculate  a (n x n) matrix A with:"
-                      "Aii=1+weighted_degree_ni"
-                      "Aij=1 if (i,j)=0"
-                      "Aij=1-wij if (i,j)=wij"
-                      "Next, it will compute the inverse matrix C of A."
-                      "The computation of the inverse matrix is VERY CPU intensive function."
-                      "because it uses the Gauss-Jordan elimination algorithm.\n\n"
+                   tr("Please note that this function is <b>SLOW</b> on large "
+                      "networks (n>200), since it will calculate  a (n x n) matrix A with: <br>"
+                      "Aii=1+weighted_degree_ni <br>"
+                      "Aij=1 if (i,j)=0 <br>"
+                      "Aij=1-wij if (i,j)=wij <br>"
+                      "Next, it will compute the inverse matrix C of A. "
+                      "The computation of the inverse matrix is a CPU intensive function "
+                      "although it uses LU decomposition. <br>"
+                      "How slow is this? For instance, to compute IC scores of 600 nodes "
+                      "on a modern i7 4790K CPU you will need to wait for 2 minutes at least. <br>"
                       "Are you sure you want to continue?"), QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
         case QMessageBox::Ok:
             break;
@@ -9548,14 +9552,16 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
         switch(
                QMessageBox::critical(
                    this, "Slow function warning",
-                   tr("Please note that this function is <b>VERY SLOW</b> on large "
-                      "networks (n>200), since it will calculate  a (n x n) matrix A with:"
-                      "Aii=1+weighted_degree_ni"
-                      "Aij=1 if (i,j)=0"
-                      "Aij=1-wij if (i,j)=wij"
-                      "Next, it will compute the inverse matrix C of A."
-                      "The computation of the inverse matrix is VERY CPU intensive function."
-                      "because it uses the Gauss-Jordan elimination algorithm.\n\n"
+                   tr("Please note that this function is <b>SLOW</b> on large "
+                      "networks (n>200), since it will calculate  a (n x n) matrix A with: <br>"
+                      "Aii=1+weighted_degree_ni <br>"
+                      "Aij=1 if (i,j)=0 <br>"
+                      "Aij=1-wij if (i,j)=wij <br>"
+                      "Next, it will compute the inverse matrix C of A. "
+                      "The computation of the inverse matrix is a CPU intensive function "
+                      "although it uses LU decomposition. <br>"
+                      "How slow is this? For instance, to compute IC scores of 600 nodes "
+                      "on a modern i7 4790K CPU you will need to wait for 2 minutes at least. <br>"
                       "Are you sure you want to continue?"), QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
         case QMessageBox::Ok:
             break;
@@ -11117,13 +11123,15 @@ void MainWindow::slotAnalyzeCentralityInformation(){
                QMessageBox::critical(
                    this, "Slow function warning",
                    tr("Please note that this function is <b>SLOW</b> on large "
-                      "networks (n>200), since it will calculate  a (n x n) matrix A with:"
-                      "Aii=1+weighted_degree_ni"
-                      "Aij=1 if (i,j)=0"
-                      "Aij=1-wij if (i,j)=wij\n"
-                      "Next, it will compute the inverse matrix C of A."
-                      "The computation of the inverse matrix is a CPU intensive function."
-                      "although it uses LU decomposition.\n\n"
+                      "networks (n>200), since it will calculate  a (n x n) matrix A with: <br>"
+                      "Aii=1+weighted_degree_ni <br>"
+                      "Aij=1 if (i,j)=0 <br>"
+                      "Aij=1-wij if (i,j)=wij <br>"
+                      "Next, it will compute the inverse matrix C of A. "
+                      "The computation of the inverse matrix is a CPU intensive function "
+                      "although it uses LU decomposition. <br>"
+                      "How slow is this? For instance, to compute IC scores of 600 nodes "
+                      "on a modern i7 4790K CPU you will need to wait for 2 minutes at least. <br>"
                       "Are you sure you want to continue?"), QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
         case QMessageBox::Ok:
             break;
@@ -11177,26 +11185,7 @@ void MainWindow::slotAnalyzeCentralityEigenvector(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    if (activeNodes() > 200) {
-        switch(
-               QMessageBox::critical(
-                   this, "Slow function warning",
-                   tr("Please note that this function is <b>SLOW</b> on large "
-                      "networks (n>200), because it uses Power Iteration until it converge."
 
-                      "Are you sure you want to continue?"), QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
-        case QMessageBox::Ok:
-            break;
-
-        case QMessageBox::Cancel:
-            // Cancel was clicked
-            return;
-            break;
-        default:
-            // should never be reached
-            break;
-        }
-    }
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality_eigenvector.html";
     statusMessage(  QString(tr(" Please wait...")));
 
