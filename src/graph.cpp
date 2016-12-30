@@ -237,7 +237,7 @@ void Graph::clear() {
     m_graph.clear();
     index.clear();
 
-    discreteDPs.clear(); discreteDCs.clear(); discreteCCs.clear();
+    discreteDPs.clear(); discreteSDCs.clear(); discreteCCs.clear();
     discreteBCs.clear(); discreteSCs.clear(); discreteIRCCs.clear();
     discreteECs.clear(); discreteEccentricities.clear();
     discretePCs.clear(); discreteICs.clear();  discretePRPs.clear();
@@ -3692,9 +3692,9 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
         }
 
         qDebug("Graph: graphMatrixDistancesCreate() - initialising variables for centrality index");
-        maxCC=0; minCC=RAND_MAX; nomCC=0; denomCC=0; groupCC=0; maxNodeCC=0;
-        minNodeCC=0; sumCC=0;
-        discreteCCs.clear(); classesCC=0;
+        maxSCC=0; minSCC=RAND_MAX; nomSCC=0; denomSCC=0; groupCC=0; maxNodeSCC=0;
+        minNodeSCC=0; sumSCC=0; sumCC=0;
+        discreteCCs.clear(); classesSCC=0;
         maxBC=0; minBC=RAND_MAX; nomBC=0; denomBC=0; groupBC=0; maxNodeBC=0;
         minNodeBC=0; sumBC=0;
         discreteBCs.clear(); classesBC=0;
@@ -3902,13 +3902,14 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                 sumBC+=SBC;
                 minmax( SBC, (*it), maxBC, minBC, maxNodeBC, minNodeBC) ;
 
-                // Compute std CC, classes and min/maxCC
+                // Compute std CC, classes and min/maxSCC
                 CC = (*it)->CC();
+                sumSCC+=CC;
                 SCC = maxIndexCC * CC;
                 (*it)->setSCC (  SCC );
-                resolveClasses(SCC, discreteCCs, classesCC,(*it)->name() );
-                sumCC+=SCC;
-                minmax( SCC, (*it), maxCC, minCC, maxNodeCC, minNodeCC) ;
+                resolveClasses(SCC, discreteCCs, classesSCC,(*it)->name() );
+                sumSCC+=SCC;
+                minmax( SCC, (*it), maxSCC, minSCC, maxNodeSCC, minNodeSCC) ;
 
                 //prepare to compute stdSC
                 SC=(*it)->SC();
@@ -3934,8 +3935,8 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
             varianceBC=0;
             tempVarianceBC=0;
 
-            meanCC = sumCC /(float) aVertices ;
-            varianceCC=0;
+            meanSCC = sumSCC /(float) aVertices ;
+            varianceSCC=0;
             tempVarianceCC=0;
 
             meanPC = sumPC /(float) aVertices ;
@@ -3968,12 +3969,12 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                 varianceBC  += tempVarianceBC;
 
                 //Compute numerator of groupCC
-                nomCC += maxCC- (*it)->SCC();
+                nomSCC += maxSCC- (*it)->SCC();
 
                 //calculate CC variance
-                tempVarianceCC = (  (*it)->SCC()  -  meanCC  ) ;
+                tempVarianceCC = (  (*it)->SCC()  -  meanSCC  ) ;
                 tempVarianceCC *=tempVarianceCC;
-                varianceCC  += tempVarianceCC;
+                varianceSCC  += tempVarianceCC;
 
                 //Compute numerator of groupPC
                 SPC=(*it)->SPC();
@@ -3992,7 +3993,7 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
 
             //compute final variances
             varianceBC  /=  (float) aVertices;
-            varianceCC  /=  (float) aVertices;
+            varianceSCC  /=  (float) aVertices;
             variancePC  /=  (float) aVertices;
             varianceEC  /=  (float) aVertices;
 
@@ -4017,11 +4018,11 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
             //what if the net is disconnected (isolates exist) ?
             groupPC = nomPC/denomPC;
 
-            denomCC = ( ( aVertices-1.0) * (aVertices-2.0) ) / (2.0 * aVertices -3.0);
+            denomSCC = ( ( aVertices-1.0) * (aVertices-2.0) ) / (2.0 * aVertices -3.0);
             if (aVertices < 3 )
-                 denomCC = aVertices-1.0;
+                 denomSCC = aVertices-1.0;
 
-            groupCC = nomCC/denomCC;	//Calculate group Closeness centrality
+            groupCC = nomSCC/denomSCC;	//Calculate group Closeness centrality
 
             //nomBC*=2.0;
 //            denomBC =   (aVertices-1.0) *  (aVertices-1.0) * (aVertices-2.0);
@@ -5086,14 +5087,14 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
     }
     float DC=0, nom=0, denom=0,  SDC=0;
     float weight;
-    classesDC=0;
-    discreteDCs.clear();
+    classesSDC=0;
+    discreteSDCs.clear();
+    sumSDC=0;
     sumDC=0;
-    t_sumDC=0;
-    maxDC=0;
-    minDC=RAND_MAX;
-    varianceDC=0;
-    meanDC=0;
+    maxSDC=0;
+    minSDC=RAND_MAX;
+    varianceSDC=0;
+    meanSDC=0;
     int N=vertices(dropIsolates);
 
     QList<Vertex*>::const_iterator it, it1;
@@ -5120,7 +5121,7 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
         }
 
         (*it) -> setDC ( DC ) ;	//Set OutDegree
-        t_sumDC += DC;          // store temp sumDC (for std calc below)
+        sumDC += DC;          // store sumDC (for std calc below)
         qDebug() << "Graph:centralityDegree() - vertex "
                  <<  (*it)->name() << " has DC = " << DC ;
     }
@@ -5132,39 +5133,39 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
             SDC = ( DC / (N-1.0) );
         }
         else {
-            SDC= ( DC / (t_sumDC) );
+            SDC= ( DC / (sumDC) );
         }
         (*it) -> setSDC( SDC );		//Set Standard DC
 
 //        qDebug() << "Graph::centralityDegree() - vertex "
 //                 <<  (*it)->name() << " SDC " << (*it)->SDC ();
 
-        sumDC+=SDC;
+        sumSDC+=SDC;
 
-        it2 = discreteDCs.find(QString::number(SDC));
-        if (it2 == discreteDCs.end() )	{
-            classesDC++;
+        it2 = discreteSDCs.find(QString::number(SDC));
+        if (it2 == discreteSDCs.end() )	{
+            classesSDC++;
            // qDebug("This is a new DC class");
-            discreteDCs.insert ( QString::number(DC), classesDC );
+            discreteSDCs.insert ( QString::number(SDC), classesSDC );
         }
-        //qDebug() << "DC classes =  " << classesDC;
+        //qDebug() << "DC classes =  " << classesSDC;
 
-        if (maxDC < SDC ) {
-            maxDC = SDC ;
-            maxNodeDC=(*it)->name();
+        if (maxSDC < SDC ) {
+            maxSDC = SDC ;
+            maxNodeSDC=(*it)->name();
         }
-        if (minDC > SDC ) {
-            minDC = SDC ;
-            minNodeDC=(*it)->name();
+        if (minSDC > SDC ) {
+            minSDC = SDC ;
+            minNodeSDC=(*it)->name();
         }
     }
 
-    if (minDC == maxDC)
-        maxNodeDC=-1;
+    if (minSDC == maxSDC)
+        maxNodeSDC=-1;
 
-    meanDC = sumDC / (float) N;
-    //    qDebug() << "Graph::centralityDegree() - sumDC  " << sumDC
-    //             << " vertices " << N << " meanDC = sumDC / N = " << meanDC;
+    meanSDC = sumSDC / (float) N;
+    //    qDebug() << "Graph::centralityDegree() - sumSDC  " << sumSDC
+    //             << " vertices " << N << " meanSDC = sumSDC / N = " << meanSDC;
 
     // Calculate Variance and the Degree Centralisation of the whole graph.
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -5172,14 +5173,14 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
             continue;
         }
         SDC= (*it)->SDC();
-        nom+= (maxDC-SDC);
-        varianceDC += (SDC-meanDC) * (SDC-meanDC) ;
+        nom+= (maxSDC-SDC);
+        varianceSDC += (SDC-meanSDC) * (SDC-meanSDC) ;
 
 
     }
-    varianceDC=varianceDC/(float) N;
+    varianceSDC=varianceSDC/(float) N;
 
-//    qDebug() << "Graph::centralityDegree() - variance = " << varianceDC;
+//    qDebug() << "Graph::centralityDegree() - variance = " << varianceSDC;
     if (m_symmetric) {
         // we divide by N-1 because we use std C values
         denom= (N-1.0)*(N-2.0)  / (N-1.0);
@@ -5261,7 +5262,7 @@ void Graph::writeCentralityDegree ( const QString fileName,
                   "edges from node u to all adjacent nodes.<br />"
                   "Note: To compute inDegree Centrality, use the Degree Prestige measure.")
             << "<br />"
-            << tr("DC' is the standardized DC.")
+            << tr("DC' is the standardized index (=DC/(N-1) in non-valued nets and DC/sumDC in valued nets).")
             << "</p>";
 
     outText << "<p>"
@@ -5298,7 +5299,7 @@ void Graph::writeCentralityDegree ( const QString fileName,
             << tr("DC'")
             << "</th>"
             <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
-            << tr("%DC")
+            << tr("%DC'")
             <<"</th>"
            <<"</tr>"
           << "</thead>"
@@ -5348,7 +5349,7 @@ void Graph::writeCentralityDegree ( const QString fileName,
 
     outText << "</tbody></table>";
 
-    if ( minDC ==  maxDC) {
+    if ( minSDC ==  maxSDC) {
         outText << "<p>"
                 << tr("All nodes have the same DC score.")
                 << "</p>";
@@ -5356,42 +5357,44 @@ void Graph::writeCentralityDegree ( const QString fileName,
     else {
         outText << "<p>";
         outText << "<span class=\"info\">"
+                << tr("DC Sum = ")
+                <<"</span>"
+                << sumDC
+                <<"</p>";
+
+        outText << "<p>";
+        outText << "<span class=\"info\">"
                 << tr("Max DC' = ")
                 <<"</span>"
-               << maxDC <<" (node "<< maxNodeDC  <<  ")"
+               << maxSDC <<" (node "<< maxNodeSDC  <<  ")"
                << "<br />"
                << "<span class=\"info\">"
                << tr("Min DC' = ")
                <<"</span>"
-               << minDC <<" (node "<< minNodeDC <<  ")"
+               << minSDC <<" (node "<< minNodeSDC <<  ")"
                << "<br />"
                << "<span class=\"info\">"
                << tr("DC' classes = ")
                <<"</span>"
-               << classesDC
+               << classesSDC
                << "</p>";
     }
 
     outText << "<p>";
     outText << "<span class=\"info\">"
-            << tr("DC Sum = ")
-            <<"</span>"
-            << t_sumDC
-            <<"<br/>"
-           << "<span class=\"info\">"
             << tr("DC' Sum = ")
             <<"</span>"
-            << sumDC
+            << sumSDC
             <<"<br/>"
            << "<span class=\"info\">"
             << tr("DC' Mean = ")
             <<"</span>"
-            << meanDC
+            << meanSDC
             <<"<br/>"
             << "<span class=\"info\">"
             << tr("DC' Variance = ")
             <<"</span>"
-            << varianceDC
+            << varianceSDC
             <<"<br/>";
     outText << "</p>";
 
@@ -5518,7 +5521,7 @@ void Graph::writeCentralityCloseness( const QString fileName,
             << tr("Note: The CC index considers outbound arcs only and "
                   "isolate nodes are dropped by default. Read the Manual for more.")
             << "<br />"
-            << tr("CC' is the standardized CC (multiplied by N-1 minus isolates).")
+            << tr("CC' is the standardized index (CC multiplied by (N-1 minus isolates)).")
             << "</p>";
 
     outText << "<p>"
@@ -5604,7 +5607,7 @@ void Graph::writeCentralityCloseness( const QString fileName,
 
     outText << "</tbody></table>";
 
-    if ( minCC ==  maxCC) {
+    if ( minSCC ==  maxSCC) {
         outText << "<p>"
                 << tr("All nodes have the same CC score.")
                 << "</p>";
@@ -5612,19 +5615,26 @@ void Graph::writeCentralityCloseness( const QString fileName,
     else {
         outText << "<p>";
         outText << "<span class=\"info\">"
+                << tr("CC Sum = ")
+                <<"</span>"
+                << sumCC
+                <<"</p>";
+
+        outText << "<p>";
+        outText << "<span class=\"info\">"
                 << tr("Max CC' = ")
                 <<"</span>"
-               << maxCC <<" (node "<< maxNodeCC  <<  ")"
+               << maxSCC <<" (node "<< maxNodeSCC  <<  ")"
                << "<br />"
                << "<span class=\"info\">"
                << tr("Min CC' = ")
                <<"</span>"
-               << minCC <<" (node "<< minNodeCC <<  ")"
+               << minSCC <<" (node "<< minNodeSCC <<  ")"
                << "<br />"
                << "<span class=\"info\">"
                << tr("CC' classes = ")
                <<"</span>"
-               << classesCC
+               << classesSCC
                << "</p>";
     }
 
@@ -5632,17 +5642,17 @@ void Graph::writeCentralityCloseness( const QString fileName,
     outText << "<span class=\"info\">"
             << tr("CC' Sum = ")
             <<"</span>"
-            << sumCC
+            << sumSCC
             <<"<br/>"
            << "<span class=\"info\">"
             << tr("CC' Mean = ")
             <<"</span>"
-            << meanCC
+            << meanSCC
             <<"<br/>"
             << "<span class=\"info\">"
             << tr("CC' Variance = ")
             <<"</span>"
-            << varianceCC
+            << varianceSCC
             <<"<br/>";
     outText << "</p>";
 
@@ -6882,14 +6892,14 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
 
     float DP=0, SDP=0, nom=0, denom=0;
     float weight;
-    classesDP=0;
+    classesSDP=0;
+    sumSDP=0;
     sumDP=0;
-    t_sumDP=0;
-    maxDP=0;
-    minDP=vertices(dropIsolates)-1;
+    maxSDP=0;
+    minSDP=vertices(dropIsolates)-1;
     discreteDPs.clear();
-    varianceDP=0;
-    meanDP=0;
+    varianceSDP=0;
+    meanSDP=0;
     m_symmetric = true;
     QList<Vertex*>::const_iterator it; //, it1;
     H_StrToInt::iterator it2;
@@ -6949,7 +6959,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
         }
 
         (*it) -> setDP ( DP ) ;		//Set DP
-        t_sumDP += DP;
+        sumDP += DP;
         qDebug() << "Graph: prestigeDegree() vertex " <<  (*it)->name()
                  << " DP "  << DP;
 
@@ -6963,35 +6973,35 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
             SDP=( DP / (vert-1.0) );		//Set Standard InDegree
         }
         else {
-            SDP =( DP / (t_sumDP) );
+            SDP =( DP / (sumDP) );
         }
         (*it) -> setSDP( SDP );
-        sumDP += SDP;
+        sumSDP += SDP;
         qDebug() << "Graph::prestigeDegree - vertex " <<  (*it)->name() << " DP  "
                  << DP << " SDP " << (*it)->SDP ();
         it2 = discreteDPs.find(QString::number(SDP));
         if (it2 == discreteDPs.end() )	{
-            classesDP++;
+            classesSDP++;
             qDebug("This is a new DP class");
-            discreteDPs.insert ( QString::number(SDP), classesDP );
+            discreteDPs.insert ( QString::number(SDP), classesSDP );
         }
-        qDebug("DP classes = %i ", classesDP);
-        if (maxDP < SDP ) {
-            maxDP = SDP ;
+        qDebug("DP classes = %i ", classesSDP);
+        if (maxSDP < SDP ) {
+            maxSDP = SDP ;
             maxNodeDP=(*it)->name();
         }
-        if (minDP > SDP ) {
-            minDP = SDP ;
+        if (minSDP > SDP ) {
+            minSDP = SDP ;
             minNodeDP=(*it)->name();
         }
 
     }
 
-    if (minDP == maxDP)
+    if (minSDP == maxSDP)
         maxNodeDP=-1;
 
-    meanDP = sumDP / (float) vert;
-    qDebug("Graph: sumDP = %f, meanDP = %f", sumDP, meanDP);
+    meanSDP = sumSDP / (float) vert;
+    qDebug("Graph: sumSDP = %f, meanSDP = %f", sumSDP, meanSDP);
 
     // Calculate Variance and the Degree Prestigation of the whole graph. :)
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -6999,10 +7009,10 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
             continue;
         }
         SDP= (*it)->SDP();
-        nom+= maxDP-SDP;
-        varianceDP += (SDP-meanDP) * (SDP-meanDP) ;
+        nom+= maxSDP-SDP;
+        varianceSDP += (SDP-meanSDP) * (SDP-meanSDP) ;
     }
-    varianceDP=varianceDP/(float) vert;
+    varianceSDP=varianceSDP/(float) vert;
 
     if (m_symmetric)
         denom=(vert-1.0)*(vert-2.0);
@@ -7014,7 +7024,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
     //qDebug () << "*** vert is " << vert << " nom " << nom << " denom is " << denom;
     if (!weights) {
         groupDP=nom/denom;
-        qDebug("Graph: varianceDP = %f, groupDP = %f", varianceDP, groupDP);
+        qDebug("Graph: varianceSDP = %f, groupDP = %f", varianceSDP, groupDP);
     }
 
     delete enabledInEdges;
@@ -7163,50 +7173,52 @@ void Graph::writePrestigeDegree (const QString fileName,
 
     outText << "</tbody></table>";
 
-    if ( minDP ==  maxDP) {
+    if ( minSDP ==  maxSDP) {
         outText << "<p>"
                 << tr("All nodes have the same DP score.")
                 << "</p>";
     }
     else {
         outText << "<p>";
-        outText << "<span class=\"info\">"
+        outText  << "<span class=\"info\">"
+                 << tr("DP Sum = ")
+                 <<"</span>"
+                << sumDP
+                << "</p>";
+
+        outText << "<p>"
+                << "<span class=\"info\">"
                 << tr("Max DP' = ")
                 <<"</span>"
-               << maxDP <<" (node "<< maxNodeDP  <<  ")"
+               << maxSDP <<" (node "<< maxNodeDP  <<  ")"
                << "<br />"
                << "<span class=\"info\">"
                << tr("Min DP' = ")
                <<"</span>"
-               << minDP <<" (node "<< minNodeDP <<  ")"
-               << "<br />"
-               << "<span class=\"info\">"
-               << tr("DP' classes = ")
-               <<"</span>"
-               << classesDP
-               << "</p>";
+              << minSDP <<" (node "<< minNodeDP <<  ")"
+              << "<br />"
+              << "<span class=\"info\">"
+              << tr("DP' classes = ")
+              <<"</span>"
+             << classesSDP
+             << "</p>";
     }
 
     outText << "<p>";
     outText << "<span class=\"info\">"
-            << tr("DP Sum = ")
-            <<"</span>"
-            << t_sumDP
-            <<"<br/>"
-           << "<span class=\"info\">"
             << tr("DP' Sum = ")
             <<"</span>"
-            << sumDP
+            << sumSDP
             <<"<br/>"
            << "<span class=\"info\">"
             << tr("DP' Mean = ")
             <<"</span>"
-            << meanDP
+            << meanSDP
             <<"<br/>"
             << "<span class=\"info\">"
             << tr("DP' Variance = ")
             <<"</span>"
-            << varianceDP
+            << varianceSDP
             <<"<br/>";
     outText << "</p>";
 
@@ -8078,14 +8090,14 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
             qDebug("Layout according to DC");
             C=(*it)->SDC();
             std= (*it)->SDC();
-            maxC=maxDC;
+            maxC=maxSDC;
             break;
         }
         case 2 : {
             qDebug("Layout according to CC");
             C=(*it)->CC();
             std= (*it)->SCC();
-            maxC=maxCC;
+            maxC=maxSCC;
             break;
         }
         case 3 : {
@@ -8146,7 +8158,7 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
             qDebug("Layout according to DP");
             C=(*it)->SDP();
             std= (*it)->SDP();
-            maxC=maxDP;
+            maxC=maxSDP;
             break;
         }
         case 11 : {
@@ -8346,14 +8358,14 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
             qDebug("Layout according to DC");
             C=(*it)->SDC();
             std= (*it)->SDC();
-            maxC=maxDC;
+            maxC=maxSDC;
             break;
         }
         case 2 : {
             qDebug("Layout according to CC");
             C=(*it)->CC();
             std= (*it)->SCC();
-            maxC=maxCC;
+            maxC=maxSCC;
             break;
         }
         case 3 : {
@@ -8410,7 +8422,7 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
             qDebug("Layout according to DP");
             C=(*it)->SDP();
             std= (*it)->SDP();
-            maxC=maxDP;
+            maxC=maxSDP;
             break;
         }
         case 11 : {
@@ -8535,14 +8547,14 @@ void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
             qDebug("VerticesSize according to DC");
             C=(*it)->SDC();
             std= (*it)->SDC();
-            maxC=maxDC;
+            maxC=maxSDC;
             break;
         }
         case 2 : {
             qDebug("VerticesSize according to CC");
             C=(*it)->CC();
             std= (*it)->SCC();
-            maxC=maxCC;
+            maxC=maxSCC;
             break;
         }
         case 3 : {
@@ -8599,7 +8611,7 @@ void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
             qDebug("VerticesSize according to DP");
             C=(*it)->SDP();
             std= (*it)->SDP();
-            maxC=maxDP;
+            maxC=maxSDP;
             break;
         }
         case 11 : {

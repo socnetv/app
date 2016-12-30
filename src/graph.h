@@ -884,15 +884,15 @@ private:
     stack<int> Stack;
 
     /** used in resolveClasses and graphMatrixDistancesCreate() */
-    H_StrToInt discreteDPs, discreteDCs, discreteCCs, discreteBCs, discreteSCs;
+    H_StrToInt discreteDPs, discreteSDCs, discreteCCs, discreteBCs, discreteSCs;
     H_StrToInt discreteIRCCs, discreteECs, discreteEccentricities;
     H_StrToInt discretePCs, discreteICs,  discretePRPs, discretePPs, discreteEVCs;
 
     int m_precision, m_fieldWidth, m_curRelation, m_fileFormat, m_vertexClicked;
     ClickedEdge m_clickedEdge;
     float edgeWeightTemp, edgeReverseWeightTemp;
-    float meanDC, varianceDC;
-    float meanCC, varianceCC;
+    float meanSDC, varianceSDC;
+    float meanSCC, varianceSCC;
     float meanIRCC, varianceIRCC;
     float meanBC, varianceBC;
     float meanSC, varianceSC;
@@ -900,13 +900,13 @@ private:
     float meanPC, variancePC;
     float meanIC, varianceIC;
     float meanEVC, varianceEVC;
-    float meanDP, varianceDP;
+    float meanSDP, varianceSDP;
     float meanPP, variancePP;
     float meanPRP, variancePRP;
     float minEccentricity, maxEccentricity, sumEccentricity;
-    float minDP, maxDP, t_sumDP, sumDP, groupDP;
-    float minDC, maxDC, t_sumDC, sumDC, groupDC;
-    float minCC, maxCC, nomCC, denomCC, sumCC, groupCC, maxIndexCC;
+    float minSDP, maxSDP, sumDP, sumSDP, groupDP;
+    float minSDC, maxSDC, sumDC, sumSDC, groupDC;
+    float minSCC, maxSCC, nomSCC, denomSCC, sumCC, sumSCC, groupCC, maxIndexCC;
     float minIRCC, maxIRCC, nomIRCC, denomIRCC, sumIRCC, groupIRCC;
     float minBC, maxBC, nomBC, denomBC, sumBC, groupBC, maxIndexBC;
     float minPC, maxPC, nomPC, denomPC, t_sumIC, sumPC, groupPC, maxIndexPC;
@@ -919,9 +919,9 @@ private:
 
     float minCLC, maxCLC, averageCLC,varianceCLC, d_factor;
     int maxNodeCLC, minNodeCLC;
-    int classesDP, maxNodeDP, minNodeDP;
-    int classesDC, maxNodeDC, minNodeDC;
-    int classesCC, maxNodeCC, minNodeCC;
+    int classesSDP, maxNodeDP, minNodeDP;
+    int classesSDC, maxNodeSDC, minNodeSDC;
+    int classesSCC, maxNodeSCC, minNodeSCC;
     int classesIRCC, maxNodeIRCC, minNodeIRCC;
     int classesBC, maxNodeBC, minNodeBC;
     int classesPC, maxNodePC, minNodePC;
