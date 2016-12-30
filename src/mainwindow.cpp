@@ -1790,11 +1790,12 @@ void MainWindow::initActions(){
 
 
     graphDistanceAct = new QAction(
-                QIcon(":/images/distance.png"), tr("Distance"), this
+                QIcon(":/images/distance.png"), tr("Geodesic Distance between 2 nodes"), this
                 );
-    graphDistanceAct -> setShortcut(Qt::CTRL + Qt::Key_G);
+    graphDistanceAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_G) );
     graphDistanceAct->setStatusTip(
-                tr("Compute the length of the shortest path (geodesic distance) between two nodes."));
+                tr("Compute the length of the shortest path (geodesic distance) between 2 nodes."));
     graphDistanceAct->setWhatsThis(
                 tr("Distance\n\n"
                    "Computes the geodesic distance between two nodes."
@@ -1804,8 +1805,9 @@ void MainWindow::initActions(){
     connect(graphDistanceAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeDistance()));
 
 
-    distanceMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Distances Matrix"),this);
-    distanceMatrixAct -> setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_G);
+    distanceMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesic Distances Matrix"),this);
+    distanceMatrixAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_M) );
     distanceMatrixAct->
             setStatusTip(
                 tr("Compute the matrix of geodesic distances between all pair of nodes.")
@@ -1822,7 +1824,8 @@ void MainWindow::initActions(){
     connect(distanceMatrixAct, SIGNAL(triggered()), this, SLOT( slotAnalyzeMatrixDistances() ) );
 
     geodesicsMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesics Matrix"),this);
-    geodesicsMatrixAct -> setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_G);
+    geodesicsMatrixAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_S));
     geodesicsMatrixAct->setStatusTip(tr("Compute the number of geodesic paths between each pair of nodes "));
     geodesicsMatrixAct->setWhatsThis(
                 tr(
@@ -1834,15 +1837,19 @@ void MainWindow::initActions(){
     connect(geodesicsMatrixAct, SIGNAL(triggered()),
             this, SLOT( slotAnalyzeMatrixGeodesics()) );
 
-    diameterAct = new QAction(QIcon(":/images/diameter.png"), tr("Diameter"),this);
-    diameterAct -> setShortcut(Qt::CTRL + Qt::Key_D);
-    diameterAct->setStatusTip(tr("Compute the network diameter (maximum distance between any actors) ."));
+    diameterAct = new QAction(QIcon(":/images/diameter.png"), tr("Graph Diameter"),this);
+    diameterAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_D));
+    diameterAct->setStatusTip(tr("Compute the diameter of the network, "
+                                 "the maximum geodesic distance between any actors."));
     diameterAct->setWhatsThis(tr("Diameter\n\n "
-                                 "The Diameter of a network is the maximum distance (maximum shortest path length) between any two nodes of the network."));
+                                 "The Diameter of a social network is the maximum geodesic distance "
+                                 "(maximum shortest path length) between any two nodes of the network."));
     connect(diameterAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeDiameter()));
 
     averGraphDistanceAct = new QAction(QIcon(":/images/avdistance.png"), tr("Average Distance"),this);
-    averGraphDistanceAct -> setShortcut(Qt::CTRL + Qt::Key_B);
+    averGraphDistanceAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_A));
     averGraphDistanceAct->setStatusTip(tr("Compute the average length of shortest paths for all possible pairs of nodes."));
     averGraphDistanceAct->setWhatsThis(
                 tr("Average Distance\n\n "
@@ -1853,15 +1860,29 @@ void MainWindow::initActions(){
             this, SLOT(slotAnalyzeDistanceAverage()));
 
     eccentricityAct = new QAction(QIcon(":/images/eccentricity.png"), tr("Eccentricity"),this);
-    eccentricityAct-> setShortcut(Qt::CTRL +  Qt::SHIFT + Qt::Key_E);
-    eccentricityAct->setStatusTip(tr("Compute the Eccentricity indices for each node and group Eccentricity"));
+    eccentricityAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_E ) );
+    eccentricityAct->setStatusTip(tr("Compute the Eccentricity of each actor and group Eccentricity"));
     eccentricityAct->setWhatsThis(tr("Eccentricity\n\n"
-                                     "The eccentricity or association number of each node i is the largest geodesic distance (i,j) between node i and every other node j. Therefore, it reflects how far, at most, is each node from every other node. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
+                                     "The eccentricity of each node i in a network "
+                                     "or graph is the largest geodesic distance "
+                                     "between node i and any other node j. "
+                                     "Therefore, it reflects how far, at most, "
+                                     "is each node from every other node. \n"
+                                     "The maximum eccentricity is the graph diameter "
+                                     "while the minimum is the graph radius.\n"
+                                     "This index can be calculated in both graphs "
+                                     "and digraphs but is usually best suited "
+                                     "for undirected graphs. \n"
+                                     "It can also be calculated in weighted graphs "
+                                     "although the weight of each edge (v,u) in E is "
+                                     "always considered to be 1."));
     connect(eccentricityAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeEccentricity()));
 
 
     connectednessAct = new QAction(QIcon(":/images/distance.png"),  tr("Connectedness"), this);
-    connectednessAct -> setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_C);
+    connectednessAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_C) );
     connectednessAct->setStatusTip(tr("Check whether the network is a connected "
                                       "graph, a weakly connected digraph or "
                                       "a disconnected graph/digraph..."));
@@ -1880,7 +1901,8 @@ void MainWindow::initActions(){
 
 
     walksAct = new QAction(QIcon(":/images/walk.png"), tr("Walks of a given length"),this);
-    walksAct-> setShortcut(Qt::CTRL + Qt::Key_W);
+    walksAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_U, Qt::CTRL + Qt::Key_G) );
     walksAct->setStatusTip(tr("Compute the number of walks of a given length between any nodes."));
     walksAct->setWhatsThis(tr("Walks of a given length\n\n"
                               "A walk is a sequence of alternating vertices and edges "
@@ -1893,7 +1915,8 @@ void MainWindow::initActions(){
     connect(walksAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeWalksLength() )  );
 
     totalWalksAct = new QAction(QIcon(":/images/walk.png"), tr("Total Walks"),this);
-    totalWalksAct-> setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_W);
+    totalWalksAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_U, Qt::CTRL + Qt::Key_W) );
     totalWalksAct->setStatusTip(tr("Calculate the total number of walks of every possible length between all nodes"));
     totalWalksAct->setWhatsThis(tr("Total Walks\n\n"
                                    "A walk is a sequence of alternating vertices "
@@ -1907,7 +1930,8 @@ void MainWindow::initActions(){
 
 
     reachabilityMatrixAct = new QAction(QIcon(":/images/walk.png"), tr("Reachability Matrix"),this);
-    reachabilityMatrixAct-> setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_R);
+    reachabilityMatrixAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_R));
     reachabilityMatrixAct->setStatusTip(tr("Compute the Reachability Matrix of the network."));
     reachabilityMatrixAct->setWhatsThis(tr("Reachability Matrix\n\n"
                                            "Calculates the reachability matrix X<sup>R</sup> of "
@@ -1920,7 +1944,8 @@ void MainWindow::initActions(){
 
 
     clusteringHierarchicalAct = new QAction(QIcon(":/images/hierarchical.png"), tr("Hierarchical clustering"),this);
-    clusteringHierarchicalAct-> setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_C);
+    clusteringHierarchicalAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_U, Qt::CTRL + Qt::Key_H));
 
     clusteringHierarchicalAct->setStatusTip(tr("Perform agglomerative cluster analysis of the actors in the social network"));
     clusteringHierarchicalAct->setWhatsThis(
@@ -1952,7 +1977,8 @@ void MainWindow::initActions(){
 
 
     cliquesAct = new QAction(QIcon(":/images/clique.png"), tr("Clique Census"),this);
-    cliquesAct-> setShortcut(Qt::CTRL + Qt::Key_T);
+    cliquesAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_U, Qt::CTRL + Qt::Key_C));
     cliquesAct->setStatusTip(tr("Compute the clique census: find all maximal connected subgraphs."));
     cliquesAct->setWhatsThis(tr("Clique Census\n\n"
                                 "Produces the census of network cliques (maximal connected subgraphs), "
@@ -1961,7 +1987,8 @@ void MainWindow::initActions(){
 
 
     clusteringCoefAct = new QAction(QIcon(":/images/clucof.png"), tr("Local and Network Clustering Coefficient"),this);
-    clusteringCoefAct -> setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_L);
+    clusteringCoefAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_U, Qt::CTRL + Qt::Key_L) );
     clusteringCoefAct->setStatusTip(tr("Compute the Watts & Strogatz Clustering Coefficient for every actor and the network average."));
     clusteringCoefAct->setWhatsThis(tr("Local and Network Clustering Coefficient\n\n"
                                        "The local Clustering Coefficient  (Watts & Strogatz, 1998) "
@@ -1972,7 +1999,8 @@ void MainWindow::initActions(){
 
 
     triadCensusAct = new QAction(QIcon(":/images/triad.png"), tr("Triad Census (M-A-N labeling)"),this);
-    triadCensusAct-> setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_T);
+    triadCensusAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_U, Qt::CTRL + Qt::Key_T) );
     triadCensusAct->setStatusTip(tr("Calculate the triad census for all actors."));
     triadCensusAct->setWhatsThis(tr("Triad Census\n\n"
                                     "A triad census counts all the different kinds of observed triads "
@@ -2004,7 +2032,8 @@ void MainWindow::initActions(){
 
 
 
-    similarityExactMatchesAct = new QAction(QIcon(":/images/similarity.png"), tr("Similarity matrix by measure (Exact, Jaccard, Hamming, Cosine)"),this);
+    similarityExactMatchesAct = new QAction(QIcon(":/images/similarity.png"),
+                                            tr("Similarity matrix by measure (Exact, Jaccard, Hamming, Cosine)"),this);
     similarityExactMatchesAct-> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_E)
                 );
@@ -2962,10 +2991,10 @@ void MainWindow::initToolBox(){
     toolBoxAnalysisGeodesicsSelectLabel->setMinimumWidth(115);
     toolBoxAnalysisGeodesicsSelect = new QComboBox;
     toolBoxAnalysisGeodesicsSelect -> setStatusTip(
-                tr("Select a basic graph-theoretic metric to compute, i.e. diameter."));
+                tr("Select a basic graph-theoretic metric to compute, i.e. graph diameter."));
     toolBoxAnalysisGeodesicsSelect -> setToolTip(
                 tr("Basic graph-theoretic metrics of a social network, "
-                   "such as distances (shortest paths), diameter, eccentricity, etc."));
+                   "such as geodesic distances (shortest paths), graph diameter, eccentricity, etc."));
     toolBoxAnalysisGeodesicsSelect -> setWhatsThis(
                 tr("Analyze Distances\n\n"
                    "Compute basic graph-theoretic features of the network "
@@ -6670,7 +6699,7 @@ void MainWindow::slotNetworkRandomScaleFree ( const int &newNodes,
 
     setWindowTitle("Untitled scale-free network");
 
-    //float avGraphDistance=activeGraph.distanceGraphAverage();
+    //float avGraphDistance=activeGraph.graphDistanceGeodesicAverage();
     //float clucof=activeGraph.clusteringCoefficient();
     QMessageBox::information(this, "New scale-free network",
                              tr("Scale-free random network created.\n")
@@ -6734,7 +6763,7 @@ void MainWindow::slotNetworkRandomSmallWorld(const int &newNodes,
 
     setWindowTitle("Untitled small-world network");
 
-    //float avGraphDistance=activeGraph.distanceGraphAverage();
+    //float avGraphDistance=activeGraph.graphDistanceGeodesicAverage();
     //float clucof=activeGraph.clusteringCoefficient();
     QMessageBox::information(this, "New Small World network",
                              tr("Small world network created.\n")
@@ -6790,7 +6819,7 @@ void MainWindow::slotNetworkRandomRegular(const int &newNodes, const int &degree
 
     setWindowTitle("Untitled d-regular network");
 
-    //float avGraphDistance=activeGraph.distanceGraphAverage();
+    //float avGraphDistance=activeGraph.graphDistanceGeodesicAverage();
     //float clucof=activeGraph.clusteringCoefficient();
     QMessageBox::information(this, "New d-Regular network",
                              tr("d-Regular network created.\n")
@@ -6859,7 +6888,7 @@ void MainWindow::slotNetworkRandomRingLattice(){
     destroyProgressBar(newNodes);
 
     setWindowTitle("Untitled ring-lattice network");
-    //float avGraphDistance=activeGraph.distanceGraphAverage();
+    //float avGraphDistance=activeGraph.graphDistanceGeodesicAverage();
     //float clucof=activeGraph.clusteringCoefficient();
     QMessageBox::information(this, "New Ring Lattice",
                              tr("Ring lattice network created.\n")
@@ -9900,19 +9929,20 @@ void MainWindow::slotAnalyzeDistance(){
 
     createProgressBar(0,progressMsg);
 
-     int distance = activeGraph.distance(i,j,
+     int distanceGeodesic = activeGraph.graphDistanceGeodesic(i,j,
                                          considerWeights,
                                          inverseWeights);
 
      destroyProgressBar();
 
-    if ( distance > 0 && distance < RAND_MAX)
-        QMessageBox::information(this, tr("Distance"), tr("Network distance (")
+    if ( distanceGeodesic > 0 && distanceGeodesic < RAND_MAX)
+        QMessageBox::information(this, tr("Geodesic Distance"),
+                                 tr("The length of the shortest path between actors (")
                                  +QString::number(i)+", "+QString::number(j)
-                                 +") = "+QString::number(distance)
+                                 +") = "+QString::number(distanceGeodesic)
                                  +tr("\nThe nodes are connected."),"OK",0);
     else
-        QMessageBox::information(this, tr("Distance"), tr("Network distance (")
+        QMessageBox::information(this, tr("Geodesic Distance"), tr("Network distance (")
                                  +QString::number(i)+", "+QString::number(j)
                                  +") = "+ QString("\xE2\x88\x9E")
                                  +tr("\nThe nodes are not connected."),"OK",0);
@@ -10025,7 +10055,7 @@ void MainWindow::slotAnalyzeDiameter() {
 
     createProgressBar(0,progressMsg);
 
-    int netDiameter=activeGraph.diameter(considerWeights, inverseWeights);
+    int netDiameter=activeGraph.graphDiameter(considerWeights, inverseWeights);
 
     destroyProgressBar();
 
@@ -10072,7 +10102,7 @@ void MainWindow::slotAnalyzeDistanceAverage() {
 
     createProgressBar(0,progressMsg);
 
-    float averGraphDistance=activeGraph.distanceGraphAverage(
+    float averGraphDistance=activeGraph.graphDistanceGeodesicAverage(
                 considerWeights, inverseWeights,  editFilterNodesIsolatesAct->isChecked() );
 
     destroyProgressBar();
