@@ -455,8 +455,8 @@ public:
                                 const int &center = 0);
 
 
-    qreal distanceEuclidean(const QPointF &a, const QPointF &b);
-    qreal distanceEuclidean(const QPointF &a);
+    qreal graphDistanceEuclidean(const QPointF &a, const QPointF &b);
+    qreal graphDistanceEuclidean(const QPointF &a);
     int sign(const qreal &D);
 
     qreal layoutForceDirected_F_rep(const QString model, const qreal &dist,
@@ -666,14 +666,14 @@ public:
 
 
     /* DISTANCES, CENTRALITIES & PROMINENCE MEASURES */
-    int distance(const int, const int,
+    int graphDistanceGeodesic(const int, const int,
                  const bool considerWeights, const bool inverseWeights);
-    int diameter(const bool considerWeights, const bool inverseWeights);
-    float distanceGraphAverage(const bool considerWeights,
+    int graphDiameter(const bool considerWeights, const bool inverseWeights);
+    float graphDistanceGeodesicAverage(const bool considerWeights,
                                const bool inverseWeights, const bool dropIsolates);
     int graphConnectedness(const bool updateProgress=false) ;
 
-    void distanceMatrixCreate(const bool &computeCentralities=false,
+    void graphMatrixDistancesCreate(const bool &computeCentralities=false,
                               const bool &considerWeights=false,
                               const bool &inverseWeights=true,
                               const bool &dropIsolates=false);
@@ -848,7 +848,7 @@ private:
                   const QString &color
                   );
 
-    /** methods used by distanceMatrixCreate()  */
+    /** methods used by graphMatrixDistancesCreate()  */
     void BFS(const int &s, const bool &computeCentralities=false,
              const bool &dropIsolates=false);
     void dijkstra(const int &s, const bool &computeCentralities=false,
@@ -883,7 +883,7 @@ private:
     Matrix XM, XSM, XRM, CLQM;
     stack<int> Stack;
 
-    /** used in resolveClasses and distanceMatrixCreate() */
+    /** used in resolveClasses and graphMatrixDistancesCreate() */
     H_StrToInt discreteDPs, discreteDCs, discreteCCs, discreteBCs, discreteSCs;
     H_StrToInt discreteIRCCs, discreteECs, discreteEccentricities;
     H_StrToInt discretePCs, discreteICs,  discretePRPs, discretePPs, discreteEVCs;

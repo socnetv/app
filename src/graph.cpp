@@ -3093,20 +3093,20 @@ void Graph::edgeUndirectedSet(const long int &v1, const long int &v2,
 
 
 /**
- * @brief Graph::distance
- * Returns the distance between nodes numbered (i-1) and (j-1)
+ * @brief Graph::graphDistanceGeodesic
+ * Returns the graphDistanceGeodesic between nodes numbered (i-1) and (j-1)
  * @param i
  * @param j
  * @param considerWeights
  * @param inverseWeights
  * @return
  */
-int Graph::distance(const int i, const int j,
+int Graph::graphDistanceGeodesic(const int i, const int j,
                     const bool considerWeights,
                     const bool inverseWeights){
-    qDebug() <<"Graph::distance()";
+    qDebug() <<"Graph::graphDistanceGeodesic()";
     if ( !calculatedDistances || graphModified() ) {
-        distanceMatrixCreate(false, considerWeights, inverseWeights, false);
+        graphMatrixDistancesCreate(false, considerWeights, inverseWeights, false);
     }
     return DM.item(index[i],index[j]);
 }
@@ -3115,17 +3115,17 @@ int Graph::distance(const int i, const int j,
 
 
 /**
- * @brief Graph::diameter
- * Returns the diameter of the graph, aka the largest geodesic distance between any two vertices
+ * @brief Returns the diameter of the graph, aka the largest geodesic distance
+ * between any two vertices
  * @param considerWeights
  * @param inverseWeights
  * @return
  */
-int Graph::diameter(const bool considerWeights,
+int Graph::graphDiameter(const bool considerWeights,
                     const bool inverseWeights){
-    qDebug () << "Graph::diameter()" ;
+    qDebug () << "Graph::graphDiameter()" ;
     if ( !calculatedDistances || graphModified() ) {
-        distanceMatrixCreate(false, considerWeights, inverseWeights, false);
+        graphMatrixDistancesCreate(false, considerWeights, inverseWeights, false);
     }
     return m_graphDiameter;
 }
@@ -3133,14 +3133,14 @@ int Graph::diameter(const bool considerWeights,
 
 
 /**
- * @brief Graph::distanceGraphAverage
+ * @brief Graph::graphDistanceGeodesicAverage
  * Returns the average distance of the graph
  * @param considerWeights
  * @param inverseWeights
  * @param dropIsolates
  * @return
  */
-float Graph::distanceGraphAverage(const bool considerWeights,
+float Graph::graphDistanceGeodesicAverage(const bool considerWeights,
                                   const bool inverseWeights,
                                   const bool dropIsolates){
 
@@ -3148,7 +3148,7 @@ float Graph::distanceGraphAverage(const bool considerWeights,
     Q_UNUSED(inverseWeights);
 
     if (!calculatedDistances || graphModified())  {
-        qDebug() <<"Graph::distanceGraphAverage() - reachability matrix not created "
+        qDebug() <<"Graph::graphDistanceGeodesicAverage() - reachability matrix not created "
                    "or graph modified. Recomputing XRM";
         emit statusMessage ( tr("Computing Average Distance: "
                                 "Need to recompute Distances. Please wait...") );
@@ -3156,7 +3156,7 @@ float Graph::distanceGraphAverage(const bool considerWeights,
 
     }
 
-    qDebug() <<"Graph::distanceGraphAverage() - m_vertexPairsNotConnected " <<
+    qDebug() <<"Graph::graphDistanceGeodesicAverage() - m_vertexPairsNotConnected " <<
                m_vertexPairsNotConnected.count();
     int N=vertices(dropIsolates);//TOFIX
     if (m_graphAverageDistance!=0) {
@@ -3184,7 +3184,7 @@ float Graph::distanceGraphAverage(const bool considerWeights,
  */
 int Graph::graphGeodesics()  {
     if (!calculatedDistances || graphModified()) {
-        distanceMatrixCreate(false, false,false,false);
+        graphMatrixDistancesCreate(false, false,false,false);
     }
     qDebug()<< "Graph::graphGeodesics() - geodesics:" << m_graphGeodesicsCount;
     return m_graphGeodesicsCount;
@@ -3230,7 +3230,7 @@ int Graph::graphConnectedness(const bool updateProgress) {
         m_graphConnectedness = 2;
     }
 
-    distanceMatrixCreate(false, false,false,false);
+    graphMatrixDistancesCreate(false, false,false,false);
     int size = vertices(false,false), i=0, j=0;
 
     m_vertexPairsNotConnected.clear();
@@ -3345,7 +3345,7 @@ void Graph::writeMatrixDistancesPlainText (const QString &fn,
     if ( !calculatedDistances || graphModified() ) {
         emit statusMessage ( tr("Writing Distance Matrix: "
                                 "Need to recompute Distances. Please wait...") );
-        distanceMatrixCreate(false, considerWeights, inverseWeights, dropIsolates);
+        graphMatrixDistancesCreate(false, considerWeights, inverseWeights, dropIsolates);
     }
 
     qDebug ("Graph::writeMatrixDistancesPlainText() writing to file");
@@ -3378,7 +3378,7 @@ void Graph::writeMatrixNumberOfGeodesicsPlainText(const QString &fn,
                                          const bool &inverseWeights) {
     qDebug ("Graph::writeMatrixNumberOfGeodesicsPlainText()");
     if ( !calculatedDistances || graphModified() ) {
-        distanceMatrixCreate(false, considerWeights, inverseWeights, false);
+        graphMatrixDistancesCreate(false, considerWeights, inverseWeights, false);
     }
 
     qDebug () << "Graph::writeMatrixNumberOfGeodesicsPlainText() - Distance matrix created. "
@@ -3430,7 +3430,7 @@ void Graph::writeEccentricity(
     QTextStream outText ( &file );
     outText.setCodec("UTF-8");
     if ( !calculatedDistances || !calculatedCentralities || graphModified() ) {
-        distanceMatrixCreate(true, considerWeights,
+        graphMatrixDistancesCreate(true, considerWeights,
                              inverseWeights, dropIsolates);
 
     }
@@ -3486,21 +3486,22 @@ void Graph::writeEccentricity(
 
     outText << "<thead>"
             <<"<tr>"
-            <<"<th onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;\">"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;\">"
             << tr("Actor")
             << "</th>"
-            << "<th onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;\">"
+            << "<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;\">"
             << tr("Label")
             << "</th>"
-            <<"<th onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc2 = 1; asc1 = 1;asc4 = 1;\">"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc2 = 1; asc1 = 1;asc4 = 1;\">"
             << tr("e")
             << "</th>"
-            <<"<th onclick=\"tableSort(results, 3, asc4); asc4*= -1; asc2 = 1; asc3 = 1;asc1 = 1;\">"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4*= -1; asc2 = 1; asc3 = 1;asc1 = 1;\">"
             << tr("%e")
             <<"</th>"
            <<"</tr>"
           << "</thead>"
           <<"<tbody  id=\"results\">";
+
 
     QList<Vertex*>::const_iterator it;
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
@@ -3533,17 +3534,17 @@ void Graph::writeEccentricity(
     else {
         outText << "<p>";
         outText << "<span class=\"info\">"
-                << tr("Max e = ")
+                << tr("Max e (Graph Diameter) = ")
                 <<"</span>"
                << maxEccentricity <<" (node "<< maxNodeEccentricity  <<  ")"
                << "<br />"
                << "<span class=\"info\">"
-               << tr("Min DC' = ")
+               << tr("Min e (Graph Radius) = ")
                <<"</span>"
                << minEccentricity <<" (node "<< minNodeEccentricity <<  ")"
                << "<br />"
                << "<span class=\"info\">"
-               << tr("DC' classes = ")
+               << tr("e classes = ")
                <<"</span>"
                << classesEccentricity
                << "</p>";
@@ -3588,8 +3589,7 @@ void Graph::writeEccentricity(
 
 
 /**
- * @brief Graph::distanceMatrixCreate
- * Computes the distance matrix, DM, with geodesic distances between all vertices:
+ * @brief Computes the distance matrix, DM, with geodesic distances between all vertices:
  * DM(i,j)=geodesic distance between vertex i and vertex j
  * In the process, it also computes many other matrices and metrics:
  * * The so-called sigma matrix, named TM, where TM(i,j) is the number of shortest paths
@@ -3612,28 +3612,28 @@ void Graph::writeEccentricity(
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::distanceMatrixCreate(const bool &computeCentralities,
+void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                                  const bool &considerWeights,
                                  const bool &inverseWeights,
                                  const bool &dropIsolates) {
-    qDebug() << "Graph::distanceMatrixCreate()"
+    qDebug() << "Graph::graphMatrixDistancesCreate()"
              << "centralities" << computeCentralities
              << "considerWeights:"<<considerWeights
              << "inverseWeights:"<<inverseWeights
              << "dropIsolates:" << dropIsolates;
 
     if ( !graphModified() && calculatedDistances && !computeCentralities)  {
-        qDebug() << "Graph::distanceMatrixCreate() - not modified. Return.";
+        qDebug() << "Graph::graphMatrixDistancesCreate() - not modified. Return.";
         return;
     }
 
-    qDebug() << "Graph::distanceMatrixCreate() - Need to compute geodesic distances.";
+    qDebug() << "Graph::graphMatrixDistancesCreate() - Need to compute geodesic distances.";
 
     emit statusMessage ( tr("Computing geodesic distances. Please wait...") );
 
     //Create a NxN DistanceMatrix. Initialise values to zero.
     m_totalVertices = vertices(false,true);
-    qDebug() << "Graph::distanceMatrixCreate() - Resizing Matrices to hold "
+    qDebug() << "Graph::graphMatrixDistancesCreate() - Resizing Matrices to hold "
              << m_totalVertices << " vertices";
     DM.resize(m_totalVertices, m_totalVertices);
     TM.resize(m_totalVertices, m_totalVertices);
@@ -3643,9 +3643,9 @@ void Graph::distanceMatrixCreate(const bool &computeCentralities,
     //drop isolated vertices from calculations (i.e. std C and group C).
     int aVertices=(dropIsolates) ?  (m_totalVertices - verticesListIsolated().count()):m_totalVertices;
 
-    qDebug() << "Graph::distanceMatrixCreate() -Calling graphSymmetric()";
+    qDebug() << "Graph::graphMatrixDistancesCreate() -Calling graphSymmetric()";
     m_symmetric = graphSymmetric();
-    qDebug() << "Graph::distanceMatrixCreate() - now m_symmetric: "
+    qDebug() << "Graph::graphMatrixDistancesCreate() - now m_symmetric: "
                 << m_symmetric ;
 
     if ( aEdges == 0 )
@@ -3674,7 +3674,7 @@ void Graph::distanceMatrixCreate(const bool &computeCentralities,
                  << " outboundEdgesVert "<<  outboundEdgesVert;
         qDebug() << "	aEdges " << aEdges <<  " aVertices " << aVertices;
 
-        qDebug() << "Graph: distanceMatrixCreate() - "
+        qDebug() << "Graph: graphMatrixDistancesCreate() - "
                     " initialising variables for maximum centrality indeces";
         if (m_symmetric) {
             maxIndexBC=( aVertices-1.0) *  (aVertices-2.0)  / 2.0;
@@ -3691,7 +3691,7 @@ void Graph::distanceMatrixCreate(const bool &computeCentralities,
             qDebug("############# NOT SymmetricAdjacencyMatrix - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
         }
 
-        qDebug("Graph: distanceMatrixCreate() - initialising variables for centrality index");
+        qDebug("Graph: graphMatrixDistancesCreate() - initialising variables for centrality index");
         maxCC=0; minCC=RAND_MAX; nomCC=0; denomCC=0; groupCC=0; maxNodeCC=0;
         minNodeCC=0; sumCC=0;
         discreteCCs.clear(); classesCC=0;
@@ -3721,7 +3721,7 @@ void Graph::distanceMatrixCreate(const bool &computeCentralities,
         //Zero closeness indeces of each vertex
         if (computeCentralities)
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
-                qDebug() << " Graph:distanceMatrixCreate() - ZEROing all indices";
+                qDebug() << " Graph:graphMatrixDistancesCreate() - ZEROing all indices";
                 (*it)->setBC( 0.0 );
                 (*it)->setSC( 0.0 );
                 (*it)->setEccentricity( 0.0 );
@@ -4230,7 +4230,7 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
         v=index[ (*it)->name() ];
         if (v != s ){
-            // NOTE: DM(i,j) init to RAND_MAX already done in distanceMatrixCreate
+            // NOTE: DM(i,j) init to RAND_MAX already done in graphMatrixDistancesCreate
             // Not needed here: DM.setItem(s,v,RAND_MAX);
 //            qDebug() << " push " << v << " to prQ with infinite distance from s";
 //            prQ.push(GraphDistance(v,RAND_MAX));
@@ -4410,7 +4410,7 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
 
 
 /**
-    minmax() facilitates the calculations of minimum and maximum centralities during distanceMatrixCreate()
+    minmax() facilitates the calculations of minimum and maximum centralities during graphMatrixDistancesCreate()
 */
 void Graph::minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int &minNode) {
     qDebug() << "MINMAX C = " <<  C << "  max = " << max << "  min = " << min << " name = " <<  v->name();
@@ -4429,7 +4429,7 @@ void Graph::minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int
 
 /** 	This method calculates the number of discrete centrality classes of all vertices
     It stores that number in a QHash<QString,int> type where the centrality value is the key.
-    Called from distanceMatrixCreate()
+    Called from graphMatrixDistancesCreate()
 */
 void Graph::resolveClasses(float C, H_StrToInt &discreteClasses, int &classes){
     H_StrToInt::iterator it2;
@@ -4827,6 +4827,7 @@ void Graph::writeCentralityEigenvector(const QString fileName,
                   "The eigenvector centralities are also known as Gould indices.")
             << "<br />"
             << tr("EVC' is the standardized EVC (EVC divided by the sum of all EVCs).")
+            << "<br />"
             << tr("EVC'' is the scaled EVC (EVC divided by max EVC).")
             << "<br />"
             << "</p>";
@@ -5478,7 +5479,7 @@ void Graph::writeCentralityCloseness( const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if (graphModified() || !calculatedCentralities ) {
-            distanceMatrixCreate(true, considerWeights,
+            graphMatrixDistancesCreate(true, considerWeights,
                                  inverseWeights, dropIsolates);
     }
     else {
@@ -5726,7 +5727,7 @@ void Graph::centralityClosenessIR(const bool considerWeights,
     }
 
      if (!calculatedDistances || graphModified()) {
-         distanceMatrixCreate(false,considerWeights,inverseWeights,dropIsolates);
+         graphMatrixDistancesCreate(false,considerWeights,inverseWeights,dropIsolates);
      }
 
     // calculate centralities
@@ -6018,7 +6019,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if (graphModified() || !calculatedCentralities ) {
-        distanceMatrixCreate(true, considerWeights, inverseWeights, dropIsolates);
+        graphMatrixDistancesCreate(true, considerWeights, inverseWeights, dropIsolates);
     }
     else {
         qDebug() << "Graph::writeCentralityBetweenness() -"
@@ -6256,7 +6257,7 @@ void Graph::writeCentralityStress( const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if (graphModified() || !calculatedCentralities ) {
-        distanceMatrixCreate(true, considerWeights, inverseWeights,dropIsolates);
+        graphMatrixDistancesCreate(true, considerWeights, inverseWeights,dropIsolates);
     }
     else {
         qDebug() << " graph not modified, and centralities calculated. Returning";
@@ -6453,7 +6454,7 @@ void Graph::writeCentralityEccentricity(const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if (graphModified() || !calculatedCentralities ) {
-        distanceMatrixCreate(true, considerWeights, inverseWeights,dropIsolates);
+        graphMatrixDistancesCreate(true, considerWeights, inverseWeights,dropIsolates);
     }
     else {
         qDebug() << " graph not modified, and centralities calculated. Returning";
@@ -6644,7 +6645,7 @@ void Graph::writeCentralityPower(const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if (graphModified() || !calculatedCentralities ) {
-        distanceMatrixCreate(true, considerWeights, inverseWeights, dropIsolates);
+        graphMatrixDistancesCreate(true, considerWeights, inverseWeights, dropIsolates);
     }
     else {
         qDebug() << " graph not modified, and centralities calculated. Returning";
@@ -7280,7 +7281,7 @@ void Graph::prestigeProximity( const bool considerWeights,
     }
 
     if (!calculatedDistances || graphModified()) {
-        distanceMatrixCreate(false,considerWeights, inverseWeights,inverseWeights);
+        graphMatrixDistancesCreate(false,considerWeights, inverseWeights,inverseWeights);
     }
 
     // calculate centralities
@@ -8061,7 +8062,7 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
     }
     else{
         if (graphModified() || !calculatedCentralities )
-            distanceMatrixCreate(true, considerWeights,
+            graphMatrixDistancesCreate(true, considerWeights,
                                  inverseWeights, dropIsolates);
     }
 
@@ -8332,7 +8333,7 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
     }
     else{
         if (graphModified() || !calculatedCentralities )
-            distanceMatrixCreate(true, considerWeights,
+            graphMatrixDistancesCreate(true, considerWeights,
                                  inverseWeights, dropIsolates);
     }
 
@@ -8516,7 +8517,7 @@ void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
     }
     else{
         if (graphModified() || !calculatedCentralities )
-            distanceMatrixCreate(true, considerWeights,
+            graphMatrixDistancesCreate(true, considerWeights,
                                    inverseWeights, dropIsolates);
     }
 
@@ -9556,7 +9557,7 @@ void Graph::writeMatrixWalks (const QString &fn,
 int Graph::reachable(const int &v1, const int &v2) {
     qDebug()<< "Graph::reachable()";
     if (!calculatedDistances || graphModified() )
-        distanceMatrixCreate(false);
+        graphMatrixDistancesCreate(false);
     return DM.item(v1-1,v2-1);
 }
 
@@ -9572,7 +9573,7 @@ QList<int> Graph::vertexinfluenceRange(int v1){
     qDebug() << "Graph::vertexinfluenceRange() ";
     if (!calculatedDistances|| graphModified()) {
         // Construct a list of influence ranges for each node
-        distanceMatrixCreate(false, false,false,false);
+        graphMatrixDistancesCreate(false, false,false,false);
     }
     return influenceRanges.values(v1);
 }
@@ -9592,7 +9593,7 @@ QList<int> Graph::vertexinfluenceDomain(int v1){
     qDebug() << "Graph::vertexinfluenceDomain() ";
     if (!calculatedDistances || graphModified()) {
         // Construct a list of influence domains for each node
-        distanceMatrixCreate(false, false,false,false);
+        graphMatrixDistancesCreate(false, false,false,false);
     }
     return influenceDomains.values(v1);
 }
@@ -9627,7 +9628,7 @@ void Graph::writeReachabilityMatrixPlainText(const QString &fn, const bool &drop
     outText << "If nodes i and j are reachable then XR(i,j)=1 otherwise XR(i,j)=0.\n\n";
 
     if (!calculatedDistances || graphModified()) {
-        distanceMatrixCreate(false,false,false,dropIsolates);
+        graphMatrixDistancesCreate(false,false,false,dropIsolates);
     }
 
     outText << XRM ;
@@ -10632,7 +10633,7 @@ void Graph::graphClusteringHierarchical(const int &matrix,
         DSM=AM;
         break;
     case MATRIX_DISTANCES:
-        distanceMatrixCreate(false, considerWeights, inverseWeights, dropIsolates);
+        graphMatrixDistancesCreate(false, considerWeights, inverseWeights, dropIsolates);
         DSM=DM;
         break;
     case MATRIX_ADJACENCY_SIMILARITY:
@@ -10640,7 +10641,7 @@ void Graph::graphClusteringHierarchical(const int &matrix,
         graphSimilarityMatching(AM, DSM, similarityMeasure, "Rows", false, considerWeights);
         break;
     case MATRIX_DISTANCES_SIMILARITY:
-        distanceMatrixCreate(false, considerWeights, inverseWeights, dropIsolates);
+        graphMatrixDistancesCreate(false, considerWeights, inverseWeights, dropIsolates);
         graphSimilarityMatching(DM, DSM, similarityMeasure, "Rows", false, considerWeights);
         break;
     default:
@@ -10872,7 +10873,7 @@ void Graph::writeSimilarityMatchingPlainText(const QString fileName,
         graphSimilarityMatching(AM, SCM, measure, varLocation, diagonal, considerWeights);
     }
     else if (matrix == "Distances") {
-        distanceMatrixCreate();
+        graphMatrixDistancesCreate();
         graphSimilarityMatching(DM, SCM, measure, varLocation, diagonal, considerWeights);
     }
     else {
@@ -10981,7 +10982,7 @@ void Graph::writeSimilarityMatching(const QString fileName,
         graphSimilarityMatching(AM, SCM, measure, varLocation, diagonal, considerWeights);
     }
     else if (matrix == "Distances") {
-        distanceMatrixCreate();
+        graphMatrixDistancesCreate();
         graphSimilarityMatching(DM, SCM, measure, varLocation, diagonal, considerWeights);
     }
     else {
@@ -11166,7 +11167,7 @@ void Graph::writeSimilarityPearson(const QString fileName,
         graphSimilarityPearsonCorrelationCoefficients(AM, PCC, varLocation,diagonal);
     }
     else if (matrix == "Distances") {
-        distanceMatrixCreate();
+        graphMatrixDistancesCreate();
         graphSimilarityPearsonCorrelationCoefficients(DM, PCC, varLocation,diagonal);
     }
     else {
@@ -11302,7 +11303,7 @@ void Graph::writeSimilarityPearsonPlainText(const QString fileName,
         graphSimilarityPearsonCorrelationCoefficients(AM, PCC, varLocation,diagonal);
     }
     else if (matrix == "Distances") {
-        distanceMatrixCreate();
+        graphMatrixDistancesCreate();
         graphSimilarityPearsonCorrelationCoefficients(DM, PCC, varLocation,diagonal);
     }
     else {
@@ -16471,13 +16472,13 @@ void Graph::writeMatrix (const QString &fn,
         break;
     case MATRIX_DISTANCES:
         if ( !calculatedDistances || graphModified() ) {
-            distanceMatrixCreate(false, considerWeights, inverseWeights, dropIsolates);
+            graphMatrixDistancesCreate(false, considerWeights, inverseWeights, dropIsolates);
         }
         emit statusMessage ( tr("Distances recomputed. Writing Distances Matrix...") );
         break;
     case MATRIX_GEODESICS:
         if ( !calculatedDistances || graphModified() ) {
-            distanceMatrixCreate(false, considerWeights, inverseWeights, false);
+            graphMatrixDistancesCreate(false, considerWeights, inverseWeights, false);
         }
         emit statusMessage ( tr("Distances recomputed. Writing Geodesics Matrix...") );
         break;
@@ -16488,7 +16489,7 @@ void Graph::writeMatrix (const QString &fn,
         break;
     case MATRIX_REACHABILITY:
         if (!calculatedDistances || graphModified()) {
-            distanceMatrixCreate(false,false,false,dropIsolates);
+            graphMatrixDistancesCreate(false,false,false,dropIsolates);
         }
         emit statusMessage ( tr("Distances recomputed. Writing Reachability Matrix...") );
         break;
@@ -17305,7 +17306,7 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations){
                 DV.setX( (*v2) -> x() - (*v1)->x());
                 DV.setY( (*v2) -> y() - (*v1)->y());
 
-                dist = distanceEuclidean(DV);
+                dist = graphDistanceEuclidean(DV);
 
                 /**
                   *  calculate electric (repulsive) forces between
@@ -17442,7 +17443,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
                 DV.setX( (*v2)->x() - (*v1)->x() );
                 DV.setY( (*v2)->y() - (*v1)->y() );
 
-                dist = distanceEuclidean( DV );
+                dist = graphDistanceEuclidean( DV );
 
                 //calculate repulsive force from _near_ vertices
                 f_rep = layoutForceDirected_F_rep( "FR", dist, optimalDistance);
@@ -17510,7 +17511,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
 
     // Compute dij for 1 <= i!=j <= n
     bool considerWeights=false, inverseWeights=false, dropIsolates=false;
-    distanceMatrixCreate(false,considerWeights,inverseWeights, dropIsolates);
+    graphMatrixDistancesCreate(false,considerWeights,inverseWeights, dropIsolates);
     qDebug() << " DM : ";
     DM.printMatrixConsole();
 
@@ -17520,7 +17521,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
     // Since we are on a restricted display (a canvas), L depends on the
     // diameter D of the graph and the length L of a side of the display square:
     // L = L0 / D
-    float L = canvasMinDimension() / (float) diameter(considerWeights,inverseWeights);
+    float L = canvasMinDimension() / (float) graphDiameter(considerWeights,inverseWeights);
     TM.zeroMatrix(DM.rows(), DM.cols());
     TM=DM;
     TM.multiplyScalar(L);
@@ -17691,7 +17692,7 @@ void Graph::compute_angles(const QPointF &DV,
  * @param b
  * @return
  */
-qreal Graph::distanceEuclidean (const QPointF & a, const QPointF & b){
+qreal Graph::graphDistanceEuclidean (const QPointF & a, const QPointF & b){
     return qSqrt (
                  ( b.x() - a.x() ) * (b.x() - a.x() ) +
                  ( b.y() - a.y())  * (b.y() - a.y() )
@@ -17704,7 +17705,7 @@ qreal Graph::distanceEuclidean (const QPointF & a, const QPointF & b){
  * @param a
  * @return
  */
-qreal Graph::distanceEuclidean (const QPointF & a){
+qreal Graph::graphDistanceEuclidean (const QPointF & a){
     return qSqrt (
                   a.x()  * a.x()  +
                   a.y() * a.y()
