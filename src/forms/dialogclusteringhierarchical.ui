@@ -97,12 +97,12 @@
      <item>
       <widget class="QLabel" name="label_4">
        <property name="text">
-        <string>Similarity measure:</string>
+        <string>Distance/dissimilarity metric:</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="similarityMeasureSelect">
+      <widget class="QComboBox" name="metricSelect">
        <property name="minimumSize">
         <size>
          <width>200</width>
@@ -129,7 +129,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="linkageCriterionSelect">
+      <widget class="QComboBox" name="linkageSelect">
        <property name="minimumSize">
         <size>
          <width>200</width>

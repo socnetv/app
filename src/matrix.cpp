@@ -1261,17 +1261,305 @@ Matrix& Matrix::inverse(Matrix &a)
 
 
 
+Matrix& Matrix::distancesMatrix(const int &metric,
+                        const QString varLocation,
+                        const bool &diagonal,
+                        const bool &considerWeights) {
+    Q_UNUSED(considerWeights);
+
+    Matrix *T = new Matrix(cols(), rows());
+
+    qDebug()<< "Matrix::distancesMatrix() -"
+            <<"metric"<< metric
+            << "varLocation"<< varLocation;
+
+    int N = 0;
+    float sum = 0;
+    float distance = 0;
+    float distTemp = 0;
+    float ties = 0;
+    if (varLocation=="Rows") {
+
+        N = rows() ;
+
+        this->zeroMatrix(N,N);
+
+        QVector<float> mean (N,0); // holds mean values
+
+        qDebug()<< "Matrix::distancesMatrix() -"
+                <<"input matrix";
+        //printMatrixConsole(true);
+
+        for (int i = 0 ; i < N ; i++ ) {
+            sum = 0 ;
+            for (int k = i ; k < N ; k++ ) {
+                distTemp = 0;
+                ties = 0;
+                for (int j = 0 ; j < N ; j++ ) {
+
+                    if (!diagonal && (i==j || k==j))
+                        continue;
+
+                    switch (metric) {
+                    case METRIC_JACCARD_INDEX:
+                        if (item(i,j) == item(k,j)  && item(i,j) != 0) {
+                            distTemp++;
+                        }
+                        if (item(i,j) != 0  || item(k,j)  ) {
+                           ties++;
+                        }
+                        break;
+                    case METRIC_HAMMING_DISTANCE:
+                        if (item(i,j) != item(k,j) ) {
+                            distTemp++;
+                        }
+                        break;
+                    case METRIC_EUCLIDEAN_DISTANCE:
+                        distTemp += ( item(i,j) - item(k,j) )*( item(i,j) - item(k,j) ); //compute (x * y)^2
+                        break;
+                    case METRIC_MANHATTAN_DISTANCE:
+                        distTemp += fabs( item(i,j) - item(k,j) ); //compute |x * y|
+                        break;
+                    default:
+                        break;
+                    }
+
+                }
+
+                switch (metric) {
+                case METRIC_JACCARD_INDEX:
+                    distance=  1 -  distTemp/  ( ( ties ) ) ;
+
+                    break;
+                case METRIC_HAMMING_DISTANCE:
+                    distance = distTemp;
+                    break;
+                case METRIC_EUCLIDEAN_DISTANCE:
+                    distance = sqrt(distTemp);
+                    break;
+                case METRIC_MANHATTAN_DISTANCE:
+                    distance = distTemp ;
+                    break;
+                default:
+                    break;
+                }
+
+
+                qDebug() << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
+
+                         << "matchRatio("<<i+1<<","<<k+1<<") =" << distance;
+                T->setItem(i,k, distance);
+                T->setItem(k,i, distance);
+
+                sum += distance;
+            }
+            //compute mean match value
+            mean[i] = sum / ( N ) ;
+
+        }
+
+    }
+    else if (varLocation=="Columns") {
+
+        N = rows() ;
+
+        this->zeroMatrix(N,N);
+
+        QVector<float> mean (N,0); // holds mean values
+
+        qDebug()<< "Matrix::similarityMatrix() -"
+                <<"input matrix";
+        //printMatrixConsole(true);
+
+        for (int i = 0 ; i < N ; i++ ) {
+            sum = 0 ;
+            for (int k = i ; k < N ; k++ ) {
+                distTemp = 0;
+                ties = 0;
+                for (int j = 0 ; j < N ; j++ ) {
+
+                    if (!diagonal && (i==j || k==j))
+                        continue;
+
+                    switch (metric) {
+                    case METRIC_JACCARD_INDEX:
+                        if (item(j,i) == item(j,k)  && item(j,i) != 0) {
+                            distTemp++;
+                        }
+                        if (item(j,i) != 0  || item(j,k) !=0 ) {
+                           ties++;
+                        }
+                        break;
+                    case METRIC_HAMMING_DISTANCE:
+                        if (item(j,i) != item(j,k) ) {
+                            distTemp++;
+                        }
+                        break;
+                    case METRIC_EUCLIDEAN_DISTANCE:
+                        distTemp += ( item(j,i) - item(j,k) )*( item(j,i) - item(j,k) ); //compute (x * y)^2
+                        break;
+                    case METRIC_MANHATTAN_DISTANCE:
+                        distTemp += fabs( item(j,i) - item(j,k) ); //compute |x * y|
+                        break;
+
+                    default:
+                        break;
+                    }
+
+
+
+                }
+
+                switch (metric) {
+                case METRIC_JACCARD_INDEX:
+                    distance=  1 -  distTemp/  ( ( ties ) ) ;
+
+                    break;
+                case METRIC_HAMMING_DISTANCE:
+                    distance = distTemp;
+                    break;
+                case METRIC_EUCLIDEAN_DISTANCE:
+                    distance = sqrt(distTemp);
+                    break;
+                case METRIC_MANHATTAN_DISTANCE:
+                    distance = distTemp ;
+                    break;
+                default:
+                    break;
+                }
+
+                qDebug() << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
+
+                         << "distance("<<i+1<<","<<k+1<<") =" << distance;
+                T->setItem(i,k, distance);
+                T->setItem(k,i, distance);
+
+                sum += distance;
+            }
+            //compute mean match value
+            mean[i] = sum / ( N ) ;
+
+        }
+
+    }
+    else if (varLocation=="Both") {
+        Matrix CM;
+        N = rows() ;
+        int M = N * 2; // CM will have double rows
+
+        this->zeroMatrix(N,N);
+        CM.zeroMatrix(M,N);
+
+        QVector<float> mean (N,0); // holds mean values
+
+
+        //create augmented matrix (concatenated rows and columns) from input matrix
+        for (int i = 0 ; i < N  ; i++ ) {
+            for (int j = 0 ; j < N  ; j++ ) {
+                CM.setItem(j,i, item(i,j));
+                CM.setItem(j + N,i, item(j,i));
+            }
+        }
+        qDebug()<< "Matrix::similarityMatrix() -"
+                <<"input matrix";
+        //CM.printMatrixConsole(true);
+
+
+        for (int i = 0 ; i < N ; i++ ) {
+
+            for (int k = i ; k < N ; k++ ) {
+
+                distTemp = 0;
+                ties = 0;
+
+                for (int j = 0 ; j < M ; j++ ) {
+
+                    if (!diagonal) {
+                        if ( (i==j || k==j ))
+                        continue;
+                        if ( j>=N && ( (i+N)==j || (k+N)==j ))
+                        continue;
+                    }
+                    switch (metric) {
+                    case METRIC_JACCARD_INDEX:
+                        if (CM.item(j,i) == CM.item(j,k)  && CM.item(j,i) != 0) {
+                            distTemp++;
+                        }
+                        if (CM.item(j,i) != 0  || CM.item(j,k) !=0 ) {
+                           ties++;
+                        }
+                        break;
+                    case METRIC_HAMMING_DISTANCE:
+                        if (CM.item(j,i) != CM.item(j,k) ) {
+                            distTemp++;
+                        }
+                        break;
+                    case METRIC_EUCLIDEAN_DISTANCE:
+                        distTemp += ( item(j,i) - item(j,k) )*( item(j,i) - item(j,k) ); //compute (x * y)^2
+                        break;
+                    case METRIC_MANHATTAN_DISTANCE:
+                        distTemp += fabs( item(j,i) - item(j,k) ); //compute |x * y|
+                        break;
+                    default:
+                        break;
+                    }
+
+
+                }
+
+
+                switch (metric) {
+                case METRIC_JACCARD_INDEX:
+                    distance=  1 -  distTemp/  ( ( ties ) ) ;
+
+                    break;
+                case METRIC_HAMMING_DISTANCE:
+                    distance = distTemp;
+                    break;
+                case METRIC_EUCLIDEAN_DISTANCE:
+                    distance = sqrt(distTemp);
+                    break;
+                case METRIC_MANHATTAN_DISTANCE:
+                    distance = distTemp ;
+                    break;
+                default:
+                    break;
+                }
+
+
+                qDebug() << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
+
+                         << "matchRatio("<<i+1<<","<<k+1<<") =" << distance;
+                T->setItem(i,k, distance);
+                T->setItem(k,i, distance);
+
+                sum += distance;
+
+            }
+            //compute mean match value
+            mean[i] = sum / ( N ) ;
+
+        }
+    }
+    else {
+
+    }
+
+    return *this;
+}
+
 
 
 
 /**
  * @brief  Computes the pair-wise matching score of the rows, columns
  * or both of the given matrix AM, based on the given matching measure
+ * and returns the similarity matrix.
  * @param AM Matrix
  * @return Matrix nxn with matching scores for every pair of rows/columns of AM
  */
 
-Matrix& Matrix::similarityMatching(Matrix &AM,
+Matrix& Matrix::similarityMatrix(Matrix &AM,
                                    const int &measure,
                                    const QString varLocation,
                                    const bool &diagonal,
@@ -1279,7 +1567,7 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
 
     Q_UNUSED(considerWeights);
 
-    qDebug()<< "Matrix::similarityMatching() -"
+    qDebug()<< "Matrix::similarityMatrix() -"
             <<"measure"<< measure
             << "varLocation"<< varLocation;
 
@@ -1297,7 +1585,7 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
 
         QVector<float> mean (N,0); // holds mean values
 
-        qDebug()<< "Matrix::similarityMatching() -"
+        qDebug()<< "Matrix::similarityMatrix() -"
                 <<"input matrix";
         //AM.printMatrixConsole(true);
 
@@ -1313,13 +1601,13 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
                         continue;
 
                     switch (measure) {
-                    case SIMILARITY_MEASURE_SIMPLE :
+                    case METRIC_SIMPLE_MATCHING :
                         if (AM.item(i,j) == AM.item(k,j) ) {
                             matches++;
                         }
                         ties++;
                         break;
-                    case SIMILARITY_MEASURE_JACCARD:
+                    case METRIC_JACCARD_INDEX:
                         if (AM.item(i,j) == AM.item(k,j)  && AM.item(i,j) != 0) {
                             matches++;
                         }
@@ -1327,17 +1615,17 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
                            ties++;
                         }
                         break;
-                    case SIMILARITY_MEASURE_HAMMING:
+                    case METRIC_HAMMING_DISTANCE:
                         if (AM.item(i,j) != AM.item(k,j) ) {
                             matches++;
                         }
                         break;
-                    case SIMILARITY_MEASURE_COSINE:
+                    case METRIC_COSINE_SIMILARITY:
                         matches += AM.item(i,j) * AM.item(k,j); //compute x * y
                         magn_i  += AM.item(i,j) * AM.item(i,j); //compute |x|^2
                         magn_k  += AM.item(k,j) * AM.item(k,j); //compute |y|^2
                         break;
-                    case SIMILARITY_MEASURE_EUCLIDEAN:
+                    case METRIC_EUCLIDEAN_DISTANCE:
                         matches += ( AM.item(i,j) - AM.item(k,j) )*( AM.item(i,j) - AM.item(k,j) ); //compute (x * y)^2
                         break;
                     default:
@@ -1347,17 +1635,17 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
                 }
 
                 switch (measure) {
-                case SIMILARITY_MEASURE_SIMPLE :
+                case METRIC_SIMPLE_MATCHING :
                     matchRatio=   matches/  ( ( ties  ) ) ;
                     break;
-                case SIMILARITY_MEASURE_JACCARD:
+                case METRIC_JACCARD_INDEX:
                     matchRatio=   matches/  ( ( ties ) ) ;
 
                     break;
-                case SIMILARITY_MEASURE_HAMMING:
+                case METRIC_HAMMING_DISTANCE:
                     matchRatio = matches;
                     break;
-                case SIMILARITY_MEASURE_COSINE:
+                case METRIC_COSINE_SIMILARITY:
                     // sigma(i,j) = cos(theta) = x * y / |x| * |y|
                     if ( !magn_i  || ! magn_k ) {
                         // Note that cosine similarity is undefined when
@@ -1368,7 +1656,7 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
                     else
                         matchRatio = matches / sqrt( magn_i  * magn_k );
                     break;
-                case SIMILARITY_MEASURE_EUCLIDEAN:
+                case METRIC_EUCLIDEAN_DISTANCE:
                     matchRatio = sqrt(matches);
                     break;
                 default:
@@ -1398,7 +1686,7 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
 
         QVector<float> mean (N,0); // holds mean values
 
-        qDebug()<< "Matrix::similarityMatching() -"
+        qDebug()<< "Matrix::similarityMatrix() -"
                 <<"input matrix";
         //AM.printMatrixConsole(true);
 
@@ -1414,13 +1702,13 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
                         continue;
 
                     switch (measure) {
-                    case SIMILARITY_MEASURE_SIMPLE :
+                    case METRIC_SIMPLE_MATCHING :
                         if (AM.item(j,i) == AM.item(j,k) ) {
                             matches++;
                         }
                         ties++;
                         break;
-                    case SIMILARITY_MEASURE_JACCARD:
+                    case METRIC_JACCARD_INDEX:
                         if (AM.item(j,i) == AM.item(j,k)  && AM.item(j,i) != 0) {
                             matches++;
                         }
@@ -1429,12 +1717,12 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
                         }
 
                         break;
-                    case SIMILARITY_MEASURE_HAMMING:
+                    case METRIC_HAMMING_DISTANCE:
                         if (AM.item(j,i) != AM.item(j,k) ) {
                             matches++;
                         }
                         break;
-                    case SIMILARITY_MEASURE_COSINE:
+                    case METRIC_COSINE_SIMILARITY:
                         matches += AM.item(j,i) * AM.item(j,k); //compute x * y
                         magn_i  += AM.item(j,i) * AM.item(j,i); //compute |x|^2
                         magn_k  += AM.item(j,k) * AM.item(j,k); //compute |y|^2
@@ -1448,17 +1736,17 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
                 }
 
                 switch (measure) {
-                case SIMILARITY_MEASURE_SIMPLE :
+                case METRIC_SIMPLE_MATCHING :
                     matchRatio=   matches/  ( ( ties  ) ) ;
                     break;
-                case SIMILARITY_MEASURE_JACCARD:
+                case METRIC_JACCARD_INDEX:
                     matchRatio=   matches/  ( ( ties ) ) ;
 
                     break;
-                case SIMILARITY_MEASURE_HAMMING:
+                case METRIC_HAMMING_DISTANCE:
                     matchRatio = matches;
                     break;
-                case SIMILARITY_MEASURE_COSINE:
+                case METRIC_COSINE_SIMILARITY:
                     // sigma(i,j) = cos(theta) = x * y / |x| * |y|
                     if ( !magn_i  || ! magn_k ) {
                         // Note that cosine similarity is undefined when
@@ -1504,7 +1792,7 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
                 CM.setItem(j + N,i, AM.item(j,i));
             }
         }
-        qDebug()<< "Matrix::similarityMatching() -"
+        qDebug()<< "Matrix::similarityMatrix() -"
                 <<"input matrix";
         //CM.printMatrixConsole(true);
 
@@ -1525,13 +1813,13 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
                         continue;
                     }
                     switch (measure) {
-                    case SIMILARITY_MEASURE_SIMPLE :
+                    case METRIC_SIMPLE_MATCHING :
                         if (CM.item(j,i) == CM.item(j,k) ) {
                             matches++;
                         }
                         ties++;
                         break;
-                    case SIMILARITY_MEASURE_JACCARD:
+                    case METRIC_JACCARD_INDEX:
                         if (CM.item(j,i) == CM.item(j,k)  && CM.item(j,i) != 0) {
                             matches++;
                         }
@@ -1539,12 +1827,12 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
                            ties++;
                         }
                         break;
-                    case SIMILARITY_MEASURE_HAMMING:
+                    case METRIC_HAMMING_DISTANCE:
                         if (CM.item(j,i) != CM.item(j,k) ) {
                             matches++;
                         }
                         break;
-                    case SIMILARITY_MEASURE_COSINE:
+                    case METRIC_COSINE_SIMILARITY:
                         matches += AM.item(j,i) * AM.item(j,k); //compute x * y
                         magn_i  += AM.item(j,i) * AM.item(j,i); //compute |x|^2
                         magn_k  += AM.item(j,k) * AM.item(j,k); //compute |y|^2
@@ -1557,17 +1845,17 @@ Matrix& Matrix::similarityMatching(Matrix &AM,
                 }
 
                 switch (measure) {
-                case SIMILARITY_MEASURE_SIMPLE :
+                case METRIC_SIMPLE_MATCHING :
                     matchRatio=   matches/  ( ( ties  ) ) ;
                     break;
-                case SIMILARITY_MEASURE_JACCARD:
+                case METRIC_JACCARD_INDEX:
                     matchRatio=   matches/  ( ( ties ) ) ;
 
                     break;
-                case SIMILARITY_MEASURE_HAMMING:
+                case METRIC_HAMMING_DISTANCE:
                     matchRatio = matches;
                     break;
-                case SIMILARITY_MEASURE_COSINE:
+                case METRIC_COSINE_SIMILARITY:
                     // sigma(i,j) = cos(theta) = x * y / |x| * |y|
                     if ( !magn_i  || ! magn_k ) {
                         // Note that cosine similarity is undefined when

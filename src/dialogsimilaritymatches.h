@@ -43,7 +43,7 @@ public slots:
 signals:
     void userChoices(const QString &matrix,
                      const QString &varLocation,
-                     const int &method,
+                     const QString &method,
                      const bool &diagonal);
 private slots:
     void on_buttonBox_accepted();
@@ -52,7 +52,7 @@ private slots:
 
 private:
     Ui::DialogSimilarityMatches ui;
-    QStringList matrixList, variablesLocationList, methodsList;
+    QStringList matrixList, variablesLocationList, measureList;
 
 };
 

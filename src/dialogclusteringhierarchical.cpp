@@ -45,24 +45,23 @@ DialogClusteringHierarchical::DialogClusteringHierarchical (QWidget *parent) :
                << "Adjacency Similarity"
                << "Distances Similarity";
 
-    similarityMeasuresList << "Simple / Exact matching"
-                           << "Jaccard index"
-                           << "Hamming distance"
-                           << "Cosine similarity"
-                           << "Pearson coefficients";
+    measureList << "Jaccard index"
+                << "Hamming distance"
+                << "Euclidean distance"
+                << "Manhattan distance";
 
 
-    linkageCriteriaList << "Single-linkage (minimum)"
+    linkageList << "Single-linkage (minimum)"
                         << "Complete-linkage (maximum)"
                         << "Average-linkage (UPGMA)";
 
 
     (ui.matrixSelect) -> insertItems( 1, matrixList );
 
-    ui.similarityMeasureSelect ->insertItems(1, similarityMeasuresList);
-    ui.similarityMeasureSelect ->setEnabled(false);
+    ui.metricSelect ->insertItems(1, measureList);
+    ui.metricSelect ->setEnabled(false);
 
-    (ui.linkageCriterionSelect) -> insertItems( 1, linkageCriteriaList );
+    (ui.linkageSelect) -> insertItems( 1, linkageList );
 
     (ui.diagonalCheckBox)->setChecked(false);
 
@@ -78,10 +77,10 @@ void DialogClusteringHierarchical::matrixChanged(const QString &matrix) {
             << matrix;
 
     if (matrix.contains("similarity", Qt::CaseInsensitive)) {
-        ui.similarityMeasureSelect ->setEnabled(true);
+        ui.metricSelect ->setEnabled(true);
     }
     else {
-        ui.similarityMeasureSelect ->setEnabled(false);
+        ui.metricSelect ->setEnabled(false);
     }
 
 }
@@ -90,17 +89,17 @@ void DialogClusteringHierarchical::gatherData(){
     qDebug()<< "DialogClusteringHierarchical: gathering Data!...";
     QString matrix = (ui.matrixSelect) ->currentText();
 
-    QString similarityMeasure= (( ui.similarityMeasureSelect ->isEnabled() ) ?
-                                    ui.similarityMeasureSelect ->currentText()  :
+    QString metric= (( ui.metricSelect ->isEnabled() ) ?
+                                    ui.metricSelect ->currentText()  :
                                     "-" );
 
-    QString linkageCriterion = (ui.linkageCriterionSelect) ->currentText();
+    QString linkage = (ui.linkageSelect) ->currentText();
     bool diagonal = (ui.diagonalCheckBox)->isChecked();
     qDebug()<< "DialogClusteringHierarchical: user selected: "
             << matrix
-            << similarityMeasure
-            << linkageCriterion;
-    emit userChoices( matrix, similarityMeasure, linkageCriterion,diagonal );
+            << metric
+            << linkage;
+    emit userChoices( matrix, metric, linkage,diagonal );
 }
 
 
@@ -117,6 +116,6 @@ void DialogClusteringHierarchical::on_buttonBox_rejected()
 
 DialogClusteringHierarchical::~DialogClusteringHierarchical(){
      matrixList.clear();
-     similarityMeasuresList.clear();
-     linkageCriteriaList.clear();
+     measureList.clear();
+     linkageList.clear();
 }

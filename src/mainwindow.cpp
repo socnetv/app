@@ -1880,6 +1880,28 @@ void MainWindow::initActions(){
     connect(eccentricityAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeEccentricity()));
 
 
+    metricDistancesAct = new QAction(QIcon(":/images/dm.png"), tr("Metric Distances (Euclidean, Manhattan, Jaccard, Hamming)"),this);
+    metricDistancesAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_M) );
+    metricDistancesAct->
+            setStatusTip(
+                tr("Compute a matrix of metric distances (Euclidean, Manhattan, Jaccard, Hamming) between all pair of nodes.")
+                );
+    metricDistancesAct->
+            setWhatsThis(
+                tr("Metric Distances Matrix\n\n"
+                   "Computes a matrix of distances between all "
+                   "pairs of actors/nodes in the social network using an ordinary "
+                   "metric such as Euclidean distance, Manhattan distance, "
+                   "Jaccard distance or Hamming distance)."
+                   "A distances matrix is a n x n matrix, in which the "
+                   "(i,j) element is the distance from node i to node j"
+                   )
+                );
+    connect(metricDistancesAct, SIGNAL(triggered()), this, SLOT( slotAnalyzeMatrixDistancesMetric() ) );
+
+
+
     connectednessAct = new QAction(QIcon(":/images/distance.png"),  tr("Connectedness"), this);
     connectednessAct -> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_C) );
@@ -2674,13 +2696,16 @@ void MainWindow::initMenuBar() {
     distancesMenu = new QMenu(tr("Distances..."));
     distancesMenu -> setIcon(QIcon(":/images/distances.png"));
     analysisMenu -> addMenu(distancesMenu);
+    distancesMenu ->addSection("Graph distances");
     distancesMenu -> addAction (graphDistanceAct);
     distancesMenu -> addAction (averGraphDistanceAct);
     distancesMenu -> addAction (distanceMatrixAct);
     distancesMenu -> addAction (geodesicsMatrixAct);
     distancesMenu -> addAction (eccentricityAct);
     distancesMenu -> addAction (diameterAct);
-
+    distancesMenu -> addSeparator();
+    distancesMenu ->addSection("Other distances");
+    distancesMenu -> addAction (metricDistancesAct);
 
     analysisMenu -> addSeparator();
     connectivityMenu  = new QMenu(tr("Connectivity..."));
@@ -9667,7 +9692,7 @@ void MainWindow::slotAnalyzeMatrixAdjacencyInverse(){
     QString fn = appSettings["dataDir"] + "socnetv-report-adjacency-matrix-inverse.html";
 
     //activeGraph.writeMatrixAdjacencyInvert(fn, QString("lu")) ;
-    activeGraph.writeMatrix(fn,MATRIX_ADJACENCY_INVERT) ;
+    activeGraph.writeMatrix(fn,MATRIX_ADJACENCY_INVERSE) ;
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -10160,6 +10185,63 @@ void MainWindow::slotAnalyzeEccentricity(){
 
 
 
+
+
+/**
+*  Invokes calculation of matrix of metric distances of the loaded network, then displays it.
+*/
+void MainWindow::slotAnalyzeMatrixDistancesMetric(){
+    qDebug() << "MW::slotAnalyzeMatrixDistancesMetric()";
+    if ( !activeNodes()    )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    QString fn = appSettings["dataDir"] + "socnetv-report-distance-matrix.html";
+
+
+    askAboutWeights();
+
+    statusMessage( tr("Computing metric distances. Please wait...") );
+    progressMsg = tr("Computing Metric Distances. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+
+    QStringList metrics;
+    metrics << tr("Euclidean")
+            << tr("Manhattan")
+            << tr("Hamming")
+            << tr("Jaccard");
+
+    bool ok;
+
+    QString metric = QInputDialog::getItem(this, tr("Select metric to compute "
+                                                  "distance matrix"),
+                                         tr("Metric:"), metrics, 0, false, &ok);
+
+    createProgressBar(0,progressMsg);
+    if (ok && !metric.isEmpty())
+        activeGraph.writeMatrix(fn,activeGraph.graphMetricStrToType(metric),
+                                considerWeights, inverseWeights,
+                                editFilterNodesIsolatesAct->isChecked());
+
+
+    destroyProgressBar();
+
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
+    statusMessage(tr("Distances matrix saved as: ")+fn);
+}
+
+
+
 /**
  * @brief Reports the network connectedness
  */
@@ -10397,8 +10479,8 @@ void MainWindow::slotAnalyzeClusteringHierarchicalDialog() {
  * @param diagonal
  */
 void MainWindow::slotAnalyzeClusteringHierarchical(const QString &matrix,
-                                                   const QString &similarityMeasure,
-                                                   const QString &linkageCriterion,
+                                                   const QString &metric,
+                                                   const QString &method,
                                                     const bool &diagonal){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -10410,57 +10492,6 @@ void MainWindow::slotAnalyzeClusteringHierarchical(const QString &matrix,
     bool inverseWeights=false;
     bool dropIsolates=false;
 
-    int m_matrix = 0;
-    int m_linkageCriterion = 0;
-    int m_similarityMeasure = 0;
-
-    if (matrix.contains("Adjacency similarity", Qt::CaseInsensitive)) {
-        m_matrix = MATRIX_ADJACENCY_SIMILARITY;
-    }
-    else if (matrix.contains("Distances similarity", Qt::CaseInsensitive)) {
-        m_matrix = MATRIX_DISTANCES_SIMILARITY;
-    }
-    else if (matrix.contains("Adjacency", Qt::CaseInsensitive)) {
-        m_matrix = MATRIX_ADJACENCY;
-    }
-    else if (matrix.contains("Distances", Qt::CaseInsensitive)) {
-        m_matrix = MATRIX_DISTANCES;
-    }
-    else {
-        m_matrix = -1;
-    }
-
-    if (similarityMeasure.contains("Exact", Qt::CaseInsensitive)) {
-        m_similarityMeasure = SIMILARITY_MEASURE_SIMPLE;
-    }
-    else if (similarityMeasure.contains("Jaccard", Qt::CaseInsensitive)) {
-        m_similarityMeasure = SIMILARITY_MEASURE_JACCARD;
-    }
-    else if (similarityMeasure.contains("Hamming", Qt::CaseInsensitive)) {
-        m_similarityMeasure = SIMILARITY_MEASURE_HAMMING;
-    }
-    else if (similarityMeasure.contains("Cosine", Qt::CaseInsensitive)) {
-        m_similarityMeasure = SIMILARITY_MEASURE_COSINE;
-    }
-    else if (similarityMeasure.contains("Pearson", Qt::CaseInsensitive)) {
-        m_similarityMeasure = SIMILARITY_MEASURE_PEARSON;
-    }
-    else {
-        m_similarityMeasure = -1;
-    }
-
-
-    if (linkageCriterion == "Single-linkage (minimum)") {
-        m_linkageCriterion=CLUSTERING_SINGLE_LINKAGE;
-    }
-    else if (linkageCriterion == "Complete-linkage (maximum)") {
-        m_linkageCriterion=CLUSTERING_COMPLETE_LINKAGE;
-    }
-    else if (linkageCriterion == "Average-linkage (UPGMA)") {
-        m_linkageCriterion=CLUSTERING_AVERAGE_LINKAGE;
-    }
-
-
     statusMessage(  tr("Computing Hierarchical Cluster Analysis. Please wait...") );
     progressMsg = tr("Hierarchical Cluster Analysis... \n"
             "Please wait (or disable progress bars from Options -> Settings).");
@@ -10468,9 +10499,9 @@ void MainWindow::slotAnalyzeClusteringHierarchical(const QString &matrix,
     createProgressBar(0,progressMsg);
 
     activeGraph.writeClusteringHierarchical(fn,
-                                            m_matrix,
-                                            m_similarityMeasure,
-                                            m_linkageCriterion,
+                                            matrix,
+                                            metric,
+                                            method,
                                             considerWeights,
                                             inverseWeights,
                                             dropIsolates);
@@ -10591,7 +10622,7 @@ void MainWindow::slotAnalyzeSimilarityMatchingDialog() {
  */
 void MainWindow::slotAnalyzeSimilarityMatching(const QString &matrix,
                                        const QString &varLocation,
-                                       const int &measure,
+                                       const QString &measure,
                                        const bool &diagonal) {
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -10607,7 +10638,8 @@ void MainWindow::slotAnalyzeSimilarityMatching(const QString &matrix,
     createProgressBar(0,progressMsg);
 
     //activeGraph.writeSimilarityMatchingPlainText( fn, measure, matrix, varLocation, diagonal,considerWeights);
-    activeGraph.writeSimilarityMatching( fn, measure, matrix, varLocation, diagonal,considerWeights);
+    activeGraph.writeSimilarityMatching( fn, measure, matrix,
+                                         varLocation, diagonal,considerWeights);
     destroyProgressBar();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {

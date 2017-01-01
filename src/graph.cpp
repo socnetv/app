@@ -10503,9 +10503,9 @@ int Graph::graphCliquesOfSize(const int &size){
  * @param dropIsolates
  */
 void Graph::writeClusteringHierarchical(const QString &fileName,
-                                        const int &matrix,
-                                        const int &similarityMeasure,
-                                        const int &clusteringMethod,
+                                        const QString &matrix,
+                                        const QString &metric,
+                                        const QString &method,
                                         const bool &considerWeights,
                                         const bool &inverseWeights,
                                         const bool &dropIsolates) {
@@ -10516,10 +10516,10 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
 
     qDebug()<< "Graph::writeClusteringHierarchical() - matrix:"
             << matrix
-            << "similarityMeasure"
-            << similarityMeasure
-            << "clusteringMethod"
-            << clusteringMethod
+            << "metric"
+            << metric
+            << "method"
+            << method
             << "considerWeights:"<<considerWeights
             << "inverseWeights:"<<inverseWeights
             << "dropIsolates:" << dropIsolates;
@@ -10533,9 +10533,9 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
     }
 
     emit statusMessage ( tr("Computing hierarchical clustering. Please wait... "));
-    graphClusteringHierarchical(matrix,
-                                similarityMeasure,
-                                clusteringMethod,
+    graphClusteringHierarchical(graphMatrixStrToType(matrix),
+                                graphMetricStrToType(metric),
+                                graphClusteringMethodStrToType(method),
                                 considerWeights,
                                 inverseWeights,
                                 dropIsolates);
@@ -10572,7 +10572,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
             << "<span class=\"info\">"
             << tr("Input matrix: ")
             << "</span>"
-            << graphMatrixTypeToString(matrix)
+            << matrix
             << "</p>";
 
 
@@ -10580,7 +10580,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
             << "<span class=\"info\">"
             << tr("Similarity measure: ")
             <<"</span>"
-           << graphSimilarityMeasureTypeToString(similarityMeasure)
+           << metric
            << "</p>";
 
 
@@ -10588,7 +10588,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
             << "<span class=\"info\">"
             << tr("Clustering method/criterion: ")
             <<"</span>"
-           << graphClusteringMethodTypeToString(clusteringMethod)
+           << method
            << "</p>";
 
     outText << "<pre>";
@@ -10633,24 +10633,24 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
  * - CLUSTERING_COMPLETE_LINKAGE: "complete-link" or "diameter" or "maximum"
  * - CLUSTERING_AVERAGE_LINKAGE: "average-link" or UPGMA
  * @param matrix
- * @param similarityMeasure
+ * @param metric
  * @param method
  * @param considerWeights
  * @param inverseWeights
  * @param dropIsolates
  */
 void Graph::graphClusteringHierarchical(const int &matrix,
-                                        const int &similarityMeasure,
+                                        const int &metric,
                                         const int &method,
                                         const bool &considerWeights,
                                         const bool &inverseWeights,
                                         const bool &dropIsolates) {
     qDebug() << "Graph::graphClusteringHierarchical() - matrix:"
              << matrix
-             << "similarityMeasure"
-             << similarityMeasure
+             << "metric"
+             << metric
              << "method"
-             << method;
+             << graphClusteringMethodTypeToString(method);
 
     float min=RAND_MAX;
     float max=0;
@@ -10674,11 +10674,11 @@ void Graph::graphClusteringHierarchical(const int &matrix,
         break;
     case MATRIX_ADJACENCY_SIMILARITY:
         graphMatrixAdjacencyCreate();
-        graphSimilarityMatching(AM, DSM, similarityMeasure, "Rows", false, considerWeights);
+        graphSimilarityMatching(AM, DSM, metric, "Rows", false, considerWeights);
         break;
     case MATRIX_DISTANCES_SIMILARITY:
         graphMatrixDistancesCreate(false, considerWeights, inverseWeights, dropIsolates);
-        graphSimilarityMatching(DM, DSM, similarityMeasure, "Rows", false, considerWeights);
+        graphSimilarityMatching(DM, DSM, metric, "Rows", false, considerWeights);
         break;
     default:
         break;
@@ -10935,14 +10935,14 @@ void Graph::writeSimilarityMatchingPlainText(const QString fileName,
             << tr("Matching measure: ") << reset ;
 
 
-    outText << graphSimilarityMeasureTypeToString(measure);
+    outText << graphMetricTypeToString(measure);
 
     outText << endl
              << qSetPadChar('.') <<qSetFieldWidth(20)<< left
             << tr("Diagonal: \t") << reset << ((diagonal) ? "Included" : "Not included") << endl << endl;
 
     outText << tr("Analysis results") <<endl<<endl;
-    if (measure==SIMILARITY_MEASURE_HAMMING)
+    if (measure==METRIC_HAMMING_DISTANCE)
         outText << tr("SMMC range: 0 < C") << endl<<endl;
     else
         outText << tr("SMMC range: 0 < C < 1") << endl<<endl;
@@ -10951,7 +10951,7 @@ void Graph::writeSimilarityMatchingPlainText(const QString fileName,
 
     outText << endl;
 
-    if (measure==SIMILARITY_MEASURE_HAMMING) {
+    if (measure==METRIC_HAMMING_DISTANCE) {
         outText << tr("SMMC = 0, when two actors are absolutely similar (no tie/distance differences).")<<endl;
         outText << tr(
           "SMMC > 0, when two actors have some differences in their ties/distances, \n"
@@ -10993,7 +10993,7 @@ void Graph::writeSimilarityMatchingPlainText(const QString fileName,
  * @param considerWeights
  */
 void Graph::writeSimilarityMatching(const QString fileName,
-                                   const int &measure,
+                                   const QString &measure,
                                    const QString &matrix,
                                    const QString &varLocation,
                                    const bool &diagonal,
@@ -11001,6 +11001,8 @@ void Graph::writeSimilarityMatching(const QString fileName,
 
     QTime computationTimer;
     computationTimer.start();
+
+    int measureInt = graphMetricStrToType( measure );
 
     Q_UNUSED(considerWeights);
 
@@ -11017,11 +11019,13 @@ void Graph::writeSimilarityMatching(const QString fileName,
     Matrix SCM;
     if (matrix == "Adjacency") {
         graphMatrixAdjacencyCreate();
-        graphSimilarityMatching(AM, SCM, measure, varLocation, diagonal, considerWeights);
+        graphSimilarityMatching(AM, SCM, measureInt ,
+                                varLocation, diagonal, considerWeights);
     }
     else if (matrix == "Distances") {
         graphMatrixDistancesCreate();
-        graphSimilarityMatching(DM, SCM, measure, varLocation, diagonal, considerWeights);
+        graphSimilarityMatching(DM, SCM, measureInt,
+                                varLocation, diagonal, considerWeights);
     }
     else {
         return;
@@ -11071,7 +11075,7 @@ void Graph::writeSimilarityMatching(const QString fileName,
             << "<span class=\"info\">"
             << tr("Matching measure: ")
             << "</span>"
-            <<  graphSimilarityMeasureTypeToString(measure)
+            <<  measure
             << "</p>";
 
     outText << "<p>"
@@ -11087,7 +11091,7 @@ void Graph::writeSimilarityMatching(const QString fileName,
             << tr("SMMC range: ")
             <<"</span>";
 
-    if (measure==SIMILARITY_MEASURE_HAMMING)
+    if (measureInt==METRIC_HAMMING_DISTANCE)
         outText << tr("0 &lt; C") ;
     else
         outText << tr("0 &lt; C &lt; 1") ;
@@ -11103,7 +11107,7 @@ void Graph::writeSimilarityMatching(const QString fileName,
     SCM.printHTMLTable(outText);
 
     outText << "<p class=\"description\">";
-    if (measure==SIMILARITY_MEASURE_HAMMING) {
+    if (measureInt==METRIC_HAMMING_DISTANCE) {
         outText << "<span class=\"info\">"
                 << tr("SMMC = 0 ")
                 <<"</span>"
@@ -11147,7 +11151,7 @@ void Graph::writeSimilarityMatching(const QString fileName,
 
 
 /**
- * @brief Calls Matrix:similarityMatching to compute the similarity matrix SCM
+ * @brief Calls Matrix:similarityMatrix to compute the similarity matrix SCM
  * of the variables (rows, columns, both) in given input matrix using the
  * selected matching measure.
  *
@@ -11164,7 +11168,7 @@ void Graph::graphSimilarityMatching (Matrix &AM,
     qDebug()<<"Graph::graphSimilarityMatching()";
 
 
-    SCM.similarityMatching(AM, measure, varLocation, diagonal, considerWeights);
+    SCM.similarityMatrix(AM, measure, varLocation, diagonal, considerWeights);
 
     qDebug()<<"Graph::graphSimilarityMatching() - matrix SCM";
     //SCM.printMatrixConsole(true);
@@ -16520,7 +16524,7 @@ void Graph::writeMatrix (const QString &fn,
         }
         emit statusMessage ( tr("Distances recomputed. Writing Geodesics Matrix...") );
         break;
-    case MATRIX_ADJACENCY_INVERT:
+    case MATRIX_ADJACENCY_INVERSE:
         emit statusMessage ( tr("Computing Inverse Adjacency Matrix. Please wait...") );
         inverseResult = graphMatrixAdjacencyInvert(QString("lu"));
         emit statusMessage ( tr("Inverse Adjacency Matrix computed. Writing Matrix...") );
@@ -16542,6 +16546,13 @@ void Graph::writeMatrix (const QString &fn,
         graphMatrixAdjacencyCreate();
         emit statusMessage ( tr("Adjacency recomputed. Writing Adjacency Matrix...") );
         break;
+
+    case MATRIX_DISTANCES_EUCLIDEAN:
+        emit statusMessage ( tr("Need to recompute Euclidean distances Matrix. Please wait...") );
+        graphMatrixAdjacencyCreate();
+        emit statusMessage ( tr("Euclidean distances recomputed. Writing Distances matrix...") );
+        break;
+
 
     default:
         break;
@@ -16570,7 +16581,7 @@ void Graph::writeMatrix (const QString &fn,
     case MATRIX_GEODESICS:
         outText << tr("GEODESICS MATRIX REPORT");
         break;
-    case MATRIX_ADJACENCY_INVERT:
+    case MATRIX_ADJACENCY_INVERSE:
         outText << tr("INVERSE ADJACENCY MATRIX REPORT");
         break;
     case MATRIX_REACHABILITY:
@@ -16581,6 +16592,9 @@ void Graph::writeMatrix (const QString &fn,
         break;
     case MATRIX_COCITATION:
         outText << tr("COCITATION MATRIX REPORT");
+        break;
+    case MATRIX_DISTANCES_EUCLIDEAN:
+        outText << tr("EUCLIDEAN DISTANCE MATRIX REPORT");
         break;
     default:
         break;
@@ -16652,7 +16666,7 @@ void Graph::writeMatrix (const QString &fn,
         TM.printHTMLTable(outText);
         break;
 
-    case MATRIX_ADJACENCY_INVERT:
+    case MATRIX_ADJACENCY_INVERSE:
         if (!inverseResult) {
             outText << "<p class=\"description\">"
                     << tr("The adjacency matrix is singular.")
@@ -16705,6 +16719,15 @@ void Graph::writeMatrix (const QString &fn,
         AM.cocitation().printHTMLTable(outText,true);
         break;
 
+    case MATRIX_DISTANCES_EUCLIDEAN:
+        outText << "<p class=\"description\">"
+                << tr("The Euclidean distances matrix is a "
+                      "NxN matrix where each element (i,j) is the euclidean distance"
+                      "of the tie profiles of actors i and j.")
+                << "<br />"
+                << "</p>";
+        AM.distancesMatrix(METRIC_EUCLIDEAN_DISTANCE, "Rows", false, true ).printHTMLTable(outText,true);
+        break;
     default:
         break;
     }
@@ -17845,10 +17868,10 @@ void Graph::layoutForceDirected_FR_moveNodes(const qreal &temperature) {
  * @brief Helper method, return the human readable name of matrix type.
  * @param matrix
  */
-QString Graph::graphMatrixTypeToString(const int &matrix) const {
+QString Graph::graphMatrixTypeToString(const int &matrixType) const {
     QString matrixStr;
 
-    switch (matrix) {
+    switch (matrixType) {
 
     case MATRIX_ADJACENCY :
         matrixStr = "Adjacency Matrix" ;
@@ -17862,7 +17885,7 @@ QString Graph::graphMatrixTypeToString(const int &matrix) const {
     case MATRIX_LAPLACIAN:
         matrixStr = "Laplacian Matrix" ;
         break;
-    case MATRIX_ADJACENCY_INVERT:
+    case MATRIX_ADJACENCY_INVERSE:
         matrixStr = "Adjacency Inverse" ;
         break;
 
@@ -17879,10 +17902,22 @@ QString Graph::graphMatrixTypeToString(const int &matrix) const {
         matrixStr = "Cocitation Matrix" ;
         break;
     case MATRIX_ADJACENCY_SIMILARITY:
-        matrixStr = "Adjacency Similarity Matrix" ;
+        matrixStr = "Adjacency Similarity matrix" ;
         break;
     case MATRIX_DISTANCES_SIMILARITY:
-        matrixStr = "Distances Similarity Matrix" ;
+        matrixStr = "Distances Similarity matrix" ;
+        break;
+    case MATRIX_DISTANCES_EUCLIDEAN :
+        matrixStr = "Euclidean distance matrix";
+        break;
+    case MATRIX_DISTANCES_MANHATTAN:
+        matrixStr = "Manhattan distance matrix";
+        break;
+    case MATRIX_DISTANCES_JACCARD:
+        matrixStr = "Jaccard distance matrix";
+        break;
+    case MATRIX_DISTANCES_HAMMING:
+        matrixStr = "Hamming distance matrix";
         break;
     default:
         matrixStr = "-" ;
@@ -17893,56 +17928,163 @@ QString Graph::graphMatrixTypeToString(const int &matrix) const {
 
 
 /**
- * @brief Helper method, return the human readable name of similarity measure type.
- * @param similarityMeasure
+ * @brief Helper method, return the matrix type of human readable matrix name .
+ * @param matrix
+ * @return
  */
-QString Graph::graphSimilarityMeasureTypeToString(const int &similarityMeasure) const {
-    QString similarityMeasureStr;
-    switch (similarityMeasure) {
-    case SIMILARITY_MEASURE_SIMPLE :
-        similarityMeasureStr = "Simple / Exact matching" ;
+int Graph::graphMatrixStrToType(const QString &matrix) const {
+    if (matrix.contains("Hamming", Qt::CaseInsensitive)) {
+            return MATRIX_DISTANCES_HAMMING;
+    }
+    else if (matrix.contains("Jaccard", Qt::CaseInsensitive)) {
+            return MATRIX_DISTANCES_JACCARD;
+    }
+    else if (matrix.contains("Manhattan", Qt::CaseInsensitive)) {
+            return MATRIX_DISTANCES_MANHATTAN;
+    }
+    else if (matrix.contains("Euclidean", Qt::CaseInsensitive)) {
+            return MATRIX_DISTANCES_EUCLIDEAN;
+    }
+    else if (matrix.contains("Adjacency similarity", Qt::CaseInsensitive)) {
+        return MATRIX_ADJACENCY_SIMILARITY;
+    }
+    else if (matrix.contains("Distances similarity", Qt::CaseInsensitive)) {
+        return MATRIX_DISTANCES_SIMILARITY;
+    }
+    else if (matrix.contains("Cocitation", Qt::CaseInsensitive)) {
+        return MATRIX_COCITATION;
+    }
+    else if (matrix.contains("Adjacency Transpose", Qt::CaseInsensitive)) {
+        return MATRIX_ADJACENCY_TRANSPOSE;
+    }
+    else if (matrix.contains("Reachability", Qt::CaseInsensitive)) {
+        return MATRIX_REACHABILITY;
+    }
+    else if (matrix.contains("Geodesics", Qt::CaseInsensitive)) {
+        return MATRIX_GEODESICS;
+    }
+    else if (matrix.contains("Adjacency Inverse", Qt::CaseInsensitive)) {
+        return MATRIX_ADJACENCY_INVERSE;
+    }
+    else if (matrix.contains("Laplacian", Qt::CaseInsensitive)) {
+        return MATRIX_LAPLACIAN;
+    }
+    else if (matrix.contains("Degree", Qt::CaseInsensitive)) {
+        return MATRIX_DEGREE;
+    }
+    else if (matrix.contains("Adjacency", Qt::CaseInsensitive)) {
+        return MATRIX_ADJACENCY;
+    }
+    else if (matrix.contains("Distances", Qt::CaseInsensitive)) {
+        return MATRIX_DISTANCES;
+    }
+    else {
+        return -1;
+    }
+}
+
+/**
+ * @brief Helper method, return the human readable name of metric type.
+ * @param metric
+ */
+QString Graph::graphMetricTypeToString(const int &metricType) const {
+    QString metricStr;
+    switch (metricType) {
+    case METRIC_SIMPLE_MATCHING :
+        metricStr = "Simple / Exact matching" ;
         break;
-    case SIMILARITY_MEASURE_JACCARD:
-        similarityMeasureStr = "Jaccard Index" ;
+    case METRIC_JACCARD_INDEX:
+        metricStr = "Jaccard Index" ;
         break;
-    case SIMILARITY_MEASURE_HAMMING:
-        similarityMeasureStr = "Hamming distance" ;
+    case METRIC_HAMMING_DISTANCE:
+        metricStr = "Hamming distance" ;
         break;
-    case SIMILARITY_MEASURE_COSINE:
-        similarityMeasureStr = "Cosine similarity" ;
+    case METRIC_COSINE_SIMILARITY:
+        metricStr = "Cosine similarity" ;
+        break;
+    case METRIC_EUCLIDEAN_DISTANCE:
+        metricStr = "Euclidean distance" ;
+        break;
+    case METRIC_MANHATTAN_DISTANCE:
+        metricStr = "Manhattan distance" ;
+        break;
+    case METRIC_PEARSON_COEFFICIENT:
+        metricStr = "Pearson Correlation Coefficient" ;
         break;
     default:
-        similarityMeasureStr = "-" ;
+        metricStr = "-" ;
         break;
     }
-    return similarityMeasureStr;
+    return metricStr;
 }
+
+
+/**
+ * @brief Helper method, return the identifier of a metric.
+ * @param metricStr
+ */
+int Graph::graphMetricStrToType(const QString &metricStr) const {
+    int metric=METRIC_SIMPLE_MATCHING;
+    if (metricStr.contains("Simple",Qt::CaseInsensitive))
+        metric = METRIC_SIMPLE_MATCHING ;
+    else if (metricStr.contains("Jaccard",Qt::CaseInsensitive))
+        metric =METRIC_JACCARD_INDEX ;
+    else if (metricStr.contains("Hamming",Qt::CaseInsensitive))
+        metric =METRIC_HAMMING_DISTANCE;
+    else if (metricStr.contains("Cosine",Qt::CaseInsensitive))
+        metric =METRIC_COSINE_SIMILARITY;
+    else if (metricStr.contains("Euclidean",Qt::CaseInsensitive))
+        metric =METRIC_EUCLIDEAN_DISTANCE;
+    else if (metricStr.contains("Manhattan",Qt::CaseInsensitive))
+        metric =METRIC_MANHATTAN_DISTANCE;
+    else if (metricStr.contains("Pearson ",Qt::CaseInsensitive))
+        metric = METRIC_PEARSON_COEFFICIENT;
+    return metric;
+}
+
 
 
 /**
  * @brief  Helper method, return the human readable name of clustering method type.
  * @return
  */
-QString Graph::graphClusteringMethodTypeToString(const int &clusteringMethod) const {
-    QString clusteringMethodStr;
-    switch (clusteringMethod) {
+QString Graph::graphClusteringMethodTypeToString(const int &methodType) const {
+    QString methodStr;
+    switch (methodType) {
     case CLUSTERING_SINGLE_LINKAGE:
-        clusteringMethodStr = "Single-linkage";
+        methodStr = "Single-linkage (minumum)";
         break;
     case CLUSTERING_COMPLETE_LINKAGE:
-        clusteringMethodStr = "Complete-linkage";
+        methodStr = "Complete-linkage (maximum)";
         break;
     case CLUSTERING_AVERAGE_LINKAGE:
-        clusteringMethodStr = "Average-linkage (UPGMA)";
+        methodStr = "Average-linkage (UPGMA)";
         break;
     default:
         break;
     }
-    return clusteringMethodStr;
+    return methodStr;
 }
 
 
-
+/**
+ * @brief Helper method, return clustering method type from the human readable name of it.
+ * @param method
+ * @return
+ */
+int Graph::graphClusteringMethodStrToType(const QString &method) const {
+    int methodType=CLUSTERING_AVERAGE_LINKAGE;
+    if (method.contains("Single", Qt::CaseInsensitive)) {
+        methodType = CLUSTERING_SINGLE_LINKAGE;
+    }
+    else if (method.contains("Complete", Qt::CaseInsensitive)) {
+        methodType = CLUSTERING_COMPLETE_LINKAGE;
+    }
+    else if (method.contains("Average", Qt::CaseInsensitive)) {
+        methodType = CLUSTERING_AVERAGE_LINKAGE;
+    }
+    return methodType;
+}
 
 /**
  * @brief Helper method, returns a nice qstring where all html special chars are encoded

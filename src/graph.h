@@ -85,13 +85,17 @@ static const int MATRIX_ADJACENCY        = 1;
 static const int MATRIX_DISTANCES        = 2;
 static const int MATRIX_DEGREE           = 3;
 static const int MATRIX_LAPLACIAN        = 4;
-static const int MATRIX_ADJACENCY_INVERT = 5;
+static const int MATRIX_ADJACENCY_INVERSE = 5;
 static const int MATRIX_GEODESICS        = 6;
 static const int MATRIX_REACHABILITY     = 7;
 static const int MATRIX_ADJACENCY_TRANSPOSE = 8;
 static const int MATRIX_COCITATION = 9;
 static const int MATRIX_ADJACENCY_SIMILARITY = 10;
 static const int MATRIX_DISTANCES_SIMILARITY = 11;
+static const int MATRIX_DISTANCES_EUCLIDEAN = 12;
+static const int MATRIX_DISTANCES_MANHATTAN= 13;
+static const int MATRIX_DISTANCES_JACCARD= 14;
+static const int MATRIX_DISTANCES_HAMMING= 15;
 
 
 class QPointF;
@@ -370,9 +374,15 @@ public:
     bool graphSaveToDotFormat (QString fileName);
     int graphFileFormat() const;
     bool graphFileFormatExportSupported(const int &fileFormat) const;
-    QString graphMatrixTypeToString(const int &matrix) const;
-    QString graphSimilarityMeasureTypeToString(const int &similarityMeasure) const;
-    QString graphClusteringMethodTypeToString(const int &clusteringMethod) const;
+
+    QString graphMatrixTypeToString(const int &matrixType) const;
+    int graphMatrixStrToType(const QString &matrix) const;
+
+    QString graphMetricTypeToString(const int &metricType) const;
+    int graphMetricStrToType(const QString &metricStr) const;
+
+    QString graphClusteringMethodTypeToString(const int &methodType) const;
+    int graphClusteringMethodStrToType(const QString &method) const;
 
     /* RELATIONS */
     int relations();
@@ -620,9 +630,9 @@ public:
 
 
     void writeClusteringHierarchical(const QString &fileName,
-                                     const int &matrix = MATRIX_ADJACENCY,
-                                     const int &similarityMeasure=SIMILARITY_MEASURE_SIMPLE,
-                                     const int &clusteringMethod=CLUSTERING_SINGLE_LINKAGE ,
+                                     const QString &matrix = "Adjancency",
+                                     const QString &metric = "Manhattan",
+                                     const QString &method = "Complete",
                                      const bool &considerWeights=true,
                                      const bool &inverseWeights=false,
                                      const bool &dropIsolates=false);
@@ -636,14 +646,14 @@ public:
 
 
     void writeSimilarityMatchingPlainText(const QString fileName,
-                                const int &measure=SIMILARITY_MEASURE_SIMPLE,
+                                const int &measure=METRIC_SIMPLE_MATCHING,
                                 const QString &matrix = "adjacency",
                                 const QString &varLocation="rows",
                                 const bool &diagonal=false,
                                 const bool &considerWeights=true);
 
     void writeSimilarityMatching(const QString fileName,
-                                const int &measure=SIMILARITY_MEASURE_SIMPLE,
+                                const QString &measure="Simple",
                                 const QString &matrix = "adjacency",
                                 const QString &varLocation="rows",
                                 const bool &diagonal=false,
@@ -718,7 +728,7 @@ public:
     int graphCliquesOfSize(const int &size );
 
     void graphClusteringHierarchical(const int &matrix,
-                                     const int &similarityMeasure,
+                                     const int &metric,
                                      const int &method,
                                      const bool &considerWeights,
                                      const bool &inverseWeights,
@@ -732,7 +742,7 @@ public:
 
     void graphSimilarityMatching(Matrix &AM,
                                 Matrix &SEM,
-                                const int &measure=SIMILARITY_MEASURE_SIMPLE,
+                                const int &measure=METRIC_SIMPLE_MATCHING,
                                 const QString &varLocation="Rows",
                                 const bool &diagonal=false,
                                 const bool &considerWeights=true);

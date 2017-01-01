@@ -48,7 +48,7 @@ DialogSimilarityMatches::DialogSimilarityMatches (QWidget *parent) : QDialog (pa
             << "Columns"
             << "Both";
 
-    methodsList << "Simple / Exact matching"
+    measureList << "Simple / Exact matching"
                 <<"Jaccard index"
                 <<"Hamming distance"
                 <<"Cosine similarity"
@@ -57,7 +57,7 @@ DialogSimilarityMatches::DialogSimilarityMatches (QWidget *parent) : QDialog (pa
 
     ui.matrixSelect -> insertItems( 1, matrixList );
     (ui.variablesLocationSelect) -> insertItems( 1, variablesLocationList );
-    (ui.methodSelect) -> insertItems( 1, methodsList );
+    (ui.measureSelect) -> insertItems( 1, measureList );
 
     (ui.diagonalCheckBox)->setChecked(false);
 
@@ -69,14 +69,14 @@ void DialogSimilarityMatches::gatherData(){
     qDebug()<< "DialogSimilarityMatches: gathering Data!...";
     QString matrix = (ui.matrixSelect) ->currentText();
     QString varLocation = (ui.variablesLocationSelect) ->currentText();
-    int method = (ui.methodSelect)->currentIndex();
+    QString measure = (ui.measureSelect)->currentText();
     bool diagonal = (ui.diagonalCheckBox)->isChecked();
 
     qDebug()<< "DialogSimilarityMatches: user selected: "
             << matrix
             << varLocation
-            << method;
-    emit userChoices( matrix, varLocation, method, diagonal  );
+            << measure;
+    emit userChoices( matrix, varLocation, measure, diagonal  );
 			
 }
 

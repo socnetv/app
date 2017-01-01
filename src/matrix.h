@@ -47,13 +47,13 @@ static const QString infinity = QString("\xE2\x88\x9E") ;
 #endif
 
 
-static const int SIMILARITY_MEASURE_SIMPLE  = 0;
-static const int SIMILARITY_MEASURE_JACCARD = 1;
-static const int SIMILARITY_MEASURE_HAMMING = 2;
-static const int SIMILARITY_MEASURE_COSINE  = 3;
-static const int SIMILARITY_MEASURE_EUCLIDEAN = 4;
-static const int SIMILARITY_MEASURE_MANHATTAN= 5;
-static const int SIMILARITY_MEASURE_PEARSON = 6;
+static const int METRIC_SIMPLE_MATCHING  = 0;
+static const int METRIC_JACCARD_INDEX = 1;
+static const int METRIC_HAMMING_DISTANCE = 2;
+static const int METRIC_COSINE_SIMILARITY  = 3;
+static const int METRIC_EUCLIDEAN_DISTANCE = 4;
+static const int METRIC_MANHATTAN_DISTANCE= 5;
+static const int METRIC_PEARSON_COEFFICIENT = 6;
 
 
 
@@ -226,9 +226,12 @@ public:
     void lubksb (Matrix &a, const int &n, int indx[], float b[]);
 
 
-
-
-    Matrix& similarityMatching(Matrix &AM,
+    Matrix& distancesMatrix(const int &metric,
+                            const QString varLocation,
+                            const bool &diagonal,
+                            const bool &considerWeights);
+    
+    Matrix& similarityMatrix(Matrix &AM,
                                const int &measure,
                                const QString varLocation="Rows",
                                const bool &diagonal=false,

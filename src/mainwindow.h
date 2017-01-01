@@ -319,6 +319,7 @@ public slots:
     void slotAnalyzeDistanceAverage();
     void slotAnalyzeDiameter();
     void slotAnalyzeEccentricity();
+    void slotAnalyzeMatrixDistancesMetric();
 
     void slotAnalyzeWalksLength();
     void slotAnalyzeWalksTotal();
@@ -327,8 +328,8 @@ public slots:
 
     void slotAnalyzeClusteringHierarchicalDialog();
     void slotAnalyzeClusteringHierarchical(const QString &matrix,
-                                           const QString &similarityMeasure,
-                                           const QString &linkageCriterion,
+                                           const QString &metric,
+                                           const QString &method,
                                            const bool &diagonal);
     void slotAnalyzeCliqueCensus();
     void slotAnalyzeClusteringCoefficient();
@@ -358,7 +359,7 @@ public slots:
     void slotAnalyzeSimilarityMatchingDialog();
     void slotAnalyzeSimilarityMatching(const QString &matrix,
                                const QString &varLocation,
-                               const int &measure,
+                               const QString &measure,
                                const bool &diagonal);
 
     void slotAnalyzeSimilarityPearsonDialog();
@@ -537,6 +538,7 @@ private:
 
     QAction *netDensity, *analyzeSymmetryAct, *graphDistanceAct, *averGraphDistanceAct,
             *distanceMatrixAct, *geodesicsMatrixAct, *diameterAct, *eccentricityAct;
+    QAction *metricDistancesAct;
     QAction *walksAct,*totalWalksAct, *reachabilityMatrixAct, *connectednessAct;
     QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct;
     QAction *analyzeMatrixAdjTransposeAct, *analyzeMatrixAdjInvertAct;

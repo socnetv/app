@@ -53,7 +53,7 @@ private slots:
     void matrixChanged(const QString &matrix);
 private:
     Ui::DialogClusteringHierarchical ui;
-    QStringList matrixList, similarityMeasuresList, linkageCriteriaList;
+    QStringList matrixList, measureList, linkageList;
 
 };
 
