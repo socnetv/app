@@ -87,6 +87,7 @@ class DialogRandSmallWorld;
 class DialogRandScaleFree;
 class DialogSimilarityPearson;
 class DialogSimilarityMatches;
+class DialogDissimilarities;
 class DialogClusteringHierarchical;
 class DialogRandRegular;
 class DialogSettings;
@@ -319,7 +320,10 @@ public slots:
     void slotAnalyzeDistanceAverage();
     void slotAnalyzeDiameter();
     void slotAnalyzeEccentricity();
-    void slotAnalyzeMatrixDistancesMetric();
+    void slotAnalyzeDissimilaritiesDialog();
+    void slotAnalyzeDissimilaritiesTieProfile(const QString &metric,
+                                               const QString &varLocation,
+                                               const bool &diagonal);
 
     void slotAnalyzeWalksLength();
     void slotAnalyzeWalksTotal();
@@ -455,6 +459,7 @@ private:
     DialogSettings *m_settingsDialog;
     DialogSimilarityPearson *m_dialogSimilarityPearson;
     DialogSimilarityMatches *m_dialogSimilarityMatches;
+    DialogDissimilarities *m_dialogdissimilarities;
     DialogClusteringHierarchical *m_dialogClusteringHierarchical;
 
 
@@ -538,7 +543,7 @@ private:
 
     QAction *netDensity, *analyzeSymmetryAct, *graphDistanceAct, *averGraphDistanceAct,
             *distanceMatrixAct, *geodesicsMatrixAct, *diameterAct, *eccentricityAct;
-    QAction *metricDistancesAct;
+    QAction *analyzeDistancesTieProfileAct;
     QAction *walksAct,*totalWalksAct, *reachabilityMatrixAct, *connectednessAct;
     QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct;
     QAction *analyzeMatrixAdjTransposeAct, *analyzeMatrixAdjInvertAct;

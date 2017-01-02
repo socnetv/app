@@ -1282,8 +1282,6 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
         N = rows() ;
 
-        this->zeroMatrix(N,N);
-
         QVector<float> mean (N,0); // holds mean values
 
         qDebug()<< "Matrix::distancesMatrix() -"
@@ -1362,8 +1360,6 @@ Matrix& Matrix::distancesMatrix(const int &metric,
     else if (varLocation=="Columns") {
 
         N = rows() ;
-
-        this->zeroMatrix(N,N);
 
         QVector<float> mean (N,0); // holds mean values
 
@@ -1447,7 +1443,6 @@ Matrix& Matrix::distancesMatrix(const int &metric,
         N = rows() ;
         int M = N * 2; // CM will have double rows
 
-        this->zeroMatrix(N,N);
         CM.zeroMatrix(M,N);
 
         QVector<float> mean (N,0); // holds mean values
@@ -1545,7 +1540,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
     }
 
-    return *this;
+    return *T;
 }
 
 

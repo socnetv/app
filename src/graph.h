@@ -549,8 +549,25 @@ public:
 
     bool graphMatrixAdjacencyInvert(const QString &method="lu");
 
-    void graphDegreeMatrixCreate();
 
+    void graphMatrixSimilarityMatchingCreate(Matrix &AM,
+                                             Matrix &SEM,
+                                             const int &measure=METRIC_SIMPLE_MATCHING,
+                                             const QString &varLocation="Rows",
+                                             const bool &diagonal=false,
+                                             const bool &considerWeights=true);
+
+    void graphMatrixSimilarityPearsonCreate (Matrix &AM,
+                                             Matrix &PCC,
+                                             const QString &varLocation="Rows",
+                                             const bool &diagonal=false);
+
+    void graphMatrixDissimilaritiesCreate(Matrix &AM,
+                                          Matrix &DSM,
+                                          const int &metric,
+                                          const QString &varLocation,
+                                          const bool &diagonal,
+                                          const bool &considerWeights);
 
     /* REPORT EXPORTS */
 
@@ -582,6 +599,40 @@ public:
     void writeMatrixNumberOfGeodesicsPlainText(const QString &fn,
                                       const bool &considerWeights,
                                       const bool &inverseWeights);
+
+    void writeMatrixDissimilarities(const QString fileName,
+                                    const QString &metricStr,
+                                    const QString &varLocation,
+                                    const bool &diagonal,
+                                    const bool &considerWeights) ;
+
+    void writeMatrixSimilarityMatchingPlain(const QString fileName,
+                                const int &measure=METRIC_SIMPLE_MATCHING,
+                                const QString &matrix = "adjacency",
+                                const QString &varLocation="rows",
+                                const bool &diagonal=false,
+                                const bool &considerWeights=true);
+
+    void writeMatrixSimilarityMatching(const QString fileName,
+                                const QString &measure="Simple",
+                                const QString &matrix = "adjacency",
+                                const QString &varLocation="rows",
+                                const bool &diagonal=false,
+                                const bool &considerWeights=true);
+
+
+    void writeMatrixSimilarityPearson(const QString fileName,
+                                const bool considerWeights,
+                                const QString &matrix = "adjacency",
+                                const QString &varLocation="rows",
+                                const bool &diagonal=false);
+
+    void writeMatrixSimilarityPearsonPlainText(const QString fileName,
+                                const bool considerWeights,
+                                const QString &matrix = "adjacency",
+                                const QString &varLocation="rows",
+                                const bool &diagonal=false);
+
     void writeEccentricity(const QString, const bool considerWeights,
                            const bool inverseWeights, const bool dropIsolates);
 
@@ -645,32 +696,6 @@ public:
     void writeTriadCensus(const QString, const bool);
 
 
-    void writeSimilarityMatchingPlainText(const QString fileName,
-                                const int &measure=METRIC_SIMPLE_MATCHING,
-                                const QString &matrix = "adjacency",
-                                const QString &varLocation="rows",
-                                const bool &diagonal=false,
-                                const bool &considerWeights=true);
-
-    void writeSimilarityMatching(const QString fileName,
-                                const QString &measure="Simple",
-                                const QString &matrix = "adjacency",
-                                const QString &varLocation="rows",
-                                const bool &diagonal=false,
-                                const bool &considerWeights=true);
-
-
-    void writeSimilarityPearson(const QString fileName,
-                                const bool considerWeights,
-                                const QString &matrix = "adjacency",
-                                const QString &varLocation="rows",
-                                const bool &diagonal=false);
-
-    void writeSimilarityPearsonPlainText(const QString fileName,
-                                const bool considerWeights,
-                                const QString &matrix = "adjacency",
-                                const QString &varLocation="rows",
-                                const bool &diagonal=false);
 
 
 
@@ -740,17 +765,7 @@ public:
     void triadType_examine_MAN_label(int, int, int, Vertex*,  Vertex*, Vertex* );
     //	void eccentr_JordanCenter(); 				// TODO
 
-    void graphSimilarityMatching(Matrix &AM,
-                                Matrix &SEM,
-                                const int &measure=METRIC_SIMPLE_MATCHING,
-                                const QString &varLocation="Rows",
-                                const bool &diagonal=false,
-                                const bool &considerWeights=true);
 
-    void graphSimilarityPearsonCorrelationCoefficients (Matrix &AM,
-                                                       Matrix &PCC,
-                                                       const QString &varLocation="Rows",
-                                                        const bool &diagonal=false);
 
     /* LAYOUTS */
 

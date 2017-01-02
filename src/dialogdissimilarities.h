@@ -3,7 +3,7 @@
  version: 2.2
  Written in Qt
  
-                         dialogsimilaritymatches.h  -  description
+                         dialogdissimilarities.h  -  description
                              -------------------
     copyright         : (C) 2005-2016 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -25,25 +25,24 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef DIALOGSIMILARITYMATCHES_H
-#define DIALOGSIMILARITYMATCHES_H
+#ifndef DIALOGDISSIMILARITIES_H
+#define DIALOGDISSIMILARITIES_H
 
 #include <QDialog>
-#include "ui_dialogsimilaritymatches.h"
+#include "ui_dialogdissimilarities.h"
  
 
-class DialogSimilarityMatches: public QDialog
+class DialogDissimilarities: public QDialog
 {
 	Q_OBJECT
 public:
-    DialogSimilarityMatches (QWidget *parent = 0);
-    ~DialogSimilarityMatches();
+    DialogDissimilarities (QWidget *parent = 0);
+    ~DialogDissimilarities();
 public slots:
 	void gatherData();
 signals:
-    void userChoices(const QString &matrix,
+    void userChoices(const QString &metric,
                      const QString &varLocation,
-                     const QString &method,
                      const bool &diagonal);
 private slots:
     void on_buttonBox_accepted();
@@ -51,8 +50,8 @@ private slots:
     void on_buttonBox_rejected();
 
 private:
-    Ui::DialogSimilarityMatches ui;
-    QStringList matrixList, variablesLocationList, measureList;
+    Ui::DialogDissimilarities ui;
+    QStringList variablesLocationList, metricList;
 
 };
 

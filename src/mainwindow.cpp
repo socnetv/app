@@ -58,6 +58,7 @@
 #include "dialogsimilaritypearson.h"
 #include "dialogsimilaritymatches.h"
 #include "dialogclusteringhierarchical.h"
+#include "dialogdissimilarities.h"
 
 
 
@@ -1880,25 +1881,29 @@ void MainWindow::initActions(){
     connect(eccentricityAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeEccentricity()));
 
 
-    metricDistancesAct = new QAction(QIcon(":/images/dm.png"), tr("Metric Distances (Euclidean, Manhattan, Jaccard, Hamming)"),this);
-    metricDistancesAct -> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_M) );
-    metricDistancesAct->
+    analyzeDistancesTieProfileAct = new QAction(QIcon(":/images/dm.png"),
+                                                tr("Tie Profile Dissimilarities/Distances"),this);
+    analyzeDistancesTieProfileAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_T) );
+    analyzeDistancesTieProfileAct->
             setStatusTip(
-                tr("Compute a matrix of metric distances (Euclidean, Manhattan, Jaccard, Hamming) between all pair of nodes.")
+                tr("Compute tie profile dissimilarities/distances "
+                   "(Euclidean, Manhattan, Jaccard, Hamming) between all pair of nodes.")
                 );
-    metricDistancesAct->
+    analyzeDistancesTieProfileAct->
             setWhatsThis(
-                tr("Metric Distances Matrix\n\n"
-                   "Computes a matrix of distances between all "
-                   "pairs of actors/nodes in the social network using an ordinary "
-                   "metric such as Euclidean distance, Manhattan distance, "
-                   "Jaccard distance or Hamming distance)."
-                   "A distances matrix is a n x n matrix, in which the "
-                   "(i,j) element is the distance from node i to node j"
+                tr("Tie Profile Dissimilarities/Distances\n\n"
+                   "Computes a matrix of tie profile distances/dissimilarities "
+                   "between all pairs of actors/nodes in the social network "
+                   "using an ordinary metric such as Euclidean distance, "
+                   "Manhattan distance, Jaccard distance or Hamming distance)."
+                   "The resulted distance matrix is a n x n matrix, in which the "
+                   "(i,j) element is the distance or dissimilarity between "
+                   "the tie profiles of node i and node j."
                    )
                 );
-    connect(metricDistancesAct, SIGNAL(triggered()), this, SLOT( slotAnalyzeMatrixDistancesMetric() ) );
+    connect(analyzeDistancesTieProfileAct, SIGNAL(triggered()),
+            this, SLOT( slotAnalyzeDissimilaritiesDialog() ) );
 
 
 
@@ -2059,7 +2064,8 @@ void MainWindow::initActions(){
     similarityExactMatchesAct-> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_E)
                 );
-    similarityExactMatchesAct->setStatusTip(tr("Compute pair-wise actor similarity matrix based on a measure of their ties (or distances) \"matches\" ."));
+    similarityExactMatchesAct->setStatusTip(tr("Compute a pair-wise actor similarity "
+                                               "matrix based on a measure of their ties (or distances) \"matches\" ."));
     similarityExactMatchesAct->setWhatsThis(
                 tr("Matches: Exact, Jaccard, Hamming, Cosine etc\n\n"
                    "Computes a pair-wise actor similarity matrix, where each element (i,j) is "
@@ -2693,27 +2699,30 @@ void MainWindow::initMenuBar() {
     //	analysisMenu -> addAction (netDensity);
 
     analysisMenu -> addSeparator();
-    distancesMenu = new QMenu(tr("Distances..."));
+    distancesMenu = new QMenu(tr("Distances and Dissimilarities..."));
     distancesMenu -> setIcon(QIcon(":/images/distances.png"));
     analysisMenu -> addMenu(distancesMenu);
     distancesMenu ->addSection("Graph distances");
     distancesMenu -> addAction (graphDistanceAct);
     distancesMenu -> addAction (averGraphDistanceAct);
+    distancesMenu -> addSeparator();
     distancesMenu -> addAction (distanceMatrixAct);
     distancesMenu -> addAction (geodesicsMatrixAct);
+    distancesMenu -> addSeparator();
     distancesMenu -> addAction (eccentricityAct);
     distancesMenu -> addAction (diameterAct);
-    distancesMenu -> addSeparator();
     distancesMenu ->addSection("Other distances");
-    distancesMenu -> addAction (metricDistancesAct);
+    distancesMenu -> addAction (analyzeDistancesTieProfileAct);
 
     analysisMenu -> addSeparator();
     connectivityMenu  = new QMenu(tr("Connectivity..."));
     connectivityMenu -> setIcon(QIcon(":/images/connectivity.png"));
     analysisMenu -> addMenu(connectivityMenu);
     connectivityMenu -> addAction(connectednessAct);
+    connectivityMenu  -> addSeparator();
     connectivityMenu -> addAction (walksAct);
     connectivityMenu -> addAction (totalWalksAct);
+    connectivityMenu  -> addSeparator();
     connectivityMenu -> addAction (reachabilityMatrixAct);
 
     analysisMenu -> addSeparator();
@@ -10184,47 +10193,53 @@ void MainWindow::slotAnalyzeEccentricity(){
 
 
 
+/**
+ * @brief Displays the DialogDissimilarities dialog.
+ */
+void MainWindow::slotAnalyzeDissimilaritiesDialog() {
+    qDebug()<< "MW::slotAnalyzeDissimilaritiesDialog()";
+
+    m_dialogdissimilarities = new DialogDissimilarities(this);
+
+    connect( m_dialogdissimilarities, &DialogDissimilarities::userChoices,
+             this, &MainWindow::slotAnalyzeDissimilaritiesTieProfile );
+
+    m_dialogdissimilarities->exec();
+
+}
+
+
 
 
 
 /**
-*  Invokes calculation of matrix of metric distances of the loaded network, then displays it.
-*/
-void MainWindow::slotAnalyzeMatrixDistancesMetric(){
-    qDebug() << "MW::slotAnalyzeMatrixDistancesMetric()";
+ * @brief Invokes calculation of pair-wise tie profile dissimilarities of the
+ * network, then displays it.
+ * @param metric
+ * @param varLocation
+ * @param diagonal
+ */
+void MainWindow::slotAnalyzeDissimilaritiesTieProfile(const QString &metric,
+                                                       const QString &varLocation,
+                                                       const bool &diagonal){
+    qDebug() << "MW::slotAnalyzeDissimilaritiesTieProfile()";
     if ( !activeNodes()    )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-distance-matrix.html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-tie-profile-dissimilarities-matrix.html";
 
 
     askAboutWeights();
 
-    statusMessage( tr("Computing metric distances. Please wait...") );
-    progressMsg = tr("Computing Metric Distances. \n"
+    statusMessage( tr("Computing tie profile dissimilarities. Please wait...") );
+    progressMsg = tr("Computing tie profile dissimilarities. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
-
-    QStringList metrics;
-    metrics << tr("Euclidean")
-            << tr("Manhattan")
-            << tr("Hamming")
-            << tr("Jaccard");
-
-    bool ok;
-
-    QString metric = QInputDialog::getItem(this, tr("Select metric to compute "
-                                                  "distance matrix"),
-                                         tr("Metric:"), metrics, 0, false, &ok);
-
     createProgressBar(0,progressMsg);
-    if (ok && !metric.isEmpty())
-        activeGraph.writeMatrix(fn,activeGraph.graphMetricStrToType(metric),
-                                considerWeights, inverseWeights,
-                                editFilterNodesIsolatesAct->isChecked());
 
+    activeGraph.writeMatrixDissimilarities(fn, metric, varLocation,diagonal, considerWeights);
 
     destroyProgressBar();
 
@@ -10237,7 +10252,7 @@ void MainWindow::slotAnalyzeMatrixDistancesMetric(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Distances matrix saved as: ")+fn);
+    statusMessage(tr("Tie Profile Dissimilarities matrix saved as: ")+fn);
 }
 
 
@@ -10616,7 +10631,7 @@ void MainWindow::slotAnalyzeSimilarityMatchingDialog() {
 
 
 /**
- * @brief Calls Graph::writeSimilarityMatching() to write Exact Matches
+ * @brief Calls Graph::writeMatrixSimilarityMatching() to write Exact Matches
  * similarity matrix into a file, and displays it.
  *
  */
@@ -10637,8 +10652,8 @@ void MainWindow::slotAnalyzeSimilarityMatching(const QString &matrix,
 
     createProgressBar(0,progressMsg);
 
-    //activeGraph.writeSimilarityMatchingPlainText( fn, measure, matrix, varLocation, diagonal,considerWeights);
-    activeGraph.writeSimilarityMatching( fn, measure, matrix,
+    //activeGraph.writeMatrixSimilarityMatchingPlain( fn, measure, matrix, varLocation, diagonal,considerWeights);
+    activeGraph.writeMatrixSimilarityMatching( fn, measure, matrix,
                                          varLocation, diagonal,considerWeights);
     destroyProgressBar();
 
@@ -10672,7 +10687,7 @@ void MainWindow::slotAnalyzeSimilarityPearsonDialog(){
 
 
 /**
- * @brief Calls Graph::writeSimilarityPearson() to write Pearson
+ * @brief Calls Graph::writeMatrixSimilarityPearson() to write Pearson
  * Correlation Coefficients into a file, and displays it.
  *
  */
@@ -10692,7 +10707,7 @@ void MainWindow::slotAnalyzeSimilarityPearson(const QString &matrix,
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.writeSimilarityPearson( fn, considerWeights, matrix, varLocation,diagonal);
+    activeGraph.writeMatrixSimilarityPearson( fn, considerWeights, matrix, varLocation,diagonal);
 
     destroyProgressBar();
 

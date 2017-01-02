@@ -10674,11 +10674,11 @@ void Graph::graphClusteringHierarchical(const int &matrix,
         break;
     case MATRIX_ADJACENCY_SIMILARITY:
         graphMatrixAdjacencyCreate();
-        graphSimilarityMatching(AM, DSM, metric, "Rows", false, considerWeights);
+        graphMatrixSimilarityMatchingCreate(AM, DSM, metric, "Rows", false, considerWeights);
         break;
     case MATRIX_DISTANCES_SIMILARITY:
         graphMatrixDistancesCreate(false, considerWeights, inverseWeights, dropIsolates);
-        graphSimilarityMatching(DM, DSM, metric, "Rows", false, considerWeights);
+        graphMatrixSimilarityMatchingCreate(DM, DSM, metric, "Rows", false, considerWeights);
         break;
     default:
         break;
@@ -10886,7 +10886,7 @@ void Graph::graphClusteringHierarchical(const int &matrix,
  * @param diagonal
  * @param considerWeights
  */
-void Graph::writeSimilarityMatchingPlainText(const QString fileName,
+void Graph::writeMatrixSimilarityMatchingPlain(const QString fileName,
                                    const int &measure,
                                    const QString &matrix,
                                    const QString &varLocation,
@@ -10908,11 +10908,11 @@ void Graph::writeSimilarityMatchingPlainText(const QString fileName,
     Matrix SCM;
     if (matrix == "Adjacency") {
         graphMatrixAdjacencyCreate();
-        graphSimilarityMatching(AM, SCM, measure, varLocation, diagonal, considerWeights);
+        graphMatrixSimilarityMatchingCreate(AM, SCM, measure, varLocation, diagonal, considerWeights);
     }
     else if (matrix == "Distances") {
         graphMatrixDistancesCreate();
-        graphSimilarityMatching(DM, SCM, measure, varLocation, diagonal, considerWeights);
+        graphMatrixSimilarityMatchingCreate(DM, SCM, measure, varLocation, diagonal, considerWeights);
     }
     else {
         return;
@@ -10984,6 +10984,186 @@ void Graph::writeSimilarityMatchingPlainText(const QString fileName,
 
 
 /**
+ * @brief Writes dissimilarity matrix based on a metric/measure to given html file
+ * @param fileName
+ * @param measure
+ * @param varLocation
+ * @param diagonal
+ * @param considerWeights
+ */
+void Graph::writeMatrixDissimilarities(const QString fileName,
+                                          const QString &metricStr,
+                                          const QString &varLocation,
+                                          const bool &diagonal,
+                                          const bool &considerWeights) {
+
+    qDebug()<< "Graph::writeMatrixDissimilarities()"
+            << "metric" << metricStr
+            << "varLocation" << varLocation
+            << "diagonal"<<diagonal;
+
+    QTime computationTimer;
+    computationTimer.start();
+
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
+        return;
+    }
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
+
+    Matrix DSM;
+
+    emit statusMessage ( (tr("Recomputing adjacency matrix...")) );
+
+    graphMatrixAdjacencyCreate();
+
+    emit statusMessage ( (tr("Examining pair-wise tie profile dissimilarities of actors...")) );
+
+    int metric = graphMetricStrToType( metricStr );
+    graphMatrixDissimilaritiesCreate(AM,DSM, metric, varLocation,diagonal, considerWeights);
+
+    emit statusMessage ( tr("Writing tie profile dissimilarities to file: ")
+                         + fileName );
+
+    outText.setRealNumberPrecision(m_precision);
+
+
+    outText << htmlHead;
+
+    outText << "<h1>";
+    outText << tr("DISSIMILARITIES MATRIX");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << vertices()
+            << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Variables in: ")
+            <<"</span>"
+            << ((varLocation != "Rows" && varLocation != "Columns") ? "Concatenated rows + columns " : varLocation)
+            << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Metric: ")
+            << "</span>"
+            <<  metricStr
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Diagonal: ")
+            <<"</span>"
+            << ((diagonal) ? "Included" : "Not included")
+            << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Range: ")
+            <<"</span>";
+
+    if (metric==METRIC_JACCARD_INDEX)
+        outText << tr("0 &lt; C &lt; 1") ;
+    else
+        outText << tr("0 &lt; C &lt; 1") ;
+    outText << "</p>";
+
+    outText << "<p>"
+            << "<br />"
+            << "<span class=\"info\">"
+            << tr("Analysis results ")
+            <<"</span>"
+            << "</p>";
+
+    DSM.printHTMLTable(outText);
+
+    outText << "<p class=\"description\">";
+    if (metric==METRIC_HAMMING_DISTANCE || metric==METRIC_MANHATTAN_DISTANCE) {
+        outText << "<span class=\"info\">"
+                << tr("DSM = 0 ")
+                <<"</span>"
+                << tr("when two actors have no tie profile dissimilarities. The actors have the same ties to all others.")
+                <<"<br/>"
+                << "<span class=\"info\">"
+                << tr("DSM &gt; 0 ")
+                <<"</span>"
+                << tr("when two actors have some differences in their ties to other actors <br />"
+                      "i.e. DSM = 3 means the two actors have 3 differences in their tie profiles.");
+    }
+    else {
+        outText << "<span class=\"info\">"
+                << tr("DSM = 0 ")
+                <<"</span>"
+                << tr("when two actors have no tie profile dissimilarities. The actors have the same ties to all others.")
+                <<"<br/>"
+                << "<span class=\"info\">"
+                << tr("DSM &gt; 0 ")
+                <<"</span>"
+                << tr("when the two actors have differences in their ties to other actors.");
+    }
+    outText << "</p>";
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Dissimilarity Matrix Report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+    file.close();
+
+}
+
+
+
+/**
+ * @brief Calls Matrix:distancesMatrix to compute the dissimilarities matrix DSM
+ * of the variables (rows, columns, both) in given input matrix AM using the
+ * user defined metric
+ * @param AM
+ * @param DSM
+ * @param metric
+ * @param varLocation
+ * @param diagonal
+ * @param considerWeights
+ */
+void Graph::graphMatrixDissimilaritiesCreate(Matrix &AM,
+                                             Matrix &DSM,
+                                             const int &metric,
+                                             const QString &varLocation,
+                                             const bool &diagonal,
+                                             const bool &considerWeights){
+    qDebug()<<"Graph::graphMatrixDissimilaritiesCreate()";
+
+    DSM = AM.distancesMatrix(metric, varLocation, diagonal, considerWeights);
+
+    qDebug()<<"Graph::graphMatrixDissimilaritiesCreate() - matrix SCM";
+}
+
+
+
+
+
+/**
  * @brief Writes similarity matrix based on a matching measure to given html file
  * @param fileName
  * @param measure
@@ -10992,7 +11172,7 @@ void Graph::writeSimilarityMatchingPlainText(const QString fileName,
  * @param diagonal
  * @param considerWeights
  */
-void Graph::writeSimilarityMatching(const QString fileName,
+void Graph::writeMatrixSimilarityMatching(const QString fileName,
                                    const QString &measure,
                                    const QString &matrix,
                                    const QString &varLocation,
@@ -11019,12 +11199,12 @@ void Graph::writeSimilarityMatching(const QString fileName,
     Matrix SCM;
     if (matrix == "Adjacency") {
         graphMatrixAdjacencyCreate();
-        graphSimilarityMatching(AM, SCM, measureInt ,
+        graphMatrixSimilarityMatchingCreate(AM, SCM, measureInt ,
                                 varLocation, diagonal, considerWeights);
     }
     else if (matrix == "Distances") {
         graphMatrixDistancesCreate();
-        graphSimilarityMatching(DM, SCM, measureInt,
+        graphMatrixSimilarityMatchingCreate(DM, SCM, measureInt,
                                 varLocation, diagonal, considerWeights);
     }
     else {
@@ -11159,18 +11339,18 @@ void Graph::writeSimilarityMatching(const QString fileName,
  * @param SCM
  * @param rows
  */
-void Graph::graphSimilarityMatching (Matrix &AM,
+void Graph::graphMatrixSimilarityMatchingCreate (Matrix &AM,
                                     Matrix &SCM,
                                     const int &measure,
                                     const QString &varLocation,
                                     const bool &diagonal,
                                     const bool &considerWeights){
-    qDebug()<<"Graph::graphSimilarityMatching()";
+    qDebug()<<"Graph::graphMatrixSimilarityMatchingCreate()";
 
 
     SCM.similarityMatrix(AM, measure, varLocation, diagonal, considerWeights);
 
-    qDebug()<<"Graph::graphSimilarityMatching() - matrix SCM";
+    qDebug()<<"Graph::graphMatrixSimilarityMatchingCreate() - matrix SCM";
     //SCM.printMatrixConsole(true);
 
 }
@@ -11178,12 +11358,12 @@ void Graph::graphSimilarityMatching (Matrix &AM,
 
 
 /**
- * @brief Calls Graph::graphSimilarityPearsonCorrelationCoefficients() and
+ * @brief Calls Graph::graphMatrixSimilarityPearsonCreate() and
  * writes Pearson Correlation Coefficients to given file
  * @param fileName
  * @param considerWeights
  */
-void Graph::writeSimilarityPearson(const QString fileName,
+void Graph::writeMatrixSimilarityPearson(const QString fileName,
                                    const bool considerWeights,
                                    const QString &matrix,
                                    const QString &varLocation,
@@ -11206,11 +11386,11 @@ void Graph::writeSimilarityPearson(const QString fileName,
     Matrix PCC;
     if (matrix == "Adjacency") {
         graphMatrixAdjacencyCreate();
-        graphSimilarityPearsonCorrelationCoefficients(AM, PCC, varLocation,diagonal);
+        graphMatrixSimilarityPearsonCreate(AM, PCC, varLocation,diagonal);
     }
     else if (matrix == "Distances") {
         graphMatrixDistancesCreate();
-        graphSimilarityPearsonCorrelationCoefficients(DM, PCC, varLocation,diagonal);
+        graphMatrixSimilarityPearsonCreate(DM, PCC, varLocation,diagonal);
     }
     else {
         return;
@@ -11322,7 +11502,7 @@ void Graph::writeSimilarityPearson(const QString fileName,
  * @param fileName
  * @param considerWeights
  */
-void Graph::writeSimilarityPearsonPlainText(const QString fileName,
+void Graph::writeMatrixSimilarityPearsonPlainText(const QString fileName,
                                    const bool considerWeights,
                                    const QString &matrix,
                                    const QString &varLocation,
@@ -11342,11 +11522,11 @@ void Graph::writeSimilarityPearsonPlainText(const QString fileName,
     Matrix PCC;
     if (matrix == "Adjacency") {
         graphMatrixAdjacencyCreate();
-        graphSimilarityPearsonCorrelationCoefficients(AM, PCC, varLocation,diagonal);
+        graphMatrixSimilarityPearsonCreate(AM, PCC, varLocation,diagonal);
     }
     else if (matrix == "Distances") {
         graphMatrixDistancesCreate();
-        graphSimilarityPearsonCorrelationCoefficients(DM, PCC, varLocation,diagonal);
+        graphMatrixSimilarityPearsonCreate(DM, PCC, varLocation,diagonal);
     }
     else {
         return;
@@ -11416,16 +11596,16 @@ void Graph::writeSimilarityPearsonPlainText(const QString fileName,
  * @param PCC
  * @param rows
  */
-void Graph::graphSimilarityPearsonCorrelationCoefficients (Matrix &AM,
+void Graph::graphMatrixSimilarityPearsonCreate (Matrix &AM,
                                                           Matrix &PCC,
                                                           const QString &varLocation,
                                                            const bool &diagonal){
-    qDebug()<<"Graph::graphSimilarityPearsonCorrelationCoefficients()";
+    qDebug()<<"Graph::graphMatrixSimilarityPearsonCreate()";
 
 
     PCC.pearsonCorrelationCoefficients(AM, varLocation,diagonal);
 
-    qDebug()<<"Graph::graphSimilarityPearsonCorrelationCoefficients() - matrix PCC";
+    qDebug()<<"Graph::graphMatrixSimilarityPearsonCreate() - matrix PCC";
     //PCC.printMatrixConsole(true);
 
 }
@@ -16546,11 +16726,13 @@ void Graph::writeMatrix (const QString &fn,
         graphMatrixAdjacencyCreate();
         emit statusMessage ( tr("Adjacency recomputed. Writing Adjacency Matrix...") );
         break;
-
+    case MATRIX_DISTANCES_HAMMING:
+    case MATRIX_DISTANCES_JACCARD:
+    case MATRIX_DISTANCES_MANHATTAN:
     case MATRIX_DISTANCES_EUCLIDEAN:
-        emit statusMessage ( tr("Need to recompute Euclidean distances Matrix. Please wait...") );
+        emit statusMessage ( tr("Need to recompute tie profile distances. Please wait...") );
         graphMatrixAdjacencyCreate();
-        emit statusMessage ( tr("Euclidean distances recomputed. Writing Distances matrix...") );
+        emit statusMessage ( tr("Tie profile distances recomputed. Writing matrix...") );
         break;
 
 
@@ -16596,6 +16778,15 @@ void Graph::writeMatrix (const QString &fn,
     case MATRIX_DISTANCES_EUCLIDEAN:
         outText << tr("EUCLIDEAN DISTANCE MATRIX REPORT");
         break;
+    case MATRIX_DISTANCES_HAMMING:
+        outText << tr("HAMMING DISTANCE MATRIX REPORT");
+        break;
+    case MATRIX_DISTANCES_JACCARD:
+        outText << tr("JACCARD DISTANCE MATRIX REPORT");
+        break;
+    case MATRIX_DISTANCES_MANHATTAN:
+        outText << tr("MANHATTAN DISTANCE MATRIX REPORT");
+        break;
     default:
         break;
     }
@@ -16629,10 +16820,13 @@ void Graph::writeMatrix (const QString &fn,
         outText << "<p class=\"description\">"
                 << tr("The laplacian matrix L of a social network is a NxN matrix ")
                 << tr("with L = D - A, where D the degree matrix and A the "
-                      "adjacency matrix. The elements of L are:"
-                      "L<sub>i,j</sub> = degree<sub>i<sub>, if i = j, <br />"
-                      "L<sub>i,j</sub> = -1,  if i &ne; j <br />"
-                      "and all other elements zero.")
+                      "adjacency matrix. ")
+                << "<br />"
+                << tr("The elements of L are: "
+                      "<br />"
+                      "- L<sub>i,j</sub> = d<sub>i</sub>, if i = j, <br />"
+                      "- L<sub>i,j</sub> = -1,  if i &ne; j and there is an edge (i,j)<br />"
+                      "- and all other elements zero.<br />")
                 << "<br />"
                 << "</p>";
         AM.laplacianMatrix().printHTMLTable(outText);
@@ -16722,12 +16916,41 @@ void Graph::writeMatrix (const QString &fn,
     case MATRIX_DISTANCES_EUCLIDEAN:
         outText << "<p class=\"description\">"
                 << tr("The Euclidean distances matrix is a "
-                      "NxN matrix where each element (i,j) is the euclidean distance"
-                      "of the tie profiles of actors i and j.")
+                      "NxN matrix where each element (i,j) is the Euclidean distance"
+                      "of the tie profiles between actors i and j.")
                 << "<br />"
                 << "</p>";
         AM.distancesMatrix(METRIC_EUCLIDEAN_DISTANCE, "Rows", false, true ).printHTMLTable(outText,true);
         break;
+    case MATRIX_DISTANCES_HAMMING:
+        outText << "<p class=\"description\">"
+                << tr("The Hamming distances matrix is a "
+                      "NxN matrix where each element (i,j) is the Hamming distance"
+                      "of the tie profiles between actors i and j.")
+                << "<br />"
+                << "</p>";
+        AM.distancesMatrix(METRIC_HAMMING_DISTANCE, "Rows", false, true ).printHTMLTable(outText,true);
+        break;
+    case MATRIX_DISTANCES_JACCARD:
+        outText << "<p class=\"description\">"
+                << tr("The Jaccard distances matrix is a "
+                      "NxN matrix where each element (i,j) is the Jaccard distance"
+                      "of the tie profiles between actors i and j.")
+                << "<br />"
+                << "</p>";
+        AM.distancesMatrix(METRIC_JACCARD_INDEX, "Rows", false, true ).printHTMLTable(outText,true);
+
+        break;
+    case MATRIX_DISTANCES_MANHATTAN:
+        outText << "<p class=\"description\">"
+                << tr("The Manhattan distances matrix is a "
+                      "NxN matrix where each element (i,j) is the Manhattan distance"
+                      "of the tie profiles between actors i and j.")
+                << "<br />"
+                << "</p>";
+        AM.distancesMatrix(METRIC_MANHATTAN_DISTANCE, "Rows", false, true ).printHTMLTable(outText,true);
+        break;
+
     default:
         break;
     }
