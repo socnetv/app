@@ -41,27 +41,27 @@ DialogClusteringHierarchical::DialogClusteringHierarchical (QWidget *parent) :
     (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
 
     matrixList << "Adjacency"
-               << "Distances"
-               << "Adjacency Similarity"
-               << "Distances Similarity";
+               << "Distances";
 
-    measureList << "Jaccard index"
+    measureList << "None, use raw input matrix"
+                << "Jaccard distance"
                 << "Hamming distance"
                 << "Euclidean distance"
                 << "Manhattan distance";
 
 
     linkageList << "Single-linkage (minimum)"
-                        << "Complete-linkage (maximum)"
-                        << "Average-linkage (UPGMA)";
+                << "Complete-linkage (maximum)"
+                << "Average-linkage (UPGMA)";
 
 
     (ui.matrixSelect) -> insertItems( 1, matrixList );
 
     ui.metricSelect ->insertItems(1, measureList);
-    ui.metricSelect ->setEnabled(false);
 
     (ui.linkageSelect) -> insertItems( 1, linkageList );
+
+    (ui.linkageSelect)-> setCurrentIndex(2);
 
     (ui.diagonalCheckBox)->setChecked(false);
 
@@ -75,14 +75,6 @@ DialogClusteringHierarchical::DialogClusteringHierarchical (QWidget *parent) :
 void DialogClusteringHierarchical::matrixChanged(const QString &matrix) {
     qDebug()<< "DialogClusteringHierarchical::matrixChanged()"
             << matrix;
-
-    if (matrix.contains("similarity", Qt::CaseInsensitive)) {
-        ui.metricSelect ->setEnabled(true);
-    }
-    else {
-        ui.metricSelect ->setEnabled(false);
-    }
-
 }
 
 void DialogClusteringHierarchical::gatherData(){

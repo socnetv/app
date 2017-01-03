@@ -55,7 +55,7 @@
       </size>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Hierarchical clustering builds a hierarchy of clusters, based on their elements dissimilarity. This method takes a matrix (adjacency, distances, similarities, etc) as input and uses the Agglomerative approach where each actor starts in its own cluster (Level 0). In each subsequent Level, as we move up the clustering hierarchy, a pair of clusters are merged into a larger cluster, until all actors end up in the same cluster. &lt;/p&gt;&lt;p&gt;To decide which clusters should be combined at each level, a measure of dissimilarity between sets of observations is required. This measure consists of a metric for the distance between actors (i.e. manhattan distance) and a linkage criterion (i.e. single-linkage clustering). &lt;/p&gt;&lt;p&gt;Select an input matrix, a similarity measure (only if you choose a similarity input matrix) and a clustering method (criterion) for the hiearchical cluster analysis. The latter is the criterion by which pairs of clusters are going to be combined into larger clusters. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Agglomerative hierarchical clustering builds a hierarchy of actor clusters, based on their tie/distance dissimilarity, starting with single elements and aggregating them into clusters.&lt;/p&gt;&lt;p&gt;It takes a matrix (adjacency or geodesic distances) and a distance metric between actors as input and constructs a pair-wise dissimilarity matrix. &lt;/p&gt;&lt;p&gt;Initially, each actor starts in its own cluster (Level 0). In each subsequent Level, the pair of clusters with minimum distance are merged into a larger cluster. Then, the distance between the new cluster and the old ones is computed, using the specified clustering method (i.e. single-linkage clustering).  The process is repeated until all actors end up in the same cluster. &lt;/p&gt;&lt;p&gt;Select an input matrix, a distance/dissimilarity metric and a clustering method (criterion) for the hierarchical cluster analysis. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
@@ -86,7 +86,7 @@
         <enum>Qt::StrongFocus</enum>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Adjacency:&lt;/span&gt; Use the active network's adjacency matrix as input to hierarchical clustering.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Distances:&lt;/span&gt; Use the active network's geodedic distances matrix as input. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Similarity of Adjacency&lt;/span&gt;: Use a pair-wise actor Similarity matrix derived from the Adjacency matrix. If you select this, you also need to select a similarity measure below. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Similarity of Distances&lt;/span&gt;: Use a pair-wise actor Similarity matrix derived from their Distances matrix. If you select this, you also need to select a similarity measure below. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Adjacency:&lt;/span&gt; Use the active network's adjacency matrix as input to hierarchical clustering.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Distances:&lt;/span&gt; Use the active network's geodedic distances matrix as input. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
@@ -113,7 +113,7 @@
         <enum>Qt::StrongFocus</enum>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Supported similarity methods (needed only if you chose Similarity matrix above):&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Exact Matching&lt;/span&gt;: The ratio of exact tie or distance matches (present or absent) between each pair of actors to their overall ties to all actors. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Positive Matches (Jaccard/Co-citation)&lt;/span&gt;: The ratio of same ties/distances reported by pairs of actors to the total number of ties reported. Does not count absent ties.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Hamming distance&lt;/span&gt;: The number of ties/distances to other actors which differ between each pair of actors.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Cosine similarity&lt;/span&gt;: The dot product of tie/distance vectors of each pair of actors divided by the magnitude of these vectors. &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Supported distance metrics for hierarchical clustering:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Euclidean distance&lt;/span&gt;: The square root of the sum of squared differences between tie/distance profiles.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Jaccard distance&lt;/span&gt;: The Jaccard index J is the ratio of same ties/distances reported by each pair of actors to the total number of their ties. Does not count absent ties. The Jaccard distance is 1 - J&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Hamming distance&lt;/span&gt;: The number of ties/distances to other actors which differ between each pair of actors.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Manhattan distance&lt;/span&gt;: The sum of absoulute differences between tie/distance profiles.&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
@@ -124,7 +124,7 @@
      <item>
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>Linkage criterion:</string>
+        <string>Clustering method (criterion):</string>
        </property>
       </widget>
      </item>
@@ -140,7 +140,7 @@
         <enum>Qt::StrongFocus</enum>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Single-linkage (minimum)&lt;/span&gt;:  The distance between two clusters will be determined by a single element pair, namely those two elements (one in each cluster) that have the shortest distance between them. In each step, the clusters that have the shortest distance will be merged. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Complete-linkage (maximum)&lt;/span&gt;: The distance between two clusters will be determined any two elements (one in each cluster) that have the longest distance between them. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Average-linkage (UPGMA)&lt;/span&gt;: The distance between two clusters A and B is equal to the average of distances between all pairs of elements in A and B. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Supported linkage criteria for agglomerative hierarchical clustering: &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Single-linkage (minimum)&lt;/span&gt;: The distance between two clusters will be determined by a single element pair, namely those two elements (one in each cluster) that have the shortest distance between them. In each step, the clusters that have the shortest distance will be merged. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Complete-linkage (maximum)&lt;/span&gt;: The distance between two clusters will be determined by any two elements (one in each cluster) that have the longest distance between them. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Average-linkage (UPGMA)&lt;/span&gt;: The distance between two clusters A and B is equal to the average of distances between all pairs of elements in A and B. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>

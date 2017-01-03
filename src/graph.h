@@ -90,8 +90,6 @@ static const int MATRIX_GEODESICS        = 6;
 static const int MATRIX_REACHABILITY     = 7;
 static const int MATRIX_ADJACENCY_TRANSPOSE = 8;
 static const int MATRIX_COCITATION = 9;
-static const int MATRIX_ADJACENCY_SIMILARITY = 10;
-static const int MATRIX_DISTANCES_SIMILARITY = 11;
 static const int MATRIX_DISTANCES_EUCLIDEAN = 12;
 static const int MATRIX_DISTANCES_MANHATTAN= 13;
 static const int MATRIX_DISTANCES_JACCARD= 14;
@@ -562,7 +560,7 @@ public:
                                              const QString &varLocation="Rows",
                                              const bool &diagonal=false);
 
-    void graphMatrixDissimilaritiesCreate(Matrix &AM,
+    void graphMatrixDissimilaritiesCreate(Matrix &INPUT_MATRIX,
                                           Matrix &DSM,
                                           const int &metric,
                                           const QString &varLocation,
@@ -906,6 +904,7 @@ private:
 
     Matrix  TM, DM, sumM, invAM, AM, invM;
     Matrix XM, XSM, XRM, CLQM;
+    Matrix STR_EQUIV;
     stack<int> Stack;
 
     /** used in resolveClasses and graphMatrixDistancesCreate() */

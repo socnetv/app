@@ -47,6 +47,7 @@ static const QString infinity = QString("\xE2\x88\x9E") ;
 #endif
 
 
+static const int METRIC_NONE = -1;
 static const int METRIC_SIMPLE_MATCHING  = 0;
 static const int METRIC_JACCARD_INDEX = 1;
 static const int METRIC_HAMMING_DISTANCE = 2;

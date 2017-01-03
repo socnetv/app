@@ -10578,7 +10578,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
 
     outText << "<p>"
             << "<span class=\"info\">"
-            << tr("Similarity measure: ")
+            << tr("Distance/dissimilarity metric: ")
             <<"</span>"
            << metric
            << "</p>";
@@ -10590,6 +10590,30 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
             <<"</span>"
            << method
            << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Structural Equivalence Matrix: ")
+            <<"</span>"
+           << "</p>";
+
+    STR_EQUIV.printHTMLTable(outText,true,false);
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Analysis results")
+            <<"</span>"
+           << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Hierarchical Clustering of Equivalence Matrix: ")
+            <<"</span>"
+           << "</p>";
+
 
     outText << "<pre>";
     outText <<"Level" << "\t"<< "Actors" <<endl;
@@ -10661,28 +10685,48 @@ void Graph::graphClusteringHierarchical(const int &matrix,
     QVector<int> clusteredItems;  //temp vector stores cluster members at each clustering level
     QMap <int, V_int> m_clusters;
 
-    Matrix DSM;
+    Matrix DSM;  //will be destroyed.
 
     switch (matrix) {
     case MATRIX_ADJACENCY:
         graphMatrixAdjacencyCreate();
-        DSM=AM;
+        STR_EQUIV=AM;
         break;
     case MATRIX_DISTANCES:
         graphMatrixDistancesCreate(false, considerWeights, inverseWeights, dropIsolates);
-        DSM=DM;
-        break;
-    case MATRIX_ADJACENCY_SIMILARITY:
-        graphMatrixAdjacencyCreate();
-        graphMatrixSimilarityMatchingCreate(AM, DSM, metric, "Rows", false, considerWeights);
-        break;
-    case MATRIX_DISTANCES_SIMILARITY:
-        graphMatrixDistancesCreate(false, considerWeights, inverseWeights, dropIsolates);
-        graphMatrixSimilarityMatchingCreate(DM, DSM, metric, "Rows", false, considerWeights);
+        STR_EQUIV=DM;
         break;
     default:
         break;
     }
+
+    QString varLocation = "Rows";
+    bool diagonal = false;
+
+    switch (metric) {
+    case METRIC_NONE:
+        DSM=STR_EQUIV;
+        break;
+    case METRIC_JACCARD_INDEX:
+        graphMatrixDissimilaritiesCreate(STR_EQUIV, DSM, metric,varLocation,diagonal, considerWeights);
+        STR_EQUIV = DSM;
+        break;
+    case METRIC_MANHATTAN_DISTANCE:
+        graphMatrixDissimilaritiesCreate(STR_EQUIV, DSM, metric,varLocation,diagonal, considerWeights);
+        STR_EQUIV = DSM;
+        break;
+    case METRIC_HAMMING_DISTANCE:
+        graphMatrixDissimilaritiesCreate(STR_EQUIV, DSM, metric,varLocation,diagonal, considerWeights);
+        STR_EQUIV = DSM;
+        break;
+    case METRIC_EUCLIDEAN_DISTANCE:
+        graphMatrixDissimilaritiesCreate(STR_EQUIV, DSM, metric,varLocation,diagonal, considerWeights);
+        STR_EQUIV = DSM;
+        break;
+    default:
+        break;
+    }
+
 
     int N = DSM.rows();
 
@@ -11137,7 +11181,7 @@ void Graph::writeMatrixDissimilarities(const QString fileName,
 
 /**
  * @brief Calls Matrix:distancesMatrix to compute the dissimilarities matrix DSM
- * of the variables (rows, columns, both) in given input matrix AM using the
+ * of the variables (rows, columns, both) in given input matrix using the
  * user defined metric
  * @param AM
  * @param DSM
@@ -11146,7 +11190,7 @@ void Graph::writeMatrixDissimilarities(const QString fileName,
  * @param diagonal
  * @param considerWeights
  */
-void Graph::graphMatrixDissimilaritiesCreate(Matrix &AM,
+void Graph::graphMatrixDissimilaritiesCreate(Matrix &INPUT_MATRIX,
                                              Matrix &DSM,
                                              const int &metric,
                                              const QString &varLocation,
@@ -11154,7 +11198,7 @@ void Graph::graphMatrixDissimilaritiesCreate(Matrix &AM,
                                              const bool &considerWeights){
     qDebug()<<"Graph::graphMatrixDissimilaritiesCreate()";
 
-    DSM = AM.distancesMatrix(metric, varLocation, diagonal, considerWeights);
+    DSM = INPUT_MATRIX.distancesMatrix(metric, varLocation, diagonal, considerWeights);
 
     qDebug()<<"Graph::graphMatrixDissimilaritiesCreate() - matrix SCM";
 }
@@ -18131,12 +18175,6 @@ QString Graph::graphMatrixTypeToString(const int &matrixType) const {
     case MATRIX_COCITATION:
         matrixStr = "Cocitation Matrix" ;
         break;
-    case MATRIX_ADJACENCY_SIMILARITY:
-        matrixStr = "Adjacency Similarity matrix" ;
-        break;
-    case MATRIX_DISTANCES_SIMILARITY:
-        matrixStr = "Distances Similarity matrix" ;
-        break;
     case MATRIX_DISTANCES_EUCLIDEAN :
         matrixStr = "Euclidean distance matrix";
         break;
@@ -18174,12 +18212,6 @@ int Graph::graphMatrixStrToType(const QString &matrix) const {
     }
     else if (matrix.contains("Euclidean", Qt::CaseInsensitive)) {
             return MATRIX_DISTANCES_EUCLIDEAN;
-    }
-    else if (matrix.contains("Adjacency similarity", Qt::CaseInsensitive)) {
-        return MATRIX_ADJACENCY_SIMILARITY;
-    }
-    else if (matrix.contains("Distances similarity", Qt::CaseInsensitive)) {
-        return MATRIX_DISTANCES_SIMILARITY;
     }
     else if (matrix.contains("Cocitation", Qt::CaseInsensitive)) {
         return MATRIX_COCITATION;
@@ -18259,6 +18291,8 @@ int Graph::graphMetricStrToType(const QString &metricStr) const {
         metric = METRIC_SIMPLE_MATCHING ;
     else if (metricStr.contains("Jaccard",Qt::CaseInsensitive))
         metric =METRIC_JACCARD_INDEX ;
+    else if (metricStr.contains("None",Qt::CaseInsensitive))
+        metric =METRIC_NONE;
     else if (metricStr.contains("Hamming",Qt::CaseInsensitive))
         metric =METRIC_HAMMING_DISTANCE;
     else if (metricStr.contains("Cosine",Qt::CaseInsensitive))
