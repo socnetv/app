@@ -2965,7 +2965,7 @@ void Graph::graphCocitation(){
     graphMatrixAdjacencyCreate();
 
     Matrix *CT = new Matrix (AM.rows(), AM.cols());
-    *CT = AM.cocitation();
+    *CT = AM.cocitationMatrix();
 
     CT->printMatrixConsole(true);
 
@@ -16917,7 +16917,7 @@ void Graph::writeMatrix (const QString &fn,
                 << "<br />"
                 << tr("C is a symmetric matrix.")
                 << "</p>";
-        AM.cocitation().printHTMLTable(outText,true);
+        AM.cocitationMatrix().printHTMLTable(outText,true);
         break;
 
     case MATRIX_DISTANCES_EUCLIDEAN:

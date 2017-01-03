@@ -895,17 +895,17 @@ Matrix& Matrix::transpose() {
 
 /**
   * @brief Returns the Cocitation Matrix of this matrix (C = A * A^T)
-  * Allows T = A.cocitation()
+  * Allows T = A.cocitationMatrix()
   * @param b
   * @return Matrix T
 */
 
-Matrix& Matrix::cocitation() {
+Matrix& Matrix::cocitationMatrix() {
     Matrix *T = new Matrix(cols(), rows());
     //T->zeroMatrix(cols(), rows());
-    qDebug()<< "Matrix::cocitation() this";
+    qDebug()<< "Matrix::cocitationMatrix() this";
     this->printMatrixConsole();
-    qDebug()<< "Matrix::cocitation() this transpose";
+    qDebug()<< "Matrix::cocitationMatrix() this transpose";
     this->transpose().printMatrixConsole();
     T->product(this->transpose(),*this, true);
     return *T;
@@ -1447,7 +1447,6 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
         QVector<float> mean (N,0); // holds mean values
 
-
         //create augmented matrix (concatenated rows and columns) from input matrix
         for (int i = 0 ; i < N  ; i++ ) {
             for (int j = 0 ; j < N  ; j++ ) {
@@ -1455,9 +1454,10 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                 CM.setItem(j + N,i, item(j,i));
             }
         }
+
         qDebug()<< "Matrix::distancesMatrix() -"
                 <<"input matrix";
-        //CM.printMatrixConsole(true);
+        CM.printMatrixConsole(true);
 
 
         for (int i = 0 ; i < N ; i++ ) {
@@ -1681,7 +1681,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
 
         qDebug()<< "Matrix::similarityMatrix() -"
                 <<"input matrix";
-        //AM.printMatrixConsole(true);
+        AM.printMatrixConsole(true);
 
         for (int i = 0 ; i < N ; i++ ) {
             sum = 0 ;
@@ -1720,7 +1720,9 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
                         magn_i  += AM.item(j,i) * AM.item(j,i); //compute |x|^2
                         magn_k  += AM.item(j,k) * AM.item(j,k); //compute |y|^2
                         break;
-
+                    case METRIC_EUCLIDEAN_DISTANCE:
+                        matches += ( AM.item(j,i) - AM.item(j,k) )*( AM.item(j,i) - AM.item(j,k) ); //compute (x * y)^2
+                        break;
                     default:
                         break;
                     }
@@ -1749,6 +1751,9 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
                     }
                     else
                         matchRatio = matches / sqrt( magn_i  * magn_k );
+                    break;
+                case METRIC_EUCLIDEAN_DISTANCE:
+                    matchRatio = sqrt(matches);
                     break;
                 default:
                     break;
@@ -1787,7 +1792,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
         }
         qDebug()<< "Matrix::similarityMatrix() -"
                 <<"input matrix";
-        //CM.printMatrixConsole(true);
+        CM.printMatrixConsole(true);
 
 
         for (int i = 0 ; i < N ; i++ ) {
@@ -1826,9 +1831,12 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
                         }
                         break;
                     case METRIC_COSINE_SIMILARITY:
-                        matches += AM.item(j,i) * AM.item(j,k); //compute x * y
-                        magn_i  += AM.item(j,i) * AM.item(j,i); //compute |x|^2
-                        magn_k  += AM.item(j,k) * AM.item(j,k); //compute |y|^2
+                        matches += CM.item(j,i) * CM.item(j,k); //compute x * y
+                        magn_i  += CM.item(j,i) * CM.item(j,i); //compute |x|^2
+                        magn_k  += CM.item(j,k) * CM.item(j,k); //compute |y|^2
+                        break;
+                    case METRIC_EUCLIDEAN_DISTANCE:
+                        matches += ( CM.item(j,i) - CM.item(j,k) )*( CM.item(j,i) - CM.item(j,k) ); //compute (x * y)^2
                         break;
                     default:
                         break;
@@ -1858,6 +1866,9 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
                     }
                     else
                         matchRatio = matches / sqrt( magn_i  * magn_k );
+                    break;
+                case METRIC_EUCLIDEAN_DISTANCE:
+                    matchRatio = sqrt(matches);
                     break;
                 default:
                     break;
@@ -1901,8 +1912,10 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
             << "varLocation"<< varLocation;
 
     int N = 0;
-    float sum = 0;
-    float varianceTimesN = 0; // = sqrDeviationsFromMean
+    float sumi = 0;
+    float sumk = 0;
+    float varianceTimesNi = 0; // = sqrDeviationsFromMean
+    float varianceTimesNk = 0; // = sqrDeviationsFromMean
     float covariance = 0;
     float pcc = 0;
 
@@ -1919,35 +1932,65 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                 <<"input matrix";
         //AM.printMatrixConsole(true);
 
-        //compute mean and variance  values
-        for (int i = 0 ; i < N ; i++ ) {
-            sum = 0;
-            for (int j = 0 ; j < N ; j++ ) {
-                if (!diagonal && i==j)
-                    continue;
-                sum += AM.item(i,j);
-            }
-            mean[i] = sum / ( (diagonal) ? (float) N : (float) (N-1) ) ;
-            varianceTimesN = 0;
-            for (int j = 0 ; j < N ; j++ ) {
-                if (!diagonal && i==j) continue;
-                varianceTimesN +=  ( AM.item(i,j)  - mean[i] ) *  ( AM.item(i,j)  - mean[i] );
-            }
-            sigma[i] = sqrt (varianceTimesN); //actually this is sigma * sqrt (N)
-            qDebug() << "mean["<<i+1<<"]" << mean[i]
-                        << "sigma["<<i+1<<"]" << sigma[i];
-
-        }
-
         for (int i = 0 ; i < N ; i++ ) {
 
             for (int k = i ; k < N ; k++ ) {
-                covariance = 0;
+
+                qDebug() << "comparing rows i"<<i+1<<"k"<<k+1;
+
+                // compute mean and variance  values
+                sumi = 0;
+                sumk = 0;
                 for (int j = 0 ; j < N ; j++ ) {
-                    if (!diagonal && (i==j || k==j) ) continue;
-                    covariance  +=  ( AM.item(i,j)  - mean[i] ) * ( AM.item(k,j)  - mean[k] ) ;
+                    if (!diagonal && ( i==j || k==j ) )
+                        continue;
+                    sumi += AM.item(i,j);
+                    sumk += AM.item(k,j);
                 }
-                pcc =   covariance   /  (( sigma[i] ) * ( sigma[k] )) ;
+                mean[i] = sumi / ( (diagonal) ? (float) N : (float) (N-2) ) ;
+                mean[k] = sumk / ( (diagonal) ? (float) N : (float) (N-2) ) ;
+                varianceTimesNi = 0;
+                varianceTimesNk = 0;
+                for (int j = 0 ; j < N ; j++ ) {
+                    if (!diagonal && ( i==j || k==j ) )
+                        continue;
+                    varianceTimesNi +=  ( AM.item(i,j)  - mean[i] ) *  ( AM.item(i,j)  - mean[i] );
+                    varianceTimesNk +=  ( AM.item(k,j)  - mean[k] ) *  ( AM.item(k,j)  - mean[k] );
+                }
+                sigma[i] = sqrt (varianceTimesNi); //actually this is sigma * sqrt (N)
+                sigma[k] = sqrt (varianceTimesNk); //actually this is sigma * sqrt (N)
+
+
+                covariance = 0;
+
+                for (int j = 0 ; j < N ; j++ ) {
+
+                    qDebug() << "AM.item(i,j)=AM.item("<<i+1<<","<<j+1<<") = "<<AM.item(i,j)
+                             << " mean(i)=mean("<<i+1<<") = "<<mean[i]
+                                << "AM.item(k,j)=AM.item("<<k+1<<","<<j+1<<") = "<<AM.item(k,j)
+                                << " mean(k)=mean("<<k+1<<") = "<<mean[k];
+
+                    if (!diagonal && (i==j ) ) {
+                        qDebug() << "skipping because i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
+                        continue;
+                    }
+                    if (!diagonal && (k==j) ) {
+                        qDebug() << "skipping because i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
+                        continue;
+                    }
+                    else
+                        covariance  +=  ( AM.item(i,j)  - mean[i] ) * ( AM.item(k,j)  - mean[k] ) ;
+                }
+
+
+                if ( ( sigma[i] != 0 ) && ( sigma[k] != 0  ) ) {
+                    pcc =   covariance   /  (( sigma[i] ) * ( sigma[k] )) ;
+                }
+                else {
+                    pcc = 0;
+                }
+
+
                 qDebug() << "covariance("<<i+1<<","<<k+1<<") =" << covariance
                          << "sigma["<<i+1<<"]" << sigma[i]
                          << "sigma["<<k+1<<"]" << sigma[k]
@@ -1974,36 +2017,51 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
         //AM.printMatrixConsole(true);
 
 
-        //compute mean and variance  values
-        for (int i = 0 ; i < N ; i++ ) {
-            sum = 0;
-            for (int j = 0 ; j < N ; j++ ) {
-                if (!diagonal && i==j)
-                    continue;
-                sum += AM.item(j,i);
-            }
-            mean[i] = sum / ( (diagonal) ? (float) N : (float) (N-1) ) ;
-            varianceTimesN = 0;
-            for (int j = 0 ; j < N ; j++ ) {
-                if (!diagonal && i==j)
-                    continue;
-                varianceTimesN +=  ( AM.item(j,i)  - mean[i] ) *  ( AM.item(j,i)  - mean[i] );
-            }
-            sigma[i] = sqrt (varianceTimesN); //actually this is sigma * sqrt (N)
-
-            qDebug() << "mean["<<i+1<<"]" << mean[i]
-                     << "sigma["<<i+1<<"]" << sigma[i];
-        }
-
         for (int i = 0 ; i < N ; i++ ) {
 
             for (int k = i ; k < N ; k++ ) {
+
+                qDebug() << "comparing columns i"<<i+1<<"k"<<k+1;
+
+                // compute mean and variance  values
+                sumi = 0;
+                sumk = 0;
+                for (int j = 0 ; j < N ; j++ ) {
+                    if (!diagonal && ( i==j || k==j ) )
+                        continue;
+                    sumi += AM.item(j,i);
+                    sumk += AM.item(j,k);
+                }
+                mean[i] = sumi / ( (diagonal) ? (float) N : (float) (N-2) ) ;
+                mean[k] = sumk / ( (diagonal) ? (float) N : (float) (N-2) ) ;
+                varianceTimesNi = 0;
+                varianceTimesNk = 0;
+                for (int j = 0 ; j < N ; j++ ) {
+                    if (!diagonal && ( i==j || k==j ) )
+                        continue;
+                    varianceTimesNi +=  ( AM.item(j,i)  - mean[i] ) *  ( AM.item(j,i)  - mean[i] );
+                    varianceTimesNk +=  ( AM.item(j,k)  - mean[k] ) *  ( AM.item(j,k)  - mean[k] );
+                }
+                sigma[i] = sqrt (varianceTimesNi); //actually this is sigma * sqrt (N)
+                sigma[k] = sqrt (varianceTimesNk); //actually this is sigma * sqrt (N)
+
                 covariance = 0;
                 for (int j = 0 ; j < N ; j++ ) {
-                    if (!diagonal && (i==j || k==j) ) continue;
+                    if (!diagonal && (i==j || k==j) ) {
+                        qDebug() << "skipping because i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
+                        continue;
+                    }
                     covariance  +=  ( AM.item(j,i)  - mean[i] ) * ( AM.item(j,k)  - mean[k] ) ;
                 }
-                pcc =   covariance   /  (( sigma[i] ) * ( sigma[k] )) ;
+
+
+                if ( ( sigma[i] != 0 ) && ( sigma[k] != 0  ) ) {
+                    pcc =   covariance   /  (( sigma[i] ) * ( sigma[k] )) ;
+                }
+                else {
+                    pcc = 0;
+                }
+
 
                 qDebug() << "covariance("<<i+1<<","<<k+1<<") =" << covariance
                          << "sigma["<<i+1<<"]" << sigma[i]
@@ -2024,83 +2082,85 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
 
         int M = N * 2; // CM will have double rows
 
-        if (!diagonal) {
-            M = M - 2;
-        }
-        this->zeroMatrix(N,N);
 
+        this->zeroMatrix(N,N);
 
         CM.zeroMatrix(M,N);
 
         QVector<float> mean (N,0); // holds mean values
         QVector<float> sigma(N,0);
 
-        if (!diagonal) {
-            for (int i = 0 ; i < N-1  ; i++ ) {
-                for (int j = 0 ; j < N  ; j++ ) {
-                    if (i<j) {
-                        CM.setItem(i,j, AM.item(j,i));
-                        CM.setItem(j + N - 2, i, AM.item(j,i) );
-                    }
-                    else {
-                        CM.setItem(i,j, AM.item(j,i+1));
-                        if (j>0)
-                            CM.setItem(j + N - 2, i, AM.item(j-1,i) );
-                        if (i==(N-2)){ //last col
-                            CM.setItem(j + N - 1, N-1, AM.item(j, N-1) );
-                        }
-                    }
 
-                }
-            }
-
-        }
-        else {
-            for (int i = 0 ; i < N  ; i++ ) {
-                for (int j = 0 ; j < N  ; j++ ) {
-                    CM.setItem(j,i, AM.item(i,j));  //row vectors first
-                    CM.setItem(j + N ,i, AM.item(j,i)); // then column vectors
-                }
+        //create augmented matrix (concatenated rows and columns) from input matrix
+        for (int i = 0 ; i < N  ; i++ ) {
+            for (int j = 0 ; j < N  ; j++ ) {
+                CM.setItem(j,i, AM.item(i,j));
+                CM.setItem(j + N,i, AM.item(j,i));
             }
         }
 
         qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
                 <<"input matrix";
-        CM.printMatrixConsole(true);
+        //CM.printMatrixConsole(true);
 
-        //compute mean and variance values
-        for (int i = 0 ; i < N ; i++ ) {
-            sum = 0;
-            for (int j = 0 ; j < M ; j++ ) {
-                sum += CM.item(j,i);
-            }
-            mean[i] = sum / M;
-            varianceTimesN = 0;
-            for (int j = 0 ; j < M ; j++ ) {
-               varianceTimesN +=  ( CM.item(j,i)  - mean[i] ) *  ( CM.item(j,i)  - mean[i] );
-            }
-            sigma[i] = sqrt (varianceTimesN); //actually this is sigma * sqrt (N)
-
-            qDebug() << "mean["<<i+1<<"]" << mean[i]
-                        << "sigma["<<i+1<<"]" << sigma[i];
-
-        }
 
         for (int i = 0 ; i < N ; i++ ) {  //a column
 
             for (int k = i ; k < N ; k++ ) {  // next column
+
+               qDebug() << "comparing augmented columns i"<<i+1<<"k"<<k+1;
+
+                // compute mean and variance  values
+                sumi = 0;
+                sumk = 0;
+                for (int j = 0 ; j < M ; j++ ) {
+                    if (!diagonal && ( i==j || k==j || (i+N)==j || (k+N)==j  ) )
+                        continue;
+                    sumi += CM.item(j,i);
+                    sumk += CM.item(j,k);
+                }
+                mean[i] = sumi / ( (diagonal) ? (float) M : (float) (M-4) ) ;
+                mean[k] = sumk / ( (diagonal) ? (float) M : (float) (M-4) ) ;
+                varianceTimesNi = 0;
+                varianceTimesNk = 0;
+                for (int j = 0 ; j < M; j++ ) {
+                    if (!diagonal && ( i==j || k==j || (i+N)==j || (k+N)==j  ) )
+                        continue;
+                    varianceTimesNi +=  ( CM.item(j,i)  - mean[i] ) *  ( CM.item(j,i)  - mean[i] );
+                    varianceTimesNk +=  ( CM.item(j,k)  - mean[k] ) *  ( CM.item(j,k)  - mean[k] );
+                }
+                sigma[i] = sqrt (varianceTimesNi); //actually this is sigma * sqrt (N)
+                sigma[k] = sqrt (varianceTimesNk); //actually this is sigma * sqrt (N)
+
                 covariance = 0;
-                qDebug() << "comparing columns i"<<i+1<<"k"<<k+1;
+
                 for (int j = 0 ; j < M ; j++ ) {
                     qDebug() << "CM.item(j,i)=CM.item("<<j+1<<","<<i+1<<") = "<<CM.item(j,i)
                              << " mean(i)=mean("<<i+1<<") = "<<mean[i]
                                 << "CM.item(j,k)=CM.item("<<j+1<<","<<k+1<<") = "<<CM.item(j,k)
                                 << " mean(k)=mean("<<k+1<<") = "<<mean[k];
 
+
+                    if (!diagonal) {
+                        if ( (i==j || k==j )) {
+                            qDebug() << "skipping because i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
+                            continue;
+                        }
+                        if ( j>=N && ( (i+N)==j || (k+N)==j )) {
+                            qDebug() << "skipping because j>=N and i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
+                            continue;
+                        }
+                    }
+
                     covariance  +=  ( CM.item(j,i)  - mean[i] ) * ( CM.item(j,k)  - mean[k] ) ;
                 }
 
-                pcc =   covariance   /  (( sigma[i] ) * ( sigma[k] )) ;
+                if ( ( sigma[i] != 0 ) && ( sigma[k] != 0  ) ) {
+                    pcc =   covariance   /  (( sigma[i] ) * ( sigma[k] )) ;
+                }
+                else {
+                    pcc = 0;
+                }
 
                 qDebug() << "final covariance("<<i+1<<","<<k+1<<") =" << covariance
                          << "sigma["<<i+1<<"]" << sigma[i]

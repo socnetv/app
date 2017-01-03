@@ -214,7 +214,7 @@ public:
 
     Matrix& transpose();
 
-    Matrix& cocitation();
+    Matrix& cocitationMatrix();
 
 
     Matrix& inverseByGaussJordanElimination(Matrix &a);
