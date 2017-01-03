@@ -11438,6 +11438,13 @@ void Graph::writeMatrixSimilarityPearson(const QString fileName,
 
     outText << "<p>"
             << "<span class=\"info\">"
+            << tr("Diagonal: ")
+            <<"</span>"
+            << ((diagonal) ? "Included" : "Not included")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
             << tr("PCC range: ")
             <<"</span>"
             << "-1 &lt; C &lt; 1"
