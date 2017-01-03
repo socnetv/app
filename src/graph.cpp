@@ -144,7 +144,7 @@ Graph::Graph() {
                        "border-collapse: collapse; border-spacing: 0; }"
                        "table.plot td.filled {background: #000;}"
                        ".pre {margin-top:0px; margin-bottom:0px;font-size:1px; line-height: 100%; white-space: nowrap; }"
-                       ".description {font-style: italic;color: #666;}"
+                       ".description {font-style: italic;color: #666;max-width: 107ch;}"
                        ".info {font-weight: bold;color: #333;}"
                        ".small {font-style: italic;color: #333; font-size: 90%;}"
                        "</style>"
@@ -2967,7 +2967,7 @@ void Graph::graphCocitation(){
     Matrix *CT = new Matrix (AM.rows(), AM.cols());
     *CT = AM.cocitationMatrix();
 
-    CT->printMatrixConsole(true);
+    //CT->printMatrixConsole(true);
 
     QList<Vertex*>::const_iterator it, it1;
 
@@ -4827,7 +4827,7 @@ void Graph::writeCentralityEigenvector(const QString fileName,
                   "an extension of the simpler Degree Centrality because it gives "
                   "each actor a score proportional to the scores of its neighbors. "
                   "Thus, a node may have high EVC score if it has lots of ties or "
-                  "it has ties to other nodes with high EVC."
+                  "it has ties to other nodes with high EVC. <br />"
                   "The eigenvector centralities are also known as Gould indices.")
             << "<br />"
             << tr("EVC' is the standardized index (EVC divided by the sum of all EVCs).")
@@ -5522,7 +5522,9 @@ void Graph::writeCentralityCloseness( const QString fileName,
                   "from each node u to all other nodes. " )
             << "<br />"
             << tr("Note: The CC index considers outbound arcs only and "
-                  "isolate nodes are dropped by default. Read the Manual for more.")
+                  "isolate nodes are dropped by default. ")
+            << "<br />"
+            << tr("Read the Manual for more.")
             << "<br />"
             << tr("CC' is the standardized index (CC multiplied by (N-1 minus isolates)).")
             << "</p>";
@@ -6067,7 +6069,9 @@ void Graph::writeCentralityBetweenness(const QString fileName,
             << tr("The BC index of a node u is the sum of &delta;<sub>(s,t,u)</sub> for all s,t &isin; V ")
             << "<br />"
             << tr("where &delta;<sub>(s,t,u)</sub> is the ratio of all geodesics between "
-                  "s and t which run through u. Read the Manual for more.")
+                  "s and t which run through u. ")
+            << "<br />"
+            << tr("Read the Manual for more.")
             << "<br />"
             << tr("BC' is the standardized index (BC divided by (N-1)(N-2)/2 in symmetric nets or (N-1)(N-2) otherwise.")
             << "</p>";
@@ -10723,6 +10727,10 @@ void Graph::graphClusteringHierarchical(const int &matrix,
         graphMatrixDissimilaritiesCreate(STR_EQUIV, DSM, metric,varLocation,diagonal, considerWeights);
         STR_EQUIV = DSM;
         break;
+    case METRIC_CHEBYSHEV_MAXIMUM:
+        graphMatrixDissimilaritiesCreate(STR_EQUIV, DSM, metric,varLocation,diagonal, considerWeights);
+        STR_EQUIV = DSM;
+        break;
     default:
         break;
     }
@@ -10735,7 +10743,7 @@ void Graph::graphClusteringHierarchical(const int &matrix,
              << "initial matrix DSM.size:"
              << N
              <<"matrix DSM contents";
-    DSM.printMatrixConsole();
+   // DSM.printMatrixConsole();
 
     clusteredItems.reserve(N);
 
@@ -10900,7 +10908,7 @@ void Graph::graphClusteringHierarchical(const int &matrix,
                  << seq
                  << "Level:" << min
                  << "Resizing old DSM matrix";
-        DSM.printMatrixConsole();
+        //DSM.printMatrixConsole();
         DSM.deleteRowColumn(deletedClusterIndex);
 
         clustersLeft --;
@@ -11124,7 +11132,7 @@ void Graph::writeMatrixDissimilarities(const QString fileName,
     if (metric==METRIC_JACCARD_INDEX)
         outText << tr("0 &lt; C &lt; 1") ;
     else
-        outText << tr("0 &lt; C &lt; 1") ;
+        outText << tr("0 &lt; C ") ;
     outText << "</p>";
 
     outText << "<p>"
@@ -11137,29 +11145,15 @@ void Graph::writeMatrixDissimilarities(const QString fileName,
     DSM.printHTMLTable(outText);
 
     outText << "<p class=\"description\">";
-    if (metric==METRIC_HAMMING_DISTANCE || metric==METRIC_MANHATTAN_DISTANCE) {
-        outText << "<span class=\"info\">"
-                << tr("DSM = 0 ")
-                <<"</span>"
-                << tr("when two actors have no tie profile dissimilarities. The actors have the same ties to all others.")
-                <<"<br/>"
-                << "<span class=\"info\">"
-                << tr("DSM &gt; 0 ")
-                <<"</span>"
-                << tr("when two actors have some differences in their ties to other actors <br />"
-                      "i.e. DSM = 3 means the two actors have 3 differences in their tie profiles.");
-    }
-    else {
-        outText << "<span class=\"info\">"
-                << tr("DSM = 0 ")
-                <<"</span>"
-                << tr("when two actors have no tie profile dissimilarities. The actors have the same ties to all others.")
-                <<"<br/>"
-                << "<span class=\"info\">"
-                << tr("DSM &gt; 0 ")
-                <<"</span>"
-                << tr("when the two actors have differences in their ties to other actors.");
-    }
+    outText << "<span class=\"info\">"
+            << tr("DSM = 0 ")
+            <<"</span>"
+           << tr("when two actors have no tie profile dissimilarities. The actors have the same ties to all others.")
+           <<"<br/>"
+          << "<span class=\"info\">"
+          << tr("DSM &gt; 0 ")
+          <<"</span>"
+         << tr("when the two actors have differences in their ties to other actors.");
     outText << "</p>";
 
     outText << "<p>&nbsp;</p>";
@@ -16701,14 +16695,14 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
 
 
 /**
-    Writes the matrix of G to a specified file fn
-    This is called by MainWindow::slotViewAdjacencyMatrix()
+    Writes the specified matrix of social network to file fn
 */
 void Graph::writeMatrix (const QString &fn,
                          const int &matrix,
                          const bool &considerWeights,
                          const bool &inverseWeights,
                          const bool &dropIsolates,
+                         const QString &varLocation,
                          const bool &simpler) {
 
     QTime computationTimer;
@@ -16849,7 +16843,7 @@ void Graph::writeMatrix (const QString &fn,
             << tr("Network name: ")
             <<"</span>"
             << graphName()
-            <<"-trasposed <br />"
+            <<"<br />"
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
@@ -16865,7 +16859,7 @@ void Graph::writeMatrix (const QString &fn,
                       "actor i to actor j, or 0 if no edge exists.")
                 << "<br />"
                 << "</p>";
-        AM.printHTMLTable(outText);
+        AM.printHTMLTable(outText,true);
         break;
     case MATRIX_LAPLACIAN:
         outText << "<p class=\"description\">"
@@ -16880,7 +16874,7 @@ void Graph::writeMatrix (const QString &fn,
                       "- and all other elements zero.<br />")
                 << "<br />"
                 << "</p>";
-        AM.laplacianMatrix().printHTMLTable(outText);
+        AM.laplacianMatrix().printHTMLTable(outText,true,false,false);
         break;
     case MATRIX_DEGREE:
         outText << "<p class=\"description\">"
@@ -16893,12 +16887,13 @@ void Graph::writeMatrix (const QString &fn,
         break;
     case MATRIX_DISTANCES:
         outText << "<p class=\"description\">"
-                << tr("The distances matrix, DM, of a social network is a NxN matrix ")
-                << tr("where each element (i,j) is the geodesic distance of "
-                      "actor i to actor j, or infinity if no shortest path exists.")
+                << tr("The distance matrix, DM, of a social network is a NxN matrix "
+                    "where each element (i,j) is the geodesic distance "
+                      "(length of shortest path) from actor i to actor j, "
+                      "or infinity if no shortest path exists.")
                 << "<br />"
                 << "</p>";
-        DM.printHTMLTable(outText);
+        DM.printHTMLTable(outText,true);
         break;
     case MATRIX_GEODESICS:
         outText << "<p class=\"description\">"
@@ -16908,7 +16903,7 @@ void Graph::writeMatrix (const QString &fn,
                       "or infinity if no shortest path exists.")
                 << "<br />"
                 << "</p>";
-        TM.printHTMLTable(outText);
+        TM.printHTMLTable(outText,true);
         break;
 
     case MATRIX_ADJACENCY_INVERSE:
@@ -16918,7 +16913,7 @@ void Graph::writeMatrix (const QString &fn,
                     << "<br />"
                     << "</p>";
         }else {
-            invAM.printHTMLTable(outText);
+            invAM.printHTMLTable(outText,true);
         }
         break;
     case MATRIX_REACHABILITY:
@@ -16933,7 +16928,7 @@ void Graph::writeMatrix (const QString &fn,
                 << "<br />"
                 << "</p>";
 
-        XRM.printHTMLTable(outText);
+        XRM.printHTMLTable(outText,true);
         break;
 
     case MATRIX_ADJACENCY_TRANSPOSE:
@@ -16947,7 +16942,7 @@ void Graph::writeMatrix (const QString &fn,
                 << "</p>";
 
 
-        AM.transpose().printHTMLTable(outText);
+        AM.transpose().printHTMLTable(outText,true);
         break;
 
     case MATRIX_COCITATION:
@@ -16968,19 +16963,21 @@ void Graph::writeMatrix (const QString &fn,
         outText << "<p class=\"description\">"
                 << tr("The Euclidean distances matrix is a "
                       "NxN matrix where each element (i,j) is the Euclidean distance"
-                      "of the tie profiles between actors i and j.")
+                      "of the tie profiles between actors i and j, namely the "
+                      "square root of the sum of their squared differences.")
                 << "<br />"
                 << "</p>";
-        AM.distancesMatrix(METRIC_EUCLIDEAN_DISTANCE, "Rows", false, true ).printHTMLTable(outText,true);
+        AM.distancesMatrix(METRIC_EUCLIDEAN_DISTANCE, varLocation, false, true ).printHTMLTable(outText,true);
         break;
     case MATRIX_DISTANCES_HAMMING:
         outText << "<p class=\"description\">"
                 << tr("The Hamming distances matrix is a "
                       "NxN matrix where each element (i,j) is the Hamming distance"
-                      "of the tie profiles between actors i and j.")
+                      "of the tie profiles between actors i and j, namely the "
+                      "number of different ties to other actors.")
                 << "<br />"
                 << "</p>";
-        AM.distancesMatrix(METRIC_HAMMING_DISTANCE, "Rows", false, true ).printHTMLTable(outText,true);
+        AM.distancesMatrix(METRIC_HAMMING_DISTANCE, varLocation, false, true ).printHTMLTable(outText,true);
         break;
     case MATRIX_DISTANCES_JACCARD:
         outText << "<p class=\"description\">"
@@ -16996,10 +16993,20 @@ void Graph::writeMatrix (const QString &fn,
         outText << "<p class=\"description\">"
                 << tr("The Manhattan distances matrix is a "
                       "NxN matrix where each element (i,j) is the Manhattan distance"
-                      "of the tie profiles between actors i and j.")
+                      "of the tie profiles between actors i and j, namely  the "
+                      "sum of their absolute differences.")
                 << "<br />"
                 << "</p>";
-        AM.distancesMatrix(METRIC_MANHATTAN_DISTANCE, "Rows", false, true ).printHTMLTable(outText,true);
+        AM.distancesMatrix(METRIC_MANHATTAN_DISTANCE, varLocation, false, true ).printHTMLTable(outText,true);
+        break;
+    case MATRIX_DISTANCES_CHEBYSHEV:
+        outText << "<p class=\"description\">"
+                << tr("The Chebyshev distances matrix is a "
+                      "NxN matrix where each element (i,j) is the Chebyshev distance"
+                      "of the tie profiles between actors i and j, namely the greatest of their differences.")
+                << "<br />"
+                << "</p>";
+        AM.distancesMatrix(METRIC_CHEBYSHEV_MAXIMUM, varLocation, false, true ).printHTMLTable(outText,true);
         break;
 
     default:
@@ -17057,9 +17064,9 @@ void Graph::writeMatrixAdjacencyTo(QTextStream& os,
 
 /** 
     Writes the adjacency matrix of G to a specified file fn
-    This is called by MainWindow::slotViewAdjacencyMatrix()
 */
-void Graph::writeMatrixAdjacency (const QString fn) {
+void Graph::writeMatrixAdjacency (const QString fn,
+                                  const bool &markDiag) {
 
     QTime computationTimer;
     computationTimer.start();
@@ -17077,6 +17084,7 @@ void Graph::writeMatrixAdjacency (const QString fn) {
     int sum=0;
     float weight=0;
     int rowCount=0;
+    //int colCount=0;
 
     QList<Vertex*>::const_iterator it, it1;
 
@@ -17140,17 +17148,17 @@ void Graph::writeMatrixAdjacency (const QString fn) {
 
             if ( ! (*it1)->isEnabled() ) continue;
 
+            outText <<"<td" << ((markDiag && (*it)->name() ==(*it1)->name() )? " class=\"diag\">" : ">");
             if ( (weight =  edgeExists ( (*it)->name(), (*it1)->name() )  )!=0 ) {
                 sum++;
-                outText <<"<td>"
-                       << (weight)
-                       << "</td>";
+                outText << (weight);
+
             }
             else {
-                outText <<"<td>"
-                       << 0
-                       << "</td>";
+                outText << 0 ;
+
             }
+            outText << "</td>";
 
         }
         outText <<"</tr>";
@@ -17848,7 +17856,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
     bool considerWeights=false, inverseWeights=false, dropIsolates=false;
     graphMatrixDistancesCreate(false,considerWeights,inverseWeights, dropIsolates);
     qDebug() << " DM : ";
-    DM.printMatrixConsole();
+    //DM.printMatrixConsole();
 
     // Compute lij for 1 <= i!=j <= n using the formula:
     // lij = L x dij
@@ -17860,7 +17868,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
     TM.zeroMatrix(DM.rows(), DM.cols());
     TM=DM;
     TM.multiplyScalar(L);
-    TM.printMatrixConsole();
+   // TM.printMatrixConsole();
 
     // Compute kij for 1 <= i!=j <= n using the formula:
     // ki
@@ -18273,6 +18281,9 @@ QString Graph::graphMetricTypeToString(const int &metricType) const {
     case METRIC_PEARSON_COEFFICIENT:
         metricStr = "Pearson Correlation Coefficient" ;
         break;
+    case METRIC_CHEBYSHEV_MAXIMUM:
+        metricStr = "Chebyshev distance" ;
+        break;
     default:
         metricStr = "-" ;
         break;
@@ -18303,6 +18314,8 @@ int Graph::graphMetricStrToType(const QString &metricStr) const {
         metric =METRIC_MANHATTAN_DISTANCE;
     else if (metricStr.contains("Pearson ",Qt::CaseInsensitive))
         metric = METRIC_PEARSON_COEFFICIENT;
+    else if (metricStr.contains("Chebyshev",Qt::CaseInsensitive))
+        metric = METRIC_CHEBYSHEV_MAXIMUM;
     return metric;
 }
 

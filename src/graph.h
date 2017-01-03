@@ -94,6 +94,7 @@ static const int MATRIX_DISTANCES_EUCLIDEAN = 12;
 static const int MATRIX_DISTANCES_MANHATTAN= 13;
 static const int MATRIX_DISTANCES_JACCARD= 14;
 static const int MATRIX_DISTANCES_HAMMING= 15;
+static const int MATRIX_DISTANCES_CHEBYSHEV= 16;
 
 
 class QPointF;
@@ -578,9 +579,11 @@ public:
                      const bool &considerWeights=true,
                      const bool &inverseWeights=false,
                      const bool &dropIsolates=false,
+                     const QString &varLocation="Rows",
                      const bool &simpler=false);
 
-    void writeMatrixAdjacency(const QString fileName);
+    void writeMatrixAdjacency(const QString fileName,
+                              const bool &markDiag=true);
     void writeMatrixAdjacencyPlot(const QString fileName,
                                       const bool &simpler=false);
 

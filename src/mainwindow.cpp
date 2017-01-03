@@ -6434,6 +6434,8 @@ void MainWindow::slotNetworkViewSociomatrix(){
 
     createProgressBar(0,progressMsg);
     activeGraph.writeMatrixAdjacency(fn) ;
+    //AVOID THIS, no preserving of node numbers when nodes are deleted.
+    // activeGraph.writeMatrix(fn,MATRIX_ADJACENCY) ;
     destroyProgressBar();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {

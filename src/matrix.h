@@ -55,6 +55,7 @@ static const int METRIC_COSINE_SIMILARITY  = 3;
 static const int METRIC_EUCLIDEAN_DISTANCE = 4;
 static const int METRIC_MANHATTAN_DISTANCE= 5;
 static const int METRIC_PEARSON_COEFFICIENT = 6;
+static const int METRIC_CHEBYSHEV_MAXIMUM= 7;
 
 
 
@@ -247,7 +248,8 @@ public:
     friend QTextStream& operator <<  (QTextStream& os, Matrix& m);
     bool printHTMLTable(QTextStream& os,
                         const bool markDiag=false,
-                        const bool &plain=false);
+                        const bool &plain=false,
+                        const bool &printInfinity=true);
     bool printMatrixConsole(bool debug=true);
 
 private:

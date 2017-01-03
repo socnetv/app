@@ -47,7 +47,8 @@ DialogDissimilarities::DialogDissimilarities (QWidget *parent) : QDialog (parent
     metricList  << tr("Euclidean distance")
                 << tr("Manhattan distance")
                 << tr("Hamming distance")
-                << tr("Jaccard distance");
+                << tr("Jaccard distance")
+                << tr("Chebyshev distance");
 
 
 

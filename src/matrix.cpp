@@ -308,7 +308,7 @@ void Matrix::deleteRowColumn(int erased){
         row[i].setSize(m_cols);
     }
     qDebug() << "Matrix:deleteRowColumn() - finished, new matrix:";
-    printMatrixConsole(true); // @TODO comment out to release
+    //printMatrixConsole(true); // @TODO comment out to release
 
 }
 
@@ -902,11 +902,8 @@ Matrix& Matrix::transpose() {
 
 Matrix& Matrix::cocitationMatrix() {
     Matrix *T = new Matrix(cols(), rows());
-    //T->zeroMatrix(cols(), rows());
-    qDebug()<< "Matrix::cocitationMatrix() this";
-    this->printMatrixConsole();
     qDebug()<< "Matrix::cocitationMatrix() this transpose";
-    this->transpose().printMatrixConsole();
+    //this->transpose().printMatrixConsole();
     T->product(this->transpose(),*this, true);
     return *T;
 }
@@ -925,7 +922,6 @@ Matrix& Matrix::cocitationMatrix() {
 
 Matrix& Matrix::degreeMatrix() {
     Matrix *S = new Matrix(rows(), cols());
-    //S->zeroMatrix(rows(), cols());
     qDebug()<< "Matrix::degreeMatrix()";
     float degree=0;
     for (int i=0;i< rows();i++) {
@@ -1278,6 +1274,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
     float distance = 0;
     float distTemp = 0;
     float ties = 0;
+    float max = 0 ; // for Chebyshev metric
     if (varLocation=="Rows") {
 
         N = rows() ;
@@ -1293,6 +1290,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
             for (int k = i ; k < N ; k++ ) {
                 distTemp = 0;
                 ties = 0;
+                max = 0;
                 for (int j = 0 ; j < N ; j++ ) {
 
                     if (!diagonal && (i==j || k==j))
@@ -1318,6 +1316,11 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                     case METRIC_MANHATTAN_DISTANCE:
                         distTemp += fabs( item(i,j) - item(k,j) ); //compute |x * y|
                         break;
+                    case METRIC_CHEBYSHEV_MAXIMUM:
+                        distTemp =  fabs( item(i,j) - item(k,j) );
+                        max = ( distTemp  > max ) ? distTemp : max;
+                        distTemp = max;
+                        break;
                     default:
                         break;
                     }
@@ -1336,6 +1339,9 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                     distance = sqrt(distTemp);
                     break;
                 case METRIC_MANHATTAN_DISTANCE:
+                    distance = distTemp ;
+                    break;
+                case METRIC_CHEBYSHEV_MAXIMUM:
                     distance = distTemp ;
                     break;
                 default:
@@ -1372,6 +1378,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
             for (int k = i ; k < N ; k++ ) {
                 distTemp = 0;
                 ties = 0;
+                max = 0;
                 for (int j = 0 ; j < N ; j++ ) {
 
                     if (!diagonal && (i==j || k==j))
@@ -1397,7 +1404,11 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                     case METRIC_MANHATTAN_DISTANCE:
                         distTemp += fabs( item(j,i) - item(j,k) ); //compute |x * y|
                         break;
-
+                    case METRIC_CHEBYSHEV_MAXIMUM:
+                        distTemp = fabs( item(j,i) - item(j,k) );
+                        max = ( distTemp  > max ) ? distTemp:max;
+                        distTemp = max;
+                        break;
                     default:
                         break;
                     }
@@ -1418,6 +1429,9 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                     distance = sqrt(distTemp);
                     break;
                 case METRIC_MANHATTAN_DISTANCE:
+                    distance = distTemp ;
+                    break;
+                case METRIC_CHEBYSHEV_MAXIMUM:
                     distance = distTemp ;
                     break;
                 default:
@@ -1457,7 +1471,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
         qDebug()<< "Matrix::distancesMatrix() -"
                 <<"input matrix";
-        CM.printMatrixConsole(true);
+        //CM.printMatrixConsole(true);
 
 
         for (int i = 0 ; i < N ; i++ ) {
@@ -1466,7 +1480,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
                 distTemp = 0;
                 ties = 0;
-
+                max = 0;
                 for (int j = 0 ; j < M ; j++ ) {
 
                     if (!diagonal) {
@@ -1495,6 +1509,11 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                     case METRIC_MANHATTAN_DISTANCE:
                         distTemp += fabs( CM.item(j,i) - CM.item(j,k) ); //compute |x * y|
                         break;
+                    case METRIC_CHEBYSHEV_MAXIMUM:
+                        distTemp = fabs( CM.item(j,i) - CM.item(j,k) );
+                        max = ( distTemp  > max ) ? distTemp : max;
+                        distTemp = max;
+                        break;
                     default:
                         break;
                     }
@@ -1513,6 +1532,9 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                     distance = sqrt(distTemp);
                     break;
                 case METRIC_MANHATTAN_DISTANCE:
+                    distance = distTemp ;
+                    break;
+                case METRIC_CHEBYSHEV_MAXIMUM:
                     distance = distTemp ;
                     break;
                 default:
@@ -1681,7 +1703,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
 
         qDebug()<< "Matrix::similarityMatrix() -"
                 <<"input matrix";
-        AM.printMatrixConsole(true);
+        //AM.printMatrixConsole(true);
 
         for (int i = 0 ; i < N ; i++ ) {
             sum = 0 ;
@@ -1792,7 +1814,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
         }
         qDebug()<< "Matrix::similarityMatrix() -"
                 <<"input matrix";
-        CM.printMatrixConsole(true);
+        //CM.printMatrixConsole(true);
 
 
         for (int i = 0 ; i < N ; i++ ) {
@@ -2308,7 +2330,10 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
  * @param debug
  * @return
  */
-bool Matrix::printHTMLTable(QTextStream& os, const bool markDiag, const bool &plain){
+bool Matrix::printHTMLTable(QTextStream& os,
+                            const bool markDiag,
+                            const bool &plain,
+                            const bool &printInfinity){
     qDebug() << "Matrix::printHTMLTable()";
     int actorNumber=0, rowCount = 0;
     float maxVal, minVal, element;
@@ -2394,12 +2419,12 @@ bool Matrix::printHTMLTable(QTextStream& os, const bool markDiag, const bool &pl
             element = item(r,c) ;
             os << fixed << right;
             os <<"<td" << ((markDiag && r==c)? " class=\"diag\">" : ">");
-            if ( element == -1 || element == RAND_MAX)  // print inf symbol instead of -1 (distances matrix).
+            if ( ( element == -1 || element == RAND_MAX ) && printInfinity) {
+                // print inf symbol instead of -1 (distances matrix).
                 os << infinity;
+            }
             else {
                 os << element ;
-
-
             }
             os << "</td>";
         }
@@ -2421,12 +2446,16 @@ bool Matrix::printHTMLTable(QTextStream& os, const bool markDiag, const bool &pl
        << "<span class=\"info\">"
        << ("- Max value: ")
        <<"</span>"
-       << ( (maxVal == -1 ||  maxVal==RAND_MAX ) ? infinity + " (=not connected nodes, in distance matrix)" : QString::number(maxVal) )
+       << ( (maxVal == -1 ||  maxVal==RAND_MAX ) ?
+                ( (printInfinity) ? infinity : QString::number(maxVal) ) +
+                " (=not connected nodes, in distance matrix)" : QString::number(maxVal) )
        << "<br />"
        << "<span class=\"info\">"
        << ("- Min value: ")
        <<"</span>"
-       << ( (minVal == -1 ||  minVal==RAND_MAX ) ? infinity + " (=not connected nodes, in distance matrix)" : QString::number(minVal ) )
+       << ( (minVal == -1 ||  minVal==RAND_MAX ) ?
+                ( (printInfinity) ? infinity : QString::number(minVal) ) +
+                + " (usually denotes unconnected nodes, in distance matrix)" : QString::number(minVal ) )
        << "</p>";
 
     return true;
