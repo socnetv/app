@@ -147,6 +147,13 @@ Graph::Graph() {
                        ".description {font-style: italic;color: #666;max-width: 107ch;}"
                        ".info {font-weight: bold;color: #333;}"
                        ".small {font-style: italic;color: #333; font-size: 90%;}"
+                       ".dendrogram .row { clear:both; height: 16px; margin: 2px 0px; overflow:hidden; }"
+                       ".dendrogram .row .col { float: left; height: 12px; min-width:60px; text-align:center;}"
+                       ".dendrogram .row .col.first { border-top:1px solid red; }"
+                       ".dendrogram .row .col.last { border-bottom:1px solid red; }"
+                       ".dendrogram .row .col.level { border-right:1px solid red; }"
+                       ".dendrogram .cluster-levels .col {float:left; min-width: 60px; text-align:right;}"
+
                        "</style>"
                        "<script type=\"text/javascript\">\n"
                        "var mytable, asc1=1, asc2=1,asc3=1,asc4=1;asc5=1;\n"
@@ -2589,11 +2596,11 @@ float Graph::graphDensity() {
         return m_graphDensity;
     }
 
-    int vert=vertices();
-    if (vert!=0 && vert!=1) {
+    int V=vertices();
+    if (V!=0 && V!=1) {
         m_graphDensity = (graphUndirected()) ?
-                    (float) 2* edgesEnabled() / (float)(vert*(vert-1.0)) :
-                    (float) edgesEnabled() / (float)(vert*(vert-1.0)) ;
+                    (float) 2* edgesEnabled() / (float)(V*(V-1.0)) :
+                    (float) edgesEnabled() / (float)(V*(V-1.0)) ;
     }
     else {
         m_graphDensity = 0;
@@ -4587,6 +4594,7 @@ void Graph::writeCentralityInformation(const QString fileName,
     outText.setRealNumberPrecision(m_precision);
 
     int rowCount=0;
+    int N = vertices();
 
     outText << htmlHead;
 
@@ -4603,7 +4611,7 @@ void Graph::writeCentralityInformation(const QString fileName,
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
-            << vertices()
+            << N
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -4800,6 +4808,7 @@ void Graph::writeCentralityEigenvector(const QString fileName,
     outText.setRealNumberPrecision(m_precision);
 
     int rowCount=0;
+    int N = vertices();
 
     outText << htmlHead;
 
@@ -4816,7 +4825,7 @@ void Graph::writeCentralityEigenvector(const QString fileName,
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
-            << vertices()
+            << N
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -5236,6 +5245,7 @@ void Graph::writeCentralityDegree ( const QString fileName,
 
 
     int rowCount=0;
+    int N = vertices();
 
     outText << htmlHead;
 
@@ -5254,7 +5264,7 @@ void Graph::writeCentralityDegree ( const QString fileName,
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
-            << vertices()
+            << N
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -5496,6 +5506,7 @@ void Graph::writeCentralityCloseness( const QString fileName,
     emit statusMessage ( tr("Writing Closeness indices to file:") + fileName );
 
     int rowCount=0;
+    int N = vertices();
 
     outText << htmlHead;
 
@@ -5514,7 +5525,7 @@ void Graph::writeCentralityCloseness( const QString fileName,
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
-            << vertices()
+            << N
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -5842,6 +5853,7 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
     emit statusMessage ( tr("Writing IR Closeness indices to file:") + fileName );
 
     int rowCount=0;
+    int N = vertices();
 
     outText << htmlHead;
 
@@ -5860,7 +5872,7 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
-            << vertices()
+            << N
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -6044,6 +6056,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     emit statusMessage ( tr("Writing Betweenness indices to file:") +  fileName );
 
     int rowCount=0;
+    int N = vertices();
 
     outText << htmlHead;
 
@@ -6062,7 +6075,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
-            << vertices()
+            << N
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -6290,6 +6303,7 @@ void Graph::writeCentralityStress( const QString fileName,
     emit statusMessage ( tr("Writing Stress indices to file:") + fileName );
 
     int rowCount=0;
+    int N = vertices();
 
     outText << htmlHead;
 
@@ -6308,7 +6322,7 @@ void Graph::writeCentralityStress( const QString fileName,
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
-            << vertices()
+            << N
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -6494,6 +6508,7 @@ void Graph::writeCentralityEccentricity(const QString fileName,
     emit statusMessage ( tr("Writing Eccentricity indices to file:") + fileName );
 
     int rowCount=0;
+    int N = vertices();
 
     outText << htmlHead;
 
@@ -6512,7 +6527,7 @@ void Graph::writeCentralityEccentricity(const QString fileName,
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
-            << vertices()
+            << N
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -6685,6 +6700,7 @@ void Graph::writeCentralityPower(const QString fileName,
     emit statusMessage ( tr("Writing Power indices to file:") + fileName );
 
     int rowCount=0;
+    int N = vertices();
 
     outText << htmlHead;
 
@@ -6703,7 +6719,7 @@ void Graph::writeCentralityPower(const QString fileName,
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
-            << vertices()
+            << N
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -7083,7 +7099,9 @@ void Graph::writePrestigeDegree (const QString fileName,
 
     prestigeDegree(considerWeights, dropIsolates);
 
-    float maxIndexDP=vertices()-1.0;
+    int N = vertices();
+
+    float maxIndexDP=N-1.0;
 
     int rowCount=0;
 
@@ -7104,7 +7122,7 @@ void Graph::writePrestigeDegree (const QString fileName,
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
-            << vertices()
+            << N
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -7447,6 +7465,7 @@ void Graph::writePrestigeProximity( const QString fileName,
     emit statusMessage ( tr("Writing Proximity Prestige indices to file:") + fileName );
 
     int rowCount=0;
+    int N = vertices();
 
     outText << htmlHead;
 
@@ -7465,7 +7484,7 @@ void Graph::writePrestigeProximity( const QString fileName,
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
-            << vertices()
+            << N
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -7859,7 +7878,7 @@ void Graph::writePrestigePageRank(const QString fileName,
     outText.setRealNumberPrecision(m_precision);
 
     int rowCount=0;
-
+    int N = vertices();
     outText << htmlHead;
 
     outText.setRealNumberPrecision(m_precision);
@@ -7877,7 +7896,7 @@ void Graph::writePrestigePageRank(const QString fileName,
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
-            << vertices()
+            << N
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -7901,7 +7920,7 @@ void Graph::writePrestigePageRank(const QString fileName,
             << "<span class=\"info\">"
             << tr("PRP range: ")
             <<"</span>"
-            << tr("(1-d)/N = ") << ( ( 1- d_factor ) / vertices() ) << tr(" &le; PRP  ")
+            << tr("(1-d)/N = ") << ( ( 1- d_factor ) / N ) << tr(" &le; PRP  ")
             << "</p>";
 
     outText << "<p>"
@@ -9532,7 +9551,7 @@ void Graph::writeMatrixWalks (const QString &fn,
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
-            << vertices()
+            << N
             << "</p>";
 
 
@@ -9713,6 +9732,7 @@ void Graph::writeClusteringCoefficient( const QString fileName,
     outText.setRealNumberPrecision(m_precision);
 
     int rowCount = 0;
+    int N = vertices();
 
     outText << htmlHead;
 
@@ -9729,7 +9749,7 @@ void Graph::writeClusteringCoefficient( const QString fileName,
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
-            << vertices()
+            << N
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -9909,7 +9929,7 @@ void Graph::writeTriadCensus( const QString fileName,
                          fileName );
 
     int rowCount = 0;
-
+    int N = vertices();
 
     outText << htmlHead;
 
@@ -9926,7 +9946,7 @@ void Graph::writeTriadCensus( const QString fileName,
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
-            << vertices()
+            << N
             << "</p>";
 
 
@@ -10064,7 +10084,7 @@ void Graph::writeCliqueCensus( const QString fileName,
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
-            << vertices()
+            << N
             << "</p>";
 
     outText << "<p class=\"description\">"
@@ -10510,6 +10530,8 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
                                         const QString &matrix,
                                         const QString &metric,
                                         const QString &method,
+                                        const bool &diagonal,
+                                        const bool &diagram,
                                         const bool &considerWeights,
                                         const bool &inverseWeights,
                                         const bool &dropIsolates) {
@@ -10528,6 +10550,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
             << "inverseWeights:"<<inverseWeights
             << "dropIsolates:" << dropIsolates;
 
+    int N = vertices();
 
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
@@ -10537,9 +10560,12 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
     }
 
     emit statusMessage ( tr("Computing hierarchical clustering. Please wait... "));
+
     graphClusteringHierarchical(graphMatrixStrToType(matrix),
                                 graphMetricStrToType(metric),
                                 graphClusteringMethodStrToType(method),
+                                diagonal,
+                                diagram,
                                 considerWeights,
                                 inverseWeights,
                                 dropIsolates);
@@ -10568,7 +10594,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
           << "<span class=\"info\">"
           << tr("Actors: ")
           <<"</span>"
-         << vertices()
+         << N
          << "</p>";
 
 
@@ -10595,15 +10621,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
            << method
            << "</p>";
 
-
-    outText << "<p>"
-            << "<span class=\"info\">"
-            << tr("Structural Equivalence Matrix: ")
-            <<"</span>"
-           << "</p>";
-
-    STR_EQUIV.printHTMLTable(outText,true,false);
-
+    outText << "<p>&nbsp;</p>";
 
     outText << "<p>"
             << "<span class=\"info\">"
@@ -10614,6 +10632,14 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
 
     outText << "<p>"
             << "<span class=\"info\">"
+            << tr("Structural Equivalence Matrix: ")
+            <<"</span>"
+           << "</p>";
+
+    STR_EQUIV.printHTMLTable(outText,true,false);
+
+    outText << "<p>"
+            << "<span class=\"info\">"
             << tr("Hierarchical Clustering of Equivalence Matrix: ")
             <<"</span>"
            << "</p>";
@@ -10621,17 +10647,147 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
 
     outText << "<pre>";
     outText <<"Level" << "\t"<< "Actors" <<endl;
-    QMap<float, V_int>::const_iterator i;
-    for ( i= m_clustersPerLevel.constBegin() ; i != m_clustersPerLevel.constEnd(); ++i) {
-         outText << i.key() << "\t" ;
+    QMap<float, V_int>::const_iterator it;
+    for ( it= m_clustersPerLevel.constBegin() ; it != m_clustersPerLevel.constEnd(); ++it) {
+         outText << it.key() << "\t" ;
 
-         foreach (int item, i.value() ) {
+         foreach (int item, it.value() ) {
              outText << item << " " ;
          }
          outText << endl;
 
      }
     outText << "</pre>";
+
+    if (diagram) {
+        outText << "<p>"
+                << "<span class=\"info\">"
+                << tr("Clustering Dendrogram")
+                <<"</span>"
+               << "</p>";
+
+        outText << "<div class=\"dendrogram\">";
+
+        QMap <int,QString> clusteredItems;
+        QMap <int, int> nextFirstItems;
+        int actorNumber;
+        int index;
+        int nextFirst ;
+        for ( it= m_clustersPerLevel.constBegin() ; it != m_clustersPerLevel.constEnd(); ++it) {
+            clusteredItems.insert( it.value().constFirst() ,"first");
+            clusteredItems.insert( it.value().constLast() ,"last");
+        }
+
+        it = m_clustersPerLevel.constEnd();
+        it--;
+
+        for ( int i=0; i < it.value().size() ; ++i ) {
+            actorNumber = it.value().at(i);
+
+            outText << "<div class=\"row row-" << i << "\">";
+
+            for (int j=0; j< m_clustersByOrder.size() + 1 ; ++j) {
+
+                if (j==0) {
+                    outText << "<div class=\"col col-" << j << "\">";
+                    outText <<  "<span class=\"header\">" << actorNumber << "</span>";
+                    outText << "</div>"; //end col
+                }
+                else {
+
+                    if ( m_clustersByOrder.value(j).contains(actorNumber) ){
+
+                        outText << "<div class=\"col col-" << j << " "
+                                << clusteredItems.value(actorNumber,"none")
+                                << " level \">";
+                        outText <<  "";
+                        outText << "</div>"; //end col
+
+                        if ( m_clustersByOrder.value(j).constFirst() == actorNumber ) {
+
+                            clusteredItems.remove(actorNumber);
+
+                            index = ceil ( m_clustersByOrder.value(j).size() / 2 ) ;
+
+                            if ( index == m_clustersByOrder.value(j).indexOf(actorNumber)) {
+
+                            }
+                            nextFirst = m_clustersByOrder.value(j).at(index);
+                            nextFirstItems.insert(nextFirst ,j);
+
+//                            for (int jnext=j+1; jnext< m_clustersByOrder.size() ; ++jnext) {
+//                                if ( m_clustersByOrder.value(jnext).contains(actorNumber) ){
+//                                    if ( m_clustersByOrder.value(jnext).constFirst() == actorNumber ) {
+//                                        index = m_clustersByOrder.value(jnext).size() / 2;
+//                                        nextFirst = m_clustersByOrder.value(jnext).at(index);
+//                                        nextFirstItems.insert(jnext,nextFirst);
+//                                    }
+//                                    else if ( m_clustersByOrder.value(jnext).constLast() == actorNumber ) {
+//                                        clusteredItems.insert(actorNumber,"last");
+//                                    }
+//                                }
+//                            }
+                        }
+                        else if ( m_clustersByOrder.value(j).constLast() == actorNumber ) {
+
+                            clusteredItems.remove(actorNumber);
+
+                            for (int jnext=j+1; jnext< m_clustersByOrder.size() ; ++jnext) {
+                                if ( m_clustersByOrder.value(jnext).contains(actorNumber) ){
+                                    if ( m_clustersByOrder.value(jnext).constFirst() == actorNumber ) {
+                                        clusteredItems.insert(actorNumber,"first");
+                                    }
+                                    else if ( m_clustersByOrder.value(jnext).constLast() == actorNumber ) {
+                                        clusteredItems.insert(actorNumber,"last");
+                                    }
+                                }
+                            }
+                        }
+
+                        if ( nextFirstItems.contains(actorNumber) ) {
+                            clusteredItems.insert(actorNumber,"first");
+                        }
+                        else {
+                            clusteredItems.insert(actorNumber,"inner");
+                        }
+
+
+
+
+                    }
+                    else {
+                        outText << "<div class=\"col col-" << j << " "<< clusteredItems.value(actorNumber,"none") <<"\">";
+                        outText <<  "";
+                        outText << "</div>"; //end col
+
+                    }
+
+                }
+
+            }                       // end for (columns inside row)
+            outText << "</div>";    // end row
+        }                           // end for rows
+
+        outText << "<div class=\"row cluster-levels\">";
+        outText <<     "<div class=\"col col-0\">";
+        outText <<     "&nbsp;";
+        outText <<     "</div>"; //end col-0
+        int j = 1;
+        for ( it= m_clustersPerLevel.constBegin() ; it != m_clustersPerLevel.constEnd(); ++it) {
+            outText << "<div style=\"float:left;\" class=\"col level-" << j << "\">";
+            outText << it.key() << "\t" ;
+            outText << "</div>"; //end level
+            j++;
+        }
+
+        outText << "</div>"; //end cluster-levels
+        outText << "</div>"; //end dendrogram
+
+    }
+
+    qDebug() <<"m_clustersPerLevel" << m_clustersPerLevel <<endl
+            << "m_clustersByOrder"<<m_clustersByOrder;
+
 
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
@@ -10670,6 +10826,8 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
 void Graph::graphClusteringHierarchical(const int &matrix,
                                         const int &metric,
                                         const int &method,
+                                        const bool &diagonal,
+                                        const bool &diagram,
                                         const bool &considerWeights,
                                         const bool &inverseWeights,
                                         const bool &dropIsolates) {
@@ -11066,6 +11224,7 @@ void Graph::writeMatrixDissimilarities(const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     Matrix DSM;
+    int N = vertices();
 
     emit statusMessage ( (tr("Recomputing adjacency matrix...")) );
 
@@ -11097,7 +11256,7 @@ void Graph::writeMatrixDissimilarities(const QString fileName,
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
-            << vertices()
+            << N
             << "</p>";
 
 
@@ -11235,6 +11394,8 @@ void Graph::writeMatrixSimilarityMatching(const QString fileName,
     emit statusMessage ( (tr("Examining pair-wise similarity of actors...")) );
 
     Matrix SCM;
+    int N = vertices();
+
     if (matrix == "Adjacency") {
         graphMatrixAdjacencyCreate();
         graphMatrixSimilarityMatchingCreate(AM, SCM, measureInt ,
@@ -11270,7 +11431,7 @@ void Graph::writeMatrixSimilarityMatching(const QString fileName,
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
-            << vertices()
+            << N
             << "</p>";
 
 
@@ -11422,6 +11583,8 @@ void Graph::writeMatrixSimilarityPearson(const QString fileName,
     emit statusMessage ( (tr("Calculating Pearson Correlations...")) );
 
     Matrix PCC;
+    int N = vertices();
+
     if (matrix == "Adjacency") {
         graphMatrixAdjacencyCreate();
         graphMatrixSimilarityPearsonCreate(AM, PCC, varLocation,diagonal);
@@ -11440,7 +11603,6 @@ void Graph::writeMatrixSimilarityPearson(const QString fileName,
 
     outText.setRealNumberPrecision(m_precision);
 
-
     outText << htmlHead;
 
     outText << "<h1>";
@@ -11456,7 +11618,7 @@ void Graph::writeMatrixSimilarityPearson(const QString fileName,
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
-            << vertices()
+            << N
             << "</p>";
 
 
@@ -16720,6 +16882,7 @@ void Graph::writeMatrix (const QString &fn,
     }
 
     bool inverseResult = false;
+    int N = vertices();
 
     switch (matrix) {
     case MATRIX_ADJACENCY:
@@ -16847,7 +17010,7 @@ void Graph::writeMatrix (const QString &fn,
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
-            << vertices()
+            << N
             << "</p>";
 
 
@@ -17084,6 +17247,7 @@ void Graph::writeMatrixAdjacency (const QString fn,
     int sum=0;
     float weight=0;
     int rowCount=0;
+    int N = vertices();
     //int colCount=0;
 
     QList<Vertex*>::const_iterator it, it1;
@@ -17103,7 +17267,7 @@ void Graph::writeMatrixAdjacency (const QString fn,
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
-            << vertices()
+            << N
             << "</p>";
 
 
@@ -17211,8 +17375,8 @@ void Graph::writeMatrixAdjacencyPlot (const QString fn,
     int sum=0;
     float weight=0;
 
-
     int rowCount=0;
+    int N = vertices();
 
     QList<Vertex*>::const_iterator it, it1;
     if (!simpler) {
@@ -17234,7 +17398,7 @@ void Graph::writeMatrixAdjacencyPlot (const QString fn,
             << "<span class=\"info\">"
             << tr("Actors: ")
             <<"</span>"
-            << vertices()
+            << N
             << "</p>";
 
 
@@ -17345,13 +17509,14 @@ void Graph::graphMatrixAdjacencyCreate(const bool dropIsolates,
     qDebug() << "Graph::graphMatrixAdjacencyCreate()";
     float m_weight=-1;
     int i=0, j=0;
+    int N = vertices();
     if (dropIsolates){
         qDebug() << "Graph::graphMatrixAdjacencyCreate() - Find and drop possible isolates";
-        int m = vertices()- verticesListIsolated().count();
+        int m = N- verticesListIsolated().count();
         AM.resize( m , m);
     }
     else
-        AM.resize(vertices(), vertices());
+        AM.resize(N, N);
     QList<Vertex*>::const_iterator it, it1;
     //qDebug() << "Graph::graphMatrixAdjacencyCreate() - creating new adjacency matrix ";
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){

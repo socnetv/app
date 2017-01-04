@@ -685,6 +685,8 @@ public:
                                      const QString &matrix = "Adjancency",
                                      const QString &metric = "Manhattan",
                                      const QString &method = "Complete",
+                                     const bool &diagonal = false,
+                                     const bool &diagram = false,
                                      const bool &considerWeights=true,
                                      const bool &inverseWeights=false,
                                      const bool &dropIsolates=false);
@@ -756,9 +758,11 @@ public:
     void graphClusteringHierarchical(const int &matrix,
                                      const int &metric,
                                      const int &method,
-                                     const bool &considerWeights,
-                                     const bool &inverseWeights,
-                                     const bool &dropIsolates);
+                                     const bool &diagonal=false,
+                                     const bool &diagram=false,
+                                     const bool &considerWeights=true,
+                                     const bool &inverseWeights=false,
+                                     const bool &dropIsolates=false);
     float clusteringCoefficientLocal(const long int &v1);
     float clusteringCoefficient (const bool updateProgress=false);
 

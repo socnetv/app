@@ -10498,7 +10498,8 @@ void MainWindow::slotAnalyzeClusteringHierarchicalDialog() {
 void MainWindow::slotAnalyzeClusteringHierarchical(const QString &matrix,
                                                    const QString &metric,
                                                    const QString &method,
-                                                    const bool &diagonal){
+                                                   const bool &diagonal,
+                                                   const bool &diagram){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10519,6 +10520,8 @@ void MainWindow::slotAnalyzeClusteringHierarchical(const QString &matrix,
                                             matrix,
                                             metric,
                                             method,
+                                            diagonal,
+                                            diagram,
                                             considerWeights,
                                             inverseWeights,
                                             dropIsolates);

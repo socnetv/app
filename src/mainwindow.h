@@ -334,7 +334,8 @@ public slots:
     void slotAnalyzeClusteringHierarchical(const QString &matrix,
                                            const QString &metric,
                                            const QString &method,
-                                           const bool &diagonal);
+                                           const bool &diagonal=false,
+                                           const bool &diagram=false);
     void slotAnalyzeCliqueCensus();
     void slotAnalyzeClusteringCoefficient();
     void slotAnalyzeTriadCensus();
