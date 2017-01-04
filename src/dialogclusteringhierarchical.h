@@ -44,7 +44,8 @@ signals:
     void userChoices(const QString &matrix,
                      const QString &similarityMeasure,
                      const QString &linkageCriterion,
-                     const bool &diagonal);
+                     const bool &diagonal,
+                     const bool &diagram);
 private slots:
     void on_buttonBox_accepted();
 

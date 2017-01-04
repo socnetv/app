@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>550</width>
-    <height>416</height>
+    <height>450</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -22,7 +22,7 @@
   <property name="minimumSize">
    <size>
     <width>550</width>
-    <height>410</height>
+    <height>450</height>
    </size>
   </property>
   <property name="maximumSize">
@@ -51,7 +51,7 @@
      <property name="minimumSize">
       <size>
        <width>400</width>
-       <height>150</height>
+       <height>210</height>
       </size>
      </property>
      <property name="text">
@@ -119,7 +119,7 @@
      </item>
     </layout>
    </item>
-   <item row="4" column="0" colspan="2">
+   <item row="5" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLabel" name="label_3">
@@ -146,7 +146,7 @@
      </item>
     </layout>
    </item>
-   <item row="5" column="0">
+   <item row="7" column="0">
     <widget class="QCheckBox" name="diagonalCheckBox">
      <property name="statusTip">
       <string>Enable to include matrix diagonal in calculations</string>
@@ -156,7 +156,17 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="1">
+   <item row="8" column="0" colspan="2">
+    <widget class="QCheckBox" name="diagramCheckBox">
+     <property name="statusTip">
+      <string>Enable to include matrix diagonal in calculations</string>
+     </property>
+     <property name="text">
+      <string>Print dendrogram (avoid in large nets)</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="1">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -169,7 +179,7 @@
      </property>
     </spacer>
    </item>
-   <item row="7" column="1">
+   <item row="11" column="1">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="font">
       <font>

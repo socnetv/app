@@ -54,16 +54,17 @@ DialogClusteringHierarchical::DialogClusteringHierarchical (QWidget *parent) :
                 << "Complete-linkage (maximum)"
                 << "Average-linkage (UPGMA)";
 
-
-    (ui.matrixSelect) -> insertItems( 1, matrixList );
+    ui.matrixSelect -> insertItems( 1, matrixList );
 
     ui.metricSelect ->insertItems(1, measureList);
 
-    (ui.linkageSelect) -> insertItems( 1, linkageList );
+    ui.linkageSelect -> insertItems( 1, linkageList );
 
-    (ui.linkageSelect)-> setCurrentIndex(2);
+    ui.linkageSelect -> setCurrentIndex(2);
 
-    (ui.diagonalCheckBox)->setChecked(false);
+    ui.diagonalCheckBox -> setChecked(false);
+
+    ui.diagramCheckBox ->setChecked(false);
 
     connect ( ui.matrixSelect, SIGNAL(highlighted(QString)),
               this, SLOT(matrixChanged(QString)) );
@@ -79,19 +80,24 @@ void DialogClusteringHierarchical::matrixChanged(const QString &matrix) {
 
 void DialogClusteringHierarchical::gatherData(){
     qDebug()<< "DialogClusteringHierarchical: gathering Data!...";
-    QString matrix = (ui.matrixSelect) ->currentText();
+
+    QString matrix = ui.matrixSelect ->currentText();
 
     QString metric= (( ui.metricSelect ->isEnabled() ) ?
                                     ui.metricSelect ->currentText()  :
                                     "-" );
 
-    QString linkage = (ui.linkageSelect) ->currentText();
-    bool diagonal = (ui.diagonalCheckBox)->isChecked();
+    QString linkage = ui.linkageSelect -> currentText();
+
+    bool diagonal = ui.diagonalCheckBox -> isChecked();
+
+    bool diagram = ui.diagramCheckBox -> isChecked();
+
     qDebug()<< "DialogClusteringHierarchical: user selected: "
             << matrix
             << metric
             << linkage;
-    emit userChoices( matrix, metric, linkage,diagonal );
+    emit userChoices( matrix, metric, linkage,diagonal, diagram );
 }
 
 
