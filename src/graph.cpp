@@ -148,6 +148,7 @@ Graph::Graph() {
                        ".info {font-weight: bold;color: #333;}"
                        ".small {font-style: italic;color: #333; font-size: 90%;}"
                        ".dendrogram .row { clear:both; height: 16px; margin: 2px 0px; overflow:hidden; }"
+                       ".row .col .header {display:block;} "
                        ".dendrogram .row .col { float: left; height: 12px; min-width:60px; text-align:center;}"
                        ".dendrogram .row .col.first { border-top:1px solid red; }"
                        ".dendrogram .row .col.last { border-bottom:1px solid red; }"
@@ -10687,15 +10688,23 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
             outText << "<div class=\"row row-" << i << "\">";
 
             for (int j=0; j< m_clustersByOrder.size() + 1 ; ++j) {
+                qDebug() << "actorNumber " << actorNumber
+                         << "j" << j;
 
                 if (j==0) {
+                    qDebug() << "j = 0 writing header col" ;
                     outText << "<div class=\"col col-" << j << "\">";
                     outText <<  "<span class=\"header\">" << actorNumber << "</span>";
                     outText << "</div>"; //end col
                 }
                 else {
+                    qDebug() << "j > 0 writing col - m_clustersByOrder.value(j) " << m_clustersByOrder.value(j) ;
 
                     if ( m_clustersByOrder.value(j).contains(actorNumber) ){
+
+                        qDebug() << "m_clustersByOrder.value(j) contains actorNumber"
+                                 << actorNumber ;
+                        qDebug() << "writing level col";
 
                         outText << "<div class=\"col col-" << j << " "
                                 << clusteredItems.value(actorNumber,"none")
@@ -10751,11 +10760,10 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
                             clusteredItems.insert(actorNumber,"inner");
                         }
 
-
-
-
                     }
                     else {
+                        qDebug() << "m_clustersByOrder.value(j) DOES NOT contain actorNumber" << actorNumber;
+                        qDebug() << "writing non level col";
                         outText << "<div class=\"col col-" << j << " "<< clusteredItems.value(actorNumber,"none") <<"\">";
                         outText <<  "";
                         outText << "</div>"; //end col
