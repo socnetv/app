@@ -110,6 +110,7 @@ typedef QHash < int, rel_w_bool > H_edges;
 typedef QHash<QString, bool> H_StrToBool;
 typedef QList<int> L_int;
 typedef QVector<int> V_int;
+typedef QVector<QString> V_str;
 
 
 
@@ -908,6 +909,7 @@ private:
     QMap <int, L_int > m_cliques;
     QMap <float, V_int> m_clustersPerLevel;
     QMap <int, V_int> m_clustersByOrder;
+    QMap<int, V_str> m_clusteredItemType;
 
     Matrix  TM, DM, sumM, invAM, AM, invM;
     Matrix XM, XSM, XRM, CLQM;

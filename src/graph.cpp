@@ -10678,6 +10678,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
             clusteredItems.insert( it.value().constFirst() ,"first");
             clusteredItems.insert( it.value().constLast() ,"last");
         }
+        qDebug() << "clusteredItems " << clusteredItems;
 
         it = m_clustersPerLevel.constEnd();
         it--;
@@ -10688,7 +10689,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
             outText << "<div class=\"row row-" << i << "\">";
 
             for (int j=0; j< m_clustersByOrder.size() + 1 ; ++j) {
-                qDebug() << "actorNumber " << actorNumber
+                qDebug() << "actorNumber" << actorNumber
                          << "j" << j;
 
                 if (j==0) {
@@ -10846,14 +10847,33 @@ void Graph::graphClusteringHierarchical(const int &matrix,
              << "method"
              << graphClusteringMethodTypeToString(method);
 
+    QString varLocation = "Rows";
+//    bool diagonal = false;
+
     float min=RAND_MAX;
     float max=0;
     int imin, jmin, imax, jmax, mergedClusterIndex, deletedClusterIndex ;
     float distanceNewCluster;
 
     QList <int> clusteringLevel;
-    QVector<int> clusteredItems;  //temp vector stores cluster members at each clustering level
-    QMap <int, V_int> m_clusters;
+
+    //temp vector stores cluster members at each clustering level
+    QVector<int> clusteredItems;
+    QVector<int>::const_iterator vt;
+
+    // maps original and clustered items per their DSM matrix index
+    // so that we know that at Level X the matrix index 0 corresponds to the cluster i.e. { 1,2,4}
+    QMap <int, V_int> m_clustersIndex;
+    QMap<int,V_int>::iterator it;
+    QMap<int,V_int>::iterator prev;
+
+    // variables for diagram computation
+    QVector<QString> types;
+    QString curLevelType, nextLevelType;
+    QMap<int, V_str>::const_iterator tit;
+    int nextFirstIndex;
+    int actorNumber;
+
 
     Matrix DSM;  //will be destroyed.
 
@@ -10870,8 +10890,7 @@ void Graph::graphClusteringHierarchical(const int &matrix,
         break;
     }
 
-    QString varLocation = "Rows";
-    bool diagonal = false;
+
 
     switch (metric) {
     case METRIC_NONE:
@@ -10912,10 +10931,15 @@ void Graph::graphClusteringHierarchical(const int &matrix,
    // DSM.printMatrixConsole();
 
     clusteredItems.reserve(N);
+    if (diagram) {
+        types.reserve(N);
+    }
 
-    m_clusters.clear();
+
+    m_clustersIndex.clear();
     m_clustersPerLevel.clear();
     m_clustersByOrder.clear();
+    m_clusteredItemType.clear();
 
     //
     //Step 1: Assign each of the N items to its own cluster.
@@ -10927,7 +10951,10 @@ void Graph::graphClusteringHierarchical(const int &matrix,
     for (int i = 0 ; i< N ; i ++ ) {
         clusteredItems.clear();
         clusteredItems << i+1;
-        m_clusters[i] = clusteredItems;
+        m_clustersIndex[i] = clusteredItems;
+        if (diagram) {
+            types<< "none";
+        }
     }
 
     while (clustersLeft > 1) {
@@ -10942,12 +10969,57 @@ void Graph::graphClusteringHierarchical(const int &matrix,
         clusteringLevel << min;
 
         clusteredItems.clear();
-        clusteredItems = m_clusters[mergedClusterIndex] + m_clusters[deletedClusterIndex] ;
-
+        clusteredItems = m_clustersIndex[mergedClusterIndex] + m_clustersIndex[deletedClusterIndex] ;
+        qDebug() << "level"<< min << "seq" << seq+1<<"clusteredItems in level" <<clusteredItems;
         m_clustersPerLevel.insert( min, clusteredItems);
         m_clustersByOrder.insert( seq+1, clusteredItems);
+        if (diagram) {
+            qDebug () << "type previous" << types;
+            for ( vt= clusteredItems.constBegin() ; vt != clusteredItems.constEnd(); ++vt) {
+                actorNumber = *vt;
+                qDebug () << " vt " << *vt << ( (vt==clusteredItems.constBegin()) ?
+                                                    "first":
+                                                    ((vt==clusteredItems.constEnd() - 1) ? "last" : "inner") );
+                curLevelType = ( (vt==clusteredItems.constBegin()) ?
+                                     "first":
+                                     ((vt==clusteredItems.constEnd() - 1) ? "last" : "none") );
 
-        m_clusters[mergedClusterIndex] = clusteredItems ;
+                types [ (*vt) - 1 ] =  curLevelType;
+
+                m_clusteredItemType[seq+1] = types;
+
+                //updates types in previous levels.
+                if (curLevelType == "first") {
+                    for ( tit= m_clusteredItemType.constBegin() ; tit != m_clusteredItemType.constEnd()-1; ++tit) {
+                        qDebug() << "tit" << tit.key() << ":"  << tit.value();
+
+                    }
+                    for (int i = 1 ; i < m_clusteredItemType.size(); ++i) {
+                        qDebug () << "m_clusteredItemType i prev:"<< i << m_clusteredItemType[i];
+                        qDebug () << m_clusteredItemType[i][(*vt) - 1];
+                        m_clusteredItemType[i][(*vt) - 1] = curLevelType;
+                        qDebug () << "m_clusteredItemType i now :"<< i << m_clusteredItemType[i];
+                    }
+                }
+                else if (curLevelType == "last") {
+
+                }
+                // compute next level
+
+                nextFirstIndex = ceil ( clusteredItems.size() / 2 ) ;
+
+//                if ( clusteredItems [nextFirstIndex]  == actorNumber ) {
+
+//                }
+                //nextFirst = clusteredItems.at(nextFirstIndex);
+
+
+            }
+            qDebug () << "type next" << types;
+
+        }
+
+        m_clustersIndex[mergedClusterIndex] = clusteredItems ;
 
         qDebug() << "Graph::graphClusteringHierarchical() -" << endl
                  << "  Clustering seq:"
@@ -10962,21 +11034,21 @@ void Graph::graphClusteringHierarchical(const int &matrix,
                  << "  m_clustersPerLevel" << m_clustersPerLevel ;
 
         qDebug() << "Graph::graphClusteringHierarchical() -" << endl
-                 << "  Shift m_clusters values to left: "
-                 << m_clusters;
-        QMap<int,V_int>::iterator it = m_clusters.find(deletedClusterIndex);
-        while (it != m_clusters.end()) {
-            QMap<int,V_int>::iterator prev = it;
+                 << "  Shift m_clustersIndex values to left: "
+                 << m_clustersIndex;
+        it = m_clustersIndex.find(deletedClusterIndex);
+        while (it != m_clustersIndex.end()) {
+            prev = it;
             ++it;
-            if ( it != m_clusters.end() ) {
+            if ( it != m_clustersIndex.end() ) {
                 prev.value() = it.value() ;
                 qDebug() << "  key now"<< prev.key() << ": " << prev.value() ;
             }
         }
-        m_clusters.erase(--it); //erase the last element in map
+        m_clustersIndex.erase(--it); //erase the last element in map
 
         qDebug() << "Graph::graphClusteringHierarchical() -" << endl
-                 << "  m_clusters now" <<m_clusters << endl
+                 << "  m_clustersIndex now" <<m_clustersIndex << endl
                  << "  Compute distances "
             "between the new cluster and the old ones";
 
@@ -11086,7 +11158,7 @@ void Graph::graphClusteringHierarchical(const int &matrix,
     }
 
     clusteredItems.clear();
-    m_clusters.clear();
+    m_clustersIndex.clear();
 
 }
 
