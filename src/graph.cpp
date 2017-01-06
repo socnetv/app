@@ -152,8 +152,10 @@ Graph::Graph() {
                        ".dendrogram .row .col { float: left; height: 12px; min-width:60px; text-align:center;}"
                        ".dendrogram .row .col.first { border-top:1px solid red; }"
                        ".dendrogram .row .col.first.down,"
-                       ".dendrogram .row .col.last { border-bottom:1px solid red; }"
+                       ".dendrogram .row .col.last { border-bottom:1px solid red; border-top: 0 none;}"
                        ".dendrogram .row .col.level { border-right:1px solid red; }"
+                       ".dendrogram .row .col.clustered.level, "
+                       ".dendrogram .row .col.first.down.level { border-right:0 none;}"
                        ".dendrogram .cluster-levels .col {float:left; min-width: 60px; text-align:right;}"
 
                        "</style>"
@@ -10978,36 +10980,47 @@ void Graph::graphClusteringHierarchical(const int &matrix,
             // and update their types in previous levels.
             for ( vt= clusteredItems.constBegin() ; vt != clusteredItems.constEnd(); ++vt) {
                 actorNumber = *vt;
-                qDebug () << " vt " << *vt << ( (vt==clusteredItems.constBegin()) ?
-                                                    "first":
-                                                    ((vt==clusteredItems.constEnd() - 1) ? "last" : "inner") );
                 newLevelActorType = ( (vt==clusteredItems.constBegin()) ?
                                      "first":
                                      ((vt==clusteredItems.constEnd() - 1) ? "last" : "inner") );
+                qDebug () << " vt" << *vt << newLevelActorType ;
 
-                // update the actor's current level type: first, last or inner
-                types [ (*vt) - 1 ] =  newLevelActorType;
+                if ( types [ (*vt) - 1 ] != "clustered" &&
+                     types [ (*vt) - 1 ] != "first down"){
+                    // update the actor's current level type: first, last or inner
+                    types [ (*vt) - 1 ] =  newLevelActorType;
+                }
+                else {
+                    qDebug () << " vt" << *vt << "is type clustered - not changing";
+                }
+
                 // store this level's actor types.
                 m_clusteredActorType[seq+1] = types;
+
                 qDebug () << "types in current level" << types;
 
                 //update actor types in all previous levels.
-                if (newLevelActorType == "first" || newLevelActorType == "last") {
+                qDebug() << "update actor"<< (*vt)<< "types in all previous levels.";
+                if ( types [ (*vt) - 1 ] == "first" ||
+                     types [ (*vt) - 1 ] == "first down" ||
+                     types [ (*vt) - 1 ] == "last") {
 //                    for ( tit= m_clusteredActorType.constBegin() ; tit != m_clusteredActorType.constEnd()-1; ++tit) {
 //                        qDebug() << "tit" << tit.key() << ":"  << tit.value();
 
 //                    }
                     for (int i = 1 ; i < m_clusteredActorType.size(); ++i) {
-                        qDebug () << "m_clusteredActorType i prev:"<< i << m_clusteredActorType[i];
-                        qDebug () << m_clusteredActorType[i][(*vt) - 1];
+                        qDebug () << "m_clusteredActorType i level:"<< i << "was"<< m_clusteredActorType[i];
                         if (m_clusteredActorType[i][(*vt) - 1] == "none") {
+                            qDebug () << "changing type: none to:"<< newLevelActorType;
                             m_clusteredActorType[i][(*vt) - 1] = newLevelActorType;
                         }
-                        qDebug () << "m_clusteredActorType i now :"<< i << m_clusteredActorType[i];
+                        else {
+                            qDebug () << "not changing type:"<< m_clusteredActorType[i][(*vt) - 1];
+                        }
                     }
 
-
-                    // compute the middle actor of the new cluster
+                    qDebug() << "compute middle actor of the new cluster - will be 'first' in next level";
+                    // compute middle actor of the new cluster
                     // this will be 'first' in next level
                     // from which a straight line will be drawn
                     if ( ( clusteredItems.size() % 2) == 0) {
@@ -11017,6 +11030,7 @@ void Graph::graphClusteringHierarchical(const int &matrix,
                         qDebug () <<"clusteredItems.size()" << ( clusteredItems.size())
                                     << "even - nextFirstIndex" << nextFirstIndex
                                        << "clusteredItems.at(nextFirstIndex)" << clusteredItems.at(nextFirstIndex)  ;
+
                         typesNext[ clusteredItems.at(nextFirstIndex) -1 ] =  "first down";
                     }
                     else {
