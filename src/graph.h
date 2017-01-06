@@ -909,7 +909,7 @@ private:
     QMap <int, L_int > m_cliques;
     QMap <float, V_int> m_clustersPerLevel;
     QMap <int, V_int> m_clustersByOrder;
-    QMap<int, V_str> m_clusteredItemType;
+    QMap<int, V_str> m_clusteredActorType;
 
     Matrix  TM, DM, sumM, invAM, AM, invM;
     Matrix XM, XSM, XRM, CLQM;
