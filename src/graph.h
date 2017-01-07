@@ -687,7 +687,7 @@ public:
                                      const QString &metric = "Manhattan",
                                      const QString &method = "Complete",
                                      const bool &diagonal = false,
-                                     const bool &diagram = false,
+                                     const bool &dendrogram = false,
                                      const bool &considerWeights=true,
                                      const bool &inverseWeights=false,
                                      const bool &dropIsolates=false);

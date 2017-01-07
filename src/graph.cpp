@@ -10535,7 +10535,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
                                         const QString &metric,
                                         const QString &method,
                                         const bool &diagonal,
-                                        const bool &diagram,
+                                        const bool &dendrogram,
                                         const bool &considerWeights,
                                         const bool &inverseWeights,
                                         const bool &dropIsolates) {
@@ -10569,7 +10569,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
                                 graphMetricStrToType(metric),
                                 graphClusteringMethodStrToType(method),
                                 diagonal,
-                                diagram,
+                                dendrogram,
                                 considerWeights,
                                 inverseWeights,
                                 dropIsolates);
@@ -10663,7 +10663,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
      }
     outText << "</pre>";
 
-    if (diagram) {
+    if (dendrogram) {
         outText << "<p>"
                 << "<span class=\"info\">"
                 << tr("Clustering Dendrogram")
@@ -10672,16 +10672,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
 
         outText << "<div class=\"dendrogram\">";
 
-        QMap <int,QString> clusteredItems;
-        QMap <int, int> nextFirstItems;
         int actorNumber;
-        int index;
-        int nextFirst ;
-        for ( it= m_clustersPerLevel.constBegin() ; it != m_clustersPerLevel.constEnd(); ++it) {
-            clusteredItems.insert( it.value().constFirst() ,"first");
-            clusteredItems.insert( it.value().constLast() ,"last");
-        }
-        qDebug() << "clusteredItems " << clusteredItems;
 
         it = m_clustersPerLevel.constEnd();
         it--;
@@ -10699,7 +10690,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
                     qDebug() << "j = 0 writing header col" ;
                     outText << "<div class=\"col col-" << j << "\">";
                     outText <<  "<span class=\"header\">" << actorNumber << "</span>";
-                    outText << "</div>"; //end col
+                    outText << "</div>";            //end col
                 }
                 else {
                     qDebug() << "j > 0 writing col - m_clustersByOrder.value(j) " << m_clustersByOrder.value(j) ;
@@ -10715,43 +10706,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
                                 << m_clusteredActorType[j][actorNumber - 1]
                                 << " level \">";
                         outText <<  "";
-                        outText << "</div>"; //end col
-
-//                        if ( m_clustersByOrder.value(j).constFirst() == actorNumber ) {
-
-//                            clusteredItems.remove(actorNumber);
-
-//                            index = ceil ( m_clustersByOrder.value(j).size() / 2 ) ;
-
-//                            if ( index == m_clustersByOrder.value(j).indexOf(actorNumber)) {
-
-//                            }
-//                            nextFirst = m_clustersByOrder.value(j).at(index);
-//                            nextFirstItems.insert(nextFirst ,j);
-
-//                        }
-//                        else if ( m_clustersByOrder.value(j).constLast() == actorNumber ) {
-
-//                            clusteredItems.remove(actorNumber);
-
-//                            for (int jnext=j+1; jnext< m_clustersByOrder.size() ; ++jnext) {
-//                                if ( m_clustersByOrder.value(jnext).contains(actorNumber) ){
-//                                    if ( m_clustersByOrder.value(jnext).constFirst() == actorNumber ) {
-//                                        clusteredItems.insert(actorNumber,"first");
-//                                    }
-//                                    else if ( m_clustersByOrder.value(jnext).constLast() == actorNumber ) {
-//                                        clusteredItems.insert(actorNumber,"last");
-//                                    }
-//                                }
-//                            }
-//                        }
-
-//                        if ( nextFirstItems.contains(actorNumber) ) {
-//                            clusteredItems.insert(actorNumber,"first");
-//                        }
-//                        else {
-//                            clusteredItems.insert(actorNumber,"inner");
-//                        }
+                        outText << "</div>";        //end col
 
                     }
                     else {
@@ -10761,7 +10716,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
                         outText << "<div class=\"col col-" << j << " "<< m_clusteredActorType[j][actorNumber - 1] <<"\">";
 
                         outText <<  "";
-                        outText << "</div>"; //end col
+                        outText << "</div>";        //end col
 
                     }
 
@@ -10783,10 +10738,10 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
             j++;
         }
 
-        outText << "</div>"; //end cluster-levels
-        outText << "</div>"; //end dendrogram
+        outText << "</div>";        //end cluster-levels
+        outText << "</div>";        //end dendrogram
 
-    }
+    }       // end if dendrogram
 
     qDebug() <<"m_clustersPerLevel" << m_clustersPerLevel <<endl
             << "m_clustersByOrder"<<m_clustersByOrder;
@@ -10865,9 +10820,10 @@ void Graph::graphClusteringHierarchical(const int &matrix,
     // variables for diagram computation
     QVector<QString> types;
     QVector<QString> typesNext;
-    QString newLevelActorType;
+    QString newLevelActorType, curActorType;
 //    QMap<int, V_str>::const_iterator tit;
     int nextFirstIndex;
+    int curFirstIndex;
     int actorNumber;
 
 
@@ -10984,14 +10940,52 @@ void Graph::graphClusteringHierarchical(const int &matrix,
                                      "first":
                                      ((vt==clusteredItems.constEnd() - 1) ? "last" : "inner") );
                 qDebug () << " vt" << *vt << newLevelActorType ;
+                curActorType = types [ (*vt) - 1 ] ;
 
-                if ( types [ (*vt) - 1 ] != "clustered" &&
-                     types [ (*vt) - 1 ] != "first down"){
+                if ( curActorType  != "clustered" &&
+                     curActorType  != "first down"){
                     // update the actor's current level type: first, last or inner
+                    qDebug () << " vt" << *vt << "type"
+                              << curActorType << "changing to" <<newLevelActorType;
+                    types [ (*vt) - 1 ] =  newLevelActorType;
+
+                }
+                else if (curActorType == "clustered" && newLevelActorType=="inner" ){
+
+                    //prpei na ginei mono an to index toy
+                    // itan megalytero toy first i fist down
+                    for (int i = 0; i < types.size(); ++i) {
+                        if (types.at(i) == "first" || types.at(i) == "first down") {
+                            if ( (curFirstIndex =clusteredItems.indexOf(i+1)) != -1 ) {
+                                if (clusteredItems.indexOf(actorNumber) > curFirstIndex){
+                                    qDebug () << " vt" << *vt << "type"
+                                              << curActorType << "changing to" <<newLevelActorType;
+                                    types [ (*vt) - 1 ] =  newLevelActorType;
+                                }
+                            }
+                        }
+
+                    }
+                }
+                else if (curActorType == "first down" && newLevelActorType=="last") {
+                    qDebug () << " vt" << *vt << "type"
+                              << curActorType << "changing to" <<newLevelActorType;
                     types [ (*vt) - 1 ] =  newLevelActorType;
                 }
+                else if (curActorType == "first down" &&
+                         newLevelActorType=="inner" &&
+                         ( clusteredItems.indexOf(actorNumber) + 1) > clusteredItems.size()/2) {
+                    qDebug () << " vt" << *vt << "type"
+                              << curActorType << "changing to" <<newLevelActorType
+                              <<"because clusteredItems.indexOf"
+                             << (clusteredItems.indexOf(actorNumber) + 1) <<" > clusteredItems.size/2" <<
+                                                                           clusteredItems.size()/2;
+
+                         types [ (*vt) - 1 ] =  "last"; //"first down inner";
+                }
                 else {
-                    qDebug () << " vt" << *vt << "is type clustered - not changing";
+                    qDebug () << " vt" << *vt << "is type"
+                              << curActorType << "- not changing";
                 }
 
                 // store this level's actor types.
@@ -11009,13 +11003,13 @@ void Graph::graphClusteringHierarchical(const int &matrix,
 
 //                    }
                     for (int i = 1 ; i < m_clusteredActorType.size(); ++i) {
-                        qDebug () << "m_clusteredActorType i level:"<< i << "was"<< m_clusteredActorType[i];
+                        qDebug () << "level:"<< i << ":"<< m_clusteredActorType[i];
                         if (m_clusteredActorType[i][(*vt) - 1] == "none") {
-                            qDebug () << "changing type: none to:"<< newLevelActorType;
+                            qDebug () << "changing actor"<< (*vt) - 1 << "type: none to:"<< newLevelActorType;
                             m_clusteredActorType[i][(*vt) - 1] = newLevelActorType;
                         }
                         else {
-                            qDebug () << "not changing type:"<< m_clusteredActorType[i][(*vt) - 1];
+                            qDebug () << "not changing actor"<< (*vt) - 1 << "type:"<< m_clusteredActorType[i][(*vt) - 1];
                         }
                     }
 
@@ -11034,15 +11028,15 @@ void Graph::graphClusteringHierarchical(const int &matrix,
                         typesNext[ clusteredItems.at(nextFirstIndex) -1 ] =  "first down";
                     }
                     else {
-                        // turn first and last actors to type: none in next level.
+                        // turn first and last actors to type: clustered in next level.
                         typesNext [ (*vt) - 1 ] =  "clustered";
-                        nextFirstIndex = ceil ( clusteredItems.size() / 2 )  - 1 ;
+                        nextFirstIndex = ceil ( clusteredItems.size() / 2 )   ;
                         qDebug () <<"clusteredItems.size()" << ( clusteredItems.size())
                                  << "odd - nextFirstIndex" << nextFirstIndex
                                   << "clusteredItems.at(nextFirstIndex)" << clusteredItems.at(nextFirstIndex)  ;
 
 
-                        typesNext [ clusteredItems.at(nextFirstIndex) -1 ] =  "first ";
+                        typesNext [ clusteredItems.at(nextFirstIndex) -1 ] =  "first down";
                     }
 
                 }
