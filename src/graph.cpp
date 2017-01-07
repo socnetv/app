@@ -10845,6 +10845,7 @@ void Graph::graphClusteringHierarchical(const int &matrix,
         break;
     }
 
+    // TODO: needs fix when distances matrix with -1 (infinity) elements is used.
 
     // compute, if needed, the dissimilarities matrix
     switch (metric) {
