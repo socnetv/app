@@ -6427,15 +6427,18 @@ void MainWindow::slotNetworkViewSociomatrix(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    int aNodes=activeNodes();
-    statusBar() ->  showMessage ( QString (tr ("creating adjacency adjacency matrix of %1 nodes")).arg(aNodes) );
-    qDebug ("MW: calling Graph::writeMatrixAdjacency with %i nodes", aNodes);
-    QString fn = appSettings["dataDir"] + "socnetv-report-adjacency-matrix.html";
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-"+dateTime+".html";
+
+    statusMessage ( tr ("Creating and writing adjacency matrix") );
 
     createProgressBar(0,progressMsg);
+
     activeGraph.writeMatrixAdjacency(fn) ;
     //AVOID THIS, no preserving of node numbers when nodes are deleted.
     // activeGraph.writeMatrix(fn,MATRIX_ADJACENCY) ;
+
     destroyProgressBar();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
@@ -6465,7 +6468,9 @@ void MainWindow::slotNetworkViewSociomatrixPlotText(){
 
     qDebug ("MW: calling Graph::writeMatrixAdjacency with %i nodes", N);
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-adjacency-matrix-plot.html";
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-plot-"+dateTime+".html";
+
     bool simpler = false;
     if ( N > 999 ) {
         float MB = (N * N * 10)/(1024*1024);
@@ -6491,7 +6496,7 @@ void MainWindow::slotNetworkViewSociomatrixPlotText(){
     createProgressBar(0,progressMsg);
 
     activeGraph.writeMatrixAdjacencyPlot(fn, simpler);
-    statusMessage(tr("Plot file created. Please wait to open it..."));
+
     destroyProgressBar();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
@@ -9694,13 +9699,11 @@ void MainWindow::slotAnalyzeMatrixAdjacencyInverse(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    int aNodes=activeNodes();
 
-    statusMessage(tr ("inverting adjacency adjacency matrix of %1 nodes").arg(aNodes));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-inverse-"+dateTime+".html";
 
-    qDebug ("MW: calling Graph::writeMatrixAdjacencyInvert with %i nodes", aNodes);
-
-    QString fn = appSettings["dataDir"] + "socnetv-report-adjacency-matrix-inverse.html";
+    statusMessage(tr ("Inverting adjacency matrix.") );
 
     //activeGraph.writeMatrixAdjacencyInvert(fn, QString("lu")) ;
     activeGraph.writeMatrix(fn,MATRIX_ADJACENCY_INVERSE) ;
@@ -9730,13 +9733,11 @@ void MainWindow::slotAnalyzeMatrixAdjacencyTranspose(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    int aNodes=activeNodes();
 
-    statusMessage( tr ("Transposing adjacency matrix of %1 nodes").arg(aNodes) );
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-transpose-"+dateTime+".html";
 
-    qDebug ("MW: calling Graph::writeMatrixAdjacencyTranspose with %i nodes", aNodes);
-
-    QString fn = appSettings["dataDir"] + "socnetv-report-adjacency-matrix-transpose.html";
+    statusMessage( tr ("Transposing adjacency matrix.") );
 
     activeGraph.writeMatrix(fn,MATRIX_ADJACENCY_TRANSPOSE) ;
 
@@ -9763,13 +9764,11 @@ void MainWindow::slotAnalyzeMatrixAdjacencyCocitation(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    int aNodes=activeNodes();
 
-    statusMessage( tr ("Computing Cocitation matrix of %1 nodes").arg(aNodes) );
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-cocitation-"+dateTime+".html";
 
-    qDebug ("MW: calling Graph::writeMatrixAdjacencyCocitation with %i nodes", aNodes);
-
-    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-cocitation.html";
+    statusMessage( tr ("Computing Cocitation matrix.") );
 
     activeGraph.writeMatrix(fn,MATRIX_COCITATION) ;
 
@@ -9796,13 +9795,11 @@ void MainWindow::slotAnalyzeMatrixDegree(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    int aNodes=activeNodes();
 
-    statusMessage(tr ("Computing Degree matrix of %1 nodes").arg(aNodes) );
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-degree-"+dateTime+".html";
 
-    qDebug ("MW: calling Graph::writeMatrixDegreeText with %i nodes", aNodes);
-
-    QString fn = appSettings["dataDir"] + "socnetv-report-degree-matrix.html";
+    statusMessage(tr ("Computing Degree matrix.") );
 
     //activeGraph.writeMatrixDegreeText(fn) ;
     activeGraph.writeMatrix(fn, MATRIX_DEGREE) ;
@@ -9830,13 +9827,13 @@ void MainWindow::slotAnalyzeMatrixLaplacian(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    int aNodes=activeNodes();
 
-    statusMessage(tr ("Computing Laplacian matrix of %1 nodes").arg(aNodes) );
+    qDebug() << "MW:slotAnalyzeMatrixLaplacian() - calling Graph::writeMatrix";
 
-    qDebug ("MW: calling Graph::writeMatrixLaplacianPlainText with %i nodes", aNodes);
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-laplacian-"+dateTime+".html";
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-laplacian-matrix.html";
+    statusMessage(tr ("Computing Laplacian matrix") );
 
     activeGraph.writeMatrix(fn, MATRIX_LAPLACIAN) ;
 
@@ -9998,18 +9995,19 @@ void MainWindow::slotAnalyzeDistance(){
 */
 void MainWindow::slotAnalyzeMatrixDistances(){
     qDebug() << "MW::slotAnalyzeMatrixDistances()";
-    if ( !activeNodes()    )  {
+    if ( !activeNodes()  )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    statusMessage( tr("Computing distances matrix. Please wait...") );
-    QString fn = appSettings["dataDir"] + "socnetv-report-distance-matrix.html";
 
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-geodesic-distances-"+dateTime+".html";
 
     askAboutWeights();
 
-    statusMessage(  tr("Computing Distances Matrix. Please wait...") );
-    progressMsg = tr("Computing Distances Matrix. \n"
+    statusMessage( tr("Computing geodesic distances. Please wait...") );
+
+    progressMsg = tr("Computing geodesic distances. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
@@ -10017,7 +10015,6 @@ void MainWindow::slotAnalyzeMatrixDistances(){
     activeGraph.writeMatrix(fn,MATRIX_DISTANCES,
                                     considerWeights, inverseWeights,
                                     editFilterNodesIsolatesAct->isChecked());
-
 
     destroyProgressBar();
 
@@ -10030,7 +10027,7 @@ void MainWindow::slotAnalyzeMatrixDistances(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Distances matrix saved as: ")+fn);
+    statusMessage(tr("Geodesic Distances matrix saved as: ")+fn);
 }
 
 
@@ -10047,13 +10044,14 @@ void MainWindow::slotAnalyzeMatrixGeodesics(){
         return;
     }
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-sigmas-matrix.html";
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-geodesics-"+dateTime+".html";
 
     askAboutWeights();
 
-    statusMessage(  tr("Computing Geodesics Matrix. Please wait...") );
+    statusMessage(  tr("Computing geodesics (number of shortest paths). Please wait...") );
 
-    progressMsg = tr("Computing Geodesics Matrix. \n"
+    progressMsg = tr("Computing geodesics. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
@@ -10138,14 +10136,15 @@ void MainWindow::slotAnalyzeDistanceAverage() {
 
     askAboutWeights();
 
-    statusMessage(  QString(tr("Computing Average Graph Distance. Please wait...")) );
+    statusMessage(  tr("Computing Average Graph Distance. Please wait...") );
     progressMsg = tr("Computing Average Graph Distance. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
 
     float averGraphDistance=activeGraph.graphDistanceGeodesicAverage(
-                considerWeights, inverseWeights,  editFilterNodesIsolatesAct->isChecked() );
+                considerWeights, inverseWeights,
+                editFilterNodesIsolatesAct->isChecked() );
 
     destroyProgressBar();
 
@@ -10153,7 +10152,8 @@ void MainWindow::slotAnalyzeDistanceAverage() {
                              "Average Graph Distance",
                              "The average shortest path length is  = " +
                              QString::number(averGraphDistance), "OK",0);
-    statusMessage( tr("Average distance calculated. Ready.") );
+
+    statusMessage( tr("Average geodesic distance computed. Ready.") );
 
 }
 
@@ -10166,18 +10166,21 @@ void MainWindow::slotAnalyzeEccentricity(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-eccentricity.html";
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-eccentricity-"+dateTime+".html";
 
     askAboutWeights();
 
-    statusMessage(  QString(tr("Computing Eccentricity. Please wait...")) );
-    progressMsg = tr("Computing Eccentricity. \n"
+    statusMessage(  tr("Computing Eccentricities. Please wait...") );
+    progressMsg = tr("Computing Eccentricities. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
+
     activeGraph.writeEccentricity(
                 fn, considerWeights, inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
+
     destroyProgressBar();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
@@ -10189,7 +10192,7 @@ void MainWindow::slotAnalyzeEccentricity(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Eccentricity report saved as: ") + fn );
+    statusMessage(tr("Eccentricities saved as: ") + fn );
 }
 
 
@@ -10230,12 +10233,13 @@ void MainWindow::slotAnalyzeDissimilaritiesTieProfile(const QString &metric,
         return;
     }
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-tie-profile-dissimilarities-matrix.html";
-
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-tie-profile-dissimilarities-"+dateTime+".html";
 
     askAboutWeights();
 
     statusMessage( tr("Computing tie profile dissimilarities. Please wait...") );
+
     progressMsg = tr("Computing tie profile dissimilarities. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
@@ -10254,7 +10258,7 @@ void MainWindow::slotAnalyzeDissimilaritiesTieProfile(const QString &metric,
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Tie Profile Dissimilarities matrix saved as: ")+fn);
+    statusMessage(tr("Tie profile dissimilarities matrix saved as: ")+fn);
 }
 
 
@@ -10339,18 +10343,21 @@ void MainWindow::slotAnalyzeWalksLength(){
 
      bool ok=false;
 
-    int length = QInputDialog::getInt(this, "Number of walks",
-                                      tr("Select desired length of walk: (2 to %1)").arg(activeNodes()-1),2, 2, activeNodes()-1, 1, &ok );
+    int length = QInputDialog::getInt(
+                this, "Number of walks",
+                tr("Select desired length of walk: (2 to %1)").arg(activeNodes()-1),
+                2, 2, activeNodes()-1, 1, &ok );
     if (!ok) {
         statusMessage( "Cancelled." );
         return;
     }
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-walks-length"+QString::number(length)+".html";
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-walks-length-"+QString::number(length)+"-"+dateTime+".html";
 
-    statusMessage( tr("Computing Walks of length %1 matrix. Please wait...").arg(length) );
+    statusMessage( tr("Computing walks of length %1. Please wait...").arg(length) );
 
-    progressMsg = tr("Computing Walks of length %1 matrix. \n"
+    progressMsg = tr("Computing walks of length %1. \n"
             "Please wait (or disable progress bars from Options -> Settings).").arg(length);
 
     createProgressBar(0,progressMsg);
@@ -10368,7 +10375,7 @@ void MainWindow::slotAnalyzeWalksLength(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Matrix: Walks of length %1 saved as: ").arg(length) + fn );
+    statusMessage(tr("Walks of length %1 matrix saved as: ").arg(length) + fn );
 }
 
 
@@ -10405,16 +10412,19 @@ void MainWindow::slotAnalyzeWalksTotal(){
             break;
         }
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-walks-total.html";
 
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-walks-total-"+dateTime+".html";
 
-    statusMessage(  QString(tr("Computing Total Walks Matrix. Please wait...")) );
-    progressMsg = tr("Computing Total Walks Matrix. \n"
+    statusMessage(  tr("Computing total walks matrix. Please wait...") );
+
+    progressMsg = tr("Computing total walks matrix. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(activeNodes()-1,progressMsg);
 
     activeGraph.writeMatrixWalks(fn);
+
     destroyProgressBar(activeNodes()-1); // do not check for progress bar
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
@@ -10426,7 +10436,7 @@ void MainWindow::slotAnalyzeWalksTotal(){
         m_textEditors << ed;
     }
 
-    statusMessage("Total number of walks saved as: " + fn);
+    statusMessage("Total walks matrix saved as: " + fn);
 
 }
 
@@ -10442,10 +10452,12 @@ void MainWindow::slotAnalyzeReachabilityMatrix(){
         return;
     }
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-reachability-matrix.html";
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-reachability-"+dateTime+".html";
 
-    statusMessage(  QString(tr("Computing Reachability Matrix. Please wait...")) );
-    progressMsg = tr("Computing Reachability Matrix. \n"
+    statusMessage(  tr("Computing reachability matrix. Please wait...") );
+
+    progressMsg = tr("Computing reachability matrix. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
@@ -10464,7 +10476,7 @@ void MainWindow::slotAnalyzeReachabilityMatrix(){
         m_textEditors << ed;
     }
 
-    statusMessage("Reachability Matrix saved as: " + fn );
+    statusMessage("Reachability matrix saved as: " + fn );
 }
 
 
@@ -10504,13 +10516,16 @@ void MainWindow::slotAnalyzeClusteringHierarchical(const QString &matrix,
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-clustering-hierarchical.html";
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-clustering-hierarchical-"+dateTime+".html";
 
     bool considerWeights=true;
     bool inverseWeights=false;
     bool dropIsolates=false;
 
     statusMessage(  tr("Computing Hierarchical Cluster Analysis. Please wait...") );
+
     progressMsg = tr("Hierarchical Cluster Analysis... \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
@@ -10537,7 +10552,7 @@ void MainWindow::slotAnalyzeClusteringHierarchical(const QString &matrix,
         m_textEditors << ed;
     }
 
-    statusMessage("Hierarchical cluster analysis saved as: " + fn);
+    statusMessage("Hierarchical Cluster Analysis saved as: " + fn);
 
 }
 
@@ -10552,10 +10567,14 @@ void MainWindow::slotAnalyzeCliqueCensus(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-clique-census.html";
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-clique-census-"+dateTime+".html";
+
     bool considerWeights=true;
 
-    statusMessage(  QString(tr("Computing Clique Census. Please wait...")) );
+    statusMessage(  tr("Computing Clique Census. Please wait...") );
+
     progressMsg = tr("Computing Clique Census. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
@@ -10591,10 +10610,14 @@ void MainWindow::slotAnalyzeClusteringCoefficient (){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-clustering-coefficient.html";
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-clustering-coefficient-"+dateTime+".html";
+
     bool considerWeights=true;
 
-    statusMessage(  QString(tr("Computing Clustering Coefficient report. Please wait...")) );
+    statusMessage(  tr("Computing Clustering Coefficients. Please wait...") );
+
     progressMsg = tr("Computing Clustering Coefficient. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
@@ -10613,7 +10636,7 @@ void MainWindow::slotAnalyzeClusteringCoefficient (){
         m_textEditors << ed;
     }
 
-    statusMessage("Clustering Coefficient report saved as: " + fn);
+    statusMessage("Clustering Coefficients saved as: " + fn);
 }
 
 
@@ -10648,18 +10671,26 @@ void MainWindow::slotAnalyzeSimilarityMatching(const QString &matrix,
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-similarity-exact.html";
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-similarity-matches"+dateTime+".html";
+
     bool considerWeights=true;
 
-    statusMessage(  QString(tr("Computing similarity matrix. Please wait...")) );
-    progressMsg = tr("Computing matching similarity matrix. \n"
+    statusMessage(  tr("Computing similarity matrix. Please wait...") );
+
+    progressMsg = tr("Computing similarity matrix. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
 
     //activeGraph.writeMatrixSimilarityMatchingPlain( fn, measure, matrix, varLocation, diagonal,considerWeights);
-    activeGraph.writeMatrixSimilarityMatching( fn, measure, matrix,
-                                         varLocation, diagonal,considerWeights);
+    activeGraph.writeMatrixSimilarityMatching( fn,
+                                               measure,
+                                               matrix,
+                                               varLocation,
+                                               diagonal,
+                                               considerWeights);
     destroyProgressBar();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
@@ -10703,11 +10734,14 @@ void MainWindow::slotAnalyzeSimilarityPearson(const QString &matrix,
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-similarity-pearson.html";
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-similarity-pearson-"+dateTime+".html";
+
     bool considerWeights=true;
 
-    statusMessage(  QString(tr("Computing Pearson Correlation Coefficients. Please wait...")) );
-    progressMsg = tr("Computing Pearson Correlation Coefficients. \n"
+    statusMessage(  tr("Computing Pearson coefficients matrix. Please wait...") );
+    progressMsg = tr("Computing Pearson coefficients matrix. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
@@ -10725,7 +10759,7 @@ void MainWindow::slotAnalyzeSimilarityPearson(const QString &matrix,
         m_textEditors << ed;
     }
 
-    statusMessage("Pearson Correlation Coefficients saved as: " + fn);
+    statusMessage("Pearson correlation coefficients matrix saved as: " + fn);
 }
 
 
@@ -10738,10 +10772,14 @@ void MainWindow::slotAnalyzeTriadCensus() {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-triad-census.html";
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-triad-census-"+dateTime+".html";
+
     bool considerWeights=true;
 
-    statusMessage(  QString(tr("Computing Triad Census. Please wait...")) );
+    statusMessage(  tr("Computing Triad Census. Please wait...") );
+
     progressMsg = tr("Computing Triad Census. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
@@ -10794,12 +10832,14 @@ void MainWindow::slotAnalyzeCentralityDegree(){
             return;
             break;
         }
-
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-out-degree.html";
 
-    statusMessage(  QString(tr("Computing Degree Centrality. Please wait...")) );
-    progressMsg = tr("Computing Degree Centrality. \n"
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-out-degree-"+dateTime+".html";
+
+    statusMessage(  tr("Computing out-Degree Centralities. Please wait...") );
+
+    progressMsg = tr("Computing out-Degree Centralities. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
@@ -10903,9 +10943,11 @@ void MainWindow::slotAnalyzeCentralityCloseness(){
 
     askAboutWeights();
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_closeness.html";
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-closeness-"+dateTime+".html";
 
-    statusMessage(  QString(tr("Computing Closeness Centrality. Please wait...")) );
+    statusMessage(  tr("Computing Closeness Centralities. Please wait...") );
+
     progressMsg = tr("Computing Closeness Centrality. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
@@ -10943,11 +10985,13 @@ void MainWindow::slotAnalyzeCentralityClosenessIR(){
         return;
     }
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_closeness_influence_range.html";
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-closeness-influence-range-"+dateTime+".html";
 
     askAboutWeights();
 
-    statusMessage(  QString(tr("Computing Influence Range Centrality. Please wait...")) );
+    statusMessage(  tr("Computing Influence Range Centralities. Please wait...") );
+
     progressMsg = tr("Computing Influence Range Centrality. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
@@ -10970,7 +11014,7 @@ void MainWindow::slotAnalyzeCentralityClosenessIR(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Influence Range Closeness Centrality saved as: ")+fn);
+    statusMessage(tr("Influence Range Closeness Centralities saved as: ")+fn);
 }
 
 
@@ -10984,11 +11028,14 @@ void MainWindow::slotAnalyzeCentralityBetweenness(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_betweenness.html";
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-betweenness-"+dateTime+".html";
 
     askAboutWeights();
 
-    statusMessage(  QString(tr("Computing Betweenness Centrality. Please wait...")) );
+    statusMessage( tr("Computing Betweenness Centralities. Please wait...") );
+
     progressMsg = tr("Computing Betweenness Centrality. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
@@ -11056,10 +11103,13 @@ void MainWindow::slotAnalyzePrestigeDegree(){
         }
 
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-degree-prestige.html";
 
-    statusMessage(  QString(tr("Computing Degree Prestige . Please wait...")) );
-    progressMsg = tr("Computing Degree Prestige. \n"
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-prestige-degree-"+dateTime+".html";
+
+    statusMessage(  tr("Computing Degree Prestige indices. Please wait...") );
+
+    progressMsg = tr("Computing Degree Prestige (in-Degree). \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
@@ -11078,7 +11128,7 @@ void MainWindow::slotAnalyzePrestigeDegree(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Degree Prestige (in-degree) saved as: ") + fn);
+    statusMessage(tr("Degree Prestige (in-degree) indices saved as: ") + fn);
 }
 
 
@@ -11091,13 +11141,14 @@ void MainWindow::slotAnalyzePrestigePageRank(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-prestige_pagerank.html";
 
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-prestige-pagerank-"+dateTime+".html";
 
     askAboutWeights();
 
+    statusMessage( tr("Computing PageRank Prestige indices. Please wait...") );
 
-    statusMessage(  QString(tr("Computing PageRank Prestige. Please wait...")) );
     progressMsg = tr("Computing PageRank Prestige. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
@@ -11130,11 +11181,14 @@ void MainWindow::slotAnalyzePrestigeProximity(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_proximity_prestige.html";
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-prestige-proximity-"+dateTime+".html";
 
     askAboutWeights();
 
-    statusMessage(  QString(tr("Computing Proximity Prestige. Please wait...")) );
+    statusMessage( tr("Computing Proximity Prestige indices. Please wait...") );
+
     progressMsg = tr("Computing Proximity Prestige. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
@@ -11155,7 +11209,7 @@ void MainWindow::slotAnalyzePrestigeProximity(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Proximity Prestige Centralities saved as: ")+ fn);
+    statusMessage(tr("Proximity Prestige indices saved as: ")+ fn);
 }
 
 
@@ -11197,12 +11251,14 @@ void MainWindow::slotAnalyzeCentralityInformation(){
             break;
         }
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_information.html";
-    statusMessage(  QString(tr(" Please wait...")));
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-information-"+dateTime+".html";
 
     askAboutWeights();
 
-    statusMessage(  QString(tr("Computing Information Centrality. Please wait...")) );
+    statusMessage(  tr("Computing Information Centralities. Please wait...") );
+
     progressMsg = tr("Computing Information Centrality. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
@@ -11238,14 +11294,15 @@ void MainWindow::slotAnalyzeCentralityEigenvector(){
         return;
     }
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_eigenvector.html";
-    statusMessage(  QString(tr(" Please wait...")));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-eigenvector-"+dateTime+".html";
 
     askAboutWeights();
 
     bool dropIsolates = false;
 
-    statusMessage(  QString(tr("Computing Eigenvector Centrality. Please wait...")) );
+    statusMessage(  tr("Computing Eigenvector Centralities. Please wait...") );
+
     progressMsg = tr("Computing Eigenvector Centrality. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
@@ -11279,13 +11336,17 @@ void MainWindow::slotAnalyzeCentralityStress(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_stress.html";
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-stress-"+dateTime+".html";
 
     askAboutWeights();
 
-    statusMessage(  QString(tr("Computing Stress Centrality. Please wait...")) );
+    statusMessage( (tr("Computing Stress Centralities. Please wait...") );
+
     progressMsg = tr("Computing Stress Centrality. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
+
     createProgressBar(0,progressMsg);
 
     activeGraph.writeCentralityStress(
@@ -11312,19 +11373,22 @@ void MainWindow::slotAnalyzeCentralityStress(){
 
 /**
  * @brief MainWindow::slotAnalyzeCentralityPower
- * Writes Power Centralities into a file, then displays it.
+ * Writes Gil-Schmidt Power Centralities into a file, then displays it.
  */
 void MainWindow::slotAnalyzeCentralityPower(){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_power.html";
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-power-Gil-Schmidt-"+dateTime+".html";
 
     askAboutWeights();
 
-    statusMessage(  QString(tr("Computing Power Centrality. Please wait...")) );
-    progressMsg = tr("Computing Power Centrality. \n"
+    statusMessage(  tr("Computing Gil-Schmidt Power Centralities. Please wait...") );
+
+    progressMsg = tr("Computing Gil-Schmidt Power Centrality. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
@@ -11344,7 +11408,7 @@ void MainWindow::slotAnalyzeCentralityPower(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Stress Centralities saved as: ")+ fn);
+    statusMessage(tr("Gil-Schmidt Power Centralities saved as: ")+ fn);
 }
 
 
@@ -11359,11 +11423,14 @@ void MainWindow::slotAnalyzeCentralityEccentricity(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_eccentricity.html";
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-eccentricity-"+dateTime+".html";
 
     askAboutWeights();
 
-    statusMessage(  QString(tr("Computing Eccentricity Centrality. Please wait...")) );
+    statusMessage(  tr("Computing Eccentricity Centralities. Please wait...") );
+
     progressMsg = tr("Computing Eccentricity Centrality. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
