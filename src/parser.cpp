@@ -547,6 +547,12 @@ bool Parser::loadDL(){
                           "but I found a different number of actors");
         return false;
     }
+
+    if (relationsList.count() == 0) {
+        emit addRelation("unnamed");
+    }
+
+
     //The network has been loaded. Tell MW the statistics and network type
     emit relationSet (0);
     qDebug() << "Parser::loadDL() - FINISHED - "
@@ -1062,9 +1068,15 @@ bool Parser::loadPajek(){
             emit removeDummyNode(*it);
         }
     }
+
+    if (relationsList.count() == 0) {
+        emit addRelation(networkName);
+    }
+
     qDebug("Parser-loadPajek(): Clearing DumiesList from Pajek");
     listDummiesPajek.clear();
     relationsList.clear();
+
     emit relationSet (0);
 
     //The network has been loaded. Tell MW the statistics and network type
@@ -1097,6 +1109,7 @@ bool Parser::loadAdjacency(){
     QStringList lineElement;
     int i=0, j=0, newCount=0, lastCount=0;
     bool intOK=false;
+    relationsList.clear();
     totalNodes=0;
     edgeWeight=1.0;
     totalLinks=0;
@@ -1202,6 +1215,10 @@ bool Parser::loadAdjacency(){
     }
     file.close();
 
+    if (relationsList.count() == 0 ) {
+        emit addRelation( "unnamed" );
+    }
+
     qDebug() << "Parser: SM network has been loaded. Tell MW the statistics and network type";
     emit networkFileLoaded(FILE_ADJACENCY, fileName, networkName,
                            totalNodes, totalLinks, EDGE_DIRECTED);
@@ -1230,6 +1247,7 @@ bool Parser::loadTwoModeSociomatrix(){
     int i=0, j=0,  newCount=0, lastCount=0;
     totalNodes=0;
     edgeWeight=1.0;
+    relationsList.clear();
 
     while (  !ts.atEnd() )  {
         i++;
@@ -1305,6 +1323,11 @@ bool Parser::loadTwoModeSociomatrix(){
         }
     }
     file.close();
+
+
+    if (relationsList.count() == 0) {
+        emit addRelation("unnamed");
+    }
 
     qDebug() << "Parser: Two-mode SM network has been loaded. Tell MW the statistics and network type";
     emit networkFileLoaded(FILE_TWOMODE, fileName,networkName,
@@ -2210,6 +2233,9 @@ bool Parser::loadGML(){
     bool isPlanar = false, graphKey=false, graphicsKey=false,
             edgeKey=false, nodeKey=false, graphicsCenterKey=false;
     Q_UNUSED(isPlanar);
+
+    relationsList.clear();
+
     node_id= QString::null;
     arrows=true;
     bezier=false;
@@ -2489,6 +2515,10 @@ bool Parser::loadGML(){
         }
 
     }
+
+    if (relationsList.count() == 0 ) {
+        emit addRelation( "unnamed" );
+    }
     //The network has been loaded. Tell MW the statistics and network type
     emit networkFileLoaded(FILE_GML, fileName, networkName, totalNodes, totalLinks, edgeDirType);
     qDebug() << "Parser-loadGML()";
@@ -2517,15 +2547,20 @@ bool Parser::loadDot(){
     QList<QString> nodeSequence;   //holds edges
     QList<QString> nodesDiscovered; //holds nodes;
 
+    relationsList.clear();
+
     edgeDirType=EDGE_DIRECTED;
     arrows=true;
     bezier=false;
     source=0, target=0;
+
     QFile file ( fileName );
     if ( ! file.open(QIODevice::ReadOnly )) return false;
     QTextStream ts( &file );
     ts.setCodec(userSelectedCodecName.toUtf8());
+
     totalNodes=0;
+
     while (!ts.atEnd() )   {
         str= ts.readLine() ;
         str=str.simplified();
@@ -2879,6 +2914,11 @@ bool Parser::loadDot(){
         }
     }
     file.close();
+
+    if (relationsList.count() == 0) {
+        emit addRelation( (!networkName.isEmpty()) ? networkName :"unnamed");
+    }
+
     //The network has been loaded. Tell MW the statistics and network type
     emit networkFileLoaded(FILE_GRAPHVIZ, fileName, networkName,
                            totalNodes, totalLinks, edgeDirType);
@@ -3044,6 +3084,8 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
     edgeDirType=EDGE_DIRECTED;
     arrows=true;
     bezier=false;
+
+    relationsList.clear();
 
     qDebug()<< "*** Parser::loadEdgeListWeighed() - Initial file parsing "
                "to test integrity and edge naming scheme";
@@ -3226,81 +3268,86 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
     while (!nodeQ.empty()) {
 
         Actor node = nodeQ.top();
-         nodeQ.pop();
-         randX=rand()%gwWidth;
-         randY=rand()%gwHeight;
+        nodeQ.pop();
+        randX=rand()%gwWidth;
+        randY=rand()%gwHeight;
 
-         if (nodesWithLabels) {
-             qDebug() << "Parser::loadEdgeListWeighed() - creating node named"
-                      << node.key << "numbered" << node.value
-                      << "at position" << QPointF(randX, randY);
-             emit createNode( node.value,
-                              initNodeSize,
-                              initNodeColor,
-                              initNodeNumberColor,
-                              initNodeNumberSize,
-                              node.key,
-                              initNodeLabelColor, initNodeLabelSize,
-                              QPointF(randX, randY),
-                              initNodeShape,
-                              false
-                              );
-         }
-         else {
+        if (nodesWithLabels) {
+            qDebug() << "Parser::loadEdgeListWeighed() - creating node named"
+                     << node.key << "numbered" << node.value
+                     << "at position" << QPointF(randX, randY);
+            emit createNode( node.value,
+                             initNodeSize,
+                             initNodeColor,
+                             initNodeNumberColor,
+                             initNodeNumberSize,
+                             node.key,
+                             initNodeLabelColor, initNodeLabelSize,
+                             QPointF(randX, randY),
+                             initNodeShape,
+                             false
+                             );
+        }
+        else {
 
-             qDebug() << "Parser::loadEdgeListWeighed() - creating node named"
-                      << node.key << "numbered" << node.key.toInt()
-                      << "at position" << QPointF(randX, randY);
-             emit createNode( node.key.toInt(),
-                              initNodeSize,
-                              initNodeColor,
-                              initNodeNumberColor,
-                              initNodeNumberSize,
-                              node.key,
-                              initNodeLabelColor, initNodeLabelSize,
-                              QPointF(randX, randY),
-                              initNodeShape,
-                              false
-                              );
+            qDebug() << "Parser::loadEdgeListWeighed() - creating node named"
+                     << node.key << "numbered" << node.key.toInt()
+                     << "at position" << QPointF(randX, randY);
+            emit createNode( node.key.toInt(),
+                             initNodeSize,
+                             initNodeColor,
+                             initNodeNumberColor,
+                             initNodeNumberSize,
+                             node.key,
+                             initNodeLabelColor, initNodeLabelSize,
+                             QPointF(randX, randY),
+                             initNodeShape,
+                             false
+                             );
 
-         }
+        }
 
-     }
+    }
 
-     //create edges one by one
-     QHash<QString, float>::const_iterator edge = edgeList.constBegin();
-      while (edge!= edgeList.constEnd()) {
+    //create edges one by one
+    QHash<QString, float>::const_iterator edge = edgeList.constBegin();
+    while (edge!= edgeList.constEnd()) {
 
-          qDebug() << "Parser::loadEdgeListWeighed() - creating edge named"
-                   << edge.key() << " weight " << edge.value();
+        qDebug() << "Parser::loadEdgeListWeighed() - creating edge named"
+                 << edge.key() << " weight " << edge.value();
 
-          edgeElement=edge.key().split(edgeKeyDelimiter);
-          if (nodesWithLabels) {
-              source = nodeMap.value( edgeElement[0] ) ;
-              target = nodeMap.value( edgeElement[1] ) ;
-          }
-          else {
-              source = edgeElement[0].toInt() ;
-              target = edgeElement[1].toInt() ;
-          }
-          edgeWeight = edge.value();
-          emit edgeCreate(source,
-                          target,
-                          edgeWeight,
-                          initEdgeColor,
-                          edgeDirType,
-                          arrows,
-                          bezier);
+        edgeElement=edge.key().split(edgeKeyDelimiter);
+        if (nodesWithLabels) {
+            source = nodeMap.value( edgeElement[0] ) ;
+            target = nodeMap.value( edgeElement[1] ) ;
+        }
+        else {
+            source = edgeElement[0].toInt() ;
+            target = edgeElement[1].toInt() ;
+        }
+        edgeWeight = edge.value();
+        emit edgeCreate(source,
+                        target,
+                        edgeWeight,
+                        initEdgeColor,
+                        edgeDirType,
+                        arrows,
+                        bezier);
 
-          ++edge;
-      }
+        ++edge;
+    }
 
 
+
+    if (relationsList.count() == 0) {
+        emit addRelation("unnamed");
+    }
 
     //The network has been loaded. Tell MW the statistics and network type
     emit networkFileLoaded(FILE_EDGELIST_WEIGHTED, fileName, networkName,
                            totalNodes, totalLinks, edgeDirType);
     qDebug() << "Parser::loadEdgeListWeighed() - END. Returning.";
+
     return true;
 
 }
@@ -3337,6 +3384,8 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
     edgeDirType=EDGE_DIRECTED;
     arrows=true;
     bezier=false;
+
+    relationsList.clear();
 
     qDebug()<< "*** Parser::loadEdgeListSimple() - Initial file parsing "
                "to test integrity and edge naming scheme";
@@ -3578,6 +3627,11 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
                          bezier);
 
          ++edge;
+     }
+
+
+     if (relationsList.count() == 0) {
+         emit addRelation("unnamed");
      }
 
     //The network has been loaded. Tell MW the statistics and network type

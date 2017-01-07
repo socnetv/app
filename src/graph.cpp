@@ -577,6 +577,7 @@ int Graph::relationCurrent(){
  * @return string current relation name
  */
 QString Graph::relationCurrentName() const{
+    qDebug() << "Graph::relationCurrentName() -";
     return m_relationsList.value(m_curRelation);
 }
 
@@ -13300,7 +13301,7 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                                 "polyhedral graph. \n"
                                 "It is the unique such graph on 11 nodes, "
                                 "and has 18 edges.");
-        outText << "*Network Herschel" << endl <<
+        outText << "*Network Herschel_Graph" << endl <<
                    "*Vertices 11" << endl <<
                    "1 \"1\" ic red	0.48225  0.411308 circle" << endl <<
                    "2 \"2\" ic red	0.652297 0.591389 circle" << endl <<
