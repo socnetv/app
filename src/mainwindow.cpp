@@ -10488,6 +10488,11 @@ void MainWindow::slotAnalyzeReachabilityMatrix(){
 void MainWindow::slotAnalyzeClusteringHierarchicalDialog() {
     qDebug()<< "MW::slotAnalyzeClusteringHierarchicalDialog()";
 
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
     m_dialogClusteringHierarchical = new DialogClusteringHierarchical(this);
 
     connect( m_dialogClusteringHierarchical, &DialogClusteringHierarchical::userChoices,
@@ -10646,6 +10651,11 @@ void MainWindow::slotAnalyzeClusteringCoefficient (){
 void MainWindow::slotAnalyzeSimilarityMatchingDialog() {
     qDebug()<< "MW::slotAnalyzeSimilarityMatchingDialog()";
 
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
     m_dialogSimilarityMatches = new DialogSimilarityMatches(this);
 
     connect( m_dialogSimilarityMatches, &DialogSimilarityMatches::userChoices,
@@ -10712,6 +10722,10 @@ void MainWindow::slotAnalyzeSimilarityMatching(const QString &matrix,
  */
 void MainWindow::slotAnalyzeSimilarityPearsonDialog(){
     qDebug()<< "MW::slotAnalyzeSimilarityPearsonDialog()";
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
     m_dialogSimilarityPearson = new DialogSimilarityPearson(this);
 
     connect( m_dialogSimilarityPearson, &DialogSimilarityPearson::userChoices,
