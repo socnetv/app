@@ -11342,7 +11342,7 @@ void MainWindow::slotAnalyzeCentralityStress(){
 
     askAboutWeights();
 
-    statusMessage( (tr("Computing Stress Centralities. Please wait...") );
+    statusMessage( tr("Computing Stress Centralities. Please wait...") );
 
     progressMsg = tr("Computing Stress Centrality. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
