@@ -751,6 +751,7 @@ public:
 
     float numberOfTriples(int v1);
 
+    /* CLIQUES, CLUSTERING, TRIADS */
     void graphCliques(QSet<int> R=QSet<int>(), QSet<int> P=QSet<int>(), QSet<int> X=QSet<int>() );
     void graphCliqueAdd (const QList<int> &clique);
     int graphCliquesContaining(const int &actor, const int &size=0);
