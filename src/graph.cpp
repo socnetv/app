@@ -10550,6 +10550,9 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
     QTime computationTimer;
     computationTimer.start();
 
+    QMap<float, V_int>::const_iterator it;
+    QMap<float, V_int>::const_iterator vt;
+
     qDebug()<< "Graph::writeClusteringHierarchical() - matrix:"
             << matrix
             << "metric"
@@ -10657,7 +10660,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
 
     outText << "<pre>";
     outText <<"Level" << "\t"<< "Actors" <<endl;
-    QMap<float, V_int>::const_iterator it;
+
     for ( it= m_clustersPerLevel.constBegin() ; it != m_clustersPerLevel.constEnd(); ++it) {
          outText << it.key() << "\t" ;
 
@@ -10748,6 +10751,58 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
         outText << "</div>";        //end dendrogram
 
     }       // end if dendrogram
+
+
+
+
+    if (dendrogram) {
+        outText << "<p>"
+                << "<span class=\"info\">"
+                << tr("Clustering Dendrogram (SVG)")
+                <<"</span>"
+               << "</p>";
+
+        qDebug()<<"SVG";
+
+        int actorNumber;
+        QMap <int,int> myindex;
+
+        it = m_clustersPerLevel.constEnd();
+        it--;
+
+
+        outText << "<svg class=\"dendrosvg\" width=\"200\" height=\"150\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">";
+
+        for ( int i=0; i < it.value().size() ; ++i ) {
+            actorNumber = it.value().at(i);
+            myindex[actorNumber] = i;
+            outText << "<g class=\"row row-" << i << "\">";
+            outText << "<text class=\"header\" x=\"10\" y=\"" <<10*(i+1)<<"\">"<< actorNumber<<"</text>";
+            outText << "</g>";    // end row
+
+        }                           // end for rows
+
+
+        for ( it= m_clustersPerLevel.constBegin() ; it != m_clustersPerLevel.constEnd(); ++it) {
+            qDebug() << "LEVEL"<< (it).key()
+                     << "ACTORS"<<(it).value;
+
+            for ( int i=0; i < it.value().size() ; ++i ) {
+                actorNumber = it.value().at(i);
+
+                outText << "<path d=\"M 10 " <<10*(myindex[actorNumber]+1)<<" L 190 " <<10*(myindex[actorNumber]+1)<<"\" stroke=\"red\" "
+                                   "stroke-linecap=\"round\" stroke-width=\"1\" stroke-dasharray=\"5,5\" fill=\"none\"/>";
+            }
+
+
+
+        }
+
+        outText << "</svg>";        //end dendrogram
+
+
+    }       // end if dendrogram
+
 
     qDebug() <<"m_clustersPerLevel" << m_clustersPerLevel <<endl
             << "m_clustersByOrder"<<m_clustersByOrder;
