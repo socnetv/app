@@ -2229,7 +2229,7 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
 
     os << "- Max value:  ";
 
-    if (maxVal == -1 ||  maxVal==RAND_MAX )
+    if ( maxVal==RAND_MAX )
         os <<  infinity << " (=not connected nodes, in distance matrix)";
     else
         os <<   maxVal;
@@ -2238,7 +2238,7 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
 
     os << "- Min value:   ";
 
-    if (minVal == -1 ||  minVal==RAND_MAX )
+    if ( minVal==RAND_MAX )
         os << infinity;
     else
         os << minVal;
@@ -2301,7 +2301,7 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
         for (int c = 0; c < m.cols(); ++c) {
             element = m(r,c) ;
             os << qSetFieldWidth(fieldWidth) << fixed << right;
-            if ( element == -1 || element == RAND_MAX)  // we print inf symbol instead of -1 (distances matrix).
+            if ( element == RAND_MAX)  // we print inf symbol instead of RAND_MAX (distances matrix).
                 os << fixed << right << qSetFieldWidth(fieldWidth) << infinity ;
             else {
                 if ( element > 999)
@@ -2368,7 +2368,7 @@ bool Matrix::printHTMLTable(QTextStream& os,
             for (int c = 0; c < cols(); ++c) {
                 element = item(r,c) ;
                 os << fixed << qSetFieldWidth(10) << right;
-                if ( element == -1 || element == RAND_MAX)  // print inf symbol instead of -1 (distances matrix).
+                if (  element == RAND_MAX)  // print inf symbol instead of RAND_MAX (distances matrix).
                     os << infinity;
                 else {
                     os << element ;
@@ -2419,8 +2419,8 @@ bool Matrix::printHTMLTable(QTextStream& os,
             element = item(r,c) ;
             os << fixed << right;
             os <<"<td" << ((markDiag && r==c)? " class=\"diag\">" : ">");
-            if ( ( element == -1 || element == RAND_MAX ) && printInfinity) {
-                // print inf symbol instead of -1 (distances matrix).
+            if ( ( element == RAND_MAX ) && printInfinity) {
+                // print inf symbol instead of RAND_MAX (distances matrix).
                 os << infinity;
             }
             else {
@@ -2446,14 +2446,14 @@ bool Matrix::printHTMLTable(QTextStream& os,
        << "<span class=\"info\">"
        << ("- Max value: ")
        <<"</span>"
-       << ( (maxVal == -1 ||  maxVal==RAND_MAX ) ?
+       << ( ( maxVal==RAND_MAX ) ?
                 ( (printInfinity) ? infinity : QString::number(maxVal) ) +
                 " (=not connected nodes, in distance matrix)" : QString::number(maxVal) )
        << "<br />"
        << "<span class=\"info\">"
        << ("- Min value: ")
        <<"</span>"
-       << ( (minVal == -1 ||  minVal==RAND_MAX ) ?
+       << ( ( minVal==RAND_MAX ) ?
                 ( (printInfinity) ? infinity : QString::number(minVal) ) +
                 + " (usually denotes unconnected nodes, in distance matrix)" : QString::number(minVal ) )
        << "</p>";

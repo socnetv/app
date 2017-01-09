@@ -149,14 +149,16 @@ Graph::Graph() {
                        ".small {font-style: italic;color: #333; font-size: 90%;}"
                        ".dendrogram .row { clear:both; height: 16px; margin: 2px 0px; overflow:hidden; }"
                        ".row .col .header {display:block;} "
-                       ".dendrogram .row .col { float: left; height: 12px; min-width:60px; text-align:center;}"
-                       ".dendrogram .row .col.first { border-top:1px solid red; }"
+                       ".dendrogram .row .col { float: left; height: 12px; min-width:3%; text-align:center;}"
+                       ".dendrogram .row .col.last.up, "
+                       ".dendrogram .row .col.first { border-top:1px solid red; border-bottom: 0 none;}"
                        ".dendrogram .row .col.first.down,"
                        ".dendrogram .row .col.last { border-bottom:1px solid red; border-top: 0 none;}"
                        ".dendrogram .row .col.level { border-right:1px solid red; }"
                        ".dendrogram .row .col.clustered.level, "
+                       ".dendrogram .row .col.last.up.level, "
                        ".dendrogram .row .col.first.down.level { border-right:0 none;}"
-                       ".dendrogram .cluster-levels .col {float:left; min-width: 60px; text-align:right;}"
+                       ".dendrogram .cluster-levels .col {float:left; min-width: 3%; text-align:right;}"
 
                        "</style>"
                        "<script type=\"text/javascript\">\n"
@@ -10834,7 +10836,7 @@ void Graph::graphClusteringHierarchical(const int &matrix,
 
     switch (matrix) {
     case MATRIX_ADJACENCY:
-        graphMatrixAdjacencyCreate();
+        graphMatrixAdjacencyCreate(dropIsolates);
         STR_EQUIV=AM;
         break;
     case MATRIX_DISTANCES:
@@ -10967,11 +10969,12 @@ void Graph::graphClusteringHierarchical(const int &matrix,
                                           "last" : "inner")
                                           );
 
-                qDebug () << " actor" << actorNumber << newLevelActorType ;
+                qDebug () << " actor newlevel pos" << actorNumber << newLevelActorType ;
 
                 curActorType = types [ actorNumber - 1 ] ;
 
                 if ( curActorType  != "clustered" &&
+                     curActorType  != "first" &&
                      curActorType  != "first down"){
 
                     // update the actor's current level type: first, last or inner
@@ -10990,9 +10993,9 @@ void Graph::graphClusteringHierarchical(const int &matrix,
                     {
                         if (types.at(i) == "first" || types.at(i) == "first down")
                         {
-                            if ( (curFirstIndex =clusteredItems.indexOf(i+1)) != -1 )
+                            if (  clusteredItems.indexOf(i+1) != -1 )
                             {
-                                if (clusteredItems.indexOf(actorNumber) > curFirstIndex)
+                                if (clusteredItems.indexOf(actorNumber) > clusteredItems.indexOf(i+1) )
                                 {
 
                                     qDebug () << " actor" << actorNumber
@@ -11008,21 +11011,21 @@ void Graph::graphClusteringHierarchical(const int &matrix,
 
                     }
                 }
-                else if (curActorType == "first down" && newLevelActorType=="last") {
+                else if (curActorType == "first" && newLevelActorType=="last") {
                     qDebug () << " actor" << actorNumber
                               << "type"  << curActorType
-                              << "changing to" <<newLevelActorType;
-                    types [ actorNumber - 1 ] =  newLevelActorType;
+                              << "changing to" <<"last up";
+                    types [ actorNumber - 1 ] =  "last up";
                 }
-                else if (curActorType == "first down" &&
+                else if (curActorType == "first" &&
                          newLevelActorType=="inner" &&
-                         ( clusteredItems.indexOf(actorNumber) + 1) > clusteredItems.size()/2) {
+                         ( clusteredItems.indexOf(actorNumber) ) > clusteredItems.size()/2) {
 
                     qDebug () << " actor" << actorNumber
                               << "type" << curActorType
                               << "changing to" <<newLevelActorType
                               <<"because clusteredItems.indexOf"
-                             << (clusteredItems.indexOf(actorNumber) + 1)
+                             << (clusteredItems.indexOf(actorNumber) )
                              <<" > clusteredItems.size/2" <<clusteredItems.size()/2;
 
                          types [ actorNumber - 1 ] =  "last"; //"first down inner";
@@ -11044,7 +11047,8 @@ void Graph::graphClusteringHierarchical(const int &matrix,
 
                 if ( types [ actorNumber - 1 ] == "first" ||
                      types [ actorNumber - 1 ] == "first down" ||
-                     types [ actorNumber - 1 ] == "last")
+                     types [ actorNumber - 1 ] == "last" ||
+                     types [ actorNumber - 1 ] == "last up")
                 {
                     qDebug() << "actor"<< actorNumber
                              << "first or last - update its types in all previous levels.";
@@ -11067,47 +11071,74 @@ void Graph::graphClusteringHierarchical(const int &matrix,
                     }
 
 
+                    qDebug() << "compute 'first' actor for next level." << endl
+                             << "  curFirstIndex"<<curFirstIndex << endl
+                             << "  current types" << types;
                     if ( types [ actorNumber - 1 ] == "first" ||
-                         types [ actorNumber - 1 ] == "first down" ) {
+                         types [ actorNumber - 1 ] == "first down" ||
+                         types [ actorNumber - 1 ] == "first up"
+                         ) {
                         curFirstIndex =clusteredItems.indexOf(actorNumber);
+                        qDebug() << "'first' actor for next level:" << actorNumber
+                                 << "  indexOf:"<<curFirstIndex;
                     }
 
 
-                    qDebug() << "compute middle actor of the new cluster - will be 'first' in next level";
+                    qDebug() << "computed 'first' actor for next level:" << endl
+                             << "  curFirstIndex"<<curFirstIndex;
 
                     // compute middle actor of the new cluster
                     // this will be 'first' in next level
                     // from which a straight line will be drawn
-
 
                     if ( ( ( clusteredItems.size() - curFirstIndex ) % 2) == 0) {
 
                         // turn first and last actors to type: clustered in next level.
                         typesNext [ actorNumber - 1 ] =  "clustered";
 
-                        nextFirstIndex =  floor (  clusteredItems.size()  / 2   ) + curFirstIndex;
+                        nextFirstIndex =  floor (  (clusteredItems.size()  - curFirstIndex ) / 2   ) ;
 
-                        qDebug () <<"clusteredItems.size()" << ( clusteredItems.size())
-                                    << "even - nextFirstIndex" << nextFirstIndex
-                                    << "clusteredItems.at(nextFirstIndex)"
-                                    << clusteredItems.at(nextFirstIndex)  ;
-
-                        typesNext[ clusteredItems.at(nextFirstIndex) -1 ] =  "first";
                     }
                     else {
 
                         // turn first and last actors to type: clustered in next level.
                         typesNext [ actorNumber - 1 ] =  "clustered";
 
-                        nextFirstIndex = ceil (  clusteredItems.size()  / 2 )  + curFirstIndex ;
+                        nextFirstIndex = floor (  (clusteredItems.size()  - curFirstIndex )  / 2 ) ;
 
-                        qDebug () << "clusteredItems.size()" << ( clusteredItems.size())
-                                  << "odd - nextFirstIndex" << nextFirstIndex
-                                  << "clusteredItems.at(nextFirstIndex)"
-                                  << clusteredItems.at(nextFirstIndex)  ;
-
-                        typesNext [ clusteredItems.at(nextFirstIndex) -1 ] =  "first down";
                     }
+
+                    if (nextFirstIndex <  (clusteredItems.size()  / 2)  ) {
+                        typesNext[ clusteredItems.at(nextFirstIndex) -1 ] =  "first down";
+                        qDebug () <<"clusteredItems.size()" << ( clusteredItems.size())
+                                    << "even - nextFirstIndex" << nextFirstIndex
+                                    << "clusteredItems.at(nextFirstIndex)"
+                                    << clusteredItems.at(nextFirstIndex)
+                                    << "next type" << "first down";
+
+                    }
+                    else {
+                        if (typesNext[ clusteredItems.at(nextFirstIndex) -1 ]== "first") {
+                            typesNext[ clusteredItems.at(nextFirstIndex) -1 ] = "first down";
+                            qDebug () <<"clusteredItems.size()" << ( clusteredItems.size())
+                                    << "even - nextFirstIndex" << nextFirstIndex
+                                    << "clusteredItems.at(nextFirstIndex)"
+                                    << clusteredItems.at(nextFirstIndex)
+                                       << "next type" << "first down";
+
+                        }
+                        else {
+                            typesNext[ clusteredItems.at(nextFirstIndex) -1 ] =  "first";
+                            qDebug () <<"clusteredItems.size()" << ( clusteredItems.size())
+                                    << "even - nextFirstIndex" << nextFirstIndex
+                                    << "clusteredItems.at(nextFirstIndex)"
+                                    << clusteredItems.at(nextFirstIndex)
+                                       << "next type" << "first";
+
+                        }
+
+                    }
+
                 }
 
             } //end for clusteredItems
@@ -17386,7 +17417,7 @@ void Graph::writeMatrixAdjacencyTo(QTextStream& os,
                                    const bool &saveEdgeWeights){
     qDebug("Graph: adjacencyMatrix(), writing matrix with %i vertices", vertices());
     QList<Vertex*>::const_iterator it, it1;
-    float weight=-1;
+    float weight=RAND_MAX;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() ) continue;
         for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
@@ -17690,7 +17721,7 @@ void Graph::graphMatrixAdjacencyCreate(const bool dropIsolates,
                                   const bool inverseWeights,
                                   const bool symmetrize ){
     qDebug() << "Graph::graphMatrixAdjacencyCreate()";
-    float m_weight=-1;
+    float m_weight=RAND_MAX;
     int i=0, j=0;
     int N = vertices();
     if (dropIsolates){
