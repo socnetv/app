@@ -10527,7 +10527,7 @@ void MainWindow::slotAnalyzeClusteringHierarchical(const QString &matrix,
 
     bool considerWeights=true;
     bool inverseWeights=false;
-    bool dropIsolates=false;
+    bool dropIsolates=true;
 
     statusMessage(  tr("Computing Hierarchical Cluster Analysis. Please wait...") );
 
