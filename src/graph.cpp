@@ -10756,13 +10756,18 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
 
 
     if (dendrogram) {
+        qDebug()<<"SVG";
+
         outText << "<p>"
                 << "<span class=\"info\">"
                 << tr("Clustering Dendrogram (SVG)")
                 <<"</span>"
                << "</p>";
 
-        qDebug()<<"SVG";
+
+        int rowHeight = 10;
+
+        QMap<int, QPoint> levelStartPoints;
 
         int actorNumber;
         QMap <int,int> myindex;
@@ -10777,7 +10782,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
             actorNumber = it.value().at(i);
             myindex[actorNumber] = i;
             outText << "<g class=\"row row-" << i << "\">";
-            outText << "<text class=\"header\" x=\"10\" y=\"" <<10*(i+1)<<"\">"<< actorNumber<<"</text>";
+            outText << "<text class=\"header\" x=\"10\" y=\"" <<rowHeight*(i+1)<<"\">"<< actorNumber<<"</text>";
             outText << "</g>";    // end row
 
         }                           // end for rows
@@ -10790,7 +10795,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
             for ( int i=0; i < it.value().size() ; ++i ) {
                 actorNumber = it.value().at(i);
 
-                outText << "<path d=\"M 10 " <<10*(myindex[actorNumber]+1)<<" L 190 " <<10*(myindex[actorNumber]+1)<<"\" stroke=\"red\" "
+                outText << "<path d=\"M 10 " <<10*(myindex[actorNumber]+1)<<" L 190 " <<rowHeight*(myindex[actorNumber]+1)<<"\" stroke=\"red\" "
                                    "stroke-linecap=\"round\" stroke-width=\"1\" stroke-dasharray=\"5,5\" fill=\"none\"/>";
             }
 
@@ -10879,6 +10884,7 @@ void Graph::graphClusteringHierarchical(const int &matrix,
     QMap<int,V_int>::iterator prev;
 
     // variables for diagram computation
+    QVector<QString> clusterNames;
     QVector<QString> types; // stores actor types in current level
     QVector<QString> typesNext; //stores actor types in next level
     QString newLevelActorType, curActorType;
@@ -10947,6 +10953,7 @@ void Graph::graphClusteringHierarchical(const int &matrix,
     if (diagram) {
         types.reserve(N);
         typesNext.reserve(N);
+        clusterNames.reserve(N);
     }
 
 
@@ -10971,6 +10978,8 @@ void Graph::graphClusteringHierarchical(const int &matrix,
             // initially all actors have no type
             types<< "none";
             typesNext<< "none";
+
+
         }
     }
 
@@ -10990,12 +10999,32 @@ void Graph::graphClusteringHierarchical(const int &matrix,
         clusteredItems.clear();
         clusteredItems = m_clustersIndex[mergedClusterIndex] + m_clustersIndex[deletedClusterIndex] ;
 
+        if (m_clustersIndex[mergedClusterIndex].count() == 1) {
+            m_clusterNames.insert(QString::number(i+1), clustersIndex[mergedClusterIndex]);
+        }
+        else {
+
+        }
+        if (m_clustersIndex[deletedClusterIndex].count() == 1) {
+
+        }
+        else {
+            for ( vt= m_clustersIndex[deletedClusterIndex].constBegin() ;
+                  vt != m_clustersIndex[deletedClusterIndex].constEnd(); ++vt) {
+                actorNumber = *vt;
+            }
+
+        }
+
+
+
         qDebug() << "level"<< min << "seq" << seq+1<<"clusteredItems in level"
                  <<clusteredItems;
 
         m_clustersPerLevel.insert( min, clusteredItems);
         m_clustersByOrder.insert( seq+1, clusteredItems);
 
+        m_clusterPairsPerLevel[min] = clusterNames;
 
         if (diagram) {
 
@@ -11017,6 +11046,8 @@ void Graph::graphClusteringHierarchical(const int &matrix,
             for ( vt= clusteredItems.constBegin() ; vt != clusteredItems.constEnd(); ++vt)
             {
                 actorNumber = *vt;
+
+
 
                 newLevelActorType = ( (vt==clusteredItems.constBegin()) ?
                                      "first" :
@@ -11198,9 +11229,13 @@ void Graph::graphClusteringHierarchical(const int &matrix,
 
             } //end for clusteredItems
 
+
             qDebug () << "types in current level END" << m_clusteredActorType[seq+1];
             types = typesNext;
             qDebug () << "types in next level" << types;
+
+
+
 
         } //end if diagram
 
