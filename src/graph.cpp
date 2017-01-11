@@ -10551,7 +10551,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
     computationTimer.start();
 
     QMap<float, V_int>::const_iterator it;
-    QMap<float, V_int>::const_iterator vt;
+
 
     qDebug()<< "Graph::writeClusteringHierarchical() - matrix:"
             << matrix
@@ -10765,22 +10765,36 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
                << "</p>";
 
 
-        int rowHeight = 10;
+        int rowHeight = 15;
+        int maxWidth = 800;
 
-        QMap<int, QPoint> levelStartPoints;
+        QMap<QString, QPoint> levelStartPoints;
+        QMap<float, V_str>::const_iterator vit;
 
         int actorNumber;
-        QMap <int,int> myindex;
+        QMap <int,int> clusterRowIndex;
+        float maxLevelValue;
+        QString clusterName;
 
         it = m_clustersPerLevel.constEnd();
         it--;
 
+        maxLevelValue = it.key();
 
-        outText << "<svg class=\"dendrosvg\" width=\"200\" height=\"150\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">";
+        qDebug() <<"m_clustersPerLevel" << m_clustersPerLevel <<endl
+                << "m_clustersByOrder"<<m_clustersByOrder;
+
+        qDebug() << "DENDRO SVG"
+                 << "max Level value"<< maxLevelValue  << endl
+                 << "m_clusterPairNamesPerLevel" << m_clusterPairNamesPerLevel << endl
+                 << "m_clustersByName" << m_clustersByName;
+
+        outText << "<svg class=\"dendrosvg\" width=\""<<maxWidth<<"\" height=\"" <<rowHeight*(N+1)
+                << "\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">";
 
         for ( int i=0; i < it.value().size() ; ++i ) {
             actorNumber = it.value().at(i);
-            myindex[actorNumber] = i;
+            clusterRowIndex[actorNumber] = i;
             outText << "<g class=\"row row-" << i << "\">";
             outText << "<text class=\"header\" x=\"10\" y=\"" <<rowHeight*(i+1)<<"\">"<< actorNumber<<"</text>";
             outText << "</g>";    // end row
@@ -10788,18 +10802,33 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
         }                           // end for rows
 
 
-        for ( it= m_clustersPerLevel.constBegin() ; it != m_clustersPerLevel.constEnd(); ++it) {
-            qDebug() << "LEVEL"<< (it).key()
-                     << "ACTORS"<<(it).value;
 
-            for ( int i=0; i < it.value().size() ; ++i ) {
-                actorNumber = it.value().at(i);
+        for ( vit= m_clusterPairNamesPerLevel.constBegin() ; vit != m_clusterPairNamesPerLevel.constEnd(); ++vit) {
 
-                outText << "<path d=\"M 10 " <<10*(myindex[actorNumber]+1)<<" L 190 " <<rowHeight*(myindex[actorNumber]+1)<<"\" stroke=\"red\" "
-                                   "stroke-linecap=\"round\" stroke-width=\"1\" stroke-dasharray=\"5,5\" fill=\"none\"/>";
+            qDebug() << "vit.key()" <<vit.key()
+                     << "vit.value" << vit.value();
+
+            for ( int i=0; i < vit.value().size() ; ++i ) {
+                clusterName = vit.value().at(i);
+                if (!clusterName.startsWith('c')) {
+                    actorNumber= clusterName.toInt();
+                    qDebug() << "clusterName" <<clusterName
+                             << "actorNumber" << actorNumber;
+                    outText << "<path d=\"M 30 " <<rowHeight*(clusterRowIndex[actorNumber]+1)<<" L "
+                            << maxWidth * (vit.key() / maxLevelValue)
+                            <<" "
+                            <<rowHeight*(clusterRowIndex[actorNumber]+1)
+                           <<"\" stroke=\"red\" "
+                             "stroke-linecap=\"round\" stroke-width=\"1\" stroke-dasharray=\"5,5\" fill=\"none\"/>";
+                }
+                else {
+
+                }
             }
-
-
+            outText << "<text x=\"" << maxWidth * (vit.key() / maxLevelValue)
+                    <<"\" y=\""
+                    <<rowHeight*(N)
+                   <<"\" >"<< vit.key() <<"</text>";
 
         }
 
@@ -10809,8 +10838,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
     }       // end if dendrogram
 
 
-    qDebug() <<"m_clustersPerLevel" << m_clustersPerLevel <<endl
-            << "m_clustersByOrder"<<m_clustersByOrder;
+
 
 
     outText << "<p>&nbsp;</p>";
@@ -10883,8 +10911,11 @@ void Graph::graphClusteringHierarchical(const int &matrix,
     QMap<int,V_int>::iterator it;
     QMap<int,V_int>::iterator prev;
 
+    QMap<QString,V_int>::const_iterator sit;
+
     // variables for diagram computation
-    QVector<QString> clusterNames;
+    QVector<QString> clusterPairNames;
+    QString cluster1, cluster2;
     QVector<QString> types; // stores actor types in current level
     QVector<QString> typesNext; //stores actor types in next level
     QString newLevelActorType, curActorType;
@@ -10953,7 +10984,7 @@ void Graph::graphClusteringHierarchical(const int &matrix,
     if (diagram) {
         types.reserve(N);
         typesNext.reserve(N);
-        clusterNames.reserve(N);
+        clusterPairNames.reserve(N);
     }
 
 
@@ -10961,7 +10992,8 @@ void Graph::graphClusteringHierarchical(const int &matrix,
     m_clustersPerLevel.clear();
     m_clustersByOrder.clear();
     m_clusteredActorType.clear();
-
+    m_clustersByName.clear();
+    m_clusterPairNamesPerLevel.clear();
 
     //
     //Step 1: Assign each of the N items to its own cluster.
@@ -10978,7 +11010,7 @@ void Graph::graphClusteringHierarchical(const int &matrix,
             // initially all actors have no type
             types<< "none";
             typesNext<< "none";
-
+            m_clustersByName.insert(QString::number(i+1),clusteredItems );
 
         }
     }
@@ -10999,32 +11031,36 @@ void Graph::graphClusteringHierarchical(const int &matrix,
         clusteredItems.clear();
         clusteredItems = m_clustersIndex[mergedClusterIndex] + m_clustersIndex[deletedClusterIndex] ;
 
-        if (m_clustersIndex[mergedClusterIndex].count() == 1) {
-            m_clusterNames.insert(QString::number(i+1), clustersIndex[mergedClusterIndex]);
-        }
-        else {
-
-        }
-        if (m_clustersIndex[deletedClusterIndex].count() == 1) {
-
-        }
-        else {
-            for ( vt= m_clustersIndex[deletedClusterIndex].constBegin() ;
-                  vt != m_clustersIndex[deletedClusterIndex].constEnd(); ++vt) {
-                actorNumber = *vt;
-            }
-
-        }
-
-
-
         qDebug() << "level"<< min << "seq" << seq+1<<"clusteredItems in level"
                  <<clusteredItems;
 
         m_clustersPerLevel.insert( min, clusteredItems);
         m_clustersByOrder.insert( seq+1, clusteredItems);
 
-        m_clusterPairsPerLevel[min] = clusterNames;
+        cluster1.clear();
+        cluster2.clear();
+        clusterPairNames.clear();
+
+        for ( sit= m_clustersByName.constBegin() ; sit != m_clustersByName.constEnd(); ++sit) {
+            if (sit.value() == m_clustersIndex[mergedClusterIndex] ) {
+                cluster1 = sit.key();
+            }
+            else if (sit.value() == m_clustersIndex[deletedClusterIndex] ) {
+                cluster2 = sit.key();
+            }
+        }
+        if (cluster1.isNull() && m_clustersIndex[mergedClusterIndex].size() == 1) {
+            cluster1 = QString::number( m_clustersIndex[mergedClusterIndex].first() );
+        }
+        if (cluster2.isNull() && m_clustersIndex[deletedClusterIndex].size() == 1) {
+            cluster1 = QString::number( m_clustersIndex[deletedClusterIndex].first() );
+        }
+        clusterPairNames.append(cluster1);
+        clusterPairNames.append(cluster2);
+        m_clusterPairNamesPerLevel.insert(min, clusterPairNames);
+
+        m_clustersByName.insert("c"+QString::number(seq+1),clusteredItems );
+
 
         if (diagram) {
 
