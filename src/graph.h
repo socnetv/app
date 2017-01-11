@@ -912,7 +912,6 @@ private:
     QMap <float, V_int> m_clustersPerLevel;
     QMap <int, V_int> m_clustersByOrder;
 
-    QMap<int, V_str> m_clusteredActorType;
 
     QMap<QString, V_int> m_clustersByName;
     QMap<float, V_str> m_clusterPairNamesPerLevel;

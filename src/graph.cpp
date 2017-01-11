@@ -148,17 +148,7 @@ Graph::Graph() {
                        ".info {font-weight: bold;color: #333;}"
                        ".small {font-style: italic;color: #333; font-size: 90%;}"
                        ".dendrogram .row { clear:both; height: 16px; margin: 2px 0px; overflow:hidden; }"
-                       ".row .col .header {display:block;} "
-                       ".dendrogram .row .col { float: left; height: 12px; min-width:3%; text-align:center;}"
-                       ".dendrogram .row .col.last.up, "
-                       ".dendrogram .row .col.first { border-top:1px solid red; border-bottom: 0 none;}"
-                       ".dendrogram .row .col.first.down,"
-                       ".dendrogram .row .col.last { border-bottom:1px solid red; border-top: 0 none;}"
-                       ".dendrogram .row .col.level { border-right:1px solid red; }"
-                       ".dendrogram .row .col.clustered.level, "
-                       ".dendrogram .row .col.last.up.level, "
-                       ".dendrogram .row .col.first.down.level { border-right:0 none;}"
-                       ".dendrogram .cluster-levels .col {float:left; min-width: 3%; text-align:right;}"
+                       ".dendrogram .cluster-levels {float:left; min-width: 3%; text-align:right;}"
 
                        "</style>"
                        "<script type=\"text/javascript\">\n"
@@ -10672,87 +10662,6 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
      }
     outText << "</pre>";
 
-    if (dendrogram) {
-        outText << "<p>"
-                << "<span class=\"info\">"
-                << tr("Clustering Dendrogram")
-                <<"</span>"
-               << "</p>";
-
-        outText << "<div class=\"dendrogram\">";
-
-        int actorNumber;
-
-        it = m_clustersPerLevel.constEnd();
-        it--;
-
-        for ( int i=0; i < it.value().size() ; ++i ) {
-            actorNumber = it.value().at(i);
-
-            outText << "<div class=\"row row-" << i << "\">";
-
-            for (int j=0; j< m_clustersByOrder.size() + 1 ; ++j) {
-                qDebug() << "actorNumber" << actorNumber
-                         << "col j" << j;
-
-                if (j==0) {
-                    qDebug() << "j = 0 writing header col" ;
-                    outText << "<div class=\"col col-" << j << "\">";
-                    outText <<  "<span class=\"header\">" << actorNumber << "</span>";
-                    outText << "</div>";            //end col
-                }
-                else {
-                    qDebug() << "j > 0 writing col - m_clustersByOrder.value(j) " << m_clustersByOrder.value(j) ;
-
-                    if ( m_clustersByOrder.value(j).contains(actorNumber) ){
-
-                        qDebug() << "m_clustersByOrder.value(j) contains actorNumber"
-                                 << actorNumber ;
-                        qDebug() << "writing level col";
-
-                        outText << "<div class=\"col col-" << j << " "
-                                //<< clusteredItems.value(actorNumber,"none")
-                                << m_clusteredActorType[j][actorNumber - 1]
-                                << " level \">";
-                        outText <<  "";
-                        outText << "</div>";        //end col
-
-                    }
-                    else {
-                        qDebug() << "m_clustersByOrder.value(j) DOES NOT contain actorNumber" << actorNumber;
-                        qDebug() << "writing non level col";
-                        //outText << "<div class=\"col col-" << j << " "<< clusteredItems.value(actorNumber,"none") <<"\">";
-                        outText << "<div class=\"col col-" << j << " "<< m_clusteredActorType[j][actorNumber - 1] <<"\">";
-
-                        outText <<  "";
-                        outText << "</div>";        //end col
-
-                    }
-
-                }
-
-            }                       // end for (columns inside row)
-            outText << "</div>";    // end row
-        }                           // end for rows
-
-        outText << "<div class=\"row cluster-levels\">";
-        outText <<     "<div class=\"col col-0\">";
-        outText <<     "&nbsp;";
-        outText <<     "</div>"; //end col-0
-        int j = 1;
-        for ( it= m_clustersPerLevel.constBegin() ; it != m_clustersPerLevel.constEnd(); ++it) {
-            outText << "<div style=\"float:left;\" class=\"col level-" << j << "\">";
-            outText << it.key() << "\t" ;
-            outText << "</div>"; //end level
-            j++;
-        }
-
-        outText << "</div>";        //end cluster-levels
-        outText << "</div>";        //end dendrogram
-
-    }       // end if dendrogram
-
-
 
 
     if (dendrogram) {
@@ -10764,15 +10673,22 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
                 <<"</span>"
                << "</p>";
 
-
+        int diagramPaddingLeft=30;
         int rowHeight = 15;
+        int rowPadding = 10;
         int maxWidth = 800;
 
-        QMap<QString, QPoint> levelStartPoints;
-        QMap<float, V_str>::const_iterator vit;
+        QMap<QString, QPoint> clusterEndPoint;
+        QPoint endPoint1, endPoint2, endPointLevel;
+
+        QMap<float, V_str>::const_iterator pit; //cluster names pair iterator
+
+        QVector<int> clusterVector;
+       // QVector<int>::const_iterator vt; //cluster vector iterator
 
         int actorNumber;
-        QMap <int,int> clusterRowIndex;
+        int seq=0;
+
         float maxLevelValue;
         QString clusterName;
 
@@ -10780,6 +10696,8 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
         it--;
 
         maxLevelValue = it.key();
+
+        clusterVector.reserve(N);
 
         qDebug() <<"m_clustersPerLevel" << m_clustersPerLevel <<endl
                 << "m_clustersByOrder"<<m_clustersByOrder;
@@ -10789,50 +10707,86 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
                  << "m_clusterPairNamesPerLevel" << m_clusterPairNamesPerLevel << endl
                  << "m_clustersByName" << m_clustersByName;
 
+
+        outText << "<div class=\"dendrogram\">";
+
         outText << "<svg class=\"dendrosvg\" width=\""<<maxWidth<<"\" height=\"" <<rowHeight*(N+1)
                 << "\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">";
 
         for ( int i=0; i < it.value().size() ; ++i ) {
             actorNumber = it.value().at(i);
-            clusterRowIndex[actorNumber] = i;
+
+            clusterEndPoint[QString::number(actorNumber)] = QPoint(diagramPaddingLeft,rowHeight*(i+1));
             outText << "<g class=\"row row-" << i << "\">";
-            outText << "<text class=\"header\" x=\"10\" y=\"" <<rowHeight*(i+1)<<"\">"<< actorNumber<<"</text>";
+            outText << "<text class=\"header\" x=\"" << rowPadding
+                    <<"\" y=\"" << (rowHeight*(i+1))
+                    <<"\">" << actorNumber
+                    <<"</text>";
+
             outText << "</g>";    // end row
 
         }                           // end for rows
 
 
 
-        for ( vit= m_clusterPairNamesPerLevel.constBegin() ; vit != m_clusterPairNamesPerLevel.constEnd(); ++vit) {
+        for ( pit= m_clusterPairNamesPerLevel.constBegin() ; pit != m_clusterPairNamesPerLevel.constEnd(); ++pit) {
+            seq++;
 
-            qDebug() << "vit.key()" <<vit.key()
-                     << "vit.value" << vit.value();
+            qDebug() << "seq" <<seq
+                     << "level" <<pit.key()
+                     << "cluster pair" << pit.value();
 
-            for ( int i=0; i < vit.value().size() ; ++i ) {
-                clusterName = vit.value().at(i);
-                if (!clusterName.startsWith('c')) {
-                    actorNumber= clusterName.toInt();
-                    qDebug() << "clusterName" <<clusterName
-                             << "actorNumber" << actorNumber;
-                    outText << "<path d=\"M 30 " <<rowHeight*(clusterRowIndex[actorNumber]+1)<<" L "
-                            << maxWidth * (vit.key() / maxLevelValue)
-                            <<" "
-                            <<rowHeight*(clusterRowIndex[actorNumber]+1)
-                           <<"\" stroke=\"red\" "
-                             "stroke-linecap=\"round\" stroke-width=\"1\" stroke-dasharray=\"5,5\" fill=\"none\"/>";
+            for ( int i=0; i < pit.value().size() ; ++i ) {
+
+                clusterName = pit.value().at(i);
+                qDebug() << "clusterName" <<clusterName;
+
+                if (i==0) {
+                    endPoint1 = clusterEndPoint.value(clusterName, QPoint());
                 }
                 else {
-
+                    endPoint2 = clusterEndPoint.value(clusterName, QPoint());
                 }
+
             }
-            outText << "<text x=\"" << maxWidth * (vit.key() / maxLevelValue)
+
+            if (endPoint1.isNull() || endPoint2.isNull()) {
+                continue;
+            }
+            endPointLevel = QPoint ( ceil(maxWidth * (pit.key() / maxLevelValue)),
+                                        ceil(endPoint1.y() + endPoint2.y())/2);
+
+            clusterEndPoint.insert("c"+QString::number(seq), endPointLevel);
+            outText << "<path d=\"M "<<endPoint1.x()
+                    <<" " <<endPoint1.y()
+                   <<" L "
+                    << endPointLevel.x()
+                    <<" "
+                    <<endPoint1.y()
+                   <<" L "
+                    << endPointLevel.x()
+                    <<" "
+                    << endPoint2.y()
+                   <<" L "
+                    << endPoint2.x()
+                    <<" "
+                    <<endPoint2.y()
+                   <<"\" stroke=\"red\" "
+                     "stroke-linecap=\"round\" stroke-width=\"1\" fill=\"none\"/>"; //stroke-dasharray=\"5,5\"
+
+
+            outText << "<text x=\"" << maxWidth * (pit.key() / maxLevelValue)
                     <<"\" y=\""
                     <<rowHeight*(N)
-                   <<"\" >"<< vit.key() <<"</text>";
+                   <<"\" >"<< pit.key() <<"</text>";
+
+
 
         }
 
-        outText << "</svg>";        //end dendrogram
+        outText << "</svg>";        //end dendrogram svg
+
+        outText << "</div>";        //end dendrogram div
 
 
     }       // end if dendrogram
@@ -10903,7 +10857,6 @@ void Graph::graphClusteringHierarchical(const int &matrix,
 
     // temp vector stores cluster members at each clustering level
     QVector<int> clusteredItems;
-    QVector<int>::const_iterator vt;
 
     // maps original and clustered items per their DSM matrix index
     // so that we know that at Level X the matrix index 0 corresponds to the cluster i.e. { 1,2,4}
@@ -10916,13 +10869,6 @@ void Graph::graphClusteringHierarchical(const int &matrix,
     // variables for diagram computation
     QVector<QString> clusterPairNames;
     QString cluster1, cluster2;
-    QVector<QString> types; // stores actor types in current level
-    QVector<QString> typesNext; //stores actor types in next level
-    QString newLevelActorType, curActorType;
-    int nextFirstIndex;
-    int curFirstIndex;
-    int actorNumber;
-
 
     Matrix DSM;  //dissimilarities matrix. Note: will be destroyed in the end.
 
@@ -10982,8 +10928,6 @@ void Graph::graphClusteringHierarchical(const int &matrix,
 
     clusteredItems.reserve(N);
     if (diagram) {
-        types.reserve(N);
-        typesNext.reserve(N);
         clusterPairNames.reserve(N);
     }
 
@@ -10991,7 +10935,7 @@ void Graph::graphClusteringHierarchical(const int &matrix,
     m_clustersIndex.clear();
     m_clustersPerLevel.clear();
     m_clustersByOrder.clear();
-    m_clusteredActorType.clear();
+
     m_clustersByName.clear();
     m_clusterPairNamesPerLevel.clear();
 
@@ -11007,11 +10951,7 @@ void Graph::graphClusteringHierarchical(const int &matrix,
         clusteredItems << i+1;
         m_clustersIndex[i] = clusteredItems;
         if (diagram) {
-            // initially all actors have no type
-            types<< "none";
-            typesNext<< "none";
             m_clustersByName.insert(QString::number(i+1),clusteredItems );
-
         }
     }
 
@@ -11037,240 +10977,32 @@ void Graph::graphClusteringHierarchical(const int &matrix,
         m_clustersPerLevel.insert( min, clusteredItems);
         m_clustersByOrder.insert( seq+1, clusteredItems);
 
-        cluster1.clear();
-        cluster2.clear();
-        clusterPairNames.clear();
-
-        for ( sit= m_clustersByName.constBegin() ; sit != m_clustersByName.constEnd(); ++sit) {
-            if (sit.value() == m_clustersIndex[mergedClusterIndex] ) {
-                cluster1 = sit.key();
-            }
-            else if (sit.value() == m_clustersIndex[deletedClusterIndex] ) {
-                cluster2 = sit.key();
-            }
-        }
-        if (cluster1.isNull() && m_clustersIndex[mergedClusterIndex].size() == 1) {
-            cluster1 = QString::number( m_clustersIndex[mergedClusterIndex].first() );
-        }
-        if (cluster2.isNull() && m_clustersIndex[deletedClusterIndex].size() == 1) {
-            cluster1 = QString::number( m_clustersIndex[deletedClusterIndex].first() );
-        }
-        clusterPairNames.append(cluster1);
-        clusterPairNames.append(cluster2);
-        m_clusterPairNamesPerLevel.insert(min, clusterPairNames);
-
-        m_clustersByName.insert("c"+QString::number(seq+1),clusteredItems );
-
 
         if (diagram) {
 
-            qDebug () << "types in current level pre-computation" << types;
+            cluster1.clear();
+            cluster2.clear();
+            clusterPairNames.clear();
 
-            // VALID ACTOR TYPES:
-            // first: this is the actor from which the upper leg horizontal line is drawn
-            // first down: same, but the horizontal line is drawn as border-bottom
-            // last: this is the actor from which the down leg horizontal line will be drawn.
-            // inner: no horizontal line, but in every level it appears a border-right is drawn
-            // clustered: no line is drawn.
-            // none: the initial type.
-
-            // compute the type/position of every actor in the current cluster
-            // and update their types in previous levels.
-
-            curFirstIndex = 0 ;
-
-            for ( vt= clusteredItems.constBegin() ; vt != clusteredItems.constEnd(); ++vt)
-            {
-                actorNumber = *vt;
-
-
-
-                newLevelActorType = ( (vt==clusteredItems.constBegin()) ?
-                                     "first" :
-                                     ((vt==clusteredItems.constEnd() - 1) ?
-                                          "last" : "inner")
-                                          );
-
-                qDebug () << " actor newlevel pos" << actorNumber << newLevelActorType ;
-
-                curActorType = types [ actorNumber - 1 ] ;
-
-                if ( curActorType  != "clustered" &&
-                     curActorType  != "first" &&
-                     curActorType  != "first down"){
-
-                    // update the actor's current level type: first, last or inner
-                    qDebug () << " actor" << actorNumber << "type"
-                              << curActorType << "changing to" <<newLevelActorType;
-
-                    types [ actorNumber - 1 ] =  newLevelActorType;
-
+            for ( sit= m_clustersByName.constBegin() ; sit != m_clustersByName.constEnd(); ++sit) {
+                if (sit.value() == m_clustersIndex[mergedClusterIndex] ) {
+                    cluster1 = sit.key();
                 }
-                else if (curActorType == "clustered" && newLevelActorType=="inner" ){
-
-                    //change to newLevelActorType only if this actor's index
-                    // is greater than this cluster's real first actor
-
-                    for (int i = 0; i < types.size(); ++i)
-                    {
-                        if (types.at(i) == "first" || types.at(i) == "first down")
-                        {
-                            if (  clusteredItems.indexOf(i+1) != -1 )
-                            {
-                                if (clusteredItems.indexOf(actorNumber) > clusteredItems.indexOf(i+1) )
-                                {
-
-                                    qDebug () << " actor" << actorNumber
-                                              << "type" << curActorType
-                                              << "changing to"
-                                              << newLevelActorType;
-
-                                    types [ actorNumber - 1 ] =  newLevelActorType;
-
-                                }
-                            }
-                        }
-
-                    }
+                else if (sit.value() == m_clustersIndex[deletedClusterIndex] ) {
+                    cluster2 = sit.key();
                 }
-                else if (curActorType == "first" && newLevelActorType=="last") {
-                    qDebug () << " actor" << actorNumber
-                              << "type"  << curActorType
-                              << "changing to" <<"last up";
-                    types [ actorNumber - 1 ] =  "last up";
-                }
-                else if (curActorType == "first" &&
-                         newLevelActorType=="inner" &&
-                         ( clusteredItems.indexOf(actorNumber) ) > clusteredItems.size()/2) {
+            }
+            if (cluster1.isNull() && m_clustersIndex[mergedClusterIndex].size() == 1) {
+                cluster1 = QString::number( m_clustersIndex[mergedClusterIndex].first() );
+            }
+            if (cluster2.isNull() && m_clustersIndex[deletedClusterIndex].size() == 1) {
+                cluster1 = QString::number( m_clustersIndex[deletedClusterIndex].first() );
+            }
+            clusterPairNames.append(cluster1);
+            clusterPairNames.append(cluster2);
+            m_clusterPairNamesPerLevel.insert(min, clusterPairNames);
 
-                    qDebug () << " actor" << actorNumber
-                              << "type" << curActorType
-                              << "changing to" <<newLevelActorType
-                              <<"because clusteredItems.indexOf"
-                             << (clusteredItems.indexOf(actorNumber) )
-                             <<" > clusteredItems.size/2" <<clusteredItems.size()/2;
-
-                         types [ actorNumber - 1 ] =  "last"; //"first down inner";
-                }
-                else {
-                    qDebug () << " actor" << actorNumber << "is type"
-                              << curActorType << "- not changing";
-                }
-
-                // store this level's actor types.
-                m_clusteredActorType[seq+1] = types;
-
-                qDebug () << "types in current level" << types;
-
-
-                // only if actor is first or last:
-                // update actor type in all previous levels,
-                // and compute first actor of cluster in next level
-
-                if ( types [ actorNumber - 1 ] == "first" ||
-                     types [ actorNumber - 1 ] == "first down" ||
-                     types [ actorNumber - 1 ] == "last" ||
-                     types [ actorNumber - 1 ] == "last up")
-                {
-                    qDebug() << "actor"<< actorNumber
-                             << "first or last - update its types in all previous levels.";
-
-                    for (int i = 1 ; i < m_clusteredActorType.size(); ++i) {
-                        qDebug () << "level:"<< i << ":"<< m_clusteredActorType[i];
-                        if (m_clusteredActorType[i][actorNumber - 1] == "none") {
-
-                            qDebug () << "changing actor index"<< actorNumber - 1
-                                      << "type: none to:"<< newLevelActorType;
-
-                            m_clusteredActorType[i][actorNumber - 1] = newLevelActorType;
-                        }
-                        else {
-
-                            qDebug () << "not changing actor index"<< actorNumber - 1
-                                      << "type:"<< m_clusteredActorType[i][(*vt) - 1];
-
-                        }
-                    }
-
-
-                    qDebug() << "compute 'first' actor for next level." << endl
-                             << "  curFirstIndex"<<curFirstIndex << endl
-                             << "  current types" << types;
-                    if ( types [ actorNumber - 1 ] == "first" ||
-                         types [ actorNumber - 1 ] == "first down" ||
-                         types [ actorNumber - 1 ] == "first up"
-                         ) {
-                        curFirstIndex =clusteredItems.indexOf(actorNumber);
-                        qDebug() << "'first' actor for next level:" << actorNumber
-                                 << "  indexOf:"<<curFirstIndex;
-                    }
-
-
-                    qDebug() << "computed 'first' actor for next level:" << endl
-                             << "  curFirstIndex"<<curFirstIndex;
-
-                    // compute middle actor of the new cluster
-                    // this will be 'first' in next level
-                    // from which a straight line will be drawn
-
-                    if ( ( ( clusteredItems.size() - curFirstIndex ) % 2) == 0) {
-
-                        // turn first and last actors to type: clustered in next level.
-                        typesNext [ actorNumber - 1 ] =  "clustered";
-
-                        nextFirstIndex =  floor (  (clusteredItems.size()  - curFirstIndex ) / 2   ) ;
-
-                    }
-                    else {
-
-                        // turn first and last actors to type: clustered in next level.
-                        typesNext [ actorNumber - 1 ] =  "clustered";
-
-                        nextFirstIndex = floor (  (clusteredItems.size()  - curFirstIndex )  / 2 ) ;
-
-                    }
-
-                    if (nextFirstIndex <  (clusteredItems.size()  / 2)  ) {
-                        typesNext[ clusteredItems.at(nextFirstIndex) -1 ] =  "first down";
-                        qDebug () <<"clusteredItems.size()" << ( clusteredItems.size())
-                                    << "even - nextFirstIndex" << nextFirstIndex
-                                    << "clusteredItems.at(nextFirstIndex)"
-                                    << clusteredItems.at(nextFirstIndex)
-                                    << "next type" << "first down";
-
-                    }
-                    else {
-                        if (typesNext[ clusteredItems.at(nextFirstIndex) -1 ]== "first") {
-                            typesNext[ clusteredItems.at(nextFirstIndex) -1 ] = "first down";
-                            qDebug () <<"clusteredItems.size()" << ( clusteredItems.size())
-                                    << "even - nextFirstIndex" << nextFirstIndex
-                                    << "clusteredItems.at(nextFirstIndex)"
-                                    << clusteredItems.at(nextFirstIndex)
-                                       << "next type" << "first down";
-
-                        }
-                        else {
-                            typesNext[ clusteredItems.at(nextFirstIndex) -1 ] =  "first";
-                            qDebug () <<"clusteredItems.size()" << ( clusteredItems.size())
-                                    << "even - nextFirstIndex" << nextFirstIndex
-                                    << "clusteredItems.at(nextFirstIndex)"
-                                    << clusteredItems.at(nextFirstIndex)
-                                       << "next type" << "first";
-
-                        }
-
-                    }
-
-                }
-
-            } //end for clusteredItems
-
-
-            qDebug () << "types in current level END" << m_clusteredActorType[seq+1];
-            types = typesNext;
-            qDebug () << "types in next level" << types;
-
-
+            m_clustersByName.insert("c"+QString::number(seq+1),clusteredItems );
 
 
         } //end if diagram
