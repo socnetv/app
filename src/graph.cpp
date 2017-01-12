@@ -10673,10 +10673,19 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
                 <<"</span>"
                << "</p>";
 
+        int diagramMaxWidth = 800;
         int diagramPaddingLeft=30;
+        int diagramPaddingTop =30;
         int rowHeight = 15;
-        int rowPadding = 10;
-        int maxWidth = 800;
+        int rowPaddingLeft = 5;
+
+        int headerHeight = 10;
+        int headerTextSize = 9;
+        int actorTextSize = 12;
+        int legendTextSize = 9;
+
+        int maxSVGWidth = diagramMaxWidth + diagramPaddingLeft + rowPaddingLeft;
+        int maxSVGHeight = 2 * diagramPaddingTop + (rowHeight * N);
 
         QMap<QString, QPoint> clusterEndPoint;
         QPoint endPoint1, endPoint2, endPointLevel;
@@ -10684,7 +10693,6 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
         QMap<float, V_str>::const_iterator pit; //cluster names pair iterator
 
         QVector<int> clusterVector;
-       // QVector<int>::const_iterator vt; //cluster vector iterator
 
         int actorNumber;
         int seq=0;
@@ -10710,25 +10718,43 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
 
         outText << "<div class=\"dendrogram\">";
 
-        outText << "<svg class=\"dendrosvg\" width=\""<<maxWidth<<"\" height=\"" <<rowHeight*(N+1)
+        outText << "<svg class=\"dendrosvg SocNetV-v"<< VERSION
+                <<"\" width=\""<< maxSVGWidth
+                <<"\" height=\"" <<maxSVGHeight
                 << "\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">";
 
-        for ( int i=0; i < it.value().size() ; ++i ) {
-            actorNumber = it.value().at(i);
+        // print a legend on top
+        outText << "<text font-size=\""<< headerTextSize
+                << "\" class=\"header\" x=\"" << 0
+                <<"\" y=\"" << headerHeight
+                <<"\">" << "Actor"
+                <<"</text>";
+        outText << "<text font-size=\""<< headerTextSize
+                << "\" class=\"header\" x=\"" << diagramMaxWidth / 2
+                <<"\" y=\"" << headerHeight
+                <<"\">" << "Clusterings"
+                <<"</text>";
 
-            clusterEndPoint[QString::number(actorNumber)] = QPoint(diagramPaddingLeft,rowHeight*(i+1));
+        // print actor numbers
+        // and compute initial cluster end points for them.
+        for ( int i=0; i < it.value().size() ; ++i ) {
+
+            actorNumber = it.value().at(i);
+            clusterEndPoint[QString::number(actorNumber)] = QPoint(diagramPaddingLeft,diagramPaddingTop+rowHeight*(i));
+
             outText << "<g class=\"row row-" << i << "\">";
-            outText << "<text class=\"header\" x=\"" << rowPadding
-                    <<"\" y=\"" << (rowHeight*(i+1))
+            outText << "<text class=\"actor\" font-size=\""<< actorTextSize
+                    << "\" x=\"" << rowPaddingLeft
+                    <<"\" y=\"" << diagramPaddingTop + (rowHeight*(i)) + actorTextSize / 3
                     <<"\">" << actorNumber
                     <<"</text>";
 
             outText << "</g>";    // end row
 
-        }                           // end for rows
+        }                         // end for rows
 
 
-
+        // begin drawing clustering paths/lines
         for ( pit= m_clusterPairNamesPerLevel.constBegin() ; pit != m_clusterPairNamesPerLevel.constEnd(); ++pit) {
             seq++;
 
@@ -10753,10 +10779,14 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
             if (endPoint1.isNull() || endPoint2.isNull()) {
                 continue;
             }
-            endPointLevel = QPoint ( ceil(maxWidth * (pit.key() / maxLevelValue)),
+
+            // compute and save new endPoint
+            endPointLevel = QPoint ( ceil(diagramMaxWidth * (pit.key() / maxLevelValue)),
                                         ceil(endPoint1.y() + endPoint2.y())/2);
 
             clusterEndPoint.insert("c"+QString::number(seq), endPointLevel);
+
+            // print path
             outText << "<path d=\"M "<<endPoint1.x()
                     <<" " <<endPoint1.y()
                    <<" L "
@@ -10775,9 +10805,23 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
                      "stroke-linecap=\"round\" stroke-width=\"1\" fill=\"none\"/>"; //stroke-dasharray=\"5,5\"
 
 
-            outText << "<text x=\"" << maxWidth * (pit.key() / maxLevelValue)
+            // print level vertical dashed line
+            outText << "<path d=\"M "<<endPointLevel.x()
+                    <<" " << diagramPaddingTop - 10
+                   <<" L "
+                    << endPointLevel.x()
+                    <<" "
+                    <<diagramPaddingTop  + rowHeight*(N) -10
+                   <<"\" stroke=\"#999\" "
+                     "stroke-linecap=\"round\" stroke-dasharray=\"1,2\" stroke-width=\"0.4\" fill=\"none\"/>";
+
+
+            outText << "<text class=\"legend\"  writing-mode=\"tb-rl\" "
+                       "glyph-orientation-vertical=\"90\" "
+                       "font-size=\""<< legendTextSize
+                    << "\" x=\"" << diagramMaxWidth * (pit.key() / maxLevelValue) - 5
                     <<"\" y=\""
-                    <<rowHeight*(N)
+                    <<diagramPaddingTop  + rowHeight*(N)
                    <<"\" >"<< pit.key() <<"</text>";
 
 
@@ -10790,8 +10834,6 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
 
 
     }       // end if dendrogram
-
-
 
 
 
