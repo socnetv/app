@@ -10891,7 +10891,11 @@ void Graph::graphClusteringHierarchical(const int &matrix,
              << "metric"
              << metric
              << "method"
-             << graphClusteringMethodTypeToString(method);
+             << graphClusteringMethodTypeToString(method)
+             << "diagonal"
+             << diagonal
+             << "diagram"
+             << diagram;
 
     QString varLocation = "Rows";
 
@@ -11077,15 +11081,14 @@ void Graph::graphClusteringHierarchical(const int &matrix,
 
         qDebug() << "Graph::graphClusteringHierarchical() -" << endl
                  << "  Remove key"<< deletedClusterIndex
-                    << "and shift m_clustersIndex values to left: "
-                 << m_clustersIndex;
+                 << "and shift next values to left: " ;
         it = m_clustersIndex.find(deletedClusterIndex);
         while (it != m_clustersIndex.end()) {
             prev = it;
             ++it;
             if ( it != m_clustersIndex.end() ) {
                 prev.value() = it.value() ;
-                qDebug() << "  key now"<< prev.key() << ": " << prev.value() ;
+                //qDebug() << "  key now"<< prev.key() << ": " << prev.value() ;
             }
         }
         m_clustersIndex.erase(--it); //erase the last element in map
@@ -11099,60 +11102,60 @@ void Graph::graphClusteringHierarchical(const int &matrix,
         //Step 3. Compute distances (or similarities) between
         //        the single new cluster and the old clusters
         //
+        int j = mergedClusterIndex ;
         for (int i = 0 ; i< clustersLeft; i ++ ) {
             if (i == deletedClusterIndex  ) {
 //                qDebug() << "Graph::graphClusteringHierarchical() -"
-//                         << "i"<<i+1
-//                          << "= deletedClusterIndex"<< deletedClusterIndex +1
 //                          <<"SKIP this as it is one of the merged clusters.";
                 continue;
 
             }
 
-            int j = mergedClusterIndex;
+            distanceNewCluster = 0;
+
             switch (method) {
             case CLUSTERING_SINGLE_LINKAGE: //"single-linkage":
-                if (!diagonal) {
-                    if (i==imin) {
-                        distanceNewCluster = DSM.item(i,jmin);
-                    }
-                    else if (i==jmin) {
-                        distanceNewCluster = DSM.item(i,imin);
-
-                    }
+                if (i==j) {
+                    distanceNewCluster = 0;
                 }
                 else {
                     distanceNewCluster= (DSM.item(i,imin) < DSM.item(i,jmin) ) ? DSM.item(i,imin) : DSM.item(i,jmin);
                 }
-                qDebug() << "Graph::graphClusteringHierarchical() -"
+                qDebug() << "Graph::graphClusteringHierarchical() - single-linkage (minimum)"
                          << "i"<<i+1  <<"j"<<j+1
                          <<"== mergedCluster"<<mergedClusterIndex + 1 <<endl
-                         << "  DSM(i,imin)"<< DSM.item(i,imin)
-                         << "DSM(i,jmin)"  << DSM.item(i,jmin)
-                         << "  single-linkage distanceNewCluster"<< distanceNewCluster;
+                        << "  DSM(i,imin)"<< DSM.item(i,imin)
+                        << "DSM(i,jmin)"  << DSM.item(i,jmin)
+                        << "minimum"<< distanceNewCluster;
                 break;
             case CLUSTERING_COMPLETE_LINKAGE: // "complete-linkage":
-                if (i!=j) {
-                    distanceNewCluster= (DSM.item(i,imin) > DSM.item(i,jmin) ) ? DSM.item(i,imin) : DSM.item(i,jmin);
-                }
-                else {
+                if (i==j) {
                     distanceNewCluster = 0;
                 }
-                qDebug() << "Graph::graphClusteringHierarchical() -"
+                else {
+                    distanceNewCluster= (DSM.item(i,imin) > DSM.item(i,jmin) ) ? DSM.item(i,imin) : DSM.item(i,jmin);
+
+                }
+                qDebug() << "Graph::graphClusteringHierarchical() - complete-linkage "
                          << "i"<<i+1  <<"j"<<j+1
                          <<"== mergedCluster"<<mergedClusterIndex + 1 <<endl
-                         << "  DSM(i,imin)"<<DSM.item(i,imin)
-                         << "DSM(i,jmin)"<<DSM.item(i,jmin)
-                         << "  complete-linkage distanceNewCluster"<< distanceNewCluster;
+                        << "  DSM(i,imin)"<<DSM.item(i,imin)
+                        << "DSM(i,jmin)"<<DSM.item(i,jmin)
+                        << "maximum"<< distanceNewCluster;
                 break;
             case CLUSTERING_AVERAGE_LINKAGE: //mean or "average-linkage" or UPGMA
-                distanceNewCluster= ( DSM.item(i,imin)  + DSM.item(i,jmin) ) / 2;
-                qDebug() << "Graph::graphClusteringHierarchical() -"
+                if (i==j) {
+                    distanceNewCluster = 0;
+                }
+                else {
+                    distanceNewCluster= ( DSM.item(i,imin)  + DSM.item(i,jmin) ) / 2;
+                }
+                qDebug() << "Graph::graphClusteringHierarchical() - average-linkage "
                          << "i"<<i+1  <<"j"<<j+1
                          <<"== mergedCluster"<<mergedClusterIndex + 1 <<endl
-                         << "  DSM(i,imin)"<< DSM.item(i,imin)
-                         << "DSM(i,jmin)"  << DSM.item(i,jmin)
-                         << "  average-linkage distanceNewCluster"<< distanceNewCluster;
+                        << "  DSM(i,imin)"<< DSM.item(i,imin)
+                        << "DSM(i,jmin)"  << DSM.item(i,jmin)
+                        << "average"<< distanceNewCluster;
                 break;
             default:
                 distanceNewCluster= (DSM.item(i,imin) < DSM.item(i,jmin) ) ? DSM.item(i,imin) : DSM.item(i,jmin);
@@ -11162,91 +11165,10 @@ void Graph::graphClusteringHierarchical(const int &matrix,
             DSM.setItem(i, j, distanceNewCluster);
             DSM.setItem(j, i, distanceNewCluster);
 
+            // DSM.setItem(deletedClusterIndex, j, RAND_MAX);
+            // DSM.setItem(j, deletedClusterIndex, RAND_MAX);
 
 
-//            for (int j = 0 ; j< clustersLeft; j ++ ) {
-//                if (j == mergedClusterIndex ) {
-
-//                    switch (method) {
-//                    case CLUSTERING_SINGLE_LINKAGE: //"single-linkage":
-//                        if (!diagonal) {
-//                            if (i==imin) {
-//                                distanceNewCluster = DSM.item(i,jmin);
-//                            }
-//                            else if (i==jmin) {
-//                                distanceNewCluster = DSM.item(i,imin);
-
-//                            }
-//                        }
-//                        else {
-//                            distanceNewCluster= (DSM.item(i,imin) < DSM.item(i,jmin) ) ? DSM.item(i,imin) : DSM.item(i,jmin);
-//                        }
-//                        qDebug() << "Graph::graphClusteringHierarchical() -"
-//                                 << "i"<<i+1  <<"j"<<j+1
-//                                 <<"== mergedCluster"<<mergedClusterIndex + 1 <<endl
-//                                 << "  DSM(i,imin)"<< DSM.item(i,imin)
-//                                 << "DSM(i,jmin)"  << DSM.item(i,jmin)
-//                                 << "  single-linkage distanceNewCluster"<< distanceNewCluster;
-//                        break;
-//                    case CLUSTERING_COMPLETE_LINKAGE: // "complete-linkage":
-//                        if (i!=j) {
-//                            distanceNewCluster= (DSM.item(i,imin) > DSM.item(i,jmin) ) ? DSM.item(i,imin) : DSM.item(i,jmin);
-//                        }
-//                        else {
-//                            distanceNewCluster = 0;
-//                        }
-//                        qDebug() << "Graph::graphClusteringHierarchical() -"
-//                                 << "i"<<i+1  <<"j"<<j+1
-//                                 <<"== mergedCluster"<<mergedClusterIndex + 1 <<endl
-//                                 << "  DSM(i,imin)"<<DSM.item(i,imin)
-//                                 << "DSM(i,jmin)"<<DSM.item(i,jmin)
-//                                 << "  complete-linkage distanceNewCluster"<< distanceNewCluster;
-//                        break;
-//                    case CLUSTERING_AVERAGE_LINKAGE: //mean or "average-linkage" or UPGMA
-//                        distanceNewCluster= ( DSM.item(i,imin)  + DSM.item(i,jmin) ) / 2;
-//                        qDebug() << "Graph::graphClusteringHierarchical() -"
-//                                 << "i"<<i+1  <<"j"<<j+1
-//                                 <<"== mergedCluster"<<mergedClusterIndex + 1 <<endl
-//                                 << "  DSM(i,imin)"<< DSM.item(i,imin)
-//                                 << "DSM(i,jmin)"  << DSM.item(i,jmin)
-//                                 << "  average-linkage distanceNewCluster"<< distanceNewCluster;
-//                        break;
-//                    default:
-//                        distanceNewCluster= (DSM.item(i,imin) < DSM.item(i,jmin) ) ? DSM.item(i,imin) : DSM.item(i,jmin);
-//                        break;
-//                    }
-
-//                    DSM.setItem(i, j, distanceNewCluster);
-//                    DSM.setItem(j, i, distanceNewCluster);
-
-//                   // DSM.setItem(deletedClusterIndex, j, RAND_MAX);
-//                   // DSM.setItem(j, deletedClusterIndex, RAND_MAX);
-
-//                }
-//                else {
-//                    if (j == deletedClusterIndex  ) {
-////                        qDebug() << "Graph::graphClusteringHierarchical() -"
-////                                 << "i"<<i+1
-////                                 << "j"<<j+1
-////                                 << "= deletedClusterIndex"<< deletedClusterIndex  +1
-////                                 <<"SKIP as it is one of the merged clusters";
-
-//                       // DSM.setItem(i, j, RAND_MAX);
-//                       // DSM.setItem(j, i, RAND_MAX);
-
-//                        continue;
-
-//                    }
-
-////                    qDebug() << "Graph::graphClusteringHierarchical() -"
-////                             << "i"<<i+1
-////                             << "j"<<j+1
-////                             << "!= mergedClusterIndex"<< mergedClusterIndex+1
-////                             <<"SKIP as distance to this cluster should remain the same";
-//                    continue;
-
-//                }
-//            }
         }
 
 
