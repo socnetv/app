@@ -33,8 +33,10 @@
 #include <QPushButton>
 
 
-DialogClusteringHierarchical::DialogClusteringHierarchical (QWidget *parent) :
+DialogClusteringHierarchical::DialogClusteringHierarchical (QWidget *parent,
+                                                            QString preselectMatrix) :
     QDialog (parent)
+
 {
     ui.setupUi(this);
 
@@ -55,8 +57,12 @@ DialogClusteringHierarchical::DialogClusteringHierarchical (QWidget *parent) :
                 << "Average-linkage (UPGMA)";
 
     ui.matrixSelect -> insertItems( 1, matrixList );
+    if (preselectMatrix == "Distances") {
+        ui.matrixSelect  -> setCurrentIndex(1);
+    }
 
     ui.metricSelect ->insertItems(1, measureList);
+    ui.metricSelect  -> setCurrentIndex(3);
 
     ui.linkageSelect -> insertItems( 1, linkageList );
 
@@ -64,7 +70,7 @@ DialogClusteringHierarchical::DialogClusteringHierarchical (QWidget *parent) :
 
     ui.diagonalCheckBox -> setChecked(false);
 
-    ui.diagramCheckBox ->setChecked(false);
+    ui.diagramCheckBox ->setChecked(true);
 
     connect ( ui.matrixSelect, SIGNAL(highlighted(QString)),
               this, SLOT(matrixChanged(QString)) );

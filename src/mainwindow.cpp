@@ -10493,7 +10493,12 @@ void MainWindow::slotAnalyzeClusteringHierarchicalDialog() {
         return;
     }
 
-    m_dialogClusteringHierarchical = new DialogClusteringHierarchical(this);
+    QString preselectMatrix = "Adjacency";
+
+    if (!activeGraph.graphWeighted()) {
+        preselectMatrix = "Distances";
+    }
+    m_dialogClusteringHierarchical = new DialogClusteringHierarchical(this, preselectMatrix);
 
     connect( m_dialogClusteringHierarchical, &DialogClusteringHierarchical::userChoices,
              this, &MainWindow::slotAnalyzeClusteringHierarchical );
