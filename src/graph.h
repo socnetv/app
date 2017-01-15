@@ -757,7 +757,7 @@ public:
     int graphCliquesContaining(const int &actor, const int &size=0);
     int graphCliquesOfSize(const int &size );
 
-    void graphClusteringHierarchical(const int &matrix,
+    void graphClusteringHierarchical(Matrix &STR_EQUIV,
                                      const int &metric,
                                      const int &method,
                                      const bool &diagonal=false,
@@ -909,16 +909,16 @@ private:
 
     QMap <int, L_int > m_cliques;
 
-    QMap <float, V_int> m_clustersPerLevel;
-    QMap <int, V_int> m_clustersByOrder;
+    QList <float> m_clusteringLevel;
+    QMap <int, V_int> m_clustersPerSequence;
 
 
     QMap<QString, V_int> m_clustersByName;
-    QMap<float, V_str> m_clusterPairNamesPerLevel;
+    QMap<int, V_str> m_clusterPairNamesPerSeq;
 
     Matrix  TM, DM, sumM, invAM, AM, invM;
     Matrix XM, XSM, XRM, CLQM;
-    Matrix STR_EQUIV;
+
     stack<int> Stack;
 
     /** used in resolveClasses and graphMatrixDistancesCreate() */
