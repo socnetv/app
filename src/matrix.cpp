@@ -1298,10 +1298,11 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
                     switch (metric) {
                     case METRIC_JACCARD_INDEX:
-                        if (item(i,j) == item(k,j)  && item(i,j) != 0) {
+                        if (item(i,j) == item(k,j)  && (item(i,j) != 0 && item(i,j) != RAND_MAX)) {
                             distTemp++;
                         }
-                        if (item(i,j) != 0  || item(k,j)  ) {
+                        if ( ( item(i,j) != 0 && item(i,j) != RAND_MAX ) ||
+                             ( item(k,j) != 0 && item(k,j) != RAND_MAX )) {
                            ties++;
                         }
                         break;
@@ -1311,15 +1312,31 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                         }
                         break;
                     case METRIC_EUCLIDEAN_DISTANCE:
-                        distTemp += ( item(i,j) - item(k,j) )*( item(i,j) - item(k,j) ); //compute (x * y)^2
+                        if (item(i,j) == RAND_MAX || item(k,j) == RAND_MAX || distTemp == RAND_MAX) {
+                            distTemp = RAND_MAX;
+                        }
+                        else {
+                            distTemp += ( item(i,j) - item(k,j) )*( item(i,j) - item(k,j) ); //compute (x * y)^2
+                        }
                         break;
                     case METRIC_MANHATTAN_DISTANCE:
-                        distTemp += fabs( item(i,j) - item(k,j) ); //compute |x * y|
+                        if (item(i,j) == RAND_MAX || item(k,j) == RAND_MAX || distTemp == RAND_MAX ) {
+                            distTemp = RAND_MAX;
+                        }
+                        else {
+                            distTemp += fabs( item(i,j) - item(k,j) ); //compute |x * y|
+                        }
                         break;
                     case METRIC_CHEBYSHEV_MAXIMUM:
-                        distTemp =  fabs( item(i,j) - item(k,j) );
-                        max = ( distTemp  > max ) ? distTemp : max;
-                        distTemp = max;
+                        if (item(i,j) == RAND_MAX || item(k,j) == RAND_MAX || distTemp == RAND_MAX) {
+                            distTemp = RAND_MAX;
+                            max = RAND_MAX;
+                        }
+                        else {
+                            distTemp =  fabs( item(i,j) - item(k,j) );
+                            max = ( distTemp  > max ) ? distTemp : max;
+                            distTemp = max;
+                        }
                         break;
                     default:
                         break;
@@ -1329,15 +1346,17 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
                 switch (metric) {
                 case METRIC_JACCARD_INDEX:
-                    distance=  1 -  distTemp/  ( ( ties ) ) ;
-
+                    if (ties!=0)
+                        distance =  1 -  distTemp/  (  ties ) ;
+                    else
+                        distance = 1;
                     break;
                 case METRIC_HAMMING_DISTANCE:
                     distance = distTemp;
                     break;
                 case METRIC_EUCLIDEAN_DISTANCE:
-                    distance = sqrt(distTemp);
-                    break;
+                     distance = (distTemp == RAND_MAX) ? distTemp : sqrt(distTemp);
+                     break;
                 case METRIC_MANHATTAN_DISTANCE:
                     distance = distTemp ;
                     break;
@@ -1384,12 +1403,14 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                     if (!diagonal && (i==j || k==j))
                         continue;
 
+
                     switch (metric) {
                     case METRIC_JACCARD_INDEX:
-                        if (item(j,i) == item(j,k)  && item(j,i) != 0) {
+                        if (item(j,i) == item(j,k)  && (item(j,i) != 0 && item(j,i) != RAND_MAX)) {
                             distTemp++;
                         }
-                        if (item(j,i) != 0  || item(j,k) !=0 ) {
+                        if ( ( item(j,i) != 0 && item(j,i) != RAND_MAX ) ||
+                             ( item(j,k) != 0 && item(j,k) != RAND_MAX )) {
                            ties++;
                         }
                         break;
@@ -1399,35 +1420,50 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                         }
                         break;
                     case METRIC_EUCLIDEAN_DISTANCE:
-                        distTemp += ( item(j,i) - item(j,k) )*( item(j,i) - item(j,k) ); //compute (x * y)^2
+                        if (item(j,i) == RAND_MAX || item(j,k) == RAND_MAX || distTemp == RAND_MAX) {
+                            distTemp = RAND_MAX;
+                        }
+                        else {
+                            distTemp += ( item(j,i) - item(j,k) )*( item(j,i) - item(j,k) ); //compute (x * y)^2
+                        }
                         break;
                     case METRIC_MANHATTAN_DISTANCE:
-                        distTemp += fabs( item(j,i) - item(j,k) ); //compute |x * y|
+                        if (item(j,i) == RAND_MAX || item(j,k) == RAND_MAX || distTemp == RAND_MAX ) {
+                            distTemp = RAND_MAX;
+                        }
+                        else {
+                            distTemp += fabs( item(j,i) - item(j,k) ); //compute |x * y|
+                        }
                         break;
                     case METRIC_CHEBYSHEV_MAXIMUM:
-                        distTemp = fabs( item(j,i) - item(j,k) );
-                        max = ( distTemp  > max ) ? distTemp:max;
-                        distTemp = max;
+                        if (item(j,i) == RAND_MAX || item(j,k) == RAND_MAX || distTemp == RAND_MAX) {
+                            distTemp = RAND_MAX;
+                            max = RAND_MAX;
+                        }
+                        else {
+                            distTemp =  fabs( item(j,i) - item(j,k) );
+                            max = ( distTemp  > max ) ? distTemp : max;
+                            distTemp = max;
+                        }
                         break;
                     default:
                         break;
                     }
-
-
-
                 }
 
                 switch (metric) {
                 case METRIC_JACCARD_INDEX:
-                    distance=  1 -  distTemp/  ( ( ties ) ) ;
-
+                    if (ties!=0)
+                        distance =  1 -  distTemp/  (  ties ) ;
+                    else
+                        distance = 1;
                     break;
                 case METRIC_HAMMING_DISTANCE:
                     distance = distTemp;
                     break;
                 case METRIC_EUCLIDEAN_DISTANCE:
-                    distance = sqrt(distTemp);
-                    break;
+                     distance = (distTemp == RAND_MAX) ? distTemp : sqrt(distTemp);
+                     break;
                 case METRIC_MANHATTAN_DISTANCE:
                     distance = distTemp ;
                     break;
@@ -1437,6 +1473,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                 default:
                     break;
                 }
+
 
                 qDebug() << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
 
@@ -1489,48 +1526,69 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                         if ( j>=N && ( (i+N)==j || (k+N)==j ))
                             continue;
                     }
+
                     switch (metric) {
                     case METRIC_JACCARD_INDEX:
-                        if (CM.item(j,i) == CM.item(j,k)  && CM.item(j,i) != 0) {
+                        if (CM.item(j,i) == CM.item(j,k)  && (CM.item(j,i) != 0 && CM.item(j,i) != RAND_MAX)) {
                             distTemp++;
                         }
-                        if (CM.item(j,i) != 0  || CM.item(j,k) !=0 ) {
+                        if ( ( CM.item(j,i) != 0 && CM.item(j,i) != RAND_MAX ) ||
+                             ( CM.item(j,k) != 0 && CM.item(j,k) != RAND_MAX )) {
                            ties++;
                         }
                         break;
                     case METRIC_HAMMING_DISTANCE:
-                        if (CM.item(j,i) != CM.item(j,k) ) {
+                        if (  CM.item(j,i) != CM.item(j,k) ) {
                             distTemp++;
                         }
                         break;
                     case METRIC_EUCLIDEAN_DISTANCE:
-                        distTemp += ( CM.item(j,i) - CM.item(j,k) )*( CM.item(j,i) - CM.item(j,k) ); //compute (x * y)^2
+                        if ( CM.item(j,i) == RAND_MAX || CM.item(j,k) == RAND_MAX || distTemp == RAND_MAX) {
+                            distTemp = RAND_MAX;
+                        }
+                        else {
+                            distTemp += ( CM.item(j,i) - CM.item(j,k) )*( CM.item(j,i) - CM.item(j,k) ); //compute (x * y)^2
+                        }
                         break;
                     case METRIC_MANHATTAN_DISTANCE:
-                        distTemp += fabs( CM.item(j,i) - CM.item(j,k) ); //compute |x * y|
+                        if ( CM.item(j,i) == RAND_MAX || CM.item(j,k) == RAND_MAX || distTemp == RAND_MAX ) {
+                            distTemp = RAND_MAX;
+                        }
+                        else {
+                            distTemp += fabs( CM.item(j,i) - CM.item(j,k) ); //compute |x * y|
+                        }
                         break;
                     case METRIC_CHEBYSHEV_MAXIMUM:
-                        distTemp = fabs( CM.item(j,i) - CM.item(j,k) );
-                        max = ( distTemp  > max ) ? distTemp : max;
-                        distTemp = max;
+                        if ( CM.item(j,i) == RAND_MAX || CM.item(j,k) == RAND_MAX || distTemp == RAND_MAX) {
+                            distTemp = RAND_MAX;
+                            max = RAND_MAX;
+                        }
+                        else {
+                            distTemp =  fabs( CM.item(j,i) - CM.item(j,k) );
+                            max = ( distTemp  > max ) ? distTemp : max;
+                            distTemp = max;
+                        }
                         break;
                     default:
                         break;
                     }
+
                 }
 
 
                 switch (metric) {
                 case METRIC_JACCARD_INDEX:
-                    distance=  1 -  distTemp/  ( ( ties ) ) ;
-
+                    if (ties!=0)
+                        distance =  1 -  distTemp/  (  ties ) ;
+                    else
+                        distance = 1;
                     break;
                 case METRIC_HAMMING_DISTANCE:
                     distance = distTemp;
                     break;
                 case METRIC_EUCLIDEAN_DISTANCE:
-                    distance = sqrt(distTemp);
-                    break;
+                     distance = (distTemp == RAND_MAX) ? distTemp : sqrt(distTemp);
+                     break;
                 case METRIC_MANHATTAN_DISTANCE:
                     distance = distTemp ;
                     break;
@@ -1540,6 +1598,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                 default:
                     break;
                 }
+
 
 
                 qDebug() << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
