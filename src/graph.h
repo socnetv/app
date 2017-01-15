@@ -572,6 +572,7 @@ public:
     /* REPORT EXPORTS */
 
     void writeDataSetToFile(const QString dir, const QString );
+
     void writeMatrixAdjacencyTo(QTextStream& os,
                                 const bool &saveEdgeWeights=true);
 
@@ -595,12 +596,13 @@ public:
     void writeMatrixDegreeText(const QString &filename);
 
     void writeMatrixDistancesPlainText(const QString &fn,
-                             const bool &considerWeights,
-                             const bool &inverseWeights,
-                             const bool &dropIsolates);
+                                       const bool &considerWeights,
+                                       const bool &inverseWeights,
+                                       const bool &dropIsolates);
+
     void writeMatrixNumberOfGeodesicsPlainText(const QString &fn,
-                                      const bool &considerWeights,
-                                      const bool &inverseWeights);
+                                               const bool &considerWeights,
+                                               const bool &inverseWeights);
 
     void writeMatrixDissimilarities(const QString fileName,
                                     const QString &metricStr,
@@ -609,31 +611,31 @@ public:
                                     const bool &considerWeights) ;
 
     void writeMatrixSimilarityMatchingPlain(const QString fileName,
-                                const int &measure=METRIC_SIMPLE_MATCHING,
-                                const QString &matrix = "adjacency",
-                                const QString &varLocation="rows",
-                                const bool &diagonal=false,
-                                const bool &considerWeights=true);
+                                            const int &measure=METRIC_SIMPLE_MATCHING,
+                                            const QString &matrix = "adjacency",
+                                            const QString &varLocation="rows",
+                                            const bool &diagonal=false,
+                                            const bool &considerWeights=true);
 
     void writeMatrixSimilarityMatching(const QString fileName,
-                                const QString &measure="Simple",
-                                const QString &matrix = "adjacency",
-                                const QString &varLocation="rows",
-                                const bool &diagonal=false,
-                                const bool &considerWeights=true);
+                                       const QString &measure="Simple",
+                                       const QString &matrix = "adjacency",
+                                       const QString &varLocation="rows",
+                                       const bool &diagonal=false,
+                                       const bool &considerWeights=true);
 
 
     void writeMatrixSimilarityPearson(const QString fileName,
-                                const bool considerWeights,
-                                const QString &matrix = "adjacency",
-                                const QString &varLocation="rows",
-                                const bool &diagonal=false);
+                                      const bool considerWeights,
+                                      const QString &matrix = "adjacency",
+                                      const QString &varLocation="rows",
+                                      const bool &diagonal=false);
 
     void writeMatrixSimilarityPearsonPlainText(const QString fileName,
-                                const bool considerWeights,
-                                const QString &matrix = "adjacency",
-                                const QString &varLocation="rows",
-                                const bool &diagonal=false);
+                                               const bool considerWeights,
+                                               const QString &matrix = "adjacency",
+                                               const QString &varLocation="rows",
+                                               const bool &diagonal=false);
 
     void writeEccentricity(const QString, const bool considerWeights,
                            const bool inverseWeights, const bool dropIsolates);
@@ -691,6 +693,11 @@ public:
                                      const bool &considerWeights=true,
                                      const bool &inverseWeights=false,
                                      const bool &dropIsolates=false);
+
+    void writeClusteringHierarchicalResultsToStream(QTextStream& outText,
+                                                    const int N,
+                                               const bool &dendrogram = false);
+
     void writeCliqueCensus(
             const QString fileName, const bool considerWeights
             );

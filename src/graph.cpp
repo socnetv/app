@@ -10043,6 +10043,9 @@ void Graph::writeCliqueCensus( const QString fileName,
     qDebug()<< "Graph::writeCliqueCensus() ";
 
     Q_UNUSED(considerWeights);
+
+    bool dendrogram = true;
+
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
@@ -10271,35 +10274,8 @@ void Graph::writeCliqueCensus( const QString fileName,
                                false,
                                true);
 
-   outText << "<table class=\"stripes\">";
-   outText << "<thead>"
-           <<"<tr>"
-           <<"<th>"
-           << tr("Level")
-           << "</th>"
-           <<"<th>"
-           << tr("Actors")
-           << "</th>";
-   outText <<"</tr>"
-          << "</thead>"
-          <<"<tbody>";
+   writeClusteringHierarchicalResultsToStream(outText, N, dendrogram);
 
-//   QMap<float, V_int>::const_iterator i;
-//   for ( i= m_clusters.constBegin() ; i != m_clusters.constEnd(); ++i) {
-//       outText << "<tr class=" << ((rowCounter%2==0) ? "even" :"odd" )<< ">"
-//               <<"<td class=\"header\">"
-//               << i.key()
-//               <<"</td>";
-
-//        foreach (int item, i.value() ) {
-//            outText <<"<td>"
-//                   << item
-//                   <<"</td>";
-//        }
-//        outText <<"</tr>";
-//    }
-
-   outText << "</tbody></table>";
 
    emit updateProgressDialog(3 * N / 5);
 
@@ -10311,7 +10287,7 @@ void Graph::writeCliqueCensus( const QString fileName,
            << "</p>";
 
 
-    emit updateProgressDialog(4 * N / 5);
+  emit updateProgressDialog(4 * N / 5);
 
    outText << "<p>"
            << "<span class=\"info\">"
@@ -10524,7 +10500,7 @@ int Graph::graphCliquesOfSize(const int &size){
 
 
 /**
- * @brief Graph::writeClusteringHierarchical
+ * @brief Writes Hierarchical Clustering Analysis to a given file
  * @param fileName
  * @param matrix
  * @param similarityMeasure
@@ -10546,9 +10522,6 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
 
     QTime computationTimer;
     computationTimer.start();
-
-    QMap<int, V_int>::const_iterator it;
-    float level;
 
     qDebug()<< "Graph::writeClusteringHierarchical() - matrix:"
             << matrix
@@ -10670,6 +10643,37 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
            << "</p>";
 
 
+
+    writeClusteringHierarchicalResultsToStream(outText, N, dendrogram);
+
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Hierarchical Cluster Analysis report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+    file.close();
+    qDebug()<< "Graph::writeClusteringHierarchical() - finished";
+
+}
+
+
+void Graph::writeClusteringHierarchicalResultsToStream(QTextStream& outText,
+                                                       const int N,
+                                                       const bool &dendrogram) {
+
+
+    qDebug()<<"Graph::writeClusteringHierarchicalResultsToStream()";
+
+    QMap<int, V_int>::const_iterator it;
+    float level;
+
     outText << "<pre>";
     outText <<"Seq" << "\t"<<"Level" << "\t"<< "Actors" <<endl;
 
@@ -10686,9 +10690,8 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
      }
     outText << reset << "</pre>";
 
-
-
     if (dendrogram) {
+
         qDebug()<<"SVG";
 
         outText << "<p>"
@@ -10727,7 +10730,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
         it = m_clustersPerSequence.constEnd();
         it--;
 
-        maxLevelValue = m_clusteringLevel.last() ; //it.key(); ;
+        maxLevelValue = m_clusteringLevel.last() ;
 
         clusterVector.reserve(N);
 
@@ -10744,20 +10747,20 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
 
         outText << "<svg class=\"dendrosvg SocNetV-v"<< VERSION
                 <<"\" width=\""<< maxSVGWidth
-                <<"\" height=\"" <<maxSVGHeight
-                << "\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">";
+               <<"\" height=\"" <<maxSVGHeight
+              << "\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">";
 
         // print a legend on top
         outText << "<text font-size=\""<< headerTextSize
                 << "\" class=\"header\" x=\"" << 0
                 <<"\" y=\"" << headerHeight
-                <<"\">" << "Actor"
-                <<"</text>";
+               <<"\">" << "Actor"
+              <<"</text>";
         outText << "<text font-size=\""<< headerTextSize
                 << "\" class=\"header\" x=\"" << diagramMaxWidth / 2
                 <<"\" y=\"" << headerHeight
-                <<"\">" << "Clusterings"
-                <<"</text>";
+               <<"\">" << "Clusterings"
+              <<"</text>";
 
         // print actor numbers
         // and compute initial cluster end points for them.
@@ -10770,8 +10773,8 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
             outText << "<text class=\"actor\" font-size=\""<< actorTextSize
                     << "\" x=\"" << rowPaddingLeft
                     <<"\" y=\"" << diagramPaddingTop + (rowHeight*(i)) + actorTextSize / 3
-                    <<"\">" << actorNumber
-                    <<"</text>";
+                   <<"\">" << actorNumber
+                  <<"</text>";
 
             outText << "</g>";    // end actor name
 
@@ -10807,54 +10810,57 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
 
             // compute and save new endPoint
             endPointLevel = QPoint ( ceil(diagramPaddingLeft + diagramMaxWidth * ( level / maxLevelValue)),
-                                        ceil(endPoint1.y() + endPoint2.y())/2);
+                                     ceil(endPoint1.y() + endPoint2.y())/2);
 
             clusterEndPoint.insert("c"+QString::number(pit.key()), endPointLevel);
 
             qDebug()<<"(pit.key() / maxLevelValue)" << ( diagramPaddingLeft + level / maxLevelValue)
-                    <<"endPointLevel" <<endPointLevel ;
+                   <<"endPointLevel" <<endPointLevel ;
 
             // print path
-            outText << "<path d=\"M "<<endPoint1.x()
-                    <<" " <<endPoint1.y()
-                   <<" L "
+            outText << "<path d=\"M "
+                    << endPoint1.x()
+                    << " " <<endPoint1.y()
+                    << " L "
                     << endPointLevel.x()
-                    <<" "
-                    <<endPoint1.y()
-                   <<" L "
+                    << " "
+                    << endPoint1.y()
+                    << " L "
                     << endPointLevel.x()
-                    <<" "
+                    << " "
                     << endPoint2.y()
-                   <<" L "
+                    << " L "
                     << endPoint2.x()
-                    <<" "
-                    <<endPoint2.y()
-                   <<"\" stroke=\"red\" "
-                     "stroke-linecap=\"round\" stroke-width=\"1\" fill=\"none\"/>"; //stroke-dasharray=\"5,5\"
+                    << " "
+                    << endPoint2.y()
+                    << "\" stroke=\"red\" "
+                       "stroke-linecap=\"round\" stroke-width=\"1\" fill=\"none\"/>"; //stroke-dasharray=\"5,5\"
 
 
             // print level vertical dashed line
-            outText << "<path d=\"M "<<endPointLevel.x()
-                    <<" " << diagramPaddingTop - 10
-                   <<" L "
+            outText << "<path d=\"M "
                     << endPointLevel.x()
-                    <<" "
-                    <<diagramPaddingTop  + rowHeight*(N) -10
-                   <<"\" stroke=\"#999\" "
-                     "stroke-linecap=\"round\" stroke-dasharray=\"1,2\" stroke-width=\"0.4\" fill=\"none\"/>";
+                    << " "
+                    << diagramPaddingTop - 10
+                    << " L "
+                    << endPointLevel.x()
+                    << " "
+                    << diagramPaddingTop  + rowHeight*(N) -10
+                    << "\" stroke=\"#999\" "
+                       "stroke-linecap=\"round\" stroke-dasharray=\"1,2\" stroke-width=\"0.4\" fill=\"none\"/>";
 
 
             //print legend
             if (!legendLevelsDone.contains(level)) {
                 outText << "<text class=\"legend\"  writing-mode=\"tb-rl\" "
                            "glyph-orientation-vertical=\"90\" "
-                           "font-size=\""<< legendTextSize
+                           "font-size=\""
+                        << legendTextSize
                         << "\" x=\"" << diagramPaddingLeft  + diagramMaxWidth * (level / maxLevelValue) - 5
-                        <<"\" y=\""
-                       <<diagramPaddingTop  + rowHeight*(N)
-                      <<"\" >"<< fixed << level <<"</text>";
+                        << "\" y=\""
+                        << diagramPaddingTop  + rowHeight*(N)
+                        << "\" >" << fixed << level <<"</text>";
                 legendLevelsDone.append(level);
-
             }
 
         }
@@ -10863,28 +10869,9 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
 
         outText << "</div>";        //end dendrogram div
 
-
     }       // end if dendrogram
 
-
-
-    outText << "<p>&nbsp;</p>";
-    outText << "<p class=\"small\">";
-    outText << tr("Hierarchical Cluster Analysis report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
-               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
-    outText << "<br />";
-    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
-    outText << "</p>";
-
-    outText << htmlEnd;
-
-    file.close();
-    qDebug()<< "Graph::writeClusteringHierarchical() - finished";
-
 }
-
-
 
 
 /**
