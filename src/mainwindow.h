@@ -102,7 +102,6 @@ class TextEditor;
     created which creates a graphics widget.
  */
 
-
 class MainWindow : public QMainWindow
 {
     Q_OBJECT

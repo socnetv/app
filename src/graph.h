@@ -170,6 +170,14 @@ class GraphDistancesCompare {
   \bug Fruchterman-Reingold model fixes some nodes to (1,1) breaking the layout
 
 
+  TODO
+  Change Menus to:
+  Matrices
+  Cohesion/Connectedness: Density, Reachability, and All distance and Walks, Connectivity, Reciprocity, Transitivity ?, Clu Cof
+  Prominence: Centrality and Prestige
+  Subgroups / Communities: Cliques (later clans etc), (later path distance MDS) Components, Blocks and Cutpoints,
+  Structural Equivalence: HCA, Similarity (later MDS), Block modelling, CONCOR
+
   */
 
 
