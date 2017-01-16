@@ -278,6 +278,8 @@ public slots:
     void slotEditEdgeColor();
     void slotEditEdgeWeight();
     void slotEditEdgeColorAll(QColor color=QColor(), const int &threshold=RAND_MAX);
+
+    void slotEditEdgeMode(const int &mode);
     void slotEditEdgeSymmetrizeAll();
     void slotEditEdgeSymmetrizeStrongTies();
     void slotEditEdgeSymmetrizeCocitation();
@@ -423,6 +425,8 @@ public slots:
 
 
     //Called from MW, when user highlights something in the toolbox Comboboxes
+    void toolBoxEditNodeSubgraphSelectChanged(int);
+    void toolBoxEditEdgeSymmetrizeSelectChanged(int);
     void toolBoxAnalysisMatricesSelectChanged(int);
     void toolBoxAnalysisCohesionSelectChanged(int);
     void toolBoxAnalysisStrEquivalenceSelectChanged(int);
@@ -490,7 +494,8 @@ private:
     QMenu *randomLayoutMenu, *circleLayoutMenu, *levelLayoutMenu, *physicalLayoutMenu;
     QMenu *colorationMenu;
     QCheckBox  *toolBoxNodeSizesByOutDegreeBx,*toolBoxNodeSizesByInDegreeBx, *toolBoxLayoutGuidesBx;
-    QComboBox *toolBoxSymmetrizeSelect, *toolBoxAnalysisCohesionSelect,
+    QComboBox *toolBoxEditNodeSubgraphSelect, *toolBoxEditEdgeModeSelect,
+    *toolBoxEditEdgeSymmetrizeSelect, *toolBoxAnalysisCohesionSelect,
     *toolBoxAnalysisStrEquivalenceSelect,
     *toolBoxAnalysisProminenceSelect, *toolBoxAnalysisCommunitiesSelect,
     *toolBoxAnalysisMatricesSelect;

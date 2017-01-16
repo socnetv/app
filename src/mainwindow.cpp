@@ -905,9 +905,19 @@ void MainWindow::initActions(){
 
     editNodeAddAct = new QAction(QIcon(":/images/add.png"), tr("Add Node"), this);
     editNodeAddAct->setShortcut(Qt::CTRL + Qt::Key_Period);
-    editNodeAddAct->setStatusTip(tr("Add a new node"));
-    editNodeAddAct->setWhatsThis(tr("Add Node\n\n"
-                                    "Adds a new node to the active network"));
+    editNodeAddAct->setToolTip(
+                tr("Add a new node to the network (Ctrl+.). \n\n"
+                   "You can also create a new node \n"
+                   "in a specific position by double-clicking.")
+                );
+    editNodeAddAct->setWhatsThis(
+                tr("Add new node\n\n"
+                   "Adds a new node to the network (Ctrl+.). \n\n"
+                   "Alternately, you can create a new node "
+                   "in a specific position by double-clicking "
+                   "on that spot of the canvas.")
+                );
+
     connect(editNodeAddAct, SIGNAL(triggered()), this, SLOT(slotEditNodeAdd()));
 
     editNodeRemoveAct = new QAction(QIcon(":/images/remove.png"),tr("Remove Node"), this);
@@ -915,9 +925,13 @@ void MainWindow::initActions(){
     //Single key shortcuts with backspace or del do no work in Mac http://goo.gl/7hz7Dx
     editNodeRemoveAct->setStatusTip(tr("Remove selected node(s). If no nodes are selected, "
                                        "you will be prompt for a node number. "));
-    editNodeRemoveAct->setWhatsThis(tr("Remove Node\n\n"
-                                       "Removes selected node(s) from the network. "
-                                       "If no nodes are selected, you will be prompt for a node number. "));
+    editNodeRemoveAct->setWhatsThis(
+                tr("Remove node\n\n"
+                   "Removes selected node(s) from the network (Ctrl+Alt+.). \n"
+                   "Alternately, you can remove a node by right-clicking on it. \n"
+                   "If no nodes are selected, you will be prompt for a node number. ")
+                );
+
     connect(editNodeRemoveAct, SIGNAL(triggered()), this, SLOT(slotEditNodeRemove()));
 
     editNodePropertiesAct = new QAction(QIcon(":/images/properties.png"),tr("Selected Node Properties"), this);
@@ -1050,21 +1064,29 @@ void MainWindow::initActions(){
                                              "To permanently change it, use Settings & Preferences"));
     connect(editNodeLabelsColorAct, SIGNAL(triggered()), this, SLOT(slotEditNodeLabelsColor()));
 
-    editEdgeAddAct = new QAction(QIcon(":/images/plines.png"), tr("Add Edge (arc)"),this);
+    editEdgeAddAct = new QAction(QIcon(":/images/connect.png"), tr("Add Edge (arc)"),this);
     editEdgeAddAct->setShortcut(Qt::CTRL + Qt::Key_Slash);
     editEdgeAddAct->setStatusTip(tr("Add a directed edge (arc) from a node to another"));
-    editEdgeAddAct->setWhatsThis(tr("Add Edge\n\nAdds a directed edge (arc) from a node to another"));
+    editEdgeAddAct->setToolTip(
+                    tr("Add a new Edge from a node to another (Ctrl+/).\n\n"
+                       "You can also create an edge between two nodes \n"
+                       "by double-clicking or middle-clicking on them consecutively."));
+    editEdgeAddAct->setWhatsThis(
+                tr("Add edge\n\n"
+                   "Adds a new Edge from a node to another (Ctrl+/).\n\n"
+                   "Alternately, you can create a new edge between two nodes "
+                   "by double-clicking or middle-clicking on them consecutively.")
+                );
     connect(editEdgeAddAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeAdd()));
 
     editEdgeRemoveAct = new QAction(QIcon(":/images/disconnect.png"), tr("Remove Edge"), this);
     editEdgeRemoveAct ->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_Slash);
-    editEdgeRemoveAct->setStatusTip(tr("Remove an Edge"));
+    editEdgeRemoveAct->setStatusTip(tr("Remove selected Edge(s) (Ctrl+Alt+/)"));
     editEdgeRemoveAct->setWhatsThis(tr("Remove Edge\n\n"
-                                       "Removes an Edge from the network."
-                                       "If an edge has been clicked "
-                                       "it is removed. "
+                                       "Removes edges from the network (Ctrl+Alt+/). \n"
+                                       "If one or more edges has been clicked or selected, they are removed. "
                                        "Otherwise, you will be prompted to enter edge source and target "
-                                       "nodes"));
+                                       "nodes for the edge to remove."));
     connect(editEdgeRemoveAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeRemove()));
 
     editEdgeLabelAct = new QAction(QIcon(":/images/letters.png"), tr("Change Edge Label"), this);
@@ -1185,7 +1207,7 @@ void MainWindow::initActions(){
     connect(editFilterNodesIsolatesAct, SIGNAL(toggled(bool)),
             this, SLOT(slotEditFilterNodesIsolates(bool)));
 
-    editFilterEdgesByWeightAct = new QAction(tr("Filter Edges by Weight"), this);
+    editFilterEdgesByWeightAct = new QAction(QIcon(":/images/filter.png"), tr("Filter Edges by Weight"), this);
     editFilterEdgesByWeightAct -> setEnabled(true);
     editFilterEdgesByWeightAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_F));
     editFilterEdgesByWeightAct -> setStatusTip(tr("Temporarily filter edges of some weight out of the network"));
@@ -2933,6 +2955,25 @@ void MainWindow::initToolBar(){
     toolBar -> addAction (editRelationAddAct);
 
     toolBar -> addSeparator();
+    QLabel *labelEditNodes= new QLabel;
+    labelEditNodes ->setText(tr("Node:"));
+    toolBar -> addWidget (labelEditNodes);
+    toolBar -> addAction (editNodeAddAct);
+    toolBar -> addAction (editNodeRemoveAct);
+    toolBar -> addAction (editNodeFindAct);
+    toolBar -> addAction(editNodePropertiesAct );
+    toolBar -> addSeparator();
+    QLabel *labelEditEdges= new QLabel;
+    labelEditEdges ->setText(tr("Edge:"));
+    toolBar -> addWidget (labelEditEdges);
+
+    toolBar -> addAction (editEdgeAddAct);
+    toolBar -> addAction (editEdgeRemoveAct);
+    toolBar -> addSeparator();
+    toolBar -> addAction (editFilterEdgesByWeightAct);
+    toolBar -> addSeparator();
+    toolBar -> addAction(openSettingsAct);
+    toolBar -> addSeparator();
     toolBar -> addAction ( QWhatsThis::createAction (this));
     toolBar -> setIconSize(QSize(16,16));
 }
@@ -2955,113 +2996,159 @@ void MainWindow::initToolBox(){
      */
 
     // create 4 buttons for the Edit groupbox
-    editNodeAddBt= new QPushButton(QIcon(":/images/add.png"),tr("&Add Node"));
-    editNodeAddBt->setFocusPolicy(Qt::NoFocus);
-    editNodeAddBt->setMinimumWidth(100);
-    editNodeAddBt->setStatusTip( tr("Add a new node to the network.") ) ;
-    editNodeAddBt->setToolTip(
-                tr("Add a new node to the network (Ctrl+.). \n\n"
-                   "You can also create a new node \n"
-                   "in a specific position by double-clicking.")
-                );
-    editNodeAddBt->setWhatsThis(
-                tr("Add new node\n\n"
-                   "Adds a new node to the network (Ctrl+.). \n\n"
-                   "Alternately, you can create a new node "
-                   "in a specific position by double-clicking "
-                   "on that spot of the canvas.")
-                );
+//    editNodeAddBt= new QPushButton(QIcon(":/images/add.png"),tr("&Add Node"));
+//    editNodeAddBt->setFocusPolicy(Qt::NoFocus);
+//    editNodeAddBt->setMinimumWidth(100);
+//    editNodeAddBt->setStatusTip( tr("Add a new node to the network.") ) ;
+//    editNodeAddBt->setToolTip(
+//                tr("Add a new node to the network (Ctrl+.). \n\n"
+//                   "You can also create a new node \n"
+//                   "in a specific position by double-clicking.")
+//                );
+//    editNodeAddBt->setWhatsThis(
+//                tr("Add new node\n\n"
+//                   "Adds a new node to the network (Ctrl+.). \n\n"
+//                   "Alternately, you can create a new node "
+//                   "in a specific position by double-clicking "
+//                   "on that spot of the canvas.")
+//                );
 
-    removeNodeBt= new QPushButton(QIcon(":/images/remove.png"),tr("&Remove Node"));
-    removeNodeBt->setFocusPolicy(Qt::NoFocus);
-    removeNodeBt->setMinimumWidth(100);
-    removeNodeBt->setStatusTip( tr("Remove a node from the network. ") );
-    removeNodeBt->setToolTip(
-                tr("Remove a node from the network (Ctrl+Alt+.). ")
-                );
+//    removeNodeBt= new QPushButton(QIcon(":/images/remove.png"),tr("&Remove Node"));
+//    removeNodeBt->setFocusPolicy(Qt::NoFocus);
+//    removeNodeBt->setMinimumWidth(100);
+//    removeNodeBt->setStatusTip( tr("Remove a node from the network. ") );
+//    removeNodeBt->setToolTip(
+//                tr("Remove a node from the network (Ctrl+Alt+.). ")
+//                );
 
-    removeNodeBt->setWhatsThis(
-                tr("Remove node\n\n"
-                   "Removes a node from the network (Ctrl+Alt+.). \n\n"
-                   "Alternately, you can remove a node "
-                   "by right-clicking on it.")
-                );
+//    removeNodeBt->setWhatsThis(
+//                tr("Remove node\n\n"
+//                   "Removes a node from the network (Ctrl+Alt+.). \n\n"
+//                   "Alternately, you can remove a node "
+//                   "by right-clicking on it.")
+//                );
 
-    editEdgeAddBt= new QPushButton(QIcon(":/images/connect.png"),tr("Add &Edge"));
-    editEdgeAddBt->setFocusPolicy(Qt::NoFocus);
-    editEdgeAddBt->setMinimumWidth(100);
-    editEdgeAddBt->setStatusTip(
-                tr("Add a new Edge from a node to another. ")
-                );
-    editEdgeAddBt->setToolTip(
-                tr("Add a new Edge from a node to another (Ctrl+/).\n\n"
-                   "You can also create an edge between two nodes \n"
-                   "by double-clicking or middle-clicking on them consecutively.")
-                );
-    editEdgeAddBt->setWhatsThis(
-                tr("Add edge\n\n"
-                   "Adds a new Edge from a node to another (Ctrl+/).\n\n"
-                   "Alternately, you can create a new edge between two nodes "
-                   "by double-clicking or middle-clicking on them consecutively.")
-                );
+//    editEdgeAddBt= new QPushButton(QIcon(":/images/connect.png"),tr("Add &Edge"));
+//    editEdgeAddBt->setFocusPolicy(Qt::NoFocus);
+//    editEdgeAddBt->setMinimumWidth(100);
+//    editEdgeAddBt->setStatusTip(
+//                tr("Add a new Edge from a node to another. ")
+//                );
+//    editEdgeAddBt->setToolTip(
+//                tr("Add a new Edge from a node to another (Ctrl+/).\n\n"
+//                   "You can also create an edge between two nodes \n"
+//                   "by double-clicking or middle-clicking on them consecutively.")
+//                );
+//    editEdgeAddBt->setWhatsThis(
+//                tr("Add edge\n\n"
+//                   "Adds a new Edge from a node to another (Ctrl+/).\n\n"
+//                   "Alternately, you can create a new edge between two nodes "
+//                   "by double-clicking or middle-clicking on them consecutively.")
+//                );
 
-    editEdgeRemoveBt= new QPushButton(QIcon(":/images/disconnect.png"),tr("Remove Edge"));
-    editEdgeRemoveBt->setFocusPolicy(Qt::NoFocus);
-    editEdgeRemoveBt->setMinimumWidth(100);
-    editEdgeRemoveBt->setStatusTip( tr("Remove an Edge from the network ")  );
-    editEdgeRemoveBt->setToolTip(
-                tr("Remove an Edge from the network (Ctrl+Alt+/)"
-                   )
-                );
-    editEdgeRemoveBt->setWhatsThis(
-                tr("Remove edge\n\n"
-                   "Removes an Edge from the network  (Ctrl+Alt+/).\n\n"
-                   "Alternately, you can remove an Edge "
-                   "by right-clicking on it."
-                   )
-                );
+//    editEdgeRemoveBt= new QPushButton(QIcon(":/images/disconnect.png"),tr("Remove Edge"));
+//    editEdgeRemoveBt->setFocusPolicy(Qt::NoFocus);
+//    editEdgeRemoveBt->setMinimumWidth(100);
+//    editEdgeRemoveBt->setStatusTip( tr("Remove an Edge from the network ")  );
+//    editEdgeRemoveBt->setToolTip(
+//                tr("Remove an Edge from the network (Ctrl+Alt+/)"
+//                   )
+//                );
+//    editEdgeRemoveBt->setWhatsThis(
+//                tr("Remove edge\n\n"
+//                   "Removes an Edge from the network  (Ctrl+Alt+/).\n\n"
+//                   "Alternately, you can remove an Edge "
+//                   "by right-clicking on it."
+//                   )
+//                );
 
+
+    QLabel *toolBoxEditNodeSubgraphSelectLabel  = new QLabel;
+    toolBoxEditNodeSubgraphSelectLabel->setText(tr("Selection Subgraph:"));
+    toolBoxEditNodeSubgraphSelectLabel->setMinimumWidth(115);
+    toolBoxEditNodeSubgraphSelect = new QComboBox;
+    toolBoxEditNodeSubgraphSelect->setStatusTip(
+                tr("Create basic subgraph from selected nodes."));
+    toolBoxEditNodeSubgraphSelect->setToolTip(
+                tr("Basic subgraphs from selected nodes: star, clique, line, etc."));
+    toolBoxEditNodeSubgraphSelect->setWhatsThis(
+                        tr("Selection Subgraph\n\n"
+                           "Basic subgraphs from selected nodes: star, clique, line, etc."));
+    QStringList editNodeSubgraphCommands;
+    editNodeSubgraphCommands << "Select"
+                       << "Clique"
+                       << "Star"
+                       << "Cycle"
+                       << "Line";
+    toolBoxEditNodeSubgraphSelect->addItems(editNodeSubgraphCommands);
+    toolBoxEditNodeSubgraphSelect->setMinimumWidth(115);
+
+    QLabel *toolBoxEdgeModeSelectLabel  = new QLabel;
+    toolBoxEdgeModeSelectLabel->setText(tr("Edge Mode:"));
+    toolBoxEdgeModeSelectLabel->setMinimumWidth(115);
+    toolBoxEditEdgeModeSelect = new QComboBox;
+    toolBoxEditEdgeModeSelect->setStatusTip(
+                tr("Select an edge creation mode: directed or undirected."));
+    toolBoxEditEdgeModeSelect->setToolTip(
+                tr("Edge mode: directed or undirected."));
+            toolBoxEditEdgeModeSelect->setWhatsThis(
+                        tr("Edge mode\n\n"
+                           "Select what mode to use when creating new edges."));
+    QStringList edgeModeCommands;
+    edgeModeCommands << "Directed"
+                     << "Undirected";
+    toolBoxEditEdgeModeSelect->addItems(edgeModeCommands);
+    toolBoxEditEdgeModeSelect->setMinimumWidth(115);
 
 
     QLabel *toolBoxSymmetrizeSelectLabel  = new QLabel;
     toolBoxSymmetrizeSelectLabel->setText(tr("Symmetrize:"));
     toolBoxSymmetrizeSelectLabel->setMinimumWidth(115);
-    toolBoxSymmetrizeSelect = new QComboBox;
-    toolBoxSymmetrizeSelect->setStatusTip(
-                tr("Select a community detection metric / cohesive subgroup algorithm, i.e. cliques, triad census etc."));
-    toolBoxSymmetrizeSelect->setToolTip(
-                tr("Community detection metrics and cohesive subgroup algorithms, i.e. cliques, triad census etc."));
-            toolBoxSymmetrizeSelect->setWhatsThis(
-                        tr("Analyze Communities\n\n"
-                           "Community detection metrics and cohesive subgroup algorithms, "
-                           "(i.e. cliques, triad census etc), to identify "
-                           "meaningful subgraphs in the graph."
-                           "For instance, select cliques to count and identify "
-                           "all maximal cliques of actors in the network. "));
+    toolBoxEditEdgeSymmetrizeSelect = new QComboBox;
+    toolBoxEditEdgeSymmetrizeSelect->setStatusTip(
+                tr("Select what ties to symmetrize."));
+    toolBoxEditEdgeSymmetrizeSelect->setToolTip(
+                tr("Methods to symmetrize the network/graph, ie all directed edges to undirected."));
+            toolBoxEditEdgeSymmetrizeSelect->setWhatsThis(
+                        tr("Symmetrize ties\n\n"
+                           "Methods to symmetrize the network/graph, "
+                           "i.e. all directed edges to undirected , "
+                           "symmetrized strong ties only or cocitation ties"));
     QStringList symmetrizeCommands;
     symmetrizeCommands << "Select"
                        << "Directed ties"
                        << "Strong ties"
-                       << "Cocitation"
-                       << "Undirected mode";
-    toolBoxSymmetrizeSelect->addItems(symmetrizeCommands);
-    toolBoxSymmetrizeSelect->setMinimumWidth(115);
+                       << "Cocitation";
+    toolBoxEditEdgeSymmetrizeSelect->addItems(symmetrizeCommands);
+    toolBoxEditEdgeSymmetrizeSelect->setMinimumWidth(115);
 
 
-    //create a grid layout for these buttons
-    QGridLayout *buttonsGrid = new QGridLayout;
-    buttonsGrid -> addWidget(editNodeAddBt, 0,0);
-    buttonsGrid -> addWidget(removeNodeBt, 0,1);
-    buttonsGrid -> addWidget(editEdgeAddBt,1,0);
-    buttonsGrid -> addWidget(editEdgeRemoveBt,1,1);
-    buttonsGrid -> addWidget(toolBoxSymmetrizeSelectLabel,2,0);
-    buttonsGrid -> addWidget(toolBoxSymmetrizeSelect,2,1);
-    buttonsGrid -> setSpacing(5);
-    buttonsGrid -> setContentsMargins(5, 5, 5, 5);
+    //create a grid layout for Edit buttons
+    QGridLayout *editNodesGrid = new QGridLayout;
+    editNodesGrid -> addWidget(toolBoxEditNodeSubgraphSelectLabel, 0,0);
+    editNodesGrid -> addWidget(toolBoxEditNodeSubgraphSelect, 0,1);
 
-    //create a groupbox "Edit" - Inside, display the grid layout of widgets
+    QGroupBox *editNodesGroupBox= new QGroupBox(tr("Nodes"));
+    editNodesGroupBox->setLayout(editNodesGrid);
+
+    QGridLayout *editEdgeGrid = new QGridLayout;
+    editEdgeGrid -> addWidget(toolBoxEdgeModeSelectLabel,0,0);
+    editEdgeGrid -> addWidget(toolBoxEditEdgeModeSelect,0,1);
+    editEdgeGrid -> addWidget(toolBoxSymmetrizeSelectLabel,1,0);
+    editEdgeGrid -> addWidget(toolBoxEditEdgeSymmetrizeSelect,1,1);
+
+    QGroupBox *editEdgeGroupBox= new QGroupBox(tr("Edges"));
+    editEdgeGroupBox->setLayout(editEdgeGrid);
+
+    QGridLayout *EditGrid = new QGridLayout;
+    EditGrid -> addWidget(editNodesGroupBox, 0,0,1,2);
+    EditGrid -> addWidget(editEdgeGroupBox,1,0,1,2);
+    EditGrid -> setSpacing(5);
+    EditGrid -> setContentsMargins(5, 5, 5, 5);
+
+            //create a groupbox "Edit" - Inside, display the grid layout of widgets
     QGroupBox *editGroupBox= new QGroupBox(tr("Edit"));
-    editGroupBox->setLayout(buttonsGrid);
+    editGroupBox->setLayout(EditGrid);
     editGroupBox->setMaximumWidth(280);
     editGroupBox->setMinimumHeight(100);
 
@@ -4222,13 +4309,13 @@ void MainWindow::initSignalSlots() {
 
 
     //signals and slots inside MainWindow
-    connect( editNodeAddBt,SIGNAL(clicked()), this, SLOT( slotEditNodeAdd() ) );
+//    connect( editNodeAddBt,SIGNAL(clicked()), this, SLOT( slotEditNodeAdd() ) );
 
-    connect( editEdgeAddBt,SIGNAL(clicked()), this, SLOT( slotEditEdgeAdd() ) );
+//    connect( editEdgeAddBt,SIGNAL(clicked()), this, SLOT( slotEditEdgeAdd() ) );
 
-    connect( removeNodeBt,SIGNAL(clicked()), this, SLOT( slotEditNodeRemove() ) );
+//    connect( removeNodeBt,SIGNAL(clicked()), this, SLOT( slotEditNodeRemove() ) );
 
-    connect( editEdgeRemoveBt,SIGNAL(clicked()), this, SLOT( slotEditEdgeRemove() ) );
+//    connect( editEdgeRemoveBt,SIGNAL(clicked()), this, SLOT( slotEditEdgeRemove() ) );
 
     connect( editRelationAddAct, SIGNAL(triggered()),
              this, SLOT(slotEditRelationAdd()) );
@@ -4252,6 +4339,15 @@ void MainWindow::initSignalSlots() {
              this, SLOT(slotLayoutGuides(bool)));
 
 
+    connect(toolBoxEditNodeSubgraphSelect, SIGNAL (currentIndexChanged(int) ),
+            this, SLOT(toolBoxEditNodeSubgraphSelectChanged(int) ) );
+
+
+    connect(toolBoxEditEdgeModeSelect, SIGNAL (currentIndexChanged(int) ),
+                this, SLOT(slotEditEdgeMode(int) ) );
+
+    connect(toolBoxEditEdgeSymmetrizeSelect, SIGNAL (currentIndexChanged(int) ),
+            this, SLOT(toolBoxEditEdgeSymmetrizeSelectChanged(int) ) );
 
     connect(toolBoxAnalysisMatricesSelect, SIGNAL (currentIndexChanged(int) ),
         this, SLOT(toolBoxAnalysisMatricesSelectChanged(int) ) );
@@ -4328,6 +4424,8 @@ void MainWindow::initApp(){
     rightPanelClickedEdgeWeightLCD->display(0);
 
     /** Clear toolbox and menu checkboxes **/
+    toolBoxEditEdgeSymmetrizeSelect->setCurrentIndex(0);
+    toolBoxEditEdgeModeSelect->setCurrentIndex(0);
     toolBoxAnalysisCommunitiesSelect->setCurrentIndex(0);
     toolBoxAnalysisStrEquivalenceSelect->setCurrentIndex(0);
     toolBoxAnalysisCohesionSelect->setCurrentIndex(0);
@@ -4610,6 +4708,58 @@ int MainWindow::slotHelpMessageToUser(const int type,
 
 
 
+/**
+ * @brief Called from MW, when user selects something in the Subgraph from Selected
+ * Nodes selectbox of the toolbox
+ * @param selectedIndex
+ */
+void MainWindow::toolBoxEditNodeSubgraphSelectChanged(int selectedIndex) {
+    qDebug()<< "MW::toolBoxEditNodeSubgraphSelectChanged "
+               "selected text index: " << selectedIndex;
+    switch(selectedIndex){
+    case 0:
+        break;
+    case 1:
+        slotEditNodeSelectedToClique();
+        break;
+    case 2:
+        slotEditNodeSelectedToStar();
+        break;
+    case 3:
+        slotEditNodeSelectedToCycle();
+        break;
+    case 4:
+        slotEditNodeSelectedToLine();
+        break;
+    };
+}
+
+
+
+
+
+/**
+ * @brief Called from MW, when user selects something in the Edge Symmetrize
+ * selectbox of the toolbox
+ * @param selectedIndex
+ */
+void MainWindow::toolBoxEditEdgeSymmetrizeSelectChanged(int selectedIndex) {
+    qDebug()<< "MW::toolBoxEditEdgeSymmetrizeSelectChanged "
+               "selected text index: " << selectedIndex;
+    switch(selectedIndex){
+    case 0:
+        break;
+    case 1:
+        slotEditEdgeSymmetrizeAll();
+        break;
+    case 2:
+        slotEditEdgeSymmetrizeStrongTies();
+        break;
+    case 3:
+        slotEditEdgeSymmetrizeCocitation();
+        break;
+    };
+}
 
 
 
@@ -4647,9 +4797,8 @@ void MainWindow::toolBoxAnalysisMatricesSelectChanged(int selectedIndex) {
         slotAnalyzeMatrixLaplacian();
         break;
     };
-
-
 }
+
 
 
 
@@ -8891,6 +9040,44 @@ void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
 
 }
 
+
+
+/**
+ * @brief Toggles between directed and undirected edge mode
+  */
+void MainWindow::slotEditEdgeMode(const int &mode){
+    qDebug()<<"MW: slotEditEdgeMode() - calling Graph::graphUndirectedSet()";
+    if (mode==1) {
+        activeGraph.graphUndirectedSet(true);
+        optionsEdgeArrowsAct->setChecked(false);
+        if (activeEdges() !=0 ) {
+            statusMessage(tr("Undirected data mode. "
+                               "All existing directed edges transformed to "
+                               "undirected. Ready") ) ;
+
+        }
+        else {
+            statusMessage( tr("Undirected data mode. "
+                               "Any edge you add will be undirected. Ready")) ;
+        }
+    }
+    else {
+        activeGraph.graphUndirectedSet(false);
+        optionsEdgeArrowsAct->trigger();
+        optionsEdgeArrowsAct->setChecked(true);
+        if (activeEdges() !=0 ) {
+            statusMessage ( tr("Directed data mode. "
+                               "All existing undirected edges transformed to "
+                               "directed. Ready")) ;
+
+        }
+        else {
+            statusMessage ( tr("Directed data mode. "
+                               "Any new edge you add will be directed. Ready")) ;
+        }
+    }
+
+}
 
 
 
