@@ -319,7 +319,7 @@ public slots:
     void slotAnalyzeDistanceAverage();
     void slotAnalyzeDiameter();
     void slotAnalyzeEccentricity();
-    void slotAnalyzeDissimilaritiesDialog();
+    void slotAnalyzeStrEquivalenceDissimilaritiesDialog();
     void slotAnalyzeDissimilaritiesTieProfile(const QString &metric,
                                                const QString &varLocation,
                                                const bool &diagonal);
@@ -329,15 +329,15 @@ public slots:
     void slotAnalyzeReachabilityMatrix();
     void slotAnalyzeConnectedness();
 
-    void slotAnalyzeClusteringHierarchicalDialog();
+    void slotAnalyzeStrEquivalenceClusteringHierarchicalDialog();
     void slotAnalyzeClusteringHierarchical(const QString &matrix,
                                            const QString &metric,
                                            const QString &method,
                                            const bool &diagonal=false,
                                            const bool &diagram=false);
-    void slotAnalyzeCliqueCensus();
+    void slotAnalyzeCommunitiesCliqueCensus();
     void slotAnalyzeClusteringCoefficient();
-    void slotAnalyzeTriadCensus();
+    void slotAnalyzeCommunitiesTriadCensus();
 
     void slotAnalyzeSymmetryCheck();
     void slotAnalyzeMatrixAdjacencyInverse();
@@ -360,13 +360,13 @@ public slots:
     void slotAnalyzePrestigePageRank();
     void slotAnalyzePrestigeProximity();
 
-    void slotAnalyzeSimilarityMatchingDialog();
+    void slotAnalyzeStrEquivalenceSimilarityMeasureDialog();
     void slotAnalyzeSimilarityMatching(const QString &matrix,
                                const QString &varLocation,
                                const QString &measure,
                                const bool &diagonal);
 
-    void slotAnalyzeSimilarityPearsonDialog();
+    void slotAnalyzeStrEquivalencePearsonDialog();
     void slotAnalyzeSimilarityPearson(const QString &matrix,
                                const QString &varLocation,
                                const bool &diagonal=false);
@@ -423,10 +423,11 @@ public slots:
 
 
     //Called from MW, when user highlights something in the toolbox Comboboxes
-    void toolBoxAnalysisGeodesicsSelectChanged(int);
-    void toolBoxAnalysisConnectivitySelectChanged(int);
+    void toolBoxAnalysisMatricesSelectChanged(int);
+    void toolBoxAnalysisCohesionSelectChanged(int);
+    void toolBoxAnalysisStrEquivalenceSelectChanged(int);
     void toolBoxAnalysisProminenceSelectChanged(int);
-    void toolBoxAnalysisClusterabilitySelectChanged(int);
+    void toolBoxAnalysisCommunitiesSelectChanged(int);
     void toolBoxLayoutByIndexButtonPressed();
     void toolBoxLayoutForceDirectedButtonPressed();
 
@@ -483,14 +484,16 @@ private:
     QMenu *importSubMenu, *exportSubMenu, *editMenu, *analysisMenu, *helpMenu;
     QMenu *optionsMenu, *colorOptionsMenu, *edgeOptionsMenu, *nodeOptionsMenu;
     QMenu *editNodeMenu, *editEdgeMenu, *centrlMenu,  *viewOptionsMenu, *layoutMenu;
-    QMenu *distancesMenu, *similarityMenu, *communitiesMenu, *connectivityMenu;
+    QMenu *cohesionMenu, *strEquivalenceMenu, *communitiesMenu, *connectivityMenu;
     QMenu *matrixMenu;
     QMenu *networkMenu, *randomNetworkMenu, *filterMenu, *recentFilesSubMenu;
     QMenu *randomLayoutMenu, *circleLayoutMenu, *levelLayoutMenu, *physicalLayoutMenu;
     QMenu *colorationMenu;
     QCheckBox  *toolBoxNodeSizesByOutDegreeBx,*toolBoxNodeSizesByInDegreeBx, *toolBoxLayoutGuidesBx;
-    QComboBox *toolBoxAnalysisGeodesicsSelect,*toolBoxAnalysisConnectivitySelect,
-            *toolBoxAnalysisProminenceSelect, *toolBoxAnalysisClusterabilitySelect;
+    QComboBox *toolBoxSymmetrizeSelect, *toolBoxAnalysisCohesionSelect,
+    *toolBoxAnalysisStrEquivalenceSelect,
+    *toolBoxAnalysisProminenceSelect, *toolBoxAnalysisCommunitiesSelect,
+    *toolBoxAnalysisMatricesSelect;
     QComboBox *toolBoxLayoutByIndexSelect, *toolBoxLayoutByIndexTypeSelect;
     QComboBox *toolBoxLayoutForceDirectedSelect;
 
@@ -541,16 +544,16 @@ private:
     QAction *openSettingsAct;
     QAction *webCrawlerAct;
 
-    QAction *netDensity, *analyzeSymmetryAct, *graphDistanceAct, *averGraphDistanceAct,
-            *distanceMatrixAct, *geodesicsMatrixAct, *diameterAct, *eccentricityAct;
-    QAction *analyzeDistancesTieProfileAct;
-    QAction *walksAct,*totalWalksAct, *reachabilityMatrixAct, *connectednessAct;
-    QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct;
+    QAction *netDensity, *analyzeGraphSymmetryAct, *analyzeGraphDistanceAct, *averGraphDistanceAct,
+            *analyzeMatrixDistancesGeodesicAct, *analyzeMatrixGeodesicsAct, *analyzeGraphDiameterAct, *analyzeGraphEccentricityAct;
+    QAction *analyzeStrEquivalenceTieProfileDissimilaritiesAct;
+    QAction *analyzeGraphWalksAct,*analyzeGraphWalksTotalAct, *analyzeMatrixReachabilityAct, *analyzeGraphConnectednessAct;
+    QAction *analyzeCommunitiesCliquesAct, *clusteringCoefAct, *analyzeCommunitiesTriadCensusAct;
     QAction *analyzeMatrixAdjTransposeAct, *analyzeMatrixAdjInvertAct;
     QAction *analyzeMatrixAdjCocitationAct;
     QAction *analyzeMatrixDegreeAct, *analyzeMatrixLaplacianAct;
-    QAction *clusteringHierarchicalAct, *similarityPearsonAct;
-    QAction *similarityExactMatchesAct;
+    QAction *analyzeStrEquivalenceClusteringHierarchicalAct, *analyzeStrEquivalencePearsonAct;
+    QAction *analyzeStrEquivalenceMatchesAct;
     QAction *cDegreeAct, *cInDegreeAct, *cClosenessAct, *cInfluenceRangeClosenessAct,
             *cBetweennessAct, *cInformationAct, *cEigenvectorAct, *cPageRankAct,
             *cStressAct, *cPowerAct, *cEccentAct, *cProximityPrestigeAct;

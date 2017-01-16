@@ -1715,19 +1715,6 @@ void MainWindow::initActions(){
     Analysis menu actions
     */
 
-    analyzeSymmetryAct = new QAction(
-                QIcon(":/images/symmetry-edge.png"), tr("Symmetry Test"), this);
-    analyzeSymmetryAct -> setShortcut(Qt::SHIFT + Qt::Key_S);
-    analyzeSymmetryAct->setStatusTip(tr("Check whether the network is symmetric or not"));
-    analyzeSymmetryAct->setWhatsThis(
-                tr("Symmetry\n\n"
-                   "Checks whether the network is symmetric or not. \n"
-                   "A network is symmetric when all edges are reciprocal, or, "
-                   "in mathematical language, when the adjacency matrix is "
-                   "symmetric.")
-                );
-    connect(analyzeSymmetryAct, SIGNAL(triggered()),
-            this, SLOT(slotAnalyzeSymmetryCheck()));
 
     analyzeMatrixAdjInvertAct = new QAction(
                 QIcon(":/images/invertmatrix.png"), tr("Invert Adjacency Matrix"), this);
@@ -1790,30 +1777,45 @@ void MainWindow::initActions(){
     connect(analyzeMatrixLaplacianAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeMatrixLaplacian()));
 
 
-    graphDistanceAct = new QAction(
+
+    analyzeGraphSymmetryAct = new QAction(
+                QIcon(":/images/symmetry-edge.png"), tr("Symmetry Test"), this);
+    analyzeGraphSymmetryAct -> setShortcut(Qt::SHIFT + Qt::Key_S);
+    analyzeGraphSymmetryAct->setStatusTip(tr("Check whether the network is symmetric or not"));
+    analyzeGraphSymmetryAct->setWhatsThis(
+                tr("Symmetry\n\n"
+                   "Checks whether the network is symmetric or not. \n"
+                   "A network is symmetric when all edges are reciprocal, or, "
+                   "in mathematical language, when the adjacency matrix is "
+                   "symmetric.")
+                );
+    connect(analyzeGraphSymmetryAct, SIGNAL(triggered()),
+            this, SLOT(slotAnalyzeSymmetryCheck()));
+
+    analyzeGraphDistanceAct = new QAction(
                 QIcon(":/images/distance.png"), tr("Geodesic Distance between 2 nodes"), this
                 );
-    graphDistanceAct -> setShortcut(
+    analyzeGraphDistanceAct -> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_G) );
-    graphDistanceAct->setStatusTip(
+    analyzeGraphDistanceAct->setStatusTip(
                 tr("Compute the length of the shortest path (geodesic distance) between 2 nodes."));
-    graphDistanceAct->setWhatsThis(
+    analyzeGraphDistanceAct->setWhatsThis(
                 tr("Distance\n\n"
                    "Computes the geodesic distance between two nodes."
                    "In graph theory, the geodesic distance of two "
                    "nodes is the length (number of edges) of the shortest path "
                    "between them."));
-    connect(graphDistanceAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeDistance()));
+    connect(analyzeGraphDistanceAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeDistance()));
 
 
-    distanceMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesic Distances Matrix"),this);
-    distanceMatrixAct -> setShortcut(
+    analyzeMatrixDistancesGeodesicAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesic Distances Matrix"),this);
+    analyzeMatrixDistancesGeodesicAct -> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_M) );
-    distanceMatrixAct->
+    analyzeMatrixDistancesGeodesicAct->
             setStatusTip(
                 tr("Compute the matrix of geodesic distances between all pair of nodes.")
                 );
-    distanceMatrixAct->
+    analyzeMatrixDistancesGeodesicAct->
             setWhatsThis(
                 tr("Distances Matrix\n\n"
                    "Computes the matrix of distances between all "
@@ -1822,31 +1824,31 @@ void MainWindow::initActions(){
                    "(i,j) element is the distance from node i to node j"
                    "The distance of two nodes is the length of the shortest path between them.")
                 );
-    connect(distanceMatrixAct, SIGNAL(triggered()), this, SLOT( slotAnalyzeMatrixDistances() ) );
+    connect(analyzeMatrixDistancesGeodesicAct, SIGNAL(triggered()), this, SLOT( slotAnalyzeMatrixDistances() ) );
 
-    geodesicsMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesics Matrix"),this);
-    geodesicsMatrixAct -> setShortcut(
+    analyzeMatrixGeodesicsAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesics Matrix"),this);
+    analyzeMatrixGeodesicsAct -> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_S));
-    geodesicsMatrixAct->setStatusTip(tr("Compute the number of geodesic paths between each pair of nodes "));
-    geodesicsMatrixAct->setWhatsThis(
+    analyzeMatrixGeodesicsAct->setStatusTip(tr("Compute the number of geodesic paths between each pair of nodes "));
+    analyzeMatrixGeodesicsAct->setWhatsThis(
                 tr(
                     "Geodesics Matrix\n\n"
                     "Displays a n x n matrix, where the (i,j) element "
                     "is the number of geodesics between node i and node j. "
                     "A geodesic of two nodes is the shortest path between them.")
                 );
-    connect(geodesicsMatrixAct, SIGNAL(triggered()),
+    connect(analyzeMatrixGeodesicsAct, SIGNAL(triggered()),
             this, SLOT( slotAnalyzeMatrixGeodesics()) );
 
-    diameterAct = new QAction(QIcon(":/images/diameter.png"), tr("Graph Diameter"),this);
-    diameterAct -> setShortcut(
+    analyzeGraphDiameterAct = new QAction(QIcon(":/images/diameter.png"), tr("Graph Diameter"),this);
+    analyzeGraphDiameterAct -> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_D));
-    diameterAct->setStatusTip(tr("Compute the diameter of the network, "
+    analyzeGraphDiameterAct->setStatusTip(tr("Compute the diameter of the network, "
                                  "the maximum geodesic distance between any actors."));
-    diameterAct->setWhatsThis(tr("Diameter\n\n "
+    analyzeGraphDiameterAct->setWhatsThis(tr("Diameter\n\n "
                                  "The Diameter of a social network is the maximum geodesic distance "
                                  "(maximum shortest path length) between any two nodes of the network."));
-    connect(diameterAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeDiameter()));
+    connect(analyzeGraphDiameterAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeDiameter()));
 
     averGraphDistanceAct = new QAction(QIcon(":/images/avdistance.png"), tr("Average Distance"),this);
     averGraphDistanceAct -> setShortcut(
@@ -1860,11 +1862,11 @@ void MainWindow::initActions(){
     connect(averGraphDistanceAct, SIGNAL(triggered()),
             this, SLOT(slotAnalyzeDistanceAverage()));
 
-    eccentricityAct = new QAction(QIcon(":/images/eccentricity.png"), tr("Eccentricity"),this);
-    eccentricityAct-> setShortcut(
+    analyzeGraphEccentricityAct = new QAction(QIcon(":/images/eccentricity.png"), tr("Eccentricity"),this);
+    analyzeGraphEccentricityAct-> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_E ) );
-    eccentricityAct->setStatusTip(tr("Compute the Eccentricity of each actor and group Eccentricity"));
-    eccentricityAct->setWhatsThis(tr("Eccentricity\n\n"
+    analyzeGraphEccentricityAct->setStatusTip(tr("Compute the Eccentricity of each actor and group Eccentricity"));
+    analyzeGraphEccentricityAct->setWhatsThis(tr("Eccentricity\n\n"
                                      "The eccentricity of each node i in a network "
                                      "or graph is the largest geodesic distance "
                                      "between node i and any other node j. "
@@ -1878,19 +1880,178 @@ void MainWindow::initActions(){
                                      "It can also be calculated in weighted graphs "
                                      "although the weight of each edge (v,u) in E is "
                                      "always considered to be 1."));
-    connect(eccentricityAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeEccentricity()));
+    connect(analyzeGraphEccentricityAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeEccentricity()));
 
 
-    analyzeDistancesTieProfileAct = new QAction(QIcon(":/images/dm.png"),
-                                                tr("Tie Profile Dissimilarities/Distances"),this);
-    analyzeDistancesTieProfileAct -> setShortcut(
+
+    analyzeGraphConnectednessAct = new QAction(QIcon(":/images/distance.png"),  tr("Connectedness"), this);
+    analyzeGraphConnectednessAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_C) );
+    analyzeGraphConnectednessAct->setStatusTip(tr("Check whether the network is a connected "
+                                      "graph, a weakly connected digraph or "
+                                      "a disconnected graph/digraph..."));
+    analyzeGraphConnectednessAct->setWhatsThis(tr("Connectedness\n\n In graph theory, a "
+                                      "graph is <b>connected</b> if there is a "
+                                      "path between every pair of nodes. \n"
+                                      "A digraph is <b>strongly connected</b> "
+                                      "if there the a path from i to j and "
+                                      "from j to i for all pairs (i,j).\n"
+                                      "A digraph is weakly connected if at least "
+                                      "a pair of nodes are joined by a semipath.\n"
+                                      "A digraph or a graph is disconnected if "
+                                      "at least one node is isolate."
+                                      ));
+    connect(analyzeGraphConnectednessAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeConnectedness()));
+
+
+    analyzeGraphWalksAct = new QAction(QIcon(":/images/walk.png"), tr("Walks of a given length"),this);
+    analyzeGraphWalksAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_W) );
+    analyzeGraphWalksAct->setStatusTip(tr("Compute the number of walks of a given length between any nodes."));
+    analyzeGraphWalksAct->setWhatsThis(tr("Walks of a given length\n\n"
+                              "A walk is a sequence of alternating vertices and edges "
+                              "such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, "
+                              "v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, "
+                              "where each edge, e<sub>i</sub> is defined as "
+                              "e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. "
+                              "This function counts the number of walks of a given "
+                              "length between each pair of nodes, by studying the powers of the sociomatrix.\n"));
+    connect(analyzeGraphWalksAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeWalksLength() )  );
+
+    analyzeGraphWalksTotalAct = new QAction(QIcon(":/images/walk.png"), tr("Total Walks"),this);
+    analyzeGraphWalksTotalAct-> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_T) );
-    analyzeDistancesTieProfileAct->
+    analyzeGraphWalksTotalAct->setStatusTip(tr("Calculate the total number of walks of every possible length between all nodes"));
+    analyzeGraphWalksTotalAct->setWhatsThis(tr("Total Walks\n\n"
+                                   "A walk is a sequence of alternating vertices "
+                                   "and edges such as v<sub>0</sub>e<sub>1</sub>, "
+                                   "v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, "
+                                   "e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> "
+                                   "is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. "
+                                   "This function counts the number of walks of any length "
+                                   "between each pair of nodes, by studying the powers of the sociomatrix. \n"));
+    connect(analyzeGraphWalksTotalAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeWalksTotal() )  );
+
+
+    analyzeMatrixReachabilityAct = new QAction(QIcon(":/images/walk.png"), tr("Reachability Matrix"),this);
+    analyzeMatrixReachabilityAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_R));
+    analyzeMatrixReachabilityAct->setStatusTip(tr("Compute the Reachability Matrix of the network."));
+    analyzeMatrixReachabilityAct->setWhatsThis(tr("Reachability Matrix\n\n"
+                                           "Calculates the reachability matrix X<sup>R</sup> of "
+                                           "the graph where the {i,j} element is 1 if "
+                                           "the vertices i and j are reachable. \n\n"
+                                           "Actually, this just checks whether the corresponding element "
+                                           "of Distances matrix is not zero.\n"));
+    connect(analyzeMatrixReachabilityAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeReachabilityMatrix() )  );
+
+
+
+    clusteringCoefAct = new QAction(QIcon(":/images/clucof.png"), tr("Local and Network Clustering Coefficient"),this);
+    clusteringCoefAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_L) );
+    clusteringCoefAct->setStatusTip(tr("Compute the Watts & Strogatz Clustering Coefficient for every actor and the network average."));
+    clusteringCoefAct->setWhatsThis(tr("Local and Network Clustering Coefficient\n\n"
+                                       "The local Clustering Coefficient  (Watts & Strogatz, 1998) "
+                                       "of an actor quantifies how close "
+                                       "the actor and her neighbors are to being a clique and "
+                                       "can be used as an indication of network transitivity. \n"));
+    connect(clusteringCoefAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeClusteringCoefficient() )  );
+
+
+
+
+
+    analyzeCommunitiesCliquesAct = new QAction(QIcon(":/images/clique.png"), tr("Clique Census"),this);
+    analyzeCommunitiesCliquesAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_U, Qt::CTRL + Qt::Key_C));
+    analyzeCommunitiesCliquesAct->setStatusTip(tr("Compute the clique census: find all maximal connected subgraphs."));
+    analyzeCommunitiesCliquesAct->setWhatsThis(tr("Clique Census\n\n"
+                                "Produces the census of network cliques (maximal connected subgraphs), "
+                                "along with disaggregation by actor and co-membership information. "));
+    connect(analyzeCommunitiesCliquesAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCommunitiesCliqueCensus() )  );
+
+
+
+    analyzeCommunitiesTriadCensusAct = new QAction(QIcon(":/images/triad.png"), tr("Triad Census (M-A-N labeling)"),this);
+    analyzeCommunitiesTriadCensusAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_U, Qt::CTRL + Qt::Key_T) );
+    analyzeCommunitiesTriadCensusAct->setStatusTip(tr("Calculate the triad census for all actors."));
+    analyzeCommunitiesTriadCensusAct->setWhatsThis(tr("Triad Census\n\n"
+                                    "A triad census counts all the different kinds of observed triads "
+                                    "within a network and codes them according to their number of mutual, "
+                                    "asymmetric and non-existent dyads using the M-A-N labeling scheme. \n"));
+    connect(analyzeCommunitiesTriadCensusAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCommunitiesTriadCensus() )  );
+
+
+
+    analyzeStrEquivalencePearsonAct = new QAction(QIcon(":/images/similarity.png"),
+                                                  tr("Pearson correlation coefficients"),this);
+    analyzeStrEquivalencePearsonAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_T, Qt::CTRL + Qt::Key_P)
+                );
+    analyzeStrEquivalencePearsonAct->setStatusTip(
+                tr("Compute Pearson Correlation Coefficients between pairs of actors. "
+                   "Most useful with valued/weighted ties (non-binary). "));
+    analyzeStrEquivalencePearsonAct->setWhatsThis(
+                tr("Pearson correlation coefficients\n\n"
+                   "Computes a correlation matrix, where the elements are the "
+                   "Pearson correlation coefficients between pairs of actors "
+                   "in terms of their tie profiles or distances (in, out or both). \n\n"
+                   "The Pearson product-moment correlation coefficient (PPMCC or PCC or Pearson's r)"
+                   "is a measure of the linear dependence/association between two variables X and Y. \n\n"
+                   "This correlation measure of similarity is particularly useful "
+                   "when ties are valued/weighted denoting strength, cost or probability.\n\n"
+                   "Note that in very sparse networks (very low density), measures such as"
+                   "\"exact matches\", \"correlation\" and \"distance\" "
+                   "will show little variation among the actors, causing "
+                   "difficulty in classifying the actors in structural equivalence classes."));
+    connect(analyzeStrEquivalencePearsonAct, SIGNAL(triggered()),
+            this, SLOT(slotAnalyzeStrEquivalencePearsonDialog() )  );
+
+
+
+    analyzeStrEquivalenceMatchesAct = new QAction(QIcon(":/images/similarity.png"),
+                                            tr("Similarity by measure (Exact, Jaccard, Hamming, Cosine, Euclidean)"),this);
+    analyzeStrEquivalenceMatchesAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_T, Qt::CTRL + Qt::Key_E)
+                );
+    analyzeStrEquivalenceMatchesAct->setStatusTip(tr("Compute a pair-wise actor similarity "
+                                               "matrix based on a measure of their ties (or distances) \"matches\" ."));
+    analyzeStrEquivalenceMatchesAct->setWhatsThis(
+                tr("Actor Similarity by measure\n\n"
+                   "Computes a pair-wise actor similarity matrix, where each element (i,j) is "
+                   "the ratio of tie (or distance) matches of actors i and j to all other actors. \n\n"
+                   "SocNetV supports the following matching measures: "
+                   "Simple Matching (Exact Matches)"
+                   "Jaccard Index (Positive Matches or Co-citation)"
+                   "Hamming distance"
+                   "Cosine similarity"
+                   "Euclidean distance"
+                   "For instance, if you select Exact Matches, a matrix element (i,j) = 0.5, "
+                   "means that actors i and j have the same ties present or absent "
+                   "to other actors 50% of the time. \n\n"
+                   "These measures of similarity are particularly useful "
+                   "when ties are binary (not valued).\n\n"
+                   "Note that in very sparse networks (very low density), measures such as"
+                   "\"exact matches\", \"correlation\" and \"distance\" "
+                   "will show little variation among the actors, causing "
+                   "difficulty in classifying the actors in structural equivalence classes."));
+    connect(analyzeStrEquivalenceMatchesAct, SIGNAL(triggered()),
+            this, SLOT(slotAnalyzeStrEquivalenceSimilarityMeasureDialog() )  );
+
+
+
+    analyzeStrEquivalenceTieProfileDissimilaritiesAct = new QAction(QIcon(":/images/dm.png"),
+                                                tr("Tie Profile Dissimilarities/Distances"),this);
+    analyzeStrEquivalenceTieProfileDissimilaritiesAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_T, Qt::CTRL + Qt::Key_T) );
+    analyzeStrEquivalenceTieProfileDissimilaritiesAct->
             setStatusTip(
                 tr("Compute tie profile dissimilarities/distances "
                    "(Euclidean, Manhattan, Jaccard, Hamming) between all pair of nodes.")
                 );
-    analyzeDistancesTieProfileAct->
+    analyzeStrEquivalenceTieProfileDissimilaritiesAct->
             setWhatsThis(
                 tr("Tie Profile Dissimilarities/Distances\n\n"
                    "Computes a matrix of tie profile distances/dissimilarities "
@@ -1902,80 +2063,18 @@ void MainWindow::initActions(){
                    "the tie profiles of node i and node j."
                    )
                 );
-    connect(analyzeDistancesTieProfileAct, SIGNAL(triggered()),
-            this, SLOT( slotAnalyzeDissimilaritiesDialog() ) );
+    connect(analyzeStrEquivalenceTieProfileDissimilaritiesAct, SIGNAL(triggered()),
+            this, SLOT( slotAnalyzeStrEquivalenceDissimilaritiesDialog() ) );
 
 
+    analyzeStrEquivalenceClusteringHierarchicalAct = new QAction(QIcon(":/images/hierarchical.png"),
+                                                                 tr("Hierarchical clustering"),this);
+    analyzeStrEquivalenceClusteringHierarchicalAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_T, Qt::CTRL + Qt::Key_H));
 
-    connectednessAct = new QAction(QIcon(":/images/distance.png"),  tr("Connectedness"), this);
-    connectednessAct -> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_C) );
-    connectednessAct->setStatusTip(tr("Check whether the network is a connected "
-                                      "graph, a weakly connected digraph or "
-                                      "a disconnected graph/digraph..."));
-    connectednessAct->setWhatsThis(tr("Connectedness\n\n In graph theory, a "
-                                      "graph is <b>connected</b> if there is a "
-                                      "path between every pair of nodes. \n"
-                                      "A digraph is <b>strongly connected</b> "
-                                      "if there the a path from i to j and "
-                                      "from j to i for all pairs (i,j).\n"
-                                      "A digraph is weakly connected if at least "
-                                      "a pair of nodes are joined by a semipath.\n"
-                                      "A digraph or a graph is disconnected if "
-                                      "at least one node is isolate."
-                                      ));
-    connect(connectednessAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeConnectedness()));
-
-
-    walksAct = new QAction(QIcon(":/images/walk.png"), tr("Walks of a given length"),this);
-    walksAct-> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_U, Qt::CTRL + Qt::Key_G) );
-    walksAct->setStatusTip(tr("Compute the number of walks of a given length between any nodes."));
-    walksAct->setWhatsThis(tr("Walks of a given length\n\n"
-                              "A walk is a sequence of alternating vertices and edges "
-                              "such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, "
-                              "v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, "
-                              "where each edge, e<sub>i</sub> is defined as "
-                              "e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. "
-                              "This function counts the number of walks of a given "
-                              "length between each pair of nodes, by studying the powers of the sociomatrix.\n"));
-    connect(walksAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeWalksLength() )  );
-
-    totalWalksAct = new QAction(QIcon(":/images/walk.png"), tr("Total Walks"),this);
-    totalWalksAct-> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_U, Qt::CTRL + Qt::Key_W) );
-    totalWalksAct->setStatusTip(tr("Calculate the total number of walks of every possible length between all nodes"));
-    totalWalksAct->setWhatsThis(tr("Total Walks\n\n"
-                                   "A walk is a sequence of alternating vertices "
-                                   "and edges such as v<sub>0</sub>e<sub>1</sub>, "
-                                   "v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, "
-                                   "e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> "
-                                   "is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. "
-                                   "This function counts the number of walks of any length "
-                                   "between each pair of nodes, by studying the powers of the sociomatrix. \n"));
-    connect(totalWalksAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeWalksTotal() )  );
-
-
-    reachabilityMatrixAct = new QAction(QIcon(":/images/walk.png"), tr("Reachability Matrix"),this);
-    reachabilityMatrixAct-> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_R));
-    reachabilityMatrixAct->setStatusTip(tr("Compute the Reachability Matrix of the network."));
-    reachabilityMatrixAct->setWhatsThis(tr("Reachability Matrix\n\n"
-                                           "Calculates the reachability matrix X<sup>R</sup> of "
-                                           "the graph where the {i,j} element is 1 if "
-                                           "the vertices i and j are reachable. \n\n"
-                                           "Actually, this just checks whether the corresponding element "
-                                           "of Distances matrix is not zero.\n"));
-    connect(reachabilityMatrixAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeReachabilityMatrix() )  );
-
-
-
-    clusteringHierarchicalAct = new QAction(QIcon(":/images/hierarchical.png"), tr("Hierarchical clustering"),this);
-    clusteringHierarchicalAct-> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_U, Qt::CTRL + Qt::Key_H));
-
-    clusteringHierarchicalAct->setStatusTip(tr("Perform agglomerative cluster analysis of the actors in the social network"));
-    clusteringHierarchicalAct->setWhatsThis(
+    analyzeStrEquivalenceClusteringHierarchicalAct->setStatusTip(
+                tr("Perform agglomerative cluster analysis of the actors in the social network"));
+    analyzeStrEquivalenceClusteringHierarchicalAct->setWhatsThis(
                 tr("Hierarchical clustering\n\n"
                    "Hierarchical clustering (or hierarchical cluster analysis, HCA) "
                    "is a method of cluster analysis which builds a hierarchy "
@@ -2000,92 +2099,8 @@ void MainWindow::initActions(){
                    "Note that the complexity of agglomerative clustering is O( n^2 log(n) ), "
                    "therefore is too slow for large data sets."
                    ));
-    connect(clusteringHierarchicalAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeClusteringHierarchicalDialog() )  );
-
-
-    cliquesAct = new QAction(QIcon(":/images/clique.png"), tr("Clique Census"),this);
-    cliquesAct-> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_U, Qt::CTRL + Qt::Key_C));
-    cliquesAct->setStatusTip(tr("Compute the clique census: find all maximal connected subgraphs."));
-    cliquesAct->setWhatsThis(tr("Clique Census\n\n"
-                                "Produces the census of network cliques (maximal connected subgraphs), "
-                                "along with disaggregation by actor and co-membership information. "));
-    connect(cliquesAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCliqueCensus() )  );
-
-
-    clusteringCoefAct = new QAction(QIcon(":/images/clucof.png"), tr("Local and Network Clustering Coefficient"),this);
-    clusteringCoefAct -> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_U, Qt::CTRL + Qt::Key_L) );
-    clusteringCoefAct->setStatusTip(tr("Compute the Watts & Strogatz Clustering Coefficient for every actor and the network average."));
-    clusteringCoefAct->setWhatsThis(tr("Local and Network Clustering Coefficient\n\n"
-                                       "The local Clustering Coefficient  (Watts & Strogatz, 1998) "
-                                       "of an actor quantifies how close "
-                                       "the actor and her neighbors are to being a clique and "
-                                       "can be used as an indication of network transitivity. \n"));
-    connect(clusteringCoefAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeClusteringCoefficient() )  );
-
-
-    triadCensusAct = new QAction(QIcon(":/images/triad.png"), tr("Triad Census (M-A-N labeling)"),this);
-    triadCensusAct-> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_U, Qt::CTRL + Qt::Key_T) );
-    triadCensusAct->setStatusTip(tr("Calculate the triad census for all actors."));
-    triadCensusAct->setWhatsThis(tr("Triad Census\n\n"
-                                    "A triad census counts all the different kinds of observed triads "
-                                    "within a network and codes them according to their number of mutual, "
-                                    "asymmetric and non-existent dyads using the M-A-N labeling scheme. \n"));
-    connect(triadCensusAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeTriadCensus() )  );
-
-
-    similarityPearsonAct = new QAction(QIcon(":/images/similarity.png"), tr("Pearson correlation coefficients"),this);
-    similarityPearsonAct-> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_P)
-                );
-    similarityPearsonAct->setStatusTip(tr("Compute Pearson Correlation Coefficients between pairs of actors. "
-                                          "Most useful with valued/weighted ties (non-binary). "));
-    similarityPearsonAct->setWhatsThis(
-                tr("Pearson correlation coefficients\n\n"
-                   "Computes a correlation matrix, where the elements are the "
-                   "Pearson correlation coefficients between pairs of actors "
-                   "in terms of their tie profiles or distances (in, out or both). \n\n"
-                   "The Pearson product-moment correlation coefficient (PPMCC or PCC or Pearson's r)"
-                   "is a measure of the linear dependence/association between two variables X and Y. \n\n"
-                   "This correlation measure of similarity is particularly useful "
-                   "when ties are valued/weighted denoting strength, cost or probability.\n\n"
-                   "Note that in very sparse networks (very low density), measures such as"
-                   "\"exact matches\", \"correlation\" and \"distance\" "
-                   "will show little variation among the actors, causing "
-                   "difficulty in classifying the actors in structural equivalence classes."));
-    connect(similarityPearsonAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeSimilarityPearsonDialog() )  );
-
-
-
-    similarityExactMatchesAct = new QAction(QIcon(":/images/similarity.png"),
-                                            tr("Similarity matrix by measure (Exact, Jaccard, Hamming, Cosine)"),this);
-    similarityExactMatchesAct-> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_E)
-                );
-    similarityExactMatchesAct->setStatusTip(tr("Compute a pair-wise actor similarity "
-                                               "matrix based on a measure of their ties (or distances) \"matches\" ."));
-    similarityExactMatchesAct->setWhatsThis(
-                tr("Matches: Exact, Jaccard, Hamming, Cosine etc\n\n"
-                   "Computes a pair-wise actor similarity matrix, where each element (i,j) is "
-                   "the ratio of tie (or distance) matches of actors i and j to all other actors. \n\n"
-                   "SocNetV supports the following matching measures:"
-                   "Simple Matching (Exact Matches)"
-                   "Jaccard Index (Positive Matches or Co-citation)"
-                   "Hamming distance"
-                   "For instance, if you select Exact Matches, a matrix element (i,j) = 0.5, "
-                   "means that actors i and j have the same ties present or absent "
-                   "to other actors 50% of the time. \n\n"
-                   "These measures of similarity are particularly useful "
-                   "when ties are binary (not valued).\n\n"
-                   "Note that in very sparse networks (very low density), measures such as"
-                   "\"exact matches\", \"correlation\" and \"distance\" "
-                   "will show little variation among the actors, causing "
-                   "difficulty in classifying the actors in structural equivalence classes."));
-    connect(similarityExactMatchesAct, SIGNAL(triggered()),
-            this, SLOT(slotAnalyzeSimilarityMatchingDialog() )  );
-
+    connect(analyzeStrEquivalenceClusteringHierarchicalAct, SIGNAL(triggered()),
+            this, SLOT(slotAnalyzeStrEquivalenceClusteringHierarchicalDialog() )  );
 
 
     cDegreeAct = new QAction(tr("Degree Centrality (DC)"),this);
@@ -2680,8 +2695,6 @@ void MainWindow::initMenuBar() {
 
     /** menuBar entry: analyze menu */
     analysisMenu = menuBar()->addMenu(tr("&Analyze"));
-    analysisMenu -> addAction (analyzeSymmetryAct);
-    analysisMenu -> addSeparator();
     matrixMenu = new QMenu(tr("Adjacency Matrix and Matrices..."));
     matrixMenu -> setIcon(QIcon(":/images/sm.png"));
     analysisMenu -> addMenu (matrixMenu);
@@ -2699,45 +2712,33 @@ void MainWindow::initMenuBar() {
     //	analysisMenu -> addAction (netDensity);
 
     analysisMenu -> addSeparator();
-    distancesMenu = new QMenu(tr("Distances and Dissimilarities..."));
-    distancesMenu -> setIcon(QIcon(":/images/distances.png"));
-    analysisMenu -> addMenu(distancesMenu);
-    distancesMenu ->addSection("Graph distances");
-    distancesMenu -> addAction (graphDistanceAct);
-    distancesMenu -> addAction (averGraphDistanceAct);
-    distancesMenu -> addSeparator();
-    distancesMenu -> addAction (distanceMatrixAct);
-    distancesMenu -> addAction (geodesicsMatrixAct);
-    distancesMenu -> addSeparator();
-    distancesMenu -> addAction (eccentricityAct);
-    distancesMenu -> addAction (diameterAct);
-    distancesMenu ->addSection("Other distances");
-    distancesMenu -> addAction (analyzeDistancesTieProfileAct);
+    cohesionMenu = new QMenu(tr("Cohesion..."));
+    cohesionMenu -> setIcon(QIcon(":/images/distances.png"));
+    analysisMenu -> addMenu(cohesionMenu);
+    cohesionMenu -> addAction (analyzeGraphSymmetryAct);
+    cohesionMenu -> addSeparator();
+    cohesionMenu -> addSection("Graph distances");
+    cohesionMenu -> addAction (analyzeGraphDistanceAct);
+    cohesionMenu -> addAction (averGraphDistanceAct);
+    cohesionMenu -> addSeparator();
+    cohesionMenu -> addAction (analyzeMatrixDistancesGeodesicAct);
+    cohesionMenu -> addAction (analyzeMatrixGeodesicsAct);
+    cohesionMenu -> addSeparator();
+    cohesionMenu -> addAction (analyzeGraphEccentricityAct);
+    cohesionMenu -> addAction (analyzeGraphDiameterAct);
+    cohesionMenu  -> addSeparator();
+    cohesionMenu -> addAction(analyzeGraphConnectednessAct);
+    cohesionMenu  -> addSeparator();
+    cohesionMenu -> addAction (analyzeGraphWalksAct);
+    cohesionMenu -> addAction (analyzeGraphWalksTotalAct);
+    cohesionMenu  -> addSeparator();
+    cohesionMenu -> addAction (analyzeMatrixReachabilityAct);
+    cohesionMenu -> addSeparator();
+    cohesionMenu -> addAction (clusteringCoefAct);
 
-    analysisMenu -> addSeparator();
-    connectivityMenu  = new QMenu(tr("Connectivity..."));
-    connectivityMenu -> setIcon(QIcon(":/images/connectivity.png"));
-    analysisMenu -> addMenu(connectivityMenu);
-    connectivityMenu -> addAction(connectednessAct);
-    connectivityMenu  -> addSeparator();
-    connectivityMenu -> addAction (walksAct);
-    connectivityMenu -> addAction (totalWalksAct);
-    connectivityMenu  -> addSeparator();
-    connectivityMenu -> addAction (reachabilityMatrixAct);
-
-    analysisMenu -> addSeparator();
-    communitiesMenu = new QMenu(tr("Communities / Clustering..."));
-    communitiesMenu -> setIcon(QIcon(":/images/clustering.png"));
-    analysisMenu -> addMenu(communitiesMenu);
-    communitiesMenu -> addAction (cliquesAct);
-    communitiesMenu -> addSeparator();
-    communitiesMenu -> addAction (clusteringCoefAct);
-    communitiesMenu -> addSeparator();
-    communitiesMenu -> addAction (triadCensusAct);
-    communitiesMenu -> addSeparator();
-    communitiesMenu -> addAction (clusteringHierarchicalAct);
 
     analysisMenu->addSeparator();
+    // CENTRALITIES
     centrlMenu = new QMenu(tr("Centrality and Prestige indices..."));
     centrlMenu -> setIcon(QIcon(":/images/centrality.png"));
     analysisMenu->addMenu(centrlMenu);
@@ -2757,12 +2758,30 @@ void MainWindow::initMenuBar() {
     centrlMenu -> addAction (cPageRankAct);
     centrlMenu -> addAction (cProximityPrestigeAct);
 
+
+    analysisMenu -> addSeparator();
+    // COMMUNITIES & SUBGROUPS
+    communitiesMenu = new QMenu(tr("Communities and Subgroups..."));
+    communitiesMenu -> setIcon(QIcon(":/images/clustering.png"));
+    analysisMenu -> addMenu(communitiesMenu);
+    communitiesMenu -> addAction (analyzeCommunitiesCliquesAct);
+    communitiesMenu -> addSeparator();
+    communitiesMenu -> addAction (analyzeCommunitiesTriadCensusAct);
+
+
     analysisMenu->addSeparator();
-    similarityMenu = new QMenu(tr("Similarity..."));
-    similarityMenu -> setIcon(QIcon(":/images/similarity.png"));
-    analysisMenu -> addMenu (similarityMenu);
-    similarityMenu -> addAction (similarityPearsonAct);
-    similarityMenu -> addAction(similarityExactMatchesAct);
+    // STRUCTURAL EQUIVALENCE
+    strEquivalenceMenu = new QMenu(tr("Structural Equivalence..."));
+    strEquivalenceMenu -> setIcon(QIcon(":/images/similarity.png"));
+    analysisMenu -> addMenu (strEquivalenceMenu);
+    strEquivalenceMenu -> addAction (analyzeStrEquivalencePearsonAct);
+    strEquivalenceMenu -> addAction(analyzeStrEquivalenceMatchesAct);
+    strEquivalenceMenu -> addSeparator();
+    strEquivalenceMenu -> addAction (analyzeStrEquivalenceTieProfileDissimilaritiesAct);
+    strEquivalenceMenu -> addSeparator();
+    strEquivalenceMenu -> addAction (analyzeStrEquivalenceClusteringHierarchicalAct);
+
+
 
     /** menuBar entry layoutMenu  */
 
@@ -3003,12 +3022,40 @@ void MainWindow::initToolBox(){
                 );
 
 
+
+    QLabel *toolBoxSymmetrizeSelectLabel  = new QLabel;
+    toolBoxSymmetrizeSelectLabel->setText(tr("Symmetrize:"));
+    toolBoxSymmetrizeSelectLabel->setMinimumWidth(115);
+    toolBoxSymmetrizeSelect = new QComboBox;
+    toolBoxSymmetrizeSelect->setStatusTip(
+                tr("Select a community detection metric / cohesive subgroup algorithm, i.e. cliques, triad census etc."));
+    toolBoxSymmetrizeSelect->setToolTip(
+                tr("Community detection metrics and cohesive subgroup algorithms, i.e. cliques, triad census etc."));
+            toolBoxSymmetrizeSelect->setWhatsThis(
+                        tr("Analyze Communities\n\n"
+                           "Community detection metrics and cohesive subgroup algorithms, "
+                           "(i.e. cliques, triad census etc), to identify "
+                           "meaningful subgraphs in the graph."
+                           "For instance, select cliques to count and identify "
+                           "all maximal cliques of actors in the network. "));
+    QStringList symmetrizeCommands;
+    symmetrizeCommands << "Select"
+                       << "Directed ties"
+                       << "Strong ties"
+                       << "Cocitation"
+                       << "Undirected mode";
+    toolBoxSymmetrizeSelect->addItems(symmetrizeCommands);
+    toolBoxSymmetrizeSelect->setMinimumWidth(115);
+
+
     //create a grid layout for these buttons
     QGridLayout *buttonsGrid = new QGridLayout;
     buttonsGrid -> addWidget(editNodeAddBt, 0,0);
     buttonsGrid -> addWidget(removeNodeBt, 0,1);
     buttonsGrid -> addWidget(editEdgeAddBt,1,0);
     buttonsGrid -> addWidget(editEdgeRemoveBt,1,1);
+    buttonsGrid -> addWidget(toolBoxSymmetrizeSelectLabel,2,0);
+    buttonsGrid -> addWidget(toolBoxSymmetrizeSelect,2,1);
     buttonsGrid -> setSpacing(5);
     buttonsGrid -> setContentsMargins(5, 5, 5, 5);
 
@@ -3020,74 +3067,59 @@ void MainWindow::initToolBox(){
 
 
     //create widgets for the "Analysis" box
-    QLabel *toolBoxAnalysisGeodesicsSelectLabel = new QLabel;
-    toolBoxAnalysisGeodesicsSelectLabel->setText(tr("Distances:"));
-    toolBoxAnalysisGeodesicsSelectLabel->setMinimumWidth(115);
-    toolBoxAnalysisGeodesicsSelect = new QComboBox;
-    toolBoxAnalysisGeodesicsSelect -> setStatusTip(
-                tr("Select a basic graph-theoretic metric to compute, i.e. graph diameter."));
-    toolBoxAnalysisGeodesicsSelect -> setToolTip(
-                tr("Basic graph-theoretic metrics of a social network, "
-                   "such as geodesic distances (shortest paths), graph diameter, eccentricity, etc."));
-    toolBoxAnalysisGeodesicsSelect -> setWhatsThis(
-                tr("Analyze Distances\n\n"
-                   "Compute basic graph-theoretic features of the network "
-                   "i.e. diameter, eccentricity, distances etc."));
-    QStringList geodesicsCommandsList;
-    geodesicsCommandsList << "Select"
-                          << "Distance" << "Average Distance"
-                          << "Distances Matrix" << "Geodesics Matrix"
-                          << "Eccentricity" << "Diameter";
-    toolBoxAnalysisGeodesicsSelect->addItems(geodesicsCommandsList);
-    toolBoxAnalysisGeodesicsSelect->setMinimumWidth(115);
+    QLabel *toolBoxAnalysisMatricesSelectLabel = new QLabel;
+    toolBoxAnalysisMatricesSelectLabel->setText(tr("Matrix:"));
+    toolBoxAnalysisMatricesSelectLabel->setMinimumWidth(115);
+    toolBoxAnalysisMatricesSelect = new QComboBox;
+    toolBoxAnalysisMatricesSelect -> setStatusTip(
+                tr("Select which matrix to compute and display, based on the adjacency matrix of the current network."));
+    toolBoxAnalysisMatricesSelect -> setToolTip(
+                tr("The adjacency matrix and other matrices based on the adjacency matrix of the current network."));
+    toolBoxAnalysisMatricesSelect -> setWhatsThis(
+                tr("Analyze Matrices\n\n"
+                   "Compute and display matrices based on the adjacency matrix of the current network."));
+    QStringList graphMatricesList;
+    graphMatricesList << "Select"
+                          << "Adjacency Matrix"
+                          << "Adjacency Matrix Plot"
+                          << "Adjacency Matrix Inverse"
+                          << "Adjacency Matrix Transpose"
+                          << "Cocitation Matrix"
+                          << "Degree Matrix"
+                          << "Laplacian Matrix";
+    toolBoxAnalysisMatricesSelect->addItems(graphMatricesList);
+    toolBoxAnalysisMatricesSelect->setMinimumWidth(115);
 
 
-    QLabel *toolBoxAnalysisConnectivitySelectLabel  = new QLabel;
-    toolBoxAnalysisConnectivitySelectLabel->setText(tr("Connectivity:"));
-    toolBoxAnalysisConnectivitySelectLabel->setMinimumWidth(115);
-    toolBoxAnalysisConnectivitySelect = new QComboBox;
-    toolBoxAnalysisConnectivitySelect->setStatusTip(
-                tr("Select a 'connectivity' metric to compute i.e. connectedness, walks, etc."));
-    toolBoxAnalysisConnectivitySelect->setToolTip(
-                tr("Compute 'connectivity' metrics such as network connectedness, "
-                   "walks, reachability etc."));
-    toolBoxAnalysisConnectivitySelect->setWhatsThis(
-                tr("Analyze Connectivity\\n\n"
-                   "Compute 'connectivity' metrics such as network connectedness, "
-                   "walks, reachability etc."));
-    QStringList connectivityCommands;
-    connectivityCommands << "Select"
-                         << "Connectedness"
-                         << "Walks of given length"
-                         << "Total Walks"
-                         << "Reachability Matrix";
-    toolBoxAnalysisConnectivitySelect->addItems(connectivityCommands);
-    toolBoxAnalysisConnectivitySelect->setMinimumWidth(115);
 
+    QLabel *toolBoxAnalysisCohesionSelectLabel = new QLabel;
+    toolBoxAnalysisCohesionSelectLabel->setText(tr("Cohesion:"));
+    toolBoxAnalysisCohesionSelectLabel->setMinimumWidth(115);
+    toolBoxAnalysisCohesionSelect = new QComboBox;
+    toolBoxAnalysisCohesionSelect -> setStatusTip(
+                tr("Select a basic graph-theoretic metric to compute, i.e. distances, walks, graph diameter, eccentricity."));
+    toolBoxAnalysisCohesionSelect -> setToolTip(
+                tr("Basic graph-theoretic metrics, such as distances, walks, graph diameter, eccentricity."));
+    toolBoxAnalysisCohesionSelect -> setWhatsThis(
+                tr("Analyze Cohesion\n\n"
+                   "Compute basic graph-theoretic metrics, i.e. distances, walks, graph diameter, eccentricity."));
+    QStringList graphPropertiesList;
+    graphPropertiesList << "Select"
+                          << "Symmetry"
+                          << "Distance"
+                          << "Average Distance"
+                          << "Distances Matrix"
+                          << "Geodesics Matrix"
+                          << "Eccentricity"
+                          << "Diameter"
+                          << "Connectedness"
+                          << "Walks of given length"
+                          << "Total Walks"
+                          << "Reachability Matrix"
+                          << "Clustering Coefficient";
+    toolBoxAnalysisCohesionSelect->addItems(graphPropertiesList);
+    toolBoxAnalysisCohesionSelect->setMinimumWidth(115);
 
-    QLabel *toolBoxAnalysisClusterabilitySelectLabel  = new QLabel;
-    toolBoxAnalysisClusterabilitySelectLabel->setText(tr("Clusterability:"));
-    toolBoxAnalysisClusterabilitySelectLabel->setMinimumWidth(115);
-    toolBoxAnalysisClusterabilitySelect = new QComboBox;
-    toolBoxAnalysisClusterabilitySelect->setStatusTip(
-                tr("'Select a clusterability metric, i.e. cliques"));
-    toolBoxAnalysisClusterabilitySelect->setToolTip(
-                tr("Select which 'clusterability' metric to compute, such as cliques"));
-            toolBoxAnalysisClusterabilitySelect->setWhatsThis(
-                        tr("Analyze Clusterability\n\n"
-                           "'Clusterability' analysis includes metrics and indices, "
-                           "such as cliques, which primary focus is to identify "
-                           "clusters or meaningful subgraphs in the graph."
-                           "For instance, select cliques to count and identify "
-                           "all cliques of actors in the network. A clique is a "
-                           "maximal connected subgraph."));
-    QStringList clusterabilityCommands;
-    clusterabilityCommands << "Select"
-                           << "Cliques"
-                           << "Clustering Coefficient"
-                           << "Triad Census";
-    toolBoxAnalysisClusterabilitySelect->addItems(clusterabilityCommands);
-    toolBoxAnalysisClusterabilitySelect->setMinimumWidth(115);
 
 
     QLabel *toolBoxAnalysisProminenceSelectLabel  = new QLabel;
@@ -3134,16 +3166,72 @@ void MainWindow::initToolBox(){
     toolBoxAnalysisProminenceSelect->addItems(prominenceCommands);
     toolBoxAnalysisProminenceSelect->setMinimumWidth(115);
 
+
+    QLabel *toolBoxAnalysisCommunitiesSelectLabel  = new QLabel;
+    toolBoxAnalysisCommunitiesSelectLabel->setText(tr("Communities:"));
+    toolBoxAnalysisCommunitiesSelectLabel->setMinimumWidth(115);
+    toolBoxAnalysisCommunitiesSelect = new QComboBox;
+    toolBoxAnalysisCommunitiesSelect->setStatusTip(
+                tr("Select a community detection metric / cohesive subgroup algorithm, i.e. cliques, triad census etc."));
+    toolBoxAnalysisCommunitiesSelect->setToolTip(
+                tr("Community detection metrics and cohesive subgroup algorithms, i.e. cliques, triad census etc."));
+            toolBoxAnalysisCommunitiesSelect->setWhatsThis(
+                        tr("Analyze Communities\n\n"
+                           "Community detection metrics and cohesive subgroup algorithms, "
+                           "(i.e. cliques, triad census etc), to identify "
+                           "meaningful subgraphs in the graph."
+                           "For instance, select cliques to count and identify "
+                           "all maximal cliques of actors in the network. "));
+    QStringList communitiesCommands;
+    communitiesCommands << "Select"
+                           << "Cliques"
+                           << "Triad Census";
+    toolBoxAnalysisCommunitiesSelect->addItems(communitiesCommands);
+    toolBoxAnalysisCommunitiesSelect->setMinimumWidth(115);
+
+
+
+
+    QLabel *toolBoxAnalysisStrEquivalenceSelectLabel  = new QLabel;
+    toolBoxAnalysisStrEquivalenceSelectLabel->setText(tr("Equivalence:"));
+    toolBoxAnalysisStrEquivalenceSelectLabel->setMinimumWidth(115);
+    toolBoxAnalysisStrEquivalenceSelect = new QComboBox;
+    toolBoxAnalysisStrEquivalenceSelect->setStatusTip(
+                tr("Select a metric to measure structural equivalence, "
+                   "i.e. Pearson Coefficients, tie profile similarities, "
+                   "hierarchical clustering, etc."));
+    toolBoxAnalysisStrEquivalenceSelect->setToolTip(
+                tr("Structural equivalence measures and visualization algorthms, "
+                   "i.e. Pearson Coefficients, tie profile similarities, "
+                   "hierarchical clustering"));
+    toolBoxAnalysisStrEquivalenceSelect->setWhatsThis(
+                tr("Analyze Structural Equivalence\\n\n"
+                   "Structural equivalence measures and visualization algorthms, "
+                   "i.e. Pearson Coefficients, tie profile similarities, "
+                   "hierarchical clustering "));
+    QStringList connectivityCommands;
+    connectivityCommands << "Select"
+                         << "Pearson Coefficients"
+                         << "Similarities"
+                         << "Dissimilarities"
+                         << "Hierarchical Clustering";
+    toolBoxAnalysisStrEquivalenceSelect->addItems(connectivityCommands);
+    toolBoxAnalysisStrEquivalenceSelect->setMinimumWidth(115);
+
+
     //create layout for analysis options
     QGridLayout *analysisGrid = new QGridLayout();
-    analysisGrid -> addWidget(toolBoxAnalysisGeodesicsSelectLabel, 0,0);
-    analysisGrid -> addWidget(toolBoxAnalysisGeodesicsSelect, 0,1);
-    analysisGrid -> addWidget(toolBoxAnalysisConnectivitySelectLabel, 1,0);
-    analysisGrid -> addWidget(toolBoxAnalysisConnectivitySelect, 1,1);
-    analysisGrid -> addWidget(toolBoxAnalysisClusterabilitySelectLabel, 3,0);
-    analysisGrid -> addWidget(toolBoxAnalysisClusterabilitySelect, 3,1);
-    analysisGrid -> addWidget(toolBoxAnalysisProminenceSelectLabel, 4,0);
-    analysisGrid -> addWidget(toolBoxAnalysisProminenceSelect, 4,1);
+    analysisGrid -> addWidget(toolBoxAnalysisMatricesSelectLabel, 0,0);
+    analysisGrid -> addWidget(toolBoxAnalysisMatricesSelect, 0,1);
+    analysisGrid -> addWidget(toolBoxAnalysisCohesionSelectLabel, 1,0);
+    analysisGrid -> addWidget(toolBoxAnalysisCohesionSelect, 1,1);
+    analysisGrid -> addWidget(toolBoxAnalysisProminenceSelectLabel, 2,0);
+    analysisGrid -> addWidget(toolBoxAnalysisProminenceSelect, 2,1);
+    analysisGrid -> addWidget(toolBoxAnalysisCommunitiesSelectLabel, 3,0);
+    analysisGrid -> addWidget(toolBoxAnalysisCommunitiesSelect, 3,1);
+    analysisGrid -> addWidget(toolBoxAnalysisStrEquivalenceSelectLabel, 4,0);
+    analysisGrid -> addWidget(toolBoxAnalysisStrEquivalenceSelect, 4,1);
+
     analysisGrid -> setSpacing(5);
     analysisGrid -> setContentsMargins(15, 5, 15, 5);
 
@@ -4163,14 +4251,19 @@ void MainWindow::initSignalSlots() {
     connect( layoutGuidesAct, SIGNAL(triggered(bool)),
              this, SLOT(slotLayoutGuides(bool)));
 
-        connect(toolBoxAnalysisGeodesicsSelect, SIGNAL (currentIndexChanged(int) ),
-            this, SLOT(toolBoxAnalysisGeodesicsSelectChanged(int) ) );
 
-    connect(toolBoxAnalysisConnectivitySelect, SIGNAL (currentIndexChanged(int) ),
-            this, SLOT(toolBoxAnalysisConnectivitySelectChanged(int) ) );
 
-    connect(toolBoxAnalysisClusterabilitySelect, SIGNAL (currentIndexChanged(int) ),
-            this, SLOT(toolBoxAnalysisClusterabilitySelectChanged(int) ) );
+    connect(toolBoxAnalysisMatricesSelect, SIGNAL (currentIndexChanged(int) ),
+        this, SLOT(toolBoxAnalysisMatricesSelectChanged(int) ) );
+
+    connect(toolBoxAnalysisCohesionSelect, SIGNAL (currentIndexChanged(int) ),
+            this, SLOT(toolBoxAnalysisCohesionSelectChanged(int) ) );
+
+    connect(toolBoxAnalysisStrEquivalenceSelect, SIGNAL (currentIndexChanged(int) ),
+            this, SLOT(toolBoxAnalysisStrEquivalenceSelectChanged(int) ) );
+
+    connect(toolBoxAnalysisCommunitiesSelect, SIGNAL (currentIndexChanged(int) ),
+            this, SLOT(toolBoxAnalysisCommunitiesSelectChanged(int) ) );
 
     connect(toolBoxAnalysisProminenceSelect, SIGNAL (currentIndexChanged(int) ),
             this, SLOT(toolBoxAnalysisProminenceSelectChanged(int) ) );
@@ -4235,9 +4328,9 @@ void MainWindow::initApp(){
     rightPanelClickedEdgeWeightLCD->display(0);
 
     /** Clear toolbox and menu checkboxes **/
-    toolBoxAnalysisClusterabilitySelect->setCurrentIndex(0);
-    toolBoxAnalysisConnectivitySelect->setCurrentIndex(0);
-    toolBoxAnalysisGeodesicsSelect->setCurrentIndex(0);
+    toolBoxAnalysisCommunitiesSelect->setCurrentIndex(0);
+    toolBoxAnalysisStrEquivalenceSelect->setCurrentIndex(0);
+    toolBoxAnalysisCohesionSelect->setCurrentIndex(0);
     toolBoxAnalysisProminenceSelect->setCurrentIndex(0);
     toolBoxLayoutByIndexSelect->setCurrentIndex(0);
     toolBoxLayoutByIndexTypeSelect ->setCurrentIndex(0);
@@ -4519,35 +4612,39 @@ int MainWindow::slotHelpMessageToUser(const int type,
 
 
 
+
+
 /**
- * @brief MainWindow::toolBoxAnalysisGeodesicsSelectChanged
- * Called from MW, when user selects something in the Geodesics selectbox of
- * toolbox
+ * @brief Called from MW, when user selects something in the Matrices
+ * selectbox of the toolbox
  * @param selectedIndex
  */
-void MainWindow::toolBoxAnalysisGeodesicsSelectChanged(int selectedIndex) {
-    qDebug()<< "MW::toolBoxAnalysisGeodesicsSelectChanged "
+void MainWindow::toolBoxAnalysisMatricesSelectChanged(int selectedIndex) {
+    qDebug()<< "MW::toolBoxAnalysisMatricesSelectChanged "
                "selected text index: " << selectedIndex;
     switch(selectedIndex){
     case 0:
         break;
     case 1:
-        slotAnalyzeDistance();
+        slotNetworkViewSociomatrix();
         break;
     case 2:
-        slotAnalyzeDistanceAverage();
+        slotNetworkViewSociomatrixPlotText();
         break;
     case 3:
-        slotAnalyzeMatrixDistances();
+        slotAnalyzeMatrixAdjacencyInverse();
         break;
     case 4:
-        slotAnalyzeMatrixGeodesics();
+        slotAnalyzeMatrixAdjacencyTranspose();
         break;
     case 5:
-        slotAnalyzeEccentricity();
+        slotAnalyzeMatrixAdjacencyCocitation();
         break;
     case 6:
-        slotAnalyzeDiameter();
+        slotAnalyzeMatrixDegree();
+        break;
+    case 7:
+        slotAnalyzeMatrixLaplacian();
         break;
     };
 
@@ -4556,66 +4653,82 @@ void MainWindow::toolBoxAnalysisGeodesicsSelectChanged(int selectedIndex) {
 
 
 
-
-
 /**
- * @brief MainWindow::toolBoxAnalysisConnectivitySelectChanged
+ * @brief Called from MW, when user selects something in the Cohesion
+ * selectbox of the toolbox to compute basic graph theoretic / network properties
  * @param selectedIndex
- * Called from MW, when user selects something in the Connectivity selectbox of
- *  toolbox
  */
-void MainWindow::toolBoxAnalysisConnectivitySelectChanged(int selectedIndex) {
-    qDebug()<< "MW::toolBoxAnalysisConnectivitySelectChanged "
+void MainWindow::toolBoxAnalysisCohesionSelectChanged(int selectedIndex) {
+    qDebug()<< "MW::toolBoxAnalysisCohesionSelectChanged "
                "selected text index: " << selectedIndex;
     switch(selectedIndex){
     case 0:
         break;
     case 1:
-        qDebug()<< "connectedness";
-        slotAnalyzeConnectedness();
+        slotAnalyzeSymmetryCheck();
         break;
     case 2:
-        qDebug()<< "Walks of given length";
-        slotAnalyzeWalksLength();
+        slotAnalyzeDistance();
         break;
     case 3:
-        qDebug() << "Total Walks selected";
-        slotAnalyzeWalksTotal();
+        slotAnalyzeDistanceAverage();
         break;
     case 4:
-        qDebug() << "Reachability Matrix";
+        slotAnalyzeMatrixDistances();
+        break;
+    case 5:
+        slotAnalyzeMatrixGeodesics();
+        break;
+    case 6:
+        slotAnalyzeEccentricity();
+        break;
+    case 7:
+        slotAnalyzeDiameter();
+        break;
+    case 8:
+        slotAnalyzeConnectedness();
+        break;
+    case 9:
+        slotAnalyzeWalksLength();
+        break;
+    case 10:
+        slotAnalyzeWalksTotal();
+        break;
+    case 11:
         slotAnalyzeReachabilityMatrix();
         break;
+    case 12:
+        slotAnalyzeClusteringCoefficient();
+        break;
     };
+
 
 }
 
 
 
 
+
+
 /**
- * @brief MainWindow::toolBoxAnalysisClusterabilitySelectChanged
+ * @brief Called from MW, when user selects something in the Communities selectbox
+ * of the toolbox
  * @param selectedIndex
- * Called from MW, when user selects something in the Clusterability selectbox
- * of toolbox
+ *
  */
-void MainWindow::toolBoxAnalysisClusterabilitySelectChanged(int selectedIndex) {
-    qDebug()<< "MW::toolBoxAnalysisClusterabilitySelectChanged "
+void MainWindow::toolBoxAnalysisCommunitiesSelectChanged(int selectedIndex) {
+    qDebug()<< "MW::toolBoxAnalysisCommunitiesSelectChanged "
                "selected text index: " << selectedIndex;
     switch(selectedIndex){
     case 0:
         break;
     case 1:
         qDebug()<< "Cliques";
-        slotAnalyzeCliqueCensus();
+        slotAnalyzeCommunitiesCliqueCensus();
         break;
     case 2:
-        qDebug()<< "Clustering Coefficient";
-        slotAnalyzeClusteringCoefficient();
-        break;
-    case 3:
         qDebug() << "Triad Census";
-        slotAnalyzeTriadCensus();
+        slotAnalyzeCommunitiesTriadCensus();
         break;
     };
 
@@ -4626,10 +4739,46 @@ void MainWindow::toolBoxAnalysisClusterabilitySelectChanged(int selectedIndex) {
 
 
 /**
- * @brief MainWindow::toolBoxAnalysisProminenceSelectChanged
+ * @brief Called from MW, when user selects something in the Structural Equivalence
+ * selectbox of the toolbox
  * @param selectedIndex
- * Called from MW, when user selects something in the Prominence selectbox
- *  of toolbox
+ *
+ */
+void MainWindow::toolBoxAnalysisStrEquivalenceSelectChanged(int selectedIndex) {
+    qDebug()<< "MW::toolBoxAnalysisStrEquivalenceSelectChanged "
+               "selected text index: " << selectedIndex;
+    switch(selectedIndex){
+    case 0:
+        break;
+    case 1:
+        qDebug()<< "Pearson";
+        slotAnalyzeStrEquivalencePearsonDialog();
+        break;
+    case 2:
+        qDebug()<< "Similarities";
+        slotAnalyzeStrEquivalenceSimilarityMeasureDialog();
+        break;
+    case 3:
+        qDebug() << "Dissimilarities";
+        slotAnalyzeStrEquivalenceDissimilaritiesDialog();
+        break;
+    case 4:
+        qDebug() << "Hierarchical Clustering";
+        slotAnalyzeStrEquivalenceClusteringHierarchicalDialog();
+        break;
+    };
+
+}
+
+
+
+
+
+/**
+ * @brief Called from MW, when user selects something in the Prominence selectbox
+ *  of the toolbox
+ * @param selectedIndex
+ *
  */
 void MainWindow::toolBoxAnalysisProminenceSelectChanged(int selectedIndex) {
     qDebug()<< "MW::toolBoxAnalysisProminenceSelectChanged "
@@ -10201,8 +10350,8 @@ void MainWindow::slotAnalyzeEccentricity(){
 /**
  * @brief Displays the DialogDissimilarities dialog.
  */
-void MainWindow::slotAnalyzeDissimilaritiesDialog() {
-    qDebug()<< "MW::slotAnalyzeDissimilaritiesDialog()";
+void MainWindow::slotAnalyzeStrEquivalenceDissimilaritiesDialog() {
+    qDebug()<< "MW::slotAnalyzeStrEquivalenceDissimilaritiesDialog()";
 
     m_dialogdissimilarities = new DialogDissimilarities(this);
 
@@ -10483,10 +10632,10 @@ void MainWindow::slotAnalyzeReachabilityMatrix(){
 
 
 /**
- * @brief Displays the slotAnalyzeClusteringHierarchicalDialog dialog.
+ * @brief Displays the slotAnalyzeStrEquivalenceClusteringHierarchicalDialog dialog.
  */
-void MainWindow::slotAnalyzeClusteringHierarchicalDialog() {
-    qDebug()<< "MW::slotAnalyzeClusteringHierarchicalDialog()";
+void MainWindow::slotAnalyzeStrEquivalenceClusteringHierarchicalDialog() {
+    qDebug()<< "MW::slotAnalyzeStrEquivalenceClusteringHierarchicalDialog()";
 
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -10572,7 +10721,7 @@ void MainWindow::slotAnalyzeClusteringHierarchical(const QString &matrix,
 *	Calls Graph:: writeCliqueCensus() to write the number of cliques (triangles)
 *  of each vertex into a file, then displays it.
 */
-void MainWindow::slotAnalyzeCliqueCensus(){
+void MainWindow::slotAnalyzeCommunitiesCliqueCensus(){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10653,8 +10802,8 @@ void MainWindow::slotAnalyzeClusteringCoefficient (){
 /**
  * @brief Displays the DialogSimilarityMatches dialog.
  */
-void MainWindow::slotAnalyzeSimilarityMatchingDialog() {
-    qDebug()<< "MW::slotAnalyzeSimilarityMatchingDialog()";
+void MainWindow::slotAnalyzeStrEquivalenceSimilarityMeasureDialog() {
+    qDebug()<< "MW::slotAnalyzeStrEquivalenceSimilarityMeasureDialog()";
 
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -10725,8 +10874,8 @@ void MainWindow::slotAnalyzeSimilarityMatching(const QString &matrix,
 /**
  * @brief Calls the m_dialogSimilarityPearson to display the Pearson statistics dialog
  */
-void MainWindow::slotAnalyzeSimilarityPearsonDialog(){
-    qDebug()<< "MW::slotAnalyzeSimilarityPearsonDialog()";
+void MainWindow::slotAnalyzeStrEquivalencePearsonDialog(){
+    qDebug()<< "MW::slotAnalyzeStrEquivalencePearsonDialog()";
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10785,7 +10934,7 @@ void MainWindow::slotAnalyzeSimilarityPearson(const QString &matrix,
 /**
 *	Calls Graph to conduct and write a triad census into a file, then displays it.
 */
-void MainWindow::slotAnalyzeTriadCensus() {
+void MainWindow::slotAnalyzeCommunitiesTriadCensus() {
 
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
