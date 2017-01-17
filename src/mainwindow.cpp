@@ -6740,6 +6740,8 @@ void MainWindow::slotNetworkViewSociomatrix(){
     destroyProgressBar();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        qDebug () << "MW::slotNetworkViewSociomatrix() - calling QDesktopServices::openUrl for"
+                  << QUrl::fromLocalFile(fn);
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
     }
     else {
