@@ -6741,8 +6741,10 @@ void MainWindow::slotNetworkViewSociomatrix(){
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         qDebug () << "MW::slotNetworkViewSociomatrix() - calling QDesktopServices::openUrl for"
-                  << QUrl::fromLocalFile(fn) << endl
-                     << QUrl(fn);
+                  << "plain" << QUrl(fn) << endl
+                  << "local" << QUrl::fromLocalFile(fn) << endl
+                     << "toNative" << QUrl(QDir::toNativeSeparators(fn)) ;
+
         QDesktopServices::openUrl(QUrl(fn));
     }
     else {
