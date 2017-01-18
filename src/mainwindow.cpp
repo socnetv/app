@@ -6726,7 +6726,7 @@ void MainWindow::slotNetworkViewSociomatrix(){
         return;
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-"+dateTime+".html";
 
     qDebug () << "MW::slotNetworkViewSociomatrix() - dataDir"
