@@ -7330,6 +7330,10 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
                                     "disable the option Edit -> Edges -> Undirected \n"
                                     "or press CTRL+E+U"));
 
+
+        if (toolBoxEditEdgeModeSelect->currentIndex()==0) {
+            toolBoxEditEdgeModeSelect->setCurrentIndex(1);
+        }
         rightPanelNetworkTypeLabel-> setText ("Network Type: Undirected");
         rightPanelEdgesLabel->setText(tr("Total Edges"));
         rightPanelSelectedEdgesLabel->setText(tr("Selected Edges"));
@@ -7353,6 +7357,9 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
                                     "or press CTRL+E+U"));
 
         rightPanelNetworkTypeLabel-> setText ("Network Type: Directed");
+        if (toolBoxEditEdgeModeSelect->currentIndex()==1) {
+            toolBoxEditEdgeModeSelect->setCurrentIndex(0);
+        }
         rightPanelEdgesLabel->setText(tr("Total Arcs"));
         rightPanelSelectedEdgesLabel->setText(tr("Selected Arcs"));
         editEdgeUndirectedAllAct->setChecked(false);

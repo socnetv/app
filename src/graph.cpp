@@ -3027,6 +3027,11 @@ void Graph::graphCocitation(){
  * Transforms the graph to undirected
  */
 void Graph::graphUndirectedSet(const bool &toggle, const bool &signalMW){
+
+    if (toggle == m_undirected) {
+        qDebug() << "Graph::graphUndirectedSet() - toggle==m_undirected"<<toggle;
+        return;
+    }
     qDebug() << "Graph::graphUndirectedSet()";
     if (!toggle) {
         m_undirected=false;
