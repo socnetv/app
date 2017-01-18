@@ -3167,10 +3167,10 @@ void MainWindow::initToolBox(){
                    "Compute and display matrices based on the adjacency matrix of the current network."));
     QStringList graphMatricesList;
     graphMatricesList << "Select"
-                          << "Adjacency Matrix"
-                          << "Adjacency Matrix Plot"
-                          << "Adjacency Matrix Inverse"
-                          << "Adjacency Matrix Transpose"
+                          << "Adjacency"
+                          << "Adjacency Plot"
+                          << "Adjacency Inverse"
+                          << "Adjacency Transpose"
                           << "Cocitation Matrix"
                           << "Degree Matrix"
                           << "Laplacian Matrix";
@@ -3238,16 +3238,16 @@ void MainWindow::initToolBox(){
                 );
     QStringList prominenceCommands;
     prominenceCommands << "Select"
-                       << "Degree Centrality"
-                       << "Closeness Centrality"
-                       << "Influence Range Closeness Centrality"
-                       << "Betweenness Centrality"
-                       << "Stress Centrality"
-                       << "Eccentricity Centrality"
-                       << "Power Centrality"
-                       << "Information Centrality"
-                       << "Eigenvector Centrality"
-                       << "Degree Prestige (in-Degree)"
+                       << "Degree Centr."
+                       << "Closeness Centr."
+                       << "IR Closeness Centr."
+                       << "Betweenness Centr."
+                       << "Stress Centr."
+                       << "Eccentricity Centr."
+                       << "Power Centr."
+                       << "Information Centr."
+                       << "Eigenvector Centr"
+                       << "Degree Prestige"
                        << "PageRank Prestige"
                        << "Proximity Prestige";
     toolBoxAnalysisProminenceSelect->addItems(prominenceCommands);
