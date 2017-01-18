@@ -6745,18 +6745,16 @@ void MainWindow::slotNetworkViewSociomatrix(){
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         qDebug () << "MW::slotNetworkViewSociomatrix() - calling QDesktopServices::openUrl for"
-                  << "plain" << QUrl(fn) << endl
-                  << "local" << QUrl::fromLocalFile(fn) << endl
-                     << "toNative" << QUrl(QDir::toNativeSeparators(fn)) ;
+                  << QUrl::fromLocalFile(fn) ;
 
-        QDesktopServices::openUrl(QUrl(fn));
+        QDesktopServices::openUrl(  QUrl::fromLocalFile(fn)  );
     }
     else {
         TextEditor *ed = new TextEditor(fn,this,true);
         ed->show();
         m_textEditors << ed;
     }
-    statusMessage(tr("Adjacency matrix saved as ") + fn);
+    statusMessage(tr("Adjacency matrix saved as ") + QDir::toNativeSeparators(fn));
 }
 
 
