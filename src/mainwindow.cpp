@@ -6649,7 +6649,7 @@ void MainWindow::slotNetworkFileView(){
         ed->setWindowTitle( fileNameNoPath );
         ed->show();
         m_textEditors << ed;
-        statusMessage(  tr("Displaying network data file " ).arg(fileNameNoPath));
+        statusMessage(  tr("Displaying network data file %1" ).arg(fileNameNoPath));
     }
 
     else if (!activeGraph.graphSaved() ) {
