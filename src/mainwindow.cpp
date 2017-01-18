@@ -6744,7 +6744,8 @@ void MainWindow::slotNetworkViewSociomatrix(){
     destroyProgressBar();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
-        qDebug () << "MW::slotNetworkViewSociomatrix() - calling QDesktopServices::openUrl for"
+        qDebug () << "MW::slotNetworkViewSociomatrix() - "
+                     "calling QDesktopServices::openUrl for"
                   << QUrl::fromLocalFile(fn) ;
 
         QDesktopServices::openUrl(  QUrl::fromLocalFile(fn)  );
@@ -6773,7 +6774,7 @@ void MainWindow::slotNetworkViewSociomatrixPlotText(){
 
     qDebug ("MW: calling Graph::writeMatrixAdjacency with %i nodes", N);
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-plot-"+dateTime+".html";
 
     bool simpler = false;
@@ -6813,7 +6814,7 @@ void MainWindow::slotNetworkViewSociomatrixPlotText(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Visual form of adjacency matrix saved as ") + fn);
+    statusMessage(tr("Visual form of adjacency matrix saved as ") + QDir::toNativeSeparators(fn));
 }
 
 
@@ -10043,7 +10044,7 @@ void MainWindow::slotAnalyzeMatrixAdjacencyInverse(){
         return;
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-inverse-"+dateTime+".html";
 
     statusMessage(tr ("Inverting adjacency matrix.") );
@@ -10060,7 +10061,7 @@ void MainWindow::slotAnalyzeMatrixAdjacencyInverse(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Inverse matrix saved as: ")+fn);
+    statusMessage(tr("Inverse matrix saved as: ")+QDir::toNativeSeparators(fn));
 }
 
 
@@ -10077,7 +10078,7 @@ void MainWindow::slotAnalyzeMatrixAdjacencyTranspose(){
         return;
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-transpose-"+dateTime+".html";
 
     statusMessage( tr ("Transposing adjacency matrix.") );
@@ -10093,7 +10094,7 @@ void MainWindow::slotAnalyzeMatrixAdjacencyTranspose(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Transpose adjacency matrix saved as: ")+fn);
+    statusMessage(tr("Transpose adjacency matrix saved as: ")+QDir::toNativeSeparators(fn));
 }
 
 
@@ -10108,7 +10109,7 @@ void MainWindow::slotAnalyzeMatrixAdjacencyCocitation(){
         return;
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-cocitation-"+dateTime+".html";
 
     statusMessage( tr ("Computing Cocitation matrix.") );
@@ -10124,7 +10125,7 @@ void MainWindow::slotAnalyzeMatrixAdjacencyCocitation(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Cocitation matrix saved as: ")+fn);
+    statusMessage(tr("Cocitation matrix saved as: ")+QDir::toNativeSeparators(fn));
 }
 
 
@@ -10139,7 +10140,7 @@ void MainWindow::slotAnalyzeMatrixDegree(){
         return;
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-degree-"+dateTime+".html";
 
     statusMessage(tr ("Computing Degree matrix.") );
@@ -10156,7 +10157,7 @@ void MainWindow::slotAnalyzeMatrixDegree(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Degree matrix saved as: ")+fn);
+    statusMessage(tr("Degree matrix saved as: ")+QDir::toNativeSeparators(fn));
 }
 
 
@@ -10173,7 +10174,7 @@ void MainWindow::slotAnalyzeMatrixLaplacian(){
 
     qDebug() << "MW:slotAnalyzeMatrixLaplacian() - calling Graph::writeMatrix";
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-laplacian-"+dateTime+".html";
 
     statusMessage(tr ("Computing Laplacian matrix") );
@@ -10189,7 +10190,7 @@ void MainWindow::slotAnalyzeMatrixLaplacian(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Laplacian matrix saved as: ")+fn);
+    statusMessage(tr("Laplacian matrix saved as: ")+QDir::toNativeSeparators(fn));
 }
 
 
@@ -10343,7 +10344,7 @@ void MainWindow::slotAnalyzeMatrixDistances(){
         return;
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-geodesic-distances-"+dateTime+".html";
 
     askAboutWeights();
@@ -10370,7 +10371,7 @@ void MainWindow::slotAnalyzeMatrixDistances(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Geodesic Distances matrix saved as: ")+fn);
+    statusMessage(tr("Geodesic Distances matrix saved as: ")+QDir::toNativeSeparators(fn));
 }
 
 
@@ -10387,7 +10388,7 @@ void MainWindow::slotAnalyzeMatrixGeodesics(){
         return;
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-geodesics-"+dateTime+".html";
 
     askAboutWeights();
@@ -10417,7 +10418,7 @@ void MainWindow::slotAnalyzeMatrixGeodesics(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Geodesics Matrix saved as: ") + fn);
+    statusMessage(tr("Geodesics Matrix saved as: ") + QDir::toNativeSeparators(fn));
 }
 
 
@@ -10509,7 +10510,7 @@ void MainWindow::slotAnalyzeEccentricity(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-eccentricity-"+dateTime+".html";
 
     askAboutWeights();
@@ -10535,7 +10536,7 @@ void MainWindow::slotAnalyzeEccentricity(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Eccentricities saved as: ") + fn );
+    statusMessage(tr("Eccentricities saved as: ") + QDir::toNativeSeparators(fn) );
 }
 
 
@@ -10576,7 +10577,7 @@ void MainWindow::slotAnalyzeDissimilaritiesTieProfile(const QString &metric,
         return;
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-tie-profile-dissimilarities-"+dateTime+".html";
 
     askAboutWeights();
@@ -10601,7 +10602,7 @@ void MainWindow::slotAnalyzeDissimilaritiesTieProfile(const QString &metric,
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Tie profile dissimilarities matrix saved as: ")+fn);
+    statusMessage(tr("Tie profile dissimilarities matrix saved as: ")+QDir::toNativeSeparators(fn));
 }
 
 
@@ -10695,7 +10696,7 @@ void MainWindow::slotAnalyzeWalksLength(){
         return;
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-walks-length-"+QString::number(length)+"-"+dateTime+".html";
 
     statusMessage( tr("Computing walks of length %1. Please wait...").arg(length) );
@@ -10718,7 +10719,7 @@ void MainWindow::slotAnalyzeWalksLength(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Walks of length %1 matrix saved as: ").arg(length) + fn );
+    statusMessage(tr("Walks of length %1 matrix saved as: ").arg(length) + QDir::toNativeSeparators(fn) );
 }
 
 
@@ -10756,7 +10757,7 @@ void MainWindow::slotAnalyzeWalksTotal(){
         }
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-walks-total-"+dateTime+".html";
 
     statusMessage(  tr("Computing total walks matrix. Please wait...") );
@@ -10779,7 +10780,7 @@ void MainWindow::slotAnalyzeWalksTotal(){
         m_textEditors << ed;
     }
 
-    statusMessage("Total walks matrix saved as: " + fn);
+    statusMessage("Total walks matrix saved as: " + QDir::toNativeSeparators(fn));
 
 }
 
@@ -10795,7 +10796,7 @@ void MainWindow::slotAnalyzeReachabilityMatrix(){
         return;
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-reachability-"+dateTime+".html";
 
     statusMessage(  tr("Computing reachability matrix. Please wait...") );
@@ -10819,7 +10820,7 @@ void MainWindow::slotAnalyzeReachabilityMatrix(){
         m_textEditors << ed;
     }
 
-    statusMessage("Reachability matrix saved as: " + fn );
+    statusMessage("Reachability matrix saved as: " + QDir::toNativeSeparators(fn) );
 }
 
 
@@ -10870,7 +10871,7 @@ void MainWindow::slotAnalyzeClusteringHierarchical(const QString &matrix,
         return;
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-clustering-hierarchical-"+dateTime+".html";
 
     bool considerWeights=true;
@@ -10905,7 +10906,7 @@ void MainWindow::slotAnalyzeClusteringHierarchical(const QString &matrix,
         m_textEditors << ed;
     }
 
-    statusMessage("Hierarchical Cluster Analysis saved as: " + fn);
+    statusMessage("Hierarchical Cluster Analysis saved as: " + QDir::toNativeSeparators(fn));
 
 }
 
@@ -10921,7 +10922,7 @@ void MainWindow::slotAnalyzeCommunitiesCliqueCensus(){
         return;
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-clique-census-"+dateTime+".html";
 
     bool considerWeights=true;
@@ -10946,7 +10947,7 @@ void MainWindow::slotAnalyzeCommunitiesCliqueCensus(){
         m_textEditors << ed;
     }
 
-    statusMessage("Clique Census saved as: " + fn);
+    statusMessage("Clique Census saved as: " + QDir::toNativeSeparators(fn));
 }
 
 
@@ -10964,7 +10965,7 @@ void MainWindow::slotAnalyzeClusteringCoefficient (){
         return;
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-clustering-coefficient-"+dateTime+".html";
 
     bool considerWeights=true;
@@ -10989,7 +10990,7 @@ void MainWindow::slotAnalyzeClusteringCoefficient (){
         m_textEditors << ed;
     }
 
-    statusMessage("Clustering Coefficients saved as: " + fn);
+    statusMessage("Clustering Coefficients saved as: " + QDir::toNativeSeparators(fn));
 }
 
 
@@ -11030,7 +11031,7 @@ void MainWindow::slotAnalyzeSimilarityMatching(const QString &matrix,
         return;
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-similarity-matches"+dateTime+".html";
 
     bool considerWeights=true;
@@ -11060,7 +11061,7 @@ void MainWindow::slotAnalyzeSimilarityMatching(const QString &matrix,
         m_textEditors << ed;
     }
 
-    statusMessage("Similarity matrix saved as: " + fn);
+    statusMessage("Similarity matrix saved as: " + QDir::toNativeSeparators(fn));
 }
 
 
@@ -11097,7 +11098,7 @@ void MainWindow::slotAnalyzeSimilarityPearson(const QString &matrix,
         return;
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-similarity-pearson-"+dateTime+".html";
 
     bool considerWeights=true;
@@ -11121,7 +11122,7 @@ void MainWindow::slotAnalyzeSimilarityPearson(const QString &matrix,
         m_textEditors << ed;
     }
 
-    statusMessage("Pearson correlation coefficients matrix saved as: " + fn);
+    statusMessage("Pearson correlation coefficients matrix saved as: " + QDir::toNativeSeparators(fn));
 }
 
 
@@ -11135,7 +11136,7 @@ void MainWindow::slotAnalyzeCommunitiesTriadCensus() {
         return;
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-triad-census-"+dateTime+".html";
 
     bool considerWeights=true;
@@ -11160,7 +11161,7 @@ void MainWindow::slotAnalyzeCommunitiesTriadCensus() {
         m_textEditors << ed;
     }
 
-    statusMessage("Triad Census saved as: " + fn);
+    statusMessage("Triad Census saved as: " + QDir::toNativeSeparators(fn));
 }
 
 
@@ -11196,7 +11197,7 @@ void MainWindow::slotAnalyzeCentralityDegree(){
         }
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-out-degree-"+dateTime+".html";
 
     statusMessage(  tr("Computing out-Degree Centralities. Please wait...") );
@@ -11220,7 +11221,7 @@ void MainWindow::slotAnalyzeCentralityDegree(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Out-Degree Centralities saved as: ") + fn);
+    statusMessage(tr("Out-Degree Centralities saved as: ") + QDir::toNativeSeparators(fn));
 }
 
 
@@ -11305,7 +11306,7 @@ void MainWindow::slotAnalyzeCentralityCloseness(){
 
     askAboutWeights();
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-closeness-"+dateTime+".html";
 
     statusMessage(  tr("Computing Closeness Centralities. Please wait...") );
@@ -11330,7 +11331,7 @@ void MainWindow::slotAnalyzeCentralityCloseness(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Closeness Centralities  saved as: ") + fn);
+    statusMessage(tr("Closeness Centralities  saved as: ") + QDir::toNativeSeparators(fn));
 }
 
 
@@ -11347,7 +11348,7 @@ void MainWindow::slotAnalyzeCentralityClosenessIR(){
         return;
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-closeness-influence-range-"+dateTime+".html";
 
     askAboutWeights();
@@ -11376,7 +11377,7 @@ void MainWindow::slotAnalyzeCentralityClosenessIR(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Influence Range Closeness Centralities saved as: ")+fn);
+    statusMessage(tr("Influence Range Closeness Centralities saved as: ")+QDir::toNativeSeparators(fn));
 }
 
 
@@ -11391,7 +11392,7 @@ void MainWindow::slotAnalyzeCentralityBetweenness(){
         return;
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-betweenness-"+dateTime+".html";
 
     askAboutWeights();
@@ -11418,7 +11419,7 @@ void MainWindow::slotAnalyzeCentralityBetweenness(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Betweenness Centralities saved as: ")+fn);
+    statusMessage(tr("Betweenness Centralities saved as: ")+QDir::toNativeSeparators(fn));
 }
 
 
@@ -11466,7 +11467,7 @@ void MainWindow::slotAnalyzePrestigeDegree(){
 
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-prestige-degree-"+dateTime+".html";
 
     statusMessage(  tr("Computing Degree Prestige indices. Please wait...") );
@@ -11490,7 +11491,7 @@ void MainWindow::slotAnalyzePrestigeDegree(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Degree Prestige (in-degree) indices saved as: ") + fn);
+    statusMessage(tr("Degree Prestige (in-degree) indices saved as: ") + QDir::toNativeSeparators(fn));
 }
 
 
@@ -11504,7 +11505,7 @@ void MainWindow::slotAnalyzePrestigePageRank(){
         return;
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-prestige-pagerank-"+dateTime+".html";
 
     askAboutWeights();
@@ -11529,7 +11530,7 @@ void MainWindow::slotAnalyzePrestigePageRank(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("PageRank Prestige indices saved as: ")+ fn);
+    statusMessage(tr("PageRank Prestige indices saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
 
@@ -11544,7 +11545,7 @@ void MainWindow::slotAnalyzePrestigeProximity(){
         return;
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-prestige-proximity-"+dateTime+".html";
 
     askAboutWeights();
@@ -11571,7 +11572,7 @@ void MainWindow::slotAnalyzePrestigeProximity(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Proximity Prestige indices saved as: ")+ fn);
+    statusMessage(tr("Proximity Prestige indices saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
 
@@ -11614,7 +11615,7 @@ void MainWindow::slotAnalyzeCentralityInformation(){
         }
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-information-"+dateTime+".html";
 
     askAboutWeights();
@@ -11639,7 +11640,7 @@ void MainWindow::slotAnalyzeCentralityInformation(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Information Centralities saved as: ")+ fn);
+    statusMessage(tr("Information Centralities saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
 
@@ -11656,7 +11657,7 @@ void MainWindow::slotAnalyzeCentralityEigenvector(){
         return;
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-eigenvector-"+dateTime+".html";
 
     askAboutWeights();
@@ -11683,7 +11684,7 @@ void MainWindow::slotAnalyzeCentralityEigenvector(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Eigenvector Centralities saved as: ")+ fn);
+    statusMessage(tr("Eigenvector Centralities saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
 
@@ -11699,7 +11700,7 @@ void MainWindow::slotAnalyzeCentralityStress(){
         return;
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-stress-"+dateTime+".html";
 
     askAboutWeights();
@@ -11726,7 +11727,7 @@ void MainWindow::slotAnalyzeCentralityStress(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Stress Centralities saved as: ")+ fn);
+    statusMessage(tr("Stress Centralities saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
 
@@ -11743,7 +11744,7 @@ void MainWindow::slotAnalyzeCentralityPower(){
         return;
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-power-Gil-Schmidt-"+dateTime+".html";
 
     askAboutWeights();
@@ -11770,7 +11771,7 @@ void MainWindow::slotAnalyzeCentralityPower(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Gil-Schmidt Power Centralities saved as: ")+ fn);
+    statusMessage(tr("Gil-Schmidt Power Centralities saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
 
@@ -11786,7 +11787,7 @@ void MainWindow::slotAnalyzeCentralityEccentricity(){
         return;
     }
 
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hh:mm:ss"));
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-eccentricity-"+dateTime+".html";
 
     askAboutWeights();
@@ -11813,7 +11814,7 @@ void MainWindow::slotAnalyzeCentralityEccentricity(){
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Eccentricity Centralities saved as: ")+ fn);
+    statusMessage(tr("Eccentricity Centralities saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
 

@@ -10899,6 +10899,10 @@ void Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
                                         const bool &considerWeights,
                                         const bool &inverseWeights,
                                         const bool &dropIsolates) {
+
+    Q_UNUSED (inverseWeights);
+    Q_UNUSED (dropIsolates);
+
     qDebug() << "Graph::graphClusteringHierarchical() - "
              << "metric"
              << metric
