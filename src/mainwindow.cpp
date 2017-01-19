@@ -895,7 +895,9 @@ void MainWindow::initActions(){
 
     editNodeFindAct = new QAction(QIcon(":/images/find.png"), tr("Find Node"), this);
     editNodeFindAct->setShortcut(Qt::CTRL + Qt::Key_F);
-    editNodeFindAct->setStatusTip(tr("Find and highlight an actor by number or label. "
+    editNodeFindAct->setToolTip(tr("Find an actor by its number or label and highlight it. "
+                                     "Press Ctrl+F again to undo."));
+    editNodeFindAct->setStatusTip(tr("Find an actor by its number or label and highlight it. "
                                  "Press Ctrl+F again to undo."));
     editNodeFindAct->setWhatsThis(tr("Find Node\n\n"
                                      "Finds a node with a given number or label and "
@@ -923,19 +925,25 @@ void MainWindow::initActions(){
     editNodeRemoveAct = new QAction(QIcon(":/images/remove.png"),tr("Remove Node"), this);
     editNodeRemoveAct ->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_Period);
     //Single key shortcuts with backspace or del do no work in Mac http://goo.gl/7hz7Dx
+    editNodeRemoveAct->setToolTip(tr("Remove selected node(s). \n\n"
+                                     "If no nodes are selected, you will be prompted "
+                                     "for a node number. "));
+
     editNodeRemoveAct->setStatusTip(tr("Remove selected node(s). If no nodes are selected, "
-                                       "you will be prompt for a node number. "));
+                                       "you will be prompted for a node number. "));
     editNodeRemoveAct->setWhatsThis(
                 tr("Remove node\n\n"
                    "Removes selected node(s) from the network (Ctrl+Alt+.). \n"
                    "Alternately, you can remove a node by right-clicking on it. \n"
-                   "If no nodes are selected, you will be prompt for a node number. ")
+                   "If no nodes are selected, you will be prompted for a node number. ")
                 );
 
     connect(editNodeRemoveAct, SIGNAL(triggered()), this, SLOT(slotEditNodeRemove()));
 
     editNodePropertiesAct = new QAction(QIcon(":/images/properties.png"),tr("Selected Node Properties"), this);
     editNodePropertiesAct ->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_Period );
+    editNodePropertiesAct->setToolTip(tr("Change the basic properties of the selected node(s) \n\n"
+                                           "There must be some nodes on the canvas!"));
     editNodePropertiesAct->setStatusTip(tr("Change the basic properties of the selected node(s) -- "
                                            "There must be some nodes on the canvas!"));
     editNodePropertiesAct->setWhatsThis(tr("Selected Node Properties\n\n"
@@ -1068,12 +1076,12 @@ void MainWindow::initActions(){
     editEdgeAddAct->setShortcut(Qt::CTRL + Qt::Key_Slash);
     editEdgeAddAct->setStatusTip(tr("Add a directed edge (arc) from a node to another"));
     editEdgeAddAct->setToolTip(
-                    tr("Add a new Edge from a node to another (Ctrl+/).\n\n"
+                    tr("Add a new edge from a node to another (Ctrl+/).\n\n"
                        "You can also create an edge between two nodes \n"
                        "by double-clicking or middle-clicking on them consecutively."));
     editEdgeAddAct->setWhatsThis(
                 tr("Add edge\n\n"
-                   "Adds a new Edge from a node to another (Ctrl+/).\n\n"
+                   "Adds a new edge from a node to another (Ctrl+/).\n\n"
                    "Alternately, you can create a new edge between two nodes "
                    "by double-clicking or middle-clicking on them consecutively.")
                 );
@@ -1081,6 +1089,9 @@ void MainWindow::initActions(){
 
     editEdgeRemoveAct = new QAction(QIcon(":/images/disconnect.png"), tr("Remove Edge"), this);
     editEdgeRemoveAct ->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_Slash);
+    editEdgeRemoveAct ->setToolTip(tr("Remove selected edges from the network (Ctrl+Alt+/). \n\n"
+                                      "If no edge has been clicked or selected, you will be prompted \n"
+                                      "to enter edge source and target nodes for the edge to remove."));
     editEdgeRemoveAct->setStatusTip(tr("Remove selected Edge(s) (Ctrl+Alt+/)"));
     editEdgeRemoveAct->setWhatsThis(tr("Remove Edge\n\n"
                                        "Removes edges from the network (Ctrl+Alt+/). \n"
@@ -2492,8 +2503,11 @@ void MainWindow::initActions(){
     openSettingsAct = new QAction(QIcon(":/images/appsettings.png"), tr("Settings"),	this);
     openSettingsAct->setShortcut(Qt::CTRL + Qt::Key_Comma);
     openSettingsAct->setEnabled(true);
+    openSettingsAct->setToolTip(
+                tr("Open the Settings dialog where you can save your preferences "
+                   "for all future sessions"));
     openSettingsAct->setStatusTip(
-                tr("Open Settings dialog where you can save your preferences "
+                tr("Open the Settings dialog to save your preferences "
                    "for all future sessions"));
     openSettingsAct->setWhatsThis(
                 tr("Settings\n\n"
@@ -2931,7 +2945,7 @@ void MainWindow::initToolBar(){
 
     //Create relation select widget
     QLabel *labelRelationSelect= new QLabel;
-    labelRelationSelect ->setText(tr("Relation:"));
+    labelRelationSelect ->setText(tr("Relations:"));
     toolBar -> addWidget (labelRelationSelect);
     toolBar -> addAction (editRelationPreviousAct);
     editRelationChangeCombo = new QComboBox;
@@ -2956,7 +2970,7 @@ void MainWindow::initToolBar(){
 
     toolBar -> addSeparator();
     QLabel *labelEditNodes= new QLabel;
-    labelEditNodes ->setText(tr("Node:"));
+    labelEditNodes ->setText(tr("Nodes:"));
     toolBar -> addWidget (labelEditNodes);
     toolBar -> addAction (editNodeAddAct);
     toolBar -> addAction (editNodeRemoveAct);
@@ -2964,7 +2978,7 @@ void MainWindow::initToolBar(){
     toolBar -> addAction(editNodePropertiesAct );
     toolBar -> addSeparator();
     QLabel *labelEditEdges= new QLabel;
-    labelEditEdges ->setText(tr("Edge:"));
+    labelEditEdges ->setText(tr("Edges:"));
     toolBar -> addWidget (labelEditEdges);
 
     toolBar -> addAction (editEdgeAddAct);
@@ -2972,6 +2986,8 @@ void MainWindow::initToolBar(){
     toolBar -> addSeparator();
     toolBar -> addAction (editFilterEdgesByWeightAct);
     toolBar -> addSeparator();
+    QLabel *labelApplicationIcons = new QLabel;
+    labelApplicationIcons ->setText(tr("App:"));
     toolBar -> addAction(openSettingsAct);
     toolBar -> addSeparator();
     toolBar -> addAction ( QWhatsThis::createAction (this));
@@ -3068,12 +3084,14 @@ void MainWindow::initToolBox(){
     toolBoxEditNodeSubgraphSelectLabel->setMinimumWidth(115);
     toolBoxEditNodeSubgraphSelect = new QComboBox;
     toolBoxEditNodeSubgraphSelect->setStatusTip(
-                tr("Create basic subgraph from selected nodes."));
+                tr("Create a basic subgraph with selected nodes."));
     toolBoxEditNodeSubgraphSelect->setToolTip(
-                tr("Basic subgraphs from selected nodes: star, clique, line, etc."));
+                tr("Create a basic subgraph (star, clique, line, etc) "
+                   "with selected nodes. \n"
+                   "There must be some nodes selected!"));
     toolBoxEditNodeSubgraphSelect->setWhatsThis(
                         tr("Selection Subgraph\n\n"
-                           "Basic subgraphs from selected nodes: star, clique, line, etc."));
+                           "Creates basic subgraphs with all selected nodes: star, clique, line, etc."));
     QStringList editNodeSubgraphCommands;
     editNodeSubgraphCommands << "Select"
                        << "Clique"
@@ -3090,7 +3108,7 @@ void MainWindow::initToolBox(){
     toolBoxEditEdgeModeSelect->setStatusTip(
                 tr("Select an edge creation mode: directed or undirected."));
     toolBoxEditEdgeModeSelect->setToolTip(
-                tr("Edge mode: directed or undirected."));
+                tr("Select an edge creation mode: directed or undirected."));
             toolBoxEditEdgeModeSelect->setWhatsThis(
                         tr("Edge mode\n\n"
                            "Select what mode to use when creating new edges."));
@@ -3106,14 +3124,52 @@ void MainWindow::initToolBox(){
     toolBoxSymmetrizeSelectLabel->setMinimumWidth(115);
     toolBoxEditEdgeSymmetrizeSelect = new QComboBox;
     toolBoxEditEdgeSymmetrizeSelect->setStatusTip(
-                tr("Select what ties to symmetrize."));
+                tr("Select a method to symmetrize the network, i.e. tranform all directed edges to undirected."));
     toolBoxEditEdgeSymmetrizeSelect->setToolTip(
-                tr("Methods to symmetrize the network/graph, ie all directed edges to undirected."));
-            toolBoxEditEdgeSymmetrizeSelect->setWhatsThis(
-                        tr("Symmetrize ties\n\n"
-                           "Methods to symmetrize the network/graph, "
-                           "i.e. all directed edges to undirected , "
-                           "symmetrized strong ties only or cocitation ties"));
+                        tr("Select a method to symmetrize the network: \n\n"
+                           "Symmetrize Directed Edges:\n"
+                           "Makes all directed arcs in this relation reciprocal. \n"
+                           "That is, if there is an arc from node A to node B \n"
+                           "then a new arc from node B to node A is created \n"
+                           "with the same weight.\n\n"
+
+                           "Symmetrize Edges by examining Strong Ties:\n"
+                           "Creates a new symmetric relation by keeping strong ties only. \n"
+                           "In the new relation, a tie will exist between actor A and actor B \n"
+                           "only when both arcs A -> B and B -> A are present in the current or all relations. \n\n"
+
+                           "Symmetrize Edges by examining Cocitation:\n"
+                           "Creates a new symmetric relation by connecting actors "
+                           "that are cocitated by others. "
+                           "In the new relation, an edge will exist between actor i and "
+                           "actor j only if C(i,j) > 0, where C the Cocitation Matrix. "
+                           ));
+
+    toolBoxEditEdgeSymmetrizeSelect->setWhatsThis(
+                        tr("Select a method to symmetrize the network: \n\n"
+                           "Symmetrize Directed Edges\n"
+                           "Makes all directed arcs in this relation reciprocal. "
+                           "That is, if there is an arc from node A to node B \n"
+                           "then a new arc from node B to node A is created \n"
+                           "with the same weight.\n\n"
+
+                           "Symmetrize Edges by examining Strong Ties:\n"
+                           "Creates a new symmetric relation by keeping strong ties only. "
+                           "That is, a strong tie exists between actor A and actor B "
+                           "only when both arcs A -> B and B -> A are present. "
+                           "If the network is multi-relational, it asks you whether "
+                           "ties in the current relation or all relations are to be considered. \n\n"
+
+                           "Symmetrize Edges by examining Cocitation:\n"
+                           "Creates a new symmetric relation by connecting actors "
+                           "that are cocitated by others. "
+                           "In the new relation, an edge will exist between actor i and "
+                           "actor j only if C(i,j) > 0, where C the Cocitation Matrix. "
+                           "Thus the actor pairs cited by more common neighbors will appear "
+                           "with a stronger tie between them than pairs those cited by fewer "
+                           "common neighbors. "
+
+                           ));
     QStringList symmetrizeCommands;
     symmetrizeCommands << "Select"
                        << "Directed ties"
@@ -3345,16 +3401,16 @@ void MainWindow::initToolBox(){
     QStringList indicesList;
     indicesList << "None"
                 << "Random"
-                << "Degree Centrality"
-                << "Closeness Centrality"
-                << "Influence Range Closeness Centrality"
-                << "Betweenness Centrality"
-                << "Stress Centrality"
-                << "Eccentricity Centrality"
-                << "Power Centrality"
-                << "Information Centrality"
-                << "Eigenvector Centrality"
-                << "Degree Prestige (in-Degree)"
+                << "Degree Centr."
+                << "Closeness Centr."
+                << "IR Closeness Centr."
+                << "Betweenness Centr."
+                << "Stress Centr."
+                << "Eccentricity Centr."
+                << "Power Centr."
+                << "Information Centr."
+                << "Eigenvector Centr."
+                << "Degree Prestige"
                 << "PageRank Prestige"
                 << "Proximity Prestige";
     toolBoxLayoutByIndexSelect->addItems(indicesList);
@@ -4977,7 +5033,7 @@ void MainWindow::toolBoxAnalysisProminenceSelectChanged(int selectedIndex) {
 
 /**
  * @brief MainWindow::toolBoxLayoutByIndexButtonPressed
- * Called from MW, when user selects an index in the Layout by index selectbox
+ * Called from MW, when user selects a Prominence index in the Layout selectbox
  *  of the left panel.
  */
 void MainWindow::toolBoxLayoutByIndexButtonPressed(){
@@ -9480,7 +9536,7 @@ void MainWindow::slotLayoutCircularByProminenceIndex(){
 
 /**
  * @brief
- * Overloaded - called when selectbox changes in the toolbox
+ * Overloaded - called when user clicks Apply in the Layout toolbox
  * or from slotLayoutCircularByProminenceIndex() when the user click on menu
  * Repositions all nodes  on a Circular layout based on that index
 *  More prominent nodes are closer to the centre of the screen.
@@ -9494,23 +9550,25 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
     int userChoice = 0;
     QString prominenceIndexName = choice;
     slotLayoutGuides(true);
-    if ( prominenceIndexName.contains("Degree Centrality") )
+    if ( prominenceIndexName.contains("Degree Centr") )
         userChoice=1;
-    else if ( prominenceIndexName == "Closeness Centrality")
+    else if ( prominenceIndexName == "Closeness Centr")
         userChoice=2;
-    else if ( prominenceIndexName.contains("Influence Range Closeness Centrality"))
+    else if ( prominenceIndexName.contains("Influence Range Closeness Centrality")  ||
+              prominenceIndexName.contains("IR Closeness")
+              )
         userChoice=3;
-    else if ( prominenceIndexName.contains("Betweenness Centrality"))
+    else if ( prominenceIndexName.contains("Betweenness Centr"))
         userChoice=4;
-    else if (prominenceIndexName.contains("Stress Centrality"))
+    else if (prominenceIndexName.contains("Stress Centr"))
         userChoice=5;
-    else if (prominenceIndexName.contains("Eccentricity Centrality"))
+    else if (prominenceIndexName.contains("Eccentricity Centr"))
         userChoice=6;
-    else if (prominenceIndexName.contains("Power Centrality"))
+    else if (prominenceIndexName.contains("Power Centr"))
         userChoice=7;
-    else if (prominenceIndexName.contains("Information Centrality"))
+    else if (prominenceIndexName.contains("Information Centr"))
         userChoice=8;
-    else if (prominenceIndexName.contains("Eigenvector Centrality"))
+    else if (prominenceIndexName.contains("Eigenvector Centr"))
         userChoice=9;
     else if (prominenceIndexName.contains("Degree Prestige"))
         userChoice=10;
@@ -9659,23 +9717,24 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
     int userChoice = 0;
     QString prominenceIndexName = choice;
 
-    if ( prominenceIndexName.contains("Degree Centrality") )
+    if ( prominenceIndexName.contains("Degree Centr") )
         userChoice=1;
-    else if ( prominenceIndexName == "Closeness Centrality")
+    else if ( prominenceIndexName == "Closeness Centr")
         userChoice=2;
-    else if ( prominenceIndexName.contains("Influence Range Closeness Centrality"))
+    else if ( prominenceIndexName.contains("Influence Range Closeness Centrality") ||
+              prominenceIndexName.contains("IR Closeness"))
         userChoice=3;
-    else if ( prominenceIndexName.contains("Betweenness Centrality"))
+    else if ( prominenceIndexName.contains("Betweenness Centr"))
         userChoice=4;
-    else if (prominenceIndexName.contains("Stress Centrality"))
+    else if (prominenceIndexName.contains("Stress Centr"))
         userChoice=5;
-    else if (prominenceIndexName.contains("Eccentricity Centrality"))
+    else if (prominenceIndexName.contains("Eccentricity Centr"))
         userChoice=6;
-    else if (prominenceIndexName.contains("Power Centrality"))
+    else if (prominenceIndexName.contains("Power Centr"))
         userChoice=7;
-    else if (prominenceIndexName.contains("Information Centrality"))
+    else if (prominenceIndexName.contains("Information Centr"))
         userChoice=8;
-    else if (prominenceIndexName.contains("Eigenvector Centrality"))
+    else if (prominenceIndexName.contains("Eigenvector Centr"))
         userChoice=9;
     else if (prominenceIndexName.contains("Degree Prestige"))
         userChoice=10;
@@ -9827,7 +9886,7 @@ void MainWindow::slotLayoutLevelByProminenceIndex(){
 
 
 /**
- * @brief MainWindow::slotLayoutLevelByProminenceIndex(QString)
+ * @brief
  * Overloaded - called when user clicks on toolbox options and when
  * the user selects a menu option (called by slotLayoutLevelByProminenceIndex())
  * Repositions all nodes  on different top-down levels according to the
@@ -9842,30 +9901,33 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
     int userChoice = 0;
     QString prominenceIndexName = choice;
     slotLayoutGuides(true);
-    if (prominenceIndexName == "Degree Centrality")
+
+    if ( prominenceIndexName.contains("Degree Centr") )
         userChoice=1;
-    else if (prominenceIndexName == "Closeness Centrality")
+    else if ( prominenceIndexName == "Closeness Centr")
         userChoice=2;
-    else if (prominenceIndexName == "Influence Range Closeness Centrality")
+    else if ( prominenceIndexName.contains("Influence Range Closeness Centrality") ||
+              prominenceIndexName.contains("IR Closeness"))
         userChoice=3;
-    else if (prominenceIndexName == "Betweenness Centrality")
+    else if ( prominenceIndexName.contains("Betweenness Centr"))
         userChoice=4;
-    else if (prominenceIndexName == "Stress Centrality")
+    else if (prominenceIndexName.contains("Stress Centr"))
         userChoice=5;
-    else if (prominenceIndexName == "Eccentricity Centrality")
+    else if (prominenceIndexName.contains("Eccentricity Centr"))
         userChoice=6;
-    else if (prominenceIndexName == "Power Centrality")
+    else if (prominenceIndexName.contains("Power Centr"))
         userChoice=7;
-    else if (prominenceIndexName ==  "Information Centrality")
+    else if (prominenceIndexName.contains("Information Centr"))
         userChoice=8;
-    else if (prominenceIndexName.contains("Eigenvector Centrality"))
+    else if (prominenceIndexName.contains("Eigenvector Centr"))
         userChoice=9;
-    else if (prominenceIndexName == "Degree Prestige")
+    else if (prominenceIndexName.contains("Degree Prestige"))
         userChoice=10;
-    else if (prominenceIndexName ==  "PageRank Prestige")
+    else if (prominenceIndexName.contains("PageRank Prestige"))
         userChoice=11;
-    else if (prominenceIndexName ==  "Proximity Prestige")
+    else if (prominenceIndexName.contains("Proximity Prestige"))
         userChoice=12;
+
 
     qDebug() << "MainWindow::slotLayoutLevelByProminenceIndex() "
              << "prominenceIndexName " << prominenceIndexName
