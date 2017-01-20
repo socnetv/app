@@ -4,13 +4,22 @@ Social Networks Visualiser (SocNetV)
 SocNetV News
 -==========-
 
-Oct 2016
+Jan 2017
 ========
 - Version 2.2 released with major new features:
-  DESCRIBE FEATURES
-  Kamada-Kawai FDP layout model
-  Clustering?
-
+  Hierarchical Clustering Analysis (HCA)
+  Pearson correlation coefficients
+  Actor Similarities
+  Tie profile dissimilarities
+  Maximal clique census
+  New network symmetrization methods: Strong Ties, Cocitation
+  Multi-relational data read and write in GraphML
+  GML format support
+  Support for EdgeLists with labels
+  Support for Pajek multirelational directed networks
+  Adjacency matrix plotting
+  Better reports (in HTML with JS)
+  Improved performance and GUI 
 
 Sep 2016
 ========

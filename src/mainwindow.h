@@ -5,7 +5,7 @@
  
                          mainwindow.h  -  description
                              -------------------
-    copyright         : (C) 2005-2016 by Dimitris B. Kalamaras
+    copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
     blog              : http://dimitris.apeiro.gr
     project site      : http://socnetv.org
 

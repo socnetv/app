@@ -5,7 +5,7 @@
 
 -                           mainwindow.cpp  -  description
                              -------------------
-    copyright         : (C) 2005-2016 by Dimitris B. Kalamaras
+    copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
     blog              : http://dimitris.apeiro.gr
     project site      : http://socnetv.org
 
@@ -2705,16 +2705,16 @@ void MainWindow::initMenuBar() {
     editEdgeMenu -> addAction(editEdgeAddAct);
     editEdgeMenu -> addAction(editEdgeRemoveAct);
     editEdgeMenu -> addSeparator();
+    editEdgeMenu -> addAction (editEdgeSymmetrizeAllAct);
+    editEdgeMenu -> addAction (editEdgeSymmetrizeStrongTiesAct);
+    editEdgeMenu -> addAction (editEdgesCocitationAct);
+    editEdgeMenu -> addAction (editEdgeUndirectedAllAct);
+    editEdgeMenu -> addSeparator();
     editEdgeMenu -> addAction(editEdgeLabelAct);
     editEdgeMenu -> addAction(editEdgeColorAct);
     editEdgeMenu -> addAction(editEdgeWeightAct);
     editEdgeMenu -> addSeparator();
     editEdgeMenu -> addAction (editEdgeColorAllAct);
-    editEdgeMenu -> addSeparator();
-    editEdgeMenu -> addAction (editEdgeSymmetrizeAllAct);
-    editEdgeMenu -> addAction (editEdgeSymmetrizeStrongTiesAct);
-    editEdgeMenu -> addAction (editEdgesCocitationAct);
-    editEdgeMenu -> addAction (editEdgeUndirectedAllAct);
 
     //   transformNodes2EdgesAct -> addTo (editMenu);
 
@@ -2752,7 +2752,6 @@ void MainWindow::initMenuBar() {
     cohesionMenu -> setIcon(QIcon(":/images/distances.png"));
     analysisMenu -> addMenu(cohesionMenu);
     cohesionMenu -> addAction (analyzeGraphSymmetryAct);
-    cohesionMenu -> addSeparator();
     cohesionMenu -> addSection("Graph distances");
     cohesionMenu -> addAction (analyzeGraphDistanceAct);
     cohesionMenu -> addAction (averGraphDistanceAct);
@@ -2983,11 +2982,11 @@ void MainWindow::initToolBar(){
 
     toolBar -> addAction (editEdgeAddAct);
     toolBar -> addAction (editEdgeRemoveAct);
-    toolBar -> addSeparator();
     toolBar -> addAction (editFilterEdgesByWeightAct);
     toolBar -> addSeparator();
     QLabel *labelApplicationIcons = new QLabel;
-    labelApplicationIcons ->setText(tr("App:"));
+    labelApplicationIcons ->setText(tr("Settings:"));
+    toolBar -> addWidget(labelApplicationIcons);
     toolBar -> addAction(openSettingsAct);
     toolBar -> addSeparator();
     toolBar -> addAction ( QWhatsThis::createAction (this));
@@ -3135,13 +3134,14 @@ void MainWindow::initToolBox(){
 
                            "Symmetrize Edges by examining Strong Ties:\n"
                            "Creates a new symmetric relation by keeping strong ties only. \n"
-                           "In the new relation, a tie will exist between actor A and actor B \n"
-                           "only when both arcs A -> B and B -> A are present in the current or all relations. \n\n"
+                           "In the new relation, a tie will exist between actor A and \n"
+                           "actor B only when both arcs A -> B and B -> A are present \n"
+                           "in the current or all relations. \n\n"
 
                            "Symmetrize Edges by examining Cocitation:\n"
-                           "Creates a new symmetric relation by connecting actors "
-                           "that are cocitated by others. "
-                           "In the new relation, an edge will exist between actor i and "
+                           "Creates a new symmetric relation by connecting actors \n"
+                           "that are cocitated by others. \n"
+                           "In the new relation, an edge will exist between actor i and \n"
                            "actor j only if C(i,j) > 0, where C the Cocitation Matrix. "
                            ));
 
@@ -3217,7 +3217,8 @@ void MainWindow::initToolBox(){
     toolBoxAnalysisMatricesSelect -> setStatusTip(
                 tr("Select which matrix to compute and display, based on the adjacency matrix of the current network."));
     toolBoxAnalysisMatricesSelect -> setToolTip(
-                tr("The adjacency matrix and other matrices based on the adjacency matrix of the current network."));
+                tr("The adjacency matrix and other matrices based on the adjacency \n"
+                   "matrix of the current network, i.e. Cocitation, Degree Matrix etc."));
     toolBoxAnalysisMatricesSelect -> setWhatsThis(
                 tr("Analyze Matrices\n\n"
                    "Compute and display matrices based on the adjacency matrix of the current network."));
@@ -3240,9 +3241,10 @@ void MainWindow::initToolBox(){
     toolBoxAnalysisCohesionSelectLabel->setMinimumWidth(115);
     toolBoxAnalysisCohesionSelect = new QComboBox;
     toolBoxAnalysisCohesionSelect -> setStatusTip(
-                tr("Select a basic graph-theoretic metric to compute, i.e. distances, walks, graph diameter, eccentricity."));
+                tr("Select a graph-theoretic metric to compute, i.e. distances, walks, graph diameter, eccentricity."));
     toolBoxAnalysisCohesionSelect -> setToolTip(
-                tr("Basic graph-theoretic metrics, such as distances, walks, graph diameter, eccentricity."));
+                tr("Basic graph-theoretic metrics, such as distances, walks, \n"
+                   "graph diameter, eccentricity, clustering coefficient, etc."));
     toolBoxAnalysisCohesionSelect -> setWhatsThis(
                 tr("Analyze Cohesion\n\n"
                    "Compute basic graph-theoretic metrics, i.e. distances, walks, graph diameter, eccentricity."));
@@ -3273,13 +3275,9 @@ void MainWindow::initToolBox(){
                 tr("Select a prominence metric to compute for each actor and the whole network. ")
                 );
     toolBoxAnalysisProminenceSelect -> setToolTip(
-                tr("Metrics to understand how 'prominent' or "
-                   "important each actor (node) is inside the network.")
-                );
-    toolBoxAnalysisProminenceSelect -> setWhatsThis(
-                tr("Analyze Prominence\n\n"
-                   "Computes various metrics to see how 'prominent' or "
-                   "important each actor (node) is inside the network.")
+                tr("Metrics to understand how 'prominent' or important each \n"
+                   "actor (node) is inside the network, i.e.\n Betweeness Centrality, \n"
+                   "Eigenvector Centrality, PageRank etc.")
                 );
     toolBoxAnalysisProminenceSelect -> setWhatsThis(
                 tr("Analyze Prominence\n\n"
@@ -3317,7 +3315,8 @@ void MainWindow::initToolBox(){
     toolBoxAnalysisCommunitiesSelect->setStatusTip(
                 tr("Select a community detection metric / cohesive subgroup algorithm, i.e. cliques, triad census etc."));
     toolBoxAnalysisCommunitiesSelect->setToolTip(
-                tr("Community detection metrics and cohesive subgroup algorithms, i.e. cliques, triad census etc."));
+                tr("Community detection metrics and cohesive subgroup algorithms, \n"
+                   "i.e. cliques, triad census etc."));
             toolBoxAnalysisCommunitiesSelect->setWhatsThis(
                         tr("Analyze Communities\n\n"
                            "Community detection metrics and cohesive subgroup algorithms, "
@@ -3344,12 +3343,12 @@ void MainWindow::initToolBox(){
                    "i.e. Pearson Coefficients, tie profile similarities, "
                    "hierarchical clustering, etc."));
     toolBoxAnalysisStrEquivalenceSelect->setToolTip(
-                tr("Structural equivalence measures and visualization algorthms, "
-                   "i.e. Pearson Coefficients, tie profile similarities, "
+                tr("Structural equivalence measures and visualization algorithms, \n"
+                   "i.e. Pearson Coefficients, tie profile similarities, \n"
                    "hierarchical clustering"));
     toolBoxAnalysisStrEquivalenceSelect->setWhatsThis(
                 tr("Analyze Structural Equivalence\\n\n"
-                   "Structural equivalence measures and visualization algorthms, "
+                   "Structural equivalence measures and visualization algorithms, "
                    "i.e. Pearson Coefficients, tie profile similarities, "
                    "hierarchical clustering "));
     QStringList connectivityCommands;
@@ -12593,7 +12592,7 @@ void MainWindow::slotHelpCheckUpdates() {
 */
 void MainWindow::slotHelpAbout(){
     int randomCookie=rand()%fortuneCookie.count();
-QString BUILD="Fri Sep 30 00:32:25 EEST 2016";
+QString BUILD="Sat Jan 21 01:11:50 EET 2017";
     QMessageBox::about(
                 this, tr("About SocNetV"),
                         tr("<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)") +
@@ -12602,7 +12601,7 @@ QString BUILD="Fri Sep 30 00:32:25 EEST 2016";
 
                         tr("<p>Website: <a href=\"http://socnetv.org\">http://socnetv.org</a></p>")+
 
-                        tr("<p>(C) 2005-2016 by Dimitris V. Kalamaras</p>")+
+                        tr("<p>(C) 2005-2017 by Dimitris V. Kalamaras</p>")+
                         tr("<p><a href=\"http://socnetv.org/contact\">Have questions? Contact us!</a></p>")+
 
                         tr("<p><b>Fortune cookie: </b><br> \"")  + fortuneCookie[randomCookie]  + "\"" +
