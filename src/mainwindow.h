@@ -1,14 +1,14 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.1
+ version: 2.2
  Written in Qt
  
                          mainwindow.h  -  description
                              -------------------
-    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
-    email                : dimitris.kalamaras@gmail.com
-    website:             : http://dimitris.apeiro.gr
-    project site         : http://socnetv.sourceforge.net
+    copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
+    blog              : http://dimitris.apeiro.gr
+    project site      : http://socnetv.org
+
  ***************************************************************************/
 
 /*******************************************************************************
@@ -39,20 +39,26 @@
 #include <QMainWindow>
 #include <QGraphicsScene>
 #include <QPrinter>
+#include <QMessageBox>
+#include <math.h>
 
 /** SocNetV specific includes*/
 
-#include <math.h>
-#include "graphicswidget.h"
 #include "graph.h"
-#include "filteredgesbyweightdialog.h"
+#include "graphicswidget.h"
+#include "dialogfilteredgesbyweight.h"
 #include "webcrawlerdialog.h"
-#include "nodeeditdialog.h"
-#include "datasetselectdialog.h"
+#include "dialognodeedit.h"
+#include "dialogdatasetselect.h"
 
-static const QString VERSION="2.1";
+static const QString VERSION="2.2";
 
-
+static const int USER_MSG_INFO=0;
+static const int USER_MSG_CRITICAL=1;
+static const int USER_MSG_CRITICAL_NO_NETWORK=2;
+static const int USER_MSG_CRITICAL_NO_EDGES=3;
+static const int USER_MSG_QUESTION=4;
+static const int USER_MSG_QUESTION_CUSTOM=5;
 
 QT_BEGIN_NAMESPACE
 class QMenu;
@@ -74,12 +80,18 @@ QT_END_NAMESPACE
 
 using namespace std;
 
-class PreviewForm;
-class RandErdosRenyiDialog;
-class RandSmallWorldDialog;
-class RandScaleFreeDialog;
-class RandRegularDialog;
-class SettingsDialog;
+
+class DialogPreviewFile;
+class DialogRandErdosRenyi;
+class DialogRandSmallWorld;
+class DialogRandScaleFree;
+class DialogSimilarityPearson;
+class DialogSimilarityMatches;
+class DialogDissimilarities;
+class DialogClusteringHierarchical;
+class DialogRandRegular;
+class DialogSettings;
+class TextEditor;
 
 
 /**
@@ -90,13 +102,12 @@ class SettingsDialog;
     created which creates a graphics widget.
  */
 
-
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    GraphicsWidget *graphicsWidget;
+
 
     MainWindow(const QString &f);
     ~MainWindow();
@@ -110,12 +121,11 @@ public:
     void initSignalSlots();
     QMap<QString, QString> initSettings();
     void saveSettings();
-    void initNet();
+    void initApp();
 
     void setLastPath(QString filePath);
     QString getLastPath();
     void createFortuneCookies();
-    void slotHelpCreateTips();
 
     int activeEdges();
     int activeNodes();
@@ -123,17 +133,27 @@ public:
     void createProgressBar(const int &max=0, const QString &msg="Please wait...");
     void destroyProgressBar(int max=0);
 
+
+
 public slots:
     //NETWORK MENU
     void slotNetworkNew();
     void slotNetworkFileChoose(QString m_fileName = QString::null,
                                int m_fileFormat = -1,
                                const bool &checkSelectFileType = true);
+    void slotNetworkFileDialogFileSelected(const QString &fileName);
+    void slotNetworkFileDialogFilterSelected(const QString &filter);
+    void slotNetworkFileDialogRejected();
     void slotNetworkFileRecentUpdateActions();
     void slotNetworkAvailableTextCodecs();
     bool slotNetworkFilePreview(const QString &, const int &);
-    bool slotNetworkFileLoad ( const QString, const QString, const int );
-    void slotNetworkFileLoaded(int , QString fName, QString , int, int, bool);
+    void slotNetworkFileLoad ( const QString, const QString, const int );
+    void slotNetworkFileLoaded(const int &type,
+                               const QString &fName=QString::null,
+                               const QString &netName=QString::null,
+                               const int &totalNodes=0,
+                               const int &totalEdges=0,
+                               const QString &message=QString::null);
     void slotNetworkFileLoadRecent();
     void slotNetworkSaved(const int &status);
     void slotNetworkFileView();
@@ -153,6 +173,7 @@ public slots:
     void slotNetworkClose();
     void slotNetworkPrint();
     void slotNetworkViewSociomatrix();
+    void slotNetworkViewSociomatrixPlotText();
     bool slotNetworkExportBMP();
     bool slotNetworkExportPNG();
     bool slotNetworkExportPDF();
@@ -201,18 +222,26 @@ public slots:
     void slotNetworkWebCrawler(QString, int, int, bool, bool);
 
     //EDIT MENU
-    void slotEditRelationPrev();
-    void slotEditRelationNext();
-    void slotEditRelationAdd();
-    void slotEditRelationAdd(QString relationName);
+    void slotEditRelationsClear();
+    void slotEditRelationAdd(QString newRelationName=QString::null,
+                             const bool &changeRelation=true);
+    void slotEditRelationChange(const int relIndex=RAND_MAX);
+    void slotEditRelationRename(QString newName=QString::null);
 
     void slotEditOpenContextMenu(const QPointF & mPos);
+    void slotEditSelectionChanged (const int &selNodes, const int &selEdges);
 
-    void slotEditClickOnEmptySpace ();
+    void slotEditClickOnEmptySpace (const QPointF &p);
 
     void slotEditNodeSelectAll();
     void slotEditNodeSelectNone();
-
+    void slotEditNodeInfoStatusBar(const int &number,
+                                   const QPointF &p,
+                                   const QString &label,
+                                   const int &inDegree,
+                                   const int &outDegree,
+                                   const float &clc=0);
+    void slotEditNodePosition(const int &nodeNumber, const int &x, const int &y);
     void slotEditNodeAdd();
     void slotEditNodeAddWithMouse(const QPointF &);
     void slotEditNodeFind();
@@ -221,6 +250,10 @@ public slots:
     void slotEditNodePropertiesDialog();
     void slotEditNodeProperties( const QString, const int, const QString,
                              const QColor, const QString);
+    void slotEditNodeSelectedToClique();
+    void slotEditNodeSelectedToStar();
+    void slotEditNodeSelectedToCycle();
+    void slotEditNodeSelectedToLine();
     void slotEditNodeColorAll(QColor color=QColor());
     void slotEditNodeSizeAll(int newSize=0, const bool &normalized=false);
     void slotEditNodeShape(QString shape=QString::null, const int vertex = 0);
@@ -231,6 +264,12 @@ public slots:
     void slotEditNodeLabelsColor(QColor color=QColor());
     void slotEditNodeLabelDistance(int v1=0, int newSize=0);
 
+    void slotEditEdgeInfoStatusBar (const int &v1,
+                                    const int &v2,
+                                    const float &weight,
+                                    const bool &undirected);
+
+    void slotEditEdgeOpenContextMenu() ;
     void slotEditEdgeAdd();
     void slotEditEdgeCreate (const int &source, const int &target,
                              const float &weight=1);
@@ -239,19 +278,22 @@ public slots:
     void slotEditEdgeColor();
     void slotEditEdgeWeight();
     void slotEditEdgeColorAll(QColor color=QColor(), const int &threshold=RAND_MAX);
+
+    void slotEditEdgeMode(const int &mode);
     void slotEditEdgeSymmetrizeAll();
+    void slotEditEdgeSymmetrizeStrongTies();
+    void slotEditEdgeSymmetrizeCocitation();
     void slotEditEdgeUndirectedAll(const bool &toggle);
 
     void slotFilterNodes();
-    void slotFilterIsolateNodes(bool checked);
-    void slotShowFilterEdgesDialog();
-    void slotTransformNodes2Edges();
+    void slotEditFilterNodesIsolates(bool checked);
+    void slotEditFilterEdgesByWeightDialog();
+    void slotEditFilterEdgesUnilateral(bool checked);
 
+    void slotEditTransformNodes2Edges();
 
 
     // LAYOUT MENU
-    void slotColorationStrongStructural();
-    void slotColorationRegular();
     void slotLayoutRandom();
     void slotLayoutCircularRandom();
     void slotLayoutCircularByProminenceIndex();
@@ -260,44 +302,76 @@ public slots:
     void slotLayoutLevelByProminenceIndex();
     void slotLayoutLevelByProminenceIndex(QString);
     void slotLayoutGuides(const bool &toggle);
+
     void slotLayoutSpringEmbedder();
     void slotLayoutFruchterman();
     void slotLayoutKamadaKawai();
+
     void slotLayoutNodeSizesByOutDegree(bool);
     void slotLayoutNodeSizesByInDegree(bool);
 
-    //STATISTICS MENU
+    void slotLayoutColorationStrongStructural();
+    void slotLayoutColorationRegular();
+
+    //ANALYSIS MENU
     void askAboutWeights();
-    void slotDistancesMatrix();
-    void slotGeodesicsMatrix();
-    void slotGraphDistance();
-    void slotAverageGraphDistance();
-    void slotDiameter();
-    void slotEccentricity();
+    void slotAnalyzeMatrixDistances();
+    void slotAnalyzeMatrixGeodesics();
+    void slotAnalyzeDistance();
+    void slotAnalyzeDistanceAverage();
+    void slotAnalyzeDiameter();
+    void slotAnalyzeEccentricity();
+    void slotAnalyzeStrEquivalenceDissimilaritiesDialog();
+    void slotAnalyzeDissimilaritiesTieProfile(const QString &metric,
+                                               const QString &varLocation,
+                                               const bool &diagonal);
 
-    void slotWalksOfGivenLength();
-    void slotTotalWalks();
-    void slotReachabilityMatrix();
-    void slotConnectedness();
+    void slotAnalyzeWalksLength();
+    void slotAnalyzeWalksTotal();
+    void slotAnalyzeReachabilityMatrix();
+    void slotAnalyzeConnectedness();
 
-    void slotCliqueCensus();
-    void slotClusteringCoefficient();
-    void slotTriadCensus();
-    void slotCheckSymmetry();
-    void slotInvertAdjMatrix();
+    void slotAnalyzeStrEquivalenceClusteringHierarchicalDialog();
+    void slotAnalyzeClusteringHierarchical(const QString &matrix,
+                                           const QString &metric,
+                                           const QString &method,
+                                           const bool &diagonal=false,
+                                           const bool &diagram=false);
+    void slotAnalyzeCommunitiesCliqueCensus();
+    void slotAnalyzeClusteringCoefficient();
+    void slotAnalyzeCommunitiesTriadCensus();
 
-    void slotCentralityDegree();
-    void slotCentralityCloseness();
-    void slotCentralityClosenessInfluenceRange();
-    void slotCentralityBetweenness();
-    void slotCentralityInformation();
-    void slotCentralityStress();
-    void slotCentralityPower();
-    void slotCentralityEccentricity();
+    void slotAnalyzeSymmetryCheck();
+    void slotAnalyzeMatrixAdjacencyInverse();
+    void slotAnalyzeMatrixAdjacencyTranspose();
+    void slotAnalyzeMatrixAdjacencyCocitation();
+    void slotAnalyzeMatrixDegree();
+    void slotAnalyzeMatrixLaplacian();
 
-    void slotPrestigeDegree();
-    void slotPrestigePageRank();
-    void slotPrestigeProximity();
+    void slotAnalyzeCentralityDegree();
+    void slotAnalyzeCentralityCloseness();
+    void slotAnalyzeCentralityClosenessIR();
+    void slotAnalyzeCentralityBetweenness();
+    void slotAnalyzeCentralityInformation();
+    void slotAnalyzeCentralityEigenvector();
+    void slotAnalyzeCentralityStress();
+    void slotAnalyzeCentralityPower();
+    void slotAnalyzeCentralityEccentricity();
+
+    void slotAnalyzePrestigeDegree();
+    void slotAnalyzePrestigePageRank();
+    void slotAnalyzePrestigeProximity();
+
+    void slotAnalyzeStrEquivalenceSimilarityMeasureDialog();
+    void slotAnalyzeSimilarityMatching(const QString &matrix,
+                               const QString &varLocation,
+                               const QString &measure,
+                               const bool &diagonal);
+
+    void slotAnalyzeStrEquivalencePearsonDialog();
+    void slotAnalyzeSimilarityPearson(const QString &matrix,
+                               const QString &varLocation,
+                               const bool &diagonal=false);
 
     //OPTIONS MENU
     void slotOpenSettingsDialog();
@@ -329,32 +403,38 @@ public slots:
     void slotHelpTips();
     void slotHelp();
     void slotHelpCheckUpdates();
+    void slotHelpCreateTips();
     void slotHelpAbout();
     void slotAboutQt();
+    void slotHelpMessageToUserInfo(const QString text=QString::null);
+    void slotHelpMessageToUserError(const QString text=QString::null);
+    int slotHelpMessageToUser(const int type=0,
+                              const QString statusMsg=QString::null,
+                              const QString text=QString::null,
+                              const QString info=QString::null,
+                              QMessageBox::StandardButtons buttons=QMessageBox::NoButton,
+                              QMessageBox::StandardButton defBtn=QMessageBox::Ok,
+                              const QString btn1=QString::null,
+                              const QString btn2=QString::null
+                               );
 
 
-    //PUBLICLY AVAILABLE SLOTS. CALLED FROM GRAPHICSVIEW
-    void nodeInfoStatusBar(Node*);
-    void edgeInfoStatusBar (Edge*);
-
-    void openEdgeContextMenu() ;
-
-    void updateNodeCoords(const int &nodeNumber, const int &x, const int &y);
 
     //Called by Graph to display some message to the user
     void statusMessage(const QString);
-    void showMessageToUser(const QString);
 
 
     //Called from MW, when user highlights something in the toolbox Comboboxes
-    void toolBoxAnalysisGeodesicsSelectChanged(int);
-    void toolBoxAnalysisConnectivitySelectChanged(int);
+    void toolBoxEditNodeSubgraphSelectChanged(int);
+    void toolBoxEditEdgeSymmetrizeSelectChanged(int);
+    void toolBoxAnalysisMatricesSelectChanged(int);
+    void toolBoxAnalysisCohesionSelectChanged(int);
+    void toolBoxAnalysisStrEquivalenceSelectChanged(int);
     void toolBoxAnalysisProminenceSelectChanged(int);
-    void toolBoxAnalysisClusterabilitySelectChanged(int);
+    void toolBoxAnalysisCommunitiesSelectChanged(int);
     void toolBoxLayoutByIndexButtonPressed();
     void toolBoxLayoutForceDirectedButtonPressed();
 
-    QList<QGraphicsItem *> selectedNodes();
 
 protected:
     void resizeEvent( QResizeEvent * );
@@ -363,28 +443,39 @@ protected:
 
     //	void myMessageOutput(QtMsgType type, const char *msg);
 signals:
-    void addRelationToGraph(QString);
+    void signalRelationAddAndChange(const QString &relName, const bool &changeRelation=true);
 
 private:
-    QMap<QString,QString> appSettings;
     QGraphicsScene *scene;
+    GraphicsWidget *graphicsWidget;
+    Graph activeGraph;
 
-    FilterEdgesByWeightDialog m_DialogEdgeFilterByWeight;
+    QMap<QString,QString> appSettings;
+
+    DialogFilterEdgesByWeight m_DialogEdgeFilterByWeight;
     WebCrawlerDialog m_WebCrawlerDialog;
+    DialogDataSetSelect m_datasetSelectDialog;
 
-    NodeEditDialog *m_nodeEditDialog;
+    DialogNodeEdit *m_nodeEditDialog;
+    DialogRandErdosRenyi *m_randErdosRenyiDialog;
+    DialogRandSmallWorld *m_randSmallWorldDialog;
+    DialogRandScaleFree *m_randScaleFreeDialog;
+    DialogRandRegular *m_randRegularDialog;
+    DialogSettings *m_settingsDialog;
+    DialogSimilarityPearson *m_dialogSimilarityPearson;
+    DialogSimilarityMatches *m_dialogSimilarityMatches;
+    DialogDissimilarities *m_dialogdissimilarities;
+    DialogClusteringHierarchical *m_dialogClusteringHierarchical;
 
-    RandErdosRenyiDialog *m_randErdosRenyiDialog;
-    RandSmallWorldDialog *m_randSmallWorldDialog;
-    RandScaleFreeDialog *m_randScaleFreeDialog;
-    RandRegularDialog *m_randRegularDialog;
-    SettingsDialog *m_settingsDialog;
 
-    PreviewForm *previewForm;
+    DialogPreviewFile *m_dialogPreviewFile;
     QList<QTextCodec *> codecs;
     QString userSelectedCodecName;
-    DataSetSelectDialog m_datasetSelectDialog;
-    Graph activeGraph;
+
+
+
+    QList<TextEditor *> m_textEditors;
+
     QPrinter *printer;
     QToolBar *toolBar;
 
@@ -394,18 +485,20 @@ private:
 
     QProgressDialog *progressDialog;
 
-    Node *clickedNode;
-    Edge *clickedEdge;
-
-    QMenu *importSubMenu, *exportSubMenu, *editMenu, *statMenu,  *helpMenu;
-    QMenu *optionsMenu, *colorOptionsMenu, *edgeOptionsMenu, *nodeOptionsMenu, *viewOptionsMenu;
-    QMenu *editNodeMenu, *editEdgeMenu, *centrlMenu, *layoutMenu;
+    QMenu *importSubMenu, *exportSubMenu, *editMenu, *analysisMenu, *helpMenu;
+    QMenu *optionsMenu, *colorOptionsMenu, *edgeOptionsMenu, *nodeOptionsMenu;
+    QMenu *editNodeMenu, *editEdgeMenu, *centrlMenu,  *viewOptionsMenu, *layoutMenu;
+    QMenu *cohesionMenu, *strEquivalenceMenu, *communitiesMenu, *connectivityMenu;
+    QMenu *matrixMenu;
     QMenu *networkMenu, *randomNetworkMenu, *filterMenu, *recentFilesSubMenu;
     QMenu *randomLayoutMenu, *circleLayoutMenu, *levelLayoutMenu, *physicalLayoutMenu;
     QMenu *colorationMenu;
     QCheckBox  *toolBoxNodeSizesByOutDegreeBx,*toolBoxNodeSizesByInDegreeBx, *toolBoxLayoutGuidesBx;
-    QComboBox *toolBoxAnalysisGeodesicsSelect,*toolBoxAnalysisConnectivitySelect,
-            *toolBoxAnalysisProminenceSelect, *toolBoxAnalysisClusterabilitySelect;
+    QComboBox *toolBoxEditNodeSubgraphSelect, *toolBoxEditEdgeModeSelect,
+    *toolBoxEditEdgeSymmetrizeSelect, *toolBoxAnalysisCohesionSelect,
+    *toolBoxAnalysisStrEquivalenceSelect,
+    *toolBoxAnalysisProminenceSelect, *toolBoxAnalysisCommunitiesSelect,
+    *toolBoxAnalysisMatricesSelect;
     QComboBox *toolBoxLayoutByIndexSelect, *toolBoxLayoutByIndexTypeSelect;
     QComboBox *toolBoxLayoutForceDirectedSelect;
 
@@ -422,10 +515,10 @@ private:
     QAction *networkExportBMP, *networkExportPNG, *networkExportPajek,
     *networkExportPDF, *networkExportDL, *networkExportGW, *networkExportSM,
     *networkExportList;
-    QAction *networkImportPajek,*networkImportSM, *networkImportList,
+    QAction *networkImportPajek, *networkImportGML, *networkImportSM, *networkImportList,
     *networkImportDot , *networkImportDL, *networkImportTwoModeSM;
     QAction *networkViewFileAct, *openTextEditorAct, *networkViewSociomatrixAct,
-    *networkDataSetSelectAct;
+    *networkDataSetSelectAct, *networkViewSociomatrixPlotAct;
 
     QAction *createErdosRenyiRandomNetworkAct, *createGaussianRandomNetworkAct;
     QAction *createLatticeNetworkAct, *createScaleFreeRandomNetworkAct;
@@ -433,15 +526,21 @@ private:
 
     QAction *optionsNodeNumbersVisibilityAct, *optionsNodeLabelsVisibilityAct, *optionsNodeNumbersInsideAct;
     QAction *editNodeSelectNoneAct, *editNodeSelectAllAct;
-    QAction *editNodeFindAct,*editNodeAddAct, *editNodeRemoveAct, *editNodePropertiesAct;
+    QAction *editNodeSelectedToStarAct, *editNodeSelectedToCycleAct;
+    QAction *editNodeSelectedToLineAct, *editNodeSelectedToCliqueAct;
+    QAction *editNodeFindAct,*editNodeAddAct, *editNodeRemoveAct;
+    QAction *editNodePropertiesAct;
     QAction *editEdgeAddAct, *editEdgeRemoveAct;
     QAction *editNodeNumbersSizeAct, *editNodeLabelsSizeAct;
     QAction *editNodeSizeAllAct, *editNodeShapeAll;
     QAction *editEdgeLabelAct, *editEdgeColorAct, *editEdgeWeightAct;
-    QAction *filterNodesAct, *filterIsolateNodesAct, *filterEdgesAct;
-    QAction *transformNodes2EdgesAct, *editEdgeSymmetrizeAllAct, *editEdgeUndirectedAllAct;
+    QAction *filterNodesAct, *editFilterNodesIsolatesAct, *editFilterEdgesByWeightAct;
+    QAction *editFilterEdgesUnilateralAct;
+    QAction *transformNodes2EdgesAct, *editEdgeSymmetrizeAllAct;
+    QAction *editEdgeSymmetrizeStrongTiesAct, *editEdgeUndirectedAllAct;
     QAction *changeBackColorAct, *editNodeColorAll, *editEdgeColorAllAct,
-            *editNodeNumbersColorAct,*editNodeLabelsColorAct;
+            *editNodeNumbersColorAct,*editNodeLabelsColorAct,
+            *editEdgesCocitationAct;
     QAction *optionsEdgeThicknessPerWeightAct, *optionsEdgeWeightNumbersAct, *optionsEdgesVisibilityAct;
     QAction *optionsEdgeArrowsAct, *drawEdgesBezier,*considerEdgeWeightsAct;
     QAction *optionsEdgeLabelsAct;
@@ -450,13 +549,19 @@ private:
     QAction *openSettingsAct;
     QAction *webCrawlerAct;
 
-    QAction *netDensity, *symmetryAct, *graphDistanceAct, *averGraphDistanceAct,
-            *distanceMatrixAct, *geodesicsMatrixAct, *diameterAct, *eccentricityAct;
-    QAction *walksAct,*totalWalksAct, *reachabilityMatrixAct, *connectednessAct;
-    QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct, *invertAdjMatrixAct;
+    QAction *netDensity, *analyzeGraphSymmetryAct, *analyzeGraphDistanceAct, *averGraphDistanceAct,
+            *analyzeMatrixDistancesGeodesicAct, *analyzeMatrixGeodesicsAct, *analyzeGraphDiameterAct, *analyzeGraphEccentricityAct;
+    QAction *analyzeStrEquivalenceTieProfileDissimilaritiesAct;
+    QAction *analyzeGraphWalksAct,*analyzeGraphWalksTotalAct, *analyzeMatrixReachabilityAct, *analyzeGraphConnectednessAct;
+    QAction *analyzeCommunitiesCliquesAct, *clusteringCoefAct, *analyzeCommunitiesTriadCensusAct;
+    QAction *analyzeMatrixAdjTransposeAct, *analyzeMatrixAdjInvertAct;
+    QAction *analyzeMatrixAdjCocitationAct;
+    QAction *analyzeMatrixDegreeAct, *analyzeMatrixLaplacianAct;
+    QAction *analyzeStrEquivalenceClusteringHierarchicalAct, *analyzeStrEquivalencePearsonAct;
+    QAction *analyzeStrEquivalenceMatchesAct;
     QAction *cDegreeAct, *cInDegreeAct, *cClosenessAct, *cInfluenceRangeClosenessAct,
-            *cBetweennessAct, *cInformationAct, *cPageRankAct, *cStressAct,
-            *cPowerAct, *cEccentAct, *cProximityPrestigeAct;
+            *cBetweennessAct, *cInformationAct, *cEigenvectorAct, *cPageRankAct,
+            *cStressAct, *cPowerAct, *cEccentAct, *cProximityPrestigeAct;
     QAction *randLayoutAct, *randCircleLayoutAct, *layoutGuidesAct;
     QAction *layoutCircular_DC_Act, *layoutCircular_DP_Act,
     *layoutCircular_CC_Act, *layoutCircular_SC_Act, *layoutCircular_EC_Act,
@@ -470,30 +575,32 @@ private:
     QAction *springLayoutAct, *FRLayoutAct;
     QAction *nodeSizesByOutDegreeAct,  *nodeSizesByInDegreeAct;
     QAction *editRelationNextAct, *editRelationPreviousAct, *editRelationAddAct;
+    QAction *editRelationRenameAct;
     enum { MaxRecentFiles = 5 };
     QAction *recentFileActs[MaxRecentFiles];
 
-    QString fileName, networkName, previous_fileName, progressMsg;
+    QString fileName, previous_fileName, fileNameNoPath, progressMsg;
     QString settingsFilePath, settingsDir ;
-    QStringList fileNameNoPath, fortuneCookie;
+    QStringList fortuneCookie;
     QStringList tempFileNameNoPath, tips, recentFiles;
-    int clickedNodeNumber;
     int statusBarDuration, progressCounter;
-    int maxNodes;
+    int fileType, maxNodes;
     int fortuneCookiesCounter;
     //QString VERSION;
-    bool fileLoaded;
 
-    bool networkModified;
-    bool edgeClicked, nodeClicked, markedNodesExist, showProgressBar, firstTime;
+    bool markedNodesExist;
     bool considerWeights, inverseWeights, askedAboutWeights;
     float randomErdosEdgeProb;
     QString initFileCodec;
-    QColor initBackgroundColor;
-    QPointF cursorPosGW;	//Carries the position of the cursor in graphicsWidget coordinates
-    QLabel *labelEdgesLCD, *networkLabel ;
-    QLCDNumber  *inDegreeLCD, *outDegreeLCD , *selectedNodeLCD, *clucofLCD;
-    QLCDNumber *nodesLCD, *edgesLCD, *densityLCD;
+
+    QLabel *rightPanelEdgesLabel, *rightPanelSelectedEdgesLabel, *rightPanelNetworkTypeLabel ;
+    QLabel *rightPanelClickedEdgeHeaderLabel;
+    QLCDNumber *rightPanelClickedNodeInDegreeLCD, *rightPanelClickedNodeOutDegreeLCD;
+    QLCDNumber *rightPanelClickedNodeLCD, *rightPanelClickedNodeClucofLCD;
+    QLCDNumber *rightPanelNodesLCD, *rightPanelEdgesLCD, *rightPanelDensityLCD;
+    QLCDNumber *rightPanelSelectedNodesLCD, *rightPanelSelectedEdgesLCD;
+    QLCDNumber *rightPanelClickedEdgeSourceLCD, *rightPanelClickedEdgeTargetLCD;
+    QLCDNumber *rightPanelClickedEdgeWeightLCD;
     QDateTime actualDateTime, actualDate, actualTime;
     QTime eTime;     //used  to time algorithms.
 

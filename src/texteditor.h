@@ -1,12 +1,13 @@
 /****************************************************************************
 SocNetV: Social Network Visualizer 
-version: 2.1
+version: 2.2
 Written in Qt
 
 			       texteditor.h
                              -------------------
-    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
-    email                : dimitris.kalamaras@gmail.com
+    copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
+    project site      : http://socnetv.org
+
 *****************************************************************************/
 
 /*******************************************************************************
@@ -28,6 +29,7 @@ Written in Qt
 #define TEXTEDITOR_H
 
 #include <QMainWindow>
+//#include <QMimeData>
 
 class QAction;
 class QMenu;
@@ -38,7 +40,8 @@ class TextEditor : public QMainWindow
     Q_OBJECT
 
 public:
-    TextEditor(const QString &fileName , QWidget *parent=0 );
+    TextEditor(const QString &fileName ,
+               QWidget *parent=0 , const bool &format=false);
 
 protected:
 	void closeEvent(QCloseEvent *event);
@@ -50,7 +53,9 @@ private slots:
 	bool saveAs();
 	void about();
 	void documentWasModified();
-
+//protected:
+//    bool canInsertFromMimeData(const QMimeData *source) const;
+//    void insertFromMimeData(const QMimeData *source) ;
 private:
 	void createActions();
 	void createMenus();
@@ -66,7 +71,7 @@ private:
 
 	QTextEdit *textEdit;
 	QString curFile;
-
+    bool formatHTML;
 	QMenu *fileMenu;
 	QMenu *editMenu;
 	QMenu *helpMenu;

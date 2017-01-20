@@ -1,12 +1,13 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.1
+ version: 2.2
  Written in Qt
 
                         node.cpp  -  description
                         -------------------
-    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
-    email                : dimitris.kalamaras@gmail.com
+    copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
+    project site      : http://socnetv.org
+
  ***************************************************************************/
 
 /*******************************************************************************
@@ -162,7 +163,7 @@ void Node::setShape(const QString shape) {
     else if ( m_shape == "ellipse") {
         m_path->addEllipse(-m_size, -m_size, 2*m_size, 1.7* m_size);
     }
-    else if ( m_shape == "box" || m_shape == "rectangle"  ) {  //rectangle: for GraphML compliance
+    else if ( m_shape == "box" || m_shape == "rectangle"  ) {  //rectangle: for GraphML/GML compliance
         m_path->addRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size );
     }
     else if (m_shape == "roundrectangle"  ) {  //roundrectangle: GraphML only
@@ -297,7 +298,6 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
  * @return
  */
 QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
-    QPointF newPos = value.toPointF();
 
     switch (change) {
     case ItemPositionHasChanged :
@@ -318,11 +318,7 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
         if (m_hasLabel) {
             m_label->setPos( -m_size, m_labelDistance+m_size);
         }
-        if ( newPos.x() !=0 && newPos.y() != 0 ){
-            graphicsWidget->nodeMoved(nodeNumber(), (int) newPos.x(), (int) newPos.y());
-        }
-//        else qDebug()<<  "Node: ItemChange():  Not emitting nodeMoved. Node "
-//                      << nodeNumber()<<" is at 0,0";
+
         break;
     }
     case ItemEnabledHasChanged:{
@@ -470,6 +466,18 @@ void Node::setLabelText ( QString label) {
     m_hasLabel=true;
 }
 
+
+
+void Node::setLabelColor ( const QString &color) {
+    qDebug()<< "Node::setLabelColor()";
+    prepareGeometryChange();
+    m_labelColor= color;
+    if (m_hasLabel)
+        m_label->setDefaultTextColor(color);
+    else
+        addLabel();
+    m_hasLabel=true;
+}
 
 
 void Node::setLabelVisibility(const bool &toggle) {

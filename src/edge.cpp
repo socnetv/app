@@ -1,12 +1,13 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.1
+ version: 2.2
  Written in Qt
 
                         edge.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
-    email                : dimitris.kalamaras@gmail.com
+    copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
+    project site      : http://socnetv.org
+
  ***************************************************************************/
 
 /*******************************************************************************
@@ -97,7 +98,7 @@ Edge::Edge(  GraphicsWidget *gw,
         addLabel();
 
     setAcceptHoverEvents(true);
-    //setFlags(QGraphicsItem::ItemIsSelectable);
+    setFlags(QGraphicsItem::ItemIsSelectable);
 
     //Edges have lower z than nodes. Nodes always appear above edges.
     setZValue(ZValueEdge);
@@ -105,6 +106,8 @@ Edge::Edge(  GraphicsWidget *gw,
     setBoundingRegionGranularity(0);
     //setCacheMode (QGraphicsItem::ItemCoordinateCache);
 
+    m_path = new QPainterPath;
+    m_path_shape = new QPainterPath;
 
     adjust();
 }
@@ -282,7 +285,7 @@ int Edge::targetNodeNumber() {
  * make the edge weight appear on the centre of the edge
  */
 void Edge::adjust(){
-    qDebug() << "Edge::adjust()";
+   // qDebug() << "Edge::adjust()";
     if (!source || !target)
         return;
     //QLineF line(mapFromItem(source, 0, 0), mapFromItem(target, 0, 0));
@@ -327,7 +330,7 @@ void Edge::adjust(){
 
     //Define the path upon which we' ll draw the line
     //QPainterPath line(sourcePoint);
-    m_path = new QPainterPath(sourcePoint);
+    m_path =  new QPainterPath(sourcePoint);
 
     //Construct the path
     if (source!=target) {
@@ -424,7 +427,10 @@ void Edge::adjust(){
  */
 QPainterPath Edge::shape () const {
     //qDebug()<<"Edge::shape()";		//too many debug messages...
-    return *m_path;
+    *m_path_shape= QPainterPath(*m_path);
+    m_path_shape->addPath(m_path->translated(1,1));
+    m_path_shape->addPath(m_path->translated(-1,-1));
+    return *m_path_shape;
 } 
 
 
@@ -483,21 +489,20 @@ QPen Edge::pen() const {
 
     switch (m_state) {
     case EDGE_STATE_REGULAR:
-        qDebug() << "Edge::pen() - returning pen for state REGULAR"  ;
+        //qDebug() << "Edge::pen() - returning pen for state REGULAR"  ;
         if (m_weight < 0 ){
             return  QPen(QColor(m_color), width(), Qt::DashLine, Qt::RoundCap, Qt::RoundJoin);
         }
         return QPen(QColor(m_color), width(), style(), Qt::RoundCap, Qt::RoundJoin);
         break;
     case EDGE_STATE_HIGHLIGHT: // selected
-        qDebug() << "Edge::pen() - returning pen for state HIGHLIGHTED"  ;
-
+        //qDebug() << "Edge::pen() - returning pen for state HIGHLIGHTED"  ;
         return QPen(QColor("red"), width(), style(), Qt::RoundCap, Qt::RoundJoin);
     case EDGE_STATE_HOVER: // hover
-        qDebug() << "Edge::pen() - returning pen for state HOVER"  ;
+        //qDebug() << "Edge::pen() - returning pen for state HOVER"  ;
         return QPen(QColor("red"), width()+1, style(), Qt::RoundCap, Qt::RoundJoin);
     default:
-        qDebug() << "Edge::pen() - returning pen for state DEFAULT"  ;
+        //qDebug() << "Edge::pen() - returning pen for state DEFAULT"  ;
         return QPen(QColor(m_color), width(), style(), Qt::RoundCap, Qt::RoundJoin);
     }
 
@@ -512,7 +517,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     if (!source || !target)
         return;
 
-    qDebug() <<"@@@ Edge::paint()";
+    //qDebug() <<"@@@ Edge::paint()";
 
      //if the edge is being dragged around, darken it!
      if (option->state & QStyle::State_Selected) {
@@ -543,12 +548,12 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 */
 float Edge::width() const{
     if ( fabs(m_weight) > 1  )  {
-        qDebug()<< "Edge::width() -"
-                   << "m_weight" << m_weight
-                  <<"Returning "<< 1  +  log(fabs(m_weight)) ;
+//        qDebug()<< "Edge::width() -"
+//                   << "m_weight" << m_weight
+//                  <<"Returning "<< 1  +  log(fabs(m_weight)) ;
         return 1+log(fabs(m_weight)) ;
     }
-    qDebug()<< "Edge::width() - Returning"<< m_weight;
+//    qDebug()<< "Edge::width() - Returning"<< m_weight;
     return m_weight;	//	Default, if  m_weight in (-1, 1) space
 }
 
@@ -559,7 +564,7 @@ float Edge::width() const{
  * @param flag
  */
 void Edge::highlight(const bool &flag) {
-    qDebug()<< "Edge::highlight() - " << flag;
+    //qDebug()<< "Edge::highlight() - " << flag;
     if (flag) {
         prepareGeometryChange();
         setState(EDGE_STATE_HIGHLIGHT);
@@ -583,13 +588,17 @@ void Edge::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 Edge::~Edge(){
     qDebug() << "*** ~Edge() - edge " << sourceNodeNumber()<< "->" << targetNodeNumber();
     removeRefs();
-
     if (m_drawWeightNumber)
         graphicsWidget->removeItem(weightNumber);
     if (m_drawLabel)
         graphicsWidget->removeItem(edgeLabel);
 
     this->hide();
+
     graphicsWidget->removeItem(this);
+
+    if ( ! m_path->isEmpty())
+         delete m_path;
+
 }
 

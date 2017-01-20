@@ -1,12 +1,13 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.1
+ version: 2.2
  Written in Qt
 
                           matrix.h  -  description
                              -------------------
-    copyright            : (C) 2005-2016 by dimitris kalamaras
-    email                : dimitris.kalamaras@gmail.com
+    copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
+    project site      : http://socnetv.org
+
  ***************************************************************************/
 
 
@@ -36,30 +37,43 @@
 
 using namespace std; //or else compiler groans for nothrow
 
+class QTextStream;
+
 
 #ifdef Q_OS_WIN32
-static const QString infinity = QString::number( INFINITY) ;
+static const QString infinity = "\u221E" ;
 #else
 static const QString infinity = QString("\xE2\x88\x9E") ;
 #endif
 
 
-class QTextStream;
+static const int METRIC_NONE = -1;
+static const int METRIC_SIMPLE_MATCHING  = 0;
+static const int METRIC_JACCARD_INDEX = 1;
+static const int METRIC_HAMMING_DISTANCE = 2;
+static const int METRIC_COSINE_SIMILARITY  = 3;
+static const int METRIC_EUCLIDEAN_DISTANCE = 4;
+static const int METRIC_MANHATTAN_DISTANCE= 5;
+static const int METRIC_PEARSON_COEFFICIENT = 6;
+static const int METRIC_CHEBYSHEV_MAXIMUM= 7;
 
-class Row {
+
+
+
+
+class MatrixRow {
 public:
-    Row (int cols=0) {
+    MatrixRow (int cols=0) {
         cell=new (nothrow) float [m_cols=cols];
 		Q_CHECK_PTR( cell );
         for (int i=0;i<m_cols; i++) {
             cell[i]=0;
         }
-		m_outEdges=0;
 	}
 
-    ~Row() { m_cols=0, m_outEdges=0 ; delete [] cell;}
+    ~MatrixRow() { m_cols=0 ; delete [] cell;}
 	
-    Row& operator =(Row & a) {
+    MatrixRow& operator =(MatrixRow & a) {
         if (this != &a){
             if (a.m_cols!=m_cols) {
                 delete [] cell;
@@ -83,25 +97,12 @@ public:
 	
 	void setColumn (int index, float elem) {
 		cell[index]=elem;
-		if (elem!=0)
-			m_outEdges++;
 	}
 
 	void clearColumn(int index){
-		if (cell[index]!=0)
-			m_outEdges--;
 		cell[index]=0;
 	}	
 
-
-	//FIXME 
-	void updateOutEdges(){
-		m_outEdges=0;
-        for (int i=0;i<m_cols; i++) {
-			if (cell[i])
-			    m_outEdges++;
-		}
-	}
 
     void resize(int cols) {
 		delete [] cell;
@@ -110,18 +111,15 @@ public:
         for (int i=0;i<m_cols; i++) {
 			cell[i]=0;
 		}
-		m_outEdges=0;
-	}
+    }
 	
     void setSize(int cols){
         m_cols=cols;
-		//FIXME Matrix.row setSize m_outEdges should be zero
-	}
-	int outEdges () { return m_outEdges;}
+    }
 
 private:
 	float *cell;
-    int m_cols, m_outEdges;
+    int m_cols;
 };
 
 
@@ -144,10 +142,10 @@ public:
 
     void setItem(const int r, const int c, const float elem );
 
-    //WARNING: this operator is slow! Avoid using it.
+    //WARNING: operator() is slow! Avoid using it.
     float  operator ()  (const int r, const int c) { return  row[r].column(c);  }
 
-    Row& operator []  (const int &r)  { return row[r]; }
+    MatrixRow& operator []  (const int &r)  { return row[r]; }
 
     void clearItem( int r, int c ) ;
 
@@ -157,17 +155,13 @@ public:
 
     int  size() { return m_rows * m_cols; }
 
-    void findMinMaxValues(float&,float&);
+    void findMinMaxValues(float&min, float&max, bool &hasRealNumbers);
+
+    void NeighboursNearestFarthest(float&min,float&max,
+                          int &imin, int &jmin,
+                          int &imax, int &jmax);
 
     void deleteRowColumn(int i);	/* deletes row i and column i */
-
-    int edgesFrom(int Actor);
-
-    int edgesTo(const int Actor);
-
-    int totalEdges();
-
-    bool printMatrixConsole(bool debug=true);
 
     void identityMatrix (int dim);
 
@@ -175,37 +169,91 @@ public:
 
     void fillMatrix (float value );
 
+    Matrix& subtractFromI () ;
+
+
     Matrix& operator =(Matrix & a);
+
+    void sum(Matrix &a, Matrix &b) ;
+
+    void operator +=(Matrix & b);
 
     Matrix& operator +(Matrix & b);
 
-    friend QTextStream& operator <<  (QTextStream& os, Matrix& m);
+    Matrix& operator -(Matrix & b);
 
-    Matrix & product( Matrix &a, Matrix & b, bool symmetry) ;
+    Matrix& operator *(Matrix & b);
+    void operator *=(Matrix & b);
+
+    void product( Matrix &A, Matrix & B, bool symmetry=false) ;
 
     Matrix & productSym( Matrix &a, Matrix & b)  ;
 
-    Matrix & pow (int power, bool symmetry)  ;
+    void swapRows(int rowA,int rowB);
 
-    Matrix& subtractFromI () ;
+    void multiplyScalar(const float &f);
+    void multiplyRow(int row, float value);
 
-    Matrix& sum (Matrix &a, Matrix &b) ;
+    void productByVector (float in[], float out[], const bool &leftMultiply=false);
 
-    bool ludcmp (Matrix &a, const int &n, int indx[], float &d ) ;
+    Matrix & pow (int n, bool symmetry=false)  ;
+    Matrix & expBySquaring2 (Matrix &Y, Matrix &X, int n, bool symmetry=false);
 
-    void lubksb (Matrix &a, const int &n, int indx[], float b[]);
+    float distanceManhattan(float x[], float y[] , int n);
+    float distanceEuclidean(float x[], int n);
+
+    void powerIteration (float x[] ,
+                         float &xsum,
+                         float &xmax,
+                         int &xmaxi,
+                         float &xmin,
+                         int &xmini,
+                         const float eps, const int &maxIter);
+
+    Matrix& degreeMatrix();
+
+    Matrix& laplacianMatrix();
+
+    Matrix& transpose();
+
+    Matrix& cocitationMatrix();
+
 
     Matrix& inverseByGaussJordanElimination(Matrix &a);
 
     Matrix& inverse(Matrix &a);
 
-    void swapRows(int rowA,int rowB);		/* elementary matrix algebra */
+    bool ludcmp (Matrix &a, const int &n, int indx[], float &d ) ;
 
-    void multiplyScalar(const float &f);
-    void multiplyRow(int row, float value);
+    void lubksb (Matrix &a, const int &n, int indx[], float b[]);
+
+
+    Matrix& distancesMatrix(const int &metric,
+                            const QString varLocation,
+                            const bool &diagonal,
+                            const bool &considerWeights);
+    
+    Matrix& similarityMatrix(Matrix &AM,
+                               const int &measure,
+                               const QString varLocation="Rows",
+                               const bool &diagonal=false,
+                               const bool &considerWeights=true);
+
+
+    Matrix& pearsonCorrelationCoefficients(Matrix &AM,
+                                          const QString &varLocation="Rows",
+                                           const bool &diagonal=false);
+
+
+    friend QTextStream& operator <<  (QTextStream& os, Matrix& m);
+    bool printHTMLTable(QTextStream& os,
+                        const bool markDiag=false,
+                        const bool &plain=false,
+                        const bool &printInfinity=true);
+    bool printMatrixConsole(bool debug=true);
 
 private:
-    Row *row;
+    MatrixRow *row;
     int m_Actors;
     int m_rows;
     int m_cols;

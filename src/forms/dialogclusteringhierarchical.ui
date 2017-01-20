@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DialogClusteringHierarchical</class>
+ <widget class="QDialog" name="DialogClusteringHierarchical">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>550</width>
+    <height>450</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>550</width>
+    <height>450</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>600</width>
+    <height>600</height>
+   </size>
+  </property>
+  <property name="font">
+   <font>
+    <pointsize>10</pointsize>
+   </font>
+  </property>
+  <property name="windowTitle">
+   <string>Hierarchical Clustering</string>
+  </property>
+  <layout class="QFormLayout" name="formLayout">
+   <item row="0" column="0" colspan="2">
+    <widget class="QLabel" name="description">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>400</width>
+       <height>210</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Agglomerative hierarchical clustering builds a hierarchy of actor clusters, based on their tie/distance dissimilarity, starting with single elements and aggregating them into clusters.&lt;/p&gt;&lt;p&gt;It takes a matrix (adjacency or geodesic distances) and a distance metric between actors as input and constructs a pair-wise dissimilarity matrix. &lt;/p&gt;&lt;p&gt;Initially, each actor starts in its own cluster (Level 0). In each subsequent Level, the pair of clusters with minimum distance are merged into a larger cluster. Then, the distance between the new cluster and the old ones is computed, using the specified clustering method (i.e. single-linkage clustering).  The process is repeated until all actors end up in the same cluster. &lt;/p&gt;&lt;p&gt;Select an input matrix, a distance/dissimilarity metric and a clustering method (criterion) for the hierarchical cluster analysis. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Input matrix:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="matrixSelect">
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::StrongFocus</enum>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Adjacency:&lt;/span&gt; Use the active network's adjacency matrix as input to hierarchical clustering.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Distances:&lt;/span&gt; Use the active network's geodedic distances matrix as input. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="3" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Distance/dissimilarity metric:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="metricSelect">
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::StrongFocus</enum>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Supported distance metrics for hierarchical clustering:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Euclidean distance&lt;/span&gt;: The square root of the sum of squared differences between tie/distance profiles.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Jaccard distance&lt;/span&gt;: The Jaccard index J is the ratio of same ties/distances reported by each pair of actors to the total number of their ties. Does not count absent ties. The Jaccard distance is 1 - J&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Hamming distance&lt;/span&gt;: The number of ties/distances to other actors which differ between each pair of actors.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Manhattan distance&lt;/span&gt;: The sum of absoulute differences between tie/distance profiles.&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="5" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Clustering method (criterion):</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="linkageSelect">
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::StrongFocus</enum>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Supported linkage criteria for agglomerative hierarchical clustering: &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Single-linkage (minimum)&lt;/span&gt;: The distance between two clusters will be determined by a single element pair, namely those two elements (one in each cluster) that have the shortest distance between them. In each step, the clusters that have the shortest distance will be merged. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Complete-linkage (maximum)&lt;/span&gt;: The distance between two clusters will be determined by any two elements (one in each cluster) that have the longest distance between them. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Average-linkage (UPGMA)&lt;/span&gt;: The distance between two clusters A and B is equal to the average of distances between all pairs of elements in A and B. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="7" column="0">
+    <widget class="QCheckBox" name="diagonalCheckBox">
+     <property name="statusTip">
+      <string>Enable to include matrix diagonal in calculations</string>
+     </property>
+     <property name="text">
+      <string>Include input matrix diagonal</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0" colspan="2">
+    <widget class="QCheckBox" name="diagramCheckBox">
+     <property name="statusTip">
+      <string>Enable to include matrix diagonal in calculations</string>
+     </property>
+     <property name="text">
+      <string>Print dendrogram (avoid in large nets)</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="1">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="11" column="1">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

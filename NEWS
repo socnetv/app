@@ -4,6 +4,23 @@ Social Networks Visualiser (SocNetV)
 SocNetV News
 -==========-
 
+Jan 2017
+========
+- Version 2.2 released with major new features:
+  Hierarchical Clustering Analysis (HCA)
+  Pearson correlation coefficients
+  Actor Similarities
+  Tie profile dissimilarities
+  Maximal clique census
+  New network symmetrization methods: Strong Ties, Cocitation
+  Multi-relational data read and write in GraphML
+  GML format support
+  Support for EdgeLists with labels
+  Support for Pajek multirelational directed networks
+  Adjacency matrix plotting
+  Better reports (in HTML with JS)
+  Improved performance and GUI 
+
 Sep 2016
 ========
 - Version 2.1 released with a few new features but lots of bug fixes.
@@ -174,7 +191,7 @@ June 2006
 
 May 2006
 ========
-- Did some work on the webpages at http://socnetv.sourceforge.net. Hope it is better now.
+- Did some work on the webpages at http://socnetv.org. Hope it is better now.
 
 April 2006
 ==========
@@ -197,4 +214,4 @@ January 2006
 ------------
 - version 0.38 released after one year of silence.
 - The project moved to sourceforge.net
-- The homepage is http://socnetv.sourceforge.net
+- The homepage is http://socnetv.org

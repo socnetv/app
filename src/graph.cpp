@@ -1,14 +1,15 @@
 /******************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.1
+ version: 2.2
  Written in Qt
  
                          graph.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2017 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
     website:             : http://dimitris.apeiro.gr
-    project site         : http://socnetv.sourceforge.net
+    project site         : http://socnetv.org
+
 *******************************************************************************/
 
 /*******************************************************************************
@@ -35,6 +36,7 @@
 #include <QHash>
 #include <QColor>
 #include <QTextCodec>
+#include <QFileInfo>
 
 #include <cstdlib>		//allows the use of RAND_MAX macro 
 #include <math.h>
@@ -58,16 +60,27 @@ Graph::Graph() {
     reciprocalEdgesVert=0;
     order=true;		//returns true if the indexes of the list is ordered.
     graphModifiedFlag=false;
-    m_undirected=false;
-    m_isWeighted=false;
+
     m_graphName="";
     m_curRelation=0;
     m_fileFormat=FILE_UNRECOGNIZED;
+    m_undirected=false;
+    m_isWeighted=false;
     m_symmetric=true;
+    m_graphDensity = -1;
     fileName ="";
-    adjacencyMatrixCreated=false;
-    reachabilityMatrixCreated=false;
-    distanceMatrixCreated=false;
+
+    calculatedGraphSymmetry = false;
+    calculatedGraphWeighted = false;
+    calculatedGraphDensity = false;
+    calculatedEdges = false;
+    calculatedVertices=false;
+    calculatedVerticesList = false;
+    calculatedVerticesSet = false;
+    calculatedAdjacencyMatrix=false;
+
+    calculatedDistances=false;
+    calculatedIsolates = false;
     calculatedDP=false;
     calculatedDC=false;
     calculatedIC=false;
@@ -76,7 +89,10 @@ Graph::Graph() {
     calculatedPP=false;
     calculatedPRP=false;
     calculatedTriad=false;
-    m_precision = 5;
+    m_precision = 3;
+    m_vertexClicked = 0;
+    m_clickedEdge.v1=0;
+    m_clickedEdge.v2=0;
 
     file_parser = 0;
     wc_parser = 0;
@@ -90,6 +106,125 @@ Graph::Graph() {
                                << FILE_PAJEK
                                << FILE_ADJACENCY;
 
+    randomizeThings();
+
+    htmlHead = QString("<!DOCTYPE html>"
+                       "<html>"
+                       "<head>"
+                       "<meta name=\"qrichtext\" content=\"1\" />"
+                       "<meta charset=\"utf-8\" />"
+                       "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />"
+                       "<meta name=\"generator\" content=\"SocNetV v%1\" />"
+                       "<meta name=\"keywords\" content=\"Social Network Visualizer, SocNetV, report\" />"
+                       "<meta name=\"description\" content=\"Social Network Visualizer (SocNetV) report\" />"
+                       "<style type=\"text/css\">"
+                       "body {font-family:'monospace'; font-size:12px; font-weight:400; font-style:normal;}"
+                       "body.waiting * { cursor: progress; }"
+                       "p, li { white-space: normal; }"
+                       "p {margin:10px 0;-qt-block-indent:0; text-indent:0px;}"
+                       "table {margin: 20px 5px; white-space: nowrap; border-spacing: 0px; "
+                       "border-collapse: separate;font-size: 10px;}"
+                       "table tr {white-space: normal;}"
+                       "table th {cursor:pointer;text-align:center;font-weight: bold;"
+                       "background: #000; color: #fff; vertical-align: bottom; font-size:12px; padding: 3px 6px;}"
+                       "table td {text-align:center; padding: 0.2em 1em;}"
+                       "span.header, table td.header {background:#000; color:#fff; font-size:12px; padding: 3px 6px;}"
+                       "table td.diag {background:#aaa;}"
+                       "table.stripes th {}"
+                       "table.sortable th::after {content: \"\\2195\"; font-size: 16px;color: #777;}"
+                       "table.sortable th.desc::after {content: \"\\2193\"; color: #fff;}"
+                       "table.sortable th.asc::after {content: \"\\2191\"; color: #fff;}"
+                       "table.stripes tr.odd  { background: #ddd;}"
+                       "table.stripes tr:odd  { background: #ddd;}"
+                       "table.stripes tr.even { background: #fff;}"
+                       "table.stripes tr:even { background: #fff;}"
+                       "table.plot {}"
+                       "table.plot th {}"
+                       "table.plot td {text-align: center; padding: 0px 3px;"
+                       "border-collapse: collapse; border-spacing: 0; }"
+                       "table.plot td.filled {background: #000;}"
+                       ".pre {margin-top:0px; margin-bottom:0px;font-size:1px; line-height: 100%; white-space: nowrap; }"
+                       ".description {font-style: italic;color: #666;max-width: 107ch;}"
+                       ".info {font-weight: bold;color: #333;}"
+                       ".small {font-style: italic;color: #333; font-size: 90%;}"
+                       ".dendrogram .row { clear:both; height: 16px; margin: 2px 0px; overflow:hidden; }"
+                       ".dendrogram .cluster-levels {float:left; min-width: 3%; text-align:right;}"
+
+                       "</style>"
+                       "<script type=\"text/javascript\">\n"
+                       "var mytable, asc1=1, asc2=1,asc3=1,asc4=1;asc5=1;\n"
+                       "window.onload = function () {\n"
+                       "mytable = document.getElementById(\"results\");\n"
+                       "}\n"
+                       "function tableSort(tbody, col, asc) {\n"
+                       " document.getElementById(\"socnetv-report\").classList.toggle('waiting'); \n"
+                       " var rows = tbody.rows, \n"
+                       " rlen = rows.length, \n"
+                       " arr = new Array(),\n"
+                       " i, j, cells, clen;\n"
+                       " clen = rows[0].cells.length;\n"
+                       "  for (j = 0; j < clen; j++) {\n"
+                       "    document.getElementById(\"col\"+(j+1).toString()).classList.remove('desc'); \n"
+                       "    document.getElementById(\"col\"+(j+1).toString()).classList.remove('asc'); \n"
+                       "   if ( j == col ) {\n"
+                       "    if (  asc > 0 ) { document.getElementById(\"col\"+(j+1).toString()).classList.add('asc'); }"
+                       "    else { document.getElementById(\"col\"+(j+1).toString()).classList.add('desc'); }"
+                       "   }"
+
+                       "  }\n"
+                       " // fill the array with values from the table\n"
+                       " for (i = 0; i < rlen; i++) {\n"
+                       "  cells = rows[i].cells;\n"
+                       "  clen = cells.length;\n"
+                       "  arr[i] = new Array();\n"
+                       "  for (j = 0; j < clen; j++) {\n"
+                       "   arr[i][j] = cells[j].innerHTML; \n"
+                       "  }\n"
+                       " }\n"
+                       " // sort the array by the specified column (col) and order (asc)\n"
+                       " arr.sort(function (a, b) {\n"
+                       "  var retval=0;\n"
+                       "  var fA=parseFloat(a[col]);\n"
+                       "  var fB=parseFloat(b[col]);\n"
+                       "  if(a[col] != b[col]) {\n"
+                       "    if((fA==a[col]) && (fB==b[col]) ){ retval=( fA > fB ) ? asc : -1*asc; } //numerical\n"
+                       "    else { retval = (a[col] > b[col]) ? asc : -1 * asc; }\n"
+                       "   }"
+                       "   return retval; \n"
+                       " });\n"
+                       " // replace existing rows with new rows created from the sorted array\n"
+                       " for (i = 0; i < rlen; i++) {\n"
+                       "  rows[i].innerHTML = \"<td>\" + arr[i].join(\"</td><td>\") + \"</td>\";\n"
+                       "  }\n"
+                       " document.getElementById(\"socnetv-report\").classList.toggle('waiting'); \n"
+                       "}\n"
+                       "</script>"
+                       "</head>"
+                       "<body id=\"socnetv-report\">").arg(VERSION);
+
+
+    htmlHeadLight = QString("<!DOCTYPE html>"
+                       "<html>"
+                       "<head>"
+                       "<meta name=\"qrichtext\" content=\"1\" />"
+                       "<meta charset=\"utf-8\" />"
+                       "<meta name=\"generator\" content=\"SocNetV v%1\" />"
+                       "<meta name=\"keywords\" content=\"Social Network Visualizer, SocNetV, report\" />"
+                       "<meta name=\"description\" content=\"Social Network Visualizer (SocNetV) report\" />"
+                       "<style type=\"text/css\">"
+                       "body { font-size:12px;white-space: nowrap; }"
+                       "p, li { white-space: normal; }"
+                       "p {margin:10px 0;-qt-block-indent:0; text-indent:0px;}"
+                       ".pre {margin:0px; font-size:1px; line-height: 100%; white-space: nowrap; }"
+                       ".description {font-style: italic;color: #666;}"
+                       ".info {font-weight: bold;color: #333;}"
+                       ".small {font-style: italic;color: #333; font-size: 90%;}"
+                       "</style>"
+                       "</head>"
+                       "<body>").arg(VERSION);
+
+    htmlEnd = "</body></html>";
+
 }
 
 
@@ -100,12 +235,12 @@ Graph::Graph() {
     Clears all vertices
 */
 void Graph::clear() {
-   qDebug("Graph::clear() m_graph reports size %i", m_graph.size());
+   qDebug()<< "Graph::clear() - m_graph reports size "<<m_graph.size();
     qDeleteAll(m_graph.begin(), m_graph.end());
     m_graph.clear();
     index.clear();
 
-    discreteDPs.clear(); discreteDCs.clear(); discreteCCs.clear();
+    discreteDPs.clear(); discreteSDCs.clear(); discreteCCs.clear();
     discreteBCs.clear(); discreteSCs.clear(); discreteIRCCs.clear();
     discreteECs.clear(); discreteEccentricities.clear();
     discretePCs.clear(); discreteICs.clear();  discretePRPs.clear();
@@ -147,17 +282,19 @@ void Graph::clear() {
         XRM.clear();
     }
 
-
+    m_verticesList.clear();
+    m_verticesSet.clear();
     m_isolatedVerticesList.clear();
-    disconnectedVertices.clear();
-    unilaterallyConnectedVertices.clear();
+    m_vertexPairsNotConnected.clear();
+    m_vertexPairsUnilaterallyConnected.clear();
     influenceDomains.clear();
     influenceRanges.clear();
     triadTypeFreqs.clear();
 
     //clear relations
-    m_relationsList.clear();
-    m_curRelation=0;
+    relationsClear();
+    relationAdd(tr(("unnamed")));
+
     m_fileFormat=FILE_UNRECOGNIZED;
 
     m_graphName="";
@@ -166,29 +303,50 @@ void Graph::clear() {
     outboundEdgesVert=0;
     inboundEdgesVert=0;
     reciprocalEdgesVert=0;
+    m_vertexClicked = 0;
+    m_clickedEdge.v1=0;
+    m_clickedEdge.v2=0;
+
 
     order=true;		//returns true if the indexes of the list is ordered.
+
     m_undirected=false;
     m_isWeighted=false;
-    calculatedDP=false; calculatedDC=false;
-    calculatedIC=false; calculatedCentralities=false;
-    calculatedIRCC=false; calculatedPP=false;
-    calculatedPRP=false; calculatedTriad=false;
-    adjacencyMatrixCreated=false;
-    reachabilityMatrixCreated=false;
-    distanceMatrixCreated=false;
     m_symmetric=true;
+    m_graphDensity = -1;
+
+    calculatedGraphSymmetry = false;
+    calculatedGraphWeighted = false;
+    calculatedGraphDensity = false;
+    calculatedEdges = false;
+    calculatedVertices=false;
+    calculatedVerticesList = false;
+    calculatedVerticesSet = false;
+    calculatedAdjacencyMatrix=false;
+
+    calculatedDistances=false;
+    calculatedIsolates = false;
+
+    calculatedCentralities=false;
+    calculatedDP=false;
+    calculatedDC=false;
+    calculatedIC=false;
+    calculatedIRCC=false;
+    calculatedPP=false;
+    calculatedPRP=false;
+    calculatedTriad=false;
 
     graphModifiedFlag=false;
 
-    qDebug ()<< "Graph::clear()  -Do parser threads run ?";
-    terminateParserThreads("Graph::initNet()");
+    graphLoadedTerminateParserThreads("Graph::clear()");
 
-    qDebug ()<< "Graph::clear()  -Do web crawler threads run ?";
-    webCrawlTerminateThreads("Graph::initNet");
+    webCrawlTerminateThreads("Graph::clear()");
 
+    qDebug()<< "Graph::clear() - m_graph cleared. Now reports size"
+            << m_graph.size()
+               << "emitting graphModifiedSet()";
 
-    qDebug("Graph: m_graph cleared. Now reports size %i", m_graph.size());
+    graphModifiedSet(graphModifiedFlag,true);
 }
 
 
@@ -199,7 +357,22 @@ void Graph::clear() {
  * @param h
  */
 void Graph::canvasSizeSet(const int w, const int h){
-    qDebug() << "Graph:: canvasSizeSet() - (" << w << ", " << h<<")";
+
+    float fX=  (float)(w)/(float)(canvasWidth);
+    float fY= (float)(h)/(float)(canvasHeight);
+    float newX, newY;
+
+    qDebug() << "Graph::canvasSizeSet() - new size (" << w << ", " << h<<")"
+             << "adjusting node positions if any.";
+    QList<Vertex*>::const_iterator it;
+    for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        newX = (*it)->x() * fX ;
+        newY = (*it)->y() * fY ;
+        (*it)->setX( newX ) ;
+        (*it)->setY( newY );
+        emit setNodePos((*it)->name(), newX , newY);
+        graphModifiedSet(GRAPH_CHANGED_POSITIONS,false);
+    }
     canvasWidth = w;
     canvasHeight= h;
 }
@@ -278,69 +451,109 @@ double Graph::canvasRandomY() const {
 
 
 
-
 /**
  * @brief Graph::relationSet
- * Called from MW and Parser
- * @param relation
+ * Changes m_curRelation to index.
+ * If index==RAND_MAX, changes to last added relation.
+ * Then calls Vertex::relationSet() for all enabled vertices, to disable edges
+ * of the old relation and enable edges of the new relation
+ * Then, if notifyMW==TRUE, it signals signalRelationChangedToGW(int),
+ * which disables/enables the on screen edges, and
+ * Called from MW when the user selects a relation in the combo box.
+ * Also called from Parser
+ * @param index int
+ * @param notifyMW bool
  */
-void Graph::relationSet(int relation){
-    qDebug() << "++ Graph::relationSet(int) to relation " << relation
+void Graph::relationSet(int index, const bool notifyMW){
+    qDebug() << "++ Graph::relationSet(int) to relation " << index
              << " current relation is " << m_curRelation ;
-    if (m_curRelation == relation ) {
+    if (m_curRelation == index ) {
         qDebug() << "++ Graph::relationSet(int) - same relation - END";
         return;
     }
-    if ( relation < 0) {
+    if ( index < 0) {
         qDebug() << "++ Graph::relationSet(int) - negative relation - END ";
         return;
     }
+    else if (index==RAND_MAX) {
+        index=relations() -1;
+    }
+    else if (index> relations() -1) {
+        qDebug() << "++ Graph::relationSet(int) - not existing relation - END ";
+        return;
+    }
+
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() )
             continue;
-       (*it)->relationSet(relation);
+       (*it)->relationSet(index);
     }
-    m_curRelation = relation;
-    emit relationChanged(m_curRelation);
-
-    graphModifiedSet(GRAPH_CHANGED_EDGES);
+    m_curRelation = index;
+    if (notifyMW) {
+        //notify MW to change combo box relation name
+        emit signalRelationChangedToMW(m_curRelation);
+        //notify GW to disable/enable the on screen edges.
+        emit signalRelationChangedToGW(m_curRelation);
+        qDebug()<<"Graph::relationSet() - emitting graphModifiedSet(GRAPH_CHANGED_EDGES)";
+        graphModifiedSet(GRAPH_CHANGED_EDGES);
+    }
 }
 
 
 
 /**
- * @brief Called from MW to add a relation and change to that new relation
- * @param newRelation
+ * @brief Graph::slotEditRelationPrev
+ * Decreases the index of editRelationChangeCombo
+ * which signals to Graph::relationSet()
  */
-void Graph::relationAddFromUser(QString newRelation){
-    m_relationsList << newRelation;
-    qDebug() << "Graph::relationAddFromUser(string) " << newRelation
-                << " total relations now " << relations() ;
-
+void Graph::relationPrev(){
+    qDebug() << "Graph::relationPrev()";
+    int index=m_curRelation;
+    if (m_curRelation>0){
+        --index;
+        relationSet(index);
+        //editFilterNodesIsolatesAct->setChecked(false);
+    }
 }
 
+
 /**
- * @brief Called when creating random networks
+ * @brief Graph::slotEditRelationNext
+ * Increases the index of editRelationChangeCombo
+ * which signals to Graph::relationSet()
+ */
+void Graph::relationNext(){
+    qDebug() << "Graph::relationNext()";
+    int index=m_curRelation;
+    if ( relations() >0 && index < relations() ){
+        ++index;
+        relationSet(index);
+        //editFilterNodesIsolatesAct->setChecked(false);
+    }
+}
+
+
+
+/**
+ * @brief Graph::relationAdd
+ * Adds a new relation named relName
+ * Called by file parser to add a new relation
+ * Also called from MW.
  * emits signalRelationAddToMW
- * @param newRelation
+ * @param relName
  */
-void Graph::relationAddFromGraph(QString newRelation) {
-    qDebug() << "Graph::relationAddFromGraph(string) " << newRelation;
-    m_relationsList << newRelation;
-    emit signalRelationAddToMW(newRelation);
+void Graph::relationAdd(const QString &relName, const bool &changeRelation) {
+    qDebug() << "Graph::relationAdd() - relation name" << relName;
+    m_relationsList << relName;
+    // add new relation to MW combo box
+    emit signalRelationAddToMW(relName, false);
+    if (changeRelation)
+        relationSet();
 }
 
-/**
- * @brief Called by file parser to add a new relation
- * emits signalRelationAddToMW
- * @param newRelation
- */
-void Graph::relationAddFromParser(QString newRelation) {
-    qDebug() << "Graph::relationAddFromParser(string) " << newRelation;
-    m_relationsList << newRelation;
-    emit signalRelationAddToMW(newRelation);
-}
+
+
 
 /**
  * @brief Returns current relation index
@@ -356,19 +569,66 @@ int Graph::relationCurrent(){
  * @return string current relation name
  */
 QString Graph::relationCurrentName() const{
+    qDebug() << "Graph::relationCurrentName() -";
     return m_relationsList.value(m_curRelation);
+}
+
+
+
+/**
+ * @brief Graph::relationCurrentRename
+ * @param newName
+ */
+void Graph::relationCurrentRename(const QString &newName, const bool &notifyMW) {
+
+    if (newName.isEmpty()) {
+        qDebug()<< "Graph::relationCurrentRename() - m_curRelation"
+                   <<m_curRelation<<
+                     "newName"<<newName
+                     << "is empty - Returning";
+
+        return;
+    }
+    qDebug()<< "Graph::relationCurrentRename() - m_relationsList["
+               <<m_curRelation<<
+                 "]="<<newName
+                 << " - notifyMW" <<notifyMW;
+
+    m_relationsList[m_curRelation] = newName;
+    if (notifyMW)
+        emit signalRelationRenamedToMW(newName);
 }
 
 
 /**
  * @brief Graph::relations
  * @return
+ * Returns the number of relationships in this Graph
  */
 int Graph::relations(){
     //qDebug () << " relations count " << m_relationsList.count();
     return m_relationsList.count();
 }
 
+
+
+/**
+ * @brief Graph::relationsClear
+ * @return
+ * Clears relationships in this Graph
+ */
+void Graph::relationsClear(){
+    int oldRelationsCounter = m_relationsList.count();
+    m_relationsList.clear();
+    m_curRelation=0;
+    qDebug () << "Graph::relationsClear() - cleared"
+                 << oldRelationsCounter
+                 << "relation(s). New relations count:"
+                 << m_relationsList.count()
+                 <<"Emitting signalRelationsClear()";
+    emit signalRelationsClear();
+
+}
 
 /**
 
@@ -407,10 +667,10 @@ void Graph::vertexCreate(const int &num, const int &nodeSize, const QString &nod
 
 
     emit drawNode( num, nodeSize, nodeShape, nodeColor,
-                   initVertexNumbersVisibility, initNumbersInsideNodes,
-                   numColor, numSize,
+                   initVertexNumbersVisibility, initVertexNumberInside,
+                   numColor, numSize, initVertexNumberDistance,
                    initVertexLabelsVisibility, label,
-                   labelColor, labelSize,
+                   labelColor, labelSize, initVertexLabelDistance,
                    p );
 
     graphModifiedSet(GRAPH_CHANGED_VERTICES, signalMW);
@@ -431,7 +691,7 @@ void Graph::vertexCreate(const int &num, const int &nodeSize, const QString &nod
  * Calls the main creation slot with init node values.
  */
 void Graph::vertexCreateAtPos(const QPointF &p){
-    int i = vertexLastNumber() +1;
+    int i = vertexNumberMax() +1;
     qDebug() << "Graph::vertexCreateAtPos() - vertex " << i << " pos " << p;
     vertexCreate(	i, initVertexSize,  initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
@@ -453,11 +713,12 @@ void Graph::vertexCreateAtPos(const QPointF &p){
  * Then calls the main creation slot with init node values.
  */
 void Graph::vertexCreateAtPosRandom(const bool &signalMW){
-    qDebug() << "Graph::vertexCreateAtPosRandom() ";
+
     QPointF p;
     p.setX( canvasRandomX());
-    p.setY( canvasRandomX() );
-    vertexCreate( vertexLastNumber()+1, initVertexSize, initVertexColor,
+    p.setY( canvasRandomY() );
+    qDebug() << "Graph::vertexCreateAtPosRandom()" << p;
+    vertexCreate( vertexNumberMax()+1, initVertexSize, initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     QString::null, initVertexLabelColor, initVertexLabelSize,
                     p, initVertexShape, signalMW
@@ -484,7 +745,7 @@ void Graph::vertexCreateAtPosRandomWithLabel(const int &i,
     QPointF p;
     p.setX(canvasRandomX());
     p.setY(canvasRandomY());
-    vertexCreate( (i<0)?vertexLastNumber() +1:i, initVertexSize,  initVertexColor,
+    vertexCreate( (i<0)?vertexNumberMax() +1:i, initVertexSize,  initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     label, initVertexLabelColor,  initVertexLabelSize,
                     p, initVertexShape, signalMW
@@ -558,11 +819,11 @@ void Graph::vertexAdd ( const int &v1, const int &val, const int &size,
 
 
 /**
- * @brief Graph::vertexLastNumber
+ * @brief Graph::vertexNumberMax
  * Returns the name of the last vertex.  Used by slotEditNodeRemove of MW
  * @return  int
  */
-int Graph::vertexLastNumber() {
+int Graph::vertexNumberMax() {
     if (m_totalVertices>0)
         return m_graph.back()->name();
     else return 0;
@@ -571,11 +832,11 @@ int Graph::vertexLastNumber() {
 
 
 /**
- * @brief Graph::vertexFirstNumber
+ * @brief Graph::vertexNumberMin
  * Returns the name of the first vertex.  Used by slotRemoveNode of MW
  * @return int
  */
-int Graph::vertexFirstNumber() {
+int Graph::vertexNumberMin() {
     if (m_totalVertices>0)
         return m_graph.front()->name();
     else return 0;
@@ -650,6 +911,9 @@ void Graph::vertexRemove(long int Doomed){
 
     order=false;
 
+    if (vertexClicked()==Doomed)
+        vertexClickedSet(0);
+
     graphModifiedSet(GRAPH_CHANGED_VERTICES);
 
     emit eraseNode(Doomed);
@@ -690,7 +954,19 @@ void Graph::vertexIsolateFilter(bool filterFlag){
 
 
 
-
+/**
+ * @brief Graph::vertexIsolated
+ * @param v1
+ * @return
+ */
+bool Graph::vertexIsolated(const long int &v1) const{
+    if (  m_graph[ index[v1] ] -> isIsolated() ) {
+        qDebug()<<"Graph::vertexIsolated() - vertex:"<< v1 << "isolated";
+        return true;
+    }
+    qDebug()<<"Graph::vertexIsolated() - vertex:"<< v1 << "not isolated";
+    return false;
+}
 
 
 /**
@@ -753,6 +1029,47 @@ void Graph::vertexPosSet(const int &v1, const int &x, const int &y){
 }
 
 
+/**
+ * @brief Graph::vertexPos
+ * @param v1
+ * @return
+ */
+QPointF Graph::vertexPos(const int &v1){
+    return m_graph[ index[v1] ]->pos();
+}
+
+/**
+ * @brief Graph::vertexClickedSet
+ * @param v1
+ * Called from GW::userClickedNode(int) to update clicked vertex number and
+ * signal signalNodeClickedInfo(node info) to MW which shows node info on the
+ * status bar.
+ */
+void Graph::vertexClickedSet(const int &v1) {
+    qDebug()<<"Graph::vertexClickedSet() - " << v1;
+    m_vertexClicked = v1;
+    if (v1 == 0) {
+        signalNodeClickedInfo(0);
+    }
+    else {
+        edgeClickedSet(0,0);
+        signalNodeClickedInfo( v1,
+                           vertexPos(v1),
+                           vertexLabel(v1),
+                           vertexDegreeIn(v1),
+                           vertexDegreeOut(v1),
+                           ( vertices() < 500 ) ? clusteringCoefficientLocal(v1): 0
+                                                  );
+    }
+}
+
+/**
+ * @brief Graph::vertexClicked
+ * @return  int
+ */
+int Graph::vertexClicked() const {
+    return m_vertexClicked;
+}
 
 /**
  * @brief Graph::vertexSizeInit
@@ -807,7 +1124,6 @@ void Graph::vertexSizeAllSet(const int size) {
             emit setNodeSize((*it)->name(), size);
         }
     }
-
     graphModifiedSet(GRAPH_CHANGED_VERTICES_METADATA);
 }
 
@@ -1052,7 +1368,7 @@ void Graph::vertexNumberDistanceSetAll(const int &newDistance) {
  * @param toggle
  */
 void Graph::vertexNumbersInsideNodesSet(bool toggle){
-    initNumbersInsideNodes=toggle;
+    initVertexNumberInside=toggle;
 
 }
 
@@ -1077,7 +1393,9 @@ void Graph::vertexNumbersVisibilitySet(bool toggle){
  * @param label
  */
 void Graph::vertexLabelSet(int v1, QString label){
-    qDebug()<< "Graph: vertexLabelSet for "<< v1 << ", index " << index[v1]<< " with label"<< label;
+    qDebug()<< "Graph::vertexLabelSet() - vertex "<< v1
+            << "index " << index[v1]
+               << "new label"<< label;
     m_graph[ index[v1] ]->setLabel ( label);
     emit setNodeLabel ( m_graph[ index[v1] ]-> name(), label);
 
@@ -1161,6 +1479,35 @@ void Graph::vertexLabelSizeAllSet(const int &size) {
 }
 
 
+
+
+
+/**
+ * @brief Graph::vertexLabelColorAllSet
+ * Changes the label color of all vertices
+ * @param size
+ */
+void Graph::vertexLabelColorAllSet(const QString &color) {
+    qDebug() << "*** Graph::vertexLabelColorAllSet() "
+                << " to " << color;
+    vertexLabelColorInit(color);
+    QList<Vertex*>::const_iterator it;
+    for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( ! (*it)->isEnabled() ){
+            continue;
+        }
+        else {
+            qDebug() << "Graph::vertexLabelColorAllSet() Vertex " << (*it)->name()
+                     << " new color" << color;
+            (*it)->setLabelColor(color);
+            emit setNodeLabelColor( (*it)-> name(), color);
+        }
+    }
+
+    graphModifiedSet(GRAPH_CHANGED_MINOR_OPTIONS);
+}
+
+
 /**
  * @brief Graph::vertexLabelColorSet
  * Changes the label color of vertex v1
@@ -1169,7 +1516,7 @@ void Graph::vertexLabelSizeAllSet(const int &size) {
  */
 void Graph::vertexLabelColorSet(int v1, QString color){
     m_graph[ index[v1] ]->setLabelColor(color);
-
+    emit setNodeLabelColor(v1, color);
     graphModifiedSet(GRAPH_CHANGED_MINOR_OPTIONS);
 }
 
@@ -1397,7 +1744,7 @@ void Graph::edgeRemove (const long int &v1,
     m_graph [ index[v2] ]->edgeRemoveFrom(v1);
 
 
-    if (isUndirected() || removeOpposite ) { // remove opposite edge
+    if (graphUndirected() || removeOpposite ) { // remove opposite edge
         m_graph [ index[v2] ]->edgeRemoveTo(v1);
         m_graph [ index[v1] ]->edgeRemoveFrom(v2);
         m_symmetric=true;
@@ -1477,12 +1824,55 @@ void Graph::edgeFilterByRelation(int relation, bool status){
     }
 }
 
+/**
+ * @brief Graph::edgeFilterUnilateral
+ * Filters (enables/disables) unilateral edges in current relationship.
+ * If toggle=true, all non-reciprocal edges are disabled, effectively making
+ * the network symmetric.
+ * @param toggle
+ */
+void Graph::edgeFilterUnilateral(const bool &toggle) {
+    qDebug() << "Graph::edgeFilterUnilateral() " ;
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+            (*it)->edgeFilterUnilateral ( toggle );
+    }
+    graphModifiedSet(GRAPH_CHANGED_EDGES);
+    emit statusMessage(tr("Unilateral edges have been temporarily disabled."));
+}
+
 
 
 
 /**
+ * @brief Graph::vertexClickedSet
+ * @param v1
+ */
+void Graph::edgeClickedSet(const int &v1, const int &v2) {
+    m_clickedEdge.v1=v1;
+    m_clickedEdge.v2=v2;
+
+    if (m_clickedEdge.v1 == 0 && m_clickedEdge.v2==0) {
+        signalEdgeClickedInfo();
+    }
+    else {
+        float weight = m_graph[ index[ m_clickedEdge.v1] ]->hasEdgeTo(m_clickedEdge.v2);
+        bool undirected=false;
+        if ( edgeExists(m_clickedEdge.v1,m_clickedEdge.v2, true) && graphUndirected() )
+            undirected=true;
+        signalEdgeClickedInfo( m_clickedEdge.v1 ,m_clickedEdge.v2, weight, undirected);
+    }
+
+}
+
+
+ClickedEdge Graph::edgeClicked() {
+    return m_clickedEdge;
+}
+
+/**
  * @brief Graph::edgeExists
- * Checks if there is a directed edge (arc) from v1 to v2
+ * Checks if there is a (un)directed edge (arc) from v1 to v2
    Complexity:  O(logN) for index retrieval + O(1) for QList index retrieval + O(logN) for checking edge(v2)
  * @param v1
  * @param v2
@@ -1490,25 +1880,28 @@ void Graph::edgeFilterByRelation(int relation, bool status){
  * @return zero if arc does not exist or non-zero if arc exists
  */
 float Graph::edgeExists (const long int &v1, const long int &v2, const bool &undirected) {
+    edgeWeightTemp = 0;
+    edgeWeightTemp = m_graph[ index[v1] ]->hasEdgeTo(v2);
 
     if (!undirected) {
         qDebug() << "Graph::edgeExists() - directed" << v1 << "->" << v2
-                 << "=" << m_graph[ index[v1] ]->hasEdgeTo(v2);
-        return m_graph[ index[v1] ]->hasEdgeTo(v2);
+                 << "="<<edgeWeightTemp;
+        return edgeWeightTemp;
+
     }
     else { //undirected
-        qDebug() << "Graph::edgeExists() - undirected" << v1 << " <-> " << v2 << " ? " ;
-       edgeWeightTemp = 0;
-       edgeWeightTemp = m_graph[ index[v1] ]->hasEdgeTo(v2);
-       if  ( edgeWeightTemp!=0  &&
-             (  edgeWeightTemp ==  m_graph[ index[v2] ]->hasEdgeTo(v1)  ) ){
-                qDebug() << "Graph::edgeExists() - undirected" << v1 << "<->" << v2 << "="
-                            <<edgeWeightTemp;
-               return edgeWeightTemp;
+
+       if  ( edgeWeightTemp!=0 ) {
+           edgeReverseWeightTemp = m_graph[ index[v2] ]->hasEdgeTo(v1);
+           if  ( edgeWeightTemp == edgeReverseWeightTemp  ){
+                    qDebug() << "Graph::edgeExists() - undirected" << v1 << "<->" << v2 << "="
+                                <<edgeWeightTemp;
+                   return edgeWeightTemp;
+           }
        }
     }
     qDebug() << "Graph::edgeExists() - undirected" << v1 << "<->" << v2 << "= 0";
-    return 0;
+    return edgeWeightTemp;
 }
 
 
@@ -1540,10 +1933,10 @@ bool Graph::edgeSymmetric(const long int &v1, const long int &v2){
  */
 int Graph::edgesEnabled() {
 
-    if ( !graphModified() ) {
+    if ( !graphModified() && calculatedEdges ) {
         qDebug()<< "Graph::edgesEnabled() - Graph unchanged, edges: "
-                   <<     ((isUndirected()) ? m_totalEdges / 2 : m_totalEdges);
-       return (isUndirected()) ? m_totalEdges / 2 : m_totalEdges;
+                   <<     ((graphUndirected()) ? m_totalEdges / 2 : m_totalEdges);
+       return (graphUndirected()) ? m_totalEdges / 2 : m_totalEdges;
     }
 
     m_totalEdges = 0;
@@ -1553,33 +1946,33 @@ int Graph::edgesEnabled() {
         m_totalEdges+=(*it)->outEdges();
     }
     qDebug() << "Graph::edgesEnabled() - edges recounted: " <<  m_totalEdges;
-
-    return (isUndirected()) ? m_totalEdges / 2 : m_totalEdges;
+    calculatedEdges = true;
+    return (graphUndirected()) ? m_totalEdges / 2 : m_totalEdges;
 }
 
 
 
 
 /**
- * @brief Graph::edgesOutbound
+ * @brief Graph::vertexEdgesOutbound
  * *Returns the number of outbound edges (arcs) from vertex v1
  * @param v1
  * @return
  */
-int Graph::edgesOutbound(int v1) {
-    qDebug("Graph: edgesOutbound()");
+int Graph::vertexEdgesOutbound(int v1) {
+    qDebug("Graph: vertexEdgesOutbound()");
     return m_graph[ index[v1] ]->outEdges();
 }
 
 
 /**
- * @brief Graph::edgesInbound
+ * @brief Graph::vertexEdgesInbound
  * Returns the number of inbound edges (arcs) to vertex v1
  * @param v1
  * @return int
  */
-int Graph::edgesInbound (int v1) {
-    qDebug("Graph: edgesInbound()");
+int Graph::vertexEdgesInbound (int v1) {
+    qDebug("Graph: vertexEdgesInbound()");
     return m_graph[ index[v1] ]->inEdges();
 }
 
@@ -1670,7 +2063,7 @@ bool Graph::edgeColorAllSet(const QString &color, const int &threshold){
         source = (*it)->name();
         if ( ! (*it)->isEnabled() )
             continue;
-        enabledOutEdges=(*it)->returnEnabledOutEdges();
+        enabledOutEdges=(*it)->outEdgesEnabledHash();
         it1=enabledOutEdges->cbegin();
         while ( it1!=enabledOutEdges->cend() ){
             target = it1.key();
@@ -1717,7 +2110,7 @@ void Graph::edgeColorSet(const long &v1, const long &v2, const QString &color){
            <<" new color "<< color;
     m_graph[ index[v1] ]->setOutLinkColor(v2, color);
     emit setEdgeColor(v1, v2, color);
-    if (isSymmetric()) {
+    if (graphSymmetric()) {
         m_graph[ index[v2] ]->setOutLinkColor(v1, color);
         emit setEdgeColor(v2, v1, color);
     }
@@ -1788,7 +2181,7 @@ void Graph::edgeLabelsVisibilitySet (const bool &toggle) {
  * @return
  */
 int Graph::vertexDegreeOut (int v1) {
-    qDebug("Graph: vertexDegreeOut()");
+    qDebug()<< "Graph: vertexDegreeOut()";
     return m_graph[ index[v1] ]->degreeOut();
 }
 
@@ -1801,26 +2194,36 @@ int Graph::vertexDegreeOut (int v1) {
  * @return
  */
 int Graph::vertexDegreeIn (int v1) {
-    qDebug("Graph: vertexDegreeIn()");
+    qDebug()<< "Graph: vertexDegreeIn()";
     return m_graph[ index[v1] ]-> degreeIn();
 }
 
-
-
+/**
+ * @brief Graph::vertexNeighborhoodList
+ * @param v1
+ * @return  QList<int>
+ */
+QList<int> Graph::vertexNeighborhoodList(const int &v1) {
+    qDebug()<< "Graph::vertexNeighborhoodList()";
+    return m_graph[ index[v1] ]-> neighborhoodList();
+}
 
 
 
 /**
  * @brief Graph::vertices
- *     Returns |V| of graph
- * @param dropIsolates
+ * Returns |V| of graph
+ * If countAll = true, returns |V| where V the set of all enabled or not vertices
+ * If countAll = false, it skips disabled vertices
+ * If countAll = false and dropIsolates = true, it skips both disabled and isolated vertices
+  * @param dropIsolates
  * @param countAll
  * @return
  */
 int Graph::vertices(const bool dropIsolates, const bool countAll) {
 
-    if ( !graphModified() ) {
-        qDebug()<< "Graph::vertices() - Graph unchanged, vertices: "
+    if ( !graphModified() && m_totalVertices!=0 && calculatedVertices ) {
+        qDebug()<< "Graph::vertices() - Graph not modified, vertices: "
                    << m_totalVertices;
         return m_totalVertices;
     }
@@ -1832,28 +2235,42 @@ int Graph::vertices(const bool dropIsolates, const bool countAll) {
         }
         else {
             if (dropIsolates && (*it)->isIsolated()){
+                qDebug()<< "Graph::vertices() - isolated vertex:" <<(*it)->name();
+                continue;
+            }
+            if ( !(*it)->isEnabled()) {
+                qDebug()<< "Graph::vertices() - disabled vertex:" <<(*it)->name();
                 continue;
             }
             ++m_totalVertices;
         }
     }
-    qDebug()<< "Graph::vertices() - Graph changed, vertices: "
+    qDebug()<< "Graph::vertices() - Graph modified, vertices: "
                << m_totalVertices;
+    calculatedVertices=true;
     return m_totalVertices;
 }
 
 
 
 /**
- * @brief Graph::verticesIsolated
- * Returns a list of all isolated vertices inside the graph
+ * @brief Returns a list of all isolated vertices inside the graph
+ * Used by
+ * Graph::graphMatrixAdjacencyCreate()
+ * Graph::writeMatrixAdjacencyInvert()
+ * Graph::centralityInformation()
+ * Graph::graphConnectedness()
  * @return
  */
-QList<int> Graph::verticesIsolated(){
-    qDebug()<< "Graph::verticesIsolated()";
-    if (!graphModified()){
+QList<int> Graph::verticesListIsolated(){
+    if (!graphModified() && calculatedIsolates ){
+        qDebug()<< "Graph::verticesListIsolated() - graph not modified and "
+                   "already calculated isolates. Returning list as is:"
+                <<m_isolatedVerticesList;
         return m_isolatedVerticesList;
     }
+    qDebug()<< "Graph::verticesListIsolated() - graph modified or "
+               "isolated vertices list empty. Computing list.";
     QList<Vertex*>::const_iterator it;
     m_isolatedVerticesList.clear();
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -1861,12 +2278,158 @@ QList<int> Graph::verticesIsolated(){
 //            continue;
         if ((*it)->isIsolated()) {
             m_isolatedVerticesList << (*it)->name();
-            qDebug()<< "Graph::verticesIsolated() - node " << (*it)->name()
+            qDebug()<< "Graph::verticesListIsolated() - node " << (*it)->name()
                     << " is isolated. Marking it." ;
         }
     }
+    qDebug()<< "Graph::verticesListIsolated() - isolated vertices list computed:"
+            <<m_isolatedVerticesList;
+    calculatedIsolates = true;
     return m_isolatedVerticesList ;
 }
+
+
+
+/**
+ * @brief Returns a list of all vertices numbers inside the graph
+ * @return
+ */
+QList<int> Graph::verticesList(){
+    qDebug()<< "Graph::verticesList()";
+    if (!graphModified() && !m_verticesList.isEmpty() && calculatedVerticesList ){
+        return m_verticesList;
+    }
+    QList<Vertex*>::const_iterator it;
+    m_verticesList.clear();
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( ! (*it)->isEnabled() )
+            continue;
+        m_verticesList << (*it)->name();
+    }
+    calculatedVerticesList = true;
+    return m_verticesList ;
+}
+
+
+
+/**
+ * @brief Returns a QSet of all vertices numbers inside the graph
+ * @return
+ */
+QSet<int> Graph::verticesSet(){
+    qDebug()<< "Graph::verticesSet()";
+    if (!graphModified() && !m_verticesSet.isEmpty() && calculatedVerticesSet ){
+        return m_verticesSet;
+    }
+    QList<Vertex*>::const_iterator it;
+    m_verticesSet.clear();
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( ! (*it)->isEnabled() )
+            continue;
+        m_verticesSet << (*it)->name();
+    }
+    calculatedVerticesSet = true;
+    return m_verticesSet ;
+}
+
+
+
+
+
+/**
+ * @brief Creates a subgraph (clique, star, cycle, line) with vertices in vList
+ * Iff vList is empty, then fallbacks to the m_selectedVertices.
+ * @param vList
+ */
+void Graph::verticesCreateSubgraph(QList<int> vList,
+                                   const int &type,
+                                   const int &center) {
+
+    if ( relations() == 1 && edgesEnabled()==0 ) {
+        QString newRelationName = QString::number ( vList.size() ) + tr("-clique");
+        relationCurrentRename(newRelationName, true);
+    }
+
+    if (vList.isEmpty()) {
+        vList = m_selectedVertices;
+    }
+    qDebug()<<"Graph::verticesCreateSubgraph() - type:" << type
+               << "vList:" << vList;
+
+    int weight;
+
+    if (type == SUBGRAPH_CLIQUE) {
+
+        for (int i=0; i < vList.size(); ++i ) {
+            for (int j=i+1; j < vList.size(); ++j ) {
+                if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
+                    edgeCreate(vList.value(i), vList.value(j),1.0,
+                               initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
+                }
+                else {
+                    edgeUndirectedSet(vList.value(i), vList.value(j), weight);
+                }
+            }
+        }
+
+
+    }
+    else if (type == SUBGRAPH_STAR)  {
+
+        for (int j=0; j < vList.size(); ++j ) {
+
+            if ( ! (weight=edgeExists( center, vList.value(j) ) ) ) {
+                if ( center == vList.value(j))
+                     continue;
+                edgeCreate(center, vList.value(j),1.0,
+                           initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
+            }
+            else {
+                edgeUndirectedSet(center, vList.value(j), weight);
+            }
+
+        }
+    }
+    else if (type == SUBGRAPH_CYCLE)  {
+        int j=0;
+        for (int i=0; i < vList.size(); ++i ) {
+            j= ( i == vList.size()-1) ? 0:i+1;
+            if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
+                edgeCreate(vList.value(i), vList.value(j),1.0,
+                           initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
+            }
+            else {
+                edgeUndirectedSet(vList.value(i), vList.value(j), weight);
+            }
+
+        }
+
+
+    }
+    else if (type == SUBGRAPH_LINE)  {
+        int j=0;
+        for (int i=0; i < vList.size(); ++i ) {
+            if ( i == vList.size()-1 ) break;
+            j= i+1;
+            if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
+                edgeCreate(vList.value(i), vList.value(j),1.0,
+                           initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
+            }
+            else {
+                edgeUndirectedSet(vList.value(i), vList.value(j), weight);
+            }
+
+        }
+
+    }
+    else {
+        return;
+    }
+
+}
+
+
+
 
 
 /**
@@ -1874,19 +2437,25 @@ QList<int> Graph::verticesIsolated(){
  * @param graphChangedFlag
  * @param signalMW
  */
-void Graph::graphModifiedSet(const int &graphChangedFlag, const bool &signalMW){
+void Graph::graphModifiedSet(const int &graphNewStatus, const bool &signalMW){
 
-    graphModifiedFlag=graphChangedFlag;
+    if (graphNewStatus >0 && graphNewStatus < 10){ //minor changes, i.e. vertex positions, labels, etc
+        graphModifiedFlag = (graphModifiedFlag > 10 ) ? graphModifiedFlag : graphNewStatus ;
+    }
+    else {
+        graphModifiedFlag=graphNewStatus;
+    }
+
 
     if (signalMW) {
         qDebug()<<"Graph::graphModifiedSet() - m_symmetric " << m_symmetric
                   << "graphModifiedFlag" << graphModifiedFlag
                   << "Emitting signal signalGraphModified()";
         emit signalGraphModified(graphModifiedFlag,
-                                 isUndirected(),
+                                 graphUndirected(),
                                  vertices(),
                                  edgesEnabled(),
-                                 density());
+                                 graphDensity());
         return;
     }
     qDebug()<<"Graph::graphModifiedSet() - m_symmetric " << m_symmetric
@@ -1902,53 +2471,171 @@ void Graph::graphModifiedSet(const int &graphChangedFlag, const bool &signalMW){
  * @return
  */
 bool Graph::graphModified() const {
+    qDebug() << "Graph::graphModified() - graphModifiedFlag:" << graphModifiedFlag ;
     return (graphModifiedFlag > 10 ) ? true: false;
 }
 
+/**
+ * @brief Graph::graphSaved
+ * @return
+ */
+bool Graph::graphSaved() const {
+    qDebug() << "Graph::graphSaved() - graphModifiedFlag:" << graphModifiedFlag ;
+    return (graphModifiedFlag == 0 ) ? true: false;
+}
 
 
 /**
- * @brief Graph::density
- *  Returns ratio of present edges to total possible edges.
+ * @brief Graph::graphLoaded
  * @return
  */
-float Graph::density() {
-    qDebug()<< "Graph: density()";
-
-    int vert=vertices();
-    if (vert!=0 && vert!=1)
-        return  (isUndirected()) ?
-                    (float) 2* edgesEnabled() / (float)(vert*(vert-1.0)) :
-                    (float) edgesEnabled() / (float)(vert*(vert-1.0)) ;
-    else return 0;
+bool Graph::graphLoaded() const {
+    qDebug() << "Graph::graphLoaded() - " << (( graphFileFormat() != FILE_UNRECOGNIZED ) ? true: false );
+    return ( graphFileFormat() != FILE_UNRECOGNIZED ) ? true: false;
 }
 
 
 
 /**
- * @brief Graph::isWeighted
- *  Checks if the graph is weighted, i.e. if any e in |E| has value > 1
+ * @brief Gets updates on the user-selected vertices and edges from GW and emits
+ * their counts to MW
+ * @param selectedVertices
+ * @param selectedEdges
+ */
+void Graph::graphSelectionChanged(const QList<int> &selectedVertices,
+                                   const QList<SelectedEdge> &selectedEdges) {
+
+    m_selectedVertices = selectedVertices;
+    m_selectedEdges = selectedEdges;
+
+    qDebug() << "Graph::graphSelectionChanged()" << m_selectedVertices;
+
+    emit signalSelectionChanged(m_selectedVertices.size(), m_selectedEdges.size());
+
+}
+
+
+/**
+ * @brief Returns a QList of user-selected vertices
+ * @return
+ */
+QList<int> Graph::graphSelectedVertices() const{
+    return m_selectedVertices;
+}
+
+
+/**
+ * @brief Returns count of user-selected vertices
+ * @return
+ */
+int Graph::graphSelectedVerticesCount() const{
+    return m_selectedVertices.size();
+}
+
+
+/**
+ * @brief Returns min of user-selected vertices
+ * @return
+ */
+int Graph::graphSelectedVerticesMin() const{
+    int min = RAND_MAX;
+    foreach (int i, m_selectedVertices) {
+        if (i < min) min = i;
+    }
+    return min;
+}
+
+
+/**
+ * @brief Returns max of user-selected vertices
+ * @return
+ */
+int Graph::graphSelectedVerticesMax() const{
+    int max = 0;
+    foreach (int i, m_selectedVertices) {
+        if (i > max ) max = i;
+    }
+    return max;
+}
+
+
+
+/**
+ * @brief Returns a QList of user-selected edges in pair<int,int>
+ * @return
+ */
+QList<SelectedEdge> Graph::graphSelectedEdges() const{
+    return m_selectedEdges;
+}
+
+
+/**
+ * @brief Returns count of user-selected edges
+ * @return
+ */
+int Graph::graphSelectedEdgesCount() const {
+    return m_selectedEdges.size();
+}
+
+
+
+
+/**
+ * @brief Graph::graphDensity
+ *  Returns ratio of present edges to total possible edges.
+ * @return
+ */
+float Graph::graphDensity() {
+    if (!graphModified() && calculatedGraphDensity) {
+        qDebug()<< "Graph::graphDensity() - graph not modified and"
+                   "already calculated density. Returning last value:"
+                << m_graphDensity;
+        return m_graphDensity;
+    }
+
+    int V=vertices();
+    if (V!=0 && V!=1) {
+        m_graphDensity = (graphUndirected()) ?
+                    (float) 2* edgesEnabled() / (float)(V*(V-1.0)) :
+                    (float) edgesEnabled() / (float)(V*(V-1.0)) ;
+    }
+    else {
+        m_graphDensity = 0;
+    }
+    calculatedGraphDensity = true;
+    return m_graphDensity ;
+}
+
+
+
+/**
+ * @brief Graph::graphWeighted
+ *  Checks if the graph is weighted (valued), i.e. if any e in |E| has value not 0 or 1
  *  Complexity: O(n^2)
  * @return
  */
-bool Graph::isWeighted(){
-    qDebug()<< "Graph::isWeighted()";
-    if ( ! graphModified() )
-    {
-        qDebug()<< "Graph::isWeighted() - graph not modified. Return " << m_isWeighted;
+bool Graph::graphWeighted(){
+
+    emit statusMessage(tr("Checking if the graph edges are valued. Please wait."));
+
+    if ( ! graphModified() && calculatedGraphWeighted )     {
+        qDebug()<< "Graph::graphWeighted() - graph not modified. Return: "
+                << m_isWeighted;
         return m_isWeighted;
     }
+    float m_weight=0;
     QList<Vertex*>::const_iterator it, it1;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
-            if ( ( edgeExists ( (*it1)->name(), (*it)->name() ) )  > 1  )   {
-                qDebug()<< "Graph: isWeighted() - true";
-                //FIXME What about negative weights?? or 0 < w < 1 ?
+           m_weight = edgeExists ( (*it1)->name(), (*it)->name() ) ;
+            if ( m_weight  != 1  && m_weight  != 0 )   {
+                qDebug()<< "Graph: graphWeighted() - true. Graph is edge-weighted.";
                 return m_isWeighted=true;
             }
         }
     }
-    qDebug()<< "Graph::isWeighted() - false";
+    calculatedGraphWeighted = true;
+    qDebug()<< "Graph::graphWeighted() - false. Graph is not edge-weighted.";
     return m_isWeighted=false;
 }
 
@@ -1982,24 +2669,14 @@ int Graph:: verticesWithReciprocalEdges(){
 //called from Graph, when closing network, to terminate all processes
 //also called indirectly when wc_spider finishes
 void Graph::webCrawlTerminateThreads (QString reason){
-    qDebug() << "Graph::webCrawlTerminateThreads() - reason " << reason;
-    qDebug() << "Graph::webCrawlTerminateThreads()  check if wc_parserThread is running...";
-    if (wc_parserThread.isRunning() ) {
-         qDebug() << "Graph::webCrawlTerminateThreads()  parser thread quit";
-        wc_parserThread.quit();
-        qDebug() << "Graph::webCrawlTerminateThreads() - deleting wc_parser pointer";
-        delete wc_parser;
-        wc_parser = 0;  // see why here: https://goo.gl/tQxpGA
-
-    }
-    qDebug() << "Graph::webCrawlTerminateThreads()  check if wc_spiderThread is running...";
+    qDebug() << "Graph::webCrawlTerminateThreads() - reason " << reason
+                << "Checking if wc_spiderThread is running...";
     if (wc_spiderThread.isRunning() ) {
         qDebug() << "Graph::webCrawlTerminateThreads()  spider thread quit";
         wc_spiderThread.quit();
         qDebug() << "Graph::webCrawlTerminateThreads() - deleting wc_spider pointer";
         delete wc_spider;
         wc_spider= 0;  // see why here: https://goo.gl/tQxpGA
-        relationAddFromGraph(tr("web"));
         emit signalNodeSizesByInDegree(true);
      }
 
@@ -2012,6 +2689,8 @@ void Graph::webCrawlTerminateThreads (QString reason){
 //Called by MW to start a web crawler...
 void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
                       bool extLinks, bool intLinks){
+
+    relationCurrentRename(tr("web"), true);
 
     qDebug() << "Graph::webCrawl() - seed " << seed ;
     //WebCrawler *crawler = new WebCrawler;
@@ -2082,14 +2761,15 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
 
 
 /**
- * @brief Graph::isSymmetric
+ * @brief Graph::graphSymmetric
  * Returns TRUE if the adjacency matrix of the current relation is symmetric
  * @return bool
  */
-bool Graph::isSymmetric(){
-    qDebug() << "Graph::isSymmetric() ";
-    if (!graphModified()){
-        qDebug() << "Graph::isSymmetric() - graph not modified. Returning: "
+bool Graph::graphSymmetric(){
+    qDebug() << "Graph::graphSymmetric() ";
+    if (!graphModified() && calculatedGraphSymmetry){
+        qDebug() << "Graph::graphSymmetric() - graph not modified and "
+                    "already calculated symmetry. Returning previous result: "
                  << m_symmetric;
         return m_symmetric;
     }
@@ -2108,10 +2788,10 @@ bool Graph::isSymmetric(){
 
         if ( ! (*lit)->isEnabled() )
             continue;
-        qDebug() << "Graph::isSymmetric() - Graph modified! " <<
+        qDebug() << "Graph::graphSymmetric() - Graph modified! " <<
                     " Iterate over all edges of " << v1 ;
 
-        enabledOutEdges=(*lit)->returnEnabledOutEdges();
+        enabledOutEdges=(*lit)->outEdgesEnabledHash();
 
         hit=enabledOutEdges->cbegin();
 
@@ -2121,7 +2801,7 @@ bool Graph::isSymmetric(){
             float weight = hit.value();
             if (  m_graph[y]->hasEdgeTo( v1) != weight) {
                 m_symmetric=false;
-//                qDebug() <<"Graph::isSymmetric() - "
+//                qDebug() <<"Graph::graphSymmetric() - "
 //                         << " graph not symmetric because "
 //                         << v1 << " -> " << v2 << " weight " << weight
 //                         << " differs from " << v2 << " -> " << v1 ;
@@ -2132,7 +2812,8 @@ bool Graph::isSymmetric(){
         }
     }
     delete enabledOutEdges;
-    qDebug() << "Graph: isSymmetric() -"  << m_symmetric;
+    qDebug() << "Graph: graphSymmetric() -"  << m_symmetric;
+    calculatedGraphSymmetry = true;
     return m_symmetric;
 }
 
@@ -2140,11 +2821,11 @@ bool Graph::isSymmetric(){
 
 
 /**
- * @brief Graph::symmetrize
+ * @brief Graph::graphSymmetrize
  * Transforms the graph to symmetric (all edges reciprocal)
  */
-void Graph::symmetrize(){
-    qDebug("Graph: symmetrize");
+void Graph::graphSymmetrize(){
+    qDebug()<< "Graph::graphSymmetrize";
     QList<Vertex*>::const_iterator it;
     int y=0, v2=0, v1=0, weight;
     float invertWeight=0;
@@ -2152,25 +2833,25 @@ void Graph::symmetrize(){
     QHash<int,float>::const_iterator it1;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         v1 = (*it)->name();
-        qDebug() << "Graph:symmetrize() - iterate over edges of v1 " << v1;
-        enabledOutEdges=(*it)->returnEnabledOutEdges();
+        qDebug() << "Graph:graphSymmetrize() - iterate over edges of v1 " << v1;
+        enabledOutEdges=(*it)->outEdgesEnabledHash();
         it1=enabledOutEdges->cbegin();
         while ( it1!=enabledOutEdges->cend() ){
             v2 = it1.key();
             weight = it1.value();
             y=index[ v2 ];
-            qDebug() << "Graph:symmetrize() - "
+            qDebug() << "Graph:graphSymmetrize() - "
                      << " v1 " << v1
                      << " outLinked to " << v2 << " weight " << weight;
             invertWeight = m_graph[y]->hasEdgeTo( v1 ) ;
             if ( invertWeight == 0 ) {
-                qDebug() << "Graph:symmetrize(): s = " << v1
+                qDebug() << "Graph:graphSymmetrize(): s = " << v1
                          << " is NOT inLinked from y = " <<  v2  ;
                 edgeCreate( v2, v1, weight, initEdgeColor, false, true, false,
                             QString::null, false);
             }
             else {
-                qDebug() << "Graph: symmetrize(): v1 = " << v1
+                qDebug() << "Graph: graphSymmetrize(): v1 = " << v1
                          << " is already inLinked from v2 = " << v2 ;
                 if (weight!= invertWeight )
                     edgeWeightSet(v2,v1,weight);
@@ -2189,14 +2870,172 @@ void Graph::symmetrize(){
 
 
 /**
+ * @brief Graph::graphSymmetrizeStrongTies
+ * @param allRelations
+ */
+void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
+    qDebug()<< "Graph::graphSymmetrizeStrongTies()"
+            << "initial relations"<<relations();
+    int y=0, v2=0, v1=0, weight;
+    float invertWeight=0;
+
+    QList<Vertex*>::const_iterator it;
+
+    QHash<int,float> *outEdgesAll = new QHash<int,float>;
+    QHash<int,float>::const_iterator it1;
+
+    QHash<QString,float> *strongTies = new QHash<QString,float>;
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        v1 = (*it)->name();
+        qDebug() << "Graph::graphSymmetrizeStrongTies() - v" << v1
+                    << "iterate over outEdges in all relations";
+        outEdgesAll=(*it)->outEdgesEnabledHash(allRelations); //outEdgesAllRelationsUniqueHash();
+        it1=outEdgesAll->cbegin();
+        while ( it1!=outEdgesAll->cend() ){
+            v2 = it1.key();
+            weight = it1.value();
+            y=index[ v2 ];
+            qDebug() << "Graph::graphSymmetrizeStrongTies() - "
+                     << v1 << "->" << v2 << "=" << weight << "Checking opposite.";
+            invertWeight = m_graph[y]->hasEdgeTo( v1,allRelations ) ;
+            if ( invertWeight == 0 ) {
+                qDebug() << "Graph::graphSymmetrizeStrongTies() - " << v1
+                         << "<-" <<  v2 << " does not exist. Weak tie. Continue." ;
+            }
+            else {
+                if (!strongTies->contains(QString::number(v1)+"--"+QString::number(v2)) &&
+                    !strongTies->contains(QString::number(v2)+"--"+QString::number(v1)) ){
+                    qDebug() << "Graph::graphSymmetrizeStrongTies() - " << v1
+                             << "--" << v2 << " exists. Strong Tie. Adding";
+                    strongTies->insert(QString::number(v1)+"--"+QString::number(v2), 1);
+                }
+                else {
+                    qDebug() << "Graph::graphSymmetrizeStrongTies() - " << v1
+                             << "--" << v2 << " exists. Strong Tie already found. Continue";
+                }
+            }
+            ++it1;
+        }
+    }
+
+
+    relationAdd("Strong Ties",true);
+
+    QHash<QString,float>::const_iterator it2;
+    it2=strongTies->constBegin();
+    QStringList vertices;
+    qDebug() << "Graph::graphSymmetrizeStrongTies() - creating strong tie edges";
+    while ( it2!=strongTies->constEnd() ){
+        vertices = it2.key().split("--");
+        qDebug() << "Graph::graphSymmetrizeStrongTies() - tie " <<it2.key()
+                 << "vertices.at(0)" << vertices.at(0)
+                 << "vertices.at(1)" << vertices.at(1);
+        v1 = (vertices.at(0)).toInt();
+        v2 = (vertices.at(1)).toInt();
+        qDebug() << "Graph::graphSymmetrizeStrongTies() - calling edgeCreate for"
+                 << v1 << "--"<<v2;
+        edgeCreate( v1, v2, 1, initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED, true, false,
+                    QString::null, false);
+        ++it2;
+    }
+
+    delete outEdgesAll;
+    delete strongTies;
+    m_symmetric=true;
+
+    graphModifiedSet(GRAPH_CHANGED_EDGES);
+    qDebug()<< "Graph::graphSymmetrizeStrongTies()"
+            << "final relations"<<relations();
+}
+
+
+
+
+
+/**
+* @brief Creates a new symmetric relation by connecting those actors
+* that are cocitated by others.
+* In the new relation, an edge will exist between actor i and actor j
+* only if C(i,j) > 0, where C the Cocitation Matrix.
+* Thus the actor pairs cited by more common neighbors will appear
+* with a stronger tie between them than pairs those cited by fewer
+* common neighbors. The resulting relation is symmetric.
+ */
+void Graph::graphCocitation(){
+    qDebug()<< "Graph::graphCocitation()"
+            << "initial relations"<<relations();
+
+    int v1=0, v2=0, i=0, j=0, weight;
+    bool dropIsolates = false;
+
+    graphMatrixAdjacencyCreate();
+
+    Matrix *CT = new Matrix (AM.rows(), AM.cols());
+    *CT = AM.cocitationMatrix();
+
+    //CT->printMatrixConsole(true);
+
+    QList<Vertex*>::const_iterator it, it1;
+
+    relationAdd("Cocitation",true);
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( ! (*it)->isEnabled() || ( (*it)->isIsolated() && dropIsolates) ) {
+            continue;
+        }
+        v1 = (*it)->name();
+        j = 0;
+        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); it1++){
+            qDebug()<< "Graph::graphCocitation() - (i,j)" << i+1<<j+1;
+            if ( ! (*it1)->isEnabled() || ( (*it1)->isIsolated() && dropIsolates) ) {
+                continue;
+            }
+            v2 = (*it1)->name();
+
+            if (v1==v2) {
+                j++;
+                qDebug()<< "Graph::graphCocitation() - skipping self loop" << v1<<v2;
+                continue;
+            }
+            if ( (weight = CT->item(i, j) ) != 0 ) {
+                qDebug()<< "Graph::graphCocitation() - creating edge"
+                        << v1 << "<->" << v2
+                        << "because CT(" << i+1 << "," <<  j+1 << ") = " << weight;
+                edgeCreate( v1, v2, weight, initEdgeColor,
+                            EDGE_RECIPROCAL_UNDIRECTED, true, false,
+                            QString::null, false);
+            }
+
+            j++;
+        }
+        i++;
+    }
+
+    m_symmetric=true;
+
+    graphModifiedSet(GRAPH_CHANGED_EDGES);
+    qDebug()<< "Graph::graphCocitation()"
+            << "final relations"<<relations();
+}
+
+
+
+
+/**
  * @brief Graph::undirected
  * Transforms the graph to undirected
  */
-void Graph::undirectedSet(const bool &toggle){
-    qDebug() << "Graph::undirectedSet()";
+void Graph::graphUndirectedSet(const bool &toggle, const bool &signalMW){
+
+    if (toggle == m_undirected) {
+        qDebug() << "Graph::graphUndirectedSet() - toggle==m_undirected"<<toggle;
+        return;
+    }
+    qDebug() << "Graph::graphUndirectedSet()";
     if (!toggle) {
         m_undirected=false;
-        graphModifiedSet(GRAPH_CHANGED_EDGES);
+        graphModifiedSet(GRAPH_CHANGED_EDGES, signalMW);
         return;
     }
     QList<Vertex*>::const_iterator it;
@@ -2205,14 +3044,14 @@ void Graph::undirectedSet(const bool &toggle){
     QHash<int,float>::const_iterator it1;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         v1 = (*it)->name();
-        qDebug() << "Graph::undirectedSet() - iterate over edges of v1 " << v1;
-        enabledOutEdges=(*it)->returnEnabledOutEdges();
+        qDebug() << "Graph::graphUndirectedSet() - iterate over edges of v1 " << v1;
+        enabledOutEdges=(*it)->outEdgesEnabledHash();
         it1=enabledOutEdges->cbegin();
         while ( it1!=enabledOutEdges->cend() ){
             v2 = it1.key();
             weight = it1.value();
 
-            qDebug() << "Graph::undirectedSet() - "
+            qDebug() << "Graph::graphUndirectedSet() - "
                      << " v1 " << v1
                      << " -> " << v2 << " = "
                      << " weight " << weight;
@@ -2224,11 +3063,11 @@ void Graph::undirectedSet(const bool &toggle){
 
     m_symmetric=m_undirected=true;
 
-    graphModifiedSet(GRAPH_CHANGED_EDGES);
+    graphModifiedSet(GRAPH_CHANGED_EDGES, signalMW);
 }
 
 
-bool Graph::isUndirected() {
+bool Graph::graphUndirected() {
     return m_undirected;
 }
 
@@ -2264,24 +3103,24 @@ void Graph::edgeUndirectedSet(const long int &v1, const long int &v2,
 }
 
 
+
+
+
 /**
- * @brief Graph::distance
- * Returns the distance between nodes numbered (i-1) and (j-1)
+ * @brief Graph::graphDistanceGeodesic
+ * Returns the graphDistanceGeodesic between nodes numbered (i-1) and (j-1)
  * @param i
  * @param j
  * @param considerWeights
  * @param inverseWeights
  * @return
  */
-int Graph::distance(const int i, const int j,
+int Graph::graphDistanceGeodesic(const int i, const int j,
                     const bool considerWeights,
                     const bool inverseWeights){
-    qDebug() <<"Graph::distance()";
-    if ( !distanceMatrixCreated || graphModified() ) {
-        qDebug() <<"Graph::distance() - graph modified - recomputing DM";
-        emit statusMessage ( tr("Computing Distance: "
-                                "Need to recompute Distances. Please wait...") );
-        distanceMatrixCreate(false, considerWeights, inverseWeights, false);
+    qDebug() <<"Graph::graphDistanceGeodesic()";
+    if ( !calculatedDistances || graphModified() ) {
+        graphMatrixDistancesCreate(false, considerWeights, inverseWeights, false);
     }
     return DM.item(index[i],index[j]);
 }
@@ -2290,20 +3129,17 @@ int Graph::distance(const int i, const int j,
 
 
 /**
- * @brief Graph::diameter
- * Returns the diameter of the graph, aka the largest geodesic distance between any two vertices
+ * @brief Returns the diameter of the graph, aka the largest geodesic distance
+ * between any two vertices
  * @param considerWeights
  * @param inverseWeights
  * @return
  */
-int Graph::diameter(const bool considerWeights,
+int Graph::graphDiameter(const bool considerWeights,
                     const bool inverseWeights){
-    qDebug () << "Graph::diameter()" ;
-    if ( !distanceMatrixCreated || graphModified() ) {
-        qDebug() <<"Graph::distance() - graphModified(). Recomputing DM";
-        emit statusMessage ( tr("Computing Diameter: "
-                                "Need to recompute Distances. Please wait...") );
-        distanceMatrixCreate(false, considerWeights, inverseWeights, false);
+    qDebug () << "Graph::graphDiameter()" ;
+    if ( !calculatedDistances || graphModified() ) {
+        graphMatrixDistancesCreate(false, considerWeights, inverseWeights, false);
     }
     return m_graphDiameter;
 }
@@ -2311,37 +3147,40 @@ int Graph::diameter(const bool considerWeights,
 
 
 /**
- * @brief Graph::distanceGraphAverage
+ * @brief Graph::graphDistanceGeodesicAverage
  * Returns the average distance of the graph
  * @param considerWeights
  * @param inverseWeights
  * @param dropIsolates
  * @return
  */
-float Graph::distanceGraphAverage(const bool considerWeights,
+float Graph::graphDistanceGeodesicAverage(const bool considerWeights,
                                   const bool inverseWeights,
                                   const bool dropIsolates){
-    qDebug() <<"Graph::distanceGraphAverage() - reachabilityMatrixCreated "
-            <<reachabilityMatrixCreated
-              << "graphModified()" <<graphModified();
-               ;
-    if (!reachabilityMatrixCreated || graphModified())  {
-        qDebug() <<"Graph::distanceGraphAverage() - graphModified(). Recomputing DM";
+
+    Q_UNUSED(considerWeights);
+    Q_UNUSED(inverseWeights);
+
+    if (!calculatedDistances || graphModified())  {
+        qDebug() <<"Graph::graphDistanceGeodesicAverage() - reachability matrix not created "
+                   "or graph modified. Recomputing XRM";
         emit statusMessage ( tr("Computing Average Distance: "
                                 "Need to recompute Distances. Please wait...") );
-        reachabilityMatrix(considerWeights, inverseWeights,dropIsolates,false);
-        //distanceMatrixCreate(false, considerWeights, inverseWeights,dropIsolates);
+        graphConnectedness();
+
     }
 
-    qDebug() <<"Graph::distanceGraphAverage() - disconnectedVertices " <<
-               disconnectedVertices.count();
-    int aVertices=vertices(dropIsolates);
+    qDebug() <<"Graph::graphDistanceGeodesicAverage() - m_vertexPairsNotConnected " <<
+               m_vertexPairsNotConnected.count();
+    int N=vertices(dropIsolates);//TOFIX
     if (m_graphAverageDistance!=0) {
-        if (disconnectedVertices.count()==0) {
-            return m_graphAverageDistance / ( aVertices * ( aVertices-1.0 ) );
+        if (m_vertexPairsNotConnected.count()==0) {
+            return m_graphAverageDistance / ( N * ( N-1.0 ) );
         }
         else {
-            return m_graphAverageDistance / graphPathsExistingCount();
+            //TODO In not connected nets, it would be nice to ask the user what to do
+            // with unconnected pairs (make M or drop (default?)
+            return m_graphAverageDistance / m_graphGeodesicsCount;
         }
     }
     else return 0;
@@ -2350,8 +3189,26 @@ float Graph::distanceGraphAverage(const bool considerWeights,
 }
 
 
+
+
 /**
- * @brief Graph::connectedness()
+ * @brief Graph::graphGeodesics
+ * Returns the number of geodesics (shortest-paths) in the graph.
+  * @return
+ */
+int Graph::graphGeodesics()  {
+    if (!calculatedDistances || graphModified()) {
+        graphMatrixDistancesCreate(false, false,false,false);
+    }
+    qDebug()<< "Graph::graphGeodesics() - geodesics:" << m_graphGeodesicsCount;
+    return m_graphGeodesicsCount;
+
+
+}
+
+
+/**
+ * @brief Graph::graphConnectedness()
  * @return int:
 
  * 2: strongly connected digraph (exists path from i to j and vice versa for every i,j)
@@ -2359,79 +3216,156 @@ float Graph::distanceGraphAverage(const bool considerWeights,
  * 0: not connected undirected graph no isolates
  * -1: not connected undirected graph with isolates
  * -2: unilaterally connected digraph (exists path only from i to j or from j to i, not both)
- * -3  disconnected digraph (with isolates).
- * -4  disconnected digraph (there are pairs not connected at all).
+ * -3  disconnected digraph (there are unconnected pairs, with isolates).
+ * -4  disconnected digraph (there are unconnected pairs, no isolates).
+ *
+ * Used by
+ * MW::slotConnectedness()
+ * MW::slotAnalyzeCentralityCloseness()
+ * MW::slotLayoutCircularByProminenceIndex(QString )
+ * MW::slotLayoutNodeSizesByProminenceIndex(QString )
+ * MW::slotLayoutLevelByProminenceIndex(QString )
+ *
  */
-int Graph::connectedness() {
-    qDebug() << "Graph::connectedness() ";
-    if (!reachabilityMatrixCreated || graphModified()) {
-        reachabilityMatrix();
-    }
-    isolatedVertices=verticesIsolated().count();
-    if ( isSymmetric() ) {
-        qDebug() << "Graph::connectedness() IS SYMMETRIC";
-        if ( disconnectedVertices.size() != 0 ) {
-            if (isolatedVertices!=0 ) {
-                qDebug() << "undirected graph is disconnected  (has isolates)" ;
-                return -1;
+int Graph::graphConnectedness(const bool updateProgress) {
+    qDebug() << "Graph::graphConnectedness() ";
 
-            }
-            else
-            {
-                qDebug() << " undirected graph is disconnected (no isolates)";
-                return 0;
-            }
-        }
-        qDebug() << " undirected graph is connected ";
-        return 1;
+    if (calculatedDistances && !graphModified()) {
+        qDebug()<< "Graph::graphConnectedness() - graph unmodified. Returning:"
+                << m_graphConnectedness;
+        return m_graphConnectedness;
+    }
+    //initially if graph is undirected, assume it is connected.
+    // if is directed, assume it is strongly connected.
+    if ( graphUndirected() ) {
+        m_graphConnectedness = 1;
     }
     else {
-        qDebug() << "Graph::connectedness() NOT SYMMETRIC";
-        if ( disconnectedVertices.size() != 0 ) {
-            if ( unilaterallyConnectedVertices.size() == 0 ) {
-                if (isolatedVertices!=0) {
-                    qDebug() << " directed graph is disconnected (has isolates)";
-                    return -3; // - can be connected directed if we remove isolate nodes
+        m_graphConnectedness = 2;
+    }
+
+    graphMatrixDistancesCreate(false, false,false,false);
+    int size = vertices(false,false), i=0, j=0;
+
+    m_vertexPairsNotConnected.clear();
+    m_vertexPairsUnilaterallyConnected.clear();
+
+   // int isolatedVertices=verticesListIsolated().count();
+    bool isolatedVertices = false;
+
+    for (i=0; i < size ; i++) {
+        for (j=i+1; j < size ; j++) {
+
+            if ( graphUndirected() ) {
+
+                if ( XRM.item(i,j) == 0 ) {
+                    // not connected because there is no path connecting (i,j)
+                    m_vertexPairsNotConnected.insertMulti(i,j);
+                    //m_vertexPairsNotConnected.insertMulti(j,i);
+                    if (vertexIsolated(i+1) || vertexIsolated(j+1)) {
+                        isolatedVertices = true;
+                    }
                 }
+
             }
-            qDebug () << " directed graph is disconnected (no isolates)";
-            return -4;
+            else {
+
+                if ( XRM.item(i,j) != 0 ) {
+                    if ( XRM.item(j,i) == 0 ) {
+                        // unilaterly connected because there is only a path i -> j
+                        m_vertexPairsUnilaterallyConnected.insertMulti(i,j);
+                        //m_vertexPairsNotConnected.insertMulti(j,i);
+                    }
+                    else {
+                        //strongly connected pair
+                    }
+
+                }
+                else {
+                    if ( XRM.item(j,i) == 0 ) {
+                        //  not connected because there is no path connecting (i,j) or (j,i)
+                        m_vertexPairsNotConnected.insertMulti(i,j);
+                        //m_vertexPairsNotConnected.insertMulti(j,i);
+                        if (vertexIsolated(i+1) || vertexIsolated(j+1)) {
+                            isolatedVertices = true;
+                        }
+                    }
+                    else {
+                        // unilaterly connected because there is only a path j -> i
+                        m_vertexPairsUnilaterallyConnected.insertMulti(j,i);
+                        //m_vertexPairsNotConnected.insertMulti(i,j);
+                    }
+
+                }
+
+            }
+
+
         }
-        else {
-            if ( unilaterallyConnectedVertices.size() != 0 ) {
-                qDebug () << " directed graph is unilaterally connected";
-                return -2; // (exists path only from i to j or from j to i, not both)
-            }
-            else{
-                qDebug () << " directed graph is connected ";
-                return 2;
-            }
+        if (updateProgress)
+            emit updateProgressDialog(i+1);
+    }
+
+
+    if ( graphUndirected() ) {
+        if ( m_vertexPairsNotConnected.count()>0) {
+            if (isolatedVertices)
+                m_graphConnectedness = -1;
+            else
+                m_graphConnectedness = 0;
         }
+        else
+            m_graphConnectedness = 1;
 
     }
-    return -666; // for sanity check :P
+    else {
+        if (m_vertexPairsNotConnected.count()>0) {
+            if (isolatedVertices)
+                m_graphConnectedness = -3;
+            else
+                m_graphConnectedness = -4;
+        }
+        else if (m_vertexPairsUnilaterallyConnected.count() > 0) {
+            m_graphConnectedness = -2;
+        }
+        else
+            m_graphConnectedness = 2;
+    }
+
+
+    return m_graphConnectedness;
 }
 
 
-/**
-*  Writes the matrix of distances to a file
-*/
-void Graph::writeDistanceMatrix (QString fn,
-                                 const bool considerWeights,
-                                 const bool inverseWeights,
-                                 const bool dropIsolates) {
-    qDebug ("Graph::writeDistanceMatrix()");
 
-    if ( !distanceMatrixCreated || graphModified() ) {
+
+
+
+
+/**
+ * @brief Graph::writeMatrixDistancesPlainText
+ * Writes the matrix of distances to a file
+ * @param fn
+ * @param considerWeights
+ * @param inverseWeights
+ * @param dropIsolates
+ */
+void Graph::writeMatrixDistancesPlainText (const QString &fn,
+                                 const bool &considerWeights,
+                                 const bool &inverseWeights,
+                                 const bool &dropIsolates) {
+    qDebug ("Graph::writeMatrixDistancesPlainText()");
+
+    if ( !calculatedDistances || graphModified() ) {
         emit statusMessage ( tr("Writing Distance Matrix: "
                                 "Need to recompute Distances. Please wait...") );
-        distanceMatrixCreate(false, considerWeights, inverseWeights, dropIsolates);
+        graphMatrixDistancesCreate(false, considerWeights, inverseWeights, dropIsolates);
     }
 
-    qDebug ("Graph::writeDistanceMatrix() writing to file");
+    qDebug ("Graph::writeMatrixDistancesPlainText() writing to file");
 
     QFile file (fn);
-    if ( !file.open( QIODevice::WriteOnly ) )  {
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
@@ -2453,20 +3387,19 @@ void Graph::writeDistanceMatrix (QString fn,
 *  Saves the number of geodesic distances matrix TM to a file
 *
 */
-void Graph::writeNumberOfGeodesicsMatrix(const QString &fn,
+void Graph::writeMatrixNumberOfGeodesicsPlainText(const QString &fn,
                                          const bool &considerWeights,
                                          const bool &inverseWeights) {
-    qDebug ("Graph::writeNumberOfGeodesicsMatrix()");
-    if ( !distanceMatrixCreated || graphModified() ) {
-        emit statusMessage ( (tr("Calculating shortest paths")) );
-        distanceMatrixCreate(false, considerWeights, inverseWeights, false);
+    qDebug ("Graph::writeMatrixNumberOfGeodesicsPlainText()");
+    if ( !calculatedDistances || graphModified() ) {
+        graphMatrixDistancesCreate(false, considerWeights, inverseWeights, false);
     }
 
-    qDebug () << "Graph::writeNumberOfGeodesicsMatrix() - Distance matrix created. "
+    qDebug () << "Graph::writeMatrixNumberOfGeodesicsPlainText() - Distance matrix created. "
                  "Writing geoderics matrix to file";
 
     QFile file (fn);
-    if ( !file.open( QIODevice::WriteOnly ) )  {
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
@@ -2485,6 +3418,7 @@ void Graph::writeNumberOfGeodesicsMatrix(const QString &fn,
 }
 
 
+
 /**
  * @brief Graph::writeEccentricity
  * @param fileName
@@ -2496,99 +3430,224 @@ void Graph::writeEccentricity(
         const QString fileName, const bool considerWeights=false,
         const bool inverseWeights=false, const bool dropIsolates=false)
 {
+
+    QTime computationTimer;
+    computationTimer.start();
+
     qDebug() << "Graph::writeEccentricity";
     QFile file ( fileName );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
     QTextStream outText ( &file );
     outText.setCodec("UTF-8");
-    if ( !distanceMatrixCreated || !calculatedCentralities || graphModified() ) {
-        emit statusMessage ( (tr("Calculating shortest paths")) );
-        distanceMatrixCreate(true, considerWeights,
+    if ( !calculatedDistances || !calculatedCentralities || graphModified() ) {
+        graphMatrixDistancesCreate(true, considerWeights,
                              inverseWeights, dropIsolates);
+
     }
+
+    if (graphConnectedness()) {
+
+    }
+
     emit statusMessage ( tr("Writing eccentricity to file:") + fileName );
 
-    outText << tr("ECCENTRICITY (e)") << endl ;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-    outText << tr("The eccentricity e of a node is the maximum geodesic distance "
-                  " from that node to all other nodes in the network.") ;
-    outText << endl  ;
-    outText << tr("Therefore, e reflects farness: how far, at most, is each "
-                  " node from every other node.") ;
-    outText << endl  ;
-    outText << tr("A node has maximum e when it has distance 1 "
-          "to all other nodes (star node))\n");
+    int rowCount=0;
+    int N = vertices();
+    float eccentr=0;
 
-    outText << endl << endl ;
+    outText << htmlHead;
 
-    outText << tr("Range: 0 < e < ") << vertices()-1 <<" (g-1, "
-             << tr("where g is the number of nodes |V|)");
+    outText.setRealNumberPrecision(m_precision);
 
-    outText << endl << endl ;
-    outText << "Node"<<"\te\t%e\n";
+    outText << "<h1>";
+    outText << tr("ECCENTRICITY (e) REPORT");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("The eccentricity <em>e</em> measures how far, at most, is each "
+                  " node from every other node. <br />"
+                  "In a connected graph, the eccentricity <em>e</em> of a vertex "
+                  "is the maximum geodesic distance between that vertex and all other vertices. <br />"
+                  "In a disconnected graph, the eccentricity <em>e</em> of all vertices "
+                  "is considered to be infinite.")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("e range: ")
+            <<"</span>"
+            << tr("1 &le; e &le; \xE2\x88\x9E")
+            << "</p>";
+
+
+    outText << "<table class=\"stripes sortable\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;\">"
+            << tr("Actor")
+            << "</th>"
+            << "<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;\">"
+            << tr("Label")
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc2 = 1; asc1 = 1;asc4 = 1;\">"
+            << tr("e")
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4*= -1; asc2 = 1; asc3 = 1;asc1 = 1;\">"
+            << tr("%e")
+            <<"</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody  id=\"results\">";
+
+
     QList<Vertex*>::const_iterator it;
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
-        outText << (*it)->name()<<"\t"<<(*it)->eccentricity() << "\t" <<
-                   (100* ((*it)->eccentricity()) / sumEccentricity)<<endl;
-    }
-    if ( minEccentricity ==  maxEccentricity)
-        outText << tr("\nAll nodes have the same e value.\n");
-    else {
-        outText << "\n";
-        outText << tr("Max e = ") << maxEccentricity
-                <<" (node "<< maxNodeEccentricity  <<  ")  \n";
-        outText << tr("Min e = ") << minEccentricity
-                <<" (node "<< minNodeEccentricity <<  ")  \n";
-        outText << tr("e classes = ") << classesEccentricity<<" \n";
+
+        rowCount++;
+        eccentr = (*it)->eccentricity();
+
+        outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                <<"<td>"
+                << (*it)->name()
+                << "</td><td>"
+                << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                << "</td><td>"
+                << ((eccentr == 0) ? "\xE2\x88\x9E" : QString::number(eccentr) )
+                << "</td><td>"
+                << ((eccentr == 0) ? "\xE2\x88\x9E" : QString::number( 100* (eccentr) / sumEccentricity  ) )
+                << "</td>"
+                <<"</tr>";
+
     }
 
-    outText << "\n\n";
-    outText << tr("Eccentricity report, \n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    outText << "</tbody></table>";
+
+
+    if ( minEccentricity ==  maxEccentricity) {
+        outText << "<p>"
+                << tr("All nodes have the same eccentricity.")
+                << "</p>";
+    }
+    else {
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("Max e (Graph Diameter) = ")
+                <<"</span>"
+               << maxEccentricity <<" (node "<< maxNodeEccentricity  <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("Min e (Graph Radius) = ")
+               <<"</span>"
+               << minEccentricity <<" (node "<< minNodeEccentricity <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("e classes = ")
+               <<"</span>"
+               << classesEccentricity
+               << "</p>";
+    }
+
+    outText << "<p class=\"description\">";
+    outText << "<span class=\"info\">"
+            << tr("e = 1 ")
+            <<"</span>"
+            << tr("when a vertex is connected to all other vertices (star node).")
+            <<"<br/>"
+           << "<span class=\"info\">"
+            << tr("e > 1 ")
+            <<"</span>"
+            << tr("when a vertex is not directly connected to all others. "
+                  "Larger eccentricity means that the actor is farther from others.")
+            <<"<br />"
+           << "<span class=\"info\">"
+            << tr("e = \xE2\x88\x9E ")
+            <<"</span>"
+            << tr("the graph of the network is disconnected.")
+            <<"<br/>";
+    outText << "</p>";
+
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Eccentricity Report, <br />");    
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
     file.close();
 
 }
 
 
 
+
 /**
- * @brief Graph::distanceMatrixCreate
-  Creates a matrix DM which stores geodesic distances between all vertices
-    INPUT:
-        boolean computeCentralities
-        boolean considerWeights
-        bool inverseWeights
-    OUTPUT:
-        DM(i,j)=geodesic distance between vertex i and vertex j
-        TM(i,j)=number of shortest paths from vertex i to vertex j, called sigma(i,j).
-        m_graphDiameter is set to the length of the longest shortest path between every (i,j)
-        Eccentricity(i) is set to the length of the longest shortest path from i to every j
-        Also, if computeCentralities==true, it calculates the centralities for every u in V:
-        - Betweenness: BC(u) = Sum ( sigma(i,j,u)/sigma(i,j) ) for every s,t in V
-        - Stress: SC(u) = Sum ( sigma(i,j) ) for every s,t in V
-        - Eccentricity: EC(u) =  1/maxDistance(u,t)  for some t in V
-        - Closeness: CC(u) =  1 / Sum( DM(u,t) )  for every  t in V
-        - Power:
- * @param computeCentralities
+ * @brief Computes the distance matrix, DM, with geodesic distances between all vertices:
+ * DM(i,j)=geodesic distance between vertex i and vertex j
+ * In the process, it also computes many other matrices and metrics:
+ * * The so-called sigma matrix, named TM, where TM(i,j) is the number of shortest paths
+ *   from vertex i to vertex j, called sigma(i,j).
+ * * The reachability matrix X^R where the {i,j} element is 1 if the vertices i
+ *   and j are reachable, otherwise 0.
+ * * The Diameter of the graph, m_graphDiameter, which is the length of the longest
+ *   shortest path between every (i,j)
+ * * The Eccentricity of every node i which is the length of the longest shortest
+ *   path from i to every other node j
+ * * The InfluenceRange and InfluenceDomain of each node.
+ * * The centralities for every u in V (if centralities=true):
+ *   - Betweenness: BC(u) = Sum ( sigma(i,j,u)/sigma(i,j) ) for every s,t in V
+ *   - Stress: SC(u) = Sum ( sigma(i,j) ) for every s,t in V
+ *   - Eccentricity: EC(u) =  1/maxDistance(u,t)  for some t in V
+ *   - Closeness: CC(u) =  1 / Sum( DM(u,t) )  for every  t in V
+ *   - Power:
+ * @param centralities
+ * @param considerWeights
+ * @param inverseWeights
+ * @param dropIsolates
  */
-void Graph::distanceMatrixCreate(const bool &centralities,
+void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                                  const bool &considerWeights,
                                  const bool &inverseWeights,
                                  const bool &dropIsolates) {
-    qDebug ("Graph::distanceMatrixCreate()");
-    if ( !graphModified() && distanceMatrixCreated && !centralities)  {
-        qDebug() << "Graph::distanceMatrixCreate() - not modified. Return.";
+    qDebug() << "Graph::graphMatrixDistancesCreate()"
+             << "centralities" << computeCentralities
+             << "considerWeights:"<<considerWeights
+             << "inverseWeights:"<<inverseWeights
+             << "dropIsolates:" << dropIsolates;
+
+    if ( !graphModified() && calculatedDistances && !computeCentralities)  {
+        qDebug() << "Graph::graphMatrixDistancesCreate() - not modified. Return.";
         return;
     }
+
+    qDebug() << "Graph::graphMatrixDistancesCreate() - Need to compute geodesic distances.";
+
+    emit statusMessage ( tr("Computing geodesic distances. Please wait...") );
+
     //Create a NxN DistanceMatrix. Initialise values to zero.
     m_totalVertices = vertices(false,true);
-    qDebug() << "Graph::distanceMatrixCreate() - Resizing Matrices to hold "
+    qDebug() << "Graph::graphMatrixDistancesCreate() - Resizing Matrices to hold "
              << m_totalVertices << " vertices";
     DM.resize(m_totalVertices, m_totalVertices);
     TM.resize(m_totalVertices, m_totalVertices);
@@ -2596,21 +3655,19 @@ void Graph::distanceMatrixCreate(const bool &centralities,
 
     int aEdges = edgesEnabled();
     //drop isolated vertices from calculations (i.e. std C and group C).
-    int aVertices=vertices(dropIsolates);
+    int aVertices=(dropIsolates) ?  (m_totalVertices - verticesListIsolated().count()):m_totalVertices;
 
-    qDebug() << "Graph::distanceMatrixCreate() - m_symmetric: "
-                << m_symmetric
-                   << "Calling isSymmetric()";
-    m_symmetric = isSymmetric();
-    qDebug() << "Graph::distanceMatrixCreate() - now m_symmetric: "
+    qDebug() << "Graph::graphMatrixDistancesCreate() -Calling graphSymmetric()";
+    m_symmetric = graphSymmetric();
+    qDebug() << "Graph::graphMatrixDistancesCreate() - now m_symmetric: "
                 << m_symmetric ;
 
     if ( aEdges == 0 )
         DM.fillMatrix(RAND_MAX);
     else {
-        qDebug() << "	for all vertices set their distances to -1 (infinum)";
+        qDebug() << "	for all vertices set their pair-wise distances to RAND_MAX";
         DM.fillMatrix(RAND_MAX);
-        qDebug () << "	for all vertices set their sigmas as 0";
+        qDebug () << "	for all vertices set their pair-wise shortest-path counts (sigmas) to 0";
         TM.fillMatrix(0);
 
         QList<Vertex*>::const_iterator it, it1;
@@ -2620,9 +3677,9 @@ void Graph::distanceMatrixCreate(const bool &centralities,
         int progressCounter=0;
 
         m_graphDiameter=0;
-        distanceMatrixCreated = false;
+        calculatedDistances = false;
         m_graphAverageDistance=0;
-        nonZeroDistancesCounter=0;
+        m_graphGeodesicsCount = 0; //non zero distances
 
         qDebug() << "	m_graphDiameter "<< m_graphDiameter
                  << " m_graphAverageDistance " <<m_graphAverageDistance;
@@ -2631,7 +3688,7 @@ void Graph::distanceMatrixCreate(const bool &centralities,
                  << " outboundEdgesVert "<<  outboundEdgesVert;
         qDebug() << "	aEdges " << aEdges <<  " aVertices " << aVertices;
 
-        qDebug() << "Graph: distanceMatrixCreate() - "
+        qDebug() << "Graph: graphMatrixDistancesCreate() - "
                     " initialising variables for maximum centrality indeces";
         if (m_symmetric) {
             maxIndexBC=( aVertices-1.0) *  (aVertices-2.0)  / 2.0;
@@ -2648,37 +3705,36 @@ void Graph::distanceMatrixCreate(const bool &centralities,
             qDebug("############# NOT SymmetricAdjacencyMatrix - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
         }
 
-        qDebug("Graph: distanceMatrixCreate() - initialising variables for centrality index");
-        maxCC=0; minCC=RAND_MAX; nomCC=0; denomCC=0; groupCC=0; maxNodeCC=0;
-        minNodeCC=0; sumCC=0;
-        discreteCCs.clear(); classesCC=0;
-        maxBC=0; minBC=RAND_MAX; nomBC=0; denomBC=0; groupBC=0; maxNodeBC=0;
-        minNodeBC=0; sumBC=0;
-        discreteBCs.clear(); classesBC=0;
-        maxSC=0; minSC=RAND_MAX; nomSC=0; denomSC=0; groupSC=0; maxNodeSC=0;
-        minNodeSC=0; sumSC=0;
-        discreteSCs.clear(); classesSC=0;
-        maxPC=0; minPC=RAND_MAX; nomPC=0; denomPC=0; groupPC=0; maxNodePC=0;
-        minNodePC=0; sumPC=0;t_sumPC=0;
-        discretePCs.clear(); classesPC=0;
+        qDebug("Graph: graphMatrixDistancesCreate() - initialising variables for centrality index");
+        maxSCC=0; minSCC=RAND_MAX; nomSCC=0; denomSCC=0; groupCC=0; maxNodeSCC=0;
+        minNodeSCC=0; sumSCC=0; sumCC=0;
+        discreteCCs.clear(); classesSCC=0;
+        maxSBC=0; minSBC=RAND_MAX; nomSBC=0; denomSBC=0; groupSBC=0; maxNodeSBC=0;
+        minNodeSBC=0; sumBC=0; sumSBC=0;
+        discreteBCs.clear(); classesSBC=0;
+        maxSSC=0; minSSC=RAND_MAX; groupSC=0; maxNodeSSC=0;
+        minNodeSSC=0;sumSC=0; sumSSC=0;
+        discreteSCs.clear(); classesSSC=0;
+        maxSPC=0; minSPC=RAND_MAX; nomSPC=0; denomSPC=0; groupSPC=0; maxNodeSPC=0;
+        minNodeSPC=0; sumSPC=0;sumPC=0;
+        discretePCs.clear(); classesSPC=0;
         maxEccentricity=0; minEccentricity=RAND_MAX; maxNodeEccentricity=0;
         minNodeEccentricity=0; sumEccentricity=0; discreteEccentricities.clear();
         classesEccentricity=0;
-        maxPC=0; minPC=RAND_MAX; maxNodePC=0; minNodePC=0; sumPC=0;
+        maxSPC=0; minSPC=RAND_MAX; maxNodeSPC=0; minNodeSPC=0; sumSPC=0;
         float CC=0, BC=0, SC= 0, eccentricity=0, EC=0, PC=0;
         float SCC=0, SBC=0, SSC=0, SEC=0, SPC=0;
         float tempVarianceBC=0, tempVarianceSC=0,tempVarianceEC=0;
         float tempVarianceCC=0, tempVariancePC=0;
-        float t_sumSC=0;
 
         maxEC=0; minEC=RAND_MAX; nomEC=0; denomEC=0; groupEC=0; maxNodeEC=0;
         minNodeEC=0; sumEC=0;
         discreteECs.clear(); classesEC=0;
 
         //Zero closeness indeces of each vertex
-        if (centralities)
+        if (computeCentralities)
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
-                qDebug() << " Graph:distanceMatrixCreate() - ZEROing all indices";
+                qDebug() << " Graph:graphMatrixDistancesCreate() - ZEROing all indices";
                 (*it)->setBC( 0.0 );
                 (*it)->setSC( 0.0 );
                 (*it)->setEccentricity( 0.0 );
@@ -2688,18 +3744,19 @@ void Graph::distanceMatrixCreate(const bool &centralities,
             }
         qDebug("MAIN LOOP: for every s in V solve the Single Source Shortest Path problem...");
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
-            progressCounter++;
-            emit updateProgressDialog( progressCounter );
+
+            emit updateProgressDialog( ++progressCounter );
+
             //isolates are dropped by default in the beginning
-            //
 //            if ( ! (*it)->isEnabled() )
 //                continue;
+
             s=index[(*it)->name()];
             qDebug() << "Source vertex s = " << (*it)->name()
                      << " of BFS algorithm has index " << s
 
                      << ". Clearing Stack ...";
-            if (centralities){
+            if (computeCentralities){
                 qDebug()<< "Empty stack Stack which will return vertices in "
                            "order of their (non increasing) distance from S ...";
                 //- Complexity linear O(n)
@@ -2719,14 +3776,15 @@ void Graph::distanceMatrixCreate(const bool &centralities,
                      << (*it)->name() << " index " << s
                      << " to determine distances and geodesics from s to every vertex t" ;
             if (!considerWeights)
-                BFS(s,centralities, dropIsolates );
+                BFS(s,computeCentralities, dropIsolates );
             else
-                dijkstra(s, centralities, inverseWeights, dropIsolates);
+                dijkstra(s, computeCentralities, inverseWeights, dropIsolates);
 
 
-            qDebug("***** FINISHED PHASE 1 (SSSP) BFS ALGORITHM. Continuing to calculate centralities");
+            qDebug("***** FINISHED PHASE 1 (SSSP) BFS / DIJKSTRA ALGORITHM. "
+                   "Continuing to calculate centralities");
 
-            if (centralities){
+            if (computeCentralities){
                 qDebug() << "Set CC for source vertex " << (*it)->name()
                          << "  with index s = " << s ;
                 if ( (*it)->CC() != 0 ) //Closeness centrality must be inverted
@@ -2777,7 +3835,7 @@ void Graph::distanceMatrixCreate(const bool &centralities,
                 }
 
                 (*it)->setPC( PC );	//Power Centrality is stdized already
-                t_sumPC += PC;   //add to temp sumPC
+                sumPC += PC;   //add to temp sumSPC
                 if ( sizeOfComponent != 1 )
                     SPC = ( 1.0/(sizeOfComponent-1.0) ) * PC;
                 else
@@ -2785,7 +3843,7 @@ void Graph::distanceMatrixCreate(const bool &centralities,
 
                 (*it)->setSPC( SPC );	//Set std PC
 
-                sumPC += SPC;   //add to sumPC -- used later to compute mean and variance
+                sumSPC += SPC;   //add to sumSPC -- used later to compute mean and variance
 
                 qDebug() << "Visit all vertices in reverse order of their discovery (from s = " << s
                          << " ) to sum dependencies. Initial Stack size has " << Stack.size();
@@ -2827,7 +3885,7 @@ void Graph::distanceMatrixCreate(const bool &centralities,
 
 
 
-        if (centralities) {
+        if (computeCentralities) {
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
                 if ( dropIsolates && (*it)->isIsolated() ){
                     qDebug() << "vertex " << (*it)->name()
@@ -2839,31 +3897,33 @@ void Graph::distanceMatrixCreate(const bool &centralities,
                 resolveClasses(SEC, discreteECs, classesEC,(*it)->name() );
                 minmax( SEC, (*it), maxEC, minEC, maxNodeEC, minNodeEC) ;
 
-                // Compute classes and min/maxPC
+                // Compute classes and min/maxSPC
                 SPC = (*it)->SPC();  //same as PC
-                resolveClasses(SPC, discretePCs, classesPC,(*it)->name() );
-                minmax( SPC, (*it), maxPC, minPC, maxNodePC, minNodePC) ;
+                resolveClasses(SPC, discretePCs, classesSPC,(*it)->name() );
+                minmax( SPC, (*it), maxSPC, minSPC, maxNodeSPC, minNodeSPC) ;
 
-                // Compute std BC, classes and min/maxBC
+                // Compute std BC, classes and min/maxSBC
                 if (m_symmetric) {
                     qDebug()<< "Betweenness centrality must be divided by"
                             <<" two if the graph is undirected";
                     (*it)->setBC ( (*it)->BC()/2.0);
                 }
                 BC=(*it)->BC();
+                sumBC+=BC;
                 SBC = BC/maxIndexBC;
                 (*it)->setSBC( SBC );
-                resolveClasses(SBC, discreteBCs, classesBC);
-                sumBC+=SBC;
-                minmax( SBC, (*it), maxBC, minBC, maxNodeBC, minNodeBC) ;
+                resolveClasses(SBC, discreteBCs, classesSBC);
+                sumSBC+=SBC;
+                minmax( SBC, (*it), maxSBC, minSBC, maxNodeSBC, minNodeSBC) ;
 
-                // Compute std CC, classes and min/maxCC
+                // Compute std CC, classes and min/maxSCC
                 CC = (*it)->CC();
+                sumCC+=CC;
                 SCC = maxIndexCC * CC;
                 (*it)->setSCC (  SCC );
-                resolveClasses(SCC, discreteCCs, classesCC,(*it)->name() );
-                sumCC+=SCC;
-                minmax( SCC, (*it), maxCC, minCC, maxNodeCC, minNodeCC) ;
+                resolveClasses(SCC, discreteCCs, classesSCC,(*it)->name() );
+                sumSCC+=SCC;
+                minmax( SCC, (*it), maxSCC, minSCC, maxNodeSCC, minNodeSCC) ;
 
                 //prepare to compute stdSC
                 SC=(*it)->SC();
@@ -2874,7 +3934,7 @@ void Graph::distanceMatrixCreate(const bool &centralities,
                              << "  divided by 2 (because the graph is symmetric) "
                              << (*it)->SC();
                 }
-                t_sumSC+=SC;
+                sumSC+=SC;
 
                 qDebug() << "vertex " << (*it)->name() << " - "
                          << " EC: "<< (*it)->EC()
@@ -2885,16 +3945,16 @@ void Graph::distanceMatrixCreate(const bool &centralities,
             }
 
             // calculate mean values and prepare to compute variances
-            meanBC = sumBC /(float) aVertices ;
-            varianceBC=0;
+            meanSBC = sumSBC /(float) aVertices ;
+            varianceSBC=0;
             tempVarianceBC=0;
 
-            meanCC = sumCC /(float) aVertices ;
-            varianceCC=0;
+            meanSCC = sumSCC /(float) aVertices ;
+            varianceSCC=0;
             tempVarianceCC=0;
 
-            meanPC = sumPC /(float) aVertices ;
-            variancePC=0;
+            meanSPC = sumSPC /(float) aVertices ;
+            varianceSPC=0;
             tempVariancePC=0;
 
             meanEC = sumEC /(float) aVertices ;
@@ -2905,39 +3965,39 @@ void Graph::distanceMatrixCreate(const bool &centralities,
                 if ( dropIsolates && (*it)->isIsolated() ) {
                     continue;
                 }
-                // Compute std SC, classes and min/maxSC
+                // Compute std SC, classes and min/maxSSC
                 SC=(*it)->SC();
-                SSC=SC/t_sumSC;
+                SSC=SC/sumSC;
                 (*it)->setSSC(SSC);
-                resolveClasses(SSC, discreteSCs, classesSC);
-                sumSC+=SSC;
-                minmax( SSC, (*it), maxSC, minSC, maxNodeSC, minNodeSC) ;
+                resolveClasses(SSC, discreteSCs, classesSSC);
+                sumSSC+=SSC;
+                minmax( SSC, (*it), maxSSC, minSSC, maxNodeSSC, minNodeSSC) ;
 
-                //Compute numerator of groupBC
+                //Compute numerator of groupSBC
                 SBC=(*it)->SBC();
-                nomBC +=(maxBC - SBC );
+                nomSBC +=(maxSBC - SBC );
 
                 //calculate BC variance
-                tempVarianceBC = (  SBC  -  meanBC  ) ;
+                tempVarianceBC = (  SBC  -  meanSBC  ) ;
                 tempVarianceBC *=tempVarianceBC;
-                varianceBC  += tempVarianceBC;
+                varianceSBC  += tempVarianceBC;
 
                 //Compute numerator of groupCC
-                nomCC += maxCC- (*it)->SCC();
+                nomSCC += maxSCC- (*it)->SCC();
 
                 //calculate CC variance
-                tempVarianceCC = (  (*it)->SCC()  -  meanCC  ) ;
+                tempVarianceCC = (  (*it)->SCC()  -  meanSCC  ) ;
                 tempVarianceCC *=tempVarianceCC;
-                varianceCC  += tempVarianceCC;
+                varianceSCC  += tempVarianceCC;
 
-                //Compute numerator of groupPC
+                //Compute numerator of groupSPC
                 SPC=(*it)->SPC();
-                nomPC +=(maxPC - SPC );
+                nomSPC +=(maxSPC - SPC );
 
                 //calculate PC variance
-                tempVariancePC = (  (*it)->SPC()  -  meanPC  ) ;
+                tempVariancePC = (  (*it)->SPC()  -  meanSPC  ) ;
                 tempVariancePC *=tempVariancePC;
-                variancePC  += tempVariancePC;
+                varianceSPC  += tempVariancePC;
 
                 //calculate EC variance
                 tempVarianceEC = (  (*it)->EC()  -  meanEC  ) ;
@@ -2946,48 +4006,48 @@ void Graph::distanceMatrixCreate(const bool &centralities,
             }
 
             //compute final variances
-            varianceBC  /=  (float) aVertices;
-            varianceCC  /=  (float) aVertices;
-            variancePC  /=  (float) aVertices;
+            varianceSBC  /=  (float) aVertices;
+            varianceSCC  /=  (float) aVertices;
+            varianceSPC  /=  (float) aVertices;
             varianceEC  /=  (float) aVertices;
 
             // calculate SC mean value and prepare to compute variance
-            meanSC = sumSC /(float) aVertices ;
-            varianceSC=0;
+            meanSSC = sumSSC /(float) aVertices ;
+            varianceSSC=0;
             tempVarianceSC=0;
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
                 if ( dropIsolates && (*it)->isIsolated() ){
                     continue;
                 }
-                tempVarianceSC = (  (*it)->SSC()  -  meanSC  ) ;
+                tempVarianceSC = (  (*it)->SSC()  -  meanSSC  ) ;
                 tempVarianceSC *=tempVarianceSC;
-                varianceSC  += tempVarianceSC;
+                varianceSSC  += tempVarianceSC;
             }
             //calculate final SC variance
-            varianceSC  /=  (float) aVertices;
+            varianceSSC  /=  (float) aVertices;
 
-            denomPC = (  (aVertices-2.0) ) / (2.0 );   //only for connected nets
+            denomSPC = (  (aVertices-2.0) ) / (2.0 );   //only for connected nets
             if (aVertices < 3 )
-                 denomPC = aVertices-1.0;
+                 denomSPC = aVertices-1.0;
             //what if the net is disconnected (isolates exist) ?
-            groupPC = nomPC/denomPC;
+            groupSPC = nomSPC/denomSPC;
 
-            denomCC = ( ( aVertices-1.0) * (aVertices-2.0) ) / (2.0 * aVertices -3.0);
+            denomSCC = ( ( aVertices-1.0) * (aVertices-2.0) ) / (2.0 * aVertices -3.0);
             if (aVertices < 3 )
-                 denomCC = aVertices-1.0;
+                 denomSCC = aVertices-1.0;
 
-            groupCC = nomCC/denomCC;	//Calculate group Closeness centrality
+            groupCC = nomSCC/denomSCC;	//Calculate group Closeness centrality
 
-            //nomBC*=2.0;
-//            denomBC =   (aVertices-1.0) *  (aVertices-1.0) * (aVertices-2.0);
-            denomBC =   (aVertices-1.0) ;  // Wasserman&Faust - formula 5.14
-            groupBC=nomBC/denomBC;		//Calculate group Betweenness centrality
+            //nomSBC*=2.0;
+//            denomSBC =   (aVertices-1.0) *  (aVertices-1.0) * (aVertices-2.0);
+            denomSBC =   (aVertices-1.0) ;  // Wasserman&Faust - formula 5.14
+            groupSBC=nomSBC/denomSBC;		//Calculate group Betweenness centrality
 
             calculatedCentralities=true;
         }
     }
 
-    distanceMatrixCreated=true;
+    calculatedDistances=true;
 
 }
 
@@ -3074,10 +4134,10 @@ void Graph::BFS(const int &s, const bool &computeCentralities,
                 qDebug("BFS: Setting distance of w=%i from s=%i equal to distance(s,u) plus 1. New distance = %i",w,s, dist_w );
                 DM.setItem(s, w, dist_w);
                 m_graphAverageDistance += dist_w;
-                nonZeroDistancesCounter++;
+                m_graphGeodesicsCount++;
 
 
-                qDebug()<< "Graph::BFS()  - d("
+                qDebug()<< "== BFS  - d("
                         << s <<"," << w
                         <<")=" << DM.item(s,w)
                        << " - inserting " << w
@@ -3085,8 +4145,8 @@ void Graph::BFS(const int &s, const bool &computeCentralities,
                        << " - and " << s
                        << " to inflDomain I of "<< w;
                 XRM.setItem(s,w,1);
-                influenceRanges.insert(s,w);
-                influenceDomains.insert(w,s);
+                influenceRanges.insertMulti(s,w);
+                influenceDomains.insertMulti(w,s);
 
                 if (computeCentralities){
                     qDebug()<<"BFS: Calculate PC: store the number of nodes at distance " << dist_w << "from s";
@@ -3140,17 +4200,19 @@ void Graph::BFS(const int &s, const bool &computeCentralities,
 
 
 /**
-*	Breadth-First Search (BFS) method for unweighted graphs (directed or not)
+*	Dijkstra's algorithm for the SSSP in weighted graphs (directed or not)
+*   It uses a min-priority queue prQ to provide constant time lookup of the minimum
+*   distance. The priority queue is implemented with std::priority_queue
 
     INPUT:
         a 'source' vertex with index s and a boolean computeCentralities.
-        (Implicitly, BFS uses the m_graph structure)
+        (Implicitly, the algorithm uses the m_graph structure)
 
     OUTPUT:
         For every vertex t: DM(s, t) is set to the distance of each t from s
         For every vertex t: TM(s, t) is set to the number of shortest paths between s and t
 
-        Also, if computeCentralities is true then BFS does extra operations:
+        Also, if computeCentralities is true then it does extra operations:
             a) For source vertex s:
                 it calculates CC(s) as the sum of its distances from every other vertex.
                 it calculates eccentricity(s) as the maximum distance from all other vertices.
@@ -3158,7 +4220,7 @@ void Graph::BFS(const int &s, const bool &computeCentralities,
             b) For every vertex u:
                 it increases SC(u) by one, when it finds a new shor. path from s to t through u.
                 appends each neighbor y of u to the list Ps, thus Ps stores all predecessors of y on all all shortest paths from s
-            c) Each vertex u popped from Q is pushed to a stack Stack
+            c) Each vertex u popped from prQ is pushed to a stack Stack
 
 */
 void Graph::dijkstra(const int &s, const bool &computeCentralities,
@@ -3171,8 +4233,8 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
     bool edgeStatus=false;
     H_edges::const_iterator it1;
 
-    qDebug() << "dijkstra: Construct a priority queue Q of all vertices-distances";
-    priority_queue<Distance, vector<Distance>, CompareDistances> Q;
+    qDebug() << "dijkstra: Construct a priority queue prQ of all vertices-distances";
+    priority_queue<GraphDistance, vector<GraphDistance>, GraphDistancesCompare> prQ;
 
     //set distance of s from s equal to 0
     DM.setItem(s,s,0);
@@ -3183,38 +4245,41 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
         v=index[ (*it)->name() ];
         if (v != s ){
-            // DM initialization to RAND_MAX already done in distanceMatrixCreate
-            //DM.setItem(s,v,RAND_MAX);
-            qDebug() << " push " << v << " to Q with infinite distance from s";
-            Q.push(Distance(v,RAND_MAX));
+            // NOTE: DM(i,j) init to RAND_MAX already done in graphMatrixDistancesCreate
+            // Not needed here: DM.setItem(s,v,RAND_MAX);
+//            qDebug() << " push " << v << " to prQ with infinite distance from s";
+//            prQ.push(GraphDistance(v,RAND_MAX));
             //TODO // Previous node in optimal path from source
             //    previous[v]  := undefined
         }
     }
-    qDebug() << " finally push source " << s << " to Q with 0 distance from s";
-    //crucial: without it the priority Q would pop arbitrary node at first loop
-    Q.push(Distance(s,0));
-    qDebug()<<"dijkstra: Q size "<< Q.size();
+    qDebug() << " push source " << s << " to prQ with 0 distance from s";
 
-    qDebug() << "\n\n ### dijkstra: LOOP: While Q not empty ";
-    while ( !Q.empty() ) {
-        u=Q.top().target;
-        qDebug()<< "\n\n *** dijkstra: take u = "<< u
-                   << " from Q which has minimum distance from s = " << s;
-         Q.pop();
+    //crucial: without it the priority prQ would pop arbitrary node at first loop
+    prQ.push(GraphDistance(s,0));
+
+    qDebug()<<"dijkstra: prQ size "<< prQ.size();
+
+
+    qDebug() << "### dijkstra: LOOP: While prQ not empty ";
+    while ( !prQ.empty() ) {
+        u=prQ.top().target;
+        qDebug()<< "    *** dijkstra: take u = "<< u
+                   << " from prQ which has minimum distance from s =" << s;
+         prQ.pop();
 
         if ( ! m_graph [ u ]->isEnabled() )
             continue ;
 
         if (computeCentralities){
-            qDebug()<< "dijkstra: We will calculate centralities, push u="<< u
+            qDebug()<< "    dijkstra: We will calculate centralities, push u ="<< u
                     << " to global stack Stack ";
             Stack.push(u);
         }
-        qDebug() << "*** dijkstra: LOOP over every edge ("<< u <<",w) e E, "
-                 <<  "that is for each neighbor w of u";
+        qDebug() << "    *** dijkstra: LOOP over every edge ("<< u <<", w ) e E, "
+                 <<  "for each neighbor w of u";
         it1=m_graph [ u ] ->m_outEdges.cbegin();
-        while ( it1!=m_graph [ u ] -> m_outEdges.cend() ){
+        while ( it1!=m_graph [ u ] -> m_outEdges.cend() ) {
             relation = it1.value().first;
             if ( relation != relationCurrent() )  {
                 ++it1;
@@ -3228,80 +4293,85 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
             target = it1.key();
             weight = it1.value().second.first;
             w=index[ target ];
-            qDebug()<<"\ndijkstra: u="<< u << " --> w="<< w << " (node "<< target
-                   << ") of weight "<<  weight;
+            qDebug()<<"        -- (u, w) = ("<< u << ","<< w << ") =" << weight
+                   <<"( node"<< target << ")";
             if (inverseWeights) { //only invert if user asked to do so
                 weight = 1.0 / weight;
-                qDebug () << " inverting weight to " << weight;
+                qDebug () << "       inverting weight to " << weight;
             }
 
-            qDebug("dijkstra: Start path discovery");
+            qDebug() <<"        Start path discovery";
 
             dist_u=DM.item(s,u);
+
             if (dist_u == RAND_MAX || dist_u < 0) {
                 dist_w = RAND_MAX;
-                qDebug() << "dijkstra: dist_w = RAND_MAX " << RAND_MAX;
+                qDebug() << "        dist_w = RAND_MAX " << RAND_MAX;
 
             }
             else {
                 dist_w = dist_u + weight;
-                qDebug() << "dijkstra: dist_w = dist_u + weight = "
-                         << dist_u << " + " << weight <<  " = " <<dist_w ;
+                qDebug() << "        dist_w = dist_u + weight = "
+                         << dist_u << "+" << weight <<  "=" <<dist_w ;
             }
-            qDebug() << "dijkstra: RELAXATION : check if dist_w=" << dist_w
-                     <<  " is shorter than current DM(s,w)";
+            qDebug() << "        RELAXATION: check if dist_w =" << dist_w
+                     <<  " is shorter than current DM(s,w) = DM("
+                      << s <<","<<w <<")" <<DM.item(s, w) ;
             if  (dist_w == DM.item(s, w)  && dist_w < RAND_MAX) {
-                qDebug() << "dijkstra: dist_w : " << dist_w
+                qDebug() <<"        dist_w : " << dist_w
                          <<  " ==  DM(s,w) : " << DM.item(s, w);
                 temp= TM.item(s,w)+TM.item(s,u);
-                qDebug()<<"dijkstra: Found another SP from s=" << s
-                       << " to w=" << w << " via u="<< u
-                       << " - Setting Sigma(s, w) = "<< temp;
+                qDebug() <<"        Found ANOTHER SP from s =" << s
+                        << " to w=" << w << " via u="<< u
+                        << " - Setting Sigma(s, w) = "<< temp;
                 if (s!=w)
                     TM.setItem(s,w, temp);
                 if (computeCentralities){
-                    qDebug()<< "dijkstra/SC:";
+
                     if ( s!=w && s != u && u!=w ) {
-                        qDebug() << "dijkstra: Calculate SC: setSC of u="<<u
+                        qDebug() << "        Calculate SC: setSC of u ="<<u
                                  <<" to "<<m_graph[u]->SC()+1;
                         m_graph[u]->setSC(m_graph[u]->SC()+1);
                     }
                     else {
-                        qDebug() << "dijkstra/SC: skipping setSC of u, because s="
+                        qDebug() << "        Skipping setSC of u, because s="
                                  <<s<<" w="<< w << " u="<< u;
                     }
-                    qDebug() << "dijkstra/SC: SC is " << m_graph[u]->SC();
+                    qDebug() << "        SC is " << m_graph[u]->SC();
 
-                    qDebug() << "dijkstra: appending u="<< u << " to list Ps[w=" << w
+                    qDebug() << "        Appending u="<< u << " to list Ps[w =" << w
                              << "] with the predecessors of w on all shortest paths from s ";
                     m_graph[w]->appendToPs(u);
                 }
             }
 
             else if (dist_w > 0 && dist_w < DM.item(s, w)  ) {
-                qDebug() << "dijkstra: Yeap. Set DM (s,w) = DM(" << s
-                         << ","<< w
-                         << ") = "<< dist_w ;
+
+                prQ.push(GraphDistance(w,dist_w)); //@FIXME: w might have been already visited?
+                //If so, we might use QMap<int> which is sorted (minimum)
+                // and also provides contain()
                 DM.setItem(s, w, dist_w);
+
                 m_graphAverageDistance += dist_w;
-                nonZeroDistancesCounter++;
+                m_graphGeodesicsCount++;
 
+                qDebug() << "        Found new smaller SP! Set DM (s,w) = DM("
+                         << s << ","<< w
+                         << ") = "<< dist_w << "="<< DM.item(s,w)
+                         << " m_graphAverageDistance ="
+                         << m_graphAverageDistance
+                       << "Inserting" << w
+                       << "to inflRange J of" << s
+                       << "and" << s
+                       << "to inflDomain I of"<< w;
 
-                qDebug()<< "Graph::dijkstra()  - d("
-                        << s <<"," << w
-                        <<")=" << DM.item(s,w)
-                       << " - inserting " << w
-                       << " to inflRange J of " << s
-                       << " - and " << s
-                       << " to inflDomain I of "<< w;
                 XRM.setItem(s,w,1);
-                influenceRanges.insert(s,w);
-                influenceDomains.insert(w,s);
-
+                influenceRanges.insertMulti(s,w);
+                influenceDomains.insertMulti(w,s);
 
                 if (s!=w) {
-                    qDebug()<<"dijkstra: Found NEW SP from s=" << s
-                           << " to w=" << w << " via u="<< u
+                    qDebug()<<"        Found NEW SP from s =" << s
+                           << " to w =" << w << " via u ="<< u
                            << " - Setting Sigma(s, w) = 1 ";
                     TM.setItem(s,w, 1);
                 }
@@ -3311,29 +4381,28 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
                                 dist_w,
                                 sizeOfNthOrderNeighborhood.value(dist_w)+1
                                 );
-                    qDebug()<<"dijkstra/PC: number of nodes at distance "
+                    qDebug()<<"        For PC: number of nodes at distance "
                            << dist_w << "from s is "
                            <<  sizeOfNthOrderNeighborhood.value(dist_w);
 
                     m_graph [s]->setCC (m_graph [s]->CC() + dist_w);
-                    qDebug()<<"dijkstra/CC:: sum of distances = "
+                    qDebug()<<"        For CC: sum of distances ="
                            <<  m_graph [s]->CC() << " (will invert it l8r)";
 
                     if (m_graph [s]->eccentricity() < dist_w )
                         m_graph [s]->setEccentricity(dist_w);
-                    qDebug()<<"dijkstra/Eccentricity: max distance  = "
+                    qDebug()<<"        For EC: max distance ="
                               <<  m_graph [s]->eccentricity();
                 }
 
-                qDebug("dijkstra/m_graphDiameter");
                 if ( dist_w > m_graphDiameter){
                     m_graphDiameter=dist_w;
-                    qDebug() << "dijkstra: new m_graphDiameter = " << m_graphDiameter ;
+                    qDebug() << "        New graph diameter =" << m_graphDiameter ;
                 }
 
             }
             else
-                qDebug() << "dijkstra: NO";
+                qDebug() << "        Not a new SP";
 
 
 //            qDebug()<< "### dijkstra: Start path counting";
@@ -3346,6 +4415,7 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
         }
 
     }
+    qDebug() << "### dijkstra: LOOP END. prQ is empty - Returning.";
 }
 
 
@@ -3355,7 +4425,7 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
 
 
 /**
-    minmax() facilitates the calculations of minimum and maximum centralities during distanceMatrixCreate()
+    minmax() facilitates the calculations of minimum and maximum centralities during graphMatrixDistancesCreate()
 */
 void Graph::minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int &minNode) {
     qDebug() << "MINMAX C = " <<  C << "  max = " << max << "  min = " << min << " name = " <<  v->name();
@@ -3374,7 +4444,7 @@ void Graph::minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int
 
 /** 	This method calculates the number of discrete centrality classes of all vertices
     It stores that number in a QHash<QString,int> type where the centrality value is the key.
-    Called from distanceMatrixCreate()
+    Called from graphMatrixDistancesCreate()
 */
 void Graph::resolveClasses(float C, H_StrToInt &discreteClasses, int &classes){
     H_StrToInt::iterator it2;
@@ -3413,7 +4483,7 @@ void Graph::resolveClasses(float C, H_StrToInt &discreteClasses, int &classes, i
  */
 void Graph::centralityInformation(const bool considerWeights,
                                   const bool inverseWeights){
-    qDebug()<< "Graph:: centralityInformation()";
+    qDebug()<< "Graph::centralityInformation()";
     if (calculatedIC && !graphModified()) {
         return;
     }
@@ -3425,7 +4495,7 @@ void Graph::centralityInformation(const bool considerWeights,
     classesIC=0;
     varianceIC=0;
 
-    isolatedVertices=verticesIsolated().count();
+    int isolatedVertices=verticesListIsolated().count();
     int i=0, j=0, n=vertices();
     float m_weight=0, weightSum=1, diagonalEntriesSum=0, rowSum=0;
     float IC=0, SIC=0;
@@ -3433,9 +4503,9 @@ void Graph::centralityInformation(const bool considerWeights,
         Otherwise, the TM might be singular, therefore non-invertible. */
     bool dropIsolates=true;
     bool symmetrize=true;
-    adjacencyMatrixCreate(dropIsolates, considerWeights, inverseWeights, symmetrize);
+    graphMatrixAdjacencyCreate(dropIsolates, considerWeights, inverseWeights, symmetrize);
 
-    n-=isolatedVertices;  //isolatedVertices updated in adjacencyMatrixCreate
+    n-=isolatedVertices;
 
     TM.resize(n, n);
     invM.resize(n, n);
@@ -3452,8 +4522,9 @@ void Graph::centralityInformation(const bool considerWeights,
         TM.setItem(i,i,weightSum);
     }
 
+    emit statusMessage ( (tr("Computing inverse matrix. This needs time. Please wait...")) );
     invM.inverse(TM);
-
+    emit statusMessage ( (tr("Computing IC scores...")) );
     diagonalEntriesSum = 0;
     rowSum = 0;
     for (j=0; j<n; j++){
@@ -3506,8 +4577,12 @@ void Graph::centralityInformation(const bool considerWeights,
 void Graph::writeCentralityInformation(const QString fileName,
                                        const bool considerWeights,
                                        const bool inverseWeights){
+
+    QTime computationTimer;
+    computationTimer.start();
+
     QFile file ( fileName );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
@@ -3515,66 +4590,192 @@ void Graph::writeCentralityInformation(const QString fileName,
     QTextStream outText ( &file );
     outText.setCodec("UTF-8");
     if (graphModified() || !calculatedIC ) {
-            emit statusMessage ( (tr("Calculating IC scores...")) );
+            emit statusMessage ( (tr("Computing IC scores...")) );
             centralityInformation(considerWeights, inverseWeights);
     }
 
-    emit statusMessage ( QString(tr("Writing information centralities to file: "))
-                         .arg(fileName) );
+    emit statusMessage ( tr("Writing Information Centralities to file:") + fileName );
+
     outText.setRealNumberPrecision(m_precision);
-    outText << tr("INFORMATION CENTRALITY (IC)")<<endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-    outText << tr("The IC index measures the information flow through "
-                  "all paths between actors weighted by strength of tie and distance\n");
-    outText << tr("IC' is the standardized IC (IC divided by the sumIC).") <<"\n"
-               << tr ("Warning: To compute this index, SocNetV drops all isolated "
-                      "nodes and symmetrizes (if needed) the adjacency matrix. "
-                      "Read the Manual for more.") << "\n\n";
 
-    outText << tr("IC  range:  0 < IC < inf (this index has no max value)") << "\n";
-    outText << tr("IC' range:  0 < IC'< 1 (" )<<"\n\n";
-    outText << "Node"<<"\tIC\t\tIC'\t\t%IC'\n";
+    int rowCount=0;
+    int N = vertices();
+
+    outText << htmlHead;
+
+    outText << "<h1>";
+    outText << tr("INFORMATION CENTRALITY (IC)");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("The IC index, introduced by Stephenson and Zelen (1991), measures the "
+                  "information flow through all paths between actors weighted by "
+                  "strength of tie and distance.")
+            << "<br />"
+            << tr("IC' is the standardized index (IC divided by the sumIC).")
+            << "<br />"
+            << tr ("Warning: To compute this index, SocNetV drops all isolated "
+                  "nodes and symmetrizes (if needed) the adjacency matrix. <br />"
+                  "Read the Manual for more.")
+            << "</p>";
+
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("IC range: ")
+            <<"</span>"
+            << tr("0 &le; IC &le; \xE2\x88\x9E")
+            << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("IC' range: ")
+            <<"</span>"
+            << tr("0 &le; IC' &le; 1")
+            << "</p>";
+
+
+    outText << "<table class=\"stripes sortable\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Node")
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Label")
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("IC")
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
+            << tr("IC'")
+            << "</th>"
+            <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
+            << tr("%IC")
+            <<"</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody id=\"results\">";
+
     QList<Vertex*>::const_iterator it;
-    float IC=0, SIC=0;
+
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        IC = (*it)->IC();
-        SIC = (*it)->SIC();
-        outText << (*it)->name()<<"\t"
-                << IC << "\t\t"
-                << SIC  << "\t\t"
-                <<  ( 100* SIC )<<endl;
-        qDebug()<< "Graph::writeCentralityInformation() vertex: "
-                <<  (*it)->name() << " SIC  " << SIC;
+
+        rowCount++;
+
+        outText <<fixed;
+
+        outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                <<"<td>"
+                << (*it)->name()
+                << "</td><td>"
+                << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                << "</td><td>"
+                << (*it)->IC()
+                << "</td><td>"
+                << (*it)->SIC()
+                << "</td><td>"
+                << (100* ((*it)->SIC()))
+                << "</td>"
+                <<"</tr>";
+
     }
-    qDebug ("min %f, max %f", minIC, maxIC);
-    if ( minIC == maxIC )
-        outText << tr("\nAll nodes have the same IC value.\n");
-    else  {
-        outText << "\n";
-        outText << tr("Max IC' = ") << maxIC <<" (node "<< maxNodeIC  <<  ")  \n";
-        outText << tr("Min IC' = ") << minIC <<" (node "<< minNodeIC <<  ")  \n";
-        outText << tr("IC classes = ") << classesIC<<" \n";
+
+
+    outText << "</tbody></table>";
+
+    if ( minIC ==  maxIC) {
+        outText << "<p>"
+                << tr("All nodes have the same IC score.")
+                << "</p>";
     }
-    outText << "\n";
-    outText << tr("IC' sum = ") << sumIC <<  " \n";
-    outText << tr("IC' Mean = ") << meanIC <<  " \n";
-    outText << tr("IC' Variance = ") << varianceIC <<  " \n\n";
+    else {
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("Max IC' = ")
+                <<"</span>"
+               << maxIC <<" (node "<< maxNodeIC  <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("Min IC' = ")
+               <<"</span>"
+               << minIC <<" (node "<< minNodeIC <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("IC classes = ")
+               <<"</span>"
+               << classesIC
+               << "</p>";
+    }
 
-    outText << tr("Since there is no way to compute Group Information Centralization, "
-                  "you can use variance as a general centralization index.")
-            <<" \n\n";
+    outText << "<p>";
+    outText << "<span class=\"info\">"
+            << tr("IC' Sum = ")
+            <<"</span>"
+            << sumIC
+            <<"<br/>"
+           << "<span class=\"info\">"
+            << tr("IC' Mean = ")
+            <<"</span>"
+            << meanIC
+            <<"<br/>"
+            << "<span class=\"info\">"
+            << tr("IC' Variance = ")
+            <<"</span>"
+            << varianceIC
+            <<"<br/>";
+    outText << "</p>";
 
-    outText << tr("Variance = 0, when all nodes have the same IC value, i.e. a "
-                  "complete or a circle graph).\n");
-    outText << tr("Larger values of variance suggest larger variability between the "
-                  "IC' values.\n");
-    outText <<"(Wasserman & Faust, formula 5.20, p. 197)\n\n";
+
+    outText << "<h2>";
+    outText << tr("GROUP INFORMATION CENTRALISATION (GIC)")
+            << "</h2>";
+
+    outText << "<p>"
+            << tr("Since there is no way to compute Group Information Centralization, <br />"
+                  "you can use Variance as a general centralization index. <br /><br />")
+            << "<span class=\"info\">"
+            << tr("Variance = ")
+            <<"</span>"
+            <<  varianceIC
+             << "</p>";
 
 
-    outText << tr("Information Centrality report, \n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    outText << "<p class=\"description\">"
+            << tr("Variance = 0, when all nodes have the same IC value, i.e. a "
+                  "complete or a circle graph). <br />")
+            << tr("Larger values of variance suggest larger variability between the "
+                  "IC' values. <br />")
+            <<"(Wasserman & Faust, formula 5.20, p. 197)\n\n"
+            << "</p>";
+
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Information Centrality report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
     file.close();
 
 }
@@ -3583,8 +4784,319 @@ void Graph::writeCentralityInformation(const QString fileName,
 
 
 
+
+
+//Writes the eigenvector centralities to a file
+void Graph::writeCentralityEigenvector(const QString fileName,
+                                       const bool &considerWeights,
+                                       const bool &inverseWeights,
+                                       const bool &dropIsolates){
+
+    QTime computationTimer;
+    computationTimer.start();
+
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
+        return;
+    }
+    QTextStream outText ( &file );
+    outText.setCodec("UTF-8");
+    if (graphModified() || !calculatedIC ) {
+            emit statusMessage ( (tr("Calculating EVC scores...")) );
+            centralityEigenvector(considerWeights, inverseWeights,dropIsolates);
+    }
+
+    emit statusMessage ( tr("Writing Eigenvector Centralities to file:") + fileName );
+
+    outText.setRealNumberPrecision(m_precision);
+
+    int rowCount=0;
+    int N = vertices();
+
+    outText << htmlHead;
+
+    outText << "<h1>";
+    outText << tr("EIGENVECTOR CENTRALITY (EVC)");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("The Eigenvector Centrality of each node is the i<sub>th</sub> element of "
+                  "the leading eigenvector of the adjacency matrix, that is the "
+                  "eigenvector corresponding to the largest positive eigenvalue. <br />"
+                  "Proposed by Bonacich (1972), the Eigenvector Centrality is "
+                  "an extension of the simpler Degree Centrality because it gives "
+                  "each actor a score proportional to the scores of its neighbors. "
+                  "Thus, a node may have high EVC score if it has lots of ties or "
+                  "it has ties to other nodes with high EVC. <br />"
+                  "The eigenvector centralities are also known as Gould indices.")
+            << "<br />"
+            << tr("EVC' is the standardized index (EVC divided by the sum of all EVCs).")
+            << "<br />"
+            << tr("EVC'' is the scaled EVC (EVC divided by max EVC).")
+            << "<br />"
+            << "</p>";
+
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("EVC range: ")
+            <<"</span>"
+            << tr("0 &le; EVC &lt; 1 (The eigenvector has unit euclidean length) ")
+            << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("EVC' range: ")
+            <<"</span>"
+            << tr("0 &le; EVC' &le; 1")
+            << "</p>";
+
+
+
+    outText << "<table class=\"stripes sortable\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Node")
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Label")
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("EVC")
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
+            << tr("EVC'")
+            << "</th>"
+            <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
+            << tr("%EVC")
+            <<"</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody id=\"results\">";
+
+
+    QList<Vertex*>::const_iterator it;
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
+        rowCount++;
+
+        outText <<fixed;
+
+        outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                <<"<td>"
+                << (*it)->name()
+                << "</td><td>"
+                << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                << "</td><td>"
+                << (*it)->EVC()
+                << "</td><td>"
+                << (*it)->SEVC()
+                << "</td><td>"
+                << (100* ((*it)->SEVC()))
+                << "</td>"
+                <<"</tr>";
+
+    }
+
+
+    outText << "</tbody></table>";
+
+    if ( minEVC ==  maxEVC) {
+        outText << "<p>"
+                << tr("All nodes have the same EVC score.")
+                << "</p>";
+    }
+    else {
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("Max EVC' = ")
+                <<"</span>"
+               << maxEVC <<" (node "<< maxNodeEVC  <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("Min EVC' = ")
+               <<"</span>"
+               << minEVC <<" (node "<< minNodeEVC <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("EVC classes = ")
+               <<"</span>"
+               << classesEVC
+               << "</p>";
+    }
+
+    outText << "<p>";
+    outText << "<span class=\"info\">"
+            << tr("EVC' Sum = ")
+            <<"</span>"
+            << sumEVC
+            <<"<br/>"
+           << "<span class=\"info\">"
+            << tr("EVC' Mean = ")
+            <<"</span>"
+            << meanEVC
+            <<"<br/>"
+            << "<span class=\"info\">"
+            << tr("EVC' Variance = ")
+            <<"</span>"
+            << varianceEVC
+            <<"<br/>";
+    outText << "</p>";
+
+
+    outText << "<h2>";
+    outText << tr("GROUP EIGENVECTOR CENTRALISATION (GEC)")
+            << "</h2>";
+
+    outText << "<p>"
+            << tr("Since there is no way to compute Group Eigenvector Centralization, <br />"
+                  "you can use Variance as a general centralization index. <br /><br />")
+            << "<span class=\"info\">"
+            << tr("Variance = ")
+            <<"</span>"
+            <<  varianceEVC
+             << "</p>";
+
+
+    outText << "<p class=\"description\">"
+            << tr("Variance = 0, when all nodes have the same EVC value, i.e. a "
+                  "complete or a circle graph). <br />")
+            << tr("Larger values of variance suggest larger variability between the "
+                  "EVC' values. <br />")
+            << "</p>";
+
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Eigenvector Centrality report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+    file.close();
+
+}
+
+
+
+/**
+ * @brief Computes Eigenvector centrality
+ * @param considerWeights
+ * @param inverseWeights
+ */
+void Graph::centralityEigenvector(const bool &considerWeights,
+                                  const bool &inverseWeights,
+                                  const bool &dropIsolates) {
+
+    qDebug("Graph::centralityEigenvector()");
+    if (!graphModified() && calculatedEVC ) {
+        qDebug() << "Graph::centralityEigenvector() - graph not changed - returning";
+        return;
+    }
+
+    //float nom=0, denom=0,  SEVC=0;
+
+    classesEVC=0;
+    discreteEVCs.clear();
+    sumEVC=0;
+    maxEVC=0;
+    minEVC=RAND_MAX;
+    varianceEVC=0;
+    meanEVC=0;
+    QList<Vertex*>::const_iterator it;
+
+    bool symmetrize=false;
+    bool useDegrees=false;
+
+    int N = vertices(dropIsolates);
+
+    float EVC[N];
+
+    emit statusMessage(tr("Computing adjacency matrix. Please wait..."));
+
+    qDebug()<<"Graph::centralityEigenvector() - Create adjacency matrix AM";
+
+    graphMatrixAdjacencyCreate(dropIsolates, considerWeights,
+                               inverseWeights, symmetrize);
+
+    int i = 0;
+    if (useDegrees) {
+
+        emit statusMessage(tr("Computing outDegrees. Please wait..."));
+
+        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
+            if (!(*it)->isIsolated() && dropIsolates) {
+                continue;
+            }
+
+            EVC[i] = (*it)->degreeOut();
+
+            i++;
+        }
+
+    }
+    else {
+       for (int i = 0 ; i < N ; i++) {
+            EVC[i] = 1;
+        }
+
+    }
+
+    emit statusMessage(tr("Computing matrix leading eigenvector. "
+                          "Please wait..."));
+
+    AM.powerIteration(EVC, sumEVC, maxEVC, maxNodeEVC,
+                      minEVC, minNodeEVC,
+                      0.0000001, 500);
+
+    emit statusMessage(tr("Leading eigenvector computed. "
+                          "Analysing centralities. Please wait..."));
+    i = 0;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
+        if (!(*it)->isIsolated() && dropIsolates) {
+            continue;
+        }
+
+        (*it) -> setEVC( EVC[i]);
+        (*it) -> setSEVC( EVC[i] / sumEVC);
+
+        i++;
+    }
+
+    // group eigenvector centralization measure is
+    // S(cmax - c(vi)) divided by the maximum value possible,
+    // where c(vi) is the eigenvector centrality of vertex vi.
+}
+
+
+
 //Calculates the degree (outDegree) centrality of each vertex - diagonal included
-void Graph::centralityDegree(const bool weights, const bool dropIsolates){
+void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
     qDebug("Graph::centralityDegree()");
     if (!graphModified() && calculatedDC ) {
         qDebug() << "Graph::centralityDegree() - graph not changed - returning";
@@ -3592,15 +5104,15 @@ void Graph::centralityDegree(const bool weights, const bool dropIsolates){
     }
     float DC=0, nom=0, denom=0,  SDC=0;
     float weight;
-    classesDC=0;
-    discreteDCs.clear();
+    classesSDC=0;
+    discreteSDCs.clear();
+    sumSDC=0;
     sumDC=0;
-    t_sumDC=0;
-    maxDC=0;
-    minDC=RAND_MAX;
-    varianceDC=0;
-    meanDC=0;
-    int vert=vertices(dropIsolates);
+    maxSDC=0;
+    minSDC=RAND_MAX;
+    varianceSDC=0;
+    meanSDC=0;
+    int N=vertices(dropIsolates);
 
     QList<Vertex*>::const_iterator it, it1;
     H_StrToInt::iterator it2;
@@ -3626,7 +5138,7 @@ void Graph::centralityDegree(const bool weights, const bool dropIsolates){
         }
 
         (*it) -> setDC ( DC ) ;	//Set OutDegree
-        t_sumDC += DC;          // store temp sumDC (for std calc below)
+        sumDC += DC;          // store sumDC (for std calc below)
         qDebug() << "Graph:centralityDegree() - vertex "
                  <<  (*it)->name() << " has DC = " << DC ;
     }
@@ -3635,42 +5147,42 @@ void Graph::centralityDegree(const bool weights, const bool dropIsolates){
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         DC= (*it)->DC();
         if (!weights) {
-            SDC = ( DC / (vert-1.0) );
+            SDC = ( DC / (N-1.0) );
         }
         else {
-            SDC= ( DC / (t_sumDC) );
+            SDC= ( DC / (sumDC) );
         }
         (*it) -> setSDC( SDC );		//Set Standard DC
 
 //        qDebug() << "Graph::centralityDegree() - vertex "
 //                 <<  (*it)->name() << " SDC " << (*it)->SDC ();
 
-        sumDC+=SDC;
+        sumSDC+=SDC;
 
-        it2 = discreteDCs.find(QString::number(SDC));
-        if (it2 == discreteDCs.end() )	{
-            classesDC++;
+        it2 = discreteSDCs.find(QString::number(SDC));
+        if (it2 == discreteSDCs.end() )	{
+            classesSDC++;
            // qDebug("This is a new DC class");
-            discreteDCs.insert ( QString::number(DC), classesDC );
+            discreteSDCs.insert ( QString::number(SDC), classesSDC );
         }
-        //qDebug() << "DC classes =  " << classesDC;
+        //qDebug() << "DC classes =  " << classesSDC;
 
-        if (maxDC < SDC ) {
-            maxDC = SDC ;
-            maxNodeDC=(*it)->name();
+        if (maxSDC < SDC ) {
+            maxSDC = SDC ;
+            maxNodeSDC=(*it)->name();
         }
-        if (minDC > SDC ) {
-            minDC = SDC ;
-            minNodeDC=(*it)->name();
+        if (minSDC > SDC ) {
+            minSDC = SDC ;
+            minNodeSDC=(*it)->name();
         }
     }
 
-    if (minDC == maxDC)
-        maxNodeDC=-1;
+    if (minSDC == maxSDC)
+        maxNodeSDC=-1;
 
-    meanDC = sumDC / (float) vert;
-    //    qDebug() << "Graph::centralityDegree() - sumDC  " << sumDC
-    //             << " vertices " << vert << " meanDC = sumDC / vert = " << meanDC;
+    meanSDC = sumSDC / (float) N;
+    //    qDebug() << "Graph::centralityDegree() - sumSDC  " << sumSDC
+    //             << " vertices " << N << " meanSDC = sumSDC / N = " << meanSDC;
 
     // Calculate Variance and the Degree Centralisation of the whole graph.
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -3678,30 +5190,26 @@ void Graph::centralityDegree(const bool weights, const bool dropIsolates){
             continue;
         }
         SDC= (*it)->SDC();
-        nom+= (maxDC-SDC);
-        varianceDC += (SDC-meanDC) * (SDC-meanDC) ;
+        nom+= (maxSDC-SDC);
+        varianceSDC += (SDC-meanSDC) * (SDC-meanSDC) ;
 
-//        if ( dropIsolates  ) {
-//            if   ( ! (*it)->isIsolated() ) {
-//                varianceDC += (SDC-meanDC) * (SDC-meanDC) ;
-//                nom+= (maxDC-SDC);
-//            }
-//        }
-//        else {
-//        }
 
     }
-    varianceDC=varianceDC/(float) vert;
+    varianceSDC=varianceSDC/(float) N;
 
-//    qDebug() << "Graph::centralityDegree() - variance = " << varianceDC;
-    if (m_symmetric)
-        denom=(vert-1.0)*(vert-2.0);
-    else
-        denom=(vert-1.0)*(vert-1.0);
+//    qDebug() << "Graph::centralityDegree() - variance = " << varianceSDC;
+    if (m_symmetric) {
+        // we divide by N-1 because we use std C values
+        denom= (N-1.0)*(N-2.0)  / (N-1.0);
+    }
+    else {
+        denom=(N-1.0)*(N-1.0)   / (N-1.0);
+    }
 
-    if (vert < 3 )
-         denom = vert-1.0;
-    //    qDebug () << "*** vert is " << vert << " nom " << nom << " denom is " << denom;
+    if (N < 3 )
+         denom = N-1.0;
+
+    //    qDebug () << "*** N is " << N << " nom " << nom << " denom is " << denom;
     if (!weights) {
         groupDC=nom/denom;
     }
@@ -3720,8 +5228,11 @@ void Graph::centralityDegree(const bool weights, const bool dropIsolates){
  */
 void Graph::writeCentralityDegree ( const QString fileName,
                                     const bool considerWeights,
-                                    const bool dropIsolates)
-{
+                                    const bool dropIsolates) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
@@ -3735,82 +5246,498 @@ void Graph::writeCentralityDegree ( const QString fileName,
                << " dropIsolates " <<dropIsolates;
     centralityDegree(considerWeights, dropIsolates);
 
-    float maximumIndexValue=vertices(dropIsolates)-1.0;
+    float maxIndexDC=vertices(dropIsolates)-1.0;
+
+
+    int rowCount=0;
+    int N = vertices();
+
+    outText << htmlHead;
 
     outText.setRealNumberPrecision(m_precision);
-    outText << tr("DEGREE CENTRALITY (DC)")<<endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-    outText << tr("In undirected graphs, the DC index is the sum of edges "
-                  "attached to a node u.\n");
-    outText << tr("In digraphs, the index is the sum of outbound arcs from "
-                  "node u to all adjacent nodes.\n");
-    outText << tr("If the network is weighted, the DC score is the sum of weights of outbound "
-                  "edges from node u to all adjacent nodes.\n");
-    outText << tr("DC' is the standardized DC\n\n");
 
-    if (considerWeights){
-        outText << tr("DC  range: 0 < C < undefined (valued graph)")<<"\n";
-    }
-    else
-        outText << tr("DC  range: 0 < C < ")<<QString::number(maximumIndexValue)<<"\n";
+    outText << "<h1>";
+    outText << tr("DEGREE CENTRALITY (DC) REPORT");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("In undirected networks, the DC index is the sum of edges attached to a node u. <br />"
+                  "In directed networks, the index is the sum of outbound arcs from node u "
+                  "to all adjacent nodes (also called \"outDegree Centrality\"). <br />"
+                  "If the network is weighted, the DC score is the sum of weights of outbound "
+                  "edges from node u to all adjacent nodes.<br />"
+                  "Note: To compute inDegree Centrality, use the Degree Prestige measure.")
+            << "<br />"
+            << tr("DC' is the standardized index (DC divided by N-1 (non-valued nets) or by sumDC (valued nets).")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("DC range: ")
+            <<"</span>"
+            << tr("0 &le; DC &le; ");
+    if (considerWeights) outText<< infinity;
+    else outText << maxIndexDC;
+    outText << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("DC' range: ")
+            <<"</span>"
+            << tr("0 &le; DC' &le; 1")
+            << "</p>";
 
 
-    outText << "DC' range: 0 < C'< 1"<<"\n\n";
+    outText << "<table class=\"stripes sortable\">";
 
-    outText << "Node"<<"\tDC\tDC'\t%DC'\n";
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Node")
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Label")
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("DC")
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
+            << tr("DC'")
+            << "</th>"
+            <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
+            << tr("%DC'")
+            <<"</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody id=\"results\">";
+
+
     QList<Vertex*>::const_iterator it;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
+    for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+        rowCount++;
+
+        outText <<fixed;
+
         if (dropIsolates && (*it)->isIsolated()) {
-            outText << (*it)->name()<<"\t -- \t\t --" <<endl;
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                   << (*it)->name()
+                   << "</td><td>"
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td>"
+                   <<"</tr>";
         }
         else {
-            outText << (*it)->name()<<"\t"
-                    <<(*it)->DC() << "\t"<< (*it)->SDC() << "\t"
-                   <<  ( 100* ((*it)->SDC() ) )<< "\n";
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                    << (*it)->name()
+                    << "</td><td>"
+                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                    << "</td><td>"
+                    << (*it)->DC()
+                    << "</td><td>"
+                    << (*it)->SDC()
+                    << "</td><td>"
+                    << (100* ((*it)->SDC()))
+                    << "</td>"
+                    <<"</tr>";
+
         }
-    }
-    if ( minDC == maxDC ) {
-        outText << "\n" << tr("All nodes have the same DC score.") << "\n";
-    }
-    else  {
-        outText << "\n";
-        outText << tr("Max DC' = ") << maxDC <<" (node "<< maxNodeDC <<  ")  \n";
-        outText << tr("Min DC' = ") << minDC <<" (node "<< minNodeDC <<  ")  \n";
-        outText << tr("DC classes = ") << classesDC<<" \n";
+
     }
 
-    outText << "\n";
-    outText << tr("DC sum = ") << t_sumDC<<"\n" ;
-    outText << tr("DC' sum = ") << sumDC<<"\n" ;
-    outText << tr("DC' Mean = ") << meanDC<<"\n" ;
-    outText << tr("DC' Variance = ") << varianceDC<<"\n";
+    outText << "</tbody></table>";
 
-    if (!considerWeights) {
-        outText << "\nGROUP DEGREE CENTRALISATION (GDC)\n\n";
-        outText << "GDC = " << qSetRealNumberPrecision(m_precision) << groupDC<<"\n\n";
-
-        outText << "GDC range: 0 < GDC < 1\n";
-        outText << "GDC = 0, when all out-degrees are equal (i.e. regular lattice).\n";
-        outText << "GDC = 1, when one node completely dominates or overshadows the other nodes.\n";
-        outText << "(Wasserman & Faust, formula 5.5, p. 177)\n\n";
-        outText << "(Wasserman & Faust, p. 101)\n";
+    if ( minSDC ==  maxSDC) {
+        outText << "<p>"
+                << tr("All nodes have the same DC score.")
+                << "</p>";
     }
     else {
-        outText << "This graph is weighted. No GDC value can be computed. \n"
-                << "You can use DC mean or variance as a group-level DC measure";
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("DC Sum = ")
+                <<"</span>"
+                << sumDC
+                <<"</p>";
+
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("Max DC' = ")
+                <<"</span>"
+               << maxSDC <<" (node "<< maxNodeSDC  <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("Min DC' = ")
+               <<"</span>"
+               << minSDC <<" (node "<< minNodeSDC <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("DC' classes = ")
+               <<"</span>"
+               << classesSDC
+               << "</p>";
     }
 
-    outText << "\n\n";
-    outText << tr("Degree Centrality (Out-Degree) Report, \n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    outText << "<p>";
+    outText << "<span class=\"info\">"
+            << tr("DC' Sum = ")
+            <<"</span>"
+            << sumSDC
+            <<"<br/>"
+           << "<span class=\"info\">"
+            << tr("DC' Mean = ")
+            <<"</span>"
+            << meanSDC
+            <<"<br/>"
+            << "<span class=\"info\">"
+            << tr("DC' Variance = ")
+            <<"</span>"
+            << varianceSDC
+            <<"<br/>";
+    outText << "</p>";
+
+
+    if (!considerWeights) {
+        outText << "<h2>";
+        outText << tr("GROUP DEGREE CENTRALISATION (GDC)")
+                << "</h2>";
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("GDC = ")
+                <<"</span>"
+                <<  groupDC
+                 << "</p>";
+
+        outText << "<p>"
+                << "<span class=\"info\">"
+                << tr("GDC range: ")
+                <<"</span>"
+                <<" 0 &le; GDC &le; 1"
+               << "</p>";
+
+        outText << "<p class=\"description\">"
+                << tr("GDC = 0, when all out-degrees are equal (i.e. regular lattice).")
+                << "<br />"
+                << tr("GDC = 1, when one node completely dominates or overshadows the other nodes.")
+                << "<br />"
+                << "(Wasserman & Faust, formula 5.5, p. 177)"
+                 << "<br />"
+                << "(Wasserman & Faust, p. 101)"
+                << "</p>";
+
+    }
+    else
+        outText << "<p class=\"description\">"
+                << tr("Because this graph is weighted, we cannot compute Group Centralization")
+                << "<br />"
+                << tr("You can use variance as a group-level centralisation measure.")
+                << "</p>";
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Degree Centrality report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
     file.close();
 
 }
 
+
+
+
+
 /**
- * @brief Graph::centralityClosenessInfluenceRange
+ * @brief Writes the closeness centralities to a file
+ * @param fileName
+ * @param considerWeights
+ * @param inverseWeights
+ * @param dropIsolates
+ */
+void Graph::writeCentralityCloseness( const QString fileName,
+                                      const bool considerWeights,
+                                      const bool inverseWeights,
+                                      const bool dropIsolates) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
+    qDebug() << "Graph::writeCentralityCloseness()"
+             << "considerWeights"<<considerWeights
+             << "inverseWeights"<<inverseWeights
+             << "dropIsolates" << dropIsolates;
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
+        return;
+    }
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
+
+    if (graphModified() || !calculatedCentralities ) {
+            graphMatrixDistancesCreate(true, considerWeights,
+                                 inverseWeights, dropIsolates);
+    }
+    else {
+        qDebug() << "Graph::writeCentralityCloseness() - graph not modified, "
+                    "and centralities calculated. Writing file...";
+    }
+
+    emit statusMessage ( tr("Writing Closeness indices to file:") + fileName );
+
+    int rowCount=0;
+    int N = vertices();
+
+    outText << htmlHead;
+
+    outText.setRealNumberPrecision(m_precision);
+
+    outText << "<h1>";
+    outText << tr("CLOSENESS CENTRALITY (CC) REPORT");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("The CC index is the inverted sum of geodesic distances "
+                  "from each node u to all other nodes. " )
+            << "<br />"
+            << tr("Note: The CC index considers outbound arcs only and "
+                  "isolate nodes are dropped by default. ")
+            << "<br />"
+            << tr("Read the Manual for more.")
+            << "<br />"
+            << tr("CC' is the standardized index (CC multiplied by (N-1 minus isolates)).")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("CC range: ")
+            <<"</span>"
+            << tr("0 &le; CC &le; ")<< 1.0/maxIndexCC
+            << tr(" ( 1 / Number of node pairs excluding u)")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("CC' range: ")
+            <<"</span>"
+            << tr("0 &le; CC' &le; 1  (CC'=1 when a node is the center of a star graph)")
+            << "</p>";
+
+
+    outText << "<table class=\"stripes sortable\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Node")
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Label")
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("CC")
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
+            << tr("CC'")
+            << "</th>"
+            <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
+            << tr("%CC'")
+            <<"</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody id=\"results\">";
+
+
+    QList<Vertex*>::const_iterator it;
+
+    for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+        rowCount++;
+
+        outText <<fixed;
+
+        if (dropIsolates && (*it)->isIsolated()) {
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                   << (*it)->name()
+                   << "</td><td>"
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td>"
+                   <<"</tr>";
+        }
+        else {
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                    << (*it)->name()
+                    << "</td><td>"
+                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                    << "</td><td>"
+                    << (*it)->CC()
+                    << "</td><td>"
+                    << (*it)->SCC()
+                    << "</td><td>"
+                    << (100* ((*it)->SCC()))
+                    << "</td>"
+                    <<"</tr>";
+
+        }
+
+    }
+
+    outText << "</tbody></table>";
+
+    if ( minSCC ==  maxSCC) {
+        outText << "<p>"
+                << tr("All nodes have the same CC score.")
+                << "</p>";
+    }
+    else {
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("CC Sum = ")
+                <<"</span>"
+                << sumCC
+                <<"</p>";
+
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("Max CC' = ")
+                <<"</span>"
+               << maxSCC <<" (node "<< maxNodeSCC  <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("Min CC' = ")
+               <<"</span>"
+               << minSCC <<" (node "<< minNodeSCC <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("CC' classes = ")
+               <<"</span>"
+               << classesSCC
+               << "</p>";
+    }
+
+    outText << "<p>";
+    outText << "<span class=\"info\">"
+            << tr("CC' Sum = ")
+            <<"</span>"
+            << sumSCC
+            <<"<br/>"
+           << "<span class=\"info\">"
+            << tr("CC' Mean = ")
+            <<"</span>"
+            << meanSCC
+            <<"<br/>"
+            << "<span class=\"info\">"
+            << tr("CC' Variance = ")
+            <<"</span>"
+            << varianceSCC
+            <<"<br/>";
+    outText << "</p>";
+
+
+    if (!considerWeights) {
+        outText << "<h2>";
+        outText << tr("GROUP CLOSENESS CENTRALISATION (GCC)")
+                << "</h2>";
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("GCC = ")
+                <<"</span>"
+                <<  groupCC
+                 << "</p>";
+
+        outText << "<p>"
+                << "<span class=\"info\">"
+                << tr("GCC range: ")
+                <<"</span>"
+                <<" 0 &le; GCC &le; 1"
+               << "</p>";
+
+        outText << "<p class=\"description\">"
+                << tr("GCC = 0, when the lengths of the geodesics are all equal, "
+                      "i.e. a complete or a circle graph.")
+                << "<br />"
+                << tr("GCC = 1, when one node has geodesics of length 1 to all the "
+                      "other nodes, and the other nodes have geodesics of length 2. "
+                      "to the remaining (N-2) nodes.")
+                << "<br />"
+                << tr("This is exactly the situation realised by a star graph.")
+                << "<br />"
+                << "(Wasserman & Faust, formula 5.9, p. 186-187)"
+                << "</p>";
+
+    }
+    else
+        outText << "<p class=\"description\">"
+                << tr("Because this graph is weighted, we cannot compute Group Centralization")
+                << "<br />"
+                << tr("You can use variance as a group-level centralisation measure.")
+                << "</p>";
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Closeness Centrality report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+    file.close();
+
+}
+
+
+
+
+
+/**
+ * @brief Graph::centralityClosenessIR
  * Improved node-level centrality closeness index which focuses on the
  * influence range of each node (the set of nodes that are reachable from it)
  * For each node v, this index calculates the fraction of nodes in its influence
@@ -3820,46 +5747,59 @@ void Graph::writeCentralityDegree ( const QString fileName,
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::centralityClosenessInfluenceRange(const bool considerWeights,
+void Graph::centralityClosenessIR(const bool considerWeights,
                                               const bool inverseWeights,
                                               const bool dropIsolates){
-    qDebug()<< "Graph::centralityClosenessImproved()";
+    qDebug()<< "Graph::centralityClosenessIR()";
     if (!graphModified() && calculatedIRCC ) {
-        qDebug() << "Graph::centralityClosenessImproved() - "
+        qDebug() << "Graph::centralityClosenessIR() - "
                     " graph not changed - returning";
         return;
     }
-     if (!reachabilityMatrixCreated || graphModified()) {
-         qDebug()<< "Graph::centralityClosenessImproved() - "
-                    "call reachabilityMatrix()";
-        reachabilityMatrix(considerWeights, inverseWeights, dropIsolates);
+
+     if (!calculatedDistances || graphModified()) {
+         graphMatrixDistancesCreate(false,considerWeights,inverseWeights,dropIsolates);
      }
+
     // calculate centralities
     QList<Vertex*>::const_iterator it;
     float IRCC=0,SIRCC=0;
     float Ji=0;
+    float dist=0;
+    int i = 0, j = 0;
+    float V=vertices(dropIsolates);
     classesIRCC=0;
     discreteIRCCs.clear();
     sumIRCC=0;
     maxIRCC=0;
     minIRCC=vertices(dropIsolates)-1;
-    float V=vertices(dropIsolates);
     varianceIRCC=0;
     meanIRCC=0;
+
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         IRCC=0;
+        Ji = 0;
         if (!(*it)->isIsolated()) {
-            // find connected nodes
-            QList<int> influencedVertices = influenceRanges.values((*it)->name()-1);
-            Ji=influencedVertices.size();
-            for (int i = 0; i < Ji; ++i) {
-                qDebug() << "Graph:: centralityClosenessImproved - vertex " <<  (*it)->name()
-                         << " is outbound connected to  = " << influencedVertices.at(i) + 1
-                         << " at distance " << DM.item ((*it)->name()-1, influencedVertices.at(i) );
-                IRCC += DM.item ((*it)->name()-1, influencedVertices.at(i) ) ;
+
+            for ( j=0; j < DM.cols() ; j++) {
+                i = index[(*it)->name()];
+                if (i == j) continue;
+                dist = DM.item ( i , j );
+                if (dist != RAND_MAX ) {
+                    IRCC += dist;
+                    Ji ++; // compute |Ji|
+                }
             }
-            qDebug()<< "Graph:: centralityClosenessImproved -  size of vertexinfluenceRangee Ji = " << Ji
-                    << " IRCC=" << IRCC << " divided by Ji=" << Ji << " yields final IRCC =" << IRCC / Ji;
+//            qDebug()<< "Graph::centralityClosenessIR() -  vertex"
+//                    << (*it)->name()
+//                    << "actors in influence range Ji" << Ji
+//                    << "actors in network"<< (V-1)
+//                    << "fraction of reachable actors |Ji|/(V-1)="  << Ji/ (V-1)
+//                    << "distance to actors in Ji" << IRCC
+//                    << "average distance to actors in Ji" << IRCC / Ji
+//                    << "IRCC = "
+//                    << Ji / (V-1) << " / " << IRCC / Ji << " = " << ( Ji / (V-1) ) / ( IRCC / Ji);
+
             // sanity check for IRCC=0 (=> node is disconnected)
             if (IRCC != 0)  {
                 IRCC /= Ji;
@@ -3871,14 +5811,10 @@ void Graph::centralityClosenessInfluenceRange(const bool considerWeights,
         (*it) -> setSIRCC ( IRCC ) ;  // IRCC is a ratio, already std
         resolveClasses(IRCC, discreteIRCCs, classesIRCC);
         minmax( IRCC, (*it), maxIRCC, minIRCC, maxNodeIRCC, minNodeIRCC) ;
-        qDebug() << "Graph::centralityClosenessImproved - vertex " <<  (*it)->name()
-                 << " has IRCC = "
-                 << Ji / (V-1) << " / " << IRCC << " = " << (*it)->IRCC();
+
     }
 
     meanIRCC = sumIRCC / (float) V;
-    qDebug("Graph::centralityClosenessImproved - sumIRCC = %f, meanIRCC = %f",
-           sumIRCC, meanIRCC);
 
     if (minIRCC == maxIRCC)
         maxNodeIRCC=-1;
@@ -3894,94 +5830,6 @@ void Graph::centralityClosenessInfluenceRange(const bool considerWeights,
     calculatedIRCC=true;
 }
 
-//Writes the closeness centralities to a file
-void Graph::writeCentralityCloseness(
-        const QString fileName,
-        const bool considerWeights,
-        const bool inverseWeights,
-        const bool dropIsolates) {
-    QFile file ( fileName );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
-        qDebug()<< "Error opening file!";
-        emit statusMessage ( tr("Error. Could not write to ") + fileName );
-        return;
-    }
-    QTextStream outText ( &file ); outText.setCodec("UTF-8");
-
-    if (graphModified() || !calculatedCentralities ) {
-            emit statusMessage ( (tr("Calculating shortest paths")) );
-            distanceMatrixCreate(true, considerWeights,
-                                 inverseWeights, dropIsolates);
-    }
-    else {
-        qDebug() << " graph not modified, and centralities calculated. Returning";
-    }
-
-    emit statusMessage ( QString(tr("Writing closeness indices to file:"))
-                         .arg(fileName) );
-    outText.setRealNumberPrecision(m_precision);
-    outText << tr("CLOSENESS CENTRALITY (CC)")<<endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-    outText << tr("The CC index is the inverted sum of geodesic distances "
-                  " from each node u to all other nodes.")<<"\n";
-    outText << tr("CC' is the standardized CC (multiplied by N-1 minus isolates).")
-            <<"\n";
-    outText << tr("Note: The CC index considers outbound arcs only and "
-                  "isolate nodes are dropped by default. Read the Manual for more.")
-            << "\n\n";
-
-    outText << tr("CC  range:  0 < C < ")<<QString::number(1.0/maxIndexCC)<<"\n";
-    outText << tr("CC' range:  0 < C'< 1")<<"\n\n";
-    outText << "Node"<<"\tCC\t\tCC'\t\t%CC'\n";
-    QList<Vertex*>::const_iterator it;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if (dropIsolates && (*it)->isIsolated()) {
-            outText << (*it)->name()<<"\t -- \t\t --" <<endl;
-        }
-        else {
-            outText << (*it)->name()<<"\t"<<(*it)->CC() << "\t\t"
-                    << (*it)->SCC() << "\t\t"
-                    <<  (100* ((*it)->SCC()) )<<endl;
-        }
-    }
-    qDebug ("min %f, max %f", minCC, maxCC);
-    if ( minCC == maxCC ) {
-        outText << "\n" << tr("All nodes have the same CC score.") << "\n";
-    }
-    else  {
-        outText << "\n";
-        outText << tr("Max CC' = ") << maxCC <<" (node "<< maxNodeCC  <<  ")  \n";
-        outText << tr("Min CC' = ") << minCC <<" (node "<< minNodeCC <<  ")  \n";
-        outText << tr("CC classes = ") << classesCC<<" \n\n";
-    }
-    outText << tr("CC' sum = ") << sumCC<<" \n";
-    outText << tr("CC' Mean = ") << meanCC<<" \n";
-    outText << tr("CC' Variance = ") << varianceCC<<" \n";
-
-    if (!considerWeights) {
-        outText << tr("\nGROUP CLOSENESS CENTRALISATION (GCC)\n\n");
-        outText << tr("GCC = ") << groupCC<<"\n\n";
-
-        outText << tr("GCC range: 0 < GCC < 1\n");
-        outText << tr("GCC = 0, when the lengths of the geodesics are all equal "
-                      "(i.e. a complete or a circle graph).\n");
-        outText << tr("GCC = 1, when one node has geodesics of length 1 to all the "
-                      "other nodes, and the other nodes have geodesics of length 2 "
-                      "to the remaining (N-2) nodes. "
-                      "This is exactly the situation realised by a star graph.\n");
-        outText <<"(Wasserman & Faust, formula 5.9, p. 186-187)\n\n";
-    }
-    else
-        outText << tr("Because this graph is weighted, we cannot compute Group Centralization\n")
-                << tr("Use variance instead.");
-    outText << "\n\n";
-    outText << tr("Closeness Centrality report, \n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
-    file.close();
-
-}
 
 
 
@@ -3990,75 +5838,212 @@ void Graph::writeCentralityCloseness(
 void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
                                                    const bool considerWeights,
                                                    const bool inverseWeights,
-                                                   const bool dropIsolates)
-{
+                                                   const bool dropIsolates) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
     QFile file ( fileName );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    emit statusMessage ( (tr("calculating IRCC indices")) );
+    emit statusMessage ( (tr("Computing IRCC indices")) );
 
-    centralityClosenessInfluenceRange(considerWeights,inverseWeights, dropIsolates);
+    centralityClosenessIR(considerWeights,inverseWeights, dropIsolates);
 
-    emit statusMessage ( QString(tr("Writing IR closeness indices to file:")
-                         .arg(fileName) ));
+    emit statusMessage ( tr("Writing IR Closeness indices to file:") + fileName );
+
+    int rowCount=0;
+    int N = vertices();
+
+    outText << htmlHead;
+
     outText.setRealNumberPrecision(m_precision);
-    outText << tr("INFLUENCE RANGE CLOSENESS CENTRALITY (IRCC)")<<endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-    outText << tr("The IRCC index is the ratio of the fraction of nodes "
-                   "reachable by each node u to the average distance of these nodes from u.\n"
-                   "This index is optimized for graphs and directed graphs which "
-                   "are not strongly connected. Read the Manual for more. ");
-    outText <<"(Wasserman & Faust, formula 5.22, p. 201)\n\n";
 
-    outText << tr("IRCC  range:  0 < IRCC < 1  (IRCC is a ratio)") << "\n\n";
+    outText << "<h1>";
+    outText << tr("INFLUENCE RANGE CLOSENESS CENTRALITY (IRCC)");
+    outText << "</h1>";
 
-    outText << "Node"<<"\tIRCC=IRCC'\t\t%IRCC'\n";
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("The IRCC index of a node u is the ratio of the fraction of nodes "
+                  "reachable by node u to the average distance of these nodes from u  "
+                  "(Wasserman & Faust, formula 5.22, p. 201)<br />"
+                  "Thus, this metric is similar to Closeness Centrality "
+                  "but it counts only outbound distances from each actor to other reachable nodes. <br />"
+                  "This metric is useful for directed networks which are "
+                  "not strongly connected (thus the ordinary CC index cannot be computed).<br />"
+                  "In undirected networks, the IRCC has the same properties and yields "
+                  "the same results as the ordinary Closeness Centrality.<br />"
+                  "Read the Manual for more. ")
+
+            << "<br />"
+            << tr("IRCC is standardized.")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("IRCC range: ")
+            <<"</span>"
+            << tr("0 &le; IRCC &le; 1  (IRCC is a ratio)")
+            << "</p>";
+
+
+
+    outText << "<table class=\"stripes sortable\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Node")
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Label")
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("IRCC")
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
+            << tr("%IRCC'")
+            << "</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody id=\"results\">";
+
+
+
     QList<Vertex*>::const_iterator it;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
+    for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+        rowCount++;
+
+        outText <<fixed;
+
         if (dropIsolates && (*it)->isIsolated()) {
-            outText << (*it)->name()<<"\t -- \t\t --" <<endl;
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                   << (*it)->name()
+                   << "</td><td>"
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td>"
+                   <<"</tr>";
         }
         else {
-            outText << (*it)->name()<<"\t"<<(*it)->IRCC() << "\t\t"
-                << (100* ((*it)->SIRCC())  )<<endl;
-        }
-    }
-    qDebug ("min %f, max %f", minIRCC, maxIRCC);
-    if ( minIRCC == maxIRCC ){
-        outText << "\n" << tr("All nodes have the same IRCC score.") << "\n";
-    }
-    else  {
-        outText << "\n";
-        outText << tr("Max IRCC = ") << maxIRCC <<" (node "<< maxNodeIRCC  <<  ")  \n";
-        outText << tr("Min IRCC = ") << minIRCC <<" (node "<< minNodeIRCC <<  ")  \n";
-        outText << tr("IRCC classes = ") << classesIRCC<<" \n\n";
-    }
-    outText << tr("IRCC sum = ") << sumIRCC<<"\n";
-    outText << tr("IRCC Mean = ") << meanIRCC<<"\n";
-    outText << tr("IRCC Variance = ") << varianceIRCC<<"\n";
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                    << (*it)->name()
+                    << "</td><td>"
+                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                    << "</td><td>"
+                    << (*it)->IRCC()
+                    << "</td><td>"
+                    << (100* ((*it)->SIRCC()))
+                    << "</td>"
+                    <<"</tr>";
 
-    outText << "\n\n";
-    outText << tr("InfluenceRange Closeness Centrality report, \n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
-            << actualDateTime.currentDateTime().
-               toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+        }
+
+    }
+
+    outText << "</tbody></table>";
+
+    if ( minIRCC ==  maxIRCC) {
+        outText << "<p>"
+                << tr("All nodes have the same IRCC score.")
+                << "</p>";
+    }
+    else {
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("Max IRCC = ")
+                <<"</span>"
+               << maxIRCC <<" (node "<< maxNodeIRCC  <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("Min IRCC = ")
+               <<"</span>"
+               << minIRCC <<" (node "<< minNodeIRCC <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("IRCC classes = ")
+               <<"</span>"
+               << classesIRCC
+               << "</p>";
+    }
+
+    outText << "<p>";
+    outText << "<span class=\"info\">"
+            << tr("IRCC Sum = ")
+            <<"</span>"
+            << sumIRCC
+            <<"<br/>"
+           << "<span class=\"info\">"
+            << tr("IRCC Mean = ")
+            <<"</span>"
+            << meanIRCC
+            <<"<br/>"
+            << "<span class=\"info\">"
+            << tr("IRCC Variance = ")
+            <<"</span>"
+            << varianceIRCC
+            <<"<br/>";
+    outText << "</p>";
+
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Influence Range Closeness Centrality report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
     file.close();
 
 }
 
 
-//Writes the betweenness centralities to a file
+
+
+/**
+ * @brief Writes Betweeness centralities to file
+ * @param fileName
+ * @param considerWeights
+ * @param inverseWeights
+ * @param dropIsolates
+ */
 void Graph::writeCentralityBetweenness(const QString fileName,
                                         const bool considerWeights,
                                         const bool inverseWeights,
                                        const bool dropIsolates) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
     QFile file ( fileName );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
@@ -4066,73 +6051,230 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if (graphModified() || !calculatedCentralities ) {
-        qDebug() << "Graph::writeCentralityBetweenness() -"
-                    "Graph modified. Recomputing Distances/Centralities."
-                       << "calculatedCentralities " << calculatedCentralities ;
-
-        emit statusMessage ( (tr("Calculating shortest paths")) );
-        distanceMatrixCreate(true, considerWeights, inverseWeights, dropIsolates);
+        graphMatrixDistancesCreate(true, considerWeights, inverseWeights, dropIsolates);
     }
     else {
         qDebug() << "Graph::writeCentralityBetweenness() -"
                     "No need to recompute Distances/Centralities. Writing file.";
     }
 
-    emit statusMessage ( tr("Writing betweenness indices to file:") +  fileName );
+    emit statusMessage ( tr("Writing Betweenness indices to file:") +  fileName );
+
+    int rowCount=0;
+    int N = vertices();
+
+    outText << htmlHead;
+
     outText.setRealNumberPrecision(m_precision);
-    outText << tr("BETWEENESS CENTRALITY (BC)")<<endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-    outText << tr("The BC index of a node u is the sum of delta (s,t,u) for all s,t in V")<<"\n";
-    outText << tr("where delta (s,t,u) is the ratio of all geodesics between "
-                  "s and t which run through u. Read the Manual for more.")<<"\n";
-    outText << tr("BC' is the standardized BC.")<<"\n\n";
-    outText << tr("BC  range: 0 < BC < ")<<QString::number( maxIndexBC)
-            << tr(" (Number of pairs of nodes excluding u)")<<"\n";
-    outText << tr("BC' range: 0 < BC'< 1  (C' is 1 when the node falls on all geodesics)\n\n");
-    outText << "Node"<<"\tBC\t\tBC'\t\t%BC'\n";
+
+    outText << "<h1>";
+    outText << tr("BETWEENESS CENTRALITY (BC)");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("The BC index of a node u is the sum of &delta;<sub>(s,t,u)</sub> for all s,t &isin; V ")
+            << "<br />"
+            << tr("where &delta;<sub>(s,t,u)</sub> is the ratio of all geodesics between "
+                  "s and t which run through u. ")
+            << "<br />"
+            << tr("Read the Manual for more.")
+            << "<br />"
+            << tr("BC' is the standardized index (BC divided by (N-1)(N-2)/2 in symmetric nets or (N-1)(N-2) otherwise.")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("BC range: ")
+            <<"</span>"
+            << tr("0 &le; BC &le; ")<< maxIndexBC
+            << tr(" (Number of pairs of nodes excluding u)")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("BC' range: ")
+            <<"</span>"
+            << tr("0 &le; BC' &le; 1  (BC'=1 when the node falls on all geodesics)")
+            << "</p>";
+
+
+    outText << "<table class=\"stripes sortable\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Node")
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Label")
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("BC")
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
+            << tr("BC'")
+            << "</th>"
+            <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
+            << tr("%BC'")
+            <<"</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody id=\"results\">";
+
+
     QList<Vertex*>::const_iterator it;
+
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+        rowCount++;
+
+        outText <<fixed;
+
         if (dropIsolates && (*it)->isIsolated()) {
-            outText << (*it)->name()<<"\t -- \t\t --" <<endl;
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                   << (*it)->name()
+                   << "</td><td>"
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td>"
+                   <<"</tr>";
         }
         else {
-            outText <<(*it)->name()<<"\t"<<(*it)->BC()
-               << "\t\t"<< (*it)->SBC() << "\t\t"
-               <<  (100* ((*it)->SBC()))<<endl;
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                    << (*it)->name()
+                    << "</td><td>"
+                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                    << "</td><td>"
+                    << (*it)->BC()
+                    << "</td><td>"
+                    << (*it)->SBC()
+                    << "</td><td>"
+                    << (100* ((*it)->SBC()))
+                    << "</td>"
+                    <<"</tr>";
+
         }
+
     }
-    if ( minBC ==  maxBC)
-        outText << "\n" << tr("All nodes have the same BC score.") << "\n";
+
+    outText << "</tbody></table>";
+
+    if ( minSBC ==  maxSBC) {
+        outText << "<p>"
+                << tr("All nodes have the same BC score.")
+                << "</p>";
+    }
     else {
-        outText << "\n";
-        outText << tr("Max BC' = ") << maxBC <<" (node "<< maxNodeBC  <<  ")  \n";
-        outText << tr("Min BC' = ") << minBC <<" (node "<< minNodeBC <<  ")  \n";
-        outText << tr("BC classes = ") << classesBC<<" \n\n";
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("BC Sum = ")
+                <<"</span>"
+                << sumBC
+                <<"</p>";
+
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("Max BC' = ")
+                <<"</span>"
+               << maxSBC <<" (node "<< maxNodeSBC  <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("Min BC' = ")
+               <<"</span>"
+               << minSBC <<" (node "<< minNodeSBC <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("BC' classes = ")
+               <<"</span>"
+               << classesSBC
+               << "</p>";
     }
-    outText << tr("BC' sum = ") << sumBC<<" \n";
-    outText << tr("BC' Mean = ") << meanBC<<" \n";
-    outText << tr("BC' Variance = ") << varianceBC<<" \n";
+
+    outText << "<p>";
+    outText << "<span class=\"info\">"
+            << tr("BC' Sum = ")
+            <<"</span>"
+            << sumSBC
+            <<"<br/>"
+           << "<span class=\"info\">"
+            << tr("BC' Mean = ")
+            <<"</span>"
+            << meanSBC
+            <<"<br/>"
+            << "<span class=\"info\">"
+            << tr("BC' Variance = ")
+            <<"</span>"
+            << varianceSBC
+            <<"<br/>";
+    outText << "</p>";
+
 
     if (!considerWeights) {
-        outText << tr("\nGROUP BETWEENESS CENTRALISATION (GBC)\n\n");
-        outText << tr("GBC = ") <<  groupBC <<"\n\n";
+        outText << "<h2>";
+        outText << tr("GROUP BETWEENESS CENTRALISATION (GBC)")
+                << "</h2>";
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("GBC = ")
+                <<"</span>"
+                <<  groupSBC
+                 << "</p>";
 
-        outText << tr("GBC range: 0 < GBC < 1\n");
-        outText << tr("GBC = 0, when all the nodes have exactly the same betweenness index.\n");
-        outText << tr("GBC = 1, when one node falls on all other geodesics between "
-                      "all the remaining (N-1) nodes. "
-                      "This is exactly the situation realised by a star graph.\n");
-        outText << "(Wasserman & Faust, formula 5.13, p. 192)\n\n";
+        outText << "<p>"
+                << "<span class=\"info\">"
+                << tr("GBC range: ")
+                <<"</span>"
+                <<" 0 &le; GBC &le; 1"
+               << "</p>";
+
+        outText << "<p class=\"description\">"
+                << tr("GBC = 0, when all the nodes have exactly the same betweenness index.")
+                << "<br />"
+                << tr("GBC = 1, when one node falls on all other geodesics between "
+                      "all the remaining (N-1) nodes. ")
+                << "<br />"
+                << tr("This is exactly the situation realised by a star graph.")
+                << "<br />"
+                << "(Wasserman & Faust, formula 5.13, p. 192)"
+                << "</p>";
+
     }
     else
-        outText << tr("Because this graph is weighted, we cannot compute Group Centralization\n")
-                << tr("Use variance instead.");
+        outText << "<p class=\"description\">"
+                << tr("Because this graph is weighted, we cannot compute Group Centralization")
+                << "<br />"
+                << tr("You can use variance as a group-level centralisation measure.")
+                << "</p>";
 
-    outText << "\n\n";
-    outText << tr("Betweenness Centrality report, \n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Betweenness Centrality report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
     file.close();
 
 }
@@ -4144,8 +6286,12 @@ void Graph::writeCentralityStress( const QString fileName,
                                    const bool considerWeights,
                                    const bool inverseWeights,
                                    const bool dropIsolates) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
     QFile file ( fileName );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
@@ -4153,67 +6299,183 @@ void Graph::writeCentralityStress( const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if (graphModified() || !calculatedCentralities ) {
-        emit statusMessage ( (tr("Calculating shortest paths")) );
-        distanceMatrixCreate(true, considerWeights, inverseWeights,dropIsolates);
+        graphMatrixDistancesCreate(true, considerWeights, inverseWeights,dropIsolates);
     }
     else {
         qDebug() << " graph not modified, and centralities calculated. Returning";
     }
 
-    emit statusMessage ( tr("Writing stress indices to file:") + fileName );
-    outText.setRealNumberPrecision(m_precision);
-    outText << tr("STRESS CENTRALITY (SC)")<<endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-    outText << tr("The SC index of each node u is the sum of sigma(s,t,u): "
-                  "the number of geodesics from s to t through u.")<<"\n";
+    emit statusMessage ( tr("Writing Stress indices to file:") + fileName );
 
-    outText << tr("SC  range: 0 < SC < ")<<QString::number(maxIndexSC)<<"\n";
-    outText << tr("SC' range: 0 < SC'< 1  (SC'=1 when the node falls on all "
-                  "geodesics)\n\n");
-    outText  << "Node"<<"\tSC\t\tSC'\t\t%SC'\n";
+    int rowCount=0;
+    int N = vertices();
+
+    outText << htmlHead;
+
+    outText.setRealNumberPrecision(m_precision);
+
+    outText << "<h1>";
+    outText << tr("STRESS CENTRALITY (SC)");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("The SC index of each node u is the sum of &sigma;<sub>(s,t,u)</sub>): <br />"
+                  "the number of geodesics from s to t through u.")
+            << "<br />"
+            << tr("SC' is the standardized index (SC divided by sumSC).")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("SC range: ")
+            <<"</span>"
+            << tr("0 &le; SC &le; ")<< maxIndexSC
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("SC' range: ")
+            <<"</span>"
+            << tr("0 &le; SC' &le; 1  (SC'=1 when the node falls on all geodesics)")
+            << "</p>";
+
+    outText << "<table class=\"stripes sortable\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Node")
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Label")
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("SC")
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
+            << tr("SC'")
+            << "</th>"
+            <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
+            << tr("%SC'")
+            <<"</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody id=\"results\">";
+
     QList<Vertex*>::const_iterator it;
+
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+        rowCount++;
+
+        outText <<fixed;
+
         if (dropIsolates && (*it)->isIsolated()) {
-            outText << (*it)->name()<<"\t -- \t\t --" <<endl;
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                   << (*it)->name()
+                   << "</td><td>"
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td>"
+                   <<"</tr>";
         }
         else {
-            outText <<(*it)->name()<<"\t"<<(*it)->SC() << "\t\t"
-               << (*it)->SSC() << "\t\t"
-               <<  (100* ((*it)->SSC()) )<<endl;
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                   << (*it)->name()
+                   << "</td><td>"
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << "</td><td>"
+                   << (*it)->SC()
+                   << "</td><td>"
+                   << (*it)->SSC()
+                   << "</td><td>"
+                   << (100* ((*it)->SSC()))
+                   << "</td>"
+                   <<"</tr>";
         }
     }
 
-    if ( minSC ==  maxSC)
-        outText  << tr("\nAll nodes have the same SC value.\n");
-    else {
-        outText << "\n";
-        outText << tr("Max SC = ") << maxSC <<" (node "<< maxNodeSC  <<  ")  \n";
-        outText << tr("Min SC = ") << minSC <<" (node "<< minNodeSC <<  ")  \n";
-        outText << tr("SC classes = ") << classesSC<<" \n\n";
+    outText << "</tbody></table>";
+
+    if ( minSSC ==  maxSSC) {
+        outText << "<p>"
+                << tr("All nodes have the same SC score.")
+                << "</p>";
     }
-    outText << tr("SC sum = ") << sumSC<<" \n";
-    outText << tr("SC Mean = ") << meanSC<<" \n";
-    outText << tr("SC Variance = ") << varianceSC<<" \n";
+    else {
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("SC Sum = ")
+                <<"</span>"
+                << sumSC
+                <<"</p>";
 
-//    if (!considerWeights) {
-//        outText << endl<< tr("GROUP STRESS CENTRALISATION (GSC)")<<"\n";
-//        outText << tr("GSC = ") <<  groupSC<<"\n\n";
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("Max SC' = ")
+                <<"</span>"
+               << maxSSC <<" (node "<< maxNodeSSC  <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("Min SC' = ")
+               <<"</span>"
+               << minSSC <<" (node "<< minNodeSSC <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("BC classes = ")
+               <<"</span>"
+               << classesSSC
+               << "</p>";
+    }
 
-//        outText << tr("GSC range: 0 < GSC < 1\n");
-//        outText << tr("GSC = 0, when all the nodes have exactly the same stress index.\n");
-//        outText << tr("GSC = 1, when one node falls on all other geodesics between "
-//                      "all the remaining (N-1) nodes. "
-//                      "This is exactly the situation realised by a star graph.\n");
-//    }
-//    else
-//        outText << tr("Because this graph is weighted, we cannot compute Group Centralization\n")
-//                << tr("Use variance instead.");
+    outText << "<p>";
+    outText << "<span class=\"info\">"
+            << tr("SC' Sum = ")
+            <<"</span>"
+            << sumSSC
+            <<"<br/>"
+           << "<span class=\"info\">"
+            << tr("SC' Mean = ")
+            <<"</span>"
+            << meanSSC
+            <<"<br/>"
+            << "<span class=\"info\">"
+            << tr("SC' Variance = ")
+            <<"</span>"
+            << varianceSSC
+            <<"<br/>";
+    outText << "</p>";
 
-    outText << "\n\n";
-    outText << tr("Stress Centrality report, \n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+
+
+    outText << "<p class=\"small\">";
+    outText << tr("Stress Centrality report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
     file.close();
 
 }
@@ -4230,8 +6492,11 @@ void Graph::writeCentralityEccentricity(const QString fileName,
                                          const bool considerWeights,
                                          const bool inverseWeights,
                                         const bool dropIsolates) {
+    QTime computationTimer;
+    computationTimer.start();
+
     QFile file ( fileName );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
@@ -4239,49 +6504,168 @@ void Graph::writeCentralityEccentricity(const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if (graphModified() || !calculatedCentralities ) {
-        emit statusMessage ( (tr("Calculating shortest paths")) );
-        distanceMatrixCreate(true, considerWeights, inverseWeights,dropIsolates);
+        graphMatrixDistancesCreate(true, considerWeights, inverseWeights,dropIsolates);
     }
     else {
         qDebug() << " graph not modified, and centralities calculated. Returning";
     }
-    emit statusMessage ( QString(tr("Writing eccentricity indices to file:"))
-                         .arg(fileName) );
+
+    emit statusMessage ( tr("Writing Eccentricity indices to file:") + fileName );
+
+    int rowCount=0;
+    int N = vertices();
+
+    outText << htmlHead;
+
     outText.setRealNumberPrecision(m_precision);
-    outText << tr("ECCENTRICITY CENTRALITY (EC)") << endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-    outText << tr("The EC index of a node u is the inverse maximum geodesic distance "
-                  " from u to all other nodes in the network.") << "\n";
 
-    outText << tr("EC range: 0 < EC < 1 (GC=1 => max distance to all other nodes is 1)") << "\n\n";
-    outText << "Node"<<"\tEC=EC'\t\t%EC\n";
+    outText << "<h1>";
+    outText << tr("ECCENTRICITY CENTRALITY (EC)");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("The EC index of a node u is the inverse maximum geodesic distance "
+                  "from u to all other nodes in the network.")
+            << "<br />"
+            << tr("EC is standardized.")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("EC range: ")
+            <<"</span>"
+            << tr("0 &le; EC &le; 1 ")
+            << tr(" (EC=1 when the actor has ties to all other nodes)")
+            << "</p>";
+
+
+    outText << "<table class=\"stripes sortable\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Node")
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Label")
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("EC=EC'")
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
+            << tr("%EC'")
+            << "</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody id=\"results\">";
+
+
     QList<Vertex*>::const_iterator it;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if (dropIsolates && (*it)->isIsolated()) {
-            outText << (*it)->name()<<"\t -- \t\t --" <<endl;
-        }
-        else  {
-            outText << (*it)->name()<<"\t"<<(*it)->EC() << "\t\t"
-                <<  (100* ((*it)->SEC()) )<<endl;
-        }
-    }
-    if ( minEC ==  maxEC)
-        outText << tr("\nAll nodes have the same EC value.\n");
-    else {
-        outText << "\n";
-        outText << tr("Max EC = ") << maxEC <<" (node "<< maxNodeEC  <<  ")  \n";
-        outText << tr("Min EC = ") << minEC <<" (node "<< minNodeEC <<  ")  \n";
-        outText << tr("EC classes = ") << classesEC<<" \n\n";
-    }
-    outText << tr("EC sum = ") << sumEC<<" \n";
-    outText << tr("EC Mean = ") << meanEC<<" \n";
-    outText << tr("EC Variance = ") << varianceEC<<" \n";
 
-    outText << "\n\n";
-    outText << tr("Eccentricity Centrality report, \n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+        rowCount++;
+
+        outText <<fixed;
+
+        if (dropIsolates && (*it)->isIsolated()) {
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                   << (*it)->name()
+                   << "</td><td>"
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td>"
+                   <<"</tr>";
+        }
+        else {
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                    << (*it)->name()
+                    << "</td><td>"
+                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                    << "</td><td>"
+                    << (*it)->EC()
+                    << "</td><td>"
+                    << (100* ((*it)->SEC()))
+                    << "</td>"
+                    <<"</tr>";
+
+        }
+
+    }
+
+    outText << "</tbody></table>";
+
+    if ( minEC ==  maxEC) {
+        outText << "<p>"
+                << tr("All nodes have the same EC score.")
+                << "</p>";
+    }
+    else {
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("Max EC = ")
+                <<"</span>"
+               << maxEC <<" (node "<< maxNodeEC  <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("Min EC = ")
+               <<"</span>"
+               << minEC <<" (node "<< minNodeEC <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("EC classes = ")
+               <<"</span>"
+               << classesEC
+               << "</p>";
+    }
+
+    outText << "<p>";
+    outText << "<span class=\"info\">"
+            << tr("EC Sum = ")
+            <<"</span>"
+            << sumEC
+            <<"<br/>"
+           << "<span class=\"info\">"
+            << tr("EC Mean = ")
+            <<"</span>"
+            << meanEC
+            <<"<br/>"
+            << "<span class=\"info\">"
+            << tr("EC Variance = ")
+            <<"</span>"
+            << varianceEC
+            <<"<br/>";
+    outText << "</p>";
+
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Eccentricity Centrality report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+
     file.close();
 
 }
@@ -4299,8 +6683,12 @@ void Graph::writeCentralityPower(const QString fileName,
                                   const bool considerWeights,
                                   const bool inverseWeights,
                                  const bool dropIsolates) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
     QFile file ( fileName );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
@@ -4308,70 +6696,224 @@ void Graph::writeCentralityPower(const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if (graphModified() || !calculatedCentralities ) {
-        emit statusMessage ( (tr("Calculating shortest paths")) );
-        distanceMatrixCreate(true, considerWeights, inverseWeights, dropIsolates);
+        graphMatrixDistancesCreate(true, considerWeights, inverseWeights, dropIsolates);
     }
     else {
         qDebug() << " graph not modified, and centralities calculated. Returning";
     }
-    emit statusMessage ( QString(tr("Writing Power indices to file:"))
-                         .arg(fileName) );
+
+    emit statusMessage ( tr("Writing Power indices to file:") + fileName );
+
+    int rowCount=0;
+    int N = vertices();
+
+    outText << htmlHead;
+
     outText.setRealNumberPrecision(m_precision);
 
-    outText << tr("POWER CENTRALITY (PC)") << endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-    outText << tr("The PC index of a node u is the sum of the sizes of all Nth-order "
-                  "neighbourhoods with weight 1/n.") << "\n";
+    outText << "<h1>";
+    outText << tr("POWER CENTRALITY (PC)");
+    outText << "</h1>";
 
-    outText << tr("PC' is the standardized index: The PC score divided by the total number "
-                  "of nodes in the same component minus 1") << "\n";
-    outText << tr("PC  range: 0 < PC < ") << QString::number(maxIndexPC)
-            << tr(" (star node)")<<"\n";
-    outText << tr("PC' range: 0 < PC'< 1 \n\n");
-    outText << "Node"<<"\tPC\t\tPC'\t\t%PC'\n";
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("The PC index, introduced by Gil and Schmidt, of a node u is the sum of the sizes of all Nth-order "
+                  "neighbourhoods with weight 1/n.")
+            << "<br />"
+            << tr("PC' is the standardized index: The PC score divided by the total number "
+                  "of nodes in the same component minus 1")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("PC range: ")
+            <<"</span>"
+            << tr("0 &le; PC &le; ")<< maxIndexPC
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("PC' range: ")
+            <<"</span>"
+            << tr("0 &le; PC' &le; 1  (PC'=1 when the node is connected to all (star).)")
+            << "</p>";
+
+
+    outText << "<table class=\"stripes sortable\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Node")
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Label")
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("PC")
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
+            << tr("PC'")
+            << "</th>"
+            <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
+            << tr("%PC'")
+            <<"</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody id=\"results\">";
+
+
+
     QList<Vertex*>::const_iterator it;
+
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+        rowCount++;
+
+        outText <<fixed;
+
         if (dropIsolates && (*it)->isIsolated()) {
-            outText << (*it)->name()<<"\t -- \t\t --" <<endl;
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                   << (*it)->name()
+                   << "</td><td>"
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td>"
+                   <<"</tr>";
         }
         else {
-            outText << (*it)->name()<<"\t"<<(*it)->PC() << "\t\t"
-                << (*it)->SPC() << "\t\t"
-                <<  (100* ((*it)->SPC()))<<endl;
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                    << (*it)->name()
+                    << "</td><td>"
+                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                    << "</td><td>"
+                    << (*it)->PC()
+                    << "</td><td>"
+                    << (*it)->SPC()
+                    << "</td><td>"
+                    << (100* ((*it)->SPC()))
+                    << "</td>"
+                    <<"</tr>";
+
         }
 
     }
-    if ( minPC ==  maxPC)
-        outText << tr("\nAll nodes have the same PC value.\n");
-    else {
-        outText << "\n";
-        outText << tr("Max PC' = ") << maxPC <<" (node "<< maxNodePC  <<  ")  \n";
-        outText << tr("Min PC' = ") << minPC <<" (node "<< minNodePC <<  ")  \n";
-        outText << tr("PC classes = ") << classesPC<<" \n\n";
+
+    outText << "</tbody></table>";
+
+    if ( minSPC ==  maxSPC) {
+        outText << "<p>"
+                << tr("All nodes have the same PC score.")
+                << "</p>";
     }
-    outText << tr("PC sum = ") << t_sumPC<<" \n";
-    outText << tr("PC' sum = ") << sumPC<<" \n";
-    outText << tr("PC' Mean = ") << meanPC<<" \n";
-    outText << tr("PC' Variance = ") << variancePC<<" \n";
+    else {
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("PC Sum = ")
+                <<"</span>"
+                << sumPC
+                <<"</p>";
+
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("Max PC' = ")
+                <<"</span>"
+               << maxSPC <<" (node "<< maxNodeSPC  <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("Min PC' = ")
+               <<"</span>"
+               << minSPC <<" (node "<< minNodeSPC <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("PC classes = ")
+               <<"</span>"
+               << classesSPC
+               << "</p>";
+    }
+
+    outText << "<p>";
+    outText << "<span class=\"info\">"
+            << tr("PC' Sum = ")
+            <<"</span>"
+            << sumSPC
+            <<"<br/>"
+           << "<span class=\"info\">"
+            << tr("PC' Mean = ")
+            <<"</span>"
+            << meanSPC
+            <<"<br/>"
+            << "<span class=\"info\">"
+            << tr("PC' Variance = ")
+            <<"</span>"
+            << varianceSPC
+            <<"<br/>";
+    outText << "</p>";
+
 
     if (!considerWeights) {
-            outText << endl<<"GROUP POWER CENTRALIZATION (GPC)\n\n";
-            outText << "GPC = " << groupPC<<"\n\n";
+        outText << "<h2>";
+        outText << tr("GROUP POWER CENTRALISATION (GPC)")
+                << "</h2>";
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("GPC = ")
+                <<"</span>"
+                <<  groupSPC
+                 << "</p>";
 
-            outText << "GPC range: 0 < GPC < 1\n";
-            outText << "GPC = 0, when all in-degrees are equal (i.e. regular lattice).\n";
-            outText << "GPC = 1, when one node is linked to all other nodes (i.e. star).\n";
-    }
-    else {
-        outText << tr("\nBecause the network is weighted, we cannot compute Group Centralization"
-                   "You can use mean or variance instead.\n");
-    }
+        outText << "<p>"
+                << "<span class=\"info\">"
+                << tr("GPC range: ")
+                <<"</span>"
+                <<" 0 &le; GPC &le; 1"
+               << "</p>";
 
-    outText << "\n\n";
-    outText << tr("Power Centrality report, \n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+        outText << "<p class=\"description\">"
+                << tr("GPC = 0, when all in-degrees are equal (i.e. regular lattice).")
+                << "<br />"
+                << tr("GPC = 1, when one node is linked to all other nodes (i.e. star). ")
+                << "<br />"
+                << "</p>";
+
+    }
+    else
+        outText << "<p class=\"description\">"
+                << tr("Because this graph is weighted, we cannot compute Group Centralization")
+                << "<br />"
+                << tr("Use mean or variance instead.")
+                << "</p>";
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Power Centrality report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+
+
     file.close();
 
 }
@@ -4396,17 +6938,17 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
                     " graph not changed - returning";
         return;
     }
-    qDebug()<< "Graph::prestigeDegree() - graph modified. Recomputing...";
+
     float DP=0, SDP=0, nom=0, denom=0;
     float weight;
-    classesDP=0;
+    classesSDP=0;
+    sumSDP=0;
     sumDP=0;
-    t_sumDP=0;
-    maxDP=0;
-    minDP=vertices(dropIsolates)-1;
+    maxSDP=0;
+    minSDP=vertices(dropIsolates)-1;
     discreteDPs.clear();
-    varianceDP=0;
-    meanDP=0;
+    varianceSDP=0;
+    meanSDP=0;
     m_symmetric = true;
     QList<Vertex*>::const_iterator it; //, it1;
     H_StrToInt::iterator it2;
@@ -4418,6 +6960,10 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
     QHash<int,float> *enabledInEdges = new QHash<int,float>;
     QHash<int,float>::const_iterator hit;
 
+
+    qDebug()<< "Graph::prestigeDegree() - vertices"
+            << vert
+            <<"graph modified. Recomputing...";
 
     for ( it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
@@ -4435,7 +6981,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
                  << v1 ;
 
 
-        enabledInEdges=(*it)->returnEnabledInEdges();
+        enabledInEdges=(*it)->inEdgesEnabledHash();
 
         hit=enabledInEdges->cbegin();
 
@@ -4462,38 +7008,12 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
         }
 
         (*it) -> setDP ( DP ) ;		//Set DP
-        t_sumDP += DP;
+        sumDP += DP;
         qDebug() << "Graph: prestigeDegree() vertex " <<  (*it)->name()
                  << " DP "  << DP;
 
     }
 
-
-//    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-//        qDebug()<< "Graph::prestigeDegree() - computing DP for vertex" <<(*it)->name() ;
-//        DP=0;
-//        if (!(*it)->isIsolated()) {
-
-//            for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
-//                qDebug()<< "Graph::prestigeDegree() - check inbound edge "
-//                        <<(*it)->name() << "<-" << (*it1)->name();
-//                if ( (weight=edgeExists( (*it1)->name(), (*it)->name() ) ) !=0  )   {
-//                    if (weights)
-//                        DP+=weight;
-//                    else
-//                        DP++;
-//                }
-
-//                //check if the matrix is symmetric - we need this below
-//                if (  edgeExists ( (*it1)->name(), (*it)->name() , true) == 0  )
-//                    m_symmetric = false;
-//            }
-//        }
-//        (*it) -> setDP ( DP ) ;		//Set DP
-//        t_sumDP += DP;
-//        qDebug() << "Graph: prestigeDegree() vertex " <<  (*it)->name()
-//                 << " DP "  << DP;
-//    }
 
     // Calculate std DP, min,max, mean
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -4502,35 +7022,35 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
             SDP=( DP / (vert-1.0) );		//Set Standard InDegree
         }
         else {
-            SDP =( DP / (t_sumDP) );
+            SDP =( DP / (sumDP) );
         }
         (*it) -> setSDP( SDP );
-        sumDP += SDP;
+        sumSDP += SDP;
         qDebug() << "Graph::prestigeDegree - vertex " <<  (*it)->name() << " DP  "
                  << DP << " SDP " << (*it)->SDP ();
         it2 = discreteDPs.find(QString::number(SDP));
         if (it2 == discreteDPs.end() )	{
-            classesDP++;
+            classesSDP++;
             qDebug("This is a new DP class");
-            discreteDPs.insert ( QString::number(SDP), classesDP );
+            discreteDPs.insert ( QString::number(SDP), classesSDP );
         }
-        qDebug("DP classes = %i ", classesDP);
-        if (maxDP < SDP ) {
-            maxDP = SDP ;
+        qDebug("DP classes = %i ", classesSDP);
+        if (maxSDP < SDP ) {
+            maxSDP = SDP ;
             maxNodeDP=(*it)->name();
         }
-        if (minDP > SDP ) {
-            minDP = SDP ;
+        if (minSDP > SDP ) {
+            minSDP = SDP ;
             minNodeDP=(*it)->name();
         }
 
     }
 
-    if (minDP == maxDP)
+    if (minSDP == maxSDP)
         maxNodeDP=-1;
 
-    meanDP = sumDP / (float) vert;
-    qDebug("Graph: sumDP = %f, meanDP = %f", sumDP, meanDP);
+    meanSDP = sumSDP / (float) vert;
+    qDebug("Graph: sumSDP = %f, meanSDP = %f", sumSDP, meanSDP);
 
     // Calculate Variance and the Degree Prestigation of the whole graph. :)
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -4538,10 +7058,10 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
             continue;
         }
         SDP= (*it)->SDP();
-        nom+= maxDP-SDP;
-        varianceDP += (SDP-meanDP) * (SDP-meanDP) ;
+        nom+= maxSDP-SDP;
+        varianceSDP += (SDP-meanSDP) * (SDP-meanSDP) ;
     }
-    varianceDP=varianceDP/(float) vert;
+    varianceSDP=varianceSDP/(float) vert;
 
     if (m_symmetric)
         denom=(vert-1.0)*(vert-2.0);
@@ -4553,7 +7073,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
     //qDebug () << "*** vert is " << vert << " nom " << nom << " denom is " << denom;
     if (!weights) {
         groupDP=nom/denom;
-        qDebug("Graph: varianceDP = %f, groupDP = %f", varianceDP, groupDP);
+        qDebug("Graph: varianceSDP = %f, groupDP = %f", varianceSDP, groupDP);
     }
 
     delete enabledInEdges;
@@ -4570,10 +7090,12 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
  */
 void Graph::writePrestigeDegree (const QString fileName,
                                  const bool considerWeights,
-                                 const bool dropIsolates)
-{
+                                 const bool dropIsolates) {
+    QTime computationTimer;
+    computationTimer.start();
+
     QFile file ( fileName );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
@@ -4582,70 +7104,223 @@ void Graph::writePrestigeDegree (const QString fileName,
 
     prestigeDegree(considerWeights, dropIsolates);
 
-    float maximumIndexValue=vertices()-1.0;
-    outText.setRealNumberPrecision(m_precision);
-    outText << tr("DEGREE PRESTIGE (DP)") << endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-    outText << tr("The DP index of a node u is the sum of inbound edges to "
-                  "that node from all adjacent nodes.\n");
-    outText << tr("If the network is weighted, DP is the sum of inbound arc "
-                  "weights (Indegree) to node u from all adjacent nodes.\n");
-    outText << tr("The DP index is also known as InDegree Centrality.") << "\n";
-    outText << tr("DP' is the standardized DP (divided by N-1)\n\n");
-    if (considerWeights){
-        maximumIndexValue=(vertices()-1.0)*maxDP;
-        outText << tr("DP  range: 0 < C < undefined (valued graph)")<<"\n";
-    }
-    else
-        outText << tr("DP  range: 0 < C < ")<<maximumIndexValue<<"\n";
-    outText << "DP' range: 0 < C'< 1"<<"\n\n";
+    int N = vertices();
 
-    outText << "Node"<<"\tDP\tDP'\t%DP\n";
+    float maxIndexDP=N-1.0;
+
+    int rowCount=0;
+
+    outText << htmlHead;
+
+    outText.setRealNumberPrecision(m_precision);
+
+    outText << "<h1>";
+    outText << tr("DEGREE PRESTIGE (DP)");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("The DP index, also known as InDegree Centrality, of a node u "
+                  "is the sum of inbound edges to that node from all adjacent nodes. <br />"
+                  "If the network is weighted, DP is the sum of inbound arc "
+                  "weights (Indegree) to node u from all adjacent nodes. ")
+            << "<br />"
+            << tr("DP' is the standardized index (DP divided by N-1).")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("DP range: ")
+            <<"</span>"
+           << tr("0 &le; DP &le; ");
+    if (considerWeights) outText<< infinity;
+    else outText << maxIndexDP;
+    outText << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("DP' range: ")
+            <<"</span>"
+            << tr("0 &le; DP' &le; 1")
+            << "</p>";
+
+
+    outText << "<table class=\"stripes sortable\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Node")
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Label")
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("DP")
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
+            << tr("DP'")
+            << "</th>"
+            <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
+            << tr("%DP'")
+            <<"</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody id=\"results\">";
+
 
     QList<Vertex*>::const_iterator it;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
+    for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+        rowCount++;
+
+        outText <<fixed;
+
         if (dropIsolates && (*it)->isIsolated()) {
-            outText << (*it)->name()<<"\t -- \t\t --" <<endl;
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                   << (*it)->name()
+                   << "</td><td>"
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td>"
+                   <<"</tr>";
         }
         else {
-            outText <<(*it)->name()<<"\t"<<(*it)->DP() << "\t"<< (*it)->SDP()
-               << "\t" <<  (100* ((*it)->SDP()) )<<endl;
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                    << (*it)->name()
+                    << "</td><td>"
+                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                    << "</td><td>"
+                    << (*it)->DP()
+                    << "</td><td>"
+                    << (*it)->SDP()
+                    << "</td><td>"
+                    << (100* ((*it)->SDP()))
+                    << "</td>"
+                    <<"</tr>";
+
         }
+
     }
 
-    if ( minDP == maxDP )
-        outText << "\n"<< tr("All nodes have the same DP value.") << "\n";
-    else  {
-        outText << "\n"<< tr("Max DP' = ") << maxDP <<" (node "<< maxNodeDP <<  ")  \n";
-        outText << tr("Min DP' = ") << minDP <<" (node "<< minNodeDP <<  ")  \n";
-        outText << tr("DP classes = ") << classesDP<<" \n";
-    }
+    outText << "</tbody></table>";
 
-    outText << "\n";
-    outText << tr("DP sum = ") << t_sumDP<<"\n" ;
-    outText << tr("DP' sum = ") << sumDP<<"\n" ;
-    outText << tr("DP' Mean = ") << meanDP<<"\n" ;
-    outText << tr("DP' Variance = ") << varianceDP<<"\n";
-
-    if (!considerWeights) {
-            outText << endl<<"GROUP DEGREE PRESTIGE (GDP)\n\n";
-            outText << "GDP = " << groupDP<<"\n\n";
-
-            outText << "GDP range: 0 < GDP < 1\n";
-            outText << "GDP = 0, when all in-degrees are equal (i.e. regular lattice).\n";
-            outText << "GDP = 1, when one node is chosen by all other nodes (i.e. star).\n";
-            outText << "(Wasserman & Faust, p. 203)\n";
+    if ( minSDP ==  maxSDP) {
+        outText << "<p>"
+                << tr("All nodes have the same DP score.")
+                << "</p>";
     }
     else {
-        outText << tr("\nBecause the network is weighted, we cannot compute Group Centralization"
-                   "You can use mean or variance instead.\n");
+        outText << "<p>";
+        outText  << "<span class=\"info\">"
+                 << tr("DP Sum = ")
+                 <<"</span>"
+                << sumDP
+                << "</p>";
+
+        outText << "<p>"
+                << "<span class=\"info\">"
+                << tr("Max DP' = ")
+                <<"</span>"
+               << maxSDP <<" (node "<< maxNodeDP  <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("Min DP' = ")
+               <<"</span>"
+              << minSDP <<" (node "<< minNodeDP <<  ")"
+              << "<br />"
+              << "<span class=\"info\">"
+              << tr("DP' classes = ")
+              <<"</span>"
+             << classesSDP
+             << "</p>";
     }
 
-    outText << "\n\n";
-    outText << tr("Degree Prestige Report, \n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    outText << "<p>";
+    outText << "<span class=\"info\">"
+            << tr("DP' Sum = ")
+            <<"</span>"
+            << sumSDP
+            <<"<br/>"
+           << "<span class=\"info\">"
+            << tr("DP' Mean = ")
+            <<"</span>"
+            << meanSDP
+            <<"<br/>"
+            << "<span class=\"info\">"
+            << tr("DP' Variance = ")
+            <<"</span>"
+            << varianceSDP
+            <<"<br/>";
+    outText << "</p>";
+
+
+    if (!considerWeights) {
+        outText << "<h2>";
+        outText << tr("GROUP DEGREE PRESTIGE (GDP)")
+                << "</h2>";
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("GDP = ")
+                <<"</span>"
+                <<  groupDP
+                 << "</p>";
+
+        outText << "<p>"
+                << "<span class=\"info\">"
+                << tr("GDP range: ")
+                <<"</span>"
+                <<" 0 &le; GDP &le; 1"
+               << "</p>";
+
+        outText << "<p class=\"description\">"
+                << tr("GDP = 0, when all in-degrees are equal (i.e. regular lattice).")
+                << "<br />"
+                << tr("GDP = 1, when one node is chosen by all other nodes (i.e. star). ")
+                << "<br />"
+                << tr("This is exactly the situation realised by a star graph.")
+                << "<br />"
+                << "(Wasserman & Faust, p. 203)"
+                << "</p>";
+
+    }
+    else
+        outText << "<p class=\"description\">"
+                << tr("Because this graph is weighted, we cannot compute Group Centralization")
+                << "<br />"
+                << tr("You can use variance as a group-level centralisation measure.")
+                << "</p>";
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Degree Prestige report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
     file.close();
 
 }
@@ -4667,47 +7342,51 @@ void Graph::prestigeProximity( const bool considerWeights,
                     " graph not changed - returning";
         return;
     }
-    if (!reachabilityMatrixCreated || graphModified()) {
-        qDebug()<< "Graph::prestigeProximity() - "
-                   "call reachabilityMatrix()";
-        reachabilityMatrix(considerWeights, inverseWeights, dropIsolates, false);
+
+    if (!calculatedDistances || graphModified()) {
+        graphMatrixDistancesCreate(false,considerWeights, inverseWeights,inverseWeights);
     }
+
     // calculate centralities
     QList<Vertex*>::const_iterator it;
     float PP=0;
+    float dist=0;
     float Ii=0;
-    int i=0;
+    int i=0, j=0;
+    float V=vertices(dropIsolates);
     classesPP=0;
     discretePPs.clear();
     sumPP=0;
     maxPP=0;
     minPP=vertices(dropIsolates)-1;
-    float V=vertices(dropIsolates);
     variancePP=0;
     meanPP=0;
     H_StrToInt::iterator it2;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        PP=0; i=0;
-        if (!(*it)->isIsolated()){
-            // find connected nodes
-            QList<int> influencerVertices = influenceDomains.values((*it)->name()-1);
-            Ii=influencerVertices.size();
-            qDebug()<< "Graph::PP - vertex " <<  (*it)->name()
-                    << " Ii size: " << Ii;
-            for ( i = 0; i < Ii; i++) {
-                qDebug() << "Graph::PP - vertex " <<  (*it)->name()
-                         << " is inbound connected from " << influencerVertices.at(i) + 1
-                         << " at distance " << DM.item (  influencerVertices.at(i), (*it)->name()-1);
-                PP += DM.item (  influencerVertices.at(i), (*it)->name()-1);
-            }
-            qDebug()<< "Graph::PP - "
-                       "size of vertexinfluenceDomain Ii = " << Ii
-                    << " PP=" << PP << " divided by Ii=" << Ii
-                    << " yields graph-dependant PP index =" << PP / Ii;
 
-            qDebug() << "Graph::PP - vertex " <<  (*it)->name()
-                     << " has PP = "
-                     << Ii / (V-1) << " / " << PP / Ii << " = " << ( Ii / (V-1) ) / (PP/Ii);
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        PP=0; i=0; Ii = 0;
+        if (!(*it)->isIsolated()){
+
+            j = index[(*it)->name()];
+            for (i=0; i < DM.rows() ; i++) {
+                if (i == j) continue;
+                dist = DM.item ( i , j );
+                if (dist != RAND_MAX ) {
+                    PP += dist;
+                    Ii ++; // compute |Ii|
+                }
+            }
+
+            qDebug()<< "Graph::prestigeProximity() -  vertex"
+                    << (*it)->name()
+                    << "actors in influence domain Ii" << Ii
+                    << "actors in network"<< (V-1)
+                    << "fraction of actors who reach i |Ii|/(V-1)="  << Ii/ (V-1)
+                    << "distance to actors in Ii" << PP
+                    << "average distance to actors in Ii" << PP/ Ii
+                    << "PP= "
+                    << Ii / (V-1) << " / " << PP / Ii << " = " << ( Ii / (V-1) ) / ( PP / Ii  );
+
 
             // sanity check for PP=0 (=> node is disconnected)
             if (PP != 0)  {
@@ -4773,10 +7452,12 @@ void Graph::prestigeProximity( const bool considerWeights,
 void Graph::writePrestigeProximity( const QString fileName,
                                     const bool considerWeights,
                                     const bool inverseWeights,
-                                    const bool dropIsolates)
-{
+                                    const bool dropIsolates) {
+    QTime computationTimer;
+    computationTimer.start();
+
     QFile file ( fileName );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
@@ -4785,47 +7466,166 @@ void Graph::writePrestigeProximity( const QString fileName,
 
     emit statusMessage ( (tr("Calculating prestige proximity indices")) );
     prestigeProximity(considerWeights, inverseWeights, dropIsolates);
-    emit statusMessage ( QString(tr("Writing proximity prestige indices to file:"))
-                         .arg(fileName) );
-    outText.setRealNumberPrecision(m_precision);
-    outText << tr("PROXIMITY PRESTIGE (PP)") << endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-    outText << tr("The PP index of a node u is the ratio of the proportion of "
-                  "nodes who can reach u to the average distance these nodes are "
-                  "from u. Read the Manual for more.") <<"\n\n";
 
-    outText << tr("PP range:  0 < PP < 1 "
-            " (PP is a ratio)")<<"\n\n";
-    outText << "Node"<<"\tPP=PP'\t\t%PP\n";
+    emit statusMessage ( tr("Writing Proximity Prestige indices to file:") + fileName );
+
+    int rowCount=0;
+    int N = vertices();
+
+    outText << htmlHead;
+
+    outText.setRealNumberPrecision(m_precision);
+
+    outText << "<h1>";
+    outText << tr("PROXIMITY PRESTIGE (PP)");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("The PP index of a node u is the ratio of the proportion of "
+                  "nodes who can reach u to the average distance these nodes are from u "
+                  "(Wasserman & Faust, formula 5.25, p. 204)<br />"
+                  "Thus, it is similar to Closeness Centrality but it counts "
+                  "only inbound distances to each actor, thus it is a measure of actor prestige. <br />"
+                  "This metric is useful for directed networks which are "
+                  "not strongly connected (thus the ordinary CC index cannot be computed).<br />"
+                  "In undirected networks, the PP has the same properties and yields "
+                  "the same results as Closeness Centrality.<br />"
+                  "Read the Manual for more. <br />")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("PP range: ")
+            <<"</span>"
+            << tr("0 &le; PP &le; 1 (PP is a ratio)")
+            << "</p>";
+
+
+    outText << "<table class=\"stripes sortable\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Node")
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Label")
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("PP=PP'")
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
+            << tr("%PP")
+            << "</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody id=\"results\">";
+
+
     QList<Vertex*>::const_iterator it;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
+    for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+        rowCount++;
+
+        outText <<fixed;
+
         if (dropIsolates && (*it)->isIsolated()) {
-            outText << (*it)->name()<<"\t -- \t\t --" <<endl;
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                   << (*it)->name()
+                   << "</td><td>"
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td>"
+                   <<"</tr>";
         }
         else {
-            outText << (*it)->name()<<"\t"
-                <<(*it)->PP() << "\t\t"
-               <<  (100* (*it)->SPP() ) <<endl;
-        }
-    }
-    qDebug ("min %f, max %f", minPP, maxPP);
-    if ( minPP == maxPP )
-        outText << "\n"<<tr("All nodes have the same PP value.\n");
-    else  {
-        outText << "\n";
-        outText << tr("Max PP = ") << maxPP <<" (node "<< maxNodePP  <<  ")  \n";
-        outText << tr("Min PP = ") << minPP <<" (node "<< minNodePP <<  ")  \n";
-        outText << tr("PP classes = ") << classesPP<<" \n\n";
-    }
-    outText << tr("PP Sum= ") << sumPP<<"\n";
-    outText << tr("PP Mean = ") << meanPP<<"\n";
-    outText << tr("PP Variance = ") << variancePP<<"\n";
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                    << (*it)->name()
+                    << "</td><td>"
+                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                    << "</td><td>"
+                    << (*it)->PP()
+                    << "</td><td>"
+                    << (100* ((*it)->SPP()))
+                    << "</td>"
+                    <<"</tr>";
 
-    outText << "\n\n";
-    outText << tr("Proximity Prestige report, \n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+        }
+
+    }
+
+    outText << "</tbody></table>";
+
+    if ( minPP ==  maxPP) {
+        outText << "<p>"
+                << tr("All nodes have the same PP score.")
+                << "</p>";
+    }
+    else {
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("Max PP = ")
+                <<"</span>"
+               << maxPP <<" (node "<< maxNodePP  <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("Min PP = ")
+               <<"</span>"
+               << minPP <<" (node "<< minNodePP <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("PP classes = ")
+               <<"</span>"
+               << classesPP
+               << "</p>";
+    }
+
+    outText << "<p>";
+    outText << "<span class=\"info\">"
+            << tr("PP Sum = ")
+            <<"</span>"
+            << sumPP
+            <<"<br/>"
+           << "<span class=\"info\">"
+            << tr("PP Mean = ")
+            <<"</span>"
+            << meanPP
+            <<"<br/>"
+            << "<span class=\"info\">"
+            << tr("PP Variance = ")
+            <<"</span>"
+            << variancePP
+            <<"<br/>";
+    outText << "</p>";
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Proximity Prestige report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
     file.close();
 
 }
@@ -4902,9 +7702,12 @@ void Graph::prestigePageRank(const bool &dropIsolates){
 
         qDebug()<< "Graph::prestigePageRank() - ITERATION : " << iterations;
 
-        t_sumPRP=0;
+        sumPRP=0;
         maxDelta = 0;
-
+        maxPRP=0;
+        minPRP=RAND_MAX;
+        maxNodePRP = 0;
+        minNodePRP = 0;
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
         {
             sumInLinksPR = 0;
@@ -4967,7 +7770,7 @@ void Graph::prestigePageRank(const bool &dropIsolates){
 
            (*it) -> setPRP ( PRP );
 
-            t_sumPRP+=PRP;
+            sumPRP+=PRP;
 
             qDebug() << "Graph::prestigePageRank() - Node "
                      << (*it)->name()
@@ -4987,33 +7790,23 @@ void Graph::prestigePageRank(const bool &dropIsolates){
         }
         // normalize in every iteration
         qDebug() << "Graph::prestigePageRank() - sumPRP for this iteration " <<
-                    t_sumPRP;
+                    sumPRP;
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
             PRP = (*it)->PRP();
-            SPRP = PRP / t_sumPRP ;
-//            (*it)->setPRP( SPRP ); // ???
 
-            qDebug() << "Graph::prestigePageRank() - Node "
-                     << (*it)->name()
-                        << " normalized SPRP =  " << SPRP;
+            if ( PRP > maxPRP ) {
+                maxPRP = PRP;
+                maxNodePRP=(*it)->name();
+            }
+            if ( PRP < minPRP ) {
+                minPRP = PRP;
+                minNodePRP=(*it)->name();
+            }
+
         }
         iterations++;
     }
 
-    // calculate std and min/max PRPs
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
-    {
-        if (dropIsolates && (*it)->isIsolated()) {
-            continue;
-        }
-        PRP = (*it)->PRP();
-        SPRP = PRP / t_sumPRP ;
-        (*it)->setSPRP( SPRP );
-        sumPRP +=  SPRP;
-        qDebug()<< "Graph::prestigePageRank() vertex: " <<  (*it)->name()
-                << " PR = " << PRP << " standard PR = " << SPRP
-                   << " t_sumPRP " << t_sumPRP;
-    }
 
     if (aVert != 0 )
         meanPRP = sumPRP / aVert ;
@@ -5023,27 +7816,33 @@ void Graph::prestigePageRank(const bool &dropIsolates){
     qDebug() << "sumPRP = " << sumPRP << "  aVert = " << aVert
              << "  meanPRP = " << meanPRP;
 
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
+    // calculate std and min/max PRPs
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
         if (dropIsolates && (*it)->isIsolated()) {
             continue;
         }
-        SPRP=(*it)->SPRP();
-        resolveClasses(SPRP,discretePRPs,classesPRP);
-        if ( SPRP > maxPRP ) {
-            maxPRP = SPRP;
-            maxNodePRP=(*it)->name();
-        }
-        if ( SPRP < minPRP ) {
-            minPRP = SPRP;
-            minNodePRP=(*it)->name();
-        }
 
-        t_variance = ( SPRP  - meanPRP  ) ;
+        PRP=(*it)->PRP();
+
+        resolveClasses(PRP,discretePRPs,classesPRP);
+
+        SPRP = PRP / maxPRP ;
+        (*it)->setSPRP( SPRP );
+
+        qDebug()<< "Graph::prestigePageRank() vertex: " <<  (*it)->name()
+                << " PR = " << PRP << " standard PR = " << SPRP
+                   << " t_sumPRP " << t_sumPRP;
+
+        t_variance = ( PRP  - meanPRP  ) ;
         t_variance *=t_variance;
-        qDebug() << "SPRP " <<  (*it)->SPRP() << "  t_variance "
-                 << SPRP - meanPRP  << " t_variance^2" << t_variance ;
+        qDebug() << "PRP " <<  (*it)->PRP() << "  t_variance "
+                 << PRP - meanPRP  << " t_variance^2" << t_variance ;
         variancePRP  += t_variance;
+
     }
+
+
     qDebug() << "PRP' Variance   " << variancePRP   << " aVert " << aVert ;
     variancePRP  = variancePRP  /  (aVert);
     qDebug() << "PRP' Variance: " << variancePRP   ;
@@ -5062,9 +7861,13 @@ void Graph::prestigePageRank(const bool &dropIsolates){
  * @param fileName
  * @param dropIsolates
  */
-void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolates){
+void Graph::writePrestigePageRank(const QString fileName,
+                                  const bool dropIsolates){
+    QTime computationTimer;
+    computationTimer.start();
+
     QFile file ( fileName );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
@@ -5075,50 +7878,188 @@ void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolate
 
     prestigePageRank(dropIsolates);
 
-    emit statusMessage ( QString(tr("Writing PageRank indices to file: %1"))
-                         .arg(fileName) );
+    emit statusMessage ( tr("Writing PageRank indices to file:") + fileName );
+
     outText.setRealNumberPrecision(m_precision);
-    outText << tr("PAGERANK PRESTIGE (PRP)")<<endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-    outText << tr("PRP  range: (1-d)/N = ") << ( 1- d_factor ) / vertices()
-            << " < PRP" << endl;
-    outText << " d =" << d_factor   << endl;
-    outText << tr("PRP' is the standardized PR (PR divided by sumPR)")<<"\n";
-    outText << tr("PRP' range:  ") << " (1-d)/N < C'< 1" <<"\n\n";
-    outText << "Node"<<"\tPRP\t\tPRP'\t\t%PRP'\n";
+
+    int rowCount=0;
+    int N = vertices();
+    outText << htmlHead;
+
+    outText.setRealNumberPrecision(m_precision);
+
+    outText << "<h1>";
+    outText << tr("PAGERANK PRESTIGE (PRP)");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("The PRP is an importance ranking index for each node based on the structure "
+                  "of its incoming links/edges and the rank of the nodes linking to it. <br />"
+
+                 "For each node u the algorithm counts all inbound links (edges) to it, but it "
+                  "normalizes each inbound link from a node v by the outDegree of v. <br />"
+
+                  "The PR values correspond to the principal eigenvector of the normalized link matrix.<br />"
+
+                  "Note: In weighted relations, each backlink to a node u from another node v is considered "
+                  "to have weight=1 but it is normalized by the sum of outbound edge weights of v"
+                  "Therefore, nodes with high outLink weights give smaller percentage of their PR to node u."
+                  )
+            << "<br />"
+            << tr("PRP' is the scaled PRP (PRP divided by max PRP).")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("PRP range: ")
+            <<"</span>"
+            << tr("(1-d)/N = ") << ( ( 1- d_factor ) / N ) << tr(" &le; PRP  ")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("PRP' range: ")
+            <<"</span>"
+            << tr("0 &le; PRP' &le; 1")
+            << "</p>";
+
+
+
+    outText << "<table class=\"stripes sortable\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Node")
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Label")
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("PRP")
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
+            << tr("PRP'")
+            << "</th>"
+            <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
+            << tr("%PRP'")
+            <<"</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody id=\"results\">";
+
+
     QList<Vertex*>::const_iterator it;
-    float PRP=0, SPRP=0;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        PRP = (*it)->PRP();
-        SPRP = (*it)->SPRP();
-        outText << (*it)->name()<<"\t"<< PRP << "\t\t"<< SPRP  << "\t\t"
-                <<  ( 100* SPRP )<<endl;
-    }
-    qDebug ("min %f, max %f", minPRP, maxPRP);
-    if ( minPRP == maxPRP )
-        outText << tr("\nAll nodes have the same PRP value.\n");
-    else  {
-        outText << "\n";
-        outText << tr("Max PRP = ") << maxPRP <<" (node "<< maxNodePRP  <<  ")  \n";
-        outText << tr("Min PRP = ") << minPRP <<" (node "<< minNodePRP <<  ")  \n";
-        outText << tr("PRP classes = ") << classesPRP<<" \n";
-    }
-    outText << "\n";
 
-    outText << tr("PRP sum = ") << t_sumPRP << endl;
-    outText << tr("PRP' sum = ") << sumPRP << endl;
-    outText << tr("PRP' Mean = ") << meanPRP << endl;
-    outText << tr("PRP' Variance = ") << variancePRP << endl<< endl;
+    for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+        rowCount++;
 
-    outText << tr("PageRank Prestige report, \n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+        outText <<fixed;
+
+        if (dropIsolates && (*it)->isIsolated()) {
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                   << (*it)->name()
+                   << "</td><td>"
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td>"
+                   <<"</tr>";
+        }
+        else {
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                    << (*it)->name()
+                    << "</td><td>"
+                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                    << "</td><td>"
+                    << (*it)->PRP()
+                    << "</td><td>"
+                    << (*it)->SPRP()
+                    << "</td><td>"
+                    << (100* ((*it)->SPRP()))
+                    << "</td>"
+                    <<"</tr>";
+
+        }
+
+    }
+
+    outText << "</tbody></table>";
+
+    if ( minPRP ==  maxPRP) {
+        outText << "<p>"
+                << tr("All nodes have the same PRP score.")
+                << "</p>";
+    }
+    else {
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("Max PRP = ")
+                <<"</span>"
+               << maxPRP <<" (node "<< maxNodePRP  <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("Min PRP = ")
+               <<"</span>"
+               << minPRP <<" (node "<< minNodePRP <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("PRP classes = ")
+               <<"</span>"
+               << classesPRP
+               << "</p>";
+    }
+
+    outText << "<p>";
+    outText << "<span class=\"info\">"
+            << tr("PRP Sum = ")
+            <<"</span>"
+            << sumPRP
+            <<"<br/>"
+           << "<span class=\"info\">"
+            << tr("PRP Mean = ")
+            <<"</span>"
+            << meanPRP
+            <<"<br/>"
+            << "<span class=\"info\">"
+            << tr("PRP Variance = ")
+            <<"</span>"
+            << variancePRP
+            <<"<br/>";
+    outText << "</p>";
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("PageRank Prestige report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
     file.close();
 
 }
-
-
 
 
 
@@ -5145,136 +8086,152 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
                                             const bool dropIsolates){
     qDebug() << "Graph::layoutCircularByProminenceIndex - "
                 << "prominenceIndex index = " << prominenceIndex;
-    //first calculate centrality indices if needed
-
-    maxRadius = canvasMaxRadius();
-    if ( prominenceIndex == 1) {
-            if (graphModified() || !calculatedDC )
-                centralityDegree(true, dropIsolates);
-        }
-        else if ( prominenceIndex == 3 ){
-            if (graphModified() || !calculatedIRCC )
-                centralityClosenessInfluenceRange();
-        }
-        else if ( prominenceIndex == 8 ) {
-            if (graphModified() || !calculatedIC )
-                centralityInformation();
-        }
-        else if ( prominenceIndex == 9){
-            if (graphModified() || !calculatedDP )
-                prestigeDegree(true, dropIsolates);
-        }
-        else if ( prominenceIndex == 10 ) {
-            if (graphModified() || !calculatedPRP )
-                prestigePageRank();
-        }
-        else if ( prominenceIndex == 11 ){
-            if (graphModified() || !calculatedPP )
-                prestigeProximity(considerWeights, inverseWeights);
-        }
-        else{
-            if (graphModified() || !calculatedCentralities )
-                distanceMatrixCreate(true, considerWeights,
-                                       inverseWeights, dropIsolates);
-        }
-
     double rad=0;
     double i=0, std=0;
     //offset controls how far from the centre the central nodes be positioned
     float C=0, maxC=0, offset=0.06;
     double new_radius=0, new_x=0, new_y=0;
 
+    emit statusMessage(tr("Computing centrality indices. Please wait..."));
+    //first calculate centrality indices if needed
+
+    maxRadius = canvasMaxRadius();
+    if ( prominenceIndex == 1) {
+        if (graphModified() || !calculatedDC )
+            centralityDegree(true, dropIsolates);
+    }
+    else if ( prominenceIndex == 3 ){
+        if (graphModified() || !calculatedIRCC )
+            centralityClosenessIR();
+    }
+    else if ( prominenceIndex == 8 ) {
+        if (graphModified() || !calculatedIC )
+            centralityInformation();
+    }
+    else if ( prominenceIndex == 9 ) {
+        if (graphModified() || !calculatedEVC )
+            centralityEigenvector();
+    }
+    else if ( prominenceIndex == 10){
+        if (graphModified() || !calculatedDP )
+            prestigeDegree(true, dropIsolates);
+    }
+    else if ( prominenceIndex == 11 ) {
+        if (graphModified() || !calculatedPRP )
+            prestigePageRank();
+    }
+    else if ( prominenceIndex == 12 ){
+        if (graphModified() || !calculatedPP )
+            prestigeProximity(considerWeights, inverseWeights);
+    }
+    else{
+        if (graphModified() || !calculatedCentralities )
+            graphMatrixDistancesCreate(true, considerWeights,
+                                 inverseWeights, dropIsolates);
+    }
+
+    emit statusMessage(tr("Applying circular layout based on centrality/prestige score. "
+                          "Please wait..."));
+
+
     int vert=vertices();
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         switch (prominenceIndex) {
-            case 1 : {
-                qDebug("Layout according to DC");
-                C=(*it)->SDC();
-                std= (*it)->SDC();
-                maxC=maxDC;
-                break;
-            }
-            case 2 : {
-                qDebug("Layout according to CC");
-                C=(*it)->CC();
-                std= (*it)->SCC();
-                maxC=maxCC;
-                break;
-            }
-            case 3 : {
-                qDebug("Layout according to IRCC");
-                qDebug() << "Layout according to IRCC C = " << (*it)->IRCC();
-                qDebug() << "Layout according to IRCC std = " << (*it)->SIRCC();
-                qDebug() << "Layout according to IRCC maxC= " << maxIRCC;
-                C=(*it)->IRCC();
-                std= (*it)->SIRCC();
-                maxC=maxIRCC;
+        case 1 : {
+            qDebug("Layout according to DC");
+            C=(*it)->SDC();
+            std= (*it)->SDC();
+            maxC=maxSDC;
+            break;
+        }
+        case 2 : {
+            qDebug("Layout according to CC");
+            C=(*it)->CC();
+            std= (*it)->SCC();
+            maxC=maxSCC;
+            break;
+        }
+        case 3 : {
+            qDebug("Layout according to IRCC");
+            qDebug() << "Layout according to IRCC C = " << (*it)->IRCC()
+                     << "std = " << (*it)->SIRCC()
+                     << "maxC= " << maxIRCC;
+            C=(*it)->IRCC();
+            std= (*it)->SIRCC();
+            maxC=maxIRCC;
 
-                break;
-            }
-            case 4 : {
-                qDebug("Layout according to BC");
-                C=(*it)->BC();
-                std= (*it)->SBC();
-                maxC=maxBC;
-                break;
-            }
-            case 5 : {
-                qDebug("Layout according to SC");
-                C=(*it)->SC();
-                std= (*it)->SSC();
-                maxC=maxSC;
-                break;
-            }
-            case 6 : {
-                qDebug("Layout according to EC");
-                C=(*it)->EC();
-                std= (*it)->SEC();
-                maxC=maxEC;
-                break;
-            }
-            case 7 : {
-                qDebug("Layout according to PC");
-                C=(*it)->PC();
-                std= (*it)->SPC();
-                maxC=maxPC;
-                break;
-            }
-            case 8 : {
-                qDebug("Layout according to IC");
-                C=(*it)->IC();
-                std= (*it)->SIC();
-                maxC=maxIC;
-                break;
-            }
-            case 9 : {
-                qDebug("Layout according to DP");
-                C=(*it)->SDP();
-                std= (*it)->SDP();
-                maxC=maxDP;
-                break;
-            }
-            case 10 : {
-                qDebug("Layout according to PRP");
-                C=(*it)->PRP();
-                std= (*it)->SPRP();
-                maxC=maxPRP;
-                break;
-            }
-            case 11 : {
-                qDebug("Layout according to PP");
-                C=(*it)->PP();
-                std= (*it)->SPP();
-                maxC=maxPP;
-                break;
-            }
+            break;
+        }
+        case 4 : {
+            qDebug("Layout according to BC");
+            C=(*it)->BC();
+            std= (*it)->SBC();
+            maxC=maxSBC;
+            break;
+        }
+        case 5 : {
+            qDebug("Layout according to SC");
+            C=(*it)->SC();
+            std= (*it)->SSC();
+            maxC=maxSSC;
+            break;
+        }
+        case 6 : {
+            qDebug("Layout according to EC");
+            C=(*it)->EC();
+            std= (*it)->SEC();
+            maxC=maxEC;
+            break;
+        }
+        case 7 : {
+            qDebug("Layout according to PC");
+            C=(*it)->PC();
+            std= (*it)->SPC();
+            maxC=maxSPC;
+            break;
+        }
+        case 8 : {
+            qDebug("Layout according to IC");
+            C=(*it)->IC();
+            std= (*it)->SIC();
+            maxC=maxIC;
+            break;
+        }
+        case 9 : {
+            qDebug("Layout according to EVC");
+            C=(*it)->EVC();
+            std= (*it)->SEVC();
+            maxC=maxEVC;
+            break;
+        }
+
+        case 10 : {
+            qDebug("Layout according to DP");
+            C=(*it)->SDP();
+            std= (*it)->SDP();
+            maxC=maxSDP;
+            break;
+        }
+        case 11 : {
+            qDebug("Layout according to PRP");
+            C=(*it)->PRP();
+            std= (*it)->SPRP();
+            maxC=maxPRP;
+            break;
+        }
+        case 12 : {
+            qDebug("Layout according to PP");
+            C=(*it)->PP();
+            std= (*it)->SPP();
+            maxC=maxPP;
+            break;
+        }
         };
         qDebug () << "Vertice " << (*it)->name() << " at x=" << (*it)->x()
-                  << ", y= "<< (*it)->y() << ": C=" << C << ", stdC=" << std
-                  << ", maxradius " <<  maxRadius
-                  << ", maxC " << maxC << ", C/maxC " << (C/maxC)
-                  << ", newradius " << (std/maxC - offset)*maxRadius;
+                  << "y= "<< (*it)->y() << ": C" << C << "stdC" << std
+                  << "maxradius" <<  maxRadius
+                  << "newradius" << maxRadius - (std/maxC - offset)*maxRadius;
         switch (static_cast<int> (ceil(maxC)) ){
         case 0: {
             qDebug("maxC=0.   Using maxHeight");
@@ -5287,8 +8244,6 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
         }
         };
 
-        qDebug ("new radius %f", new_radius);
-
         //Calculate new position
         rad= (2.0* Pi/ vert );
         new_x=x0 + new_radius * cos(i * rad);
@@ -5298,7 +8253,7 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
         qDebug("Finished Calculation. Vertice will move to x=%f and y=%f ",
                new_x, new_y);
         //Move node to new position
-        emit moveNode((*it)->name(),  new_x,  new_y);
+        emit setNodePos((*it)->name(),  new_x,  new_y);
         i++;
         emit addGuideCircle ( x0, y0, new_radius );
     }
@@ -5312,7 +8267,7 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
 /**
  * @brief Graph::layoutRandom
   Repositions all nodes on different random positions
- * Emits moveNode(i, x,y) to tell GW that the node item should be moved.
+ * Emits setNodePos(i, x,y) to tell GW that the node item should be moved.
  * @param maxWidth
  * @param maxHeight
  */
@@ -5327,8 +8282,8 @@ void Graph::layoutRandom(){
         (*it)->setY( new_y );
         qDebug()<< "Graph::layoutRandom() - "
                 << " vertex " << (*it)->name()
-                   << " emitting moveNode to new pos " << new_x << " , "<< new_y;
-        emit moveNode((*it)->name(),  new_x,  new_y);
+                   << " emitting setNodePos to new pos " << new_x << " , "<< new_y;
+        emit setNodePos((*it)->name(),  new_x,  new_y);
     }
 
     graphModifiedSet(GRAPH_CHANGED_POSITIONS);
@@ -5370,7 +8325,7 @@ void Graph::layoutCircularRandom(double x0, double y0, double maxRadius){
         (*it)->setY( new_y );
         qDebug("Vertice will move to x=%f and y=%f ", new_x, new_y);
         //Move node to new position
-        emit moveNode((*it)->name(),  new_x,  new_y);
+        emit setNodePos((*it)->name(),  new_x,  new_y);
         i++;
         emit addGuideCircle ( x0, y0, new_radius );
     }
@@ -5384,7 +8339,7 @@ void Graph::layoutCircularRandom(double x0, double y0, double maxRadius){
 /**
  * @brief Graph::layoutLevelByProminenceIndex
  * Repositions all nodes on different top-down levels according to their centrality
- * Emits moveNode(i, x,y) to tell GW that the node item should be moved.
+ * Emits setNodePos(i, x,y) to tell GW that the node item should be moved.
  * @param maxWidth
  * @param maxHeight
  * @param prominenceIndex
@@ -5399,36 +8354,6 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
                                          const bool dropIsolates){
     qDebug("Graph: layoutLevelCentrality...");
 
-    if ( prominenceIndex == 1) {
-            if (graphModified() || !calculatedDC )
-                centralityDegree(true, dropIsolates);
-        }
-        else if ( prominenceIndex == 3 ){
-            if (graphModified() || !calculatedIRCC )
-                centralityClosenessInfluenceRange();
-        }
-        else if ( prominenceIndex == 8 ) {
-            if (graphModified() || !calculatedIC )
-                centralityInformation();
-        }
-        else if ( prominenceIndex == 9){
-            if (graphModified() || !calculatedDP )
-                prestigeDegree(true, dropIsolates);
-        }
-        else if ( prominenceIndex == 10 ) {
-            if (graphModified() || !calculatedPRP )
-                prestigePageRank();
-        }
-        else if ( prominenceIndex == 11 ){
-            if (graphModified() || !calculatedPP )
-                prestigeProximity(considerWeights, inverseWeights);
-        }
-        else{
-            if (graphModified() || !calculatedCentralities )
-                distanceMatrixCreate(true, considerWeights,
-                                       inverseWeights, dropIsolates);
-        }
-
     double i=0, std=0;
     //offset controls how far from the top the central nodes will be
     float C=0, maxC=0, offset=50;
@@ -5437,85 +8362,135 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
     maxHeight-=offset;
     maxWidth-=offset;
     QList<Vertex*>::const_iterator it;
+
+
+    emit statusMessage(tr("Computing centrality/prestige scores. Please wait..."));
+
+    if ( prominenceIndex == 1) {
+        if (graphModified() || !calculatedDC )
+            centralityDegree(true, dropIsolates);
+    }
+    else if ( prominenceIndex == 3 ){
+        if (graphModified() || !calculatedIRCC )
+            centralityClosenessIR();
+    }
+    else if ( prominenceIndex == 8 ) {
+        if (graphModified() || !calculatedIC )
+            centralityInformation();
+    }
+    else if ( prominenceIndex == 9){
+        if (graphModified() || !calculatedEVC )
+            centralityEigenvector(true, dropIsolates);
+    }
+
+    else if ( prominenceIndex == 10){
+        if (graphModified() || !calculatedDP )
+            prestigeDegree(true, dropIsolates);
+    }
+    else if ( prominenceIndex == 11 ) {
+        if (graphModified() || !calculatedPRP )
+            prestigePageRank();
+    }
+    else if ( prominenceIndex == 12 ){
+        if (graphModified() || !calculatedPP )
+            prestigeProximity(considerWeights, inverseWeights);
+    }
+    else{
+        if (graphModified() || !calculatedCentralities )
+            graphMatrixDistancesCreate(true, considerWeights,
+                                 inverseWeights, dropIsolates);
+    }
+
+    emit statusMessage(tr("Applying level layout based on centrality/prestige score. "
+                          "Please wait..."));
+
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         switch (prominenceIndex) {
-            case 1 : {
-                qDebug("Layout according to DC");
-                C=(*it)->SDC();
-                std= (*it)->SDC();
-                maxC=maxDC;
-                break;
-            }
-            case 2 : {
-                qDebug("Layout according to CC");
-                C=(*it)->CC();
-                std= (*it)->SCC();
-                maxC=maxCC;
-                break;
-            }
-            case 3 : {
-                qDebug("Layout according to IRCC");
-                C=(*it)->IRCC();
-                std= (*it)->SIRCC();
-                maxC=maxIRCC;
-                break;
-            }
-            case 4 : {
-                qDebug("Layout according to BC");
-                C=(*it)->BC();
-                std= (*it)->SBC();
-                maxC=maxBC;
-                break;
-            }
-            case 5 : {
-                qDebug("Layout according to SC");
-                C=(*it)->SC();
-                std= (*it)->SSC();
-                maxC=maxSC;
-                break;
-            }
-            case 6 : {
-                qDebug("Layout according to EC");
-                C=(*it)->EC();
-                std= (*it)->SEC();
-                maxC=maxEC;
-                break;
-            }
-            case 7 : {
-                qDebug("Layout according to PC");
-                C=(*it)->PC();
-                std= (*it)->SPC();
-                maxC=maxPC;
-                break;
-            }
-            case 8 : {
-                qDebug("Layout according to IC");
-                C=(*it)->IC();
-                std= (*it)->SIC();
-                maxC=maxIC;
-                break;
-            }
-            case 9 : {
-                qDebug("Layout according to DP");
-                C=(*it)->SDP();
-                std= (*it)->SDP();
-                maxC=maxDP;
-                break;
-            }
-            case 10 : {
-                qDebug("Layout according to PRP");
-                C=(*it)->PRP();
-                std= (*it)->SPRP();
-                maxC=maxPRP;
-                break;
-            }
-            case 11 : {
-                qDebug("Layout according to PP");
-                C=(*it)->PP();
-                std= (*it)->SPP();
-                maxC=maxPP;
-                break;
-            }
+        case 1 : {
+            qDebug("Layout according to DC");
+            C=(*it)->SDC();
+            std= (*it)->SDC();
+            maxC=maxSDC;
+            break;
+        }
+        case 2 : {
+            qDebug("Layout according to CC");
+            C=(*it)->CC();
+            std= (*it)->SCC();
+            maxC=maxSCC;
+            break;
+        }
+        case 3 : {
+            qDebug("Layout according to IRCC");
+            C=(*it)->IRCC();
+            std= (*it)->SIRCC();
+            maxC=maxIRCC;
+            break;
+        }
+        case 4 : {
+            qDebug("Layout according to BC");
+            C=(*it)->BC();
+            std= (*it)->SBC();
+            maxC=maxSBC;
+            break;
+        }
+        case 5 : {
+            qDebug("Layout according to SC");
+            C=(*it)->SC();
+            std= (*it)->SSC();
+            maxC=maxSSC;
+            break;
+        }
+        case 6 : {
+            qDebug("Layout according to EC");
+            C=(*it)->EC();
+            std= (*it)->SEC();
+            maxC=maxEC;
+            break;
+        }
+        case 7 : {
+            qDebug("Layout according to PC");
+            C=(*it)->PC();
+            std= (*it)->SPC();
+            maxC=maxSPC;
+            break;
+        }
+        case 8 : {
+            qDebug("Layout according to IC");
+            C=(*it)->IC();
+            std= (*it)->SIC();
+            maxC=maxIC;
+            break;
+        }
+        case 9 : {
+            qDebug("Layout according to EVC");
+            C=(*it)->EVC();
+            std= (*it)->SEVC();
+            maxC=maxEVC;
+            break;
+        }
+
+        case 10 : {
+            qDebug("Layout according to DP");
+            C=(*it)->SDP();
+            std= (*it)->SDP();
+            maxC=maxSDP;
+            break;
+        }
+        case 11 : {
+            qDebug("Layout according to PRP");
+            C=(*it)->PRP();
+            std= (*it)->SPRP();
+            maxC=maxPRP;
+            break;
+        }
+        case 12 : {
+            qDebug("Layout according to PP");
+            C=(*it)->PP();
+            std= (*it)->SPP();
+            maxC=maxPP;
+            break;
+        }
         };
         qDebug()<< "Vertice " << (*it)->name()
                 << " at x="<< (*it)->x() << ", y="<<  (*it)->y()
@@ -5543,7 +8518,7 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
         qDebug() << "Finished Calculation. "
                     "Vertice will move to x="<< new_x << " and y= " << new_y;
         //Move node to new position
-        emit moveNode((*it)->name(),  new_x,  new_y);
+        emit setNodePos((*it)->name(),  new_x,  new_y);
         i++;
         emit addGuideHLine(new_y);
     }
@@ -5570,6 +8545,7 @@ void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
     float C=0, maxC=0;
     int new_size=0;
 
+    emit statusMessage(tr("Computing centrality/prestige scores. Please wait..."));
     //first calculate centrality indices if needed
     if ( prominenceIndex == 0) {
         // do nothing
@@ -5580,29 +8556,38 @@ void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
     }
     else if ( prominenceIndex == 3 ){
         if (graphModified() || !calculatedIRCC )
-            centralityClosenessInfluenceRange();
+            centralityClosenessIR();
     }
     else if ( prominenceIndex == 8 ) {
         if (graphModified() || !calculatedIC )
             centralityInformation();
     }
     else if ( prominenceIndex == 9){
+        if (graphModified() || !calculatedEVC )
+            centralityEigenvector(true, dropIsolates);
+    }
+
+    else if ( prominenceIndex == 10){
         if (graphModified() || !calculatedDP )
             prestigeDegree(true, dropIsolates);
     }
-    else if ( prominenceIndex == 10 ) {
+    else if ( prominenceIndex == 11 ) {
         if (graphModified() || !calculatedPRP )
             prestigePageRank();
     }
-    else if ( prominenceIndex == 11 ){
+    else if ( prominenceIndex == 12 ){
         if (graphModified() || !calculatedPP )
             prestigeProximity(considerWeights, inverseWeights);
     }
     else{
         if (graphModified() || !calculatedCentralities )
-            distanceMatrixCreate(true, considerWeights,
+            graphMatrixDistancesCreate(true, considerWeights,
                                    inverseWeights, dropIsolates);
     }
+
+    emit statusMessage(tr("Applying node sizes based on centrality/prestige score. "
+                          "Please wait..."));
+
     QList<Vertex*>::const_iterator it;
     for  (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         switch (prominenceIndex) {
@@ -5610,83 +8595,91 @@ void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
             C=0;maxC=0;
             break;
         }
-            case 1 : {
-                qDebug("VerticesSize according to DC");
-                C=(*it)->SDC();
-                std= (*it)->SDC();
-                maxC=maxDC;
-                break;
-            }
-            case 2 : {
-                qDebug("VerticesSize according to CC");
-                C=(*it)->CC();
-                std= (*it)->SCC();
-                maxC=maxCC;
-                break;
-            }
-            case 3 : {
-                qDebug("VerticesSize according to IRCC");
-                C=(*it)->IRCC();
-                std= (*it)->SIRCC();
-                maxC=maxIRCC;
-                break;
-            }
-            case 4 : {
-                qDebug("VerticesSize according to BC");
-                C=(*it)->BC();
-                std= (*it)->SBC();
-                maxC=maxBC;
-                break;
-            }
-            case 5 : {
-                qDebug("VerticesSize according to SC");
-                C=(*it)->SC();
-                std= (*it)->SSC();
-                maxC=maxSC;
-                break;
-            }
-            case 6 : {
-                qDebug("VerticesSize according to EC");
-                C=(*it)->EC();
-                std= (*it)->SEC();
-                maxC=maxEC;
-                break;
-            }
-            case 7 : {
-                qDebug("VerticesSize according to PC");
-                C=(*it)->PC();
-                std= (*it)->SPC();
-                maxC=maxPC;
-                break;
-            }
-            case 8 : {
-                qDebug("VerticesSize according to IC");
-                C=(*it)->IC();
-                std= (*it)->SIC();
-                maxC=maxIC;
-                break;
-            }
-            case 9 : {
-                qDebug("VerticesSize according to DP");
-                C=(*it)->SDP();
-                std= (*it)->SDP();
-                maxC=maxDP;
-                break;
-            }
-            case 10 : {
-                qDebug("VerticesSize according to PRP");
-                C=(*it)->PRP();
-                std= (*it)->SPRP();
-                maxC=maxPRP;
-                break;
-            }
-            case 11 : {
-                qDebug("VerticesSize according to PP");
-                C=(*it)->PP();
-                std= (*it)->SPP();
-                maxC=maxPP;
-                break;
-            }
+        case 1 : {
+            qDebug("VerticesSize according to DC");
+            C=(*it)->SDC();
+            std= (*it)->SDC();
+            maxC=maxSDC;
+            break;
+        }
+        case 2 : {
+            qDebug("VerticesSize according to CC");
+            C=(*it)->CC();
+            std= (*it)->SCC();
+            maxC=maxSCC;
+            break;
+        }
+        case 3 : {
+            qDebug("VerticesSize according to IRCC");
+            C=(*it)->IRCC();
+            std= (*it)->SIRCC();
+            maxC=maxIRCC;
+            break;
+        }
+        case 4 : {
+            qDebug("VerticesSize according to BC");
+            C=(*it)->BC();
+            std= (*it)->SBC();
+            maxC=maxSBC;
+            break;
+        }
+        case 5 : {
+            qDebug("VerticesSize according to SC");
+            C=(*it)->SC();
+            std= (*it)->SSC();
+            maxC=maxSSC;
+            break;
+        }
+        case 6 : {
+            qDebug("VerticesSize according to EC");
+            C=(*it)->EC();
+            std= (*it)->SEC();
+            maxC=maxEC;
+            break;
+        }
+        case 7 : {
+            qDebug("VerticesSize according to PC");
+            C=(*it)->PC();
+            std= (*it)->SPC();
+            maxC=maxSPC;
+            break;
+        }
+        case 8 : {
+            qDebug("VerticesSize according to IC");
+            C=(*it)->IC();
+            std= (*it)->SIC();
+            maxC=maxIC;
+            break;
+        }
+        case 9 : {
+            qDebug("Layout according to EVC");
+            C=(*it)->EVC();
+            std= (*it)->SEVC();
+            maxC=maxEVC;
+            break;
+        }
+
+        case 10 : {
+            qDebug("VerticesSize according to DP");
+            C=(*it)->SDP();
+            std= (*it)->SDP();
+            maxC=maxSDP;
+            break;
+        }
+        case 11 : {
+            qDebug("VerticesSize according to PRP");
+            C=(*it)->PRP();
+            std= (*it)->SPRP();
+            maxC=maxPRP;
+            break;
+        }
+        case 12 : {
+            qDebug("VerticesSize according to PP");
+            C=(*it)->PP();
+            std= (*it)->SPP();
+            maxC=maxPP;
+            break;
+        }
         };
         qDebug () << "Vertex " << (*it)->name()
                   << ": C=" << C << ", stdC=" << std
@@ -5761,7 +8754,7 @@ void Graph::randomNetErdosCreate(  const int &vert,
                 << " diag " << diag;
 
     if (mode=="graph") {
-        undirectedSet(true);
+        graphUndirectedSet(true);
     }
     index.reserve(vert);
 
@@ -5867,7 +8860,7 @@ void Graph::randomNetErdosCreate(  const int &vert,
 
     }
 
-    relationAddFromGraph(tr("erdos-renyi"));
+    relationCurrentRename(tr("erdos-renyi"), true);
 
     graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
 }
@@ -5900,7 +8893,7 @@ void Graph::randomNetRingLatticeCreate( const int &vert, const int &degree,
     double rad= (2.0* Pi/ vert );
 
 //    if (mode=="graph") {
-        undirectedSet(true);
+        graphUndirectedSet(true);
 //    }
 
     randomizeThings();
@@ -5931,7 +8924,7 @@ void Graph::randomNetRingLatticeCreate( const int &vert, const int &degree,
         emit updateProgressDialog( updateProgress ? ++progressCounter:0 );
     }
     if (updateProgress)
-        relationAddFromGraph(tr("ring-lattice"));
+        relationCurrentRename(tr("ring-lattice"), true);
 
     graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES, updateProgress);
 }
@@ -5945,12 +8938,17 @@ void Graph::randomNetScaleFreeCreate (const int &n,
                                        const float &alpha,
                                        const QString &mode)
 {
+    qDebug() << "Graph::randomNetScaleFreeCreate() - max nodes n" << n
+             << "power" << power
+             <<"edges added in every round m" <<m
+            <<"alpha" <<alpha
+           <<"mode"<<mode;
     int progressCounter=0;
 
     randomizeThings();
 
     if (mode=="graph") {
-        undirectedSet(true);
+        graphUndirectedSet(true);
     }
 
     int x=0;
@@ -5968,7 +8966,6 @@ void Graph::randomNetScaleFreeCreate (const int &n,
 
     qDebug() << "Graph::randomNetScaleFreeCreate() - "
              << "Create initial connected net of m0 nodes";
-
 
     for (int i=0; i< m0 ; ++i) {
         x=x0 + radius * cos(i * rad);
@@ -5988,7 +8985,8 @@ void Graph::randomNetScaleFreeCreate (const int &n,
         qDebug() << "Graph::randomNetScaleFreeCreate() - "
                    << " Creating all edges for initial node i " << i+1;
         for (int j=i+1; j< m0  ; ++j) {
-            qDebug() << " --- Creating initial edge " << i+1 << " <-> " << j+1;
+            qDebug() << "Graph::randomNetScaleFreeCreate() ---- "
+                        "Creating initial edge " << i+1 << " <-> " << j+1;
             edgeCreate (i+1, j+1, 1, initEdgeColor,
                         EDGE_RECIPROCAL_UNDIRECTED, false, false,
                         QString::null, false);
@@ -5996,18 +8994,18 @@ void Graph::randomNetScaleFreeCreate (const int &n,
         emit updateProgressDialog( ++progressCounter );
     }
 
-    qDebug()<< endl << "Graph::randomNetScaleFreeCreate() - "
+    qDebug()<< "Graph::randomNetScaleFreeCreate() - @@@@ "
                << " start network growth to " << n
-               << " nodes with preferential attachment" << endl;
+               << " nodes with preferential attachment" ;
 
     for (int i= m0 ; i < n ; ++i) {
 
         x=x0 + radius * cos(i * rad);
         y=y0 + radius * sin(i * rad);
 
-        qDebug() << "Graph::randomNetScaleFreeCreate() - "
+        qDebug() << "Graph::randomNetScaleFreeCreate() - ++++"
                     << " adding new node i " << i+1
-                    << " pos " << x << "," << y << endl;
+                    << " pos " << x << "," << y ;
 
         vertexCreate(
                     i+1, initVertexSize,initVertexColor,
@@ -6024,6 +9022,8 @@ void Graph::randomNetScaleFreeCreate (const int &n,
 
         newEdges = 0;
 
+        qDebug()<< "Graph::randomNetScaleFreeCreate() - repeat until we reach"
+                << m << "new edges for node" <<i+1;
         for (;;)
         {	//do until we create m new edges
 
@@ -6055,7 +9055,8 @@ void Graph::randomNetScaleFreeCreate (const int &n,
 
                 if ( prob  <=  prob_j )  {
                     if ( mode == "graph") {
-                        qDebug() << " --- Creating pref.att. reciprocal edge "
+                        qDebug() << "Graph::randomNetScaleFreeCreate()  <-----> "
+                                    "Creating pref.att. reciprocal edge "
                                  <<  i+1 << " <-> " << j+1;
                         edgeCreate (i+1, j+1, 1, initEdgeColor,
                                     EDGE_RECIPROCAL_UNDIRECTED, false, false,
@@ -6064,7 +9065,8 @@ void Graph::randomNetScaleFreeCreate (const int &n,
 
                     }
                     else {
-                        qDebug() << " --- Creating pref.att. directed edge "
+                        qDebug() << "Graph::randomNetScaleFreeCreate()  -----> "
+                                    "Creating pref.att. directed edge "
                                  <<  i+1 << " <-> " << j+1;
                         edgeCreate (i+1, j+1, 1, initEdgeColor,
                                     EDGE_DIRECTED_OPPOSITE_EXISTS, true, false,
@@ -6077,9 +9079,11 @@ void Graph::randomNetScaleFreeCreate (const int &n,
             if ( newEdges == m )
                 break;
         }
+        qDebug()<< "Graph::randomNetScaleFreeCreate() - " << m << "edges reached "
+                "for node" << i+1;
     }
 
-    relationAddFromGraph(tr("scale-free"));
+    relationCurrentRename(tr("scale-free"),true);
     qDebug() << "Graph::randomNetScaleFreeCreate() - finished. Calling "
                 "graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES)";
     graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
@@ -6107,7 +9111,7 @@ void Graph::randomNetSmallWorldCreate (const int &vert, const int &degree,
              << "First creating a ring lattice";
 
     if (mode=="graph") {
-        undirectedSet(true);
+        graphUndirectedSet(true);
     }
 
     randomNetRingLatticeCreate(vert, degree, false);
@@ -6149,7 +9153,7 @@ void Graph::randomNetSmallWorldCreate (const int &vert, const int &degree,
         emit updateProgressDialog( ++progressCounter );
     }
 
-    relationAddFromGraph(tr("small-world"));
+    relationCurrentRename(tr("small-world"), true);
     emit signalNodeSizesByInDegree(true);
     graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
 }
@@ -6313,7 +9317,7 @@ void Graph::randomNetRegularCreate(const int &vert,
 
     }
 
-    relationAddFromGraph(tr("d-regular"));
+    relationCurrentRename(tr("d-regular"), true);
 
     graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
 }
@@ -6330,7 +9334,7 @@ void Graph::randomNetRegularCreate(const int &vert,
  * @return
  */
 int Graph::walksBetween(int v1, int v2, int length) {
-    walksMatrixCreate(length);
+    graphWalksMatrixCreate(length);
     return XM.item(v1-1,v2-1);
 }
 
@@ -6338,72 +9342,113 @@ int Graph::walksBetween(int v1, int v2, int length) {
 
 
 /**
- * @brief Graph::walksMatrixCreate
- *  Calculates two matrices:
-    Matrix XM=AM^l where the elements denote the number of walks of length l
-    between all pairs of vertices
-    Matrix XSM=Sum{AM^n} where the elements denote the total number of walks of
-    any length between pairs of vertices
-
-    NOTE: This function is VERY SLOW on large networks (n>50), since it will
-    calculate all powers of the sociomatrix up to n-1 in order to find out all
-    possible walks. If you need to make a simple reachability test, we advise to
-    use the reachabilityMatrix() function instead.
+ * @brief Computes either the "Walks of given length" or the "Total Walks" matrix.
+ * If length>0, it computes the Walks of given length matrix, XM=AM^l
+ * where each element (i,j) denotes the number of walks of length l between vertex i and j.
+ * If length=0, it computes the Total Walks matrix, XSM=Sum{AM^n} where each (i,j)
+ * denotes the total number of walks of any length between vertices i and j.
+ * NOTE: In the latter case, this function is VERY SLOW on large networks (n>50),
+ * since it will calculate all powers of the sociomatrix up to n-1 in order to find out all
+ * possible walks.
  * @param length
  * @param updateProgress
  */
-void Graph::walksMatrixCreate(const int &maxPower, const bool &updateProgress) {
-    qDebug()<<"Graph::walksBetween() - first create the Adjacency Matrix AM";
+void Graph::graphWalksMatrixCreate(const int &vertices,
+                                   const int &length,
+                                   const bool &updateProgress) {
 
     bool dropIsolates=false;
     bool considerWeights=true;
     bool inverseWeights=false;
     bool symmetrize=false;
-    adjacencyMatrixCreate(dropIsolates, considerWeights, inverseWeights, symmetrize);
-    int size = vertices();
+    int N = vertices;
 
-    XM = AM;   // XM will be the product matrix
-    XSM = AM;  // XSM is the sum of product matrices
-    Matrix PM; // temp matrix
-    PM.zeroMatrix(size, size);
+    qDebug()<<"Graph::graphWalksMatrixCreate() - Create adjacency matrix AM";
+    emit statusMessage(tr("Computing adjacency matrix. Please wait..."));
+    graphMatrixAdjacencyCreate(dropIsolates, considerWeights, inverseWeights, symmetrize);
 
-    qDebug()<< "Graph::writeWalksOfLengthMatrix() XM is  " ;
-    for (int i=0; i < size ; i++) {
-        for (int j=0; j < size ; j++) {
-            qDebug() << XM.item(i,j) <<  " ";
-        }
-        qDebug()<< endl;
-    }
-    if (updateProgress)
-        emit updateProgressDialog (1);
-    qDebug()<< "Graph::writeWalksOfLengthMatrix() - "
-               "Calculating sociomatrix powers up to "  << maxPower;
-    for (int i=2; i <= maxPower ; ++i) {
-        PM.product(XM,AM, false);
-        XM=PM;
-        XSM+XM; // XSM becomes XSM+XM
-        //XSM.sum(XSM,XM);
-        if (updateProgress) {
-            emit updateProgressDialog (i);
-        }
+    if (length>0) {
+        qDebug()<< "Graph::graphWalksMatrixCreate() - "
+                   "Calculating sociomatrix power"  << length;
+
+        if (updateProgress)
+            emit updateProgressDialog (1);
+
+        emit statusMessage(tr("Computing sociomatrix power %1. Please wait...").arg(length));
+        XM = AM.pow(length, false);
+        emit updateProgressDialog (length);
 
     }
+    else {
+        qDebug()<< "Graph::graphWalksMatrixCreate() - "
+                   "Calculating all sociomatrix powers up to"  << N-1;
+
+        XM = AM;   // XM will be the product matrix
+//        qDebug() << "Graph::graphWalksMatrixCreate() XM=AM=";
+//        XM.printMatrixConsole();
+
+        XSM = AM;  // XSM is the sum of product matrices
+//        qDebug() << "Graph::graphWalksMatrixCreate() XSM=AM=";
+//        XSM.printMatrixConsole();
+
+       for (int i=2; i <= (N-1) ; ++i) {
+
+           emit statusMessage(tr("Computing all sociomatrix powers up to %1. "
+                                 "Now computing A^%2. Please wait...").arg(N-1).arg(i));
+
+           XM*=AM;
+//           qDebug() << "Graph::graphWalksMatrixCreate() i"<<i <<"XM=AM^i";
+//           XM.printMatrixConsole();
+
+
+           XSM+=XM; // XSM becomes XSM+XM
+//           qDebug() << "Graph::graphWalksMatrixCreate() i"<<i <<"XSM=";
+//           XSM.printMatrixConsole();
+
+           if (updateProgress) {
+               emit updateProgressDialog (i);
+           }
+
+       }
+       emit updateProgressDialog (N);
+    }
+
+
+
+
+//    qDebug()<< "AM + AM = ";
+//    (AM+AM).printMatrixConsole(true);
+
+//    qDebug()<< "AM += AM = ";
+//    AM+=AM;
+//    (AM).printMatrixConsole(true);
+
+
+//    qDebug()<< "XSM.product (AM,AM) ";
+//    XSM.product (AM, AM);
+//    (XSM).printMatrixConsole(true);
+
+//    qDebug()<< "XSM = AM * AM ";
+//    XSM = AM * AM;
+//    (XSM).printMatrixConsole(true);
+
 
 }
 
 
+
 /**
- * @brief Graph::writeWalksTotalMatrix
+ * @brief Graph::writeWalksTotalMatrixPlainText
  * Writes the total number of walks matrix
  * @param fn
  * @param netName
  * @param length
  */
-void Graph::writeWalksTotalMatrix(const QString &fn, const int &length){
-    qDebug("Graph::writeWalksTotalMatrix() ");
+void Graph::writeWalksTotalMatrixPlainText(const QString &fn){
+    qDebug("Graph::writeWalksTotalMatrixPlainText() ");
 
     QFile file (fn);
-    if ( !file.open( QIODevice::WriteOnly ) )  {
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
@@ -6413,11 +9458,11 @@ void Graph::writeWalksTotalMatrix(const QString &fn, const int &length){
     outText.setCodec("UTF-8");
     outText << "-Social Network Visualizer "<<  VERSION <<endl;
     outText << tr("Network name: ")<< graphName()<<endl<<endl;
-    outText << "Total number of walks of any length less than or equal to "<< length
+    outText << "Total number of walks of any length less than or equal to "<< vertices()-1
         <<" between each pair of nodes \n\n";
     outText << "Warning: Walk counts consider unordered pairs of nodes\n\n";
 
-    walksMatrixCreate(length, true);
+    graphWalksMatrixCreate(vertices(), 0, true);
 
     outText << XSM ;
 
@@ -6427,33 +9472,143 @@ void Graph::writeWalksTotalMatrix(const QString &fn, const int &length){
 
 
 /**
- * @brief Graph::writeWalksOfLengthMatrix
+ * @brief Graph::writeWalksOfLengthMatrixPlainText
  * @param fn
  * @param length
  */
-void Graph::writeWalksOfLengthMatrix(const QString &fn, const int &length){
-    qDebug("Graph::writeWalksOfLengthMatrix() ");
+void Graph::writeWalksOfLengthMatrixPlainText(const QString &fn, const int &length){
+    qDebug()<<"Graph::writeWalksOfLengthMatrixPlainText() ";
 
     QFile file (fn);
-    if ( !file.open( QIODevice::WriteOnly ) )  {
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
-
+    emit statusMessage ( tr("Writing Walks matrix to file:") + fn );
     QTextStream outText(&file);
     outText.setCodec("UTF-8");
     outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
     outText << "Network name: "<< graphName()<<" \n";
     outText << "Number of walks of length "<< length <<" between each pair of nodes \n\n";
 
-    walksMatrixCreate(length, true);
+    graphWalksMatrixCreate(vertices(), length, true);
 
     outText << XM ;
 
     file.close();
 }
 
+
+
+/**
+ * @brief Calls graphWalksMatrixCreate() to compute walks and writes the
+ * Walks of given length matrix to a file in HTML.
+ * If length = 0, it writes the Total Walks matrix.
+ * @param fn
+ * @param length
+ * @param simpler
+ */
+void Graph::writeMatrixWalks (const QString &fn,
+                              const int &length,
+                              const bool &simpler) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
+    Q_UNUSED(simpler);
+    qDebug()<<"Graph::writeMatrixWalks() - length:" << length
+           << "to file:" << fn;
+
+    QFile file( fn );
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fn );
+        return;
+    }
+
+    int N = vertices();
+
+    emit statusMessage(tr("Computing Walks..."));
+    graphWalksMatrixCreate(N, length, true);
+
+    QTextStream outText( &file ); outText.setCodec("UTF-8");
+
+    outText << htmlHead;
+
+    outText << "<h1>";
+
+    if (length>0) {
+        outText << tr("WALKS OF LENGTH %1 MATRIX").arg(length);
+    }
+    else {
+         outText << tr("TOTAL WALKS MATRIX");
+    }
+
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+
+    if (length>0) {
+        outText << "<p class=\"description\">"
+                << tr("The Walks of length %1 matrix is a NxN matrix "
+                      "where each element (i,j) is the number of walks of "
+                      "length %1 between actor i and actor j, "
+                      "or 0 if no walk exists. <br />"
+                      "A walk is a sequence of edges and vertices, where each edge's "
+                      "endpoints are the two vertices adjacent to it. In a walk, "
+                      "vertices and edges may repeat. <br />"
+                      "Warning: Walks count unordered pairs of nodes. ").arg(length)
+                << "</p>";
+    }
+    else {
+        outText << "<p class=\"description\">"
+                << tr("The Total Walks matrix of a social network is a NxN matrix "
+                      "where each element (i,j) is the total number of walks of any "
+                      "length (less than or equal to %1) between actor i and actor j, "
+                      "or 0 if no walk exists. <br />"
+                      "A walk is a sequence of edges and vertices, where each edge's "
+                      "endpoints are the two vertices adjacent to it. In a walk, "
+                      "vertices and edges may repeat. <br />"
+                      "Warning: Walks count unordered pairs of nodes. ").arg(N-1)
+                << "</p>";
+    }
+
+    emit statusMessage ( tr("Writing Walks matrix to file:") + fn );
+    qDebug()<<"Graph::writeMatrixWalks() - Writing XM to file";
+
+
+    if (length > 0) {
+        XM.printHTMLTable(outText);
+    }
+    else {
+         XSM.printHTMLTable(outText);
+    }
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Walks report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+    file.close();
+}
 
 
 
@@ -6465,8 +9620,8 @@ void Graph::writeWalksOfLengthMatrix(const QString &fn, const int &length){
 */
 int Graph::reachable(const int &v1, const int &v2) {
     qDebug()<< "Graph::reachable()";
-    if (!distanceMatrixCreated || graphModified() )
-        distanceMatrixCreate(false);
+    if (!calculatedDistances || graphModified() )
+        graphMatrixDistancesCreate(false);
     return DM.item(v1-1,v2-1);
 }
 
@@ -6480,10 +9635,9 @@ int Graph::reachable(const int &v1, const int &v2) {
  */
 QList<int> Graph::vertexinfluenceRange(int v1){
     qDebug() << "Graph::vertexinfluenceRange() ";
-    if (!reachabilityMatrixCreated || graphModified()) {
-        // call reachabilityMatrix to construct a list of influence ranges
-        // for each node
-        reachabilityMatrix();
+    if (!calculatedDistances|| graphModified()) {
+        // Construct a list of influence ranges for each node
+        graphMatrixDistancesCreate(false, false,false,false);
     }
     return influenceRanges.values(v1);
 }
@@ -6501,113 +9655,29 @@ QList<int> Graph::vertexinfluenceRange(int v1){
  */
 QList<int> Graph::vertexinfluenceDomain(int v1){
     qDebug() << "Graph::vertexinfluenceDomain() ";
-    if (!reachabilityMatrixCreated || graphModified()) {
-        // call reachabilityMatrix to construct a list of influence domains
-        // for each node
-        reachabilityMatrix();
+    if (!calculatedDistances || graphModified()) {
+        // Construct a list of influence domains for each node
+        graphMatrixDistancesCreate(false, false,false,false);
     }
     return influenceDomains.values(v1);
 }
 
 
-int Graph::graphPathsExistingCount()  {
-    if (!reachabilityMatrixCreated || graphModified()) {
-        reachabilityMatrix();
-    }
-    return m_graphPathsExistingCount;
-}
 
-/**
-    Calculates the reachability matrix X^R of the graph
-    where the {i,j} element is 1 if the vertices i and j are reachable
-    Actually, this just checks the corresponding element of Distance Matrix,
-    If d(i,j) is non-zero, then the two nodes are reachable
 
-    In the process, this function creates the InfluenceRange and InfluenceDomain
-    of each node.
-*/
-void Graph::reachabilityMatrix(const bool &considerWeights,
-                               const bool &inverseWeights,
-                               const bool &dropIsolates,
-                               const bool &updateProgress) {
-    qDebug()<< "Graph::reachabilityMatrix()";
 
-    if (reachabilityMatrixCreated && !graphModified()) {
-        qDebug()<< "Graph::reachabilityMatrix() - "
-                   "XRM calculated and graph unmodified. Returning..." ;
-        return;
-    }
-    else {
 
-        distanceMatrixCreate(false, considerWeights,inverseWeights,dropIsolates);
-        int size = vertices(false,false), i=0, j=0;
-        m_graphPathsExistingCount=0;
-        qDebug()<< "Graph::reachabilityMatrix() - calculating XRM..." ;
-        influenceRanges.clear();
-        influenceDomains.clear();
-        disconnectedVertices.clear();
-        for (i=0; i < size ; i++) {
-            for (j=i+1; j < size ; j++) {
-                qDebug()<< "Graph::reachabilityMatrix() - d("<<i+1<<","
-                        <<j+1<<")=" << DM.item(i,j);
-                if ( XRM.item(i,j) ==1 ) {
-                    qDebug()<< "Graph::reachabilityMatrix() - d("<<i+1<<","
-                            <<j+1<<")=" << DM.item(i,j)
-                           << " - inserting " << j+1
-                           << " to inflRange J of " << i+1
-                           << " - and " << i+1
-                           << " to inflDomain I of "<< j+1 ;
-                    influenceRanges.insertMulti(i,j);
-                    influenceDomains.insertMulti(j,i);
-                    m_graphPathsExistingCount++;
-                    if ( XRM.item(j,i) ==1 ) {
-                        qDebug()<< "Graph::reachabilityMatrix() - inverse path d("
-                                <<j+1<<","<<i+1<<")="
-                               << DM.item(j,i)
-                               << " - inserting " << j+1 << " to vertexinfluenceDomain " << i+1
-                               << " - and " << i+1 << " to influence Range J of " << j+1 ;
-                        influenceDomains.insertMulti(i,j);
-                        influenceRanges.insertMulti(j,i);
-                        m_graphPathsExistingCount++;
-                    }
-                    else {
-                        qDebug()<< "Graph::reachabilityMatrix() - ("
-                                <<i+1<<","<<j+1<<") unilaterallyConnectedVertices";
-                        unilaterallyConnectedVertices.insertMulti(i,j);
-                    }
-                }
-                else {
-                    if ( XRM.item(j,i) == 0 ) {
-                        qDebug()<< "Graph::reachabilityMatrix() - ("
-                                <<j+1<<","<<i+1<<") disConnectedVertices";
-                        disconnectedVertices.insertMulti(i,j);
-                    }
-                    else {
-                        qDebug()<< "Graph::reachabilityMatrix() - ("
-                                <<j+1<<","<<i+1<<") unilaterallyConnectedVertices";
-                        unilaterallyConnectedVertices.insertMulti(j,i);
-                        m_graphPathsExistingCount++;
-                    }
-                }
-            }
-            if (updateProgress)
-                emit updateProgressDialog(i+1);
-        }
-
-        reachabilityMatrixCreated=true;
-    }
-}
 
 
 /**
     Writes the reachability matrix X^R of the graph to a file
 */
-void Graph::writeReachabilityMatrix(const QString &fn, const bool &dropIsolates) {
-    qDebug("Graph::writeReachabilityMatrix() ");
+void Graph::writeReachabilityMatrixPlainText(const QString &fn, const bool &dropIsolates) {
+    qDebug("Graph::writeReachabilityMatrixPlainText() ");
 
     QFile file (fn);
 
-    if ( !file.open( QIODevice::WriteOnly ) )  {
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
@@ -6621,8 +9691,8 @@ void Graph::writeReachabilityMatrix(const QString &fn, const bool &dropIsolates)
     outText << "Two nodes are reachable if there is a walk between them (their geodesic distance is non-zero). \n";
     outText << "If nodes i and j are reachable then XR(i,j)=1 otherwise XR(i,j)=0.\n\n";
 
-    if (!reachabilityMatrixCreated || graphModified()) {
-        reachabilityMatrix(false, false, dropIsolates, true);
+    if (!calculatedDistances || graphModified()) {
+        graphMatrixDistancesCreate(false,false,false,dropIsolates);
     }
 
     outText << XRM ;
@@ -6642,19 +9712,22 @@ void Graph::writeReachabilityMatrix(const QString &fn, const bool &dropIsolates)
  * @param fileName
  * @param considerWeights
  */
-void Graph::writeClusteringCoefficient(
-        const QString fileName, const bool considerWeights)
-{
+void Graph::writeClusteringCoefficient( const QString fileName,
+                                        const bool considerWeights) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
     Q_UNUSED(considerWeights);
     QFile file ( fileName );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    emit statusMessage ( (tr("Calculating local and network clustering...")) );
+    emit statusMessage ( (tr("Computing local and network clustering...")) );
 
     averageCLC= clusteringCoefficient(true);
 
@@ -6663,42 +9736,167 @@ void Graph::writeClusteringCoefficient(
 
     outText.setRealNumberPrecision(m_precision);
 
-    outText << tr("CLUSTERING COEFFICIENT (CLC) REPORT") << endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
+    int rowCount = 0;
+    int N = vertices();
 
-    outText << tr("Local CLC  range: 0 < C < 1") << endl<<endl;
-    outText << "Node"<<"\tLocal CLC\n";
+    outText << htmlHead;
+
+    outText << "<h1>";
+    outText << tr("CLUSTERING COEFFICIENT (CLC) REPORT");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("The local Clustering Coefficient, introduced by Watts and Strogatz (1998) "
+                  "quantifies how close each node and its neighbors are to being a complete subgraph (clique).")
+            << "<br />"
+            << tr("For each node <em>u</em>, the local CLC score is the proportion of actual links between "
+                  "its neighbors divided by the number of links that could possibly exist between them. <br />"
+                  "The CLC index is used to characterize the transitivity of a network. A value close to one "
+                  "indicates that the node is involved in many transitive relations. "
+                  "CLC' is the normalized CLC, divided by maximum CLC found in this network.")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("CLC range: ")
+            <<"</span>"
+            << tr("0 &le; CLC &le; 1 ")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("CLC range: ")
+            <<"</span>"
+            << tr("0 &le; CLC' &le; 1 ")
+            << "</p>";
+
+
+    outText << "<table class=\"stripes sortable\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Node")
+            << "</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("Label")
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("CLC")
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
+            << tr("CLC'")
+            << "</th>"
+            <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
+            << tr("%CLC'")
+            <<"</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody id=\"results\">";
+
+
 
 
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        outText << (*it)->name()<<"\t"<<(*it)->CLC() <<endl;
+
+        rowCount++;
+
+        outText <<fixed;
+
+        outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                <<"<td>"
+                << (*it)->name()
+                << "</td><td>"
+                << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                << "</td><td>"
+                << (*it)->CLC()
+                << "</td><td>"
+                << (*it)->CLC() / maxCLC
+                << "</td><td>"
+                << 100 * (*it)->CLC() / maxCLC
+                << "</td>"
+                <<"</tr>";
+
     }
 
-    outText << "\nAverage local Clustering Coefficient = "<<  averageCLC<<"\n" ;
+    outText << "</tbody></table>";
 
-    if (  minCLC ==  maxCLC )
-        outText << "\nAll nodes have the same clustering coefficient value.\n";
-    else  {
-        outText << "\nNode "<<  maxNodeCLC
-                << " has the maximum Clustering Coefficient: " <<  maxCLC <<"\n";
-        outText << "\nNode "<<  minNodeCLC
-                << " has the minimum Clustering Coefficient: " <<  minCLC <<"\n";
+    if ( minCLC ==  maxCLC) {
+        outText << "<p>"
+                << tr("All nodes have the same local CLC score.")
+                << "</p>";
+    }
+    else {
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("Max CLC = ")
+                <<"</span>"
+               << maxCLC <<" (node "<< maxNodeCLC  <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("Min CLC = ")
+               <<"</span>"
+               << minCLC <<" (node "<< minNodeCLC <<  ")"
+               << "<br />"
+               << "</p>";
     }
 
-    outText << endl;
-    outText << tr("NETWORK AVERAGE CLUSTERING COEFFICIENT (GCLC)") << endl <<endl;
-    outText << "GCLC = " <<  averageCLC <<"\n\n";
-    outText << tr("Range: 0 < GCLC < 1\n");
-    outText << tr("GCLC = 0, when there are no cliques (i.e. acyclic tree).\n");
-    outText << tr(
-      "GCLC = 1, when every node and its neighborhood are complete cliques.\n");
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("CLC Mean = ")
+            <<"</span>"
+            << averageCLC
+            <<"<br/>"
+            << "<span class=\"info\">"
+            << tr("CLC Variance = ")
+            <<"</span>"
+            << varianceCLC
+            <<"<br/>";
+    outText << "</p>";
 
-    outText <<"\n\n" ;
-    outText << tr("Clustering Coefficient Report,\n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+
+    outText << "<h2>";
+    outText << tr("GROUP / NETWORK AVERAGE CLUSTERING COEFFICIENT (GCLC)")
+            << "</h2>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("GCLC = ")
+            <<"</span>"
+            <<  averageCLC
+             << "</p>";
+
+
+    outText << "<p class=\"description\">"
+            << tr("Range: 0 < GCLC < 1 <br/ >")
+            << tr("GCLC = 0, when there are no cliques (i.e. acyclic tree). <br />")
+            << tr("GCLC = 1, when every node and its neighborhood are complete cliques.")
+            << "</p>";
+
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Clustering Coefficient report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
 
     file.close();
 }
@@ -6707,12 +9905,15 @@ void Graph::writeClusteringCoefficient(
 
 
 //Writes the triad census to a file
-void Graph::writeTriadCensus(
-        const QString fileName, const bool considerWeights)
-{
+void Graph::writeTriadCensus( const QString fileName,
+                              const bool considerWeights) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
     Q_UNUSED(considerWeights);
     QFile file ( fileName );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
@@ -6720,10 +9921,10 @@ void Graph::writeTriadCensus(
 
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    emit statusMessage ( (tr("Conducting triad census. Please wait....")) );
+    emit statusMessage ( (tr("Computing triad census. Please wait....")) );
     if (graphModified() || !calculatedTriad) {
-        if (!triadCensus()){
-            qDebug() << "Error in triadCensus(). Exiting...";
+        if (!graphTriadCensus()){
+            qDebug() << "Error in graphTriadCensus(). Exiting...";
             file.close();
             return;
         }
@@ -6732,121 +9933,387 @@ void Graph::writeTriadCensus(
     emit statusMessage ( tr("Writing triad census to file: ") +
                          fileName );
 
-    outText << tr("TRIAD CENSUS (TRC)")<<endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-    outText << "Type\t\tCensus\t\tExpected Value" << "\n";
-    outText << "003" << "\t\t" << triadTypeFreqs[0] << "\n";
-    outText << "012" << "\t\t" <<triadTypeFreqs[1] <<"\n";
-    outText << "102" << "\t\t" <<triadTypeFreqs[2] <<"\n";
-    outText << "021D"<< "\t\t" <<triadTypeFreqs[3] <<"\n";
-    outText << "021U"<< "\t\t" <<triadTypeFreqs[4] <<"\n";
-    outText << "021C"<< "\t\t" <<triadTypeFreqs[5] <<"\n";
-    outText << "111D"<< "\t\t" <<triadTypeFreqs[6] <<"\n";
-    outText << "111U"<< "\t\t" <<triadTypeFreqs[7] <<"\n";
-    outText << "030T"<< "\t\t" <<triadTypeFreqs[8] <<"\n";
-    outText << "030C"<< "\t\t" <<triadTypeFreqs[9] <<"\n";
-    outText << "201" << "\t\t" <<triadTypeFreqs[10] <<"\n";
-    outText << "120D"<< "\t\t" <<triadTypeFreqs[11] <<"\n";
-    outText << "120U"<< "\t\t" <<triadTypeFreqs[12] <<"\n";
-    outText << "120C"<< "\t\t" <<triadTypeFreqs[13] <<"\n";
-    outText << "210" << "\t\t" <<triadTypeFreqs[14] <<"\n";
-    outText << "300" << "\t\t" <<triadTypeFreqs[15] <<"\n";
+    int rowCount = 0;
+    int N = vertices();
 
-    outText << "\n\n";
-    outText << tr("Triad Census report, \n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
-            << actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    outText << htmlHead;
+
+    outText << "<h1>";
+    outText << tr("TRIAD CENSUS (TRC) REPORT");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+
+    outText << "<p class=\"description\">"
+            << tr("A Triad Census counts all the different types (classes) of observed triads within a network. <br />"
+                  "The triad types are coded and labeled according to their number of mutual, asymmetric and non-existent (null) dyads. <br />"
+                  "SocNetV follows the M-A-N labeling scheme, as described by Holland, Leinhardt and Davis in their studies. <br />"
+                   "In the M-A-N scheme, each triad type has a label with four characters: <br />")
+            << tr("- The first character is the number of mutual (M) duads in the triad. Possible values: 0, 1, 2, 3.<br />"
+                  "- The second character is the number of asymmetric (A) duads in the triad. Possible values: 0, 1, 2, 3.<br />"
+                  "- The third character is the number of null (N) duads in the triad. Possible values: 0, 1, 2, 3.<br />"
+                  "- The fourth character is infered from features or the nature of the triad, i.e. presence of cycle or transitivity. "
+                   "Possible values: none, D (\"Down\"), U (\"Up\"), C (\"Cyclic\"), T (\"Transitive\")")
+            << "<br /></p>";
+
+
+
+    outText << "<table class=\"stripes\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th>"
+            << tr("Type")
+            << "</th><th>"
+            << tr("Census")
+//            << "</th><th>"
+//            << tr("Expected Value")
+            <<"</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody>";
+
+    QList<QString> triadTypes;
+    triadTypes << "003" ;
+    triadTypes << "012" ;
+    triadTypes << "102" ;
+    triadTypes << "021D";
+    triadTypes << "021U";
+    triadTypes << "021C";
+    triadTypes << "111D";
+    triadTypes << "111U";
+    triadTypes << "030T";
+    triadTypes << "030C";
+    triadTypes << "201" ;
+    triadTypes << "120D";
+    triadTypes << "120U";
+    triadTypes << "120C";
+    triadTypes << "210" ;
+    triadTypes << "300" ;
+
+    for (int i = 0 ; i<=15 ; i++) {
+        rowCount = i + 1;
+        outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                <<"<td>"
+                << triadTypes[i]
+                << "</td><td>"
+                << triadTypeFreqs[i]
+                << "</td>"
+                <<"</tr>";
+    }
+
+    outText << "</tbody></table>";
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Triad Census report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
     file.close();
 
 }
 
 
+
+
 /**
-*	Writes the number of cliques (triangles) of each vertex into a given file.
-*/
-void Graph::writeCliqueCensus(
-        const QString fileName, const bool considerWeights)
-{
+ * @brief Graph::writeCliqueCensus
+ * Writes the number of cliques (maximal connected subgraphs) of each vertex into a given file.
+ * @param fileName
+ * @param considerWeights
+ */
+void Graph::writeCliqueCensus( const QString fileName,
+                               const bool considerWeights) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
     qDebug()<< "Graph::writeCliqueCensus() ";
+
     Q_UNUSED(considerWeights);
+
+    bool dendrogram = true;
+
     QFile file ( fileName );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
 
     long int N = vertices();
+    int cliqueCounter=0;
+    int rowCounter = 0;
+    int cliqueSize = 0;
+    int actor2 = 0, actor1=0, index1=0, index2=0;
+    float numerator = 0;
+    QString listString;
 
-    cliques_2_Vertex.clear();
-    cliques_3_Vertex.clear();
-    cliques_4_Vertex.clear();
-    QList<Vertex*>::const_iterator it;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
-    {
-        (*it)->clearCliques();
-    }
+    QList<Vertex*>::const_iterator it, it2;
 
-    QTextStream outText ( &file ); outText.setCodec("UTF-8");
+    emit statusMessage ( tr("Computing clique census. Please wait..") );
+
+    graphCliques();
 
     emit statusMessage ( tr("Writing clique census to file: ") + fileName );
 
-    outText << tr("CLIQUE CENSUS (CLQs)") << endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    outText << tr("CLIQUE COUNTS BY VERTEX") << endl;
-    outText << tr("Node")<<"\t"<< tr("2-Vertex") << "\t" << tr("3-Vertex")
-            << "\t" << tr("4-Vertex") << endl;
+    outText << htmlHead;
+    outText.setRealNumberPrecision(m_precision);
 
-    long int progressCounter = 0;
+    outText << "<h1>";
+    outText << tr("CLIQUE CENSUS (CLQs) REPORT");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("A clique is the largest subgroup of actors in the social network who are all "
+                  "directly connected to each other (maximal complete subgraph). <br />"
+                  "SocNetV applies the Bron–Kerbosch algorithm to produce a census of all maximal cliques "
+                  "in the network and reports some useful statistics such as disaggregation by vertex "
+                  "and co-membership information. <br />")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Maximal Cliques found: ")
+            <<"</span>"
+            << m_cliques.count()
+            << "</p>";
+
+    outText << "<table class=\"stripes\">";
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th>"
+            << tr("Clique No")
+            << "</th><th>"
+            << tr("Clique members")
+            << "</th>"
+            <<"</tr>"
+          << "</thead>"
+          <<"<tbody>";
+
+    foreach (QList<int> clique, m_cliques) {
+
+        ++cliqueCounter;
+
+        outText << "<tr class=" << ((cliqueCounter%2==0) ? "even" :"odd" )<< ">";
+
+        listString.truncate(0);
+
+        while (!clique.empty()) {
+            listString += QString::number (clique.takeFirst());
+            if (!clique.empty()) listString += " ";
+        }
+        outText <<"<td>"
+                << cliqueCounter
+                << "</td><td>"
+                << listString
+                << "</td>"
+                <<"</tr>";
+
+    }
+    outText << "</tbody></table>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Actor by clique analysis: ")
+            <<"</span>"
+            << tr("Proportion of clique members adjacent")
+            << "</p>";
+
+
+    outText << "<table class=\"stripes\">";
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th>"
+            << tr("<sub>Actor</sub>/<sup>Clique</sup>")
+            << "</th>";
+
+
+    for (int listIndex=0; listIndex<cliqueCounter; listIndex++ ) {
+         outText << "<th>"
+                 << listIndex+1
+                 << "</th>";
+     }
+
+    outText <<"</tr>"
+           << "</thead>"
+           <<"<tbody>";
+
+    rowCounter = 0;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        cliquesContaining ((*it)->name());
-        outText << (*it)->name()<<"\t"<< (*it)->cliques(2)
-                << "\t" <<  (*it)->cliques(3)
-                << "\t"<<  (*it)->cliques(4)  <<endl;
-        emit updateProgressDialog(++progressCounter);
-    }
+        rowCounter++;
+        actor1 = (*it)->name();
+        outText << "<tr class=" << ((rowCounter%2==0) ? "even" :"odd" )<< ">"
+                <<"<td class=\"header\">"
+                << actor1
+                <<"</td>";
 
-    outText << endl<< endl << tr("AGGREGATE COUNTS OF CLIQUES")<< endl;
+        foreach (QList<int> clique, m_cliques) {
+            numerator = 0;
 
-    outText << "2-Vertex cliques" <<"\t " << cliques_2_Vertex.count()
-            << "\t (max: " << ( N * (N-1)  ) /2  << ")\n";
-    outText << "3-Vertex cliques" <<"\t " << cliques_3_Vertex.count()
-            << "\t (max: " << ( N * (N-1) * (N-2)  ) /6  << ")\n";
-    outText << "4-Vertex cliques" <<"\t " << cliques_4_Vertex.count()
-            << "\t (max: " << ( N * (N-1) * (N-2) * (N-3)  ) /24  << ")\n";
+            if (clique.contains( actor1 )){
+                outText <<"<td>"
+                        << "1.000"
+                        <<"</td>";
+            }
+            else {
+                cliqueSize = clique.size();
+                while (!clique.empty()) {
+                    actor2 = clique.takeFirst();
+                    if (  edgeExists( actor1, actor2) ) {
+                        numerator++;
+                    }
 
+                }
+                outText <<"<td>"
+                        << fixed << (numerator/(float) cliqueSize)
+                        <<"</td>";
 
-    outText << endl<< endl << tr("CLIQUE ENUMERATION BY THEIR SIZE")<< endl;
-    QHash<QString, bool>::const_iterator i;
+            }
+        }
+        outText <<"</tr>";
 
-    outText << endl << tr("2-Vertex cliques") << endl ;
-
-    for (i = cliques_2_Vertex.constBegin(); i != cliques_2_Vertex.constEnd(); ++i) {
-        outText << i.key() << endl;
-    }
-
-
-    outText << endl << tr("3-Vertex cliques") << endl ;
-
-    for (i = cliques_3_Vertex.constBegin(); i != cliques_3_Vertex.constEnd(); ++i) {
-        outText << i.key() << endl;
-    }
-
-    outText << endl << tr("4-Vertex cliques") << endl ;
-
-
-    for (i = cliques_4_Vertex.constBegin(); i != cliques_4_Vertex.constEnd(); ++i) {
-        outText << i.key() << endl;
 
     }
+    outText << "</tbody></table>";
 
-    outText <<"\n\n" ;
-    outText << tr("Clique Census Report,\n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
-            << actualDateTime.currentDateTime().
-               toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    emit updateProgressDialog(N / 5);
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Actor by actor analysis: ")
+            <<"</span>"
+            << tr(" Co-membership matrix")
+            << "</p>";
+
+
+    outText << "<table class=\"stripes\">";
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th>"
+            << tr("<sub>Actor</sub>/<sup>Actor</sup>")
+            << "</th>";
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        actor1 = (*it)->name();
+        outText << "<th>"
+                << actor1
+                << "</th>";
+    }
+
+    outText <<"</tr>"
+           << "</thead>"
+           <<"<tbody>";
+
+    rowCounter=0;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        actor1 = (*it)->name();
+        index1 = index[actor1];
+        rowCounter++;
+        outText << "<tr class=" << ((rowCounter%2==0) ? "even" :"odd" )<< ">"
+                <<"<td class=\"header\">"
+                << actor1
+                <<"</td>";
+
+        for (it2=m_graph.cbegin(); it2!=m_graph.cend(); ++it2){
+            actor2 =  (*it2)->name();
+            index2 = index[actor2];
+            outText <<"<td>"
+                    << qSetRealNumberPrecision(0)<< CLQM.item(index1, index2)
+                    <<"</td>";
+        }
+        outText <<"</tr>";
+    }
+
+    outText << "</tbody></table>";
+
+    emit updateProgressDialog(2 * N / 5);
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Hierarchical clustering of overlap matrix: ")
+            <<"</span>"
+            << tr("Actors")
+            << "</p>";
+
+
+   graphClusteringHierarchical(CLQM,
+                               graphMetricStrToType("Euclidean"),
+                               CLUSTERING_COMPLETE_LINKAGE,
+                               false,
+                               true,
+                               true,
+                               false,
+                               true);
+
+   writeClusteringHierarchicalResultsToStream(outText, N, dendrogram);
+
+
+   emit updateProgressDialog(3 * N / 5);
+
+   outText << "<p>"
+           << "<span class=\"info\">"
+           << tr("Clique by clique analysis: ")
+           <<"</span>"
+           << tr("Co-membership matrix")
+           << "</p>";
+
+
+  emit updateProgressDialog(4 * N / 5);
+
+   outText << "<p>"
+           << "<span class=\"info\">"
+           << tr("Hierarchical clustering of overlap matrix: ")
+           <<"</span>"
+           << tr("Clique")
+           << "</p>";
+
+
+    emit updateProgressDialog(N);
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Clique Census Report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
 
     file.close();
 }
@@ -6854,371 +10321,1617 @@ void Graph::writeCliqueCensus(
 
 
 /**
- * @brief Graph::cliqueAdd
+ * @brief Called from Graph::graphCliques to add a new clique (list of vertices)
+ * Adds clique info to each clique member and updates CLQM matrix.
  * @param list
  * @return
  */
-bool Graph:: cliqueAdd(const QList<int> &list){
-    qDebug() << "*** Graph::cliqueAdd()" <<
-                list.count();
-    for (int i = 0; i < list.size(); ++i) {
-            qDebug() << "*** Graph::cliqueAdd() -  Found vertex " << list.at(i)
-                 << " at position " << i << endl;
+void Graph:: graphCliqueAdd(const QList<int> &clique){
+
+    m_cliques.insertMulti(clique.count(), clique);
+
+    qDebug() << "Graph::graphCliqueAdd() - added clique:"
+             << clique
+             << "of size"
+             << clique.count()
+             << "total cliques:"
+             << m_cliques.count();
+    int index1=0, index2=0, cliqueCount=0;
+    foreach (int actor1, clique) {
+       index1 = index[actor1];
+       qDebug() << "Graph::graphCliqueAdd() - updating cliques in actor1:"
+                << actor1
+                << "index:"
+                << index1;
+       m_graph[ index1 ]->cliqueAdd(clique);
+       foreach (int actor2, clique) {
+           index2 = index[actor2];
+           cliqueCount = CLQM.item(index1, index2);
+           CLQM.setItem( index1, index2, ( cliqueCount + 1)  );
+           qDebug() << "Graph::graphCliqueAdd() - upd. co-membership matrix CLQM"
+                    << "actor1:"
+                    << actor1
+                    << "actor2:"
+                    << actor2
+                    <<"old matrix element: ("
+                    << index1<<","<<index2 <<")="<<cliqueCount
+                    <<"upd:"
+                    << CLQM.item(index1, index2);
+       }
     }
 
-    QString dyad, dyad_alt;
-    QString triad, triad_alt1, triad_alt2, triad_alt3,triad_alt4,triad_alt5;
-    QString quart, quart_alt1, quart_alt2, quart_alt3,quart_alt4,quart_alt5;
-    bool knownClique=false;
-
-    if (list.size() == 2 )
-    {
-        dyad = QString::number(list.at(0)) + ", " + QString::number(list.at(1));
-        dyad_alt = QString::number(list.at(1)) + ", " + QString::number(list.at(0));
+}
 
 
-        if ( ! cliques_2_Vertex.contains(dyad) &&
-             ! cliques_2_Vertex.contains(dyad_alt) )
-        {
-            cliques_2_Vertex.insert(dyad, true);
-            qDebug() << "*** Graph::cliqueAdd() - new 2-vertex clique "
-                        << " adding it to global list ";
+/**
+ * @brief Finds all maximal cliques in an undirected (?) graph.
+ * Implements the Bron–Kerbosch algorithm, a recursive backtracking algorithm
+ * that searches for all maximal cliques in a given graph G.
+ * Given three sets R, P, and X, the algorithm finds the maximal cliques that
+ * include all of the vertices in R, some of the vertices in P, and none of
+ * the vertices in X.
+ * In each call to the algorithm, P and X are disjoint sets whose union consists
+ * of those vertices that form cliques when added to R.
+ * In other words, P ∪ X is the set of vertices which are joined to every element of R.
+ * When P and X are both empty there are no further elements that can be added to R,
+ * so R is a maximal clique and the algorithm outputs R.
+ * The recursion is initiated by setting R and X to be the empty set and P to be
+ * the vertex set of the graph.
+ * Within each recursive call, the algorithm considers the vertices in P in turn.
+ * if there are no vertices, it either reports R as a maximal clique (if X is empty),
+ * or backtracks.
+ * For each vertex v chosen from P, it makes a recursive call in which v is added to R
+ * and in which P and X are restricted to the neighbor set N(v) of v,
+ * which finds and reports all clique extensions of R that contain v.
+ * Then, it moves v from P to X to exclude it from consideration in future cliques
+ * and continues with the next vertex in P.
+ * @param R
+ * @param P
+ * @param X
+ */
+void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X) {
 
+    qDebug () << "Graph::graphCliques() - check if we are at initialization step";
+    if (R.isEmpty() && P.isEmpty() && X.isEmpty()){
+        qDebug() << "Graph::graphCliques() - initialization step. R, X empty and P=V(G)";
+        int V = vertices() ;
+        P.reserve( V );
+        R.reserve( V );
+        X.reserve( V );
+        P=verticesSet();
+        CLQM.zeroMatrix(V,V);
+        m_cliques.clear();
+        QList<Vertex*>::const_iterator it;
+        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)     {
+            (*it)->clearCliques();
         }
+    }
 
-        if ( m_graph[ index[list.at(0)] ]->cliqueAdd(dyad,list.size()) ) {
-            qDebug() << "*** Graph::cliqueAdd() - new 2-vertex clique: "
-                        << list.at(0) << "," << list.at(1) ;
-            return true;
-        }
-        return false;
+    qDebug() << "Graph::graphCliques() - check if P and X are both empty";
+    if (P.isEmpty() && X.isEmpty()) {
+        qDebug() << "Graph::graphCliques() - P and X are both empty. MAXIMAL clique R=" << R;
+
+        QList<int> clique = R.toList();
+        graphCliqueAdd(clique);
 
     }
-    else if (list.size() == 3 )
-    {
-        triad = QString::number(list.at(0)) + ", " + QString::number(list.at(1))
-                + ", " + QString::number(list.at(2));
-        triad_alt1 = QString::number(list.at(0)) + ", " + QString::number(list.at(2))
-                + ", " + QString::number(list.at(1));
-        triad_alt2 = QString::number(list.at(1)) + ", " + QString::number(list.at(2))
-                + ", " + QString::number(list.at(0));
-        triad_alt3 = QString::number(list.at(1)) + ", " + QString::number(list.at(0))
-                + ", " + QString::number(list.at(2));
-        triad_alt4 = QString::number(list.at(2)) + ", " + QString::number(list.at(0))
-                + ", " + QString::number(list.at(1));
-        triad_alt5 = QString::number(list.at(2)) + ", " + QString::number(list.at(1))
-                + ", " + QString::number(list.at(0));
-        if ( ! cliques_3_Vertex.contains(triad) &&
-             ! cliques_3_Vertex.contains(triad_alt1) &&
-             ! cliques_3_Vertex.contains(triad_alt2) &&
-             ! cliques_3_Vertex.contains(triad_alt3) &&
-             ! cliques_3_Vertex.contains(triad_alt4) &&
-             ! cliques_3_Vertex.contains(triad_alt5)  )
-        {
-            cliques_3_Vertex.insert(triad, true);
-            qDebug() << "*** Graph::cliqueAdd() - new 3-vertex clique "
-                        << " adding it to global list ";
-        }
-        if ( m_graph[ index[list.at(0)] ]->cliqueAdd(triad,list.size()) ) {
-            qDebug() << "*** Graph::cliqueAdd() - new 3-vertex clique: "
-                     << list.at(0) << "," << list.at(1) << "," << list.at(2) ;
-            return true;
-        }
-        return false;
 
+    int v;
+    QSet<int> N;
 
+    QSet<int> temp, temp1, temp2;
+
+    QSet<int>::iterator i = P.begin();
+    while( i != P.end()) {
+        v = *i;
+        qDebug() << "Graph::graphCliques() - v:" << v
+                 << " P:" << P << " P.count=" <<P.count()
+                 << " R:" << R
+                 << " X:" << X ;
+        N = vertexNeighborhoodList(v).toSet(); //fixme
+        if (N.count() == 1 && N.contains(v)) {
+            qDebug() << "Graph::graphCliques() - v:" << v
+                     << "has only a tie to itself";
+            //graphCliques( R, P, X );
+            ++i;
+            continue;
+        }
+        QSet<int> addv; addv.insert(v); // dummy set with just v
+        temp = R+addv;
+        temp1 = P&N;
+        temp2 = X&N;
+        qDebug() << "Graph::graphCliques() - v:" << v
+                    << "Recursive call to graphCliques ( R ⋃ {v}, P ⋂ N(v), X ⋂ N(v) )"
+                    << endl << "N(v):" << N
+                    << endl << "R ⋃ {v}:" << temp
+                    << endl << "P ⋂ N(v):" << temp1
+                    << endl << "X ⋂ N(v):" << temp2;
+
+        // find all clique extensions of R that contain v
+        graphCliques( R+addv, P&N, X&N );
+        qDebug() << "Graph::graphCliques() - v:" << v
+                  << "Returned from recursive call. Moving v:"<<  v
+                  <<" from P to X to be excluded in the future.";
+        // P = P \ v
+        i=P.erase(i);    //P-=v;
+        // X = X + v
+        X.insert(v);
+        qDebug() << "Graph::graphCliques() - v:" << v << "FINISHED"
+                 << " P=" << P << " P.count:" <<P.count()
+                 << " R=" << R << " R.count:" <<R.count()
+                 << " X=" << X << " X.count:" <<X.count()
+                 << " Continuing with next v in P";
+        //++i;
     }
-    else if (list.size() == 4 )
-     {
-        for (int i = 0; i < list.size(); ++i)
-        {
-            quart = QString::number(list.at( (i)%4 ))
-                    + ", " + QString::number(list.at( (i+1) % 4 ) )
-                    + ", " + QString::number(list.at( (i+2) % 4 ) )
-                    + ", " + QString::number(list.at( (i+3) % 4 ) );
-            quart_alt1 = QString::number(list.at( (i)%4 ))
-                    + ", " + QString::number(list.at( (i+1) % 4 ) )
-                    + ", " + QString::number(list.at( (i+3) % 4 ) )
-                    + ", " + QString::number(list.at( (i+2) % 4 ) );
-            quart_alt2 = QString::number(list.at( (i)%4 ))
-                    + ", " + QString::number(list.at( (i+2) % 4 ) )
-                    + ", " + QString::number(list.at( (i+3) % 4 ) )
-                    + ", " + QString::number(list.at( (i+1) % 4 ) );
-            quart_alt3 = QString::number(list.at( (i)%4 ))
-                    + ", " + QString::number(list.at( (i+2) % 4 ) )
-                    + ", " + QString::number(list.at( (i+1) % 4 ) )
-                    + ", " + QString::number(list.at( (i+3) % 4 ) );
-            quart_alt4 = QString::number(list.at( (i)%4 ))
-                    + ", " + QString::number(list.at( (i+3) % 4 ) )
-                    + ", " + QString::number(list.at( (i+1) % 4 ) )
-                    + ", " + QString::number(list.at( (i+2) % 4 ) );
-            quart_alt5 = QString::number(list.at( (i)%4 ))
-                    + ", " + QString::number(list.at( (i+3) % 4 ) )
-                    + ", " + QString::number(list.at( (i+2) % 4 ) )
-                    + ", " + QString::number(list.at( (i+1) % 4 ) );
-            qDebug() << " checking other possible combinations: ";
-            qDebug() << quart;
-            qDebug() << quart_alt1;
-            qDebug() << quart_alt2;
-            qDebug() << quart_alt3;
-            qDebug() << quart_alt4;
-            qDebug() << quart_alt5;
-            if (  cliques_4_Vertex.contains(quart) ||
-                  cliques_4_Vertex.contains(quart_alt1) ||
-                  cliques_4_Vertex.contains(quart_alt2) ||
-                  cliques_4_Vertex.contains(quart_alt3) ||
-                  cliques_4_Vertex.contains(quart_alt4) ||
-                  cliques_4_Vertex.contains(quart_alt5)  )
-            {
-                knownClique = true;
-            }
-        }
-        quart = QString::number(list.at( (0) ))
-                + ", " + QString::number(list.at( (1)  ) )
-                + ", " + QString::number(list.at( (2)  ) )
-                + ", " + QString::number(list.at( (3)  ) );
-        if (! knownClique) {
-            cliques_4_Vertex.insert(quart, true);
-            qDebug() << "*** Graph::cliqueAdd() - new 4-vertex clique "
-                        << quart
-                    << " adding it to global list ";
-        }
 
-        if ( m_graph[ index[list.at(0)] ]->cliqueAdd(quart,list.size()) ) {
-            qDebug() << "*** Graph::cliqueAdd() - new 4-vertex clique: "
-                     << list.at(0) << "," << list.at(1)
-                     << "," << list.at(2) << "," << list.at(3) ;
-            return true;
-        }
-        return false;
 
-    }
-    return false;
+
 }
 
 /**
-    Calculates and returns the number of cliques which include given vertex 'source'
-    A clique is a complete subgraph of N vertices.
-    All N vertices must be mutually adjacenct.
-    Due to computational complexity, SocNetV computes 2-vertex,
-    3-vertex and 4-vertex cliques only.
+    Returns the number of maximal cliques which include a given actor
 */	
-float Graph:: cliquesContaining(int source, int size){
-    qDebug() << "*** Graph::cliquesContaining(" <<  source << ")";
-
-    int  vert1=0, vert2=0, vert3=0;
-    int relation=0;
-
-    bool edgeStatus=false;
-    H_edges::const_iterator it1, it2, it3;
-
-    QList<int> dyad, triad, quad;
-
-    qDebug() << "Graph::cliquesContaining() Source vertex " << source
-             << "[" << index[source] << "] has inEdges " << edgesInbound(source)
-             << " and outEdges "<< edgesOutbound(source);
-
-
-    qDebug () << "Graph::cliquesContaining() - Checking inEdges to " << source;
-
-    it1=m_graph [ index[source] ] ->m_inEdges.cbegin();
-
-    while ( it1!=m_graph [ index[source] ] -> m_inEdges.cend() ){
-        relation = it1.value().first;
-        if ( relation != relationCurrent() ) {
-            ++it1;
-            continue;
-        }
-        edgeStatus=it1.value().second.second;
-        if ( edgeStatus != true) {
-            ++it1;
-            continue;
-        }
-        vert1 = it1.key();
-        //            weight = it1.value().second.first;
-        qDebug() << "Graph::cliquesContaining() - inLink from 1st neighbor "
-                 << vert1
-                 << "[" << index[vert1] << "] ";
-
-        if (source == vert1) {
-            qDebug() << "Graph::cliquesContaining() -     It's the source - CONTINUE";
-            ++it1;
-            continue;
-        }
-
-
-        if ( edgeExists( source, vert1 )  == 0 )  {
-            qDebug() << "Graph::cliquesContaining() - incomplete 2v-subgraph - CONTINUE";
-            ++it1;
-            continue;
-
-        }
-        qDebug() << "Graph::cliquesContaining() - complete 2v-subgraph ";
-
-        dyad.clear();
-        dyad << source << vert1;
-        if ( cliqueAdd( dyad ) ) {
-            qDebug() << "Graph::cliquesContaining() - 2v cliques "
-                     << cliques_2_Vertex.count();
-        }
-
-        qDebug() << "Graph::cliquesContaining() - "
-                 << " Iterate over all inEdges of " << vert1;
-
-        it2=m_graph [ index[vert1] ] ->m_inEdges.cbegin();
-        while ( it2!=m_graph [ index[vert1] ] -> m_inEdges.cend() ){
-
-            relation = it2.value().first;
-            if ( relation != relationCurrent() ){
-                ++it2;
+int Graph::graphCliquesContaining(const int &actor, const int &size){
+    qDebug() << "*** Graph::graphCliquesContaining(" <<  actor << ")";
+    int cliqueCounter = 0;
+    foreach (QList<int> clique, m_cliques) {
+        if ( size!=0  )  {
+            if ( clique.size() != size)
                 continue;
-            }
-            edgeStatus=it2.value().second.second;
-            if ( edgeStatus != true){
-                ++it2;
-                continue;
-            }
-            vert2 = it2.key();
-            qDebug() << "Graph::cliquesContaining() -     Possible other neighbor (for 3v clique)"
-                     << vert2 << "[" << index[vert2] << "]";
-            if (source == vert2) {
-                qDebug() << "Graph::cliquesContaining() -     It's the source - CONTINUE";
-                ++it2;
-                continue;
-            }
-            if (vert1 == vert2) {
-                qDebug() << "Graph::cliquesContaining() -     It's the vert1 - CONTINUE";
-                ++it2;
-                continue;
-            }
-
-            if (  edgeExists( vert1, vert2 ) == 0 )  {
-                qDebug() << "Graph::cliquesContaining() -     "
-                            <<  vert1 << "  not outLinked to  " << vert2
-                               << " - incomplete 3vertex-subgraph - CONTINUE";
-                ++it2;
-                continue;
-            }
-            else {
-                qDebug() << "Graph::cliquesContaining() -     complete 3vertex-subgraph ? "
-                         << vert2 << " <-> " << vert1
-                            << ". Checking if "
-                            << vert2 << " <-> " << source << " ... ";
-
-                if ( edgeExists( source, vert2, true ) ) {
-
-                    qDebug() << "Graph::cliquesContaining() -     complete 3v-subgraph "
-                             << source << " <-> " << vert2
-                             << " possible (new?) 3-vertex clique: ";
-
-                    triad.clear();
-                    triad << source << vert1 << vert2;
-                    if ( cliqueAdd( triad ) ) {
-                        qDebug() << "Graph::cliquesContaining() -     3-vertex cliques "
-                                 << cliques_3_Vertex.count();
-                    }
-
-                    qDebug() << "Graph::cliquesContaining() -         "
-                                << " Iterate over all inEdges of " << vert2;
-                    it3=m_graph [ index[vert2] ] ->m_inEdges.cbegin();
-                    while ( it3!=m_graph [ index[vert2] ] -> m_inEdges.cend() ){
-                        relation = it3.value().first;
-                        if ( relation != relationCurrent() ){
-                            ++it3;
-                            continue;
-                        }
-                        edgeStatus=it3.value().second.second;
-                        if ( edgeStatus != true){
-                            ++it3;
-                            continue;
-                        }
-                        vert3 = it3.key();
-                        qDebug() << "Graph::cliquesContaining() -     Possible other neighbor (for 4v clique)"
-                                 << vert3 << "[" << index[vert3] << "]";
-                        if (source == vert3 || vert1 == vert3  || vert2 == vert3 ) {
-                            qDebug() << "Graph::cliquesContaining() -     same as source, vert1 or vert2- CONTINUE";
-                            ++it3;
-                            continue;
-                        }
-                        if (  edgeExists( source, vert3, true) == 0  ||
-                              edgeExists( vert1,  vert3, true ) == 0  ||
-                              edgeExists( vert2,  vert3, false ) == 0 )  {
-                            qDebug() << "Graph::cliquesContaining() -     incomplete 4v-subgraph - CONTINUE";
-                            ++it3;
-                            continue;
-                        }
-                        quad.clear();
-                        quad << source << vert1 << vert2<< vert3;
-                        qDebug() << "Graph::cliquesContaining() -     complete 4v-subgraph "
-                                 << source << "," << vert1 << "," << vert2 << "," << vert3
-                                 << " possible (new?) 3-vertex clique: ";
-                        if ( cliqueAdd( quad ) ) {
-                            qDebug() << "Graph::cliquesContaining() -     4-vertex cliques "
-                                     << cliques_4_Vertex.count();
-                        }
-                        ++it3;
-                    }
-
-
-
-                }
-                else {
-                    qDebug() << "Graph::cliquesContaining() -     Not mutual - CONTINUE";
-                }
-            }
-            ++it2;
         }
-        ++it1;
-    } // end 1st while
-
-    switch (size) {
-    case 2: {
-        return m_graph [ index[source] ] -> cliques(2);
-        break;
+        if (clique.contains( actor )){
+            cliqueCounter++;
+        }
     }
-    case 3: {
-        return m_graph [ index[source] ] -> cliques(3);
-        break;
-    }
-    case 4: {
-        return m_graph [ index[source] ] -> cliques(4);
-        break;
-    }
-    default:
-        return 0;
-        break;
-    };
+    return cliqueCounter;
 
-    return 0;
 }
 
 
 
 /**
- * @brief Graph::cliquesOfSize
- *  Calculates and returns the total number of cliques in the graph.
- *  Calls cliquesContaining(v1) to calculate the number of cliques of each vertex v1,
- *  sums the total number, then divides it by 3 because each vertex has been counted three times.
+ * @brief Graph::graphCliquesOfSize
+ * Returns the number of maximal cliques of a given size
  * @param size
  * @return
  */
-float Graph::cliquesOfSize(int size){
-    qDebug("Graph::cliquesOfSize()");
-    float cliques=0;
+int Graph::graphCliquesOfSize(const int &size){
+    qDebug() << "Graph::graphCliquesOfSize()";
 
-    QList<Vertex*>::const_iterator v1;
+    return m_cliques.values(size).count();
 
-    for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1)
-    {
-        cliques += cliquesContaining( (*v1) -> name(), size );
+}
+
+
+
+/**
+ * @brief Writes Hierarchical Clustering Analysis to a given file
+ * @param fileName
+ * @param matrix
+ * @param similarityMeasure
+ * @param method
+ * @param considerWeights
+ * @param inverseWeights
+ * @param dropIsolates
+ */
+void Graph::writeClusteringHierarchical(const QString &fileName,
+                                        const QString &matrix,
+                                        const QString &metric,
+                                        const QString &method,
+                                        const bool &diagonal,
+                                        const bool &dendrogram,
+                                        const bool &considerWeights,
+                                        const bool &inverseWeights,
+                                        const bool &dropIsolates) {
+
+
+    QTime computationTimer;
+    computationTimer.start();
+
+    qDebug()<< "Graph::writeClusteringHierarchical() - matrix:"
+            << matrix
+            << "metric"
+            << metric
+            << "method"
+            << method
+            << "considerWeights:"<<considerWeights
+            << "inverseWeights:"<<inverseWeights
+            << "dropIsolates:" << dropIsolates;
+
+    int N = vertices();
+
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
+        return;
     }
-    cliques = cliques / size;
 
-    //actually we can just return cliques_*_Vertex.count();
+    emit statusMessage ( tr("Computing hierarchical clustering. Please wait... "));
 
-    qDebug() << "Graph::cliquesOfSize - Dividing by size we get "<< cliques ;
+   Matrix STR_EQUIV;
 
-    return cliques ;
+    switch (graphMatrixStrToType(matrix)) {
+    case MATRIX_ADJACENCY:
+        graphMatrixAdjacencyCreate(dropIsolates);
+        STR_EQUIV=AM;
+        break;
+    case MATRIX_DISTANCES:
+        graphMatrixDistancesCreate(false, considerWeights, inverseWeights, dropIsolates);
+        STR_EQUIV=DM;
+        break;
+    default:
+        break;
+    }
+
+    graphClusteringHierarchical(STR_EQUIV,
+                                graphMetricStrToType(metric),
+                                graphClusteringMethodStrToType(method),
+                                diagonal,
+                                dendrogram,
+                                considerWeights,
+                                inverseWeights,
+                                dropIsolates);
+
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
+
+    emit statusMessage ( tr("Writing hierarchical cluster analysis to file: ") + fileName );
+
+
+    outText.setRealNumberPrecision(m_precision);
+    outText.reset();
+
+
+    outText << htmlHead;
+
+    outText << "<h1>";
+    outText << tr("HIERARCHICAL CLUSTERING (HCA)");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+           << graphName()
+           <<"<br />"
+          << "<span class=\"info\">"
+          << tr("Actors: ")
+          <<"</span>"
+         << N
+         << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Input matrix: ")
+            << "</span>"
+            << matrix
+            << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Distance/dissimilarity metric: ")
+            <<"</span>"
+           << metric
+           << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Clustering method/criterion: ")
+            <<"</span>"
+           << method
+           << "</p>";
+
+    outText << "<p>&nbsp;</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Analysis results")
+            <<"</span>"
+           << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Structural Equivalence Matrix: ")
+            <<"</span>"
+           << "</p>";
+
+    STR_EQUIV.printHTMLTable(outText,true,false);
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Hierarchical Clustering of Equivalence Matrix: ")
+            <<"</span>"
+           << "</p>";
+
+
+
+    writeClusteringHierarchicalResultsToStream(outText, N, dendrogram);
+
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Hierarchical Cluster Analysis report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+    file.close();
+    qDebug()<< "Graph::writeClusteringHierarchical() - finished";
+
+}
+
+
+void Graph::writeClusteringHierarchicalResultsToStream(QTextStream& outText,
+                                                       const int N,
+                                                       const bool &dendrogram) {
+
+
+    qDebug()<<"Graph::writeClusteringHierarchicalResultsToStream()";
+
+    QMap<int, V_int>::const_iterator it;
+    float level;
+
+    outText << "<pre>";
+    outText <<"Seq" << "\t"<<"Level" << "\t"<< "Actors" <<endl;
+
+    for ( it= m_clustersPerSequence.constBegin() ; it != m_clustersPerSequence.constEnd(); ++it) {
+        level = m_clusteringLevel.at (it.key() -1 );
+        outText <<it.key()<< "\t"
+                << level << "\t" ;
+
+         foreach (int item, it.value() ) {
+             outText << item << " " ;
+         }
+         outText << endl;
+
+     }
+    outText << reset << "</pre>";
+
+    if (dendrogram) {
+
+        qDebug()<<"SVG";
+
+        outText << "<p>"
+                << "<span class=\"info\">"
+                << tr("Clustering Dendrogram (SVG)")
+                <<"</span>"
+               << "</p>";
+
+        int diagramMaxWidth = 1000;
+        int diagramPaddingLeft=30;
+        int diagramPaddingTop =30;
+        int rowHeight = 15;
+        int rowPaddingLeft = 5;
+
+        int headerHeight = 10;
+        int headerTextSize = 9;
+        int actorTextSize = 12;
+        int legendTextSize = 9;
+
+        int maxSVGWidth = diagramMaxWidth + diagramPaddingLeft + rowPaddingLeft;
+        int maxSVGHeight = 2 * diagramPaddingTop + (rowHeight * N);
+
+        QMap<QString, QPoint> clusterEndPoint;
+        QPoint endPoint1, endPoint2, endPointLevel;
+
+        QMap<int, V_str>::const_iterator pit; //cluster names pair iterator
+
+        QVector<int> clusterVector;
+
+        int actorNumber;
+
+        float maxLevelValue;
+        QString clusterName;
+        QList<float> legendLevelsDone;
+
+        it = m_clustersPerSequence.constEnd();
+        it--;
+
+        maxLevelValue = m_clusteringLevel.last() ;
+
+        clusterVector.reserve(N);
+
+        qDebug() << "DENDRO SVG"
+                 << "m_clustersPerSequence"<<m_clustersPerSequence
+                 << endl
+                 << "maxLevelValue"<<maxLevelValue
+                 << endl
+                 << "m_clusterPairNamesPerSeq" << m_clusterPairNamesPerSeq << endl
+                 << "m_clustersByName" << m_clustersByName;
+
+
+        outText << "<div class=\"dendrogram\">";
+
+        outText << "<svg class=\"dendrosvg SocNetV-v"<< VERSION
+                <<"\" width=\""<< maxSVGWidth
+               <<"\" height=\"" <<maxSVGHeight
+              << "\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">";
+
+        // print a legend on top
+        outText << "<text font-size=\""<< headerTextSize
+                << "\" class=\"header\" x=\"" << 0
+                <<"\" y=\"" << headerHeight
+               <<"\">" << "Actor"
+              <<"</text>";
+        outText << "<text font-size=\""<< headerTextSize
+                << "\" class=\"header\" x=\"" << diagramMaxWidth / 2
+                <<"\" y=\"" << headerHeight
+               <<"\">" << "Clusterings"
+              <<"</text>";
+
+        // print actor numbers
+        // and compute initial cluster end points for them.
+        for ( int i=0; i < it.value().size() ; ++i ) {
+
+            actorNumber = it.value().at(i);
+            clusterEndPoint[QString::number(actorNumber)] = QPoint(diagramPaddingLeft,diagramPaddingTop+rowHeight*(i));
+
+            outText << "<g class=\"row row-" << i << "\">";
+            outText << "<text class=\"actor\" font-size=\""<< actorTextSize
+                    << "\" x=\"" << rowPaddingLeft
+                    <<"\" y=\"" << diagramPaddingTop + (rowHeight*(i)) + actorTextSize / 3
+                   <<"\">" << actorNumber
+                  <<"</text>";
+
+            outText << "</g>";    // end actor name
+
+        }                         // end for rows
+
+
+        // begin drawing clustering paths/lines
+        for ( pit= m_clusterPairNamesPerSeq.constBegin() ; pit != m_clusterPairNamesPerSeq.constEnd(); ++pit) {
+            level = m_clusteringLevel.at ( pit.key() - 1);
+            qDebug() << "seq" <<pit.key()
+                     << "level" << level
+                     << "cluster pair" << pit.value();
+
+            for ( int i=0; i < pit.value().size() ; ++i ) {
+
+                clusterName = pit.value().at(i);
+                qDebug() << "clusterName" <<clusterName;
+
+                if (i==0) {
+                    endPoint1 = clusterEndPoint.value(clusterName, QPoint());
+                    qDebug() << "endPoint1" <<endPoint1;
+                }
+                else {
+                    endPoint2 = clusterEndPoint.value(clusterName, QPoint());
+                    qDebug() << "endPoint2" <<endPoint2;
+                }
+
+            }
+
+            if (endPoint1.isNull() || endPoint2.isNull()) {
+                continue;
+            }
+
+            // compute and save new endPoint
+            endPointLevel = QPoint ( ceil(diagramPaddingLeft + diagramMaxWidth * ( level / maxLevelValue)),
+                                     ceil(endPoint1.y() + endPoint2.y())/2);
+
+            clusterEndPoint.insert("c"+QString::number(pit.key()), endPointLevel);
+
+            qDebug()<<"(pit.key() / maxLevelValue)" << ( diagramPaddingLeft + level / maxLevelValue)
+                   <<"endPointLevel" <<endPointLevel ;
+
+            // print path
+            outText << "<path d=\"M "
+                    << endPoint1.x()
+                    << " " <<endPoint1.y()
+                    << " L "
+                    << endPointLevel.x()
+                    << " "
+                    << endPoint1.y()
+                    << " L "
+                    << endPointLevel.x()
+                    << " "
+                    << endPoint2.y()
+                    << " L "
+                    << endPoint2.x()
+                    << " "
+                    << endPoint2.y()
+                    << "\" stroke=\"red\" "
+                       "stroke-linecap=\"round\" stroke-width=\"1\" fill=\"none\"/>"; //stroke-dasharray=\"5,5\"
+
+
+            // print level vertical dashed line
+            outText << "<path d=\"M "
+                    << endPointLevel.x()
+                    << " "
+                    << diagramPaddingTop - 10
+                    << " L "
+                    << endPointLevel.x()
+                    << " "
+                    << diagramPaddingTop  + rowHeight*(N) -10
+                    << "\" stroke=\"#999\" "
+                       "stroke-linecap=\"round\" stroke-dasharray=\"1,2\" stroke-width=\"0.4\" fill=\"none\"/>";
+
+
+            //print legend
+            if (!legendLevelsDone.contains(level)) {
+                outText << "<text class=\"legend\"  writing-mode=\"tb-rl\" "
+                           "glyph-orientation-vertical=\"90\" "
+                           "font-size=\""
+                        << legendTextSize
+                        << "\" x=\"" << diagramPaddingLeft  + diagramMaxWidth * (level / maxLevelValue) - 5
+                        << "\" y=\""
+                        << diagramPaddingTop  + rowHeight*(N)
+                        << "\" >" << fixed << level <<"</text>";
+                legendLevelsDone.append(level);
+            }
+
+        }
+
+        outText << "</svg>";        //end dendrogram svg
+
+        outText << "</div>";        //end dendrogram div
+
+    }       // end if dendrogram
+
+}
+
+
+/**
+ * @brief Performs an hierarchical clustering process (Johnson, 1967) on a given
+ * NxN distance/dissimilarity matrix. The input matrix can be the
+ * the adjacency matrix, the geodesic distance matrix or a derived from them
+ * dissimilarities matrix using a user-specified metric, i.e. euclidean distance.
+ * The method parameter defines how to compute distances (similarities) between
+ * a new cluster the old clusters. Valid values can be:
+ * - CLUSTERING_SINGLE_LINKAGE: "single-link" or "connectedness" or "minimum"
+ * - CLUSTERING_COMPLETE_LINKAGE: "complete-link" or "diameter" or "maximum"
+ * - CLUSTERING_AVERAGE_LINKAGE: "average-link" or UPGMA
+ * @param matrix
+ * @param metric
+ * @param method
+ * @param considerWeights
+ * @param inverseWeights
+ * @param dropIsolates
+ */
+void Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
+                                        const int &metric,
+                                        const int &method,
+                                        const bool &diagonal,
+                                        const bool &diagram,
+                                        const bool &considerWeights,
+                                        const bool &inverseWeights,
+                                        const bool &dropIsolates) {
+
+    Q_UNUSED (inverseWeights);
+    Q_UNUSED (dropIsolates);
+
+    qDebug() << "Graph::graphClusteringHierarchical() - "
+             << "metric"
+             << metric
+             << "method"
+             << graphClusteringMethodTypeToString(method)
+             << "diagonal"
+             << diagonal
+             << "diagram"
+             << diagram;
+
+    STR_EQUIV.printMatrixConsole(true);
+
+    QString varLocation = "Rows";
+
+    float min=RAND_MAX;
+    float max=0;
+    int imin, jmin, imax, jmax, mergedClusterIndex, deletedClusterIndex ;
+    float distanceNewCluster;
+
+    // temp vector stores cluster members at each clustering level
+    QVector<int> clusteredItems;
+
+    // maps original and clustered items per their DSM matrix index
+    // so that we know that at Level X the matrix index 0 corresponds to the cluster i.e. { 1,2,4}
+    QMap <int, V_int> m_clustersIndex;
+    QMap<int,V_int>::iterator it;
+    QMap<int,V_int>::iterator prev;
+
+    QMap<QString,V_int>::const_iterator sit;
+
+    // variables for diagram computation
+    QVector<QString> clusterPairNames;
+    QString cluster1, cluster2;
+
+    Matrix DSM;  //dissimilarities matrix. Note: will be destroyed in the end.
+
+    // TODO: needs fix when distances matrix with -1 (infinity) elements is used.
+
+    // compute, if needed, the dissimilarities matrix
+    switch (metric) {
+    case METRIC_NONE:
+        DSM=STR_EQUIV;
+        break;
+    case METRIC_JACCARD_INDEX:
+        graphMatrixDissimilaritiesCreate(STR_EQUIV, DSM, metric,varLocation,diagonal, considerWeights);
+        STR_EQUIV = DSM;
+        break;
+    case METRIC_MANHATTAN_DISTANCE:
+        graphMatrixDissimilaritiesCreate(STR_EQUIV, DSM, metric,varLocation,diagonal, considerWeights);
+        STR_EQUIV = DSM;
+        break;
+    case METRIC_HAMMING_DISTANCE:
+        graphMatrixDissimilaritiesCreate(STR_EQUIV, DSM, metric,varLocation,diagonal, considerWeights);
+        STR_EQUIV = DSM;
+        break;
+    case METRIC_EUCLIDEAN_DISTANCE:
+        graphMatrixDissimilaritiesCreate(STR_EQUIV, DSM, metric,varLocation,diagonal, considerWeights);
+        STR_EQUIV = DSM;
+        break;
+    case METRIC_CHEBYSHEV_MAXIMUM:
+        graphMatrixDissimilaritiesCreate(STR_EQUIV, DSM, metric,varLocation,diagonal, considerWeights);
+        STR_EQUIV = DSM;
+        break;
+    default:
+        break;
+    }
+
+
+    int N = DSM.rows();
+
+
+    qDebug() << "Graph::graphClusteringHierarchical() -"
+             << "initial matrix DSM.size:"
+             << N
+             <<"matrix DSM contents";
+    DSM.printMatrixConsole();
+
+    clusteredItems.reserve(N);
+    if (diagram) {
+        clusterPairNames.reserve(N);
+    }
+
+
+    m_clustersIndex.clear();
+
+    m_clustersPerSequence.clear();
+    m_clusteringLevel.clear();
+
+    m_clustersByName.clear();
+    m_clusterPairNamesPerSeq.clear();
+
+    //
+    //Step 1: Assign each of the N items to its own cluster.
+    //        We have N unit clusters
+    //
+    int clustersLeft = N;
+    int seq = 1 ; //clustering stage/level sequence number
+
+    for (int i = 0 ; i< N ; i ++ ) {
+        clusteredItems.clear();
+        clusteredItems << i+1;
+        m_clustersIndex[i] = clusteredItems;
+        if (diagram) {
+            m_clustersByName.insert(QString::number(i+1),clusteredItems );
+        }
+    }
+
+    while (clustersLeft > 1)
+    {
+
+        qDebug() << "Graph::graphClusteringHierarchical() -"
+                 <<"matrix DSM contents";
+        DSM.printMatrixConsole();
+
+        //
+        //Step 2. Find the most similar pair of clusters.
+        //        Merge them into a single new cluster.
+        //
+        DSM.NeighboursNearestFarthest(min, max, imin, jmin, imax, jmax);
+        mergedClusterIndex = (imin < jmin ) ? imin : jmin;
+        deletedClusterIndex =  (mergedClusterIndex  == imin ) ? jmin : imin;
+
+        m_clusteringLevel << min;
+
+        clusteredItems.clear();
+        clusteredItems = m_clustersIndex[mergedClusterIndex] + m_clustersIndex[deletedClusterIndex] ;
+
+        qDebug() << "level"<< min
+                 << "seq" << seq
+                 <<"clusteredItems in level"  <<clusteredItems;
+
+        m_clustersPerSequence.insert( seq, clusteredItems);
+
+        if (diagram) {
+
+            cluster1.clear();
+            cluster2.clear();
+            clusterPairNames.clear();
+
+            for ( sit= m_clustersByName.constBegin() ; sit != m_clustersByName.constEnd(); ++sit) {
+                if (sit.value() == m_clustersIndex[mergedClusterIndex] ) {
+                    cluster1 = sit.key();
+                }
+                else if (sit.value() == m_clustersIndex[deletedClusterIndex] ) {
+                    cluster2 = sit.key();
+                }
+            }
+            if (cluster1.isNull() && m_clustersIndex[mergedClusterIndex].size() == 1) {
+                cluster1 = QString::number( m_clustersIndex[mergedClusterIndex].first() );
+            }
+            if (cluster2.isNull() && m_clustersIndex[deletedClusterIndex].size() == 1) {
+                cluster1 = QString::number( m_clustersIndex[deletedClusterIndex].first() );
+            }
+            clusterPairNames.append(cluster1);
+            clusterPairNames.append(cluster2);
+
+            m_clusterPairNamesPerSeq.insert(seq, clusterPairNames);
+
+            m_clustersByName.insert("c"+QString::number(seq),clusteredItems );
+
+
+        } //end if diagram
+
+
+        // map new cluster to a matrix index
+        m_clustersIndex[mergedClusterIndex] = clusteredItems ;
+
+        qDebug() << "Graph::graphClusteringHierarchical() -" << endl
+                 << "  Clustering seq:"
+                 << seq << endl
+                 << "  Level:" << min << endl
+                 << "  Neareast neighbors: ("<< imin+1 <<","<<jmin+1<<")"
+                 << "Minimum/distance:" << min << endl
+                 << "  Farthest neighbors: ("<< imax+1 <<","<<jmax+1<<")"
+                 << "Maximum/distance:" << max << endl
+                 << "  Merge nearest neighbors into a single new cluster:"
+                 << mergedClusterIndex +1 << endl
+                 << "  m_clustersPerSequence" << m_clustersPerSequence;
+
+        qDebug() << "Graph::graphClusteringHierarchical() -"
+                 << "  Remove key"<< deletedClusterIndex
+                 << "and shift next values to left: " ;
+        it = m_clustersIndex.find(deletedClusterIndex);
+        while (it != m_clustersIndex.end()) {
+            prev = it;
+            ++it;
+            if ( it != m_clustersIndex.end() ) {
+                prev.value() = it.value() ;
+                //qDebug() << "  key now"<< prev.key() << ": " << prev.value() ;
+            }
+        }
+        m_clustersIndex.erase(--it); //erase the last element in map
+
+        qDebug() << "Graph::graphClusteringHierarchical() - Finished. " << endl
+                 << "  m_clustersIndex now" <<m_clustersIndex << endl
+                 << "  Compute distances "
+                    "between the new cluster and the old ones";
+
+        //
+        //Step 3. Compute distances (or similarities) between
+        //        the single new cluster and the old clusters
+        //
+        int j = mergedClusterIndex ;
+        qDebug() << "j = mergedClusterIndex " << mergedClusterIndex +1;
+
+        for (int i = 0 ; i< clustersLeft; i ++ ) {
+            if (i == deletedClusterIndex  ) {
+//                qDebug() << "Graph::graphClusteringHierarchical() -"
+//                          <<"SKIP this as it is one of the merged clusters.";
+                continue;
+
+            }
+
+            distanceNewCluster = 0;
+
+            switch (method) {
+            case CLUSTERING_SINGLE_LINKAGE: //"single-linkage":
+                if (i==j) {
+                    distanceNewCluster = 0;
+                }
+                else {
+                    distanceNewCluster= (DSM.item(i,imin) < DSM.item(i,jmin) ) ? DSM.item(i,imin) : DSM.item(i,jmin);
+                }
+                qDebug() << "Graph::graphClusteringHierarchical() - "
+                        << "  DSM("<<i+1<<","<<imin+1<<") ="<< DSM.item(i,imin)
+                        << "  DSM("<<i+1<<","<<jmin+1<<") ="<< DSM.item(i,jmin)
+                        << " ? minimum DSM("<<i+1<<","<<j+1<<" ="<<distanceNewCluster;
+                break;
+
+            case CLUSTERING_COMPLETE_LINKAGE: // "complete-linkage":
+                if (i==j) {
+                    distanceNewCluster = 0;
+                }
+                else {
+                    distanceNewCluster= (DSM.item(i,imin) > DSM.item(i,jmin) ) ? DSM.item(i,imin) : DSM.item(i,jmin);
+
+                }
+                qDebug() << "Graph::graphClusteringHierarchical() - "
+                        << "  DSM("<<i+1<<","<<imin+1<<") ="<< DSM.item(i,imin)
+                        << "  DSM("<<i+1<<","<<jmin+1<<") ="<< DSM.item(i,jmin)
+                        << " ? maximum DSM("<<i+1<<","<<j+1<<" ="<<distanceNewCluster;
+                break;
+
+            case CLUSTERING_AVERAGE_LINKAGE: //mean or "average-linkage" or UPGMA
+                if (i==j) {
+                    distanceNewCluster = 0;
+                }
+                else {
+                    distanceNewCluster= ( DSM.item(i,imin)  + DSM.item(i,jmin) ) / 2;
+                }
+                qDebug() << "Graph::graphClusteringHierarchical() - "
+                        << "  DSM("<<i+1<<","<<imin+1<<") ="<< DSM.item(i,imin)
+                        << "  DSM("<<i+1<<","<<jmin+1<<") ="<< DSM.item(i,jmin)
+                        << " ? average DSM("<<i+1<<","<<j+1<<" ="<<distanceNewCluster;
+                break;
+
+            default:
+                distanceNewCluster= (DSM.item(i,imin) < DSM.item(i,jmin) ) ? DSM.item(i,imin) : DSM.item(i,jmin);
+                break;
+            }
+
+            DSM.setItem(i, j, distanceNewCluster);
+            DSM.setItem(j, i, distanceNewCluster);
+
+            // DSM.setItem(deletedClusterIndex, j, RAND_MAX);
+            // DSM.setItem(j, deletedClusterIndex, RAND_MAX);
+
+
+        }
+
+
+        qDebug() << "Graph::graphClusteringHierarchical() - Finished."
+                 << "Resizing old DSM matrix";
+        //DSM.printMatrixConsole();
+        DSM.deleteRowColumn(deletedClusterIndex);
+
+        clustersLeft --;
+        seq ++;
+
+        //
+        //Step 4. Repeat steps 2 and 3 until all remaining items/clusters
+        //        are clustered into a single cluster of size N
+        //
+
+    }   // end while clustersLeft
+
+    clusteredItems.clear();
+    m_clustersIndex.clear();
+
+}
+
+
+
+
+
+
+/**
+ * @brief Writes similarity matrix based on a matching measure to given file
+ * @param fileName
+ * @param measure
+ * @param matrix
+ * @param varLocation
+ * @param diagonal
+ * @param considerWeights
+ */
+void Graph::writeMatrixSimilarityMatchingPlain(const QString fileName,
+                                   const int &measure,
+                                   const QString &matrix,
+                                   const QString &varLocation,
+                                   const bool &diagonal,
+                                   const bool &considerWeights) {
+
+    Q_UNUSED(considerWeights);
+
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
+        return;
+    }
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
+
+    emit statusMessage ( (tr("Examining pair-wise similarity of actors...")) );
+
+    Matrix SCM;
+    if (matrix == "Adjacency") {
+        graphMatrixAdjacencyCreate();
+        graphMatrixSimilarityMatchingCreate(AM, SCM, measure, varLocation, diagonal, considerWeights);
+    }
+    else if (matrix == "Distances") {
+        graphMatrixDistancesCreate();
+        graphMatrixSimilarityMatchingCreate(DM, SCM, measure, varLocation, diagonal, considerWeights);
+    }
+    else {
+        return;
+    }
+
+    emit statusMessage ( tr("Writing similarity coefficients to file: ")
+                         + fileName );
+
+    outText.setRealNumberPrecision(m_precision);
+
+    outText << tr("SIMILARITY MATRIX: MATCHING COEFFICIENTS (SMMC)") << endl<< endl;
+
+    outText << qSetPadChar('.') <<qSetFieldWidth(20)<< left
+            << tr("Network name: ")<< reset<< graphName()<< endl
+            << qSetPadChar('.') <<qSetFieldWidth(20)<< left
+            << tr("Input matrix: ")<< reset<< matrix << endl
+            << qSetPadChar('.') <<qSetFieldWidth(20)<< left
+            << tr("Variables in: ")<< reset<< ((varLocation != "Rows" && varLocation != "Columns") ? "Concatenated rows + columns " : varLocation)  << endl
+            << qSetPadChar('.') <<qSetFieldWidth(20)<< left
+            << tr("Matching measure: ") << reset ;
+
+
+    outText << graphMetricTypeToString(measure);
+
+    outText << endl
+             << qSetPadChar('.') <<qSetFieldWidth(20)<< left
+            << tr("Diagonal: \t") << reset << ((diagonal) ? "Included" : "Not included") << endl << endl;
+
+    outText << tr("Analysis results") <<endl<<endl;
+    if (measure==METRIC_HAMMING_DISTANCE)
+        outText << tr("SMMC range: 0 < C") << endl<<endl;
+    else
+        outText << tr("SMMC range: 0 < C < 1") << endl<<endl;
+
+    outText << SCM;
+
+    outText << endl;
+
+    if (measure==METRIC_HAMMING_DISTANCE) {
+        outText << tr("SMMC = 0, when two actors are absolutely similar (no tie/distance differences).")<<endl;
+        outText << tr(
+          "SMMC > 0, when two actors have some differences in their ties/distances, \n"
+          "i.e. SMMC = 3 means the two actors have 3 differences in their tie/distance profiles to other actors.");
+    }
+    else {
+        outText << tr("SMMC = 0, when there is no tie profile similarity at all.")<<endl;
+        outText << tr(
+          "SMMC > 0, when two actors have some matches in their ties/distances, \n"
+          "i.e. SMMC = 1 means the two actors have their ties to other actors exactly the same all the time.");
+    }
+
+
+
+    outText << endl<< endl;
+
+    outText << tr("Similarity Matrix by Matching Measure Report,\n");
+    outText << tr("Created by SocNetV ") << VERSION << ": "
+            << actualDateTime.currentDateTime()
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+
+    file.close();
+
+}
+
+
+
+
+
+
+
+/**
+ * @brief Writes dissimilarity matrix based on a metric/measure to given html file
+ * @param fileName
+ * @param measure
+ * @param varLocation
+ * @param diagonal
+ * @param considerWeights
+ */
+void Graph::writeMatrixDissimilarities(const QString fileName,
+                                          const QString &metricStr,
+                                          const QString &varLocation,
+                                          const bool &diagonal,
+                                          const bool &considerWeights) {
+
+    qDebug()<< "Graph::writeMatrixDissimilarities()"
+            << "metric" << metricStr
+            << "varLocation" << varLocation
+            << "diagonal"<<diagonal;
+
+    QTime computationTimer;
+    computationTimer.start();
+
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
+        return;
+    }
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
+
+    Matrix DSM;
+    int N = vertices();
+
+    emit statusMessage ( (tr("Recomputing adjacency matrix...")) );
+
+    graphMatrixAdjacencyCreate();
+
+    emit statusMessage ( (tr("Examining pair-wise tie profile dissimilarities of actors...")) );
+
+    int metric = graphMetricStrToType( metricStr );
+    graphMatrixDissimilaritiesCreate(AM,DSM, metric, varLocation,diagonal, considerWeights);
+
+    emit statusMessage ( tr("Writing tie profile dissimilarities to file: ")
+                         + fileName );
+
+    outText.setRealNumberPrecision(m_precision);
+
+
+    outText << htmlHead;
+
+    outText << "<h1>";
+    outText << tr("DISSIMILARITIES MATRIX");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Variables in: ")
+            <<"</span>"
+            << ((varLocation != "Rows" && varLocation != "Columns") ? "Concatenated rows + columns " : varLocation)
+            << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Metric: ")
+            << "</span>"
+            <<  metricStr
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Diagonal: ")
+            <<"</span>"
+            << ((diagonal) ? "Included" : "Not included")
+            << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Range: ")
+            <<"</span>";
+
+    if (metric==METRIC_JACCARD_INDEX)
+        outText << tr("0 &lt; C &lt; 1") ;
+    else
+        outText << tr("0 &lt; C ") ;
+    outText << "</p>";
+
+    outText << "<p>"
+            << "<br />"
+            << "<span class=\"info\">"
+            << tr("Analysis results ")
+            <<"</span>"
+            << "</p>";
+
+    DSM.printHTMLTable(outText);
+
+    outText << "<p class=\"description\">";
+    outText << "<span class=\"info\">"
+            << tr("DSM = 0 ")
+            <<"</span>"
+           << tr("when two actors have no tie profile dissimilarities. The actors have the same ties to all others.")
+           <<"<br/>"
+          << "<span class=\"info\">"
+          << tr("DSM &gt; 0 ")
+          <<"</span>"
+         << tr("when the two actors have differences in their ties to other actors.");
+    outText << "</p>";
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Dissimilarity Matrix Report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+    file.close();
+
+}
+
+
+
+/**
+ * @brief Calls Matrix:distancesMatrix to compute the dissimilarities matrix DSM
+ * of the variables (rows, columns, both) in given input matrix using the
+ * user defined metric
+ * @param AM
+ * @param DSM
+ * @param metric
+ * @param varLocation
+ * @param diagonal
+ * @param considerWeights
+ */
+void Graph::graphMatrixDissimilaritiesCreate(Matrix &INPUT_MATRIX,
+                                             Matrix &DSM,
+                                             const int &metric,
+                                             const QString &varLocation,
+                                             const bool &diagonal,
+                                             const bool &considerWeights){
+    qDebug()<<"Graph::graphMatrixDissimilaritiesCreate()";
+
+    DSM = INPUT_MATRIX.distancesMatrix(metric, varLocation, diagonal, considerWeights);
+
+    qDebug()<<"Graph::graphMatrixDissimilaritiesCreate() - matrix SCM";
+}
+
+
+
+
+
+/**
+ * @brief Writes similarity matrix based on a matching measure to given html file
+ * @param fileName
+ * @param measure
+ * @param matrix
+ * @param varLocation
+ * @param diagonal
+ * @param considerWeights
+ */
+void Graph::writeMatrixSimilarityMatching(const QString fileName,
+                                   const QString &measure,
+                                   const QString &matrix,
+                                   const QString &varLocation,
+                                   const bool &diagonal,
+                                   const bool &considerWeights) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
+    int measureInt = graphMetricStrToType( measure );
+
+    Q_UNUSED(considerWeights);
+
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
+        return;
+    }
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
+
+    emit statusMessage ( (tr("Examining pair-wise similarity of actors...")) );
+
+    Matrix SCM;
+    int N = vertices();
+
+    if (matrix == "Adjacency") {
+        graphMatrixAdjacencyCreate();
+        graphMatrixSimilarityMatchingCreate(AM, SCM, measureInt ,
+                                varLocation, diagonal, considerWeights);
+    }
+    else if (matrix == "Distances") {
+        graphMatrixDistancesCreate();
+        graphMatrixSimilarityMatchingCreate(DM, SCM, measureInt,
+                                varLocation, diagonal, considerWeights);
+    }
+    else {
+        return;
+    }
+
+    emit statusMessage ( tr("Writing similarity coefficients to file: ")
+                         + fileName );
+
+    outText.setRealNumberPrecision(m_precision);
+
+
+    outText << htmlHead;
+
+    outText << "<h1>";
+    outText << tr("SIMILARITY MATRIX: MATCHING COEFFICIENTS (SMMC)");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Input matrix: ")
+            <<"</span>"
+            << matrix
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Variables in: ")
+            <<"</span>"
+            << ((varLocation != "Rows" && varLocation != "Columns") ? "Concatenated rows + columns " : varLocation)
+            << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Matching measure: ")
+            << "</span>"
+            <<  measure
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Diagonal: ")
+            <<"</span>"
+            << ((diagonal) ? "Included" : "Not included")
+            << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("SMMC range: ")
+            <<"</span>";
+
+    if (measureInt==METRIC_HAMMING_DISTANCE)
+        outText << tr("0 &lt; C") ;
+    else
+        outText << tr("0 &lt; C &lt; 1") ;
+    outText << "</p>";
+
+    outText << "<p>"
+            << "<br />"
+            << "<span class=\"info\">"
+            << tr("Analysis results ")
+            <<"</span>"
+            << "</p>";
+
+    SCM.printHTMLTable(outText);
+
+    outText << "<p class=\"description\">";
+    if (measureInt==METRIC_HAMMING_DISTANCE) {
+        outText << "<span class=\"info\">"
+                << tr("SMMC = 0 ")
+                <<"</span>"
+                << tr("when two actors are absolutely similar (no tie/distance differences).")
+                <<"<br/>"
+                << "<span class=\"info\">"
+                << tr("SMMC &gt; 0 ")
+                <<"</span>"
+                << tr("when two actors have some differences in their ties/distances, "
+                      "i.e. SMMC = 3 means the two actors have 3 differences in their tie/distance profiles to other actors.");
+    }
+    else {
+        outText << "<span class=\"info\">"
+                << tr("SMMC = 0 ")
+                <<"</span>"
+                << tr("when there is no tie profile similarity at all.")
+                <<"<br/>"
+                << "<span class=\"info\">"
+                << tr("SMMC &gt; 0 ")
+                <<"</span>"
+                << tr("when two actors have some matches in their ties/distances, "
+                      "i.e. SMMC = 1 means the two actors have their ties to other actors exactly the same all the time.");
+    }
+    outText << "</p>";
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Similarity Matrix by Matching Measure Report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+    file.close();
+
+}
+
+
+
+/**
+ * @brief Calls Matrix:similarityMatrix to compute the similarity matrix SCM
+ * of the variables (rows, columns, both) in given input matrix using the
+ * selected matching measure.
+ *
+ * @param AM
+ * @param SCM
+ * @param rows
+ */
+void Graph::graphMatrixSimilarityMatchingCreate (Matrix &AM,
+                                    Matrix &SCM,
+                                    const int &measure,
+                                    const QString &varLocation,
+                                    const bool &diagonal,
+                                    const bool &considerWeights){
+    qDebug()<<"Graph::graphMatrixSimilarityMatchingCreate()";
+
+
+    SCM.similarityMatrix(AM, measure, varLocation, diagonal, considerWeights);
+
+    qDebug()<<"Graph::graphMatrixSimilarityMatchingCreate() - matrix SCM";
+    //SCM.printMatrixConsole(true);
+
+}
+
+
+
+/**
+ * @brief Calls Graph::graphMatrixSimilarityPearsonCreate() and
+ * writes Pearson Correlation Coefficients to given file
+ * @param fileName
+ * @param considerWeights
+ */
+void Graph::writeMatrixSimilarityPearson(const QString fileName,
+                                   const bool considerWeights,
+                                   const QString &matrix,
+                                   const QString &varLocation,
+                                   const bool &diagonal) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
+    Q_UNUSED(considerWeights);
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
+        return;
+    }
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
+
+    emit statusMessage ( (tr("Calculating Pearson Correlations...")) );
+
+    Matrix PCC;
+    int N = vertices();
+
+    if (matrix == "Adjacency") {
+        graphMatrixAdjacencyCreate();
+        graphMatrixSimilarityPearsonCreate(AM, PCC, varLocation,diagonal);
+    }
+    else if (matrix == "Distances") {
+        graphMatrixDistancesCreate();
+        graphMatrixSimilarityPearsonCreate(DM, PCC, varLocation,diagonal);
+    }
+    else {
+        return;
+    }
+
+
+    emit statusMessage ( tr("Writing Pearson coefficients to file: ")
+                         + fileName );
+
+    outText.setRealNumberPrecision(m_precision);
+
+    outText << htmlHead;
+
+    outText << "<h1>";
+    outText << tr("PEARSON CORRELATION COEFFICIENTS (PCC) MATRIX");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Input matrix: ")
+            <<"</span>"
+            << matrix
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Variables in: ")
+            <<"</span>"
+            << ((varLocation != "Rows" && varLocation != "Columns") ? "Concatenated rows + columns " : varLocation)
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Diagonal: ")
+            <<"</span>"
+            << ((diagonal) ? "Included" : "Not included")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("PCC range: ")
+            <<"</span>"
+            << "-1 &lt; C &lt; 1"
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << "<br />"
+            << tr("Analysis results ")
+            <<"</span>"
+            << "</p>";
+
+
+    PCC.printHTMLTable(outText);
+
+
+    outText << "<p class=\"description\">";
+    outText << "<span class=\"info\">"
+            << tr("PCC = 0 ")
+            <<"</span>"
+            << tr("when there is no correlation at all.")
+            <<"<br/>"
+           << "<span class=\"info\">"
+            << tr("PCC &gt; 0 ")
+            <<"</span>"
+            << tr("when there is positive correlation, "
+                  "i.e. +1 means actors with same patterns of ties/distances.")
+            <<"<br />"
+           << "<span class=\"info\">"
+            << tr("PCC &lt; 0 ")
+            <<"</span>"
+            << tr("when there is negative correlation, "
+                  "i.e. -1 for actors with exactly opposite patterns of ties.")
+            <<"<br/>";
+    outText << "</p>";
+
+
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Pearson Correlation Coefficients Report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+    file.close();
+}
+
+
+
+
+
+
+/**
+ * @brief
+ * Calls Graph::graphSimilariyPearsonCorrelationCoefficients() and
+ * writes Pearson Correlation Coefficients to given file
+ * @param fileName
+ * @param considerWeights
+ */
+void Graph::writeMatrixSimilarityPearsonPlainText(const QString fileName,
+                                   const bool considerWeights,
+                                   const QString &matrix,
+                                   const QString &varLocation,
+                                   const bool &diagonal)
+{
+    Q_UNUSED(considerWeights);
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
+        return;
+    }
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
+
+    emit statusMessage ( (tr("Calculating Pearson Correlations...")) );
+
+    Matrix PCC;
+    if (matrix == "Adjacency") {
+        graphMatrixAdjacencyCreate();
+        graphMatrixSimilarityPearsonCreate(AM, PCC, varLocation,diagonal);
+    }
+    else if (matrix == "Distances") {
+        graphMatrixDistancesCreate();
+        graphMatrixSimilarityPearsonCreate(DM, PCC, varLocation,diagonal);
+    }
+    else {
+        return;
+    }
+
+
+    emit statusMessage ( tr("Writing Pearson coefficients to file: ")
+                         + fileName );
+
+    outText.setRealNumberPrecision(m_precision);
+
+    outText << tr("PEARSON CORRELATION COEFFICIENTS (PCC) MATRIX") << endl<<endl;
+
+    outText << tr("Network name: ")<< graphName()<< endl
+            << tr("Input matrix: ")<< matrix << endl
+            << tr("Variables in: ")<< ((varLocation != "Rows" && varLocation != "Columns") ? "Concatenated rows + columns " : varLocation)
+                                                                                            << endl<<endl;
+    outText << tr("Analysis results") <<endl<<endl;
+
+    outText << tr("PCC range: -1 < C < 1") << endl;
+
+    outText << PCC;
+
+    outText << endl;
+    outText << tr("PCC = 0, when there is no correlation at all.\n");
+    outText << tr(
+      "PCC > 0, when there is positive correlation, i.e. +1 means actors with same patterns of ties/distances.\n");
+    outText << tr(
+      "PCC < 0, when there is negative correlation, i.e. -1 for actors with exactly opposite patterns of ties.\n");
+    outText <<"\n\n" ;
+    outText << tr("Pearson Correlation Coefficients Report,\n");
+    outText << tr("Created by SocNetV ") << VERSION << ": "
+            << actualDateTime.currentDateTime()
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+
+    file.close();
+}
+
+
+/**
+ * @brief
+ * The Pearson product-moment correlation coefficient (PPMCC, PCC or Pearson's r)
+ * is a measure of the linear dependence between two variables X and Y.
+ *
+ * As a normalized version of the covariance, the PPMCC is computed with the formula:
+ *  r =\frac{\sum ^n _{i=1}(x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum ^n _{i=1}(x_i - \bar{x})^2} \sqrt{\sum ^n _{i=1}(y_i - \bar{y})^2}}
+ *
+ * It gives a value between +1 and −1 inclusive, where 1 is total positive linear
+ * correlation, 0 is no linear correlation, and −1 is total negative linear correlation.
+ *
+ * In SNA, Pearson correlations can be used to track the similarity between actors,
+ * in terms of structural equivalence.
+ *
+ * This method creates an actor by actor NxN matrix PCC where the (i,j) element
+ * is the Pearson correlation coefficient of actor i and actor j.
+ * If the input matrix is the adjacency matrix, the PCC of two nodes measures
+ * how related (similar, inverse or not related at all) their patterns of ties tend to be.
+ * A positive value means there is strong linear association of the two actors,
+ * while a negative value means the inverse. For instance a value of -1 means
+ * the two actors have exactly opposite ties to other actors, while a value of 1
+ * means the actors have identical patterns of ties to other actors
+ * (they are connected to the same actors).
+ *
+ * The correlation measure of similarity is particularly useful when the data on ties are valued
+
+ * @param AM
+ * @param PCC
+ * @param rows
+ */
+void Graph::graphMatrixSimilarityPearsonCreate (Matrix &AM,
+                                                          Matrix &PCC,
+                                                          const QString &varLocation,
+                                                           const bool &diagonal){
+    qDebug()<<"Graph::graphMatrixSimilarityPearsonCreate()";
+
+
+    PCC.pearsonCorrelationCoefficients(AM, varLocation,diagonal);
+
+    qDebug()<<"Graph::graphMatrixSimilarityPearsonCreate() - matrix PCC";
+    //PCC.printMatrixConsole(true);
+
 }
 
 
@@ -7229,11 +11942,11 @@ float Graph::cliquesOfSize(int size){
 */
 float Graph::numberOfTriples(int v1){
     float totalDegree=0;
-    if (isSymmetric()){
-        totalDegree=edgesOutbound(v1);
+    if (graphSymmetric()){
+        totalDegree=vertexEdgesOutbound(v1);
         return totalDegree * (totalDegree -1.0) / 2.0;
     }
-    totalDegree=edgesOutbound(v1) + edgesInbound(v1);  //FIXEM
+    totalDegree=vertexEdgesOutbound(v1) + vertexEdgesInbound(v1);  //FIXEM
     return	totalDegree * (totalDegree -1.0);
 }
 
@@ -7260,13 +11973,13 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
     qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") - "
             << " Graph changed or clucof not calculated.";
 
-    bool graphSymmetric = false;
+    bool graphIsSymmetric = false;
 
-    if ( isSymmetric() ) {
-        graphSymmetric = true;
+    if ( graphSymmetric() ) {
+        graphIsSymmetric = true;
     }
     else {
-        graphSymmetric = false;
+        graphIsSymmetric = false;
     }
 
     float clucof=0, denom = 0 , nom = 0;
@@ -7280,7 +11993,7 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
              << " Checking adjacent edges " ;
 
     QHash<int,float> *reciprocalEdges = new QHash<int,float>;
-    reciprocalEdges = m_graph [ index[v1] ] -> returnReciprocalEdges();
+    reciprocalEdges = m_graph [ index[v1] ] -> reciprocalEdgesHash();
 
     QHash<int,float>::const_iterator it1;
     QHash<int,float>::const_iterator it2;
@@ -7307,16 +12020,16 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
 
         it2=reciprocalEdges->cbegin();
         qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
-                 << "Checking if neighbor " << u1
-                 << "is connected to other neighbors of " << v1;
+                 << "Checking if neighbor" << u1
+                 << "is connected to other neighbors of" << v1;
 
         while ( it2 != reciprocalEdges->cend() ){
 
             u2 = it2.key();
 
             qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
-                     << "Other neighbor " << u2
-                     << "Check if there is an edge "
+                     << "Other neighbor" << u2
+                     << "Check if there is an edge"
                      << u1
                      << "[" << index[u1] << "]"
                         << "->" << u2 ;
@@ -7328,6 +12041,7 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
                 continue;
             }
 
+
             if ( edgeExists( u1, u2 ) != 0 )
             {
                 qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
@@ -7337,33 +12051,9 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
                 QString edge = QString::number(u1) + "->" + QString::number(u2);
                 QString revedge = QString::number(u2) + "->" + QString::number(u1);
 
-                if ( ! neighborhoodEdges.contains(edge) &&
-                     ( graphSymmetric && ! neighborhoodEdges.contains(revedge) )
-                     )
-                {
-                    neighborhoodEdges.insert(edge, true);
-                    qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
-                             << "Edge added to neighborhoodEdges : " << edge;
-
-                }
-                else {
-                    qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
-                             << "Edge not added, discovered previously : " << edge;
-                }
-            }
-            if ( ! graphSymmetric )
-            {
-                if (  edgeExists( u2, u1 ) != 0   )
-                {
-                    qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
-                             << "Graph not symmetric  "
-                             << "Connected neighbors: "
-                             << u2 << " -> " << u1;
-
-                    QString edge = QString::number(u2) + "->" + QString::number(u1);
-
-                    if ( ! neighborhoodEdges.contains(edge) )
-                    {
+                if ( graphIsSymmetric ) {
+                    if ( ! neighborhoodEdges.contains(edge) &&
+                         ! neighborhoodEdges.contains(revedge)  )    {
                         neighborhoodEdges.insert(edge, true);
                         qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
                                  << "Edge added to neighborhoodEdges : " << edge;
@@ -7373,9 +12063,23 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
                         qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
                                  << "Edge not added, discovered previously : " << edge;
                     }
+
+                }
+                else {
+                    if ( ! neighborhoodEdges.contains(edge) ) {
+                        neighborhoodEdges.insert(edge, true);
+                        qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
+                                 << "Edge added to neighborhoodEdges : " << edge;
+                    }
+                    else {
+                        qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
+                                 << "Edge not added, discovered previously : " << edge;
+                    }
+
                 }
 
             }
+
             ++it2;
         }
         ++it1;
@@ -7389,7 +12093,7 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
     if ( nom == 0)
         return 0;	//stop if we're at a leaf.
 
-    if ( graphSymmetric ){
+    if ( graphIsSymmetric ){
         k=reciprocalEdges->count();  //k_{i} is the number of neighbours of a vertex
         denom =	k * (k -1.0) / 2.0;
 
@@ -7434,6 +12138,8 @@ float Graph::clusteringCoefficient (const bool updateProgress){
     averageCLC=0;
     maxCLC=0; minCLC=1;
     float temp=0;
+    float x=0;
+    float N = vertices();
     int progressCounter = 0;
     Q_UNUSED(progressCounter );
     QList<Vertex*>::const_iterator vertex;
@@ -7453,8 +12159,18 @@ float Graph::clusteringCoefficient (const bool updateProgress){
             emit updateProgressDialog(++progressCounter);
     }
 
-    averageCLC = averageCLC / vertices();
+    averageCLC = averageCLC / N ;
+
     qDebug() << "Graph::clusteringCoefficient() network average " << averageCLC;
+
+    for ( vertex = m_graph.cbegin(); vertex != m_graph.cend(); ++vertex) {
+        x = (  (*vertex)->CLC()  -  averageCLC  ) ;
+        x *=x;
+        varianceCLC  += x;
+
+    }
+
+    varianceIC  /=  N;
 
     return averageCLC;
 }
@@ -7463,19 +12179,19 @@ float Graph::clusteringCoefficient (const bool updateProgress){
 
 
 /**
- * @brief Graph::triadCensus
+ * @brief Graph::graphTriadCensus
  *  Conducts a triad census and updates QList::triadTypeFreqs,
  * 		which is the list carrying all triad type frequencies
  *  Complexity:O(n!)
  * @return
  */
-bool Graph::triadCensus(){
+bool Graph::graphTriadCensus(){
     int mut=0, asy=0, nul =0;
     int temp_mut=0, temp_asy=0, temp_nul =0, counter_021=0;
     int ver1, ver2, ver3;
     int progressCounter = 0;
 
-    qDebug() << "Graph::triadCensus()";
+    qDebug() << "Graph::graphTriadCensus()";
     /*
      * QList::triadTypeFreqs stores triad type frequencies with the following order:
      * 0	1	2	3		4	5	6	7	8		9	10	11	12		13	14	15
@@ -7819,7 +12535,10 @@ QString Graph::graphName() const {
 /**
  * @brief Graph::graphLoad
  * Our almost universal network loader. :)
- * Actually it calls the load() method of parser/qthread class.
+ * It creates a new Parser object,
+ * moves it to a another thread,
+ * connects signals and slots and
+ * calls its run() method.
  * @param m_fileName
  * @param m_codecName
  * @param m_showLabels
@@ -7829,13 +12548,17 @@ QString Graph::graphName() const {
  * @param two_sm_mode
  * @return
  */
-bool Graph::graphLoad (	const QString m_fileName,
+void Graph::graphLoad (	const QString m_fileName,
                         const QString m_codecName,
                         const bool m_showLabels,
-                        const int maxWidth, const int maxHeight,
-                        const int fileFormat, const int two_sm_mode){
+                        const int fileFormat,
+                        const int two_sm_mode,
+                        const QString delimiter){
     initVertexLabelsVisibility = m_showLabels;
-    qDebug() << "Graph::graphLoad() : "<< m_fileName
+
+    qDebug() << "Graph::graphLoad() - clearing relations ";
+    relationsClear();
+    qDebug() << "Graph::graphLoad() - "<< m_fileName
                 << " calling parser.load() from thread " << this->thread();
 
     Parser *file_parser = new Parser(
@@ -7846,27 +12569,26 @@ bool Graph::graphLoad (	const QString m_fileName,
                 initVertexNumberColor, initVertexNumberSize,
                 initVertexLabelColor, initVertexLabelSize,
                 initEdgeColor,
-                maxWidth, maxHeight,
+                canvasWidth, canvasHeight,
                 fileFormat,
-                two_sm_mode
+                two_sm_mode,
+                delimiter
                 );
 
-    qDebug () << "Graph::graphLoad() file_parser thread  " << file_parser->thread()
+    qDebug () << "Graph::graphLoad() - file_parser thread  " << file_parser->thread()
                  << " moving it to new thread ";
 
     file_parser->moveToThread(&file_parserThread);
 
-    qDebug () << "Graph::graphLoad() file_parser thread now " << file_parser->thread();
+    qDebug () << "Graph::graphLoad() - file_parser thread now " << file_parser->thread();
 
-    qDebug () << "Graph::graphLoad()  connecting file_parser signals ";
+    qDebug () << "Graph::graphLoad() - connecting file_parser signals ";
 
     connect(&file_parserThread, &QThread::finished,
             file_parser, &QObject::deleteLater);
 
-    connect (
-                file_parser, SIGNAL( addRelation (QString) ),
-                this, SLOT(relationAddFromParser(QString) )
-                ) ;
+    connect(file_parser, &Parser::addRelation,
+            this, &Graph::relationAdd);
 
     connect (
                 file_parser, SIGNAL( relationSet (int) ),
@@ -7915,11 +12637,24 @@ bool Graph::graphLoad (	const QString m_fileName,
                 );
 
     connect (
-                file_parser, SIGNAL(networkFileLoaded(int, QString, QString,
-                                                      int, int, bool)),
-                this, SLOT(graphLoaded(int, QString, QString,
-                                       int, int, bool))
+                file_parser, SIGNAL(networkFileLoaded(int,
+                                                      QString,
+                                                      QString,
+                                                      int,
+                                                      int,
+                                                      bool,
+                                                      const QString &)
+                                    ),
+                this, SLOT(graphFileLoaded( const int &,
+                                            const QString &,
+                                            const QString &,
+                                            const int &,
+                                            const int&,
+                                            const bool&,
+                                            const QString &)
+                           )
                 );
+
 
     connect (
                 file_parser, SIGNAL(removeDummyNode(int)),
@@ -7928,53 +12663,72 @@ bool Graph::graphLoad (	const QString m_fileName,
 
     connect (
                 file_parser, &Parser::finished,
-                this, &Graph::terminateParserThreads
+                this, &Graph::graphLoadedTerminateParserThreads
                 );
 
-    qDebug() << "Graph::graphLoad()  Starting file_parserThread ";
+    qDebug() << "Graph::graphLoad() - Starting file_parserThread ";
 
     file_parserThread.start();
 
-    bool loadGraphStatus = file_parser->run();
-    qDebug() << "Graph::graphLoad() : loadGraphStatus "<< loadGraphStatus;
-    return loadGraphStatus;
+    qDebug() << "Graph::graphLoad() - calling file_parser->run() ";
+    file_parser->run();
+
+
 }
 
 
 /**
- * @brief Graph::terminateParserThreads
+ * @brief Graph::graphLoadedTerminateParserThreads
  * @param reason
  */
-void Graph::terminateParserThreads(QString reason) {
-    qDebug() << "Graph::terminateParserThreads() - reason " << reason
-                    <<" is file_parserThread running? ";
+void Graph::graphLoadedTerminateParserThreads(QString reason) {
+    qDebug() << "Graph::graphLoadedTerminateParserThreads() - reason " << reason
+                    <<" Checking if file_parserThread is running...";
     if (file_parserThread.isRunning() ) {
-         qDebug() << "Graph::terminateParserThreads()  file_parserThread quit";
+         qDebug() << "Graph::graphLoadedTerminateParserThreads() - file_parserThread running."
+                     "Calling file_parserThread.quit();";
         file_parserThread.quit();
-        qDebug() << "Graph::terminateParserThreads() - deleting file_parser pointer";
+        qDebug() << "Graph::graphLoadedTerminateParserThreads() - deleting file_parser pointer";
         delete file_parser;
         file_parser = 0;  // see why here: https://goo.gl/tQxpGA
-
     }
-
 }
 
 
 
 
+
 /**
- * @brief Graph::graphLoaded
- * Updates MW  with the file type (0=nofile, 1=Pajek, 2=Adjacency etc)
- * Called from Parser on file parsing end .
+ * @brief Graph::graphFileLoaded
+ * Updates MW  with the loaded file type (0=nofile, 1=Pajek, 2=Adjacency etc)
+ * Called from Parser on file parsing end or file error.
  * @param type
  * @param netName
  * @param aNodes
  * @param totalLinks
  * @param undirected
  */
-void Graph::graphLoaded (int fileType, QString fName, QString netName,
-                          int totalNodes, int totalLinks, bool undirected)
+void Graph::graphFileLoaded (const int &fileType,
+                             const QString &fName,
+                             const QString &netName,
+                             const int &totalNodes,
+                             const int &totalLinks,
+                             const bool &undirected,
+                             const QString &message)
 {
+    if ( fileType == FILE_UNRECOGNIZED ) {
+        qDebug() << "Graph::graphFileLoaded() - FILE_UNRECOGNIZED. "
+                    "Emitting signalGraphLoaded with error message "
+                 << message;
+        emit signalGraphLoaded (fileType,
+                                QString::null,
+                                QString::null,
+                                0,
+                                0,
+                                message);
+        return;
+
+    }
     fileName = fName;
     if (netName != "")
         m_graphName=netName ;
@@ -7984,7 +12738,7 @@ void Graph::graphLoaded (int fileType, QString fName, QString netName,
     m_undirected = undirected;
     m_fileFormat = fileType;
 
-    qDebug() << "Graph::graphLoaded() - "
+    qDebug() << "Graph::graphFileLoaded() - "
                 << " type " << fileType
                 << " filename " << fileName
                 << " name " << graphName()
@@ -7994,10 +12748,15 @@ void Graph::graphLoaded (int fileType, QString fName, QString netName,
 
     graphModifiedSet(GRAPH_CHANGED_NEW);
 
-    emit signalGraphLoaded (fileType, fileName, graphName(),
-                            totalNodes, totalLinks, m_undirected);
+    emit signalGraphLoaded (fileType,
+                            fileName,
+                            graphName(),
+                            totalNodes,
+                            totalLinks,
+                            message);
+
     graphModifiedSet(GRAPH_CHANGED_NONE);
-    qDebug ()<< "Graph::graphLoaded()  -check parser if running...";
+    qDebug ()<< "Graph::graphFileLoaded()  -check parser if running...";
 
 }
 
@@ -8006,6 +12765,7 @@ void Graph::graphLoaded (int fileType, QString fName, QString netName,
 /**
  * @brief graphFileFormat
  * @return
+ * Returns the format of the last file opened
  */
 int Graph::graphFileFormat() const {
     return m_fileFormat;
@@ -8033,10 +12793,13 @@ bool Graph::graphFileFormatExportSupported(const int &fileFormat) const {
  * @param fileType
   * @return
  */
-void Graph::graphSave( QString fileName, int fileType )
+void Graph::graphSave(const QString &fileName,
+                      const int &fileType ,
+                      const bool &saveEdgeWeights)
 {
     qDebug() << "Graph::graphSave()";
     bool saved = false;
+    m_fileFormat = fileType;
     switch (fileType) {
     case FILE_PAJEK : {
         qDebug() << "Graph::graphSave() - Pajek formatted file";
@@ -8045,7 +12808,7 @@ void Graph::graphSave( QString fileName, int fileType )
     }
     case FILE_ADJACENCY: {
         qDebug() << "Graph::graphSave() - Adjacency formatted file";
-        saved=graphSaveToAdjacencyFormat(fileName) ;
+        saved=graphSaveToAdjacencyFormat(fileName, saveEdgeWeights) ;
         break;
     }
     case FILE_GRAPHVIZ: {
@@ -8058,11 +12821,31 @@ void Graph::graphSave( QString fileName, int fileType )
         break;
     }
     default: {
+        m_fileFormat = FILE_UNRECOGNIZED;
         qDebug() << "Graph::graphSave() - Error! Unrecognized fileType";
         break;
     }
     };
     if (saved) {
+        if (graphModified()) {
+            calculatedGraphWeighted = false;
+            calculatedGraphDensity = false;
+            calculatedEdges = false;
+            calculatedVertices = false;
+            calculatedVerticesList=false;
+            calculatedVerticesSet = false;
+            calculatedGraphSymmetry = false;
+            calculatedIsolates = false;
+            calculatedAdjacencyMatrix = false;
+            calculatedDistances = false;
+            calculatedCentralities = false;
+            calculatedDP = false;
+            calculatedDC = false;
+            calculatedPP = false;
+            calculatedIRCC = false;
+            calculatedIC = false;
+            calculatedPRP = false;
+        }
         graphModifiedSet(GRAPH_CHANGED_NONE);
         signalGraphSaved(fileType);
     }
@@ -8084,16 +12867,22 @@ bool Graph::graphSaveToPajekFormat (const QString &fileName, \
                                     int maxWidth, int maxHeight
                                     )
 {
-    qDebug () << " Graph::graphSaveToPajekFormat to file: " << fileName.toUtf8();
+    float weight=0;
+    QFileInfo fileInfo (fileName);
+    QString fileNameNoPath = fileInfo.fileName();
 
     networkName  = (networkName == "") ? graphName().toHtmlEscaped(): networkName;
+    networkName  = (networkName == "unnamed") ? fileNameNoPath.toHtmlEscaped().left(fileNameNoPath.lastIndexOf('.')): networkName;
+
+    qDebug () << " Graph::graphSaveToPajekFormat() - file: " << fileName.toUtf8()
+              << "networkName" << networkName;
+
     maxWidth = (maxWidth == 0) ? canvasWidth:maxWidth ;
     maxHeight= (maxHeight== 0) ? canvasHeight:maxHeight;
 
-    int weight=0;
 
     QFile f( fileName );
-    if ( !f.open( QIODevice::WriteOnly ) )  {
+    if ( !f.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return false;
     }
@@ -8150,9 +12939,8 @@ bool Graph::graphSaveToPajekFormat (const QString &fileName, \
         }
     }
     f.close();
-    QString fileNameNoPath=fileName.split("/").last();
 
-    emit statusMessage (QString(tr( "File %1 saved" ) ).arg( fileNameNoPath ));
+    emit statusMessage (tr( "File %1 saved" ).arg( fileNameNoPath ));
     return true;
 
 
@@ -8163,13 +12951,12 @@ bool Graph::graphSaveToPajekFormat (const QString &fileName, \
 /**
  * @brief Graph::graphSaveToAdjacencyFormat
  * @param fileName
- * @param maxWidth
- * @param maxHeight
  * @return
  */
-bool Graph::graphSaveToAdjacencyFormat (QString fileName){
+bool Graph::graphSaveToAdjacencyFormat (const QString &fileName,
+                                        const bool &saveEdgeWeights){
     QFile file( fileName );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return false;
     }
@@ -8177,7 +12964,7 @@ bool Graph::graphSaveToAdjacencyFormat (QString fileName){
     outText.setCodec("UTF-8");
     qDebug("Graph: graphSaveToAdjacencyFormat() for %i vertices", vertices());
 
-    writeAdjacencyMatrixTo(outText);
+    writeMatrixAdjacencyTo(outText, saveEdgeWeights);
 
     file.close();
     QString fileNameNoPath=fileName.split("/").last();
@@ -8186,33 +12973,6 @@ bool Graph::graphSaveToAdjacencyFormat (QString fileName){
 }
 
 
-
-/**
- * @brief Graph::htmlEscaped
- * returns a nice qstring where all html special chars are encoded
- * @param str
- * @return
- */
-QString Graph::htmlEscaped(QString str) const {
-    str=str.simplified();
-    if (str.contains('&') ){
-        str=str.replace('&',"&amp;");
-    }
-    if (str.contains('<') ){
-        str=str.replace('<',"&lt;");
-    }
-    if (str.contains('>') ){
-        str=str.replace('>',"&gt;");
-    }
-    if (str.contains('\"') ){
-        str=str.replace('\"',"&quot;");
-    }
-    if (str.contains('\'') ){
-        str=str.replace('\'',"&apos;");
-    }
-    return str;
-
-}
 
 
 bool Graph::graphSaveToDotFormat (QString fileName)
@@ -8228,26 +12988,35 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
                                       QString networkName,
                                       int maxWidth, int maxHeight)
 {
-    qDebug () << " Graph::graphSaveToGraphMLFormat to file: " << fileName.toUtf8();
 
-    int weight=0, source=0, target=0, edgeCount=0, m_size=1, m_labelSize;
+
+    float weight=0;
+    int source=0, target=0, edgeCount=0, m_size=1, m_labelSize;
     QString m_color, m_labelColor, m_label;
     bool openToken;
 
+    QFileInfo fileInfo (fileName);
+    QString fileNameNoPath = fileInfo.fileName();
+
     networkName  = (networkName == "") ? graphName().toHtmlEscaped(): networkName;
+    networkName  = (networkName == "unnamed") ? fileNameNoPath.toHtmlEscaped().left(fileNameNoPath.lastIndexOf('.')): networkName;
+    qDebug () << "Graph::graphSaveToGraphMLFormat() - file:" << fileName.toUtf8()
+              << "networkName"<< networkName;
+
     maxWidth = (maxWidth == 0) ? canvasWidth:maxWidth ;
     maxHeight= (maxHeight== 0) ? canvasHeight:maxHeight;
 
     QFile f( fileName );
-    if ( !f.open( QIODevice::WriteOnly ) )  {
+    if ( !f.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return false;
     }
     QTextStream outText( &f );
     outText.setCodec("UTF-8");
-    qDebug () << " codec used for saving stream: " << outText.codec()->name();
+    qDebug () << "Graph::graphSaveToGraphMLFormat() - codec used for saving stream: "
+              << outText.codec()->name();
 
-    qDebug()<< "		... writing xml version";
+    qDebug()<< "Graph::graphSaveToGraphMLFormat() -  writing xml version";
     outText << "<?xml version=\"1.0\" encoding=\"" << outText.codec()->name() << "\"?> \n";
     outText << " <!-- Created by SocNetV "<<  VERSION << " --> \n" ;
     outText << "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" "
@@ -8256,7 +13025,7 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
                "      http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">"
                "\n";
 
-    qDebug()<< "		... writing keys ";
+    qDebug()<< "Graph::graphSaveToGraphMLFormat() - writing keys ";
 
     outText <<	"  <key id=\"d0\" for=\"node\" attr.name=\"label\" attr.type=\"string\"> \n"
                 "    <default>" "</default> \n"
@@ -8298,163 +13067,187 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
                 "    <default>" << ""<< "</default> \n"
                 "  </key> \n";
 
-    qDebug()<< "		... writing graph tag";
-
-    if (isUndirected())
-        outText << "  <graph id=\""<< networkName << "\" edgedefault=\"undirected\"> \n";
-    else
-        outText << "  <graph id=\""<< networkName << "\" edgedefault=\"directed\"> \n";
-
     QList<Vertex*>::const_iterator it;
     QList<Vertex*>::const_iterator jt;
+    QString  relationName;
+    int relationPrevious = relationCurrent();
+    for (int i = 0; i < relations(); ++i) {
+        relationName = (m_relationsList.at(i).simplified()).remove("\"");
+        relationSet( i , false);
+        qDebug()<< "Graph::graphSaveToGraphMLFormat() - writing graph tag. Relation" << relationName ;
 
-    qDebug()<< "		    writing nodes data";
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( ! (*it)->isEnabled () )
-            continue;
-        qDebug() << " 	Node id: "<<  (*it)->name()  ;
-        outText << "    <node id=\"" << (*it)->name() << "\"> \n";
-        m_color = (*it)->color();
-        m_size = (*it)->size() ;
-        m_labelSize=(*it)->labelSize() ;
-        m_labelColor=(*it)->labelColor() ;
-        m_label=(*it)->label();
-        m_label = htmlEscaped(m_label);
+        if (graphUndirected())
+            outText << "  <graph id=\""
+                    << (( relations()==1 ) ? networkName : relationName)
+                                                      << "\" edgedefault=\"undirected\"> \n";
+        else
+            outText << "  <graph id=\""
+                    << (( relations()==1) ? networkName : relationName )
+                                                      << "\" edgedefault=\"directed\"> \n";
+
+        qDebug()<< "Graph::graphSaveToGraphMLFormat() - writing nodes data";
+        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+            if ( ! (*it)->isEnabled () )
+                continue;
+            qDebug() << "Graph::graphSaveToGraphMLFormat() - Node id: "
+                     <<  (*it)->name()  ;
+            outText << "    <node id=\"" << (*it)->name() << "\"> \n";
+            m_color = (*it)->color();
+            m_size = (*it)->size() ;
+            m_labelSize=(*it)->labelSize() ;
+            m_labelColor=(*it)->labelColor() ;
+            m_label=(*it)->label();
+            m_label = htmlEscaped(m_label);
 
 
-        outText << "      <data key=\"d0\">" << m_label <<"</data>\n";
+            outText << "      <data key=\"d0\">" << m_label <<"</data>\n";
 
-        qDebug()<<" 		... Coordinates x " << (*it)->x()<< " "<<maxWidth
-               <<" y " << (*it)->y()<< " "<<maxHeight;
+            qDebug()<<"Graph::graphSaveToGraphMLFormat() - Coordinates x "
+                   << (*it)->x()<< " "<<maxWidth
+                   <<" y " << (*it)->y()<< " "<<maxHeight;
 
-        outText << "      <data key=\"d1\">" << (*it)->x()/(maxWidth) <<"</data>\n";
-        outText << "      <data key=\"d2\">" << (*it)->y()/(maxHeight) <<"</data>\n";
+            outText << "      <data key=\"d1\">" << (*it)->x()/(maxWidth) <<"</data>\n";
+            outText << "      <data key=\"d2\">" << (*it)->y()/(maxHeight) <<"</data>\n";
 
-        if (  initVertexSize != m_size ) {
-            outText << "      <data key=\"d3\">" << m_size  <<"</data>\n";
+            if (  initVertexSize != m_size ) {
+                outText << "      <data key=\"d3\">" << m_size  <<"</data>\n";
+            }
+
+            if (  QString::compare ( initVertexColor, m_color,  Qt::CaseInsensitive) != 0) {
+                outText << "      <data key=\"d4\">" << m_color <<"</data>\n";
+            }
+
+            outText << "      <data key=\"d5\">" << (*it)->shape() <<"</data>\n";
+
+
+            if (  QString::compare ( initVertexLabelColor, m_labelColor,  Qt::CaseInsensitive) != 0) {
+                outText << "      <data key=\"d6\">" << m_labelColor <<"</data>\n";
+            }
+
+            if (  initVertexLabelSize != m_labelSize ) {
+                outText << "      <data key=\"d7\">" << m_labelSize <<"</data>\n";
+            }
+
+            outText << "    </node>\n";
+
         }
 
-        if (  QString::compare ( initVertexColor, m_color,  Qt::CaseInsensitive) != 0) {
-            outText << "      <data key=\"d4\">" << m_color <<"</data>\n";
-        }
-
-        outText << "      <data key=\"d5\">" << (*it)->shape() <<"</data>\n";
-
-
-        if (  QString::compare ( initVertexLabelColor, m_labelColor,  Qt::CaseInsensitive) != 0) {
-            outText << "      <data key=\"d6\">" << m_labelColor <<"</data>\n";
-        }
-
-        if (  initVertexLabelSize != m_labelSize ) {
-            outText << "      <data key=\"d7\">" << m_labelSize <<"</data>\n";
-        }
-
-        outText << "    </node>\n";
-
-    }
-
-    qDebug() << "		... writing edges data";
-    edgeCount=0;
-    if (!isUndirected()) {
-        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
-        {
-            for (jt=m_graph.begin(); jt!=m_graph.end(); jt++)
+        qDebug() << "Graph::graphSaveToGraphMLFormat() - writing edges data";
+        edgeCount=0;
+        if (!graphUndirected()) {
+            for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
             {
-                source=(*it)->name();
-                target=(*jt)->name();
-                m_label = "";
-                if  ( 	(weight= edgeExists( source,target ) ) !=0 )
+                for (jt=m_graph.begin(); jt!=m_graph.end(); jt++)
                 {
-                    ++edgeCount;
-                    m_color = (*it)->outLinkColor( target );
-                    m_label = edgeLabel(source, target);
-                    m_label=htmlEscaped(m_label);
-                    qDebug()<< "				edge no "<< edgeCount
-                            << " from n1=" << source << " to n2=" << target
-                            << " with weight " << weight
-                            << " and color " << m_color.toUtf8() ;
-                    outText << "    <edge id=\""<< "e"+QString::number(edgeCount)
-                            << "\" directed=\"" << "true" << "\" source=\"" << source
-                            << "\" target=\"" << target << "\"";
+                    source=(*it)->name();
+                    target=(*jt)->name();
+                    m_label = "";
+                    weight= edgeExists( source,target ) ;
+                    if  (  weight !=0 )
+                    {
+                        ++edgeCount;
+                        m_color = (*it)->outLinkColor( target );
+                        m_label = edgeLabel(source, target);
+                        m_label=htmlEscaped(m_label);
+                        qDebug()<< "Graph::graphSaveToGraphMLFormat() - edge no "
+                                << edgeCount
+                                << " from n1=" << source << " to n2=" << target
+                                << " with weight " << weight
+                                << " and color " << m_color.toUtf8() ;
+                        outText << "    <edge id=\""<< "e"+QString::number(edgeCount)
+                                << "\" directed=\"" << "true" << "\" source=\"" << source
+                                << "\" target=\"" << target << "\"";
 
-                    openToken = true;
-                    if ( weight !=0 ) {
-                        outText << "> \n";
-                        outText << "      <data key=\"d8\">" << weight<<"</data>" <<" \n";
-                        openToken=false;
-                    }
-                    if (  QString::compare ( initEdgeColor, m_color,  Qt::CaseInsensitive) != 0) {
-                        if (openToken)
+                        openToken = true;
+                        if ( weight !=0 ) {
                             outText << "> \n";
-                        outText << "      <data key=\"d9\">" << m_color <<"</data>" <<" \n";
-                        openToken=false;
-                    }
-                    if (  !m_label.isEmpty()) {
-                        if (openToken)
-                            outText << "> \n";
-                        outText << "      <data key=\"d10\">" << m_label<<"</data>" <<" \n";
-                        openToken=false;
-                    }
+                            outText << "      <data key=\"d8\">" << weight<<"</data>" <<" \n";
+                            openToken=false;
+                        }
+                        if (  QString::compare ( initEdgeColor, m_color,  Qt::CaseInsensitive) != 0) {
+                            if (openToken)
+                                outText << "> \n";
+                            outText << "      <data key=\"d9\">" << m_color <<"</data>" <<" \n";
+                            openToken=false;
+                        }
+                        if (  !m_label.isEmpty()) {
+                            if (openToken)
+                                outText << "> \n";
+                            outText << "      <data key=\"d10\">" << m_label<<"</data>" <<" \n";
+                            openToken=false;
+                        }
 
-                    if (openToken)
-                        outText << "/> \n";
-                    else
-                        outText << "    </edge>\n";
+                        if (openToken)
+                            outText << "/> \n";
+                        else
+                            outText << "    </edge>\n";
+
+                    }
 
                 }
-
             }
         }
-    }
-    else {
-        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
-        {
-            for (jt=it; jt!=m_graph.end(); jt++)
+        else {
+            for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
             {
-                source=(*it)->name();
-                target=(*jt)->name();
-
-                if  ( 	(weight= edgeExists( source,target, true ) ) !=0 )
+                for (jt=it; jt!=m_graph.end(); jt++)
                 {
-                    ++edgeCount;
-                    m_color = (*it)->outLinkColor( target );
-                    qDebug()<< "				edge no "<< edgeCount
-                            << " from n1=" << source << " to n2=" << target
-                            << " with weight " << weight
-                            << " and color " << m_color.toUtf8() ;
-                    outText << "    <edge id=\""<< "e"+QString::number(edgeCount)
-                            << "\" directed=\"" << "false" << "\" source=\"" << source
-                            << "\" target=\"" << target << "\"";
+                    source=(*it)->name();
+                    target=(*jt)->name();
+                    weight= edgeExists( source,target );
+                    m_label = "";
+                    if  (  weight  !=0 )
+                    {
+                        ++edgeCount;
+                        m_color = (*it)->outLinkColor( target );
+                        m_label = edgeLabel(source, target);
+                        m_label=htmlEscaped(m_label);
+                        qDebug()<< "Graph::graphSaveToGraphMLFormat() - edge no "
+                                << edgeCount
+                                << " from n1=" << source << " to n2=" << target
+                                << " with weight " << weight
+                                << " and color " << m_color.toUtf8() ;
+                        outText << "    <edge id=\""<< "e"+QString::number(edgeCount)
+                                << "\" directed=\"" << "false" << "\" source=\"" << source
+                                << "\" target=\"" << target << "\"";
 
-                    openToken = true;
-                    if ( weight !=0 ) {
-                        outText << "> \n";
-                        outText << "      <data key=\"d8\">" << weight<<"</data>" <<" \n";
-                        openToken=false;
-                    }
-                    if (  QString::compare ( initEdgeColor, m_color,  Qt::CaseInsensitive) != 0) {
-                        if (openToken)
+                        openToken = true;
+                        if ( weight !=0 ) {
                             outText << "> \n";
-                        outText << "      <data key=\"d9\">" << m_color <<"</data>" <<" \n";
-                        openToken=false;
+                            outText << "      <data key=\"d8\">" << weight<<"</data>" <<" \n";
+                            openToken=false;
+                        }
+                        if (  QString::compare ( initEdgeColor, m_color,  Qt::CaseInsensitive) != 0) {
+                            if (openToken)
+                                outText << "> \n";
+                            outText << "      <data key=\"d9\">" << m_color <<"</data>" <<" \n";
+                            openToken=false;
+                        }
+                        if (  !m_label.isEmpty()) {
+                            if (openToken)
+                                outText << "> \n";
+                            outText << "      <data key=\"d10\">" << m_label<<"</data>" <<" \n";
+                            openToken=false;
+                        }
+                        if (openToken)
+                            outText << "/> \n";
+                        else
+                            outText << "    </edge>\n";
+
                     }
-                    if (openToken)
-                        outText << "/> \n";
-                    else
-                        outText << "    </edge>\n";
 
                 }
-
             }
         }
-    }
 
-    outText << "  </graph>\n";
+        outText << "  </graph>\n";
+    }
     outText << "</graphml>\n";
 
     f.close();
-    QString fileNameNoPath=fileName.split("/").last();
-    emit statusMessage( QString(tr( "File %1 saved" ) ).arg( fileNameNoPath ) );
+    relationSet(relationPrevious, false);
+
+    emit statusMessage( tr( "File %1 saved" ).arg( fileNameNoPath ) );
 
     return true;
 }
@@ -8469,7 +13262,7 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
 void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
     qDebug() << "Graph::writeDataSetToFile() to " << dir+fileName;
     QFile file( dir+fileName );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
@@ -8477,9 +13270,87 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
     outText.setCodec("UTF-8");
     QString datasetDescription=QString::null;
     qDebug()<< "		... writing dataset ";
-    if ( fileName == "Krackhardt_High-tech_managers_Advice_relation.sm" ) {
+
+    if ( fileName == "Herschel_Graph.paj") {
         qDebug()<< "		... to  " << fileName;
-        outText <<
+        datasetDescription = tr("The Herschel graph is the smallest nonhamiltonian "
+                                "polyhedral graph. \n"
+                                "It is the unique such graph on 11 nodes, "
+                                "and has 18 edges.");
+        outText << "*Network Herschel_Graph" << endl <<
+                   "*Vertices 11" << endl <<
+                   "1 \"1\" ic red	0.48225  0.411308 circle" << endl <<
+                   "2 \"2\" ic red	0.652297 0.591389 circle" << endl <<
+                   "3 \"3\" ic red	0.479571 0.762504 circle"<< endl <<
+                   "4 \"4\" ic red	0.849224 0.41395 circle"<< endl <<
+                   "5 \"5\" ic red  0.48196  0.06	circle"<< endl <<
+                   "6 \"6\" ic red	0.148625 0.413208 circle"<< endl <<
+                   "7 \"7\" ic red	0.654193 0.198133 circle"<< endl <<
+                   "8 \"8\" ic red	0.268771 0.593206 circle"<< endl <<
+                   "9 \"9\" ic red	0.272785 0.19606	circle"<< endl <<
+                   "10 \"10\" ic red 0.834746 0.0533333 circle"<< endl <<
+                   "11 \"11\" ic red 0.134137 0.761837 circle"<< endl <<
+                   "*Arcs "<< endl <<
+                   "*Edges "<< endl <<
+                   "1 3 1 c #616161"<< endl <<
+                   "1 4 1 c #616161"<< endl <<
+                   "1 5 1 c #616161"<< endl <<
+                   "1 6 1 c #616161"<< endl <<
+                   "2 3 1 c #616161"<< endl <<
+                   "2 4 1 c #616161"<< endl <<
+                   "2 7 1 c #616161"<< endl <<
+                   "2 8 1 c #616161"<< endl <<
+                   "3 11 1 c #616161"<< endl <<
+                   "4 10 1 c #616161"<< endl <<
+                   "5 9 1 c #616161"<< endl <<
+                   "5 10 1 c #616161"<< endl <<
+                   "6 9 1 c #616161"<< endl <<
+                   "6 11 1 c #616161"<< endl <<
+                   "7 9 1 c #616161"<< endl <<
+                   "7 10 1 c #616161"<< endl <<
+                   "8 9 1 c #616161"<< endl <<
+                   "8 11 1 c #616161";
+    }
+    else if ( fileName == "Krackhardt_High-tech_managers.paj" ) {
+        qDebug()<< "		... to  " << fileName;
+        datasetDescription = tr("Krackhardt's High-tech Managers is a famous social network "
+                             "of 21 managers of a high-tech US company. \n\n"
+                             "The company manufactured high-tech equipment "
+                             "and had just over 100 employees with 21 managers. "
+                             "David Krackhardt collected the data to assess the effects "
+                             "of a recent management intervention program. \n\n"
+                             "The network consists of 3 relations:\n"
+                             "- Advice\n"
+                             "- Friendship\n"
+                             "- Reports To\n"
+                             "Each manager was asked to whom do you go to for advice and who is your friend. "
+                             "Data for the \"whom do you report\" relation was taken from company documents. \n\n"
+                             "This data is used by Wasserman and Faust in their seminal network analysis book.\n\n"
+                             "Krackhardt D. (1987). Cognitive social structures. Social Networks, 9, 104-134.");
+        outText << "*Network  Krackhardt's High-tech managers"<< endl <<
+                   "*Vertices      21"<< endl <<
+                     "1 \"v1\"       0.6226    0.7207" << endl <<
+                     "2 \"v2\"       0.6000    0.5533" << endl <<
+                     "3 \"v3\"       0.6722    0.3928" << endl <<
+                     "4 \"v4\"       0.7646    0.6000" << endl <<
+                     "5 \"v5\"       0.3518    0.4775" << endl <<
+                     "6 \"v6\"       0.7583    0.0784" << endl <<
+                     "7 \"v7\"       0.6692    0.2475" << endl <<
+                     "8 \"v8\"       0.7349    0.5030" << endl <<
+                     "9 \"v9\"       0.5325    0.3892" << endl <<
+                    "10 \"v10\"      0.5846    0.6311" << endl <<
+                    "11 \"v11\"      0.4600    0.4733" << endl <<
+                    "12 \"v12\"      0.8855    0.2566" << endl <<
+                    "13 \"v13\"      0.1145    0.4786" << endl <<
+                    "14 \"v14\"      0.3838    0.3270" << endl <<
+                    "15 \"v15\"      0.5349    0.4455" << endl <<
+                    "16 \"v16\"      0.6117    0.9216" << endl <<
+                    "17 \"v17\"      0.7041    0.4144" << endl <<
+                    "18 \"v18\"      0.4864    0.5808" << endl <<
+                    "19 \"v19\"      0.5728    0.4802" << endl <<
+                    "20 \"v20\"      0.6640    0.5041" << endl <<
+                    "21 \"v21\"      0.7846    0.3329" << endl <<
+                   "*Matrix :1 gives_advice_to"<< endl <<
                    "0 1 0 1 0 0 0 1 0 0 0 0 0 0 0 1 0 1 0 0 1" << endl <<
                    "0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << endl <<
                    "1 1 0 1 0 1 1 1 1 1 1 1 0 1 0 0 1 1 0 1 1" << endl <<
@@ -8500,11 +13371,9 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                    "1 1 1 1 1 0 1 1 1 1 1 0 1 1 1 1 0 0 1 1 1" << endl <<
                    "1 1 1 0 1 0 1 0 0 1 1 0 0 1 1 0 0 1 0 1 0" << endl <<
                    "1 1 0 0 0 1 0 1 0 0 1 1 0 1 1 1 1 1 0 0 1" << endl <<
-                   "0 1 1 1 0 1 1 1 0 0 0 1 0 1 0 0 1 1 0 1 0";
-
-    }
-    else if (fileName == "Krackhardt_High-tech_managers_Friendship_relation.sm"){
-        outText<< "0 1 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 0 0" << endl <<
+                   "0 1 1 1 0 1 1 1 0 0 0 1 0 1 0 0 1 1 0 1 0"<< endl <<
+                   "*Matrix :2 is_friend_of" <<endl <<
+                  "0 1 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 0 0" << endl <<
                   "1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1" << endl <<
                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0" << endl <<
                   "1 1 0 0 0 0 0 1 0 0 0 1 0 0 0 1 1 0 0 0 0" << endl <<
@@ -8524,10 +13393,9 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                   "0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
                   "1 1 1 0 1 0 0 0 0 0 1 1 0 1 1 0 0 0 0 1 0" << endl <<
                   "0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0" << endl <<
-                  "0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0" ;
-    }
-    else if (fileName == "Krackhardt_High-tech_managers_ReportsTo_relation.sm"){
-        outText<< "0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
+                  "0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0" << endl <<
+                  "*Matrix :3 reports_to" <<endl <<
+                  "0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
                   "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << endl <<
                   "0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
@@ -8549,8 +13417,27 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << endl <<
                   "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0";
     }
-    else if (fileName == "Padgett_Florentine_Families_Marital_relation.net"){
-        outText<< "*Network Padgett's Florentine Families Marital Relation" << endl <<
+
+
+    else if (fileName == "Padgett_Florentine_Families.paj"){
+        datasetDescription = tr("This famous data set includes 16 families who were fighting \n"
+                                "each other to gain political control of the city of Florence \n"
+                                "circa 1430. Among the 16 families, the Medicis and the Strozzis \n"
+                                "were the two most prominent with factions formed around them.\n\n"
+
+                                "The data set is actually a subset of the original data on social \n"
+                                "relations among 116 Renaissance Florentine Families collected \n"
+                                "by John Padgett. This subset was used by Breiger & Pattison (1986)\n"
+                                "in their paper about local role analysis.\n\n"
+
+                                "Padgett researched historical documents to code two relations: \n"
+                                "Business ties (loans, credits, partnerships)\n"
+                                "Marrital ties (marriage alliances).\n\n"
+
+                                "Breiger R. and Pattison P. (1986). Cumulated social roles: The \n"
+                                "duality of persons and their algebras. Social Networks, 8, 215-256. "
+                             "");
+        outText<< "*Network Padgett's Florentine Families" << endl <<
                   "*Vertices      16" << endl <<
                     "1 \"Acciaiuoli\"         0.2024    0.1006" << endl <<
                     "2 \"Albizzi\"            0.3882    0.4754" << endl <<
@@ -8568,101 +13455,135 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                    "14 \"Salviati\"           0.0734    0.4455" << endl <<
                    "15 \"Strozzi\"            0.8639    0.5832" << endl <<
                    "16 \"Tornabuoni\"         0.5633    0.3713" << endl <<
-                  "*Arcs \"Marital\""<< endl <<
-                    "1  9 1" << endl <<
-                    "2  6 1" << endl <<
-                    "2  7 1" << endl <<
-                    "2  9 1" << endl <<
-                    "3  5 1" << endl <<
-                    "3  9 1" << endl <<
-                    "4  7 1" << endl <<
-                    "4 11 1" << endl <<
-                    "4 15 1" << endl <<
-                    "5  3 1" << endl <<
-                    "5 11 1" << endl <<
-                    "5 15 1" << endl <<
-                    "6  2 1" << endl <<
-                    "7  2 1" << endl <<
-                    "7  4 1" << endl <<
-                    "7  8 1" << endl <<
-                    "7 16 1" << endl <<
-                    "8  7 1" << endl <<
-                    "9  1 1" << endl <<
-                    "9  2 1" << endl <<
-                    "9  3 1" << endl <<
-                    "9 13 1" << endl <<
-                    "9 14 1" << endl <<
-                    "9 16 1" << endl <<
-                   "10 14 1" << endl <<
-                   "11  4 1" << endl <<
-                   "11  5 1" << endl <<
-                   "11 15 1" << endl <<
-                   "13  9 1" << endl <<
-                   "13 15 1" << endl <<
-                   "13 16 1" << endl <<
-                   "14  9 1" << endl <<
-                   "14 10 1" << endl <<
-                   "15  4 1" << endl <<
-                   "15  5 1" << endl <<
-                   "15 11 1" << endl <<
-                   "15 13 1" << endl <<
-                   "16  7 1" << endl <<
-                   "16  9 1" << endl <<
-                  "16 13 1" ;
+                  "*Matrix 1: \"Marital\""<< endl <<
+                  "0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 0 0 1 1 0 1 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 0 0 0 1 0 0 0 1 0 0 0 1 0"<< endl <<
+                  "0 0 1 0 0 0 0 0 0 0 1 0 0 0 1 0"<< endl <<
+                  "0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< endl <<
+                  "0 1 0 1 0 0 0 1 0 0 0 0 0 0 0 1"<< endl <<
+                  "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0"<< endl <<
+                  "1 1 1 0 0 0 0 0 0 0 0 0 1 1 0 1"<< endl <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0"<< endl <<
+                  "0 0 0 1 1 0 0 0 0 0 0 0 0 0 1 0"<< endl <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 1"<< endl <<
+                  "0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 1 1 0 0 0 0 0 1 0 1 0 0 0"<< endl <<
+                  "0 0 0 0 0 0 1 0 1 0 0 0 1 0 0 0"<< endl <<
+                  "*Matrix 2: \"Business\""<< endl <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 0 1 1 0 0 1 0 1 0 0 0 0 0"<< endl <<
+                  "0 0 0 0 0 0 1 1 0 0 1 0 0 0 0 0"<< endl <<
+                  "0 0 1 0 0 0 0 1 0 0 1 0 0 0 0 0"<< endl <<
+                  "0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 1 1 0 1 0 0 0 1 0 0 0 0 0"<< endl <<
+                  "0 0 1 0 0 1 0 0 0 1 0 0 0 1 0 1"<< endl <<
+                  "0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 1 1 1 0 0 1 0 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0";
+
+//                  "*Arcs 1: \"Marital\""<< endl <<
+//                    "1  9 1" << endl <<
+//                    "2  6 1" << endl <<
+//                    "2  7 1" << endl <<
+//                    "2  9 1" << endl <<
+//                    "3  5 1" << endl <<
+//                    "3  9 1" << endl <<
+//                    "4  7 1" << endl <<
+//                    "4 11 1" << endl <<
+//                    "4 15 1" << endl <<
+//                    "5  3 1" << endl <<
+//                    "5 11 1" << endl <<
+//                    "5 15 1" << endl <<
+//                    "6  2 1" << endl <<
+//                    "7  2 1" << endl <<
+//                    "7  4 1" << endl <<
+//                    "7  8 1" << endl <<
+//                    "7 16 1" << endl <<
+//                    "8  7 1" << endl <<
+//                    "9  1 1" << endl <<
+//                    "9  2 1" << endl <<
+//                    "9  3 1" << endl <<
+//                    "9 13 1" << endl <<
+//                    "9 14 1" << endl <<
+//                    "9 16 1" << endl <<
+//                   "10 14 1" << endl <<
+//                   "11  4 1" << endl <<
+//                   "11  5 1" << endl <<
+//                   "11 15 1" << endl <<
+//                   "13  9 1" << endl <<
+//                   "13 15 1" << endl <<
+//                   "13 16 1" << endl <<
+//                   "14  9 1" << endl <<
+//                   "14 10 1" << endl <<
+//                   "15  4 1" << endl <<
+//                   "15  5 1" << endl <<
+//                   "15 11 1" << endl <<
+//                   "15 13 1" << endl <<
+//                   "16  7 1" << endl <<
+//                   "16  9 1" << endl <<
+//                  "16 13 1"  << endl <<
+//                  "*Arcs 2: \"Business\""<< endl <<
+//                    "3  5 1" << endl <<
+//                    "3  6 1" << endl <<
+//                    "3  9 1" << endl <<
+//                    "3 11 1" << endl <<
+//                    "4  7 1" << endl <<
+//                    "4  8 1" << endl <<
+//                    "4 11 1" << endl <<
+//                    "5  3 1" << endl <<
+//                    "5  8 1" << endl <<
+//                    "5 11 1" << endl <<
+//                    "6  3 1" << endl <<
+//                    "6  9 1" << endl <<
+//                    "7  4 1" << endl <<
+//                    "7  8 1" << endl <<
+//                    "8  4 1" << endl <<
+//                    "8  5 1" << endl <<
+//                    "8  7 1" << endl <<
+//                    "8 11 1" << endl <<
+//                    "9  3 1" << endl <<
+//                    "9  6 1" << endl <<
+//                    "9 10 1" << endl <<
+//                    "9 14 1" << endl <<
+//                    "9 16 1" << endl <<
+//                   "10  9 1" << endl <<
+//                   "11  3 1" << endl <<
+//                   "11  4 1" << endl <<
+//                   "11  5 1" << endl <<
+//                   "11  8 1" << endl <<
+//                   "14  9 1" << endl <<
+//                   "16  9 1";
     }
-    else if (fileName == "Padgett_Florentine_Families_Business_relation.paj"){
-        outText<< "*Network Padgett's Florentine Families Business Relation" << endl <<
-                  "*Vertices      16" << endl <<
-                    "1 \"Acciaiuoli\"         0.2024    0.1006" << endl <<
-                    "2 \"Albizzi\"            0.3882    0.4754" << endl <<
-                    "3 \"Barbadori\"          0.1633    0.7413" << endl <<
-                    "4 \"Bischeri\"           0.6521    0.5605" << endl <<
-                    "5 \"Castellani\"         0.6178    0.9114" << endl <<
-                    "6 \"Ginori\"             0.3018    0.5976" << endl <<
-                    "7 \"Guadagni\"           0.5219    0.5006" << endl <<
-                    "8 \"Lamberteschi\"       0.4533    0.6299" << endl <<
-                    "9 \"Medici\"             0.2876    0.3521" << endl <<
-                   "10 \"Pazzi\"              0.0793    0.2587" << endl <<
-                   "11 \"Peruzzi\"            0.6509    0.7365" << endl <<
-                   "12 \"Pucci\"              0.4083    0.1186" << endl <<
-                   "13 \"Ridolfi\"            0.6308    0.2060" << endl <<
-                   "14 \"Salviati\"           0.0734    0.4455" << endl <<
-                   "15 \"Strozzi\"            0.8639    0.5832" << endl <<
-                   "16 \"Tornabuoni\"         0.5633    0.3713" << endl <<
-                  "*Arcs \"Business\""<< endl <<
-                    "3  5 1" << endl <<
-                    "3  6 1" << endl <<
-                    "3  9 1" << endl <<
-                    "3 11 1" << endl <<
-                    "4  7 1" << endl <<
-                    "4  8 1" << endl <<
-                    "4 11 1" << endl <<
-                    "5  3 1" << endl <<
-                    "5  8 1" << endl <<
-                    "5 11 1" << endl <<
-                    "6  3 1" << endl <<
-                    "6  9 1" << endl <<
-                    "7  4 1" << endl <<
-                    "7  8 1" << endl <<
-                    "8  4 1" << endl <<
-                    "8  5 1" << endl <<
-                    "8  7 1" << endl <<
-                    "8 11 1" << endl <<
-                    "9  3 1" << endl <<
-                    "9  6 1" << endl <<
-                    "9 10 1" << endl <<
-                    "9 14 1" << endl <<
-                    "9 16 1" << endl <<
-                   "10  9 1" << endl <<
-                   "11  3 1" << endl <<
-                   "11  4 1" << endl <<
-                   "11  5 1" << endl <<
-                   "11  8 1" << endl <<
-                   "14  9 1" << endl <<
-                   "16  9 1";
-    }
-    else if (fileName == "Zachary_Karate_Club_Simple_Ties.sm"){
-        outText<< "0 1 1 1 1 1 1 1 1 0 1 1 1 1 0 0 0 1 0 1 0 1 0 0 0 0 0 0 0 0 0 1 0 0" << endl <<
+    else if (fileName == "Zachary_Karate_Club.dl"){
+        datasetDescription = tr(
+                             "The Zachary Karate Club is a well-known social network of 34 members"
+                             " of a university karate club studied by Wayne W. Zachary from 1970 to 1972.\n\n"
+                             "During the study, disputes among two members led to club splitting into two groups. "
+                             "Zachary documented 78 ties between members who interacted outside the club and "
+                             "used the collected data and an information flow model to explain the split-up. \n\n"
+                             "There are two relations (matrices) in this network:"
+                             "The ZACHE relation represents the presence or absence of ties among the actors. "
+                             "The ZACHC relation indicates the relative strength of their associations "
+                             "(number of situations in and outside the club in which interactions occurred).\n\n"
+                             "Zachary W. (1977). An information flow model for conflict and fission in small groups. "
+                             "Journal of Anthropological Research, 33, 452-473. ");
+        outText<< "DL"<< endl <<
+                  "N=34 NM=2"<< endl <<
+                  "FORMAT = FULLMATRIX DIAGONAL PRESENT"<< endl <<
+                  "LEVEL LABELS:"<< endl <<
+                  "ZACHE"<< endl <<
+                  "ZACHC"<< endl <<
+                  "DATA:"<< endl <<
+                  "0 1 1 1 1 1 1 1 1 0 1 1 1 1 0 0 0 1 0 1 0 1 0 0 0 0 0 0 0 0 0 1 0 0" << endl <<
                   "1 0 1 1 0 0 0 1 0 0 0 0 0 1 0 0 0 1 0 1 0 1 0 0 0 0 0 0 0 0 1 0 0 0" << endl <<
                   "1 1 0 1 0 0 0 1 1 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 1 0" << endl <<
                   "1 1 1 0 0 0 0 1 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
@@ -8695,10 +13616,8 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                   "0 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1" << endl <<
                   "1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 1 0 0 0 1 1" << endl <<
                   "0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 1 0 0 1 0 1 0 1 1 0 0 0 0 0 1 1 1 0 1" << endl <<
-                  "0 0 0 0 0 0 0 0 1 1 0 0 0 1 1 1 0 0 1 1 1 0 1 1 0 0 1 1 1 1 1 1 1 0" ;
-    }
-    else if (fileName == "Zachary_Karate_Club_Weighted_Ties.sm"){
-        outText<< "0 4 5 3 3 3 3 2 2 0 2 3 1 3 0 0 0 2 0 2 0 2 0 0 0 0 0 0 0 0 0 2 0 0" << endl <<
+                  "0 0 0 0 0 0 0 0 1 1 0 0 0 1 1 1 0 0 1 1 1 0 1 1 0 0 1 1 1 1 1 1 1 0" << endl <<
+                  "0 4 5 3 3 3 3 2 2 0 2 3 1 3 0 0 0 2 0 2 0 2 0 0 0 0 0 0 0 0 0 2 0 0" << endl <<
                   "4 0 6 3 0 0 0 4 0 0 0 0 0 5 0 0 0 1 0 2 0 2 0 0 0 0 0 0 0 0 2 0 0 0" << endl <<
                   "5 6 0 3 0 0 0 4 5 1 0 0 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 2 2 0 0 0 2 0" << endl <<
                   "3 3 3 0 0 0 0 3 0 0 0 0 3 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
@@ -8734,6 +13653,15 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                   "0 0 0 0 0 0 0 0 4 2 0 0 0 3 2 4 0 0 2 1 1 0 3 4 0 0 2 4 2 2 3 4 5 0";
     }
     else if (fileName == "Galaskiewicz_CEOs_and_clubs_affiliation_network_data.2sm"){
+        datasetDescription = tr("The affiliation network of the chief executive officers "
+                                "and their spouses from 26 corporations and banks in 15 clubs, "
+                                "corporate and cultural boards. "
+                                "Membership was during the period 1978-1981\n\n"
+                                "This is a 26x15 affiliation matrix, where the rows "
+                                "correspond to the 26 CEOs and the columns to the 15 clubs. \n\n"
+                                "This data  was originally collected by Galaskiewicz (1985) "
+                                "and is used by Wasserman and Faust in Social Network Analysis: Methods and Applications (1994).\n\n"
+                                "Galaskiewicz, J. (1985). Social Organization of an Urban Grants Economy. New York: Academic Press. ");
         outText<< "0 0 1 1 0 0 0 0 1 0 0 0 0 0 0" << endl <<
                   "0 0 1 0 1 0 1 0 0 0 0 0 0 0 0" << endl <<
                   "0 0 1 0 0 0 0 0 0 0 0 1 0 0 0" << endl <<
@@ -8988,11 +13916,14 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
         datasetDescription =
                 tr("Bernard & Killworth recorded the interactions among students living in a fraternity at "
                    "a West Virginia college. Subjects had been residents in the fraternity from 3 months to 3 years. "
-                   "This network dataset contains two relations: \n"
+                   "This network dataset contains two relations: \n\n"
                    "The BKFRAB relation is symmetric and valued. It counts the number of times a pair of subjects were "
-                   "seen in conversation by an unobtrusive observer (observation time: 21 hours a day, for five days). \n"
+                   "seen in conversation by an unobtrusive observer (observation time: 21 hours a day, for five days). \n\n"
                    "The BKFRAC relation is non-symmetric and valued. Contains rankings made by the subjects themselves of "
-                   "how frequently they interacted with other subjects in the observation week.");
+                   "how frequently they interacted with other subjects in the observation week. \n\n"
+                   "Knoke D. and Wood J. (1981). Organized for action: Commitment in voluntary associations. "
+                   "New Brunswick, NJ: Rutgers University Press. Knoke D. and Kuklinski J. (1982). "
+                   "Network analysis, Beverly Hills, CA: Sage");
         outText << "DL"<<endl<<
                    "N=58 NM=2"<<endl<<
                    "FORMAT = FULLMATRIX DIAGONAL PRESENT"<<endl<<
@@ -9294,20 +14225,28 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
     }
     else if ( fileName == "Freeman_EIES_networks_32actors.dl" ) {
         qDebug()<< "		... to  " << fileName;
-        datasetDescription ="Freeman's_EIES includes the following three 32x32 relations: \n"
-        "TIME_1 non-symmetric, valued\n"
-        "TIME_2 non-symmetric, valued\n"
-        "NUMBER_OF_MESSAGES non-symmetric, valued\n"
-        "This data comes from an early experiment on computer mediated communication. \n"
-        "Fifty academics were allowed to contact each other via an "
-        "Electronic Information Exchange System (EIES). "
-        "The data collected consisted of all messages sent plus acquaintance "
-        "relationships at two time periods.\n "
-        "The data includes the 32 actors who completed the study. \n"
-        "TIME_1 and TIME_2 give the acquaintance information at the beginning "
-        "and end of the study. This is coded as follows: \n"
-        "4 = close personal fiend, 3= friend, 2= person I've met, 1 = person I've heard of but not met, and 0 = person unknown to me (or no reply). \n"
-        "NUMBER_OF MESSAGES is the total number of messages person i sent to j over the entire period of the study. ";
+        datasetDescription = tr(
+                    "This data comes from an early experiment on computer mediated communication. \n"
+                    "Fifty academics were allowed to contact each other via an "
+                    "Electronic Information Exchange System (EIES). "
+                    "The data collected consisted of all messages sent plus acquaintance "
+                    "relationships at two time periods.\n\n"
+
+                    "The data includes the 32 actors who completed the study and \n"
+                    "the following three 32x32 relations: \n\n"
+                    "TIME_1 non-symmetric, valued\n"
+                    "TIME_2 non-symmetric, valued\n"
+                    "NUMBER_OF_MESSAGES non-symmetric, valued\n\n"
+
+                    "TIME_1 and TIME_2 give the acquaintance information at the beginning "
+                    "and end of the study. This is coded as follows: \n"
+                    "4 = close personal fiend, \n"
+                    "3 = friend, \n"
+                    "2= person I've met, \n"
+                    "1 = person I've heard of but not met, and \n"
+                    "0 = person unknown to me (or no reply). \n\n"
+                    "NUMBER_OF MESSAGES is the total number of messages person i \n"
+                    "sent to j over the entire period of the study. ");
         outText <<"DL"<<endl<<
                   "N=32 NM=3"<<endl<<
                   "FORMAT = FULLMATRIX DIAGONAL PRESENT"<<endl<<
@@ -11733,9 +16672,17 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                   "37 8 36" << endl <<
                   "25 10 11 8";
     }
-    else if (fileName == "Knocke_Bureacracies_Information_Exchange_Network.pajek"){
+    else if (fileName == "Knoke_Bureaucracies_Network.pajek"){
+        datasetDescription=tr("In 1978, Knoke & Wood collected data from workers at 95 organizations in Indianapolis. "
+                              "Respondents indicated with which other organizations their own organization had any "
+                              "of 13 different types of relationships. \n"
+                              "Knoke and Kuklinski (1982) selected a subset of 10 organizations and two relationships: "
+                              "information exchange and money exchange.\n"
+                              "This dataset is directed and not symmetric.\n"
+                              "Information exchange is recorded in KNOKI relation while money exchange in KNOKM .");
+
         qDebug()<< "		Knocke_Bureacracies_Information_Exchange_Network.pajek written... ";
-        outText<< "*Network KNOKI " << endl <<
+        outText<< "*Network knokbur " << endl <<
                   "*Vertices 10" << endl <<
                    "1 \"COUN\" 0.1000    0.5000    0.5000" << endl <<
                    "2 \"COMM\" 0.1764    0.2649    0.5000" << endl <<
@@ -11747,56 +16694,29 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                    "8 \"UWAY\" 0.6236    0.8804    0.5000" << endl <<
                    "9 \"WELF\" 0.3764    0.8804    0.5000" << endl <<
                    "10 \"WEST\" 0.1764    0.7351    0.5000" << endl <<
-                  "*Arcs" << endl <<
-                  " 1 2  1" << endl <<
-                  " 1 5  1" << endl <<
-                  " 1 7  1" << endl <<
-                  " 1 9  1" << endl <<
-                  " 2 1  1" << endl <<
-                  " 2 3  1" << endl <<
-                  " 2 4  1" << endl <<
-                  " 2 5  1" << endl <<
-                  " 2 7  1" << endl <<
-                  " 2 8  1" << endl <<
-                  " 2 9  1" << endl <<
-                  " 3 2  1" << endl <<
-                  " 3 4  1" << endl <<
-                  " 3 5  1" << endl <<
-                  " 3 6  1" << endl <<
-                  " 3 7  1" << endl <<
-                  " 3 10  1" << endl <<
-                  " 4 1  1" << endl <<
-                  " 4 2  1" << endl <<
-                  " 4 5  1" << endl <<
-                  " 4 7  1" << endl <<
-                  " 5 1  1" << endl <<
-                  " 5 2  1" << endl <<
-                  " 5 3  1" << endl <<
-                  " 5 4  1" << endl <<
-                  " 5 7  1" << endl <<
-                  " 5 8  1" << endl <<
-                  " 5 9  1" << endl <<
-                  " 5 10  1" << endl <<
-                  " 6 3  1" << endl <<
-                  " 6 7  1" << endl <<
-                  " 6 9  1" << endl <<
-                  " 7 2  1" << endl <<
-                  " 7 4  1" << endl <<
-                  " 7 5  1" << endl <<
-                  " 8 1  1" << endl <<
-                  " 8 2  1" << endl <<
-                  " 8 4  1" << endl <<
-                  " 8 5  1" << endl <<
-                  " 8 7  1" << endl <<
-                  " 8 9  1" << endl <<
-                  " 9 2  1" << endl <<
-                  " 9 5  1" << endl <<
-                  " 9 7  1" << endl <<
-                  " 10 1  1" << endl <<
-                  " 10 2  1" << endl <<
-                  " 10 3  1" << endl <<
-                  " 10 5  1" << endl <<
-                  " 10 7  1";
+                  "*Matrix :1 \"Information exchange\"" << endl <<
+                  "0 1 0 0 1 0 1 0 1 0 " << endl <<
+                  "1 0 1 1 1 0 1 1 1 0 " << endl <<
+                  "0 1 0 1 1 1 1 0 0 1 " << endl <<
+                  "1 1 0 0 1 0 1 0 0 0 " << endl <<
+                  "1 1 1 1 0 0 1 1 1 1 " << endl <<
+                  "0 0 1 0 0 0 1 0 1 0 " << endl <<
+                  "0 1 0 1 1 0 0 0 0 0 " << endl <<
+                  "1 1 0 1 1 0 1 0 1 0 " << endl <<
+                  "0 1 0 0 1 0 1 0 0 0 " << endl <<
+                  "1 1 1 0 1 0 1 0 0 0 " << endl <<
+                  "*Matrix :2 \"Money exchange\"" << endl <<
+                  "0 0 1 0 1 0 0 1 1 1 " << endl <<
+                  "0 0 1 0 0 0 0 0 0 0 " << endl <<
+                  "0 0 0 0 0 0 0 1 0 0 " << endl <<
+                  "0 1 1 0 0 0 1 1 1 0 " << endl <<
+                  "0 1 1 0 0 0 0 1 1 0 " << endl <<
+                  "0 0 0 0 0 0 0 0 0 0 " << endl <<
+                  "0 1 0 0 0 0 0 1 0 0 " << endl <<
+                  "0 0 0 0 0 0 0 0 1 1 " << endl <<
+                  "0 0 1 0 0 0 0 1 0 0 " << endl <<
+                  "0 0 0 0 0 0 0 0 0 0 ";
+
                     qDebug()<< "		Knocke_Bureacracies_Information_Exchange_Network.pajek written... ";
     }
     else if (fileName=="Stephenson&Zelen_40_AIDS_patients_sex_contact.paj"){
@@ -12001,6 +16921,45 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                    "1 1 0 1 1 0 1 1 1 0 1 1 1 0 0 1 1 1 1 1 1 1 1 0";
                     qDebug()<< "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek written... ";
     }
+    else if (fileName == "Petersen_Graph.paj") {
+        qDebug()<< "		Petersen_Graph.paj written... ";
+        datasetDescription=tr("This data set is just a famous non-planar mathematical graph, \n"
+                              "named after Julius Petersen, who constructed it in 1898.\n"
+                "The Petersen graph is undirected with 10 vertices and 15 edges \n"
+                 "and the smallest bridgeless cubic graph with no three-edge-coloring.\n"
+                "This small graph serves as a useful example and counterexample \n"
+                              "for many problems in graph theory. ");
+
+        outText<< "*Network petersen"<<endl<<
+                  "*Vertices 10"<<endl<<
+                  "1 \"blue\" ic RGB5555FF      0.301331  0.398259  circle"<<endl<<
+                  "2 \"red\" ic red             0.474335  0.238302  circle"<<endl<<
+                  "3 \"blue\" ic RGB5555FF      0.652082  0.407722  circle"<<endl<<
+                  "4 \"green\" ic RGB00FF00     0.601418  0.681758  circle"<<endl<<
+                  "5 \"red\" ic red             0.348936  0.677763  circle"<<endl<<
+                  "6 \"green\" ic RGB00FF00     0.410646  0.581066  circle"<<endl<<
+                  "7 \"red\" ic red             0.534221  0.583243  circle"<<endl<<
+                  "8 \"red\" ic red             0.561787  0.437432  circle"<<endl<<
+                  "9 \"blue\" ic RGB5555FF      0.475285  0.351469  circle"<<endl<<
+                  "10 \"green\" ic RGB00FF00    0.38308   0.436344  circle"<<endl<<
+                  "*Arcs "<<endl<<
+                  "*Edges "<<endl<<
+                  "1 2 1 c black"<<endl<<
+                  "1 5 1 c black"<<endl<<
+                  "1 10 1 c black"<<endl<<
+                  "2 3 1 c black"<<endl<<
+                  "2 9 1 c black"<<endl<<
+                  "3 4 1 c black"<<endl<<
+                  "3 8 1 c black"<<endl<<
+                  "4 5 1 c black"<<endl<<
+                  "4 7 1 c black"<<endl<<
+                  "5 6 1 c black"<<endl<<
+                  "6 8 1 c black"<<endl<<
+                  "6 9 1 c black"<<endl<<
+                  "7 9 1 c black"<<endl<<
+                  "7 10 1 c black"<<endl<<
+                  "8 10 1 c black";
+    }
     file.close();
     if ( !datasetDescription.isEmpty() ) {
         emit signalDatasetDescription(datasetDescription);
@@ -12011,19 +16970,364 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
 
 
 
+
+
+
+/**
+    Writes the specified matrix of social network to file fn
+*/
+void Graph::writeMatrix (const QString &fn,
+                         const int &matrix,
+                         const bool &considerWeights,
+                         const bool &inverseWeights,
+                         const bool &dropIsolates,
+                         const QString &varLocation,
+                         const bool &simpler) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
+    Q_UNUSED(simpler);
+    qDebug()<<"Graph::writeMatrix() - matrix" << matrix
+           << "to" << fn;
+
+    QFile file( fn );
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fn );
+        return;
+    }
+
+    bool inverseResult = false;
+    int N = vertices();
+
+    switch (matrix) {
+    case MATRIX_ADJACENCY:
+        emit statusMessage ( tr("Need to recompute Adjacency Matrix. Please wait...") );
+        graphMatrixAdjacencyCreate();
+        emit statusMessage ( tr("Adjacency recomputed. Writing Adjacency Matrix...") );
+        break;
+    case MATRIX_LAPLACIAN:
+        emit statusMessage ( tr("Need to recompute Adjacency Matrix. Please wait...") );
+        graphMatrixAdjacencyCreate();
+        emit statusMessage ( tr("Adjacency recomputed. Writing Laplacian Matrix...") );
+        break;
+    case MATRIX_DEGREE:
+        emit statusMessage ( tr("Need to recompute Adjacency Matrix. Please wait...") );
+        graphMatrixAdjacencyCreate();
+        emit statusMessage ( tr("Adjacency recomputed. Writing Degree Matrix...") );
+        break;
+    case MATRIX_DISTANCES:
+        if ( !calculatedDistances || graphModified() ) {
+            graphMatrixDistancesCreate(false, considerWeights, inverseWeights, dropIsolates);
+        }
+        emit statusMessage ( tr("Distances recomputed. Writing Distances Matrix...") );
+        break;
+    case MATRIX_GEODESICS:
+        if ( !calculatedDistances || graphModified() ) {
+            graphMatrixDistancesCreate(false, considerWeights, inverseWeights, false);
+        }
+        emit statusMessage ( tr("Distances recomputed. Writing Geodesics Matrix...") );
+        break;
+    case MATRIX_ADJACENCY_INVERSE:
+        emit statusMessage ( tr("Computing Inverse Adjacency Matrix. Please wait...") );
+        inverseResult = graphMatrixAdjacencyInvert(QString("lu"));
+        emit statusMessage ( tr("Inverse Adjacency Matrix computed. Writing Matrix...") );
+        break;
+    case MATRIX_REACHABILITY:
+        if (!calculatedDistances || graphModified()) {
+            graphMatrixDistancesCreate(false,false,false,dropIsolates);
+        }
+        emit statusMessage ( tr("Distances recomputed. Writing Reachability Matrix...") );
+        break;
+
+    case MATRIX_ADJACENCY_TRANSPOSE:
+        emit statusMessage ( tr("Need to recompute Adjacency Matrix. Please wait...") );
+        graphMatrixAdjacencyCreate();
+        emit statusMessage ( tr("Adjacency recomputed. Writing Adjacency Matrix...") );
+        break;
+    case MATRIX_COCITATION:
+        emit statusMessage ( tr("Need to recompute Adjacency Matrix. Please wait...") );
+        graphMatrixAdjacencyCreate();
+        emit statusMessage ( tr("Adjacency recomputed. Writing Adjacency Matrix...") );
+        break;
+    case MATRIX_DISTANCES_HAMMING:
+    case MATRIX_DISTANCES_JACCARD:
+    case MATRIX_DISTANCES_MANHATTAN:
+    case MATRIX_DISTANCES_EUCLIDEAN:
+        emit statusMessage ( tr("Need to recompute tie profile distances. Please wait...") );
+        graphMatrixAdjacencyCreate();
+        emit statusMessage ( tr("Tie profile distances recomputed. Writing matrix...") );
+        break;
+
+
+    default:
+        break;
+    }
+
+
+    QTextStream outText( &file ); outText.setCodec("UTF-8");
+
+    outText << htmlHead;
+
+    outText << "<h1>";
+
+    switch (matrix) {
+    case MATRIX_ADJACENCY:
+        outText << tr("ADJACENCY MATRIX REPORT");
+        break;
+    case MATRIX_LAPLACIAN:
+        outText << tr("LAPLACIAN MATRIX REPORT");
+        break;
+    case MATRIX_DEGREE:
+        outText << tr("DEGREE MATRIX REPORT");
+        break;
+    case MATRIX_DISTANCES:
+        outText << tr("DISTANCES MATRIX REPORT");
+        break;
+    case MATRIX_GEODESICS:
+        outText << tr("GEODESICS MATRIX REPORT");
+        break;
+    case MATRIX_ADJACENCY_INVERSE:
+        outText << tr("INVERSE ADJACENCY MATRIX REPORT");
+        break;
+    case MATRIX_REACHABILITY:
+        outText << tr("REACHABILITY MATRIX REPORT");
+        break;
+    case MATRIX_ADJACENCY_TRANSPOSE:
+        outText << tr("TRANSPOSE OF ADJACENCY MATRIX REPORT");
+        break;
+    case MATRIX_COCITATION:
+        outText << tr("COCITATION MATRIX REPORT");
+        break;
+    case MATRIX_DISTANCES_EUCLIDEAN:
+        outText << tr("EUCLIDEAN DISTANCE MATRIX REPORT");
+        break;
+    case MATRIX_DISTANCES_HAMMING:
+        outText << tr("HAMMING DISTANCE MATRIX REPORT");
+        break;
+    case MATRIX_DISTANCES_JACCARD:
+        outText << tr("JACCARD DISTANCE MATRIX REPORT");
+        break;
+    case MATRIX_DISTANCES_MANHATTAN:
+        outText << tr("MANHATTAN DISTANCE MATRIX REPORT");
+        break;
+    default:
+        break;
+    }
+
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+
+    switch (matrix) {
+    case MATRIX_ADJACENCY:
+        outText << "<p class=\"description\">"
+                << tr("The adjacency matrix, AM, of a social network is a NxN matrix ")
+                << tr("where each element (i,j) is the value of the edge from "
+                      "actor i to actor j, or 0 if no edge exists.")
+                << "<br />"
+                << "</p>";
+        AM.printHTMLTable(outText,true);
+        break;
+    case MATRIX_LAPLACIAN:
+        outText << "<p class=\"description\">"
+                << tr("The laplacian matrix L of a social network is a NxN matrix ")
+                << tr("with L = D - A, where D the degree matrix and A the "
+                      "adjacency matrix. ")
+                << "<br />"
+                << tr("The elements of L are: "
+                      "<br />"
+                      "- L<sub>i,j</sub> = d<sub>i</sub>, if i = j, <br />"
+                      "- L<sub>i,j</sub> = -1,  if i &ne; j and there is an edge (i,j)<br />"
+                      "- and all other elements zero.<br />")
+                << "<br />"
+                << "</p>";
+        AM.laplacianMatrix().printHTMLTable(outText,true,false,false);
+        break;
+    case MATRIX_DEGREE:
+        outText << "<p class=\"description\">"
+                << tr("The degree matrix D of a social network is a NxN matrix ")
+                << tr("where each element (i,i) is the degree of actor i "
+                      "and all other elements are zero.")
+                << "<br />"
+                << "</p>";
+        AM.degreeMatrix().printHTMLTable(outText, true);
+        break;
+    case MATRIX_DISTANCES:
+        outText << "<p class=\"description\">"
+                << tr("The distance matrix, DM, of a social network is a NxN matrix "
+                    "where each element (i,j) is the geodesic distance "
+                      "(length of shortest path) from actor i to actor j, "
+                      "or infinity if no shortest path exists.")
+                << "<br />"
+                << "</p>";
+        DM.printHTMLTable(outText,true);
+        break;
+    case MATRIX_GEODESICS:
+        outText << "<p class=\"description\">"
+                << tr("The geodesics matrix of a social network is a NxN matrix ")
+                << tr("where each element (i,j) is the number of geodesics "
+                      "(shortest paths) from actor i to actor j, "
+                      "or infinity if no shortest path exists.")
+                << "<br />"
+                << "</p>";
+        TM.printHTMLTable(outText,true);
+        break;
+
+    case MATRIX_ADJACENCY_INVERSE:
+        if (!inverseResult) {
+            outText << "<p class=\"description\">"
+                    << tr("The adjacency matrix is singular.")
+                    << "<br />"
+                    << "</p>";
+        }else {
+            invAM.printHTMLTable(outText,true);
+        }
+        break;
+    case MATRIX_REACHABILITY:
+        outText << "<p class=\"description\">"
+                << tr("The reachability matrix R of a social network is a NxN matrix "
+                      "where each element R(i,j) is 1 if actors j is reachable from i "
+                      "otherwise 0. <br />"
+                      "Two nodes are reachable if there is a walk between them "
+                      "(their geodesic distance is non-zero). <br />"
+                      "Essentially the reachability matrix is a dichotomized "
+                      "geodesics matrix.")
+                << "<br />"
+                << "</p>";
+
+        XRM.printHTMLTable(outText,true);
+        break;
+
+    case MATRIX_ADJACENCY_TRANSPOSE:
+        outText << "<p class=\"description\">"
+                << tr("The adjacency matrix AM of a social network is a NxN matrix "
+                      "where each element (i,j) is the value of the edge from "
+                      "actor i to actor j, or 0 if no edge exists. ")
+                << "<br />"
+                << tr("This is the transpose of the adjacency matrix, AM<sup>T</sup>, "
+                      "a matrix whose (i,j) element is the (j,i) element of AM.")
+                << "</p>";
+
+
+        AM.transpose().printHTMLTable(outText,true);
+        break;
+
+    case MATRIX_COCITATION:
+        outText << "<p class=\"description\">"
+                << tr("The Cocitation matrix, C = A<sup>T</sup> * A, is a "
+                      "NxN matrix where each element (i,j) is the number of "
+                      "actors that have outbound ties/links to both actors i and j.")
+                << "<br />"
+                << tr("The diagonal elements, C<sub>ii</sub>, of the Cocitation "
+                      "matrix are equal to the number of inbound edges of i (inDegree).")
+                << "<br />"
+                << tr("C is a symmetric matrix.")
+                << "</p>";
+        AM.cocitationMatrix().printHTMLTable(outText,true);
+        break;
+
+    case MATRIX_DISTANCES_EUCLIDEAN:
+        outText << "<p class=\"description\">"
+                << tr("The Euclidean distances matrix is a "
+                      "NxN matrix where each element (i,j) is the Euclidean distance"
+                      "of the tie profiles between actors i and j, namely the "
+                      "square root of the sum of their squared differences.")
+                << "<br />"
+                << "</p>";
+        AM.distancesMatrix(METRIC_EUCLIDEAN_DISTANCE, varLocation, false, true ).printHTMLTable(outText,true);
+        break;
+    case MATRIX_DISTANCES_HAMMING:
+        outText << "<p class=\"description\">"
+                << tr("The Hamming distances matrix is a "
+                      "NxN matrix where each element (i,j) is the Hamming distance"
+                      "of the tie profiles between actors i and j, namely the "
+                      "number of different ties to other actors.")
+                << "<br />"
+                << "</p>";
+        AM.distancesMatrix(METRIC_HAMMING_DISTANCE, varLocation, false, true ).printHTMLTable(outText,true);
+        break;
+    case MATRIX_DISTANCES_JACCARD:
+        outText << "<p class=\"description\">"
+                << tr("The Jaccard distances matrix is a "
+                      "NxN matrix where each element (i,j) is the Jaccard distance"
+                      "of the tie profiles between actors i and j.")
+                << "<br />"
+                << "</p>";
+        AM.distancesMatrix(METRIC_JACCARD_INDEX, "Rows", false, true ).printHTMLTable(outText,true);
+
+        break;
+    case MATRIX_DISTANCES_MANHATTAN:
+        outText << "<p class=\"description\">"
+                << tr("The Manhattan distances matrix is a "
+                      "NxN matrix where each element (i,j) is the Manhattan distance"
+                      "of the tie profiles between actors i and j, namely  the "
+                      "sum of their absolute differences.")
+                << "<br />"
+                << "</p>";
+        AM.distancesMatrix(METRIC_MANHATTAN_DISTANCE, varLocation, false, true ).printHTMLTable(outText,true);
+        break;
+    case MATRIX_DISTANCES_CHEBYSHEV:
+        outText << "<p class=\"description\">"
+                << tr("The Chebyshev distances matrix is a "
+                      "NxN matrix where each element (i,j) is the Chebyshev distance"
+                      "of the tie profiles between actors i and j, namely the greatest of their differences.")
+                << "<br />"
+                << "</p>";
+        AM.distancesMatrix(METRIC_CHEBYSHEV_MAXIMUM, varLocation, false, true ).printHTMLTable(outText,true);
+        break;
+
+    default:
+        break;
+    }
+
+
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Matrix report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+    file.close();
+}
+
+
+
+
+
 /** 
     Exports the adjacency matrix to a given textstream
 */
-void Graph::writeAdjacencyMatrixTo(QTextStream& os){
+void Graph::writeMatrixAdjacencyTo(QTextStream& os,
+                                   const bool &saveEdgeWeights){
     qDebug("Graph: adjacencyMatrix(), writing matrix with %i vertices", vertices());
     QList<Vertex*>::const_iterator it, it1;
-    float weight=-1;
+    float weight=RAND_MAX;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() ) continue;
         for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
             if ( ! (*it1)->isEnabled() ) continue;
             if ( (weight = edgeExists( (*it)->name(), (*it1)->name() )  ) !=0 ) {
-                os << static_cast<int> (weight) << " ";
+                //os << static_cast<int> (weight) << " ";
+                os << ((saveEdgeWeights) ? weight : 1 ) << " ";
             }
             else
                 os << "0 ";
@@ -12040,13 +17344,146 @@ void Graph::writeAdjacencyMatrixTo(QTextStream& os){
 
 /** 
     Writes the adjacency matrix of G to a specified file fn
-    This is called by MainWindow::slotViewAdjacencyMatrix()
+*/
+void Graph::writeMatrixAdjacency (const QString fn,
+                                  const bool &markDiag) {
+
+    QTime computationTimer;
+    computationTimer.start();
+
+    qDebug()<<"Graph::writeMatrixAdjacency() to : " << fn;
+    QFile file( fn );
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fn );
+        return;
+    }
+
+    QTextStream outText( &file ); outText.setCodec("UTF-8");
+
+    int sum=0;
+    float weight=0;
+    int rowCount=0;
+    int N = vertices();
+    //int colCount=0;
+
+    QList<Vertex*>::const_iterator it, it1;
+
+    outText << htmlHead;
+
+    outText << "<h1>";
+    outText << tr("ADJACENCY MATRIX");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+
+    outText << "<p class=\"description\">"
+            << tr("The adjacency matrix of a social network is a NxN matrix ")
+            << tr("where each element (i,j) is the value of the edge from "
+                  "actor i to actor j, or 0 if no edge exists.")
+            << "<br />"
+            << "</p>";
+
+
+
+    outText << "<table  border=\"1\" cellspacing=\"0\" cellpadding=\"0\" class=\"stripes\">"
+            << "<thead>"
+            << "<tr>"
+            << "<th>"
+            << tr("<sub>Actor</sup>/<sup>Actor</sup>")
+            << "</th>";
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        outText <<"<th>"
+                << (*it)->name()
+                << "</th>";
+    }
+    outText << "</tr>"
+            << "</thead>"
+            << "<tbody>";
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
+        if ( ! (*it)->isEnabled() ) continue;
+
+        rowCount++;
+
+        outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">";
+
+        outText <<"<td class=\"header\">"
+               << (*it)->name()
+               << "</td>";
+
+        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
+
+            if ( ! (*it1)->isEnabled() ) continue;
+
+            outText <<"<td" << ((markDiag && (*it)->name() ==(*it1)->name() )? " class=\"diag\">" : ">");
+            if ( (weight =  edgeExists ( (*it)->name(), (*it1)->name() )  )!=0 ) {
+                sum++;
+                outText << (weight);
+
+            }
+            else {
+                outText << 0 ;
+
+            }
+            outText << "</td>";
+
+        }
+        outText <<"</tr>";
+
+        emit updateProgressDialog(rowCount);
+    }
+    outText << "</tbody></table>";
+
+    qDebug("Graph: Found a total of %i edge",sum);
+    if ( sum != edgesEnabled() ) qDebug ("Error in edge count found!!!");
+    else qDebug("Edge count OK!");
+
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Adjacency matrix report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+
+    file.close();
+}
+
+
+
+/**
+    Writes a visual representation of the adjacency matrix of G
+    to a specified file fn
+    This is called by MainWindow::slotViewAdjacencyMatrixPlotText()
     The resulting matrix HAS NO spaces between elements.
 */
-void Graph::writeAdjacencyMatrix (const QString fn) {
-    qDebug()<<"Graph::writeAdjacencyMatrix() to : " << fn;
+void Graph::writeMatrixAdjacencyPlot (const QString fn,
+                                      const bool &simpler) {
+    QTime computationTimer;
+    computationTimer.start();
+
+    qDebug()<<"Graph::writeMatrixAdjacencyPlot() to : " << fn;
     QFile file( fn );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
@@ -12054,27 +17491,121 @@ void Graph::writeAdjacencyMatrix (const QString fn) {
     outText.setCodec("UTF-8");
     int sum=0;
     float weight=0;
-    outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
-    outText << "Network name: "<< graphName() <<" \n";
-    outText << "Adjacency matrix: \n\n";
-    QList<Vertex*>::const_iterator it, it1;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( ! (*it)->isEnabled() ) continue;
-        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
-            if ( ! (*it1)->isEnabled() ) continue;
-            if ( (weight =  edgeExists ( (*it)->name(), (*it1)->name() )  )!=0 ) {
-                sum++;
-                outText <<  (weight) << " "; // TODO make the matrix look symmetric
-            }
-            else
-                outText << "0 ";
-        }
-        outText << endl;
-    }
 
+    int rowCount=0;
+    int N = vertices();
+
+    QList<Vertex*>::const_iterator it, it1;
+    if (!simpler) {
+        outText << htmlHead;
+    }
+    else
+        outText <<  htmlHeadLight;
+
+    outText << "<h1>";
+    outText << tr("ADJACENCY MATRIX PLOT");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+
+    outText << "<p class=\"description\">"
+            << tr("This a plot of the network's adjacency matrix, a NxN matrix ")
+            << tr("where each element (i,j) is filled if there is an edge from "
+                  "actor i to actor j, or not filled if no edge exists.")
+            << "<br />"
+            << "</p>";
+
+
+    if (!simpler) {
+
+
+        outText << "<table class=\"plot\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">";
+
+        outText << "<tbody>";
+
+        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
+            if ( ! (*it)->isEnabled() ) continue;
+
+            rowCount++;
+
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">";
+            emit updateProgressDialog(rowCount);
+            for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
+
+                if ( ! (*it1)->isEnabled() ) continue;
+
+                if ( (weight =  edgeExists ( (*it)->name(), (*it1)->name() )  )!=0 ) {
+                    sum++;
+                    outText <<"<td class=\"filled\">"
+                           << QString("\xe2\x96\xa0")
+                           << "</td>";
+                }
+                else {
+                    outText <<"<td>"
+                              //   << "&nbsp;&nbsp;"
+                           << QString("\xe2\x96\xa1")
+                           << "</td>";
+                }
+
+            }
+            outText <<"</tr>";
+        }
+        outText << "</tbody></table>";
+    }
+    else {
+        outText << "<p class=\"pre\">";
+        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
+            if ( ! (*it)->isEnabled() ) continue;
+             rowCount++;
+            emit updateProgressDialog(rowCount);
+            for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
+
+                if ( ! (*it1)->isEnabled() ) continue;
+
+                if ( (weight =  edgeExists ( (*it)->name(), (*it1)->name() )  )!=0 ) {
+                    sum++;
+                    outText << QString("\xe2\x96\xa0") << " ";
+                }
+                else {
+                    outText << QString("\xe2\x96\xa1") << " ";
+
+                }
+
+            }
+            outText << "<br>"<<endl;
+        }
+        outText << "</p>";
+    }
     qDebug("Graph: Found a total of %i edge",sum);
     if ( sum != edgesEnabled() ) qDebug ("Error in edge count found!!!");
     else qDebug("Edge count OK!");
+
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Adjacency matrix plot, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+
 
     file.close();
 }
@@ -12084,25 +17615,27 @@ void Graph::writeAdjacencyMatrix (const QString fn) {
  *  Creates an adjacency matrix AM
  *  where AM(i,j)=1 if i is connected to j
  *  and AM(i,j)=0 if i not connected to j
- *  Used in Graph::centralityInformation() and Graph::adjacencyMatrixInvert()
+ *
+ *  Used in Graph::centralityInformation(), Graph::graphWalksMatrixCreate
+ *  and Graph::graphMatrixAdjacencyInvert()
  */
-void Graph::adjacencyMatrixCreate(const bool dropIsolates,
+void Graph::graphMatrixAdjacencyCreate(const bool dropIsolates,
                                   const bool considerWeights,
                                   const bool inverseWeights,
                                   const bool symmetrize ){
-    qDebug() << "Graph::adjacencyMatrixCreate()";
-    float m_weight=-1;
+    qDebug() << "Graph::graphMatrixAdjacencyCreate()";
+    float m_weight=RAND_MAX;
     int i=0, j=0;
+    int N = vertices();
     if (dropIsolates){
-        qDebug() << "Graph::adjacencyMatrixCreate() - Find and drop possible isolates";
-        isolatedVertices = verticesIsolated().count();
-        int m = m_totalVertices-isolatedVertices;
+        qDebug() << "Graph::graphMatrixAdjacencyCreate() - Find and drop possible isolates";
+        int m = N- verticesListIsolated().count();
         AM.resize( m , m);
     }
     else
-        AM.resize(m_totalVertices, m_totalVertices);
+        AM.resize(N, N);
     QList<Vertex*>::const_iterator it, it1;
-    //qDebug() << "Graph::adjacencyMatrixCreate() - creating new adjacency matrix ";
+    //qDebug() << "Graph::graphMatrixAdjacencyCreate() - creating new adjacency matrix ";
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() || ( (*it)->isIsolated() && dropIsolates) ) {
             continue;
@@ -12154,22 +17687,23 @@ void Graph::adjacencyMatrixCreate(const bool dropIsolates,
         i++;
     }
 
-    adjacencyMatrixCreated=true;
+    calculatedAdjacencyMatrix=true;
 }
 
 
-bool Graph::adjacencyMatrixInvert(const QString &method){
-    qDebug()<<"Graph::adjacencyMatrixInvert() ";
+bool Graph::graphMatrixAdjacencyInvert(const QString &method){
+    qDebug()<<"Graph::graphMatrixAdjacencyInvert() ";
 
     bool considerWeights=false;
     long int i=0, j=0;
     bool isSingular=true;
-
+    int  m = vertices();
+    int isolatedVertices = verticesListIsolated().count();
     bool dropIsolates=true; // always drop isolates else AM will be singular
 
-    adjacencyMatrixCreate(dropIsolates, considerWeights);
+    graphMatrixAdjacencyCreate(dropIsolates, considerWeights);
 
-    int  m = m_totalVertices-isolatedVertices;
+    m-=isolatedVertices;
 
     invAM.resize(m,m);
 
@@ -12200,14 +17734,14 @@ bool Graph::adjacencyMatrixInvert(const QString &method){
 
 
 
-void Graph::writeAdjacencyMatrixInvert(const QString &fn,
+void Graph::writeMatrixAdjacencyInvert(const QString &fn,
                                        const QString &method)
 {
-    qDebug("Graph::writeAdjacencyMatrixInvert() ");
+    qDebug("Graph::writeMatrixAdjacencyInvert() ");
     int i=0, j=0;
     QList<Vertex*>::const_iterator it, it1;
     QFile file( fn );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
@@ -12216,13 +17750,15 @@ void Graph::writeAdjacencyMatrixInvert(const QString &fn,
     outText << "-Social Network Visualizer "<<  VERSION <<endl;
     outText << tr("Network name: ")<< graphName()<< endl<<endl;
     outText << "Inverse Matrix: \n";
-    if (!adjacencyMatrixInvert(method)) {
+    if (!graphMatrixAdjacencyInvert(method)) {
             outText << endl<< " The adjacency matrix is singular.";
             file.close();
             return;
     }
-    if ( verticesIsolated().count() > 0  )
-            outText << endl<< "Dropped "<< isolatedVertices << " isolated vertices"
+    int isolatedVertices = verticesListIsolated().count();
+    if (  isolatedVertices  > 0  )
+            outText << endl<< "Dropped "<< isolatedVertices
+                    << " isolated vertices"
                     << endl<< endl;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() || (*it)->isIsolated() )
@@ -12246,7 +17782,58 @@ void Graph::writeAdjacencyMatrixInvert(const QString &fn,
 
 
 
+/**
+ * @brief Computes the Degree matrix of the graph and writes it to given file
+ * @param fn
+ */
+void Graph::writeMatrixDegreeText(const QString &fn) {
+    qDebug("Graph::writeMatrixDegreeText() ");
+//    int i=0, j=0;
+//    QList<Vertex*>::const_iterator it, it1;
 
+    graphMatrixAdjacencyCreate();
+
+    QFile file( fn );
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        emit statusMessage ( tr("Error. Could not write to ") + fn );
+        return;
+    }
+    QTextStream outText( &file );
+    outText.setCodec("UTF-8");
+
+    outText << AM.degreeMatrix();
+
+    file.close();
+
+}
+
+
+
+
+/**
+ * @brief Computes the Laplacian matrix of the graph and writes it to given file
+ * @param fn
+ */
+void Graph::writeMatrixLaplacianPlainText(const QString &fn) {
+    qDebug("Graph::writeMatrixLaplacianPlainText() ");
+//    int i=0, j=0;
+//    QList<Vertex*>::const_iterator it, it1;
+
+    graphMatrixAdjacencyCreate();
+
+    QFile file( fn );
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        emit statusMessage ( tr("Error. Could not write to ") + fn );
+        return;
+    }
+    QTextStream outText( &file );
+    outText.setCodec("UTF-8");
+
+    outText << AM.laplacianMatrix();
+
+    file.close();
+
+}
 
 
 /**	
@@ -12295,7 +17882,7 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations){
     QList<Vertex*>::const_iterator v2;
 
     /* apply an inital random layout */
-    layoutRandom();
+   // layoutRandom();
 
     /**
      * compute max spring length as function of canvas area divided by the
@@ -12344,7 +17931,7 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations){
                 DV.setX( (*v2) -> x() - (*v1)->x());
                 DV.setY( (*v2) -> y() - (*v1)->y());
 
-                dist = length(DV);
+                dist = graphDistanceEuclidean(DV);
 
                 /**
                   *  calculate electric (repulsive) forces between
@@ -12432,7 +18019,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
 
 
     /* apply an inital random layout */
-    layoutRandom();
+   // layoutRandom();
 
     qDebug() << "Graph: layoutForceDirectedFruchtermanReingold() ";
     qDebug () << "Graph: Setting optimalDistance = "<<  optimalDistance
@@ -12481,7 +18068,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
                 DV.setX( (*v2)->x() - (*v1)->x() );
                 DV.setY( (*v2)->y() - (*v1)->y() );
 
-                dist = length( DV );
+                dist = graphDistanceEuclidean( DV );
 
                 //calculate repulsive force from _near_ vertices
                 f_rep = layoutForceDirected_F_rep( "FR", dist, optimalDistance);
@@ -12549,9 +18136,9 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
 
     // Compute dij for 1 <= i!=j <= n
     bool considerWeights=false, inverseWeights=false, dropIsolates=false;
-    distanceMatrixCreate(false,considerWeights,inverseWeights, dropIsolates);
+    graphMatrixDistancesCreate(false,considerWeights,inverseWeights, dropIsolates);
     qDebug() << " DM : ";
-    DM.printMatrixConsole();
+    //DM.printMatrixConsole();
 
     // Compute lij for 1 <= i!=j <= n using the formula:
     // lij = L x dij
@@ -12559,11 +18146,11 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
     // Since we are on a restricted display (a canvas), L depends on the
     // diameter D of the graph and the length L of a side of the display square:
     // L = L0 / D
-    float L = canvasMinDimension() / (float) diameter(considerWeights,inverseWeights);
+    float L = canvasMinDimension() / (float) graphDiameter(considerWeights,inverseWeights);
     TM.zeroMatrix(DM.rows(), DM.cols());
     TM=DM;
     TM.multiplyScalar(L);
-    TM.printMatrixConsole();
+   // TM.printMatrixConsole();
 
     // Compute kij for 1 <= i!=j <= n using the formula:
     // ki
@@ -12725,12 +18312,12 @@ void Graph::compute_angles(const QPointF &DV,
 
 
 /**
- * @brief Graph::length
+ * @brief Computes the euclideian distance between QPointF a and b
  * @param a
  * @param b
- * @return  the euclideian distance of QPointF a and b
+ * @return
  */
-qreal Graph::length (const QPointF & a, const QPointF & b){
+qreal Graph::graphDistanceEuclidean (const QPointF & a, const QPointF & b){
     return qSqrt (
                  ( b.x() - a.x() ) * (b.x() - a.x() ) +
                  ( b.y() - a.y())  * (b.y() - a.y() )
@@ -12739,11 +18326,11 @@ qreal Graph::length (const QPointF & a, const QPointF & b){
 
 
 /**
- * @brief Graph::length
+ * @brief the euclideian distance of QPointF a (where a is difference vector)
  * @param a
- * @return  the euclideian distance of QPointF a (where a is difference vector)
+ * @return
  */
-qreal Graph::length (const QPointF & a){
+qreal Graph::graphDistanceEuclidean (const QPointF & a){
     return qSqrt (
                   a.x()  * a.x()  +
                   a.y() * a.y()
@@ -12767,7 +18354,7 @@ void Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4) {
                  << " xvel,yvel = ("<< xvel << ", "<< yvel << ")";
 
          //fix Qt error a positive QPoint to the floor
-        // when we ask for moveNode to happen.
+        // when we ask for setNodePos to happen.
         if ( xvel < 1 && xvel > 0 )
             xvel = 1 ;
         if ( yvel < 1 && yvel > 0 )
@@ -12788,7 +18375,10 @@ void Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4) {
 
         qDebug() << "  Final new pos (" <<  newPos.x() << ","
                  << newPos.y()<< ")";
-        emit moveNode((*v1)->name(),  newPos.x(),  newPos.y());
+        (*v1)->setX(  newPos.x() );
+        (*v1)->setY(  newPos.y() );
+        emit setNodePos((*v1)->name(),  newPos.x(),  newPos.y());
+        //vertexPosSet();
 
     }
 
@@ -12830,11 +18420,262 @@ void Graph::layoutForceDirected_FR_moveNodes(const qreal &temperature) {
         qDebug()<< " final new pos "
                 <<  newPos.x() << ","
                 << newPos.y()<< ")";
-        emit moveNode((*v1)->name(),  newPos.x(),  newPos.y());
+        (*v1)->setX(  newPos.x() );
+        (*v1)->setY(  newPos.y() );
+        emit setNodePos((*v1)->name(),  newPos.x(),  newPos.y());
     }
 }
 
 
+
+/**
+ * @brief Helper method, return the human readable name of matrix type.
+ * @param matrix
+ */
+QString Graph::graphMatrixTypeToString(const int &matrixType) const {
+    QString matrixStr;
+
+    switch (matrixType) {
+
+    case MATRIX_ADJACENCY :
+        matrixStr = "Adjacency Matrix" ;
+        break;
+    case MATRIX_DISTANCES:
+        matrixStr = "Distances Matrix" ;
+        break;
+    case MATRIX_DEGREE:
+        matrixStr = "Degree Matrix" ;
+        break;
+    case MATRIX_LAPLACIAN:
+        matrixStr = "Laplacian Matrix" ;
+        break;
+    case MATRIX_ADJACENCY_INVERSE:
+        matrixStr = "Adjacency Inverse" ;
+        break;
+
+    case MATRIX_GEODESICS:
+        matrixStr = "Geodesics Matrix" ;
+        break;
+    case MATRIX_REACHABILITY:
+        matrixStr = "Reachability Matrix" ;
+        break;
+    case MATRIX_ADJACENCY_TRANSPOSE:
+        matrixStr = "Adjacency Transpose" ;
+        break;
+    case MATRIX_COCITATION:
+        matrixStr = "Cocitation Matrix" ;
+        break;
+    case MATRIX_DISTANCES_EUCLIDEAN :
+        matrixStr = "Euclidean distance matrix";
+        break;
+    case MATRIX_DISTANCES_MANHATTAN:
+        matrixStr = "Manhattan distance matrix";
+        break;
+    case MATRIX_DISTANCES_JACCARD:
+        matrixStr = "Jaccard distance matrix";
+        break;
+    case MATRIX_DISTANCES_HAMMING:
+        matrixStr = "Hamming distance matrix";
+        break;
+    default:
+        matrixStr = "-" ;
+        break;
+    }
+    return matrixStr;
+}
+
+
+/**
+ * @brief Helper method, return the matrix type of human readable matrix name .
+ * @param matrix
+ * @return
+ */
+int Graph::graphMatrixStrToType(const QString &matrix) const {
+    if (matrix.contains("Hamming", Qt::CaseInsensitive)) {
+            return MATRIX_DISTANCES_HAMMING;
+    }
+    else if (matrix.contains("Jaccard", Qt::CaseInsensitive)) {
+            return MATRIX_DISTANCES_JACCARD;
+    }
+    else if (matrix.contains("Manhattan", Qt::CaseInsensitive)) {
+            return MATRIX_DISTANCES_MANHATTAN;
+    }
+    else if (matrix.contains("Euclidean", Qt::CaseInsensitive)) {
+            return MATRIX_DISTANCES_EUCLIDEAN;
+    }
+    else if (matrix.contains("Cocitation", Qt::CaseInsensitive)) {
+        return MATRIX_COCITATION;
+    }
+    else if (matrix.contains("Adjacency Transpose", Qt::CaseInsensitive)) {
+        return MATRIX_ADJACENCY_TRANSPOSE;
+    }
+    else if (matrix.contains("Reachability", Qt::CaseInsensitive)) {
+        return MATRIX_REACHABILITY;
+    }
+    else if (matrix.contains("Geodesics", Qt::CaseInsensitive)) {
+        return MATRIX_GEODESICS;
+    }
+    else if (matrix.contains("Adjacency Inverse", Qt::CaseInsensitive)) {
+        return MATRIX_ADJACENCY_INVERSE;
+    }
+    else if (matrix.contains("Laplacian", Qt::CaseInsensitive)) {
+        return MATRIX_LAPLACIAN;
+    }
+    else if (matrix.contains("Degree", Qt::CaseInsensitive)) {
+        return MATRIX_DEGREE;
+    }
+    else if (matrix.contains("Adjacency", Qt::CaseInsensitive)) {
+        return MATRIX_ADJACENCY;
+    }
+    else if (matrix.contains("Distances", Qt::CaseInsensitive)) {
+        return MATRIX_DISTANCES;
+    }
+    else {
+        return -1;
+    }
+}
+
+/**
+ * @brief Helper method, return the human readable name of metric type.
+ * @param metric
+ */
+QString Graph::graphMetricTypeToString(const int &metricType) const {
+    QString metricStr;
+    switch (metricType) {
+    case METRIC_SIMPLE_MATCHING :
+        metricStr = "Simple / Exact matching" ;
+        break;
+    case METRIC_JACCARD_INDEX:
+        metricStr = "Jaccard Index" ;
+        break;
+    case METRIC_HAMMING_DISTANCE:
+        metricStr = "Hamming distance" ;
+        break;
+    case METRIC_COSINE_SIMILARITY:
+        metricStr = "Cosine similarity" ;
+        break;
+    case METRIC_EUCLIDEAN_DISTANCE:
+        metricStr = "Euclidean distance" ;
+        break;
+    case METRIC_MANHATTAN_DISTANCE:
+        metricStr = "Manhattan distance" ;
+        break;
+    case METRIC_PEARSON_COEFFICIENT:
+        metricStr = "Pearson Correlation Coefficient" ;
+        break;
+    case METRIC_CHEBYSHEV_MAXIMUM:
+        metricStr = "Chebyshev distance" ;
+        break;
+    default:
+        metricStr = "-" ;
+        break;
+    }
+    return metricStr;
+}
+
+
+/**
+ * @brief Helper method, return the identifier of a metric.
+ * @param metricStr
+ */
+int Graph::graphMetricStrToType(const QString &metricStr) const {
+    int metric=METRIC_SIMPLE_MATCHING;
+    if (metricStr.contains("Simple",Qt::CaseInsensitive))
+        metric = METRIC_SIMPLE_MATCHING ;
+    else if (metricStr.contains("Jaccard",Qt::CaseInsensitive))
+        metric =METRIC_JACCARD_INDEX ;
+    else if (metricStr.contains("None",Qt::CaseInsensitive))
+        metric =METRIC_NONE;
+    else if (metricStr.contains("Hamming",Qt::CaseInsensitive))
+        metric =METRIC_HAMMING_DISTANCE;
+    else if (metricStr.contains("Cosine",Qt::CaseInsensitive))
+        metric =METRIC_COSINE_SIMILARITY;
+    else if (metricStr.contains("Euclidean",Qt::CaseInsensitive))
+        metric =METRIC_EUCLIDEAN_DISTANCE;
+    else if (metricStr.contains("Manhattan",Qt::CaseInsensitive))
+        metric =METRIC_MANHATTAN_DISTANCE;
+    else if (metricStr.contains("Pearson ",Qt::CaseInsensitive))
+        metric = METRIC_PEARSON_COEFFICIENT;
+    else if (metricStr.contains("Chebyshev",Qt::CaseInsensitive))
+        metric = METRIC_CHEBYSHEV_MAXIMUM;
+    return metric;
+}
+
+
+
+/**
+ * @brief  Helper method, return the human readable name of clustering method type.
+ * @return
+ */
+QString Graph::graphClusteringMethodTypeToString(const int &methodType) const {
+    QString methodStr;
+    switch (methodType) {
+    case CLUSTERING_SINGLE_LINKAGE:
+        methodStr = "Single-linkage (minumum)";
+        break;
+    case CLUSTERING_COMPLETE_LINKAGE:
+        methodStr = "Complete-linkage (maximum)";
+        break;
+    case CLUSTERING_AVERAGE_LINKAGE:
+        methodStr = "Average-linkage (UPGMA)";
+        break;
+    default:
+        break;
+    }
+    return methodStr;
+}
+
+
+/**
+ * @brief Helper method, return clustering method type from the human readable name of it.
+ * @param method
+ * @return
+ */
+int Graph::graphClusteringMethodStrToType(const QString &method) const {
+    int methodType=CLUSTERING_AVERAGE_LINKAGE;
+    if (method.contains("Single", Qt::CaseInsensitive)) {
+        methodType = CLUSTERING_SINGLE_LINKAGE;
+    }
+    else if (method.contains("Complete", Qt::CaseInsensitive)) {
+        methodType = CLUSTERING_COMPLETE_LINKAGE;
+    }
+    else if (method.contains("Average", Qt::CaseInsensitive)) {
+        methodType = CLUSTERING_AVERAGE_LINKAGE;
+    }
+    return methodType;
+}
+
+/**
+ * @brief Helper method, returns a nice qstring where all html special chars are encoded
+ * @param str
+ * @return
+ */
+QString Graph::htmlEscaped(QString str) const {
+    str=str.simplified();
+    if (str.contains('&') ){
+        str=str.replace('&',"&amp;");
+    }
+    if (str.contains('<') ){
+        str=str.replace('<',"&lt;");
+    }
+    if (str.contains('>') ){
+        str=str.replace('>',"&gt;");
+    }
+    if (str.contains('\"') ){
+        str=str.replace('\"',"&quot;");
+    }
+    if (str.contains('\'') ){
+        str=str.replace('\'',"&apos;");
+    }
+    return str;
+
+}
+
+
+
+/**
+ * @brief Graph::~Graph
+ */
 Graph::~Graph() {
     clear();
 }

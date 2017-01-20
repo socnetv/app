@@ -1,12 +1,13 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer 
- version: 2.1
+ version: 2.2
  Written in Qt
 
                         matrix  -  description
                              -------------------
-    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
-    email                : dimitris.kalamaras@gmail.com
+    copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
+    project site      : http://socnetv.org
+
  ***************************************************************************/
 
 /*******************************************************************************
@@ -38,12 +39,12 @@
 
 /**
  * @brief Matrix::Matrix
- * Default constructor - creates a Matrix of given size (default 0)
- * Use resize(int) to resize it
+ * Default constructor - creates a Matrix of given dimension (0x0)
+ * Use resize(m,n) or zeromatrix(m,n) to resize it
  * @param Actors
  */
 Matrix::Matrix (int rowDim, int colDim)  : m_rows (rowDim), m_cols(colDim) {
-    row = new (nothrow) Row[ m_rows ];
+    row = new (nothrow) MatrixRow[ m_rows ];
     Q_CHECK_PTR( row );
     for (int i=0;i<m_rows; i++) {
         row[i].resize( m_cols );
@@ -56,14 +57,14 @@ Matrix::Matrix (int rowDim, int colDim)  : m_rows (rowDim), m_cols(colDim) {
 * @brief Matrix::Matrix
 * Copy constructor. Creates a Matrix identical to Matrix b
 * Allows Matrix a=b declaration
-* Every Row object holds max_int=32762
+* Every MatrixRow object holds max_int=32762
 * @param b
 */
 Matrix::Matrix(const Matrix &b) {
     qDebug()<< "Matrix:: constructor";
     m_rows=b.m_rows;
     m_cols=b.m_cols ;
-    row = new Row[m_rows];
+    row = new MatrixRow[m_rows];
     Q_CHECK_PTR( row );
     for (int i=0;i<m_rows; i++) {
         row[i].resize( m_cols );
@@ -82,9 +83,9 @@ Matrix::~Matrix() {
     delete [] row;
 }
 
+
  /**
- * @brief Matrix::clear
- * clears data
+ * @brief Clears data
  */
 void Matrix::clear() {
     if (m_rows > 0){
@@ -97,10 +98,9 @@ void Matrix::clear() {
 
 
 /**
- * @brief Matrix::resize
- * Resize this matrix to m x n
+ * @brief Resizes this matrix to m x n
  * Called before every operation on new matrices.
- * Every Row object holds max_int=32762
+ * Every MatrixRow object holds max_int=32762
  * @param Actors
  */
 void Matrix::resize (const int m, const int n) {
@@ -108,7 +108,7 @@ void Matrix::resize (const int m, const int n) {
     clear();
     m_rows = m;
     m_cols = n;
-    row = new (nothrow) Row [ m_rows  ];
+    row = new (nothrow) MatrixRow [ m_rows  ];
     Q_CHECK_PTR( row );
     qDebug() << "Matrix: resize() -- resizing each row";
     for (int i=0;i<m_rows; i++) {
@@ -120,19 +120,25 @@ void Matrix::resize (const int m, const int n) {
 
 
 /**
- * @brief Matrix::findMinMaxValues
- * @param maxVal
- * @param minVal
+ * @brief finds Min-Max values in current Matrix
+ * @param min value in the matrix
+ * @param max value
+ * Complexity: O(n^2)
  */
-void Matrix::findMinMaxValues (float & maxVal, float &minVal){
-    maxVal=0;
-    minVal=RAND_MAX;
+void Matrix::findMinMaxValues (float &min, float & max, bool &hasRealNumbers){
+    max=0;
+    min=RAND_MAX;
+    hasRealNumbers = false;
     for (int r = 0; r < rows(); ++r) {
         for (int c = 0; c < cols(); ++c) {
-            if ( item(r,c) > maxVal)
-                maxVal = item(r,c) ;
-            if ( item(r,c) < minVal){
-                minVal= item(r,c) ;
+            if ( fmod (item(r,c), 1.0)  != 0 )  {
+                hasRealNumbers = true;
+            }
+            if ( item(r,c) > max) {
+                max = item(r,c) ;
+            }
+            if ( item(r,c) < min){
+                min = item(r,c) ;
             }
         }
     }
@@ -140,20 +146,47 @@ void Matrix::findMinMaxValues (float & maxVal, float &minVal){
 
 
 
+/**
+ * @brief Like Matrix::findMinMaxValues only it skips r==c
+ *
+ * @param min value. If (r,c) = minimum, it mean that neighbors r and c are the nearest in the matrix/network
+ * @param max value
+ * Complexity: O(n^2)
+ */
+void Matrix::NeighboursNearestFarthest (float &min, float & max,
+                               int &imin, int &jmin,
+                               int &imax, int &jmax){
+    max=0;
+    min=RAND_MAX;
+    for (int r = 0; r < rows(); ++r) {
+        for (int c = 0; c < cols(); ++c) {
+            if (r==c) continue;
+            if ( item(r,c) > max) {
+                max = item(r,c) ;
+                imax = r; jmax=c;
+            }
+            if ( item(r,c) < min){
+                min = item(r,c) ;
+                imin = r; jmin=c;
+            }
+        }
+    }
+}
+
+
 
 /**
- * @brief Matrix::identityMatrix
- * makes this square matrix the identity square matrix I
+ * @brief Makes this square matrix the identity square matrix I
  * @param dim
  */
 void Matrix::identityMatrix(int dim) {
-    qDebug() << "Matrix: identityMatrix() -- deleting old rows";
+    qDebug() << "Matrix::identityMatrix() -- deleting old rows";
     clear();
     m_rows=dim;
     m_cols=dim;
-    row = new (nothrow) Row [m_rows];
+    row = new (nothrow) MatrixRow [m_rows];
     Q_CHECK_PTR( row );
-    qDebug() << "Matrix: resize() -- resizing each row";
+    //qDebug() << "Matrix: resize() -- resizing each row";
     for (int i=0;i<m_rows; i++) {
         row[i].resize(m_rows);
         setItem(i,i, 1);
@@ -163,30 +196,31 @@ void Matrix::identityMatrix(int dim) {
 
 
 /**
- * @brief Matrix::zeroMatrix
- * makes this matrix the zero matrix of size mxn
+ * @brief Makes this matrix the zero matrix of size mxn
  * @param m
  * @param n
  */
 void Matrix::zeroMatrix(const int m, const int n) {
-    qDebug() << "Matrix:: zeroMatrix() m " << m << " n " << n;
+    qDebug() << "Matrix::zeroMatrix() m " << m << " n " << n;
     clear();
     m_rows=m;
     m_cols=n;
-    row = new (nothrow) Row [m_rows];
+    row = new (nothrow) MatrixRow [m_rows];
     Q_CHECK_PTR( row );
-    qDebug() << "Matrix::zeroMatrix - resizing each row";
+    //qDebug() << "Matrix::zeroMatrix - resizing each row";
     for (int i=0;i<m_rows; i++) {
         row[i].resize(m_cols);
-        setItem(i,i, 0);
+        for (int j=0;j<m_cols; j++) {
+            setItem(i,j, 0);
+        }
+
     }
 
 }
 
 
 /**
- * @brief Matrix::item
- * returns the (r,c) matrix element
+ * @brief Returns the (r,c) matrix element
  * @param r
  * @param c
  * @return
@@ -198,8 +232,7 @@ float Matrix::item( int r, int c ){
 
 
 /**
- * @brief Matrix::setItem
- * sets the (r,c) matrix element calling the setColumn method
+ * @brief Sets the (r,c) matrix element calling the setColumn method
  * @param r
  * @param c
  * @param elem
@@ -209,9 +242,9 @@ void Matrix::setItem( const int r, const int c, const float elem ) {
 }
 
 
+
 /**
- * @brief Matrix::clearItem
- * clears the (r,c) matrix element
+ * @brief Clears the (r,c) matrix element
  * @param r
  * @param c
  */
@@ -220,96 +253,68 @@ void Matrix::clearItem( int r, int c ) 	{
 }
 
 
-/**
- * @brief Matrix::edgesFrom
- * returns the number of edges starting from r
- * @param r
- * @return
- */
-int Matrix::edgesFrom(int r){
-    qDebug() << "Matrix: edgesFrom() " << r << " = "<< row[r].outEdges();
-    return row[r].outEdges();
-}
+
+
+
 
 
 /**
- * @brief Matrix::edgesTo
- * @param t
- * @return
- */
-int Matrix::edgesTo(const int t){
-    int m_inEdges=0;
-    for (int i = 0; i < rows(); ++i) {
-        if ( item(i, t) != 0 )
-            m_inEdges++;
-    }
-    qDebug()<< "Matrix: edgesTo() " << t << " = " << m_inEdges;
-    return m_inEdges;
-}
-
-
-/**
- * @brief Matrix::totalEdges
- * @return
- */
-int Matrix::totalEdges(){
-    int m_totalEdges=0;
-    for (int r = 0; r < rows(); ++r) {
-        m_totalEdges+=edgesFrom(r);
-    }
-    qDebug() << "Matrix: totalEdges " << m_totalEdges;
-    return m_totalEdges;
-}
-
-
-/**
- * @brief Matrix::deleteRowColumn
- * @param erased
+ * @brief Deletes row and column and shifts rows and cols accordingly
+ * @param erased row/col to delete
  */
 void Matrix::deleteRowColumn(int erased){
-    qDebug() << "Matrix: deleteRowColumn() : "<< erased;
-    qDebug() << "Matrix: m_rows before " <<  m_rows;
+    qDebug() << "Matrix:deleteRowColumn() - will delete row and column"
+             << erased
+             << "m_rows before" <<  m_rows;
 
     --m_rows;
-    qDebug() << "Matrix: m_rows now " << m_rows << ". Resizing...";
+    m_cols = m_rows;
+    qDebug() << "Matrix:deleteRowColumn() - m_rows now " << m_rows << ". Resizing...";
     for (int i=0;i<m_rows+1; i++) {
         for (int j=0;j<m_rows+1; j++) {
-            qDebug() << "Matrix: (" <<  i << ", " << j << ")="<< item(i, j) ;
-            if ( j==erased && item(i,erased) ){
-                clearItem(i,j);
-                qDebug() << i << "  connected to " << erased << ". Clearing..." ;
-            }
-            if (i<erased && j< erased) {
-                qDebug() << "i, j < erased. Skipping. Item remains";
-            }
-            if (i<erased && j>=erased) {
-                setItem( i, j, item(i,j+1) ) ;
-                qDebug() << "case 2";
-            }
-            if (i>=erased && j<erased) {
-                setItem( i, j, item(i+1,j) ) ;
-                qDebug() <<"case 3";
-            }
-            if (i>=erased && j>=erased) {
-                setItem( i, j, item(i+1,j+1) ) ;
-                qDebug() <<"case 4";
-            }
+//            qDebug() << "Matrix:deleteRowColumn() -"
+//                        <<"item ("<< i+1 << "," << j+1 << ") ="<< item(i, j) ;
             if (i>=m_rows || j>=m_rows) {
-                setItem( i, j, 0) ;
-                qDebug() <<"case 5 (border)";
+                setItem( i, j, RAND_MAX) ;
+//                qDebug() << "Matrix:deleteRowColumn() -"
+//                         <<"both i,j>=m_rows, corner case (will be deleted). Settting to RAND_MAX."
+//                        << "New item value (" <<  i+1 << ", " << j+1 << ") ="<< item(i, j) ;
             }
-            qDebug() << "Matrix: new value (" <<  i << ", " << j << ")="<< item(i, j) ;
+            else if (i<erased && j< erased) {
+//                qDebug() << "Matrix:deleteRowColumn() -"
+//                         << "i, j < erased. Skipping. Item unchanged.";
+                continue;
+            }
+            else if (i<erased && j>=erased) {
+                setItem( i, j, item(i,j+1) ) ;
+//                qDebug() << "Matrix:deleteRowColumn() -"
+//                            <<"j>=erased, shifting column left"
+//                           << "New item value (" <<  i+1 << ", " << j+1 << ") ="<< item(i, j) ;
+            }
+            else if (i>=erased && j<erased) {
+                setItem( i, j, item(i+1,j) ) ;
+//                qDebug() << "Matrix:deleteRowColumn() -"
+//                         <<"i>=erased, shifting rows up."
+//                        << "New item value (" <<  i+1 << ", " << j+1 << ") ="<< item(i, j) ;
+            }
+            else if (i>=erased && j>=erased) {
+                setItem( i, j, item(i+1,j+1) ) ;
+//                qDebug() << "Matrix:deleteRowColumn() -"
+//                         <<"both i,j>=erased, shifting row up and column left."
+//                        << "New item value (" <<  i+1 << ", " << j+1 << ") ="<< item(i, j) ;
+            }
+
         }
+        row[i].setSize(m_cols);
     }
-    for (int i=0;i<m_rows; i++)
-        row[i].updateOutEdges();
+    qDebug() << "Matrix:deleteRowColumn() - finished, new matrix:";
+    //printMatrixConsole(true); // @TODO comment out to release
 
 }
 
 
 /**
- * @brief Matrix::fillMatrix
- * fills a matrix with a given value
+ * @brief Fills a matrix with a given value
  * @param value
  */
 void Matrix::fillMatrix(float value )   {
@@ -321,8 +326,9 @@ void Matrix::fillMatrix(float value )   {
 
 
 /**
- * @brief Matrix::subtractFromI
- * @return
+ * @brief Subtracts this matrix from I and returns
+ *
+ * @return I-this to this matrix
  */
 Matrix& Matrix::subtractFromI ()  {
     for (int i=0;i< rows();i++)
@@ -339,8 +345,7 @@ Matrix& Matrix::subtractFromI ()  {
 
 
 /**
- * @brief Matrix::swapRows
- * Swaps row A with row B of this matrix
+ * @brief Swaps row A with row B of this matrix
  * @param rowA
  * @param rowB
  */
@@ -361,9 +366,8 @@ void Matrix::swapRows(int rowA,int rowB){
 
 
 /**
-* @brief Matrix::multiplyScalar
-  * Scalar Multiplication
-  * Multiplies this by float f and returns the product matrix of the same dim
+* @brief Scalar Multiplication. Multiplies this by float f
+*  and returns the product matrix of the same dim
   * Allows to use P.multiplyScalar(f)
   * @param f
 */
@@ -378,8 +382,7 @@ void Matrix::multiplyScalar (const float  & f) {
 
 
 /**
- * @brief Matrix::multiplyRow
- * Multiply every element of row A by value
+ * @brief Multiply every element of row by value
  * @param row
  * @param value
  */
@@ -395,45 +398,226 @@ void Matrix::multiplyRow(int row, float value) {
 
 
 
+
+
+
 /**
- * @brief Matrix::product
- * Matrix Multiplication
- * Allows P = a * b where P, a and b are not the same initially.
- * Takes two matrices a and b of the same dimension
- * and returns their product as a reference to the calling object
- * NOTE: do not use it as B.product(A,B) because it will destroy B on the way.
- * @param a
- * @param b
- * @param symmetry
- * @return
- */
-Matrix& Matrix::product( Matrix &a, Matrix & b, bool symmetry)  {
-    qDebug()<< "Matrix::product()";
-    for (int i=0;i< rows();i++)
-        for (int j=0;j<cols();j++) {
-            setItem(i,j,0);
-            for (int k=0;k<m_rows;k++) {
-                qDebug() << "Matrix::product() - a("<< i+1 << ","<< k+1 << ")="
-                         << a.item(i,k) << "* b("<< k+1 << ","<< j+1 << ")="
-                         << b.item(k,j)  << " gives "  << a.item(i,k)*b.item(k,j);
-                if  ( k > j && symmetry) {
-                    if (a.item(i,k)!=0 && b.item(j,k)!=0)
-                        setItem(i,j, item(i,j)+a.item(i,k)*b.item(j,k));
-                }
-                else{
-                    setItem(i,j, item(i,j)+a.item(i,k)*b.item(k,j));
-                }
+* @brief Matrix equality/assignment , operator =
+* Allows copying a matrix onto another using b=a where b,a matrices
+* Equals two matrices.
+* @param a
+* @return
+*/
+Matrix& Matrix::operator = (Matrix & a) {
+    qDebug()<< "Matrix::operator asignment =";
+    if (this != &a){
+        if (a.m_rows!=m_rows) {
+            clear();
+            m_rows=a.m_rows;
+            m_cols=a.m_cols;
+            row=new (nothrow) MatrixRow[m_rows];
+            Q_CHECK_PTR( row );
+            for (int i=0;i<m_rows; i++) {
+                row[i].resize(m_cols); //every MatrixRow object holds max_int=32762
             }
-            qDebug() << "Matrix::product() - ("<< i+1 << ","<< j+1 << ") = "
-                     << item(i,j);
         }
+       for (int i=0;i<m_rows; i++)
+           row[i]=a.row[i];
+    }
     return *this;
 }
 
 
+
 /**
- * @brief Matrix::productSym
- * takes two ( N x N ) matrices (symmetric) and outputs an upper triangular matrix
+ * @brief Matrix addition
+ * Takes two (nxn) matrices and returns their sum as a reference to this
+ * Same algorithm as operator +, just different interface.
+ * In this case, you use something like: c.sum(a,b)
+ * @param a
+ * @param b
+ * @return
+ */
+void Matrix::sum( Matrix &a, Matrix & b)  {
+    for (int i=0;i< rows();i++)
+        for (int j=0;j<cols();j++)
+            setItem(i,j, a.item(i,j)+b.item(i,j));
+}
+
+
+
+
+
+/**
+* @brief Matrix::operator +=
+* Matrix add another matrix: +=
+* Adds to this matrix another matrix B of the same dim and returns to this
+* Allows A+=B
+* @param b
+* @return this
+*/
+void Matrix::operator +=(Matrix & b) {
+    qDebug()<< "Matrix::operator +=";
+    for (int i=0;i< rows();i++)
+        for (int j=0;j<cols();j++)
+            setItem(i,j, item(i,j)+b.item(i,j));
+}
+
+
+/**
+  * @brief Matrix addition, operator +
+  * Adds this matrix and B of the same dim and returns the sum S
+  * Allows S = A+B
+  * @param b
+  * @return Matrix S
+*/
+Matrix& Matrix::operator +(Matrix & b) {
+    Matrix *S = new Matrix(rows(), cols());
+    qDebug()<< "Matrix::operator +";
+    for (int i=0;i< rows();i++)
+        for (int j=0;j<cols();j++)
+            S->setItem(i,j, item(i,j)+b.item(i,j));
+    return *S;
+}
+
+
+/**
+  * @brief Matrix subtraction, operator -
+  * Subtract this matrix - B of the same dim and returns the result S
+  * Allows S = A-B
+  * @param b
+  * @return Matrix S
+*/
+Matrix& Matrix::operator -(Matrix & b) {
+    Matrix *S = new Matrix(rows(), cols() );
+    qDebug()<< "Matrix::operator -";
+    for (int i=0;i< rows();i++)
+        for (int j=0;j<cols();j++)
+            S->setItem(i,j, item(i,j)-b.item(i,j));
+    return *S;
+}
+
+
+
+/**
+ * @brief Matrix multiplication, operator *
+ * Multiplies (right) this matrix with given matrix b.
+ * Allows P = A * B where A,B of same dimension
+* and returns product as a reference to the calling object
+* @param b
+* @param symmetry
+* @return
+*/
+Matrix& Matrix::operator *(Matrix & b) {
+
+    qDebug()<< "Matrix::operator *";
+
+    Matrix *P = new Matrix(rows(), cols());
+
+    if ( cols() != b.rows() ) {
+        qDebug()<< "Matrix::product() - ERROR! Non compatible input matrices:"
+                   " this("
+                << rows() << "," << cols()
+                << ") and b(" << b.rows() << ","<< b.cols();
+        return *P;
+    }
+
+    for (int i=0;i< rows();i++)
+        for (int j=0;j<b.cols();j++) {
+            P->setItem(i,j,0);
+            for (int k=0;k< cols();k++) {
+                    P->setItem(i,j, P->item(i,j) + item(i,k)*b.item(k,j) );
+
+            }
+        }
+    return *P;
+}
+
+
+
+/**
+* @brief Multiplies (right) this m x n matrix with given n x p matrix b
+* and returns the product in the calling matrix which becomes an m x p matrix.
+* This convenience operator *= allows A *= B
+* @param b
+* @param symmetry
+* @return
+*/
+void Matrix::operator *=(Matrix & b) {
+
+    qDebug()<< "Matrix::operator *";
+
+    if ( cols() != b.rows() ) {
+        qDebug()<< "Matrix::product() - ERROR! Non compatible input matrices:"
+                   " this("
+                << rows() << "," << cols()
+                << ") and b(" << b.rows() << ","<< b.cols();
+        return;
+    }
+
+    Matrix *P = new Matrix(rows(), b.cols());
+
+    for (int i=0;i< rows();i++) {
+        for (int j=0;j<b.cols();j++) {
+            P->setItem(i,j,0);
+            for (int k=0;k < cols();k++) {
+                    P->setItem(i,j, P->item(i,j) + item(i,k)*b.item(k,j) );
+            }
+        }
+    }
+    *this = *P;
+}
+
+
+
+
+/**
+ * @brief Matrix Multiplication. Given two matrices A (mxn) and B (nxp)
+ * computes their product and stores it to the calling matrix which becomes
+ * an m x p matrix
+ * Allows P.product(A, B)
+ * @param A
+ * @param B
+ * @param symmetry
+ * @return i x k matrix
+ */
+void Matrix::product(Matrix &A, Matrix & B, bool symmetry)  {
+    qDebug()<< "Matrix::product() - symmetry" << symmetry;
+
+    if (A.cols() != B.rows() ) {
+        qDebug()<< "Matrix::product() - ERROR! Non compatible input matrices:"
+                   " a("
+                << A.rows() << "," << A.cols()
+                << ") and b(" << B.rows() << ","<< B.cols();
+        return;
+    }
+
+    Matrix *P = new Matrix(A.rows(), B.cols());
+
+    float prod = 0;
+
+    for (int i=0;i< A.rows();i++) {
+        for (int j=0;j<B.cols();j++) {
+            if (symmetry && i > j ) continue;
+            prod = 0;
+            for (int k=0;k<A.cols();k++) {
+                prod += A.item(i,k)*B.item(k,j);
+            }
+            P->setItem(i,j, prod);
+            if (symmetry) {
+               P->setItem(j,i, prod );
+            }
+        }
+    }
+//    qDebug() << "Matrix::product() - this";
+    *this = *P;
+
+    //this->printMatrixConsole();
+}
+
+
+/**
+ * @brief Takes two ( N x N ) matrices (symmetric) and outputs an upper triangular matrix
  * @param a
  * @param b
  * @return
@@ -463,246 +647,310 @@ Matrix& Matrix::productSym( Matrix &a, Matrix & b)  {
 
 
 /**
- * @brief Matrix::pow
- * @param power
+ * @brief Returns the n-nth power of this matrix
+ * @param n
  * @param symmetry
- * @return
+ * @return Matrix
  */
-Matrix& Matrix::pow (int power, bool symmetry)  {
-    Matrix t=*this;
-    for (int k=1; k<power; k++){
-        product(*this, t, symmetry);
+Matrix& Matrix::pow (int n, bool symmetry)  {
+    if (rows()!= cols()) {
+        qDebug()<< "Matrix::pow() - Error. This works only for square matrix";
+        return *this;
     }
-    return *this;
+    qDebug()<< "Matrix::pow() ";
+    Matrix X, Y; //auxilliary matrices
+    qDebug()<< "Matrix::pow() - creating X = this";
+    X=*this; //X = this
+    //X.printMatrixConsole(true);
+    qDebug()<< "Matrix::pow() - creating Y = I";
+    Y.identityMatrix( rows() ); // y=I
+    //Y.printMatrixConsole(true);
+    return expBySquaring2 (Y, X, n, symmetry);
+
 }
 
 
 
 /**
- * @brief Matrix::sum
- * Matrix addition
- * Takes two (nxn) matrices and returns their product as a reference to this
- * Same algorithm as operator +, just different interface.
- * In this case, you use something like: c.sum(a,b)
- * @param a
- * @param b
- * @return
+ * @brief Recursive algorithm implementing "Exponentiation by squaring".
+ * Also known as Fast Modulo Multiplication, this algorithm allows
+ * fast computation of a large power n of square matrix X
+ * @param Y must be the Identity matrix  on first call
+ * @param X the matrix to be powered
+ * @param n the power
+ * @param symmetry
+ * @return Matrix&
+
+ * On first call, parameters must be: Y=I, X the orginal matrix to power and n the power.
+ * Returns the power of matrix X to this object.
+ * For n > 4 it is more efficient than naively multiplying the base with itself repeatedly.
  */
-Matrix& Matrix::sum( Matrix &a, Matrix & b)  {
-    for (int i=0;i< rows();i++)
-        for (int j=0;j<cols();j++)
-            setItem(i,j, a.item(i,j)+b.item(i,j));
-    return *this;
+Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
+    if (n==1) {
+        qDebug() <<"Matrix::expBySquaring2() - n = 1. Computing PM = X*Y where "
+                   "X = " ;
+        //X.printMatrixConsole();
+        //qDebug() <<"Matrix::expBySquaring2() - n = 1. And Y = ";
+        //Y.printMatrixConsole();
+        Matrix *PM = new Matrix(rows(), cols());
+        PM->product(X, Y, symmetry);
+        //qDebug()<<"Matrix::expBySquaring2() - n = 1. PM = X*Y ="  ;
+        //PM->printMatrixConsole();
+        return *PM;
+    }
+    else if ( n%2 == 0 ) { //even
+        qDebug()<<"Matrix::expBySquaring2() - even n =" << n
+               << "Computing PM = X * X";
+        Matrix PM(rows(), cols());
+        PM.product(X,X,symmetry);
+        //qDebug()<<"Matrix::expBySquaring2() - even n =" << n << ". PM = X * X = " ;
+        //PM.printMatrixConsole();
+        return expBySquaring2 ( Y, PM, n/2 );
+    }
+    else  { //odd
+        qDebug()<<"Matrix::expBySquaring2() - odd n =" << n
+               << "First compute PM = X * Y";
+        Matrix PM(rows(), cols());
+        Matrix PM2(rows(), cols());
+        PM.product(X,Y,symmetry);
+        //qDebug()<<"Matrix::expBySquaring2() - odd n =" << n << ". PM = X * Y = " ;
+        //PM.printMatrixConsole();
+        qDebug()<<"Matrix::expBySquaring2() - odd n =" << n
+               << "Now compute PM2 = X * X";
+        PM2.product(X,X,symmetry);
+        //qDebug()<<"Matrix::expBySquaring2() - odd n =" << n << ". PM2 = X * X = " ;
+        //PM2.printMatrixConsole();
+        return expBySquaring2 ( PM, PM2, (n-1)/2 );
+    }
 }
 
 
 
 /**
-* @brief Matrix::operator =
-* Assigment allows copying a matrix onto another using b=a where b,a matrices
-* Equals two matrices.
-* @param a
-* @return
-*/
-Matrix& Matrix::operator = (Matrix & a) {
-    qDebug()<< "Matrix::operator asignment =";
-    if (this != &a){
-        if (a.m_rows!=m_rows) {
-            clear();
-            m_rows=a.m_rows;
-            m_cols=a.m_cols;
-            row=new (nothrow) Row[m_rows];
-			Q_CHECK_PTR( row );
-            for (int i=0;i<m_rows; i++) {
-                row[i].resize(m_cols); //every Row object holds max_int=32762
-			}
-		}
-       for (int i=0;i<m_rows; i++)
-           row[i]=a.row[i];
-	}
-	return *this;
+ * @brief Calculates the matrix-by-vector product Ax of this matrix
+ * Default product: Ax
+ * if leftMultiply=true then it returns the left product xA
+ * @param in input array/vector
+ * @param out output array
+ * @param leftMultiply
+ */
+void Matrix::productByVector (float in[], float out[], const bool &leftMultiply) {
+    int n = rows();
+    int m = cols();
+
+    for(int i = 0; i < n; i++) {
+         out[i] = 0;
+         for (int j = 0; j < m; j++) {
+             if (leftMultiply) {
+              // dot product of row vector b with j-th column in A
+              out[i] += item (j, i) * in[j];
+             }
+             else {
+               // dot product of i-th row in A with the column vector b
+               out[i] += item (i, j) * in[j];
+             }
+
+         }
+    }
 }
 
 
 /**
-* @brief Matrix::operator +
-* Matrix addition: +
-* Adds this matrix with b of the same dim
-* Allows a+b
-* @param a
-* @return
-*/
-  Matrix& Matrix::operator +(Matrix & b) {
-      qDebug()<< "Matrix::operator addition";
-      for (int i=0;i< rows();i++)
-          for (int j=0;j<cols();j++)
-              setItem(i,j, item(i,j)+b.item(i,j));
-      return *this;
-
- }
-
-
-
-
+ * @brief Helper function, takes to vectors and returns their
+ * Manhattan distance (also known as l1 norm, Taxicab or L1 distance)
+ * which is the sum of the absolute differences
+ * of their coordinates.
+ * @param x
+ * @param y
+ * @return
+ */
+float Matrix::distanceManhattan(float x[], float y[], int n) {
+    float norm = 0;
+    for(int i = 0; i < n; i++) {
+        norm += fabs (x[i] - y[i]);
+    }
+    return norm;
+}
 
 
 /**
- * @brief operator <<
- * Outputs matrix m to a text str
- * @param os
- * @param m
+ * @brief Helper function, computes the Euclideian length (also known as L2 distance)
+ * of a vector:
+   if x = (x1 x2 ... xn), then ||x|| = square_root(x1*x1 + x2*x2 + ... + xn*xn)
+ * @param x
+ * @param n
  * @return
  */
-QTextStream& operator <<  (QTextStream& os, Matrix& m){
-    qDebug() << "Matrix: << Matrix";
-    int fieldWidth = 8, newFieldWidth = 8, actorNumber=1;
-    float maxVal, minVal;
-    m.findMinMaxValues(maxVal,minVal);
-    float element;
-
-
-
-    if (maxVal == -1 ||  maxVal==RAND_MAX )
-         os << " max Value = " <<  infinity << endl;
-        else
-        os << " max Value = " << maxVal<< endl;
-    if (minVal == -1 ||  minVal==RAND_MAX )
-         os << " min Value = " <<  infinity << endl;
-    else
-        os << " min Value = " << minVal<< endl<<endl;
-    if (maxVal > 999999 )
-        fieldWidth = 14;
-    else if (maxVal > 99999 )
-        fieldWidth = 13;
-    else if (maxVal > 9999 )
-        fieldWidth = 12;
-    else if  (maxVal > 999 )
-        fieldWidth = 8;
-    else if  (maxVal > 99 )
-        fieldWidth = 7;
-
-    os << qSetFieldWidth(fieldWidth) << right <<  QString("v |");
-    for (int r = 0; r < m.cols(); ++r) {
-        newFieldWidth = fieldWidth;
-        actorNumber = r+1;
-        if ( actorNumber > 99999)
-            newFieldWidth = fieldWidth -5;
-        else if ( actorNumber > 9999)
-            newFieldWidth = fieldWidth -4;
-        else if ( actorNumber > 999)
-            newFieldWidth = fieldWidth -3;
-        else if ( actorNumber > 99)
-            newFieldWidth = fieldWidth -2;
-        else if ( actorNumber > 9)
-            newFieldWidth = fieldWidth -1;
-        os << qSetFieldWidth(newFieldWidth) << right  << QString("%1").arg(actorNumber) ;
+float Matrix::distanceEuclidean(float x[], int n) {
+    float norm = 0;
+    for (int i = 0; i < n; i++) {
+         norm += x[i] * x[i];
     }
-    os<<endl;
-    os.setFieldAlignment(QTextStream::AlignCenter);
-    os.setPadChar('-');
-    for (int r = 0; r < m.cols()+1; ++r) {
-        if ( r > 99999)
-            newFieldWidth = fieldWidth -6;
-        else if ( r > 9999)
-            newFieldWidth = fieldWidth -5;
-        else if ( r > 999)
-            newFieldWidth = fieldWidth -4;
-        else if ( r > 99)
-            newFieldWidth = fieldWidth -3;
-        else if ( r > 9)
-            newFieldWidth = fieldWidth -2 ;
-        os << qSetFieldWidth(newFieldWidth) <<  QString("-") ;
-    }
-    os << qSetFieldWidth(1) << QString("-");
-    os.setPadChar(' ');
-    os<<endl;
-    for (int r = 0; r < m.rows(); ++r) {
-        actorNumber = r+1;
-        if ( actorNumber > 99999)
-            newFieldWidth = fieldWidth -5;
-        else if ( actorNumber > 9999)
-            newFieldWidth = fieldWidth -4;
-        else if ( actorNumber > 999)
-            newFieldWidth = fieldWidth -3;
-        else if ( actorNumber > 99)
-            newFieldWidth = fieldWidth -2;
-        else if ( actorNumber > 9)
-            newFieldWidth = fieldWidth -1;
-        else
-            newFieldWidth = fieldWidth;
-        os << qSetFieldWidth(newFieldWidth) << right << QString("%1 |").arg(actorNumber) ;
-        for (int c = 0; c < m.cols(); ++c) {
-            element = m(r,c) ;
-            newFieldWidth = fieldWidth;
-            if ( element == RAND_MAX )
-                newFieldWidth = fieldWidth;
-            else if ( element > 9999)
-                newFieldWidth = fieldWidth -5;
-            else if ( element > 9999)
-                newFieldWidth = fieldWidth -4;
-            else if ( element > 999)
-                newFieldWidth = fieldWidth -3;
-            else if ( element > 99)
-                newFieldWidth = fieldWidth -2;
-            else if ( element > 9)
-                newFieldWidth = fieldWidth -1;
-            else if ( (element - floor (element) ) != 0  ) {
-                if ( element *10 == qFloor(10* element)  )
-                newFieldWidth = fieldWidth-1;
-                else if (element *100 == qFloor(100* element)  )
-                newFieldWidth = fieldWidth-1;
-                else if (element *1000 == qFloor(1000* element)  )
-                newFieldWidth = fieldWidth-2;
-                else
-                    newFieldWidth = fieldWidth-2;
-            }
-            else if (element < 1.0 ) {
-                if ( element *10 == qFloor(10* element)  )
-                newFieldWidth = fieldWidth-1;
-                else if (element *100 == qFloor(100* element)  )
-                newFieldWidth = fieldWidth-1;
-                else if (element *1000 == qFloor(1000* element)  )
-                newFieldWidth = fieldWidth-2;
-                else
-                    newFieldWidth = fieldWidth-2;
-            }
-            else
-                newFieldWidth = fieldWidth;
-            if ( element == -1 || element == RAND_MAX)  // we print infinity symbol instead of -1 (distances matrix).
-                os << qSetFieldWidth(newFieldWidth) << right << infinity;
-            else
-                os << qSetFieldWidth(newFieldWidth)
-                   << right << element;
+    norm = sqrt(norm);
+    return norm;
+}
+
+
+/**
+ * @brief Implementation of the Power method which computes the
+ * leading eigenvector (eigenvector centrality) of this matrix
+ * and returns it as vector x.
+ * @param n
+ * @param x
+ */
+void Matrix::powerIteration (float x[], float &xsum,
+                             float &xmax, int &xmaxi,
+                             float &xmin, int &xmini,
+                             const float eps, const int &maxIter) {
+    qDebug() << "Matrix::powerIteration() - maxIter"
+             << maxIter
+             <<"initial x"
+            <<x;
+    int n = rows();
+    float norm = 0, distance=0;
+    float *tmp;
+    tmp=new (nothrow) float [n];
+    Q_CHECK_PTR( tmp );
+
+    xsum = 0;
+    int iter = 0;
+    QVector<float> vec(n);
+    do {
+        // calculate the matrix-by-vector product Ax and
+        // store the result to vector tmp
+        productByVector(x, tmp, false);
+
+        // calculate the euclidean length of the resulting vector
+        norm = distanceEuclidean(tmp, n);
+
+        // normalize tmp to unit vector for next iteration
+        xsum = 0;
+        for(int i = 0; i < n; i++) {
+           tmp[i] = tmp[i] / norm;
         }
-        os << '\n';
-    }
-    return os;
-}
+        // calculate the manhattan distance between the new and prev vectors
+        distance = distanceManhattan (tmp, x, n);
 
+        vec.clear();
 
-
-
-/**
- * @brief Matrix::printMatrixConsole
- * @return
- */
-bool Matrix::printMatrixConsole(bool debug){
-    qDebug() << "Matrix::printMatrixConsole() debug " << debug ;
-    for (int r = 0; r < rows(); ++r) {
-        for (int c = 0; c < cols(); ++c) {
-            if ( item(r,c) < RAND_MAX  ) {
-                QTextStream( (debug ? stderr : stdout) ) << item(r,c) << ' ';
-            }
-            else {
-                QTextStream( (debug ? stderr : stdout) ) << "X" << ' ';
-            }
-
-//            QTextStream( (debug ? stderr : stdout) )
-//                    << ( (item(r,c) < RAND_MAX ) ? item(r,c) : INFINITY  )<<' ';
+        xmax = 0 ;
+        xmin = RAND_MAX;
+        for(int i = 0; i < n; i++) {
+           vec.append(tmp[i]);
+           x[i] = tmp[i];
+           xsum += x[i];
+           if (x[i] > xmax) {
+               xmax = x[i] ;
+               xmaxi = i+1;
+           }
+           if (x[i] < xmin) {
+               xmin = x[i] ;
+               xmini = i+1;
+           }
         }
-        QTextStream( (debug ? stderr : stdout)  ) <<'\n';
+
+
+        qDebug() << "Matrix::powerIteration() - iteration"
+                 << iter << endl
+                 << "x" << vec  << endl
+                 << "distance from previous x " << distance
+                 << "sum" << xsum
+                 << "xmax" << xmax
+                 << "xmin" << xmin;
+
+        iter ++;
+        if (iter > maxIter)
+            break;
+
+    } while ( distance > eps);
+
+    delete [] tmp;
+}
+
+
+
+/**
+  * @brief Returns the Transpose of this matrix
+  * Allows T = A.transpose()
+  * @param b
+  * @return Matrix T
+*/
+
+Matrix& Matrix::transpose() {
+    Matrix *T = new Matrix(cols(), rows());
+    //T->zeroMatrix(cols(), rows());
+    qDebug()<< "Matrix::transpose()";
+    for (int i=0;i< cols();i++) {
+        for (int j=0;j<rows();j++) {
+            T->setItem(i,j, item(j,i));
+
+        }
     }
-    return true;
+    return *T;
+}
+
+
+
+
+
+/**
+  * @brief Returns the Cocitation Matrix of this matrix (C = A * A^T)
+  * Allows T = A.cocitationMatrix()
+  * @param b
+  * @return Matrix T
+*/
+
+Matrix& Matrix::cocitationMatrix() {
+    Matrix *T = new Matrix(cols(), rows());
+    qDebug()<< "Matrix::cocitationMatrix() this transpose";
+    //this->transpose().printMatrixConsole();
+    T->product(this->transpose(),*this, true);
+    return *T;
+}
+
+
+
+
+/**
+  * @brief Returns the Degree Matrix of this matrix.
+  * The Degree Matrix is diagonal matrix which contains information about the degree
+  * of each graph vertex (row of the adjacency matrix)
+  * Allows S = A.degreeMatrix()
+  * @param b
+  * @return Matrix S
+*/
+
+Matrix& Matrix::degreeMatrix() {
+    Matrix *S = new Matrix(rows(), cols());
+    qDebug()<< "Matrix::degreeMatrix()";
+    float degree=0;
+    for (int i=0;i< rows();i++) {
+        degree = 0;
+        for (int j=0;j<cols();j++) {
+            degree += item(i,j);
+
+        }
+        S->setItem(i,i, degree);
+    }
+    return *S;
+}
+
+
+
+/**
+  * @brief Returns the Laplacian of this matrix.
+  * The Laplacian is a NxN matrix L = D - A where D is the degree matrix of A
+  * Allows S = A.laplacianMatrix()
+  * @param b
+  * @return Matrix S
+*/
+
+Matrix& Matrix::laplacianMatrix() {
+    Matrix *S = new Matrix(rows(), cols());
+    //S->zeroMatrix(rows(), cols());
+    qDebug()<< "Matrix::laplacianMatrix()";
+    *S = (this->degreeMatrix()) - *this;
+    return *S;
 }
 
 
@@ -712,8 +960,7 @@ bool Matrix::printMatrixConsole(bool debug){
 
 
 /**
- * @brief Matrix::inverseByGaussJordanElimination
- * Inverts given matrix A by Gauss Jordan elimination
+ * @brief Inverts given matrix A by Gauss Jordan elimination
    Input:  matrix A
    Output: matrix A becomes unit matrix
    *this becomes the invert of A and is returned back.
@@ -801,8 +1048,7 @@ Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
 
 
 /**
- * @brief Matrix::ludcmp(Matrix &a, const int &n, int *indx, float *d)
- * Given matrix a, it replaces a by the LU decomposition of a rowwise permutation of itself.
+ * @brief Given matrix a, it replaces a by the LU decomposition of a rowwise permutation of itself.
  * Used in combination with lubksb to solve linear equations or invert a matrix.
  * @param a: input matrix n x n and output arranged as in Knuth's equation (2.3.14)
  * @param n: input size of matrix
@@ -913,9 +1159,7 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], float &d) {
 
 
 /**
- * @brief Matrix::lubksb(float **a, int n, int *indx, float b[])
- *
- * Solves the set of n linear equations A·X = b, where A nxn matrix
+ * @brief Solves the set of n linear equations A·X = b, where A nxn matrix
  * decomposed as L·U (L lower triangular and U upper triangular)
  * by forward substitution and  backsubstitution.
  *
@@ -968,8 +1212,11 @@ void Matrix::lubksb(Matrix &a, const int &n, int indx[], float b[])
     }
 }
 
+
+
 /**
- * @brief Matrix::inverse
+ * @brief Computes and returns the inverse of given matrix a
+ * Allows b.inverse(a)
  * @param a
  * @return
  */
@@ -1007,4 +1254,1303 @@ Matrix& Matrix::inverse(Matrix &a)
 
     return *this;
 }
+
+
+
+Matrix& Matrix::distancesMatrix(const int &metric,
+                        const QString varLocation,
+                        const bool &diagonal,
+                        const bool &considerWeights) {
+    Q_UNUSED(considerWeights);
+
+    Matrix *T = new Matrix(cols(), rows());
+
+    qDebug()<< "Matrix::distancesMatrix() -"
+            <<"metric"<< metric
+            << "varLocation"<< varLocation;
+
+    int N = 0;
+    float sum = 0;
+    float distance = 0;
+    float distTemp = 0;
+    float ties = 0;
+    float max = 0 ; // for Chebyshev metric
+    if (varLocation=="Rows") {
+
+        N = rows() ;
+
+        QVector<float> mean (N,0); // holds mean values
+
+        qDebug()<< "Matrix::distancesMatrix() -"
+                <<"input matrix";
+        //printMatrixConsole(true);
+
+        for (int i = 0 ; i < N ; i++ ) {
+            sum = 0 ;
+            for (int k = i ; k < N ; k++ ) {
+                distTemp = 0;
+                ties = 0;
+                max = 0;
+                for (int j = 0 ; j < N ; j++ ) {
+
+                    if (!diagonal && (i==j || k==j))
+                        continue;
+
+                    switch (metric) {
+                    case METRIC_JACCARD_INDEX:
+                        if (item(i,j) == item(k,j)  && (item(i,j) != 0 && item(i,j) != RAND_MAX)) {
+                            distTemp++;
+                        }
+                        if ( ( item(i,j) != 0 && item(i,j) != RAND_MAX ) ||
+                             ( item(k,j) != 0 && item(k,j) != RAND_MAX )) {
+                           ties++;
+                        }
+                        break;
+                    case METRIC_HAMMING_DISTANCE:
+                        if (item(i,j) != item(k,j) ) {
+                            distTemp++;
+                        }
+                        break;
+                    case METRIC_EUCLIDEAN_DISTANCE:
+                        if (item(i,j) == RAND_MAX || item(k,j) == RAND_MAX || distTemp == RAND_MAX) {
+                            distTemp = RAND_MAX;
+                        }
+                        else {
+                            distTemp += ( item(i,j) - item(k,j) )*( item(i,j) - item(k,j) ); //compute (x * y)^2
+                        }
+                        break;
+                    case METRIC_MANHATTAN_DISTANCE:
+                        if (item(i,j) == RAND_MAX || item(k,j) == RAND_MAX || distTemp == RAND_MAX ) {
+                            distTemp = RAND_MAX;
+                        }
+                        else {
+                            distTemp += fabs( item(i,j) - item(k,j) ); //compute |x * y|
+                        }
+                        break;
+                    case METRIC_CHEBYSHEV_MAXIMUM:
+                        if (item(i,j) == RAND_MAX || item(k,j) == RAND_MAX || distTemp == RAND_MAX) {
+                            distTemp = RAND_MAX;
+                            max = RAND_MAX;
+                        }
+                        else {
+                            distTemp =  fabs( item(i,j) - item(k,j) );
+                            max = ( distTemp  > max ) ? distTemp : max;
+                            distTemp = max;
+                        }
+                        break;
+                    default:
+                        break;
+                    }
+
+                }
+
+                switch (metric) {
+                case METRIC_JACCARD_INDEX:
+                    if (ties!=0)
+                        distance =  1 -  distTemp/  (  ties ) ;
+                    else
+                        distance = 1;
+                    break;
+                case METRIC_HAMMING_DISTANCE:
+                    distance = distTemp;
+                    break;
+                case METRIC_EUCLIDEAN_DISTANCE:
+                     distance = (distTemp == RAND_MAX) ? distTemp : sqrt(distTemp);
+                     break;
+                case METRIC_MANHATTAN_DISTANCE:
+                    distance = distTemp ;
+                    break;
+                case METRIC_CHEBYSHEV_MAXIMUM:
+                    distance = distTemp ;
+                    break;
+                default:
+                    break;
+                }
+
+
+                qDebug() << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
+
+                         << "matchRatio("<<i+1<<","<<k+1<<") =" << distance;
+                T->setItem(i,k, distance);
+                T->setItem(k,i, distance);
+
+                sum += distance;
+            }
+            //compute mean match value
+            mean[i] = sum / ( N ) ;
+
+        }
+
+    }
+    else if (varLocation=="Columns") {
+
+        N = rows() ;
+
+        QVector<float> mean (N,0); // holds mean values
+
+        qDebug()<< "Matrix::distancesMatrix() -"
+                <<"input matrix";
+        //printMatrixConsole(true);
+
+        for (int i = 0 ; i < N ; i++ ) {
+            sum = 0 ;
+            for (int k = i ; k < N ; k++ ) {
+                distTemp = 0;
+                ties = 0;
+                max = 0;
+                for (int j = 0 ; j < N ; j++ ) {
+
+                    if (!diagonal && (i==j || k==j))
+                        continue;
+
+
+                    switch (metric) {
+                    case METRIC_JACCARD_INDEX:
+                        if (item(j,i) == item(j,k)  && (item(j,i) != 0 && item(j,i) != RAND_MAX)) {
+                            distTemp++;
+                        }
+                        if ( ( item(j,i) != 0 && item(j,i) != RAND_MAX ) ||
+                             ( item(j,k) != 0 && item(j,k) != RAND_MAX )) {
+                           ties++;
+                        }
+                        break;
+                    case METRIC_HAMMING_DISTANCE:
+                        if (item(j,i) != item(j,k) ) {
+                            distTemp++;
+                        }
+                        break;
+                    case METRIC_EUCLIDEAN_DISTANCE:
+                        if (item(j,i) == RAND_MAX || item(j,k) == RAND_MAX || distTemp == RAND_MAX) {
+                            distTemp = RAND_MAX;
+                        }
+                        else {
+                            distTemp += ( item(j,i) - item(j,k) )*( item(j,i) - item(j,k) ); //compute (x * y)^2
+                        }
+                        break;
+                    case METRIC_MANHATTAN_DISTANCE:
+                        if (item(j,i) == RAND_MAX || item(j,k) == RAND_MAX || distTemp == RAND_MAX ) {
+                            distTemp = RAND_MAX;
+                        }
+                        else {
+                            distTemp += fabs( item(j,i) - item(j,k) ); //compute |x * y|
+                        }
+                        break;
+                    case METRIC_CHEBYSHEV_MAXIMUM:
+                        if (item(j,i) == RAND_MAX || item(j,k) == RAND_MAX || distTemp == RAND_MAX) {
+                            distTemp = RAND_MAX;
+                            max = RAND_MAX;
+                        }
+                        else {
+                            distTemp =  fabs( item(j,i) - item(j,k) );
+                            max = ( distTemp  > max ) ? distTemp : max;
+                            distTemp = max;
+                        }
+                        break;
+                    default:
+                        break;
+                    }
+                }
+
+                switch (metric) {
+                case METRIC_JACCARD_INDEX:
+                    if (ties!=0)
+                        distance =  1 -  distTemp/  (  ties ) ;
+                    else
+                        distance = 1;
+                    break;
+                case METRIC_HAMMING_DISTANCE:
+                    distance = distTemp;
+                    break;
+                case METRIC_EUCLIDEAN_DISTANCE:
+                     distance = (distTemp == RAND_MAX) ? distTemp : sqrt(distTemp);
+                     break;
+                case METRIC_MANHATTAN_DISTANCE:
+                    distance = distTemp ;
+                    break;
+                case METRIC_CHEBYSHEV_MAXIMUM:
+                    distance = distTemp ;
+                    break;
+                default:
+                    break;
+                }
+
+
+                qDebug() << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
+
+                         << "distance("<<i+1<<","<<k+1<<") =" << distance;
+                T->setItem(i,k, distance);
+                T->setItem(k,i, distance);
+
+                sum += distance;
+            }
+            //compute mean match value
+            mean[i] = sum / ( N ) ;
+
+        }
+
+    }
+    else if (varLocation=="Both") {
+        Matrix CM;
+        N = rows() ;
+        int M = N * 2; // CM will have double rows
+
+        CM.zeroMatrix(M,N);
+
+        QVector<float> mean (N,0); // holds mean values
+
+        //create augmented matrix (concatenated rows and columns) from input matrix
+        for (int i = 0 ; i < N  ; i++ ) {
+            for (int j = 0 ; j < N  ; j++ ) {
+                CM.setItem(j,i, item(i,j));
+                CM.setItem(j + N,i, item(j,i));
+            }
+        }
+
+        qDebug()<< "Matrix::distancesMatrix() -"
+                <<"input matrix";
+        //CM.printMatrixConsole(true);
+
+
+        for (int i = 0 ; i < N ; i++ ) {
+
+            for (int k = i ; k < N ; k++ ) {
+
+                distTemp = 0;
+                ties = 0;
+                max = 0;
+                for (int j = 0 ; j < M ; j++ ) {
+
+                    if (!diagonal) {
+                        if ( (i==j || k==j ))
+                            continue;
+                        if ( j>=N && ( (i+N)==j || (k+N)==j ))
+                            continue;
+                    }
+
+                    switch (metric) {
+                    case METRIC_JACCARD_INDEX:
+                        if (CM.item(j,i) == CM.item(j,k)  && (CM.item(j,i) != 0 && CM.item(j,i) != RAND_MAX)) {
+                            distTemp++;
+                        }
+                        if ( ( CM.item(j,i) != 0 && CM.item(j,i) != RAND_MAX ) ||
+                             ( CM.item(j,k) != 0 && CM.item(j,k) != RAND_MAX )) {
+                           ties++;
+                        }
+                        break;
+                    case METRIC_HAMMING_DISTANCE:
+                        if (  CM.item(j,i) != CM.item(j,k) ) {
+                            distTemp++;
+                        }
+                        break;
+                    case METRIC_EUCLIDEAN_DISTANCE:
+                        if ( CM.item(j,i) == RAND_MAX || CM.item(j,k) == RAND_MAX || distTemp == RAND_MAX) {
+                            distTemp = RAND_MAX;
+                        }
+                        else {
+                            distTemp += ( CM.item(j,i) - CM.item(j,k) )*( CM.item(j,i) - CM.item(j,k) ); //compute (x * y)^2
+                        }
+                        break;
+                    case METRIC_MANHATTAN_DISTANCE:
+                        if ( CM.item(j,i) == RAND_MAX || CM.item(j,k) == RAND_MAX || distTemp == RAND_MAX ) {
+                            distTemp = RAND_MAX;
+                        }
+                        else {
+                            distTemp += fabs( CM.item(j,i) - CM.item(j,k) ); //compute |x * y|
+                        }
+                        break;
+                    case METRIC_CHEBYSHEV_MAXIMUM:
+                        if ( CM.item(j,i) == RAND_MAX || CM.item(j,k) == RAND_MAX || distTemp == RAND_MAX) {
+                            distTemp = RAND_MAX;
+                            max = RAND_MAX;
+                        }
+                        else {
+                            distTemp =  fabs( CM.item(j,i) - CM.item(j,k) );
+                            max = ( distTemp  > max ) ? distTemp : max;
+                            distTemp = max;
+                        }
+                        break;
+                    default:
+                        break;
+                    }
+
+                }
+
+
+                switch (metric) {
+                case METRIC_JACCARD_INDEX:
+                    if (ties!=0)
+                        distance =  1 -  distTemp/  (  ties ) ;
+                    else
+                        distance = 1;
+                    break;
+                case METRIC_HAMMING_DISTANCE:
+                    distance = distTemp;
+                    break;
+                case METRIC_EUCLIDEAN_DISTANCE:
+                     distance = (distTemp == RAND_MAX) ? distTemp : sqrt(distTemp);
+                     break;
+                case METRIC_MANHATTAN_DISTANCE:
+                    distance = distTemp ;
+                    break;
+                case METRIC_CHEBYSHEV_MAXIMUM:
+                    distance = distTemp ;
+                    break;
+                default:
+                    break;
+                }
+
+
+
+                qDebug() << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
+
+                         << "matchRatio("<<i+1<<","<<k+1<<") =" << distance;
+                T->setItem(i,k, distance);
+                T->setItem(k,i, distance);
+
+                sum += distance;
+
+            }
+            //compute mean match value
+            mean[i] = sum / ( N ) ;
+
+        }
+    }
+    else {
+
+    }
+
+    return *T;
+}
+
+
+
+
+/**
+ * @brief  Computes the pair-wise matching score of the rows, columns
+ * or both of the given matrix AM, based on the given matching measure
+ * and returns the similarity matrix.
+ * @param AM Matrix
+ * @return Matrix nxn with matching scores for every pair of rows/columns of AM
+ */
+
+Matrix& Matrix::similarityMatrix(Matrix &AM,
+                                   const int &measure,
+                                   const QString varLocation,
+                                   const bool &diagonal,
+                                   const bool &considerWeights){
+
+    Q_UNUSED(considerWeights);
+
+    qDebug()<< "Matrix::similarityMatrix() -"
+            <<"measure"<< measure
+            << "varLocation"<< varLocation;
+
+    int N = 0;
+    float sum = 0;
+    float matchRatio = 0;
+    float matches = 0;
+    float ties = 0;
+    float magn_i=0, magn_k=0;
+    if (varLocation=="Rows") {
+
+        N = AM.rows() ;
+
+        this->zeroMatrix(N,N);
+
+        QVector<float> mean (N,0); // holds mean values
+
+        qDebug()<< "Matrix::similarityMatrix() -"
+                <<"input matrix";
+        //AM.printMatrixConsole(true);
+
+        for (int i = 0 ; i < N ; i++ ) {
+            sum = 0 ;
+            for (int k = i ; k < N ; k++ ) {
+                matches = 0;
+                ties = 0;
+                magn_i=0; magn_k=0;
+                for (int j = 0 ; j < N ; j++ ) {
+
+                    if (!diagonal && (i==j || k==j))
+                        continue;
+
+                    switch (measure) {
+                    case METRIC_SIMPLE_MATCHING :
+                        if (AM.item(i,j) == AM.item(k,j) ) {
+                            matches++;
+                        }
+                        ties++;
+                        break;
+                    case METRIC_JACCARD_INDEX:
+                        if (AM.item(i,j) == AM.item(k,j)  && AM.item(i,j) != 0) {
+                            matches++;
+                        }
+                        if (AM.item(i,j) != 0  || AM.item(k,j)  ) {
+                           ties++;
+                        }
+                        break;
+                    case METRIC_HAMMING_DISTANCE:
+                        if (AM.item(i,j) != AM.item(k,j) ) {
+                            matches++;
+                        }
+                        break;
+                    case METRIC_COSINE_SIMILARITY:
+                        matches += AM.item(i,j) * AM.item(k,j); //compute x * y
+                        magn_i  += AM.item(i,j) * AM.item(i,j); //compute |x|^2
+                        magn_k  += AM.item(k,j) * AM.item(k,j); //compute |y|^2
+                        break;
+                    case METRIC_EUCLIDEAN_DISTANCE:
+                        matches += ( AM.item(i,j) - AM.item(k,j) )*( AM.item(i,j) - AM.item(k,j) ); //compute (x * y)^2
+                        break;
+                    default:
+                        break;
+                    }
+
+                }
+
+                switch (measure) {
+                case METRIC_SIMPLE_MATCHING :
+                    matchRatio=   matches/  ( ( ties  ) ) ;
+                    break;
+                case METRIC_JACCARD_INDEX:
+                    matchRatio=   matches/  ( ( ties ) ) ;
+
+                    break;
+                case METRIC_HAMMING_DISTANCE:
+                    matchRatio = matches;
+                    break;
+                case METRIC_COSINE_SIMILARITY:
+                    // sigma(i,j) = cos(theta) = x * y / |x| * |y|
+                    if ( !magn_i  || ! magn_k ) {
+                        // Note that cosine similarity is undefined when
+                        // one or both vertices has degree zero. By convention,
+                        // in this case we take sigma(i,j) = 0
+                        matchRatio = 0;
+                    }
+                    else
+                        matchRatio = matches / sqrt( magn_i  * magn_k );
+                    break;
+                case METRIC_EUCLIDEAN_DISTANCE:
+                    matchRatio = sqrt(matches);
+                    break;
+                default:
+                    break;
+                }
+
+
+                qDebug() << "matches("<<i+1<<","<<k+1<<") =" << matches
+
+                         << "matchRatio("<<i+1<<","<<k+1<<") =" << matchRatio;
+                setItem(i,k, matchRatio);
+                setItem(k,i, matchRatio);
+
+                sum += matchRatio;
+            }
+            //compute mean match value
+            mean[i] = sum / ( N ) ;
+
+        }
+
+    }
+    else if (varLocation=="Columns") {
+
+        N = AM.rows() ;
+
+        this->zeroMatrix(N,N);
+
+        QVector<float> mean (N,0); // holds mean values
+
+        qDebug()<< "Matrix::similarityMatrix() -"
+                <<"input matrix";
+        //AM.printMatrixConsole(true);
+
+        for (int i = 0 ; i < N ; i++ ) {
+            sum = 0 ;
+            for (int k = i ; k < N ; k++ ) {
+                matches = 0;
+                ties = 0;
+                magn_i=0; magn_k=0;
+                for (int j = 0 ; j < N ; j++ ) {
+
+                    if (!diagonal && (i==j || k==j))
+                        continue;
+
+                    switch (measure) {
+                    case METRIC_SIMPLE_MATCHING :
+                        if (AM.item(j,i) == AM.item(j,k) ) {
+                            matches++;
+                        }
+                        ties++;
+                        break;
+                    case METRIC_JACCARD_INDEX:
+                        if (AM.item(j,i) == AM.item(j,k)  && AM.item(j,i) != 0) {
+                            matches++;
+                        }
+                        if (AM.item(j,i) != 0  || AM.item(j,k) !=0 ) {
+                           ties++;
+                        }
+
+                        break;
+                    case METRIC_HAMMING_DISTANCE:
+                        if (AM.item(j,i) != AM.item(j,k) ) {
+                            matches++;
+                        }
+                        break;
+                    case METRIC_COSINE_SIMILARITY:
+                        matches += AM.item(j,i) * AM.item(j,k); //compute x * y
+                        magn_i  += AM.item(j,i) * AM.item(j,i); //compute |x|^2
+                        magn_k  += AM.item(j,k) * AM.item(j,k); //compute |y|^2
+                        break;
+                    case METRIC_EUCLIDEAN_DISTANCE:
+                        matches += ( AM.item(j,i) - AM.item(j,k) )*( AM.item(j,i) - AM.item(j,k) ); //compute (x * y)^2
+                        break;
+                    default:
+                        break;
+                    }
+
+
+                }
+
+                switch (measure) {
+                case METRIC_SIMPLE_MATCHING :
+                    matchRatio=   matches/  ( ( ties  ) ) ;
+                    break;
+                case METRIC_JACCARD_INDEX:
+                    matchRatio=   matches/  ( ( ties ) ) ;
+
+                    break;
+                case METRIC_HAMMING_DISTANCE:
+                    matchRatio = matches;
+                    break;
+                case METRIC_COSINE_SIMILARITY:
+                    // sigma(i,j) = cos(theta) = x * y / |x| * |y|
+                    if ( !magn_i  || ! magn_k ) {
+                        // Note that cosine similarity is undefined when
+                        // one or both vertices has degree zero. By convention,
+                        // in this case we take sigma(i,j) = 0
+                        matchRatio = 0;
+                    }
+                    else
+                        matchRatio = matches / sqrt( magn_i  * magn_k );
+                    break;
+                case METRIC_EUCLIDEAN_DISTANCE:
+                    matchRatio = sqrt(matches);
+                    break;
+                default:
+                    break;
+                }
+                qDebug() << "matches("<<i+1<<","<<k+1<<") =" << matches
+
+                         << "matchRatio("<<i+1<<","<<k+1<<") =" << matchRatio;
+                setItem(i,k, matchRatio);
+                setItem(k,i, matchRatio);
+
+                sum += matchRatio;
+            }
+            //compute mean match value
+            mean[i] = sum / ( N ) ;
+
+        }
+
+    }
+    else if (varLocation=="Both") {
+        Matrix CM;
+        N = AM.rows() ;
+        int M = N * 2; // CM will have double rows
+
+        this->zeroMatrix(N,N);
+        CM.zeroMatrix(M,N);
+
+        QVector<float> mean (N,0); // holds mean values
+
+
+        //create augmented matrix (concatenated rows and columns) from input matrix
+        for (int i = 0 ; i < N  ; i++ ) {
+            for (int j = 0 ; j < N  ; j++ ) {
+                CM.setItem(j,i, AM.item(i,j));
+                CM.setItem(j + N,i, AM.item(j,i));
+            }
+        }
+        qDebug()<< "Matrix::similarityMatrix() -"
+                <<"input matrix";
+        //CM.printMatrixConsole(true);
+
+
+        for (int i = 0 ; i < N ; i++ ) {
+
+            for (int k = i ; k < N ; k++ ) {
+
+                matches = 0;
+                ties = 0;
+                magn_i=0; magn_k=0;
+                for (int j = 0 ; j < M ; j++ ) {
+
+                    if (!diagonal) {
+                        if ( (i==j || k==j ))
+                        continue;
+                        if ( j>=N && ( (i+N)==j || (k+N)==j ))
+                        continue;
+                    }
+                    switch (measure) {
+                    case METRIC_SIMPLE_MATCHING :
+                        if (CM.item(j,i) == CM.item(j,k) ) {
+                            matches++;
+                        }
+                        ties++;
+                        break;
+                    case METRIC_JACCARD_INDEX:
+                        if (CM.item(j,i) == CM.item(j,k)  && CM.item(j,i) != 0) {
+                            matches++;
+                        }
+                        if (CM.item(j,i) != 0  || CM.item(j,k) !=0 ) {
+                           ties++;
+                        }
+                        break;
+                    case METRIC_HAMMING_DISTANCE:
+                        if (CM.item(j,i) != CM.item(j,k) ) {
+                            matches++;
+                        }
+                        break;
+                    case METRIC_COSINE_SIMILARITY:
+                        matches += CM.item(j,i) * CM.item(j,k); //compute x * y
+                        magn_i  += CM.item(j,i) * CM.item(j,i); //compute |x|^2
+                        magn_k  += CM.item(j,k) * CM.item(j,k); //compute |y|^2
+                        break;
+                    case METRIC_EUCLIDEAN_DISTANCE:
+                        matches += ( CM.item(j,i) - CM.item(j,k) )*( CM.item(j,i) - CM.item(j,k) ); //compute (x * y)^2
+                        break;
+                    default:
+                        break;
+                    }
+
+
+                }
+
+                switch (measure) {
+                case METRIC_SIMPLE_MATCHING :
+                    matchRatio=   matches/  ( ( ties  ) ) ;
+                    break;
+                case METRIC_JACCARD_INDEX:
+                    matchRatio=   matches/  ( ( ties ) ) ;
+
+                    break;
+                case METRIC_HAMMING_DISTANCE:
+                    matchRatio = matches;
+                    break;
+                case METRIC_COSINE_SIMILARITY:
+                    // sigma(i,j) = cos(theta) = x * y / |x| * |y|
+                    if ( !magn_i  || ! magn_k ) {
+                        // Note that cosine similarity is undefined when
+                        // one or both vertices has degree zero. By convention,
+                        // in this case we take sigma(i,j) = 0
+                        matchRatio = 0;
+                    }
+                    else
+                        matchRatio = matches / sqrt( magn_i  * magn_k );
+                    break;
+                case METRIC_EUCLIDEAN_DISTANCE:
+                    matchRatio = sqrt(matches);
+                    break;
+                default:
+                    break;
+                }
+
+                qDebug() << "matches("<<i+1<<","<<k+1<<") =" << matches
+
+                         << "matchRatio("<<i+1<<","<<k+1<<") =" << matchRatio;
+                setItem(i,k, matchRatio);
+                setItem(k,i, matchRatio);
+
+                sum += matchRatio;
+
+            }
+            //compute mean match value
+            mean[i] = sum / ( N ) ;
+
+        }
+    }
+    else {
+
+    }
+
+    return *this;
+
+}
+
+
+
+
+/**
+ * @brief  Computes the Pearson Correlation Coefficient of the rows or the columns
+ * of the given matrix AM
+ * @param AM Matrix
+ * @return Matrix nxn with PPC values for every pair of rows/columns of AM
+ */
+Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
+                                               const QString &varLocation,
+                                               const bool &diagonal){
+    qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
+            << "varLocation"<< varLocation;
+
+    int N = 0;
+    float sumi = 0;
+    float sumk = 0;
+    float varianceTimesNi = 0; // = sqrDeviationsFromMean
+    float varianceTimesNk = 0; // = sqrDeviationsFromMean
+    float covariance = 0;
+    float pcc = 0;
+
+
+    if (varLocation=="Rows") {
+
+        N = AM.rows() ;
+
+        this->zeroMatrix(N,N);
+
+        QVector<float> mean (N,0); // holds mean values
+        QVector<float> sigma(N,0);
+        qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
+                <<"input matrix";
+        //AM.printMatrixConsole(true);
+
+        for (int i = 0 ; i < N ; i++ ) {
+
+            for (int k = i ; k < N ; k++ ) {
+
+                qDebug() << "comparing rows i"<<i+1<<"k"<<k+1;
+
+                // compute mean and variance  values
+                sumi = 0;
+                sumk = 0;
+                for (int j = 0 ; j < N ; j++ ) {
+                    if (!diagonal && ( i==j || k==j ) )
+                        continue;
+                    sumi += AM.item(i,j);
+                    sumk += AM.item(k,j);
+                }
+                mean[i] = sumi / ( (diagonal) ? (float) N : (float) (N-2) ) ;
+                mean[k] = sumk / ( (diagonal) ? (float) N : (float) (N-2) ) ;
+                varianceTimesNi = 0;
+                varianceTimesNk = 0;
+                for (int j = 0 ; j < N ; j++ ) {
+                    if (!diagonal && ( i==j || k==j ) )
+                        continue;
+                    varianceTimesNi +=  ( AM.item(i,j)  - mean[i] ) *  ( AM.item(i,j)  - mean[i] );
+                    varianceTimesNk +=  ( AM.item(k,j)  - mean[k] ) *  ( AM.item(k,j)  - mean[k] );
+                }
+                sigma[i] = sqrt (varianceTimesNi); //actually this is sigma * sqrt (N)
+                sigma[k] = sqrt (varianceTimesNk); //actually this is sigma * sqrt (N)
+
+
+                covariance = 0;
+
+                for (int j = 0 ; j < N ; j++ ) {
+
+                    qDebug() << "AM.item(i,j)=AM.item("<<i+1<<","<<j+1<<") = "<<AM.item(i,j)
+                             << " mean(i)=mean("<<i+1<<") = "<<mean[i]
+                                << "AM.item(k,j)=AM.item("<<k+1<<","<<j+1<<") = "<<AM.item(k,j)
+                                << " mean(k)=mean("<<k+1<<") = "<<mean[k];
+
+                    if (!diagonal && (i==j ) ) {
+                        qDebug() << "skipping because i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
+                        continue;
+                    }
+                    if (!diagonal && (k==j) ) {
+                        qDebug() << "skipping because i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
+                        continue;
+                    }
+                    else
+                        covariance  +=  ( AM.item(i,j)  - mean[i] ) * ( AM.item(k,j)  - mean[k] ) ;
+                }
+
+
+                if ( ( sigma[i] != 0 ) && ( sigma[k] != 0  ) ) {
+                    pcc =   covariance   /  (( sigma[i] ) * ( sigma[k] )) ;
+                }
+                else {
+                    pcc = 0;
+                }
+
+
+                qDebug() << "covariance("<<i+1<<","<<k+1<<") =" << covariance
+                         << "sigma["<<i+1<<"]" << sigma[i]
+                         << "sigma["<<k+1<<"]" << sigma[k]
+                         << "pcc("<<i+1<<","<<k+1<<") =" << pcc;
+                setItem(i,k, pcc);
+                setItem(k,i, pcc);
+            }
+
+        }
+
+    }
+    else if (varLocation=="Columns") {
+
+
+        N = AM.rows() ;
+
+        this->zeroMatrix(N,N);
+
+        QVector<float> mean (N,0); // holds mean values
+        QVector<float> sigma(N,0);
+
+        qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
+                <<"input matrix";
+        //AM.printMatrixConsole(true);
+
+
+        for (int i = 0 ; i < N ; i++ ) {
+
+            for (int k = i ; k < N ; k++ ) {
+
+                qDebug() << "comparing columns i"<<i+1<<"k"<<k+1;
+
+                // compute mean and variance  values
+                sumi = 0;
+                sumk = 0;
+                for (int j = 0 ; j < N ; j++ ) {
+                    if (!diagonal && ( i==j || k==j ) )
+                        continue;
+                    sumi += AM.item(j,i);
+                    sumk += AM.item(j,k);
+                }
+                mean[i] = sumi / ( (diagonal) ? (float) N : (float) (N-2) ) ;
+                mean[k] = sumk / ( (diagonal) ? (float) N : (float) (N-2) ) ;
+                varianceTimesNi = 0;
+                varianceTimesNk = 0;
+                for (int j = 0 ; j < N ; j++ ) {
+                    if (!diagonal && ( i==j || k==j ) )
+                        continue;
+                    varianceTimesNi +=  ( AM.item(j,i)  - mean[i] ) *  ( AM.item(j,i)  - mean[i] );
+                    varianceTimesNk +=  ( AM.item(j,k)  - mean[k] ) *  ( AM.item(j,k)  - mean[k] );
+                }
+                sigma[i] = sqrt (varianceTimesNi); //actually this is sigma * sqrt (N)
+                sigma[k] = sqrt (varianceTimesNk); //actually this is sigma * sqrt (N)
+
+                covariance = 0;
+                for (int j = 0 ; j < N ; j++ ) {
+                    if (!diagonal && (i==j || k==j) ) {
+                        qDebug() << "skipping because i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
+                        continue;
+                    }
+                    covariance  +=  ( AM.item(j,i)  - mean[i] ) * ( AM.item(j,k)  - mean[k] ) ;
+                }
+
+
+                if ( ( sigma[i] != 0 ) && ( sigma[k] != 0  ) ) {
+                    pcc =   covariance   /  (( sigma[i] ) * ( sigma[k] )) ;
+                }
+                else {
+                    pcc = 0;
+                }
+
+
+                qDebug() << "covariance("<<i+1<<","<<k+1<<") =" << covariance
+                         << "sigma["<<i+1<<"]" << sigma[i]
+                         << "sigma["<<k+1<<"]" << sigma[k]
+                         << "pcc("<<i+1<<","<<k+1<<") =" << pcc;
+
+                setItem(i,k, pcc);
+                setItem(k,i, pcc);
+            }
+
+        }
+
+    }
+    else if (varLocation=="Both") {
+        Matrix CM;
+
+        N = AM.rows() ;
+
+        int M = N * 2; // CM will have double rows
+
+
+        this->zeroMatrix(N,N);
+
+        CM.zeroMatrix(M,N);
+
+        QVector<float> mean (N,0); // holds mean values
+        QVector<float> sigma(N,0);
+
+
+        //create augmented matrix (concatenated rows and columns) from input matrix
+        for (int i = 0 ; i < N  ; i++ ) {
+            for (int j = 0 ; j < N  ; j++ ) {
+                CM.setItem(j,i, AM.item(i,j));
+                CM.setItem(j + N,i, AM.item(j,i));
+            }
+        }
+
+        qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
+                <<"input matrix";
+        //CM.printMatrixConsole(true);
+
+
+        for (int i = 0 ; i < N ; i++ ) {  //a column
+
+            for (int k = i ; k < N ; k++ ) {  // next column
+
+               qDebug() << "comparing augmented columns i"<<i+1<<"k"<<k+1;
+
+                // compute mean and variance  values
+                sumi = 0;
+                sumk = 0;
+                for (int j = 0 ; j < M ; j++ ) {
+                    if (!diagonal && ( i==j || k==j || (i+N)==j || (k+N)==j  ) )
+                        continue;
+                    sumi += CM.item(j,i);
+                    sumk += CM.item(j,k);
+                }
+                mean[i] = sumi / ( (diagonal) ? (float) M : (float) (M-4) ) ;
+                mean[k] = sumk / ( (diagonal) ? (float) M : (float) (M-4) ) ;
+                varianceTimesNi = 0;
+                varianceTimesNk = 0;
+                for (int j = 0 ; j < M; j++ ) {
+                    if (!diagonal && ( i==j || k==j || (i+N)==j || (k+N)==j  ) )
+                        continue;
+                    varianceTimesNi +=  ( CM.item(j,i)  - mean[i] ) *  ( CM.item(j,i)  - mean[i] );
+                    varianceTimesNk +=  ( CM.item(j,k)  - mean[k] ) *  ( CM.item(j,k)  - mean[k] );
+                }
+                sigma[i] = sqrt (varianceTimesNi); //actually this is sigma * sqrt (N)
+                sigma[k] = sqrt (varianceTimesNk); //actually this is sigma * sqrt (N)
+
+                covariance = 0;
+
+                for (int j = 0 ; j < M ; j++ ) {
+                    qDebug() << "CM.item(j,i)=CM.item("<<j+1<<","<<i+1<<") = "<<CM.item(j,i)
+                             << " mean(i)=mean("<<i+1<<") = "<<mean[i]
+                                << "CM.item(j,k)=CM.item("<<j+1<<","<<k+1<<") = "<<CM.item(j,k)
+                                << " mean(k)=mean("<<k+1<<") = "<<mean[k];
+
+
+                    if (!diagonal) {
+                        if ( (i==j || k==j )) {
+                            qDebug() << "skipping because i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
+                            continue;
+                        }
+                        if ( j>=N && ( (i+N)==j || (k+N)==j )) {
+                            qDebug() << "skipping because j>=N and i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
+                            continue;
+                        }
+                    }
+
+                    covariance  +=  ( CM.item(j,i)  - mean[i] ) * ( CM.item(j,k)  - mean[k] ) ;
+                }
+
+                if ( ( sigma[i] != 0 ) && ( sigma[k] != 0  ) ) {
+                    pcc =   covariance   /  (( sigma[i] ) * ( sigma[k] )) ;
+                }
+                else {
+                    pcc = 0;
+                }
+
+                qDebug() << "final covariance("<<i+1<<","<<k+1<<") =" << covariance
+                         << "sigma["<<i+1<<"]" << sigma[i]
+                         << "sigma["<<k+1<<"]" << sigma[k]
+                         << "pcc("<<i+1<<","<<k+1<<") =" << pcc;
+
+                setItem(i,k, pcc);
+                setItem(k,i, pcc);
+            }
+
+        }
+    }
+    else {
+
+    }
+
+    return *this;
+
+}
+
+
+
+/**
+ * @brief Prints matrix m to given textstream
+ * @param os
+ * @param m
+ * @return
+ */
+QTextStream& operator <<  (QTextStream& os, Matrix& m){
+    qDebug() << "Matrix: << Matrix";
+    int actorNumber=1, fieldWidth = 13;
+    float maxVal, minVal, maxAbsVal, element;
+    bool hasRealNumbers=false;
+
+    m.findMinMaxValues(minVal, maxVal, hasRealNumbers);
+
+    maxAbsVal = ( fabs(minVal) > fabs(maxVal) ) ? fabs(minVal) : fabs(maxVal) ;
+
+
+    os << qSetFieldWidth(0) << endl ;
+
+    os << "- Values:        "
+       << ( (hasRealNumbers) ? ("real numbers (printed decimals 3)") : ("integers only" ) ) << endl;
+
+    os << "- Max value:  ";
+
+    if ( maxVal==RAND_MAX )
+        os <<  infinity << " (=not connected nodes, in distance matrix)";
+    else
+        os <<   maxVal;
+
+    os << qSetFieldWidth(0) << endl ;
+
+    os << "- Min value:   ";
+
+    if ( minVal==RAND_MAX )
+        os << infinity;
+    else
+        os << minVal;
+
+
+    os << qSetFieldWidth(0) << endl << endl;
+
+    os << qSetFieldWidth(7) << fixed << right << "v"<< qSetFieldWidth(3) << "" ;
+
+    os <<  ( (hasRealNumbers) ? qSetRealNumberPrecision(3) : qSetRealNumberPrecision(0) ) ;
+
+    // Note: In the case of Distance Matrix,
+    // if there is DM(i,j)=RAND_MAX (not connected), we always use fieldWidth  = 13
+    if ( maxAbsVal  > 999)
+        fieldWidth  = 13 ;
+    else if  ( maxAbsVal > 99)
+        fieldWidth  = 10 ;
+    else if ( maxAbsVal > 9   )
+        fieldWidth  = 9 ;
+    else
+        fieldWidth  = 8 ;
+
+    // print first/header row
+    for (int r = 0; r < m.cols(); ++r) {
+        actorNumber = r+1;
+
+        if ( actorNumber > 999)
+            os << qSetFieldWidth(fieldWidth-3) ;
+        else if  ( actorNumber > 99)
+            os << qSetFieldWidth(fieldWidth-2) ;
+        else if ( actorNumber > 9)
+            os << qSetFieldWidth(fieldWidth-1) ;
+        else
+            os << qSetFieldWidth(fieldWidth) ;
+
+        os <<  fixed << actorNumber;
+    }
+
+    os << qSetFieldWidth(0) << endl;
+
+    os << qSetFieldWidth(7)<< endl;
+
+    // print rows
+    for (int r = 0; r < m.rows(); ++r) {
+        actorNumber = r+1;
+
+        if ( actorNumber > 999)
+            os << qSetFieldWidth(4) ;
+        else if  ( actorNumber > 99)
+            os << qSetFieldWidth(5) ;
+        else if ( actorNumber > 9)
+            os << qSetFieldWidth(6) ;
+        else
+            os << qSetFieldWidth(7) ;
+
+
+        os <<  fixed << actorNumber
+            << qSetFieldWidth(3) <<"" ;
+
+        for (int c = 0; c < m.cols(); ++c) {
+            element = m(r,c) ;
+            os << qSetFieldWidth(fieldWidth) << fixed << right;
+            if ( element == RAND_MAX)  // we print inf symbol instead of RAND_MAX (distances matrix).
+                os << fixed << right << qSetFieldWidth(fieldWidth) << infinity ;
+            else {
+                if ( element > 999)
+                    os << qSetFieldWidth(fieldWidth-3) ;
+                else if  ( element > 99)
+                    os << qSetFieldWidth(fieldWidth-2) ;
+                else if ( element > 9)
+                    os << qSetFieldWidth(fieldWidth-1) ;
+                else
+                    os << qSetFieldWidth(fieldWidth) ;
+                os <<  element;
+            }
+        }
+        os << qSetFieldWidth(0) << endl;
+    }
+    return os;
+}
+
+
+
+
+
+/**
+ * @brief  Prints this matrix a HTML table
+ * @param os
+ * @param debug
+ * @return
+ */
+bool Matrix::printHTMLTable(QTextStream& os,
+                            const bool markDiag,
+                            const bool &plain,
+                            const bool &printInfinity){
+    qDebug() << "Matrix::printHTMLTable()";
+    int actorNumber=0, rowCount = 0;
+    float maxVal, minVal, element;
+    bool hasRealNumbers=false;
+
+    findMinMaxValues(minVal, maxVal, hasRealNumbers);
+
+    //maxAbsVal = ( fabs(minVal) > fabs(maxVal) ) ? fabs(minVal) : fabs(maxVal) ;
+
+    os <<  ( (hasRealNumbers) ? qSetRealNumberPrecision(3) : qSetRealNumberPrecision(0) ) ;
+
+    if (plain) {
+        os << "<pre>";
+
+        // print first/header row
+        os << "<span class=\"header\">" << qSetFieldWidth(5) << right << "A/A";
+        os <<  fixed << qSetFieldWidth(10) << right ;
+        for (int r = 0; r < cols(); ++r) {
+            actorNumber = r+1;
+            os << actorNumber;
+        }
+        os << qSetFieldWidth(0) << "</span>"<< endl;
+
+        for (int r = 0; r < rows(); ++r) {
+            actorNumber = r+1;
+            rowCount++;
+
+            os << "<span class=\"header\">" << qSetFieldWidth(5) << right;
+            os << actorNumber;
+            os << qSetFieldWidth(0) << "</span>";
+
+            for (int c = 0; c < cols(); ++c) {
+                element = item(r,c) ;
+                os << fixed << qSetFieldWidth(10) << right;
+                if (  element == RAND_MAX)  // print inf symbol instead of RAND_MAX (distances matrix).
+                    os << infinity;
+                else {
+                    os << element ;
+
+                }
+               // os << "";
+            }
+
+            os << qSetFieldWidth(0) << endl;
+        }
+
+        os << "</pre>";
+        return true;
+    }
+
+    os << "<table  border=\"1\" cellspacing=\"0\" cellpadding=\"0\" class=\"stripes\">"
+            << "<thead>"
+            << "<tr>"
+            << "<th>"
+            << ("<sub>Actor</sup>/<sup>Actor</sup>")
+            << "</th>";
+
+
+    // print first/header row
+    for (int r = 0; r < cols(); ++r) {
+        actorNumber = r+1;
+        os << "<th>"
+                << actorNumber
+                << "</th>";
+
+    }
+    os << "</tr>"
+            << "</thead>"
+            << "<tbody>";
+
+    // print rows
+    rowCount = 0;
+    for (int r = 0; r < rows(); ++r) {
+        actorNumber = r+1;
+        rowCount++;
+        os << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">";
+
+        os <<"<td class=\"header\">"
+               << actorNumber
+               << "</td>";
+
+        for (int c = 0; c < cols(); ++c) {
+            element = item(r,c) ;
+            os << fixed << right;
+            os <<"<td" << ((markDiag && r==c)? " class=\"diag\">" : ">");
+            if ( ( element == RAND_MAX ) && printInfinity) {
+                // print inf symbol instead of RAND_MAX (distances matrix).
+                os << infinity;
+            }
+            else {
+                os << element ;
+            }
+            os << "</td>";
+        }
+
+        os <<"</tr>";
+    }
+    os << "</tbody></table>";
+
+
+    os << qSetFieldWidth(0) << endl ;
+
+
+    os << "<p>"
+       << "<span class=\"info\">"
+       << ("Values: ")
+       <<"</span>"
+       << ( (hasRealNumbers) ? ("real numbers (printed decimals 3)") : ("integers only" ) )
+       << "<br />"
+       << "<span class=\"info\">"
+       << ("- Max value: ")
+       <<"</span>"
+       << ( ( maxVal==RAND_MAX ) ?
+                ( (printInfinity) ? infinity : QString::number(maxVal) ) +
+                " (=not connected nodes, in distance matrix)" : QString::number(maxVal) )
+       << "<br />"
+       << "<span class=\"info\">"
+       << ("- Min value: ")
+       <<"</span>"
+       << ( ( minVal==RAND_MAX ) ?
+                ( (printInfinity) ? infinity : QString::number(minVal) ) +
+                + " (usually denotes unconnected nodes, in distance matrix)" : QString::number(minVal ) )
+       << "</p>";
+
+    return true;
+}
+
+
+
+
+/**
+ * @brief  Prints this matrix to stderr or stdout
+ * @return
+ */
+bool Matrix::printMatrixConsole(bool debug){
+    //qDebug() << "Matrix::printMatrixConsole() debug " << debug ;
+    QTextStream out ( (debug ? stderr : stdout) );
+
+    for (int r = 0; r < rows(); ++r) {
+        for (int c = 0; c < cols(); ++c) {
+
+            if ( item(r,c) < RAND_MAX  ) {
+                out <<  qSetFieldWidth(12) << qSetRealNumberPrecision(3)
+                     <<  forcepoint << fixed<<right
+                        << item(r,c);
+            }
+            else {
+                out <<  qSetFieldWidth(12) << qSetRealNumberPrecision(3)
+                     <<  forcepoint << fixed<<right
+                        << "x";
+            }
+
+//            QTextStream( (debug ? stderr : stdout) )
+//                    << ( (item(r,c) < RAND_MAX ) ? item(r,c) : INFINITY  )<<' ';
+        }
+        out <<qSetFieldWidth(0)<< endl;
+    }
+    return true;
+}
+
 

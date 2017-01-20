@@ -1,12 +1,14 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.1
+ version: 2.2
  Written in Qt
 
 -                           mainwindow.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
-    email                : dimitris.kalamaras@gmail.com
+    copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
+    blog              : http://dimitris.apeiro.gr
+    project site      : http://socnetv.org
+
  ***************************************************************************/
 
 /*******************************************************************************
@@ -44,15 +46,19 @@
 #include "nodelabel.h"
 #include "edgeweight.h"
 #include "texteditor.h"
-#include "filteredgesbyweightdialog.h"
+#include "dialogfilteredgesbyweight.h"
 #include "guide.h"
 #include "vertex.h"
-#include "previewform.h"
-#include "randerdosrenyidialog.h"
-#include "randsmallworlddialog.h"
-#include "randscalefreedialog.h"
-#include "randregulardialog.h"
-#include "settingsdialog.h"
+#include "dialogpreviewfile.h"
+#include "dialogranderdosrenyi.h"
+#include "dialograndsmallworld.h"
+#include "dialograndscalefree.h"
+#include "dialograndregular.h"
+#include "dialogsettings.h"
+#include "dialogsimilaritypearson.h"
+#include "dialogsimilaritymatches.h"
+#include "dialogclusteringhierarchical.h"
+#include "dialogdissimilarities.h"
 
 
 
@@ -123,8 +129,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     initSignalSlots();  //connect signals and slots between app components
 
-    /*  load and initialise default network parameters  */
-    initNet();
+    initApp();          //  load and initialise default app parameters
 
     // Check if user-provided network file on startup
     qDebug() << "MW::MainWindow() Checking if user provided file on startup...";
@@ -140,11 +145,24 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
 
 
+/**
+ * @brief Deletes variables on MW closing
+ */
 MainWindow::~MainWindow() {
     qDebug() << "MW::~MainWindow() Destruct function running...";
+
+    initApp();
     delete printer;
     delete scene;
     delete graphicsWidget;
+
+    foreach ( TextEditor *ed, m_textEditors) {
+        ed->close();
+        delete ed;
+    }
+    m_textEditors.clear();
+
+
     qDebug() << "MW::~MainWindow() Destruct function finished - bye!";
 }
 
@@ -161,8 +179,6 @@ QMap<QString,QString> MainWindow::initSettings(){
 
     printDebug = false; // comment it to stop debug override
 
-    firstTime=true;  // becomes false on user IO
-
     // Create fortune cookies and tips
     createFortuneCookies();
     slotHelpCreateTips();
@@ -171,11 +187,11 @@ QMap<QString,QString> MainWindow::initSettings(){
     qDebug() << "MW::initSettings - calling slotNetworkAvailableTextCodecs" ;
     slotNetworkAvailableTextCodecs();
 
-    qDebug() << "MW::initSettings - creating PreviewForm object and setting codecs list" ;
-    previewForm = new PreviewForm(this);
-    previewForm->setCodecList(codecs);
+    qDebug() << "MW::initSettings - creating DialogPreviewFile object and setting codecs list" ;
+    m_dialogPreviewFile = new DialogPreviewFile(this);
+    m_dialogPreviewFile->setCodecList(codecs);
 
-    connect (previewForm, &PreviewForm::loadNetworkFileWithCodec,
+    connect (m_dialogPreviewFile, &DialogPreviewFile::loadNetworkFileWithCodec,
              this, &MainWindow::slotNetworkFileLoad );
 
     qDebug() << "MW::initSettings - creating default settings" ;
@@ -221,6 +237,7 @@ QMap<QString,QString> MainWindow::initSettings(){
     appSettings["initBackgroundColor"]="white"; //"gainsboro";
     appSettings["initBackgroundImage"]="";
     appSettings["printDebug"] = (printDebug) ? "true" : "false";
+    appSettings["viewReportsInSystemBrowser"] = "true";
     appSettings["showProgressBar"] = "true";
     appSettings["showToolBar"] = "true";
     appSettings["showStatusBar"] = "true";
@@ -350,87 +367,90 @@ void MainWindow::slotOpenSettingsDialog() {
 
     // build dialog
 
-    m_settingsDialog = new SettingsDialog( appSettings, this);
+    m_settingsDialog = new DialogSettings( appSettings, this);
 
-    connect( m_settingsDialog, &SettingsDialog::saveSettings,
+    connect( m_settingsDialog, &DialogSettings::saveSettings,
                      this, &MainWindow::saveSettings);
 
-    connect( m_settingsDialog, &SettingsDialog::setDebugMsgs,
+    connect( m_settingsDialog, &DialogSettings::setDebugMsgs,
                          this, &MainWindow::slotOptionsDebugMessages);
 
-    connect( m_settingsDialog, &SettingsDialog::setProgressBars,
+    connect( m_settingsDialog, &DialogSettings::setProgressBars,
              this, &MainWindow::slotOptionsProgressBarVisibility);
 
-    connect( m_settingsDialog, &SettingsDialog::setAntialiasing,
+    connect( m_settingsDialog, &DialogSettings::setAntialiasing,
              this, &MainWindow::slotOptionsAntialiasing);
 
-    connect( m_settingsDialog, &SettingsDialog::setPrintLogo,
+    connect( m_settingsDialog, &DialogSettings::setPrintLogo,
                  this, &MainWindow::slotOptionsEmbedLogoExporting);
 
-    connect( m_settingsDialog, &SettingsDialog::setBgColor,
+    connect( m_settingsDialog, &DialogSettings::setBgColor,
                      this, &MainWindow::slotOptionsBackgroundColor);
 
-    connect( m_settingsDialog, &SettingsDialog::setBgImage,
+    connect( m_settingsDialog, &DialogSettings::setBgImage,
                      this, &MainWindow::slotOptionsBackgroundImage);
 
-    connect( m_settingsDialog, &SettingsDialog::setToolBar,
+    connect( m_settingsDialog, &DialogSettings::setToolBar,
              this, &MainWindow::slotOptionsToolbarVisibility);
 
-    connect( m_settingsDialog, &SettingsDialog::setStatusBar,
+    connect( m_settingsDialog, &DialogSettings::setStatusBar,
              this, &MainWindow::slotOptionsStatusBarVisibility);
 
-    connect( m_settingsDialog, &SettingsDialog::setLeftPanel,
+    connect( m_settingsDialog, &DialogSettings::setLeftPanel,
              this, &MainWindow::slotOptionsLeftPanelVisibility);
 
-    connect( m_settingsDialog, &SettingsDialog::setRightPanel,
+    connect( m_settingsDialog, &DialogSettings::setRightPanel,
              this, &MainWindow::slotOptionsRightPanelVisibility);
 
     connect(m_settingsDialog, SIGNAL(setNodeColor(QColor)),
             this, SLOT(slotEditNodeColorAll(QColor)) );
 
-    connect( m_settingsDialog, &SettingsDialog::setNodeShape,
+    connect( m_settingsDialog, &DialogSettings::setNodeShape,
              this, &MainWindow::slotEditNodeShape);
 
-    connect( m_settingsDialog, &SettingsDialog::setNodeSize,
+    connect( m_settingsDialog, &DialogSettings::setNodeSize,
              this, &MainWindow::slotEditNodeSizeAll);
 
-    connect( m_settingsDialog, &SettingsDialog::setNodeNumbersVisibility,
+    connect( m_settingsDialog, &DialogSettings::setNodeNumbersVisibility,
              this, &MainWindow::slotOptionsNodeNumbersVisibility);
 
-    connect( m_settingsDialog, &SettingsDialog::setNodeNumbersInside,
+    connect( m_settingsDialog, &DialogSettings::setNodeNumbersInside,
              this, &MainWindow::slotOptionsNodeNumbersInside);
 
-    connect( m_settingsDialog, &SettingsDialog::setNodeNumberColor,
+    connect( m_settingsDialog, &DialogSettings::setNodeNumberColor,
              this, &MainWindow::slotEditNodeNumbersColor);
 
-    connect( m_settingsDialog, &SettingsDialog::setNodeNumberSize,
+    connect( m_settingsDialog, &DialogSettings::setNodeNumberSize,
              this, &MainWindow::slotEditNodeNumberSize);
 
-    connect( m_settingsDialog, &SettingsDialog::setNodeNumberDistance,
+    connect( m_settingsDialog, &DialogSettings::setNodeNumberDistance,
              this, &MainWindow::slotEditNodeNumberDistance);
 
-    connect( m_settingsDialog, &SettingsDialog::setNodeLabelsVisibility,
+    connect( m_settingsDialog, &DialogSettings::setNodeLabelsVisibility,
              this, &MainWindow::slotOptionsNodeLabelsVisibility);
 
-    connect( m_settingsDialog, &SettingsDialog::setNodeLabelSize,
+    connect( m_settingsDialog, &DialogSettings::setNodeLabelSize,
              this, &MainWindow::slotEditNodeLabelSize);
 
-    connect( m_settingsDialog, &SettingsDialog::setNodeLabelColor,
+    connect( m_settingsDialog, &DialogSettings::setNodeLabelColor,
              this, &MainWindow::slotEditNodeLabelsColor);
 
-    connect( m_settingsDialog, &SettingsDialog::setNodeLabelDistance,
+    connect( m_settingsDialog, &DialogSettings::setNodeLabelDistance,
              this, &MainWindow::slotEditNodeLabelDistance);
 
-    connect( m_settingsDialog, &SettingsDialog::setEdgesVisibility,
+    connect( m_settingsDialog, &DialogSettings::setEdgesVisibility,
              this, &MainWindow::slotOptionsEdgesVisibility);
 
-    connect( m_settingsDialog, &SettingsDialog::setEdgeColor,
+    connect( m_settingsDialog, &DialogSettings::setEdgeArrowsVisibility,
+             this, &MainWindow::slotOptionsEdgeArrowsVisibility);
+
+    connect( m_settingsDialog, &DialogSettings::setEdgeColor,
              this, &MainWindow::slotEditEdgeColorAll);
 
-    connect( m_settingsDialog, &SettingsDialog::setEdgeWeightNumbersVisibility,
+    connect( m_settingsDialog, &DialogSettings::setEdgeWeightNumbersVisibility,
              this, &MainWindow::slotOptionsEdgeWeightNumbersVisibility);
 
-    connect( m_settingsDialog, &SettingsDialog::setEdgeLabelsVisibility,
+    connect( m_settingsDialog, &DialogSettings::setEdgeLabelsVisibility,
              this, &MainWindow::slotOptionsEdgeLabelsVisibility);
 
 
@@ -459,16 +479,16 @@ void MainWindow::initActions(){
     networkNew->setStatusTip(tr("Create a new network"));
     networkNew->setToolTip(tr("New network"));
     networkNew->setWhatsThis(tr("New\n\n"
-                                "Creates a new network. "
+                                "Creates a new social network. "
                                 "Firtst, checks if current network needs to be saved."));
     connect(networkNew, SIGNAL(triggered()), this, SLOT(slotNetworkNew()));
 
     networkOpen = new QAction(QIcon(":/images/open.png"), tr("&Open"), this);
     networkOpen->setShortcut(Qt::CTRL+Qt::Key_O);
     networkOpen->setToolTip(tr("Open network"));
-    networkOpen->setStatusTip(tr("Open GraphML-formatted file of an existing network"));
+    networkOpen->setStatusTip(tr("Open a GraphML formatted file of social network data."));
     networkOpen->setWhatsThis(tr("Open\n\n"
-                              "Opens a file of an existing network in GraphML format"));
+                              "Opens a file of a social network in GraphML format"));
     connect(networkOpen, SIGNAL(triggered()), this, SLOT(slotNetworkFileChoose()));
 
 
@@ -479,39 +499,48 @@ void MainWindow::initActions(){
                  this, SLOT(slotNetworkFileLoadRecent()));
      }
 
+    networkImportGML = new QAction( QIcon(":/images/open.png"), tr("&GML"), this);
+    networkImportGML->setStatusTip(tr("Import GML-formatted file"));
+    networkImportGML->setWhatsThis(tr("Import GML\n\n"
+                                 "Imports a social network from a GML-formatted file"));
+    connect(networkImportGML, SIGNAL(triggered()), this, SLOT(slotNetworkImportGML()));
+
 
     networkImportPajek = new QAction( QIcon(":/images/open.png"), tr("&Pajek"), this);
     networkImportPajek->setStatusTip(tr("Import Pajek-formatted file"));
     networkImportPajek->setWhatsThis(tr("Import Pajek \n\n"
-                                 "Imports a network from a Pajek-formatted file"));
+                                 "Imports a social network from a Pajek-formatted file"));
     connect(networkImportPajek, SIGNAL(triggered()), this, SLOT(slotNetworkImportPajek()));
 
 
     networkImportSM = new QAction( QIcon(":/images/open.png"), tr("&Adjacency Matrix"), this);
     networkImportSM->setStatusTip(tr("Import Adjacency matrix"));
     networkImportSM->setWhatsThis(tr("Import Sociomatrix \n\n"
-                              "Imports a network from an Adjacency matrix-formatted file"));
+                              "Imports a social network from an Adjacency matrix-formatted file"));
     connect(networkImportSM, SIGNAL(triggered()), this, SLOT(slotNetworkImportSM()));
 
     networkImportDot = new QAction( QIcon(":/images/open.png"), tr("GraphViz (.dot)"), this);
     networkImportDot->setStatusTip(tr("Import dot file"));
-    networkImportDot->setWhatsThis(tr("Import GraphViz \n\n "
-                               "Imports a network from an GraphViz formatted file"));
+    networkImportDot->setWhatsThis(tr("Import GraphViz \n\n"
+                               "Imports a social network from an GraphViz formatted file"));
     connect(networkImportDot, SIGNAL(triggered()),
             this, SLOT(slotNetworkImportDot()));
 
 
     networkImportDL = new QAction( QIcon(":/images/open.png"), tr("UCINET (.dl)..."), this);
     networkImportDL->setStatusTip(tr("ImportDL-formatted file (UCINET)"));
-    networkImportDL->setWhatsThis(tr("Import UCINET\n\nImports a network from a DL-formatted file"));
+    networkImportDL->setWhatsThis(tr("Import UCINET\n\n"
+                                     "Imports social network data from a DL-formatted file"));
     connect(networkImportDL, SIGNAL(triggered()), this, SLOT(slotNetworkImportDL()));
 
 
     networkImportList = new QAction( QIcon(":/images/open.png"), tr("&Edge list"), this);
     networkImportList->setStatusTip(tr("Import an edge list file. "));
-    networkImportList->setWhatsThis(tr("Import edge list\n\n"
-                                "Import a network from an edgelist file. "
-                                " The file can be unvalued or valued (see manual)"
+    networkImportList->setWhatsThis(
+                tr("Import edge list\n\n"
+                   "Import a network from an edgelist file. "
+                   "SocNetV supports EdgeList files with edge weights "
+                   "as well as simple EdgeList files where the edges are non-value (see manual)"
                                 ));
     connect(networkImportList, SIGNAL(triggered()),
             this, SLOT(slotNetworkImportEdgeList()));
@@ -519,7 +548,7 @@ void MainWindow::initActions(){
 
     networkImportTwoModeSM = new QAction( QIcon(":/images/open.png"), tr("&Two Mode Sociomatrix"), this);
     networkImportTwoModeSM->setStatusTip(tr("Import two-mode sociomatrix (affiliation network) file"));
-    networkImportTwoModeSM->setWhatsThis(tr("Import Two-Mode Sociomatrix \n\n "
+    networkImportTwoModeSM->setWhatsThis(tr("Import Two-Mode Sociomatrix \n\n"
                                      "Imports a two-mode network from a sociomatrix file. "
                                      "Two-mode networks are described by affiliation "
                                      "network matrices, where A(i,j) codes the "
@@ -530,45 +559,48 @@ void MainWindow::initActions(){
 
     networkSave = new QAction(QIcon(":/images/save.png"), tr("&Save"),  this);
     networkSave->setShortcut(Qt::CTRL+Qt::Key_S);
-    networkSave->setStatusTip(tr("Save to the current file"));
+    networkSave->setStatusTip(tr("Save social network to a file"));
     networkSave->setWhatsThis(tr("Save.\n\n"
-                              "Saves the actual network to the current file"));
+                              "Saves the social network to file"));
     connect(networkSave, SIGNAL(triggered()), this, SLOT(slotNetworkSave()));
 
     networkSaveAs = new QAction(QIcon(":/images/save.png"), tr("Save &As..."),  this);
     networkSaveAs->setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_S);
-    networkSaveAs->setStatusTip(tr("Save under a new filename"));
+    networkSaveAs->setStatusTip(tr("Save network under a new filename"));
     networkSaveAs->setWhatsThis(tr("Save As\n\n"
-                                "Saves the actual network under a new filename"));
+                                "Saves the social network under a new filename"));
     connect(networkSaveAs, SIGNAL(triggered()), this, SLOT(slotNetworkSaveAs()));
 
     networkExportBMP = new QAction(QIcon(":/images/image.png"), tr("&BMP..."), this);
-    networkExportBMP->setStatusTip(tr("Export to BMP image"));
-    networkExportBMP->setWhatsThis(tr("Export BMP \n\n Exports the network to a BMP image"));
+    networkExportBMP->setStatusTip(tr("Export social network to BMP image"));
+    networkExportBMP->setWhatsThis(tr("Export BMP\n\n"
+                                      "Exports the social network to a BMP image"));
     connect(networkExportBMP, SIGNAL(triggered()), this, SLOT(slotNetworkExportBMP()));
 
     networkExportPNG = new QAction( QIcon(":/images/image.png"), tr("&PNG..."), this);
-    networkExportPNG->setStatusTip(tr("Export to PNG image"));
-    networkExportPNG->setWhatsThis(tr("Export PNG \n\n Exports the network to a PNG image"));
+    networkExportPNG->setStatusTip(tr("Export social network to PNG image"));
+    networkExportPNG->setWhatsThis(tr("Export PNG \n\n"
+                                      "Exports the social network to a PNG image"));
     connect(networkExportPNG, SIGNAL(triggered()), this, SLOT(slotNetworkExportPNG()));
 
 
     networkExportPDF = new QAction( QIcon(":/images/pdf.png"), tr("&PDF..."), this);
-    networkExportPDF->setStatusTip(tr("Export to PDF"));
-    networkExportPDF->setWhatsThis(tr("Export PDF\n\n Exports the network to a PDF document"));
+    networkExportPDF->setStatusTip(tr("Export social network to PDF"));
+    networkExportPDF->setWhatsThis(tr("Export PDF\n\n"
+                                      "Exports the social network to a PDF document"));
     connect(networkExportPDF, SIGNAL(triggered()), this, SLOT(slotNetworkExportPDF()));
 
     networkExportSM = new QAction( QIcon(":/images/save.png"), tr("&Adjacency Matrix"), this);
-    networkExportSM->setStatusTip(tr("Export to adjacency matrix file"));
-    networkExportSM->setWhatsThis(tr("Export Sociomatrix \n\n"
-                              "Exports the network to an "
+    networkExportSM->setStatusTip(tr("Export social network to an adjacency/sociomatrix file"));
+    networkExportSM->setWhatsThis(tr("Export network to Adjacency format\n\n"
+                              "Exports the social network to an "
                               "adjacency matrix-formatted file"));
     connect(networkExportSM, SIGNAL(triggered()), this, SLOT(slotNetworkExportSM()));
 
     networkExportPajek = new QAction( QIcon(":/images/save.png"), tr("&Pajek"), this);
-    networkExportPajek->setStatusTip(tr("Export to Pajek-formatted file"));
-    networkExportPajek->setWhatsThis(tr("Export Pajek \n\n "
-                                 "Exports the network to a Pajek-formatted file"));
+    networkExportPajek->setStatusTip(tr("Export social network to a Pajek-formatted file"));
+    networkExportPajek->setWhatsThis(tr("Export Pajek \n\n"
+                                 "Exports the social network to a Pajek-formatted file"));
     connect(networkExportPajek, SIGNAL(triggered()), this, SLOT(slotNetworkExportPajek()));
 
 
@@ -579,8 +611,8 @@ void MainWindow::initActions(){
     connect(networkExportList, SIGNAL(triggered()), this, SLOT(slotNetworkExportList()));
 
     networkExportDL = new QAction( QIcon(":/images/save.png"), tr("&DL..."), this);
-    networkExportDL->setStatusTip(tr("Export to DL-formatted file"));
-    networkExportDL->setWhatsThis(tr("Export DL\n\n"
+    networkExportDL->setStatusTip(tr("Export network to UCINET-formatted file"));
+    networkExportDL->setWhatsThis(tr("Export UCINET\n\n"
                                      "Exports the active network to a DL-formatted"));
     connect(networkExportDL, SIGNAL(triggered()), this, SLOT(slotNetworkExportDL()));
 
@@ -597,27 +629,29 @@ void MainWindow::initActions(){
 
     networkPrint = new QAction(QIcon(":/images/print.png"), tr("&Print"), this);
     networkPrint->setShortcut(Qt::CTRL+Qt::Key_P);
-    networkPrint->setStatusTip(tr("Send the network to the printer"));
-    networkPrint->setWhatsThis(tr("Printing \n\n"
-                                  "This function prints whatever is viewable on "
-                                  "the canvas. \nTo print the whole network, "
+    networkPrint->setStatusTip(tr("Send the currrent social network to the printer"));
+    networkPrint->setWhatsThis(tr("Print \n\n"
+                                  "Sends whatever is viewable on "
+                                  "the canvas to your printer. \n"
+                                  "To print the whole social network, "
                                   "you might want to zoom-out."));
     connect(networkPrint, SIGNAL(triggered()), this, SLOT(slotNetworkPrint()));
 
     networkQuit = new QAction(QIcon(":/images/exit.png"), tr("E&xit"), this);
     networkQuit->setShortcut(Qt::CTRL+Qt::Key_Q);
-    networkQuit->setStatusTip(tr("Quits the application"));
-    networkQuit->setWhatsThis(tr("Exit\n\nQuits the application"));
+    networkQuit->setStatusTip(tr("Quit SocNetV. Are you sure?"));
+    networkQuit->setWhatsThis(tr("Exit\n\n"
+                                 "Quits the application"));
     connect(networkQuit, SIGNAL(triggered()), this, SLOT(close()));
 
 
     openTextEditorAct = new QAction(QIcon(":/images/texteditor.png"),
                                     tr("Open Text Editor"),this);
     openTextEditorAct ->setShortcut(Qt::SHIFT+Qt::Key_F5);
-    openTextEditorAct->setStatusTip(tr("Opens a simple text editor "
+    openTextEditorAct->setStatusTip(tr("Open a text editor "
                                        "to take notes, copy/paste network data, etc"));
-    openTextEditorAct->setWhatsThis(tr("Open Text Editor\n\n"
-                                       "Opens the SocNetV text editor where you can "
+    openTextEditorAct->setWhatsThis(tr("Text Editor\n\n"
+                                       "Opens a simple text editor where you can "
                                        "copy paste network data, of any supported format, "
                                        "and save to a file. Then you can import that file to SocNetV..."));
     connect(openTextEditorAct, SIGNAL(triggered()), this, SLOT(slotNetworkTextEditor()));
@@ -626,9 +660,9 @@ void MainWindow::initActions(){
     networkViewFileAct = new QAction(QIcon(":/images/networkfile.png"),
                                      tr("View Loaded File"),this);
     networkViewFileAct ->setShortcut(Qt::Key_F5);
-    networkViewFileAct->setStatusTip(tr("Displays the loaded network file"));
+    networkViewFileAct->setStatusTip(tr("Display the loaded social network file."));
     networkViewFileAct->setWhatsThis(tr("View Loaded File\n\n"
-                                        "Displays the file of the loaded network"));
+                                        "Displays the loaded social network file "));
     connect(networkViewFileAct, SIGNAL(triggered()), this, SLOT(slotNetworkFileView()));
 
     networkViewSociomatrixAct = new QAction(QIcon(":/images/sm.png"),
@@ -637,21 +671,41 @@ void MainWindow::initActions(){
     networkViewSociomatrixAct->setStatusTip(tr("Display the adjacency matrix of the network."));
     networkViewSociomatrixAct->setWhatsThis(tr("View Adjacency Matrix\n\n"
                                         "Displays the adjacency matrix of the active network. \n\n"
-                                        "The adjacency matrix of a network is a matrix "
+                                        "The adjacency matrix of a social network is a matrix "
                                         "where each element a(i,j) is equal to the weight "
-                                        "of the arc from node i to node j. "
-                                        "If the nodes are not connected, then a(i,j)=0. "));
+                                        "of the arc from actor (node) i to actor j. "
+                                        "If the actors are not connected, then a(i,j)=0. "));
     connect(networkViewSociomatrixAct, SIGNAL(triggered()),
             this, SLOT(slotNetworkViewSociomatrix()));
 
-    networkDataSetSelectAct = new QAction(QIcon(":/images/sm.png"),
-                                     tr("Create Known Data Sets"),  this);
+
+    networkViewSociomatrixPlotAct = new QAction(QIcon(":/images/adjacencyplot.png"),
+                                     tr("Plot Adjacency Matrix (text)"),  this);
+    networkViewSociomatrixPlotAct ->setShortcut(Qt::SHIFT + Qt::Key_F6);
+    networkViewSociomatrixPlotAct->setStatusTip(tr("Plots the adjacency matrix in a text file using unicode characters."));
+    networkViewSociomatrixPlotAct->setWhatsThis(
+                tr("Plot Adjacency Matrix (text)\n\n"
+                   "Plots the adjacency matrix in a text file using "
+                   "unicode characters. \n\n"
+                   "In every element (i,j) of the \"image\", "
+                   "a black square means actors i and j are connected"
+                   "whereas a white square means they are disconnected."
+                   ));
+    connect(networkViewSociomatrixPlotAct, SIGNAL(triggered()),
+            this, SLOT(slotNetworkViewSociomatrixPlotText()));
+
+
+    networkDataSetSelectAct = new QAction(QIcon(":/images/petersengraph.png"),
+                                     tr("Create From Known Data Sets"),  this);
     networkDataSetSelectAct ->setShortcut(Qt::Key_F7);
-    networkDataSetSelectAct->setStatusTip(tr("Recreate a variety of known data sets."));
+    networkDataSetSelectAct->setStatusTip(tr("Create a social network using one of the \'famous\' "
+                                             "social network data sets included in SocNetV."));
     networkDataSetSelectAct->setWhatsThis(tr("Known Data Sets\n\n"
-                                        "Recreates some of the most widely used "
-                                        "data sets in network analysis studies, i.e. "
-                                        "Krackhardt's high-tech managers"));
+                                        "SocNetV includes a number of known "
+                                        "(also called famous) data sets in Social Network Analysis, "
+                                        "such as Krackhardt's high-tech managers, etc. "
+                                             "Click this menu item or press F7 to select a data set.  "
+                                        ""));
     connect(networkDataSetSelectAct, SIGNAL(triggered()),
             this, SLOT(slotNetworkDataSetSelect()));
 
@@ -661,7 +715,7 @@ void MainWindow::initActions(){
     createErdosRenyiRandomNetworkAct -> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_E)
                 );
-    createErdosRenyiRandomNetworkAct->setStatusTip(tr("Creates a random network "
+    createErdosRenyiRandomNetworkAct->setStatusTip(tr("Create a random network "
                                                       "according to the Erdős–Rényi model"));
     createErdosRenyiRandomNetworkAct->setWhatsThis(
                 tr("Erdős–Rényi \n\n"
@@ -676,10 +730,10 @@ void MainWindow::initActions(){
     createLatticeNetworkAct -> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_L)
                 );
-    createLatticeNetworkAct->setStatusTip(tr("Create a ring lattice random network"));
+    createLatticeNetworkAct->setStatusTip(tr("Create a ring lattice random network."));
     createLatticeNetworkAct->setWhatsThis(
                 tr("Ring Lattice \n\n")+
-                tr("A ring lattice is a graph with N nodes each connected to d neighbors, d / 2 on each side."));
+                tr("A ring lattice is a graph with N vertices each connected to d neighbors, d / 2 on each side."));
     connect(createLatticeNetworkAct, SIGNAL(triggered()), this, SLOT(slotNetworkRandomRingLattice()));
 
     createRegularRandomNetworkAct = new QAction(QIcon(":/images/net.png"), tr("d-Regular"), this);
@@ -687,10 +741,10 @@ void MainWindow::initActions(){
                         QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_R)
                         );
     createRegularRandomNetworkAct->setStatusTip(
-                tr("Create a random network where every node has the same degree d."));
+                tr("Create a d-regular random network, where every actor has the same degree d."));
     createRegularRandomNetworkAct->setWhatsThis(
                 tr("d-Regular \n\n") +
-                tr("Creates a random network where each node have the same "
+                tr("A random network where each actor has the same "
                    "number d of neighbours, aka the same degree d "));
     connect(createRegularRandomNetworkAct, SIGNAL(triggered()),
             this, SLOT(slotNetworkRandomRegularDialog()));
@@ -699,7 +753,7 @@ void MainWindow::initActions(){
     createGaussianRandomNetworkAct -> setShortcut(
                     QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_G)
                     );
-    createGaussianRandomNetworkAct->setStatusTip(tr("Create a Gaussian distributed random network"));
+    createGaussianRandomNetworkAct->setStatusTip(tr("Create a Gaussian distributed random network."));
     createGaussianRandomNetworkAct->setWhatsThis(tr("Gaussian \n\nCreates a random network of Gaussian distribution"));
     connect(createGaussianRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotNetworkRandomGaussian()));
 
@@ -707,7 +761,7 @@ void MainWindow::initActions(){
     createSmallWorldRandomNetworkAct-> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_W)
                 );
-    createSmallWorldRandomNetworkAct->setStatusTip(tr("Create a random network with small world properties"));
+    createSmallWorldRandomNetworkAct->setStatusTip(tr("Create a small-world random network."));
     createSmallWorldRandomNetworkAct ->
             setWhatsThis(
                 tr("Small World \n\n") +
@@ -727,7 +781,7 @@ void MainWindow::initActions(){
             setWhatsThis(
                 tr("Scale-free (power-law)\n\n") +
                 tr("A scale-free network is a network whose degree distribution follows a power law."
-                   " This method generates random scale-free networks according to the "
+                   " SocNetV generates random scale-free networks according to the "
                    " Barabási–Albert (BA) model using a preferential attachment mechanism."));
     connect(createScaleFreeRandomNetworkAct, SIGNAL(triggered()),
             this, SLOT(slotNetworkRandomScaleFreeDialog()));
@@ -761,7 +815,7 @@ void MainWindow::initActions(){
                                   tr("Next Relation"),  this);
     editRelationNextAct->setShortcut(Qt::ALT + Qt::Key_Right);
     editRelationNextAct->setToolTip(tr("Goto next graph relation (ALT+Right)"));
-    editRelationNextAct->setStatusTip(tr("Loads the next relation of the network (if any)."));
+    editRelationNextAct->setStatusTip(tr("Load the next relation of the network (if any)."));
     editRelationNextAct->setWhatsThis(tr("Next Relation\n\nLoads the next relation of the network (if any)"));
 
     editRelationPreviousAct = new QAction(QIcon(":/images/prevrelation.png"),
@@ -770,7 +824,7 @@ void MainWindow::initActions(){
     editRelationPreviousAct->setToolTip(
                 tr("Goto previous graph relation (ALT+Left)"));
     editRelationPreviousAct->setStatusTip(
-                tr("Loads the previous relation of the network (if any)."));
+                tr("Load the previous relation of the network (if any)."));
     editRelationPreviousAct->setWhatsThis(
                 tr("Previous Relation\n\n"
                    "Loads the previous relation of the network (if any)"));
@@ -781,12 +835,19 @@ void MainWindow::initActions(){
     editRelationAddAct->setToolTip(
                 tr("Add a new relation to the active graph (Ctrl+Shift+N)"));
     editRelationAddAct->setStatusTip(
-                tr("Adds a new relation to the network. "
+                tr("Add a new relation to the network. "
                    "Nodes will be preserved, edges will be removed. "));
     editRelationAddAct->setWhatsThis(
                 tr("Add New Relation\n\n"
                    "Adds a new relation to the active network. "
                    "Nodes will be preserved, edges will be removed. "));
+
+    editRelationRenameAct = new QAction(QIcon(":/images/edit-rename.png"),
+                                  tr("Rename Relation"),  this);
+    editRelationRenameAct->setToolTip(tr("Rename current relation"));
+    editRelationRenameAct->setStatusTip(tr("Rename the current relation of the network (if any)."));
+    editRelationRenameAct->setWhatsThis(tr("Rename Relation\n\n"
+                                           "Renames the current relation of the network (if any)."));
 
 
     zoomInAct = new QAction(QIcon(":/images/zoomin.png"), tr("Zoom In"), this);
@@ -834,28 +895,55 @@ void MainWindow::initActions(){
 
     editNodeFindAct = new QAction(QIcon(":/images/find.png"), tr("Find Node"), this);
     editNodeFindAct->setShortcut(Qt::CTRL + Qt::Key_F);
-    editNodeFindAct->setStatusTip(tr("Find and highlight a node by number or label. "
+    editNodeFindAct->setToolTip(tr("Find an actor by its number or label and highlight it. "
+                                     "Press Ctrl+F again to undo."));
+    editNodeFindAct->setStatusTip(tr("Find an actor by its number or label and highlight it. "
                                  "Press Ctrl+F again to undo."));
-    editNodeFindAct->setWhatsThis(tr("Find Node\n\nFinds a node with a given number or label and doubles its size. Ctrl+F again resizes back the node"));
+    editNodeFindAct->setWhatsThis(tr("Find Node\n\n"
+                                     "Finds a node with a given number or label and "
+                                     "highlights it by doubling its size. "
+                                     "Ctrl+F again resizes back the node"));
     connect(editNodeFindAct, SIGNAL(triggered()), this, SLOT(slotEditNodeFind()) );
 
     editNodeAddAct = new QAction(QIcon(":/images/add.png"), tr("Add Node"), this);
     editNodeAddAct->setShortcut(Qt::CTRL + Qt::Key_Period);
-    editNodeAddAct->setStatusTip(tr("Add a new node"));
-    editNodeAddAct->setWhatsThis(tr("Add Node\n\n"
-                                    "Adds a new node to the active network"));
+    editNodeAddAct->setToolTip(
+                tr("Add a new node to the network (Ctrl+.). \n\n"
+                   "You can also create a new node \n"
+                   "in a specific position by double-clicking.")
+                );
+    editNodeAddAct->setWhatsThis(
+                tr("Add new node\n\n"
+                   "Adds a new node to the network (Ctrl+.). \n\n"
+                   "Alternately, you can create a new node "
+                   "in a specific position by double-clicking "
+                   "on that spot of the canvas.")
+                );
+
     connect(editNodeAddAct, SIGNAL(triggered()), this, SLOT(slotEditNodeAdd()));
 
     editNodeRemoveAct = new QAction(QIcon(":/images/remove.png"),tr("Remove Node"), this);
     editNodeRemoveAct ->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_Period);
     //Single key shortcuts with backspace or del do no work in Mac http://goo.gl/7hz7Dx
-    editNodeRemoveAct->setStatusTip(tr("Remove a node"));
-    editNodeRemoveAct->setWhatsThis(tr("Remove Node\n\n"
-                                       "Removes an existing node from the network"));
+    editNodeRemoveAct->setToolTip(tr("Remove selected node(s). \n\n"
+                                     "If no nodes are selected, you will be prompted "
+                                     "for a node number. "));
+
+    editNodeRemoveAct->setStatusTip(tr("Remove selected node(s). If no nodes are selected, "
+                                       "you will be prompted for a node number. "));
+    editNodeRemoveAct->setWhatsThis(
+                tr("Remove node\n\n"
+                   "Removes selected node(s) from the network (Ctrl+Alt+.). \n"
+                   "Alternately, you can remove a node by right-clicking on it. \n"
+                   "If no nodes are selected, you will be prompted for a node number. ")
+                );
+
     connect(editNodeRemoveAct, SIGNAL(triggered()), this, SLOT(slotEditNodeRemove()));
 
     editNodePropertiesAct = new QAction(QIcon(":/images/properties.png"),tr("Selected Node Properties"), this);
     editNodePropertiesAct ->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_Period );
+    editNodePropertiesAct->setToolTip(tr("Change the basic properties of the selected node(s) \n\n"
+                                           "There must be some nodes on the canvas!"));
     editNodePropertiesAct->setStatusTip(tr("Change the basic properties of the selected node(s) -- "
                                            "There must be some nodes on the canvas!"));
     editNodePropertiesAct->setWhatsThis(tr("Selected Node Properties\n\n"
@@ -864,6 +952,58 @@ void MainWindow::initActions(){
                                            "their label, size, color, shape etc. \n"
                                            "You must have some node selected."));
     connect(editNodePropertiesAct, SIGNAL(triggered()), this, SLOT(slotEditNodePropertiesDialog()));
+
+
+    editNodeSelectedToCliqueAct = new QAction(QIcon(":/images/cliquenew.png"),
+                                               tr("Create a clique from selected nodes "), this);
+    editNodeSelectedToCliqueAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_C));
+    editNodeSelectedToCliqueAct->setStatusTip(tr("Connect all selected nodes with edges to create a clique -- "
+                                           "There must be some nodes selected!"));
+    editNodeSelectedToCliqueAct->setWhatsThis(tr("Clique from Selected Nodes\n\n"
+                                           "Adds all possible edges between selected nodes, "
+                                           "so that they become a complete subgraph (clique)\n"
+                                           "You must have some nodes selected."));
+    connect(editNodeSelectedToCliqueAct, SIGNAL(triggered()),
+            this, SLOT(slotEditNodeSelectedToClique()));
+
+
+    editNodeSelectedToStarAct = new QAction(QIcon(":/images/subgraphstar.png"),
+                                               tr("Create a star from selected nodes "), this);
+    editNodeSelectedToStarAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_S));
+    editNodeSelectedToStarAct->setStatusTip(tr("Connect selected nodes with edges/arcs to create a star -- "
+                                           "There must be some nodes selected!"));
+    editNodeSelectedToStarAct->setWhatsThis(tr("Star from Selected Nodes\n\n"
+                                           "Adds edges between selected nodes, "
+                                           "so that they become a star subgraph.\n"
+                                           "You must have some nodes selected."));
+    connect(editNodeSelectedToStarAct, SIGNAL(triggered()),
+            this, SLOT(slotEditNodeSelectedToStar()));
+
+
+    editNodeSelectedToCycleAct = new QAction(QIcon(":/images/subgraphcycle.png"),
+                                               tr("Create a cycle from selected nodes "), this);
+    editNodeSelectedToCycleAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_Y));
+    editNodeSelectedToCycleAct->setStatusTip(tr("Connect selected nodes with edges/arcs to create a star -- "
+                                           "There must be some nodes selected!"));
+    editNodeSelectedToCycleAct->setWhatsThis(tr("Cycle from Selected Nodes\n\n"
+                                           "Adds edges between selected nodes, "
+                                           "so that they become a cycle subgraph.\n"
+                                           "You must have some nodes selected."));
+    connect(editNodeSelectedToCycleAct, SIGNAL(triggered()),
+            this, SLOT(slotEditNodeSelectedToCycle()));
+
+
+    editNodeSelectedToLineAct = new QAction(QIcon(":/images/subgraphline.png"),
+                                               tr("Create a line from selected nodes "), this);
+    editNodeSelectedToLineAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_Y));
+    editNodeSelectedToLineAct->setStatusTip(tr("Connect selected nodes with edges/arcs to create a line-- "
+                                           "There must be some nodes selected!"));
+    editNodeSelectedToLineAct->setWhatsThis(tr("Line from Selected Nodes\n\n"
+                                           "Adds edges between selected nodes, "
+                                           "so that they become a line subgraph.\n"
+                                           "You must have some nodes selected."));
+    connect(editNodeSelectedToLineAct, SIGNAL(triggered()),
+            this, SLOT(slotEditNodeSelectedToLine()));
 
 
     editNodeColorAll = new QAction(QIcon(":/images/nodecolor.png"), tr("Change All Nodes Color (this session)"),	this);
@@ -876,7 +1016,7 @@ void MainWindow::initActions(){
 
     editNodeSizeAllAct = new QAction(QIcon(":/images/resize.png"), tr("Change All Nodes Size (this session)"),	this);
     editNodeSizeAllAct->setStatusTip(tr("Change the size of all nodes (in this session only)"));
-    editNodeSizeAllAct->setWhatsThis(tr("Nodes Size\n\n"
+    editNodeSizeAllAct->setWhatsThis(tr("Change All Nodes Size\n\n"
                                         "Click to select and apply a new size for all nodes at once. \n"
                                         "This setting will apply to this session only. \n"
                                         "To permanently change it, use Settings & Preferences"));
@@ -884,7 +1024,7 @@ void MainWindow::initActions(){
 
     editNodeShapeAll = new QAction(QIcon(":/images/nodeshape.png"), tr("Change All Nodes Shape (this session)"),	this);
     editNodeShapeAll->setStatusTip(tr("Change the shape of all nodes (this session only)"));
-    editNodeShapeAll->setWhatsThis(tr("Nodes Shape\n\n"
+    editNodeShapeAll->setWhatsThis(tr("Change All Nodes Shape\n\n"
                                       "Click to select and apply a new shape for all nodes at once."
                                       "This setting will apply to this session only. \n"
                                       "To permanently change it, use Settings & Preferences"));
@@ -895,7 +1035,7 @@ void MainWindow::initActions(){
                                          tr("Change All Node Numbers Size (this session)"),	this);
     editNodeNumbersSizeAct->setStatusTip(tr("Change the font size of the numbers of all nodes"
                                             "(in this session only)"));
-    editNodeNumbersSizeAct->setWhatsThis(tr("Node Numbers Size\n\n"
+    editNodeNumbersSizeAct->setWhatsThis(tr("Change Node Numbers Size\n\n"
                                             "Click to select and apply a new font size for all node numbers"
                                             "This setting will apply to this session only. \n"
                                             "To permanently change it, use Settings & Preferences"));
@@ -932,21 +1072,32 @@ void MainWindow::initActions(){
                                              "To permanently change it, use Settings & Preferences"));
     connect(editNodeLabelsColorAct, SIGNAL(triggered()), this, SLOT(slotEditNodeLabelsColor()));
 
-    editEdgeAddAct = new QAction(QIcon(":/images/plines.png"), tr("Add Edge (arc)"),this);
+    editEdgeAddAct = new QAction(QIcon(":/images/connect.png"), tr("Add Edge (arc)"),this);
     editEdgeAddAct->setShortcut(Qt::CTRL + Qt::Key_Slash);
     editEdgeAddAct->setStatusTip(tr("Add a directed edge (arc) from a node to another"));
-    editEdgeAddAct->setWhatsThis(tr("Add Edge\n\nAdds a directed edge (arc) from a node to another"));
+    editEdgeAddAct->setToolTip(
+                    tr("Add a new edge from a node to another (Ctrl+/).\n\n"
+                       "You can also create an edge between two nodes \n"
+                       "by double-clicking or middle-clicking on them consecutively."));
+    editEdgeAddAct->setWhatsThis(
+                tr("Add edge\n\n"
+                   "Adds a new edge from a node to another (Ctrl+/).\n\n"
+                   "Alternately, you can create a new edge between two nodes "
+                   "by double-clicking or middle-clicking on them consecutively.")
+                );
     connect(editEdgeAddAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeAdd()));
 
     editEdgeRemoveAct = new QAction(QIcon(":/images/disconnect.png"), tr("Remove Edge"), this);
     editEdgeRemoveAct ->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_Slash);
-    editEdgeRemoveAct->setStatusTip(tr("Remove an Edge"));
+    editEdgeRemoveAct ->setToolTip(tr("Remove selected edges from the network (Ctrl+Alt+/). \n\n"
+                                      "If no edge has been clicked or selected, you will be prompted \n"
+                                      "to enter edge source and target nodes for the edge to remove."));
+    editEdgeRemoveAct->setStatusTip(tr("Remove selected Edge(s) (Ctrl+Alt+/)"));
     editEdgeRemoveAct->setWhatsThis(tr("Remove Edge\n\n"
-                                       "Removes an Edge from the network."
-                                       "If an edge has been clicked previously "
-                                       "it is removed. "
-                                       "Otherwise, it asks for source and target "
-                                       "nodes"));
+                                       "Removes edges from the network (Ctrl+Alt+/). \n"
+                                       "If one or more edges has been clicked or selected, they are removed. "
+                                       "Otherwise, you will be prompted to enter edge source and target "
+                                       "nodes for the edge to remove."));
     connect(editEdgeRemoveAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeRemove()));
 
     editEdgeLabelAct = new QAction(QIcon(":/images/letters.png"), tr("Change Edge Label"), this);
@@ -974,29 +1125,67 @@ void MainWindow::initActions(){
                                          "Changes the color of all Edges"));
     connect(editEdgeColorAllAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeColorAll()));
 
-    editEdgeSymmetrizeAllAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Symmetrize Edges"), this);
+    editEdgeSymmetrizeAllAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Symmetrize Directed Edges"), this);
     editEdgeSymmetrizeAllAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_S));
-    editEdgeSymmetrizeAllAct->setStatusTip(tr("Make all arcs reciprocal (thus, a symmetric graph)."));
+    editEdgeSymmetrizeAllAct->setStatusTip(tr("Make all arcs in this relation reciprocal (thus, a symmetric graph)."));
     editEdgeSymmetrizeAllAct->setWhatsThis(
-                tr("Symmetrize Edges\n\n"
-                   "Makes all directed arcs reciprocal. \n"
+                tr("Symmetrize Directed Edges\n\n"
+                   "Makes all directed arcs in this relation reciprocal. \n"
                    "If there is an arc from node A to node B \n"
                    "then a new arc from node B to node A is created \n"
                    "with the same weight"
                    "The result is a symmetric network"));
     connect(editEdgeSymmetrizeAllAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeSymmetrizeAll()));
 
+
+    editEdgeSymmetrizeStrongTiesAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Symmetrize Edges by Strong Ties"), this);
+    editEdgeSymmetrizeStrongTiesAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_T));
+    editEdgeSymmetrizeStrongTiesAct->setStatusTip(tr("Create a new symmetric relation by counting reciprocated ties only (strong ties)."));
+    editEdgeSymmetrizeStrongTiesAct->setWhatsThis(
+                tr("Symmetrize Edges by examing Strong Ties\n\n"
+                   "Creates a new symmetric relation by keeping strong ties only. \n"
+                   "That is, a strong tie exists between actor A and actor B \n"
+                   "only when both arcs A -> B and B -> A are present. \n"
+                   "If the network is multi-relational, it asks you whether \n"
+                   "ties in the current relation or all relations are to be considered. \n"
+                   "The resulting relation is symmetric."));
+    connect(editEdgeSymmetrizeStrongTiesAct, SIGNAL(triggered()),
+            this, SLOT(slotEditEdgeSymmetrizeStrongTies()));
+
+
+    //TODO Separate action for Directed/Undirected graph drawing (without changing all existing edges).
     editEdgeUndirectedAllAct= new QAction( tr("Undirected Edges"), this);
     editEdgeUndirectedAllAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_U));
-    editEdgeUndirectedAllAct->setStatusTip(tr("Tranform all arcs to undirected edges (thus, an undirected graph)."));
+    editEdgeUndirectedAllAct->setStatusTip(tr("Enable to tranform all arcs to undirected edges and hereafter work with undirected edges ."));
     editEdgeUndirectedAllAct->setWhatsThis(
                 tr("Undirected Edges\n\n"
                    "Tranforms all directed arcs to undirected edges. \n"
-                   "The result is a undirected and symmetric network"));
+                   "The result is a undirected and symmetric network."
+                   "After that, every new edge you add, will be undirected too."
+                   "If you disable this, then all edges become directed again."));
     editEdgeUndirectedAllAct -> setCheckable(true);
     editEdgeUndirectedAllAct -> setChecked(false);
-    connect(editEdgeUndirectedAllAct, SIGNAL(toggled(bool)),
+    connect(editEdgeUndirectedAllAct, SIGNAL(triggered(bool)),
             this, SLOT(slotEditEdgeUndirectedAll(bool)));
+
+
+
+    editEdgesCocitationAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Cocitation Network"), this);
+    editEdgesCocitationAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_C));
+    editEdgesCocitationAct->setStatusTip(tr("Create a new symmetric relation by "
+                                            "connecting actors that are cocitated by others."));
+    editEdgesCocitationAct->setWhatsThis(
+                tr("Symmetrize Edges by examing Strong Ties\n\n"
+                   "Create a new symmetric relation by connecting actors "
+                   "that are cocitated by others. \n"
+                   "In the new relation, an edge will exist between actor i and "
+                   "actor j only if C(i,j) > 0, where C the Cocitation Matrix. "
+                   "Thus the actor pairs cited by more common neighbors will appear "
+                   "with a stronger tie between them than pairs those cited by fewer "
+                   "common neighbors. "
+                   "The resulting relation is symmetric."));
+    connect(editEdgesCocitationAct, SIGNAL(triggered()),
+            this, SLOT(slotEditEdgeSymmetrizeCocitation()));
 
 
     transformNodes2EdgesAct = new QAction( tr("Transform Nodes to Edges"),this);
@@ -1005,7 +1194,7 @@ void MainWindow::initActions(){
     transformNodes2EdgesAct->setWhatsThis(tr("Transform Nodes EdgesAct\n\n"
                                              "Transforms network so that nodes become Edges and vice versa"));
     connect(transformNodes2EdgesAct, SIGNAL(triggered()),
-            this, SLOT(slotTransformNodes2Edges()));
+            this, SLOT(slotEditTransformNodes2Edges()));
 
 
 
@@ -1017,26 +1206,45 @@ void MainWindow::initActions(){
                                     "Filters Nodes of some value out of the network."));
     connect(filterNodesAct, SIGNAL(triggered()), this, SLOT(slotFilterNodes()));
 
-    filterIsolateNodesAct = new QAction(tr("Filter Isolate Nodes"), this);
-    filterIsolateNodesAct -> setEnabled(true);
-    filterIsolateNodesAct -> setCheckable(true);
-    filterIsolateNodesAct -> setChecked(false);
-    filterIsolateNodesAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_F));
-    filterIsolateNodesAct -> setStatusTip(tr("Filters nodes with no edges"));
-    filterIsolateNodesAct -> setWhatsThis(tr("Filter Isolate Nodes\n\n "
-                                             "Enables or disables displaying of isolate nodes. Isolate nodes are those with no edges..."));
-    connect(filterIsolateNodesAct, SIGNAL(toggled(bool)),
-            this, SLOT(slotFilterIsolateNodes(bool)));
+    editFilterNodesIsolatesAct = new QAction(tr("Disable Isolate Nodes"), this);
+    editFilterNodesIsolatesAct -> setEnabled(true);
+    editFilterNodesIsolatesAct -> setCheckable(true);
+    editFilterNodesIsolatesAct -> setChecked(false);
+    editFilterNodesIsolatesAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_F));
+    editFilterNodesIsolatesAct -> setStatusTip(tr("Temporarily filter out nodes with no edges"));
+    editFilterNodesIsolatesAct -> setWhatsThis(tr("Filter Isolate Nodes\n\n"
+                                             "Enables or disables displaying of isolate nodes. "
+                                                  "Isolate nodes are those with no edges..."));
+    connect(editFilterNodesIsolatesAct, SIGNAL(toggled(bool)),
+            this, SLOT(slotEditFilterNodesIsolates(bool)));
 
-    filterEdgesAct = new QAction(tr("Filter Edges by Weight"), this);
-    filterEdgesAct -> setEnabled(true);
-    filterEdgesAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_F));
-    filterEdgesAct -> setStatusTip(tr("Filters Edges of some weight out of the network"));
-    filterEdgesAct -> setWhatsThis(tr("Filter Edges\n\n"
+    editFilterEdgesByWeightAct = new QAction(QIcon(":/images/filter.png"), tr("Filter Edges by Weight"), this);
+    editFilterEdgesByWeightAct -> setEnabled(true);
+    editFilterEdgesByWeightAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_F));
+    editFilterEdgesByWeightAct -> setStatusTip(tr("Temporarily filter edges of some weight out of the network"));
+    editFilterEdgesByWeightAct -> setWhatsThis(tr("Filter Edges\n\n"
                                       "Filters Edge of some specific weight out of the network."));
-    connect(filterEdgesAct , SIGNAL(triggered()),
-            this, SLOT(slotShowFilterEdgesDialog()));
+    connect(editFilterEdgesByWeightAct , SIGNAL(triggered()),
+            this, SLOT(slotEditFilterEdgesByWeightDialog()));
 
+    editFilterEdgesUnilateralAct = new QAction(tr("Disable unilateral edges"), this);
+    editFilterEdgesUnilateralAct -> setEnabled(true);
+    editFilterEdgesUnilateralAct -> setCheckable(true);
+    editFilterEdgesUnilateralAct -> setChecked(false);
+    editFilterEdgesUnilateralAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_R));
+    editFilterEdgesUnilateralAct -> setStatusTip(tr("Temporarily disable all unilateral (non-reciprocal) edges in this relation. Keeps only \"strong\" ties."));
+    editFilterEdgesUnilateralAct -> setWhatsThis(tr("Unilateral edges\n\n"
+                                      "In directed networks, a tie between two actors "
+                                      "is unilateral when only one actor identifies the other "
+                                      "as connected (i.e. friend, vote, etc). "
+                                      "A unilateral tie is depicted as a single arc. "
+                                      "These ties are considered weak, as opposed to "
+                                      "reciprocal ties where both actors identify each other as connected. "
+                                      "Strong ties are depicted as either a single undirected edge "
+                                      "or as two reciprocated arcs between two nodes. "
+                                       "By selecting this option, all unilateral edges in this relation will be disabled."));
+    connect(editFilterEdgesUnilateralAct , SIGNAL(triggered(bool)),
+            this, SLOT(slotEditFilterEdgesUnilateral(bool)));
 
 
 
@@ -1047,7 +1255,7 @@ void MainWindow::initActions(){
     strongColorationAct = new QAction ( tr("Strong Structural"), this);
     strongColorationAct -> setStatusTip( tr("Nodes are assigned the same color if they have identical in and out neighborhoods") );
     strongColorationAct -> setWhatsThis( tr("Click this to colorize nodes; Nodes are assigned the same color if they have identical in and out neighborhoods"));
-    connect(strongColorationAct, SIGNAL(triggered() ), this, SLOT(slotColorationStrongStructural()) );
+    connect(strongColorationAct, SIGNAL(triggered() ), this, SLOT(slotLayoutColorationStrongStructural()) );
 
     regularColorationAct = new QAction ( tr("Regular"), this);
     regularColorationAct ->
@@ -1059,7 +1267,7 @@ void MainWindow::initActions(){
                 tr("Click this to colorize nodes; "
                    "Nodes are assigned the same color if they have neighborhoods "
                    "of the same set of colors"));
-    connect(regularColorationAct, SIGNAL(triggered() ), this, SLOT(slotColorationRegular()) );//TODO
+    connect(regularColorationAct, SIGNAL(triggered() ), this, SLOT(slotLayoutColorationRegular()) );//TODO
 
     randLayoutAct = new QAction( tr("Random"),this);
     randLayoutAct -> setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_0);
@@ -1078,14 +1286,14 @@ void MainWindow::initActions(){
 
 
     layoutCircular_DC_Act = new QAction( tr("Degree Centrality"),	this);
-    layoutCircular_DC_Act ->setShortcut(tr("Ctrl+Alt+1"));
+    layoutCircular_DC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_1);
     layoutCircular_DC_Act
             ->setStatusTip(
                 tr("Layout all nodes on concentric circles of radius inversely "
                     "proportional to their Degree Centrality."));
     layoutCircular_DC_Act->
             setWhatsThis(
-                tr( "Degree Centrality Circular Layout\n\n "
+                tr( "Degree Centrality Circular Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their Degree Centrality"
                     "Nodes with higher DC score are closer to the centre."
@@ -1095,14 +1303,14 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutCircularByProminenceIndex()) );
 
     layoutCircular_CC_Act = new QAction( tr("Closeness Centrality"), this);
-    layoutCircular_CC_Act ->setShortcut(tr("Ctrl+Alt+2"));
+    layoutCircular_CC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_2);
     layoutCircular_CC_Act
             -> setStatusTip(
                 tr("Layout all nodes on concentric circles of radius inversely "
                     "proportional to their CC index."));
     layoutCircular_CC_Act->
             setWhatsThis(
-                tr( "Closeness Centrality Circular Layout\n\n "
+                tr( "Closeness Centrality Circular Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their CC index."
                     "Nodes having higher CC score are closer to the centre."
@@ -1113,7 +1321,7 @@ void MainWindow::initActions(){
 
     layoutCircular_IRCC_Act = new QAction(
                 tr("Influence Range Closeness Centrality"),	this);
-    layoutCircular_IRCC_Act ->setShortcut(tr("Ctrl+Alt+3"));
+    layoutCircular_IRCC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_3);
     layoutCircular_IRCC_Act
             ->setStatusTip(
                 tr(
@@ -1122,7 +1330,7 @@ void MainWindow::initActions(){
     layoutCircular_IRCC_Act->
             setWhatsThis(
                 tr(
-                    "Influence Range Closeness Centrality Circular Layout\n\n "
+                    "Influence Range Closeness Centrality Circular Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their IRCC index."
                     "Nodes having higher IRCC score are closer to the centre."
@@ -1131,7 +1339,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutCircularByProminenceIndex()));
 
     layoutCircular_BC_Act = new QAction( tr("Betweenness Centrality"), this);
-    layoutCircular_BC_Act ->setShortcut(tr("Ctrl+Alt+4"));
+    layoutCircular_BC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_4);
     layoutCircular_BC_Act ->setStatusTip(
                 tr(
                    "Layout all nodes on concentric circles of radius inversely "
@@ -1139,7 +1347,7 @@ void MainWindow::initActions(){
     layoutCircular_BC_Act->
             setWhatsThis(
                 tr(
-                    "Betweenness Centrality Circular Layout\n\n "
+                    "Betweenness Centrality Circular Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their BC index."
                     "Nodes having higher BC score are closer to the centre."
@@ -1148,7 +1356,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutCircularByProminenceIndex()));
 
     layoutCircular_SC_Act = new QAction( tr("Stress Centrality"),	this);
-    layoutCircular_SC_Act ->setShortcut(tr("Ctrl+Alt+5"));
+    layoutCircular_SC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_5);
     layoutCircular_SC_Act ->setStatusTip(
                 tr(
                    "Layout all nodes on concentric circles of radius inversely "
@@ -1156,7 +1364,7 @@ void MainWindow::initActions(){
     layoutCircular_SC_Act->
             setWhatsThis(
                 tr(
-                    "Stress Centrality Circular Layout\n\n "
+                    "Stress Centrality Circular Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their SC index."
                     "Nodes having higher SC score are closer to the centre."
@@ -1165,7 +1373,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutCircularByProminenceIndex()));
 
     layoutCircular_EC_Act = new QAction( tr("Eccentricity Centrality"),	this);
-    layoutCircular_EC_Act ->setShortcut(tr("Ctrl+Alt+6"));
+    layoutCircular_EC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_6);
     layoutCircular_EC_Act ->setStatusTip(
                 tr(
                    "Layout all nodes on concentric circles of radius inversely "
@@ -1173,7 +1381,7 @@ void MainWindow::initActions(){
     layoutCircular_EC_Act->
             setWhatsThis(
                 tr(
-                    "Eccentricity Centrality Circular Layout\n\n "
+                    "Eccentricity Centrality Circular Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their EC index."
                     "Nodes having higher EC score are closer to the centre."
@@ -1183,7 +1391,7 @@ void MainWindow::initActions(){
 
 
     layoutCircular_PC_Act = new QAction( tr("Power Centrality"),	this);
-    layoutCircular_PC_Act ->setShortcut(tr("Ctrl+Alt+7"));
+    layoutCircular_PC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_7);
     layoutCircular_PC_Act ->setStatusTip(
                 tr(
                    "Layout all nodes on concentric circles of radius inversely "
@@ -1191,7 +1399,7 @@ void MainWindow::initActions(){
     layoutCircular_PC_Act->
             setWhatsThis(
                 tr(
-                    "Power Centrality Circular Layout\n\n "
+                    "Power Centrality Circular Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their PC index."
                     "Nodes having higher PC score are closer to the centre."
@@ -1201,16 +1409,16 @@ void MainWindow::initActions(){
 
 
     layoutCircular_IC_Act = new QAction( tr("Information Centrality"),	this);
-    layoutCircular_IC_Act ->setEnabled(true);
-    layoutCircular_IC_Act ->setShortcut(tr("Ctrl+Alt+8"));
-    layoutCircular_IC_Act ->setStatusTip(
+    layoutCircular_IC_Act -> setEnabled(true);
+    layoutCircular_IC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_8);
+    layoutCircular_IC_Act -> setStatusTip(
                 tr(
                    "Layout all nodes on concentric circles of radius inversely "
                     "proportional to their IC index."));
     layoutCircular_IC_Act->
             setWhatsThis(
                 tr(
-                    "Information Centrality Circular Layout\n\n "
+                    "Information Centrality Circular Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their IC index."
                     "Nodes having higher IC score are closer to the centre."
@@ -1220,7 +1428,7 @@ void MainWindow::initActions(){
 
 
     layoutCircular_DP_Act = new QAction( tr("Degree Prestige"),	this);
-    layoutCircular_DP_Act ->setShortcut(tr("Ctrl+Alt+I"));
+    layoutCircular_DP_Act->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_I);
     layoutCircular_DP_Act ->setStatusTip(
                 tr(
                    "Layout all nodes on concentric circles of radius inversely "
@@ -1228,7 +1436,7 @@ void MainWindow::initActions(){
     layoutCircular_DP_Act->
             setWhatsThis(
                 tr(
-                    "Degree Prestige Circular Layout\n\n "
+                    "Degree Prestige Circular Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their DP index."
                     "Nodes having higher DP score are closer to the centre."
@@ -1238,7 +1446,7 @@ void MainWindow::initActions(){
 
     layoutCircular_PRP_Act = new QAction( tr("PageRank Prestige"),	this);
     layoutCircular_PRP_Act ->setEnabled(true);
-    layoutCircular_PRP_Act ->setShortcut(tr("Ctrl+Alt+K"));
+    layoutCircular_PRP_Act->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_K);
     layoutCircular_PRP_Act ->setStatusTip(
                 tr(
                    "Layout all nodes on concentric circles of radius inversely "
@@ -1246,7 +1454,7 @@ void MainWindow::initActions(){
     layoutCircular_PRP_Act->
             setWhatsThis(
                 tr(
-                    "PageRank Prestige Circular Layout\n\n "
+                    "PageRank Prestige Circular Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their PRP index."
                     "Nodes having higher PRP score are closer to the centre."
@@ -1256,7 +1464,7 @@ void MainWindow::initActions(){
 
 
     layoutCircular_PP_Act = new QAction( tr("Proximity Prestige"),	this);
-    layoutCircular_PP_Act ->setShortcut(tr("Ctrl+Alt+Y"));
+    layoutCircular_PP_Act ->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_Y);
     layoutCircular_PP_Act ->setStatusTip(
                 tr(
                    "Layout all nodes on concentric circles of radius inversely "
@@ -1264,7 +1472,7 @@ void MainWindow::initActions(){
     layoutCircular_PP_Act->
             setWhatsThis(
                 tr(
-                    "Proximity Prestige Circular Layout\n\n "
+                    "Proximity Prestige Circular Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their PP index."
                     "Nodes having higher PP score are closer to the centre."
@@ -1287,7 +1495,7 @@ void MainWindow::initActions(){
 
 
     layoutLevel_DC_Act = new QAction( tr("Degree Centrality"),	this);
-    layoutLevel_DC_Act ->setShortcut(tr("Ctrl+Shift+1"));
+    layoutLevel_DC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_1);
     layoutLevel_DC_Act
             ->setStatusTip(
                 tr(
@@ -1296,7 +1504,7 @@ void MainWindow::initActions(){
     layoutLevel_DC_Act->
              setWhatsThis(
                  tr(
-                     "Degree Centrality Levels Layout\n\n "
+                     "Degree Centrality Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
                      "proportional to their DC index."
                      "Nodes having higher DC score are closer to the top.\n\n"
@@ -1306,7 +1514,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutLevelByProminenceIndex()) );
 
     layoutLevel_CC_Act = new QAction( tr("Closeness Centrality"), this);
-    layoutLevel_CC_Act ->setShortcut(tr("Ctrl+Shift+2"));
+    layoutLevel_CC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_2);
     layoutLevel_CC_Act
             -> setStatusTip(
                 tr(
@@ -1315,7 +1523,7 @@ void MainWindow::initActions(){
     layoutLevel_CC_Act->
              setWhatsThis(
                  tr(
-                     "Closeness Centrality Levels Layout\n\n "
+                     "Closeness Centrality Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
                      "proportional to their CC index."
                      "Nodes having higher CC score are closer to the top.\n\n"
@@ -1327,7 +1535,7 @@ void MainWindow::initActions(){
 
     layoutLevel_IRCC_Act = new QAction(
                 tr("Influence Range Closeness Centrality"),	this);
-    layoutLevel_IRCC_Act ->setShortcut(tr("Ctrl+Shift+3"));
+    layoutLevel_IRCC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_3);
     layoutLevel_IRCC_Act
             ->setStatusTip(
                 tr(
@@ -1336,7 +1544,7 @@ void MainWindow::initActions(){
     layoutLevel_IRCC_Act->
              setWhatsThis(
                  tr(
-                     "Influence Range Closeness Centrality Levels Layout\n\n "
+                     "Influence Range Closeness Centrality Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
                      "proportional to their IRCC index."
                      "Nodes having higher IRCC score are closer to the top.\n\n"
@@ -1346,7 +1554,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutLevelByProminenceIndex()));
 
     layoutLevel_BC_Act = new QAction( tr("Betweenness Centrality"), this);
-    layoutLevel_BC_Act ->setShortcut(tr("Ctrl+Shift+4"));
+    layoutLevel_BC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_4);
     layoutLevel_BC_Act ->setStatusTip(
                 tr(
                     "Layout nodes on horizontal levels of height "
@@ -1354,7 +1562,7 @@ void MainWindow::initActions(){
     layoutLevel_BC_Act->
              setWhatsThis(
                  tr(
-                     "Betweenness Centrality Levels Layout\n\n "
+                     "Betweenness Centrality Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
                      "proportional to their BC index."
                      "Nodes having higher BC score are closer to the top."
@@ -1363,7 +1571,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutLevelByProminenceIndex()));
 
     layoutLevel_SC_Act = new QAction( tr("Stress Centrality"),	this);
-    layoutLevel_SC_Act ->setShortcut(tr("Ctrl+Shift+5"));
+    layoutLevel_SC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_5);
     layoutLevel_SC_Act ->setStatusTip(
                 tr(
                     "Layout nodes on horizontal levels of height "
@@ -1371,7 +1579,7 @@ void MainWindow::initActions(){
     layoutLevel_SC_Act->
              setWhatsThis(
                  tr(
-                     "Stress Centrality Levels Layout\n\n "
+                     "Stress Centrality Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
                      "proportional to their SC index."
                      "Nodes having higher SC score are closer to the top."
@@ -1380,7 +1588,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutLevelByProminenceIndex()));
 
     layoutLevel_EC_Act = new QAction( tr("Eccentricity Centrality"),	this);
-    layoutLevel_EC_Act ->setShortcut(tr("Ctrl+Shift+6"));
+    layoutLevel_EC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_6);
     layoutLevel_EC_Act ->setStatusTip(
                 tr(
                     "Layout nodes on horizontal levels of height "
@@ -1388,7 +1596,7 @@ void MainWindow::initActions(){
     layoutLevel_EC_Act->
              setWhatsThis(
                  tr(
-                     "Eccentricity Centrality Levels Layout\n\n "
+                     "Eccentricity Centrality Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
                      "proportional to their EC index."
                      "Nodes having higher EC score are closer to the top."
@@ -1398,7 +1606,7 @@ void MainWindow::initActions(){
 
 
     layoutLevel_PC_Act = new QAction( tr("Power Centrality"),	this);
-    layoutLevel_PC_Act ->setShortcut(tr("Ctrl+Shift+7"));
+    layoutLevel_PC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_7);
     layoutLevel_PC_Act ->setStatusTip(
                 tr(
                     "Layout nodes on horizontal levels of height "
@@ -1406,7 +1614,7 @@ void MainWindow::initActions(){
     layoutLevel_PC_Act->
              setWhatsThis(
                  tr(
-                     "Power Centrality Levels Layout\n\n "
+                     "Power Centrality Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
                      "proportional to their PC index."
                      "Nodes having higher PC score are closer to the top."
@@ -1417,7 +1625,7 @@ void MainWindow::initActions(){
 
     layoutLevel_IC_Act = new QAction( tr("Information Centrality"),	this);
     layoutLevel_IC_Act ->setEnabled(true);
-    layoutLevel_IC_Act ->setShortcut(tr("Ctrl+Shift+8"));
+    layoutLevel_IC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_8);
     layoutLevel_IC_Act ->setStatusTip(
                 tr(
                     "Layout nodes on horizontal levels of height "
@@ -1425,7 +1633,7 @@ void MainWindow::initActions(){
     layoutLevel_IC_Act->
              setWhatsThis(
                  tr(
-                     "Information Centrality Levels Layout\n\n "
+                     "Information Centrality Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
                      "proportional to their IC index."
                      "Nodes having higher IC score are closer to the top."
@@ -1435,7 +1643,7 @@ void MainWindow::initActions(){
 
 
     layoutLevel_DP_Act = new QAction( tr("Degree Prestige"),	this);
-    layoutLevel_DP_Act ->setShortcut(tr("Ctrl+Shift+I"));
+    layoutLevel_DP_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_I);
     layoutLevel_DP_Act ->setStatusTip(
                 tr(
                    "Layout nodes on horizontal levels of height "
@@ -1443,7 +1651,7 @@ void MainWindow::initActions(){
     layoutLevel_DP_Act->
             setWhatsThis(
                 tr(
-                    "Degree Prestige Levels Layout\n\n "
+                    "Degree Prestige Levels Layout\n\n"
                     "Repositions all nodes on horizontal levels of height"
                     "proportional to their DP index."
                     "Nodes having higher DP score are closer to the top."
@@ -1452,16 +1660,16 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutLevelByProminenceIndex()));
 
     layoutLevel_PRP_Act = new QAction( tr("PageRank Prestige"),	this);
-    layoutLevel_PRP_Act ->setEnabled(true);
-    layoutLevel_PRP_Act ->setShortcut(tr("Ctrl+Shift+K"));
-    layoutLevel_PRP_Act ->setStatusTip(
+    layoutLevel_PRP_Act -> setEnabled(true);
+    layoutLevel_PRP_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_K);
+    layoutLevel_PRP_Act -> setStatusTip(
                 tr(
                    "Layout nodes on horizontal levels of height "
                     "proportional to their PRP index."));
     layoutLevel_PRP_Act->
             setWhatsThis(
                 tr(
-                    "PageRank Prestige Levels Layout\n\n "
+                    "PageRank Prestige Levels Layout\n\n"
                     "Repositions all nodes on horizontal levels of height"
                     "proportional to their PRP index."
                     "Nodes having higher PRP score are closer to the top."
@@ -1471,16 +1679,16 @@ void MainWindow::initActions(){
 
 
     layoutLevel_PP_Act = new QAction( tr("Proximity Prestige"),	this);
-    layoutLevel_PP_Act ->setEnabled(true);
-    layoutLevel_PP_Act ->setShortcut(tr("Ctrl+Shift+Y"));
-    layoutLevel_PP_Act ->setStatusTip(
+    layoutLevel_PP_Act -> setEnabled(true);
+    layoutLevel_PP_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_Y);
+    layoutLevel_PP_Act -> setStatusTip(
                 tr(
                    "Layout nodes on horizontal levels of height "
                     "proportional to their PP index."));
     layoutLevel_PP_Act->
             setWhatsThis(
                 tr(
-                    "Proximity Prestige Levels Layout\n\n "
+                    "Proximity Prestige Levels Layout\n\n"
                     "Repositions all nodes on horizontal levels of height"
                     "proportional to their PP index."
                     "Nodes having higher PP score are closer to the top."
@@ -1490,13 +1698,13 @@ void MainWindow::initActions(){
 
 
     springLayoutAct= new QAction(tr("Spring Embedder (Eades)"), this);
-    springLayoutAct->setShortcut(tr("Alt+1"));
+    springLayoutAct-> setShortcut(Qt::ALT + Qt::Key_1);
     springLayoutAct->setStatusTip(tr("All nodes repel each other while the connected ones are attracted as if connected by springs."));
     springLayoutAct->setWhatsThis(tr("Spring Embedder Layout\n\n In this model, nodes are regarded as physical bodies (i.e. electrons) which exert repelling forces to each other, while edges are springs connecting adjacents nodes. Non-adjacent nodes repel each other while connected nodes are The algorithm continues until the system retains an equilibrium state in which all forces cancel each other. "));
     connect(springLayoutAct, SIGNAL(triggered(bool)), this, SLOT(slotLayoutSpringEmbedder()));
 
     FRLayoutAct= new QAction( tr("Fruchterman-Reingold"),	this);
-    FRLayoutAct->setShortcut(tr("Alt+2"));
+    FRLayoutAct-> setShortcut(Qt::ALT + Qt::Key_2);
     FRLayoutAct->setStatusTip(tr("Repelling forces between all nodes, and attracting forces between adjacent nodes."));
     FRLayoutAct->setWhatsThis(tr("Fruchterman-Reingold Layout\n\n Embeds a layout all nodes according to a model in which	repelling forces are used between every pair of nodes, while attracting forces are used only between adjacent nodes. The algorithm continues until the system retains its equilibrium state where all forces cancel each other."));
     connect(FRLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutFruchterman()));
@@ -1507,7 +1715,7 @@ void MainWindow::initActions(){
 
     nodeSizesByOutDegreeAct= new QAction(QIcon(":/images/nodeout.png"),
                                          tr("Node sizes by OutDegree"), this);
-    nodeSizesByOutDegreeAct->setShortcut(tr("Alt+3"));
+    nodeSizesByOutDegreeAct-> setShortcut(Qt::ALT + Qt::Key_3);
     nodeSizesByOutDegreeAct->
             setStatusTip(tr("Resizes all nodes according to their outDegree."));
     nodeSizesByOutDegreeAct
@@ -1522,11 +1730,11 @@ void MainWindow::initActions(){
 
     nodeSizesByInDegreeAct= new QAction(
                 QIcon(":/images/nodein.png"),tr("Node sizes by InDegree"), this);
-    nodeSizesByInDegreeAct->setShortcut(tr("Alt+4"));
+    nodeSizesByInDegreeAct-> setShortcut(Qt::ALT + Qt::Key_4);
     nodeSizesByInDegreeAct->setStatusTip(
                 tr("Resizes all nodes according to their InDegree."));
     nodeSizesByInDegreeAct->
-            setWhatsThis(tr("Node sizes by InDegree) \n\n "
+            setWhatsThis(tr("Node sizes by InDegree) \n\n"
                             "This method adjusts the size of each node according "
                             "to its InDegree. The more in-linked a node is, "
                             "the bigger will appear..."));
@@ -1540,96 +1748,182 @@ void MainWindow::initActions(){
     Analysis menu actions
     */
 
-    symmetryAct = new QAction(
-                QIcon(":/images/symmetry.png"), tr("Symmetry Test"), this);
-    symmetryAct ->setShortcut(tr("Shift+S"));
-    symmetryAct->setStatusTip(tr("Checks whether the network is symmetric or not"));
-    symmetryAct->setWhatsThis(
-                tr("Symmetry\n\n "
+
+    analyzeMatrixAdjInvertAct = new QAction(
+                QIcon(":/images/invertmatrix.png"), tr("Invert Adjacency Matrix"), this);
+    analyzeMatrixAdjInvertAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_I)
+                );
+    analyzeMatrixAdjInvertAct->setStatusTip(tr("Invert the adjacency matrix, if possible"));
+    analyzeMatrixAdjInvertAct->setWhatsThis(tr("Invert  Adjacency Matrix \n\n"
+                                               "Inverts the adjacency matrix using linear algebra methods."));
+    connect(analyzeMatrixAdjInvertAct, SIGNAL(triggered()),
+            this, SLOT(slotAnalyzeMatrixAdjacencyInverse()));
+
+
+    analyzeMatrixAdjTransposeAct = new QAction(
+                QIcon(":/images/transposematrix.png"), tr("Transpose Adjacency Matrix"), this);
+    analyzeMatrixAdjTransposeAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_T)
+                );
+    analyzeMatrixAdjTransposeAct->setStatusTip(tr("View the transpose of adjacency matrix"));
+    analyzeMatrixAdjTransposeAct->setWhatsThis(tr("Transpose Adjacency Matrix \n\n"
+                                                  "Computes and displays the adjacency matrix tranpose."));
+    connect(analyzeMatrixAdjTransposeAct, SIGNAL(triggered()),
+            this, SLOT(slotAnalyzeMatrixAdjacencyTranspose()));
+
+
+    analyzeMatrixAdjCocitationAct = new QAction(
+                QIcon(":/images/cocitation.png"), tr("Cocitation Matrix"), this);
+    analyzeMatrixAdjCocitationAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_C)
+                );
+    analyzeMatrixAdjCocitationAct->setStatusTip(tr("Compute the Cocitation matrix of this network."));
+    analyzeMatrixAdjCocitationAct->setWhatsThis(tr("Cocitation Matrix \n\n "
+                                                   "Computes and displays the cocitation matrix of the network. "
+                                                   "The Cocitation matrix, C=A*A^T, is a NxN matrix where "
+                                                   "each element (i,j) is the number of actors that have "
+                                                   "outbound ties/links to both actors i and j. "));
+    connect(analyzeMatrixAdjCocitationAct, SIGNAL(triggered()),
+            this, SLOT(slotAnalyzeMatrixAdjacencyCocitation()));
+
+
+    analyzeMatrixDegreeAct = new QAction(
+                QIcon(":/images/degreematrix.png"), tr("Degree Matrix"), this);
+    analyzeMatrixDegreeAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_D)
+                );
+    analyzeMatrixDegreeAct->setStatusTip(tr("Compute the Degree matrix of the network"));
+    analyzeMatrixDegreeAct->setWhatsThis(tr("Degree Matrix "
+                                        "\n\n Compute the Degree matrix of the network."));
+    connect(analyzeMatrixDegreeAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeMatrixDegree()));
+
+
+    analyzeMatrixLaplacianAct = new QAction(
+                QIcon(":/images/laplacian.png"), tr("Laplacian Matrix"), this);
+    analyzeMatrixLaplacianAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_L)
+                );
+    analyzeMatrixLaplacianAct->setStatusTip(tr("Compute the Laplacian matrix of the network"));
+    analyzeMatrixLaplacianAct->setWhatsThis(tr("Laplacian Matrix \n\n"
+                                               "Compute the Laplacian matrix of the network."));
+    connect(analyzeMatrixLaplacianAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeMatrixLaplacian()));
+
+
+
+    analyzeGraphSymmetryAct = new QAction(
+                QIcon(":/images/symmetry-edge.png"), tr("Symmetry Test"), this);
+    analyzeGraphSymmetryAct -> setShortcut(Qt::SHIFT + Qt::Key_S);
+    analyzeGraphSymmetryAct->setStatusTip(tr("Check whether the network is symmetric or not"));
+    analyzeGraphSymmetryAct->setWhatsThis(
+                tr("Symmetry\n\n"
                    "Checks whether the network is symmetric or not. \n"
                    "A network is symmetric when all edges are reciprocal, or, "
                    "in mathematical language, when the adjacency matrix is "
                    "symmetric.")
                 );
-    connect(symmetryAct, SIGNAL(triggered()), this, SLOT(slotCheckSymmetry()));
+    connect(analyzeGraphSymmetryAct, SIGNAL(triggered()),
+            this, SLOT(slotAnalyzeSymmetryCheck()));
 
-    invertAdjMatrixAct = new QAction(
-                QIcon(":/images/symmetry.png"), tr("Invert Adjacency Matrix"), this);
-    invertAdjMatrixAct ->setShortcut(tr("Shift+I"));
-    invertAdjMatrixAct->setStatusTip(tr("Inverts the adjacency matrix"));
-    invertAdjMatrixAct->setWhatsThis(tr("Invert  Adjacency Matrix \n\n Inverts the adjacency matrix using linear algebra methods."));
-    connect(invertAdjMatrixAct, SIGNAL(triggered()), this, SLOT(slotInvertAdjMatrix()));
-
-    graphDistanceAct = new QAction(
-                QIcon(":/images/distance.png"), tr("Distance"), this
+    analyzeGraphDistanceAct = new QAction(
+                QIcon(":/images/distance.png"), tr("Geodesic Distance between 2 nodes"), this
                 );
-    graphDistanceAct ->setShortcut(tr("Ctrl+G"));
-    graphDistanceAct->setStatusTip(
-                tr("Calculates the length of the shortest path between two nodes..."));
-    graphDistanceAct->setWhatsThis(
-                tr("Distance\n\n "
-                   "In graph theory, the distance (geodesic distance) of two "
+    analyzeGraphDistanceAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_G) );
+    analyzeGraphDistanceAct->setStatusTip(
+                tr("Compute the length of the shortest path (geodesic distance) between 2 nodes."));
+    analyzeGraphDistanceAct->setWhatsThis(
+                tr("Distance\n\n"
+                   "Computes the geodesic distance between two nodes."
+                   "In graph theory, the geodesic distance of two "
                    "nodes is the length (number of edges) of the shortest path "
                    "between them."));
-    connect(graphDistanceAct, SIGNAL(triggered()), this, SLOT(slotGraphDistance()));
+    connect(analyzeGraphDistanceAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeDistance()));
 
 
-    distanceMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Distances Matrix"),this);
-    distanceMatrixAct ->setShortcut(tr("Ctrl+Shift+G"));
-    distanceMatrixAct->
+    analyzeMatrixDistancesGeodesicAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesic Distances Matrix"),this);
+    analyzeMatrixDistancesGeodesicAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_M) );
+    analyzeMatrixDistancesGeodesicAct->
             setStatusTip(
-                tr("The matrix of geodesic distances between all pair of nodes.")
+                tr("Compute the matrix of geodesic distances between all pair of nodes.")
                 );
-    distanceMatrixAct->
+    analyzeMatrixDistancesGeodesicAct->
             setWhatsThis(
                 tr("Distances Matrix\n\n"
-                   "Calculates and displays the matrix of distances between all "
-                   "possible pair of nodes in the social network."
-                   "A distances matrix is a n x n square matrix, in which the "
+                   "Computes the matrix of distances between all "
+                   "pairs of actors/nodes in the social network."
+                   "A distances matrix is a n x n matrix, in which the "
                    "(i,j) element is the distance from node i to node j"
                    "The distance of two nodes is the length of the shortest path between them.")
                 );
-    connect(distanceMatrixAct, SIGNAL(triggered()), this, SLOT( slotDistancesMatrix() ) );
+    connect(analyzeMatrixDistancesGeodesicAct, SIGNAL(triggered()), this, SLOT( slotAnalyzeMatrixDistances() ) );
 
-    geodesicsMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesics Matrix"),this);
-    geodesicsMatrixAct ->setShortcut(tr("Ctrl+Alt+G"));
-    geodesicsMatrixAct->setStatusTip(tr("The number of geodesic paths between each pair of nodes "));
-    geodesicsMatrixAct->setWhatsThis(
+    analyzeMatrixGeodesicsAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesics Matrix"),this);
+    analyzeMatrixGeodesicsAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_S));
+    analyzeMatrixGeodesicsAct->setStatusTip(tr("Compute the number of geodesic paths between each pair of nodes "));
+    analyzeMatrixGeodesicsAct->setWhatsThis(
                 tr(
                     "Geodesics Matrix\n\n"
-                    "Displays a n x n square matrix, where the (i,j) element "
+                    "Displays a n x n matrix, where the (i,j) element "
                     "is the number of geodesics between node i and node j. "
                     "A geodesic of two nodes is the shortest path between them.")
                 );
-    connect(geodesicsMatrixAct, SIGNAL(triggered()),
-            this, SLOT( slotGeodesicsMatrix()) );
+    connect(analyzeMatrixGeodesicsAct, SIGNAL(triggered()),
+            this, SLOT( slotAnalyzeMatrixGeodesics()) );
 
-    diameterAct = new QAction(QIcon(":/images/diameter.png"), tr("Diameter"),this);
-    diameterAct ->setShortcut(tr("Ctrl+D"));
-    diameterAct->setStatusTip(tr("The diameter of the network."));
-    diameterAct->setWhatsThis(tr("Diameter\n\n The Diameter of a network is the maximum graph distance (maximum shortest path length) between any two nodes of the network."));
-    connect(diameterAct, SIGNAL(triggered()), this, SLOT(slotDiameter()));
+    analyzeGraphDiameterAct = new QAction(QIcon(":/images/diameter.png"), tr("Graph Diameter"),this);
+    analyzeGraphDiameterAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_D));
+    analyzeGraphDiameterAct->setStatusTip(tr("Compute the diameter of the network, "
+                                 "the maximum geodesic distance between any actors."));
+    analyzeGraphDiameterAct->setWhatsThis(tr("Diameter\n\n "
+                                 "The Diameter of a social network is the maximum geodesic distance "
+                                 "(maximum shortest path length) between any two nodes of the network."));
+    connect(analyzeGraphDiameterAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeDiameter()));
 
     averGraphDistanceAct = new QAction(QIcon(":/images/avdistance.png"), tr("Average Distance"),this);
-    averGraphDistanceAct ->setShortcut(tr("Ctrl+B"));
-    averGraphDistanceAct->setStatusTip(tr("The average shortest path length."));
-    averGraphDistanceAct->setWhatsThis(tr("Average Distance\n\n This the average length of all shortest paths (geodesics) between the connected pair of nodes of the network."));
+    averGraphDistanceAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_A));
+    averGraphDistanceAct->setStatusTip(tr("Compute the average length of shortest paths for all possible pairs of nodes."));
+    averGraphDistanceAct->setWhatsThis(
+                tr("Average Distance\n\n "
+                   "Computes the average length of shortest paths (geodesics) "
+                   "between all pairs of network actors (vertices in the graph). "
+                   "It is a measure of the efficiency or compactness of the network."));
     connect(averGraphDistanceAct, SIGNAL(triggered()),
-            this, SLOT(slotAverageGraphDistance()));
+            this, SLOT(slotAnalyzeDistanceAverage()));
 
-    eccentricityAct = new QAction(QIcon(":/images/eccentricity.png"), tr("Eccentricity"),this);
-    eccentricityAct->setShortcut(tr(""));
-    eccentricityAct->setStatusTip(tr("Eccentricity indices for each node and group Eccentricity"));
-    eccentricityAct->setWhatsThis(tr("Eccentricity\n\n The eccentricity or association number of each node i is the largest geodesic distance (i,j) between node i and every other node j. Therefore, it reflects how far, at most, is each node from every other node. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
-    connect(eccentricityAct, SIGNAL(triggered()), this, SLOT(slotEccentricity()));
+    analyzeGraphEccentricityAct = new QAction(QIcon(":/images/eccentricity.png"), tr("Eccentricity"),this);
+    analyzeGraphEccentricityAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_E ) );
+    analyzeGraphEccentricityAct->setStatusTip(tr("Compute the Eccentricity of each actor and group Eccentricity"));
+    analyzeGraphEccentricityAct->setWhatsThis(tr("Eccentricity\n\n"
+                                     "The eccentricity of each node i in a network "
+                                     "or graph is the largest geodesic distance "
+                                     "between node i and any other node j. "
+                                     "Therefore, it reflects how far, at most, "
+                                     "is each node from every other node. \n"
+                                     "The maximum eccentricity is the graph diameter "
+                                     "while the minimum is the graph radius.\n"
+                                     "This index can be calculated in both graphs "
+                                     "and digraphs but is usually best suited "
+                                     "for undirected graphs. \n"
+                                     "It can also be calculated in weighted graphs "
+                                     "although the weight of each edge (v,u) in E is "
+                                     "always considered to be 1."));
+    connect(analyzeGraphEccentricityAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeEccentricity()));
 
 
-    connectednessAct = new QAction(QIcon(":/images/distance.png"),  tr("Connectedness"), this);
-    connectednessAct ->setShortcut(tr("Ctrl+Shift+C"));
-    connectednessAct->setStatusTip(tr("Checks whether the network is a connected "
+
+    analyzeGraphConnectednessAct = new QAction(QIcon(":/images/distance.png"),  tr("Connectedness"), this);
+    analyzeGraphConnectednessAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_C) );
+    analyzeGraphConnectednessAct->setStatusTip(tr("Check whether the network is a connected "
                                       "graph, a weakly connected digraph or "
                                       "a disconnected graph/digraph..."));
-    connectednessAct->setWhatsThis(tr("Connectedness\n\n In graph theory, a "
+    analyzeGraphConnectednessAct->setWhatsThis(tr("Connectedness\n\n In graph theory, a "
                                       "graph is <b>connected</b> if there is a "
                                       "path between every pair of nodes. \n"
                                       "A digraph is <b>strongly connected</b> "
@@ -1640,55 +1934,215 @@ void MainWindow::initActions(){
                                       "A digraph or a graph is disconnected if "
                                       "at least one node is isolate."
                                       ));
-    connect(connectednessAct, SIGNAL(triggered()), this, SLOT(slotConnectedness()));
+    connect(analyzeGraphConnectednessAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeConnectedness()));
 
 
-    walksAct = new QAction(QIcon(":/images/walk.png"), tr("Walks of a given length"),this);
-    walksAct->setShortcut(tr("Ctrl+W"));
-    walksAct->setStatusTip(tr("The number of walks of a given length between any nodes."));
-    walksAct->setWhatsThis(tr("Walks of a given length\n\n A walk is a sequence of alternating vertices and edges such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. This function counts the number of walks of a given length between each pair of nodes, by studying the powers of the sociomatrix.\n "));
-    connect(walksAct, SIGNAL(triggered()), this, SLOT(slotWalksOfGivenLength() )  );
+    analyzeGraphWalksAct = new QAction(QIcon(":/images/walk.png"), tr("Walks of a given length"),this);
+    analyzeGraphWalksAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_W) );
+    analyzeGraphWalksAct->setStatusTip(tr("Compute the number of walks of a given length between any nodes."));
+    analyzeGraphWalksAct->setWhatsThis(tr("Walks of a given length\n\n"
+                              "A walk is a sequence of alternating vertices and edges "
+                              "such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, "
+                              "v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, "
+                              "where each edge, e<sub>i</sub> is defined as "
+                              "e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. "
+                              "This function counts the number of walks of a given "
+                              "length between each pair of nodes, by studying the powers of the sociomatrix.\n"));
+    connect(analyzeGraphWalksAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeWalksLength() )  );
 
-    totalWalksAct = new QAction(QIcon(":/images/walk.png"), tr("Total Walks"),this);
-    totalWalksAct->setShortcut(tr("Ctrl+Shift+W"));
-    totalWalksAct->setStatusTip(tr("Calculates the total number of walks of every possible length between all nodes"));
-    totalWalksAct->setWhatsThis(tr("Total Walks\n\n A walk is a sequence of alternating vertices and edges such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. This function counts the number of walks of any length between each pair of nodes, by studying the powers of the sociomatrix\n "));
-    connect(totalWalksAct, SIGNAL(triggered()), this, SLOT(slotTotalWalks() )  );
-
-
-    reachabilityMatrixAct = new QAction(QIcon(":/images/walk.png"), tr("Reachability Matrix"),this);
-    reachabilityMatrixAct->setShortcut(tr("Ctrl+Shift+R"));
-    reachabilityMatrixAct->setStatusTip(tr("Calculates the Reachability Matrix for the loaded network."));
-    reachabilityMatrixAct->setWhatsThis(tr("Reachability Matrix\n\n     Calculates the reachability matrix X<sup>R</sup> of the graph where the {i,j} element is 1 if the vertices i and j are reachable. \n\n Actually, this just checks whether the corresponding element of Distances matrix is not zero.\n "));
-    connect(reachabilityMatrixAct, SIGNAL(triggered()), this, SLOT(slotReachabilityMatrix() )  );
-
-    cliquesAct = new QAction(QIcon(":/images/clique.png"), tr("Clique Census (clique number <= 4) "),this);
-    cliquesAct->setShortcut(tr("Ctrl+T"));
-    cliquesAct->setStatusTip(tr("Computes a partial clique census report (for cliques up to 4 vertices)."));
-    cliquesAct->setWhatsThis(tr("Clique Census\n\n Computes aggregate counts of cliques (up to clique number 4), along with disaggregation by vertex and co-membership information. "));
-    connect(cliquesAct, SIGNAL(triggered()), this, SLOT(slotCliqueCensus() )  );
-
-
-    clusteringCoefAct = new QAction(QIcon(":/images/clique.png"), tr("Clustering Coefficient"),this);
-    clusteringCoefAct ->setShortcut(tr("Ctrl+C"));
-    clusteringCoefAct->setStatusTip(tr("The average Clustering Coefficient of the network."));
-    clusteringCoefAct->setWhatsThis(tr("Clustering Coefficient\n\n The Clustering Coefficient of a vertex quantifies how close the vertex and its neighbors are to being a clique. \n "));
-    connect(clusteringCoefAct, SIGNAL(triggered()), this, SLOT(slotClusteringCoefficient() )  );
+    analyzeGraphWalksTotalAct = new QAction(QIcon(":/images/walk.png"), tr("Total Walks"),this);
+    analyzeGraphWalksTotalAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_T) );
+    analyzeGraphWalksTotalAct->setStatusTip(tr("Calculate the total number of walks of every possible length between all nodes"));
+    analyzeGraphWalksTotalAct->setWhatsThis(tr("Total Walks\n\n"
+                                   "A walk is a sequence of alternating vertices "
+                                   "and edges such as v<sub>0</sub>e<sub>1</sub>, "
+                                   "v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, "
+                                   "e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> "
+                                   "is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. "
+                                   "This function counts the number of walks of any length "
+                                   "between each pair of nodes, by studying the powers of the sociomatrix. \n"));
+    connect(analyzeGraphWalksTotalAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeWalksTotal() )  );
 
 
-    triadCensusAct = new QAction(QIcon(":/images/triad.png"), tr("Triad Census"),this);
-    triadCensusAct->setShortcut(tr("Ctrl+Shift+T"));
-    triadCensusAct->setStatusTip(tr("Conducts a triad census for the active network."));
-    triadCensusAct->setWhatsThis(tr("Triad Census\n\n A triad census counts all the different kinds of observed triads within a network and codes them according to their number of mutual, asymmetric and non-existent dyads. \n "));
-    connect(triadCensusAct, SIGNAL(triggered()), this, SLOT(slotTriadCensus() )  );
+    analyzeMatrixReachabilityAct = new QAction(QIcon(":/images/walk.png"), tr("Reachability Matrix"),this);
+    analyzeMatrixReachabilityAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_R));
+    analyzeMatrixReachabilityAct->setStatusTip(tr("Compute the Reachability Matrix of the network."));
+    analyzeMatrixReachabilityAct->setWhatsThis(tr("Reachability Matrix\n\n"
+                                           "Calculates the reachability matrix X<sup>R</sup> of "
+                                           "the graph where the {i,j} element is 1 if "
+                                           "the vertices i and j are reachable. \n\n"
+                                           "Actually, this just checks whether the corresponding element "
+                                           "of Distances matrix is not zero.\n"));
+    connect(analyzeMatrixReachabilityAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeReachabilityMatrix() )  );
+
+
+
+    clusteringCoefAct = new QAction(QIcon(":/images/clucof.png"), tr("Local and Network Clustering Coefficient"),this);
+    clusteringCoefAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_L) );
+    clusteringCoefAct->setStatusTip(tr("Compute the Watts & Strogatz Clustering Coefficient for every actor and the network average."));
+    clusteringCoefAct->setWhatsThis(tr("Local and Network Clustering Coefficient\n\n"
+                                       "The local Clustering Coefficient  (Watts & Strogatz, 1998) "
+                                       "of an actor quantifies how close "
+                                       "the actor and her neighbors are to being a clique and "
+                                       "can be used as an indication of network transitivity. \n"));
+    connect(clusteringCoefAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeClusteringCoefficient() )  );
+
+
+
+
+
+    analyzeCommunitiesCliquesAct = new QAction(QIcon(":/images/clique.png"), tr("Clique Census"),this);
+    analyzeCommunitiesCliquesAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_U, Qt::CTRL + Qt::Key_C));
+    analyzeCommunitiesCliquesAct->setStatusTip(tr("Compute the clique census: find all maximal connected subgraphs."));
+    analyzeCommunitiesCliquesAct->setWhatsThis(tr("Clique Census\n\n"
+                                "Produces the census of network cliques (maximal connected subgraphs), "
+                                "along with disaggregation by actor and co-membership information. "));
+    connect(analyzeCommunitiesCliquesAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCommunitiesCliqueCensus() )  );
+
+
+
+    analyzeCommunitiesTriadCensusAct = new QAction(QIcon(":/images/triad.png"), tr("Triad Census (M-A-N labeling)"),this);
+    analyzeCommunitiesTriadCensusAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_U, Qt::CTRL + Qt::Key_T) );
+    analyzeCommunitiesTriadCensusAct->setStatusTip(tr("Calculate the triad census for all actors."));
+    analyzeCommunitiesTriadCensusAct->setWhatsThis(tr("Triad Census\n\n"
+                                    "A triad census counts all the different kinds of observed triads "
+                                    "within a network and codes them according to their number of mutual, "
+                                    "asymmetric and non-existent dyads using the M-A-N labeling scheme. \n"));
+    connect(analyzeCommunitiesTriadCensusAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCommunitiesTriadCensus() )  );
+
+
+
+    analyzeStrEquivalencePearsonAct = new QAction(QIcon(":/images/similarity.png"),
+                                                  tr("Pearson correlation coefficients"),this);
+    analyzeStrEquivalencePearsonAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_T, Qt::CTRL + Qt::Key_P)
+                );
+    analyzeStrEquivalencePearsonAct->setStatusTip(
+                tr("Compute Pearson Correlation Coefficients between pairs of actors. "
+                   "Most useful with valued/weighted ties (non-binary). "));
+    analyzeStrEquivalencePearsonAct->setWhatsThis(
+                tr("Pearson correlation coefficients\n\n"
+                   "Computes a correlation matrix, where the elements are the "
+                   "Pearson correlation coefficients between pairs of actors "
+                   "in terms of their tie profiles or distances (in, out or both). \n\n"
+                   "The Pearson product-moment correlation coefficient (PPMCC or PCC or Pearson's r)"
+                   "is a measure of the linear dependence/association between two variables X and Y. \n\n"
+                   "This correlation measure of similarity is particularly useful "
+                   "when ties are valued/weighted denoting strength, cost or probability.\n\n"
+                   "Note that in very sparse networks (very low density), measures such as"
+                   "\"exact matches\", \"correlation\" and \"distance\" "
+                   "will show little variation among the actors, causing "
+                   "difficulty in classifying the actors in structural equivalence classes."));
+    connect(analyzeStrEquivalencePearsonAct, SIGNAL(triggered()),
+            this, SLOT(slotAnalyzeStrEquivalencePearsonDialog() )  );
+
+
+
+    analyzeStrEquivalenceMatchesAct = new QAction(QIcon(":/images/similarity.png"),
+                                            tr("Similarity by measure (Exact, Jaccard, Hamming, Cosine, Euclidean)"),this);
+    analyzeStrEquivalenceMatchesAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_T, Qt::CTRL + Qt::Key_E)
+                );
+    analyzeStrEquivalenceMatchesAct->setStatusTip(tr("Compute a pair-wise actor similarity "
+                                               "matrix based on a measure of their ties (or distances) \"matches\" ."));
+    analyzeStrEquivalenceMatchesAct->setWhatsThis(
+                tr("Actor Similarity by measure\n\n"
+                   "Computes a pair-wise actor similarity matrix, where each element (i,j) is "
+                   "the ratio of tie (or distance) matches of actors i and j to all other actors. \n\n"
+                   "SocNetV supports the following matching measures: "
+                   "Simple Matching (Exact Matches)"
+                   "Jaccard Index (Positive Matches or Co-citation)"
+                   "Hamming distance"
+                   "Cosine similarity"
+                   "Euclidean distance"
+                   "For instance, if you select Exact Matches, a matrix element (i,j) = 0.5, "
+                   "means that actors i and j have the same ties present or absent "
+                   "to other actors 50% of the time. \n\n"
+                   "These measures of similarity are particularly useful "
+                   "when ties are binary (not valued).\n\n"
+                   "Note that in very sparse networks (very low density), measures such as"
+                   "\"exact matches\", \"correlation\" and \"distance\" "
+                   "will show little variation among the actors, causing "
+                   "difficulty in classifying the actors in structural equivalence classes."));
+    connect(analyzeStrEquivalenceMatchesAct, SIGNAL(triggered()),
+            this, SLOT(slotAnalyzeStrEquivalenceSimilarityMeasureDialog() )  );
+
+
+
+    analyzeStrEquivalenceTieProfileDissimilaritiesAct = new QAction(QIcon(":/images/dm.png"),
+                                                tr("Tie Profile Dissimilarities/Distances"),this);
+    analyzeStrEquivalenceTieProfileDissimilaritiesAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_T, Qt::CTRL + Qt::Key_T) );
+    analyzeStrEquivalenceTieProfileDissimilaritiesAct->
+            setStatusTip(
+                tr("Compute tie profile dissimilarities/distances "
+                   "(Euclidean, Manhattan, Jaccard, Hamming) between all pair of nodes.")
+                );
+    analyzeStrEquivalenceTieProfileDissimilaritiesAct->
+            setWhatsThis(
+                tr("Tie Profile Dissimilarities/Distances\n\n"
+                   "Computes a matrix of tie profile distances/dissimilarities "
+                   "between all pairs of actors/nodes in the social network "
+                   "using an ordinary metric such as Euclidean distance, "
+                   "Manhattan distance, Jaccard distance or Hamming distance)."
+                   "The resulted distance matrix is a n x n matrix, in which the "
+                   "(i,j) element is the distance or dissimilarity between "
+                   "the tie profiles of node i and node j."
+                   )
+                );
+    connect(analyzeStrEquivalenceTieProfileDissimilaritiesAct, SIGNAL(triggered()),
+            this, SLOT( slotAnalyzeStrEquivalenceDissimilaritiesDialog() ) );
+
+
+    analyzeStrEquivalenceClusteringHierarchicalAct = new QAction(QIcon(":/images/hierarchical.png"),
+                                                                 tr("Hierarchical clustering"),this);
+    analyzeStrEquivalenceClusteringHierarchicalAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_T, Qt::CTRL + Qt::Key_H));
+
+    analyzeStrEquivalenceClusteringHierarchicalAct->setStatusTip(
+                tr("Perform agglomerative cluster analysis of the actors in the social network"));
+    analyzeStrEquivalenceClusteringHierarchicalAct->setWhatsThis(
+                tr("Hierarchical clustering\n\n"
+                   "Hierarchical clustering (or hierarchical cluster analysis, HCA) "
+                   "is a method of cluster analysis which builds a hierarchy "
+                   "of clusters, based on their elements dissimilarity. "
+                   "In SNA context these clusters usually consist of "
+                   "network actors. \n"
+
+                   "This method takes the social network distance matrix as input and uses "
+                   "the Agglomerative \"bottom up\" approach where each "
+                   "actor starts in its own cluster (Level 0). In each subsequent Level, "
+                   "as we move up the clustering hierarchy, a pair of clusters "
+                   "are merged into a larger cluster, until "
+                   "all actors end up in the same cluster. "
+
+                   "To decide which clusters should be combined at each level, a measure of "
+                   "dissimilarity between sets of observations is required. "
+                   "This measure consists of a metric for the distance between actors "
+                   "(i.e. manhattan distance) and a linkage criterion (i.e. single-linkage clustering). "
+                   "This linkage criterion (essentially a definition of distance between clusters), "
+                   "differentiates between the different HCA methods."
+
+                   "Note that the complexity of agglomerative clustering is O( n^2 log(n) ), "
+                   "therefore is too slow for large data sets."
+                   ));
+    connect(analyzeStrEquivalenceClusteringHierarchicalAct, SIGNAL(triggered()),
+            this, SLOT(slotAnalyzeStrEquivalenceClusteringHierarchicalDialog() )  );
+
 
     cDegreeAct = new QAction(tr("Degree Centrality (DC)"),this);
-    cDegreeAct->setShortcut(tr("Ctrl+1"));
+    cDegreeAct-> setShortcut(Qt::CTRL + Qt::Key_1);
     cDegreeAct
-            ->setStatusTip(tr("Degree Centrality indices and group Degree Centralization."));
+            ->setStatusTip(tr("Compute Degree Centrality indices for every actor and group Degree Centralization."));
     cDegreeAct
             ->setWhatsThis(
-                tr( "Degree Centrality (DC)\n\n "
+                tr( "Degree Centrality (DC)\n\n"
                     "For each node v, the DC index is the number of edges "
                     "attached to it (in undirected graphs) or the total number "
                     "of arcs (outLinks) starting from it (in digraphs).\n"
@@ -1698,18 +2152,18 @@ void MainWindow::initActions(){
                     "It can also be calculated in weighted graphs. "
                     "In weighted relations, DC is the sum of weights of all "
                     "edges/outLinks attached to v."));
-    connect(cDegreeAct, SIGNAL(triggered()), this, SLOT(slotCentralityDegree()));
+    connect(cDegreeAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityDegree()));
 
 
     cClosenessAct = new QAction(tr("Closeness Centrality (CC)"), this);
-    cClosenessAct->setShortcut(tr("Ctrl+2"));
+    cClosenessAct-> setShortcut(Qt::CTRL + Qt::Key_2);
     cClosenessAct
             ->setStatusTip(
                 tr(
-                    "Closeness Centrality indices and group Closeness Centralization."));
+                    "Compute Closeness Centrality indices for every actor and group Closeness Centralization."));
     cClosenessAct
             ->setWhatsThis(
-                tr("Closeness Centrality (CC)\n\n "
+                tr("Closeness Centrality (CC)\n\n"
                    "For each node v, CC the inverse sum of "
                    "the shortest distances between v and every other node. CC is "
                    "interpreted as the ability to access information through the "
@@ -1718,17 +2172,18 @@ void MainWindow::initActions(){
                    "\n\nThis index can be calculated in both graphs and digraphs. "
                    "It can also be calculated in weighted graphs although the weight of "
                    "each edge (v,u) in E is always considered to be 1. "));
-    connect(cClosenessAct, SIGNAL(triggered()), this, SLOT(slotCentralityCloseness()));
+    connect(cClosenessAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityCloseness()));
 
     cInfluenceRangeClosenessAct = new QAction(tr("Influence Range Closeness Centrality (IRCC)"), this);
-    cInfluenceRangeClosenessAct->setShortcut(tr("Ctrl+3"));
+    cInfluenceRangeClosenessAct-> setShortcut(Qt::CTRL + Qt::Key_3);
     cInfluenceRangeClosenessAct
             ->setStatusTip(
-                tr("Closeness Centrality indices focusing on how proximate each node is"
-                   "to the nodes in its influence range"));
+                tr("Compute Influence Range Closeness Centrality indices for every actor "
+                   "focusing on how proximate each one is"
+                   "to others in its influence range"));
     cInfluenceRangeClosenessAct
             ->setWhatsThis(
-                tr("Influence Range Closeness Centrality (IRCC)\n\n "
+                tr("Influence Range Closeness Centrality (IRCC)\n\n"
                    "For each node v, IRCC is the standardized inverse average distance "
                    "between v and every reachable node.\n"
                    "This improved CC index is optimized for graphs and directed graphs which "
@@ -1738,24 +2193,42 @@ void MainWindow::initActions(){
                    "distances from node v to nodes in its influence range J (nodes reachable from v). "
                    "The IRCC formula used is the ratio of the fraction of nodes reachable by v "
                    "(|J|/(n-1)) to the average distance of these nodes from v (sum(d(v,j))/|J|"));
-    connect(cInfluenceRangeClosenessAct, SIGNAL(triggered()), this, SLOT(slotCentralityClosenessInfluenceRange()));
+    connect(cInfluenceRangeClosenessAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityClosenessIR()));
 
     cBetweennessAct = new QAction(tr("Betweenness Centrality (BC)"), this);
-    cBetweennessAct->setShortcut(tr("Ctrl+4"));
-    cBetweennessAct->setWhatsThis(tr("Betweenness Centrality (BC)\n\n For each node v, BC is the ratio of all geodesics between pairs of nodes which run through v. It reflects how often an node lies on the geodesics between the other nodes of the network. It can be interpreted as a measure of control. A node which lies between many others is assumed to have a higher likelihood of being able to control information flow in the network. \n\n Note that betweenness centrality assumes that all geodesics have equal weight or are equally likely to be chosen for the flow of information between any two nodes. This is reasonable only on \"regular\" networks where all nodes have similar degrees. On networks with significant degree variance you might want to try informational centrality instead. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
-    cBetweennessAct->setStatusTip(tr("Betweenness Centrality indices and group Betweenness Centralization."));
-    connect(cBetweennessAct, SIGNAL(triggered()), this, SLOT(slotCentralityBetweenness()));
+    cBetweennessAct-> setShortcut(Qt::CTRL + Qt::Key_4);
+    cBetweennessAct->setWhatsThis(tr("Betweenness Centrality (BC)\n\n"
+                                     "For each node v, BC is the ratio of all geodesics between pairs of nodes which run through v. "
+                                     "It reflects how often an node lies on the geodesics between the other nodes of the network. "
+                                     "It can be interpreted as a measure of control. "
+                                     "A node which lies between many others is assumed to have a higher likelihood of being able "
+                                     "to control information flow in the network. \n\n"
+                                     "Note that betweenness centrality assumes that all geodesics "
+                                     "have equal weight or are equally likely to be chosen for the flow of information "
+                                     "between any two nodes. This is reasonable only on \"regular\" networks where all "
+                                     "nodes have similar degrees. On networks with significant degree variance you might want "
+                                     "to try informational centrality instead. \n\nThis index can be calculated in both graphs "
+                                     "and digraphs but is usually best suited for undirected graphs. It can also be calculated"
+                                     " in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
+    cBetweennessAct->setStatusTip(tr("Compute Betweenness Centrality indices and group Betweenness Centralization."));
+    connect(cBetweennessAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityBetweenness()));
 
     cStressAct = new QAction(tr("Stress Centrality (SC)"), this);
-    cStressAct->setShortcut(tr("Ctrl+5"));
-    cStressAct->setStatusTip(tr("Stress Centrality indices and group Stress Centralization."));
-    cStressAct->setWhatsThis(tr("Stress Centrality (SC)\n\n For each node v, SC is the total number of geodesics between all other nodes which run through v. A node with high SC is considered 'stressed', since it is traversed by a high number of geodesics. When one node falls on all other geodesics between all the remaining (N-1) nodes, then we have a star graph with maximum Stress Centrality. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
-    connect(cStressAct, SIGNAL(triggered()), this, SLOT(slotCentralityStress()));
+    cStressAct-> setShortcut(Qt::CTRL + Qt::Key_5);
+    cStressAct->setStatusTip(tr("Compute Stress Centrality indices for every actor and group Stress Centralization."));
+    cStressAct->setWhatsThis(tr("Stress Centrality (SC)\n\n"
+                                "For each node v, SC is the total number of geodesics between all other nodes which run through v. "
+                                "A node with high SC is considered 'stressed', since it is traversed by a high number of geodesics. "
+                                "When one node falls on all other geodesics between all the remaining (N-1) nodes, "
+                                "then we have a star graph with maximum Stress Centrality. \n\n"
+                                "This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. "
+                                "It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
+    connect(cStressAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityStress()));
 
 
     cEccentAct = new QAction(tr("Eccentricity Centrality (EC)"), this);
-    cEccentAct->setShortcut(tr("Ctrl+6"));
-    cEccentAct->setStatusTip(tr("Eccentricity Centrality indices for each node."));
+    cEccentAct-> setShortcut(Qt::CTRL + Qt::Key_6);
+    cEccentAct->setStatusTip(tr("Compute Eccentricity Centrality indices for each node."));
     cEccentAct->setWhatsThis(
                 tr("Eccentricity Centrality (EC)\n\n For each node i, "
                    "the EC is the inverse of the maximum geodesic distance "
@@ -1764,53 +2237,74 @@ void MainWindow::initActions(){
                    "This index can be calculated in both graphs and digraphs "
                    "but is usually best suited for undirected graphs. "
                    "It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
-    connect(cEccentAct, SIGNAL(triggered()), this, SLOT(slotCentralityEccentricity()));
+    connect(cEccentAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityEccentricity()));
 
 
-    cPowerAct = new QAction(tr("Power Centrality (PC)"), this);
-    cPowerAct->setShortcut(tr("Ctrl+7"));
-    cPowerAct->setStatusTip(tr("Calculate and display Power Centrality indices (aka Gil-Schmidt Power Centrality) and group Power Centralization"));
-    cPowerAct->setWhatsThis(tr("Power Centrality (PC)\n\n For each node v, this index sums its degree (with weight 1), with the size of the 2nd-order neighbourhood (with weight 2), and in general, with the size of the kth order neighbourhood (with weight k). Thus, for each node in the network the most important other nodes are its immediate neighbours and then in decreasing importance the nodes of the 2nd-order neighbourhood, 3rd-order neighbourhood etc. For each node, the sum obtained is normalised by the total numbers of nodes in the same component minus 1. Power centrality has been devised by Gil-Schmidt. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1 (therefore not considered)."));
-    connect(cPowerAct, SIGNAL(triggered()), this, SLOT(slotCentralityPower()));
+    cPowerAct = new QAction(tr("Gil and Schmidt Power Centrality (PC)"), this);
+    cPowerAct-> setShortcut(Qt::CTRL + Qt::Key_7);
+    cPowerAct->setStatusTip(tr("Compute Power Centrality indices (aka Gil-Schmidt Power Centrality) for every actor and group Power Centralization"));
+    cPowerAct->setWhatsThis(tr("Power Centrality (PC)\n\n "
+                               "For each node v, this index sums its degree (with weight 1), with the size of the 2nd-order neighbourhood (with weight 2), and in general, with the size of the kth order neighbourhood (with weight k). Thus, for each node in the network the most important other nodes are its immediate neighbours and then in decreasing importance the nodes of the 2nd-order neighbourhood, 3rd-order neighbourhood etc. For each node, the sum obtained is normalised by the total numbers of nodes in the same component minus 1. Power centrality has been devised by Gil-Schmidt. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1 (therefore not considered)."));
+    connect(cPowerAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityPower()));
 
 
     cInformationAct = new QAction(tr("Information Centrality (IC)"),	this);
-    cInformationAct->setShortcut(tr("Ctrl+8"));
+    cInformationAct-> setShortcut(Qt::CTRL + Qt::Key_8);
     cInformationAct->setEnabled(true);
-    cInformationAct->setStatusTip(tr("Calculate and display Information Centrality indices and group Information Centralization"));
+    cInformationAct->setStatusTip(tr("Compute Information Centrality indices and group Information Centralization"));
     cInformationAct->setWhatsThis(
-                tr("Information Centrality (IC)\n\n "
+                tr("Information Centrality (IC)\n\n"
                    "Information centrality counts all paths between "
                    "nodes weighted by strength of tie and distance. "
                    "This centrality  measure developed by Stephenson and Zelen (1989) "
                    "focuses on how information might flow through many different paths. \n\n"
-                   "This index should be calculated only for  graphs. \n\n "
+                   "This index should be calculated only for  graphs. \n\n"
                    "Note: To compute this index, SocNetV drops all isolated nodes."));
-    connect(cInformationAct, SIGNAL(triggered()), this, SLOT(slotCentralityInformation()));
+    connect(cInformationAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityInformation()));
+
+
+    cEigenvectorAct = new QAction(tr("Eigenvector Centrality (EVC)"),	this);
+    cEigenvectorAct-> setShortcut(Qt::CTRL + Qt::Key_9);
+    cEigenvectorAct->setEnabled(true);
+    cEigenvectorAct->setStatusTip(tr("Compute Eigenvector Centrality indices and group Eigenvector Centralization"));
+    cEigenvectorAct->setWhatsThis(
+                tr("Eigenvector Centrality (EVC)\n\n"
+                   "Computes the Eigenvector centrality of each node in a social network "
+                   "which is defined as the ith element of the leading eigenvector "
+                   "of the adjacency matrix. The leading eigenvector is the "
+                   "eigenvector corresponding to the largest positive eigevalue."
+                   "The Eigenvector Centrality, proposed by Bonacich (1989), is "
+                   "an extension of the simpler Degree Centrality because it gives "
+                   "each actor a score proportional to the scores of its neighbors. "
+                   "Thus, a node may be important, in terms of its EC, because it "
+                   "has lots of ties or it has fewer ties to important other nodes."));
+    connect(cEigenvectorAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityEigenvector()));
+
+
 
     cInDegreeAct = new QAction(tr("Degree Prestige (DP)"),	 this);
-    cInDegreeAct->setStatusTip(tr("Degree Prestige (InDegree) indices "));
-    cInDegreeAct->setShortcut(tr("Ctrl+I"));
+    cInDegreeAct->setStatusTip(tr("Compute Degree Prestige (InDegree) indices "));
+    cInDegreeAct-> setShortcut(Qt::CTRL + Qt::Key_I);
     cInDegreeAct->setWhatsThis(tr("InDegree (Degree Prestige)\n\n For each node k, this the number of arcs ending at k. Nodes with higher in-degree are considered more prominent among others. In directed graphs, this index measures the prestige of each node/actor. Thus it is called Degree Prestige. Nodes who are prestigious tend to receive many nominations or choices (in-links). The largest the index is, the more prestigious is the node. \n\nThis index can be calculated only for digraphs. In weighted relations, DP is the sum of weights of all arcs/inLinks ending at node v."));
-    connect(cInDegreeAct, SIGNAL(triggered()), this, SLOT(slotPrestigeDegree()));
+    connect(cInDegreeAct, SIGNAL(triggered()), this, SLOT(slotAnalyzePrestigeDegree()));
 
     cPageRankAct = new QAction(tr("PageRank Prestige (PRP)"),	this);
-    cPageRankAct->setShortcut(tr("Ctrl+K"));
+    cPageRankAct-> setShortcut(Qt::CTRL + Qt::Key_K);
     cPageRankAct->setEnabled(true);
-    cPageRankAct->setStatusTip(tr("Calculate and display PageRank Prestige"));
+    cPageRankAct->setStatusTip(tr("Compute PageRank Prestige indices for every actor"));
     cPageRankAct->setWhatsThis(tr("PageRank Prestige\n\n An importance ranking for each node based on the link structure of the network. PageRank, developed by Page and Brin (1997), focuses on how nodes are connected to each other, treating each edge from a node as a citation/backlink/vote to another. In essence, for each node PageRank counts all backlinks to it, but it does so by not counting all edges equally while it normalizes each edge from a node by the total number of edges from it. PageRank is calculated iteratively and it corresponds to the principal eigenvector of the normalized link matrix. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for directed graphs since it is a prestige measure. It can also be calculated in weighted graphs. In weighted relations, each backlink to a node v from another node u is considered to have weight=1 but it is normalized by the sum of outLinks weights (outDegree) of u. Therefore, nodes with high outLink weights give smaller percentage of their PR to node v."));
-    connect(cPageRankAct, SIGNAL(triggered()), this, SLOT(slotPrestigePageRank()));
+    connect(cPageRankAct, SIGNAL(triggered()), this, SLOT(slotAnalyzePrestigePageRank()));
 
     cProximityPrestigeAct = new QAction(tr("Proximity Prestige (PP)"),	this);
-    cProximityPrestigeAct->setShortcut(tr("Ctrl+Y"));
+    cProximityPrestigeAct-> setShortcut(Qt::CTRL + Qt::Key_Y);
     cProximityPrestigeAct->setEnabled(true);
     cProximityPrestigeAct->setStatusTip(tr("Calculate and display Proximity Prestige (digraphs only)"));
     cProximityPrestigeAct
             ->setWhatsThis(
-                tr("Proximity Prestige (PP) \n\n "
+                tr("Proximity Prestige (PP) \n\n"
                    "This index measures how proximate a node v is to the nodes "
                    "in its influence domain I (the influence domain I of a node "
-                   "is the number of other nodes that can reach it).\n "
+                   "is the number of other nodes that can reach it).\n\n"
                    "In PP calculation, proximity is based on distances to rather "
                    "than distances from node v. \n"
                    "To put it simply, in PP what matters is how close are all "
@@ -1823,7 +2317,7 @@ void MainWindow::initActions(){
                    "to the average distance of that nodes to v: \n"
                    "PP = (I/(N-1))/(sum{d(u,v)}/I) \n"
                    "where the sum is over all nodes in I."));
-    connect(cProximityPrestigeAct, SIGNAL(triggered()), this, SLOT(slotPrestigeProximity()));
+    connect(cProximityPrestigeAct, SIGNAL(triggered()), this, SLOT(slotAnalyzePrestigeProximity()));
 
 
     /**
@@ -1943,7 +2437,7 @@ void MainWindow::initActions(){
                 tr("Toggle displaying directional Arrows on edges (this session only)"));
     optionsEdgeArrowsAct->setWhatsThis(
                 tr("Display edge Arrows\n\n"
-                   "Enables or disables displaying of arrows on edges.\n "
+                   "Enables or disables displaying of arrows on edges.\n\n"
                    "Useful if all links are reciprocal (undirected graph).\n"
                    "This setting will apply to this session only. \n"
                    "To permanently change it, use Settings & Preferences"));
@@ -1996,7 +2490,7 @@ void MainWindow::initActions(){
                 tr("Select and display a custom image in the background"
                    "(for this session only)"));
     backgroundImageAct->setWhatsThis(
-                tr("Background image\n\n "
+                tr("Background image\n\n"
                    "Enable to select an image file from your computer, "
                    "which will be displayed in the background instead of plain color."
                    "This setting will apply to this session only. \n"
@@ -2009,11 +2503,14 @@ void MainWindow::initActions(){
     openSettingsAct = new QAction(QIcon(":/images/appsettings.png"), tr("Settings"),	this);
     openSettingsAct->setShortcut(Qt::CTRL + Qt::Key_Comma);
     openSettingsAct->setEnabled(true);
+    openSettingsAct->setToolTip(
+                tr("Open the Settings dialog where you can save your preferences "
+                   "for all future sessions"));
     openSettingsAct->setStatusTip(
-                tr("Open Settings dialog where you can save your preferences "
+                tr("Open the Settings dialog to save your preferences "
                    "for all future sessions"));
     openSettingsAct->setWhatsThis(
-                tr("Settings\n\n "
+                tr("Settings\n\n"
                    "Opens the Settings dialog where you can edit and save settings "
                    "permanently for all subsequent sessions."));
     connect(openSettingsAct, SIGNAL(triggered()),
@@ -2026,7 +2523,7 @@ void MainWindow::initActions(){
     Help menu actions
     */
     helpApp = new QAction(QIcon(":/images/help.png"), tr("Manual"),	this);
-    helpApp ->setShortcut(tr("F1"));
+    helpApp -> setShortcut(Qt::Key_F1);
     helpApp->setStatusTip(tr("Read the manual..."));
     helpApp->setWhatsThis(tr("Manual\n\nDisplays the documentation of SocNetV"));
     connect(helpApp, SIGNAL(triggered()), this, SLOT(slotHelp()));
@@ -2083,6 +2580,7 @@ void MainWindow::initMenuBar() {
     networkMenu -> addSeparator();
     importSubMenu = new QMenu(tr("Import ..."));
     importSubMenu -> setIcon(QIcon(":/images/import.png"));
+    importSubMenu -> addAction(networkImportGML);
     importSubMenu -> addAction(networkImportPajek);
     importSubMenu -> addAction(networkImportSM);
     importSubMenu -> addAction(networkImportTwoModeSM);
@@ -2096,6 +2594,7 @@ void MainWindow::initMenuBar() {
     networkMenu -> addAction (networkViewFileAct);
     networkMenu -> addSeparator();
     networkMenu -> addAction (networkViewSociomatrixAct);
+    networkMenu -> addAction (networkViewSociomatrixPlotAct);
     networkMenu -> addSeparator();
 
     networkMenu -> addAction (networkDataSetSelectAct);
@@ -2148,6 +2647,7 @@ void MainWindow::initMenuBar() {
     editMenu -> addAction (editRelationPreviousAct);
     editMenu -> addAction (editRelationNextAct);
     editMenu -> addAction (editRelationAddAct);
+    editMenu -> addAction (editRelationRenameAct);
 
     editMenu -> addSeparator();
 
@@ -2180,6 +2680,14 @@ void MainWindow::initMenuBar() {
     editNodeMenu -> addAction (editNodePropertiesAct);
 
     editNodeMenu -> addSeparator();
+
+    editNodeMenu -> addAction (editNodeSelectedToCliqueAct);
+    editNodeMenu -> addAction (editNodeSelectedToStarAct);
+    editNodeMenu -> addAction (editNodeSelectedToCycleAct);
+    editNodeMenu -> addAction (editNodeSelectedToLineAct);
+
+    editNodeMenu -> addSeparator();
+
     editNodeMenu -> addAction (editNodeColorAll);
     editNodeMenu -> addAction (editNodeSizeAllAct);
     editNodeMenu -> addAction (editNodeShapeAll);
@@ -2197,14 +2705,16 @@ void MainWindow::initMenuBar() {
     editEdgeMenu -> addAction(editEdgeAddAct);
     editEdgeMenu -> addAction(editEdgeRemoveAct);
     editEdgeMenu -> addSeparator();
+    editEdgeMenu -> addAction (editEdgeSymmetrizeAllAct);
+    editEdgeMenu -> addAction (editEdgeSymmetrizeStrongTiesAct);
+    editEdgeMenu -> addAction (editEdgesCocitationAct);
+    editEdgeMenu -> addAction (editEdgeUndirectedAllAct);
+    editEdgeMenu -> addSeparator();
     editEdgeMenu -> addAction(editEdgeLabelAct);
     editEdgeMenu -> addAction(editEdgeColorAct);
     editEdgeMenu -> addAction(editEdgeWeightAct);
     editEdgeMenu -> addSeparator();
     editEdgeMenu -> addAction (editEdgeColorAllAct);
-    editEdgeMenu -> addSeparator();
-    editEdgeMenu -> addAction (editEdgeSymmetrizeAllAct);
-    editEdgeMenu -> addAction (editEdgeUndirectedAllAct);
 
     //   transformNodes2EdgesAct -> addTo (editMenu);
 
@@ -2214,47 +2724,59 @@ void MainWindow::initMenuBar() {
     editMenu ->addMenu(filterMenu);
 
     filterMenu -> addAction(filterNodesAct );
-    filterMenu -> addAction(filterIsolateNodesAct );
-    filterMenu -> addAction(filterEdgesAct );
-
-
-
-
+    filterMenu -> addAction(editFilterNodesIsolatesAct );
+    filterMenu -> addAction(editFilterEdgesByWeightAct );
+    filterMenu -> addAction(editFilterEdgesUnilateralAct);
 
 
     /** menuBar entry: analyze menu */
-    statMenu = menuBar()->addMenu(tr("&Analyze"));
-    statMenu -> addAction (symmetryAct);
-    statMenu -> addAction (invertAdjMatrixAct);
-    //	statMenu -> addAction (netDensity);
+    analysisMenu = menuBar()->addMenu(tr("&Analyze"));
+    matrixMenu = new QMenu(tr("Adjacency Matrix and Matrices..."));
+    matrixMenu -> setIcon(QIcon(":/images/sm.png"));
+    analysisMenu -> addMenu (matrixMenu);
+    matrixMenu -> addAction (networkViewSociomatrixAct);
+    matrixMenu -> addAction (networkViewSociomatrixPlotAct);
+    matrixMenu -> addSeparator();
+    matrixMenu -> addAction (analyzeMatrixAdjInvertAct);
+    matrixMenu -> addSeparator();
+    matrixMenu -> addAction(analyzeMatrixAdjTransposeAct);
+    matrixMenu -> addSeparator();
+    matrixMenu -> addAction(analyzeMatrixAdjCocitationAct);
+    matrixMenu -> addSeparator();
+    matrixMenu -> addAction (analyzeMatrixDegreeAct);
+    matrixMenu -> addAction (analyzeMatrixLaplacianAct);
+    //	analysisMenu -> addAction (netDensity);
 
-    statMenu -> addSeparator();
-    statMenu -> addAction (graphDistanceAct);
-    statMenu -> addAction (averGraphDistanceAct);
+    analysisMenu -> addSeparator();
+    cohesionMenu = new QMenu(tr("Cohesion..."));
+    cohesionMenu -> setIcon(QIcon(":/images/distances.png"));
+    analysisMenu -> addMenu(cohesionMenu);
+    cohesionMenu -> addAction (analyzeGraphSymmetryAct);
+    cohesionMenu -> addSection("Graph distances");
+    cohesionMenu -> addAction (analyzeGraphDistanceAct);
+    cohesionMenu -> addAction (averGraphDistanceAct);
+    cohesionMenu -> addSeparator();
+    cohesionMenu -> addAction (analyzeMatrixDistancesGeodesicAct);
+    cohesionMenu -> addAction (analyzeMatrixGeodesicsAct);
+    cohesionMenu -> addSeparator();
+    cohesionMenu -> addAction (analyzeGraphEccentricityAct);
+    cohesionMenu -> addAction (analyzeGraphDiameterAct);
+    cohesionMenu  -> addSeparator();
+    cohesionMenu -> addAction(analyzeGraphConnectednessAct);
+    cohesionMenu  -> addSeparator();
+    cohesionMenu -> addAction (analyzeGraphWalksAct);
+    cohesionMenu -> addAction (analyzeGraphWalksTotalAct);
+    cohesionMenu  -> addSeparator();
+    cohesionMenu -> addAction (analyzeMatrixReachabilityAct);
+    cohesionMenu -> addSeparator();
+    cohesionMenu -> addAction (clusteringCoefAct);
 
-    statMenu -> addAction (distanceMatrixAct);
-    statMenu -> addAction (geodesicsMatrixAct);
-    statMenu -> addAction (eccentricityAct);
-    statMenu -> addAction (diameterAct);
 
-
-    statMenu -> addSeparator();
-    statMenu -> addAction(connectednessAct);
-    statMenu -> addAction (walksAct);
-    statMenu -> addAction (totalWalksAct);
-    statMenu -> addAction (reachabilityMatrixAct);
-
-    statMenu -> addSeparator();
-    statMenu -> addAction (cliquesAct);
-    statMenu -> addAction (clusteringCoefAct);
-
-    statMenu -> addSeparator();
-    statMenu -> addAction (triadCensusAct);
-
-    statMenu->addSeparator();
+    analysisMenu->addSeparator();
+    // CENTRALITIES
     centrlMenu = new QMenu(tr("Centrality and Prestige indices..."));
     centrlMenu -> setIcon(QIcon(":/images/centrality.png"));
-    statMenu->addMenu(centrlMenu);
+    analysisMenu->addMenu(centrlMenu);
     centrlMenu -> addSection(QIcon(":/images/centrality.png"), tr("Centrality"));
 
     centrlMenu -> addAction (cDegreeAct);
@@ -2265,10 +2787,35 @@ void MainWindow::initMenuBar() {
     centrlMenu -> addAction (cEccentAct);
     centrlMenu -> addAction (cPowerAct);
     centrlMenu -> addAction (cInformationAct);
+    centrlMenu -> addAction (cEigenvectorAct);
     centrlMenu -> addSection(QIcon(":/images/prestige.png"), tr("Prestige"));
     centrlMenu -> addAction (cInDegreeAct);
     centrlMenu -> addAction (cPageRankAct);
     centrlMenu -> addAction (cProximityPrestigeAct);
+
+
+    analysisMenu -> addSeparator();
+    // COMMUNITIES & SUBGROUPS
+    communitiesMenu = new QMenu(tr("Communities and Subgroups..."));
+    communitiesMenu -> setIcon(QIcon(":/images/clustering.png"));
+    analysisMenu -> addMenu(communitiesMenu);
+    communitiesMenu -> addAction (analyzeCommunitiesCliquesAct);
+    communitiesMenu -> addSeparator();
+    communitiesMenu -> addAction (analyzeCommunitiesTriadCensusAct);
+
+
+    analysisMenu->addSeparator();
+    // STRUCTURAL EQUIVALENCE
+    strEquivalenceMenu = new QMenu(tr("Structural Equivalence..."));
+    strEquivalenceMenu -> setIcon(QIcon(":/images/similarity.png"));
+    analysisMenu -> addMenu (strEquivalenceMenu);
+    strEquivalenceMenu -> addAction (analyzeStrEquivalencePearsonAct);
+    strEquivalenceMenu -> addAction(analyzeStrEquivalenceMatchesAct);
+    strEquivalenceMenu -> addSeparator();
+    strEquivalenceMenu -> addAction (analyzeStrEquivalenceTieProfileDissimilaritiesAct);
+    strEquivalenceMenu -> addSeparator();
+    strEquivalenceMenu -> addAction (analyzeStrEquivalenceClusteringHierarchicalAct);
+
 
 
     /** menuBar entry layoutMenu  */
@@ -2328,7 +2875,6 @@ void MainWindow::initMenuBar() {
     layoutMenu -> addAction (layoutGuidesAct);
 
 
-
     /** menuBar entry optionsMenu  */
     optionsMenu = menuBar()->addMenu(tr("&Options"));
     nodeOptionsMenu=new QMenu(tr("Nodes..."));
@@ -2361,10 +2907,8 @@ void MainWindow::initMenuBar() {
     viewOptionsMenu -> addAction (changeBackColorAct);
     viewOptionsMenu -> addAction (backgroundImageAct);
 
-
     optionsMenu -> addSeparator();
     optionsMenu -> addAction (openSettingsAct);
-
 
 
     /**  menuBar entry helpMenu */
@@ -2376,7 +2920,6 @@ void MainWindow::initMenuBar() {
     helpMenu -> addSeparator();
     helpMenu-> addAction (helpAboutApp);
     helpMenu-> addAction (helpAboutQt);
-
 
 }
 
@@ -2401,24 +2944,50 @@ void MainWindow::initToolBar(){
 
     //Create relation select widget
     QLabel *labelRelationSelect= new QLabel;
-    labelRelationSelect ->setText(tr("Relation:"));
+    labelRelationSelect ->setText(tr("Relations:"));
     toolBar -> addWidget (labelRelationSelect);
     toolBar -> addAction (editRelationPreviousAct);
     editRelationChangeCombo = new QComboBox;
+    editRelationChangeCombo ->setEditable(true);
+    editRelationChangeCombo ->setInsertPolicy(QComboBox::InsertAtCurrent);
     editRelationChangeCombo->setMinimumWidth(180);
     editRelationChangeCombo->setCurrentIndex(0);
     editRelationChangeCombo->setToolTip(
-                tr("Displays current relation - Click to change graph relation"));
+                tr("Current relation. To rename it, write new name and press Enter."));
     editRelationChangeCombo->setStatusTip(
-                tr("Displays current relation - Click to change graph relation"));
+                tr("Name of the current relation. "
+                   "To rename it, write a new name and press Enter. To select another relation use Down arrow"));
     editRelationChangeCombo->setWhatsThis(
-                tr("Previous Relation\n\n"
-                   "Displays current relation - Click to change graph relation (if any)"));
+                tr("Relations combo\n\n"
+                   "This combo box displays the current relation. \n"
+                   "To rename the current relation, write a new name and press Enter. "
+                   "To select another relation (if any), click the Down arrow."));
 
     toolBar -> addWidget(editRelationChangeCombo);
     toolBar -> addAction (editRelationNextAct);
     toolBar -> addAction (editRelationAddAct);
 
+    toolBar -> addSeparator();
+    QLabel *labelEditNodes= new QLabel;
+    labelEditNodes ->setText(tr("Nodes:"));
+    toolBar -> addWidget (labelEditNodes);
+    toolBar -> addAction (editNodeAddAct);
+    toolBar -> addAction (editNodeRemoveAct);
+    toolBar -> addAction (editNodeFindAct);
+    toolBar -> addAction(editNodePropertiesAct );
+    toolBar -> addSeparator();
+    QLabel *labelEditEdges= new QLabel;
+    labelEditEdges ->setText(tr("Edges:"));
+    toolBar -> addWidget (labelEditEdges);
+
+    toolBar -> addAction (editEdgeAddAct);
+    toolBar -> addAction (editEdgeRemoveAct);
+    toolBar -> addAction (editFilterEdgesByWeightAct);
+    toolBar -> addSeparator();
+    QLabel *labelApplicationIcons = new QLabel;
+    labelApplicationIcons ->setText(tr("Settings:"));
+    toolBar -> addWidget(labelApplicationIcons);
+    toolBar -> addAction(openSettingsAct);
     toolBar -> addSeparator();
     toolBar -> addAction ( QWhatsThis::createAction (this));
     toolBar -> setIconSize(QSize(16,16));
@@ -2442,151 +3011,260 @@ void MainWindow::initToolBox(){
      */
 
     // create 4 buttons for the Edit groupbox
-    editNodeAddBt= new QPushButton(QIcon(":/images/add.png"),tr("&Add Node"));
-    editNodeAddBt->setFocusPolicy(Qt::NoFocus);
-    editNodeAddBt->setMinimumWidth(100);
-    editNodeAddBt->setStatusTip( tr("Add a new node to the network.") ) ;
-    editNodeAddBt->setToolTip(
-                tr("Add a new node to the network (Ctrl+.). \n\n "
-                   "You can also create a new node \n"
-                   "in a specific position by double-clicking \n")
-                );
-    editNodeAddBt->setWhatsThis(
-                tr("Add new node\n\n"
-                   "Adds a new node to the network (Ctrl+.). \n\n "
-                   "Alternately, you can create a new node \n"
-                   "in a specific position by double-clicking \n"
-                   "on that spot of the canvas.")
-                );
+//    editNodeAddBt= new QPushButton(QIcon(":/images/add.png"),tr("&Add Node"));
+//    editNodeAddBt->setFocusPolicy(Qt::NoFocus);
+//    editNodeAddBt->setMinimumWidth(100);
+//    editNodeAddBt->setStatusTip( tr("Add a new node to the network.") ) ;
+//    editNodeAddBt->setToolTip(
+//                tr("Add a new node to the network (Ctrl+.). \n\n"
+//                   "You can also create a new node \n"
+//                   "in a specific position by double-clicking.")
+//                );
+//    editNodeAddBt->setWhatsThis(
+//                tr("Add new node\n\n"
+//                   "Adds a new node to the network (Ctrl+.). \n\n"
+//                   "Alternately, you can create a new node "
+//                   "in a specific position by double-clicking "
+//                   "on that spot of the canvas.")
+//                );
 
-    removeNodeBt= new QPushButton(QIcon(":/images/remove.png"),tr("&Remove Node"));
-    removeNodeBt->setFocusPolicy(Qt::NoFocus);
-    removeNodeBt->setMinimumWidth(100);
-    removeNodeBt->setStatusTip( tr("Remove a node from the network. ") );
-    removeNodeBt->setToolTip(
-                tr("Remove a node from the network (Ctrl+Alt+.). ")
-                );
+//    removeNodeBt= new QPushButton(QIcon(":/images/remove.png"),tr("&Remove Node"));
+//    removeNodeBt->setFocusPolicy(Qt::NoFocus);
+//    removeNodeBt->setMinimumWidth(100);
+//    removeNodeBt->setStatusTip( tr("Remove a node from the network. ") );
+//    removeNodeBt->setToolTip(
+//                tr("Remove a node from the network (Ctrl+Alt+.). ")
+//                );
 
-    removeNodeBt->setWhatsThis(
-                tr("Remove node\n\n"
-                   "Removes a node from the network (Ctrl+Alt+.). \n\n "
-                   "Alternately, you can remove a node \n"
-                   "by right-clicking on it.")
-                );
+//    removeNodeBt->setWhatsThis(
+//                tr("Remove node\n\n"
+//                   "Removes a node from the network (Ctrl+Alt+.). \n\n"
+//                   "Alternately, you can remove a node "
+//                   "by right-clicking on it.")
+//                );
 
-    editEdgeAddBt= new QPushButton(QIcon(":/images/connect.png"),tr("Add &Edge"));
-    editEdgeAddBt->setFocusPolicy(Qt::NoFocus);
-    editEdgeAddBt->setMinimumWidth(100);
-    editEdgeAddBt->setStatusTip(
-                tr("Add a new Edge from a node to another. ")
-                );
-    editEdgeAddBt->setToolTip(
-                tr("Add a new Edge from a node to another (Ctrl+/).\n\n "
-                   "You can also create an edge between two nodes\n"
-                   "by double-clicking or middle-clicking on them consecutively.")
-                );
-    editEdgeAddBt->setWhatsThis(
-                tr("Add edge\n\n"
-                   "Adds a new Edge from a node to another (Ctrl+/).\n\n "
-                   "Alternately, you can create a new edge between two nodes\n"
-                   "by double-clicking or middle-clicking on them consecutively.")
-                );
+//    editEdgeAddBt= new QPushButton(QIcon(":/images/connect.png"),tr("Add &Edge"));
+//    editEdgeAddBt->setFocusPolicy(Qt::NoFocus);
+//    editEdgeAddBt->setMinimumWidth(100);
+//    editEdgeAddBt->setStatusTip(
+//                tr("Add a new Edge from a node to another. ")
+//                );
+//    editEdgeAddBt->setToolTip(
+//                tr("Add a new Edge from a node to another (Ctrl+/).\n\n"
+//                   "You can also create an edge between two nodes \n"
+//                   "by double-clicking or middle-clicking on them consecutively.")
+//                );
+//    editEdgeAddBt->setWhatsThis(
+//                tr("Add edge\n\n"
+//                   "Adds a new Edge from a node to another (Ctrl+/).\n\n"
+//                   "Alternately, you can create a new edge between two nodes "
+//                   "by double-clicking or middle-clicking on them consecutively.")
+//                );
 
-    editEdgeRemoveBt= new QPushButton(QIcon(":/images/disconnect.png"),tr("Remove Edge"));
-    editEdgeRemoveBt->setFocusPolicy(Qt::NoFocus);
-    editEdgeRemoveBt->setMinimumWidth(100);
-    editEdgeRemoveBt->setStatusTip( tr("Remove an Edge from the network ")  );
-    editEdgeRemoveBt->setToolTip(
-                tr("Remove an Edge from the network (Ctrl+Alt+/)"
-                   )
-                );
-    editEdgeRemoveBt->setWhatsThis(
-                tr("Remove edge\n\n"
-                   "Removes an Edge from the network  (Ctrl+Alt+/)."
-                   "Alternately, you can remove an Edge \n"
-                   "by right-clicking on it."
-                   )
-                );
+//    editEdgeRemoveBt= new QPushButton(QIcon(":/images/disconnect.png"),tr("Remove Edge"));
+//    editEdgeRemoveBt->setFocusPolicy(Qt::NoFocus);
+//    editEdgeRemoveBt->setMinimumWidth(100);
+//    editEdgeRemoveBt->setStatusTip( tr("Remove an Edge from the network ")  );
+//    editEdgeRemoveBt->setToolTip(
+//                tr("Remove an Edge from the network (Ctrl+Alt+/)"
+//                   )
+//                );
+//    editEdgeRemoveBt->setWhatsThis(
+//                tr("Remove edge\n\n"
+//                   "Removes an Edge from the network  (Ctrl+Alt+/).\n\n"
+//                   "Alternately, you can remove an Edge "
+//                   "by right-clicking on it."
+//                   )
+//                );
 
 
-    //create a grid layout for these buttons
-    QGridLayout *buttonsGrid = new QGridLayout;
-    buttonsGrid -> addWidget(editNodeAddBt, 0,0);
-    buttonsGrid -> addWidget(removeNodeBt, 0,1);
-    buttonsGrid -> addWidget(editEdgeAddBt,1,0);
-    buttonsGrid -> addWidget(editEdgeRemoveBt,1,1);
-    buttonsGrid -> setSpacing(5);
-    buttonsGrid -> setContentsMargins(5, 5, 5, 5);
+    QLabel *toolBoxEditNodeSubgraphSelectLabel  = new QLabel;
+    toolBoxEditNodeSubgraphSelectLabel->setText(tr("Selection Subgraph:"));
+    toolBoxEditNodeSubgraphSelectLabel->setMinimumWidth(115);
+    toolBoxEditNodeSubgraphSelect = new QComboBox;
+    toolBoxEditNodeSubgraphSelect->setStatusTip(
+                tr("Create a basic subgraph with selected nodes."));
+    toolBoxEditNodeSubgraphSelect->setToolTip(
+                tr("Create a basic subgraph (star, clique, line, etc) "
+                   "with selected nodes. \n"
+                   "There must be some nodes selected!"));
+    toolBoxEditNodeSubgraphSelect->setWhatsThis(
+                        tr("Selection Subgraph\n\n"
+                           "Creates basic subgraphs with all selected nodes: star, clique, line, etc."));
+    QStringList editNodeSubgraphCommands;
+    editNodeSubgraphCommands << "Select"
+                       << "Clique"
+                       << "Star"
+                       << "Cycle"
+                       << "Line";
+    toolBoxEditNodeSubgraphSelect->addItems(editNodeSubgraphCommands);
+    toolBoxEditNodeSubgraphSelect->setMinimumWidth(115);
 
-    //create a groupbox "Edit" - Inside, display the grid layout of widgets
+    QLabel *toolBoxEdgeModeSelectLabel  = new QLabel;
+    toolBoxEdgeModeSelectLabel->setText(tr("Edge Mode:"));
+    toolBoxEdgeModeSelectLabel->setMinimumWidth(115);
+    toolBoxEditEdgeModeSelect = new QComboBox;
+    toolBoxEditEdgeModeSelect->setStatusTip(
+                tr("Select an edge creation mode: directed or undirected."));
+    toolBoxEditEdgeModeSelect->setToolTip(
+                tr("Select an edge creation mode: directed or undirected."));
+            toolBoxEditEdgeModeSelect->setWhatsThis(
+                        tr("Edge mode\n\n"
+                           "Select what mode to use when creating new edges."));
+    QStringList edgeModeCommands;
+    edgeModeCommands << "Directed"
+                     << "Undirected";
+    toolBoxEditEdgeModeSelect->addItems(edgeModeCommands);
+    toolBoxEditEdgeModeSelect->setMinimumWidth(115);
+
+
+    QLabel *toolBoxSymmetrizeSelectLabel  = new QLabel;
+    toolBoxSymmetrizeSelectLabel->setText(tr("Symmetrize:"));
+    toolBoxSymmetrizeSelectLabel->setMinimumWidth(115);
+    toolBoxEditEdgeSymmetrizeSelect = new QComboBox;
+    toolBoxEditEdgeSymmetrizeSelect->setStatusTip(
+                tr("Select a method to symmetrize the network, i.e. tranform all directed edges to undirected."));
+    toolBoxEditEdgeSymmetrizeSelect->setToolTip(
+                        tr("Select a method to symmetrize the network: \n\n"
+                           "Symmetrize Directed Edges:\n"
+                           "Makes all directed arcs in this relation reciprocal. \n"
+                           "That is, if there is an arc from node A to node B \n"
+                           "then a new arc from node B to node A is created \n"
+                           "with the same weight.\n\n"
+
+                           "Symmetrize Edges by examining Strong Ties:\n"
+                           "Creates a new symmetric relation by keeping strong ties only. \n"
+                           "In the new relation, a tie will exist between actor A and \n"
+                           "actor B only when both arcs A -> B and B -> A are present \n"
+                           "in the current or all relations. \n\n"
+
+                           "Symmetrize Edges by examining Cocitation:\n"
+                           "Creates a new symmetric relation by connecting actors \n"
+                           "that are cocitated by others. \n"
+                           "In the new relation, an edge will exist between actor i and \n"
+                           "actor j only if C(i,j) > 0, where C the Cocitation Matrix. "
+                           ));
+
+    toolBoxEditEdgeSymmetrizeSelect->setWhatsThis(
+                        tr("Select a method to symmetrize the network: \n\n"
+                           "Symmetrize Directed Edges\n"
+                           "Makes all directed arcs in this relation reciprocal. "
+                           "That is, if there is an arc from node A to node B \n"
+                           "then a new arc from node B to node A is created \n"
+                           "with the same weight.\n\n"
+
+                           "Symmetrize Edges by examining Strong Ties:\n"
+                           "Creates a new symmetric relation by keeping strong ties only. "
+                           "That is, a strong tie exists between actor A and actor B "
+                           "only when both arcs A -> B and B -> A are present. "
+                           "If the network is multi-relational, it asks you whether "
+                           "ties in the current relation or all relations are to be considered. \n\n"
+
+                           "Symmetrize Edges by examining Cocitation:\n"
+                           "Creates a new symmetric relation by connecting actors "
+                           "that are cocitated by others. "
+                           "In the new relation, an edge will exist between actor i and "
+                           "actor j only if C(i,j) > 0, where C the Cocitation Matrix. "
+                           "Thus the actor pairs cited by more common neighbors will appear "
+                           "with a stronger tie between them than pairs those cited by fewer "
+                           "common neighbors. "
+
+                           ));
+    QStringList symmetrizeCommands;
+    symmetrizeCommands << "Select"
+                       << "Directed ties"
+                       << "Strong ties"
+                       << "Cocitation";
+    toolBoxEditEdgeSymmetrizeSelect->addItems(symmetrizeCommands);
+    toolBoxEditEdgeSymmetrizeSelect->setMinimumWidth(115);
+
+
+    //create a grid layout for Edit buttons
+    QGridLayout *editNodesGrid = new QGridLayout;
+    editNodesGrid -> addWidget(toolBoxEditNodeSubgraphSelectLabel, 0,0);
+    editNodesGrid -> addWidget(toolBoxEditNodeSubgraphSelect, 0,1);
+
+    QGroupBox *editNodesGroupBox= new QGroupBox(tr("Nodes"));
+    editNodesGroupBox->setLayout(editNodesGrid);
+
+    QGridLayout *editEdgeGrid = new QGridLayout;
+    editEdgeGrid -> addWidget(toolBoxEdgeModeSelectLabel,0,0);
+    editEdgeGrid -> addWidget(toolBoxEditEdgeModeSelect,0,1);
+    editEdgeGrid -> addWidget(toolBoxSymmetrizeSelectLabel,1,0);
+    editEdgeGrid -> addWidget(toolBoxEditEdgeSymmetrizeSelect,1,1);
+
+    QGroupBox *editEdgeGroupBox= new QGroupBox(tr("Edges"));
+    editEdgeGroupBox->setLayout(editEdgeGrid);
+
+    QGridLayout *EditGrid = new QGridLayout;
+    EditGrid -> addWidget(editNodesGroupBox, 0,0,1,2);
+    EditGrid -> addWidget(editEdgeGroupBox,1,0,1,2);
+    EditGrid -> setSpacing(5);
+    EditGrid -> setContentsMargins(5, 5, 5, 5);
+
+            //create a groupbox "Edit" - Inside, display the grid layout of widgets
     QGroupBox *editGroupBox= new QGroupBox(tr("Edit"));
-    editGroupBox->setLayout(buttonsGrid);
+    editGroupBox->setLayout(EditGrid);
     editGroupBox->setMaximumWidth(280);
     editGroupBox->setMinimumHeight(100);
 
 
     //create widgets for the "Analysis" box
-    QLabel *toolBoxAnalysisGeodesicsSelectLabel = new QLabel;
-    toolBoxAnalysisGeodesicsSelectLabel->setText(tr("Distances:"));
-    toolBoxAnalysisGeodesicsSelectLabel->setMinimumWidth(115);
-    toolBoxAnalysisGeodesicsSelect = new QComboBox;
-    toolBoxAnalysisGeodesicsSelect -> setStatusTip(
-                tr("Basic graph-theoretic metrics i.e. diameter."));
-    toolBoxAnalysisGeodesicsSelect -> setToolTip(
-                tr("Compute basic graph-theoretic features of the network, "
-                   "i.e. diameter."));
-    toolBoxAnalysisGeodesicsSelect -> setWhatsThis(
-                tr("Analyze Distances\n\n"
-                   "Compute basic graph-theoretic features of the network "
-                   "i.e. diameter, eccentricity, distances etc."));
-    QStringList geodesicsCommandsList;
-    geodesicsCommandsList << "Select"
-                          << "Distance" << "Average Distance"
-                          << "Distances Matrix" << "Geodesics Matrix"
-                          << "Eccentricity" << "Diameter";
-    toolBoxAnalysisGeodesicsSelect->addItems(geodesicsCommandsList);
-    toolBoxAnalysisGeodesicsSelect->setMinimumWidth(115);
+    QLabel *toolBoxAnalysisMatricesSelectLabel = new QLabel;
+    toolBoxAnalysisMatricesSelectLabel->setText(tr("Matrix:"));
+    toolBoxAnalysisMatricesSelectLabel->setMinimumWidth(115);
+    toolBoxAnalysisMatricesSelect = new QComboBox;
+    toolBoxAnalysisMatricesSelect -> setStatusTip(
+                tr("Select which matrix to compute and display, based on the adjacency matrix of the current network."));
+    toolBoxAnalysisMatricesSelect -> setToolTip(
+                tr("The adjacency matrix and other matrices based on the adjacency \n"
+                   "matrix of the current network, i.e. Cocitation, Degree Matrix etc."));
+    toolBoxAnalysisMatricesSelect -> setWhatsThis(
+                tr("Analyze Matrices\n\n"
+                   "Compute and display matrices based on the adjacency matrix of the current network."));
+    QStringList graphMatricesList;
+    graphMatricesList << "Select"
+                          << "Adjacency"
+                          << "Adjacency Plot"
+                          << "Adjacency Inverse"
+                          << "Adjacency Transpose"
+                          << "Cocitation Matrix"
+                          << "Degree Matrix"
+                          << "Laplacian Matrix";
+    toolBoxAnalysisMatricesSelect->addItems(graphMatricesList);
+    toolBoxAnalysisMatricesSelect->setMinimumWidth(115);
 
 
-    QLabel *toolBoxAnalysisConnectivitySelectLabel  = new QLabel;
-    toolBoxAnalysisConnectivitySelectLabel->setText(tr("Connectivity:"));
-    toolBoxAnalysisConnectivitySelectLabel->setMinimumWidth(115);
-    toolBoxAnalysisConnectivitySelect = new QComboBox;
-    toolBoxAnalysisConnectivitySelect->setStatusTip(
-                tr("'Connectivity' metrics i.e. connectedness, walks, etc."));
-    toolBoxAnalysisConnectivitySelect->setToolTip(
-                tr("Compute 'connectivity' metrics such as network connectedness, "
-                   "walks, reachability etc."));
-    toolBoxAnalysisConnectivitySelect->setWhatsThis(
-                tr("Analyze Connectivity\\n\n"
-                   "Compute 'connectivity' metrics such as network connectedness, "
-                   "walks, reachability etc."));
-    QStringList connectivityCommands;
-    connectivityCommands << "Select"
-                         << "Connectedness" << "Walks of given length"
-                         << "Total Walks" << "Reachability Matrix";
-    toolBoxAnalysisConnectivitySelect->addItems(connectivityCommands);
-    toolBoxAnalysisConnectivitySelect->setMinimumWidth(115);
 
+    QLabel *toolBoxAnalysisCohesionSelectLabel = new QLabel;
+    toolBoxAnalysisCohesionSelectLabel->setText(tr("Cohesion:"));
+    toolBoxAnalysisCohesionSelectLabel->setMinimumWidth(115);
+    toolBoxAnalysisCohesionSelect = new QComboBox;
+    toolBoxAnalysisCohesionSelect -> setStatusTip(
+                tr("Select a graph-theoretic metric to compute, i.e. distances, walks, graph diameter, eccentricity."));
+    toolBoxAnalysisCohesionSelect -> setToolTip(
+                tr("Basic graph-theoretic metrics, such as distances, walks, \n"
+                   "graph diameter, eccentricity, clustering coefficient, etc."));
+    toolBoxAnalysisCohesionSelect -> setWhatsThis(
+                tr("Analyze Cohesion\n\n"
+                   "Compute basic graph-theoretic metrics, i.e. distances, walks, graph diameter, eccentricity."));
+    QStringList graphPropertiesList;
+    graphPropertiesList << "Select"
+                          << "Symmetry"
+                          << "Distance"
+                          << "Average Distance"
+                          << "Distances Matrix"
+                          << "Geodesics Matrix"
+                          << "Eccentricity"
+                          << "Diameter"
+                          << "Connectedness"
+                          << "Walks of given length"
+                          << "Total Walks"
+                          << "Reachability Matrix"
+                          << "Clustering Coefficient";
+    toolBoxAnalysisCohesionSelect->addItems(graphPropertiesList);
+    toolBoxAnalysisCohesionSelect->setMinimumWidth(115);
 
-    QLabel *toolBoxAnalysisClusterabilitySelectLabel  = new QLabel;
-    toolBoxAnalysisClusterabilitySelectLabel->setText(tr("Clusterability:"));
-    toolBoxAnalysisClusterabilitySelectLabel->setMinimumWidth(115);
-    toolBoxAnalysisClusterabilitySelect = new QComboBox;
-    toolBoxAnalysisClusterabilitySelect->setStatusTip(
-                tr("'Clusterability' metrics, i.e. cliques"));
-    toolBoxAnalysisClusterabilitySelect->setToolTip(
-                tr("Compute 'clusterability' metrics, such as cliques"));
-            toolBoxAnalysisClusterabilitySelect->setWhatsThis(
-                        tr("Analyze Clusterability\n\n"
-                           "Compute 'clusterability' metrics, such as cliques"));
-    QStringList clusterabilityCommands;
-    clusterabilityCommands << "Select"
-                         << "Cliques"
-                         << "Clustering Coefficient"
-                         << "Triad Census";
-    toolBoxAnalysisClusterabilitySelect->addItems(clusterabilityCommands);
-    toolBoxAnalysisClusterabilitySelect->setMinimumWidth(115);
 
 
     QLabel *toolBoxAnalysisProminenceSelectLabel  = new QLabel;
@@ -2594,16 +3272,12 @@ void MainWindow::initToolBox(){
     toolBoxAnalysisProminenceSelectLabel->setMinimumWidth(115);
     toolBoxAnalysisProminenceSelect = new QComboBox;
     toolBoxAnalysisProminenceSelect -> setStatusTip(
-                tr("Metrics of how 'prominent' or important each node is.")
+                tr("Select a prominence metric to compute for each actor and the whole network. ")
                 );
     toolBoxAnalysisProminenceSelect -> setToolTip(
-                tr("Compute metrics to see how 'prominent' or "
-                   "important each actor (node) is inside the network.")
-                );
-    toolBoxAnalysisProminenceSelect -> setWhatsThis(
-                tr("Analyze Prominence\n\n"
-                   "Computes various metrics to see how 'prominent' or "
-                   "important each actor (node) is inside the network.")
+                tr("Metrics to understand how 'prominent' or important each \n"
+                   "actor (node) is inside the network, i.e.\n Betweeness Centrality, \n"
+                   "Eigenvector Centrality, PageRank etc.")
                 );
     toolBoxAnalysisProminenceSelect -> setWhatsThis(
                 tr("Analyze Prominence\n\n"
@@ -2612,32 +3286,94 @@ void MainWindow::initToolBox(){
                 "Centrality metrics quantify how central is each node by examining "
                    "its ties and its geodesic distances (shortest path lengths) to other nodes. "
                 "Most Centrality indices were designed for undirected graphs.\n\n"
-                "Prestige indices focus on \"choices received\" to a node. \n"
+                "Prestige indices focus on \"choices received\" to a node. "
                 "These indices measure the nominations or ties to each node from all others (or inLinks). "
                 "Prestige indices are suitable (and can be calculated only) on directed graphs.")
                 );
     QStringList prominenceCommands;
     prominenceCommands << "Select"
-                       << "Degree Centrality" << "Closeness Centrality"
-                       << "Influence Range Closeness Centrality"
-                       << "Betweenness Centrality"
-                       << "Stress Centrality" << "Eccentricity Centrality"
-                       << "Power Centrality" << "Information Centrality"
-                       << "Degree Prestige (in-Degree)"  << "PageRank Prestige"
+                       << "Degree Centr."
+                       << "Closeness Centr."
+                       << "IR Closeness Centr."
+                       << "Betweenness Centr."
+                       << "Stress Centr."
+                       << "Eccentricity Centr."
+                       << "Power Centr."
+                       << "Information Centr."
+                       << "Eigenvector Centr"
+                       << "Degree Prestige"
+                       << "PageRank Prestige"
                        << "Proximity Prestige";
     toolBoxAnalysisProminenceSelect->addItems(prominenceCommands);
     toolBoxAnalysisProminenceSelect->setMinimumWidth(115);
 
+
+    QLabel *toolBoxAnalysisCommunitiesSelectLabel  = new QLabel;
+    toolBoxAnalysisCommunitiesSelectLabel->setText(tr("Communities:"));
+    toolBoxAnalysisCommunitiesSelectLabel->setMinimumWidth(115);
+    toolBoxAnalysisCommunitiesSelect = new QComboBox;
+    toolBoxAnalysisCommunitiesSelect->setStatusTip(
+                tr("Select a community detection metric / cohesive subgroup algorithm, i.e. cliques, triad census etc."));
+    toolBoxAnalysisCommunitiesSelect->setToolTip(
+                tr("Community detection metrics and cohesive subgroup algorithms, \n"
+                   "i.e. cliques, triad census etc."));
+            toolBoxAnalysisCommunitiesSelect->setWhatsThis(
+                        tr("Analyze Communities\n\n"
+                           "Community detection metrics and cohesive subgroup algorithms, "
+                           "(i.e. cliques, triad census etc), to identify "
+                           "meaningful subgraphs in the graph."
+                           "For instance, select cliques to count and identify "
+                           "all maximal cliques of actors in the network. "));
+    QStringList communitiesCommands;
+    communitiesCommands << "Select"
+                           << "Cliques"
+                           << "Triad Census";
+    toolBoxAnalysisCommunitiesSelect->addItems(communitiesCommands);
+    toolBoxAnalysisCommunitiesSelect->setMinimumWidth(115);
+
+
+
+
+    QLabel *toolBoxAnalysisStrEquivalenceSelectLabel  = new QLabel;
+    toolBoxAnalysisStrEquivalenceSelectLabel->setText(tr("Equivalence:"));
+    toolBoxAnalysisStrEquivalenceSelectLabel->setMinimumWidth(115);
+    toolBoxAnalysisStrEquivalenceSelect = new QComboBox;
+    toolBoxAnalysisStrEquivalenceSelect->setStatusTip(
+                tr("Select a metric to measure structural equivalence, "
+                   "i.e. Pearson Coefficients, tie profile similarities, "
+                   "hierarchical clustering, etc."));
+    toolBoxAnalysisStrEquivalenceSelect->setToolTip(
+                tr("Structural equivalence measures and visualization algorithms, \n"
+                   "i.e. Pearson Coefficients, tie profile similarities, \n"
+                   "hierarchical clustering"));
+    toolBoxAnalysisStrEquivalenceSelect->setWhatsThis(
+                tr("Analyze Structural Equivalence\\n\n"
+                   "Structural equivalence measures and visualization algorithms, "
+                   "i.e. Pearson Coefficients, tie profile similarities, "
+                   "hierarchical clustering "));
+    QStringList connectivityCommands;
+    connectivityCommands << "Select"
+                         << "Pearson Coefficients"
+                         << "Similarities"
+                         << "Dissimilarities"
+                         << "Hierarchical Clustering";
+    toolBoxAnalysisStrEquivalenceSelect->addItems(connectivityCommands);
+    toolBoxAnalysisStrEquivalenceSelect->setMinimumWidth(115);
+
+
     //create layout for analysis options
     QGridLayout *analysisGrid = new QGridLayout();
-    analysisGrid -> addWidget(toolBoxAnalysisGeodesicsSelectLabel, 0,0);
-    analysisGrid -> addWidget(toolBoxAnalysisGeodesicsSelect, 0,1);
-    analysisGrid -> addWidget(toolBoxAnalysisConnectivitySelectLabel, 1,0);
-    analysisGrid -> addWidget(toolBoxAnalysisConnectivitySelect, 1,1);
-    analysisGrid -> addWidget(toolBoxAnalysisClusterabilitySelectLabel, 3,0);
-    analysisGrid -> addWidget(toolBoxAnalysisClusterabilitySelect, 3,1);
-    analysisGrid -> addWidget(toolBoxAnalysisProminenceSelectLabel, 4,0);
-    analysisGrid -> addWidget(toolBoxAnalysisProminenceSelect, 4,1);
+    analysisGrid -> addWidget(toolBoxAnalysisMatricesSelectLabel, 0,0);
+    analysisGrid -> addWidget(toolBoxAnalysisMatricesSelect, 0,1);
+    analysisGrid -> addWidget(toolBoxAnalysisCohesionSelectLabel, 1,0);
+    analysisGrid -> addWidget(toolBoxAnalysisCohesionSelect, 1,1);
+    analysisGrid -> addWidget(toolBoxAnalysisProminenceSelectLabel, 2,0);
+    analysisGrid -> addWidget(toolBoxAnalysisProminenceSelect, 2,1);
+    analysisGrid -> addWidget(toolBoxAnalysisCommunitiesSelectLabel, 3,0);
+    analysisGrid -> addWidget(toolBoxAnalysisCommunitiesSelect, 3,1);
+    analysisGrid -> addWidget(toolBoxAnalysisStrEquivalenceSelectLabel, 4,0);
+    analysisGrid -> addWidget(toolBoxAnalysisStrEquivalenceSelect, 4,1);
+
     analysisGrid -> setSpacing(5);
     analysisGrid -> setContentsMargins(15, 5, 15, 5);
 
@@ -2662,13 +3398,19 @@ void MainWindow::initToolBox(){
                    "For instance, you can apply a degree centrality layout. "
                    "For each prominence index, you can select a circular or level layout type."));
     QStringList indicesList;
-    indicesList << "None"<< "Random"
-                << "Degree Centrality" << "Closeness Centrality"
-                << "Influence Range Closeness Centrality"
-                << "Betweenness Centrality"
-                << "Stress Centrality" << "Eccentricity Centrality"
-                << "Power Centrality" << "Information Centrality"
-                << "Degree Prestige (in-Degree)"  << "PageRank Prestige"
+    indicesList << "None"
+                << "Random"
+                << "Degree Centr."
+                << "Closeness Centr."
+                << "IR Closeness Centr."
+                << "Betweenness Centr."
+                << "Stress Centr."
+                << "Eccentricity Centr."
+                << "Power Centr."
+                << "Information Centr."
+                << "Eigenvector Centr."
+                << "Degree Prestige"
+                << "PageRank Prestige"
                 << "Proximity Prestige";
     toolBoxLayoutByIndexSelect->addItems(indicesList);
     toolBoxLayoutByIndexSelect->setMinimumHeight(20);
@@ -2732,48 +3474,46 @@ void MainWindow::initToolBox(){
     toolBoxLayoutForceDirectedSelect->setStatusTip (
                             tr("Select a Force-Directed layout model. "));
     toolBoxLayoutForceDirectedSelect->setToolTip (
-                tr("Select a Force-Directed layout model to embed to the network\n\n"
-                   "Available models: \n"
-                   "Eades:\n"
-                   "A spring-gravitational model, where each node is \n"
-                   "regarded as physical object (ring) repeling all other \n"
-                   "nodes, while springs between connected nodes attract them. \n\n"
+                tr("Select a Force-Directed layout model to embed to the network.\n"
+                   "Available models: \n\n"
+                   "Eades: A spring-gravitational model, where connected nodes \n"
+                   "attract each other and all nodes repel all other non-adjacent \n"
+                   "nodes. \n\n"
 
-                   "Fruchterman-Reingold: Vertices that are neighbours "
-                   "attract each other but, unlike Eades Spring "
-                   "Embedder, all vertices repel each other.\n\n"
+                   "Fruchterman-Reingold: Again adjacent vertices attract each \n"
+                   "each other but, unlike Eades Spring Embedder, all vertices \n"
+                   "repel each other.\n\n"
+
                    "Kamada-Kawai\n"
-                   "Every two vertices are connected  by a 'spring' of a \n"
-                   "desirable length, which corresponds to their graph theoretic \n"
-                   "distance. In this way, the optimal layout of the graph \n"
-                   "is the state with the minimum imbalance. The degree of \n"
-                   "imbalance is formulated as the total spring energy: \n"
+                   "Another spring embedder model, where the optimal layout is \n"
+                   "that of minimum total spring energy, which is computed as \n"
                    "the square summation of the differences between desirable \n"
                    "distances and real ones for all pairs of vertices"
                    )
                 );
     toolBoxLayoutForceDirectedSelect->setWhatsThis(
                 tr("Visualize by a Force-Directed layout model.\n\n"
-                   "Available models: \n\n "
-                   "Eades model\n "
-                   "A spring-gravitational model, where each node is \n"
-                   "regarded as physical object (ring) repeling all other \n"
+                   "Available models: \n\n"
+                   "Eades model\n"
+                   "A spring-gravitational model, where each node is "
+                   "regarded as physical object (ring) repeling all other non-adjacent"
                    "nodes, while springs between connected nodes attract them. \n\n"
 
                    "Fruchterman-Reingold\n"
-                   "In this model, the vertices behave as atomic particles \n"
-                   "or celestial bodies, exerting attractive and repulsive \n"
-                   "forces to each other. Again, only vertices that are \n"
-                   "neighbours  attract each other but, unlike Eades Spring \n"
+                   "In this model, the vertices behave as atomic particles "
+                   "or celestial bodies, exerting attractive and repulsive "
+                   "forces to each other. Again, only vertices that are "
+                   "neighbours  attract each other but, unlike Eades Spring "
                    "Embedder, all vertices repel each other.\n\n"
+
                    "Kamada-Kawai\n"
-                   "In this model, the graph is considered to be a dynamic system \n"
-                   "where every two vertices are connected  by a 'spring' of a \n"
-                   "desirable length, which corresponds to their graph theoretic \n"
-                   "distance. In this way, the optimal layout of the graph \n"
-                   "is the state with the minimum imbalance. The degree of \n"
-                   "imbalance is formulated as the total spring energy: \n"
-                   "the square summation of the differences between desirable \n"
+                   "Another variant of Eades model. In this the graph is considered to be a dynamic system "
+                   "where every two vertices are connected  by a 'spring' of a "
+                   "desirable length, which corresponds to their graph theoretic "
+                   "distance. In this way, the optimal layout of the graph "
+                   "is the state with the minimum imbalance. The degree of "
+                   "imbalance is formulated as the total spring energy: "
+                   "the square summation of the differences between desirable "
                    "distances and real ones for all pairs of vertices"
                    )
                 );
@@ -2860,7 +3600,7 @@ void MainWindow::initToolBox(){
     QVBoxLayout *visualizationBoxLayout = new QVBoxLayout;
     visualizationBoxLayout -> addWidget(layoutByIndexBox);
     visualizationBoxLayout -> addWidget(layoutDynamicBox);
-    visualizationBoxLayout -> addWidget(visualizeOptionsBox);
+    //visualizationBoxLayout -> addWidget(visualizeOptionsBox);
 
     QGroupBox *visualizationBox= new QGroupBox(tr("Visualize"));
     visualizationBox->setMaximumWidth(280);
@@ -2878,155 +3618,261 @@ void MainWindow::initToolBox(){
     leftPanel -> setLayout (editGrid);
 
     //create widgets for Properties/Statistics group/tab
-    QLabel *labelNodesLCD = new QLabel;
-    labelNodesLCD->setText(tr("Total Nodes"));
-    labelNodesLCD->setToolTip(tr("The total number of nodes (vertices) in the network."));
-    labelEdgesLCD = new QLabel;
-    labelEdgesLCD->setText(tr("Total Arcs"));
-    labelEdgesLCD->setToolTip(tr("The total number of directed edges in the network."));
 
-    nodesLCD=new QLCDNumber(7);
-    nodesLCD->setSegmentStyle(QLCDNumber::Flat);
-    nodesLCD->setToolTip(tr("The total number of nodes (vertices) in the network."));
-    edgesLCD=new QLCDNumber(7);
-    edgesLCD->setSegmentStyle(QLCDNumber::Flat);
-    edgesLCD->setStatusTip(tr("Shows the total number of directed edges in the network."));
-    edgesLCD->setToolTip(tr("The total number of directed edges in the network."));
+    rightPanelNetworkTypeLabel = new QLabel;
+    rightPanelNetworkTypeLabel-> setText ("Network Type: Undirected");
+    rightPanelNetworkTypeLabel->setStatusTip(tr("Directed data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
 
-    QLabel *labelDensityLCD = new QLabel;
-    labelDensityLCD->setText(tr("Density"));
-    labelDensityLCD->setToolTip(tr("The density of a network is the ratio of existing \n"
+    rightPanelNetworkTypeLabel->setToolTip(tr("The loaded network, if any, is directed and \n"
+                                "any link you add between nodes will be a directed arc.\n"
+                                "If you want to work with undirected edges and/or \n"
+                                "transform the loaded network (if any) to undirected \n"
+                                "toggle the option Edit -> Edges -> Undirected \n"
+                                "or press CTRL+E+U"));
+    rightPanelNetworkTypeLabel->setWhatsThis(tr("The loaded network, if any, is directed and \n"
+                                "any link you add between nodes will be a directed arc.\n"
+                                "If you want to work with undirected edges and/or \n"
+                                "transform the loaded network (if any) to undirected \n"
+                                "toggle the option Edit -> Edges -> Undirected \n"
+                                "or press CTRL+E+U"));
+
+    QFont labelFont = rightPanelNetworkTypeLabel ->font();
+    labelFont.setWeight(QFont::Bold);
+    rightPanelNetworkTypeLabel ->setFont(labelFont);
+    rightPanelNetworkTypeLabel ->setFixedWidth(195);
+
+
+    QLabel *rightPanelNodesLabel = new QLabel;
+    rightPanelNodesLabel->setText(tr("Total Nodes"));
+    rightPanelNodesLabel->setStatusTip(tr("The total number of actors (nodes or vertices) in the social network."));
+    rightPanelNodesLabel->setToolTip(tr("The total number of actors \n"
+                                        "(nodes or vertices) in the social network."));
+
+    rightPanelNodesLCD=new QLCDNumber(7);
+    rightPanelNodesLCD->setSegmentStyle(QLCDNumber::Flat);
+    rightPanelNodesLCD->setStatusTip(tr("The total number of actors (nodes or vertices) in the social network."));
+    rightPanelNodesLCD->setToolTip(tr("This is the total number of actors \n"
+                                      "(nodes or vertices) in the social network."));
+
+    rightPanelEdgesLabel = new QLabel;
+    rightPanelEdgesLabel->setText(tr("Total Arcs"));
+    rightPanelEdgesLabel->setStatusTip(tr("The total number of edges (links between actors) in the social network."));
+    rightPanelEdgesLabel->setToolTip(tr("This is the total number of edges \n"
+                                        "(links between actors) in the social network."));
+
+    rightPanelEdgesLCD=new QLCDNumber(7);
+    rightPanelEdgesLCD->setSegmentStyle(QLCDNumber::Flat);
+    rightPanelEdgesLCD->setStatusTip(tr("The total number of directed edges in the social network."));
+    rightPanelEdgesLCD->setToolTip(tr("This is the total number of directed edges \n"
+                                        "(links between actors) in the social network."));
+
+
+    QLabel *rightPanelDensityLabel = new QLabel;
+    rightPanelDensityLabel->setText(tr("Density"));
+    rightPanelDensityLabel->setToolTip(tr("The density of a social network is the ratio of existing \n"
                                   "edges to all possible edges ( n*(n-1) ) between nodes."));
-    densityLCD=new QLCDNumber(7);
-    densityLCD->setSegmentStyle(QLCDNumber::Flat);
-    densityLCD->setStatusTip(tr("Shows the network density, the ratio of existing "
+    rightPanelDensityLCD=new QLCDNumber(7);
+    rightPanelDensityLCD->setSegmentStyle(QLCDNumber::Flat);
+    rightPanelDensityLCD->setStatusTip(tr("The network density, the ratio of existing "
                                 "edges to all possible edges ( n*(n-1) ) between nodes."));
-    densityLCD->setToolTip(tr("This is the density of the network. \n"
+    rightPanelDensityLCD->setToolTip(tr("This is the density of the network. \n"
                               "The density of a network is the ratio of existing \n"
                               "edges to all possible edges ( n*(n-1) ) between nodes."));
 
-    //create a grid layout
-    QGridLayout *propertiesGrid = new QGridLayout();
-    propertiesGrid -> setColumnMinimumWidth(0, 10);
-    propertiesGrid -> setColumnMinimumWidth(1, 10);
 
-    networkLabel = new QLabel;
-    networkLabel-> setText ("Network Type: Undirected");
-    networkLabel->setStatusTip(tr("Directed data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
 
-    networkLabel->setToolTip(tr("The loaded network, if any, is directed and \n"
-                                "any link you add between nodes will be a directed arc.\n"
-                                "If you want to work with undirected edges and/or \n"
-                                "transform the loaded network (if any) to undirected \n"
-                                "toggle the option Edit -> Edges -> Undirected \n"
-                                "or press CTRL+E+U"));
-    networkLabel->setWhatsThis(tr("The loaded network, if any, is directed and \n"
-                                "any link you add between nodes will be a directed arc.\n"
-                                "If you want to work with undirected edges and/or \n"
-                                "transform the loaded network (if any) to undirected \n"
-                                "toggle the option Edit -> Edges -> Undirected \n"
-                                "or press CTRL+E+U"));
+    QLabel *verticalSpaceLabel1 = new QLabel;
+    verticalSpaceLabel1 -> setText ("");
+    QLabel *rightPanelSelectedHeaderLabel = new QLabel;
+    rightPanelSelectedHeaderLabel-> setText (tr("Selection"));
+    rightPanelSelectedHeaderLabel->setFont(labelFont);
 
-    QFont labelFont = networkLabel ->font();
-    labelFont.setWeight(QFont::Bold);
-    networkLabel ->setFont(labelFont);
-    networkLabel ->setFixedWidth(195);
-    propertiesGrid -> addWidget(networkLabel , 0,0);
-    propertiesGrid -> addWidget(labelNodesLCD, 1,0);
-    propertiesGrid -> addWidget(nodesLCD,1,1);
-    propertiesGrid -> addWidget(labelEdgesLCD, 2,0);
-    propertiesGrid -> addWidget(edgesLCD,2,1);
-    propertiesGrid -> addWidget(labelDensityLCD, 3,0);
-    propertiesGrid -> addWidget(densityLCD,3,1);
+    QLabel *rightPanelSelectedNodesLabel = new QLabel;
+    rightPanelSelectedNodesLabel->setText(tr("Selected Nodes"));
+    rightPanelSelectedNodesLabel->setStatusTip(tr("The number of selected nodes (vertices)."));
+    rightPanelSelectedNodesLabel->setToolTip(tr("The number of selected nodes (vertices)."));
+    rightPanelSelectedNodesLCD=new QLCDNumber(7);
+    rightPanelSelectedNodesLCD->setSegmentStyle(QLCDNumber::Flat);
+    rightPanelSelectedNodesLCD->setStatusTip(tr("The number of selected nodes (vertices)."));
+    rightPanelSelectedNodesLCD->setToolTip(tr("The number of selected nodes (vertices)."));
 
-    QLabel *dummyLabel = new QLabel;
-    dummyLabel-> setText ("");
-    QLabel *labelNode = new QLabel;
-    labelNode-> setText (tr("Active Node"));
-    labelNode->setFont(labelFont);
+    rightPanelSelectedEdgesLabel = new QLabel;
+    rightPanelSelectedEdgesLabel->setText(tr("Selected Arcs"));
+    rightPanelSelectedEdgesLabel->setStatusTip(tr("The number of selected edges."));
+    rightPanelSelectedEdgesLabel->setToolTip(tr("The number of selected edges."));
+    rightPanelSelectedEdgesLCD=new QLCDNumber(7);
+    rightPanelSelectedEdgesLCD->setSegmentStyle(QLCDNumber::Flat);
+    rightPanelSelectedEdgesLCD->setStatusTip(tr("The number of selected edges."));
+    rightPanelSelectedEdgesLCD->setToolTip(tr("The number of selected edges."));
 
-    QLabel *labelSelectedNodeLCD = new QLabel;
-    labelSelectedNodeLCD -> setText (tr("Number:"));
-    labelSelectedNodeLCD -> setToolTip (tr("This is the number of the last selected node."));
 
-    selectedNodeLCD =new QLCDNumber(5);
-    selectedNodeLCD ->setSegmentStyle(QLCDNumber::Flat);
+    QLabel *verticalSpaceLabel2 = new QLabel;
+    verticalSpaceLabel2-> setText ("");
 
-    QLabel *labelInDegreeLCD = new QLabel;
-    labelInDegreeLCD -> setText (tr("In-Degree:"));
-    labelInDegreeLCD -> setToolTip (tr("The inDegree of a node is the sum of all inbound edge weights."));
-    inDegreeLCD=new QLCDNumber(5);
-    inDegreeLCD -> setSegmentStyle(QLCDNumber::Flat);
-    inDegreeLCD -> setToolTip (tr("The sum of all inbound edge weights of the node you clicked."));
-    inDegreeLCD -> setStatusTip (tr("The sum of all inbound edge weights of the node you clicked."));
-    QLabel *labelOutDegreeLCD = new QLabel;
-    labelOutDegreeLCD -> setText (tr("Out-Degree:"));
-    labelOutDegreeLCD -> setToolTip (tr("The outDegree of a node is the sum of all outbound edge weights."));
-    outDegreeLCD=new QLCDNumber(5);
-    outDegreeLCD -> setSegmentStyle(QLCDNumber::Flat);
-    outDegreeLCD -> setStatusTip (tr("The sum of all outbound edge weights of the node you clicked."));
-    outDegreeLCD -> setToolTip (tr("The sum of all outbound edge weights of the node you clicked."));
+    QLabel *rightPanelClickedNodeHeaderLabel = new QLabel;
+    rightPanelClickedNodeHeaderLabel-> setText (tr("Clicked Node"));
+    rightPanelClickedNodeHeaderLabel->setFont(labelFont);
 
-    QLabel *labelClucofLCD  = new QLabel;
-    labelClucofLCD -> setText (tr("Clu.Coef."));
-    labelClucofLCD -> setWhatsThis(
+    QLabel *rightPanelClickedNodeLabel = new QLabel;
+    rightPanelClickedNodeLabel -> setText (tr("Number:"));
+    rightPanelClickedNodeLabel -> setToolTip (tr("The node number of the last clicked node."));
+    rightPanelClickedNodeLabel -> setStatusTip( tr("The node number of the last clicked node. Zero means no node clicked."));
+    rightPanelClickedNodeLCD =new QLCDNumber(5);
+    rightPanelClickedNodeLCD ->setSegmentStyle(QLCDNumber::Flat);
+    rightPanelClickedNodeLCD -> setToolTip (tr("This is the node number of the last clicked node. \n"
+                                               "Becomes zero when you click on something other than a node."));
+    rightPanelClickedNodeLCD -> setStatusTip( tr("The node number of the last clicked node. Zero if you clicked something else."));
+
+    QLabel *rightPanelClickedNodeInDegreeLabel = new QLabel;
+    rightPanelClickedNodeInDegreeLabel -> setText (tr("In-Degree:"));
+    rightPanelClickedNodeInDegreeLabel -> setToolTip (tr("The inDegree of a node is the sum of all inbound edge weights."));
+    rightPanelClickedNodeInDegreeLabel -> setStatusTip (tr("The inDegree of a node is the sum of all inbound edge weights."));
+    rightPanelClickedNodeInDegreeLCD=new QLCDNumber(5);
+    rightPanelClickedNodeInDegreeLCD -> setSegmentStyle(QLCDNumber::Flat);
+    rightPanelClickedNodeInDegreeLCD -> setStatusTip (tr("The sum of all inbound edge weights of the last clicked node. "
+                                                       "Zero if you clicked something else."));
+    rightPanelClickedNodeInDegreeLCD -> setToolTip (tr("This is the sum of all inbound edge weights of last clicked node. \n"
+                                                         "Becomes zero when you click on something other than a node."));
+
+    QLabel *rightPanelClickedNodeOutDegreeLabel = new QLabel;
+    rightPanelClickedNodeOutDegreeLabel -> setText (tr("Out-Degree:"));
+    rightPanelClickedNodeOutDegreeLabel -> setToolTip (tr("The outDegree of a node is the sum of all outbound edge weights."));
+    rightPanelClickedNodeOutDegreeLabel -> setStatusTip (tr("The outDegree of a node is the sum of all outbound edge weights."));
+    rightPanelClickedNodeOutDegreeLCD=new QLCDNumber(5);
+    rightPanelClickedNodeOutDegreeLCD -> setSegmentStyle(QLCDNumber::Flat);
+    rightPanelClickedNodeOutDegreeLCD -> setStatusTip (tr("The sum of all outbound edge weights of the last clicked node. "
+                                                          "Zero if you clicked something else."));
+    rightPanelClickedNodeOutDegreeLCD -> setToolTip (tr("This is the sum of all outbound edge weights of the last clicked node. \n"
+                                                        "Becomes zero when you click on something other than a node."));
+
+    QLabel *rightPanelClickedNodeClucofLabel  = new QLabel;
+    rightPanelClickedNodeClucofLabel -> setText (tr("Clu.Coef."));
+    rightPanelClickedNodeClucofLabel -> setWhatsThis(
                 tr("The Clustering Coefficient quantifies how close the clicked \n"
                    "vertex and its neighbors are to being a clique. \n"
                    "The value is the proportion of Edges between the vertices \n"
                    "within the neighbourhood of the clicked vertex, \n"
                    "divided by the number of Edges that could possibly exist "
-                   "between them. \n\n "
+                   "between them. \n\n"
                    "This value is automatically calculated only if vertices < 500.\n"
                    "If your network is larger than 500 vertices, compute CluCof "
                    "from the menu Analysis > Clustering Coefficient "));
-    labelClucofLCD -> setToolTip (
+    rightPanelClickedNodeClucofLabel -> setToolTip (
                 tr("The Clustering Coefficient quantifies how close the clicked \n"
-                   "vertex and its neighbors are to being a clique. \n"
+                   "vertex and its neighbors are to being a clique. \n\n"
                    "The value is the proportion of Edges between the vertices \n"
                    "within the neighbourhood of the clicked vertex, \n"
-                   "divided by the number of Edges that could possibly exist "
-                   "between them. \n\n "
+                   "divided by the number of Edges that could possibly exist \n"
+                   "between them. \n\n"
                    "This value is automatically calculated only if vertices < 500.\n"
                    "If your network is larger than 500 vertices, compute CluCof "
                    "from the menu Analysis > Clustering Coefficient "));
-    clucofLCD = new QLCDNumber(5);
-    clucofLCD -> setSegmentStyle(QLCDNumber::Flat);
-    clucofLCD -> setStatusTip( tr("The Clustering Coefficient of the active node."));
-    clucofLCD -> setWhatsThis(
+    rightPanelClickedNodeClucofLCD = new QLCDNumber(5);
+    rightPanelClickedNodeClucofLCD -> setSegmentStyle(QLCDNumber::Flat);
+    rightPanelClickedNodeClucofLCD -> setStatusTip( tr("The Clustering Coefficient of the last clicked node. "
+                                                       "Zero when you click on something else."));
+    rightPanelClickedNodeClucofLCD -> setWhatsThis(
                 tr("The Clustering Coefficient of the active node. \n"
                    "The Clustering Coefficient quantifies how close the clicked \n"
                        "vertex and its neighbors are to being a clique. \n"
                        "The value is the proportion of Edges between the vertices \n"
                        "within the neighbourhood of the clicked vertex, \n"
                        "divided by the number of Edges that could possibly exist "
-                       "between them. \n\n "
+                       "between them. \n\n"
                        "This value is automatically calculated only if vertices < 500.\n"
                        "If your network is larger than 500 vertices, compute CluCof "
                        "from the menu Analysis > Clustering Coefficient "));
-    clucofLCD  -> setToolTip (
+    rightPanelClickedNodeClucofLCD  -> setToolTip (
                 tr("The Clustering Coefficient of the active node. \n"
                    "The Clustering Coefficient quantifies how close the clicked \n"
                    "vertex and its neighbors are to being a clique. \n"
                    "The value is the proportion of Edges between the vertices \n"
                    "within the neighbourhood of the clicked vertex, \n"
                    "divided by the number of Edges that could possibly exist "
-                   "between them. \n\n "
+                   "between them. \n\n"
                    "This value is automatically calculated only if vertices < 500.\n"
-                   "If your network is larger than 500 vertices, compute CluCof "
+                   "If your network is larger than 500 vertices, compute CluCof  \n"
                    "from the menu Analysis > Clustering Coefficient "));
 
 
-    propertiesGrid -> addWidget(dummyLabel, 6,0);
-    propertiesGrid -> addWidget(labelNode, 7,0);
-    propertiesGrid -> addWidget(labelSelectedNodeLCD , 8,0);
-    propertiesGrid -> addWidget(selectedNodeLCD ,8,1);
-    propertiesGrid -> addWidget(labelInDegreeLCD, 9,0);
-    propertiesGrid -> addWidget(inDegreeLCD, 9,1);
-    propertiesGrid -> addWidget(labelOutDegreeLCD, 10,0);
-    propertiesGrid -> addWidget(outDegreeLCD,10,1);
-    propertiesGrid -> addWidget(labelClucofLCD, 11,0);
-    propertiesGrid -> addWidget(clucofLCD,11,1);
-    propertiesGrid -> setRowStretch(12,1);   //fix stretch
+    QLabel *verticalSpaceLabel3 = new QLabel;
+    verticalSpaceLabel3-> setText ("");
+
+    rightPanelClickedEdgeHeaderLabel = new QLabel;
+    rightPanelClickedEdgeHeaderLabel-> setText (tr("Clicked Edge"));
+    rightPanelClickedEdgeHeaderLabel->setFont(labelFont);
+
+    QLabel *rightPanelClickedEdgeSourceLabel = new QLabel;
+    rightPanelClickedEdgeSourceLabel -> setText (tr("Edge source:"));
+    rightPanelClickedEdgeSourceLabel -> setToolTip (tr("The number of the last clicked edge source node."));
+    rightPanelClickedEdgeSourceLCD =new QLCDNumber(5);
+    rightPanelClickedEdgeSourceLCD ->setSegmentStyle(QLCDNumber::Flat);
+    rightPanelClickedEdgeSourceLCD -> setToolTip (tr("This is the node number of the last clicked edge source node. \n"
+                                                     "Becomes zero when you click on somethingto other than an edge"));
+    rightPanelClickedEdgeSourceLCD -> setStatusTip (tr("The node number of the last clicked edge source node."
+                                                       "Zero when you click on something else."));
+    QLabel *rightPanelClickedEdgeTargetLabel = new QLabel;
+    rightPanelClickedEdgeTargetLabel -> setText (tr("Edge target:"));
+    rightPanelClickedEdgeTargetLabel -> setToolTip (tr("The number of the target node."));
+    rightPanelClickedEdgeTargetLCD =new QLCDNumber(5);
+    rightPanelClickedEdgeTargetLCD ->setSegmentStyle(QLCDNumber::Flat);
+    rightPanelClickedEdgeTargetLCD -> setToolTip (tr("This is the node number of the last clicked edge target node. \n"
+                                                     "Becomes zero when you click on something other than an edge"));
+    rightPanelClickedEdgeTargetLCD -> setStatusTip (tr("The node number of the last clicked edge target node."
+                                                       "Zero when you click on something else."));
+    QLabel *rightPanelClickedEdgeWeightLabel = new QLabel;
+    rightPanelClickedEdgeWeightLabel -> setText (tr("Edge weight:"));
+    rightPanelClickedEdgeWeightLabel -> setToolTip (tr("The weight of the clicked edge."));
+    rightPanelClickedEdgeWeightLCD =new QLCDNumber(5);
+    rightPanelClickedEdgeWeightLCD ->setSegmentStyle(QLCDNumber::Flat);
+    rightPanelClickedEdgeWeightLCD -> setToolTip (tr("This is the weight of the last clicked edge. \n"
+                                                       "Becomes zero when you click on something other than an edge"));
+    rightPanelClickedEdgeWeightLCD -> setStatusTip (tr("The weight of the last clicked edge. "
+                                                         "Zero when you click on something else."));
+
+    //create a grid layout
+    QGridLayout *propertiesGrid = new QGridLayout();
+    propertiesGrid -> setColumnMinimumWidth(0, 10);
+    propertiesGrid -> setColumnMinimumWidth(1, 10);
+
+    propertiesGrid -> addWidget(rightPanelNetworkTypeLabel , 0,0);
+    propertiesGrid -> addWidget(rightPanelNodesLabel, 1,0);
+    propertiesGrid -> addWidget(rightPanelNodesLCD,1,1);
+    propertiesGrid -> addWidget(rightPanelEdgesLabel, 2,0);
+    propertiesGrid -> addWidget(rightPanelEdgesLCD,2,1);
+    propertiesGrid -> addWidget(rightPanelDensityLabel, 3,0);
+    propertiesGrid -> addWidget(rightPanelDensityLCD,3,1);
+
+    propertiesGrid -> addWidget(verticalSpaceLabel1, 4,0);
+
+    propertiesGrid -> addWidget(rightPanelSelectedHeaderLabel, 5,0,1,2);
+    propertiesGrid -> addWidget(rightPanelSelectedNodesLabel , 6,0);
+    propertiesGrid -> addWidget(rightPanelSelectedNodesLCD ,6,1);
+    propertiesGrid -> addWidget(rightPanelSelectedEdgesLabel, 7,0);
+    propertiesGrid -> addWidget(rightPanelSelectedEdgesLCD, 7,1);
+
+    propertiesGrid -> addWidget(verticalSpaceLabel2, 8,0);
+    propertiesGrid -> addWidget(rightPanelClickedNodeHeaderLabel, 9,0,1,2);
+    propertiesGrid -> addWidget(rightPanelClickedNodeLabel , 10,0);
+    propertiesGrid -> addWidget(rightPanelClickedNodeLCD ,10,1);
+    propertiesGrid -> addWidget(rightPanelClickedNodeInDegreeLabel, 11,0);
+    propertiesGrid -> addWidget(rightPanelClickedNodeInDegreeLCD,11,1);
+    propertiesGrid -> addWidget(rightPanelClickedNodeOutDegreeLabel, 12,0);
+    propertiesGrid -> addWidget(rightPanelClickedNodeOutDegreeLCD,12,1);
+    propertiesGrid -> addWidget(rightPanelClickedNodeClucofLabel, 13,0);
+    propertiesGrid -> addWidget(rightPanelClickedNodeClucofLCD,13,1);
+
+    propertiesGrid -> addWidget(verticalSpaceLabel3, 15,0);
+    propertiesGrid -> addWidget(rightPanelClickedEdgeHeaderLabel, 16,0,1,2);
+    propertiesGrid -> addWidget(rightPanelClickedEdgeSourceLabel , 17,0);
+    propertiesGrid -> addWidget(rightPanelClickedEdgeSourceLCD ,17,1);
+    propertiesGrid -> addWidget(rightPanelClickedEdgeTargetLabel , 18,0);
+    propertiesGrid -> addWidget(rightPanelClickedEdgeTargetLCD ,18,1);
+    propertiesGrid -> addWidget(rightPanelClickedEdgeWeightLabel , 19,0);
+    propertiesGrid -> addWidget(rightPanelClickedEdgeWeightLCD ,19,1);
+
+
+    propertiesGrid -> setRowStretch(20,1);   //make an invisible row stretch to rest of height
 
     //create a panel with title
     rightPanel = new QGroupBox(tr("Statistics Panel"));
@@ -3194,6 +4040,7 @@ void MainWindow::initWindowLayout() {
     resetSlidersBtn = new QToolButton;
     resetSlidersBtn->setText(tr("Reset"));
     resetSlidersBtn->setShortcut(Qt::CTRL + Qt::Key_0);
+    resetSlidersBtn->setStatusTip(tr("Reset zoom and rotation to zero (or press Ctrl+0)"));
     resetSlidersBtn->setToolTip(tr("Reset zoom and rotation to zero (Ctrl+0)"));
     resetSlidersBtn->setWhatsThis(tr("Reset zoom and rotation to zero (Ctrl+0)"));
     resetSlidersBtn->setIcon(QPixmap(":/images/reset.png"));
@@ -3250,19 +4097,16 @@ void MainWindow::initWindowLayout() {
 void MainWindow::initSignalSlots() {
     qDebug ()<< "MW::initSignalSlots()";
 
-    // Signals from graphicsWidget to MainWindow
+    // Signals between graphicsWidget and MainWindow
 
     connect( graphicsWidget, SIGNAL( resized(int, int)),
                 &activeGraph, SLOT( canvasSizeSet(int,int)) ) ;
 
-    connect( graphicsWidget, SIGNAL( selectedNode(Node*) ),
-             this, SLOT( nodeInfoStatusBar(Node*) ) 	);
+    connect( graphicsWidget, &GraphicsWidget::setCursor,
+                     this,&MainWindow::setCursor);
 
-    connect( graphicsWidget, SIGNAL( selectedEdge(Edge*) ),
-             this, SLOT ( edgeInfoStatusBar(Edge*) )  );
-
-    connect( graphicsWidget, SIGNAL( userClickOnEmptySpace() ),
-                     this, SLOT( slotEditClickOnEmptySpace() ) ) ;
+    connect( graphicsWidget,  &GraphicsWidget::userClickOnEmptySpace,
+                     this, &MainWindow::slotEditClickOnEmptySpace ) ;
 
     connect( graphicsWidget, SIGNAL(
                  userDoubleClickNewNode(const QPointF &) ),
@@ -3277,14 +4121,13 @@ void MainWindow::initSignalSlots() {
              this, SLOT( slotEditNodeOpenContextMenu() ) ) ;
 
     connect( graphicsWidget, SIGNAL( openEdgeMenu() ),
-             this, SLOT( openEdgeContextMenu() ) ) ;
+             this, SLOT( slotEditEdgeOpenContextMenu() ) ) ;
 
     connect (graphicsWidget, &GraphicsWidget::openContextMenu,
              this, &MainWindow::slotEditOpenContextMenu);
 
-    connect( graphicsWidget, SIGNAL(updateNodeCoords(const int &, const int &, const int &)),
-             this, SLOT( updateNodeCoords(const int &, const int &, const int &) ) );
-
+    connect( graphicsWidget, SIGNAL(userNodeMoved(const int &, const int &, const int &)),
+             this, SLOT( slotEditNodePosition(const int &, const int &, const int &) ) );
 
     connect( graphicsWidget, SIGNAL(zoomChanged(const int &)),
              zoomSlider, SLOT( setValue(const int &)) );
@@ -3307,7 +4150,11 @@ void MainWindow::initSignalSlots() {
     connect(resetSlidersBtn, SIGNAL(clicked()), graphicsWidget, SLOT(reset()));
 
 
-    // Signals from activeGraph to graphicsWidget
+    // Signals between activeGraph and graphicsWidget
+
+    connect( graphicsWidget, &GraphicsWidget::userSelectedItems,
+                     &activeGraph,&Graph::graphSelectionChanged);
+
     connect( &activeGraph,
              SIGNAL( addGuideCircle(const double&, const double&, const double&) ),
              graphicsWidget,
@@ -3316,19 +4163,17 @@ void MainWindow::initSignalSlots() {
     connect( &activeGraph, SIGNAL( addGuideHLine(const double&) ),
              graphicsWidget, SLOT(  addGuideHLine(const double&) ) ) ;
 
-    connect( &activeGraph, SIGNAL( moveNode(const int &, const qreal &, const qreal &) ),
+    connect( &activeGraph, SIGNAL( setNodePos(const int &, const qreal &, const qreal &) ),
              graphicsWidget, SLOT( moveNode(const int &, const qreal &, const qreal &) ) ) ;
-
-
 
     connect( &activeGraph,
              SIGNAL(
                  drawNode( const int &, const int &, const QString &,
                            const QString &,
                            const bool &,const bool &,
-                           const QString &, const int &,
+                           const QString &, const int &, const int &,
                            const bool &, const QString &,
-                           const QString &, const int &,
+                           const QString &, const int &, const int &,
                            const QPointF &
                             )
                  ),
@@ -3337,9 +4182,9 @@ void MainWindow::initSignalSlots() {
                  drawNode( const int &, const int &, const QString &,
                            const QString &,
                            const bool &,const bool &,
-                           const QString &, const int &,
+                           const QString &, const int &, const int &,
                            const bool &, const QString &,
-                           const QString &, const int &,
+                           const QString &, const int &, const int &,
                            const QPointF &
                             )
                  )
@@ -3347,23 +4192,6 @@ void MainWindow::initSignalSlots() {
 
     connect( &activeGraph, SIGNAL( eraseEdge(const long int &, const long int &)),
              graphicsWidget, SLOT( eraseEdge(const long int &, const long int &) ) );
-
-    connect( &activeGraph,
-             SIGNAL( signalGraphModified(const int &, const bool &,
-                                  const int &, const int &,
-                                  const float &) ),
-             this,
-             SLOT( slotNetworkChanged(const int &, const bool &,
-                                      const int &, const int &,
-                                      const float &) ) ) ;
-
-    connect( &activeGraph, SIGNAL( signalGraphLoaded( int, QString, QString,
-                                                   int , int, bool) ),
-             this, SLOT( slotNetworkFileLoaded( int, QString, QString, int , int, bool) ) ) ;
-
-
-    connect( &activeGraph, SIGNAL( signalGraphSaved( const int &) ),
-             this, SLOT( slotNetworkSaved( const int &) ) ) ;
 
 
     connect( &activeGraph, SIGNAL( drawEdge( const int&, const int&, const float &,
@@ -3392,8 +4220,6 @@ void MainWindow::initSignalSlots() {
                                                 const long int &,
                                                 const float &) ) );
 
-
-
     connect( &activeGraph, SIGNAL( setEdgeColor(const long int &,
                                                    const long int &,
                                                    const QString &)),
@@ -3408,7 +4234,6 @@ void MainWindow::initSignalSlots() {
              graphicsWidget, SLOT( setEdgeLabel(const long int &,
                                                 const long int &,
                                                 const QString &) ) );
-
 
     connect( &activeGraph, SIGNAL( eraseNode(long int) ),
              graphicsWidget, SLOT(  eraseNode(long int) ) );
@@ -3437,6 +4262,10 @@ void MainWindow::initSignalSlots() {
     connect( &activeGraph, &Graph::setNodeLabel ,
              graphicsWidget, &GraphicsWidget::setNodeLabel );
 
+    connect( &activeGraph,&Graph::setNodeLabelColor,
+             graphicsWidget,  &GraphicsWidget::setNodeLabelColor  );
+
+
     connect( &activeGraph, SIGNAL( setNodeLabelSize(const long int &, const int &)  ),
              graphicsWidget, SLOT(  setNodeLabelSize (const long int &, const int &) ) );
 
@@ -3444,45 +4273,111 @@ void MainWindow::initSignalSlots() {
              graphicsWidget, SLOT( setNodeLabelDistance (const long int &, const int &) ) );
 
 
+    connect( graphicsWidget, &GraphicsWidget::userClickedNode,
+             &activeGraph, &Graph::vertexClickedSet );
+
+    connect( graphicsWidget, &GraphicsWidget::userClickedEdge,
+             &activeGraph, &Graph::edgeClickedSet );
+
+    connect( &activeGraph, SIGNAL(signalRelationChangedToGW(int)),
+             graphicsWidget, SLOT( relationSet(int))  ) ;
+
+
+    //SIGNALS BETWEEN ACTIVEGRAPH AND MAINWINDOW
+
+    connect( &activeGraph, &Graph::signalSelectionChanged,
+                     this, &MainWindow::slotEditSelectionChanged);
+
+
+    connect( &activeGraph, &Graph::signalNodeClickedInfo ,
+             this, &MainWindow::slotEditNodeInfoStatusBar );
+
+    connect ( &activeGraph, &Graph::signalEdgeClickedInfo,
+             this, &MainWindow::slotEditEdgeInfoStatusBar );
+
+    connect( &activeGraph,
+             SIGNAL( signalGraphModified(const int &, const bool &,
+                                  const int &, const int &,
+                                  const float &) ),
+             this,
+             SLOT( slotNetworkChanged(const int &, const bool &,
+                                      const int &, const int &,
+                                      const float &) ) ) ;
+
+    connect( &activeGraph, SIGNAL( signalGraphLoaded( const int &,
+                                                      const QString &,
+                                                      const QString &,
+                                                      const int &,
+                                                      const int &,
+                                                      const QString &)
+                                   ),
+             this, SLOT( slotNetworkFileLoaded( const int &,
+                                                const QString &,
+                                                const QString &,
+                                                const int &,
+                                                const int &,
+                                                const QString &)
+                         )
+             ) ;
+
+    connect( &activeGraph, SIGNAL( signalGraphSaved( const int &) ),
+             this, SLOT( slotNetworkSaved( const int &) ) ) ;
+
     connect( &activeGraph, SIGNAL( statusMessage (QString) ),
              this, SLOT( statusMessage (QString) ) ) ;
 
     connect( &activeGraph, SIGNAL( signalDatasetDescription (QString) ),
-             this, SLOT( showMessageToUser (QString) ) ) ;
+             this, SLOT( slotHelpMessageToUserInfo (QString) ) ) ;
 
     connect( &activeGraph, &Graph::signalNodeSizesByInDegree,
              this, &MainWindow::slotLayoutNodeSizesByInDegree );
 
 
+    connect( editRelationChangeCombo , SIGNAL( activated(int) ) ,
+             &activeGraph, SLOT( relationSet(int) ) );
+
+    connect( editRelationChangeCombo , SIGNAL( currentTextChanged(QString) ),
+             &activeGraph, SLOT( relationCurrentRename(QString) )  );
+
+    connect( this , &MainWindow::signalRelationAddAndChange,
+             &activeGraph, &Graph::relationAdd );
+
+    connect( editRelationNextAct, &QAction::triggered,
+             &activeGraph, &Graph::relationNext );
+
+    connect( editRelationPreviousAct, &QAction::triggered,
+             &activeGraph, &Graph::relationPrev );
+
+    connect ( &activeGraph, &Graph::signalRelationChangedToMW,
+                      this, &MainWindow::slotEditRelationChange );
+
+    connect ( &activeGraph, &Graph::signalRelationsClear,
+              this, &MainWindow::slotEditRelationsClear );
+
+    connect ( &activeGraph, &Graph::signalRelationAddToMW,
+              this, &MainWindow::slotEditRelationAdd  );
+
+    connect ( &activeGraph, &Graph::signalRelationRenamedToMW,
+                      this, &MainWindow::slotEditRelationRename );
+
+
 
 
     //signals and slots inside MainWindow
-    connect( editNodeAddBt,SIGNAL(clicked()), this, SLOT( slotEditNodeAdd() ) );
+//    connect( editNodeAddBt,SIGNAL(clicked()), this, SLOT( slotEditNodeAdd() ) );
 
-    connect( editEdgeAddBt,SIGNAL(clicked()), this, SLOT( slotEditEdgeAdd() ) );
+//    connect( editEdgeAddBt,SIGNAL(clicked()), this, SLOT( slotEditEdgeAdd() ) );
 
-    connect( removeNodeBt,SIGNAL(clicked()), this, SLOT( slotEditNodeRemove() ) );
+//    connect( removeNodeBt,SIGNAL(clicked()), this, SLOT( slotEditNodeRemove() ) );
 
-    connect( editEdgeRemoveBt,SIGNAL(clicked()), this, SLOT( slotEditEdgeRemove() ) );
+//    connect( editEdgeRemoveBt,SIGNAL(clicked()), this, SLOT( slotEditEdgeRemove() ) );
 
+    connect( editRelationAddAct, SIGNAL(triggered()),
+             this, SLOT(slotEditRelationAdd()) );
 
-    connect( editRelationNextAct, SIGNAL(triggered()),
-             this, SLOT( slotEditRelationNext() ) );
-    connect( editRelationPreviousAct, SIGNAL(triggered()),
-             this, SLOT( slotEditRelationPrev() ) );
-    connect( editRelationAddAct, SIGNAL(triggered()), this, SLOT( slotEditRelationAdd() ) );
+    connect( editRelationRenameAct,SIGNAL(triggered()),
+             this, SLOT(slotEditRelationRename()) ) ;
 
-    connect( editRelationChangeCombo , SIGNAL( currentIndexChanged(int) ) ,
-             &activeGraph, SLOT( relationSet(int) ) );
-
-    connect( this , SIGNAL(addRelationToGraph(QString)),
-             &activeGraph, SLOT( relationAddFromUser(QString) ) );
-
-    connect ( &activeGraph, SIGNAL(signalRelationAddToMW(QString)),
-              this, SLOT(slotEditRelationAdd(QString)));
-
-    connect( &activeGraph, SIGNAL(relationChanged(int)),
-             graphicsWidget, SLOT( relationSet(int))  ) ;
 
     connect( &m_DialogEdgeFilterByWeight, SIGNAL( userChoices( float, bool) ),
              &activeGraph, SLOT( edgeFilterByWeight (float, bool) ) );
@@ -3494,21 +4389,35 @@ void MainWindow::initSignalSlots() {
     connect( &m_datasetSelectDialog, SIGNAL( userChoices( QString) ),
              this, SLOT( slotNetworkDataSetRecreate(QString) ) );
 
+
     connect( layoutGuidesAct, SIGNAL(triggered(bool)),
              this, SLOT(slotLayoutGuides(bool)));
 
-        connect(toolBoxAnalysisGeodesicsSelect, SIGNAL (currentIndexChanged(int) ),
-            this, SLOT(toolBoxAnalysisGeodesicsSelectChanged(int) ) );
 
-    connect(toolBoxAnalysisConnectivitySelect, SIGNAL (currentIndexChanged(int) ),
-            this, SLOT(toolBoxAnalysisConnectivitySelectChanged(int) ) );
+    connect(toolBoxEditNodeSubgraphSelect, SIGNAL (currentIndexChanged(int) ),
+            this, SLOT(toolBoxEditNodeSubgraphSelectChanged(int) ) );
 
-    connect(toolBoxAnalysisClusterabilitySelect, SIGNAL (currentIndexChanged(int) ),
-            this, SLOT(toolBoxAnalysisClusterabilitySelectChanged(int) ) );
+
+    connect(toolBoxEditEdgeModeSelect, SIGNAL (currentIndexChanged(int) ),
+                this, SLOT(slotEditEdgeMode(int) ) );
+
+    connect(toolBoxEditEdgeSymmetrizeSelect, SIGNAL (currentIndexChanged(int) ),
+            this, SLOT(toolBoxEditEdgeSymmetrizeSelectChanged(int) ) );
+
+    connect(toolBoxAnalysisMatricesSelect, SIGNAL (currentIndexChanged(int) ),
+        this, SLOT(toolBoxAnalysisMatricesSelectChanged(int) ) );
+
+    connect(toolBoxAnalysisCohesionSelect, SIGNAL (currentIndexChanged(int) ),
+            this, SLOT(toolBoxAnalysisCohesionSelectChanged(int) ) );
+
+    connect(toolBoxAnalysisStrEquivalenceSelect, SIGNAL (currentIndexChanged(int) ),
+            this, SLOT(toolBoxAnalysisStrEquivalenceSelectChanged(int) ) );
+
+    connect(toolBoxAnalysisCommunitiesSelect, SIGNAL (currentIndexChanged(int) ),
+            this, SLOT(toolBoxAnalysisCommunitiesSelectChanged(int) ) );
 
     connect(toolBoxAnalysisProminenceSelect, SIGNAL (currentIndexChanged(int) ),
             this, SLOT(toolBoxAnalysisProminenceSelectChanged(int) ) );
-
 
 
     connect(toolBoxNodeSizesByOutDegreeBx , SIGNAL(clicked(bool)),
@@ -3535,127 +4444,46 @@ void MainWindow::initSignalSlots() {
 
 
 /**
- * @brief MainWindow::initNet
+ * @brief MainWindow::initApp
  * Initializes the default network parameters.
  * Used on app start and especially when erasing a network to start a new one
  */
-void MainWindow::initNet(){
-    qDebug()<<"MW::initNet() - START INITIALISATION";
+void MainWindow::initApp(){
+    qDebug()<<"MW::initApp() - START INITIALISATION";
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
     // Init basic variables
-
 
     considerWeights=false;
     inverseWeights=false;
     askedAboutWeights=false;
 
-
-    networkName="";
-
     previous_fileName=fileName;
     fileName="";
 
     initFileCodec= "UTF-8";
-    fileLoaded=false;
 
-    networkModified=false;
     networkSave->setIcon(QIcon(":/images/saved.png"));
     networkSave->setEnabled(true);
 
     markedNodesExist=false;	//used by slotEditNodeFind()
 
-    cursorPosGW=QPointF(-1,-1);
-    clickedNodeNumber=-1;
-    edgeClicked=false;
-    nodeClicked=false;
-
-
-    /** Clear previous network data */
-    activeGraph.clear();
-    activeGraph.setSocNetV_Version(VERSION);
-
-    activeGraph.vertexShapeInit(appSettings["initNodeShape"]);
-    activeGraph.vertexSizeInit(appSettings["initNodeSize"].toInt(0, 10));
-    activeGraph.vertexColorInit( appSettings["initNodeColor"] );
-
-    activeGraph.vertexNumberSizeInit(appSettings["initNodeNumberSize"].toInt(0,10));
-    activeGraph.vertexNumberColorInit(appSettings["initNodeNumberColor"]);
-
-    activeGraph.vertexLabelColorInit(appSettings["initNodeLabelColor"]);
-    activeGraph.vertexLabelSizeInit(appSettings["initNodeLabelSize"].toInt(0,10));
-
-    activeGraph.edgeColorInit(appSettings["initEdgeColor"]);
-
-    activeGraph.vertexLabelsVisibilitySet(
-                (appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false
-                );
-    activeGraph.vertexNumbersVisibilitySet(
-                ( appSettings["initNodeNumbersVisibility"] == "true" ) ? true: false
-                );
-    activeGraph.vertexNumbersInsideNodesSet(
-                ( appSettings["initNodeNumbersInside"] == "true" ) ? true: false
-                );
-
-    /** Clear graphicsWidget scene and reset transformations **/
-    graphicsWidget->clear();
-    rotateSlider->setValue(0);
-    zoomSlider->setValue(250);
 
     /** Clear LCDs **/
-    nodesLCD->display(activeGraph.vertices());
-    if (activeGraph.isUndirected()) {
-        editEdgeUndirectedAllAct->setChecked(true);
-        edgesLCD->setStatusTip(tr("Shows the total number of undirected edges in the network."));
-        edgesLCD->setToolTip(tr("The total number of undirected edges in the network."));
-        networkLabel->setStatusTip(tr("Undirected data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
-        networkLabel->setToolTip(tr("The loaded network, if any, is undirected and \n"
-                                    "any edge you add between nodes will be undirected.\n"
-                                    "If you want to work with directed edges and/or \n"
-                                    "transform the loaded network (if any) to directed \n"
-                                    "disable the option Edit -> Edges -> Undirected \n"
-                                    "or press CTRL+E+U"));
-        networkLabel->setWhatsThis(tr("The loaded network, if any, is undirected and \n"
-                                    "any edge you add between nodes will be undirected.\n"
-                                    "If you want to work with directed edges and/or \n"
-                                    "transform the loaded network (if any) to directed \n"
-                                    "disable the option Edit -> Edges -> Undirected \n"
-                                    "or press CTRL+E+U"));
-        networkLabel-> setText ("Network Type: Undirected");
-        labelEdgesLCD->setText(tr("Total Edges"));
-    }
-    else {
-        editEdgeUndirectedAllAct->setChecked(false);
-        edgesLCD->setStatusTip(tr("Shows the total number of directed edges in the network."));
-        edgesLCD->setToolTip(tr("The total number of directed edges in the network."));
-        networkLabel->setStatusTip(tr("Directed data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
-        networkLabel->setToolTip(tr("The loaded network, if any, is directed and \n"
-                                    "any link you add between nodes will be a directed arc.\n"
-                                    "If you want to work with undirected edges and/or \n"
-                                    "transform the loaded network (if any) to undirected \n"
-                                    "enable the option Edit -> Edges -> Undirected \n"
-                                    "or press CTRL+E+U"));
-        networkLabel->setWhatsThis(tr("The loaded network, if any, is directed and \n"
-                                    "any link you add between nodes will be a directed arc.\n"
-                                    "If you want to work with undirected edges and/or \n"
-                                    "transform the loaded network (if any) to undirected \n"
-                                    "enable the option Edit -> Edges -> Undirected \n"
-                                    "or press CTRL+E+U"));
-
-        networkLabel-> setText ("Network Type: Directed");
-        labelEdgesLCD->setText(tr("Total Arcs"));
-    }
-    edgesLCD->display(activeEdges());
-    densityLCD->display(activeGraph.density());
-    inDegreeLCD->display(0);
-    outDegreeLCD->display(0);
-    clucofLCD->display(0);
-    selectedNodeLCD->display(0);
+    rightPanelClickedNodeInDegreeLCD->display(0);
+    rightPanelClickedNodeOutDegreeLCD->display(0);
+    rightPanelClickedNodeClucofLCD->display(0);
+    rightPanelClickedNodeLCD->display(0);
+    rightPanelClickedEdgeSourceLCD->display(0);
+    rightPanelClickedEdgeTargetLCD->display(0);
+    rightPanelClickedEdgeWeightLCD->display(0);
 
     /** Clear toolbox and menu checkboxes **/
-    toolBoxAnalysisClusterabilitySelect->setCurrentIndex(0);
-    toolBoxAnalysisConnectivitySelect->setCurrentIndex(0);
-    toolBoxAnalysisGeodesicsSelect->setCurrentIndex(0);
+    toolBoxEditEdgeSymmetrizeSelect->setCurrentIndex(0);
+    toolBoxEditEdgeModeSelect->setCurrentIndex(0);
+    toolBoxAnalysisCommunitiesSelect->setCurrentIndex(0);
+    toolBoxAnalysisStrEquivalenceSelect->setCurrentIndex(0);
+    toolBoxAnalysisCohesionSelect->setCurrentIndex(0);
     toolBoxAnalysisProminenceSelect->setCurrentIndex(0);
     toolBoxLayoutByIndexSelect->setCurrentIndex(0);
     toolBoxLayoutByIndexTypeSelect ->setCurrentIndex(0);
@@ -3673,19 +4501,46 @@ void MainWindow::initNet(){
 
     optionsEdgeLabelsAct->setChecked (
                 (appSettings["initEdgeLabelsVisibility"] == "true") ? true: false
-
                 );
-    filterIsolateNodesAct->setChecked(false); // re-init orphan nodes menu item
+    editFilterNodesIsolatesAct->setChecked(false); // re-init orphan nodes menu item
 
-    editRelationChangeCombo->clear();
+    editFilterEdgesUnilateralAct->setChecked(false);
 
-    graphicsWidget->setInitNodeColor(appSettings["initNodeColor"]);
-    graphicsWidget->setInitNumberDistance(
-                appSettings["initNodeNumberDistance"].toInt(0,10)
-            );
-    graphicsWidget->setInitLabelDistance(
-                appSettings["initNodeLabelDistance"].toInt(0,10)
+    //editRelationChangeCombo->clear();
+
+
+    /** Clear previous network data */
+    activeGraph.clear();
+    activeGraph.setSocNetV_Version(VERSION);
+
+    activeGraph.vertexShapeInit(appSettings["initNodeShape"]);
+    activeGraph.vertexSizeInit(appSettings["initNodeSize"].toInt(0, 10));
+    activeGraph.vertexColorInit( appSettings["initNodeColor"] );
+
+    activeGraph.vertexNumberSizeInit(appSettings["initNodeNumberSize"].toInt(0,10));
+    activeGraph.vertexNumberColorInit(appSettings["initNodeNumberColor"]);
+    activeGraph.vertexNumberDistanceInit(appSettings["initNodeNumberDistance"].toInt(0,10));
+
+    activeGraph.vertexLabelColorInit(appSettings["initNodeLabelColor"]);
+    activeGraph.vertexLabelSizeInit(appSettings["initNodeLabelSize"].toInt(0,10));
+    activeGraph.vertexLabelDistanceInit(appSettings["initNodeLabelDistance"].toInt(0,10));
+
+    activeGraph.edgeColorInit(appSettings["initEdgeColor"]);
+
+    activeGraph.vertexLabelsVisibilitySet(
+                (appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false
                 );
+    activeGraph.vertexNumbersVisibilitySet(
+                ( appSettings["initNodeNumbersVisibility"] == "true" ) ? true: false
+                );
+    activeGraph.vertexNumbersInsideNodesSet(
+                ( appSettings["initNodeNumbersInside"] == "true" ) ? true: false
+                );
+
+    /** Clear graphicsWidget scene and reset transformations **/
+    graphicsWidget->clear();
+    rotateSlider->setValue(0);
+    zoomSlider->setValue(250);
     graphicsWidget->setInitZoomIndex(250);
     graphicsWidget->setInitNodeSize(appSettings["initNodeSize"].toInt(0, 10));
 
@@ -3698,11 +4553,17 @@ void MainWindow::initNet(){
     else {
         graphicsWidget->setBackgroundBrush(
                     QBrush(QColor (appSettings["initBackgroundColor"]))
-                    ); //Qt::gray
+                    );
     }
 
-
-
+    qDebug()<<"MW::initApp() - Clearing my"
+           <<m_textEditors.size()
+          <<"textEditors";
+    foreach ( TextEditor *ed, m_textEditors) {
+        ed->close();
+        delete ed;
+    }
+    m_textEditors.clear();
 
     /** set window title **/
     setWindowTitle(tr("Social Network Visualizer ")+VERSION);
@@ -3712,7 +4573,7 @@ void MainWindow::initNet(){
     setCursor(Qt::ArrowCursor);
 
     statusMessage( tr("Ready"));
-    qDebug("MW: initNet() INITIALISATION END");
+    qDebug()<< "MW::initApp() - INITIALISATION END";
 
 
 }
@@ -3751,139 +4612,327 @@ void MainWindow::statusMessage(const QString message){
 
 
 /**
- * @brief MainWindow::showMessageToUser
+ * @brief MainWindow::slotHelpMessageToUserInfo
+ * @param text
+ * Helper function to display a useful info message
+ */
+void MainWindow::slotHelpMessageToUserInfo(const QString text) {
+    slotHelpMessageToUser(USER_MSG_INFO,tr("Useful information"), text  );
+}
+
+
+/**
+ * @brief MainWindow::slotHelpMessageToUserError
+ * @param text
+ * Helper function to display a useful error message
+ */
+void MainWindow::slotHelpMessageToUserError(const QString text) {
+    slotHelpMessageToUser(USER_MSG_CRITICAL ,tr("Error"), text  );
+}
+
+
+/**
+ * @brief MainWindow::slotHelpMessageToUser
  * Convenience method
  * @param message
  */
-void MainWindow::showMessageToUser(const QString message) {
-    QMessageBox::information(this, tr("Info"),
-                          message,
-                          QMessageBox::Ok, 0);
-}
+int MainWindow::slotHelpMessageToUser(const int type,
+                                      const QString statusMsg,
+                                      const QString text,
+                                      const QString info,
+                                      QMessageBox::StandardButtons buttons,
+                                      QMessageBox::StandardButton defBtn,
+                                      const QString btn1,
+                                      const QString btn2
+                                      ) {
+    int response=0;
+    QMessageBox msgBox;
+    QPushButton *pbtn1, *pbtn2;
 
+    switch (type) {
+    case USER_MSG_INFO:
+        if (!statusMsg.isNull()) statusMessage(  statusMsg  );
 
+        msgBox.setText(text);
+        if (!info.isNull()) msgBox.setInformativeText(info);
+        msgBox.setIcon(QMessageBox::Information);
+        if (buttons==QMessageBox::NoButton) {
+            msgBox.setStandardButtons(QMessageBox::Ok);
+            msgBox.setDefaultButton(QMessageBox::Ok);
+        }
+        else {
+            msgBox.setStandardButtons(buttons);
+            msgBox.setDefaultButton(defBtn);
+        }
+        msgBox.setDefaultButton(defBtn);
+        response = msgBox.exec();
 
+        break;
 
-/**
- * @brief MainWindow::updateNodeCoords
- * Called from GraphicsWidget when a node moves to update vertex coordinates
- * in Graph
- * @param nodeNumber
- * @param x
- * @param y
- */
-void MainWindow::updateNodeCoords(const int &nodeNumber,
-                                  const int &x, const int &y){
-    qDebug("MW: updateNodeCoords() for %i with x %i and y %i", nodeNumber, x, y);
-    activeGraph.vertexPosSet(nodeNumber, x, y);
-    if (!networkModified) {
-        networkModified=true;
-        networkSave->setIcon(QIcon(":/images/save.png"));
-        networkSave->setEnabled(true);
+    case USER_MSG_CRITICAL:
+        if (!statusMsg.isNull()) statusMessage(  statusMsg  );
+
+        msgBox.setText(text);
+        if (!info.isNull()) msgBox.setInformativeText(info);
+        //msgBox.setTextFormat(Qt::RichText);
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        response = msgBox.exec();
+
+        break;
+
+    case USER_MSG_CRITICAL_NO_NETWORK:
+        statusMessage(  tr("Nothing to do! Load or create a social network first")  );
+
+        msgBox.setText(
+                    tr("No network! \n"
+                       "Load social network data or create a new social network first. \n")
+                    );
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        response = msgBox.exec();
+
+        break;
+
+    case USER_MSG_CRITICAL_NO_EDGES:
+        statusMessage(  tr("Nothing to do! Load social network data or create edges first")  );
+
+        msgBox.setText(
+                    tr("No edges! \n"
+                       "Load social network data or create some edges first. \n")
+                    );
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        response = msgBox.exec();
+
+        break;
+
+    case USER_MSG_QUESTION:
+        if (!statusMsg.isNull()) statusMessage(  statusMsg  );
+
+        msgBox.setText( text );
+        if (!info.isNull()) msgBox.setInformativeText(info);
+        if (buttons==QMessageBox::NoButton) {
+            msgBox.setStandardButtons(QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel);
+            msgBox.setDefaultButton(QMessageBox::Yes);
+        }
+        else {
+            msgBox.setStandardButtons(buttons);
+            msgBox.setDefaultButton(defBtn);
+        }
+
+        msgBox.setIcon(QMessageBox::Question);
+        response = msgBox.exec();
+
+        break;
+
+    case USER_MSG_QUESTION_CUSTOM: // a custom question with just two buttons
+        if (!statusMsg.isNull()) statusMessage(  statusMsg  );
+
+        msgBox.setText( text );
+        if (!info.isNull()) msgBox.setInformativeText(info);
+        pbtn1 = msgBox.addButton(btn1, QMessageBox::ActionRole);
+        pbtn2 = msgBox.addButton(btn2, QMessageBox::ActionRole);
+        msgBox.setIcon(QMessageBox::Question);
+        response = msgBox.exec();
+        if (msgBox.clickedButton() == pbtn1 ) {
+            response=1;
+        }
+        else if (msgBox.clickedButton() == pbtn2 ) {
+            response=2;
+        }
+        break;
+    default: //just for sanity
+        if (!statusMsg.isNull()) statusMessage(  statusMsg  );
+        msgBox.setText( text );
+        msgBox.setIcon(QMessageBox::Information);
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        response = msgBox.exec();
+        break;
     }
+    return response;
+
 }
 
 
 
 
 
+
 /**
- * @brief MainWindow::toolBoxAnalysisGeodesicsSelectChanged
- * Called from MW, when user selects something in the Geodesics selectbox of
- * toolbox
+ * @brief Called from MW, when user selects something in the Subgraph from Selected
+ * Nodes selectbox of the toolbox
  * @param selectedIndex
  */
-void MainWindow::toolBoxAnalysisGeodesicsSelectChanged(int selectedIndex) {
-    qDebug()<< "MW::toolBoxAnalysisGeodesicsSelectChanged "
+void MainWindow::toolBoxEditNodeSubgraphSelectChanged(int selectedIndex) {
+    qDebug()<< "MW::toolBoxEditNodeSubgraphSelectChanged "
                "selected text index: " << selectedIndex;
     switch(selectedIndex){
     case 0:
         break;
     case 1:
-        slotGraphDistance();
+        slotEditNodeSelectedToClique();
         break;
     case 2:
-        slotAverageGraphDistance();
+        slotEditNodeSelectedToStar();
         break;
     case 3:
-        slotDistancesMatrix();
+        slotEditNodeSelectedToCycle();
         break;
     case 4:
-        slotGeodesicsMatrix();
+        slotEditNodeSelectedToLine();
+        break;
+    };
+}
+
+
+
+
+
+/**
+ * @brief Called from MW, when user selects something in the Edge Symmetrize
+ * selectbox of the toolbox
+ * @param selectedIndex
+ */
+void MainWindow::toolBoxEditEdgeSymmetrizeSelectChanged(int selectedIndex) {
+    qDebug()<< "MW::toolBoxEditEdgeSymmetrizeSelectChanged "
+               "selected text index: " << selectedIndex;
+    switch(selectedIndex){
+    case 0:
+        break;
+    case 1:
+        slotEditEdgeSymmetrizeAll();
+        break;
+    case 2:
+        slotEditEdgeSymmetrizeStrongTies();
+        break;
+    case 3:
+        slotEditEdgeSymmetrizeCocitation();
+        break;
+    };
+}
+
+
+
+
+/**
+ * @brief Called from MW, when user selects something in the Matrices
+ * selectbox of the toolbox
+ * @param selectedIndex
+ */
+void MainWindow::toolBoxAnalysisMatricesSelectChanged(int selectedIndex) {
+    qDebug()<< "MW::toolBoxAnalysisMatricesSelectChanged "
+               "selected text index: " << selectedIndex;
+    switch(selectedIndex){
+    case 0:
+        break;
+    case 1:
+        slotNetworkViewSociomatrix();
+        break;
+    case 2:
+        slotNetworkViewSociomatrixPlotText();
+        break;
+    case 3:
+        slotAnalyzeMatrixAdjacencyInverse();
+        break;
+    case 4:
+        slotAnalyzeMatrixAdjacencyTranspose();
         break;
     case 5:
-        slotEccentricity();
+        slotAnalyzeMatrixAdjacencyCocitation();
         break;
     case 6:
-        slotDiameter();
+        slotAnalyzeMatrixDegree();
+        break;
+    case 7:
+        slotAnalyzeMatrixLaplacian();
         break;
     };
-
-
 }
 
 
 
 
-
 /**
- * @brief MainWindow::toolBoxAnalysisConnectivitySelectChanged
+ * @brief Called from MW, when user selects something in the Cohesion
+ * selectbox of the toolbox to compute basic graph theoretic / network properties
  * @param selectedIndex
- * Called from MW, when user selects something in the Connectivity selectbox of
- *  toolbox
  */
-void MainWindow::toolBoxAnalysisConnectivitySelectChanged(int selectedIndex) {
-    qDebug()<< "MW::toolBoxAnalysisConnectivitySelectChanged "
+void MainWindow::toolBoxAnalysisCohesionSelectChanged(int selectedIndex) {
+    qDebug()<< "MW::toolBoxAnalysisCohesionSelectChanged "
                "selected text index: " << selectedIndex;
     switch(selectedIndex){
     case 0:
         break;
     case 1:
-        qDebug()<< "Connectedness";
-        slotConnectedness();
+        slotAnalyzeSymmetryCheck();
         break;
     case 2:
-        qDebug()<< "Walks of given length";
-        slotWalksOfGivenLength();
+        slotAnalyzeDistance();
         break;
     case 3:
-        qDebug() << "Total Walks selected";
-        slotTotalWalks();
+        slotAnalyzeDistanceAverage();
         break;
     case 4:
-        qDebug() << "Reachability Matrix";
-        slotReachabilityMatrix();
+        slotAnalyzeMatrixDistances();
+        break;
+    case 5:
+        slotAnalyzeMatrixGeodesics();
+        break;
+    case 6:
+        slotAnalyzeEccentricity();
+        break;
+    case 7:
+        slotAnalyzeDiameter();
+        break;
+    case 8:
+        slotAnalyzeConnectedness();
+        break;
+    case 9:
+        slotAnalyzeWalksLength();
+        break;
+    case 10:
+        slotAnalyzeWalksTotal();
+        break;
+    case 11:
+        slotAnalyzeReachabilityMatrix();
+        break;
+    case 12:
+        slotAnalyzeClusteringCoefficient();
         break;
     };
+
 
 }
 
 
 
 
+
+
 /**
- * @brief MainWindow::toolBoxAnalysisClusterabilitySelectChanged
+ * @brief Called from MW, when user selects something in the Communities selectbox
+ * of the toolbox
  * @param selectedIndex
- * Called from MW, when user selects something in the Clusterability selectbox
- * of toolbox
+ *
  */
-void MainWindow::toolBoxAnalysisClusterabilitySelectChanged(int selectedIndex) {
-    qDebug()<< "MW::toolBoxAnalysisClusterabilitySelectChanged "
+void MainWindow::toolBoxAnalysisCommunitiesSelectChanged(int selectedIndex) {
+    qDebug()<< "MW::toolBoxAnalysisCommunitiesSelectChanged "
                "selected text index: " << selectedIndex;
     switch(selectedIndex){
     case 0:
         break;
     case 1:
         qDebug()<< "Cliques";
-        slotCliqueCensus();
+        slotAnalyzeCommunitiesCliqueCensus();
         break;
     case 2:
-        qDebug()<< "Clustering Coefficient";
-        slotClusteringCoefficient();
-        break;
-    case 3:
         qDebug() << "Triad Census";
-        slotTriadCensus();
+        slotAnalyzeCommunitiesTriadCensus();
         break;
     };
 
@@ -3894,10 +4943,46 @@ void MainWindow::toolBoxAnalysisClusterabilitySelectChanged(int selectedIndex) {
 
 
 /**
- * @brief MainWindow::toolBoxAnalysisProminenceSelectChanged
+ * @brief Called from MW, when user selects something in the Structural Equivalence
+ * selectbox of the toolbox
  * @param selectedIndex
- * Called from MW, when user selects something in the Prominence selectbox
- *  of toolbox
+ *
+ */
+void MainWindow::toolBoxAnalysisStrEquivalenceSelectChanged(int selectedIndex) {
+    qDebug()<< "MW::toolBoxAnalysisStrEquivalenceSelectChanged "
+               "selected text index: " << selectedIndex;
+    switch(selectedIndex){
+    case 0:
+        break;
+    case 1:
+        qDebug()<< "Pearson";
+        slotAnalyzeStrEquivalencePearsonDialog();
+        break;
+    case 2:
+        qDebug()<< "Similarities";
+        slotAnalyzeStrEquivalenceSimilarityMeasureDialog();
+        break;
+    case 3:
+        qDebug() << "Dissimilarities";
+        slotAnalyzeStrEquivalenceDissimilaritiesDialog();
+        break;
+    case 4:
+        qDebug() << "Hierarchical Clustering";
+        slotAnalyzeStrEquivalenceClusteringHierarchicalDialog();
+        break;
+    };
+
+}
+
+
+
+
+
+/**
+ * @brief Called from MW, when user selects something in the Prominence selectbox
+ *  of the toolbox
+ * @param selectedIndex
+ *
  */
 void MainWindow::toolBoxAnalysisProminenceSelectChanged(int selectedIndex) {
     qDebug()<< "MW::toolBoxAnalysisProminenceSelectChanged "
@@ -3906,37 +4991,40 @@ void MainWindow::toolBoxAnalysisProminenceSelectChanged(int selectedIndex) {
     case 0:
         break;
     case 1:
-        slotCentralityDegree();
+        slotAnalyzeCentralityDegree();
         break;
     case 2:
-        slotCentralityCloseness();
+        slotAnalyzeCentralityCloseness();
         break;
     case 3:
-        slotCentralityClosenessInfluenceRange();
+        slotAnalyzeCentralityClosenessIR();
         break;
     case 4:
-        slotCentralityBetweenness();
+        slotAnalyzeCentralityBetweenness();
         break;
     case 5:
-        slotCentralityStress();
+        slotAnalyzeCentralityStress();
         break;
     case 6:
-        slotCentralityEccentricity();
+        slotAnalyzeCentralityEccentricity();
         break;
     case 7:
-        slotCentralityPower();
+        slotAnalyzeCentralityPower();
         break;
     case 8:
-        slotCentralityInformation();
+        slotAnalyzeCentralityInformation();
         break;
     case 9:
-        slotPrestigeDegree();
+        slotAnalyzeCentralityEigenvector();
         break;
     case 10:
-        slotPrestigePageRank();
+        slotAnalyzePrestigeDegree();
         break;
     case 11:
-        slotPrestigeProximity();
+        slotAnalyzePrestigePageRank();
+        break;
+    case 12:
+        slotAnalyzePrestigeProximity();
         break;
     };
 
@@ -3944,7 +5032,7 @@ void MainWindow::toolBoxAnalysisProminenceSelectChanged(int selectedIndex) {
 
 /**
  * @brief MainWindow::toolBoxLayoutByIndexButtonPressed
- * Called from MW, when user selects an index in the Layout by index selectbox
+ * Called from MW, when user selects a Prominence index in the Layout selectbox
  *  of the left panel.
  */
 void MainWindow::toolBoxLayoutByIndexButtonPressed(){
@@ -4026,12 +5114,14 @@ void MainWindow::toolBoxLayoutForceDirectedButtonPressed(){
  */
 void MainWindow::resizeEvent( QResizeEvent * ){
 
-    qDebug ("MW::resizeEvent():  window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",
-            width(),height(),
-            graphicsWidget->width(),graphicsWidget->height(),
-            graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
+    qDebug() << "MW::resizeEvent():  Window resized to"
+             << width()
+             << ","
+             << height()
+             <<"Calling activeGraph.canvasSizeSet() to set canvas width and height";
 
     activeGraph.canvasSizeSet(graphicsWidget->width(),graphicsWidget->height());
+
     statusMessage(
                 QString(
                     tr("Window resized to (%1, %2)px. Canvas size: (%3, %4) px"))
@@ -4050,28 +5140,34 @@ void MainWindow::resizeEvent( QResizeEvent * ){
  * Closes the application. Asks to write any unsaved network data.
  */
 void MainWindow::closeEvent( QCloseEvent* ce ) {
-    if ( !networkModified )       {
+    qDebug() << "MW::closeEvent()";
+    if ( activeGraph.graphSaved()  )  {
         ce->accept();
         return;
     }
-    switch( QMessageBox::information( this, "Save file",
-                                      tr("Do you want to save the changes") +
-                                      tr(" to the network file?"),
-                                      tr("Yes"), tr("No"), tr("Cancel"),
-                                      0, 1 ) )
+
+    switch( slotHelpMessageToUser(
+                USER_MSG_QUESTION,
+                tr("Save changes"),
+                tr("Modified network has not been saved!"),
+                tr("Do you want to save the changes to the network file?"),
+                 QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel, QMessageBox::Cancel
+                ) )
     {
-    case 0:
+    case QMessageBox::Yes:
         slotNetworkSave();
         ce->accept();
         break;
-    case 1:
+    case QMessageBox::No:
         ce->accept();
         break;
-    case 2:
+    case QMessageBox::NoButton:
     default: // just for sanity
         ce->ignore();
         break;
     }
+
+    initApp();
 }
 
 
@@ -4140,87 +5236,210 @@ void MainWindow::setLastPath(QString filePath) {
 void MainWindow::slotNetworkFileChoose(QString m_fileName,
                                        int m_fileFormat,
                                        const bool &checkSelectFileType) {
-    qDebug() << "MW::slotNetworkFileChoose() start - "
+    qDebug() << "MW::slotNetworkFileChoose() - "
              << " m_fileName: " << m_fileName
              << " m_fileFormat " << m_fileFormat
              << " checkSelectFileType " << checkSelectFileType;
-    if (firstTime && m_fileFormat == -500 ) {
-        QMessageBox::information( this, "SocNetV",
-                                  tr("Attention: \n")+
-                                  tr("This menu option is more suitable for loading "
-                                     "a network file in GraphML format (.graphml), "
-                                     "which is the default format of SocNetV. \n"
-                                     "Nevertheless, if you select other supported "
-                                     "filetype SocNetV will attempt to load it.\n")+
 
-                                  tr("If your file is not GraphML but you know its "
-                                     "format is supported (i.e. Pajek, UCINET, GraphViz, etc), ")+
-                                  tr("please use the options in the Import sub menu. They are more safe.\n")+
-                                  tr("\n This warning message will not appear again."),
-                                  "OK", 0 );
-        firstTime=false;
-    }
-
-    bool a_file_was_already_loaded=fileLoaded;
     previous_fileName=fileName;
-    QString fileType_string;
+    QString fileType_filter;
 
-    // prepare and open a file selection dialog
-    if (m_fileName.isNull()) {
-        statusMessage( tr("Choose a network file..."));
+    /*
+     * CASE 1: No filename provided. This happens when:
+     * - User clicked Open Network File or
+     * - User clicked Import Network
+     *
+     * Prepare known filetypes and
+     * Open a file selection dialog for the user
+     *
+     */
+    if (m_fileName.isNull() || m_fileName.isEmpty() ) {
 
-        // prepare supported extensions strings
-        switch (m_fileFormat){
+        fileType=m_fileFormat;
+
+        // prepare supported filetype extensions
+        switch (fileType){
         case FILE_GRAPHML:
-            fileType_string = tr("GraphML (*.graphml *.xml);;All (*)");
+            fileType_filter = tr("GraphML (*.graphml *.xml);;All (*)");
             break;
         case FILE_PAJEK:
-            fileType_string = tr("Pajek (*.net *.paj *.pajek);;All (*)");
+            fileType_filter = tr("Pajek (*.net *.paj *.pajek);;All (*)");
             break;
         case FILE_ADJACENCY:
-            fileType_string = tr("Adjacency (*.csv *.sm *.adj *.txt);;All (*)");
+            fileType_filter = tr("Adjacency (*.csv *.sm *.adj *.txt);;All (*)");
             break;
         case FILE_GRAPHVIZ:
-            fileType_string = tr("GraphViz (*.dot);;All (*)");
+            fileType_filter = tr("GraphViz (*.dot);;All (*)");
             break;
         case FILE_UCINET:
-            fileType_string = tr("UCINET (*.dl *.dat);;All (*)");
+            fileType_filter = tr("UCINET (*.dl *.dat);;All (*)");
             break;
         case FILE_GML:
-            fileType_string = tr("GML (*.gml);;All (*)");
+            fileType_filter = tr("GML (*.gml);;All (*)");
             break;
 
-        case FILE_WLIST:
-            fileType_string = tr("Weighted List (*.wlst *.wlist);;All (*)");
+        case FILE_EDGELIST_WEIGHTED:
+            fileType_filter = tr("Weighted Edge List (*.csv *.txt *.list *.edgelist *.lst *.wlst);;All (*)");
             break;
-        case FILE_LIST:
-            fileType_string = tr("List (*.lst *.csv *.list);;All (*)");
+        case FILE_EDGELIST_SIMPLE:
+            fileType_filter = tr("Simple Edge List (*.csv *.txt *.list *.edgelist *.lst);;All (*)");
             break;
         case FILE_TWOMODE:
-            fileType_string = tr("Two-Mode Sociomatrix (*.2sm *.aff);;All (*)");
+            fileType_filter = tr("Two-Mode Sociomatrix (*.2sm *.aff);;All (*)");
             break;
         default:	//All
-            fileType_string = tr("GraphML (*.graphml *.xml);;"
+            fileType_filter = tr("GraphML (*.graphml *.xml);;"
+                                 "GML (*.gml *.xml);;"
                                  "Pajek (*.net *.pajek *.paj);;"
-                                 "DL (*.dl *.dat);;"
+                                 "UCINET (*.dl *.dat);;"
                                  "Adjacency (*.csv *.adj *.sm *.txt);;"
                                  "GraphViz (*.dot);;"
-                                 "List (*.lst *.csv *.list);;"
-                                 "Weighted List (*.wlst *.wlist);;All (*)");
+                                 "Weighted Edge List (*.csv *.txt *.edgelist *.list *.lst *.wlst);;"
+                                 "Simple Edge List (*.csv *.txt *.edgelist *.list *.lst);;"
+                                 "Two-Mode Sociomatrix (*.2sm *.aff);;"
+                                  "All (*)");
             break;
 
         }
-        m_fileName = QFileDialog::getOpenFileName(
-                    this,
-                    tr("Select a network file to open"),
-                    getLastPath(), fileType_string);
+        //prepare the filedialog
+        QFileDialog *fileDialog = new QFileDialog(this);
+        fileDialog->setFileMode(QFileDialog::ExistingFile);
+        fileDialog->setNameFilter(fileType_filter);
+        fileDialog->setViewMode(QFileDialog::Detail);
+        fileDialog->setDirectory(getLastPath());
+
+        //connect its signals to our slots
+        connect ( fileDialog, &QFileDialog::filterSelected,
+                  this, &MainWindow::slotNetworkFileDialogFilterSelected);
+        connect ( fileDialog, &QFileDialog::fileSelected,
+                  this, &MainWindow::slotNetworkFileDialogFileSelected);
+        connect ( fileDialog, &QFileDialog::rejected ,
+                  this, &MainWindow::slotNetworkFileDialogRejected);
+
+        //open the filedialog
+        statusMessage( tr("Choose a network file..."));
+        if (fileDialog->exec()) {
+            m_fileName = (fileDialog->selectedFiles()).at(0);
+            qDebug() << "MW::slotNetworkFileChoose() - m_fileName " << m_fileName;
+
+        }
+        else {
+            //display some error
+            statusMessage( tr("Nothing to do..."));
+        }
+        return;
 
     }
-    qDebug() << "MW::slotNetworkFileChoose() - "
-             << " m_fileName: " << m_fileName;
-    if (checkSelectFileType) {
-        //check if user has changed the filetype filter and loaded other filetype
-        if (m_fileName.endsWith(".graphml",Qt::CaseInsensitive ) ||
+
+
+    /*
+     * CASE 2: Filename provided. This happens when:
+     * - Application starts from command line with filename parameter or
+     * - User selects a Recent File or
+     * - User selects a file in a previous slotNetworkFileChoose call
+     *
+     * If checkSelectFileType==TRUE (that is on app start or Recent File),
+     * it tries to understand fileType by file extension. If file has unknown
+     * file extension or an ambiguous file extension used by many different file
+     * formats, then it asks the user to provide the fileType. Then it loads the
+     * file
+     *
+     * If checkSelectFileType==FALSE, then it loads the file with given fileType.
+     *
+     */
+    if (checkSelectFileType || m_fileFormat==FILE_UNRECOGNIZED) {
+        // This happens only on application startup or on loading a recent file.
+        if ( ! m_fileName.endsWith(".graphml",Qt::CaseInsensitive ) &&
+             ! m_fileName.endsWith(".net",Qt::CaseInsensitive ) &&
+             ! m_fileName.endsWith(".paj",Qt::CaseInsensitive )  &&
+             ! m_fileName.endsWith(".pajek",Qt::CaseInsensitive ) &&
+             ! m_fileName.endsWith(".dl",Qt::CaseInsensitive ) &&
+             ! m_fileName.endsWith(".gml",Qt::CaseInsensitive ) &&
+             ! m_fileName.endsWith(".wlst",Qt::CaseInsensitive ) &&
+             ! m_fileName.endsWith(".wlist",Qt::CaseInsensitive )&&
+             ! m_fileName.endsWith(".2sm",Qt::CaseInsensitive ) &&
+             ! m_fileName.endsWith(".aff",Qt::CaseInsensitive )) {
+            //ambigious
+
+            tempFileNameNoPath=m_fileName.split ("/");
+            QStringList fileTypes;
+            fileTypes << tr("GraphML")
+                      << tr("GML")
+                      << tr("Pajek")
+                      << tr("UCINET")
+                      << tr("Adjacency")
+                      << tr("GraphViz")
+                      << tr("Edge List (weighted)")
+                      << tr("Edge List (simple, non-weighted)")
+                      << tr("Two-mode sociomatrix") ;
+
+            bool ok;
+            QString userFileType= QInputDialog::getItem(
+                        this,
+                        tr("Selected file has ambiguous file extension!"),
+                        tr("You selected: %1 \n"
+
+                           "The name of this file has either an unknown extension \n"
+                           "or an extension used by different network file formats.\n\n"
+
+                           "SocNetV supports the following social network file "
+                           "formats. \nIn parentheses the expected extension. \n"
+                        "- GraphML (.graphml or .xml)\n"
+                           "- GML (.gml or .xml)\n"
+                        "- Pajek (.paj or .pajek or .net)\n"
+                        "- UCINET (.dl .dat) \n"
+                        "- GraphViz (.dot)\n"
+                        "- Adjacency Matrix (.sm or .adj or .csv or .txt)\n"
+                        "- Simple Edge List (.list or .lst)\n"
+                        "- Weighted Edge List (.wlist or .wlst)\n"
+                        "- Two-Mode / affiliation (.2sm or .aff) \n\n"
+
+                        "If you are sure the file is of a supported format, please \n"
+                           "select the right format from the list below.").
+                        arg(tempFileNameNoPath.last()),
+                        fileTypes, 0, false, &ok);
+            if (ok && !userFileType.isEmpty()) {
+                if (userFileType == "GraphML") {
+                    m_fileFormat=FILE_GRAPHML;
+                }
+                else if (userFileType == "GraphML") {
+                    m_fileFormat=FILE_PAJEK;
+                }
+                else if (userFileType == "GML") {
+                    m_fileFormat=FILE_GML;
+                }
+                else if (userFileType == "UCINET") {
+                    m_fileFormat=FILE_UCINET;
+                }
+                else if (userFileType == "Adjacency") {
+                    m_fileFormat=FILE_ADJACENCY;
+                }
+                else if (userFileType == "GraphViz") {
+                    m_fileFormat=FILE_GRAPHVIZ;
+                }
+                else if (userFileType == "Edge List (weighted)") {
+                    m_fileFormat=FILE_EDGELIST_WEIGHTED;
+                }
+                else if (userFileType == "Edge List (simple, non-weighted)") {
+                    m_fileFormat=FILE_EDGELIST_SIMPLE;
+                }
+                else if (userFileType == "Two-mode sociomatrix") {
+                    m_fileFormat=FILE_TWOMODE;
+                }
+
+            }
+            else {
+                statusMessage( tr("Opening network file aborted."));
+                //if a file was previously opened, get back to it.
+                if (activeGraph.graphLoaded())	{
+                    fileName=previous_fileName;
+                }
+                return;
+            }
+
+        }
+
+        else if (m_fileName.endsWith(".graphml",Qt::CaseInsensitive ) ||
                 m_fileName.endsWith(".xml",Qt::CaseInsensitive ) ) {
             m_fileFormat=FILE_GRAPHML;
         }
@@ -4247,11 +5466,11 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
         }
         else if (m_fileName.endsWith(".list",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".lst",Qt::CaseInsensitive )  ) {
-            m_fileFormat=FILE_LIST;
+            m_fileFormat=FILE_EDGELIST_SIMPLE;
         }
         else if (m_fileName.endsWith(".wlist",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".wlst",Qt::CaseInsensitive )  ) {
-            m_fileFormat=FILE_WLIST;
+            m_fileFormat=FILE_EDGELIST_WEIGHTED;
         }
         else if (m_fileName.endsWith(".2sm",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".aff",Qt::CaseInsensitive )  ) {
@@ -4260,77 +5479,127 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
         else
             m_fileFormat=FILE_UNRECOGNIZED;
     }
-    if (!m_fileName.isEmpty() && !m_fileName.isNull()) {
-        if (m_fileFormat == FILE_UNRECOGNIZED) {
-            QMessageBox::critical(this, "Unrecognized file", tr("Error! \n"
-                                  "SocNetV supports the following network file"
-                                  "formats. The filename you selected does not "
-                                  "end with any of the following extensions:\n"
-                                  "- GraphML (.graphml or .xml)\n"
-                                  "- Pajek (.paj or .pajek or .net)\n"
-                                  "- UCINET (.dl .dat) \n"
-                                  "- GraphViz (.dot)\n"
-                                  "- Adjacency Matrix (.sm or .adj or .csv)\n"
-                                  "- List (.list or .lst)\n"
-                                  "- Weighted List (.wlist or .wlst)\n"
-                                  "- Two-Mode / affiliation (.2sm or .aff) \n\n"
-                                  "If you are sure the file is of a supported "
-                                  "format, perhaps you should just change its extension..."),
-                                  QMessageBox::Ok, 0);
-            statusMessage( tr("Error: Unrecognized file. "));
-            //if a file was previously opened, get back to it.
-            if (a_file_was_already_loaded)	{
-                fileLoaded=true;
-                fileName=previous_fileName;
-            }
-            return;
-        }
-        qDebug()<<"MW::slotNetworkFileChoose() - selected file: " << m_fileName
-                  << " file format " << m_fileFormat;
-
-        slotNetworkFilePreview(m_fileName, m_fileFormat );
 
 
-    }
-    else  {
-        statusMessage( tr("Opening aborted"));
-        //if a file was previously opened, get back to it.
-        if (a_file_was_already_loaded)	{
-            fileLoaded=true;
-            fileName=previous_fileName;
-        }
-    }
+    qDebug()<<"MW::slotNetworkFileChoose() - Calling slotNetworkFilePreview"
+           << "with m_fileName" << m_fileName
+           << "and m_fileFormat " << m_fileFormat;
+
+    slotNetworkFilePreview(m_fileName, m_fileFormat );
+
+
 }
 
 
 
 
+void MainWindow::slotNetworkFileDialogRejected() {
+    qDebug() << "MW::slotNetworkFileDialogRejected() - if a file was previously opened, get back to it.";
+    statusMessage( tr("Opening aborted"));
+}
+
+
+/**
+ * @brief MainWindow::slotNetworkFileDialogFilterSelected
+ * @param filter
+ * Called when user selects a file filter (i.e. GraphML) in the fileDialog
+ */
+void MainWindow::slotNetworkFileDialogFilterSelected(const QString &filter) {
+    qDebug() << "MW::slotNetworkFileDialogFilterSelected() - filter" << filter;
+    if (filter.startsWith("GraphML",Qt::CaseInsensitive ) ) {
+        fileType=FILE_GRAPHML;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_GRAPHML";
+    }
+    else if (filter.contains("PAJEK",Qt::CaseInsensitive ) ) {
+        fileType=FILE_PAJEK;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_PAJEK";
+    }
+    else if (filter.contains("DL",Qt::CaseInsensitive ) ||
+             filter.contains("UCINET",Qt::CaseInsensitive ) ) {
+        fileType=FILE_UCINET;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_UCINET";
+    }
+    else if (filter.contains("Adjancency",Qt::CaseInsensitive ) ) {
+        fileType=FILE_ADJACENCY;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_ADJACENCY";
+    }
+    else if (filter.contains("GraphViz",Qt::CaseInsensitive ) ) {
+        fileType=FILE_GRAPHVIZ;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_GRAPHVIZ";
+    }
+    else if (filter.contains("GML",Qt::CaseInsensitive ) ) {
+        fileType=FILE_GML;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_GML";
+    }
+    else if (filter.contains("Simple Edge List",Qt::CaseInsensitive ) ) {
+        fileType=FILE_EDGELIST_SIMPLE;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_EDGELIST_SIMPLE";
+    }
+    else if (filter.contains("Weighted Edge List",Qt::CaseInsensitive ) ) {
+        fileType=FILE_EDGELIST_WEIGHTED;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_EDGELIST_WEIGHTED";
+    }
+    else if (filter.contains("Two-Mode",Qt::CaseInsensitive )  ) {
+        fileType=FILE_TWOMODE;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_TWOMODE";
+    }
+    else {
+        fileType=FILE_UNRECOGNIZED;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_UNRECOGNIZED";
+    }
+
+
+}
+
+
+/**
+ * @brief MainWindow::slotNetworkFileDialogFileSelected
+ * @param fileName
+ * Called when user selects a file in the fileDialog
+ * Calls slotNetworkFileChoose() again.
+ */
+void MainWindow::slotNetworkFileDialogFileSelected(const QString &fileName) {
+    qDebug() << "MW::slotNetworkFileDialogFileSelected() - filename " << fileName
+             << "calling slotNetworkFileChoose() with fileType" << fileType;
+    slotNetworkFileChoose( fileName,
+                           fileType,
+                           (  (fileType==FILE_UNRECOGNIZED) ? true : false )
+                           );
+}
+
 
 /**
  * @brief MainWindow::slotNetworkSave
  * Saves the network in the same file.
- * Only GraphML is supported.
+ * First check if a fileName is currently used
+ * If not, calls slotNetworkSaveAs (which prompts for a fileName before returning here)
+ * If a fileName is currently set, it checks if fileFormat is supported for export
+ * If not supported, and the file is new, just tries to save in GraphML
  * For other exporing options the user is informed to use the export menu.
  */
 void MainWindow::slotNetworkSave(const int &fileFormat) {
     statusMessage( tr("Saving file..."));
 
-    if (!fileLoaded && !networkModified ) {
-        statusMessage(  QString(tr("No network loaded.")) );
-        return;
+    if (activeGraph.vertices() == 0) {
+        statusMessage(  QString(tr("Nothing to save. There are no vertices.")) );
+    }
+    if (activeGraph.graphSaved()) {
+        statusMessage(  QString(tr("Graph already saved.")) );
     }
     if ( fileName.isEmpty() ) {
         slotNetworkSaveAs();
         return;
     }
-    fileNameNoPath=fileName.split ("/");
+    QFileInfo fileInfo (fileName);
+    fileNameNoPath = fileInfo.fileName();
 
     if ( activeGraph.graphFileFormatExportSupported( fileFormat ) )
     {
         activeGraph.graphSave(fileName, fileFormat ) ;
     }
     else if (activeGraph.graphFileFormat()==FILE_GRAPHML ||
-            ( !fileLoaded && networkModified) )
+             ( activeGraph.graphSaved() && !activeGraph.graphLoaded() )
+             )
     {	//new file or GraphML
         activeGraph.graphSave(fileName, FILE_GRAPHML);
     }
@@ -4343,20 +5612,23 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
     }
     else
     {
-        switch( QMessageBox::information(
-                    this, "Default File Format: GraphML ",
-                    tr("This imported network will be saved in GraphML format ")+
-                    tr("which is the default file format of SocNetV. \n\n")+
-                    tr("Is this OK? \n\n") +
-                    tr("If not, press Cancel, then go to Network > Export menu "
-                       "to see other supported formats to export your data to."),
-                    "Yes", "No",0,1 )
-                )
+        switch(
+               slotHelpMessageToUser (USER_MSG_QUESTION,
+                                      tr("Save to GraphML?"),
+                                      tr("Default File Format: GraphML "),
+                                      tr("This network will be saved in GraphML format "
+                                         "which is the default file format of SocNetV. \n\n"
+                                         "Is this OK? \n\n"
+                                         "If not, press Cancel, then go to Network > Export menu "
+                                         "to see other supported formats to export your data to.")
+                                      )
+               )
         {
-        case 0:
+        case QMessageBox::Yes:
              activeGraph.graphSave(fileName, FILE_GRAPHML);
             break;
-        case 1:
+        case QMessageBox::Cancel:
+        case QMessageBox::No:
             statusMessage( tr("Save aborted...") );
             break;
         }
@@ -4381,20 +5653,24 @@ void MainWindow::slotNetworkSaveAs() {
                 getLastPath(), tr("GraphML (*.graphml *.xml);;All (*)") );
     if (!fn.isEmpty())  {
         if  ( QFileInfo(fn).suffix().isEmpty() ){
-            QMessageBox::information(
-                        this, "Missing Extension ",
-                        tr("File extension was missing! \n"
-                           "Appending a standard .graphml to the given filename."), "OK",0);
+            slotHelpMessageToUser (
+                        USER_MSG_INFO,
+                        tr("Appending .graphml"),
+                        tr("Missing Extension. \n"
+                           "Appending a standard .graphml to the given filename.")
+                        );
             fn.append(".graphml");
         }
-        //TODO. Perhaps change the suffix automatically to graphML
-        // even if the user has selected other?
+        /** \todo  Change the suffix automatically to graphML even if the user
+         * has selected other?
+         */
         if ( !QFileInfo(fn).suffix().contains("graphML") ||
              !QFileInfo(fn).suffix().contains("xml") ) {
             //fn = QFileInfo(fn).absoluteDir() + QFileInfo(fn).baseName()
         }
         fileName=fn;
-        fileNameNoPath=fileName.split ("/");
+        QFileInfo fileInfo (fileName);
+        fileNameNoPath = fileInfo.fileName();
         setLastPath(fileName); // store this path
         slotNetworkSave(FILE_GRAPHML);
     }
@@ -4402,7 +5678,6 @@ void MainWindow::slotNetworkSaveAs() {
         statusMessage( tr("Saving aborted"));
         return;
     }
-    statusMessage( tr("Ready."));
 }
 
 
@@ -4410,22 +5685,19 @@ void MainWindow::slotNetworkSaveAs() {
 /**
  * @brief MainWindow::slotNetworkSaved
  * @param saved_ok
- * Called from Graph when we try to save file
+ * Called from Graph when we save file.
+ * Updates Save icon and window title.
  */
 void MainWindow::slotNetworkSaved(const int &status)
 {
-    if (status <= 0)
-    {
-        //slotNetworkChanged();
-        statusMessage( tr("Error! Could not save this file... ")+fileNameNoPath.last()+tr(".") );
+    if (status <= 0) {
+        statusMessage( tr("Error! Could not save this file: %1").arg (fileNameNoPath));
     }
-    else
-    {
+    else {
         networkSave->setIcon(QIcon(":/images/saved.png"));
         networkSave->setEnabled(false);
-        fileLoaded=true; networkModified=false;
-        setWindowTitle( fileNameNoPath.last() );
-        statusMessage( tr("Network saved under filename: ")+fileNameNoPath.last()+tr(".") );
+        setWindowTitle( fileNameNoPath );
+        statusMessage( tr("Network saved under filename: %1").arg (fileNameNoPath));
     }
 }
 
@@ -4438,18 +5710,23 @@ void MainWindow::slotNetworkSaved(const int &status)
 void MainWindow::slotNetworkClose() {
     qDebug()<<"slotNetworkClose()";
     statusMessage( tr("Closing network file..."));
-    if (networkModified) {
-        switch ( QMessageBox::information (this,
-                                           "Closing Network...",
-                                           tr("Network has not been saved. \nDo you want to save before closing it?"),
-                                           "Yes", "No",0,1))
+    if (!activeGraph.graphSaved()) {
+        switch (
+                slotHelpMessageToUser (
+                            USER_MSG_QUESTION,
+                            tr("Closing Network..."),
+                            tr("Network has not been saved. \n"
+                               "Do you want to save before closing it?")
+                            )
+                )
         {
-        case 0: slotNetworkSave(); break;
-        case 1: break;
+        case QMessageBox::Yes: slotNetworkSave(); break;
+        case QMessageBox::No: break;
+        case QMessageBox::Cancel: return; break;
         }
     }
     statusMessage( tr("Erasing old network data...."));
-    initNet();
+    initApp();
     statusMessage( tr("Ready."));
 }
 
@@ -4484,6 +5761,14 @@ void MainWindow::slotNetworkImportGraphML(){
 
 
 
+/**
+ * @brief MainWindow::slotNetworkImportGML
+ * Imports a network from a GML formatted file
+ */
+void MainWindow::slotNetworkImportGML(){
+    bool m_checkSelectFileType = false;
+    slotNetworkFileChoose( QString::null, FILE_GML, m_checkSelectFileType);
+}
 
 /**
  * @brief MainWindow::slotNetworkImportPajek
@@ -4520,14 +5805,6 @@ void MainWindow::slotNetworkImportDot(){
 
 
 
-/**
- * @brief MainWindow::slotNetworkImportGML
- * Imports a network from a GML formatted file
- */
-void MainWindow::slotNetworkImportGML(){
-    bool m_checkSelectFileType = false;
-    slotNetworkFileChoose( QString::null, FILE_GML, m_checkSelectFileType);
-}
 
 
 
@@ -4549,21 +5826,39 @@ void MainWindow::slotNetworkImportDL(){
  */
 void MainWindow::slotNetworkImportEdgeList(){
     bool m_checkSelectFileType = false;
-    switch( QMessageBox::question( this, "Type of list format",
-                                   tr("I can parse two kinds of lists: \n\n")+
-                                   tr("A. Weighted lists, with each line having exactly 3 columns (source, target, weight), i.e.\n  1 2 5 \n \n")+
-                                   tr("B. Simple edge lists, with each line having 2 or more columns (source, target1, target2, ... etc)\n\n")+
-                                   tr("Please select the appropriate type of list format for the file you want to load:"),
-                                   "Weighted", "Simple",0,1 )
-            )
+
+    switch(
+           slotHelpMessageToUser(USER_MSG_QUESTION_CUSTOM,
+                                 tr("Select type of edge list format..."),
+                                 tr("Select type of edge list format"),
+                                 tr("SocNetV can parse two kinds of edgelist formats: \n\n"
+                                    "A. Edge lists with edge weights, "
+                                    "where each line has exactly 3 columns: "
+                                    "source  target  weight, i.e.:\n"
+                                    "1 2 1 \n"
+                                    "2 3 1 \n"
+                                    "3 4 2 \n"
+                                    "4 5 1 \n\n"
+                                    "B. Simple edge lists without weights, where each line "
+                                    "has two or more columns in the form: source, target1, target2, ... , i.e.:\n"
+                                    "1 2 3 4 5 6\n"
+                                    "2 3 4 \n"
+                                    "3 5 8 7\n\n"
+                                 "Please select the appropriate type of edge list format of "
+                                 "the file you want to load:"),
+                                 QMessageBox::NoButton, QMessageBox::NoButton,
+                                 tr("Weighted"), tr("Simple non-weighted")
+
+                                 )
+           )
     {
-    case 0:
-        qDebug() << "***  MW::slotNetworkImportEdgeList - Weighted list selected! " ;
-        slotNetworkFileChoose( QString::null, FILE_WLIST, m_checkSelectFileType);
-        break;
     case 1:
+        qDebug() << "***  MW::slotNetworkImportEdgeList - Weighted list selected! " ;
+        slotNetworkFileChoose( QString::null, FILE_EDGELIST_WEIGHTED, m_checkSelectFileType);
+        break;
+    case 2:
         qDebug() << "***  MW: slotNetworkImportEdgeList - Simple list selected! " ;
-        slotNetworkFileChoose( QString::null, FILE_LIST, m_checkSelectFileType);
+        slotNetworkFileChoose( QString::null, FILE_EDGELIST_SIMPLE, m_checkSelectFileType);
         break;
     }
 }
@@ -4628,22 +5923,23 @@ void MainWindow::slotNetworkAvailableTextCodecs()
  */
 bool MainWindow::slotNetworkFilePreview(const QString &m_fileName,
                                     const int &m_fileFormat ){
-    qDebug() << "MW::slotNetworkFilePreview() : "<< m_fileName;
+    qDebug() << "MW::slotNetworkFilePreview() - file: "<< m_fileName;
 
     if (!m_fileName.isEmpty()) {
         QFile file(m_fileName);
         if (!file.open(QFile::ReadOnly)) {
-            QMessageBox::warning(this, tr("Network File Previewer"),
-                                 tr("Cannot read file %1:\n%2")
-                                 .arg(m_fileName)
-                                 .arg(file.errorString()));
+            slotHelpMessageToUserError(
+                        tr("Cannot read file %1:\n%2")
+                        .arg(m_fileName)
+                        .arg(file.errorString())
+                                       );
             return false;
         }
-        qDebug() << "MW::slotNetworkFilePreview() reading the file now... " ;
+        qDebug() << "MW::slotNetworkFilePreview() - reading file... " ;
         QByteArray data = file.readAll();
 
-        previewForm->setEncodedData(data,m_fileName, m_fileFormat);
-        previewForm->exec();
+        m_dialogPreviewFile->setEncodedData(data,m_fileName, m_fileFormat);
+        m_dialogPreviewFile->exec();
     }
     return true;
 }
@@ -4673,55 +5969,86 @@ void MainWindow::slotNetworkFileLoadRecent() {
  * @param m_fileFormat
  * @return
  * Main network file loader method
- * Called from previewForm and slotNetworkDataSetRecreate
- * Calls initNet to init to default values.
+ * Called from m_dialogPreviewFile and slotNetworkDataSetRecreate
+ * Calls initApp to init to default values.
  * Then calls activeGraph::graphLoad to actually load the network...
  */
-bool MainWindow::slotNetworkFileLoad(const QString m_fileName,
+void MainWindow::slotNetworkFileLoad(const QString m_fileName,
                                  const QString m_codecName,
                                  const int m_fileFormat )
 {
     qDebug() << "MW::slotNetworkFileLoad() : "<< m_fileName
                     << " m_codecName " << m_codecName
                     << " m_fileFormat " << m_fileFormat;
-    initNet();
+    initApp();
 
     userSelectedCodecName = m_codecName; //var for future use in a Settings dialog
-
+    QString delimiter=QString::null;
     int two_sm_mode = 0;
 
     if ( m_fileFormat == FILE_TWOMODE ) {
-        switch( QMessageBox::information( this, "Two-mode sociomatrix",
-                                          tr("If this file is in two-mode sociomatrix format, \n")+
-                                          tr("please specify which mode to open \n\n") +
-                                          tr("1st mode: rows are nodes \n") +
-                                          tr("2nd mode: columns are nodes"),
-                                          tr("1st Mode"), tr("2nd mode"), 0,1 ) ) {
-        case 0:
+        switch(
+               slotHelpMessageToUser (
+                   USER_MSG_QUESTION_CUSTOM,
+                   tr("Two-mode sociomatrix. Select mode..."),
+                   tr("Two-mode sociomatrix"),
+                   tr("If this file is in two-mode sociomatrix format, "
+                      "please specify which mode to open \n\n"
+                      "1st mode: rows are nodes \n"
+                      "2nd mode: columns are nodes"),
+                   QMessageBox::NoButton,
+                   QMessageBox::Ok,
+                   tr("1st Mode"),tr("2nd mode")
+
+                           )
+               ) {
+        case 1:
             two_sm_mode = 1;
             break;
-        case 1:
+        case 2:
             two_sm_mode = 2;
             break;
         }
     }
 
+    if ( m_fileFormat == FILE_EDGELIST_SIMPLE ||
+            m_fileFormat == FILE_EDGELIST_WEIGHTED ) {
+        bool ok;
+        QString delimiter =
+                QInputDialog::getText(this, tr("Enter column delimiter"),
+                                      tr("SocNetV supports edge list formatted files"
+                                         "with arbitrary column delimiters. \n"
+                                         "The default delimiter is one or more spaces.\n"
+                                         "If the column delimiter in this file is "
+                                         "other than simple space or TAB, \n"
+                                         "please enter it below.\n"
+                                         "For instance, if the delimiter is a "
+                                         "comma or pipe enter \",\" or \"|\" respectively.\n"
+                                         "Leave empty to use space or TAB as delimiter."),
+                                      QLineEdit::Normal,
+                                      QString(""), &ok);
+        if (!ok || delimiter.isEmpty() || delimiter.isNull() ) {
+            delimiter=" ";
+        }
+        qDebug()<<"MW::slotNetworkFileLoad() - delimiter" << delimiter;
+    }
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
     qDebug() << "MW::slotNetworkFileLoad() : calling activeGraph.graphLoad() ";
-    bool loadGraphStatus = activeGraph.graphLoad (
+
+    activeGraph.graphLoad (
                 m_fileName,
                 m_codecName,
-                (appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false,
-                graphicsWidget->width(),
-                graphicsWidget->height(),
-                m_fileFormat, two_sm_mode
-                );
-    qDebug() << "MW::slotNetworkFileLoad() : loadGraphStatus " << loadGraphStatus;
+                ((appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false),
+            m_fileFormat,
+            two_sm_mode,
+            delimiter
+            );
 
     QApplication::restoreOverrideCursor();
 
-    return loadGraphStatus;
 }
+
+
 
 
 /**
@@ -4732,92 +6059,92 @@ bool MainWindow::slotNetworkFileLoad(const QString m_fileName,
  * @param netName
  * @param aNodes
  * @param totalEdges
- * @param undirected
  */
-void MainWindow::slotNetworkFileLoaded (
-        int type, QString fName, QString netName, int aNodes, int totalEdges, bool undirected)
+void MainWindow::slotNetworkFileLoaded (const int &type,
+                                        const QString &fName,
+                                        const QString &netName,
+                                        const int &totalNodes,
+                                        const int &totalEdges,
+                                        const QString &message)
 {
-    qDebug()<< "MW::slotNetworkFileLoaded() - mnetworkName is: " << netName << " type " << type;
-    Q_UNUSED (undirected);
+    qDebug()<< "MW::slotNetworkFileLoaded() - type " << type;
 
     if (type > 0) {
         fileName=fName;
         previous_fileName=fileName;
-        fileNameNoPath = fileName.split("/");
+        QFileInfo fileInfo (fileName);
+        fileNameNoPath = fileInfo.fileName();
+
         Q_ASSERT_X( !fileNameNoPath.isEmpty(),  "not empty filename ", "empty filename " );
 
-        setWindowTitle("SocNetV "+ VERSION +" - "+fileNameNoPath.last());
+        setWindowTitle("SocNetV "+ VERSION +" - "+fileNameNoPath);
         setLastPath(fileName); // store this path and file
-        fileLoaded=true;
-        networkModified=false;
-
     }
     else {
-        fileLoaded =false;
+
+        qDebug()<< "MW::slotNetworkFileLoaded() - UNRECOGNIZED FILE. "
+                   "Message from Parser: "
+                << message
+                   << "Calling initApp()";
+
         statusMessage( tr("Error loading requested file. Aborted."));
-        QMessageBox::critical( this, "SocNetV",
-                               tr("Error! \n")+
-                               tr("Sorry, the selected file is not in valid format or encoding. \n")+
-                               tr("Try a different codec in the preview window or if you are trying to import legacy formats (i.e. Pajek, UCINET, dot, etc), ")+
-                               tr("please use the options in the Import sub menu. \n"),
-                               "OK", 0 );
+
+        slotHelpMessageToUser(USER_MSG_CRITICAL,
+                              tr("Error loading network file"),
+                              tr("Error loading network file"),
+                              tr("Sorry, the selected file is not in a supported format or encoding, "
+                                 "or contains formatting errors. \n\n"
+                                 "The error message was: \n\n"
+                                 "%1"
+                                 "\n\n"
+                              "What now? Review the message above to see if it helps you to fix the data file. "
+                                 "Try a different codec in the preview window "
+                                 "or if the file is of a legacy format (i.e. Pajek, UCINET, GraphViz, etc), "
+                              "please use the options in the Import sub menu. \n").arg(message)
+                              );
+
+        initApp();
+
+        return;
     }
 
     switch( type ) 	{
     case 0:
-        fileLoaded=false;
         break;
     case 1:
-        fileLoaded=true;
-        networkModified=false;
-        statusMessage( tr("GraphML formatted network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( networkName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( tr("GraphML formatted network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
 
     case 2:
-        fileLoaded=true;
-        networkModified=false;
-        statusMessage( QString(tr("Pajek formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ));
+        statusMessage( QString(tr("Pajek formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ));
         break;
 
     case 3:
-        fileLoaded=true;
-        networkModified=false;
-        statusMessage( QString(tr("Adjacency formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("Adjacency formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
 
     case 4:
-        fileLoaded=true;
-        networkModified=false;
-        statusMessage( QString(tr("Dot formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("GraphViz (Dot) formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
 
     case 5:
-        fileLoaded=true;
-        networkModified=false;
-        statusMessage( QString(tr("DL-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("UCINET formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
     case 6:
-        statusMessage( QString(tr("GML-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("GML formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
     case 7:
-        fileLoaded=true;
-        networkModified=false;
-        statusMessage( QString(tr("Weighted list-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("Weighted list formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
     case 8:
-        fileLoaded=true;
-        networkModified=false;
-        statusMessage( QString(tr("Simple list-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("Simple list formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
     case 9:
-        fileLoaded=true;
-        networkModified=false;
-        statusMessage( QString(tr("Two-mode affiliation network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("Two-mode affiliation network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
 
     default: // just for sanity
-        fileLoaded=false;
-        QMessageBox::critical(this, "Error","Unrecognized format. \nPlease specify"
+         QMessageBox::critical(this, "Error","Unrecognized format. \nPlease specify"
                               " which is the file-format using Import Menu.","OK",0);
         break;
     }
@@ -4826,68 +6153,70 @@ void MainWindow::slotNetworkFileLoaded (
 }
 
 
-/**
- * @brief MainWindow::slotEditRelationPrev
- * Decreases the index of editRelationChangeCombo
- * which signals to Graph::relationSet()
- */
-void MainWindow::slotEditRelationPrev(){
-    qDebug() << "MW::slotEditRelationPrev()";
-    int index=editRelationChangeCombo->currentIndex();
-    if (index>0){
-        --index;
-        filterIsolateNodesAct->setChecked(false);
-        editRelationChangeCombo->setCurrentIndex(index);
-    }
-}
 
 /**
- * @brief MainWindow::slotEditRelationNext
- * Increases the index of editRelationChangeCombo
- * which signals to Graph::relationSet()
+ * @brief MainWindow::slotEditRelationsClear
+ * Called from Graph::relationsClear() to clear the relations combo.
  */
-void MainWindow::slotEditRelationNext(){
-    qDebug() << "MW::slotEditRelationNext()";
-    int index=editRelationChangeCombo->currentIndex();
-    int relationsCounter=editRelationChangeCombo->count();
-    if (index< (relationsCounter -1 )){
-        ++index;
-        filterIsolateNodesAct->setChecked(false);
-        editRelationChangeCombo->setCurrentIndex(index);
-    }
-
-}
-
-
-
-/**
- * @brief MainWindow::slotEditRelationAdd
- * called from activeGraph::relationAddFromGraph(QString) when the parser or a
- * Graph method demands a new relation to be added in the Combobox.
- * @param relationName (NULL)
- */
-void MainWindow::slotEditRelationAdd(QString relationName){
-    qDebug() << "MW::slotEditRelationAdd(string)" << relationName;
-    if ( !relationName.isNull() ){
-        editRelationChangeCombo->addItem(relationName);
-    }
+void MainWindow::slotEditRelationsClear(){
+    qDebug() << "MW::slotEditRelationsClear() - clearing combo";
+    editRelationChangeCombo->clear();
 }
 
 /**
  * @brief MainWindow::slotEditRelationAdd
  * Called from MW when user clicks New Relation btn
  * or when the user creates the first edge visually.
+ *  * called from activeGraph::relationAdd(QString)
+ * via signal Graph::signalRelationChangedToMW() when the parser or a
+ * Graph method demands a new relation to be added in the Combobox.
+
+ *
  */
-void MainWindow::slotEditRelationAdd(){
-    qDebug() << "MW::slotEditRelationAdd()";
+void MainWindow::slotEditRelationAdd(QString newRelationName, const bool &changeRelation){
+    int comboItemsBefore = editRelationChangeCombo->count();
+    int relationsCounter=activeGraph.relations();
+
+    qDebug() << "MW::slotEditRelationAdd() - adding relation:"
+             << newRelationName
+             <<"to relations combo. Before this, combo items:"
+            << comboItemsBefore
+            << "and currentIndex:"
+            <<editRelationChangeCombo->currentIndex()
+           << "relationsCounter:"
+           <<relationsCounter;
+
+    if (!newRelationName.isNull()) {
+
+        editRelationChangeCombo->addItem(newRelationName);
+
+        if (changeRelation) {
+            if ( comboItemsBefore == 0 ) { // only at startup
+                slotEditRelationChange(0);
+            }
+            else {
+                slotEditRelationChange();
+            }
+
+        }
+        qDebug() << "MW::slotEditRelationAdd() - added relation:"
+                 << newRelationName
+                <<"now combo items:"
+               << editRelationChangeCombo->count()
+                << "now currentIndex:"
+                <<editRelationChangeCombo->currentIndex()
+               << "relationsCounter"
+               <<relationsCounter;
+        return;
+    }
+
     bool ok;
-    QString newRelationName;
-    int relationsCounter=editRelationChangeCombo->count();
-    if (relationsCounter==0) {
+
+    if (relationsCounter==1 && activeGraph.vertices()==0 ) {
         newRelationName = QInputDialog::getText(
                     this,
                     tr("Add new relation"),
-                    tr("Enter a name for this new relation between the actors.\n"
+                    tr("Enter a name for a new relation between the actors.\n"
                         "A relation is a collection of ties of a "
                         "specific kind between the network actors.\n"
                         "For instance, enter \"friendship\" if the "
@@ -4902,25 +6231,85 @@ void MainWindow::slotEditRelationAdd(){
                     QLineEdit::Normal,QString::null, &ok );
     }
     if (ok && !newRelationName.isEmpty()){
-        editRelationChangeCombo->addItem(newRelationName);
-        emit addRelationToGraph(newRelationName);
-        if (relationsCounter != 0){ //dont do it if its the first relation added
-            qDebug() << "MW::slotEditRelationAdd() - updating combo index";
-            editRelationChangeCombo->setCurrentIndex(relationsCounter);
-        }
+        // user pressed OK, name entered
+        emit signalRelationAddAndChange(newRelationName);
     }
     else if ( newRelationName.isEmpty() && ok ){
+        // user pressed OK, no name entered
         QMessageBox::critical(this, tr("Error"),
                               tr("You did not type a name for this new relation"),
                               QMessageBox::Ok, 0);
         slotEditRelationAdd();
     }
     else {
+        //user pressed Cancel
         statusMessage( QString(tr("New relation cancelled.")) );
         return;
     }
     statusMessage( QString(tr("New relation named %1, added."))
                    .arg( newRelationName ) );
+}
+
+
+
+
+/**
+ * @brief MainWindow::slotEditRelationChange
+ * @param relIndex
+ * if relIndex==RAND_MAX changes combo box index to last relation index
+ * else it changes the combo box index to relIndex
+ * Called from Graph::relationAddAndChangeTo
+ * via signal Graph::signalRelationChangedToMW()
+ */
+void MainWindow::slotEditRelationChange(const int relIndex) {
+    if ( relIndex == RAND_MAX){
+        qDebug() << "MW::slotEditRelationChange(int) - RANDMAX. Change to last relation";
+        editRelationChangeCombo->setCurrentIndex(
+                     ( editRelationChangeCombo->count()-1 )
+                    );
+    }
+    else {
+        qDebug() << "MW::slotEditRelationChange(int) - to index" << relIndex;
+        editRelationChangeCombo->setCurrentIndex(relIndex);
+    }
+
+}
+
+
+
+
+/**
+ * @brief MainWindow::slotEditRelationRename
+ * @param newName
+ */
+void MainWindow::slotEditRelationRename(QString newName) {
+    qDebug()<<"MW::slotEditRelationRename() -" << newName;
+    bool ok=false;
+    if (newName.isNull() || newName.isEmpty()) {
+        qDebug()<<"MW::slotEditRelationRename() - prompt to enter new name";
+        newName = QInputDialog::getText(
+                    this,
+                    tr("Rename current relation"),
+                    tr("Enter a new name for this relation."),
+                              QLineEdit::Normal, QString::null, &ok );
+        if ( newName.isEmpty() || !ok ){
+            slotHelpMessageToUser(USER_MSG_CRITICAL,
+                                  tr("Not a valid name."),
+                                  tr("Error"),
+                                  tr("You did not enter a valid name for this relation.")
+                                  );
+            return;
+        }
+        else {
+            activeGraph.relationCurrentRename(newName, true);
+        }
+    }
+    else {
+        qDebug()<<"MW::slotEditRelationRename() - current text " << editRelationChangeCombo->currentText();
+        qDebug()<<"MW::slotEditRelationRename() - updating combo name to" << newName;
+        editRelationChangeCombo->setCurrentText(newName);
+    }
+
 }
 
 
@@ -4936,11 +6325,8 @@ void MainWindow::slotEditRelationAdd(){
  */
 bool MainWindow::slotNetworkExportPNG(){
     qDebug()<< "MW::slotNetworkExportPNG";
-    if (!fileLoaded && !networkModified )  {
-        QMessageBox::critical(this, "Error",
-                              tr("The canvas is empty!\n"
-                              "Load a network file or create a new network first."), "OK",0);
-        statusMessage( tr("Cannot export PNG.") );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return false;
     }
     QString fn = QFileDialog::getSaveFileName(
@@ -4996,14 +6382,8 @@ bool MainWindow::slotNetworkExportPNG(){
  */
 bool MainWindow::slotNetworkExportBMP(){
     qDebug(	"slotNetworkExportBMP()");
-    if (!fileLoaded && !networkModified )  {
-        QMessageBox::critical(this,
-                              "Error",
-                              tr(
-                                  "Nothing to export! \n"
-                                 "Load a network file or create a new network first."),
-                              "OK",0);
-        statusMessage( tr("Cannot export BMP.") );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return false;
     }
     QString format="bmp";
@@ -5061,12 +6441,8 @@ bool MainWindow::slotNetworkExportBMP(){
  */
 bool MainWindow::slotNetworkExportPDF(){
     qDebug()<< "MW::slotNetworkExportPDF()";
-    if (!fileLoaded && !networkModified )  {
-        QMessageBox::critical(this,
-                              "Error",
-                              tr("The canvas is empty!\n"
-                                 "Load a network file or create a new network first."), "OK",0);
-        statusMessage( tr("Cannot export PDF.")  );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return false;
     }
 
@@ -5113,11 +6489,8 @@ void MainWindow::slotNetworkExportPajek()
 {
     qDebug () << "MW::slotNetworkExportPajek";
 
-    if (!fileLoaded && !networkModified )  {
-        QMessageBox::critical(this, "Error",
-                              tr("Nothing to export! \n"
-                                 "Load a network file or create a new network first."), "OK",0);
-        statusMessage( tr("Cannot export to Pajek.")  );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -5135,7 +6508,8 @@ void MainWindow::slotNetworkExportPajek()
         }
         fileName=fn;
         setLastPath(fileName);
-        fileNameNoPath=fileName.split ("/");
+        QFileInfo fileInfo (fileName);
+        fileNameNoPath = fileInfo.fileName();
     }
     else  {
         statusMessage( tr("Saving aborted"));
@@ -5154,10 +6528,8 @@ void MainWindow::slotNetworkExportPajek()
  */
 void MainWindow::slotNetworkExportSM(){
     qDebug("MW: slotNetworkExportSM()");
-    if (!fileLoaded && !networkModified )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to export!\n"
-                                               "Load a network file or create a new network first."), "OK",0);
-        statusMessage( tr("Cannot export to Adjacency Matrix.")  );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     statusMessage( tr("Exporting active network under new filename..."));
@@ -5174,16 +6546,50 @@ void MainWindow::slotNetworkExportSM(){
         }
         fileName=fn;
         setLastPath(fileName);
-        fileNameNoPath=fileName.split ("/");
+        QFileInfo fileInfo (fileName);
+        fileNameNoPath = fileInfo.fileName();
     }
     else  {
         statusMessage( tr("Saving aborted"));
         return;
     }
 
-    QMessageBox::information(this, "Warning",tr("Note that exporting to an adjacency matrix does not save floating-point weight values; adjacency matrices consist of integers, only. \n If your network had any floating point weights in some edges, these are being truncated to the nearest integer or 1."), "OK",0);
 
-    activeGraph.graphSave(fileName, FILE_ADJACENCY ) ;
+    bool saveEdgeWeights=false;
+    if (activeGraph.graphWeighted() )  {
+        switch (
+                slotHelpMessageToUser(USER_MSG_QUESTION,
+                                  tr("Weighted graph. Social network with valued/weighted edges"),
+                                  tr("Social network with valued/weighted edges"),
+                                  tr("This social network includes valued/weighted edges "
+                                     "(the depicted graph is weighted). "
+                                     "Do you want to save the edge weights in the adjacency file?\n"
+                                     "Select Yes if you want to save edge values "
+                                     "in the resulting file. \n"
+                                     "Select No, if you don't want edge values "
+                                     "to be saved. In the later case, all non-zero values will be truncated to 1.")
+                                  )
+
+                )
+        {
+        case QMessageBox::Yes:
+            saveEdgeWeights = true;
+            break;
+        case QMessageBox::No:
+            saveEdgeWeights = false;
+            break;
+        case QMessageBox::Cancel:
+            statusMessage( tr("Save aborted...") );
+            return;
+            break;
+        }
+
+    }
+
+    activeGraph.graphSave(fileName, FILE_ADJACENCY,  saveEdgeWeights ) ;
+
+
+
 
 }
 
@@ -5197,9 +6603,8 @@ void MainWindow::slotNetworkExportSM(){
  * - TODO slotNetworkExportDL
  */
 bool MainWindow::slotNetworkExportDL(){
-    if (!fileLoaded && !networkModified )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to export!\nLoad a network file or create a new network first."), "OK",0);
-        statusMessage( tr("Cannot export to DL.")  );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return false;
     }
 
@@ -5227,9 +6632,8 @@ bool MainWindow::slotNetworkExportDL(){
     TODO slotNetworkExportGW
 */ 
 bool MainWindow::slotNetworkExportGW(){
-    if (!fileLoaded && !networkModified )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to export!\nLoad a network file or create a new network first."), "OK",0);
-        statusMessage( tr("Cannot export to GW.")  );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return false;
     }
 
@@ -5281,41 +6685,66 @@ bool MainWindow::slotNetworkExportList(){
 
 
 /**
- * @brief MainWindow::slotNetworkFileView
- * Displays the file of the loaded network.
+ * @brief Displays the file of the loaded network.
    Network _must_ be unchanged since last save/load.
    Otherwise it will ask the user to first save the network, then view its file.
  */
 void MainWindow::slotNetworkFileView(){
     qDebug() << "slotNetworkFileView() : " << fileName.toLatin1();
-    if ( fileLoaded && !networkModified ) { //file network unmodified
+    if ( activeGraph.graphLoaded() && activeGraph.graphSaved()  ) {
+        //network unmodified, read loaded file again.
         QFile f( fileName );
         if ( !f.open( QIODevice::ReadOnly ) ) {
             qDebug ("Error in open!");
             return;
         }
-        TextEditor *ed = new TextEditor(fileName);//OPEN A TEXT EDITOR WINDOW
-        ed->setWindowTitle(tr("Viewing network file - ") + fileNameNoPath.last() );
+        TextEditor *ed = new TextEditor(fileName,this,false);
+        QFileInfo fileInfo (fileName);
+        fileNameNoPath = fileInfo.fileName();
+        ed->setWindowTitle( fileNameNoPath );
         ed->show();
-        statusMessage(  tr("Loaded network text file " )+ fileNameNoPath.last()  );
+        m_textEditors << ed;
+        statusMessage(  tr("Displaying network data file %1" ).arg(fileNameNoPath));
     }
-    else if (fileName.isEmpty() && networkModified)     {  //New network + something
-        QMessageBox::information (this, "Viewing network file",
-                                  tr("This network has not been saved yet. \nI will open a dialog for you to save it now. \nPlease choose a filename..."), "OK",0);
-        slotNetworkSaveAs();
-    }
-    else if (fileLoaded && networkModified ) {   //file network + modified
-        QMessageBox::information (this, "Viewing network file",
-                                  //FIXME maybe better to save automagically rather than asking?
-                                  tr("The network has been modified. \nI will save it to the original file for you now."), "OK",0);
-        networkModified = false;
-        slotNetworkSave();
+
+    else if (!activeGraph.graphSaved() ) {
+
+        if ( !activeGraph.graphLoaded() ) {
+            // new network, not saved yet
+            int response = slotHelpMessageToUser(USER_MSG_QUESTION,
+                                              tr("New network not saved yet. You might want to save it first."),
+                                              tr("This new network you created has not been saved yet."),
+                                              tr("Do you want to open a file dialog to save your work "
+                                                 "(then I will display the file)?"),
+                                                   QMessageBox::Yes|QMessageBox::No,QMessageBox::Yes
+                                              );
+            if (  response == QMessageBox::Yes ) {
+                slotNetworkSaveAs();
+            }
+            else { return; }
+        }
+        else {
+            // loaded network, but modified
+            int response = slotHelpMessageToUser(USER_MSG_QUESTION,
+                                              tr("Current network has been modified. Save to the original file?"),
+                                              tr("Current social network has been modified since last save."),
+                                              tr("Do you want to save it to the original file?"),
+                                              QMessageBox::Yes|QMessageBox::No,QMessageBox::Yes
+                                              );
+            if ( response ==  QMessageBox::Yes ){
+                slotNetworkSave();
+            }else if (response ==QMessageBox::No ) {
+                slotNetworkSaveAs();
+            }
+            else { // user pressed Cancel
+                return;
+            }
+
+        }
         slotNetworkFileView();
     }
     else	{
-        QMessageBox::critical(this, "Error",
-                              tr("Empty network! \nLoad a network file first or create and save a new one..."), "OK",0);
-        statusMessage(  tr("Nothing here. Not my fault, though!") );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
     }
 }
 
@@ -5323,15 +6752,15 @@ void MainWindow::slotNetworkFileView(){
 
 
 /**
- * @brief MainWindow::slotNetworkTextEditor
- * Opens the embedded text editor
+ * @brief Opens the embedded text editor
  */
 void MainWindow::slotNetworkTextEditor(){
     qDebug() << "slotNetworkTextEditor() : ";
 
-    TextEditor *ed = new TextEditor("", this);
+    TextEditor *ed = new TextEditor("", this,false);
     ed->setWindowTitle(tr("New Network File"));
     ed->show();
+    m_textEditors << ed;
     statusMessage(  tr("Enter your network data here" ) );
 }
 
@@ -5340,32 +6769,107 @@ void MainWindow::slotNetworkTextEditor(){
 
 
 /**
- * @brief MainWindow::slotNetworkViewSociomatrix
- *  Displays the adjacency matrix of the network.
+ * @brief Displays the adjacency matrix of the network.
  *  It uses a different method for writing the matrix to a file.
  *  While slotNetworkExportSM uses << operator of Matrix class
  *  (via adjacencyMatrix of Graph class), this is using directly the
- *  writeAdjacencyMatrix method of Graph class
+ *  writeMatrixAdjacency method of Graph class
  */
 void MainWindow::slotNetworkViewSociomatrix(){
-    if ( !fileLoaded && !networkModified) {
-        QMessageBox::critical (this, "Error",
-                               tr("Empty network! \nLoad a network file or create something by double-clicking on the canvas!"), "OK",0);
-
-        statusMessage(  tr("Nothing to show!") );
+    if ( !activeNodes() ) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    int aNodes=activeNodes();
-    statusBar() ->  showMessage ( QString (tr ("creating adjacency adjacency matrix of %1 nodes")).arg(aNodes) );
-    qDebug ("MW: calling Graph::writeAdjacencyMatrix with %i nodes", aNodes);
-    QString fn = appSettings["dataDir"] + "socnetv-report-adjacency-matrix.dat";
 
-    activeGraph.writeAdjacencyMatrix(fn) ;
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-"+dateTime+".html";
 
-    //Open a text editor window for the new file created by graph class
-    TextEditor *ed = new TextEditor(fn);
-    ed->show();
-    statusMessage(tr("Adjacency Matrix saved as ") + fn);
+    qDebug () << "MW::slotNetworkViewSociomatrix() - dataDir"
+              << appSettings["dataDir"]
+              << "fn" <<fn;
+
+    statusMessage ( tr ("Creating and writing adjacency matrix") );
+
+    createProgressBar(0,progressMsg);
+
+    activeGraph.writeMatrixAdjacency(fn) ;
+    //AVOID THIS, no preserving of node numbers when nodes are deleted.
+    // activeGraph.writeMatrix(fn,MATRIX_ADJACENCY) ;
+
+    destroyProgressBar();
+
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        qDebug () << "MW::slotNetworkViewSociomatrix() - "
+                     "calling QDesktopServices::openUrl for"
+                  << QUrl::fromLocalFile(fn) ;
+
+        QDesktopServices::openUrl(  QUrl::fromLocalFile(fn)  );
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+    statusMessage(tr("Adjacency matrix saved as ") + QDir::toNativeSeparators(fn));
+}
+
+
+
+/**
+ * @brief Displays a text-only plot of the network adjacency matrix
+ */
+void MainWindow::slotNetworkViewSociomatrixPlotText(){
+    if ( !activeNodes() ) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+    int N=activeNodes();
+
+    statusMessage(tr("Creating plot of adjacency matrix of %1 nodes.").arg(N ));
+
+    qDebug ("MW: calling Graph::writeMatrixAdjacency with %i nodes", N);
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-plot-"+dateTime+".html";
+
+    bool simpler = false;
+    if ( N > 999 ) {
+        float MB = (N * N * 10)/(1024*1024);
+        switch ( slotHelpMessageToUser(
+                     USER_MSG_QUESTION,tr("Very large network to plot!"),
+                     tr("Warning: Really large network"),
+                     tr("To plot a %1 x %1 matrix arranged in HTML table, "
+                        "I will need time to write a very large .html file , circa %2 MB in size. "
+                        "Instead, I can create a simpler / smaller HTML file without table. "
+                        "Press Yes to continue with simpler version, "
+                        "Press No to create large file with HTML table.").arg(N).arg( MB ) ) ) {
+        case QMessageBox::Yes:
+            simpler = true;
+            break;
+        case QMessageBox::No:
+            simpler = false;
+            break;
+        default:
+            return;
+            break;
+        }
+    }
+    createProgressBar(0,progressMsg);
+
+    activeGraph.writeMatrixAdjacencyPlot(fn, simpler);
+
+    destroyProgressBar();
+
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
+    statusMessage(tr("Visual form of adjacency matrix saved as ") + QDir::toNativeSeparators(fn));
 }
 
 
@@ -5391,7 +6895,7 @@ void MainWindow::slotNetworkDataSetRecreate (const QString m_fileName) {
     int m_fileFormat=0;
     qDebug()<< "MW::slotNetworkDataSetRecreate() fileName: " << m_fileName;
 
-    //initNet();
+    //initApp();
 
     qDebug()<< "MW::slotNetworkDataSetRecreate() datadir+fileName: "
             << appSettings["dataDir"]+m_fileName;
@@ -5417,25 +6921,28 @@ void MainWindow::slotNetworkDataSetRecreate (const QString m_fileName) {
         m_fileFormat=FILE_GML;
     }
     else if (m_fileName.endsWith(".wlst")) {
-        m_fileFormat=FILE_WLIST;
+        m_fileFormat=FILE_EDGELIST_WEIGHTED;
     }
     else if (m_fileName.endsWith(".lst")) {
-        m_fileFormat=FILE_LIST;
+        m_fileFormat=FILE_EDGELIST_SIMPLE;
     }
     else if (m_fileName.endsWith(".2sm")) {
         m_fileFormat=FILE_TWOMODE;
     }
-    if ( slotNetworkFileLoad(appSettings["dataDir"]+m_fileName, "UTF-8", m_fileFormat) ) {
-        qDebug() << "slotNetworkDataSetRecreate() loaded file " << m_fileName;
-        fileName=m_fileName;
-        previous_fileName=fileName;
-        setWindowTitle("SocNetV "+ VERSION +" - "+fileName);
-        QString message=tr("Dataset loaded. Dataset file saved as ") + fileName;
-        statusMessage( message );
-    }
-    else {
-        statusMessage( "Could not read new network data file. Aborting.");
-    }
+
+    slotNetworkFileLoad(appSettings["dataDir"]+m_fileName, "UTF-8", m_fileFormat);
+
+//    if ( slotNetworkFileLoad(appSettings["dataDir"]+m_fileName, "UTF-8", m_fileFormat) ) {
+//        qDebug() << "slotNetworkDataSetRecreate() loaded file " << m_fileName;
+//        fileName=m_fileName;
+//        previous_fileName=fileName;
+//        setWindowTitle("SocNetV "+ VERSION +" - "+fileName);
+//        QString message=tr("Dataset loaded. Dataset file saved as ") + fileName;
+//        statusMessage( message );
+//    }
+//    else {
+//        statusMessage( "Could not read new network data file. Aborting.");
+//    }
 }
 
 
@@ -5447,10 +6954,10 @@ void MainWindow::slotNetworkRandomErdosRenyiDialog(){
 
     statusMessage( tr("Generate a random Erdos-Renyi network. "));
 
-    m_randErdosRenyiDialog = new RandErdosRenyiDialog(
+    m_randErdosRenyiDialog = new DialogRandErdosRenyi(
                 this, appSettings["randomErdosEdgeProbability"].toFloat(0));
 
-    connect( m_randErdosRenyiDialog, &RandErdosRenyiDialog::userChoices,
+    connect( m_randErdosRenyiDialog, &DialogRandErdosRenyi::userChoices,
              this, &MainWindow::slotNetworkRandomErdosRenyi );
 
     m_randErdosRenyiDialog->exec();
@@ -5482,11 +6989,11 @@ void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
 
     statusMessage( tr("Erasing any existing network."));
 
-    initNet();
+    initApp();
 
     statusMessage( tr("Creating Erdos-Renyi Random Network. Please wait... ")  );
 
-    progressMsg  = "Creating Erdos-Renyi Random Network. \n "
+    progressMsg  = "Creating Erdos-Renyi Random Network. \n"
                 " Please wait (or disable progress bars from Options -> Settings).";
     createProgressBar( (edges != 0 ? edges:newNodes), progressMsg );
     appSettings["randomErdosEdgeProbability"] = QString::number(eprob);
@@ -5500,8 +7007,6 @@ void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
                                        diag);
 
     destroyProgressBar( (edges != 0 ? edges:newNodes) );
-
-    fileLoaded=false;
 
     setWindowTitle("Untitled Erdos-Renyi random network");
 
@@ -5550,9 +7055,9 @@ void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
 void MainWindow::slotNetworkRandomScaleFreeDialog() {
     qDebug() << "MW::slotNetworkRandomScaleFreeDialog()";
     statusMessage( tr("Generate a random Scale-Free network. "));
-    m_randScaleFreeDialog = new RandScaleFreeDialog(this);
+    m_randScaleFreeDialog = new DialogRandScaleFree(this);
 
-    connect( m_randScaleFreeDialog, &RandScaleFreeDialog::userChoices,
+    connect( m_randScaleFreeDialog, &DialogRandScaleFree::userChoices,
              this, &MainWindow::slotNetworkRandomScaleFree);
 
     m_randScaleFreeDialog->exec();
@@ -5578,7 +7083,7 @@ void MainWindow::slotNetworkRandomScaleFree ( const int &newNodes,
 {
     qDebug() << "MW::slotNetworkRandomScaleFree()";
     statusMessage( tr("Erasing any existing network. "));
-    initNet();
+    initApp();
 
     statusMessage( tr("Creating Scale-Free Random Network. Please wait..."));
     progressMsg = "Creating Scale-Free Random Network. \n"
@@ -5594,15 +7099,13 @@ void MainWindow::slotNetworkRandomScaleFree ( const int &newNodes,
 
     destroyProgressBar(newNodes);
 
-    fileLoaded=false;
-
     setWindowTitle("Untitled scale-free network");
 
-    //float avGraphDistance=activeGraph.distanceGraphAverage();
+    //float avGraphDistance=activeGraph.graphDistanceGeodesicAverage();
     //float clucof=activeGraph.clusteringCoefficient();
     QMessageBox::information(this, "New scale-free network",
                              tr("Scale-free random network created.\n")
-//                             +tr("\nNodes: ")+ QString::number(nodeCount)+
+//                             +tr("\nNodes: ")+ QString::number(nodesSelected)+
 //                             tr("\nEdges: ") +  QString::number( edgeCount )
                              //+  tr("\nAverage path length: ") + QString::number(avGraphDistance)
                              //+ tr("\nClustering coefficient: ")+QString::number(clucof)
@@ -5621,9 +7124,9 @@ void MainWindow::slotNetworkRandomSmallWorldDialog()
 {
     qDebug() << "MW::slotNetworkRandomSmallWorldDialog()";
     statusMessage( tr("Generate a random Small-World network. "));
-    m_randSmallWorldDialog = new RandSmallWorldDialog(this);
+    m_randSmallWorldDialog = new DialogRandSmallWorld(this);
 
-    connect( m_randSmallWorldDialog, &RandSmallWorldDialog::userChoices,
+    connect( m_randSmallWorldDialog, &DialogRandSmallWorld::userChoices,
              this, &MainWindow::slotNetworkRandomSmallWorld);
 
 
@@ -5649,7 +7152,7 @@ void MainWindow::slotNetworkRandomSmallWorld(const int &newNodes,
     Q_UNUSED(diag);
     qDebug() << "MW::slotNetworkRandomSmallWorld()";
     statusMessage( tr("Erasing any existing network. "));
-    initNet();
+    initApp();
 
     statusMessage( tr("Creating Small-World Random Network. Please wait..."));
     progressMsg  = "Creating Small-World Random Network. \n"
@@ -5660,11 +7163,9 @@ void MainWindow::slotNetworkRandomSmallWorld(const int &newNodes,
 
     destroyProgressBar(newNodes);
 
-    fileLoaded=false;
-
     setWindowTitle("Untitled small-world network");
 
-    //float avGraphDistance=activeGraph.distanceGraphAverage();
+    //float avGraphDistance=activeGraph.graphDistanceGeodesicAverage();
     //float clucof=activeGraph.clusteringCoefficient();
     QMessageBox::information(this, "New Small World network",
                              tr("Small world network created.\n")
@@ -5689,9 +7190,9 @@ void MainWindow::slotNetworkRandomRegularDialog()
 {
     qDebug() << "MW::slotRandomRegularDialog()";
     statusMessage( tr("Generate a d-regular random network. "));
-    m_randRegularDialog = new RandRegularDialog(this);
+    m_randRegularDialog = new DialogRandRegular(this);
 
-    connect( m_randRegularDialog, &RandRegularDialog::userChoices,
+    connect( m_randRegularDialog, &DialogRandRegular::userChoices,
              this, &MainWindow::slotNetworkRandomRegular);
 
     m_randRegularDialog->exec();
@@ -5706,7 +7207,7 @@ void MainWindow::slotNetworkRandomRegular(const int &newNodes, const int &degree
                                           const QString &mode, const bool &diag){
 
     statusMessage( "Erasing any existing network. ");
-    initNet();
+    initApp();
     statusMessage( "Creating a pseudo-random d-regular network where each node "
                    "has the same degree... ");
 
@@ -5718,11 +7219,9 @@ void MainWindow::slotNetworkRandomRegular(const int &newNodes, const int &degree
 
     destroyProgressBar(newNodes);
 
-    fileLoaded=false;
-
     setWindowTitle("Untitled d-regular network");
 
-    //float avGraphDistance=activeGraph.distanceGraphAverage();
+    //float avGraphDistance=activeGraph.graphDistanceGeodesicAverage();
     //float clucof=activeGraph.clusteringCoefficient();
     QMessageBox::information(this, "New d-Regular network",
                              tr("d-Regular network created.\n")
@@ -5742,7 +7241,6 @@ void MainWindow::slotNetworkRandomRegular(const int &newNodes, const int &degree
 
 
 void MainWindow::slotNetworkRandomGaussian(){
-    //slotNetworkChanged();
 
 }
 
@@ -5760,7 +7258,7 @@ void MainWindow::slotNetworkRandomRingLattice(){
                        tr("Create ring lattice"),
                        tr("This will create a ring lattice network, "
                           "where each node has degree d:\n d/2 edges to the right "
-                          "and d/2 to the left.\n "
+                          "and d/2 to the left.\n"
                           "Please enter the number of nodes you want:"),
                        100, 4, maxNodes, 1, &ok ) ) ;
     if (!ok) {
@@ -5780,7 +7278,7 @@ void MainWindow::slotNetworkRandomRingLattice(){
     }
 
     statusMessage( "Erasing any existing network. ");
-    initNet();
+    initApp();
 
     statusMessage( "Creating ring lattice network. Please wait...");
     progressMsg  = "Creating ring-lattice network. \n"
@@ -5791,10 +7289,8 @@ void MainWindow::slotNetworkRandomRingLattice(){
 
     destroyProgressBar(newNodes);
 
-    fileLoaded=false;
-
     setWindowTitle("Untitled ring-lattice network");
-    //float avGraphDistance=activeGraph.distanceGraphAverage();
+    //float avGraphDistance=activeGraph.graphDistanceGeodesicAverage();
     //float clucof=activeGraph.clusteringCoefficient();
     QMessageBox::information(this, "New Ring Lattice",
                              tr("Ring lattice network created.\n")
@@ -5860,57 +7356,71 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
                                     const bool &undirected,
                                     const int &vertices, const int &edges,
                                     const float &density){
-    qDebug()<<"MW::slotNetworkChanged()";
+    qDebug()<<"MW::slotNetworkChanged()"
+           <<"graphStatus" << graphStatus
+             <<"undirected" << undirected
+            <<"vertices" << vertices
+           <<"edges" <<edges
+          << "density"<<density;
+
     if (graphStatus) {
-        networkModified=true;
         networkSave->setIcon(QIcon(":/images/save.png"));
         networkSave->setEnabled(true);
     }
-    nodesLCD->display(vertices);
+    rightPanelNodesLCD->display(vertices);
     if ( undirected ) {
-        edgesLCD->setStatusTip(tr("Shows the total number of undirected edges in the network."));
-        edgesLCD->setToolTip(tr("The total number of undirected edges in the network."));
-        networkLabel->setStatusTip(tr("Undirected data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
-        networkLabel->setToolTip(tr("The loaded network, if any, is undirected and \n"
+        rightPanelEdgesLCD->setStatusTip(tr("Shows the total number of undirected edges in the network."));
+        rightPanelEdgesLCD->setToolTip(tr("The total number of undirected edges in the network."));
+        rightPanelNetworkTypeLabel->setStatusTip(tr("Undirected data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
+        rightPanelNetworkTypeLabel->setToolTip(tr("The loaded network, if any, is undirected and \n"
                                     "any edge you add between nodes will be undirected.\n"
                                     "If you want to work with directed edges and/or \n"
                                     "transform the loaded network (if any) to directed \n"
                                     "disable the option Edit -> Edges -> Undirected \n"
                                     "or press CTRL+E+U"));
-        networkLabel->setWhatsThis(tr("The loaded network, if any, is undirected and \n"
+        rightPanelNetworkTypeLabel->setWhatsThis(tr("The loaded network, if any, is undirected and \n"
                                     "any edge you add between nodes will be undirected.\n"
                                     "If you want to work with directed edges and/or \n"
                                     "transform the loaded network (if any) to directed \n"
                                     "disable the option Edit -> Edges -> Undirected \n"
                                     "or press CTRL+E+U"));
 
-        networkLabel-> setText ("Network Type: Undirected");
-        labelEdgesLCD->setText(tr("Total Edges"));
+
+        if (toolBoxEditEdgeModeSelect->currentIndex()==0) {
+            toolBoxEditEdgeModeSelect->setCurrentIndex(1);
+        }
+        rightPanelNetworkTypeLabel-> setText ("Network Type: Undirected");
+        rightPanelEdgesLabel->setText(tr("Total Edges"));
+        rightPanelSelectedEdgesLabel->setText(tr("Selected Edges"));
         editEdgeUndirectedAllAct->setChecked(true);
     }
     else {
-        edgesLCD->setStatusTip(tr("Shows the total number of directed edges in the network."));
-        edgesLCD->setToolTip(tr("The total number of directed edges in the network."));
-        networkLabel->setStatusTip(tr("Directed data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
-        networkLabel->setToolTip(tr("The loaded network, if any, is directed and \n"
+        rightPanelEdgesLCD->setStatusTip(tr("Shows the total number of directed edges in the network."));
+        rightPanelEdgesLCD->setToolTip(tr("The total number of directed edges in the network."));
+        rightPanelNetworkTypeLabel->setStatusTip(tr("Directed data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
+        rightPanelNetworkTypeLabel->setToolTip(tr("The loaded network, if any, is directed and \n"
                                     "any link you add between nodes will be a directed arc.\n"
                                     "If you want to work with undirected edges and/or \n"
                                     "transform the loaded network (if any) to undirected \n"
                                     "enable the option Edit -> Edges -> Undirected \n"
                                     "or press CTRL+E+U"));
-        networkLabel->setWhatsThis(tr("The loaded network, if any, is directed and \n"
+        rightPanelNetworkTypeLabel->setWhatsThis(tr("The loaded network, if any, is directed and \n"
                                     "any link you add between nodes will be a directed arc.\n"
                                     "If you want to work with undirected edges and/or \n"
                                     "transform the loaded network (if any) to undirected \n"
                                     "enable the option Edit -> Edges -> Undirected \n"
                                     "or press CTRL+E+U"));
 
-        networkLabel-> setText ("Network Type: Directed");
-        labelEdgesLCD->setText(tr("Total Arcs"));
+        rightPanelNetworkTypeLabel-> setText ("Network Type: Directed");
+        if (toolBoxEditEdgeModeSelect->currentIndex()==1) {
+            toolBoxEditEdgeModeSelect->setCurrentIndex(0);
+        }
+        rightPanelEdgesLabel->setText(tr("Total Arcs"));
+        rightPanelSelectedEdgesLabel->setText(tr("Selected Arcs"));
         editEdgeUndirectedAllAct->setChecked(false);
     }
-    edgesLCD->display(edges);
-    densityLCD->display( density );
+    rightPanelEdgesLCD->display(edges);
+    rightPanelDensityLCD->display( density );
 }
 
 
@@ -5926,28 +7436,35 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
  * @param mPos
  */
 void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
-    cursorPosGW=mPos;
+    Q_UNUSED(mPos);
     QMenu *contextMenu = new QMenu(" Menu",this);
     Q_CHECK_PTR( contextMenu );  //displays "out of memory" if needed
 
-    int nodeCount = selectedNodes().count();
+    int nodesSelected = activeGraph.graphSelectedVerticesCount();
+
     contextMenu -> addAction( "## Selected nodes: "
-                              + QString::number(  nodeCount ) + " ##  ");
+                              + QString::number(  nodesSelected ) + " ##  ");
 
     contextMenu -> addSeparator();
 
-    if (nodeCount > 0) {
+    if (nodesSelected > 0) {
         contextMenu -> addAction(editNodePropertiesAct );
         contextMenu -> addSeparator();
         contextMenu -> addAction(editNodeRemoveAct );
-        if (nodeCount > 1 ){
+        if (nodesSelected > 1 ){
             editNodeRemoveAct->setText(tr("Remove ")
-                                       + QString::number(nodeCount)
+                                       + QString::number(nodesSelected)
                                        + tr(" nodes"));
+            contextMenu -> addSeparator();
+            contextMenu -> addAction(editNodeSelectedToCliqueAct);
+            contextMenu -> addAction(editNodeSelectedToStarAct);
+            contextMenu -> addAction(editNodeSelectedToCycleAct);
+            contextMenu -> addAction(editNodeSelectedToLineAct);
+
         }
         else {
             editNodeRemoveAct->setText(tr("Remove ")
-                                       + QString::number(nodeCount)
+                                       + QString::number(nodesSelected)
                                        + tr(" node"));
         }
         contextMenu -> addSeparator();
@@ -5977,33 +7494,25 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
     //QCursor::pos() is good only for menus not related with node coordinates
     contextMenu -> exec(QCursor::pos() );
     delete  contextMenu;
-    cursorPosGW=QPoint(-1,-1);
 }
 
 
-
-/**
- * @brief MainWindow::selectedNodes
- * Returns a QList of all selected nodes
- * @return
- */
-QList<QGraphicsItem *> MainWindow::selectedNodes() {
-    return graphicsWidget->selectedItems();
-
-}
 
 
 /**
  * @brief MainWindow::slotEditClickOnEmptySpace
  * Called from GW when the user clicks on empty space.
  */
-void MainWindow::slotEditClickOnEmptySpace() {
-    selectedNodeLCD->display (0);
-    inDegreeLCD->display (0);
-    outDegreeLCD->display (0);
-    clucofLCD->display(0);
-    nodeClicked = false;
-    edgeClicked=false;
+void MainWindow::slotEditClickOnEmptySpace(const QPointF &p) {
+    rightPanelClickedNodeLCD->display (0);
+    rightPanelClickedNodeInDegreeLCD->display (0);
+    rightPanelClickedNodeOutDegreeLCD->display (0);
+    rightPanelClickedNodeClucofLCD->display(0);
+    activeGraph.vertexClickedSet(0);
+    activeGraph.edgeClickedSet(0,0);
+    statusMessage( tr("Position (%1,%2): Nothing here. Cleared any selection. Double-click to create a new node." )
+                   .arg(p.x())
+                   .arg(p.y())  );
 }
 
 
@@ -6014,8 +7523,8 @@ void MainWindow::slotEditClickOnEmptySpace() {
 void MainWindow::slotEditNodeSelectAll(){
     qDebug() << "MainWindow::slotEditNodeSelectAll()";
     graphicsWidget->selectAll();
-    statusMessage( QString(tr("Selected nodes: %1") )
-                   .arg( selectedNodes().count() ) );
+    statusMessage( tr("Selected nodes: %1")
+                   .arg( activeGraph.graphSelectedVerticesCount()  ) );
 
 }
 
@@ -6030,6 +7539,26 @@ void MainWindow::slotEditNodeSelectNone(){
 }
 
 
+
+/**
+ * @brief MainWindow::slotEditNodePosition
+ * Called from GraphicsWidget when a node moves to update vertex coordinates
+ * in Graph
+ * @param nodeNumber
+ * @param x
+ * @param y
+ */
+void MainWindow::slotEditNodePosition(const int &nodeNumber,
+                                  const int &x, const int &y){
+    qDebug("MW::slotEditNodePosition() for %i with x %i and y %i", nodeNumber, x, y);
+    activeGraph.vertexPosSet(nodeNumber, x, y);
+    if (!activeGraph.graphSaved()) {
+        networkSave->setIcon(QIcon(":/images/save.png"));
+        networkSave->setEnabled(true);
+    }
+}
+
+
 /**
  * @brief MainWindow::slotEditNodeAdd
  * Calls Graph::vertexCreate method to add a new RANDOM node into the activeGraph.
@@ -6039,7 +7568,7 @@ void MainWindow::slotEditNodeAdd() {
     qDebug() << "MW::slotEditNodeAdd() - calling Graph::vertexCreateAtPosRandom ";
     activeGraph.vertexCreateAtPosRandom(true);
     statusMessage( tr("New random positioned node (numbered %1) added.")
-                   .arg(activeGraph.vertexLastNumber())  );
+                   .arg(activeGraph.vertexNumberMax())  );
 }
 
 
@@ -6055,7 +7584,7 @@ void MainWindow::slotEditNodeAddWithMouse( const QPointF &p) {
                "Calling activeGraph::vertexCreateAtPos()";
     activeGraph.vertexCreateAtPos(p);
     statusMessage(  tr("New node (numbered %1) added at position (%2,%3)")
-                   .arg(activeGraph.vertexLastNumber())
+                   .arg(activeGraph.vertexNumberMax())
                    .arg( p.x() )
                    .arg( p.y() )
                    ) ;
@@ -6070,11 +7599,8 @@ void MainWindow::slotEditNodeAddWithMouse( const QPointF &p) {
  */
 void MainWindow::slotEditNodeFind(){
     qDebug ("MW: slotEditNodeFind()");
-    if (!fileLoaded && !networkModified  ) {
-        QMessageBox::critical( this, tr("Find Node"),
-                               tr("No nodes present! \nLoad a network file first or create some nodes..."),
-                               tr("OK"),0 );
-        statusMessage(  QString(tr("Nothing to find!"))  );
+    if ( !activeNodes() ) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -6119,14 +7645,9 @@ void MainWindow::slotEditNodeFind(){
  * Called from nodeContextMenu
  */
 void MainWindow::slotEditNodeRemove() {
-    qDebug() << "MW: slotEditNodeRemove()";
-    if (!activeGraph.vertices())  {
-        QMessageBox::critical(
-                    this,
-                    "Error",
-                    tr("Nothing to do! \n"
-                       "Load a network file or add some nodes first."), "OK",0);
-        statusMessage( tr("Nothing to remove.")  );
+    qDebug() << "MW::slotEditNodeRemove()";
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     if (activeGraph.relations() > 1){
@@ -6144,39 +7665,35 @@ void MainWindow::slotEditNodeRemove() {
     }
 
     // if there are already multiple nodes selected, erase them
-    int nodeCount = selectedNodes().count();
-    if ( nodeCount > 1) {
+    int nodesSelected = activeGraph.graphSelectedVerticesCount();
+    if ( nodesSelected > 0) {
         int removeCounter = 0;
-        qDebug() << "MW: removeNode() multiple selected to remove";
-        foreach (QGraphicsItem *item, selectedNodes() ) {
-           if ( (clickedNode = qgraphicsitem_cast<Node *>(item) )) {
-               activeGraph.vertexRemove(clickedNode->nodeNumber());
+        qDebug() << "MW::removeNode() multiple selected to remove";
+        foreach (int nodeNumber, activeGraph.graphSelectedVertices() ) {
+               activeGraph.vertexRemove(nodeNumber);
                ++removeCounter ;
-           }
         }
         editNodeRemoveAct->setText(tr("Remove Node"));
-        statusMessage( tr("Removed ") + nodeCount + tr(" nodes. Ready. ") );
+        statusMessage( tr("Removed ") + nodesSelected + tr(" nodes. Ready. ") );
     }
 
     else {
-
-
         int doomedJim=-1, min=-1, max=-1;
         bool ok=false;
-
-        min = activeGraph.vertexFirstNumber();
-        max = activeGraph.vertexLastNumber();
+        min = activeGraph.vertexNumberMin();
+        max = activeGraph.vertexNumberMax();
         qDebug("MW: min is %i and max is %i", min, max);
         if (min==-1 || max==-1 ) {
             qDebug("ERROR in finding min max nodeNumbers. Abort");
             return;
         }
-        else if (nodeClicked && clickedNodeNumber >= 0 && clickedNodeNumber<= max ) {
-            doomedJim=clickedNodeNumber ;
-        }
-        else if (!nodeClicked ) {
-            doomedJim =  QInputDialog::getInt(this,"Remove node",tr("Choose a node to remove between ("
-                                                                    + QString::number(min).toLatin1()+"..."+QString::number(max).toLatin1()+"):"),min, 1, max, 1, &ok);
+        else  {
+            doomedJim =  QInputDialog::getInt(
+                        this,
+                        tr("Remove node"),
+                        tr("Choose a node to remove between ("
+                           + QString::number(min).toLatin1()+"..."+
+                           QString::number(max).toLatin1()+"):"),min, 1, max, 1, &ok);
             if (!ok) {
                 statusMessage( "Remove node operation cancelled." );
                 return;
@@ -6187,11 +7704,6 @@ void MainWindow::slotEditNodeRemove() {
         qDebug("MW: removeNode() completed. Node %i removed completely.",doomedJim);
         statusMessage( tr("Node removed completely. Ready. ") );
     }
-    clickedNodeNumber=-1;
-    nodeClicked=false;
-    //slotNetworkChanged();
-
-
 }
 
 
@@ -6204,33 +7716,32 @@ void MainWindow::slotEditNodeRemove() {
 void MainWindow::slotEditNodePropertiesDialog() {
 
     qDebug() << "MW::slotEditNodePropertiesDialog()";
-//    if (!fileLoaded && !networkModified )  {
-    if (!activeGraph.vertices())  {
-        QMessageBox::critical(
-                    this,
-                    "Error",
-                    tr("Nothing to do! \n"
-                       "Load a network file or add some nodes first."), "OK",0);
-        statusMessage( tr("Nothing to remove.")  );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     int min=-1, max=-1, size = appSettings["initNodeSize"].toInt(0, 10);
+    int nodeNumber = 0;
+    int selectedNodesCount = activeGraph.graphSelectedVerticesCount();
     QColor color = QColor(appSettings["initNodeColor"]);
     QString shape= appSettings["initNodeShape"];
     QString label="";
     bool ok=false;
 
 
-    if ( selectedNodes().count() == 0) {
-        min = activeGraph.vertexFirstNumber();
-        max = activeGraph.vertexLastNumber();
-        qDebug("MW: min is %i and max is %i", min, max);
+    if ( selectedNodesCount  == 0) {
+        min = activeGraph.vertexNumberMin();
+        max = activeGraph.vertexNumberMax();
+        qDebug() << "MW::slotEditNodePropertiesDialog() - no node selected"
+                    << "min node number " << min
+                       << "max node number " << max
+                          << "opening inputdialog";
         if (min==-1 || max==-1 ) {
             qDebug("ERROR in finding min max nodeNumbers. Abort");
             return;
         }
 
-        clickedNodeNumber =  QInputDialog::getInt(
+        nodeNumber =  QInputDialog::getInt(
                     this,
                     "Node Properties",
                     tr("Choose a node between ("
@@ -6243,29 +7754,29 @@ void MainWindow::slotEditNodePropertiesDialog() {
         }
     }
     else   {
-        foreach (QGraphicsItem *item, selectedNodes() ) {
-           if ( (clickedNode = qgraphicsitem_cast<Node *>(item) )) {
-               if ( selectedNodes().count() > 1 ) {
-                   clickedNodeNumber = clickedNode->nodeNumber();
-                   color = activeGraph.vertexColor( clickedNodeNumber );
-                   shape = activeGraph.vertexShape( clickedNodeNumber);
-                   size = activeGraph.vertexSize ( clickedNodeNumber);
-               }
-               else {
-                    clickedNodeNumber = clickedNode->nodeNumber();
-                    label = activeGraph.vertexLabel( clickedNodeNumber );
-                    color = activeGraph.vertexColor( clickedNodeNumber );
-                    shape = activeGraph.vertexShape( clickedNodeNumber);
-                    size = activeGraph.vertexSize ( clickedNodeNumber);
-               }
-           }
+        foreach (nodeNumber, activeGraph.graphSelectedVertices() ) {
+            qDebug() << "MW::slotEditNodePropertiesDialog() "
+                        "changing properties for selected node "
+                     << nodeNumber ;
+            if ( selectedNodesCount > 1 ) {
+                color = activeGraph.vertexColor( nodeNumber );
+                shape = activeGraph.vertexShape( nodeNumber);
+                size = activeGraph.vertexSize ( nodeNumber);
+            }
+            else {
+                label = activeGraph.vertexLabel( nodeNumber );
+                color = activeGraph.vertexColor( nodeNumber );
+                shape = activeGraph.vertexShape( nodeNumber);
+                size = activeGraph.vertexSize ( nodeNumber);
+            }
         }
     }
-    qDebug ()<< "MW: changing properties for "<< clickedNodeNumber ;
 
-    m_nodeEditDialog = new NodeEditDialog(this, label, size, color, shape) ;
+    //@todo add some grouping function here?
 
-    connect( m_nodeEditDialog, &NodeEditDialog::userChoices,
+    m_nodeEditDialog = new DialogNodeEdit(this, label, size, color, shape) ;
+
+    connect( m_nodeEditDialog, &DialogNodeEdit::userChoices,
              this, &MainWindow::slotEditNodeProperties );
 
     m_nodeEditDialog->exec();
@@ -6277,7 +7788,7 @@ void MainWindow::slotEditNodePropertiesDialog() {
 /**
  * @brief MainWindow::slotEditNodeProperties
  * Applies new (user-defined) values to all selected nodes
- * Called on exit from NodeEditDialog
+ * Called on exit from DialogNodeEdit
  * @param label
  * @param size
  * @param value
@@ -6287,58 +7798,206 @@ void MainWindow::slotEditNodePropertiesDialog() {
 void MainWindow::slotEditNodeProperties( const QString label, const int size,
                                      const QString value, const QColor color,
                                      const QString shape) {
-    qDebug()<< "MW::slotEditNodeProperties() "
+
+    int selectedNodesCount = activeGraph.graphSelectedVerticesCount();
+
+    qDebug()<< "MW::slotEditNodeProperties() - new properties: "
             << " label " << label
             << " size " << size
             << "value " << value
             << " color " << color
             << " shape " << shape
-               << " clickedNodeNumber " <<clickedNodeNumber
-                  << " selectedNodes " << selectedNodes().count();
+               << " vertexClicked " <<activeGraph.vertexClicked()
+                  << " selectedNodesCount " << selectedNodesCount;
 
-    foreach (QGraphicsItem *item, selectedNodes() ) {
-        if ( (clickedNode = qgraphicsitem_cast<Node *>(item) )) {
-
-            clickedNodeNumber = clickedNode->nodeNumber();
-            if ( selectedNodes().count() > 1 )
+    if ( selectedNodesCount == 0 && activeGraph.vertexClicked() != 0) {
+        // no node selected but user entered a node number in a dialog
+        if ( label !="" && appSettings["initNodeLabelsVisibility"] != "true")
+            slotOptionsNodeLabelsVisibility(true);
+        qDebug()<< "MW::slotEditNodeProperties() - updating label ";
+        activeGraph.vertexLabelSet( activeGraph.vertexClicked(), label );
+        qDebug()<< "MW::slotEditNodeProperties() - updating color ";
+        activeGraph.vertexColorSet( activeGraph.vertexClicked(), color.name());
+        qDebug()<< "MW::slotEditNodeProperties() - updating size ";
+        activeGraph.vertexSizeSet( activeGraph.vertexClicked(), size);
+        qDebug()<< "MW::slotEditNodeProperties() - updating shape ";
+        activeGraph.vertexShapeSet( activeGraph.vertexClicked(), shape);
+    }
+    else {
+        //some nodes are selected
+        int nodeNumber = 0;
+        foreach (nodeNumber, activeGraph.graphSelectedVertices() ) {
+            qDebug()<< "MW::slotEditNodeProperties() - node " << nodeNumber;
+            qDebug()<< "MW::slotEditNodeProperties() - updating label ";
+            if ( selectedNodesCount > 1 )
             {
                 activeGraph.vertexLabelSet(
-                            clickedNodeNumber,
-                            label + QString::number(clickedNodeNumber)
+                            nodeNumber,
+                            label + QString::number(nodeNumber)
                             );
             }
             else
-                activeGraph.vertexLabelSet(
-                            clickedNodeNumber,
-                            label
-                            );
+                activeGraph.vertexLabelSet( nodeNumber, label );
 
             if ( label !="" && appSettings["initNodeLabelsVisibility"] != "true")
                 slotOptionsNodeLabelsVisibility(true);
 
-            qDebug () <<  clickedNodeNumber;
-            qDebug()<<"MW: updating color ";
-            activeGraph.vertexColorSet( clickedNodeNumber, color.name());
-            qDebug()<<"MW: updating size ";
-            activeGraph.vertexSizeSet(clickedNodeNumber,size);
-            qDebug()<<"MW: updating shape ";
-            activeGraph.vertexShapeSet( clickedNodeNumber, shape);
-            clickedNode->setShape(shape);
+
+            qDebug()<< "MW::slotEditNodeProperties() - updating color ";
+            activeGraph.vertexColorSet( nodeNumber, color.name());
+            qDebug()<< "MW::slotEditNodeProperties() - updating size ";
+            activeGraph.vertexSizeSet(nodeNumber,size);
+            qDebug()<< "MW::slotEditNodeProperties() - updating shape ";
+            activeGraph.vertexShapeSet( nodeNumber, shape);
         }
     }
-    clickedNode=0;
-    clickedNodeNumber=-1;
 
-    //slotNetworkChanged();
     statusMessage( tr("Ready. "));
-
 }
 
 
 
+/**
+ * @brief Creates a complete subgraph (clique) from selected nodes.
+ * Calls Graph::verticesSelectedCreateClique()
+ */
+void MainWindow::slotEditNodeSelectedToClique () {
+    qDebug() << "MW::slotEditNodeSelectedToClique()";
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    int selectedNodesCount = activeGraph.graphSelectedVerticesCount();
+
+    if ( selectedNodesCount == 0 ) {
+        slotHelpMessageToUser(USER_MSG_INFO,tr("No nodes selected."),
+                              tr("Cannot create new clique. No nodes are selected."),
+                              tr("Select some nodes first.")
+                              );
+        return;
+    }
+
+    activeGraph.verticesCreateSubgraph(QList<int> (), SUBGRAPH_CLIQUE);
+
+    slotHelpMessageToUser(USER_MSG_INFO,tr("Clique created."),
+                          tr("A new clique has been created from ") + QString::number(selectedNodesCount)
+                          + tr(" nodes")
+                          );
+}
 
 
 
+/**
+ * @brief Creates a star subgraph from selected nodes.
+ * User must choose a central actor.
+ * Calls Graph::slotEditNodeSelectedToStar()
+ */
+void MainWindow::slotEditNodeSelectedToStar() {
+    qDebug() << "MW::slotEditNodeSelectedToStar()";
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    int selectedNodesCount = activeGraph.graphSelectedVerticesCount();
+
+    if ( selectedNodesCount == 0 ) {
+        slotHelpMessageToUser(USER_MSG_INFO,tr("No nodes selected."),
+                              tr("Cannot create star subgraph. No nodes are selected."),
+                              tr("Select some nodes first.")
+                              );
+        return;
+    }
+    int center;
+    bool ok=false;
+
+    int min = activeGraph.graphSelectedVerticesMin();
+    int max = activeGraph.graphSelectedVerticesMax();
+    center=QInputDialog::getInt(
+                this,
+                "Create star subgraph",
+                tr("To create a star subgraph from selected nodes, \n"
+                   "enter the number of the central actor ("
+                   +QString::number(min).toLatin1()+"..."
+                   +QString::number(max).toLatin1()+"):"), min, 1, max , 1, &ok ) ;
+    if (!ok) {
+        statusMessage( "Create star subgraph cancelled." );
+        return;
+    }
+
+    activeGraph.verticesCreateSubgraph(QList<int> (), SUBGRAPH_STAR,center);
+
+    slotHelpMessageToUser(USER_MSG_INFO,tr("Star subgraph created."),
+                          tr("A new star subgraph has been created from ") +
+                          QString::number( selectedNodesCount )
+                          + tr(" nodes")
+                          );
+}
+
+
+
+/**
+ * @brief Creates a cycle subgraph from selected nodes.
+ * Calls Graph::verticesSelectedCreateCycle()
+ */
+void MainWindow::slotEditNodeSelectedToCycle() {
+    qDebug() << "MW::slotEditNodeSelectedToCycle()";
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    int selectedNodesCount = activeGraph.graphSelectedVerticesCount();
+
+    if ( selectedNodesCount == 0 ) {
+        slotHelpMessageToUser(USER_MSG_INFO,tr("No nodes selected."),
+                              tr("Cannot create cycle subgraph. No nodes are selected."),
+                              tr("Select some nodes first.")
+                              );
+        return;
+    }
+
+    activeGraph.verticesCreateSubgraph(QList<int> (),SUBGRAPH_CYCLE);
+
+    slotHelpMessageToUser(USER_MSG_INFO,tr("Cycle subgraph created."),
+                          tr("A new cycle subgraph has been created from ")
+                          + QString::number( selectedNodesCount )
+                          + tr(" nodes")
+                          );
+}
+
+
+
+/**
+ * @brief Creates a line subgraph from selected nodes.
+ * Calls Graph::verticesSelectedCreateLine()
+ */
+void MainWindow::slotEditNodeSelectedToLine() {
+    qDebug() << "MW::slotEditNodeSelectedToLine()";
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    int selectedNodesCount = activeGraph.graphSelectedVerticesCount();
+
+    if ( selectedNodesCount == 0 ) {
+        slotHelpMessageToUser(USER_MSG_INFO,tr("No nodes selected."),
+                              tr("Cannot create line subgraph. No nodes are selected."),
+                              tr("Select some nodes first.")
+                              );
+        return;
+    }
+
+    activeGraph.verticesCreateSubgraph(QList<int> (),SUBGRAPH_LINE);
+
+    slotHelpMessageToUser(USER_MSG_INFO,tr("Line subgraph created."),
+                          tr("A new line subgraph has been created from ")
+                          + QString::number( selectedNodesCount )
+                          + tr(" nodes")
+                          );
+}
 
 
 
@@ -6379,13 +8038,14 @@ void MainWindow::slotEditNodeColorAll(QColor color){
  * @brief MainWindow::slotEditNodeSizeAll
  * Changes the size of nodes to newSize.
  * Calls activeGraph.vertexSizeAllSet to do the work.
- * Called from Edit menu item, SettingsDialog
+ * Called from Edit menu item, DialogSettings
  * If newSize = 0 asks the user a new size for all nodes
  * If normalized = true, changes node sizes according to their plethos
  * @param newSize
  * @param normalized
  */
 void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
+    Q_UNUSED(normalized);
     qDebug () << "MW: slotEditNodeSizeAll() - "
                  << " newSize " << newSize ;
     if ( newSize == 0 && !normalized ) {
@@ -6393,8 +8053,8 @@ void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
         newSize = QInputDialog::getInt(
                     this,
                     "Change node size",
-                    tr("Select new size for all nodes: (1-16)"),
-                    appSettings["initNodeSize"].toInt(0, 10), 1, 16, 1, &ok );
+                    tr("Select new size for all nodes:"),
+                    appSettings["initNodeSize"].toInt(0, 10), 1, 100, 1, &ok );
 
         if (!ok) {
             statusMessage( "Change node size operation cancelled." );
@@ -6402,24 +8062,6 @@ void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
         }
     }
 
-    if ( normalized ) {
-        int N = activeNodes() ;
-        if ( N < 100) {
-            newSize = 8;
-        }
-        else if ( N < 200) {
-            newSize = 7;
-        }
-        if ( N >= 200 && N < 500){
-            newSize = 6;
-        }
-        else if ( N >= 500 && N < 1000) {
-            newSize = 6;
-        }
-        else if ( N  >= 1000) {
-            newSize = 5;
-        }
-    }
     appSettings["initNodeSize"]= QString::number(newSize);
     nodeSizesByOutDegreeAct->setChecked(false);
     toolBoxNodeSizesByOutDegreeBx->setChecked(false);
@@ -6428,7 +8070,6 @@ void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
 
     activeGraph.vertexSizeAllSet(newSize);
 
-    //slotNetworkChanged();
     statusMessage(tr("Ready"));
     return;
 }
@@ -6444,7 +8085,7 @@ void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
  * Then changes the shape of all nodes/vertices accordingly.
  * If vertex is non-zero, changes the shape of that node only.
  * Called when user clicks on Edit -> Node > Change all nodes shapes
- * Called from SettingsDialog when the user has selected a new default node shape
+ * Called from DialogSettings when the user has selected a new default node shape
  * Calls Graph::vertexShapeAllSet(QString)
  * @param shape
  * @param vertex
@@ -6474,7 +8115,6 @@ void MainWindow::slotEditNodeShape(QString shape, const int vertex) {
     }
 
     if (vertex == 0) { //change all nodes shapes
-        //slotNetworkChanged();
         activeGraph.vertexShapeAllSet(shape);
         appSettings["initNodeShape"] = shape;
         statusMessage(tr("All shapes have been changed. Ready."));
@@ -6491,7 +8131,7 @@ void MainWindow::slotEditNodeShape(QString shape, const int vertex) {
 /**
  * @brief MainWindow::slotEditNodeNumberSize
  * Changes the size of one or all node numbers.
- * Called from Edit menu option and SettingsDialog
+ * Called from Edit menu option and DialogSettings
  * if newSize=0, asks the user to enter a new node number font size
  * if v1=0, it changes all node numbers
  * @param v1
@@ -6502,7 +8142,8 @@ void MainWindow::slotEditNodeNumberSize(int v1, int newSize, const bool prompt) 
     qDebug() << "MW::slotEditNodeNumberSize - newSize " << newSize;
     if (prompt) {
         newSize = QInputDialog::getInt(this, "Change text size",
-                                       tr("Change all node numbers size to: (1-16)"),appSettings["initNodeNumberSize"].toInt(0,10), 1, 16, 1, &ok );
+                                       tr("Change all node numbers size to: (1-16)"),
+                                       appSettings["initNodeNumberSize"].toInt(0,10), 1, 16, 1, &ok );
         if (!ok) {
             statusMessage( tr("Change font size: Aborted.") );
             return;
@@ -6561,7 +8202,7 @@ void MainWindow::slotEditNodeNumbersColor(QColor color){
 /**
  * @brief MainWindow::slotEditNodeNumberDistance
  * Changes the distance of one or all node numbers from their nodes.
- * Called from Edit menu option and SettingsDialog
+ * Called from Edit menu option and DialogSettings
  * if newDistance=0, asks the user to enter a new node number distance
  * if v1=0, it changes all node number distances
  * @param v1
@@ -6595,7 +8236,7 @@ void MainWindow::slotEditNodeNumberDistance(int v1, int newDistance) {
 /**
  * @brief MainWindow::slotEditNodeLabelSize
  * Changes the size of one or all node Labels.
- * Called from Edit menu option and SettingsDialog
+ * Called from Edit menu option and DialogSettings
  * if newSize=0, asks the user to enter a new node Label font size
  * if v1=0, it changes all node Labels
  * @param v1
@@ -6607,7 +8248,7 @@ void MainWindow::slotEditNodeLabelSize(int v1, int newSize) {
     if (!newSize) {
         newSize = QInputDialog::getInt(this, "Change text size",
                                        tr("Change all node labels text size to: (1-16)"),
-                                       appSettings["initNodeLabelSize"].toInt(0,10), 1, 16, 1, &ok );
+                                       appSettings["initNodeLabelSize"].toInt(0,10), 1, 32, 1, &ok );
         if (!ok) {
             statusMessage( tr("Change font size: Aborted.") );
             return;
@@ -6643,16 +8284,8 @@ void MainWindow::slotEditNodeLabelsColor(QColor color){
     }
     if (color.isValid()) {
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        QList<QGraphicsItem *> list= scene->items();
-        for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
-            if ( (*it)->type() == TypeNode ) 	{
-                Node *jim = (Node *) (*it);
-                jim->label()->update();
-                jim->label()->setDefaultTextColor(color);
-                activeGraph.vertexLabelColorSet (jim->nodeNumber(), color.name());
-            }
+        activeGraph.vertexLabelColorAllSet(color.name());
         appSettings["initNodeLabelColor"] = color.name();
-        activeGraph.vertexLabelColorInit(color.name());
         optionsNodeLabelsVisibilityAct->setChecked(true);
         QApplication::restoreOverrideCursor();
         statusMessage( tr("Label colors changed. Ready. ")  );
@@ -6669,7 +8302,7 @@ void MainWindow::slotEditNodeLabelsColor(QColor color){
 /**
  * @brief MainWindow::slotEditNodeLabelDistance
  * Changes the distance of one or all node label from their nodes.
- * Called from Edit menu option and SettingsDialog
+ * Called from Edit menu option and DialogSettings
  * if newDistance=0, asks the user to enter a new node label distance
  * if v1=0, it changes all node label distances
  * @param v1
@@ -6706,21 +8339,23 @@ void MainWindow::slotEditNodeLabelDistance(int v1, int newDistance) {
  * Opens a node context menu with some options when the user right-clicks on a node
  */
 void MainWindow::slotEditNodeOpenContextMenu() {
-    clickedNodeNumber=clickedNode->nodeNumber();
-    qDebug("MW: slotEditNodeOpenContextMenu() for node %i at %i, %i",
-           clickedNodeNumber, QCursor::pos().x(), QCursor::pos().y());
 
-    QMenu *nodeContextMenu = new QMenu(QString::number(clickedNodeNumber), this);
+    qDebug("MW: slotEditNodeOpenContextMenu() for node %i at %i, %i",
+           activeGraph.vertexClicked(), QCursor::pos().x(), QCursor::pos().y());
+
+    QMenu *nodeContextMenu = new QMenu(QString::number( activeGraph.vertexClicked() ), this);
     Q_CHECK_PTR( nodeContextMenu );  //displays "out of memory" if needed
-    int nodeCount = selectedNodes().count();
-    if ( nodeCount == 1) {
-        nodeContextMenu -> addAction( tr("## NODE ") + QString::number(clickedNodeNumber) + " ##  ");
+    int nodesSelected = activeGraph.graphSelectedVerticesCount();
+    if ( nodesSelected == 1) {
+        nodeContextMenu -> addAction(
+                    tr("## NODE ") + QString::number(activeGraph.vertexClicked()) + " ##  "
+                    );
     }
     else {
         nodeContextMenu -> addAction(
-                    tr("## NODE ") + QString::number(clickedNodeNumber)
+                    tr("## NODE ") + QString::number(activeGraph.vertexClicked())
                     + " ##  " + tr(" (selected nodes: ")
-                    + QString::number (selectedNodes().count() ) + ")");
+                    + QString::number ( nodesSelected ) + ")");
     }
 
     nodeContextMenu -> addSeparator();
@@ -6735,79 +8370,136 @@ void MainWindow::slotEditNodeOpenContextMenu() {
 
     nodeContextMenu -> addAction(editNodeRemoveAct );
 
-    if (nodeCount > 1 ){
-        editNodeRemoveAct->setText(tr("Remove ")
-                                   + QString::number(nodeCount)
-                                   + tr(" nodes"));
-    }
-    else {
-        editNodeRemoveAct->setText(tr("Remove ")
-                                   + QString::number(nodeCount)
-                                   + tr(" node"));
-    }
+
     nodeContextMenu -> addSeparator();
 
 
     //QCursor::pos() is good only for menus not related with node coordinates
     nodeContextMenu -> exec(QCursor::pos() );
     delete  nodeContextMenu;
-    clickedNodeNumber=-1;    //undo node selection
+
 }
 
 
 
+/**
+ * @brief MainWindow::slotEditSelectionChanged
+ * @param nodes
+ * @param edges
+ */
+void MainWindow::slotEditSelectionChanged(const int &selNodes, const int &selEdges) {
+    qDebug()<< "MW::slotEditSelectionChanged()";
+    rightPanelSelectedNodesLCD->display(selNodes);
+    rightPanelSelectedEdgesLCD->display(selEdges);
+
+    if (selNodes > 1 ){
+        editNodeRemoveAct->setText(tr("Remove ")
+                                   + QString::number(selNodes)
+                                   + tr(" nodes"));
+        editNodeSelectedToCliqueAct->setEnabled(true);
+        editNodeSelectedToCliqueAct->setText(tr("Create a clique from ")
+                                             + QString::number(selNodes)
+                                             + tr(" selected nodes"));
+        editNodeSelectedToStarAct->setEnabled(true);
+        editNodeSelectedToStarAct->setText(tr("Create a star from ")
+                                             + QString::number(selNodes)
+                                             + tr(" selected nodes"));
+        editNodeSelectedToCycleAct->setEnabled(true);
+        editNodeSelectedToCycleAct->setText(tr("Create a cycle from ")
+                                             + QString::number(selNodes)
+                                             + tr(" selected nodes"));
+        editNodeSelectedToLineAct->setEnabled(true);
+        editNodeSelectedToLineAct->setText(tr("Create a line from ")
+                                             + QString::number(selNodes)
+                                             + tr(" selected nodes"));
+    }
+    else {
+        editNodeRemoveAct->setText(tr("Remove Node"));
+        editNodeSelectedToCliqueAct->setText(tr("Create a clique from selected nodes"));
+        editNodeSelectedToCliqueAct->setEnabled(false);
+        editNodeSelectedToStarAct->setText(tr("Create a star from selected nodes"));
+        editNodeSelectedToStarAct->setEnabled(false);
+        editNodeSelectedToCycleAct->setText(tr("Create a cycle from selected nodes"));
+        editNodeSelectedToCycleAct->setEnabled(false);
+        editNodeSelectedToLineAct->setText(tr("Create a line from selected nodes"));
+        editNodeSelectedToLineAct->setEnabled(false);
+
+    }
+
+    statusMessage(  tr("Selected %1 nodes and %2 edges")
+                     .arg( selNodes )
+                     .arg( selEdges )
+                     );
+}
+
 
 
 /**
-*	When the user clicks on a node, displays some information about it on the status bar.
-*/
-void MainWindow::nodeInfoStatusBar ( Node *jim) {
-    qDebug ("MW: NodeInfoStatusBar()");
-    edgeClicked=false;
-    nodeClicked=true;
-    clickedNode=jim;
-    clickedNodeNumber=clickedNode->nodeNumber();
-    int inDegree=activeGraph.vertexDegreeIn(clickedNodeNumber);
-    int outDegree=activeGraph.vertexDegreeOut(clickedNodeNumber);
-    selectedNodeLCD->display (clickedNodeNumber);
-    inDegreeLCD->display (inDegree);
-    outDegreeLCD->display (outDegree);
-    if (activeGraph.vertices() < 500)
-        clucofLCD->display(activeGraph.clusteringCoefficientLocal(clickedNodeNumber));
+ * @brief MainWindow::slotEditNodeInfoStatusBar
+ * Called by Graph::userClickedNode() signal, when the user clicks on a node.
+ * It displays information about the node on the statusbar.
+ * @param jim
+ */
+void MainWindow::slotEditNodeInfoStatusBar (const int &number,
+                                             const QPointF &p,
+                                             const QString &label,
+                                             const int &inDegree,
+                                             const int &outDegree,
+                                             const float &clc) {
+    qDebug()<<"MW::slotEditNodeInfoStatusBar()";
+    rightPanelClickedNodeLCD->display (number);
+    rightPanelClickedNodeInDegreeLCD->display (inDegree);
+    rightPanelClickedNodeOutDegreeLCD->display (outDegree);
+    rightPanelClickedNodeClucofLCD->display(clc);
 
-    statusMessage(  QString(tr("(%1, %2);  Node %3, label %4 - "
-                               "In-Degree: %5, Out-Degree: %6")).arg( ceil( clickedNode->x() ) )
-                    .arg( ceil( clickedNode->y() )).arg( clickedNodeNumber ).arg( clickedNode->labelText() )
+    if (number!=0)  {
+
+        statusMessage(  QString(tr("Position (%1, %2):  Node %3, label %4 - "
+                               "In-Degree: %5, Out-Degree: %6"))
+                    .arg( ceil( p.x() ) )
+                    .arg( ceil( p.y() )).arg( number )
+                    .arg( ( label == "") ? "unset" : label )
                     .arg(inDegree).arg(outDegree) );
+    }
+
 }
 
 
 
 
 /**
- * @brief MainWindow::edgeInfoStatusBar
- * Displays information on the status bar about and edge clicked by the user
- * Called by GW::selectedEdge signal
+ * @brief MainWindow::slotEditEdgeInfoStatusBar
+ * Called by GW::selectedEdge signal when the user clickes on an edge
+ * Displays information about the clicked edge on the statusbar
  * @param edge
  */
-void MainWindow::edgeInfoStatusBar (Edge* edge) {
-    clickedEdge=edge;
-    edgeClicked=true;
-    nodeClicked=false;
+void MainWindow::slotEditEdgeInfoStatusBar (const int &v1,
+                                            const  int &v2,
+                                            const float &weight,
+                                            const bool &undirected) {
 
-    if (edge->isUndirected()) {
+    rightPanelClickedEdgeSourceLCD->display(v1);
+    rightPanelClickedEdgeTargetLCD->display(v2);
+    rightPanelClickedEdgeWeightLCD->display(weight);
+
+    if (v1 ==0 || v2 == 0) return;
+
+    if ( undirected ) {
             statusMessage(  QString
                         (tr("Symmetric edge %1 <--> %2 of weight %3 has been selected. "
-                                   "Click again to unselect it."))
-                    .arg( edge->sourceNodeNumber() ).arg(edge->targetNodeNumber())
-                    .arg( edge->weight()) ) ;
-
+                                   "Click anywhere else to unselect it."))
+                    .arg( v1 ).arg( v2 )
+                    .arg( weight )
+                            );
+            rightPanelClickedEdgeHeaderLabel->setText(tr("Clicked Edge"));
     }
     else {
         statusMessage(  QString(tr("Arc %1 --> %2 of weight %3 has been selected. "
                                    "Click again to unselect it."))
-                    .arg( edge->sourceNodeNumber() ).arg(edge->targetNodeNumber())
-                    .arg(edge->weight()) ) ;
+                        .arg( v1 ).arg( v2 )
+                        .arg( weight )
+                        );
+        rightPanelClickedEdgeHeaderLabel->setText(tr("Clicked Directed Edge"));
     }
 }
 
@@ -6815,12 +8507,14 @@ void MainWindow::edgeInfoStatusBar (Edge* edge) {
 
 
 /**
-     Popups a context menu with some options when the user right-clicks on an Edge
-*/
-void MainWindow::openEdgeContextMenu() {
-    int source=clickedEdge->sourceNodeNumber();
-    int target=clickedEdge->targetNodeNumber();
-    qDebug("MW: openEdgeContextMenu() for edge %i-%i at %i, %i",source, target, QCursor::pos().x(), QCursor::pos().y());
+ * @brief MainWindow::slotEditEdgeOpenContextMenu
+ * Called by GW::openEdgeMenu when the user right-clicks on an edge
+ * Popups a context menu with edge- related options
+ */
+void MainWindow::slotEditEdgeOpenContextMenu() {
+    int source=activeGraph.edgeClicked().v1;
+    int target=activeGraph.edgeClicked().v2;
+    qDebug("MW: slotEditEdgeOpenContextMenu() for edge %i-%i at %i, %i",source, target, QCursor::pos().x(), QCursor::pos().y());
     QString edgeName=QString::number(source)+QString("->")+QString::number(target);
     //make the menu
     QMenu *edgeContextMenu = new QMenu(edgeName, this);
@@ -6841,22 +8535,21 @@ void MainWindow::openEdgeContextMenu() {
  * Called when user clicks on the MW button/menu item "Add edge"
  */
 void MainWindow::slotEditEdgeAdd(){
-    qDebug ("MW: slotEditEdgeAdd()");
-    if (!fileLoaded && !networkModified )  {
-        QMessageBox::critical(this, "Error",tr("No nodes!! \nCreate some nodes first."), "OK",0);
-        statusMessage( tr("There are no nodes yet...")  );
+    qDebug ()<<"MW::slotEditEdgeAdd()";
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
     int sourceNode=-1, targetNode=-1;
     float weight=1; 	//weight of this new edge should be one...
     bool ok=false;
-    int min=activeGraph.vertexFirstNumber();
-    int max=activeGraph.vertexLastNumber();
+    int min=activeGraph.vertexNumberMin();
+    int max=activeGraph.vertexNumberMax();
 
     if (min==max) return;		//if there is only one node -> no edge
 
-    if ( !nodeClicked || clickedNodeNumber == -1 ) {
+    if ( ! activeGraph.vertexClicked() ) {
         sourceNode=QInputDialog::getInt(
                     this,
                     "Create new edge, Step 1",
@@ -6870,13 +8563,14 @@ void MainWindow::slotEditEdgeAdd(){
         }
     }
     else
-        sourceNode=clickedNodeNumber;
+        sourceNode=activeGraph.vertexClicked();
 
-    qDebug () << "sourceNode=clickedNodeNumber " << clickedNodeNumber;
+    qDebug ()<<"MW::slotEditEdgeAdd() - sourceNode:" << sourceNode;
+
     if ( activeGraph.vertexExists(sourceNode) ==-1 ) {
         statusMessage( tr("Aborting. ")  );
         QMessageBox::critical(this,"Error","No such node.", "OK",0);
-        qDebug ("MW: slotEditEdgeAdd: Cant find sourceNode %i.", sourceNode);
+        qDebug ()<<"MW::slotEditEdgeAdd() - cannot find sourceNode:" << sourceNode;
         return;
     }
 
@@ -6900,7 +8594,7 @@ void MainWindow::slotEditEdgeAdd(){
 
     weight=QInputDialog::getDouble(
                 this, "Create new edge, Step 3",
-                tr("Source and target nodes accepted. \n "
+                tr("Source and target nodes accepted. \n"
                    "Please, enter the weight of new edge: "),1.0, -100.0, 100.0, 1, &ok);
     if (!ok) {
         statusMessage( "Add edge operation cancelled." );
@@ -6915,7 +8609,6 @@ void MainWindow::slotEditEdgeAdd(){
     }
 
     slotEditEdgeCreate(sourceNode, targetNode, weight);
-    //slotNetworkChanged();
     statusMessage( tr("Ready. ")  );
 }
 
@@ -6958,18 +8651,17 @@ void MainWindow::slotEditEdgeCreate (const int &source, const int &target,
  * First deletes arc reference from object nodeVector then deletes arc item from scene
  */
 void MainWindow::slotEditEdgeRemove(){
-    if ( (!fileLoaded && !networkModified) || activeEdges() ==0 )  {
-        QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network first."), "OK",0);
-        statusMessage( tr("No edges to remove - sorry.")  );
+    if ( !activeNodes() || activeEdges() ==0 )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
 
     int min=0, max=0, sourceNode=-1, targetNode=-1;
     bool ok=false;
-    min=activeGraph.vertexFirstNumber();
-    max=activeGraph.vertexLastNumber();
+    min=activeGraph.vertexNumberMin();
+    max=activeGraph.vertexNumberMax();
 
-    if (!edgeClicked) {
+    if (!activeGraph.edgeClicked().v1 || !activeGraph.edgeClicked().v2 ) {
         sourceNode=QInputDialog::getInt(
                     this,tr("Remove edge"),
                     tr("Source node:  (")+QString::number(min)+
@@ -7001,14 +8693,14 @@ void MainWindow::slotEditEdgeRemove(){
 
     }
     else {
-        sourceNode = clickedEdge->sourceNodeNumber();
-        targetNode = clickedEdge->targetNodeNumber();
+        sourceNode = activeGraph.edgeClicked().v1;
+        targetNode = activeGraph.edgeClicked().v2;
         activeGraph.edgeRemove(sourceNode, targetNode);
 
     }
-    //slotNetworkChanged();
-    qDebug("MW: View items now: %i ", graphicsWidget->items().size());
-    qDebug("MW: Scene items now: %i ", scene->items().size());
+    qDebug()<< "MW::slotEditEdgeRemove() -"
+              << "View items now:"<< graphicsWidget->items().size()
+               << "Scene items now:"<< scene->items().size();
 }
 
 
@@ -7024,21 +8716,18 @@ void MainWindow::slotEditEdgeRemove(){
  */
 void MainWindow::slotEditEdgeLabel(){
     qDebug() << "MW::slotEditEdgeLabel()";
-    if ( ( !fileLoaded && !networkModified) || activeEdges() ==0 )  {
-        QMessageBox::critical(this, "Error",
-                              tr("There are no edges! \n"
-                                 "Load a network file or create a new network first."), "OK",0);
-        statusMessage( tr("No edges present...")  );
+    if ( !activeEdges() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
 
     int sourceNode=-1, targetNode=-1;
     bool ok=false;
 
-    int min=activeGraph.vertexFirstNumber();
-    int max=activeGraph.vertexLastNumber();
+    int min=activeGraph.vertexNumberMin();
+    int max=activeGraph.vertexNumberMax();
 
-    if (!edgeClicked)
+    if (!activeGraph.edgeClicked().v1 || !activeGraph.edgeClicked().v2 )
     {	//no edge clicked. Ask user to define an edge.
         sourceNode=QInputDialog::getInt(this,
                                         "Change edge label",
@@ -7072,8 +8761,8 @@ void MainWindow::slotEditEdgeLabel(){
     }
     else
     {	//edge has been clicked.
-         sourceNode = clickedEdge->sourceNodeNumber();
-         targetNode = clickedEdge->targetNodeNumber();
+         sourceNode = activeGraph.edgeClicked().v1;
+         targetNode = activeGraph.edgeClicked().v2;
     }
 
     QString label = QInputDialog::getText( this, tr("Change edge label"),
@@ -7127,7 +8816,6 @@ void MainWindow::slotEditEdgeColorAll(QColor color,const int &threshold){
         qDebug() << "MainWindow::slotEditEdgeColorAll() - new edge color: " << color.name();
         activeGraph.edgeColorAllSet(color.name(), threshold );
         QApplication::restoreOverrideCursor();
-        //slotNetworkChanged();
         statusMessage( tr("Ready. ")  );
     }
     else {
@@ -7146,20 +8834,18 @@ void MainWindow::slotEditEdgeColorAll(QColor color,const int &threshold){
  */
 void MainWindow::slotEditEdgeColor(){
     qDebug() << "MW::slotEditEdgeColor()";
-    if ( ( !fileLoaded && !networkModified) || activeEdges() ==0 )  {
-        QMessageBox::critical(this, "Error",
-                              tr("There are no edges! \nLoad a network file or create a new network first."), "OK",0);
-        statusMessage( tr("No edges present...")  );
+    if (  !activeEdges() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
 
     int sourceNode=-1, targetNode=-1;
     bool ok=false;
 
-    int min=activeGraph.vertexFirstNumber();
-    int max=activeGraph.vertexLastNumber();
+    int min=activeGraph.vertexNumberMin();
+    int max=activeGraph.vertexNumberMax();
 
-    if (!edgeClicked)
+    if (!activeGraph.edgeClicked().v1 || !activeGraph.edgeClicked().v2)
     {	//no edge clicked. Ask user to define an edge.
         sourceNode=QInputDialog::getInt(this,
                                         "Change edge color",
@@ -7193,8 +8879,8 @@ void MainWindow::slotEditEdgeColor(){
     }
     else
     {	//edge has been clicked.
-         sourceNode = clickedEdge->sourceNodeNumber();
-         targetNode = clickedEdge->targetNodeNumber();
+         sourceNode = activeGraph.edgeClicked().v1;
+         targetNode = activeGraph.edgeClicked().v2;
     }
     QString curColor = activeGraph.edgeColor(sourceNode, targetNode);
     if (!QColor(curColor).isValid()) {
@@ -7226,23 +8912,19 @@ void MainWindow::slotEditEdgeColor(){
  * If no edge is clicked, asks the user to specify an Edge.
  */
 void MainWindow::slotEditEdgeWeight(){
-    if ( ( !fileLoaded && !networkModified) || activeEdges() ==0 )  {
-        QMessageBox::critical(
-                    this, "Error",
-                    tr("There are no edges! \n"
-                       "Load a network file or create a new network first."), "OK",0);
-        statusMessage( tr("No edges present...")  );
+    if (  !activeEdges()  )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
 
     qDebug("MW::slotEditEdgeWeight()");
     int  sourceNode=-1, targetNode=-1;
     float newWeight=1.0;
-    int min=activeGraph.vertexFirstNumber();
-    int max=activeGraph.vertexLastNumber();
+    int min=activeGraph.vertexNumberMin();
+    int max=activeGraph.vertexNumberMax();
 
     bool ok=false;
-    if (!edgeClicked) {
+    if ( activeGraph.edgeClicked().v1==0 || activeGraph.edgeClicked().v2==0 ) {
         sourceNode=QInputDialog::getInt(
                     this,
                     "Change edge weight",
@@ -7269,10 +8951,10 @@ void MainWindow::slotEditEdgeWeight(){
 
         qDebug("source %i target %i",sourceNode, targetNode);
     }
-    else {  //edgeClicked
+    else {
         qDebug() << "MW: slotEditEdgeWeight() - an Edge has already been clicked";
-        sourceNode=clickedEdge->sourceNodeNumber();
-        targetNode=clickedEdge->targetNodeNumber();
+        sourceNode=activeGraph.edgeClicked().v1;
+        targetNode=activeGraph.edgeClicked().v2;
         qDebug() << "MW: slotEditEdgeWeight() from "
                  << sourceNode << " to " << targetNode;
 
@@ -7288,7 +8970,7 @@ void MainWindow::slotEditEdgeWeight(){
 
         if (ok) {
             activeGraph.edgeWeightSet(sourceNode, targetNode, newWeight,
-                                      activeGraph.isUndirected()
+                                      activeGraph.graphUndirected()
                                       );
         }
         else {
@@ -7297,7 +8979,6 @@ void MainWindow::slotEditEdgeWeight(){
         }
     }
 
-        //edgeClicked=false;
 }
 
 
@@ -7311,13 +8992,12 @@ void MainWindow::slotEditEdgeWeight(){
  * with a symmetric adjacency matrix
  */
 void MainWindow::slotEditEdgeSymmetrizeAll(){
-    if ( ( !fileLoaded && !networkModified) || activeEdges() ==0 )  {
-        QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network first."), "OK",0);
-        statusMessage( tr("No edges present...")  );
+    if ( activeEdges() ==0 )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
-    qDebug("MW: slotEditEdgeSymmetrizeAll() calling symmetrize");
-    activeGraph.symmetrize();
+    qDebug("MW: slotEditEdgeSymmetrizeAll() calling graphSymmetrize()");
+    activeGraph.graphSymmetrize();
     QMessageBox::information(this,
                              "Symmetrize",
                              tr("All arcs are reciprocal. \n"
@@ -7327,15 +9007,79 @@ void MainWindow::slotEditEdgeSymmetrizeAll(){
 
 
 /**
+ * @brief Adds a new symmetric relation with ties only between pairs of nodes
+ * who are cocited by others.
+ */
+void MainWindow::slotEditEdgeSymmetrizeCocitation(){
+    if ( activeEdges() ==0 )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
+        return;
+    }
+    qDebug("MW: slotEditEdgeSymmetrizeCocitation() calling graphCocitation()");
+    activeGraph.graphCocitation();
+    slotHelpMessageToUser(USER_MSG_INFO,tr("New symmetric cocitation relation created."),
+                          tr("New cocitation relation created from strong ties"),
+                             tr("A new relation \"%1\" has been added to the network. "
+                                "by counting cocitation ties only. "
+                             "This relation is symmetric. ").arg("Cocitation"));
+
+}
+
+
+
+
+
+/**
+ * @brief MainWindow::slotEditEdgeSymmetrizeStrongTies
+ */
+void MainWindow::slotEditEdgeSymmetrizeStrongTies(){
+    if ( activeEdges() ==0 )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
+        return;
+    }
+    qDebug()<< "MW::slotEditEdgeSymmetrizeStrongTies() - calling graphSymmetrizeStrongTies()";
+    int oldRelationsCounter=activeGraph.relations();
+    int answer=0;
+    if (oldRelationsCounter>0) {
+        switch (
+        answer=slotHelpMessageToUser(USER_MSG_QUESTION_CUSTOM, tr("Select"),
+                              tr("Symmetrize social network by examining strong ties"),
+                              tr("This network has multiple relations. "
+                                 "Symmetrize by examining reciprocated ties across all relations or just the current relation?"),
+                              QMessageBox::NoButton, QMessageBox::NoButton,
+                              tr("all relations"), tr("current relation")
+                              )
+                ){
+        case 1:
+            activeGraph.graphSymmetrizeStrongTies(true);
+            break;
+        case 2:
+            activeGraph.graphSymmetrizeStrongTies(false);
+            break;
+        }
+
+
+    }
+    else {
+        activeGraph.graphSymmetrizeStrongTies(false);
+    }
+    slotHelpMessageToUser(USER_MSG_INFO,tr("New symmetric relation created from strong ties"),
+                          tr("New relation created from strong ties"),
+                             tr("A new relation \"%1\" has been added to the network. "
+                                "by counting reciprocated ties only. "
+                             "This relation is binary and symmetric. ").arg("Strong Ties"));
+
+}
+
+/**
  * @brief MainWindow::slotEditEdgeUndirectedAll
  * Tranforms all directed arcs to undirected edges.
  * The result is a undirected and symmetric network
  */
 void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
-
+    qDebug()<<"MW: slotEditEdgeUndirectedAll() - calling Graph::graphUndirectedSet()";
     if (toggle) {
-        qDebug("MW: slotEditEdgeUndirectedAll() calling Graph::undirectedSet()");
-        activeGraph.undirectedSet(toggle);
+        activeGraph.graphUndirectedSet(toggle);
         optionsEdgeArrowsAct->setChecked(false);
         if (activeEdges() !=0 ) {
             statusMessage(tr("Undirected data mode. "
@@ -7349,7 +9093,46 @@ void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
         }
     }
     else {
-        activeGraph.undirectedSet(toggle);
+        activeGraph.graphUndirectedSet(toggle);
+        optionsEdgeArrowsAct->trigger();
+        optionsEdgeArrowsAct->setChecked(true);
+        if (activeEdges() !=0 ) {
+            statusMessage ( tr("Directed data mode. "
+                               "All existing undirected edges transformed to "
+                               "directed. Ready")) ;
+
+        }
+        else {
+            statusMessage ( tr("Directed data mode. "
+                               "Any new edge you add will be directed. Ready")) ;
+        }
+    }
+
+}
+
+
+
+/**
+ * @brief Toggles between directed and undirected edge mode
+  */
+void MainWindow::slotEditEdgeMode(const int &mode){
+    qDebug()<<"MW: slotEditEdgeMode() - calling Graph::graphUndirectedSet()";
+    if (mode==1) {
+        activeGraph.graphUndirectedSet(true);
+        optionsEdgeArrowsAct->setChecked(false);
+        if (activeEdges() !=0 ) {
+            statusMessage(tr("Undirected data mode. "
+                               "All existing directed edges transformed to "
+                               "undirected. Ready") ) ;
+
+        }
+        else {
+            statusMessage( tr("Undirected data mode. "
+                               "Any edge you add will be undirected. Ready")) ;
+        }
+    }
+    else {
+        activeGraph.graphUndirectedSet(false);
         optionsEdgeArrowsAct->trigger();
         optionsEdgeArrowsAct->setChecked(true);
         if (activeEdges() !=0 ) {
@@ -7369,7 +9152,6 @@ void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
 
 
 
-
 /**
 *	Filters Nodes by their value   
     TODO slotFilterNodes
@@ -7377,27 +9159,25 @@ void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
 */
 void MainWindow::slotFilterNodes(){
 
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to filter! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to filter!"))  );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 }
 
 /**
- * @brief MainWindow::slotFilterIsolateNodes
+ * @brief MainWindow::slotEditFilterNodesIsolates
  *Calls Graph::vertexIsolateFilter to toggle visibility of isolated vertices
  */
-void MainWindow::slotFilterIsolateNodes(bool checked){
+void MainWindow::slotEditFilterNodesIsolates(bool checked){
     Q_UNUSED(checked);
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to filter! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to filter!"))  );
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    qDebug()<< "MW: slotFilterIsolateNodes";
-    activeGraph.vertexIsolateFilter( ! filterIsolateNodesAct->isChecked() );
-    statusMessage(  QString(tr("Isolate nodes visibility toggled!"))  );
+    qDebug()<< "MW: slotEditFilterNodesIsolates";
+    activeGraph.vertexIsolateFilter( ! editFilterNodesIsolatesAct->isChecked() );
+    statusMessage(  tr("Isolate nodes visibility toggled!")  );
 }
 
 
@@ -7406,8 +9186,8 @@ void MainWindow::slotFilterIsolateNodes(bool checked){
 *	filter edges according to their weight 
 *	All edges weighted more (or less) than the specified weight  will be disabled.
 */ 
-void MainWindow::slotShowFilterEdgesDialog() {
-    if (!fileLoaded && !networkModified  )   {
+void MainWindow::slotEditFilterEdgesByWeightDialog() {
+    if ( !activeEdges()  )   {
         statusMessage(  QString(tr("Load a network file first. \nThen you may ask me to compute something!"))  );
         return;
     }
@@ -7416,17 +9196,34 @@ void MainWindow::slotShowFilterEdgesDialog() {
 
 
 
+/**
+ * @brief MainWindow::slotEditFilterEdgesUnilateral
+ * @param checked
+ * Calls Graph::edgeFilterUnilateral( bool). If bool==true, all unilateral
+ * edges are filtered out.
+ */
+void MainWindow::slotEditFilterEdgesUnilateral(bool checked) {
+    Q_UNUSED(checked);
+    if ( !activeEdges() && editFilterEdgesUnilateralAct->isChecked() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
+        return;
+    }
+    if (activeGraph.relations()>1) {
 
-
+    }
+    qDebug()<< "MW::slotEditFilterEdgesUnilateral";
+    activeGraph.edgeFilterUnilateral( ! editFilterEdgesUnilateralAct->isChecked() );
+    statusMessage(  tr("Unilateral (weak) edges visibility toggled!")  );
+}
 
 
 
 /**
 *	Transforms all nodes to edges
-    TODO slotTransformNodes2Edges
+    TODO slotEditTransformNodes2Edges
 */
-void MainWindow::slotTransformNodes2Edges(){
-    //slotNetworkChanged();
+void MainWindow::slotEditTransformNodes2Edges(){
+
 
 }
 
@@ -7439,16 +9236,16 @@ void MainWindow::slotTransformNodes2Edges(){
 
 
 /**
-    TODO slotColorationStrongStructural
+    TODO slotLayoutColorationStrongStructural
 */
-void MainWindow::slotColorationStrongStructural() {
+void MainWindow::slotLayoutColorationStrongStructural() {
 }
 
 
 /**
-    TODO slotColorationRegular
+    TODO slotLayoutColorationRegular
 */
-void MainWindow::slotColorationRegular() {
+void MainWindow::slotLayoutColorationRegular() {
 }
 
 
@@ -7458,13 +9255,8 @@ void MainWindow::slotColorationRegular() {
  * to reposition all nodes on a circular layout randomly
  */
 void MainWindow::slotLayoutRandom(){
-    if (!fileLoaded && !networkModified  )  {
-                QMessageBox::critical(
-                    this, "Error",
-                    tr("Sorry, nothing to do! "
-                       "\nLoad a network file or create a new network first. \n"
-                       "Then we can talk about layouts!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -7488,13 +9280,8 @@ void MainWindow::slotLayoutRandom(){
  */
 void MainWindow::slotLayoutCircularRandom(){
     qDebug() << "MainWindow::slotLayoutCircularRandom()";
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(
-                    this, "Error",
-                    tr("Sorry, I can't follow! "
-                       "\nLoad a network file or create a new network first. \n"
-                       "Then we can talk about layouts!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -7525,11 +9312,8 @@ void MainWindow::slotLayoutCircularRandom(){
  */
 void MainWindow::slotLayoutSpringEmbedder(){
     qDebug()<< "MW:slotLayoutSpringEmbedder";
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are node nodes yet!\n"
-                                               "Load a network file or create a new network first. \n"
-                                               "Then we can talk about layouts!"), "OK",0);
-        statusMessage( tr("I am really sorry. You must really load a file first... ")  );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -7554,11 +9338,8 @@ void MainWindow::slotLayoutSpringEmbedder(){
  */
 void MainWindow::slotLayoutFruchterman(){
     qDebug("MW: slotLayoutFruchterman ()");
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes yet!\n"
-                                               "Load a network file or create a new network first. \n"
-                                               "Then we can talk about layouts!"), "OK",0);
-        statusMessage( tr("I am really sorry. You must really load a file first... ")  );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -7586,11 +9367,8 @@ void MainWindow::slotLayoutFruchterman(){
  */
 void MainWindow::slotLayoutKamadaKawai(){
     qDebug()<< "MW::slotLayoutKamadaKawai ()";
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes yet!\n"
-                                               "Load a network file or create a new network first. \n"
-                                               "Then we can talk about layouts!"), "OK",0);
-        statusMessage( tr("I am really sorry. You must really load a file first... ")  );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -7616,13 +9394,8 @@ void MainWindow::slotLayoutKamadaKawai(){
  * @param checked
  */
 void MainWindow::slotLayoutNodeSizesByOutDegree(bool checked){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(
-                    this, "Error",
-                    tr("There are no nodes yet!\n"
-                       "Load a network file or create a new network first. "
-                       "Then we can talk about layouts!"), "OK",0);
-        statusMessage( tr("I am really sorry. You must really load a file first... ")  );
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -7654,7 +9427,7 @@ void MainWindow::slotLayoutNodeSizesByOutDegree(bool checked){
 
     activeGraph.layoutVerticesSizeByProminenceIndex(
                 1,considerWeights,inverseWeights,
-                filterIsolateNodesAct->isChecked());
+                editFilterNodesIsolatesAct->isChecked());
 
     QApplication::restoreOverrideCursor( );
 }
@@ -7668,12 +9441,8 @@ void MainWindow::slotLayoutNodeSizesByOutDegree(bool checked){
  * @param checked
  */
 void MainWindow::slotLayoutNodeSizesByInDegree(bool checked){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this,
-                              "Error",
-                              tr("Load a network file or create a new network first. \n"
-                                 "Then we can talk about layouts!"), "OK",0);
-        statusMessage( tr("I am really sorry. You must really load a file first... ")  );
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -7705,7 +9474,7 @@ void MainWindow::slotLayoutNodeSizesByInDegree(bool checked){
 
     activeGraph.layoutVerticesSizeByProminenceIndex(
                 9, considerWeights, inverseWeights,
-                filterIsolateNodesAct->isChecked());
+                editFilterNodesIsolatesAct->isChecked());
 
     QApplication::restoreOverrideCursor( );
 
@@ -7720,11 +9489,8 @@ void MainWindow::slotLayoutNodeSizesByInDegree(bool checked){
  */
 void MainWindow::slotLayoutGuides(const bool &toggle){
     qDebug()<< "MW:slotLayoutGuides()";
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",
-                              tr("There are node nodes yet!\n"
-                                 "Load a network file or create a new network first."), "OK",0);
-        statusMessage( tr("I am really sorry. You must really load a file first... ")  );
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -7751,13 +9517,8 @@ void MainWindow::slotLayoutGuides(const bool &toggle){
  */
 void MainWindow::slotLayoutCircularByProminenceIndex(){
     qDebug() << "MainWindow::slotLayoutCircularByProminenceIndex()";
-    if (!fileLoaded && !networkModified  )  {
-                QMessageBox::critical(
-                    this, "Error",
-                    tr("Sorry, I can't follow! "
-                       "\nLoad a network file or create a new network first. \n"
-                       "Then we can talk about layouts!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     QAction *menuitem=(QAction *) sender();
@@ -7774,47 +9535,46 @@ void MainWindow::slotLayoutCircularByProminenceIndex(){
 
 /**
  * @brief
- * Overloaded - called when selectbox changes in the toolbox
+ * Overloaded - called when user clicks Apply in the Layout toolbox
  * or from slotLayoutCircularByProminenceIndex() when the user click on menu
  * Repositions all nodes  on a Circular layout based on that index
 *  More prominent nodes are closer to the centre of the screen.
  */
 void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
         qDebug() << "MainWindow::slotLayoutCircularByProminenceIndex() ";
-    if (!fileLoaded && !networkModified  )  {
-                QMessageBox::critical(
-                    this, "Error",
-                    tr("Sorry, I can't follow! "
-                       "\nLoad a network file or create a new network first. \n"
-                       "Then we can talk about layouts!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     int userChoice = 0;
     QString prominenceIndexName = choice;
     slotLayoutGuides(true);
-    if ( prominenceIndexName.contains("Degree Centrality") )
+    if ( prominenceIndexName.contains("Degree Centr") )
         userChoice=1;
-    else if ( prominenceIndexName == "Closeness Centrality")
+    else if ( prominenceIndexName == "Closeness Centr")
         userChoice=2;
-    else if ( prominenceIndexName.contains("Influence Range Closeness Centrality"))
+    else if ( prominenceIndexName.contains("Influence Range Closeness Centrality")  ||
+              prominenceIndexName.contains("IR Closeness")
+              )
         userChoice=3;
-    else if ( prominenceIndexName.contains("Betweenness Centrality"))
+    else if ( prominenceIndexName.contains("Betweenness Centr"))
         userChoice=4;
-    else if (prominenceIndexName.contains("Stress Centrality"))
+    else if (prominenceIndexName.contains("Stress Centr"))
         userChoice=5;
-    else if (prominenceIndexName.contains("Eccentricity Centrality"))
+    else if (prominenceIndexName.contains("Eccentricity Centr"))
         userChoice=6;
-    else if (prominenceIndexName.contains("Power Centrality"))
+    else if (prominenceIndexName.contains("Power Centr"))
         userChoice=7;
-    else if (prominenceIndexName.contains("Information Centrality"))
+    else if (prominenceIndexName.contains("Information Centr"))
         userChoice=8;
-    else if (prominenceIndexName.contains("Degree Prestige"))
+    else if (prominenceIndexName.contains("Eigenvector Centr"))
         userChoice=9;
-    else if (prominenceIndexName.contains("PageRank Prestige"))
+    else if (prominenceIndexName.contains("Degree Prestige"))
         userChoice=10;
-    else if (prominenceIndexName.contains("Proximity Prestige"))
+    else if (prominenceIndexName.contains("PageRank Prestige"))
         userChoice=11;
+    else if (prominenceIndexName.contains("Proximity Prestige"))
+        userChoice=12;
 
     qDebug() << "MainWindow::slotLayoutCircularByProminenceIndex() "
              << "prominenceIndexName " << prominenceIndexName
@@ -7826,7 +9586,7 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
     bool dropIsolates=false;
     //check if CC was selected and the graph is disconnected.
     if (userChoice == 2 ) {
-        int connectedness=activeGraph.connectedness();
+        int connectedness=activeGraph.graphConnectedness();
         switch ( connectedness ) {
         case 1:
             break;
@@ -7893,14 +9653,16 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
         switch(
                QMessageBox::critical(
                    this, "Slow function warning",
-                   tr("Please note that this function is <b>VERY SLOW</b> on large "
-                      "networks (n>200), since it will calculate  a (n x n) matrix A with:\n"
-                      "Aii=1+weighted_degree_ni \n"
-                      "Aij=1 if (i,j)=0 \n"
-                      "Aij=1-wij if (i,j)=wij \n"
-                      "Next, it will compute the inverse matrix C of A. \n"
-                      "The computation of the inverse matrix is VERY CPU intensive function."
-                      "because it uses the Gauss-Jordan elimination algorithm.\n\n "
+                   tr("Please note that this function is <b>SLOW</b> on large "
+                      "networks (n>200), since it will calculate  a (n x n) matrix A with: <br>"
+                      "Aii=1+weighted_degree_ni <br>"
+                      "Aij=1 if (i,j)=0 <br>"
+                      "Aij=1-wij if (i,j)=wij <br>"
+                      "Next, it will compute the inverse matrix C of A. "
+                      "The computation of the inverse matrix is a CPU intensive function "
+                      "although it uses LU decomposition. <br>"
+                      "How slow is this? For instance, to compute IC scores of 600 nodes "
+                      "on a modern i7 4790K CPU you will need to wait for 2 minutes at least. <br>"
                       "Are you sure you want to continue?"), QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
         case QMessageBox::Ok:
             break;
@@ -7932,7 +9694,7 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
     activeGraph.layoutCircularByProminenceIndex(
                 x0, y0, maxRadius, userChoice,
                 considerWeights, inverseWeights,
-                filterIsolateNodesAct->isChecked() || dropIsolates);
+                editFilterNodesIsolatesAct->isChecked() || dropIsolates);
     destroyProgressBar();
     statusMessage( tr("Nodes in inner circles have greater prominence index.") );
 }
@@ -7947,40 +9709,38 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
  */
 void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
         qDebug() << "MainWindow::slotLayoutNodeSizesByProminenceIndex() ";
-    if (!fileLoaded && !networkModified  )  {
-                QMessageBox::critical(
-                    this, "Error",
-                    tr("Sorry, I can't follow! "
-                       "\nLoad a network file or create a new network first. \n"
-                       "Then we can talk about layouts!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     int userChoice = 0;
     QString prominenceIndexName = choice;
 
-    if ( prominenceIndexName.contains("Degree Centrality") )
+    if ( prominenceIndexName.contains("Degree Centr") )
         userChoice=1;
-    else if ( prominenceIndexName == "Closeness Centrality")
+    else if ( prominenceIndexName == "Closeness Centr")
         userChoice=2;
-    else if ( prominenceIndexName.contains("Influence Range Closeness Centrality"))
+    else if ( prominenceIndexName.contains("Influence Range Closeness Centrality") ||
+              prominenceIndexName.contains("IR Closeness"))
         userChoice=3;
-    else if ( prominenceIndexName.contains("Betweenness Centrality"))
+    else if ( prominenceIndexName.contains("Betweenness Centr"))
         userChoice=4;
-    else if (prominenceIndexName.contains("Stress Centrality"))
+    else if (prominenceIndexName.contains("Stress Centr"))
         userChoice=5;
-    else if (prominenceIndexName.contains("Eccentricity Centrality"))
+    else if (prominenceIndexName.contains("Eccentricity Centr"))
         userChoice=6;
-    else if (prominenceIndexName.contains("Power Centrality"))
+    else if (prominenceIndexName.contains("Power Centr"))
         userChoice=7;
-    else if (prominenceIndexName.contains("Information Centrality"))
+    else if (prominenceIndexName.contains("Information Centr"))
         userChoice=8;
-    else if (prominenceIndexName.contains("Degree Prestige"))
+    else if (prominenceIndexName.contains("Eigenvector Centr"))
         userChoice=9;
-    else if (prominenceIndexName.contains("PageRank Prestige"))
+    else if (prominenceIndexName.contains("Degree Prestige"))
         userChoice=10;
-    else if (prominenceIndexName.contains("Proximity Prestige"))
+    else if (prominenceIndexName.contains("PageRank Prestige"))
         userChoice=11;
+    else if (prominenceIndexName.contains("Proximity Prestige"))
+        userChoice=12;
 
     qDebug() << "MainWindow::slotLayoutNodeSizesByProminenceIndex() "
              << "prominenceIndexName " << prominenceIndexName
@@ -7992,7 +9752,7 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
     //check if CC was selected and the graph is disconnected.
     bool dropIsolates=false;
     if (userChoice == 2 ) {
-        int connectedness=activeGraph.connectedness();
+        int connectedness=activeGraph.graphConnectedness();
         switch ( connectedness ) {
         case 1:
             break;
@@ -8059,14 +9819,16 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
         switch(
                QMessageBox::critical(
                    this, "Slow function warning",
-                   tr("Please note that this function is <b>VERY SLOW</b> on large "
-                      "networks (n>200), since it will calculate  a (n x n) matrix A with:"
-                      "Aii=1+weighted_degree_ni"
-                      "Aij=1 if (i,j)=0"
-                      "Aij=1-wij if (i,j)=wij"
-                      "Next, it will compute the inverse matrix C of A."
-                      "The computation of the inverse matrix is VERY CPU intensive function."
-                      "because it uses the Gauss-Jordan elimination algorithm.\n\n "
+                   tr("Please note that this function is <b>SLOW</b> on large "
+                      "networks (n>200), since it will calculate  a (n x n) matrix A with: <br>"
+                      "Aii=1+weighted_degree_ni <br>"
+                      "Aij=1 if (i,j)=0 <br>"
+                      "Aij=1-wij if (i,j)=wij <br>"
+                      "Next, it will compute the inverse matrix C of A. "
+                      "The computation of the inverse matrix is a CPU intensive function "
+                      "although it uses LU decomposition. <br>"
+                      "How slow is this? For instance, to compute IC scores of 600 nodes "
+                      "on a modern i7 4790K CPU you will need to wait for 2 minutes at least. <br>"
                       "Are you sure you want to continue?"), QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
         case QMessageBox::Ok:
             break;
@@ -8092,7 +9854,7 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
 
     activeGraph.layoutVerticesSizeByProminenceIndex(
                 userChoice, considerWeights,
-                inverseWeights, filterIsolateNodesAct->isChecked() || dropIsolates);
+                inverseWeights, editFilterNodesIsolatesAct->isChecked() || dropIsolates);
     destroyProgressBar();
     statusMessage( tr("Bigger nodes have greater prominence index.") );
 }
@@ -8106,17 +9868,8 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
  * calls slotLayoutLevelByProminenceIndex(QString)
   */
 void MainWindow::slotLayoutLevelByProminenceIndex(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical
-                (this,
-                 "Error",
-                 tr("Sorry, I can't follow! "
-                    "\nLoad a network file or create a new network first. "
-                    "\nThen we can talk about layouts!"
-                    ),
-                 "OK",0
-                 );
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     QAction *menuitem=(QAction *) sender();
@@ -8132,7 +9885,7 @@ void MainWindow::slotLayoutLevelByProminenceIndex(){
 
 
 /**
- * @brief MainWindow::slotLayoutLevelByProminenceIndex(QString)
+ * @brief
  * Overloaded - called when user clicks on toolbox options and when
  * the user selects a menu option (called by slotLayoutLevelByProminenceIndex())
  * Repositions all nodes  on different top-down levels according to the
@@ -8140,44 +9893,40 @@ void MainWindow::slotLayoutLevelByProminenceIndex(){
 * More prominent nodes are closer to the top of the canvas
  */
 void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical
-                (this,
-                 "Error",
-                 tr("Sorry, I can't follow! "
-                    "\nLoad a network file or create a new network first. "
-                    "\nThen we can talk about layouts!"
-                    ),
-                 "OK",0
-                 );
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     int userChoice = 0;
     QString prominenceIndexName = choice;
     slotLayoutGuides(true);
-    if (prominenceIndexName == "Degree Centrality")
+
+    if ( prominenceIndexName.contains("Degree Centr") )
         userChoice=1;
-    else if (prominenceIndexName == "Closeness Centrality")
+    else if ( prominenceIndexName == "Closeness Centr")
         userChoice=2;
-    else if (prominenceIndexName == "Influence Range Closeness Centrality")
+    else if ( prominenceIndexName.contains("Influence Range Closeness Centrality") ||
+              prominenceIndexName.contains("IR Closeness"))
         userChoice=3;
-    else if (prominenceIndexName == "Betweenness Centrality")
+    else if ( prominenceIndexName.contains("Betweenness Centr"))
         userChoice=4;
-    else if (prominenceIndexName == "Stress Centrality")
+    else if (prominenceIndexName.contains("Stress Centr"))
         userChoice=5;
-    else if (prominenceIndexName == "Eccentricity Centrality")
+    else if (prominenceIndexName.contains("Eccentricity Centr"))
         userChoice=6;
-    else if (prominenceIndexName == "Power Centrality")
+    else if (prominenceIndexName.contains("Power Centr"))
         userChoice=7;
-    else if (prominenceIndexName ==  "Information Centrality")
+    else if (prominenceIndexName.contains("Information Centr"))
         userChoice=8;
-    else if (prominenceIndexName == "Degree Prestige")
+    else if (prominenceIndexName.contains("Eigenvector Centr"))
         userChoice=9;
-    else if (prominenceIndexName ==  "PageRank Prestige")
+    else if (prominenceIndexName.contains("Degree Prestige"))
         userChoice=10;
-    else if (prominenceIndexName ==  "Proximity Prestige")
+    else if (prominenceIndexName.contains("PageRank Prestige"))
         userChoice=11;
+    else if (prominenceIndexName.contains("Proximity Prestige"))
+        userChoice=12;
+
 
     qDebug() << "MainWindow::slotLayoutLevelByProminenceIndex() "
              << "prominenceIndexName " << prominenceIndexName
@@ -8189,7 +9938,7 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
     bool dropIsolates=false;
     //check if CC was selected and the graph is disconnected.
     if (userChoice == 2 ) {
-        int connectedness=activeGraph.connectedness();
+        int connectedness=activeGraph.graphConnectedness();
         switch ( connectedness ) {
         case 1:
             break;
@@ -8256,14 +10005,16 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
         switch(
                QMessageBox::critical(
                    this, "Slow function warning",
-                   tr("Please note that this function is <b>VERY SLOW</b> on large "
-                      "networks (n>200), since it will calculate  a (n x n) matrix A with:"
-                      "Aii=1+weighted_degree_ni"
-                      "Aij=1 if (i,j)=0"
-                      "Aij=1-wij if (i,j)=wij"
-                      "Next, it will compute the inverse matrix C of A."
-                      "The computation of the inverse matrix is VERY CPU intensive function."
-                      "because it uses the Gauss-Jordan elimination algorithm.\n\n "
+                   tr("Please note that this function is <b>SLOW</b> on large "
+                      "networks (n>200), since it will calculate  a (n x n) matrix A with: <br>"
+                      "Aii=1+weighted_degree_ni <br>"
+                      "Aij=1 if (i,j)=0 <br>"
+                      "Aij=1-wij if (i,j)=wij <br>"
+                      "Next, it will compute the inverse matrix C of A. "
+                      "The computation of the inverse matrix is a CPU intensive function "
+                      "although it uses LU decomposition. <br>"
+                      "How slow is this? For instance, to compute IC scores of 600 nodes "
+                      "on a modern i7 4790K CPU you will need to wait for 2 minutes at least. <br>"
                       "Are you sure you want to continue?"), QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
         case QMessageBox::Ok:
             break;
@@ -8295,7 +10046,7 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
     activeGraph.layoutLevelByProminenceIndex(
                 maxWidth, maxHeight, userChoice,
                 considerWeights, inverseWeights,
-                filterIsolateNodesAct->isChecked() || dropIsolates);
+                editFilterNodesIsolatesAct->isChecked() || dropIsolates);
     destroyProgressBar();
     statusMessage( tr("Nodes in upper levels are more prominent. ") );
 }
@@ -8330,13 +10081,12 @@ int MainWindow::activeNodes(){
 *	Displays a box informing the user about the symmetry or not of the adjacency matrix
 */
 
-void MainWindow::slotCheckSymmetry(){
-    if (!fileLoaded && !networkModified  )   {
-        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr("There is no network!"))  );
+void MainWindow::slotAnalyzeSymmetryCheck(){
+    if ( !activeNodes() )   {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    if (activeGraph.isSymmetric())
+    if (activeGraph.graphSymmetric())
         QMessageBox::information(this,
                                  "Symmetry",
                                  tr("The adjacency matrix is symmetric."
@@ -8352,38 +10102,171 @@ void MainWindow::slotCheckSymmetry(){
 }
 
 
-void MainWindow::slotInvertAdjMatrix(){
-    if ( !fileLoaded && !networkModified) {
-        QMessageBox::critical (this, "Error",
-                               tr("Empty network! \nLoad a network file or create something by double-clicking on the canvas!"), "OK",0);
 
-        statusMessage(  tr("Nothing to show!") );
+/**
+ * @brief Writes the adjacency matrix inverse
+ */
+void MainWindow::slotAnalyzeMatrixAdjacencyInverse(){
+    if ( !activeNodes() ) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    int aNodes=activeNodes();
-    statusBar() ->  showMessage ( QString (tr ("inverting adjacency adjacency matrix of %1 nodes")).arg(aNodes) );
-    qDebug ("MW: calling Graph::writeAdjacencyMatrixInvert with %i nodes", aNodes);
-    QString fn = appSettings["dataDir"] + "socnetv-report-invert-adjacency-matrix.dat";
 
-    QTime timer;
-    timer.start();
-    activeGraph.writeAdjacencyMatrixInvert(fn, QString("lu")) ;
-    int msecs = timer.elapsed();
-    statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
-    //Open a text editor window for the new file created by graph class
-    TextEditor *ed = new TextEditor(fn);
-    ed->setWindowTitle(tr("Inverse adjacency matrix saved as ") + fn);
-    ed->show();
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-inverse-"+dateTime+".html";
+
+    statusMessage(tr ("Inverting adjacency matrix.") );
+
+    //activeGraph.writeMatrixAdjacencyInvert(fn, QString("lu")) ;
+    activeGraph.writeMatrix(fn,MATRIX_ADJACENCY_INVERSE) ;
+
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
+    statusMessage(tr("Inverse matrix saved as: ")+QDir::toNativeSeparators(fn));
+}
 
 
+
+
+
+
+/**
+ * @brief Writes the transpose adjacency matrix
+ */
+void MainWindow::slotAnalyzeMatrixAdjacencyTranspose(){
+    if ( !activeNodes() ) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-transpose-"+dateTime+".html";
+
+    statusMessage( tr ("Transposing adjacency matrix.") );
+
+    activeGraph.writeMatrix(fn,MATRIX_ADJACENCY_TRANSPOSE) ;
+
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
+    statusMessage(tr("Transpose adjacency matrix saved as: ")+QDir::toNativeSeparators(fn));
+}
+
+
+
+
+/**
+ * @brief Writes the cocitation matrix
+ */
+void MainWindow::slotAnalyzeMatrixAdjacencyCocitation(){
+    if ( !activeNodes() ) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-cocitation-"+dateTime+".html";
+
+    statusMessage( tr ("Computing Cocitation matrix.") );
+
+    activeGraph.writeMatrix(fn,MATRIX_COCITATION) ;
+
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
+    statusMessage(tr("Cocitation matrix saved as: ")+QDir::toNativeSeparators(fn));
+}
+
+
+
+
+/**
+ * @brief Writes the degree matrix of the graph
+ */
+void MainWindow::slotAnalyzeMatrixDegree(){
+    if ( !activeNodes() ) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-degree-"+dateTime+".html";
+
+    statusMessage(tr ("Computing Degree matrix.") );
+
+    //activeGraph.writeMatrixDegreeText(fn) ;
+    activeGraph.writeMatrix(fn, MATRIX_DEGREE) ;
+
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
+    statusMessage(tr("Degree matrix saved as: ")+QDir::toNativeSeparators(fn));
+}
+
+
+
+
+/**
+ * @brief Writes the Laplacian matrix of the graph
+ */
+void MainWindow::slotAnalyzeMatrixLaplacian(){
+    if ( !activeNodes() ) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    qDebug() << "MW:slotAnalyzeMatrixLaplacian() - calling Graph::writeMatrix";
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-laplacian-"+dateTime+".html";
+
+    statusMessage(tr ("Computing Laplacian matrix") );
+
+    activeGraph.writeMatrix(fn, MATRIX_LAPLACIAN) ;
+
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
+    statusMessage(tr("Laplacian matrix saved as: ")+QDir::toNativeSeparators(fn));
 }
 
 
 
 
 void MainWindow::askAboutWeights(){
-    qDebug() << "MW::askAboutWeights() - check if Graph weighted.";
-    if (!activeGraph.isWeighted()  ){
+    qDebug() << "MW::askAboutWeights() - checking if graph weighted.";
+    if (!activeGraph.graphWeighted()  ){
         considerWeights=false;
         return;
     }
@@ -8391,11 +10274,14 @@ void MainWindow::askAboutWeights(){
         return;
 
     if ( ! considerEdgeWeightsAct->isChecked() && !considerWeights){
-        switch( QMessageBox::information(
-                    this, "Edge weights and Distances",
-                    tr("This network is weighted.\n"
-                       "Take edge weights into account (Default: No)?"),
-                    QMessageBox::Yes|QMessageBox::No, QMessageBox::No) )
+        switch(
+               slotHelpMessageToUser(USER_MSG_QUESTION, tr("Network is edge-weighted. Consider edge weights?"),
+                                     tr("Edge-weighted network. Consider edge weights?"),
+                                     tr("The edges in this network have weights (non-unit values). "
+                                        "Take these edge weights into account to compute distances?"),
+                                     QMessageBox::Yes|QMessageBox::No, QMessageBox::Yes)
+
+               )
         {
         case QMessageBox::Yes:
             considerWeights=true;
@@ -8415,15 +10301,20 @@ void MainWindow::askAboutWeights(){
     }
 
     if (considerWeights){
-        switch( QMessageBox::information
-                ( this, "Edge weights and Distances",
-                  tr("Inverse edge weights during calculations? (Default: Yes)?\n\n"
-                     "If the weights denote cost (i.e. ), press No, since the "
-                     "distance between two nodes should be the quickest or cheaper one. \n\n"
-                     "If the weights denote value or strength (i.e. votes or interaction), "
-                     "press Yes to inverse the weights, since the distance between two "
-                     "nodes should be the most valuable one."),
-                  QMessageBox::Yes|QMessageBox::No, QMessageBox::Yes) )
+        switch(
+
+               slotHelpMessageToUser(
+                   USER_MSG_QUESTION, tr("Inverse edge weights during calculations? "),
+                   tr("Inverse edge weights during calculations? "),
+                   tr("If the edge weights denote cost or real distances (i.e. miles between cities), "
+                      "press No, since the distance between two nodes should be the quickest "
+                      "or cheaper one. \n\n"
+                      "If the weights denote value or strength (i.e. votes or interaction), "
+                      "press Yes to inverse the weights, since the distance between two "
+                      "nodes should be the most valuable one."),
+                   QMessageBox::Yes|QMessageBox::No, QMessageBox::Yes)
+
+               )
         {
         case QMessageBox::Yes:
             inverseWeights=true;
@@ -8444,22 +10335,15 @@ void MainWindow::askAboutWeights(){
 *  Displays the graph distance (geodesic distance) between two user-specified nodes
     This is the length of the shortest path between them.
 */
-void MainWindow::slotGraphDistance(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr("There are no nodes. Nothing to do..."))  );
+void MainWindow::slotAnalyzeDistance(){
+    if ( !activeNodes() || !activeEdges()  )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     bool ok=false;
     long int  min=1, max=1, i=-1, j=-1;
-    QList<QGraphicsItem *> list=scene->items();
-    for (QList<QGraphicsItem *> ::iterator it=list.begin(); it!=list.end(); it++) {
-        if ( (*it) -> type() == TypeNode ){
-            Node *jim = (Node*) (*it);
-            if ( min>jim->nodeNumber() && jim->isEnabled() ) min=jim->nodeNumber();
-            if ( max<jim->nodeNumber() && jim->isEnabled() ) max=jim->nodeNumber();
-        }
-    }
+    min=activeGraph.vertexNumberMin();
+    max=activeGraph.vertexNumberMax();
     i=QInputDialog::getInt(this, tr("Distance between two nodes"),
                            tr("Select source node:  ("
                               +QString::number(min).toLatin1()
@@ -8482,7 +10366,7 @@ void MainWindow::slotGraphDistance(){
 
     qDebug() << "source " << i  << " target" <<  j;
 
-    if (activeGraph.isSymmetric() && i>j) {
+    if (activeGraph.graphSymmetric() && i>j) {
         qSwap(i,j);
     }
 
@@ -8496,19 +10380,20 @@ void MainWindow::slotGraphDistance(){
 
     createProgressBar(0,progressMsg);
 
-     int distance = activeGraph.distance(i,j,
+     int distanceGeodesic = activeGraph.graphDistanceGeodesic(i,j,
                                          considerWeights,
                                          inverseWeights);
 
      destroyProgressBar();
 
-    if ( distance > 0 && distance < RAND_MAX)
-        QMessageBox::information(this, tr("Distance"), tr("Network distance (")
+    if ( distanceGeodesic > 0 && distanceGeodesic < RAND_MAX)
+        QMessageBox::information(this, tr("Geodesic Distance"),
+                                 tr("The length of the shortest path between actors (")
                                  +QString::number(i)+", "+QString::number(j)
-                                 +") = "+QString::number(distance)
+                                 +") = "+QString::number(distanceGeodesic)
                                  +tr("\nThe nodes are connected."),"OK",0);
     else
-        QMessageBox::information(this, tr("Distance"), tr("Network distance (")
+        QMessageBox::information(this, tr("Geodesic Distance"), tr("Network distance (")
                                  +QString::number(i)+", "+QString::number(j)
                                  +") = "+ QString("\xE2\x88\x9E")
                                  +tr("\nThe nodes are not connected."),"OK",0);
@@ -8520,83 +10405,96 @@ void MainWindow::slotGraphDistance(){
 /**
 *  Invokes calculation of the matrix of geodesic distances for the loaded network, then displays it.
 */
-void MainWindow::slotDistancesMatrix(){
-    qDebug("MW: slotDistancesMatrix()");
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes nor edges!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to do!"))  );
+void MainWindow::slotAnalyzeMatrixDistances(){
+    qDebug() << "MW::slotAnalyzeMatrixDistances()";
+    if ( !activeNodes()  )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    statusMessage( tr("Creating distance matrix. Please wait...") );
-    QString fn = appSettings["dataDir"] + "socnetv-report-distance-matrix.dat";
 
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-geodesic-distances-"+dateTime+".html";
 
     askAboutWeights();
 
-    statusMessage(  tr("Computing Distances Matrix. Please wait...") );
-    progressMsg = tr("Computing Distances Matrix. \n"
+    statusMessage( tr("Computing geodesic distances. Please wait...") );
+
+    progressMsg = tr("Computing geodesic distances. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.writeDistanceMatrix(fn,
+    activeGraph.writeMatrix(fn,MATRIX_DISTANCES,
                                     considerWeights, inverseWeights,
-                                    filterIsolateNodesAct->isChecked());
+                                    editFilterNodesIsolatesAct->isChecked());
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);
-    ed->show();
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
 
-    statusMessage(tr("Distance matrix saved as: ")+fn);
+    statusMessage(tr("Geodesic Distances matrix saved as: ")+QDir::toNativeSeparators(fn));
 }
 
 
 
 
 /**
-*  Invokes calculation of the sigmas matrix (the number of geodesic paths between each pair of nodes in the loaded network), then displays it.
-*/
-void MainWindow::slotGeodesicsMatrix(){
+ * @brief Invokes calculation of the geodedics matrix (the number of shortest paths
+ * between each pair of nodes in the loaded network), then displays it.
+ */
+void MainWindow::slotAnalyzeMatrixGeodesics(){
     qDebug("MW: slotViewNumberOfGeodesics()");
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes nor edges!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to do!"))  );
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-sigmas-matrix.dat";
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-geodesics-"+dateTime+".html";
 
     askAboutWeights();
 
-    statusMessage(  tr("Computing Geodesics Matrix. Please wait...") );
-    progressMsg = tr("Computing Geodesics Matrix. \n"
+    statusMessage(  tr("Computing geodesics (number of shortest paths). Please wait...") );
+
+    progressMsg = tr("Computing geodesics. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.writeNumberOfGeodesicsMatrix(fn,
-                                             considerWeights, inverseWeights);
+//    activeGraph.writeMatrixNumberOfGeodesicsPlainText(fn,
+//                                             considerWeights, inverseWeights);
+
+    activeGraph.writeMatrix(fn,MATRIX_GEODESICS,
+                                    considerWeights, inverseWeights,
+                                    editFilterNodesIsolatesAct->isChecked());
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);
-    ed->show();
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
 
-    statusMessage(tr("Matrix of geodesic path counts saved as: ") + fn);
+    statusMessage(tr("Geodesics Matrix saved as: ") + QDir::toNativeSeparators(fn));
 }
 
 
 
 /**  Displays the network diameter (largest geodesic) */
-void MainWindow::slotDiameter() {
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error"
-                              ,tr("There are no nodes nor edges!\n"
-                                  "Load a network file or create a new network. \n"
-                                  "Then ask me to compute something!"), "OK",0);
-
-        statusMessage(  QString(tr("Cannot find the diameter of nothing..."))  );
+void MainWindow::slotAnalyzeDiameter() {
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -8609,18 +10507,18 @@ void MainWindow::slotDiameter() {
 
     createProgressBar(0,progressMsg);
 
-    int netDiameter=activeGraph.diameter(considerWeights, inverseWeights);
+    int netDiameter=activeGraph.graphDiameter(considerWeights, inverseWeights);
 
     destroyProgressBar();
 
-    if ( activeGraph.isWeighted() && considerWeights )
+    if ( activeGraph.graphWeighted() && considerWeights )
         QMessageBox::information(this, "Diameter",
                                  tr("Diameter =  ")
                                  + QString::number(netDiameter) +
                                  tr("\n\nSince this is a weighted network \n"
                                  "the diameter can be more than N"),
                                  "OK",0);
-    else if ( activeGraph.isWeighted() && !considerWeights )
+    else if ( activeGraph.graphWeighted() && !considerWeights )
         QMessageBox::information(this, "Diameter",
                                  tr("Diameter =  ")
                                  + QString::number(netDiameter) +
@@ -8642,24 +10540,23 @@ void MainWindow::slotDiameter() {
 
 
 /**  Displays the  average shortest path length (average graph distance) */
-void MainWindow::slotAverageGraphDistance() {
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes nor edges!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-
-        statusMessage(  QString(tr("Cannot find the diameter of nothing..."))  );
+void MainWindow::slotAnalyzeDistanceAverage() {
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
     askAboutWeights();
 
-    statusMessage(  QString(tr("Computing Average Graph Distance. Please wait...")) );
+    statusMessage(  tr("Computing Average Graph Distance. Please wait...") );
     progressMsg = tr("Computing Average Graph Distance. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
 
-    float averGraphDistance=activeGraph.distanceGraphAverage(
-                considerWeights, inverseWeights,  filterIsolateNodesAct->isChecked() );
+    float averGraphDistance=activeGraph.graphDistanceGeodesicAverage(
+                considerWeights, inverseWeights,
+                editFilterNodesIsolatesAct->isChecked() );
 
     destroyProgressBar();
 
@@ -8667,7 +10564,8 @@ void MainWindow::slotAverageGraphDistance() {
                              "Average Graph Distance",
                              "The average shortest path length is  = " +
                              QString::number(averGraphDistance), "OK",0);
-    statusMessage( tr("Average distance calculated. Ready.") );
+
+    statusMessage( tr("Average geodesic distance computed. Ready.") );
 
 }
 
@@ -8675,31 +10573,56 @@ void MainWindow::slotAverageGraphDistance() {
 /**
 *	Writes Eccentricity indices into a file, then displays it.
 */
-void MainWindow::slotEccentricity(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-
-        statusMessage(  QString(tr(" Nothing to do..."))  );
+void MainWindow::slotAnalyzeEccentricity(){
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-eccentricity.dat";
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-eccentricity-"+dateTime+".html";
 
     askAboutWeights();
 
-    statusMessage(  QString(tr("Computing Eccentricity. Please wait...")) );
-    progressMsg = tr("Computing Eccentricity. \n"
+    statusMessage(  tr("Computing Eccentricities. Please wait...") );
+    progressMsg = tr("Computing Eccentricities. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
+
     activeGraph.writeEccentricity(
                 fn, considerWeights, inverseWeights,
-                filterIsolateNodesAct->isChecked());
+                editFilterNodesIsolatesAct->isChecked());
+
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    ed->show();
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
 
-    statusMessage(tr("Eccentricity report saved as: ") + fn );
+    statusMessage(tr("Eccentricities saved as: ") + QDir::toNativeSeparators(fn) );
+}
+
+
+
+
+/**
+ * @brief Displays the DialogDissimilarities dialog.
+ */
+void MainWindow::slotAnalyzeStrEquivalenceDissimilaritiesDialog() {
+    qDebug()<< "MW::slotAnalyzeStrEquivalenceDissimilaritiesDialog()";
+
+    m_dialogdissimilarities = new DialogDissimilarities(this);
+
+    connect( m_dialogdissimilarities, &DialogDissimilarities::userChoices,
+             this, &MainWindow::slotAnalyzeDissimilaritiesTieProfile );
+
+    m_dialogdissimilarities->exec();
+
 }
 
 
@@ -8707,25 +10630,70 @@ void MainWindow::slotEccentricity(){
 
 
 /**
- * @brief MainWindow::slotConnectedness
+ * @brief Invokes calculation of pair-wise tie profile dissimilarities of the
+ * network, then displays it.
+ * @param metric
+ * @param varLocation
+ * @param diagonal
  */
-void MainWindow::slotConnectedness(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes nor edges!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-
-        statusMessage(  QString(tr("Nothing to do..."))  );
+void MainWindow::slotAnalyzeDissimilaritiesTieProfile(const QString &metric,
+                                                       const QString &varLocation,
+                                                       const bool &diagonal){
+    qDebug() << "MW::slotAnalyzeDissimilaritiesTieProfile()";
+    if ( !activeNodes()    )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
-    statusMessage(  QString(tr("Computing Connectedness. Please wait...")) );
-    progressMsg = tr("Computing Connectedness. \n"
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-tie-profile-dissimilarities-"+dateTime+".html";
+
+    askAboutWeights();
+
+    statusMessage( tr("Computing tie profile dissimilarities. Please wait...") );
+
+    progressMsg = tr("Computing tie profile dissimilarities. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
 
-    int connectedness=activeGraph.connectedness();
+    activeGraph.writeMatrixDissimilarities(fn, metric, varLocation,diagonal, considerWeights);
 
-    qDebug () << "MW::connectedness result " << connectedness;
+    destroyProgressBar();
+
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
+    statusMessage(tr("Tie profile dissimilarities matrix saved as: ")+QDir::toNativeSeparators(fn));
+}
+
+
+
+/**
+ * @brief Reports the network connectedness
+ */
+void MainWindow::slotAnalyzeConnectedness(){
+    qDebug () << "MW::slotAnalyzeConnectedness()" ;
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    statusMessage(  QString(tr("Computing Network Connectedness. Please wait...")) );
+    progressMsg = tr("Computing Network Connectedness. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
+
+    int connectedness=activeGraph.graphConnectedness(true);
+
+    qDebug () << "MW::slotAnalyzeConnectedness result " << connectedness;
 
     destroyProgressBar();
 
@@ -8776,54 +10744,61 @@ void MainWindow::slotConnectedness(){
 
 
 /**
-*	Calls Graph:: writeNumberOfWalks() to calculate and print
+*	Calls Graph:: writeWalksOfLengthMatrixPlainText() to calculate and print
 *   the number of walks of a given length , between each pair of nodes.
 */
-void MainWindow::slotWalksOfGivenLength(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
+void MainWindow::slotAnalyzeWalksLength(){
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-number-of-walks.dat";
      bool ok=false;
 
-    int length = QInputDialog::getInt(this, "Number of walks", tr("Select desired length of walk: (2 to %1)").arg(activeNodes()-1),2, 2, activeNodes()-1, 1, &ok );
+    int length = QInputDialog::getInt(
+                this, "Number of walks",
+                tr("Select desired length of walk: (2 to %1)").arg(activeNodes()-1),
+                2, 2, activeNodes()-1, 1, &ok );
     if (!ok) {
         statusMessage( "Cancelled." );
         return;
     }
-    statusMessage(  QString(tr("Computing Walks of given length Matrix. Please wait...")) );
-    progressMsg = tr("Computing Walks of given length Matrix. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-walks-length-"+QString::number(length)+"-"+dateTime+".html";
+
+    statusMessage( tr("Computing walks of length %1. Please wait...").arg(length) );
+
+    progressMsg = tr("Computing walks of length %1. \n"
+            "Please wait (or disable progress bars from Options -> Settings).").arg(length);
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.writeWalksOfLengthMatrix(fn, length);
+    activeGraph.writeMatrixWalks(fn, length);
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    ed->show();
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
 
-    statusMessage(tr("Number of walks saved as: ") + fn );
+    statusMessage(tr("Walks of length %1 matrix saved as: ").arg(length) + QDir::toNativeSeparators(fn) );
 }
 
 
 
 /**
- * @brief MainWindow::slotTotalWalks
-*  Calls Graph:: writeWalksTotalMatrix() to calculate and print
+ * @brief Calls Graph:: writeWalksTotalMatrixPlainText() to calculate and print
 *  the total number of walks of any length , between each pair of nodes.
  */
-void MainWindow::slotTotalWalks(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",
-                              tr("Nothing to do! \n"
-                                 "Load a network file or create a new network. \n"
-                                 "Then ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to do."))  );
+void MainWindow::slotAnalyzeWalksTotal(){
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     if (activeNodes() > 50) {
@@ -8834,7 +10809,7 @@ void MainWindow::slotTotalWalks(){
                        "since it will calculate all powers of the sociomatrix up to n-1 "
                        "in order to find out all possible walks. \n\n"
                        "If you need to make a simple reachability test, "
-                       "we advise to use the Reachability Matrix function instead. \n\n "
+                       "we advise to use the Reachability Matrix function instead. \n\n"
                        "Are you sure you want to continue?"),
                     QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
         case QMessageBox::Ok:
@@ -8849,57 +10824,158 @@ void MainWindow::slotTotalWalks(){
             break;
         }
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-total-number-of-walks.dat";
-    int maxLength=activeNodes()-1;
 
-    statusMessage(  QString(tr("Computing Total Walks Matrix. Please wait...")) );
-    progressMsg = tr("Computing Total Walks Matrix. \n"
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-walks-total-"+dateTime+".html";
+
+    statusMessage(  tr("Computing total walks matrix. Please wait...") );
+
+    progressMsg = tr("Computing total walks matrix. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
-    createProgressBar(maxLength,progressMsg);
+    createProgressBar(activeNodes()-1,progressMsg);
 
-    activeGraph.writeWalksTotalMatrix(fn, maxLength);
-    destroyProgressBar(maxLength); // do not check for progress bar
+    activeGraph.writeMatrixWalks(fn);
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    ed->show();
+    destroyProgressBar(activeNodes()-1); // do not check for progress bar
 
-    statusMessage("Total number of walks saved as: " + fn);
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
+    statusMessage("Total walks matrix saved as: " + QDir::toNativeSeparators(fn));
 
 }
 
 
 
 /**
-*	Calls Graph:: writeReachabilityMatrix() to calculate and print
+*	Calls Graph:: writeReachabilityMatrixPlainText() to calculate and print
 *   the Reachability Matrix of the network.
 */
-void MainWindow::slotReachabilityMatrix(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",
-                              tr("Nothing to do! \n"
-                                 "Load a network file or create a new network. \n"
-                                 "Then ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to do."))  );
+void MainWindow::slotAnalyzeReachabilityMatrix(){
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-reachability-matrix.dat";
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-reachability-"+dateTime+".html";
 
-    statusMessage(  QString(tr("Computing Reachability Matrix. Please wait...")) );
-    progressMsg = tr("Computing Reachability Matrix. \n"
+    statusMessage(  tr("Computing reachability matrix. Please wait...") );
+
+    progressMsg = tr("Computing reachability matrix. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.writeReachabilityMatrix(fn);
+    //activeGraph.writeReachabilityMatrixPlainText(fn);
+    activeGraph.writeMatrix(fn, MATRIX_REACHABILITY );
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    ed->show();
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
 
-    statusMessage("Reachability Matrix saved as: " + fn );
+    statusMessage("Reachability matrix saved as: " + QDir::toNativeSeparators(fn) );
+}
+
+
+
+
+/**
+ * @brief Displays the slotAnalyzeStrEquivalenceClusteringHierarchicalDialog dialog.
+ */
+void MainWindow::slotAnalyzeStrEquivalenceClusteringHierarchicalDialog() {
+    qDebug()<< "MW::slotAnalyzeStrEquivalenceClusteringHierarchicalDialog()";
+
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    QString preselectMatrix = "Adjacency";
+
+    if (!activeGraph.graphWeighted()) {
+        preselectMatrix = "Distances";
+    }
+    m_dialogClusteringHierarchical = new DialogClusteringHierarchical(this, preselectMatrix);
+
+    connect( m_dialogClusteringHierarchical, &DialogClusteringHierarchical::userChoices,
+             this, &MainWindow::slotAnalyzeClusteringHierarchical );
+
+    m_dialogClusteringHierarchical->exec();
+
+}
+
+
+
+/**
+ * @brief Called from DialogClusteringHierarchical with user choices. Calls
+ * Graph::writeClusteringHierarchical() to compute and write HCA and displays the report.
+ * @param matrix
+ * @param similarityMeasure
+ * @param linkageCriterion
+ * @param diagonal
+ */
+void MainWindow::slotAnalyzeClusteringHierarchical(const QString &matrix,
+                                                   const QString &metric,
+                                                   const QString &method,
+                                                   const bool &diagonal,
+                                                   const bool &diagram){
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-clustering-hierarchical-"+dateTime+".html";
+
+    bool considerWeights=true;
+    bool inverseWeights=false;
+    bool dropIsolates=true;
+
+    statusMessage(  tr("Computing Hierarchical Cluster Analysis. Please wait...") );
+
+    progressMsg = tr("Hierarchical Cluster Analysis... \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
+
+    activeGraph.writeClusteringHierarchical(fn,
+                                            matrix,
+                                            metric,
+                                            method,
+                                            diagonal,
+                                            diagram,
+                                            considerWeights,
+                                            inverseWeights,
+                                            dropIsolates);
+
+    destroyProgressBar();
+
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
+    statusMessage("Hierarchical Cluster Analysis saved as: " + QDir::toNativeSeparators(fn));
+
 }
 
 
@@ -8908,19 +10984,19 @@ void MainWindow::slotReachabilityMatrix(){
 *	Calls Graph:: writeCliqueCensus() to write the number of cliques (triangles)
 *  of each vertex into a file, then displays it.
 */
-void MainWindow::slotCliqueCensus(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",
-                              tr("Nothing to do! \n"
-                                 "Load a network file or create a new network. \n"
-                                 "Then ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
+void MainWindow::slotAnalyzeCommunitiesCliqueCensus(){
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-clique-census.dat";
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-clique-census-"+dateTime+".html";
+
     bool considerWeights=true;
 
-    statusMessage(  QString(tr("Computing Clique Census. Please wait...")) );
+    statusMessage(  tr("Computing Clique Census. Please wait...") );
+
     progressMsg = tr("Computing Clique Census. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
@@ -8930,10 +11006,16 @@ void MainWindow::slotCliqueCensus(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    ed->show();
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
 
-    statusMessage("Clique Census saved as: " + fn);
+    statusMessage("Clique Census saved as: " + QDir::toNativeSeparators(fn));
 }
 
 
@@ -8942,21 +11024,22 @@ void MainWindow::slotCliqueCensus(){
 
 
 /**
-*	Writes Clustering Coefficients into a file, then displays it.
-*/
-void MainWindow::slotClusteringCoefficient (){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",
-                              tr("Nothing to do! \n"
-                                 "Load a network file or create a new network. \n"
-                                 "Then ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
+ * @brief Calls Graph::writeClusteringCoefficient() to write Clustering Coefficients
+ * into a file, and displays it.
+ */
+void MainWindow::slotAnalyzeClusteringCoefficient (){
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-clustering-coefficients.dat";
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-clustering-coefficient-"+dateTime+".html";
+
     bool considerWeights=true;
 
-    statusMessage(  QString(tr("Computing Clustering Coefficient. Please wait...")) );
+    statusMessage(  tr("Computing Clustering Coefficients. Please wait...") );
+
     progressMsg = tr("Computing Clustering Coefficient. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
@@ -8966,32 +11049,168 @@ void MainWindow::slotClusteringCoefficient (){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    ed->show();
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
 
-    statusMessage("Clustering Coefficients saved as: " + fn);
+    statusMessage("Clustering Coefficients saved as: " + QDir::toNativeSeparators(fn));
+}
+
+
+/**
+ * @brief Displays the DialogSimilarityMatches dialog.
+ */
+void MainWindow::slotAnalyzeStrEquivalenceSimilarityMeasureDialog() {
+    qDebug()<< "MW::slotAnalyzeStrEquivalenceSimilarityMeasureDialog()";
+
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    m_dialogSimilarityMatches = new DialogSimilarityMatches(this);
+
+    connect( m_dialogSimilarityMatches, &DialogSimilarityMatches::userChoices,
+             this, &MainWindow::slotAnalyzeSimilarityMatching );
+
+    m_dialogSimilarityMatches->exec();
+
 }
 
 
 
 
 /**
-*	Calls Graph to conduct and write a triad census into a file, then displays it.
-*/
-void MainWindow::slotTriadCensus() {
-
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",
-                              tr("Nothing to do! \n"
-                                 "Load a network file or create a new network. \n"
-                                 "Then ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
+ * @brief Calls Graph::writeMatrixSimilarityMatching() to write Exact Matches
+ * similarity matrix into a file, and displays it.
+ *
+ */
+void MainWindow::slotAnalyzeSimilarityMatching(const QString &matrix,
+                                       const QString &varLocation,
+                                       const QString &measure,
+                                       const bool &diagonal) {
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-triad-census.dat";
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-similarity-matches"+dateTime+".html";
+
     bool considerWeights=true;
 
-    statusMessage(  QString(tr("Computing Triad Census. Please wait...")) );
+    statusMessage(  tr("Computing similarity matrix. Please wait...") );
+
+    progressMsg = tr("Computing similarity matrix. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
+
+    //activeGraph.writeMatrixSimilarityMatchingPlain( fn, measure, matrix, varLocation, diagonal,considerWeights);
+    activeGraph.writeMatrixSimilarityMatching( fn,
+                                               measure,
+                                               matrix,
+                                               varLocation,
+                                               diagonal,
+                                               considerWeights);
+    destroyProgressBar();
+
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
+    statusMessage("Similarity matrix saved as: " + QDir::toNativeSeparators(fn));
+}
+
+
+
+/**
+ * @brief Calls the m_dialogSimilarityPearson to display the Pearson statistics dialog
+ */
+void MainWindow::slotAnalyzeStrEquivalencePearsonDialog(){
+    qDebug()<< "MW::slotAnalyzeStrEquivalencePearsonDialog()";
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+    m_dialogSimilarityPearson = new DialogSimilarityPearson(this);
+
+    connect( m_dialogSimilarityPearson, &DialogSimilarityPearson::userChoices,
+             this, &MainWindow::slotAnalyzeSimilarityPearson );
+
+    m_dialogSimilarityPearson->exec();
+}
+
+
+
+/**
+ * @brief Calls Graph::writeMatrixSimilarityPearson() to write Pearson
+ * Correlation Coefficients into a file, and displays it.
+ *
+ */
+void MainWindow::slotAnalyzeSimilarityPearson(const QString &matrix,
+                                       const QString &varLocation,
+                                       const bool &diagonal) {
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-similarity-pearson-"+dateTime+".html";
+
+    bool considerWeights=true;
+
+    statusMessage(  tr("Computing Pearson coefficients matrix. Please wait...") );
+    progressMsg = tr("Computing Pearson coefficients matrix. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
+
+    activeGraph.writeMatrixSimilarityPearson( fn, considerWeights, matrix, varLocation,diagonal);
+
+    destroyProgressBar();
+
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
+    statusMessage("Pearson correlation coefficients matrix saved as: " + QDir::toNativeSeparators(fn));
+}
+
+
+/**
+*	Calls Graph to conduct and write a triad census into a file, then displays it.
+*/
+void MainWindow::slotAnalyzeCommunitiesTriadCensus() {
+
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-triad-census-"+dateTime+".html";
+
+    bool considerWeights=true;
+
+    statusMessage(  tr("Computing Triad Census. Please wait...") );
+
     progressMsg = tr("Computing Triad Census. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
@@ -9001,36 +11220,42 @@ void MainWindow::slotTriadCensus() {
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    ed->show();
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
 
-    statusMessage("Triad Census saved as: " + fn);
+    statusMessage("Triad Census saved as: " + QDir::toNativeSeparators(fn));
 }
 
 
 /**
 *	Writes Out-Degree Centralities into a file, then displays it.
 */
-void MainWindow::slotCentralityDegree(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",
-                              tr("Nothing to do! \n"
-                                 "Load a network file or create a new network. \n"
-                                 "Then ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
+void MainWindow::slotAnalyzeCentralityDegree(){
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     bool considerWeights=false;
-    if ( activeGraph.isWeighted()) {
-        switch( QMessageBox::information( this, "Centrality Out-Degree",
-                                          tr("Graph edges have weights. \nTake weights into account (Default: No)?"),
-                                          tr("Yes"), tr("No"),
-                                          0, 1 ) )
+    if ( activeGraph.graphWeighted()) {
+
+        switch( slotHelpMessageToUser(
+                    USER_MSG_QUESTION,
+                    tr("Consider weights?") ,
+                    tr("Graph edges have weights. \n"
+                       "Take weights into account (Default: No)?")
+                    )
+                )
         {
-        case 0:
+        case QMessageBox::Yes:
             considerWeights=true;
             break;
-        case 1:
+        case QMessageBox::No:
             considerWeights=false;
             break;
         default: // just for sanity
@@ -9038,25 +11263,33 @@ void MainWindow::slotCentralityDegree(){
             return;
             break;
         }
-
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-out-degree.dat";
 
-    statusMessage(  QString(tr("Computing Degree Centrality. Please wait...")) );
-    progressMsg = tr("Computing Degree Centrality. \n"
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-out-degree-"+dateTime+".html";
+
+    statusMessage(  tr("Computing out-Degree Centralities. Please wait...") );
+
+    progressMsg = tr("Computing out-Degree Centralities. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
 
     activeGraph.writeCentralityDegree(fn, considerWeights,
-                                      filterIsolateNodesAct->isChecked() );
+                                      editFilterNodesIsolatesAct->isChecked() );
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    ed->show();
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
 
-    statusMessage(tr("Out-Degree Centralities saved as: ") + fn);
+    statusMessage(tr("Out-Degree Centralities saved as: ") + QDir::toNativeSeparators(fn));
 }
 
 
@@ -9065,16 +11298,17 @@ void MainWindow::slotCentralityDegree(){
 /**
 *	Writes Closeness Centralities into a file, then displays it.
 */
-void MainWindow::slotCentralityCloseness(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",
-                              tr("Nothing to do! \n"
-                                 "Load a network file or create a new network. \n"
-                                 "Then ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to do..."))  );
+void MainWindow::slotAnalyzeCentralityCloseness(){
+    qDebug() << "MW::slotAnalyzeCentralityCloseness()";
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    int connectedness=activeGraph.connectedness();
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+    statusMessage(  tr("Please wait while computing Connectivity...")  );
+    int connectedness=activeGraph.graphConnectedness();
+    QApplication::restoreOverrideCursor();
+
     bool dropIsolates=false;
     switch ( connectedness ) {
     case 1:
@@ -9140,9 +11374,11 @@ void MainWindow::slotCentralityCloseness(){
 
     askAboutWeights();
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_closeness.dat";
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-closeness-"+dateTime+".html";
 
-    statusMessage(  QString(tr("Computing Closeness Centrality. Please wait...")) );
+    statusMessage(  tr("Computing Closeness Centralities. Please wait...") );
+
     progressMsg = tr("Computing Closeness Centrality. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
@@ -9150,39 +11386,43 @@ void MainWindow::slotCentralityCloseness(){
 
     activeGraph.writeCentralityCloseness(
                 fn, considerWeights, inverseWeights,
-                filterIsolateNodesAct->isChecked() || dropIsolates);
+                editFilterNodesIsolatesAct->isChecked() || dropIsolates);
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    ed->show();
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
 
-    statusMessage(tr("Closeness Centralities  saved as: ") + fn);
+    statusMessage(tr("Closeness Centralities  saved as: ") + QDir::toNativeSeparators(fn));
 }
 
 
 
 
 /**
- * @brief MainWindow::slotCentralityClosenessInfluenceRange
+ * @brief MainWindow::slotAnalyzeCentralityClosenessIR
 *	Writes Centrality Closeness (based on Influence Range) indices into a file,
 *   then displays it.
  */
-void MainWindow::slotCentralityClosenessInfluenceRange(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",
-                              tr("Nothing to do! \n"
-                                 "Load a network file or create a new network. \n"
-                                 "Then ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to do..."))  );
+void MainWindow::slotAnalyzeCentralityClosenessIR(){
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_closeness_influence_range.dat";
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-closeness-influence-range-"+dateTime+".html";
 
     askAboutWeights();
 
-    statusMessage(  QString(tr("Computing Influence Range Centrality. Please wait...")) );
+    statusMessage(  tr("Computing Influence Range Centralities. Please wait...") );
+
     progressMsg = tr("Computing Influence Range Centrality. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
@@ -9190,16 +11430,22 @@ void MainWindow::slotCentralityClosenessInfluenceRange(){
 
     activeGraph.writeCentralityClosenessInfluenceRange(
                 fn, considerWeights,inverseWeights,
-                filterIsolateNodesAct->isChecked());
+                editFilterNodesIsolatesAct->isChecked());
 
     destroyProgressBar();
 
     statusMessage( QString(tr(" displaying file...")));
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    ed->show();
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
 
-    statusMessage(tr("Influence Range Closeness Centrality saved as: ")+fn);
+    statusMessage(tr("Influence Range Closeness Centralities saved as: ")+QDir::toNativeSeparators(fn));
 }
 
 
@@ -9208,20 +11454,19 @@ void MainWindow::slotCentralityClosenessInfluenceRange(){
 /**
 *	Writes Betweenness Centralities into a file, then displays it.
 */
-void MainWindow::slotCentralityBetweenness(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",
-                              tr("Nothing to do! \n"
-                                 "Load a network file or create a new network. \n"
-                                 "Then ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr(" Nothing to do..."))  );
+void MainWindow::slotAnalyzeCentralityBetweenness(){
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_betweenness.dat";
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-betweenness-"+dateTime+".html";
 
     askAboutWeights();
 
-    statusMessage(  QString(tr("Computing Betweenness Centrality. Please wait...")) );
+    statusMessage( tr("Computing Betweenness Centralities. Please wait...") );
+
     progressMsg = tr("Computing Betweenness Centrality. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
@@ -9229,14 +11474,20 @@ void MainWindow::slotCentralityBetweenness(){
 
     activeGraph.writeCentralityBetweenness(
                 fn, considerWeights, inverseWeights,
-                filterIsolateNodesAct->isChecked());
+                editFilterNodesIsolatesAct->isChecked());
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    ed->show();
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
 
-    statusMessage(tr("Betweenness Centralities saved as: ")+fn);
+    statusMessage(tr("Betweenness Centralities saved as: ")+QDir::toNativeSeparators(fn));
 }
 
 
@@ -9246,16 +11497,12 @@ void MainWindow::slotCentralityBetweenness(){
 /**
 *	Writes Degree Prestige indices (In-Degree Centralities) into a file, then displays it.
 */
-void MainWindow::slotPrestigeDegree(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",
-                              tr("Nothing to do! \n"
-                                 "Load a network file or create a new network. \n"
-                                 "Then ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to do..."))  );
+void MainWindow::slotAnalyzePrestigeDegree(){
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    if (activeGraph.isSymmetric()) {
+    if (activeGraph.graphSymmetric()) {
         QMessageBox::warning(
                     this,
                     "Warning",
@@ -9267,9 +11514,10 @@ void MainWindow::slotPrestigeDegree(){
     }
 
     bool considerWeights=false;
-    if ( activeGraph.isWeighted()) {
+    if ( activeGraph.graphWeighted()) {
         switch( QMessageBox::information( this, "Degree Prestige (In-Degree)",
-                                          tr("Graph edges have weights. \nTake weights into account (Default: No)?"),
+                                          tr("Graph edges have weights. \n"
+                                             "Take weights into account (Default: No)?"),
                                           tr("Yes"), tr("No"),
                                           0, 1 ) )
         {
@@ -9286,23 +11534,32 @@ void MainWindow::slotPrestigeDegree(){
         }
 
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-degree-prestige.dat";
 
-    statusMessage(  QString(tr("Computing Degree Prestige . Please wait...")) );
-    progressMsg = tr("Computing Degree Prestige. \n"
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-prestige-degree-"+dateTime+".html";
+
+    statusMessage(  tr("Computing Degree Prestige indices. Please wait...") );
+
+    progressMsg = tr("Computing Degree Prestige (in-Degree). \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
 
     activeGraph.writePrestigeDegree(fn, considerWeights,
-                                    filterIsolateNodesAct->isChecked() );
+                                    editFilterNodesIsolatesAct->isChecked() );
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    ed->show();
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
 
-    statusMessage(tr("Degree Prestige (in-degree) saved as: ") + fn);
+    statusMessage(tr("Degree Prestige (in-degree) indices saved as: ") + QDir::toNativeSeparators(fn));
 }
 
 
@@ -9310,91 +11567,92 @@ void MainWindow::slotPrestigeDegree(){
 /**
 *	Writes PageRank Prestige indices into a file, then displays it.
 */
-void MainWindow::slotPrestigePageRank(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",
-                              tr("Nothing to do! \n"
-                                 "Load a network file or create a new network. \n"
-                                 "Then ask me to compute something!"), "OK",0);
-
-        statusMessage(  QString(tr(" Nothing to do..."))  );
+void MainWindow::slotAnalyzePrestigePageRank(){
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-prestige_pagerank.dat";
 
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-prestige-pagerank-"+dateTime+".html";
 
     askAboutWeights();
 
+    statusMessage( tr("Computing PageRank Prestige indices. Please wait...") );
 
-    statusMessage(  QString(tr("Computing PageRank Prestige. Please wait...")) );
     progressMsg = tr("Computing PageRank Prestige. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.writePrestigePageRank(fn, filterIsolateNodesAct->isChecked());
+    activeGraph.writePrestigePageRank(fn, editFilterNodesIsolatesAct->isChecked());
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    ed->show();
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
 
-    statusMessage(tr("PageRank Prestige indices saved as: ")+ fn);
+    statusMessage(tr("PageRank Prestige indices saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
 
 
 /**
- * @brief MainWindow::slotPrestigeProximity
+ * @brief MainWindow::slotAnalyzePrestigeProximity
  * Writes Proximity Prestige indices into a file, then displays them.
  */
-void MainWindow::slotPrestigeProximity(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(
-                    this, "Error",
-                    tr("There are no nodes!\n"
-                       "Load a network file or create a new network. \n"
-                       "Then ask me to compute something!"), "OK",0);
-
-        statusMessage(  QString(tr(" Nothing to do..."))  );
+void MainWindow::slotAnalyzePrestigeProximity(){
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_proximity_prestige.dat";
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-prestige-proximity-"+dateTime+".html";
 
     askAboutWeights();
 
-    statusMessage(  QString(tr("Computing Proximity Prestige. Please wait...")) );
+    statusMessage( tr("Computing Proximity Prestige indices. Please wait...") );
+
     progressMsg = tr("Computing Proximity Prestige. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
 
     activeGraph.writePrestigeProximity(fn, true, false ,
-                                       filterIsolateNodesAct->isChecked());
+                                       editFilterNodesIsolatesAct->isChecked());
     destroyProgressBar();
 
-    statusMessage( QString(tr(" displaying file...")));
+    statusMessage( tr("Displaying file..."));
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    ed->show();
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
 
-    statusMessage(tr("Proximity Prestige Centralities saved as: ")+ fn);
+    statusMessage(tr("Proximity Prestige indices saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
 
 
 
 /**
- * @brief MainWindow::slotCentralityInformation
+ * @brief MainWindow::slotAnalyzeCentralityInformation
  * Writes Informational Centralities into a file, then displays it.
  */
-void MainWindow::slotCentralityInformation(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",
-                              tr("Nothing to do! \n"
-                                 "Load a network file or create a new network. \n"
-                                 "Then ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr(" Nothing to do..."))  );
+void MainWindow::slotAnalyzeCentralityInformation(){
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     if (activeNodes() > 200) {
@@ -9402,13 +11660,15 @@ void MainWindow::slotCentralityInformation(){
                QMessageBox::critical(
                    this, "Slow function warning",
                    tr("Please note that this function is <b>SLOW</b> on large "
-                      "networks (n>200), since it will calculate  a (n x n) matrix A with:"
-                      "Aii=1+weighted_degree_ni"
-                      "Aij=1 if (i,j)=0"
-                      "Aij=1-wij if (i,j)=wij\n"
-                      "Next, it will compute the inverse matrix C of A."
-                      "The computation of the inverse matrix is a CPU intensive function."
-                      "although it uses LU decomposition.\n\n "
+                      "networks (n>200), since it will calculate  a (n x n) matrix A with: <br>"
+                      "Aii=1+weighted_degree_ni <br>"
+                      "Aij=1 if (i,j)=0 <br>"
+                      "Aij=1-wij if (i,j)=wij <br>"
+                      "Next, it will compute the inverse matrix C of A. "
+                      "The computation of the inverse matrix is a CPU intensive function "
+                      "although it uses LU decomposition. <br>"
+                      "How slow is this? For instance, to compute IC scores of 600 nodes "
+                      "on a modern i7 4790K CPU you will need to wait for 2 minutes at least. <br>"
                       "Are you sure you want to continue?"), QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
         case QMessageBox::Ok:
             break;
@@ -9422,12 +11682,14 @@ void MainWindow::slotCentralityInformation(){
             break;
         }
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_information.dat";
-    statusMessage(  QString(tr(" Please wait...")));
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-information-"+dateTime+".html";
 
     askAboutWeights();
 
-    statusMessage(  QString(tr("Computing Information Centrality. Please wait...")) );
+    statusMessage(  tr("Computing Information Centralities. Please wait...") );
+
     progressMsg = tr("Computing Information Centrality. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
@@ -9437,49 +11699,103 @@ void MainWindow::slotCentralityInformation(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);
-    ed->show();
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
 
-    statusMessage(tr("Information Centralities saved as: ")+ fn);
+    statusMessage(tr("Information Centralities saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
 
 
 
 
-/**
- * @brief MainWindow::slotCentralityStress
- * Writes Stress Centralities into a file, then displays it.
- */
-void MainWindow::slotCentralityStress(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",
-                              tr("Nothing to do! \n"
-                                 "Load a network file or create a new network. \n"
-                                 "Then ask me to compute something!"), "OK",0);
 
-        statusMessage(  QString(tr(" Nothing to do! Why don't you try creating something first?"))  );
+/**
+ * @brief Writes Eigenvector Centralities into a file, then displays it.
+ */
+void MainWindow::slotAnalyzeCentralityEigenvector(){
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_stress.dat";
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-eigenvector-"+dateTime+".html";
 
     askAboutWeights();
 
-    statusMessage(  QString(tr("Computing Stress Centrality. Please wait...")) );
+    bool dropIsolates = false;
+
+    statusMessage(  tr("Computing Eigenvector Centralities. Please wait...") );
+
+    progressMsg = tr("Computing Eigenvector Centrality. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
+
+    activeGraph.writeCentralityEigenvector(fn,considerWeights, inverseWeights, dropIsolates);
+
+    destroyProgressBar();
+
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
+    statusMessage(tr("Eigenvector Centralities saved as: ")+ QDir::toNativeSeparators(fn));
+}
+
+
+
+
+/**
+ * @brief MainWindow::slotAnalyzeCentralityStress
+ * Writes Stress Centralities into a file, then displays it.
+ */
+void MainWindow::slotAnalyzeCentralityStress(){
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-stress-"+dateTime+".html";
+
+    askAboutWeights();
+
+    statusMessage( tr("Computing Stress Centralities. Please wait...") );
+
     progressMsg = tr("Computing Stress Centrality. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
+
     createProgressBar(0,progressMsg);
 
     activeGraph.writeCentralityStress(
                 fn, considerWeights, inverseWeights,
-                filterIsolateNodesAct->isChecked());
+                editFilterNodesIsolatesAct->isChecked());
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    ed->show();
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
 
-    statusMessage(tr("Stress Centralities saved as: ")+ fn);
+    statusMessage(tr("Stress Centralities saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
 
@@ -9487,62 +11803,65 @@ void MainWindow::slotCentralityStress(){
 
 
 /**
- * @brief MainWindow::slotCentralityPower
- * Writes Power Centralities into a file, then displays it.
+ * @brief MainWindow::slotAnalyzeCentralityPower
+ * Writes Gil-Schmidt Power Centralities into a file, then displays it.
  */
-void MainWindow::slotCentralityPower(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",
-                              tr("Nothing to do! \n"
-                                 "Load a network file or create a new network. \n"
-                                 "Then ask me to compute something!"), "OK",0);
-
-        statusMessage(  QString(tr(" Nothing to do! Why don't you try creating something first?"))  );
+void MainWindow::slotAnalyzeCentralityPower(){
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_power.dat";
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-power-Gil-Schmidt-"+dateTime+".html";
 
     askAboutWeights();
 
-    statusMessage(  QString(tr("Computing Power Centrality. Please wait...")) );
-    progressMsg = tr("Computing Power Centrality. \n"
+    statusMessage(  tr("Computing Gil-Schmidt Power Centralities. Please wait...") );
+
+    progressMsg = tr("Computing Gil-Schmidt Power Centrality. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
 
     activeGraph.writeCentralityPower(
                 fn, considerWeights, inverseWeights,
-                filterIsolateNodesAct->isChecked());
+                editFilterNodesIsolatesAct->isChecked());
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    ed->show();
-    statusMessage(tr("Stress Centralities saved as: ")+ fn);
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
+    statusMessage(tr("Gil-Schmidt Power Centralities saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
 
 
 
 /**
- * @brief MainWindow::slotCentralityEccentricity
+ * @brief MainWindow::slotAnalyzeCentralityEccentricity
  * Writes Eccentricity Centralities into a file, then displays it.
  */
-void MainWindow::slotCentralityEccentricity(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",
-                              tr("Nothing to do! \n"
-                                 "Load a network file or create a new network. \n"
-                                 "Then ask me to compute something!"), "OK",0);
-
-        statusMessage(  QString(tr(" Nothing to do..."))  );
+void MainWindow::slotAnalyzeCentralityEccentricity(){
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_eccentricity.dat";
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-eccentricity-"+dateTime+".html";
 
     askAboutWeights();
 
-    statusMessage(  QString(tr("Computing Eccentricity Centrality. Please wait...")) );
+    statusMessage(  tr("Computing Eccentricity Centralities. Please wait...") );
+
     progressMsg = tr("Computing Eccentricity Centrality. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
@@ -9550,14 +11869,20 @@ void MainWindow::slotCentralityEccentricity(){
 
     activeGraph.writeCentralityEccentricity(
                 fn, considerWeights, inverseWeights,
-                filterIsolateNodesAct->isChecked());
+                editFilterNodesIsolatesAct->isChecked());
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    ed->show();
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
 
-    statusMessage(tr("Eccentricity Centralities saved as: ")+ fn);
+    statusMessage(tr("Eccentricity Centralities saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
 
@@ -9699,12 +12024,8 @@ void MainWindow::slotOptionsNodeLabelsVisibility(bool toggle){
  * @param toggle
  */
 void MainWindow::slotOptionsEdgesVisibility(bool toggle){
-    if (!fileLoaded && ! networkModified) {
-        QMessageBox::critical(this, "Error",
-                              tr("There are no nodes nor edges! \n"
-                                 "Load a network file or create a new network first!"), "OK",0);
-
-        statusMessage( tr("No edges found...") );
+    if ( !activeEdges() ) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
@@ -9729,10 +12050,8 @@ void MainWindow::slotOptionsEdgesVisibility(bool toggle){
  * @param toggle
  */
 void MainWindow::slotOptionsEdgeArrowsVisibility(bool toggle){
-    if (!fileLoaded && ! networkModified) {
-        QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network first!"), "OK",0);
-
-        statusMessage( tr("No edges found...") );
+    if ( !activeNodes() ) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     statusMessage( tr("Toggle Edges Arrows. Please wait...") );
@@ -9787,10 +12106,8 @@ void MainWindow::slotOptionsEdgeWeightsDuringComputation(bool toggle) {
 *  FIXME edges Bezier
 */
 void MainWindow::slotOptionsEdgesBezier(bool toggle){
-    if (!fileLoaded && ! networkModified) {
-        QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network!"), "OK",0);
-
-        statusMessage( tr("There are NO edges here!") );
+    if ( !activeNodes() ) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     statusMessage( tr("Toggle edges bezier. Please wait...") );
@@ -10223,9 +12540,7 @@ void MainWindow::slotHelpCreateTips(){
              "when you left-click on it.");
     tips+=tr("Edge information is displayed on the Status bar, when you left-click on it.");
     tips+=tr("Save your work often, especially when working with large data sets. "
-             "SocNetV alogorithms are faster when working with saved data. "
-             "For most time-consuming metrics, once you compute one, all other "
-             "metric are computed almost instantly.");
+             "SocNetV alogorithms are faster when working with saved data. ");
 
     tips+=tr("The Closeness Centrality (CC) of a node v, is the inverse sum of "
        "the shortest distances between v and every other node. CC is "
@@ -10255,7 +12570,7 @@ void MainWindow::slotHelpCreateTips(){
  */
 void MainWindow::slotHelp(){
     statusMessage( tr("Opening the SocNetV Manual in your default web browser....") );
-    QDesktopServices::openUrl(QUrl("http://socnetv.sourceforge.net/docs/index.html"));
+    QDesktopServices::openUrl(QUrl("http://socnetv.org/docs/index.html"));
 }
 
 
@@ -10267,23 +12582,27 @@ void MainWindow::slotHelp(){
  */
 void MainWindow::slotHelpCheckUpdates() {
     statusMessage( tr("Opening SocNetV website in your default web browser....") );
-    QDesktopServices::openUrl(QUrl("http://socnetv.sourceforge.net/downloads?app=" + VERSION));
+    QDesktopServices::openUrl(QUrl("http://socnetv.org/downloads?app=" + VERSION));
 }
+
+
 
 /**
     Displays the following message!!
 */
 void MainWindow::slotHelpAbout(){
     int randomCookie=rand()%fortuneCookie.count();
-    QString BUILD="Wed Sep 28 22:54:24 EEST 2016";
+QString BUILD="Sat Jan 21 01:11:50 EET 2017";
     QMessageBox::about(
                 this, tr("About SocNetV"),
                         tr("<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)") +
                         tr("<p><b>Version</b>: ") + VERSION + "</p>" +
                         tr("<p><b>Build</b>: ")  + BUILD + " </p>" +
 
-                        tr("<p>(C) 2005-2016 by Dimitris V. Kalamaras")+
-                        tr("<br> dimitris.kalamaras@gmail.com")+
+                        tr("<p>Website: <a href=\"http://socnetv.org\">http://socnetv.org</a></p>")+
+
+                        tr("<p>(C) 2005-2017 by Dimitris V. Kalamaras</p>")+
+                        tr("<p><a href=\"http://socnetv.org/contact\">Have questions? Contact us!</a></p>")+
 
                         tr("<p><b>Fortune cookie: </b><br> \"")  + fortuneCookie[randomCookie]  + "\"" +
 

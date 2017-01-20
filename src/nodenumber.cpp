@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.1
+ version: 2.2
  Written in Qt
 
                         nodenumber.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2017 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 

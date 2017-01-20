@@ -1,12 +1,13 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.1
+ version: 2.2
  Written in Qt
  
                          edge.h  -  description
                              -------------------
-    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
-    email                : dimitris.kalamaras@gmail.com
+    copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
+    project site      : http://socnetv.org
+
  ***************************************************************************/
 
 /*******************************************************************************
@@ -123,7 +124,7 @@ protected:
 private:
     GraphicsWidget *graphicsWidget;
     Node *source, *target;
-    QPainterPath *m_path;
+    QPainterPath *m_path, *m_path_up, *m_path_down, *m_path_shape;
     QPointF sourcePoint, targetPoint;
     qreal m_arrowSize, m_startOffset, m_endOffset;
     Qt::PenStyle m_style;

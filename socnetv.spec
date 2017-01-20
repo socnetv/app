@@ -16,7 +16,7 @@
 
 
 %define name    socnetv
-%define version 2.1
+%define version 2.2
 %define release 1
 %define prefix  /usr/local
 %define lastrev %(LANG=en_US.UTF-8 && date +"%a %b %e %Y")
@@ -69,7 +69,7 @@ Release:	%{release}
 Summary:	A Social Networks Analyser and Visualiser
 License:	GPL-3.0	
 Group:		Productivity/Scientific/Math 
-URL:		http://socnetv.sourceforge.net/
+URL:		http://socnetv.org/
 Vendor: 	Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 Source0:	SocNetV-%{version}.tar.bz2
 Distribution:   %{distr}
@@ -186,6 +186,8 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 #CHANGELOG SECTION
 #
 %changelog
+* Sat Jan 21 2017 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.2-1
+- Synced with new stable version 2.2 from upstream
 * Wed Sep 28 2016 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.1-1
 - Synced with new stable version from upstream.
 * Tue Sep 13 2016 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.0-2

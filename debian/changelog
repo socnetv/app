@@ -1,3 +1,9 @@
+socnetv (2.2-1) xenial; urgency=medium
+
+  * New upstream version 2.2. See http://socnetv.org/ChangeLog
+
+ -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Sat, 21 Jan 2017 22:13:03 +0300
+
 socnetv (2.1-1) vivid; urgency=medium
 
   * New upstream version 2.1. See http://socnetv.sf.net/ChangeLog  

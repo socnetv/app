@@ -93,5 +93,24 @@
         <file>images/nodelabelcolor.png</file>
         <file>images/nodenumbersize.png</file>
         <file>images/edgecolor.png</file>
+        <file>images/petersengraph.png</file>
+        <file>images/cliquenew.png</file>
+        <file>images/edit-rename.png</file>
+        <file>images/subgraphstar.png</file>
+        <file>images/subgraphline.png</file>
+        <file>images/subgraphcycle.png</file>
+        <file>images/clustering.png</file>
+        <file>images/adjacencyplot.png</file>
+        <file>images/similarity.png</file>
+        <file>images/distances.png</file>
+        <file>images/connectivity.png</file>
+        <file>images/hierarchical.png</file>
+        <file>images/clucof.png</file>
+        <file>images/symmetry-edge.png</file>
+        <file>images/laplacian.png</file>
+        <file>images/degreematrix.png</file>
+        <file>images/invertmatrix.png</file>
+        <file>images/transposematrix.png</file>
+        <file>images/cocitation.png</file>
     </qresource>
 </RCC>

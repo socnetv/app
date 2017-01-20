@@ -1,12 +1,13 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.1
+ version: 2.2
  Written in Qt
  
                          vertex.h  -  description
                              -------------------
-    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
-    email                : dimitris.kalamaras@gmail.com
+    copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
+    project site      : http://socnetv.org
+
  ***************************************************************************/
 
 /*******************************************************************************
@@ -42,7 +43,7 @@ class Graph;
 
 
 typedef QHash<int,QString> H_IntToStr;
-typedef QList<int> ilist;
+typedef QList<int> L_int;
 typedef QPair <float, bool> pair_f_b;
 typedef QPair <int, pair_f_b > rel_w_bool;
 typedef QHash < int, rel_w_bool > H_edges;
@@ -90,9 +91,11 @@ public:
     void edgeRemoveTo (long int target);
     void edgeRemoveFrom(long int source);
 
-    QHash<int,float>* returnEnabledOutEdges();
-    QHash<int,float>* returnEnabledInEdges();
-    QHash<int,float>* returnReciprocalEdges();
+    QHash<int,float>* outEdgesEnabledHash(const bool &allRelations=false);
+    QHash<int,float>* outEdgesAllRelationsUniqueHash();
+    QHash<int,float>* inEdgesEnabledHash();
+    QHash<int,float>* reciprocalEdgesHash();
+    QList<int> neighborhoodList();
 
     long int outEdges();
     long int outEdgesConst() const ;
@@ -112,12 +115,11 @@ public:
 
     /* Returns true if there is an outLink from this vertex */
     bool isOutLinked() { return (outEdges() > 0) ? true:false;}
-    /* Returns the weight of the link to vertex V, otherwise zero*/
-    float hasEdgeTo(const long int &v);
+    float hasEdgeTo(const long int &v, const bool &allRelations=false);
 
     /* Returns true if there is an outLink from this vertex */
     bool isInLinked() { return  (inEdges() > 0) ? true:false;}
-    float hasEdgeFrom (const long int &v);
+    float hasEdgeFrom (const long int &v, const bool &allRelations=false);
 
     bool isIsolated() { return !(isOutLinked() | isInLinked()) ; }
     void setIsolated(bool isolated) {m_isolated = isolated; }
@@ -125,6 +127,7 @@ public:
     void edgeFilterByWeight(float m_threshold, bool overThreshold);
     //	void filterEdgesByColor(float m_threshold, bool overThreshold);
     void edgeFilterByRelation(int relation, bool status);
+    void edgeFilterUnilateral(const bool &toggle=false);
 
     void setSize(const int &size ) { m_size=size; }
     int size()  const { return m_size; }
@@ -164,6 +167,7 @@ public:
     float y() const { return m_y; }
 
     QPointF pos () const { return QPointF ( x(), y() ); }
+    void setPos (QPointF &p) { m_x=p.x(); m_y=p.y(); }
 
     //returns displacement vector
     QPointF & disp() { return m_disp; }
@@ -171,24 +175,18 @@ public:
     void set_dispX (float x) { m_disp.rx() = x ; }
     void set_dispY (float y) { m_disp.ry() = y ; }
 
-    //FIXME -- VERY SLOW?
+
     void setOutLinkColor(const long int &v2,
                          const QString &color) { outLinkColors[v2]=color; }
-
-    //FIXME: See MW line 1965 - FIXME MULTIGRAPH
     QString outLinkColor(const long int &v2) {
-        if (outLinkColors.contains(v2))
-            return outLinkColors.value(v2);
-        else return "black";
+        return ( outLinkColors.contains(v2) ) ? outLinkColors.value(v2) : "black";
     }
 
 
     void setOutEdgeLabel(const long int &v2,
                          const QString &label) { m_outEdgeLabels[v2]=label; }
     QString outEdgeLabel(const long int &v2) const {
-        if (m_outEdgeLabels.contains(v2))
-            return m_outEdgeLabels.value(v2);
-        else return QString::null;
+        return ( m_outEdgeLabels.contains(v2) ) ? m_outEdgeLabels.value(v2) : QString::null;
     }
 
 
@@ -198,7 +196,7 @@ public:
     void clearPs()	;
 
     void appendToPs(long  int vertex ) ;
-    ilist Ps(void);
+    L_int Ps(void);
 
     void setDC (float c){ m_DC=c;} 	/* Sets vertex Degree Centrality*/
     void setSDC (float c ) { m_SDC=c;}	/* Sets standard vertex Degree Centrality*/
@@ -259,14 +257,17 @@ public:
     void setCLC(float clucof)  { m_CLC=clucof; m_hasCLC=true; }
     bool hasCLC() { 	return m_hasCLC; }
 
+    void setEVC (float c){ m_EVC=c;} 	/* Sets vertex Degree Centrality*/
+    void setSEVC (float c ) { m_SEVC=c;}	/* Sets standard vertex Degree Centrality*/
+    float EVC() { return m_EVC;}		/* Returns vertex Degree Centrality*/
+    float SEVC() { return m_SEVC;}		/* Returns standard vertex Degree Centrality*/
 
-    int cliques (const int &size);
 
-    bool cliqueAdd (const QString &clique, const int &size);
+    int cliques (const int &ofSize);
 
-    void clearCliques() {
-        m_cliques.clear();
-    }
+    void cliqueAdd (const QList<int> &clique);
+
+    void clearCliques() {  m_cliques.clear();    }
 
     //hold all outbound and inboud edges of this vertex.
     H_edges m_outEdges, m_inEdges;
@@ -277,25 +278,28 @@ protected:
 
 private:
     Graph *parentGraph;
-    ilist myPs;
     long int m_name,  m_outEdgesCounter, m_inEdgesCounter, m_outDegree, m_inDegree, m_localDegree;
-    float m_Eccentricity;
     int m_value, m_size, m_labelSize, m_numberSize, m_numberDistance, m_labelDistance;
     int m_curRelation;
-    H_StrToInt m_cliques;
-    QHash<int,float>* m_reciprocalEdges;
     bool m_reciprocalLinked, m_enabled, m_hasCLC, m_isolated;
-    QString m_color, m_numberColor, m_label, m_labelColor, m_shape;
-    QPointF m_disp;
-    H_IntToStr outLinkColors, m_outEdgeLabels;
-    //FIXME vertex coords
-
     double m_x, m_y;
-    float m_CLC;
+    float m_Eccentricity, m_CLC;
     float m_delta, m_EC, m_SEC;
     float m_DC, m_SDC, m_DP, m_SDP, m_CC, m_SCC, m_BC, m_SBC, m_IRCC, m_SIRCC, m_SC, m_SSC;
     float m_PC, m_SPC, m_SIC, m_IC, m_SPRC, m_PRC;
-    float m_PP, m_SPP;
+    float m_PP, m_SPP, m_EVC, m_SEVC;
+
+    QString m_color, m_numberColor, m_label, m_labelColor, m_shape;
+    QPointF m_disp;
+
+    QHash<int,float>* m_reciprocalEdges;
+    L_int myPs;
+    L_int m_neighborhoodList;
+    H_IntToStr outLinkColors, m_outEdgeLabels;
+    QHash <int, L_int> m_cliques;
+    //FIXME vertex coords
+
+
 
 };
 

@@ -1,14 +1,13 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.1
+ version: 2.2
  Written in Qt
  
                          graph.h  -  description
                              -------------------
-    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
-    email                : dimitris.kalamaras@gmail.com
-    website:             : http://dimitris.apeiro.gr
-    project site         : http://socnetv.sourceforge.net
+    copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
+    project site      : http://socnetv.org
+
  ***************************************************************************/
 
 /*******************************************************************************
@@ -51,30 +50,56 @@ static const int EDGE_DIRECTED                 = 0;
 static const int EDGE_DIRECTED_OPPOSITE_EXISTS = 1;
 static const int EDGE_RECIPROCAL_UNDIRECTED    = 2;
 
-static const int FILE_GRAPHML     = 1;  // .GRAPHML .XML
-static const int FILE_PAJEK       = 2;  // .PAJ .NET
-static const int FILE_ADJACENCY   = 3;  // .ADJ .CSV .SM
-static const int FILE_GRAPHVIZ    = 4;  // .DOT
-static const int FILE_UCINET      = 5;  // .DL .DAT
-static const int FILE_GML         = 6;  // .GML
-static const int FILE_WLIST       = 7;  // .WLST
-static const int FILE_LIST        = 8;  // .LST .CSV
-static const int FILE_TWOMODE     = 9;  // .2SM .AFF
-static const int FILE_UNRECOGNIZED=-1;  // UNRECOGNIZED FILE FORMAT
+static const int FILE_GRAPHML           = 1;  // .GRAPHML .XML
+static const int FILE_PAJEK             = 2;  // .PAJ .NET
+static const int FILE_ADJACENCY         = 3;  // .ADJ .CSV .SM
+static const int FILE_GRAPHVIZ          = 4;  // .DOT
+static const int FILE_UCINET            = 5;  // .DL .DAT
+static const int FILE_GML               = 6;  // .GML
+static const int FILE_EDGELIST_WEIGHTED = 7;  // .CSV, .TXT, .LIST, LST, WLST
+static const int FILE_EDGELIST_SIMPLE   = 8;  // .CSV, .TXT, .LIST, LST
+static const int FILE_TWOMODE           = 9;  // .2SM .AFF
+static const int FILE_UNRECOGNIZED      =-1;  // UNRECOGNIZED FILE FORMAT
 
 
-static const int GRAPH_CHANGED_NONE = 0;
-static const int GRAPH_CHANGED_MINOR_OPTIONS = 1;
-static const int GRAPH_CHANGED_VERTICES_METADATA = 2;
-static const int GRAPH_CHANGED_EDGES_METADATA = 3;
-static const int GRAPH_CHANGED_POSITIONS = 4;
-static const int GRAPH_CHANGED_VERTICES = 11;
-static const int GRAPH_CHANGED_EDGES = 12;
-static const int GRAPH_CHANGED_VERTICES_AND_EDGES = 13;
-static const int GRAPH_CHANGED_NEW = 14;
+static const int GRAPH_CHANGED_NONE                = 0;
+static const int GRAPH_CHANGED_MINOR_OPTIONS       = 1;
+static const int GRAPH_CHANGED_VERTICES_METADATA   = 2;
+static const int GRAPH_CHANGED_EDGES_METADATA      = 3;
+static const int GRAPH_CHANGED_POSITIONS           = 4;
+static const int GRAPH_CHANGED_VERTICES            = 11;
+static const int GRAPH_CHANGED_EDGES               = 12;
+static const int GRAPH_CHANGED_VERTICES_AND_EDGES  = 13;
+static const int GRAPH_CHANGED_NEW                 = 14;
+
+static const int CLUSTERING_SINGLE_LINKAGE   = 0; //"single-link" or minimum
+static const int CLUSTERING_COMPLETE_LINKAGE = 1; // "complete-link or maximum
+static const int CLUSTERING_AVERAGE_LINKAGE  = 2;
+
+static const int SUBGRAPH_CLIQUE = 1;
+static const int SUBGRAPH_STAR   = 2;
+static const int SUBGRAPH_CYCLE  = 3;
+static const int SUBGRAPH_LINE   = 4;
+
+static const int MATRIX_ADJACENCY        = 1;
+static const int MATRIX_DISTANCES        = 2;
+static const int MATRIX_DEGREE           = 3;
+static const int MATRIX_LAPLACIAN        = 4;
+static const int MATRIX_ADJACENCY_INVERSE = 5;
+static const int MATRIX_GEODESICS        = 6;
+static const int MATRIX_REACHABILITY     = 7;
+static const int MATRIX_ADJACENCY_TRANSPOSE = 8;
+static const int MATRIX_COCITATION = 9;
+static const int MATRIX_DISTANCES_EUCLIDEAN = 12;
+static const int MATRIX_DISTANCES_MANHATTAN= 13;
+static const int MATRIX_DISTANCES_JACCARD= 14;
+static const int MATRIX_DISTANCES_HAMMING= 15;
+static const int MATRIX_DISTANCES_CHEBYSHEV= 16;
 
 
 class QPointF;
+
+
 
 typedef QList<Vertex*> Vertices;
 typedef QHash <QString, int> H_StrToInt;
@@ -83,31 +108,40 @@ typedef QPair <float, bool> pair_f_b;
 typedef QPair <int, pair_f_b > rel_w_bool;
 typedef QHash < int, rel_w_bool > H_edges;
 typedef QHash<QString, bool> H_StrToBool;
+typedef QList<int> L_int;
+typedef QVector<int> V_int;
+typedef QVector<QString> V_str;
 
 
 
-class Distance
+struct ClickedEdge {
+    int v1;
+    int v2;
+};
+
+
+
+typedef pair<int, int> SelectedEdge;
+
+
+class GraphDistance
 {
 public:
     int target;
     int distance;
 
-    Distance(int t, int dist)
+    GraphDistance(int t, int dist)
         : target(t), distance(dist)
     {
 
     }
 };
 
-struct Distance1 {
-    int target;
-    int distance;
-};
 
 // implement a min-priority queue
-class CompareDistances {
+class GraphDistancesCompare {
     public:
-    bool operator()(Distance& t1, Distance& t2)
+    bool operator()(GraphDistance& t1, GraphDistance& t2)
     {
        if (t1.distance == t2.distance)
             return t1.target > t2.target;
@@ -118,24 +152,34 @@ class CompareDistances {
 };
 
 
+/**
+  TODO & KNOWN BUGS:
+    \todo Group edge editing: i.e. change weight or color.
+    \todo Enrich Node properties dialog
+    \todo Update app icons
+    \todo - CHECK weighted networks results (IRCC and distance matrix with other combinations)
+    \todo - CHECK graphWeighted corner case results, when !graphModified.
+    \todo - CHECK graphConnectedness() algorithm implementation (m_vertexPairsUnilaterallyConnected)
 
-/*
- TODO & KNOWN BUGS:
+  \bug Create d-regular, undirected, ask for closeness, it says we are on a disconnected graph
+  \bug Crash on Graphml files with textlabels instead of nodenumbers (i.e. nets/killer.graphml)
+  \bug wontfix Crash on Graphml files with html special chars in node/edge labels
+  \bug Pajek files with no ic / label in nodes are displayed without colors???
+  \bug wrong default edge colors (not the ones used by Settings) after loading GraphML files.
+  \bug Resizing the MW view does not resize/reposition the layout guides
+  \bug Fruchterman-Reingold model fixes some nodes to (1,1) breaking the layout
 
- - BUG: Crash on Graphml files with textlabels instead of nodenumbers (i.e. nets/killer.graphml)
--  BUG: wrong default edge colors (not the ones used by Settings) after loading GraphML files.
- - BUG: Resizing the MW view does not resize/reposition the layout guides
- - BUG: Fruchterman-Reingold model fixes some nodes to (1,1) breaking the layout
- - BUG: Rubber band selection does not always work on large nets where nodes been removed.
- - BUG/WONTFIX: Crash on Graphml files with html special chars in node/edge labels
 
- - TODO: Enrich Node properties dialog
- - TODO: Update app icons
+  TODO
+  Change Menus to:
+  Matrices
+  Cohesion/Connectedness: Density, Reachability, and All distance and Walks, Connectivity, Reciprocity, Transitivity ?, Clu Cof
+  Prominence: Centrality and Prestige
+  Subgroups / Communities: Cliques (later clans etc), (later path distance MDS) Components, Blocks and Cutpoints,
+  Structural Equivalence: HCA, Similarity (later MDS), Block modelling, CONCOR
 
- - CHECK weighted networks results (IRCC and distance matrix with other combinations)
- - CHECK isWeighted corner case results, when !graphModified.
- - CHECK connectedness() algorithm implementation (unilaterallyConnectedVertices)
-*/
+  */
+
 
 /**
  * @brief The Graph class
@@ -155,10 +199,9 @@ public slots:
 
     int relationCurrent();
     QString relationCurrentName() const;
+    void relationCurrentRename(const QString &newName, const bool &notifyMW=false);
 
     /** Slots to signals from Parser */
-
-    void relationAddFromParser(QString);
     void vertexCreate(const int &num, const int &size, const QString &nodeColor,
                        const QString &numColor, const int &numSize,
                        const QString &label, const QString &lColor,
@@ -166,10 +209,16 @@ public slots:
                        const bool &signalMW
                         );//Main vertex creation call
 
-    void graphLoaded(int fileType, QString fName, QString netName,
-                     int totalNodes, int totalLinks, bool undirected);
+    void graphFileLoaded(const int &fileType,
+                         const QString &fName=QString::null,
+                         const QString &netName=QString::null,
+                         const int &totalNodes=0,
+                         const int &totalLinks=0,
+                         const bool &undirected=false,
+                         const QString &message=QString::null);
+
     void vertexRemoveDummyNode(int);
-    void terminateParserThreads (QString reason);
+    void graphLoadedTerminateParserThreads (QString reason);
 
     /** Slots to signals from GraphicsWidget and Parser*/
     void edgeCreate  (const int &v1, const int &v2, const float &weight,
@@ -188,10 +237,11 @@ public slots:
     void vertexCreateAtPosRandomWithLabel(const int &i,
                                           const QString &label,
                                           const bool &signalMW=false) ;
-
     /** Slots to signals from MainWindow */
-    void relationSet(int);
-    void relationAddFromUser(QString relation);
+
+    void relationSet(int index=RAND_MAX, const bool notifyMW=true);
+    void relationNext();
+    void relationPrev();
     void canvasSizeSet(const int w, const int h);
     double canvasMaxRadius() const;
     float canvasMinDimension() const;
@@ -200,9 +250,11 @@ public slots:
     double canvasRandomX()  const;
     double canvasRandomY()  const;
     void vertexIsolateFilter ( bool );		//Called by MW to filter orphan vertices
+    void vertexClickedSet(const int &v);
+    void edgeClickedSet(const int &v1, const int &v2) ;
     void edgeFilterByWeight (float, bool);		//Called by MW to filter edges over/under a weight
     void edgeFilterByRelation(int relation, bool status);
-
+    void edgeFilterUnilateral(const bool &toggle);
     void webCrawl(QString, int, int, bool extLinks, bool intLinks);	//Called by MW to start a web crawler...
 
     QString htmlEscaped (QString str) const;
@@ -216,23 +268,46 @@ signals:
                       const int &edges,
                       const float &density);
 
-    void signalGraphLoaded (int fileType, QString fileName, QString netName,
-                            int totalNodes,int totalLinks, bool undirected);
+    void signalGraphLoaded (const int &fileType,
+                            const QString &fileName=QString::null,
+                            const QString &netName=QString::null,
+                            const int &totalNodes=0,
+                            const int &totalLinks=0,
+                            const QString &message=QString::null
+            );
     void signalGraphSaved(const int &status);
 
-    void statusMessage (const QString &message);			//updates statusbar message
-    void signalRelationAddToMW(QString newRelation);
+    void statusMessage (const QString &message);
     void signalDatasetDescription(QString);
     void signalNodeSizesByOutDegree(bool);
     void signalNodeSizesByInDegree(bool);
+    void signalNodeClickedInfo(const int &number=0,
+                                    const QPointF &p=QPointF(),
+                                    const QString &label=QString::null,
+                                    const int &inDegree=0,
+                                    const int &outDegree=0,
+                                    const float &clc=0);
+    void signalEdgeClickedInfo (const long int &v1=0,
+                                const long int &v2=0,
+                                const float &weight=0,
+                                const bool &undirected=false);
+    void signalRelationAddToMW(const QString &newRelation, const bool &changeRelation=true);
+    void signalRelationsClear();
+    void signalRelationRenamedToMW(const QString newRelName);
+    void signalRelationChangedToGW(int);
+    void signalRelationChangedToMW(const int &relIndex=RAND_MAX);
+    void signalSelectionChanged(const int &selectedVertices,
+                                const int &selectedEdges);
 
     /** Signals to GraphicsWidget */
     void drawNode( const int &num, const int &size, const QString &nodeShape,
                    const QString &nodeColor,
                    const bool &showNumbers,const bool &numbersInside,
                    const QString &numberColor, const int &numSize,
+                   const int &numDistance,
                    const bool &showLabels, const QString &label,
                    const QString &labelColor, const int &labelSize,
+                   const int &labelDistance,
                    const QPointF &p
                     );
 
@@ -246,6 +321,7 @@ signals:
     void eraseEdge(const long int &, const long int &);					//emited from edgeRemove() to GW to clear the edge item.
     void setEdgeVisibility (int, int, int, bool);			// emitted from each Vertex
     void setVertexVisibility(long int, bool);		//notifies GW to disable a node
+    void setNodePos(const int &, const qreal &, const qreal &);
     void setNodeSize(const long int &v, const int &size);
     void setNodeShape(const long int v, const QString &shape);
     void setNodeColor(const long int v, const QString &color);
@@ -253,6 +329,7 @@ signals:
     void setNodeNumberSize(const long int &, const int &);
     void setNodeNumberDistance(const long int &, const int &);
     void setNodeLabelSize(const long int &, const int &);
+    void setNodeLabelColor(const long int &, const QString &color);
     void setNodeLabelDistance(const long int &, const int &);
 
     void setEdgeWeight (const long int &v1, const long int &v2, const float &weight);
@@ -265,10 +342,9 @@ signals:
                        const QString &label);
     void addGuideCircle(const double&, const double&, const double&);
     void addGuideHLine (const double&y0);
-    void moveNode(const int &, const qreal &, const qreal &);
 
-    /** Signals to Vertice */
-    void relationChanged(int);
+
+
 
     /** Signals to Crawler threads */
     void  operateSpider();
@@ -285,18 +361,20 @@ public:
 
     /*FILES (READ AND WRITE)*/
     QString graphName() const;
-    bool graphLoad (const QString, const QString m_codecName,
-                    const bool,
-                    const int maxWidth,
-                    const int maxHeight,
+    void graphLoad (const QString m_fileName, const QString m_codecName,
+                    const bool m_showLabels,
                     const int format,
-                    const int two_sm_mode);
+                    const int two_sm_mode,
+                    const QString delimiter=QString::null);
 
-    void graphSave(QString fileName, int fileType);
+    void graphSave(const QString &fileName,
+                   const int &fileType,
+                   const bool &saveEdgeWeights=true);
     bool graphSaveToPajekFormat (const QString &fileName,
                                  QString networkName="",
                                  int maxWidth=0, int maxHeight=0);
-    bool graphSaveToAdjacencyFormat (QString fileName);
+    bool graphSaveToAdjacencyFormat (const QString &fileName,
+                                     const bool &saveEdgeWeights=true);
 
     bool graphSaveToGraphMLFormat (const QString &fileName,
                                    QString networkName="",
@@ -305,17 +383,29 @@ public:
     int graphFileFormat() const;
     bool graphFileFormatExportSupported(const int &fileFormat) const;
 
+    QString graphMatrixTypeToString(const int &matrixType) const;
+    int graphMatrixStrToType(const QString &matrix) const;
+
+    QString graphMetricTypeToString(const int &metricType) const;
+    int graphMetricStrToType(const QString &metricStr) const;
+
+    QString graphClusteringMethodTypeToString(const int &methodType) const;
+    int graphClusteringMethodStrToType(const QString &method) const;
+
     /* RELATIONS */
     int relations();
-    void relationAddFromGraph(QString relationName);
-
+    void relationsClear();
+    void relationAdd(const QString &relName, const bool &changeRelation=false);
 
     /* VERTICES */
-    int vertexLastNumber();
-    int vertexFirstNumber();
+    int vertexNumberMax();
+    int vertexNumberMin();
 
     int vertexDegreeOut(int);
     int vertexDegreeIn(int);
+    QList<int> vertexNeighborhoodList(const int &v1);
+
+    bool vertexIsolated(const long int &v1) const;
 
     int vertexExists(const long int &v1 );
     int vertexExists(const QString &label);
@@ -353,26 +443,38 @@ public:
     void vertexLabelColorInit(QString color);
     void vertexLabelSet(int v, QString label);
     void vertexLabelColorSet(int v1, QString color);
+    void vertexLabelColorAllSet(const QString &color);
     QString vertexLabel(const long int &v1);
     void vertexLabelDistanceInit (const int &distance);
     void vertexLabelDistanceSet(const long int &v, const int &newDistance );
     void vertexLabelDistanceAllSet (const int &newDistance);
 
     void vertexPosSet(const int &v, const int &x, const int &y);
+    QPointF vertexPos(const int &v1);
+    int vertexClicked() const;
 
     int vertices(const bool dropIsolates=false, const bool countAll=false) ;
 
-    int edgesOutbound (int i) ;
-    int edgesInbound (int i) ;
+    int vertexEdgesOutbound (int i) ;
+    int vertexEdgesInbound (int i) ;
 
     int verticesWithOutboundEdges();
     int verticesWithInboundEdges();
     int verticesWithReciprocalEdges();
 
-    QList<int> verticesIsolated();
+    QList<int> verticesListIsolated();
+    QList<int> verticesList();
+    QSet<int> verticesSet();
 
-    qreal length(const QPointF &a, const QPointF &b);
-    qreal length(const QPointF &a);
+
+
+    void verticesCreateSubgraph(QList<int> vList,
+                                const int &type = SUBGRAPH_CLIQUE,
+                                const int &center = 0);
+
+
+    qreal graphDistanceEuclidean(const QPointF &a, const QPointF &b);
+    qreal graphDistanceEuclidean(const QPointF &a);
     int sign(const qreal &D);
 
     qreal layoutForceDirected_F_rep(const QString model, const qreal &dist,
@@ -394,6 +496,7 @@ public:
 
     /* EDGES */
     int edgesEnabled();
+    ClickedEdge edgeClicked();
     float edgeExists(const long &v1, const long &v2, const bool &undirected=false);
 
     void edgeRemove (const long int &v1, const long int &v2,
@@ -417,42 +520,131 @@ public:
     bool edgeColorAllSet(const QString &color, const int &threshold=RAND_MAX);
 
     //GRAPH methods
-    void graphModifiedSet(const int &graphChangedFlag, const bool&signalMW=true);
+    void graphModifiedSet(const int &graphNewStatus, const bool&signalMW=true);
     bool graphModified() const ;
+    bool graphSaved() const;
+    bool graphLoaded() const;
 
-    int graphPathsExistingCount();
+    void graphSelectionChanged(const QList<int> &selectedVertices,
+                               const QList<SelectedEdge> &selectedEdges);
 
-    float density();
-    bool isWeighted();
+    QList<int> graphSelectedVertices() const;
+    int graphSelectedVerticesCount() const;
+    int graphSelectedVerticesMin() const;
+    int graphSelectedVerticesMax() const;
 
-    bool isSymmetric();
-    void symmetrize();
+    QList<SelectedEdge> graphSelectedEdges() const;
+    int graphSelectedEdgesCount() const;
 
-    void undirectedSet(const bool &toggle);
-    bool isUndirected();
+    int graphGeodesics();
 
-    void adjacencyMatrixCreate(const bool dropIsolates=false,
+    float graphDensity();
+    bool graphWeighted();
+
+    bool graphSymmetric();
+    void graphSymmetrize();
+    void graphSymmetrizeStrongTies(const bool &allRelations=false);
+
+    void graphCocitation();
+
+    void graphUndirectedSet(const bool &toggle, const bool &signalMW=true);
+    bool graphUndirected();
+
+    void graphMatrixAdjacencyCreate(const bool dropIsolates=false,
                                const bool considerWeights=true,
                                const bool inverseWeights=false,
                                const bool symmetrize=false );
-    bool adjacencyMatrixInvert(const QString &method);
+
+    bool graphMatrixAdjacencyInvert(const QString &method="lu");
 
 
-    /* PRINT OUT TO FILES*/
+    void graphMatrixSimilarityMatchingCreate(Matrix &AM,
+                                             Matrix &SEM,
+                                             const int &measure=METRIC_SIMPLE_MATCHING,
+                                             const QString &varLocation="Rows",
+                                             const bool &diagonal=false,
+                                             const bool &considerWeights=true);
+
+    void graphMatrixSimilarityPearsonCreate (Matrix &AM,
+                                             Matrix &PCC,
+                                             const QString &varLocation="Rows",
+                                             const bool &diagonal=false);
+
+    void graphMatrixDissimilaritiesCreate(Matrix &INPUT_MATRIX,
+                                          Matrix &DSM,
+                                          const int &metric,
+                                          const QString &varLocation,
+                                          const bool &diagonal,
+                                          const bool &considerWeights);
+
+    /* REPORT EXPORTS */
 
     void writeDataSetToFile(const QString dir, const QString );
-    void writeAdjacencyMatrixTo(QTextStream& os);
-    void writeAdjacencyMatrix(const QString fileName);
 
-    void writeAdjacencyMatrixInvert(const QString &filename,
+    void writeMatrixAdjacencyTo(QTextStream& os,
+                                const bool &saveEdgeWeights=true);
+
+    void writeMatrix(const QString &fileName,
+                     const int &matrix=MATRIX_ADJACENCY,
+                     const bool &considerWeights=true,
+                     const bool &inverseWeights=false,
+                     const bool &dropIsolates=false,
+                     const QString &varLocation="Rows",
+                     const bool &simpler=false);
+
+    void writeMatrixAdjacency(const QString fileName,
+                              const bool &markDiag=true);
+    void writeMatrixAdjacencyPlot(const QString fileName,
+                                      const bool &simpler=false);
+
+    void writeMatrixAdjacencyInvert(const QString &filename,
                                     const QString &method);
-    void writeDistanceMatrix(const QString fn,
-                             const bool considerWeights,
-                             const bool inverseWeights,
-                             const bool dropIsolates);
-    void writeNumberOfGeodesicsMatrix(const QString &fn,
-                                      const bool &considerWeights,
-                                      const bool &inverseWeights);
+
+    void writeMatrixLaplacianPlainText(const QString &filename);
+    void writeMatrixDegreeText(const QString &filename);
+
+    void writeMatrixDistancesPlainText(const QString &fn,
+                                       const bool &considerWeights,
+                                       const bool &inverseWeights,
+                                       const bool &dropIsolates);
+
+    void writeMatrixNumberOfGeodesicsPlainText(const QString &fn,
+                                               const bool &considerWeights,
+                                               const bool &inverseWeights);
+
+    void writeMatrixDissimilarities(const QString fileName,
+                                    const QString &metricStr,
+                                    const QString &varLocation,
+                                    const bool &diagonal,
+                                    const bool &considerWeights) ;
+
+    void writeMatrixSimilarityMatchingPlain(const QString fileName,
+                                            const int &measure=METRIC_SIMPLE_MATCHING,
+                                            const QString &matrix = "adjacency",
+                                            const QString &varLocation="rows",
+                                            const bool &diagonal=false,
+                                            const bool &considerWeights=true);
+
+    void writeMatrixSimilarityMatching(const QString fileName,
+                                       const QString &measure="Simple",
+                                       const QString &matrix = "adjacency",
+                                       const QString &varLocation="rows",
+                                       const bool &diagonal=false,
+                                       const bool &considerWeights=true);
+
+
+    void writeMatrixSimilarityPearson(const QString fileName,
+                                      const bool considerWeights,
+                                      const QString &matrix = "adjacency",
+                                      const QString &varLocation="rows",
+                                      const bool &diagonal=false);
+
+    void writeMatrixSimilarityPearsonPlainText(const QString fileName,
+                                               const bool considerWeights,
+                                               const QString &matrix = "adjacency",
+                                               const QString &varLocation="rows",
+                                               const bool &diagonal=false);
+
     void writeEccentricity(const QString, const bool considerWeights,
                            const bool inverseWeights, const bool dropIsolates);
 
@@ -488,6 +680,10 @@ public:
     void writeCentralityInformation(const QString,
                                     const bool weigths,
                                     const bool inverseWeights);
+    void writeCentralityEigenvector(const QString,
+                                    const bool &weigths=true,
+                                    const bool &inverseWeights = false,
+                                    const bool &dropIsolates=false);
     void writePrestigeDegree(const QString, const bool weights,
                              const bool dropIsolates);
     void writePrestigeProximity(const QString, const bool weights,
@@ -495,6 +691,20 @@ public:
                                 const bool dropIsolates);
     void writePrestigePageRank(const QString, const bool Isolates=false);
 
+
+    void writeClusteringHierarchical(const QString &fileName,
+                                     const QString &matrix = "Adjancency",
+                                     const QString &metric = "Manhattan",
+                                     const QString &method = "Complete",
+                                     const bool &diagonal = false,
+                                     const bool &dendrogram = false,
+                                     const bool &considerWeights=true,
+                                     const bool &inverseWeights=false,
+                                     const bool &dropIsolates=false);
+
+    void writeClusteringHierarchicalResultsToStream(QTextStream& outText,
+                                                    const int N,
+                                               const bool &dendrogram = false);
 
     void writeCliqueCensus(
             const QString fileName, const bool considerWeights
@@ -505,22 +715,30 @@ public:
     void writeTriadCensus(const QString, const bool);
 
 
-    /* DISTANCES, CENTRALITIES & PROMINENCE MEASURES */
-    int distance(const int, const int,
-                 const bool considerWeights, const bool inverseWeights);
-    int diameter(const bool considerWeights, const bool inverseWeights);
-    float distanceGraphAverage(const bool considerWeights,
-                               const bool inverseWeights, const bool dropIsolates);
-    int connectedness();
 
-    void distanceMatrixCreate(const bool &centralities=false,
+
+
+
+    /* DISTANCES, CENTRALITIES & PROMINENCE MEASURES */
+    int graphDistanceGeodesic(const int, const int,
+                 const bool considerWeights, const bool inverseWeights);
+    int graphDiameter(const bool considerWeights, const bool inverseWeights);
+    float graphDistanceGeodesicAverage(const bool considerWeights,
+                               const bool inverseWeights, const bool dropIsolates);
+    int graphConnectedness(const bool updateProgress=false) ;
+
+    void graphMatrixDistancesCreate(const bool &computeCentralities=false,
                               const bool &considerWeights=false,
                               const bool &inverseWeights=true,
                               const bool &dropIsolates=false);
-    void centralityDegree(const bool weights, const bool dropIsolates=false);
+    void centralityDegree(const bool &weights=true,
+                          const bool &dropIsolates=false);
     void centralityInformation(const bool considerWeights=false,
                                const bool inverseWeights=false);
-    void centralityClosenessInfluenceRange(const bool considerWeights=false,
+    void centralityEigenvector(const bool &considerWeights=false,
+                               const bool &inverseWeights=false,
+                               const bool &dropIsolates=false);
+    void centralityClosenessIR(const bool considerWeights=false,
                                            const bool inverseWeights=false,
                                            const bool dropIsolates=false);
 
@@ -532,32 +750,43 @@ public:
 
     /* REACHABILTY AND WALKS */
     int walksBetween(int v1, int v2,int length);
-    void walksMatrixCreate(const int &length,
+    void graphWalksMatrixCreate(const int &vertices=0, const int &length=0,
                                    const bool &updateProgress=false);
-    void writeWalksTotalMatrix(const QString &fn, const int &length);
-    void writeWalksOfLengthMatrix(const QString &fn, const int &length);
+    void writeWalksTotalMatrixPlainText(const QString &fn);
+    void writeWalksOfLengthMatrixPlainText(const QString &fn, const int &length);
+    void writeMatrixWalks (const QString &fn,
+                             const int &length=0,
+                             const bool &simpler=false);
     int reachable(const int &v1, const int &v2) ;
     QList<int> vertexinfluenceRange(int v1);
     QList<int> vertexinfluenceDomain(int v2);
-    void reachabilityMatrix(const bool &considerWeights=false,
-                            const bool &inverseWeights=false,
-                            const bool &dropIsolates=false,
-                            const bool &updateProgress=false);
-    void writeReachabilityMatrix(const QString &fn, const bool &dropIsolates=false);
+
+    void writeReachabilityMatrixPlainText(const QString &fn, const bool &dropIsolates=false);
 
 
     float numberOfTriples(int v1);
 
+    /* CLIQUES, CLUSTERING, TRIADS */
+    void graphCliques(QSet<int> R=QSet<int>(), QSet<int> P=QSet<int>(), QSet<int> X=QSet<int>() );
+    void graphCliqueAdd (const QList<int> &clique);
+    int graphCliquesContaining(const int &actor, const int &size=0);
+    int graphCliquesOfSize(const int &size );
 
-    bool  cliqueAdd (const QList<int> &list);
-    float cliquesContaining(int source, int size=0);
-    float cliquesOfSize(int size );
+    void graphClusteringHierarchical(Matrix &STR_EQUIV,
+                                     const int &metric,
+                                     const int &method,
+                                     const bool &diagonal=false,
+                                     const bool &diagram=false,
+                                     const bool &considerWeights=true,
+                                     const bool &inverseWeights=false,
+                                     const bool &dropIsolates=false);
     float clusteringCoefficientLocal(const long int &v1);
     float clusteringCoefficient (const bool updateProgress=false);
 
-    bool triadCensus();
+    bool graphTriadCensus();
     void triadType_examine_MAN_label(int, int, int, Vertex*,  Vertex*, Vertex* );
     //	void eccentr_JordanCenter(); 				// TODO
+
 
 
     /* LAYOUTS */
@@ -666,7 +895,7 @@ private:
                   const QString &color
                   );
 
-    /** methods used by distanceMatrixCreate()  */
+    /** methods used by graphMatrixDistancesCreate()  */
     void BFS(const int &s, const bool &computeCentralities=false,
              const bool &dropIsolates=false);
     void dijkstra(const int &s, const bool &computeCentralities=false,
@@ -685,67 +914,77 @@ private:
 
     QList<QString> m_relationsList;
     QList<int>  triadTypeFreqs; 	//stores triad type frequencies
-    QList<int>  m_isolatedVerticesList, m_graphFileFormatExportSupported;
+    QList<int>  m_isolatedVerticesList,m_verticesList, m_graphFileFormatExportSupported;
+    QSet<int> m_verticesSet;
+    QList<SelectedEdge> m_selectedEdges;
+    QList<int> m_selectedVertices;
     QHash <int, int> influenceRanges, influenceDomains;
-    QHash <int, int> disconnectedVertices;
-    QHash <int, int> unilaterallyConnectedVertices;
+    QHash <int, int> m_vertexPairsNotConnected;
+    QHash <int, int> m_vertexPairsUnilaterallyConnected;
 
-    H_StrToBool cliques_2_Vertex;
-    H_StrToBool cliques_3_Vertex;
-    H_StrToBool cliques_4_Vertex;
+    QMap <int, L_int > m_cliques;
+
+    QList <float> m_clusteringLevel;
+    QMap <int, V_int> m_clustersPerSequence;
+
+
+    QMap<QString, V_int> m_clustersByName;
+    QMap<int, V_str> m_clusterPairNamesPerSeq;
 
     Matrix  TM, DM, sumM, invAM, AM, invM;
-    Matrix XM, XSM, XRM;
+    Matrix XM, XSM, XRM, CLQM;
+
     stack<int> Stack;
 
-    /** used in resolveClasses and distanceMatrixCreate() */
-    H_StrToInt discreteDPs, discreteDCs, discreteCCs, discreteBCs, discreteSCs;
+    /** used in resolveClasses and graphMatrixDistancesCreate() */
+    H_StrToInt discreteDPs, discreteSDCs, discreteCCs, discreteBCs, discreteSCs;
     H_StrToInt discreteIRCCs, discreteECs, discreteEccentricities;
-    H_StrToInt discretePCs, discreteICs,  discretePRPs, discretePPs;
+    H_StrToInt discretePCs, discreteICs,  discretePRPs, discretePPs, discreteEVCs;
 
-    bool calculatedDP, calculatedDC, calculatedCentralities;
-    bool calculatedPP, calculatedIRCC, calculatedIC, calculatedPRP;
-    bool calculatedTriad;
-
-    int m_precision, m_curRelation, m_fileFormat;
-    float edgeWeightTemp;
-    float meanDC, varianceDC;
-    float meanCC, varianceCC;
+    int m_precision, m_fieldWidth, m_curRelation, m_fileFormat, m_vertexClicked;
+    ClickedEdge m_clickedEdge;
+    float edgeWeightTemp, edgeReverseWeightTemp;
+    float meanSDC, varianceSDC;
+    float meanSCC, varianceSCC;
     float meanIRCC, varianceIRCC;
-    float meanBC, varianceBC;
-    float meanSC, varianceSC;
+    float meanSBC, varianceSBC;
+    float meanSSC, varianceSSC;
     float meanEC, varianceEC;
-    float meanPC, variancePC;
+    float meanSPC, varianceSPC;
     float meanIC, varianceIC;
-    float meanDP, varianceDP;
+    float meanEVC, varianceEVC;
+    float meanSDP, varianceSDP;
     float meanPP, variancePP;
     float meanPRP, variancePRP;
     float minEccentricity, maxEccentricity, sumEccentricity;
-    float minDP, maxDP, t_sumDP, sumDP, groupDP;
-    float minDC, maxDC, t_sumDC, sumDC, groupDC;
-    float minCC, maxCC, nomCC, denomCC, sumCC, groupCC, maxIndexCC;
+    float minSDP, maxSDP, sumDP, sumSDP, groupDP;
+    float minSDC, maxSDC, sumDC, sumSDC, groupDC;
+    float minSCC, maxSCC, nomSCC, denomSCC, sumCC, sumSCC, groupCC, maxIndexCC;
     float minIRCC, maxIRCC, nomIRCC, denomIRCC, sumIRCC, groupIRCC;
-    float minBC, maxBC, nomBC, denomBC, sumBC, groupBC, maxIndexBC;
-    float minPC, maxPC, nomPC, denomPC, t_sumIC, sumPC, groupPC, maxIndexPC;
-    float minSC, maxSC, nomSC, denomSC, sumSC, groupSC, maxIndexSC;
+    float minSBC, maxSBC, nomSBC, denomSBC, sumBC, sumSBC, groupSBC, maxIndexBC;
+    float minSPC, maxSPC, nomSPC, denomSPC, t_sumIC, sumSPC, groupSPC, maxIndexPC;
+    float minSSC, maxSSC, sumSC, sumSSC, groupSC, maxIndexSC;
     float minEC, maxEC, nomEC, denomEC, sumEC, groupEC, maxIndexEC;
     float minIC, maxIC, nomIC, denomIC, sumIC, maxIndexIC;
-    float minPRP, maxPRP, nomPRC, denomPRC, t_sumPC, t_sumPRP, sumPRP;
+    float minEVC, maxEVC, nomEVC, denomEVC, sumEVC, sumSEVC, groupEVC;
+    float minPRP, maxPRP, nomPRC, denomPRC, sumPC, t_sumPRP, sumPRP;
     float minPP, maxPP, nomPP, denomPP, sumPP, groupPP;
-    float minCLC, maxCLC, averageCLC, d_factor;
+
+    float minCLC, maxCLC, averageCLC,varianceCLC, d_factor;
     int maxNodeCLC, minNodeCLC;
-    int classesDP, maxNodeDP, minNodeDP;
-    int classesDC, maxNodeDC, minNodeDC;
-    int classesCC, maxNodeCC, minNodeCC;
+    int classesSDP, maxNodeDP, minNodeDP;
+    int classesSDC, maxNodeSDC, minNodeSDC;
+    int classesSCC, maxNodeSCC, minNodeSCC;
     int classesIRCC, maxNodeIRCC, minNodeIRCC;
-    int classesBC, maxNodeBC, minNodeBC;
-    int classesPC, maxNodePC, minNodePC;
-    int classesSC, maxNodeSC, minNodeSC;
+    int classesSBC, maxNodeSBC, minNodeSBC;
+    int classesSPC, maxNodeSPC, minNodeSPC;
+    int classesSSC, maxNodeSSC, minNodeSSC;
     int classesEC, maxNodeEC, minNodeEC;
     int classesEccentricity, maxNodeEccentricity, minNodeEccentricity;
     int classesIC, maxNodeIC, minNodeIC;
     int classesPRP, maxNodePRP, minNodePRP;
     int classesPP, maxNodePP, minNodePP;
+    int classesEVC, maxNodeEVC, minNodeEVC;
     int sizeOfComponent;
 
     /** General & initialisation variables */
@@ -754,21 +993,27 @@ private:
     long int m_totalVertices, m_totalEdges, m_graphDiameter, initVertexSize;
     int initVertexLabelSize, initVertexNumberSize;
     int initVertexNumberDistance, initVertexLabelDistance;
-
-    int isolatedVertices;
-
-    float m_graphAverageDistance, nonZeroDistancesCounter, m_graphPathsExistingCount;
+    bool order, initVertexLabelsVisibility,initVertexNumbersVisibility;
+    bool initVertexNumberInside, initEdgeWeightNumbers, initEdgeLabels;
+    float m_graphAverageDistance, m_graphGeodesicsCount;
+    float m_graphDensity;
+    int m_graphConnectedness;
     int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
     int timerId,  canvasWidth, canvasHeight;
-    bool order, initVertexLabelsVisibility,initVertexNumbersVisibility;
-    bool initNumbersInsideNodes;
-    bool adjacencyMatrixCreated,distanceMatrixCreated;
-    bool reachabilityMatrixCreated;
+    bool calculatedEdges;
+    bool calculatedVertices, calculatedVerticesList, calculatedVerticesSet;
+    bool calculatedAdjacencyMatrix, calculatedDistances, calculatedCentralities;
+    bool calculatedIsolates;
+    bool calculatedEVC;
+    bool calculatedDP, calculatedDC, calculatedPP;
+    bool calculatedIRCC, calculatedIC, calculatedPRP;
+    bool calculatedTriad;
+    bool calculatedGraphSymmetry, calculatedGraphDensity, calculatedGraphWeighted;
     bool m_undirected, m_symmetric, m_isWeighted;
-    bool initEdgeWeightNumbers, initEdgeLabels;
 
     QString VERSION, fileName, m_graphName, initEdgeColor, initVertexColor,
         initVertexNumberColor, initVertexLabelColor, initVertexShape;
+    QString htmlHead, htmlHeadLight, htmlEnd;
 
     QDateTime actualDateTime;
 };

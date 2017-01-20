@@ -1,12 +1,13 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer 
- version: 2.1
+ version: 2.2
  Written in Qt
  
                          parser.h  -  description
                              -------------------
-    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
-    email                : dimitris.kalamaras@gmail.com
+    copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
+    project site      : http://socnetv.org
+
  ***************************************************************************/
 
 /*******************************************************************************
@@ -33,13 +34,47 @@
 #include <QPointF>
 #include <QObject>
 #include <QMultiMap>
-
+#include <QDebug>
 class QXmlStreamReader;
 class QXmlStreamAttributes;
-/** 	
-	Main class for network file parsing and loading
-	Currently, it supports Pajek, Adjacency, Graphviz, GraphML
-*/
+
+
+
+
+/**
+ * @brief The Actor struct
+ * Used in loadEdgeListWeighed and loadEdgeListSimple
+ */
+struct Actor {
+    QString key;
+    int value;
+};
+
+
+/**
+ * @brief The CompareActors class
+ * Implements a min-priority queue
+ * Used in loadEdgeListWeighed
+ */
+class CompareActors {
+    public:
+    bool operator()(Actor& t1, Actor& t2)
+    {
+       if (t1.value== t2.value)
+            return t1.key  > t2.key ;
+//       qDebug () << t1.value << " > " << t2.value << "?"
+//                 << ( t1.value > t2.value ) ;
+       return t1.value > t2.value;  //minimum priority
+       // Returns true if t2.value smaller than t1.value
+    }
+};
+
+
+/**
+ * @brief The Parser class
+ * Main class for network file parsing and loading
+ * Supports GraphML, Pajek, Adjacency, Graphviz, UCINET, EdgeLists etc
+ */
 class Parser :  public QObject {
 	Q_OBJECT
 public:
@@ -48,9 +83,10 @@ public:
               const QString iNC, const QString iNSh, const QString iNNC,
               const int iNNS, const QString iNLC, const int iNLS ,
               const QString iEC, const int w, const int h, const int format,
-              const int sm_mode);
+              const int sm_mode,
+           const QString delim=QString::null);
     ~Parser();
-    bool run();
+    void run();
 	bool loadPajek();
 	bool loadAdjacency();
 	bool loadDot();
@@ -58,14 +94,14 @@ public:
 	bool loadGML();
 	bool loadGW();
 	bool loadDL();
-	bool loadSimpleList();
-	bool loadWeighedList();
+    bool loadEdgeListSimple(const QString &delimiter);
+    bool loadEdgeListWeighed(const QString &delimiter);
 	bool loadTwoModeSociomatrix();
 
-    void dotProperties(QString str, float &, QString &label,
+    void readDotProperties(QString str, float &, QString &label,
                        QString &shape, QString &color, QString &fontName,
                        QString &fontColor );
-	void readGraphML (QXmlStreamReader &);
+    bool readGraphML(QXmlStreamReader &);
 	void readGraphMLElementGraph(QXmlStreamReader &);
 	void readGraphMLElementNode (QXmlStreamReader &);
 	void endGraphMLElementNode (QXmlStreamReader &);
@@ -84,8 +120,10 @@ public:
     void createRandomNodes(const int &fixedNum=1,const QString &label=QString::null,
                            const int &newNodes=1);
 
+    void loadFileError(const QString &errorMessage);
+
 signals:
-    void addRelation( QString );
+    void addRelation( const QString & relName, const bool &changeRelation=false);
     void relationSet( int );
 	void createNode( 
             const int &num, const int &size, const QString &color,
@@ -104,32 +142,37 @@ signals:
                      const bool &arrows, const bool &bezier,
                      const QString &edgeLabel=QString::null,
                      const bool &signalMW=false);
-    void networkFileLoaded(int fileType, QString fileName,
+    void networkFileLoaded(int fileType,
+                           QString fileName,
                            QString netName,
-                           int totalNodes, int totalLinks,
-                           bool edgeDirType);
+                           int totalNodes,
+                           int totalLinks,
+                           bool edgeDirType,
+                           const QString &message=QString::null);
+
+
 	void removeDummyNode (int);
     void finished(QString);
 	
 protected:
 
 private: 
-	QHash<QString, int> nodeNumber;
+    QHash<QString, int> nodeHash;
 	QHash<QString, QString> keyFor, keyName, keyType, keyDefaultValue ;
     QHash<QString, QString> edgesMissingNodesHash;
-    QStringList edgeMissingNodesList,edgeMissingNodesListData;
+    QStringList edgeMissingNodesList,edgeMissingNodesListData, relationsList;
 	QMultiMap<int, int> firstModeMultiMap, secondModeMultiMap;
 	QXmlStreamReader *xml;
     QString fileName, userSelectedCodecName, networkName, initNodeColor;
     QString initEdgeColor, initNodeShape, initNodeNumberColor, initNodeLabelColor;
+    QString initEdgeLabel, delimiter, errorMessage;
     QString nodeColor, edgeColor, edgeType, nodeShape, nodeLabel, edgeLabel;
     QString nodeNumberColor, nodeLabelColor;
     QString key_id, key_value, key_name, key_what, key_type;
-    QString node_id, edge_id, edge_source, edge_target, edge_directed;
+    QString node_id, edge_id, edge_source, edge_target, edge_weight, edge_directed;
 	int gwWidth, gwHeight;
-    int totalLinks, aNodes, fileFormat, two_sm_mode, edgeDirType;
+    int totalLinks, totalNodes, fileFormat, two_sm_mode, edgeDirType;
     int initNodeSize,  initNodeNumberSize, nodeNumberSize, initNodeLabelSize;
-    QString initEdgeLabel;
     int nodeLabelSize, source, target, nodeSize;
 	float initEdgeWeight, edgeWeight, arrowSize;
 	float bez_p1_x,bez_p1_y, bez_p2_x, bez_p2_y;

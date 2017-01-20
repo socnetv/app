@@ -40,15 +40,19 @@ QT += widgets
 QT += printsupport 
 
 INCLUDEPATH  += ./src
-FORMS += src/forms/filteredgesbyweightdialog.ui \
-        src/forms/webcrawlerdialog.ui \
-        src/forms/nodeeditdialog.ui \
-        src/forms/datasetselectdialog.ui \
-        src/forms/randsmallworlddialog.ui \
-        src/forms/randscalefreedialog.ui \
-        src/forms/randerdosrenyidialog.ui \
-        src/forms/randregulardialog.ui \
-        src/forms/settingsdialog.ui
+FORMS += src/forms/dialogfilteredgesbyweight.ui \
+         src/forms/webcrawlerdialog.ui \
+         src/forms/dialognodeedit.ui \
+         src/forms/dialogdatasetselect.ui \
+         src/forms/dialograndsmallworld.ui \
+         src/forms/dialograndscalefree.ui \
+         src/forms/dialogranderdosrenyi.ui \
+         src/forms/dialograndregular.ui \
+         src/forms/dialogsettings.ui \
+         src/forms/dialogsimilaritypearson.ui \
+         src/forms/dialogsimilaritymatches.ui \
+         src/forms/dialogdissimilarities.ui \
+         src/forms/dialogclusteringhierarchical.ui 
 
 HEADERS += src/guide.h \
            src/graphicswidget.h \
@@ -64,17 +68,21 @@ HEADERS += src/guide.h \
            src/texteditor.h \
            src/vertex.h \ 
   	   src/parser.h \
-	   src/filteredgesbyweightdialog.h \
+	   src/dialogfilteredgesbyweight.h \
 	   src/webcrawlerdialog.h \
 	   src/webcrawler.h \
-	   src/datasetselectdialog.h \
-    src/previewform.h \
-    src/nodeeditdialog.h \
-    src/randerdosrenyidialog.h \
-    src/randsmallworlddialog.h \
-    src/randscalefreedialog.h \
-    src/randregulardialog.h \
-    src/settingsdialog.h
+	   src/dialogdatasetselect.h \
+	   src/dialogpreviewfile.h \
+	   src/dialognodeedit.h \
+	   src/dialogranderdosrenyi.h \
+	   src/dialograndsmallworld.h \
+	   src/dialograndscalefree.h \
+	   src/dialograndregular.h \
+	   src/dialogsettings.h \
+	   src/dialogsimilaritypearson.h \
+	   src/dialogsimilaritymatches.h \
+	   src/dialogdissimilarities.h \
+ 	   src/dialogclusteringhierarchical.h 
 
 SOURCES += src/guide.cpp \
            src/graphicswidget.cpp \
@@ -91,17 +99,21 @@ SOURCES += src/guide.cpp \
            src/texteditor.cpp \
            src/vertex.cpp \
            src/parser.cpp \
-	   src/filteredgesbyweightdialog.cpp \
+	   src/dialogfilteredgesbyweight.cpp \
 	   src/webcrawlerdialog.cpp \
 	   src/webcrawler.cpp \
-	   src/datasetselectdialog.cpp \
-    src/previewform.cpp \
-    src/nodeeditdialog.cpp \
-    src/randerdosrenyidialog.cpp \
-    src/randsmallworlddialog.cpp \
-    src/randregulardialog.cpp \
-    src/randscalefreedialog.cpp \
-    src/settingsdialog.cpp
+	   src/dialogdatasetselect.cpp \
+	   src/dialogpreviewfile.cpp \
+	   src/dialognodeedit.cpp \
+	   src/dialogranderdosrenyi.cpp \
+	   src/dialograndsmallworld.cpp \
+	   src/dialograndregular.cpp \
+	   src/dialograndscalefree.cpp \
+	   src/dialogsettings.cpp \
+	   src/dialogsimilaritypearson.cpp \
+	   src/dialogsimilaritymatches.cpp \ 
+	   src/dialogdissimilarities.cpp \
+	   src/dialogclusteringhierarchical.cpp 
 
 
 

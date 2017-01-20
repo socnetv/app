@@ -1,12 +1,13 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.1
+ version: 2.2
  Written in Qt
  
                          graphicswidget.h  -  description
                              -------------------
-    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
-    email                : dimitris.kalamaras@gmail.com
+    copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
+    project site      : http://socnetv.org
+
  ***************************************************************************/
 
 /*******************************************************************************
@@ -44,6 +45,11 @@ class EdgeLabel;
 typedef QHash<QString, Edge*> H_StrToEdge;
 typedef QHash <long int, Node*> H_NumToNode;
 
+using namespace std;
+
+
+typedef pair<int, int> SelectedEdge;
+
 class GraphicsWidget : public QGraphicsView {
     Q_OBJECT
 public:
@@ -51,11 +57,16 @@ public:
     ~GraphicsWidget();
     void clear();
 
+    void setInitNodeSize(int);
+    void setInitZoomIndex (int);
+
+
     Node* hasNode(QString text);
-    //	Node* hasNode(int number);
     bool setMarkedNode(QString text);
 
     QList<QGraphicsItem *> selectedItems();
+    QList<int> selectedNodes();
+    QList<SelectedEdge> selectedEdges();
 
     void selectAll();
     void selectNone();
@@ -66,15 +77,6 @@ public:
     void removeItem(Node*);
     void removeItem(NodeNumber*);
     void removeItem(NodeLabel*);
-
-    void nodeMoved(const int &number, const int &x, const int &y);
-
-    void setInitNodeColor(QString);
-    void setInitLinkColor(QString);
-    void setInitNodeSize(int);
-    void setInitNumberDistance(int);
-    void setInitLabelDistance(int);
-    void setInitZoomIndex (int);
 
     void setNumbersInsideNodes(bool);
 
@@ -90,14 +92,19 @@ protected:
     void paintEvent ( QPaintEvent * event );
 
 public slots:
+
+    void getSelectedItems();
+
     void relationSet(int relation);
 
-    void drawNode( const int &num, const int &nodeSize,
+    void drawNode(const int &num, const int &nodeSize,
                    const QString &nodeShape, const QString &nodeColor,
-                   const bool &showNumbers,const bool &numberInsideNode,
+                   const bool &showNumbers, const bool &numberInsideNode,
                    const QString &numberColor, const int &numberSize,
+                  const int &numberDistance,
                    const bool &showLabels, const QString &nodeLabel,
                    const QString &labelColor, const int &labelSize,
+                  const int &labelDistance,
                    const QPointF &p
                     );
     void eraseNode(const long int &number);
@@ -116,6 +123,7 @@ public slots:
     bool setNodeNumberDistance(const long int &, const int &distance=0);
 
     void setNodeLabelsVisibility(const bool &toggle);
+    bool setNodeLabelColor(const long int &number, const QString &color="green");
     bool setNodeLabelSize(const long int &, const int &size=0);
     bool setNodeLabel(long int , QString );
     bool setNodeLabelDistance(const long int &, const int &distance=0);
@@ -135,7 +143,6 @@ public slots:
     void setEdgeLabel(const long int &, const long int&, const QString &);
     void setEdgeColor(const long int &, const long int&, const QString &);
     void edgeClicked(Edge *);
-    void openEdgeContextMenu();
     void setEdgeWeightNumbersVisibility (const bool &toggle);
     void setEdgeLabelsVisibility(const bool &toggle);
 
@@ -156,35 +163,39 @@ public slots:
 signals:
     void userDoubleClickNewNode(const QPointF &);
     void userMiddleClicked(const int &, const int &);
-    void userClickOnEmptySpace();
+    void userClickOnEmptySpace(const QPointF &p);
     void openNodeMenu();
     void openEdgeMenu();
     void openContextMenu(const QPointF p);
-    void updateNodeCoords(const int &, const int &, const int &);
-    void selectedNode(Node *);
-    void selectedEdge(Edge *);
+    void userNodeMoved(const int &, const int &, const int &);
+    //void userSelectedItems(const int nodes, const int edges);
+    void userSelectedItems(const QList<int> &selectedNodes,
+                           const QList<SelectedEdge> &selectedEdges);
+    void userClickedNode(const int &nodeNumber);
+    void userClickedEdge(const int &source, const int &target);
     void zoomChanged(const int);
     void rotationChanged(const int);
     void resized(const int, const int);
+    void setCursor(Qt::CursorShape);
 
 
 
 private:
     H_NumToNode nodeHash;	//This is used in drawEdge() method
     H_StrToEdge edgesHash; // helper hash to easily find edges
-    int m_curRelation;
-    int  m_nodeSize, m_numberDistance, m_labelDistance;
-    double m_currentScaleFactor;
-    qreal fX,fY, factor;
+    QList<int> m_selectedNodes;
+    QList<SelectedEdge> m_selectedEdges;
+    int m_curRelation, m_nodeSize;
     int m_currentRotationAngle;
     int m_zoomIndex, markedNodeOrigSize,markedEdgeSourceOrigSize, markedEdgeTargetOrigSize;
-    QString m_nodeLabel, m_numberColor, m_nodeColor, m_labelColor, m_linkColor;
+    double m_currentScaleFactor;
+    qreal fX,fY, factor;
+    QString m_nodeLabel, m_numberColor, m_labelColor;
     QString edgeName;
-    bool secondDoubleClick, markedNodeExist, markedEdgeExist;
-    QGraphicsItem *moving;
+    bool transformationActive;
+    bool secondDoubleClick, markedNodeExist, clickedEdgeExists;
     Node *firstNode, *secondNode, *markedNode1, *markedEdgeSource;
     Node *markedEdgeTarget, *tempNode ;
-    bool transformationActive;
 };
 
 #endif

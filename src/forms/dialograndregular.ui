@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DialogRandRegular</class>
+ <widget class="QDialog" name="DialogRandRegular">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>570</width>
+    <height>440</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>570</width>
+    <height>440</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>580</width>
+    <height>480</height>
+   </size>
+  </property>
+  <property name="font">
+   <font>
+    <pointsize>10</pointsize>
+   </font>
+  </property>
+  <property name="windowTitle">
+   <string>d-Regular network generator</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="10" column="0">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="font">
+      <font>
+       <family>Sans Serif</family>
+       <pointsize>10</pointsize>
+       <stylestrategy>PreferDefault</stylestrategy>
+      </font>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="Line" name="line_4">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_6">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetMinimumSize</enum>
+     </property>
+     <item>
+      <widget class="QLabel" name="degreeLabel">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>380</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <family>Sans Serif</family>
+        </font>
+       </property>
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Degree &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="degreeSpinBox">
+       <property name="minimumSize">
+        <size>
+         <width>110</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <family>Sans Serif</family>
+        </font>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the degree &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt; each new node will have.&lt;/p&gt;&lt;p&gt;Note that for a &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt;-regular graph of &lt;span style=&quot; font-style:italic;&quot;&gt;n&lt;/span&gt; nodes, it is necessary that &lt;span style=&quot; font-style:italic;&quot;&gt;n &amp;gt;= d + 1 &lt;/span&gt;and &lt;span style=&quot; font-style:italic;&quot;&gt;n*d &lt;/span&gt;is even.&lt;/p&gt;&lt;p&gt;In directed Graph Mode, this Degree &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt; option corresponds to the outDegree and the inDegree, which will be both equal to &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt; in the generated directed regular network. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="minimum">
+        <number>2</number>
+       </property>
+       <property name="maximum">
+        <number>9999</number>
+       </property>
+       <property name="singleStep">
+        <number>1</number>
+       </property>
+       <property name="value">
+        <number>2</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="3" column="0">
+    <widget class="Line" name="line_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="0">
+    <widget class="Line" name="line_6">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLabel" name="nodesLabel">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>380</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <family>Sans Serif</family>
+        </font>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The number n of nodes in the new Regular Network.&lt;/p&gt;&lt;p&gt;Note: For a &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt;-regular graph of &lt;span style=&quot; font-style:italic;&quot;&gt;n&lt;/span&gt; nodes, it is necessary that &lt;span style=&quot; font-style:italic;&quot;&gt;n &amp;gt;= d + 1 &lt;/span&gt;and &lt;span style=&quot; font-style:italic;&quot;&gt;n*d &lt;/span&gt;is even&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Nodes</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="nodesSpinBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>110</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <family>Sans Serif</family>
+        </font>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter number n of nodes in the new Regular Network.&lt;/p&gt;&lt;p&gt;For a &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt;-regular graph of &lt;span style=&quot; font-style:italic;&quot;&gt;n&lt;/span&gt; nodes, it is necessary that &lt;span style=&quot; font-style:italic;&quot;&gt;n &amp;gt;= d + 1 &lt;/span&gt;and &lt;span style=&quot; font-style:italic;&quot;&gt;n*d &lt;/span&gt;is even&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="minimum">
+        <number>4</number>
+       </property>
+       <property name="maximum">
+        <number>9999</number>
+       </property>
+       <property name="value">
+        <number>100</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="7" column="0">
+    <widget class="Line" name="line_5">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>400</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <family>Sans Serif</family>
+        </font>
+       </property>
+       <property name="text">
+        <string>Allow diagonals (loops) or set to zero?</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QCheckBox" name="diagCheckBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>110</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Sans Serif</family>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>Check to allow loops (nodes linking to themselves) in the new network</string>
+         </property>
+         <property name="text">
+          <string>No loops</string>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item row="6" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>400</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <family>Sans Serif</family>
+        </font>
+       </property>
+       <property name="text">
+        <string>Graph Mode</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QRadioButton" name="undirectedRadioButton">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>110</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Sans Serif</family>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Click &amp;quot;undirected&amp;quot; to generate an undirected &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt;-regular network &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>Undirected</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <property name="autoExclusive">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="directedRadioButton">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Sans Serif</family>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Click &amp;quot;directed&amp;quot; to generate a directed &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt;-regular network. &lt;/p&gt;&lt;p&gt;In this case, the Degree &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt; option above corresponds to the outDegree and the inDegree which will be both equal to &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt; in the generated regular network. &lt;/p&gt;&lt;p&gt;For instance, if you select &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt;=4 and &lt;span style=&quot; font-style:italic;&quot;&gt;Graph Mode&lt;/span&gt;=directed, then each new node will have outDegree=4 (four outbound edges) and inDegree=4 (four inbound edges). The inbound and outbound edges of each node will not necessarily be from / to the same nodes.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>Directed</string>
+         </property>
+         <property name="autoExclusive">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>450</width>
+       <height>70</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>95</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Sans Serif</family>
+      </font>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Sunken</enum>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Generate a &lt;span style=&quot; font-style:italic;&quot;&gt;d-regular&lt;/span&gt; random network of &lt;span style=&quot; font-style:italic;&quot;&gt;n&lt;/span&gt; nodes. This is a graph where each vertex has the same number of neighbors &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;This model produces undirect and directed provided that &lt;span style=&quot; font-style:italic;&quot;&gt;n &amp;gt;= d + 1 &lt;/span&gt;and &lt;span style=&quot; font-style:italic;&quot;&gt;nd &lt;/span&gt;is even. Read more in the manual.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>DialogRandRegular</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>257</x>
+     <y>373</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>DialogRandRegular</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>325</x>
+     <y>373</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
