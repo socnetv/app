@@ -23,11 +23,14 @@ You can load a network consisting of multiple relations or create a network
 on your own and add multiple relations to it.
 
 SocNetV computes graph-theoretic properties, such as density, diameter, geodesics 
-and distances (geodesic lengths), connectedness, eccentricity, etc. 
-It also calculates advanced structural measures for social network analysis 
-such as centrality and prestige indices (i.e. closeness centrality, betweeness 
-centrality, information centrality, power centrality, proximity and rank prestige), 
-triad census, cliques, clustering coefficient, etc.
+and distances (geodesic lengths), connectedness, eccentricity, clustering coefficient, etc. 
+
+It also supports advanced structural measures for social network analysis 
+such as centrality and prestige indices (i.e. eigenvector and closeness centrality, 
+betweenness centrality, information centrality, power centrality, proximity and 
+pagerank prestige), community detection metrics (triad census, cliques, etc) and 
+structural equivalence methods (hierarchical clustering analysis, similarities and 
+dissimilarities, pearson coefficients, etc). 
 
 Furthermore, random networks (Erdos-Renyi, Watts-Strogatz, ring lattice, etc) and 
 well-known social network datasets (i.e. Padgett's Florentine families) can be easily 
@@ -190,6 +193,5 @@ The manual is also available at the project's website.
 # 6. Bug reporting
 
 Please, file any bug reports in our bug tracker:
-https://bugs.launchpad.net/socnetv/+filebug
-
+https://github.com/socnetv/app/issues
 
