@@ -2272,7 +2272,7 @@ void MainWindow::initActions(){
                    "Computes the Eigenvector centrality of each node in a social network "
                    "which is defined as the ith element of the leading eigenvector "
                    "of the adjacency matrix. The leading eigenvector is the "
-                   "eigenvector corresponding to the largest positive eigevalue."
+                   "eigenvector corresponding to the largest positive eigenvalue."
                    "The Eigenvector Centrality, proposed by Bonacich (1989), is "
                    "an extension of the simpler Degree Centrality because it gives "
                    "each actor a score proportional to the scores of its neighbors. "
@@ -2285,14 +2285,37 @@ void MainWindow::initActions(){
     cInDegreeAct = new QAction(tr("Degree Prestige (DP)"),	 this);
     cInDegreeAct->setStatusTip(tr("Compute Degree Prestige (InDegree) indices "));
     cInDegreeAct-> setShortcut(Qt::CTRL + Qt::Key_I);
-    cInDegreeAct->setWhatsThis(tr("InDegree (Degree Prestige)\n\n For each node k, this the number of arcs ending at k. Nodes with higher in-degree are considered more prominent among others. In directed graphs, this index measures the prestige of each node/actor. Thus it is called Degree Prestige. Nodes who are prestigious tend to receive many nominations or choices (in-links). The largest the index is, the more prestigious is the node. \n\nThis index can be calculated only for digraphs. In weighted relations, DP is the sum of weights of all arcs/inLinks ending at node v."));
+    cInDegreeAct->setWhatsThis(tr("InDegree (Degree Prestige)\n\n"
+                                  "For each node k, this the number of arcs ending at k. "
+                                  "Nodes with higher in-degree are considered more prominent among others. "
+                                  "In directed graphs, this index measures the prestige of each node/actor. "
+                                  "Thus it is called Degree Prestige. "
+                                  "Nodes who are prestigious tend to receive many nominations or choices (in-links). "
+                                  "The largest the index is, the more prestigious is the node. \n\n"
+                                  "This index can be calculated only for digraphs. "
+                                  "In weighted relations, DP is the sum of weights of all arcs/inLinks ending at node v."));
     connect(cInDegreeAct, SIGNAL(triggered()), this, SLOT(slotAnalyzePrestigeDegree()));
 
     cPageRankAct = new QAction(tr("PageRank Prestige (PRP)"),	this);
     cPageRankAct-> setShortcut(Qt::CTRL + Qt::Key_K);
     cPageRankAct->setEnabled(true);
     cPageRankAct->setStatusTip(tr("Compute PageRank Prestige indices for every actor"));
-    cPageRankAct->setWhatsThis(tr("PageRank Prestige\n\n An importance ranking for each node based on the link structure of the network. PageRank, developed by Page and Brin (1997), focuses on how nodes are connected to each other, treating each edge from a node as a citation/backlink/vote to another. In essence, for each node PageRank counts all backlinks to it, but it does so by not counting all edges equally while it normalizes each edge from a node by the total number of edges from it. PageRank is calculated iteratively and it corresponds to the principal eigenvector of the normalized link matrix. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for directed graphs since it is a prestige measure. It can also be calculated in weighted graphs. In weighted relations, each backlink to a node v from another node u is considered to have weight=1 but it is normalized by the sum of outLinks weights (outDegree) of u. Therefore, nodes with high outLink weights give smaller percentage of their PR to node v."));
+    cPageRankAct->setWhatsThis(tr("PageRank Prestige\n\n"
+                                  "An importance ranking for each node based on the link structure of the network. "
+                                  "PageRank, developed by Page and Brin (1997), focuses on how nodes are "
+                                  "connected to each other, treating each edge from a node as a citation/backlink/vote to another. "
+                                  "In essence, for each node PageRank counts all backlinks to it, "
+                                  "but it does so by not counting all edges equally while it "
+                                  "normalizes each edge from a node by the total number of edges from it. "
+                                  "PageRank is calculated iteratively and it corresponds to the principal "
+                                  "eigenvector of the normalized link matrix. \n\n"
+                                  "This index can be calculated in both graphs and digraphs but is "
+                                  "usually best suited for directed graphs since it is a prestige measure. "
+                                  "It can also be calculated in weighted graphs. "
+                                  "In weighted relations, each backlink to a node v from another node u is "
+                                  "considered to have weight=1 but it is normalized by the sum of "
+                                  "outLinks weights (outDegree) of u. Therefore, nodes with high outLink "
+                                  "weights give smaller percentage of their PR to node v."));
     connect(cPageRankAct, SIGNAL(triggered()), this, SLOT(slotAnalyzePrestigePageRank()));
 
     cProximityPrestigeAct = new QAction(tr("Proximity Prestige (PP)"),	this);
@@ -5040,7 +5063,8 @@ void MainWindow::toolBoxLayoutByIndexButtonPressed(){
     int selectedIndex = toolBoxLayoutByIndexSelect->currentIndex();
     QString selectedIndexText = toolBoxLayoutByIndexSelect -> currentText();
     int selectedLayoutType = toolBoxLayoutByIndexTypeSelect ->currentIndex();
-    qDebug() << " selected index is " << selectedIndexText << " : " << selectedIndex
+    qDebug() << " selected index is "
+             << selectedIndexText << " : " << selectedIndex
              << " selected layout type is " << selectedLayoutType;
     switch(selectedIndex) {
     case 0:

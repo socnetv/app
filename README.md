@@ -190,8 +190,10 @@ Or, when running SocNetV, press F1 to display the SocNetV Manual.
 The manual is also available at the project's website.
 
 
-# 6. Bug reporting
+# 6. Bug reporting & contact
 
 Please, file any bug reports in our bug tracker:
 https://github.com/socnetv/app/issues
+
+To contact us, send an email to:  info@socnetv.org
 

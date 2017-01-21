@@ -152,7 +152,7 @@ Graph::Graph() {
 
                        "</style>"
                        "<script type=\"text/javascript\">\n"
-                       "var mytable, asc1=1, asc2=1,asc3=1,asc4=1;asc5=1;\n"
+                       "var mytable, asc1=1, asc2=1,asc3=1,asc4=1;asc5=1;asc6=1;\n"
                        "window.onload = function () {\n"
                        "mytable = document.getElementById(\"results\");\n"
                        "}\n"
@@ -4844,9 +4844,9 @@ void Graph::writeCentralityEigenvector(const QString fileName,
                   "it has ties to other nodes with high EVC. <br />"
                   "The eigenvector centralities are also known as Gould indices.")
             << "<br />"
-            << tr("EVC' is the standardized index (EVC divided by the sum of all EVCs).")
+            << tr("EVC' is the scaled EVC (EVC divided by max EVC).")
             << "<br />"
-            << tr("EVC'' is the scaled EVC (EVC divided by max EVC).")
+            << tr("EVC'' is the standardized index (EVC divided by the sum of all EVCs).")
             << "<br />"
             << "</p>";
 
@@ -4873,20 +4873,23 @@ void Graph::writeCentralityEigenvector(const QString fileName,
 
     outText << "<thead>"
             <<"<tr>"
-            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;asc6 = 1;\">"
             << tr("Node")
             << "</th>"
-            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;asc6 = 1;\">"
             << tr("Label")
             << "</th>"
-            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;asc6 = 1;\">"
             << tr("EVC")
             << "</th>"
-            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;asc6 = 1;\">"
             << tr("EVC'")
             << "</th>"
-            <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
-            << tr("%EVC")
+            <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;asc6 = 1;\">"
+            << tr("EVC''")
+            << "</th>"
+            <<"<th id=\"col6\" onclick=\"tableSort(results, 5, asc6); asc6 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;asc5 = 1;\">"
+            << tr("%EVC'")
             <<"</th>"
            <<"</tr>"
           << "</thead>"
@@ -4911,6 +4914,8 @@ void Graph::writeCentralityEigenvector(const QString fileName,
                 << "</td><td>"
                 << (*it)->SEVC()
                 << "</td><td>"
+                << (*it)->EVC() / sumEVC
+                << "</td><td>"
                 << (100* ((*it)->SEVC()))
                 << "</td>"
                 <<"</tr>";
@@ -4928,12 +4933,12 @@ void Graph::writeCentralityEigenvector(const QString fileName,
     else {
         outText << "<p>";
         outText << "<span class=\"info\">"
-                << tr("Max EVC' = ")
+                << tr("Max EVC = ")
                 <<"</span>"
                << maxEVC <<" (node "<< maxNodeEVC  <<  ")"
                << "<br />"
                << "<span class=\"info\">"
-               << tr("Min EVC' = ")
+               << tr("Min EVC = ")
                <<"</span>"
                << minEVC <<" (node "<< minNodeEVC <<  ")"
                << "<br />"
@@ -4946,17 +4951,17 @@ void Graph::writeCentralityEigenvector(const QString fileName,
 
     outText << "<p>";
     outText << "<span class=\"info\">"
-            << tr("EVC' Sum = ")
+            << tr("EVC Sum = ")
             <<"</span>"
             << sumEVC
             <<"<br/>"
            << "<span class=\"info\">"
-            << tr("EVC' Mean = ")
+            << tr("EVC Mean = ")
             <<"</span>"
             << meanEVC
             <<"<br/>"
             << "<span class=\"info\">"
-            << tr("EVC' Variance = ")
+            << tr("EVC Variance = ")
             <<"</span>"
             << varianceEVC
             <<"<br/>";
@@ -5076,6 +5081,7 @@ void Graph::centralityEigenvector(const bool &considerWeights,
     emit statusMessage(tr("Leading eigenvector computed. "
                           "Analysing centralities. Please wait..."));
     i = 0;
+    meanEVC = sumEVC / (float) N;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
 
         if (!(*it)->isIsolated() && dropIsolates) {
@@ -5083,10 +5089,16 @@ void Graph::centralityEigenvector(const bool &considerWeights,
         }
 
         (*it) -> setEVC( EVC[i]);
-        (*it) -> setSEVC( EVC[i] / sumEVC);
+        (*it) -> setSEVC( EVC[i] / maxEVC);
+
+        varianceEVC += (EVC[i]-meanEVC) * (EVC[i]-meanEVC) ;
 
         i++;
+
     }
+
+    varianceEVC=varianceEVC/(float) N;
+
 
     // group eigenvector centralization measure is
     // S(cmax - c(vi)) divided by the maximum value possible,
@@ -8202,7 +8214,7 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
             qDebug("Layout according to EVC");
             C=(*it)->EVC();
             std= (*it)->SEVC();
-            maxC=maxEVC;
+            maxC=1;
             break;
         }
 
@@ -8217,7 +8229,7 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
             qDebug("Layout according to PRP");
             C=(*it)->PRP();
             std= (*it)->SPRP();
-            maxC=maxPRP;
+            maxC=1;
             break;
         }
         case 12 : {
@@ -8466,7 +8478,7 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
             qDebug("Layout according to EVC");
             C=(*it)->EVC();
             std= (*it)->SEVC();
-            maxC=maxEVC;
+            maxC=1;
             break;
         }
 
@@ -8481,7 +8493,7 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
             qDebug("Layout according to PRP");
             C=(*it)->PRP();
             std= (*it)->SPRP();
-            maxC=maxPRP;
+            maxC=1;
             break;
         }
         case 12 : {
@@ -8655,7 +8667,7 @@ void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
             qDebug("Layout according to EVC");
             C=(*it)->EVC();
             std= (*it)->SEVC();
-            maxC=maxEVC;
+            maxC=1;
             break;
         }
 
@@ -8670,7 +8682,7 @@ void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
             qDebug("VerticesSize according to PRP");
             C=(*it)->PRP();
             std= (*it)->SPRP();
-            maxC=maxPRP;
+            maxC=1;
             break;
         }
         case 12 : {
