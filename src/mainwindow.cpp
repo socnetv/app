@@ -12616,7 +12616,7 @@ void MainWindow::slotHelpCheckUpdates() {
 */
 void MainWindow::slotHelpAbout(){
     int randomCookie=rand()%fortuneCookie.count();
-QString BUILD="Sat Jan 21 01:11:50 EET 2017";
+QString BUILD="Sat Jan 21 21:37:38 EET 2017";
     QMessageBox::about(
                 this, tr("About SocNetV"),
                         tr("<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)") +

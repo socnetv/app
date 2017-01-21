@@ -100,11 +100,15 @@ It lets you create new networks (graphs) with a few clicks on a
 virtual canvas or load networks of various formats (GraphViz, 
 GraphML, Adjacency, Pajek, etc) and modify them to suit your needs.
 
-The application computes network metrics, such as density, 
+The application computes graph theory metrics, such as density, 
 diameter and distances (shortest paths) in directed and undirected,
 weighted or non weighted graphs. It also computes node and 
 network centrality and prestige indices, such as closeness, 
-betweeness, information, power centralities and pagerank prestige. 
+betweeness, eigenvector, information, power centralities 
+and pagerank prestige. Community detection and structural 
+equivalence algorithms are included, such as triad census, 
+clique census, hierarchical cluster analysis, actor similarity 
+and tie profile dissimilarities. 
 
 Various layout algorithms (i.e. Spring-embedder, circular and in 
 levels according to centrality or prestige) are supported for 
@@ -112,6 +116,10 @@ meaningful visualisations of your networks.
 
 Furthermore, SocNetV generates random networks using various models
 such as Erdos-Renyi, Scale-Free, Small-World, d-regular etc.
+
+The application also includes a simple web crawler to create 
+a social network of web pages, where edges are the links between 
+them. 
 
 Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 
