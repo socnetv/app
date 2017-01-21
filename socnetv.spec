@@ -105,10 +105,10 @@ diameter and distances (shortest paths) in directed and undirected,
 weighted or non weighted graphs. It also computes node and 
 network centrality and prestige indices, such as closeness, 
 betweeness, eigenvector, information, power centralities 
-and pagerank prestige. Community detection and structural 
-equivalence algorithms are included, such as triad census, 
-clique census, hierarchical cluster analysis, actor similarity 
-and tie profile dissimilarities. 
+and pagerank prestige. 
+SocNetV can also perform community detection (triad census, 
+clique census) and apply structural equivalence methods, such as 
+hierarchical clustering analysis, tie-profile similarity etc.
 
 Various layout algorithms (i.e. Spring-embedder, circular and in 
 levels according to centrality or prestige) are supported for 
