@@ -73,17 +73,21 @@ Author: Dimitris V. Kalamaras
 Blog:   http://dimitris.apeiro.gr
 
 SocNetV is a cross-platform application, developed in C++ language 
-using the Qt5 cross-platform libraries and tools.
+using the Qt5 cross-platform libraries and tools. Qt is an open source 
+development toolkit published under the GPL.
 
-This means you can compile and run SocNetV on Linux, Mac and Windows. 
+This means you can compile and run SocNetV on any OS supported by Qt. 
+Binary packages and executables for Linux, Mac and Windows are available from 
+the project's website. See section 3 (installation) below.
 
 SocNetV is Free Software, distributed under the General Public Licence Version 3 
 (see the COPYING file for details). 
 
-The application is not a "finished" product. Therefore, 
-there is no warranty of efficiency, correctness or usability. 
-Nevertheless, we are looking forward to help you if you have any problem. 
-See section 6 (bug reporting) below.
+The application is not a "finished" product. Therefore, there is no warranty of 
+efficiency, correctness or usability. 
+
+Nevertheless, we are looking forward to help you if you experience any problems 
+with SocNetV. See section 6 (bug reporting) below.
 
 
 
@@ -92,15 +96,15 @@ See section 6 (bug reporting) below.
 
 You can install SocNetV :
 
-b) using binary packages.
-a) compiling it from source or
+- using binary packages or
+- compiling it from source 
 
 
 ## a) Install a binary package or executable (Linux/Mac/Windows)
 
-SocNetV binary packages are available for Windows, Mac OS X and Linux distros.
+SocNetV binary packages are available for Windows, MacOS and Linux.
 
-You can download a binary package for your Operating System from the project
+You can download a binary package for your Operating System from the project's
 webpage at: http://socnetv.org/downloads
 
 If there is no package for your OS, please download and compile the source code.
@@ -110,30 +114,33 @@ Windows
 To run SocNetV in Windows, download the latest SocNetV Windows installer from the 
 project's Downloads page and double-click on the executable to start the installation.
 The program will be installed in the usual Windows Program Files directory and a new 
-Start Menu shortcut will be created. Click on that shortcut to start SocNetV immediately.
+Start Menu shortcut will be created. Click on that shortcut to start SocNetV.
 
 MacOS
 
-If you are a Mac user, you can download a SocNetV disk image (dmg file) to install it. 
-From the Downloads page, download the Mac OS .dmg file. 
-Once downloaded, double click on it and a new window will appear. Drag the SocNetV icon
-into your Applications folder to install it.
-To run the application, double click on the SocNetV icon holding down the META key.
+If you are a Mac user, download the latest SocNetV disk image (.dmg file) from the 
+Downloads page. 
+Once downloaded, double click on the .dmg file and a new window will appear. 
+Drag the SocNetV icon into your Applications folder to install it.
+To run the application, double click on the SocNetV icon in Applications holding 
+down the META key.
 
 Linux
 
-SocNetV is available in most Linux distributions, although not the latest version. 
+SocNetV packages are available in the repositories of most Linux distributions, although 
+these are usually not the latest version. 
 
 To install the latest and greatest SocNetV version, users of openSUSE, Fedora and 
 Ubuntu/Debian are advised to add our own repositories to their systems.
 
-In Debian and Ubuntu, install SocNetV from our repos with these commands:
+In Debian and Ubuntu, add our repository and install SocNetV with these commands:
 
 sudo add-apt-repository ppa:dimitris-kalamaras/ppa
 sudo apt-get update
 sudo apt-get install socnetv
 
-In Fedora and openSUSE, choose and add the correct repository from here: 
+In Fedora and openSUSE, choose and add the correct repository for your distro version 
+from here: 
 http://download.opensuse.org/repositories/home:/oxy86/ 
 
 Once you add the repo, install SocNetV using the command (Fedora):
@@ -147,9 +154,8 @@ sudo zypper in socnetv
 ## b) Compile from Source Code
 
 To compile and install SocNetV from source you need the Qt5 toolkit development 
-libraries. Qt is an open source C++ toolkit published under the GPL. 
-Qt5 is preinstalled in most Linux distributions and it is available for
-Windows and Mac OS X.  If you do not have Qt5 installed, please download and
+libraries. Qt5 is preinstalled in most Linux distributions and it is also available 
+for Windows and MacOS.  If you do not have Qt5 installed, please download and
 install it from https://www.qt.io/developers
 
 Once you have Qt5 installed in your OS, you are ready to compile SocNetV from source.
@@ -190,19 +196,21 @@ to start socnetv with network named filename.net loaded.
 
 
 
-# 5. Usage 
+# 5. Usage & documentation
 
-For usage documentation, see online help.
+For usage documentation, there are tooltips and What's This help messages
+inside the application, when running SocNetV.
 
-Or, when running SocNetV, press F1 to display the SocNetV Manual.
-The manual is also available at the project's website.
+To see the full documentation, press F1 to display the SocNetV Manual.
+
+The manual is also available online at the project's website.
 
 
 # 6. Bug reporting & contact
 
-For bug reports and feature requests, please file them 
+If you have a bug report or a feature request, please file it
 in our github issue tracker:
 https://github.com/socnetv/app/issues
 
-To contact us, send an email to:  info@socnetv.org
+To contact us directly, send an email to: info@socnetv.org
 
