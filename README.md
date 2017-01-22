@@ -1,4 +1,4 @@
-SocNetV -A Social Network Visualizer
+[![socnetv](/src/images/socnetv.png)](http://socnetv.org) SocNetV - Social Network Visualizer
 ====================================
 
 
