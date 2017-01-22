@@ -2,52 +2,59 @@
 ====================================
 
 
-\tableofcontents
 
 1. Overview
 ------------
 
-Social Network Visualizer (SocNetV) is a cross-platform, user-friendly and free
+Social Network Visualizer (SocNetV) is a cross-platform, user-friendly free
 software application for social network analysis and visualization.
 
-Using SocNetV you draw social networks (mathematical graphs) with a few clicks 
-on a virtual canvas or load social network data of various formats (GraphML, 
-GraphViz, Adjacency, Pajek, UCINET, etc).
+With SocNetV you can:
 
-SocNetV enables you to modify the social networks, analyse their social and 
-mathematical properties, produce reports for these properties and apply 
-visualization layouts for relevant presentation of each network. 
+- Draw social networks with a few clicks on a virtual canvas, load 
+field data from a file in a supported format (GraphML, GraphViz, EdgeList, GML, 
+Adjacency, Edgelist, Pajek, UCINET, etc.) or crawl the internet to create 
+a social network of connected webpages.
 
-The application supports multirelational loading and editing. 
-You can load a network consisting of multiple relations or create a network 
-on your own and add multiple relations to it.
+- Edit actors and ties through point-and-click, analyse graph and social 
+network properties, produce beautiful HTML reports and embed visualization 
+layouts to the network.
 
-SocNetV computes graph-theoretic properties, such as density, diameter, geodesics 
-and distances (geodesic lengths), connectedness, eccentricity, clustering coefficient, etc. 
+Main features:
 
-It also supports advanced structural measures for social network analysis 
-such as centrality and prestige indices (i.e. eigenvector and closeness centrality, 
-betweenness centrality, information centrality, power centrality, proximity and 
-pagerank prestige), community detection metrics (triad census, cliques, etc) and 
-structural equivalence methods (hierarchical clustering analysis, similarities and 
-dissimilarities, pearson coefficients, etc). 
+- Standard graph-theoretic and network cohesion metrics, such as density, 
+diameter, geodesics and distances, connectedness, eccentricity, 
+clustering coefficient, walks, etc.
 
-Furthermore, random networks (Erdos-Renyi, Watts-Strogatz, ring lattice, etc) and 
-well-known social network datasets (i.e. Padgett's Florentine families) can be easily 
-recreated. 
+- Matrix routines: Adjacency plot, Laplacian matrix, Degree matrix, Cocitation, etc.
 
-SocNetV also offers a built-in web crawler, allowing you to automatically create 
-networks from links found in a given initial URL.
+- Advanced structural measures for social network analysis
+such as centrality and prestige indices (i.e. eigenvector and closeness centrality,
+betweenness centrality, information centrality, power centrality, proximity and
+pagerank prestige), 
 
-The application supports various layout algorithms based on either prominence indices 
-(i.e. circular, level and nodal sizes by centrality score) or force-directed models 
-(i.e. Eades, Fruchterman-Reingold, etc) for meaningful visualizations of your social 
-network data.
+- Community detection algorithms such as triad census, clique census, etc.
 
-There is also comprehensive documentation, both online and while running the 
+- Structural equivalence analysis, using hierarchical clustering, 
+actor similarities and tie profile dissimilarities, pearson coefficients, etc.
+
+- Random network creation, i.e. Erdos-Renyi, Watts-Strogatz, scale-free, ring lattice, etc.
+
+- One-click recreation of well-known social network datasets such as Padgett's Florentine families.
+
+- Layout algorithms based on either prominence indices (i.e. circular, level and nodal sizes 
+by centrality score) or force-directed models (i.e. Eades, Fruchterman-Reingold, etc) 
+for meaningful visualizations of your social network data.
+
+- Multirelational loading and editing. You can load a network consisting of multiple 
+relations or create a network on your own and add multiple relations to it. 
+
+- Built-in web crawler, allowing you to automatically create networks from links found in a given initial URL.
+
+- Comprehensive documentation, both online and while running the 
 application, which explains each feature and algorithm of SocNetV in detail.
 
-SocNetV runs in Windows, Linux and Mac OS X.
+- Binary packages for Windows, Linux and MacOS.
 
 The program is Free Software, licensed under the GNU General Public License 3 (GPL3).
 You can copy it as many times as you wish, or modify it, provided you keep the 
@@ -60,8 +67,9 @@ The documentation is also Free, licensed under the Free Documentation License (F
 -------------------------
 
 Official Website: http://socnetv.org
+Email: info@socnetv.org
 
-Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
+Author: Dimitris V. Kalamaras 
 Blog:   http://dimitris.apeiro.gr
 
 SocNetV is a cross-platform application, developed in C++ language 
