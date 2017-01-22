@@ -112,7 +112,7 @@ project's Downloads page and double-click on the executable to start the install
 The program will be installed in the usual Windows Program Files directory and a new 
 Start Menu shortcut will be created. Click on that shortcut to start SocNetV immediately.
 
-Mac OS X
+MacOS
 
 If you are a Mac user, you can download a SocNetV disk image (dmg file) to install it. 
 From the Downloads page, download the Mac OS .dmg file. 
@@ -153,8 +153,8 @@ Windows and Mac OS X.  If you do not have Qt5 installed, please download and
 install it from https://www.qt.io/developers
 
 Once you have Qt5 installed in your OS, you are ready to compile SocNetV from source.
-Download the tarball archive with the source code of the latest SocNetV version 
-(you probably already have this :P). 
+Download the archive with the source code of the latest version from 
+https://github.com/socnetv/app/releases/latest, i.e. SocNetV-2.x.tar.gz
 
 All you have to do is to type in the following commands in order to decompress the
 SocNetV tarball and build it. Replace 2.X with the version you downloaded.
@@ -200,7 +200,8 @@ The manual is also available at the project's website.
 
 # 6. Bug reporting & contact
 
-Please, file any bug reports in our bug tracker:
+For bug reports and feature requests, please file them 
+in our github issue tracker:
 https://github.com/socnetv/app/issues
 
 To contact us, send an email to:  info@socnetv.org
