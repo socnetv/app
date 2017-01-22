@@ -55,7 +55,7 @@
 
 %if %{is_suse}
 %define distr SUSE	# %(head -1 /etc/SuSE-release)
-%define breqr libqt5-qtbase, libqt5-qtbase-devel, libqt5-qttools, update-desktop-files
+%define breqr libqt5-qtbase, libqt5-qtbase-devel, libqt5-qttools, unzip, update-desktop-files
 %define qmake /usr/bin/qmake-qt5
 %define lrelease /usr/bin/lrelease
 %endif
@@ -71,7 +71,8 @@ License:	GPL-3.0
 Group:		Productivity/Scientific/Math 
 URL:		http://socnetv.org/
 Vendor: 	Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
-Source0:	SocNetV-%{version}.tar.bz2
+#Source0:	SocNetV-%{version}.tar.hhh
+Source0:	https://github.com/%{name}/app/archive/master.zip
 Distribution:   %{distr}
 Prefix:		%{prefix}
 BuildRequires:	gcc-c++, %{breqr}
@@ -80,7 +81,8 @@ BuildRequires:  pkgconfig(Qt5Gui)
 BuildRequires:  pkgconfig(Qt5PrintSupport)
 BuildRequires:  pkgconfig(Qt5Widgets)
 BuildRequires:  pkgconfig(Qt5Network)
-
+Provides:       %{name} = %{version}
+Obsoletes:      %{name} < %{version}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 
@@ -105,10 +107,10 @@ diameter and distances (shortest paths) in directed and undirected,
 weighted or non weighted graphs. It also computes node and 
 network centrality and prestige indices, such as closeness, 
 betweeness, eigenvector, information, power centralities 
-and pagerank prestige. 
-SocNetV can also perform community detection (triad census, 
-clique census) and apply structural equivalence methods, such as 
-hierarchical clustering analysis, tie-profile similarity etc.
+and pagerank prestige. Community detection and structural 
+equivalence algorithms are included, such as triad census, 
+clique census, hierarchical cluster analysis, actor similarity 
+and tie profile dissimilarities. 
 
 Various layout algorithms (i.e. Spring-embedder, circular and in 
 levels according to centrality or prestige) are supported for 
@@ -128,8 +130,11 @@ Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 #PREPARATION SECTION
 #
 
+
 %prep
-%setup 
+
+## %setup 
+%setup -q -n app-master  ## because master.zip unpacks to app-master/ 
 chmod -R a-x+X COPYING changelog.gz INSTALL NEWS README.md TODO man nets src
 chmod 644 nets/*
 find . -type f -name '*~' -delete
@@ -157,7 +162,7 @@ desktop-file-validate %{name}.desktop
 
 
 
-%makeinstall
+%make_install
 
 
 mkdir -p %{buildroot}%{_bindir}
