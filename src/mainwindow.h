@@ -432,8 +432,8 @@ public slots:
     void toolBoxAnalysisStrEquivalenceSelectChanged(int);
     void toolBoxAnalysisProminenceSelectChanged(int);
     void toolBoxAnalysisCommunitiesSelectChanged(int);
-    void toolBoxLayoutByIndexButtonPressed();
-    void toolBoxLayoutForceDirectedButtonPressed();
+    void toolBoxLayoutByIndexApplyBtnPressed();
+    void toolBoxLayoutForceDirectedApplyBtnPressed();
 
 
 protected:
@@ -503,7 +503,7 @@ private:
     QComboBox *toolBoxLayoutForceDirectedSelect;
 
     QPushButton *editNodeAddBt, *editEdgeAddBt, *removeNodeBt, *editEdgeRemoveBt;
-    QPushButton *toolBoxLayoutByIndexButton, *toolBoxLayoutForceDirectedButton;
+    QPushButton *toolBoxLayoutByIndexApplyButton, *toolBoxLayoutForceDirectedApplyButton;
 
     QAction *zoomInAct,*zoomOutAct,*editRotateRightAct,*editRotateLeftAct, *editResetSlidersAct ;
     QToolButton *zoomInBtn,*zoomOutBtn,*rotateLeftBtn,*rotateRightBtn, *resetSlidersBtn ;

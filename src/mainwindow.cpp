@@ -3458,10 +3458,10 @@ void MainWindow::initToolBox(){
     toolBoxLayoutByIndexTypeSelect->setMinimumHeight(20);
     toolBoxLayoutByIndexTypeSelect->setMinimumWidth(120);
 
-    toolBoxLayoutByIndexButton = new QPushButton(tr("Apply"));
-    toolBoxLayoutByIndexButton->setFocusPolicy(Qt::NoFocus);
-    toolBoxLayoutByIndexButton->setMinimumHeight(20);
-    toolBoxLayoutByIndexButton->setMaximumWidth(60);
+    toolBoxLayoutByIndexApplyButton = new QPushButton(tr("Apply"));
+    toolBoxLayoutByIndexApplyButton->setFocusPolicy(Qt::NoFocus);
+    toolBoxLayoutByIndexApplyButton->setMinimumHeight(20);
+    toolBoxLayoutByIndexApplyButton->setMaximumWidth(60);
 
 
     //create layout for visualisation by index options
@@ -3470,7 +3470,7 @@ void MainWindow::initToolBox(){
     layoutByIndexGrid -> addWidget(toolBoxLayoutByIndexSelect, 0,1);
     layoutByIndexGrid -> addWidget(toolBoxLayoutByIndexTypeLabel, 1,0);
     layoutByIndexGrid -> addWidget(toolBoxLayoutByIndexTypeSelect, 1,1);
-    layoutByIndexGrid -> addWidget(toolBoxLayoutByIndexButton, 2,1);
+    layoutByIndexGrid -> addWidget(toolBoxLayoutByIndexApplyButton, 2,1);
     layoutByIndexGrid -> setSpacing(5);
     layoutByIndexGrid -> setContentsMargins(5, 5, 5, 5);
 
@@ -3541,16 +3541,16 @@ void MainWindow::initToolBox(){
                    )
                 );
 
-    toolBoxLayoutForceDirectedButton = new QPushButton(tr("Apply"));
-    toolBoxLayoutForceDirectedButton->setFocusPolicy(Qt::NoFocus);
-    toolBoxLayoutForceDirectedButton->setMinimumHeight(20);
-    toolBoxLayoutForceDirectedButton->setMaximumWidth(60);
+    toolBoxLayoutForceDirectedApplyButton = new QPushButton(tr("Apply"));
+    toolBoxLayoutForceDirectedApplyButton->setFocusPolicy(Qt::NoFocus);
+    toolBoxLayoutForceDirectedApplyButton->setMinimumHeight(20);
+    toolBoxLayoutForceDirectedApplyButton->setMaximumWidth(60);
 
     //create layout for dynamic visualisation
     QGridLayout *layoutForceDirectedGrid = new QGridLayout();
     layoutForceDirectedGrid -> addWidget(toolBoxLayoutForceDirectedSelectLabel, 0,0);
     layoutForceDirectedGrid -> addWidget(toolBoxLayoutForceDirectedSelect, 0,1);
-    layoutForceDirectedGrid -> addWidget(toolBoxLayoutForceDirectedButton, 1,1);
+    layoutForceDirectedGrid -> addWidget(toolBoxLayoutForceDirectedApplyButton, 1,1);
     layoutForceDirectedGrid -> setSpacing(5);
     layoutForceDirectedGrid -> setContentsMargins(5,5, 5, 5);
 
@@ -4449,11 +4449,11 @@ void MainWindow::initSignalSlots() {
             this, SLOT(slotLayoutNodeSizesByInDegree(bool)));
 
 
-    connect(toolBoxLayoutByIndexButton, SIGNAL (clicked() ),
-            this, SLOT(toolBoxLayoutByIndexButtonPressed() ) );
+    connect(toolBoxLayoutByIndexApplyButton, SIGNAL (clicked() ),
+            this, SLOT(toolBoxLayoutByIndexApplyBtnPressed() ) );
 
-    connect(toolBoxLayoutForceDirectedButton, SIGNAL (clicked() ),
-            this, SLOT(toolBoxLayoutForceDirectedButtonPressed() ) );
+    connect(toolBoxLayoutForceDirectedApplyButton, SIGNAL (clicked() ),
+            this, SLOT(toolBoxLayoutForceDirectedApplyBtnPressed() ) );
 
     connect( toolBoxLayoutGuidesBx, SIGNAL(clicked(bool)),
              this, SLOT(slotLayoutGuides(bool)));
@@ -5054,12 +5054,12 @@ void MainWindow::toolBoxAnalysisProminenceSelectChanged(int selectedIndex) {
 }
 
 /**
- * @brief MainWindow::toolBoxLayoutByIndexButtonPressed
+ * @brief MainWindow::toolBoxLayoutByIndexApplyBtnPressed
  * Called from MW, when user selects a Prominence index in the Layout selectbox
- *  of the left panel.
+ *  of the Control Panel .
  */
-void MainWindow::toolBoxLayoutByIndexButtonPressed(){
-    qDebug()<<"MW::toolBoxLayoutByIndexButtonPressed()";
+void MainWindow::toolBoxLayoutByIndexApplyBtnPressed(){
+    qDebug()<<"MW::toolBoxLayoutByIndexApplyBtnPressed()";
     int selectedIndex = toolBoxLayoutByIndexSelect->currentIndex();
     QString selectedIndexText = toolBoxLayoutByIndexSelect -> currentText();
     int selectedLayoutType = toolBoxLayoutByIndexTypeSelect ->currentIndex();
@@ -5095,12 +5095,12 @@ void MainWindow::toolBoxLayoutByIndexButtonPressed(){
 
 
 /**
- * @brief MainWindow::toolBoxLayoutForceDirectedButtonPressed
+ * @brief MainWindow::toolBoxLayoutForceDirectedApplyBtnPressed
  * Called from MW, when user selects a model in the Layout by Force Directed
  * selectbox of left panel.
  */
-void MainWindow::toolBoxLayoutForceDirectedButtonPressed(){
-    qDebug()<<"MW::toolBoxLayoutForceDirectedButtonPressed()";
+void MainWindow::toolBoxLayoutForceDirectedApplyBtnPressed(){
+    qDebug()<<"MW::toolBoxLayoutForceDirectedApplyBtnPressed()";
     int selectedModel = toolBoxLayoutForceDirectedSelect->currentIndex();
     QString selectedModelText = toolBoxLayoutForceDirectedSelect -> currentText();
     qDebug() << " selected index is " << selectedModelText << " : "
@@ -9575,7 +9575,8 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
     slotLayoutGuides(true);
     if ( prominenceIndexName.contains("Degree Centr") )
         userChoice=1;
-    else if ( prominenceIndexName == "Closeness Centr")
+    else if ( prominenceIndexName.contains("Closeness Centr") &&
+              !prominenceIndexName.contains("IR"))
         userChoice=2;
     else if ( prominenceIndexName.contains("Influence Range Closeness Centrality")  ||
               prominenceIndexName.contains("IR Closeness")
@@ -9742,7 +9743,8 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
 
     if ( prominenceIndexName.contains("Degree Centr") )
         userChoice=1;
-    else if ( prominenceIndexName == "Closeness Centr")
+    else if ( prominenceIndexName.contains("Closeness Centr") &&
+              !prominenceIndexName.contains("IR"))
         userChoice=2;
     else if ( prominenceIndexName.contains("Influence Range Closeness Centrality") ||
               prominenceIndexName.contains("IR Closeness"))
@@ -9927,7 +9929,8 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
 
     if ( prominenceIndexName.contains("Degree Centr") )
         userChoice=1;
-    else if ( prominenceIndexName == "Closeness Centr")
+    else if ( prominenceIndexName.contains("Closeness Centr") &&
+              !prominenceIndexName.contains("IR"))
         userChoice=2;
     else if ( prominenceIndexName.contains("Influence Range Closeness Centrality") ||
               prominenceIndexName.contains("IR Closeness"))
