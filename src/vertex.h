@@ -79,7 +79,7 @@ public:
     void setEnabled (const bool &flag ) { m_enabled=flag; }
     bool isEnabled () const { return m_enabled; }
 
-    void relationSet(int) ;
+    void relationSet(int newRel) ;
 
     void edgeAddTo (const long int &v2, const float &weight);
     void edgeAddFrom(const long int &v1, const float &weight);

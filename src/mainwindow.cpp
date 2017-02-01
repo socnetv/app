@@ -1811,9 +1811,29 @@ void MainWindow::initActions(){
 
 
 
+    analyzeGraphReciprocityAct = new QAction(
+                QIcon(":/images/symmetry-edge.png"), tr("Reciprocity"), this);
+    analyzeGraphReciprocityAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_R)
+                );
+    analyzeGraphReciprocityAct->setStatusTip(tr("Compute the reciprocity of the network."));
+    analyzeGraphReciprocityAct->setWhatsThis(
+                tr("Reciprocity\n\n"
+                   "The reciprocity of a network/graph is the fraction of "
+                   "reciprocal edges over all edges of the graph. \n"
+                   "For an undirected graph, all edges are reciprocal. Thus the "
+                   "reciprocity of the graph is always 1. "
+                   "Reciprocity can be computed on undirected, directed, and weighted graphs."
+                   )
+                );
+    connect(analyzeGraphReciprocityAct, SIGNAL(triggered()),
+            this, SLOT(slotAnalyzeReciprocity()));
+
     analyzeGraphSymmetryAct = new QAction(
                 QIcon(":/images/symmetry-edge.png"), tr("Symmetry Test"), this);
-    analyzeGraphSymmetryAct -> setShortcut(Qt::SHIFT + Qt::Key_S);
+    analyzeGraphSymmetryAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_S)
+                );
     analyzeGraphSymmetryAct->setStatusTip(tr("Check whether the network is symmetric or not"));
     analyzeGraphSymmetryAct->setWhatsThis(
                 tr("Symmetry\n\n"
@@ -1861,7 +1881,7 @@ void MainWindow::initActions(){
 
     analyzeMatrixGeodesicsAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesics Matrix"),this);
     analyzeMatrixGeodesicsAct -> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_S));
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_N));
     analyzeMatrixGeodesicsAct->setStatusTip(tr("Compute the number of geodesic paths between each pair of nodes "));
     analyzeMatrixGeodesicsAct->setWhatsThis(
                 tr(
@@ -2774,6 +2794,7 @@ void MainWindow::initMenuBar() {
     cohesionMenu = new QMenu(tr("Cohesion..."));
     cohesionMenu -> setIcon(QIcon(":/images/distances.png"));
     analysisMenu -> addMenu(cohesionMenu);
+    cohesionMenu -> addAction (analyzeGraphReciprocityAct);
     cohesionMenu -> addAction (analyzeGraphSymmetryAct);
     cohesionMenu -> addSection("Graph distances");
     cohesionMenu -> addAction (analyzeGraphDistanceAct);
@@ -3273,6 +3294,7 @@ void MainWindow::initToolBox(){
                    "Compute basic graph-theoretic metrics, i.e. distances, walks, graph diameter, eccentricity."));
     QStringList graphPropertiesList;
     graphPropertiesList << "Select"
+                          << "Reciprocity"
                           << "Symmetry"
                           << "Distance"
                           << "Average Distance"
@@ -4892,39 +4914,42 @@ void MainWindow::toolBoxAnalysisCohesionSelectChanged(int selectedIndex) {
     case 0:
         break;
     case 1:
-        slotAnalyzeSymmetryCheck();
+        slotAnalyzeReciprocity();
         break;
     case 2:
-        slotAnalyzeDistance();
+        slotAnalyzeSymmetryCheck();
         break;
     case 3:
-        slotAnalyzeDistanceAverage();
+        slotAnalyzeDistance();
         break;
     case 4:
-        slotAnalyzeMatrixDistances();
+        slotAnalyzeDistanceAverage();
         break;
     case 5:
-        slotAnalyzeMatrixGeodesics();
+        slotAnalyzeMatrixDistances();
         break;
     case 6:
-        slotAnalyzeEccentricity();
+        slotAnalyzeMatrixGeodesics();
         break;
     case 7:
-        slotAnalyzeDiameter();
+        slotAnalyzeEccentricity();
         break;
     case 8:
-        slotAnalyzeConnectedness();
+        slotAnalyzeDiameter();
         break;
     case 9:
-        slotAnalyzeWalksLength();
+        slotAnalyzeConnectedness();
         break;
     case 10:
-        slotAnalyzeWalksTotal();
+        slotAnalyzeWalksLength();
         break;
     case 11:
-        slotAnalyzeReachabilityMatrix();
+        slotAnalyzeWalksTotal();
         break;
     case 12:
+        slotAnalyzeReachabilityMatrix();
+        break;
+    case 13:
         slotAnalyzeClusteringCoefficient();
         break;
     };
@@ -10101,6 +10126,27 @@ int MainWindow::activeNodes(){
 
 
 
+
+
+/**
+*	Displays the reciprocity of the network
+*/
+
+void MainWindow::slotAnalyzeReciprocity(){
+    if ( !activeNodes() )   {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+    float m_graphReciprocity = activeGraph.graphReciprocity();
+    QMessageBox::information(this,
+                             "Reciprocity",
+                             tr("The reciprocity of the graph/network is: %1")
+                             .arg(m_graphReciprocity),
+                             "OK",0);
+
+    statusMessage (tr("Ready"));
+
+}
 
 
 

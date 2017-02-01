@@ -70,6 +70,7 @@ Graph::Graph() {
     m_graphDensity = -1;
     fileName ="";
 
+    calculatedGraphReciprocity = false;
     calculatedGraphSymmetry = false;
     calculatedGraphWeighted = false;
     calculatedGraphDensity = false;
@@ -315,6 +316,7 @@ void Graph::clear() {
     m_symmetric=true;
     m_graphDensity = -1;
 
+    calculatedGraphReciprocity = false;
     calculatedGraphSymmetry = false;
     calculatedGraphWeighted = false;
     calculatedGraphDensity = false;
@@ -2760,6 +2762,73 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
 
 
 
+
+
+/**
+ * @brief Returns the reciprocity of the graph.
+ * @return float
+ */
+float Graph::graphReciprocity(){
+    qDebug() << "Graph::graphReciprocity() ";
+    if (!graphModified() && calculatedGraphReciprocity){
+        qDebug() << "Graph::graphReciprocity() - graph not modified and "
+                    "already calculated reciprocity. Returning previous result: "
+                 << m_graphReciprocity;
+        return m_graphReciprocity;
+    }
+    m_graphReciprocity=0;
+    float nom=0, denom=0;
+
+    float weight = 0;
+    int y=0, v2=0, v1=0;
+
+    QHash<int,float> *enabledOutEdges = new QHash<int,float>;
+
+    QHash<int,float>::const_iterator hit;
+    QList<Vertex*>::const_iterator lit;
+
+    for ( lit = m_graph.cbegin(); lit != m_graph.cend(); ++lit)
+    {
+        v1 = (*lit) -> name();
+
+        if ( ! (*lit)->isEnabled() )
+            continue;
+
+        enabledOutEdges=(*lit)->outEdgesEnabledHash();
+
+        hit=enabledOutEdges->cbegin();
+
+        while ( hit!=enabledOutEdges->cend() ){
+
+            denom ++ ;
+            v2 = hit.key();
+            y=index[ v2 ];
+            weight = hit.value();
+
+            if (  m_graph[y]->hasEdgeTo( v1) == weight) {
+                nom ++ ;
+//                qDebug() <<"Graph::graphSymmetric() - "
+//                         << " graph not symmetric because "
+//                         << v1 << " -> " << v2 << " weight " << weight
+//                         << " differs from " << v2 << " -> " << v1 ;
+
+                break;
+            }
+            ++hit;
+        }
+    }
+    delete enabledOutEdges;
+
+    m_graphReciprocity = nom / denom;
+
+    qDebug() << "Graph: graphReciprocity() - Finished. New result:"  << m_graphReciprocity;
+
+    calculatedGraphReciprocity = true;
+
+    return m_graphReciprocity;
+}
+
+
 /**
  * @brief Graph::graphSymmetric
  * Returns TRUE if the adjacency matrix of the current relation is symmetric
@@ -2775,6 +2844,7 @@ bool Graph::graphSymmetric(){
     }
     m_symmetric=true;
     int y=0, v2=0, v1=0;
+    float weight = 0;
 
     QHash<int,float> *enabledOutEdges = new QHash<int,float>;
 
@@ -2788,18 +2858,19 @@ bool Graph::graphSymmetric(){
 
         if ( ! (*lit)->isEnabled() )
             continue;
-        qDebug() << "Graph::graphSymmetric() - Graph modified! " <<
-                    " Iterate over all edges of " << v1 ;
 
         enabledOutEdges=(*lit)->outEdgesEnabledHash();
 
         hit=enabledOutEdges->cbegin();
 
         while ( hit!=enabledOutEdges->cend() ){
+
             v2 = hit.key();
             y=index[ v2 ];
-            float weight = hit.value();
+            weight = hit.value();
+
             if (  m_graph[y]->hasEdgeTo( v1) != weight) {
+
                 m_symmetric=false;
 //                qDebug() <<"Graph::graphSymmetric() - "
 //                         << " graph not symmetric because "
@@ -2812,7 +2883,7 @@ bool Graph::graphSymmetric(){
         }
     }
     delete enabledOutEdges;
-    qDebug() << "Graph: graphSymmetric() -"  << m_symmetric;
+    qDebug() << "Graph: graphSymmetric() - Finished. Result:"  << m_symmetric;
     calculatedGraphSymmetry = true;
     return m_symmetric;
 }
@@ -12846,6 +12917,7 @@ void Graph::graphSave(const QString &fileName,
             calculatedVertices = false;
             calculatedVerticesList=false;
             calculatedVerticesSet = false;
+            calculatedGraphReciprocity = false;
             calculatedGraphSymmetry = false;
             calculatedIsolates = false;
             calculatedAdjacencyMatrix = false;

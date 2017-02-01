@@ -541,6 +541,8 @@ public:
     float graphDensity();
     bool graphWeighted();
 
+    float graphReciprocity();
+
     bool graphSymmetric();
     void graphSymmetrize();
     void graphSymmetrizeStrongTies(const bool &allRelations=false);
@@ -996,7 +998,7 @@ private:
     bool order, initVertexLabelsVisibility,initVertexNumbersVisibility;
     bool initVertexNumberInside, initEdgeWeightNumbers, initEdgeLabels;
     float m_graphAverageDistance, m_graphGeodesicsCount;
-    float m_graphDensity;
+    float m_graphDensity, m_graphReciprocity;
     int m_graphConnectedness;
     int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
     int timerId,  canvasWidth, canvasHeight;
@@ -1008,7 +1010,8 @@ private:
     bool calculatedDP, calculatedDC, calculatedPP;
     bool calculatedIRCC, calculatedIC, calculatedPRP;
     bool calculatedTriad;
-    bool calculatedGraphSymmetry, calculatedGraphDensity, calculatedGraphWeighted;
+    bool calculatedGraphSymmetry, calculatedGraphReciprocity;
+    bool calculatedGraphDensity, calculatedGraphWeighted;
     bool m_undirected, m_symmetric, m_isWeighted;
 
     QString VERSION, fileName, m_graphName, initEdgeColor, initVertexColor,

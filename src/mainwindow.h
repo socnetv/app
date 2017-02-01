@@ -315,38 +315,29 @@ public slots:
 
     //ANALYSIS MENU
     void askAboutWeights();
-    void slotAnalyzeMatrixDistances();
-    void slotAnalyzeMatrixGeodesics();
-    void slotAnalyzeDistance();
-    void slotAnalyzeDistanceAverage();
-    void slotAnalyzeDiameter();
-    void slotAnalyzeEccentricity();
-    void slotAnalyzeStrEquivalenceDissimilaritiesDialog();
-    void slotAnalyzeDissimilaritiesTieProfile(const QString &metric,
-                                               const QString &varLocation,
-                                               const bool &diagonal);
 
-    void slotAnalyzeWalksLength();
-    void slotAnalyzeWalksTotal();
-    void slotAnalyzeReachabilityMatrix();
-    void slotAnalyzeConnectedness();
-
-    void slotAnalyzeStrEquivalenceClusteringHierarchicalDialog();
-    void slotAnalyzeClusteringHierarchical(const QString &matrix,
-                                           const QString &metric,
-                                           const QString &method,
-                                           const bool &diagonal=false,
-                                           const bool &diagram=false);
-    void slotAnalyzeCommunitiesCliqueCensus();
-    void slotAnalyzeClusteringCoefficient();
-    void slotAnalyzeCommunitiesTriadCensus();
-
+    void slotAnalyzeReciprocity();
     void slotAnalyzeSymmetryCheck();
     void slotAnalyzeMatrixAdjacencyInverse();
     void slotAnalyzeMatrixAdjacencyTranspose();
     void slotAnalyzeMatrixAdjacencyCocitation();
     void slotAnalyzeMatrixDegree();
     void slotAnalyzeMatrixLaplacian();
+    void slotAnalyzeClusteringCoefficient();
+
+    void slotAnalyzeMatrixDistances();
+    void slotAnalyzeMatrixGeodesics();
+    void slotAnalyzeDistance();
+    void slotAnalyzeDistanceAverage();
+    void slotAnalyzeDiameter();
+    void slotAnalyzeEccentricity();
+
+    void slotAnalyzeWalksLength();
+    void slotAnalyzeWalksTotal();
+    void slotAnalyzeReachabilityMatrix();
+    void slotAnalyzeConnectedness();
+
+
 
     void slotAnalyzeCentralityDegree();
     void slotAnalyzeCentralityCloseness();
@@ -362,6 +353,22 @@ public slots:
     void slotAnalyzePrestigePageRank();
     void slotAnalyzePrestigeProximity();
 
+
+    void slotAnalyzeCommunitiesCliqueCensus();
+    void slotAnalyzeCommunitiesTriadCensus();
+
+
+    void slotAnalyzeStrEquivalenceClusteringHierarchicalDialog();
+    void slotAnalyzeClusteringHierarchical(const QString &matrix,
+                                           const QString &metric,
+                                           const QString &method,
+                                           const bool &diagonal=false,
+                                           const bool &diagram=false);
+    void slotAnalyzeStrEquivalenceDissimilaritiesDialog();
+    void slotAnalyzeDissimilaritiesTieProfile(const QString &metric,
+                                               const QString &varLocation,
+                                               const bool &diagonal);
+
     void slotAnalyzeStrEquivalenceSimilarityMeasureDialog();
     void slotAnalyzeSimilarityMatching(const QString &matrix,
                                const QString &varLocation,
@@ -372,6 +379,7 @@ public slots:
     void slotAnalyzeSimilarityPearson(const QString &matrix,
                                const QString &varLocation,
                                const bool &diagonal=false);
+
 
     //OPTIONS MENU
     void slotOpenSettingsDialog();
@@ -549,8 +557,10 @@ private:
     QAction *openSettingsAct;
     QAction *webCrawlerAct;
 
-    QAction *netDensity, *analyzeGraphSymmetryAct, *analyzeGraphDistanceAct, *averGraphDistanceAct,
-            *analyzeMatrixDistancesGeodesicAct, *analyzeMatrixGeodesicsAct, *analyzeGraphDiameterAct, *analyzeGraphEccentricityAct;
+    QAction *netDensity, *analyzeGraphReciprocityAct, *analyzeGraphSymmetryAct;
+    QAction *analyzeGraphDistanceAct, *averGraphDistanceAct;
+    QAction *analyzeMatrixDistancesGeodesicAct, *analyzeMatrixGeodesicsAct;
+    QAction *analyzeGraphDiameterAct, *analyzeGraphEccentricityAct;
     QAction *analyzeStrEquivalenceTieProfileDissimilaritiesAct;
     QAction *analyzeGraphWalksAct,*analyzeGraphWalksTotalAct, *analyzeMatrixReachabilityAct, *analyzeGraphConnectednessAct;
     QAction *analyzeCommunitiesCliquesAct, *clusteringCoefAct, *analyzeCommunitiesTriadCensusAct;
