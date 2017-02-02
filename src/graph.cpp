@@ -2766,9 +2766,12 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
 
 /**
  * @brief Returns the reciprocity of the graph.
+ * Also the parameters reciprocalEdges and allEdges are filled.
+ * @param reciprocalEdges
+ * @param allEdges
  * @return float
  */
-float Graph::graphReciprocity(){
+float Graph::graphReciprocity(float &reciprocalEdges, float &allEdges ){
     qDebug() << "Graph::graphReciprocity() ";
     if (!graphModified() && calculatedGraphReciprocity){
         qDebug() << "Graph::graphReciprocity() - graph not modified and "
@@ -2777,9 +2780,8 @@ float Graph::graphReciprocity(){
         return m_graphReciprocity;
     }
     m_graphReciprocity=0;
-    float nom=0, denom=0;
 
-    float weight = 0;
+    float weight = 0, reciprocalWeight = 0;
     int y=0, v2=0, v1=0;
 
     QHash<int,float> *enabledOutEdges = new QHash<int,float>;
@@ -2800,28 +2802,29 @@ float Graph::graphReciprocity(){
 
         while ( hit!=enabledOutEdges->cend() ){
 
-            denom ++ ;
             v2 = hit.key();
             y=index[ v2 ];
             weight = hit.value();
+            allEdges += weight;
 
-            if (  m_graph[y]->hasEdgeTo( v1) == weight) {
-                nom ++ ;
-//                qDebug() <<"Graph::graphSymmetric() - "
-//                         << " graph not symmetric because "
-//                         << v1 << " -> " << v2 << " weight " << weight
-//                         << " differs from " << v2 << " -> " << v1 ;
+            qDebug() << v1 << "->" << v2
+                      << "allEdges" << allEdges;
 
-                break;
+            if (  (reciprocalWeight = m_graph[y]->hasEdgeTo( v1 ) ) ) {
+                reciprocalEdges +=reciprocalWeight  ;
+                qDebug() << v2 << "->" << v1 << "reciprocal!"
+                          << "reciprocalEdges" << reciprocalEdges;
+
             }
             ++hit;
         }
     }
     delete enabledOutEdges;
 
-    m_graphReciprocity = nom / denom;
+    m_graphReciprocity = (float) reciprocalEdges / (float) allEdges;
 
-    qDebug() << "Graph: graphReciprocity() - Finished. New result:"  << m_graphReciprocity;
+    qDebug() << "Graph: graphReciprocity() - Finished. New result:"
+             << reciprocalEdges << "/" << allEdges << "="  << m_graphReciprocity;
 
     calculatedGraphReciprocity = true;
 

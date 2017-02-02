@@ -1821,8 +1821,11 @@ void MainWindow::initActions(){
                 tr("Reciprocity\n\n"
                    "The reciprocity of a network/graph is the fraction of "
                    "reciprocal edges over all edges of the graph. \n"
-                   "For an undirected graph, all edges are reciprocal. Thus the "
-                   "reciprocity of the graph is always 1. "
+                   "In an undirected graph, all edges are reciprocal. Thus the "
+                   "reciprocity of the graph is always 1. \n"
+                   "In a directed graph, it measures the number of directed edges "
+                   "that are bidirectional. If the reciprocity is 1, \n"
+                   "then the adjacency matrix is structurally symmetric."
                    "Reciprocity can be computed on undirected, directed, and weighted graphs."
                    )
                 );
@@ -10137,10 +10140,14 @@ void MainWindow::slotAnalyzeReciprocity(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    float m_graphReciprocity = activeGraph.graphReciprocity();
+    float allEdges=0; float reciprocalEdges=0;
+    float m_graphReciprocity = activeGraph.graphReciprocity(reciprocalEdges, allEdges);
     QMessageBox::information(this,
                              "Reciprocity",
-                             tr("The reciprocity of the graph/network is: %1")
+                             tr("The reciprocity of the graph/network is: \n"
+                                "%1 / %2 = %3")
+                             .arg(reciprocalEdges)
+                             .arg(allEdges)
                              .arg(m_graphReciprocity),
                              "OK",0);
 
