@@ -2771,7 +2771,7 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
  * @param allEdges
  * @return float
  */
-float Graph::graphReciprocity(float &reciprocalEdges, float &allEdges ){
+float Graph::graphReciprocity(float &reciprocalTies, float &totalActualTies ){
     qDebug() << "Graph::graphReciprocity() ";
     if (!graphModified() && calculatedGraphReciprocity){
         qDebug() << "Graph::graphReciprocity() - graph not modified and "
@@ -2782,21 +2782,25 @@ float Graph::graphReciprocity(float &reciprocalEdges, float &allEdges ){
     m_graphReciprocity=0;
 
     float weight = 0, reciprocalWeight = 0;
+    float tiedPairs=0, reciprocatedPairs=0;
     int y=0, v2=0, v1=0;
 
     QHash<int,float> *enabledOutEdges = new QHash<int,float>;
 
     QHash<int,float>::const_iterator hit;
-    QList<Vertex*>::const_iterator lit;
+    QList<Vertex*>::const_iterator it, it1;
 
-    for ( lit = m_graph.cbegin(); lit != m_graph.cend(); ++lit)
+    // Compute "arc" reciprocity
+    //  the number of ties that are involved in reciprocal relations
+    //  relative to the total number of actual ties (not possible ties)
+    for ( it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-        v1 = (*lit) -> name();
+        v1 = (*it) -> name();
 
-        if ( ! (*lit)->isEnabled() )
+        if ( ! (*it)->isEnabled() )
             continue;
 
-        enabledOutEdges=(*lit)->outEdgesEnabledHash();
+        enabledOutEdges=(*it)->outEdgesEnabledHash();
 
         hit=enabledOutEdges->cbegin();
 
@@ -2805,15 +2809,15 @@ float Graph::graphReciprocity(float &reciprocalEdges, float &allEdges ){
             v2 = hit.key();
             y=index[ v2 ];
             weight = hit.value();
-            allEdges += weight;
+            totalActualTies += weight;
 
             qDebug() << v1 << "->" << v2
-                      << "allEdges" << allEdges;
+                      << "allEdges" << totalActualTies;
 
-            if (  (reciprocalWeight = m_graph[y]->hasEdgeTo( v1 ) ) ) {
-                reciprocalEdges +=reciprocalWeight  ;
+            if (  (reciprocalWeight = m_graph[y]->hasEdgeTo( v1 ) ) == weight) {
+                reciprocalTies +=reciprocalWeight  ;
                 qDebug() << v2 << "->" << v1 << "reciprocal!"
-                          << "reciprocalEdges" << reciprocalEdges;
+                          << "reciprocalEdges" << reciprocalTies;
 
             }
             ++hit;
@@ -2821,15 +2825,53 @@ float Graph::graphReciprocity(float &reciprocalEdges, float &allEdges ){
     }
     delete enabledOutEdges;
 
-    m_graphReciprocity = (float) reciprocalEdges / (float) allEdges;
+    m_graphReciprocity = (float) reciprocalTies / (float) totalActualTies;
 
     qDebug() << "Graph: graphReciprocity() - Finished. New result:"
-             << reciprocalEdges << "/" << allEdges << "="  << m_graphReciprocity;
+             << reciprocalTies << "/" << totalActualTies << "="  << m_graphReciprocity;
+
+    // Compute "dyad" reciprocity
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( ! (*it)->isEnabled() || ( (*it)->isIsolated() ) ) {
+            continue;
+        }
+        v1 = (*it)->name();
+
+        for (it1=it; it1!=m_graph.cend(); it1++){
+
+            if ( ! (*it1)->isEnabled() || ( (*it1)->isIsolated() ) ) {
+                continue;
+            }
+            v2 = (*it1)->name();
+
+            if (v1==v2) {
+
+                qDebug()<< "skipping self loop" << v1<<v2;
+                continue;
+            }
+
+            y=index[ v2 ];
+
+            if (  edgeExists(v1,v2)  ) {
+                tiedPairs++;
+                if (  edgeExists(v2,v1)  ) {
+                    reciprocatedPairs++;
+                }
+
+            }
+        }
+    }
+
 
     calculatedGraphReciprocity = true;
 
     return m_graphReciprocity;
 }
+
+
+
+
+
 
 
 /**
