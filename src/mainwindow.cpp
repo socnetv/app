@@ -1816,16 +1816,22 @@ void MainWindow::initActions(){
     analyzeGraphReciprocityAct -> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_R)
                 );
-    analyzeGraphReciprocityAct->setStatusTip(tr("Compute the reciprocity of the network."));
+    analyzeGraphReciprocityAct->setStatusTip(tr("Compute the arc and dyad reciprocity of the network."));
     analyzeGraphReciprocityAct->setWhatsThis(
-                tr("Reciprocity\n\n"
-                   "The reciprocity of a network/graph is the fraction of "
-                   "reciprocal edges over all edges of the graph. \n"
+                tr("Arc and Dyad Reciprocity\n\n"
+                   "The arc reciprocity of a network/graph is the fraction of "
+                   "reciprocated ties over all present ties of the graph. \n"
+                   "The dyad reciprocity of a network/graph is the fraction of "
+                   "actor pairs that have reciprocated ties over all connected "
+                   "pairs of actors. \n"
+                   "In a directed network, the arc reciprocity measures the proportion "
+                   "of directed edges that are bidirectional. If the reciprocity is 1, \n"
+                   "then the adjacency matrix is structurally symmetric. \n"
+                   "Likewise, in a directed network, the dyad reciprocity measures "
+                   "the proportion of connected actor dyads that have bidirectional ties "
+                   "between them. \n"
                    "In an undirected graph, all edges are reciprocal. Thus the "
                    "reciprocity of the graph is always 1. \n"
-                   "In a directed graph, it measures the number of directed edges "
-                   "that are bidirectional. If the reciprocity is 1, \n"
-                   "then the adjacency matrix is structurally symmetric."
                    "Reciprocity can be computed on undirected, directed, and weighted graphs."
                    )
                 );
@@ -10132,7 +10138,7 @@ int MainWindow::activeNodes(){
 
 
 /**
-*	Displays the reciprocity of the network
+*	Displays the arc and dyad reciprocity of the network
 */
 
 void MainWindow::slotAnalyzeReciprocity(){
@@ -10140,15 +10146,25 @@ void MainWindow::slotAnalyzeReciprocity(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    float allEdges=0; float reciprocalEdges=0;
-    float m_graphReciprocity = activeGraph.graphReciprocity(reciprocalEdges, allEdges);
+    float allTies=0, reciprocatedTies=0;
+    float allPairs=0, reciprocatedPairs=0;
+    float m_graphReciprocity = activeGraph.graphReciprocity(
+                reciprocatedTies,
+                allTies,
+                reciprocatedPairs,
+                allPairs);
     QMessageBox::information(this,
                              "Reciprocity",
-                             tr("The reciprocity of the graph/network is: \n"
-                                "%1 / %2 = %3")
-                             .arg(reciprocalEdges)
-                             .arg(allEdges)
-                             .arg(m_graphReciprocity),
+                             tr("The arc reciprocity of the graph/network is: \n"
+                                "%1 / %2 = %3 \n\n"
+                                "The dyad reciprocity of the graph/network is: \n"
+                                "%4 / %5 = %6 \n\n")
+                             .arg(reciprocatedTies)
+                             .arg(allTies)
+                             .arg(m_graphReciprocity)
+                             .arg(reciprocatedPairs)
+                             .arg(allPairs)
+                             .arg( (reciprocatedPairs/allPairs ) ),
                              "OK",0);
 
     statusMessage (tr("Ready"));

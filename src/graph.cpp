@@ -2771,7 +2771,9 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
  * @param allEdges
  * @return float
  */
-float Graph::graphReciprocity(float &reciprocalTies, float &totalActualTies ){
+float Graph::graphReciprocity(float &reciprocatedTies, float &totalActualTies ,
+                              float &reciprocatedPairs, float &totalPairs){
+
     qDebug() << "Graph::graphReciprocity() ";
     if (!graphModified() && calculatedGraphReciprocity){
         qDebug() << "Graph::graphReciprocity() - graph not modified and "
@@ -2782,13 +2784,17 @@ float Graph::graphReciprocity(float &reciprocalTies, float &totalActualTies ){
     m_graphReciprocity=0;
 
     float weight = 0, reciprocalWeight = 0;
-    float tiedPairs=0, reciprocatedPairs=0;
+   //float tiedPairs=0, reciprocatedPairs=0;
     int y=0, v2=0, v1=0;
 
     QHash<int,float> *enabledOutEdges = new QHash<int,float>;
 
     QHash<int,float>::const_iterator hit;
     QList<Vertex*>::const_iterator it, it1;
+
+    H_StrToBool totalDyads;
+    H_StrToBool reciprocatedDyads;
+    QString pair, reversePair;
 
     // Compute "arc" reciprocity
     //  the number of ties that are involved in reciprocal relations
@@ -2811,13 +2817,31 @@ float Graph::graphReciprocity(float &reciprocalTies, float &totalActualTies ){
             weight = hit.value();
             totalActualTies += weight;
 
-            qDebug() << v1 << "->" << v2
-                      << "allEdges" << totalActualTies;
+            // Compute "dyad" reciprocity
+            pair = QString::number(v1) + ">" + QString::number(v2) ;
+            reversePair = QString::number(v2) + ">" + QString::number(v1) ;
+            if ( !totalDyads.contains(pair) && !totalDyads.contains(reversePair) ) {
+                totalDyads [pair] = true;
+            }
+
+
+            qDebug() << pair
+                      << "totalTies" << totalActualTies
+                      << "totalDyads" << totalDyads.count();
 
             if (  (reciprocalWeight = m_graph[y]->hasEdgeTo( v1 ) ) == weight) {
-                reciprocalTies +=reciprocalWeight  ;
-                qDebug() << v2 << "->" << v1 << "reciprocal!"
-                          << "reciprocalEdges" << reciprocalTies;
+                reciprocatedTies +=reciprocalWeight  ;
+
+                pair = QString::number(v2) + ">" + QString::number(v1) ;
+                reversePair = QString::number(v1) + ">" + QString::number(v2) ;
+                if ( !reciprocatedDyads.contains(pair) && !reciprocatedDyads.contains(reversePair) ) {
+                    reciprocatedDyads [pair] = true;
+                }
+
+
+                qDebug() << pair << "reciprocal!"
+                          << "reciprocatedTies" << reciprocatedTies
+                          << "reciprocatedDyads" << reciprocatedDyads.count();
 
             }
             ++hit;
@@ -2825,12 +2849,14 @@ float Graph::graphReciprocity(float &reciprocalTies, float &totalActualTies ){
     }
     delete enabledOutEdges;
 
-    m_graphReciprocity = (float) reciprocalTies / (float) totalActualTies;
+    reciprocatedPairs = reciprocatedDyads.count();
+    totalPairs = totalDyads.count();
+    m_graphReciprocity = (float) reciprocatedTies / (float) totalActualTies;
 
     qDebug() << "Graph: graphReciprocity() - Finished. New result:"
-             << reciprocalTies << "/" << totalActualTies << "="  << m_graphReciprocity;
+             << reciprocatedTies << "/" << totalActualTies << "="  << m_graphReciprocity;
 
-    // Compute "dyad" reciprocity
+    // Compute "dyad" reciprocity for each
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() || ( (*it)->isIsolated() ) ) {
             continue;
@@ -2853,9 +2879,9 @@ float Graph::graphReciprocity(float &reciprocalTies, float &totalActualTies ){
             y=index[ v2 ];
 
             if (  edgeExists(v1,v2)  ) {
-                tiedPairs++;
+                //tiedPairs++;
                 if (  edgeExists(v2,v1)  ) {
-                    reciprocatedPairs++;
+                    //reciprocatedPairs++;
                 }
 
             }

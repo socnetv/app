@@ -541,7 +541,10 @@ public:
     float graphDensity();
     bool graphWeighted();
 
-    float graphReciprocity(float &reciprocalTies, float &totalActualTies);
+    float graphReciprocity(float &reciprocatedTies,
+                           float &totalActualTies,
+                           float &reciprocatedPairs,
+                           float &totalPairs);
 
     bool graphSymmetric();
     void graphSymmetrize();
