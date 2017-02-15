@@ -10140,34 +10140,37 @@ int MainWindow::activeNodes(){
 /**
 *	Displays the arc and dyad reciprocity of the network
 */
-
 void MainWindow::slotAnalyzeReciprocity(){
-    if ( !activeNodes() )   {
+
+    if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    float allTies=0, reciprocatedTies=0;
-    float allPairs=0, reciprocatedPairs=0;
-    float m_graphReciprocity = activeGraph.graphReciprocity(
-                reciprocatedTies,
-                allTies,
-                reciprocatedPairs,
-                allPairs);
-    QMessageBox::information(this,
-                             "Reciprocity",
-                             tr("The arc reciprocity of the graph/network is: \n"
-                                "%1 / %2 = %3 \n\n"
-                                "The dyad reciprocity of the graph/network is: \n"
-                                "%4 / %5 = %6 \n\n")
-                             .arg(reciprocatedTies)
-                             .arg(allTies)
-                             .arg(m_graphReciprocity)
-                             .arg(reciprocatedPairs)
-                             .arg(allPairs)
-                             .arg( (reciprocatedPairs/allPairs ) ),
-                             "OK",0);
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-reciprocity-"+dateTime+".html";
 
-    statusMessage (tr("Ready"));
+    askAboutWeights();
+
+    statusMessage(  tr("Computing Reciprocity. Please wait...") );
+    progressMsg = tr("Computing Reciprocity. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
+
+    activeGraph.writeReciprocity(fn, considerWeights);
+
+    destroyProgressBar();
+
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
+    statusMessage(tr("Reciprocity report saved as: ") + QDir::toNativeSeparators(fn) );
 
 }
 

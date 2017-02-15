@@ -198,9 +198,19 @@ public:
     void appendToPs(long  int vertex ) ;
     L_int Ps(void);
 
+    //used in reciprocity report
+    void setOutEdgesReciprocated(int outEdgesSym=-1) { m_outEdgesSym = (outEdgesSym!=-1) ?  outEdgesSym :  m_outEdgesSym+1;  }
+    int outEdgesReciprocated() { return m_outEdgesSym; }
+
+    void setOutEdgesNonSym(int outEdgesNonSym=-1) { m_outEdgesNonSym = (outEdgesNonSym!=-1) ?  outEdgesNonSym :  m_outEdgesNonSym+1;  }
+    int outEdgesNonSym() { return m_outEdgesNonSym;  }
+
+    void setInEdgesNonSym(int inEdgesNonSym=-1) { m_inEdgesNonSym = (inEdgesNonSym!=-1) ?  inEdgesNonSym :  m_inEdgesNonSym+1;  }
+    int inEdgesNonSym() { return m_inEdgesNonSym; }
+
     void setDC (float c){ m_DC=c;} 	/* Sets vertex Degree Centrality*/
     void setSDC (float c ) { m_SDC=c;}	/* Sets standard vertex Degree Centrality*/
-    float DC() { return m_DC;}		/* Returns vertex Degree Centrality*/
+    float DC() { return m_DC;}          /* Returns vertex Degree Centrality*/
     float SDC() { return m_SDC;}		/* Returns standard vertex Degree Centrality*/
 
     void setCC (float c){ m_CC=c;}		/* sets vertex Closeness Centrality*/
@@ -279,6 +289,7 @@ protected:
 private:
     Graph *parentGraph;
     long int m_name,  m_outEdgesCounter, m_inEdgesCounter, m_outDegree, m_inDegree, m_localDegree;
+    long int m_outEdgesNonSym, m_inEdgesNonSym, m_outEdgesSym;
     int m_value, m_size, m_labelSize, m_numberSize, m_numberDistance, m_labelDistance;
     int m_curRelation;
     bool m_reciprocalLinked, m_enabled, m_hasCLC, m_isolated;

@@ -2765,11 +2765,13 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
 
 
 /**
- * @brief Returns the reciprocity of the graph.
- * Also the parameters reciprocalEdges and allEdges are filled.
- * @param reciprocalEdges
- * @param allEdges
- * @return float
+ * @brief Computes and returns the arc reciprocity of the graph.
+ * Also computes the dyad reciprocity and fills parameters with values.
+ * @param reciprocatedTies
+ * @param totalActualTies
+ * @param reciprocatedPairs
+ * @param totalPairs
+ * @return
  */
 float Graph::graphReciprocity(float &reciprocatedTies, float &totalActualTies ,
                               float &reciprocatedPairs, float &totalPairs){
@@ -2778,13 +2780,20 @@ float Graph::graphReciprocity(float &reciprocatedTies, float &totalActualTies ,
     if (!graphModified() && calculatedGraphReciprocity){
         qDebug() << "Graph::graphReciprocity() - graph not modified and "
                     "already calculated reciprocity. Returning previous result: "
-                 << m_graphReciprocity;
-        return m_graphReciprocity;
+                 << m_graphReciprocityArc;
+        return m_graphReciprocityArc;
     }
-    m_graphReciprocity=0;
+
+    m_graphReciprocityArc=0;
+    m_graphReciprocityDyad=0;
+    m_graphReciprocityTiesReciprocated=0;
+    m_graphReciprocityTiesNonSymmetric=0;
+    m_graphReciprocityTiesTotal=0;
+    m_graphReciprocityPairsReciprocated=0;
+    m_graphReciprocityPairsTotal=0;
 
     float weight = 0, reciprocalWeight = 0;
-   //float tiedPairs=0, reciprocatedPairs=0;
+
     int y=0, v2=0, v1=0;
 
     QHash<int,float> *enabledOutEdges = new QHash<int,float>;
@@ -2795,6 +2804,13 @@ float Graph::graphReciprocity(float &reciprocatedTies, float &totalActualTies ,
     H_StrToBool totalDyads;
     H_StrToBool reciprocatedDyads;
     QString pair, reversePair;
+
+    //initialize counters
+    for ( it = m_graph.cbegin(); it != m_graph.cend(); ++it) {
+        (*it)->setOutEdgesReciprocated(0);
+        (*it)->setOutEdgesNonSym(0);
+        (*it)->setInEdgesNonSym(0);
+    }
 
     // Compute "arc" reciprocity
     //  the number of ties that are involved in reciprocal relations
@@ -2815,7 +2831,7 @@ float Graph::graphReciprocity(float &reciprocatedTies, float &totalActualTies ,
             v2 = hit.key();
             y=index[ v2 ];
             weight = hit.value();
-            totalActualTies += weight;
+            m_graphReciprocityTiesTotal += weight;
 
             // Compute "dyad" reciprocity
             pair = QString::number(v1) + ">" + QString::number(v2) ;
@@ -2826,11 +2842,14 @@ float Graph::graphReciprocity(float &reciprocatedTies, float &totalActualTies ,
 
 
             qDebug() << pair
-                      << "totalTies" << totalActualTies
+                      << "totalTies" << m_graphReciprocityTiesTotal
                       << "totalDyads" << totalDyads.count();
 
             if (  (reciprocalWeight = m_graph[y]->hasEdgeTo( v1 ) ) == weight) {
-                reciprocatedTies +=reciprocalWeight  ;
+
+                (*it)->setOutEdgesReciprocated();
+
+                m_graphReciprocityTiesReciprocated  +=reciprocalWeight  ;
 
                 pair = QString::number(v2) + ">" + QString::number(v1) ;
                 reversePair = QString::number(v1) + ">" + QString::number(v2) ;
@@ -2840,62 +2859,292 @@ float Graph::graphReciprocity(float &reciprocatedTies, float &totalActualTies ,
 
 
                 qDebug() << pair << "reciprocal!"
-                          << "reciprocatedTies" << reciprocatedTies
+                          << "reciprocatedTies" << m_graphReciprocityTiesReciprocated
                           << "reciprocatedDyads" << reciprocatedDyads.count();
 
             }
+            else {
+                (*it)->setOutEdgesNonSym();
+                m_graph[y]->setInEdgesNonSym();
+                m_graphReciprocityTiesNonSymmetric++;
+            }
+
             ++hit;
         }
     }
     delete enabledOutEdges;
 
-    reciprocatedPairs = reciprocatedDyads.count();
-    totalPairs = totalDyads.count();
-    m_graphReciprocity = (float) reciprocatedTies / (float) totalActualTies;
+    m_graphReciprocityArc = (float) m_graphReciprocityTiesReciprocated / (float) m_graphReciprocityTiesTotal;
 
-    qDebug() << "Graph: graphReciprocity() - Finished. New result:"
-             << reciprocatedTies << "/" << totalActualTies << "="  << m_graphReciprocity;
+    m_graphReciprocityPairsReciprocated = reciprocatedDyads.count();
+    m_graphReciprocityPairsTotal = totalDyads.count();
 
-    // Compute "dyad" reciprocity for each
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( ! (*it)->isEnabled() || ( (*it)->isIsolated() ) ) {
-            continue;
-        }
-        v1 = (*it)->name();
+    m_graphReciprocityDyad = (float) m_graphReciprocityPairsReciprocated / (float) m_graphReciprocityPairsTotal;
 
-        for (it1=it; it1!=m_graph.cend(); it1++){
+    qDebug() << "Graph: graphReciprocity() - Finished. Arc reciprocity:"
+             << m_graphReciprocityTiesReciprocated
+             << "/"
+             << m_graphReciprocityTiesTotal << "="  << m_graphReciprocityArc << endl
+             << m_graphReciprocityPairsReciprocated
+             << "/"
+             << m_graphReciprocityPairsTotal << "=" << m_graphReciprocityDyad;
 
-            if ( ! (*it1)->isEnabled() || ( (*it1)->isIsolated() ) ) {
-                continue;
-            }
-            v2 = (*it1)->name();
-
-            if (v1==v2) {
-
-                qDebug()<< "skipping self loop" << v1<<v2;
-                continue;
-            }
-
-            y=index[ v2 ];
-
-            if (  edgeExists(v1,v2)  ) {
-                //tiedPairs++;
-                if (  edgeExists(v2,v1)  ) {
-                    //reciprocatedPairs++;
-                }
-
-            }
-        }
-    }
 
 
     calculatedGraphReciprocity = true;
 
-    return m_graphReciprocity;
+    return m_graphReciprocityArc;
 }
 
 
 
+
+
+
+
+
+/**
+ * @brief Writes reciprocity report to filename
+ * @param fileName
+ * @param considerWeights
+ */
+void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
+{
+
+    QTime computationTimer;
+    computationTimer.start();
+
+    qDebug() << "Graph::writeReciprocity";
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
+        return;
+    }
+    QTextStream outText ( &file );
+    outText.setCodec("UTF-8");
+
+    float allTies=0, reciprocatedTies=0;
+    float allPairs=0, reciprocatedPairs=0;
+
+
+    if (graphModified() || !calculatedGraphReciprocity){
+
+        qDebug() << "Graph::writeReciprocity() - graph modified or "
+                    "reciprocity not computed yet. Recomputing. ";
+
+        m_graphReciprocityArc = graphReciprocity(
+                    reciprocatedTies,
+                    allTies,
+                    reciprocatedPairs,
+                    allPairs);
+
+    }
+
+
+    emit statusMessage ( tr("Writing reciprocity to file:") + fileName );
+
+    int rowCount=0;
+    int N = vertices();
+    float sym=0;
+
+    outText << htmlHead;
+
+    outText.setRealNumberPrecision(m_precision);
+
+    outText << "<h1>";
+    outText << tr("RECIPROCITY (r) REPORT");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("Reciprocity, <em>r</em> is a measure of the likelihood of vertices "
+                  "in a directed network to be mutually linked. <br />"
+                  "SocNetV supports two different methods to index the degree of "
+                  "reciprocity in a social network: <br />"
+                  "- The arc reciprocity, which is the fraction of "
+                  "reciprocated ties over all present ties of the graph. <br />"
+                  "- The dyad reciprocity which is the fraction of "
+                  "actor pairs that have reciprocated ties over all connected "
+                  "pairs of actors. <br />"
+                  "In a directed network, the arc reciprocity measures the proportion "
+                  "of directed edges that are bidirectional. If the reciprocity is 1, "
+                  "then the adjacency matrix is structurally symmetric. <br />"
+                  "Likewise, in a directed network, the dyad reciprocity measures "
+                  "the proportion of connected actor dyads that have bidirectional ties "
+                  "between them. <br />"
+                  "In an undirected graph, all edges are reciprocal. Thus the "
+                  "reciprocity of the graph is always 1. <br />"
+                  "Reciprocity can be computed on undirected, directed, and weighted graphs.")
+
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("r range: ")
+            <<"</span>"
+            << tr("1 &le; r &le; 1")
+            << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Arc reciprocity: ")
+            <<"</span>"
+            << tr("%1 / %2 = %3").arg(m_graphReciprocityTiesReciprocated).arg(m_graphReciprocityTiesTotal).arg(m_graphReciprocityArc)
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Dyad reciprocity: ")
+            <<"</span>"
+            << tr("%1 / %2 = %3").arg(m_graphReciprocityPairsReciprocated).arg(m_graphReciprocityPairsTotal).arg(m_graphReciprocityDyad )
+            << "</p>";
+
+
+
+
+    outText << "<table class=\"stripes sortable\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;asc6 = 1; asc7 = 1;asc8 = 1;\">"
+            << tr("Actor")
+            <<"</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;asc6 = 1; asc7 = 1;asc8 = 1;\">"
+            << tr("Label")
+            <<"</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;asc6 = 1; asc7 = 1;asc8 = 1;\">"
+            << tr("sym")
+            <<"</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4*= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;asc6 = 1; asc7 = 1;asc8 = 1;\">"
+            << tr("non-sym")
+            <<"</th>"
+            <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5*= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;asc6 = 1; asc7 = 1;asc8 = 1;\">"
+            << tr("out/nsym")
+            <<"</th>"
+            <<"<th id=\"col6\" onclick=\"tableSort(results, 5, asc6); asc6*= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;asc5 = 1; asc7 = 1;asc8 = 1;\">"
+            << tr("in/nsym")
+            <<"</th>"
+            <<"<th id=\"col7\" onclick=\"tableSort(results, 6, asc7); asc7*= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;asc5 = 1; asc6 = 1;asc8 = 1;\">"
+            << tr("nsym/out")
+            <<"</th>"
+            <<"<th id=\"col8\" onclick=\"tableSort(results, 7, asc8); asc8*= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;asc5 = 1; asc6 = 1;asc7 = 1;\">"
+            << tr("nsym/in")
+            <<"</th>"
+            <<"</tr>"
+            << "</thead>"
+            <<"<tbody  id=\"results\">";
+
+
+
+    QList<Vertex*>::const_iterator it;
+    for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+
+        rowCount++;
+        qDebug() << "Graph::writeReciprocity outnon  - innon - rec"
+                 << (*it)->outEdgesNonSym()
+                 << (*it)->inEdgesNonSym()
+                 << (*it)->outEdgesReciprocated();
+
+        sym =(float)   (*it)->outEdgesReciprocated() / (float)  ( (*it)->outEdges() + (*it)->inEdges());
+
+        outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                <<"<td>"
+                << (*it)->name()
+                << "</td><td>"
+                << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                << "</td><td>"
+                << sym
+                //<< ((eccentr == 0) ? "\xE2\x88\x9E" : QString::number(eccentr) )
+                << "</td><td>"
+                << 1-sym
+                //<< ((eccentr == 0) ? "\xE2\x88\x9E" : QString::number(eccentr) )
+                << "</td><td>"
+                << (float) (*it)->outEdgesNonSym() / (float) m_graphReciprocityTiesNonSymmetric
+                << "</td><td>"
+                << (float) (*it)->inEdgesNonSym() / (float)  m_graphReciprocityTiesNonSymmetric
+                << "</td><td>"
+                << (float)  (*it)->outEdgesNonSym() /(float)  m_graphReciprocityTiesTotal
+                << "</td><td>"
+                << (float)  (*it)->inEdgesNonSym() / (float) m_graphReciprocityTiesTotal
+                << "</td>"
+                <<"</tr>";
+
+    }
+
+    outText << "</tbody></table>";
+
+
+    if ( minEccentricity ==  maxEccentricity) {
+        outText << "<p>"
+                << tr("All nodes have the same eccentricity.")
+                << "</p>";
+    }
+    else {
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("Max e (Graph Diameter) = ")
+                <<"</span>"
+               << maxEccentricity <<" (node "<< maxNodeEccentricity  <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("Min e (Graph Radius) = ")
+               <<"</span>"
+               << minEccentricity <<" (node "<< minNodeEccentricity <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("e classes = ")
+               <<"</span>"
+               << classesEccentricity
+               << "</p>";
+    }
+
+    outText << "<p class=\"description\">";
+    outText << "<span class=\"info\">"
+            << tr("e = 1 ")
+            <<"</span>"
+            << tr("when a vertex is connected to all other vertices (star node).")
+            <<"<br/>"
+           << "<span class=\"info\">"
+            << tr("e > 1 ")
+            <<"</span>"
+            << tr("when a vertex is not directly connected to all others. "
+                  "Larger eccentricity means that the actor is farther from others.")
+            <<"<br />"
+           << "<span class=\"info\">"
+            << tr("e = \xE2\x88\x9E ")
+            <<"</span>"
+            << tr("the graph of the network is disconnected.")
+            <<"<br/>";
+    outText << "</p>";
+
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Reciprocity Report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+    file.close();
+
+}
 
 
 
@@ -3569,8 +3818,8 @@ void Graph::writeMatrixNumberOfGeodesicsPlainText(const QString &fn,
  * @param dropIsolates
  */
 void Graph::writeEccentricity(
-        const QString fileName, const bool considerWeights=false,
-        const bool inverseWeights=false, const bool dropIsolates=false)
+        const QString fileName, const bool considerWeights,
+        const bool inverseWeights, const bool dropIsolates)
 {
 
     QTime computationTimer;

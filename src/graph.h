@@ -589,6 +589,8 @@ public:
     void writeMatrixAdjacencyTo(QTextStream& os,
                                 const bool &saveEdgeWeights=true);
 
+    void writeReciprocity( const QString fileName, const bool considerWeights=false);
+
     void writeMatrix(const QString &fileName,
                      const int &matrix=MATRIX_ADJACENCY,
                      const bool &considerWeights=true,
@@ -650,8 +652,8 @@ public:
                                                const QString &varLocation="rows",
                                                const bool &diagonal=false);
 
-    void writeEccentricity(const QString, const bool considerWeights,
-                           const bool inverseWeights, const bool dropIsolates);
+    void writeEccentricity( const QString fileName, const bool considerWeights=false,
+                            const bool inverseWeights=false, const bool dropIsolates=false);
 
  //   friend QTextStream& operator <<  (QTextStream& os, Graph& m);
 
@@ -1001,7 +1003,14 @@ private:
     bool order, initVertexLabelsVisibility,initVertexNumbersVisibility;
     bool initVertexNumberInside, initEdgeWeightNumbers, initEdgeLabels;
     float m_graphAverageDistance, m_graphGeodesicsCount;
-    float m_graphDensity, m_graphReciprocity;
+    float m_graphDensity;
+    float m_graphReciprocityArc, m_graphReciprocityDyad;
+    int m_graphReciprocityTiesReciprocated;
+    int m_graphReciprocityTiesNonSymmetric;
+    int m_graphReciprocityTiesTotal;
+    int m_graphReciprocityPairsReciprocated;
+    int m_graphReciprocityPairsTotal;
+
     int m_graphConnectedness;
     int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
     int timerId,  canvasWidth, canvasHeight;
