@@ -2847,6 +2847,7 @@ float Graph::graphReciprocity(float &reciprocatedTies, float &totalActualTies ,
 
             if (  (reciprocalWeight = m_graph[y]->hasEdgeTo( v1 ) ) == weight) {
 
+                (*it)->setOutEdgesReciprocated(); //increase reciprocated ties for ego
                 (*it)->setOutEdgesReciprocated();
 
                 m_graphReciprocityTiesReciprocated  +=reciprocalWeight  ;
@@ -2946,7 +2947,13 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
 
     int rowCount=0;
     int N = vertices();
-    float sym=0;
+    float tiesSym=0;
+    float tiesNonSym=0;
+    float tiesOutNonSym=0;
+    float tiesInNonSym=0;
+    float tiesOutNonSymTotalOut=0;
+    float tiesInNonSymTotalIn=0;
+
 
     outText << htmlHead;
 
@@ -2969,7 +2976,7 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
             << "</p>";
 
     outText << "<p class=\"description\">"
-            << tr("Reciprocity, <em>r</em> is a measure of the likelihood of vertices "
+            << tr("Reciprocity, <b>r</b>, is a measure of the likelihood of vertices "
                   "in a directed network to be mutually linked. <br />"
                   "SocNetV supports two different methods to index the degree of "
                   "reciprocity in a social network: <br />"
@@ -2994,7 +3001,7 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
             << "<span class=\"info\">"
             << tr("r range: ")
             <<"</span>"
-            << tr("1 &le; r &le; 1")
+            << tr("0 &le; r &le; 1")
             << "</p>";
 
 
@@ -3014,6 +3021,12 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
 
 
 
+    outText << "<p>"
+            << "<br />"
+            << "<span class=\"info\">"
+            << tr("Reciprocity proportions per actor: ")
+            <<"</span>"
+            << "</p>";
 
     outText << "<table class=\"stripes sortable\">";
 
@@ -3026,22 +3039,22 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
             << tr("Label")
             <<"</th>"
             <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;asc6 = 1; asc7 = 1;asc8 = 1;\">"
-            << tr("sym")
+            << tr("Symmetric")
             <<"</th>"
             <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4*= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;asc6 = 1; asc7 = 1;asc8 = 1;\">"
-            << tr("non-sym")
+            << tr("nonSymmetric")
             <<"</th>"
             <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5*= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;asc6 = 1; asc7 = 1;asc8 = 1;\">"
-            << tr("out/nsym")
+            << tr("nsym out/nsym")
             <<"</th>"
             <<"<th id=\"col6\" onclick=\"tableSort(results, 5, asc6); asc6*= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;asc5 = 1; asc7 = 1;asc8 = 1;\">"
-            << tr("in/nsym")
+            << tr("nsym in/nsym")
             <<"</th>"
             <<"<th id=\"col7\" onclick=\"tableSort(results, 6, asc7); asc7*= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;asc5 = 1; asc6 = 1;asc8 = 1;\">"
-            << tr("nsym/out")
+            << tr("nsym out/out")
             <<"</th>"
             <<"<th id=\"col8\" onclick=\"tableSort(results, 7, asc8); asc8*= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;asc5 = 1; asc6 = 1;asc7 = 1;\">"
-            << tr("nsym/in")
+            << tr("nsym in/in")
             <<"</th>"
             <<"</tr>"
             << "</thead>"
@@ -3058,7 +3071,18 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
                  << (*it)->inEdgesNonSym()
                  << (*it)->outEdgesReciprocated();
 
-        sym =(float)   (*it)->outEdgesReciprocated() / (float)  ( (*it)->outEdges() + (*it)->inEdges());
+        // Symmetric: Total number of reciprocated ties involving this actor divided by the number of ties to and from her.
+        tiesSym =(float)   (*it)->outEdgesReciprocated() / (float)  ( (*it)->outEdges() + (*it)->inEdges());
+        // non Symmetric: One minus symmetric
+        tiesNonSym = 1 - tiesSym;
+        // nonSym Out/NonSym. Proportion of non-symmetric outgoing ties to the total non-symmetric ties.
+        tiesOutNonSym = ((*it)->outEdgesNonSym() || (*it)->inEdgesNonSym()) ? (float) (*it)->outEdgesNonSym() / (float) ((*it)->outEdgesNonSym() + (*it)->inEdgesNonSym()) : 0;
+        // nonSym In/NonSym. Proportion of non-symmetric incoming ties to the total non-symmetric ties.
+        tiesInNonSym =  ((*it)->outEdgesNonSym() || (*it)->inEdgesNonSym()) ?  (float) (*it)->inEdgesNonSym() / (float)  ((*it)->outEdgesNonSym() + (*it)->inEdgesNonSym()) : 0;
+        // nonSym Out/Out. Proportion of non-symmetric outgoing ties to the total outgoing ties.
+        tiesOutNonSymTotalOut = ( (*it)->outEdges() != 0) ? (float)  (*it)->outEdgesNonSym() /(float) (*it)->outEdges() : 0;
+        // nonSym In/In. Proportion of non-symmetric incoming ties to the total incoming ties.
+        tiesInNonSymTotalIn = ( (*it)->inEdges() != 0) ? (float)  (*it)->inEdgesNonSym() / (float) (*it)->inEdges() : 0;
 
         outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
                 <<"<td>"
@@ -3066,19 +3090,19 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
                 << "</td><td>"
                 << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
                 << "</td><td>"
-                << sym
+                << tiesSym
                 //<< ((eccentr == 0) ? "\xE2\x88\x9E" : QString::number(eccentr) )
                 << "</td><td>"
-                << 1-sym
+                << tiesNonSym
                 //<< ((eccentr == 0) ? "\xE2\x88\x9E" : QString::number(eccentr) )
                 << "</td><td>"
-                << (float) (*it)->outEdgesNonSym() / (float) m_graphReciprocityTiesNonSymmetric
+                << tiesOutNonSym
                 << "</td><td>"
-                << (float) (*it)->inEdgesNonSym() / (float)  m_graphReciprocityTiesNonSymmetric
+                << tiesInNonSym
                 << "</td><td>"
-                << (float)  (*it)->outEdgesNonSym() /(float)  m_graphReciprocityTiesTotal
+                << tiesOutNonSymTotalOut
                 << "</td><td>"
-                << (float)  (*it)->inEdgesNonSym() / (float) m_graphReciprocityTiesTotal
+                << tiesInNonSymTotalIn
                 << "</td>"
                 <<"</tr>";
 
@@ -3087,47 +3111,38 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
     outText << "</tbody></table>";
 
 
-    if ( minEccentricity ==  maxEccentricity) {
-        outText << "<p>"
-                << tr("All nodes have the same eccentricity.")
-                << "</p>";
-    }
-    else {
-        outText << "<p>";
-        outText << "<span class=\"info\">"
-                << tr("Max e (Graph Diameter) = ")
-                <<"</span>"
-               << maxEccentricity <<" (node "<< maxNodeEccentricity  <<  ")"
-               << "<br />"
-               << "<span class=\"info\">"
-               << tr("Min e (Graph Radius) = ")
-               <<"</span>"
-               << minEccentricity <<" (node "<< minNodeEccentricity <<  ")"
-               << "<br />"
-               << "<span class=\"info\">"
-               << tr("e classes = ")
-               <<"</span>"
-               << classesEccentricity
-               << "</p>";
-    }
 
     outText << "<p class=\"description\">";
     outText << "<span class=\"info\">"
-            << tr("e = 1 ")
-            <<"</span>"
-            << tr("when a vertex is connected to all other vertices (star node).")
-            <<"<br/>"
-           << "<span class=\"info\">"
-            << tr("e > 1 ")
-            <<"</span>"
-            << tr("when a vertex is not directly connected to all others. "
-                  "Larger eccentricity means that the actor is farther from others.")
-            <<"<br />"
-           << "<span class=\"info\">"
-            << tr("e = \xE2\x88\x9E ")
-            <<"</span>"
-            << tr("the graph of the network is disconnected.")
-            <<"<br/>";
+            << tr("Symmetric ")
+            << "</span>"
+            << tr("Proportion of reciprocated ties involving the actor to the total incoming and outgoing ties.")
+            << "<br/>"
+            << "<span class=\"info\">"
+            << tr("nonSymmetric ")
+            << "</span>"
+            << tr("One minus symmetric")
+            << "<br />"
+            << "<span class=\"info\">"
+            << tr("nonSym Out/NonSym ")
+            << "</span>"
+            << tr("Proportion of non-symmetric outgoing ties to the total non-symmetric ties.")
+            << "<br/>"
+            << "<span class=\"info\">"
+            << tr("nonSym In/NonSym ")
+            << "</span>"
+            << tr("Proportion of non-symmetric incoming ties to the total non-symmetric ties.")
+            << "<br/>"
+            << "<span class=\"info\">"
+            << tr("nonSym Out/Out ")
+            << "</span>"
+            << tr("Proportion of non-symmetric outgoing ties to the total outgoing ties.")
+            << "<br/>"
+            << "<span class=\"info\">"
+            << tr("nonSym In/In ")
+            << "</span>"
+            << tr("Proportion of non-symmetric incoming ties to the total incoming ties")
+            << "<br/>";
     outText << "</p>";
 
 
