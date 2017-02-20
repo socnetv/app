@@ -2981,10 +2981,10 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
                   "SocNetV supports two different methods to index the degree of "
                   "reciprocity in a social network: <br />"
                   "- The arc reciprocity, which is the fraction of "
-                  "reciprocated ties over all present ties of the graph. <br />"
+                  "reciprocated ties over all actual ties in the network. <br />"
                   "- The dyad reciprocity which is the fraction of "
-                  "actor pairs that have reciprocated ties over all connected "
-                  "pairs of actors. <br />"
+                  "actor pairs that have reciprocated ties over all "
+                  "pairs of actors that have any connection. <br />"
                   "In a directed network, the arc reciprocity measures the proportion "
                   "of directed edges that are bidirectional. If the reciprocity is 1, "
                   "then the adjacency matrix is structurally symmetric. <br />"
@@ -3010,6 +3010,8 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
             << tr("Arc reciprocity: ")
             <<"</span>"
             << tr("%1 / %2 = %3").arg(m_graphReciprocityTiesReciprocated).arg(m_graphReciprocityTiesTotal).arg(m_graphReciprocityArc)
+            << "<br />"
+            << tr("Of all actual ties in the network, %1% are reciprocated.").arg(m_graphReciprocityArc * 100)
             << "</p>";
 
     outText << "<p>"
@@ -3017,6 +3019,8 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
             << tr("Dyad reciprocity: ")
             <<"</span>"
             << tr("%1 / %2 = %3").arg(m_graphReciprocityPairsReciprocated).arg(m_graphReciprocityPairsTotal).arg(m_graphReciprocityDyad )
+            << "<br />"
+            << tr("Of all pairs of actors that have any ties, %1% have a reciprocated connection.").arg(m_graphReciprocityDyad * 100)
             << "</p>";
 
 
