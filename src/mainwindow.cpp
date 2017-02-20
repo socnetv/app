@@ -1697,19 +1697,42 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutLevelByProminenceIndex()));
 
 
-    springLayoutAct= new QAction(tr("Spring Embedder (Eades)"), this);
-    springLayoutAct-> setShortcut(Qt::ALT + Qt::Key_1);
-    springLayoutAct->setStatusTip(tr("All nodes repel each other while the connected ones are attracted as if connected by springs."));
-    springLayoutAct->setWhatsThis(tr("Spring Embedder Layout\n\n In this model, nodes are regarded as physical bodies (i.e. electrons) which exert repelling forces to each other, while edges are springs connecting adjacents nodes. Non-adjacent nodes repel each other while connected nodes are The algorithm continues until the system retains an equilibrium state in which all forces cancel each other. "));
-    connect(springLayoutAct, SIGNAL(triggered(bool)), this, SLOT(slotLayoutSpringEmbedder()));
+    layoutFDP_Eades_Act= new QAction(tr("Spring Embedder (Eades)"), this);
+    layoutFDP_Eades_Act-> setShortcut(Qt::ALT + Qt::Key_1);
+    layoutFDP_Eades_Act->setStatusTip(
+                tr("Embed Eades Spring-Gravitational model."));
+    layoutFDP_Eades_Act->setWhatsThis(
+                tr("Spring Embedder Layout\n\n "
+                   "The Spring Embedder model (Eades, 1984), part of the "
+                   "Force Directed Placement (FDP) family, embeds a mechanical "
+                   "system in the graph by replacing nodes with rings and edges "
+                   "with springs. \n"
+                   "In our implementation, nodes are replaced by physical bodies "
+                   "(i.e. electrons) which exert repelling forces to each other, "
+                   "while edges are replaced by springs which exert attractive "
+                   "forces to the adjacent nodes. "
+                   "The nodes are placed in some initial layout and let go "
+                   "so that the spring forces move the system to a minimal energy state. "
+                   "The algorithm continues until the system retains an equilibrium state "
+                   "in which all forces cancel each other. "));
+    connect(layoutFDP_Eades_Act, SIGNAL(triggered(bool)), this, SLOT(slotLayoutSpringEmbedder()));
 
-    FRLayoutAct= new QAction( tr("Fruchterman-Reingold"),	this);
-    FRLayoutAct-> setShortcut(Qt::ALT + Qt::Key_2);
-    FRLayoutAct->setStatusTip(tr("Repelling forces between all nodes, and attracting forces between adjacent nodes."));
-    FRLayoutAct->setWhatsThis(tr("Fruchterman-Reingold Layout\n\n Embeds a layout all nodes according to a model in which	repelling forces are used between every pair of nodes, while attracting forces are used only between adjacent nodes. The algorithm continues until the system retains its equilibrium state where all forces cancel each other."));
-    connect(FRLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutFruchterman()));
+    layoutFDP_FR_Act= new QAction( tr("Fruchterman-Reingold"),	this);
+    layoutFDP_FR_Act-> setShortcut(Qt::ALT + Qt::Key_2);
+    layoutFDP_FR_Act->setStatusTip(
+                tr("Repelling forces between all nodes, and attracting forces between adjacent nodes."));
+    layoutFDP_FR_Act->setWhatsThis(
+                tr("Fruchterman-Reingold Layout\n\n Embeds a layout all nodes according to a model in which	repelling forces are used between every pair of nodes, while attracting forces are used only between adjacent nodes. The algorithm continues until the system retains its equilibrium state where all forces cancel each other."));
+    connect(layoutFDP_FR_Act, SIGNAL(triggered()), this, SLOT(slotLayoutFruchterman()));
 
-
+    layoutFDP_KamadaKawai_Act= new QAction( tr("Fruchterman-Reingold"),	this);
+    layoutFDP_KamadaKawai_Act-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_K));
+    layoutFDP_KamadaKawai_Act->setStatusTip(
+                tr("Repelling forces between all nodes, and attracting forces between adjacent nodes."));
+    layoutFDP_KamadaKawai_Act->setWhatsThis(
+                tr("Fruchterman-Reingold Layout\n\n Embeds a layout all nodes according to a model in which	repelling forces are used between every pair of nodes, while attracting forces are used only between adjacent nodes. The algorithm continues until the system retains its equilibrium state where all forces cancel each other."));
+    connect(layoutFDP_KamadaKawai_Act, SIGNAL(triggered()), this, SLOT(slotLayoutKamadaKawai()));
 
 
 
@@ -2919,8 +2942,8 @@ void MainWindow::initMenuBar() {
     physicalLayoutMenu = new QMenu (tr("Force-Directed..."));
     physicalLayoutMenu -> setIcon(QIcon(":/images/force.png"));
     layoutMenu -> addMenu (physicalLayoutMenu);
-    physicalLayoutMenu -> addAction (springLayoutAct);
-    physicalLayoutMenu -> addAction (FRLayoutAct);
+    physicalLayoutMenu -> addAction (layoutFDP_Eades_Act);
+    physicalLayoutMenu -> addAction (layoutFDP_FR_Act);
     layoutMenu->addSeparator();
     layoutMenu->addAction(nodeSizesByOutDegreeAct);
     layoutMenu->addAction(nodeSizesByInDegreeAct);
@@ -9363,9 +9386,8 @@ void MainWindow::slotLayoutCircularRandom(){
 
 
 /**
- * @brief MainWindow::slotLayoutSpringEmbedder
- * Calls Graph::layoutForceDirectedSpringEmbedder to embed a
- * spring-gravitational model
+ * @brief Calls Graph::layoutForceDirectedSpringEmbedder to embed the Eades
+ * spring-gravitational model to the network.
  * Called from menu or toolbox checkbox
  */
 void MainWindow::slotLayoutSpringEmbedder(){
@@ -9389,9 +9411,8 @@ void MainWindow::slotLayoutSpringEmbedder(){
 
 
 /**
- * @brief MainWindow::slotLayoutFruchterman
- * Calls Graph::layoutForceDirectedFruchtermanReingold to embed
- * a repelling-attracting forces model.
+ * @brief Calls Graph::layoutForceDirectedFruchtermanReingold to embed
+ * the Fruchterman-Reingold model of repelling-attracting forces to the network.
  * Called from menu or toolbox
  */
 void MainWindow::slotLayoutFruchterman(){
@@ -9418,10 +9439,8 @@ void MainWindow::slotLayoutFruchterman(){
 
 
 /**
- * @brief MainWindow::slotLayoutKamadaKawai
- * Calls Graph::layoutForceDirectedKamadaKawai to embed
- * a repelling-attracting forces model.
- * Called from menu or toolbox
+ * @brief Calls Graph::layoutForceDirectedKamadaKawai to embed
+ * the Kamada-Kawai FDP model to the network.
  */
 void MainWindow::slotLayoutKamadaKawai(){
     qDebug()<< "MW::slotLayoutKamadaKawai ()";

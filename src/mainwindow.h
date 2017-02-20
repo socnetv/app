@@ -582,7 +582,8 @@ private:
     *layoutLevel_PC_Act, *layoutLevel_BC_Act, *layoutLevel_IC_Act,
     *layoutLevel_IRCC_Act,*layoutLevel_PRP_Act, *layoutLevel_PP_Act;
     QAction *strongColorationAct, *regularColorationAct;
-    QAction *springLayoutAct, *FRLayoutAct;
+    QAction *layoutFDP_Eades_Act, *layoutFDP_FR_Act;
+    QAction *layoutFDP_KamadaKawai_Act;
     QAction *nodeSizesByOutDegreeAct,  *nodeSizesByInDegreeAct;
     QAction *editRelationNextAct, *editRelationPreviousAct, *editRelationAddAct;
     QAction *editRelationRenameAct;

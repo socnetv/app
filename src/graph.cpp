@@ -18541,14 +18541,15 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
 
 /**
  * @brief Graph::layoutForceDirectedKamadaKawai
- * In this model, the graph is considered to be a dynamic system
- * where every two vertices are connected  by a 'spring'. Each spring
- * has a desirable length, which corresponds to their graph theoretic
- * distance. In this way, the optimal layout of the graph
+ * In this model, the network is considered to be a dynamic system
+ * where every two actors are 'particles' mutually connected by a 'spring'.
+ * Each spring has a desirable length, which corresponds to their graph
+ * theoretic distance. In this way, the optimal layout of the graph
  * is the state with the minimum imbalance. The degree of
  * imbalance is formulated as the total spring energy:
  * the square summation of the differences between desirable
- * distances and real ones for all pairs of vertices
+ * distances and real ones for all pairs of particles
+ * Initially, the particles/actors are placed on the vertices of a regular n-polygon
  * @return qreal temperature
  */
 
@@ -18557,29 +18558,84 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
                << "maxIter " << maxIterations;
     Q_UNUSED(maxIterations);
 
-    // Compute dij for 1 <= i!=j <= n
+    int progressCounter=0;
+    int i=0, j=0, N=vertices();
+    float K=1;
+    float L=0, L0=0;
+    float D=0;
     bool considerWeights=false, inverseWeights=false, dropIsolates=false;
-    graphMatrixDistancesCreate(false,considerWeights,inverseWeights, dropIsolates);
-    qDebug() << " DM : ";
-    //DM.printMatrixConsole();
 
+    qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - Compute dij, where (i,j) in E";
+    // Compute dij for 1 <= i!=j <= n
+    if ( !calculatedDistances || graphModified() ) {
+        graphMatrixDistancesCreate(false,considerWeights,inverseWeights, dropIsolates);
+    }
+    qDebug() << " DM : ";
+    DM.printMatrixConsole();
+
+
+    qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
+               "Compute lij = L x dij. lij will be symmmetric.";
     // Compute lij for 1 <= i!=j <= n using the formula:
     // lij = L x dij
     // where L the desirable length of a single edge in the display pane
     // Since we are on a restricted display (a canvas), L depends on the
     // diameter D of the graph and the length L of a side of the display square:
     // L = L0 / D
-    float L = canvasMinDimension() / (float) graphDiameter(considerWeights,inverseWeights);
-    TM.zeroMatrix(DM.rows(), DM.cols());
-    TM=DM;
-    TM.multiplyScalar(L);
-   // TM.printMatrixConsole();
+    D = graphDiameter(considerWeights,inverseWeights);
+    L0 = canvasMinDimension();
+    L = L0 / D;
+    qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - L="
+            << L0 << "/" <<D << "=" <<L;
+    Matrix lij;
+    lij.zeroMatrix(DM.rows(), DM.cols());
+    lij=DM;
+    lij.multiplyScalar(L);
+    qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - lij=" ;
+    lij.printMatrixConsole();
 
+    //TM.zeroMatrix(DM.rows(), DM.cols());
+    //TM=DM;
+    //TM.multiplyScalar(L);
+
+    qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
+               "Compute kij = K / dij ^2. kij will be symmmetric. ";
     // Compute kij for 1 <= i!=j <= n using the formula:
-    // ki
+    // kij = K / dij ^2
     // kij is the strength of the spring between pi and pj
 
-    // initialize p1, p2, ... pn;
+    Matrix kij;
+    kij.zeroMatrix(DM.rows(), DM.cols());
+
+    for (i=0; i<N; i++){
+        for (j=0; j<N; j++){
+            if ( i == j )
+                continue;
+            kij.setItem(i,j, K / (DM.item(i,j) * DM.item(i,j)));
+        }
+    }
+    qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - kij=" ;
+    kij.printMatrixConsole();
+
+    qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
+               "Compute initial positions p of particles " ;
+    // initialize p1, p2, ... pn, placing the particles on the vertices of a regular n-polygon
+
+
+    double new_x=0, new_y=0;
+    Vertices::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        new_x= canvasRandomX();
+        new_y= canvasRandomY();
+        (*it)->setX( new_x );
+        (*it)->setY( new_y );
+        qDebug()<< "Graph::layoutRandom() - "
+                << " vertex " << (*it)->name()
+                   << " emitting setNodePos to new pos " << new_x << " , "<< new_y;
+        emit setNodePos((*it)->name(),  new_x,  new_y);
+    }
+
+    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
 
     // while ( max_D_i > e )
 
@@ -18591,6 +18647,9 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
         // x_m = x_m + delta_x
         // y_m = y_m + delta_y
 
+
+    progressCounter++;
+    emit updateProgressDialog(progressCounter );
 
 
 }
