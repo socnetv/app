@@ -12751,8 +12751,15 @@ QString BUILD="Tue Jan 31 15:16:27 EET 2017";
 void MainWindow::createFortuneCookies(){
     fortuneCookie+="sic itur ad astra / sic transit gloria mundi ? <br /> "
                    "--Unknown";
+    fortuneCookie+="The truth is not my business. I am a statistician... I don’t like words like \"correct\" and \"truth\". "
+                    "Statistics is about measuring against convention. <br /> "
+		   "Walter Radermacher, Eurostat director, interview to NY Times, 2012."
     fortuneCookie+="Losers of yesterday, the winners of tomorrow... <br /> "
                    "--B.Brecht";
+    fortuneCookie+="I've seen things you people wouldn't believe. Attack ships on fire off the shoulder of Orion. " 
+                   "I watched C-beams glitter in the dark near the Tannhauser gate. "
+                   "All those moments will be lost in time... like tears in rain... Time to die.<br />"
+                   "Replicant Roy Batty, Blade Runner (1982)"
     fortuneCookie+="Patriotism is the virtue of the wicked... <br /> "
                    "--O. Wilde";
     fortuneCookie+="No tengo nunca mas, no tengo siempre. En la arena <br />"
