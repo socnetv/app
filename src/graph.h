@@ -800,9 +800,9 @@ public:
 
     void layoutRandom();
 
-    void layoutCircularRandom(double x0, double y0, double maxRadius);
+    void layoutRadialRandom(double x0, double y0, double maxRadius);
 
-    void layoutCircularByProminenceIndex(double x0, double y0, double maxRadius,
+    void layoutRadialByProminenceIndex(double x0, double y0, double maxRadius,
                                          int type, const bool considerWeights,
                                          const bool inverseWeights,
                                          const bool dropIsolates);

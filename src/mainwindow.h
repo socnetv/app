@@ -295,9 +295,9 @@ public slots:
 
     // LAYOUT MENU
     void slotLayoutRandom();
-    void slotLayoutCircularRandom();
-    void slotLayoutCircularByProminenceIndex();
-    void slotLayoutCircularByProminenceIndex(QString);
+    void slotLayoutRadialRandom();
+    void slotLayoutRadialByProminenceIndex();
+    void slotLayoutRadialByProminenceIndex(QString);
     void slotLayoutNodeSizesByProminenceIndex(QString);
     void slotLayoutLevelByProminenceIndex();
     void slotLayoutLevelByProminenceIndex(QString);
@@ -499,7 +499,7 @@ private:
     QMenu *cohesionMenu, *strEquivalenceMenu, *communitiesMenu, *connectivityMenu;
     QMenu *matrixMenu;
     QMenu *networkMenu, *randomNetworkMenu, *filterMenu, *recentFilesSubMenu;
-    QMenu *randomLayoutMenu, *circleLayoutMenu, *levelLayoutMenu, *physicalLayoutMenu;
+    QMenu *randomLayoutMenu, *layoutProminenceRadialMenu, *layoutProminenceLevelMenu, *layoutForceDirectedMenu;
     QMenu *colorationMenu;
     QCheckBox  *toolBoxNodeSizesByOutDegreeBx,*toolBoxNodeSizesByInDegreeBx, *toolBoxLayoutGuidesBx;
     QComboBox *toolBoxEditNodeSubgraphSelect, *toolBoxEditEdgeModeSelect,
@@ -572,15 +572,15 @@ private:
     QAction *cDegreeAct, *cInDegreeAct, *cClosenessAct, *cInfluenceRangeClosenessAct,
             *cBetweennessAct, *cInformationAct, *cEigenvectorAct, *cPageRankAct,
             *cStressAct, *cPowerAct, *cEccentAct, *cProximityPrestigeAct;
-    QAction *randLayoutAct, *randCircleLayoutAct, *layoutGuidesAct;
-    QAction *layoutCircular_DC_Act, *layoutCircular_DP_Act,
-    *layoutCircular_CC_Act, *layoutCircular_SC_Act, *layoutCircular_EC_Act,
-    *layoutCircular_PC_Act, *layoutCircular_BC_Act, *layoutCircular_IC_Act,
-    *layoutCircular_IRCC_Act,*layoutCircular_PRP_Act, *layoutCircular_PP_Act;
-    QAction *layoutLevel_DC_Act, *layoutLevel_DP_Act,
-    *layoutLevel_CC_Act, *layoutLevel_SC_Act, *layoutLevel_EC_Act,
-    *layoutLevel_PC_Act, *layoutLevel_BC_Act, *layoutLevel_IC_Act,
-    *layoutLevel_IRCC_Act,*layoutLevel_PRP_Act, *layoutLevel_PP_Act;
+    QAction *layoutRandomAct, *layoutRandomRadialAct, *layoutGuidesAct;
+    QAction *layoutProminenceRadial_DC_Act, *layoutProminenceRadial_DP_Act,
+    *layoutProminenceRadial_CC_Act, *layoutProminenceRadial_SC_Act, *layoutProminenceRadial_EC_Act,
+    *layoutProminenceRadial_PC_Act, *layoutProminenceRadial_BC_Act, *layoutProminenceRadial_IC_Act,
+    *layoutProminenceRadial_IRCC_Act,*layoutProminenceRadial_PRP_Act, *layoutProminenceRadial_PP_Act;
+    QAction *layoutProminenceLevel_DC_Act, *layoutProminenceLevel_DP_Act,
+    *layoutProminenceLevel_CC_Act, *layoutProminenceLevel_SC_Act, *layoutProminenceLevel_EC_Act,
+    *layoutProminenceLevel_PC_Act, *layoutProminenceLevel_BC_Act, *layoutProminenceLevel_IC_Act,
+    *layoutProminenceLevel_IRCC_Act,*layoutProminenceLevel_PRP_Act, *layoutProminenceLevel_PP_Act;
     QAction *strongColorationAct, *regularColorationAct;
     QAction *layoutFDP_Eades_Act, *layoutFDP_FR_Act;
     QAction *layoutFDP_KamadaKawai_Act;

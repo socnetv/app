@@ -3632,7 +3632,7 @@ int Graph::graphGeodesics()  {
  * Used by
  * MW::slotConnectedness()
  * MW::slotAnalyzeCentralityCloseness()
- * MW::slotLayoutCircularByProminenceIndex(QString )
+ * MW::slotLayoutRadialByProminenceIndex(QString )
  * MW::slotLayoutNodeSizesByProminenceIndex(QString )
  * MW::slotLayoutLevelByProminenceIndex(QString )
  *
@@ -8489,7 +8489,7 @@ void Graph::writePrestigePageRank(const QString fileName,
 
 
 /**
- * @brief Graph::layoutCircularByProminenceIndex
+ * @brief Graph::layoutRadialByProminenceIndex
 * Repositions all nodes on the periphery of different circles with radius
 * analogous to their prominence index
  * @param x0
@@ -8500,13 +8500,13 @@ void Graph::writePrestigePageRank(const QString fileName,
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::layoutCircularByProminenceIndex(double x0, double y0,
+void Graph::layoutRadialByProminenceIndex(double x0, double y0,
                                             double maxRadius,
                                             int prominenceIndex,
                                             const bool considerWeights,
                                             const bool inverseWeights,
                                             const bool dropIsolates){
-    qDebug() << "Graph::layoutCircularByProminenceIndex - "
+    qDebug() << "Graph::layoutRadialByProminenceIndex - "
                 << "prominenceIndex index = " << prominenceIndex;
     double rad=0;
     double i=0, std=0;
@@ -8714,14 +8714,14 @@ void Graph::layoutRandom(){
 
 
 /**
- * @brief Graph::layoutCircularRandom
+ * @brief Graph::layoutRadialRandom
  * Repositions all nodes on the periphery of different circles with random radius
  * @param x0
  * @param y0
  * @param maxRadius
  */
-void Graph::layoutCircularRandom(double x0, double y0, double maxRadius){
-    qDebug() << "Graph::layoutCircularRandom - ";
+void Graph::layoutRadialRandom(double x0, double y0, double maxRadius){
+    qDebug() << "Graph::layoutRadialRandom - ";
     double rad=0, new_radius=0, new_x=0, new_y=0;
     double i=0;
     maxRadius = canvasMaxRadius();
