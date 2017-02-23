@@ -908,6 +908,9 @@ private:
     void dijkstra(const int &s, const bool &computeCentralities=false,
                   const bool &inverseWeights=false,
                   const bool &dropIsolates=false);
+
+    void max (float *arr, float &imax );
+
     void minmax(
                 float C, Vertex *v, float &max, float &min,
                 int &maxNode, int &minNode

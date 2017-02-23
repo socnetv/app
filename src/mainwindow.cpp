@@ -9578,35 +9578,6 @@ void MainWindow::slotLayoutNodeSizesByInDegree(bool checked){
 
 /**
  * @brief
- * Enables/disables layout guides
- * Called from
- * @param state
- */
-void MainWindow::slotLayoutGuides(const bool &toggle){
-    qDebug()<< "MW:slotLayoutGuides()";
-    if ( !activeNodes()   )  {
-        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
-        return;
-    }
-
-    if (toggle){
-        toolBoxLayoutGuidesBx->setCheckState(Qt::Checked);
-        layoutGuidesAct->setChecked(true);
-        qDebug()<< "MW:slotLayoutGuides() - will be displayed";
-        statusMessage( tr("Layout Guides will be displayed") );
-    }
-    else {
-        toolBoxLayoutGuidesBx->setCheckState(Qt::Unchecked);
-        layoutGuidesAct->setChecked(false);
-        qDebug()<< "MW:slotLayoutGuides() - will NOT be displayed";
-        graphicsWidget->clearGuides();
-        statusMessage( tr("Layout Guides will not be displayed") );
-    }
-}
-
-
-/**
- * @brief
  * Checks sender text() to find out who QMenu item was pressed
  * calls slotLayoutRadialByProminenceIndex(QString)
  */
@@ -10148,6 +10119,38 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
     destroyProgressBar();
     statusMessage( tr("Nodes in upper levels are more prominent. ") );
 }
+
+
+
+
+/**
+ * @brief
+ * Enables/disables layout guides
+ * Called from
+ * @param state
+ */
+void MainWindow::slotLayoutGuides(const bool &toggle){
+    qDebug()<< "MW:slotLayoutGuides()";
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    if (toggle){
+        toolBoxLayoutGuidesBx->setCheckState(Qt::Checked);
+        layoutGuidesAct->setChecked(true);
+        qDebug()<< "MW:slotLayoutGuides() - will be displayed";
+        statusMessage( tr("Layout Guides will be displayed") );
+    }
+    else {
+        toolBoxLayoutGuidesBx->setCheckState(Qt::Unchecked);
+        layoutGuidesAct->setChecked(false);
+        qDebug()<< "MW:slotLayoutGuides() - will NOT be displayed";
+        graphicsWidget->clearGuides();
+        statusMessage( tr("Layout Guides will not be displayed") );
+    }
+}
+
 
 
 /**
