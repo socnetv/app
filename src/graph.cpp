@@ -18556,15 +18556,18 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
 void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
     qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
                << "maxIter " << maxIterations;
+
     Q_UNUSED(maxIterations);
 
     int progressCounter=0;
     bool considerWeights=false, inverseWeights=false, dropIsolates=false;
 
-    int i=0, m=0, j=0, N=vertices();
+    int i=0, j=0, m=0, pm=0;
+
+    int N=vertices();  // active actors
 
     Matrix l; // the original spring length between pairs of particles/actors
-    Matrix k; // the strength of the spring between pairs of points/actors
+    Matrix k; // the strength of the spring between pairs of particles/actors
 
     float K=1;  // constant
     float L=0;  // the desirable length of a single edge.
@@ -18573,27 +18576,30 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
 
     double new_x=0, new_y=0;
 
-    Vertices::const_iterator it;
     Vertices::const_iterator v1;
     Vertices::const_iterator v2;
 
     float partDrvtEx = 0; // partial derivative of E by Xm
     float partDrvtEy = 0; // partial derivative of E by Ym
-    float xm=0,ym=0,xi=0,yi=0;
+    float partDrvtEx_m = 0; // cache for partial derivative of E by Xm, for particle with max D_i
+    float partDrvtEy_m = 0; // cache for partial derivative of E by Ym, for particle with max D_i
+
+    float xm=0,ym=0;
+    float xi=0,yi=0;
+    float xpm=0, ypm=0; // cache for pos of particle with max D_i
+
+    float dx=0, dy=0;
 
     float epsilon=0.01;
     float Delta_m=0;
-    float Delta_max=0;
+    float Delta_max=epsilon + 1;
 
-//    float *Delta ;
-//    Delta = new (nothrow) float [N];
-//    Q_CHECK_PTR( Delta );
 
-    std::vector<float> Delta;
-    Delta.reserve(N);
+
+    // Compute dij for 1 <= i!=j <= n
 
     qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - Compute dij, where (i,j) in E";
-    // Compute dij for 1 <= i!=j <= n
+
     if ( !calculatedDistances || graphModified() ) {
         graphMatrixDistancesCreate(false,considerWeights,inverseWeights, dropIsolates);
     }
@@ -18601,14 +18607,16 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
     DM.printMatrixConsole();
 
 
-    qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
-               "Compute lij = L x dij. lij will be symmmetric.";
     // Compute lij for 1 <= i!=j <= n using the formula:
     // lij = L x dij
     // where L the desirable length of a single edge in the display pane
     // Since we are on a restricted display (a canvas), L depends on the
     // diameter D of the graph and the length L of a side of the display square:
     // L = L0 / D
+
+    qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
+               "Compute lij = L x dij. lij will be symmmetric.";
+
     D = graphDiameter(considerWeights,inverseWeights);
     L0 = canvasMinDimension();
     L = L0 / D;
@@ -18621,15 +18629,13 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
     qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - l=" ;
     l.printMatrixConsole();
 
-    //TM.zeroMatrix(DM.rows(), DM.cols());
-    //TM=DM;
-    //TM.multiplyScalar(L);
 
-    qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
-               "Compute kij = K / dij ^2. kij will be symmmetric. ";
     // Compute kij for 1 <= i!=j <= n using the formula:
     // kij = K / dij ^2
     // kij is the strength of the spring between pi and pj
+
+    qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
+               "Compute kij = K / dij ^2. kij will be symmmetric. ";
 
     k.zeroMatrix(DM.rows(), DM.cols());
 
@@ -18640,41 +18646,54 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
             k.setItem(i,j, K / (DM.item(i,j) * DM.item(i,j)));
         }
     }
-    qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - kij=" ;
+    qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - k=" ;
     k.printMatrixConsole();
+
+
+    // initialize p1, p2, ... pn
+    // placing the particles on the vertices of a regular n-polygon
 
     qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
                "Compute initial positions p of particles " ;
-    // initialize p1, p2, ... pn, placing the particles on the vertices of a regular n-polygon
 
+    for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1){
 
-
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( ! (*v1)->isEnabled() ) {
+            qDebug() << "  vertex i" << (*v1)->name() << " disabled. Continue";
+            continue;
+        }
+        // TODO - move particles onto a regular polygon, not random positions
         new_x= canvasRandomX();
         new_y= canvasRandomY();
-        (*it)->setX( new_x );
-        (*it)->setY( new_y );
-        qDebug()<< "Graph::layoutRandom() - "
-                << " vertex " << (*it)->name()
+        (*v1)->setX( new_x );
+        (*v1)->setY( new_y );
+        qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
+                << " vertex " << (*v1)->name()
                    << " emitting setNodePos to new pos " << new_x << " , "<< new_y;
-        emit setNodePos((*it)->name(),  new_x,  new_y);
+        emit setNodePos((*v1)->name(),  new_x,  new_y);
     }
 
-    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
 
     // while ( max_D_i > e )
     while (Delta_max > epsilon) {
 
-        //compute partial derivatives of E by xm and ym
+        // compute partial derivatives of E by xm and ym for every particle m
+        // and find out initial Delta_m = max Delta_i
+
         for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1) {
+
             m = index[(*v1)->name()];
             xm = (*v1)->x();
             ym = (*v1)->y();
-            qDebug() << "*****  Calculate partial derivatives E for m" << (*v1)->name()
+
+            qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
+                       "Compute partial derivatives E for m" << (*v1)->name()
                      << " index" <<  index[(*v1)->name()]
                      << " pos"<< xm << ", "<< ym;
+
             partDrvtEx = 0;
             partDrvtEy = 0;
+
             if ( ! (*v1)->isEnabled() ) {
                 qDebug() << "  vertex m" << (*v1)->name() << " disabled. Continue";
                 continue;
@@ -18689,7 +18708,6 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
                 qDebug () << "  i"<< i
                           << "  pos (" <<  xi << "," << yi << ")";
 
-
                 if ( ! (*v2)->isEnabled() ) {
                     qDebug()<< " i "<< (*v2)->name()<< " disabled. Continue";
                     continue;
@@ -18703,32 +18721,79 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
                 partDrvtEx += k.item(m,i) * ( (xm - xi) - ( l.item(m,i) * (xm - xi) ) / sqrt( (xm - xi) * (xm - xi) + (ym - yi)*(ym - yi) ) );
                 partDrvtEy += k.item(m,i) * ( (ym - yi) - ( l.item(m,i) * (ym - yi) ) / sqrt( (xm - xi) * (xm - xi) + (ym - yi)*(ym - yi) ) );
 
+
+            } // end v2 for loop
+
+            Delta_m = sqrt (partDrvtEx * partDrvtEx + partDrvtEy * partDrvtEy);
+
+            qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - Delta_m"
+                    << Delta_m;
+
+            if (Delta_m > Delta_max) {
+                Delta_max = Delta_m;
+                partDrvtEx_m = partDrvtEx;
+                partDrvtEy_m = partDrvtEy;
+                pm = m ;  // store particle satisfying Delta_m = max Delta_i
+                xpm = xm; // store particle x pos
+                ypm = ym; // store particle y pos
             }
-        }
+
+        } // end v1 for loop
 
 
       // let pm the particle satisfying  D_m = max_D_i
+      m  = pm ;
+      xm = xpm;
+      ym = ypm;
 
       // while ( D_m > e)
+      while (Delta_max > epsilon) {
+          // compute dx and dy by solving equations 11 and 12
 
-        // compute delta_x and delta_y by solving equations 11 and 12
-        // x_m = x_m + delta_x
-        // y_m = y_m + delta_y
+          // first compute coefficients of the linear system equations
+          for (v2=m_graph.cbegin(); v2!=m_graph.cend(); ++v2) {
+
+              i = index[(*v2)->name()];
+              xi = (*v2)->x();
+              yi = (*v2)->y();
+
+              qDebug () << "  i"<< i
+                        << "  pos (" <<  xi << "," << yi << ")";
+
+              if ( ! (*v2)->isEnabled() ) {
+                  qDebug()<< " i "<< (*v2)->name()<< " disabled. Continue";
+                  continue;
+              }
+
+              if (v2 == v1) {
+                  qDebug() << "  m==i, continuing";
+                  continue;
+              }
+
+              partDrvtEx += k.item(m,i) * ( (xm - xi) - ( l.item(m,i) * (xm - xi) ) / sqrt( (xm - xi) * (xm - xi) + (ym - yi)*(ym - yi) ) );
+              partDrvtEy += k.item(m,i) * ( (ym - yi) - ( l.item(m,i) * (ym - yi) ) / sqrt( (xm - xi) * (xm - xi) + (ym - yi)*(ym - yi) ) );
+
+
+          } // end v2 for loop
+
+
+            // x_m = x_m + dx
+            // y_m = y_m + dy
+
+      }
+
     }
 
     progressCounter++;
     emit updateProgressDialog(progressCounter );
 
+    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
+
 
 }
 
 
 
-
-void Graph::max (float *arr, float &imax ) {
-    float maxVal = 0;
-
-}
 
 
 
