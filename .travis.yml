@@ -19,7 +19,8 @@ script:
   - mkdir -p appdir
   - sudo mv ./usr appdir/ ; sudo chown -R $USER appdir/ # Workaround for non-functional make install
   - cd appdir ; find .
-  - cp ./usr/share/applications/*.desktop .
+  - mkdir -p ./usr/share/applications/ # Workaround for missing desktop file in make install
+  - cp ../*.desktop ./usr/share/applications/
   - cp ./usr/share/icons/hicolor/48x48/apps/*.png .
   - cd .. 
   - wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/3/linuxdeployqt-3-x86_64.AppImage" 
