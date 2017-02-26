@@ -17,7 +17,7 @@ script:
   - sudo make install # Does not write to /usr
   - find .
   - mkdir -p appdir
-  - mv ./usr appdir/ # Workaround for non-functional make install
+  - sudo mv ./usr appdir/ ; sudo chown -R $USER appdir/ # Workaround for non-functional make install
   - cd appdir ; find .
   - cp ./usr/share/applications/*.desktop .
   - cp ./usr/share/icons/hicolor/48x48/apps/*.png .
