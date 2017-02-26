@@ -21,7 +21,7 @@ script:
   - cd appdir ; find .
   - mkdir -p ./usr/share/applications/ # Workaround for missing desktop file in make install
   - cp ../*.desktop ./usr/share/applications/
-  - cp ./usr/share/icons/hicolor/48x48/apps/*.png .
+  - cp ./usr/share/pixmaps/socnetv.png .
   - cd .. 
   - wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/3/linuxdeployqt-3-x86_64.AppImage" 
   - chmod a+x linuxdeployqt*.AppImage
