@@ -553,8 +553,7 @@ float Edge::width() const{
 //                  <<"Returning "<< 1  +  log(fabs(m_weight)) ;
         return 1+log(fabs(m_weight)) ;
     }
-//    qDebug()<< "Edge::width() - Returning"<< m_weight;
-    return m_weight;	//	Default, if  m_weight in (-1, 1) space
+    return fabs(m_weight) ;
 }
 
 
