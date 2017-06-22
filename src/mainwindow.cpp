@@ -313,10 +313,6 @@ QMap<QString,QString> MainWindow::initSettings(){
 void MainWindow::saveSettings() {
     qDebug () << "MW::saveSettings to "<< settingsFilePath;
     QFile file(settingsFilePath);
-
-    // application settings file does not exist - create it
-    // this must be the first time SocNetV runs in this computer
-    // or the user might have deleted seetings file.
     if (!file.open(QIODevice::WriteOnly ) ) {
         QMessageBox::critical(this,
                               "File Write Error",
@@ -333,7 +329,7 @@ void MainWindow::saveSettings() {
                               QMessageBox::Ok, 0);
         return;
     }
-    qDebug()<< "MW::saveSettings - settings file does not exist - Creating it";
+
     QTextStream out(&file);
     qDebug()<< "MW::saveSettings - writing settings to settings file first ";
     QMap<QString, QString>::const_iterator it = appSettings.constBegin();
@@ -363,7 +359,7 @@ void MainWindow::saveSettings() {
  * Open Settings dialog
  */
 void MainWindow::slotOpenSettingsDialog() {
-    qDebug() << "MW;:slotOpenSettingsDialog()";
+    qDebug() << "MW::slotOpenSettingsDialog()";
 
     // build dialog
 
@@ -8892,7 +8888,7 @@ void MainWindow::slotEditEdgeLabel(){
  * @param color = QColor()
  * @param threshold = RAND_MAX
  */
-void MainWindow::slotEditEdgeColorAll(QColor color,const int &threshold){
+void MainWindow::slotEditEdgeColorAll(QColor color, const int threshold){
     if (!color.isValid()) {
         QString text;
         if (threshold < RAND_MAX) {
@@ -8905,13 +8901,14 @@ void MainWindow::slotEditEdgeColorAll(QColor color,const int &threshold){
                                            text);
     }
     if (color.isValid()) {
-        if (threshold < 0 ) {
+        qDebug() << "MainWindow::slotEditEdgeColorAll() - new edge color: " << color.name() << " threshold " << threshold;
+        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+        if (threshold <= 0 ) {
             appSettings["initEdgeColorNegative"]=color.name();
         }
-        else
+        else {
             appSettings["initEdgeColor"]=color.name();
-        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        qDebug() << "MainWindow::slotEditEdgeColorAll() - new edge color: " << color.name();
+        }
         activeGraph.edgeColorAllSet(color.name(), threshold );
         QApplication::restoreOverrideCursor();
         statusMessage( tr("Ready. ")  );

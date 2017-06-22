@@ -277,7 +277,7 @@ public slots:
     void slotEditEdgeLabel();
     void slotEditEdgeColor();
     void slotEditEdgeWeight();
-    void slotEditEdgeColorAll(QColor color=QColor(), const int &threshold=RAND_MAX);
+    void slotEditEdgeColorAll(QColor color=QColor(), const int threshold=RAND_MAX);
 
     void slotEditEdgeMode(const int &mode);
     void slotEditEdgeSymmetrizeAll();

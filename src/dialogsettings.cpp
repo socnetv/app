@@ -169,6 +169,7 @@ DialogSettings::DialogSettings(
     m_pixmap.fill( m_edgeColor );
     ui->edgeColorBtn->setIcon(QIcon(m_pixmap));
 
+
     m_edgeColorNegative = QColor (m_appSettings["initEdgeColorNegative"]);
     m_pixmap = QPixmap(60,20) ;
     m_pixmap.fill( m_edgeColorNegative );
@@ -253,9 +254,6 @@ DialogSettings::DialogSettings(
     connect(ui->nodeSizeSpin, SIGNAL(valueChanged(int)),
             this, SLOT(getNodeSize(int)) );
 
-    connect ( ui->buttonBox, &QDialogButtonBox::accepted,
-              this, &DialogSettings::validateSettings );
-
     connect (ui->nodeColorBtn, &QToolButton::clicked,
              this, &DialogSettings::getNodeColor);
 
@@ -300,6 +298,9 @@ DialogSettings::DialogSettings(
 
     connect (ui->edgeLabelsChkBox, &QCheckBox::stateChanged,
                      this, &DialogSettings::getEdgeLabelsVisibility);
+
+    connect ( ui->buttonBox, &QDialogButtonBox::accepted,
+              this, &DialogSettings::validateSettings );
 
 }
 
@@ -578,7 +579,7 @@ void DialogSettings::getEdgeColor(){
     if ( m_edgeColor.isValid()) {
         m_pixmap.fill(m_edgeColor);
         ui->edgeColorBtn->setIcon(QIcon(m_pixmap));
-        (m_appSettings)["initEdgeColor"] = m_edgeColor.name();
+        m_appSettings["initEdgeColor"] = m_edgeColor.name();
         emit setEdgeColor(m_edgeColor, RAND_MAX);
     }
     else {
@@ -597,7 +598,7 @@ void DialogSettings::getEdgeColorNegative(){
     if ( m_edgeColorNegative.isValid()) {
         m_pixmap.fill(m_edgeColorNegative);
         ui->edgeColorNegativeBtn->setIcon(QIcon(m_pixmap));
-        (m_appSettings)["initEdgeColorNegative"] = m_edgeColorNegative.name();
+        m_appSettings["initEdgeColorNegative"] = m_edgeColorNegative.name();
         emit setEdgeColor(m_edgeColorNegative, 0);
     }
     else {
