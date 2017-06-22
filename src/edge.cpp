@@ -548,9 +548,6 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 */
 float Edge::width() const{
     if ( fabs(m_weight) > 1  )  {
-//        qDebug()<< "Edge::width() -"
-//                   << "m_weight" << m_weight
-//                  <<"Returning "<< 1  +  log(fabs(m_weight)) ;
         return 1+log(fabs(m_weight)) ;
     }
     return fabs(m_weight) ;
