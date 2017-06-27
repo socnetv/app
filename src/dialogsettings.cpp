@@ -176,6 +176,13 @@ DialogSettings::DialogSettings(
     ui->edgeColorNegativeBtn ->setIcon(QIcon(m_pixmap));
 
 
+    m_edgeColorZero = QColor (m_appSettings["initEdgeColorZero"]);
+    m_pixmap = QPixmap(60,20) ;
+    m_pixmap.fill( m_edgeColorZero);
+    ui->edgeColorZeroBtn ->setIcon(QIcon(m_pixmap));
+
+
+
     if (m_appSettings["initEdgeShape"] == "line") {
         ui->edgeShapeRadioStraightLine->setChecked(true);
     }
@@ -287,6 +294,9 @@ DialogSettings::DialogSettings(
              this, &DialogSettings::getEdgeColor);
     connect (ui->edgeColorNegativeBtn, &QToolButton::clicked,
              this, &DialogSettings::getEdgeColorNegative);
+    connect (ui->edgeColorZeroBtn, &QToolButton::clicked,
+             this, &DialogSettings::getEdgeColorZero);
+
     connect (ui->edgeShapeRadioStraightLine, &QRadioButton::clicked,
              this, &DialogSettings::getEdgeShape);
     connect (ui->edgeShapeRadioBezier, &QRadioButton::clicked,
@@ -590,7 +600,7 @@ void DialogSettings::getEdgeColor(){
 
 /**
  * @brief DialogSettings::getEdgeColorNegative
- * * Opens a QColorDialog for the user to select a new edge color
+ * * Opens a QColorDialog for the user to select a new negative edge color
  */
 void DialogSettings::getEdgeColorNegative(){
     m_edgeColorNegative = QColorDialog::getColor(
@@ -599,7 +609,27 @@ void DialogSettings::getEdgeColorNegative(){
         m_pixmap.fill(m_edgeColorNegative);
         ui->edgeColorNegativeBtn->setIcon(QIcon(m_pixmap));
         m_appSettings["initEdgeColorNegative"] = m_edgeColorNegative.name();
-        emit setEdgeColor(m_edgeColorNegative, 0);
+        emit setEdgeColor(m_edgeColorNegative, -1);
+    }
+    else {
+        // user pressed Cancel
+    }
+}
+
+
+
+/**
+ * @brief DialogSettings::getEdgeColorZero
+ * * Opens a QColorDialog for the user to select a new zero edge color
+ */
+void DialogSettings::getEdgeColorZero(){
+    m_edgeColorZero = QColorDialog::getColor(
+                m_edgeColorZero, this, tr("Select color for negative Edges") );
+    if ( m_edgeColorZero.isValid()) {
+        m_pixmap.fill(m_edgeColorZero);
+        ui->edgeColorZeroBtn->setIcon(QIcon(m_pixmap));
+        m_appSettings["initEdgeColorZero"] = m_edgeColorZero.name();
+        emit setEdgeColor(m_edgeColorZero, 0);
     }
     else {
         // user pressed Cancel

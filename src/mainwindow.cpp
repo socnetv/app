@@ -224,6 +224,7 @@ QMap<QString,QString> MainWindow::initSettings(){
     appSettings["initEdgeShape"]="line"; //bezier
     appSettings["initEdgeColor"]="black";
     appSettings["initEdgeColorNegative"]="red";
+    appSettings["initEdgeColorZero"]="blue";
     appSettings["initEdgeArrows"]="true";
     appSettings["initEdgeThicknessPerWeight"]="true";
     appSettings["initEdgeWeightNumbersVisibility"]="false";
@@ -8903,8 +8904,11 @@ void MainWindow::slotEditEdgeColorAll(QColor color, const int threshold){
     if (color.isValid()) {
         qDebug() << "MainWindow::slotEditEdgeColorAll() - new edge color: " << color.name() << " threshold " << threshold;
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        if (threshold <= 0 ) {
+        if (threshold < 0 ) {
             appSettings["initEdgeColorNegative"]=color.name();
+        }
+        else if (threshold == 0 ) {
+            appSettings["initEdgeColorZero"]=color.name();
         }
         else {
             appSettings["initEdgeColor"]=color.name();

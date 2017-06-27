@@ -1624,8 +1624,9 @@ void Graph::edgeCreate(const int &v1, const int &v2, const float &weight,
         if ( type == EDGE_RECIPROCAL_UNDIRECTED ) {
             qDebug()<< "-- Graph::edgeCreate() - "
                     << "Creating RECIPROCAL edge - emitting drawEdge signal to GW";
-            edgeAdd ( v1, v2, weight, type, label, color );
-            emit drawEdge(v1, v2, weight, label, color, type,
+
+            edgeAdd ( v1, v2, weight, type, label, ( (weight==0) ? "blue" :  color  ) );
+            emit drawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), type,
                           drawArrows, bezier, initEdgeWeightNumbers);
         }
         else if ( edgeExists( v2, v1) )  {
@@ -1639,8 +1640,9 @@ void Graph::edgeCreate(const int &v1, const int &v2, const float &weight,
         else {
             qDebug()<< "-- Graph::edgeCreate() - "
                        << "Opposite arc does not exist. Emitting drawEdge to GW...";
-            edgeAdd ( v1, v2, weight, EDGE_DIRECTED, label, color   );
-            emit drawEdge(v1, v2, weight, label, color, EDGE_DIRECTED,
+
+            edgeAdd ( v1, v2, weight, EDGE_DIRECTED, label, ( (weight==0) ? "blue" :  color  )   );
+            emit drawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), EDGE_DIRECTED,
                           drawArrows, bezier, initEdgeWeightNumbers);
             m_undirected = false;
             m_symmetric=false;
@@ -2069,8 +2071,17 @@ bool Graph::edgeColorAllSet(const QString &color, const int &threshold){
         it1=enabledOutEdges->cbegin();
         while ( it1!=enabledOutEdges->cend() ){
             target = it1.key();
-            if (threshold != RAND_MAX ) {
-                if ( it1.value() < threshold ) {
+            if (threshold == 0 ){
+                if ( it1.value() == threshold  ) {
+                    qDebug() << " Graph::edgeColorAllSet() zero weight threshold "
+                             << threshold << " - edge "
+                                << source << "->" << target << " new color " << color;
+                    (*it)->setOutLinkColor(target, color);
+                    emit setEdgeColor(source, target, color);
+                }
+            }
+            else if (threshold != 0 && threshold != RAND_MAX ) {
+                if ( it1.value() <= threshold ) {
                     qDebug() << " Graph::edgeColorAllSet() below weight threshold "
                              << threshold << " - edge "
                                 << source << "->" << target << " new color " << color;
