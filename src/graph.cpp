@@ -8499,654 +8499,6 @@ void Graph::writePrestigePageRank(const QString fileName,
 
 
 
-/**
- * @brief Graph::layoutRadialByProminenceIndex
-* Repositions all nodes on the periphery of different circles with radius
-* analogous to their prominence index
- * @param x0
- * @param y0
- * @param maxRadius
- * @param prominenceIndex
- * @param considerWeights
- * @param inverseWeights
- * @param dropIsolates
- */
-void Graph::layoutRadialByProminenceIndex(double x0, double y0,
-                                            double maxRadius,
-                                            int prominenceIndex,
-                                            const bool considerWeights,
-                                            const bool inverseWeights,
-                                            const bool dropIsolates){
-    qDebug() << "Graph::layoutRadialByProminenceIndex - "
-                << "prominenceIndex index = " << prominenceIndex;
-    double rad=0;
-    double i=0, std=0;
-    //offset controls how far from the centre the central nodes be positioned
-    float C=0, maxC=0, offset=0.06;
-    double new_radius=0, new_x=0, new_y=0;
-
-    emit statusMessage(tr("Computing centrality indices. Please wait..."));
-    //first calculate centrality indices if needed
-
-    maxRadius = canvasMaxRadius();
-    if ( prominenceIndex == 1) {
-        if (graphModified() || !calculatedDC )
-            centralityDegree(true, dropIsolates);
-    }
-    else if ( prominenceIndex == 3 ){
-        if (graphModified() || !calculatedIRCC )
-            centralityClosenessIR();
-    }
-    else if ( prominenceIndex == 8 ) {
-        if (graphModified() || !calculatedIC )
-            centralityInformation();
-    }
-    else if ( prominenceIndex == 9 ) {
-        if (graphModified() || !calculatedEVC )
-            centralityEigenvector();
-    }
-    else if ( prominenceIndex == 10){
-        if (graphModified() || !calculatedDP )
-            prestigeDegree(true, dropIsolates);
-    }
-    else if ( prominenceIndex == 11 ) {
-        if (graphModified() || !calculatedPRP )
-            prestigePageRank();
-    }
-    else if ( prominenceIndex == 12 ){
-        if (graphModified() || !calculatedPP )
-            prestigeProximity(considerWeights, inverseWeights);
-    }
-    else{
-        if (graphModified() || !calculatedCentralities )
-            graphMatrixDistancesCreate(true, considerWeights,
-                                 inverseWeights, dropIsolates);
-    }
-
-    emit statusMessage(tr("Applying circular layout based on centrality/prestige score. "
-                          "Please wait..."));
-
-
-    int vert=vertices();
-    QList<Vertex*>::const_iterator it;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        switch (prominenceIndex) {
-        case 1 : {
-            qDebug("Layout according to DC");
-            C=(*it)->SDC();
-            std= (*it)->SDC();
-            maxC=maxSDC;
-            break;
-        }
-        case 2 : {
-            qDebug("Layout according to CC");
-            C=(*it)->CC();
-            std= (*it)->SCC();
-            maxC=maxSCC;
-            break;
-        }
-        case 3 : {
-            qDebug("Layout according to IRCC");
-            qDebug() << "Layout according to IRCC C = " << (*it)->IRCC()
-                     << "std = " << (*it)->SIRCC()
-                     << "maxC= " << maxIRCC;
-            C=(*it)->IRCC();
-            std= (*it)->SIRCC();
-            maxC=maxIRCC;
-
-            break;
-        }
-        case 4 : {
-            qDebug("Layout according to BC");
-            C=(*it)->BC();
-            std= (*it)->SBC();
-            maxC=maxSBC;
-            break;
-        }
-        case 5 : {
-            qDebug("Layout according to SC");
-            C=(*it)->SC();
-            std= (*it)->SSC();
-            maxC=maxSSC;
-            break;
-        }
-        case 6 : {
-            qDebug("Layout according to EC");
-            C=(*it)->EC();
-            std= (*it)->SEC();
-            maxC=maxEC;
-            break;
-        }
-        case 7 : {
-            qDebug("Layout according to PC");
-            C=(*it)->PC();
-            std= (*it)->SPC();
-            maxC=maxSPC;
-            break;
-        }
-        case 8 : {
-            qDebug("Layout according to IC");
-            C=(*it)->IC();
-            std= (*it)->SIC();
-            maxC=maxIC;
-            break;
-        }
-        case 9 : {
-            qDebug("Layout according to EVC");
-            C=(*it)->EVC();
-            std= (*it)->SEVC();
-            maxC=1;
-            break;
-        }
-
-        case 10 : {
-            qDebug("Layout according to DP");
-            C=(*it)->SDP();
-            std= (*it)->SDP();
-            maxC=maxSDP;
-            break;
-        }
-        case 11 : {
-            qDebug("Layout according to PRP");
-            C=(*it)->PRP();
-            std= (*it)->SPRP();
-            maxC=1;
-            break;
-        }
-        case 12 : {
-            qDebug("Layout according to PP");
-            C=(*it)->PP();
-            std= (*it)->SPP();
-            maxC=maxPP;
-            break;
-        }
-        };
-        qDebug () << "Vertice " << (*it)->name() << " at x=" << (*it)->x()
-                  << "y= "<< (*it)->y() << ": C" << C << "stdC" << std
-                  << "maxradius" <<  maxRadius
-                  << "newradius" << maxRadius - (std/maxC - offset)*maxRadius;
-        switch (static_cast<int> (ceil(maxC)) ){
-        case 0: {
-            qDebug("maxC=0.   Using maxHeight");
-            new_radius=maxRadius;
-            break;
-        }
-        default: {
-            new_radius=(maxRadius- (std/maxC - offset)*maxRadius);
-            break;
-        }
-        };
-
-        //Calculate new position
-        rad= (2.0* Pi/ vert );
-        new_x=x0 + new_radius * cos(i * rad);
-        new_y=y0 + new_radius * sin(i * rad);
-        (*it)->setX( new_x );
-        (*it)->setY( new_y );
-        qDebug("Finished Calculation. Vertice will move to x=%f and y=%f ",
-               new_x, new_y);
-        //Move node to new position
-        emit setNodePos((*it)->name(),  new_x,  new_y);
-        i++;
-        emit addGuideCircle ( x0, y0, new_radius );
-    }
-
-    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
-}
-
-
-
-
-/**
- * @brief Graph::layoutRandom
-  Repositions all nodes on different random positions
- * Emits setNodePos(i, x,y) to tell GW that the node item should be moved.
- * @param maxWidth
- * @param maxHeight
- */
-void Graph::layoutRandom(){
-    qDebug()<< "Graph::layoutRandom() ";
-    double new_x=0, new_y=0;
-    Vertices::const_iterator it;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        new_x= canvasRandomX();
-        new_y= canvasRandomY();
-        (*it)->setX( new_x );
-        (*it)->setY( new_y );
-        qDebug()<< "Graph::layoutRandom() - "
-                << " vertex " << (*it)->name()
-                   << " emitting setNodePos to new pos " << new_x << " , "<< new_y;
-        emit setNodePos((*it)->name(),  new_x,  new_y);
-    }
-
-    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
-}
-
-
-
-/**
- * @brief Graph::layoutRadialRandom
- * Repositions all nodes on the periphery of different circles with random radius
- * @param x0
- * @param y0
- * @param maxRadius
- */
-void Graph::layoutRadialRandom(double x0, double y0, double maxRadius){
-    qDebug() << "Graph::layoutRadialRandom - ";
-    double rad=0, new_radius=0, new_x=0, new_y=0;
-    double i=0;
-    maxRadius = canvasMaxRadius();
-    //offset controls how far from the centre the central nodes be positioned
-    float offset=0.06, randomDecimal=0;
-    int vert=vertices();
-    QList<Vertex*>::const_iterator it;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        randomDecimal = (float ) ( rand()%100 ) / 100.0;
-        new_radius=(maxRadius- (randomDecimal - offset)*maxRadius);
-        qDebug () << "Vertice " << (*it)->name()
-                  << " at x=" << (*it)->x()
-                  << ", y= "<< (*it)->y()
-                  << ", maxradius " <<  maxRadius
-                  << " randomDecimal " << randomDecimal
-                  << " new radius " << new_radius;
-
-        //Calculate new position
-        rad= (2.0* Pi/ vert );
-        new_x=x0 + new_radius * cos(i * rad);
-        new_y=y0 + new_radius * sin(i * rad);
-        (*it)->setX( new_x );
-        (*it)->setY( new_y );
-        qDebug("Vertice will move to x=%f and y=%f ", new_x, new_y);
-        //Move node to new position
-        emit setNodePos((*it)->name(),  new_x,  new_y);
-        i++;
-        emit addGuideCircle ( x0, y0, new_radius );
-    }
-
-    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
-}
-
-
-
-
-/**
- * @brief Graph::layoutLevelByProminenceIndex
- * Repositions all nodes on different top-down levels according to their centrality
- * Emits setNodePos(i, x,y) to tell GW that the node item should be moved.
- * @param maxWidth
- * @param maxHeight
- * @param prominenceIndex
- * @param considerWeights
- * @param inverseWeights
- * @param dropIsolates
- */
-void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
-                                         int prominenceIndex,
-                                         const bool considerWeights,
-                                         const bool inverseWeights,
-                                         const bool dropIsolates){
-    qDebug("Graph: layoutLevelCentrality...");
-
-    double i=0, std=0;
-    //offset controls how far from the top the central nodes will be
-    float C=0, maxC=0, offset=50;
-    double new_x=0, new_y=0;
-    //	int vert=vertices();
-    maxHeight-=offset;
-    maxWidth-=offset;
-    QList<Vertex*>::const_iterator it;
-
-
-    emit statusMessage(tr("Computing centrality/prestige scores. Please wait..."));
-
-    if ( prominenceIndex == 1) {
-        if (graphModified() || !calculatedDC )
-            centralityDegree(true, dropIsolates);
-    }
-    else if ( prominenceIndex == 3 ){
-        if (graphModified() || !calculatedIRCC )
-            centralityClosenessIR();
-    }
-    else if ( prominenceIndex == 8 ) {
-        if (graphModified() || !calculatedIC )
-            centralityInformation();
-    }
-    else if ( prominenceIndex == 9){
-        if (graphModified() || !calculatedEVC )
-            centralityEigenvector(true, dropIsolates);
-    }
-
-    else if ( prominenceIndex == 10){
-        if (graphModified() || !calculatedDP )
-            prestigeDegree(true, dropIsolates);
-    }
-    else if ( prominenceIndex == 11 ) {
-        if (graphModified() || !calculatedPRP )
-            prestigePageRank();
-    }
-    else if ( prominenceIndex == 12 ){
-        if (graphModified() || !calculatedPP )
-            prestigeProximity(considerWeights, inverseWeights);
-    }
-    else{
-        if (graphModified() || !calculatedCentralities )
-            graphMatrixDistancesCreate(true, considerWeights,
-                                 inverseWeights, dropIsolates);
-    }
-
-    emit statusMessage(tr("Applying level layout based on centrality/prestige score. "
-                          "Please wait..."));
-
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        switch (prominenceIndex) {
-        case 1 : {
-            qDebug("Layout according to DC");
-            C=(*it)->SDC();
-            std= (*it)->SDC();
-            maxC=maxSDC;
-            break;
-        }
-        case 2 : {
-            qDebug("Layout according to CC");
-            C=(*it)->CC();
-            std= (*it)->SCC();
-            maxC=maxSCC;
-            break;
-        }
-        case 3 : {
-            qDebug("Layout according to IRCC");
-            C=(*it)->IRCC();
-            std= (*it)->SIRCC();
-            maxC=maxIRCC;
-            break;
-        }
-        case 4 : {
-            qDebug("Layout according to BC");
-            C=(*it)->BC();
-            std= (*it)->SBC();
-            maxC=maxSBC;
-            break;
-        }
-        case 5 : {
-            qDebug("Layout according to SC");
-            C=(*it)->SC();
-            std= (*it)->SSC();
-            maxC=maxSSC;
-            break;
-        }
-        case 6 : {
-            qDebug("Layout according to EC");
-            C=(*it)->EC();
-            std= (*it)->SEC();
-            maxC=maxEC;
-            break;
-        }
-        case 7 : {
-            qDebug("Layout according to PC");
-            C=(*it)->PC();
-            std= (*it)->SPC();
-            maxC=maxSPC;
-            break;
-        }
-        case 8 : {
-            qDebug("Layout according to IC");
-            C=(*it)->IC();
-            std= (*it)->SIC();
-            maxC=maxIC;
-            break;
-        }
-        case 9 : {
-            qDebug("Layout according to EVC");
-            C=(*it)->EVC();
-            std= (*it)->SEVC();
-            maxC=1;
-            break;
-        }
-
-        case 10 : {
-            qDebug("Layout according to DP");
-            C=(*it)->SDP();
-            std= (*it)->SDP();
-            maxC=maxSDP;
-            break;
-        }
-        case 11 : {
-            qDebug("Layout according to PRP");
-            C=(*it)->PRP();
-            std= (*it)->SPRP();
-            maxC=1;
-            break;
-        }
-        case 12 : {
-            qDebug("Layout according to PP");
-            C=(*it)->PP();
-            std= (*it)->SPP();
-            maxC=maxPP;
-            break;
-        }
-        };
-        qDebug()<< "Vertice " << (*it)->name()
-                << " at x="<< (*it)->x() << ", y="<<  (*it)->y()
-                << ": C=" << C << ", stdC=" << std
-                << ", maxC "<<	maxC << ", maxWidth " << maxWidth
-                <<" , maxHeight "<<maxHeight;
-        //Calculate new position
-        qDebug ("std %f, maxHeight-(std)*maxHeight = %f "
-                , std, maxHeight-(std)*maxHeight );
-        switch ( static_cast<int> (ceil(maxC)) ){
-        case 0: {
-            qDebug("maxC=0.   Using maxHeight");
-            new_y=maxHeight;
-            break;
-        }
-        default: {
-            new_y=offset/2.0+maxHeight-(std/maxC)*maxHeight;
-            break;
-        }
-        };
-        new_x=offset/2.0 + rand() % ( static_cast<int> (maxWidth) );
-        qDebug ("new_x %f, new_y %f", new_x, new_y);
-        (*it)->setX( new_x );
-        (*it)->setY( new_y );
-        qDebug() << "Finished Calculation. "
-                    "Vertice will move to x="<< new_x << " and y= " << new_y;
-        //Move node to new position
-        emit setNodePos((*it)->name(),  new_x,  new_y);
-        i++;
-        emit addGuideHLine(new_y);
-    }
-
-
-    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
-}
-
-
-
-
-/**
- * @brief Graph::layoutVerticesSizeByProminenceIndex
- * changes the node size to be proportinal to given prominence index
- * @param prominenceIndex
- */
-void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
-                                                 const bool considerWeights,
-                                                 const bool inverseWeights,
-                                                 const bool dropIsolates){
-    qDebug() << "Graph::layoutVerticesSizeByProminenceIndex - "
-                << "prominenceIndex index = " << prominenceIndex;
-    double std=0;
-    float C=0, maxC=0;
-    int new_size=0;
-
-    emit statusMessage(tr("Computing centrality/prestige scores. Please wait..."));
-    //first calculate centrality indices if needed
-    if ( prominenceIndex == 0) {
-        // do nothing
-    }
-    else if ( prominenceIndex == 1) {
-        if (graphModified() || !calculatedDC )
-            centralityDegree(true, dropIsolates);
-    }
-    else if ( prominenceIndex == 3 ){
-        if (graphModified() || !calculatedIRCC )
-            centralityClosenessIR();
-    }
-    else if ( prominenceIndex == 8 ) {
-        if (graphModified() || !calculatedIC )
-            centralityInformation();
-    }
-    else if ( prominenceIndex == 9){
-        if (graphModified() || !calculatedEVC )
-            centralityEigenvector(true, dropIsolates);
-    }
-
-    else if ( prominenceIndex == 10){
-        if (graphModified() || !calculatedDP )
-            prestigeDegree(true, dropIsolates);
-    }
-    else if ( prominenceIndex == 11 ) {
-        if (graphModified() || !calculatedPRP )
-            prestigePageRank();
-    }
-    else if ( prominenceIndex == 12 ){
-        if (graphModified() || !calculatedPP )
-            prestigeProximity(considerWeights, inverseWeights);
-    }
-    else{
-        if (graphModified() || !calculatedCentralities )
-            graphMatrixDistancesCreate(true, considerWeights,
-                                   inverseWeights, dropIsolates);
-    }
-
-    emit statusMessage(tr("Applying node sizes based on centrality/prestige score. "
-                          "Please wait..."));
-
-    QList<Vertex*>::const_iterator it;
-    for  (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        switch (prominenceIndex) {
-        case 0: {
-            C=0;maxC=0;
-            break;
-        }
-        case 1 : {
-            qDebug("VerticesSize according to DC");
-            C=(*it)->SDC();
-            std= (*it)->SDC();
-            maxC=maxSDC;
-            break;
-        }
-        case 2 : {
-            qDebug("VerticesSize according to CC");
-            C=(*it)->CC();
-            std= (*it)->SCC();
-            maxC=maxSCC;
-            break;
-        }
-        case 3 : {
-            qDebug("VerticesSize according to IRCC");
-            C=(*it)->IRCC();
-            std= (*it)->SIRCC();
-            maxC=maxIRCC;
-            break;
-        }
-        case 4 : {
-            qDebug("VerticesSize according to BC");
-            C=(*it)->BC();
-            std= (*it)->SBC();
-            maxC=maxSBC;
-            break;
-        }
-        case 5 : {
-            qDebug("VerticesSize according to SC");
-            C=(*it)->SC();
-            std= (*it)->SSC();
-            maxC=maxSSC;
-            break;
-        }
-        case 6 : {
-            qDebug("VerticesSize according to EC");
-            C=(*it)->EC();
-            std= (*it)->SEC();
-            maxC=maxEC;
-            break;
-        }
-        case 7 : {
-            qDebug("VerticesSize according to PC");
-            C=(*it)->PC();
-            std= (*it)->SPC();
-            maxC=maxSPC;
-            break;
-        }
-        case 8 : {
-            qDebug("VerticesSize according to IC");
-            C=(*it)->IC();
-            std= (*it)->SIC();
-            maxC=maxIC;
-            break;
-        }
-        case 9 : {
-            qDebug("Layout according to EVC");
-            C=(*it)->EVC();
-            std= (*it)->SEVC();
-            maxC=1;
-            break;
-        }
-
-        case 10 : {
-            qDebug("VerticesSize according to DP");
-            C=(*it)->SDP();
-            std= (*it)->SDP();
-            maxC=maxSDP;
-            break;
-        }
-        case 11 : {
-            qDebug("VerticesSize according to PRP");
-            C=(*it)->PRP();
-            std= (*it)->SPRP();
-            maxC=1;
-            break;
-        }
-        case 12 : {
-            qDebug("VerticesSize according to PP");
-            C=(*it)->PP();
-            std= (*it)->SPP();
-            maxC=maxPP;
-            break;
-        }
-        };
-        qDebug () << "Vertex " << (*it)->name()
-                  << ": C=" << C << ", stdC=" << std
-                  << ", maxC " << maxC
-                  << "initVertexSize " << initVertexSize
-                  << " stdC/maxC " << std/maxC
-                  << ", (std/maxC) * initVertexSize " << (std/maxC *initVertexSize);
-
-        switch (static_cast<int> (ceil(maxC) )){
-        case 0: {
-            qDebug()<<"maxC=0.   Using initVertexSize";
-            new_size=initVertexSize;
-            //emit signal to change node size
-            emit setNodeSize((*it)->name(),  new_size);
-            break;
-        }
-        default: {
-            //Calculate new size
-            new_size=ceil ( initVertexSize/2.0 + (float) initVertexSize * (std/maxC));
-            qDebug ()<< "new vertex size "<< new_size << " call setSize()";
-            (*it)->setSize(new_size);
-            //emit signal to change node size
-            emit setNodeSize((*it)->name(),  new_size);
-            break;
-        }
-        };
-    }
-
-    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
-}
-
-
-
-
 
 /**
  * @brief Graph::randomizeThings
@@ -18288,6 +17640,700 @@ void Graph::timerEvent(QTimerEvent *event) {
 
 
 
+
+
+/**
+ * @brief Graph::layoutRandom
+  Repositions all nodes on different random positions
+ * Emits setNodePos(i, x,y) to tell GW that the node item should be moved.
+ * @param maxWidth
+ * @param maxHeight
+ */
+void Graph::layoutRandom(){
+    qDebug()<< "Graph::layoutRandom() ";
+    double new_x=0, new_y=0;
+    Vertices::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        new_x= canvasRandomX();
+        new_y= canvasRandomY();
+        (*it)->setX( new_x );
+        (*it)->setY( new_y );
+        qDebug()<< "Graph::layoutRandom() - "
+                << " vertex " << (*it)->name()
+                   << " emitting setNodePos to new pos " << new_x << " , "<< new_y;
+        emit setNodePos((*it)->name(),  new_x,  new_y);
+    }
+
+    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
+}
+
+
+
+/**
+ * @brief Graph::layoutRadialRandom
+ * Repositions all nodes on the periphery of different circles with random radius
+ * @param x0
+ * @param y0
+ * @param maxRadius
+ */
+void Graph::layoutRadialRandom(double x0, double y0, double maxRadius){
+    qDebug() << "Graph::layoutRadialRandom - ";
+    double rad=0, new_radius=0, new_x=0, new_y=0;
+    double i=0;
+    maxRadius = canvasMaxRadius();
+    //offset controls how far from the centre the central nodes be positioned
+    float offset=0.06, randomDecimal=0;
+    int vert=vertices();
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        randomDecimal = (float ) ( rand()%100 ) / 100.0;
+        new_radius=(maxRadius- (randomDecimal - offset)*maxRadius);
+        qDebug () << "Vertice " << (*it)->name()
+                  << " at x=" << (*it)->x()
+                  << ", y= "<< (*it)->y()
+                  << ", maxradius " <<  maxRadius
+                  << " randomDecimal " << randomDecimal
+                  << " new radius " << new_radius;
+
+        //Calculate new position
+        rad= (2.0* Pi/ vert );
+        new_x=x0 + new_radius * cos(i * rad);
+        new_y=y0 + new_radius * sin(i * rad);
+        (*it)->setX( new_x );
+        (*it)->setY( new_y );
+        qDebug("Vertice will move to x=%f and y=%f ", new_x, new_y);
+        //Move node to new position
+        emit setNodePos((*it)->name(),  new_x,  new_y);
+        i++;
+        emit addGuideCircle ( x0, y0, new_radius );
+    }
+
+    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
+}
+
+
+
+
+/**
+ * @brief Graph::layoutRadialRandom
+ * Repositions all nodes on the periphery of different circles with random radius
+ * @param x0
+ * @param y0
+ * @param maxRadius
+ */
+void Graph::layoutRadial (const double &x0, const double &y0, const double &maxRadius, const bool &guides){
+    qDebug() << "Graph::layoutRadialRandom - ";
+    double rad=0, new_radius=0, new_x=0, new_y=0;
+    double i=0;
+
+    int N=vertices();
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
+        if ( ! (*it)->isEnabled() ) {
+            qDebug() << "  vertex i" << (*it)->name() << " disabled. Continue";
+            continue;
+        }
+
+        //Calculate new position
+        rad= (2.0* Pi/ N );
+        new_x=x0 + maxRadius * cos(i * rad);
+        new_y=y0 + maxRadius * sin(i * rad);
+        (*it)->setX( new_x );
+        (*it)->setY( new_y );
+        qDebug("Vertice will move to x=%f and y=%f ", new_x, new_y);
+        //Move node to new position
+        emit setNodePos((*it)->name(),  new_x,  new_y);
+        i++;
+
+        if (guides) {
+            emit addGuideCircle ( x0, y0, new_radius );
+        }
+
+    }
+
+    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
+}
+
+
+
+
+/**
+ * @brief Graph::layoutRadialByProminenceIndex
+* Repositions all nodes on the periphery of different circles with radius
+* analogous to their prominence index
+ * @param x0
+ * @param y0
+ * @param maxRadius
+ * @param prominenceIndex
+ * @param considerWeights
+ * @param inverseWeights
+ * @param dropIsolates
+ */
+void Graph::layoutRadialByProminenceIndex(double x0, double y0,
+                                            double maxRadius,
+                                            int prominenceIndex,
+                                            const bool considerWeights,
+                                            const bool inverseWeights,
+                                            const bool dropIsolates){
+    qDebug() << "Graph::layoutRadialByProminenceIndex - "
+                << "prominenceIndex index = " << prominenceIndex;
+    double rad=0;
+    double i=0, std=0;
+    //offset controls how far from the centre the central nodes be positioned
+    float C=0, maxC=0, offset=0.06;
+    double new_radius=0, new_x=0, new_y=0;
+
+    emit statusMessage(tr("Computing centrality indices. Please wait..."));
+    //first calculate centrality indices if needed
+
+    maxRadius = canvasMaxRadius();
+    if ( prominenceIndex == 1) {
+        if (graphModified() || !calculatedDC )
+            centralityDegree(true, dropIsolates);
+    }
+    else if ( prominenceIndex == 3 ){
+        if (graphModified() || !calculatedIRCC )
+            centralityClosenessIR();
+    }
+    else if ( prominenceIndex == 8 ) {
+        if (graphModified() || !calculatedIC )
+            centralityInformation();
+    }
+    else if ( prominenceIndex == 9 ) {
+        if (graphModified() || !calculatedEVC )
+            centralityEigenvector();
+    }
+    else if ( prominenceIndex == 10){
+        if (graphModified() || !calculatedDP )
+            prestigeDegree(true, dropIsolates);
+    }
+    else if ( prominenceIndex == 11 ) {
+        if (graphModified() || !calculatedPRP )
+            prestigePageRank();
+    }
+    else if ( prominenceIndex == 12 ){
+        if (graphModified() || !calculatedPP )
+            prestigeProximity(considerWeights, inverseWeights);
+    }
+    else{
+        if (graphModified() || !calculatedCentralities )
+            graphMatrixDistancesCreate(true, considerWeights,
+                                 inverseWeights, dropIsolates);
+    }
+
+    emit statusMessage(tr("Applying circular layout based on centrality/prestige score. "
+                          "Please wait..."));
+
+
+    int vert=vertices();
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        switch (prominenceIndex) {
+        case 1 : {
+            qDebug("Layout according to DC");
+            C=(*it)->SDC();
+            std= (*it)->SDC();
+            maxC=maxSDC;
+            break;
+        }
+        case 2 : {
+            qDebug("Layout according to CC");
+            C=(*it)->CC();
+            std= (*it)->SCC();
+            maxC=maxSCC;
+            break;
+        }
+        case 3 : {
+            qDebug("Layout according to IRCC");
+            qDebug() << "Layout according to IRCC C = " << (*it)->IRCC()
+                     << "std = " << (*it)->SIRCC()
+                     << "maxC= " << maxIRCC;
+            C=(*it)->IRCC();
+            std= (*it)->SIRCC();
+            maxC=maxIRCC;
+
+            break;
+        }
+        case 4 : {
+            qDebug("Layout according to BC");
+            C=(*it)->BC();
+            std= (*it)->SBC();
+            maxC=maxSBC;
+            break;
+        }
+        case 5 : {
+            qDebug("Layout according to SC");
+            C=(*it)->SC();
+            std= (*it)->SSC();
+            maxC=maxSSC;
+            break;
+        }
+        case 6 : {
+            qDebug("Layout according to EC");
+            C=(*it)->EC();
+            std= (*it)->SEC();
+            maxC=maxEC;
+            break;
+        }
+        case 7 : {
+            qDebug("Layout according to PC");
+            C=(*it)->PC();
+            std= (*it)->SPC();
+            maxC=maxSPC;
+            break;
+        }
+        case 8 : {
+            qDebug("Layout according to IC");
+            C=(*it)->IC();
+            std= (*it)->SIC();
+            maxC=maxIC;
+            break;
+        }
+        case 9 : {
+            qDebug("Layout according to EVC");
+            C=(*it)->EVC();
+            std= (*it)->SEVC();
+            maxC=1;
+            break;
+        }
+
+        case 10 : {
+            qDebug("Layout according to DP");
+            C=(*it)->SDP();
+            std= (*it)->SDP();
+            maxC=maxSDP;
+            break;
+        }
+        case 11 : {
+            qDebug("Layout according to PRP");
+            C=(*it)->PRP();
+            std= (*it)->SPRP();
+            maxC=1;
+            break;
+        }
+        case 12 : {
+            qDebug("Layout according to PP");
+            C=(*it)->PP();
+            std= (*it)->SPP();
+            maxC=maxPP;
+            break;
+        }
+        };
+        qDebug () << "Vertice " << (*it)->name() << " at x=" << (*it)->x()
+                  << "y= "<< (*it)->y() << ": C" << C << "stdC" << std
+                  << "maxradius" <<  maxRadius
+                  << "newradius" << maxRadius - (std/maxC - offset)*maxRadius;
+        switch (static_cast<int> (ceil(maxC)) ){
+        case 0: {
+            qDebug("maxC=0.   Using maxHeight");
+            new_radius=maxRadius;
+            break;
+        }
+        default: {
+            new_radius=(maxRadius- (std/maxC - offset)*maxRadius);
+            break;
+        }
+        };
+
+        //Calculate new position
+        rad= (2.0* Pi/ vert );
+        new_x=x0 + new_radius * cos(i * rad);
+        new_y=y0 + new_radius * sin(i * rad);
+        (*it)->setX( new_x );
+        (*it)->setY( new_y );
+        qDebug("Finished Calculation. Vertice will move to x=%f and y=%f ",
+               new_x, new_y);
+        //Move node to new position
+        emit setNodePos((*it)->name(),  new_x,  new_y);
+        i++;
+        emit addGuideCircle ( x0, y0, new_radius );
+    }
+
+    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
+}
+
+
+
+
+/**
+ * @brief Graph::layoutLevelByProminenceIndex
+ * Repositions all nodes on different top-down levels according to their centrality
+ * Emits setNodePos(i, x,y) to tell GW that the node item should be moved.
+ * @param maxWidth
+ * @param maxHeight
+ * @param prominenceIndex
+ * @param considerWeights
+ * @param inverseWeights
+ * @param dropIsolates
+ */
+void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
+                                         int prominenceIndex,
+                                         const bool considerWeights,
+                                         const bool inverseWeights,
+                                         const bool dropIsolates){
+    qDebug("Graph: layoutLevelCentrality...");
+
+    double i=0, std=0;
+    //offset controls how far from the top the central nodes will be
+    float C=0, maxC=0, offset=50;
+    double new_x=0, new_y=0;
+    //	int vert=vertices();
+    maxHeight-=offset;
+    maxWidth-=offset;
+    QList<Vertex*>::const_iterator it;
+
+
+    emit statusMessage(tr("Computing centrality/prestige scores. Please wait..."));
+
+    if ( prominenceIndex == 1) {
+        if (graphModified() || !calculatedDC )
+            centralityDegree(true, dropIsolates);
+    }
+    else if ( prominenceIndex == 3 ){
+        if (graphModified() || !calculatedIRCC )
+            centralityClosenessIR();
+    }
+    else if ( prominenceIndex == 8 ) {
+        if (graphModified() || !calculatedIC )
+            centralityInformation();
+    }
+    else if ( prominenceIndex == 9){
+        if (graphModified() || !calculatedEVC )
+            centralityEigenvector(true, dropIsolates);
+    }
+
+    else if ( prominenceIndex == 10){
+        if (graphModified() || !calculatedDP )
+            prestigeDegree(true, dropIsolates);
+    }
+    else if ( prominenceIndex == 11 ) {
+        if (graphModified() || !calculatedPRP )
+            prestigePageRank();
+    }
+    else if ( prominenceIndex == 12 ){
+        if (graphModified() || !calculatedPP )
+            prestigeProximity(considerWeights, inverseWeights);
+    }
+    else{
+        if (graphModified() || !calculatedCentralities )
+            graphMatrixDistancesCreate(true, considerWeights,
+                                 inverseWeights, dropIsolates);
+    }
+
+    emit statusMessage(tr("Applying level layout based on centrality/prestige score. "
+                          "Please wait..."));
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        switch (prominenceIndex) {
+        case 1 : {
+            qDebug("Layout according to DC");
+            C=(*it)->SDC();
+            std= (*it)->SDC();
+            maxC=maxSDC;
+            break;
+        }
+        case 2 : {
+            qDebug("Layout according to CC");
+            C=(*it)->CC();
+            std= (*it)->SCC();
+            maxC=maxSCC;
+            break;
+        }
+        case 3 : {
+            qDebug("Layout according to IRCC");
+            C=(*it)->IRCC();
+            std= (*it)->SIRCC();
+            maxC=maxIRCC;
+            break;
+        }
+        case 4 : {
+            qDebug("Layout according to BC");
+            C=(*it)->BC();
+            std= (*it)->SBC();
+            maxC=maxSBC;
+            break;
+        }
+        case 5 : {
+            qDebug("Layout according to SC");
+            C=(*it)->SC();
+            std= (*it)->SSC();
+            maxC=maxSSC;
+            break;
+        }
+        case 6 : {
+            qDebug("Layout according to EC");
+            C=(*it)->EC();
+            std= (*it)->SEC();
+            maxC=maxEC;
+            break;
+        }
+        case 7 : {
+            qDebug("Layout according to PC");
+            C=(*it)->PC();
+            std= (*it)->SPC();
+            maxC=maxSPC;
+            break;
+        }
+        case 8 : {
+            qDebug("Layout according to IC");
+            C=(*it)->IC();
+            std= (*it)->SIC();
+            maxC=maxIC;
+            break;
+        }
+        case 9 : {
+            qDebug("Layout according to EVC");
+            C=(*it)->EVC();
+            std= (*it)->SEVC();
+            maxC=1;
+            break;
+        }
+
+        case 10 : {
+            qDebug("Layout according to DP");
+            C=(*it)->SDP();
+            std= (*it)->SDP();
+            maxC=maxSDP;
+            break;
+        }
+        case 11 : {
+            qDebug("Layout according to PRP");
+            C=(*it)->PRP();
+            std= (*it)->SPRP();
+            maxC=1;
+            break;
+        }
+        case 12 : {
+            qDebug("Layout according to PP");
+            C=(*it)->PP();
+            std= (*it)->SPP();
+            maxC=maxPP;
+            break;
+        }
+        };
+        qDebug()<< "Vertice " << (*it)->name()
+                << " at x="<< (*it)->x() << ", y="<<  (*it)->y()
+                << ": C=" << C << ", stdC=" << std
+                << ", maxC "<<	maxC << ", maxWidth " << maxWidth
+                <<" , maxHeight "<<maxHeight;
+        //Calculate new position
+        qDebug ("std %f, maxHeight-(std)*maxHeight = %f "
+                , std, maxHeight-(std)*maxHeight );
+        switch ( static_cast<int> (ceil(maxC)) ){
+        case 0: {
+            qDebug("maxC=0.   Using maxHeight");
+            new_y=maxHeight;
+            break;
+        }
+        default: {
+            new_y=offset/2.0+maxHeight-(std/maxC)*maxHeight;
+            break;
+        }
+        };
+        new_x=offset/2.0 + rand() % ( static_cast<int> (maxWidth) );
+        qDebug ("new_x %f, new_y %f", new_x, new_y);
+        (*it)->setX( new_x );
+        (*it)->setY( new_y );
+        qDebug() << "Finished Calculation. "
+                    "Vertice will move to x="<< new_x << " and y= " << new_y;
+        //Move node to new position
+        emit setNodePos((*it)->name(),  new_x,  new_y);
+        i++;
+        emit addGuideHLine(new_y);
+    }
+
+
+    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
+}
+
+
+
+
+/**
+ * @brief Graph::layoutVerticesSizeByProminenceIndex
+ * changes the node size to be proportinal to given prominence index
+ * @param prominenceIndex
+ */
+void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
+                                                 const bool considerWeights,
+                                                 const bool inverseWeights,
+                                                 const bool dropIsolates){
+    qDebug() << "Graph::layoutVerticesSizeByProminenceIndex - "
+                << "prominenceIndex index = " << prominenceIndex;
+    double std=0;
+    float C=0, maxC=0;
+    int new_size=0;
+
+    emit statusMessage(tr("Computing centrality/prestige scores. Please wait..."));
+    //first calculate centrality indices if needed
+    if ( prominenceIndex == 0) {
+        // do nothing
+    }
+    else if ( prominenceIndex == 1) {
+        if (graphModified() || !calculatedDC )
+            centralityDegree(true, dropIsolates);
+    }
+    else if ( prominenceIndex == 3 ){
+        if (graphModified() || !calculatedIRCC )
+            centralityClosenessIR();
+    }
+    else if ( prominenceIndex == 8 ) {
+        if (graphModified() || !calculatedIC )
+            centralityInformation();
+    }
+    else if ( prominenceIndex == 9){
+        if (graphModified() || !calculatedEVC )
+            centralityEigenvector(true, dropIsolates);
+    }
+
+    else if ( prominenceIndex == 10){
+        if (graphModified() || !calculatedDP )
+            prestigeDegree(true, dropIsolates);
+    }
+    else if ( prominenceIndex == 11 ) {
+        if (graphModified() || !calculatedPRP )
+            prestigePageRank();
+    }
+    else if ( prominenceIndex == 12 ){
+        if (graphModified() || !calculatedPP )
+            prestigeProximity(considerWeights, inverseWeights);
+    }
+    else{
+        if (graphModified() || !calculatedCentralities )
+            graphMatrixDistancesCreate(true, considerWeights,
+                                   inverseWeights, dropIsolates);
+    }
+
+    emit statusMessage(tr("Applying node sizes based on centrality/prestige score. "
+                          "Please wait..."));
+
+    QList<Vertex*>::const_iterator it;
+    for  (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        switch (prominenceIndex) {
+        case 0: {
+            C=0;maxC=0;
+            break;
+        }
+        case 1 : {
+            qDebug("VerticesSize according to DC");
+            C=(*it)->SDC();
+            std= (*it)->SDC();
+            maxC=maxSDC;
+            break;
+        }
+        case 2 : {
+            qDebug("VerticesSize according to CC");
+            C=(*it)->CC();
+            std= (*it)->SCC();
+            maxC=maxSCC;
+            break;
+        }
+        case 3 : {
+            qDebug("VerticesSize according to IRCC");
+            C=(*it)->IRCC();
+            std= (*it)->SIRCC();
+            maxC=maxIRCC;
+            break;
+        }
+        case 4 : {
+            qDebug("VerticesSize according to BC");
+            C=(*it)->BC();
+            std= (*it)->SBC();
+            maxC=maxSBC;
+            break;
+        }
+        case 5 : {
+            qDebug("VerticesSize according to SC");
+            C=(*it)->SC();
+            std= (*it)->SSC();
+            maxC=maxSSC;
+            break;
+        }
+        case 6 : {
+            qDebug("VerticesSize according to EC");
+            C=(*it)->EC();
+            std= (*it)->SEC();
+            maxC=maxEC;
+            break;
+        }
+        case 7 : {
+            qDebug("VerticesSize according to PC");
+            C=(*it)->PC();
+            std= (*it)->SPC();
+            maxC=maxSPC;
+            break;
+        }
+        case 8 : {
+            qDebug("VerticesSize according to IC");
+            C=(*it)->IC();
+            std= (*it)->SIC();
+            maxC=maxIC;
+            break;
+        }
+        case 9 : {
+            qDebug("Layout according to EVC");
+            C=(*it)->EVC();
+            std= (*it)->SEVC();
+            maxC=1;
+            break;
+        }
+
+        case 10 : {
+            qDebug("VerticesSize according to DP");
+            C=(*it)->SDP();
+            std= (*it)->SDP();
+            maxC=maxSDP;
+            break;
+        }
+        case 11 : {
+            qDebug("VerticesSize according to PRP");
+            C=(*it)->PRP();
+            std= (*it)->SPRP();
+            maxC=1;
+            break;
+        }
+        case 12 : {
+            qDebug("VerticesSize according to PP");
+            C=(*it)->PP();
+            std= (*it)->SPP();
+            maxC=maxPP;
+            break;
+        }
+        };
+        qDebug () << "Vertex " << (*it)->name()
+                  << ": C=" << C << ", stdC=" << std
+                  << ", maxC " << maxC
+                  << "initVertexSize " << initVertexSize
+                  << " stdC/maxC " << std/maxC
+                  << ", (std/maxC) * initVertexSize " << (std/maxC *initVertexSize);
+
+        switch (static_cast<int> (ceil(maxC) )){
+        case 0: {
+            qDebug()<<"maxC=0.   Using initVertexSize";
+            new_size=initVertexSize;
+            //emit signal to change node size
+            emit setNodeSize((*it)->name(),  new_size);
+            break;
+        }
+        default: {
+            //Calculate new size
+            new_size=ceil ( initVertexSize/2.0 + (float) initVertexSize * (std/maxC));
+            qDebug ()<< "new vertex size "<< new_size << " call setSize()";
+            (*it)->setSize(new_size);
+            //emit signal to change node size
+            emit setNodeSize((*it)->name(),  new_size);
+            break;
+        }
+        };
+    }
+
+    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
+}
+
+
+
+
 /**
  * @brief Graph::layoutForceDirectedSpringEmbedder
  * @param maxIterations
@@ -18585,7 +18631,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
     float L0=0; // the length of a side of the display square area
     float D=0;  // the graph diameter
 
-    double new_x=0, new_y=0;
+    double new_x=0, new_y=0, x0=0, y0=0;
 
     Vertices::const_iterator v1;
     Vertices::const_iterator v2;
@@ -18643,7 +18689,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
 
     // Compute kij for 1 <= i!=j <= n using the formula:
     // kij = K / dij ^2
-    // kij is the strength of the spring between pi and pj
+    // kij is the strength of the spring between pi and pj, K a constant
 
     qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
                "Compute kij = K / dij ^2. kij will be symmmetric. ";
@@ -18663,27 +18709,17 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
 
     // initialize p1, p2, ... pn
     // placing the particles on the vertices of a regular n-polygon
+    // circumscribed by a circle whose diameter is L0
 
     qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
                "Compute initial positions p of particles " ;
+    i=0;
+    x0=canvasWidth/2.0;
+    y0=canvasHeight/2.0;
 
-    for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1){
+    layoutRadial(x0,y0,L0/2,false);
 
-        if ( ! (*v1)->isEnabled() ) {
-            qDebug() << "  vertex i" << (*v1)->name() << " disabled. Continue";
-            continue;
-        }
-        // TODO - move particles onto a regular polygon, not random positions
-        new_x= canvasRandomX();
-        new_y= canvasRandomY();
-        (*v1)->setX( new_x );
-        (*v1)->setY( new_y );
-        qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
-                << " vertex " << (*v1)->name()
-                   << " emitting setNodePos to new pos " << new_x << " , "<< new_y;
-        emit setNodePos((*v1)->name(),  new_x,  new_y);
-    }
-
+    return;
 
     // while ( max_D_i > e )
     while (Delta_max > epsilon) {

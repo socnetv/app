@@ -801,6 +801,7 @@ public:
     void layoutRandom();
 
     void layoutRadialRandom(double x0, double y0, double maxRadius);
+    void layoutRadial(const double &x0, const double &y0, const double &maxRadius, const bool &guides=false);
 
     void layoutRadialByProminenceIndex(double x0, double y0, double maxRadius,
                                          int type, const bool considerWeights,
