@@ -18719,7 +18719,6 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
 
     layoutRadial(x0,y0,L0/2,false);
 
-    return;
 
     // while ( max_D_i > e )
     while (Delta_max > epsilon) {
