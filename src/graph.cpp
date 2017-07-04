@@ -18616,15 +18616,15 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
 
     Q_UNUSED(maxIterations);
 
+    Vertices::const_iterator v1;
+    Vertices::const_iterator v2;
+
     int progressCounter=0;
     bool considerWeights=false, inverseWeights=false, dropIsolates=false;
 
     int i=0, j=0, m=0, pm=0;
 
     int N=vertices();  // active actors
-
-    Matrix l; // the original spring length between pairs of particles/actors
-    Matrix k; // the strength of the spring between pairs of particles/actors
 
     float K=1;  // constant
     float L=0;  // the desirable length of a single edge.
@@ -18633,14 +18633,23 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
 
     double new_x=0, new_y=0, x0=0, y0=0;
 
-    Vertices::const_iterator v1;
-    Vertices::const_iterator v2;
+    Matrix l; // the original spring length between pairs of particles/actors
+    Matrix k; // the strength of the spring between pairs of particles/actors
+
+    Matrix LIN_EQ_COEF(2,2);    // holds the coefficients of set of linear equations 11 and 12
+    float b[2];                 // holds the right hand vector of linear equations 11 and 12
 
     float partDrvtEx = 0; // partial derivative of E by Xm
     float partDrvtEy = 0; // partial derivative of E by Ym
+    float partDrvtExSec_m = 0; // partial second derivative of E by Xm
+    float partDrvtEySec_m = 0; // partial second derivative of E by Ym
+    float partDrvtExEySec_m = 0; // partial second derivative of E by Xm Ym
+    float partDrvtEyExSec_m = 0; // partial second derivative of E by Ym Xm
+
     float partDrvtEx_m = 0; // cache for partial derivative of E by Xm, for particle with max D_i
     float partDrvtEy_m = 0; // cache for partial derivative of E by Ym, for particle with max D_i
 
+    float partDrvDenom = 0;
     float xm=0,ym=0;
     float xi=0,yi=0;
     float xpm=0, ypm=0; // cache for pos of particle with max D_i
@@ -18724,6 +18733,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
     while (Delta_max > epsilon) {
 
         // compute partial derivatives of E by xm and ym for every particle m
+        // using equations 7 and 8
         // and find out initial Delta_m = max Delta_i
 
         for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1) {
@@ -18759,7 +18769,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
                     continue;
                 }
 
-                if (v2 == v1) {
+                if (m == i) {
                     qDebug() << "  m==i, continuing";
                     continue;
                 }
@@ -18776,6 +18786,10 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
                     << Delta_m;
 
             if (Delta_m > Delta_max) {
+                qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - Delta_m > Delta_max. "
+                        << " Setting new Delta_max = "
+                        << Delta_m;
+
                 Delta_max = Delta_m;
                 partDrvtEx_m = partDrvtEx;
                 partDrvtEy_m = partDrvtEy;
@@ -18792,10 +18806,20 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
       xm = xpm;
       ym = ypm;
 
+      qDebug () << "starting minimizing Delta_m for m"<< m << " with max Delta_m"<< Delta_max
+                << " initial m pos " << xm << ym;
+
+
       // while ( D_m > e)
-      while (Delta_max > epsilon) {
+      while (Delta_m > epsilon) {
           // compute dx and dy by solving equations 11 and 12
 
+          partDrvtEx=0;
+          partDrvtEy=0;
+          partDrvtExSec_m=0;
+          partDrvtEySec_m=0;
+          partDrvtExEySec_m=0;
+          partDrvtEyExSec_m=0;
           // first compute coefficients of the linear system equations
           for (v2=m_graph.cbegin(); v2!=m_graph.cend(); ++v2) {
 
@@ -18803,30 +18827,55 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
               xi = (*v2)->x();
               yi = (*v2)->y();
 
-              qDebug () << "  i"<< i
-                        << "  pos (" <<  xi << "," << yi << ")";
+              qDebug () << "  m"<< m << "  i"<< i
+                        << "  pos_i (" <<  xi << "," << yi << ")";
 
               if ( ! (*v2)->isEnabled() ) {
                   qDebug()<< " i "<< (*v2)->name()<< " disabled. Continue";
                   continue;
               }
 
-              if (v2 == v1) {
+              if (i == m) {
                   qDebug() << "  m==i, continuing";
                   continue;
               }
+              partDrvDenom = pow ( sqrt( (xm - xi) * (xm - xi) + (ym - yi)*(ym - yi) ) , 3 );
 
-              partDrvtEx += k.item(m,i) * ( (xm - xi) - ( l.item(m,i) * (xm - xi) ) / sqrt( (xm - xi) * (xm - xi) + (ym - yi)*(ym - yi) ) );
-              partDrvtEy += k.item(m,i) * ( (ym - yi) - ( l.item(m,i) * (ym - yi) ) / sqrt( (xm - xi) * (xm - xi) + (ym - yi)*(ym - yi) ) );
+              partDrvtEx_m += k.item(m,i) * ( (xm - xi) - ( l.item(m,i) * (xm - xi) ) / sqrt( (xm - xi) * (xm - xi) + (ym - yi)*(ym - yi) ) );
+              partDrvtEy_m += k.item(m,i) * ( (ym - yi) - ( l.item(m,i) * (ym - yi) ) / sqrt( (xm - xi) * (xm - xi) + (ym - yi)*(ym - yi) ) );
+
+              partDrvtExSec_m   += k.item(m,i) * ( 1 - ( l.item(m,i) * (ym - yi) * (ym - yi) ) / partDrvDenom );
+
+              partDrvtExEySec_m += k.item(m,i) * ( (ym - yi) - ( l.item(m,i) * (xm - xi) * (ym - yi) ) /   partDrvDenom );
+
+              partDrvtEyExSec_m += k.item(m,i) * ( (ym - yi) - ( l.item(m,i) * (xm - xi) * (ym - yi) ) /   partDrvDenom );
+
+              partDrvtEySec_m   += k.item(m,i) * ( 1 - ( l.item(m,i) * (xm - xi) * (xm - xi) ) / partDrvDenom );
 
 
           } // end v2 for loop
 
 
-            // x_m = x_m + dx
-            // y_m = y_m + dy
+          LIN_EQ_COEF.setItem(0,0,partDrvtExSec_m);
+          LIN_EQ_COEF.setItem(0,1,partDrvtExEySec_m);
+          LIN_EQ_COEF.setItem(1,0,partDrvtEyExSec_m);
+          LIN_EQ_COEF.setItem(1,1,partDrvtEySec_m);
+          b[0] = - partDrvtEx_m;
+          b[1] = - partDrvtEy_m;
+          LIN_EQ_COEF.solve(b);
+          dx=b[0];
+          dy=b[1];
+
+          xm = xm + dx;
+          ym = ym + dy;
+
+          Delta_m = sqrt (partDrvtEx * partDrvtEx + partDrvtEy * partDrvtEy);
 
       }
+      qDebug () << "finished minimizing Delta_m for m"<< m << "  - Delta_m"<< Delta_m
+                << " new m pos " << xm << ym;
+      m_graph[m]->setX(xm);
+      m_graph[m]->setY(ym);
 
     }
 

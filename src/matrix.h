@@ -223,6 +223,8 @@ public:
 
     Matrix& inverse(Matrix &a);
 
+    bool solve(float b[]);
+
     bool ludcmp (Matrix &a, const int &n, int indx[], float &d ) ;
 
     void lubksb (Matrix &a, const int &n, int indx[], float b[]);

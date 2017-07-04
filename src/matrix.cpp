@@ -1174,7 +1174,7 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], float &d) {
  * @param a: input matrix a as the LU decomposition of A, returned by the routine ludcmp
  * @param n: input size of matrix
  * @param indx: input vector, records the row permutation, returned by the routine ludcmp
- * @param b: input array as the right-hand side vector B, and ouput with the solution vector X
+ * @param b: input array as the right-hand side vector B, and output with the solution vector X
  * @return:
  *
  * a, n, and indx are not modified by this routine and can be left in place for
@@ -1255,6 +1255,46 @@ Matrix& Matrix::inverse(Matrix &a)
     return *this;
 }
 
+
+
+
+
+/**
+ * @brief Computes and returns the solution of the set of n linear equations A·x = b
+ * Allows A.solve(b)
+ *
+ * @param b vector
+ * @return
+ */
+bool Matrix::solve(float b[])
+{
+
+    Matrix *A = new Matrix(this->rows(), this->cols());
+
+    *A = *this;
+
+
+    int i,j, n=rows();
+    float d;
+
+    int indx[n];
+
+    qDebug () << "Matrix::solve() - solving A x  - size " << n;
+    if (n==0) {
+        return false;
+    }
+    if ( ! ludcmp(*A,n,indx,d) )
+    { //  Decompose the matrix just once.
+        qDebug () << "Matrix::solve() - matrix a singular - RETURN";
+        return false ;
+    }
+
+    qDebug () << "Matrix::solve() - call lubksb";
+    lubksb(*A, n, indx, b);
+    qDebug () << "Matrix::solve() - finished!";
+
+    return true;
+}
 
 
 Matrix& Matrix::distancesMatrix(const int &metric,
