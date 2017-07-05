@@ -2955,7 +2955,7 @@ void MainWindow::initMenuBar() {
     layoutMenu -> addMenu (layoutForceDirectedMenu);
     layoutForceDirectedMenu -> addAction (layoutFDP_Eades_Act);
     layoutForceDirectedMenu -> addAction (layoutFDP_FR_Act);
-    layoutForceDirectedMenu -> addAction (layoutFDP_KamadaKawai_Act);
+    //layoutForceDirectedMenu -> addAction (layoutFDP_KamadaKawai_Act);
 
     layoutMenu->addSeparator();
     layoutMenu->addAction(nodeSizesByOutDegreeAct);
@@ -3555,8 +3555,8 @@ void MainWindow::initToolBox(){
     QStringList modelsList;
     modelsList << tr("None")
                 << tr("Spring Embedder (Eades)")
-                << tr("Fruchterman-Reingold")
-                << tr("Kamada-Kawai") ;
+                << tr("Fruchterman-Reingold");
+               // << tr("Kamada-Kawai") ;
 
     toolBoxLayoutForceDirectedSelect->addItems(modelsList);
     toolBoxLayoutForceDirectedSelect->setMinimumHeight(20);

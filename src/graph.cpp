@@ -2778,14 +2778,11 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
 /**
  * @brief Computes and returns the arc reciprocity of the graph.
  * Also computes the dyad reciprocity and fills parameters with values.
- * @param reciprocatedTies
- * @param totalActualTies
- * @param reciprocatedPairs
- * @param totalPairs
+
  * @return
  */
-float Graph::graphReciprocity(float &reciprocatedTies, float &totalActualTies ,
-                              float &reciprocatedPairs, float &totalPairs){
+float Graph::graphReciprocity(){
+
 
     qDebug() << "Graph::graphReciprocity() ";
     if (!graphModified() && calculatedGraphReciprocity){
@@ -2923,6 +2920,8 @@ float Graph::graphReciprocity(float &reciprocatedTies, float &totalActualTies ,
 void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
 {
 
+    Q_UNUSED(considerWeights);
+
     QTime computationTimer;
     computationTimer.start();
 
@@ -2936,20 +2935,12 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
     QTextStream outText ( &file );
     outText.setCodec("UTF-8");
 
-    float allTies=0, reciprocatedTies=0;
-    float allPairs=0, reciprocatedPairs=0;
-
-
     if (graphModified() || !calculatedGraphReciprocity){
 
         qDebug() << "Graph::writeReciprocity() - graph modified or "
                     "reciprocity not computed yet. Recomputing. ";
 
-        m_graphReciprocityArc = graphReciprocity(
-                    reciprocatedTies,
-                    allTies,
-                    reciprocatedPairs,
-                    allPairs);
+        m_graphReciprocityArc = graphReciprocity();
 
     }
 
@@ -18631,7 +18622,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
     float L0=0; // the length of a side of the display square area
     float D=0;  // the graph diameter
 
-    double new_x=0, new_y=0, x0=0, y0=0;
+    double x0=0, y0=0;
 
     Matrix l; // the original spring length between pairs of particles/actors
     Matrix k; // the strength of the spring between pairs of particles/actors
