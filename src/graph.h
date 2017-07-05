@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.2
+ version: 2.3
  Written in Qt
  
                          graph.h  -  description
@@ -541,6 +541,8 @@ public:
     float graphDensity();
     bool graphWeighted();
 
+    float graphReciprocity();
+
     bool graphSymmetric();
     void graphSymmetrize();
     void graphSymmetrizeStrongTies(const bool &allRelations=false);
@@ -583,6 +585,8 @@ public:
 
     void writeMatrixAdjacencyTo(QTextStream& os,
                                 const bool &saveEdgeWeights=true);
+
+    void writeReciprocity( const QString fileName, const bool considerWeights=false);
 
     void writeMatrix(const QString &fileName,
                      const int &matrix=MATRIX_ADJACENCY,
@@ -645,8 +649,8 @@ public:
                                                const QString &varLocation="rows",
                                                const bool &diagonal=false);
 
-    void writeEccentricity(const QString, const bool considerWeights,
-                           const bool inverseWeights, const bool dropIsolates);
+    void writeEccentricity( const QString fileName, const bool considerWeights=false,
+                            const bool inverseWeights=false, const bool dropIsolates=false);
 
  //   friend QTextStream& operator <<  (QTextStream& os, Graph& m);
 
@@ -793,9 +797,10 @@ public:
 
     void layoutRandom();
 
-    void layoutCircularRandom(double x0, double y0, double maxRadius);
+    void layoutRadialRandom(double x0, double y0, double maxRadius);
+    void layoutRadial(const double &x0, const double &y0, const double &maxRadius, const bool &guides=false);
 
-    void layoutCircularByProminenceIndex(double x0, double y0, double maxRadius,
+    void layoutRadialByProminenceIndex(double x0, double y0, double maxRadius,
                                          int type, const bool considerWeights,
                                          const bool inverseWeights,
                                          const bool dropIsolates);
@@ -901,6 +906,7 @@ private:
     void dijkstra(const int &s, const bool &computeCentralities=false,
                   const bool &inverseWeights=false,
                   const bool &dropIsolates=false);
+
     void minmax(
                 float C, Vertex *v, float &max, float &min,
                 int &maxNode, int &minNode
@@ -997,6 +1003,13 @@ private:
     bool initVertexNumberInside, initEdgeWeightNumbers, initEdgeLabels;
     float m_graphAverageDistance, m_graphGeodesicsCount;
     float m_graphDensity;
+    float m_graphReciprocityArc, m_graphReciprocityDyad;
+    int m_graphReciprocityTiesReciprocated;
+    int m_graphReciprocityTiesNonSymmetric;
+    int m_graphReciprocityTiesTotal;
+    int m_graphReciprocityPairsReciprocated;
+    int m_graphReciprocityPairsTotal;
+
     int m_graphConnectedness;
     int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
     int timerId,  canvasWidth, canvasHeight;
@@ -1008,7 +1021,8 @@ private:
     bool calculatedDP, calculatedDC, calculatedPP;
     bool calculatedIRCC, calculatedIC, calculatedPRP;
     bool calculatedTriad;
-    bool calculatedGraphSymmetry, calculatedGraphDensity, calculatedGraphWeighted;
+    bool calculatedGraphSymmetry, calculatedGraphReciprocity;
+    bool calculatedGraphDensity, calculatedGraphWeighted;
     bool m_undirected, m_symmetric, m_isWeighted;
 
     QString VERSION, fileName, m_graphName, initEdgeColor, initVertexColor,

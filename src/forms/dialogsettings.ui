@@ -1106,8 +1106,8 @@
          <property name="title">
           <string>Edge settings</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_13">
-          <item row="0" column="0">
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
            <layout class="QHBoxLayout" name="horizontalLayout_20">
             <item>
              <widget class="QCheckBox" name="edgesChkBox">
@@ -1137,7 +1137,7 @@
             </item>
            </layout>
           </item>
-          <item row="1" column="0">
+          <item>
            <layout class="QHBoxLayout" name="horizontalLayout_13">
             <item>
              <widget class="QLabel" name="label_13">
@@ -1148,7 +1148,7 @@
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Edge color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click the colored button on the right to select a new color for all edges.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing edges immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default edge color. Until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
-               <string>Edge color</string>
+               <string>Default edge color</string>
               </property>
              </widget>
             </item>
@@ -1207,7 +1207,7 @@
             </item>
            </layout>
           </item>
-          <item row="2" column="0">
+          <item>
            <layout class="QHBoxLayout" name="horizontalLayout_17">
             <item>
              <widget class="QLabel" name="label_17">
@@ -1218,7 +1218,7 @@
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Negative edge color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click the colored button at the right corner to select a new color for negative weighted edges.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing &amp;quot;negative&amp;quot; edges immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default edge color for &amp;quot;negative&amp;quot; edges. Until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
-               <string>Edge color (negative weights)</string>
+               <string>Negative valued edge color</string>
               </property>
              </widget>
             </item>
@@ -1277,7 +1277,77 @@
             </item>
            </layout>
           </item>
-          <item row="3" column="0">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_21">
+            <item>
+             <widget class="QLabel" name="label_20">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Zero edge color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click the colored button at the right corner to select a new color for edges with zero weights.&lt;/p&gt;&lt;p&gt;ATTTENTION:  Zero-valued edges are being omittted during network analysis computations.  This setting is available for those that have data  (i.e. weighted edge lists) with zero weights on some edges and they still need to draw those edges, despite the fact that they will not be considered in any SNA computation by SocNetV.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing &amp;quot;zero&amp;quot; edges immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default edge color for &amp;quot;zero&amp;quot; edges. Until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="whatsThis">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Zero edge color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click the colored button at the right corner to select a new color for edges with zero weights.&lt;/p&gt;&lt;p&gt;ATTTENTION: Zero-valued edges are being omittted during network analysis computations. This setting is available for those that have data (i.e. weighted edge lists) with zero weights on some edges and they still need to draw those edges, despite the fact that they will not be considered in any SNA computation by SocNetV.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing &amp;quot;zero&amp;quot; edges immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default edge color for &amp;quot;zero&amp;quot; edges. Until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Zero valued edge color</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_20">
+              <property name="font">
+               <font>
+                <family>DejaVu Sans</family>
+                <pointsize>11</pointsize>
+               </font>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QToolButton" name="edgeColorZeroBtn">
+              <property name="minimumSize">
+               <size>
+                <width>60</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <family>DejaVu Sans</family>
+                <pointsize>11</pointsize>
+               </font>
+              </property>
+              <property name="cursor">
+               <cursorShape>PointingHandCursor</cursorShape>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Zero edge color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click this button to select a new color for edges with zero weights.&lt;/p&gt;&lt;p&gt;ATTTENTION: Zero-valued edges are being omittted during network analysis computations. This setting is available for those that have data (i.e. weighted edge lists) with zero weights on some edges and they still need to draw those edges, despite the fact that they will not be considered in any SNA computation by SocNetV.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing &amp;quot;zero&amp;quot; edges immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default edge color for &amp;quot;zero&amp;quot; edges. Until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="whatsThis">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Zero edge color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click this button to select a new color for edges with zero weights.&lt;/p&gt;&lt;p&gt;ATTTENTION: Zero-valued edges are being omittted during network analysis computations. This setting is available for those that have data (i.e. weighted edge lists) with zero weights on some edges and they still need to draw those edges, despite the fact that they will not be considered in any SNA computation by SocNetV.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing &amp;quot;zero&amp;quot; edges immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default edge color for &amp;quot;zero&amp;quot; edges. Until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>...</string>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>60</width>
+                <height>20</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
            <layout class="QHBoxLayout" name="horizontalLayout_14">
             <item>
              <widget class="QLabel" name="label_14">

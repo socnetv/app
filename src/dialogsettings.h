@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.2
+ version: 2.3
  Written in Qt
 
                          dialogsettings.h  -  description
@@ -65,6 +65,7 @@ public slots:
     void getEdgeArrowsVisibility (const bool &toggle);
     void getEdgeColor();
     void getEdgeColorNegative();
+    void getEdgeColorZero();
     void getEdgeShape();
     void getEdgeWeightNumbersVisibility(const bool &toggle);
     void getEdgeLabelsVisibility(const bool &toggle);
@@ -105,7 +106,7 @@ private:
      QPixmap m_pixmap;
      //QString m_nodeShape;
      QColor m_bgColor, m_nodeColor, m_nodeNumberColor, m_nodeLabelColor;
-     QColor m_edgeColor, m_edgeColorNegative, m_edgeWeightNumberColor;
+     QColor m_edgeColor, m_edgeColorNegative,m_edgeColorZero, m_edgeWeightNumberColor;
 };
 
 #endif

@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.2
+ version: 2.3
  Written in Qt
  
                          mainwindow.h  -  description
@@ -51,7 +51,7 @@
 #include "dialognodeedit.h"
 #include "dialogdatasetselect.h"
 
-static const QString VERSION="2.2";
+static const QString VERSION="2.3";
 
 static const int USER_MSG_INFO=0;
 static const int USER_MSG_CRITICAL=1;
@@ -277,7 +277,7 @@ public slots:
     void slotEditEdgeLabel();
     void slotEditEdgeColor();
     void slotEditEdgeWeight();
-    void slotEditEdgeColorAll(QColor color=QColor(), const int &threshold=RAND_MAX);
+    void slotEditEdgeColorAll(QColor color=QColor(), const int threshold=RAND_MAX);
 
     void slotEditEdgeMode(const int &mode);
     void slotEditEdgeSymmetrizeAll();
@@ -295,9 +295,9 @@ public slots:
 
     // LAYOUT MENU
     void slotLayoutRandom();
-    void slotLayoutCircularRandom();
-    void slotLayoutCircularByProminenceIndex();
-    void slotLayoutCircularByProminenceIndex(QString);
+    void slotLayoutRadialRandom();
+    void slotLayoutRadialByProminenceIndex();
+    void slotLayoutRadialByProminenceIndex(QString);
     void slotLayoutNodeSizesByProminenceIndex(QString);
     void slotLayoutLevelByProminenceIndex();
     void slotLayoutLevelByProminenceIndex(QString);
@@ -315,38 +315,29 @@ public slots:
 
     //ANALYSIS MENU
     void askAboutWeights();
-    void slotAnalyzeMatrixDistances();
-    void slotAnalyzeMatrixGeodesics();
-    void slotAnalyzeDistance();
-    void slotAnalyzeDistanceAverage();
-    void slotAnalyzeDiameter();
-    void slotAnalyzeEccentricity();
-    void slotAnalyzeStrEquivalenceDissimilaritiesDialog();
-    void slotAnalyzeDissimilaritiesTieProfile(const QString &metric,
-                                               const QString &varLocation,
-                                               const bool &diagonal);
 
-    void slotAnalyzeWalksLength();
-    void slotAnalyzeWalksTotal();
-    void slotAnalyzeReachabilityMatrix();
-    void slotAnalyzeConnectedness();
-
-    void slotAnalyzeStrEquivalenceClusteringHierarchicalDialog();
-    void slotAnalyzeClusteringHierarchical(const QString &matrix,
-                                           const QString &metric,
-                                           const QString &method,
-                                           const bool &diagonal=false,
-                                           const bool &diagram=false);
-    void slotAnalyzeCommunitiesCliqueCensus();
-    void slotAnalyzeClusteringCoefficient();
-    void slotAnalyzeCommunitiesTriadCensus();
-
+    void slotAnalyzeReciprocity();
     void slotAnalyzeSymmetryCheck();
     void slotAnalyzeMatrixAdjacencyInverse();
     void slotAnalyzeMatrixAdjacencyTranspose();
     void slotAnalyzeMatrixAdjacencyCocitation();
     void slotAnalyzeMatrixDegree();
     void slotAnalyzeMatrixLaplacian();
+    void slotAnalyzeClusteringCoefficient();
+
+    void slotAnalyzeMatrixDistances();
+    void slotAnalyzeMatrixGeodesics();
+    void slotAnalyzeDistance();
+    void slotAnalyzeDistanceAverage();
+    void slotAnalyzeDiameter();
+    void slotAnalyzeEccentricity();
+
+    void slotAnalyzeWalksLength();
+    void slotAnalyzeWalksTotal();
+    void slotAnalyzeReachabilityMatrix();
+    void slotAnalyzeConnectedness();
+
+
 
     void slotAnalyzeCentralityDegree();
     void slotAnalyzeCentralityCloseness();
@@ -362,6 +353,22 @@ public slots:
     void slotAnalyzePrestigePageRank();
     void slotAnalyzePrestigeProximity();
 
+
+    void slotAnalyzeCommunitiesCliqueCensus();
+    void slotAnalyzeCommunitiesTriadCensus();
+
+
+    void slotAnalyzeStrEquivalenceClusteringHierarchicalDialog();
+    void slotAnalyzeClusteringHierarchical(const QString &matrix,
+                                           const QString &metric,
+                                           const QString &method,
+                                           const bool &diagonal=false,
+                                           const bool &diagram=false);
+    void slotAnalyzeStrEquivalenceDissimilaritiesDialog();
+    void slotAnalyzeDissimilaritiesTieProfile(const QString &metric,
+                                               const QString &varLocation,
+                                               const bool &diagonal);
+
     void slotAnalyzeStrEquivalenceSimilarityMeasureDialog();
     void slotAnalyzeSimilarityMatching(const QString &matrix,
                                const QString &varLocation,
@@ -372,6 +379,7 @@ public slots:
     void slotAnalyzeSimilarityPearson(const QString &matrix,
                                const QString &varLocation,
                                const bool &diagonal=false);
+
 
     //OPTIONS MENU
     void slotOpenSettingsDialog();
@@ -432,8 +440,8 @@ public slots:
     void toolBoxAnalysisStrEquivalenceSelectChanged(int);
     void toolBoxAnalysisProminenceSelectChanged(int);
     void toolBoxAnalysisCommunitiesSelectChanged(int);
-    void toolBoxLayoutByIndexButtonPressed();
-    void toolBoxLayoutForceDirectedButtonPressed();
+    void toolBoxLayoutByIndexApplyBtnPressed();
+    void toolBoxLayoutForceDirectedApplyBtnPressed();
 
 
 protected:
@@ -491,7 +499,7 @@ private:
     QMenu *cohesionMenu, *strEquivalenceMenu, *communitiesMenu, *connectivityMenu;
     QMenu *matrixMenu;
     QMenu *networkMenu, *randomNetworkMenu, *filterMenu, *recentFilesSubMenu;
-    QMenu *randomLayoutMenu, *circleLayoutMenu, *levelLayoutMenu, *physicalLayoutMenu;
+    QMenu *randomLayoutMenu, *layoutProminenceRadialMenu, *layoutProminenceLevelMenu, *layoutForceDirectedMenu;
     QMenu *colorationMenu;
     QCheckBox  *toolBoxNodeSizesByOutDegreeBx,*toolBoxNodeSizesByInDegreeBx, *toolBoxLayoutGuidesBx;
     QComboBox *toolBoxEditNodeSubgraphSelect, *toolBoxEditEdgeModeSelect,
@@ -503,7 +511,7 @@ private:
     QComboBox *toolBoxLayoutForceDirectedSelect;
 
     QPushButton *editNodeAddBt, *editEdgeAddBt, *removeNodeBt, *editEdgeRemoveBt;
-    QPushButton *toolBoxLayoutByIndexButton, *toolBoxLayoutForceDirectedButton;
+    QPushButton *toolBoxLayoutByIndexApplyButton, *toolBoxLayoutForceDirectedApplyButton;
 
     QAction *zoomInAct,*zoomOutAct,*editRotateRightAct,*editRotateLeftAct, *editResetSlidersAct ;
     QToolButton *zoomInBtn,*zoomOutBtn,*rotateLeftBtn,*rotateRightBtn, *resetSlidersBtn ;
@@ -549,8 +557,10 @@ private:
     QAction *openSettingsAct;
     QAction *webCrawlerAct;
 
-    QAction *netDensity, *analyzeGraphSymmetryAct, *analyzeGraphDistanceAct, *averGraphDistanceAct,
-            *analyzeMatrixDistancesGeodesicAct, *analyzeMatrixGeodesicsAct, *analyzeGraphDiameterAct, *analyzeGraphEccentricityAct;
+    QAction *netDensity, *analyzeGraphReciprocityAct, *analyzeGraphSymmetryAct;
+    QAction *analyzeGraphDistanceAct, *averGraphDistanceAct;
+    QAction *analyzeMatrixDistancesGeodesicAct, *analyzeMatrixGeodesicsAct;
+    QAction *analyzeGraphDiameterAct, *analyzeGraphEccentricityAct;
     QAction *analyzeStrEquivalenceTieProfileDissimilaritiesAct;
     QAction *analyzeGraphWalksAct,*analyzeGraphWalksTotalAct, *analyzeMatrixReachabilityAct, *analyzeGraphConnectednessAct;
     QAction *analyzeCommunitiesCliquesAct, *clusteringCoefAct, *analyzeCommunitiesTriadCensusAct;
@@ -562,17 +572,18 @@ private:
     QAction *cDegreeAct, *cInDegreeAct, *cClosenessAct, *cInfluenceRangeClosenessAct,
             *cBetweennessAct, *cInformationAct, *cEigenvectorAct, *cPageRankAct,
             *cStressAct, *cPowerAct, *cEccentAct, *cProximityPrestigeAct;
-    QAction *randLayoutAct, *randCircleLayoutAct, *layoutGuidesAct;
-    QAction *layoutCircular_DC_Act, *layoutCircular_DP_Act,
-    *layoutCircular_CC_Act, *layoutCircular_SC_Act, *layoutCircular_EC_Act,
-    *layoutCircular_PC_Act, *layoutCircular_BC_Act, *layoutCircular_IC_Act,
-    *layoutCircular_IRCC_Act,*layoutCircular_PRP_Act, *layoutCircular_PP_Act;
-    QAction *layoutLevel_DC_Act, *layoutLevel_DP_Act,
-    *layoutLevel_CC_Act, *layoutLevel_SC_Act, *layoutLevel_EC_Act,
-    *layoutLevel_PC_Act, *layoutLevel_BC_Act, *layoutLevel_IC_Act,
-    *layoutLevel_IRCC_Act,*layoutLevel_PRP_Act, *layoutLevel_PP_Act;
+    QAction *layoutRandomAct, *layoutRandomRadialAct, *layoutGuidesAct;
+    QAction *layoutProminenceRadial_DC_Act, *layoutProminenceRadial_DP_Act,
+    *layoutProminenceRadial_CC_Act, *layoutProminenceRadial_SC_Act, *layoutProminenceRadial_EC_Act,
+    *layoutProminenceRadial_PC_Act, *layoutProminenceRadial_BC_Act, *layoutProminenceRadial_IC_Act,
+    *layoutProminenceRadial_IRCC_Act,*layoutProminenceRadial_PRP_Act, *layoutProminenceRadial_PP_Act;
+    QAction *layoutProminenceLevel_DC_Act, *layoutProminenceLevel_DP_Act,
+    *layoutProminenceLevel_CC_Act, *layoutProminenceLevel_SC_Act, *layoutProminenceLevel_EC_Act,
+    *layoutProminenceLevel_PC_Act, *layoutProminenceLevel_BC_Act, *layoutProminenceLevel_IC_Act,
+    *layoutProminenceLevel_IRCC_Act,*layoutProminenceLevel_PRP_Act, *layoutProminenceLevel_PP_Act;
     QAction *strongColorationAct, *regularColorationAct;
-    QAction *springLayoutAct, *FRLayoutAct;
+    QAction *layoutFDP_Eades_Act, *layoutFDP_FR_Act;
+    QAction *layoutFDP_KamadaKawai_Act;
     QAction *nodeSizesByOutDegreeAct,  *nodeSizesByInDegreeAct;
     QAction *editRelationNextAct, *editRelationPreviousAct, *editRelationAddAct;
     QAction *editRelationRenameAct;

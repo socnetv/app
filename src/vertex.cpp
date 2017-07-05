@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer 
- version: 2.2
+ version: 2.3
  Written in Qt
  
                          vertex.cpp  -  description
@@ -83,7 +83,11 @@ Vertex::Vertex(Graph* parent,
 
 }
 
-// constructor with default values
+
+/**
+ * @brief constructor with default values
+ * @param name
+ */
 Vertex::Vertex(const long int &name) {
     qDebug() << "Vertex::Vertex() - "<<  name << " using default values";
     m_name=name;
@@ -103,21 +107,25 @@ Vertex::Vertex(const long int &name) {
 
 
 /**
-* @brief Vertex::relationSet
-* @param relation
+* @brief Changes the current relation of this vertex to newRel
+* @param newRel
 */
-void Vertex::relationSet(int relation) {
+void Vertex::relationSet(int newRel) {
     qDebug() << "Vertex::relationSet() - Current: " << m_curRelation
-                << " new: " << relation;
+                << " new: " << newRel;
     // first make false all edges of current relation
     edgeFilterByRelation(m_curRelation, false);
     // then make true all edges of new relation
-    edgeFilterByRelation(relation, true);
+    edgeFilterByRelation(newRel, true);
     // update current relation
-    m_curRelation=relation;
+    m_curRelation=newRel;
 }
 
 
+/**
+ * @brief returns the vertex color to pajek format
+ * @return
+ */
 QString Vertex::colorToPajek(){
     if (m_color.startsWith("#")) {
         return  ("RGB"+m_color.right( m_color.size()-1 )).toUpper()  ;
@@ -128,8 +136,7 @@ QString Vertex::colorToPajek(){
 
 
 /**
- * @brief Vertex::edgeAddTo
- * Adds an outLink to target with weight w
+ * @brief Adds an outbound edge to vertex v2 with weight w
  * @param target
  * @param weight
  */
@@ -179,7 +186,7 @@ void Vertex::setOutEdgeEnabled (long int target, bool status){
 
 
 /**
- * @brief Vertex::edgeAddFrom
+ * @brief Adds an inbound edge from vertex v1
  * @param source
  * @param weight
  */
@@ -217,8 +224,7 @@ void Vertex::changeOutEdgeWeight(long int target, float weight){
 
 
 /**
- * @brief Vertex::edgeRemoveTo
- * finds and removes a link to vertex v2
+ * @brief Removes outbound edge to vertex v2
  * @param v2
  */
 void Vertex::edgeRemoveTo (long int v2) {
@@ -250,7 +256,7 @@ void Vertex::edgeRemoveTo (long int v2) {
 
 
 /**
- * @brief Vertex::edgeRemoveFrom
+ * @brief Removes the inbound edge from vertex v2
  * @param v2
  */
 void Vertex::edgeRemoveFrom(long int v2){
@@ -284,9 +290,7 @@ void Vertex::edgeRemoveFrom(long int v2){
 
 
 /**
- * @brief Vertex::edgeFilterByWeight
-   Called from Graph parent
-    to filter edges over or under a specified weight (m_threshold)
+ * @brief Filters out edges over or under a specified weight (m_threshold)
  * @param m_threshold
  * @param overThreshold
  */
@@ -341,8 +345,7 @@ void Vertex::edgeFilterByWeight(float m_threshold, bool overThreshold){
 
 
 /**
- * @brief Vertex::edgeFilterUnilateral
-   Called from Graph to filter non-reciprocal edges
+ * @brief Filters out unilateral (non-reciprocal) edges
    If allRelations is true, then all relations are checked
  * @param toggle
  */
@@ -378,8 +381,7 @@ void Vertex::edgeFilterUnilateral(const bool &toggle){
 
 
 /**
- * @brief Vertex::edgeFilterByRelation
- * Called from Graph to filter out all edges of a given relation
+ * @brief Filters out all edges of a given relation
  * @param relation
  */
 void Vertex::edgeFilterByRelation(int relation, bool status ){
@@ -411,8 +413,7 @@ void Vertex::edgeFilterByRelation(int relation, bool status ){
 
 
 /**
- * @brief Vertex::outEdges
- * Returns the number of active outbound arcs, aka the number of
+ * @brief Returns the number of active outbound arcs, aka the number of
  * outEdges, from this vertex for the current relation
  * @return long int
  */
@@ -434,9 +435,10 @@ long int Vertex::outEdges() {
     return m_outEdgesCounter;
 }
 
+
+
 /**
- * @brief Vertex::outEdgesConst
- * Returns the number of active outbound arcs
+ * @brief Returns the number of active outbound arcs
  * Needs to have outEdges called before the call to this method
  * @return long int
  */
@@ -446,8 +448,7 @@ long int Vertex::outEdgesConst() const {
 
 
 /**
- * @brief Vertex::outEdgesEnabledHash
- * Returns a qhash of all enabled outEdges in the active relation
+ * @brief Returns a qhash of all enabled outEdges in the active relation
  * @return  QHash<int,float>*
  */
 QHash<int,float>* Vertex::outEdgesEnabledHash(const bool &allRelations){
@@ -490,6 +491,10 @@ QHash<int,float>* Vertex::outEdgesEnabledHash(const bool &allRelations){
 }
 
 
+/**
+ * @brief  Returns a qhash of all edges to neighbors in all relations
+ * @return
+ */
 QHash<int, float>* Vertex::outEdgesAllRelationsUniqueHash() {
     qDebug() << "Vertex::outEdgesAllRelationsUniqueHash() - v " << this->name();
     QHash<int,float> *outEdgesAll = new QHash<int,float>;
@@ -514,8 +519,7 @@ QHash<int, float>* Vertex::outEdgesAllRelationsUniqueHash() {
 }
 
 /**
- * @brief Vertex::allReciprocalEdges
- * Returns a qhash of all reciprocal edges to neighbors in the active relation
+ * @brief Returns a qhash of all reciprocal edges to neighbors in the active relation
  * @return  QHash<int,float>*
  */
 QHash<int,float>* Vertex::reciprocalEdgesHash(){
@@ -556,8 +560,7 @@ QHash<int,float>* Vertex::reciprocalEdgesHash(){
 
 
 /**
- * @brief Vertex::neighborhoodList
- * Returns a list of all neighbors mutually connected to this vertex in the active relation
+ * @brief Returns a list of all neighbors mutually connected to this vertex in the active relation
  * Same as calling Vertex::reciprocalEdgesHash().keys() which returns a QList of int keys,
  * where each key is a vertex reciprocally connected to this one.
  * @return  QList<int>
@@ -600,8 +603,7 @@ QList<int> Vertex::neighborhoodList(){
 
 
 /**
- * @brief Vertex::inEdges
- * Returns the number of active inbound arcs, aka the number of
+ * @brief Returns the number of active inbound arcs, aka the number of
  * inEdges, to this vertex for the current relation
  * @return long int
  */
@@ -629,8 +631,7 @@ long int Vertex::inEdges() {
 
 
 /**
- * @brief Vertex::inEdgesEnabledHash
- * Returns a qhash of all enabled inEdges in the active relation
+ * @brief Returns a qhash of all enabled inEdges in the active relation
  * @return  QHash<int,float>*
  */
 QHash<int,float>* Vertex::inEdgesEnabledHash() {
@@ -658,8 +659,7 @@ QHash<int,float>* Vertex::inEdgesEnabledHash() {
 
 
 /**
- * @brief Vertex::inEdgesConst
- * Returns the number of active inbound arcs
+ * @brief Returns the number of active inbound arcs
  * Needs to have inEdges called before the call to this method
  * @return long int
  */
@@ -670,8 +670,7 @@ long int Vertex::inEdgesConst() const {
 
 
 /**
- * @brief Vertex::degreeOut
- * Returns the degreeOut (the sum of all enabled outEdges weights) of this vertex
+ * @brief Returns the degreeOut (the sum of all enabled outEdges weights) of this vertex
  * @return long int
  */
 long int Vertex::degreeOut() {
@@ -700,8 +699,7 @@ long int Vertex::outDegreeConst() {
 }
 
 /**
- * @brief Vertex::degreeIn
- * Returns the degreeIn (the sum of all enabled inEdges weights) of this vertex
+ * @brief Returns the degreeIn (the sum of all enabled inEdges weights) of this vertex
  * @return long int
  */
 long int Vertex::degreeIn() {

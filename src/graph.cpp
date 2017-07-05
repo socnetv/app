@@ -1,6 +1,6 @@
 /******************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.2
+ version: 2.3
  Written in Qt
  
                          graph.cpp  -  description
@@ -70,6 +70,7 @@ Graph::Graph() {
     m_graphDensity = -1;
     fileName ="";
 
+    calculatedGraphReciprocity = false;
     calculatedGraphSymmetry = false;
     calculatedGraphWeighted = false;
     calculatedGraphDensity = false;
@@ -315,6 +316,7 @@ void Graph::clear() {
     m_symmetric=true;
     m_graphDensity = -1;
 
+    calculatedGraphReciprocity = false;
     calculatedGraphSymmetry = false;
     calculatedGraphWeighted = false;
     calculatedGraphDensity = false;
@@ -1622,8 +1624,9 @@ void Graph::edgeCreate(const int &v1, const int &v2, const float &weight,
         if ( type == EDGE_RECIPROCAL_UNDIRECTED ) {
             qDebug()<< "-- Graph::edgeCreate() - "
                     << "Creating RECIPROCAL edge - emitting drawEdge signal to GW";
-            edgeAdd ( v1, v2, weight, type, label, color );
-            emit drawEdge(v1, v2, weight, label, color, type,
+
+            edgeAdd ( v1, v2, weight, type, label, ( (weight==0) ? "blue" :  color  ) );
+            emit drawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), type,
                           drawArrows, bezier, initEdgeWeightNumbers);
         }
         else if ( edgeExists( v2, v1) )  {
@@ -1637,8 +1640,9 @@ void Graph::edgeCreate(const int &v1, const int &v2, const float &weight,
         else {
             qDebug()<< "-- Graph::edgeCreate() - "
                        << "Opposite arc does not exist. Emitting drawEdge to GW...";
-            edgeAdd ( v1, v2, weight, EDGE_DIRECTED, label, color   );
-            emit drawEdge(v1, v2, weight, label, color, EDGE_DIRECTED,
+
+            edgeAdd ( v1, v2, weight, EDGE_DIRECTED, label, ( (weight==0) ? "blue" :  color  )   );
+            emit drawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), EDGE_DIRECTED,
                           drawArrows, bezier, initEdgeWeightNumbers);
             m_undirected = false;
             m_symmetric=false;
@@ -2067,8 +2071,17 @@ bool Graph::edgeColorAllSet(const QString &color, const int &threshold){
         it1=enabledOutEdges->cbegin();
         while ( it1!=enabledOutEdges->cend() ){
             target = it1.key();
-            if (threshold != RAND_MAX ) {
-                if ( it1.value() < threshold ) {
+            if (threshold == 0 ){
+                if ( it1.value() == threshold  ) {
+                    qDebug() << " Graph::edgeColorAllSet() zero weight threshold "
+                             << threshold << " - edge "
+                                << source << "->" << target << " new color " << color;
+                    (*it)->setOutLinkColor(target, color);
+                    emit setEdgeColor(source, target, color);
+                }
+            }
+            else if (threshold != 0 && threshold != RAND_MAX ) {
+                if ( it1.value() <= threshold ) {
                     qDebug() << " Graph::edgeColorAllSet() below weight threshold "
                              << threshold << " - edge "
                                 << source << "->" << target << " new color " << color;
@@ -2760,6 +2773,403 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
 
 
 
+
+
+/**
+ * @brief Computes and returns the arc reciprocity of the graph.
+ * Also computes the dyad reciprocity and fills parameters with values.
+
+ * @return
+ */
+float Graph::graphReciprocity(){
+
+
+    qDebug() << "Graph::graphReciprocity() ";
+    if (!graphModified() && calculatedGraphReciprocity){
+        qDebug() << "Graph::graphReciprocity() - graph not modified and "
+                    "already calculated reciprocity. Returning previous result: "
+                 << m_graphReciprocityArc;
+        return m_graphReciprocityArc;
+    }
+
+    m_graphReciprocityArc=0;
+    m_graphReciprocityDyad=0;
+    m_graphReciprocityTiesReciprocated=0;
+    m_graphReciprocityTiesNonSymmetric=0;
+    m_graphReciprocityTiesTotal=0;
+    m_graphReciprocityPairsReciprocated=0;
+    m_graphReciprocityPairsTotal=0;
+
+    float weight = 0, reciprocalWeight = 0;
+
+    int y=0, v2=0, v1=0;
+
+    QHash<int,float> *enabledOutEdges = new QHash<int,float>;
+
+    QHash<int,float>::const_iterator hit;
+    QList<Vertex*>::const_iterator it, it1;
+
+    H_StrToBool totalDyads;
+    H_StrToBool reciprocatedDyads;
+    QString pair, reversePair;
+
+    //initialize counters
+    for ( it = m_graph.cbegin(); it != m_graph.cend(); ++it) {
+        (*it)->setOutEdgesReciprocated(0);
+        (*it)->setOutEdgesNonSym(0);
+        (*it)->setInEdgesNonSym(0);
+    }
+
+    // Compute "arc" reciprocity
+    //  the number of ties that are involved in reciprocal relations
+    //  relative to the total number of actual ties (not possible ties)
+    for ( it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    {
+        v1 = (*it) -> name();
+
+        if ( ! (*it)->isEnabled() )
+            continue;
+
+        enabledOutEdges=(*it)->outEdgesEnabledHash();
+
+        hit=enabledOutEdges->cbegin();
+
+        while ( hit!=enabledOutEdges->cend() ){
+
+            v2 = hit.key();
+            y=index[ v2 ];
+            weight = hit.value();
+            m_graphReciprocityTiesTotal += weight;
+
+            // Compute "dyad" reciprocity
+            pair = QString::number(v1) + ">" + QString::number(v2) ;
+            reversePair = QString::number(v2) + ">" + QString::number(v1) ;
+            if ( !totalDyads.contains(pair) && !totalDyads.contains(reversePair) ) {
+                totalDyads [pair] = true;
+            }
+
+
+            qDebug() << pair
+                      << "totalTies" << m_graphReciprocityTiesTotal
+                      << "totalDyads" << totalDyads.count();
+
+            if (  (reciprocalWeight = m_graph[y]->hasEdgeTo( v1 ) ) == weight) {
+
+                (*it)->setOutEdgesReciprocated(); //increase reciprocated ties for ego
+                (*it)->setOutEdgesReciprocated();
+
+                m_graphReciprocityTiesReciprocated  +=reciprocalWeight  ;
+
+                pair = QString::number(v2) + ">" + QString::number(v1) ;
+                reversePair = QString::number(v1) + ">" + QString::number(v2) ;
+                if ( !reciprocatedDyads.contains(pair) && !reciprocatedDyads.contains(reversePair) ) {
+                    reciprocatedDyads [pair] = true;
+                }
+
+
+                qDebug() << pair << "reciprocal!"
+                          << "reciprocatedTies" << m_graphReciprocityTiesReciprocated
+                          << "reciprocatedDyads" << reciprocatedDyads.count();
+
+            }
+            else {
+                (*it)->setOutEdgesNonSym();
+                m_graph[y]->setInEdgesNonSym();
+                m_graphReciprocityTiesNonSymmetric++;
+            }
+
+            ++hit;
+        }
+    }
+    delete enabledOutEdges;
+
+    m_graphReciprocityArc = (float) m_graphReciprocityTiesReciprocated / (float) m_graphReciprocityTiesTotal;
+
+    m_graphReciprocityPairsReciprocated = reciprocatedDyads.count();
+    m_graphReciprocityPairsTotal = totalDyads.count();
+
+    m_graphReciprocityDyad = (float) m_graphReciprocityPairsReciprocated / (float) m_graphReciprocityPairsTotal;
+
+    qDebug() << "Graph: graphReciprocity() - Finished. Arc reciprocity:"
+             << m_graphReciprocityTiesReciprocated
+             << "/"
+             << m_graphReciprocityTiesTotal << "="  << m_graphReciprocityArc << endl
+             << m_graphReciprocityPairsReciprocated
+             << "/"
+             << m_graphReciprocityPairsTotal << "=" << m_graphReciprocityDyad;
+
+
+
+    calculatedGraphReciprocity = true;
+
+    return m_graphReciprocityArc;
+}
+
+
+
+
+
+
+
+
+/**
+ * @brief Writes reciprocity report to filename
+ * @param fileName
+ * @param considerWeights
+ */
+void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
+{
+
+    Q_UNUSED(considerWeights);
+
+    QTime computationTimer;
+    computationTimer.start();
+
+    qDebug() << "Graph::writeReciprocity";
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
+        return;
+    }
+    QTextStream outText ( &file );
+    outText.setCodec("UTF-8");
+
+    if (graphModified() || !calculatedGraphReciprocity){
+
+        qDebug() << "Graph::writeReciprocity() - graph modified or "
+                    "reciprocity not computed yet. Recomputing. ";
+
+        m_graphReciprocityArc = graphReciprocity();
+
+    }
+
+
+    emit statusMessage ( tr("Writing reciprocity to file:") + fileName );
+
+    int rowCount=0;
+    int N = vertices();
+    float tiesSym=0;
+    float tiesNonSym=0;
+    float tiesOutNonSym=0;
+    float tiesInNonSym=0;
+    float tiesOutNonSymTotalOut=0;
+    float tiesInNonSymTotalIn=0;
+
+
+    outText << htmlHead;
+
+    outText.setRealNumberPrecision(m_precision);
+
+    outText << "<h1>";
+    outText << tr("RECIPROCITY (r) REPORT");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("Reciprocity, <b>r</b>, is a measure of the likelihood of vertices "
+                  "in a directed network to be mutually linked. <br />"
+                  "SocNetV supports two different methods to index the degree of "
+                  "reciprocity in a social network: <br />"
+                  "- The arc reciprocity, which is the fraction of "
+                  "reciprocated ties over all actual ties in the network. <br />"
+                  "- The dyad reciprocity which is the fraction of "
+                  "actor pairs that have reciprocated ties over all "
+                  "pairs of actors that have any connection. <br />"
+                  "In a directed network, the arc reciprocity measures the proportion "
+                  "of directed edges that are bidirectional. If the reciprocity is 1, "
+                  "then the adjacency matrix is structurally symmetric. <br />"
+                  "Likewise, in a directed network, the dyad reciprocity measures "
+                  "the proportion of connected actor dyads that have bidirectional ties "
+                  "between them. <br />"
+                  "In an undirected graph, all edges are reciprocal. Thus the "
+                  "reciprocity of the graph is always 1. <br />"
+                  "Reciprocity can be computed on undirected, directed, and weighted graphs.")
+
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("r range: ")
+            <<"</span>"
+            << tr("0 &le; r &le; 1")
+            << "</p>";
+
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Arc reciprocity: ")
+            <<"</span>"
+            << tr("%1 / %2 = %3").arg(m_graphReciprocityTiesReciprocated).arg(m_graphReciprocityTiesTotal).arg(m_graphReciprocityArc)
+            << "<br />"
+            << tr("Of all actual ties in the network, %1% are reciprocated.").arg(m_graphReciprocityArc * 100)
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Dyad reciprocity: ")
+            <<"</span>"
+            << tr("%1 / %2 = %3").arg(m_graphReciprocityPairsReciprocated).arg(m_graphReciprocityPairsTotal).arg(m_graphReciprocityDyad )
+            << "<br />"
+            << tr("Of all pairs of actors that have any ties, %1% have a reciprocated connection.").arg(m_graphReciprocityDyad * 100)
+            << "</p>";
+
+
+
+    outText << "<p>"
+            << "<br />"
+            << "<span class=\"info\">"
+            << tr("Reciprocity proportions per actor: ")
+            <<"</span>"
+            << "</p>";
+
+    outText << "<table class=\"stripes sortable\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;asc6 = 1; asc7 = 1;asc8 = 1;\">"
+            << tr("Actor")
+            <<"</th>"
+            <<"<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;asc6 = 1; asc7 = 1;asc8 = 1;\">"
+            << tr("Label")
+            <<"</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;asc6 = 1; asc7 = 1;asc8 = 1;\">"
+            << tr("Symmetric")
+            <<"</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4*= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;asc6 = 1; asc7 = 1;asc8 = 1;\">"
+            << tr("nonSymmetric")
+            <<"</th>"
+            <<"<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5*= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;asc6 = 1; asc7 = 1;asc8 = 1;\">"
+            << tr("nsym out/nsym")
+            <<"</th>"
+            <<"<th id=\"col6\" onclick=\"tableSort(results, 5, asc6); asc6*= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;asc5 = 1; asc7 = 1;asc8 = 1;\">"
+            << tr("nsym in/nsym")
+            <<"</th>"
+            <<"<th id=\"col7\" onclick=\"tableSort(results, 6, asc7); asc7*= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;asc5 = 1; asc6 = 1;asc8 = 1;\">"
+            << tr("nsym out/out")
+            <<"</th>"
+            <<"<th id=\"col8\" onclick=\"tableSort(results, 7, asc8); asc8*= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;asc5 = 1; asc6 = 1;asc7 = 1;\">"
+            << tr("nsym in/in")
+            <<"</th>"
+            <<"</tr>"
+            << "</thead>"
+            <<"<tbody  id=\"results\">";
+
+
+
+    QList<Vertex*>::const_iterator it;
+    for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+
+        rowCount++;
+        qDebug() << "Graph::writeReciprocity outnon  - innon - rec"
+                 << (*it)->outEdgesNonSym()
+                 << (*it)->inEdgesNonSym()
+                 << (*it)->outEdgesReciprocated();
+
+        // Symmetric: Total number of reciprocated ties involving this actor divided by the number of ties to and from her.
+        tiesSym =(float)   (*it)->outEdgesReciprocated() / (float)  ( (*it)->outEdges() + (*it)->inEdges());
+        // non Symmetric: One minus symmetric
+        tiesNonSym = 1 - tiesSym;
+        // nonSym Out/NonSym. Proportion of non-symmetric outgoing ties to the total non-symmetric ties.
+        tiesOutNonSym = ((*it)->outEdgesNonSym() || (*it)->inEdgesNonSym()) ? (float) (*it)->outEdgesNonSym() / (float) ((*it)->outEdgesNonSym() + (*it)->inEdgesNonSym()) : 0;
+        // nonSym In/NonSym. Proportion of non-symmetric incoming ties to the total non-symmetric ties.
+        tiesInNonSym =  ((*it)->outEdgesNonSym() || (*it)->inEdgesNonSym()) ?  (float) (*it)->inEdgesNonSym() / (float)  ((*it)->outEdgesNonSym() + (*it)->inEdgesNonSym()) : 0;
+        // nonSym Out/Out. Proportion of non-symmetric outgoing ties to the total outgoing ties.
+        tiesOutNonSymTotalOut = ( (*it)->outEdges() != 0) ? (float)  (*it)->outEdgesNonSym() /(float) (*it)->outEdges() : 0;
+        // nonSym In/In. Proportion of non-symmetric incoming ties to the total incoming ties.
+        tiesInNonSymTotalIn = ( (*it)->inEdges() != 0) ? (float)  (*it)->inEdgesNonSym() / (float) (*it)->inEdges() : 0;
+
+        outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                <<"<td>"
+                << (*it)->name()
+                << "</td><td>"
+                << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                << "</td><td>"
+                << tiesSym
+                //<< ((eccentr == 0) ? "\xE2\x88\x9E" : QString::number(eccentr) )
+                << "</td><td>"
+                << tiesNonSym
+                //<< ((eccentr == 0) ? "\xE2\x88\x9E" : QString::number(eccentr) )
+                << "</td><td>"
+                << tiesOutNonSym
+                << "</td><td>"
+                << tiesInNonSym
+                << "</td><td>"
+                << tiesOutNonSymTotalOut
+                << "</td><td>"
+                << tiesInNonSymTotalIn
+                << "</td>"
+                <<"</tr>";
+
+    }
+
+    outText << "</tbody></table>";
+
+
+
+    outText << "<p class=\"description\">";
+    outText << "<span class=\"info\">"
+            << tr("Symmetric ")
+            << "</span>"
+            << tr("Proportion of reciprocated ties involving the actor to the total incoming and outgoing ties.")
+            << "<br/>"
+            << "<span class=\"info\">"
+            << tr("nonSymmetric ")
+            << "</span>"
+            << tr("One minus symmetric")
+            << "<br />"
+            << "<span class=\"info\">"
+            << tr("nonSym Out/NonSym ")
+            << "</span>"
+            << tr("Proportion of non-symmetric outgoing ties to the total non-symmetric ties.")
+            << "<br/>"
+            << "<span class=\"info\">"
+            << tr("nonSym In/NonSym ")
+            << "</span>"
+            << tr("Proportion of non-symmetric incoming ties to the total non-symmetric ties.")
+            << "<br/>"
+            << "<span class=\"info\">"
+            << tr("nonSym Out/Out ")
+            << "</span>"
+            << tr("Proportion of non-symmetric outgoing ties to the total outgoing ties.")
+            << "<br/>"
+            << "<span class=\"info\">"
+            << tr("nonSym In/In ")
+            << "</span>"
+            << tr("Proportion of non-symmetric incoming ties to the total incoming ties")
+            << "<br/>";
+    outText << "</p>";
+
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Reciprocity Report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+    file.close();
+
+}
+
+
+
+
 /**
  * @brief Graph::graphSymmetric
  * Returns TRUE if the adjacency matrix of the current relation is symmetric
@@ -2775,6 +3185,7 @@ bool Graph::graphSymmetric(){
     }
     m_symmetric=true;
     int y=0, v2=0, v1=0;
+    float weight = 0;
 
     QHash<int,float> *enabledOutEdges = new QHash<int,float>;
 
@@ -2788,18 +3199,19 @@ bool Graph::graphSymmetric(){
 
         if ( ! (*lit)->isEnabled() )
             continue;
-        qDebug() << "Graph::graphSymmetric() - Graph modified! " <<
-                    " Iterate over all edges of " << v1 ;
 
         enabledOutEdges=(*lit)->outEdgesEnabledHash();
 
         hit=enabledOutEdges->cbegin();
 
         while ( hit!=enabledOutEdges->cend() ){
+
             v2 = hit.key();
             y=index[ v2 ];
-            float weight = hit.value();
+            weight = hit.value();
+
             if (  m_graph[y]->hasEdgeTo( v1) != weight) {
+
                 m_symmetric=false;
 //                qDebug() <<"Graph::graphSymmetric() - "
 //                         << " graph not symmetric because "
@@ -2812,7 +3224,7 @@ bool Graph::graphSymmetric(){
         }
     }
     delete enabledOutEdges;
-    qDebug() << "Graph: graphSymmetric() -"  << m_symmetric;
+    qDebug() << "Graph: graphSymmetric() - Finished. Result:"  << m_symmetric;
     calculatedGraphSymmetry = true;
     return m_symmetric;
 }
@@ -3222,7 +3634,7 @@ int Graph::graphGeodesics()  {
  * Used by
  * MW::slotConnectedness()
  * MW::slotAnalyzeCentralityCloseness()
- * MW::slotLayoutCircularByProminenceIndex(QString )
+ * MW::slotLayoutRadialByProminenceIndex(QString )
  * MW::slotLayoutNodeSizesByProminenceIndex(QString )
  * MW::slotLayoutLevelByProminenceIndex(QString )
  *
@@ -3427,8 +3839,8 @@ void Graph::writeMatrixNumberOfGeodesicsPlainText(const QString &fn,
  * @param dropIsolates
  */
 void Graph::writeEccentricity(
-        const QString fileName, const bool considerWeights=false,
-        const bool inverseWeights=false, const bool dropIsolates=false)
+        const QString fileName, const bool considerWeights,
+        const bool inverseWeights, const bool dropIsolates)
 {
 
     QTime computationTimer;
@@ -8078,654 +8490,6 @@ void Graph::writePrestigePageRank(const QString fileName,
 
 
 
-/**
- * @brief Graph::layoutCircularByProminenceIndex
-* Repositions all nodes on the periphery of different circles with radius
-* analogous to their prominence index
- * @param x0
- * @param y0
- * @param maxRadius
- * @param prominenceIndex
- * @param considerWeights
- * @param inverseWeights
- * @param dropIsolates
- */
-void Graph::layoutCircularByProminenceIndex(double x0, double y0,
-                                            double maxRadius,
-                                            int prominenceIndex,
-                                            const bool considerWeights,
-                                            const bool inverseWeights,
-                                            const bool dropIsolates){
-    qDebug() << "Graph::layoutCircularByProminenceIndex - "
-                << "prominenceIndex index = " << prominenceIndex;
-    double rad=0;
-    double i=0, std=0;
-    //offset controls how far from the centre the central nodes be positioned
-    float C=0, maxC=0, offset=0.06;
-    double new_radius=0, new_x=0, new_y=0;
-
-    emit statusMessage(tr("Computing centrality indices. Please wait..."));
-    //first calculate centrality indices if needed
-
-    maxRadius = canvasMaxRadius();
-    if ( prominenceIndex == 1) {
-        if (graphModified() || !calculatedDC )
-            centralityDegree(true, dropIsolates);
-    }
-    else if ( prominenceIndex == 3 ){
-        if (graphModified() || !calculatedIRCC )
-            centralityClosenessIR();
-    }
-    else if ( prominenceIndex == 8 ) {
-        if (graphModified() || !calculatedIC )
-            centralityInformation();
-    }
-    else if ( prominenceIndex == 9 ) {
-        if (graphModified() || !calculatedEVC )
-            centralityEigenvector();
-    }
-    else if ( prominenceIndex == 10){
-        if (graphModified() || !calculatedDP )
-            prestigeDegree(true, dropIsolates);
-    }
-    else if ( prominenceIndex == 11 ) {
-        if (graphModified() || !calculatedPRP )
-            prestigePageRank();
-    }
-    else if ( prominenceIndex == 12 ){
-        if (graphModified() || !calculatedPP )
-            prestigeProximity(considerWeights, inverseWeights);
-    }
-    else{
-        if (graphModified() || !calculatedCentralities )
-            graphMatrixDistancesCreate(true, considerWeights,
-                                 inverseWeights, dropIsolates);
-    }
-
-    emit statusMessage(tr("Applying circular layout based on centrality/prestige score. "
-                          "Please wait..."));
-
-
-    int vert=vertices();
-    QList<Vertex*>::const_iterator it;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        switch (prominenceIndex) {
-        case 1 : {
-            qDebug("Layout according to DC");
-            C=(*it)->SDC();
-            std= (*it)->SDC();
-            maxC=maxSDC;
-            break;
-        }
-        case 2 : {
-            qDebug("Layout according to CC");
-            C=(*it)->CC();
-            std= (*it)->SCC();
-            maxC=maxSCC;
-            break;
-        }
-        case 3 : {
-            qDebug("Layout according to IRCC");
-            qDebug() << "Layout according to IRCC C = " << (*it)->IRCC()
-                     << "std = " << (*it)->SIRCC()
-                     << "maxC= " << maxIRCC;
-            C=(*it)->IRCC();
-            std= (*it)->SIRCC();
-            maxC=maxIRCC;
-
-            break;
-        }
-        case 4 : {
-            qDebug("Layout according to BC");
-            C=(*it)->BC();
-            std= (*it)->SBC();
-            maxC=maxSBC;
-            break;
-        }
-        case 5 : {
-            qDebug("Layout according to SC");
-            C=(*it)->SC();
-            std= (*it)->SSC();
-            maxC=maxSSC;
-            break;
-        }
-        case 6 : {
-            qDebug("Layout according to EC");
-            C=(*it)->EC();
-            std= (*it)->SEC();
-            maxC=maxEC;
-            break;
-        }
-        case 7 : {
-            qDebug("Layout according to PC");
-            C=(*it)->PC();
-            std= (*it)->SPC();
-            maxC=maxSPC;
-            break;
-        }
-        case 8 : {
-            qDebug("Layout according to IC");
-            C=(*it)->IC();
-            std= (*it)->SIC();
-            maxC=maxIC;
-            break;
-        }
-        case 9 : {
-            qDebug("Layout according to EVC");
-            C=(*it)->EVC();
-            std= (*it)->SEVC();
-            maxC=1;
-            break;
-        }
-
-        case 10 : {
-            qDebug("Layout according to DP");
-            C=(*it)->SDP();
-            std= (*it)->SDP();
-            maxC=maxSDP;
-            break;
-        }
-        case 11 : {
-            qDebug("Layout according to PRP");
-            C=(*it)->PRP();
-            std= (*it)->SPRP();
-            maxC=1;
-            break;
-        }
-        case 12 : {
-            qDebug("Layout according to PP");
-            C=(*it)->PP();
-            std= (*it)->SPP();
-            maxC=maxPP;
-            break;
-        }
-        };
-        qDebug () << "Vertice " << (*it)->name() << " at x=" << (*it)->x()
-                  << "y= "<< (*it)->y() << ": C" << C << "stdC" << std
-                  << "maxradius" <<  maxRadius
-                  << "newradius" << maxRadius - (std/maxC - offset)*maxRadius;
-        switch (static_cast<int> (ceil(maxC)) ){
-        case 0: {
-            qDebug("maxC=0.   Using maxHeight");
-            new_radius=maxRadius;
-            break;
-        }
-        default: {
-            new_radius=(maxRadius- (std/maxC - offset)*maxRadius);
-            break;
-        }
-        };
-
-        //Calculate new position
-        rad= (2.0* Pi/ vert );
-        new_x=x0 + new_radius * cos(i * rad);
-        new_y=y0 + new_radius * sin(i * rad);
-        (*it)->setX( new_x );
-        (*it)->setY( new_y );
-        qDebug("Finished Calculation. Vertice will move to x=%f and y=%f ",
-               new_x, new_y);
-        //Move node to new position
-        emit setNodePos((*it)->name(),  new_x,  new_y);
-        i++;
-        emit addGuideCircle ( x0, y0, new_radius );
-    }
-
-    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
-}
-
-
-
-
-/**
- * @brief Graph::layoutRandom
-  Repositions all nodes on different random positions
- * Emits setNodePos(i, x,y) to tell GW that the node item should be moved.
- * @param maxWidth
- * @param maxHeight
- */
-void Graph::layoutRandom(){
-    qDebug()<< "Graph::layoutRandom() ";
-    double new_x=0, new_y=0;
-    Vertices::const_iterator it;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        new_x= canvasRandomX();
-        new_y= canvasRandomY();
-        (*it)->setX( new_x );
-        (*it)->setY( new_y );
-        qDebug()<< "Graph::layoutRandom() - "
-                << " vertex " << (*it)->name()
-                   << " emitting setNodePos to new pos " << new_x << " , "<< new_y;
-        emit setNodePos((*it)->name(),  new_x,  new_y);
-    }
-
-    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
-}
-
-
-
-/**
- * @brief Graph::layoutCircularRandom
- * Repositions all nodes on the periphery of different circles with random radius
- * @param x0
- * @param y0
- * @param maxRadius
- */
-void Graph::layoutCircularRandom(double x0, double y0, double maxRadius){
-    qDebug() << "Graph::layoutCircularRandom - ";
-    double rad=0, new_radius=0, new_x=0, new_y=0;
-    double i=0;
-    maxRadius = canvasMaxRadius();
-    //offset controls how far from the centre the central nodes be positioned
-    float offset=0.06, randomDecimal=0;
-    int vert=vertices();
-    QList<Vertex*>::const_iterator it;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        randomDecimal = (float ) ( rand()%100 ) / 100.0;
-        new_radius=(maxRadius- (randomDecimal - offset)*maxRadius);
-        qDebug () << "Vertice " << (*it)->name()
-                  << " at x=" << (*it)->x()
-                  << ", y= "<< (*it)->y()
-                  << ", maxradius " <<  maxRadius
-                  << " randomDecimal " << randomDecimal
-                  << " new radius " << new_radius;
-
-        //Calculate new position
-        rad= (2.0* Pi/ vert );
-        new_x=x0 + new_radius * cos(i * rad);
-        new_y=y0 + new_radius * sin(i * rad);
-        (*it)->setX( new_x );
-        (*it)->setY( new_y );
-        qDebug("Vertice will move to x=%f and y=%f ", new_x, new_y);
-        //Move node to new position
-        emit setNodePos((*it)->name(),  new_x,  new_y);
-        i++;
-        emit addGuideCircle ( x0, y0, new_radius );
-    }
-
-    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
-}
-
-
-
-
-/**
- * @brief Graph::layoutLevelByProminenceIndex
- * Repositions all nodes on different top-down levels according to their centrality
- * Emits setNodePos(i, x,y) to tell GW that the node item should be moved.
- * @param maxWidth
- * @param maxHeight
- * @param prominenceIndex
- * @param considerWeights
- * @param inverseWeights
- * @param dropIsolates
- */
-void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
-                                         int prominenceIndex,
-                                         const bool considerWeights,
-                                         const bool inverseWeights,
-                                         const bool dropIsolates){
-    qDebug("Graph: layoutLevelCentrality...");
-
-    double i=0, std=0;
-    //offset controls how far from the top the central nodes will be
-    float C=0, maxC=0, offset=50;
-    double new_x=0, new_y=0;
-    //	int vert=vertices();
-    maxHeight-=offset;
-    maxWidth-=offset;
-    QList<Vertex*>::const_iterator it;
-
-
-    emit statusMessage(tr("Computing centrality/prestige scores. Please wait..."));
-
-    if ( prominenceIndex == 1) {
-        if (graphModified() || !calculatedDC )
-            centralityDegree(true, dropIsolates);
-    }
-    else if ( prominenceIndex == 3 ){
-        if (graphModified() || !calculatedIRCC )
-            centralityClosenessIR();
-    }
-    else if ( prominenceIndex == 8 ) {
-        if (graphModified() || !calculatedIC )
-            centralityInformation();
-    }
-    else if ( prominenceIndex == 9){
-        if (graphModified() || !calculatedEVC )
-            centralityEigenvector(true, dropIsolates);
-    }
-
-    else if ( prominenceIndex == 10){
-        if (graphModified() || !calculatedDP )
-            prestigeDegree(true, dropIsolates);
-    }
-    else if ( prominenceIndex == 11 ) {
-        if (graphModified() || !calculatedPRP )
-            prestigePageRank();
-    }
-    else if ( prominenceIndex == 12 ){
-        if (graphModified() || !calculatedPP )
-            prestigeProximity(considerWeights, inverseWeights);
-    }
-    else{
-        if (graphModified() || !calculatedCentralities )
-            graphMatrixDistancesCreate(true, considerWeights,
-                                 inverseWeights, dropIsolates);
-    }
-
-    emit statusMessage(tr("Applying level layout based on centrality/prestige score. "
-                          "Please wait..."));
-
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        switch (prominenceIndex) {
-        case 1 : {
-            qDebug("Layout according to DC");
-            C=(*it)->SDC();
-            std= (*it)->SDC();
-            maxC=maxSDC;
-            break;
-        }
-        case 2 : {
-            qDebug("Layout according to CC");
-            C=(*it)->CC();
-            std= (*it)->SCC();
-            maxC=maxSCC;
-            break;
-        }
-        case 3 : {
-            qDebug("Layout according to IRCC");
-            C=(*it)->IRCC();
-            std= (*it)->SIRCC();
-            maxC=maxIRCC;
-            break;
-        }
-        case 4 : {
-            qDebug("Layout according to BC");
-            C=(*it)->BC();
-            std= (*it)->SBC();
-            maxC=maxSBC;
-            break;
-        }
-        case 5 : {
-            qDebug("Layout according to SC");
-            C=(*it)->SC();
-            std= (*it)->SSC();
-            maxC=maxSSC;
-            break;
-        }
-        case 6 : {
-            qDebug("Layout according to EC");
-            C=(*it)->EC();
-            std= (*it)->SEC();
-            maxC=maxEC;
-            break;
-        }
-        case 7 : {
-            qDebug("Layout according to PC");
-            C=(*it)->PC();
-            std= (*it)->SPC();
-            maxC=maxSPC;
-            break;
-        }
-        case 8 : {
-            qDebug("Layout according to IC");
-            C=(*it)->IC();
-            std= (*it)->SIC();
-            maxC=maxIC;
-            break;
-        }
-        case 9 : {
-            qDebug("Layout according to EVC");
-            C=(*it)->EVC();
-            std= (*it)->SEVC();
-            maxC=1;
-            break;
-        }
-
-        case 10 : {
-            qDebug("Layout according to DP");
-            C=(*it)->SDP();
-            std= (*it)->SDP();
-            maxC=maxSDP;
-            break;
-        }
-        case 11 : {
-            qDebug("Layout according to PRP");
-            C=(*it)->PRP();
-            std= (*it)->SPRP();
-            maxC=1;
-            break;
-        }
-        case 12 : {
-            qDebug("Layout according to PP");
-            C=(*it)->PP();
-            std= (*it)->SPP();
-            maxC=maxPP;
-            break;
-        }
-        };
-        qDebug()<< "Vertice " << (*it)->name()
-                << " at x="<< (*it)->x() << ", y="<<  (*it)->y()
-                << ": C=" << C << ", stdC=" << std
-                << ", maxC "<<	maxC << ", maxWidth " << maxWidth
-                <<" , maxHeight "<<maxHeight;
-        //Calculate new position
-        qDebug ("std %f, maxHeight-(std)*maxHeight = %f "
-                , std, maxHeight-(std)*maxHeight );
-        switch ( static_cast<int> (ceil(maxC)) ){
-        case 0: {
-            qDebug("maxC=0.   Using maxHeight");
-            new_y=maxHeight;
-            break;
-        }
-        default: {
-            new_y=offset/2.0+maxHeight-(std/maxC)*maxHeight;
-            break;
-        }
-        };
-        new_x=offset/2.0 + rand() % ( static_cast<int> (maxWidth) );
-        qDebug ("new_x %f, new_y %f", new_x, new_y);
-        (*it)->setX( new_x );
-        (*it)->setY( new_y );
-        qDebug() << "Finished Calculation. "
-                    "Vertice will move to x="<< new_x << " and y= " << new_y;
-        //Move node to new position
-        emit setNodePos((*it)->name(),  new_x,  new_y);
-        i++;
-        emit addGuideHLine(new_y);
-    }
-
-
-    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
-}
-
-
-
-
-/**
- * @brief Graph::layoutVerticesSizeByProminenceIndex
- * changes the node size to be proportinal to given prominence index
- * @param prominenceIndex
- */
-void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
-                                                 const bool considerWeights,
-                                                 const bool inverseWeights,
-                                                 const bool dropIsolates){
-    qDebug() << "Graph::layoutVerticesSizeByProminenceIndex - "
-                << "prominenceIndex index = " << prominenceIndex;
-    double std=0;
-    float C=0, maxC=0;
-    int new_size=0;
-
-    emit statusMessage(tr("Computing centrality/prestige scores. Please wait..."));
-    //first calculate centrality indices if needed
-    if ( prominenceIndex == 0) {
-        // do nothing
-    }
-    else if ( prominenceIndex == 1) {
-        if (graphModified() || !calculatedDC )
-            centralityDegree(true, dropIsolates);
-    }
-    else if ( prominenceIndex == 3 ){
-        if (graphModified() || !calculatedIRCC )
-            centralityClosenessIR();
-    }
-    else if ( prominenceIndex == 8 ) {
-        if (graphModified() || !calculatedIC )
-            centralityInformation();
-    }
-    else if ( prominenceIndex == 9){
-        if (graphModified() || !calculatedEVC )
-            centralityEigenvector(true, dropIsolates);
-    }
-
-    else if ( prominenceIndex == 10){
-        if (graphModified() || !calculatedDP )
-            prestigeDegree(true, dropIsolates);
-    }
-    else if ( prominenceIndex == 11 ) {
-        if (graphModified() || !calculatedPRP )
-            prestigePageRank();
-    }
-    else if ( prominenceIndex == 12 ){
-        if (graphModified() || !calculatedPP )
-            prestigeProximity(considerWeights, inverseWeights);
-    }
-    else{
-        if (graphModified() || !calculatedCentralities )
-            graphMatrixDistancesCreate(true, considerWeights,
-                                   inverseWeights, dropIsolates);
-    }
-
-    emit statusMessage(tr("Applying node sizes based on centrality/prestige score. "
-                          "Please wait..."));
-
-    QList<Vertex*>::const_iterator it;
-    for  (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        switch (prominenceIndex) {
-        case 0: {
-            C=0;maxC=0;
-            break;
-        }
-        case 1 : {
-            qDebug("VerticesSize according to DC");
-            C=(*it)->SDC();
-            std= (*it)->SDC();
-            maxC=maxSDC;
-            break;
-        }
-        case 2 : {
-            qDebug("VerticesSize according to CC");
-            C=(*it)->CC();
-            std= (*it)->SCC();
-            maxC=maxSCC;
-            break;
-        }
-        case 3 : {
-            qDebug("VerticesSize according to IRCC");
-            C=(*it)->IRCC();
-            std= (*it)->SIRCC();
-            maxC=maxIRCC;
-            break;
-        }
-        case 4 : {
-            qDebug("VerticesSize according to BC");
-            C=(*it)->BC();
-            std= (*it)->SBC();
-            maxC=maxSBC;
-            break;
-        }
-        case 5 : {
-            qDebug("VerticesSize according to SC");
-            C=(*it)->SC();
-            std= (*it)->SSC();
-            maxC=maxSSC;
-            break;
-        }
-        case 6 : {
-            qDebug("VerticesSize according to EC");
-            C=(*it)->EC();
-            std= (*it)->SEC();
-            maxC=maxEC;
-            break;
-        }
-        case 7 : {
-            qDebug("VerticesSize according to PC");
-            C=(*it)->PC();
-            std= (*it)->SPC();
-            maxC=maxSPC;
-            break;
-        }
-        case 8 : {
-            qDebug("VerticesSize according to IC");
-            C=(*it)->IC();
-            std= (*it)->SIC();
-            maxC=maxIC;
-            break;
-        }
-        case 9 : {
-            qDebug("Layout according to EVC");
-            C=(*it)->EVC();
-            std= (*it)->SEVC();
-            maxC=1;
-            break;
-        }
-
-        case 10 : {
-            qDebug("VerticesSize according to DP");
-            C=(*it)->SDP();
-            std= (*it)->SDP();
-            maxC=maxSDP;
-            break;
-        }
-        case 11 : {
-            qDebug("VerticesSize according to PRP");
-            C=(*it)->PRP();
-            std= (*it)->SPRP();
-            maxC=1;
-            break;
-        }
-        case 12 : {
-            qDebug("VerticesSize according to PP");
-            C=(*it)->PP();
-            std= (*it)->SPP();
-            maxC=maxPP;
-            break;
-        }
-        };
-        qDebug () << "Vertex " << (*it)->name()
-                  << ": C=" << C << ", stdC=" << std
-                  << ", maxC " << maxC
-                  << "initVertexSize " << initVertexSize
-                  << " stdC/maxC " << std/maxC
-                  << ", (std/maxC) * initVertexSize " << (std/maxC *initVertexSize);
-
-        switch (static_cast<int> (ceil(maxC) )){
-        case 0: {
-            qDebug()<<"maxC=0.   Using initVertexSize";
-            new_size=initVertexSize;
-            //emit signal to change node size
-            emit setNodeSize((*it)->name(),  new_size);
-            break;
-        }
-        default: {
-            //Calculate new size
-            new_size=ceil ( initVertexSize/2.0 + (float) initVertexSize * (std/maxC));
-            qDebug ()<< "new vertex size "<< new_size << " call setSize()";
-            (*it)->setSize(new_size);
-            //emit signal to change node size
-            emit setNodeSize((*it)->name(),  new_size);
-            break;
-        }
-        };
-    }
-
-    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
-}
-
-
-
-
 
 /**
  * @brief Graph::randomizeThings
@@ -12846,6 +12610,7 @@ void Graph::graphSave(const QString &fileName,
             calculatedVertices = false;
             calculatedVerticesList=false;
             calculatedVerticesSet = false;
+            calculatedGraphReciprocity = false;
             calculatedGraphSymmetry = false;
             calculatedIsolates = false;
             calculatedAdjacencyMatrix = false;
@@ -17866,6 +17631,700 @@ void Graph::timerEvent(QTimerEvent *event) {
 
 
 
+
+
+/**
+ * @brief Graph::layoutRandom
+  Repositions all nodes on different random positions
+ * Emits setNodePos(i, x,y) to tell GW that the node item should be moved.
+ * @param maxWidth
+ * @param maxHeight
+ */
+void Graph::layoutRandom(){
+    qDebug()<< "Graph::layoutRandom() ";
+    double new_x=0, new_y=0;
+    Vertices::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        new_x= canvasRandomX();
+        new_y= canvasRandomY();
+        (*it)->setX( new_x );
+        (*it)->setY( new_y );
+        qDebug()<< "Graph::layoutRandom() - "
+                << " vertex " << (*it)->name()
+                   << " emitting setNodePos to new pos " << new_x << " , "<< new_y;
+        emit setNodePos((*it)->name(),  new_x,  new_y);
+    }
+
+    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
+}
+
+
+
+/**
+ * @brief Graph::layoutRadialRandom
+ * Repositions all nodes on the periphery of different circles with random radius
+ * @param x0
+ * @param y0
+ * @param maxRadius
+ */
+void Graph::layoutRadialRandom(double x0, double y0, double maxRadius){
+    qDebug() << "Graph::layoutRadialRandom - ";
+    double rad=0, new_radius=0, new_x=0, new_y=0;
+    double i=0;
+    maxRadius = canvasMaxRadius();
+    //offset controls how far from the centre the central nodes be positioned
+    float offset=0.06, randomDecimal=0;
+    int vert=vertices();
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        randomDecimal = (float ) ( rand()%100 ) / 100.0;
+        new_radius=(maxRadius- (randomDecimal - offset)*maxRadius);
+        qDebug () << "Vertice " << (*it)->name()
+                  << " at x=" << (*it)->x()
+                  << ", y= "<< (*it)->y()
+                  << ", maxradius " <<  maxRadius
+                  << " randomDecimal " << randomDecimal
+                  << " new radius " << new_radius;
+
+        //Calculate new position
+        rad= (2.0* Pi/ vert );
+        new_x=x0 + new_radius * cos(i * rad);
+        new_y=y0 + new_radius * sin(i * rad);
+        (*it)->setX( new_x );
+        (*it)->setY( new_y );
+        qDebug("Vertice will move to x=%f and y=%f ", new_x, new_y);
+        //Move node to new position
+        emit setNodePos((*it)->name(),  new_x,  new_y);
+        i++;
+        emit addGuideCircle ( x0, y0, new_radius );
+    }
+
+    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
+}
+
+
+
+
+/**
+ * @brief Graph::layoutRadialRandom
+ * Repositions all nodes on the periphery of different circles with random radius
+ * @param x0
+ * @param y0
+ * @param maxRadius
+ */
+void Graph::layoutRadial (const double &x0, const double &y0, const double &maxRadius, const bool &guides){
+    qDebug() << "Graph::layoutRadialRandom - ";
+    double rad=0, new_radius=0, new_x=0, new_y=0;
+    double i=0;
+
+    int N=vertices();
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
+        if ( ! (*it)->isEnabled() ) {
+            qDebug() << "  vertex i" << (*it)->name() << " disabled. Continue";
+            continue;
+        }
+
+        //Calculate new position
+        rad= (2.0* Pi/ N );
+        new_x=x0 + maxRadius * cos(i * rad);
+        new_y=y0 + maxRadius * sin(i * rad);
+        (*it)->setX( new_x );
+        (*it)->setY( new_y );
+        qDebug("Vertice will move to x=%f and y=%f ", new_x, new_y);
+        //Move node to new position
+        emit setNodePos((*it)->name(),  new_x,  new_y);
+        i++;
+
+        if (guides) {
+            emit addGuideCircle ( x0, y0, new_radius );
+        }
+
+    }
+
+    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
+}
+
+
+
+
+/**
+ * @brief Graph::layoutRadialByProminenceIndex
+* Repositions all nodes on the periphery of different circles with radius
+* analogous to their prominence index
+ * @param x0
+ * @param y0
+ * @param maxRadius
+ * @param prominenceIndex
+ * @param considerWeights
+ * @param inverseWeights
+ * @param dropIsolates
+ */
+void Graph::layoutRadialByProminenceIndex(double x0, double y0,
+                                            double maxRadius,
+                                            int prominenceIndex,
+                                            const bool considerWeights,
+                                            const bool inverseWeights,
+                                            const bool dropIsolates){
+    qDebug() << "Graph::layoutRadialByProminenceIndex - "
+                << "prominenceIndex index = " << prominenceIndex;
+    double rad=0;
+    double i=0, std=0;
+    //offset controls how far from the centre the central nodes be positioned
+    float C=0, maxC=0, offset=0.06;
+    double new_radius=0, new_x=0, new_y=0;
+
+    emit statusMessage(tr("Computing centrality indices. Please wait..."));
+    //first calculate centrality indices if needed
+
+    maxRadius = canvasMaxRadius();
+    if ( prominenceIndex == 1) {
+        if (graphModified() || !calculatedDC )
+            centralityDegree(true, dropIsolates);
+    }
+    else if ( prominenceIndex == 3 ){
+        if (graphModified() || !calculatedIRCC )
+            centralityClosenessIR();
+    }
+    else if ( prominenceIndex == 8 ) {
+        if (graphModified() || !calculatedIC )
+            centralityInformation();
+    }
+    else if ( prominenceIndex == 9 ) {
+        if (graphModified() || !calculatedEVC )
+            centralityEigenvector();
+    }
+    else if ( prominenceIndex == 10){
+        if (graphModified() || !calculatedDP )
+            prestigeDegree(true, dropIsolates);
+    }
+    else if ( prominenceIndex == 11 ) {
+        if (graphModified() || !calculatedPRP )
+            prestigePageRank();
+    }
+    else if ( prominenceIndex == 12 ){
+        if (graphModified() || !calculatedPP )
+            prestigeProximity(considerWeights, inverseWeights);
+    }
+    else{
+        if (graphModified() || !calculatedCentralities )
+            graphMatrixDistancesCreate(true, considerWeights,
+                                 inverseWeights, dropIsolates);
+    }
+
+    emit statusMessage(tr("Applying circular layout based on centrality/prestige score. "
+                          "Please wait..."));
+
+
+    int vert=vertices();
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        switch (prominenceIndex) {
+        case 1 : {
+            qDebug("Layout according to DC");
+            C=(*it)->SDC();
+            std= (*it)->SDC();
+            maxC=maxSDC;
+            break;
+        }
+        case 2 : {
+            qDebug("Layout according to CC");
+            C=(*it)->CC();
+            std= (*it)->SCC();
+            maxC=maxSCC;
+            break;
+        }
+        case 3 : {
+            qDebug("Layout according to IRCC");
+            qDebug() << "Layout according to IRCC C = " << (*it)->IRCC()
+                     << "std = " << (*it)->SIRCC()
+                     << "maxC= " << maxIRCC;
+            C=(*it)->IRCC();
+            std= (*it)->SIRCC();
+            maxC=maxIRCC;
+
+            break;
+        }
+        case 4 : {
+            qDebug("Layout according to BC");
+            C=(*it)->BC();
+            std= (*it)->SBC();
+            maxC=maxSBC;
+            break;
+        }
+        case 5 : {
+            qDebug("Layout according to SC");
+            C=(*it)->SC();
+            std= (*it)->SSC();
+            maxC=maxSSC;
+            break;
+        }
+        case 6 : {
+            qDebug("Layout according to EC");
+            C=(*it)->EC();
+            std= (*it)->SEC();
+            maxC=maxEC;
+            break;
+        }
+        case 7 : {
+            qDebug("Layout according to PC");
+            C=(*it)->PC();
+            std= (*it)->SPC();
+            maxC=maxSPC;
+            break;
+        }
+        case 8 : {
+            qDebug("Layout according to IC");
+            C=(*it)->IC();
+            std= (*it)->SIC();
+            maxC=maxIC;
+            break;
+        }
+        case 9 : {
+            qDebug("Layout according to EVC");
+            C=(*it)->EVC();
+            std= (*it)->SEVC();
+            maxC=1;
+            break;
+        }
+
+        case 10 : {
+            qDebug("Layout according to DP");
+            C=(*it)->SDP();
+            std= (*it)->SDP();
+            maxC=maxSDP;
+            break;
+        }
+        case 11 : {
+            qDebug("Layout according to PRP");
+            C=(*it)->PRP();
+            std= (*it)->SPRP();
+            maxC=1;
+            break;
+        }
+        case 12 : {
+            qDebug("Layout according to PP");
+            C=(*it)->PP();
+            std= (*it)->SPP();
+            maxC=maxPP;
+            break;
+        }
+        };
+        qDebug () << "Vertice " << (*it)->name() << " at x=" << (*it)->x()
+                  << "y= "<< (*it)->y() << ": C" << C << "stdC" << std
+                  << "maxradius" <<  maxRadius
+                  << "newradius" << maxRadius - (std/maxC - offset)*maxRadius;
+        switch (static_cast<int> (ceil(maxC)) ){
+        case 0: {
+            qDebug("maxC=0.   Using maxHeight");
+            new_radius=maxRadius;
+            break;
+        }
+        default: {
+            new_radius=(maxRadius- (std/maxC - offset)*maxRadius);
+            break;
+        }
+        };
+
+        //Calculate new position
+        rad= (2.0* Pi/ vert );
+        new_x=x0 + new_radius * cos(i * rad);
+        new_y=y0 + new_radius * sin(i * rad);
+        (*it)->setX( new_x );
+        (*it)->setY( new_y );
+        qDebug("Finished Calculation. Vertice will move to x=%f and y=%f ",
+               new_x, new_y);
+        //Move node to new position
+        emit setNodePos((*it)->name(),  new_x,  new_y);
+        i++;
+        emit addGuideCircle ( x0, y0, new_radius );
+    }
+
+    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
+}
+
+
+
+
+/**
+ * @brief Graph::layoutLevelByProminenceIndex
+ * Repositions all nodes on different top-down levels according to their centrality
+ * Emits setNodePos(i, x,y) to tell GW that the node item should be moved.
+ * @param maxWidth
+ * @param maxHeight
+ * @param prominenceIndex
+ * @param considerWeights
+ * @param inverseWeights
+ * @param dropIsolates
+ */
+void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
+                                         int prominenceIndex,
+                                         const bool considerWeights,
+                                         const bool inverseWeights,
+                                         const bool dropIsolates){
+    qDebug("Graph: layoutLevelCentrality...");
+
+    double i=0, std=0;
+    //offset controls how far from the top the central nodes will be
+    float C=0, maxC=0, offset=50;
+    double new_x=0, new_y=0;
+    //	int vert=vertices();
+    maxHeight-=offset;
+    maxWidth-=offset;
+    QList<Vertex*>::const_iterator it;
+
+
+    emit statusMessage(tr("Computing centrality/prestige scores. Please wait..."));
+
+    if ( prominenceIndex == 1) {
+        if (graphModified() || !calculatedDC )
+            centralityDegree(true, dropIsolates);
+    }
+    else if ( prominenceIndex == 3 ){
+        if (graphModified() || !calculatedIRCC )
+            centralityClosenessIR();
+    }
+    else if ( prominenceIndex == 8 ) {
+        if (graphModified() || !calculatedIC )
+            centralityInformation();
+    }
+    else if ( prominenceIndex == 9){
+        if (graphModified() || !calculatedEVC )
+            centralityEigenvector(true, dropIsolates);
+    }
+
+    else if ( prominenceIndex == 10){
+        if (graphModified() || !calculatedDP )
+            prestigeDegree(true, dropIsolates);
+    }
+    else if ( prominenceIndex == 11 ) {
+        if (graphModified() || !calculatedPRP )
+            prestigePageRank();
+    }
+    else if ( prominenceIndex == 12 ){
+        if (graphModified() || !calculatedPP )
+            prestigeProximity(considerWeights, inverseWeights);
+    }
+    else{
+        if (graphModified() || !calculatedCentralities )
+            graphMatrixDistancesCreate(true, considerWeights,
+                                 inverseWeights, dropIsolates);
+    }
+
+    emit statusMessage(tr("Applying level layout based on centrality/prestige score. "
+                          "Please wait..."));
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        switch (prominenceIndex) {
+        case 1 : {
+            qDebug("Layout according to DC");
+            C=(*it)->SDC();
+            std= (*it)->SDC();
+            maxC=maxSDC;
+            break;
+        }
+        case 2 : {
+            qDebug("Layout according to CC");
+            C=(*it)->CC();
+            std= (*it)->SCC();
+            maxC=maxSCC;
+            break;
+        }
+        case 3 : {
+            qDebug("Layout according to IRCC");
+            C=(*it)->IRCC();
+            std= (*it)->SIRCC();
+            maxC=maxIRCC;
+            break;
+        }
+        case 4 : {
+            qDebug("Layout according to BC");
+            C=(*it)->BC();
+            std= (*it)->SBC();
+            maxC=maxSBC;
+            break;
+        }
+        case 5 : {
+            qDebug("Layout according to SC");
+            C=(*it)->SC();
+            std= (*it)->SSC();
+            maxC=maxSSC;
+            break;
+        }
+        case 6 : {
+            qDebug("Layout according to EC");
+            C=(*it)->EC();
+            std= (*it)->SEC();
+            maxC=maxEC;
+            break;
+        }
+        case 7 : {
+            qDebug("Layout according to PC");
+            C=(*it)->PC();
+            std= (*it)->SPC();
+            maxC=maxSPC;
+            break;
+        }
+        case 8 : {
+            qDebug("Layout according to IC");
+            C=(*it)->IC();
+            std= (*it)->SIC();
+            maxC=maxIC;
+            break;
+        }
+        case 9 : {
+            qDebug("Layout according to EVC");
+            C=(*it)->EVC();
+            std= (*it)->SEVC();
+            maxC=1;
+            break;
+        }
+
+        case 10 : {
+            qDebug("Layout according to DP");
+            C=(*it)->SDP();
+            std= (*it)->SDP();
+            maxC=maxSDP;
+            break;
+        }
+        case 11 : {
+            qDebug("Layout according to PRP");
+            C=(*it)->PRP();
+            std= (*it)->SPRP();
+            maxC=1;
+            break;
+        }
+        case 12 : {
+            qDebug("Layout according to PP");
+            C=(*it)->PP();
+            std= (*it)->SPP();
+            maxC=maxPP;
+            break;
+        }
+        };
+        qDebug()<< "Vertice " << (*it)->name()
+                << " at x="<< (*it)->x() << ", y="<<  (*it)->y()
+                << ": C=" << C << ", stdC=" << std
+                << ", maxC "<<	maxC << ", maxWidth " << maxWidth
+                <<" , maxHeight "<<maxHeight;
+        //Calculate new position
+        qDebug ("std %f, maxHeight-(std)*maxHeight = %f "
+                , std, maxHeight-(std)*maxHeight );
+        switch ( static_cast<int> (ceil(maxC)) ){
+        case 0: {
+            qDebug("maxC=0.   Using maxHeight");
+            new_y=maxHeight;
+            break;
+        }
+        default: {
+            new_y=offset/2.0+maxHeight-(std/maxC)*maxHeight;
+            break;
+        }
+        };
+        new_x=offset/2.0 + rand() % ( static_cast<int> (maxWidth) );
+        qDebug ("new_x %f, new_y %f", new_x, new_y);
+        (*it)->setX( new_x );
+        (*it)->setY( new_y );
+        qDebug() << "Finished Calculation. "
+                    "Vertice will move to x="<< new_x << " and y= " << new_y;
+        //Move node to new position
+        emit setNodePos((*it)->name(),  new_x,  new_y);
+        i++;
+        emit addGuideHLine(new_y);
+    }
+
+
+    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
+}
+
+
+
+
+/**
+ * @brief Graph::layoutVerticesSizeByProminenceIndex
+ * changes the node size to be proportinal to given prominence index
+ * @param prominenceIndex
+ */
+void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
+                                                 const bool considerWeights,
+                                                 const bool inverseWeights,
+                                                 const bool dropIsolates){
+    qDebug() << "Graph::layoutVerticesSizeByProminenceIndex - "
+                << "prominenceIndex index = " << prominenceIndex;
+    double std=0;
+    float C=0, maxC=0;
+    int new_size=0;
+
+    emit statusMessage(tr("Computing centrality/prestige scores. Please wait..."));
+    //first calculate centrality indices if needed
+    if ( prominenceIndex == 0) {
+        // do nothing
+    }
+    else if ( prominenceIndex == 1) {
+        if (graphModified() || !calculatedDC )
+            centralityDegree(true, dropIsolates);
+    }
+    else if ( prominenceIndex == 3 ){
+        if (graphModified() || !calculatedIRCC )
+            centralityClosenessIR();
+    }
+    else if ( prominenceIndex == 8 ) {
+        if (graphModified() || !calculatedIC )
+            centralityInformation();
+    }
+    else if ( prominenceIndex == 9){
+        if (graphModified() || !calculatedEVC )
+            centralityEigenvector(true, dropIsolates);
+    }
+
+    else if ( prominenceIndex == 10){
+        if (graphModified() || !calculatedDP )
+            prestigeDegree(true, dropIsolates);
+    }
+    else if ( prominenceIndex == 11 ) {
+        if (graphModified() || !calculatedPRP )
+            prestigePageRank();
+    }
+    else if ( prominenceIndex == 12 ){
+        if (graphModified() || !calculatedPP )
+            prestigeProximity(considerWeights, inverseWeights);
+    }
+    else{
+        if (graphModified() || !calculatedCentralities )
+            graphMatrixDistancesCreate(true, considerWeights,
+                                   inverseWeights, dropIsolates);
+    }
+
+    emit statusMessage(tr("Applying node sizes based on centrality/prestige score. "
+                          "Please wait..."));
+
+    QList<Vertex*>::const_iterator it;
+    for  (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        switch (prominenceIndex) {
+        case 0: {
+            C=0;maxC=0;
+            break;
+        }
+        case 1 : {
+            qDebug("VerticesSize according to DC");
+            C=(*it)->SDC();
+            std= (*it)->SDC();
+            maxC=maxSDC;
+            break;
+        }
+        case 2 : {
+            qDebug("VerticesSize according to CC");
+            C=(*it)->CC();
+            std= (*it)->SCC();
+            maxC=maxSCC;
+            break;
+        }
+        case 3 : {
+            qDebug("VerticesSize according to IRCC");
+            C=(*it)->IRCC();
+            std= (*it)->SIRCC();
+            maxC=maxIRCC;
+            break;
+        }
+        case 4 : {
+            qDebug("VerticesSize according to BC");
+            C=(*it)->BC();
+            std= (*it)->SBC();
+            maxC=maxSBC;
+            break;
+        }
+        case 5 : {
+            qDebug("VerticesSize according to SC");
+            C=(*it)->SC();
+            std= (*it)->SSC();
+            maxC=maxSSC;
+            break;
+        }
+        case 6 : {
+            qDebug("VerticesSize according to EC");
+            C=(*it)->EC();
+            std= (*it)->SEC();
+            maxC=maxEC;
+            break;
+        }
+        case 7 : {
+            qDebug("VerticesSize according to PC");
+            C=(*it)->PC();
+            std= (*it)->SPC();
+            maxC=maxSPC;
+            break;
+        }
+        case 8 : {
+            qDebug("VerticesSize according to IC");
+            C=(*it)->IC();
+            std= (*it)->SIC();
+            maxC=maxIC;
+            break;
+        }
+        case 9 : {
+            qDebug("Layout according to EVC");
+            C=(*it)->EVC();
+            std= (*it)->SEVC();
+            maxC=1;
+            break;
+        }
+
+        case 10 : {
+            qDebug("VerticesSize according to DP");
+            C=(*it)->SDP();
+            std= (*it)->SDP();
+            maxC=maxSDP;
+            break;
+        }
+        case 11 : {
+            qDebug("VerticesSize according to PRP");
+            C=(*it)->PRP();
+            std= (*it)->SPRP();
+            maxC=1;
+            break;
+        }
+        case 12 : {
+            qDebug("VerticesSize according to PP");
+            C=(*it)->PP();
+            std= (*it)->SPP();
+            maxC=maxPP;
+            break;
+        }
+        };
+        qDebug () << "Vertex " << (*it)->name()
+                  << ": C=" << C << ", stdC=" << std
+                  << ", maxC " << maxC
+                  << "initVertexSize " << initVertexSize
+                  << " stdC/maxC " << std/maxC
+                  << ", (std/maxC) * initVertexSize " << (std/maxC *initVertexSize);
+
+        switch (static_cast<int> (ceil(maxC) )){
+        case 0: {
+            qDebug()<<"maxC=0.   Using initVertexSize";
+            new_size=initVertexSize;
+            //emit signal to change node size
+            emit setNodeSize((*it)->name(),  new_size);
+            break;
+        }
+        default: {
+            //Calculate new size
+            new_size=ceil ( initVertexSize/2.0 + (float) initVertexSize * (std/maxC));
+            qDebug ()<< "new vertex size "<< new_size << " call setSize()";
+            (*it)->setSize(new_size);
+            //emit signal to change node size
+            emit setNodeSize((*it)->name(),  new_size);
+            break;
+        }
+        };
+    }
+
+    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
+}
+
+
+
+
 /**
  * @brief Graph::layoutForceDirectedSpringEmbedder
  * @param maxIterations
@@ -18130,27 +18589,80 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
 
 /**
  * @brief Graph::layoutForceDirectedKamadaKawai
- * In this model, the graph is considered to be a dynamic system
- * where every two vertices are connected  by a 'spring'. Each spring
- * has a desirable length, which corresponds to their graph theoretic
- * distance. In this way, the optimal layout of the graph
+ * In this model, the network is considered to be a dynamic system
+ * where every two actors are 'particles' mutually connected by a 'spring'.
+ * Each spring has a desirable length, which corresponds to their graph
+ * theoretic distance. In this way, the optimal layout of the graph
  * is the state with the minimum imbalance. The degree of
  * imbalance is formulated as the total spring energy:
  * the square summation of the differences between desirable
- * distances and real ones for all pairs of vertices
+ * distances and real ones for all pairs of particles
+ * Initially, the particles/actors are placed on the vertices of a regular n-polygon
  * @return qreal temperature
  */
 
 void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
     qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
                << "maxIter " << maxIterations;
+
     Q_UNUSED(maxIterations);
 
-    // Compute dij for 1 <= i!=j <= n
+    Vertices::const_iterator v1;
+    Vertices::const_iterator v2;
+
+    int progressCounter=0;
     bool considerWeights=false, inverseWeights=false, dropIsolates=false;
-    graphMatrixDistancesCreate(false,considerWeights,inverseWeights, dropIsolates);
+
+    int i=0, j=0, m=0, pm=0;
+
+    int N=vertices();  // active actors
+
+    float K=1;  // constant
+    float L=0;  // the desirable length of a single edge.
+    float L0=0; // the length of a side of the display square area
+    float D=0;  // the graph diameter
+
+    double x0=0, y0=0;
+
+    Matrix l; // the original spring length between pairs of particles/actors
+    Matrix k; // the strength of the spring between pairs of particles/actors
+
+    Matrix LIN_EQ_COEF(2,2);    // holds the coefficients of set of linear equations 11 and 12
+    float b[2];                 // holds the right hand vector of linear equations 11 and 12
+
+    float partDrvtEx = 0; // partial derivative of E by Xm
+    float partDrvtEy = 0; // partial derivative of E by Ym
+    float partDrvtExSec_m = 0; // partial second derivative of E by Xm
+    float partDrvtEySec_m = 0; // partial second derivative of E by Ym
+    float partDrvtExEySec_m = 0; // partial second derivative of E by Xm Ym
+    float partDrvtEyExSec_m = 0; // partial second derivative of E by Ym Xm
+
+    float partDrvtEx_m = 0; // cache for partial derivative of E by Xm, for particle with max D_i
+    float partDrvtEy_m = 0; // cache for partial derivative of E by Ym, for particle with max D_i
+
+    float partDrvDenom = 0;
+    float xm=0,ym=0;
+    float xi=0,yi=0;
+    float xpm=0, ypm=0; // cache for pos of particle with max D_i
+
+    float dx=0, dy=0;
+
+    float epsilon=0.01;
+    float Delta_m=0;
+    float Delta_max=epsilon + 1;
+
+
+
+    // Compute dij for 1 <= i!=j <= n
+
+    qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - Compute dij, where (i,j) in E";
+
+    if ( !calculatedDistances || graphModified() ) {
+        graphMatrixDistancesCreate(false,considerWeights,inverseWeights, dropIsolates);
+    }
     qDebug() << " DM : ";
-    //DM.printMatrixConsole();
+    DM.printMatrixConsole();
+
 
     // Compute lij for 1 <= i!=j <= n using the formula:
     // lij = L x dij
@@ -18158,31 +18670,218 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
     // Since we are on a restricted display (a canvas), L depends on the
     // diameter D of the graph and the length L of a side of the display square:
     // L = L0 / D
-    float L = canvasMinDimension() / (float) graphDiameter(considerWeights,inverseWeights);
-    TM.zeroMatrix(DM.rows(), DM.cols());
-    TM=DM;
-    TM.multiplyScalar(L);
-   // TM.printMatrixConsole();
+
+    qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
+               "Compute lij = L x dij. lij will be symmmetric.";
+
+    D = graphDiameter(considerWeights,inverseWeights);
+    L0 = canvasMinDimension();
+    L = L0 / D;
+    qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - L="
+            << L0 << "/" <<D << "=" <<L;
+
+    l.zeroMatrix(DM.rows(), DM.cols());
+    l=DM;
+    l.multiplyScalar(L);
+    qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - l=" ;
+    l.printMatrixConsole();
+
 
     // Compute kij for 1 <= i!=j <= n using the formula:
-    // ki
-    // kij is the strength of the spring between pi and pj
+    // kij = K / dij ^2
+    // kij is the strength of the spring between pi and pj, K a constant
 
-    // initialize p1, p2, ... pn;
+    qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
+               "Compute kij = K / dij ^2. kij will be symmmetric. ";
+
+    k.zeroMatrix(DM.rows(), DM.cols());
+
+    for (i=0; i<N; i++){
+        for (j=0; j<N; j++){
+            if ( i == j )
+                continue;
+            k.setItem(i,j, K / (DM.item(i,j) * DM.item(i,j)));
+        }
+    }
+    qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - k=" ;
+    k.printMatrixConsole();
+
+
+    // initialize p1, p2, ... pn
+    // placing the particles on the vertices of a regular n-polygon
+    // circumscribed by a circle whose diameter is L0
+
+    qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
+               "Compute initial positions p of particles " ;
+    i=0;
+    x0=canvasWidth/2.0;
+    y0=canvasHeight/2.0;
+
+    layoutRadial(x0,y0,L0/2,false);
+
 
     // while ( max_D_i > e )
+    while (Delta_max > epsilon) {
+
+        // compute partial derivatives of E by xm and ym for every particle m
+        // using equations 7 and 8
+        // and find out initial Delta_m = max Delta_i
+
+        for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1) {
+
+            m = index[(*v1)->name()];
+            xm = (*v1)->x();
+            ym = (*v1)->y();
+
+            qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
+                       "Compute partial derivatives E for m" << (*v1)->name()
+                     << " index" <<  index[(*v1)->name()]
+                     << " pos"<< xm << ", "<< ym;
+
+            partDrvtEx = 0;
+            partDrvtEy = 0;
+
+            if ( ! (*v1)->isEnabled() ) {
+                qDebug() << "  vertex m" << (*v1)->name() << " disabled. Continue";
+                continue;
+            }
+
+            for (v2=m_graph.cbegin(); v2!=m_graph.cend(); ++v2) {
+
+                i = index[(*v2)->name()];
+                xi = (*v2)->x();
+                yi = (*v2)->y();
+
+                qDebug () << "  i"<< i
+                          << "  pos (" <<  xi << "," << yi << ")";
+
+                if ( ! (*v2)->isEnabled() ) {
+                    qDebug()<< " i "<< (*v2)->name()<< " disabled. Continue";
+                    continue;
+                }
+
+                if (m == i) {
+                    qDebug() << "  m==i, continuing";
+                    continue;
+                }
+
+                partDrvtEx += k.item(m,i) * ( (xm - xi) - ( l.item(m,i) * (xm - xi) ) / sqrt( (xm - xi) * (xm - xi) + (ym - yi)*(ym - yi) ) );
+                partDrvtEy += k.item(m,i) * ( (ym - yi) - ( l.item(m,i) * (ym - yi) ) / sqrt( (xm - xi) * (xm - xi) + (ym - yi)*(ym - yi) ) );
+
+
+            } // end v2 for loop
+
+            Delta_m = sqrt (partDrvtEx * partDrvtEx + partDrvtEy * partDrvtEy);
+
+            qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - Delta_m"
+                    << Delta_m;
+
+            if (Delta_m > Delta_max) {
+                qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - Delta_m > Delta_max. "
+                        << " Setting new Delta_max = "
+                        << Delta_m;
+
+                Delta_max = Delta_m;
+                partDrvtEx_m = partDrvtEx;
+                partDrvtEy_m = partDrvtEy;
+                pm = m ;  // store particle satisfying Delta_m = max Delta_i
+                xpm = xm; // store particle x pos
+                ypm = ym; // store particle y pos
+            }
+
+        } // end v1 for loop
+
 
       // let pm the particle satisfying  D_m = max_D_i
+      m  = pm ;
+      xm = xpm;
+      ym = ypm;
+
+      qDebug () << "starting minimizing Delta_m for m"<< m << " with max Delta_m"<< Delta_max
+                << " initial m pos " << xm << ym;
+
 
       // while ( D_m > e)
+      while (Delta_m > epsilon) {
+          // compute dx and dy by solving equations 11 and 12
 
-        // compute delta_x and delta_y by solving equations 11 and 12
-        // x_m = x_m + delta_x
-        // y_m = y_m + delta_y
+          partDrvtEx=0;
+          partDrvtEy=0;
+          partDrvtExSec_m=0;
+          partDrvtEySec_m=0;
+          partDrvtExEySec_m=0;
+          partDrvtEyExSec_m=0;
+          // first compute coefficients of the linear system equations
+          for (v2=m_graph.cbegin(); v2!=m_graph.cend(); ++v2) {
 
+              i = index[(*v2)->name()];
+              xi = (*v2)->x();
+              yi = (*v2)->y();
+
+              qDebug () << "  m"<< m << "  i"<< i
+                        << "  pos_i (" <<  xi << "," << yi << ")";
+
+              if ( ! (*v2)->isEnabled() ) {
+                  qDebug()<< " i "<< (*v2)->name()<< " disabled. Continue";
+                  continue;
+              }
+
+              if (i == m) {
+                  qDebug() << "  m==i, continuing";
+                  continue;
+              }
+              partDrvDenom = pow ( sqrt( (xm - xi) * (xm - xi) + (ym - yi)*(ym - yi) ) , 3 );
+
+              partDrvtEx_m += k.item(m,i) * ( (xm - xi) - ( l.item(m,i) * (xm - xi) ) / sqrt( (xm - xi) * (xm - xi) + (ym - yi)*(ym - yi) ) );
+              partDrvtEy_m += k.item(m,i) * ( (ym - yi) - ( l.item(m,i) * (ym - yi) ) / sqrt( (xm - xi) * (xm - xi) + (ym - yi)*(ym - yi) ) );
+
+              partDrvtExSec_m   += k.item(m,i) * ( 1 - ( l.item(m,i) * (ym - yi) * (ym - yi) ) / partDrvDenom );
+
+              partDrvtExEySec_m += k.item(m,i) * ( (ym - yi) - ( l.item(m,i) * (xm - xi) * (ym - yi) ) /   partDrvDenom );
+
+              partDrvtEyExSec_m += k.item(m,i) * ( (ym - yi) - ( l.item(m,i) * (xm - xi) * (ym - yi) ) /   partDrvDenom );
+
+              partDrvtEySec_m   += k.item(m,i) * ( 1 - ( l.item(m,i) * (xm - xi) * (xm - xi) ) / partDrvDenom );
+
+
+          } // end v2 for loop
+
+
+          LIN_EQ_COEF.setItem(0,0,partDrvtExSec_m);
+          LIN_EQ_COEF.setItem(0,1,partDrvtExEySec_m);
+          LIN_EQ_COEF.setItem(1,0,partDrvtEyExSec_m);
+          LIN_EQ_COEF.setItem(1,1,partDrvtEySec_m);
+          b[0] = - partDrvtEx_m;
+          b[1] = - partDrvtEy_m;
+          LIN_EQ_COEF.solve(b);
+          dx=b[0];
+          dy=b[1];
+
+          xm = xm + dx;
+          ym = ym + dy;
+
+          Delta_m = sqrt (partDrvtEx * partDrvtEx + partDrvtEy * partDrvtEy);
+
+      }
+      qDebug () << "finished minimizing Delta_m for m"<< m << "  - Delta_m"<< Delta_m
+                << " new m pos " << xm << ym;
+      m_graph[m]->setX(xm);
+      m_graph[m]->setY(ym);
+
+    }
+
+    progressCounter++;
+    emit updateProgressDialog(progressCounter );
+
+    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
 
 
 }
+
+
+
+
+
 
 /**
  * @brief Graph::layoutForceDirected_FR_temperature

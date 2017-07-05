@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.2
+ version: 2.3
  Written in Qt
 
                         edge.cpp  -  description
@@ -548,13 +548,9 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 */
 float Edge::width() const{
     if ( fabs(m_weight) > 1  )  {
-//        qDebug()<< "Edge::width() -"
-//                   << "m_weight" << m_weight
-//                  <<"Returning "<< 1  +  log(fabs(m_weight)) ;
         return 1+log(fabs(m_weight)) ;
     }
-//    qDebug()<< "Edge::width() - Returning"<< m_weight;
-    return m_weight;	//	Default, if  m_weight in (-1, 1) space
+    return fabs(m_weight) ;
 }
 
 

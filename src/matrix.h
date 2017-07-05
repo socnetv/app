@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.2
+ version: 2.3
  Written in Qt
 
                           matrix.h  -  description
@@ -222,6 +222,8 @@ public:
     Matrix& inverseByGaussJordanElimination(Matrix &a);
 
     Matrix& inverse(Matrix &a);
+
+    bool solve(float b[]);
 
     bool ludcmp (Matrix &a, const int &n, int indx[], float &d ) ;
 
