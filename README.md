@@ -24,7 +24,7 @@ Main features:
 
 - Standard graph-theoretic and network cohesion metrics, such as density, 
 diameter, geodesics and distances, connectedness, eccentricity, 
-clustering coefficient, walks, etc.
+clustering coefficient, walks, reciprocity etc.
 
 - Matrix routines: Adjacency plot, Laplacian matrix, Degree matrix, Cocitation, etc.
 
