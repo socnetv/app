@@ -18613,7 +18613,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
     int progressCounter=0;
     bool considerWeights=false, inverseWeights=false, dropIsolates=false;
 
-    int i=0, j=0, m=0, pm=0;
+    int i=0, j=0, m=0, pm=0, iter=0;
 
     int N=vertices();  // active actors
 
@@ -18722,6 +18722,10 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
 
     // while ( max_D_i > e )
     while (Delta_max > epsilon) {
+        if (iter > maxIterations) {
+            return;
+        }
+        iter++;
 
         // compute partial derivatives of E by xm and ym for every particle m
         // using equations 7 and 8
@@ -18773,11 +18777,11 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
 
             Delta_m = sqrt (partDrvtEx * partDrvtEx + partDrvtEy * partDrvtEy);
 
-            qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - Delta_m"
+            qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - m" << m << " Delta_m"
                     << Delta_m;
 
             if (Delta_m > Delta_max) {
-                qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - Delta_m > Delta_max. "
+                qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - m" << m << " Delta_m > Delta_max. "
                         << " Setting new Delta_max = "
                         << Delta_m;
 
@@ -18797,16 +18801,21 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
       xm = xpm;
       ym = ypm;
 
-      qDebug () << "starting minimizing Delta_m for m"<< m << " with max Delta_m"<< Delta_max
+      qDebug () << "Graph::layoutForceDirectedKamadaKawai() - m"<< m << " has max Delta_m"<< Delta_max
+                << " Starting minimizing Delta_m - "
                 << " initial m pos " << xm << ym;
 
 
       // while ( D_m > e)
       while (Delta_m > epsilon) {
+           qDebug () << "Graph::layoutForceDirectedKamadaKawai() - m"<< m << " compute dx and dy by solving equations 11 and 12 ";
+
           // compute dx and dy by solving equations 11 and 12
 
           partDrvtEx=0;
           partDrvtEy=0;
+          partDrvtEx_m = 0;
+          partDrvtEy_m = 0;
           partDrvtExSec_m=0;
           partDrvtEySec_m=0;
           partDrvtExEySec_m=0;
@@ -18832,41 +18841,54 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
               }
               partDrvDenom = pow ( sqrt( (xm - xi) * (xm - xi) + (ym - yi)*(ym - yi) ) , 3 );
 
+
               partDrvtEx_m += k.item(m,i) * ( (xm - xi) - ( l.item(m,i) * (xm - xi) ) / sqrt( (xm - xi) * (xm - xi) + (ym - yi)*(ym - yi) ) );
               partDrvtEy_m += k.item(m,i) * ( (ym - yi) - ( l.item(m,i) * (ym - yi) ) / sqrt( (xm - xi) * (xm - xi) + (ym - yi)*(ym - yi) ) );
 
               partDrvtExSec_m   += k.item(m,i) * ( 1 - ( l.item(m,i) * (ym - yi) * (ym - yi) ) / partDrvDenom );
 
-              partDrvtExEySec_m += k.item(m,i) * ( (ym - yi) - ( l.item(m,i) * (xm - xi) * (ym - yi) ) /   partDrvDenom );
+              partDrvtExEySec_m += k.item(m,i) * ( ( l.item(m,i) * (xm - xi) * (ym - yi) ) /   partDrvDenom );
 
-              partDrvtEyExSec_m += k.item(m,i) * ( (ym - yi) - ( l.item(m,i) * (xm - xi) * (ym - yi) ) /   partDrvDenom );
+              partDrvtEyExSec_m += k.item(m,i) * (  ( l.item(m,i) * (xm - xi) * (ym - yi) ) /   partDrvDenom );
 
               partDrvtEySec_m   += k.item(m,i) * ( 1 - ( l.item(m,i) * (xm - xi) * (xm - xi) ) / partDrvDenom );
 
 
           } // end v2 for loop
 
+          Delta_m = sqrt (partDrvtEx_m * partDrvtEx_m + partDrvtEy_m * partDrvtEy_m);
+
+          qDebug () << "Graph::layoutForceDirectedKamadaKawai() - m"<< m << " new Delta_m"
+                  << Delta_m;
 
           LIN_EQ_COEF.setItem(0,0,partDrvtExSec_m);
           LIN_EQ_COEF.setItem(0,1,partDrvtExEySec_m);
           LIN_EQ_COEF.setItem(1,0,partDrvtEyExSec_m);
           LIN_EQ_COEF.setItem(1,1,partDrvtEySec_m);
+          qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
+                     " Jacobian Matrix of coefficients for linear system (eq. 11 & 12) is:";
+          LIN_EQ_COEF.printMatrixConsole(true);
           b[0] = - partDrvtEx_m;
           b[1] = - partDrvtEy_m;
+          qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - right hand vector is: \n"
+                  << b[0] << " \n" << b[1];
+          qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - solving linear system...";
           LIN_EQ_COEF.solve(b);
+          qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - solved linear system.";
           dx=b[0];
           dy=b[1];
-
+          qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - Solution b[0] = dx" << dx;
+          qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - Solution b[1] = dy" << dy;
           xm = xm + dx;
           ym = ym + dy;
-
-          Delta_m = sqrt (partDrvtEx * partDrvtEx + partDrvtEy * partDrvtEy);
-
+          qDebug () << "Graph::layoutForceDirectedKamadaKawai() - m"<< m
+                    << " new m pos " << xm << ym;
       }
-      qDebug () << "finished minimizing Delta_m for m"<< m << "  - Delta_m"<< Delta_m
-                << " new m pos " << xm << ym;
+      qDebug () << "Graph::layoutForceDirectedKamadaKawai() - m"<< m << "  - minimized Delta_m"<< Delta_m
+                << " moving m to new pos " << xm << ym;
       m_graph[m]->setX(xm);
       m_graph[m]->setY(ym);
+      emit setNodePos(m+1,  xm,  ym);
 
     }
 
