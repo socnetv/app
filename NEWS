@@ -4,9 +4,14 @@ Social Networks Visualiser (SocNetV)
 SocNetV News
 -==========-
 
-Feb 2017
+Jul 2017
 ========
-- Version 2.3 bugfix release
+- Version 2.3 released with bugfixes and new features:
+  Dyad and  Actor/Ego reciprocity
+  Zero-weighted edge support and zero-weighted edge color selection functionality in Settings
+  Bug Closed:
+  #28 Edges with values in [-1,0) are not visible
+  #29 Settings: Negative edge colour preferences break positive edge colours 
 
 
 Jan 2017
