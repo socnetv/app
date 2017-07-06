@@ -18605,7 +18605,6 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
     qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
                << "maxIter " << maxIterations;
 
-    Q_UNUSED(maxIterations);
 
     Vertices::const_iterator v1;
     Vertices::const_iterator v2;
@@ -18613,7 +18612,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
     int progressCounter=0;
     bool considerWeights=false, inverseWeights=false, dropIsolates=false;
 
-    int i=0, j=0, m=0, pm=0, iter=0;
+    int i=0, j=0, m=0, pm=0;
 
     int N=vertices();  // active actors
 
@@ -18647,13 +18646,13 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
 
     float dx=0, dy=0;
 
-    float epsilon=0.01;
+    float epsilon=0.1;
     float Delta_m=0;
-    float Delta_max=epsilon + 1;
+    float Delta_max=epsilon + 0.0001;
 
 
 
-    // Compute dij for 1 <= i!=j <= n
+    // Compute graph-theoretic distances dij for 1 <= i!=j <= n
 
     qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - Compute dij, where (i,j) in E";
 
@@ -18661,10 +18660,11 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
         graphMatrixDistancesCreate(false,considerWeights,inverseWeights, dropIsolates);
     }
     qDebug() << " DM : ";
-    DM.printMatrixConsole();
+    //DM.printMatrixConsole();
 
 
-    // Compute lij for 1 <= i!=j <= n using the formula:
+    // Compute original spring length
+    // lij for 1 <= i!=j <= n using the formula:
     // lij = L x dij
     // where L the desirable length of a single edge in the display pane
     // Since we are on a restricted display (a canvas), L depends on the
@@ -18675,7 +18675,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
                "Compute lij = L x dij. lij will be symmmetric.";
 
     D = graphDiameter(considerWeights,inverseWeights);
-    L0 = canvasMinDimension();
+    L0 = canvasMinDimension()-100;
     L = L0 / D;
     qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - L="
             << L0 << "/" <<D << "=" <<L;
@@ -18684,7 +18684,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
     l=DM;
     l.multiplyScalar(L);
     qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - l=" ;
-    l.printMatrixConsole();
+    //l.printMatrixConsole();
 
 
     // Compute kij for 1 <= i!=j <= n using the formula:
@@ -18704,7 +18704,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
         }
     }
     qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - k=" ;
-    k.printMatrixConsole();
+    //k.printMatrixConsole();
 
 
     // initialize p1, p2, ... pn
@@ -18722,14 +18722,24 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
 
     // while ( max_D_i > e )
     while (Delta_max > epsilon) {
-        if (iter > maxIterations) {
+
+        if (progressCounter == maxIterations) {
+            qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
+                       "Reached maxIterations. Stopping algorithm!";
             return;
         }
-        iter++;
+        progressCounter++;
+        qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - iteration" << progressCounter;
+        emit updateProgressDialog(progressCounter );
 
+        Delta_max = epsilon;
+
+        // choose particle with largest Delta_m = max Delta_i
         // compute partial derivatives of E by xm and ym for every particle m
         // using equations 7 and 8
-        // and find out initial Delta_m = max Delta_i
+
+        qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
+                    "Choose particle with largest Delta_m = max Delta_i ";
 
         for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1) {
 
@@ -18738,17 +18748,18 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
             ym = (*v1)->y();
 
             qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
-                       "Compute partial derivatives E for m" << (*v1)->name()
-                     << " index" <<  index[(*v1)->name()]
+                       "Compute partial derivatives E for particle" << (*v1)->name()
+                     << " index m" <<  index[(*v1)->name()]
                      << " pos"<< xm << ", "<< ym;
 
-            partDrvtEx = 0;
-            partDrvtEy = 0;
 
             if ( ! (*v1)->isEnabled() ) {
                 qDebug() << "  vertex m" << (*v1)->name() << " disabled. Continue";
                 continue;
             }
+
+            partDrvtEx = 0;
+            partDrvtEy = 0;
 
             for (v2=m_graph.cbegin(); v2!=m_graph.cend(); ++v2) {
 
@@ -18801,14 +18812,16 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
       xm = xpm;
       ym = ypm;
 
-      qDebug () << "Graph::layoutForceDirectedKamadaKawai() - m"<< m << " has max Delta_m"<< Delta_max
+      qDebug () << "Graph::layoutForceDirectedKamadaKawai() - m"<< m
+                << " has max Delta_m"<< Delta_max
                 << " Starting minimizing Delta_m - "
                 << " initial m pos " << xm << ym;
 
 
       // while ( D_m > e)
-      while (Delta_m > epsilon) {
-           qDebug () << "Graph::layoutForceDirectedKamadaKawai() - m"<< m << " compute dx and dy by solving equations 11 and 12 ";
+      do {
+           qDebug () << "Graph::layoutForceDirectedKamadaKawai() - m"<< m
+                     << " compute dx and dy by solving equations 11 and 12 ";
 
           // compute dx and dy by solving equations 11 and 12
 
@@ -18867,7 +18880,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
           LIN_EQ_COEF.setItem(1,1,partDrvtEySec_m);
           qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
                      " Jacobian Matrix of coefficients for linear system (eq. 11 & 12) is:";
-          LIN_EQ_COEF.printMatrixConsole(true);
+          //LIN_EQ_COEF.printMatrixConsole();
           b[0] = - partDrvtEx_m;
           b[1] = - partDrvtEy_m;
           qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - right hand vector is: \n"
@@ -18877,13 +18890,24 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
           qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - solved linear system.";
           dx=b[0];
           dy=b[1];
-          qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - Solution b[0] = dx" << dx;
-          qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - Solution b[1] = dy" << dy;
+          qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - Solution \n b[0] = dx =" << dx
+                    << "\n b[1] = dy =" << dy;
+
+          qDebug () << "Graph::layoutForceDirectedKamadaKawai() - m"<< m
+                    << " current m pos " << xm << ym
+                    << " new m pos " << xm +dx << ym+dy;
           xm = xm + dx;
           ym = ym + dy;
-          qDebug () << "Graph::layoutForceDirectedKamadaKawai() - m"<< m
-                    << " new m pos " << xm << ym;
-      }
+          if ( xm < 0) {
+              qDebug () << "Graph::layoutForceDirectedKamadaKawai() - new xm < 0. Setting to zero. ";
+              xm=0;
+          }
+          if ( ym  < 0) {
+              qDebug () << "Graph::layoutForceDirectedKamadaKawai() - new ym < 0. Setting to zero. ";
+              ym=0;
+          }
+
+      } while (Delta_m > epsilon);
       qDebug () << "Graph::layoutForceDirectedKamadaKawai() - m"<< m << "  - minimized Delta_m"<< Delta_m
                 << " moving m to new pos " << xm << ym;
       m_graph[m]->setX(xm);
@@ -18892,8 +18916,6 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
 
     }
 
-    progressCounter++;
-    emit updateProgressDialog(progressCounter );
 
     graphModifiedSet(GRAPH_CHANGED_POSITIONS);
 

@@ -9474,7 +9474,7 @@ void MainWindow::slotLayoutKamadaKawai(){
                   "(Kamada & Kawai) \n"
             "Please wait (or disable progress bars from Options -> Settings).";
     createProgressBar(0,progressMsg );
-    activeGraph.layoutForceDirectedKamadaKawai(10000);
+    activeGraph.layoutForceDirectedKamadaKawai(500);
 
     destroyProgressBar();
     statusMessage( tr("Kamada & Kawai model embedded.") );
