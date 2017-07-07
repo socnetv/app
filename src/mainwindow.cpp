@@ -904,6 +904,7 @@ void MainWindow::initActions(){
 
     editNodeAddAct = new QAction(QIcon(":/images/add.png"), tr("Add Node"), this);
     editNodeAddAct->setShortcut(Qt::CTRL + Qt::Key_Period);
+    editNodeAddAct->setShortcut(Qt::Key_Insert);
     editNodeAddAct->setToolTip(
                 tr("Add a new node to the network (Ctrl+.). \n\n"
                    "You can also create a new node \n"
@@ -1071,6 +1072,7 @@ void MainWindow::initActions(){
 
     editEdgeAddAct = new QAction(QIcon(":/images/connect.png"), tr("Add Edge (arc)"),this);
     editEdgeAddAct->setShortcut(Qt::CTRL + Qt::Key_Slash);
+    editEdgeAddAct->setShortcut(Qt::Key_Slash);
     editEdgeAddAct->setStatusTip(tr("Add a directed edge (arc) from a node to another"));
     editEdgeAddAct->setToolTip(
                     tr("Add a new edge from a node to another (Ctrl+/).\n\n"
