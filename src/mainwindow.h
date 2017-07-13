@@ -298,7 +298,10 @@ public slots:
     void slotLayoutRadialRandom();
     void slotLayoutRadialByProminenceIndex();
     void slotLayoutRadialByProminenceIndex(QString);
+    void slotLayoutNodeSizesByProminenceIndex();
     void slotLayoutNodeSizesByProminenceIndex(QString);
+    void slotLayoutNodeColorsByProminenceIndex();
+    void slotLayoutNodeColorsByProminenceIndex(QString);
     void slotLayoutLevelByProminenceIndex();
     void slotLayoutLevelByProminenceIndex(QString);
     void slotLayoutGuides(const bool &toggle);
@@ -577,10 +580,12 @@ private:
     QAction *layoutProminenceRadial_DC_Act, *layoutProminenceRadial_DP_Act,
     *layoutProminenceRadial_CC_Act, *layoutProminenceRadial_SC_Act, *layoutProminenceRadial_EC_Act,
     *layoutProminenceRadial_PC_Act, *layoutProminenceRadial_BC_Act, *layoutProminenceRadial_IC_Act,
+    *layoutProminenceRadial_EVC_Act,
     *layoutProminenceRadial_IRCC_Act,*layoutProminenceRadial_PRP_Act, *layoutProminenceRadial_PP_Act;
     QAction *layoutProminenceLevel_DC_Act, *layoutProminenceLevel_DP_Act,
     *layoutProminenceLevel_CC_Act, *layoutProminenceLevel_SC_Act, *layoutProminenceLevel_EC_Act,
     *layoutProminenceLevel_PC_Act, *layoutProminenceLevel_BC_Act, *layoutProminenceLevel_IC_Act,
+    *layoutProminenceLevel_EVC_Act,
     *layoutProminenceLevel_IRCC_Act,*layoutProminenceLevel_PRP_Act, *layoutProminenceLevel_PP_Act;
     QAction *strongColorationAct, *regularColorationAct;
     QAction *layoutFDP_Eades_Act, *layoutFDP_FR_Act;

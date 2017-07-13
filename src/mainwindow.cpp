@@ -1286,18 +1286,19 @@ void MainWindow::initActions(){
     connect(layoutRandomRadialAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialRandom()));
 
 
+
     layoutProminenceRadial_DC_Act = new QAction( tr("Degree Centrality"),	this);
     layoutProminenceRadial_DC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_1);
     layoutProminenceRadial_DC_Act
             ->setStatusTip(
-                tr("Layout all nodes on concentric circles of radius inversely "
+                tr("Place all nodes on concentric circles of radius inversely "
                     "proportional to their Degree Centrality."));
     layoutProminenceRadial_DC_Act->
             setWhatsThis(
-                tr( "Degree Centrality Radial Layout\n\n"
+                tr( "Degree Centrality (DC) Radial Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
-                    "inversely proportional to their Degree Centrality"
-                    "Nodes with higher DC score are closer to the centre."
+                    "inversely proportional to their Degree Centrality score."
+                    "Nodes with higher DC are closer to the centre."
                     )
                 );
     connect(layoutProminenceRadial_DC_Act, SIGNAL(triggered()),
@@ -1307,14 +1308,14 @@ void MainWindow::initActions(){
     layoutProminenceRadial_CC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_2);
     layoutProminenceRadial_CC_Act
             -> setStatusTip(
-                tr("Layout all nodes on concentric circles of radius inversely "
-                    "proportional to their CC index."));
+                tr("Place all nodes on concentric circles of radius inversely "
+                    "proportional to their Closeness Centrality."));
     layoutProminenceRadial_CC_Act->
             setWhatsThis(
-                tr( "Closeness Centrality Radial Layout\n\n"
+                tr( "Closeness Centrality (CC) Radial Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
-                    "inversely proportional to their CC index."
-                    "Nodes having higher CC score are closer to the centre."
+                    "inversely proportional to their Closeness Centrality."
+                    "Nodes having higher CC are closer to the centre."
                     ));
     connect(layoutProminenceRadial_CC_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutRadialByProminenceIndex()));
@@ -1326,15 +1327,15 @@ void MainWindow::initActions(){
     layoutProminenceRadial_IRCC_Act
             ->setStatusTip(
                 tr(
-                   "Layout all nodes on concentric circles of radius inversely "
-                    "proportional to their IRCC index."));
+                   "Place all nodes on concentric circles of radius inversely "
+                    "proportional to their Influence Range Closeness Centrality."));
     layoutProminenceRadial_IRCC_Act->
             setWhatsThis(
                 tr(
-                    "Influence Range Closeness Centrality Radial Layout\n\n"
+                    "Influence Range Closeness Centrality (IRCC) Radial Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
-                    "inversely proportional to their IRCC index."
-                    "Nodes having higher IRCC score are closer to the centre."
+                    "inversely proportional to their IRCC score."
+                    "Nodes having higher IRCC are closer to the centre."
                     ));
     connect(layoutProminenceRadial_IRCC_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutRadialByProminenceIndex()));
@@ -1343,15 +1344,15 @@ void MainWindow::initActions(){
     layoutProminenceRadial_BC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_4);
     layoutProminenceRadial_BC_Act ->setStatusTip(
                 tr(
-                   "Layout all nodes on concentric circles of radius inversely "
-                    "proportional to their BC index."));
+                   "Place all nodes on concentric circles of radius inversely "
+                    "proportional to their Betweenness Centrality."));
     layoutProminenceRadial_BC_Act->
             setWhatsThis(
                 tr(
-                    "Betweenness Centrality Radial Layout\n\n"
+                    "Betweenness Centrality (BC) Radial Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
-                    "inversely proportional to their BC index."
-                    "Nodes having higher BC score are closer to the centre."
+                    "inversely proportional to their Betweenness Centrality."
+                    "Nodes having higher BC are closer to the centre."
                     ));
     connect(layoutProminenceRadial_BC_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutRadialByProminenceIndex()));
@@ -1360,15 +1361,15 @@ void MainWindow::initActions(){
     layoutProminenceRadial_SC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_5);
     layoutProminenceRadial_SC_Act ->setStatusTip(
                 tr(
-                   "Layout all nodes on concentric circles of radius inversely "
-                    "proportional to their SC index."));
+                   "Place all nodes on concentric circles of radius inversely "
+                    "proportional to their Stress Centrality."));
     layoutProminenceRadial_SC_Act->
             setWhatsThis(
                 tr(
-                    "Stress Centrality Radial Layout\n\n"
+                    "Stress Centrality (SC) Radial Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
-                    "inversely proportional to their SC index."
-                    "Nodes having higher SC score are closer to the centre."
+                    "inversely proportional to their Stress Centrality score."
+                    "Nodes having higher SC are closer to the centre."
                     ));
     connect(layoutProminenceRadial_SC_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutRadialByProminenceIndex()));
@@ -1377,15 +1378,15 @@ void MainWindow::initActions(){
     layoutProminenceRadial_EC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_6);
     layoutProminenceRadial_EC_Act ->setStatusTip(
                 tr(
-                   "Layout all nodes on concentric circles of radius inversely "
-                    "proportional to their EC index."));
+                   "Place all nodes on concentric circles of radius inversely "
+                    "proportional to their Eccentricity Centrality."));
     layoutProminenceRadial_EC_Act->
             setWhatsThis(
                 tr(
-                    "Eccentricity Centrality Radial Layout\n\n"
+                    "Eccentricity Centrality (EC) Radial Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
-                    "inversely proportional to their EC index."
-                    "Nodes having higher EC score are closer to the centre."
+                    "inversely proportional to their Eccentricity Centrality score."
+                    "Nodes having higher EC are closer to the centre."
                     ));
     connect(layoutProminenceRadial_EC_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutRadialByProminenceIndex()));
@@ -1395,15 +1396,15 @@ void MainWindow::initActions(){
     layoutProminenceRadial_PC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_7);
     layoutProminenceRadial_PC_Act ->setStatusTip(
                 tr(
-                   "Layout all nodes on concentric circles of radius inversely "
-                    "proportional to their PC index."));
+                   "Place all nodes on concentric circles of radius inversely "
+                    "proportional to their Power Centrality."));
     layoutProminenceRadial_PC_Act->
             setWhatsThis(
                 tr(
-                    "Power Centrality Radial Layout\n\n"
+                    "Power Centrality (PC) Radial Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
-                    "inversely proportional to their PC index."
-                    "Nodes having higher PC score are closer to the centre."
+                    "inversely proportional to their Power Centrality score."
+                    "Nodes having higher PC are closer to the centre."
                     ));
     connect(layoutProminenceRadial_PC_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutRadialByProminenceIndex()));
@@ -1414,17 +1415,36 @@ void MainWindow::initActions(){
     layoutProminenceRadial_IC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_8);
     layoutProminenceRadial_IC_Act -> setStatusTip(
                 tr(
-                   "Layout all nodes on concentric circles of radius inversely "
-                    "proportional to their IC index."));
+                   "Place all nodes on concentric circles of radius inversely "
+                    "proportional to their Information Centrality."));
     layoutProminenceRadial_IC_Act->
             setWhatsThis(
                 tr(
-                    "Information Centrality Radial Layout\n\n"
+                    "Information Centrality (IC) Radial Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
-                    "inversely proportional to their IC index."
-                    "Nodes having higher IC score are closer to the centre."
+                    "inversely proportional to their Information Centrality score."
+                    "Nodes of higher IC are closer to the centre."
                     ));
     connect(layoutProminenceRadial_IC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutRadialByProminenceIndex()));
+
+
+    layoutProminenceRadial_EVC_Act = new QAction( tr("Eigenvector Centrality"),	this);
+    layoutProminenceRadial_EVC_Act -> setEnabled(true);
+    layoutProminenceRadial_EVC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_9);
+    layoutProminenceRadial_EVC_Act -> setStatusTip(
+                tr(
+                   "Place all nodes on concentric circles of radius inversely "
+                    "proportional to their Eigenvector Centrality."));
+    layoutProminenceRadial_EVC_Act->
+            setWhatsThis(
+                tr(
+                    "Eigenvector Centrality (EVC) Radial Layout\n\n"
+                    "Repositions all nodes on concentric circles of radius "
+                    "inversely proportional to their Eigenvector Centrality score."
+                    "Nodes of higher EVC are closer to the centre."
+                    ));
+    connect(layoutProminenceRadial_EVC_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutRadialByProminenceIndex()));
 
 
@@ -1432,15 +1452,15 @@ void MainWindow::initActions(){
     layoutProminenceRadial_DP_Act->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_I);
     layoutProminenceRadial_DP_Act ->setStatusTip(
                 tr(
-                   "Layout all nodes on concentric circles of radius inversely "
-                    "proportional to their DP index."));
+                   "Place all nodes on concentric circles of radius inversely "
+                    "proportional to their Degree Prestige (inDegree)."));
     layoutProminenceRadial_DP_Act->
             setWhatsThis(
                 tr(
-                    "Degree Prestige Radial Layout\n\n"
+                    "Degree Prestige (DP) Radial Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
-                    "inversely proportional to their DP index."
-                    "Nodes having higher DP score are closer to the centre."
+                    "inversely proportional to their inDegree score."
+                    "Nodes having higher DP are closer to the centre."
                     ));
     connect(layoutProminenceRadial_DP_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutRadialByProminenceIndex()));
@@ -1450,15 +1470,15 @@ void MainWindow::initActions(){
     layoutProminenceRadial_PRP_Act->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_K);
     layoutProminenceRadial_PRP_Act ->setStatusTip(
                 tr(
-                   "Layout all nodes on concentric circles of radius inversely "
+                   "Place all nodes on concentric circles of radius inversely "
                     "proportional to their PRP index."));
     layoutProminenceRadial_PRP_Act->
             setWhatsThis(
                 tr(
-                    "PageRank Prestige Radial Layout\n\n"
+                    "PageRank Prestige (PRP) Radial Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
-                    "inversely proportional to their PRP index."
-                    "Nodes having higher PRP score are closer to the centre."
+                    "inversely proportional to their PageRank score."
+                    "Nodes having higher PRP are closer to the centre."
                     ));
     connect(layoutProminenceRadial_PRP_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutRadialByProminenceIndex()));
@@ -1468,12 +1488,12 @@ void MainWindow::initActions(){
     layoutProminenceRadial_PP_Act ->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_Y);
     layoutProminenceRadial_PP_Act ->setStatusTip(
                 tr(
-                   "Layout all nodes on concentric circles of radius inversely "
-                    "proportional to their PP index."));
+                   "Place all nodes on concentric circles of radius inversely "
+                    "proportional to their Proximity Prestige."));
     layoutProminenceRadial_PP_Act->
             setWhatsThis(
                 tr(
-                    "Proximity Prestige Radial Layout\n\n"
+                    "Proximity Prestige (PP) Radial Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their PP index."
                     "Nodes having higher PP score are closer to the centre."
@@ -1483,32 +1503,21 @@ void MainWindow::initActions(){
 
 
 
-    layoutGuidesAct = new QAction(QIcon(":/images/gridlines.png"), tr("Layout GuideLines"), this);
-    layoutGuidesAct ->setStatusTip(tr("Toggles layout guidelines on or off."));
-    layoutGuidesAct->setWhatsThis(tr("Layout Guidelines\n\n"
-                                     "Layout Guidelines are circular or horizontal lines \n"
-                                     "usually created when embedding prominence-based \n"
-                                     "visualization models on the network.\n"
-                                     "Disable this checkbox to hide guidelines"));
-    layoutGuidesAct->setCheckable(true);
-    layoutGuidesAct->setChecked(true);
-
-
 
     layoutProminenceLevel_DC_Act = new QAction( tr("Degree Centrality"), this);
     layoutProminenceLevel_DC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_1);
     layoutProminenceLevel_DC_Act
             ->setStatusTip(
                 tr(
-                    "Layout nodes on horizontal levels of height "
-                     "proportional to their DC index."));
+                    "Place all nodes on horizontal levels of height "
+                     "proportional to their Degree Centrality."));
     layoutProminenceLevel_DC_Act->
              setWhatsThis(
                  tr(
-                     "Degree Centrality Levels Layout\n\n"
+                     "Degree Centrality (DC) Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
-                     "proportional to their DC index."
-                     "Nodes having higher DC score are closer to the top.\n\n"
+                     "proportional to their DC score."
+                     "Nodes having higher DC are closer to the top.\n\n"
                     )
                 );
     connect(layoutProminenceLevel_DC_Act, SIGNAL(triggered()),
@@ -1519,15 +1528,15 @@ void MainWindow::initActions(){
     layoutProminenceLevel_CC_Act
             -> setStatusTip(
                 tr(
-                    "Layout nodes on horizontal levels of height "
-                     "proportional to their CC index."));
+                    "Place all nodes on horizontal levels of height "
+                     "proportional to their Closeness Centrality."));
     layoutProminenceLevel_CC_Act->
              setWhatsThis(
                  tr(
-                     "Closeness Centrality Levels Layout\n\n"
+                     "Closeness Centrality (CC) Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
-                     "proportional to their CC index."
-                     "Nodes having higher CC score are closer to the top.\n\n"
+                     "proportional to their Closeness Centrality score."
+                     "Nodes of higher CC are closer to the top.\n\n"
                      "This layout can be computed only for connected graphs. "
                     ));
     connect(layoutProminenceLevel_CC_Act, SIGNAL(triggered()),
@@ -1540,15 +1549,15 @@ void MainWindow::initActions(){
     layoutProminenceLevel_IRCC_Act
             ->setStatusTip(
                 tr(
-                    "Layout nodes on horizontal levels of height "
-                     "proportional to their IRCC index."));
+                    "Place all nodes on horizontal levels of height "
+                     "proportional to their Influence Range Closeness Centrality."));
     layoutProminenceLevel_IRCC_Act->
              setWhatsThis(
                  tr(
-                     "Influence Range Closeness Centrality Levels Layout\n\n"
+                     "Influence Range Closeness Centrality (IRCC) Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
-                     "proportional to their IRCC index."
-                     "Nodes having higher IRCC score are closer to the top.\n\n"
+                     "proportional to their IRCC score."
+                     "Nodes having higher IRCC are closer to the top.\n\n"
                      "This layout can be computed for not connected graphs. "
                     ));
     connect(layoutProminenceLevel_IRCC_Act, SIGNAL(triggered()),
@@ -1558,15 +1567,15 @@ void MainWindow::initActions(){
     layoutProminenceLevel_BC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_4);
     layoutProminenceLevel_BC_Act ->setStatusTip(
                 tr(
-                    "Layout nodes on horizontal levels of height "
-                     "proportional to their BC index."));
+                    "Place all nodes on horizontal levels of height "
+                     "proportional to their Betweenness Centrality."));
     layoutProminenceLevel_BC_Act->
              setWhatsThis(
                  tr(
-                     "Betweenness Centrality Levels Layout\n\n"
+                     "Betweenness Centrality (BC) Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
-                     "proportional to their BC index."
-                     "Nodes having higher BC score are closer to the top."
+                     "proportional to their Betweenness Centrality score."
+                     "Nodes having higher BC are closer to the top."
                     ));
     connect(layoutProminenceLevel_BC_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutLevelByProminenceIndex()));
@@ -1575,15 +1584,15 @@ void MainWindow::initActions(){
     layoutProminenceLevel_SC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_5);
     layoutProminenceLevel_SC_Act ->setStatusTip(
                 tr(
-                    "Layout nodes on horizontal levels of height "
-                     "proportional to their SC index."));
+                    "Place nodes on horizontal levels of height "
+                     "proportional to their Stress Centrality."));
     layoutProminenceLevel_SC_Act->
              setWhatsThis(
                  tr(
-                     "Stress Centrality Levels Layout\n\n"
+                     "Stress Centrality (SC) Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
-                     "proportional to their SC index."
-                     "Nodes having higher SC score are closer to the top."
+                     "proportional to their Stress Centrality score."
+                     "Nodes having higher SC are closer to the top."
                     ));
     connect(layoutProminenceLevel_SC_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutLevelByProminenceIndex()));
@@ -1592,15 +1601,15 @@ void MainWindow::initActions(){
     layoutProminenceLevel_EC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_6);
     layoutProminenceLevel_EC_Act ->setStatusTip(
                 tr(
-                    "Layout nodes on horizontal levels of height "
-                     "proportional to their EC index."));
+                    "Place nodes on horizontal levels of height "
+                     "proportional to their Eccentricity Centrality."));
     layoutProminenceLevel_EC_Act->
              setWhatsThis(
                  tr(
-                     "Eccentricity Centrality Levels Layout\n\n"
+                     "Eccentricity Centrality (EC) Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
-                     "proportional to their EC index."
-                     "Nodes having higher EC score are closer to the top."
+                     "proportional to their Eccentricity Centrality score."
+                     "Nodes having higher EC are closer to the top."
                     ));
     connect(layoutProminenceLevel_EC_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutLevelByProminenceIndex()));
@@ -1610,15 +1619,15 @@ void MainWindow::initActions(){
     layoutProminenceLevel_PC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_7);
     layoutProminenceLevel_PC_Act ->setStatusTip(
                 tr(
-                    "Layout nodes on horizontal levels of height "
-                     "proportional to their PC index."));
+                    "Place nodes on horizontal levels of height "
+                     "proportional to their Power Centrality."));
     layoutProminenceLevel_PC_Act->
              setWhatsThis(
                  tr(
-                     "Power Centrality Levels Layout\n\n"
+                     "Power Centrality (PC) Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
-                     "proportional to their PC index."
-                     "Nodes having higher PC score are closer to the top."
+                     "proportional to their Power Centrality score."
+                     "Nodes having higher PC are closer to the top."
                     ));
     connect(layoutProminenceLevel_PC_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutLevelByProminenceIndex()));
@@ -1629,33 +1638,52 @@ void MainWindow::initActions(){
     layoutProminenceLevel_IC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_8);
     layoutProminenceLevel_IC_Act ->setStatusTip(
                 tr(
-                    "Layout nodes on horizontal levels of height "
-                     "proportional to their IC index."));
+                    "Place nodes on horizontal levels of height "
+                     "proportional to their Information Centrality."));
     layoutProminenceLevel_IC_Act->
              setWhatsThis(
                  tr(
-                     "Information Centrality Levels Layout\n\n"
+                     "Information Centrality (IC) Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
-                     "proportional to their IC index."
-                     "Nodes having higher IC score are closer to the top."
+                     "proportional to their Information Centrality score."
+                     "Nodes having higher IC are closer to the top."
                     ));
     connect(layoutProminenceLevel_IC_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutLevelByProminenceIndex()));
+
+    layoutProminenceLevel_EVC_Act = new QAction( tr("Eigenvector Centrality"),	this);
+    layoutProminenceLevel_EVC_Act ->setEnabled(true);
+    layoutProminenceLevel_EVC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_9);
+    layoutProminenceLevel_EVC_Act ->setStatusTip(
+                tr(
+                    "Place nodes on horizontal levels of height "
+                     "proportional to their Eigenvector Centrality."));
+    layoutProminenceLevel_EVC_Act->
+             setWhatsThis(
+                 tr(
+                     "Eigenvector Centrality (EVC) Levels Layout\n\n"
+                     "Repositions all nodes on horizontal levels of height"
+                     "proportional to their Eigenvector Centrality score."
+                     "Nodes having higher EVC are closer to the top."
+                    ));
+    connect(layoutProminenceLevel_EVC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutLevelByProminenceIndex()));
+
 
 
     layoutProminenceLevel_DP_Act = new QAction( tr("Degree Prestige"),	this);
     layoutProminenceLevel_DP_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_I);
     layoutProminenceLevel_DP_Act ->setStatusTip(
                 tr(
-                   "Layout nodes on horizontal levels of height "
-                    "proportional to their DP index."));
+                   "Place nodes on horizontal levels of height "
+                    "proportional to their Degree Prestige."));
     layoutProminenceLevel_DP_Act->
             setWhatsThis(
                 tr(
-                    "Degree Prestige Levels Layout\n\n"
+                    "Degree Prestige (DP) Levels Layout\n\n"
                     "Repositions all nodes on horizontal levels of height"
-                    "proportional to their DP index."
-                    "Nodes having higher DP score are closer to the top."
+                    "proportional to their Degree Prestige score."
+                    "Nodes having higher DP are closer to the top."
                     ));
     connect(layoutProminenceLevel_DP_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutLevelByProminenceIndex()));
@@ -1665,15 +1693,15 @@ void MainWindow::initActions(){
     layoutProminenceLevel_PRP_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_K);
     layoutProminenceLevel_PRP_Act -> setStatusTip(
                 tr(
-                   "Layout nodes on horizontal levels of height "
-                    "proportional to their PRP index."));
+                   "Place nodes on horizontal levels of height "
+                    "proportional to their PageRank Prestige."));
     layoutProminenceLevel_PRP_Act->
             setWhatsThis(
                 tr(
-                    "PageRank Prestige Levels Layout\n\n"
+                    "PageRank Prestige (PRP) Levels Layout\n\n"
                     "Repositions all nodes on horizontal levels of height"
-                    "proportional to their PRP index."
-                    "Nodes having higher PRP score are closer to the top."
+                    "proportional to their PageRank Prestige score."
+                    "Nodes having higher PRP are closer to the top."
                     ));
     connect(layoutProminenceLevel_PRP_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutLevelByProminenceIndex()));
@@ -1684,15 +1712,15 @@ void MainWindow::initActions(){
     layoutProminenceLevel_PP_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_Y);
     layoutProminenceLevel_PP_Act -> setStatusTip(
                 tr(
-                   "Layout nodes on horizontal levels of height "
-                    "proportional to their PP index."));
+                   "Place nodes on horizontal levels of height "
+                    "proportional to their Proximity Prestige."));
     layoutProminenceLevel_PP_Act->
             setWhatsThis(
                 tr(
-                    "Proximity Prestige Levels Layout\n\n"
+                    "Proximity Prestige (PP) Levels Layout\n\n"
                     "Repositions all nodes on horizontal levels of height"
-                    "proportional to their PP index."
-                    "Nodes having higher PP score are closer to the top."
+                    "proportional to their Proximity Prestige score."
+                    "Nodes having higher PP are closer to the top."
                     ));
     connect(layoutProminenceLevel_PP_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutLevelByProminenceIndex()));
@@ -1778,6 +1806,19 @@ void MainWindow::initActions(){
     nodeSizesByInDegreeAct->setChecked(false);
     connect(nodeSizesByInDegreeAct, SIGNAL(triggered(bool)),
             this, SLOT(slotLayoutNodeSizesByInDegree(bool)));
+
+
+
+
+    layoutGuidesAct = new QAction(QIcon(":/images/gridlines.png"), tr("Layout GuideLines"), this);
+    layoutGuidesAct ->setStatusTip(tr("Toggles layout guidelines on or off."));
+    layoutGuidesAct->setWhatsThis(tr("Layout Guidelines\n\n"
+                                     "Layout Guidelines are circular or horizontal lines \n"
+                                     "usually created when embedding prominence-based \n"
+                                     "visualization models on the network.\n"
+                                     "Disable this checkbox to hide guidelines"));
+    layoutGuidesAct->setCheckable(true);
+    layoutGuidesAct->setChecked(true);
 
 
     /**
@@ -2932,6 +2973,7 @@ void MainWindow::initMenuBar() {
     layoutProminenceRadialMenu -> addAction (layoutProminenceRadial_EC_Act);
     layoutProminenceRadialMenu -> addAction (layoutProminenceRadial_PC_Act);
     layoutProminenceRadialMenu -> addAction (layoutProminenceRadial_IC_Act);
+    layoutProminenceRadialMenu -> addAction (layoutProminenceRadial_EVC_Act);
     layoutProminenceRadialMenu -> addAction (layoutProminenceRadial_DP_Act);
     layoutProminenceRadialMenu -> addAction (layoutProminenceRadial_PRP_Act);
     layoutProminenceRadialMenu -> addAction (layoutProminenceRadial_PP_Act);
@@ -2947,6 +2989,7 @@ void MainWindow::initMenuBar() {
     layoutProminenceLevelMenu -> addAction (layoutProminenceLevel_EC_Act);
     layoutProminenceLevelMenu -> addAction (layoutProminenceLevel_PC_Act);
     layoutProminenceLevelMenu -> addAction (layoutProminenceLevel_IC_Act);
+    layoutProminenceLevelMenu -> addAction (layoutProminenceLevel_EVC_Act);
     layoutProminenceLevelMenu -> addAction (layoutProminenceLevel_DP_Act);
     layoutProminenceLevelMenu -> addAction (layoutProminenceLevel_PRP_Act);
     layoutProminenceLevelMenu -> addAction (layoutProminenceLevel_PP_Act);
@@ -9986,6 +10029,30 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
 
 
 
+
+
+
+/**
+ * @brief
+ * Checks sender text() to find out who QMenu item was pressed
+ * and what prominence index was chosen
+ * calls slotLayoutNodeSizesByProminenceIndex(QString)
+  */
+void MainWindow::slotLayoutNodeSizesByProminenceIndex(){
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+    QAction *menuitem=(QAction *) sender();
+    QString menuItemText = menuitem->text();
+    qDebug() << "MainWindow::slotLayoutNodeSizesByProminenceIndex() - " <<
+                "SENDER MENU IS " << menuItemText;
+
+    slotLayoutNodeSizesByProminenceIndex(menuItemText);
+
+}
+
+
 /**
  * @brief
  * Calls Graph::layoutVerticesSizeByProminenceIndex to apply a layout model
@@ -10150,6 +10217,29 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
 
 
 
+
+
+/**
+ * @brief
+ * Checks sender text() to find out who QMenu item was pressed
+ * and what prominence index was chosen
+ * calls slotLayoutNodeColorsByProminenceIndex(QString)
+  */
+void MainWindow::slotLayoutNodeColorsByProminenceIndex(){
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+    QAction *menuitem=(QAction *) sender();
+    QString menuItemText = menuitem->text();
+    qDebug() << "MainWindow::slotLayoutNodeColorsByProminenceIndex() - " <<
+                "SENDER MENU IS " << menuItemText;
+
+    slotLayoutNodeColorsByProminenceIndex(menuItemText);
+
+}
+
+
 /**
  * @brief
  * Calls Graph::layoutVerticesColorByProminenceIndex to apply a layout model
@@ -10159,7 +10249,7 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
  * Called when selectbox changes in the toolbox
  */
 void MainWindow::slotLayoutNodeColorsByProminenceIndex(QString choice=""){
-        qDebug() << "MainWindow::slotLayoutNodeSizesByProminenceIndex() ";
+        qDebug() << "MainWindow::slotLayoutNodeColorsByProminenceIndex() ";
     if ( !activeNodes() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
