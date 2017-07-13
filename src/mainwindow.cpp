@@ -9860,12 +9860,20 @@ void MainWindow::slotLayoutRadialByProminenceIndex(QString choice=""){
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.layoutRadialByProminenceIndex(
-                x0, y0, maxRadius, userChoice,
+//    activeGraph.layoutRadialByProminenceIndex(
+//                x0, y0, maxRadius, userChoice,
+//                considerWeights, inverseWeights,
+//                editFilterNodesIsolatesAct->isChecked() || dropIsolates);
+
+    activeGraph.layoutByProminenceIndex(
+                userChoice, 0,
                 considerWeights, inverseWeights,
                 editFilterNodesIsolatesAct->isChecked() || dropIsolates);
+
+
     destroyProgressBar();
-    statusMessage( tr("Nodes in inner circles have greater prominence index.") );
+
+    statusMessage( tr("Nodes in inner circles have higher %1 score. ").arg(prominenceIndexName ) );
 }
 
 
@@ -10055,12 +10063,19 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.layoutLevelByProminenceIndex(
-                maxWidth, maxHeight, userChoice,
+//    activeGraph.layoutLevelByProminenceIndex(
+//                maxWidth, maxHeight, userChoice,
+//                considerWeights, inverseWeights,
+//                editFilterNodesIsolatesAct->isChecked() || dropIsolates);
+
+    activeGraph.layoutByProminenceIndex(
+                userChoice, 1,
                 considerWeights, inverseWeights,
                 editFilterNodesIsolatesAct->isChecked() || dropIsolates);
+
+
     destroyProgressBar();
-    statusMessage( tr("Nodes in upper levels are more prominent. ") );
+    statusMessage( tr("Nodes in upper levels have higher %1 score. ").arg(prominenceIndexName ) );
 }
 
 
@@ -10235,15 +10250,22 @@ void MainWindow::slotLayoutNodeSizeByProminenceIndex(QString choice=""){
     askAboutWeights();
 
     graphicsWidget->clearGuides();
-    statusMessage(  tr("Embedding Prominence Index Node Layout. Please wait...") );
-    progressMsg = tr("Embedding Prominence Index Node Layout. \n"
+    statusMessage(  tr("Embedding Node Size by Prominence score layout. Please wait...") );
+    progressMsg = tr("Embedding Node Size by Prominence score layout. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.layoutVertexSizeByProminenceIndex(
-                userChoice, considerWeights,
-                inverseWeights, editFilterNodesIsolatesAct->isChecked() || dropIsolates);
+//    activeGraph.layoutVertexSizeByProminenceIndex(
+//                userChoice, considerWeights,
+//                inverseWeights, editFilterNodesIsolatesAct->isChecked() || dropIsolates);
+
+    activeGraph.layoutByProminenceIndex(
+                userChoice, 2,
+                considerWeights, inverseWeights,
+                editFilterNodesIsolatesAct->isChecked() || dropIsolates);
+
+
     destroyProgressBar();
     statusMessage( tr("Bigger nodes have greater %1 score.").arg(prominenceIndexName ) );
 }
@@ -10278,7 +10300,7 @@ void MainWindow::slotLayoutNodeColorByProminenceIndex(){
 
 /**
  * @brief
- * Calls Graph::layoutVerticesColorByProminenceIndex to apply a layout model
+ * Calls Graph::layoutVertexColorByProminenceIndex to apply a layout model
  * where the color of each node follows its prominence score
  * RED=rgb(255,0,0) most prominent
  * BLUE=rgb(0,0,255) least prominent
@@ -10320,12 +10342,12 @@ void MainWindow::slotLayoutNodeColorByProminenceIndex(QString choice=""){
     else if (prominenceIndexName.contains("Proximity Prestige"))
         userChoice=12;
 
-    qDebug() << "MainWindow::slotLayoutNodeSizeByProminenceIndex() "
+    qDebug() << "MainWindow::slotLayoutNodeColorByProminenceIndex() "
              << "prominenceIndexName " << prominenceIndexName
                 << " userChoice " << userChoice;
 
     toolBoxLayoutByIndexSelect->setCurrentIndex(userChoice+1);
-    toolBoxLayoutByIndexTypeSelect->setCurrentIndex(0);
+    toolBoxLayoutByIndexTypeSelect->setCurrentIndex(3);
 
     //check if CC was selected and the graph is disconnected.
     bool dropIsolates=false;
@@ -10424,17 +10446,17 @@ void MainWindow::slotLayoutNodeColorByProminenceIndex(QString choice=""){
     askAboutWeights();
 
     graphicsWidget->clearGuides();
-    statusMessage(  tr("Embedding Prominence Index Node Layout. Please wait...") );
-    progressMsg = tr("Embedding Prominence Index Node Layout. \n"
+    statusMessage(  tr("Embedding Node Color by Prominence Score layout. Please wait...") );
+    progressMsg = tr("Embedding Node Color by Prominence Score layout. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.layoutVertexSizeByProminenceIndex(
-                userChoice, considerWeights,
-                inverseWeights, editFilterNodesIsolatesAct->isChecked() || dropIsolates);
+//    activeGraph.layoutVertexColorByProminenceIndex(
+//                userChoice, considerWeights,
+//                inverseWeights, editFilterNodesIsolatesAct->isChecked() || dropIsolates);
     destroyProgressBar();
-    statusMessage( tr("Bigger nodes have greater prominence index.") );
+    statusMessage( tr("Nodes with red color have greater %1 score.").arg(prominenceIndexName));
 }
 
 
