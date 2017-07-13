@@ -1297,7 +1297,7 @@ void MainWindow::initActions(){
             setWhatsThis(
                 tr( "Degree Centrality (DC) Radial Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
-                    "inversely proportional to their Degree Centrality score."
+                    "inversely proportional to their Degree Centrality score. "
                     "Nodes with higher DC are closer to the centre."
                     )
                 );
@@ -1314,7 +1314,7 @@ void MainWindow::initActions(){
             setWhatsThis(
                 tr( "Closeness Centrality (CC) Radial Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
-                    "inversely proportional to their Closeness Centrality."
+                    "inversely proportional to their Closeness Centrality. "
                     "Nodes having higher CC are closer to the centre."
                     ));
     connect(layoutProminenceRadial_CC_Act, SIGNAL(triggered()),
@@ -1334,7 +1334,7 @@ void MainWindow::initActions(){
                 tr(
                     "Influence Range Closeness Centrality (IRCC) Radial Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
-                    "inversely proportional to their IRCC score."
+                    "inversely proportional to their IRCC score. "
                     "Nodes having higher IRCC are closer to the centre."
                     ));
     connect(layoutProminenceRadial_IRCC_Act, SIGNAL(triggered()),
@@ -1351,7 +1351,7 @@ void MainWindow::initActions(){
                 tr(
                     "Betweenness Centrality (BC) Radial Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
-                    "inversely proportional to their Betweenness Centrality."
+                    "inversely proportional to their Betweenness Centrality. "
                     "Nodes having higher BC are closer to the centre."
                     ));
     connect(layoutProminenceRadial_BC_Act, SIGNAL(triggered()),
@@ -1368,7 +1368,7 @@ void MainWindow::initActions(){
                 tr(
                     "Stress Centrality (SC) Radial Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
-                    "inversely proportional to their Stress Centrality score."
+                    "inversely proportional to their Stress Centrality score. "
                     "Nodes having higher SC are closer to the centre."
                     ));
     connect(layoutProminenceRadial_SC_Act, SIGNAL(triggered()),
@@ -1385,7 +1385,7 @@ void MainWindow::initActions(){
                 tr(
                     "Eccentricity Centrality (EC) Radial Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
-                    "inversely proportional to their Eccentricity Centrality score."
+                    "inversely proportional to their Eccentricity Centrality score. "
                     "Nodes having higher EC are closer to the centre."
                     ));
     connect(layoutProminenceRadial_EC_Act, SIGNAL(triggered()),
@@ -1403,7 +1403,7 @@ void MainWindow::initActions(){
                 tr(
                     "Power Centrality (PC) Radial Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
-                    "inversely proportional to their Power Centrality score."
+                    "inversely proportional to their Power Centrality score. "
                     "Nodes having higher PC are closer to the centre."
                     ));
     connect(layoutProminenceRadial_PC_Act, SIGNAL(triggered()),
@@ -1422,7 +1422,7 @@ void MainWindow::initActions(){
                 tr(
                     "Information Centrality (IC) Radial Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
-                    "inversely proportional to their Information Centrality score."
+                    "inversely proportional to their Information Centrality score. "
                     "Nodes of higher IC are closer to the centre."
                     ));
     connect(layoutProminenceRadial_IC_Act, SIGNAL(triggered()),
@@ -1441,7 +1441,7 @@ void MainWindow::initActions(){
                 tr(
                     "Eigenvector Centrality (EVC) Radial Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
-                    "inversely proportional to their Eigenvector Centrality score."
+                    "inversely proportional to their Eigenvector Centrality score. "
                     "Nodes of higher EVC are closer to the centre."
                     ));
     connect(layoutProminenceRadial_EVC_Act, SIGNAL(triggered()),
@@ -1459,7 +1459,7 @@ void MainWindow::initActions(){
                 tr(
                     "Degree Prestige (DP) Radial Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
-                    "inversely proportional to their inDegree score."
+                    "inversely proportional to their inDegree score. "
                     "Nodes having higher DP are closer to the centre."
                     ));
     connect(layoutProminenceRadial_DP_Act, SIGNAL(triggered()),
@@ -1477,7 +1477,7 @@ void MainWindow::initActions(){
                 tr(
                     "PageRank Prestige (PRP) Radial Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
-                    "inversely proportional to their PageRank score."
+                    "inversely proportional to their PageRank score. "
                     "Nodes having higher PRP are closer to the centre."
                     ));
     connect(layoutProminenceRadial_PRP_Act, SIGNAL(triggered()),
@@ -1495,7 +1495,7 @@ void MainWindow::initActions(){
                 tr(
                     "Proximity Prestige (PP) Radial Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
-                    "inversely proportional to their PP index."
+                    "inversely proportional to their PP index. "
                     "Nodes having higher PP score are closer to the centre."
                     ));
     connect(layoutProminenceRadial_PP_Act, SIGNAL(triggered()),
@@ -1516,7 +1516,7 @@ void MainWindow::initActions(){
                  tr(
                      "Degree Centrality (DC) Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
-                     "proportional to their DC score."
+                     "proportional to their DC score. "
                      "Nodes having higher DC are closer to the top.\n\n"
                     )
                 );
@@ -1535,7 +1535,7 @@ void MainWindow::initActions(){
                  tr(
                      "Closeness Centrality (CC) Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
-                     "proportional to their Closeness Centrality score."
+                     "proportional to their Closeness Centrality score. "
                      "Nodes of higher CC are closer to the top.\n\n"
                      "This layout can be computed only for connected graphs. "
                     ));
@@ -1556,7 +1556,7 @@ void MainWindow::initActions(){
                  tr(
                      "Influence Range Closeness Centrality (IRCC) Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
-                     "proportional to their IRCC score."
+                     "proportional to their IRCC score. "
                      "Nodes having higher IRCC are closer to the top.\n\n"
                      "This layout can be computed for not connected graphs. "
                     ));
@@ -1574,7 +1574,7 @@ void MainWindow::initActions(){
                  tr(
                      "Betweenness Centrality (BC) Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
-                     "proportional to their Betweenness Centrality score."
+                     "proportional to their Betweenness Centrality score. "
                      "Nodes having higher BC are closer to the top."
                     ));
     connect(layoutProminenceLevel_BC_Act, SIGNAL(triggered()),
@@ -1591,7 +1591,7 @@ void MainWindow::initActions(){
                  tr(
                      "Stress Centrality (SC) Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
-                     "proportional to their Stress Centrality score."
+                     "proportional to their Stress Centrality score. "
                      "Nodes having higher SC are closer to the top."
                     ));
     connect(layoutProminenceLevel_SC_Act, SIGNAL(triggered()),
@@ -1608,7 +1608,7 @@ void MainWindow::initActions(){
                  tr(
                      "Eccentricity Centrality (EC) Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
-                     "proportional to their Eccentricity Centrality score."
+                     "proportional to their Eccentricity Centrality score. "
                      "Nodes having higher EC are closer to the top."
                     ));
     connect(layoutProminenceLevel_EC_Act, SIGNAL(triggered()),
@@ -1626,7 +1626,7 @@ void MainWindow::initActions(){
                  tr(
                      "Power Centrality (PC) Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
-                     "proportional to their Power Centrality score."
+                     "proportional to their Power Centrality score. "
                      "Nodes having higher PC are closer to the top."
                     ));
     connect(layoutProminenceLevel_PC_Act, SIGNAL(triggered()),
@@ -1645,7 +1645,7 @@ void MainWindow::initActions(){
                  tr(
                      "Information Centrality (IC) Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
-                     "proportional to their Information Centrality score."
+                     "proportional to their Information Centrality score. "
                      "Nodes having higher IC are closer to the top."
                     ));
     connect(layoutProminenceLevel_IC_Act, SIGNAL(triggered()),
@@ -1663,7 +1663,7 @@ void MainWindow::initActions(){
                  tr(
                      "Eigenvector Centrality (EVC) Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
-                     "proportional to their Eigenvector Centrality score."
+                     "proportional to their Eigenvector Centrality score. "
                      "Nodes having higher EVC are closer to the top."
                     ));
     connect(layoutProminenceLevel_EVC_Act, SIGNAL(triggered()),
@@ -1682,7 +1682,7 @@ void MainWindow::initActions(){
                 tr(
                     "Degree Prestige (DP) Levels Layout\n\n"
                     "Repositions all nodes on horizontal levels of height"
-                    "proportional to their Degree Prestige score."
+                    "proportional to their Degree Prestige score. "
                     "Nodes having higher DP are closer to the top."
                     ));
     connect(layoutProminenceLevel_DP_Act, SIGNAL(triggered()),
@@ -1700,7 +1700,7 @@ void MainWindow::initActions(){
                 tr(
                     "PageRank Prestige (PRP) Levels Layout\n\n"
                     "Repositions all nodes on horizontal levels of height"
-                    "proportional to their PageRank Prestige score."
+                    "proportional to their PageRank Prestige score. "
                     "Nodes having higher PRP are closer to the top."
                     ));
     connect(layoutProminenceLevel_PRP_Act, SIGNAL(triggered()),
@@ -1719,11 +1719,243 @@ void MainWindow::initActions(){
                 tr(
                     "Proximity Prestige (PP) Levels Layout\n\n"
                     "Repositions all nodes on horizontal levels of height"
-                    "proportional to their Proximity Prestige score."
+                    "proportional to their Proximity Prestige score. "
                     "Nodes having higher PP are closer to the top."
                     ));
     connect(layoutProminenceLevel_PP_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutLevelByProminenceIndex()));
+
+
+
+
+
+
+
+    layoutProminenceNodeSize_DC_Act = new QAction( tr("Degree Centrality"), this);
+    layoutProminenceNodeSize_DC_Act -> setShortcut(Qt::ALT+ Qt::Key_1);
+    layoutProminenceNodeSize_DC_Act
+            ->setStatusTip(
+                tr(
+                    "Resize all nodes to be "
+                     "proportional to their Degree Centrality."));
+    layoutProminenceNodeSize_DC_Act->
+             setWhatsThis(
+                 tr(
+                     "Degree Centrality (DC) Node Size Layout\n\n"
+                     "Changes the size of all nodes to be "
+                     "proportional to their DC score. "
+                     "Nodes having higher DC are bigger.\n\n"
+                    )
+                );
+    connect(layoutProminenceNodeSize_DC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutNodeSizeByProminenceIndex()) );
+
+    layoutProminenceNodeSize_CC_Act = new QAction( tr("Closeness Centrality"), this);
+    layoutProminenceNodeSize_CC_Act -> setShortcut(Qt::ALT+ Qt::Key_2);
+    layoutProminenceNodeSize_CC_Act
+            -> setStatusTip(
+                tr(
+                    "Resize all nodes to be  "
+                     "proportional to their Closeness Centrality."));
+    layoutProminenceNodeSize_CC_Act->
+             setWhatsThis(
+                 tr(
+                     "Closeness Centrality (CC) Node Size Layout\n\n"
+                     "Changes the size of all nodes to be "
+                     "proportional to their Closeness Centrality score. "
+                     "Nodes of higher CC are bigger.\n\n"
+                     "This layout can be computed only for connected graphs. "
+                    ));
+    connect(layoutProminenceNodeSize_CC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutNodeSizeByProminenceIndex()));
+
+
+    layoutProminenceNodeSize_IRCC_Act = new QAction(
+                tr("Influence Range Closeness Centrality"),	this);
+    layoutProminenceNodeSize_IRCC_Act -> setShortcut(Qt::ALT+ Qt::Key_3);
+    layoutProminenceNodeSize_IRCC_Act
+            ->setStatusTip(
+                tr(
+                    "Resize all nodes to be "
+                     "proportional to their Influence Range Closeness Centrality."));
+    layoutProminenceNodeSize_IRCC_Act->
+             setWhatsThis(
+                 tr(
+                     "Influence Range Closeness Centrality (IRCC) Node Size Layout\n\n"
+                     "Changes the size of all nodes to be "
+                     "proportional to their IRCC score. "
+                     "Nodes having higher IRCC are bigger.\n\n"
+                     "This layout can be computed for not connected graphs. "
+                    ));
+    connect(layoutProminenceNodeSize_IRCC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutNodeSizeByProminenceIndex()));
+
+    layoutProminenceNodeSize_BC_Act = new QAction( tr("Betweenness Centrality"), this);
+    layoutProminenceNodeSize_BC_Act -> setShortcut(Qt::ALT+ Qt::Key_4);
+    layoutProminenceNodeSize_BC_Act ->setStatusTip(
+                tr(
+                    "Resize all nodes to be  "
+                     "proportional to their Betweenness Centrality."));
+    layoutProminenceNodeSize_BC_Act->
+             setWhatsThis(
+                 tr(
+                     "Betweenness Centrality (BC) Node Size Layout\n\n"
+                     "Changes the size of all nodes to be "
+                     "proportional to their Betweenness Centrality score. "
+                     "Nodes having higher BC are bigger."
+                    ));
+    connect(layoutProminenceNodeSize_BC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutNodeSizeByProminenceIndex()));
+
+    layoutProminenceNodeSize_SC_Act = new QAction( tr("Stress Centrality"),	this);
+    layoutProminenceNodeSize_SC_Act -> setShortcut(Qt::ALT+ Qt::Key_5);
+    layoutProminenceNodeSize_SC_Act ->setStatusTip(
+                tr(
+                    "Resize all nodes to be  "
+                     "proportional to their Stress Centrality."));
+    layoutProminenceNodeSize_SC_Act->
+             setWhatsThis(
+                 tr(
+                     "Stress Centrality (SC) Node Size Layout\n\n"
+                     "Changes the size of all nodes to be "
+                     "proportional to their Stress Centrality score. "
+                     "Nodes having higher SC are bigger."
+                    ));
+    connect(layoutProminenceNodeSize_SC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutNodeSizeByProminenceIndex()));
+
+    layoutProminenceNodeSize_EC_Act = new QAction( tr("Eccentricity Centrality"),	this);
+    layoutProminenceNodeSize_EC_Act -> setShortcut(Qt::ALT+ Qt::Key_6);
+    layoutProminenceNodeSize_EC_Act ->setStatusTip(
+                tr(
+                    "Resize all nodes to be "
+                     "proportional to their Eccentricity Centrality."));
+    layoutProminenceNodeSize_EC_Act->
+             setWhatsThis(
+                 tr(
+                     "Eccentricity Centrality (EC) NodeSizes Layout\n\n"
+                     "Changes the size of all nodes to be "
+                     "proportional to their Eccentricity Centrality score. "
+                     "Nodes having higher EC are bigger."
+                    ));
+    connect(layoutProminenceNodeSize_EC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutNodeSizeByProminenceIndex()));
+
+
+    layoutProminenceNodeSize_PC_Act = new QAction( tr("Power Centrality"),	this);
+    layoutProminenceNodeSize_PC_Act -> setShortcut(Qt::ALT+ Qt::Key_7);
+    layoutProminenceNodeSize_PC_Act ->setStatusTip(
+                tr(
+                    "Resize all nodes to be "
+                     "proportional to their Power Centrality."));
+    layoutProminenceNodeSize_PC_Act->
+             setWhatsThis(
+                 tr(
+                     "Power Centrality (PC) Node Size Layout\n\n"
+                    "Changes the size of all nodes to be "
+                     "proportional to their Power Centrality score. "
+                     "Nodes having higher PC are bigger."
+                    ));
+    connect(layoutProminenceNodeSize_PC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutNodeSizeByProminenceIndex()));
+
+
+    layoutProminenceNodeSize_IC_Act = new QAction( tr("Information Centrality"),	this);
+    layoutProminenceNodeSize_IC_Act ->setEnabled(true);
+    layoutProminenceNodeSize_IC_Act -> setShortcut(Qt::ALT+ Qt::Key_8);
+    layoutProminenceNodeSize_IC_Act ->setStatusTip(
+                tr(
+                    "Resize all nodes to be "
+                     "proportional to their Information Centrality."));
+    layoutProminenceNodeSize_IC_Act->
+             setWhatsThis(
+                 tr(
+                     "Information Centrality (IC) Node Size Layout\n\n"
+                     "Changes the size of all nodes to be "
+                     "proportional to their Information Centrality score. "
+                     "Nodes having higher IC are bigger."
+                    ));
+    connect(layoutProminenceNodeSize_IC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutNodeSizeByProminenceIndex()));
+
+    layoutProminenceNodeSize_EVC_Act = new QAction( tr("Eigenvector Centrality"),	this);
+    layoutProminenceNodeSize_EVC_Act ->setEnabled(true);
+    layoutProminenceNodeSize_EVC_Act -> setShortcut(Qt::ALT+ Qt::Key_9);
+    layoutProminenceNodeSize_EVC_Act ->setStatusTip(
+                tr(
+                    "Resize all nodes to be "
+                     "proportional to their Eigenvector Centrality."));
+    layoutProminenceNodeSize_EVC_Act->
+             setWhatsThis(
+                 tr(
+                     "Eigenvector Centrality (EVC) Node Size Layout\n\n"
+                     "Changes the size of all nodes to be "
+                     "proportional to their Eigenvector Centrality score. "
+                     "Nodes having higher EVC are bigger."
+                    ));
+    connect(layoutProminenceNodeSize_EVC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutNodeSizeByProminenceIndex()));
+
+
+
+    layoutProminenceNodeSize_DP_Act = new QAction( tr("Degree Prestige"),	this);
+    layoutProminenceNodeSize_DP_Act -> setShortcut(Qt::ALT + Qt::Key_I);
+    layoutProminenceNodeSize_DP_Act ->setStatusTip(
+                tr(
+                   "Resize all nodes to be "
+                    "proportional to their Degree Prestige."));
+    layoutProminenceNodeSize_DP_Act->
+            setWhatsThis(
+                tr(
+                    "Degree Prestige (DP) Node Size Layout\n\n"
+                    "Changes the size of all nodes to be "
+                    "proportional to their Degree Prestige score. "
+                    "Nodes having higher DP are bigger."
+                    ));
+    connect(layoutProminenceNodeSize_DP_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutNodeSizeByProminenceIndex()));
+
+    layoutProminenceNodeSize_PRP_Act = new QAction( tr("PageRank Prestige"),	this);
+    layoutProminenceNodeSize_PRP_Act -> setEnabled(true);
+    layoutProminenceNodeSize_PRP_Act -> setShortcut(Qt::ALT+ Qt::Key_K);
+    layoutProminenceNodeSize_PRP_Act -> setStatusTip(
+                tr(
+                   "Resize all nodes to be "
+                    "proportional to their PageRank Prestige."));
+    layoutProminenceNodeSize_PRP_Act->
+            setWhatsThis(
+                tr(
+                    "PageRank Prestige (PRP) Node Size Layout\n\n"
+                    "Changes the size of all nodes to be "
+                    "proportional to their PageRank Prestige score. "
+                    "Nodes having higher PRP are bigger."
+                    ));
+    connect(layoutProminenceNodeSize_PRP_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutNodeSizeByProminenceIndex()));
+
+
+    layoutProminenceNodeSize_PP_Act = new QAction( tr("Proximity Prestige"),	this);
+    layoutProminenceNodeSize_PP_Act -> setEnabled(true);
+    layoutProminenceNodeSize_PP_Act -> setShortcut(Qt::ALT + Qt::Key_Y);
+    layoutProminenceNodeSize_PP_Act -> setStatusTip(
+                tr(
+                   "Resize all nodes to be "
+                    "proportional to their Proximity Prestige."));
+    layoutProminenceNodeSize_PP_Act->
+            setWhatsThis(
+                tr(
+                    "Proximity Prestige (PP) NodeSize Layout\n\n"
+                    "Repositions all nodes on horizontal NodeSizes of height"
+                    "proportional to their Proximity Prestige score. "
+                    "Nodes having higher PP are closer to the top."
+                    ));
+    connect(layoutProminenceNodeSize_PP_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutNodeSizeByProminenceIndex()));
+
+
+
+
+
 
 
     layoutFDP_Eades_Act= new QAction(tr("Spring Embedder (Eades)"), this);
@@ -1774,38 +2006,6 @@ void MainWindow::initActions(){
                    "The algorithm continues until the system retains its equilibrium state where "
                    "all forces cancel each other."));
     connect(layoutFDP_KamadaKawai_Act, SIGNAL(triggered()), this, SLOT(slotLayoutKamadaKawai()));
-
-
-
-    nodeSizesByOutDegreeAct= new QAction(QIcon(":/images/nodeout.png"),
-                                         tr("Node sizes by OutDegree"), this);
-    nodeSizesByOutDegreeAct-> setShortcut(Qt::ALT + Qt::Key_3);
-    nodeSizesByOutDegreeAct->
-            setStatusTip(tr("Resizes all nodes according to their outDegree."));
-    nodeSizesByOutDegreeAct
-            ->setWhatsThis(tr("Node sizes by OutDegree) \n\n"
-                              "Adjusts the size of each node according to its "
-                              "OutDegree. The more out-linked a node is, "
-                              "the bigger will appear..."));
-    nodeSizesByOutDegreeAct->setCheckable(true);
-    nodeSizesByOutDegreeAct->setChecked(false);
-    connect(nodeSizesByOutDegreeAct, SIGNAL(triggered(bool)),
-            this, SLOT(slotLayoutNodeSizesByOutDegree(bool)));
-
-    nodeSizesByInDegreeAct= new QAction(
-                QIcon(":/images/nodein.png"),tr("Node sizes by InDegree"), this);
-    nodeSizesByInDegreeAct-> setShortcut(Qt::ALT + Qt::Key_4);
-    nodeSizesByInDegreeAct->setStatusTip(
-                tr("Resizes all nodes according to their InDegree."));
-    nodeSizesByInDegreeAct->
-            setWhatsThis(tr("Node sizes by InDegree) \n\n"
-                            "This method adjusts the size of each node according "
-                            "to its InDegree. The more in-linked a node is, "
-                            "the bigger will appear..."));
-    nodeSizesByInDegreeAct->setCheckable(true);
-    nodeSizesByInDegreeAct->setChecked(false);
-    connect(nodeSizesByInDegreeAct, SIGNAL(triggered(bool)),
-            this, SLOT(slotLayoutNodeSizesByInDegree(bool)));
 
 
 
@@ -2996,17 +3196,28 @@ void MainWindow::initMenuBar() {
 
     layoutMenu->addSeparator();
 
-    layoutProminenceNodalMenu = new QMenu (tr("Node Size by prominence index..."));
-    layoutProminenceNodalMenu -> setIcon(QIcon(":/images/node.png"));
-    layoutMenu -> addMenu (layoutProminenceNodalMenu);
-    //layoutProminenceNodalMenu -> addAction (layoutProminenceNodal_DC_Act);
+    layoutProminenceNodeSizeMenu = new QMenu (tr("Node Size by prominence index..."));
+    layoutProminenceNodeSizeMenu -> setIcon(QIcon(":/images/node.png"));
+    layoutMenu -> addMenu (layoutProminenceNodeSizeMenu);
+    layoutProminenceNodeSizeMenu -> addAction (layoutProminenceNodeSize_DC_Act);
+    layoutProminenceNodeSizeMenu -> addAction (layoutProminenceNodeSize_CC_Act);
+    layoutProminenceNodeSizeMenu -> addAction (layoutProminenceNodeSize_IRCC_Act);
+    layoutProminenceNodeSizeMenu -> addAction (layoutProminenceNodeSize_BC_Act);
+    layoutProminenceNodeSizeMenu -> addAction (layoutProminenceNodeSize_SC_Act);
+    layoutProminenceNodeSizeMenu -> addAction (layoutProminenceNodeSize_EC_Act);
+    layoutProminenceNodeSizeMenu -> addAction (layoutProminenceNodeSize_PC_Act);
+    layoutProminenceNodeSizeMenu -> addAction (layoutProminenceNodeSize_IC_Act);
+    layoutProminenceNodeSizeMenu -> addAction (layoutProminenceNodeSize_EVC_Act);
+    layoutProminenceNodeSizeMenu -> addAction (layoutProminenceNodeSize_DP_Act);
+    layoutProminenceNodeSizeMenu -> addAction (layoutProminenceNodeSize_PRP_Act);
+    layoutProminenceNodeSizeMenu -> addAction (layoutProminenceNodeSize_PP_Act);
 
     layoutMenu->addSeparator();
 
-    layoutProminenceColorMenu = new QMenu (tr("Node Color by prominence index..."));
-    layoutProminenceColorMenu -> setIcon(QIcon(":/images/nodecolor.png"));
-    layoutMenu -> addMenu (layoutProminenceColorMenu);
-    //layoutProminenceNodalMenu -> addAction (layoutProminenceNodal_DC_Act);
+    layoutProminenceNodeColorMenu = new QMenu (tr("Node Color by prominence index..."));
+    layoutProminenceNodeColorMenu -> setIcon(QIcon(":/images/nodecolor.png"));
+    layoutMenu -> addMenu (layoutProminenceNodeColorMenu);
+    //layoutProminenceNodeSizeMenu -> addAction (layoutProminenceNodal_DC_Act);
 
     layoutMenu->addSeparator();
 
@@ -3017,9 +3228,6 @@ void MainWindow::initMenuBar() {
     layoutForceDirectedMenu -> addAction (layoutFDP_FR_Act);
     layoutForceDirectedMenu -> addAction (layoutFDP_KamadaKawai_Act);
 
-    layoutMenu->addSeparator();
-    layoutMenu->addAction(nodeSizesByOutDegreeAct);
-    layoutMenu->addAction(nodeSizesByInDegreeAct);
     layoutMenu->addSeparator();
     layoutMenu -> addAction (layoutGuidesAct);
 
@@ -3688,70 +3896,12 @@ void MainWindow::initToolBox(){
     layoutDynamicBox->setLayout (layoutForceDirectedGrid );
 
 
-    //create widgets for additional visualization options box
-    toolBoxNodeSizesByOutDegreeBx = new QCheckBox(
-                tr("Node sizes by OutDegree") );
-    toolBoxNodeSizesByOutDegreeBx ->setEnabled(true);
-    toolBoxNodeSizesByOutDegreeBx
-            ->setStatusTip(
-                tr("Enable to have all nodes resized so that their "
-                   "size reflect their out-degree."));
-
-    toolBoxNodeSizesByOutDegreeBx
-            ->setToolTip(
-                tr("If you enable this, all nodes will be resized "
-                   "so that their size reflect their out-degree. \n"
-                   "Nodes with more outbound directed edges will be bigger..."));
-
-    toolBoxNodeSizesByInDegreeBx = new QCheckBox(
-                tr("Node sizes by InDegree") );
-    toolBoxNodeSizesByInDegreeBx ->setEnabled(true);
-    toolBoxNodeSizesByInDegreeBx
-            ->setStatusTip(
-                tr("Enable to have all nodes resized so that their "
-                   "size reflect their in-degree." ) );
-    toolBoxNodeSizesByInDegreeBx
-            ->setToolTip(
-                tr("If you enable this, all nodes will be resized "
-                   "so that their size reflect their in-degree. \n"
-                   "Nodes with more inbound directed edges them will be bigger..."));
-
-    toolBoxLayoutGuidesBx = new QCheckBox(
-                tr("Layout guidelines") );
-    toolBoxLayoutGuidesBx->setToolTip(
-                tr("Toggle layout guidelines on or off."));
-
-    toolBoxLayoutGuidesBx ->setStatusTip(tr("Toggle layout guidelines on or off."));
-    toolBoxLayoutGuidesBx->setWhatsThis(tr("Layout Guidelines\n\n"
-                                     "Layout Guidelines are circular or horizontal lines \n"
-                                     "usually created when embedding prominence-based \n"
-                                     "visualization models on the network.\n"
-                                     "Disable this checkbox to hide guidelines"));
-    toolBoxLayoutGuidesBx ->setEnabled(true);
-    toolBoxLayoutGuidesBx ->setChecked(true);
-
-
-
-
-    QGridLayout *layoutOptionsGrid = new QGridLayout();
-    layoutOptionsGrid -> addWidget(toolBoxNodeSizesByOutDegreeBx, 0,0);
-    layoutOptionsGrid -> addWidget(toolBoxNodeSizesByInDegreeBx, 1,0);
-    layoutOptionsGrid -> addWidget(toolBoxLayoutGuidesBx, 2,0);
-    layoutOptionsGrid->setSpacing(5);
-    layoutOptionsGrid->setContentsMargins(5, 5, 5, 5);
-
-    //Box for additional visualization options
-    QGroupBox *visualizeOptionsBox= new QGroupBox(tr("Options"));
-    visualizeOptionsBox->setMinimumHeight(110);
-    visualizeOptionsBox->setMaximumWidth(280);
-    visualizeOptionsBox->setLayout (layoutOptionsGrid );
-
 
     //Parent box with vertical layout for all layout/visualization boxes
     QVBoxLayout *visualizationBoxLayout = new QVBoxLayout;
     visualizationBoxLayout -> addWidget(layoutByIndexBox);
     visualizationBoxLayout -> addWidget(layoutDynamicBox);
-    //visualizationBoxLayout -> addWidget(visualizeOptionsBox);
+
 
     QGroupBox *visualizationBox= new QGroupBox(tr("Visualize"));
     visualizationBox->setMaximumWidth(280);
@@ -4480,10 +4630,6 @@ void MainWindow::initSignalSlots() {
     connect( &activeGraph, SIGNAL( signalDatasetDescription (QString) ),
              this, SLOT( slotHelpMessageToUserInfo (QString) ) ) ;
 
-    connect( &activeGraph, &Graph::signalNodeSizesByInDegree,
-             this, &MainWindow::slotLayoutNodeSizesByInDegree );
-
-
     connect( editRelationChangeCombo , SIGNAL( activated(int) ) ,
              &activeGraph, SLOT( relationSet(int) ) );
 
@@ -4571,20 +4717,12 @@ void MainWindow::initSignalSlots() {
             this, SLOT(toolBoxAnalysisProminenceSelectChanged(int) ) );
 
 
-    connect(toolBoxNodeSizesByOutDegreeBx , SIGNAL(clicked(bool)),
-            this, SLOT(slotLayoutNodeSizesByOutDegree(bool)));
-    connect(toolBoxNodeSizesByInDegreeBx , SIGNAL(clicked(bool)),
-            this, SLOT(slotLayoutNodeSizesByInDegree(bool)));
-
-
     connect(toolBoxLayoutByIndexApplyButton, SIGNAL (clicked() ),
             this, SLOT(toolBoxLayoutByIndexApplyBtnPressed() ) );
 
     connect(toolBoxLayoutForceDirectedApplyButton, SIGNAL (clicked() ),
             this, SLOT(toolBoxLayoutForceDirectedApplyBtnPressed() ) );
 
-    connect( toolBoxLayoutGuidesBx, SIGNAL(clicked(bool)),
-             this, SLOT(slotLayoutGuides(bool)));
 
 }
 
@@ -4639,8 +4777,6 @@ void MainWindow::initApp(){
     toolBoxLayoutByIndexSelect->setCurrentIndex(0);
     toolBoxLayoutByIndexTypeSelect ->setCurrentIndex(0);
     toolBoxLayoutForceDirectedSelect->setCurrentIndex(0);
-    toolBoxNodeSizesByOutDegreeBx->setChecked(false);
-    toolBoxNodeSizesByInDegreeBx->setChecked(false);
 
     optionsEdgeWeightNumbersAct->setChecked(
                 (appSettings["initEdgeWeightNumbersVisibility"] == "true") ? true:false
@@ -5214,15 +5350,11 @@ void MainWindow::toolBoxLayoutByIndexApplyBtnPressed(){
             slotLayoutLevelByProminenceIndex(selectedIndexText);
         }
         else if (selectedLayoutType==2) { //  node size
-            slotLayoutNodeSizesByProminenceIndex(selectedIndexText);
+            slotLayoutNodeSizeByProminenceIndex(selectedIndexText);
             // re-init other options for node sizes...
-            nodeSizesByOutDegreeAct->setChecked(false);
-            toolBoxNodeSizesByOutDegreeBx->setChecked(false);
-            nodeSizesByInDegreeAct->setChecked(false);
-            toolBoxNodeSizesByInDegreeBx->setChecked(false);
         }
         else if (selectedLayoutType==3){  // node color
-            //slotLayoutNodeColorsByProminenceIndex(selectedIndexText);
+            //slotLayoutNodeColorByProminenceIndex(selectedIndexText);
         }
         break;
     };
@@ -8223,10 +8355,6 @@ void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
     }
 
     appSettings["initNodeSize"]= QString::number(newSize);
-    nodeSizesByOutDegreeAct->setChecked(false);
-    toolBoxNodeSizesByOutDegreeBx->setChecked(false);
-    nodeSizesByInDegreeAct->setChecked(false);
-    toolBoxNodeSizesByInDegreeBx->setChecked(false);
 
     activeGraph.vertexSizeAllSet(newSize);
 
@@ -9548,98 +9676,6 @@ void MainWindow::slotLayoutKamadaKawai(){
 
 
 
-/**
- * @brief
- * Resizes all nodes according to their outDegree
- * Called when user selects the relevant menu entry or the option in the toolbox
- * @param checked
- */
-void MainWindow::slotLayoutNodeSizesByOutDegree(bool checked){
-    if ( !activeNodes()   )  {
-        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
-        return;
-    }
-
-    qDebug("MW: slotLayoutNodeSizesByOutDegree()");
-
-    if (checked != true) {
-        qDebug("MW: slotLayoutNodeSizesByOutDegree() resetting size");
-        nodeSizesByOutDegreeAct->setChecked(false);
-        toolBoxNodeSizesByOutDegreeBx->setChecked(false);
-
-        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-
-        activeGraph.layoutVerticesSizeByProminenceIndex(
-                    0, false, false, false);
-
-        QApplication::restoreOverrideCursor();
-        return;
-    }
-    qDebug("MW: slotLayoutNodeSizesByOutDegree() setting size");
-    nodeSizesByOutDegreeAct->setChecked(true);
-    toolBoxNodeSizesByOutDegreeBx->setChecked(true);
-    nodeSizesByInDegreeAct->setChecked(false);
-    toolBoxNodeSizesByInDegreeBx->setChecked(false);
-
-    askAboutWeights();
-
-    statusMessage( tr("Embedding node size model on the network.... ")  );
-    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-
-    activeGraph.layoutVerticesSizeByProminenceIndex(
-                1,considerWeights,inverseWeights,
-                editFilterNodesIsolatesAct->isChecked());
-
-    QApplication::restoreOverrideCursor( );
-}
-
-
-
-/**
- * @brief
- * Resizes all nodes according to their inDegree
- * Called when user selects the relevant menu entry or the option in the toolbox
- * @param checked
- */
-void MainWindow::slotLayoutNodeSizesByInDegree(bool checked){
-    if ( !activeNodes()   )  {
-        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
-        return;
-    }
-
-    qDebug("MW: slotLayoutNodeSizesByInDegree()");
-
-    if (checked != true) {
-        qDebug("MW: slotLayoutNodeSizesByInDegree() resetting size");
-        nodeSizesByInDegreeAct->setChecked(false);
-        toolBoxNodeSizesByInDegreeBx->setChecked(false);
-
-        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-
-        activeGraph.layoutVerticesSizeByProminenceIndex(
-                    0, false,false, false);
-
-        QApplication::restoreOverrideCursor();
-        return;
-    }
-    qDebug("MW: slotLayoutNodeSizesByInDegree() setting size");
-    nodeSizesByOutDegreeAct->setChecked(false);
-    toolBoxNodeSizesByOutDegreeBx->setChecked(false);
-    nodeSizesByInDegreeAct->setChecked(true);
-    toolBoxNodeSizesByInDegreeBx->setChecked(true);
-
-    askAboutWeights();
-
-    statusMessage( tr("Embedding node size model on the network.... ")  );
-    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-
-    activeGraph.layoutVerticesSizeByProminenceIndex(
-                9, considerWeights, inverseWeights,
-                editFilterNodesIsolatesAct->isChecked());
-
-    QApplication::restoreOverrideCursor( );
-
-}
 
 
 /**
@@ -10036,31 +10072,31 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
  * @brief
  * Checks sender text() to find out who QMenu item was pressed
  * and what prominence index was chosen
- * calls slotLayoutNodeSizesByProminenceIndex(QString)
+ * calls slotLayoutNodeSizeByProminenceIndex(QString)
   */
-void MainWindow::slotLayoutNodeSizesByProminenceIndex(){
+void MainWindow::slotLayoutNodeSizeByProminenceIndex(){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     QAction *menuitem=(QAction *) sender();
     QString menuItemText = menuitem->text();
-    qDebug() << "MainWindow::slotLayoutNodeSizesByProminenceIndex() - " <<
+    qDebug() << "MainWindow::slotLayoutNodeSizeByProminenceIndex() - " <<
                 "SENDER MENU IS " << menuItemText;
 
-    slotLayoutNodeSizesByProminenceIndex(menuItemText);
+    slotLayoutNodeSizeByProminenceIndex(menuItemText);
 
 }
 
 
 /**
  * @brief
- * Calls Graph::layoutVerticesSizeByProminenceIndex to apply a layout model
+ * Calls Graph::layoutVertexSizeByProminenceIndex to apply a layout model
  * where the size of each node follows its prominence score
   * Called when selectbox changes in the toolbox
  */
-void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
-        qDebug() << "MainWindow::slotLayoutNodeSizesByProminenceIndex() ";
+void MainWindow::slotLayoutNodeSizeByProminenceIndex(QString choice=""){
+        qDebug() << "MainWindow::slotLayoutNodeSizeByProminenceIndex() ";
     if ( !activeNodes() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10095,12 +10131,12 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
     else if (prominenceIndexName.contains("Proximity Prestige"))
         userChoice=12;
 
-    qDebug() << "MainWindow::slotLayoutNodeSizesByProminenceIndex() "
+    qDebug() << "MainWindow::slotLayoutNodeSizeByProminenceIndex() "
              << "prominenceIndexName " << prominenceIndexName
                 << " userChoice " << userChoice;
 
     toolBoxLayoutByIndexSelect->setCurrentIndex(userChoice+1);
-    toolBoxLayoutByIndexTypeSelect->setCurrentIndex(0);
+    toolBoxLayoutByIndexTypeSelect->setCurrentIndex(2);
 
     //check if CC was selected and the graph is disconnected.
     bool dropIsolates=false;
@@ -10205,11 +10241,11 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.layoutVerticesSizeByProminenceIndex(
+    activeGraph.layoutVertexSizeByProminenceIndex(
                 userChoice, considerWeights,
                 inverseWeights, editFilterNodesIsolatesAct->isChecked() || dropIsolates);
     destroyProgressBar();
-    statusMessage( tr("Bigger nodes have greater prominence index.") );
+    statusMessage( tr("Bigger nodes have greater %1 score.").arg(prominenceIndexName ) );
 }
 
 
@@ -10223,19 +10259,19 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
  * @brief
  * Checks sender text() to find out who QMenu item was pressed
  * and what prominence index was chosen
- * calls slotLayoutNodeColorsByProminenceIndex(QString)
+ * calls slotLayoutNodeColorByProminenceIndex(QString)
   */
-void MainWindow::slotLayoutNodeColorsByProminenceIndex(){
+void MainWindow::slotLayoutNodeColorByProminenceIndex(){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     QAction *menuitem=(QAction *) sender();
     QString menuItemText = menuitem->text();
-    qDebug() << "MainWindow::slotLayoutNodeColorsByProminenceIndex() - " <<
+    qDebug() << "MainWindow::slotLayoutNodeColorByProminenceIndex() - " <<
                 "SENDER MENU IS " << menuItemText;
 
-    slotLayoutNodeColorsByProminenceIndex(menuItemText);
+    slotLayoutNodeColorByProminenceIndex(menuItemText);
 
 }
 
@@ -10248,8 +10284,8 @@ void MainWindow::slotLayoutNodeColorsByProminenceIndex(){
  * BLUE=rgb(0,0,255) least prominent
  * Called when selectbox changes in the toolbox
  */
-void MainWindow::slotLayoutNodeColorsByProminenceIndex(QString choice=""){
-        qDebug() << "MainWindow::slotLayoutNodeColorsByProminenceIndex() ";
+void MainWindow::slotLayoutNodeColorByProminenceIndex(QString choice=""){
+        qDebug() << "MainWindow::slotLayoutNodeColorByProminenceIndex() ";
     if ( !activeNodes() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10284,7 +10320,7 @@ void MainWindow::slotLayoutNodeColorsByProminenceIndex(QString choice=""){
     else if (prominenceIndexName.contains("Proximity Prestige"))
         userChoice=12;
 
-    qDebug() << "MainWindow::slotLayoutNodeSizesByProminenceIndex() "
+    qDebug() << "MainWindow::slotLayoutNodeSizeByProminenceIndex() "
              << "prominenceIndexName " << prominenceIndexName
                 << " userChoice " << userChoice;
 
@@ -10394,7 +10430,7 @@ void MainWindow::slotLayoutNodeColorsByProminenceIndex(QString choice=""){
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.layoutVerticesSizeByProminenceIndex(
+    activeGraph.layoutVertexSizeByProminenceIndex(
                 userChoice, considerWeights,
                 inverseWeights, editFilterNodesIsolatesAct->isChecked() || dropIsolates);
     destroyProgressBar();
@@ -10420,13 +10456,11 @@ void MainWindow::slotLayoutGuides(const bool &toggle){
     }
 
     if (toggle){
-        toolBoxLayoutGuidesBx->setCheckState(Qt::Checked);
         layoutGuidesAct->setChecked(true);
         qDebug()<< "MW:slotLayoutGuides() - will be displayed";
         statusMessage( tr("Layout Guides will be displayed") );
     }
     else {
-        toolBoxLayoutGuidesBx->setCheckState(Qt::Unchecked);
         layoutGuidesAct->setChecked(false);
         qDebug()<< "MW:slotLayoutGuides() - will NOT be displayed";
         graphicsWidget->clearGuides();

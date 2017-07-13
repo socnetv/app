@@ -2690,7 +2690,7 @@ void Graph::webCrawlTerminateThreads (QString reason){
         qDebug() << "Graph::webCrawlTerminateThreads() - deleting wc_spider pointer";
         delete wc_spider;
         wc_spider= 0;  // see why here: https://goo.gl/tQxpGA
-        emit signalNodeSizesByInDegree(true);
+        layoutVertexSizeByIndegree();
      }
 
 }
@@ -3635,7 +3635,7 @@ int Graph::graphGeodesics()  {
  * MW::slotConnectedness()
  * MW::slotAnalyzeCentralityCloseness()
  * MW::slotLayoutRadialByProminenceIndex(QString )
- * MW::slotLayoutNodeSizesByProminenceIndex(QString )
+ * MW::slotLayoutNodeSizeByProminenceIndex(QString )
  * MW::slotLayoutLevelByProminenceIndex(QString )
  *
  */
@@ -8863,7 +8863,8 @@ void Graph::randomNetScaleFreeCreate (const int &n,
     qDebug() << "Graph::randomNetScaleFreeCreate() - finished. Calling "
                 "graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES)";
     graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
-    emit signalNodeSizesByInDegree(true); //FIXME
+
+    layoutVertexSizeByIndegree();
 
 }
 
@@ -8930,7 +8931,9 @@ void Graph::randomNetSmallWorldCreate (const int &vert, const int &degree,
     }
 
     relationCurrentRename(tr("small-world"), true);
-    emit signalNodeSizesByInDegree(true);
+
+    layoutVertexSizeByIndegree();
+
     graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
 }
 
@@ -18142,15 +18145,36 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
 
 
 /**
- * @brief Graph::layoutVerticesSizeByProminenceIndex
- * changes the node size to be proportinal to given prominence index
+ * @brief Graph::layoutVertexSizeByOutdegree
+ * Changes the size of all nodes to be proportional to their outDegree (Degree Centrality)
+ * Calls layoutVertexSizeByProminenceIndex
+ */
+void Graph::layoutVertexSizeByOutdegree() {
+
+    layoutVertexSizeByProminenceIndex(1);
+}
+
+
+/**
+ * @brief Graph::layoutVertexSizeByIndegree
+ * Changes the size of all nodes to be proportional to their InDegree (Degree Prestige)
+ * Calls layoutVertexSizeByProminenceIndex
+ */
+void Graph::layoutVertexSizeByIndegree() {
+
+    layoutVertexSizeByProminenceIndex(10);
+}
+
+/**
+ * @brief Graph::layoutVertexSizeByProminenceIndex
+ * Changes the size of all all node to be proportional to given prominence index score
  * @param prominenceIndex
  */
-void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
+void Graph::layoutVertexSizeByProminenceIndex (int prominenceIndex,
                                                  const bool considerWeights,
                                                  const bool inverseWeights,
                                                  const bool dropIsolates){
-    qDebug() << "Graph::layoutVerticesSizeByProminenceIndex - "
+    qDebug() << "Graph::layoutVertexSizeByProminenceIndex - "
                 << "prominenceIndex index = " << prominenceIndex;
     double std=0;
     float C=0, maxC=0;

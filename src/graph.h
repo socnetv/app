@@ -279,8 +279,7 @@ signals:
 
     void statusMessage (const QString &message);
     void signalDatasetDescription(QString);
-    void signalNodeSizesByOutDegree(bool);
-    void signalNodeSizesByInDegree(bool);
+
     void signalNodeClickedInfo(const int &number=0,
                                     const QPointF &p=QPointF(),
                                     const QString &label=QString::null,
@@ -806,14 +805,16 @@ public:
                                          const bool dropIsolates);
 
     void layoutLevelByProminenceIndex(double maxWidth, double maxHeight, int type,
-                                      const bool considerWeights,
-                                      const bool inverseWeights,
-                                      const bool dropIsolates);
+                                      const bool considerWeights=false,
+                                      const bool inverseWeights=false,
+                                      const bool dropIsolates=false);
 
-    void layoutVerticesSizeByProminenceIndex(int index,
-                                             const bool considerWeights,
-                                             const bool inverseWeights,
-                                             const bool dropIsolates);
+    void layoutVertexSizeByIndegree();
+    void layoutVertexSizeByOutdegree();
+    void layoutVertexSizeByProminenceIndex(int index,
+                                             const bool considerWeights=false,
+                                             const bool inverseWeights=false,
+                                             const bool dropIsolates=false);
 
     void layoutForceDirectedSpringEmbedder(const int maxIterations);
 

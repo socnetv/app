@@ -296,25 +296,27 @@ public slots:
     // LAYOUT MENU
     void slotLayoutRandom();
     void slotLayoutRadialRandom();
+
     void slotLayoutRadialByProminenceIndex();
     void slotLayoutRadialByProminenceIndex(QString);
-    void slotLayoutNodeSizesByProminenceIndex();
-    void slotLayoutNodeSizesByProminenceIndex(QString);
-    void slotLayoutNodeColorsByProminenceIndex();
-    void slotLayoutNodeColorsByProminenceIndex(QString);
+
     void slotLayoutLevelByProminenceIndex();
     void slotLayoutLevelByProminenceIndex(QString);
-    void slotLayoutGuides(const bool &toggle);
+
+    void slotLayoutNodeSizeByProminenceIndex();
+    void slotLayoutNodeSizeByProminenceIndex(QString);
+
+    void slotLayoutNodeColorByProminenceIndex();
+    void slotLayoutNodeColorByProminenceIndex(QString);
 
     void slotLayoutSpringEmbedder();
     void slotLayoutFruchterman();
     void slotLayoutKamadaKawai();
 
-    void slotLayoutNodeSizesByOutDegree(bool);
-    void slotLayoutNodeSizesByInDegree(bool);
-
     void slotLayoutColorationStrongStructural();
     void slotLayoutColorationRegular();
+
+    void slotLayoutGuides(const bool &toggle);
 
     //ANALYSIS MENU
     void askAboutWeights();
@@ -503,9 +505,8 @@ private:
     QMenu *matrixMenu;
     QMenu *networkMenu, *randomNetworkMenu, *filterMenu, *recentFilesSubMenu;
     QMenu *randomLayoutMenu, *layoutProminenceRadialMenu, *layoutProminenceLevelMenu;
-    QMenu *layoutForceDirectedMenu, *layoutProminenceNodalMenu, *layoutProminenceColorMenu;
+    QMenu *layoutForceDirectedMenu, *layoutProminenceNodeSizeMenu, *layoutProminenceNodeColorMenu;
     QMenu *colorationMenu;
-    QCheckBox  *toolBoxNodeSizesByOutDegreeBx,*toolBoxNodeSizesByInDegreeBx, *toolBoxLayoutGuidesBx;
     QComboBox *toolBoxEditNodeSubgraphSelect, *toolBoxEditEdgeModeSelect,
     *toolBoxEditEdgeSymmetrizeSelect, *toolBoxAnalysisCohesionSelect,
     *toolBoxAnalysisStrEquivalenceSelect,
@@ -587,10 +588,22 @@ private:
     *layoutProminenceLevel_PC_Act, *layoutProminenceLevel_BC_Act, *layoutProminenceLevel_IC_Act,
     *layoutProminenceLevel_EVC_Act,
     *layoutProminenceLevel_IRCC_Act,*layoutProminenceLevel_PRP_Act, *layoutProminenceLevel_PP_Act;
+    QAction *layoutProminenceNodeSize_DC_Act, *layoutProminenceNodeSize_DP_Act,
+    *layoutProminenceNodeSize_CC_Act, *layoutProminenceNodeSize_SC_Act, *layoutProminenceNodeSize_EC_Act,
+    *layoutProminenceNodeSize_PC_Act, *layoutProminenceNodeSize_BC_Act, *layoutProminenceNodeSize_IC_Act,
+    *layoutProminenceNodeSize_EVC_Act,
+    *layoutProminenceNodeSize_IRCC_Act,*layoutProminenceNodeSize_PRP_Act, *layoutProminenceNodeSize_PP_Act;
+    QAction *layoutProminenceNodeColor_DC_Act, *layoutProminenceNodeColor_DP_Act,
+    *layoutProminenceNodeColor_CC_Act, *layoutProminenceNodeColor_SC_Act, *layoutProminenceNodeColor_EC_Act,
+    *layoutProminenceNodeColor_PC_Act, *layoutProminenceNodeColor_BC_Act, *layoutProminenceNodeColor_IC_Act,
+    *layoutProminenceNodeColor_EVC_Act,
+    *layoutProminenceNodeColor_IRCC_Act,*layoutProminenceNodeColor_PRP_Act, *layoutProminenceNodeColor_PP_Act;
+
+
     QAction *strongColorationAct, *regularColorationAct;
     QAction *layoutFDP_Eades_Act, *layoutFDP_FR_Act;
     QAction *layoutFDP_KamadaKawai_Act;
-    QAction *nodeSizesByOutDegreeAct,  *nodeSizesByInDegreeAct;
+
     QAction *editRelationNextAct, *editRelationPreviousAct, *editRelationAddAct;
     QAction *editRelationRenameAct;
     enum { MaxRecentFiles = 5 };
