@@ -499,7 +499,8 @@ private:
     QMenu *cohesionMenu, *strEquivalenceMenu, *communitiesMenu, *connectivityMenu;
     QMenu *matrixMenu;
     QMenu *networkMenu, *randomNetworkMenu, *filterMenu, *recentFilesSubMenu;
-    QMenu *randomLayoutMenu, *layoutProminenceRadialMenu, *layoutProminenceLevelMenu, *layoutForceDirectedMenu;
+    QMenu *randomLayoutMenu, *layoutProminenceRadialMenu, *layoutProminenceLevelMenu;
+    QMenu *layoutForceDirectedMenu, *layoutProminenceNodalMenu, *layoutProminenceColorMenu;
     QMenu *colorationMenu;
     QCheckBox  *toolBoxNodeSizesByOutDegreeBx,*toolBoxNodeSizesByInDegreeBx, *toolBoxLayoutGuidesBx;
     QComboBox *toolBoxEditNodeSubgraphSelect, *toolBoxEditEdgeModeSelect,
