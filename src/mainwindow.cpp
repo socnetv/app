@@ -5354,7 +5354,7 @@ void MainWindow::toolBoxLayoutByIndexApplyBtnPressed(){
             // re-init other options for node sizes...
         }
         else if (selectedLayoutType==3){  // node color
-            //slotLayoutNodeColorByProminenceIndex(selectedIndexText);
+            slotLayoutNodeColorByProminenceIndex(selectedIndexText);
         }
         break;
     };

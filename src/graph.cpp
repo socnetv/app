@@ -17803,15 +17803,19 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
     qDebug() << "Graph::layoutByProminenceIndex - "
                 << "index = " << prominenceIndex
                 << "type = " << layoutType;
-    double  i=0, std=0;
+
+    double  i=0, std=0, norm=0;
     double new_x=0, new_y=0;
     float C=0, maxC=0;
     double x0=0, y0=0, maxRadius=0, new_radius=0, rad=0;
     double maxWidth=0, maxHeight=0;
     float offset=0;
-    int new_size=0;
+    int new_size=0, cRed=0, cGreen=0, cBlue=0;
 
     int N=vertices();
+
+    QColor new_color;
+
 
     switch (layoutType){
     case 0: { // radial
@@ -17832,7 +17836,9 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
     QList<Vertex*>::const_iterator it;
 
     emit statusMessage(tr("Computing centrality/prestige scores. Please wait..."));
-    //first calculate centrality indices if needed
+
+    //first compute centrality indices if needed
+
     if ( prominenceIndex == 0) {
         // do nothing
     }
@@ -17871,9 +17877,9 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
                                    inverseWeights, dropIsolates);
     }
 
+
     emit statusMessage(tr("Applying layout based on node prominence score. "
                           "Please wait..."));
-
 
     for  (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         switch (prominenceIndex) {
@@ -17956,102 +17962,191 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
         }
         };
 
+        norm = std/maxC;
+
         switch (layoutType){
+
         case 0: { // radial
+
             qDebug () << "Vertex" << (*it)->name()
                       << "pos x" << (*it)->x() << "y"<< (*it)->y()
                       << "C" << C << "stdC" << std << "maxC"<< maxC
+                      << "norm (std/maxC)" << norm
                       << "maxradius" <<  maxRadius
-                      << "newradius" << maxRadius - (std/maxC - offset)*maxRadius;
+                      << "newradius" << maxRadius - (norm - offset)*maxRadius;
+
+            //Compute new vertex position
             switch (static_cast<int> (ceil(maxC)) ){
+
             case 0: {
                 qDebug("maxC=0.   Using maxRadius");
                 new_radius=maxRadius;
                 break;
             }
+
             default: {
-                new_radius=(maxRadius- (std/maxC - offset)*maxRadius);
+                new_radius=(maxRadius- (norm - offset)*maxRadius);
                 break;
             }
+
             };
 
-            //Compute new position
             rad= (2.0* Pi/ N );
             new_x=x0 + new_radius * cos(i * rad);
             new_y=y0 + new_radius * sin(i * rad);
+
+            qDebug() << "Finished calculation. "
+                        "new radial pos: x"<< new_x << "y" << new_y;
+
+            //Move vertex to new position
             (*it)->setX( new_x );
             (*it)->setY( new_y );
-            qDebug() << "Finished Calculation. "
-                        "new pos: x"<< new_x << "y" << new_y;
-            //Move node to new position
+
             emit setNodePos((*it)->name(), new_x, new_y);
+
             i++;
+
             emit addGuideCircle ( x0, y0, new_radius );
+
             break;
         }
+
         case 1: { // level
+
             qDebug()<< "Vertex" << (*it)->name()
                     << "pos x"<< (*it)->x() << "y"<<  (*it)->y()
-                    << "C" << C << "stdC" << std
-                    << "maxC "<<	maxC << "maxWidth " << maxWidth
-                    <<" maxHeight "<<maxHeight;
-            //Compute new position
-            qDebug ("std %f, maxHeight-(std)*maxHeight = %f "
-                    , std, maxHeight-(std)*maxHeight );
+                    << "C" << C << "stdC" << std  << "maxC "<<	maxC
+                    << "norm (std/maxC)" << norm
+                    << "maxWidth " << maxWidth
+                    <<" maxHeight "<<maxHeight
+                    << "maxHeight-(norm)*maxHeight "
+                    <<  maxHeight-(norm)*maxHeight;
+
+            //Compute new vertex position
             switch ( static_cast<int> (ceil(maxC)) ){
+
             case 0: {
                 qDebug("maxC=0.   Using maxHeight");
                 new_y=maxHeight;
                 break;
             }
+
             default: {
-                new_y=offset/2.0+maxHeight-(std/maxC)*maxHeight;
+                new_y=offset/2.0+maxHeight-(norm)*maxHeight;
                 break;
             }
+
             };
+
             new_x=offset/2.0 + rand() % ( static_cast<int> (maxWidth) );
-            qDebug ("new_x %f, new_y %f", new_x, new_y);
+
+            qDebug() << "Finished calculation. "
+                        "new level pos: x"<< new_x << "y" << new_y;
+
+            //Move vertex to new position
             (*it)->setX( new_x );
             (*it)->setY( new_y );
-            qDebug() << "Finished Calculation. "
-                        "new pos: x"<< new_x << "y" << new_y;
-            //Move node to new position
-            emit setNodePos((*it)->name(),  new_x,  new_y);
-            i++;
-            emit addGuideHLine(new_y);
-            break;
-        }
-        case 2: { // node size
-            qDebug () << "Vertex" << (*it)->name()
-                      << "C=" << C << ", stdC=" << std
-                      << "maxC" << maxC
-                      << "initVertexSize " << initVertexSize
-                      << "stdC/maxC " << std/maxC
-                      << ", (std/maxC) * initVertexSize " << (std/maxC *initVertexSize);
 
+            emit setNodePos((*it)->name(),  new_x,  new_y);
+
+            i++;
+
+            emit addGuideHLine(new_y);
+
+            break;
+
+        }
+
+        case 2: { // node size
+
+            qDebug () << "Vertex" << (*it)->name()
+                      << "C=" << C << ", stdC=" << std  << "maxC" << maxC
+                      << "initVertexSize " << initVertexSize
+                      << "norm (stdC/maxC) " << norm
+                      << ", (norm) * initVertexSize " << (norm *initVertexSize);
+
+            //Calculate new node size
             switch (static_cast<int> (ceil(maxC) )){
+
             case 0: {
                 qDebug()<<"maxC=0.   Using initVertexSize";
                 new_size=initVertexSize;
-                //emit signal to change node size
-                emit setNodeSize((*it)->name(),  new_size);
+                break;
+            }
+
+            default: {
+                new_size=ceil ( initVertexSize/2.0 + (float) initVertexSize * (norm));
+                break;
+            }
+
+            };
+
+            //set new vertex size and emit signal to change node size
+            qDebug() << "Finished calculation. "
+                     << "new vertex size "<< new_size << " call setSize()";
+            (*it)->setSize(new_size);
+            emit setNodeSize((*it)->name(),  new_size);
+
+            break;
+        }
+
+        case 3: { // node color
+
+            qDebug () << "Vertex" << (*it)->name()
+                      << "C=" << C << ", stdC=" << std << "maxC" << maxC
+                      << "initVertexColor " << initVertexColor
+                      << "norm (stdC/maxC) " << norm;
+
+            //Calculate new node color
+            switch (static_cast<int> (ceil(maxC) )){
+            case 0: {
+                qDebug()<<"maxC=0.   Using initVertexColor";
+                new_color = QColor (initVertexColor);
                 break;
             }
             default: {
-                //Calculate new size
-                new_size=ceil ( initVertexSize/2.0 + (float) initVertexSize * (std/maxC));
-                qDebug ()<< "new vertex size "<< new_size << " call setSize()";
-                (*it)->setSize(new_size);
-                //emit signal to change node size
-                emit setNodeSize((*it)->name(),  new_size);
+                if ( norm == 0 ) {
+                    cRed   = 0;
+                    cGreen = 0;
+                    cBlue  = 255;   // ==> blue
+
+                }
+                else if ( norm > 0    && norm <= 0.25 ) {
+                    cRed   = 0;
+                    cGreen = 128 + norm / 0.25 * ( 127 ) ; // max is 255 ==> green
+                    cBlue  = 255;
+
+                }
+                else if ( norm > 0.25 && norm <= 0.50 ) {
+                    cRed   = 128 + ( norm - 0.25 ) / 0.25 * ( 127 ) ; // max is 255 => yellow
+                    cGreen = 255;
+                    cBlue  = 0;
+                }
+                else if ( norm > 0.50 && norm <= 0.75 ) {
+                    cRed   = 255;
+                    cGreen = 255 - (norm - 0.50 ) / 0.25 * ( 127 ) ; // max is 255 => yellow - min is 128 ==> orange
+                    cBlue  = 0;
+                }
+                else if ( norm > 0.75 && norm <= 1 ) {
+                    cRed   = 255;
+                    cGreen = 128 - ( norm - 0.75 ) / 0.25 * ( 127 ) ; // max is 255 => yellow - min is 128 ==> orange
+                    cBlue  = 0;
+                }
+                new_color.setRgb( cRed, cGreen, cBlue, 255 );
                 break;
             }
             };
+
+            //change vertex color and emit signal to change node color as well
+            qDebug ()<< "new vertex color "<< new_color << " call setSize()";
+            (*it)->setColor(new_color.name());
+
+            emit setNodeColor((*it)->name(),  new_color.name());
+
+
             break;
         }
-        case 3: { // node color
-        }
-            break;
+
         };
     }
 
