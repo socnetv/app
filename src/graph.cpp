@@ -17810,7 +17810,7 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
     double x0=0, y0=0, maxRadius=0, new_radius=0, rad=0;
     double maxWidth=0, maxHeight=0;
     float offset=0;
-    int new_size=0, cRed=0, cGreen=0, cBlue=0;
+    int new_size=0;
 
     int N=vertices();
 
