@@ -797,7 +797,8 @@ public:
     void layoutRandom();
 
     void layoutRadialRandom(double x0, double y0, double maxRadius);
-    void layoutRadial(const double &x0, const double &y0, const double &maxRadius, const bool &guides=false);
+    void layoutRadial(const double &x0, const double &y0,
+                      const double &maxRadius, const bool &guides=false);
 
 
     void layoutByProminenceIndex ( int prominenceIndex, int layoutType,
@@ -805,28 +806,9 @@ public:
                                    const bool inverseWeights=false,
                                    const bool dropIsolates=false);
 
-    void layoutRadialByProminenceIndex(double x0, double y0, double maxRadius,
-                                         int type, const bool considerWeights,
-                                         const bool inverseWeights,
-                                         const bool dropIsolates);
-
-    void layoutLevelByProminenceIndex(double maxWidth, double maxHeight, int type,
-                                      const bool considerWeights=false,
-                                      const bool inverseWeights=false,
-                                      const bool dropIsolates=false);
 
     void layoutVertexSizeByIndegree();
     void layoutVertexSizeByOutdegree();
-    void layoutVertexSizeByProminenceIndex(int index,
-                                             const bool considerWeights=false,
-                                             const bool inverseWeights=false,
-                                             const bool dropIsolates=false);
-
-//    void layoutVertexColorByProminenceIndex(int index,
-//                                             const bool considerWeights=false,
-//                                             const bool inverseWeights=false,
-//                                             const bool dropIsolates=false);
-
 
 
     void layoutForceDirectedSpringEmbedder(const int maxIterations);
