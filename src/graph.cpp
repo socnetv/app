@@ -18105,34 +18105,9 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
                 break;
             }
             default: {
-                if ( norm == 0 ) {
-                    cRed   = 0;
-                    cGreen = 0;
-                    cBlue  = 255;   // ==> blue
-
-                }
-                else if ( norm > 0    && norm <= 0.25 ) {
-                    cRed   = 0;
-                    cGreen = 128 + norm / 0.25 * ( 127 ) ; // max is 255 ==> green
-                    cBlue  = 255;
-
-                }
-                else if ( norm > 0.25 && norm <= 0.50 ) {
-                    cRed   = 128 + ( norm - 0.25 ) / 0.25 * ( 127 ) ; // max is 255 => yellow
-                    cGreen = 255;
-                    cBlue  = 0;
-                }
-                else if ( norm > 0.50 && norm <= 0.75 ) {
-                    cRed   = 255;
-                    cGreen = 255 - (norm - 0.50 ) / 0.25 * ( 127 ) ; // max is 255 => yellow - min is 128 ==> orange
-                    cBlue  = 0;
-                }
-                else if ( norm > 0.75 && norm <= 1 ) {
-                    cRed   = 255;
-                    cGreen = 128 - ( norm - 0.75 ) / 0.25 * ( 127 ) ; // max is 255 => yellow - min is 128 ==> orange
-                    cBlue  = 0;
-                }
-                new_color.setRgb( cRed, cGreen, cBlue, 255 );
+                // H = 0 (red) for most important nodes
+                // H = 240 (blue) for least important nodes
+                new_color.setHsv( 240 - norm * 240, 255, 255,255 );
                 break;
             }
             };
@@ -18142,7 +18117,6 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
             (*it)->setColor(new_color.name());
 
             emit setNodeColor((*it)->name(),  new_color.name());
-
 
             break;
         }
