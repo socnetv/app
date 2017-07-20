@@ -5872,7 +5872,7 @@ void MainWindow::slotNetworkFileDialogFileSelected(const QString &fileName) {
 void MainWindow::slotNetworkSave(const int &fileFormat) {
     statusMessage( tr("Saving file..."));
 
-    if (activeGraph.vertices() == 0) {
+    if (activeNodes() == 0) {
         statusMessage(  QString(tr("Nothing to save. There are no vertices.")) );
     }
     if (activeGraph.graphSaved()) {
@@ -6504,7 +6504,7 @@ void MainWindow::slotEditRelationAdd(QString newRelationName, const bool &change
 
     bool ok;
 
-    if (relationsCounter==1 && activeGraph.vertices()==0 ) {
+    if (relationsCounter==1 && activeNodes()==0 ) {
         newRelationName = QInputDialog::getText(
                     this,
                     tr("Add new relation"),
@@ -11394,10 +11394,14 @@ void MainWindow::slotAnalyzeClusteringHierarchical(const QString &matrix,
                                                    const QString &method,
                                                    const bool &diagonal,
                                                    const bool &diagram){
-    if ( !activeNodes()   )  {
-        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
-        return;
-    }
+
+    qDebug()<< "MW::slotAnalyzeClusteringHierarchical()";
+
+    // No need to check as this method is called from a dialog which didi check for nodes
+//    if ( !activeNodes()   )  {
+//        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+//        return;
+//    }
 
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-clustering-hierarchical-"+dateTime+".html";
@@ -12361,7 +12365,7 @@ void MainWindow::createProgressBar(const int &max, const QString &msg){
         progressDialog = new QProgressDialog(msg,
                                             "Cancel",
                                             0,
-                                            (max==0) ? activeGraph.vertices(): max
+                                            (max==0) ? activeNodes(): max
                                             , this);
         progressDialog -> setWindowModality(Qt::WindowModal);
         connect( &activeGraph, SIGNAL( updateProgressDialog(int) ),

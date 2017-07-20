@@ -928,9 +928,8 @@ void Graph::vertexRemove(long int Doomed){
 
 
 /**
- * @brief Graph::vertexIsolateFilter
- * Called from filterOrphanNodes via MainWindow  to filter nodes with no links
- * For each orphan Vertex in the Graph, emits the filterVertex()
+ * @brief Called from filterOrphanNodes via MainWindow  to filter nodes with no links
+ * For each orphan Vertex in the Graph, emits the setVertexVisibility signal
  * @param filterFlag
  */
 void Graph::vertexIsolateFilter(bool filterFlag){
@@ -4058,23 +4057,24 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
     emit statusMessage ( tr("Computing geodesic distances. Please wait...") );
 
     //Create a NxN DistanceMatrix. Initialise values to zero.
-    m_totalVertices = vertices(false,true);
+    // m_totalVertices = vertices(dropIsolates,false);
+    int N = vertices(true,false);
     qDebug() << "Graph::graphMatrixDistancesCreate() - Resizing Matrices to hold "
-             << m_totalVertices << " vertices";
-    DM.resize(m_totalVertices, m_totalVertices);
-    TM.resize(m_totalVertices, m_totalVertices);
-    XRM.zeroMatrix(m_totalVertices, m_totalVertices);
+             << N << " vertices";
+    DM.resize(N, N);
+    TM.resize(N, N);
+    XRM.zeroMatrix(N, N);
 
-    int aEdges = edgesEnabled();
+    int E = edgesEnabled();
     //drop isolated vertices from calculations (i.e. std C and group C).
-    int aVertices=(dropIsolates) ?  (m_totalVertices - verticesListIsolated().count()):m_totalVertices;
+    //int N=(dropIsolates) ?  (m_totalVertices - verticesListIsolated().count()):m_totalVertices;
 
     qDebug() << "Graph::graphMatrixDistancesCreate() -Calling graphSymmetric()";
     m_symmetric = graphSymmetric();
     qDebug() << "Graph::graphMatrixDistancesCreate() - now m_symmetric: "
                 << m_symmetric ;
 
-    if ( aEdges == 0 )
+    if ( E == 0 )
         DM.fillMatrix(RAND_MAX);
     else {
         qDebug() << "	for all vertices set their pair-wise distances to RAND_MAX";
@@ -4098,22 +4098,23 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
         qDebug() << "	reciprocalEdgesVert "<< reciprocalEdgesVert
                  << " inboundEdgesVert " << inboundEdgesVert
                  << " outboundEdgesVert "<<  outboundEdgesVert;
-        qDebug() << "	aEdges " << aEdges <<  " aVertices " << aVertices;
+        qDebug() << "	E " << E <<  " N " << N;
 
         qDebug() << "Graph: graphMatrixDistancesCreate() - "
                     " initialising variables for maximum centrality indeces";
         if (m_symmetric) {
-            maxIndexBC=( aVertices-1.0) *  (aVertices-2.0)  / 2.0;
-            maxIndexSC=( aVertices-1.0) *  (aVertices-2.0) / 2.0;
-            maxIndexCC=aVertices-1.0;
-            maxIndexPC=aVertices-1.0;
+            maxIndexBC= ( N == 2 ) ? 1 :  ( N-1.0) *  (N-2.0)  / 2.0;
+            maxIndexSC= ( N == 2 ) ? 1 :  ( N-1.0) *  (N-2.0) / 2.0;
+            maxIndexCC=N-1.0;
+            maxIndexPC=N-1.0;
             qDebug("############# m_symmetric - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
         }
         else {
-            maxIndexBC=( aVertices-1.0) *  (aVertices-2.0) ;
-            maxIndexSC=( aVertices-1.0) *  (aVertices-2.0);
-            maxIndexPC=aVertices-1.0;
-            maxIndexCC=aVertices-1.0;
+
+            maxIndexBC= ( N == 2 ) ? 1 : ( N-1.0) *  (N-2.0);  // fix N=2 case where maxIndex becomes zero
+            maxIndexSC= ( N == 2 ) ? 1 : ( N-1.0) *  (N-2.0);
+            maxIndexPC=N-1.0;
+            maxIndexCC=N-1.0;
             qDebug("############# NOT SymmetricAdjacencyMatrix - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
         }
 
@@ -4144,7 +4145,7 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
         discreteECs.clear(); classesEC=0;
 
         //Zero closeness indeces of each vertex
-        if (computeCentralities)
+        if (computeCentralities) {
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
                 qDebug() << " Graph:graphMatrixDistancesCreate() - ZEROing all indices";
                 (*it)->setBC( 0.0 );
@@ -4154,23 +4155,28 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                 (*it)->setCC( 0.0 );
                 (*it)->setPC( 0.0 );
             }
-        qDebug("MAIN LOOP: for every s in V solve the Single Source Shortest Path problem...");
+        }
+
+        qDebug() << "MAIN LOOP: for every s in V solve the Single Source Shortest Path problem...";
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
 
             emit updateProgressDialog( ++progressCounter );
 
-            //isolates are dropped by default in the beginning
-//            if ( ! (*it)->isEnabled() )
-//                continue;
-
             s=index[(*it)->name()];
-            qDebug() << "Source vertex s = " << (*it)->name()
-                     << " of BFS algorithm has index " << s
 
-                     << ". Clearing Stack ...";
+            qDebug()<< "***** PHASE 1 (SSSP) BFS / DIJKSTRA ALGORITHM "
+                    << "Source vertex s =" << (*it)->name()
+                     << "has index" << s;
+
+            if ( ! (*it)->isEnabled() ) {
+                qDebug()<< "s " << (*it)->name() << "disabled. SKIP/CONTINUE";
+                continue;
+            }
+
+
             if (computeCentralities){
                 qDebug()<< "Empty stack Stack which will return vertices in "
-                           "order of their (non increasing) distance from S ...";
+                           "order of their (non increasing) distance from s ...";
                 //- Complexity linear O(n)
                 while ( !Stack.empty() )
                     Stack.pop();
@@ -4193,8 +4199,8 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                 dijkstra(s, computeCentralities, inverseWeights, dropIsolates);
 
 
-            qDebug("***** FINISHED PHASE 1 (SSSP) BFS / DIJKSTRA ALGORITHM. "
-                   "Continuing to calculate centralities");
+            qDebug()<< "***** FINISHED PHASE 1 (SSSP) BFS / DIJKSTRA ALGORITHM. "
+                   "Continuing to calculate centralities";
 
             if (computeCentralities){
                 qDebug() << "Set CC for source vertex " << (*it)->name()
@@ -4357,19 +4363,19 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
             }
 
             // calculate mean values and prepare to compute variances
-            meanSBC = sumSBC /(float) aVertices ;
+            meanSBC = sumSBC /(float) N ;
             varianceSBC=0;
             tempVarianceBC=0;
 
-            meanSCC = sumSCC /(float) aVertices ;
+            meanSCC = sumSCC /(float) N ;
             varianceSCC=0;
             tempVarianceCC=0;
 
-            meanSPC = sumSPC /(float) aVertices ;
+            meanSPC = sumSPC /(float) N ;
             varianceSPC=0;
             tempVariancePC=0;
 
-            meanEC = sumEC /(float) aVertices ;
+            meanEC = sumEC /(float) N ;
             varianceEC=0;
             tempVarianceEC=0;
 
@@ -4418,13 +4424,13 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
             }
 
             //compute final variances
-            varianceSBC  /=  (float) aVertices;
-            varianceSCC  /=  (float) aVertices;
-            varianceSPC  /=  (float) aVertices;
-            varianceEC  /=  (float) aVertices;
+            varianceSBC  /=  (float) N;
+            varianceSCC  /=  (float) N;
+            varianceSPC  /=  (float) N;
+            varianceEC  /=  (float) N;
 
             // calculate SC mean value and prepare to compute variance
-            meanSSC = sumSSC /(float) aVertices ;
+            meanSSC = sumSSC /(float) N ;
             varianceSSC=0;
             tempVarianceSC=0;
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
@@ -4436,23 +4442,23 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                 varianceSSC  += tempVarianceSC;
             }
             //calculate final SC variance
-            varianceSSC  /=  (float) aVertices;
+            varianceSSC  /=  (float) N;
 
-            denomSPC = (  (aVertices-2.0) ) / (2.0 );   //only for connected nets
-            if (aVertices < 3 )
-                 denomSPC = aVertices-1.0;
+            denomSPC = (  (N-2.0) ) / (2.0 );   //only for connected nets
+            if (N < 3 )
+                 denomSPC = N-1.0;
             //what if the net is disconnected (isolates exist) ?
             groupSPC = nomSPC/denomSPC;
 
-            denomSCC = ( ( aVertices-1.0) * (aVertices-2.0) ) / (2.0 * aVertices -3.0);
-            if (aVertices < 3 )
-                 denomSCC = aVertices-1.0;
+            denomSCC = ( ( N-1.0) * (N-2.0) ) / (2.0 * N -3.0);
+            if (N < 3 )
+                 denomSCC = N-1.0;
 
             groupCC = nomSCC/denomSCC;	//Calculate group Closeness centrality
 
             //nomSBC*=2.0;
-//            denomSBC =   (aVertices-1.0) *  (aVertices-1.0) * (aVertices-2.0);
-            denomSBC =   (aVertices-1.0) ;  // Wasserman&Faust - formula 5.14
+//            denomSBC =   (N-1.0) *  (N-1.0) * (N-2.0);
+            denomSBC =   (N-1.0) ;  // Wasserman&Faust - formula 5.14
             groupSBC=nomSBC/denomSBC;		//Calculate group Betweenness centrality
 
             calculatedCentralities=true;
@@ -4492,23 +4498,26 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
 void Graph::BFS(const int &s, const bool &computeCentralities,
                 const bool &dropIsolates){
     Q_UNUSED(dropIsolates);
+
+    qDebug()<< "BFS:";
     int u,w, dist_u=0, temp=0, dist_w=0;
     int relation=0, target=0;
     //int  weight=0;
     bool edgeStatus=false;
     H_edges::const_iterator it1;
+
+
     //set distance of s from s equal to 0
     DM.setItem(s,s,0);
     //set sigma of s from s equal to 1
     TM.setItem(s,s,1);
 
-//    qDebug("BFS: Construct a queue Q of integers and push source vertex s=%i to Q as initial vertex", s);
+    //    qDebug("BFS: Construct a queue Q of integers and push source vertex s=%i to Q as initial vertex", s);
     queue<int> Q;
-//    qDebug()<<"BFS: Q size "<< Q.size();
 
     Q.push(s);
 
-    qDebug("BFS: LOOP: While Q not empty ");
+    qDebug()<< "BFS: LOOP: While Q not empty ";
     while ( !Q.empty() ) {
         qDebug("BFS: Dequeue: first element of Q is u=%i", Q.front());
         u=Q.front(); Q.pop();
@@ -11245,7 +11254,7 @@ void Graph::graphMatrixDissimilaritiesCreate(Matrix &INPUT_MATRIX,
                                              const QString &varLocation,
                                              const bool &diagonal,
                                              const bool &considerWeights){
-    qDebug()<<"Graph::graphMatrixDissimilaritiesCreate()";
+    qDebug()<<"Graph::graphMatrixDissimilaritiesCreate() -metric" << metric;
 
     DSM = INPUT_MATRIX.distancesMatrix(metric, varLocation, diagonal, considerWeights);
 
@@ -16769,7 +16778,8 @@ void Graph::writeMatrix (const QString &fn,
 
     Q_UNUSED(simpler);
     qDebug()<<"Graph::writeMatrix() - matrix" << matrix
-           << "to" << fn;
+           << "to" << fn
+           << "dropIsolates"<<dropIsolates;
 
     QFile file( fn );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {

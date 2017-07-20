@@ -199,6 +199,7 @@ void Vertex::edgeAddFrom (const long int &v1, const float &weight) {
 }
 
 
+
 void Vertex::changeOutEdgeWeight(long int target, float weight){
     qDebug() << "Vertex::changeEdgeWeightTo " << target << " weight " << weight ;
     qDebug() << " *** m_outEdges.count " <<
@@ -845,6 +846,23 @@ float Vertex::hasEdgeFrom(const long int &v2, const bool &allRelations){
     //qDebug()<< "Vertex::hasEdgeFrom() - a ("  <<  this->name()  << ", " << v2 << ") = 0 ";
     return 0;
 }
+
+
+
+
+/**
+ * @brief Sets distance to vertex v1
+ * @param source
+ * @param weight
+ */
+void Vertex::distanceTo (const long int &v1, const float &dist) {
+    qDebug() <<"Vertex::distanceTo() - dist"
+            << name() << " --> "<< v1 << " = "<< dist
+               << " relation " << m_curRelation;
+    m_distance.insertMulti(
+                v1, rel_w_bool (m_curRelation, pair_f_b(dist, true) ) );
+}
+
 
 
 /**

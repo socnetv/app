@@ -1297,6 +1297,15 @@ bool Matrix::solve(float b[])
 }
 
 
+/**
+ * @brief Computes the dissimilarities matrix of the variables (rows, columns, both)
+ * of the matrix using the user defined metric
+ * @param metric
+ * @param varLocation
+ * @param diagonal
+ * @param considerWeights
+ * @return
+ */
 Matrix& Matrix::distancesMatrix(const int &metric,
                         const QString varLocation,
                         const bool &diagonal,
