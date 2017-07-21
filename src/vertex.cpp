@@ -768,7 +768,7 @@ long int Vertex::localDegree(){
 float Vertex::hasEdgeTo(const long int &v2, const bool &allRelations){
     float m_weight=0;
     bool edgeStatus=false;
-    H_edges::iterator it1=m_outEdges.find(v2);
+    H_edges::const_iterator it1=m_outEdges.find(v2);
     while (it1 != m_outEdges.end() && it1.key() == v2 ) {
         if (!allRelations) {
             if ( it1.value().first == m_curRelation  ) {
@@ -851,19 +851,35 @@ float Vertex::hasEdgeFrom(const long int &v2, const bool &allRelations){
 
 
 /**
- * @brief Sets distance to vertex v1
- * @param source
- * @param weight
+ * @brief Sets distance to vertex v1 to dist
+ * @param v1
+ * @param dist
  */
-void Vertex::distanceTo (const long int &v1, const float &dist) {
+void Vertex::distanceSet (const long int &v1, const float &d) {
     qDebug() <<"Vertex::distanceTo() - dist"
-            << name() << " --> "<< v1 << " = "<< dist
+            << name() << " --> "<< v1 << " = "<< d
                << " relation " << m_curRelation;
-    m_distance.insertMulti(
-                v1, rel_w_bool (m_curRelation, pair_f_b(dist, true) ) );
+    m_distance.insertMulti( v1, rel_d(m_curRelation, d ) );
 }
 
-
+/**
+ * @brief Returns distance to vertex v1
+ * If d to v1 has not been set previously, then return RAND_MAX
+ * @param v1
+ */
+float Vertex::distance (const long int &v1) {
+    float m_dist=RAND_MAX;
+    int relation=0;
+    H_distance::const_iterator it1=m_distance.find(v1);
+    while (it1 != m_distance.constEnd() && it1.key() == v1 ) {
+        relation = it1.value().first;
+        if ( relation == m_curRelation ) {
+            m_dist = it1.value().second;
+        }
+        ++it1;
+    }
+    return m_dist;
+}
 
 /**
  * @brief Vertex::cliques

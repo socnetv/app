@@ -251,35 +251,35 @@ void Graph::clear() {
         DM.clear();
     }
     if ( TM.size() > 0) {
-                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+                qDebug() << "\n\n\n\n Graph::clear()  clearing TM\n\n\n";
         TM.clear();
     }
     if ( sumM.size() > 0) {
-                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+                qDebug() << "\n\n\n\n Graph::clear()  clearing sumM\n\n\n";
         sumM.clear();
     }
     if ( invAM.size() > 0) {
-                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+                qDebug() << "\n\n\n\n Graph::clear()  clearing invAM\n\n\n";
         invAM.clear();
     }
     if ( AM.size() > 0) {
-                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+                qDebug() << "\n\n\n\n Graph::clear()  clearing AM\n\n\n";
         AM.clear();
     }
     if ( invM.size() > 0) {
-                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+                qDebug() << "\n\n\n\n Graph::clear()  clearing invM\n\n\n";
         invM.clear();
     }
     if ( XM.size() > 0) {
-                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+                qDebug() << "\n\n\n\n Graph::clear()  clearing XM\n\n\n";
         XM.clear();
     }
     if ( XSM.size() > 0) {
-                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+                qDebug() << "\n\n\n\n Graph::clear()  clearing XSM\n\n\n";
         XSM.clear();
     }
     if ( XRM.size() > 0) {
-                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+                qDebug() << "\n\n\n\n Graph::clear()  clearing XRM\n\n\n";
         XRM.clear();
     }
 
@@ -2852,7 +2852,7 @@ float Graph::graphReciprocity(){
                       << "totalTies" << m_graphReciprocityTiesTotal
                       << "totalDyads" << totalDyads.count();
 
-            if (  (reciprocalWeight = m_graph[y]->hasEdgeTo( v1 ) ) == weight) {
+            if (  (reciprocalWeight = edgeExists(v2, v1) ) == weight) {
 
                 (*it)->setOutEdgesReciprocated(); //increase reciprocated ties for ego
                 (*it)->setOutEdgesReciprocated();
@@ -3183,7 +3183,7 @@ bool Graph::graphSymmetric(){
         return m_symmetric;
     }
     m_symmetric=true;
-    int y=0, v2=0, v1=0;
+    int v2=0, v1=0;
     float weight = 0;
 
     QHash<int,float> *enabledOutEdges = new QHash<int,float>;
@@ -3206,10 +3206,9 @@ bool Graph::graphSymmetric(){
         while ( hit!=enabledOutEdges->cend() ){
 
             v2 = hit.key();
-            y=index[ v2 ];
             weight = hit.value();
 
-            if (  m_graph[y]->hasEdgeTo( v1) != weight) {
+            if ( edgeExists ( v2, v1 )  != weight) {
 
                 m_symmetric=false;
 //                qDebug() <<"Graph::graphSymmetric() - "
@@ -3238,7 +3237,7 @@ bool Graph::graphSymmetric(){
 void Graph::graphSymmetrize(){
     qDebug()<< "Graph::graphSymmetrize";
     QList<Vertex*>::const_iterator it;
-    int y=0, v2=0, v1=0, weight;
+    int v2=0, v1=0, weight;
     float invertWeight=0;
     QHash<int,float> *enabledOutEdges = new QHash<int,float>;
     QHash<int,float>::const_iterator it1;
@@ -3250,11 +3249,10 @@ void Graph::graphSymmetrize(){
         while ( it1!=enabledOutEdges->cend() ){
             v2 = it1.key();
             weight = it1.value();
-            y=index[ v2 ];
             qDebug() << "Graph:graphSymmetrize() - "
                      << " v1 " << v1
                      << " outLinked to " << v2 << " weight " << weight;
-            invertWeight = m_graph[y]->hasEdgeTo( v1 ) ;
+            invertWeight = edgeExists(v2,v1);
             if ( invertWeight == 0 ) {
                 qDebug() << "Graph:graphSymmetrize(): s = " << v1
                          << " is NOT inLinked from y = " <<  v2  ;
@@ -3494,8 +3492,8 @@ void Graph::edgeUndirectedSet(const long int &v1, const long int &v2,
                               const float &weight) {
     qDebug() << "Graph::edgeUndirectedSet(): " << v1
              << " -> " <<  v2  ;
-    int y=index[ v2 ];
-    float invertWeight = m_graph[y]->hasEdgeTo( v1 ) ;
+
+    float invertWeight = edgeExists ( v2, v1 ) ; // m_graph[y]->hasEdgeTo( v1 ) ;
     if ( invertWeight == 0 ) {
         qDebug() << "Graph::edgeUndirectedSet(): opposite  " << v1
                  << " <- " <<  v2 << " does not exist - Add it to Graph." ;
@@ -4509,6 +4507,7 @@ void Graph::BFS(const int &s, const bool &computeCentralities,
 
     //set distance of s from s equal to 0
     DM.setItem(s,s,0);
+
     //set sigma of s from s equal to 1
     TM.setItem(s,s,1);
 
@@ -5557,7 +5556,7 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
                 if ( (weight=edgeExists( (*it)->name(), (*it1)->name() ) ) !=0  )   {
 //                    qDebug() << "Graph::centralityDegree() - vertex "
 //                             <<  (*it)->name()
-//                             << " hasEdgeTo = " <<  (*it1)->name();
+//                             << " has edge to = " <<  (*it1)->name();
                     if (weights)
                         DC+=weight;
                     else

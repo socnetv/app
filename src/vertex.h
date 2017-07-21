@@ -49,7 +49,8 @@ typedef QPair <int, pair_f_b > rel_w_bool;
 typedef QHash < int, rel_w_bool > H_edges;
 typedef QHash <QString, int> H_StrToInt;
 
-
+typedef QPair <int, float > rel_d;
+typedef QHash < int, rel_d > H_distance;
 
 class Vertex : public QObject{
     Q_OBJECT
@@ -111,7 +112,8 @@ public:
     long int inDegreeConst();
     long int localDegree();
 
-    void distanceTo (const long int &v1, const float &dist) ;
+    float distance(const long int &v1) ;
+    void distanceSet (const long int &v1, const float &d) ;
 
     /* sets eccentricity */
     void setEccentricity (float c){ m_Eccentricity=c;}
@@ -285,7 +287,7 @@ public:
 
     //hold all outbound and inbound edges of this vertex.
     H_edges m_outEdges, m_inEdges;
-    H_edges m_distance;
+    H_distance m_distance;
 
 signals:
     void setEdgeVisibility (int, int, int, bool);
