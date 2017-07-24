@@ -4638,7 +4638,7 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
                     qDebug("BFS/SC: If we are to calculate centralities, we must calculate SC as well");
                     if ( s!=w && s != u && u!=w ) {
                         qDebug() << "BFS: setSC of u="<<u<<" to "<<m_graph[ui]->SC()+1;
-                        m_graph[ui]->setSC(m_graph[ui]->SC()+1);
+                        m_graph[ui]->setSC( m_graph[ui]->SC()+1 );
                     }
                     else {
 //                        qDebug() << "BFS/SC: skipping setSC of u, because s="
