@@ -113,7 +113,7 @@ public:
     long int localDegree();
 
     float distance(const long int &v1) ;
-    void distanceSet (const long int &v1, const float &d) ;
+    void setDistance (const long int &v1, const float &d) ;
 
     /* sets eccentricity */
     void setEccentricity (float c){ m_Eccentricity=c;}

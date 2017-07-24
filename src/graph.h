@@ -897,7 +897,7 @@ private:
                   );
 
     /** methods used by graphMatrixDistancesCreate()  */
-    void BFS(const int &s, const bool &computeCentralities=false,
+    void BFS(const int &s, const int &si, const bool &computeCentralities=false,
              const bool &dropIsolates=false);
     void dijkstra(const int &s, const bool &computeCentralities=false,
                   const bool &inverseWeights=false,

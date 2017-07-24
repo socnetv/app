@@ -4050,6 +4050,12 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
         return;
     }
 
+    QList<Vertex*>::const_iterator it, it1;
+    QList<int>::iterator it2;
+    int w=0, u=0,s=0, i=0, si=0, ui=0, wi=0;
+    float d_sw=0, d_su=0;
+    int progressCounter=0;
+
     qDebug() << "Graph::graphMatrixDistancesCreate() - Need to compute geodesic distances.";
 
     emit statusMessage ( tr("Computing geodesic distances. Please wait...") );
@@ -4074,17 +4080,10 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
 
     if ( E == 0 )
         DM.fillMatrix(RAND_MAX);
-    else {
-        qDebug() << "	for all vertices set their pair-wise distances to RAND_MAX";
-        DM.fillMatrix(RAND_MAX);
-        qDebug () << "	for all vertices set their pair-wise shortest-path counts (sigmas) to 0";
-        TM.fillMatrix(0);
 
-        QList<Vertex*>::const_iterator it, it1;
-        QList<int>::iterator it2;
-        int w=0, u=0,s=0, i=0;
-        float d_sw=0, d_su=0;
-        int progressCounter=0;
+    else {
+
+
 
         m_graphDiameter=0;
         calculatedDistances = false;
@@ -4097,6 +4096,35 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                  << " inboundEdgesVert " << inboundEdgesVert
                  << " outboundEdgesVert "<<  outboundEdgesVert;
         qDebug() << "	E " << E <<  " N " << N;
+
+        qDebug() << "	Set all their pair-wise distances to RAND_MAX";
+        DM.fillMatrix(RAND_MAX);
+        qDebug () << "	Set all pair-wise shortest-path counts (sigmas) to 0";
+        TM.fillMatrix(0);
+
+
+        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
+            // Set all pair-wise distances to RAND_MAX
+            for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
+                (*it)->setDistance((*it1)->name(), RAND_MAX);
+            }
+
+            //Zero centrality indeces of each vertex
+            if (computeCentralities) {
+
+                qDebug() << " Graph:graphMatrixDistancesCreate() - ZEROing all indices";
+                (*it)->setBC( 0.0 );
+                (*it)->setSC( 0.0 );
+                (*it)->setEccentricity( 0.0 );
+                (*it)->setEC( 0.0 );
+                (*it)->setCC( 0.0 );
+                (*it)->setPC( 0.0 );
+
+            }
+
+
+        }
+
 
         qDebug() << "Graph: graphMatrixDistancesCreate() - "
                     " initialising variables for maximum centrality indeces";
@@ -4142,32 +4170,21 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
         minNodeEC=0; sumEC=0;
         discreteECs.clear(); classesEC=0;
 
-        //Zero closeness indeces of each vertex
-        if (computeCentralities) {
-            for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
-                qDebug() << " Graph:graphMatrixDistancesCreate() - ZEROing all indices";
-                (*it)->setBC( 0.0 );
-                (*it)->setSC( 0.0 );
-                (*it)->setEccentricity( 0.0 );
-                (*it)->setEC( 0.0 );
-                (*it)->setCC( 0.0 );
-                (*it)->setPC( 0.0 );
-            }
-        }
+
 
         qDebug() << "MAIN LOOP: for every s in V solve the Single Source Shortest Path problem...";
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
 
-            emit updateProgressDialog( ++progressCounter );
-
-            s=index[(*it)->name()];
+            s=(*it)->name();
+            si=index[s];
 
             qDebug()<< "***** PHASE 1 (SSSP) BFS / DIJKSTRA ALGORITHM "
-                    << "Source vertex s =" << (*it)->name()
-                     << "has index" << s;
+                    << "Source vertex s" << s << "index" << si;
+
+            emit updateProgressDialog( ++progressCounter );
 
             if ( ! (*it)->isEnabled() ) {
-                qDebug()<< "s " << (*it)->name() << "disabled. SKIP/CONTINUE";
+                qDebug()<< "s " << s  << "disabled. SKIP/CONTINUE";
                 continue;
             }
 
@@ -4178,7 +4195,7 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                 //- Complexity linear O(n)
                 while ( !Stack.empty() )
                     Stack.pop();
-                i=0;
+                i=1;
                 qDebug()<< "...and for each vertex: empty list Ps of predecessors";
                 for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
                     (*it1)->clearPs();
@@ -4188,11 +4205,11 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                 }
             }
 
-            qDebug() << "PHASE 1 (SSSP): Call BFS or dijkstra for source vertex "
-                     << (*it)->name() << " index " << s
+            qDebug() << "PHASE 1 (SSSP): Call BFS or dijkstra for source "
+                     << s << " index " << si
                      << " to determine distances and geodesics from s to every vertex t" ;
             if (!considerWeights)
-                BFS(s,computeCentralities, dropIsolates );
+                BFS(s,si,computeCentralities, dropIsolates );
             else
                 dijkstra(s, computeCentralities, inverseWeights, dropIsolates);
 
@@ -4266,34 +4283,37 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
 
                 while ( !Stack.empty() ) {
                     w=Stack.top();
-                    qDebug("Stack top is vertex w=%i. This is the furthest vertex from s. Popping it.", w);
+                    wi=index[w];
+                    qDebug() << "Stack top is vertex w " << w
+                             << "This is the furthest vertex from s. Popping it.";
                     Stack.pop();
-                    QList<int> lst=m_graph[w]->Ps();
+                    QList<int> lst=m_graph[wi]->Ps();
                     qDebug("preLOOP: Checking size of predecessors list Ps[w]...  = %i ",lst.size());
                     qDebug("LOOP: for every other vertex u in the list of predecessors Ps[w] of w....");
                     if (lst.size() > 0) // just in case...do a sanity check
                         for ( it2=lst.begin(); it2 != lst.end(); it2++ ){
                             u=(*it2);
+                            ui=index[u];
                             qDebug("Selecting Ps[w] element u=%i with delta_u=%f. sigma(u)=TM(s,u)=%f, sigma(w)=TM(s,w)=%f, delta_w=%f ",
-                                   u, m_graph[u]->delta(),TM.item(s,u), TM.item(s,w), m_graph[w]->delta());
-                            if ( TM.item(s,w) > 0) {
+                                   u, m_graph[ui]->delta(),TM.item(si,ui), TM.item(si,wi), m_graph[wi]->delta());
+                            if ( TM.item(si,wi) > 0) {
                                 //delta[u]=delta[u]+(1+delta[w])*(sigma[u]/sigma[w]) ;
-                                d_su=m_graph[u]->delta()+(1.0+m_graph[w]->delta() ) * ( (float)TM.item(s,u)/(float)TM.item(s,w) );
+                                d_su=m_graph[ui]->delta()+(1.0+m_graph[wi]->delta() ) * ( (float)TM.item(si,ui)/(float)TM.item(si,wi) );
                             }
                             else {
-                                d_su=m_graph[u]->delta();
+                                d_su=m_graph[ui]->delta();
                                 qDebug("TM (s,w) zero, i.e. zero shortest path counts from s to w - using SAME DELTA for vertex u");
                             }
                             qDebug("Assigning new delta d_su = %f to u = %i", d_su, u);
-                            m_graph[u]->setDelta( d_su);
+                            m_graph[ui]->setDelta( d_su);
                         }
                     qDebug()<<" Adding delta_w to BC of w";
                     if  (w!=s) {
                         qDebug("w!=s. For this furthest vertex we need to add its new delta %f to old BC index: %f",
-                               m_graph[w]->delta(), m_graph[w]->BC());
-                        d_sw = m_graph[w]->BC() + m_graph[w]->delta();
+                               m_graph[wi]->delta(), m_graph[wi]->BC());
+                        d_sw = m_graph[wi]->BC() + m_graph[wi]->delta();
                         qDebug("New BC = d_sw = %f", d_sw);
-                        m_graph[w]->setBC (d_sw);
+                        m_graph[wi]->setBC (d_sw);
                     }
                 }
             }
@@ -4463,6 +4483,13 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
         }
     }
 
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
+        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
+            DM.setItem(index[(*it)->name()],index[(*it1)->name()], (*it)->distance((*it1)->name()));
+
+        }
+    }
     calculatedDistances=true;
 
 }
@@ -4489,27 +4516,28 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                 it increases sizeOfNthOrderNeighborhood [ N ] by one, to store the number of nodes at distance n from source s
             b) For every vertex u:
                 it increases SC(u) by one, when it finds a new shor. path from s to t through u.
-                appends each neighbor y of u to the list Ps, thus Ps stores all predecessors of y on all all shortest paths from s
+                appends each neighbor y of u to the list , thus Ps stores all predecessors of y on all all shortest paths from s
             c) Each vertex u popped from Q is pushed to a stack Stack
 
 */ 
-void Graph::BFS(const int &s, const bool &computeCentralities,
+void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
                 const bool &dropIsolates){
     Q_UNUSED(dropIsolates);
 
     qDebug()<< "BFS:";
-    int u,w, dist_u=0, temp=0, dist_w=0;
-    int relation=0, target=0;
+    int u=0, ui=0 ,w=0, wi=0;
+    int dist_u=0, temp=0, dist_w=0;
+    int relation=0;
     //int  weight=0;
     bool edgeStatus=false;
     H_edges::const_iterator it1;
 
 
     //set distance of s from s equal to 0
-    DM.setItem(s,s,0);
-
+    //DM.setItem(s,s,0);
+    m_graph[si]->setDistance(s,0);
     //set sigma of s from s equal to 1
-    TM.setItem(s,s,1);
+    TM.setItem(si,si,1);
 
     //    qDebug("BFS: Construct a queue Q of integers and push source vertex s=%i to Q as initial vertex", s);
     queue<int> Q;
@@ -4520,16 +4548,16 @@ void Graph::BFS(const int &s, const bool &computeCentralities,
     while ( !Q.empty() ) {
         qDebug("BFS: Dequeue: first element of Q is u=%i", Q.front());
         u=Q.front(); Q.pop();
-
-        if ( ! m_graph [ u ]->isEnabled() ) continue ;
+        ui=index[u];
+        if ( ! m_graph [ ui ]->isEnabled() ) continue ;
 
         if (computeCentralities){
-//            qDebug("BFS: If we are to calculate centralities, we must push u=%i to global stack Stack ", u);
+            qDebug("BFS: If we are to calculate centralities, we must push u=%i to global stack Stack ", u);
             Stack.push(u);
         }
         qDebug() << "BFS: LOOP over every edge (u,w) e E, that is all neighbors w of vertex u";
-        it1=m_graph [ u ] ->m_outEdges.cbegin();
-        while ( it1!=m_graph [ u ] -> m_outEdges.cend() ){
+        it1=m_graph [ ui ] ->m_outEdges.cbegin();
+        while ( it1!=m_graph [ ui ] -> m_outEdges.cend() ){
             relation = it1.value().first;
             if ( relation != relationCurrent() )  {
                 ++it1;
@@ -4540,33 +4568,44 @@ void Graph::BFS(const int &s, const bool &computeCentralities,
                 ++it1;
                 continue;
             }
-            target = it1.key();
+            w = it1.key();
           //  weight = it1.value().second.first;
-            w=index[ target ];
-            qDebug("BFS: u=%i is connected with node %i of index w=%i. ", u, target, w);
-//            qDebug("BFS: Start path discovery");
-            if (	DM.item(s, w) == RAND_MAX ) { //if distance (s,w) is infinite, w found for the first time.
+            wi=index[ w ];
+            qDebug("BFS: u=%i is connected with node %i of index wi=%i. ", u, w, wi);
+
+            qDebug("BFS: Start path discovery");
+
+            //if distance (s,w) is infinite, w found for the first time.
+            if ( m_graph [ si ]->distance( w ) == RAND_MAX ) {
+            //if (	DM.item(s, w) == RAND_MAX ) {
                 qDebug("BFS: first time visiting w=%i. Enqueuing w to the end of Q", w);
                 Q.push(w);
                 qDebug()<<"BFS: First check if distance(s,u) = -1 (aka infinite :)) and set it to zero";
-                dist_u=DM.item(s,u);
+                //dist_u=DM.item(s,u);
+                dist_u=m_graph [ si ]->distance( u );
                 dist_w = dist_u + 1;
+
                 qDebug("BFS: Setting distance of w=%i from s=%i equal to distance(s,u) plus 1. New distance = %i",w,s, dist_w );
-                DM.setItem(s, w, dist_w);
+                //DM.setItem(s, w, dist_w);
+                m_graph[si]->setDistance(w,dist_w);
+
                 m_graphAverageDistance += dist_w;
                 m_graphGeodesicsCount++;
 
 
                 qDebug()<< "== BFS  - d("
                         << s <<"," << w
-                        <<")=" << DM.item(s,w)
+                        <<")=" <<
+                          m_graph[si]->distance(w)
+                          //DM.item(s,w)
                        << " - inserting " << w
                        << " to inflRange J of " << s
                        << " - and " << s
                        << " to inflDomain I of "<< w;
-                XRM.setItem(s,w,1);
-                influenceRanges.insertMulti(s,w);
-                influenceDomains.insertMulti(w,s);
+
+                XRM.setItem(si,wi,1);
+                influenceRanges.insertMulti(si,wi);
+                influenceDomains.insertMulti(wi,si);
 
                 if (computeCentralities){
                     qDebug()<<"BFS: Calculate PC: store the number of nodes at distance " << dist_w << "from s";
@@ -4575,10 +4614,10 @@ void Graph::BFS(const int &s, const bool &computeCentralities,
                                 sizeOfNthOrderNeighborhood.value(dist_w)+1
                                 );
                     qDebug()<<"BFS: Calculate CC: the sum of distances (will invert it l8r)";
-                    m_graph [s]->setCC (m_graph [s]->CC() + dist_w);
+                    m_graph [si]->setCC (m_graph [si]->CC() + dist_w);
                     qDebug()<<"BFS: Calculate Eccentricity: the maximum distance ";
-                    if (m_graph [s]->eccentricity() < dist_w )
-                        m_graph [s]->setEccentricity(dist_w);
+                    if (m_graph [si]->eccentricity() < dist_w )
+                        m_graph [si]->setEccentricity(dist_w);
 
                 }
 //                qDebug("BFS: Checking m_graphDiameter");
@@ -4589,16 +4628,17 @@ void Graph::BFS(const int &s, const bool &computeCentralities,
             }
 
             qDebug("BFS: Start path counting"); 	//Is edge (u,w) on a shortest path from s to w via u?
-            if ( DM.item(s,w)==DM.item(s,u)+1) {
-                temp= TM.item(s,w)+TM.item(s,u);
+            if ( m_graph[si]->distance(w) == m_graph[si]->distance(u) + 1) {
+            //if ( DM.item(s,w)==DM.item(s,u)+1) {
+                temp= TM.item(si,wi)+TM.item(si,ui);
                 qDebug("BFS: Found a NEW SHORTEST PATH from s=%i to w=%i via u=%i. Setting Sigma(%i, %i) = %i",s, w, u, s, w,temp);
                 if (s!=w)
-                    TM.setItem(s,w, temp);
+                    TM.setItem(si,wi, temp);
                 if (computeCentralities){
                     qDebug("BFS/SC: If we are to calculate centralities, we must calculate SC as well");
                     if ( s!=w && s != u && u!=w ) {
-                        qDebug() << "BFS: setSC of u="<<u<<" to "<<m_graph[u]->SC()+1;
-                        m_graph[u]->setSC(m_graph[u]->SC()+1);
+                        qDebug() << "BFS: setSC of u="<<u<<" to "<<m_graph[ui]->SC()+1;
+                        m_graph[u]->setSC(m_graph[ui]->SC()+1);
                     }
                     else {
 //                        qDebug() << "BFS/SC: skipping setSC of u, because s="
@@ -4607,7 +4647,7 @@ void Graph::BFS(const int &s, const bool &computeCentralities,
 //                    qDebug() << "BFS/SC: SC is " << m_graph[u]->SC();
                     qDebug() << "BFS: appending u="<< u << " to list Ps[w=" << w
                              << "] with the predecessors of w on all shortest paths from s ";
-                    m_graph[w]->appendToPs(u);
+                    m_graph[wi]->appendToPs(u);
                 }
             }
             ++it1;

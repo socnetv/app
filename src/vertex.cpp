@@ -855,11 +855,11 @@ float Vertex::hasEdgeFrom(const long int &v2, const bool &allRelations){
  * @param v1
  * @param dist
  */
-void Vertex::distanceSet (const long int &v1, const float &d) {
-    qDebug() <<"Vertex::distanceTo() - dist"
+void Vertex::setDistance (const long int &v1, const float &d) {
+    qDebug() <<"Vertex::setDistance() - dist"
             << name() << " --> "<< v1 << " = "<< d
                << " relation " << m_curRelation;
-    m_distance.insertMulti( v1, rel_d(m_curRelation, d ) );
+    m_distance.insert( v1, rel_d(m_curRelation, d ) );
 }
 
 /**
@@ -868,17 +868,21 @@ void Vertex::distanceSet (const long int &v1, const float &d) {
  * @param v1
  */
 float Vertex::distance (const long int &v1) {
-    float m_dist=RAND_MAX;
+    float d=RAND_MAX;
     int relation=0;
     H_distance::const_iterator it1=m_distance.find(v1);
     while (it1 != m_distance.constEnd() && it1.key() == v1 ) {
         relation = it1.value().first;
         if ( relation == m_curRelation ) {
-            m_dist = it1.value().second;
+            d = it1.value().second;
+            break;
         }
         ++it1;
     }
-    return m_dist;
+    qDebug() <<"Vertex::distance() - dist"
+               << name() << " --> "<< v1 << " = "<< d;
+
+    return d;
 }
 
 /**
