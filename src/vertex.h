@@ -42,15 +42,22 @@ class QPointF;
 class Graph;
 
 
-typedef QHash<int,QString> H_IntToStr;
 typedef QList<int> L_int;
-typedef QPair <float, bool> pair_f_b;
-typedef QPair <int, pair_f_b > rel_w_bool;
-typedef QHash < int, rel_w_bool > H_edges;
+
+typedef QHash<int,QString> H_IntToStr;
 typedef QHash <QString, int> H_StrToInt;
 
-typedef QPair <int, float > rel_d;
-typedef QHash < int, rel_d > H_distance;
+
+typedef QPair <float, bool> pair_f_b;
+typedef QPair <int, pair_f_b > pair_i_fb;
+typedef QHash < int, pair_i_fb > H_edges;
+
+typedef QPair <int, float > pair_i_f;
+typedef QHash < int, pair_i_f > H_distance;
+
+typedef QPair <int, int> pair_i_i;
+typedef QHash < int, pair_i_i > H_shortestPaths;
+
 
 class Vertex : public QObject{
     Q_OBJECT
@@ -114,6 +121,9 @@ public:
 
     float distance(const long int &v1) ;
     void setDistance (const long int &v1, const float &d) ;
+
+    int shortestPaths(const long int &v1) ;
+    void setShortestPaths(const long int &v1, const int &sp) ;
 
     /* sets eccentricity */
     void setEccentricity (float c){ m_Eccentricity=c;}
@@ -288,6 +298,7 @@ public:
     //hold all outbound and inbound edges of this vertex.
     H_edges m_outEdges, m_inEdges;
     H_distance m_distance;
+    H_shortestPaths m_shortestPaths;
 
 signals:
     void setEdgeVisibility (int, int, int, bool);

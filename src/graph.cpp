@@ -4053,7 +4053,7 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
     QList<Vertex*>::const_iterator it, it1;
     QList<int>::iterator it2;
     int w=0, u=0,s=0, i=0, si=0, ui=0, wi=0;
-    float d_sw=0, d_su=0;
+
     int progressCounter=0;
 
     qDebug() << "Graph::graphMatrixDistancesCreate() - Need to compute geodesic distances.";
@@ -4165,7 +4165,9 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
         float SCC=0, SBC=0, SSC=0, SEC=0, SPC=0;
         float tempVarianceBC=0, tempVarianceSC=0,tempVarianceEC=0;
         float tempVarianceCC=0, tempVariancePC=0;
-
+        float sigma_u=0, sigma_w=0;
+        float delta_u=0, delta_w=0;
+        float d_sw=0, d_su=0;
         maxEC=0; minEC=RAND_MAX; nomEC=0; denomEC=0; groupEC=0; maxNodeEC=0;
         minNodeEC=0; sumEC=0;
         discreteECs.clear(); classesEC=0;
@@ -4218,8 +4220,10 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                    "Continuing to calculate centralities";
 
             if (computeCentralities){
-                qDebug() << "Set CC for source vertex " << (*it)->name()
-                         << "  with index s = " << s ;
+
+                qDebug() << "Set CC for source" << s
+                         << "  with index" << si ;
+
                 if ( (*it)->CC() != 0 ) //Closeness centrality must be inverted
                     CC=1.0/(*it)->CC();
                 else
@@ -4294,14 +4298,23 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                         for ( it2=lst.begin(); it2 != lst.end(); it2++ ){
                             u=(*it2);
                             ui=index[u];
-                            qDebug("Selecting Ps[w] element u=%i with delta_u=%f. sigma(u)=TM(s,u)=%f, sigma(w)=TM(s,w)=%f, delta_w=%f ",
-                                   u, m_graph[ui]->delta(),TM.item(si,ui), TM.item(si,wi), m_graph[wi]->delta());
-                            if ( TM.item(si,wi) > 0) {
+                            sigma_u=m_graph[si]->shortestPaths(u);
+                            sigma_w=m_graph[si]->shortestPaths(w);
+                            delta_u=m_graph[ui]->delta();
+                            delta_w=m_graph[wi]->delta();
+                            qDebug()<< "Selecting Ps[w] element u"<< u
+                                    << "with delta_u" << delta_u
+                                    << "sigma(u)=TM(s,u)"<< sigma_u
+                                    << "sigma(w)=TM(s,w)" << sigma_w
+                                    << "delta_w"<< delta_w;
+                            //if ( TM.item(si,wi) > 0) {
+                            if (m_graph[si]->shortestPaths(w) > 0 ) {
                                 //delta[u]=delta[u]+(1+delta[w])*(sigma[u]/sigma[w]) ;
-                                d_su=m_graph[ui]->delta()+(1.0+m_graph[wi]->delta() ) * ( (float)TM.item(si,ui)/(float)TM.item(si,wi) );
+                                //d_su=m_graph[ui]->delta()+(1.0+m_graph[wi]->delta() ) * ( (float)TM.item(si,ui)/(float)TM.item(si,wi) );
+                                 d_su=delta_u + ( 1.0 + delta_u ) * ( (float) sigma_u / (float)sigma_w);
                             }
                             else {
-                                d_su=m_graph[ui]->delta();
+                                d_su=delta_u;
                                 qDebug("TM (s,w) zero, i.e. zero shortest path counts from s to w - using SAME DELTA for vertex u");
                             }
                             qDebug("Assigning new delta d_su = %f to u = %i", d_su, u);
@@ -4310,8 +4323,8 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                     qDebug()<<" Adding delta_w to BC of w";
                     if  (w!=s) {
                         qDebug("w!=s. For this furthest vertex we need to add its new delta %f to old BC index: %f",
-                               m_graph[wi]->delta(), m_graph[wi]->BC());
-                        d_sw = m_graph[wi]->BC() + m_graph[wi]->delta();
+                               delta_w, m_graph[wi]->BC());
+                        d_sw = m_graph[wi]->BC() + delta_w;
                         qDebug("New BC = d_sw = %f", d_sw);
                         m_graph[wi]->setBC (d_sw);
                     }
@@ -4487,6 +4500,7 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
         for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
             DM.setItem(index[(*it)->name()],index[(*it1)->name()], (*it)->distance((*it1)->name()));
+            TM.setItem(index[(*it)->name()],index[(*it1)->name()], (*it)->shortestPaths((*it1)->name()));
 
         }
     }
@@ -4537,7 +4551,8 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
     //DM.setItem(s,s,0);
     m_graph[si]->setDistance(s,0);
     //set sigma of s from s equal to 1
-    TM.setItem(si,si,1);
+    //TM.setItem(si,si,1);
+    m_graph[si]->setShortestPaths(s,1);
 
     //    qDebug("BFS: Construct a queue Q of integers and push source vertex s=%i to Q as initial vertex", s);
     queue<int> Q;
@@ -4604,8 +4619,8 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
                        << " to inflDomain I of "<< w;
 
                 XRM.setItem(si,wi,1);
-                influenceRanges.insertMulti(si,wi);
-                influenceDomains.insertMulti(wi,si);
+                influenceRanges.insertMulti(s,w);
+                influenceDomains.insertMulti(w,s);
 
                 if (computeCentralities){
                     qDebug()<<"BFS: Calculate PC: store the number of nodes at distance " << dist_w << "from s";
@@ -4630,10 +4645,13 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
             qDebug("BFS: Start path counting"); 	//Is edge (u,w) on a shortest path from s to w via u?
             if ( m_graph[si]->distance(w) == m_graph[si]->distance(u) + 1) {
             //if ( DM.item(s,w)==DM.item(s,u)+1) {
-                temp= TM.item(si,wi)+TM.item(si,ui);
+                //temp= TM.item(si,wi)+TM.item(si,ui);
+                temp=m_graph[si]->shortestPaths(w)+m_graph[si]->shortestPaths(u);
                 qDebug("BFS: Found a NEW SHORTEST PATH from s=%i to w=%i via u=%i. Setting Sigma(%i, %i) = %i",s, w, u, s, w,temp);
-                if (s!=w)
-                    TM.setItem(si,wi, temp);
+                if (s!=w) {
+                    //TM.setItem(si,wi, temp);
+                    m_graph[si]->setShortestPaths(w, temp);
+                }
                 if (computeCentralities){
                     qDebug("BFS/SC: If we are to calculate centralities, we must calculate SC as well");
                     if ( s!=w && s != u && u!=w ) {
@@ -9457,7 +9475,7 @@ int Graph::reachable(const int &v1, const int &v2) {
 
 /**
  *  Returns the influence range of vertex v1, namely the set of nodes who are
- *  reachable by v1 (See Wasserman and Faust, pp.200-201, based on Lin, 1976).
+ *  reachable from v1 (See Wasserman and Faust, pp.200-201, based on Lin, 1976).
  *  This function is for digraphs only
  */
 QList<int> Graph::vertexinfluenceRange(int v1){

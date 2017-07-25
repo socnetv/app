@@ -146,7 +146,7 @@ void Vertex::edgeAddTo (const long &v2, const float &weight) {
                << " relation " << m_curRelation;
     // do not use [] operator - silently creates an item if key do not exist
     m_outEdges.insertMulti(
-                v2, rel_w_bool(m_curRelation, pair_f_b(weight, true) ) );
+                v2, pair_i_fb(m_curRelation, pair_f_b(weight, true) ) );
 }
 
 
@@ -159,7 +159,7 @@ void Vertex::setOutEdgeEnabled (long int target, bool status){
     qDebug () << "Vertex::setOutEdgeEnabled - set outEdge to " << target
               << " as " << status
                  << ". Finding outLink...";
-    QMutableHashIterator < int, rel_w_bool > it1 (m_outEdges);
+    QMutableHashIterator < int, pair_i_fb > it1 (m_outEdges);
     int linkTarget=0;
     float weight =0;
     int relation = 0;
@@ -174,7 +174,7 @@ void Vertex::setOutEdgeEnabled (long int target, bool status){
                          << linkTarget << " relation " << relation
                          << " weight " << weight
                          << " status " << it1.value().second.second;
-                it1.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, status) ));
+                it1.setValue(pair_i_fb(m_curRelation, pair_f_b(weight, status) ));
                 emit setEdgeVisibility (m_curRelation, m_name, target, status );
             }
         }
@@ -195,7 +195,7 @@ void Vertex::edgeAddFrom (const long int &v1, const float &weight) {
             << name() << " <- "<< v1 << " weight "<< weight
                << " relation " << m_curRelation;
     m_inEdges.insertMulti(
-                v1, rel_w_bool (m_curRelation, pair_f_b(weight, true) ) );
+                v1, pair_i_fb (m_curRelation, pair_f_b(weight, true) ) );
 }
 
 
@@ -218,7 +218,7 @@ void Vertex::changeOutEdgeWeight(long int target, float weight){
                 m_outEdges.count();
     qDebug() << " create new relation-weight pair ";
     m_outEdges.insertMulti(
-                target, rel_w_bool(m_curRelation, pair_f_b(weight, true) ) );
+                target, pair_i_fb(m_curRelation, pair_f_b(weight, true) ) );
     qDebug() << " *** m_outEdges.count " << m_outEdges.count();
 }
 
@@ -299,7 +299,7 @@ void Vertex::edgeFilterByWeight(float m_threshold, bool overThreshold){
 	qDebug() << "Vertex::edgeFilterByWeight of vertex " << this->m_name;
 	int target=0;
     float weight=0;
-    QMutableHashIterator < int, rel_w_bool > it (m_outEdges);
+    QMutableHashIterator < int, pair_i_fb > it (m_outEdges);
     while ( it.hasNext()) {
         it.next();
         if ( it.value().first == m_curRelation ) {
@@ -310,13 +310,13 @@ void Vertex::edgeFilterByWeight(float m_threshold, bool overThreshold){
                     qDebug() << "Vertex::edgeFilterByWeight() - edge  to " << target
                     << " has weight " << weight
                     << ". It will be disabled. Emitting signal to Graph....";
-                    it.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, false) ));
+                    it.setValue(pair_i_fb(m_curRelation, pair_f_b(weight, false) ));
                     emit setEdgeVisibility (m_curRelation, m_name, target, false );
                 }
                 else {
                     qDebug() << "Vertex::edgeFilterByWeight() - edge  to " << target
                     << " has weight " << weight << ". It will be enabled. Emitting signal to Graph....";
-                    it.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, true) ));
+                    it.setValue(pair_i_fb(m_curRelation, pair_f_b(weight, true) ));
                     emit setEdgeVisibility (m_curRelation, m_name, target, true );
                 }
             }
@@ -324,13 +324,13 @@ void Vertex::edgeFilterByWeight(float m_threshold, bool overThreshold){
                  if ( weight <= m_threshold ) {
                     qDebug() << "Vertex::edgeFilterByWeight() - edge  to " << target
                     << " has weight " << weight << ". It will be disabled. Emitting signal to Graph....";
-                    it.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, false) ));
+                    it.setValue(pair_i_fb(m_curRelation, pair_f_b(weight, false) ));
                     emit setEdgeVisibility (m_curRelation, m_name, target, false );
                 }
                 else {
                     qDebug() << "Vertex::edgeFilterByWeight() - edge  to " << target
                     << " has weight " << weight << ". It will be enabled. Emitting signal to Graph....";
-                    it.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, true) ));
+                    it.setValue(pair_i_fb(m_curRelation, pair_f_b(weight, true) ));
                     emit setEdgeVisibility (m_curRelation, m_name, target, true );
                 }
             }
@@ -354,7 +354,7 @@ void Vertex::edgeFilterUnilateral(const bool &toggle){
     qDebug() << "Vertex::edgeFilterUnilateral() of vertex " << this->m_name;
     int target=0;
     float weight=0;
-    QMutableHashIterator < int, rel_w_bool > it (m_outEdges);
+    QMutableHashIterator < int, pair_i_fb > it (m_outEdges);
     while ( it.hasNext()) {
         it.next();
         if ( it.value().first == m_curRelation ) {
@@ -365,13 +365,13 @@ void Vertex::edgeFilterUnilateral(const bool &toggle){
                         qDebug() << "Vertex::edgeFilterUnilateral() - unilateral edge to " << target
                         << " has weight " << weight
                         << ". It will be disabled. Emitting signal to Graph....";
-                        it.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, false) ));
+                        it.setValue(pair_i_fb(m_curRelation, pair_f_b(weight, false) ));
                         emit setEdgeVisibility (m_curRelation, m_name, target, false );
                     }
                     else {
                         qDebug() << "Vertex::edgeFilterUnilateral() - unilateral edge to " << target
                         << " has weight " << weight << ". It will be enabled. Emitting signal to Graph....";
-                        it.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, true) ));
+                        it.setValue(pair_i_fb(m_curRelation, pair_f_b(weight, true) ));
                         emit setEdgeVisibility (m_curRelation, m_name, target, true );
                     }
             }
@@ -391,7 +391,7 @@ void Vertex::edgeFilterByRelation(int relation, bool status ){
     int target=0;
     float weight =0;
     int edgeRelation=0;
-    QMutableHashIterator < int, rel_w_bool > it1 (m_outEdges);
+    QMutableHashIterator < int, pair_i_fb > it1 (m_outEdges);
     while ( it1.hasNext()) {
         it1.next();
         edgeRelation = it1.value().first;
@@ -401,7 +401,7 @@ void Vertex::edgeFilterByRelation(int relation, bool status ){
             qDebug() << "Vertex::edgeFilterByRelation() - outLink "
                      << m_name << " -> " << target
                         << "  - emitting to GW to be " << status ;
-            it1.setValue(rel_w_bool(relation, pair_f_b(weight, status) ));
+            it1.setValue(pair_i_fb(relation, pair_f_b(weight, status) ));
             emit setEdgeVisibility ( relation, m_name, target, status );
         }
         else {
@@ -859,7 +859,7 @@ void Vertex::setDistance (const long int &v1, const float &d) {
     qDebug() <<"Vertex::setDistance() - dist"
             << name() << " --> "<< v1 << " = "<< d
                << " relation " << m_curRelation;
-    m_distance.insert( v1, rel_d(m_curRelation, d ) );
+    m_distance.insert( v1, pair_i_f(m_curRelation, d ) );
 }
 
 /**
@@ -883,6 +883,45 @@ float Vertex::distance (const long int &v1) {
                << name() << " --> "<< v1 << " = "<< d;
 
     return d;
+}
+
+
+
+
+
+/**
+ * @brief Sets shortest paths to vertex v1 to sp
+ * @param v1
+ * @param sp
+ */
+void Vertex::setShortestPaths (const long int &v1, const int &sp) {
+    qDebug() <<"Vertex::setShortestPaths() - sp"
+            << name() << " --> "<< v1 << " = "<< sp
+               << " relation " << m_curRelation;
+    m_shortestPaths.insert( v1, pair_i_i( m_curRelation, sp ) );
+}
+
+/**
+ * @brief Returns number of shortest paths to vertex v1
+ * If it has not been set previously, then return 0
+ * @param v1
+ */
+int Vertex::shortestPaths (const long int &v1) {
+    float sp=0;
+    int relation=0;
+    H_shortestPaths::const_iterator it1=m_shortestPaths.find(v1);
+    while (it1 != m_shortestPaths.constEnd() && it1.key() == v1 ) {
+        relation = it1.value().first;
+        if ( relation == m_curRelation ) {
+            sp = it1.value().second;
+            break;
+        }
+        ++it1;
+    }
+    qDebug() <<"Vertex::shortestPaths() - sp ("
+               << name() << "->"<< v1 << ") = "<< sp;
+
+    return sp;
 }
 
 /**
