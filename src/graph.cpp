@@ -4078,12 +4078,42 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
     qDebug() << "Graph::graphMatrixDistancesCreate() - now m_symmetric: "
                 << m_symmetric ;
 
-    if ( E == 0 )
+    if ( E == 0 ) {
         DM.fillMatrix(RAND_MAX);
-
+    }
     else {
 
+        qDebug() << "Graph::graphMatrixDistancesCreate() - Initializing variables";
 
+        float CC=0, BC=0, SC= 0, eccentricity=0, EC=0, PC=0;
+        float SCC=0, SBC=0, SSC=0, SEC=0, SPC=0;
+        float tempVarianceBC=0, tempVarianceSC=0,tempVarianceEC=0;
+        float tempVarianceCC=0, tempVariancePC=0;
+        float sigma_u=0, sigma_w=0;
+        float delta_u=0, delta_w=0;
+        float d_sw=0, d_su=0;
+
+
+        qDebug() << "Graph: graphMatrixDistancesCreate() - initialising centrality variables ";
+        maxSCC=0; minSCC=RAND_MAX; nomSCC=0; denomSCC=0; groupCC=0; maxNodeSCC=0;
+        minNodeSCC=0; sumSCC=0; sumCC=0;
+        discreteCCs.clear(); classesSCC=0;
+        maxSBC=0; minSBC=RAND_MAX; nomSBC=0; denomSBC=0; groupSBC=0; maxNodeSBC=0;
+        minNodeSBC=0; sumBC=0; sumSBC=0;
+        discreteBCs.clear(); classesSBC=0;
+        maxSSC=0; minSSC=RAND_MAX; groupSC=0; maxNodeSSC=0;
+        minNodeSSC=0;sumSC=0; sumSSC=0;
+        discreteSCs.clear(); classesSSC=0;
+        maxSPC=0; minSPC=RAND_MAX; nomSPC=0; denomSPC=0; groupSPC=0; maxNodeSPC=0;
+        minNodeSPC=0; sumSPC=0;sumPC=0;
+        discretePCs.clear(); classesSPC=0;
+        maxEccentricity=0; minEccentricity=RAND_MAX; maxNodeEccentricity=0;
+        minNodeEccentricity=0; sumEccentricity=0; discreteEccentricities.clear();
+        classesEccentricity=0;
+        maxSPC=0; minSPC=RAND_MAX; maxNodeSPC=0; minNodeSPC=0; sumSPC=0;
+        maxEC=0; minEC=RAND_MAX; nomEC=0; denomEC=0; groupEC=0; maxNodeEC=0;
+        minNodeEC=0; sumEC=0;
+        discreteECs.clear(); classesEC=0;
 
         m_graphDiameter=0;
         calculatedDistances = false;
@@ -4104,15 +4134,18 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
 
 
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
-            // Set all pair-wise distances to RAND_MAX
             for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
+                // Set all pair-wise distances to RAND_MAX
                 (*it)->setDistance((*it1)->name(), RAND_MAX);
+                // Set all pair-wise shortest-path counts (sigmas) to 0
+                (*it)->setShortestPaths((*it1)->name(), 0);
             }
 
             //Zero centrality indeces of each vertex
             if (computeCentralities) {
 
-                qDebug() << " Graph:graphMatrixDistancesCreate() - ZEROing all indices";
+                qDebug() << " Graph:graphMatrixDistancesCreate() -"
+                            "Initializing actor centrality indices";
                 (*it)->setBC( 0.0 );
                 (*it)->setSC( 0.0 );
                 (*it)->setEccentricity( 0.0 );
@@ -4122,12 +4155,11 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
 
             }
 
-
         }
 
 
         qDebug() << "Graph: graphMatrixDistancesCreate() - "
-                    " initialising variables for maximum centrality indeces";
+                    " initialising variables for max centrality scores";
         if (m_symmetric) {
             maxIndexBC= ( N == 2 ) ? 1 :  ( N-1.0) *  (N-2.0)  / 2.0;
             maxIndexSC= ( N == 2 ) ? 1 :  ( N-1.0) *  (N-2.0) / 2.0;
@@ -4144,37 +4176,12 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
             qDebug("############# NOT SymmetricAdjacencyMatrix - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
         }
 
-        qDebug("Graph: graphMatrixDistancesCreate() - initialising variables for centrality index");
-        maxSCC=0; minSCC=RAND_MAX; nomSCC=0; denomSCC=0; groupCC=0; maxNodeSCC=0;
-        minNodeSCC=0; sumSCC=0; sumCC=0;
-        discreteCCs.clear(); classesSCC=0;
-        maxSBC=0; minSBC=RAND_MAX; nomSBC=0; denomSBC=0; groupSBC=0; maxNodeSBC=0;
-        minNodeSBC=0; sumBC=0; sumSBC=0;
-        discreteBCs.clear(); classesSBC=0;
-        maxSSC=0; minSSC=RAND_MAX; groupSC=0; maxNodeSSC=0;
-        minNodeSSC=0;sumSC=0; sumSSC=0;
-        discreteSCs.clear(); classesSSC=0;
-        maxSPC=0; minSPC=RAND_MAX; nomSPC=0; denomSPC=0; groupSPC=0; maxNodeSPC=0;
-        minNodeSPC=0; sumSPC=0;sumPC=0;
-        discretePCs.clear(); classesSPC=0;
-        maxEccentricity=0; minEccentricity=RAND_MAX; maxNodeEccentricity=0;
-        minNodeEccentricity=0; sumEccentricity=0; discreteEccentricities.clear();
-        classesEccentricity=0;
-        maxSPC=0; minSPC=RAND_MAX; maxNodeSPC=0; minNodeSPC=0; sumSPC=0;
-        float CC=0, BC=0, SC= 0, eccentricity=0, EC=0, PC=0;
-        float SCC=0, SBC=0, SSC=0, SEC=0, SPC=0;
-        float tempVarianceBC=0, tempVarianceSC=0,tempVarianceEC=0;
-        float tempVarianceCC=0, tempVariancePC=0;
-        float sigma_u=0, sigma_w=0;
-        float delta_u=0, delta_w=0;
-        float d_sw=0, d_su=0;
-        maxEC=0; minEC=RAND_MAX; nomEC=0; denomEC=0; groupEC=0; maxNodeEC=0;
-        minNodeEC=0; sumEC=0;
-        discreteECs.clear(); classesEC=0;
 
 
 
-        qDebug() << "MAIN LOOP: for every s in V solve the Single Source Shortest Path problem...";
+
+        qDebug() << "*********** MAIN LOOP: "
+                    "for every s in V solve the Single Source Shortest Path problem...";
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
 
             s=(*it)->name();
@@ -4192,11 +4199,12 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
 
 
             if (computeCentralities){
-                qDebug()<< "Empty stack Stack which will return vertices in "
+                qDebug()<< "Empty Stack which will return vertices in "
                            "order of their (non increasing) distance from s ...";
                 //- Complexity linear O(n)
-                while ( !Stack.empty() )
+                while ( !Stack.empty() ) {
                     Stack.pop();
+                }
                 i=1;
                 qDebug()<< "...and for each vertex: empty list Ps of predecessors";
                 for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
@@ -4209,7 +4217,7 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
 
             qDebug() << "PHASE 1 (SSSP): Call BFS or dijkstra for source "
                      << s << " index " << si
-                     << " to determine distances and geodesics from s to every vertex t" ;
+                     << " to compute distance and shortest paths to every vertex t" ;
             if (!considerWeights)
                 BFS(s,si,computeCentralities, dropIsolates );
             else
@@ -4283,7 +4291,7 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                 sumSPC += SPC;   //add to sumSPC -- used later to compute mean and variance
 
                 qDebug() << "Visit all vertices in reverse order of their discovery (from s = " << s
-                         << " ) to sum dependencies. Initial Stack size has " << Stack.size();
+                         << " ) to sum dependencies. Initial Stack size " << Stack.size();
 
                 while ( !Stack.empty() ) {
                     w=Stack.top();
@@ -4308,10 +4316,10 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                                     << "sigma(w)=TM(s,w)" << sigma_w
                                     << "delta_w"<< delta_w;
                             //if ( TM.item(si,wi) > 0) {
-                            if (m_graph[si]->shortestPaths(w) > 0 ) {
+                            if ( m_graph[si]->shortestPaths(w) > 0 ) {
                                 //delta[u]=delta[u]+(1+delta[w])*(sigma[u]/sigma[w]) ;
                                 //d_su=m_graph[ui]->delta()+(1.0+m_graph[wi]->delta() ) * ( (float)TM.item(si,ui)/(float)TM.item(si,wi) );
-                                 d_su=delta_u + ( 1.0 + delta_u ) * ( (float) sigma_u / (float)sigma_w);
+                                 d_su=delta_u + ( 1.0 + delta_w ) * ( (float) sigma_u / (float)sigma_w);
                             }
                             else {
                                 d_su=delta_u;
@@ -4329,12 +4337,16 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                         m_graph[wi]->setBC (d_sw);
                     }
                 }
-            }
-        }
 
+            } // END if computeCentralities
 
+        }     // END for SSSP problem
+
+        qDebug() << "*********** MAIN LOOP (SSSP problem): FINISHED.";
 
         if (computeCentralities) {
+            qDebug() << "Graph: graphMatrixDistancesCreate() - "
+                        "Computing centralities...";
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
                 if ( dropIsolates && (*it)->isIsolated() ){
                     qDebug() << "vertex " << (*it)->name()
@@ -4393,7 +4405,10 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                          << " PC: "<< (*it)->PC();
             }
 
-            // calculate mean values and prepare to compute variances
+            qDebug() << "Graph: graphMatrixDistancesCreate() -"
+                        "Computing mean centrality values...";
+
+            // Compute mean values and prepare to compute variances
             meanSBC = sumSBC /(float) N ;
             varianceSBC=0;
             tempVarianceBC=0;
@@ -4409,6 +4424,9 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
             meanEC = sumEC /(float) N ;
             varianceEC=0;
             tempVarianceEC=0;
+
+            qDebug() << "Graph: graphMatrixDistancesCreate() - "
+                        "Computing std centralities ...";
 
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
                 if ( dropIsolates && (*it)->isIsolated() ) {
@@ -4493,17 +4511,22 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
             groupSBC=nomSBC/denomSBC;		//Calculate group Betweenness centrality
 
             calculatedCentralities=true;
-        }
-    }
+
+        }  // END if computeCentralities
+
+    }  // END else (aka E!=0)
 
 
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
-        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
-            DM.setItem(index[(*it)->name()],index[(*it1)->name()], (*it)->distance((*it1)->name()));
-            TM.setItem(index[(*it)->name()],index[(*it1)->name()], (*it)->shortestPaths((*it1)->name()));
+    qDebug() << "Graph: graphMatrixDistancesCreate() - Almost finished! "
+                "Writing distance and sigmas matrix...";
+//    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
+//        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
+//            DM.setItem(index[(*it)->name()],index[(*it1)->name()], (*it)->distance((*it1)->name()));
+//            TM.setItem(index[(*it)->name()],index[(*it1)->name()], (*it)->shortestPaths((*it1)->name()));
 
-        }
-    }
+//        }
+//    }
+
     calculatedDistances=true;
 
 }
@@ -4564,10 +4587,14 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
         qDebug("BFS: Dequeue: first element of Q is u=%i", Q.front());
         u=Q.front(); Q.pop();
         ui=index[u];
-        if ( ! m_graph [ ui ]->isEnabled() ) continue ;
+
+        if ( ! m_graph [ ui ]->isEnabled() ) {
+            continue ;
+        }
 
         if (computeCentralities){
-            qDebug("BFS: If we are to calculate centralities, we must push u=%i to global stack Stack ", u);
+            qDebug()<< "BFS: Compute centralities: Pushing u" << u
+                    << "to global Stack ";
             Stack.push(u);
         }
         qDebug() << "BFS: LOOP over every edge (u,w) e E, that is all neighbors w of vertex u";
@@ -4595,7 +4622,7 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
             //if (	DM.item(s, w) == RAND_MAX ) {
                 qDebug("BFS: first time visiting w=%i. Enqueuing w to the end of Q", w);
                 Q.push(w);
-                qDebug()<<"BFS: First check if distance(s,u) = -1 (aka infinite :)) and set it to zero";
+                qDebug()<<"BFS: First check if distance(s,u) = infinite and set it to zero";
                 //dist_u=DM.item(s,u);
                 dist_u=m_graph [ si ]->distance( u );
                 dist_w = dist_u + 1;
@@ -4623,7 +4650,8 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
                 influenceDomains.insertMulti(w,s);
 
                 if (computeCentralities){
-                    qDebug()<<"BFS: Calculate PC: store the number of nodes at distance " << dist_w << "from s";
+                    qDebug()<<"BFS: Calculate PC: store the number of nodes at distance "
+                           << dist_w << "from s";
                     sizeOfNthOrderNeighborhood.insert(
                                 dist_w,
                                 sizeOfNthOrderNeighborhood.value(dist_w)+1
@@ -4642,18 +4670,21 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
                 }
             }
 
-            qDebug("BFS: Start path counting"); 	//Is edge (u,w) on a shortest path from s to w via u?
+            qDebug()<< "BFS: Start path counting";
+            //Is edge (u,w) on a shortest path from s to w via u?
             if ( m_graph[si]->distance(w) == m_graph[si]->distance(u) + 1) {
             //if ( DM.item(s,w)==DM.item(s,u)+1) {
                 //temp= TM.item(si,wi)+TM.item(si,ui);
                 temp=m_graph[si]->shortestPaths(w)+m_graph[si]->shortestPaths(u);
-                qDebug("BFS: Found a NEW SHORTEST PATH from s=%i to w=%i via u=%i. Setting Sigma(%i, %i) = %i",s, w, u, s, w,temp);
+                qDebug()<< "BFS: Found a NEW SHORTEST PATH from s" << s
+                        << "to w"<< w << "via u"<< u
+                        << "Setting Sigma(s, w)"<< temp;
                 if (s!=w) {
                     //TM.setItem(si,wi, temp);
                     m_graph[si]->setShortestPaths(w, temp);
                 }
                 if (computeCentralities){
-                    qDebug("BFS/SC: If we are to calculate centralities, we must calculate SC as well");
+                    qDebug()<< "BFS/SC: Computing centralities: Computing SC ";
                     if ( s!=w && s != u && u!=w ) {
                         qDebug() << "BFS: setSC of u="<<u<<" to "<<m_graph[ui]->SC()+1;
                         m_graph[ui]->setSC( m_graph[ui]->SC()+1 );
@@ -4663,7 +4694,7 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
 //                                 <<s<<" w="<< w << " u="<< u;
                     }
 //                    qDebug() << "BFS/SC: SC is " << m_graph[u]->SC();
-                    qDebug() << "BFS: appending u="<< u << " to list Ps[w=" << w
+                    qDebug() << "BFS: appending u"<< u << " to list Ps[w=" << w
                              << "] with the predecessors of w on all shortest paths from s ";
                     m_graph[wi]->appendToPs(u);
                 }

@@ -879,8 +879,8 @@ float Vertex::distance (const long int &v1) {
         }
         ++it1;
     }
-    qDebug() <<"Vertex::distance() - dist"
-               << name() << " --> "<< v1 << " = "<< d;
+    qDebug() <<"Vertex::distance() - d("
+               << name() << " --> "<< v1 << ") = "<< d;
 
     return d;
 }
@@ -907,7 +907,7 @@ void Vertex::setShortestPaths (const long int &v1, const int &sp) {
  * @param v1
  */
 int Vertex::shortestPaths (const long int &v1) {
-    float sp=0;
+    int sp=0;
     int relation=0;
     H_shortestPaths::const_iterator it1=m_shortestPaths.find(v1);
     while (it1 != m_shortestPaths.constEnd() && it1.key() == v1 ) {
@@ -957,7 +957,8 @@ void Vertex::clearPs()	{
 }
 	
 void Vertex::appendToPs(long  int vertex ) {
-	qDebug() << "adding " <<  vertex << " to myPs"; 
+    qDebug()<<"Vertex::appendToPs() - vertex:"
+           << name() << "adding" <<  vertex << " to myPs";
 	myPs.append(vertex); 
 }
 
