@@ -730,7 +730,7 @@ public:
                                const bool inverseWeights, const bool dropIsolates);
     int graphConnectedness(const bool updateProgress=false) ;
 
-    void graphMatrixDistancesCreate(const bool &computeCentralities=false,
+    void graphDistanceGeodesicCompute(const bool &computeCentralities=false,
                               const bool &considerWeights=false,
                               const bool &inverseWeights=true,
                               const bool &dropIsolates=false);
@@ -896,10 +896,10 @@ private:
                   const QString &color
                   );
 
-    /** methods used by graphMatrixDistancesCreate()  */
+    /** methods used by graphDistanceGeodesicCompute()  */
     void BFS(const int &s, const int &si, const bool &computeCentralities=false,
              const bool &dropIsolates=false);
-    void dijkstra(const int &s, const bool &computeCentralities=false,
+    void dijkstra(const int &s, const int &si, const bool &computeCentralities=false,
                   const bool &inverseWeights=false,
                   const bool &dropIsolates=false);
 
@@ -938,7 +938,7 @@ private:
 
     stack<int> Stack;
 
-    /** used in resolveClasses and graphMatrixDistancesCreate() */
+    /** used in resolveClasses and graphDistanceGeodesicCompute() */
     H_StrToInt discreteDPs, discreteSDCs, discreteCCs, discreteBCs, discreteSCs;
     H_StrToInt discreteIRCCs, discreteECs, discreteEccentricities;
     H_StrToInt discretePCs, discreteICs,  discretePRPs, discretePPs, discreteEVCs;

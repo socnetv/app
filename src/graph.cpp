@@ -3529,7 +3529,7 @@ int Graph::graphDistanceGeodesic(const int i, const int j,
                     const bool inverseWeights){
     qDebug() <<"Graph::graphDistanceGeodesic()";
     if ( !calculatedDistances || graphModified() ) {
-        graphMatrixDistancesCreate(false, considerWeights, inverseWeights, false);
+        graphDistanceGeodesicCompute(false, considerWeights, inverseWeights, false);
     }
     return DM.item(index[i],index[j]);
 }
@@ -3548,7 +3548,7 @@ int Graph::graphDiameter(const bool considerWeights,
                     const bool inverseWeights){
     qDebug () << "Graph::graphDiameter()" ;
     if ( !calculatedDistances || graphModified() ) {
-        graphMatrixDistancesCreate(false, considerWeights, inverseWeights, false);
+        graphDistanceGeodesicCompute(false, considerWeights, inverseWeights, false);
     }
     return m_graphDiameter;
 }
@@ -3607,7 +3607,7 @@ float Graph::graphDistanceGeodesicAverage(const bool considerWeights,
  */
 int Graph::graphGeodesics()  {
     if (!calculatedDistances || graphModified()) {
-        graphMatrixDistancesCreate(false, false,false,false);
+        graphDistanceGeodesicCompute(false, false,false,false);
     }
     qDebug()<< "Graph::graphGeodesics() - geodesics:" << m_graphGeodesicsCount;
     return m_graphGeodesicsCount;
@@ -3653,7 +3653,7 @@ int Graph::graphConnectedness(const bool updateProgress) {
         m_graphConnectedness = 2;
     }
 
-    graphMatrixDistancesCreate(false, false,false,false);
+    graphDistanceGeodesicCompute(false, false,false,false);
     int size = vertices(false,false), i=0, j=0;
 
     m_vertexPairsNotConnected.clear();
@@ -3768,7 +3768,7 @@ void Graph::writeMatrixDistancesPlainText (const QString &fn,
     if ( !calculatedDistances || graphModified() ) {
         emit statusMessage ( tr("Writing Distance Matrix: "
                                 "Need to recompute Distances. Please wait...") );
-        graphMatrixDistancesCreate(false, considerWeights, inverseWeights, dropIsolates);
+        graphDistanceGeodesicCompute(false, considerWeights, inverseWeights, dropIsolates);
     }
 
     qDebug ("Graph::writeMatrixDistancesPlainText() writing to file");
@@ -3801,7 +3801,7 @@ void Graph::writeMatrixNumberOfGeodesicsPlainText(const QString &fn,
                                          const bool &inverseWeights) {
     qDebug ("Graph::writeMatrixNumberOfGeodesicsPlainText()");
     if ( !calculatedDistances || graphModified() ) {
-        graphMatrixDistancesCreate(false, considerWeights, inverseWeights, false);
+        graphDistanceGeodesicCompute(false, considerWeights, inverseWeights, false);
     }
 
     qDebug () << "Graph::writeMatrixNumberOfGeodesicsPlainText() - Distance matrix created. "
@@ -3853,7 +3853,7 @@ void Graph::writeEccentricity(
     QTextStream outText ( &file );
     outText.setCodec("UTF-8");
     if ( !calculatedDistances || !calculatedCentralities || graphModified() ) {
-        graphMatrixDistancesCreate(true, considerWeights,
+        graphDistanceGeodesicCompute(true, considerWeights,
                              inverseWeights, dropIsolates);
 
     }
@@ -4035,18 +4035,18 @@ void Graph::writeEccentricity(
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
+void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                                  const bool &considerWeights,
                                  const bool &inverseWeights,
                                  const bool &dropIsolates) {
-    qDebug() << "Graph::graphMatrixDistancesCreate()"
+    qDebug() << "Graph::graphDistanceGeodesicCompute()"
              << "centralities" << computeCentralities
              << "considerWeights:"<<considerWeights
              << "inverseWeights:"<<inverseWeights
              << "dropIsolates:" << dropIsolates;
 
     if ( !graphModified() && calculatedDistances && !computeCentralities)  {
-        qDebug() << "Graph::graphMatrixDistancesCreate() - not modified. Return.";
+        qDebug() << "Graph::graphDistanceGeodesicCompute() - not modified. Return.";
         return;
     }
 
@@ -4056,14 +4056,14 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
 
     int progressCounter=0;
 
-    qDebug() << "Graph::graphMatrixDistancesCreate() - Need to compute geodesic distances.";
+    qDebug() << "Graph::graphDistanceGeodesicCompute() - Need to compute geodesic distances.";
 
     emit statusMessage ( tr("Computing geodesic distances. Please wait...") );
 
     //Create a NxN DistanceMatrix. Initialise values to zero.
     // m_totalVertices = vertices(dropIsolates,false);
     int N = vertices(true,false);
-    qDebug() << "Graph::graphMatrixDistancesCreate() - Resizing Matrices to hold "
+    qDebug() << "Graph::graphDistanceGeodesicCompute() - Resizing Matrices to hold "
              << N << " vertices";
     DM.resize(N, N);
     TM.resize(N, N);
@@ -4073,9 +4073,9 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
     //drop isolated vertices from calculations (i.e. std C and group C).
     //int N=(dropIsolates) ?  (m_totalVertices - verticesListIsolated().count()):m_totalVertices;
 
-    qDebug() << "Graph::graphMatrixDistancesCreate() -Calling graphSymmetric()";
+    qDebug() << "Graph::graphDistanceGeodesicCompute() -Calling graphSymmetric()";
     m_symmetric = graphSymmetric();
-    qDebug() << "Graph::graphMatrixDistancesCreate() - now m_symmetric: "
+    qDebug() << "Graph::graphDistanceGeodesicCompute() - now m_symmetric: "
                 << m_symmetric ;
 
     if ( E == 0 ) {
@@ -4083,7 +4083,7 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
     }
     else {
 
-        qDebug() << "Graph::graphMatrixDistancesCreate() - Initializing variables";
+        qDebug() << "Graph::graphDistanceGeodesicCompute() - Initializing variables";
 
         float CC=0, BC=0, SC= 0, eccentricity=0, EC=0, PC=0;
         float SCC=0, SBC=0, SSC=0, SEC=0, SPC=0;
@@ -4094,7 +4094,7 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
         float d_sw=0, d_su=0;
 
 
-        qDebug() << "Graph: graphMatrixDistancesCreate() - initialising centrality variables ";
+        qDebug() << "Graph: graphDistanceGeodesicCompute() - initialising centrality variables ";
         maxSCC=0; minSCC=RAND_MAX; nomSCC=0; denomSCC=0; groupCC=0; maxNodeSCC=0;
         minNodeSCC=0; sumSCC=0; sumCC=0;
         discreteCCs.clear(); classesSCC=0;
@@ -4127,6 +4127,7 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                  << " outboundEdgesVert "<<  outboundEdgesVert;
         qDebug() << "	E " << E <<  " N " << N;
 
+
         qDebug() << "	Set all their pair-wise distances to RAND_MAX";
         DM.fillMatrix(RAND_MAX);
         qDebug () << "	Set all pair-wise shortest-path counts (sigmas) to 0";
@@ -4144,7 +4145,7 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
             //Zero centrality indeces of each vertex
             if (computeCentralities) {
 
-                qDebug() << " Graph:graphMatrixDistancesCreate() -"
+                qDebug() << " Graph:graphDistanceGeodesicCompute() -"
                             "Initializing actor centrality indices";
                 (*it)->setBC( 0.0 );
                 (*it)->setSC( 0.0 );
@@ -4158,19 +4159,19 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
         }
 
 
-        qDebug() << "Graph: graphMatrixDistancesCreate() - "
+        qDebug() << "Graph: graphDistanceGeodesicCompute() - "
                     " initialising variables for max centrality scores";
         if (m_symmetric) {
-            maxIndexBC= ( N == 2 ) ? 1 :  ( N-1.0) *  (N-2.0)  / 2.0;
-            maxIndexSC= ( N == 2 ) ? 1 :  ( N-1.0) *  (N-2.0) / 2.0;
+            maxIndexBC= ( N == 2 ) ? 1 : ( N-1.0 ) * ( N-2.0 ) / 2.0;
+            maxIndexSC= ( N == 2 ) ? 1 : ( N-1.0 ) * ( N-2.0 ) / 2.0;
             maxIndexCC=N-1.0;
             maxIndexPC=N-1.0;
             qDebug("############# m_symmetric - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
         }
         else {
 
-            maxIndexBC= ( N == 2 ) ? 1 : ( N-1.0) *  (N-2.0);  // fix N=2 case where maxIndex becomes zero
-            maxIndexSC= ( N == 2 ) ? 1 : ( N-1.0) *  (N-2.0);
+            maxIndexBC= ( N == 2 ) ? 1 : ( N-1.0 ) * ( N-2.0 );  // fix N=2 case where maxIndex becomes zero
+            maxIndexSC= ( N == 2 ) ? 1 : ( N-1.0 ) * ( N-2.0 );
             maxIndexPC=N-1.0;
             maxIndexCC=N-1.0;
             qDebug("############# NOT SymmetricAdjacencyMatrix - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
@@ -4221,7 +4222,7 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
             if (!considerWeights)
                 BFS(s,si,computeCentralities, dropIsolates );
             else
-                dijkstra(s, computeCentralities, inverseWeights, dropIsolates);
+                dijkstra(s, si,computeCentralities, inverseWeights, dropIsolates);
 
 
             qDebug()<< "***** FINISHED PHASE 1 (SSSP) BFS / DIJKSTRA ALGORITHM. "
@@ -4328,14 +4329,23 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                             qDebug("Assigning new delta d_su = %f to u = %i", d_su, u);
                             m_graph[ui]->setDelta( d_su);
                         }
+
                     qDebug()<<" Adding delta_w to BC of w";
+
                     if  (w!=s) {
-                        qDebug("w!=s. For this furthest vertex we need to add its new delta %f to old BC index: %f",
-                               delta_w, m_graph[wi]->BC());
+
+                        qDebug() << "w!=s. For this furthest vertex we need to add its new delta"
+                                 << delta_w
+                                 << "to old BC index:
+                                 <<  m_graph[wi]->BC();
+
                         d_sw = m_graph[wi]->BC() + delta_w;
+
                         qDebug("New BC = d_sw = %f", d_sw);
+
                         m_graph[wi]->setBC (d_sw);
                     }
+
                 }
 
             } // END if computeCentralities
@@ -4345,7 +4355,7 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
         qDebug() << "*********** MAIN LOOP (SSSP problem): FINISHED.";
 
         if (computeCentralities) {
-            qDebug() << "Graph: graphMatrixDistancesCreate() - "
+            qDebug() << "Graph: graphDistanceGeodesicCompute() - "
                         "Computing centralities...";
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
                 if ( dropIsolates && (*it)->isIsolated() ){
@@ -4405,7 +4415,7 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
                          << " PC: "<< (*it)->PC();
             }
 
-            qDebug() << "Graph: graphMatrixDistancesCreate() -"
+            qDebug() << "Graph: graphDistanceGeodesicCompute() -"
                         "Computing mean centrality values...";
 
             // Compute mean values and prepare to compute variances
@@ -4425,7 +4435,7 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
             varianceEC=0;
             tempVarianceEC=0;
 
-            qDebug() << "Graph: graphMatrixDistancesCreate() - "
+            qDebug() << "Graph: graphDistanceGeodesicCompute() - "
                         "Computing std centralities ...";
 
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
@@ -4517,15 +4527,15 @@ void Graph::graphMatrixDistancesCreate(const bool &computeCentralities,
     }  // END else (aka E!=0)
 
 
-    qDebug() << "Graph: graphMatrixDistancesCreate() - Almost finished! "
+    qDebug() << "Graph: graphDistanceGeodesicCompute() - Almost finished! "
                 "Writing distance and sigmas matrix...";
-//    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
-//        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
-//            DM.setItem(index[(*it)->name()],index[(*it1)->name()], (*it)->distance((*it1)->name()));
-//            TM.setItem(index[(*it)->name()],index[(*it1)->name()], (*it)->shortestPaths((*it1)->name()));
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
+        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
+            DM.setItem(index[(*it)->name()],index[(*it1)->name()], (*it)->distance((*it1)->name()));
+            TM.setItem(index[(*it)->name()],index[(*it1)->name()], (*it)->shortestPaths((*it1)->name()));
 
-//        }
-//    }
+        }
+    }
 
     calculatedDistances=true;
 
@@ -4584,9 +4594,10 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
 
     qDebug()<< "BFS: LOOP: While Q not empty ";
     while ( !Q.empty() ) {
-        qDebug("BFS: Dequeue: first element of Q is u=%i", Q.front());
+
         u=Q.front(); Q.pop();
         ui=index[u];
+        qDebug()<< "BFS: Dequeue: first element of Q is u"<<u<< "index"<< ui;
 
         if ( ! m_graph [ ui ]->isEnabled() ) {
             continue ;
@@ -4732,29 +4743,35 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
             c) Each vertex u popped from prQ is pushed to a stack Stack
 
 */
-void Graph::dijkstra(const int &s, const bool &computeCentralities,
+void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralities,
                      const bool &inverseWeights,
                      const bool &dropIsolates){
     Q_UNUSED(dropIsolates);
-    int u,w,v, temp=0;
-    int relation=0, target=0;
+    int u=0,ui=0, w=0, wi=0, v=0, vi=0, temp=0;
+    int relation=0;
     float  weight=0, dist_u=0,  dist_w=0;
     bool edgeStatus=false;
     H_edges::const_iterator it1;
+    QList<Vertex*>::const_iterator it;
 
     qDebug() << "dijkstra: Construct a priority queue prQ of all vertices-distances";
+
     priority_queue<GraphDistance, vector<GraphDistance>, GraphDistancesCompare> prQ;
 
     //set distance of s from s equal to 0
-    DM.setItem(s,s,0);
+    //DM.setItem(s,s,0);
+    m_graph[si]->setDistance(s,0);
     //set sigma of s from s equal to 1
-    TM.setItem(s,s,1);
+    //TM.setItem(s,s,1);
+    m_graph[si]->setShortestPaths(s,1);
 
-    QList<Vertex*>::const_iterator it;
+
+
+
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
         v=index[ (*it)->name() ];
         if (v != s ){
-            // NOTE: DM(i,j) init to RAND_MAX already done in graphMatrixDistancesCreate
+            // NOTE: DM(i,j) init to RAND_MAX already done in graphDistanceGeodesicCompute
             // Not needed here: DM.setItem(s,v,RAND_MAX);
 //            qDebug() << " push " << v << " to prQ with infinite distance from s";
 //            prQ.push(GraphDistance(v,RAND_MAX));
@@ -4773,22 +4790,30 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
     qDebug() << "### dijkstra: LOOP: While prQ not empty ";
     while ( !prQ.empty() ) {
         u=prQ.top().target;
-        qDebug()<< "    *** dijkstra: take u = "<< u
-                   << " from prQ which has minimum distance from s =" << s;
+        ui=index[u];
+
+        qDebug()<< "    *** dijkstra: take u"<< u << "index" << ui
+                   << " from prQ. It has minimum distance from s =" << s;
          prQ.pop();
 
-        if ( ! m_graph [ u ]->isEnabled() )
+        if ( ! m_graph [ ui ]->isEnabled() )
             continue ;
 
         if (computeCentralities){
-            qDebug()<< "    dijkstra: We will calculate centralities, push u ="<< u
-                    << " to global stack Stack ";
+
+            qDebug()<< "    dijkstra: Compute centralities: pushing u ="
+                    << u
+                    << " to global Stack ";
+
             Stack.push(u);
         }
-        qDebug() << "    *** dijkstra: LOOP over every edge ("<< u <<", w ) e E, "
-                 <<  "for each neighbor w of u";
-        it1=m_graph [ u ] ->m_outEdges.cbegin();
-        while ( it1!=m_graph [ u ] -> m_outEdges.cend() ) {
+
+        qDebug() << "    *** dijkstra: LOOP over every edge ("<< u <<", w ) e E... ";
+
+        it1=m_graph [ ui ] ->m_outEdges.cbegin();
+
+        while ( it1!=m_graph [ ui ] -> m_outEdges.cend() ) {
+
             relation = it1.value().first;
             if ( relation != relationCurrent() )  {
                 ++it1;
@@ -4799,11 +4824,14 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
                 ++it1;
                 continue;
             }
-            target = it1.key();
+
+            w = it1.key();
+            wi=index[ w ];
+
             weight = it1.value().second.first;
-            w=index[ target ];
-            qDebug()<<"        -- (u, w) = ("<< u << ","<< w << ") =" << weight
-                   <<"( node"<< target << ")";
+
+            qDebug()<<"        edge (u, w) = ("<< u << ","<< w << ") =" << weight;
+
             if (inverseWeights) { //only invert if user asked to do so
                 weight = 1.0 / weight;
                 qDebug () << "       inverting weight to " << weight;
@@ -4811,7 +4839,8 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
 
             qDebug() <<"        Start path discovery";
 
-            dist_u=DM.item(s,u);
+            //dist_u=DM.item(s,u);
+            dist_u=m_graph [ si ]->distance( u );
 
             if (dist_u == RAND_MAX || dist_u < 0) {
                 dist_w = RAND_MAX;
@@ -4823,50 +4852,63 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
                 qDebug() << "        dist_w = dist_u + weight = "
                          << dist_u << "+" << weight <<  "=" <<dist_w ;
             }
+
             qDebug() << "        RELAXATION: check if dist_w =" << dist_w
-                     <<  " is shorter than current DM(s,w) = DM("
-                      << s <<","<<w <<")" <<DM.item(s, w) ;
-            if  (dist_w == DM.item(s, w)  && dist_w < RAND_MAX) {
+                     <<  "  shorter than current d(s=" << s <<",w="<<w <<")="
+                      <<m_graph [ si ]->distance( w );
+
+            if ( ( dist_w == m_graph [ si ]->distance( w ) ) &&  dist_w < RAND_MAX ) {
+            //if  (dist_w == DM.item(s, w)  && dist_w < RAND_MAX) {
+
                 qDebug() <<"        dist_w : " << dist_w
-                         <<  " ==  DM(s,w) : " << DM.item(s, w);
-                temp= TM.item(s,w)+TM.item(s,u);
+                         <<  " ==  d(s,w) : " << m_graph [ si ]->distance( w ) ;
+
+                //temp = TM.item(s,w)+TM.item(s,u);
+                temp = m_graph[si]->shortestPaths(w) + m_graph[si]->shortestPaths(u);
+
                 qDebug() <<"        Found ANOTHER SP from s =" << s
                         << " to w=" << w << " via u="<< u
                         << " - Setting Sigma(s, w) = "<< temp;
-                if (s!=w)
-                    TM.setItem(s,w, temp);
+
+                if (s!=w) {
+                    //TM.setItem(s,w, temp);
+                    m_graph[si]->setShortestPaths(w, temp);
+                }
+
                 if (computeCentralities){
 
                     if ( s!=w && s != u && u!=w ) {
                         qDebug() << "        Calculate SC: setSC of u ="<<u
-                                 <<" to "<<m_graph[u]->SC()+1;
-                        m_graph[u]->setSC(m_graph[u]->SC()+1);
+                                 <<" to "<<m_graph[ui]->SC()+1;
+                        m_graph[ui]->setSC(m_graph[ui]->SC()+1);
                     }
                     else {
                         qDebug() << "        Skipping setSC of u, because s="
                                  <<s<<" w="<< w << " u="<< u;
                     }
-                    qDebug() << "        SC is " << m_graph[u]->SC();
+                    qDebug() << "        SC is " << m_graph[ui]->SC();
 
                     qDebug() << "        Appending u="<< u << " to list Ps[w =" << w
                              << "] with the predecessors of w on all shortest paths from s ";
-                    m_graph[w]->appendToPs(u);
+                    m_graph[wi]->appendToPs(u);
                 }
             }
 
-            else if (dist_w > 0 && dist_w < DM.item(s, w)  ) {
+            else if (dist_w > 0 && dist_w < m_graph [ si ]->distance( w )  ) {
+            //else if (dist_w > 0 && dist_w < DM.item(s, w)  ) {
 
                 prQ.push(GraphDistance(w,dist_w)); //@FIXME: w might have been already visited?
                 //If so, we might use QMap<int> which is sorted (minimum)
                 // and also provides contain()
-                DM.setItem(s, w, dist_w);
+                //DM.setItem(s, w, dist_w);
+                m_graph[si]->setDistance(w,dist_w);
 
                 m_graphAverageDistance += dist_w;
                 m_graphGeodesicsCount++;
 
-                qDebug() << "        Found new smaller SP! Set DM (s,w) = DM("
-                         << s << ","<< w
-                         << ") = "<< dist_w << "="<< DM.item(s,w)
+                qDebug() << "        Found new smaller SP! Set d ( s="
+                         << s << ", w="<< w
+                         << " ) = "<< dist_w << "="<< m_graph[si]->distance(w)
                          << " m_graphAverageDistance ="
                          << m_graphAverageDistance
                        << "Inserting" << w
@@ -4874,7 +4916,7 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
                        << "and" << s
                        << "to inflDomain I of"<< w;
 
-                XRM.setItem(s,w,1);
+                XRM.setItem(si,wi,1);
                 influenceRanges.insertMulti(s,w);
                 influenceDomains.insertMulti(w,s);
 
@@ -4882,7 +4924,8 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
                     qDebug()<<"        Found NEW SP from s =" << s
                            << " to w =" << w << " via u ="<< u
                            << " - Setting Sigma(s, w) = 1 ";
-                    TM.setItem(s,w, 1);
+                    //TM.setItem(s,w, 1);
+                    m_graph[si]->setShortestPaths(w, 1);
                 }
 
                 if (computeCentralities){
@@ -4894,14 +4937,14 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
                            << dist_w << "from s is "
                            <<  sizeOfNthOrderNeighborhood.value(dist_w);
 
-                    m_graph [s]->setCC (m_graph [s]->CC() + dist_w);
+                    m_graph [si]->setCC (m_graph [si]->CC() + dist_w);
                     qDebug()<<"        For CC: sum of distances ="
-                           <<  m_graph [s]->CC() << " (will invert it l8r)";
+                           <<  m_graph [si]->CC() << " (will invert it l8r)";
 
-                    if (m_graph [s]->eccentricity() < dist_w )
-                        m_graph [s]->setEccentricity(dist_w);
+                    if (m_graph [si]->eccentricity() < dist_w )
+                        m_graph [si]->setEccentricity(dist_w);
                     qDebug()<<"        For EC: max distance ="
-                              <<  m_graph [s]->eccentricity();
+                              <<  m_graph [si]->eccentricity();
                 }
 
                 if ( dist_w > m_graphDiameter){
@@ -4934,7 +4977,7 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
 
 
 /**
-    minmax() facilitates the calculations of minimum and maximum centralities during graphMatrixDistancesCreate()
+    minmax() facilitates the calculations of minimum and maximum centralities during graphDistanceGeodesicCompute()
 */
 void Graph::minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int &minNode) {
     qDebug() << "MINMAX C = " <<  C << "  max = " << max << "  min = " << min << " name = " <<  v->name();
@@ -4953,7 +4996,7 @@ void Graph::minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int
 
 /** 	This method calculates the number of discrete centrality classes of all vertices
     It stores that number in a QHash<QString,int> type where the centrality value is the key.
-    Called from graphMatrixDistancesCreate()
+    Called from graphDistanceGeodesicCompute()
 */
 void Graph::resolveClasses(float C, H_StrToInt &discreteClasses, int &classes){
     H_StrToInt::iterator it2;
@@ -6021,7 +6064,7 @@ void Graph::writeCentralityCloseness( const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if (graphModified() || !calculatedCentralities ) {
-            graphMatrixDistancesCreate(true, considerWeights,
+            graphDistanceGeodesicCompute(true, considerWeights,
                                  inverseWeights, dropIsolates);
     }
     else {
@@ -6279,7 +6322,7 @@ void Graph::centralityClosenessIR(const bool considerWeights,
     }
 
      if (!calculatedDistances || graphModified()) {
-         graphMatrixDistancesCreate(false,considerWeights,inverseWeights,dropIsolates);
+         graphDistanceGeodesicCompute(false,considerWeights,inverseWeights,dropIsolates);
      }
 
     // calculate centralities
@@ -6572,7 +6615,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if (graphModified() || !calculatedCentralities ) {
-        graphMatrixDistancesCreate(true, considerWeights, inverseWeights, dropIsolates);
+        graphDistanceGeodesicCompute(true, considerWeights, inverseWeights, dropIsolates);
     }
     else {
         qDebug() << "Graph::writeCentralityBetweenness() -"
@@ -6820,7 +6863,7 @@ void Graph::writeCentralityStress( const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if (graphModified() || !calculatedCentralities ) {
-        graphMatrixDistancesCreate(true, considerWeights, inverseWeights,dropIsolates);
+        graphDistanceGeodesicCompute(true, considerWeights, inverseWeights,dropIsolates);
     }
     else {
         qDebug() << " graph not modified, and centralities calculated. Returning";
@@ -7025,7 +7068,7 @@ void Graph::writeCentralityEccentricity(const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if (graphModified() || !calculatedCentralities ) {
-        graphMatrixDistancesCreate(true, considerWeights, inverseWeights,dropIsolates);
+        graphDistanceGeodesicCompute(true, considerWeights, inverseWeights,dropIsolates);
     }
     else {
         qDebug() << " graph not modified, and centralities calculated. Returning";
@@ -7217,7 +7260,7 @@ void Graph::writeCentralityPower(const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if (graphModified() || !calculatedCentralities ) {
-        graphMatrixDistancesCreate(true, considerWeights, inverseWeights, dropIsolates);
+        graphDistanceGeodesicCompute(true, considerWeights, inverseWeights, dropIsolates);
     }
     else {
         qDebug() << " graph not modified, and centralities calculated. Returning";
@@ -7865,7 +7908,7 @@ void Graph::prestigeProximity( const bool considerWeights,
     }
 
     if (!calculatedDistances || graphModified()) {
-        graphMatrixDistancesCreate(false,considerWeights, inverseWeights,inverseWeights);
+        graphDistanceGeodesicCompute(false,considerWeights, inverseWeights,inverseWeights);
     }
 
     // calculate centralities
@@ -9497,7 +9540,7 @@ void Graph::writeMatrixWalks (const QString &fn,
 int Graph::reachable(const int &v1, const int &v2) {
     qDebug()<< "Graph::reachable()";
     if (!calculatedDistances || graphModified() )
-        graphMatrixDistancesCreate(false);
+        graphDistanceGeodesicCompute(false);
     return DM.item(v1-1,v2-1);
 }
 
@@ -9513,7 +9556,7 @@ QList<int> Graph::vertexinfluenceRange(int v1){
     qDebug() << "Graph::vertexinfluenceRange() ";
     if (!calculatedDistances|| graphModified()) {
         // Construct a list of influence ranges for each node
-        graphMatrixDistancesCreate(false, false,false,false);
+        graphDistanceGeodesicCompute(false, false,false,false);
     }
     return influenceRanges.values(v1);
 }
@@ -9533,7 +9576,7 @@ QList<int> Graph::vertexinfluenceDomain(int v1){
     qDebug() << "Graph::vertexinfluenceDomain() ";
     if (!calculatedDistances || graphModified()) {
         // Construct a list of influence domains for each node
-        graphMatrixDistancesCreate(false, false,false,false);
+        graphDistanceGeodesicCompute(false, false,false,false);
     }
     return influenceDomains.values(v1);
 }
@@ -9568,7 +9611,7 @@ void Graph::writeReachabilityMatrixPlainText(const QString &fn, const bool &drop
     outText << "If nodes i and j are reachable then XR(i,j)=1 otherwise XR(i,j)=0.\n\n";
 
     if (!calculatedDistances || graphModified()) {
-        graphMatrixDistancesCreate(false,false,false,dropIsolates);
+        graphDistanceGeodesicCompute(false,false,false,dropIsolates);
     }
 
     outText << XRM ;
@@ -10433,7 +10476,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
         STR_EQUIV=AM;
         break;
     case MATRIX_DISTANCES:
-        graphMatrixDistancesCreate(false, considerWeights, inverseWeights, dropIsolates);
+        graphDistanceGeodesicCompute(false, considerWeights, inverseWeights, dropIsolates);
         STR_EQUIV=DM;
         break;
     default:
@@ -11114,7 +11157,7 @@ void Graph::writeMatrixSimilarityMatchingPlain(const QString fileName,
         graphMatrixSimilarityMatchingCreate(AM, SCM, measure, varLocation, diagonal, considerWeights);
     }
     else if (matrix == "Distances") {
-        graphMatrixDistancesCreate();
+        graphDistanceGeodesicCompute();
         graphMatrixSimilarityMatchingCreate(DM, SCM, measure, varLocation, diagonal, considerWeights);
     }
     else {
@@ -11395,7 +11438,7 @@ void Graph::writeMatrixSimilarityMatching(const QString fileName,
                                 varLocation, diagonal, considerWeights);
     }
     else if (matrix == "Distances") {
-        graphMatrixDistancesCreate();
+        graphDistanceGeodesicCompute();
         graphMatrixSimilarityMatchingCreate(DM, SCM, measureInt,
                                 varLocation, diagonal, considerWeights);
     }
@@ -11583,7 +11626,7 @@ void Graph::writeMatrixSimilarityPearson(const QString fileName,
         graphMatrixSimilarityPearsonCreate(AM, PCC, varLocation,diagonal);
     }
     else if (matrix == "Distances") {
-        graphMatrixDistancesCreate();
+        graphDistanceGeodesicCompute();
         graphMatrixSimilarityPearsonCreate(DM, PCC, varLocation,diagonal);
     }
     else {
@@ -11725,7 +11768,7 @@ void Graph::writeMatrixSimilarityPearsonPlainText(const QString fileName,
         graphMatrixSimilarityPearsonCreate(AM, PCC, varLocation,diagonal);
     }
     else if (matrix == "Distances") {
-        graphMatrixDistancesCreate();
+        graphDistanceGeodesicCompute();
         graphMatrixSimilarityPearsonCreate(DM, PCC, varLocation,diagonal);
     }
     else {
@@ -16897,13 +16940,13 @@ void Graph::writeMatrix (const QString &fn,
         break;
     case MATRIX_DISTANCES:
         if ( !calculatedDistances || graphModified() ) {
-            graphMatrixDistancesCreate(false, considerWeights, inverseWeights, dropIsolates);
+            graphDistanceGeodesicCompute(false, considerWeights, inverseWeights, dropIsolates);
         }
         emit statusMessage ( tr("Distances recomputed. Writing Distances Matrix...") );
         break;
     case MATRIX_GEODESICS:
         if ( !calculatedDistances || graphModified() ) {
-            graphMatrixDistancesCreate(false, considerWeights, inverseWeights, false);
+            graphDistanceGeodesicCompute(false, considerWeights, inverseWeights, false);
         }
         emit statusMessage ( tr("Distances recomputed. Writing Geodesics Matrix...") );
         break;
@@ -16914,7 +16957,7 @@ void Graph::writeMatrix (const QString &fn,
         break;
     case MATRIX_REACHABILITY:
         if (!calculatedDistances || graphModified()) {
-            graphMatrixDistancesCreate(false,false,false,dropIsolates);
+            graphDistanceGeodesicCompute(false,false,false,dropIsolates);
         }
         emit statusMessage ( tr("Distances recomputed. Writing Reachability Matrix...") );
         break;
@@ -17971,7 +18014,7 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
     }
     else{
         if (graphModified() || !calculatedCentralities )
-            graphMatrixDistancesCreate(true, considerWeights,
+            graphDistanceGeodesicCompute(true, considerWeights,
                                    inverseWeights, dropIsolates);
     }
 
@@ -18561,7 +18604,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
     qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - Compute dij, where (i,j) in E";
 
     if ( !calculatedDistances || graphModified() ) {
-        graphMatrixDistancesCreate(false,considerWeights,inverseWeights, dropIsolates);
+        graphDistanceGeodesicCompute(false,considerWeights,inverseWeights, dropIsolates);
     }
     qDebug() << " DM : ";
     //DM.printMatrixConsole();

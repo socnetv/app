@@ -856,9 +856,9 @@ float Vertex::hasEdgeFrom(const long int &v2, const bool &allRelations){
  * @param dist
  */
 void Vertex::setDistance (const long int &v1, const float &d) {
-    qDebug() <<"Vertex::setDistance() - dist"
-            << name() << " --> "<< v1 << " = "<< d
-               << " relation " << m_curRelation;
+//    qDebug() <<"Vertex::setDistance() - dist"
+//            << name() << " --> "<< v1 << " = "<< d
+//               << " relation " << m_curRelation;
     m_distance.insert( v1, pair_i_f(m_curRelation, d ) );
 }
 
@@ -879,8 +879,8 @@ float Vertex::distance (const long int &v1) {
         }
         ++it1;
     }
-    qDebug() <<"Vertex::distance() - d("
-               << name() << " --> "<< v1 << ") = "<< d;
+//    qDebug() <<"Vertex::distance() - d("
+//               << name() << " --> "<< v1 << ") = "<< d;
 
     return d;
 }
@@ -895,9 +895,9 @@ float Vertex::distance (const long int &v1) {
  * @param sp
  */
 void Vertex::setShortestPaths (const long int &v1, const int &sp) {
-    qDebug() <<"Vertex::setShortestPaths() - sp"
-            << name() << " --> "<< v1 << " = "<< sp
-               << " relation " << m_curRelation;
+//    qDebug() <<"Vertex::setShortestPaths() - sp"
+//            << name() << " --> "<< v1 << " = "<< sp
+//               << " relation " << m_curRelation;
     m_shortestPaths.insert( v1, pair_i_i( m_curRelation, sp ) );
 }
 
@@ -918,8 +918,8 @@ int Vertex::shortestPaths (const long int &v1) {
         }
         ++it1;
     }
-    qDebug() <<"Vertex::shortestPaths() - sp ("
-               << name() << "->"<< v1 << ") = "<< sp;
+//    qDebug() <<"Vertex::shortestPaths() - sp ("
+//               << name() << "->"<< v1 << ") = "<< sp;
 
     return sp;
 }
