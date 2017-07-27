@@ -4052,6 +4052,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 
     QList<Vertex*>::const_iterator it, it1;
     QList<int>::iterator it2;
+
     int w=0, u=0,s=0, i=0, si=0, ui=0, wi=0;
 
     int progressCounter=0;
@@ -4092,7 +4093,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
         float sigma_u=0, sigma_w=0;
         float delta_u=0, delta_w=0;
         float d_sw=0, d_su=0;
-
+        H_f_i::const_iterator hfi ; // for Power Centrality
 
         qDebug() << "Graph: graphDistanceGeodesicCompute() - initialising centrality variables ";
         maxSCC=0; minSCC=RAND_MAX; nomSCC=0; denomSCC=0; groupCC=0; maxNodeSCC=0;
@@ -4211,9 +4212,10 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                 for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
                     (*it1)->clearPs();
                     //initialize all sizeOfNthOrderNeighborhood to zero
-                    sizeOfNthOrderNeighborhood.insert(i, 0);
+                    //sizeOfNthOrderNeighborhood.insert(i, 0);
                     i++;
                 }
+                sizeOfNthOrderNeighborhood.clear();
             }
 
             qDebug() << "PHASE 1 (SSSP): Call BFS or dijkstra for source "
@@ -4230,14 +4232,13 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 
             if (computeCentralities){
 
-                qDebug() << "Set CC for source" << s
-                         << "  with index" << si ;
-
                 if ( (*it)->CC() != 0 ) //Closeness centrality must be inverted
                     CC=1.0/(*it)->CC();
                 else
                     CC=0;
                 (*it)->setCC( CC );
+
+                qDebug() << "s" << s << "index" << si << "CC" << CC;
 
                 //Check eccentricity (max geodesic distance)
                 eccentricity = (*it)->eccentricity();
@@ -4253,6 +4254,8 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                 (*it)->setSEC( EC ); //Set std EC = EC
                 sumEC+=EC;  //set sum EC
 
+                qDebug() << "s" << s << "index" << si << "EC" << CC;
+
                 //Find min/max Eccentricity
                 minmax( eccentricity, (*it), maxEccentricity, minEccentricity,
                         maxNodeEccentricity, minNodeEccentricity) ;
@@ -4260,28 +4263,26 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                                classesEccentricity ,(*it)->name() );
                 sumEccentricity+=eccentricity;
 
-                qDebug()<< "PHASE 2 (ACCUMULATION): Start back propagation of dependencies." <<
-                       "Set dependency delta[u]=0 on each vertex";
 
-                i=1; //used in calculating power centrality
+                //Compute Power Centrality: In = [ 1/(N-1) ] * ( Nd1 + Nd2 * 1/2 + ... + Ndi * 1/i )
+                // where
+                // Ndi (sizeOfNthOrderNeighborhood) is the number of nodes at distance i from this node.
+                // N is the sum Nd0 + Nd1 + Nd2 + ... + Ndi, that is the amount of nodes in the same component as the current node
+
                 sizeOfComponent = 1;
                 PC=0;
-                for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
+                hfi = sizeOfNthOrderNeighborhood.constBegin();
+                //FIXME do we need to check for disabled nodes somewhere?
+                 while (hfi != sizeOfNthOrderNeighborhood.constEnd()) {
+                     qDebug() << " sizeOfNthOrderNeighborhood.value("<< hfi.key() <<")"
+                                 << hfi.value();
+                     PC += ( 1.0 / hfi.key() ) * hfi.value();
+                     sizeOfComponent += hfi.value();
+                     ++hfi;
+                 }
 
-                    (*it1)->setDelta(0.0);
-                    //Calculate Power Centrality: In = [ 1/(N-1) ] * ( Nd1 + Nd2 * 1/2 + ... + Ndi * 1/i )
-                    // where Ndi (sizeOfNthOrderNeighborhood) is the number of nodes at distance i from this node.
-                    //FIXME do we need to check for disabled nodes somewhere?
-                    qDebug() << " sizeOfNthOrderNeighborhood.value("<< i<<")"
-                                << sizeOfNthOrderNeighborhood.value(i);
-                    PC += ( 1.0 / (float) i ) * sizeOfNthOrderNeighborhood.value(i);
-                    // where N is the sum Nd0 + Nd1 + Nd2 + ... + Ndi, that is the amount of nodes in the same component as the current node
-                    sizeOfComponent += sizeOfNthOrderNeighborhood.value(i);
-                    i++;
-                }
-
-                (*it)->setPC( PC );	//Power Centrality is stdized already
-                sumPC += PC;   //add to temp sumSPC
+                (*it)->setPC( PC );
+                sumPC += PC;
                 if ( sizeOfComponent != 1 )
                     SPC = ( 1.0/(sizeOfComponent-1.0) ) * PC;
                 else
@@ -4290,6 +4291,15 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                 (*it)->setSPC( SPC );	//Set std PC
 
                 sumSPC += SPC;   //add to sumSPC -- used later to compute mean and variance
+
+                qDebug() << "s" << s << "index" << si << "PC" << PC;
+
+                qDebug()<< "PHASE 2 (ACCUMULATION): Start back propagation of dependencies." <<
+                       "Set dependency delta[u]=0 on each vertex";
+
+                for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
+                    (*it1)->setDelta(0.0);
+                }
 
                 qDebug() << "Visit all vertices in reverse order of their discovery (from s = " << s
                          << " ) to sum dependencies. Initial Stack size " << Stack.size();
@@ -4301,8 +4311,12 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                              << "This is the furthest vertex from s. Popping it.";
                     Stack.pop();
                     QList<int> lst=m_graph[wi]->Ps();
-                    qDebug("preLOOP: Checking size of predecessors list Ps[w]...  = %i ",lst.size());
-                    qDebug("LOOP: for every other vertex u in the list of predecessors Ps[w] of w....");
+                    qDebug() << "preLOOP: Size of predecessors list Ps[w]"<< lst.size();
+                    qDebug() << "Ps[w]" ;
+                    for ( it2=lst.begin(); it2 != lst.end(); it2++ ){
+                        qDebug() << (*it2);
+                    }
+                    qDebug()<< "LOOP: for every other vertex u in the list of predecessors Ps of w"<<w;
                     if (lst.size() > 0) // just in case...do a sanity check
                         for ( it2=lst.begin(); it2 != lst.end(); it2++ ){
                             u=(*it2);
@@ -4341,7 +4355,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 
                         d_sw = m_graph[wi]->BC() + delta_w;
 
-                        qDebug("New BC = d_sw = %f", d_sw);
+                        qDebug() << "s" << s << "index" << si << "BC = d_sw" << d_sw;
 
                         m_graph[wi]->setBC (d_sw);
                     }
@@ -4663,9 +4677,10 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
                 if (computeCentralities){
                     qDebug()<<"BFS: Calculate PC: store the number of nodes at distance "
                            << dist_w << "from s";
+
                     sizeOfNthOrderNeighborhood.insert(
                                 dist_w,
-                                sizeOfNthOrderNeighborhood.value(dist_w)+1
+                                sizeOfNthOrderNeighborhood.value(dist_w,0)+1
                                 );
                     qDebug()<<"BFS: Calculate CC: the sum of distances (will invert it l8r)";
                     m_graph [si]->setCC (m_graph [si]->CC() + dist_w);
@@ -4747,14 +4762,14 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
                      const bool &inverseWeights,
                      const bool &dropIsolates){
     Q_UNUSED(dropIsolates);
-    int u=0,ui=0, w=0, wi=0, v=0, vi=0, temp=0;
+    int u=0,ui=0, w=0, wi=0, v=0, temp=0;
     int relation=0;
     float  weight=0, dist_u=0,  dist_w=0;
     bool edgeStatus=false;
     H_edges::const_iterator it1;
     QList<Vertex*>::const_iterator it;
 
-    qDebug() << "dijkstra: Construct a priority queue prQ of all vertices-distances";
+    qDebug() << "### dijkstra: Construct a priority queue prQ of all vertices-distances";
 
     priority_queue<GraphDistance, vector<GraphDistance>, GraphDistancesCompare> prQ;
 
@@ -4779,12 +4794,12 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
             //    previous[v]  := undefined
         }
     }
-    qDebug() << " push source " << s << " to prQ with 0 distance from s";
+    qDebug() << "### dijkstra: push s" << s << "to prQ with 0 distance from s";
 
     //crucial: without it the priority prQ would pop arbitrary node at first loop
     prQ.push(GraphDistance(s,0));
 
-    qDebug()<<"dijkstra: prQ size "<< prQ.size();
+    qDebug()<<"### dijkstra: prQ size "<< prQ.size();
 
 
     qDebug() << "### dijkstra: LOOP: While prQ not empty ";
@@ -4801,14 +4816,14 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
 
         if (computeCentralities){
 
-            qDebug()<< "    dijkstra: Compute centralities: pushing u ="
+            qDebug()<< "    *** dijkstra: Compute centralities: pushing u ="
                     << u
                     << " to global Stack ";
 
             Stack.push(u);
         }
 
-        qDebug() << "    *** dijkstra: LOOP over every edge ("<< u <<", w ) e E... ";
+        qDebug() << "    --- dijkstra: LOOP over every edge ("<< u <<", w ) e E... ";
 
         it1=m_graph [ ui ] ->m_outEdges.cbegin();
 
@@ -4830,43 +4845,43 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
 
             weight = it1.value().second.first;
 
-            qDebug()<<"        edge (u, w) = ("<< u << ","<< w << ") =" << weight;
+            qDebug()<<"    --- dijkstra: edge (u, w) = ("<< u << ","<< w << ") =" << weight;
 
             if (inverseWeights) { //only invert if user asked to do so
                 weight = 1.0 / weight;
-                qDebug () << "       inverting weight to " << weight;
+                qDebug () << "    --- dijkstra: inverting weight to " << weight;
             }
 
-            qDebug() <<"        Start path discovery";
+            qDebug() <<"    --- dijkstra: Start path discovery";
 
             //dist_u=DM.item(s,u);
             dist_u=m_graph [ si ]->distance( u );
 
             if (dist_u == RAND_MAX || dist_u < 0) {
                 dist_w = RAND_MAX;
-                qDebug() << "        dist_w = RAND_MAX " << RAND_MAX;
+                qDebug() << "    --- dijkstra: dist_w = RAND_MAX " << RAND_MAX;
 
             }
             else {
                 dist_w = dist_u + weight;
-                qDebug() << "        dist_w = dist_u + weight = "
+                qDebug() << "    --- dijkstra: dist_w = dist_u + weight = "
                          << dist_u << "+" << weight <<  "=" <<dist_w ;
             }
 
-            qDebug() << "        RELAXATION: check if dist_w =" << dist_w
+            qDebug() << "    --- dijkstra: RELAXATION: check if dist_w =" << dist_w
                      <<  "  shorter than current d(s=" << s <<",w="<<w <<")="
                       <<m_graph [ si ]->distance( w );
 
             if ( ( dist_w == m_graph [ si ]->distance( w ) ) &&  dist_w < RAND_MAX ) {
             //if  (dist_w == DM.item(s, w)  && dist_w < RAND_MAX) {
 
-                qDebug() <<"        dist_w : " << dist_w
+                qDebug() <<"    --- dijkstra: dist_w : " << dist_w
                          <<  " ==  d(s,w) : " << m_graph [ si ]->distance( w ) ;
 
                 //temp = TM.item(s,w)+TM.item(s,u);
                 temp = m_graph[si]->shortestPaths(w) + m_graph[si]->shortestPaths(u);
 
-                qDebug() <<"        Found ANOTHER SP from s =" << s
+                qDebug() <<"    --- dijkstra: Found ANOTHER SP from s =" << s
                         << " to w=" << w << " via u="<< u
                         << " - Setting Sigma(s, w) = "<< temp;
 
@@ -4878,17 +4893,23 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
                 if (computeCentralities){
 
                     if ( s!=w && s != u && u!=w ) {
-                        qDebug() << "        Calculate SC: setSC of u ="<<u
-                                 <<" to "<<m_graph[ui]->SC()+1;
+
+                        qDebug() << "    --- dijkstra: Compute Centralities: "
+                                    "setSC of u" << u
+                                 <<"to" << m_graph[ui]->SC()+1;
+
                         m_graph[ui]->setSC(m_graph[ui]->SC()+1);
                     }
                     else {
-                        qDebug() << "        Skipping setSC of u, because s="
+                        qDebug() << "    --- dijkstra: Compute Centralities: "
+                                    "Skipping setSC of u, because s="
                                  <<s<<" w="<< w << " u="<< u;
                     }
-                    qDebug() << "        SC is " << m_graph[ui]->SC();
+                    qDebug() << "    --- dijkstra: Compute Centralities: "
+                                "SC is " << m_graph[ui]->SC();
 
-                    qDebug() << "        Appending u="<< u << " to list Ps[w =" << w
+                    qDebug() << "    --- dijkstra: Compute Centralities: "
+                                "Appending u="<< u << " to list Ps[w =" << w
                              << "] with the predecessors of w on all shortest paths from s ";
                     m_graph[wi]->appendToPs(u);
                 }
@@ -4896,6 +4917,10 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
 
             else if (dist_w > 0 && dist_w < m_graph [ si ]->distance( w )  ) {
             //else if (dist_w > 0 && dist_w < DM.item(s, w)  ) {
+
+                qDebug() <<"    --- dijkstra: dist_w =" << dist_w
+                         <<  " <  d(s,w) =" << m_graph [ si ]->distance( w )
+                         << " Pushing w" << w<< "to prQ with distance"<< dist_w << "from s"<<s;
 
                 prQ.push(GraphDistance(w,dist_w)); //@FIXME: w might have been already visited?
                 //If so, we might use QMap<int> which is sorted (minimum)
@@ -4906,8 +4931,8 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
                 m_graphAverageDistance += dist_w;
                 m_graphGeodesicsCount++;
 
-                qDebug() << "        Found new smaller SP! Set d ( s="
-                         << s << ", w="<< w
+                qDebug() << "    --- dijkstra: "
+                            "Set d ( s=" << s << ", w="<< w
                          << " ) = "<< dist_w << "="<< m_graph[si]->distance(w)
                          << " m_graphAverageDistance ="
                          << m_graphAverageDistance
@@ -4920,8 +4945,15 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
                 influenceRanges.insertMulti(s,w);
                 influenceDomains.insertMulti(w,s);
 
+                if ( dist_w > m_graphDiameter){
+                    m_graphDiameter=dist_w;
+                    qDebug() << "    --- dijkstra: "
+                                "New graph diameter =" << m_graphDiameter ;
+                }
+
                 if (s!=w) {
-                    qDebug()<<"        Found NEW SP from s =" << s
+                    qDebug() << "    --- dijkstra: "
+                              "Found NEW shortest path from s =" << s
                            << " to w =" << w << " via u ="<< u
                            << " - Setting Sigma(s, w) = 1 ";
                     //TM.setItem(s,w, 1);
@@ -4929,33 +4961,40 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
                 }
 
                 if (computeCentralities){
+
                     sizeOfNthOrderNeighborhood.insert(
                                 dist_w,
-                                sizeOfNthOrderNeighborhood.value(dist_w)+1
+                                sizeOfNthOrderNeighborhood.value(dist_w,0)+1
                                 );
-                    qDebug()<<"        For PC: number of nodes at distance "
+
+                    qDebug() << "    --- dijkstra: Compute Centralities: "
+                              "For PC: sizeOfNthOrderNeighborhood: number of nodes at distance "
                            << dist_w << "from s is "
-                           <<  sizeOfNthOrderNeighborhood.value(dist_w);
+                           <<  sizeOfNthOrderNeighborhood.value(dist_w,0);
 
                     m_graph [si]->setCC (m_graph [si]->CC() + dist_w);
-                    qDebug()<<"        For CC: sum of distances ="
+
+                    qDebug() << "    --- dijkstra: Compute Centralities: "
+                              "For CC: sum of distances ="
                            <<  m_graph [si]->CC() << " (will invert it l8r)";
 
-                    if (m_graph [si]->eccentricity() < dist_w )
+                    if (m_graph [si]->eccentricity() < dist_w ) {
                         m_graph [si]->setEccentricity(dist_w);
-                    qDebug()<<"        For EC: max distance ="
-                              <<  m_graph [si]->eccentricity();
+                        qDebug() << "    --- dijkstra: Compute Centralities: "
+                                  "For EC: max distance ="
+                                  <<  m_graph [si]->eccentricity();
+                    }
+
+
                 }
 
-                if ( dist_w > m_graphDiameter){
-                    m_graphDiameter=dist_w;
-                    qDebug() << "        New graph diameter =" << m_graphDiameter ;
-                }
+
 
             }
-            else
-                qDebug() << "        Not a new SP";
-
+            else {
+                qDebug() << "    --- dijkstra: "
+                            "Not a new SP";
+            }
 
 //            qDebug()<< "### dijkstra: Start path counting";
 //            // Is (u,w) on a shortest path from s to w via u?
@@ -4965,6 +5004,7 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
 //            }
             ++it1;
         }
+        qDebug() << "    --- dijkstra: LOOP END over every edge ("<< u <<", w ) e E... ";
 
     }
     qDebug() << "### dijkstra: LOOP END. prQ is empty - Returning.";

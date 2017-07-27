@@ -104,6 +104,7 @@ class QPointF;
 typedef QList<Vertex*> Vertices;
 typedef QHash <QString, int> H_StrToInt;
 typedef QHash <long int, long int> H_Int;
+typedef QHash <float, long int> H_f_i;
 typedef QPair <float, bool> pair_f_b;
 typedef QPair <int, pair_f_b > pair_i_fb;
 typedef QHash < int, pair_i_fb > H_edges;
@@ -859,7 +860,7 @@ public:
     H_Int index;
 
     // Stores the number of vertices at distance n from a given vertex
-    H_Int sizeOfNthOrderNeighborhood;
+    H_f_i sizeOfNthOrderNeighborhood;
 
     /* maps have O(logN) lookup complexity */
     /* Consider using tr1::hashmap which has O(1) lookup, but this is not ISO C++ yet :(   */
@@ -987,7 +988,7 @@ private:
     int classesPRP, maxNodePRP, minNodePRP;
     int classesPP, maxNodePP, minNodePP;
     int classesEVC, maxNodeEVC, minNodeEVC;
-    int sizeOfComponent;
+    float sizeOfComponent;
 
     /** General & initialisation variables */
 
