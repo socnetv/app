@@ -4336,7 +4336,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 
                         qDebug() << "w!=s. For this furthest vertex we need to add its new delta"
                                  << delta_w
-                                 << "to old BC index:
+                                 << "to old BC index:"
                                  <<  m_graph[wi]->BC();
 
                         d_sw = m_graph[wi]->BC() + delta_w;
