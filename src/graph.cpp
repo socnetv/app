@@ -4183,32 +4183,34 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 
 
         qDebug() << "*********** MAIN LOOP: "
-                    "for every s in V solve the Single Source Shortest Path problem...";
+                    "for every s in V solve the Single Source Shortest Path (SSSP) problem...";
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
 
             s=(*it)->name();
             si=index[s];
 
-            qDebug()<< "***** PHASE 1 (SSSP) BFS / DIJKSTRA ALGORITHM "
+            qDebug()<< "***** PHASE 1 (SSSP): "
                     << "Source vertex s" << s << "index" << si;
 
             emit updateProgressDialog( ++progressCounter );
 
             if ( ! (*it)->isEnabled() ) {
-                qDebug()<< "s " << s  << "disabled. SKIP/CONTINUE";
+                qDebug()<< "***** PHASE 1 (SSSP): s" << s  << "disabled. SKIP/CONTINUE";
                 continue;
             }
 
 
             if (computeCentralities){
-                qDebug()<< "Empty Stack which will return vertices in "
+                qDebug()<< "***** PHASE 1 (SSSP): "
+                           "Empty Stack which will return vertices in "
                            "order of their (non increasing) distance from s ...";
                 //- Complexity linear O(n)
                 while ( !Stack.empty() ) {
                     Stack.pop();
                 }
                 i=1;
-                qDebug()<< "...and for each vertex: empty list Ps of predecessors";
+                qDebug()<< "***** PHASE 1 (SSSP): "
+                           "...and for each vertex: empty list Ps of predecessors";
                 for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
                     (*it1)->clearPs();
                     //initialize all sizeOfNthOrderNeighborhood to zero
@@ -4218,7 +4220,8 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                 sizeOfNthOrderNeighborhood.clear();
             }
 
-            qDebug() << "PHASE 1 (SSSP): Call BFS or dijkstra for source "
+            qDebug()<< "***** PHASE 1 (SSSP): "
+                       "Call BFS or dijkstra for s"
                      << s << " index " << si
                      << " to compute distance and shortest paths to every vertex t" ;
             if (!considerWeights)
@@ -4226,8 +4229,8 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
             else
                 dijkstra(s, si,computeCentralities, inverseWeights, dropIsolates);
 
-
-            qDebug()<< "***** FINISHED PHASE 1 (SSSP) BFS / DIJKSTRA ALGORITHM. "
+            qDebug()<< "***** PHASE 1 (SSSP): "
+                       "FINISHED BFS / DIJKSTRA ALGORITHM. "
                    "Continuing to calculate centralities";
 
             if (computeCentralities){
@@ -4238,7 +4241,8 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                     CC=0;
                 (*it)->setCC( CC );
 
-                qDebug() << "s" << s << "index" << si << "CC" << CC;
+                qDebug()<< "***** PHASE 2 (CENTRALITIES): "
+                           "s" << s << "index" << si << "CC" << CC;
 
                 //Check eccentricity (max geodesic distance)
                 eccentricity = (*it)->eccentricity();
@@ -4254,7 +4258,8 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                 (*it)->setSEC( EC ); //Set std EC = EC
                 sumEC+=EC;  //set sum EC
 
-                qDebug() << "s" << s << "index" << si << "EC" << CC;
+                qDebug()<< "***** PHASE 2 (CENTRALITIES): "
+                           "s" << s << "index" << si << "EC" << CC;
 
                 //Find min/max Eccentricity
                 minmax( eccentricity, (*it), maxEccentricity, minEccentricity,
@@ -4292,31 +4297,44 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 
                 sumSPC += SPC;   //add to sumSPC -- used later to compute mean and variance
 
-                qDebug() << "s" << s << "index" << si << "PC" << PC;
+                qDebug()<< "***** PHASE 2 (CENTRALITIES): "
+                           "s" << s << "index" << si << "PC" << PC;
 
-                qDebug()<< "PHASE 2 (ACCUMULATION): Start back propagation of dependencies." <<
+                qDebug()<< "***** PHASE 2 (BC/ACCUMULATION): "
+                           "Start back propagation of dependencies." <<
                        "Set dependency delta[u]=0 on each vertex";
 
                 for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
                     (*it1)->setDelta(0.0);
                 }
 
-                qDebug() << "Visit all vertices in reverse order of their discovery (from s = " << s
+                qDebug()<< "***** PHASE 2 (BC/ACCUMULATION): "
+                           "Visit all vertices in reverse order of their discovery (from s = "
+                         << s
                          << " ) to sum dependencies. Initial Stack size " << Stack.size();
 
                 while ( !Stack.empty() ) {
                     w=Stack.top();
                     wi=index[w];
-                    qDebug() << "Stack top is vertex w " << w
+
+                    qDebug()<< "***** PHASE 2 (BC/ACCUMULATION): "
+                               "Stack top is vertex w " << w
                              << "This is the furthest vertex from s. Popping it.";
+
                     Stack.pop();
                     QList<int> lst=m_graph[wi]->Ps();
-                    qDebug() << "preLOOP: Size of predecessors list Ps[w]"<< lst.size();
+
+                    qDebug()<< "***** PHASE 2 (BC/ACCUMULATION): "
+                               "preLOOP: Size of predecessors list Ps[w]"<< lst.size();
                     qDebug() << "Ps[w]" ;
+
                     for ( it2=lst.begin(); it2 != lst.end(); it2++ ){
                         qDebug() << (*it2);
                     }
-                    qDebug()<< "LOOP: for every other vertex u in the list of predecessors Ps of w"<<w;
+
+                    qDebug()<< "***** PHASE 2 (BC/ACCUMULATION): "
+                               "LOOP over every vertex u in Ps of w"<<w;
+
                     if (lst.size() > 0) // just in case...do a sanity check
                         for ( it2=lst.begin(); it2 != lst.end(); it2++ ){
                             u=(*it2);
@@ -4325,11 +4343,14 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                             sigma_w=m_graph[si]->shortestPaths(w);
                             delta_u=m_graph[ui]->delta();
                             delta_w=m_graph[wi]->delta();
-                            qDebug()<< "Selecting Ps[w] element u"<< u
+
+                            qDebug()<< "***** PHASE 2 (BC/ACCUMULATION): "
+                                       "Selecting Ps[w] element u"<< u
                                     << "with delta_u" << delta_u
                                     << "sigma(u)=TM(s,u)"<< sigma_u
                                     << "sigma(w)=TM(s,w)" << sigma_w
                                     << "delta_w"<< delta_w;
+
                             //if ( TM.item(si,wi) > 0) {
                             if ( m_graph[si]->shortestPaths(w) > 0 ) {
                                 //delta[u]=delta[u]+(1+delta[w])*(sigma[u]/sigma[w]) ;
@@ -4338,24 +4359,33 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                             }
                             else {
                                 d_su=delta_u;
-                                qDebug("TM (s,w) zero, i.e. zero shortest path counts from s to w - using SAME DELTA for vertex u");
+                                qDebug()<< "***** PHASE 2 (BC/ACCUMULATION): "
+                                           "zero shortest paths from s to w - "
+                                           "using SAME DELTA for vertex u";
                             }
-                            qDebug("Assigning new delta d_su = %f to u = %i", d_su, u);
+                            qDebug()<< "***** PHASE 2 (BC/ACCUMULATION): "
+                                       "Assigning new delta d_su"
+                                    << d_su
+                                    << " to u" << u;
+
                             m_graph[ui]->setDelta( d_su);
                         }
 
-                    qDebug()<<" Adding delta_w to BC of w";
+                    qDebug()<< "***** PHASE 2 (BC/ACCUMULATION): "
+                               "Adding delta_w to BC of w";
 
                     if  (w!=s) {
 
-                        qDebug() << "w!=s. For this furthest vertex we need to add its new delta"
+                        qDebug()<< "***** PHASE 2 (BC/ACCUMULATION): "
+                                   "w!=s. For this furthest vertex we need to add its new delta"
                                  << delta_w
                                  << "to old BC index:"
                                  <<  m_graph[wi]->BC();
 
                         d_sw = m_graph[wi]->BC() + delta_w;
 
-                        qDebug() << "s" << s << "index" << si << "BC = d_sw" << d_sw;
+                        qDebug()<< "***** PHASE 2 (BC/ACCUMULATION): "
+                                   "s" << s << "index" << si << "BC = d_sw" << d_sw;
 
                         m_graph[wi]->setBC (d_sw);
                     }
@@ -4985,6 +5015,10 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
                                   <<  m_graph [si]->eccentricity();
                     }
 
+                    qDebug() << "    --- dijkstra: Compute Centralities: "
+                                "Appending u="<< u << " to list Ps[w =" << w
+                             << "] with the predecessors of w on all shortest paths from s ";
+                    m_graph[wi]->appendToPs(u);
 
                 }
 
@@ -4993,7 +5027,7 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
             }
             else {
                 qDebug() << "    --- dijkstra: "
-                            "Not a new SP";
+                            "NOT a new SP";
             }
 
 //            qDebug()<< "### dijkstra: Start path counting";
