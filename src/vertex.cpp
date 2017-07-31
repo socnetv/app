@@ -863,7 +863,7 @@ void Vertex::setDistance (const long int &v1, const float &d) {
 }
 
 /**
- * @brief Returns distance to vertex v1
+ * @brief Returns geodesic distance to vertex v1
  * If d to v1 has not been set previously, then return RAND_MAX
  * @param v1
  */

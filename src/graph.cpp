@@ -3516,22 +3516,39 @@ void Graph::edgeUndirectedSet(const long int &v1, const long int &v2,
 
 
 /**
- * @brief Graph::graphDistanceGeodesic
- * Returns the graphDistanceGeodesic between nodes numbered (i-1) and (j-1)
- * @param i
- * @param j
+ * @brief Returns true if vertices v1 and v2 are reachable.
+ * @param v1
+ * @param v2
+ * @return
+ */
+bool Graph::graphReachable(const int &v1, const int &v2) {
+    qDebug()<< "Graph::reachable()";
+    if (!calculatedDistances || graphModified() )
+        graphDistanceGeodesicCompute(false);
+    //return DM.item(v1-1,v2-1);
+    return ( m_graph[ index[v1] ] ->distance( v2) != RAND_MAX ) ? true: false;
+}
+
+
+
+/**
+ * @brief Returns the geodesic distance (lenght of shortest path)
+ * from vertex v1 to vertex v2
+ * @param v1
+ * @param v2
  * @param considerWeights
  * @param inverseWeights
  * @return
  */
-int Graph::graphDistanceGeodesic(const int i, const int j,
+int Graph::graphDistanceGeodesic(const int v1, const int v2,
                     const bool considerWeights,
                     const bool inverseWeights){
     qDebug() <<"Graph::graphDistanceGeodesic()";
     if ( !calculatedDistances || graphModified() ) {
         graphDistanceGeodesicCompute(false, considerWeights, inverseWeights, false);
     }
-    return DM.item(index[i],index[j]);
+    //return DM.item(index[i],index[j]);
+    return m_graph[ index[v1] ]->distance(v2);
 }
 
 
@@ -3750,271 +3767,42 @@ int Graph::graphConnectedness(const bool updateProgress) {
 
 
 
-
-/**
- * @brief Graph::writeMatrixDistancesPlainText
- * Writes the matrix of distances to a file
- * @param fn
- * @param considerWeights
- * @param inverseWeights
- * @param dropIsolates
- */
-void Graph::writeMatrixDistancesPlainText (const QString &fn,
-                                 const bool &considerWeights,
+void Graph::graphDistanceGeodesicMatrix(const bool &considerWeights,
                                  const bool &inverseWeights,
                                  const bool &dropIsolates) {
-    qDebug ("Graph::writeMatrixDistancesPlainText()");
+    qDebug() << "Graph::graphDistanceGeodesicMatrix()";
 
     if ( !calculatedDistances || graphModified() ) {
-        emit statusMessage ( tr("Writing Distance Matrix: "
-                                "Need to recompute Distances. Please wait...") );
-        graphDistanceGeodesicCompute(false, considerWeights, inverseWeights, dropIsolates);
+        graphDistanceGeodesicCompute(false,considerWeights,inverseWeights, dropIsolates);
+    }
+    QList<Vertex*>::const_iterator it, it1;
+
+    int N = vertices(true,false);
+
+    qDebug() << "Graph::graphDistanceGeodesicMatrix() - Resizing Matrices to hold "
+             << N << " vertices";
+
+    DM.resize(N, N);
+    TM.resize(N, N);
+
+    qDebug() << "Graph: graphDistanceGeodesicMatrix() - Almost finished! "
+                "Writing distance and sigmas matrix...";
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
+        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
+            DM.setItem(index[(*it)->name()],index[(*it1)->name()], (*it)->distance((*it1)->name()));
+            TM.setItem(index[(*it)->name()],index[(*it1)->name()], (*it)->shortestPaths((*it1)->name()));
+
+        }
     }
 
-    qDebug ("Graph::writeMatrixDistancesPlainText() writing to file");
 
-    QFile file (fn);
-    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
-        emit statusMessage ( tr("Error. Could not write to ") + fn );
-        return;
-    }
-    QTextStream outText(&file);
-    outText.setCodec("UTF-8");
-    outText.setRealNumberPrecision(m_precision);
-    outText << "-Social Network Visualizer "<<  VERSION <<endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-    outText << "Distance matrix: \n";
 
-    outText << DM ;
-
-    file.close();
 }
 
 
 /**
-*  Saves the number of geodesic distances matrix TM to a file
-*
-*/
-void Graph::writeMatrixNumberOfGeodesicsPlainText(const QString &fn,
-                                         const bool &considerWeights,
-                                         const bool &inverseWeights) {
-    qDebug ("Graph::writeMatrixNumberOfGeodesicsPlainText()");
-    if ( !calculatedDistances || graphModified() ) {
-        graphDistanceGeodesicCompute(false, considerWeights, inverseWeights, false);
-    }
-
-    qDebug () << "Graph::writeMatrixNumberOfGeodesicsPlainText() - Distance matrix created. "
-                 "Writing geoderics matrix to file";
-
-    QFile file (fn);
-    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
-        emit statusMessage ( tr("Error. Could not write to ") + fn );
-        return;
-    }
-
-    QTextStream outText(&file);
-    outText.setCodec("UTF-8");
-    outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
-    outText << tr("Network name: ")<< graphName() <<" \n\n";
-    outText << "Number of geodesics matrix: \n";
-
-    outText << TM ;
-
-    file.close();
-
-}
-
-
-
-/**
- * @brief Graph::writeEccentricity
- * @param fileName
- * @param considerWeights
- * @param inverseWeights
- * @param dropIsolates
- */
-void Graph::writeEccentricity(
-        const QString fileName, const bool considerWeights,
-        const bool inverseWeights, const bool dropIsolates)
-{
-
-    QTime computationTimer;
-    computationTimer.start();
-
-    qDebug() << "Graph::writeEccentricity";
-    QFile file ( fileName );
-    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
-        emit statusMessage ( tr("Error. Could not write to ") + fileName );
-        return;
-    }
-    QTextStream outText ( &file );
-    outText.setCodec("UTF-8");
-    if ( !calculatedDistances || !calculatedCentralities || graphModified() ) {
-        graphDistanceGeodesicCompute(true, considerWeights,
-                             inverseWeights, dropIsolates);
-
-    }
-
-    if (graphConnectedness()) {
-
-    }
-
-    emit statusMessage ( tr("Writing eccentricity to file:") + fileName );
-
-    int rowCount=0;
-    int N = vertices();
-    float eccentr=0;
-
-    outText << htmlHead;
-
-    outText.setRealNumberPrecision(m_precision);
-
-    outText << "<h1>";
-    outText << tr("ECCENTRICITY (e) REPORT");
-    outText << "</h1>";
-
-    outText << "<p>"
-            << "<span class=\"info\">"
-            << tr("Network name: ")
-            <<"</span>"
-            << graphName()
-            <<"<br />"
-            << "<span class=\"info\">"
-            << tr("Actors: ")
-            <<"</span>"
-            << N
-            << "</p>";
-
-    outText << "<p class=\"description\">"
-            << tr("The eccentricity <em>e</em> measures how far, at most, is each "
-                  " node from every other node. <br />"
-                  "In a connected graph, the eccentricity <em>e</em> of a vertex "
-                  "is the maximum geodesic distance between that vertex and all other vertices. <br />"
-                  "In a disconnected graph, the eccentricity <em>e</em> of all vertices "
-                  "is considered to be infinite.")
-            << "</p>";
-
-    outText << "<p>"
-            << "<span class=\"info\">"
-            << tr("e range: ")
-            <<"</span>"
-            << tr("1 &le; e &le; \xE2\x88\x9E")
-            << "</p>";
-
-
-    outText << "<table class=\"stripes sortable\">";
-
-    outText << "<thead>"
-            <<"<tr>"
-            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;\">"
-            << tr("Actor")
-            << "</th>"
-            << "<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;\">"
-            << tr("Label")
-            << "</th>"
-            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc2 = 1; asc1 = 1;asc4 = 1;\">"
-            << tr("e")
-            << "</th>"
-            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4*= -1; asc2 = 1; asc3 = 1;asc1 = 1;\">"
-            << tr("%e")
-            <<"</th>"
-           <<"</tr>"
-          << "</thead>"
-          <<"<tbody  id=\"results\">";
-
-
-    QList<Vertex*>::const_iterator it;
-    for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
-
-        rowCount++;
-        eccentr = (*it)->eccentricity();
-
-        outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
-                <<"<td>"
-                << (*it)->name()
-                << "</td><td>"
-                << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
-                << "</td><td>"
-                << ((eccentr == 0) ? "\xE2\x88\x9E" : QString::number(eccentr) )
-                << "</td><td>"
-                << ((eccentr == 0) ? "\xE2\x88\x9E" : QString::number( 100* (eccentr) / sumEccentricity  ) )
-                << "</td>"
-                <<"</tr>";
-
-    }
-
-    outText << "</tbody></table>";
-
-
-    if ( minEccentricity ==  maxEccentricity) {
-        outText << "<p>"
-                << tr("All nodes have the same eccentricity.")
-                << "</p>";
-    }
-    else {
-        outText << "<p>";
-        outText << "<span class=\"info\">"
-                << tr("Max e (Graph Diameter) = ")
-                <<"</span>"
-               << maxEccentricity <<" (node "<< maxNodeEccentricity  <<  ")"
-               << "<br />"
-               << "<span class=\"info\">"
-               << tr("Min e (Graph Radius) = ")
-               <<"</span>"
-               << minEccentricity <<" (node "<< minNodeEccentricity <<  ")"
-               << "<br />"
-               << "<span class=\"info\">"
-               << tr("e classes = ")
-               <<"</span>"
-               << classesEccentricity
-               << "</p>";
-    }
-
-    outText << "<p class=\"description\">";
-    outText << "<span class=\"info\">"
-            << tr("e = 1 ")
-            <<"</span>"
-            << tr("when a vertex is connected to all other vertices (star node).")
-            <<"<br/>"
-           << "<span class=\"info\">"
-            << tr("e > 1 ")
-            <<"</span>"
-            << tr("when a vertex is not directly connected to all others. "
-                  "Larger eccentricity means that the actor is farther from others.")
-            <<"<br />"
-           << "<span class=\"info\">"
-            << tr("e = \xE2\x88\x9E ")
-            <<"</span>"
-            << tr("the graph of the network is disconnected.")
-            <<"<br/>";
-    outText << "</p>";
-
-
-    outText << "<p>&nbsp;</p>";
-    outText << "<p class=\"small\">";
-    outText << tr("Eccentricity Report, <br />");    
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
-               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
-    outText << "<br />";
-    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
-    outText << "</p>";
-
-    outText << htmlEnd;
-
-    file.close();
-
-}
-
-
-
-
-/**
- * @brief Computes the distance matrix, DM, with geodesic distances between all vertices:
- * DM(i,j)=geodesic distance between vertex i and vertex j
- * In the process, it also computes many other matrices and metrics:
+ * @brief Computes the geodesic distances between all vertices:
+  * In the process, it also computes many other centrality/prestige metrics:
  * * The so-called sigma matrix, named TM, where TM(i,j) is the number of shortest paths
  *   from vertex i to vertex j, called sigma(i,j).
  * * The reachability matrix X^R where the {i,j} element is 1 if the vertices i
@@ -4028,7 +3816,7 @@ void Graph::writeEccentricity(
  *   - Betweenness: BC(u) = Sum ( sigma(i,j,u)/sigma(i,j) ) for every s,t in V
  *   - Stress: SC(u) = Sum ( sigma(i,j) ) for every s,t in V
  *   - Eccentricity: EC(u) =  1/maxDistance(u,t)  for some t in V
- *   - Closeness: CC(u) =  1 / Sum( DM(u,t) )  for every  t in V
+ *   - Closeness: CC(u) =  1 / Sum( d(u,t) )  for every  t in V
  *   - Power:
  * @param centralities
  * @param considerWeights
@@ -4064,10 +3852,12 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
     //Create a NxN DistanceMatrix. Initialise values to zero.
     // m_totalVertices = vertices(dropIsolates,false);
     int N = vertices(true,false);
-    qDebug() << "Graph::graphDistanceGeodesicCompute() - Resizing Matrices to hold "
-             << N << " vertices";
-    DM.resize(N, N);
-    TM.resize(N, N);
+
+    //qDebug() << "Graph::graphDistanceGeodesicCompute() - Resizing Matrices to hold "
+    //         << N << " vertices";
+    //DM.resize(N, N);
+    //TM.resize(N, N);
+
     XRM.zeroMatrix(N, N);
 
     int E = edgesEnabled();
@@ -4080,7 +3870,16 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                 << m_symmetric ;
 
     if ( E == 0 ) {
-        DM.fillMatrix(RAND_MAX);
+        //DM.fillMatrix(RAND_MAX);
+
+        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
+            for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
+                // Set all pair-wise distances to RAND_MAX
+                (*it)->setDistance((*it1)->name(), RAND_MAX);
+                // Set all pair-wise shortest-path counts (sigmas) to 0
+                (*it)->setShortestPaths((*it1)->name(), 0);
+            }
+        }
     }
     else {
 
@@ -4129,10 +3928,10 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
         qDebug() << "	E " << E <<  " N " << N;
 
 
-        qDebug() << "	Set all their pair-wise distances to RAND_MAX";
-        DM.fillMatrix(RAND_MAX);
-        qDebug () << "	Set all pair-wise shortest-path counts (sigmas) to 0";
-        TM.fillMatrix(0);
+//        qDebug() << "	Set all their pair-wise distances to RAND_MAX";
+//        DM.fillMatrix(RAND_MAX);
+//        qDebug () << "	Set all pair-wise shortest-path counts (sigmas) to 0";
+//        TM.fillMatrix(0);
 
 
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
@@ -4571,15 +4370,15 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
     }  // END else (aka E!=0)
 
 
-    qDebug() << "Graph: graphDistanceGeodesicCompute() - Almost finished! "
-                "Writing distance and sigmas matrix...";
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
-        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
-            DM.setItem(index[(*it)->name()],index[(*it1)->name()], (*it)->distance((*it1)->name()));
-            TM.setItem(index[(*it)->name()],index[(*it1)->name()], (*it)->shortestPaths((*it1)->name()));
+//    qDebug() << "Graph: graphDistanceGeodesicCompute() - Almost finished! "
+//                "Writing distance and sigmas matrix...";
+//    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
+//        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
+//            DM.setItem(index[(*it)->name()],index[(*it1)->name()], (*it)->distance((*it1)->name()));
+//            TM.setItem(index[(*it)->name()],index[(*it1)->name()], (*it)->shortestPaths((*it1)->name()));
 
-        }
-    }
+//        }
+//    }
 
     calculatedDistances=true;
 
@@ -4597,8 +4396,8 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
         (Implicitly, BFS uses the m_graph structure)
 
     OUTPUT:
-        For every vertex t: DM(s, t) is set to the distance of each t from s
-        For every vertex t: TM(s, t) is set to the number of shortest paths between s and t
+        For every vertex t: d(s, t) is set to the distance of each t from s
+        For every vertex t: s(s, t) is set to the number of shortest paths between s and t
 
         Also, if computeCentralities is true then BFS does extra operations:
             a) For source vertex s:
@@ -5096,6 +4895,267 @@ void Graph::resolveClasses(float C, H_StrToInt &discreteClasses, int &classes, i
 }
 
 
+
+
+
+
+
+/**
+ * @brief Graph::writeMatrixDistancesPlainText
+ * Writes the matrix of distances to a file
+ * @param fn
+ * @param considerWeights
+ * @param inverseWeights
+ * @param dropIsolates
+ */
+void Graph::writeMatrixDistancesPlainText (const QString &fn,
+                                 const bool &considerWeights,
+                                 const bool &inverseWeights,
+                                 const bool &dropIsolates) {
+    qDebug ("Graph::writeMatrixDistancesPlainText()");
+
+    if ( !calculatedDistances || graphModified() ) {
+        emit statusMessage ( tr("Writing Distance Matrix: "
+                                "Need to recompute Distances. Please wait...") );
+        graphDistanceGeodesicMatrix(considerWeights, inverseWeights, dropIsolates);
+    }
+
+    qDebug ("Graph::writeMatrixDistancesPlainText() writing to file");
+
+    QFile file (fn);
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fn );
+        return;
+    }
+    QTextStream outText(&file);
+    outText.setCodec("UTF-8");
+    outText.setRealNumberPrecision(m_precision);
+    outText << "-Social Network Visualizer "<<  VERSION <<endl;
+    outText << tr("Network name: ")<< graphName()<< endl<<endl;
+    outText << "Distance matrix: \n";
+
+    outText << DM ;
+
+    file.close();
+}
+
+
+/**
+*  Saves the number of geodesic distances matrix TM to a file
+*
+*/
+void Graph::writeMatrixNumberOfGeodesicsPlainText(const QString &fn,
+                                         const bool &considerWeights,
+                                         const bool &inverseWeights) {
+    qDebug ("Graph::writeMatrixNumberOfGeodesicsPlainText()");
+    if ( !calculatedDistances || graphModified() ) {
+        graphDistanceGeodesicCompute(false, considerWeights, inverseWeights, false);
+    }
+
+    qDebug () << "Graph::writeMatrixNumberOfGeodesicsPlainText() - Distance matrix created. "
+                 "Writing geoderics matrix to file";
+
+    QFile file (fn);
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fn );
+        return;
+    }
+
+    QTextStream outText(&file);
+    outText.setCodec("UTF-8");
+    outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
+    outText << tr("Network name: ")<< graphName() <<" \n\n";
+    outText << "Number of geodesics matrix: \n";
+
+    outText << TM ;
+
+    file.close();
+
+}
+
+
+
+/**
+ * @brief Graph::writeEccentricity
+ * @param fileName
+ * @param considerWeights
+ * @param inverseWeights
+ * @param dropIsolates
+ */
+void Graph::writeEccentricity(
+        const QString fileName, const bool considerWeights,
+        const bool inverseWeights, const bool dropIsolates)
+{
+
+    QTime computationTimer;
+    computationTimer.start();
+
+    qDebug() << "Graph::writeEccentricity";
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
+        return;
+    }
+    QTextStream outText ( &file );
+    outText.setCodec("UTF-8");
+    if ( !calculatedDistances || !calculatedCentralities || graphModified() ) {
+        graphDistanceGeodesicCompute(true, considerWeights,
+                             inverseWeights, dropIsolates);
+
+    }
+
+    if (graphConnectedness()) {
+
+    }
+
+    emit statusMessage ( tr("Writing eccentricity to file:") + fileName );
+
+    int rowCount=0;
+    int N = vertices();
+    float eccentr=0;
+
+    outText << htmlHead;
+
+    outText.setRealNumberPrecision(m_precision);
+
+    outText << "<h1>";
+    outText << tr("ECCENTRICITY (e) REPORT");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("The eccentricity <em>e</em> measures how far, at most, is each "
+                  " node from every other node. <br />"
+                  "In a connected graph, the eccentricity <em>e</em> of a vertex "
+                  "is the maximum geodesic distance between that vertex and all other vertices. <br />"
+                  "In a disconnected graph, the eccentricity <em>e</em> of all vertices "
+                  "is considered to be infinite.")
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("e range: ")
+            <<"</span>"
+            << tr("1 &le; e &le; \xE2\x88\x9E")
+            << "</p>";
+
+
+    outText << "<table class=\"stripes sortable\">";
+
+    outText << "<thead>"
+            <<"<tr>"
+            <<"<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;\">"
+            << tr("Actor")
+            << "</th>"
+            << "<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;\">"
+            << tr("Label")
+            << "</th>"
+            <<"<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc2 = 1; asc1 = 1;asc4 = 1;\">"
+            << tr("e")
+            << "</th>"
+            <<"<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4*= -1; asc2 = 1; asc3 = 1;asc1 = 1;\">"
+            << tr("%e")
+            <<"</th>"
+           <<"</tr>"
+          << "</thead>"
+          <<"<tbody  id=\"results\">";
+
+
+    QList<Vertex*>::const_iterator it;
+    for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+
+        rowCount++;
+        eccentr = (*it)->eccentricity();
+
+        outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                <<"<td>"
+                << (*it)->name()
+                << "</td><td>"
+                << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                << "</td><td>"
+                << ((eccentr == 0) ? "\xE2\x88\x9E" : QString::number(eccentr) )
+                << "</td><td>"
+                << ((eccentr == 0) ? "\xE2\x88\x9E" : QString::number( 100* (eccentr) / sumEccentricity  ) )
+                << "</td>"
+                <<"</tr>";
+
+    }
+
+    outText << "</tbody></table>";
+
+
+    if ( minEccentricity ==  maxEccentricity) {
+        outText << "<p>"
+                << tr("All nodes have the same eccentricity.")
+                << "</p>";
+    }
+    else {
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("Max e (Graph Diameter) = ")
+                <<"</span>"
+               << maxEccentricity <<" (node "<< maxNodeEccentricity  <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("Min e (Graph Radius) = ")
+               <<"</span>"
+               << minEccentricity <<" (node "<< minNodeEccentricity <<  ")"
+               << "<br />"
+               << "<span class=\"info\">"
+               << tr("e classes = ")
+               <<"</span>"
+               << classesEccentricity
+               << "</p>";
+    }
+
+    outText << "<p class=\"description\">";
+    outText << "<span class=\"info\">"
+            << tr("e = 1 ")
+            <<"</span>"
+            << tr("when a vertex is connected to all other vertices (star node).")
+            <<"<br/>"
+           << "<span class=\"info\">"
+            << tr("e > 1 ")
+            <<"</span>"
+            << tr("when a vertex is not directly connected to all others. "
+                  "Larger eccentricity means that the actor is farther from others.")
+            <<"<br />"
+           << "<span class=\"info\">"
+            << tr("e = \xE2\x88\x9E ")
+            <<"</span>"
+            << tr("the graph of the network is disconnected.")
+            <<"<br/>";
+    outText << "</p>";
+
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Eccentricity Report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+    file.close();
+
+}
 
 
 
@@ -6400,11 +6460,10 @@ void Graph::centralityClosenessIR(const bool considerWeights,
      }
 
     // calculate centralities
-    QList<Vertex*>::const_iterator it;
+    QList<Vertex*>::const_iterator it, jt;
     float IRCC=0,SIRCC=0;
     float Ji=0;
     float dist=0;
-    int i = 0, j = 0;
     float V=vertices(dropIsolates);
     classesIRCC=0;
     discreteIRCCs.clear();
@@ -6417,33 +6476,42 @@ void Graph::centralityClosenessIR(const bool considerWeights,
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         IRCC=0;
         Ji = 0;
-        if (!(*it)->isIsolated()) {
-
-            for ( j=0; j < DM.cols() ; j++) {
-                i = index[(*it)->name()];
-                if (i == j) continue;
-                dist = DM.item ( i , j );
-                if (dist != RAND_MAX ) {
-                    IRCC += dist;
-                    Ji ++; // compute |Ji|
-                }
+        if ((*it)->isIsolated()) {
+            continue;
+        }
+        for (jt=m_graph.cbegin(); jt!=m_graph.cend(); ++jt){
+        //for ( j=0; j < DM.cols() ; j++) {
+            //i = index[(*it)->name()];
+            //if (i == j) continue;
+            if ( (*it)->name() == (*jt)->name() ) {
+                continue;
             }
-//            qDebug()<< "Graph::centralityClosenessIR() -  vertex"
-//                    << (*it)->name()
-//                    << "actors in influence range Ji" << Ji
-//                    << "actors in network"<< (V-1)
-//                    << "fraction of reachable actors |Ji|/(V-1)="  << Ji/ (V-1)
-//                    << "distance to actors in Ji" << IRCC
-//                    << "average distance to actors in Ji" << IRCC / Ji
-//                    << "IRCC = "
-//                    << Ji / (V-1) << " / " << IRCC / Ji << " = " << ( Ji / (V-1) ) / ( IRCC / Ji);
-
-            // sanity check for IRCC=0 (=> node is disconnected)
-            if (IRCC != 0)  {
-                IRCC /= Ji;
-                IRCC =  ( Ji / (V-1) ) / IRCC;
+            if ( ! (*jt)-> isEnabled() ) {
+                continue;
+            }
+            dist = (*it)->distance( (*jt)->name() );
+            //dist = DM.item ( i , j );
+            if (dist != RAND_MAX ) {
+                IRCC += dist;
+                Ji ++; // compute |Ji|
             }
         }
+        //            qDebug()<< "Graph::centralityClosenessIR() -  vertex"
+        //                    << (*it)->name()
+        //                    << "actors in influence range Ji" << Ji
+        //                    << "actors in network"<< (V-1)
+        //                    << "fraction of reachable actors |Ji|/(V-1)="  << Ji/ (V-1)
+        //                    << "distance to actors in Ji" << IRCC
+        //                    << "average distance to actors in Ji" << IRCC / Ji
+        //                    << "IRCC = "
+        //                    << Ji / (V-1) << " / " << IRCC / Ji << " = " << ( Ji / (V-1) ) / ( IRCC / Ji);
+
+        // sanity check for IRCC=0 (=> node is disconnected)
+        if (IRCC != 0)  {
+            IRCC /= Ji;
+            IRCC =  ( Ji / (V-1) ) / IRCC;
+        }
+
         sumIRCC += IRCC;
         (*it) -> setIRCC ( IRCC ) ;
         (*it) -> setSIRCC ( IRCC ) ;  // IRCC is a ratio, already std
@@ -7967,8 +8035,7 @@ void Graph::writePrestigeDegree (const QString fileName,
 
 
 /**
- * @brief Graph::prestigeProximity
- * Calculates Proximity Prestige of each vertex
+ * @brief Computes Proximity Prestige of each vertex
  * Also the mean value and the variance of it..
  */
 void Graph::prestigeProximity( const bool considerWeights,
@@ -7986,11 +8053,10 @@ void Graph::prestigeProximity( const bool considerWeights,
     }
 
     // calculate centralities
-    QList<Vertex*>::const_iterator it;
+    QList<Vertex*>::const_iterator it, jt;
     float PP=0;
     float dist=0;
     float Ii=0;
-    int i=0, j=0;
     float V=vertices(dropIsolates);
     classesPP=0;
     discretePPs.clear();
@@ -8002,37 +8068,57 @@ void Graph::prestigeProximity( const bool considerWeights,
     H_StrToInt::iterator it2;
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        PP=0; i=0; Ii = 0;
-        if (!(*it)->isIsolated()){
 
-            j = index[(*it)->name()];
-            for (i=0; i < DM.rows() ; i++) {
-                if (i == j) continue;
-                dist = DM.item ( i , j );
-                if (dist != RAND_MAX ) {
-                    PP += dist;
-                    Ii ++; // compute |Ii|
-                }
-            }
+        PP=0;
+        Ii = 0;
 
-            qDebug()<< "Graph::prestigeProximity() -  vertex"
-                    << (*it)->name()
-                    << "actors in influence domain Ii" << Ii
-                    << "actors in network"<< (V-1)
-                    << "fraction of actors who reach i |Ii|/(V-1)="  << Ii/ (V-1)
-                    << "distance to actors in Ii" << PP
-                    << "average distance to actors in Ii" << PP/ Ii
-                    << "PP= "
-                    << Ii / (V-1) << " / " << PP / Ii << " = " << ( Ii / (V-1) ) / ( PP / Ii  );
-
-
-            // sanity check for PP=0 (=> node is disconnected)
-            if (PP != 0)  {
-                PP /= Ii;
-                PP =  ( Ii / (V-1) ) / PP;
-            }
-            sumPP += PP;
+        if ((*it)->isIsolated()){
+            continue;
         }
+
+        // j = index[(*it)->name()];
+
+        for (jt=m_graph.cbegin(); jt!=m_graph.cend(); ++jt){
+            //for ( j=0; j < DM.cols() ; j++) {
+            //i = index[(*it)->name()];
+            //if (i == j) continue;
+            if ( (*it)->name() == (*jt)->name() ) {
+                continue;
+            }
+            if ( ! (*jt)-> isEnabled() ) {
+                continue;
+            }
+
+            //            for (i=0; i < DM.rows() ; i++) {
+            //                if (i == j) continue;
+            //                dist = DM.item ( i , j );
+
+            dist = (*jt)->distance( (*it)->name() );
+
+            if (dist != RAND_MAX ) {
+                PP += dist;
+                Ii ++; // compute |Ii|
+            }
+        }
+
+        qDebug()<< "Graph::prestigeProximity() -  vertex"
+                << (*it)->name()
+                << "actors in influence domain Ii" << Ii
+                << "actors in network"<< (V-1)
+                << "fraction of actors who reach i |Ii|/(V-1)="  << Ii/ (V-1)
+                << "distance to actors in Ii" << PP
+                << "average distance to actors in Ii" << PP/ Ii
+                << "PP= "
+                << Ii / (V-1) << " / " << PP / Ii << " = " << ( Ii / (V-1) ) / ( PP / Ii  );
+
+
+        // sanity check for PP=0 (=> node is disconnected)
+        if (PP != 0)  {
+            PP /= Ii;
+            PP =  ( Ii / (V-1) ) / PP;
+        }
+        sumPP += PP;
+
         (*it) -> setPP ( PP ) ;
         (*it) -> setSPP ( PP ) ; // PP is already stdized
 
@@ -9605,19 +9691,6 @@ void Graph::writeMatrixWalks (const QString &fn,
 
 
 
-/**
-    Calculates and returns non-zero if vertices v1 and v2 are reachable.
-    If v1, v2 are reachable it returns the geodesic distance.
-    This method is actually a reachability test (if it returns non-zero)
-
-*/
-int Graph::reachable(const int &v1, const int &v2) {
-    qDebug()<< "Graph::reachable()";
-    if (!calculatedDistances || graphModified() )
-        graphDistanceGeodesicCompute(false);
-    return DM.item(v1-1,v2-1);
-}
-
 
 
 
@@ -10550,7 +10623,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
         STR_EQUIV=AM;
         break;
     case MATRIX_DISTANCES:
-        graphDistanceGeodesicCompute(false, considerWeights, inverseWeights, dropIsolates);
+        graphDistanceGeodesicMatrix(considerWeights, inverseWeights, dropIsolates);
         STR_EQUIV=DM;
         break;
     default:
@@ -12120,15 +12193,15 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
 
 
 /**
- * @brief Graph::clusteringCoefficient
- * Calculates local clustering coefficients and returns
+ * @brief Computes local clustering coefficients and returns
  * the network average Clustering Coefficient
  * @param updateProgress
  * @return
  */
 float Graph::clusteringCoefficient (const bool updateProgress){
-    qDebug("=== Graph::clusteringCoefficient()  ");
+    qDebug()<< "Graph::clusteringCoefficient()";
     averageCLC=0;
+    varianceCLC=0;
     maxCLC=0; minCLC=1;
     float temp=0;
     float x=0;
@@ -17014,13 +17087,13 @@ void Graph::writeMatrix (const QString &fn,
         break;
     case MATRIX_DISTANCES:
         if ( !calculatedDistances || graphModified() ) {
-            graphDistanceGeodesicCompute(false, considerWeights, inverseWeights, dropIsolates);
+            graphDistanceGeodesicMatrix(considerWeights, inverseWeights, dropIsolates);
         }
         emit statusMessage ( tr("Distances recomputed. Writing Distances Matrix...") );
         break;
     case MATRIX_GEODESICS:
         if ( !calculatedDistances || graphModified() ) {
-            graphDistanceGeodesicCompute(false, considerWeights, inverseWeights, false);
+            graphDistanceGeodesicMatrix(considerWeights, inverseWeights, false);
         }
         emit statusMessage ( tr("Distances recomputed. Writing Geodesics Matrix...") );
         break;
@@ -18678,7 +18751,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
     qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - Compute dij, where (i,j) in E";
 
     if ( !calculatedDistances || graphModified() ) {
-        graphDistanceGeodesicCompute(false,considerWeights,inverseWeights, dropIsolates);
+        graphDistanceGeodesicMatrix(considerWeights,inverseWeights, dropIsolates);
     }
     qDebug() << " DM : ";
     //DM.printMatrixConsole();

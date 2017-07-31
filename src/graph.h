@@ -724,17 +724,22 @@ public:
 
 
     /* DISTANCES, CENTRALITIES & PROMINENCE MEASURES */
-    int graphDistanceGeodesic(const int, const int,
-                 const bool considerWeights, const bool inverseWeights);
+    int graphConnectedness(const bool updateProgress=false) ;
+    int graphDistanceGeodesic(const int v1, const int v2,
+                              const bool considerWeights,
+                              const bool inverseWeights);
+    bool graphReachable(const int &v1, const int &v2) ;
     int graphDiameter(const bool considerWeights, const bool inverseWeights);
     float graphDistanceGeodesicAverage(const bool considerWeights,
                                const bool inverseWeights, const bool dropIsolates);
-    int graphConnectedness(const bool updateProgress=false) ;
 
     void graphDistanceGeodesicCompute(const bool &computeCentralities=false,
                               const bool &considerWeights=false,
                               const bool &inverseWeights=true,
                               const bool &dropIsolates=false);
+    void graphDistanceGeodesicMatrix(const bool &considerWeights=false,
+                                     const bool &inverseWeights=true,
+                                     const bool &dropIsolates=false);
     void centralityDegree(const bool &weights=true,
                           const bool &dropIsolates=false);
     void centralityInformation(const bool considerWeights=false,
@@ -761,7 +766,7 @@ public:
     void writeMatrixWalks (const QString &fn,
                              const int &length=0,
                              const bool &simpler=false);
-    int reachable(const int &v1, const int &v2) ;
+
     QList<int> vertexinfluenceRange(int v1);
     QList<int> vertexinfluenceDomain(int v2);
 
