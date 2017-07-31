@@ -3523,9 +3523,9 @@ void Graph::edgeUndirectedSet(const long int &v1, const long int &v2,
  */
 bool Graph::graphReachable(const int &v1, const int &v2) {
     qDebug()<< "Graph::reachable()";
-    if (!calculatedDistances || graphModified() )
+    if (!calculatedDistances || graphModified() ) {
         graphDistanceGeodesicCompute(false);
-    //return DM.item(v1-1,v2-1);
+    }
     return ( m_graph[ index[v1] ] ->distance( v2) != RAND_MAX ) ? true: false;
 }
 
@@ -3547,7 +3547,6 @@ int Graph::graphDistanceGeodesic(const int v1, const int v2,
     if ( !calculatedDistances || graphModified() ) {
         graphDistanceGeodesicCompute(false, considerWeights, inverseWeights, false);
     }
-    //return DM.item(index[i],index[j]);
     return m_graph[ index[v1] ]->distance(v2);
 }
 
@@ -3589,7 +3588,7 @@ float Graph::graphDistanceGeodesicAverage(const bool considerWeights,
 
     if (!calculatedDistances || graphModified())  {
         qDebug() <<"Graph::graphDistanceGeodesicAverage() - reachability matrix not created "
-                   "or graph modified. Recomputing XRM";
+                   "or graph modified. Recomputing distances";
         emit statusMessage ( tr("Computing Average Distance: "
                                 "Need to recompute Distances. Please wait...") );
         graphConnectedness();
@@ -3661,6 +3660,7 @@ int Graph::graphConnectedness(const bool updateProgress) {
                 << m_graphConnectedness;
         return m_graphConnectedness;
     }
+
     //initially if graph is undirected, assume it is connected.
     // if is directed, assume it is strongly connected.
     if ( graphUndirected() ) {
@@ -3671,7 +3671,9 @@ int Graph::graphConnectedness(const bool updateProgress) {
     }
 
     graphDistanceGeodesicCompute(false, false,false,false);
-    int size = vertices(false,false), i=0, j=0;
+
+    int i=0;
+    QList<Vertex*>::const_iterator it, jt;
 
     m_vertexPairsNotConnected.clear();
     m_vertexPairsUnilaterallyConnected.clear();
@@ -3679,27 +3681,25 @@ int Graph::graphConnectedness(const bool updateProgress) {
    // int isolatedVertices=verticesListIsolated().count();
     bool isolatedVertices = false;
 
-    for (i=0; i < size ; i++) {
-        for (j=i+1; j < size ; j++) {
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
+        for (jt=it; jt!=m_graph.cend(); ++jt) {
 
             if ( graphUndirected() ) {
 
-                if ( XRM.item(i,j) == 0 ) {
+                if ( (*it)->distance( (*jt)-> name() ) == RAND_MAX ) {
                     // not connected because there is no path connecting (i,j)
-                    m_vertexPairsNotConnected.insertMulti(i,j);
-                    //m_vertexPairsNotConnected.insertMulti(j,i);
-                    if (vertexIsolated(i+1) || vertexIsolated(j+1)) {
+                    m_vertexPairsNotConnected.insertMulti((*it)-> name(),(*jt)-> name());
+                    if ( (*it)->isIsolated() || (*jt)->isIsolated() ) {
                         isolatedVertices = true;
                     }
                 }
 
             }
             else {
-
-                if ( XRM.item(i,j) != 0 ) {
-                    if ( XRM.item(j,i) == 0 ) {
+                if ( (*it)->distance( (*jt)-> name() ) != RAND_MAX ) {
+                    if ( (*jt)->distance( (*it)-> name() ) == RAND_MAX ) {
                         // unilaterly connected because there is only a path i -> j
-                        m_vertexPairsUnilaterallyConnected.insertMulti(i,j);
+                        m_vertexPairsUnilaterallyConnected.insertMulti((*it)-> name(),(*jt)-> name());
                         //m_vertexPairsNotConnected.insertMulti(j,i);
                     }
                     else {
@@ -3708,18 +3708,16 @@ int Graph::graphConnectedness(const bool updateProgress) {
 
                 }
                 else {
-                    if ( XRM.item(j,i) == 0 ) {
+                    if ( (*jt)->distance( (*it)-> name() ) == RAND_MAX ) {
                         //  not connected because there is no path connecting (i,j) or (j,i)
-                        m_vertexPairsNotConnected.insertMulti(i,j);
-                        //m_vertexPairsNotConnected.insertMulti(j,i);
-                        if (vertexIsolated(i+1) || vertexIsolated(j+1)) {
+                        m_vertexPairsNotConnected.insertMulti( (*it)-> name(),(*jt)-> name() );
+                        if ( (*it)->isIsolated() || (*jt)->isIsolated() ) {
                             isolatedVertices = true;
                         }
                     }
                     else {
                         // unilaterly connected because there is only a path j -> i
-                        m_vertexPairsUnilaterallyConnected.insertMulti(j,i);
-                        //m_vertexPairsNotConnected.insertMulti(i,j);
+                        m_vertexPairsUnilaterallyConnected.insertMulti((*jt)-> name(),(*it)-> name() );
                     }
 
                 }
@@ -3775,7 +3773,7 @@ void Graph::graphDistanceGeodesicMatrix(const bool &considerWeights,
     if ( !calculatedDistances || graphModified() ) {
         graphDistanceGeodesicCompute(false,considerWeights,inverseWeights, dropIsolates);
     }
-    QList<Vertex*>::const_iterator it, it1;
+    QList<Vertex*>::const_iterator it, jt;
 
     int N = vertices(true,false);
 
@@ -3788,9 +3786,9 @@ void Graph::graphDistanceGeodesicMatrix(const bool &considerWeights,
     qDebug() << "Graph: graphDistanceGeodesicMatrix() - Almost finished! "
                 "Writing distance and sigmas matrix...";
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
-        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
-            DM.setItem(index[(*it)->name()],index[(*it1)->name()], (*it)->distance((*it1)->name()));
-            TM.setItem(index[(*it)->name()],index[(*it1)->name()], (*it)->shortestPaths((*it1)->name()));
+        for (jt=m_graph.cbegin(); jt!=m_graph.cend(); ++jt) {
+            DM.setItem(index[(*it)->name()],index[(*jt)->name()], (*it)->distance((*jt)->name()));
+            TM.setItem(index[(*it)->name()],index[(*jt)->name()], (*it)->shortestPaths((*jt)->name()));
 
         }
     }
@@ -3853,13 +3851,6 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
     // m_totalVertices = vertices(dropIsolates,false);
     int N = vertices(true,false);
 
-    //qDebug() << "Graph::graphDistanceGeodesicCompute() - Resizing Matrices to hold "
-    //         << N << " vertices";
-    //DM.resize(N, N);
-    //TM.resize(N, N);
-
-    XRM.zeroMatrix(N, N);
-
     int E = edgesEnabled();
     //drop isolated vertices from calculations (i.e. std C and group C).
     //int N=(dropIsolates) ?  (m_totalVertices - verticesListIsolated().count()):m_totalVertices;
@@ -3870,7 +3861,6 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                 << m_symmetric ;
 
     if ( E == 0 ) {
-        //DM.fillMatrix(RAND_MAX);
 
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
             for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
@@ -3927,11 +3917,6 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                  << " outboundEdgesVert "<<  outboundEdgesVert;
         qDebug() << "	E " << E <<  " N " << N;
 
-
-//        qDebug() << "	Set all their pair-wise distances to RAND_MAX";
-//        DM.fillMatrix(RAND_MAX);
-//        qDebug () << "	Set all pair-wise shortest-path counts (sigmas) to 0";
-//        TM.fillMatrix(0);
 
 
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
@@ -4370,15 +4355,6 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
     }  // END else (aka E!=0)
 
 
-//    qDebug() << "Graph: graphDistanceGeodesicCompute() - Almost finished! "
-//                "Writing distance and sigmas matrix...";
-//    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
-//        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
-//            DM.setItem(index[(*it)->name()],index[(*it1)->name()], (*it)->distance((*it1)->name()));
-//            TM.setItem(index[(*it)->name()],index[(*it1)->name()], (*it)->shortestPaths((*it1)->name()));
-
-//        }
-//    }
 
     calculatedDistances=true;
 
@@ -4424,10 +4400,8 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
 
 
     //set distance of s from s equal to 0
-    //DM.setItem(s,s,0);
     m_graph[si]->setDistance(s,0);
     //set sigma of s from s equal to 1
-    //TM.setItem(si,si,1);
     m_graph[si]->setShortestPaths(s,1);
 
     //    qDebug("BFS: Construct a queue Q of integers and push source vertex s=%i to Q as initial vertex", s);
@@ -4473,16 +4447,19 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
 
             //if distance (s,w) is infinite, w found for the first time.
             if ( m_graph [ si ]->distance( w ) == RAND_MAX ) {
-            //if (	DM.item(s, w) == RAND_MAX ) {
+
                 qDebug("BFS: first time visiting w=%i. Enqueuing w to the end of Q", w);
+
                 Q.push(w);
+
                 qDebug()<<"BFS: First check if distance(s,u) = infinite and set it to zero";
-                //dist_u=DM.item(s,u);
+
                 dist_u=m_graph [ si ]->distance( u );
                 dist_w = dist_u + 1;
 
-                qDebug("BFS: Setting distance of w=%i from s=%i equal to distance(s,u) plus 1. New distance = %i",w,s, dist_w );
-                //DM.setItem(s, w, dist_w);
+                qDebug() << "BFS: Setting dist_w = d ( s" << s << " -> w"<<w
+                         << "equal to dist_u=d(s,u) plus 1. New dist_w" << dist_w ;
+;
                 m_graph[si]->setDistance(w,dist_w);
 
                 m_graphAverageDistance += dist_w;
@@ -4493,13 +4470,11 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
                         << s <<"," << w
                         <<")=" <<
                           m_graph[si]->distance(w)
-                          //DM.item(s,w)
                        << " - inserting " << w
                        << " to inflRange J of " << s
                        << " - and " << s
                        << " to inflDomain I of "<< w;
 
-                XRM.setItem(si,wi,1);
                 influenceRanges.insertMulti(s,w);
                 influenceDomains.insertMulti(w,s);
 
@@ -4526,11 +4501,13 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
             }
 
             qDebug()<< "BFS: Start path counting";
+
             //Is edge (u,w) on a shortest path from s to w via u?
+
             if ( m_graph[si]->distance(w) == m_graph[si]->distance(u) + 1) {
-            //if ( DM.item(s,w)==DM.item(s,u)+1) {
-                //temp= TM.item(si,wi)+TM.item(si,ui);
+
                 temp=m_graph[si]->shortestPaths(w)+m_graph[si]->shortestPaths(u);
+
                 qDebug()<< "BFS: Found a NEW SHORTEST PATH from s" << s
                         << "to w"<< w << "via u"<< u
                         << "Setting Sigma(s, w)"<< temp;
@@ -4573,8 +4550,8 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
         (Implicitly, the algorithm uses the m_graph structure)
 
     OUTPUT:
-        For every vertex t: DM(s, t) is set to the distance of each t from s
-        For every vertex t: TM(s, t) is set to the number of shortest paths between s and t
+        For every vertex t: d(s, t) is set to the distance of each t from s
+        For every vertex t: s(s, t) is set to the number of shortest paths between s and t
 
         Also, if computeCentralities is true then it does extra operations:
             a) For source vertex s:
@@ -4602,11 +4579,9 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
 
     priority_queue<GraphDistance, vector<GraphDistance>, GraphDistancesCompare> prQ;
 
-    //set distance of s from s equal to 0
-    //DM.setItem(s,s,0);
+    //set d( s, s ) = 0
     m_graph[si]->setDistance(s,0);
-    //set sigma of s from s equal to 1
-    //TM.setItem(s,s,1);
+    //set sp ( s , s ) = 1
     m_graph[si]->setShortestPaths(s,1);
 
 
@@ -4615,8 +4590,7 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
         v=index[ (*it)->name() ];
         if (v != s ){
-            // NOTE: DM(i,j) init to RAND_MAX already done in graphDistanceGeodesicCompute
-            // Not needed here: DM.setItem(s,v,RAND_MAX);
+            // NOTE: d(i,j) init to RAND_MAX already done in graphDistanceGeodesicCompute
 //            qDebug() << " push " << v << " to prQ with infinite distance from s";
 //            prQ.push(GraphDistance(v,RAND_MAX));
             //TODO // Previous node in optimal path from source
@@ -4683,7 +4657,6 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
 
             qDebug() <<"    --- dijkstra: Start path discovery";
 
-            //dist_u=DM.item(s,u);
             dist_u=m_graph [ si ]->distance( u );
 
             if (dist_u == RAND_MAX || dist_u < 0) {
@@ -4702,7 +4675,6 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
                       <<m_graph [ si ]->distance( w );
 
             if ( ( dist_w == m_graph [ si ]->distance( w ) ) &&  dist_w < RAND_MAX ) {
-            //if  (dist_w == DM.item(s, w)  && dist_w < RAND_MAX) {
 
                 qDebug() <<"    --- dijkstra: dist_w : " << dist_w
                          <<  " ==  d(s,w) : " << m_graph [ si ]->distance( w ) ;
@@ -4745,16 +4717,15 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
             }
 
             else if (dist_w > 0 && dist_w < m_graph [ si ]->distance( w )  ) {
-            //else if (dist_w > 0 && dist_w < DM.item(s, w)  ) {
 
                 qDebug() <<"    --- dijkstra: dist_w =" << dist_w
                          <<  " <  d(s,w) =" << m_graph [ si ]->distance( w )
                          << " Pushing w" << w<< "to prQ with distance"<< dist_w << "from s"<<s;
 
-                prQ.push(GraphDistance(w,dist_w)); //@FIXME: w might have been already visited?
-                //If so, we might use QMap<int> which is sorted (minimum)
+                prQ.push(GraphDistance(w,dist_w));
+                // FIXME: w might have been already visited?
+                // If so, we might use QMap<int> which is sorted (minimum)
                 // and also provides contain()
-                //DM.setItem(s, w, dist_w);
                 m_graph[si]->setDistance(w,dist_w);
 
                 m_graphAverageDistance += dist_w;
@@ -4770,7 +4741,6 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
                        << "and" << s
                        << "to inflDomain I of"<< w;
 
-                XRM.setItem(si,wi,1);
                 influenceRanges.insertMulti(s,w);
                 influenceDomains.insertMulti(w,s);
 
@@ -4829,12 +4799,6 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
                             "NOT a new SP";
             }
 
-//            qDebug()<< "### dijkstra: Start path counting";
-//            // Is (u,w) on a shortest path from s to w via u?
-//            if ( DM.item(s,w)==DM.item(s,u)+weight) {
-//                temp= TM.item(s,w)+TM.item(s,u);
-
-//            }
             ++it1;
         }
         qDebug() << "    --- dijkstra: LOOP END over every edge ("<< u <<", w ) e E... ";
@@ -6480,17 +6444,16 @@ void Graph::centralityClosenessIR(const bool considerWeights,
             continue;
         }
         for (jt=m_graph.cbegin(); jt!=m_graph.cend(); ++jt){
-        //for ( j=0; j < DM.cols() ; j++) {
-            //i = index[(*it)->name()];
-            //if (i == j) continue;
+
             if ( (*it)->name() == (*jt)->name() ) {
                 continue;
             }
             if ( ! (*jt)-> isEnabled() ) {
                 continue;
             }
+
             dist = (*it)->distance( (*jt)->name() );
-            //dist = DM.item ( i , j );
+
             if (dist != RAND_MAX ) {
                 IRCC += dist;
                 Ji ++; // compute |Ji|
@@ -8076,22 +8039,14 @@ void Graph::prestigeProximity( const bool considerWeights,
             continue;
         }
 
-        // j = index[(*it)->name()];
-
         for (jt=m_graph.cbegin(); jt!=m_graph.cend(); ++jt){
-            //for ( j=0; j < DM.cols() ; j++) {
-            //i = index[(*it)->name()];
-            //if (i == j) continue;
+
             if ( (*it)->name() == (*jt)->name() ) {
                 continue;
             }
             if ( ! (*jt)-> isEnabled() ) {
                 continue;
             }
-
-            //            for (i=0; i < DM.rows() ; i++) {
-            //                if (i == j) continue;
-            //                dist = DM.item ( i , j );
 
             dist = (*jt)->distance( (*it)->name() );
 
@@ -17104,7 +17059,7 @@ void Graph::writeMatrix (const QString &fn,
         break;
     case MATRIX_REACHABILITY:
         if (!calculatedDistances || graphModified()) {
-            graphDistanceGeodesicCompute(false,false,false,dropIsolates);
+            graphDistanceGeodesicMatrix(false,false,false);
         }
         emit statusMessage ( tr("Distances recomputed. Writing Reachability Matrix...") );
         break;
@@ -17235,7 +17190,7 @@ void Graph::writeMatrix (const QString &fn,
         break;
     case MATRIX_DISTANCES:
         outText << "<p class=\"description\">"
-                << tr("The distance matrix, DM, of a social network is a NxN matrix "
+                << tr("The distance matrix of a social network is a NxN matrix "
                     "where each element (i,j) is the geodesic distance "
                       "(length of shortest path) from actor i to actor j, "
                       "or infinity if no shortest path exists.")
@@ -18753,8 +18708,6 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
     if ( !calculatedDistances || graphModified() ) {
         graphDistanceGeodesicMatrix(considerWeights,inverseWeights, dropIsolates);
     }
-    qDebug() << " DM : ";
-    //DM.printMatrixConsole();
 
 
     // Compute original spring length
