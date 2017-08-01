@@ -372,8 +372,8 @@ void MainWindow::slotOpenSettingsDialog() {
     connect( m_settingsDialog, &DialogSettings::setDebugMsgs,
                          this, &MainWindow::slotOptionsDebugMessages);
 
-    connect( m_settingsDialog, &DialogSettings::setProgressBars,
-             this, &MainWindow::slotOptionsProgressBarVisibility);
+    connect( m_settingsDialog, &DialogSettings::setProgressDialog,
+             this, &MainWindow::slotOptionsProgressDialogVisibility);
 
     connect( m_settingsDialog, &DialogSettings::setAntialiasing,
              this, &MainWindow::slotOptionsAntialiasing);
@@ -3365,74 +3365,6 @@ void MainWindow::initToolBox(){
      *  create widgets for the Controls Tab
      */
 
-    // create 4 buttons for the Edit groupbox
-//    editNodeAddBt= new QPushButton(QIcon(":/images/add.png"),tr("&Add Node"));
-//    editNodeAddBt->setFocusPolicy(Qt::NoFocus);
-//    editNodeAddBt->setMinimumWidth(100);
-//    editNodeAddBt->setStatusTip( tr("Add a new node to the network.") ) ;
-//    editNodeAddBt->setToolTip(
-//                tr("Add a new node to the network (Ctrl+.). \n\n"
-//                   "You can also create a new node \n"
-//                   "in a specific position by double-clicking.")
-//                );
-//    editNodeAddBt->setWhatsThis(
-//                tr("Add new node\n\n"
-//                   "Adds a new node to the network (Ctrl+.). \n\n"
-//                   "Alternately, you can create a new node "
-//                   "in a specific position by double-clicking "
-//                   "on that spot of the canvas.")
-//                );
-
-//    removeNodeBt= new QPushButton(QIcon(":/images/remove.png"),tr("&Remove Node"));
-//    removeNodeBt->setFocusPolicy(Qt::NoFocus);
-//    removeNodeBt->setMinimumWidth(100);
-//    removeNodeBt->setStatusTip( tr("Remove a node from the network. ") );
-//    removeNodeBt->setToolTip(
-//                tr("Remove a node from the network (Ctrl+Alt+.). ")
-//                );
-
-//    removeNodeBt->setWhatsThis(
-//                tr("Remove node\n\n"
-//                   "Removes a node from the network (Ctrl+Alt+.). \n\n"
-//                   "Alternately, you can remove a node "
-//                   "by right-clicking on it.")
-//                );
-
-//    editEdgeAddBt= new QPushButton(QIcon(":/images/connect.png"),tr("Add &Edge"));
-//    editEdgeAddBt->setFocusPolicy(Qt::NoFocus);
-//    editEdgeAddBt->setMinimumWidth(100);
-//    editEdgeAddBt->setStatusTip(
-//                tr("Add a new Edge from a node to another. ")
-//                );
-//    editEdgeAddBt->setToolTip(
-//                tr("Add a new Edge from a node to another (Ctrl+/).\n\n"
-//                   "You can also create an edge between two nodes \n"
-//                   "by double-clicking or middle-clicking on them consecutively.")
-//                );
-//    editEdgeAddBt->setWhatsThis(
-//                tr("Add edge\n\n"
-//                   "Adds a new Edge from a node to another (Ctrl+/).\n\n"
-//                   "Alternately, you can create a new edge between two nodes "
-//                   "by double-clicking or middle-clicking on them consecutively.")
-//                );
-
-//    editEdgeRemoveBt= new QPushButton(QIcon(":/images/disconnect.png"),tr("Remove Edge"));
-//    editEdgeRemoveBt->setFocusPolicy(Qt::NoFocus);
-//    editEdgeRemoveBt->setMinimumWidth(100);
-//    editEdgeRemoveBt->setStatusTip( tr("Remove an Edge from the network ")  );
-//    editEdgeRemoveBt->setToolTip(
-//                tr("Remove an Edge from the network (Ctrl+Alt+/)"
-//                   )
-//                );
-//    editEdgeRemoveBt->setWhatsThis(
-//                tr("Remove edge\n\n"
-//                   "Removes an Edge from the network  (Ctrl+Alt+/).\n\n"
-//                   "Alternately, you can remove an Edge "
-//                   "by right-clicking on it."
-//                   )
-//                );
-
-
     QLabel *toolBoxEditNodeSubgraphSelectLabel  = new QLabel;
     toolBoxEditNodeSubgraphSelectLabel->setText(tr("Selection Subgraph:"));
     toolBoxEditNodeSubgraphSelectLabel->setMinimumWidth(115);
@@ -4656,16 +4588,16 @@ void MainWindow::initSignalSlots() {
                       this, &MainWindow::slotEditRelationRename );
 
 
+    connect ( &activeGraph, &Graph::signalProgressBoxCreate,
+              this, &MainWindow::slotProgressBoxCreate);
+
+    connect ( &activeGraph, &Graph::signalProgressBoxKill,
+              this, &MainWindow::slotProgressBoxDestroy);
+
 
 
     //signals and slots inside MainWindow
-//    connect( editNodeAddBt,SIGNAL(clicked()), this, SLOT( slotEditNodeAdd() ) );
 
-//    connect( editEdgeAddBt,SIGNAL(clicked()), this, SLOT( slotEditEdgeAdd() ) );
-
-//    connect( removeNodeBt,SIGNAL(clicked()), this, SLOT( slotEditNodeRemove() ) );
-
-//    connect( editEdgeRemoveBt,SIGNAL(clicked()), this, SLOT( slotEditEdgeRemove() ) );
 
     connect( editRelationAddAct, SIGNAL(triggered()),
              this, SLOT(slotEditRelationAdd()) );
@@ -4736,7 +4668,10 @@ void MainWindow::initSignalSlots() {
  * Used on app start and especially when erasing a network to start a new one
  */
 void MainWindow::initApp(){
-    qDebug()<<"MW::initApp() - START INITIALISATION";
+    qDebug()<<"MW::initApp() - START INITIALIZATION";
+
+    statusMessage( tr("Application initialization. Please wait..."));
+
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
     // Init basic variables
@@ -7080,15 +7015,12 @@ void MainWindow::slotNetworkViewSociomatrix(){
 
     statusMessage ( tr ("Creating and writing adjacency matrix") );
 
-    createProgressBar(0,progressMsg);
-
     activeGraph.writeMatrixAdjacency(fn) ;
     //AVOID THIS, no preserving of node numbers when nodes are deleted.
     // activeGraph.writeMatrix(fn,MATRIX_ADJACENCY) ;
 
-    destroyProgressBar();
-
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+
         qDebug () << "MW::slotNetworkViewSociomatrix() - "
                      "calling QDesktopServices::openUrl for"
                   << QUrl::fromLocalFile(fn) ;
@@ -7117,8 +7049,6 @@ void MainWindow::slotNetworkViewSociomatrixPlotText(){
 
     statusMessage(tr("Creating plot of adjacency matrix of %1 nodes.").arg(N ));
 
-    qDebug ("MW: calling Graph::writeMatrixAdjacency with %i nodes", N);
-
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-plot-"+dateTime+".html";
 
@@ -7144,11 +7074,9 @@ void MainWindow::slotNetworkViewSociomatrixPlotText(){
             break;
         }
     }
-    createProgressBar(0,progressMsg);
+
 
     activeGraph.writeMatrixAdjacencyPlot(fn, simpler);
-
-    destroyProgressBar();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -7277,15 +7205,10 @@ void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
 {
     qDebug() << "MW::slotNetworkRandomErdosRenyi()";
 
-    statusMessage( tr("Erasing any existing network."));
-
     initApp();
 
     statusMessage( tr("Creating Erdos-Renyi Random Network. Please wait... ")  );
 
-    progressMsg  = "Creating Erdos-Renyi Random Network. \n"
-                " Please wait (or disable progress bars from Options -> Settings).";
-    createProgressBar( (edges != 0 ? edges:newNodes), progressMsg );
     appSettings["randomErdosEdgeProbability"] = QString::number(eprob);
 
 
@@ -7296,7 +7219,6 @@ void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
                                        mode,
                                        diag);
 
-    destroyProgressBar( (edges != 0 ? edges:newNodes) );
 
     setWindowTitle("Untitled Erdos-Renyi random network");
 
@@ -7372,13 +7294,8 @@ void MainWindow::slotNetworkRandomScaleFree ( const int &newNodes,
                                           const QString &mode)
 {
     qDebug() << "MW::slotNetworkRandomScaleFree()";
-    statusMessage( tr("Erasing any existing network. "));
-    initApp();
 
-    statusMessage( tr("Creating Scale-Free Random Network. Please wait..."));
-    progressMsg = "Creating Scale-Free Random Network. \n"
-            "Please wait (or disable progress bars from Options -> Settings).";
-    createProgressBar(newNodes, progressMsg );
+    initApp();
 
     activeGraph.randomNetScaleFreeCreate( newNodes,
                                           power,
@@ -7387,7 +7304,6 @@ void MainWindow::slotNetworkRandomScaleFree ( const int &newNodes,
                                           zeroAppeal,
                                           mode);
 
-    destroyProgressBar(newNodes);
 
     setWindowTitle("Untitled scale-free network");
 
@@ -7441,17 +7357,10 @@ void MainWindow::slotNetworkRandomSmallWorld(const int &newNodes,
 {
     Q_UNUSED(diag);
     qDebug() << "MW::slotNetworkRandomSmallWorld()";
-    statusMessage( tr("Erasing any existing network. "));
+
     initApp();
 
-    statusMessage( tr("Creating Small-World Random Network. Please wait..."));
-    progressMsg  = "Creating Small-World Random Network. \n"
-            "Please wait (or disable progress bars from Options -> Settings).";
-    createProgressBar(newNodes, progressMsg );
-
     activeGraph.randomNetSmallWorldCreate(newNodes, degree, beta, mode);
-
-    destroyProgressBar(newNodes);
 
     setWindowTitle("Untitled small-world network");
 
@@ -7496,18 +7405,10 @@ void MainWindow::slotNetworkRandomRegularDialog()
 void MainWindow::slotNetworkRandomRegular(const int &newNodes, const int &degree,
                                           const QString &mode, const bool &diag){
 
-    statusMessage( "Erasing any existing network. ");
-    initApp();
-    statusMessage( "Creating a pseudo-random d-regular network where each node "
-                   "has the same degree... ");
 
-    progressMsg  = "Creating pseudo-random d-regular network. \n"
-            "Please wait (or disable progress bars from Options -> Settings).";
-    createProgressBar(newNodes, progressMsg );
+    initApp();
 
     activeGraph.randomNetRegularCreate (newNodes,degree, mode, diag);
-
-    destroyProgressBar(newNodes);
 
     setWindowTitle("Untitled d-regular network");
 
@@ -7567,17 +7468,11 @@ void MainWindow::slotNetworkRandomRingLattice(){
         return;
     }
 
-    statusMessage( "Erasing any existing network. ");
-    initApp();
 
-    statusMessage( "Creating ring lattice network. Please wait...");
-    progressMsg  = "Creating ring-lattice network. \n"
-            "Please wait (or disable progress bars from Options -> Settings).";
-    createProgressBar(newNodes, progressMsg );
+    initApp();
 
     activeGraph.randomNetRingLatticeCreate(newNodes, degree, true );
 
-    destroyProgressBar(newNodes);
 
     setWindowTitle("Untitled ring-lattice network");
     //float avGraphDistance=activeGraph.graphDistanceGeodesicAverage();
@@ -7681,7 +7576,7 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
         }
         rightPanelNetworkTypeLabel-> setText ("Network Type: Undirected");
         rightPanelEdgesLabel->setText(tr("Total Edges"));
-        rightPanelSelectedEdgesLabel->setText(tr("Selected Edges"));
+        rightPanelSelectedEdgesLabel->setText( tr("Selected Edges") );
         editEdgeUndirectedAllAct->setChecked(true);
     }
     else {
@@ -7706,7 +7601,7 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
             toolBoxEditEdgeModeSelect->setCurrentIndex(0);
         }
         rightPanelEdgesLabel->setText(tr("Total Arcs"));
-        rightPanelSelectedEdgesLabel->setText(tr("Selected Arcs"));
+        rightPanelSelectedEdgesLabel->setText( tr("Selected Arcs")  );
         editEdgeUndirectedAllAct->setChecked(false);
     }
     rightPanelEdgesLCD->display(edges);
@@ -9551,14 +9446,8 @@ void MainWindow::slotLayoutRandom(){
     }
 
     graphicsWidget->clearGuides();
-    statusMessage(  tr("Embedding Random Layout. Please wait...") );
-    progressMsg = tr("Embedding Random Layout. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-    createProgressBar(0,progressMsg);
 
     activeGraph.layoutRandom();
-
-    destroyProgressBar();
 
     statusMessage( tr("Nodes in random positions.") );
 }
@@ -9581,12 +9470,9 @@ void MainWindow::slotLayoutRadialRandom(){
     double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
 
     slotLayoutGuides(false);
-    statusMessage(  QString(tr("Embedding Random Radial model. Please wait...")) );
-    progressMsg = "Embedding Random Radial model. \n"
-            "Please wait (or disable progress bars from Options -> Settings).";
-    createProgressBar(0,progressMsg );
+
     activeGraph.layoutRadialRandom(x0, y0, maxRadius);
-    destroyProgressBar();
+
     slotLayoutGuides(true);
     statusMessage( tr("Nodes in random concentric circles.") );
 }
@@ -9607,12 +9493,8 @@ void MainWindow::slotLayoutSpringEmbedder(){
         return;
     }
 
-    statusMessage( tr("Embedding Spring-Gravitational model (Eades).... ")  );
-    progressMsg  = "Embedding Spring-Gravitational model (Eades). \n"
-            "Please wait (or disable progress bars from Options -> Settings).";
-    createProgressBar(0,progressMsg );
-    activeGraph.layoutForceDirectedSpringEmbedder(100);
-    destroyProgressBar();
+    activeGraph.layoutForceDirectedSpringEmbedder(500);
+
     statusMessage( tr("Spring-Gravitational (Eades) model embedded.") );
 }
 
@@ -9632,15 +9514,8 @@ void MainWindow::slotLayoutFruchterman(){
         return;
     }
 
-    statusMessage( tr("Embedding a repelling-attracting forces model "
-                      "(Fruchterman & Reingold) on the network.... ")  );
-    progressMsg = "Embedding a repelling-attracting forces model "
-                  "(Fruchterman & Reingold) \n"
-            "Please wait (or disable progress bars from Options -> Settings).";
-    createProgressBar(0,progressMsg );
     activeGraph.layoutForceDirectedFruchtermanReingold(100);
 
-    destroyProgressBar();
     statusMessage( tr("Fruchterman & Reingold model embedded.") );
 }
 
@@ -9659,15 +9534,8 @@ void MainWindow::slotLayoutKamadaKawai(){
         return;
     }
 
-    statusMessage( tr("Embedding a dynamic spring model "
-                      "(Kamada & Kawai) on the network.... ")  );
-    progressMsg = "Embedding a dynamic spring model "
-                  "(Kamada & Kawai) \n"
-            "Please wait (or disable progress bars from Options -> Settings).";
-    createProgressBar(0,progressMsg );
     activeGraph.layoutForceDirectedKamadaKawai(500);
 
-    destroyProgressBar();
     statusMessage( tr("Kamada & Kawai model embedded.") );
 }
 
@@ -9848,18 +9716,10 @@ void MainWindow::slotLayoutRadialByProminenceIndex(QString choice=""){
 
     graphicsWidget->clearGuides();
 
-    statusMessage(  tr("Embedding Prominence Index Radial Layout. Please wait...") );
-    progressMsg = tr("Embedding Prominence Index Radial Layout. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    createProgressBar(0,progressMsg);
-
     activeGraph.layoutByProminenceIndex(
                 userChoice, 0,
                 considerWeights, inverseWeights,
                 editFilterNodesIsolatesAct->isChecked() || dropIsolates);
-
-    destroyProgressBar();
 
     statusMessage( tr("Nodes in inner circles have higher %1 score. ").arg(prominenceIndexName ) );
 
@@ -10042,18 +9902,11 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
 
     graphicsWidget->clearGuides();
 
-    statusMessage(  tr("Embedding Prominence Index Level Layout. Please wait...") );
-    progressMsg = tr("Embedding Prominence Index Level Layout. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    createProgressBar(0,progressMsg);
-
     activeGraph.layoutByProminenceIndex(
                 userChoice, 1,
                 considerWeights, inverseWeights,
                 editFilterNodesIsolatesAct->isChecked() || dropIsolates);
 
-    destroyProgressBar();
 
     statusMessage( tr("Nodes in upper levels have higher %1 score. ").arg(prominenceIndexName ) );
 
@@ -10231,11 +10084,6 @@ void MainWindow::slotLayoutNodeSizeByProminenceIndex(QString choice=""){
     askAboutWeights();
 
     graphicsWidget->clearGuides();
-    statusMessage(  tr("Embedding Node Size by Prominence score layout. Please wait...") );
-    progressMsg = tr("Embedding Node Size by Prominence score layout. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    createProgressBar(0,progressMsg);
 
     activeGraph.layoutByProminenceIndex(
                 userChoice, 2,
@@ -10243,7 +10091,6 @@ void MainWindow::slotLayoutNodeSizeByProminenceIndex(QString choice=""){
                 editFilterNodesIsolatesAct->isChecked() || dropIsolates);
 
 
-    destroyProgressBar();
     statusMessage( tr("Bigger nodes have greater %1 score.").arg(prominenceIndexName ) );
 }
 
@@ -10423,20 +10270,15 @@ void MainWindow::slotLayoutNodeColorByProminenceIndex(QString choice=""){
     askAboutWeights();
 
     graphicsWidget->clearGuides();
-    statusMessage(  tr("Embedding Node Color by Prominence Score layout. Please wait...") );
-    progressMsg = tr("Embedding Node Color by Prominence Score layout. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
 
-    createProgressBar(0,progressMsg);
 
     activeGraph.layoutByProminenceIndex(
                 userChoice, 3,
                 considerWeights, inverseWeights,
                 editFilterNodesIsolatesAct->isChecked() || dropIsolates);
 
-    destroyProgressBar();
-
     statusMessage( tr("Nodes with red color have greater %1 score.").arg(prominenceIndexName));
+
 }
 
 
@@ -10510,15 +10352,7 @@ void MainWindow::slotAnalyzeReciprocity(){
 
     askAboutWeights();
 
-    statusMessage(  tr("Computing Reciprocity. Please wait...") );
-    progressMsg = tr("Computing Reciprocity. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    createProgressBar(0,progressMsg);
-
     activeGraph.writeReciprocity(fn, considerWeights);
-
-    destroyProgressBar();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -10832,17 +10666,9 @@ void MainWindow::slotAnalyzeDistance(){
     askAboutWeights();
 
 
-    statusMessage(  QString(tr("Computing Graph Distance. Please wait...")) );
-    progressMsg = tr("Computing Graph Distance. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    createProgressBar(0,progressMsg);
-
      int distanceGeodesic = activeGraph.graphDistanceGeodesic(i,j,
                                          considerWeights,
                                          inverseWeights);
-
-     destroyProgressBar();
 
     if ( distanceGeodesic > 0 && distanceGeodesic < RAND_MAX)
         QMessageBox::information(this, tr("Geodesic Distance"),
@@ -10861,8 +10687,8 @@ void MainWindow::slotAnalyzeDistance(){
 
 
 /**
-*  Invokes calculation of the matrix of geodesic distances for the loaded network, then displays it.
-*/
+ * @brief Invokes calculation of the matrix of geodesic distances for the loaded network, then displays it.
+ */
 void MainWindow::slotAnalyzeMatrixDistances(){
     qDebug() << "MW::slotAnalyzeMatrixDistances()";
     if ( !activeNodes()  )  {
@@ -10877,16 +10703,10 @@ void MainWindow::slotAnalyzeMatrixDistances(){
 
     statusMessage( tr("Computing geodesic distances. Please wait...") );
 
-    progressMsg = tr("Computing geodesic distances. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    createProgressBar(0,progressMsg);
 
     activeGraph.writeMatrix(fn,MATRIX_DISTANCES,
-                                    considerWeights, inverseWeights,
-                                    editFilterNodesIsolatesAct->isChecked());
-
-    destroyProgressBar();
+                            considerWeights, inverseWeights,
+                            editFilterNodesIsolatesAct->isChecked());
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -10921,19 +10741,9 @@ void MainWindow::slotAnalyzeMatrixGeodesics(){
 
     statusMessage(  tr("Computing geodesics (number of shortest paths). Please wait...") );
 
-    progressMsg = tr("Computing geodesics. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    createProgressBar(0,progressMsg);
-
-//    activeGraph.writeMatrixNumberOfGeodesicsPlainText(fn,
-//                                             considerWeights, inverseWeights);
-
     activeGraph.writeMatrix(fn,MATRIX_GEODESICS,
                                     considerWeights, inverseWeights,
                                     editFilterNodesIsolatesAct->isChecked());
-
-    destroyProgressBar();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -10956,18 +10766,11 @@ void MainWindow::slotAnalyzeDiameter() {
         return;
     }
 
-
     askAboutWeights();
 
     statusMessage(  QString(tr("Computing Graph Diameter. Please wait...")) );
-    progressMsg = tr("Computing Graph Diameter. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    createProgressBar(0,progressMsg);
 
     int netDiameter=activeGraph.graphDiameter(considerWeights, inverseWeights);
-
-    destroyProgressBar();
 
     if ( activeGraph.graphWeighted() && considerWeights )
         QMessageBox::information(this, "Diameter",
@@ -11007,16 +10810,10 @@ void MainWindow::slotAnalyzeDistanceAverage() {
     askAboutWeights();
 
     statusMessage(  tr("Computing Average Graph Distance. Please wait...") );
-    progressMsg = tr("Computing Average Graph Distance. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    createProgressBar(0,progressMsg);
 
     float averGraphDistance=activeGraph.graphDistanceGeodesicAverage(
                 considerWeights, inverseWeights,
                 editFilterNodesIsolatesAct->isChecked() );
-
-    destroyProgressBar();
 
     QMessageBox::information(this,
                              "Average Graph Distance",
@@ -11041,17 +10838,9 @@ void MainWindow::slotAnalyzeEccentricity(){
 
     askAboutWeights();
 
-    statusMessage(  tr("Computing Eccentricities. Please wait...") );
-    progressMsg = tr("Computing Eccentricities. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    createProgressBar(0,progressMsg);
-
     activeGraph.writeEccentricity(
                 fn, considerWeights, inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
-
-    destroyProgressBar();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11108,16 +10897,7 @@ void MainWindow::slotAnalyzeDissimilaritiesTieProfile(const QString &metric,
 
     askAboutWeights();
 
-    statusMessage( tr("Computing tie profile dissimilarities. Please wait...") );
-
-    progressMsg = tr("Computing tie profile dissimilarities. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    createProgressBar(0,progressMsg);
-
     activeGraph.writeMatrixDissimilarities(fn, metric, varLocation,diagonal, considerWeights);
-
-    destroyProgressBar();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11143,17 +10923,10 @@ void MainWindow::slotAnalyzeConnectedness(){
         return;
     }
 
-    statusMessage(  QString(tr("Computing Network Connectedness. Please wait...")) );
-    progressMsg = tr("Computing Network Connectedness. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    createProgressBar(0,progressMsg);
-
     int connectedness=activeGraph.graphConnectedness(true);
 
     qDebug () << "MW::slotAnalyzeConnectedness result " << connectedness;
 
-    destroyProgressBar();
 
     switch ( connectedness ) {
     case 1:
@@ -11225,16 +10998,9 @@ void MainWindow::slotAnalyzeWalksLength(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-walks-length-"+QString::number(length)+"-"+dateTime+".html";
 
-    statusMessage( tr("Computing walks of length %1. Please wait...").arg(length) );
-
-    progressMsg = tr("Computing walks of length %1. \n"
-            "Please wait (or disable progress bars from Options -> Settings).").arg(length);
-
-    createProgressBar(0,progressMsg);
 
     activeGraph.writeMatrixWalks(fn, length);
 
-    destroyProgressBar();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11288,14 +11054,7 @@ void MainWindow::slotAnalyzeWalksTotal(){
 
     statusMessage(  tr("Computing total walks matrix. Please wait...") );
 
-    progressMsg = tr("Computing total walks matrix. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    createProgressBar(activeNodes()-1,progressMsg);
-
     activeGraph.writeMatrixWalks(fn);
-
-    destroyProgressBar(activeNodes()-1); // do not check for progress bar
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11327,15 +11086,7 @@ void MainWindow::slotAnalyzeReachabilityMatrix(){
 
     statusMessage(  tr("Computing reachability matrix. Please wait...") );
 
-    progressMsg = tr("Computing reachability matrix. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    createProgressBar(0,progressMsg);
-
-    //activeGraph.writeReachabilityMatrixPlainText(fn);
     activeGraph.writeMatrix(fn, MATRIX_REACHABILITY );
-
-    destroyProgressBar();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11410,11 +11161,6 @@ void MainWindow::slotAnalyzeClusteringHierarchical(const QString &matrix,
 
     statusMessage(  tr("Computing Hierarchical Cluster Analysis. Please wait...") );
 
-    progressMsg = tr("Hierarchical Cluster Analysis... \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    createProgressBar(0,progressMsg);
-
     activeGraph.writeClusteringHierarchical(fn,
                                             matrix,
                                             metric,
@@ -11425,7 +11171,6 @@ void MainWindow::slotAnalyzeClusteringHierarchical(const QString &matrix,
                                             inverseWeights,
                                             dropIsolates);
 
-    destroyProgressBar();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11462,11 +11207,11 @@ void MainWindow::slotAnalyzeCommunitiesCliqueCensus(){
     progressMsg = tr("Computing Clique Census. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
-    createProgressBar(0,progressMsg);
+    slotProgressBoxCreate(0,progressMsg);
 
     activeGraph.writeCliqueCensus(fn, considerWeights);
 
-    destroyProgressBar();
+    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11505,11 +11250,11 @@ void MainWindow::slotAnalyzeClusteringCoefficient (){
     progressMsg = tr("Computing Clustering Coefficient. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
-    createProgressBar(0,progressMsg);
+    slotProgressBoxCreate(0,progressMsg);
 
     activeGraph.writeClusteringCoefficient(fn, considerWeights);
 
-    destroyProgressBar();
+    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11571,7 +11316,7 @@ void MainWindow::slotAnalyzeSimilarityMatching(const QString &matrix,
     progressMsg = tr("Computing similarity matrix. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
-    createProgressBar(0,progressMsg);
+    slotProgressBoxCreate(0,progressMsg);
 
     //activeGraph.writeMatrixSimilarityMatchingPlain( fn, measure, matrix, varLocation, diagonal,considerWeights);
     activeGraph.writeMatrixSimilarityMatching( fn,
@@ -11580,7 +11325,7 @@ void MainWindow::slotAnalyzeSimilarityMatching(const QString &matrix,
                                                varLocation,
                                                diagonal,
                                                considerWeights);
-    destroyProgressBar();
+    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11637,11 +11382,11 @@ void MainWindow::slotAnalyzeSimilarityPearson(const QString &matrix,
     progressMsg = tr("Computing Pearson coefficients matrix. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
-    createProgressBar(0,progressMsg);
+    slotProgressBoxCreate(0,progressMsg);
 
     activeGraph.writeMatrixSimilarityPearson( fn, considerWeights, matrix, varLocation,diagonal);
 
-    destroyProgressBar();
+    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11676,11 +11421,11 @@ void MainWindow::slotAnalyzeCommunitiesTriadCensus() {
     progressMsg = tr("Computing Triad Census. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
-    createProgressBar(0,progressMsg);
+    slotProgressBoxCreate(0,progressMsg);
 
     activeGraph.writeTriadCensus(fn, considerWeights);
 
-    destroyProgressBar();
+    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11735,12 +11480,12 @@ void MainWindow::slotAnalyzeCentralityDegree(){
     progressMsg = tr("Computing out-Degree Centralities. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
-    createProgressBar(0,progressMsg);
+    slotProgressBoxCreate(0,progressMsg);
 
     activeGraph.writeCentralityDegree(fn, considerWeights,
                                       editFilterNodesIsolatesAct->isChecked() );
 
-    destroyProgressBar();
+    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11844,13 +11589,13 @@ void MainWindow::slotAnalyzeCentralityCloseness(){
     progressMsg = tr("Computing Closeness Centrality. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
-    createProgressBar(0,progressMsg);
+    slotProgressBoxCreate(0,progressMsg);
 
     activeGraph.writeCentralityCloseness(
                 fn, considerWeights, inverseWeights,
                 editFilterNodesIsolatesAct->isChecked() || dropIsolates);
 
-    destroyProgressBar();
+    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11888,13 +11633,13 @@ void MainWindow::slotAnalyzeCentralityClosenessIR(){
     progressMsg = tr("Computing Influence Range Centrality. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
-    createProgressBar(0,progressMsg);
+    slotProgressBoxCreate(0,progressMsg);
 
     activeGraph.writeCentralityClosenessInfluenceRange(
                 fn, considerWeights,inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
 
-    destroyProgressBar();
+    slotProgressBoxDestroy();
 
     statusMessage( QString(tr(" displaying file...")));
 
@@ -11927,18 +11672,10 @@ void MainWindow::slotAnalyzeCentralityBetweenness(){
 
     askAboutWeights();
 
-    statusMessage( tr("Computing Betweenness Centralities. Please wait...") );
-
-    progressMsg = tr("Computing Betweenness Centrality. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    createProgressBar(0,progressMsg);
-
     activeGraph.writeCentralityBetweenness(
                 fn, considerWeights, inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
 
-    destroyProgressBar();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12005,12 +11742,12 @@ void MainWindow::slotAnalyzePrestigeDegree(){
     progressMsg = tr("Computing Degree Prestige (in-Degree). \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
-    createProgressBar(0,progressMsg);
+    slotProgressBoxCreate(0,progressMsg);
 
     activeGraph.writePrestigeDegree(fn, considerWeights,
                                     editFilterNodesIsolatesAct->isChecked() );
 
-    destroyProgressBar();
+    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12045,11 +11782,11 @@ void MainWindow::slotAnalyzePrestigePageRank(){
     progressMsg = tr("Computing PageRank Prestige. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
-    createProgressBar(0,progressMsg);
+    slotProgressBoxCreate(0,progressMsg);
 
     activeGraph.writePrestigePageRank(fn, editFilterNodesIsolatesAct->isChecked());
 
-    destroyProgressBar();
+    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12085,11 +11822,11 @@ void MainWindow::slotAnalyzePrestigeProximity(){
     progressMsg = tr("Computing Proximity Prestige. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
-    createProgressBar(0,progressMsg);
+    slotProgressBoxCreate(0,progressMsg);
 
     activeGraph.writePrestigeProximity(fn, true, false ,
                                        editFilterNodesIsolatesAct->isChecked());
-    destroyProgressBar();
+    slotProgressBoxDestroy();
 
     statusMessage( tr("Displaying file..."));
 
@@ -12155,11 +11892,11 @@ void MainWindow::slotAnalyzeCentralityInformation(){
     progressMsg = tr("Computing Information Centrality. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
-    createProgressBar(0,progressMsg);
+    slotProgressBoxCreate(0,progressMsg);
 
     activeGraph.writeCentralityInformation(fn,considerWeights, inverseWeights);
 
-    destroyProgressBar();
+    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12199,11 +11936,11 @@ void MainWindow::slotAnalyzeCentralityEigenvector(){
     progressMsg = tr("Computing Eigenvector Centrality. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
-    createProgressBar(0,progressMsg);
+    slotProgressBoxCreate(0,progressMsg);
 
     activeGraph.writeCentralityEigenvector(fn,considerWeights, inverseWeights, dropIsolates);
 
-    destroyProgressBar();
+    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12240,13 +11977,13 @@ void MainWindow::slotAnalyzeCentralityStress(){
     progressMsg = tr("Computing Stress Centrality. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
-    createProgressBar(0,progressMsg);
+    slotProgressBoxCreate(0,progressMsg);
 
     activeGraph.writeCentralityStress(
                 fn, considerWeights, inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
 
-    destroyProgressBar();
+    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12284,13 +12021,13 @@ void MainWindow::slotAnalyzeCentralityPower(){
     progressMsg = tr("Computing Gil-Schmidt Power Centrality. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
-    createProgressBar(0,progressMsg);
+    slotProgressBoxCreate(0,progressMsg);
 
     activeGraph.writeCentralityPower(
                 fn, considerWeights, inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
 
-    destroyProgressBar();
+    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12327,13 +12064,13 @@ void MainWindow::slotAnalyzeCentralityEccentricity(){
     progressMsg = tr("Computing Eccentricity Centrality. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
-    createProgressBar(0,progressMsg);
+    slotProgressBoxCreate(0,progressMsg);
 
     activeGraph.writeCentralityEccentricity(
                 fn, considerWeights, inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
 
-    destroyProgressBar();
+    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12350,25 +12087,29 @@ void MainWindow::slotAnalyzeCentralityEccentricity(){
 
 
 /**
- * @brief MainWindow::createProgressBar
+ * @brief Creates a Qt Progress Dialog
+ * if max = 0, then max becomes equal to active vertices*
  * @param max
  * @param msg
- * Creates a Qt Progress Dialog
- * if max = 0, then max becomes equal to active vertices*
  */
-void MainWindow::createProgressBar(const int &max, const QString &msg){
-    qDebug() << "MW::createProgressBar" ;
+void MainWindow::slotProgressBoxCreate(const int &max, const QString &msg){
+    qDebug() << "MW::slotProgressBoxCreate" ;
 
-    if (   appSettings["showProgressBar"] == "true"  ){
-        progressDialog = new QProgressDialog(msg,
+    if (  appSettings["showProgressBar"] == "true"  ){
+        int duration = (max==0) ? activeNodes(): max;
+        QProgressDialog *progressBox = new QProgressDialog(msg,
                                             "Cancel",
                                             0,
-                                            (max==0) ? activeNodes(): max
-                                            , this);
-        progressDialog -> setWindowModality(Qt::WindowModal);
-        connect( &activeGraph, SIGNAL( updateProgressDialog(int) ),
-                 progressDialog, SLOT(setValue(int) ) ) ;
-        progressDialog->setMinimumDuration(0);
+                                            duration,
+                                             this);
+        progressBox->setWindowModality(Qt::WindowModal);
+        connect ( &activeGraph, &Graph::signalProgressBoxUpdate,
+                  progressBox, &QProgressDialog::setValue );
+
+        progressBox->setMinimumDuration(0);
+        progressBox->setAutoClose(true);
+        progressBox->setAutoReset(true);
+        progressDialogs.append(progressBox);
     }
 
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
@@ -12377,17 +12118,25 @@ void MainWindow::createProgressBar(const int &max, const QString &msg){
 
 
 /**
- * @brief MainWindow::destroyProgressBar
+ * @brief MainWindow::slotProgressBoxDestroy
  */
-void MainWindow::destroyProgressBar(int max){
-    qDebug () << "MainWindow::destroyProgressBar";
+void MainWindow::slotProgressBoxDestroy(const int &max){
+    qDebug () << "MainWindow::slotProgressBoxDestroy";
     QApplication::restoreOverrideCursor();
-    qDebug () << "MainWindow::destroyProgressBar - check if a progressbar exists";
+    qDebug () << "MainWindow::slotProgressBoxDestroy - check if a progress dialog exists";
     if (  appSettings["showProgressBar"] == "true" && max > -1 ) {
-        if ( progressDialog->value() != 0  ) {
-            qDebug () << "MainWindow::destroyProgressBar - progressbar exists. Destroying";
-            progressDialog->deleteLater();
+        if (! progressDialogs.isEmpty()) {
+            QProgressDialog *progressBox = progressDialogs.dequeue();
+            progressBox->reset();
+            progressBox->deleteLater();
+            delete progressBox;
         }
+//        if ( progressDialog->value() != 0  ) {
+//            qDebug () << "MainWindow::slotProgressBoxDestroy - progress dialog exists. Destroying";
+//            progressDialog->reset();
+//            progressDialog->deleteLater();
+//            //delete progressDialog;
+//        }
     }
 }
 
@@ -12719,11 +12468,11 @@ void MainWindow::slotOptionsEmbedLogoExporting(bool toggle){
 }
 
 /**
- * @brief MainWindow::slotOptionsProgressBarVisibility
+ * @brief Turns progress dialogs on or off
  * @param toggle
- * turn progressbar on or off
+ *
  */
-void MainWindow::slotOptionsProgressBarVisibility(bool toggle) {
+void MainWindow::slotOptionsProgressDialogVisibility(bool toggle) {
     statusMessage( tr("Toggle progressbar..."));
     if (!toggle)  {
         appSettings["showProgressBar"] = "false";

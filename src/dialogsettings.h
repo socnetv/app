@@ -71,7 +71,7 @@ public slots:
     void getEdgeLabelsVisibility(const bool &toggle);
 
 signals:
-    void setProgressBars(bool);
+    void setProgressDialog(bool);
     void setToolBar(bool);
     void setStatusBar(bool);
     void setAntialiasing(bool);

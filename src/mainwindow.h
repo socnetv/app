@@ -40,6 +40,8 @@
 #include <QGraphicsScene>
 #include <QPrinter>
 #include <QMessageBox>
+#include <QQueue>
+#include <QProgressDialog>
 #include <math.h>
 
 /** SocNetV specific includes*/
@@ -76,6 +78,7 @@ class QComboBox;
 class QGroupBox;
 class QTabWidget;
 class QSpinBox;
+
 QT_END_NAMESPACE
 
 using namespace std;
@@ -129,9 +132,6 @@ public:
 
     int activeEdges();
     int activeNodes();
-
-    void createProgressBar(const int &max=0, const QString &msg="Please wait...");
-    void destroyProgressBar(int max=0);
 
 
 
@@ -405,7 +405,7 @@ public slots:
 
     void slotOptionsAntialiasing(bool );
     void slotOptionsEmbedLogoExporting(bool toggle);
-    void slotOptionsProgressBarVisibility(bool toggle);
+    void slotOptionsProgressDialogVisibility(bool toggle);
     void slotOptionsToolbarVisibility(bool toggle);
     void slotOptionsStatusBarVisibility(bool toggle);
     void slotOptionsLeftPanelVisibility(bool toggle);
@@ -448,6 +448,9 @@ public slots:
     void toolBoxLayoutByIndexApplyBtnPressed();
     void toolBoxLayoutForceDirectedApplyBtnPressed();
 
+
+    void slotProgressBoxCreate(const int &max=0, const QString &msg="Please wait...");
+    void slotProgressBoxDestroy(const int &max=0);
 
 protected:
     void resizeEvent( QResizeEvent * );
@@ -496,6 +499,8 @@ private:
 
     QComboBox *editRelationChangeCombo;
 
+    QQueue<QProgressDialog *> progressDialogs;
+
     QProgressDialog *progressDialog;
 
     QMenu *importSubMenu, *exportSubMenu, *editMenu, *analysisMenu, *helpMenu;
@@ -515,7 +520,6 @@ private:
     QComboBox *toolBoxLayoutByIndexSelect, *toolBoxLayoutByIndexTypeSelect;
     QComboBox *toolBoxLayoutForceDirectedSelect;
 
-    QPushButton *editNodeAddBt, *editEdgeAddBt, *removeNodeBt, *editEdgeRemoveBt;
     QPushButton *toolBoxLayoutByIndexApplyButton, *toolBoxLayoutForceDirectedApplyButton;
 
     QAction *zoomInAct,*zoomOutAct,*editRotateRightAct,*editRotateLeftAct, *editResetSlidersAct ;

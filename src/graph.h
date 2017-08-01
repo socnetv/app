@@ -262,7 +262,9 @@ public slots:
 
 signals:
     /** Signals to MainWindow */
-    void updateProgressDialog(int );
+    void signalProgressBoxCreate(const int max=0, const QString msg="Please wait");
+    void signalProgressBoxKill(const int max=0);
+    void signalProgressBoxUpdate(const int count=0 );
     void signalGraphModified(const int &graphStatus,
                       const bool &undirected,
                       const int &vertices,
@@ -759,7 +761,7 @@ public:
 
     /* REACHABILTY AND WALKS */
     int walksBetween(int v1, int v2,int length);
-    void graphWalksMatrixCreate(const int &vertices=0, const int &length=0,
+    void graphWalksMatrixCreate(const int &N=0, const int &length=0,
                                    const bool &updateProgress=false);
     void writeWalksTotalMatrixPlainText(const QString &fn);
     void writeWalksOfLengthMatrixPlainText(const QString &fn, const int &length);
@@ -821,7 +823,10 @@ public:
 
     void layoutForceDirectedFruchtermanReingold(const int maxIterations);
 
-    void layoutForceDirectedKamadaKawai(const int maxIterations);
+    void layoutForceDirectedKamadaKawai(const int maxIterations=500,
+                                        const bool considerWeights=false,
+                                        const bool inverseWeights=false,
+                                        const bool dropIsolates=false);
 
     /* CRAWLER */
     void webCrawlTerminateThreads (QString reason);
@@ -829,29 +834,29 @@ public:
     /**RANDOM NETWORKS*/
     void randomizeThings();
 
-    void randomNetErdosCreate (  const int &vert,
+    void randomNetErdosCreate (  const int &N,
                                  const QString &model,
-                                 const int &edges,
-                                 const float &eprob,
+                                 const int &m,
+                                 const float &p,
                                  const QString &mode,
                                  const bool &diag);
 
-    void randomNetRingLatticeCreate (const int &vert, const int &degree,
+    void randomNetRingLatticeCreate (const int &N, const int &degree,
                                       const bool updateProgress=false);
 
-    void randomNetRegularCreate (const int &vert,
+    void randomNetRegularCreate (const int &N,
                                     const int &degree,
                                     const QString &mode,
                                     const bool &diag);
 
-    void randomNetScaleFreeCreate (const int &n,
+    void randomNetScaleFreeCreate (const int &N,
                                     const int &power,
                                     const int &m0,
                                     const int &m,
                                     const float &alpha,
                                     const QString &mode);
 
-    void randomNetSmallWorldCreate(const int &vert, const int &degree,
+    void randomNetSmallWorldCreate(const int &N, const int &degree,
                                    const double &beta, const QString &mode);
 
     int factorial (int);

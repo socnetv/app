@@ -2062,7 +2062,7 @@ bool Graph::edgeColorAllSet(const QString &color, const int &threshold){
     QHash<int,float>::const_iterator it1;
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        //updateProgressDialog(++count);
+
         source = (*it)->name();
         if ( ! (*it)->isEnabled() )
             continue;
@@ -2943,10 +2943,8 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
 
     }
 
-
-    emit statusMessage ( tr("Writing reciprocity to file:") + fileName );
-
     int rowCount=0;
+    int progressCounter=0;
     int N = vertices();
     float tiesSym=0;
     float tiesNonSym=0;
@@ -2955,6 +2953,11 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
     float tiesOutNonSymTotalOut=0;
     float tiesInNonSymTotalIn=0;
 
+
+    QString pMsg = tr("Writing Reciprocity to file:") + fileName ;
+    emit statusMessage ( pMsg );
+
+    emit signalProgressBoxCreate(N,pMsg);
 
     outText << htmlHead;
 
@@ -3070,6 +3073,8 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
     QList<Vertex*>::const_iterator it;
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
 
+        emit signalProgressBoxUpdate(++progressCounter);
+
         rowCount++;
         qDebug() << "Graph::writeReciprocity outnon  - innon - rec"
                  << (*it)->outEdgesNonSym()
@@ -3164,6 +3169,8 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
 
     file.close();
 
+    emit signalProgressBoxUpdate(N);
+    emit signalProgressBoxKill();
 }
 
 
@@ -3653,6 +3660,7 @@ int Graph::graphGeodesics()  {
  *
  */
 int Graph::graphConnectedness(const bool updateProgress) {
+
     qDebug() << "Graph::graphConnectedness() ";
 
     if (calculatedDistances && !graphModified()) {
@@ -3672,7 +3680,9 @@ int Graph::graphConnectedness(const bool updateProgress) {
 
     graphDistanceGeodesicCompute(false, false,false,false);
 
-    int i=0;
+    int progressCounter=0;
+    int N = vertices();
+
     QList<Vertex*>::const_iterator it, jt;
 
     m_vertexPairsNotConnected.clear();
@@ -3681,7 +3691,17 @@ int Graph::graphConnectedness(const bool updateProgress) {
    // int isolatedVertices=verticesListIsolated().count();
     bool isolatedVertices = false;
 
+    QString pMsg = tr("Computing Network Connectedness. \nPlease wait...");
+    emit statusMessage(  pMsg );
+    emit signalProgressBoxCreate(N,pMsg);
+
+
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
+
+        if (updateProgress) {
+            emit signalProgressBoxUpdate(++progressCounter);
+        }
+
         for (jt=it; jt!=m_graph.cend(); ++jt) {
 
             if ( graphUndirected() ) {
@@ -3726,8 +3746,7 @@ int Graph::graphConnectedness(const bool updateProgress) {
 
 
         }
-        if (updateProgress)
-            emit updateProgressDialog(i+1);
+
     }
 
 
@@ -3757,6 +3776,9 @@ int Graph::graphConnectedness(const bool updateProgress) {
     }
 
 
+    emit signalProgressBoxUpdate(N);
+    emit signalProgressBoxKill();
+
     return m_graphConnectedness;
 }
 
@@ -3776,6 +3798,7 @@ void Graph::graphDistanceGeodesicMatrix(const bool &considerWeights,
     QList<Vertex*>::const_iterator it, jt;
 
     int N = vertices(true,false);
+    int progressCounter=0;
 
     qDebug() << "Graph::graphDistanceGeodesicMatrix() - Resizing Matrices to hold "
              << N << " vertices";
@@ -3783,9 +3806,16 @@ void Graph::graphDistanceGeodesicMatrix(const bool &considerWeights,
     DM.resize(N, N);
     TM.resize(N, N);
 
+    QString pMsg = tr("Computing matrix. \nPlease wait ");
+
+    emit signalProgressBoxCreate(N,pMsg);
+
     qDebug() << "Graph: graphDistanceGeodesicMatrix() - Almost finished! "
                 "Writing distance and sigmas matrix...";
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
+
+        emit signalProgressBoxUpdate(++progressCounter);
+
         for (jt=m_graph.cbegin(); jt!=m_graph.cend(); ++jt) {
             DM.setItem(index[(*it)->name()],index[(*jt)->name()], (*it)->distance((*jt)->name()));
             TM.setItem(index[(*it)->name()],index[(*jt)->name()], (*it)->shortestPaths((*jt)->name()));
@@ -3793,6 +3823,8 @@ void Graph::graphDistanceGeodesicMatrix(const bool &considerWeights,
         }
     }
 
+    emit signalProgressBoxUpdate(N);
+    emit signalProgressBoxKill();
 
 
 }
@@ -3845,7 +3877,6 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 
     qDebug() << "Graph::graphDistanceGeodesicCompute() - Need to compute geodesic distances.";
 
-    emit statusMessage ( tr("Computing geodesic distances. Please wait...") );
 
     //Create a NxN DistanceMatrix. Initialise values to zero.
     // m_totalVertices = vertices(dropIsolates,false);
@@ -3854,6 +3885,11 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
     int E = edgesEnabled();
     //drop isolated vertices from calculations (i.e. std C and group C).
     //int N=(dropIsolates) ?  (m_totalVertices - verticesListIsolated().count()):m_totalVertices;
+
+    QString pMsg  = tr("Computing geodesic distances. \nPlease wait...");
+    emit statusMessage ( pMsg  );
+    emit signalProgressBoxCreate(N, pMsg );
+
 
     qDebug() << "Graph::graphDistanceGeodesicCompute() -Calling graphSymmetric()";
     m_symmetric = graphSymmetric();
@@ -3918,7 +3954,6 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
         qDebug() << "	E " << E <<  " N " << N;
 
 
-
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
             for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
                 // Set all pair-wise distances to RAND_MAX
@@ -3976,7 +4011,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
             qDebug()<< "***** PHASE 1 (SSSP): "
                     << "Source vertex s" << s << "index" << si;
 
-            emit updateProgressDialog( ++progressCounter );
+            emit signalProgressBoxUpdate( ++progressCounter );
 
             if ( ! (*it)->isEnabled() ) {
                 qDebug()<< "***** PHASE 1 (SSSP): s" << s  << "disabled. SKIP/CONTINUE";
@@ -4357,6 +4392,10 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 
 
     calculatedDistances=true;
+
+    emit signalProgressBoxUpdate( N );
+    emit signalProgressBoxKill();
+
 
 }
 
@@ -4971,15 +5010,15 @@ void Graph::writeEccentricity(
 
     }
 
-    if (graphConnectedness()) {
-
-    }
-
-    emit statusMessage ( tr("Writing eccentricity to file:") + fileName );
-
+    int progressCounter=0;
     int rowCount=0;
     int N = vertices();
     float eccentr=0;
+
+    QString pMsg = tr("Writing eccentricity to file:") + fileName ;
+    emit statusMessage ( pMsg );
+
+    emit signalProgressBoxCreate(N,pMsg);
 
     outText << htmlHead;
 
@@ -5042,6 +5081,7 @@ void Graph::writeEccentricity(
     QList<Vertex*>::const_iterator it;
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
 
+        emit signalProgressBoxUpdate(++progressCounter);
         rowCount++;
         eccentr = (*it)->eccentricity();
 
@@ -5119,6 +5159,8 @@ void Graph::writeEccentricity(
 
     file.close();
 
+    emit signalProgressBoxUpdate(N);
+    emit signalProgressBoxKill();
 }
 
 
@@ -5153,6 +5195,7 @@ void Graph::centralityInformation(const bool considerWeights,
         Otherwise, the TM might be singular, therefore non-invertible. */
     bool dropIsolates=true;
     bool symmetrize=true;
+
     graphMatrixAdjacencyCreate(dropIsolates, considerWeights, inverseWeights, symmetrize);
 
     n-=isolatedVertices;
@@ -5689,8 +5732,6 @@ void Graph::centralityEigenvector(const bool &considerWeights,
     int N = vertices(dropIsolates);
 
     float EVC[N];
-
-    emit statusMessage(tr("Computing adjacency matrix. Please wait..."));
 
     qDebug()<<"Graph::centralityEigenvector() - Create adjacency matrix AM";
 
@@ -6727,10 +6768,14 @@ void Graph::writeCentralityBetweenness(const QString fileName,
                     "No need to recompute Distances/Centralities. Writing file.";
     }
 
-    emit statusMessage ( tr("Writing Betweenness indices to file:") +  fileName );
-
-    int rowCount=0;
+    int rowCount=0, progressCounter=0;
     int N = vertices();
+
+
+    QString pMsg =  tr("Writing Betweenness indices to file:") +  fileName ;
+    emit statusMessage ( pMsg );
+    emit signalProgressBoxCreate(N,pMsg);
+
 
     outText << htmlHead;
 
@@ -6806,6 +6851,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     QList<Vertex*>::const_iterator it;
 
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+        emit signalProgressBoxUpdate(++progressCounter);
         rowCount++;
 
         outText <<fixed;
@@ -6945,6 +6991,9 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     outText << htmlEnd;
 
     file.close();
+
+    emit signalProgressBoxUpdate(N);
+    emit signalProgressBoxKill();
 
 }
 
@@ -8761,33 +8810,32 @@ void Graph::randomizeThings()   {
 
 
 /**
- * @brief Graph::randomNetErdosCreate
+ * @brief Create an erdos-renyi random network according to the given model
  * @param vert
  * @param model
  * @param edges
  * @param eprob
  * @param mode
  * @param diag
- * Create an erdos-renyi random network according to the given model
  */
-void Graph::randomNetErdosCreate(  const int &vert,
+void Graph::randomNetErdosCreate(const int &N,
                                    const QString &model,
-                                   const int &edges,
-                                   const float &eprob,
+                                   const int &m,
+                                   const float &p,
                                    const QString &mode,
                                    const bool &diag)
 {
-    qDebug() << "Graph::randomNetErdosCreate() - vertices " << vert
+    qDebug() << "Graph::randomNetErdosCreate() - vertices " << N
                 << " model " << model
-                << " edges " << edges
-                << " edge probability " << eprob
+                << " edges " << m
+                << " edge probability " << p
                 << " graph mode " << mode
                 << " diag " << diag;
 
     if (mode=="graph") {
         graphUndirectedSet(true);
     }
-    index.reserve(vert);
+    index.reserve(N);
 
     randomizeThings();
 
@@ -8796,7 +8844,12 @@ void Graph::randomNetErdosCreate(  const int &vert,
 
     qDebug() << "Graph::randomNetErdosCreate() - Creating nodes...";
 
-    for (int i=0; i< vert ; i++)
+    QString progressMsg  = tr( "Creating Erdos-Renyi Random Network. \n"
+                               " Please wait..." );
+
+    signalProgressBoxCreate( (m != 0 ? m:N), progressMsg );
+
+    for (int i=0; i< N ; i++)
     {
         int x=canvasRandomX();
         int y=canvasRandomY();
@@ -8813,8 +8866,8 @@ void Graph::randomNetErdosCreate(  const int &vert,
     if ( model == "G(n,p)")
     {
         qDebug() << "Graph::randomNetErdosCreate() - G(n,p) model...";
-        for (int i=0;i<vert; i++) {
-            for (int j=0; j<vert; j++) {
+        for (int i=0;i<N; i++) {
+            for (int j=0; j<N; j++) {
                 qDebug() << "Graph::randomNetErdosCreate() - Bernoulli trial "
                        << "for edge " <<  i+1 << " -> " << j+1;
                 if (!diag && i==j) {
@@ -8823,7 +8876,7 @@ void Graph::randomNetErdosCreate(  const int &vert,
                             << " and diag " << diag;
                     continue;
                 }
-                if ( ( rand() % 100 + 1 ) / 100.0 < eprob )    {
+                if ( ( rand() % 100 + 1 ) / 100.0 < p )    {
                     edgeCount ++ ;
 
                     if (mode == "graph") {
@@ -8848,7 +8901,7 @@ void Graph::randomNetErdosCreate(  const int &vert,
                     qDebug() << "Graph::randomNetErdosCreate() - do not create Edge";
             }
 
-            emit updateProgressDialog(++progressCounter );
+            emit signalProgressBoxUpdate(++progressCounter );
 
         }
 
@@ -8858,8 +8911,8 @@ void Graph::randomNetErdosCreate(  const int &vert,
         qDebug() << "Graph::randomNetErdosCreate() - G(n,M) model...";
         int source = 0, target = 0 ;
         do {
-            source =  rand() % vert + 1;
-            target =  rand() % vert + 1;
+            source =  rand() % N + 1;
+            target =  rand() % N + 1;
             qDebug() << "Graph::randomNetErdosCreate() - random pair "
                         << " " << source
                            << " , " << target ;
@@ -8886,14 +8939,19 @@ void Graph::randomNetErdosCreate(  const int &vert,
                            EDGE_DIRECTED, true, false,
                            QString::null, false);
             }
-          emit updateProgressDialog(++progressCounter );
-        } while ( edgeCount != edges );
+          emit signalProgressBoxUpdate(++progressCounter );
+        } while ( edgeCount != m );
 
     }
 
     relationCurrentRename(tr("erdos-renyi"), true);
 
+    emit signalProgressBoxUpdate((m != 0 ? m:N));
+    emit signalProgressBoxKill();
+
     graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
+
+
 }
 
 
@@ -8910,7 +8968,7 @@ void Graph::randomNetErdosCreate(  const int &vert,
  * @param radius
  * @param updateProgress
  */
-void Graph::randomNetRingLatticeCreate( const int &vert, const int &degree,
+void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
                                         const bool updateProgress)
 {
     qDebug("Graph: createRingLatticeNetwork");
@@ -8921,17 +8979,20 @@ void Graph::randomNetRingLatticeCreate( const int &vert, const int &degree,
     double x0 = canvasWidth/2.0;
     double y0 =canvasHeight/2.0;
     double radius = canvasMaxRadius();
-    double rad= (2.0* Pi/ vert );
+    double rad= (2.0* Pi/ N );
 
-//    if (mode=="graph") {
-        graphUndirectedSet(true);
-//    }
+    graphUndirectedSet(true);
 
     randomizeThings();
 
-    index.reserve(vert);
+    index.reserve(N);
 
-    for (int i=0; i< vert ; i++) {
+    QString pMsg  = tr( "Creating ring-lattice network. \n"
+                        "Please wait..." );
+    emit statusMessage( pMsg );
+    emit signalProgressBoxCreate (N, pMsg );
+
+    for (int i=0; i< N ; i++) {
         x=x0 + radius * cos(i * rad);
         y=y0 + radius * sin(i * rad);
         vertexCreate( i+1,initVertexSize,initVertexColor,
@@ -8941,40 +9002,46 @@ void Graph::randomNetRingLatticeCreate( const int &vert, const int &degree,
         qDebug("Graph: createPhysicistLatticeNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
     }
     int target = 0;
-    for (int i=0;i<vert; i++){
+    for (int i=0;i<N; i++){
         qDebug("Creating links for node %i = ", i+1);
         for (int j=0; j< degree/2 ; j++) {
             target = i + j+1 ;
-            if ( target > (vert-1))
-                target = target-vert;
+            if ( target > (N-1))
+                target = target-N;
             qDebug("Creating Link between %i  and %i", i+1, target+1);
             edgeCreate(i+1, target+1, 1, initEdgeColor,
                        EDGE_RECIPROCAL_UNDIRECTED, false, false,
                        QString::null, false);
         }
-        emit updateProgressDialog( updateProgress ? ++progressCounter:0 );
+        if (updateProgress) {
+            emit signalProgressBoxUpdate( ++progressCounter );
+        }
     }
-    if (updateProgress)
+
+    if (updateProgress) {
         relationCurrentRename(tr("ring-lattice"), true);
+        emit signalProgressBoxUpdate( N );
+        emit signalProgressBoxKill();
+    }
+
 
     graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES, updateProgress);
 }
 
 
 
-void Graph::randomNetScaleFreeCreate (const int &n,
+void Graph::randomNetScaleFreeCreate (const int &N,
                                        const int &power,
                                        const int &m0,
                                        const int &m,
                                        const float &alpha,
                                        const QString &mode)
 {
-    qDebug() << "Graph::randomNetScaleFreeCreate() - max nodes n" << n
+    qDebug() << "Graph::randomNetScaleFreeCreate() - max nodes n" << N
              << "power" << power
              <<"edges added in every round m" <<m
             <<"alpha" <<alpha
            <<"mode"<<mode;
-    int progressCounter=0;
 
     randomizeThings();
 
@@ -8990,13 +9057,21 @@ void Graph::randomNetScaleFreeCreate (const int &n,
     double x0 = canvasWidth/2.0;
     double y0 =canvasHeight/2.0;
     double radius = canvasMaxRadius();
-    double rad= (2.0* Pi/ n );
+    double rad= (2.0* Pi/ N );
     double  prob_j = 0, prob=0;
+    int progressCounter=0;
 
-    index.reserve( n );
+    index.reserve( N );
 
     qDebug() << "Graph::randomNetScaleFreeCreate() - "
              << "Create initial connected net of m0 nodes";
+
+    QString pMsg = tr ("Creating Scale-Free Random Network. \n"
+                  "Please wait...");
+    emit statusMessage(pMsg);
+
+    emit signalProgressBoxCreate(N, pMsg );
+
 
     for (int i=0; i< m0 ; ++i) {
         x=x0 + radius * cos(i * rad);
@@ -9022,14 +9097,14 @@ void Graph::randomNetScaleFreeCreate (const int &n,
                         EDGE_RECIPROCAL_UNDIRECTED, false, false,
                         QString::null, false);
         }
-        emit updateProgressDialog( ++progressCounter );
+        emit signalProgressBoxUpdate( ++progressCounter );
     }
 
     qDebug()<< "Graph::randomNetScaleFreeCreate() - @@@@ "
-               << " start network growth to " << n
+               << " start network growth to " << N
                << " nodes with preferential attachment" ;
 
-    for (int i= m0 ; i < n ; ++i) {
+    for (int i= m0 ; i < N ; ++i) {
 
         x=x0 + radius * cos(i * rad);
         y=y0 + radius * sin(i * rad);
@@ -9045,7 +9120,7 @@ void Graph::randomNetScaleFreeCreate (const int &n,
                     QPoint(x, y), initVertexShape,false
                     );
 
-        emit updateProgressDialog( ++progressCounter );
+        emit signalProgressBoxUpdate( ++progressCounter );
 
         // need to multiply by 2, since we have a undirected graph
         // and edgesEnabled reports edges/2
@@ -9117,9 +9192,13 @@ void Graph::randomNetScaleFreeCreate (const int &n,
     relationCurrentRename(tr("scale-free"),true);
     qDebug() << "Graph::randomNetScaleFreeCreate() - finished. Calling "
                 "graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES)";
+
     graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
 
+    emit signalProgressBoxKill();
+
     layoutVertexSizeByIndegree();
+
 
 }
 
@@ -9132,11 +9211,11 @@ void Graph::randomNetScaleFreeCreate (const int &n,
  * @param degree
  * @param beta
  */
-void Graph::randomNetSmallWorldCreate (const int &vert, const int &degree,
+void Graph::randomNetSmallWorldCreate (const int &N, const int &degree,
                                        const double &beta, const QString &mode)
 {
     qDebug() << "Graph:randomNetSmallWorldCreate() -. "
-             << "vertices: " << vert
+             << "vertices: " << N
              << "degree: " << degree
              << "beta: " << beta
              << "mode: " << mode
@@ -9146,14 +9225,19 @@ void Graph::randomNetSmallWorldCreate (const int &vert, const int &degree,
         graphUndirectedSet(true);
     }
 
-    randomNetRingLatticeCreate(vert, degree, false);
+    randomNetRingLatticeCreate(N, degree, true);
+
+    QString pMsg  = tr("Creating Small-World Random Network. \n"
+                       "Please wait ...");
+    emit statusMessage( pMsg );
+    emit signalProgressBoxCreate(N, pMsg);
 
     qDebug("******** Graph: REWIRING starts...");
 
     int candidate;
     int progressCounter=1;
-    for (int i=1;i<vert; i++) {
-        for (int j=i+1;j<vert; j++) {
+    for (int i=1;i<N; i++) {
+        for (int j=i+1;j<N; j++) {
             qDebug()<<">>>>> REWIRING: Check if  "<< i << " is linked to " << j;
             if ( edgeExists(i, j) ) {
                 qDebug()<<">>>>> REWIRING: They're linked. Do a random REWIRING "
@@ -9164,7 +9248,7 @@ void Graph::randomNetSmallWorldCreate (const int &vert, const int &degree,
                     edgeRemove(i, j, true);
                     qDebug()<<">>>>> REWIRING: OK. Let's create a new edge!";
                     for (;;) {	//do until we create a new edge
-                        candidate=rand() % (vert+1) ;		//pick another vertex.
+                        candidate=rand() % (N+1) ;		//pick another vertex.
                         if (candidate == 0 || candidate == i) continue;
                         qDebug()<<">>>>> REWIRING: Candidate: "<< candidate;
                         //Only if differs from i and hasnot edge with it
@@ -9182,10 +9266,13 @@ void Graph::randomNetSmallWorldCreate (const int &vert, const int &degree,
                 else  qDebug("Will not break link!");
             }
         }
-        emit updateProgressDialog( ++progressCounter );
+        emit signalProgressBoxUpdate( ++progressCounter );
     }
 
     relationCurrentRename(tr("small-world"), true);
+
+
+    emit signalProgressBoxKill();
 
     layoutVertexSizeByIndegree();
 
@@ -9203,21 +9290,35 @@ void Graph::randomNetSmallWorldCreate (const int &vert, const int &degree,
  * @param vert
  * @param degree
  */
-void Graph::randomNetRegularCreate(const int &vert,
+void Graph::randomNetRegularCreate(const int &N,
                                       const int &degree,
                                       const QString &mode, const bool &diag){
     qDebug() << "Graph::randomNetRegularCreate()";
     Q_UNUSED(diag);
     m_undirected = (mode == "graph") ? true: false;
+
+    int x = 0, y = 0 ;
     float progressCounter=0;
     float progressFraction =(m_undirected) ? 2/(float) degree : 1/(float) degree;
 
-    randomizeThings();
-    index.reserve(vert);
+    int target = 0;
+    int edgeCount = 0;
+    QList<QString> m_edges;
+    QStringList firstEdgeVertices, secondEdgeVertices, m_edge;
+    QString firstEdge, secondEdge;
 
-    int x = 0, y = 0 ;
+
+    randomizeThings();
+    index.reserve(N);
+
+    QString pMsg = tr( "Creating pseudo-random d-regular network. \n"
+                       "Please wait..." );
+    emit statusMessage( pMsg );
+    emit signalProgressBoxCreate (N, pMsg );
+
     qDebug()<< "Graph::randomNetRegularCreate() - creating vertices";
-    for (int i=0; i< vert ; i++) {
+
+    for (int i=0; i< N ; i++) {
         x=canvasRandomX();
         y=canvasRandomY();
         qDebug() << "Graph::randomNetRegularCreate() - creating new vertex at "
@@ -9231,22 +9332,16 @@ void Graph::randomNetRegularCreate(const int &vert,
                     );
     }
 
-    int target = 0;
-    int edgeCount = 0;
-    QList<QString> m_edges;
-    QStringList firstEdgeVertices, secondEdgeVertices, m_edge;
-    QString firstEdge, secondEdge;
-
 
     qDebug()<< "Graph::randomNetRegularCreate() - Creating initial edges";
     if (mode=="graph") {
-        for (int i=0;i<vert; i++){
+        for (int i=0;i<N; i++){
             qDebug()<< "Graph::randomNetRegularCreate() - "
                        "Creating undirected edges for node  "<< i+1;
             for (int j=0; j< degree/2 ; j++) {
                 target = i + j+1 ;
-                if ( target > (vert-1))
-                    target = target-vert;
+                if ( target > (N-1))
+                    target = target-N;
                 qDebug()<< "Graph::randomNetRegularCreate() - undirected edge "
                         << i+1 << "<->"<< target+1;
                 m_edges.append(QString::number(i+1)+"->"+QString::number(target+1));
@@ -9256,14 +9351,14 @@ void Graph::randomNetRegularCreate(const int &vert,
 
     }
     else {
-        for (int i=0;i<vert; i++){
+        for (int i=0;i<N; i++){
             qDebug()<< "Graph::randomNetRegularCreate() - "
                        "Creating directed edges for node  "
                     << i+1;
             for (int j=0; j< degree ; j++) {
                 target = i + j+1 ;
-                if ( target > (vert-1))
-                    target = target-vert;
+                if ( target > (N-1))
+                    target = target-N;
                 qDebug()<< "Graph::randomNetRegularCreate() - directed edge "
                         << i+1 << "->"<< target+1;
                 m_edges.append(QString::number(i+1)+"->"+QString::number(target+1));
@@ -9344,16 +9439,17 @@ void Graph::randomNetRegularCreate(const int &vert,
                     << "fmod ( progressCounter, 1.0) = "
                  << fmod ( progressCounter, 1.0);
         if ( fmod ( progressCounter, 1.0) == 0) {
-            qDebug() << "Graph::randomNetRegularCreate() - emit updateProgressDialog"
-                     << (int) progressCounter ;
-                    emit updateProgressDialog( (int) progressCounter );
+            emit signalProgressBoxUpdate( (int) progressCounter );
         }
 
     }
 
     relationCurrentRename(tr("d-regular"), true);
 
+    emit signalProgressBoxKill();
+
     graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
+
 }
 
 
@@ -9387,7 +9483,7 @@ int Graph::walksBetween(int v1, int v2, int length) {
  * @param length
  * @param updateProgress
  */
-void Graph::graphWalksMatrixCreate(const int &vertices,
+void Graph::graphWalksMatrixCreate(const int &N,
                                    const int &length,
                                    const bool &updateProgress) {
 
@@ -9395,22 +9491,27 @@ void Graph::graphWalksMatrixCreate(const int &vertices,
     bool considerWeights=true;
     bool inverseWeights=false;
     bool symmetrize=false;
-    int N = vertices;
 
-    qDebug()<<"Graph::graphWalksMatrixCreate() - Create adjacency matrix AM";
-    emit statusMessage(tr("Computing adjacency matrix. Please wait..."));
+
     graphMatrixAdjacencyCreate(dropIsolates, considerWeights, inverseWeights, symmetrize);
 
     if (length>0) {
         qDebug()<< "Graph::graphWalksMatrixCreate() - "
                    "Calculating sociomatrix power"  << length;
 
-        if (updateProgress)
-            emit updateProgressDialog (1);
+        QString pMsg = tr("Computing walks of length %1. \nPlease wait...").arg(length) ;
+        emit statusMessage( pMsg  );
+        if (updateProgress) {
+            signalProgressBoxCreate(length,pMsg);
+        }
 
-        emit statusMessage(tr("Computing sociomatrix power %1. Please wait...").arg(length));
         XM = AM.pow(length, false);
-        emit updateProgressDialog (length);
+
+        if (updateProgress) {
+            emit signalProgressBoxUpdate (length);
+        }
+
+
 
     }
     else {
@@ -9418,12 +9519,16 @@ void Graph::graphWalksMatrixCreate(const int &vertices,
                    "Calculating all sociomatrix powers up to"  << N-1;
 
         XM = AM;   // XM will be the product matrix
-//        qDebug() << "Graph::graphWalksMatrixCreate() XM=AM=";
-//        XM.printMatrixConsole();
 
         XSM = AM;  // XSM is the sum of product matrices
-//        qDebug() << "Graph::graphWalksMatrixCreate() XSM=AM=";
-//        XSM.printMatrixConsole();
+
+        QString pMsg = tr("Computing sociomatrix powers up to %1. \nPlease wait...").arg(N-1) ;
+        emit statusMessage( pMsg  );
+        if (updateProgress) {
+            signalProgressBoxCreate(N-1,pMsg);
+        }
+
+
 
        for (int i=2; i <= (N-1) ; ++i) {
 
@@ -9440,15 +9545,19 @@ void Graph::graphWalksMatrixCreate(const int &vertices,
 //           XSM.printMatrixConsole();
 
            if (updateProgress) {
-               emit updateProgressDialog (i);
+               emit signalProgressBoxUpdate (i);
            }
 
        }
-       emit updateProgressDialog (N);
+
+       if (updateProgress) {
+           emit signalProgressBoxUpdate (N-1);
+       }
+
     }
 
 
-
+    emit signalProgressBoxKill();
 
 //    qDebug()<< "AM + AM = ";
 //    (AM+AM).printMatrixConsole(true);
@@ -9496,7 +9605,8 @@ void Graph::writeWalksTotalMatrixPlainText(const QString &fn){
         <<" between each pair of nodes \n\n";
     outText << "Warning: Walk counts consider unordered pairs of nodes\n\n";
 
-    graphWalksMatrixCreate(vertices(), 0, true);
+    int N = vertices();
+    graphWalksMatrixCreate( N, 0, true);
 
     outText << XSM ;
 
@@ -9526,7 +9636,8 @@ void Graph::writeWalksOfLengthMatrixPlainText(const QString &fn, const int &leng
     outText << "Network name: "<< graphName()<<" \n";
     outText << "Number of walks of length "<< length <<" between each pair of nodes \n\n";
 
-    graphWalksMatrixCreate(vertices(), length, true);
+    int N = vertices();
+    graphWalksMatrixCreate( N, length, true);
 
     outText << XM ;
 
@@ -10230,7 +10341,7 @@ void Graph::writeCliqueCensus( const QString fileName,
     }
     outText << "</tbody></table>";
 
-    emit updateProgressDialog(N / 5);
+    emit signalProgressBoxUpdate(N / 5);
 
 
     outText << "<p>"
@@ -10281,7 +10392,7 @@ void Graph::writeCliqueCensus( const QString fileName,
 
     outText << "</tbody></table>";
 
-    emit updateProgressDialog(2 * N / 5);
+    emit signalProgressBoxUpdate(2 * N / 5);
 
     outText << "<p>"
             << "<span class=\"info\">"
@@ -10303,7 +10414,7 @@ void Graph::writeCliqueCensus( const QString fileName,
    writeClusteringHierarchicalResultsToStream(outText, N, dendrogram);
 
 
-   emit updateProgressDialog(3 * N / 5);
+   emit signalProgressBoxUpdate(3 * N / 5);
 
    outText << "<p>"
            << "<span class=\"info\">"
@@ -10313,7 +10424,7 @@ void Graph::writeCliqueCensus( const QString fileName,
            << "</p>";
 
 
-  emit updateProgressDialog(4 * N / 5);
+  emit signalProgressBoxUpdate(4 * N / 5);
 
    outText << "<p>"
            << "<span class=\"info\">"
@@ -10323,7 +10434,7 @@ void Graph::writeCliqueCensus( const QString fileName,
            << "</p>";
 
 
-    emit updateProgressDialog(N);
+    emit signalProgressBoxUpdate(N);
 
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
@@ -11036,8 +11147,14 @@ void Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
         }
     }
 
+    QString pMsg=tr("Computing hierarchical clustering. \nPlease wait...");
+    emit statusMessage(pMsg);
+    emit signalProgressBoxCreate(N, pMsg);
+
     while (clustersLeft > 1)
     {
+
+        emit signalProgressBoxUpdate(seq);
 
         qDebug() << "Graph::graphClusteringHierarchical() -"
                  <<"matrix DSM contents";
@@ -11218,6 +11335,8 @@ void Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
     clusteredItems.clear();
     m_clustersIndex.clear();
 
+    emit signalProgressBoxUpdate(N);
+    emit signalProgressBoxKill();
 }
 
 
@@ -11363,8 +11482,6 @@ void Graph::writeMatrixDissimilarities(const QString fileName,
 
     Matrix DSM;
     int N = vertices();
-
-    emit statusMessage ( (tr("Recomputing adjacency matrix...")) );
 
     graphMatrixAdjacencyCreate();
 
@@ -12177,7 +12294,7 @@ float Graph::clusteringCoefficient (const bool updateProgress){
         }
         averageCLC += temp;
         if (updateProgress)
-            emit updateProgressDialog(++progressCounter);
+            emit signalProgressBoxUpdate(++progressCounter);
     }
 
     averageCLC = averageCLC / N ;
@@ -12286,7 +12403,7 @@ bool Graph::graphTriadCensus(){
                 }
             } // end 3rd for
         }// end 2rd for
-        emit updateProgressDialog( ++progressCounter );
+        emit signalProgressBoxUpdate( ++progressCounter );
     }// end 1rd for
     qDebug() << " ****** 003 COUNTER: "<< counter_021;
 
@@ -17026,7 +17143,6 @@ void Graph::writeMatrix (const QString &fn,
 
     switch (matrix) {
     case MATRIX_ADJACENCY:
-        emit statusMessage ( tr("Need to recompute Adjacency Matrix. Please wait...") );
         graphMatrixAdjacencyCreate();
         emit statusMessage ( tr("Adjacency recomputed. Writing Adjacency Matrix...") );
         break;
@@ -17388,9 +17504,10 @@ void Graph::writeMatrixAdjacency (const QString fn,
     float weight=0;
     int rowCount=0;
     int N = vertices();
-    //int colCount=0;
 
     QList<Vertex*>::const_iterator it, it1;
+
+    emit signalProgressBoxCreate(N, "Writing Adjacency Matrix. \nPlease wait..." );
 
     outText << htmlHead;
 
@@ -17467,7 +17584,7 @@ void Graph::writeMatrixAdjacency (const QString fn,
         }
         outText <<"</tr>";
 
-        emit updateProgressDialog(rowCount);
+        emit signalProgressBoxUpdate(rowCount);
     }
     outText << "</tbody></table>";
 
@@ -17489,6 +17606,9 @@ void Graph::writeMatrixAdjacency (const QString fn,
 
 
     file.close();
+
+    emit signalProgressBoxKill();
+
 }
 
 
@@ -17512,13 +17632,14 @@ void Graph::writeMatrixAdjacencyPlot (const QString fn,
     }
     QTextStream outText( &file );
     outText.setCodec("UTF-8");
+    QList<Vertex*>::const_iterator it, it1;
     int sum=0;
-    float weight=0;
-
     int rowCount=0;
     int N = vertices();
+    float weight=0;
 
-    QList<Vertex*>::const_iterator it, it1;
+    emit signalProgressBoxCreate(N, "Plotting Adjacency Matrix. \nPlease wait..." );
+
     if (!simpler) {
         outText << htmlHead;
     }
@@ -17564,7 +17685,7 @@ void Graph::writeMatrixAdjacencyPlot (const QString fn,
             rowCount++;
 
             outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">";
-            emit updateProgressDialog(rowCount);
+            emit signalProgressBoxUpdate(rowCount);
             for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
 
                 if ( ! (*it1)->isEnabled() ) continue;
@@ -17593,7 +17714,7 @@ void Graph::writeMatrixAdjacencyPlot (const QString fn,
 
             if ( ! (*it)->isEnabled() ) continue;
              rowCount++;
-            emit updateProgressDialog(rowCount);
+            emit signalProgressBoxUpdate(rowCount);
             for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
 
                 if ( ! (*it1)->isEnabled() ) continue;
@@ -17629,18 +17750,25 @@ void Graph::writeMatrixAdjacencyPlot (const QString fn,
     outText << htmlEnd;
 
 
-
     file.close();
+
+    emit signalProgressBoxKill();
+
 }
 
 
-/*
- *  Creates an adjacency matrix AM
+
+
+/**
+ * @brief  Creates an adjacency matrix AM
  *  where AM(i,j)=1 if i is connected to j
  *  and AM(i,j)=0 if i not connected to j
- *
  *  Used in Graph::centralityInformation(), Graph::graphWalksMatrixCreate
  *  and Graph::graphMatrixAdjacencyInvert()
+ * @param dropIsolates
+ * @param considerWeights
+ * @param inverseWeights
+ * @param symmetrize
  */
 void Graph::graphMatrixAdjacencyCreate(const bool dropIsolates,
                                   const bool considerWeights,
@@ -17649,17 +17777,26 @@ void Graph::graphMatrixAdjacencyCreate(const bool dropIsolates,
     qDebug() << "Graph::graphMatrixAdjacencyCreate()";
     float m_weight=RAND_MAX;
     int i=0, j=0;
-    int N = vertices();
+    int N = vertices(), progressCounter=0;
+    QList<Vertex*>::const_iterator it, it1;
+
     if (dropIsolates){
         qDebug() << "Graph::graphMatrixAdjacencyCreate() - Find and drop possible isolates";
         int m = N- verticesListIsolated().count();
         AM.resize( m , m);
     }
-    else
+    else {
         AM.resize(N, N);
-    QList<Vertex*>::const_iterator it, it1;
-    //qDebug() << "Graph::graphMatrixAdjacencyCreate() - creating new adjacency matrix ";
+    }
+
+    QString pMsg = tr ("Computing Adjacency Matrix. \nPlease wait...");
+    emit statusMessage (pMsg);
+    emit signalProgressBoxCreate(N, pMsg);
+
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
+        emit signalProgressBoxUpdate(++progressCounter);
+
         if ( ! (*it)->isEnabled() || ( (*it)->isIsolated() && dropIsolates) ) {
             continue;
         }
@@ -17711,6 +17848,9 @@ void Graph::graphMatrixAdjacencyCreate(const bool dropIsolates,
     }
 
     calculatedAdjacencyMatrix=true;
+
+    emit signalProgressBoxUpdate(N);
+    emit signalProgressBoxKill();
 }
 
 
@@ -17890,6 +18030,14 @@ void Graph::layoutRandom(){
     qDebug()<< "Graph::layoutRandom() ";
     double new_x=0, new_y=0;
     Vertices::const_iterator it;
+
+    int N = vertices();
+
+    QString pMsg = tr("Embedding Random Layout. \n"
+                     "Please wait...");
+    emit statusMessage(  pMsg  );
+    emit signalProgressBoxCreate (N,pMsg);
+
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         new_x= canvasRandomX();
         new_y= canvasRandomY();
@@ -17900,6 +18048,8 @@ void Graph::layoutRandom(){
                    << " emitting setNodePos to new pos " << new_x << " , "<< new_y;
         emit setNodePos((*it)->name(),  new_x,  new_y);
     }
+
+    emit signalProgressBoxKill();
 
     graphModifiedSet(GRAPH_CHANGED_POSITIONS);
 }
@@ -17921,10 +18071,24 @@ void Graph::layoutRadialRandom(double x0, double y0, double maxRadius){
     //offset controls how far from the centre the central nodes be positioned
     float offset=0.06, randomDecimal=0;
     int vert=vertices();
+    int progressCounter=0;
     QList<Vertex*>::const_iterator it;
+
+    int N = vertices();
+
+    QString pMsg = tr("Embedding Random Radial model. \n"
+                      "Please wait ....");
+    emit statusMessage(  pMsg );
+    emit signalProgressBoxCreate(N,pMsg );
+
+
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
+        emit signalProgressBoxUpdate(++progressCounter);
+
         randomDecimal = (float ) ( rand()%100 ) / 100.0;
         new_radius=(maxRadius- (randomDecimal - offset)*maxRadius);
+
         qDebug () << "Vertice " << (*it)->name()
                   << " at x=" << (*it)->x()
                   << ", y= "<< (*it)->y()
@@ -17945,6 +18109,7 @@ void Graph::layoutRadialRandom(double x0, double y0, double maxRadius){
         emit addGuideCircle ( x0, y0, new_radius );
     }
 
+    emit signalProgressBoxKill();
     graphModifiedSet(GRAPH_CHANGED_POSITIONS);
 }
 
@@ -17962,10 +18127,16 @@ void Graph::layoutRadial (const double &x0, const double &y0, const double &maxR
     qDebug() << "Graph::layoutRadialRandom - ";
     double rad=0, new_radius=0, new_x=0, new_y=0;
     double i=0;
-
-    int N=vertices();
     QList<Vertex*>::const_iterator it;
+    int N=vertices();
+    int progressCounter=0;
+
+    QString pMsg=tr("Applying random layout. \nPlease wait...");
+    emit signalProgressBoxCreate(N, pMsg);
+
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
+        emit signalProgressBoxUpdate(++progressCounter);
 
         if ( ! (*it)->isEnabled() ) {
             qDebug() << "  vertex i" << (*it)->name() << " disabled. Continue";
@@ -17989,7 +18160,10 @@ void Graph::layoutRadial (const double &x0, const double &y0, const double &maxR
 
     }
 
+    emit signalProgressBoxKill();
+
     graphModifiedSet(GRAPH_CHANGED_POSITIONS);
+
 }
 
 
@@ -18054,11 +18228,12 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
     double maxWidth=0, maxHeight=0;
     float offset=0;
     int new_size=0;
+    int progressCounter=0;
 
     int N=vertices();
+    QList<Vertex*>::const_iterator it;
 
     QColor new_color;
-
 
     switch (layoutType){
     case 0: { // radial
@@ -18076,9 +18251,11 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
     }
     };
 
-    QList<Vertex*>::const_iterator it;
+
 
     emit statusMessage(tr("Computing centrality/prestige scores. Please wait..."));
+
+
 
     //first compute centrality indices if needed
 
@@ -18121,8 +18298,33 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
     }
 
 
-    emit statusMessage(tr("Applying layout based on node prominence score. "
-                          "Please wait..."));
+    QString pMsg;
+
+    switch (layoutType){
+
+    case 0: { // radial
+        pMsg = tr("Embedding Radial layout by Prominence Score. \nPlease wait...");
+        break;
+    }
+    case 1: { // level
+        pMsg = tr("Embedding Level layout by Prominence Score. \nPlease wait...");
+        break;
+    }
+    case 2: { // node size
+        pMsg = tr("Embedding Node Size by Prominence Score layout. \nPlease wait...");
+        break;
+    }
+    case 3: { // node color
+        pMsg = tr("Embedding Node Color by Prominence Score layout. \nPlease wait...");
+        break;
+    }
+    }
+
+
+    emit statusMessage(  pMsg );
+
+    emit signalProgressBoxCreate(N,pMsg);
+
 
     for  (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         switch (prominenceIndex) {
@@ -18206,6 +18408,8 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
         };
 
         norm = std/maxC;
+
+        emit signalProgressBoxUpdate( ++progressCounter);
 
         switch (layoutType){
 
@@ -18367,6 +18571,9 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
         };
     }
 
+    emit signalProgressBoxUpdate( N );
+    emit signalProgressBoxKill();
+
     graphModifiedSet(GRAPH_CHANGED_POSITIONS);
 }
 
@@ -18392,6 +18599,7 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
  */
 void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations){
 
+    int iteration = 1 ;
     int progressCounter=0;
     qreal dist = 0;
     qreal f_rep=0, f_att=0;
@@ -18415,7 +18623,12 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations){
              << " vertices " << V
              << " naturalLength " << naturalLength;
 
-    int iteration = 1 ;
+
+    QString pMsg  = tr ( "Embedding Eades Spring-Gravitational model. \n"
+                         "Please wait ....");
+    emit statusMessage( pMsg  );
+    emit signalProgressBoxCreate (maxIterations, pMsg );
+
     for ( iteration=1; iteration <= maxIterations ; iteration++) {
 
         //setup init disp
@@ -18506,10 +18719,11 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations){
 
         layoutForceDirected_Eades_moveNodes(c4) ;
 
-        progressCounter++;
-        emit updateProgressDialog(progressCounter );
+        emit signalProgressBoxUpdate( ++progressCounter );
 
     } //end iterations
+
+    emit signalProgressBoxKill();
 }
 
 
@@ -18538,6 +18752,8 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
     // we add vertexWidth to it
     qreal optimalDistance= C * computeOptimalDistance(V);
 
+    QList<Vertex*>::const_iterator v1, v2;
+    int iteration = 1 ;
 
     /* apply an inital random layout */
    // layoutRandom();
@@ -18547,10 +18763,15 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
               << "...following Fruchterman-Reingold (1991) formula ";
 
     qDebug() << "Graph: canvasWidth " << canvasWidth << " canvasHeight " << canvasHeight;
-    QList<Vertex*>::const_iterator v1;
-    QList<Vertex*>::const_iterator v2;
-    int iteration = 1 ;
-      for ( iteration=1; iteration <= maxIterations ; iteration++) {
+
+
+    QString pMsg = tr( "Embedding Fruchterman & Reingold forces model. \n"
+                       "Please wait ...");
+    emit statusMessage( pMsg );
+
+    emit signalProgressBoxCreate(maxIterations,pMsg );
+
+    for ( iteration=1; iteration <= maxIterations ; iteration++) {
 
         //setup init disp
         for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1)
@@ -18628,10 +18849,10 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
         // prevent placement outside of the frame/canvas
         layoutForceDirected_FR_moveNodes( layoutForceDirected_FR_temperature (iteration) );
 
-        progressCounter++;
-        emit updateProgressDialog(progressCounter );
+        emit signalProgressBoxUpdate( ++progressCounter );
     }
 
+    emit signalProgressBoxKill();
 }
 
 
@@ -18651,16 +18872,17 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
  * @return qreal temperature
  */
 
-void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
+void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
+                                           const bool considerWeights,
+                                           const bool inverseWeights,
+                                           const bool dropIsolates){
+
     qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
                << "maxIter " << maxIterations;
 
-
-    Vertices::const_iterator v1;
-    Vertices::const_iterator v2;
+    Vertices::const_iterator v1, v2;
 
     int progressCounter=0, minimizationIterations=0;
-    bool considerWeights=false, inverseWeights=false, dropIsolates=false;
 
     int i=0, j=0, m=0, pm=0, pnm=0, pn=0;
 
@@ -18709,6 +18931,11 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
         graphDistanceGeodesicMatrix(considerWeights,inverseWeights, dropIsolates);
     }
 
+    QString pMsg = tr("Embedding Kamada & Kawai spring model.\n"
+                      "Please wait...");
+    emit statusMessage( pMsg );
+
+    emit signalProgressBoxCreate(maxIterations, pMsg);
 
     // Compute original spring length
     // lij for 1 <= i!=j <= n using the formula:
@@ -18776,7 +19003,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
         }
 
         progressCounter++;
-        emit updateProgressDialog(progressCounter );
+        emit signalProgressBoxUpdate( progressCounter );
 
         Delta_max = epsilon;
 
@@ -19003,6 +19230,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
 
     graphModifiedSet(GRAPH_CHANGED_POSITIONS);
 
+    emit signalProgressBoxKill();
 
 }
 

@@ -125,7 +125,7 @@
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QCheckBox" name="progressBarsChkBox">
+           <widget class="QCheckBox" name="progressDialogChkBox">
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Progress Bars&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable the application Progress Bars.&lt;/p&gt;&lt;p&gt;Progress Bars may appear during time-cost operations. &lt;/p&gt;&lt;p&gt;Enabling Progress Bars has a significant cpu cost but lets you know about the progress of a given operation.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and will be the default of the application every time you run SocNetV - until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
@@ -136,7 +136,7 @@
              <enum>Qt::LeftToRight</enum>
             </property>
             <property name="text">
-             <string>Show progress bars</string>
+             <string>Show progress dialog</string>
             </property>
             <property name="checked">
              <bool>true</bool>

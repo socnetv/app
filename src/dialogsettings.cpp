@@ -53,7 +53,7 @@ DialogSettings::DialogSettings(
                 (appSettings["printDebug"] == "true") ? true:false
             );
 
-    ui->progressBarsChkBox->setChecked(
+    ui->progressDialogChkBox->setChecked(
                 (appSettings["showProgressBar"] == "true") ? true:false
                 );
 
@@ -229,8 +229,8 @@ DialogSettings::DialogSettings(
     connect (ui->bgImageSelectButton, &QToolButton::clicked,
              this, &DialogSettings::getBgImage);
 
-    connect (ui->progressBarsChkBox, &QCheckBox::stateChanged,
-             this, &DialogSettings::setProgressBars);
+    connect (ui->progressDialogChkBox, &QCheckBox::stateChanged,
+             this, &DialogSettings::setProgressDialog);
 
     connect (ui->showToolBarChkBox, &QCheckBox::stateChanged,
              this, &DialogSettings::setToolBar);
