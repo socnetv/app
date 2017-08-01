@@ -6813,9 +6813,6 @@ void MainWindow::slotNetworkExportSM(){
 
     activeGraph.graphSave(fileName, FILE_ADJACENCY,  saveEdgeWeights ) ;
 
-
-
-
 }
 
 
@@ -10562,8 +10559,9 @@ void MainWindow::askAboutWeights(){
         considerWeights=false;
         return;
     }
-    if (askedAboutWeights)
+    if (askedAboutWeights) {
         return;
+    }
 
     if ( ! considerEdgeWeightsAct->isChecked() && !considerWeights){
         switch(
@@ -11187,12 +11185,14 @@ void MainWindow::slotAnalyzeClusteringHierarchical(const QString &matrix,
 
 
 
+
 /**
-*	Calls Graph:: writeCliqueCensus() to write the number of cliques (triangles)
+ * @brief Calls Graph:: writeCliqueCensus() to write the number of cliques (triangles)
 *  of each vertex into a file, then displays it.
-*/
+ */
 void MainWindow::slotAnalyzeCommunitiesCliqueCensus(){
-    if ( !activeNodes()   )  {
+
+    if ( !activeNodes()  )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
@@ -11202,16 +11202,7 @@ void MainWindow::slotAnalyzeCommunitiesCliqueCensus(){
 
     bool considerWeights=true;
 
-    statusMessage(  tr("Computing Clique Census. Please wait...") );
-
-    progressMsg = tr("Computing Clique Census. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    slotProgressBoxCreate(0,progressMsg);
-
     activeGraph.writeCliqueCensus(fn, considerWeights);
-
-    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11245,16 +11236,7 @@ void MainWindow::slotAnalyzeClusteringCoefficient (){
 
     bool considerWeights=true;
 
-    statusMessage(  tr("Computing Clustering Coefficients. Please wait...") );
-
-    progressMsg = tr("Computing Clustering Coefficient. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    slotProgressBoxCreate(0,progressMsg);
-
     activeGraph.writeClusteringCoefficient(fn, considerWeights);
-
-    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11275,7 +11257,7 @@ void MainWindow::slotAnalyzeClusteringCoefficient (){
 void MainWindow::slotAnalyzeStrEquivalenceSimilarityMeasureDialog() {
     qDebug()<< "MW::slotAnalyzeStrEquivalenceSimilarityMeasureDialog()";
 
-    if ( !activeNodes()   )  {
+    if ( !activeNodes()  )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
@@ -11311,13 +11293,6 @@ void MainWindow::slotAnalyzeSimilarityMatching(const QString &matrix,
 
     bool considerWeights=true;
 
-    statusMessage(  tr("Computing similarity matrix. Please wait...") );
-
-    progressMsg = tr("Computing similarity matrix. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    slotProgressBoxCreate(0,progressMsg);
-
     //activeGraph.writeMatrixSimilarityMatchingPlain( fn, measure, matrix, varLocation, diagonal,considerWeights);
     activeGraph.writeMatrixSimilarityMatching( fn,
                                                measure,
@@ -11325,7 +11300,6 @@ void MainWindow::slotAnalyzeSimilarityMatching(const QString &matrix,
                                                varLocation,
                                                diagonal,
                                                considerWeights);
-    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11378,15 +11352,7 @@ void MainWindow::slotAnalyzeSimilarityPearson(const QString &matrix,
 
     bool considerWeights=true;
 
-    statusMessage(  tr("Computing Pearson coefficients matrix. Please wait...") );
-    progressMsg = tr("Computing Pearson coefficients matrix. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    slotProgressBoxCreate(0,progressMsg);
-
     activeGraph.writeMatrixSimilarityPearson( fn, considerWeights, matrix, varLocation,diagonal);
-
-    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11416,16 +11382,7 @@ void MainWindow::slotAnalyzeCommunitiesTriadCensus() {
 
     bool considerWeights=true;
 
-    statusMessage(  tr("Computing Triad Census. Please wait...") );
-
-    progressMsg = tr("Computing Triad Census. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    slotProgressBoxCreate(0,progressMsg);
-
     activeGraph.writeTriadCensus(fn, considerWeights);
-
-    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11475,17 +11432,9 @@ void MainWindow::slotAnalyzeCentralityDegree(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-out-degree-"+dateTime+".html";
 
-    statusMessage(  tr("Computing out-Degree Centralities. Please wait...") );
-
-    progressMsg = tr("Computing out-Degree Centralities. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    slotProgressBoxCreate(0,progressMsg);
 
     activeGraph.writeCentralityDegree(fn, considerWeights,
                                       editFilterNodesIsolatesAct->isChecked() );
-
-    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));

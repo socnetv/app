@@ -806,7 +806,7 @@ public:
 
     void layoutRadialRandom(double x0, double y0, double maxRadius);
     void layoutRadial(const double &x0, const double &y0,
-                      const double &maxRadius, const bool &guides=false);
+                      const double &newRadius, const bool &guides=false);
 
 
     void layoutByProminenceIndex ( int prominenceIndex, int layoutType,
