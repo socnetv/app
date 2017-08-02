@@ -2966,7 +2966,7 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
     float tiesInNonSymTotalIn=0;
 
 
-    QString pMsg = tr("Writing Reciprocity to file:") + fileName ;
+    QString pMsg = tr("Writing Reciprocity to file. \nPlease wait...");
     emit statusMessage ( pMsg );
 
     emit signalProgressBoxCreate(N,pMsg);
@@ -3820,7 +3820,7 @@ void Graph::graphDistanceGeodesicMatrix(const bool &considerWeights,
     DM.resize(N, N);
     TM.resize(N, N);
 
-    QString pMsg = tr("Computing matrix. \nPlease wait ");
+    QString pMsg = tr("Creating distance matrix. \nPlease wait ");
 
     emit signalProgressBoxCreate(N,pMsg);
 
@@ -4882,10 +4882,15 @@ void Graph::minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int
 
 
 
-/** 	This method calculates the number of discrete centrality classes of all vertices
+
+/**
+ * @brief Calculates the number of discrete centrality classes of all vertices
     It stores that number in a QHash<QString,int> type where the centrality value is the key.
     Called from graphDistanceGeodesicCompute()
-*/
+ * @param C
+ * @param discreteClasses
+ * @param classes
+ */
 void Graph::resolveClasses(float C, H_StrToInt &discreteClasses, int &classes){
     H_StrToInt::iterator it2;
     it2 = discreteClasses.find(QString::number(C));    //Amort. O(1) complexity
@@ -4896,8 +4901,13 @@ void Graph::resolveClasses(float C, H_StrToInt &discreteClasses, int &classes){
 }
 
 
-/*
- * Overloaded method. It only adds displaying current vertex for debugging purposes.
+
+/**
+ * @brief Overloaded method. It only adds displaying current vertex for debugging purposes.
+ * @param C
+ * @param discreteClasses
+ * @param classes
+ * @param vertex
  */
 void Graph::resolveClasses(float C, H_StrToInt &discreteClasses, int &classes, int vertex){
     H_StrToInt::iterator it2;
@@ -4956,10 +4966,14 @@ void Graph::writeMatrixDistancesPlainText (const QString &fn,
 }
 
 
+
+
 /**
-*  Saves the number of geodesic distances matrix TM to a file
-*
-*/
+ * @brief Saves the number of geodesic distances matrix TM to a file
+ * @param fn
+ * @param considerWeights
+ * @param inverseWeights
+ */
 void Graph::writeMatrixNumberOfGeodesicsPlainText(const QString &fn,
                                          const bool &considerWeights,
                                          const bool &inverseWeights) {
@@ -4993,7 +5007,7 @@ void Graph::writeMatrixNumberOfGeodesicsPlainText(const QString &fn,
 
 
 /**
- * @brief Graph::writeEccentricity
+ * @brief Writes the Eccentricity scores to file
  * @param fileName
  * @param considerWeights
  * @param inverseWeights
@@ -5027,7 +5041,7 @@ void Graph::writeEccentricity(
     int N = vertices();
     float eccentr=0;
 
-    QString pMsg = tr("Writing eccentricity to file:") + fileName ;
+    QString pMsg = tr("Writing Eccentricity scores to file. \nPlease wait...");
     emit statusMessage ( pMsg );
 
     emit signalProgressBoxCreate(N,pMsg);
@@ -5178,8 +5192,7 @@ void Graph::writeEccentricity(
 
 
 /**
- * @brief Graph::centralityInformation
- * Calculates the Information centrality of each vertex - diagonal included
+ * @brief Computes the Information centrality of each vertex - diagonal included
  *  Note that there is no known generalization of Stephenson&Zelen's theory
  *  for information centrality to directional data
  * @param considerWeights
@@ -5188,9 +5201,11 @@ void Graph::writeEccentricity(
 void Graph::centralityInformation(const bool considerWeights,
                                   const bool inverseWeights){
     qDebug()<< "Graph::centralityInformation()";
+
     if (calculatedIC && !graphModified()) {
         return;
     }
+
     discreteICs.clear();
     sumIC=0;
     maxIC=0;
@@ -5199,8 +5214,11 @@ void Graph::centralityInformation(const bool considerWeights,
     classesIC=0;
     varianceIC=0;
 
+    QList<Vertex*>::const_iterator it;
+
     int isolatedVertices=verticesListIsolated().count();
-    int i=0, j=0, n=vertices();
+    int i=0, j=0;
+    int n=vertices();
     float m_weight=0, weightSum=1, diagonalEntriesSum=0, rowSum=0;
     float IC=0, SIC=0;
     /* Note: isolated nodes must be dropped from the AM
@@ -5211,6 +5229,12 @@ void Graph::centralityInformation(const bool considerWeights,
     graphMatrixAdjacencyCreate(dropIsolates, considerWeights, inverseWeights, symmetrize);
 
     n-=isolatedVertices;
+
+
+    QString pMsg = tr("Computing Information Centralities. \nPlease wait...");
+    emit statusMessage( pMsg );
+    emit signalProgressBoxCreate(n,pMsg);
+
 
     TM.resize(n, n);
     invM.resize(n, n);
@@ -5227,9 +5251,15 @@ void Graph::centralityInformation(const bool considerWeights,
         TM.setItem(i,i,weightSum);
     }
 
-    emit statusMessage ( (tr("Computing inverse matrix. This needs time. Please wait...")) );
+    emit signalProgressBoxUpdate(n/3);
+    emit statusMessage ( tr("Computing inverse adjancecy matrix. Please wait...") );
+
     invM.inverse(TM);
-    emit statusMessage ( (tr("Computing IC scores...")) );
+
+    emit statusMessage ( tr("Computing IC scores. Please wait...") );
+
+    emit signalProgressBoxUpdate(2*n/3);
+
     diagonalEntriesSum = 0;
     rowSum = 0;
     for (j=0; j<n; j++){
@@ -5239,7 +5269,7 @@ void Graph::centralityInformation(const bool considerWeights,
         diagonalEntriesSum  += invM.item(i,i);  // calculate the matrix trace
     }
 
-    QList<Vertex*>::const_iterator it;
+
     i=0;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( (*it)->isIsolated() ) {
@@ -5274,11 +5304,21 @@ void Graph::centralityInformation(const bool considerWeights,
     varianceIC  /=  (float) n;
 
     calculatedIC = true;
+
+    emit signalProgressBoxUpdate(n);
+    emit signalProgressBoxKill();
 }
 
 
 
-//Writes the information centralities to a file
+
+/**
+ * @brief Writes the information centralities to file
+ * @param fileName
+ * @param considerWeights
+ * @param inverseWeights
+ */
+
 void Graph::writeCentralityInformation(const QString fileName,
                                        const bool considerWeights,
                                        const bool inverseWeights){
@@ -5292,19 +5332,26 @@ void Graph::writeCentralityInformation(const QString fileName,
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
+
     QTextStream outText ( &file );
     outText.setCodec("UTF-8");
+
     if (graphModified() || !calculatedIC ) {
             emit statusMessage ( (tr("Computing IC scores...")) );
             centralityInformation(considerWeights, inverseWeights);
     }
 
-    emit statusMessage ( tr("Writing Information Centralities to file:") + fileName );
-
-    outText.setRealNumberPrecision(m_precision);
+    QList<Vertex*>::const_iterator it;
 
     int rowCount=0;
     int N = vertices();
+    int progressCounter = 0;
+
+    QString pMsg = tr("Writing Information Centralities to file. \nPlease wait...");
+    emit statusMessage( pMsg );
+    emit signalProgressBoxCreate(N,pMsg);
+
+    outText.setRealNumberPrecision(m_precision);
 
     outText << htmlHead;
 
@@ -5377,9 +5424,11 @@ void Graph::writeCentralityInformation(const QString fileName,
           << "</thead>"
           <<"<tbody id=\"results\">";
 
-    QList<Vertex*>::const_iterator it;
+
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
+        emit signalProgressBoxUpdate(++progressCounter);
 
         rowCount++;
 
@@ -5483,6 +5532,9 @@ void Graph::writeCentralityInformation(const QString fileName,
 
     file.close();
 
+    emit signalProgressBoxUpdate(N);
+    emit signalProgressBoxKill();
+
 }
 
 
@@ -5513,12 +5565,17 @@ void Graph::writeCentralityEigenvector(const QString fileName,
             centralityEigenvector(considerWeights, inverseWeights,dropIsolates);
     }
 
-    emit statusMessage ( tr("Writing Eigenvector Centralities to file:") + fileName );
-
-    outText.setRealNumberPrecision(m_precision);
+    QList<Vertex*>::const_iterator it;
 
     int rowCount=0;
     int N = vertices();
+    int progressCounter = 0;
+
+    QString pMsg = tr("Writing Eigenvector Centrality scores to file. \nPlease wait...") ;
+    emit statusMessage( pMsg );
+    emit signalProgressBoxCreate(N,pMsg);
+
+    outText.setRealNumberPrecision(m_precision);
 
     outText << htmlHead;
 
@@ -5601,13 +5658,13 @@ void Graph::writeCentralityEigenvector(const QString fileName,
           <<"<tbody id=\"results\">";
 
 
-    QList<Vertex*>::const_iterator it;
-
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
+        emit signalProgressBoxUpdate(++progressCounter);
 
         rowCount++;
 
-        outText <<fixed;
+        outText << fixed;
 
         outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
                 <<"<td>"
@@ -5708,6 +5765,9 @@ void Graph::writeCentralityEigenvector(const QString fileName,
 
     file.close();
 
+    emit signalProgressBoxUpdate(N);
+    emit signalProgressBoxKill();
+
 }
 
 
@@ -5740,17 +5800,20 @@ void Graph::centralityEigenvector(const bool &considerWeights,
 
     bool symmetrize=false;
     bool useDegrees=false;
-
+    int i = 0;
     int N = vertices(dropIsolates);
 
     float EVC[N];
 
-    qDebug()<<"Graph::centralityEigenvector() - Create adjacency matrix AM";
-
     graphMatrixAdjacencyCreate(dropIsolates, considerWeights,
                                inverseWeights, symmetrize);
 
-    int i = 0;
+
+    QString pMsg = tr("Computing Eigenvector Centrality scores. \nPlease wait...") ;
+    emit statusMessage( pMsg );
+    emit signalProgressBoxCreate(N,pMsg);
+
+
     if (useDegrees) {
 
         emit statusMessage(tr("Computing outDegrees. Please wait..."));
@@ -5774,12 +5837,14 @@ void Graph::centralityEigenvector(const bool &considerWeights,
 
     }
 
-    emit statusMessage(tr("Computing matrix leading eigenvector. "
-                          "Please wait..."));
+    emit signalProgressBoxUpdate( N / 3);
+
 
     AM.powerIteration(EVC, sumEVC, maxEVC, maxNodeEVC,
                       minEVC, minNodeEVC,
                       0.0000001, 500);
+
+    emit signalProgressBoxUpdate(2 * N / 3);
 
     emit statusMessage(tr("Leading eigenvector computed. "
                           "Analysing centralities. Please wait..."));
@@ -5806,7 +5871,12 @@ void Graph::centralityEigenvector(const bool &considerWeights,
     // group eigenvector centralization measure is
     // S(cmax - c(vi)) divided by the maximum value possible,
     // where c(vi) is the eigenvector centrality of vertex vi.
+
+    emit signalProgressBoxUpdate( N );
+    emit signalProgressBoxKill();
 }
+
+
 
 
 
@@ -6244,10 +6314,13 @@ void Graph::writeCentralityCloseness( const QString fileName,
                     "and centralities calculated. Writing file...";
     }
 
-    emit statusMessage ( tr("Writing Closeness indices to file:") + fileName );
-
     int rowCount=0;
     int N = vertices();
+    int progressCounter = 0;
+
+    QString pMsg = tr("Writing Closeness Centrality scores to file. \nPlease wait ...");
+    emit statusMessage(pMsg);
+    emit signalProgressBoxCreate(N,pMsg);
 
     outText << htmlHead;
 
@@ -6324,6 +6397,9 @@ void Graph::writeCentralityCloseness( const QString fileName,
     QList<Vertex*>::const_iterator it;
 
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+
+        emit signalProgressBoxUpdate(++progressCounter);
+
         rowCount++;
 
         outText <<fixed;
@@ -6466,6 +6542,9 @@ void Graph::writeCentralityCloseness( const QString fileName,
 
     file.close();
 
+    emit signalProgressBoxUpdate(N);
+    emit signalProgressBoxKill();
+
 }
 
 
@@ -6499,19 +6578,29 @@ void Graph::centralityClosenessIR(const bool considerWeights,
 
     // calculate centralities
     QList<Vertex*>::const_iterator it, jt;
+    int progressCounter = 0;
     float IRCC=0,SIRCC=0;
     float Ji=0;
     float dist=0;
-    float V=vertices(dropIsolates);
+    float N=vertices(dropIsolates);
     classesIRCC=0;
     discreteIRCCs.clear();
     sumIRCC=0;
     maxIRCC=0;
-    minIRCC=vertices(dropIsolates)-1;
+    minIRCC=N-1;
     varianceIRCC=0;
     meanIRCC=0;
 
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+    QString pMsg = tr("Computing Influence Range Centrality scores. \n"
+                      "Please wait");
+    emit statusMessage( pMsg );
+    emit signalProgressBoxCreate(N,pMsg);
+
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
+
+        emit signalProgressBoxUpdate(++progressCounter);
+
         IRCC=0;
         Ji = 0;
         if ((*it)->isIsolated()) {
@@ -6533,20 +6622,11 @@ void Graph::centralityClosenessIR(const bool considerWeights,
                 Ji ++; // compute |Ji|
             }
         }
-        //            qDebug()<< "Graph::centralityClosenessIR() -  vertex"
-        //                    << (*it)->name()
-        //                    << "actors in influence range Ji" << Ji
-        //                    << "actors in network"<< (V-1)
-        //                    << "fraction of reachable actors |Ji|/(V-1)="  << Ji/ (V-1)
-        //                    << "distance to actors in Ji" << IRCC
-        //                    << "average distance to actors in Ji" << IRCC / Ji
-        //                    << "IRCC = "
-        //                    << Ji / (V-1) << " / " << IRCC / Ji << " = " << ( Ji / (V-1) ) / ( IRCC / Ji);
 
         // sanity check for IRCC=0 (=> node is disconnected)
         if (IRCC != 0)  {
             IRCC /= Ji;
-            IRCC =  ( Ji / (V-1) ) / IRCC;
+            IRCC =  ( Ji / (float) (N-1) ) / IRCC;
         }
 
         sumIRCC += IRCC;
@@ -6557,7 +6637,7 @@ void Graph::centralityClosenessIR(const bool considerWeights,
 
     }
 
-    meanIRCC = sumIRCC / (float) V;
+    meanIRCC = sumIRCC / (float) N;
 
     if (minIRCC == maxIRCC)
         maxNodeIRCC=-1;
@@ -6568,9 +6648,14 @@ void Graph::centralityClosenessIR(const bool considerWeights,
             varianceIRCC += (SIRCC-meanIRCC) * (SIRCC-meanIRCC) ;
         }
     }
-    varianceIRCC=varianceIRCC/(float) V;
+
+    varianceIRCC=varianceIRCC/(float) N;
 
     calculatedIRCC=true;
+
+    emit signalProgressBoxUpdate(N);
+    emit signalProgressBoxKill();
+
 }
 
 
@@ -6594,14 +6679,17 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    emit statusMessage ( (tr("Computing IRCC indices")) );
-
     centralityClosenessIR(considerWeights,inverseWeights, dropIsolates);
-
-    emit statusMessage ( tr("Writing IR Closeness indices to file:") + fileName );
 
     int rowCount=0;
     int N = vertices();
+    int progressCounter = 0;
+
+    QString pMsg = tr("Writing Influence Range Centrality scores. \n"
+                      "Please wait");
+    emit statusMessage( pMsg );
+    emit signalProgressBoxCreate(N,pMsg);
+
 
     outText << htmlHead;
 
@@ -6673,6 +6761,9 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
     QList<Vertex*>::const_iterator it;
 
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+
+        emit signalProgressBoxUpdate(++progressCounter);
+
         rowCount++;
 
         outText <<fixed;
@@ -6764,6 +6855,10 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
     outText << htmlEnd;
 
     file.close();
+
+    emit signalProgressBoxUpdate(N);
+    emit signalProgressBoxKill();
+
 
 }
 
@@ -7054,10 +7149,16 @@ void Graph::writeCentralityStress( const QString fileName,
         qDebug() << " graph not modified, and centralities calculated. Returning";
     }
 
-    emit statusMessage ( tr("Writing Stress indices to file:") + fileName );
+    QList<Vertex*>::const_iterator it;
 
     int rowCount=0;
     int N = vertices();
+    int progressCounter = 0;
+
+    QString pMsg =  tr("Writing Stress Centralities. \nPlease wait...");
+    emit statusMessage( pMsg );
+    emit signalProgressBoxCreate(N,pMsg);
+
 
     outText << htmlHead;
 
@@ -7123,12 +7224,15 @@ void Graph::writeCentralityStress( const QString fileName,
           << "</thead>"
           <<"<tbody id=\"results\">";
 
-    QList<Vertex*>::const_iterator it;
+
 
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+
+        emit signalProgressBoxUpdate(++progressCounter);
+
         rowCount++;
 
-        outText <<fixed;
+        outText << fixed;
 
         if (dropIsolates && (*it)->isIsolated()) {
             outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
@@ -7227,6 +7331,9 @@ void Graph::writeCentralityStress( const QString fileName,
 
     file.close();
 
+    emit signalProgressBoxUpdate(N);
+    emit signalProgressBoxKill();
+
 }
 
 
@@ -7259,10 +7366,15 @@ void Graph::writeCentralityEccentricity(const QString fileName,
         qDebug() << " graph not modified, and centralities calculated. Returning";
     }
 
-    emit statusMessage ( tr("Writing Eccentricity indices to file:") + fileName );
+    QList<Vertex*>::const_iterator it;
 
-    int rowCount=0;
+        int rowCount=0;
     int N = vertices();
+    int progressCounter = 0;
+
+    QString pMsg = tr("Writing Eccentricity Centralities to file. \nPlease wait...") ;
+    emit statusMessage( pMsg );
+    emit signalProgressBoxCreate(N,pMsg);
 
     outText << htmlHead;
 
@@ -7321,12 +7433,14 @@ void Graph::writeCentralityEccentricity(const QString fileName,
           <<"<tbody id=\"results\">";
 
 
-    QList<Vertex*>::const_iterator it;
 
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+
+        emit signalProgressBoxUpdate(++progressCounter);
+
         rowCount++;
 
-        outText <<fixed;
+        outText << fixed;
 
         if (dropIsolates && (*it)->isIsolated()) {
             outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
@@ -7417,6 +7531,9 @@ void Graph::writeCentralityEccentricity(const QString fileName,
 
     file.close();
 
+    emit signalProgressBoxUpdate(N);
+    emit signalProgressBoxKill();
+
 }
 
 
@@ -7451,10 +7568,15 @@ void Graph::writeCentralityPower(const QString fileName,
         qDebug() << " graph not modified, and centralities calculated. Returning";
     }
 
-    emit statusMessage ( tr("Writing Power indices to file:") + fileName );
+    QList<Vertex*>::const_iterator it;
 
     int rowCount=0;
     int N = vertices();
+    int progressCounter = 0;
+
+    QString pMsg = tr("Writing Gil-Schmidt Power Centralities to file. \nPlease wait...");
+    emit statusMessage( pMsg );
+    emit signalProgressBoxCreate(N,pMsg);
 
     outText << htmlHead;
 
@@ -7523,13 +7645,13 @@ void Graph::writeCentralityPower(const QString fileName,
           <<"<tbody id=\"results\">";
 
 
-
-    QList<Vertex*>::const_iterator it;
-
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+
+        emit signalProgressBoxUpdate(++progressCounter);
+
         rowCount++;
 
-        outText <<fixed;
+        outText << fixed;
 
         if (dropIsolates && (*it)->isIsolated()) {
             outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
@@ -7662,8 +7784,10 @@ void Graph::writeCentralityPower(const QString fileName,
     outText << htmlEnd;
 
 
-
     file.close();
+
+    emit signalProgressBoxUpdate(N);
+    emit signalProgressBoxKill();
 
 }
 
@@ -7681,41 +7805,52 @@ void Graph::writeCentralityPower(const QString fileName,
  * @param dropIsolates
  */
 void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
+
     qDebug()<< "Graph::prestigeDegree()";
+
     if (!graphModified() && calculatedDP ) {
         qDebug() << "Graph::prestigeDegree() - "
                     " graph not changed - returning";
         return;
     }
 
-    float DP=0, SDP=0, nom=0, denom=0;
-    float weight;
-    classesSDP=0;
-    sumSDP=0;
-    sumDP=0;
-    maxSDP=0;
-    minSDP=vertices(dropIsolates)-1;
-    discreteDPs.clear();
-    varianceSDP=0;
-    meanSDP=0;
-    m_symmetric = true;
-    QList<Vertex*>::const_iterator it; //, it1;
-    H_StrToInt::iterator it2;
-
-    int vert=vertices(dropIsolates);
-
+    int N=vertices(dropIsolates);
     int v2=0, v1=0;
+    int progressCounter = 0;
+
+    QList<Vertex*>::const_iterator it;
+    H_StrToInt::iterator it2;
 
     QHash<int,float> *enabledInEdges = new QHash<int,float>;
     QHash<int,float>::const_iterator hit;
 
+    float DP=0, SDP=0, nom=0, denom=0;
+    float weight;
+
+    classesSDP=0;
+    sumSDP=0;
+    sumDP=0;
+    maxSDP=0;
+    minSDP=N-1;
+    discreteDPs.clear();
+    varianceSDP=0;
+    meanSDP=0;
+    m_symmetric = true;
+
+
+    QString pMsg = tr("Computing Degree Prestige (in-Degree). \n Please wait ...");
+    emit statusMessage(  pMsg );
+    emit signalProgressBoxCreate(N,pMsg);
+
 
     qDebug()<< "Graph::prestigeDegree() - vertices"
-            << vert
+            << N
             <<"graph modified. Recomputing...";
 
-    for ( it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
+    for ( it = m_graph.cbegin(); it != m_graph.cend(); ++it)  {
+
+        emit signalProgressBoxUpdate(++progressCounter);
+
         v1 = (*it) -> name();
         qDebug()<< "Graph::prestigeDegree() - computing DP for vertex" << v1 ;
 
@@ -7737,7 +7872,9 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
         while ( hit!=enabledInEdges->cend() ){
 
             v2 = hit.key();
+
             qDebug() << "Graph::prestigeDegree() - inbound edge from" << v2;
+
             if (  ! edgeExists ( v2, v1)  ) {
                 //sanity check
                 qDebug() << "Graph::prestigeDegree() - Cannot verify inbound edge"
@@ -7745,11 +7882,15 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
                 ++hit;
                 continue;
             }
+
             weight = hit.value();
-            if (weights)
+
+            if (weights) {
                 DP+=weight;
-            else
+            }
+            else {
                 DP++;
+            }
             if (  edgeExists ( v1, v2)  != weight) {
                 m_symmetric=false;
             }
@@ -7758,6 +7899,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
 
         (*it) -> setDP ( DP ) ;		//Set DP
         sumDP += DP;
+
         qDebug() << "Graph: prestigeDegree() vertex " <<  (*it)->name()
                  << " DP "  << DP;
 
@@ -7766,24 +7908,31 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
 
     // Calculate std DP, min,max, mean
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
         DP= (*it)->DP();
+
         if (!weights) {
-            SDP=( DP / (vert-1.0) );		//Set Standard InDegree
+            SDP=( DP / (N-1.0) );		//Set Standard InDegree
         }
         else {
             SDP =( DP / (sumDP) );
         }
         (*it) -> setSDP( SDP );
         sumSDP += SDP;
+
         qDebug() << "Graph::prestigeDegree - vertex " <<  (*it)->name() << " DP  "
                  << DP << " SDP " << (*it)->SDP ();
+
         it2 = discreteDPs.find(QString::number(SDP));
+
         if (it2 == discreteDPs.end() )	{
             classesSDP++;
             qDebug("This is a new DP class");
             discreteDPs.insert ( QString::number(SDP), classesSDP );
         }
+
         qDebug("DP classes = %i ", classesSDP);
+
         if (maxSDP < SDP ) {
             maxSDP = SDP ;
             maxNodeDP=(*it)->name();
@@ -7798,7 +7947,8 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
     if (minSDP == maxSDP)
         maxNodeDP=-1;
 
-    meanSDP = sumSDP / (float) vert;
+    meanSDP = sumSDP / (float) N;
+
     qDebug("Graph: sumSDP = %f, meanSDP = %f", sumSDP, meanSDP);
 
     // Calculate Variance and the Degree Prestigation of the whole graph. :)
@@ -7810,16 +7960,16 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
         nom+= maxSDP-SDP;
         varianceSDP += (SDP-meanSDP) * (SDP-meanSDP) ;
     }
-    varianceSDP=varianceSDP/(float) vert;
+    varianceSDP=varianceSDP/(float) N;
 
     if (m_symmetric)
-        denom=(vert-1.0)*(vert-2.0);
+        denom=(N-1.0)*(N-2.0);
     else
-        denom=(vert-1.0)*(vert-1.0);
-    if (vert < 3 )
-         denom = vert-1.0;
+        denom=(N-1.0)*(N-1.0);
+    if (N < 3 )
+         denom = N-1.0;
 
-    //qDebug () << "*** vert is " << vert << " nom " << nom << " denom is " << denom;
+
     if (!weights) {
         groupDP=nom/denom;
         qDebug("Graph: varianceSDP = %f, groupDP = %f", varianceSDP, groupDP);
@@ -7827,6 +7977,10 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
 
     delete enabledInEdges;
     calculatedDP=true;
+
+    emit signalProgressBoxUpdate(N);
+    emit signalProgressBoxKill();
+
 }
 
 
@@ -7853,11 +8007,19 @@ void Graph::writePrestigeDegree (const QString fileName,
 
     prestigeDegree(considerWeights, dropIsolates);
 
+    QList<Vertex*>::const_iterator it;
+
     int N = vertices();
 
     float maxIndexDP=N-1.0;
 
     int rowCount=0;
+    int progressCounter = 0;
+
+    QString pMsg = tr("Writing Degree Prestige (in-Degree) scores to file. \nPlease wait ...");
+    emit statusMessage(  pMsg );
+    emit signalProgressBoxCreate(N,pMsg);
+
 
     outText << htmlHead;
 
@@ -7930,12 +8092,15 @@ void Graph::writePrestigeDegree (const QString fileName,
           <<"<tbody id=\"results\">";
 
 
-    QList<Vertex*>::const_iterator it;
+
 
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+
+        emit signalProgressBoxUpdate( ++progressCounter );
+
         rowCount++;
 
-        outText <<fixed;
+        outText << fixed;
 
         if (dropIsolates && (*it)->isIsolated()) {
             outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
@@ -8072,6 +8237,9 @@ void Graph::writePrestigeDegree (const QString fileName,
 
     file.close();
 
+    emit signalProgressBoxUpdate( N );
+    emit signalProgressBoxKill();
+
 }
 
 
@@ -8105,12 +8273,21 @@ void Graph::prestigeProximity( const bool considerWeights,
     discretePPs.clear();
     sumPP=0;
     maxPP=0;
-    minPP=vertices(dropIsolates)-1;
+    minPP=V-1;
     variancePP=0;
     meanPP=0;
     H_StrToInt::iterator it2;
 
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+    int progressCounter = 0;
+
+    QString pMsg = tr("Computing Proximity Prestige scores. \nPlease wait ...");
+    emit statusMessage( pMsg );
+    emit signalProgressBoxCreate(V,pMsg);
+
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
+
+        emit signalProgressBoxUpdate(++progressCounter);
 
         PP=0;
         Ii = 0;
@@ -8178,7 +8355,7 @@ void Graph::prestigeProximity( const bool considerWeights,
     if (minPP == maxPP)
         maxNodePP=-1;
 
-    meanPP = sumPP / (float) V;
+    meanPP = sumPP / V;
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if (dropIsolates && (*it)->isIsolated() ) {
@@ -8188,12 +8365,16 @@ void Graph::prestigeProximity( const bool considerWeights,
         variancePP += (PP-meanPP) * (PP-meanPP) ;
     }
 
-    variancePP=variancePP/(float) V;
+    variancePP=variancePP/ V;
+
     qDebug() << "Graph::prestigeProximity - sumPP = " << sumPP
                 << " meanPP = " << meanPP
                 << " variancePP " << variancePP;
 
     calculatedPP=true;
+
+    emit signalProgressBoxUpdate(V);
+    emit signalProgressBoxKill();
 
 }
 
@@ -8223,13 +8404,18 @@ void Graph::writePrestigeProximity( const QString fileName,
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    emit statusMessage ( (tr("Calculating prestige proximity indices")) );
     prestigeProximity(considerWeights, inverseWeights, dropIsolates);
 
-    emit statusMessage ( tr("Writing Proximity Prestige indices to file:") + fileName );
+    QList<Vertex*>::const_iterator it;
 
     int rowCount=0;
     int N = vertices();
+    int progressCounter = 0;
+
+    QString pMsg = tr("Writing Proximity Prestige scores to file. \nPlease wait ...");
+    emit statusMessage( pMsg );
+    emit signalProgressBoxCreate(N,pMsg);
+
 
     outText << htmlHead;
 
@@ -8293,12 +8479,14 @@ void Graph::writePrestigeProximity( const QString fileName,
           <<"<tbody id=\"results\">";
 
 
-    QList<Vertex*>::const_iterator it;
 
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+
+        emit signalProgressBoxUpdate(++progressCounter);
+
         rowCount++;
 
-        outText <<fixed;
+        outText << fixed;
 
         if (dropIsolates && (*it)->isIsolated()) {
             outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
@@ -8387,6 +8575,10 @@ void Graph::writePrestigeProximity( const QString fileName,
 
     file.close();
 
+    emit signalProgressBoxUpdate(N);
+    emit signalProgressBoxKill();
+
+
 }
 
 
@@ -8399,11 +8591,14 @@ void Graph::writePrestigeProximity( const QString fileName,
  * @param dropIsolates
  */
 void Graph::prestigePageRank(const bool &dropIsolates){
+
     qDebug()<< "Graph::prestigePageRank()";
+
     if (! graphModified() && calculatedPRP ) {
         qDebug() << " graph not changed - return ";
         return;
     }
+
     discretePRPs.clear();
     sumPRP=0;
     t_sumPRP=0;
@@ -8426,21 +8621,26 @@ void Graph::prestigePageRank(const bool &dropIsolates){
     float inLinks = 0;       // temp var
     float outLinks = 0;       // temp var
     float t_variance=0;
-    float aVert =  vertices(dropIsolates) ;
+    int N =  vertices(dropIsolates) ;
+
     QList<Vertex*>::const_iterator it;
-    int relation=0;
-    bool edgeStatus=false;
     H_edges::const_iterator jt;
 
+    int relation=0;
+    bool edgeStatus=false;
 
-    qDebug()<< "Graph::prestigePageRank() "
-            << "active vertices: " << aVert
-            << " total vertices: " << vertices();
 
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+    QString pMsg = tr("Computing PageRank Prestige scores. \nPlease wait ...");
+    emit statusMessage( pMsg ) ;
+    emit signalProgressBoxCreate(N,pMsg);
+
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
+
         // At first, PR scores have probability distribution
         // from 0 to 1, so each one is set to 1/N
-        (*it)->setPRP( 1.0 / aVert );
+        (*it)->setPRP( 1.0 / (float) N );
+
         // compute inEdges() to warm up inEdgesConst for everyone
         inLinks = (*it)->inEdges();
         outLinks = (*it)->outEdges();
@@ -8456,6 +8656,8 @@ void Graph::prestigePageRank(const bool &dropIsolates){
         return;
     }
 
+    emit signalProgressBoxUpdate( N / 3);
+
     // begin iteration - continue until we reach our desired delta
     while (maxDelta > delta) {
 
@@ -8467,6 +8669,7 @@ void Graph::prestigePageRank(const bool &dropIsolates){
         minPRP=RAND_MAX;
         maxNodePRP = 0;
         minNodePRP = 0;
+
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
         {
             sumInLinksPR = 0;
@@ -8525,7 +8728,7 @@ void Graph::prestigePageRank(const bool &dropIsolates){
                 ++jt;
             }
 
-            PRP = (1-d_factor) / aVert + d_factor * sumInLinksPR;
+            PRP = (1-d_factor) / (float) N + d_factor * sumInLinksPR;
 
            (*it) -> setPRP ( PRP );
 
@@ -8547,9 +8750,12 @@ void Graph::prestigePageRank(const bool &dropIsolates){
             }
 
         }
+
         // normalize in every iteration
+
         qDebug() << "Graph::prestigePageRank() - sumPRP for this iteration " <<
                     sumPRP;
+
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
             PRP = (*it)->PRP();
 
@@ -8567,12 +8773,16 @@ void Graph::prestigePageRank(const bool &dropIsolates){
     }
 
 
-    if (aVert != 0 )
-        meanPRP = sumPRP / aVert ;
-    else
-        meanPRP = SPRP;
+    emit signalProgressBoxUpdate( 2* N / 3);
 
-    qDebug() << "sumPRP = " << sumPRP << "  aVert = " << aVert
+    if (N != 0 ) {
+        meanPRP = sumPRP / (float) N ;
+    }
+    else {
+        meanPRP = SPRP;
+    }
+
+    qDebug() << "sumPRP = " << sumPRP << "  N = " << N
              << "  meanPRP = " << meanPRP;
 
 
@@ -8602,11 +8812,17 @@ void Graph::prestigePageRank(const bool &dropIsolates){
     }
 
 
-    qDebug() << "PRP' Variance   " << variancePRP   << " aVert " << aVert ;
-    variancePRP  = variancePRP  /  (aVert);
+
+
+    qDebug() << "PRP' Variance   " << variancePRP   << " N " << N ;
+    variancePRP  = variancePRP  / (float) N;
     qDebug() << "PRP' Variance: " << variancePRP   ;
 
     calculatedPRP= true;
+
+    emit signalProgressBoxUpdate( N);
+    emit signalProgressBoxKill();
+
 
     return;
 
@@ -8633,19 +8849,21 @@ void Graph::writePrestigePageRank(const QString fileName,
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    emit statusMessage ( (tr("Calculating PageRank indices. Please wait...")) );
-
     prestigePageRank(dropIsolates);
 
-    emit statusMessage ( tr("Writing PageRank indices to file:") + fileName );
-
-    outText.setRealNumberPrecision(m_precision);
+    QList<Vertex*>::const_iterator it;
 
     int rowCount=0;
     int N = vertices();
-    outText << htmlHead;
+    int progressCounter = 0;
+
+    QString pMsg = tr("Writing PageRank scores to file. \nPlease wait ...");
+    emit statusMessage( pMsg ) ;
+    emit signalProgressBoxCreate(N,pMsg);
 
     outText.setRealNumberPrecision(m_precision);
+
+    outText << htmlHead;
 
     outText << "<h1>";
     outText << tr("PAGERANK PRESTIGE (PRP)");
@@ -8720,12 +8938,14 @@ void Graph::writePrestigePageRank(const QString fileName,
           <<"<tbody id=\"results\">";
 
 
-    QList<Vertex*>::const_iterator it;
 
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+
+        emit signalProgressBoxUpdate( ++progressCounter );
+
         rowCount++;
 
-        outText <<fixed;
+        outText << fixed;
 
         if (dropIsolates && (*it)->isIsolated()) {
             outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
@@ -8817,6 +9037,9 @@ void Graph::writePrestigePageRank(const QString fileName,
     outText << htmlEnd;
 
     file.close();
+
+    emit signalProgressBoxUpdate(N);
+    emit signalProgressBoxKill();
 
 }
 
@@ -9897,7 +10120,7 @@ void Graph::writeClusteringCoefficient( const QString fileName,
 
     averageCLC= clusteringCoefficient(true);
 
-    QString pMsg = tr("Writing clustering coefficients to file: ") + fileName;
+    QString pMsg = tr("Writing Clustering Coefficients to file. \nPlease wait...");
     emit statusMessage ( pMsg );
     emit signalProgressBoxCreate(N,pMsg);
 
@@ -10122,7 +10345,7 @@ void Graph::writeTriadCensus( const QString fileName,
     triadTypes << "300" ;
 
 
-    QString pMsg = tr("Writing Triad Census. \nPlease wait...") ;
+    QString pMsg = tr("Writing Triad Census to file. \nPlease wait...") ;
     emit statusMessage( pMsg );
     emit signalProgressBoxCreate(16,pMsg);
 
@@ -10178,7 +10401,7 @@ void Graph::writeTriadCensus( const QString fileName,
 
     for (int i = 0 ; i<=15 ; i++) {
 
-        emit signalProgressBoxCreate(++progressCounter);
+        emit signalProgressBoxUpdate(++progressCounter);
 
         rowCount = i + 1;
         outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
@@ -10254,8 +10477,7 @@ void Graph::writeCliqueCensus( const QString fileName,
     outText << htmlHead;
     outText.setRealNumberPrecision(m_precision);
 
-    QString pMsg = tr("Writing Clique Census. \n"
-                      "Please wait...");
+    QString pMsg = tr("Writing Clique Census to file. \nPlease wait...");
     emit statusMessage(pMsg);
     emit signalProgressBoxCreate(N,pMsg);
 
@@ -11717,7 +11939,7 @@ void Graph::writeMatrixSimilarityMatching(const QString fileName,
         return;
     }
 
-    QString pMsg = tr("Writing similarity coefficients. \nPlease wait...");
+    QString pMsg = tr("Writing Similarity coefficients to file. \nPlease wait...");
     emit statusMessage( pMsg );
     emit signalProgressBoxCreate(1, pMsg);
 
@@ -11856,7 +12078,7 @@ void Graph::graphMatrixSimilarityMatchingCreate (Matrix &AM,
                                     const bool &considerWeights){
     qDebug()<<"Graph::graphMatrixSimilarityMatchingCreate()";
 
-    QString pMsg = tr ("Computing similarity coefficients matrix. \nPlease wait...");
+    QString pMsg = tr ("Computing Similarity coefficients matrix. \nPlease wait...");
     emit signalProgressBoxCreate(1, pMsg);
     SCM.similarityMatrix(AM, measure, varLocation, diagonal, considerWeights);
     emit signalProgressBoxUpdate(1);
@@ -17589,7 +17811,7 @@ void Graph::writeMatrixAdjacency (const QString fn,
 
     QList<Vertex*>::const_iterator it, it1;
 
-    QString pMsg = tr("Writing Adjacency Matrix. \nPlease wait...");
+    QString pMsg = tr("Writing Adjacency Matrix to file. \nPlease wait...");
     emit statusMessage( pMsg );
     emit signalProgressBoxCreate(N, pMsg );
 
@@ -17876,7 +18098,7 @@ void Graph::graphMatrixAdjacencyCreate(const bool dropIsolates,
         AM.resize(N, N);
     }
 
-    QString pMsg = tr ("Computing Adjacency Matrix. \nPlease wait...");
+    QString pMsg = tr ("Creating Adjacency Matrix. \nPlease wait...");
     emit statusMessage (pMsg);
     emit signalProgressBoxCreate(N, pMsg);
 
@@ -18126,7 +18348,7 @@ void Graph::layoutRandom(){
     emit signalProgressBoxCreate (N,pMsg);
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        emit signalProgressBoxCreate (++progressCounter);
+        emit signalProgressBoxUpdate (++progressCounter);
         new_x= canvasRandomX();
         new_y= canvasRandomY();
         (*it)->setX( new_x );
@@ -18165,7 +18387,7 @@ void Graph::layoutRadialRandom(double x0, double y0, double maxRadius){
 
     int N = vertices();
 
-    QString pMsg = tr("Embedding Random Radial model. \n"
+    QString pMsg = tr("Embedding Random Radial layout. \n"
                       "Please wait ....");
     emit statusMessage(  pMsg );
     emit signalProgressBoxCreate(N,pMsg );
@@ -18221,6 +18443,7 @@ void Graph::layoutRadial (const double &x0, const double &y0,
     int progressCounter=0;
 
     QString pMsg=tr("Applying random layout. \nPlease wait...");
+    emit statusMessage( pMsg );
     emit signalProgressBoxCreate(N, pMsg);
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -19070,7 +19293,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
     // circumscribed by a circle whose diameter is L0
 
     qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
-               "Compute initial positions p of particles " ;
+               "Set particles to initial positions p" ;
     i=0;
     x0=canvasWidth/2.0;
     y0=canvasHeight/2.0;
@@ -19085,13 +19308,15 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
     // while ( max_D_i > e )
     while (Delta_max > epsilon) {
 
+        progressCounter++;
+
         if (progressCounter == maxIterations) {
             qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
-                       "Reached maxIterations. RETURN";
-            return;
+                       "Reached maxIterations. BREAK";
+            break;
         }
 
-        emit signalProgressBoxUpdate( ++progressCounter );
+        emit signalProgressBoxUpdate( progressCounter );
 
         Delta_max = epsilon;
 
@@ -19316,10 +19541,11 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
     qDebug () << "Graph::layoutForceDirectedKamadaKawai() - "
                  "Delta_max =< epsilon -- RETURN";
 
-    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
-
     emit signalProgressBoxUpdate(maxIterations);
     emit signalProgressBoxKill();
+
+    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
+
 
 }
 

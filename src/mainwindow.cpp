@@ -11533,18 +11533,11 @@ void MainWindow::slotAnalyzeCentralityCloseness(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-closeness-"+dateTime+".html";
 
-    statusMessage(  tr("Computing Closeness Centralities. Please wait...") );
-
-    progressMsg = tr("Computing Closeness Centrality. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    slotProgressBoxCreate(0,progressMsg);
 
     activeGraph.writeCentralityCloseness(
                 fn, considerWeights, inverseWeights,
                 editFilterNodesIsolatesAct->isChecked() || dropIsolates);
 
-    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11577,20 +11570,9 @@ void MainWindow::slotAnalyzeCentralityClosenessIR(){
 
     askAboutWeights();
 
-    statusMessage(  tr("Computing Influence Range Centralities. Please wait...") );
-
-    progressMsg = tr("Computing Influence Range Centrality. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    slotProgressBoxCreate(0,progressMsg);
-
     activeGraph.writeCentralityClosenessInfluenceRange(
                 fn, considerWeights,inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
-
-    slotProgressBoxDestroy();
-
-    statusMessage( QString(tr(" displaying file...")));
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11686,17 +11668,8 @@ void MainWindow::slotAnalyzePrestigeDegree(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-prestige-degree-"+dateTime+".html";
 
-    statusMessage(  tr("Computing Degree Prestige indices. Please wait...") );
-
-    progressMsg = tr("Computing Degree Prestige (in-Degree). \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    slotProgressBoxCreate(0,progressMsg);
-
     activeGraph.writePrestigeDegree(fn, considerWeights,
                                     editFilterNodesIsolatesAct->isChecked() );
-
-    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11726,16 +11699,9 @@ void MainWindow::slotAnalyzePrestigePageRank(){
 
     askAboutWeights();
 
-    statusMessage( tr("Computing PageRank Prestige indices. Please wait...") );
-
-    progressMsg = tr("Computing PageRank Prestige. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    slotProgressBoxCreate(0,progressMsg);
 
     activeGraph.writePrestigePageRank(fn, editFilterNodesIsolatesAct->isChecked());
 
-    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11766,18 +11732,8 @@ void MainWindow::slotAnalyzePrestigeProximity(){
 
     askAboutWeights();
 
-    statusMessage( tr("Computing Proximity Prestige indices. Please wait...") );
-
-    progressMsg = tr("Computing Proximity Prestige. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    slotProgressBoxCreate(0,progressMsg);
-
     activeGraph.writePrestigeProximity(fn, true, false ,
                                        editFilterNodesIsolatesAct->isChecked());
-    slotProgressBoxDestroy();
-
-    statusMessage( tr("Displaying file..."));
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11836,16 +11792,7 @@ void MainWindow::slotAnalyzeCentralityInformation(){
 
     askAboutWeights();
 
-    statusMessage(  tr("Computing Information Centralities. Please wait...") );
-
-    progressMsg = tr("Computing Information Centrality. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    slotProgressBoxCreate(0,progressMsg);
-
     activeGraph.writeCentralityInformation(fn,considerWeights, inverseWeights);
-
-    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11880,16 +11827,7 @@ void MainWindow::slotAnalyzeCentralityEigenvector(){
 
     bool dropIsolates = false;
 
-    statusMessage(  tr("Computing Eigenvector Centralities. Please wait...") );
-
-    progressMsg = tr("Computing Eigenvector Centrality. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    slotProgressBoxCreate(0,progressMsg);
-
     activeGraph.writeCentralityEigenvector(fn,considerWeights, inverseWeights, dropIsolates);
-
-    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11921,18 +11859,11 @@ void MainWindow::slotAnalyzeCentralityStress(){
 
     askAboutWeights();
 
-    statusMessage( tr("Computing Stress Centralities. Please wait...") );
-
-    progressMsg = tr("Computing Stress Centrality. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    slotProgressBoxCreate(0,progressMsg);
 
     activeGraph.writeCentralityStress(
                 fn, considerWeights, inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
 
-    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11965,18 +11896,10 @@ void MainWindow::slotAnalyzeCentralityPower(){
 
     askAboutWeights();
 
-    statusMessage(  tr("Computing Gil-Schmidt Power Centralities. Please wait...") );
-
-    progressMsg = tr("Computing Gil-Schmidt Power Centrality. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    slotProgressBoxCreate(0,progressMsg);
-
     activeGraph.writeCentralityPower(
                 fn, considerWeights, inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
 
-    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12008,18 +11931,9 @@ void MainWindow::slotAnalyzeCentralityEccentricity(){
 
     askAboutWeights();
 
-    statusMessage(  tr("Computing Eccentricity Centralities. Please wait...") );
-
-    progressMsg = tr("Computing Eccentricity Centrality. \n"
-            "Please wait (or disable progress bars from Options -> Settings).");
-
-    slotProgressBoxCreate(0,progressMsg);
-
     activeGraph.writeCentralityEccentricity(
                 fn, considerWeights, inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
-
-    slotProgressBoxDestroy();
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12058,7 +11972,7 @@ void MainWindow::slotProgressBoxCreate(const int &max, const QString &msg){
         progressBox->setMinimumDuration(0);
         progressBox->setAutoClose(true);
         progressBox->setAutoReset(true);
-        progressDialogs.append(progressBox);
+        progressDialogs.push(progressBox);
     }
 
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
@@ -12067,15 +11981,14 @@ void MainWindow::slotProgressBoxCreate(const int &max, const QString &msg){
 
 
 /**
- * @brief MainWindow::slotProgressBoxDestroy
+ * @brief Destroys the first in queue Progress dialog
  */
 void MainWindow::slotProgressBoxDestroy(const int &max){
     qDebug () << "MainWindow::slotProgressBoxDestroy";
     QApplication::restoreOverrideCursor();
-    qDebug () << "MainWindow::slotProgressBoxDestroy - check if a progress dialog exists";
     if (  appSettings["showProgressBar"] == "true" && max > -1 ) {
         if (! progressDialogs.isEmpty()) {
-            QProgressDialog *progressBox = progressDialogs.dequeue();
+            QProgressDialog *progressBox = progressDialogs.pop();
             progressBox->reset();
             progressBox->deleteLater();
             delete progressBox;

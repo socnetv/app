@@ -40,7 +40,7 @@
 #include <QGraphicsScene>
 #include <QPrinter>
 #include <QMessageBox>
-#include <QQueue>
+#include <QStack>
 #include <QProgressDialog>
 #include <math.h>
 
@@ -499,7 +499,7 @@ private:
 
     QComboBox *editRelationChangeCombo;
 
-    QQueue<QProgressDialog *> progressDialogs;
+    QStack<QProgressDialog *> progressDialogs;
 
     QProgressDialog *progressDialog;
 
