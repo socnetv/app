@@ -240,7 +240,7 @@ public slots:
                                           const bool &signalMW=false) ;
     /** Slots to signals from MainWindow */
 
-    void relationSet(int index=RAND_MAX, const bool notifyMW=true);
+    void relationSet(int relNum=RAND_MAX, const bool notifyMW=true);
     void relationNext();
     void relationPrev();
     void canvasSizeSet(const int w, const int h);
@@ -862,12 +862,12 @@ public:
     int factorial (int);
 
 
-    /**  index stores the real position of each vertex inside m_graph.
+    /**  vpos stores the real position of each vertex inside m_graph.
      *  It starts at zero (0).
      *   We need to know the place of a vertex inside m_graph after adding
      *   or removing many vertices
      */
-    H_Int index;
+    H_Int vpos;
 
     // Stores the number of vertices at distance n from a given vertex
     H_f_i sizeOfNthOrderNeighborhood;

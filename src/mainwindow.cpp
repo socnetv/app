@@ -7780,7 +7780,7 @@ void MainWindow::slotEditNodeAddWithMouse( const QPointF &p) {
  * The node is then marked.
  */
 void MainWindow::slotEditNodeFind(){
-    qDebug() << "MW:: slotEditNodeFind()";
+    qDebug() << "MW::slotEditNodeFind()";
     if ( !activeNodes() ) {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;

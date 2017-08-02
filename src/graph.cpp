@@ -239,7 +239,7 @@ void Graph::clear() {
    qDebug()<< "Graph::clear() - m_graph reports size "<<m_graph.size();
     qDeleteAll(m_graph.begin(), m_graph.end());
     m_graph.clear();
-    index.clear();
+    vpos.clear();
 
     discreteDPs.clear(); discreteSDCs.clear(); discreteCCs.clear();
     discreteBCs.clear(); discreteSCs.clear(); discreteIRCCs.clear();
@@ -309,7 +309,7 @@ void Graph::clear() {
     m_clickedEdge.v2=0;
 
 
-    order=true;		//returns true if the indexes of the list is ordered.
+    order=true;		//returns true if the vpositions of the list is ordered.
 
     m_undirected=false;
     m_isWeighted=false;
@@ -455,32 +455,32 @@ double Graph::canvasRandomY() const {
 
 /**
  * @brief Graph::relationSet
- * Changes m_curRelation to index.
- * If index==RAND_MAX, changes to last added relation.
+ * Changes m_curRelation to relNum.
+ * If relNum==RAND_MAX, changes to last added relation.
  * Then calls Vertex::relationSet() for all enabled vertices, to disable edges
  * of the old relation and enable edges of the new relation
  * Then, if notifyMW==TRUE, it signals signalRelationChangedToGW(int),
  * which disables/enables the on screen edges, and
  * Called from MW when the user selects a relation in the combo box.
  * Also called from Parser
- * @param index int
+ * @param relNum int
  * @param notifyMW bool
  */
-void Graph::relationSet(int index, const bool notifyMW){
-    qDebug() << "++ Graph::relationSet(int) to relation " << index
+void Graph::relationSet(int relNum, const bool notifyMW){
+    qDebug() << "++ Graph::relationSet(int) to relation " << relNum
              << " current relation is " << m_curRelation ;
-    if (m_curRelation == index ) {
+    if (m_curRelation == relNum ) {
         qDebug() << "++ Graph::relationSet(int) - same relation - END";
         return;
     }
-    if ( index < 0) {
+    if ( relNum < 0) {
         qDebug() << "++ Graph::relationSet(int) - negative relation - END ";
         return;
     }
-    else if (index==RAND_MAX) {
-        index=relations() -1;
+    else if (relNum==RAND_MAX) {
+        relNum=relations() -1;
     }
-    else if (index> relations() -1) {
+    else if (relNum> relations() -1) {
         qDebug() << "++ Graph::relationSet(int) - not existing relation - END ";
         return;
     }
@@ -489,9 +489,9 @@ void Graph::relationSet(int index, const bool notifyMW){
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() )
             continue;
-       (*it)->relationSet(index);
+       (*it)->relationSet(relNum);
     }
-    m_curRelation = index;
+    m_curRelation = relNum;
     if (notifyMW) {
         //notify MW to change combo box relation name
         emit signalRelationChangedToMW(m_curRelation);
@@ -506,15 +506,15 @@ void Graph::relationSet(int index, const bool notifyMW){
 
 /**
  * @brief Graph::slotEditRelationPrev
- * Decreases the index of editRelationChangeCombo
+ * Decreases the rel number of editRelationChangeCombo
  * which signals to Graph::relationSet()
  */
 void Graph::relationPrev(){
     qDebug() << "Graph::relationPrev()";
-    int index=m_curRelation;
+    int relNum=m_curRelation;
     if (m_curRelation>0){
-        --index;
-        relationSet(index);
+        --relNum;
+        relationSet(relNum);
         //editFilterNodesIsolatesAct->setChecked(false);
     }
 }
@@ -522,15 +522,15 @@ void Graph::relationPrev(){
 
 /**
  * @brief Graph::slotEditRelationNext
- * Increases the index of editRelationChangeCombo
+ * Increases the rel number of editRelationChangeCombo
  * which signals to Graph::relationSet()
  */
 void Graph::relationNext(){
     qDebug() << "Graph::relationNext()";
-    int index=m_curRelation;
-    if ( relations() >0 && index < relations() ){
-        ++index;
-        relationSet(index);
+    int relNum=m_curRelation;
+    if ( relations() >0 && relNum < relations() ){
+        ++relNum;
+        relationSet(relNum);
         //editFilterNodesIsolatesAct->setChecked(false);
     }
 }
@@ -558,8 +558,8 @@ void Graph::relationAdd(const QString &relName, const bool &changeRelation) {
 
 
 /**
- * @brief Returns current relation index
- * @return int current relation index
+ * @brief Returns current relation number
+ * @return int
  */
 int Graph::relationCurrent(){
     return m_curRelation;
@@ -795,9 +795,9 @@ void Graph::vertexAdd ( const int &v1, const int &val, const int &size,
 
     qDebug() << "Graph::vertexAdd() ";
     if (order)
-        index[v1]=m_totalVertices;
+        vpos[v1]=m_totalVertices;
     else
-        index[v1]=m_graph.size();
+        vpos[v1]=m_graph.size();
 
     m_graph.append(
                 new Vertex
@@ -808,7 +808,7 @@ void Graph::vertexAdd ( const int &v1, const int &val, const int &size,
     m_totalVertices++;
 
 //    qDebug() << "Graph: vertexAdd(): Vertex named " << m_graph.back()->name()
-//             << " appended with index= "<<index[v1]
+//             << " appended with vpos= "<<vpos[v1]
 //             << " Now, m_graph size " << m_graph.size()
 //             << ". New vertex position: " << p.x() << "," << p.y();
 
@@ -851,16 +851,16 @@ int Graph::vertexNumberMin() {
  * @brief Graph::vertexRemove
  * Removes the vertex named Doomed from the graph
  * First, it removes all edges to Doomed from other vertices
- * Then it changes the index of all subsequent vertices inside m_graph
+ * Then it changes the vpos of all subsequent vertices inside m_graph
  * Finally, it removes the vertex.
  * @param Doomed
  */
 void Graph::vertexRemove(long int Doomed){
     qDebug() << "Graph::vertexRemove() - doomed: "
-             << m_graph[ index[Doomed] ]->name()
-             << "  index: " << index[Doomed]
-                << " Removing all inbound and outbound edges ";
-    long int indexOfDoomed=index[Doomed];
+             << m_graph[ vpos[Doomed] ]->name()
+             << "  vpos: " << vpos[Doomed]
+             << " Removing all inbound and outbound edges ";
+    long int doomedPos=vpos[Doomed];
 
     //Remove links to Doomed from each other vertex
     QList<Vertex*>::const_iterator it;
@@ -877,27 +877,28 @@ void Graph::vertexRemove(long int Doomed){
         }
     }
 
-    qDebug()<< "Graph::vertexRemove() - Finished with vertices. Update the index which maps vertices inside m_graph " ;
-    long int prevIndex=indexOfDoomed;
+    qDebug()<< "Graph::vertexRemove() - Finished with vertices. "
+               "Update the vpos which maps vertices inside m_graph " ;
+    long int prevIndex=doomedPos;
 
-    qDebug()<< "Graph::vertexRemove() - Updating index of all subsequent vertices ";
-    H_Int::const_iterator it1=index.cbegin();
-    while (it1 != index.cend()){
-        if ( it1.value() > indexOfDoomed ) {
+    qDebug()<< "Graph::vertexRemove() - Updating vpos of all subsequent vertices ";
+    H_Int::const_iterator it1=vpos.cbegin();
+    while (it1 != vpos.cend()){
+        if ( it1.value() > doomedPos ) {
             prevIndex = it1.value();
             qDebug() << "Graph::vertexRemove() - vertex " << it1.key()
                      << " had prevIndex: " << prevIndex
-                     << " > indexOfDoomed " << indexOfDoomed
-                     << " Setting new index. Index size was: "<< index.size();
-            index.insert( it1.key(), --prevIndex)  ;
+                     << " > doomedPos " << doomedPos
+                     << " Setting new vpos. vpos size was: "<< vpos.size();
+            vpos.insert( it1.key(), --prevIndex)  ;
             qDebug() << "Graph::vertexRemove() - vertex " << it1.key()
-                     << " new index: " << index.value( it1.key(), -666)
-                     << " Index size now: "<< index.size();
+                     << " new vpos: " << vpos.value( it1.key(), -666)
+                     << " vpos size now: "<< vpos.size();
 
         }
         else {
-            qDebug() << "Graph::vertexRemove() " << it1.key() << " with index "
-                     << it1.value() << " < indexOfDoomed. CONTINUE";
+            qDebug() << "Graph::vertexRemove() " << it1.key() << " with vpos "
+                     << it1.value() << " < doomedPos. CONTINUE";
 
         }
         ++it1;
@@ -905,8 +906,8 @@ void Graph::vertexRemove(long int Doomed){
 
     //Now remove vertex Doomed from m_graph
     qDebug()<< "Graph::vertexRemove() -  graph vertices=size="<< vertices() << "="
-             << m_graph.size() <<  " removing vertex at index " << indexOfDoomed ;
-    m_graph.removeAt( indexOfDoomed ) ;
+             << m_graph.size() <<  " removing vertex at vpos " << doomedPos ;
+    m_graph.removeAt( doomedPos ) ;
     m_totalVertices--;
     qDebug()<< "Graph::vertexRemove() - Now graph vertices=size="<< vertices() << "="
              << m_graph.size() <<  " total edges now  " << edgesEnabled();
@@ -961,7 +962,7 @@ void Graph::vertexIsolateFilter(bool filterFlag){
  * @return
  */
 bool Graph::vertexIsolated(const long int &v1) const{
-    if (  m_graph[ index[v1] ] -> isIsolated() ) {
+    if (  m_graph[ vpos[v1] ] -> isIsolated() ) {
         qDebug()<<"Graph::vertexIsolated() - vertex:"<< v1 << "isolated";
         return true;
     }
@@ -973,17 +974,17 @@ bool Graph::vertexIsolated(const long int &v1) const{
 /**
  * @brief Graph::vertexExists
  * Checks if there is a specific vertex in the graph.
- * Returns the index or -1
- * Complexity:  O(logN) for index retrieval
+ * Returns the vpos or -1
+ * Complexity:  O(logN) for vpos retrieval
  * @param num
  * @return
  */
 int Graph::vertexExists(const long int &v1){
     qDebug () << "Graph: vertexExists() v: " << v1
-              <<  " with index " << index[v1]
-                  << " named " << m_graph[ index[v1] ] ->name();
-    if (  m_graph[ index[v1] ] ->name() == v1)
-        return index[v1];
+              <<  " with vpos " << vpos[v1]
+                  << " named " << m_graph[ vpos[v1] ] ->name();
+    if (  m_graph[ vpos[v1] ] ->name() == v1)
+        return vpos[v1];
     else
         return -1;
 }
@@ -993,10 +994,10 @@ int Graph::vertexExists(const long int &v1){
 /**
  * @brief Graph::vertexExists
  * Checks if there is a vertex with a specific label in the graph
- * Returns the index or -1
+ * Returns the vpos or -1
  * Complexity:  O(N)
  * @param label
- * @return index or -1
+ * @return vpos or -1
  */
 int Graph::vertexExists(const QString &label){
     qDebug ()<<"Graph: vertexExists() - check for label "<< label.toUtf8()  ;
@@ -1023,9 +1024,9 @@ int Graph::vertexExists(const QString &label){
  * @param y
  */
 void Graph::vertexPosSet(const int &v1, const int &x, const int &y){
-    //qDebug("Graph: vertexPosSet() for %i with index %i with %i, %i", v1, index[v1], x,y);
-    m_graph[ index[v1] ]->setX( x );
-    m_graph[ index[v1] ]->setY( y );
+
+    m_graph[ vpos[v1] ]->setX( x );
+    m_graph[ vpos[v1] ]->setY( y );
     graphModifiedSet(GRAPH_CHANGED_POSITIONS,false);
 }
 
@@ -1036,7 +1037,7 @@ void Graph::vertexPosSet(const int &v1, const int &x, const int &y){
  * @return
  */
 QPointF Graph::vertexPos(const int &v1){
-    return m_graph[ index[v1] ]->pos();
+    return m_graph[ vpos[v1] ]->pos();
 }
 
 /**
@@ -1091,7 +1092,7 @@ void Graph::vertexSizeInit (const long int size) {
  * @param size
  */
 void Graph::vertexSizeSet(const long int &v, const int &size) {
-    m_graph[ index[v] ]->setSize(size);
+    m_graph[ vpos[v] ]->setSize(size);
 
     graphModifiedSet(GRAPH_CHANGED_VERTICES_METADATA);
     emit setNodeSize(v, size);
@@ -1103,7 +1104,7 @@ void Graph::vertexSizeSet(const long int &v, const int &size) {
  * @return int
  */
 int Graph::vertexSize(const long &v ) {
-    return m_graph[ index[v] ]-> size();
+    return m_graph[ vpos[v] ]-> size();
 }
 
 
@@ -1147,7 +1148,7 @@ void Graph::vertexShapeInit(const QString shape) {
  * @param shape
  */
 void Graph::vertexShapeSet(const int v1, const QString shape){
-    m_graph[ index[v1] ]->setShape(shape);
+    m_graph[ vpos[v1] ]->setShape(shape);
     emit setNodeShape(v1, shape);
 
     graphModifiedSet(GRAPH_CHANGED_VERTICES_METADATA);
@@ -1162,7 +1163,7 @@ void Graph::vertexShapeSet(const int v1, const QString shape){
  * @return
  */
 QString Graph::vertexShape(const int &v1){
-    return m_graph[ index[v1] ]->shape();
+    return m_graph[ vpos[v1] ]->shape();
 
 }
 
@@ -1200,9 +1201,9 @@ void Graph::vertexShapeAllSet(const QString shape) {
  * @param color
  */
 void Graph::vertexColorSet(const long int &v1, const QString &color){
-    qDebug()<< "Graph: vertexColorSet for "<< v1 << ", index " << index[v1]<< " with color "<< color;
-    m_graph[ index[v1] ]->setColor ( color );
-    emit setNodeColor ( m_graph[ index[v1] ]-> name(), color );
+    qDebug()<< "Graph: vertexColorSet for "<< v1 << ", vpos " << vpos[v1]<< " with color "<< color;
+    m_graph[ vpos[v1] ]->setColor ( color );
+    emit setNodeColor ( m_graph[ vpos[v1] ]-> name(), color );
 
     graphModifiedSet(GRAPH_CHANGED_VERTICES_METADATA);
 }
@@ -1213,7 +1214,7 @@ void Graph::vertexColorSet(const long int &v1, const QString &color){
  * @return
  */
 QColor Graph::vertexColor(const long int &v1){
-    return  QColor ( m_graph[ index[v1] ] -> color() ) ;
+    return  QColor ( m_graph[ vpos[v1] ] -> color() ) ;
 }
 
 
@@ -1286,7 +1287,7 @@ void Graph::vertexNumberSizeInit (const int &size) {
  * @param size
  */
 void Graph::vertexNumberSizeSet(const long int &v, const int &size) {
-    m_graph[ index[v] ]->setNumberSize (size);
+    m_graph[ vpos[v] ]->setNumberSize (size);
 
     graphModifiedSet(GRAPH_CHANGED_MINOR_OPTIONS);
 }
@@ -1330,7 +1331,7 @@ void Graph::vertexNumberDistanceInit(const int &distance) {
  * @param size
  */
 void Graph::vertexNumberDistanceSet(const long int &v, const int &newDistance) {
-    m_graph[ index[v] ]->setNumberDistance (newDistance);
+    m_graph[ vpos[v] ]->setNumberDistance (newDistance);
 
     graphModifiedSet(GRAPH_CHANGED_MINOR_OPTIONS);
     emit setNodeNumberDistance(v, newDistance);
@@ -1395,10 +1396,10 @@ void Graph::vertexNumbersVisibilitySet(bool toggle){
  */
 void Graph::vertexLabelSet(int v1, QString label){
     qDebug()<< "Graph::vertexLabelSet() - vertex "<< v1
-            << "index " << index[v1]
+            << "vpos " << vpos[v1]
                << "new label"<< label;
-    m_graph[ index[v1] ]->setLabel ( label);
-    emit setNodeLabel ( m_graph[ index[v1] ]-> name(), label);
+    m_graph[ vpos[v1] ]->setLabel ( label);
+    emit setNodeLabel ( m_graph[ vpos[v1] ]-> name(), label);
 
     graphModifiedSet(GRAPH_CHANGED_VERTICES_METADATA);
 }
@@ -1412,7 +1413,7 @@ void Graph::vertexLabelSet(int v1, QString label){
  * @return
  */
 QString Graph::vertexLabel(const long int &v1){
-    return m_graph[ index[v1] ]->label ();
+    return m_graph[ vpos[v1] ]->label ();
 }
 
 
@@ -1443,9 +1444,9 @@ void Graph::vertexLabelSizeInit(int newSize) {
  * @param size
  */
 void Graph::vertexLabelSizeSet(const long int &v1, const int &size) {
-    qDebug()<< "Graph: vertexLabelSizeSet for "<< v1 << ", index "
-            << index[v1]<< " with size "<< size;
-    m_graph[ index[v1] ] -> setLabelSize ( size );
+    qDebug()<< "Graph: vertexLabelSizeSet for "<< v1 << ", vpos "
+            << vpos[v1]<< " with size "<< size;
+    m_graph[ vpos[v1] ] -> setLabelSize ( size );
     emit setNodeLabelSize ( v1, size);
 
     graphModifiedSet(GRAPH_CHANGED_MINOR_OPTIONS);
@@ -1516,7 +1517,7 @@ void Graph::vertexLabelColorAllSet(const QString &color) {
  * @param color
  */
 void Graph::vertexLabelColorSet(int v1, QString color){
-    m_graph[ index[v1] ]->setLabelColor(color);
+    m_graph[ vpos[v1] ]->setLabelColor(color);
     emit setNodeLabelColor(v1, color);
     graphModifiedSet(GRAPH_CHANGED_MINOR_OPTIONS);
 }
@@ -1541,7 +1542,7 @@ void Graph::vertexLabelColorInit(QString color){
  * @param size
  */
 void Graph::vertexLabelDistanceSet(const long int &v, const int &newDistance) {
-    m_graph[ index[v] ]->setLabelDistance (newDistance);
+    m_graph[ vpos[v] ]->setLabelDistance (newDistance);
 
     graphModifiedSet(GRAPH_CHANGED_MINOR_OPTIONS);
     emit setNodeLabelDistance(v, newDistance);
@@ -1699,8 +1700,8 @@ void Graph::edgeAdd (const int &v1, const int &v2, const float &weight,
                      const QString &label,
                      const QString &color) {
 
-    int source=index[v1];
-    int target=index[v2];
+    int source=vpos[v1];
+    int target=vpos[v2];
 
     qDebug()<< "Graph: edgeAdd() from vertex "<< v1 << "["<< source
             << "] to vertex "<< v2 << "["<< target << "] of weight "<<weight
@@ -1741,15 +1742,15 @@ void Graph::edgeAdd (const int &v1, const int &v2, const float &weight,
 void Graph::edgeRemove (const long int &v1,
                         const long int &v2,
                         const bool &removeOpposite) {
-    qDebug ()<< "Graph::edgeRemove() - edge " << v1 << " index " << index[v1]
+    qDebug ()<< "Graph::edgeRemove() - edge " << v1 << " vpos " << vpos[v1]
                 << " ->" << v2 << " to be removed from graph";
-    m_graph [ index[v1] ]->edgeRemoveTo(v2);
-    m_graph [ index[v2] ]->edgeRemoveFrom(v1);
+    m_graph [ vpos[v1] ]->edgeRemoveTo(v2);
+    m_graph [ vpos[v2] ]->edgeRemoveFrom(v1);
 
 
     if (graphUndirected() || removeOpposite ) { // remove opposite edge
-        m_graph [ index[v2] ]->edgeRemoveTo(v1);
-        m_graph [ index[v1] ]->edgeRemoveFrom(v2);
+        m_graph [ vpos[v2] ]->edgeRemoveTo(v1);
+        m_graph [ vpos[v1] ]->edgeRemoveFrom(v2);
         m_symmetric=true;
     }
     else {
@@ -1859,7 +1860,7 @@ void Graph::edgeClickedSet(const int &v1, const int &v2) {
         signalEdgeClickedInfo();
     }
     else {
-        float weight = m_graph[ index[ m_clickedEdge.v1] ]->hasEdgeTo(m_clickedEdge.v2);
+        float weight = m_graph[ vpos[ m_clickedEdge.v1] ]->hasEdgeTo(m_clickedEdge.v2);
         bool undirected=false;
         if ( edgeExists(m_clickedEdge.v1,m_clickedEdge.v2, true) && graphUndirected() )
             undirected=true;
@@ -1876,7 +1877,7 @@ ClickedEdge Graph::edgeClicked() {
 /**
  * @brief Graph::edgeExists
  * Checks if there is a (un)directed edge (arc) from v1 to v2
-   Complexity:  O(logN) for index retrieval + O(1) for QList index retrieval + O(logN) for checking edge(v2)
+   Complexity:  O(logN) for vpos retrieval + O(1) for QList index retrieval + O(logN) for checking edge(v2)
  * @param v1
  * @param v2
  * @param undirected if true, check if there is an undirected edge v1<->v2
@@ -1884,7 +1885,7 @@ ClickedEdge Graph::edgeClicked() {
  */
 float Graph::edgeExists (const long int &v1, const long int &v2, const bool &undirected) {
     edgeWeightTemp = 0;
-    edgeWeightTemp = m_graph[ index[v1] ]->hasEdgeTo(v2);
+    edgeWeightTemp = m_graph[ vpos[v1] ]->hasEdgeTo(v2);
 
     if (!undirected) {
         qDebug() << "Graph::edgeExists() - directed" << v1 << "->" << v2
@@ -1895,7 +1896,7 @@ float Graph::edgeExists (const long int &v1, const long int &v2, const bool &und
     else { //undirected
 
        if  ( edgeWeightTemp!=0 ) {
-           edgeReverseWeightTemp = m_graph[ index[v2] ]->hasEdgeTo(v1);
+           edgeReverseWeightTemp = m_graph[ vpos[v2] ]->hasEdgeTo(v1);
            if  ( edgeWeightTemp == edgeReverseWeightTemp  ){
                     qDebug() << "Graph::edgeExists() - undirected" << v1 << "<->" << v2 << "="
                                 <<edgeWeightTemp;
@@ -1964,7 +1965,7 @@ int Graph::edgesEnabled() {
  */
 int Graph::vertexEdgesOutbound(int v1) {
     qDebug("Graph: vertexEdgesOutbound()");
-    return m_graph[ index[v1] ]->outEdges();
+    return m_graph[ vpos[v1] ]->outEdges();
 }
 
 
@@ -1976,7 +1977,7 @@ int Graph::vertexEdgesOutbound(int v1) {
  */
 int Graph::vertexEdgesInbound (int v1) {
     qDebug("Graph: vertexEdgesInbound()");
-    return m_graph[ index[v1] ]->inEdges();
+    return m_graph[ vpos[v1] ]->inEdges();
 }
 
 
@@ -1991,12 +1992,12 @@ int Graph::vertexEdgesInbound (int v1) {
  */
 void Graph::edgeWeightSet (const long &v1, const long &v2,
                            const float &weight, const bool &undirected) {
-    qDebug() << "Graph::edgeWeightSet() - " << v1 << "[" << index[v1]
-                << "] ->" << v2 << "[" << index[v2] << "]" << " = " << weight;
-    m_graph [ index[v1] ]->changeOutEdgeWeight(v2, weight);
+    qDebug() << "Graph::edgeWeightSet() - " << v1 << "[" << vpos[v1]
+                << "] ->" << v2 << "[" << vpos[v2] << "]" << " = " << weight;
+    m_graph [ vpos[v1] ]->changeOutEdgeWeight(v2, weight);
     if (undirected) {
         qDebug() << "Graph::edgeWeightSet() - changing opposite edge weight too";
-        m_graph [ index[v2] ]->changeOutEdgeWeight(v1, weight);
+        m_graph [ vpos[v2] ]->changeOutEdgeWeight(v1, weight);
     }
 
     emit setEdgeWeight(v1,v2, weight);
@@ -2017,7 +2018,7 @@ void Graph::edgeWeightSet (const long &v1, const long &v2,
  * @return
  */
 float Graph::edgeWeight (const long &v1, const long &v2) const{
-    return m_graph[ index[v1] ]->hasEdgeTo(v2);
+    return m_graph[ vpos[v1] ]->hasEdgeTo(v2);
 }
 
 
@@ -2118,12 +2119,12 @@ bool Graph::edgeColorAllSet(const QString &color, const int &threshold){
  */
 void Graph::edgeColorSet(const long &v1, const long &v2, const QString &color){
     qDebug()<< "Graph::edgeColorSet() - "<< v1 << " -> "<< v2
-            <<" index ("<< index[v1]<< " -> "<<index[v2]<<")"
+            <<" vpos ("<< vpos[v1]<< " -> "<<vpos[v2]<<")"
            <<" new color "<< color;
-    m_graph[ index[v1] ]->setOutLinkColor(v2, color);
+    m_graph[ vpos[v1] ]->setOutLinkColor(v2, color);
     emit setEdgeColor(v1, v2, color);
     if (graphSymmetric()) {
-        m_graph[ index[v2] ]->setOutLinkColor(v1, color);
+        m_graph[ vpos[v2] ]->setOutLinkColor(v1, color);
         emit setEdgeColor(v2, v1, color);
     }
 
@@ -2141,7 +2142,7 @@ void Graph::edgeColorSet(const long &v1, const long &v2, const QString &color){
  * @return
  */
 QString Graph::edgeColor (const long &v1, const long &v2){
-    return m_graph[ index[v1] ]->outLinkColor(v2);
+    return m_graph[ vpos[v1] ]->outLinkColor(v2);
 }
 
 
@@ -2155,9 +2156,9 @@ QString Graph::edgeColor (const long &v1, const long &v2){
  * @param weight
  */
 void Graph::edgeLabelSet (const long &v1, const long &v2, const QString &label) {
-    qDebug() << "Graph::edgeLabelSet()  " << v1 << "[" << index[v1]
-                << "] -> " << v2 << "[" << index[v2] << "]" << " label " << label;
-    m_graph[ index[v1] ]->setOutEdgeLabel(v2, label);
+    qDebug() << "Graph::edgeLabelSet()  " << v1 << "[" << vpos[v1]
+                << "] -> " << v2 << "[" << vpos[v2] << "]" << " label " << label;
+    m_graph[ vpos[v1] ]->setOutEdgeLabel(v2, label);
 
     emit setEdgeLabel(v1,v2, label);
 
@@ -2172,7 +2173,7 @@ void Graph::edgeLabelSet (const long &v1, const long &v2, const QString &label) 
  * @return
  */
 QString Graph::edgeLabel (const long int &v1, const long int &v2) const {
-   return m_graph [ index[v1] ]->outEdgeLabel(v2);
+   return m_graph [ vpos[v1] ]->outEdgeLabel(v2);
 }
 
 
@@ -2194,7 +2195,7 @@ void Graph::edgeLabelsVisibilitySet (const bool &toggle) {
  */
 int Graph::vertexDegreeOut (int v1) {
     qDebug()<< "Graph: vertexDegreeOut()";
-    return m_graph[ index[v1] ]->degreeOut();
+    return m_graph[ vpos[v1] ]->degreeOut();
 }
 
 
@@ -2207,7 +2208,7 @@ int Graph::vertexDegreeOut (int v1) {
  */
 int Graph::vertexDegreeIn (int v1) {
     qDebug()<< "Graph: vertexDegreeIn()";
-    return m_graph[ index[v1] ]-> degreeIn();
+    return m_graph[ vpos[v1] ]-> degreeIn();
 }
 
 /**
@@ -2217,7 +2218,7 @@ int Graph::vertexDegreeIn (int v1) {
  */
 QList<int> Graph::vertexNeighborhoodList(const int &v1) {
     qDebug()<< "Graph::vertexNeighborhoodList()";
-    return m_graph[ index[v1] ]-> neighborhoodList();
+    return m_graph[ vpos[v1] ]-> neighborhoodList();
 }
 
 
@@ -2852,7 +2853,7 @@ float Graph::graphReciprocity(){
         while ( hit!=enabledOutEdges->cend() ){
 
             v2 = hit.key();
-            y=index[ v2 ];
+            y=vpos[ v2 ];
             weight = hit.value();
             m_graphReciprocityTiesTotal += weight;
 
@@ -3327,7 +3328,7 @@ void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
         while ( it1!=outEdgesAll->cend() ){
             v2 = it1.key();
             weight = it1.value();
-            y=index[ v2 ];
+            y=vpos[ v2 ];
             qDebug() << "Graph::graphSymmetrizeStrongTies() - "
                      << v1 << "->" << v2 << "=" << weight << "Checking opposite.";
             invertWeight = m_graph[y]->hasEdgeTo( v1,allRelations ) ;
@@ -3547,7 +3548,7 @@ void Graph::edgeUndirectedSet(const long int &v1, const long int &v2,
 bool Graph::graphReachable(const int &v1, const int &v2) {
     qDebug()<< "Graph::reachable()";
     graphDistanceGeodesicCompute(false);
-    return ( m_graph[ index[v1] ] ->distance( v2) != RAND_MAX ) ? true: false;
+    return ( m_graph[ vpos[v1] ] ->distance( v2) != RAND_MAX ) ? true: false;
 }
 
 
@@ -3566,7 +3567,7 @@ int Graph::graphDistanceGeodesic(const int v1, const int v2,
                     const bool inverseWeights){
     qDebug() <<"Graph::graphDistanceGeodesic()";
     graphDistanceGeodesicCompute(false, considerWeights, inverseWeights, false);
-    return m_graph[ index[v1] ]->distance(v2);
+    return m_graph[ vpos[v1] ]->distance(v2);
 }
 
 
@@ -3811,6 +3812,8 @@ void Graph::graphDistanceGeodesicMatrix(const bool &considerWeights,
     int N = vertices( dropIsolates, false, true);
 
     int progressCounter=0;
+    int source = 0 , target = 0;
+    int i = 0, j = 0 ;
 
     qDebug() << "Graph::graphDistanceGeodesicMatrix() - Resizing Matrices to hold "
              << N << " vertices";
@@ -3822,42 +3825,60 @@ void Graph::graphDistanceGeodesicMatrix(const bool &considerWeights,
     emit statusMessage ( pMsg );
     emit signalProgressBoxCreate(N,pMsg);
 
+
     qDebug() << "Graph: graphDistanceGeodesicMatrix() - Almost finished! "
                 "Creating distance and sigmas matrix...";
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
 
         emit signalProgressBoxUpdate(++progressCounter);
 
+        source = (*it)->name();
+
         if  ( (*it)->isIsolated() && dropIsolates ) {
             qDebug() << "Graph: graphDistanceGeodesicMatrix() - "
-                     << (*it)->name() << "isolated. SKIP";
+                     << source << "isolated. SKIP";
+
             continue;
         }
 
         if  ( ! (*it)->isEnabled()  ) {
             qDebug() << "Graph: graphDistanceGeodesicMatrix() - "
-                     << (*it)->name() << "disabled. SKIP";
+                     << source << "disabled. SKIP";
             continue;
         }
 
 
+        i = vpos[ source ];
+
+        qDebug() << "Graph: graphDistanceGeodesicMatrix() - source" << source
+                 << "vpos" << i;
+
         for (jt=m_graph.cbegin(); jt!=m_graph.cend(); ++jt) {
+
+            target = (*jt)->name();
 
             if  ( (*jt)->isIsolated() && dropIsolates ) {
                 qDebug() << "Graph: graphDistanceGeodesicMatrix() - "
-                         << (*jt)->name() << "isolated. SKIP";
+                         << target << "isolated. SKIP";
                 continue;
             }
 
             if  ( ! (*jt)->isEnabled()  ) {
                 qDebug() << "Graph: graphDistanceGeodesicMatrix() - "
-                         << (*jt)->name() << "disabled. SKIP";
+                         << target << "disabled. SKIP";
                 continue;
             }
 
+            j = vpos[ target ];
 
-            DM.setItem(index[(*it)->name()],index[(*jt)->name()], (*it)->distance((*jt)->name()));
-            TM.setItem(index[(*it)->name()],index[(*jt)->name()], (*it)->shortestPaths((*jt)->name()));
+            qDebug() << "Graph: graphDistanceGeodesicMatrix() - "
+                     << "target" << target << "vpos" << j;
+
+
+            qDebug() << "Graph: graphDistanceGeodesicMatrix() -  setting DM ("<< i <<","<< j << ") =" << (*it)->distance( target ) ;
+            DM.setItem( i, j, (*it)->distance( target ) );
+            qDebug() << "Graph: graphDistanceGeodesicMatrix() -  setting TM ("<< i <<","<< j << ") =" << (*it)->distance( target ) ;
+            TM.setItem( i, j, (*it)->shortestPaths( target ) );
 
         }
     }
@@ -4038,10 +4059,10 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
 
             s=(*it)->name();
-            si=index[s];
+            si=vpos[s];
 
             qDebug()<< "***** PHASE 1 (SSSP): "
-                    << "Source vertex s" << s << "index" << si;
+                    << "Source vertex s" << s << "vpos" << si;
 
             emit signalProgressBoxUpdate( ++progressCounter );
 
@@ -4073,7 +4094,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 
             qDebug()<< "***** PHASE 1 (SSSP): "
                        "Call BFS or dijkstra for s"
-                     << s << " index " << si
+                     << s << " vpos " << si
                      << " to compute distance and shortest paths to every vertex t" ;
             if (!considerWeights)
                 BFS(s,si,computeCentralities, dropIsolates );
@@ -4093,7 +4114,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                 (*it)->setCC( CC );
 
                 qDebug()<< "***** PHASE 2 (CENTRALITIES): "
-                           "s" << s << "index" << si << "CC" << CC;
+                           "s" << s << "vpos" << si << "CC" << CC;
 
                 //Check eccentricity (max geodesic distance)
                 eccentricity = (*it)->eccentricity();
@@ -4110,7 +4131,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                 sumEC+=EC;  //set sum EC
 
                 qDebug()<< "***** PHASE 2 (CENTRALITIES): "
-                           "s" << s << "index" << si << "EC" << CC;
+                           "s" << s << "vpos" << si << "EC" << CC;
 
                 //Find min/max Eccentricity
                 minmax( eccentricity, (*it), maxEccentricity, minEccentricity,
@@ -4149,7 +4170,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                 sumSPC += SPC;   //add to sumSPC -- used later to compute mean and variance
 
                 qDebug()<< "***** PHASE 2 (CENTRALITIES): "
-                           "s" << s << "index" << si << "PC" << PC;
+                           "s" << s << "vpos" << si << "PC" << PC;
 
                 qDebug()<< "***** PHASE 2 (BC/ACCUMULATION): "
                            "Start back propagation of dependencies." <<
@@ -4166,7 +4187,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 
                 while ( !Stack.empty() ) {
                     w=Stack.top();
-                    wi=index[w];
+                    wi=vpos[w];
 
                     qDebug()<< "***** PHASE 2 (BC/ACCUMULATION): "
                                "Stack top is vertex w " << w
@@ -4189,7 +4210,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                     if (lst.size() > 0) // just in case...do a sanity check
                         for ( it2=lst.begin(); it2 != lst.end(); it2++ ){
                             u=(*it2);
-                            ui=index[u];
+                            ui=vpos[u];
                             sigma_u=m_graph[si]->shortestPaths(u);
                             sigma_w=m_graph[si]->shortestPaths(w);
                             delta_u=m_graph[ui]->delta();
@@ -4236,7 +4257,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                         d_sw = m_graph[wi]->BC() + delta_w;
 
                         qDebug()<< "***** PHASE 2 (BC/ACCUMULATION): "
-                                   "s" << s << "index" << si << "BC = d_sw" << d_sw;
+                                   "s" << s << "vpos" << si << "BC = d_sw" << d_sw;
 
                         m_graph[wi]->setBC (d_sw);
                     }
@@ -4441,7 +4462,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 *	Breadth-First Search (BFS) method for unweighted graphs (directed or not)
 
     INPUT:
-        a 'source' vertex with index s and a boolean computeCentralities.
+        a 'source' vertex with vpos s and a boolean computeCentralities.
         (Implicitly, BFS uses the m_graph structure)
 
     OUTPUT:
@@ -4486,8 +4507,8 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
     while ( !Q.empty() ) {
 
         u=Q.front(); Q.pop();
-        ui=index[u];
-        qDebug()<< "BFS: Dequeue: first element of Q is u"<<u<< "index"<< ui;
+        ui=vpos[u];
+        qDebug()<< "BFS: Dequeue: first element of Q is u"<<u<< "vpos"<< ui;
 
         if ( ! m_graph [ ui ]->isEnabled() ) {
             continue ;
@@ -4513,8 +4534,8 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
             }
             w = it1.key();
           //  weight = it1.value().second.first;
-            wi=index[ w ];
-            qDebug("BFS: u=%i is connected with node %i of index wi=%i. ", u, w, wi);
+            wi=vpos[ w ];
+            qDebug("BFS: u=%i is connected with node %i of vpos wi=%i. ", u, w, wi);
 
             qDebug("BFS: Start path discovery");
 
@@ -4619,7 +4640,7 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
 *   distance. The priority queue is implemented with std::priority_queue
 
     INPUT:
-        a 'source' vertex with index s and a boolean computeCentralities.
+        a 'source' vertex with vpos s and a boolean computeCentralities.
         (Implicitly, the algorithm uses the m_graph structure)
 
     OUTPUT:
@@ -4661,7 +4682,7 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
 
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
-        v=index[ (*it)->name() ];
+        v=vpos[ (*it)->name() ];
         if (v != s ){
             // NOTE: d(i,j) init to RAND_MAX already done in graphDistanceGeodesicCompute
 //            qDebug() << " push " << v << " to prQ with infinite distance from s";
@@ -4681,9 +4702,9 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
     qDebug() << "### dijkstra: LOOP: While prQ not empty ";
     while ( !prQ.empty() ) {
         u=prQ.top().target;
-        ui=index[u];
+        ui=vpos[u];
 
-        qDebug()<< "    *** dijkstra: take u"<< u << "index" << ui
+        qDebug()<< "    *** dijkstra: take u"<< u << "vpos" << ui
                    << " from prQ. It has minimum distance from s =" << s;
          prQ.pop();
 
@@ -4717,7 +4738,7 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
             }
 
             w = it1.key();
-            wi=index[ w ];
+            wi=vpos[ w ];
 
             weight = it1.value().second.first;
 
@@ -8722,15 +8743,15 @@ void Graph::prestigePageRank(const bool &dropIsolates){
                 referrer = jt.key();
 
                 qDebug() << "Graph::prestigePageRank() - Node " << (*it)->name()
-                         << " inLinked from neighbor " << referrer  << " index "
-                         << index[referrer];
+                         << " inLinked from neighbor " << referrer  << " vpos "
+                         << vpos[referrer];
 
                 if ( edgeExists( referrer , (*it)->name() ) )
                 {
-                    inLinks = m_graph[ index[referrer] ] ->inEdgesConst();
-                    outLinks = m_graph[ index[referrer] ]-> outEdgesConst();
+                    inLinks = m_graph[ vpos[referrer] ] ->inEdgesConst();
+                    outLinks = m_graph[ vpos[referrer] ]-> outEdgesConst();
 
-                    PRP =  m_graph[ index[referrer] ]->PRP();
+                    PRP =  m_graph[ vpos[referrer] ]->PRP();
 
                     transferedPRP = (outLinks != 0 ) ? ( PRP / outLinks ) : PRP;
 
@@ -9106,7 +9127,7 @@ void Graph::randomNetErdosCreate(const int &N,
     if (mode=="graph") {
         graphUndirectedSet(true);
     }
-    index.reserve(N);
+    vpos.reserve(N);
 
     randomizeThings();
 
@@ -9256,7 +9277,7 @@ void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
 
     randomizeThings();
 
-    index.reserve(N);
+    vpos.reserve(N);
 
     QString pMsg  = tr( "Creating ring-lattice network. \n"
                         "Please wait..." );
@@ -9332,7 +9353,7 @@ void Graph::randomNetScaleFreeCreate (const int &N,
     double  prob_j = 0, prob=0;
     int progressCounter=0;
 
-    index.reserve( N );
+    vpos.reserve( N );
 
     qDebug() << "Graph::randomNetScaleFreeCreate() - "
              << "Create initial connected net of m0 nodes";
@@ -9580,7 +9601,7 @@ void Graph::randomNetRegularCreate(const int &N,
 
 
     randomizeThings();
-    index.reserve(N);
+    vpos.reserve(N);
 
     QString pMsg = tr( "Creating pseudo-random d-regular network. \n"
                        "Please wait..." );
@@ -10658,7 +10679,7 @@ void Graph::writeCliqueCensus( const QString fileName,
     rowCounter=0;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         actor1 = (*it)->name();
-        index1 = index[actor1];
+        index1 = vpos[actor1];
         rowCounter++;
         outText << "<tr class=" << ((rowCounter%2==0) ? "even" :"odd" )<< ">"
                 <<"<td class=\"header\">"
@@ -10667,7 +10688,7 @@ void Graph::writeCliqueCensus( const QString fileName,
 
         for (it2=m_graph.cbegin(); it2!=m_graph.cend(); ++it2){
             actor2 =  (*it2)->name();
-            index2 = index[actor2];
+            index2 = vpos[actor2];
             outText <<"<td>"
                     << qSetRealNumberPrecision(0)<< CLQM.item(index1, index2)
                     <<"</td>";
@@ -10756,14 +10777,14 @@ void Graph:: graphCliqueAdd(const QList<int> &clique){
              << m_cliques.count();
     int index1=0, index2=0, cliqueCount=0;
     foreach (int actor1, clique) {
-       index1 = index[actor1];
+       index1 = vpos[actor1];
        qDebug() << "Graph::graphCliqueAdd() - updating cliques in actor1:"
                 << actor1
-                << "index:"
+                << "vpos:"
                 << index1;
        m_graph[ index1 ]->cliqueAdd(clique);
        foreach (int actor2, clique) {
-           index2 = index[actor2];
+           index2 = vpos[actor2];
            cliqueCount = CLQM.item(index1, index2);
            CLQM.setItem( index1, index2, ( cliqueCount + 1)  );
            qDebug() << "Graph::graphCliqueAdd() - upd. co-membership matrix CLQM"
@@ -12407,8 +12428,8 @@ float Graph::numberOfTriples(int v1){
  * @return
  */
 float Graph::clusteringCoefficientLocal(const long int &v1){
-    if ( !graphModified() && (m_graph[ index [v1] ] -> hasCLC() ) )  {
-        float clucof=m_graph[ index [v1] ] ->CLC();
+    if ( !graphModified() && (m_graph[ vpos [v1] ] -> hasCLC() ) )  {
+        float clucof=m_graph[ vpos [v1] ] ->CLC();
         qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") - "
                  << " Not modified. Returning previous clucof = " << clucof;
         return clucof;
@@ -12433,11 +12454,11 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
     neighborhoodEdges.clear();
 
     qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") - vertex " << v1
-             << "[" << index[v1] << "] "
+             << "[" << vpos[v1] << "] "
              << " Checking adjacent edges " ;
 
     QHash<int,float> *reciprocalEdges = new QHash<int,float>;
-    reciprocalEdges = m_graph [ index[v1] ] -> reciprocalEdgesHash();
+    reciprocalEdges = m_graph [ vpos[v1] ] -> reciprocalEdgesHash();
 
     QHash<int,float>::const_iterator it1;
     QHash<int,float>::const_iterator it2;
@@ -12452,7 +12473,7 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
                  << v1
                  << "<->"
                  << u1
-                 << "[" << index[u1] << "] exists"
+                 << "[" << vpos[u1] << "] exists"
                  << "weight " << it1.value();
 
         if ( v1 == u1 ) {
@@ -12475,7 +12496,7 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
                      << "Other neighbor" << u2
                      << "Check if there is an edge"
                      << u1
-                     << "[" << index[u1] << "]"
+                     << "[" << vpos[u1] << "]"
                         << "->" << u2 ;
 
             if ( u1 == u2 ) {
@@ -12562,7 +12583,7 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
     qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
              << "CLUCOF = "<< clucof;
 
-    m_graph[ index [v1] ] -> setCLC(clucof);
+    m_graph[ vpos [v1] ] -> setCLC(clucof);
 
     reciprocalEdges->clear();
     neighborhoodEdges.clear();
@@ -19121,7 +19142,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
         for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1)
         {
 //            qDebug() << "*****  Calculate forces for s " << (*v1)->name()
-//                     << " index " <<  index[(*v1)->name()]
+//                     << " vpos " <<  vpos[(*v1)->name()]
 //                     << " pos "<< (*v1)->x() << ", "<< (*v1)->y();
 
             if ( ! (*v1)->isEnabled() ) {
@@ -19355,19 +19376,19 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
         for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1) {
 
             pn = (*v1)->name();
-            m = index[pn];
+            m = vpos[pn];
             xm = (*v1)->x();
             ym = (*v1)->y();
 
             qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
                        "Compute partial derivatives E for particle" << pn
-                     << " index m" <<  m
+                     << " vpos m" <<  m
                      << " pos"<< xm << ", "<< ym;
 
 
             if ( ! (*v1)->isEnabled() ) {
                 qDebug() << "  particle " << pn
-                         << " index m " << m << " disabled. Continue";
+                         << " vpos m " << m << " disabled. Continue";
                 continue;
             }
 
@@ -19376,11 +19397,11 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
 
             for (v2=m_graph.cbegin(); v2!=m_graph.cend(); ++v2) {
 
-                i = index[(*v2)->name()];
+                i = vpos[(*v2)->name()];
                 xi = (*v2)->x();
                 yi = (*v2)->y();
 
-                qDebug () << "  particle index i"<< i
+                qDebug () << "  particle vpos i"<< i
                           << "  pos (" <<  xi << "," << yi << ")";
 
                 if ( ! (*v2)->isEnabled() ) {
@@ -19414,7 +19435,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
                 partDrvtEy_m = partDrvtEy;
 
                 pnm = pn ;  // store name of particle satisfying Delta_m = max Delta_i
-                pm = m ;  // store index of particle satisfying Delta_m = max Delta_i
+                pm = m ;  // store vpos of particle satisfying Delta_m = max Delta_i
                 xpm = xm; // store particle x pos
                 ypm = ym; // store particle y pos
             }
@@ -19468,7 +19489,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
           // first compute coefficients of the linear system equations
           for (v2=m_graph.cbegin(); v2!=m_graph.cend(); ++v2) {
 
-              i = index[(*v2)->name()];
+              i = vpos[(*v2)->name()];
               xi = (*v2)->x();
               yi = (*v2)->y();
 
@@ -19551,7 +19572,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
 
       } while (Delta_m > epsilon);
       qDebug () << "Graph::layoutForceDirectedKamadaKawai() - Finished minimizing Delta_m "
-                   "for particle" << pnm << "index" << m
+                   "for particle" << pnm << "vpos" << m
                 << "Minimized Delta_m"<< Delta_m
                 << "moving it to new pos" << xm << ym;
       m_graph[m]->setX(xm);
