@@ -123,7 +123,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     initToolBar();      //build the toolbar
 
-    initToolBox();      //build the toolbox
+    initPanels();      //build the toolbox
 
     initWindowLayout();   //init the application window, set layout etc
 
@@ -170,8 +170,7 @@ MainWindow::~MainWindow() {
 
 
 /**
-  * @brief MainWindow::initSettings()
-  * Init default (or user-defined) app settings
+  * @brief Initializes default (or user-defined) app settings
   *
   */
 QMap<QString,QString> MainWindow::initSettings(){
@@ -308,8 +307,7 @@ QMap<QString,QString> MainWindow::initSettings(){
 
 
 /**
- * @brief MainWindow::saveSettings
- *  Saves default (or user-defined) app settings
+ * @brief Saves default (or user-defined) app settings
  */
 void MainWindow::saveSettings() {
     qDebug () << "MW::saveSettings to "<< settingsFilePath;
@@ -356,8 +354,7 @@ void MainWindow::saveSettings() {
 
 
 /**
- * @brief MainWindow::slotOpenSettingsDialog
- * Open Settings dialog
+ * @brief Opens the Settings & Preferences dialog
  */
 void MainWindow::slotOpenSettingsDialog() {
     qDebug() << "MW::slotOpenSettingsDialog()";
@@ -461,8 +458,7 @@ void MainWindow::slotOpenSettingsDialog() {
 
 
 /**
- * @brief MainWindow::initActions
- * Initializes ALL QActions of the application
+ * @brief Initializes all QActions of the application
  * Take a breath, the listing below is HUGE.
  */
 void MainWindow::initActions(){
@@ -2887,8 +2883,8 @@ void MainWindow::initActions(){
 
 
 /**
-  Creates and populates the MenuBar
-*/
+ * @brief Creates and populates the menu bar
+ */
 void MainWindow::initMenuBar() {
 
 
@@ -3280,9 +3276,10 @@ void MainWindow::initMenuBar() {
 
 
 
+
 /**
-    Initializes the toolbar
-*/
+ * @brief Initializes the toolbar
+ */
 void MainWindow::initToolBar(){
     toolBar = addToolBar("operations");
 
@@ -3356,13 +3353,13 @@ void MainWindow::initToolBar(){
 
 
 /**
- * @brief MainWindow::initToolBox
- * Creates a dock widget for instant menu access
+ * @brief Creates docked panels for instant access to main app functionalities
+ * and displaying statistics
  */
-void MainWindow::initToolBox(){
+void MainWindow::initPanels(){
 
     /*
-     *  create widgets for the Controls Tab
+     *  create widgets for the Control Panel
      */
 
     QLabel *toolBoxEditNodeSubgraphSelectLabel  = new QLabel;
@@ -3489,7 +3486,7 @@ void MainWindow::initToolBox(){
     EditGrid -> setSpacing(5);
     EditGrid -> setContentsMargins(5, 5, 5, 5);
 
-            //create a groupbox "Edit" - Inside, display the grid layout of widgets
+    //create a groupbox "Edit" - Inside, display the grid layout of widgets
     QGroupBox *editGroupBox= new QGroupBox(tr("Edit"));
     editGroupBox->setLayout(EditGrid);
     editGroupBox->setMaximumWidth(280);
@@ -4119,8 +4116,7 @@ void MainWindow::initToolBox(){
 
 
 /**
- * @brief MainWindow::initView
- * Initializes the scene and the corresponding graphicsWidget,
+ * @brief Initializes the scene and the corresponding graphicsWidget,
  * The latter is a QGraphicsView canvas which is the main widget of SocNetV.
  */
 void MainWindow::initView() {
@@ -4177,8 +4173,7 @@ void MainWindow::initView() {
 
 
 /**
- * @brief MainWindow::initWindowLayout
- * Initializes the application window UI:
+ * @brief Initializes the application window UI:
  * Creates helper widgets and sets the main layout of the MainWindow
  */
 void MainWindow::initWindowLayout() {
@@ -4318,8 +4313,7 @@ void MainWindow::initWindowLayout() {
 
 
 /**
- * @brief MainWindow::initSignalSlots
- * Connect signals & slots between various parts of the app:
+ * @brief Connects signals & slots between various parts of the app:
  * - the GraphicsWidget and the Graph
  * - the GraphicsWidget and the MainWindow
  * This must be called after all widgets have been created.
@@ -4663,8 +4657,7 @@ void MainWindow::initSignalSlots() {
 
 
 /**
- * @brief MainWindow::initApp
- * Initializes the default network parameters.
+ * @brief Initializes the default network parameters.
  * Used on app start and especially when erasing a network to start a new one
  */
 void MainWindow::initApp(){
@@ -4800,7 +4793,9 @@ void MainWindow::initApp(){
 
 
 
-
+/**
+ * @brief Updates the Recent Files QActions in the menu
+ */
 void MainWindow::slotNetworkFileRecentUpdateActions() {
 
     int numRecentFiles = qMin(recentFiles.size(), (int)MaxRecentFiles);
@@ -4820,10 +4815,9 @@ void MainWindow::slotNetworkFileRecentUpdateActions() {
 
 
 /**
- * @brief MainWindow::statusMessage
- * @param message
- * Convenience method to show a message in the status bar, with the given duration
+ * @brief  Convenience method to show a message in the status bar, with the given duration
  * Slot called by Graph::statusMessage to display some message to the user
+ * @param message
  */
 void MainWindow::statusMessage(const QString message){
     statusBar()->showMessage( message, appSettings["initStatusBarDuration"].toInt(0));
@@ -4832,9 +4826,8 @@ void MainWindow::statusMessage(const QString message){
 
 
 /**
- * @brief MainWindow::slotHelpMessageToUserInfo
+ * @brief Helper function to display a useful info message
  * @param text
- * Helper function to display a useful info message
  */
 void MainWindow::slotHelpMessageToUserInfo(const QString text) {
     slotHelpMessageToUser(USER_MSG_INFO,tr("Useful information"), text  );
@@ -4842,9 +4835,8 @@ void MainWindow::slotHelpMessageToUserInfo(const QString text) {
 
 
 /**
- * @brief MainWindow::slotHelpMessageToUserError
+ * @brief Helper function to display a useful error message
  * @param text
- * Helper function to display a useful error message
  */
 void MainWindow::slotHelpMessageToUserError(const QString text) {
     slotHelpMessageToUser(USER_MSG_CRITICAL ,tr("Error"), text  );
@@ -4852,8 +4844,7 @@ void MainWindow::slotHelpMessageToUserError(const QString text) {
 
 
 /**
- * @brief MainWindow::slotHelpMessageToUser
- * Convenience method
+ * @brief Convenience method
  * @param message
  */
 int MainWindow::slotHelpMessageToUser(const int type,
@@ -5254,8 +5245,7 @@ void MainWindow::toolBoxAnalysisProminenceSelectChanged(int selectedIndex) {
 }
 
 /**
- * @brief MainWindow::toolBoxLayoutByIndexApplyBtnPressed
- * Called from MW, when user selects a Prominence index in the Layout selectbox
+ * @brief Called from MW, when user selects a Prominence index in the Layout selectbox
  *  of the Control Panel .
  */
 void MainWindow::toolBoxLayoutByIndexApplyBtnPressed(){
@@ -5296,8 +5286,7 @@ void MainWindow::toolBoxLayoutByIndexApplyBtnPressed(){
 
 
 /**
- * @brief MainWindow::toolBoxLayoutForceDirectedApplyBtnPressed
- * Called from MW, when user selects a model in the Layout by Force Directed
+ * @brief Called from MW, when user selects a model in the Layout by Force Directed
  * selectbox of left panel.
  */
 void MainWindow::toolBoxLayoutForceDirectedApplyBtnPressed(){
@@ -5334,8 +5323,7 @@ void MainWindow::toolBoxLayoutForceDirectedApplyBtnPressed(){
 
 
 /**
- * @brief MainWindow::resizeEvent
- * Resizes the scene when the window is resized.
+ * @brief Resizes the scene when the window is resized.
  */
 void MainWindow::resizeEvent( QResizeEvent * ){
 
@@ -5360,9 +5348,8 @@ void MainWindow::resizeEvent( QResizeEvent * ){
 
 
 /**
- * @brief MainWindow::closeEvent
+ * @brief Called when the application closes. Asks to write any unsaved network data.
  * @param ce
- * Closes the application. Asks to write any unsaved network data.
  */
 void MainWindow::closeEvent( QCloseEvent* ce ) {
     qDebug() << "MW::closeEvent()";
@@ -5398,8 +5385,7 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
 
 
 /**
- * @brief MainWindow::slotNetworkNew
- * Creates a new network
+ * @brief Creates a new network
  */
 void MainWindow::slotNetworkNew() {
     slotNetworkClose();
@@ -5408,8 +5394,7 @@ void MainWindow::slotNetworkNew() {
 
 
 /**
- * @brief MainWindow::getLastPath
- * returns the last path used by user to open/save something
+ * @brief Returns the last path used by user to open/save something
  */
 QString MainWindow::getLastPath() {
     if ( appSettings["lastUsedDirPath"] == "socnetv-initial-none") {
@@ -5421,8 +5406,7 @@ QString MainWindow::getLastPath() {
 
 
 /**
- * @brief MainWindow::setLastPath
- * sets the last path used by user to open/save something
+ * @brief Sets the last path used by user to open/save something
  * @param filePath
  */
 void MainWindow::setLastPath(QString filePath) {
@@ -5448,8 +5432,7 @@ void MainWindow::setLastPath(QString filePath) {
 
 
 /**
- * @brief MainWindow::slotNetworkFileChoose
- * If m_fileName is empty, opens a file selection dialog
+ * @brief If m_fileName is empty, opens a file selection dialog
  * Then calls slotNetworkFilePreview()
  * Called on application loading from command line with filename parameter
  * Called from slotNetworkImport* methods
@@ -5725,9 +5708,8 @@ void MainWindow::slotNetworkFileDialogRejected() {
 
 
 /**
- * @brief MainWindow::slotNetworkFileDialogFilterSelected
+ * @brief Called when user selects a file filter (i.e. GraphML) in the fileDialog
  * @param filter
- * Called when user selects a file filter (i.e. GraphML) in the fileDialog
  */
 void MainWindow::slotNetworkFileDialogFilterSelected(const QString &filter) {
     qDebug() << "MW::slotNetworkFileDialogFilterSelected() - filter" << filter;
@@ -5778,10 +5760,10 @@ void MainWindow::slotNetworkFileDialogFilterSelected(const QString &filter) {
 
 
 /**
- * @brief MainWindow::slotNetworkFileDialogFileSelected
- * @param fileName
- * Called when user selects a file in the fileDialog
+ * @brief Called when user selects a file in the fileDialog
  * Calls slotNetworkFileChoose() again.
+ * @param fileName
+ *
  */
 void MainWindow::slotNetworkFileDialogFileSelected(const QString &fileName) {
     qDebug() << "MW::slotNetworkFileDialogFileSelected() - filename " << fileName
@@ -5794,8 +5776,7 @@ void MainWindow::slotNetworkFileDialogFileSelected(const QString &fileName) {
 
 
 /**
- * @brief MainWindow::slotNetworkSave
- * Saves the network in the same file.
+ * @brief Saves the network to a file.
  * First check if a fileName is currently used
  * If not, calls slotNetworkSaveAs (which prompts for a fileName before returning here)
  * If a fileName is currently set, it checks if fileFormat is supported for export
@@ -5865,8 +5846,7 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
 
 
 /**
- * @brief MainWindow::slotNetworkSaveAs
- * Saves the network in a new file
+ * @brief Saves the network in a new file
  */
 void MainWindow::slotNetworkSaveAs() {
     qDebug() << "MW::slotNetworkSaveAs()";
@@ -5908,10 +5888,10 @@ void MainWindow::slotNetworkSaveAs() {
 
 
 /**
- * @brief MainWindow::slotNetworkSaved
- * @param saved_ok
- * Called from Graph when we save file.
+ * @brief Called from Graph when we save file.
  * Updates Save icon and window title.
+ * @param saved_ok
+ *
  */
 void MainWindow::slotNetworkSaved(const int &status)
 {
@@ -5929,8 +5909,7 @@ void MainWindow::slotNetworkSaved(const int &status)
 
 
 /**
- * @brief MainWindow::slotNetworkClose
- * Closes the network. Saves it if necessary. Used by createNew.
+ * @brief Closes the network. Saves it if necessary. Used by createNew.
  */
 void MainWindow::slotNetworkClose() {
     qDebug()<<"slotNetworkClose()";
@@ -5958,8 +5937,7 @@ void MainWindow::slotNetworkClose() {
 
 
 /**
- * @brief MainWindow::slotNetworkPrint
- * Sends the active network to the printer
+ * @brief Sends the active network to the printer
  */
 void MainWindow::slotNetworkPrint() {
     statusMessage( tr("Printing..."));
@@ -5976,8 +5954,7 @@ void MainWindow::slotNetworkPrint() {
 
 
 /**
- * @brief MainWindow::slotNetworkImportGraphML
- * Imports a network from a GraphML formatted file
+ * @brief Imports a network from a GraphML formatted file
  */
 void MainWindow::slotNetworkImportGraphML(){
     bool m_checkSelectFileType = false;
@@ -5987,8 +5964,7 @@ void MainWindow::slotNetworkImportGraphML(){
 
 
 /**
- * @brief MainWindow::slotNetworkImportGML
- * Imports a network from a GML formatted file
+ * @brief Imports a network from a GML formatted file
  */
 void MainWindow::slotNetworkImportGML(){
     bool m_checkSelectFileType = false;
@@ -5996,8 +5972,7 @@ void MainWindow::slotNetworkImportGML(){
 }
 
 /**
- * @brief MainWindow::slotNetworkImportPajek
- * Imports a network from a Pajek-like formatted file
+ * @brief Imports a network from a Pajek-like formatted file
  */
 void MainWindow::slotNetworkImportPajek(){
     bool m_checkSelectFileType = false;
@@ -6008,8 +5983,7 @@ void MainWindow::slotNetworkImportPajek(){
 
 
 /**
- * @brief MainWindow::slotNetworkImportSM
- * Imports a network from a Adjacency matrix formatted file
+ * @brief Imports a network from a Adjacency matrix formatted file
  */
 void MainWindow::slotNetworkImportSM(){
     bool m_checkSelectFileType = false;
@@ -6020,8 +5994,7 @@ void MainWindow::slotNetworkImportSM(){
 
 
 /**
- * @brief MainWindow::slotNetworkImportDot
- * Imports a network from a Dot formatted file
+ * @brief Imports a network from a Dot (GraphViz) formatted file
  */
 void MainWindow::slotNetworkImportDot(){
     bool m_checkSelectFileType = false;
@@ -6035,8 +6008,7 @@ void MainWindow::slotNetworkImportDot(){
 
 
 /**
- * @brief MainWindow::slotNetworkImportDL
- * Imports a network from a UCINET formatted file
+ * @brief Imports a network from a UCINET formatted file
  */
 void MainWindow::slotNetworkImportDL(){
     bool m_checkSelectFileType = false;
@@ -6046,8 +6018,7 @@ void MainWindow::slotNetworkImportDL(){
 
 
 /**
- * @brief MainWindow::slotNetworkImportEdgeList
- * Imports a network from a simple List or weighted List formatted file
+ * @brief Imports a network from a simple List or weighted List formatted file
  */
 void MainWindow::slotNetworkImportEdgeList(){
     bool m_checkSelectFileType = false;
@@ -6091,8 +6062,7 @@ void MainWindow::slotNetworkImportEdgeList(){
 
 
 /**
- * @brief MainWindow::slotNetworkImportTwoModeSM
- * Imports a network from a two mode sociomatrix formatted file
+ * @brief Imports a network from a two mode sociomatrix formatted file
  */
 void MainWindow::slotNetworkImportTwoModeSM(){
     bool m_checkSelectFileType = false;
@@ -6102,8 +6072,7 @@ void MainWindow::slotNetworkImportTwoModeSM(){
 
 
 /**
- * @brief MainWindow::slotNetworkAvailableTextCodecs
- * Setup a list of all text codecs supported by current OS
+ * @brief Setup a list of all text codecs supported by OS
  */
 void MainWindow::slotNetworkAvailableTextCodecs()
 {
@@ -6138,13 +6107,12 @@ void MainWindow::slotNetworkAvailableTextCodecs()
 
 
 /**
- * @brief MainWindow::slotNetworkFilePreview
+ * @brief Called from slotNetworkFileChoose()
+ * Opens a window to preview the selected file where the user
+ * can select an appropriate text codec
  * @param m_fileName
  * @param m_fileFormat
  * @return
- * Called from slotNetworkFileChoose()
- * Opens a window to preview the selected file where the user
- * can select an appropriate text codec
  */
 bool MainWindow::slotNetworkFilePreview(const QString &m_fileName,
                                     const int &m_fileFormat ){
@@ -6173,8 +6141,7 @@ bool MainWindow::slotNetworkFilePreview(const QString &m_fileName,
 
 
 /**
- * @brief MainWindow::slotNetworkFileLoadRecent
- * Called on click on any file entry in "Recent Files" menu
+ * @brief Called on click on any file entry in "Recent Files" menu
  * Calls slotNetworkFileChoose() which checks file type and calls slotNetworkFilePreview
  */
 void MainWindow::slotNetworkFileLoadRecent() {
@@ -6188,15 +6155,13 @@ void MainWindow::slotNetworkFileLoadRecent() {
 
 
 /**
- * @brief MainWindow::slotNetworkFileLoad
- * @param m_fileName
- * @param m_codecName
- * @param m_fileFormat
- * @return
- * Main network file loader method
+ * @brief Main network file loader method
  * Called from m_dialogPreviewFile and slotNetworkDataSetRecreate
  * Calls initApp to init to default values.
  * Then calls activeGraph::graphLoad to actually load the network...
+ * @param m_fileName
+ * @param m_codecName
+ * @param m_fileFormat
  */
 void MainWindow::slotNetworkFileLoad(const QString m_fileName,
                                  const QString m_codecName,
@@ -6277,8 +6242,7 @@ void MainWindow::slotNetworkFileLoad(const QString m_fileName,
 
 
 /**
- * @brief MainWindow::slotNetworkFileLoaded
- * Called from Parser/Graph when a network file is loaded.
+ * @brief Called from Parser/Graph when a network file is loaded.
  * It informs the MW about the type of the network so that it can display the appropiate message.
  * @param type
  * @param netName
@@ -6380,8 +6344,7 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
 
 
 /**
- * @brief MainWindow::slotEditRelationsClear
- * Called from Graph::relationsClear() to clear the relations combo.
+ * @brief Called from Graph::relationsClear() to clear the relations combo.
  */
 void MainWindow::slotEditRelationsClear(){
     qDebug() << "MW::slotEditRelationsClear() - clearing combo";
@@ -6389,14 +6352,11 @@ void MainWindow::slotEditRelationsClear(){
 }
 
 /**
- * @brief MainWindow::slotEditRelationAdd
- * Called from MW when user clicks New Relation btn
+ * @brief Called from MW when user clicks New Relation btn
  * or when the user creates the first edge visually.
- *  * called from activeGraph::relationAdd(QString)
+ * Called from activeGraph::relationAdd(QString)
  * via signal Graph::signalRelationChangedToMW() when the parser or a
  * Graph method demands a new relation to be added in the Combobox.
-
- *
  */
 void MainWindow::slotEditRelationAdd(QString newRelationName, const bool &changeRelation){
     int comboItemsBefore = editRelationChangeCombo->count();
@@ -6479,12 +6439,11 @@ void MainWindow::slotEditRelationAdd(QString newRelationName, const bool &change
 
 
 /**
- * @brief MainWindow::slotEditRelationChange
- * @param relIndex
- * if relIndex==RAND_MAX changes combo box index to last relation index
+ * @brief if relIndex==RAND_MAX changes combo box index to last relation index
  * else it changes the combo box index to relIndex
  * Called from Graph::relationAddAndChangeTo
  * via signal Graph::signalRelationChangedToMW()
+ * @param relIndex
  */
 void MainWindow::slotEditRelationChange(const int relIndex) {
     if ( relIndex == RAND_MAX){
@@ -6504,7 +6463,7 @@ void MainWindow::slotEditRelationChange(const int relIndex) {
 
 
 /**
- * @brief MainWindow::slotEditRelationRename
+ * @brief Renames a relation
  * @param newName
  */
 void MainWindow::slotEditRelationRename(QString newName) {
@@ -6544,9 +6503,9 @@ void MainWindow::slotEditRelationRename(QString newName) {
 
 
 /**
- * @brief MainWindow::slotExportPNG
+ * @brief Exports the network to a PNG image - Mediocre Quality but smaller file
  * @return
- * Exports the network to a PNG image - Mediocre Quality but smaller file
+ *
  */
 bool MainWindow::slotNetworkExportPNG(){
     qDebug()<< "MW::slotNetworkExportPNG";
@@ -6601,9 +6560,8 @@ bool MainWindow::slotNetworkExportPNG(){
 
 
 /**
- * @brief MainWindow::slotNetworkExportBMP
+ * @brief Exports the network to a BMP image - Better Quality but larger file
  * @return
- * Exports the network to a BMP image - Better Quality but larger file
  */
 bool MainWindow::slotNetworkExportBMP(){
     qDebug(	"slotNetworkExportBMP()");
@@ -6660,9 +6618,9 @@ bool MainWindow::slotNetworkExportBMP(){
 
 
 /**
- * @brief MainWindow::slotExportPDF
+ * @brief Exports the network to a PDF Document - Best Quality
  * @return
- * Exports the network to a PDF Document - Best Quality
+ *
  */
 bool MainWindow::slotNetworkExportPDF(){
     qDebug()<< "MW::slotNetworkExportPDF()";
@@ -6706,8 +6664,7 @@ bool MainWindow::slotNetworkExportPDF(){
 
 
 /**
- * @brief MainWindow::slotExportPajek
- * Exports the network to a Pajek-formatted file
+ * @brief Exports the network to a Pajek-formatted file
  * Calls the relevant Graph method.
  */
 void MainWindow::slotNetworkExportPajek()
@@ -6747,8 +6704,7 @@ void MainWindow::slotNetworkExportPajek()
 
 
 /**
- * @brief MainWindow::slotNetworkExportSM
- * Exports the network to a adjacency matrix-formatted file
+ * @brief Exports the network to a adjacency matrix-formatted file
  * Calls the relevant Graph method.
  */
 void MainWindow::slotNetworkExportSM(){
@@ -6820,9 +6776,8 @@ void MainWindow::slotNetworkExportSM(){
 
 
 /**
- * @brief MainWindow::slotNetworkExportDL
- * @return Exports the network to a DL-formatted file
- * - TODO slotNetworkExportDL
+ * @brief TODO Exports the network to a DL-formatted file
+ * @return
  */
 bool MainWindow::slotNetworkExportDL(){
     if ( !activeNodes() )  {
@@ -6850,8 +6805,7 @@ bool MainWindow::slotNetworkExportDL(){
 
 
 /**
-    Exports the network to a GW-formatted file
-    TODO slotNetworkExportGW
+    TODO: Exports the network to a GW-formatted file
 */ 
 bool MainWindow::slotNetworkExportGW(){
     if ( !activeNodes() )  {
@@ -6880,8 +6834,7 @@ bool MainWindow::slotNetworkExportGW(){
 
 
 /**
-    Exports the network to a list-formatted file
-    TODO slotNetworkExportList
+    TODO: Exports the network to a list-formatted file
 */
 bool MainWindow::slotNetworkExportList(){
     if (fileName.isEmpty()) {
@@ -7090,8 +7043,7 @@ void MainWindow::slotNetworkViewSociomatrixPlotText(){
 
 
 /**
- * @brief MainWindow::slotNetworkDataSetSelect
- * Calls the m_datasetSelectionDialog to display the dataset selection dialog
+ * @brief Calls the m_datasetSelectionDialog to display the dataset selection dialog
  */
 void MainWindow::slotNetworkDataSetSelect(){
     qDebug()<< "MW::slotNetworkDataSetSelect()";
@@ -9490,7 +9442,7 @@ void MainWindow::slotLayoutSpringEmbedder(){
         return;
     }
 
-    activeGraph.layoutForceDirectedSpringEmbedder(500);
+    activeGraph.layoutForceDirectedSpringEmbedder(100);
 
     statusMessage( tr("Spring-Gravitational (Eades) model embedded.") );
 }
@@ -9531,7 +9483,7 @@ void MainWindow::slotLayoutKamadaKawai(){
         return;
     }
 
-    activeGraph.layoutForceDirectedKamadaKawai(500);
+    activeGraph.layoutForceDirectedKamadaKawai(400);
 
     statusMessage( tr("Kamada & Kawai model embedded.") );
 }
@@ -12017,12 +11969,6 @@ void MainWindow::slotProgressBoxDestroy(const int &max){
             progressBox->deleteLater();
             delete progressBox;
         }
-//        if ( progressDialog->value() != 0  ) {
-//            qDebug () << "MainWindow::slotProgressBoxDestroy - progress dialog exists. Destroying";
-//            progressDialog->reset();
-//            progressDialog->deleteLater();
-//            //delete progressDialog;
-//        }
     }
 }
 

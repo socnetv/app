@@ -118,7 +118,7 @@ public:
     void initActions();
     void initMenuBar();
     void initToolBar();
-    void initToolBox();
+    void initPanels();
     void initView();
     void initWindowLayout();
     void initSignalSlots();
@@ -500,8 +500,6 @@ private:
     QComboBox *editRelationChangeCombo;
 
     QStack<QProgressDialog *> progressDialogs;
-
-    QProgressDialog *progressDialog;
 
     QMenu *importSubMenu, *exportSubMenu, *editMenu, *analysisMenu, *helpMenu;
     QMenu *optionsMenu, *colorOptionsMenu, *edgeOptionsMenu, *nodeOptionsMenu;
