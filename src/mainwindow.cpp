@@ -5263,7 +5263,7 @@ void MainWindow::toolBoxLayoutByIndexApplyBtnPressed(){
     int selectedIndex = toolBoxLayoutByIndexSelect->currentIndex();
     QString selectedIndexText = toolBoxLayoutByIndexSelect -> currentText();
     int selectedLayoutType = toolBoxLayoutByIndexTypeSelect ->currentIndex();
-    qDebug() << " selected index is "
+    qDebug()<<"MW::toolBoxLayoutByIndexApplyBtnPressed() - selected index is "
              << selectedIndexText << " : " << selectedIndex
              << " selected layout type is " << selectedLayoutType;
     switch(selectedIndex) {
@@ -7780,7 +7780,7 @@ void MainWindow::slotEditNodeAddWithMouse( const QPointF &p) {
  * The node is then marked.
  */
 void MainWindow::slotEditNodeFind(){
-    qDebug ("MW: slotEditNodeFind()");
+    qDebug() << "MW:: slotEditNodeFind()";
     if ( !activeNodes() ) {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -9625,41 +9625,45 @@ void MainWindow::slotLayoutRadialByProminenceIndex(QString choice=""){
         case 2:
             break;
         case -1:
-            QMessageBox::information(this,
-                                  "Closeness Centrality",
-                                     tr(
-                                         "Undirected graph has isolate nodes!\n"
-                                         "Since this network has isolate nodes, "
-                                         "I will drop them from calculations "
-                                         "otherwise the CC index "
-                                         "cannot be computed, because d(u,v) will be "
-                                         "infinite for any isolate node u or v.\n"
-                                         "You can also try the slightly different "
-                                         "but improved Influence Range Closeness index "
-                                         "which considers how proximate is each node "
-                                         "to the nodes in its influence range.\n"
-                                         "Read more in the SocNetV manual."
-                                         ), "OK",0);
-            dropIsolates=true;
+            if (! editFilterNodesIsolatesAct->isChecked() ) {
+                QMessageBox::information(this,
+                                         "Closeness Centrality",
+                                         tr(
+                                             "Undirected graph has isolate nodes!\n"
+                                             "Since this network has isolate nodes, "
+                                             "I will drop them from calculations "
+                                             "otherwise the CC index "
+                                             "cannot be computed, because d(u,v) will be "
+                                             "infinite for any isolate node u or v.\n"
+                                             "You can also try the slightly different "
+                                             "but improved Influence Range Closeness index "
+                                             "which considers how proximate is each node "
+                                             "to the nodes in its influence range.\n"
+                                             "Read more in the SocNetV manual."
+                                             ), "OK",0);
+                dropIsolates=true;
+            }
             break;
 
         case -3:
-            QMessageBox::information(this,
-                                  "Closeness Centrality",
-                                  tr(
-                                     "Directed graph has isolate nodes!\n"
-                                     "Since this digraph has isolate nodes, "
-                                     "I will drop them from calculations"
-                                      "otherwise Closeness Centrality "
-                                     "index can not be defined, because d(u,v) will be "
-                                     "infinite for any isolate node u or v.\n"
-                                     "You can conside using the slightly different "
-                                     "but improved Influence Range Closeness index "
-                                     "which considers how proximate is each node "
-                                     "to the nodes in its influence range.\n"
-                                      "Read more in the SocNetV manual."
-                                     ), "OK",0);
-            dropIsolates=true;
+            if (! editFilterNodesIsolatesAct->isChecked() ) {
+                QMessageBox::information(this,
+                                         "Closeness Centrality",
+                                         tr(
+                                             "Directed graph has isolate nodes!\n"
+                                             "Since this digraph has isolate nodes, "
+                                             "I will drop them from calculations"
+                                             "otherwise Closeness Centrality "
+                                             "index can not be defined, because d(u,v) will be "
+                                             "infinite for any isolate node u or v.\n"
+                                             "You can conside using the slightly different "
+                                             "but improved Influence Range Closeness index "
+                                             "which considers how proximate is each node "
+                                             "to the nodes in its influence range.\n"
+                                             "Read more in the SocNetV manual."
+                                             ), "OK",0);
+                dropIsolates=true;
+                    }
             break;
         default:
             QMessageBox::critical(this,
@@ -9811,41 +9815,45 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
         case 2:
             break;
         case -1:
-            QMessageBox::information(this,
-                                  "Closeness Centrality",
-                                  tr(
-                                         "Undirected graph has isolate nodes!\n"
-                                         "Since this network has isolate nodes, "
-                                         "I will drop them from calculations "
-                                         "otherwise the CC index "
-                                         "cannot be computed, because d(u,v) will be "
-                                         "infinite for any isolate node u or v.\n"
-                                         "You can also try the slightly different "
-                                         "but improved Influence Range Closeness index "
-                                         "which considers how proximate is each node "
-                                         "to the nodes in its influence range.\n"
-                                          "Read more in the SocNetV manual."
-                                     ), "OK",0);
-            dropIsolates=true;
+            if (! editFilterNodesIsolatesAct->isChecked() ) {
+                QMessageBox::information(this,
+                                         "Closeness Centrality",
+                                         tr(
+                                             "Undirected graph has isolate nodes!\n"
+                                             "Since this network has isolate nodes, "
+                                             "I will drop them from calculations "
+                                             "otherwise the CC index "
+                                             "cannot be computed, because d(u,v) will be "
+                                             "infinite for any isolate node u or v.\n"
+                                             "You can also try the slightly different "
+                                             "but improved Influence Range Closeness index "
+                                             "which considers how proximate is each node "
+                                             "to the nodes in its influence range.\n"
+                                             "Read more in the SocNetV manual."
+                                             ), "OK",0);
+                dropIsolates=true;
+            }
             break;
 
         case -3:
-            QMessageBox::information(this,
-                                  "Closeness Centrality",
-                                  tr(
-                                     "Directed graph has isolate nodes!\n"
-                                     "Since this digraph has isolate nodes, "
-                                         "I will drop them from calculations "
-                                         "otherwise the CC index "
-                                         "cannot be computed, because d(u,v) will be "
-                                         "infinite for any isolate node u or v.\n"
-                                         "You can also try the slightly different "
-                                         "but improved Influence Range Closeness index "
-                                         "which considers how proximate is each node "
-                                         "to the nodes in its influence range.\n"
-                                         "Read more in the SocNetV manual."
-                                     ), "OK",0);
-            dropIsolates=true;
+            if (! editFilterNodesIsolatesAct->isChecked() ) {
+                QMessageBox::information(this,
+                                         "Closeness Centrality",
+                                         tr(
+                                             "Directed graph has isolate nodes!\n"
+                                             "Since this digraph has isolate nodes, "
+                                             "I will drop them from calculations "
+                                             "otherwise the CC index "
+                                             "cannot be computed, because d(u,v) will be "
+                                             "infinite for any isolate node u or v.\n"
+                                             "You can also try the slightly different "
+                                             "but improved Influence Range Closeness index "
+                                             "which considers how proximate is each node "
+                                             "to the nodes in its influence range.\n"
+                                             "Read more in the SocNetV manual."
+                                             ), "OK",0);
+                dropIsolates=true;
+            }
             break;
         default:
             QMessageBox::critical(this,
@@ -9994,41 +10002,45 @@ void MainWindow::slotLayoutNodeSizeByProminenceIndex(QString choice=""){
         case 2:
             break;
         case -1:
-            QMessageBox::information(this,
-                                  "Closeness Centrality",
-                                     tr(
-                                         "Undirected graph has isolate nodes!\n"
-                                         "Since this network has isolate nodes, "
-                                         "I will drop them from calculations "
-                                         "otherwise the CC index "
-                                         "cannot be computed, because d(u,v) will be "
-                                         "infinite for any isolate node u or v.\n"
-                                         "You can also try the slightly different "
-                                         "but improved Influence Range Closeness index "
-                                         "which considers how proximate is each node "
-                                         "to the nodes in its influence range.\n"
-                                         "Read more in the SocNetV manual."
-                                         ), "OK",0);
-            dropIsolates=true;
+            if (! editFilterNodesIsolatesAct->isChecked() ) {
+                QMessageBox::information(this,
+                                         "Closeness Centrality",
+                                         tr(
+                                             "Undirected graph has isolate nodes!\n"
+                                             "Since this network has isolate nodes, "
+                                             "I will drop them from calculations "
+                                             "otherwise the CC index "
+                                             "cannot be computed, because d(u,v) will be "
+                                             "infinite for any isolate node u or v.\n"
+                                             "You can also try the slightly different "
+                                             "but improved Influence Range Closeness index "
+                                             "which considers how proximate is each node "
+                                             "to the nodes in its influence range.\n"
+                                             "Read more in the SocNetV manual."
+                                             ), "OK",0);
+                dropIsolates=true;
+            }
             break;
 
         case -3:
-            QMessageBox::information(this,
-                                  "Closeness Centrality",
-                                  tr(
-                                     "Directed graph has isolate nodes!\n"
-                                     "Since this digraph has isolate nodes, "
-                                         "I will drop them from calculations "
-                                         "otherwise the CC index "
-                                         "cannot be computed, because d(u,v) will be "
-                                         "infinite for any isolate node u or v.\n"
-                                         "You can also try the slightly different "
-                                         "but improved Influence Range Closeness index "
-                                         "which considers how proximate is each node "
-                                         "to the nodes in its influence range.\n"
-                                         "Read more in the SocNetV manual."
-                                     ), "OK",0);
-            dropIsolates=true;
+            if (! editFilterNodesIsolatesAct->isChecked() ) {
+                QMessageBox::information(this,
+                                         "Closeness Centrality",
+                                         tr(
+                                             "Directed graph has isolate nodes!\n"
+                                             "Since this digraph has isolate nodes, "
+                                             "I will drop them from calculations "
+                                             "otherwise the CC index "
+                                             "cannot be computed, because d(u,v) will be "
+                                             "infinite for any isolate node u or v.\n"
+                                             "You can also try the slightly different "
+                                             "but improved Influence Range Closeness index "
+                                             "which considers how proximate is each node "
+                                             "to the nodes in its influence range.\n"
+                                             "Read more in the SocNetV manual."
+                                             ), "OK",0);
+                dropIsolates=true;
+            }
             break;
         default:
             QMessageBox::critical(this,
@@ -10180,41 +10192,45 @@ void MainWindow::slotLayoutNodeColorByProminenceIndex(QString choice=""){
         case 2:
             break;
         case -1:
-            QMessageBox::information(this,
-                                  "Closeness Centrality",
-                                     tr(
-                                         "Undirected graph has isolate nodes!\n"
-                                         "Since this network has isolate nodes, "
-                                         "I will drop them from calculations "
-                                         "otherwise the CC index "
-                                         "cannot be computed, because d(u,v) will be "
-                                         "infinite for any isolate node u or v.\n"
-                                         "You can also try the slightly different "
-                                         "but improved Influence Range Closeness index "
-                                         "which considers how proximate is each node "
-                                         "to the nodes in its influence range.\n"
-                                         "Read more in the SocNetV manual."
-                                         ), "OK",0);
-            dropIsolates=true;
+            if (! editFilterNodesIsolatesAct->isChecked() ) {
+                QMessageBox::information(this,
+                                         "Closeness Centrality",
+                                         tr(
+                                             "Undirected graph has isolate nodes!\n"
+                                             "Since this network has isolate nodes, "
+                                             "I will drop them from calculations "
+                                             "otherwise the CC index "
+                                             "cannot be computed, because d(u,v) will be "
+                                             "infinite for any isolate node u or v.\n"
+                                             "You can also try the slightly different "
+                                             "but improved Influence Range Closeness index "
+                                             "which considers how proximate is each node "
+                                             "to the nodes in its influence range.\n"
+                                             "Read more in the SocNetV manual."
+                                             ), "OK",0);
+                dropIsolates=true;
+            }
             break;
 
         case -3:
-            QMessageBox::information(this,
-                                  "Closeness Centrality",
-                                  tr(
-                                     "Directed graph has isolate nodes!\n"
-                                     "Since this digraph has isolate nodes, "
-                                         "I will drop them from calculations "
-                                         "otherwise the CC index "
-                                         "cannot be computed, because d(u,v) will be "
-                                         "infinite for any isolate node u or v.\n"
-                                         "You can also try the slightly different "
-                                         "but improved Influence Range Closeness index "
-                                         "which considers how proximate is each node "
-                                         "to the nodes in its influence range.\n"
-                                         "Read more in the SocNetV manual."
-                                     ), "OK",0);
-            dropIsolates=true;
+            if (! editFilterNodesIsolatesAct->isChecked() ) {
+                QMessageBox::information(this,
+                                         "Closeness Centrality",
+                                         tr(
+                                             "Directed graph has isolate nodes!\n"
+                                             "Since this digraph has isolate nodes, "
+                                             "I will drop them from calculations "
+                                             "otherwise the CC index "
+                                             "cannot be computed, because d(u,v) will be "
+                                             "infinite for any isolate node u or v.\n"
+                                             "You can also try the slightly different "
+                                             "but improved Influence Range Closeness index "
+                                             "which considers how proximate is each node "
+                                             "to the nodes in its influence range.\n"
+                                             "Read more in the SocNetV manual."
+                                             ), "OK",0);
+                dropIsolates=true;
+            }
             break;
         default:
             QMessageBox::critical(this,
@@ -10552,7 +10568,10 @@ void MainWindow::slotAnalyzeMatrixLaplacian(){
 
 
 
-
+/**
+ * @brief If the network has weighted / valued edges, it asks the user
+ * if the app should consider weights or not.
+ */
 void MainWindow::askAboutWeights(){
     qDebug() << "MW::askAboutWeights() - checking if graph weighted.";
     if (!activeGraph.graphWeighted()  ){
@@ -10621,10 +10640,13 @@ void MainWindow::askAboutWeights(){
     askedAboutWeights=true;
 }
 
+
+
 /**
-*  Displays the graph distance (geodesic distance) between two user-specified nodes
+ * @brief Displays the graph distance (geodesic distance) between two user-specified nodes
     This is the length of the shortest path between them.
-*/
+
+ */
 void MainWindow::slotAnalyzeDistance(){
     if ( !activeNodes() || !activeEdges()  )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -11157,8 +11179,6 @@ void MainWindow::slotAnalyzeClusteringHierarchical(const QString &matrix,
     bool inverseWeights=false;
     bool dropIsolates=true;
 
-    statusMessage(  tr("Computing Hierarchical Cluster Analysis. Please wait...") );
-
     activeGraph.writeClusteringHierarchical(fn,
                                             matrix,
                                             metric,
@@ -11472,41 +11492,45 @@ void MainWindow::slotAnalyzeCentralityCloseness(){
     case 2:
         break;
     case -1:
-        QMessageBox::information(this,
-                              "Closeness Centrality",
-                              tr(
-                                 "Undirected graph has isolate nodes!\n"
-                                 "Since this network has isolate nodes, "
-                                 "I will drop them from calculations "
-                                 "otherwise the CC index "
-                                 "cannot be computed, because d(u,v) will be "
-                                 "infinite for any isolate node u or v.\n"
-                                 "You can also try the slightly different "
-                                 "but improved Influence Range Closeness index "
-                                 "which considers how proximate is each node "
-                                 "to the nodes in its influence range.\n"
-                                  "Read more in the SocNetV manual."
-                                 ), "OK",0);
-        dropIsolates=true;
+        if (! editFilterNodesIsolatesAct->isChecked() ) {
+            QMessageBox::information(this,
+                                     "Closeness Centrality",
+                                     tr(
+                                         "Undirected graph has isolate nodes!\n"
+                                         "Since this network has isolate nodes, "
+                                         "I will drop them from calculations "
+                                         "otherwise the CC index "
+                                         "cannot be computed, because d(u,v) will be "
+                                         "infinite for any isolate node u or v.\n"
+                                         "You can also try the slightly different "
+                                         "but improved Influence Range Closeness index "
+                                         "which considers how proximate is each node "
+                                         "to the nodes in its influence range.\n"
+                                         "Read more in the SocNetV manual."
+                                         ), "OK",0);
+            dropIsolates=true;
+        }
         break;
 
     case -3:
-        QMessageBox::information(this,
-                              "Closeness Centrality",
-                              tr(
-                                 "Directed graph has isolate nodes!\n"
-                                 "Since this digraph has isolate nodes, "
-                                     "I will drop them from calculations "
-                                     "otherwise the CC index "
-                                     "cannot be computed, because d(u,v) will be "
-                                     "infinite for any isolate node u or v.\n"
-                                     "You can also try the slightly different "
-                                     "but improved Influence Range Closeness index "
-                                     "which considers how proximate is each node "
-                                     "to the nodes in its influence range.\n"
-                                     "Read more in the SocNetV manual."
-                                 ), "OK",0);
-        dropIsolates=true;
+        if (! editFilterNodesIsolatesAct->isChecked() ) {
+            QMessageBox::information(this,
+                                     "Closeness Centrality",
+                                     tr(
+                                         "Directed graph has isolate nodes!\n"
+                                         "Since this digraph has isolate nodes, "
+                                         "I will drop them from calculations "
+                                         "otherwise the CC index "
+                                         "cannot be computed, because d(u,v) will be "
+                                         "infinite for any isolate node u or v.\n"
+                                         "You can also try the slightly different "
+                                         "but improved Influence Range Closeness index "
+                                         "which considers how proximate is each node "
+                                         "to the nodes in its influence range.\n"
+                                         "Read more in the SocNetV manual."
+                                         ), "OK",0);
+            dropIsolates=true;
+        }
         break;
     default:
         QMessageBox::critical(this,
@@ -11515,7 +11539,7 @@ void MainWindow::slotAnalyzeCentralityCloseness(){
                                   "Disconnected graph/digraph!\n"
                                   "Since this network is disconnected, "
                                   "the ordinary Closeness Centrality "
-                                  "index is not defined, because d(u,v) will be "
+                                  "index is undefined, because d(u,v) will be "
                                   "infinite for any isolate nodes u or v.\n"
                                   "Please use the slightly different but improved "
                                   "Influence Range Closeness (IRCC) index "

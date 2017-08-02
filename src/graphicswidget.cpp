@@ -324,8 +324,7 @@ void GraphicsWidget::moveNode(const int &num, const qreal &x, const qreal &y){
 
 
 /**
- * @brief GraphicsWidget::eraseNode
- * Called from Graph signal eraseNode(int)
+ * @brief Called from Graph signal eraseNode(int)
  * @param number
  */
 void GraphicsWidget::eraseNode(const long int &number){
@@ -337,6 +336,16 @@ void GraphicsWidget::eraseNode(const long int &number){
     if ( nodeHash.contains(number) ) {
         qDebug() << "GW::eraseNode() - found number "
                  <<  number<< " Deleting :)" ;
+
+        if ( nodeHash.value(number) == markedNode1 ) {
+
+            qDebug() << "WARNING DOOMED NODE IS ALREADY MARKED!! UNMARKING IT";
+            setMarkedNode(""); 	// call setMarkedNode to just unmark it.
+
+        }
+        else {
+            qDebug() << "OK - DOOMED NODE IS NOT MARKED!";
+        }
         delete nodeHash.value(number);
     }
 

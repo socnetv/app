@@ -455,7 +455,7 @@ public:
     QPointF vertexPos(const int &v1);
     int vertexClicked() const;
 
-    int vertices(const bool dropIsolates=false, const bool countAll=false) ;
+    int vertices(const bool &dropIsolates=false, const bool &countAll=false, const bool &recount=false) ;
 
     int vertexEdgesOutbound (int i) ;
     int vertexEdgesInbound (int i) ;
