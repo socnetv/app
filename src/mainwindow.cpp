@@ -9420,7 +9420,7 @@ void MainWindow::slotLayoutRadialRandom(){
 
     slotLayoutGuides(false);
 
-    activeGraph.layoutRadialRandom(x0, y0, maxRadius);
+    activeGraph.layoutRadialRandom(x0, y0, maxRadius, true);
 
     slotLayoutGuides(true);
     statusMessage( tr("Nodes in random concentric circles.") );

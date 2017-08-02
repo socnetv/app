@@ -18395,7 +18395,8 @@ void Graph::layoutRandom(){
  * @param y0
  * @param maxRadius
  */
-void Graph::layoutRadialRandom(double x0, double y0, double maxRadius){
+void Graph::layoutRadialRandom(double x0, double y0, double maxRadius,
+                               const bool &guides){
     qDebug() << "Graph::layoutRadialRandom - ";
     double rad=0, new_radius=0, new_x=0, new_y=0;
     double i=0;
@@ -18438,7 +18439,9 @@ void Graph::layoutRadialRandom(double x0, double y0, double maxRadius){
         //Move node to new position
         emit setNodePos((*it)->name(),  new_x,  new_y);
         i++;
-        emit addGuideCircle ( x0, y0, new_radius );
+        if (guides) {
+            emit addGuideCircle ( x0, y0, new_radius );
+        }
     }
 
     emit signalProgressBoxKill();
@@ -18950,8 +18953,7 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations){
 
 
     /* apply an initial circular layout */
-    layoutCircular(canvasWidth/2.0, canvasHeight/2.0, naturalLength ,false);
-
+    layoutCircular(canvasWidth/2.0, canvasHeight/2.0, naturalLength/2.0 ,false);
 
 
     QString pMsg  = tr ( "Embedding Eades Spring-Gravitational model. \n"
@@ -19086,7 +19088,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
     int iteration = 1 ;
 
     /* apply an initial circular layout */
-    layoutCircular(canvasWidth/2.0, canvasHeight/2.0, optimalDistance,false);
+    layoutCircular(canvasWidth/2.0, canvasHeight/2.0, optimalDistance/2.0,false);
 
     qDebug() << "Graph: layoutForceDirectedFruchtermanReingold() ";
     qDebug () << "Graph: Setting optimalDistance = "<<  optimalDistance
