@@ -18048,6 +18048,7 @@ void Graph::writeMatrixAdjacency (const QString fn,
             << "</th>";
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( ! (*it)->isEnabled() ) continue;
         outText <<"<th>"
                 << (*it)->name()
                 << "</th>";
