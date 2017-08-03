@@ -2279,8 +2279,7 @@ QList<int> Graph::verticesListIsolated(){
                 <<m_isolatedVerticesList;
         return m_isolatedVerticesList;
     }
-    qDebug()<< "Graph::verticesListIsolated() - graph modified or "
-               "isolated vertices list empty. Computing list.";
+
     QList<Vertex*>::const_iterator it;
     m_isolatedVerticesList.clear();
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -2292,7 +2291,7 @@ QList<int> Graph::verticesListIsolated(){
                     << " is isolated. Marking it." ;
         }
     }
-    qDebug()<< "Graph::verticesListIsolated() - isolated vertices list computed:"
+    qDebug()<< "Graph::verticesListIsolated() - isolated vertices list:"
             <<m_isolatedVerticesList;
     calculatedIsolates = true;
     return m_isolatedVerticesList ;
@@ -5539,8 +5538,11 @@ void Graph::writeCentralityInformation(const QString fileName,
 
     QList<Vertex*>::const_iterator it;
 
+    bool dropIsolates = true;  // by default IC needs to exclude isolates
+
     int rowCount=0;
-    int N = vertices();
+    int N = vertices(dropIsolates, false, true);
+
     int progressCounter = 0;
 
     QString pMsg = tr("Writing Information Centralities to file. \nPlease wait...");
@@ -5630,20 +5632,37 @@ void Graph::writeCentralityInformation(const QString fileName,
 
         outText <<fixed;
 
-        outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
-                <<"<td>"
-                << (*it)->name()
-                << "</td><td>"
-                << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
-                << "</td><td>"
-                << (*it)->IC()
-                << "</td><td>"
-                << (*it)->SIC()
-                << "</td><td>"
-                << (100* ((*it)->SIC()))
-                << "</td>"
-                <<"</tr>";
+        if ((*it)->isIsolated()) {
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                   << (*it)->name()
+                   << "</td><td>"
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td><td>"
+                   << "--"
+                   << "</td>"
+                   <<"</tr>";
+        }
+        else {
 
+            outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
+                    <<"<td>"
+                   << (*it)->name()
+                   << "</td><td>"
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << "</td><td>"
+                   << (*it)->IC()
+                   << "</td><td>"
+                   << (*it)->SIC()
+                   << "</td><td>"
+                   << (100* ((*it)->SIC()))
+                   << "</td>"
+                   <<"</tr>";
+        }
     }
 
 
@@ -17650,7 +17669,7 @@ void Graph::writeMatrix (const QString &fn,
         break;
     case MATRIX_GEODESICS:
         graphMatrixShortestPathsCreate(considerWeights, inverseWeights, false);
-        emit statusMessage ( tr("Distances recomputed. Writing Geodesics Matrix...") );
+        emit statusMessage ( tr("Distances recomputed. Writing Shortest Paths Matrix...") );
         break;
     case MATRIX_ADJACENCY_INVERSE:
         emit statusMessage ( tr("Computing Inverse Adjacency Matrix. Please wait...") );
@@ -17707,7 +17726,7 @@ void Graph::writeMatrix (const QString &fn,
         outText << tr("DISTANCES MATRIX REPORT");
         break;
     case MATRIX_GEODESICS:
-        outText << tr("GEODESICS MATRIX REPORT");
+        outText << tr("SHORTEST PATHS (GEODESICS) MATRIX REPORT");
         break;
     case MATRIX_ADJACENCY_INVERSE:
         outText << tr("INVERSE ADJACENCY MATRIX REPORT");
@@ -17799,8 +17818,8 @@ void Graph::writeMatrix (const QString &fn,
     case MATRIX_GEODESICS:
         outText << "<p class=\"description\">"
                 << tr("The geodesics matrix of a social network is a NxN matrix ")
-                << tr("where each element (i,j) is the number of geodesics "
-                      "(shortest paths) from actor i to actor j, "
+                << tr("where each element (i,j) is the number of shortest paths"
+                      "(geodesics) from actor i to actor j, "
                       "or infinity if no shortest path exists.")
                 << "<br />"
                 << "</p>";
@@ -18279,17 +18298,6 @@ void Graph::graphMatrixAdjacencyCreate(const bool dropIsolates,
     int N = vertices(dropIsolates,false,true), progressCounter=0;
     QList<Vertex*>::const_iterator it, jt;
 
-//    if (dropIsolates){
-//        qDebug() << "Graph::graphMatrixAdjacencyCreate() - Find and drop possible isolates";
-//        int m = N- verticesListIsolated().count();
-//        qDebug() << "Graph::graphMatrixAdjacencyCreate() -resizing AM to"<< m;
-//        AM.resize( m , m);
-//    }
-//    else {
-//        qDebug() << "Graph::graphMatrixAdjacencyCreate() -resizing AM to"<< N;
-//        AM.resize(N, N);
-//    }
-
     qDebug() << "Graph::graphMatrixAdjacencyCreate() -resizing AM to"<< N;
     AM.resize(N, N);
 
@@ -18381,16 +18389,13 @@ bool Graph::graphMatrixAdjacencyInvert(const QString &method){
     long int i=0, j=0;
     bool isSingular=true;
 
-    int isolatedVertices = verticesListIsolated().count();
     bool dropIsolates=true; // always drop isolates else AM will be singular
 
-    int  m = vertices();
+    int  N = vertices(dropIsolates, false, true);
 
     graphMatrixAdjacencyCreate(dropIsolates, considerWeights);
 
-    m-=isolatedVertices;
-
-    invAM.resize(m,m);
+    invAM.resize(N,N);
 
     if ( method == "gauss") {
         invAM.inverseByGaussJordanElimination(AM);
@@ -19450,7 +19455,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
 
     qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - Compute dij, where (i,j) in E";
 
-     graphMatrixDistanceGeodesicCreate(considerWeights,inverseWeights, dropIsolates);
+    graphMatrixDistanceGeodesicCreate(considerWeights,inverseWeights, dropIsolates);
 
     // Compute original spring length
     // lij for 1 <= i!=j <= n using the formula:

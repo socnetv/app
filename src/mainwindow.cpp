@@ -2161,14 +2161,14 @@ void MainWindow::initActions(){
 
     analyzeMatrixGeodesicsAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesics Matrix"),this);
     analyzeMatrixGeodesicsAct -> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_N));
-    analyzeMatrixGeodesicsAct->setStatusTip(tr("Compute the number of geodesic paths between each pair of nodes "));
+                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_P));
+    analyzeMatrixGeodesicsAct->setStatusTip(tr("Compute the number of shortest paths (geodesics) between each pair of nodes "));
     analyzeMatrixGeodesicsAct->setWhatsThis(
                 tr(
                     "Geodesics Matrix\n\n"
                     "Displays a n x n matrix, where the (i,j) element "
-                    "is the number of geodesics between node i and node j. "
-                    "A geodesic of two nodes is the shortest path between them.")
+                    "is the number of shortest paths (geodesics) between "
+                    "node i and node j. ")
                 );
     connect(analyzeMatrixGeodesicsAct, SIGNAL(triggered()),
             this, SLOT( slotAnalyzeMatrixGeodesics()) );
