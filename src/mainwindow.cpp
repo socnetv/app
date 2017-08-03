@@ -10525,7 +10525,9 @@ void MainWindow::slotAnalyzeMatrixLaplacian(){
  * if the app should consider weights or not.
  */
 void MainWindow::askAboutWeights(){
+
     qDebug() << "MW::askAboutWeights() - checking if graph weighted.";
+
     if (!activeGraph.graphWeighted()  ){
         considerWeights=false;
         return;
@@ -11731,6 +11733,9 @@ void MainWindow::slotAnalyzePrestigeProximity(){
  * Writes Informational Centralities into a file, then displays it.
  */
 void MainWindow::slotAnalyzeCentralityInformation(){
+
+    qDebug() << "MW::slotAnalyzeCentralityInformation()";
+
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;

@@ -250,9 +250,9 @@ void Graph::clear() {
         qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
         DM.clear();
     }
-    if ( TM.size() > 0) {
-                qDebug() << "\n\n\n\n Graph::clear()  clearing TM\n\n\n";
-        TM.clear();
+    if ( SIGMA.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing SIGMA\n\n\n";
+        SIGMA.clear();
     }
     if ( sumM.size() > 0) {
                 qDebug() << "\n\n\n\n Graph::clear()  clearing sumM\n\n\n";
@@ -1874,6 +1874,8 @@ ClickedEdge Graph::edgeClicked() {
     return m_clickedEdge;
 }
 
+
+
 /**
  * @brief Graph::edgeExists
  * Checks if there is a (un)directed edge (arc) from v1 to v2
@@ -1888,8 +1890,6 @@ float Graph::edgeExists (const long int &v1, const long int &v2, const bool &und
     edgeWeightTemp = m_graph[ vpos[v1] ]->hasEdgeTo(v2);
 
     if (!undirected) {
-        qDebug() << "Graph::edgeExists() - directed" << v1 << "->" << v2
-                 << "="<<edgeWeightTemp;
         return edgeWeightTemp;
 
     }
@@ -1898,13 +1898,10 @@ float Graph::edgeExists (const long int &v1, const long int &v2, const bool &und
        if  ( edgeWeightTemp!=0 ) {
            edgeReverseWeightTemp = m_graph[ vpos[v2] ]->hasEdgeTo(v1);
            if  ( edgeWeightTemp == edgeReverseWeightTemp  ){
-                    qDebug() << "Graph::edgeExists() - undirected" << v1 << "<->" << v2 << "="
-                                <<edgeWeightTemp;
                    return edgeWeightTemp;
            }
        }
     }
-    qDebug() << "Graph::edgeExists() - undirected" << v1 << "<->" << v2 << "= 0";
     return edgeWeightTemp;
 }
 
@@ -3550,6 +3547,85 @@ bool Graph::graphReachable(const int &v1, const int &v2) {
 
 
 
+
+/**
+ * @brief Creates the reachability matrix XRM
+ */
+void Graph::graphMatrixReachabilityCreate() {
+    qDebug() << "Graph::graphMatrixReachabilityCreate()";
+
+    if ( !calculatedDistances || graphModified() ) {
+        graphDistanceGeodesicCompute(false);
+    }
+
+    QList<Vertex*>::const_iterator it, jt;
+
+    int N = vertices( false, false, true);
+
+    int progressCounter=0;
+    int source = 0 , target = 0;
+    int i = 0, j = 0 ;
+    int reachVal = 0;
+
+    XRM.resize(N, N);
+
+    QString pMsg = tr("Creating reachability matrix. \nPlease wait ");
+    emit statusMessage ( pMsg );
+    emit signalProgressBoxCreate(N,pMsg);
+
+
+    qDebug() << "Graph: graphMatrixReachabilityCreate() - writing matrix...";
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
+
+        emit signalProgressBoxUpdate(++progressCounter);
+
+        source = (*it)->name();
+
+        if  ( ! (*it)->isEnabled()  ) {
+            qDebug() << "Graph: graphMatrixReachabilityCreate() - "
+                     << source << "disabled. SKIP";
+            continue;
+        }
+
+
+        i = vpos[ source ];
+
+        qDebug() << "Graph: graphMatrixReachabilityCreate() - source" << source
+                 << "vpos" << i;
+
+        for (jt=m_graph.cbegin(); jt!=m_graph.cend(); ++jt) {
+
+            target = (*jt)->name();
+
+
+            if  ( ! (*jt)->isEnabled()  ) {
+                qDebug() << "Graph: graphMatrixReachabilityCreate() - "
+                         << target << "disabled. SKIP";
+                continue;
+            }
+
+            j = vpos[ target ];
+
+            qDebug() << "Graph: graphMatrixReachabilityCreate() - "
+                     << "target" << target << "vpos" << j;
+
+
+            reachVal = ((*it)->distance( target ) != RAND_MAX ) ? 1 : 0;
+            qDebug() << "Graph: graphMatrixReachabilityCreate() -  setting XRM ("<< i <<","<< j << ") =" <<  reachVal;
+            XRM.setItem( i, j, reachVal );
+
+        }
+    }
+
+    emit signalProgressBoxKill();
+
+
+}
+
+
+
+
 /**
  * @brief Returns the geodesic distance (lenght of shortest path)
  * from vertex v1 to vertex v2
@@ -3789,15 +3865,16 @@ int Graph::graphConnectedness(const bool updateProgress) {
 
 
 /**
- * @brief Creates the Geodesic Distances matrix
+ * @brief Creates the shortest paths (geodesic) matrix SIGMA
+ * Each SIGMA(i,j) element is the number of shortest paths (geodesics) from i and j
  * @param considerWeights
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::graphDistanceGeodesicMatrix(const bool &considerWeights,
+void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
                                  const bool &inverseWeights,
                                  const bool &dropIsolates) {
-    qDebug() << "Graph::graphDistanceGeodesicMatrix()";
+    qDebug() << "Graph::graphMatrixShortestPathsCreate()";
 
     if ( !calculatedDistances || graphModified() ) {
         graphDistanceGeodesicCompute(false,considerWeights,inverseWeights, dropIsolates);
@@ -3811,19 +3888,18 @@ void Graph::graphDistanceGeodesicMatrix(const bool &considerWeights,
     int source = 0 , target = 0;
     int i = 0, j = 0 ;
 
-    qDebug() << "Graph::graphDistanceGeodesicMatrix() - Resizing Matrices to hold "
+    qDebug() << "Graph::graphMatrixShortestPathsCreate() - Resizing matrix to hold "
              << N << " vertices";
 
-    DM.resize(N, N);
-    TM.resize(N, N);
+    SIGMA.resize(N, N);
 
-    QString pMsg = tr("Creating geodesic distances matrix. \nPlease wait ");
+    QString pMsg = tr("Creating shortest paths matrix. \nPlease wait ");
     emit statusMessage ( pMsg );
     emit signalProgressBoxCreate(N,pMsg);
 
 
-    qDebug() << "Graph: graphDistanceGeodesicMatrix() - Almost finished! "
-                "Creating distance and sigmas matrix...";
+    qDebug() << "Graph::graphMatrixShortestPathsCreate() - Writing shortest paths matrix...";
+
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
 
         emit signalProgressBoxUpdate(++progressCounter);
@@ -3831,14 +3907,14 @@ void Graph::graphDistanceGeodesicMatrix(const bool &considerWeights,
         source = (*it)->name();
 
         if  ( (*it)->isIsolated() && dropIsolates ) {
-            qDebug() << "Graph: graphDistanceGeodesicMatrix() - "
+            qDebug() << "Graph::graphMatrixShortestPathsCreate() - "
                      << source << "isolated. SKIP";
 
             continue;
         }
 
         if  ( ! (*it)->isEnabled()  ) {
-            qDebug() << "Graph: graphDistanceGeodesicMatrix() - "
+            qDebug() << "Graph::graphMatrixShortestPathsCreate() - "
                      << source << "disabled. SKIP";
             continue;
         }
@@ -3846,7 +3922,7 @@ void Graph::graphDistanceGeodesicMatrix(const bool &considerWeights,
 
         i = vpos[ source ];
 
-        qDebug() << "Graph: graphDistanceGeodesicMatrix() - source" << source
+        qDebug() << "Graph::graphMatrixShortestPathsCreate() - source" << source
                  << "vpos" << i;
 
         for (jt=m_graph.cbegin(); jt!=m_graph.cend(); ++jt) {
@@ -3854,27 +3930,123 @@ void Graph::graphDistanceGeodesicMatrix(const bool &considerWeights,
             target = (*jt)->name();
 
             if  ( (*jt)->isIsolated() && dropIsolates ) {
-                qDebug() << "Graph: graphDistanceGeodesicMatrix() - "
+                qDebug() << "Graph::graphMatrixShortestPathsCreate() - "
                          << target << "isolated. SKIP";
                 continue;
             }
 
             if  ( ! (*jt)->isEnabled()  ) {
-                qDebug() << "Graph: graphDistanceGeodesicMatrix() - "
+                qDebug() << "Graph::graphMatrixShortestPathsCreate() - "
                          << target << "disabled. SKIP";
                 continue;
             }
 
             j = vpos[ target ];
 
-            qDebug() << "Graph: graphDistanceGeodesicMatrix() - "
+            qDebug() << "Graph::graphMatrixShortestPathsCreate() - "
                      << "target" << target << "vpos" << j;
 
 
-            qDebug() << "Graph: graphDistanceGeodesicMatrix() -  setting DM ("<< i <<","<< j << ") =" << (*it)->distance( target ) ;
+            qDebug() << "Graph::graphMatrixShortestPathsCreate() -  setting SIGMA ("
+                     << i <<","<< j << ") =" << (*it)->shortestPaths( target )  ;
+            SIGMA.setItem( i, j, (*it)->shortestPaths( target ) );
+
+        }
+    }
+
+    emit signalProgressBoxKill();
+
+
+}
+
+
+
+/**
+ * @brief Creates the Geodesic Distances matrix
+ * @param considerWeights
+ * @param inverseWeights
+ * @param dropIsolates
+ */
+void Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
+                                 const bool &inverseWeights,
+                                 const bool &dropIsolates) {
+    qDebug() << "Graph::graphMatrixDistanceGeodesicCreate()";
+
+    if ( !calculatedDistances || graphModified() ) {
+        graphDistanceGeodesicCompute(false,considerWeights,inverseWeights, dropIsolates);
+    }
+
+    QList<Vertex*>::const_iterator it, jt;
+
+    int N = vertices( dropIsolates, false, true);
+
+    int progressCounter=0;
+    int source = 0 , target = 0;
+    int i = 0, j = 0 ;
+
+    qDebug() << "Graph::graphMatrixDistanceGeodesicCreate() - "
+                "Resizing distance matrix to hold "
+             << N << " vertices";
+
+    DM.resize(N, N);
+
+    QString pMsg = tr("Creating geodesic distances matrix. \nPlease wait ");
+    emit statusMessage ( pMsg );
+    emit signalProgressBoxCreate(N,pMsg);
+
+
+    qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() - Writing distances matrix...";
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
+
+        emit signalProgressBoxUpdate(++progressCounter);
+
+        source = (*it)->name();
+
+        if  ( (*it)->isIsolated() && dropIsolates ) {
+            qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() - "
+                     << source << "isolated. SKIP";
+
+            continue;
+        }
+
+        if  ( ! (*it)->isEnabled()  ) {
+            qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() - "
+                     << source << "disabled. SKIP";
+            continue;
+        }
+
+
+        i = vpos[ source ];
+
+        qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() - source"
+                 << source << "vpos" << i;
+
+        for (jt=m_graph.cbegin(); jt!=m_graph.cend(); ++jt) {
+
+            target = (*jt)->name();
+
+            if  ( (*jt)->isIsolated() && dropIsolates ) {
+                qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() - "
+                         << target << "isolated. SKIP";
+                continue;
+            }
+
+            if  ( ! (*jt)->isEnabled()  ) {
+                qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() - "
+                         << target << "disabled. SKIP";
+                continue;
+            }
+
+            j = vpos[ target ];
+
+            qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() - "
+                     << "target" << target << "vpos" << j;
+
+
+            qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() -  setting DM ("
+                     << i <<","<< j << ") =" << (*it)->distance( target ) ;
             DM.setItem( i, j, (*it)->distance( target ) );
-            qDebug() << "Graph: graphDistanceGeodesicMatrix() -  setting TM ("<< i <<","<< j << ") =" << (*it)->distance( target ) ;
-            TM.setItem( i, j, (*it)->shortestPaths( target ) );
 
         }
     }
@@ -3888,10 +4060,8 @@ void Graph::graphDistanceGeodesicMatrix(const bool &considerWeights,
 /**
  * @brief Computes the geodesic distances between all vertices:
   * In the process, it also computes many other centrality/prestige metrics:
- * * The so-called sigma matrix, named TM, where TM(i,j) is the number of shortest paths
+ * * The so-called sigma matrix, where the (i,j) element is the number of shortest paths
  *   from vertex i to vertex j, called sigma(i,j).
- * * The reachability matrix X^R where the {i,j} element is 1 if the vertices i
- *   and j are reachable, otherwise 0.
  * * The Diameter of the graph, m_graphDiameter, which is the length of the longest
  *   shortest path between every (i,j)
  * * The Eccentricity of every node i which is the length of the longest shortest
@@ -4214,14 +4384,12 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                             qDebug()<< "***** PHASE 2 (BC/ACCUMULATION): "
                                        "Selecting Ps[w] element u"<< u
                                     << "with delta_u" << delta_u
-                                    << "sigma(u)=TM(s,u)"<< sigma_u
-                                    << "sigma(w)=TM(s,w)" << sigma_w
+                                    << "sigma(s,u)"<< sigma_u
+                                    << "sigma(s,w)" << sigma_w
                                     << "delta_w"<< delta_w;
 
-                            //if ( TM.item(si,wi) > 0) {
                             if ( m_graph[si]->shortestPaths(w) > 0 ) {
                                 //delta[u]=delta[u]+(1+delta[w])*(sigma[u]/sigma[w]) ;
-                                //d_su=m_graph[ui]->delta()+(1.0+m_graph[wi]->delta() ) * ( (float)TM.item(si,ui)/(float)TM.item(si,wi) );
                                  d_su=delta_u + ( 1.0 + delta_w ) * ( (float) sigma_u / (float)sigma_w);
                             }
                             else {
@@ -4600,7 +4768,6 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
                         << "to w"<< w << "via u"<< u
                         << "Setting Sigma(s, w)"<< temp;
                 if (s!=w) {
-                    //TM.setItem(si,wi, temp);
                     m_graph[si]->setShortestPaths(w, temp);
                 }
                 if (computeCentralities){
@@ -4767,7 +4934,6 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
                 qDebug() <<"    --- dijkstra: dist_w : " << dist_w
                          <<  " ==  d(s,w) : " << m_graph [ si ]->distance( w ) ;
 
-                //temp = TM.item(s,w)+TM.item(s,u);
                 temp = m_graph[si]->shortestPaths(w) + m_graph[si]->shortestPaths(u);
 
                 qDebug() <<"    --- dijkstra: Found ANOTHER SP from s =" << s
@@ -4775,7 +4941,6 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
                         << " - Setting Sigma(s, w) = "<< temp;
 
                 if (s!=w) {
-                    //TM.setItem(s,w, temp);
                     m_graph[si]->setShortestPaths(w, temp);
                 }
 
@@ -4843,7 +5008,6 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
                               "Found NEW shortest path from s =" << s
                            << " to w =" << w << " via u ="<< u
                            << " - Setting Sigma(s, w) = 1 ";
-                    //TM.setItem(s,w, 1);
                     m_graph[si]->setShortestPaths(w, 1);
                 }
 
@@ -4976,7 +5140,7 @@ void Graph::writeMatrixDistancesPlainText (const QString &fn,
                                  const bool &dropIsolates) {
     qDebug ("Graph::writeMatrixDistancesPlainText()");
 
-    graphDistanceGeodesicMatrix(considerWeights, inverseWeights, dropIsolates);
+    graphMatrixDistanceGeodesicCreate(considerWeights, inverseWeights, dropIsolates);
 
     qDebug ("Graph::writeMatrixDistancesPlainText() writing to file");
 
@@ -5002,21 +5166,19 @@ void Graph::writeMatrixDistancesPlainText (const QString &fn,
 
 
 /**
- * @brief Saves the number of geodesic distances matrix TM to a file
+ * @brief Writes the shortest paths matrix to a file
+ * Each SIGMA(i,j) element is the number of shortest paths (geodesics) from i and j
  * @param fn
  * @param considerWeights
  * @param inverseWeights
  */
-void Graph::writeMatrixNumberOfGeodesicsPlainText(const QString &fn,
+void Graph::writeMatrixShortestPathsPlainText(const QString &fn,
                                          const bool &considerWeights,
                                          const bool &inverseWeights) {
-    qDebug ("Graph::writeMatrixNumberOfGeodesicsPlainText()");
 
-    graphDistanceGeodesicCompute(false, considerWeights, inverseWeights, false);
+    qDebug()<< "Graph::writeMatrixShortestPathsPlainText()";
 
-
-    qDebug () << "Graph::writeMatrixNumberOfGeodesicsPlainText() - Distance matrix created. "
-                 "Writing geoderics matrix to file";
+    graphMatrixShortestPathsCreate( considerWeights, inverseWeights, false);
 
     QFile file (fn);
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
@@ -5025,13 +5187,15 @@ void Graph::writeMatrixNumberOfGeodesicsPlainText(const QString &fn,
         return;
     }
 
+   qDebug () << "Graph::writeMatrixShortestPathsPlainText() - Writing shortest paths matrix to file";
+
     QTextStream outText(&file);
     outText.setCodec("UTF-8");
     outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
     outText << tr("Network name: ")<< graphName() <<" \n\n";
-    outText << "Number of geodesics matrix: \n";
+    outText << "Shortest paths matrix: \n";
 
-    outText << TM ;
+    outText << SIGMA ;
 
     file.close();
 
@@ -5249,27 +5413,25 @@ void Graph::centralityInformation(const bool considerWeights,
 
     QList<Vertex*>::const_iterator it;
 
-    int isolatedVertices=verticesListIsolated().count();
     int i=0, j=0;
-    int n=vertices();
+
     float m_weight=0, weightSum=1, diagonalEntriesSum=0, rowSum=0;
     float IC=0, SIC=0;
     /* Note: isolated nodes must be dropped from the AM
-        Otherwise, the TM might be singular, therefore non-invertible. */
+        Otherwise, the SIGMA matrix might be singular, therefore non-invertible. */
     bool dropIsolates=true;
     bool symmetrize=true;
+    int n=vertices(dropIsolates,false,true);
 
     graphMatrixAdjacencyCreate(dropIsolates, considerWeights, inverseWeights, symmetrize);
 
-    n-=isolatedVertices;
 
 
     QString pMsg = tr("Computing Information Centralities. \nPlease wait...");
     emit statusMessage( pMsg );
     emit signalProgressBoxCreate(n,pMsg);
 
-
-    TM.resize(n, n);
+    WM.resize( n, n );
     invM.resize(n, n);
 
     for (i=0; i<n; i++){
@@ -5279,15 +5441,15 @@ void Graph::centralityInformation(const bool considerWeights,
                 continue;
             m_weight = AM.item(i,j);
             weightSum += m_weight; //sum of weights for all edges incident to i
-            TM.setItem(i,j,1-m_weight);
+            WM.setItem(i,j,1-m_weight);
         }
-        TM.setItem(i,i,weightSum);
+        WM.setItem(i,i,weightSum);
     }
 
     emit signalProgressBoxUpdate(n/3);
     emit statusMessage ( tr("Computing inverse adjancecy matrix. Please wait...") );
 
-    invM.inverse(TM);
+    invM.inverse(WM);
 
     emit statusMessage ( tr("Computing IC scores. Please wait...") );
 
@@ -5338,6 +5500,8 @@ void Graph::centralityInformation(const bool considerWeights,
 
     calculatedIC = true;
 
+    WM.clear();
+
     emit signalProgressBoxUpdate(n);
     emit signalProgressBoxKill();
 }
@@ -5351,10 +5515,10 @@ void Graph::centralityInformation(const bool considerWeights,
  * @param considerWeights
  * @param inverseWeights
  */
-
 void Graph::writeCentralityInformation(const QString fileName,
                                        const bool considerWeights,
                                        const bool inverseWeights){
+    qDebug() << "Graph::writeCentralityInformation()";
 
     QTime computationTimer;
     computationTimer.start();
@@ -5370,7 +5534,6 @@ void Graph::writeCentralityInformation(const QString fileName,
     outText.setCodec("UTF-8");
 
     if (graphModified() || !calculatedIC ) {
-            emit statusMessage ( (tr("Computing IC scores...")) );
             centralityInformation(considerWeights, inverseWeights);
     }
 
@@ -10972,7 +11135,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
         STR_EQUIV=AM;
         break;
     case MATRIX_DISTANCES:
-        graphDistanceGeodesicMatrix(considerWeights, inverseWeights, dropIsolates);
+        graphMatrixDistanceGeodesicCreate(considerWeights, inverseWeights, dropIsolates);
         if (dropIsolates)
         STR_EQUIV=DM;
         break;
@@ -17482,11 +17645,11 @@ void Graph::writeMatrix (const QString &fn,
         emit statusMessage ( tr("Adjacency recomputed. Writing Degree Matrix...") );
         break;
     case MATRIX_DISTANCES:
-        graphDistanceGeodesicMatrix(considerWeights, inverseWeights, dropIsolates);
+        graphMatrixDistanceGeodesicCreate(considerWeights, inverseWeights, dropIsolates);
         emit statusMessage ( tr("Distances recomputed. Writing Distances Matrix...") );
         break;
     case MATRIX_GEODESICS:
-        graphDistanceGeodesicMatrix(considerWeights, inverseWeights, false);
+        graphMatrixShortestPathsCreate(considerWeights, inverseWeights, false);
         emit statusMessage ( tr("Distances recomputed. Writing Geodesics Matrix...") );
         break;
     case MATRIX_ADJACENCY_INVERSE:
@@ -17495,8 +17658,8 @@ void Graph::writeMatrix (const QString &fn,
         emit statusMessage ( tr("Inverse Adjacency Matrix computed. Writing Matrix...") );
         break;
     case MATRIX_REACHABILITY:
-        graphDistanceGeodesicMatrix(false,false,false);
-        emit statusMessage ( tr("Distances recomputed. Writing Reachability Matrix...") );
+        graphMatrixReachabilityCreate();
+        emit statusMessage ( tr("Writing Reachability Matrix...") );
         break;
 
     case MATRIX_ADJACENCY_TRANSPOSE:
@@ -17641,7 +17804,7 @@ void Graph::writeMatrix (const QString &fn,
                       "or infinity if no shortest path exists.")
                 << "<br />"
                 << "</p>";
-        TM.printHTMLTable(outText,true);
+        SIGMA.printHTMLTable(outText,true);
         break;
 
     case MATRIX_ADJACENCY_INVERSE:
@@ -18106,20 +18269,30 @@ void Graph::graphMatrixAdjacencyCreate(const bool dropIsolates,
                                   const bool considerWeights,
                                   const bool inverseWeights,
                                   const bool symmetrize ){
-    qDebug() << "Graph::graphMatrixAdjacencyCreate()";
+    qDebug() << "Graph::graphMatrixAdjacencyCreate() "
+             << "dropIsolates" << dropIsolates
+             << "considerWeights" << considerWeights
+             << "inverseWeights" << inverseWeights
+             << "symmetrize" << symmetrize;
     float m_weight=RAND_MAX;
     int i=0, j=0;
-    int N = vertices(), progressCounter=0;
-    QList<Vertex*>::const_iterator it, it1;
+    int N = vertices(dropIsolates,false,true), progressCounter=0;
+    QList<Vertex*>::const_iterator it, jt;
 
-    if (dropIsolates){
-        qDebug() << "Graph::graphMatrixAdjacencyCreate() - Find and drop possible isolates";
-        int m = N- verticesListIsolated().count();
-        AM.resize( m , m);
-    }
-    else {
-        AM.resize(N, N);
-    }
+//    if (dropIsolates){
+//        qDebug() << "Graph::graphMatrixAdjacencyCreate() - Find and drop possible isolates";
+//        int m = N- verticesListIsolated().count();
+//        qDebug() << "Graph::graphMatrixAdjacencyCreate() -resizing AM to"<< m;
+//        AM.resize( m , m);
+//    }
+//    else {
+//        qDebug() << "Graph::graphMatrixAdjacencyCreate() -resizing AM to"<< N;
+//        AM.resize(N, N);
+//    }
+
+    qDebug() << "Graph::graphMatrixAdjacencyCreate() -resizing AM to"<< N;
+    AM.resize(N, N);
+
 
     QString pMsg = tr ("Creating Adjacency Matrix. \nPlease wait...");
     emit statusMessage (pMsg);
@@ -18127,17 +18300,27 @@ void Graph::graphMatrixAdjacencyCreate(const bool dropIsolates,
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
 
+        qDebug() << "Graph::graphMatrixAdjacencyCreate() - i" << i << "name"<< (*it)->name();
+
         emit signalProgressBoxUpdate(++progressCounter);
 
         if ( ! (*it)->isEnabled() || ( (*it)->isIsolated() && dropIsolates) ) {
+            qDebug() << "Graph::graphMatrixAdjacencyCreate() - SKIP i" << i << "name"<< (*it)->name();
             continue;
         }
+
         j=i;
-        for (it1=it; it1!=m_graph.end(); it1++){
-            if ( ! (*it1)->isEnabled() || ( (*it1)->isIsolated() && dropIsolates) ) {
+
+        for (jt=it; jt!=m_graph.end(); jt++){
+
+            qDebug() << "Graph::graphMatrixAdjacencyCreate() - j" << j << "name"<< (*jt)->name();
+
+            if ( ! (*jt)->isEnabled() || ( (*jt)->isIsolated() && dropIsolates) ) {
+                qDebug() << "Graph::graphMatrixAdjacencyCreate() - SKIP j" << j << "name" << (*jt)->name();
                 continue;
             }
-            if ( (m_weight = edgeExists ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
+
+            if ( (m_weight = edgeExists ( (*it)->name(), (*jt)->name() )  ) !=0 ) {
                 if (!considerWeights) {
                     AM.setItem(i,j, 1 );
                 }
@@ -18151,11 +18334,14 @@ void Graph::graphMatrixAdjacencyCreate(const bool dropIsolates,
             else{
                 AM.setItem(i,j, 0);
             }
-            qDebug()<<" AM("<< i+1 << ","<< j+1 << ") = " <<  AM.item(i,j);
+
+            qDebug()<<" AM("<< i << ","<< j << ") = " <<  AM.item(i,j);
+
             if (i != j ) {
-                if ( (m_weight = edgeExists ( (*it1)->name(), (*it)->name() )  ) !=0 ) {
-                    if (!considerWeights)
+                if ( (m_weight = edgeExists ( (*jt)->name(), (*it)->name() )  ) !=0 ) {
+                    if (!considerWeights) {
                         AM.setItem(j,i, 1 );
+                    }
                     else {
                         if (inverseWeights)
                             AM.setItem(j,i, 1.0 / m_weight );
@@ -18172,7 +18358,7 @@ void Graph::graphMatrixAdjacencyCreate(const bool dropIsolates,
                         AM.setItem(j,i, AM.item(i,j) );
 
                 }
-                qDebug()<<" AM("<< j+1 << ","<< i+1 << ") = " <<  AM.item(j,i);
+                qDebug()<<" AM("<< j << ","<< i << ") = " <<  AM.item(j,i);
             }
             j++;
         }
@@ -18181,7 +18367,10 @@ void Graph::graphMatrixAdjacencyCreate(const bool dropIsolates,
 
     calculatedAdjacencyMatrix=true;
 
+    AM.printMatrixConsole(true);
+
     emit signalProgressBoxKill();
+
 }
 
 
@@ -18191,9 +18380,11 @@ bool Graph::graphMatrixAdjacencyInvert(const QString &method){
     bool considerWeights=false;
     long int i=0, j=0;
     bool isSingular=true;
-    int  m = vertices();
+
     int isolatedVertices = verticesListIsolated().count();
     bool dropIsolates=true; // always drop isolates else AM will be singular
+
+    int  m = vertices();
 
     graphMatrixAdjacencyCreate(dropIsolates, considerWeights);
 
@@ -19259,7 +19450,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
 
     qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - Compute dij, where (i,j) in E";
 
-     graphDistanceGeodesicMatrix(considerWeights,inverseWeights, dropIsolates);
+     graphMatrixDistanceGeodesicCreate(considerWeights,inverseWeights, dropIsolates);
 
     // Compute original spring length
     // lij for 1 <= i!=j <= n using the formula:

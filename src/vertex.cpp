@@ -775,29 +775,28 @@ float Vertex::hasEdgeTo(const long int &v2, const bool &allRelations){
                 edgeStatus=it1.value().second.second;
                 if ( edgeStatus == true) {
                     m_weight=it1.value().second.first;
-                    qDebug()<< "Vertex::hasEdgeTo() - "<<  this->name()
-                            << "->" << v2 << " = "<< m_weight;
+//                    qDebug()<< "Vertex::hasEdgeTo() - "<<  this->name()
+//                            << "->" << v2 << " = "<< m_weight;
                     return m_weight;
                 }
                 else {
-                    qDebug()<< "Vertex::hasEdgeTo() - "<<  this->name()
-                            << "->" << v2 << " = "<< m_weight
-                            << " but edgeStatus " << edgeStatus;
+//                    qDebug()<< "Vertex::hasEdgeTo() - "<<  this->name()
+//                            << "->" << v2 << " = "<< m_weight
+//                            << " but edgeStatus " << edgeStatus;
                     return 0;
                 }
             }
         }
         else {
                 m_weight=it1.value().second.first;
-                qDebug()<< "Vertex::hasEdgeTo() - "<<  this->name()
-                        << "->" << v2 << " = "<< m_weight
-                        << "relation"<<it1.value().first;
+//                qDebug()<< "Vertex::hasEdgeTo() - "<<  this->name()
+//                        << "->" << v2 << " = "<< m_weight
+//                        << "relation"<<it1.value().first;
                 return m_weight;
         }
         ++it1;
     }
-//    qDebug()<< "Vertex::hasEdgeTo() - a ("  <<  this->name()
-//            << ", " << v2 << ") = "<< m_weight;
+
 	return 0;
 }
 

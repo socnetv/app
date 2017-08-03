@@ -614,7 +614,7 @@ public:
                                        const bool &inverseWeights,
                                        const bool &dropIsolates);
 
-    void writeMatrixNumberOfGeodesicsPlainText(const QString &fn,
+    void writeMatrixShortestPathsPlainText(const QString &fn,
                                                const bool &considerWeights,
                                                const bool &inverseWeights);
 
@@ -727,11 +727,16 @@ public:
 
     /* DISTANCES, CENTRALITIES & PROMINENCE MEASURES */
     int graphConnectedness(const bool updateProgress=false) ;
+
+    bool graphReachable(const int &v1, const int &v2) ;
+    void graphMatrixReachabilityCreate() ;
+
+    int graphDiameter(const bool considerWeights, const bool inverseWeights);
+
     int graphDistanceGeodesic(const int v1, const int v2,
                               const bool considerWeights,
                               const bool inverseWeights);
-    bool graphReachable(const int &v1, const int &v2) ;
-    int graphDiameter(const bool considerWeights, const bool inverseWeights);
+
     float graphDistanceGeodesicAverage(const bool considerWeights,
                                const bool inverseWeights, const bool dropIsolates);
 
@@ -739,9 +744,15 @@ public:
                               const bool &considerWeights=false,
                               const bool &inverseWeights=true,
                               const bool &dropIsolates=false);
-    void graphDistanceGeodesicMatrix(const bool &considerWeights=false,
+
+    void graphMatrixDistanceGeodesicCreate(const bool &considerWeights=false,
                                      const bool &inverseWeights=true,
                                      const bool &dropIsolates=false);
+
+    void graphMatrixShortestPathsCreate(const bool &considerWeights=false,
+                                     const bool &inverseWeights=true,
+                                     const bool &dropIsolates=false) ;
+
     void centralityDegree(const bool &weights=true,
                           const bool &dropIsolates=false);
     void centralityInformation(const bool considerWeights=false,
@@ -950,7 +961,7 @@ private:
     QMap<QString, V_int> m_clustersByName;
     QMap<int, V_str> m_clusterPairNamesPerSeq;
 
-    Matrix  TM, DM, sumM, invAM, AM, invM;
+    Matrix  SIGMA, DM, sumM, invAM, AM, invM, WM;
     Matrix XM, XSM, XRM, CLQM;
 
     stack<int> Stack;
