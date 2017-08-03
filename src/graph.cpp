@@ -4131,6 +4131,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
         float sigma_u=0, sigma_w=0;
         float delta_u=0, delta_w=0;
         float d_sw=0, d_su=0;
+        bool disconnectedGraph = false;
         H_f_i::const_iterator hfi ; // for Power Centrality
 
         qDebug() << "Graph: graphDistanceGeodesicCompute() - initialising centrality variables ";
@@ -4274,29 +4275,40 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                 qDebug()<< "***** PHASE 2 (CENTRALITIES): "
                            "s" << s << "vpos" << si << "CC" << CC;
 
-                //Check eccentricity (max geodesic distance)
-                eccentricity = (*it)->eccentricity();
-                if ( eccentricity != 0 ) {
-                    //Eccentricity Centrality is the inverted Eccentricity
-                    EC=1.0 / eccentricity;
-                }
-                else {
-                    EC=0;
-                    eccentricity=0;
-                }
-                (*it)->setEC( EC ); //Set Eccentricity Centrality
-                (*it)->setSEC( EC ); //Set std EC = EC
-                sumEC+=EC;  //set sum EC
+                if (!disconnectedGraph) {
+                    //Check eccentricity (max geodesic distance)
+                    eccentricity = (*it)->eccentricity();
+                    qDebug() << "ECCENTRICITY" << eccentricity;
+                    if ( eccentricity != 0 ) {
+                        sumEccentricity+=eccentricity;
 
-                qDebug()<< "***** PHASE 2 (CENTRALITIES): "
-                           "s" << s << "vpos" << si << "EC" << CC;
+                        //Find min/max Eccentricity
+                        minmax( eccentricity, (*it), maxEccentricity, minEccentricity,
+                                maxNodeEccentricity, minNodeEccentricity) ;
+                        resolveClasses(eccentricity, discreteEccentricities,
+                                       classesEccentricity ,(*it)->name() );
 
-                //Find min/max Eccentricity
-                minmax( eccentricity, (*it), maxEccentricity, minEccentricity,
-                        maxNodeEccentricity, minNodeEccentricity) ;
-                resolveClasses(eccentricity, discreteEccentricities,
-                               classesEccentricity ,(*it)->name() );
-                sumEccentricity+=eccentricity;
+                        //Eccentricity Centrality is the inverted Eccentricity
+                        EC=1.0 / eccentricity;
+                        (*it)->setEC( EC ); //Set Eccentricity Centrality
+                        (*it)->setSEC( EC ); //Set std EC = EC
+                        sumEC+=EC;  //set sum EC
+
+
+                        qDebug()<< "***** PHASE 2 (CENTRALITIES): "
+                                   "s" << s << "vpos" << si << "EC" << EC;
+                    }
+                    else {
+                        disconnectedGraph = true;
+                        qDebug()<< "***** PHASE 2 (CENTRALITIES): "
+                                << "s" << s << "vpos" << si << "EC infinite (disconnected graph)";
+
+                    }
+
+
+                }
+
+
 
 
                 //Compute Power Centrality: In = [ 1/(N-1) ] * ( Nd1 + Nd2 * 1/2 + ... + Ndi * 1/i )
@@ -4435,11 +4447,24 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                              << " isolated, continue. ";
                     continue;
                 }
-                // Compute classes and min/maxEC
-                SEC=(*it)->SEC();
-                resolveClasses(SEC, discreteECs, classesEC,(*it)->name() );
-                minmax( SEC, (*it), maxEC, minEC, maxNodeEC, minNodeEC) ;
+                if (disconnectedGraph) {
+                    (*it)->setEccentricity(RAND_MAX);
+                    sumEccentricity = RAND_MAX;
 
+                    sumEC=0;
+                    discreteECs.clear();
+                    classesEC=1;
+                    maxEC=0;
+                    minEC=0;
+                    (*it)->setEC(0);
+                    (*it)->setSEC(0);
+                }
+                else {
+                    // Compute classes and min/maxEC
+                    SEC=(*it)->SEC();
+                    resolveClasses(SEC, discreteECs, classesEC,(*it)->name() );
+                    minmax( SEC, (*it), maxEC, minEC, maxNodeEC, minNodeEC) ;
+                }
                 // Compute classes and min/maxSPC
                 SPC = (*it)->SPC();  //same as PC
                 resolveClasses(SPC, discretePCs, classesSPC,(*it)->name() );
@@ -4503,9 +4528,14 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
             varianceSPC=0;
             tempVariancePC=0;
 
-            meanEC = sumEC /(float) N ;
-            varianceEC=0;
-            tempVarianceEC=0;
+            if (disconnectedGraph) {
+
+            }
+            else {
+                meanEC = sumEC /(float) N ;
+                varianceEC=0;
+                tempVarianceEC=0;
+            }
 
             qDebug() << "Graph: graphDistanceGeodesicCompute() - "
                         "Computing std centralities ...";
@@ -4548,17 +4578,27 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                 tempVariancePC *=tempVariancePC;
                 varianceSPC  += tempVariancePC;
 
-                //calculate EC variance
-                tempVarianceEC = (  (*it)->EC()  -  meanEC  ) ;
-                tempVarianceEC *=tempVarianceEC;
-                varianceEC  += tempVarianceEC;
+                if (disconnectedGraph) {
+
+                }
+                else {
+                    //calculate EC variance
+                    tempVarianceEC = (  (*it)->EC()  -  meanEC  ) ;
+                    tempVarianceEC *=tempVarianceEC;
+                    varianceEC  += tempVarianceEC;
+                }
             }
 
             //compute final variances
             varianceSBC  /=  (float) N;
             varianceSCC  /=  (float) N;
             varianceSPC  /=  (float) N;
-            varianceEC  /=  (float) N;
+            if (disconnectedGraph) {
+
+            }
+            else {
+                varianceEC  /=  (float) N;
+            }
 
             // calculate SC mean value and prepare to compute variance
             meanSSC = sumSSC /(float) N ;
@@ -5059,8 +5099,14 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
 
 
 /**
-    minmax() facilitates the calculations of minimum and maximum centralities during graphDistanceGeodesicCompute()
-*/
+ * @brief Computes minimum and maximum centralities during graphDistanceGeodesicCompute()
+ * @param C
+ * @param v
+ * @param max
+ * @param min
+ * @param maxNode
+ * @param minNode
+ */
 void Graph::minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int &minNode) {
     qDebug() << "MINMAX C = " <<  C << "  max = " << max << "  min = " << min << " name = " <<  v->name();
     if (C > max ) {
@@ -5308,9 +5354,9 @@ void Graph::writeEccentricity(
                 << "</td><td>"
                 << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
                 << "</td><td>"
-                << ((eccentr == 0) ? "\xE2\x88\x9E" : QString::number(eccentr) )
+                << ((eccentr == 0 || eccentr == RAND_MAX ) ? "\xE2\x88\x9E" : QString::number(eccentr) )
                 << "</td><td>"
-                << ((eccentr == 0) ? "\xE2\x88\x9E" : QString::number( 100* (eccentr) / sumEccentricity  ) )
+                << ((eccentr == 0 || eccentr == RAND_MAX ) ? "\xE2\x88\x9E" : QString::number( 100* (eccentr) / sumEccentricity  ) )
                 << "</td>"
                 <<"</tr>";
 
