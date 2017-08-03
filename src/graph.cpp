@@ -17953,6 +17953,132 @@ void Graph::writeMatrix (const QString &fn,
 
 
 
+
+/**
+    Writes the matrix M to a specified file fn
+*/
+void Graph::writeMatrixHTML(Matrix M,const bool &markDiag, QTextStream& os) {
+
+
+    int sum=0;
+    float weight=0;
+    int rowCount=0;
+    int N = vertices();
+
+    QList<Vertex*>::const_iterator it, it1;
+
+    QString pMsg = tr("Writing Matrix to file. \nPlease wait...");
+    emit statusMessage( pMsg );
+    emit signalProgressBoxCreate(N, pMsg );
+
+    outText << htmlHead;
+
+    outText << "<h1>";
+    outText << tr("ADJACENCY MATRIX");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            <<"</span>"
+            << graphName()
+            <<"<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            <<"</span>"
+            << N
+            << "</p>";
+
+
+    outText << "<p class=\"description\">"
+            << tr("The adjacency matrix of a social network is a NxN matrix ")
+            << tr("where each element (i,j) is the value of the edge from "
+                  "actor i to actor j, or 0 if no edge exists.")
+            << "<br />"
+            << "</p>";
+
+
+
+    outText << "<table  border=\"1\" cellspacing=\"0\" cellpadding=\"0\" class=\"stripes\">"
+            << "<thead>"
+            << "<tr>"
+            << "<th>"
+            << tr("<sub>Actor</sup>/<sup>Actor</sup>")
+            << "</th>";
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( ! (*it)->isEnabled() ) continue;
+        outText <<"<th>"
+                << (*it)->name()
+                << "</th>";
+    }
+    outText << "</tr>"
+            << "</thead>"
+            << "<tbody>";
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
+        rowCount++;
+
+        emit signalProgressBoxUpdate(rowCount);
+
+        if ( ! (*it)->isEnabled() ) continue;
+
+        outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">";
+
+        outText <<"<td class=\"header\">"
+               << (*it)->name()
+               << "</td>";
+
+        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
+
+            if ( ! (*it1)->isEnabled() ) continue;
+
+            outText <<"<td" << ((markDiag && (*it)->name() ==(*it1)->name() )? " class=\"diag\">" : ">");
+            if ( (weight =  edgeExists ( (*it)->name(), (*it1)->name() )  )!=0 ) {
+                sum++;
+                outText << (weight);
+
+            }
+            else {
+                outText << 0 ;
+
+            }
+            outText << "</td>";
+
+        }
+        outText <<"</tr>";
+
+    }
+    outText << "</tbody></table>";
+
+    qDebug("Graph: Found a total of %i edge",sum);
+    if ( sum != edgesEnabled() ) qDebug ("Error in edge count found!!!");
+    else qDebug("Edge count OK!");
+
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Adjacency matrix report, <br />");
+    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+
+    file.close();
+
+    emit signalProgressBoxKill();
+
+}
+
+
+
+
+
 /** 
     Exports the adjacency matrix to a given textstream
 */
