@@ -10178,10 +10178,12 @@ void Graph::writeMatrixWalks (const QString &fn,
 
 
     if (length > 0) {
-        XM.printHTMLTable(outText);
+        //XM.printHTMLTable(outText);
+        writeMatrixHTMLTable(outText,XM,true);
     }
     else {
-         XSM.printHTMLTable(outText);
+        writeMatrixHTMLTable(outText,XSM,true);
+         //XSM.printHTMLTable(outText);
     }
 
     outText << "<p>&nbsp;</p>";
@@ -11235,7 +11237,8 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
            << "</p>";
 
     emit signalProgressBoxUpdate( N /3);
-    STR_EQUIV.printHTMLTable(outText,true,false);
+    writeMatrixHTMLTable(outText,STR_EQUIV,true,false);
+    //STR_EQUIV.printHTMLTable(outText,true,false);
 
     outText << "<p>"
             << "<span class=\"info\">"
@@ -12029,8 +12032,8 @@ void Graph::writeMatrixDissimilarities(const QString fileName,
             <<"</span>"
             << "</p>";
 
-    DSM.printHTMLTable(outText);
-
+    //DSM.printHTMLTable(outText);
+    writeMatrixHTMLTable(outText,DSM, true);
     outText << "<p class=\"description\">";
     outText << "<span class=\"info\">"
             << tr("DSM = 0 ")
@@ -12212,7 +12215,8 @@ void Graph::writeMatrixSimilarityMatching(const QString fileName,
             << "</p>";
 
     emit signalProgressBoxUpdate(0);
-    SCM.printHTMLTable(outText);
+    //SCM.printHTMLTable(outText);
+    writeMatrixHTMLTable(outText,SCM, true);
 
     outText << "<p class=\"description\">";
     if (measureInt==METRIC_HAMMING_DISTANCE) {
@@ -12388,8 +12392,8 @@ void Graph::writeMatrixSimilarityPearson(const QString fileName,
             << "</p>";
 
 
-    PCC.printHTMLTable(outText);
-
+    //PCC.printHTMLTable(outText);
+    writeMatrixHTMLTable(outText,PCC, true);
 
     outText << "<p class=\"description\">";
     outText << "<span class=\"info\">"
@@ -19686,7 +19690,6 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
                        "Reached maxIterations. BREAK";
             break;
         }
-
 
 
         Delta_max = epsilon;
