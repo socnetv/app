@@ -250,7 +250,7 @@ public slots:
     double canvasVisibleY(const double &y) const ;
     double canvasRandomX()  const;
     double canvasRandomY()  const;
-    void vertexIsolateFilter ( bool );		//Called by MW to filter orphan vertices
+    void vertexIsolatedAllToggle ( const bool &toggle);
     void vertexClickedSet(const int &v);
     void edgeClickedSet(const int &v1, const int &v2) ;
     void edgeFilterByWeight (float, bool);		//Called by MW to filter edges over/under a weight
@@ -597,6 +597,11 @@ public:
                      const bool &dropIsolates=false,
                      const QString &varLocation="Rows",
                      const bool &simpler=false);
+
+    void writeMatrixHTMLTable(QTextStream &outText, Matrix &M,
+                         const bool &markDiag=true,
+                         const bool &plain=false,
+                         const bool &printInfinity=true);
 
     void writeMatrixAdjacency(const QString fileName,
                               const bool &markDiag=true);

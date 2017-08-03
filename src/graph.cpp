@@ -929,13 +929,12 @@ void Graph::vertexRemove(long int Doomed){
 
 
 /**
- * @brief Called from filterOrphanNodes via MainWindow  to filter nodes with no links
- * For each orphan Vertex in the Graph, emits the setVertexVisibility signal
- * @param filterFlag
+ * @brief Called from MainWindow  to enable/disable isolate vertices (with no links)
+ * For each isolate Vertex in the Graph, emits the setVertexVisibility signal
+ * @param toggle
  */
-void Graph::vertexIsolateFilter(bool filterFlag){
-    qDebug() << "*** Graph::vertexIsolateFilter() "
-                << " setting all isolate nodes to " << filterFlag;
+void Graph::vertexIsolatedAllToggle(const bool &toggle){
+    qDebug() << "Graph::vertexIsolatedAllToggle() - set all isolated to" << toggle;
 
     QList<Vertex*>::const_iterator it;
     for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -943,13 +942,13 @@ void Graph::vertexIsolateFilter(bool filterFlag){
             continue;
         }
         else {
-            qDebug() << "Graph::filterOrphanNodes() Vertex " << (*it)->name()
-                     << " isolate. Toggling it and emitting setVertexVisibility signal to GW...";
-            (*it)->setEnabled (filterFlag) ;
+            qDebug() << "Graph::vertexIsolatedAllToggle() - Vertex" << (*it)->name()
+                     << "is isolated. Toggling it and emitting setVertexVisibility signal to GW...";
+            (*it)->setEnabled (toggle) ;
 
             graphModifiedSet(GRAPH_CHANGED_VERTICES);
 
-            emit setVertexVisibility( (*it)-> name(), filterFlag );
+            emit setVertexVisibility( (*it)-> name(), toggle );
         }
     }
 }
@@ -2255,8 +2254,8 @@ int Graph::vertices(const bool &dropIsolates, const bool &countAll, const bool &
             ++m_totalVertices;
         }
     }
-    qDebug()<< "Graph::vertices() - Graph modified, vertices: "
-               << m_totalVertices;
+    qDebug()<< "Graph::vertices() - Graph size:"<< m_graph.size()
+            << "enabled vertices" << m_totalVertices;
     calculatedVertices=true;
     return m_totalVertices;
 }
@@ -3588,15 +3587,13 @@ void Graph::graphMatrixReachabilityCreate() {
         }
 
 
-        i = vpos[ source ];
-
-        qDebug() << "Graph: graphMatrixReachabilityCreate() - source" << source
-                 << "vpos" << i;
+        qDebug() << "Graph: graphMatrixReachabilityCreate() - "
+                  << "source" << source
+                  << "i" << i;
 
         for (jt=m_graph.cbegin(); jt!=m_graph.cend(); ++jt) {
 
             target = (*jt)->name();
-
 
             if  ( ! (*jt)->isEnabled()  ) {
                 qDebug() << "Graph: graphMatrixReachabilityCreate() - "
@@ -3604,17 +3601,18 @@ void Graph::graphMatrixReachabilityCreate() {
                 continue;
             }
 
-            j = vpos[ target ];
-
             qDebug() << "Graph: graphMatrixReachabilityCreate() - "
-                     << "target" << target << "vpos" << j;
+                     << "target" << target << "j" << j;
 
 
             reachVal = ((*it)->distance( target ) != RAND_MAX ) ? 1 : 0;
             qDebug() << "Graph: graphMatrixReachabilityCreate() -  setting XRM ("<< i <<","<< j << ") =" <<  reachVal;
             XRM.setItem( i, j, reachVal );
 
+            j++;
         }
+        j=0;
+        i++;
     }
 
     emit signalProgressBoxKill();
@@ -3918,11 +3916,8 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
             continue;
         }
 
-
-        i = vpos[ source ];
-
         qDebug() << "Graph::graphMatrixShortestPathsCreate() - source" << source
-                 << "vpos" << i;
+                 << "i" << i;
 
         for (jt=m_graph.cbegin(); jt!=m_graph.cend(); ++jt) {
 
@@ -3940,17 +3935,17 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
                 continue;
             }
 
-            j = vpos[ target ];
-
             qDebug() << "Graph::graphMatrixShortestPathsCreate() - "
-                     << "target" << target << "vpos" << j;
+                     << "target" << target << "j" << j;
 
 
             qDebug() << "Graph::graphMatrixShortestPathsCreate() -  setting SIGMA ("
                      << i <<","<< j << ") =" << (*it)->shortestPaths( target )  ;
             SIGMA.setItem( i, j, (*it)->shortestPaths( target ) );
-
+            j++;
         }
+        j=0;
+        i++;
     }
 
     emit signalProgressBoxKill();
@@ -4016,10 +4011,8 @@ void Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
         }
 
 
-        i = vpos[ source ];
-
         qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() - source"
-                 << source << "vpos" << i;
+                 << source << "i" << i;
 
         for (jt=m_graph.cbegin(); jt!=m_graph.cend(); ++jt) {
 
@@ -4037,17 +4030,18 @@ void Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
                 continue;
             }
 
-            j = vpos[ target ];
-
             qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() - "
-                     << "target" << target << "vpos" << j;
+                     << "target" << target << "j" << j;
 
 
             qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() -  setting DM ("
                      << i <<","<< j << ") =" << (*it)->distance( target ) ;
             DM.setItem( i, j, (*it)->distance( target ) );
 
+            j++;
         }
+        j=0;
+        i++;
     }
 
     emit signalProgressBoxKill();
@@ -17779,7 +17773,8 @@ void Graph::writeMatrix (const QString &fn,
                       "actor i to actor j, or 0 if no edge exists.")
                 << "<br />"
                 << "</p>";
-        AM.printHTMLTable(outText,true);
+        writeMatrixHTMLTable(outText, AM , true,false,false);
+        //AM.printHTMLTable(outText,true);
         break;
     case MATRIX_LAPLACIAN:
         outText << "<p class=\"description\">"
@@ -17794,7 +17789,8 @@ void Graph::writeMatrix (const QString &fn,
                       "- and all other elements zero.<br />")
                 << "<br />"
                 << "</p>";
-        AM.laplacianMatrix().printHTMLTable(outText,true,false,false);
+        //AM.laplacianMatrix().printHTMLTable(outText,true,false,false);
+        writeMatrixHTMLTable(outText, AM.laplacianMatrix() , true,false,false);
         break;
     case MATRIX_DEGREE:
         outText << "<p class=\"description\">"
@@ -17803,7 +17799,8 @@ void Graph::writeMatrix (const QString &fn,
                       "and all other elements are zero.")
                 << "<br />"
                 << "</p>";
-        AM.degreeMatrix().printHTMLTable(outText, true);
+        //AM.degreeMatrix().printHTMLTable(outText, true);
+        writeMatrixHTMLTable(outText, AM.degreeMatrix() , true,false,false);
         break;
     case MATRIX_DISTANCES:
         outText << "<p class=\"description\">"
@@ -17813,7 +17810,8 @@ void Graph::writeMatrix (const QString &fn,
                       "or infinity if no shortest path exists.")
                 << "<br />"
                 << "</p>";
-        DM.printHTMLTable(outText,true);
+        writeMatrixHTMLTable(outText, DM, true);
+        //DM.printHTMLTable(outText,true);
         break;
     case MATRIX_GEODESICS:
         outText << "<p class=\"description\">"
@@ -17823,7 +17821,8 @@ void Graph::writeMatrix (const QString &fn,
                       "or infinity if no shortest path exists.")
                 << "<br />"
                 << "</p>";
-        SIGMA.printHTMLTable(outText,true);
+        writeMatrixHTMLTable(outText, SIGMA, true);
+        //SIGMA.printHTMLTable(outText,true);
         break;
 
     case MATRIX_ADJACENCY_INVERSE:
@@ -17833,7 +17832,8 @@ void Graph::writeMatrix (const QString &fn,
                     << "<br />"
                     << "</p>";
         }else {
-            invAM.printHTMLTable(outText,true);
+            writeMatrixHTMLTable(outText, invAM, true);
+            //invAM.printHTMLTable(outText,true);
         }
         break;
     case MATRIX_REACHABILITY:
@@ -17847,8 +17847,8 @@ void Graph::writeMatrix (const QString &fn,
                       "geodesics matrix.")
                 << "<br />"
                 << "</p>";
-
-        XRM.printHTMLTable(outText,true);
+        writeMatrixHTMLTable(outText, XRM, true);
+        //XRM.printHTMLTable(outText,true);
         break;
 
     case MATRIX_ADJACENCY_TRANSPOSE:
@@ -17861,8 +17861,8 @@ void Graph::writeMatrix (const QString &fn,
                       "a matrix whose (i,j) element is the (j,i) element of AM.")
                 << "</p>";
 
-
-        AM.transpose().printHTMLTable(outText,true);
+        writeMatrixHTMLTable(outText, AM.transpose() , true);
+        //AM.transpose().printHTMLTable(outText,true);
         break;
 
     case MATRIX_COCITATION:
@@ -17876,7 +17876,8 @@ void Graph::writeMatrix (const QString &fn,
                 << "<br />"
                 << tr("C is a symmetric matrix.")
                 << "</p>";
-        AM.cocitationMatrix().printHTMLTable(outText,true);
+        writeMatrixHTMLTable(outText, AM.cocitationMatrix() , true);
+        //AM.cocitationMatrix().printHTMLTable(outText,true);
         break;
 
     case MATRIX_DISTANCES_EUCLIDEAN:
@@ -17887,7 +17888,10 @@ void Graph::writeMatrix (const QString &fn,
                       "square root of the sum of their squared differences.")
                 << "<br />"
                 << "</p>";
-        AM.distancesMatrix(METRIC_EUCLIDEAN_DISTANCE, varLocation, false, true ).printHTMLTable(outText,true);
+        writeMatrixHTMLTable(outText,
+                        AM.distancesMatrix(METRIC_EUCLIDEAN_DISTANCE, varLocation, false, true ),
+                        true,false,false);
+        //AM.distancesMatrix(METRIC_EUCLIDEAN_DISTANCE, varLocation, false, true ).printHTMLTable(outText,true);
         break;
     case MATRIX_DISTANCES_HAMMING:
         outText << "<p class=\"description\">"
@@ -17897,7 +17901,10 @@ void Graph::writeMatrix (const QString &fn,
                       "number of different ties to other actors.")
                 << "<br />"
                 << "</p>";
-        AM.distancesMatrix(METRIC_HAMMING_DISTANCE, varLocation, false, true ).printHTMLTable(outText,true);
+        writeMatrixHTMLTable(outText,
+                        AM.distancesMatrix(METRIC_HAMMING_DISTANCE, varLocation, false, true ),
+                        true,false,false);
+        //AM.distancesMatrix(METRIC_HAMMING_DISTANCE, varLocation, false, true ).printHTMLTable(outText,true);
         break;
     case MATRIX_DISTANCES_JACCARD:
         outText << "<p class=\"description\">"
@@ -17906,7 +17913,10 @@ void Graph::writeMatrix (const QString &fn,
                       "of the tie profiles between actors i and j.")
                 << "<br />"
                 << "</p>";
-        AM.distancesMatrix(METRIC_JACCARD_INDEX, "Rows", false, true ).printHTMLTable(outText,true);
+        writeMatrixHTMLTable(outText,
+                        AM.distancesMatrix(METRIC_JACCARD_INDEX, "Rows", false, true ),
+                        true,false,false);
+        //AM.distancesMatrix(METRIC_JACCARD_INDEX, "Rows", false, true ).printHTMLTable(outText,true);
 
         break;
     case MATRIX_DISTANCES_MANHATTAN:
@@ -17917,7 +17927,10 @@ void Graph::writeMatrix (const QString &fn,
                       "sum of their absolute differences.")
                 << "<br />"
                 << "</p>";
-        AM.distancesMatrix(METRIC_MANHATTAN_DISTANCE, varLocation, false, true ).printHTMLTable(outText,true);
+        writeMatrixHTMLTable(outText,
+                        AM.distancesMatrix(METRIC_MANHATTAN_DISTANCE, varLocation, false, true ),
+                        true,false,false);
+        //AM.distancesMatrix(METRIC_MANHATTAN_DISTANCE, varLocation, false, true ).printHTMLTable(outText,true);
         break;
     case MATRIX_DISTANCES_CHEBYSHEV:
         outText << "<p class=\"description\">"
@@ -17926,7 +17939,10 @@ void Graph::writeMatrix (const QString &fn,
                       "of the tie profiles between actors i and j, namely the greatest of their differences.")
                 << "<br />"
                 << "</p>";
-        AM.distancesMatrix(METRIC_CHEBYSHEV_MAXIMUM, varLocation, false, true ).printHTMLTable(outText,true);
+        writeMatrixHTMLTable(outText,
+                        AM.distancesMatrix(METRIC_CHEBYSHEV_MAXIMUM, varLocation, false, true ),
+                        true,false,false);
+        //AM.distancesMatrix(METRIC_CHEBYSHEV_MAXIMUM, varLocation, false, true ).printHTMLTable(outText,true);
         break;
 
     default:
@@ -17955,49 +17971,41 @@ void Graph::writeMatrix (const QString &fn,
 
 
 /**
-    Writes the matrix M to a specified file fn
-*/
-void Graph::writeMatrixHTML(Matrix M,const bool &markDiag, QTextStream& os) {
+ * @brief Writes the matrix M as HTML <table> to specified text stream outText
+ * It is the same as Matrix::printHTMLTable except that
+ * this method omits disabled vertices, thus the table header is correct
+ * @param outText
+ * @param M
+ * @param markDiag
+ * @param plain
+ * @param printInfinity
+ */
+void Graph::writeMatrixHTMLTable(QTextStream& outText, Matrix &M,
+                            const bool &markDiag,
+                            const bool &plain,
+                            const bool &printInfinity) {
 
+    Q_UNUSED(plain);
 
-    int sum=0;
-    float weight=0;
-    int rowCount=0;
+    qDebug () << "Graph::writeMatrixHTMLTable() ";
+
+    int rowCount=0, i=0, j=0;
     int N = vertices();
+    float maxVal, minVal, element;
+    bool hasRealNumbers=false;
 
     QList<Vertex*>::const_iterator it, it1;
 
-    QString pMsg = tr("Writing Matrix to file. \nPlease wait...");
+    QString pMsg = tr("Writing matrix to file. \nPlease wait...");
     emit statusMessage( pMsg );
     emit signalProgressBoxCreate(N, pMsg );
 
-    outText << htmlHead;
+    M.findMinMaxValues(minVal, maxVal, hasRealNumbers);
 
-    outText << "<h1>";
-    outText << tr("ADJACENCY MATRIX");
-    outText << "</h1>";
+    outText <<  ( (hasRealNumbers) ? qSetRealNumberPrecision(3) : qSetRealNumberPrecision(0) ) ;
 
-    outText << "<p>"
-            << "<span class=\"info\">"
-            << tr("Network name: ")
-            <<"</span>"
-            << graphName()
-            <<"<br />"
-            << "<span class=\"info\">"
-            << tr("Actors: ")
-            <<"</span>"
-            << N
-            << "</p>";
-
-
-    outText << "<p class=\"description\">"
-            << tr("The adjacency matrix of a social network is a NxN matrix ")
-            << tr("where each element (i,j) is the value of the edge from "
-                  "actor i to actor j, or 0 if no edge exists.")
-            << "<br />"
-            << "</p>";
-
-
+    qDebug () << "Graph::writeMatrixHTMLTable() - minVal" << minVal
+              << "maxVal" << maxVal << "hasRealNumbers" << hasRealNumbers;
 
     outText << "<table  border=\"1\" cellspacing=\"0\" cellpadding=\"0\" class=\"stripes\">"
             << "<thead>"
@@ -18007,7 +18015,10 @@ void Graph::writeMatrixHTML(Matrix M,const bool &markDiag, QTextStream& os) {
             << "</th>";
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( ! (*it)->isEnabled() ) continue;
+
+        if ( ! (*it)->isEnabled() ) {
+            continue;
+        }
         outText <<"<th>"
                 << (*it)->name()
                 << "</th>";
@@ -18016,13 +18027,15 @@ void Graph::writeMatrixHTML(Matrix M,const bool &markDiag, QTextStream& os) {
             << "</thead>"
             << "<tbody>";
 
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
+
+        if ( ! (*it)->isEnabled() ) {
+            continue;
+        }
 
         rowCount++;
 
         emit signalProgressBoxUpdate(rowCount);
-
-        if ( ! (*it)->isEnabled() ) continue;
 
         outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">";
 
@@ -18032,44 +18045,62 @@ void Graph::writeMatrixHTML(Matrix M,const bool &markDiag, QTextStream& os) {
 
         for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
 
-            if ( ! (*it1)->isEnabled() ) continue;
+            if ( ! (*it1)->isEnabled() ) {
+                continue;
+            }
+            outText << fixed << right;
 
             outText <<"<td" << ((markDiag && (*it)->name() ==(*it1)->name() )? " class=\"diag\">" : ">");
-            if ( (weight =  edgeExists ( (*it)->name(), (*it1)->name() )  )!=0 ) {
-                sum++;
-                outText << (weight);
 
+            element = M.item(i,j);
+
+            qDebug () << "Graph::writeMatrixHTMLTable() - M(" <<i<<","<<j<<") =" <<  M.item(i,j);
+
+            if ( ( element == RAND_MAX ) && printInfinity) {
+                // print inf symbol instead of RAND_MAX (distances matrix).
+                outText << infinity;
             }
             else {
-                outText << 0 ;
-
+                outText << element ;
             }
-            outText << "</td>";
 
+
+            outText << "</td>";
+            j++;
         }
         outText <<"</tr>";
-
+        i++;
+        j=0;
     }
     outText << "</tbody></table>";
 
-    qDebug("Graph: Found a total of %i edge",sum);
-    if ( sum != edgesEnabled() ) qDebug ("Error in edge count found!!!");
-    else qDebug("Edge count OK!");
 
 
-    outText << "<p>&nbsp;</p>";
-    outText << "<p class=\"small\">";
-    outText << tr("Adjacency matrix report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
-               .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
-    outText << "<br />";
-    outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
-    outText << "</p>";
-
-    outText << htmlEnd;
+    outText << qSetFieldWidth(0) << endl ;
 
 
-    file.close();
+    outText << "<p>"
+       << "<span class=\"info\">"
+       << ("Values: ")
+       <<"</span>"
+       << ( (hasRealNumbers) ? ("real numbers (printed decimals 3)") : ("integers only" ) )
+       << "<br />"
+       << "<span class=\"info\">"
+       << ("- Max value: ")
+       <<"</span>"
+       << ( ( maxVal==RAND_MAX ) ?
+                ( (printInfinity) ? infinity : QString::number(maxVal) ) +
+                " (=not connected nodes, in distance matrix)" : QString::number(maxVal) )
+       << "<br />"
+       << "<span class=\"info\">"
+       << ("- Min value: ")
+       <<"</span>"
+       << ( ( minVal==RAND_MAX ) ?
+                ( (printInfinity) ? infinity : QString::number(minVal) ) +
+                + " (usually denotes unconnected nodes, in distance matrix)" : QString::number(minVal ) )
+       << "</p>";
+
+
 
     emit signalProgressBoxKill();
 
@@ -18501,8 +18532,6 @@ void Graph::graphMatrixAdjacencyCreate(const bool dropIsolates,
     }
 
     calculatedAdjacencyMatrix=true;
-
-    AM.printMatrixConsole(true);
 
     emit signalProgressBoxKill();
 

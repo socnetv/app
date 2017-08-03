@@ -9301,7 +9301,7 @@ void MainWindow::slotFilterNodes(){
 
 /**
  * @brief MainWindow::slotEditFilterNodesIsolates
- *Calls Graph::vertexIsolateFilter to toggle visibility of isolated vertices
+ *Calls Graph::vertexIsolatedAllToggle to toggle visibility of isolated vertices
  */
 void MainWindow::slotEditFilterNodesIsolates(bool checked){
     Q_UNUSED(checked);
@@ -9310,7 +9310,7 @@ void MainWindow::slotEditFilterNodesIsolates(bool checked){
         return;
     }
     qDebug()<< "MW: slotEditFilterNodesIsolates";
-    activeGraph.vertexIsolateFilter( ! editFilterNodesIsolatesAct->isChecked() );
+    activeGraph.vertexIsolatedAllToggle( ! editFilterNodesIsolatesAct->isChecked() );
     statusMessage(  tr("Isolate nodes visibility toggled!")  );
 }
 

@@ -775,12 +775,12 @@ void GraphicsWidget::setEdgeVisibility(int relation, int source, int target, boo
 
 
 /**
-*	Changes the visibility of a  Node
+*	Changes the visibility of a Node
 */
 void GraphicsWidget::setNodeVisibility(long int number, bool toggle){
     if  ( nodeHash.contains (number) ) {
-        qDebug() << "GW: setNodeVisibility(): for  "
-                 << number << " to " << toggle;
+        qDebug() << "GW::setNodeVisibility() - node"
+                 << number << " set to " << toggle;
         nodeHash.value(number) -> setVisible(toggle);
         nodeHash.value(number) -> setEnabled(toggle);
         return;
