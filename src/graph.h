@@ -1052,6 +1052,7 @@ private:
     bool calculatedTriad;
     bool calculatedGraphSymmetry, calculatedGraphReciprocity;
     bool calculatedGraphDensity, calculatedGraphWeighted;
+    bool calculatedGraphConnectedness;
     bool m_undirected, m_symmetric, m_isWeighted;
 
     QString VERSION, fileName, m_graphName, initEdgeColor, initVertexColor,

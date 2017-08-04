@@ -70,6 +70,7 @@ Graph::Graph() {
     m_graphDensity = -1;
     fileName ="";
 
+    calculatedGraphConnectedness = false;
     calculatedGraphReciprocity = false;
     calculatedGraphSymmetry = false;
     calculatedGraphWeighted = false;
@@ -316,6 +317,7 @@ void Graph::clear() {
     m_symmetric=true;
     m_graphDensity = -1;
 
+    calculatedGraphConnectedness = false;
     calculatedGraphReciprocity = false;
     calculatedGraphSymmetry = false;
     calculatedGraphWeighted = false;
@@ -3737,7 +3739,7 @@ int Graph::graphConnectedness(const bool updateProgress) {
 
     qDebug() << "Graph::graphConnectedness() ";
 
-    if (calculatedDistances && !graphModified()) {
+    if (calculatedGraphConnectedness && !graphModified()) {
         qDebug()<< "Graph::graphConnectedness() - graph unmodified. Returning:"
                 << m_graphConnectedness;
         return m_graphConnectedness;
@@ -3854,6 +3856,8 @@ int Graph::graphConnectedness(const bool updateProgress) {
     if (updateProgress) {
         emit signalProgressBoxKill();
     }
+
+    calculatedGraphConnectedness = true;
     return m_graphConnectedness;
 }
 
@@ -13517,14 +13521,15 @@ void Graph::graphSave(const QString &fileName,
     };
     if (saved) {
         if (graphModified()) {
+            calculatedGraphConnectedness = false;
+            calculatedGraphReciprocity = false;
+            calculatedGraphSymmetry = false;
             calculatedGraphWeighted = false;
             calculatedGraphDensity = false;
             calculatedEdges = false;
             calculatedVertices = false;
             calculatedVerticesList=false;
             calculatedVerticesSet = false;
-            calculatedGraphReciprocity = false;
-            calculatedGraphSymmetry = false;
             calculatedIsolates = false;
             calculatedAdjacencyMatrix = false;
             calculatedDistances = false;
@@ -19707,15 +19712,14 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
 
 
     // initialize p1, p2, ... pn
-    // placing the particles on the vertices of a regular n-polygon
-    // circumscribed by a circle whose diameter is L0
-
     qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
                "Set particles to initial positions p" ;
     i=0;
     x0=canvasWidth/2.0;
     y0=canvasHeight/2.0;
 
+    // placing the particles on the vertices of a regular n-polygon
+    // circumscribed by a circle whose diameter is L0
     //layoutCircular(x0,y0,L0/2,false);
     layoutRandom();
 
