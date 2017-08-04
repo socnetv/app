@@ -507,8 +507,8 @@ private:
     QMenu *cohesionMenu, *strEquivalenceMenu, *communitiesMenu, *connectivityMenu;
     QMenu *matrixMenu;
     QMenu *networkMenu, *randomNetworkMenu, *filterMenu, *recentFilesSubMenu;
-    QMenu *randomLayoutMenu, *layoutProminenceRadialMenu, *layoutProminenceLevelMenu;
-    QMenu *layoutForceDirectedMenu, *layoutProminenceNodeSizeMenu, *layoutProminenceNodeColorMenu;
+    QMenu *randomLayoutMenu, *layoutRadialProminenceMenu, *layoutLevelProminenceMenu;
+    QMenu *layoutForceDirectedMenu, *layoutNodeSizeProminenceMenu, *layoutNodeColorProminenceMenu;
     QMenu *colorationMenu;
     QComboBox *toolBoxEditNodeSubgraphSelect, *toolBoxEditEdgeModeSelect,
     *toolBoxEditEdgeSymmetrizeSelect, *toolBoxAnalysisCohesionSelect,
@@ -580,26 +580,26 @@ private:
             *cBetweennessAct, *cInformationAct, *cEigenvectorAct, *cPageRankAct,
             *cStressAct, *cPowerAct, *cEccentAct, *cProximityPrestigeAct;
     QAction *layoutRandomAct, *layoutRandomRadialAct, *layoutGuidesAct;
-    QAction *layoutProminenceRadial_DC_Act, *layoutProminenceRadial_DP_Act,
-    *layoutProminenceRadial_CC_Act, *layoutProminenceRadial_SC_Act, *layoutProminenceRadial_EC_Act,
-    *layoutProminenceRadial_PC_Act, *layoutProminenceRadial_BC_Act, *layoutProminenceRadial_IC_Act,
-    *layoutProminenceRadial_EVC_Act,
-    *layoutProminenceRadial_IRCC_Act,*layoutProminenceRadial_PRP_Act, *layoutProminenceRadial_PP_Act;
-    QAction *layoutProminenceLevel_DC_Act, *layoutProminenceLevel_DP_Act,
-    *layoutProminenceLevel_CC_Act, *layoutProminenceLevel_SC_Act, *layoutProminenceLevel_EC_Act,
-    *layoutProminenceLevel_PC_Act, *layoutProminenceLevel_BC_Act, *layoutProminenceLevel_IC_Act,
-    *layoutProminenceLevel_EVC_Act,
-    *layoutProminenceLevel_IRCC_Act,*layoutProminenceLevel_PRP_Act, *layoutProminenceLevel_PP_Act;
-    QAction *layoutProminenceNodeSize_DC_Act, *layoutProminenceNodeSize_DP_Act,
-    *layoutProminenceNodeSize_CC_Act, *layoutProminenceNodeSize_SC_Act, *layoutProminenceNodeSize_EC_Act,
-    *layoutProminenceNodeSize_PC_Act, *layoutProminenceNodeSize_BC_Act, *layoutProminenceNodeSize_IC_Act,
-    *layoutProminenceNodeSize_EVC_Act,
-    *layoutProminenceNodeSize_IRCC_Act,*layoutProminenceNodeSize_PRP_Act, *layoutProminenceNodeSize_PP_Act;
-    QAction *layoutProminenceNodeColor_DC_Act, *layoutProminenceNodeColor_DP_Act,
-    *layoutProminenceNodeColor_CC_Act, *layoutProminenceNodeColor_SC_Act, *layoutProminenceNodeColor_EC_Act,
-    *layoutProminenceNodeColor_PC_Act, *layoutProminenceNodeColor_BC_Act, *layoutProminenceNodeColor_IC_Act,
-    *layoutProminenceNodeColor_EVC_Act,
-    *layoutProminenceNodeColor_IRCC_Act,*layoutProminenceNodeColor_PRP_Act, *layoutProminenceNodeColor_PP_Act;
+    QAction *layoutRadialProminence_DC_Act, *layoutRadialProminence_DP_Act,
+    *layoutRadialProminence_CC_Act, *layoutRadialProminence_SC_Act, *layoutRadialProminence_EC_Act,
+    *layoutRadialProminence_PC_Act, *layoutRadialProminence_BC_Act, *layoutRadialProminence_IC_Act,
+    *layoutRadialProminence_EVC_Act,
+    *layoutRadialProminence_IRCC_Act,*layoutRadialProminence_PRP_Act, *layoutRadialProminence_PP_Act;
+    QAction *layoutLevelProminence_DC_Act, *layoutLevelProminence_DP_Act,
+    *layoutLevelProminence_CC_Act, *layoutLevelProminence_SC_Act, *layoutLevelProminence_EC_Act,
+    *layoutLevelProminence_PC_Act, *layoutLevelProminence_BC_Act, *layoutLevelProminence_IC_Act,
+    *layoutLevelProminence_EVC_Act,
+    *layoutLevelProminence_IRCC_Act,*layoutLevelProminence_PRP_Act, *layoutLevelProminence_PP_Act;
+    QAction *layoutNodeSizeProminence_DC_Act, *layoutNodeSizeProminence_DP_Act,
+    *layoutNodeSizeProminence_CC_Act, *layoutNodeSizeProminence_SC_Act, *layoutNodeSizeProminence_EC_Act,
+    *layoutNodeSizeProminence_PC_Act, *layoutNodeSizeProminence_BC_Act, *layoutNodeSizeProminence_IC_Act,
+    *layoutNodeSizeProminence_EVC_Act,
+    *layoutNodeSizeProminence_IRCC_Act,*layoutNodeSizeProminence_PRP_Act, *layoutNodeSizeProminence_PP_Act;
+    QAction *layoutNodeColorProminence_DC_Act, *layoutNodeColorProminence_DP_Act,
+    *layoutNodeColorProminence_CC_Act, *layoutNodeColorProminence_SC_Act, *layoutNodeColorProminence_EC_Act,
+    *layoutNodeColorProminence_PC_Act, *layoutNodeColorProminence_BC_Act, *layoutNodeColorProminence_IC_Act,
+    *layoutNodeColorProminence_EVC_Act,
+    *layoutNodeColorProminence_IRCC_Act,*layoutNodeColorProminence_PRP_Act, *layoutNodeColorProminence_PP_Act;
 
 
     QAction *strongColorationAct, *regularColorationAct;
