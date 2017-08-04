@@ -3386,9 +3386,9 @@ void MainWindow::initMenuBar() {
     layoutForceDirectedMenu = new QMenu (tr("Force-Directed Placement..."));
     layoutForceDirectedMenu -> setIcon(QIcon(":/images/force.png"));
     layoutMenu -> addMenu (layoutForceDirectedMenu);
-    layoutForceDirectedMenu -> addAction (layoutFDP_Eades_Act);
-    layoutForceDirectedMenu -> addAction (layoutFDP_FR_Act);
     layoutForceDirectedMenu -> addAction (layoutFDP_KamadaKawai_Act);
+    layoutForceDirectedMenu -> addAction (layoutFDP_FR_Act);
+    layoutForceDirectedMenu -> addAction (layoutFDP_Eades_Act);
 
     layoutMenu->addSeparator();
     layoutMenu -> addAction (layoutGuidesAct);
@@ -3917,9 +3917,10 @@ void MainWindow::initPanels(){
     toolBoxLayoutForceDirectedSelect = new QComboBox;
     QStringList modelsList;
     modelsList << tr("None")
-                << tr("Spring Embedder (Eades)")
+                << tr("Kamada-Kawai")
                 << tr("Fruchterman-Reingold")
-                << tr("Kamada-Kawai") ;
+                << tr("Eades Spring Embedder")
+                ;
 
     toolBoxLayoutForceDirectedSelect->addItems(modelsList);
     toolBoxLayoutForceDirectedSelect->setMinimumHeight(20);
@@ -3927,29 +3928,29 @@ void MainWindow::initPanels(){
     toolBoxLayoutForceDirectedSelect->setStatusTip (
                             tr("Select a Force-Directed layout model. "));
     toolBoxLayoutForceDirectedSelect->setToolTip (
-                tr("Select a Force-Directed layout model to embed to the network.\n"
+                tr("Select a Force-Directed Placement layout model to embed to the network.\n"
                    "Available models: \n\n"
-                   "Eades: A spring-gravitational model, where connected nodes \n"
-                   "attract each other and all nodes repel all other non-adjacent \n"
-                   "nodes. \n\n"
+                   "Eades: A spring-gravitational model, the oldest one, where \n"
+                   "connected nodes attract each other and all nodes repel all \n"
+                   "other non-adjacent nodes. \n\n"
 
-                   "Fruchterman-Reingold: Again adjacent vertices attract each \n"
-                   "each other but, unlike Eades Spring Embedder, all vertices \n"
-                   "repel each other.\n\n"
+                   "Fruchterman-Reingold: Similar to Eades Spring Embedder but more efficient. "
+                   "Again adjacent vertices attract each each other but, unlike "
+                   "Eades, all vertices repel each other.\n\n"
 
                    "Kamada-Kawai\n"
-                   "Another spring embedder model, where the optimal layout is \n"
-                   "that of minimum total spring energy, which is computed as \n"
-                   "the square summation of the differences between desirable \n"
-                   "distances and real ones for all pairs of vertices"
+                   "The most efficient model of the Spring Embedder family, where \n"
+                   "the optimal layout is that of minimum total spring energy, \n"
+                   "which is computed as the square summation of the differences \n"
+                   "between desirable distances and real ones for all pairs of vertices."
                    )
                 );
     toolBoxLayoutForceDirectedSelect->setWhatsThis(
-                tr("Visualize by a Force-Directed layout model.\n\n"
+                tr("Visualize by a Force-Directed Placement layout model.\n\n"
                    "Available models: \n\n"
-                   "Eades model\n"
+                   "Eades Spring Embedder\n"
                    "A spring-gravitational model, where each node is "
-                   "regarded as physical object (ring) repeling all other non-adjacent"
+                   "regarded as physical object (ring) repelling all other non-adjacent"
                    "nodes, while springs between connected nodes attract them. \n\n"
 
                    "Fruchterman-Reingold\n"
@@ -3960,15 +3961,15 @@ void MainWindow::initPanels(){
                    "Embedder, all vertices repel each other.\n\n"
 
                    "Kamada-Kawai\n"
-                   "Another variant of Eades model. In this the graph is considered "
-                   "to be a dynamic system where every edge is between two actors is "
-                   "a 'spring' of a desirable length, which corresponds to their "
-                   "graph theoretic distance. "
+                   "The best variant of the Spring Embedder family of models. "
+                   "In this the graph is considered to be a dynamic system where "
+                   "every edge is between two actors is a 'spring' of a desirable "
+                   "length, which corresponds to their graph theoretic distance. \n"
                    "In this way, the optimal layout of the graph "
                    "is the state with the minimum imbalance. The degree of "
                    "imbalance is formulated as the total spring energy: "
                    "the square summation of the differences between desirable "
-                   "distances and real ones for all pairs of vertices"
+                   "distances and real ones for all pairs of vertices."
                    )
                 );
 
@@ -5469,7 +5470,7 @@ void MainWindow::toolBoxLayoutForceDirectedApplyBtnPressed(){
         break;
     case 1:
         slotLayoutGuides(false);
-        slotLayoutSpringEmbedder();
+        slotLayoutKamadaKawai();
         break;
     case 2:
         slotLayoutGuides(false);
@@ -5477,7 +5478,7 @@ void MainWindow::toolBoxLayoutForceDirectedApplyBtnPressed(){
         break;
     case 3:
         slotLayoutGuides(false);
-        slotLayoutKamadaKawai();
+        slotLayoutSpringEmbedder();
         break;
     default:
         toolBoxLayoutForceDirectedSelect->setCurrentIndex(0);
@@ -9610,7 +9611,7 @@ void MainWindow::slotLayoutSpringEmbedder(){
         return;
     }
 
-    activeGraph.layoutForceDirectedSpringEmbedder(100);
+    activeGraph.layoutForceDirectedSpringEmbedder(500);
 
     statusMessage( tr("Spring-Gravitational (Eades) model embedded.") );
 }

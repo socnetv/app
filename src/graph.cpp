@@ -405,7 +405,7 @@ float Graph::canvasMinDimension() const {
  */
 double Graph::canvasVisibleX(const double &x)  const {
     return qMin (
-                canvasWidth - 30.0 , qMax (30.0 , x )
+                canvasWidth - 50.0 , qMax (50.0 , x )
                 );
 }
 
@@ -419,7 +419,7 @@ double Graph::canvasVisibleX(const double &x)  const {
  */
 double Graph::canvasVisibleY(const double &y) const {
     return qMin (
-                canvasHeight - 30.0 , qMax (30.0 , y )
+                canvasHeight - 50.0 , qMax (50.0 , y )
                 );
 }
 
@@ -19354,9 +19354,9 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations){
              << " naturalLength " << naturalLength;
 
 
-    /* apply an initial circular layout */
-    layoutCircular(canvasWidth/2.0, canvasHeight/2.0, naturalLength/2.0 ,false);
-
+    /* apply an initial random layout */
+    //layoutCircular(canvasWidth/2.0, canvasHeight/2.0, naturalLength/2.0 ,false);
+    layoutRandom();
 
     QString pMsg  = tr ( "Embedding Eades Spring-Gravitational model. \n"
                          "Please wait ....");
@@ -19478,8 +19478,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
     qreal dist = 0;
     qreal f_att, f_rep;
     QPointF DV;   //difference vector
-    //qreal temperature=canvasWidth / 10.0; //limits the displacement of the vertex
-    //qreal temperature=5.8309518948453; //limits the displacement of the vertex
+
     qreal V = (qreal) vertices() ;
     qreal C=0.9; //this is found experimentally
     // optimalDistance (or k) is the radius of the empty area around a  vertex -
@@ -19490,7 +19489,8 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
     int iteration = 1 ;
 
     /* apply an initial circular layout */
-    layoutCircular(canvasWidth/2.0, canvasHeight/2.0, optimalDistance/2.0,false);
+    //layoutCircular(canvasWidth/2.0, canvasHeight/2.0, optimalDistance/2.0,false);
+    //layoutRandom();
 
     qDebug() << "Graph: layoutForceDirectedFruchtermanReingold() ";
     qDebug () << "Graph: Setting optimalDistance = "<<  optimalDistance
@@ -19603,7 +19603,6 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
  * the square summation of the differences between desirable
  * distances and real ones for all pairs of particles
  * Initially, the particles/actors are placed on the vertices of a regular n-polygon
- * @return qreal temperature
  */
 
 void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
@@ -19717,7 +19716,8 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
     x0=canvasWidth/2.0;
     y0=canvasHeight/2.0;
 
-    layoutCircular(x0,y0,L0/2,false);
+    //layoutCircular(x0,y0,L0/2,false);
+    layoutRandom();
 
     QString pMsg = tr("Embedding Kamada & Kawai spring model.\n"
                       "Please wait...");
@@ -19981,13 +19981,30 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
  */
 qreal Graph::layoutForceDirected_FR_temperature(const int iteration) const{
     qreal temp=0;
+
+    qreal temperature=5.8309518948453; //limits the displacement of the vertex
+
     qDebug() << "Graph::layoutForceDirected_FR_temperature(): cool iteration " << iteration;
-    if (iteration < 10)
-        temp =canvasWidth / 10.0;
-    else
-        temp =canvasWidth / (iteration + 10) ;
-    if (iteration > 100)  // follow Eades advice...
+    // For the temperature (which limits the displacement of each vertex),
+    // Fruchterman & Reingold suggested in their paper that it might start
+    // at an initial high value (i.e. "one tenth the width of the frame"
+    //  and then decay to 0 in an inverse linear fashion
+    // They also suggested "a combination of quenching and simmering",
+    // which is a high initial temperature and then a constant low one.
+    // This is what SocNetV does. In fact after 200 iterations we follow Eades advice
+    // and stop movement (temp = 0)
+    if (iteration < 10) {
+        // quenching: starts at a high temperature ( canvasWidth / 10) and cools steadily and rapidly
+        temp =canvasWidth / (iteration + 10.0) ;
+    }
+    else if (iteration > 200)  { // follow Eades advice...
         temp = 0;
+    }
+    else {
+        // simmering: stay at a constant low temperature
+        temp = temperature;
+    }
+
     qDebug() << "Graph::layoutForceDirected_FR_temperature() - iteration " << iteration
              << " temp " << temp;
     return temp;
@@ -20211,13 +20228,8 @@ void Graph::layoutForceDirected_FR_moveNodes(const qreal &temperature) {
                 << newPos.y()<< ")";
 
         newPos.rx() = canvasVisibleX (newPos.x());
-//                qMin (
-//                    canvasWidth - 50.0 , qMax (50.0 , newPos.x() )
-//                    );
         newPos.ry() = canvasVisibleY (newPos.y());
-//                qMin (
-//                    canvasHeight -50.0 , qMax (50.0 , newPos.y() )
-//                    );
+
         //Move node to new position
         qDebug()<< " final new pos "
                 <<  newPos.x() << ","
