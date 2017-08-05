@@ -1274,7 +1274,7 @@ bool Matrix::solve(float b[])
     *A = *this;
 
 
-    int i,j, n=rows();
+    int n=rows();
     float d;
 
     int indx[n];
@@ -1299,7 +1299,7 @@ bool Matrix::solve(float b[])
 
 /**
  * @brief Computes the dissimilarities matrix of the variables (rows, columns, both)
- * of the matrix using the user defined metric
+ * of this matrix using the user defined metric
  * @param metric
  * @param varLocation
  * @param diagonal
@@ -1330,9 +1330,8 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
         QVector<float> mean (N,0); // holds mean values
 
-        qDebug()<< "Matrix::distancesMatrix() -"
-                <<"input matrix";
-        //printMatrixConsole(true);
+        qDebug()<< "Matrix::distancesMatrix() - input matrix:";
+        this->printMatrixConsole();
 
         for (int i = 0 ; i < N ; i++ ) {
             sum = 0 ;
@@ -1667,7 +1666,8 @@ Matrix& Matrix::distancesMatrix(const int &metric,
     else {
 
     }
-
+    qDebug() << "Matrix::distancesMatrix() - FINISHED - Returning matrix:";
+    T->printMatrixConsole();
     return *T;
 }
 
@@ -2577,7 +2577,7 @@ bool Matrix::printHTMLTable(QTextStream& os,
  * @return
  */
 bool Matrix::printMatrixConsole(bool debug){
-    //qDebug() << "Matrix::printMatrixConsole() debug " << debug ;
+    qDebug() << "Matrix::printMatrixConsole() debug " << debug ;
     QTextStream out ( (debug ? stderr : stdout) );
 
     for (int r = 0; r < rows(); ++r) {

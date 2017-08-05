@@ -256,7 +256,6 @@ public:
 
 private:
     MatrixRow *row;
-    int m_Actors;
     int m_rows;
     int m_cols;
 

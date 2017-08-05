@@ -10962,7 +10962,7 @@ void Graph::writeCliqueCensus( const QString fileName,
 
 /**
  * @brief Called from Graph::graphCliques to add a new clique (list of vertices)
- * Adds clique info to each clique member and updates CLQM matrix.
+ * Adds clique info to each clique member and updates co-membership matrix CLQM .
  * @param list
  * @return
  */
@@ -12134,7 +12134,8 @@ void Graph::graphMatrixDissimilaritiesCreate(Matrix &INPUT_MATRIX,
 
     DSM = INPUT_MATRIX.distancesMatrix(metric, varLocation, diagonal, considerWeights);
 
-    qDebug()<<"Graph::graphMatrixDissimilaritiesCreate() - matrix SCM";
+    qDebug()<<"Graph::graphMatrixDissimilaritiesCreate() - matrix DSM:";
+    DSM.printMatrixConsole(true);
 }
 
 

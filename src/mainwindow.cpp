@@ -1863,7 +1863,10 @@ void MainWindow::initActions(){
 
     layoutNodeSizeProminence_PP_Act = new QAction( tr("Proximity Prestige"),	this);
     layoutNodeSizeProminence_PP_Act -> setEnabled(true);
-    layoutNodeSizeProminence_PP_Act -> setShortcut(Qt::ALT + Qt::Key_Y);
+    layoutNodeSizeProminence_PP_Act -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_S, Qt::CTRL + Qt::Key_R)
+                //Qt::ALT + Qt::Key_Y
+                );
     layoutNodeSizeProminence_PP_Act -> setStatusTip(
                 tr("Resize all nodes to be "
                     "proportional to their Proximity Prestige."));
@@ -3934,7 +3937,7 @@ void MainWindow::initPanels(){
                    "connected nodes attract each other and all nodes repel all \n"
                    "other non-adjacent nodes. \n\n"
 
-                   "Fruchterman-Reingold: Similar to Eades Spring Embedder but more efficient. "
+                   "Fruchterman-Reingold: Similar to Eades Spring Embedder but more efficient. \n"
                    "Again adjacent vertices attract each each other but, unlike "
                    "Eades, all vertices repel each other.\n\n"
 
