@@ -11302,7 +11302,7 @@ void MainWindow::slotAnalyzeClusteringHierarchical(const QString &matrix,
 
     bool considerWeights=true;
     bool inverseWeights=false;
-    bool dropIsolates=false;
+    bool dropIsolates=true;
 
     activeGraph.writeClusteringHierarchical(fn,
                                             matrix,

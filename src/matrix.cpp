@@ -1316,7 +1316,8 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
     qDebug()<< "Matrix::distancesMatrix() -"
             <<"metric"<< metric
-            << "varLocation"<< varLocation;
+            << "varLocation"<< varLocation
+            << "diagonal"<<diagonal;
 
     int N = 0;
     float sum = 0;
@@ -1341,8 +1342,11 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                 max = 0;
                 for (int j = 0 ; j < N ; j++ ) {
 
-                    if (!diagonal && (i==j || k==j))
+//                    qDebug() <<  "(i,j)" << i<< ","<<j << "(k,j)" << k<<","<<j;
+
+                    if (!diagonal && (i==j || k==j)) {
                         continue;
+                    }
 
                     switch (metric) {
                     case METRIC_JACCARD_INDEX:
@@ -1364,7 +1368,8 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                             distTemp = RAND_MAX;
                         }
                         else {
-                            distTemp += ( item(i,j) - item(k,j) )*( item(i,j) - item(k,j) ); //compute (x * y)^2
+//                            qDebug() <<  item(i,j) << "-" << item(k,j) <<"^2";
+                            distTemp += ( item(i,j) - item(k,j) )*( item(i,j) - item(k,j) ); //compute (x - y)^2
                         }
                         break;
                     case METRIC_MANHATTAN_DISTANCE:
@@ -1372,7 +1377,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                             distTemp = RAND_MAX;
                         }
                         else {
-                            distTemp += fabs( item(i,j) - item(k,j) ); //compute |x * y|
+                            distTemp += fabs( item(i,j) - item(k,j) ); //compute |x - y|
                         }
                         break;
                     case METRIC_CHEBYSHEV_MAXIMUM:
@@ -1416,9 +1421,9 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                 }
 
 
-                qDebug() << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
+//                qDebug() << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
+//                         << "matchRatio("<<i+1<<","<<k+1<<") =" << distance;
 
-                         << "matchRatio("<<i+1<<","<<k+1<<") =" << distance;
                 T->setItem(i,k, distance);
                 T->setItem(k,i, distance);
 
@@ -1472,7 +1477,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                             distTemp = RAND_MAX;
                         }
                         else {
-                            distTemp += ( item(j,i) - item(j,k) )*( item(j,i) - item(j,k) ); //compute (x * y)^2
+                            distTemp += ( item(j,i) - item(j,k) )*( item(j,i) - item(j,k) ); //compute (x - y)^2
                         }
                         break;
                     case METRIC_MANHATTAN_DISTANCE:
@@ -1480,7 +1485,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                             distTemp = RAND_MAX;
                         }
                         else {
-                            distTemp += fabs( item(j,i) - item(j,k) ); //compute |x * y|
+                            distTemp += fabs( item(j,i) - item(j,k) ); //compute |x - y|
                         }
                         break;
                     case METRIC_CHEBYSHEV_MAXIMUM:
@@ -1523,9 +1528,10 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                 }
 
 
-                qDebug() << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
+//                qDebug() << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
 
-                         << "distance("<<i+1<<","<<k+1<<") =" << distance;
+//                         << "distance("<<i+1<<","<<k+1<<") =" << distance;
+
                 T->setItem(i,k, distance);
                 T->setItem(k,i, distance);
 
@@ -1595,7 +1601,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                             distTemp = RAND_MAX;
                         }
                         else {
-                            distTemp += ( CM.item(j,i) - CM.item(j,k) )*( CM.item(j,i) - CM.item(j,k) ); //compute (x * y)^2
+                            distTemp += ( CM.item(j,i) - CM.item(j,k) )*( CM.item(j,i) - CM.item(j,k) ); //compute (x - y)^2
                         }
                         break;
                     case METRIC_MANHATTAN_DISTANCE:
@@ -1603,7 +1609,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                             distTemp = RAND_MAX;
                         }
                         else {
-                            distTemp += fabs( CM.item(j,i) - CM.item(j,k) ); //compute |x * y|
+                            distTemp += fabs( CM.item(j,i) - CM.item(j,k) ); //compute |x - y|
                         }
                         break;
                     case METRIC_CHEBYSHEV_MAXIMUM:
@@ -1649,9 +1655,10 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
 
 
-                qDebug() << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
+//                qDebug() << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
 
-                         << "matchRatio("<<i+1<<","<<k+1<<") =" << distance;
+//                         << "matchRatio("<<i+1<<","<<k+1<<") =" << distance;
+
                 T->setItem(i,k, distance);
                 T->setItem(k,i, distance);
 
@@ -1749,7 +1756,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
                         magn_k  += AM.item(k,j) * AM.item(k,j); //compute |y|^2
                         break;
                     case METRIC_EUCLIDEAN_DISTANCE:
-                        matches += ( AM.item(i,j) - AM.item(k,j) )*( AM.item(i,j) - AM.item(k,j) ); //compute (x * y)^2
+                        matches += ( AM.item(i,j) - AM.item(k,j) )*( AM.item(i,j) - AM.item(k,j) ); //compute (x - y)^2
                         break;
                     default:
                         break;
@@ -1851,7 +1858,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
                         magn_k  += AM.item(j,k) * AM.item(j,k); //compute |y|^2
                         break;
                     case METRIC_EUCLIDEAN_DISTANCE:
-                        matches += ( AM.item(j,i) - AM.item(j,k) )*( AM.item(j,i) - AM.item(j,k) ); //compute (x * y)^2
+                        matches += ( AM.item(j,i) - AM.item(j,k) )*( AM.item(j,i) - AM.item(j,k) ); //compute (x - y)^2
                         break;
                     default:
                         break;
@@ -1966,7 +1973,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
                         magn_k  += CM.item(j,k) * CM.item(j,k); //compute |y|^2
                         break;
                     case METRIC_EUCLIDEAN_DISTANCE:
-                        matches += ( CM.item(j,i) - CM.item(j,k) )*( CM.item(j,i) - CM.item(j,k) ); //compute (x * y)^2
+                        matches += ( CM.item(j,i) - CM.item(j,k) )*( CM.item(j,i) - CM.item(j,k) ); //compute (x - y)^2
                         break;
                     default:
                         break;
@@ -2433,7 +2440,9 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
 
 
 /**
- * @brief  Prints this matrix a HTML table
+ * @brief  Prints this matrix as HTML table
+ * This has the problem that the real actorNumber != elementLabel i.e. when we
+ * have deleted a node/vertex
  * @param os
  * @param debug
  * @return
@@ -2443,7 +2452,7 @@ bool Matrix::printHTMLTable(QTextStream& os,
                             const bool &plain,
                             const bool &printInfinity){
     qDebug() << "Matrix::printHTMLTable()";
-    int actorNumber=0, rowCount = 0;
+    int elementLabel=0, rowCount = 0;
     float maxVal, minVal, element;
     bool hasRealNumbers=false;
 
@@ -2460,17 +2469,17 @@ bool Matrix::printHTMLTable(QTextStream& os,
         os << "<span class=\"header\">" << qSetFieldWidth(5) << right << "A/A";
         os <<  fixed << qSetFieldWidth(10) << right ;
         for (int r = 0; r < cols(); ++r) {
-            actorNumber = r+1;
-            os << actorNumber;
+            elementLabel = r+1;
+            os << elementLabel;
         }
         os << qSetFieldWidth(0) << "</span>"<< endl;
 
         for (int r = 0; r < rows(); ++r) {
-            actorNumber = r+1;
+            elementLabel = r+1;
             rowCount++;
 
             os << "<span class=\"header\">" << qSetFieldWidth(5) << right;
-            os << actorNumber;
+            os << elementLabel;
             os << qSetFieldWidth(0) << "</span>";
 
             for (int c = 0; c < cols(); ++c) {
@@ -2502,9 +2511,9 @@ bool Matrix::printHTMLTable(QTextStream& os,
 
     // print first/header row
     for (int r = 0; r < cols(); ++r) {
-        actorNumber = r+1;
+        elementLabel = r+1;
         os << "<th>"
-                << actorNumber
+                << elementLabel
                 << "</th>";
 
     }
@@ -2515,12 +2524,12 @@ bool Matrix::printHTMLTable(QTextStream& os,
     // print rows
     rowCount = 0;
     for (int r = 0; r < rows(); ++r) {
-        actorNumber = r+1;
+        elementLabel = r+1;
         rowCount++;
         os << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">";
 
         os <<"<td class=\"header\">"
-               << actorNumber
+               << elementLabel
                << "</td>";
 
         for (int c = 0; c < cols(); ++c) {
@@ -2577,12 +2586,12 @@ bool Matrix::printHTMLTable(QTextStream& os,
  * @return
  */
 bool Matrix::printMatrixConsole(bool debug){
-    qDebug() << "Matrix::printMatrixConsole() debug " << debug ;
+    qDebug() << "Matrix::printMatrixConsole() - debug " << debug
+             << "matrix rows" << rows()<< "cols"<< cols();
     QTextStream out ( (debug ? stderr : stdout) );
 
     for (int r = 0; r < rows(); ++r) {
         for (int c = 0; c < cols(); ++c) {
-
             if ( item(r,c) < RAND_MAX  ) {
                 out <<  qSetFieldWidth(12) << qSetRealNumberPrecision(3)
                      <<  forcepoint << fixed<<right

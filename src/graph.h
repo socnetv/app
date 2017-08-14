@@ -599,12 +599,14 @@ public:
                      const bool &simpler=false);
 
     void writeMatrixHTMLTable(QTextStream &outText, Matrix &M,
-                         const bool &markDiag=true,
-                         const bool &plain=false,
-                         const bool &printInfinity=true);
+                              const bool &markDiag=true,
+                              const bool &plain=false,
+                              const bool &printInfinity=true,
+                              const bool &dropIsolates=false);
 
     void writeMatrixAdjacency(const QString fileName,
                               const bool &markDiag=true);
+
     void writeMatrixAdjacencyPlot(const QString fileName,
                                       const bool &simpler=false);
 

@@ -11201,7 +11201,6 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
         break;
     case MATRIX_DISTANCES:
         graphMatrixDistanceGeodesicCreate(considerWeights, inverseWeights, dropIsolates);
-        if (dropIsolates)
         STR_EQUIV=DM;
         break;
     default:
@@ -11223,6 +11222,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
     QString pMsg = tr("Writing Hierarchical Cluster Analysis to file. \nPlease wait... ");
     emit statusMessage ( pMsg );
     emit signalProgressBoxCreate(N,pMsg);
+
 
 
     outText.setRealNumberPrecision(m_precision);
@@ -11287,7 +11287,8 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
            << "</p>";
 
     emit signalProgressBoxUpdate( N /3);
-    writeMatrixHTMLTable(outText,STR_EQUIV,true,false);
+
+    writeMatrixHTMLTable(outText,STR_EQUIV,true,false,false, dropIsolates);
     //STR_EQUIV.printHTMLTable(outText,true,false);
 
     outText << "<p>"
@@ -11564,19 +11565,16 @@ void Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
                                         const bool &dropIsolates) {
 
     Q_UNUSED (inverseWeights);
-    Q_UNUSED (dropIsolates);
 
     qDebug() << "Graph::graphClusteringHierarchical() - "
-             << "metric"
-             << metric
-             << "method"
-             << graphClusteringMethodTypeToString(method)
-             << "diagonal"
-             << diagonal
-             << "diagram"
-             << diagram;
+             << "metric" << metric
+             << "method" << graphClusteringMethodTypeToString(method)
+             << "diagonal" << diagonal
+             << "diagram" << diagram
+             << "dropIsolates" << dropIsolates;
 
-    //STR_EQUIV.printMatrixConsole(true);
+    qDebug() << "Graph::graphClusteringHierarchical() - STR_EQUIV matrix:";
+    STR_EQUIV.printMatrixConsole(true);
 
     QString varLocation = "Rows";
 
@@ -11641,7 +11639,7 @@ void Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
              << "initial matrix DSM.size:"
              << N
              <<"matrix DSM contents";
-    //DSM.printMatrixConsole();
+    DSM.printMatrixConsole();
 
     clusteredItems.reserve(N);
     if (diagram) {
@@ -11664,14 +11662,39 @@ void Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
     int clustersLeft = N;
     int seq = 1 ; //clustering stage/level sequence number
 
-    for (int i = 0 ; i< N ; i ++ ) {
-        clusteredItems.clear();
-        clusteredItems << i+1;
-        m_clustersIndex[i] = clusteredItems;
-        if (diagram) {
-            m_clustersByName.insert(QString::number(i+1),clusteredItems );
-        }
+    QList<Vertex*>::const_iterator vit;
+    int i = 0;
+    for ( vit=m_graph.cbegin(); vit!=m_graph.cend(); ++vit){
+//        if (dropIsolates) {
+//            if ((*vit)->isIsolated()) {
+//                continue;
+//            }
+//        }
+//         if (!(*vit)->isEnabled()) {
+//            continue;
+//         }
+
+         if ((*vit)->isEnabled() && ( ! (*vit)->isIsolated() ) ) {
+             clusteredItems.clear();
+             clusteredItems << (*vit)->name();
+             m_clustersIndex[i] = clusteredItems;
+             if (diagram) {
+                 m_clustersByName.insert(QString::number(i+1),clusteredItems );
+             }
+                  i++;
+         }
+
+
     }
+
+//    for (int i = 0 ; i< N ; i ++ ) {
+//        clusteredItems.clear();
+//        clusteredItems << i+1;
+//        m_clustersIndex[i] = clusteredItems;
+//        if (diagram) {
+//            m_clustersByName.insert(QString::number(i+1),clusteredItems );
+//        }
+//    }
 
     QString pMsg=tr("Computing Hierarchical Clustering. \nPlease wait...");
     emit statusMessage(pMsg);
@@ -11684,7 +11707,7 @@ void Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
 
         qDebug() << "Graph::graphClusteringHierarchical() -"
                  <<"matrix DSM contents";
-       //DSM.printMatrixConsole();
+       DSM.printMatrixConsole();
 
         //
         //Step 2. Find the most similar pair of clusters.
@@ -11861,6 +11884,8 @@ void Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
 
     clusteredItems.clear();
     m_clustersIndex.clear();
+
+    qDebug()<< "m_clustersByName" <<m_clustersByName;
 
     emit signalProgressBoxKill();
 }
@@ -12134,8 +12159,8 @@ void Graph::graphMatrixDissimilaritiesCreate(Matrix &INPUT_MATRIX,
 
     DSM = INPUT_MATRIX.distancesMatrix(metric, varLocation, diagonal, considerWeights);
 
-    qDebug()<<"Graph::graphMatrixDissimilaritiesCreate() - matrix DSM:";
-    DSM.printMatrixConsole(true);
+//    qDebug()<<"Graph::graphMatrixDissimilaritiesCreate() - matrix DSM:";
+//    DSM.printMatrixConsole(true);
 }
 
 
@@ -18036,21 +18061,26 @@ void Graph::writeMatrix (const QString &fn,
  * @param plain
  * @param printInfinity
  */
-void Graph::writeMatrixHTMLTable(QTextStream& outText, Matrix &M,
-                            const bool &markDiag,
-                            const bool &plain,
-                            const bool &printInfinity) {
+void Graph::writeMatrixHTMLTable(QTextStream& outText,
+                                 Matrix &M,
+                                 const bool &markDiag,
+                                 const bool &plain,
+                                 const bool &printInfinity,
+                                 const bool &dropIsolates) {
 
     Q_UNUSED(plain);
 
-    qDebug () << "Graph::writeMatrixHTMLTable() ";
+    qDebug () << "Graph::writeMatrixHTMLTable() -"
+              << "markDiag" << markDiag
+              << "plain" << plain
+              << " dropIsolates " << dropIsolates;
 
     int rowCount=0, i=0, j=0;
     int N = vertices();
     float maxVal, minVal, element;
     bool hasRealNumbers=false;
 
-    QList<Vertex*>::const_iterator it, it1;
+    QList<Vertex*>::const_iterator it, jt;
 
     QString pMsg = tr("Writing matrix to file. \nPlease wait...");
     emit statusMessage( pMsg );
@@ -18072,7 +18102,7 @@ void Graph::writeMatrixHTMLTable(QTextStream& outText, Matrix &M,
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
 
-        if ( ! (*it)->isEnabled() ) {
+        if ( ! (*it)->isEnabled() || (dropIsolates && (*it)->isIsolated() ) ) {
             continue;
         }
         outText <<"<th>"
@@ -18085,7 +18115,7 @@ void Graph::writeMatrixHTMLTable(QTextStream& outText, Matrix &M,
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
 
-        if ( ! (*it)->isEnabled() ) {
+        if ( ! (*it)->isEnabled() || (dropIsolates && (*it)->isIsolated() ) ) {
             continue;
         }
 
@@ -18099,14 +18129,14 @@ void Graph::writeMatrixHTMLTable(QTextStream& outText, Matrix &M,
                << (*it)->name()
                << "</td>";
 
-        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
+        for (jt=m_graph.cbegin(); jt!=m_graph.cend(); ++jt){
 
-            if ( ! (*it1)->isEnabled() ) {
+            if ( ! (*jt)->isEnabled() || (dropIsolates && (*jt)->isIsolated() ) ) {
                 continue;
             }
             outText << fixed << right;
 
-            outText <<"<td" << ((markDiag && (*it)->name() ==(*it1)->name() )? " class=\"diag\">" : ">");
+            outText <<"<td" << ((markDiag && (*it)->name() ==(*jt)->name() )? " class=\"diag\">" : ">");
 
             element = M.item(i,j);
 
@@ -18636,6 +18666,12 @@ bool Graph::graphMatrixAdjacencyInvert(const QString &method){
 
 
 
+/**
+ * @brief Calls Graph::graphMatrixAdjacencyInvert(method) to compute
+ * the inverse of the adjacency matrix and writes it to file fn in HTML notation
+ * @param fn
+ * @param method
+ */
 void Graph::writeMatrixAdjacencyInvert(const QString &fn,
                                        const QString &method)
 {
