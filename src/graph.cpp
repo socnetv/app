@@ -11181,7 +11181,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
             << "inverseWeights:"<<inverseWeights
             << "dropIsolates:" << dropIsolates;
 
-    int N = vertices();
+    int N = vertices(dropIsolates,false, true);
 
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
@@ -11333,7 +11333,9 @@ void Graph::writeClusteringHierarchicalResultsToStream(QTextStream& outText,
                                                        const bool &dendrogram) {
 
 
-    qDebug()<<"Graph::writeClusteringHierarchicalResultsToStream()";
+    qDebug()<<"Graph::writeClusteringHierarchicalResultsToStream() - "
+           << "N"<< N
+           << "dendrogram" << dendrogram;
 
     QMap<int, V_int>::const_iterator it;
     float level;
@@ -11356,7 +11358,8 @@ void Graph::writeClusteringHierarchicalResultsToStream(QTextStream& outText,
 
     if (dendrogram) {
 
-        qDebug()<<"SVG";
+        qDebug()<< "Graph::writeClusteringHierarchicalResultsToStream() -"
+                << "Writing SVG dendrogram";
 
         outText << "<p>"
                 << "<span class=\"info\">"
@@ -11373,7 +11376,7 @@ void Graph::writeClusteringHierarchicalResultsToStream(QTextStream& outText,
         int headerHeight = 10;
         int headerTextSize = 9;
         int actorTextSize = 12;
-        int legendTextSize = 9;
+        int legendTextSize = 7;
 
         int maxSVGWidth = diagramMaxWidth + diagramPaddingLeft + rowPaddingLeft;
         int maxSVGHeight = 2 * diagramPaddingTop + (rowHeight * N);
@@ -11398,7 +11401,7 @@ void Graph::writeClusteringHierarchicalResultsToStream(QTextStream& outText,
 
         clusterVector.reserve(N);
 
-        qDebug() << "DENDRO SVG"
+        qDebug()<<"Graph::writeClusteringHierarchicalResultsToStream() -" << endl
                  << "m_clustersPerSequence"<<m_clustersPerSequence
                  << endl
                  << "maxLevelValue"<<maxLevelValue
@@ -11636,9 +11639,7 @@ void Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
 
 
     qDebug() << "Graph::graphClusteringHierarchical() -"
-             << "initial matrix DSM.size:"
-             << N
-             <<"matrix DSM contents";
+             << "initial matrix DSM contents:";
     DSM.printMatrixConsole();
 
     clusteredItems.reserve(N);
@@ -11705,9 +11706,10 @@ void Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
 
         emit signalProgressBoxUpdate(seq);
 
-        qDebug() << "Graph::graphClusteringHierarchical() -"
-                 <<"matrix DSM contents";
-       DSM.printMatrixConsole();
+        qDebug() << endl
+                 << "Graph::graphClusteringHierarchical() -"
+                 <<"matrix DSM contents now:";
+        DSM.printMatrixConsole();
 
         //
         //Step 2. Find the most similar pair of clusters.
@@ -11722,7 +11724,8 @@ void Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
         clusteredItems.clear();
         clusteredItems = m_clustersIndex[mergedClusterIndex] + m_clustersIndex[deletedClusterIndex] ;
 
-        qDebug() << "level"<< min
+        qDebug() << "Graph::graphClusteringHierarchical() -"
+                 << "level"<< min
                  << "seq" << seq
                  <<"clusteredItems in level"  <<clusteredItems;
 
@@ -11748,12 +11751,20 @@ void Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
             if (cluster2.isNull() && m_clustersIndex[deletedClusterIndex].size() == 1) {
                 cluster1 = QString::number( m_clustersIndex[deletedClusterIndex].first() );
             }
+
             clusterPairNames.append(cluster1);
             clusterPairNames.append(cluster2);
 
             m_clusterPairNamesPerSeq.insert(seq, clusterPairNames);
 
             m_clustersByName.insert("c"+QString::number(seq),clusteredItems );
+
+            qDebug() << "Graph::graphClusteringHierarchical() - computing diagram variables..."<<endl
+                     << "cluster1"<< cluster1 << endl
+                     << "cluster2"<< cluster2 << endl
+                     << "clusterPairNames" << clusterPairNames << endl
+                     << "m_clusterPairNamesPerSeq" << m_clusterPairNamesPerSeq << endl
+                     << "m_clustersByName" <<m_clustersByName;
 
 
         } //end if diagram
@@ -11774,10 +11785,12 @@ void Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
                  << mergedClusterIndex +1 << endl
                  << "  m_clustersPerSequence" << m_clustersPerSequence;
 
-        qDebug() << "Graph::graphClusteringHierarchical() -"
+        qDebug() << "Graph::graphClusteringHierarchical() -" << endl
                  << "  Remove key"<< deletedClusterIndex
-                 << "and shift next values to left: " ;
+                 << "and shift next values to left... " ;
+
         it = m_clustersIndex.find(deletedClusterIndex);
+
         while (it != m_clustersIndex.end()) {
             prev = it;
             ++it;
