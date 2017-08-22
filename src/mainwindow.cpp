@@ -153,7 +153,7 @@ MainWindow::~MainWindow() {
 
     initApp();
     delete printer;
-    delete scene;
+    //delete scene;
     delete graphicsWidget;
 
     foreach ( TextEditor *ed, m_textEditors) {
@@ -457,11 +457,75 @@ void MainWindow::slotOpenSettingsDialog() {
 
 
 
+
+
+/**
+ * @brief Initializes the scene and the corresponding graphicsWidget,
+ * The latter is a QGraphicsView canvas which is the main widget of SocNetV.
+ */
+void MainWindow::initView() {
+    qDebug ()<< "MW::initView()";
+    //create a scene
+
+
+    //create a view widget for this scene
+    //graphicsWidget=new GraphicsWidget(scene);
+    GraphicsWidget *graphicsWidget= new GraphicsWidget();
+    qDebug ()<< "MW::initView() - graphicsWidget thread" << graphicsWidget->thread();
+    graphicsWidget->moveToThread(&graphicsThread);
+    qDebug ()<< "MW::initView() - graphicsWidget thread now" << graphicsWidget->thread();
+
+    qDebug() << "MW::initView() - Starting graphicsThread";
+
+    graphicsThread.start();
+
+    graphicsWidget->setViewportUpdateMode( QGraphicsView::SmartViewportUpdate );
+    //  FullViewportUpdate  // MinimalViewportUpdate //SmartViewportUpdate  //BoundingRectViewportUpdate
+    //QGraphicsView can cache pre-rendered content in a QPixmap, which is then drawn onto the viewport.
+    graphicsWidget->setCacheMode(QGraphicsView::CacheNone);  //CacheBackground | CacheNone
+
+    bool antialiasing = (appSettings["antialiasing"] == "true" ) ? true:false;
+    graphicsWidget->setRenderHint(QPainter::Antialiasing, antialiasing );
+    graphicsWidget->setRenderHint(
+                QPainter::TextAntialiasing, antialiasing );
+    graphicsWidget->setRenderHint(QPainter::SmoothPixmapTransform, antialiasing );
+    //Optimization flags:
+    //if items do restore their state, it's not needed for graphicsWidget to do the same...
+    graphicsWidget->setOptimizationFlag(QGraphicsView::DontSavePainterState, true);
+    //Disables QGraphicsView's antialiasing auto-adjustment of exposed areas.
+    graphicsWidget->setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, false);
+
+    graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+    //graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+    //graphicsWidget->setTransformationAnchor(QGraphicsView::NoAnchor);
+    graphicsWidget->setResizeAnchor(QGraphicsView::AnchorViewCenter);
+
+    // sets dragging the mouse over the scene while the left mouse button is pressed.
+    graphicsWidget->setDragMode(QGraphicsView::RubberBandDrag);
+    graphicsWidget->setFocusPolicy(Qt::StrongFocus);
+    graphicsWidget->setFocus();
+    graphicsWidget->setWhatsThis(tr("The canvas of SocNetV. \n\n"
+                                  "Inside this area you create and edit networks, "
+                                  "load networks from files and visualize them \n"
+                                  "according to selected metrics. \n\n"
+                                  " - To create a new node, double-click anywhere (Ctrl+.)\n"
+                                  " - To add an arc between two nodes, double-click"
+                                  " on the first node then double-click on the second (Ctrl+/)\n"
+                                  " - To change network appearance, right click on empty space\n"
+                                  " - To change/edit the properties of a node, right-click on it\n"
+                                  " - To change/edit the properties of an edge, right-click on it."
+                                  ""));
+
+    qDebug() << "MW::initView() - Finished initializing view";
+}
+
+
 /**
  * @brief Initializes all QActions of the application
  * Take a breath, the listing below is HUGE.
  */
 void MainWindow::initActions(){
+    qDebug()<< "MW::initActions()";
     printer = new QPrinter;
 
     /**
@@ -797,7 +861,7 @@ void MainWindow::initActions(){
                                    "recursion level (how many URLs from the frontier "
                                    "will be visited) and maximum running time, along "
                                    "with the initial web address..."));
-    connect(webCrawlerAct, SIGNAL(triggered()), this, SLOT(slotNetworkWebCrawlerDialog()));
+
 
 
     /**
@@ -847,31 +911,31 @@ void MainWindow::initActions(){
     zoomInAct->setStatusTip(tr("Zoom in. Better, use the canvas button or press Ctrl++ or press Cltr and use mouse wheel."));
     zoomInAct->setToolTip(tr("Zoom in. Better, use the canvas button or (Ctrl++)"));
     zoomInAct->setWhatsThis(tr("Zoom In.\n\nZooms in the actual network"));
-    connect(zoomInAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomIn()) );
+
 
     zoomOutAct = new QAction(QIcon(":/images/zoomout.png"), tr("Zoom Out"), this);
     zoomOutAct->setStatusTip(tr("Zoom out. Better, use the canvas button or press Ctrl+- or press Cltr and use mouse wheel."));
     zoomOutAct->setToolTip(tr("Zoom in. Better, use the canvas button or (Ctrl+-)"));
     zoomOutAct->setWhatsThis(tr("Zoom Out.\n\nZooms out of the actual network"));
-    connect(zoomOutAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomOut()) );
+
 
     editRotateLeftAct = new QAction(QIcon(":/images/rotateleft.png"), tr("Rotate counterclockwise"), this);
     editRotateLeftAct->setToolTip(tr("Rotate counterclockwise. Better, use the canvas button or (Ctrl+Left Arrow)"));
     editRotateLeftAct->setStatusTip(tr("Rotate counterclockwise. Better, use the canvas button or Ctrl+Left Arrow"));
     editRotateLeftAct ->setWhatsThis(tr("Rotates the network counterclockwise (Ctrl+Left Arrow)"));
-    connect(editRotateLeftAct, SIGNAL(triggered()), graphicsWidget, SLOT( rotateLeft()) );
+
 
     editRotateRightAct = new QAction(QIcon(":/images/rotateright.png"), tr("Rotate clockwise"), this);
     editRotateRightAct->setStatusTip(tr("Rotate clockwise. Better, use the canvas button or (Ctrl+Right Arrow)"));
     editRotateRightAct->setToolTip(tr("Rotate clockwise. Better, use the canvas button or (Ctrl+Right Arrow)"));
     editRotateRightAct ->setWhatsThis(tr("Rotates the network clockwise (Ctrl+Right Arrow)"));
-    connect(editRotateRightAct, SIGNAL(triggered()), graphicsWidget, SLOT( rotateRight()) );
+
 
     editResetSlidersAct = new QAction(QIcon(":/images/reset.png"), tr("Reset Zoom and Rotation"), this);
     editResetSlidersAct->setStatusTip(tr("Reset zoom and rotation to zero (Ctrl+0)"));
     editResetSlidersAct->setToolTip(tr("Reset zoom and rotation to zero (Ctrl+0)"));
     editResetSlidersAct->setWhatsThis(tr("Reset zoom and rotation to zero (Ctrl+0)"));
-    connect(editResetSlidersAct, SIGNAL(triggered()), graphicsWidget, SLOT( reset()) );
+
 
 
     editNodeSelectAllAct = new QAction(QIcon(":/images/selectall.png"), tr("Select All"), this);
@@ -3035,6 +3099,9 @@ void MainWindow::initActions(){
     helpAboutQt->setStatusTip(tr("About Qt"));
     helpAboutQt->setWhatsThis(tr("About\n\nAbout Qt"));
     connect(helpAboutQt, SIGNAL(triggered()), this, SLOT(slotAboutQt() ) );
+
+
+    qDebug()<< "MW::initActions() - Finished";
 }
 
 
@@ -3044,7 +3111,7 @@ void MainWindow::initActions(){
  */
 void MainWindow::initMenuBar() {
 
-
+    qDebug()<< "MW::initMenuBar()";
     /** menuBar entry networkMenu */
     networkMenu = menuBar()->addMenu(tr("&Network"));
     networkMenu -> addAction(networkNew);
@@ -3443,6 +3510,7 @@ void MainWindow::initMenuBar() {
     helpMenu-> addAction (helpAboutApp);
     helpMenu-> addAction (helpAboutQt);
 
+   qDebug()<< "MW::initMenuBar() - Finished";
 }
 
 
@@ -3452,6 +3520,9 @@ void MainWindow::initMenuBar() {
  * @brief Initializes the toolbar
  */
 void MainWindow::initToolBar(){
+
+    qDebug()<< "MW::initToolBar()";
+
     toolBar = addToolBar("operations");
 
     toolBar -> addAction (networkNew);
@@ -3514,6 +3585,8 @@ void MainWindow::initToolBar(){
     toolBar -> addSeparator();
     toolBar -> addAction ( QWhatsThis::createAction (this));
     toolBar -> setIconSize(QSize(16,16));
+
+    qDebug()<< "MW::initToolBar() - Finished";
 }
 
 
@@ -3528,6 +3601,8 @@ void MainWindow::initToolBar(){
  * and displaying statistics
  */
 void MainWindow::initPanels(){
+
+    qDebug()<< "MW::initPanels()";
 
     /*
      *  create widgets for the Control Panel
@@ -4279,67 +4354,17 @@ void MainWindow::initPanels(){
     rightPanel->setMaximumWidth(210);
     rightPanel -> setLayout (propertiesGrid);
 
-}
 
-
-
-
-
-
-
-/**
- * @brief Initializes the scene and the corresponding graphicsWidget,
- * The latter is a QGraphicsView canvas which is the main widget of SocNetV.
- */
-void MainWindow::initView() {
-    qDebug ()<< "MW::initView()";
-    //create a scene
-    scene=new QGraphicsScene();
-
-    //create a view widget for this scene
-    graphicsWidget=new GraphicsWidget(scene, this);
-    graphicsWidget->setViewportUpdateMode( QGraphicsView::SmartViewportUpdate );
-    //  FullViewportUpdate  // MinimalViewportUpdate //SmartViewportUpdate  //BoundingRectViewportUpdate
-    //QGraphicsView can cache pre-rendered content in a QPixmap, which is then drawn onto the viewport.
-    graphicsWidget->setCacheMode(QGraphicsView::CacheNone);  //CacheBackground | CacheNone
-
-    bool antialiasing = (appSettings["antialiasing"] == "true" ) ? true:false;
-    graphicsWidget->setRenderHint(QPainter::Antialiasing, antialiasing );
-    graphicsWidget->setRenderHint(
-                QPainter::TextAntialiasing, antialiasing );
-    graphicsWidget->setRenderHint(QPainter::SmoothPixmapTransform, antialiasing );
-    //Optimization flags:
-    //if items do restore their state, it's not needed for graphicsWidget to do the same...
-    graphicsWidget->setOptimizationFlag(QGraphicsView::DontSavePainterState, true);
-    //Disables QGraphicsView's antialiasing auto-adjustment of exposed areas.
-    graphicsWidget->setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, false);
-    //"QGraphicsScene applies an indexing algorithm to the scene, to speed up item discovery functions like items() and itemAt().
-    // Indexing is most efficient for static scenes (i.e., where items don't move around).
-    // For dynamic scenes, or scenes with many animated items, the index bookkeeping can outweight the fast lookup speeds." So...
-    scene->setItemIndexMethod(QGraphicsScene::BspTreeIndex); //NoIndex (for anime) | BspTreeIndex
-
-    graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-    //graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
-    //graphicsWidget->setTransformationAnchor(QGraphicsView::NoAnchor);
-    graphicsWidget->setResizeAnchor(QGraphicsView::AnchorViewCenter);
-
-    // sets dragging the mouse over the scene while the left mouse button is pressed.
-    graphicsWidget->setDragMode(QGraphicsView::RubberBandDrag);
-    graphicsWidget->setFocusPolicy(Qt::StrongFocus);
-    graphicsWidget->setFocus();
-    graphicsWidget->setWhatsThis(tr("The canvas of SocNetV. \n\n"
-                                  "Inside this area you create and edit networks, "
-                                  "load networks from files and visualize them \n"
-                                  "according to selected metrics. \n\n"
-                                  " - To create a new node, double-click anywhere (Ctrl+.)\n"
-                                  " - To add an arc between two nodes, double-click"
-                                  " on the first node then double-click on the second (Ctrl+/)\n"
-                                  " - To change network appearance, right click on empty space\n"
-                                  " - To change/edit the properties of a node, right-click on it\n"
-                                  " - To change/edit the properties of an edge, right-click on it."
-                                  ""));
+    qDebug()<< "MW::initPanels() - Finished";
 
 }
+
+
+
+
+
+
+
 
 
 
@@ -4349,7 +4374,9 @@ void MainWindow::initView() {
  * Creates helper widgets and sets the main layout of the MainWindow
  */
 void MainWindow::initWindowLayout() {
-    qDebug () << "MW::initWindowLayout";
+
+    qDebug () << "MW::initWindowLayout()";
+
     int size = style()->pixelMetric(QStyle::PM_ToolBarIconSize);
     QSize iconSize(size, size);
     iconSize.setHeight(16);
@@ -4475,6 +4502,8 @@ void MainWindow::initWindowLayout() {
     this->resize(1280,900);
 
     this->showMaximized();
+
+    qDebug () << "MW::initWindowLayout() - Finished";
 
 }
 
@@ -8480,7 +8509,7 @@ void MainWindow::slotEditNodeNumbersColor(QColor color){
 
     if (color.isValid()) {
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        QList<QGraphicsItem *> list= scene->items();
+        QList<QGraphicsItem *> list= graphicsWidget->scene()->items();
         for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
             if ( (*it)->type() == TypeNumber) 		{
                 NodeNumber *jimNumber = (NodeNumber *) (*it);
@@ -9002,7 +9031,8 @@ void MainWindow::slotEditEdgeRemove(){
     }
     qDebug()<< "MW::slotEditEdgeRemove() -"
               << "View items now:"<< graphicsWidget->items().size()
-               << "Scene items now:"<< scene->items().size();
+               << "Scene items now:"<< graphicsWidget->scene()->items().size();
+
 }
 
 
@@ -9586,13 +9616,10 @@ void MainWindow::slotLayoutRadialRandom(){
         return;
     }
 
-    double x0=scene->width()/2.0;
-    double y0=scene->height()/2.0;
-    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
 
     slotLayoutGuides(false);
 
-    activeGraph.layoutRadialRandom(x0, y0, maxRadius, true);
+    activeGraph.layoutRadialRandom(true);
 
     slotLayoutGuides(true);
     statusMessage( tr("Nodes in random concentric circles.") );
@@ -12276,25 +12303,12 @@ void MainWindow::slotOptionsEdgeArrowsVisibility(bool toggle){
     statusMessage( tr("Toggle Edges Arrows. Please wait...") );
     appSettings["initEdgeArrows"]= (toggle) ? "true":"false";
 
-    if (!toggle) 	{
-
-        QList<QGraphicsItem *> list = scene->items();
-        for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
-            if ( (*item)->type() ==TypeEdge){
-                Edge *edge = (Edge*) (*item);
-                edge->showArrows(false);
-            }
+    QList<QGraphicsItem *> list = graphicsWidget->scene()->items();
+    for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
+        if ( (*item)->type() ==TypeEdge){
+            Edge *edge = (Edge*) (*item);
+            edge->showArrows(toggle);
         }
-        return;
-    }
-    else{
-        appSettings["initEdgeArrows"]="true";
-        QList<QGraphicsItem *> list = scene->items();
-        for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++)
-            if ( (*item)->type() ==TypeEdge){
-                Edge *edge = (Edge*) (*item);
-                edge->showArrows(true);
-            }
     }
     statusMessage( tr("Ready."));
 }

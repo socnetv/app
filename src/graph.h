@@ -822,10 +822,7 @@ public:
 
     void layoutRandom();
 
-    void layoutRadialRandom(double x0,
-                            double y0,
-                            double maxRadius,
-                            const bool &guides=true);
+    void layoutRadialRandom(const bool &guides=true);
 
     void layoutCircular(const double &x0,
                         const double &y0,

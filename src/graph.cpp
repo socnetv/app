@@ -18852,19 +18852,23 @@ void Graph::layoutRandom(){
  * @param y0
  * @param maxRadius
  */
-void Graph::layoutRadialRandom(double x0, double y0, double maxRadius,
-                               const bool &guides){
+void Graph::layoutRadialRandom(const bool &guides){
     qDebug() << "Graph::layoutRadialRandom - ";
     double rad=0, new_radius=0, new_x=0, new_y=0;
     double i=0;
-    maxRadius = canvasMaxRadius();
+    double x0=canvasWidth/2.0;
+    double y0=canvasHeight/2.0;
+
+    double maxRadius = canvasMaxRadius();
     //offset controls how far from the centre the central nodes be positioned
     float offset=0.06, randomDecimal=0;
     int vert=vertices();
     int progressCounter=0;
     QList<Vertex*>::const_iterator it;
 
+
     int N = vertices();
+
 
     QString pMsg = tr("Embedding Random Radial layout. \n"
                       "Please wait ....");

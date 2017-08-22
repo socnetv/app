@@ -31,9 +31,10 @@
 
 
 #include <QGraphicsView>
-
+#include <QGraphicsScene>
 
 class MainWindow;
+
 class Node;
 class Edge;
 class NodeNumber;
@@ -53,7 +54,10 @@ typedef pair<int, int> SelectedEdge;
 class GraphicsWidget : public QGraphicsView {
     Q_OBJECT
 public:
-    GraphicsWidget(QGraphicsScene*, MainWindow* parent);
+
+
+    //GraphicsWidget(QGraphicsScene*);
+    GraphicsWidget();
     ~GraphicsWidget();
     void clear();
 
@@ -181,6 +185,8 @@ signals:
 
 
 private:
+
+    //QGraphicsScene *sc;
     H_NumToNode nodeHash;	//This is used in drawEdge() method
     H_StrToEdge edgesHash; // helper hash to easily find edges
     QList<int> m_selectedNodes;

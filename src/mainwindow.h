@@ -37,11 +37,12 @@
 */
 
 #include <QMainWindow>
-#include <QGraphicsScene>
+
 #include <QPrinter>
 #include <QMessageBox>
 #include <QStack>
 #include <QProgressDialog>
+#include <QThread>
 #include <math.h>
 
 /** SocNetV specific includes*/
@@ -108,6 +109,8 @@ class TextEditor;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
+
+    QThread graphicsThread;
 
 public:
 
@@ -462,8 +465,9 @@ signals:
     void signalRelationAddAndChange(const QString &relName, const bool &changeRelation=true);
 
 private:
-    QGraphicsScene *scene;
+
     GraphicsWidget *graphicsWidget;
+
     Graph activeGraph;
 
     QMap<QString,QString> appSettings;

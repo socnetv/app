@@ -46,7 +46,10 @@
 /** 
     Constructor method. Called when a GraphicsWidget object is created in MW
 */
-GraphicsWidget::GraphicsWidget( QGraphicsScene *sc, MainWindow* par)  : QGraphicsView ( sc,par) {
+//GraphicsWidget::GraphicsWidget(QGraphicsScene *sc)  : QGraphicsView ( sc) {
+    GraphicsWidget::GraphicsWidget()  {
+
+    QGraphicsScene *sc=new QGraphicsScene();
     setScene(sc);
     secondDoubleClick=false;
     transformationActive = false;
@@ -59,6 +62,15 @@ GraphicsWidget::GraphicsWidget( QGraphicsScene *sc, MainWindow* par)  : QGraphic
     edgesHash.reserve(1000);
     nodeHash.reserve(1000);
 
+
+    /* "QGraphicsScene applies an indexing algorithm to the scene, to speed up
+     * item discovery functions like items() and itemAt().
+     * Indexing is most efficient for static scenes (i.e., where items don't move around).
+     * For dynamic scenes, or scenes with many animated items, the index bookkeeping
+     * can outweight the fast lookup speeds."
+     * So...
+    */
+    sc->setItemIndexMethod(QGraphicsScene::BspTreeIndex); //NoIndex (for anime) | BspTreeIndex
 
     connect ( sc , &QGraphicsScene::selectionChanged,
                  this, &GraphicsWidget::getSelectedItems);
@@ -232,7 +244,6 @@ void GraphicsWidget::startEdge(Node *node){
                    "Emitting userMiddleClicked() to create edge";
         secondNode=node;
         emit userMiddleClicked(firstNode->nodeNumber(), secondNode->nodeNumber() );
-        //( (MainWindow*)parent() )->setCursor(Qt::ArrowCursor);
         emit setCursor(Qt::ArrowCursor);
         secondDoubleClick=false;
     }
@@ -240,7 +251,6 @@ void GraphicsWidget::startEdge(Node *node){
         qDebug()<<"GW::startEdge() - this is the first double click.";
         firstNode=node;
         secondDoubleClick=true;
-        //( (MainWindow*)parent() )->setCursor( Qt::PointingHandCursor);
         emit setCursor( Qt::PointingHandCursor );
     }
 }
@@ -410,7 +420,6 @@ void GraphicsWidget::removeItem( Node *node){
         qDebug() << "GW::removeItem(node) - number: " <<  i
                  << "previously set as source node for a new edge. Unsetting.";
         secondDoubleClick = false;
-       //( (MainWindow*)parent() )->setCursor(Qt::ArrowCursor);
         emit setCursor(Qt::ArrowCursor);
     }
     nodeHash.remove(i);
