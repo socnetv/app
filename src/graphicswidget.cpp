@@ -46,37 +46,37 @@
 /** 
     Constructor method. Called when a GraphicsWidget object is created in MW
 */
-//GraphicsWidget::GraphicsWidget(QGraphicsScene *sc)  : QGraphicsView ( sc) {
-    GraphicsWidget::GraphicsWidget()  {
 
-    QGraphicsScene *sc=new QGraphicsScene();
-    setScene(sc);
-    secondDoubleClick=false;
-    transformationActive = false;
-    m_nodeLabel="";
-    m_zoomIndex=250;
-    m_currentScaleFactor = 1;
-    m_currentRotationAngle = 0;
-    markedNodeExist=false; //used in findNode()
-    clickedEdgeExists = false; //used in selecting and edge
-    edgesHash.reserve(1000);
-    nodeHash.reserve(1000);
+GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
+        QGraphicsView ( sc,m_parent) {
 
-
-    /* "QGraphicsScene applies an indexing algorithm to the scene, to speed up
-     * item discovery functions like items() and itemAt().
-     * Indexing is most efficient for static scenes (i.e., where items don't move around).
-     * For dynamic scenes, or scenes with many animated items, the index bookkeeping
-     * can outweight the fast lookup speeds."
-     * So...
-    */
-    sc->setItemIndexMethod(QGraphicsScene::BspTreeIndex); //NoIndex (for anime) | BspTreeIndex
-
-    connect ( sc , &QGraphicsScene::selectionChanged,
-                 this, &GraphicsWidget::getSelectedItems);
+        qDebug() << "GW::GraphicsWidget(*sc, *MW)";
+        secondDoubleClick=false;
+        transformationActive = false;
+        m_nodeLabel="";
+        m_zoomIndex=250;
+        m_currentScaleFactor = 1;
+        m_currentRotationAngle = 0;
+        markedNodeExist=false; //used in findNode()
+        clickedEdgeExists = false; //used in selecting and edge
+        edgesHash.reserve(1000);
+        nodeHash.reserve(1000);
 
 
-}
+        /* "QGraphicsScene applies an indexing algorithm to the scene, to speed up
+         * item discovery functions like items() and itemAt().
+         * Indexing is most efficient for static scenes (i.e., where items don't move around).
+         * For dynamic scenes, or scenes with many animated items, the index bookkeeping
+         * can outweight the fast lookup speeds."
+         * So...
+        */
+        scene() -> setItemIndexMethod(QGraphicsScene::BspTreeIndex); //NoIndex (for anime) | BspTreeIndex
+
+        connect ( scene() , &QGraphicsScene::selectionChanged,
+                     this, &GraphicsWidget::getSelectedItems);
+
+
+    }
 
 
 

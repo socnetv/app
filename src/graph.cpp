@@ -367,7 +367,7 @@ void Graph::canvasSizeSet(const int w, const int h){
     float newX, newY;
 
     qDebug() << "Graph::canvasSizeSet() - new size (" << w << ", " << h<<")"
-             << "adjusting node positions if any.";
+             << "adjusting node positions, if any.";
     QList<Vertex*>::const_iterator it;
     for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         newX = (*it)->x() * fX ;
@@ -379,6 +379,8 @@ void Graph::canvasSizeSet(const int w, const int h){
     }
     canvasWidth = w;
     canvasHeight= h;
+
+    qDebug() << "Graph::canvasSizeSet() - finished";
 }
 
 /**

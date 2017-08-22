@@ -465,19 +465,21 @@ void MainWindow::slotOpenSettingsDialog() {
  */
 void MainWindow::initView() {
     qDebug ()<< "MW::initView()";
-    //create a scene
 
+    //create a scene
+    scene=new QGraphicsScene();
 
     //create a view widget for this scene
-    //graphicsWidget=new GraphicsWidget(scene);
-    GraphicsWidget *graphicsWidget= new GraphicsWidget();
-    qDebug ()<< "MW::initView() - graphicsWidget thread" << graphicsWidget->thread();
-    graphicsWidget->moveToThread(&graphicsThread);
-    qDebug ()<< "MW::initView() - graphicsWidget thread now" << graphicsWidget->thread();
+    graphicsWidget=new GraphicsWidget(scene,this);
 
-    qDebug() << "MW::initView() - Starting graphicsThread";
+    //    GraphicsWidget *graphicsWidget= new GraphicsWidget();
+//    qDebug ()<< "MW::initView() - graphicsWidget thread" << graphicsWidget->thread();
+//    graphicsWidget->moveToThread(&graphicsThread);
+//    qDebug ()<< "MW::initView() - graphicsWidget thread now" << graphicsWidget->thread();
 
-    graphicsThread.start();
+//    qDebug() << "MW::initView() - Starting graphicsThread";
+
+//    graphicsThread.start();
 
     graphicsWidget->setViewportUpdateMode( QGraphicsView::SmartViewportUpdate );
     //  FullViewportUpdate  // MinimalViewportUpdate //SmartViewportUpdate  //BoundingRectViewportUpdate
@@ -516,7 +518,8 @@ void MainWindow::initView() {
                                   " - To change/edit the properties of an edge, right-click on it."
                                   ""));
 
-    qDebug() << "MW::initView() - Finished initializing view";
+    qDebug() << "MW::initView() - Finished initializing view:" << graphicsWidget->width()
+                << graphicsWidget->height();
 }
 
 

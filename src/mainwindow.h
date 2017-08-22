@@ -110,7 +110,7 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
-    QThread graphicsThread;
+    QThread graphThread;
 
 public:
 
@@ -466,6 +466,7 @@ signals:
 
 private:
 
+    QGraphicsScene *scene;
     GraphicsWidget *graphicsWidget;
 
     Graph activeGraph;

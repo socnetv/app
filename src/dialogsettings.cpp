@@ -60,7 +60,7 @@ DialogSettings::DialogSettings(
     /**
      * canvas options
      */
-    ui->antialiasingChkBox->setChecked(
+    ui->canvasAntialiasingChkBox->setChecked(
                 (appSettings["antialiasing"] == "true") ? true:false
                 );
     ui->printLogoChkBox->setChecked(
@@ -217,7 +217,7 @@ DialogSettings::DialogSettings(
     connect (ui->printDebugChkBox, &QCheckBox::stateChanged,
              this, &DialogSettings::setDebugMsgs);
 
-    connect (ui->antialiasingChkBox, &QCheckBox::stateChanged,
+    connect (ui->canvasAntialiasingChkBox, &QCheckBox::stateChanged,
              this, &DialogSettings::setAntialiasing);
 
     connect (ui->printLogoChkBox, &QCheckBox::stateChanged,
