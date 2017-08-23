@@ -48,6 +48,11 @@ DialogSettings::DialogSettings(
     //data export
     ui->dataDirEdit->setText(  (m_appSettings)["dataDir"]);
 
+    ui->printLogoChkBox->setChecked(
+                (appSettings["printLogo"] == "true") ? true:false
+                );
+
+
     //debugging
     ui->printDebugChkBox->setChecked(
                 (appSettings["printDebug"] == "true") ? true:false
@@ -57,15 +62,11 @@ DialogSettings::DialogSettings(
                 (appSettings["showProgressBar"] == "true") ? true:false
                 );
 
+
+
     /**
      * canvas options
      */
-    ui->canvasAntialiasingChkBox->setChecked(
-                (appSettings["antialiasing"] == "true") ? true:false
-                );
-    ui->printLogoChkBox->setChecked(
-                (appSettings["printLogo"] == "true") ? true:false
-                );
 
     m_bgColor = QColor (m_appSettings["initBackgroundColor"]);
     m_pixmap = QPixmap(60,20) ;
@@ -73,6 +74,51 @@ DialogSettings::DialogSettings(
     ui->bgColorButton->setIcon(QIcon(m_pixmap));
 
     ui->bgImageSelectEdit->setText((m_appSettings)["initBackgroundImage"]);
+
+
+    ui->canvasAntialiasingChkBox->setChecked(
+                (appSettings["antialiasing"] == "true") ? true:false
+                );
+
+    ui->canvasAntialiasingAutoAdjustChkBox->setChecked(
+                (appSettings["canvasAntialiasingAutoAdjustment"] == "true") ? true:false
+                );
+    ui->canvasSmoothPixmapTransformChkBox->setChecked(
+                (appSettings["canvasSmoothPixmapTransform"] == "true") ? true:false
+                );
+
+    ui->canvasSavePainterStateChkBox->setChecked(
+                (appSettings["canvasPainterStateSave"] == "true") ? true:false
+                );
+
+    ui->canvasCacheBackgroundChkBox->setChecked(
+                (appSettings["canvasCacheBackground"] == "true") ? true:false
+                );
+
+
+    QStringList canvasUpdateList;
+    canvasUpdateList << "Full" << "Minimal" << "Smart" << "Bounding Rectangle" << "None";
+    ui->canvasUpdateModeSelect->addItems(canvasUpdateList);
+
+    if ( appSettings["canvasUpdateMode"] == "Full" ) {
+        ui->canvasUpdateModeSelect->setCurrentText( "Full");
+    }
+    else if (appSettings["canvasUpdateMode"] == "Minimal" ) {
+        ui->canvasUpdateModeSelect->setCurrentText("Minimal" );
+    }
+    else if (appSettings["canvasUpdateMode"] == "Smart" ) {
+        ui->canvasUpdateModeSelect->setCurrentText("Smart" );
+    }
+    else if (appSettings["canvasUpdateMode"] == "Bounding Rectangle" ) {
+        ui->canvasUpdateModeSelect->setCurrentText("Bounding Rectangle" );
+    }
+    else if (appSettings["canvasUpdateMode"] == "None" ) {
+        ui->canvasUpdateModeSelect->setCurrentText("None" );
+    }
+    else { //
+        ui->canvasUpdateModeSelect->setCurrentText("Minimal" );
+    }
+    qDebug() << "canvasUpdateModeSelect" << appSettings["canvasUpdateMode"];
 
     /**
      * window options
@@ -217,17 +263,10 @@ DialogSettings::DialogSettings(
     connect (ui->printDebugChkBox, &QCheckBox::stateChanged,
              this, &DialogSettings::setDebugMsgs);
 
-    connect (ui->canvasAntialiasingChkBox, &QCheckBox::stateChanged,
-             this, &DialogSettings::setAntialiasing);
 
     connect (ui->printLogoChkBox, &QCheckBox::stateChanged,
              this, &DialogSettings::setPrintLogo);
 
-    connect (ui->bgColorButton, &QToolButton::clicked,
-             this, &DialogSettings::getBgColor);
-
-    connect (ui->bgImageSelectButton, &QToolButton::clicked,
-             this, &DialogSettings::getBgImage);
 
     connect (ui->progressDialogChkBox, &QCheckBox::stateChanged,
              this, &DialogSettings::setProgressDialog);
@@ -243,6 +282,35 @@ DialogSettings::DialogSettings(
 
     connect (ui->rightPanelChkBox, &QCheckBox::stateChanged,
              this, &DialogSettings::setRightPanel);
+
+
+    connect (ui->bgColorButton, &QToolButton::clicked,
+             this, &DialogSettings::getBgColor);
+
+    connect (ui->bgImageSelectButton, &QToolButton::clicked,
+             this, &DialogSettings::getBgImage);
+
+
+    connect (ui->canvasAntialiasingChkBox, &QCheckBox::stateChanged,
+             this, &DialogSettings::setCanvasAntialiasing);
+
+    connect (ui->canvasAntialiasingAutoAdjustChkBox, &QCheckBox::stateChanged,
+             this, &DialogSettings::setCanvasAntialiasingAutoAdjust);
+
+    connect (ui->canvasSmoothPixmapTransformChkBox, &QCheckBox::stateChanged,
+             this, &DialogSettings::setCanvasSmoothPixmapTransform);
+
+
+    connect (ui->canvasSavePainterStateChkBox, &QCheckBox::stateChanged,
+             this, &DialogSettings::setCanvasSavePainterState);
+
+    connect (ui->canvasCacheBackgroundChkBox, &QCheckBox::stateChanged,
+             this, &DialogSettings::setCanvasCacheBackground);
+
+
+    connect(ui->canvasUpdateModeSelect, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
+          [=](const QString &text){ setCanvasUpdateMode(text) ;} );
+
 
     connect (ui->nodeShapeRadioBox, &QRadioButton::clicked,
              this, &DialogSettings::getNodeShape);
@@ -355,7 +423,7 @@ void DialogSettings::getBgColor(){
         ui->bgImageSelectEdit->setText("");
         m_appSettings["initBackgroundColor"] = m_bgColor.name();
         m_appSettings["initBackgroundImage"] = "";
-        emit setBgColor(m_bgColor);
+        emit setCanvasBgColor(m_bgColor);
     }
     else {
         // user pressed Cancel
@@ -376,7 +444,7 @@ void DialogSettings::getBgImage(){
     if (!m_bgImage.isEmpty() ) {
         (m_appSettings)["initBackgroundImage"] = m_bgImage ;
         ui->bgImageSelectEdit->setText((m_appSettings)["initBackgroundImage"]);
-        emit setBgImage();
+        emit setCanvasBgImage();
     }
     else { //user pressed Cancel
 

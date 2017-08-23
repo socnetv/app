@@ -74,13 +74,20 @@ signals:
     void setProgressDialog(bool);
     void setToolBar(bool);
     void setStatusBar(bool);
-    void setAntialiasing(bool);
     void setPrintLogo(bool);
     void setDebugMsgs(bool);
-    void setBgColor(const QColor);
-    void setBgImage();
     void setRightPanel(bool);
     void setLeftPanel(bool);
+
+    void setCanvasBgColor(const QColor);
+    void setCanvasBgImage();
+    void setCanvasAntialiasing(bool);
+    void setCanvasAntialiasingAutoAdjust(bool );
+    void setCanvasSmoothPixmapTransform(bool);
+    void setCanvasSavePainterState(bool);
+    void setCanvasCacheBackground(bool);
+    void setCanvasUpdateMode(const QString &text);
+
     void setNodeColor(QColor);
     void setNodeShape(const QString, const long int);
     void setNodeSize(int, const bool &);
@@ -93,6 +100,7 @@ signals:
     void setNodeLabelColor(const QColor);
     void setNodeLabelSize(const int v, const int &);
     void setNodeLabelDistance(const int v, const int &);
+
     void setEdgesVisibility (const bool &toggle);
     void setEdgeArrowsVisibility (const bool &toggle);
     void setEdgeColor(const QColor, const int &);

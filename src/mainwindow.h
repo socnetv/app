@@ -402,11 +402,7 @@ public slots:
     void slotOptionsEdgesBezier(bool toggle);
     void slotOptionsEdgeArrowsVisibility(bool toggle);
 
-    void slotOptionsBackgroundColor(QColor color=QColor());
-    void slotOptionsBackgroundImageSelect(bool toggle);
-    void slotOptionsBackgroundImage();
 
-    void slotOptionsAntialiasing(bool );
     void slotOptionsEmbedLogoExporting(bool toggle);
     void slotOptionsProgressDialogVisibility(bool toggle);
     void slotOptionsToolbarVisibility(bool toggle);
@@ -414,6 +410,19 @@ public slots:
     void slotOptionsLeftPanelVisibility(bool toggle);
     void slotOptionsRightPanelVisibility(bool toggle);
     void slotOptionsDebugMessages(bool toggle);
+
+    void slotOptionsBackgroundColor(QColor color=QColor());
+    void slotOptionsBackgroundImageSelect(bool toggle);
+    void slotOptionsBackgroundImage();
+
+    void slotOptionsCanvasAntialiasing(bool toggle);
+    void slotOptionsCanvasAntialiasingAutoAdjust(const bool &toggle=false);
+    void slotOptionsCanvasSmoothPixmapTransform(const bool &toggle=false);
+    void slotOptionsCanvasSavePainterState(const bool &toggle=false);
+    void slotOptionsCanvasCacheBackground(const bool &toggle=false);
+    void slotOptionsCanvasUpdateMode(const QString &mode);
+
+
 
     //HELP MENU
     void slotHelpTips();

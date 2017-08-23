@@ -242,6 +242,11 @@ QMap<QString,QString> MainWindow::initSettings(){
     appSettings["showToolBar"] = "true";
     appSettings["showStatusBar"] = "true";
     appSettings["antialiasing"] = "true";
+    appSettings["canvasAntialiasingAutoAdjustment"] = "true";
+    appSettings["canvasSmoothPixmapTransform"] = "true";
+    appSettings["canvasPainterStateSave"] = "false";
+    appSettings["canvasCacheBackground"] = "false";
+    appSettings["canvasUpdateMode"] = "Full";
     appSettings["dataDir"]= dataDir ;
     appSettings["lastUsedDirPath"]= dataDir ;
     appSettings["showRightPanel"] = "true";
@@ -372,17 +377,9 @@ void MainWindow::slotOpenSettingsDialog() {
     connect( m_settingsDialog, &DialogSettings::setProgressDialog,
              this, &MainWindow::slotOptionsProgressDialogVisibility);
 
-    connect( m_settingsDialog, &DialogSettings::setAntialiasing,
-             this, &MainWindow::slotOptionsAntialiasing);
-
     connect( m_settingsDialog, &DialogSettings::setPrintLogo,
                  this, &MainWindow::slotOptionsEmbedLogoExporting);
 
-    connect( m_settingsDialog, &DialogSettings::setBgColor,
-                     this, &MainWindow::slotOptionsBackgroundColor);
-
-    connect( m_settingsDialog, &DialogSettings::setBgImage,
-                     this, &MainWindow::slotOptionsBackgroundImage);
 
     connect( m_settingsDialog, &DialogSettings::setToolBar,
              this, &MainWindow::slotOptionsToolbarVisibility);
@@ -395,6 +392,32 @@ void MainWindow::slotOpenSettingsDialog() {
 
     connect( m_settingsDialog, &DialogSettings::setRightPanel,
              this, &MainWindow::slotOptionsRightPanelVisibility);
+
+    connect( m_settingsDialog, &DialogSettings::setCanvasBgColor,
+                     this, &MainWindow::slotOptionsBackgroundColor);
+
+    connect( m_settingsDialog, &DialogSettings::setCanvasBgImage,
+                     this, &MainWindow::slotOptionsBackgroundImage);
+
+    connect( m_settingsDialog, &DialogSettings::setCanvasAntialiasing,
+             this, &MainWindow::slotOptionsCanvasAntialiasing);
+
+    connect( m_settingsDialog, &DialogSettings::setCanvasAntialiasingAutoAdjust,
+             this, &MainWindow::slotOptionsCanvasAntialiasingAutoAdjust);
+
+    connect( m_settingsDialog, &DialogSettings::setCanvasSmoothPixmapTransform,
+             this, &MainWindow::slotOptionsCanvasSmoothPixmapTransform);
+
+    connect( m_settingsDialog, &DialogSettings::setCanvasSavePainterState,
+             this, &MainWindow::slotOptionsCanvasSavePainterState);
+
+    connect( m_settingsDialog, &DialogSettings::setCanvasCacheBackground,
+                 this, &MainWindow::slotOptionsCanvasCacheBackground);
+
+
+    connect( m_settingsDialog, &DialogSettings::setCanvasUpdateMode,
+                         this, &MainWindow::slotOptionsCanvasUpdateMode);
+
 
     connect(m_settingsDialog, SIGNAL(setNodeColor(QColor)),
             this, SLOT(slotEditNodeColorAll(QColor)) );
@@ -472,30 +495,53 @@ void MainWindow::initView() {
     //create a view widget for this scene
     graphicsWidget=new GraphicsWidget(scene,this);
 
-    //    GraphicsWidget *graphicsWidget= new GraphicsWidget();
-//    qDebug ()<< "MW::initView() - graphicsWidget thread" << graphicsWidget->thread();
-//    graphicsWidget->moveToThread(&graphicsThread);
-//    qDebug ()<< "MW::initView() - graphicsWidget thread now" << graphicsWidget->thread();
+    bool toggle = false;
 
-//    qDebug() << "MW::initView() - Starting graphicsThread";
+    toggle = (appSettings["antialiasing"] == "true" ) ? true:false;
+    graphicsWidget->setRenderHint(QPainter::Antialiasing, toggle );
+    graphicsWidget->setRenderHint(QPainter::TextAntialiasing, toggle );
 
-//    graphicsThread.start();
 
-    graphicsWidget->setViewportUpdateMode( QGraphicsView::SmartViewportUpdate );
-    //  FullViewportUpdate  // MinimalViewportUpdate //SmartViewportUpdate  //BoundingRectViewportUpdate
-    //QGraphicsView can cache pre-rendered content in a QPixmap, which is then drawn onto the viewport.
-    graphicsWidget->setCacheMode(QGraphicsView::CacheNone);  //CacheBackground | CacheNone
-
-    bool antialiasing = (appSettings["antialiasing"] == "true" ) ? true:false;
-    graphicsWidget->setRenderHint(QPainter::Antialiasing, antialiasing );
-    graphicsWidget->setRenderHint(
-                QPainter::TextAntialiasing, antialiasing );
-    graphicsWidget->setRenderHint(QPainter::SmoothPixmapTransform, antialiasing );
-    //Optimization flags:
-    //if items do restore their state, it's not needed for graphicsWidget to do the same...
-    graphicsWidget->setOptimizationFlag(QGraphicsView::DontSavePainterState, true);
     //Disables QGraphicsView's antialiasing auto-adjustment of exposed areas.
-    graphicsWidget->setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, false);
+    toggle = (appSettings["canvasAntialiasingAutoAdjustment"] == "true" ) ? false:true;
+    graphicsWidget->setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, toggle);
+
+    toggle = (appSettings["canvasSmoothPixmapTransform"] == "true" ) ? true:false;
+    graphicsWidget->setRenderHint(QPainter::SmoothPixmapTransform, toggle );
+
+    //if items do restore their state, it's not needed for graphicsWidget to do the same...
+    toggle = (appSettings["canvasPainterStateSave"] == "true" ) ? false:true;
+    graphicsWidget->setOptimizationFlag(QGraphicsView::DontSavePainterState, toggle);
+
+
+    if ( appSettings["canvasUpdateMode"] == "Full" ) {
+        graphicsWidget->setViewportUpdateMode( QGraphicsView::FullViewportUpdate );
+    }
+    else if (appSettings["canvasUpdateMode"] == "Minimal" ) {
+        graphicsWidget->setViewportUpdateMode( QGraphicsView::MinimalViewportUpdate );
+    }
+    else if (appSettings["canvasUpdateMode"] == "Smart" ) {
+        graphicsWidget->setViewportUpdateMode( QGraphicsView::SmartViewportUpdate );
+    }
+    else if (appSettings["canvasUpdateMode"] == "Bounding Rectangle" ) {
+        graphicsWidget->setViewportUpdateMode( QGraphicsView::BoundingRectViewportUpdate );
+    }
+    else if (appSettings["canvasUpdateMode"] == "None" ) {
+        graphicsWidget->setViewportUpdateMode( QGraphicsView::NoViewportUpdate );
+    }
+    else { //
+        graphicsWidget->setViewportUpdateMode( QGraphicsView::MinimalViewportUpdate );
+    }
+
+
+    //QGraphicsView can cache pre-rendered content in a QPixmap, which is then drawn onto the viewport.
+    if ( appSettings["canvasCacheBackground"] == "true" ) {
+        graphicsWidget->setCacheMode(QGraphicsView::CacheBackground);
+    }
+    else {
+        graphicsWidget->setCacheMode(QGraphicsView::CacheNone);
+    }
+
 
     graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
     //graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
@@ -504,8 +550,10 @@ void MainWindow::initView() {
 
     // sets dragging the mouse over the scene while the left mouse button is pressed.
     graphicsWidget->setDragMode(QGraphicsView::RubberBandDrag);
+
     graphicsWidget->setFocusPolicy(Qt::StrongFocus);
     graphicsWidget->setFocus();
+
     graphicsWidget->setWhatsThis(tr("The canvas of SocNetV. \n\n"
                                   "Inside this area you create and edit networks, "
                                   "load networks from files and visualize them \n"
@@ -12452,28 +12500,185 @@ void MainWindow::slotOptionsEdgeLabelsVisibility(bool toggle) {
 
 
 /**
- * @brief MainWindow::slotOptionsAntialiasing
- * Turns antialiasing on or off
+ * @brief Turns antialiasing on or off
  * @param toggle
  */
-void MainWindow::slotOptionsAntialiasing(bool toggle) {
-    statusMessage( tr("Toggle anti-aliasing. This will take some time if the network is large (>500)...") );
+void MainWindow::slotOptionsCanvasAntialiasing(bool toggle) {
+    statusMessage( tr("Toggle anti-aliasing. Please wait...") );
     //Inform graphicsWidget about the change
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
     graphicsWidget->setRenderHint(QPainter::Antialiasing, toggle);
     graphicsWidget->setRenderHint(QPainter::TextAntialiasing, toggle);
-    graphicsWidget->setRenderHint(QPainter::SmoothPixmapTransform, toggle);
-    QApplication::restoreOverrideCursor();
+
     if (!toggle) {
-        statusMessage( tr("Anti-aliasing off.") );
         appSettings["antialiasing"] = "false";
+        statusMessage( tr("Anti-aliasing off.") );
     }
     else {
         appSettings["antialiasing"] = "true";
         statusMessage( tr("Anti-aliasing on.") );
     }
-
+    QApplication::restoreOverrideCursor();
 }
+
+
+
+
+/**
+ * @brief Turns antialiasing auto-adjustment on or off
+ * @param toggle
+ */
+void MainWindow::slotOptionsCanvasAntialiasingAutoAdjust(const bool &toggle) {
+
+    qDebug()<< "MW::slotOptionsCanvasAntialiasingAutoAdjust() " << toggle;
+
+    statusMessage( tr("Toggle anti-aliasing auto adjust. Please wait...") );
+
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+
+    if (!toggle) {
+        //When enabled, it minimizes the areas that require redrawing, which improves performance.
+        graphicsWidget->setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, true);
+        appSettings["canvasAntialiasingAutoAdjustment"] = "false";
+        statusMessage( tr("Antialiasing auto-adjustment off.") );
+    }
+    else {
+        graphicsWidget->setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, false);
+        appSettings["canvasAntialiasingAutoAdjustment"] = "true";
+        statusMessage( tr("Antialiasing auto-adjustment on.") );
+    }
+
+    QApplication::restoreOverrideCursor();
+}
+
+
+
+/**
+ * @brief Turns smooth pixmap transformations on or off
+ * @param toggle
+ */
+void MainWindow::slotOptionsCanvasSmoothPixmapTransform(const bool &toggle) {
+
+    qDebug()<< "MW::slotOptionsCanvasSmoothPixmapTransform() " << toggle;
+
+    statusMessage( tr("Toggle smooth pixmap transformations. Please wait...") );
+
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+
+    if (!toggle) {
+        graphicsWidget->setRenderHint(QPainter::SmoothPixmapTransform, toggle);
+        appSettings["canvasSmoothPixmapTransform"] = "false";
+        statusMessage( tr("Smooth pixmap transformations off.") );
+    }
+    else {
+        graphicsWidget->setRenderHint(QPainter::SmoothPixmapTransform, toggle);
+        appSettings["canvasSmoothPixmapTransform"] = "true";
+        statusMessage( tr("Smooth pixmap transformations on.") );
+    }
+
+    QApplication::restoreOverrideCursor();
+}
+
+
+
+
+/**
+ * @brief Turns saving painter state on or off
+ * @param toggle
+ */
+void MainWindow::slotOptionsCanvasSavePainterState(const bool &toggle) {
+
+    qDebug()<< "MW::slotOptionsCanvasSavePainterState() " << toggle;
+
+    statusMessage( tr("Toggle saving painter state. Please wait...") );
+
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+
+    if (!toggle) {
+        graphicsWidget->setOptimizationFlag(QGraphicsView::DontSavePainterState, true);
+        appSettings["canvasPainterStateSave"] = "false";
+        statusMessage( tr("Saving painter state off.") );
+    }
+    else {
+        graphicsWidget->setOptimizationFlag(QGraphicsView::DontSavePainterState, false);
+        appSettings["canvasPainterStateSave"] = "true";
+        statusMessage( tr("Saving painter state on.") );
+    }
+
+    QApplication::restoreOverrideCursor();
+}
+
+
+
+
+
+
+/**
+ * @brief Turns caching of canvas background on or off
+ * @param toggle
+ */
+void MainWindow::slotOptionsCanvasCacheBackground(const bool &toggle) {
+
+    qDebug()<< "MW::slotOptionsCanvasCacheBackground() " << toggle;
+
+    statusMessage( tr("Toggle canvas background caching state. Please wait...") );
+
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+
+    if (!toggle) {
+        graphicsWidget->setCacheMode(QGraphicsView::CacheNone);
+        appSettings["canvasCacheBackground"] = "false";
+        statusMessage( tr("Canvas background caching  off.") );
+    }
+    else {
+        graphicsWidget->setCacheMode(QGraphicsView::CacheBackground);
+        appSettings["canvasCacheBackground"] = "true";
+        statusMessage( tr("Canvas background caching  on.") );
+    }
+
+    QApplication::restoreOverrideCursor();
+}
+
+
+/**
+ * @brief Sets canvas update mode
+ * @param toggle
+ */
+void MainWindow::slotOptionsCanvasUpdateMode(const QString &mode) {
+
+    qDebug()<< "MW::slotOptionsCanvasUpdateMode() " << mode;
+
+    statusMessage( tr("Setting canvas update mode. Please wait...") );
+
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+
+    if ( mode == "Full" ) {
+        graphicsWidget->setViewportUpdateMode( QGraphicsView::FullViewportUpdate );
+    }
+    else if ( mode == "Minimal" ) {
+        graphicsWidget->setViewportUpdateMode( QGraphicsView::MinimalViewportUpdate );
+    }
+    else if ( mode == "Smart" ) {
+        graphicsWidget->setViewportUpdateMode( QGraphicsView::SmartViewportUpdate );
+    }
+    else if ( mode == "Bounding Rectangle" ) {
+        graphicsWidget->setViewportUpdateMode( QGraphicsView::BoundingRectViewportUpdate );
+    }
+    else if ( mode == "None" ) {
+        graphicsWidget->setViewportUpdateMode( QGraphicsView::NoViewportUpdate );
+    }
+    else { //
+        graphicsWidget->setViewportUpdateMode( QGraphicsView::MinimalViewportUpdate );
+    }
+
+    appSettings["canvasUpdateMode"] = mode;
+
+    statusMessage( tr("Canvas update mode: ") + mode );
+
+
+    QApplication::restoreOverrideCursor();
+}
+
 
 
 /**
