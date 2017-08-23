@@ -4856,12 +4856,19 @@ void MainWindow::initSignalSlots() {
              &activeGraph, SLOT( edgeFilterByWeight (float, bool) ) );
 
 
+    connect(webCrawlerAct, SIGNAL(triggered()), this, SLOT(slotNetworkWebCrawlerDialog()));
+
     connect( &m_WebCrawlerDialog, &WebCrawlerDialog::userChoices,
              this, &MainWindow::slotNetworkWebCrawler );
 
     connect( &m_datasetSelectDialog, SIGNAL( userChoices( QString) ),
              this, SLOT( slotNetworkDataSetRecreate(QString) ) );
 
+    connect(zoomInAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomIn()) );
+    connect(zoomOutAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomOut()) );
+    connect(editRotateLeftAct, SIGNAL(triggered()), graphicsWidget, SLOT( rotateLeft()) );
+    connect(editRotateRightAct, SIGNAL(triggered()), graphicsWidget, SLOT( rotateRight()) );
+    connect(editResetSlidersAct, SIGNAL(triggered()), graphicsWidget, SLOT( reset()) );
 
     connect( layoutGuidesAct, SIGNAL(triggered(bool)),
              this, SLOT(slotLayoutGuides(bool)));
