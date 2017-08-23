@@ -420,6 +420,8 @@ public slots:
     void slotOptionsCanvasSmoothPixmapTransform(const bool &toggle=false);
     void slotOptionsCanvasSavePainterState(const bool &toggle=false);
     void slotOptionsCanvasCacheBackground(const bool &toggle=false);
+    void slotOptionsCanvasEdgeHighlighting(const bool &toggle=false);
+
     void slotOptionsCanvasUpdateMode(const QString &mode);
 
 

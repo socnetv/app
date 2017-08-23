@@ -46,8 +46,9 @@ public:
 
 public slots:
     void getDataDir();
-    void getBgColor();
-    void getBgImage();
+    void getCanvasBgColor();
+    void getCanvasBgImage();
+    void getCanvasUpdateMode(const QString &text);
     void validateSettings();
     void getNodeColor();
     void getNodeShape();
@@ -86,6 +87,7 @@ signals:
     void setCanvasSmoothPixmapTransform(bool);
     void setCanvasSavePainterState(bool);
     void setCanvasCacheBackground(bool);
+    void setCanvasEdgeHighlighting(bool);
     void setCanvasUpdateMode(const QString &text);
 
     void setNodeColor(QColor);

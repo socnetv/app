@@ -63,6 +63,17 @@ DialogSettings::DialogSettings(
                 );
 
 
+    /**
+     * window options
+     */
+    ui->leftPanelChkBox->setChecked(
+                ( appSettings["showLeftPanel"] == "true") ? true:false
+                );
+
+    ui->rightPanelChkBox->setChecked(
+                ( appSettings["showRightPanel"] == "true") ? true:false
+                );
+
 
     /**
      * canvas options
@@ -120,16 +131,11 @@ DialogSettings::DialogSettings(
     }
     qDebug() << "canvasUpdateModeSelect" << appSettings["canvasUpdateMode"];
 
-    /**
-     * window options
-     */
-    ui->leftPanelChkBox->setChecked(
-                ( appSettings["showLeftPanel"] == "true") ? true:false
+    ui->canvasEdgeHighlightingChkBox->setChecked(
+                (appSettings["canvasEdgeHighlighting"] == "true") ? true:false
                 );
 
-    ui->rightPanelChkBox->setChecked(
-                ( appSettings["showRightPanel"] == "true") ? true:false
-                );
+
 
     /**
      * node options
@@ -285,10 +291,10 @@ DialogSettings::DialogSettings(
 
 
     connect (ui->bgColorButton, &QToolButton::clicked,
-             this, &DialogSettings::getBgColor);
+             this, &DialogSettings::getCanvasBgColor);
 
     connect (ui->bgImageSelectButton, &QToolButton::clicked,
-             this, &DialogSettings::getBgImage);
+             this, &DialogSettings::getCanvasBgImage);
 
 
     connect (ui->canvasAntialiasingChkBox, &QCheckBox::stateChanged,
@@ -308,8 +314,16 @@ DialogSettings::DialogSettings(
              this, &DialogSettings::setCanvasCacheBackground);
 
 
-    connect(ui->canvasUpdateModeSelect, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
-          [=](const QString &text){ setCanvasUpdateMode(text) ;} );
+    connect (ui->canvasEdgeHighlightingChkBox, &QCheckBox::stateChanged,
+             this, &DialogSettings::setCanvasEdgeHighlighting);
+
+
+    connect(ui->canvasUpdateModeSelect, SIGNAL ( currentIndexChanged (const QString &)),
+          this, SLOT(getCanvasUpdateMode(const QString &)) );
+
+
+
+
 
 
     connect (ui->nodeShapeRadioBox, &QRadioButton::clicked,
@@ -410,10 +424,10 @@ void DialogSettings::getDataDir(){
 
 
 /**
- * @brief DialogSettings::getBgColor
+ * @brief DialogSettings::getCanvasBgColor
  * Opens a QColorDialog for the user to select a new bg color
  */
-void DialogSettings::getBgColor(){
+void DialogSettings::getCanvasBgColor(){
 
     m_bgColor = QColorDialog::getColor(
                 m_bgColor, this, tr("Select a background color") );
@@ -434,9 +448,9 @@ void DialogSettings::getBgColor(){
 
 
 /**
- * @brief DialogSettings::getBgImage
+ * @brief DialogSettings::getCanvasBgImage
  */
-void DialogSettings::getBgImage(){
+void DialogSettings::getCanvasBgImage(){
     QString m_bgImage = QFileDialog::getOpenFileName(
                 this, tr("Select a background image "), (m_appSettings)["lastUsedDirPath"],
                 tr("All (*);;PNG (*.png);;JPG (*.jpg)")
@@ -452,6 +466,18 @@ void DialogSettings::getBgImage(){
 
 }
 
+
+
+
+/**
+ * @brief DialogSettings::getCanvasUpdateMode
+ */
+void DialogSettings::getCanvasUpdateMode(const QString &mode){
+    if (!mode.isEmpty() ) {
+        m_appSettings["canvasUpdateMode"] = mode;
+        emit setCanvasUpdateMode(mode);
+    }
+}
 
 /**
  * @brief DialogSettings::getNodeColor

@@ -247,6 +247,8 @@ QMap<QString,QString> MainWindow::initSettings(){
     appSettings["canvasPainterStateSave"] = "false";
     appSettings["canvasCacheBackground"] = "false";
     appSettings["canvasUpdateMode"] = "Full";
+    appSettings["canvasEdgeHighlighting"] = "true";
+    appSettings["canvasNodeHighlighting"] = "true";
     appSettings["dataDir"]= dataDir ;
     appSettings["lastUsedDirPath"]= dataDir ;
     appSettings["showRightPanel"] = "true";
@@ -413,6 +415,10 @@ void MainWindow::slotOpenSettingsDialog() {
 
     connect( m_settingsDialog, &DialogSettings::setCanvasCacheBackground,
                  this, &MainWindow::slotOptionsCanvasCacheBackground);
+
+
+    connect( m_settingsDialog, &DialogSettings::setCanvasEdgeHighlighting,
+                     this, &MainWindow::slotOptionsCanvasEdgeHighlighting);
 
 
     connect( m_settingsDialog, &DialogSettings::setCanvasUpdateMode,
@@ -12645,6 +12651,44 @@ void MainWindow::slotOptionsCanvasCacheBackground(const bool &toggle) {
 
     QApplication::restoreOverrideCursor();
 }
+
+
+
+
+
+
+
+
+
+
+/**
+ * @brief Turns selected edge highlighting
+ * @param toggle
+ */
+void MainWindow::slotOptionsCanvasEdgeHighlighting(const bool &toggle) {
+
+    qDebug()<< "MW::slotOptionsCanvasEdgeHighlighting() " << toggle;
+
+    statusMessage( tr("Toggle edge highlighting state. Please wait...") );
+
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+
+    if (!toggle) {
+       // graphicsWidget->setCacheMode(QGraphicsView::CacheNone);
+        appSettings["canvasEdgeHighlighting"] = "false";
+        statusMessage( tr("Edge highlighting off.") );
+    }
+    else {
+        //graphicsWidget->setCacheMode(QGraphicsView::CacheBackground);
+        appSettings["canvasEdgeHighlighting"] = "true";
+        statusMessage( tr("Edge highlighting on.") );
+    }
+
+    QApplication::restoreOverrideCursor();
+}
+
+
+
 
 
 /**
