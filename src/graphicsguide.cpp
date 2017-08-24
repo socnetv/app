@@ -3,7 +3,7 @@
  version: 2.4
  Written in Qt
 
-                         Guide.cpp  -  description
+                         graphicsguide.cpp  -  description
                              -------------------
     copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -25,10 +25,10 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#include "guide.h"
+#include "graphicsguide.h"
 #include "graphicswidget.h"
 
-Guide::Guide ( GraphicsWidget *gw,
+GraphicsGuide::GraphicsGuide ( GraphicsWidget *gw,
                const double &x0,
                const double &y0,
                const double &radius ) : graphicsWidget ( gw ){
@@ -41,7 +41,7 @@ Guide::Guide ( GraphicsWidget *gw,
 
 
 
-Guide::Guide ( GraphicsWidget *gw,
+GraphicsGuide::GraphicsGuide ( GraphicsWidget *gw,
                const double &y0, const int &width)
     : graphicsWidget ( gw ){
     graphicsWidget->scene()->addItem ( this );
@@ -53,15 +53,15 @@ Guide::Guide ( GraphicsWidget *gw,
 
 
 
-double Guide::radius() {
+double GraphicsGuide::radius() {
     return m_radius;
 }
 
-bool Guide::isCircle() {
+bool GraphicsGuide::isCircle() {
     return (circle);
 }
 
-void Guide::setCircle(const QPointF &center,
+void GraphicsGuide::setCircle(const QPointF &center,
                       const double &radius ) {
     setPos(center);
     m_radius=radius;
@@ -69,19 +69,19 @@ void Guide::setCircle(const QPointF &center,
     update();
 }
 
-void Guide::setHorizontalLine(const QPointF &origin, const int &width){
+void GraphicsGuide::setHorizontalLine(const QPointF &origin, const int &width){
     setPos(origin);
     m_width= width;
     circle=false;
     update();
 }
 
-int Guide::width() {
+int GraphicsGuide::width() {
     return m_width;
 }
 
 /** Returns the bounding rectangle of the background circle*/
-QRectF Guide::boundingRect() const {
+QRectF GraphicsGuide::boundingRect() const {
     if (circle) {
         return QRectF ( - m_radius-1,  - m_radius-1,  + 2 * m_radius + 1,  + 2* m_radius +1 );
     }
@@ -91,7 +91,7 @@ QRectF Guide::boundingRect() const {
 }
 
 
-void Guide::paint ( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget * ){
+void GraphicsGuide::paint ( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget * ){
     Q_UNUSED(option);
     painter->setPen ( QPen ( QColor ( "red" ), 1, Qt::DotLine ) );
     if (circle) {
@@ -104,7 +104,7 @@ void Guide::paint ( QPainter *painter, const QStyleOptionGraphicsItem *option, Q
 
 
 
-void Guide::die (){
+void GraphicsGuide::die (){
     this->prepareGeometryChange();
     this->hide();
     this->update();

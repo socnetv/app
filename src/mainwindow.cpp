@@ -35,26 +35,27 @@
 #include <QtGlobal>
 #include <QtDebug>
 #include <QPrintDialog>
+#include <QProgressDialog>
 #include <QKeySequence>
 
 
 #include "mainwindow.h"
-#include "graphicswidget.h"
-#include "node.h"
-#include "edge.h"
-#include "nodenumber.h"
-#include "nodelabel.h"
-#include "edgeweight.h"
 #include "texteditor.h"
+
+#include "graphicswidget.h"
+#include "graphicsnode.h"
+#include "graphicsedge.h"
+#include "graphicsnodenumber.h"
+
+
 #include "dialogfilteredgesbyweight.h"
-#include "guide.h"
-#include "vertex.h"
 #include "dialogpreviewfile.h"
 #include "dialogranderdosrenyi.h"
 #include "dialograndsmallworld.h"
 #include "dialograndscalefree.h"
 #include "dialograndregular.h"
 #include "dialogsettings.h"
+#include "dialognodeedit.h"
 #include "dialogsimilaritypearson.h"
 #include "dialogsimilaritymatches.h"
 #include "dialogclusteringhierarchical.h"
@@ -4653,7 +4654,6 @@ void MainWindow::initSignalSlots() {
              SIGNAL(
                  drawNode( const int &, const int &, const QString &,
                            const QString &,
-                           const bool &,const bool &,
                            const QString &, const int &, const int &,
                            const bool &, const QString &,
                            const QString &, const int &, const int &,
@@ -4664,7 +4664,6 @@ void MainWindow::initSignalSlots() {
              SLOT(
                  drawNode( const int &, const int &, const QString &,
                            const QString &,
-                           const bool &,const bool &,
                            const QString &, const int &, const int &,
                            const bool &, const QString &,
                            const QString &, const int &, const int &,
@@ -5008,12 +5007,7 @@ void MainWindow::initApp(){
     activeGraph.vertexLabelsVisibilitySet(
                 (appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false
                 );
-    activeGraph.vertexNumbersVisibilitySet(
-                ( appSettings["initNodeNumbersVisibility"] == "true" ) ? true: false
-                );
-    activeGraph.vertexNumbersInsideNodesSet(
-                ( appSettings["initNodeNumbersInside"] == "true" ) ? true: false
-                );
+
 
     /** Clear graphicsWidget scene and reset transformations **/
     graphicsWidget->clear();
@@ -5021,7 +5015,15 @@ void MainWindow::initApp(){
     zoomSlider->setValue(250);
     graphicsWidget->setInitZoomIndex(250);
     graphicsWidget->setInitNodeSize(appSettings["initNodeSize"].toInt(0, 10));
-
+    graphicsWidget->setNodeNumberVisibility(
+                ( appSettings["initNodeNumbersVisibility"] == "true" ) ? true: false
+                );
+    graphicsWidget->setNumbersInsideNodes(
+                ( appSettings["initNodeNumbersInside"] == "true" ) ? true: false
+                    );
+    graphicsWidget->setEdgeHighlighting(
+                ( appSettings["canvasEdgeHighlighting"] == "true" ) ? true: false
+                );
     if (appSettings["initBackgroundImage"] != ""
             && QFileInfo(appSettings["initBackgroundImage"]).exists()) {
         graphicsWidget->setBackgroundBrush(QImage(appSettings["initBackgroundImage"]));
@@ -8576,7 +8578,7 @@ void MainWindow::slotEditNodeNumbersColor(QColor color){
         QList<QGraphicsItem *> list= graphicsWidget->scene()->items();
         for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
             if ( (*it)->type() == TypeNumber) 		{
-                NodeNumber *jimNumber = (NodeNumber *) (*it);
+                GraphicsNodeNumber *jimNumber = (GraphicsNodeNumber *) (*it);
                 jimNumber->update();
                 jimNumber->setDefaultTextColor(color);
             }
@@ -12284,7 +12286,6 @@ void MainWindow::slotOptionsNodeNumbersInside(bool toggle){
         slotOptionsNodeNumbersVisibility(true);
 
     appSettings["initNodeNumbersInside"] = (toggle) ? "true":"false";
-    activeGraph.vertexNumbersInsideNodesSet(toggle);
     graphicsWidget -> setNumbersInsideNodes(toggle);
     optionsNodeNumbersVisibilityAct->setChecked (toggle);
     if (toggle){
@@ -12370,7 +12371,7 @@ void MainWindow::slotOptionsEdgeArrowsVisibility(bool toggle){
     QList<QGraphicsItem *> list = graphicsWidget->scene()->items();
     for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
         if ( (*item)->type() ==TypeEdge){
-            Edge *edge = (Edge*) (*item);
+            GraphicsEdge *edge = (GraphicsEdge*) (*item);
             edge->showArrows(toggle);
         }
     }
@@ -12414,7 +12415,7 @@ void MainWindow::slotOptionsEdgesBezier(bool toggle){
         // 		QList<QGraphicsItem *> list = scene->items();
         // 		for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
         // 			if ( (*item)->type() ==TypeEdge ){
-        // 				Edge *edge = (Edge*) (*item);
+        // 				GraphicsEdge *edge = (GraphicsEdge*) (*item);
         // //				edge->toggleBezier(false);
         // 				(*item)->hide();(*item)->show();
         // 			}
@@ -12428,7 +12429,7 @@ void MainWindow::slotOptionsEdgesBezier(bool toggle){
         // 		QList<QGraphicsItem *> list = scene->items();
         // 		for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++){
         // 			if ( (*item)->type() ==TypeEdge ){
-        // 				Edge *edge = (Edge*) (*item);
+        // 				GraphicsEdge *edge = (GraphicsEdge*) (*item);
         // //				edge->toggleBezier(true);
         // 				(*item)->hide();(*item)->show();
         // 			}
@@ -12674,12 +12675,12 @@ void MainWindow::slotOptionsCanvasEdgeHighlighting(const bool &toggle) {
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
     if (!toggle) {
-       // graphicsWidget->setCacheMode(QGraphicsView::CacheNone);
+        graphicsWidget->setEdgeHighlighting(toggle);
         appSettings["canvasEdgeHighlighting"] = "false";
         statusMessage( tr("Edge highlighting off.") );
     }
     else {
-        //graphicsWidget->setCacheMode(QGraphicsView::CacheBackground);
+        graphicsWidget->setEdgeHighlighting(toggle);
         appSettings["canvasEdgeHighlighting"] = "true";
         statusMessage( tr("Edge highlighting on.") );
     }

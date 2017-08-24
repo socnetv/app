@@ -1,8 +1,9 @@
 /***************************************************************************
- SocNetV: Social Network Visualizer
+ SocNetV: Social Network Visualizer 
  version: 2.4
  Written in Qt
-                         edgeweight.h  -  description
+
+                        graphicsedgelabel.cpp  -  description
                              -------------------
     copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -19,34 +20,30 @@
 *     but WITHOUT ANY WARRANTY; without even the implied warranty of           *
 *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            *
 *     GNU General Public License for more details.                             *
-*                                                                               *
+*                                                                              *
 *     You should have received a copy of the GNU General Public License        *
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
+#include "graphicsedgelabel.h"
+#include "graphicsedge.h"
+#include <QDebug>
+#include <QFont>
 
 
-#ifndef EDGEWEIGHT_H
-#define EDGEWEIGHT_H
-
-
-#include <QGraphicsTextItem>
-class Edge;
-
-static const int TypeEdgeWeight = QGraphicsItem::UserType+5;
-static const int ZValueEdgeWeight = 80;
-
-class EdgeWeight: public QGraphicsTextItem
+GraphicsEdgeLabel::GraphicsEdgeLabel( GraphicsEdge *link , int size, QString labelText)
+: QGraphicsTextItem( 0)
 {
-public:
-    EdgeWeight(Edge * , int, QString);
-    void removeRefs();
+    qDebug()<< "GraphicsEdgeLabel:: creating new edgelabel and attaching it to link";
+	setPlainText( labelText );
+    setParentItem(link); //auto disables child items like this, when link is disabled.
+    this->setFont( QFont ("Courier", size, QFont::Light, true) );
+    setZValue(ZValueEdgeLabel);
+}
 
-    enum { Type = UserType + 5 };
-    int type() const { return Type; }
 
-    ~EdgeWeight();
-private:
-};
+GraphicsEdgeLabel::~GraphicsEdgeLabel()
+{
+}
 
-#endif
+

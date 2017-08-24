@@ -3,7 +3,7 @@
  version: 2.4
  Written in Qt
  
-                         edge.h  -  description
+                         graphicsedge.h  -  description
                              -------------------
     copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -25,8 +25,8 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef EDGE_H
-#define EDGE_H
+#ifndef GRAPHICSEDGE_H
+#define GRAPHICSEDGE_H
 
 
 #include <QGraphicsItem>
@@ -36,9 +36,9 @@
 
 class GraphicsWidget;
 class QGraphicsSceneMouseEvent;
-class Node;
-class EdgeWeight;
-class EdgeLabel;
+class GraphicsNode;
+class GraphicsEdgeWeight;
+class GraphicsEdgeLabel;
 
 using namespace std;
 
@@ -51,24 +51,25 @@ static const int EDGE_STATE_REGULAR = 0;
 static const int EDGE_STATE_HIGHLIGHT = 1;
 static const int EDGE_STATE_HOVER = 2;
 
-class Edge : public QObject, public QGraphicsItem {
+class GraphicsEdge : public QObject, public QGraphicsItem {
     Q_OBJECT
     Q_INTERFACES (QGraphicsItem)
 
 public:
-    Edge(GraphicsWidget *, Node*, Node*, const float &weight,
+    GraphicsEdge(GraphicsWidget *, GraphicsNode*, GraphicsNode*, const float &weight,
          const QString &label, const QString &color,
          const Qt::PenStyle &style,
          const int&type, const bool & drawArrows, const bool &bezier,
-         const bool &weightNumbers=false);
-    ~Edge();
+         const bool &weightNumbers=false,
+                 const bool &highlighting=true);
+    ~GraphicsEdge();
     enum { Type = UserType + 2 };
     int type() const { return Type; }
-    Node *sourceNode() const;
-    void setSourceNode(Node *node);
+    GraphicsNode *sourceNode() const;
+    void setSourceNode(GraphicsNode *node);
 
-    Node *targetNode() const;
-    void setTargetNode(Node *node);
+    GraphicsNode *targetNode() const;
+    void setTargetNode(GraphicsNode *node);
 
     void setStartOffset(const int & );
     void setEndOffset(int );
@@ -90,7 +91,6 @@ public:
     void setLabelVisibility  (const bool &toggle);
 
     void showArrows(const bool &);
-    void toggleAntialiasing(bool);
 
     void setUndirected();
     bool isUndirected();
@@ -109,6 +109,7 @@ public:
     QString colorToPajek();
 
     void highlight (const bool &flag);
+    void setHighlighting (const bool &toggle);
 
     QPainterPath shape() const;
 
@@ -123,14 +124,14 @@ protected:
 
 private:
     GraphicsWidget *graphicsWidget;
-    Node *source, *target;
+    GraphicsNode *source, *target;
     QPainterPath *m_path, *m_path_up, *m_path_down, *m_path_shape;
     QPointF sourcePoint, targetPoint;
     qreal m_arrowSize, m_startOffset, m_endOffset;
     Qt::PenStyle m_style;
     int m_state;
-    EdgeWeight* weightNumber;
-    EdgeLabel* edgeLabel;
+    GraphicsEdgeWeight* weightNumber;
+    GraphicsEdgeLabel* edgeLabel;
 
     QString m_color, m_colorNegative, m_label;
     int eFrom, eTo;
@@ -140,7 +141,7 @@ private:
     double rad, theta, theta1, theta2;
     qreal angle, line_length, line_dx, line_dy;
     bool m_Bezier, m_drawArrows, m_directed_first, m_drawWeightNumber;
-    bool m_drawLabel;
+    bool m_drawLabel, m_hoverHighlighting;
 };
 
 #endif

@@ -1,9 +1,9 @@
 /***************************************************************************
- SocNetV: Social Network Visualizer
+ SocNetV: Social Network Visualizer 
  version: 2.4
  Written in Qt
  
-                         Guide.h  -  description
+                         graphicsnodenumber.h  -  description
                              -------------------
     copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -25,52 +25,28 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef Guide_H
-#define Guide_H
+#ifndef GRAPHICSNODENUMBER_H
+#define GRAPHICSNODENUMBER_H
+
+#include <QGraphicsTextItem>
+
+class GraphicsNode;
 
 
+static const int TypeNumber=QGraphicsItem::UserType+3;
+static const int ZValueNodeNumber = 90;
 
-#include <QGraphicsItem>
-#include <QObject>
-
-
-class GraphicsWidget;
-
-static const int TypeGuide = QGraphicsItem::UserType+7;
-static const int ZValueGuide = 10;
-
-class Guide :  public QObject, public QGraphicsItem {
-    Q_OBJECT
-    Q_INTERFACES (QGraphicsItem)
-
+class GraphicsNodeNumber : public QGraphicsTextItem {
 public:
-    Guide(GraphicsWidget *,
-          const double &x0, const double &y0, const double &radius );
-    Guide(GraphicsWidget *,
-          const double &y0, const int &width);
-    bool isCircle();
-    void setCircle(const QPointF &center, const double &radius) ;
-    void setHorizontalLine(const QPointF &origin, const int &width) ;
-    double radius();
-    int width();
-    enum { Type = UserType + 7 };
+    GraphicsNodeNumber(GraphicsNode * ,  const QString &labelText, const int &size);
+    enum { Type = UserType + 3 };
+	void removeRefs();
 	int type() const { return Type; }
-	void die();
-	
-
-protected:
-	QRectF boundingRect() const;
-	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-
-private: 
-	GraphicsWidget *graphicsWidget;
-    double m_radius;
-    int m_width;
-	bool circle;
-
+	GraphicsNode* node() { return source; }
+    void setSize(const int size);
+    ~GraphicsNodeNumber();
+private:
+	GraphicsNode *source;
 };
 
 #endif
-
-
-

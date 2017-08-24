@@ -3,7 +3,7 @@
  version: 2.4
  Written in Qt
  
-                         vertex.h  -  description
+                         graphvertex.h  -  description
                              -------------------
     copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -25,8 +25,8 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef VERTEX_H
-#define VERTEX_H
+#ifndef GRAPHVERTEX_H
+#define GRAPHVERTEX_H
 
 #include <QObject>
 #include <QString>
@@ -59,12 +59,12 @@ typedef QPair <int, int> pair_i_i;
 typedef QHash < int, pair_i_i > H_shortestPaths;
 
 
-class Vertex : public QObject{
+class GraphVertex : public QObject{
     Q_OBJECT
 
 public:
 
-    Vertex(Graph* parent,
+    GraphVertex(Graph* parent,
            const long int &name,
            const int &val,
            const int &relation,
@@ -78,9 +78,9 @@ public:
            const QPointF &p,
            const QString &shape);
 
-    Vertex(const long int &name);
+    GraphVertex(const long int &name);
 
-    ~Vertex();
+    ~GraphVertex();
 
     long int name() const { return m_name; }
 
@@ -121,9 +121,12 @@ public:
 
     float distance(const long int &v1) ;
     void setDistance (const long int &v1, const float &d) ;
+    void clearDistance();
 
     int shortestPaths(const long int &v1) ;
     void setShortestPaths(const long int &v1, const int &sp) ;
+    void clearShortestPaths();
+
 
     /* sets eccentricity */
     void setEccentricity (float c){ m_Eccentricity=c;}
@@ -193,9 +196,9 @@ public:
 
 
     void setOutLinkColor(const long int &v2,
-                         const QString &color) { outLinkColors[v2]=color; }
+                         const QString &color) { m_outLinkColors[v2]=color; }
     QString outLinkColor(const long int &v2) {
-        return ( outLinkColors.contains(v2) ) ? outLinkColors.value(v2) : "black";
+        return ( m_outLinkColors.contains(v2) ) ? m_outLinkColors.value(v2) : "black";
     }
 
 
@@ -324,9 +327,10 @@ private:
 
     QHash<int,float>* m_reciprocalEdges;
     L_int myPs;
-    L_int m_neighborhoodList;
-    H_IntToStr outLinkColors, m_outEdgeLabels;
     QHash <int, L_int> m_cliques;
+    L_int m_neighborhoodList;
+    H_IntToStr m_outLinkColors, m_outEdgeLabels;
+
     //FIXME vertex coords
 
 

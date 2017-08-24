@@ -39,7 +39,7 @@
 #include <stack>
 #include <map>
 
-#include "vertex.h"
+#include "graphvertex.h"
 #include "matrix.h"
 #include "parser.h"
 #include "webcrawler.h"
@@ -101,7 +101,7 @@ class QPointF;
 
 
 
-typedef QList<Vertex*> Vertices;
+typedef QList<GraphVertex*> Vertices;
 typedef QHash <QString, int> H_StrToInt;
 typedef QHash <long int, long int> H_Int;
 typedef QHash <float, long int> H_f_i;
@@ -184,9 +184,9 @@ class GraphDistancesCompare {
 
 /**
  * @brief The Graph class
- * This is the main class for a Graph, used in conjuction with Vertex, Parser and Matrix objects.
+ * This is the main class for a Graph, used in conjuction with GraphVertex, Parser and Matrix objects.
  *   Graph class methods are the interface to various analysis algorithms
- *   Vertex class holds each vertex data (colors, strings, statistics, etc)
+ *   GraphVertex class holds each vertex data (colors, strings, statistics, etc)
  *   Matrix class holds the adjacency matrix of the network.
  *   Parser class loads files of networks.
  */
@@ -264,7 +264,7 @@ signals:
     /** Signals to MainWindow */
     void signalProgressBoxCreate(const int max=0, const QString msg="Please wait");
     void signalProgressBoxKill(const int max=0);
-    void signalProgressBoxUpdate(const int count=0 );
+    void signalProgressBoxUpdate(const int &count=0 );
     void signalGraphModified(const int &graphStatus,
                       const bool &undirected,
                       const int &vertices,
@@ -304,7 +304,6 @@ signals:
     /** Signals to GraphicsWidget */
     void drawNode( const int &num, const int &size, const QString &nodeShape,
                    const QString &nodeColor,
-                   const bool &showNumbers,const bool &numbersInside,
                    const QString &numberColor, const int &numSize,
                    const int &numDistance,
                    const bool &showLabels, const QString &label,
@@ -321,7 +320,7 @@ signals:
                     const int &type=0, const bool arrows=true,
                     const bool &bezier=false,  const bool &weightNumbers=false);
     void eraseEdge(const long int &, const long int &);					//emited from edgeRemove() to GW to clear the edge item.
-    void setEdgeVisibility (int, int, int, bool);			// emitted from each Vertex
+    void setEdgeVisibility (int, int, int, bool);			// emitted from each GraphVertex
     void setVertexVisibility(long int, bool);		//notifies GW to disable a node
     void setNodePos(const int &, const qreal &, const qreal &);
     void setNodeSize(const long int &v, const int &size);
@@ -435,8 +434,7 @@ public:
     void vertexNumberDistanceInit (const int &distance);
     void vertexNumberDistanceSet(const long int &v, const int &newDistance );
     void vertexNumberDistanceSetAll (const int &newDistance);
-    void vertexNumbersInsideNodesSet(bool toggle);
-    void vertexNumbersVisibilitySet(bool toggle);
+
 
     void vertexLabelsVisibilitySet(bool toggle);
     void vertexLabelSizeInit(int newSize);
@@ -450,6 +448,8 @@ public:
     void vertexLabelDistanceInit (const int &distance);
     void vertexLabelDistanceSet(const long int &v, const int &newDistance );
     void vertexLabelDistanceAllSet (const int &newDistance);
+
+
 
     void vertexPosSet(const int &v, const int &x, const int &y);
     QPointF vertexPos(const int &v1);
@@ -813,7 +813,7 @@ public:
     float clusteringCoefficient (const bool updateProgress=false);
 
     bool graphTriadCensus();
-    void triadType_examine_MAN_label(int, int, int, Vertex*,  Vertex*, Vertex* );
+    void triadType_examine_MAN_label(int, int, int, GraphVertex*,  GraphVertex*, GraphVertex* );
     //	void eccentr_JordanCenter(); 				// TODO
 
 
@@ -936,7 +936,7 @@ private:
                   const bool &dropIsolates=false);
 
     void minmax(
-                float C, Vertex *v, float &max, float &min,
+                float C, GraphVertex *v, float &max, float &min,
                 int &maxNode, int &minNode
               ) ;
     void resolveClasses (float C, H_StrToInt &discreteClasses, int &classes);
@@ -1027,8 +1027,8 @@ private:
     long int m_totalVertices, m_totalEdges, m_graphDiameter, initVertexSize;
     int initVertexLabelSize, initVertexNumberSize;
     int initVertexNumberDistance, initVertexLabelDistance;
-    bool order, initVertexLabelsVisibility,initVertexNumbersVisibility;
-    bool initVertexNumberInside, initEdgeWeightNumbers, initEdgeLabels;
+    bool order, initVertexLabelsVisibility;
+    bool initEdgeWeightNumbers, initEdgeLabels;
     float m_graphAverageDistance, m_graphGeodesicsCount;
     float m_graphDensity;
     float m_graphReciprocityArc, m_graphReciprocityDyad;

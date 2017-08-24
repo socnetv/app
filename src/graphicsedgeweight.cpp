@@ -1,12 +1,13 @@
 /***************************************************************************
- SocNetV: Social Network Visualizer
+ SocNetV: Social Network Visualizer 
  version: 2.4
  Written in Qt
 
-                        nodenumber.cpp  -  description
+                        graphicsedgeweight.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2017 by Dimitris B. Kalamaras
-    email                : dimitris.kalamaras@gmail.com
+    copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
+    project site      : http://socnetv.org
+
  ***************************************************************************/
 
 /*******************************************************************************
@@ -24,32 +25,25 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#include "nodenumber.h"
-#include "node.h"
+#include "graphicsedgeweight.h"
+#include "graphicsedge.h"
+#include <QDebug>
 #include <QFont>
 
 
-NodeNumber::NodeNumber( Node *jim , const QString &labelText, const int &size)
-    :QGraphicsTextItem(jim) {
-    source=jim;
-    setParentItem(jim); //auto disables child items like this, when node is disabled.
-    setPlainText( labelText );
-    setFont( QFont ("Times", size, QFont::Black, false) );
-    setZValue(ZValueNodeNumber);
-    setAcceptHoverEvents(false);
+GraphicsEdgeWeight::GraphicsEdgeWeight( GraphicsEdge *link , int size, QString labelText)
+: QGraphicsTextItem( 0)
+{
+    qDebug()<< "GraphicsEdgeWeight:: creating new edgeweight and attaching it to link";
+	setPlainText( labelText );
+    setParentItem(link); //auto disables child items like this, when link is disabled.
+    this->setFont( QFont ("Courier", size, QFont::Light, true) );
+    setZValue(ZValueEdgeWeight);
 }
 
-void NodeNumber::setSize(const int size) {
-    prepareGeometryChange();
-    setFont( QFont ("Times", size, QFont::Black, false) );
-    //update();
+
+GraphicsEdgeWeight::~GraphicsEdgeWeight()
+{
 }
 
-void NodeNumber::removeRefs(){
-    source->deleteNumber();
 
-}
-
-NodeNumber::~NodeNumber(){
-
-}

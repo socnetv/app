@@ -3,7 +3,7 @@
  version: 2.4
  Written in Qt
  
-                         nodenumber.h  -  description
+                         graphicsnodelabel.h  -  description
                              -------------------
     copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -25,28 +25,27 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef NODENUMBER_H
-#define NODENUMBER_H
+#ifndef GRAPHICSNODELABEL_H
+#define GRAPHICSNODELABEL_H
 
 #include <QGraphicsTextItem>
+class GraphicsNode;
 
-class Node;
+static const int TypeLabel = QGraphicsItem::UserType+4;
+static const int ZValueNodeLabel = 80;
 
-
-static const int TypeNumber=QGraphicsItem::UserType+3;
-static const int ZValueNodeNumber = 90;
-
-class NodeNumber : public QGraphicsTextItem {
-public:
-    NodeNumber(Node * ,  const QString &labelText, const int &size);
-    enum { Type = UserType + 3 };
+class GraphicsNodeLabel : public QGraphicsTextItem{
+public: 
+    GraphicsNodeLabel(GraphicsNode * , const QString &text, const int &size  );
+	
 	void removeRefs();
+ 	enum { Type = UserType + 4 };
 	int type() const { return Type; }
-	Node* node() { return source; }
-    void setSize(const int size);
-	~NodeNumber();
+    void setSize(const int &size);
+    ~GraphicsNodeLabel();
+	GraphicsNode* node() { return source; }
 private:
-	Node *source;
+	GraphicsNode *source;	
 };
 
 #endif

@@ -24,7 +24,7 @@
 *                                                                              *
 *     You should have received a copy of the GNU General Public License        *
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
-********************************************************************************/
+*******************************************************************************/
 
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
@@ -37,21 +37,16 @@
 */
 
 #include <QMainWindow>
-
 #include <QPrinter>
 #include <QMessageBox>
 #include <QStack>
-#include <QProgressDialog>
 #include <QThread>
+
 #include <math.h>
 
-/** SocNetV specific includes*/
-
 #include "graph.h"
-#include "graphicswidget.h"
 #include "dialogfilteredgesbyweight.h"
 #include "webcrawlerdialog.h"
-#include "dialognodeedit.h"
 #include "dialogdatasetselect.h"
 
 static const QString VERSION="2.4";
@@ -63,14 +58,13 @@ static const int USER_MSG_CRITICAL_NO_EDGES=3;
 static const int USER_MSG_QUESTION=4;
 static const int USER_MSG_QUESTION_CUSTOM=5;
 
+
 QT_BEGIN_NAMESPACE
+class QGraphicsScene;
 class QMenu;
 class QAction;
 class QCheckBox;
 class QProgressDialog;
-class Edge;
-class Node;
-
 class QPushButton;
 class QToolButton;
 class QLCDNumber;
@@ -79,12 +73,15 @@ class QComboBox;
 class QGroupBox;
 class QTabWidget;
 class QSpinBox;
-
 QT_END_NAMESPACE
 
 using namespace std;
 
+class GraphicsWidget;
+class GraphicsEdge;
+class GraphicsNode;
 
+class DialogNodeEdit;
 class DialogPreviewFile;
 class DialogRandErdosRenyi;
 class DialogRandSmallWorld;
@@ -96,6 +93,7 @@ class DialogClusteringHierarchical;
 class DialogRandRegular;
 class DialogSettings;
 class TextEditor;
+
 
 
 /**

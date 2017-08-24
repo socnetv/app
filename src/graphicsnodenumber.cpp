@@ -3,11 +3,10 @@
  version: 2.4
  Written in Qt
 
-                        nodelabel.cpp  -  description
+                        graphicsnodenumber.cpp  -  description
                              -------------------
-    copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
-    project site      : http://socnetv.org
-
+    copyright            : (C) 2005-2017 by Dimitris B. Kalamaras
+    email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
 /*******************************************************************************
@@ -25,32 +24,32 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#include "nodelabel.h"
-#include "node.h"
+#include "graphicsnodenumber.h"
+#include "graphicsnode.h"
 #include <QFont>
 
 
-NodeLabel::NodeLabel(Node *jim , const QString &text,  const int &size) :
-    QGraphicsTextItem(jim) {
+GraphicsNodeNumber::GraphicsNodeNumber( GraphicsNode *jim , const QString &labelText, const int &size)
+    :QGraphicsTextItem(jim) {
     source=jim;
     setParentItem(jim); //auto disables child items like this, when node is disabled.
-    setPlainText( text );
-    setFont( QFont ("Times", size, QFont::Light, true) );
-    setZValue(ZValueNodeLabel);
+    setPlainText( labelText );
+    setFont( QFont ("Times", size, QFont::Black, false) );
+    setZValue(ZValueNodeNumber);
     setAcceptHoverEvents(false);
 }
 
-
-void NodeLabel::setSize(const int &size) {
+void GraphicsNodeNumber::setSize(const int size) {
     prepareGeometryChange();
     setFont( QFont ("Times", size, QFont::Black, false) );
     //update();
 }
 
-void NodeLabel::removeRefs(){
-    source->deleteLabel();
+void GraphicsNodeNumber::removeRefs(){
+    source->deleteNumber();
+
 }
 
+GraphicsNodeNumber::~GraphicsNodeNumber(){
 
-NodeLabel::~NodeLabel(){
 }

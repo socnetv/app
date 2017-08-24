@@ -1,9 +1,9 @@
 /***************************************************************************
- SocNetV: Social Network Visualizer 
+ SocNetV: Social Network Visualizer
  version: 2.4
  Written in Qt
- 
-                         nodelabel.h  -  description
+
+                        graphicsnodelabel.cpp  -  description
                              -------------------
     copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -25,27 +25,32 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef NODELABEL_H
-#define NODELABEL_H
+#include "graphicsnodelabel.h"
+#include "graphicsnode.h"
+#include <QFont>
 
-#include <QGraphicsTextItem>
-class Node;
 
-static const int TypeLabel = QGraphicsItem::UserType+4;
-static const int ZValueNodeLabel = 80;
+GraphicsNodeLabel::GraphicsNodeLabel(GraphicsNode *jim , const QString &text,  const int &size) :
+    QGraphicsTextItem(jim) {
+    source=jim;
+    setParentItem(jim); //auto disables child items like this, when node is disabled.
+    setPlainText( text );
+    setFont( QFont ("Times", size, QFont::Light, true) );
+    setZValue(ZValueNodeLabel);
+    setAcceptHoverEvents(false);
+}
 
-class NodeLabel : public QGraphicsTextItem{
-public: 
-    NodeLabel(Node * , const QString &text, const int &size  );
-	
-	void removeRefs();
- 	enum { Type = UserType + 4 };
-	int type() const { return Type; }
-    void setSize(const int &size);
-	~NodeLabel();
-	Node* node() { return source; }
-private:
-	Node *source;	
-};
 
-#endif
+void GraphicsNodeLabel::setSize(const int &size) {
+    prepareGeometryChange();
+    setFont( QFont ("Times", size, QFont::Black, false) );
+    //update();
+}
+
+void GraphicsNodeLabel::removeRefs(){
+    source->deleteLabel();
+}
+
+
+GraphicsNodeLabel::~GraphicsNodeLabel(){
+}

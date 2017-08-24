@@ -34,16 +34,16 @@
 
 class MainWindow;
 
-class Node;
-class Edge;
-class NodeNumber;
-class NodeLabel;
-class Guide;
-class EdgeWeight;
-class EdgeLabel;
+class GraphicsNode;
+class GraphicsEdge;
+class GraphicsNodeNumber;
+class GraphicsNodeLabel;
+class GraphicsGuide;
+class GraphicsEdgeWeight;
+class GraphicsEdgeLabel;
 
-typedef QHash<QString, Edge*> H_StrToEdge;
-typedef QHash <long int, Node*> H_NumToNode;
+typedef QHash<QString, GraphicsEdge*> H_StrToEdge;
+typedef QHash <long int, GraphicsNode*> H_NumToNode;
 
 using namespace std;
 
@@ -63,7 +63,7 @@ public:
     void setInitZoomIndex (int);
 
 
-    Node* hasNode(QString text);
+    GraphicsNode* hasNode(QString text);
     bool setMarkedNode(QString text);
 
     QList<QGraphicsItem *> selectedItems();
@@ -73,14 +73,14 @@ public:
     void selectAll();
     void selectNone();
 
-    void removeItem(Edge*);
-    void removeItem(EdgeWeight *edgeWeight);
-    void removeItem(EdgeLabel *edgeLabel);
-    void removeItem(Node*);
-    void removeItem(NodeNumber*);
-    void removeItem(NodeLabel*);
+    void removeItem(GraphicsEdge*);
+    void removeItem(GraphicsEdgeWeight *edgeWeight);
+    void removeItem(GraphicsEdgeLabel *edgeLabel);
+    void removeItem(GraphicsNode*);
+    void removeItem(GraphicsNodeNumber*);
+    void removeItem(GraphicsNodeLabel*);
 
-    void setNumbersInsideNodes(bool);
+    void setNumbersInsideNodes(const bool &toggle);
 
     void setAllItemsVisibility(int, bool);
 
@@ -101,7 +101,6 @@ public slots:
 
     void drawNode(const int &num, const int &nodeSize,
                    const QString &nodeShape, const QString &nodeColor,
-                   const bool &showNumbers, const bool &numberInsideNode,
                    const QString &numberColor, const int &numberSize,
                   const int &numberDistance,
                    const bool &showLabels, const QString &nodeLabel,
@@ -111,7 +110,7 @@ public slots:
                     );
     void eraseNode(const long int &number);
     void setNodeVisibility(long int, bool );	//Called from Graph via MW
-    void nodeClicked(Node *);
+    void nodeClicked(GraphicsNode *);
     void moveNode(const int &num, const qreal &x, const qreal &y);	//Called from Graph when creating random nets.
 
     bool setNodeSize(const long int &nodeNumber, const int &size=0);
@@ -144,11 +143,13 @@ public slots:
     bool setEdgeWeight(const long int &, const long int &, const float &);
     void setEdgeLabel(const long int &, const long int&, const QString &);
     void setEdgeColor(const long int &, const long int&, const QString &);
-    void edgeClicked(Edge *);
+    void edgeClicked(GraphicsEdge *);
     void setEdgeWeightNumbersVisibility (const bool &toggle);
     void setEdgeLabelsVisibility(const bool &toggle);
 
-    void startEdge(Node *node);
+    void setEdgeHighlighting(const bool &toggle);
+
+    void startEdge(GraphicsNode *node);
 
     void clearGuides();
     void addGuideCircle( const double&x0, const double&y0, const double&radius);
@@ -197,8 +198,10 @@ private:
     QString edgeName;
     bool transformationActive;
     bool secondDoubleClick, markedNodeExist, clickedEdgeExists;
-    Node *firstNode, *secondNode, *markedNode1, *markedEdgeSource;
-    Node *markedEdgeTarget, *tempNode ;
+    bool m_nodeNumbersInside, m_nodeNumberVisibility;
+    bool m_edgeHighlighting;
+    GraphicsNode *firstNode, *secondNode, *markedNode1, *markedEdgeSource;
+    GraphicsNode *markedEdgeTarget, *tempNode ;
 };
 
 #endif

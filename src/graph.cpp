@@ -368,7 +368,7 @@ void Graph::canvasSizeSet(const int w, const int h){
 
     qDebug() << "Graph::canvasSizeSet() - new size (" << w << ", " << h<<")"
              << "adjusting node positions, if any.";
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         newX = (*it)->x() * fX ;
         newY = (*it)->y() * fY ;
@@ -461,7 +461,7 @@ double Graph::canvasRandomY() const {
  * @brief Graph::relationSet
  * Changes m_curRelation to relNum.
  * If relNum==RAND_MAX, changes to last added relation.
- * Then calls Vertex::relationSet() for all enabled vertices, to disable edges
+ * Then calls GraphVertex::relationSet() for all enabled vertices, to disable edges
  * of the old relation and enable edges of the new relation
  * Then, if notifyMW==TRUE, it signals signalRelationChangedToGW(int),
  * which disables/enables the on screen edges, and
@@ -489,7 +489,7 @@ void Graph::relationSet(int relNum, const bool notifyMW){
         return;
     }
 
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() )
             continue;
@@ -642,8 +642,8 @@ void Graph::relationsClear(){
 /**
  * @brief Graph::vertexCreate
  * Main vertex creation slot, associated with homonymous signal from Parser.
- * Adds a Vertex to the Graph and calls editNodeAdd of GraphicsWidget
- * The new Vertex is named i and stores its color, label, label color, shape and position p.
+ * Adds a vertex to the Graph and calls editNodeAdd of GraphicsWidget
+ * The new vertex is named i and stores its color, label, label color, shape and position p.
  * p holds the desired position of the new node.
  * @param num
  * @param size
@@ -673,7 +673,6 @@ void Graph::vertexCreate(const int &num, const int &nodeSize, const QString &nod
 
 
     emit drawNode( num, nodeSize, nodeShape, nodeColor,
-                   initVertexNumbersVisibility, initVertexNumberInside,
                    numColor, numSize, initVertexNumberDistance,
                    initVertexLabelsVisibility, label,
                    labelColor, labelSize, initVertexLabelDistance,
@@ -776,7 +775,7 @@ void Graph::vertexRemoveDummyNode(int i){
 
 
 /**
- * @brief  Adds a Vertex named v1, valued val, sized nszm colored nc, labeled nl,
+ * @brief  Adds a vertex named v1, valued val, sized nszm colored nc, labeled nl,
  * labelColored lc, shaped nsp, at point p.
  * This method is called by vertexCreate() method
  * @param v1
@@ -804,14 +803,14 @@ void Graph::vertexAdd ( const int &v1, const int &val, const int &size,
         vpos[v1]=m_graph.size();
 
     m_graph.append(
-                new Vertex
+                new GraphVertex
                 (this, v1, val, m_curRelation , size, color, numColor, numSize,
                  label, labelColor, labelSize, p, shape
                  )
                 );
     m_totalVertices++;
 
-//    qDebug() << "Graph: vertexAdd(): Vertex named " << m_graph.back()->name()
+//    qDebug() << "Graph: vertexAdd(): vertex" << m_graph.back()->name()
 //             << " appended with vpos= "<<vpos[v1]
 //             << " Now, m_graph size " << m_graph.size()
 //             << ". New vertex position: " << p.x() << "," << p.y();
@@ -867,7 +866,7 @@ void Graph::vertexRemove(long int Doomed){
     long int doomedPos=vpos[Doomed];
 
     //Remove links to Doomed from each other vertex
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if  ( (*it)->hasEdgeTo(Doomed) != 0) {
             qDebug()<< "Graph::vertexRemove() - vertex " << (*it)->name()
@@ -934,19 +933,19 @@ void Graph::vertexRemove(long int Doomed){
 
 /**
  * @brief Called from MainWindow  to enable/disable isolate vertices (with no links)
- * For each isolate Vertex in the Graph, emits the setVertexVisibility signal
+ * For each isolate vertex in the Graph, emits the setVertexVisibility signal
  * @param toggle
  */
 void Graph::vertexIsolatedAllToggle(const bool &toggle){
     qDebug() << "Graph::vertexIsolatedAllToggle() - set all isolated to" << toggle;
 
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( !(*it)->isIsolated() ){
             continue;
         }
         else {
-            qDebug() << "Graph::vertexIsolatedAllToggle() - Vertex" << (*it)->name()
+            qDebug() << "Graph::vertexIsolatedAllToggle() - vertex" << (*it)->name()
                      << "is isolated. Toggling it and emitting setVertexVisibility signal to GW...";
             (*it)->setEnabled (toggle) ;
 
@@ -1004,7 +1003,7 @@ int Graph::vertexExists(const long int &v1){
  */
 int Graph::vertexExists(const QString &label){
     qDebug ()<<"Graph: vertexExists() - check for label "<< label.toUtf8()  ;
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     int i=0;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( (*it) ->label() == label)  {
@@ -1119,7 +1118,7 @@ int Graph::vertexSize(const long &v ) {
 void Graph::vertexSizeAllSet(const int size) {
     qDebug()<< "Graph::vertexSizeAllSet() - new size" << size;
     vertexSizeInit(size);
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() ){
             continue;
@@ -1179,7 +1178,7 @@ QString Graph::vertexShape(const int &v1){
 void Graph::vertexShapeAllSet(const QString shape) {
     qDebug() << "Graph::vertexShapeAllSet - shape " <<shape;
     vertexShapeInit(shape);
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() ){
             continue;
@@ -1241,13 +1240,13 @@ void Graph::vertexColorAllSet(const QString &color) {
     qDebug() << "*** Graph::vertexColorAllSet() "
                 << " to " << color;
     vertexColorInit(color);
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() ){
             continue;
         }
         else {
-            qDebug() << "Graph::vertexColorAllSet() Vertex " << (*it)->name()
+            qDebug() << "Graph::vertexColorAllSet() vertex " << (*it)->name()
                      << " new color " << color;
             (*it)->setColor(color) ;
             emit setNodeColor ( (*it)-> name(), color );
@@ -1304,13 +1303,13 @@ void Graph::vertexNumberSizeSetAll(const int &size) {
     qDebug() << "*** Graph::vertexNumberSizeSetAll() "
                 << " to " << size;
     vertexNumberSizeInit(size);
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() ){
             continue;
         }
         else {
-            qDebug() << "Graph::vertexNumberSizeSetAll() Vertex " << (*it)->name()
+            qDebug() << "Graph::vertexNumberSizeSetAll() vertex " << (*it)->name()
                      << " new size " << size;
             (*it)->setNumberSize(size) ;
             emit setNodeNumberSize ( (*it)-> name(), size);
@@ -1350,13 +1349,13 @@ void Graph::vertexNumberDistanceSetAll(const int &newDistance) {
     qDebug() << "*** Graph::vertexNumberDistanceSetAll() "
                 << " to " << newDistance;
     vertexNumberDistanceInit(newDistance);
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() ){
             continue;
         }
         else {
-            qDebug() << "Graph::vertexNumberDistanceSetAll() Vertex " << (*it)->name()
+            qDebug() << "Graph::vertexNumberDistanceSetAll() vertex " << (*it)->name()
                      << " new distance " << newDistance;
             (*it)->setNumberDistance(newDistance) ;
             emit setNodeNumberDistance ( (*it)-> name(), newDistance);
@@ -1366,25 +1365,6 @@ void Graph::vertexNumberDistanceSetAll(const int &newDistance) {
     graphModifiedSet(GRAPH_CHANGED_MINOR_OPTIONS);
 }
 
-
-
-/**
- * @brief Graph::vertexNumbersInsideNodesSet
- * @param toggle
- */
-void Graph::vertexNumbersInsideNodesSet(bool toggle){
-    initVertexNumberInside=toggle;
-
-}
-
-/**
- * @brief Graph::vertexNumbersVisibilitySet
- * @param toggle
- */
-void Graph::vertexNumbersVisibilitySet(bool toggle){
-    initVertexNumbersVisibility=toggle;
-
-}
 
 
 
@@ -1467,13 +1447,13 @@ void Graph::vertexLabelSizeAllSet(const int &size) {
     qDebug() << "*** Graph::vertexLabelSizeAllSet() "
                 << " to " << size;
     vertexLabelSizeInit(size);
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() ){
             continue;
         }
         else {
-            qDebug() << "Graph::vertexLabelSizeAllSet() Vertex " << (*it)->name()
+            qDebug() << "Graph::vertexLabelSizeAllSet() vertex " << (*it)->name()
                      << " new size " << size;
             (*it)->setLabelSize(size) ;
             emit setNodeLabelSize ( (*it)-> name(), size);
@@ -1496,13 +1476,13 @@ void Graph::vertexLabelColorAllSet(const QString &color) {
     qDebug() << "*** Graph::vertexLabelColorAllSet() "
                 << " to " << color;
     vertexLabelColorInit(color);
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() ){
             continue;
         }
         else {
-            qDebug() << "Graph::vertexLabelColorAllSet() Vertex " << (*it)->name()
+            qDebug() << "Graph::vertexLabelColorAllSet() vertex " << (*it)->name()
                      << " new color" << color;
             (*it)->setLabelColor(color);
             emit setNodeLabelColor( (*it)-> name(), color);
@@ -1561,13 +1541,13 @@ void Graph::vertexLabelDistanceAllSet(const int &newDistance) {
     qDebug() << "*** Graph::vertexLabelDistanceAllSet() "
                 << " to " << newDistance;
     vertexLabelDistanceInit(newDistance);
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() ){
             continue;
         }
         else {
-            qDebug() << "Graph::vertexLabelDistanceAllSet() Vertex " << (*it)->name()
+            qDebug() << "Graph::vertexLabelDistanceAllSet() vertex " << (*it)->name()
                      << " new size " << newDistance;
             (*it)->setLabelDistance(newDistance) ;
             emit setNodeLabelDistance ( (*it)-> name(), newDistance);
@@ -1588,10 +1568,6 @@ void Graph::vertexLabelDistanceAllSet(const int &newDistance) {
 void Graph::vertexLabelDistanceInit(const int &distance) {
     initVertexLabelDistance = distance;
 }
-
-
-
-
 
 
 
@@ -1774,7 +1750,7 @@ void Graph::edgeRemove (const long int &v1,
 /**
  * @brief Graph::edgeVisibilitySet
  * Changes the canvas visibility of an edge
- * Called from Vertex when edgeFilterByWeight is called
+ * Called from GraphVertex when edgeFilterByWeight is called
  * @param relation
  * @param source
  * @param target
@@ -1794,7 +1770,7 @@ void Graph::edgeVisibilitySet ( int relation,  int source, int target, bool visi
  * @brief Graph::edgeFilterByWeight
  * Called from MW::DialogEdgeFilter to filter edges over or under
  * a specified weight (m_threshold).
- * For each Vertex in the Graph, calls the homonymous method of Vertex class.
+ * For each vertex in the Graph, calls the homonymous method of GraphVertex class.
  * @param m_threshold
  * @param overThreshold
  */
@@ -1804,7 +1780,7 @@ void Graph::edgeFilterByWeight(float m_threshold, bool overThreshold){
     else
         qDebug() << "Graph: edgeFilterByWeight()  below "<< m_threshold ;
 
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
             (*it)->edgeFilterByWeight ( m_threshold, overThreshold );
     }
@@ -1818,12 +1794,12 @@ void Graph::edgeFilterByWeight(float m_threshold, bool overThreshold){
 /**
  * @brief Graph::edgeFilterByRelation
  * Filter out all edges of a given relation
- * Calls the homonymous method of Vertex class.
+ * Calls the homonymous method of GraphVertex class.
  * @param relation
   */
 void Graph::edgeFilterByRelation(int relation, bool status){
     qDebug() << "Graph::edgeFilterByRelation() " ;
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() )
             continue;
@@ -1840,7 +1816,7 @@ void Graph::edgeFilterByRelation(int relation, bool status){
  */
 void Graph::edgeFilterUnilateral(const bool &toggle) {
     qDebug() << "Graph::edgeFilterUnilateral() " ;
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
             (*it)->edgeFilterUnilateral ( toggle );
     }
@@ -1945,7 +1921,7 @@ int Graph::edgesEnabled() {
 
     m_totalEdges = 0;
 
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         m_totalEdges+=(*it)->outEdges();
     }
@@ -2061,7 +2037,7 @@ bool Graph::edgeColorAllSet(const QString &color, const int &threshold){
     edgeColorInit(color);
     QHash<int,float> *enabledOutEdges = new QHash<int,float>;
     QHash<int,float>::const_iterator it1;
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
 
         source = (*it)->name();
@@ -2241,7 +2217,7 @@ int Graph::vertices(const bool &dropIsolates, const bool &countAll, const bool &
         return m_totalVertices;
     }
     m_totalVertices=0;
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if (countAll) {
             ++m_totalVertices;
@@ -2283,7 +2259,7 @@ QList<int> Graph::verticesListIsolated(){
         return m_isolatedVerticesList;
     }
 
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     m_isolatedVerticesList.clear();
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
 //        if ( ! (*it)->isEnabled() )
@@ -2311,7 +2287,7 @@ QList<int> Graph::verticesList(){
     if (!graphModified() && !m_verticesList.isEmpty() && calculatedVerticesList ){
         return m_verticesList;
     }
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     m_verticesList.clear();
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() )
@@ -2333,7 +2309,7 @@ QSet<int> Graph::verticesSet(){
     if (!graphModified() && !m_verticesSet.isEmpty() && calculatedVerticesSet ){
         return m_verticesSet;
     }
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     m_verticesSet.clear();
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() )
@@ -2627,6 +2603,8 @@ float Graph::graphDensity() {
  * @return
  */
 bool Graph::graphWeighted(){
+
+
     qDebug()<< "Graph::graphWeighted()";
     if ( ! graphModified() && calculatedGraphWeighted )     {
         qDebug()<< "Graph::graphWeighted() - graph not modified. Return: "
@@ -2634,7 +2612,7 @@ bool Graph::graphWeighted(){
         return m_isWeighted;
     }
     float m_weight=0;
-    QList<Vertex*>::const_iterator it, it1;
+    QList<GraphVertex*>::const_iterator it, it1;
     int N = vertices();
     int progressCounter = 0;
 
@@ -2662,6 +2640,7 @@ bool Graph::graphWeighted(){
     qDebug()<< "Graph::graphWeighted() - result" << m_isWeighted;
 
     emit signalProgressBoxKill();
+
 
     return m_isWeighted=false;
 }
@@ -2821,7 +2800,7 @@ float Graph::graphReciprocity(){
     QHash<int,float> *enabledOutEdges = new QHash<int,float>;
 
     QHash<int,float>::const_iterator hit;
-    QList<Vertex*>::const_iterator it, it1;
+    QList<GraphVertex*>::const_iterator it, it1;
 
     H_StrToBool totalDyads;
     H_StrToBool reciprocatedDyads;
@@ -3084,7 +3063,7 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
 
 
 
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
 
         emit signalProgressBoxUpdate(++progressCounter);
@@ -3209,7 +3188,7 @@ bool Graph::graphSymmetric(){
     QHash<int,float> *enabledOutEdges = new QHash<int,float>;
 
     QHash<int,float>::const_iterator hit;
-    QList<Vertex*>::const_iterator lit;
+    QList<GraphVertex*>::const_iterator lit;
 
 
     for ( lit = m_graph.cbegin(); lit != m_graph.cend(); ++lit)
@@ -3256,7 +3235,7 @@ bool Graph::graphSymmetric(){
  */
 void Graph::graphSymmetrize(){
     qDebug()<< "Graph::graphSymmetrize";
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     int v2=0, v1=0, weight;
     float invertWeight=0;
     QHash<int,float> *enabledOutEdges = new QHash<int,float>;
@@ -3308,7 +3287,7 @@ void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
     int y=0, v2=0, v1=0, weight;
     float invertWeight=0;
 
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
 
     QHash<int,float> *outEdgesAll = new QHash<int,float>;
     QHash<int,float>::const_iterator it1;
@@ -3405,7 +3384,7 @@ void Graph::graphCocitation(){
 
     //CT->printMatrixConsole(true);
 
-    QList<Vertex*>::const_iterator it, it1;
+    QList<GraphVertex*>::const_iterator it, it1;
 
     relationAdd("Cocitation",true);
 
@@ -3467,7 +3446,7 @@ void Graph::graphUndirectedSet(const bool &toggle, const bool &signalMW){
         graphModifiedSet(GRAPH_CHANGED_EDGES, signalMW);
         return;
     }
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     int v2=0, v1=0, weight;
     QHash<int,float> *enabledOutEdges = new QHash<int,float>;
     QHash<int,float>::const_iterator it1;
@@ -3560,7 +3539,7 @@ void Graph::graphMatrixReachabilityCreate() {
         graphDistanceGeodesicCompute(false);
     }
 
-    QList<Vertex*>::const_iterator it, jt;
+    QList<GraphVertex*>::const_iterator it, jt;
 
     int N = vertices( false, false, true);
 
@@ -3761,7 +3740,7 @@ int Graph::graphConnectedness(const bool updateProgress) {
     int progressCounter=0;
     int N = vertices();
 
-    QList<Vertex*>::const_iterator it, jt;
+    QList<GraphVertex*>::const_iterator it, jt;
 
     m_vertexPairsNotConnected.clear();
     m_vertexPairsUnilaterallyConnected.clear();
@@ -3883,7 +3862,7 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
         graphDistanceGeodesicCompute(false,considerWeights,inverseWeights, dropIsolates);
     }
 
-    QList<Vertex*>::const_iterator it, jt;
+    QList<GraphVertex*>::const_iterator it, jt;
 
     int N = vertices( dropIsolates, false, true);
 
@@ -3976,7 +3955,7 @@ void Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
         graphDistanceGeodesicCompute(false,considerWeights,inverseWeights, dropIsolates);
     }
 
-    QList<Vertex*>::const_iterator it, jt;
+    QList<GraphVertex*>::const_iterator it, jt;
 
     int N = vertices( dropIsolates, false, true);
 
@@ -4092,7 +4071,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
         return;
     }
 
-    QList<Vertex*>::const_iterator it, it1;
+    QList<GraphVertex*>::const_iterator it, it1;
     QList<int>::iterator it2;
 
     int w=0, u=0,s=0, i=0, si=0, ui=0, wi=0;
@@ -4177,9 +4156,11 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
             for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
                 // Set all pair-wise distances to RAND_MAX
-                (*it)->setDistance((*it1)->name(), RAND_MAX);
+               // (*it)->setDistance((*it1)->name(), RAND_MAX);  // NOT NEEDED WE DO IT INSIDE GraphVertex::distance()
+                (*it)->clearDistance();
                 // Set all pair-wise shortest-path counts (sigmas) to 0
-                (*it)->setShortestPaths((*it1)->name(), 0);
+               // (*it)->setShortestPaths((*it1)->name(), 0);
+                (*it)->clearShortestPaths();
             }
 
             //Zero centrality indeces of each vertex
@@ -4441,6 +4422,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
             } // END if computeCentralities
 
         }     // END for SSSP problem
+
 
         qDebug() << "*********** MAIN LOOP (SSSP problem): FINISHED.";
 
@@ -4867,7 +4849,7 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
     float  weight=0, dist_u=0,  dist_w=0;
     bool edgeStatus=false;
     H_edges::const_iterator it1;
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
 
     qDebug() << "### dijkstra: Construct a priority queue prQ of all vertices-distances";
 
@@ -5113,7 +5095,7 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
  * @param maxNode
  * @param minNode
  */
-void Graph::minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int &minNode) {
+void Graph::minmax(float C, GraphVertex *v, float &max, float &min, int &maxNode, int &minNode) {
     qDebug() << "MINMAX C = " <<  C << "  max = " << max << "  min = " << min << " name = " <<  v->name();
     if (C > max ) {
         max=C;
@@ -5347,7 +5329,7 @@ void Graph::writeEccentricity(
           <<"<tbody  id=\"results\">";
 
 
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
 
         emit signalProgressBoxUpdate(++progressCounter);
@@ -5456,7 +5438,7 @@ void Graph::centralityInformation(const bool considerWeights,
     classesIC=0;
     varianceIC=0;
 
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
 
     int i=0, j=0;
 
@@ -5582,7 +5564,7 @@ void Graph::writeCentralityInformation(const QString fileName,
             centralityInformation(considerWeights, inverseWeights);
     }
 
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
 
     bool dropIsolates = true;  // by default IC needs to exclude isolates
 
@@ -5825,7 +5807,7 @@ void Graph::writeCentralityEigenvector(const QString fileName,
             centralityEigenvector(considerWeights, inverseWeights,dropIsolates);
     }
 
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
 
     int rowCount=0;
     int N = vertices();
@@ -6055,7 +6037,7 @@ void Graph::centralityEigenvector(const bool &considerWeights,
     minEVC=RAND_MAX;
     varianceEVC=0;
     meanEVC=0;
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
 
     bool symmetrize=false;
     bool useDegrees=false;
@@ -6158,7 +6140,7 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
     meanSDC=0;
     int N=vertices(dropIsolates);
 
-    QList<Vertex*>::const_iterator it, it1;
+    QList<GraphVertex*>::const_iterator it, it1;
     H_StrToInt::iterator it2;
 
     QString pMsg =  tr("Computing out-Degree Centralities. \nPlease wait...");
@@ -6308,7 +6290,7 @@ void Graph::writeCentralityDegree ( const QString fileName,
     int rowCount=0;
     int N = vertices();
     int progressCounter = 0;
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
 
     outText << htmlHead;
 
@@ -6652,7 +6634,7 @@ void Graph::writeCentralityCloseness( const QString fileName,
           <<"<tbody id=\"results\">";
 
 
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
 
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
 
@@ -6834,7 +6816,7 @@ void Graph::centralityClosenessIR(const bool considerWeights,
      }
 
     // calculate centralities
-    QList<Vertex*>::const_iterator it, jt;
+    QList<GraphVertex*>::const_iterator it, jt;
     int progressCounter = 0;
     float IRCC=0,SIRCC=0;
     float Ji=0;
@@ -7014,7 +6996,7 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
 
 
 
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
 
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
 
@@ -7229,7 +7211,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
           <<"<tbody id=\"results\">";
 
 
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
 
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
         emit signalProgressBoxUpdate(++progressCounter);
@@ -7403,7 +7385,7 @@ void Graph::writeCentralityStress( const QString fileName,
         qDebug() << " graph not modified, and centralities calculated. Returning";
     }
 
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
 
     int rowCount=0;
     int N = vertices();
@@ -7619,7 +7601,7 @@ void Graph::writeCentralityEccentricity(const QString fileName,
         qDebug() << " graph not modified, and centralities calculated. Returning";
     }
 
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
 
         int rowCount=0;
     int N = vertices();
@@ -7820,7 +7802,7 @@ void Graph::writeCentralityPower(const QString fileName,
         qDebug() << " graph not modified, and centralities calculated. Returning";
     }
 
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
 
     int rowCount=0;
     int N = vertices();
@@ -8069,7 +8051,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
     int v2=0, v1=0;
     int progressCounter = 0;
 
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     H_StrToInt::iterator it2;
 
     QHash<int,float> *enabledInEdges = new QHash<int,float>;
@@ -8257,7 +8239,7 @@ void Graph::writePrestigeDegree (const QString fileName,
 
     prestigeDegree(considerWeights, dropIsolates);
 
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
 
     int N = vertices();
 
@@ -8511,7 +8493,7 @@ void Graph::prestigeProximity( const bool considerWeights,
     graphDistanceGeodesicCompute(false,considerWeights, inverseWeights,inverseWeights);
 
     // calculate centralities
-    QList<Vertex*>::const_iterator it, jt;
+    QList<GraphVertex*>::const_iterator it, jt;
     float PP=0;
     float dist=0;
     float Ii=0;
@@ -8652,7 +8634,7 @@ void Graph::writePrestigeProximity( const QString fileName,
 
     prestigeProximity(considerWeights, inverseWeights, dropIsolates);
 
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
 
     int rowCount=0;
     int N = vertices();
@@ -8867,7 +8849,7 @@ void Graph::prestigePageRank(const bool &dropIsolates){
     float t_variance=0;
     int N =  vertices(dropIsolates) ;
 
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     H_edges::const_iterator jt;
 
     int relation=0;
@@ -9095,7 +9077,7 @@ void Graph::writePrestigePageRank(const QString fileName,
 
     prestigePageRank(dropIsolates);
 
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
 
     int rowCount=0;
     int N = vertices();
@@ -10358,7 +10340,7 @@ void Graph::writeClusteringCoefficient( const QString fileName,
     int N = vertices();
     int progressCounter = 0;
 
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
 
     averageCLC= clusteringCoefficient(true);
 
@@ -10708,7 +10690,7 @@ void Graph::writeCliqueCensus( const QString fileName,
     float numerator = 0;
     QString listString;
 
-    QList<Vertex*>::const_iterator it, it2;
+    QList<GraphVertex*>::const_iterator it, it2;
 
     graphCliques();
 
@@ -11046,7 +11028,7 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X) {
         P=verticesSet();
         CLQM.zeroMatrix(V,V);
         m_cliques.clear();
-        QList<Vertex*>::const_iterator it;
+        QList<GraphVertex*>::const_iterator it;
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)     {
             (*it)->clearCliques();
         }
@@ -11665,7 +11647,7 @@ void Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
     int clustersLeft = N;
     int seq = 1 ; //clustering stage/level sequence number
 
-    QList<Vertex*>::const_iterator vit;
+    QList<GraphVertex*>::const_iterator vit;
     int i = 0;
     for ( vit=m_graph.cbegin(); vit!=m_graph.cend(); ++vit){
 //        if (dropIsolates) {
@@ -12849,7 +12831,7 @@ float Graph::clusteringCoefficient (const bool updateProgress){
     float x=0;
     float N = vertices();
     int progressCounter = 0;
-    QList<Vertex*>::const_iterator vertex;
+    QList<GraphVertex*>::const_iterator vertex;
 
     QString pMsg = tr("Computing Clustering Coefficient. \n"
                       "Please wait...");
@@ -12913,9 +12895,9 @@ bool Graph::graphTriadCensus(){
     int N = vertices();
     int progressCounter = 0;
 
-    QList<Vertex*>::const_iterator v1;
-    QList<Vertex*>::const_iterator v2;
-    QList<Vertex*>::const_iterator v3;
+    QList<GraphVertex*>::const_iterator v1;
+    QList<GraphVertex*>::const_iterator v2;
+    QList<GraphVertex*>::const_iterator v3;
 
     qDebug() << "Graph::graphTriadCensus()";
     /*
@@ -13016,11 +12998,11 @@ bool Graph::graphTriadCensus(){
     inside QList::triadTypeFreqs
 */
 void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
-                               Vertex* vert1,
-                               Vertex* vert2,
-                               Vertex* vert3
+                               GraphVertex* vert1,
+                               GraphVertex* vert2,
+                               GraphVertex* vert3
                                ) 	{
-    QList<Vertex*> m_triad;
+    QList<GraphVertex*> m_triad;
     bool isDown=false, isUp=false, isCycle=false, isTrans=false;
     bool isOutLinked=false, isInLinked=false;
 
@@ -13042,11 +13024,11 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
         case 2:
             // "021?" - find out!
             //	qDebug() << "triad vertices: ( "<< vert1->name() << ", "<< vert2->name()<< ", "<< vert3->name()<< " ) = ("	<<mut<<","<< asy<<","<<nul<<")";
-            foreach (Vertex *source, m_triad)  {
-                //qDebug() << "  Vertex " << source->name() ;
+            foreach (GraphVertex *source, m_triad)  {
+                //qDebug() << "  vertex " << source->name() ;
                 isOutLinked=false; isInLinked=false;
 
-                foreach (Vertex *target, m_triad)  	{
+                foreach (GraphVertex *target, m_triad)  	{
                     if ( source->name() == target->name() )
                         continue;
 
@@ -13064,7 +13046,7 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
                         }
                     }
                     else if( target->hasEdgeTo(source->name()) ){
-                        //	qDebug() << "    Vertex " << source->name()  << " is IN linked from " <<target->name();
+                        //	qDebug() << "    vertex " << source->name()  << " is IN linked from " <<target->name();
                         if ( isInLinked ){
                             triadTypeFreqs[4] ++;//"021U"
                             break;
@@ -13083,12 +13065,12 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
         case 3:
             qDebug() << "triad vertices: ( "<< vert1->name() << ", "<< vert2->name()<< ", "<< vert3->name()<< " ) = ("	<<mut<<","<< asy<<","<<nul<<")";
             isTrans=false;
-            foreach (Vertex *source, m_triad)  {
-                qDebug() << "  Vertex " << source->name() ;
+            foreach (GraphVertex *source, m_triad)  {
+                qDebug() << "  vertex " << source->name() ;
 
                 isOutLinked=false;
 
-                foreach (Vertex *target, m_triad)  	{
+                foreach (GraphVertex *target, m_triad)  	{
                     if ( source->name() == target->name() )
                         continue;
 
@@ -13120,12 +13102,12 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
         case 1:
             isDown=false; isUp=false;
             //qDebug() << "triad vertices: ( "<< vert1->name() << ", "<< vert2->name()<< ", "<< vert3->name()<< " ) = ("	<<mut<<","<< asy<<","<<nul<<")";
-            foreach (Vertex *source, m_triad)  {
-                //	qDebug() << "  Vertex " << source->name() ;
+            foreach (GraphVertex *source, m_triad)  {
+                //	qDebug() << "  vertex " << source->name() ;
 
                 isInLinked=false;
 
-                foreach (Vertex *target, m_triad)  	{
+                foreach (GraphVertex *target, m_triad)  	{
                     if ( source->name() == target->name() )
                         continue;
 
@@ -13152,11 +13134,11 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
                      << vert2->name()<< ", "<< vert3->name()<< " ) = ("
                      <<mut<<","<< asy<<","<<nul<<")";
 
-            foreach (Vertex *source, m_triad)  {
-                //qDebug() << "  Vertex " << source->name() ;
+            foreach (GraphVertex *source, m_triad)  {
+                //qDebug() << "  vertex " << source->name() ;
                 isOutLinked=false; isInLinked=false;
 
-                foreach (Vertex *target, m_triad)  	{
+                foreach (GraphVertex *target, m_triad)  	{
                     if ( source->name() == target->name() )
                         continue;
 
@@ -13177,7 +13159,7 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
                         }
                     }
                     else if( target->hasEdgeTo(source->name()) ){
-                        //	qDebug() << "    Vertex " << source->name()  << " is IN linked from " <<target->name();
+                        //	qDebug() << "    vertex " << source->name()  << " is IN linked from " <<target->name();
                         if (source->hasEdgeTo(target->name())){
                             isOutLinked=true;
                             isInLinked=true;
@@ -13627,8 +13609,8 @@ bool Graph::graphSaveToPajekFormat (const QString &fileName, \
     t<<"*Network "<<networkName<<"\n";
 
     t<<"*Vertices "<< vertices() <<"\n";
-    QList<Vertex*>::const_iterator it;
-    QList<Vertex*>::const_iterator jt;
+    QList<GraphVertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator jt;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         qDebug()<<" Name x "<<  (*it)->name()  ;
         t<<(*it)->name()  <<" "<<"\""<<(*it)->label()<<"\"" ;
@@ -13803,8 +13785,8 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
                 "    <default>" << ""<< "</default> \n"
                 "  </key> \n";
 
-    QList<Vertex*>::const_iterator it;
-    QList<Vertex*>::const_iterator jt;
+    QList<GraphVertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator jt;
     QString  relationName;
     int relationPrevious = relationCurrent();
     for (int i = 0; i < relations(); ++i) {
@@ -18095,7 +18077,7 @@ void Graph::writeMatrixHTMLTable(QTextStream& outText,
     float maxVal, minVal, element;
     bool hasRealNumbers=false;
 
-    QList<Vertex*>::const_iterator it, jt;
+    QList<GraphVertex*>::const_iterator it, jt;
 
     QString pMsg = tr("Writing matrix to file. \nPlease wait...");
     emit statusMessage( pMsg );
@@ -18217,7 +18199,7 @@ void Graph::writeMatrixHTMLTable(QTextStream& outText,
 void Graph::writeMatrixAdjacencyTo(QTextStream& os,
                                    const bool &saveEdgeWeights){
     qDebug("Graph: adjacencyMatrix(), writing matrix with %i vertices", vertices());
-    QList<Vertex*>::const_iterator it, it1;
+    QList<GraphVertex*>::const_iterator it, it1;
     float weight=RAND_MAX;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() ) continue;
@@ -18264,7 +18246,7 @@ void Graph::writeMatrixAdjacency (const QString fn,
     int rowCount=0;
     int N = vertices();
 
-    QList<Vertex*>::const_iterator it, it1;
+    QList<GraphVertex*>::const_iterator it, it1;
 
     QString pMsg = tr("Writing Adjacency Matrix to file. \nPlease wait...");
     emit statusMessage( pMsg );
@@ -18395,7 +18377,7 @@ void Graph::writeMatrixAdjacencyPlot (const QString fn,
     }
     QTextStream outText( &file );
     outText.setCodec("UTF-8");
-    QList<Vertex*>::const_iterator it, it1;
+    QList<GraphVertex*>::const_iterator it, it1;
     int sum=0;
     int rowCount=0;
     int N = vertices();
@@ -18555,7 +18537,7 @@ void Graph::graphMatrixAdjacencyCreate(const bool dropIsolates,
     float m_weight=RAND_MAX;
     int i=0, j=0;
     int N = vertices(dropIsolates,false,true), progressCounter=0;
-    QList<Vertex*>::const_iterator it, jt;
+    QList<GraphVertex*>::const_iterator it, jt;
 
     qDebug() << "Graph::graphMatrixAdjacencyCreate() -resizing AM to"<< N;
     AM.resize(N, N);
@@ -18661,7 +18643,7 @@ bool Graph::graphMatrixAdjacencyInvert(const QString &method){
         invAM.inverse(AM);
      }
 
-    QList<Vertex*>::const_iterator it, it1;
+    QList<GraphVertex*>::const_iterator it, it1;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() || (*it)->isIsolated())
             continue;
@@ -18692,7 +18674,7 @@ void Graph::writeMatrixAdjacencyInvert(const QString &fn,
 {
     qDebug("Graph::writeMatrixAdjacencyInvert() ");
     int i=0, j=0;
-    QList<Vertex*>::const_iterator it, it1;
+    QList<GraphVertex*>::const_iterator it, it1;
     QFile file( fn );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         emit statusMessage ( tr("Error. Could not write to ") + fn );
@@ -18742,7 +18724,7 @@ void Graph::writeMatrixAdjacencyInvert(const QString &fn,
 void Graph::writeMatrixDegreeText(const QString &fn) {
     qDebug("Graph::writeMatrixDegreeText() ");
 //    int i=0, j=0;
-//    QList<Vertex*>::const_iterator it, it1;
+//    QList<GraphVertex*>::const_iterator it, it1;
 
     graphMatrixAdjacencyCreate();
 
@@ -18770,7 +18752,7 @@ void Graph::writeMatrixDegreeText(const QString &fn) {
 void Graph::writeMatrixLaplacianPlainText(const QString &fn) {
     qDebug("Graph::writeMatrixLaplacianPlainText() ");
 //    int i=0, j=0;
-//    QList<Vertex*>::const_iterator it, it1;
+//    QList<GraphVertex*>::const_iterator it, it1;
 
     graphMatrixAdjacencyCreate();
 
@@ -18866,7 +18848,7 @@ void Graph::layoutRadialRandom(const bool &guides){
     float offset=0.06, randomDecimal=0;
     int vert=vertices();
     int progressCounter=0;
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
 
 
     int N = vertices();
@@ -18925,7 +18907,7 @@ void Graph::layoutCircular (const double &x0, const double &y0,
     qDebug() << "Graph::layoutCircular - ";
     double rad=0, new_x=0, new_y=0;
     double i=0;
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
     int N=vertices();
     int progressCounter=0;
 
@@ -19030,7 +19012,7 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
     int progressCounter=0;
 
     int N=vertices();
-    QList<Vertex*>::const_iterator it;
+    QList<GraphVertex*>::const_iterator it;
 
     QColor new_color;
 
@@ -19209,7 +19191,7 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
 
         case 0: { // radial
 
-            qDebug () << "Vertex" << (*it)->name()
+            qDebug () << "vertex" << (*it)->name()
                       << "pos x" << (*it)->x() << "y"<< (*it)->y()
                       << "C" << C << "stdC" << std << "maxC"<< maxC
                       << "norm (std/maxC)" << norm
@@ -19254,7 +19236,7 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
 
         case 1: { // level
 
-            qDebug()<< "Vertex" << (*it)->name()
+            qDebug()<< "vertex" << (*it)->name()
                     << "pos x"<< (*it)->x() << "y"<<  (*it)->y()
                     << "C" << C << "stdC" << std  << "maxC "<<	maxC
                     << "norm (std/maxC)" << norm
@@ -19300,7 +19282,7 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
 
         case 2: { // node size
 
-            qDebug () << "Vertex" << (*it)->name()
+            qDebug () << "vertex" << (*it)->name()
                       << "C=" << C << ", stdC=" << std  << "maxC" << maxC
                       << "initVertexSize " << initVertexSize
                       << "norm (stdC/maxC) " << norm
@@ -19333,7 +19315,7 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
 
         case 3: { // node color
 
-            qDebug () << "Vertex" << (*it)->name()
+            qDebug () << "vertex" << (*it)->name()
                       << "C=" << C << ", stdC=" << std << "maxC" << maxC
                       << "initVertexColor " << initVertexColor
                       << "norm (stdC/maxC) " << norm;
@@ -19400,8 +19382,8 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations){
     qreal c4=0.1; //normalization factor for final displacement
 
 
-    QList<Vertex*>::const_iterator v1;
-    QList<Vertex*>::const_iterator v2;
+    QList<GraphVertex*>::const_iterator v1;
+    QList<GraphVertex*>::const_iterator v2;
 
 
     /**
@@ -19546,7 +19528,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
     // we add vertexWidth to it
     qreal optimalDistance= C * computeOptimalDistance(V);
 
-    QList<Vertex*>::const_iterator v1, v2;
+    QList<GraphVertex*>::const_iterator v1, v2;
     int iteration = 1 ;
 
     /* apply an initial circular layout */
@@ -19687,7 +19669,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
     float L0=0; // the length of a side of the display square area
     float D=0;  // the graph diameter
 
-    double x0=0, y0=0;
+    //double x0=0, y0=0;
 
     Matrix l; // the original spring length between pairs of particles/actors
     Matrix k; // the strength of the spring between pairs of particles/actors
@@ -19771,8 +19753,8 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
     qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
                "Set particles to initial positions p" ;
     i=0;
-    x0=canvasWidth/2.0;
-    y0=canvasHeight/2.0;
+    //x0=canvasWidth/2.0;
+    //y0=canvasHeight/2.0;
 
     // placing the particles on the vertices of a regular n-polygon
     // circumscribed by a circle whose diameter is L0
@@ -20222,7 +20204,7 @@ void Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4) {
     qDebug() << "\n *****  layoutForceDirected_Eades_moveNodes() " ;
     QPointF newPos;
     qreal xvel = 0, yvel = 0;
-    QList<Vertex*>::const_iterator v1;
+    QList<GraphVertex*>::const_iterator v1;
 
     for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1)
     {
@@ -20273,7 +20255,7 @@ void Graph::layoutForceDirected_FR_moveNodes(const qreal &temperature) {
     qDebug () << " temperature " << temperature;
     QPointF newPos;
     qreal xvel = 0, yvel = 0;
-    QList<Vertex*>::const_iterator v1;
+    QList<GraphVertex*>::const_iterator v1;
 
     for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1)
     {

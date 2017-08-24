@@ -3,7 +3,7 @@
  version: 2.4
  Written in Qt
 
-                        node.cpp  -  description
+                        graphicsnode.cpp  -  description
                         -------------------
     copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -26,7 +26,7 @@
 ********************************************************************************/
 
 
-#include "node.h"
+#include "graphicsnode.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
@@ -35,24 +35,24 @@
 #include <QtGlobal>
 #include <QDebug>
 #include "graphicswidget.h"
-#include "edge.h"
-#include "nodelabel.h"
-#include "nodenumber.h"
+#include "graphicsedge.h"
+#include "graphicsnodelabel.h"
+#include "graphicsnodenumber.h"
 #include <math.h>
 
 
 
-Node::Node(GraphicsWidget* gw, const int &num, const int &size,
+GraphicsNode::GraphicsNode(GraphicsWidget* gw, const int &num, const int &size,
            const QString &color, const QString &shape,
            const bool &showNumbers, const bool &numbersInside,
            const QString &numberColor, const int &numberSize,
            const int &numDistance,
            const bool &showLabels,  const QString &label, const QString &labelColor,
-           const int &labelSize, const int &labelDistance,
+           const int &labelSize, const int &labelDistance, const bool &edgeHighlighting,
            QPointF p
            ) : graphicsWidget (gw)
 {
-    qDebug()<<"Node::Node()";
+    qDebug()<<"GraphicsNode::GraphicsNode()";
     graphicsWidget->scene()->addItem(this); //Without this nodes don't appear on the screen...
 
     setFlags(ItemSendsGeometryChanges | ItemIsSelectable | ItemIsMovable );
@@ -89,10 +89,12 @@ Node::Node(GraphicsWidget* gw, const int &num, const int &size,
         addNumber();
     }
 
+    m_edgeHighLighting = edgeHighlighting;
+
     setShape(m_shape);
 
     setPos(p);
-    qDebug()<< "Node::Node() - Node created at position:"  << x()<<","<<y();
+    qDebug()<< "GraphicsNode::GraphicsNode() - Created at position:"  << x()<<","<<y();
 
 } 
 
@@ -101,7 +103,7 @@ Node::Node(GraphicsWidget* gw, const int &num, const int &size,
 /** 
     Used by MW::slotChangeNodeColor
 */
-void Node::setColor(QString str) {
+void GraphicsNode::setColor(QString str) {
     prepareGeometryChange();
     m_col=QColor(str);
     update();
@@ -110,7 +112,7 @@ void Node::setColor(QString str) {
 /** 
     Used by MW::slotEditNodeFind()
 */
-void Node::setColor(QColor color){
+void GraphicsNode::setColor(QColor color){
     prepareGeometryChange();
     m_col=color;
     m_col_str = m_col.name();
@@ -118,22 +120,22 @@ void Node::setColor(QColor color){
 }
 
 
-QString Node::color() {
+QString GraphicsNode::color() {
     return m_col_str;
 }
 
 
 /** Sets the size of the node */
-void Node::setSize(const int &size){
-    qDebug("Node: setSize()");
+void GraphicsNode::setSize(const int &size){
+    qDebug("GraphicsNode: setSize()");
     prepareGeometryChange();
     m_size=size;
-    foreach (Edge *edge, inEdgeList) {
-        qDebug("Node: updating edges in inEdgeList");
+    foreach (GraphicsEdge *edge, inEdgeList) {
+        qDebug("GraphicsNode: updating edges in inEdgeList");
         edge->setEndOffset(size);
     }
-    foreach (Edge *edge, outEdgeList) {
-        qDebug("Node: updating edges in outEdgeList");
+    foreach (GraphicsEdge *edge, outEdgeList) {
+        qDebug("GraphicsNode: updating edges in outEdgeList");
         edge->setStartOffset(size);
     }
     setShape(m_shape);
@@ -141,18 +143,18 @@ void Node::setSize(const int &size){
 
 
 
-/**  Used by MainWindow::findNode() and Edge::Edge()  */
-int Node::size() const{
+/**  Used by MainWindow::findNode() and GraphicsEdge::GraphicsEdge()  */
+int GraphicsNode::size() const{
     qDebug("size()");
     return m_size;
 }
 
 
 /**  Called every time the user needs to change the shape of an node. */
-void Node::setShape(const QString shape) {
+void GraphicsNode::setShape(const QString shape) {
     prepareGeometryChange();
     m_shape=shape;
-    qDebug()<< "Node::setShape() - Node " << nodeNumber()
+    qDebug()<< "GraphicsNode::setShape() - GraphicsNode " << nodeNumber()
             << "shape" << m_shape
             << "pos "<<  x() << "," <<  y();
 
@@ -207,8 +209,8 @@ void Node::setShape(const QString shape) {
 *	Returns the shape of the node as a path (an accurate outline of the item's shape)
 *	Used by the collision algorithm in collidesWithItem() 
 */
-QPainterPath Node::shape() const {
-    //qDebug ("Node: shape()");
+QPainterPath GraphicsNode::shape() const {
+    //qDebug ("GraphicsNode: shape()");
     return (*m_path);
 }
 
@@ -217,7 +219,7 @@ QPainterPath Node::shape() const {
  *  Returns the bounding rectangle of the node
  *  That is the rectangle where all painting will take place.
  */
-QRectF Node::boundingRect() const {
+QRectF GraphicsNode::boundingRect() const {
     qreal adjust = 5;
     return QRectF(-m_size -adjust , -m_size-adjust , 2*m_size+adjust , 2*m_size +adjust);
 }
@@ -227,13 +229,13 @@ QRectF Node::boundingRect() const {
 
 */
 /**
- * @brief Node::paint
+ * @brief GraphicsNode::paint
  * Does the actual painting using the QPainterPath created by the setShape()
- * Called by GraphicsView and Node methods in every update()
+ * Called by GraphicsView and GraphicsNode methods in every update()
  * @param painter
  * @param option
  */
-void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) {
+void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) {
     //	painter->setClipRect( option->exposedRect );
 
     //if the node is being dragged around, darken it!
@@ -289,7 +291,7 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 
 
 /**
- * @brief Node::itemChange
+ * @brief GraphicsNode::itemChange
  * Called when the node moves or becomes disabled or changes its visibility
  * Propagates the changes to connected elements, i.e. edges, numbers, etc.
  *  Checks if the node is inside the scene.
@@ -297,15 +299,15 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
  * @param value
  * @return
  */
-QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
+QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &value) {
 
     switch (change) {
     case ItemPositionHasChanged :
     {
         //setCacheMode( QGraphicsItem::ItemCoordinateCache );
-        foreach (Edge *edge, inEdgeList)  //Move each inEdge of this node
+        foreach (GraphicsEdge *edge, inEdgeList)  //Move each inEdge of this node
             edge->adjust();
-        foreach (Edge *edge, outEdgeList) //Move each outEdge of this node
+        foreach (GraphicsEdge *edge, outEdgeList) //Move each outEdge of this node
             edge->adjust();
         //Move its graphic number
         if ( m_hasNumber )
@@ -349,86 +351,95 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 
 
 /** handles the events of a click on a node */
-void Node::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     QGraphicsItem::mousePressEvent(event);
 }
 
 
-void Node::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     update();
     QGraphicsItem::mouseReleaseEvent(event);
 }
 
 /**
- * @brief Node::hoverEnterEvent
+ * @brief GraphicsNode::hoverEnterEvent
  * on hover on node, it highlights all connected edges
  * @param event
  */
-void Node::hoverEnterEvent(QGraphicsSceneHoverEvent *event) {
-    foreach (Edge *edge, inEdgeList)
-        edge->highlight(true);
-    foreach (Edge *edge, outEdgeList)
-        edge->highlight(true);
+void GraphicsNode::hoverEnterEvent(QGraphicsSceneHoverEvent *event) {
+    if (m_edgeHighLighting) {
+        foreach (GraphicsEdge *edge, inEdgeList)
+            edge->highlight(true);
+        foreach (GraphicsEdge *edge, outEdgeList)
+            edge->highlight(true);
+    }
     QGraphicsItem::hoverEnterEvent(event);
 }
 
 /**
- * @brief Node::hoverLeaveEvent
+ * @brief GraphicsNode::hoverLeaveEvent
  * Stops the connected edges highlighting
  * @param event
  */
-void Node::hoverLeaveEvent(QGraphicsSceneHoverEvent *event){
-    foreach (Edge *edge, inEdgeList)
-        edge->highlight(false);
-    foreach (Edge *edge, outEdgeList)
-        edge->highlight(false);
+void GraphicsNode::hoverLeaveEvent(QGraphicsSceneHoverEvent *event){
+    if (m_edgeHighLighting) {
+            foreach (GraphicsEdge *edge, inEdgeList)
+                edge->highlight(false);
+            foreach (GraphicsEdge *edge, outEdgeList)
+                edge->highlight(false);
+    }
     QGraphicsItem::hoverLeaveEvent(event);
 }
 
 
+
+void GraphicsNode::setEdgeHighLighting(const bool &toggle) {
+    m_edgeHighLighting = toggle;
+}
+
 /**
- * @brief Node::addInLink
+ * @brief GraphicsNode::addInLink
  * Called from a new connected in-link to acknowloedge itself to this node.
  * @param edge
  */
-void Node::addInLink( Edge *edge ) {
-    qDebug() << "Node:  addInLink() for "<<  m_num;
+void GraphicsNode::addInLink( GraphicsEdge *edge ) {
+    qDebug() << "GraphicsNode:  addInLink() for "<<  m_num;
     inEdgeList.push_back( edge);
-    //qDebug ("Node:  %i inEdgeList has now %i edges", m_num, inEdgeList.size());
+    //qDebug ("GraphicsNode:  %i inEdgeList has now %i edges", m_num, inEdgeList.size());
 }
 
 
-void Node::deleteInLink( Edge *link ){
-    qDebug () << "Node::deleteInLink() - to " <<  m_num
+void GraphicsNode::deleteInLink( GraphicsEdge *link ){
+    qDebug () << "GraphicsNode::deleteInLink() - to " <<  m_num
               << " inEdgeList size: " << inEdgeList.size();
     inEdgeList.remove( link );
-    qDebug () << "Node::deleteInLink() - deleted to " <<  m_num
+    qDebug () << "GraphicsNode::deleteInLink() - deleted to " <<  m_num
               << " inEdgeList size: " << inEdgeList.size();
 }
 
 
 
-void Node::addOutLink( Edge *edge ) {
-    qDebug("Node: addOutLink()");
+void GraphicsNode::addOutLink( GraphicsEdge *edge ) {
+    qDebug("GraphicsNode: addOutLink()");
     outEdgeList.push_back( edge);
-    //	qDebug ("Node: outEdgeList has now %i edges", outEdgeList.size());
+    //	qDebug ("GraphicsNode: outEdgeList has now %i edges", outEdgeList.size());
 }
 
 
 
-void Node::deleteOutLink(Edge *link){
-    qDebug () << "Node::deleteOutLink() - from " <<  m_num
+void GraphicsNode::deleteOutLink(GraphicsEdge *link){
+    qDebug () << "GraphicsNode::deleteOutLink() - from " <<  m_num
               << " outEdgeList size: " << outEdgeList.size();
     outEdgeList.remove( link);
-    qDebug () << "Node::deleteOutLink() - deleted from " <<  m_num
+    qDebug () << "GraphicsNode::deleteOutLink() - deleted from " <<  m_num
               << " outEdgeList size now: " << outEdgeList.size();
 }
 
 
 
-void Node::addLabel ()  {
-    qDebug()<< "Node::addLabel()" ;
-    m_label = new  NodeLabel (this, m_labelText, m_labelSize);
+void GraphicsNode::addLabel ()  {
+    qDebug()<< "GraphicsNode::addLabel()" ;
+    m_label = new  GraphicsNodeLabel (this, m_labelText, m_labelSize);
     m_label -> setDefaultTextColor (m_labelColor);
     m_label -> setPos( m_size, m_labelDistance+m_size);
     m_hasLabel = true;
@@ -436,27 +447,27 @@ void Node::addLabel ()  {
 
 
 
-NodeLabel* Node::label(){
+GraphicsNodeLabel* GraphicsNode::label(){
     if (!m_hasLabel) {
         addLabel();
     }
     return m_label;
 }
 
-void Node::deleteLabel(){
-    qDebug ("Node: deleteLabel ");
+void GraphicsNode::deleteLabel(){
+    qDebug ("GraphicsNode: deleteLabel ");
     if (m_hasLabel) {
         m_hasLabel=false;
         m_label->hide();
         graphicsWidget->removeItem(m_label);
     }
-    qDebug () << "Node::deleteLabel() - finished";
+    qDebug () << "GraphicsNode::deleteLabel() - finished";
 
 }
 
 
-void Node::setLabelText ( QString label) {
-    qDebug()<< "Node::setLabelText()";
+void GraphicsNode::setLabelText ( QString label) {
+    qDebug()<< "GraphicsNode::setLabelText()";
     prepareGeometryChange();
     m_labelText = label;
     if (m_hasLabel)
@@ -468,8 +479,8 @@ void Node::setLabelText ( QString label) {
 
 
 
-void Node::setLabelColor ( const QString &color) {
-    qDebug()<< "Node::setLabelColor()";
+void GraphicsNode::setLabelColor ( const QString &color) {
+    qDebug()<< "GraphicsNode::setLabelColor()";
     prepareGeometryChange();
     m_labelColor= color;
     if (m_hasLabel)
@@ -480,7 +491,7 @@ void Node::setLabelColor ( const QString &color) {
 }
 
 
-void Node::setLabelVisibility(const bool &toggle) {
+void GraphicsNode::setLabelVisibility(const bool &toggle) {
     if (toggle){
         if (m_hasLabel) {
             m_label->show();
@@ -498,7 +509,7 @@ void Node::setLabelVisibility(const bool &toggle) {
     m_hasLabel=toggle;
 }
 
-void Node::setLabelSize(const int &size) {
+void GraphicsNode::setLabelSize(const int &size) {
     m_labelSize = size;
     if (!m_hasLabel) {
         addLabel();
@@ -508,20 +519,20 @@ void Node::setLabelSize(const int &size) {
 }
 
 /**
- * @brief Node::labelText
+ * @brief GraphicsNode::labelText
  * @return QString
  */
-QString Node::labelText ( ) {
+QString GraphicsNode::labelText ( ) {
     return m_labelText;
 }
 
 
 
 /**
- * @brief Node::setLabelDistance
+ * @brief GraphicsNode::setLabelDistance
  * @param distance
  */
-void Node::setLabelDistance(const int &distance) {
+void GraphicsNode::setLabelDistance(const int &distance) {
     m_labelDistance = distance;
     if (!m_hasLabel) {
         addLabel();
@@ -534,33 +545,33 @@ void Node::setLabelDistance(const int &distance) {
 
 
 
-void Node::addNumber () {
-    qDebug()<<"Node::addNumber () " ;
+void GraphicsNode::addNumber () {
+    qDebug()<<"GraphicsNode::addNumber () " ;
     m_hasNumber=true;
     m_hasNumberInside = false;
-    m_number= new  NodeNumber ( this, QString::number(m_num), m_numSize);
+    m_number= new  GraphicsNodeNumber ( this, QString::number(m_num), m_numSize);
     m_number -> setDefaultTextColor (m_numColor);
     m_number -> setPos(m_size+m_numberDistance, 0);
 
 }
 
-NodeNumber* Node::number(){
+GraphicsNodeNumber* GraphicsNode::number(){
     return m_number;
 }
 
 
-void Node::deleteNumber( ){
-    qDebug () << "Node::deleteNumber()";
+void GraphicsNode::deleteNumber( ){
+    qDebug () << "GraphicsNode::deleteNumber()";
     if (m_hasNumber && !m_hasNumberInside) {
         m_number->hide();
         graphicsWidget->removeItem(m_number);
         m_hasNumber=false;
     }
-    qDebug () << "Node::deleteNumber() - finished";
+    qDebug () << "GraphicsNode::deleteNumber() - finished";
 }
 
-void Node::setNumberVisibility(const bool &toggle) {
-    qDebug() << "Node::setNumberVisibility() " << toggle;
+void GraphicsNode::setNumberVisibility(const bool &toggle) {
+    qDebug() << "GraphicsNode::setNumberVisibility() " << toggle;
     if (toggle) { //show
         if (!m_hasNumber) {
             m_hasNumber=toggle;
@@ -579,8 +590,8 @@ void Node::setNumberVisibility(const bool &toggle) {
 
 }
 
-void Node::setNumberInside (const bool &toggle){
-    qDebug()<<"Node::setNumberInside() " << toggle;
+void GraphicsNode::setNumberInside (const bool &toggle){
+    qDebug()<<"GraphicsNode::setNumberInside() " << toggle;
     if (toggle) { // set number inside
         deleteNumber();
     }
@@ -594,10 +605,10 @@ void Node::setNumberInside (const bool &toggle){
 
 
 /**
- * @brief Node::setNumberSize
+ * @brief GraphicsNode::setNumberSize
  * @param size
  */
-void Node::setNumberSize(const int &size) {
+void GraphicsNode::setNumberSize(const int &size) {
     m_numSize = size;
     if (m_hasNumber && !m_hasNumberInside) {
         m_number->setSize(m_numSize);
@@ -613,10 +624,10 @@ void Node::setNumberSize(const int &size) {
 
 
 /**
- * @brief Node::setNumberColor
+ * @brief GraphicsNode::setNumberColor
  * @param color
  */
-void Node::setNumberColor(const QString &color) {
+void GraphicsNode::setNumberColor(const QString &color) {
     m_numColor = color;
     if (m_hasNumber){
         if (m_hasNumberInside) {
@@ -630,10 +641,10 @@ void Node::setNumberColor(const QString &color) {
 }
 
 /**
- * @brief Node::setNumberDistance
+ * @brief GraphicsNode::setNumberDistance
  * @param distance
  */
-void Node::setNumberDistance(const int &distance) {
+void GraphicsNode::setNumberDistance(const int &distance) {
     m_numberDistance = distance;
     if (m_hasNumber && !m_hasNumberInside) {
         m_number -> setPos( m_size+m_numberDistance, 0);
@@ -651,17 +662,17 @@ void Node::setNumberDistance(const int &distance) {
 
 
 
-Node::~Node(){
-    qDebug() << "*** ~Node() - node "<< nodeNumber()
+GraphicsNode::~GraphicsNode(){
+    qDebug() << "*** ~GraphicsNode() - node "<< nodeNumber()
                 << "inEdgeList.size = " << inEdgeList.size()
                 << "outEdgeList.size = " << outEdgeList.size();
 
-    foreach (Edge *edge, inEdgeList) {
-        qDebug("~Node: removing edges in inEdgeList");
+    foreach (GraphicsEdge *edge, inEdgeList) {
+        qDebug("~GraphicsNode: removing edges in inEdgeList");
         delete edge;
     }
-    foreach (Edge *edge, outEdgeList) {
-        qDebug("~Node: removing edges in outEdgeList");
+    foreach (GraphicsEdge *edge, outEdgeList) {
+        qDebug("~GraphicsNode: removing edges in outEdgeList");
         delete edge;
     }
     if ( m_hasNumber )

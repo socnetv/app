@@ -28,8 +28,8 @@ INSTALLS += target pixmap documentation manpage translations doc
 
 
 TEMPLATE = app
-CONFIG  += qt thread warn_on release 
-#CONFIG  += qt thread warn_on release debug
+#CONFIG  += qt thread warn_on release
+CONFIG  += qt thread warn_on debug
 
 LANGUAGE = C++
 
@@ -54,19 +54,19 @@ FORMS += src/forms/dialogfilteredgesbyweight.ui \
          src/forms/dialogdissimilarities.ui \
          src/forms/dialogclusteringhierarchical.ui 
 
-HEADERS += src/guide.h \
-           src/graphicswidget.h \
-           src/edge.h \
-           src/edgeweight.h \
-           src/edgelabel.h \
+HEADERS += src/graphicswidget.h \
+           src/graphicsedge.h \
+           src/graphicsedgeweight.h \
+           src/graphicsedgelabel.h \
+           src/graphicsguide.h \
+           src/graphicsnode.h \
+           src/graphicsnodelabel.h \
+           src/graphicsnodenumber.h \
            src/graph.h \
+           src/graphvertex.h \
            src/mainwindow.h \
            src/matrix.h \
-           src/node.h \
-           src/nodelabel.h \
-           src/nodenumber.h \
            src/texteditor.h \
-           src/vertex.h \ 
   	   src/parser.h \
 	   src/dialogfilteredgesbyweight.h \
 	   src/webcrawlerdialog.h \
@@ -84,20 +84,20 @@ HEADERS += src/guide.h \
 	   src/dialogdissimilarities.h \
  	   src/dialogclusteringhierarchical.h 
 
-SOURCES += src/guide.cpp \
-           src/graphicswidget.cpp \
-           src/edge.cpp \
-           src/edgeweight.cpp \
-           src/edgelabel.cpp \
+SOURCES += src/graphicswidget.cpp \
+           src/graphicsedge.cpp \
+           src/graphicsedgeweight.cpp \
+           src/graphicsedgelabel.cpp \
+           src/graphicsguide.cpp \
+           src/graphicsnode.cpp \
+           src/graphicsnodelabel.cpp \
+           src/graphicsnodenumber.cpp \
            src/graph.cpp \
+           src/graphvertex.cpp \
            src/main.cpp \
            src/mainwindow.cpp \
            src/matrix.cpp \
-           src/node.cpp \
-           src/nodelabel.cpp \
-           src/nodenumber.cpp \
            src/texteditor.cpp \
-           src/vertex.cpp \
            src/parser.cpp \
 	   src/dialogfilteredgesbyweight.cpp \
 	   src/webcrawlerdialog.cpp \

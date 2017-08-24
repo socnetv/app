@@ -3,7 +3,7 @@
  version: 2.4
  Written in Qt
 
-                        edge.cpp  -  description
+                        graphicsedge.cpp  -  description
                              -------------------
     copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -33,10 +33,10 @@
 #include <cmath>
 
 #include "graphicswidget.h"
-#include "edge.h"
-#include "node.h"
-#include "edgeweight.h"
-#include "edgelabel.h"
+#include "graphicsedge.h"
+#include "graphicsnode.h"
+#include "graphicsedgeweight.h"
+#include "graphicsedgelabel.h"
 
 
 static const double Pi = 3.14159265;
@@ -46,9 +46,9 @@ static const int EDGE_DIRECTED = 0;
 static const int EDGE_DIRECTED_OPPOSITE_EXISTS = 1;
 static const int EDGE_RECIPROCAL_UNDIRECTED = 2;
 
-Edge::Edge(  GraphicsWidget *gw,
-             Node *from,
-             Node *to,
+GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
+             GraphicsNode *from,
+             GraphicsNode *to,
              const float &weight,
              const QString &label,
              const QString &color,
@@ -56,13 +56,13 @@ Edge::Edge(  GraphicsWidget *gw,
              const int &type,
              const bool &drawArrows,
              const bool &bezier,
-             const bool &weightNumbers) : graphicsWidget(gw)
+             const bool &weightNumbers, const bool &highlighting) : graphicsWidget(gw)
 {
 
     graphicsWidget->scene()->addItem(this);  //add edge to scene to be displayed
 
-    from->addOutLink( this );	//adds this Edge to sourceNode
-    to->addInLink( this );		//adds this Edge to targetNode
+    from->addOutLink( this );	//adds this to sourceNode
+    to->addInLink( this );		//adds this to targetNode
 
     source=from;			//saves the sourceNode
     target=to;			//Saves the targetNode
@@ -86,7 +86,7 @@ Edge::Edge(  GraphicsWidget *gw,
     m_drawLabel = !m_label.isEmpty();
     m_drawWeightNumber = weightNumbers;
 
-    qDebug()<< "Edge::Edge():  " << eFrom << "->" << eTo
+    qDebug()<< "GraphicsEdge::GraphicsEdge():  " << eFrom << "->" << eTo
             <<" = " << m_weight
             <<" label " << m_label
             <<" edgeType " << m_edgeType;
@@ -96,6 +96,8 @@ Edge::Edge(  GraphicsWidget *gw,
     }
     if (m_drawLabel)
         addLabel();
+
+    m_hoverHighlighting = highlighting;
 
     setAcceptHoverEvents(true);
     setFlags(QGraphicsItem::ItemIsSelectable);
@@ -114,7 +116,7 @@ Edge::Edge(  GraphicsWidget *gw,
 
 
 
-void Edge::showArrows(const bool &drawArrows){
+void GraphicsEdge::showArrows(const bool &drawArrows){
     prepareGeometryChange();
     m_drawArrows=drawArrows;
     adjust();
@@ -122,21 +124,21 @@ void Edge::showArrows(const bool &drawArrows){
 
 
 
-void Edge::removeRefs(){
-    qDebug("Edge: removeRefs()");
+void GraphicsEdge::removeRefs(){
+    qDebug("GraphicsEdge: removeRefs()");
     source->deleteOutLink(this);
     target->deleteInLink(this);
 }
 
 
-void Edge::setColor( const QString &str) {
+void GraphicsEdge::setColor( const QString &str) {
     m_color=str;
     prepareGeometryChange();
 }
 
 
 
-QString Edge::color() const{
+QString GraphicsEdge::color() const{
     return m_color;
 }
 
@@ -144,7 +146,7 @@ QString Edge::color() const{
  * @brief Called from Graph::graphSaveToPajekFormat()
  * @return
  */
-QString Edge::colorToPajek() {
+QString GraphicsEdge::colorToPajek() {
     if (m_color.startsWith("#")) {
         return  ("RGB"+m_color.right( m_color.size()-1 )).toUpper()  ;
     }
@@ -156,32 +158,32 @@ QString Edge::colorToPajek() {
     Updates both the width and the weightNumber
  * @param w
  */
-void Edge::setWeight(const float &w) {
-    qDebug() << "Edge::setWeight() " << w;
+void GraphicsEdge::setWeight(const float &w) {
+    qDebug() << "GraphicsEdge::setWeight() " << w;
     prepareGeometryChange();
     m_weight = w;
     if (m_drawWeightNumber)
         weightNumber->setPlainText (QString::number(w));
 }
 
-float Edge::weight() const {
-    qDebug() << "Edge::weight() " << m_weight;
+float GraphicsEdge::weight() const {
+    qDebug() << "GraphicsEdge::weight() " << m_weight;
     return m_weight;
 }
 
 
 
-void Edge::addWeightNumber (){
+void GraphicsEdge::addWeightNumber (){
     // create edge weight item
     double x = -20 + ( source->x() + target->x() ) / 2.0;
     double y = -20 + ( source->y() + target->y() ) / 2.0;
-    weightNumber = new  EdgeWeight (this, 7, QString::number(m_weight) );
+    weightNumber = new  GraphicsEdgeWeight (this, 7, QString::number(m_weight) );
     weightNumber-> setPos(x,y);
     weightNumber-> setDefaultTextColor (m_color);
     m_drawWeightNumber = true;
 }
 
-void Edge::setWeightNumberVisibility (const bool &toggle) {
+void GraphicsEdge::setWeightNumberVisibility (const bool &toggle) {
     if (m_drawWeightNumber) {
         if (toggle)
             weightNumber ->show();
@@ -203,30 +205,30 @@ void Edge::setWeightNumberVisibility (const bool &toggle) {
 
  * @param label
  */
-void Edge::setLabel(const QString &label) {
-    qDebug() << "Edge::setLabel() " << label;
+void GraphicsEdge::setLabel(const QString &label) {
+    qDebug() << "GraphicsEdge::setLabel() " << label;
     prepareGeometryChange();
     m_label = label;
     if (m_drawLabel)
         edgeLabel->setPlainText (m_label);
 }
 
-QString Edge::label() const {
+QString GraphicsEdge::label() const {
     return m_label;
 }
 
 
-void Edge::addLabel (){
+void GraphicsEdge::addLabel (){
     // create edge label item
     double x =  5+ ( source->x() + target->x() ) / 2.0;
     double y =  5+ ( source->y() + target->y() ) / 2.0;
-    edgeLabel = new  EdgeLabel (this, 7, m_label );
+    edgeLabel = new  GraphicsEdgeLabel (this, 7, m_label );
     edgeLabel-> setPos(x,y);
     edgeLabel-> setDefaultTextColor (m_color);
     m_drawLabel = true;
 }
 
-void Edge::setLabelVisibility (const bool &toggle) {
+void GraphicsEdge::setLabelVisibility (const bool &toggle) {
     if (m_drawLabel) {
         if (toggle)
             edgeLabel ->show();
@@ -241,41 +243,41 @@ void Edge::setLabelVisibility (const bool &toggle) {
 }
 
 
-void Edge::setStartOffset(const int &offset){
+void GraphicsEdge::setStartOffset(const int &offset){
     m_startOffset=offset;
 }
 
-void Edge::setEndOffset(int offset){
+void GraphicsEdge::setEndOffset(int offset){
     m_endOffset=offset;
 }
 
 
-Node *Edge::sourceNode() const {
+GraphicsNode *GraphicsEdge::sourceNode() const {
     return source;
 }
 
-void Edge::setSourceNode(Node *node) {
+void GraphicsEdge::setSourceNode(GraphicsNode *node) {
     source = node;
     adjust();
 }
 
 
-Node *Edge::targetNode() const {
+GraphicsNode *GraphicsEdge::targetNode() const {
     return target;
 }
 
 
-void Edge::setTargetNode(Node *node){
+void GraphicsEdge::setTargetNode(GraphicsNode *node){
     target = node;
     adjust();
 }
 
 
-int Edge::sourceNodeNumber () { 
+int GraphicsEdge::sourceNodeNumber () {
     return eFrom;
 }
 
-int Edge::targetNodeNumber() { 
+int GraphicsEdge::targetNodeNumber() {
     return eTo;
 }
 
@@ -284,8 +286,8 @@ int Edge::targetNodeNumber() {
  * @brief Leaves some empty space (offset) from node -
  * make the edge weight appear on the centre of the edge
  */
-void Edge::adjust(){
-   // qDebug() << "Edge::adjust()";
+void GraphicsEdge::adjust(){
+   // qDebug() << "GraphicsEdge::adjust()";
     if (!source || !target)
         return;
     //QLineF line(mapFromItem(source, 0, 0), mapFromItem(target, 0, 0));
@@ -335,17 +337,17 @@ void Edge::adjust(){
     //Construct the path
     if (source!=target) {
         if ( !m_Bezier){
-            //   qDebug()<< "*** Edge::paint(). Constructing a line";
+            //   qDebug()<< "*** GraphicsEdge::paint(). Constructing a line";
             m_path->lineTo(targetPoint);
         }
         else {
-            qDebug() << "*** Edge::paint(). Constructing a bezier curve";
+            qDebug() << "*** GraphicsEdge::paint(). Constructing a bezier curve";
         }
     }
     else { //self-link
         QPointF c1 = QPointF( targetPoint.x() -30,  targetPoint.y() -30 );
         QPointF c2 = QPointF( targetPoint.x() +30,  targetPoint.y() -30 );
-//        qDebug()<< "*** Edge::paint(). Constructing a bezier self curve c1 "
+//        qDebug()<< "*** GraphicsEdge::paint(). Constructing a bezier self curve c1 "
 //                <<c1.x()<<","<<c1.y()  << " and c2 "<<c2.x()<<","<<c2.y();
         m_path->cubicTo( c1, c2, targetPoint);
     }
@@ -365,7 +367,7 @@ void Edge::adjust(){
             angle = TwoPi - angle;
 
 
-//            qDebug() << "*** Edge::paint(). Constructing arrows. "
+//            qDebug() << "*** GraphicsEdge::paint(). Constructing arrows. "
 //                        "First Arrow at target node"
 //                     << "target-source: " << line_dx
 //                     << " length: " << line_length
@@ -375,7 +377,7 @@ void Edge::adjust(){
                                                         cos(angle - Pi / 3) * m_arrowSize);
             QPointF destArrowP2 = targetPoint + QPointF(sin(angle - Pi + Pi / 3) * m_arrowSize,
                                                         cos(angle - Pi + Pi / 3) * m_arrowSize);
-//            qDebug() << "*** Edge::paint() destArrowP1 "
+//            qDebug() << "*** GraphicsEdge::paint() destArrowP1 "
 //                     <<  destArrowP1.x() << "," << destArrowP1.y()
 //                      << "  destArrowP2 " <<  destArrowP2.x() << "," << destArrowP2.y();
 
@@ -387,7 +389,7 @@ void Edge::adjust(){
                                  );
 
             if (m_edgeType == EDGE_RECIPROCAL_UNDIRECTED ) {
-    //            qDebug() << "**** Edge::paint() This edge is SYMMETRIC! "
+    //            qDebug() << "**** GraphicsEdge::paint() This edge is SYMMETRIC! "
     //                     << " So, we need to create Arrow at src node as well";
                 QPointF srcArrowP1 = sourcePoint + QPointF(sin(angle +Pi / 3) * m_arrowSize,
                                                            cos(angle +Pi / 3) * m_arrowSize);
@@ -403,13 +405,13 @@ void Edge::adjust(){
 
             }
             else {
-                // qDebug() << "*** Edge::paint() Not symmetric edge. Finish";
+                // qDebug() << "*** GraphicsEdge::paint() Not symmetric edge. Finish";
             }
 
 
     }
     else {
-//        qDebug()<< "*** Edge::paint(). This edge is self-link - CONTINUE!";
+//        qDebug()<< "*** GraphicsEdge::paint(). This edge is self-link - CONTINUE!";
     }
 
 
@@ -425,8 +427,8 @@ void Edge::adjust(){
  * but we reimplement it to return a more accurate shape for non-rectangular items.
  * @return QPainterPath
  */
-QPainterPath Edge::shape () const {
-    //qDebug()<<"Edge::shape()";		//too many debug messages...
+QPainterPath GraphicsEdge::shape () const {
+    //qDebug()<<"GraphicsEdge::shape()";		//too many debug messages...
     *m_path_shape= QPainterPath(*m_path);
     m_path_shape->addPath(m_path->translated(1,1));
     m_path_shape->addPath(m_path->translated(-1,-1));
@@ -440,15 +442,15 @@ QPainterPath Edge::shape () const {
  * Qt uses this bounding rect to determine whether the edge requires redrawing.
  * @return
  */
-QRectF Edge::boundingRect() const {
+QRectF GraphicsEdge::boundingRect() const {
     if (!source || !target)
         return QRectF();
     return m_path->controlPointRect();
 }
 
 
-void Edge::setDirectedWithOpposite(){
-    qDebug()<< "Edge::setDirectedWithOpposite()";
+void GraphicsEdge::setDirectedWithOpposite(){
+    qDebug()<< "GraphicsEdge::setDirectedWithOpposite()";
     prepareGeometryChange();
     m_edgeType = EDGE_DIRECTED_OPPOSITE_EXISTS;
     m_directed_first= true;
@@ -457,8 +459,8 @@ void Edge::setDirectedWithOpposite(){
 
 
 
-void Edge::setUndirected(){
-    qDebug()<< "Edge::setUndirected()";
+void GraphicsEdge::setUndirected(){
+    qDebug()<< "GraphicsEdge::setUndirected()";
     prepareGeometryChange();
     m_edgeType = EDGE_RECIPROCAL_UNDIRECTED;
     m_directed_first= false;
@@ -467,57 +469,57 @@ void Edge::setUndirected(){
 }
 
 
-bool Edge::isUndirected() {
+bool GraphicsEdge::isUndirected() {
     return ( m_edgeType == EDGE_RECIPROCAL_UNDIRECTED ) ? true:false;
 }
 
 
-void Edge::setStyle( const Qt::PenStyle  &style ) {
+void GraphicsEdge::setStyle( const Qt::PenStyle  &style ) {
     m_style = style;
 }
 
-Qt::PenStyle Edge::style() const{
+Qt::PenStyle GraphicsEdge::style() const{
     return m_style;
 
 }
 
 /**
- * @brief Edge::pen
+ * @brief GraphicsEdge::pen
  * @return
  */
-QPen Edge::pen() const {
+QPen GraphicsEdge::pen() const {
 
     switch (m_state) {
     case EDGE_STATE_REGULAR:
-        //qDebug() << "Edge::pen() - returning pen for state REGULAR"  ;
+        //qDebug() << "GraphicsEdge::pen() - returning pen for state REGULAR"  ;
         if (m_weight < 0 ){
             return  QPen(QColor(m_color), width(), Qt::DashLine, Qt::RoundCap, Qt::RoundJoin);
         }
         return QPen(QColor(m_color), width(), style(), Qt::RoundCap, Qt::RoundJoin);
         break;
     case EDGE_STATE_HIGHLIGHT: // selected
-        //qDebug() << "Edge::pen() - returning pen for state HIGHLIGHTED"  ;
+        //qDebug() << "GraphicsEdge::pen() - returning pen for state HIGHLIGHTED"  ;
         return QPen(QColor("red"), width(), style(), Qt::RoundCap, Qt::RoundJoin);
     case EDGE_STATE_HOVER: // hover
-        //qDebug() << "Edge::pen() - returning pen for state HOVER"  ;
+        //qDebug() << "GraphicsEdge::pen() - returning pen for state HOVER"  ;
         return QPen(QColor("red"), width()+1, style(), Qt::RoundCap, Qt::RoundJoin);
     default:
-        //qDebug() << "Edge::pen() - returning pen for state DEFAULT"  ;
+        //qDebug() << "GraphicsEdge::pen() - returning pen for state DEFAULT"  ;
         return QPen(QColor(m_color), width(), style(), Qt::RoundCap, Qt::RoundJoin);
     }
 
 }
 
-void Edge::setState(const int &state) {
+void GraphicsEdge::setState(const int &state) {
     //NOTE: DO NOT USE HERE: prepareGeometryChange()
     m_state=state;
 }
 
-void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *){
+void GraphicsEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *){
     if (!source || !target)
         return;
 
-    //qDebug() <<"@@@ Edge::paint()";
+    //qDebug() <<"@@@ GraphicsEdge::paint()";
 
      //if the edge is being dragged around, darken it!
      if (option->state & QStyle::State_Selected) {
@@ -525,12 +527,16 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
          setState(EDGE_STATE_HOVER);
      }
      else if (option->state & QStyle::State_MouseOver) {
-         setZValue(ZValueEdgeHighlighted);
-         setState(EDGE_STATE_HOVER);
+         if (m_hoverHighlighting) {
+             setZValue(ZValueEdgeHighlighted);
+             setState(EDGE_STATE_HOVER);
+         }
      }
      else if (m_state==EDGE_STATE_HIGHLIGHT){
-         setZValue(ZValueEdgeHighlighted);
-         setState(EDGE_STATE_HIGHLIGHT);
+         if (m_hoverHighlighting) {
+             setZValue(ZValueEdgeHighlighted);
+             setState(EDGE_STATE_HIGHLIGHT);
+         }
      }
      else {
          setZValue(ZValueEdge);
@@ -546,7 +552,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 /** 
     Controls the width of the edge; is a function of edge weight
 */
-float Edge::width() const{
+float GraphicsEdge::width() const{
     if ( fabs(m_weight) > 1  )  {
         return 1+log(fabs(m_weight)) ;
     }
@@ -556,12 +562,13 @@ float Edge::width() const{
 
 
 /**
- * @brief Edge::highlight
+ * @brief Called from GraphicsNode to change the edge state and highlight it.
+ * This is done, when the user hovers over the node.
  * @param flag
  */
-void Edge::highlight(const bool &flag) {
-    //qDebug()<< "Edge::highlight() - " << flag;
-    if (flag) {
+void GraphicsEdge::highlight(const bool &flag) {
+    //qDebug()<< "GraphicsEdge::highlight() - " << flag;
+    if (flag && m_hoverHighlighting) {
         prepareGeometryChange();
         setState(EDGE_STATE_HIGHLIGHT);
     }
@@ -571,18 +578,26 @@ void Edge::highlight(const bool &flag) {
     }
 }
 
+/**
+ * @brief Toggles edge highlighting
+ * @param toggle
+ */
+void GraphicsEdge::setHighlighting(const bool &toggle) {
+    m_hoverHighlighting = toggle;
+
+}
 
 /** handles the events of a click on an edge*/
-void Edge::mousePressEvent(QGraphicsSceneMouseEvent *event) {  
-    qDebug() <<"Edge::mousePressEvent()";
+void GraphicsEdge::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+    qDebug() <<"GraphicsEdge::mousePressEvent()";
     QGraphicsItem::mousePressEvent(event);
 }
 
 
 
 
-Edge::~Edge(){
-    qDebug() << "*** ~Edge() - edge " << sourceNodeNumber()<< "->" << targetNodeNumber();
+GraphicsEdge::~GraphicsEdge(){
+    qDebug() << "*** ~GraphicsEdge() - edge " << sourceNodeNumber()<< "->" << targetNodeNumber();
     removeRefs();
     if (m_drawWeightNumber)
         graphicsWidget->removeItem(weightNumber);

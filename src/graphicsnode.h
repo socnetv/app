@@ -3,7 +3,7 @@
  version: 2.4
  Written in Qt
  
-                         node.h  -  description
+                         graphicsnode.h  -  description
                           -------------------
     copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -25,8 +25,8 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef NODE_H
-#define NODE_H
+#ifndef GRAPHICSNODE_H
+#define GRAPHICSNODE_H
 
 
 #include <QGraphicsItem>
@@ -35,9 +35,9 @@
 
 class GraphicsWidget;
 class QGraphicsSceneMouseEvent;
-class Edge;
-class NodeLabel;
-class NodeNumber;
+class GraphicsEdge;
+class GraphicsNodeLabel;
+class GraphicsNodeNumber;
 
 using namespace std;
 
@@ -53,20 +53,21 @@ static const int ZValueNodeHighlighted = 110;
 */
 //
 
-class Node :  public QObject,  public QGraphicsItem {
+class GraphicsNode :  public QObject,  public QGraphicsItem {
     Q_OBJECT
     Q_INTERFACES (QGraphicsItem)
 
 public:
-    Node (GraphicsWidget* gw, const int &num, const int &size,
+    GraphicsNode (GraphicsWidget* gw, const int &num, const int &size,
           const QString &color, const QString &shape,
           const bool &showNumbers, const bool &numbersInside,
           const QString &numberColor, const int &numberSize, const int &numDistance,
           const bool &showLabels, const QString &label, const QString &labelColor,
           const int &labelSize, const int &labelDistance,
+                  const bool &edgeHighlighting,
           QPointF p
           );
-    ~Node();
+    ~GraphicsNode();
 
     enum { Type = UserType + 1 };
     int type() const { return Type; }
@@ -77,10 +78,10 @@ public:
 
     long int nodeNumber() {return m_num;}
 
-    void addInLink( Edge *edge ) ;
-    void deleteInLink(Edge*);
-    void addOutLink( Edge *edge ) ;
-    void deleteOutLink(Edge*);
+    void addInLink( GraphicsEdge *edge ) ;
+    void deleteInLink(GraphicsEdge*);
+    void addOutLink( GraphicsEdge *edge ) ;
+    void deleteOutLink(GraphicsEdge*);
 
     void setSize(const int &);
     int size() const;
@@ -93,7 +94,7 @@ public:
     QString color ();
 
     void addLabel();
-    NodeLabel* label();
+    GraphicsNodeLabel* label();
     void deleteLabel();
     void setLabelVisibility(const bool &toggle);
     void setLabelSize(const int &size);
@@ -103,7 +104,7 @@ public:
     void setLabelDistance(const int &distance);
 
     void addNumber () ;
-    NodeNumber* number();
+    GraphicsNodeNumber* number();
     void deleteNumber();
     void setNumberVisibility(const bool &toggle);
     void setNumberInside(const bool &toggle);
@@ -111,8 +112,7 @@ public:
     void setNumberDistance(const int &distance);
     void setNumberColor(const QString &color);
 
-    void toggleAntialiasing(bool);
-
+    void setEdgeHighLighting(const bool &toggle) ;
 
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
@@ -121,8 +121,8 @@ protected:
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
 signals: 
-    void nodeClicked(Node*);
-    void startEdge(Node *);
+    void nodeClicked(GraphicsNode*);
+    void startEdge(GraphicsNode *);
     void adjustOutEdge();
     void adjustInEdge();
     void removeOutEdge();
@@ -136,11 +136,11 @@ private:
     long int m_num;
     QString  m_shape,  m_col_str, m_numColor, m_labelText, m_labelColor;
     QColor m_col;
-    bool m_hasNumber, m_hasLabel, m_hasNumberInside;
+    bool m_hasNumber, m_hasLabel, m_hasNumberInside, m_edgeHighLighting;
     /**Lists of elements attached to this node */
-    list<Edge*> inEdgeList, outEdgeList;
-    NodeLabel *m_label;
-    NodeNumber *m_number;
+    list<GraphicsEdge*> inEdgeList, outEdgeList;
+    GraphicsNodeLabel *m_label;
+    GraphicsNodeNumber *m_number;
 };
 
 #endif

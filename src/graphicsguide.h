@@ -2,7 +2,8 @@
  SocNetV: Social Network Visualizer
  version: 2.4
  Written in Qt
-                         edgelabel.h  -  description
+ 
+                         graphicsguide.h  -  description
                              -------------------
     copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -19,34 +20,57 @@
 *     but WITHOUT ANY WARRANTY; without even the implied warranty of           *
 *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            *
 *     GNU General Public License for more details.                             *
-*                                                                               *
+*                                                                              *
 *     You should have received a copy of the GNU General Public License        *
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
+#ifndef GRAPHICSGUIDE_H
+#define GRAPHICSGUIDE_H
 
 
-#ifndef EDGELABEL_H
-#define EDGELABEL_H
+
+#include <QGraphicsItem>
+#include <QObject>
 
 
-#include <QGraphicsTextItem>
-class Edge;
+class GraphicsWidget;
 
-static const int TypeEdgeLabel = QGraphicsItem::UserType+6;
-static const int ZValueEdgeLabel = 80;
+static const int TypeGuide = QGraphicsItem::UserType+7;
+static const int ZValueGuide = 10;
 
-class EdgeLabel: public QGraphicsTextItem
-{
+class GraphicsGuide :  public QObject, public QGraphicsItem {
+    Q_OBJECT
+    Q_INTERFACES (QGraphicsItem)
+
 public:
-    EdgeLabel(Edge * , int, QString);
-    void removeRefs();
+    GraphicsGuide(GraphicsWidget *,
+          const double &x0, const double &y0, const double &radius );
+    GraphicsGuide(GraphicsWidget *,
+          const double &y0, const int &width);
+    bool isCircle();
+    void setCircle(const QPointF &center, const double &radius) ;
+    void setHorizontalLine(const QPointF &origin, const int &width) ;
+    double radius();
+    int width();
+    enum { Type = UserType + 7 };
+	int type() const { return Type; }
+	void die();
+	
 
-    enum { Type = UserType + 6 };
-    int type() const { return Type; }
+protected:
+	QRectF boundingRect() const;
+	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
-    ~EdgeLabel();
-private:
+private: 
+	GraphicsWidget *graphicsWidget;
+    double m_radius;
+    int m_width;
+	bool circle;
+
 };
 
 #endif
+
+
+

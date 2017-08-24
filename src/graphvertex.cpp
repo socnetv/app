@@ -3,7 +3,7 @@
  version: 2.4
  Written in Qt
  
-                         vertex.cpp  -  description
+                         graphvertex.cpp  -  description
                              -------------------
     copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -25,13 +25,12 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#include "vertex.h"
-
-
 #include <QtDebug>		//used for qDebug messages
-#include "graph.h"
 
-Vertex::Vertex(Graph* parent,
+#include "graph.h"
+#include "graphvertex.h"
+
+GraphVertex::GraphVertex(Graph* parent,
                const long &name,
                const int &val,
                const int &relation,
@@ -45,7 +44,7 @@ Vertex::Vertex(Graph* parent,
                const QPointF &p,
                const QString &shape): parentGraph (parent)
 { 
-    qDebug() << "Vertex::Vertex() - "<<  name << " setting values";
+    qDebug() << "GraphVertex::GraphVertex() - "<<  name << " setting values";
     m_name=name;
 	m_value=val;
 	m_size=size;
@@ -58,8 +57,8 @@ Vertex::Vertex(Graph* parent,
 	m_shape=shape;
 	m_x=p.x();
 	m_y=p.y();
-	//FIXME outLinkColors list need update when we remove vertices/edges
-    //outLinkColors.reserve(2000);
+    //FIXME m_outLinkColors list need update when we remove vertices/edges
+    //m_outLinkColors.reserve(2000);
     m_outEdgeLabels.reserve(100);
     m_outEdges.reserve(100);
     m_inEdges.reserve(100);
@@ -88,8 +87,8 @@ Vertex::Vertex(Graph* parent,
  * @brief constructor with default values
  * @param name
  */
-Vertex::Vertex(const long int &name) {
-    qDebug() << "Vertex::Vertex() - "<<  name << " using default values";
+GraphVertex::GraphVertex(const long int &name) {
+    qDebug() << "GraphVertex::GraphVertex() - "<<  name << " using default values";
     m_name=name;
 	m_value=1;
 	m_size=9;
@@ -110,8 +109,8 @@ Vertex::Vertex(const long int &name) {
 * @brief Changes the current relation of this vertex to newRel
 * @param newRel
 */
-void Vertex::relationSet(int newRel) {
-    qDebug() << "Vertex::relationSet() - Current: " << m_curRelation
+void GraphVertex::relationSet(int newRel) {
+    qDebug() << "GraphVertex::relationSet() - Current: " << m_curRelation
                 << " new: " << newRel;
     // first make false all edges of current relation
     edgeFilterByRelation(m_curRelation, false);
@@ -126,7 +125,7 @@ void Vertex::relationSet(int newRel) {
  * @brief returns the vertex color to pajek format
  * @return
  */
-QString Vertex::colorToPajek(){
+QString GraphVertex::colorToPajek(){
     if (m_color.startsWith("#")) {
         return  ("RGB"+m_color.right( m_color.size()-1 )).toUpper()  ;
     }
@@ -140,8 +139,8 @@ QString Vertex::colorToPajek(){
  * @param target
  * @param weight
  */
-void Vertex::edgeAddTo (const long &v2, const float &weight) {
-    qDebug() <<"Vertex::edgeAddTo() - new outbound edge"
+void GraphVertex::edgeAddTo (const long &v2, const float &weight) {
+    qDebug() <<"GraphVertex::edgeAddTo() - new outbound edge"
             << name() << " -> "<< v2 << " weight "<< weight
                << " relation " << m_curRelation;
     // do not use [] operator - silently creates an item if key do not exist
@@ -151,12 +150,12 @@ void Vertex::edgeAddTo (const long &v2, const float &weight) {
 
 
 /**
- * @brief Vertex::setOutEdgeEnabled
+ * @brief GraphVertex::setOutEdgeEnabled
  * @param target
  * @param status
  */
-void Vertex::setOutEdgeEnabled (long int target, bool status){
-    qDebug () << "Vertex::setOutEdgeEnabled - set outEdge to " << target
+void GraphVertex::setOutEdgeEnabled (long int target, bool status){
+    qDebug () << "GraphVertex::setOutEdgeEnabled - set outEdge to " << target
               << " as " << status
                  << ". Finding outLink...";
     QMutableHashIterator < int, pair_i_fb > it1 (m_outEdges);
@@ -190,8 +189,8 @@ void Vertex::setOutEdgeEnabled (long int target, bool status){
  * @param source
  * @param weight
  */
-void Vertex::edgeAddFrom (const long int &v1, const float &weight) {
-    qDebug() <<"Vertex::edgeAddFrom() - new inbound edge"
+void GraphVertex::edgeAddFrom (const long int &v1, const float &weight) {
+    qDebug() <<"GraphVertex::edgeAddFrom() - new inbound edge"
             << name() << " <- "<< v1 << " weight "<< weight
                << " relation " << m_curRelation;
     m_inEdges.insertMulti(
@@ -200,8 +199,8 @@ void Vertex::edgeAddFrom (const long int &v1, const float &weight) {
 
 
 
-void Vertex::changeOutEdgeWeight(long int target, float weight){
-    qDebug() << "Vertex::changeEdgeWeightTo " << target << " weight " << weight ;
+void GraphVertex::changeOutEdgeWeight(long int target, float weight){
+    qDebug() << "GraphVertex::changeEdgeWeightTo " << target << " weight " << weight ;
     qDebug() << " *** m_outEdges.count " <<
                 m_outEdges.count();
     qDebug() << "first find and remove old relation-weight pair" ;
@@ -228,12 +227,12 @@ void Vertex::changeOutEdgeWeight(long int target, float weight){
  * @brief Removes outbound edge to vertex v2
  * @param v2
  */
-void Vertex::edgeRemoveTo (long int v2) {
-    qDebug() << "Vertex: edgeRemoveTo() - vertex " << m_name
+void GraphVertex::edgeRemoveTo (long int v2) {
+    qDebug() << "GraphVertex: edgeRemoveTo() - vertex " << m_name
              << " has " <<outEdges() << " out-links. Removing link to "<< v2 ;
 
     if (outEdges()>0) {
-        qDebug() << "Vertex::edgeRemoveTo() - checking all_outEdges";
+        qDebug() << "GraphVertex::edgeRemoveTo() - checking all_outEdges";
         H_edges::iterator it1=m_outEdges.find(v2);
         while (it1 != m_outEdges.end() && it1.key() == v2 ) {
             if ( it1.value().first == m_curRelation ) {
@@ -248,10 +247,10 @@ void Vertex::edgeRemoveTo (long int v2) {
                 ++it1;
             }
         }
-        qDebug() << "Vertex::edgeRemoveTo() - vertex " <<  m_name << " now has " <<  outEdges() << " out-edges";
+        qDebug() << "GraphVertex::edgeRemoveTo() - vertex " <<  m_name << " now has " <<  outEdges() << " out-edges";
 	}
 	else {
-        qDebug() << "Vertex::edgeRemoveTo() - vertex " <<  m_name << " has no edges" ;
+        qDebug() << "GraphVertex::edgeRemoveTo() - vertex " <<  m_name << " has no edges" ;
 	}
 }
 
@@ -260,12 +259,12 @@ void Vertex::edgeRemoveTo (long int v2) {
  * @brief Removes the inbound edge from vertex v2
  * @param v2
  */
-void Vertex::edgeRemoveFrom(long int v2){
-    qDebug() << "Vertex::edgeRemoveFrom() - vertex " << m_name
+void GraphVertex::edgeRemoveFrom(long int v2){
+    qDebug() << "GraphVertex::edgeRemoveFrom() - vertex " << m_name
              << " has " <<  inEdges() << "  in-edges. RemovingEdgeFrom " << v2 ;
 
     if (inEdges()>0) {
-        qDebug() << "Vertex::edgeRemoveFrom() - checking all_inEdges";
+        qDebug() << "GraphVertex::edgeRemoveFrom() - checking all_inEdges";
         H_edges::iterator it=m_inEdges.find(v2);
         while (it != m_inEdges.end() ) {
             if ( it.key() == v2 && it.value().first == m_curRelation ) {
@@ -280,11 +279,11 @@ void Vertex::edgeRemoveFrom(long int v2){
                 ++it;
             }
         }
-        qDebug() << "Vertex::edgeRemoveFrom() - vertex " << m_name << " now has "
+        qDebug() << "GraphVertex::edgeRemoveFrom() - vertex " << m_name << " now has "
                  << inEdges() << " in-links"  ;
 	}
 	else {
-        qDebug() << "Vertex::edgeRemoveFrom() - vertex " << m_name << " has no edges";
+        qDebug() << "GraphVertex::edgeRemoveFrom() - vertex " << m_name << " has no edges";
 	}
 }
 
@@ -295,8 +294,8 @@ void Vertex::edgeRemoveFrom(long int v2){
  * @param m_threshold
  * @param overThreshold
  */
-void Vertex::edgeFilterByWeight(float m_threshold, bool overThreshold){
-	qDebug() << "Vertex::edgeFilterByWeight of vertex " << this->m_name;
+void GraphVertex::edgeFilterByWeight(float m_threshold, bool overThreshold){
+	qDebug() << "GraphVertex::edgeFilterByWeight of vertex " << this->m_name;
 	int target=0;
     float weight=0;
     QMutableHashIterator < int, pair_i_fb > it (m_outEdges);
@@ -307,14 +306,14 @@ void Vertex::edgeFilterByWeight(float m_threshold, bool overThreshold){
             weight = it.value().second.first;
             if (overThreshold) {
                 if ( weight >= m_threshold ) {
-                    qDebug() << "Vertex::edgeFilterByWeight() - edge  to " << target
+                    qDebug() << "GraphVertex::edgeFilterByWeight() - edge  to " << target
                     << " has weight " << weight
                     << ". It will be disabled. Emitting signal to Graph....";
                     it.setValue(pair_i_fb(m_curRelation, pair_f_b(weight, false) ));
                     emit setEdgeVisibility (m_curRelation, m_name, target, false );
                 }
                 else {
-                    qDebug() << "Vertex::edgeFilterByWeight() - edge  to " << target
+                    qDebug() << "GraphVertex::edgeFilterByWeight() - edge  to " << target
                     << " has weight " << weight << ". It will be enabled. Emitting signal to Graph....";
                     it.setValue(pair_i_fb(m_curRelation, pair_f_b(weight, true) ));
                     emit setEdgeVisibility (m_curRelation, m_name, target, true );
@@ -322,13 +321,13 @@ void Vertex::edgeFilterByWeight(float m_threshold, bool overThreshold){
             }
             else {
                  if ( weight <= m_threshold ) {
-                    qDebug() << "Vertex::edgeFilterByWeight() - edge  to " << target
+                    qDebug() << "GraphVertex::edgeFilterByWeight() - edge  to " << target
                     << " has weight " << weight << ". It will be disabled. Emitting signal to Graph....";
                     it.setValue(pair_i_fb(m_curRelation, pair_f_b(weight, false) ));
                     emit setEdgeVisibility (m_curRelation, m_name, target, false );
                 }
                 else {
-                    qDebug() << "Vertex::edgeFilterByWeight() - edge  to " << target
+                    qDebug() << "GraphVertex::edgeFilterByWeight() - edge  to " << target
                     << " has weight " << weight << ". It will be enabled. Emitting signal to Graph....";
                     it.setValue(pair_i_fb(m_curRelation, pair_f_b(weight, true) ));
                     emit setEdgeVisibility (m_curRelation, m_name, target, true );
@@ -350,8 +349,8 @@ void Vertex::edgeFilterByWeight(float m_threshold, bool overThreshold){
    If allRelations is true, then all relations are checked
  * @param toggle
  */
-void Vertex::edgeFilterUnilateral(const bool &toggle){
-    qDebug() << "Vertex::edgeFilterUnilateral() of vertex " << this->m_name;
+void GraphVertex::edgeFilterUnilateral(const bool &toggle){
+    qDebug() << "GraphVertex::edgeFilterUnilateral() of vertex " << this->m_name;
     int target=0;
     float weight=0;
     QMutableHashIterator < int, pair_i_fb > it (m_outEdges);
@@ -362,14 +361,14 @@ void Vertex::edgeFilterUnilateral(const bool &toggle){
             weight = it.value().second.first;
             if (hasEdgeFrom(target)==0) {   // \todo != weight would be more precise?
                     if ( !toggle ) {
-                        qDebug() << "Vertex::edgeFilterUnilateral() - unilateral edge to " << target
+                        qDebug() << "GraphVertex::edgeFilterUnilateral() - unilateral edge to " << target
                         << " has weight " << weight
                         << ". It will be disabled. Emitting signal to Graph....";
                         it.setValue(pair_i_fb(m_curRelation, pair_f_b(weight, false) ));
                         emit setEdgeVisibility (m_curRelation, m_name, target, false );
                     }
                     else {
-                        qDebug() << "Vertex::edgeFilterUnilateral() - unilateral edge to " << target
+                        qDebug() << "GraphVertex::edgeFilterUnilateral() - unilateral edge to " << target
                         << " has weight " << weight << ". It will be enabled. Emitting signal to Graph....";
                         it.setValue(pair_i_fb(m_curRelation, pair_f_b(weight, true) ));
                         emit setEdgeVisibility (m_curRelation, m_name, target, true );
@@ -385,8 +384,8 @@ void Vertex::edgeFilterUnilateral(const bool &toggle){
  * @brief Filters out all edges of a given relation
  * @param relation
  */
-void Vertex::edgeFilterByRelation(int relation, bool status ){
-    qDebug() << "Vertex::edgeFilterByRelation() - Vertex " << this->m_name
+void GraphVertex::edgeFilterByRelation(int relation, bool status ){
+    qDebug() << "GraphVertex::edgeFilterByRelation() - GraphVertex " << this->m_name
                 << " filtering edges of relation " << relation << " to " << status;
     int target=0;
     float weight =0;
@@ -398,7 +397,7 @@ void Vertex::edgeFilterByRelation(int relation, bool status ){
         if ( edgeRelation == relation ) {
             target=it1.key();
             weight = it1.value().second.first;
-            qDebug() << "Vertex::edgeFilterByRelation() - outLink "
+            qDebug() << "GraphVertex::edgeFilterByRelation() - outLink "
                      << m_name << " -> " << target
                         << "  - emitting to GW to be " << status ;
             it1.setValue(pair_i_fb(relation, pair_f_b(weight, status) ));
@@ -418,7 +417,7 @@ void Vertex::edgeFilterByRelation(int relation, bool status ){
  * outEdges, from this vertex for the current relation
  * @return long int
  */
-long int Vertex::outEdges() {
+long int GraphVertex::outEdges() {
     m_outEdgesCounter = 0;
     int relation=0;
     bool edgeStatus = false;
@@ -443,7 +442,7 @@ long int Vertex::outEdges() {
  * Needs to have outEdges called before the call to this method
  * @return long int
  */
-long int Vertex::outEdgesConst() const {
+long int GraphVertex::outEdgesConst() const {
     return m_outEdgesCounter;
 }
 
@@ -452,8 +451,8 @@ long int Vertex::outEdgesConst() const {
  * @brief Returns a qhash of all enabled outEdges in the active relation
  * @return  QHash<int,float>*
  */
-QHash<int,float>* Vertex::outEdgesEnabledHash(const bool &allRelations){
-    //qDebug() << " Vertex::outEdgesEnabledHash() vertex " << this->name();
+QHash<int,float>* GraphVertex::outEdgesEnabledHash(const bool &allRelations){
+    //qDebug() << " GraphVertex::outEdgesEnabledHash() vertex " << this->name();
     QHash<int,float> *enabledOutEdges = new QHash<int,float>;
     float m_weight=0;
     int relation = 0;
@@ -467,7 +466,7 @@ QHash<int,float>* Vertex::outEdgesEnabledHash(const bool &allRelations){
                 if ( edgeStatus == true) {
                     m_weight=it1.value().second.first;
                     enabledOutEdges->insert(it1.key(), m_weight);
-                    //                qDebug() <<  " Vertex::outEdgesEnabledHash() count:"
+                    //                qDebug() <<  " GraphVertex::outEdgesEnabledHash() count:"
                     //                             << enabledOutEdges->count();
                 }
             }
@@ -478,14 +477,14 @@ QHash<int,float>* Vertex::outEdgesEnabledHash(const bool &allRelations){
                 if ( edgeStatus == true) {
                     m_weight=it1.value().second.first;
                     enabledOutEdges->insert(it1.key(), m_weight);
-                    //                qDebug() <<  " Vertex::outEdgesEnabledHash() count:"
+                    //                qDebug() <<  " GraphVertex::outEdgesEnabledHash() count:"
                     //                             << enabledOutEdges->count();
                 }
             }
         }
         ++it1;
     }
-//    qDebug() << " Vertex::outEdgesEnabledHash() vertex " << this->name()
+//    qDebug() << " GraphVertex::outEdgesEnabledHash() vertex " << this->name()
 //                << " outEdges count:"
 //                 << enabledOutEdges->count();
     return enabledOutEdges;
@@ -496,8 +495,8 @@ QHash<int,float>* Vertex::outEdgesEnabledHash(const bool &allRelations){
  * @brief  Returns a qhash of all edges to neighbors in all relations
  * @return
  */
-QHash<int, float>* Vertex::outEdgesAllRelationsUniqueHash() {
-    qDebug() << "Vertex::outEdgesAllRelationsUniqueHash() - v " << this->name();
+QHash<int, float>* GraphVertex::outEdgesAllRelationsUniqueHash() {
+    qDebug() << "GraphVertex::outEdgesAllRelationsUniqueHash() - v " << this->name();
     QHash<int,float> *outEdgesAll = new QHash<int,float>;
     float m_weight=0;
     H_edges::const_iterator it1=m_outEdges.constBegin();
@@ -505,14 +504,14 @@ QHash<int, float>* Vertex::outEdgesAllRelationsUniqueHash() {
         if ( !outEdgesAll->contains(it1.key() )) {
                 m_weight=it1.value().second.first;
                 outEdgesAll->insert(it1.key(), m_weight);
-                qDebug() <<  "Vertex::outEdgesAllRelationsUniqueHash() -"
+                qDebug() <<  "GraphVertex::outEdgesAllRelationsUniqueHash() -"
                           << this->name() << "->" << it1.key()
                           << "relation"<< it1.value().first;
 
         }
         ++it1;
     }
-    qDebug() << "Vertex::outEdgesAllRelationsUniqueHash() - v " << this->name()
+    qDebug() << "GraphVertex::outEdgesAllRelationsUniqueHash() - v " << this->name()
                 << " outEdges count:"
                  << outEdgesAll->count();
     return outEdgesAll;
@@ -523,13 +522,13 @@ QHash<int, float>* Vertex::outEdgesAllRelationsUniqueHash() {
  * @brief Returns a qhash of all reciprocal edges to neighbors in the active relation
  * @return  QHash<int,float>*
  */
-QHash<int,float>* Vertex::reciprocalEdgesHash(){
+QHash<int,float>* GraphVertex::reciprocalEdgesHash(){
     m_reciprocalEdges->clear();
     float m_weight=0;
     int relation = 0;
     bool edgeStatus=false;
     H_edges::const_iterator it1=m_outEdges.constBegin();
-//    qDebug() << "Vertex::reciprocalEdgesHash() - of vertex "
+//    qDebug() << "GraphVertex::reciprocalEdgesHash() - of vertex "
 //             << this->name()
 //                << " - outEdges " <<  m_outEdges.count()
 //                << " - Checking all edges for reciprocality";
@@ -541,7 +540,7 @@ QHash<int,float>* Vertex::reciprocalEdgesHash(){
             if ( edgeStatus == true) {
                 m_weight=it1.value().second.first;
                 if (this->hasEdgeFrom (it1.key()) == m_weight ) {
-//                    qDebug() << "Vertex::reciprocalEdgesHash() - of vertex "
+//                    qDebug() << "GraphVertex::reciprocalEdgesHash() - of vertex "
 //                             << this->name()
 //                             << "Found reciprocal edge with   " << it1.key();
                     m_reciprocalEdges->insertMulti(it1.key(), m_weight);
@@ -551,7 +550,7 @@ QHash<int,float>* Vertex::reciprocalEdgesHash(){
         ++it1;
     }
 
-    qDebug() << "Vertex::reciprocalEdgesHash() - vertex" << this->name()
+    qDebug() << "GraphVertex::reciprocalEdgesHash() - vertex" << this->name()
              <<  "reciprocalEdges:"
               << m_reciprocalEdges->count();
 
@@ -562,11 +561,11 @@ QHash<int,float>* Vertex::reciprocalEdgesHash(){
 
 /**
  * @brief Returns a list of all neighbors mutually connected to this vertex in the active relation
- * Same as calling Vertex::reciprocalEdgesHash().keys() which returns a QList of int keys,
+ * Same as calling GraphVertex::reciprocalEdgesHash().keys() which returns a QList of int keys,
  * where each key is a vertex reciprocally connected to this one.
  * @return  QList<int>
  */
-QList<int> Vertex::neighborhoodList(){
+QList<int> GraphVertex::neighborhoodList(){
 
     m_neighborhoodList.clear();
     float m_weight=0;
@@ -581,7 +580,7 @@ QList<int> Vertex::neighborhoodList(){
                 m_weight=it1.value().second.first;
                 if (this->hasEdgeFrom (it1.key()) == m_weight ) {
                     m_neighborhoodList << it1.key();
-//                qDebug() <<  "Vertex::neighborhoodList() - mutually connected neighbor="
+//                qDebug() <<  "GraphVertex::neighborhoodList() - mutually connected neighbor="
 //                          << it1.key()
 //                          << " m_neighborhoodList.count()"
 //                          << m_neighborhoodList.count();
@@ -591,13 +590,13 @@ QList<int> Vertex::neighborhoodList(){
         ++it1;
     }
 
-    qDebug() << "Vertex::neighborhoodList() - of vertex " << this->name()
+    qDebug() << "GraphVertex::neighborhoodList() - of vertex " << this->name()
              <<  "final list"
               <<m_neighborhoodList
                  <<" count"
                  << m_neighborhoodList.count();
 
-//    qDebug() <<  "Vertex::neighborhoodList() - reporting localDegree "
+//    qDebug() <<  "GraphVertex::neighborhoodList() - reporting localDegree "
 //                 << this->localDegree();
     return m_neighborhoodList;
 }
@@ -608,7 +607,7 @@ QList<int> Vertex::neighborhoodList(){
  * inEdges, to this vertex for the current relation
  * @return long int
  */
-long int Vertex::inEdges() {
+long int GraphVertex::inEdges() {
     m_inEdgesCounter = 0;
     int relation=0;
     bool edgeStatus = false;
@@ -635,8 +634,8 @@ long int Vertex::inEdges() {
  * @brief Returns a qhash of all enabled inEdges in the active relation
  * @return  QHash<int,float>*
  */
-QHash<int,float>* Vertex::inEdgesEnabledHash() {
-    qDebug() << "Vertex::inEdgesEnabledHash()";
+QHash<int,float>* GraphVertex::inEdgesEnabledHash() {
+    qDebug() << "GraphVertex::inEdgesEnabledHash()";
     QHash<int,float> *enabledInEdges = new QHash<int,float>;
     float m_weight=0;
     int relation = 0;
@@ -664,7 +663,7 @@ QHash<int,float>* Vertex::inEdgesEnabledHash() {
  * Needs to have inEdges called before the call to this method
  * @return long int
  */
-long int Vertex::inEdgesConst() const {
+long int GraphVertex::inEdgesConst() const {
     return m_inEdgesCounter;
 }
 
@@ -674,8 +673,8 @@ long int Vertex::inEdgesConst() const {
  * @brief Returns the degreeOut (the sum of all enabled outEdges weights) of this vertex
  * @return long int
  */
-long int Vertex::degreeOut() {
-    qDebug() << "Vertex::degreeOut()";
+long int GraphVertex::degreeOut() {
+    qDebug() << "GraphVertex::degreeOut()";
     m_outDegree=0;
     float m_weight=0;
     int relation = 0;
@@ -695,7 +694,7 @@ long int Vertex::degreeOut() {
     return m_outDegree;
 }
 
-long int Vertex::outDegreeConst() {
+long int GraphVertex::outDegreeConst() {
     return m_outDegree;
 }
 
@@ -703,8 +702,8 @@ long int Vertex::outDegreeConst() {
  * @brief Returns the degreeIn (the sum of all enabled inEdges weights) of this vertex
  * @return long int
  */
-long int Vertex::degreeIn() {
-    qDebug() << "Vertex::degreeIn()";
+long int GraphVertex::degreeIn() {
+    qDebug() << "GraphVertex::degreeIn()";
     m_inDegree=0;
     float m_weight=0;
     int relation = 0;
@@ -726,7 +725,7 @@ long int Vertex::degreeIn() {
 }
 
 
-long int Vertex::inDegreeConst() {
+long int GraphVertex::inDegreeConst() {
     return m_inDegree;
 }
 
@@ -734,7 +733,7 @@ long int Vertex::inDegreeConst() {
 /**
     localDegree is the degreeOut + degreeIn minus the edges counted twice.
 */
-long int Vertex::localDegree(){
+long int GraphVertex::localDegree(){
 	long int v2=0;
     int relation = 0;
     bool edgeStatus=false;
@@ -753,19 +752,19 @@ long int Vertex::localDegree(){
         ++it1;
     }
 
-	qDebug() << "Vertex:: localDegree() for " << this->name()  << "is " << m_localDegree;
+	qDebug() << "GraphVertex:: localDegree() for " << this->name()  << "is " << m_localDegree;
 	return m_localDegree;
 }
 
 
 /**
- * @brief Vertex::hasEdgeTo
+ * @brief GraphVertex::hasEdgeTo
  * Checks if this vertex is outlinked to v2 and returns the weight of the edge
  * only if the outbound edge is enabled.
  * @param v2
  * @return
  */
-float Vertex::hasEdgeTo(const long int &v2, const bool &allRelations){
+float GraphVertex::hasEdgeTo(const long int &v2, const bool &allRelations){
     float m_weight=0;
     bool edgeStatus=false;
     H_edges::const_iterator it1=m_outEdges.find(v2);
@@ -775,12 +774,12 @@ float Vertex::hasEdgeTo(const long int &v2, const bool &allRelations){
                 edgeStatus=it1.value().second.second;
                 if ( edgeStatus == true) {
                     m_weight=it1.value().second.first;
-//                    qDebug()<< "Vertex::hasEdgeTo() - "<<  this->name()
+//                    qDebug()<< "GraphVertex::hasEdgeTo() - "<<  this->name()
 //                            << "->" << v2 << " = "<< m_weight;
                     return m_weight;
                 }
                 else {
-//                    qDebug()<< "Vertex::hasEdgeTo() - "<<  this->name()
+//                    qDebug()<< "GraphVertex::hasEdgeTo() - "<<  this->name()
 //                            << "->" << v2 << " = "<< m_weight
 //                            << " but edgeStatus " << edgeStatus;
                     return 0;
@@ -789,7 +788,7 @@ float Vertex::hasEdgeTo(const long int &v2, const bool &allRelations){
         }
         else {
                 m_weight=it1.value().second.first;
-//                qDebug()<< "Vertex::hasEdgeTo() - "<<  this->name()
+//                qDebug()<< "GraphVertex::hasEdgeTo() - "<<  this->name()
 //                        << "->" << v2 << " = "<< m_weight
 //                        << "relation"<<it1.value().first;
                 return m_weight;
@@ -802,13 +801,13 @@ float Vertex::hasEdgeTo(const long int &v2, const bool &allRelations){
 
 
 /**
- * @brief Vertex::hasEdgeFrom
+ * @brief GraphVertex::hasEdgeFrom
  * Checks if this vertex is inLinked from v2 and returns the weight of the link
  * only if the inLink is enabled.
  * @param v2
  * @return
  */
-float Vertex::hasEdgeFrom(const long int &v2, const bool &allRelations){
+float GraphVertex::hasEdgeFrom(const long int &v2, const bool &allRelations){
     float m_weight=0;
     bool edgeStatus=false;
     H_edges::iterator it1=m_inEdges.find(v2);
@@ -818,12 +817,12 @@ float Vertex::hasEdgeFrom(const long int &v2, const bool &allRelations){
                 edgeStatus=it1.value().second.second;
                 if ( edgeStatus == true) {
                     m_weight=it1.value().second.first;
-                    qDebug()<< "Vertex::hasEdgeFrom() - "<<  this->name()
+                    qDebug()<< "GraphVertex::hasEdgeFrom() - "<<  this->name()
                             << "<-" << v2 << " = "<< m_weight;
                     return m_weight;
                 }
                 else {
-                    qDebug()<< "Vertex::hasEdgeFrom() - "<<  this->name()
+                    qDebug()<< "GraphVertex::hasEdgeFrom() - "<<  this->name()
                             << "<-" << v2 << " = "<< m_weight
                             << " but edgeStatus " << edgeStatus;
                     return 0;
@@ -832,7 +831,7 @@ float Vertex::hasEdgeFrom(const long int &v2, const bool &allRelations){
         }
         else {
                 m_weight=it1.value().second.first;
-                qDebug()<< "Vertex::hasEdgeFrom() - "<<  this->name()
+                qDebug()<< "GraphVertex::hasEdgeFrom() - "<<  this->name()
                         << "<-" << v2 << " = "<< m_weight
                            << "relation"<<it1.value().first;
                 return m_weight;
@@ -842,7 +841,7 @@ float Vertex::hasEdgeFrom(const long int &v2, const bool &allRelations){
         }
         ++it1;
     }
-    //qDebug()<< "Vertex::hasEdgeFrom() - a ("  <<  this->name()  << ", " << v2 << ") = 0 ";
+    //qDebug()<< "GraphVertex::hasEdgeFrom() - a ("  <<  this->name()  << ", " << v2 << ") = 0 ";
     return 0;
 }
 
@@ -854,8 +853,8 @@ float Vertex::hasEdgeFrom(const long int &v2, const bool &allRelations){
  * @param v1
  * @param dist
  */
-void Vertex::setDistance (const long int &v1, const float &d) {
-//    qDebug() <<"Vertex::setDistance() - dist"
+void GraphVertex::setDistance (const long int &v1, const float &d) {
+//    qDebug() <<"GraphVertex::setDistance() - dist"
 //            << name() << " --> "<< v1 << " = "<< d
 //               << " relation " << m_curRelation;
     m_distance.insert( v1, pair_i_f(m_curRelation, d ) );
@@ -866,7 +865,7 @@ void Vertex::setDistance (const long int &v1, const float &d) {
  * If d to v1 has not been set previously, then return RAND_MAX
  * @param v1
  */
-float Vertex::distance (const long int &v1) {
+float GraphVertex::distance (const long int &v1) {
     float d=RAND_MAX;
     int relation=0;
     H_distance::const_iterator it1=m_distance.find(v1);
@@ -878,12 +877,18 @@ float Vertex::distance (const long int &v1) {
         }
         ++it1;
     }
-//    qDebug() <<"Vertex::distance() - d("
+//    qDebug() <<"GraphVertex::distance() - d("
 //               << name() << " --> "<< v1 << ") = "<< d;
 
     return d;
 }
 
+/**
+ * @brief Removes all items from m_distance hash dictionary
+ */
+void GraphVertex::clearDistance() {
+    m_distance.clear();
+}
 
 
 
@@ -893,8 +898,8 @@ float Vertex::distance (const long int &v1) {
  * @param v1
  * @param sp
  */
-void Vertex::setShortestPaths (const long int &v1, const int &sp) {
-//    qDebug() <<"Vertex::setShortestPaths() - sp"
+void GraphVertex::setShortestPaths (const long int &v1, const int &sp) {
+//    qDebug() <<"GraphVertex::setShortestPaths() - sp"
 //            << name() << " --> "<< v1 << " = "<< sp
 //               << " relation " << m_curRelation;
     m_shortestPaths.insert( v1, pair_i_i( m_curRelation, sp ) );
@@ -905,7 +910,7 @@ void Vertex::setShortestPaths (const long int &v1, const int &sp) {
  * If it has not been set previously, then return 0
  * @param v1
  */
-int Vertex::shortestPaths (const long int &v1) {
+int GraphVertex::shortestPaths (const long int &v1) {
     int sp=0;
     int relation=0;
     H_shortestPaths::const_iterator it1=m_shortestPaths.find(v1);
@@ -917,29 +922,40 @@ int Vertex::shortestPaths (const long int &v1) {
         }
         ++it1;
     }
-//    qDebug() <<"Vertex::shortestPaths() - sp ("
+//    qDebug() <<"GraphVertex::shortestPaths() - sp ("
 //               << name() << "->"<< v1 << ") = "<< sp;
 
     return sp;
 }
 
+
+
 /**
- * @brief Vertex::cliques
+ * @brief Removes all items from m_shortestPaths hash dictionary
+ */
+void GraphVertex::clearShortestPaths() {
+    m_shortestPaths.clear();
+}
+
+
+
+/**
+ * @brief GraphVertex::cliques
  * Returns the number of cliques sized size this vertex belongs to
  * @param size
  * @return
  */
-int Vertex::cliques (const int &ofSize)
+int GraphVertex::cliques (const int &ofSize)
 {
     return m_cliques.values( ofSize ).size();
 }
 
 /**
- * @brief Vertex::cliqueAdd
+ * @brief GraphVertex::cliqueAdd
  * @param clique
  */
-void Vertex::cliqueAdd (const QList<int> &clique) {
-    qDebug()<<"Vertex::cliqueAdd() - vertex:"
+void GraphVertex::cliqueAdd (const QList<int> &clique) {
+    qDebug()<<"GraphVertex::cliqueAdd() - vertex:"
            << name()
            << "in a clique with:"
            << clique;
@@ -949,34 +965,53 @@ void Vertex::cliqueAdd (const QList<int> &clique) {
 
 
 /**
- * @brief Vertex::clearPs
+ * @brief GraphVertex::clearPs
  */
-void Vertex::clearPs()	{  
+void GraphVertex::clearPs()	{  
 	myPs.clear();
 }
 	
-void Vertex::appendToPs(long  int vertex ) {
-    qDebug()<<"Vertex::appendToPs() - vertex:"
+void GraphVertex::appendToPs(long  int vertex ) {
+    qDebug()<<"GraphVertex::appendToPs() - vertex:"
            << name() << "adding" <<  vertex << " to myPs";
 	myPs.append(vertex); 
 }
 
 
-L_int Vertex::Ps(void) {
+L_int GraphVertex::Ps(void) {
 	 return myPs;
 }
 
 
 
-Vertex::~Vertex() {
-    qDebug() << " Vertex:: destroying my data";
+GraphVertex::~GraphVertex() {
+    qDebug() << " GraphVertex:: destroying my data";
     m_outEdges.clear();
-    outLinkColors.clear();
-    m_outEdgeLabels.clear();
-    clearPs();
-    m_outEdges.clear();
+    m_outEdges.squeeze();
     m_inEdges.clear();
+    m_inEdges.squeeze();
     m_reciprocalEdges->clear();
+    m_reciprocalEdges->squeeze();
+
+    m_outLinkColors.clear();
+    m_outLinkColors.squeeze();
+
+    m_outEdgeLabels.clear();
+    m_outEdgeLabels.squeeze();
+
+    clearPs();
+
+    m_shortestPaths.clear();
+    m_shortestPaths.squeeze();
+
+    m_distance.clear();
+    m_distance.squeeze();
+
+    m_neighborhoodList.clear();
+
+    m_cliques.clear();
+    m_cliques.squeeze();
+
 }
 
 
