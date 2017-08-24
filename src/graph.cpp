@@ -674,7 +674,7 @@ void Graph::vertexCreate(const int &num, const int &nodeSize, const QString &nod
 
     emit drawNode( num, nodeSize, nodeShape, nodeColor,
                    numColor, numSize, initVertexNumberDistance,
-                   initVertexLabelsVisibility, label,
+                   label,
                    labelColor, labelSize, initVertexLabelDistance,
                    p );
 
@@ -1400,13 +1400,6 @@ QString Graph::vertexLabel(const long int &v1){
 }
 
 
-/**
- * @brief Graph::vertexLabelsVisibilitySet
- * @param toggle
- */
-void Graph::vertexLabelsVisibilitySet(bool toggle){
-   initVertexLabelsVisibility=toggle;
-}
 
 
 /**
@@ -13266,11 +13259,10 @@ QString Graph::graphName() const {
  */
 void Graph::graphLoad (	const QString m_fileName,
                         const QString m_codecName,
-                        const bool m_showLabels,
                         const int fileFormat,
                         const int two_sm_mode,
                         const QString delimiter){
-    initVertexLabelsVisibility = m_showLabels;
+
 
     qDebug() << "Graph::graphLoad() - clearing relations ";
     relationsClear();

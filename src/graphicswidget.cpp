@@ -64,15 +64,16 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
 
         m_edgeHighlighting = true;
         m_nodeNumberVisibility = true;
+        m_nodeLabelVisibility = true;
 
         /* "QGraphicsScene applies an indexing algorithm to the scene, to speed up
          * item discovery functions like items() and itemAt().
          * Indexing is most efficient for static scenes (i.e., where items don't move around).
          * For dynamic scenes, or scenes with many animated items, the index bookkeeping
          * can outweight the fast lookup speeds."
-         * So...
+         * The user can change this from Settings.
         */
-        scene() -> setItemIndexMethod(QGraphicsScene::BspTreeIndex); //NoIndex (for anime) | BspTreeIndex
+        scene() -> setItemIndexMethod(QGraphicsScene::BspTreeIndex); //NoIndex (for anime)
 
         connect ( scene() , &QGraphicsScene::selectionChanged,
                      this, &GraphicsWidget::getSelectedItems);
@@ -150,7 +151,7 @@ void GraphicsWidget::drawNode( const int &num, const int &nodeSize,
                                const QString &nodeShape, const QString &nodeColor,
                                const QString &numberColor, const int &numberSize,
                                const int &numberDistance,
-                               const bool &showLabels, const QString &nodeLabel,
+                               const QString &nodeLabel,
                                const QString &labelColor, const int &labelSize,
                                const int &labelDistance,
                                const QPointF &p
@@ -162,7 +163,7 @@ void GraphicsWidget::drawNode( const int &num, const int &nodeSize,
     GraphicsNode *jim= new GraphicsNode (
                 this, num, nodeSize, nodeColor, nodeShape,
                 m_nodeNumberVisibility, m_nodeNumbersInside, numberColor, numberSize, numberDistance,
-                showLabels, nodeLabel, labelColor, labelSize, labelDistance,
+                m_nodeLabelVisibility, nodeLabel, labelColor, labelSize, labelDistance,
                 m_edgeHighlighting,
                 p
                 );
@@ -569,6 +570,7 @@ void GraphicsWidget::setNodeLabelsVisibility (const bool &toggle){
     foreach ( GraphicsNode *m_node, nodeHash) {
         m_node->setLabelVisibility(toggle);
     }
+    m_nodeLabelVisibility = toggle;
 }
 
 

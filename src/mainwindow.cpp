@@ -4659,7 +4659,7 @@ void MainWindow::initSignalSlots() {
                  drawNode( const int &, const int &, const QString &,
                            const QString &,
                            const QString &, const int &, const int &,
-                           const bool &, const QString &,
+                           const QString &,
                            const QString &, const int &, const int &,
                            const QPointF &
                             )
@@ -4669,7 +4669,7 @@ void MainWindow::initSignalSlots() {
                  drawNode( const int &, const int &, const QString &,
                            const QString &,
                            const QString &, const int &, const int &,
-                           const bool &, const QString &,
+                           const QString &,
                            const QString &, const int &, const int &,
                            const QPointF &
                             )
@@ -5008,12 +5008,8 @@ void MainWindow::initApp(){
 
     activeGraph.edgeColorInit(appSettings["initEdgeColor"]);
 
-    activeGraph.vertexLabelsVisibilitySet(
-                (appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false
-                );
 
-
-    /** Clear graphicsWidget scene and reset transformations **/
+    /** Clear graphicsWidget scene and reset settings and transformations **/
     graphicsWidget->clear();
     rotateSlider->setValue(0);
     zoomSlider->setValue(250);
@@ -5022,6 +5018,10 @@ void MainWindow::initApp(){
     graphicsWidget->setNodeNumberVisibility(
                 ( appSettings["initNodeNumbersVisibility"] == "true" ) ? true: false
                 );
+    graphicsWidget->setNodeLabelsVisibility(
+                (appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false
+                );
+
     graphicsWidget->setNumbersInsideNodes(
                 ( appSettings["initNodeNumbersInside"] == "true" ) ? true: false
                     );
@@ -6499,11 +6499,10 @@ void MainWindow::slotNetworkFileLoad(const QString m_fileName,
     activeGraph.graphLoad (
                 m_fileName,
                 m_codecName,
-                ((appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false),
-            m_fileFormat,
-            two_sm_mode,
-            delimiter
-            );
+                m_fileFormat,
+                two_sm_mode,
+                delimiter
+                );
 
     QApplication::restoreOverrideCursor();
 
@@ -12284,6 +12283,7 @@ void MainWindow::slotOptionsNodeNumbersInside(bool toggle){
     qDebug() << "MW::slotOptionsNodeNumbersInside()" << toggle;
 
     statusMessage( tr("Toggle Numbers inside nodes. Please wait...") );
+
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
     // if node numbers are hidden, show them first.
     if ( toggle && appSettings["initNodeNumbersVisibility"] != "true" )
@@ -12292,6 +12292,7 @@ void MainWindow::slotOptionsNodeNumbersInside(bool toggle){
     appSettings["initNodeNumbersInside"] = (toggle) ? "true":"false";
     graphicsWidget -> setNumbersInsideNodes(toggle);
     optionsNodeNumbersVisibilityAct->setChecked (toggle);
+
     if (toggle){
         statusMessage( tr("Numbers inside nodes...") );
     }
@@ -12314,11 +12315,13 @@ void MainWindow::slotOptionsNodeLabelsVisibility(bool toggle){
     qDebug() << "MW::slotOptionsNodeLabelsVisibility()" << toggle;
 
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+
     statusMessage( tr("Toggle Nodes Labels. Please wait...") );
+
     appSettings["initNodeLabelsVisibility"] = (toggle) ? "true":"false";
     graphicsWidget->setNodeLabelsVisibility(toggle);
-    activeGraph.vertexLabelsVisibilitySet(toggle);
     optionsNodeLabelsVisibilityAct->setChecked ( toggle );
+
     if (!toggle) {
         statusMessage( tr("Node Labels are invisible now. "
                           "Click the same option again to display them.") );

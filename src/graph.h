@@ -306,7 +306,7 @@ signals:
                    const QString &nodeColor,
                    const QString &numberColor, const int &numSize,
                    const int &numDistance,
-                   const bool &showLabels, const QString &label,
+                   const QString &label,
                    const QString &labelColor, const int &labelSize,
                    const int &labelDistance,
                    const QPointF &p
@@ -362,8 +362,8 @@ public:
 
     /*FILES (READ AND WRITE)*/
     QString graphName() const;
-    void graphLoad (const QString m_fileName, const QString m_codecName,
-                    const bool m_showLabels,
+    void graphLoad (const QString m_fileName,
+                    const QString m_codecName,
                     const int format,
                     const int two_sm_mode,
                     const QString delimiter=QString::null);
@@ -1027,7 +1027,7 @@ private:
     long int m_totalVertices, m_totalEdges, m_graphDiameter, initVertexSize;
     int initVertexLabelSize, initVertexNumberSize;
     int initVertexNumberDistance, initVertexLabelDistance;
-    bool order, initVertexLabelsVisibility;
+    bool order;
     bool initEdgeWeightNumbers, initEdgeLabels;
     float m_graphAverageDistance, m_graphGeodesicsCount;
     float m_graphDensity;

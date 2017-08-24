@@ -102,10 +102,10 @@ public slots:
     void drawNode(const int &num, const int &nodeSize,
                    const QString &nodeShape, const QString &nodeColor,
                    const QString &numberColor, const int &numberSize,
-                  const int &numberDistance,
-                   const bool &showLabels, const QString &nodeLabel,
+                   const int &numberDistance,
+                   const QString &nodeLabel,
                    const QString &labelColor, const int &labelSize,
-                  const int &labelDistance,
+                   const int &labelDistance,
                    const QPointF &p
                     );
     void eraseNode(const long int &number);
@@ -198,7 +198,7 @@ private:
     QString edgeName;
     bool transformationActive;
     bool secondDoubleClick, markedNodeExist, clickedEdgeExists;
-    bool m_nodeNumbersInside, m_nodeNumberVisibility;
+    bool m_nodeNumbersInside, m_nodeNumberVisibility, m_nodeLabelVisibility;
     bool m_edgeHighlighting;
     GraphicsNode *firstNode, *secondNode, *markedNode1, *markedEdgeSource;
     GraphicsNode *markedEdgeTarget, *tempNode ;
