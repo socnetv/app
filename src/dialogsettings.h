@@ -49,6 +49,7 @@ public slots:
     void getCanvasBgColor();
     void getCanvasBgImage();
     void getCanvasUpdateMode(const QString &text);
+    void getCanvasIndexMethod(const QString &text);
     void validateSettings();
     void getNodeColor();
     void getNodeShape();
@@ -89,6 +90,7 @@ signals:
     void setCanvasCacheBackground(bool);
     void setCanvasEdgeHighlighting(bool);
     void setCanvasUpdateMode(const QString &text);
+    void setCanvasIndexMethod(const QString &text);
 
     void setNodeColor(QColor);
     void setNodeShape(const QString, const long int);

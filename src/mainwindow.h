@@ -421,7 +421,7 @@ public slots:
     void slotOptionsCanvasEdgeHighlighting(const bool &toggle=false);
 
     void slotOptionsCanvasUpdateMode(const QString &mode);
-
+    void slotOptionsCanvasIndexMethod(const QString &method);
 
 
     //HELP MENU

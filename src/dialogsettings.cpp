@@ -105,11 +105,14 @@ DialogSettings::DialogSettings(
     ui->canvasCacheBackgroundChkBox->setChecked(
                 (appSettings["canvasCacheBackground"] == "true") ? true:false
                 );
+    ui->canvasEdgeHighlightingChkBox->setChecked(
+                (appSettings["canvasEdgeHighlighting"] == "true") ? true:false
+                );
 
 
-    QStringList canvasUpdateList;
-    canvasUpdateList << "Full" << "Minimal" << "Smart" << "Bounding Rectangle" << "None";
-    ui->canvasUpdateModeSelect->addItems(canvasUpdateList);
+    QStringList optionsList;
+    optionsList << "Full" << "Minimal" << "Smart" << "Bounding Rectangle" << "None";
+    ui->canvasUpdateModeSelect->addItems(optionsList);
 
     if ( appSettings["canvasUpdateMode"] == "Full" ) {
         ui->canvasUpdateModeSelect->setCurrentText( "Full");
@@ -131,9 +134,24 @@ DialogSettings::DialogSettings(
     }
     qDebug() << "canvasUpdateModeSelect" << appSettings["canvasUpdateMode"];
 
-    ui->canvasEdgeHighlightingChkBox->setChecked(
-                (appSettings["canvasEdgeHighlighting"] == "true") ? true:false
-                );
+
+    optionsList.clear();
+    optionsList << "BspTreeIndex" << "NoIndex" ;
+    ui->canvasIndexMethodSelect->addItems(optionsList);
+
+    if ( appSettings["canvasIndexMethod"] == "BspTreeIndex" ) {
+        ui->canvasIndexMethodSelect->setCurrentText( "BspTreeIndex");
+    }
+    else if (appSettings["canvasIndexMethod"] == "NoIndex" ) {
+        ui->canvasIndexMethodSelect->setCurrentText("NoIndex" );
+    }
+    else { //
+        ui->canvasIndexMethodSelect->setCurrentText("BspTreeIndex" );
+    }
+    qDebug() << "canvasIndexMethodSelect" << appSettings["canvasIndexMethod"];
+
+
+
 
 
 
@@ -322,6 +340,9 @@ DialogSettings::DialogSettings(
           this, SLOT(getCanvasUpdateMode(const QString &)) );
 
 
+    connect(ui->canvasIndexMethodSelect, SIGNAL ( currentIndexChanged (const QString &)),
+          this, SLOT(getCanvasIndexMethod(const QString &)) );
+
 
 
 
@@ -470,7 +491,7 @@ void DialogSettings::getCanvasBgImage(){
 
 
 /**
- * @brief DialogSettings::getCanvasUpdateMode
+ * @brief Gets Canvas Update Mode
  */
 void DialogSettings::getCanvasUpdateMode(const QString &mode){
     if (!mode.isEmpty() ) {
@@ -478,6 +499,19 @@ void DialogSettings::getCanvasUpdateMode(const QString &mode){
         emit setCanvasUpdateMode(mode);
     }
 }
+
+
+
+/**
+ * @brief Gets canvas Index Method
+ */
+void DialogSettings::getCanvasIndexMethod(const QString &method){
+    if (!method.isEmpty() ) {
+        m_appSettings["canvasIndexMethod"] = method;
+        emit setCanvasIndexMethod(method);
+    }
+}
+
 
 /**
  * @brief DialogSettings::getNodeColor

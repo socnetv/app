@@ -248,6 +248,7 @@ QMap<QString,QString> MainWindow::initSettings(){
     appSettings["canvasPainterStateSave"] = "false";
     appSettings["canvasCacheBackground"] = "false";
     appSettings["canvasUpdateMode"] = "Full";
+    appSettings["canvasIndexMethod"] = "BspTreeIndex";
     appSettings["canvasEdgeHighlighting"] = "true";
     appSettings["canvasNodeHighlighting"] = "true";
     appSettings["dataDir"]= dataDir ;
@@ -425,6 +426,9 @@ void MainWindow::slotOpenSettingsDialog() {
     connect( m_settingsDialog, &DialogSettings::setCanvasUpdateMode,
                          this, &MainWindow::slotOptionsCanvasUpdateMode);
 
+
+    connect( m_settingsDialog, &DialogSettings::setCanvasIndexMethod,
+                         this, &MainWindow::slotOptionsCanvasIndexMethod);
 
     connect(m_settingsDialog, SIGNAL(setNodeColor(QColor)),
             this, SLOT(slotEditNodeColorAll(QColor)) );
@@ -12730,6 +12734,45 @@ void MainWindow::slotOptionsCanvasUpdateMode(const QString &mode) {
 
     QApplication::restoreOverrideCursor();
 }
+
+
+
+
+
+/**
+ * @brief Sets canvas index method. Called from Settings dialog.
+ * @param toggle
+ */
+void MainWindow::slotOptionsCanvasIndexMethod(const QString &method) {
+
+    qDebug()<< "MW::slotOptionsCanvasIndexMethod() " << method;
+
+    statusMessage( tr("Setting canvas index method. Please wait...") );
+
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+
+    if ( method == "BspTreeIndex" ) {  // Qt default
+        graphicsWidget->scene() -> setItemIndexMethod(QGraphicsScene::BspTreeIndex);
+
+    }
+    else if ( method == "NoIndex" ) {  // for animated scenes
+        graphicsWidget->scene() -> setItemIndexMethod(QGraphicsScene::NoIndex);
+    }
+    else { // default
+        graphicsWidget->scene() -> setItemIndexMethod(QGraphicsScene::BspTreeIndex);
+    }
+
+    appSettings["canvasIndexMethod"] = method;
+
+    statusMessage( tr("Canvas index method: ") + method );
+
+
+    QApplication::restoreOverrideCursor();
+}
+
+
+
+
 
 
 
