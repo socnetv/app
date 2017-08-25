@@ -101,8 +101,7 @@ Graph::Graph() {
     wc_spider = 0;
 
 //   edgesHash.reserve(40000);
-    influenceDomains.reserve(1000);
-    influenceRanges.reserve(1000);
+
 
     m_graphFileFormatExportSupported<< FILE_GRAPHML
                                << FILE_PAJEK
@@ -664,9 +663,9 @@ void Graph::vertexCreate(const int &num, const int &nodeSize, const QString &nod
                          const QPointF &p, const QString &nodeShape,
                          const bool &signalMW){
     int value = 1;
-    qDebug() << "Graph::vertexCreate() - vertex number" << num
-                << "signalMW" << signalMW
-                   << "call vertexAdd() and emitting drawNode() to GW";
+    qDebug() << "Graph::vertexCreate() - vertex:" << num
+                << "signalMW:" << signalMW
+                   << "- Calling vertexAdd() and emitting drawNode() to GW";
     vertexAdd ( num, value, nodeSize,  nodeColor,
                numColor, numSize,
                label, labelColor, labelSize, p, nodeShape);
@@ -697,7 +696,7 @@ void Graph::vertexCreate(const int &num, const int &nodeSize, const QString &nod
  */
 void Graph::vertexCreateAtPos(const QPointF &p){
     int i = vertexNumberMax() +1;
-    qDebug() << "Graph::vertexCreateAtPos() - vertex " << i << " pos " << p;
+    qDebug() << "Graph::vertexCreateAtPos() - vertex:" << i << " pos:" << p;
     vertexCreate(	i, initVertexSize,  initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     QString::null, initVertexLabelColor, initVertexLabelSize,
@@ -1566,8 +1565,7 @@ void Graph::vertexLabelDistanceInit(const int &distance) {
 
 
 /**
- * @brief Graph::edgeCreate
- * Checks if edge exists, and if the opposite edge exists
+ * @brief Checks a) if edge exists and b) if the opposite edge exists
  * Calls edgeAdd to add the new edge to the Graph,
  * then emits drawEdge() which calls GraphicsWidget::drawEdge() to draw the new edge.
  * Called from homonymous signal of Parser class.
@@ -1586,14 +1584,17 @@ void Graph::edgeCreate(const int &v1, const int &v2, const float &weight,
                         const int &type,
                         const bool &drawArrows, const bool &bezier,
                         const QString &label, const bool &signalMW){
+
     qDebug() <<"-- Graph::edgeCreate() - " << v1 << " -> " << v2
            << " weight " << weight
            << " type " << type
            << " label " << label;
+
     // check whether there is already such an edge
     // (see #713617 - https://bugs.launchpad.net/socnetv/+bug/713617)
     if (!edgeExists(v1,v2)){
         if ( type == EDGE_RECIPROCAL_UNDIRECTED ) {
+
             qDebug()<< "-- Graph::edgeCreate() - "
                     << "Creating RECIPROCAL edge - emitting drawEdge signal to GW";
 
@@ -1602,14 +1603,17 @@ void Graph::edgeCreate(const int &v1, const int &v2, const float &weight,
                           drawArrows, bezier, initEdgeWeightNumbers);
         }
         else if ( edgeExists( v2, v1) )  {
+
             qDebug()<<"-- Graph::edgeCreate() - Opposite arc exists. "
                    << "  Emitting drawEdge to GW ";
+
             edgeAdd ( v1, v2, weight, EDGE_DIRECTED_OPPOSITE_EXISTS , label, color);
             emit drawEdge(v1, v2, weight, label, color, EDGE_DIRECTED_OPPOSITE_EXISTS,
                           drawArrows, bezier, initEdgeWeightNumbers);
             m_undirected = false;
         }
         else {
+
             qDebug()<< "-- Graph::edgeCreate() - "
                        << "Opposite arc does not exist. Emitting drawEdge to GW...";
 
@@ -1625,10 +1629,10 @@ void Graph::edgeCreate(const int &v1, const int &v2, const float &weight,
                     << "Edge " << v1 << " -> " << v2
                  << " declared previously (exists) - nothing to do \n\n";
     }
-    //draw new edges the same color with those of the file loaded,
-    // on user clicks on the canvas
-    initEdgeColor=color;
 
+    // save the edge color so that new edges created when user clicks on the canvas
+    // have the same color with those of the file loaded,
+    initEdgeColor=color;
 
     graphModifiedSet(GRAPH_CHANGED_EDGES, signalMW);
 
@@ -1639,8 +1643,7 @@ void Graph::edgeCreate(const int &v1, const int &v2, const float &weight,
 
 
 /**
- * @brief Graph::edgeCreateWebCrawler
- * Called from WebCrawler when it finds an new link
+ * @brief Called from WebCrawler when it finds an new link
  * Calls edgeCreate() method with initEdgeColor
  * @param source
  * @param target
@@ -1658,8 +1661,7 @@ void Graph::edgeCreateWebCrawler (const int &source, const int &target){
 
 
 /**
- * @brief Graph::edgeAdd
- * Adds an edge between v1 and v2
+ * @brief Adds an edge between v1 and v2
  * @param v1
  * @param v2
  * @param weight
@@ -1675,7 +1677,7 @@ void Graph::edgeAdd (const int &v1, const int &v2, const float &weight,
     int source=vpos[v1];
     int target=vpos[v2];
 
-    qDebug()<< "Graph: edgeAdd() from vertex "<< v1 << "["<< source
+    qDebug()<< "Graph: edgeAdd() - new edge from vertex "<< v1 << "["<< source
             << "] to vertex "<< v2 << "["<< target << "] of weight "<<weight
             << " and label " << label;
 
@@ -1705,8 +1707,7 @@ void Graph::edgeAdd (const int &v1, const int &v2, const float &weight,
 
 
 /**
- * @brief Graph::edgeRemove
- * Removes the edge (arc) between v1 and v2
+ * @brief Removes the edge (arc) between v1 and v2
  * @param v1
  * @param v2
  * @param undirected if true it also removes the opposite edge
@@ -1731,7 +1732,6 @@ void Graph::edgeRemove (const long int &v1,
         }
     }
 
-
     emit eraseEdge(v1,v2);
 
     graphModifiedSet(GRAPH_CHANGED_EDGES);
@@ -1741,8 +1741,7 @@ void Graph::edgeRemove (const long int &v1,
 
 
 /**
- * @brief Graph::edgeVisibilitySet
- * Changes the canvas visibility of an edge
+ * @brief Changes the canvas visibility of an edge
  * Called from GraphVertex when edgeFilterByWeight is called
  * @param relation
  * @param source
@@ -1760,8 +1759,7 @@ void Graph::edgeVisibilitySet ( int relation,  int source, int target, bool visi
 
 
 /**
- * @brief Graph::edgeFilterByWeight
- * Called from MW::DialogEdgeFilter to filter edges over or under
+ * @brief Called from MW::DialogEdgeFilter to filter edges over or under
  * a specified weight (m_threshold).
  * For each vertex in the Graph, calls the homonymous method of GraphVertex class.
  * @param m_threshold
@@ -1785,8 +1783,7 @@ void Graph::edgeFilterByWeight(float m_threshold, bool overThreshold){
 
 
 /**
- * @brief Graph::edgeFilterByRelation
- * Filter out all edges of a given relation
+ * @brief Enables or disables all edges of a given relation
  * Calls the homonymous method of GraphVertex class.
  * @param relation
   */
@@ -1801,8 +1798,7 @@ void Graph::edgeFilterByRelation(int relation, bool status){
 }
 
 /**
- * @brief Graph::edgeFilterUnilateral
- * Filters (enables/disables) unilateral edges in current relationship.
+ * @brief Enables or disables unilateral edges in current relationship.
  * If toggle=true, all non-reciprocal edges are disabled, effectively making
  * the network symmetric.
  * @param toggle
@@ -1841,7 +1837,10 @@ void Graph::edgeClickedSet(const int &v1, const int &v2) {
 
 }
 
-
+/**
+ * @brief Returns clicked edge
+ * @return
+ */
 ClickedEdge Graph::edgeClicked() {
     return m_clickedEdge;
 }
@@ -1849,8 +1848,7 @@ ClickedEdge Graph::edgeClicked() {
 
 
 /**
- * @brief Graph::edgeExists
- * Checks if there is a (un)directed edge (arc) from v1 to v2
+ * @brief Checks if there is a (un)directed edge (arc) from v1 to v2
    Complexity:  O(logN) for vpos retrieval + O(1) for QList index retrieval + O(logN) for checking edge(v2)
  * @param v1
  * @param v2
@@ -1881,14 +1879,13 @@ float Graph::edgeExists (const long int &v1, const long int &v2, const bool &und
 
 
 /**
- * @brief Graph::edgeSymmetric
- * Returns TRUE if (v1, v2) is symmetric.
+ * @brief Returns TRUE if edge(v1, v2) is symmetric.
  * @param v1
  * @param v2
  * @return
  */
 bool Graph::edgeSymmetric(const long int &v1, const long int &v2){
-    qDebug("***Graph: edgeSymmetric()");
+    qDebug() << "***Graph: edgeSymmetric()";
     if ( ( edgeExists( v1, v2 , true) ) !=0 ) {
         return true;
     }
@@ -1900,8 +1897,7 @@ bool Graph::edgeSymmetric(const long int &v1, const long int &v2){
 
 
 /**
- * @brief Graph::edgesEnabled
- * Returns |E| of graph - only the enabled edges
+ * @brief Returns the number |E| of graph - only the enabled edges
  * @return
  */
 int Graph::edgesEnabled() {
@@ -1927,8 +1923,7 @@ int Graph::edgesEnabled() {
 
 
 /**
- * @brief Graph::vertexEdgesOutbound
- * *Returns the number of outbound edges (arcs) from vertex v1
+ * @brief Returns the number of outbound edges (arcs) from vertex v1
  * @param v1
  * @return
  */
@@ -1939,8 +1934,7 @@ int Graph::vertexEdgesOutbound(int v1) {
 
 
 /**
- * @brief Graph::vertexEdgesInbound
- * Returns the number of inbound edges (arcs) to vertex v1
+ * @brief Returns the number of inbound edges (arcs) to vertex v1
  * @param v1
  * @return int
  */
@@ -1953,8 +1947,7 @@ int Graph::vertexEdgesInbound (int v1) {
 
 
 /**
- * @brief Graph::edgeWeightSet
- * Changes the weight of an edge (arc) between v1 and v2
+ * @brief Changes the weight of an edge (arc) between v1 and v2
  * @param v1
  * @param v2
  * @param weight
@@ -1980,11 +1973,10 @@ void Graph::edgeWeightSet (const long &v1, const long &v2,
 
 
 /**
- * @brief Graph::edgeWeight
- * Returns the color qstring of the directed edge v1 -> v2
+ * @brief Returns the weight of the edge v1 -> v2
  * @param v1
  * @param v2
- * @return
+ * @return float
  */
 float Graph::edgeWeight (const long &v1, const long &v2) const{
     return m_graph[ vpos[v1] ]->hasEdgeTo(v2);
@@ -1994,8 +1986,7 @@ float Graph::edgeWeight (const long &v1, const long &v2) const{
 
 
 /**
- * @brief Graph::edgeWeightNumbersVisibilitySet
- * Changes the visibility of edge weight numbers
+ * @brief Changes the visibility of edge weight numbers
  * @param toggle
  */
 void Graph::edgeWeightNumbersVisibilitySet (const bool &toggle) {
@@ -2005,8 +1996,7 @@ void Graph::edgeWeightNumbersVisibilitySet (const bool &toggle) {
 
 
 /**
- * @brief Graph::edgeColorInit
- * Saves the default edge color
+ * @brief Saves the default edge color
  * Used by random network creation methods
  * @param color
  */
@@ -2019,8 +2009,7 @@ void Graph::edgeColorInit(const QString &color){
 
 
 /**
- * @brief Graph::edgeColorAllSet
- * Changes the color of all edges.
+ * @brief Changes the color of all enabled edges.
  * @param color
  * @return
  */
@@ -2080,8 +2069,7 @@ bool Graph::edgeColorAllSet(const QString &color, const int &threshold){
 
 
 /**
- * @brief Graph::edgeColorSet
- * Changes the color of edge s -> t
+ * @brief Changes the color of edge v1 -> v2
  * @param v1
  * @param v2
  * @param color
@@ -2104,8 +2092,7 @@ void Graph::edgeColorSet(const long &v1, const long &v2, const QString &color){
 
 
 /**
- * @brief Graph::edgeColor
- * Returns the color qstring of the directed edge v1 -> v2
+ * @brief Returns the color of the directed edge v1 -> v2
  * @param v1
  * @param v2
  * @return
@@ -2118,8 +2105,7 @@ QString Graph::edgeColor (const long &v1, const long &v2){
 
 
 /**
- * @brief Graph::edgeLabelSet
- * Changes the label of edge v1 -> v2
+ * @brief Changes the label of edge v1 -> v2
  * @param v1
  * @param v2
  * @param weight
@@ -2134,9 +2120,9 @@ void Graph::edgeLabelSet (const long &v1, const long &v2, const QString &label) 
     graphModifiedSet(GRAPH_CHANGED_EDGES_METADATA);
 }
 
+
 /**
- * @brief Graph::edgeLabel
- * Returns the label of edge v1->v2
+ * @brief Returns the label of edge v1->v2
  * @param v1
  * @param v2
  * @return
@@ -2147,7 +2133,7 @@ QString Graph::edgeLabel (const long int &v1, const long int &v2) const {
 
 
 /**
- * @brief Graph::edgeLabelsVisibilitySet
+ * @brief Toggles the visibility of edge labels.
  * @param toggle
  */
 void Graph::edgeLabelsVisibilitySet (const bool &toggle) {
@@ -2157,8 +2143,7 @@ void Graph::edgeLabelsVisibilitySet (const bool &toggle) {
 
 
 /**
- * @brief Graph::vertexDegreeOut
- * Returns the outDegree (sum of outbound edge weights) of vertex v1
+ * @brief Returns the outDegree (sum of outbound edge weights) of vertex v1
  * @param v1
  * @return
  */
@@ -2170,8 +2155,7 @@ int Graph::vertexDegreeOut (int v1) {
 
 
 /**
- * @brief Graph::vertexDegreeIn
- * Returns the inDegree (sum of inbound edge weights) of vertex v1
+ * @brief Returns the inDegree (sum of inbound edge weights) of vertex v1
  * @param v1
  * @return
  */
@@ -2181,7 +2165,8 @@ int Graph::vertexDegreeIn (int v1) {
 }
 
 /**
- * @brief Graph::vertexNeighborhoodList
+ * @brief Returns a list of all vertices mutually connected to vertex v1 in the
+ * current relation
  * @param v1
  * @return  QList<int>
  */
@@ -2193,8 +2178,7 @@ QList<int> Graph::vertexNeighborhoodList(const int &v1) {
 
 
 /**
- * @brief Graph::vertices
- * Returns |V| of graph
+ * @brief Returns the number |V| of graph
  * If countAll = true, returns |V| where V the set of all (enabled or not) vertices
  * If countAll = false, it skips disabled vertices
  * If countAll = false and dropIsolates = true, it skips both disabled and isolated vertices
@@ -2414,7 +2398,7 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
 
 
 /**
- * @brief Graph::graphModifiedSet
+ * @brief Sets the graph modification status.
  * @param graphChangedFlag
  * @param signalMW
  */
@@ -2446,8 +2430,7 @@ void Graph::graphModifiedSet(const int &graphNewStatus, const bool &signalMW){
 
 
 /**
- * @brief Graph::graphModified
- * Returns true of graph is modified (edges/vertices added/removed).
+ * @brief Returns true of graph is modified (edges/vertices added/removed).
  * else false
  * @return
  */
@@ -2457,7 +2440,7 @@ bool Graph::graphModified() const {
 }
 
 /**
- * @brief Graph::graphSaved
+ * @brief Returns true if the graph is saved.
  * @return
  */
 bool Graph::graphSaved() const {
@@ -2551,7 +2534,7 @@ QList<SelectedEdge> Graph::graphSelectedEdges() const{
 
 
 /**
- * @brief Returns count of user-selected edges
+ * @brief Returns the count of user-selected edges
  * @return
  */
 int Graph::graphSelectedEdgesCount() const {
@@ -2562,8 +2545,8 @@ int Graph::graphSelectedEdgesCount() const {
 
 
 /**
- * @brief Graph::graphDensity
- *  Returns ratio of present edges to total possible edges.
+ * @brief Returns the ratio of present edges to total possible edges
+ * in the current relation.
  * @return
  */
 float Graph::graphDensity() {
@@ -2665,8 +2648,12 @@ int Graph:: verticesWithReciprocalEdges(){
 
 
 
-//called from Graph, when closing network, to terminate all processes
-//also called indirectly when wc_spider finishes
+
+/**
+ * @brief called from Graph, when closing network, to terminate all processes
+* Also called indirectly when wc_spider finishes
+ * @param reason
+ */
 void Graph::webCrawlTerminateThreads (QString reason){
     qDebug() << "Graph::webCrawlTerminateThreads() - reason " << reason
                 << "Checking if wc_spiderThread is running...";
@@ -2685,7 +2672,15 @@ void Graph::webCrawlTerminateThreads (QString reason){
 
 
 
-//Called by MW to start a web crawler...
+
+/**
+ * @brief Called by MW to start a web crawler thread...
+ * @param seed
+ * @param maxNodes
+ * @param maxRecursion
+ * @param extLinks
+ * @param intLinks
+ */
 void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
                       bool extLinks, bool intLinks){
 
@@ -3162,8 +3157,7 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
 
 
 /**
- * @brief Graph::graphSymmetric
- * Returns TRUE if the adjacency matrix of the current relation is symmetric
+ * @brief Returns TRUE if the adjacency matrix of the current relation is symmetric
  * @return bool
  */
 bool Graph::graphSymmetric(){
@@ -3223,8 +3217,7 @@ bool Graph::graphSymmetric(){
 
 
 /**
- * @brief Graph::graphSymmetrize
- * Transforms the graph to symmetric (all edges reciprocal)
+ * @brief Transforms the graph to symmetric (all edges reciprocal)
  */
 void Graph::graphSymmetrize(){
     qDebug()<< "Graph::graphSymmetrize";
@@ -3271,7 +3264,9 @@ void Graph::graphSymmetrize(){
 
 
 /**
- * @brief Graph::graphSymmetrizeStrongTies
+ * @brief Creates a new symmetric relation by keeping only strong-ties (mutual links)
+ * in the current relation. In the new relation, two actors are connected only if
+ * they are mutually connected in the current relation.
  * @param allRelations
  */
 void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
@@ -3424,8 +3419,7 @@ void Graph::graphCocitation(){
 
 
 /**
- * @brief Graph::undirected
- * Transforms the graph to undirected
+ * @brief Transforms the graph to undirected
  */
 void Graph::graphUndirectedSet(const bool &toggle, const bool &signalMW){
 
@@ -3473,8 +3467,7 @@ bool Graph::graphUndirected() {
 }
 
 /**
- * @brief Graph::edgeUndirectedSet
- * Tranforms an edge to undirected
+ * @brief Tranforms an edge to undirected
  * Emits setEdgeUndirected to GW
  * @param v1
  * @param v2
@@ -3636,8 +3629,7 @@ int Graph::graphDiameter(const bool considerWeights,
 
 
 /**
- * @brief Graph::graphDistanceGeodesicAverage
- * Returns the average distance of the graph
+ * @brief Returns the average distance of the graph
  * @param considerWeights
  * @param inverseWeights
  * @param dropIsolates
@@ -3690,7 +3682,7 @@ int Graph::graphGeodesics()  {
 
 
 /**
- * @brief Graph::graphConnectedness()
+ * @brief Excamines the Connectedness of the graph and returns an integer code.
  * @return int:
 
  * 2: strongly connected digraph (exists path from i to j and vice versa for every i,j)
@@ -4289,8 +4281,6 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                 }
 
 
-
-
                 //Compute Power Centrality: In = [ 1/(N-1) ] * ( Nd1 + Nd2 * 1/2 + ... + Ndi * 1/i )
                 // where
                 // Ndi (sizeOfNthOrderNeighborhood) is the number of nodes at distance i from this node.
@@ -4745,8 +4735,6 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
                        << " - and " << s
                        << " to inflDomain I of "<< w;
 
-                influenceRanges.insertMulti(s,w);
-                influenceDomains.insertMulti(w,s);
 
                 if (computeCentralities){
                     qDebug()<<"BFS: Calculate PC: store the number of nodes at distance "
@@ -4810,7 +4798,7 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
 
 
 /**
-*	Dijkstra's algorithm for the SSSP in weighted graphs (directed or not)
+*	Dijkstra's algorithm for solving the SSSP problem in weighted graphs (directed or not).
 *   It uses a min-priority queue prQ to provide constant time lookup of the minimum
 *   distance. The priority queue is implemented with std::priority_queue
 
@@ -5008,8 +4996,6 @@ void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralitie
                        << "and" << s
                        << "to inflDomain I of"<< w;
 
-                influenceRanges.insertMulti(s,w);
-                influenceDomains.insertMulti(w,s);
 
                 if ( dist_w > m_graphDiameter){
                     m_graphDiameter=dist_w;
@@ -10238,12 +10224,52 @@ void Graph::writeMatrixWalks (const QString &fn,
  *  This function is for digraphs only
  */
 QList<int> Graph::vertexinfluenceRange(int v1){
-    qDebug() << "Graph::vertexinfluenceRange() ";
 
-    // Construct a list of influence ranges for each node
-    graphDistanceGeodesicCompute(false, false,false,false);
+    qDebug() << "Graph::vertexinfluenceRange() - vertex:"<< v1;
+
+    if ( !calculatedDistances || graphModified() ) {
+        graphDistanceGeodesicCompute(false);
+    }
+
+    QList<GraphVertex*>::const_iterator jt;
+
+    int N = vertices( false, false, true);
+
+    int progressCounter=0;
+    int target = 0;
+
+    influenceRanges.clear();
+    influenceRanges.reserve(N);
+
+    QString pMsg = tr("Creating Influence Range List. \nPlease wait ");
+    emit statusMessage ( pMsg );
+    emit signalProgressBoxCreate(N,pMsg);
+
+
+    for (jt=m_graph.cbegin(); jt!=m_graph.cend(); ++jt) {
+
+        emit signalProgressBoxUpdate(++progressCounter);
+
+        target = (*jt)->name();
+
+        if  ( ! (*jt)->isEnabled()  ) {
+            qDebug() << "Graph::vertexinfluenceDomain() - target:"
+                     << target << "disabled. SKIP";
+            continue;
+        }
+
+        if ((*jt)->distance( v1 ) != RAND_MAX ) {
+            qDebug() << "Graph::vertexinfluenceDomain() - v1 can reach:" << target;
+            influenceRanges.insertMulti(v1,target);
+
+        }
+    }
 
     return influenceRanges.values(v1);
+
+    emit signalProgressBoxKill();
+
+
 }
 
 
@@ -10258,12 +10284,49 @@ QList<int> Graph::vertexinfluenceRange(int v1){
  * @return
  */
 QList<int> Graph::vertexinfluenceDomain(int v1){
-    qDebug() << "Graph::vertexinfluenceDomain() ";
+    qDebug() << "Graph::vertexinfluenceDomain() - vertex:"<< v1;
 
-    // Construct a list of influence domains for each node
-    graphDistanceGeodesicCompute(false, false,false,false);
+    if ( !calculatedDistances || graphModified() ) {
+        graphDistanceGeodesicCompute(false);
+    }
+
+    QList<GraphVertex*>::const_iterator jt;
+
+    int N = vertices( false, false, true);
+
+    int progressCounter=0;
+    int source = 0;
+
+
+    influenceDomains.clear();
+    influenceDomains.reserve(N);
+
+    QString pMsg = tr("Creating Influence Domain List. \nPlease wait ");
+    emit statusMessage ( pMsg );
+    emit signalProgressBoxCreate(N,pMsg);
+
+    for (jt=m_graph.cbegin(); jt!=m_graph.cend(); ++jt) {
+
+        emit signalProgressBoxUpdate(++progressCounter);
+
+        source = (*jt)->name();
+
+        if  ( ! (*jt)->isEnabled()  ) {
+            qDebug() << "Graph::vertexinfluenceDomain() - "
+                     << source << "disabled. SKIP";
+            continue;
+        }
+
+        if ((*jt)->distance( v1 ) != RAND_MAX ) {
+            qDebug() << "Graph::vertexinfluenceDomain() - v1 reachable from:" << source;
+            influenceDomains.insertMulti(v1,source);
+
+        }
+    }
 
     return influenceDomains.values(v1);
+
+    emit signalProgressBoxKill();
 }
 
 
@@ -18973,8 +19036,7 @@ void Graph::layoutVertexSizeByIndegree() {
 
 
 /**
- * @brief
-* Applies a layout according to each actor's prominence index score
+ * @brief Applies a layout according to each actor's prominence index score.
 * The layout type can be radial (0), level (1), node sizes (2) or node colors (3), as follows:
 * layoutType=0 - Repositions all nodes on the periphery of concentric circles with radius analogous to their prominence index
 * layoutType=1 - Repositions all nodes on different top-down levels according to their centrality
@@ -19350,7 +19412,7 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
 
 
 /**
- * @brief Graph::layoutForceDirectedSpringEmbedder
+ * @brief Embeds a Force Directed Placement layout according to the initial Spring Embedder model proposed by Eades.
  * @param maxIterations
  *  The Spring Embedder model (Eades, 1984), part of the Force Directed Placement (FDP) family,
     assigns forces to all vertices and edges, as if nodes were electrically charged particles (Coulomb's law)
@@ -19498,15 +19560,15 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations){
 
 
 /**
- * @brief Graph::layoutForceDirectedFruchtermanReingold
- * @param maxIterations
- *  Fruchterman and Reingold (1991) refined the Spring Embedder model by replacing the forces.
+ * @brief Embeds a Force Directed Placement layout according to the Fruchterman-Reingold model.
+  *  Fruchterman and Reingold (1991) refined the Spring Embedder model by replacing the forces.
     In this model, "the vertices behave as atomic particles or celestial bodies,
     exerting attractive and repulsive forces on one another." (ibid).
     Again, only vertices that are neighbours attract each other but, unlike Spring Embedder,
     all vertices repel each other.
     These forces induce movement. The algorithm might resemble molecular or planetary simulations,
     sometimes called n-body problems.
+ * @param maxIterations
  */
 void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
     int progressCounter=0;
@@ -19628,7 +19690,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
 
 
 /**
- * @brief Graph::layoutForceDirectedKamadaKawai
+ * @brief Embeds a Force Directed Placement layout according to the Kamada-Kawai model.
  * In this model, the network is considered to be a dynamic system
  * where every two actors are 'particles' mutually connected by a 'spring'.
  * Each spring has a desirable length, which corresponds to their graph
@@ -20009,8 +20071,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
 
 
 /**
- * @brief Graph::layoutForceDirected_FR_temperature
- * Reduces the temperature as the layout approaches a better configuration
+ * @brief Reduces the temperature as the layout approaches a better configuration
  * @return qreal temperature
  */
 qreal Graph::layoutForceDirected_FR_temperature(const int iteration) const{
@@ -20046,7 +20107,7 @@ qreal Graph::layoutForceDirected_FR_temperature(const int iteration) const{
 }
 
 /**
- * @brief Graph::computeOptimalDistance
+ * @brief Computes Optimal Distance. Used in Spring Embedder and FR algorithms.
  * @return qreal optimalDistance
  */
 qreal Graph::computeOptimalDistance(const int &Vertices){

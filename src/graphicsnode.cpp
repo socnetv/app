@@ -52,7 +52,7 @@ GraphicsNode::GraphicsNode(GraphicsWidget* gw, const int &num, const int &size,
            QPointF p
            ) : graphicsWidget (gw)
 {
-    qDebug()<<"GraphicsNode::GraphicsNode()";
+    qDebug()<<"GraphicsNode::GraphicsNode() - Node"<< num << "initializing...";
     graphicsWidget->scene()->addItem(this); //Without this nodes don't appear on the screen...
 
     setFlags(ItemSendsGeometryChanges | ItemIsSelectable | ItemIsMovable );
@@ -127,7 +127,7 @@ QString GraphicsNode::color() {
 
 /** Sets the size of the node */
 void GraphicsNode::setSize(const int &size){
-    qDebug("GraphicsNode: setSize()");
+    qDebug()<<"GraphicsNode::setSize()";
     prepareGeometryChange();
     m_size=size;
     foreach (GraphicsEdge *edge, inEdgeList) {
@@ -145,7 +145,6 @@ void GraphicsNode::setSize(const int &size){
 
 /**  Used by MainWindow::findNode() and GraphicsEdge::GraphicsEdge()  */
 int GraphicsNode::size() const{
-    qDebug("size()");
     return m_size;
 }
 
@@ -154,9 +153,9 @@ int GraphicsNode::size() const{
 void GraphicsNode::setShape(const QString shape) {
     prepareGeometryChange();
     m_shape=shape;
-    qDebug()<< "GraphicsNode::setShape() - GraphicsNode " << nodeNumber()
-            << "shape" << m_shape
-            << "pos "<<  x() << "," <<  y();
+    qDebug()<< "GraphicsNode::setShape() - Node:" << nodeNumber()
+            << "shape:" << m_shape
+            << "pos:"<<  x() << "," <<  y();
 
     m_path = new QPainterPath;
     if ( m_shape == "circle") {

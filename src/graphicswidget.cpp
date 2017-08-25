@@ -59,8 +59,8 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         m_currentRotationAngle = 0;
         markedNodeExist=false; //used in findNode()
         clickedEdgeExists = false; //used in selecting and edge
-        edgesHash.reserve(1000);
-        nodeHash.reserve(1000);
+//        edgesHash.reserve(1000);
+//        nodeHash.reserve(1000);
 
         m_edgeHighlighting = true;
         m_nodeNumberVisibility = true;
@@ -156,8 +156,8 @@ void GraphicsWidget::drawNode( const int &num, const int &nodeSize,
                                const int &labelDistance,
                                const QPointF &p
                                 ) {
-    qDebug()<< "GW: drawNode(): drawing new node " << num
-            << " at: " << p.x() << ", "<< p.y() ;
+    qDebug()<< "GW::drawNode() - Draw new node:" << num
+            << " at:" << p.x() << ", "<< p.y() ;
 
     //Draw node
     GraphicsNode *jim= new GraphicsNode (

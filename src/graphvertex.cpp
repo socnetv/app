@@ -44,7 +44,7 @@ GraphVertex::GraphVertex(Graph* parent,
                const QPointF &p,
                const QString &shape): parentGraph (parent)
 { 
-    qDebug() << "GraphVertex::GraphVertex() - "<<  name << " setting values";
+    qDebug() << "GraphVertex::GraphVertex() - vertex:"<<  name << "initializing...";
     m_name=name;
 	m_value=val;
 	m_size=size;
@@ -59,10 +59,10 @@ GraphVertex::GraphVertex(Graph* parent,
 	m_y=p.y();
     //FIXME m_outLinkColors list need update when we remove vertices/edges
     //m_outLinkColors.reserve(2000);
-    m_outEdgeLabels.reserve(100);
-    m_outEdges.reserve(100);
-    m_inEdges.reserve(100);
-    m_neighborhoodList.reserve(100);
+//    m_outEdgeLabels.reserve(1000);
+//    m_outEdges.reserve(1000);
+//    m_inEdges.reserve(1000);
+//    m_neighborhoodList.reserve(1000);
     m_reciprocalEdges = new QHash<int,float>;
 
     m_outEdgesCounter=0;
