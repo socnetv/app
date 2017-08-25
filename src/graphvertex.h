@@ -121,10 +121,12 @@ public:
 
     float distance(const long int &v1) ;
     void setDistance (const long int &v1, const float &d) ;
+    void reserveDistance(const int &N);
     void clearDistance();
 
     int shortestPaths(const long int &v1) ;
     void setShortestPaths(const long int &v1, const int &sp) ;
+    void reserveShortestPaths(const int &N);
     void clearShortestPaths();
 
 

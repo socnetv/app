@@ -847,7 +847,8 @@ public:
     void layoutForceDirectedKamadaKawai(const int maxIterations=500,
                                         const bool considerWeights=false,
                                         const bool inverseWeights=false,
-                                        const bool dropIsolates=false);
+                                        const bool dropIsolates=false,
+                                        const QString &initialPositions="current");
 
     /* CRAWLER */
     void webCrawlTerminateThreads (QString reason);

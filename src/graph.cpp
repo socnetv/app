@@ -19705,7 +19705,8 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
 void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
                                            const bool considerWeights,
                                            const bool inverseWeights,
-                                           const bool dropIsolates){
+                                           const bool dropIsolates,
+                                           const QString  &initialPositions){
 
     qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
                << "maxIter " << maxIterations;
@@ -19723,7 +19724,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
     float L0=0; // the length of a side of the display square area
     float D=0;  // the graph diameter
 
-    //double x0=0, y0=0;
+
 
     Matrix l; // the original spring length between pairs of particles/actors
     Matrix k; // the strength of the spring between pairs of particles/actors
@@ -19807,13 +19808,19 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
     qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
                "Set particles to initial positions p" ;
     i=0;
-    //x0=canvasWidth/2.0;
-    //y0=canvasHeight/2.0;
 
-    // placing the particles on the vertices of a regular n-polygon
-    // circumscribed by a circle whose diameter is L0
-    //layoutCircular(x0,y0,L0/2,false);
-    layoutRandom();
+    if (initialPositions == "circle") {
+        double x0=0, y0=0;
+        x0=canvasWidth/2.0;
+        y0=canvasHeight/2.0;
+        // placing the particles on the vertices of a regular n-polygon
+        // circumscribed by a circle whose diameter is L0
+        layoutCircular(x0,y0,L0/2,false);
+    }
+    else if (initialPositions == "random") {
+        layoutRandom();
+    }
+
 
     QString pMsg = tr("Embedding Kamada & Kawai spring model.\n"
                       "Please wait...");

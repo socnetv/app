@@ -860,6 +860,16 @@ void GraphVertex::setDistance (const long int &v1, const float &d) {
     m_distance.insert( v1, pair_i_f(m_curRelation, d ) );
 }
 
+
+/**
+ * @brief Reserves N items for the distance hash. See QHash Algorithmic Complexity
+ * * Not to be used on large nets, atm.
+ * @param N
+ */
+void GraphVertex::reserveDistance (const int &N) {
+    m_distance.reserve(N);
+}
+
 /**
  * @brief Returns geodesic distance to vertex v1
  * If d to v1 has not been set previously, then return RAND_MAX
@@ -868,7 +878,7 @@ void GraphVertex::setDistance (const long int &v1, const float &d) {
 float GraphVertex::distance (const long int &v1) {
     float d=RAND_MAX;
     int relation=0;
-    H_distance::const_iterator it1=m_distance.find(v1);
+    H_distance::const_iterator it1=m_distance.constFind(v1);
     while (it1 != m_distance.constEnd() && it1.key() == v1 ) {
         relation = it1.value().first;
         if ( relation == m_curRelation ) {
@@ -893,6 +903,8 @@ void GraphVertex::clearDistance() {
 
 
 
+
+
 /**
  * @brief Sets shortest paths to vertex v1 to sp
  * @param v1
@@ -913,7 +925,7 @@ void GraphVertex::setShortestPaths (const long int &v1, const int &sp) {
 int GraphVertex::shortestPaths (const long int &v1) {
     int sp=0;
     int relation=0;
-    H_shortestPaths::const_iterator it1=m_shortestPaths.find(v1);
+    H_shortestPaths::const_iterator it1=m_shortestPaths.constFind(v1);
     while (it1 != m_shortestPaths.constEnd() && it1.key() == v1 ) {
         relation = it1.value().first;
         if ( relation == m_curRelation ) {
@@ -926,6 +938,15 @@ int GraphVertex::shortestPaths (const long int &v1) {
 //               << name() << "->"<< v1 << ") = "<< sp;
 
     return sp;
+}
+
+/**
+ * @brief Reserves N items for the ShortestPaths hash. See QHash Algorithmic Complexity
+ * Not to be used on large nets, atm.
+ * @param N
+ */
+void GraphVertex::reserveShortestPaths (const int &N) {
+    m_shortestPaths.reserve(N);
 }
 
 
