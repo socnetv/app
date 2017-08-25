@@ -2998,9 +2998,6 @@ void MainWindow::initActions(){
                    "This setting will apply to this session only. \n"
                    "To permanently change it, use Settings & Preferences"));
     optionsEdgeWeightNumbersAct->setCheckable(true);
-    optionsEdgeWeightNumbersAct->setChecked(
-                (appSettings["initEdgeWeightNumbersVisibility"] == "true") ? true: false
-                );
     connect(optionsEdgeWeightNumbersAct, SIGNAL(triggered(bool)),
             this, SLOT(slotOptionsEdgeWeightNumbersVisibility(bool)) );
 

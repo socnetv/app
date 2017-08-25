@@ -101,7 +101,7 @@ class QPointF;
 
 
 
-typedef QList<GraphVertex*> Vertices;
+typedef QList<GraphVertex*> VList;
 typedef QHash <QString, int> H_StrToInt;
 typedef QHash <long int, long int> H_Int;
 typedef QHash <float, long int> H_f_i;
@@ -488,7 +488,7 @@ public:
     void layoutForceDirected_FR_moveNodes(const qreal &temperature) ;
 
     qreal layoutForceDirected_FR_temperature(const int iteration) const;
-    qreal computeOptimalDistance(const int &Vertices);
+    qreal computeOptimalDistance(const int &V);
     void compute_angles( const QPointF &Delta,
                          const qreal &dist,
                          qreal &angle1,
@@ -909,7 +909,7 @@ private:
      * List of pointers to the vertices.
      * A vertex stores all the info: links, colours, etc
     */
-    Vertices m_graph;
+    VList m_graph;
 
     Parser *file_parser;	//file loader threaded class.
 
