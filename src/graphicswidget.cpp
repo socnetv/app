@@ -1192,9 +1192,9 @@ void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
 
     if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
         if (GraphicsNode *node = qgraphicsitem_cast<GraphicsNode *>(item)) {
-            qDebug() << "GW: mouseDoubleClickEvent() - on a node!"
-                     << "Scene items: "<< scene()->items().size()
-                     << "GW items: " << items().size()
+            qDebug() << "GW::mouseDoubleClickEvent() - on a node!"
+                     << "Scene items:"<< scene()->items().size()
+                     << "GW items:" << items().size()
                      << "Starting new edge!";
             node->setSelected(true);
             nodeClicked(node);
@@ -1206,18 +1206,18 @@ void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
             QGraphicsView::mouseDoubleClickEvent(e);
             return;
         }
-        qDebug() << "GW: mouseDoubleClickEvent() - on something, not a node!"
-                 << "Scene items: "<< scene()->items().size()
-                 << "GW items: " << items().size();
+        qDebug() << "GW::mouseDoubleClickEvent() - on something, not a node!"
+                 << "Scene items:"<< scene()->items().size()
+                 << "GW items:" << items().size();
 
     }
 
     QPointF p = mapToScene(e->pos());
     qDebug()<< "GW::mouseDoubleClickEvent() - on empty space. "
-            << "Scene items: "<< scene()->items().size()
-            << " GW items: " << items().size()
-            << " Signaling MW to create a new vertex in graph. e->pos() "
-            << e->pos().x() << ","<< e->pos().y() << ", "<< p.x() << "," <<p.y();
+            << "Scene items:"<< scene()->items().size()
+            << " GW items:" << items().size()
+            << " Emit userDoubleClickNewNode to create new vertex at:"
+            << e->pos() << "~"<< p;
     emit userDoubleClickNewNode(p);
 
 }
@@ -1228,40 +1228,37 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
 
     QPointF p = mapToScene(e->pos());
 
-   // bool ctrlKey = (e->modifiers() == Qt::ControlModifier);
+    // bool ctrlKey = (e->modifiers() == Qt::ControlModifier);
 
-  //  emit selectedItems(m_selectedItems);
+    //  emit selectedItems(m_selectedItems);
 
-    if ( QGraphicsItem *item= itemAt(e->pos() )   ) {
+    if ( QGraphicsItem *item = itemAt(e->pos() )   ) {
         if (GraphicsNode *node = qgraphicsitem_cast<GraphicsNode *>(item)) {
-            qDebug() << "GW::mousePressEvent() - click at "
-                        << e->pos().x() << ","<< e->pos().y()
-                        << " or "<<  p.x() << ","<< p.y()
-                        << " selectedItems " << selectedItems().count()
-                        << "Single click on a node. "
-                     << "Setting selected and emitting nodeClicked";
+            qDebug() << "GW::mousePressEvent() - click at:"
+                     << e->pos() << "~"<< p
+                     << "SelectedItems " << scene()->selectedItems().count()
+                     << "Single click on a node. "
+                        "Setting selected and emitting nodeClicked";
             node->setSelected(true);
             nodeClicked(node);
             if ( e->button()==Qt::RightButton ) {
                 qDebug() << "GW::mousePressEvent() - Right-click on node. "
-                         << "emitting openNodeMenu() ";
+                            "Emitting openNodeMenu() ";
                 emit openNodeMenu();
             }
             if ( e->button()==Qt::MidButton) {
-                qDebug() << "GW::mousePressEvent() - Middle-click on node.  "
-                         << "Calling startEdge() ";
+                qDebug() << "GW::mousePressEvent() - Middle-click on node. "
+                            "Calling startEdge() ";
                 startEdge(node);
             }
             QGraphicsView::mousePressEvent(e);
             return;
         }
-        if (GraphicsEdge *edge= qgraphicsitem_cast<GraphicsEdge *>(item)) {
-            qDebug() << "GW::mousePressEvent() - click at "
-                        << e->pos().x() << ","<< e->pos().y()
-                        << " or "<<  p.x() << ","<< p.y()
-                        << " selectedItems " << selectedItems().count()
-                        << "Single click on an edge. "
-                     << "Emitting edgeClicked";
+        if (GraphicsEdge *edge = qgraphicsitem_cast<GraphicsEdge *>(item)) {
+            qDebug() << "GW::mousePressEvent() - click at:"
+                     << e->pos() << "~"<< p
+                     << "SelectedItems:" << scene()->selectedItems().count()
+                     << "Single click on an edge. Emitting edgeClicked()";
             edgeClicked(edge);
             if ( e->button()==Qt::LeftButton ) {
                 qDebug() << "GW::mousePressEvent() - left click on an edge ";
@@ -1277,28 +1274,26 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
         }
     }
 
-//        if ( selectedItems().count() > 0 && ctrlKey ) {
-//            qDebug() << "GW::mousePressEvent() - opening selection context menu ";
-//            emit openContextMenu(p);
-//        }
+    //        if ( selectedItems().count() > 0 && ctrlKey ) {
+    //            qDebug() << "GW::mousePressEvent() - opening selection context menu ";
+    //            emit openContextMenu(p);
+    //        }
 
-        else if ( e->button()==Qt::RightButton   ) {
-        qDebug() << "GW::mousePressEvent() - click at "
-                << e->pos().x() << ","<< e->pos().y()
-                << " or "<<  p.x() << ","<< p.y()
-                << " selectedItems " << selectedItems().count()
-                   << "Right click on empty space. Emitting openContextMenu()";
-            emit openContextMenu(p);
-        }
-        else {
-        qDebug() << "GW::mousePressEvent() - click at "
-                << e->pos().x() << ","<< e->pos().y()
-                << " or "<<  p.x() << ","<< p.y()
-                << " selectedItems " << selectedItems().count()
-                   << "Right click on empty space. Emitting userClickOnEmptySpace()";
-            emit userClickOnEmptySpace(p);
-        }
-        QGraphicsView::mousePressEvent(e);
+    else if ( e->button() == Qt::RightButton   ) {
+        qDebug() << "GW::mousePressEvent() - click at:"
+                 << e->pos() << "~"<< p
+                 << "SelectedItems:" << scene()->selectedItems().count()
+                 << "Right click on empty space. Emitting openContextMenu()";
+        emit openContextMenu(p);
+    }
+    else {
+        qDebug() << "GW::mousePressEvent() - click at:"
+                 << e->pos() << "~"<< p
+                 << "SelectedItems:" << scene()->selectedItems().count()
+                 << "Left click on empty space. Emitting userClickOnEmptySpace()";
+        emit userClickOnEmptySpace(p);
+    }
+    QGraphicsView::mousePressEvent(e);
 
 
 }
@@ -1314,15 +1309,15 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
  * in scene selectedItems
  */
 void GraphicsWidget::mouseReleaseEvent( QMouseEvent * e ) {
+
     QPointF p = mapToScene(e->pos());
 
     if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
         if (GraphicsNode *node = qgraphicsitem_cast<GraphicsNode *>(item)) {
-            qDebug() << "GW::mouseReleaseEvent() at "
-                     << e->pos().x() << ","<< e->pos().y()
-                     << " or "<<  p.x() << ","<<p.y()
-                     << "On a node. Selected items: "
-                     << selectedItems().count()
+            qDebug() << "GW::mouseReleaseEvent() - at:"
+                     << e->pos() << "~"<< p
+                     << "On a node. Selected items:"
+                     << scene()->selectedItems().count()
                      << "Emitting userNodeMoved() for all selected nodes";
             Q_UNUSED(node);
             foreach (QGraphicsItem *item, scene()->selectedItems()) {
@@ -1336,21 +1331,19 @@ void GraphicsWidget::mouseReleaseEvent( QMouseEvent * e ) {
         }
         if (GraphicsEdge *edge= qgraphicsitem_cast<GraphicsEdge *>(item)) {
             Q_UNUSED(edge);
-            qDebug() << "GW::mouseReleaseEvent() at "
-                     << e->pos().x() << ","<< e->pos().y()
-                     << " or "<<  p.x() << ","<<p.y()
-                     << "On an edge. Selected items: "
-                     << selectedItems().count();
+            qDebug() << "GW::mouseReleaseEvent() at:"
+                     << e->pos() << "~"<< p
+                     << "On an edge. Selected items:"
+                     << scene()->selectedItems().count();
             QGraphicsView::mouseReleaseEvent(e);
             return;
         }
     }
     else{
-        qDebug() << "GW::mouseReleaseEvent() at "
-                 << e->pos().x() << ","<< e->pos().y()
-                 << " or "<<  p.x() << ","<<p.y()
-                 <<"on empty space. Selected items: "
-                << selectedItems().count();
+        qDebug() << "GW::mouseReleaseEvent() at:"
+                 << e->pos() << "~"<< p
+                 <<"On empty space. Selected items:"
+                << scene()->selectedItems().count();
 
     }
 

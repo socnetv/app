@@ -7905,6 +7905,7 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
  * Called from GW when the user clicks on empty space.
  */
 void MainWindow::slotEditClickOnEmptySpace(const QPointF &p) {
+    qDebug() << "MW::slotEditClickOnEmptySpace()";
     rightPanelClickedNodeLCD->display (0);
     rightPanelClickedNodeInDegreeLCD->display (0);
     rightPanelClickedNodeOutDegreeLCD->display (0);
@@ -7922,7 +7923,7 @@ void MainWindow::slotEditClickOnEmptySpace(const QPointF &p) {
  * @brief MainWindow::slotEditNodeSelectAll
  */
 void MainWindow::slotEditNodeSelectAll(){
-    qDebug() << "MainWindow::slotEditNodeSelectAll()";
+    qDebug() << "MW::slotEditNodeSelectAll()";
     graphicsWidget->selectAll();
     statusMessage( tr("Selected nodes: %1")
                    .arg( activeGraph.graphSelectedVerticesCount()  ) );

@@ -677,7 +677,10 @@ void Graph::vertexCreate(const int &num, const int &nodeSize, const QString &nod
                    labelColor, labelSize, initVertexLabelDistance,
                    p );
 
+    qDebug() << "Graph::vertexCreate() - vertex:" << num << "created. CALLING graphModifiedSet().";
     graphModifiedSet(GRAPH_CHANGED_VERTICES, signalMW);
+
+    qDebug() << "Graph::vertexCreate() - vertex:" << num << "created. RETURNING.";
 
     //draw new user-clicked nodes with the same color with that of the file loaded
     initVertexColor=nodeColor;
@@ -721,7 +724,7 @@ void Graph::vertexCreateAtPosRandom(const bool &signalMW){
     QPointF p;
     p.setX( canvasRandomX());
     p.setY( canvasRandomY() );
-    qDebug() << "Graph::vertexCreateAtPosRandom()" << p;
+    qDebug() << "Graph::vertexCreateAtPosRandom() - at:" << p;
     vertexCreate( vertexNumberMax()+1, initVertexSize, initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     QString::null, initVertexLabelColor, initVertexLabelSize,
@@ -2418,7 +2421,7 @@ void Graph::graphModifiedSet(const int &graphNewStatus, const bool &signalMW){
                   << "Emitting signal signalGraphModified()";
         emit signalGraphModified(graphModifiedFlag,
                                  graphUndirected(),
-                                 vertices(),
+                                 m_totalVertices,
                                  edgesEnabled(),
                                  graphDensity());
         return;
@@ -3462,7 +3465,12 @@ void Graph::graphUndirectedSet(const bool &toggle, const bool &signalMW){
 }
 
 
+/**
+ * @brief Returns true if graph is undirected
+ * @return
+ */
 bool Graph::graphUndirected() {
+    qDebug() << "Graph::graphUndirected() -" <<m_undirected;
     return m_undirected;
 }
 
@@ -10265,9 +10273,11 @@ QList<int> Graph::vertexinfluenceRange(int v1){
         }
     }
 
+    emit signalProgressBoxKill();
+
     return influenceRanges.values(v1);
 
-    emit signalProgressBoxKill();
+
 
 
 }
@@ -10324,9 +10334,10 @@ QList<int> Graph::vertexinfluenceDomain(int v1){
         }
     }
 
+    emit signalProgressBoxKill();
+
     return influenceDomains.values(v1);
 
-    emit signalProgressBoxKill();
 }
 
 
