@@ -354,7 +354,7 @@ signals:
 public: 	
     /* INIT AND CLEAR*/
     Graph();
-    void clear();
+    void clear(const bool &exit=false);
     ~Graph();			//destroy object
 
     void setSocNetV_Version (QString ver) { VERSION = ver; }

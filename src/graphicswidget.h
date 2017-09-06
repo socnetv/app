@@ -144,6 +144,7 @@ public slots:
     void setEdgeLabel(const long int &, const long int&, const QString &);
     void setEdgeColor(const long int &, const long int&, const QString &);
     void edgeClicked(GraphicsEdge *);
+    void setEdgeArrowsVisibility(const bool &toggle);
     void setEdgeWeightNumbersVisibility (const bool &toggle);
     void setEdgeLabelsVisibility(const bool &toggle);
 

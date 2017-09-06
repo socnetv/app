@@ -597,7 +597,7 @@ void GraphicsEdge::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
 
 GraphicsEdge::~GraphicsEdge(){
-    qDebug() << "*** ~GraphicsEdge() - edge " << sourceNodeNumber()<< "->" << targetNodeNumber();
+    qDebug() << "GraphicsEdge::~GraphicsEdge() - self-destructing edge " << sourceNodeNumber()<< "->" << targetNodeNumber();
     removeRefs();
     if (m_drawWeightNumber)
         graphicsWidget->removeItem(weightNumber);

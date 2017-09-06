@@ -1006,7 +1006,7 @@ L_int GraphVertex::Ps(void) {
 
 
 GraphVertex::~GraphVertex() {
-    qDebug() << " GraphVertex:: destroying my data";
+    qDebug() << " GraphVertex::~GraphVertex() - destroying my data";
     m_outEdges.clear();
     m_outEdges.squeeze();
     m_inEdges.clear();

@@ -109,11 +109,11 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     qDebug() << "MW::MainWindow() - Constructor running...";
 
+    setWindowIcon (QIcon(":/images/socnetv.png"));
+
     appSettings = initSettings();
 
     qInstallMessageHandler( myMessageOutput);
-
-    setWindowIcon (QIcon(":/images/socnetv.png"));
 
     initGraph();
 
@@ -157,6 +157,9 @@ MainWindow::~MainWindow() {
     qDebug() << "MW::~MainWindow() Destruct function running...";
 
     initApp();
+
+    delete activeGraph;
+
     delete printer;
     delete scene;
     delete graphicsWidget;
@@ -168,10 +171,102 @@ MainWindow::~MainWindow() {
     m_textEditors.clear();
 
 
-    delete activeGraph;
-
     qDebug() << "MW::~MainWindow() Destruct function finished - bye!";
 }
+
+
+
+
+
+
+
+/**
+ * @brief Resizes the scene when the window is resized.
+ */
+void MainWindow::resizeEvent( QResizeEvent * ){
+
+    qDebug() << "MW::resizeEvent():  Window resized to"
+             << width()
+             << ","
+             << height()
+             <<"Calling activeGraph->canvasSizeSet() to set canvas width and height";
+
+    activeGraph->canvasSizeSet(graphicsWidget->width(),graphicsWidget->height());
+
+    statusMessage(
+                QString(
+                    tr("Window resized to (%1, %2)px. Canvas size: (%3, %4) px"))
+                .arg(width()).arg(height())
+                .arg(graphicsWidget->width()).arg(graphicsWidget->height())
+                );
+
+}
+
+
+
+
+/**
+ * @brief Called when the application closes. Asks to write any unsaved network data.
+ * @param ce
+ */
+void MainWindow::closeEvent( QCloseEvent* ce ) {
+
+    qDebug() << "MW::closeEvent()";
+
+    statusMessage( tr("Closing SocNetV. Bye!") );
+
+
+    if ( activeGraph->graphSaved()  )  {
+        ce->accept();
+        qDebug() << "MW::closeEvent() - Graph is saved. ";
+
+    }
+    else {
+        qDebug() << "MW::closeEvent() - Graph NOT saved. Asking the user.";
+        switch( slotHelpMessageToUser(
+                    USER_MSG_QUESTION,
+                    tr("Save changes"),
+                    tr("Modified network has not been saved!"),
+                    tr("Do you want to save the changes to the network file?"),
+                    QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel, QMessageBox::Cancel
+                    ) )
+        {
+        case QMessageBox::Yes:
+            slotNetworkSave();
+            ce->accept();
+            break;
+        case QMessageBox::No:
+            ce->accept();
+            break;
+        case QMessageBox::NoButton:
+        default: // just for sanity
+            ce->ignore();
+            break;
+        }
+    }
+
+    qDebug() << "MW::closeEvent() - Deleting activeGraph...";
+    delete activeGraph;
+
+    //activeGraph->deleteLater();
+
+
+    qDebug() << "MW::closeEvent() - Deleting pointers...";
+    delete printer;
+    delete graphicsWidget;
+    delete scene;
+
+    foreach ( TextEditor *ed, m_textEditors) {
+        ed->close();
+        delete ed;
+    }
+    m_textEditors.clear();
+
+
+
+    //initApp();
+}
+
 
 
 
@@ -494,6 +589,7 @@ void MainWindow::slotOpenSettingsDialog() {
     qDebug ()<< appSettings["initBackgroundImage"] ;
 
 }
+
 
 
 
@@ -4583,9 +4679,9 @@ void MainWindow::initWindowLayout() {
     }
 
     qDebug () << "MW::initWindowLayout - resize to 1280x900";
-    this->resize(1280,900);
+    resize(1280,900);
 
-    this->showMaximized();
+    showMaximized();
 
     qDebug () << "MW::initWindowLayout() - Finished";
 
@@ -5611,84 +5707,6 @@ void MainWindow::toolBoxLayoutForceDirectedApplyBtnPressed(){
 }
 
 
-
-
-
-
-/**
- * @brief Resizes the scene when the window is resized.
- */
-void MainWindow::resizeEvent( QResizeEvent * ){
-
-    qDebug() << "MW::resizeEvent():  Window resized to"
-             << width()
-             << ","
-             << height()
-             <<"Calling activeGraph->canvasSizeSet() to set canvas width and height";
-
-    activeGraph->canvasSizeSet(graphicsWidget->width(),graphicsWidget->height());
-
-    statusMessage(
-                QString(
-                    tr("Window resized to (%1, %2)px. Canvas size: (%3, %4) px"))
-                .arg(width()).arg(height())
-                .arg(graphicsWidget->width()).arg(graphicsWidget->height())
-                );
-
-}
-
-
-
-
-/**
- * @brief Called when the application closes. Asks to write any unsaved network data.
- * @param ce
- */
-void MainWindow::closeEvent( QCloseEvent* ce ) {
-    qDebug() << "MW::closeEvent()";
-    if ( activeGraph->graphSaved()  )  {
-        ce->accept();
-
-    }
-    else {
-        switch( slotHelpMessageToUser(
-                    USER_MSG_QUESTION,
-                    tr("Save changes"),
-                    tr("Modified network has not been saved!"),
-                    tr("Do you want to save the changes to the network file?"),
-                    QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel, QMessageBox::Cancel
-                    ) )
-        {
-        case QMessageBox::Yes:
-            slotNetworkSave();
-            ce->accept();
-            break;
-        case QMessageBox::No:
-            ce->accept();
-            break;
-        case QMessageBox::NoButton:
-        default: // just for sanity
-            ce->ignore();
-            break;
-        }
-    }
-
-    delete printer;
-
-    delete graphicsWidget;
-    delete scene;
-
-    foreach ( TextEditor *ed, m_textEditors) {
-        ed->close();
-        delete ed;
-    }
-    m_textEditors.clear();
-
-
-    delete activeGraph;
-
-    //initApp();
-}
 
 
 
@@ -7862,6 +7880,8 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
     }
     rightPanelEdgesLCD->display(edges);
     rightPanelDensityLCD->display( density );
+
+    qDebug()<<"MW::slotNetworkChanged() - finished updating mainwindow !";
 }
 
 
@@ -9558,9 +9578,10 @@ void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
  * @brief Toggles between directed and undirected edge mode
   */
 void MainWindow::slotEditEdgeMode(const int &mode){
-    qDebug()<<"MW: slotEditEdgeMode() - calling Graph::graphUndirectedSet()";
     if (mode==1) {
+        qDebug()<<"MW: slotEditEdgeMode() - Calling Graph::graphUndirectedSet(true)";
         activeGraph->graphUndirectedSet(true);
+        qDebug()<<"MW: slotEditEdgeMode() - Disabling optionsEdgeArrowsAct checkbox";
         optionsEdgeArrowsAct->setChecked(false);
         if (activeEdges() !=0 ) {
             statusMessage(tr("Undirected data mode. "
@@ -9574,8 +9595,11 @@ void MainWindow::slotEditEdgeMode(const int &mode){
         }
     }
     else {
+        qDebug()<<"MW: slotEditEdgeMode() - calling Graph::graphUndirectedSet(false)";
         activeGraph->graphUndirectedSet(false);
+        qDebug()<<"MW: slotEditEdgeMode() - Triggering optionsEdgeArrowsAct checkbox";
         optionsEdgeArrowsAct->trigger();
+        qDebug()<<"MW: slotEditEdgeMode() - disabling optionsEdgeArrowsAct checkbox";
         optionsEdgeArrowsAct->setChecked(true);
         if (activeEdges() !=0 ) {
             statusMessage ( tr("Directed data mode. "
@@ -12405,20 +12429,13 @@ void MainWindow::slotOptionsEdgesVisibility(bool toggle){
  * @param toggle
  */
 void MainWindow::slotOptionsEdgeArrowsVisibility(bool toggle){
-    if ( !activeNodes() ) {
-        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
-        return;
-    }
+    qDebug()<<"MW::slotOptionsEdgeArrowsVisibility() - toggle" << toggle;
+
     statusMessage( tr("Toggle Edges Arrows. Please wait...") );
     appSettings["initEdgeArrows"]= (toggle) ? "true":"false";
 
-    QList<QGraphicsItem *> list = graphicsWidget->scene()->items();
-    for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
-        if ( (*item)->type() ==TypeEdge){
-            GraphicsEdge *edge = (GraphicsEdge*) (*item);
-            edge->showArrows(toggle);
-        }
-    }
+    graphicsWidget->setEdgeArrowsVisibility(toggle);
+
     statusMessage( tr("Ready."));
 }
 

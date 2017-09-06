@@ -662,16 +662,16 @@ void GraphicsNode::setNumberDistance(const int &distance) {
 
 
 GraphicsNode::~GraphicsNode(){
-    qDebug() << "*** ~GraphicsNode() - node "<< nodeNumber()
+    qDebug() << "GraphicsNode::~GraphicsNode() - self-destructing node "<< nodeNumber()
                 << "inEdgeList.size = " << inEdgeList.size()
                 << "outEdgeList.size = " << outEdgeList.size();
 
-    foreach (GraphicsEdge *edge, inEdgeList) {
-        qDebug("~GraphicsNode: removing edges in inEdgeList");
+    qDebug()<< "GraphicsNode::~GraphicsNode() - removing edges in inEdgeList";
+    foreach (GraphicsEdge *edge, inEdgeList) {  // same as using qDeleteAll
         delete edge;
     }
-    foreach (GraphicsEdge *edge, outEdgeList) {
-        qDebug("~GraphicsNode: removing edges in outEdgeList");
+    qDebug()<< "GraphicsNode::~GraphicsNode() - removing edges in outEdgeList";
+    foreach (GraphicsEdge *edge, outEdgeList) { // same as using qDeleteAll
         delete edge;
     }
     if ( m_hasNumber )

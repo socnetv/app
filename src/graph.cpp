@@ -233,8 +233,8 @@ Graph::Graph() {
  * @brief Graph::~Graph
  */
 Graph::~Graph() {
-    qDebug()<<"Graph::~Graph() ";
-    clear();
+    qDebug()<<"Graph::~Graph() - Calling clear()";
+    clear(true);
 }
 
 
@@ -244,7 +244,7 @@ Graph::~Graph() {
 /**
     Clears all vertices
 */
-void Graph::clear() {
+void Graph::clear(const bool &exit) {
    qDebug()<< "Graph::clear() - m_graph reports size "<<m_graph.size();
     qDeleteAll(m_graph.begin(), m_graph.end());
     m_graph.clear();
@@ -358,7 +358,9 @@ void Graph::clear() {
             << m_graph.size()
                << "emitting graphModifiedSet()";
 
-    graphModifiedSet(graphModifiedFlag,true);
+    if (!exit) {
+        graphModifiedSet(graphModifiedFlag,true);
+    }
 }
 
 
@@ -1913,7 +1915,7 @@ bool Graph::edgeSymmetric(const long int &v1, const long int &v2){
  * @return
  */
 int Graph::edgesEnabled() {
-
+    qDebug()<< "Graph::edgesEnabled() - checking if graph modified... ";
     if ( !graphModified() && calculatedEdges ) {
         qDebug()<< "Graph::edgesEnabled() - Graph unchanged, edges: "
                    <<     ((graphUndirected()) ? m_totalEdges / 2 : m_totalEdges);
@@ -2425,8 +2427,8 @@ void Graph::graphModifiedSet(const int &graphNewStatus, const bool &signalMW){
 
 
     if (signalMW) {
-        qDebug()<<"Graph::graphModifiedSet() - m_symmetric " << m_symmetric
-                  << "graphModifiedFlag" << graphModifiedFlag
+        qDebug()<<"Graph::graphModifiedSet() - m_symmetric:" << m_symmetric
+                  << "graphModifiedFlag:" << graphModifiedFlag
                   << "Emitting signal signalGraphModified()";
         emit signalGraphModified(graphModifiedFlag,
                                  graphUndirected(),
@@ -2562,6 +2564,7 @@ int Graph::graphSelectedEdgesCount() const {
  * @return
  */
 float Graph::graphDensity() {
+    qDebug()<< "Graph::graphDensity() - checking if graph modified... ";
     if (!graphModified() && calculatedGraphDensity) {
         qDebug()<< "Graph::graphDensity() - graph not modified and"
                    "already calculated density. Returning last value:"
@@ -3436,7 +3439,7 @@ void Graph::graphCocitation(){
 void Graph::graphUndirectedSet(const bool &toggle, const bool &signalMW){
 
     if (toggle == m_undirected) {
-        qDebug() << "Graph::graphUndirectedSet() - toggle==m_undirected"<<toggle;
+        qDebug() << "Graph::graphUndirectedSet() - toggle == m_undirected =="<<toggle;
         return;
     }
     qDebug() << "Graph::graphUndirectedSet()";

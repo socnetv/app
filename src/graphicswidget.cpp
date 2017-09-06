@@ -102,6 +102,7 @@ void GraphicsWidget::paintEvent ( QPaintEvent * event ){
  * Clears the scene and all hashes, lists, var etc
  */
 void GraphicsWidget::clear() {
+    qDebug() << "GW::clear() - clearing hashes";
     nodeHash.clear();
     edgesHash.clear();
     m_selectedNodes.clear();
@@ -608,159 +609,6 @@ void   GraphicsWidget::setNumbersInsideNodes(const bool &toggle){
 
 
 
-/**
- * @brief GraphicsWidget::setEdgeLabel
- * Sets the label of an edge.
- * Called from MW when the user changes the label of an edge (right-clicking).
-  * @param source
- * @param target
- * @param label
- */
-void GraphicsWidget::setEdgeLabel(const long int &source,
-                                  const long int &target,
-                                  const QString &label){
-
-    QString edgeName =  QString::number(m_curRelation) + QString(":") +
-            QString::number( source ) + QString(">")+ QString::number( target );
-
-    qDebug()<<"GW::setEdgeLabel() -" << edgeName <<  " new label "  << label;
-    if  ( edgesHash.contains (edgeName) ) {
-        edgesHash.value(edgeName) -> setLabel(label);
-    }
-
-
-}
-
-/**
- * @brief GraphicsWidget::setEdgeColor
- * Sets the color of an edge.
- * Called from MW when the user changes the color of an edge (right-clicking).
- * Also called from Graph when all edge colors need to be changed.
- * @param source
- * @param target
- * @param color
- */
-void GraphicsWidget::setEdgeColor(const long int &source,
-                                  const long int &target,
-                                  const QString &color){
-
-    QString edgeName =  QString::number(m_curRelation) + QString(":") +
-            QString::number( source ) + QString(">")+ QString::number( target );
-
-    qDebug()<<"GW::setEdgeColor() -" << edgeName <<  " new color "  << color;
-    if  ( edgesHash.contains (edgeName) ) {
-        edgesHash.value(edgeName) -> setColor(color);
-    }
-
-
-}
-
-
-
-
-
-
-/**
- * @brief GraphicsWidget::setEdgeUndirected
- * Makes an edge undirected
- * @param source
- * @param target
- * @param weight
- * @return
- */
-bool GraphicsWidget::setEdgeUndirected(const long int &source,
-                                       const long int &target,
-                                       const float &weight){
-    qDebug() << "GW::setEdgeUndirected() : " << source << "->" << target
-             << " = " << weight;
-
-    QString edgeName =  QString::number(m_curRelation) + QString(":") +
-            QString::number( source ) + QString(">")+ QString::number( target );
-
-    qDebug()<<"GW::setEdgeUndirected() - checking edgesHash for:" << edgeName ;
-    if  ( edgesHash.contains (edgeName) ) {
-        qDebug()<<"GW::setEdgeUndirected() - edge exists in edgesHash. "
-                  << " Transforming it to undirected";
-        edgesHash.value(edgeName) -> setUndirected();
-
-        qDebug()<<"GW::setEdgeUndirected() - removing opposite edge "
-               << target << " -> " << source ;
-        eraseEdge(target, source);
-
-        return true;
-    }
-    return false;
-
-}
-
-
-
-/** 
-    Changes/Sets the weight of an edge.
-    Called from MW when the user changes the weight of an edge (right-clicking).
-*/
-bool GraphicsWidget::setEdgeWeight(const long int &source,
-                                   const long int &target,
-                                   const float &weight){
-    qDebug() << "GW::setEdgeWeight() : " << source << "->" << target
-             << " = " << weight;
-
-    QString edgeName =  QString::number(m_curRelation) + QString(":") +
-            QString::number( source ) + QString(">")+ QString::number( target );
-
-    qDebug()<<"GW::setEdgeWeight() -" << edgeName <<  " new weight "  << weight;
-    if  ( edgesHash.contains (edgeName) ) {
-        edgesHash.value(edgeName) -> setWeight(weight);
-        return true;
-    }
-    return false;
-
-}
-
-
-
-void GraphicsWidget::setEdgeWeightNumbersVisibility (const bool &toggle){
-    qDebug()<< "GW::setEdgeWeightNumbersVisibility()" << toggle;
-    foreach ( GraphicsEdge *m_edge, edgesHash) {
-        m_edge->setWeightNumberVisibility(toggle);
-    }
-}
-
-
-
-
-void GraphicsWidget::setEdgeLabelsVisibility (const bool &toggle){
-    qDebug()<< "GW::setEdgeLabelsVisibility()" << toggle
-               << "edgesHash.count: " << edgesHash.count();
-    foreach ( GraphicsEdge *m_edge, edgesHash) {
-        m_edge->setLabelVisibility(toggle);
-    }
-}
-
-
-
-
-
-/**
- * @brief Toggles edge highlighting when hovering over a single edge or all edges
- * connected to a node when the user hovers over that node.
- * Called from MW
- * @param numIn
- */
-void   GraphicsWidget::setEdgeHighlighting(const bool &toggle){
-    qDebug()<< "GW::setEdgeHighlighting" << toggle;
-    foreach ( GraphicsNode *m_node, nodeHash) {
-        m_node->setEdgeHighLighting(toggle);
-    }
-
-    foreach ( GraphicsEdge *m_edge, edgesHash) {
-        m_edge->setHighlighting(toggle);
-    }
-
-    m_edgeHighlighting = toggle;
-}
-
-
 
 
 /**
@@ -790,26 +638,6 @@ void GraphicsWidget::setInitZoomIndex(int zoomIndex) {
 
 
 
-
-
-/**
-*	Changes the visibility of an GraphicsView edge (number, label, edge, etc)
-*/
-void GraphicsWidget::setEdgeVisibility(int relation, int source, int target, bool toggle){
-    QString edgeName =  QString::number(relation) + QString(":") +
-            QString::number( source ) + QString(">")+ QString::number( target );
-
-    if  ( edgesHash.contains (edgeName) ) {
-        qDebug()<<"GW: setEdgeVisibility(). relation " << relation
-               << " : " << source  << " ->  "<< target << " to " << toggle;
-        edgesHash.value(edgeName) -> setVisible(toggle);
-        edgesHash.value(edgeName) -> setEnabled(toggle);
-        return;
-    }
-    qDebug()<<"GW: setEdgeVisibility(). Cannot find edge " << relation
-           << " : " << source  << " ->  "<< target ;
-
-}
 
 
 
@@ -1028,6 +856,197 @@ bool GraphicsWidget::setMarkedNode(QString nodeText){
     return true;
 }
 
+
+
+
+
+
+
+
+
+/**
+ * @brief GraphicsWidget::setEdgeLabel
+ * Sets the label of an edge.
+ * Called from MW when the user changes the label of an edge (right-clicking).
+  * @param source
+ * @param target
+ * @param label
+ */
+void GraphicsWidget::setEdgeLabel(const long int &source,
+                                  const long int &target,
+                                  const QString &label){
+
+    QString edgeName =  QString::number(m_curRelation) + QString(":") +
+            QString::number( source ) + QString(">")+ QString::number( target );
+
+    qDebug()<<"GW::setEdgeLabel() -" << edgeName <<  " new label "  << label;
+    if  ( edgesHash.contains (edgeName) ) {
+        edgesHash.value(edgeName) -> setLabel(label);
+    }
+
+
+}
+
+/**
+ * @brief GraphicsWidget::setEdgeColor
+ * Sets the color of an edge.
+ * Called from MW when the user changes the color of an edge (right-clicking).
+ * Also called from Graph when all edge colors need to be changed.
+ * @param source
+ * @param target
+ * @param color
+ */
+void GraphicsWidget::setEdgeColor(const long int &source,
+                                  const long int &target,
+                                  const QString &color){
+
+    QString edgeName =  QString::number(m_curRelation) + QString(":") +
+            QString::number( source ) + QString(">")+ QString::number( target );
+
+    qDebug()<<"GW::setEdgeColor() -" << edgeName <<  " new color "  << color;
+    if  ( edgesHash.contains (edgeName) ) {
+        edgesHash.value(edgeName) -> setColor(color);
+    }
+
+
+}
+
+
+
+
+
+
+/**
+ * @brief GraphicsWidget::setEdgeUndirected
+ * Makes an edge undirected
+ * @param source
+ * @param target
+ * @param weight
+ * @return
+ */
+bool GraphicsWidget::setEdgeUndirected(const long int &source,
+                                       const long int &target,
+                                       const float &weight){
+    qDebug() << "GW::setEdgeUndirected() : " << source << "->" << target
+             << " = " << weight;
+
+    QString edgeName =  QString::number(m_curRelation) + QString(":") +
+            QString::number( source ) + QString(">")+ QString::number( target );
+
+    qDebug()<<"GW::setEdgeUndirected() - checking edgesHash for:" << edgeName ;
+    if  ( edgesHash.contains (edgeName) ) {
+        qDebug()<<"GW::setEdgeUndirected() - edge exists in edgesHash. "
+                  << " Transforming it to undirected";
+        edgesHash.value(edgeName) -> setUndirected();
+
+        qDebug()<<"GW::setEdgeUndirected() - removing opposite edge "
+               << target << " -> " << source ;
+        eraseEdge(target, source);
+
+        return true;
+    }
+    return false;
+
+}
+
+
+
+/**
+    Changes/Sets the weight of an edge.
+    Called from MW when the user changes the weight of an edge (right-clicking).
+*/
+bool GraphicsWidget::setEdgeWeight(const long int &source,
+                                   const long int &target,
+                                   const float &weight){
+    qDebug() << "GW::setEdgeWeight() : " << source << "->" << target
+             << " = " << weight;
+
+    QString edgeName =  QString::number(m_curRelation) + QString(":") +
+            QString::number( source ) + QString(">")+ QString::number( target );
+
+    qDebug()<<"GW::setEdgeWeight() -" << edgeName <<  " new weight "  << weight;
+    if  ( edgesHash.contains (edgeName) ) {
+        edgesHash.value(edgeName) -> setWeight(weight);
+        return true;
+    }
+    return false;
+
+}
+
+
+
+void GraphicsWidget::setEdgeArrowsVisibility(const bool &toggle){
+    qDebug()<< "GW::setEdgeArrowsVisibility()" << toggle;
+    QList<QGraphicsItem *> list = scene()->items();
+    for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
+        if ( (*item)->type() ==TypeEdge){
+            GraphicsEdge *edge = (GraphicsEdge*) (*item);
+            edge->showArrows(toggle);
+        }
+    }
+
+}
+
+void GraphicsWidget::setEdgeWeightNumbersVisibility (const bool &toggle){
+    qDebug()<< "GW::setEdgeWeightNumbersVisibility()" << toggle;
+    foreach ( GraphicsEdge *m_edge, edgesHash) {
+        m_edge->setWeightNumberVisibility(toggle);
+    }
+}
+
+
+
+
+void GraphicsWidget::setEdgeLabelsVisibility (const bool &toggle){
+    qDebug()<< "GW::setEdgeLabelsVisibility()" << toggle
+               << "edgesHash.count: " << edgesHash.count();
+    foreach ( GraphicsEdge *m_edge, edgesHash) {
+        m_edge->setLabelVisibility(toggle);
+    }
+}
+
+
+
+
+
+/**
+ * @brief Toggles edge highlighting when hovering over a single edge or all edges
+ * connected to a node when the user hovers over that node.
+ * Called from MW
+ * @param numIn
+ */
+void   GraphicsWidget::setEdgeHighlighting(const bool &toggle){
+    qDebug()<< "GW::setEdgeHighlighting" << toggle;
+    foreach ( GraphicsNode *m_node, nodeHash) {
+        m_node->setEdgeHighLighting(toggle);
+    }
+
+    foreach ( GraphicsEdge *m_edge, edgesHash) {
+        m_edge->setHighlighting(toggle);
+    }
+
+    m_edgeHighlighting = toggle;
+}
+
+
+/**
+*	Changes the visibility of an GraphicsView edge (number, label, edge, etc)
+*/
+void GraphicsWidget::setEdgeVisibility(int relation, int source, int target, bool toggle){
+    QString edgeName =  QString::number(relation) + QString(":") +
+            QString::number( source ) + QString(">")+ QString::number( target );
+
+    if  ( edgesHash.contains (edgeName) ) {
+        qDebug()<<"GW: setEdgeVisibility(). relation " << relation
+               << " : " << source  << " ->  "<< target << " to " << toggle;
+        edgesHash.value(edgeName) -> setVisible(toggle);
+        edgesHash.value(edgeName) -> setEnabled(toggle);
+        return;
+    }
+    qDebug()<<"GW: setEdgeVisibility(). Cannot find edge " << relation
+           << " : " << source  << " ->  "<< target ;
+
+}
 
 
 
@@ -1544,6 +1563,7 @@ void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
     Destructor.
 */
 GraphicsWidget::~GraphicsWidget(){
+    qDebug() << "GW::~GraphicsWidget() - calling clear()";
     clear();
 }
 
