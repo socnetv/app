@@ -45,47 +45,10 @@
 
 using namespace std;
 
-Parser::Parser(const QString fn,
-               const QString m_codec,
-               const int iNS, const QString iNC, const QString iNSh,
-               const QString iNNC, const int iNNS,
-               const QString iNLC, const int iNLS ,
-               const QString iEC,
-               const int width, const int height,
-               const int fFormat,
-               const int sm_mode,
-               const QString delim)
+Parser::Parser()
 {
-    qDebug() << "Parser::Parser() fn: " << fn
-                << "running on thread "  << this->thread() ;
-    initNodeSize=iNS;
-    initNodeColor=iNC;
-    initNodeShape=iNSh;
-    initNodeNumberColor=iNNC;
-    initNodeNumberSize=iNNS;
-    initNodeLabelColor=iNLC;
-    initNodeLabelSize=iNLS;
+    qDebug() << "Parser::Parser() - running on thread "  << this->thread() ;
 
-    initEdgeColor=iEC;
-
-    edgeDirType=EDGE_DIRECTED;
-    arrows=true;
-    bezier=false;
-    fileName=fn;
-    userSelectedCodecName = m_codec;
-    networkName=(fileName.split ("/")).last();
-    gwWidth=width;
-    gwHeight=height;
-    randX=0;
-    randY=0;
-    fileFormat= fFormat;
-    two_sm_mode = sm_mode;
-    if (!delim.isNull() && !delim.isEmpty())
-        delimiter = delim;
-    else delimiter=" ";
-    qDebug() << "Parser::Parser() - delim" << delim << "delimiter"<<delimiter;
-    xml=0;
-    errorMessage=QString::null;
 
 }
 
@@ -114,79 +77,122 @@ Parser::~Parser () {
 
 }
 
-/** starts the new thread calling the load* methods
-*/
-void Parser::run()  {
-    qDebug()<< "**** Parser::run() - On a new thread " << this->thread()
-            << " networkName "<< networkName
-            << " fileFormat "<< fileFormat ;
+/**
+ * @brief Loads the network calling one of the load* methods
+ */
+void Parser::load(const QString fn,
+                  const QString m_codec,
+                  const int iNS, const QString iNC, const QString iNSh,
+                  const QString iNNC, const int iNNS,
+                  const QString iNLC, const int iNLS ,
+                  const QString iEC,
+                  const int width, const int height,
+                  const int fFormat,
+                  const int sm_mode,
+                  const QString delim)  {
+
+
+    qDebug()<< "**** Parser::load() - On a new thread " << this->thread();
+
+    initNodeSize=iNS;
+    initNodeColor=iNC;
+    initNodeShape=iNSh;
+    initNodeNumberColor=iNNC;
+    initNodeNumberSize=iNNS;
+    initNodeLabelColor=iNLC;
+    initNodeLabelSize=iNLS;
+
+    initEdgeColor=iEC;
+
+    edgeDirType=EDGE_DIRECTED;
+    arrows=true;
+    bezier=false;
+    fileName=fn;
+    userSelectedCodecName = m_codec;
+    networkName=(fileName.split ("/")).last();
+    gwWidth=width;
+    gwHeight=height;
+    randX=0;
+    randY=0;
+    fileFormat= fFormat;
+    two_sm_mode = sm_mode;
+    if (!delim.isNull() && !delim.isEmpty())
+        delimiter = delim;
+    else delimiter=" ";
+
+    xml=0;
+    errorMessage=QString::null;
+
+    qDebug()<< "**** Parser::load() - networkName "<< networkName
+            << " fileFormat "<< fileFormat
+              << "delim" << delim << "delimiter"<<delimiter;
 
     errorMessage=QString::null;
 
     switch (fileFormat){
     case FILE_GRAPHML:
-        qDebug()<< "Parser::run() - calling loadGraphML()";
+        qDebug()<< "Parser::load() - calling loadGraphML()";
         if (loadGraphML()){
-            qDebug()<< "Parser::run() - that was GRAPHML-formatted file";
+            qDebug()<< "Parser::load() - that was GRAPHML-formatted file";
         }
         break;
     case FILE_PAJEK:
-        qDebug()<< "Parser::run() - calling loadPajek()";
+        qDebug()<< "Parser::load() - calling loadPajek()";
         if ( loadPajek() ) {
-            qDebug()<< "Parser::run() - that was PAJEK formatted file";
+            qDebug()<< "Parser::load() - that was PAJEK formatted file";
         }
         break;
     case FILE_ADJACENCY:
-        qDebug()<< "Parser::run() - calling loadAdjacency()";
+        qDebug()<< "Parser::load() - calling loadAdjacency()";
         if (loadAdjacency() ) {
-            qDebug()<< "Parser::run() - that was ADJACENCY-formatted file";
+            qDebug()<< "Parser::load() - that was ADJACENCY-formatted file";
         }
         break;
     case FILE_GRAPHVIZ:
-        qDebug()<< "Parser::run() - calling loadDot()";
+        qDebug()<< "Parser::load() - calling loadDot()";
         if (loadDot() ) {
-           qDebug()<< "Parser::run() - that was GRAPHVIZ-formatted file";
+           qDebug()<< "Parser::load() - that was GRAPHVIZ-formatted file";
         }
         break;
     case FILE_UCINET:
-        qDebug()<< "Parser::run() - calling loadDL()";
+        qDebug()<< "Parser::load() - calling loadDL()";
         if (loadDL() ){
-            qDebug()<< "Parser::run() - that was UCINET-formatted file";
+            qDebug()<< "Parser::load() - that was UCINET-formatted file";
         }
         break;
 
     case FILE_GML:
-        qDebug()<< "Parser::run() - calling loadGML()";
+        qDebug()<< "Parser::load() - calling loadGML()";
         if (loadGML() ){
-            qDebug()<< "Parser::run() - that was GML-formatted file";
+            qDebug()<< "Parser::load() - that was GML-formatted file";
         }
         break;
 
     case FILE_EDGELIST_WEIGHTED:
-        qDebug()<< "Parser::run() - calling loadEdgeListWeighted()";
+        qDebug()<< "Parser::load() - calling loadEdgeListWeighted()";
         if (loadEdgeListWeighed(delimiter) ){
-            qDebug()<< "Parser::run() - that was weighted EDGELIST-formatted file";
+            qDebug()<< "Parser::load() - that was weighted EDGELIST-formatted file";
                     }
         break;
 
     case FILE_EDGELIST_SIMPLE:
-        qDebug()<< "Parser::run() - calling loadEdgeListSimple()";
+        qDebug()<< "Parser::load() - calling loadEdgeListSimple()";
         if (loadEdgeListSimple(delimiter) ){
-            qDebug()<< "Parser::run() - that was simple EDGELIST-formatted file";
+            qDebug()<< "Parser::load() - that was simple EDGELIST-formatted file";
         }
         break;
 
     case FILE_TWOMODE:
-        qDebug()<< "Parser::run() - calling loadTwoModeSociomatrix()";
+        qDebug()<< "Parser::load() - calling loadTwoModeSociomatrix()";
         if (loadTwoModeSociomatrix() ){
-            qDebug()<< "Parser::run() - that was weigted TWOMODE-formatted file";
+            qDebug()<< "Parser::load() - that was weigted TWOMODE-formatted file";
         }
         break;
 
     default:	//GraphML
-        qDebug()<< "Parser::run() - default case - calling loadGraphML()";
+        qDebug()<< "Parser::load() - default case - calling loadGraphML()";
         if (loadGraphML() ){
-            qDebug()<< "Parser::run() - that was GRAPHML-formatted file";
+            qDebug()<< "Parser::load() - that was GRAPHML-formatted file";
         }
         break;
     }
@@ -197,12 +203,12 @@ void Parser::run()  {
     }
 
 
-    qDebug()<< "**** Parser::run() - on thread " << this->thread()
+    qDebug()<< "**** Parser::load() - on thread " << this->thread()
                << "Reached end. "
                   "Emitting finished() calling loadFileError() if any"
                << " fileFormat now "<< fileFormat ;
 
-    emit finished ("Parser::run() - reach end");
+    emit finished ("Parser::load() - reach end");
 
 
 }
@@ -862,7 +868,7 @@ bool Parser::loadPajek(){
                                   "nodeNumber smaller than previous nodes.");
                 return false;
             }
-
+            qDebug ()<<"emitting createNode()";
             emit createNode(
                         nodeNum,initNodeSize, nodeColor,
                         initNodeNumberColor, initNodeNumberSize,

@@ -116,15 +116,18 @@ public:
     MainWindow(const QString &f);
     ~MainWindow();
 
+    void initGraph();
+
+    void initView();
     void initActions();
     void initMenuBar();
     void initToolBar();
     void initPanels();
-    void initView();
     void initWindowLayout();
     void initSignalSlots();
     QMap<QString, QString> initSettings();
     void saveSettings();
+
     void initApp();
 
     void setLastPath(QString filePath);
@@ -478,7 +481,7 @@ private:
     QGraphicsScene *scene;
     GraphicsWidget *graphicsWidget;
 
-    Graph activeGraph;
+    Graph *activeGraph;
 
     QMap<QString,QString> appSettings;
 

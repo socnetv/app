@@ -79,14 +79,14 @@ class Parser :  public QObject {
 	Q_OBJECT
 public:
 	
-    Parser(const QString fn, const QString codec, const int iNS,
+    Parser();
+    ~Parser();
+    void load(const QString fn, const QString codec, const int iNS,
               const QString iNC, const QString iNSh, const QString iNNC,
               const int iNNS, const QString iNLC, const int iNLS ,
               const QString iEC, const int w, const int h, const int format,
               const int sm_mode,
            const QString delim=QString::null);
-    ~Parser();
-    void run();
 	bool loadPajek();
 	bool loadAdjacency();
 	bool loadDot();

@@ -229,6 +229,15 @@ Graph::Graph() {
 }
 
 
+/**
+ * @brief Graph::~Graph
+ */
+Graph::~Graph() {
+    qDebug()<<"Graph::~Graph() ";
+    clear();
+}
+
+
 
 
 
@@ -13343,24 +13352,12 @@ void Graph::graphLoad (	const QString m_fileName,
     qDebug() << "Graph::graphLoad() - "<< m_fileName
                 << " calling parser.load() from thread " << this->thread();
 
-    Parser *file_parser = new Parser(
-                m_fileName,
-                m_codecName,
-                initVertexSize, initVertexColor,
-                initVertexShape,
-                initVertexNumberColor, initVertexNumberSize,
-                initVertexLabelColor, initVertexLabelSize,
-                initEdgeColor,
-                canvasWidth, canvasHeight,
-                fileFormat,
-                two_sm_mode,
-                delimiter
-                );
+    file_parser = new Parser();
 
     qDebug () << "Graph::graphLoad() - file_parser thread  " << file_parser->thread()
                  << " moving it to new thread ";
 
-    file_parser->moveToThread(&file_parserThread);
+    //file_parser->moveToThread(&file_parserThread);
 
     qDebug () << "Graph::graphLoad() - file_parser thread now " << file_parser->thread();
 
@@ -13452,8 +13449,20 @@ void Graph::graphLoad (	const QString m_fileName,
 
     file_parserThread.start();
 
-    qDebug() << "Graph::graphLoad() - calling file_parser->run() ";
-    file_parser->run();
+    qDebug() << "Graph::graphLoad() - calling file_parser->load() ";
+    file_parser->load(
+                m_fileName,
+                m_codecName,
+                initVertexSize, initVertexColor,
+                initVertexShape,
+                initVertexNumberColor, initVertexNumberSize,
+                initVertexLabelColor, initVertexLabelSize,
+                initEdgeColor,
+                canvasWidth, canvasHeight,
+                fileFormat,
+                two_sm_mode,
+                delimiter
+                );
 
 
 }
@@ -20600,10 +20609,4 @@ QString Graph::htmlEscaped(QString str) const {
 
 
 
-/**
- * @brief Graph::~Graph
- */
-Graph::~Graph() {
-    clear();
-}
 
