@@ -79,6 +79,9 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
                      this, &GraphicsWidget::getSelectedItems);
 
 
+        qRegisterMetaType<SelectedEdge>("SelectedEdge");
+
+
     }
 
 
@@ -1116,7 +1119,7 @@ void GraphicsWidget::clearGuides(){
 void GraphicsWidget::selectAll(){
     QPainterPath path;
     path.addRect(0,0, this->scene()->width() , this->scene()->height());
-    this->scene()->setSelectionArea(path);
+    scene()->setSelectionArea(path);
     emit userClickedNode(0);
     qDebug() << "GraphicsWidget::selectAll() - selected items now: "
              << selectedItems().count();
@@ -1133,7 +1136,7 @@ void GraphicsWidget::selectAll(){
 void GraphicsWidget::selectNone(){
     qDebug() << "GraphicsWidget::selectNone()";
     emit userClickedNode(0);
-    this->scene()->clearSelection();
+    scene()->clearSelection();
 
 }
 
@@ -1152,6 +1155,7 @@ void GraphicsWidget::getSelectedItems() {
 
     if (!clickedEdgeExists)
        // emit userSelectedItems(nodes, edges);
+
         emit userSelectedItems(selectedNodes(), selectedEdges());
 }
 
@@ -1163,7 +1167,7 @@ void GraphicsWidget::getSelectedItems() {
  */
 QList<QGraphicsItem *> GraphicsWidget::selectedItems(){
     qDebug() <<"GW::selectedItems()";
-    return this->scene()->selectedItems();
+    return scene()->selectedItems();
 }
 
 /**
@@ -1172,13 +1176,17 @@ QList<QGraphicsItem *> GraphicsWidget::selectedItems(){
  * @return a QList of integers: the selected node numbers
  */
 QList<int> GraphicsWidget::selectedNodes() {
-        m_selectedNodes.clear();
-        foreach (QGraphicsItem *item, scene()->selectedItems()) {
-            if (GraphicsNode *node = qgraphicsitem_cast<GraphicsNode *>(item) ) {
-                m_selectedNodes.append(node->nodeNumber());
-            }
+
+    m_selectedNodes.clear();
+    foreach (QGraphicsItem *item, scene()->selectedItems()) {
+        if (GraphicsNode *node = qgraphicsitem_cast<GraphicsNode *>(item) ) {
+            m_selectedNodes.append(node->nodeNumber());
         }
-        return m_selectedNodes;
+    }
+
+    qDebug() <<"GW::selectedNodes() - " << m_selectedNodes.count();
+
+    return m_selectedNodes;
 }
 
 
@@ -1188,14 +1196,16 @@ QList<int> GraphicsWidget::selectedNodes() {
  * @return a QList of selected directed edges structs
  */
 QList<SelectedEdge> GraphicsWidget::selectedEdges() {
-        m_selectedEdges.clear();
-        foreach (QGraphicsItem *item, scene()->selectedItems()) {
-            if (GraphicsEdge *edge= qgraphicsitem_cast<GraphicsEdge *>(item) ) {
-                SelectedEdge selEdge = make_pair( edge->sourceNodeNumber(), edge->targetNodeNumber());
-                m_selectedEdges << selEdge;
-            }
+
+    m_selectedEdges.clear();
+    foreach (QGraphicsItem *item, scene()->selectedItems()) {
+        if (GraphicsEdge *edge= qgraphicsitem_cast<GraphicsEdge *>(item) ) {
+            SelectedEdge selEdge = qMakePair( edge->sourceNodeNumber(), edge->targetNodeNumber());
+            m_selectedEdges << selEdge;
         }
-        return m_selectedEdges;
+    }
+    qDebug() <<"GW::selectedEdges() - " << m_selectedEdges.count();
+    return m_selectedEdges;
 }
 
 

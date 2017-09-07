@@ -41,6 +41,7 @@
 #include <QMessageBox>
 #include <QStack>
 #include <QThread>
+#include <QMetaType>
 
 #include <math.h>
 
@@ -117,7 +118,7 @@ public:
     ~MainWindow();
 
     void initGraph();
-
+    void terminateThreads(const QString &reason);
     void initView();
     void initActions();
     void initMenuBar();
@@ -504,7 +505,6 @@ private:
     DialogPreviewFile *m_dialogPreviewFile;
     QList<QTextCodec *> codecs;
     QString userSelectedCodecName;
-
 
 
     QList<TextEditor *> m_textEditors;

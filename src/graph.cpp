@@ -109,6 +109,8 @@ Graph::Graph() {
 
     randomizeThings();
 
+    qRegisterMetaType<SelectedEdge>("SelectedEdge");
+
     htmlHead = QString("<!DOCTYPE html>"
                        "<html>"
                        "<head>"
@@ -511,7 +513,7 @@ void Graph::relationSet(int relNum, const bool notifyMW){
         emit signalRelationChangedToMW(m_curRelation);
         //notify GW to disable/enable the on screen edges.
         emit signalRelationChangedToGW(m_curRelation);
-        qDebug()<<"Graph::relationSet() - emitting graphModifiedSet(GRAPH_CHANGED_EDGES)";
+        qDebug()<<"Graph::relationSet() - Calling graphModifiedSet(GRAPH_CHANGED_EDGES)";
         graphModifiedSet(GRAPH_CHANGED_EDGES);
     }
 }

@@ -158,7 +158,8 @@ MainWindow::~MainWindow() {
 
     initApp();
 
-    delete activeGraph;
+    terminateThreads("~MainWindow()");
+
 
     delete printer;
     delete scene;
@@ -170,37 +171,12 @@ MainWindow::~MainWindow() {
     }
     m_textEditors.clear();
 
+    codecs.clear();
 
     qDebug() << "MW::~MainWindow() Destruct function finished - bye!";
 }
 
 
-
-
-
-
-
-/**
- * @brief Resizes the scene when the window is resized.
- */
-void MainWindow::resizeEvent( QResizeEvent * ){
-
-    qDebug() << "MW::resizeEvent():  Window resized to"
-             << width()
-             << ","
-             << height()
-             <<"Calling activeGraph->canvasSizeSet() to set canvas width and height";
-
-    activeGraph->canvasSizeSet(graphicsWidget->width(),graphicsWidget->height());
-
-    statusMessage(
-                QString(
-                    tr("Window resized to (%1, %2)px. Canvas size: (%3, %4) px"))
-                .arg(width()).arg(height())
-                .arg(graphicsWidget->width()).arg(graphicsWidget->height())
-                );
-
-}
 
 
 
@@ -211,14 +187,14 @@ void MainWindow::resizeEvent( QResizeEvent * ){
  */
 void MainWindow::closeEvent( QCloseEvent* ce ) {
 
-    qDebug() << "MW::closeEvent()";
+    qDebug() << "MW::closeEvent() - Checking if Graph is saved...";
 
     statusMessage( tr("Closing SocNetV. Bye!") );
 
 
     if ( activeGraph->graphSaved()  )  {
         ce->accept();
-        qDebug() << "MW::closeEvent() - Graph is saved. ";
+        qDebug() << "MW::closeEvent() - Graph is already saved. ";
 
     }
     else {
@@ -245,27 +221,52 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
         }
     }
 
-    qDebug() << "MW::closeEvent() - Deleting activeGraph...";
-    delete activeGraph;
+    qDebug() << "MW::closeEvent() - Calling terminateThreads()...";
+    terminateThreads("closeEvent()");
 
-    //activeGraph->deleteLater();
-
-
-    qDebug() << "MW::closeEvent() - Deleting pointers...";
+    qDebug() << "MW::closeEvent() - Deleting other objects/pointers...";
     delete printer;
     delete graphicsWidget;
     delete scene;
 
+    qDebug() << "MW::closeEvent() - Clearing and deleting text editors...";
     foreach ( TextEditor *ed, m_textEditors) {
         ed->close();
         delete ed;
     }
     m_textEditors.clear();
 
+    qDebug() << "MW::closeEvent() - Clearing codecs...";
+    codecs.clear();
 
 
-    //initApp();
 }
+
+
+
+
+/**
+ * @brief Resizes the scene when the window is resized.
+ */
+void MainWindow::resizeEvent( QResizeEvent * ){
+
+    qDebug() << "MW::resizeEvent():  Window resized to"
+             << width()
+             << ","
+             << height()
+             <<"Calling activeGraph->canvasSizeSet() to set canvas width and height";
+
+    activeGraph->canvasSizeSet(graphicsWidget->width(),graphicsWidget->height());
+
+    statusMessage(
+                QString(
+                    tr("Window resized to (%1, %2)px. Canvas size: (%3, %4) px"))
+                .arg(width()).arg(height())
+                .arg(graphicsWidget->width()).arg(graphicsWidget->height())
+                );
+
+}
+
 
 
 
@@ -610,9 +611,26 @@ void MainWindow::initGraph() {
 
     qDebug() << "MW::MainWindow() - activeGraph thread now:" << activeGraph->thread();
 
+}
 
+/**
+ * @brief MainWindow::terminateThreads
+ * @param reason
+ */
+void MainWindow::terminateThreads(const QString &reason) {
+    qDebug() << "MW::terminateThreads() - reason " << reason
+                    <<" Checking if graphThread is running...";
+    if (graphThread.isRunning() ) {
+         qDebug() << "MW::terminateThreads() - graphThread running."
+                  << "Calling graphThread.quit();";
+        graphThread.quit();
+        qDebug() << "MW::terminateThreads() - deleting activeGraph and pointer";
+        delete activeGraph;
+        activeGraph = 0;  // see why here: https://goo.gl/tQxpGA
+    }
 
 }
+
 
 /**
  * @brief Initializes the scene and the corresponding graphicsWidget,
@@ -4758,6 +4776,8 @@ void MainWindow::initSignalSlots() {
 
     // Signals between activeGraph and graphicsWidget
 
+    qRegisterMetaType<SelectedEdge>("SelectedEdge");
+
     connect( graphicsWidget, &GraphicsWidget::userSelectedItems,
                      activeGraph,&Graph::graphSelectionChanged);
 
@@ -5071,7 +5091,7 @@ void MainWindow::initApp(){
 
 
     /** Clear previous network data */
-    activeGraph->clear();
+    activeGraph->clear(true);
     activeGraph->setSocNetV_Version(VERSION);
 
     activeGraph->vertexShapeInit(appSettings["initNodeShape"]);
@@ -5088,7 +5108,46 @@ void MainWindow::initApp(){
 
     activeGraph->edgeColorInit(appSettings["initEdgeColor"]);
 
+    activeGraph->edgeWeightNumbersVisibilitySet( (appSettings["initEdgeWeightNumbersVisibility"] == "true") ? true:false
+                                                        );
+
+
+    /** Clear graphicsWidget scene and reset settings and transformations **/
+    graphicsWidget->clear();
+    rotateSlider->setValue(0);
+    zoomSlider->setValue(250);
+    graphicsWidget->setInitZoomIndex(250);
+    graphicsWidget->setInitNodeSize(appSettings["initNodeSize"].toInt(0, 10));
+    graphicsWidget->setNodeNumberVisibility(
+                ( appSettings["initNodeNumbersVisibility"] == "true" ) ? true: false
+                );
+    graphicsWidget->setNodeLabelsVisibility(
+                (appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false
+                );
+
+    graphicsWidget->setNumbersInsideNodes(
+                ( appSettings["initNodeNumbersInside"] == "true" ) ? true: false
+                    );
+    graphicsWidget->setEdgeHighlighting(
+                ( appSettings["canvasEdgeHighlighting"] == "true" ) ? true: false
+                );
+
+    if (appSettings["initBackgroundImage"] != ""
+            && QFileInfo(appSettings["initBackgroundImage"]).exists()) {
+        graphicsWidget->setBackgroundBrush(QImage(appSettings["initBackgroundImage"]));
+        graphicsWidget->setCacheMode(QGraphicsView::CacheBackground);
+        statusMessage( tr("BackgroundImage on.") );
+    }
+    else {
+        graphicsWidget->setBackgroundBrush(
+                    QBrush(QColor (appSettings["initBackgroundColor"]))
+                    );
+    }
+
+
     /** Clear LCDs **/
+    slotNetworkChanged(0, 0, 0, 0, 0);
+
     rightPanelClickedNodeInDegreeLCD->display(0);
     rightPanelClickedNodeOutDegreeLCD->display(0);
     rightPanelClickedNodeClucofLCD->display(0);
@@ -5125,38 +5184,6 @@ void MainWindow::initApp(){
 
     //editRelationChangeCombo->clear();
 
-
-
-    /** Clear graphicsWidget scene and reset settings and transformations **/
-    graphicsWidget->clear();
-    rotateSlider->setValue(0);
-    zoomSlider->setValue(250);
-    graphicsWidget->setInitZoomIndex(250);
-    graphicsWidget->setInitNodeSize(appSettings["initNodeSize"].toInt(0, 10));
-    graphicsWidget->setNodeNumberVisibility(
-                ( appSettings["initNodeNumbersVisibility"] == "true" ) ? true: false
-                );
-    graphicsWidget->setNodeLabelsVisibility(
-                (appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false
-                );
-
-    graphicsWidget->setNumbersInsideNodes(
-                ( appSettings["initNodeNumbersInside"] == "true" ) ? true: false
-                    );
-    graphicsWidget->setEdgeHighlighting(
-                ( appSettings["canvasEdgeHighlighting"] == "true" ) ? true: false
-                );
-    if (appSettings["initBackgroundImage"] != ""
-            && QFileInfo(appSettings["initBackgroundImage"]).exists()) {
-        graphicsWidget->setBackgroundBrush(QImage(appSettings["initBackgroundImage"]));
-        graphicsWidget->setCacheMode(QGraphicsView::CacheBackground);
-        statusMessage( tr("BackgroundImage on.") );
-    }
-    else {
-        graphicsWidget->setBackgroundBrush(
-                    QBrush(QColor (appSettings["initBackgroundColor"]))
-                    );
-    }
 
     qDebug()<<"MW::initApp() - Clearing my"
            <<m_textEditors.size()
@@ -6238,7 +6265,7 @@ void MainWindow::slotNetworkSaved(const int &status)
  * @brief Closes the network. Saves it if necessary. Used by createNew.
  */
 void MainWindow::slotNetworkClose() {
-    qDebug()<<"slotNetworkClose()";
+    qDebug()<<"MW::slotNetworkClose()";
     statusMessage( tr("Closing network file..."));
     if (!activeGraph->graphSaved()) {
         switch (
@@ -6445,6 +6472,7 @@ bool MainWindow::slotNetworkFilePreview(const QString &m_fileName,
     qDebug() << "MW::slotNetworkFilePreview() - file: "<< m_fileName;
 
     if (!m_fileName.isEmpty()) {
+        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
         QFile file(m_fileName);
         if (!file.open(QFile::ReadOnly)) {
             slotHelpMessageToUserError(
@@ -6458,8 +6486,12 @@ bool MainWindow::slotNetworkFilePreview(const QString &m_fileName,
         QByteArray data = file.readAll();
 
         m_dialogPreviewFile->setEncodedData(data,m_fileName, m_fileFormat);
+        QApplication::restoreOverrideCursor();
         m_dialogPreviewFile->exec();
+
     }
+
+
     return true;
 }
 
@@ -6559,7 +6591,7 @@ void MainWindow::slotNetworkFileLoad(const QString m_fileName,
                 delimiter
                 );
 
-    QApplication::restoreOverrideCursor();
+
 
 }
 
@@ -6664,6 +6696,8 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
     }
     networkSave->setIcon(QIcon(":/images/saved.png"));
     networkSave->setEnabled(false);
+
+    QApplication::restoreOverrideCursor();
 }
 
 
@@ -9575,7 +9609,7 @@ void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
 
 
 /**
- * @brief Toggles between directed and undirected edge mode
+ * @brief Toggles between directed (mode=0) and undirected edges (mode=1)
   */
 void MainWindow::slotEditEdgeMode(const int &mode){
     if (mode==1) {

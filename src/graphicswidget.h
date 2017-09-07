@@ -31,6 +31,7 @@
 
 
 #include <QGraphicsView>
+#include <QMetaType>
 
 class MainWindow;
 
@@ -48,7 +49,10 @@ typedef QHash <long int, GraphicsNode*> H_NumToNode;
 using namespace std;
 
 
-typedef pair<int, int> SelectedEdge;
+typedef QPair<int, int> SelectedEdge;
+
+Q_DECLARE_METATYPE(SelectedEdge)
+
 
 class GraphicsWidget : public QGraphicsView {
     Q_OBJECT

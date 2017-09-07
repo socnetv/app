@@ -122,7 +122,8 @@ struct ClickedEdge {
 
 
 
-typedef pair<int, int> SelectedEdge;
+typedef QPair<int, int> SelectedEdge;
+
 
 
 class GraphDistance
