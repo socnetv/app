@@ -107,7 +107,7 @@ void myMessageOutput (
  */
 MainWindow::MainWindow(const QString & m_fileName) {
 
-    qDebug() << "MW::MainWindow() - Constructor running...";
+    qDebug() << "MW::MainWindow() - Constructor running on thread:"<< thread();
 
     setWindowIcon (QIcon(":/images/socnetv.png"));
 
@@ -5076,7 +5076,7 @@ void MainWindow::initSignalSlots() {
  * Used on app start and especially when erasing a network to start a new one
  */
 void MainWindow::initApp(){
-    qDebug()<<"MW::initApp() - START INITIALIZATION";
+    qDebug()<<"MW::initApp() - START INITIALIZATION on thread" << thread();
 
     statusMessage( tr("Application initialization. Please wait..."));
 
@@ -5100,7 +5100,7 @@ void MainWindow::initApp(){
 
 
     /** Clear previous network data */
-    activeGraph->clear(true);
+    activeGraph->clear();
     activeGraph->setSocNetV_Version(VERSION);
 
     activeGraph->vertexShapeInit(appSettings["initNodeShape"]);
@@ -5211,7 +5211,7 @@ void MainWindow::initApp(){
     setCursor(Qt::ArrowCursor);
 
     statusMessage( tr("Ready"));
-    qDebug()<< "MW::initApp() - INITIALISATION END";
+    qDebug()<< "MW::initApp() - INITIALISATION END on thread" << thread();
 
 
 }
@@ -6590,7 +6590,8 @@ void MainWindow::slotNetworkFileLoad(const QString m_fileName,
         qDebug()<<"MW::slotNetworkFileLoad() - delimiter" << delimiter;
     }
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-    qDebug() << "MW::slotNetworkFileLoad() : calling activeGraph->graphLoad() ";
+    qDebug() << "MW::slotNetworkFileLoad() - Calling activeGraph->graphLoad()"
+             << "MW thread is:" << thread();
 
     activeGraph->graphLoad (
                 m_fileName,

@@ -234,7 +234,7 @@ Graph::Graph() {
  */
 Graph::~Graph() {
     qDebug()<<"Graph::~Graph() - Calling clear()";
-    clear(true);
+    clear("exit");
 }
 
 
@@ -244,7 +244,7 @@ Graph::~Graph() {
 /**
     Clears all vertices
 */
-void Graph::clear(const bool &exit) {
+void Graph::clear(const QString &reason) {
    qDebug()<< "Graph::clear() - m_graph reports size "<<m_graph.size();
     qDeleteAll(m_graph.begin(), m_graph.end());
     m_graph.clear();
@@ -350,15 +350,16 @@ void Graph::clear(const bool &exit) {
 
     graphModifiedFlag=false;
 
-    graphLoadedTerminateParserThreads("Graph::clear()");
-
-    webCrawlTerminateThreads("Graph::clear()");
-
     qDebug()<< "Graph::clear() - m_graph cleared. Now reports size"
             << m_graph.size()
                << "emitting graphModifiedSet()";
 
-    if (!exit) {
+
+    graphLoadedTerminateParserThreads("clear");
+    webCrawlTerminateThreads("clear");
+
+
+    if ( reason != "exit") {
         graphModifiedSet(graphModifiedFlag,true);
     }
 }
@@ -13365,7 +13366,7 @@ void Graph::graphLoad (	const QString m_fileName,
     qDebug () << "Graph::graphLoad() - file_parser thread  " << file_parser->thread()
                  << " moving it to new thread ";
 
-    //file_parser->moveToThread(&file_parserThread);
+    file_parser->moveToThread(&file_parserThread);
 
     qDebug () << "Graph::graphLoad() - file_parser thread now " << file_parser->thread();
 
@@ -13484,12 +13485,13 @@ void Graph::graphLoadedTerminateParserThreads(QString reason) {
     qDebug() << "Graph::graphLoadedTerminateParserThreads() - reason " << reason
                     <<" Checking if file_parserThread is running...";
     if (file_parserThread.isRunning() ) {
-         qDebug() << "Graph::graphLoadedTerminateParserThreads() - file_parserThread running."
-                     "Calling file_parserThread.quit();";
-        file_parserThread.quit();
         qDebug() << "Graph::graphLoadedTerminateParserThreads() - deleting file_parser pointer";
         delete file_parser;
         file_parser = 0;  // see why here: https://goo.gl/tQxpGA
+
+         qDebug() << "Graph::graphLoadedTerminateParserThreads() - file_parserThread running."
+                     "Calling file_parserThread.quit();";
+        file_parserThread.quit();
     }
 }
 
