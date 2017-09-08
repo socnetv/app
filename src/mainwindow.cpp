@@ -4780,13 +4780,6 @@ void MainWindow::initSignalSlots() {
     connect( graphicsWidget, &GraphicsWidget::userSelectedItems,
                      activeGraph,&Graph::graphSelectionChanged);
 
-//    connect (graphicsWidget,
-//             SIGNAL (userSelectedItems(const QList<int> &,
-//                                       const QList<SelectedEdge> &)),
-//             activeGraph,
-//             SLOT( graphSelectionChanged (const QList<int> &,
-//                                          const QList<SelectedEdge> & ) )
-//             );
 
 
     connect( activeGraph,

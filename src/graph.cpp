@@ -11646,7 +11646,7 @@ void Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
              << "dropIsolates" << dropIsolates;
 
     qDebug() << "Graph::graphClusteringHierarchical() - STR_EQUIV matrix:";
-    STR_EQUIV.printMatrixConsole(true);
+    //STR_EQUIV.printMatrixConsole(true);
 
     QString varLocation = "Rows";
 
@@ -11709,7 +11709,7 @@ void Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
 
     qDebug() << "Graph::graphClusteringHierarchical() -"
              << "initial matrix DSM contents:";
-    DSM.printMatrixConsole();
+    //DSM.printMatrixConsole();
 
     clusteredItems.reserve(N);
     if (diagram) {
