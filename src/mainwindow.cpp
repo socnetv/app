@@ -4919,6 +4919,7 @@ void MainWindow::initSignalSlots() {
     connect ( activeGraph, &Graph::signalEdgeClickedInfo,
              this, &MainWindow::slotEditEdgeInfoStatusBar );
 
+
     connect( activeGraph,
              SIGNAL( signalGraphModified(const int &, const bool &,
                                   const int &, const int &,
@@ -8959,8 +8960,7 @@ void MainWindow::slotEditNodeInfoStatusBar (const int &number,
 
 
 /**
- * @brief MainWindow::slotEditEdgeInfoStatusBar
- * Called by GW::selectedEdge signal when the user clickes on an edge
+ * @brief Called by GW::selectedEdge signal when the user clickes on an edge
  * Displays information about the clicked edge on the statusbar
  * @param edge
  */
@@ -8968,6 +8968,12 @@ void MainWindow::slotEditEdgeInfoStatusBar (const int &v1,
                                             const  int &v2,
                                             const float &weight,
                                             const bool &undirected) {
+    qDebug()<<"MW::slotEditEdgeInfoStatusBar()"
+           << v1
+           << "->"
+           << v2
+           << "="
+           << weight;
 
     rightPanelClickedEdgeSourceLCD->display(v1);
     rightPanelClickedEdgeTargetLCD->display(v2);

@@ -287,7 +287,7 @@ void GraphicsWidget::nodeClicked(GraphicsNode *node){
     Also, it makes source and target nodes to stand out of other nodes.
 */
 void GraphicsWidget::edgeClicked(GraphicsEdge *edge){
-    //qDebug() <<"GW::edgeClicked()";
+    qDebug() <<"GW::edgeClicked()";
     if (clickedEdgeExists) {
         //unselect them, restore their color
         markedEdgeSource->setSelected(false);

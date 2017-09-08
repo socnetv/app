@@ -290,8 +290,8 @@ signals:
                                     const int &inDegree=0,
                                     const int &outDegree=0,
                                     const float &clc=0);
-    void signalEdgeClickedInfo (const long int &v1=0,
-                                const long int &v2=0,
+    void signalEdgeClickedInfo (const int &v1=0,
+                                const int &v2=0,
                                 const float &weight=0,
                                 const bool &undirected=false);
     void signalRelationAddToMW(const QString &newRelation, const bool &changeRelation=true);

@@ -1837,18 +1837,30 @@ void Graph::edgeFilterUnilateral(const bool &toggle) {
  * @param v1
  */
 void Graph::edgeClickedSet(const int &v1, const int &v2) {
+    qDebug() << "Graph::edgeClickedSet() "
+             << v1
+             << "->"
+             << v2;
     m_clickedEdge.v1=v1;
     m_clickedEdge.v2=v2;
 
     if (m_clickedEdge.v1 == 0 && m_clickedEdge.v2==0) {
-        signalEdgeClickedInfo();
+        emit signalEdgeClickedInfo();
     }
     else {
         float weight = m_graph[ vpos[ m_clickedEdge.v1] ]->hasEdgeTo(m_clickedEdge.v2);
         bool undirected=false;
-        if ( edgeExists(m_clickedEdge.v1,m_clickedEdge.v2, true) && graphUndirected() )
+        if ( edgeExists(m_clickedEdge.v1,m_clickedEdge.v2, true) && graphUndirected() ) {
             undirected=true;
-        signalEdgeClickedInfo( m_clickedEdge.v1 ,m_clickedEdge.v2, weight, undirected);
+        }
+        qDebug() << "Graph::edgeClickedSet() - emitting signalEdgeClickedInfo"
+                 << m_clickedEdge.v1
+                 << "->"
+                 << m_clickedEdge.v2
+                 << "="
+                 << weight
+                 << "undirected" << undirected;
+        emit signalEdgeClickedInfo( m_clickedEdge.v1 ,m_clickedEdge.v2, weight, undirected);
     }
 
 }
