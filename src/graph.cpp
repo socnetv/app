@@ -109,8 +109,6 @@ Graph::Graph() {
 
     randomizeThings();
 
-    qRegisterMetaType<SelectedEdge>("SelectedEdge");
-
     htmlHead = QString("<!DOCTYPE html>"
                        "<html>"
                        "<head>"
@@ -1853,13 +1851,6 @@ void Graph::edgeClickedSet(const int &v1, const int &v2) {
         if ( edgeExists(m_clickedEdge.v1,m_clickedEdge.v2, true) && graphUndirected() ) {
             undirected=true;
         }
-        qDebug() << "Graph::edgeClickedSet() - emitting signalEdgeClickedInfo"
-                 << m_clickedEdge.v1
-                 << "->"
-                 << m_clickedEdge.v2
-                 << "="
-                 << weight
-                 << "undirected" << undirected;
         emit signalEdgeClickedInfo( m_clickedEdge.v1 ,m_clickedEdge.v2, weight, undirected);
     }
 
@@ -2494,8 +2485,8 @@ bool Graph::graphLoaded() const {
  * @param selectedVertices
  * @param selectedEdges
  */
-void Graph::graphSelectionChanged(const QList<int> &selectedVertices,
-                                   const QList<SelectedEdge> &selectedEdges) {
+void Graph::graphSelectionChanged(const QList<int> selectedVertices,
+                                   const QList<SelectedEdge> selectedEdges) {
 
     m_selectedVertices = selectedVertices;
     m_selectedEdges = selectedEdges;

@@ -51,6 +51,13 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         QGraphicsView ( sc,m_parent) {
 
         qDebug() << "GW::GraphicsWidget(*sc, *MW)";
+
+
+        qRegisterMetaType<SelectedEdge>("SelectedEdge");
+        qRegisterMetaType<QList<SelectedEdge> >();
+
+
+
         secondDoubleClick=false;
         transformationActive = false;
         m_nodeLabel="";
@@ -79,7 +86,7 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
                      this, &GraphicsWidget::getSelectedItems);
 
 
-        qRegisterMetaType<SelectedEdge>("SelectedEdge");
+
 
 
     }

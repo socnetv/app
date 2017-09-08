@@ -222,6 +222,10 @@ public slots:
     void vertexRemoveDummyNode(int);
     void graphLoadedTerminateParserThreads (QString reason);
 
+    void graphSelectionChanged(const QList<int> selectedVertices,
+                               const QList<SelectedEdge> selectedEdges);
+
+
     /** Slots to signals from GraphicsWidget and Parser*/
     void edgeCreate  (const int &v1, const int &v2, const float &weight,
                       const QString &color ,
@@ -527,9 +531,6 @@ public:
     bool graphModified() const ;
     bool graphSaved() const;
     bool graphLoaded() const;
-
-    void graphSelectionChanged(const QList<int> &selectedVertices,
-                               const QList<SelectedEdge> &selectedEdges);
 
     QList<int> graphSelectedVertices() const;
     int graphSelectedVerticesCount() const;

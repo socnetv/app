@@ -4776,10 +4776,18 @@ void MainWindow::initSignalSlots() {
 
     // Signals between activeGraph and graphicsWidget
 
-    qRegisterMetaType<SelectedEdge>("SelectedEdge");
 
     connect( graphicsWidget, &GraphicsWidget::userSelectedItems,
                      activeGraph,&Graph::graphSelectionChanged);
+
+//    connect (graphicsWidget,
+//             SIGNAL (userSelectedItems(const QList<int> &,
+//                                       const QList<SelectedEdge> &)),
+//             activeGraph,
+//             SLOT( graphSelectionChanged (const QList<int> &,
+//                                          const QList<SelectedEdge> & ) )
+//             );
+
 
     connect( activeGraph,
              SIGNAL( addGuideCircle(const double&, const double&, const double&) ),
@@ -8163,6 +8171,7 @@ void MainWindow::slotEditNodeRemove() {
     // if there are already multiple nodes selected, erase them
     int nodesSelected = activeGraph->graphSelectedVerticesCount();
     if ( nodesSelected > 0) {
+        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
         int removeCounter = 0;
         qDebug() << "MW::removeNode() multiple selected to remove";
         foreach (int nodeNumber, activeGraph->graphSelectedVertices() ) {
@@ -8171,6 +8180,7 @@ void MainWindow::slotEditNodeRemove() {
         }
         editNodeRemoveAct->setText(tr("Remove Node"));
         statusMessage( tr("Removed ") + nodesSelected + tr(" nodes. Ready. ") );
+        QApplication::restoreOverrideCursor();
     }
 
     else {
