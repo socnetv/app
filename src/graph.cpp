@@ -2707,6 +2707,8 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
 
     relationCurrentRename(tr("web"), true);
 
+    // TOFIX Due to multithreading, app crashes when crawler finishes its job.
+
     qDebug() << "Graph::webCrawl() - seed " << seed ;
     //WebCrawler *crawler = new WebCrawler;
 
