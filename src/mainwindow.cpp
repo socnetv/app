@@ -191,6 +191,7 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
 
     statusMessage( tr("Closing SocNetV. Bye!") );
 
+    bool userCancelled=false;
 
     if ( activeGraph->graphSaved()  )  {
         ce->accept();
@@ -214,13 +215,19 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
         case QMessageBox::No:
             ce->accept();
             break;
+        case QMessageBox::Cancel:
+            ce->ignore();
+            userCancelled = true;
+            break;
         case QMessageBox::NoButton:
         default: // just for sanity
             ce->ignore();
             break;
         }
     }
-
+    if (userCancelled) {
+        return;
+    }
     qDebug() << "MW::closeEvent() - Calling terminateThreads()...";
     terminateThreads("closeEvent()");
 
