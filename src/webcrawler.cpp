@@ -40,20 +40,34 @@
 QQueue<QUrl> frontier;
 
 
-/*
- * constructor called from parent thread
- * - Inits variables
- * - Connects http NetworkManager signal to httpfinished() slot
- * which in turn emits http reply to WebCrawler_Parser
+
+
+/**
+ * @brief spider's constructor - does nothing
  */
-WebCrawler_Spider::WebCrawler_Spider(QString url,
+WebCrawler_Spider::WebCrawler_Spider() {
+    qDebug() << "   wc_spider::WebCrawler_Spider() - thread():" << thread();
+}
+
+
+/**
+ * @brief  Called from Graph to init variables.
+ * Connects http NetworkManager signal to httpfinished() slot
+ * which in turn emits http reply to WebCrawler_Parser
+
+ * @param url
+ * @param maxN
+ * @param maxLinksPerPage
+ * @param extLinks
+ * @param intLinks
+ */
+void WebCrawler_Spider::load(QString url,
         int maxN,
         int maxLinksPerPage,
         bool extLinks,
         bool intLinks) {
-    qDebug() << "   wc_spider::WebCrawler_Spider() "
-                << " this->thread() " << this->thread()
-                 << " Initializing vars ...";
+    qDebug() << "   wc_spider::load() - thread():" << thread()
+             << "Initializing vars ...";
 
     m_seed=url;       //the initial url/domain we will crawl
     m_maxPages=maxN;  //maxPages we'll check
@@ -62,14 +76,14 @@ WebCrawler_Spider::WebCrawler_Spider(QString url,
     m_intLinks = intLinks;
     m_visitedNodes = 0;
 
-    qDebug() << "   wc_spider::WebCrawler_Spider() Creating http";
+    qDebug() << "   wc_spider::load() - Creating http";
     http = new QNetworkAccessManager(this);
 
-    qDebug() << "   wc_spider::WebCrawler_Spider()  Connecting http signals";
+    qDebug() << "   wc_spider::load() - Connecting http signals";
     connect ( http, &QNetworkAccessManager::finished,
               this, &WebCrawler_Spider::httpFinished );
 
-    qDebug () << "  wc_spider::WebCrawler_Spider() http->thread() "
+    qDebug () << "  wc_spider::load() - http->thread() "
               << http->thread() ;
 
 }
@@ -81,12 +95,14 @@ WebCrawler_Spider::~WebCrawler_Spider() {
     delete http;
 }
 
-/*
- * WebCrawer_Spider main functionality
- * Parses urls from frontier and downloads their data.
+
+
+/**
+ * @brief Spider main functionality
+ * Takes urls from frontier and downloads their data.
 *  When http signals finished() the response data are passed to
 *  wc_parser thread to parse them
-*/
+ */
 void WebCrawler_Spider::get(){
     qDebug() << "   wc_spider::get():";
     do { 	//repeat forever....
@@ -147,6 +163,10 @@ void WebCrawler_Spider::get(){
 }
 
 
+/**
+ * @brief Called from QNetworkAccessManager http emits finished() with the reply
+ * @param reply
+ */
 void WebCrawler_Spider::httpFinished(QNetworkReply *reply){
     qDebug() << "   wc_spider::httpFinished()";
     emit parse (reply);
@@ -155,15 +175,32 @@ void WebCrawler_Spider::httpFinished(QNetworkReply *reply){
 
 
 
-//constructor called from parent thread - does nothing
-WebCrawler_Parser::WebCrawler_Parser(QString url,
-                                     int maxN,
-                                     int maxLinksPerPage,
-                                     bool extLinks,
-                                     bool intLinks) {
-    qDebug () << "   wc_parser::WebCrawler_Parser() this->thread() "
-              << this->thread()
-                 << " Initializing variables ";
+/**
+ * @brief constructor called from parent thread - does nothing
+ */
+WebCrawler_Parser::WebCrawler_Parser() {
+    qDebug () << "   wc_parser::WebCrawler_Parser() - thread:" << thread();
+
+}
+
+
+
+/**
+ * @brief Called from parent Grapg thread. Inits variables.
+ * @param url
+ * @param maxN
+ * @param maxLinksPerPage
+ * @param extLinks
+ * @param intLinks
+ */
+void WebCrawler_Parser::load(QString url,
+                             int maxN,
+                             int maxLinksPerPage,
+                             bool extLinks,
+                             bool intLinks) {
+    qDebug () << "   wc_parser::load() - thread():"
+              << thread()
+              << "Initializing variables ";
 
     m_seed=QUrl (url);   //the initial url/domain we will crawl
     m_maxPages=maxN;  //maxPages we'll check
@@ -181,7 +218,7 @@ WebCrawler_Parser::WebCrawler_Parser(QString url,
     frontier.enqueue(m_seed);
     knownUrls[m_seed]=m_discoveredNodes;
 
-    qDebug() << "   wc_parser::WebCrawler_Parser()  seed: " << m_seed
+    qDebug() << "   wc_parser::load()  seed: " << m_seed
              << " seed_domain: " << m_seed.host()
              << " Added seed to frontier queue and knownUrls map. "
              << " Node " << m_discoveredNodes << " should be already created. "
@@ -446,8 +483,13 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
 
 
 
-//signals node creation  Called from wc_parser::load()
 
+/**
+ * @brief signals node creation  - Called from wc_parser::load()
+ * @param s
+ * @param target
+ * @param enqueue_to_frontier
+ */
 void WebCrawler_Parser::newLink(int s, QUrl target,  bool enqueue_to_frontier) {
     qDebug() << "   wc_parser::newLink() : from s " <<  s
                 << " to target " << target.toString();

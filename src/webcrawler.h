@@ -40,9 +40,14 @@ using namespace std;
 class WebCrawler_Parser : public QObject  {
     Q_OBJECT
 public:
-    WebCrawler_Parser(QString seed, int maxNodes, int maxLinksPerPage,
-                      bool extLinks, bool intLinks);
+    WebCrawler_Parser();
     ~WebCrawler_Parser();
+    void load ( QString seed,
+                int maxNodes,
+                int maxLinksPerPage,
+                bool extLinks,
+                bool intLinks);
+
 public slots:
     void parse(QNetworkReply *reply);
     void newLink(int s, QUrl target, bool enqueue_to_frontier);
@@ -67,9 +72,14 @@ private:
 class  WebCrawler_Spider : public QObject  {
     Q_OBJECT
 public:
-    WebCrawler_Spider(QString seed, int maxNodes, int maxLinksPerPage
-                      ,bool extLinks, bool intLinks);
+    WebCrawler_Spider();
     ~WebCrawler_Spider();
+    void load (QString seed,
+               int maxNodes,
+               int maxLinksPerPage,
+               bool extLinks,
+               bool intLinks);
+
 public slots:
     void get();
     void httpFinished(QNetworkReply *reply);

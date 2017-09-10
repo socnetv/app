@@ -2679,11 +2679,13 @@ void Graph::webCrawlTerminateThreads (QString reason){
     qDebug() << "Graph::webCrawlTerminateThreads() - reason " << reason
                 << "Checking if wc_spiderThread is running...";
     if (wc_spiderThread.isRunning() ) {
-        qDebug() << "Graph::webCrawlTerminateThreads()  spider thread quit";
-        wc_spiderThread.quit();
         qDebug() << "Graph::webCrawlTerminateThreads() - deleting wc_spider pointer";
         delete wc_spider;
         wc_spider= 0;  // see why here: https://goo.gl/tQxpGA
+
+        qDebug() << "Graph::webCrawlTerminateThreads()  spider thread quit";
+        wc_spiderThread.quit();
+
         layoutVertexSizeByIndegree();
      }
 
@@ -2709,30 +2711,26 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
 
     // TOFIX Due to multithreading, app crashes when crawler finishes its job.
 
-    qDebug() << "Graph::webCrawl() - seed " << seed ;
-    //WebCrawler *crawler = new WebCrawler;
+    qDebug() << "Graph::webCrawl() - Graph thread:" << thread()
+             << "seed url:" << seed ;
 
-    qDebug() << "Graph::webCrawl() Creating wc_spider & wc_parser objects";
-    WebCrawler_Parser *wc_parser = new WebCrawler_Parser(seed, maxNodes,
-                                                         maxRecursion,
-                                                         extLinks,
-                                                         intLinks);
-    WebCrawler_Spider *wc_spider = new WebCrawler_Spider (seed, maxNodes,
-                                                          maxRecursion,
-                                                          extLinks, intLinks);
+    qDebug() << "Graph::webCrawl() - Creating wc_spider & wc_parser objects";
+    wc_parser = new WebCrawler_Parser();
+    wc_spider = new WebCrawler_Spider ();
 
-    qDebug() << "Graph::webCrawl()  Moving parser & spider to new QThreads!";
-    qDebug () << " graph thread  " << this->thread();
-    qDebug () << " wc_parser thread  " << wc_parser->thread();
-    qDebug () << " wc_spider thread  " << wc_spider->thread();
+    qDebug() << "Graph::webCrawl() - Moving wc_parser from thread:"
+             << wc_parser->thread()
+             << "and wc_spider from thread:"
+             << wc_spider->thread();
     wc_parser->moveToThread(&wc_parserThread);
     wc_spider->moveToThread(&wc_spiderThread);
-    qDebug () << " graph thread is " << this->thread();
-    qDebug () << " wc_parser thread now " << wc_parser->thread();
-    qDebug () << " wc_spider thread now " << wc_spider->thread();
+    qDebug() << "Graph::webCrawl() - Moved wc_spider to thread:"
+             << wc_parser->thread()
+             << "and wc_spider to thread:"
+             << wc_spider->thread();
 
 
-    qDebug() << "Graph::webCrawl()  Connecting signals from/to parser & spider";
+    qDebug() << "Graph::webCrawl() - Connecting signals from/to parser & spider";
     connect(&wc_parserThread, &QThread::finished,
             wc_parser, &QObject::deleteLater);
 
@@ -2761,14 +2759,27 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
              wc_spider, &WebCrawler_Spider::get );
 
 
-    qDebug() << "Graph::webCrawl()  Starting parser & spider QThreads!";
+    qDebug() << "Graph::webCrawl() - Starting wc_parser & wc_spider threads!";
     wc_parserThread.start();
     wc_spiderThread.start();
 
-    qDebug() << "Graph::webCrawl()  Creating initial node 1, url: " << seed;
+    qDebug() << "Graph::webCrawl() - loading wc_parser & wc_spider data!";
+
+    wc_parser->load(seed,
+                    maxNodes,
+                    maxRecursion,
+                    extLinks,
+                    intLinks);
+
+    wc_spider->load (seed,
+                     maxNodes,
+                     maxRecursion,
+                     extLinks, intLinks);
+
+    qDebug() << "Graph::webCrawl()  - Creating initial node 1, seed url:" << seed;
     vertexCreateAtPosRandomWithLabel(1, seed, false);
 
-    qDebug() << "Graph::webCrawl()  calling spider get() for that url!";
+    qDebug() << "Graph::webCrawl() - Calling spider get() for that url!";
     emit operateSpider();
 
     qDebug("Graph::webCrawl() - reach the end - See the threads running? ");
