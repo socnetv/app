@@ -112,5 +112,6 @@
         <file>images/invertmatrix.png</file>
         <file>images/transposematrix.png</file>
         <file>images/cocitation.png</file>
+        <file>images/webcrawler2.png</file>
     </qresource>
 </RCC>

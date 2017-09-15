@@ -1053,7 +1053,7 @@ void MainWindow::initActions(){
 
 
 
-    webCrawlerAct = new QAction(QIcon(":/images/spider.png"), tr("Web Crawler"),	this);
+    webCrawlerAct = new QAction(QIcon(":/images/webcrawler2.png"), tr("Web Crawler"),	this);
     webCrawlerAct->setShortcut(Qt::SHIFT+Qt::Key_C);
     webCrawlerAct->setEnabled(true);
     webCrawlerAct->setStatusTip(tr("Create a network from all links found in a given website"
