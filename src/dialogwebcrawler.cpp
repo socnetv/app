@@ -3,7 +3,7 @@
  version: 2.4
  Written in Qt
  
-                         webcrawlerdialog.cpp  -  description
+                         dialogwebcrawler.cpp  -  description
                              -------------------
     copyright            : (C) 2005-2017 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
@@ -26,12 +26,12 @@
 
 
 
-#include "webcrawlerdialog.h"
+#include "dialogwebcrawler.h"
 #include <QDebug>
 #include <QPushButton>
 #include <QUrl>
 
-WebCrawlerDialog::WebCrawlerDialog(QWidget *parent) : QDialog (parent)
+DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
 {
     ui.setupUi(this);
     connect ( ui.buttonBox,SIGNAL(accepted()), this, SLOT(gatherData()) );
@@ -40,11 +40,13 @@ WebCrawlerDialog::WebCrawlerDialog(QWidget *parent) : QDialog (parent)
 
     (ui.seedUrlEdit)->setFocus();
 
+    ui.patternsIncludedTextEdit->setText("example.com/pattern/*");
+    ui.patternsExcludedTextEdit->setText("example.com/pattern/*");
     connect (ui.extLinksCheckBox, &QCheckBox::stateChanged,
-             this, &WebCrawlerDialog::checkErrors);
+             this, &DialogWebCrawler::checkErrors);
 
     connect (ui.intLinksCheckBox, &QCheckBox::stateChanged,
-             this, &WebCrawlerDialog::checkErrors);
+             this, &DialogWebCrawler::checkErrors);
 
     if ( !ui.extLinksCheckBox->isChecked()  &&!ui.intLinksCheckBox->isChecked() )
     {
@@ -53,8 +55,8 @@ WebCrawlerDialog::WebCrawlerDialog(QWidget *parent) : QDialog (parent)
 
 }
 
-void WebCrawlerDialog::checkErrors(){
-    qDebug()<< "WebCrawlerDialog::checkErrors...";
+void DialogWebCrawler::checkErrors(){
+    qDebug()<< "DialogWebCrawler::checkErrors...";
     if ( !ui.extLinksCheckBox->isChecked()  && !ui.intLinksCheckBox->isChecked() )
     {
         (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setDisabled(true);
@@ -64,32 +66,32 @@ void WebCrawlerDialog::checkErrors(){
 
 }
 
-void WebCrawlerDialog::gatherData(){
-    qDebug()<< "WebCrawlerDialog::gatherData()...";
+void DialogWebCrawler::gatherData(){
+    qDebug()<< "DialogWebCrawler::gatherData()...";
 
     bool extLinks=true, intLinks=false;
 
     QString seedUrl = (ui.seedUrlEdit)->text();
 
-    qDebug()<< "WebCrawlerDialog::gatherData() initial seed url "
+    qDebug()<< "DialogWebCrawler::gatherData() initial seed url "
             << seedUrl
             << " simplifying and lowering it";
 
     seedUrl = seedUrl.simplified().toLower() ;
 
-    qDebug()<< "WebCrawlerDialog::gatherData() adding / to seed url ";
+    qDebug()<< "DialogWebCrawler::gatherData() adding / to seed url ";
     seedUrl = seedUrl + "/";
 
     QUrl newUrl(seedUrl);
 
-    qDebug()<< "WebCrawlerDialog::gatherData()  QUrl " << newUrl.toString()
+    qDebug()<< "DialogWebCrawler::gatherData()  QUrl " << newUrl.toString()
             << " scheme " << newUrl.scheme()
             << " host " << newUrl.host()
             << " path " << newUrl.path();
 
     if ( newUrl.scheme() != "http"  && newUrl.scheme() != "https"  &&
          newUrl.scheme() != "ftp" && newUrl.scheme() != "ftps") {
-        qDebug()<< "WebCrawlerDialog::gatherData()  URL scheme missing "
+        qDebug()<< "DialogWebCrawler::gatherData()  URL scheme missing "
                 << newUrl.scheme()
                 << " setting the default scheme http ";
         newUrl = QUrl ("http://" + seedUrl);
@@ -98,13 +100,13 @@ void WebCrawlerDialog::gatherData(){
 
     if (! newUrl.isValid() || newUrl.host() == "") {
         emit webCrawlerDialogError(seedUrl);
-        qDebug()<< "WebCrawlerDialog::gatherData()  not valid URL";
+        qDebug()<< "DialogWebCrawler::gatherData()  not valid URL";
         return;
     }
 
     seedUrl = newUrl.toString();
 
-    qDebug()<< "WebCrawlerDialog::gatherData()  final seed url " << newUrl
+    qDebug()<< "DialogWebCrawler::gatherData()  final seed url " << newUrl
             << " scheme " << newUrl.scheme()
             << " host " << newUrl.host()
             << " path " << newUrl.path();

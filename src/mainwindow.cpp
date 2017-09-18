@@ -5014,7 +5014,7 @@ void MainWindow::initSignalSlots() {
 
     connect(webCrawlerAct, SIGNAL(triggered()), this, SLOT(slotNetworkWebCrawlerDialog()));
 
-    connect( &m_WebCrawlerDialog, &WebCrawlerDialog::userChoices,
+    connect( &m_WebCrawlerDialog, &DialogWebCrawler::userChoices,
              this, &MainWindow::slotNetworkWebCrawler );
 
     connect( &m_datasetSelectDialog, SIGNAL( userChoices( QString) ),

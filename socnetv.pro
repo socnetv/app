@@ -41,7 +41,7 @@ QT += printsupport
 
 INCLUDEPATH  += ./src
 FORMS += src/forms/dialogfilteredgesbyweight.ui \
-         src/forms/webcrawlerdialog.ui \
+         src/forms/dialogwebcrawler.ui \
          src/forms/dialognodeedit.ui \
          src/forms/dialogdatasetselect.ui \
          src/forms/dialograndsmallworld.ui \
@@ -69,7 +69,7 @@ HEADERS += src/graphicswidget.h \
            src/texteditor.h \
   	   src/parser.h \
 	   src/dialogfilteredgesbyweight.h \
-	   src/webcrawlerdialog.h \
+           src/dialogwebcrawler.h \
 	   src/webcrawler.h \
 	   src/dialogdatasetselect.h \
 	   src/dialogpreviewfile.h \
@@ -100,7 +100,7 @@ SOURCES += src/graphicswidget.cpp \
            src/texteditor.cpp \
            src/parser.cpp \
 	   src/dialogfilteredgesbyweight.cpp \
-	   src/webcrawlerdialog.cpp \
+           src/dialogwebcrawler.cpp \
 	   src/webcrawler.cpp \
 	   src/dialogdatasetselect.cpp \
 	   src/dialogpreviewfile.cpp \

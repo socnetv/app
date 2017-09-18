@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>WebCrawlerDialog</class>
- <widget class="QDialog" name="WebCrawlerDialog">
+ <class>DialogWebCrawler</class>
+ <widget class="QDialog" name="DialogWebCrawler">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>518</width>
-    <height>362</height>
+    <height>724</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -25,7 +25,7 @@
   <property name="maximumSize">
    <size>
     <width>650</width>
-    <height>600</height>
+    <height>800</height>
    </size>
   </property>
   <property name="font">
@@ -36,8 +36,8 @@
   <property name="windowTitle">
    <string>Generate network from web links</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
     <widget class="QLabel" name="label_2">
      <property name="sizePolicy">
       <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
@@ -74,7 +74,7 @@
      </property>
     </widget>
    </item>
-   <item>
+   <item row="1" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <widget class="QLabel" name="label">
@@ -123,7 +123,7 @@
      </item>
     </layout>
    </item>
-   <item>
+   <item row="2" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLabel" name="label_4">
@@ -172,7 +172,7 @@
      </item>
     </layout>
    </item>
-   <item>
+   <item row="3" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLabel" name="label_3">
@@ -212,7 +212,35 @@
      </item>
     </layout>
    </item>
-   <item>
+   <item row="4" column="0">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Url Patterns to include</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QTextEdit" name="patternsIncludedTextEdit"/>
+     </item>
+    </layout>
+   </item>
+   <item row="5" column="0">
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Url Patterns to exclude</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QTextEdit" name="patternsExcludedTextEdit"/>
+     </item>
+    </layout>
+   </item>
+   <item row="6" column="0">
     <widget class="QCheckBox" name="extLinksCheckBox">
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, the crawler will map &lt;span style=&quot; font-weight:600;&quot;&gt;external links&lt;/span&gt;. &lt;/p&gt;&lt;p&gt;For instance, if you start crawling from www.iefimerida.gr and we find there a link to another domain, i.e. www.linuxinsider.gr, then we will go outside of iefimerida.gr and crawl linuxinsider.gr too. &lt;/p&gt;&lt;p&gt;If you don't want to crawl external links, disable this option. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -225,7 +253,7 @@
      </property>
     </widget>
    </item>
-   <item>
+   <item row="7" column="0">
     <widget class="QCheckBox" name="intLinksCheckBox">
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled the crawler will scan and map &lt;span style=&quot; font-weight:600;&quot;&gt;internal links &lt;/span&gt;as well (i.e. pages within the initial website). &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;If you do not want to crawl internal links disable this option. &lt;/p&gt;&lt;p&gt;Default is not to crawl internal links.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -235,7 +263,7 @@
      </property>
     </widget>
    </item>
-   <item>
+   <item row="8" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -248,7 +276,7 @@
      </property>
     </spacer>
    </item>
-   <item>
+   <item row="9" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="enabled">
       <bool>true</bool>
@@ -274,7 +302,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>WebCrawlerDialog</receiver>
+   <receiver>DialogWebCrawler</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -290,7 +318,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>WebCrawlerDialog</receiver>
+   <receiver>DialogWebCrawler</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

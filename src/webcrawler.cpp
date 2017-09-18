@@ -62,10 +62,10 @@ WebCrawler_Spider::WebCrawler_Spider() {
  * @param intLinks
  */
 void WebCrawler_Spider::load(QString url,
-        int maxN,
-        int maxLinksPerPage,
-        bool extLinks,
-        bool intLinks) {
+                             int maxN,
+                             int maxLinksPerPage,
+                             bool extLinks,
+                             bool intLinks) {
     qDebug() << "   wc_spider::load() - thread():" << thread()
              << "Initializing vars ...";
 
@@ -91,6 +91,7 @@ void WebCrawler_Spider::load(QString url,
 
 
 WebCrawler_Spider::~WebCrawler_Spider() {
+    qDebug() << "   wc_spider::~WebCrawler_Spider() - deleting http object";
     m_visitedNodes = 0;
     delete http;
 }
@@ -146,7 +147,7 @@ void WebCrawler_Spider::get(){
         request->setUrl(currentUrl);
         request->setRawHeader(
                     "User-Agent",
-                    "SocNetV innocent spider 1 - see http://socnetv.sf.net");
+                    "SocNetV harmless spider - see http://socnetv.org");
 
         qDebug() << "   wc_spider::get(): http->get() ";
 
@@ -186,7 +187,7 @@ WebCrawler_Parser::WebCrawler_Parser() {
 
 
 /**
- * @brief Called from parent Grapg thread. Inits variables.
+ * @brief Called from parent Graph thread. Inits variables.
  * @param url
  * @param maxN
  * @param maxLinksPerPage

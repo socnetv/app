@@ -3,7 +3,7 @@
  version: 2.4
  Written in Qt
  
-                         webcrawlerdialog.h  -  description
+                         dialogwebcrawler.h  -  description
                              -------------------
     copyright            : (C) 2005-2017 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
@@ -33,14 +33,14 @@
 
 #include <QDialog>
 
-#include "ui_webcrawlerdialog.h"
+#include "ui_dialogwebcrawler.h"
  
 
-class WebCrawlerDialog: public QDialog
+class DialogWebCrawler: public QDialog
 {
 	Q_OBJECT
 public:
-	WebCrawlerDialog (QWidget *parent = 0);
+	DialogWebCrawler (QWidget *parent = 0);
 public slots:
     void checkErrors ();
 	void gatherData ();
@@ -48,7 +48,7 @@ signals:
     void userChoices( QString, int, int, bool, bool);
     void webCrawlerDialogError(QString);
 private:
-	Ui::WebCrawlerDialog ui;
+	Ui::DialogWebCrawler ui;
 
 };
 

@@ -2683,10 +2683,11 @@ void Graph::webCrawlTerminateThreads (QString reason){
         delete wc_spider;
         wc_spider= 0;  // see why here: https://goo.gl/tQxpGA
 
-        qDebug() << "Graph::webCrawlTerminateThreads()  spider thread quit";
+        qDebug() << "Graph::webCrawlTerminateThreads()  - wc_spiderThread running. "
+                    "Calling wc_spiderThread.quit()";
         wc_spiderThread.quit();
 
-        layoutVertexSizeByIndegree();
+        //layoutVertexSizeByIndegree();
      }
 
 }
@@ -2738,7 +2739,7 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
             wc_spider, &QObject::deleteLater);
 
     connect(this, &Graph::operateSpider,
-             wc_spider, &WebCrawler_Spider::get);
+            wc_spider, &WebCrawler_Spider::get);
 
     connect(wc_parser, &WebCrawler_Parser::signalCreateNode,
             this, &Graph::vertexCreateAtPosRandomWithLabel);
@@ -2753,7 +2754,7 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
              this, &Graph::webCrawlTerminateThreads);
 
     connect (wc_spider, &WebCrawler_Spider::parse,
-                 wc_parser, &WebCrawler_Parser::parse );
+             wc_parser, &WebCrawler_Parser::parse );
 
     connect (wc_parser, &WebCrawler_Parser::startSpider,
              wc_spider, &WebCrawler_Spider::get );

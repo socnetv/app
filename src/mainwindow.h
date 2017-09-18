@@ -47,7 +47,7 @@
 
 #include "graph.h"
 #include "dialogfilteredgesbyweight.h"
-#include "webcrawlerdialog.h"
+#include "dialogwebcrawler.h"
 #include "dialogdatasetselect.h"
 
 static const QString VERSION="2.4";
@@ -487,7 +487,7 @@ private:
     QMap<QString,QString> appSettings;
 
     DialogFilterEdgesByWeight m_DialogEdgeFilterByWeight;
-    WebCrawlerDialog m_WebCrawlerDialog;
+    DialogWebCrawler m_WebCrawlerDialog;
     DialogDataSetSelect m_datasetSelectDialog;
 
     DialogNodeEdit *m_nodeEditDialog;
