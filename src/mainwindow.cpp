@@ -3814,7 +3814,7 @@ void MainWindow::initPanels(){
      */
 
     QLabel *toolBoxEditNodeSubgraphSelectLabel  = new QLabel;
-    toolBoxEditNodeSubgraphSelectLabel->setText(tr("Selection Subgraph:"));
+    toolBoxEditNodeSubgraphSelectLabel->setText(tr("Subgraph:"));
     toolBoxEditNodeSubgraphSelectLabel->setMinimumWidth(115);
     toolBoxEditNodeSubgraphSelect = new QComboBox;
     toolBoxEditNodeSubgraphSelect->setStatusTip(
@@ -3824,7 +3824,15 @@ void MainWindow::initPanels(){
                    "with selected nodes. \n"
                    "There must be some nodes selected!"));
     toolBoxEditNodeSubgraphSelect->setWhatsThis(
-                        tr("Selection Subgraph\n\n"
+                        tr("Subgraph\n\n"
+                           "Creates basic subgraphs with all selected nodes: star, clique, line, etc."));
+
+    toolBoxEditNodeSubgraphSelectLabel->setToolTip(
+                tr("Create a basic subgraph (star, clique, line, etc) "
+                   "with selected nodes. \n"
+                   "There must be some nodes selected!"));
+    toolBoxEditNodeSubgraphSelectLabel->setWhatsThis(
+                        tr("Subgraph\n\n"
                            "Creates basic subgraphs with all selected nodes: star, clique, line, etc."));
     QStringList editNodeSubgraphCommands;
     editNodeSubgraphCommands << "Select"
