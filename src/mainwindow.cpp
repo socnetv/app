@@ -3695,7 +3695,7 @@ void MainWindow::initMenuBar() {
     edgeOptionsMenu -> addSeparator();
     edgeOptionsMenu -> addAction (drawEdgesBezier);
 
-    viewOptionsMenu = new QMenu (tr("&View..."));
+    viewOptionsMenu = new QMenu (tr("&Canvas..."));
     viewOptionsMenu -> setIcon(QIcon(":/images/view.png"));
     optionsMenu -> addMenu (viewOptionsMenu);
     viewOptionsMenu -> addAction (changeBackColorAct);
