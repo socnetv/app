@@ -18874,15 +18874,15 @@ void Graph::writeMatrixLaplacianPlainText(const QString &fn) {
     This method is automatically invoked when a QTimerEvent occurs
     UNUSED
 */
-void Graph::timerEvent(QTimerEvent *event) {	
-    qDebug("Graph: timerEvent()");
-    Q_UNUSED(event);
-    if (!graphModified()) {
-        qDebug("Timer will be KILLED since no vertex is movin any more...");
-        killTimer(timerId);
-        timerId = 0;
-    }
-}
+//void Graph::timerEvent(QTimerEvent *event) {
+//    qDebug("Graph: timerEvent()");
+//    Q_UNUSED(event);
+//    if (!graphModified()) {
+//        qDebug("Timer will be KILLED since no vertex is movin any more...");
+//        killTimer(timerId);
+//        timerId = 0;
+//    }
+//}
 
 
 

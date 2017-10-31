@@ -902,7 +902,7 @@ public:
 
 protected: 
     // Called from nodeMovement when a timerEvent occurs
-    void timerEvent(QTimerEvent *event);
+    //void timerEvent(QTimerEvent *event);
 
 
 private:
@@ -1043,7 +1043,8 @@ private:
 
     int m_graphConnectedness;
     int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
-    int timerId,  canvasWidth, canvasHeight;
+    //int timerId;
+    int canvasWidth, canvasHeight;
     bool calculatedEdges;
     bool calculatedVertices, calculatedVerticesList, calculatedVerticesSet;
     bool calculatedAdjacencyMatrix, calculatedDistances, calculatedCentralities;

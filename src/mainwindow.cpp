@@ -613,8 +613,8 @@ void MainWindow::initGraph() {
     qDebug() << "MW::initGraph() - activeGraph created on thread:" << activeGraph->thread()
                  << "moving it to new thread ";
 
-    activeGraph->moveToThread(&graphThread);
-    graphThread.start();
+//    activeGraph->moveToThread(&graphThread);
+//    graphThread.start();
 
     qDebug() << "MW::MainWindow() - activeGraph thread now:" << activeGraph->thread();
 
