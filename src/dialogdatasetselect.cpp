@@ -61,6 +61,7 @@ DialogDataSetSelect::DialogDataSetSelect (QWidget *parent) :
             << "Stephenson and Zelen (1989): Information Centrality test dataset, 5 actors"
             << "Wasserman and Faust: star, circle and line graphs of 7 actors (multirelational)"
             << "Wasserman and Faust: Countries Trade (basic manufactured goods), 24 actors"
+            << "Borgatti (1992): Campnet dataset, 18 actors"
             << "Petersen graph: A non-planar, undirected graph with 10 vertices and 15 edges"
             << "Herschel graph: The smallest nonhamiltonian polyhedral graph. 11 nodes, 18 edges";
 
@@ -84,6 +85,7 @@ DialogDataSetSelect::DialogDataSetSelect (QWidget *parent) :
             << "Stephenson&Zelen_5actors_6edges_IC_test_dataset.paj"
             << "Wasserman_Faust_7actors_star_circle_line_graphs.paj"
             << "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek"
+            << "Campnet.paj"
             << "Petersen_Graph.paj"
             << "Herschel_Graph.paj";
 
