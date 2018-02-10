@@ -221,19 +221,21 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
 
            << " - nodeHash reports "<< nodeHash.size()<<" nodes.";
 
+    if (type != EDGE_DIRECTED_OPPOSITE_EXISTS ) {
 
-    GraphicsEdge *edge=new GraphicsEdge (this,
-                         nodeHash.value(source), nodeHash.value(target),
-                         weight, label, color,
-                         Qt::SolidLine,
-                         type,
-                         drawArrows,
-                         (source==target) ? true: bezier,
-                         weightNumbers,
-                                         m_edgeHighlighting);
+        GraphicsEdge *edge=new GraphicsEdge (this,
+                             nodeHash.value(source), nodeHash.value(target),
+                             weight, label, color,
+                             Qt::SolidLine,
+                             type,
+                             drawArrows,
+                             (source==target) ? true: bezier,
+                             weightNumbers,
+                                             m_edgeHighlighting);
 
-    edgesHash.insert(edgeName, edge);
-    if (type == EDGE_DIRECTED_OPPOSITE_EXISTS ) {
+        edgesHash.insert(edgeName, edge);
+    }
+    else {
         edgeName = QString::number(m_curRelation) + QString(":") +
                 QString::number(target) + QString(">")+ QString::number(source);
         qDebug("GW::drawEdge() - making existing edge between %i and %i reciprocal. Name: "+edgeName.toUtf8(), source, target );
