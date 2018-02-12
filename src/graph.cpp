@@ -5355,6 +5355,8 @@ void Graph::writeEccentricity(
         rowCount++;
         eccentr = (*it)->eccentricity();
 
+        if ( ! (*it) ->isEnabled() ) continue; // do not print disabled nodes
+
         outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
                 <<"<td>"
                 << (*it)->name()
