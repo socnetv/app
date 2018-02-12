@@ -78,7 +78,7 @@ GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
 
     m_directed_first = false;
 
-    m_offsetFromNode = 5;
+    m_offsetFromNode = 6;           // controls the extra offset from source/target node center
 
     m_offsetFromSourceNode=source->size()+m_offsetFromNode;  // offsets edge from the centre of source node
     m_offsetFromTargetNode=target->size()+m_offsetFromNode;  // offsets edge from the centre of target node
