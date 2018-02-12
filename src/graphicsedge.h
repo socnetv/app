@@ -71,8 +71,11 @@ public:
     GraphicsNode *targetNode() const;
     void setTargetNode(GraphicsNode *node);
 
-    void setStartOffset(const int & );
-    void setEndOffset(int );
+    void setSourceNodeSize(const int & size);
+    void setTargetNodeSize(const int & size);
+
+    void setOffsetFromNode(const int & offset);
+
     void removeRefs();
 
     int sourceNodeNumber();
@@ -127,7 +130,11 @@ private:
     GraphicsNode *source, *target;
     QPainterPath *m_path, *m_path_up, *m_path_down, *m_path_shape;
     QPointF sourcePoint, targetPoint;
-    qreal m_arrowSize, m_startOffset, m_endOffset;
+    qreal m_arrowSize;
+
+    qreal m_offsetFromNode;
+    qreal m_offsetFromTargetNode, m_offsetFromSourceNode;
+
     Qt::PenStyle m_style;
     int m_state;
     GraphicsEdgeWeight* weightNumber;

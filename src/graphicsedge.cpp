@@ -29,7 +29,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QStyleOptionGraphicsItem>
 #include <QPainter>
-#include <QtDebug>		//used for qDebug messages
+#include <QtDebug>                  //used for qDebug messages
 #include <cmath>
 
 #include "graphicswidget.h"
@@ -61,29 +61,37 @@ GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
 
     graphicsWidget->scene()->addItem(this);  //add edge to scene to be displayed
 
-    from->addOutLink( this );       //adds this to sourceNode
-    to->addInLink( this );          //adds this to targetNode
+    from->addOutLink( this );       // adds this new edge to sourceNode
+    to->addInLink( this );          // adds this new edge to targetNode
 
-    source=from;                    //saves the sourceNode
-    target=to;                      //saves the targetNode
+    source=from;                    // saves the source node
+    target=to;                      // saves the target node
+
     m_style = style;
     m_state = EDGE_STATE_REGULAR ;
-    m_color=color;
-    m_drawArrows=drawArrows;
+
+    m_color=color;                  // saves the color of the edge
+
+    m_drawArrows=drawArrows;        // controls if edge will have arrows or not
+
     m_edgeType=type;
 
     m_directed_first = false;
 
-    m_startOffset=source->size()+5;  // offsets edge from the centre of node
-    m_endOffset=target->size()+5;    // offsets edge from the centre of node
+    m_offsetFromNode = 5;
+
+    m_offsetFromSourceNode=source->size()+m_offsetFromNode;  // offsets edge from the centre of source node
+    m_offsetFromTargetNode=target->size()+m_offsetFromNode;  // offsets edge from the centre of target node
+
     m_arrowSize=4;                   // controls the width of the edge arrow
 
-    m_weight = weight ;              //
-    m_Bezier = bezier;               //
+    m_weight = weight ;              // saves the weight/value of this edge
+    m_Bezier = bezier;               // controls if it will appear as line or curve
 
     m_label = label;
     m_drawLabel = !m_label.isEmpty();
-    m_drawWeightNumber = weightNumbers;
+
+    m_drawWeightNumber = weightNumbers;     // controls if weight number will be shown
 
     qDebug()<< "GraphicsEdge::GraphicsEdge():  "
             << source->nodeNumber()
@@ -102,6 +110,7 @@ GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
     m_hoverHighlighting = highlighting;
 
     setAcceptHoverEvents(true);
+
     setFlags(QGraphicsItem::ItemIsSelectable);
 
     //Edges have lower z than nodes. Nodes always appear above edges.
@@ -168,11 +177,15 @@ void GraphicsEdge::setWeight(const float &w) {
         weightNumber->setPlainText (QString::number(w));
 }
 
+
+/**
+ * @brief Returns the weight/value of this edge
+ * @return
+ */
 float GraphicsEdge::weight() const {
     qDebug() << "GraphicsEdge::weight() " << m_weight;
     return m_weight;
 }
-
 
 
 void GraphicsEdge::addWeightNumber (){
@@ -185,6 +198,11 @@ void GraphicsEdge::addWeightNumber (){
     m_drawWeightNumber = true;
 }
 
+
+/**
+ * @brief Toggles visibility of weight numbers
+ * @param toggle
+ */
 void GraphicsEdge::setWeightNumberVisibility (const bool &toggle) {
     if (m_drawWeightNumber) {
         if (toggle)
@@ -204,7 +222,6 @@ void GraphicsEdge::setWeightNumberVisibility (const bool &toggle) {
 
 /**
  * @brief Called from MW when user wants to change an edge's label
-
  * @param label
  */
 void GraphicsEdge::setLabel(const QString &label) {
@@ -214,6 +231,7 @@ void GraphicsEdge::setLabel(const QString &label) {
     if (m_drawLabel)
         edgeLabel->setPlainText (m_label);
 }
+
 
 QString GraphicsEdge::label() const {
     return m_label;
@@ -245,22 +263,33 @@ void GraphicsEdge::setLabelVisibility (const bool &toggle) {
 }
 
 
-void GraphicsEdge::setStartOffset(const int &offset){
-    m_startOffset=offset;
-}
-
-void GraphicsEdge::setEndOffset(int offset){
-    m_endOffset=offset;
-}
 
 
 GraphicsNode *GraphicsEdge::sourceNode() const {
     return source;
 }
 
+
 void GraphicsEdge::setSourceNode(GraphicsNode *node) {
     source = node;
     adjust();
+}
+
+/**
+ * @brief Called from graphicsNode to update edge offset from source node (i.e. when node size changes)
+ * @param offset
+ */
+void GraphicsEdge::setSourceNodeSize(const int &size){
+    m_offsetFromSourceNode=size + m_offsetFromNode;
+    adjust();
+}
+
+/**
+ * Returns the source node number
+ * @return int
+ */
+int GraphicsEdge::sourceNodeNumber () {
+    return source->nodeNumber();
 }
 
 
@@ -274,11 +303,19 @@ void GraphicsEdge::setTargetNode(GraphicsNode *node){
     adjust();
 }
 
-
-int GraphicsEdge::sourceNodeNumber () {
-    return source->nodeNumber();
+/**
+ * @brief Called from graphicsNode to update edge offset from target node (i.e. when node size changes)
+ * @param offset
+ */
+void GraphicsEdge::setTargetNodeSize(const int & size){
+    m_offsetFromTargetNode=size + m_offsetFromNode;
+    adjust();
 }
 
+/**
+ * Returns the target node number
+ * @return int
+ */
 int GraphicsEdge::targetNodeNumber() {
     return target->nodeNumber();
 }
@@ -300,8 +337,8 @@ void GraphicsEdge::adjust(){
     line_dy = line.dy();
     if (source!=target) {
         edgeOffset = QPointF(
-                    (line_dx * m_endOffset) / line_length,
-                    (line_dy * m_endOffset) / line_length);
+                    (line_dx * m_offsetFromTargetNode) / line_length,
+                    (line_dy * m_offsetFromTargetNode) / line_length);
     }
     else edgeOffset = QPointF(0, 0);
 

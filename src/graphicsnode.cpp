@@ -132,11 +132,11 @@ void GraphicsNode::setSize(const int &size){
     m_size=size;
     foreach (GraphicsEdge *edge, inEdgeList) {
         qDebug("GraphicsNode: updating edges in inEdgeList");
-        edge->setEndOffset(size);
+        edge->setTargetNodeSize(size);
     }
     foreach (GraphicsEdge *edge, outEdgeList) {
         qDebug("GraphicsNode: updating edges in outEdgeList");
-        edge->setStartOffset(size);
+        edge->setSourceNodeSize(size);
     }
     setShape(m_shape);
 }
