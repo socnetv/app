@@ -61,11 +61,11 @@ GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
 
     graphicsWidget->scene()->addItem(this);  //add edge to scene to be displayed
 
-    from->addOutLink( this );	//adds this to sourceNode
-    to->addInLink( this );		//adds this to targetNode
+    from->addOutLink( this );       //adds this to sourceNode
+    to->addInLink( this );          //adds this to targetNode
 
-    source=from;			//saves the sourceNode
-    target=to;			//Saves the targetNode
+    source=from;                    //saves the sourceNode
+    target=to;                      //saves the targetNode
     m_style = style;
     m_state = EDGE_STATE_REGULAR ;
     m_color=color;
@@ -74,19 +74,21 @@ GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
 
     m_directed_first = false;
 
-    m_startOffset=source->size();  //used to offset edge from the centre of node
-    m_endOffset=target->size();  //used to offset edge from the centre of node
-    m_arrowSize=4;		//controls the width of the edge arrow
-    eFrom = source->nodeNumber() ;
-    eTo = target->nodeNumber() ;
-    m_weight = weight ;
-    m_Bezier = bezier;
+    m_startOffset=source->size()+5;  // offsets edge from the centre of node
+    m_endOffset=target->size()+5;    // offsets edge from the centre of node
+    m_arrowSize=4;                   // controls the width of the edge arrow
+
+    m_weight = weight ;              //
+    m_Bezier = bezier;               //
 
     m_label = label;
     m_drawLabel = !m_label.isEmpty();
     m_drawWeightNumber = weightNumbers;
 
-    qDebug()<< "GraphicsEdge::GraphicsEdge():  " << eFrom << "->" << eTo
+    qDebug()<< "GraphicsEdge::GraphicsEdge():  "
+            << source->nodeNumber()
+            << "->"
+            << target->nodeNumber()
             <<" = " << m_weight
             <<" label " << m_label
             <<" edgeType " << m_edgeType;
@@ -274,11 +276,11 @@ void GraphicsEdge::setTargetNode(GraphicsNode *node){
 
 
 int GraphicsEdge::sourceNodeNumber () {
-    return eFrom;
+    return source->nodeNumber();
 }
 
 int GraphicsEdge::targetNodeNumber() {
-    return eTo;
+    return target->nodeNumber();
 }
 
 

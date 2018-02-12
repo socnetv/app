@@ -134,7 +134,7 @@ private:
     GraphicsEdgeLabel* edgeLabel;
 
     QString m_color, m_colorNegative, m_label;
-    int eFrom, eTo;
+
     float m_weight;
     int tox1, tox2, toy1, toy2, size;
     int m_edgeType;
