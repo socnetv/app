@@ -4213,36 +4213,28 @@ void MainWindow::initPanels(){
     toolBoxLayoutForceDirectedSelect->setToolTip (
                 tr("Select a Force-Directed Placement layout model to embed to the network.\n"
                    "Available models: \n\n"
-                   "Eades: A spring-gravitational model, the oldest one, where \n"
-                   "connected nodes attract each other and all nodes repel all \n"
-                   "other non-adjacent nodes. \n\n"
-
-                   "Fruchterman-Reingold: Similar to Eades Spring Embedder but more efficient. \n"
-                   "Again adjacent vertices attract each each other but, unlike "
-                   "Eades, all vertices repel each other.\n\n"
-
                    "Kamada-Kawai\n"
                    "The most efficient model of the Spring Embedder family, where \n"
                    "the optimal layout is that of minimum total spring energy, \n"
                    "which is computed as the square summation of the differences \n"
                    "between desirable distances and real ones for all pairs of vertices."
+
+                   "Fruchterman-Reingold \n"
+                   "Similar to Eades Spring Embedder but more efficient. \n"
+                   "Again adjacent vertices attract each each other but, unlike "
+                   "Eades, all vertices repel each other.\n\n"
+
+                   "Eades \n"
+                   "A spring-gravitational model, the oldest one, where \n"
+                   "connected nodes attract each other and all nodes repel all \n"
+                   "other non-adjacent nodes. \n\n"
+
+
                    )
                 );
     toolBoxLayoutForceDirectedSelect->setWhatsThis(
                 tr("Visualize by a Force-Directed Placement layout model.\n\n"
                    "Available models: \n\n"
-                   "Eades Spring Embedder\n"
-                   "A spring-gravitational model, where each node is "
-                   "regarded as physical object (ring) repelling all other non-adjacent"
-                   "nodes, while springs between connected nodes attract them. \n\n"
-
-                   "Fruchterman-Reingold\n"
-                   "In this model, the vertices behave as atomic particles "
-                   "or celestial bodies, exerting attractive and repulsive "
-                   "forces to each other. Again, only vertices that are "
-                   "neighbours  attract each other but, unlike Eades Spring "
-                   "Embedder, all vertices repel each other.\n\n"
-
                    "Kamada-Kawai\n"
                    "The best variant of the Spring Embedder family of models. "
                    "In this the graph is considered to be a dynamic system where "
@@ -4253,6 +4245,19 @@ void MainWindow::initPanels(){
                    "imbalance is formulated as the total spring energy: "
                    "the square summation of the differences between desirable "
                    "distances and real ones for all pairs of vertices."
+
+                   "Fruchterman-Reingold\n"
+                   "In this model, the vertices behave as atomic particles "
+                   "or celestial bodies, exerting attractive and repulsive "
+                   "forces to each other. Again, only vertices that are "
+                   "neighbours  attract each other but, unlike Eades Spring "
+                   "Embedder, all vertices repel each other.\n\n"
+
+                   "Eades Spring Embedder\n"
+                   "A spring-gravitational model, where each node is "
+                   "regarded as physical object (ring) repelling all other non-adjacent"
+                   "nodes, while springs between connected nodes attract them. \n\n"
+
                    )
                 );
 
