@@ -14087,10 +14087,97 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
     outText.setCodec("UTF-8");
     QString datasetDescription=QString::null;
     qDebug()<< "		... writing dataset ";
+    if ( fileName == "Campnet.paj") {
+        qDebug()<< "		... to  " << fileName;
+        datasetDescription = tr("Campnet dataset\n\n"
+                             "The dataset is the interactions among 18 people, "
+                                "including 4 instructors, "
+                                "participating in a 3-week workshop. \n"
+                                "Each person was asked to rank everyone else in terms of "
+                                "how much time they spent with them.\n"
+                                "This dataset shows only top 3 choices for each respondent"
+                                "(week 2 and week 3). Thus, there is a 1 for xij "
+                                "if person i listed person j as one of their top 3 interactors.\n\n"
 
+                             "The Camp data were collected by Steve Borgatti, "
+                                "Russ Bernard and Bert Pelto in 1992 at the NSF Summer "
+                                "Institute for Ethnographic Research Methods.\n "
+                                "During the 3-week workshop, all the participants and "
+                                "instructors were housed at the same motel and spent "
+                                "a great deal of time together. \n"
+                                "The participants were all faculty in Anthropology "
+                                "except Holly, who was a PhD student. ");
+        outText << "*Network Campnet" << endl <<
+                   "*Vertices 18" << endl <<
+                   "1 \"HOLLY\" ic RGBF1F5D5		0.63046 	0.575472	circle" << endl <<
+                   "2 \"BRAZEY\" ic RGBF1F5D5		0.0991736 	0.511006	circle" << endl <<
+                   "3 \"CAROL\" ic RGBF1F5D5		0.576151 	0.43239		circle" << endl <<
+                   "4 \"PAM\" ic RGBF1F5D5		0.726092 	0.371069	circle" << endl <<
+                   "5 \"PAT\" ic RGBF1F5D5		0.709563 	0.5		circle" << endl <<
+                   "6 \"JENNIE\" ic RGBF1F5D5		0.876033 	0.482704	circle" << endl <<
+                   "7 \"PAULINE\" ic RGBF1F5D5	0.619835 	0.286164	circle" << endl <<
+                   "8 \"ANN\" ic RGBF1F5D5		0.864227 	0.309748	circle" << endl <<
+                   "9 \"MICHAEL\" ic RGBF1F5D5	0.489965 	0.638365	box" << endl <<
+                   "10 \"BILL\" ic RGBF1F5D5		0.475797 	0.805031	box" << endl <<
+                   "11 \"LEE\" ic RGBF1F5D5		0.0885478 	0.267296	box" << endl <<
+                   "12 \"DON\" ic RGBF1F5D5		0.645809 	0.778302	box" << endl <<
+                   "13 \"JOHN\" ic RGBF1F5D5		0.453365 	0.290881	box" << endl <<
+                   "14 \"HARRY\" ic RGBF1F5D5		0.593861 	0.669811	box" << endl <<
+                   "15 \"GERY\" ic RGBF1F5D5		0.362456 	0.539308	box" << endl <<
+                   "16 \"STEVE\" ic RGBF1F5D5		0.230224 	0.5		box" << endl <<
+                   "17 \"BERT\" ic RGBF1F5D5		0.218418 	0.245283	box" << endl <<
+                   "18 \"RUSS\" ic RGBF1F5D5		0.323495 	0.29717		box" << endl <<
+                   "*Arcs " << endl <<
+                   "1 4 1 c black" << endl <<
+                   "2 16 1 c black" << endl <<
+                   "2 17 1 c black" << endl <<
+                   "3 4 1 c black" << endl <<
+                   "7 5 1 c black" << endl <<
+                   "8 7 1 c black" << endl <<
+                   "9 1 1 c black" << endl <<
+                   "10 9 1 c black" << endl <<
+                   "10 12 1 c black" << endl <<
+                   "10 14 1 c black" << endl <<
+                   "13 7 1 c black" << endl <<
+                   "13 15 1 c black" << endl <<
+                   "13 18 1 c black" << endl <<
+                   "14 1 1 c black" << endl <<
+                   "15 9 1 c black" << endl <<
+                   "15 16 1 c black" << endl <<
+                   "*Edges " << endl <<
+                   "1 4 1 c black" << endl <<
+                   "1 5 1 c black" << endl <<
+                   "1 12 1 c black" << endl <<
+                   "2 11 1 c black" << endl <<
+                   "2 16 1 c black" << endl <<
+                   "2 17 1 c black" << endl <<
+                   "3 4 1 c black" << endl <<
+                   "3 5 1 c black" << endl <<
+                   "3 7 1 c black" << endl <<
+                   "4 6 1 c black" << endl <<
+                   "4 7 1 c black" << endl <<
+                   "4 8 1 c black" << endl <<
+                   "5 6 1 c black" << endl <<
+                   "6 8 1 c black" << endl <<
+                   "9 12 1 c black" << endl <<
+                   "9 14 1 c black" << endl <<
+                   "10 12 1 c black" << endl <<
+                   "10 14 1 c black" << endl <<
+                   "11 16 1 c black" << endl <<
+                   "11 17 1 c black" << endl <<
+                   "12 14 1 c black" << endl <<
+                   "13 15 1 c black" << endl <<
+                   "13 18 1 c black" << endl <<
+                   "15 16 1 c black" << endl <<
+                   "15 18 1 c black" << endl <<
+                   "16 17 1 c black" << endl <<
+                   "16 18 1 c black" << endl <<
+                   "17 18 1 c black";
+    }
     if ( fileName == "Herschel_Graph.paj") {
         qDebug()<< "		... to  " << fileName;
-        datasetDescription = tr("The Herschel graph is the smallest nonhamiltonian "
+        datasetDescription = tr("Herschel graph \n\n"
+                                "The Herschel graph is the smallest nonhamiltonian "
                                 "polyhedral graph. \n"
                                 "It is the unique such graph on 11 nodes, "
                                 "and has 18 edges.");
@@ -14130,7 +14217,8 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
     }
     else if ( fileName == "Krackhardt_High-tech_managers.paj" ) {
         qDebug()<< "		... to  " << fileName;
-        datasetDescription = tr("Krackhardt's High-tech Managers is a famous social network "
+        datasetDescription = tr("High-tech Managers\n\n"
+                                "Krackhardt's High-tech Managers is a famous social network "
                              "of 21 managers of a high-tech US company. \n\n"
                              "The company manufactured high-tech equipment "
                              "and had just over 100 employees with 21 managers. "
@@ -14237,7 +14325,8 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
 
 
     else if (fileName == "Padgett_Florentine_Families.paj"){
-        datasetDescription = tr("This famous data set includes 16 families who were fighting \n"
+        datasetDescription = tr("Padgett's Florentine_Families\n\n"
+                                "This famous data set includes 16 families who were fighting \n"
                                 "each other to gain political control of the city of Florence \n"
                                 "circa 1430. Among the 16 families, the Medicis and the Strozzis \n"
                                 "were the two most prominent with factions formed around them.\n\n"
@@ -14381,7 +14470,7 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
 //                   "16  9 1";
     }
     else if (fileName == "Zachary_Karate_Club.dl"){
-        datasetDescription = tr(
+        datasetDescription = tr("Zachary Karate Club \n\n"
                              "The Zachary Karate Club is a well-known social network of 34 members"
                              " of a university karate club studied by Wayne W. Zachary from 1970 to 1972.\n\n"
                              "During the study, disputes among two members led to club splitting into two groups. "
@@ -14470,7 +14559,8 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                   "0 0 0 0 0 0 0 0 4 2 0 0 0 3 2 4 0 0 2 1 1 0 3 4 0 0 2 4 2 2 3 4 5 0";
     }
     else if (fileName == "Galaskiewicz_CEOs_and_clubs_affiliation_network_data.2sm"){
-        datasetDescription = tr("The affiliation network of the chief executive officers "
+        datasetDescription = tr("Galaskiewicz's CEOs and Clubs\n\n"
+                                "The affiliation network of the chief executive officers "
                                 "and their spouses from 26 corporations and banks in 15 clubs, "
                                 "corporate and cultural boards. "
                                 "Membership was during the period 1978-1981\n\n"
@@ -14507,7 +14597,8 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                   "0 1 1 0 0 0 0 0 0 0 0 1 0 0 0";
     }
     else if (fileName== "Thurman_Office_Networks_Coalitions.dl" ) {
-        datasetDescription=tr("In the late 70s, B. Thurman spent 16 months "
+        datasetDescription=tr("Thurman's Office Networks and Coalitions\n\n"
+                              "In the late 70s, B. Thurman spent 16 months "
                               "observing the interactions among employees in "
                               "the overseas office of a large international "
                               "corporation. \n"
@@ -14594,7 +14685,8 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                    " 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0";
     }
     else if (fileName == "Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl" ) {
-        datasetDescription = tr("A 16x16 symmetric, binary matrix."
+        datasetDescription = tr("Corporate Interlocks in Netherlands\n\n"
+                                "A 16x16 symmetric, binary matrix."
                                 "This data represent corporate interlocks among "
                                 "the major business entities in the Netherlands. "
                                 "The data were gathered during a 6-year research "
@@ -14663,7 +14755,8 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
     }
 
     else if (fileName == "Stokman_Ziegler_Corporate_Interlocks_West_Germany.dl" ) {
-        datasetDescription = tr("A 15x15 symmetric, binary matrix."
+        datasetDescription = tr("Corporate Interlocks in West Germany\n\n"
+                                "A 15x15 symmetric, binary matrix."
                                 "This data represent corporate interlocks among "
                                 "the major business entities in the West Germany. "
                                 "The data were gathered during a 6-year research "
@@ -14731,7 +14824,8 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
 
     else if (fileName == "Bernard_Killworth_Fraternity.dl"){
         datasetDescription =
-                tr("Bernard & Killworth recorded the interactions among students living in a fraternity at "
+                tr("Bernard and Killworth Fraternity\n\n"
+                   "Bernard & Killworth recorded the interactions among students living in a fraternity at "
                    "a West Virginia college. Subjects had been residents in the fraternity from 3 months to 3 years. "
                    "This network dataset contains two relations: \n\n"
                    "The BKFRAB relation is symmetric and valued. It counts the number of times a pair of subjects were "
@@ -15043,6 +15137,7 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
     else if ( fileName == "Freeman_EIES_networks_32actors.dl" ) {
         qDebug()<< "		... to  " << fileName;
         datasetDescription = tr(
+                    "Freeman's EIES Networks\n\n"
                     "This data comes from an early experiment on computer mediated communication. \n"
                     "Fifty academics were allowed to contact each other via an "
                     "Electronic Information Exchange System (EIES). "
@@ -15238,6 +15333,7 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
     }
     else if ( fileName == "Freeman_EIES_network_48actors_Acquaintanceship_at_time-1.dl" ) {
         qDebug()<< "		... to  " << fileName;
+        datasetDescription = tr("Freeman's EIES network (Acquaintanceship)");
         outText <<
                    "dl"<<endl<<
                    "N=48"<<endl<<
@@ -15942,6 +16038,7 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
     }
     else if ( fileName == "Freeman_EIES_network_48actors_Acquaintanceship_at_time-2.dl" ) {
         qDebug()<< "		... to  " << fileName;
+        datasetDescription = tr("Freeman's EIES network (Acquaintanceship) at time 2");
         outText <<
                    "dl"<<endl<<
                    "N=48"<<endl<<
@@ -16780,6 +16877,7 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
 
     }
     else if ( fileName == "Freeman_EIES_network_48actors_Messages.dl" ) {
+        datasetDescription = tr("Freeman's EIES network (Messages)");
         qDebug()<< "		... to  " << fileName;
         outText <<
               "dl"<<endl<<
@@ -17249,7 +17347,8 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
 
     }
     else if (fileName=="Freeman_34_possible_graphs_with_N_5_multirelational.paj") {
-        datasetDescription=tr("This data comes from Freeman's (1979) seminal paper "
+        datasetDescription=tr("Freeman's 34 possible graphs of N=5\n\n"
+                              "This data comes from Freeman's (1979) seminal paper "
                 "\"Centrality in social networks\".\n"
                 "It illustrates all 34 possible graphs of five nodes. \n"
                 "Freeman used them to calculate and compare the three measures "
@@ -17469,6 +17568,8 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
 
     }
     else if (fileName == "Mexican_Power_Network_1940s.lst"){
+        datasetDescription = tr("Mexican Power Network in the 1940s\n\n"
+                                "");
         outText<< "18 8 10 23 21" << endl <<
                   "19 11 21" << endl <<
                   "29 5 9 10" << endl <<
@@ -17490,7 +17591,8 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                   "25 10 11 8";
     }
     else if (fileName == "Knoke_Bureaucracies_Network.pajek"){
-        datasetDescription=tr("In 1978, Knoke & Wood collected data from workers at 95 organizations in Indianapolis. "
+        datasetDescription=tr("Knoke Bureaucracies\n\n"
+                              "In 1978, Knoke & Wood collected data from workers at 95 organizations in Indianapolis. "
                               "Respondents indicated with which other organizations their own organization had any "
                               "of 13 different types of relationships. \n"
                               "Knoke and Kuklinski (1982) selected a subset of 10 organizations and two relationships: "
@@ -17538,6 +17640,8 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
     }
     else if (fileName=="Stephenson&Zelen_40_AIDS_patients_sex_contact.paj"){
         qDebug()<<"Stephenson&Zelen_40_AIDS_patiens";
+        datasetDescription=tr("Stephenson & Zelen's AIDS patients network (sex contact)\n\n" );
+
         outText << "*Network Stephenson&Zelen_40_AIDS_patients"<<endl<<
                    "*Vertices 40"<<endl<<
                    "1 \"1\" ic red		0.15899 	0.150442	circle"<<endl<<
@@ -17649,6 +17753,7 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
     }
     else if (fileName=="Wasserman_Faust_7actors_star_circle_line_graphs.paj") {
         qDebug () << "Wasserman_Faust_7actors_star_circle_line_graphs.paj";
+        datasetDescription=tr("Wasserman & Faust's 7 actors graphs\n\n" );
         outText<< "*Network 7actors-wasserman-test-net-all"<<endl<<
                   "*Vertices 7"<<endl<<
                   "1 \"1\" ic red         0.441826        0.426254        circle"<<endl<<
@@ -17684,6 +17789,7 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                   "0 0 0 0 1 0 0";
     }
     else if (fileName == "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek"){
+        datasetDescription=tr("Wasserman & Faust's Countries Trade Data (manufactured goods)\n\n" );
         qDebug()<< "		Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek written... ";
         outText<< "*Network Countries_Trade_Basic_Manufactured_Goods" << endl <<
                   "*Vertices      24" << endl <<
@@ -18874,15 +18980,15 @@ void Graph::writeMatrixLaplacianPlainText(const QString &fn) {
     This method is automatically invoked when a QTimerEvent occurs
     UNUSED
 */
-void Graph::timerEvent(QTimerEvent *event) {	
-    qDebug("Graph: timerEvent()");
-    Q_UNUSED(event);
-    if (!graphModified()) {
-        qDebug("Timer will be KILLED since no vertex is movin any more...");
-        killTimer(timerId);
-        timerId = 0;
-    }
-}
+//void Graph::timerEvent(QTimerEvent *event) {
+//    qDebug("Graph: timerEvent()");
+//    Q_UNUSED(event);
+//    if (!graphModified()) {
+//        qDebug("Timer will be KILLED since no vertex is movin any more...");
+//        killTimer(timerId);
+//        timerId = 0;
+//    }
+//}
 
 
 

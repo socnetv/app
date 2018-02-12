@@ -308,18 +308,19 @@ void GraphicsEdge::adjust(){
     sourcePoint = line.p1() + edgeOffset ;
     targetPoint = line.p2() - edgeOffset ;
 
-    if (m_edgeType == EDGE_DIRECTED_OPPOSITE_EXISTS ) {
-        if (m_directed_first ) {
-            sourcePoint -= QPointF(4,4);
-            targetPoint -= QPointF(4,4);
-        }
-        else {
-            sourcePoint += QPointF(4,4);
-            targetPoint += QPointF(4,4);
+//    if (m_edgeType == EDGE_DIRECTED_OPPOSITE_EXISTS ) {
+//        if (m_directed_first ) {
+//            sourcePoint -= QPointF(4,4);
+//            targetPoint -= QPointF(4,4);
+//        }
+//        else {
+//            sourcePoint += QPointF(4,4);
+//            targetPoint += QPointF(4,4);
 
-        }
+//        }
 
-    }
+//    }
+
     if (m_drawWeightNumber)
         weightNumber->setPos(
                     -20 + (source->x()+target->x())/2.0,
@@ -388,7 +389,7 @@ void GraphicsEdge::adjust(){
                                  << targetPoint
                                  );
 
-            if (m_edgeType == EDGE_RECIPROCAL_UNDIRECTED ) {
+            if (m_edgeType == EDGE_RECIPROCAL_UNDIRECTED || m_edgeType == EDGE_DIRECTED_OPPOSITE_EXISTS ) {
     //            qDebug() << "**** GraphicsEdge::paint() This edge is SYMMETRIC! "
     //                     << " So, we need to create Arrow at src node as well";
                 QPointF srcArrowP1 = sourcePoint + QPointF(sin(angle +Pi / 3) * m_arrowSize,
@@ -450,10 +451,14 @@ QRectF GraphicsEdge::boundingRect() const {
 
 
 void GraphicsEdge::setDirectedWithOpposite(){
-    qDebug()<< "GraphicsEdge::setDirectedWithOpposite()";
+    qDebug()<< "GraphicsEdge::setDirectedWithOpposite() - "
+            << source->nodeNumber()
+            << "->"
+            << target->nodeNumber();
     prepareGeometryChange();
     m_edgeType = EDGE_DIRECTED_OPPOSITE_EXISTS;
     m_directed_first= true;
+    adjust();
 }
 
 
