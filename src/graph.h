@@ -993,7 +993,7 @@ private:
     float meanSDP, varianceSDP;
     float meanPP, variancePP;
     float meanPRP, variancePRP;
-    float minEccentricity, maxEccentricity, sumEccentricity;
+    float minEccentricity, maxEccentricity;
     float minSDP, maxSDP, sumDP, sumSDP, groupDP;
     float minSDC, maxSDC, sumDC, sumSDC, groupDC;
     float minSCC, maxSCC, nomSCC, denomSCC, sumCC, sumSCC, groupCC, maxIndexCC;
@@ -1041,6 +1041,7 @@ private:
     int m_graphReciprocityPairsReciprocated;
     int m_graphReciprocityPairsTotal;
 
+    int m_disconnectedVertices;
     int m_graphConnectedness;
     int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
     //int timerId;
