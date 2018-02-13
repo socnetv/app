@@ -950,11 +950,20 @@ private:
 
 
     QList<QString> m_relationsList;
-    QList<int>  triadTypeFreqs; 	//stores triad type frequencies
-    QList<int>  m_isolatedVerticesList,m_verticesList, m_graphFileFormatExportSupported;
+
+    QList<int> m_graphFileFormatExportSupported;
+
+    QList<int> triadTypeFreqs; 	//stores triad type frequencies
+
+    QList<int> m_verticesList;
+    QList<int> m_verticesIsolatedList;
+    QList<int> m_verticesInfiniteEccentricity;
+    QList<int> m_verticesSelected;
+
     QSet<int> m_verticesSet;
+
     QList<SelectedEdge> m_selectedEdges;
-    QList<int> m_selectedVertices;
+
     QHash <int, int> influenceRanges, influenceDomains;
     QHash <int, int> m_vertexPairsNotConnected;
     QHash <int, int> m_vertexPairsUnilaterallyConnected;
@@ -1041,7 +1050,7 @@ private:
     int m_graphReciprocityPairsReciprocated;
     int m_graphReciprocityPairsTotal;
 
-    int m_disconnectedVertices;
+
     int m_graphConnectedness;
     int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
     //int timerId;
@@ -1057,7 +1066,7 @@ private:
     bool calculatedGraphSymmetry, calculatedGraphReciprocity;
     bool calculatedGraphDensity, calculatedGraphWeighted;
     bool calculatedGraphConnectedness;
-    bool m_undirected, m_symmetric, m_isWeighted;
+    bool m_undirected, m_symmetric, m_isWeighted, m_graphDisconnected;
 
     QString VERSION, fileName, m_graphName, initEdgeColor, initVertexColor,
         initVertexNumberColor, initVertexLabelColor, initVertexShape;

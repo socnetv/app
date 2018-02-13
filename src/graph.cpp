@@ -66,6 +66,7 @@ Graph::Graph() {
     m_fileFormat=FILE_UNRECOGNIZED;
     m_undirected=false;
     m_isWeighted=false;
+    m_graphDisconnected=false;
     m_symmetric=true;
     m_graphDensity = -1;
     fileName ="";
@@ -294,7 +295,7 @@ void Graph::clear(const QString &reason) {
 
     m_verticesList.clear();
     m_verticesSet.clear();
-    m_isolatedVerticesList.clear();
+    m_verticesIsolatedList.clear();
     m_vertexPairsNotConnected.clear();
     m_vertexPairsUnilaterallyConnected.clear();
     influenceDomains.clear();
@@ -322,6 +323,7 @@ void Graph::clear(const QString &reason) {
 
     m_undirected=false;
     m_isWeighted=false;
+    m_graphDisconnected=false;
     m_symmetric=true;
     m_graphDensity = -1;
 
@@ -2252,25 +2254,25 @@ QList<int> Graph::verticesListIsolated(){
     if (!graphModified() && calculatedIsolates ){
         qDebug()<< "Graph::verticesListIsolated() - graph not modified and "
                    "already calculated isolates. Returning list as is:"
-                <<m_isolatedVerticesList;
-        return m_isolatedVerticesList;
+                <<m_verticesIsolatedList;
+        return m_verticesIsolatedList;
     }
 
     VList::const_iterator it;
-    m_isolatedVerticesList.clear();
+    m_verticesIsolatedList.clear();
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
 //        if ( ! (*it)->isEnabled() )
 //            continue;
         if ((*it)->isIsolated()) {
-            m_isolatedVerticesList << (*it)->name();
+            m_verticesIsolatedList << (*it)->name();
             qDebug()<< "Graph::verticesListIsolated() - node " << (*it)->name()
                     << " is isolated. Marking it." ;
         }
     }
     qDebug()<< "Graph::verticesListIsolated() - isolated vertices list:"
-            <<m_isolatedVerticesList;
+            <<m_verticesIsolatedList;
     calculatedIsolates = true;
-    return m_isolatedVerticesList ;
+    return m_verticesIsolatedList ;
 }
 
 
@@ -2323,7 +2325,7 @@ QSet<int> Graph::verticesSet(){
 
 /**
  * @brief Creates a subgraph (clique, star, cycle, line) with vertices in vList
- * Iff vList is empty, then fallbacks to the m_selectedVertices.
+ * Iff vList is empty, then fallbacks to the m_verticesSelected.
  * @param vList
  */
 void Graph::verticesCreateSubgraph(QList<int> vList,
@@ -2336,7 +2338,7 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
     }
 
     if (vList.isEmpty()) {
-        vList = m_selectedVertices;
+        vList = m_verticesSelected;
     }
     qDebug()<<"Graph::verticesCreateSubgraph() - type:" << type
                << "vList:" << vList;
@@ -2489,12 +2491,12 @@ bool Graph::graphLoaded() const {
 void Graph::graphSelectionChanged(const QList<int> selectedVertices,
                                    const QList<SelectedEdge> selectedEdges) {
 
-    m_selectedVertices = selectedVertices;
+    m_verticesSelected = selectedVertices;
     m_selectedEdges = selectedEdges;
 
-    qDebug() << "Graph::graphSelectionChanged()" << m_selectedVertices;
+    qDebug() << "Graph::graphSelectionChanged()" << m_verticesSelected;
 
-    emit signalSelectionChanged(m_selectedVertices.size(), m_selectedEdges.size());
+    emit signalSelectionChanged(m_verticesSelected.size(), m_selectedEdges.size());
 
 }
 
@@ -2504,7 +2506,7 @@ void Graph::graphSelectionChanged(const QList<int> selectedVertices,
  * @return
  */
 QList<int> Graph::graphSelectedVertices() const{
-    return m_selectedVertices;
+    return m_verticesSelected;
 }
 
 
@@ -2513,7 +2515,7 @@ QList<int> Graph::graphSelectedVertices() const{
  * @return
  */
 int Graph::graphSelectedVerticesCount() const{
-    return m_selectedVertices.size();
+    return m_verticesSelected.size();
 }
 
 
@@ -2523,7 +2525,7 @@ int Graph::graphSelectedVerticesCount() const{
  */
 int Graph::graphSelectedVerticesMin() const{
     int min = RAND_MAX;
-    foreach (int i, m_selectedVertices) {
+    foreach (int i, m_verticesSelected) {
         if (i < min) min = i;
     }
     return min;
@@ -2536,7 +2538,7 @@ int Graph::graphSelectedVerticesMin() const{
  */
 int Graph::graphSelectedVerticesMax() const{
     int max = 0;
-    foreach (int i, m_selectedVertices) {
+    foreach (int i, m_verticesSelected) {
         if (i > max ) max = i;
     }
     return max;
@@ -4129,6 +4131,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                 (*it)->setShortestPaths((*it1)->name(), 0);
             }
         }
+        m_graphDisconnected = true;
     }
     else {
 
@@ -4141,7 +4144,8 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
         float sigma_u=0, sigma_w=0;
         float delta_u=0, delta_w=0;
         float d_sw=0, d_su=0;
-        bool disconnectedGraph = false;
+
+        m_graphDisconnected = false;
         H_f_i::const_iterator hfi ; // for Power Centrality
 
         qDebug() << "Graph: graphDistanceGeodesicCompute() - initialising centrality variables ";
@@ -4169,7 +4173,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
         calculatedDistances = false;
         m_graphAverageDistance=0;
         m_graphGeodesicsCount = 0; //non zero distances
-        m_disconnectedVertices = 0; // counts vertices that are not connected to others
+        m_verticesInfiniteEccentricity.clear(); // counts vertices with infinite eccentricity
 
         qDebug() << "	m_graphDiameter "<< m_graphDiameter
                  << " m_graphAverageDistance " <<m_graphAverageDistance;
@@ -4244,7 +4248,8 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
             }
 
 
-            if (computeCentralities){
+            if (computeCentralities) {
+
                 qDebug()<< "***** PHASE 1 (SSSP): "
                            "Empty Stack which will return vertices in "
                            "order of their (non increasing) distance from s ...";
@@ -4268,17 +4273,21 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                        "Call BFS or dijkstra for s"
                      << s << " vpos " << si
                      << " to compute distance and shortest paths to every vertex t" ;
-            if (!considerWeights)
+
+            if (!considerWeights) {
                 BFS(s,si,computeCentralities, dropIsolates );
-            else
+            }
+            else {
                 dijkstra(s, si,computeCentralities, inverseWeights, dropIsolates);
+            }
 
             qDebug()<< "***** PHASE 1 (SSSP): "
                        "FINISHED BFS / DIJKSTRA ALGORITHM. "
                    "Continuing to calculate centralities";
 
-            if (computeCentralities){
+            if (computeCentralities) {
 
+                // Compute Closeness Centrality
                 if ( (*it)->CC() != 0 )  {
                     CC=1.0/(*it)->CC();  //Closeness centrality must be inverted
                 }
@@ -4291,45 +4300,8 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                            "s" << s << "vpos" << si << "CC" << CC;
 
 
-                //Check eccentricity (max geodesic distance)
-                eccentricity = (*it)->eccentricity();
-                qDebug() << "actor"
-                         << (*it)->name()
-                        << "eccentricity" << eccentricity;
-                if ( eccentricity != 0 ) {
-
-                    //Find min/max Eccentricity
-                    minmax( eccentricity, (*it), maxEccentricity, minEccentricity,
-                            maxNodeEccentricity, minNodeEccentricity) ;
-                    resolveClasses(eccentricity, discreteEccentricities,
-                                   classesEccentricity ,(*it)->name() );
-
-                    //Eccentricity Centrality is the inverted Eccentricity
-                    EC=1.0 / eccentricity;
-                    (*it)->setEC( EC ); //Set Eccentricity Centrality
-                    (*it)->setSEC( EC ); //Set std EC = EC
-                    sumEC+=EC;  //set sum EC
-
-                    qDebug()<< "***** PHASE 2 (CENTRALITIES): "
-                               "s" << s << "vpos" << si << "EC" << EC;
-                }
-                else {
-                    (*it)->setEccentricity( RAND_MAX );
-                    disconnectedGraph = true;
-                    m_disconnectedVertices ++;
-
-                    EC=0;
-                    (*it)->setEC( EC );     //Set Eccentricity Centrality
-                    (*it)->setSEC( EC );    //Set std EC = EC
-                    sumEC+=EC;  //set sum EC
-
-                    qDebug()<< "***** PHASE 2 (CENTRALITIES): "
-                            << "s" << s << "vpos" << si << "EC=0 (disconnected graph)";
-
-                }
-
-
-                //Compute Power Centrality: In = [ 1/(N-1) ] * ( Nd1 + Nd2 * 1/2 + ... + Ndi * 1/i )
+                // Compute Power Centrality
+                // In = [ 1/(N-1) ] * ( Nd1 + Nd2 * 1/2 + ... + Ndi * 1/i )
                 // where
                 // Ndi (sizeOfNthOrderNeighborhood) is the number of nodes at distance i from this node.
                 // N is the sum Nd0 + Nd1 + Nd2 + ... + Ndi, that is the amount of nodes in the same component as the current node
@@ -4359,6 +4331,9 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 
                 qDebug()<< "***** PHASE 2 (CENTRALITIES): "
                            "s" << s << "vpos" << si << "PC" << PC;
+
+
+                // Compute Betweeness Centrality
 
                 qDebug()<< "***** PHASE 2 (BC/ACCUMULATION): "
                            "Start back propagation of dependencies." <<
@@ -4456,6 +4431,92 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 
 
         qDebug() << "*********** MAIN LOOP (SSSP problem): FINISHED.";
+
+
+        // check if there are disconnected nodes
+        qDebug() << "Checking if there are disconnected nodes";
+        m_graphDisconnected = false;
+        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
+
+            if ( ! (*it)->isEnabled() ) {
+                qDebug()<< "actor i" <<  (*it)->name() << "disabled. SKIP/CONTINUE";
+                continue;
+            }
+
+            for ( it1=it; it1!=m_graph.cend(); ++it1){
+
+                if ( ! (*it1)->isEnabled() ) {
+                    qDebug()<< "   actor j" <<  (*it1)->name() << "disabled. SKIP/CONTINUE";
+                    continue;
+                }
+                if (  (*it1)->name() == (*it)->name() ) {
+                    qDebug()<< "   == actor j" <<  (*it1)->name() << "SKIP/CONTINUE";
+                    continue;
+                }
+
+                if ( (*it)-> distance ( (*it1)->name() ) == RAND_MAX) {
+                    m_verticesInfiniteEccentricity.append((*it)->name());
+                    (*it)->setEccentricity( RAND_MAX );
+
+                    qDebug()<< "actor i" <<  (*it)->name()
+                            << "has infinite eccentricity. "
+                               "There is no path from i to j"
+                            << (*it1)->name();
+
+                    if ( (*it1)-> distance ( (*it)->name() ) == RAND_MAX) {
+                        m_verticesInfiniteEccentricity.append((*it1)->name());
+                       m_graphDisconnected = true;
+                        (*it1)->setEccentricity( RAND_MAX );
+                       qDebug()<< "actor j" <<  (*it1)->name()
+                               << "has also infinite eccentricity. "
+                                  "There is no path from j to i"
+                               << (*it1)->name();
+
+                    }
+                }
+
+
+            }
+
+            if (computeCentralities) {
+
+                // Compute Eccentricity (max geodesic distance)
+                eccentricity = (*it)->eccentricity();
+                qDebug() << "actor"
+                         << (*it)->name()
+                        << "eccentricity" << eccentricity;
+                if ( eccentricity != RAND_MAX ) {
+
+                    //Find min/max Eccentricity
+                    minmax( eccentricity, (*it), maxEccentricity, minEccentricity,
+                            maxNodeEccentricity, minNodeEccentricity) ;
+                    resolveClasses(eccentricity, discreteEccentricities,
+                                   classesEccentricity ,(*it)->name() );
+
+                    //Eccentricity Centrality is the inverted Eccentricity
+                    EC=1.0 / eccentricity;
+                    (*it)->setEC( EC ); //Set Eccentricity Centrality
+                    (*it)->setSEC( EC ); //Set std EC = EC
+                    sumEC+=EC;  //set sum EC
+
+                    qDebug()<< "actor i" <<  (*it)->name()
+                            << "EC"
+                            << EC;
+                }
+                else {
+
+                    EC=0;
+                    (*it)->setEC( EC );     //Set Eccentricity Centrality
+                    (*it)->setSEC( EC );    //Set std EC = EC
+                    sumEC+=EC;  //set sum EC
+
+                    qDebug()<< "actor i" <<  (*it)->name()
+                            << "EC=0 (disconnected graph)";
+
+                }
+            }
+
+        } // end for disconnected checking
 
         if (computeCentralities) {
 
@@ -5391,18 +5452,18 @@ void Graph::writeEccentricity(
     outText << "<span class=\"info\">"
             << tr("e = 1 ")
             <<"</span>"
-            << tr("when a vertex is connected to all other vertices (star node).")
+            << tr("when the node is connected to all others (star node).")
             <<"<br/>"
            << "<span class=\"info\">"
             << tr("e > 1 ")
             <<"</span>"
-            << tr("when a vertex is not directly connected to all others. "
-                  "Larger eccentricity means that the actor is farther from others.")
+            << tr("when the node is not directly connected to all others. "
+                  "Larger eccentricity means the actor is farther from others.")
             <<"<br />"
            << "<span class=\"info\">"
             << tr("e = \xE2\x88\x9E ")
             <<"</span>"
-            << tr("the actor is not connected to other actors.")
+            << tr("there is no path from that node to one or more other nodes.")
             <<"<br/>";
     outText << "</p>";
 
