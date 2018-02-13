@@ -4333,7 +4333,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                            "s" << s << "vpos" << si << "PC" << PC;
 
 
-                // Compute Betweeness Centrality
+                // Compute Betweenness Centrality
 
                 qDebug()<< "***** PHASE 2 (BC/ACCUMULATION): "
                            "Start back propagation of dependencies." <<
@@ -7174,7 +7174,7 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
 
 
 /**
- * @brief Writes Betweeness centralities to file
+ * @brief Writes Betweenness centralities to file
  * @param fileName
  * @param considerWeights
  * @param inverseWeights

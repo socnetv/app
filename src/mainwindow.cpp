@@ -4020,7 +4020,7 @@ void MainWindow::initPanels(){
                 );
     toolBoxAnalysisProminenceSelect -> setToolTip(
                 tr("Metrics to understand how 'prominent' or important each \n"
-                   "actor (node) is inside the network, i.e.\n Betweeness Centrality, \n"
+                   "actor (node) is inside the network, i.e.\n Betweenness Centrality, \n"
                    "Eigenvector Centrality, PageRank etc.")
                 );
     toolBoxAnalysisProminenceSelect -> setWhatsThis(
