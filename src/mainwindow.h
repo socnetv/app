@@ -574,7 +574,7 @@ private:
             *editNodeNumbersColorAct,*editNodeLabelsColorAct,
             *editEdgesCocitationAct;
     QAction *optionsEdgeThicknessPerWeightAct, *optionsEdgeWeightNumbersAct, *optionsEdgesVisibilityAct;
-    QAction *optionsEdgeArrowsAct, *drawEdgesBezier,*considerEdgeWeightsAct;
+    QAction *optionsEdgeArrowsAct, *drawEdgesBezier,*optionsEdgeWeightConsiderAct;
     QAction *optionsEdgeLabelsAct;
     QAction *backgroundImageAct,*helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
     QAction *helpCheckUpdatesApp;

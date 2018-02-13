@@ -3147,21 +3147,21 @@ void MainWindow::initActions(){
     connect(optionsEdgeWeightNumbersAct, SIGNAL(triggered(bool)),
             this, SLOT(slotOptionsEdgeWeightNumbersVisibility(bool)) );
 
-    considerEdgeWeightsAct = new QAction(tr("Consider Edge Weights in Calculations"),	this);
-    considerEdgeWeightsAct->
+    optionsEdgeWeightConsiderAct = new QAction(tr("Consider Edge Weights in Calculations"),	this);
+    optionsEdgeWeightConsiderAct->
             setStatusTip(
                 tr("Toggle considering edge weights during calculations "
                    "(i.e. distances, centrality, etc) (this session only)"));
-    considerEdgeWeightsAct->
+    optionsEdgeWeightConsiderAct->
             setWhatsThis(
                 tr("Consider Edge Weights in Calculations\n\n"
                    "Enables or disables considering edge weights during "
                    "calculations (i.e. distances, centrality, etc).\n"
                    "This setting will apply to this session only. \n"
                    "To permanently change it, use Settings & Preferences"));
-    considerEdgeWeightsAct->setCheckable(true);
-    considerEdgeWeightsAct->setChecked(false);
-    connect(considerEdgeWeightsAct, SIGNAL(triggered(bool)),
+    optionsEdgeWeightConsiderAct->setCheckable(true);
+    optionsEdgeWeightConsiderAct->setChecked(false);
+    connect(optionsEdgeWeightConsiderAct, SIGNAL(triggered(bool)),
             this, SLOT(slotOptionsEdgeWeightsDuringComputation(bool)) );
 
 
@@ -3686,7 +3686,7 @@ void MainWindow::initMenuBar() {
     edgeOptionsMenu -> addAction (optionsEdgesVisibilityAct);
     edgeOptionsMenu -> addSeparator();
     edgeOptionsMenu -> addAction (optionsEdgeWeightNumbersAct);
-    edgeOptionsMenu -> addAction (considerEdgeWeightsAct);
+    edgeOptionsMenu -> addAction (optionsEdgeWeightConsiderAct);
     edgeOptionsMenu -> addAction (optionsEdgeThicknessPerWeightAct);
     edgeOptionsMenu -> addSeparator();
     edgeOptionsMenu -> addAction (optionsEdgeLabelsAct);
@@ -5097,7 +5097,6 @@ void MainWindow::initApp(){
 
     // Init basic variables
 
-    considerWeights=false;
     inverseWeights=false;
     askedAboutWeights=false;
 
@@ -5192,7 +5191,9 @@ void MainWindow::initApp(){
     optionsEdgeWeightNumbersAct->setChecked(
                 (appSettings["initEdgeWeightNumbersVisibility"] == "true") ? true:false
                 );
-    considerEdgeWeightsAct->setChecked(false);
+    optionsEdgeWeightConsiderAct->setChecked(
+                (appSettings["considerWeights"] == "true") ? true:false
+                );
     optionsEdgeArrowsAct->setChecked(
                 (appSettings["initEdgeArrows"] == "true") ? true: false
             );
@@ -10928,7 +10929,7 @@ void MainWindow::askAboutWeights(){
         return;
     }
 
-    if ( ! considerEdgeWeightsAct->isChecked() && !considerWeights){
+    if ( ! optionsEdgeWeightConsiderAct->isChecked() && !considerWeights){
         switch(
                slotHelpMessageToUser(USER_MSG_QUESTION, tr("Network is edge-weighted. Consider edge weights?"),
                                      tr("Edge-weighted network. Consider edge weights?"),
@@ -10940,15 +10941,15 @@ void MainWindow::askAboutWeights(){
         {
         case QMessageBox::Yes:
             considerWeights=true;
-            considerEdgeWeightsAct->setChecked(true);
+            optionsEdgeWeightConsiderAct->setChecked(true);
             break;
         case QMessageBox::No:
             considerWeights=false;
-            considerEdgeWeightsAct->setChecked(false);
+            optionsEdgeWeightConsiderAct->setChecked(false);
             break;
         default: // just for sanity
             considerWeights=false;
-            considerEdgeWeightsAct->setChecked(false);
+            optionsEdgeWeightConsiderAct->setChecked(false);
             return;
             break;
         }
