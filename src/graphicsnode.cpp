@@ -681,6 +681,7 @@ GraphicsNode::~GraphicsNode(){
     inEdgeList.clear();
     outEdgeList.clear();
     this->hide();
+    delete m_path;
     graphicsWidget->removeItem(this);
 
 }

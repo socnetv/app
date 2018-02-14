@@ -28,25 +28,34 @@
 
 #include "dialogwebcrawler.h"
 #include <QDebug>
+#include <QTextEdit>
 #include <QPushButton>
 #include <QUrl>
 
 DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
 {
     ui.setupUi(this);
-    connect ( ui.buttonBox,SIGNAL(accepted()), this, SLOT(gatherData()) );
 
     (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
 
     (ui.seedUrlEdit)->setFocus();
 
-    ui.patternsIncludedTextEdit->setText("example.com/pattern/*");
-    ui.patternsExcludedTextEdit->setText("example.com/pattern/*");
+    ui.patternsIncludedTextEdit->setText("*");
+    ui.patternsIncludedTextEdit->setToolTip("Enter a pattern i.e. example.com/pattern/*");
+
+    ui.patternsExcludedTextEdit->setText("");
+    ui.patternsExcludedTextEdit->setToolTip("Enter a pattern i.e. example.com/pattern/*");
+
+    connect (ui.patternsExcludedTextEdit, &QTextEdit::textChanged,
+             this, &DialogWebCrawler::checkErrors);
+
     connect (ui.extLinksCheckBox, &QCheckBox::stateChanged,
              this, &DialogWebCrawler::checkErrors);
 
     connect (ui.intLinksCheckBox, &QCheckBox::stateChanged,
              this, &DialogWebCrawler::checkErrors);
+
+    connect ( ui.buttonBox,SIGNAL(accepted()), this, SLOT(gatherData()) );
 
     if ( !ui.extLinksCheckBox->isChecked()  &&!ui.intLinksCheckBox->isChecked() )
     {
@@ -64,6 +73,9 @@ void DialogWebCrawler::checkErrors(){
     else
         (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(true);
 
+    if (ui.patternsExcludedTextEdit->toPlainText() != "" ) {
+        qDebug () <<ui.patternsExcludedTextEdit->toPlainText();
+    }
 }
 
 void DialogWebCrawler::gatherData(){

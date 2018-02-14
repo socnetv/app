@@ -119,7 +119,7 @@ GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
     setBoundingRegionGranularity(0);
     //setCacheMode (QGraphicsItem::ItemCoordinateCache);
 
-    m_path = new QPainterPath;
+   // m_path = new QPainterPath;
     m_path_shape = new QPainterPath;
 
     adjust();
@@ -652,8 +652,13 @@ GraphicsEdge::~GraphicsEdge(){
 
     graphicsWidget->removeItem(this);
 
-    if ( ! m_path->isEmpty())
-         delete m_path;
+    if ( ! m_path->isEmpty()) {
+        delete m_path;
+    }
+
+    if (m_path_shape->isEmpty()) {
+        delete m_path_shape;
+    }
 
 }
 

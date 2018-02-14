@@ -243,6 +243,9 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
     }
     m_textEditors.clear();
 
+    delete editNodePropertiesAct;
+    delete editNodeRemoveAct;
+
     qDebug() << "MW::closeEvent() - Clearing codecs...";
     codecs.clear();
 
@@ -3734,8 +3737,6 @@ void MainWindow::initToolBar(){
     toolBar -> addAction (networkPrint);
     toolBar -> addSeparator();
 
-    QLabel *labelRotateSpinBox= new QLabel;
-    labelRotateSpinBox ->setText(tr("Rotation:"));
 
     toolBar -> addSeparator();
 
@@ -7839,10 +7840,8 @@ void MainWindow::slotNetworkWebCrawlerDialog() {
 
 
 /**
- * @brief MainWindow::slotNetworkWebCrawler
- * Called from m_WebCrawlerDialog
- * Clears the loaded network (saving if needed) then passes parameters to
- * Graph::webCrawl function
+ * @brief Called from m_WebCrawlerDialog. Clears the loaded network then
+ * passes parameters to Graph::webCrawl function
  * @param seed
  * @param maxNodes
  * @param maxRecursion
