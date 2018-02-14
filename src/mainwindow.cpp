@@ -340,9 +340,7 @@ QMap<QString,QString> MainWindow::initSettings(){
     appSettings["initEdgeWeightNumberSize"] = "7";
     appSettings["initEdgeWeightNumberColor"] = "#00aa00";
     appSettings["initEdgeLabelsVisibility"] = "false";
-    appSettings["considerWeights"]="false";
-    appSettings["inverseWeights"]="false";
-    appSettings["askedAboutWeights"]="false";
+
 
     appSettings["initBackgroundColor"]="white"; //"gainsboro";
     appSettings["initBackgroundImage"]="";
@@ -5191,9 +5189,8 @@ void MainWindow::initApp(){
     optionsEdgeWeightNumbersAct->setChecked(
                 (appSettings["initEdgeWeightNumbersVisibility"] == "true") ? true:false
                 );
-    optionsEdgeWeightConsiderAct->setChecked(
-                (appSettings["considerWeights"] == "true") ? true:false
-                );
+    optionsEdgeWeightConsiderAct->setChecked( false ) ;
+
     optionsEdgeArrowsAct->setChecked(
                 (appSettings["initEdgeArrows"] == "true") ? true: false
             );
@@ -10065,7 +10062,8 @@ void MainWindow::slotLayoutRadialByProminenceIndex(QString choice=""){
 
     activeGraph->layoutByProminenceIndex(
                 userChoice, 0,
-                considerWeights, inverseWeights,
+                optionsEdgeWeightConsiderAct->isChecked(),
+                inverseWeights,
                 editFilterNodesIsolatesAct->isChecked() || dropIsolates);
 
     statusMessage( tr("Nodes in inner circles have higher %1 score. ").arg(prominenceIndexName ) );
@@ -10255,7 +10253,8 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
 
     activeGraph->layoutByProminenceIndex(
                 userChoice, 1,
-                considerWeights, inverseWeights,
+                optionsEdgeWeightConsiderAct->isChecked(),
+                inverseWeights,
                 editFilterNodesIsolatesAct->isChecked() || dropIsolates);
 
 
@@ -10442,7 +10441,8 @@ void MainWindow::slotLayoutNodeSizeByProminenceIndex(QString choice=""){
 
     activeGraph->layoutByProminenceIndex(
                 userChoice, 2,
-                considerWeights, inverseWeights,
+                optionsEdgeWeightConsiderAct->isChecked(),
+                inverseWeights,
                 editFilterNodesIsolatesAct->isChecked() || dropIsolates);
 
 
@@ -10632,7 +10632,8 @@ void MainWindow::slotLayoutNodeColorByProminenceIndex(QString choice=""){
 
     activeGraph->layoutByProminenceIndex(
                 userChoice, 3,
-                considerWeights, inverseWeights,
+                optionsEdgeWeightConsiderAct->isChecked(),
+                inverseWeights,
                 editFilterNodesIsolatesAct->isChecked() || dropIsolates);
 
     statusMessage( tr("Nodes with red color have greater %1 score.").arg(prominenceIndexName));
@@ -10710,7 +10711,7 @@ void MainWindow::slotAnalyzeReciprocity(){
 
     askAboutWeights();
 
-    activeGraph->writeReciprocity(fn, considerWeights);
+    activeGraph->writeReciprocity(fn, optionsEdgeWeightConsiderAct->isChecked());
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -10917,46 +10918,61 @@ void MainWindow::slotAnalyzeMatrixLaplacian(){
  * @brief If the network has weighted / valued edges, it asks the user
  * if the app should consider weights or not.
  */
-void MainWindow::askAboutWeights(){
+void MainWindow::askAboutWeights(const bool userTriggered){
 
     qDebug() << "MW::askAboutWeights() - checking if graph weighted.";
 
-    if (!activeGraph->graphWeighted()  ){
-        considerWeights=false;
-        return;
+    if (userTriggered) {
+        if (!activeGraph->graphWeighted()  ){
+            slotHelpMessageToUser(USER_MSG_INFO,
+                                  tr("Non-Weighted Network"),
+                                  tr("You do not work on a weighted network at the moment. \n"
+                                     "Therefore, I will not consider edge weights during "
+                                     "computations. \n"
+                                     "This option applies only when you load or create "
+                                     "a weighted network "));
+            optionsEdgeWeightConsiderAct->setChecked(false);
+            return;
+        }
     }
+    else {
+        if (!activeGraph->graphWeighted()  ){
+            optionsEdgeWeightConsiderAct->setChecked(false);
+            return;
+        }
+    }
+    qDebug() << "MW::askAboutWeights() - graph weighted - checking if we have asked user.";
+
     if (askedAboutWeights) {
         return;
     }
 
-    if ( ! optionsEdgeWeightConsiderAct->isChecked() && !considerWeights){
-        switch(
-               slotHelpMessageToUser(USER_MSG_QUESTION, tr("Network is edge-weighted. Consider edge weights?"),
-                                     tr("Edge-weighted network. Consider edge weights?"),
-                                     tr("The edges in this network have weights (non-unit values). "
-                                        "Take these edge weights into account to compute distances?"),
-                                     QMessageBox::Yes|QMessageBox::No, QMessageBox::Yes)
+    qDebug() << "MW::askAboutWeights() - graph weighted - let's ask the user.";
 
-               )
-        {
-        case QMessageBox::Yes:
-            considerWeights=true;
-            optionsEdgeWeightConsiderAct->setChecked(true);
-            break;
-        case QMessageBox::No:
-            considerWeights=false;
-            optionsEdgeWeightConsiderAct->setChecked(false);
-            break;
-        default: // just for sanity
-            considerWeights=false;
-            optionsEdgeWeightConsiderAct->setChecked(false);
-            return;
-            break;
-        }
+    switch(
+           slotHelpMessageToUser(USER_MSG_QUESTION,
+                                 tr("Weighted Network"),
+                                 tr("This is a weighted network. Consider edge weights?"),
+                                 tr("The ties in this network have weights (non-unit values) assigned to them. "
+                                    "Do you want me to take these edge weights into account (i.e. when computing distances) ?"),
+                                 QMessageBox::Yes|QMessageBox::No, QMessageBox::Yes)
 
+           )
+    {
+    case QMessageBox::Yes:
+        optionsEdgeWeightConsiderAct->setChecked(true);
+        break;
+    case QMessageBox::No:
+        optionsEdgeWeightConsiderAct->setChecked(false);
+        break;
+    default: // just for sanity
+        optionsEdgeWeightConsiderAct->setChecked(false);
+        return;
+        break;
     }
 
-    if (considerWeights){
+
+    if (optionsEdgeWeightConsiderAct->isChecked()){
         switch(
 
                slotHelpMessageToUser(
@@ -10985,6 +11001,7 @@ void MainWindow::askAboutWeights(){
         }
     }
     askedAboutWeights=true;
+    return;
 }
 
 
@@ -11034,7 +11051,7 @@ void MainWindow::slotAnalyzeDistance(){
 
 
      int distanceGeodesic = activeGraph->graphDistanceGeodesic(i,j,
-                                         considerWeights,
+                                         optionsEdgeWeightConsiderAct->isChecked(),
                                          inverseWeights);
 
     if ( distanceGeodesic > 0 && distanceGeodesic < RAND_MAX)
@@ -11072,7 +11089,8 @@ void MainWindow::slotAnalyzeMatrixDistances(){
 
 
     activeGraph->writeMatrix(fn,MATRIX_DISTANCES,
-                            considerWeights, inverseWeights,
+                            optionsEdgeWeightConsiderAct->isChecked(),
+                            inverseWeights,
                             editFilterNodesIsolatesAct->isChecked());
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
@@ -11109,8 +11127,9 @@ void MainWindow::slotAnalyzeMatrixGeodesics(){
     statusMessage(  tr("Computing geodesics (number of shortest paths). Please wait...") );
 
     activeGraph->writeMatrix(fn,MATRIX_GEODESICS,
-                                    considerWeights, inverseWeights,
-                                    editFilterNodesIsolatesAct->isChecked());
+                             optionsEdgeWeightConsiderAct->isChecked(),
+                             inverseWeights,
+                             editFilterNodesIsolatesAct->isChecked());
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11137,22 +11156,28 @@ void MainWindow::slotAnalyzeDiameter() {
 
     statusMessage(  QString(tr("Computing Graph Diameter. Please wait...")) );
 
-    int netDiameter=activeGraph->graphDiameter(considerWeights, inverseWeights);
+    int netDiameter=activeGraph->graphDiameter(
+                optionsEdgeWeightConsiderAct->isChecked(),
+                inverseWeights);
 
-    if ( activeGraph->graphWeighted() && considerWeights )
-        QMessageBox::information(this, "Diameter",
-                                 tr("Diameter =  ")
-                                 + QString::number(netDiameter) +
-                                 tr("\n\nSince this is a weighted network \n"
-                                 "the diameter can be more than N"),
-                                 "OK",0);
-    else if ( activeGraph->graphWeighted() && !considerWeights )
-        QMessageBox::information(this, "Diameter",
-                                 tr("Diameter =  ")
-                                 + QString::number(netDiameter) +
-                                 tr("\n\nThis is the diameter of the \n"
-                                    "corresponding network without weights"),
-                                 "OK",0);
+    if ( activeGraph->graphWeighted() ) {
+        if (optionsEdgeWeightConsiderAct->isChecked()) {
+            QMessageBox::information(this, "Diameter",
+                                     tr("Diameter =  ")
+                                     + QString::number(netDiameter) +
+                                     tr("\n\nSince this is a weighted network \n"
+                                        "the diameter can be more than N"),
+                                     "OK",0);
+        }
+        else {
+            QMessageBox::information(this, "Diameter",
+                                     tr("Diameter =  ")
+                                     + QString::number(netDiameter) +
+                                     tr("\n\nThis is the diameter of the \n"
+                                        "corresponding network without weights"),
+                                     "OK",0);
+        }
+    }
     else
         QMessageBox::information(this, "Diameter",
                                  tr("Diameter =  ")
@@ -11179,7 +11204,8 @@ void MainWindow::slotAnalyzeDistanceAverage() {
     statusMessage(  tr("Computing Average Graph Distance. Please wait...") );
 
     float averGraphDistance=activeGraph->graphDistanceGeodesicAverage(
-                considerWeights, inverseWeights,
+                optionsEdgeWeightConsiderAct->isChecked(),
+                inverseWeights,
                 editFilterNodesIsolatesAct->isChecked() );
 
     QMessageBox::information(this,
@@ -11206,7 +11232,9 @@ void MainWindow::slotAnalyzeEccentricity(){
     askAboutWeights();
 
     activeGraph->writeEccentricity(
-                fn, considerWeights, inverseWeights,
+                fn,
+                optionsEdgeWeightConsiderAct->isChecked(),
+                inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
@@ -11264,7 +11292,8 @@ void MainWindow::slotAnalyzeDissimilaritiesTieProfile(const QString &metric,
 
     askAboutWeights();
 
-    activeGraph->writeMatrixDissimilarities(fn, metric, varLocation,diagonal, considerWeights);
+    activeGraph->writeMatrixDissimilarities(fn, metric, varLocation,diagonal,
+                                            optionsEdgeWeightConsiderAct->isChecked());
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11660,7 +11689,6 @@ void MainWindow::slotAnalyzeSimilarityMatching(const QString &matrix,
 
     bool considerWeights=true;
 
-    //activeGraph->writeMatrixSimilarityMatchingPlain( fn, measure, matrix, varLocation, diagonal,considerWeights);
     activeGraph->writeMatrixSimilarityMatching( fn,
                                                measure,
                                                matrix,
@@ -11772,36 +11800,17 @@ void MainWindow::slotAnalyzeCentralityDegree(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    bool considerWeights=false;
-    if ( activeGraph->graphWeighted()) {
 
-        switch( slotHelpMessageToUser(
-                    USER_MSG_QUESTION,
-                    tr("Consider weights?") ,
-                    tr("Graph edges have weights. \n"
-                       "Take weights into account (Default: No)?")
-                    )
-                )
-        {
-        case QMessageBox::Yes:
-            considerWeights=true;
-            break;
-        case QMessageBox::No:
-            considerWeights=false;
-            break;
-        default: // just for sanity
-            considerWeights=false;
-            return;
-            break;
-        }
-    }
+    askAboutWeights(false);
 
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-out-degree-"+dateTime+".html";
 
 
-    activeGraph->writeCentralityDegree(fn, considerWeights,
-                                      editFilterNodesIsolatesAct->isChecked() );
+    activeGraph->writeCentralityDegree(
+                fn,
+                optionsEdgeWeightConsiderAct->isChecked(),
+                editFilterNodesIsolatesAct->isChecked() );
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11906,7 +11915,9 @@ void MainWindow::slotAnalyzeCentralityCloseness(){
 
 
     activeGraph->writeCentralityCloseness(
-                fn, considerWeights, inverseWeights,
+                fn,
+                optionsEdgeWeightConsiderAct->isChecked(),
+                inverseWeights,
                 editFilterNodesIsolatesAct->isChecked() || dropIsolates);
 
 
@@ -11942,7 +11953,9 @@ void MainWindow::slotAnalyzeCentralityClosenessIR(){
     askAboutWeights();
 
     activeGraph->writeCentralityClosenessInfluenceRange(
-                fn, considerWeights,inverseWeights,
+                fn,
+                optionsEdgeWeightConsiderAct->isChecked(),
+                inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
@@ -11975,7 +11988,8 @@ void MainWindow::slotAnalyzeCentralityBetweenness(){
     askAboutWeights();
 
     activeGraph->writeCentralityBetweenness(
-                fn, considerWeights, inverseWeights,
+                fn, optionsEdgeWeightConsiderAct->isChecked(),
+                inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
 
 
@@ -12014,32 +12028,13 @@ void MainWindow::slotAnalyzePrestigeDegree(){
                        "Degree Centrality..."), "OK",0);
     }
 
-    bool considerWeights=false;
-    if ( activeGraph->graphWeighted()) {
-        switch( QMessageBox::information( this, "Degree Prestige (In-Degree)",
-                                          tr("Graph edges have weights. \n"
-                                             "Take weights into account (Default: No)?"),
-                                          tr("Yes"), tr("No"),
-                                          0, 1 ) )
-        {
-        case 0:
-            considerWeights=true;
-            break;
-        case 1:
-            considerWeights=false;
-            break;
-        default: // just for sanity
-            considerWeights=false;
-            return;
-            break;
-        }
-
-    }
+    askAboutWeights(false);
 
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-prestige-degree-"+dateTime+".html";
 
-    activeGraph->writePrestigeDegree(fn, considerWeights,
+    activeGraph->writePrestigeDegree(fn,
+                                    optionsEdgeWeightConsiderAct->isChecked(),
                                     editFilterNodesIsolatesAct->isChecked() );
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
@@ -12166,7 +12161,10 @@ void MainWindow::slotAnalyzeCentralityInformation(){
 
     askAboutWeights();
 
-    activeGraph->writeCentralityInformation(fn,considerWeights, inverseWeights);
+    activeGraph->writeCentralityInformation(
+                fn,
+                optionsEdgeWeightConsiderAct->isChecked(),
+                inverseWeights);
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12201,7 +12199,11 @@ void MainWindow::slotAnalyzeCentralityEigenvector(){
 
     bool dropIsolates = false;
 
-    activeGraph->writeCentralityEigenvector(fn,considerWeights, inverseWeights, dropIsolates);
+    activeGraph->writeCentralityEigenvector(
+                fn,
+                optionsEdgeWeightConsiderAct->isChecked(),
+                inverseWeights,
+                dropIsolates);
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12235,7 +12237,9 @@ void MainWindow::slotAnalyzeCentralityStress(){
 
 
     activeGraph->writeCentralityStress(
-                fn, considerWeights, inverseWeights,
+                fn,
+                optionsEdgeWeightConsiderAct->isChecked(),
+                inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
 
 
@@ -12271,7 +12275,9 @@ void MainWindow::slotAnalyzeCentralityPower(){
     askAboutWeights();
 
     activeGraph->writeCentralityPower(
-                fn, considerWeights, inverseWeights,
+                fn,
+                optionsEdgeWeightConsiderAct->isChecked(),
+                inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
 
 
@@ -12306,7 +12312,9 @@ void MainWindow::slotAnalyzeCentralityEccentricity(){
     askAboutWeights();
 
     activeGraph->writeCentralityEccentricity(
-                fn, considerWeights, inverseWeights,
+                fn,
+                optionsEdgeWeightConsiderAct->isChecked(),
+                inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
@@ -12513,15 +12521,9 @@ void MainWindow::slotOptionsEdgeArrowsVisibility(bool toggle){
  * @param toggle
  */
 void MainWindow::slotOptionsEdgeWeightsDuringComputation(bool toggle) {
-   if (toggle) {
-       considerWeights=true;
-       askedAboutWeights=false;
-       askAboutWeights(); // will only ask about inversion
-   }
-   else {
-       considerWeights=false;
-   }
-   activeGraph->graphModifiedSet(GRAPH_CHANGED_EDGES);
+    askedAboutWeights=false;
+    askAboutWeights(toggle);
+    activeGraph->graphModifiedSet(GRAPH_CHANGED_EDGES);
 }
 
 

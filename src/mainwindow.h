@@ -324,7 +324,7 @@ public slots:
     void slotLayoutGuides(const bool &toggle);
 
     //ANALYSIS MENU
-    void askAboutWeights();
+    void askAboutWeights(const bool userTriggered=false);
 
     void slotAnalyzeReciprocity();
     void slotAnalyzeSymmetryCheck();
@@ -638,7 +638,7 @@ private:
     //QString VERSION;
 
     bool markedNodesExist;
-    bool considerWeights, inverseWeights, askedAboutWeights;
+    bool inverseWeights, askedAboutWeights;
     float randomErdosEdgeProb;
     QString initFileCodec;
 

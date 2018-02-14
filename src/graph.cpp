@@ -2603,7 +2603,6 @@ float Graph::graphDensity() {
  */
 bool Graph::graphWeighted(){
 
-
     qDebug()<< "Graph::graphWeighted()";
     if ( ! graphModified() && calculatedGraphWeighted )     {
         qDebug()<< "Graph::graphWeighted() - graph not modified. Return: "
@@ -2641,7 +2640,7 @@ bool Graph::graphWeighted(){
     emit signalProgressBoxKill();
 
 
-    return m_isWeighted=false;
+    return m_isWeighted;
 }
 
 
