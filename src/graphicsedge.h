@@ -128,7 +128,7 @@ protected:
 private:
     GraphicsWidget *graphicsWidget;
     GraphicsNode *source, *target;
-    QPainterPath *m_path, *m_path_up, *m_path_down, *m_path_shape;
+    QPainterPath m_path, *m_path_up, *m_path_down, *m_path_shape;
     QPointF sourcePoint, targetPoint;
     qreal m_arrowSize;
 

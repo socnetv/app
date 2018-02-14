@@ -119,9 +119,6 @@ GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
     setBoundingRegionGranularity(0);
     //setCacheMode (QGraphicsItem::ItemCoordinateCache);
 
-   // m_path = new QPainterPath;
-    m_path_shape = new QPainterPath;
-
     adjust();
 }
 
@@ -371,14 +368,13 @@ void GraphicsEdge::adjust(){
                     5+ (source->y()+target->y())/2.0 );
 
     //Define the path upon which we' ll draw the line
-    //QPainterPath line(sourcePoint);
-    m_path =  new QPainterPath(sourcePoint);
+    QPainterPath path(sourcePoint);
 
     //Construct the path
     if (source!=target) {
         if ( !m_Bezier){
             //   qDebug()<< "*** GraphicsEdge::paint(). Constructing a line";
-            m_path->lineTo(targetPoint);
+            path.lineTo(targetPoint);
         }
         else {
             qDebug() << "*** GraphicsEdge::paint(). Constructing a bezier curve";
@@ -389,16 +385,15 @@ void GraphicsEdge::adjust(){
         QPointF c2 = QPointF( targetPoint.x() +30,  targetPoint.y() -30 );
 //        qDebug()<< "*** GraphicsEdge::paint(). Constructing a bezier self curve c1 "
 //                <<c1.x()<<","<<c1.y()  << " and c2 "<<c2.x()<<","<<c2.y();
-        m_path->cubicTo( c1, c2, targetPoint);
+        path.cubicTo( c1, c2, targetPoint);
     }
 
     //Draw the arrows only if we have different nodes
     //and the nodes are enough far apart from each other
     if (m_drawArrows && source!=target && line_length > 10) {
+
         angle = 0;
-//        line_length = m_path->length();
-//        line_dx = targetPoint.x()-sourcePoint.x();
-//        line_dy = targetPoint.y()-sourcePoint.y();
+
         if ( line_length > 0 )
             angle = ::acos( line_dx / line_length );
         //		qDebug() << " acos() " << ::acos( line_dx  / line_length ) ;
@@ -421,7 +416,7 @@ void GraphicsEdge::adjust(){
 //                     <<  destArrowP1.x() << "," << destArrowP1.y()
 //                      << "  destArrowP2 " <<  destArrowP2.x() << "," << destArrowP2.y();
 
-            m_path->addPolygon ( QPolygonF()
+            path.addPolygon ( QPolygonF()
                                  << targetPoint
                                  << destArrowP1
                                  << destArrowP2
@@ -436,7 +431,7 @@ void GraphicsEdge::adjust(){
                 QPointF srcArrowP2 = sourcePoint + QPointF(sin(angle +Pi - Pi  / 3) * m_arrowSize,
                                                            cos(angle +Pi - Pi / 3) * m_arrowSize);
 
-                m_path->addPolygon ( QPolygonF()
+                path.addPolygon ( QPolygonF()
                                      << sourcePoint
                                      << srcArrowP1
                                      << srcArrowP2
@@ -455,6 +450,7 @@ void GraphicsEdge::adjust(){
     }
 
 
+    m_path =  path;
 }
 
 
@@ -469,10 +465,10 @@ void GraphicsEdge::adjust(){
  */
 QPainterPath GraphicsEdge::shape () const {
     //qDebug()<<"GraphicsEdge::shape()";		//too many debug messages...
-    *m_path_shape= QPainterPath(*m_path);
-    m_path_shape->addPath(m_path->translated(1,1));
-    m_path_shape->addPath(m_path->translated(-1,-1));
-    return *m_path_shape;
+    QPainterPath m_path_shape = m_path;
+    m_path_shape.addPath(m_path.translated(1,1));
+    m_path_shape.addPath(m_path.translated(-1,-1));
+    return m_path_shape;
 } 
 
 
@@ -485,7 +481,7 @@ QPainterPath GraphicsEdge::shape () const {
 QRectF GraphicsEdge::boundingRect() const {
     if (!source || !target)
         return QRectF();
-    return m_path->controlPointRect();
+    return m_path.controlPointRect();
 }
 
 
@@ -589,7 +585,7 @@ void GraphicsEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
     // set painter pen to correct edge pen
     painter->setPen(pen());
 
-    painter->drawPath(*m_path);
+    painter->drawPath(m_path);
 }
 
 
@@ -652,13 +648,6 @@ GraphicsEdge::~GraphicsEdge(){
 
     graphicsWidget->removeItem(this);
 
-    if ( ! m_path->isEmpty()) {
-        delete m_path;
-    }
-
-    if (m_path_shape->isEmpty()) {
-        delete m_path_shape;
-    }
 
 }
 

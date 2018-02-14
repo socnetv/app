@@ -129,7 +129,7 @@ signals:
     void removeInEdge();
 private:
     GraphicsWidget *graphicsWidget;
-    QPainterPath *m_path;
+    QPainterPath m_path;
     QPointF newPos;
     QPolygonF *m_poly_t;
     int  m_size, m_numSize, m_labelSize, m_numberDistance, m_labelDistance;

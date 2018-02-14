@@ -157,48 +157,49 @@ void GraphicsNode::setShape(const QString shape) {
             << "shape:" << m_shape
             << "pos:"<<  x() << "," <<  y();
 
-    m_path = new QPainterPath;
+    QPainterPath path;
     if ( m_shape == "circle") {
-        m_path->addEllipse (-m_size, -m_size, 2*m_size, 2*m_size);
+        path.addEllipse (-m_size, -m_size, 2*m_size, 2*m_size);
     }
     else if ( m_shape == "ellipse") {
-        m_path->addEllipse(-m_size, -m_size, 2*m_size, 1.7* m_size);
+        path.addEllipse(-m_size, -m_size, 2*m_size, 1.7* m_size);
     }
     else if ( m_shape == "box" || m_shape == "rectangle"  ) {  //rectangle: for GraphML/GML compliance
-        m_path->addRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size );
+        path.addRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size );
     }
     else if (m_shape == "roundrectangle"  ) {  //roundrectangle: GraphML only
-        m_path->addRoundedRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size, 60.0, 60.0, Qt::RelativeSize );
+        path.addRoundedRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size, 60.0, 60.0, Qt::RelativeSize );
     }
     else if ( m_shape == "triangle") {
-        m_path->moveTo(-m_size,0.95* m_size) ;
-        m_path->lineTo(m_size,0.95*m_size);
-        m_path->lineTo( 0,-1*m_size);
-        m_path->lineTo(-m_size,0.95*m_size) ;
-        m_path->closeSubpath();
+        path.moveTo(-m_size,0.95* m_size) ;
+        path.lineTo(m_size,0.95*m_size);
+        path.lineTo( 0,-1*m_size);
+        path.lineTo(-m_size,0.95*m_size) ;
+        path.closeSubpath();
     }
     else if ( m_shape == "star") {
-        m_path->setFillRule(Qt::WindingFill);
-        m_path->moveTo(-0.8*m_size,0.6* m_size) ;
-        m_path->lineTo(+0.8*m_size,0.6*m_size);
-        m_path->lineTo( 0,-1*m_size);
-        m_path->lineTo(-0.8*m_size,0.6*m_size) ;
-        m_path->closeSubpath();
+        path.setFillRule(Qt::WindingFill);
+        path.moveTo(-0.8*m_size,0.6* m_size) ;
+        path.lineTo(+0.8*m_size,0.6*m_size);
+        path.lineTo( 0,-1*m_size);
+        path.lineTo(-0.8*m_size,0.6*m_size) ;
+        path.closeSubpath();
 
-        m_path->moveTo(0, 1* m_size) ;
-        m_path->lineTo(+0.8*m_size,-0.6*m_size);
-        m_path->lineTo(-0.8*m_size,-0.6*m_size) ;
-        m_path->lineTo(0, 1* m_size);
-        m_path->closeSubpath();
+        path.moveTo(0, 1* m_size) ;
+        path.lineTo(+0.8*m_size,-0.6*m_size);
+        path.lineTo(-0.8*m_size,-0.6*m_size) ;
+        path.lineTo(0, 1* m_size);
+        path.closeSubpath();
     }
     else if ( m_shape == "diamond"){
-        m_path->moveTo(-m_size, 0);
-        m_path->lineTo( 0,-1*m_size);
-        m_path->lineTo( m_size, 0);
-        m_path->lineTo( 0, 1*m_size);
-        m_path->lineTo(-m_size, 0) ;
-        m_path->closeSubpath();
+        path.moveTo(-m_size, 0);
+        path.lineTo( 0,-1*m_size);
+        path.lineTo( m_size, 0);
+        path.lineTo( 0, 1*m_size);
+        path.lineTo(-m_size, 0) ;
+        path.closeSubpath();
     }
+    m_path = path;
     update();
 }
 
@@ -210,7 +211,7 @@ void GraphicsNode::setShape(const QString shape) {
 */
 QPainterPath GraphicsNode::shape() const {
     //qDebug ("GraphicsNode: shape()");
-    return (*m_path);
+    return (m_path);
 }
 
 
@@ -259,7 +260,7 @@ void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
     }
     painter->setPen(QPen(QColor("#222"), 0));
 
-    painter->drawPath (*m_path);
+    painter->drawPath (m_path);
 
     if (m_hasNumberInside && m_hasNumber) {
         // m_path->setFillRule(Qt::WindingFill);
@@ -681,7 +682,7 @@ GraphicsNode::~GraphicsNode(){
     inEdgeList.clear();
     outEdgeList.clear();
     this->hide();
-    delete m_path;
+
     graphicsWidget->removeItem(this);
 
 }
