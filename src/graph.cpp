@@ -20230,7 +20230,8 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
           qDebug () << "Graph::layoutForceDirectedKamadaKawai() - m"<< m
                     << " current m pos " << xm << ym
                     << " new m pos " << xm +dx << ym+dy;
-          if ( (xm + dx) < 0 || (xm + dx) > canvasWidth ) {
+
+          if ( (xm + dx) < 50 || (xm + dx) > (canvasWidth-50) ) {
               qDebug () << "Graph::layoutForceDirectedKamadaKawai() - "
                            "new xm out of canvas, setting random x";
                            xm = canvasRandomX();
@@ -20238,7 +20239,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
           else {
               xm = xm + dx;
           }
-          if ( (ym + dy) < 0 || (ym + dy) > canvasHeight ) {
+          if ( (ym + dy) < 50 || (ym + dy) > (canvasHeight-50) ) {
               qDebug () << "Graph::layoutForceDirectedKamadaKawai() - "
                            "new ym out of canvas, setting random y";
               ym = canvasRandomY();

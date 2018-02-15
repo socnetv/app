@@ -44,6 +44,7 @@ public:
 public slots:
     void checkErrors ();
 	void gatherData ();
+    QStringList parseTextEditInput(const QString &html);
 signals:
     void userChoices( QString, int, int, bool, bool);
     void webCrawlerDialogError(QString);

@@ -231,12 +231,12 @@
      <item>
       <widget class="QLabel" name="label_6">
        <property name="text">
-        <string>Url Patterns to exclude</string>
+        <string>Classes to include</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QTextEdit" name="patternsExcludedTextEdit"/>
+      <widget class="QTextEdit" name="classesIncludedTextEdit"/>
      </item>
     </layout>
    </item>
