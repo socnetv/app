@@ -2039,7 +2039,7 @@ bool Graph::edgeColorAllSet(const QString &color, const int &threshold){
     qDebug()<< "Graph::edgeColorAllSet() - new color: " << color;
     int target=0, source=0;
     edgeColorInit(color);
-    QHash<int,float> *enabledOutEdges = new QHash<int,float>;
+    QHash<int,float> enabledOutEdges;
     QHash<int,float>::const_iterator it1;
     VList::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -2048,8 +2048,8 @@ bool Graph::edgeColorAllSet(const QString &color, const int &threshold){
         if ( ! (*it)->isEnabled() )
             continue;
         enabledOutEdges=(*it)->outEdgesEnabledHash();
-        it1=enabledOutEdges->cbegin();
-        while ( it1!=enabledOutEdges->cend() ){
+        it1=enabledOutEdges.cbegin();
+        while ( it1!=enabledOutEdges.cend() ){
             target = it1.key();
             if (threshold == 0 ){
                 if ( it1.value() == threshold  ) {
@@ -2079,7 +2079,7 @@ bool Graph::edgeColorAllSet(const QString &color, const int &threshold){
             ++it1;
         }
     }
-    delete enabledOutEdges;
+    //delete enabledOutEdges;
 
     graphModifiedSet(GRAPH_CHANGED_EDGES_METADATA);
 
@@ -2821,7 +2821,7 @@ float Graph::graphReciprocity(){
 
     int y=0, v2=0, v1=0;
 
-    QHash<int,float> *enabledOutEdges = new QHash<int,float>;
+    QHash<int,float> enabledOutEdges;
 
     QHash<int,float>::const_iterator hit;
     VList::const_iterator it, it1;
@@ -2849,9 +2849,9 @@ float Graph::graphReciprocity(){
 
         enabledOutEdges=(*it)->outEdgesEnabledHash();
 
-        hit=enabledOutEdges->cbegin();
+        hit=enabledOutEdges.cbegin();
 
-        while ( hit!=enabledOutEdges->cend() ){
+        while ( hit!=enabledOutEdges.cend() ){
 
             v2 = hit.key();
             y=vpos[ v2 ];
@@ -2898,7 +2898,7 @@ float Graph::graphReciprocity(){
             ++hit;
         }
     }
-    delete enabledOutEdges;
+    //delete enabledOutEdges;
 
     m_graphReciprocityArc = (float) m_graphReciprocityTiesReciprocated / (float) m_graphReciprocityTiesTotal;
 
@@ -3208,7 +3208,7 @@ bool Graph::graphSymmetric(){
     int v2=0, v1=0;
     float weight = 0;
 
-    QHash<int,float> *enabledOutEdges = new QHash<int,float>;
+    QHash<int,float> enabledOutEdges;
 
     QHash<int,float>::const_iterator hit;
     VList::const_iterator lit;
@@ -3223,9 +3223,9 @@ bool Graph::graphSymmetric(){
 
         enabledOutEdges=(*lit)->outEdgesEnabledHash();
 
-        hit=enabledOutEdges->cbegin();
+        hit=enabledOutEdges.cbegin();
 
-        while ( hit!=enabledOutEdges->cend() ){
+        while ( hit!=enabledOutEdges.cend() ){
 
             v2 = hit.key();
             weight = hit.value();
@@ -3243,7 +3243,7 @@ bool Graph::graphSymmetric(){
             ++hit;
         }
     }
-    delete enabledOutEdges;
+    //delete enabledOutEdges;
     qDebug() << "Graph: graphSymmetric() - Finished. Result:"  << m_symmetric;
     calculatedGraphSymmetry = true;
     return m_symmetric;
@@ -3260,14 +3260,14 @@ void Graph::graphSymmetrize(){
     VList::const_iterator it;
     int v2=0, v1=0, weight;
     float invertWeight=0;
-    QHash<int,float> *enabledOutEdges = new QHash<int,float>;
+    QHash<int,float> enabledOutEdges;
     QHash<int,float>::const_iterator it1;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         v1 = (*it)->name();
         qDebug() << "Graph:graphSymmetrize() - iterate over edges of v1 " << v1;
         enabledOutEdges=(*it)->outEdgesEnabledHash();
-        it1=enabledOutEdges->cbegin();
-        while ( it1!=enabledOutEdges->cend() ){
+        it1=enabledOutEdges.cbegin();
+        while ( it1!=enabledOutEdges.cend() ){
             v2 = it1.key();
             weight = it1.value();
             qDebug() << "Graph:graphSymmetrize() - "
@@ -3290,7 +3290,7 @@ void Graph::graphSymmetrize(){
             ++it1;
         }
     }
-    delete enabledOutEdges;
+    //delete enabledOutEdges;
 
     m_symmetric=true;
 
@@ -3313,7 +3313,7 @@ void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
 
     VList::const_iterator it;
 
-    QHash<int,float> *outEdgesAll = new QHash<int,float>;
+    QHash<int,float> outEdgesAll;
     QHash<int,float>::const_iterator it1;
 
     QHash<QString,float> *strongTies = new QHash<QString,float>;
@@ -3323,8 +3323,8 @@ void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
         qDebug() << "Graph::graphSymmetrizeStrongTies() - v" << v1
                     << "iterate over outEdges in all relations";
         outEdgesAll=(*it)->outEdgesEnabledHash(allRelations); //outEdgesAllRelationsUniqueHash();
-        it1=outEdgesAll->cbegin();
-        while ( it1!=outEdgesAll->cend() ){
+        it1=outEdgesAll.cbegin();
+        while ( it1!=outEdgesAll.cend() ){
             v2 = it1.key();
             weight = it1.value();
             y=vpos[ v2 ];
@@ -3372,7 +3372,7 @@ void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
         ++it2;
     }
 
-    delete outEdgesAll;
+    //delete outEdgesAll;
     delete strongTies;
     m_symmetric=true;
 
@@ -3471,14 +3471,14 @@ void Graph::graphUndirectedSet(const bool &toggle, const bool &signalMW){
     }
     VList::const_iterator it;
     int v2=0, v1=0, weight;
-    QHash<int,float> *enabledOutEdges = new QHash<int,float>;
+    QHash<int,float> enabledOutEdges;
     QHash<int,float>::const_iterator it1;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         v1 = (*it)->name();
         qDebug() << "Graph::graphUndirectedSet() - iterate over edges of v1 " << v1;
         enabledOutEdges=(*it)->outEdgesEnabledHash();
-        it1=enabledOutEdges->cbegin();
-        while ( it1!=enabledOutEdges->cend() ){
+        it1=enabledOutEdges.cbegin();
+        while ( it1!=enabledOutEdges.cend() ){
             v2 = it1.key();
             weight = it1.value();
 
@@ -3490,7 +3490,7 @@ void Graph::graphUndirectedSet(const bool &toggle, const bool &signalMW){
             ++it1;
         }
     }
-    delete enabledOutEdges;
+    //delete enabledOutEdges;
 
     m_symmetric=m_undirected=true;
 
@@ -11843,7 +11843,7 @@ void Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
         qDebug() << endl
                  << "Graph::graphClusteringHierarchical() -"
                  <<"matrix DSM contents now:";
-        DSM.printMatrixConsole();
+        //DSM.printMatrixConsole();
 
         //
         //Step 2. Find the most similar pair of clusters.
@@ -12832,15 +12832,15 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
              << "[" << vpos[v1] << "] "
              << " Checking adjacent edges " ;
 
-    QHash<int,float> *reciprocalEdges = new QHash<int,float>;
+    QHash<int,float> reciprocalEdges ;
     reciprocalEdges = m_graph [ vpos[v1] ] -> reciprocalEdgesHash();
 
     QHash<int,float>::const_iterator it1;
     QHash<int,float>::const_iterator it2;
 
-    it1=reciprocalEdges->cbegin();
+    it1=reciprocalEdges.cbegin();
 
-    while ( it1 != reciprocalEdges->cend() )
+    while ( it1 != reciprocalEdges.cend() )
     {
         u1 = it1.key();
 
@@ -12858,12 +12858,12 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
             continue;
         }
 
-        it2=reciprocalEdges->cbegin();
+        it2=reciprocalEdges.cbegin();
         qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
                  << "Checking if neighbor" << u1
                  << "is connected to other neighbors of" << v1;
 
-        while ( it2 != reciprocalEdges->cend() ){
+        while ( it2 != reciprocalEdges.cend() ){
 
             u2 = it2.key();
 
@@ -12934,7 +12934,7 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
         return 0;	//stop if we're at a leaf.
 
     if ( graphIsSymmetric ){
-        k=reciprocalEdges->count();  //k_{i} is the number of neighbours of a vertex
+        k=reciprocalEdges.count();  //k_{i} is the number of neighbours of a vertex
         denom =	k * (k -1.0) / 2.0;
 
         qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
@@ -12945,7 +12945,7 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
     else {
         // fixme : normally we should have a special method
         // to compute the number of vertices k_i = |N_i|, in the neighborhood N_i
-        k=reciprocalEdges->count();
+        k=reciprocalEdges.count();
         denom = k * (k -1.0);
 
         qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") - "
@@ -12960,7 +12960,7 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
 
     m_graph[ vpos [v1] ] -> setCLC(clucof);
 
-    reciprocalEdges->clear();
+    reciprocalEdges.clear();
     neighborhoodEdges.clear();
     return clucof;
 }

@@ -63,7 +63,6 @@ GraphVertex::GraphVertex(Graph* parent,
 //    m_outEdges.reserve(1000);
 //    m_inEdges.reserve(1000);
 //    m_neighborhoodList.reserve(1000);
-    m_reciprocalEdges = new QHash<int,float>;
 
     m_outEdgesCounter=0;
     m_inEdgesCounter=0;
@@ -451,9 +450,9 @@ long int GraphVertex::outEdgesConst() const {
  * @brief Returns a qhash of all enabled outEdges in the active relation
  * @return  QHash<int,float>*
  */
-QHash<int,float>* GraphVertex::outEdgesEnabledHash(const bool &allRelations){
+QHash<int,float> GraphVertex::outEdgesEnabledHash(const bool &allRelations){
     //qDebug() << " GraphVertex::outEdgesEnabledHash() vertex " << this->name();
-    QHash<int,float> *enabledOutEdges = new QHash<int,float>;
+    QHash<int,float> enabledOutEdges;
     float m_weight=0;
     int relation = 0;
     bool edgeStatus=false;
@@ -465,18 +464,18 @@ QHash<int,float>* GraphVertex::outEdgesEnabledHash(const bool &allRelations){
                 edgeStatus=it1.value().second.second;
                 if ( edgeStatus == true) {
                     m_weight=it1.value().second.first;
-                    enabledOutEdges->insert(it1.key(), m_weight);
+                    enabledOutEdges.insert(it1.key(), m_weight);
                     //                qDebug() <<  " GraphVertex::outEdgesEnabledHash() count:"
                     //                             << enabledOutEdges->count();
                 }
             }
         }
         else {
-            if ( !enabledOutEdges->contains(it1.key() )) {
+            if ( !enabledOutEdges.contains(it1.key() )) {
                 edgeStatus=it1.value().second.second;
                 if ( edgeStatus == true) {
                     m_weight=it1.value().second.first;
-                    enabledOutEdges->insert(it1.key(), m_weight);
+                    enabledOutEdges.insert(it1.key(), m_weight);
                     //                qDebug() <<  " GraphVertex::outEdgesEnabledHash() count:"
                     //                             << enabledOutEdges->count();
                 }
@@ -522,8 +521,8 @@ QHash<int, float>* GraphVertex::outEdgesAllRelationsUniqueHash() {
  * @brief Returns a qhash of all reciprocal edges to neighbors in the active relation
  * @return  QHash<int,float>*
  */
-QHash<int,float>* GraphVertex::reciprocalEdgesHash(){
-    m_reciprocalEdges->clear();
+QHash<int, float> GraphVertex::reciprocalEdgesHash(){
+    m_reciprocalEdges.clear();
     float m_weight=0;
     int relation = 0;
     bool edgeStatus=false;
@@ -543,7 +542,7 @@ QHash<int,float>* GraphVertex::reciprocalEdgesHash(){
 //                    qDebug() << "GraphVertex::reciprocalEdgesHash() - of vertex "
 //                             << this->name()
 //                             << "Found reciprocal edge with   " << it1.key();
-                    m_reciprocalEdges->insertMulti(it1.key(), m_weight);
+                    m_reciprocalEdges.insertMulti(it1.key(), m_weight);
                 }
             }
         }
@@ -552,7 +551,7 @@ QHash<int,float>* GraphVertex::reciprocalEdgesHash(){
 
     qDebug() << "GraphVertex::reciprocalEdgesHash() - vertex" << this->name()
              <<  "reciprocalEdges:"
-              << m_reciprocalEdges->count();
+              << m_reciprocalEdges.count();
 
     return m_reciprocalEdges;
 }
@@ -1011,8 +1010,8 @@ GraphVertex::~GraphVertex() {
     m_outEdges.squeeze();
     m_inEdges.clear();
     m_inEdges.squeeze();
-    m_reciprocalEdges->clear();
-    m_reciprocalEdges->squeeze();
+    m_reciprocalEdges.clear();
+    m_reciprocalEdges.squeeze();
 
     m_outLinkColors.clear();
     m_outLinkColors.squeeze();

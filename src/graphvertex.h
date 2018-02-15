@@ -101,10 +101,10 @@ public:
     void edgeRemoveTo (long int target);
     void edgeRemoveFrom(long int source);
 
-    QHash<int,float>* outEdgesEnabledHash(const bool &allRelations=false);
+    QHash<int, float> outEdgesEnabledHash(const bool &allRelations=false);
     QHash<int,float>* outEdgesAllRelationsUniqueHash();
     QHash<int,float>* inEdgesEnabledHash();
-    QHash<int,float>* reciprocalEdgesHash();
+    QHash<int,float> reciprocalEdgesHash();
     QList<int> neighborhoodList();
 
     long int outEdges();
@@ -327,7 +327,7 @@ private:
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape;
     QPointF m_disp;
 
-    QHash<int,float>* m_reciprocalEdges;
+    QHash<int,float> m_reciprocalEdges;
     L_int myPs;
     QHash <int, L_int> m_cliques;
     L_int m_neighborhoodList;

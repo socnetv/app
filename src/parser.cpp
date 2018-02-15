@@ -1373,63 +1373,64 @@ bool Parser::loadGraphML(){
         return false;
     }
 
-    QXmlStreamReader *xml = new QXmlStreamReader();
+    //QXmlStreamReader *xml = new QXmlStreamReader();
+    QXmlStreamReader xml;
 
     qDebug() << " Parser::loadGraphML(): read file to a byte array";
     QByteArray encodedData = file.readAll();
     QByteArray userSelectedCodec =userSelectedCodecName.toLatin1();
-    xml->addData(encodedData);
+    xml.addData(encodedData);
 
     qDebug() << " Parser::loadGraphML(): test if XML document encoding == userCodec";
 
-    xml->readNext();
-    if (xml->isStartDocument()) {
+    xml.readNext();
+    if (xml.isStartDocument()) {
         qDebug()<< " Parser::loadGraphML(): Testing XML document " << " version "
-                << xml->documentVersion()
-                << " encoding " << xml->documentEncoding()
+                << xml.documentVersion()
+                << " encoding " << xml.documentEncoding()
                 << " userSelectedCodecName.toUtf8() "
                 << userSelectedCodecName.toUtf8();
-         if ( xml->documentEncoding().toString() != userSelectedCodecName) {
+         if ( xml.documentEncoding().toString() != userSelectedCodecName) {
                 qDebug() << " Parser::loadGraphML(): Conflicting encodings. "
                          << " Re-reading data with userCodec";
-                xml->clear();
+                xml.clear();
                 QTextStream in(&encodedData);
                 in.setAutoDetectUnicode(false);
                 QTextCodec *codec = QTextCodec::codecForName( userSelectedCodec );
                 in.setCodec(codec);
                 QString decodedData = in.readAll();
-                xml->addData(decodedData);
+                xml.addData(decodedData);
          }
          else {
              qDebug() << " Parser::loadGraphML(): Testing XML: OK";
-             xml->clear();
-             xml->addData(encodedData);
+             xml.clear();
+             xml.addData(encodedData);
          }
     }
 
 
-    while (!xml->atEnd()) {
-        xml->readNext();
-        qDebug()<< " Parser::loadGraphML(): xml->token "<< xml->tokenString();
-        if (xml->isStartDocument()) {
+    while (!xml.atEnd()) {
+        xml.readNext();
+        qDebug()<< " Parser::loadGraphML(): xml.token "<< xml.tokenString();
+        if (xml.isStartDocument()) {
             qDebug()<< " Parser::loadGraphML(): xml startDocument" << " version "
-                    << xml->documentVersion()
-                    << " encoding " << xml->documentEncoding();
+                    << xml.documentVersion()
+                    << " encoding " << xml.documentEncoding();
         }
 
-        if (xml->isStartElement()) {
-            qDebug()<< " Parser::loadGraphML(): element name "<< xml->name().toString();
+        if (xml.isStartElement()) {
+            qDebug()<< " Parser::loadGraphML(): element name "<< xml.name().toString();
 
-            if (xml->name() == "graphml") {
+            if (xml.name() == "graphml") {
                 qDebug()<< " Parser::loadGraphML(): GraphML start. NamespaceUri is "
-                        << xml->namespaceUri().toString()
+                        << xml.namespaceUri().toString()
                         << "Calling readGraphML()";
-                if (! readGraphML(*xml) ) {
+                if (! readGraphML(xml) ) {
                     return false;
                 }
             }
             else {	//not a GraphML doc, return false.
-                xml->raiseError(
+                xml.raiseError(
                             QObject::tr(" loadGraphML(): not a GraphML file."));
                 qDebug()<< "*** loadGraphML(): Error in startElement "
                         << " The file is not an GraphML version 1.0 file ";
@@ -1438,13 +1439,13 @@ bool Parser::loadGraphML(){
                 return false;
             }
         }
-        else if  ( xml->tokenString() == "Invalid" ){
-            xml->raiseError(
+        else if  ( xml.tokenString() == "Invalid" ){
+            xml.raiseError(
                         QObject::tr(" loadGraphML(): invalid GraphML or encoding."));
             qDebug()<< "*** loadGraphML(): Cannot find  startElement"
                     << " The file is not valid GraphML or has invalid encoding";
             file.close();
-            errorMessage = tr("XML tokenString at line %1 invalid.").arg(xml->lineNumber());
+            errorMessage = tr("XML tokenString at line %1 invalid.").arg(xml.lineNumber());
             return false;
         }
     }

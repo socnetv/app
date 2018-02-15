@@ -1332,7 +1332,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
         QVector<float> mean (N,0); // holds mean values
 
         qDebug()<< "Matrix::distancesMatrix() - input matrix:";
-        this->printMatrixConsole();
+        //this->printMatrixConsole();
 
         for (int i = 0 ; i < N ; i++ ) {
             sum = 0 ;
