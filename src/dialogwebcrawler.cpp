@@ -73,8 +73,23 @@ void DialogWebCrawler::checkErrors(){
     else
         (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(true);
 
-    if (ui.patternsExcludedTextEdit->toPlainText() != "" ) {
-        qDebug () <<ui.patternsExcludedTextEdit->toPlainText();
+    if (ui.patternsExcludedTextEdit->toHtml() != "" ) {
+        //qDebug () <<ui.patternsExcludedTextEdit->toHtml();
+        QStringList list1 = ui.patternsExcludedTextEdit->toHtml().split("<p");
+        QString data;
+        QString str;
+        for (int i = 0; i < list1.size(); ++i){
+           if (i==0) continue;
+           data = list1.at(i).toLocal8Bit().constData();
+           //qDebug () << "split " << i << ":: " << data << endl;
+           //qDebug () << "first char > at ::" <<  data.indexOf('>',0) << endl;
+           str = data.mid ( data.indexOf('>',0) +1, data.indexOf("</p>",0) - (data.indexOf('>',0) +1) );
+           qDebug () << "str ::" << str << endl;
+           qDebug () << "str fin ::"  << str.remove("<br />");
+
+
+        }
+
     }
 }
 
