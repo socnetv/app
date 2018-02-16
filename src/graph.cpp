@@ -2706,8 +2706,9 @@ void Graph::webCrawlTerminateThreads (QString reason){
  * @param extLinks
  * @param intLinks
  */
-void Graph::webCrawl( const QString &urlSeed,
-                      const QStringList &urlPatterns,
+void Graph::webCrawl(const QString &urlSeed,
+                      const QStringList &urlPatternsIncluded,
+                      const QStringList &urlPatternsExcluded,
                       const QStringList &linkClasses,
                       const int &maxNodes,
                       const int &maxLinksPerPage,
@@ -2773,7 +2774,8 @@ void Graph::webCrawl( const QString &urlSeed,
     qDebug() << "Graph::webCrawl() - loading wc_parser & wc_spider data!";
 
     wc_parser->load(urlSeed,
-                    urlPatterns,
+                    urlPatternsIncluded,
+                    urlPatternsExcluded,
                     linkClasses,
                     maxNodes,
                     maxLinksPerPage,

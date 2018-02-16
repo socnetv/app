@@ -228,7 +228,8 @@ public slots:
     void slotNetworkWebCrawlerDialog();
 
     void slotNetworkWebCrawler(const QString &urlSeed,
-                               const QStringList &urlPatterns,
+                               const QStringList &urlPatternsIncluded,
+                               const QStringList &urlPatternsExcluded,
                                const QStringList &linkClasses,
                                const int &maxNodes,
                                const int &maxLinksPerPage,

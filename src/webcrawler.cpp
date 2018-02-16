@@ -192,7 +192,8 @@ WebCrawler_Parser::WebCrawler_Parser() {
  * @param intLinks
  */
 void WebCrawler_Parser::load(QString url,
-                             const QStringList &urlPatterns,
+                             const QStringList &urlPatternsIncluded,
+                             const QStringList &urlPatternsExcluded,
                              const QStringList &linkClasses,
                              int maxN,
                              int maxLinksPerPage,
@@ -203,7 +204,8 @@ void WebCrawler_Parser::load(QString url,
               << "Initializing variables ";
 
     m_seed=QUrl (url);              //the initial url/domain we will crawl
-    m_urlPatterns = urlPatterns;    //list of url patterns to include
+    m_urlPatternsIncluded = urlPatternsIncluded;    //list of url patterns to include
+    m_urlPatternsExcluded = urlPatternsExcluded;    //list of url patterns to include
     m_linkClasses = linkClasses;    //list of link classes to include
     m_maxPages=maxN;                //maxPages we'll check == max nodes in the social network
     m_maxLinksPerPage = maxLinksPerPage; // max links per page to search for
@@ -255,17 +257,19 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
     int sourceNode = knownUrls [ requestUrl ];
     QString host = requestUrl.host();
     QString path = requestUrl.path();
-    qDebug() << "   wc_parser::parse() response HTML of url "
-             << requestUrlStr << " sourceNode " << sourceNode
-              << " host " << host
+    qDebug() << "   wc_parser::parse() - HTML of url "
+             << requestUrlStr << " sourceNode " << sourceNode;
+    qDebug() << "   wc_parser::parse() - host " << host
               << " path " << path;
 
-    qDebug () << "   wc_parser::parse(): original locationHeader"
-              << reply->header(QNetworkRequest::LocationHeader) ;
-    qDebug () << "   wc_parser::parse(): decoded locationHeader" << locationHeader ;
 
-    qDebug () << "   wc_parser::parse(): encoded requestUrl  " << requestUrl;
-    qDebug () << "   wc_parser::parse(): decoded requestUrl " << requestUrlStr;
+
+//    qDebug () << "   wc_parser::parse(): original locationHeader"
+//              << reply->header(QNetworkRequest::LocationHeader) ;
+//    qDebug () << "   wc_parser::parse(): decoded locationHeader" << locationHeader ;
+
+//    qDebug () << "   wc_parser::parse(): encoded requestUrl  " << requestUrl;
+//    qDebug () << "   wc_parser::parse(): decoded requestUrl " << requestUrlStr;
 
     if ( locationHeader != "" && locationHeader != requestUrlStr ) {
         qDebug () << "&&   wc_parser::parse() Location response header "
@@ -286,7 +290,6 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
 
 
     QString md5(QCryptographicHash::hash(ba,QCryptographicHash::Md5).toHex());
-    qDebug () << "   wc_parser::parse(): md5" << md5.toLatin1();
     qDebug () << "   wc_parser::parse(): md5" << md5.toLocal8Bit();
 
     if (!page.contains ("href"))  { //if a href doesnt exist, return
@@ -298,6 +301,9 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
                  << " RETURN";
         return;
     }
+
+    //    qDebug() <<  " \npage contents: " << page << endl << endl;
+
 
     qDebug() << "   wc_parser::parse(): erasing <head></head>";
     start=page.indexOf ("<head");		//Find head pos -- deliberately open tag
@@ -377,9 +383,7 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
         }
 
         qDebug() << "@@   wc_parser::parse(): found VALID newUrl: "
-                 << newUrlStr
-                 << " in page " << requestUrlStr
-                 << " decoded newUrl " << newUrl.toString();
+                 << newUrl.toString();
 
 
         newUrlStr = newUrl.toString();
@@ -406,26 +410,51 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
 
 
          // check if newUrl is compatible with the url patterns the user asked for
-        m_urlPatternAllowed = false;
-         for (constIterator = m_urlPatterns.constBegin(); constIterator != m_urlPatterns.constEnd();
-                ++constIterator)  {
+         m_urlPatternAllowed = true;
+         for (constIterator = m_urlPatternsIncluded.constBegin();
+              constIterator != m_urlPatternsIncluded.constEnd();
+              ++constIterator)  {
              //qDebug() << (*constIterator).toLocal8Bit().constData() << endl;
-             if (! newUrl.toString().contains( (*constIterator).toLocal8Bit().constData()) ) {
-                   qDebug() << "@@   wc_parser::parse(): newUrl not in allowed url patterns. CONTINUE ";
-
+             urlPattern = (*constIterator).toLocal8Bit().constData();
+             if (urlPattern.isEmpty())
+                 continue;
+             if ( newUrl.toString().contains( urlPattern ) ) {
+                 qDebug() << "--   wc_parser::parse(): newUrl in allowed url patterns:"
+                          << urlPattern
+                          <<"Parsing";
+                 break;
              }
              else {
-                 qDebug() << "@@   wc_parser::parse(): newUrl in allowed url patterns. Parsing";
-                 m_urlPatternAllowed = true;
+                 qDebug() << "!!   wc_parser::parse(): newUrl not in allowed url patterns. CONTINUE ";
+                 m_urlPatternAllowed = false;
              }
 
          }
 
-          if ( newUrl.toString().contains( "0000000000000000000000000000000000000000000000000000000000000000"  )  )  {
-                     m_urlPatternAllowed = false;
-          }
 
-        if (m_urlPatternAllowed) {
+         m_urlPatternNotAllowed = false;
+         for (constIterator = m_urlPatternsExcluded.constBegin();
+              constIterator != m_urlPatternsExcluded.constEnd();
+              ++constIterator)  {
+             //qDebug() << (*constIterator).toLocal8Bit().constData() << endl;
+             urlPattern = (*constIterator).toLocal8Bit().constData();
+             if (urlPattern.isEmpty())
+                 continue;
+             if ( newUrl.toString().contains( urlPattern ) ) {
+                 qDebug() << "!!   wc_parser::parse(): newUrl in excluded url patterns:"
+                          << urlPattern
+                          << "CONTINUE ";
+                m_urlPatternNotAllowed = true;
+                break;
+             }
+             else {
+                 qDebug() << "--   wc_parser::parse(): newUrl not in excluded url patterns. Parsing";
+             }
+
+         }
+
+
+        if (m_urlPatternAllowed && !m_urlPatternNotAllowed) {
 
             if ( newUrl.isRelative() ) {
                 newUrl = requestUrl.resolved(newUrl);

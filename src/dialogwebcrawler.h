@@ -50,6 +50,7 @@ signals:
     void userChoices( const QString &seedUrl,
                       const QStringList &,
                       const QStringList &,
+                      const QStringList &,
                       const int &maxNodes,
                       const int &maxLinks,
                       const bool &extLinks,
@@ -62,7 +63,8 @@ private:
     int maxLinksPerPage, totalUrlsToCrawl;
     bool extLinks, intLinks;
     QStringList linkClasses;
-    QStringList urlPatterns;
+    QStringList urlPatternsIncluded;
+    QStringList urlPatternsExcluded;
 
 };
 

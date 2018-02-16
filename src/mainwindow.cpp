@@ -7842,6 +7842,7 @@ void MainWindow::slotNetworkWebCrawlerDialog() {
                  userChoices(const QString &,
                              const QStringList &,
                              const QStringList &,
+                             const QStringList &,
                              const int&,
                              const int&,
                              const bool&,
@@ -7849,6 +7850,7 @@ void MainWindow::slotNetworkWebCrawlerDialog() {
                  ),
              this, SLOT(
                  slotNetworkWebCrawler (const QString &,
+                                        const QStringList &,
                                         const QStringList &,
                                         const QStringList &,
                                         const int&,
@@ -7877,7 +7879,8 @@ void MainWindow::slotNetworkWebCrawlerDialog() {
  * @param intLinks
  */
 void MainWindow::slotNetworkWebCrawler ( const QString &urlSeed,
-                                         const QStringList &urlPatterns,
+                                         const QStringList &urlPatternsIncluded,
+                                         const QStringList &urlPatternsExcluded,
                                          const QStringList &linkClasses,
                                          const int &maxNodes,
                                          const int &maxLinksPerPage,
@@ -7886,10 +7889,11 @@ void MainWindow::slotNetworkWebCrawler ( const QString &urlSeed,
                                         ) {
 
     this->slotNetworkClose();
-    qDebug () << "MW::slotNetworkWebCrawler" << urlPatterns;
+    qDebug () << "MW::slotNetworkWebCrawler" << urlPatternsIncluded;
     qDebug () << "MW::slotNetworkWebCrawler" << linkClasses;
     activeGraph->webCrawl( urlSeed,
-                           urlPatterns,
+                           urlPatternsIncluded,
+                           urlPatternsExcluded,
                            linkClasses,
                            maxNodes,
                            maxLinksPerPage,

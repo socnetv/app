@@ -43,14 +43,25 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
     (ui.seedUrlEdit)->setFocus();
 
     ui.patternsIncludedTextEdit->setText("*");
-    ui.patternsIncludedTextEdit->setToolTip("Enter, in separate lines, one or more "
-                                            "url patterns to include while crawling. "
+    ui.patternsIncludedTextEdit->setToolTip("<b>ALLOWED URL PATTERNS</b>\n"
+                                            "Enter, in separate lines, one or more "
+                                            "url patterns to <b>include</b> while crawling. "
                                             "\nI.e. example.com/pattern/*"
                                             "\n\nDo not enter spaces."
                                             "\n\nLeave * to crawl all urls.");
 
+    ui.patternsExcludedTextEdit->setText("");
+    ui.patternsExcludedTextEdit->setToolTip("<b>NOT ALLOWED URL PATTERNS</b>\n"
+                                            "Enter, in separate lines, one or more "
+                                            "url patterns to <b>exclude</b> while crawling. "
+                                            "\nI.e. example.com/pattern/*"
+                                            "\n\nDo not enter spaces."
+                                            "\n\nLeave empty to crawl all urls.");
+
+
     ui.classesIncludedTextEdit->setText("*");
-    ui.classesIncludedTextEdit->setToolTip("Enter, in separate lines, one or more link classes to crawl."
+    ui.classesIncludedTextEdit->setToolTip("<b>ALLOWED LINK CLASSES</b>\n"
+                                           "Enter, in separate lines, one or more link classes to crawl."
                                            "\nI.e. \nlink \ngraph"
                                            "\n\nDo not enter spaces."
                                            "\n\nLeave * to crawl all urls no matter what class they have.");
@@ -61,6 +72,10 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
 
     connect (ui.patternsIncludedTextEdit, &QTextEdit::textChanged,
              this, &DialogWebCrawler::checkErrors);
+
+    connect (ui.patternsExcludedTextEdit, &QTextEdit::textChanged,
+             this, &DialogWebCrawler::checkErrors);
+
 
     connect (ui.classesIncludedTextEdit, &QTextEdit::textChanged,
              this, &DialogWebCrawler::checkErrors);
@@ -90,10 +105,11 @@ void DialogWebCrawler::checkErrors(){
 
     /* FLAGS  */
 
-    bool urlErrorFlag = false;
-    bool patternErrorFlag = false;
-    bool classesErrorFlag = false;
-    bool checkboxesErrorFlag = false;
+    bool urlError  = false;
+    bool patternsInError = false;
+    bool patternsExError = false;
+    bool classesError  = false;
+    bool checkboxesError = false;
 
     // CHECK URL
 
@@ -107,7 +123,7 @@ void DialogWebCrawler::checkErrors(){
 
     if (!seedUrl.endsWith("/")) {
         qDebug()<< "DialogWebCrawler::checkErrors() adding / to seed url ";
-        seedUrl = seedUrl + "/";
+        //seedUrl = seedUrl + "/";
     }
 
     QUrl newUrl(seedUrl);
@@ -132,13 +148,13 @@ void DialogWebCrawler::checkErrors(){
         effect->setColor(QColor("red"));
         ui.seedUrlEdit->setGraphicsEffect(effect);
         (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setDisabled(true);
-        urlErrorFlag = true;
+        urlError  = true;
     }
     else {
-        if (!patternErrorFlag && !classesErrorFlag && !checkboxesErrorFlag ) {
+        if (!patternsInError && !patternsExError && !classesError  && !checkboxesError ) {
             ui.seedUrlEdit->setGraphicsEffect(0);
             (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(true);
-            urlErrorFlag = false;
+            urlError  = false;
             seedUrl = newUrl.toString();
             qDebug()<< "DialogWebCrawler::checkErrors()  final seed url " << newUrl
                     << " scheme " << newUrl.scheme()
@@ -159,12 +175,12 @@ void DialogWebCrawler::checkErrors(){
     if ( !ui.extLinksCheckBox->isChecked()  && !ui.intLinksCheckBox->isChecked() )
     {
         (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setDisabled(true);
-        checkboxesErrorFlag = true;
+        checkboxesError = true;
     }
     else {
-        if (!patternErrorFlag && !classesErrorFlag && !urlErrorFlag) {
+        if (!patternsInError && !patternsExError && !classesError  && !urlError ) {
             (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(true);
-            checkboxesErrorFlag = false;
+            checkboxesError = false;
             extLinks = ui.extLinksCheckBox->isChecked();
             intLinks = ui.intLinksCheckBox->isChecked();
         }
@@ -173,21 +189,44 @@ void DialogWebCrawler::checkErrors(){
 
     // CHECK URL PATTERNS TO INCLUDE TEXTEDIT
 
-    urlPatterns = parseTextEditInput (ui.patternsIncludedTextEdit->toHtml());
+    urlPatternsIncluded = parseTextEditInput (ui.patternsIncludedTextEdit->toHtml());
 
 
-    if (urlPatterns.size() == 0 ) {
+    if (urlPatternsIncluded.size() == 0 ) {
         QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
         effect->setColor(QColor("red"));
         ui.patternsIncludedTextEdit->setGraphicsEffect(effect);
         (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setDisabled(true);
-        patternErrorFlag = true;
+        patternsInError = true;
     }
     else {
-        if (!classesErrorFlag && !urlErrorFlag && !checkboxesErrorFlag) {
+        if (!classesError  && !patternsExError && !urlError  && !checkboxesError) {
             ui.patternsIncludedTextEdit->setGraphicsEffect(0);
             (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(true);
-            patternErrorFlag = false;
+            patternsInError = false;
+        }
+    }
+
+
+    // CHECK URL PATTERNS TO EXCLUDE TEXTEDIT
+
+    urlPatternsExcluded = parseTextEditInput (ui.patternsExcludedTextEdit->toHtml());
+
+
+    if (urlPatternsExcluded.size() == 1 ) {
+        if (urlPatternsExcluded.at(0) == "*") {
+            QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
+            effect->setColor(QColor("red"));
+            ui.patternsExcludedTextEdit->setGraphicsEffect(effect);
+            (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setDisabled(true);
+            patternsExError = true;
+        }
+    }
+    else {
+        if (!classesError && !patternsInError && !urlError && !checkboxesError) {
+            ui.patternsExcludedTextEdit->setGraphicsEffect(0);
+            (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(true);
+            patternsExError = false;
         }
     }
 
@@ -200,13 +239,13 @@ void DialogWebCrawler::checkErrors(){
         effect->setColor(QColor("red"));
         ui.classesIncludedTextEdit->setGraphicsEffect(effect);
         (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setDisabled(true);
-        classesErrorFlag = true;
+        classesError  = true;
     }
     else {
-        if (!patternErrorFlag && !urlErrorFlag && !checkboxesErrorFlag) {
+        if (!patternsInError && !patternsExError && !urlError  && !checkboxesError) {
             ui.classesIncludedTextEdit->setGraphicsEffect(0);
             (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(true);
-            classesErrorFlag = false;
+            classesError  = false;
         }
     }
 
@@ -231,7 +270,6 @@ QStringList DialogWebCrawler::parseTextEditInput(const QString &html){
         QString data;
         QString str;
 
-            //qDebug () << "DialogWebCrawler::parseTextEditInput";
             userInput = html.split("<p");
             for (int i = 0; i < userInput.size(); ++i){
                if (i==0) continue;
@@ -239,17 +277,25 @@ QStringList DialogWebCrawler::parseTextEditInput(const QString &html){
                //qDebug () << "split " << i << ":: " << data << endl;
                //qDebug () << "first char > at ::" <<  data.indexOf('>',0) << endl;
                str = data.mid ( data.indexOf('>',0) +1, data.indexOf("</p>",0) - (data.indexOf('>',0) +1) );
-               qDebug () << "str ::" << str << endl;
+               qDebug () << "str ::" << str ;
                str.remove("<br />");
                str=str.simplified();
+               // remove wildcard
+               if (str.contains("*")) {
+                   str.remove("*");
+               }
+
                qDebug () << "str fin ::"  << str;
+
+               // urls and classes cannot contain spaces...
                if (str.contains(" ")) {
                    userInputParsed.clear();
+                   qDebug () << "urls and classes cannot contain spaces... Break." ;
                    break;
                }
-               if (!str.isEmpty()) {
-                   userInputParsed << str;
-               }
+
+               userInputParsed << str;
+
 
             }
 
@@ -258,7 +304,8 @@ QStringList DialogWebCrawler::parseTextEditInput(const QString &html){
     else {
         userInputParsed.clear();
     }
-    qDebug () << "DialogWebCrawler::parseTextEditInput() - stringlist size"<< userInputParsed.size();
+    qDebug () << "DialogWebCrawler::parseTextEditInput() - stringlist size"
+              << userInputParsed.size()<< endl;
     return userInputParsed;
 
 }
@@ -268,15 +315,17 @@ QStringList DialogWebCrawler::parseTextEditInput(const QString &html){
  * @brief gathers data from web crawler form
  */
 void DialogWebCrawler::gatherData(){
-    qDebug()<< "DialogWebCrawler::gatherData() - Emitting"
-            << "	seedUrl: " << seedUrl
-            << "	maxLinksPerPage " << maxLinksPerPage
-            << "  totalUrlsToCrawl " << totalUrlsToCrawl
-            << "urlPatterns" << urlPatterns
-            << "linkClasses" << linkClasses;
+    qDebug()<< "DialogWebCrawler::gatherData() - Emitting" << endl
+            << "	seedUrl: " << seedUrl << endl
+            << "	maxLinksPerPage " << maxLinksPerPage << endl
+            << "	totalUrlsToCrawl " << totalUrlsToCrawl << endl
+            << "	urlPatternsIncluded" << urlPatternsIncluded << endl
+            << "	urlPatternsExcluded" << urlPatternsExcluded << endl
+            << "	linkClasses" << linkClasses << endl;
 
     emit userChoices( seedUrl,
-                      urlPatterns,
+                      urlPatternsIncluded,
+                      urlPatternsExcluded,
                       linkClasses,
                       totalUrlsToCrawl,
                       maxLinksPerPage,

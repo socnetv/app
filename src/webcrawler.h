@@ -43,7 +43,8 @@ public:
     WebCrawler_Parser();
     ~WebCrawler_Parser();
     void load (QString seed,
-               const QStringList &urlPatterns,
+               const QStringList &urlPatternsIncluded,
+               const QStringList &urlPatternsExcluded,
                const QStringList &linkClasses,
                int maxNodes,
                 int maxLinksPerPage,
@@ -68,10 +69,13 @@ private:
     int m_discoveredNodes;
     int m_maxLinksPerPage;
     bool m_extLinks, m_intLinks;
-    QStringList m_urlPatterns;
+    QStringList m_urlPatternsIncluded;
+    QString urlPattern;
+    QStringList m_urlPatternsExcluded;
     QStringList m_linkClasses;
     QStringList::const_iterator constIterator;
     bool m_urlPatternAllowed;
+    bool m_urlPatternNotAllowed;
     bool m_linkClassAllowed;
 };
 
