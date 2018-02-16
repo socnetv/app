@@ -207,7 +207,7 @@ void DialogWebCrawler::checkErrors(){
         patternsInError = true;
     }
     else {
-        if (urlPatternsIncluded.size() == 1 && urlPatternsIncluded.at(0) =="") {
+        if (urlPatternsIncluded.size() == 1 && urlPatternsIncluded.at(0) =="" ) {
             urlPatternsIncluded.clear();
             qDebug() << "DialogWebCrawler::checkErrors() - return empty urlPatterns (ALL)";
         }
