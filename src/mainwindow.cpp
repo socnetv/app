@@ -48,6 +48,7 @@
 #include "graphicsnodenumber.h"
 
 
+#include "dialogwebcrawler.h"
 #include "dialogfilteredgesbyweight.h"
 #include "dialogpreviewfile.h"
 #include "dialogranderdosrenyi.h"
@@ -5026,8 +5027,6 @@ void MainWindow::initSignalSlots() {
 
     connect(webCrawlerAct, SIGNAL(triggered()), this, SLOT(slotNetworkWebCrawlerDialog()));
 
-    connect( &m_WebCrawlerDialog, &DialogWebCrawler::userChoices,
-             this, &MainWindow::slotNetworkWebCrawler );
 
     connect( &m_datasetSelectDialog, SIGNAL( userChoices( QString) ),
              this, SLOT( slotNetworkDataSetRecreate(QString) ) );
@@ -7728,9 +7727,14 @@ void MainWindow::slotNetworkRandomRegularDialog()
 
 }
 
+
+
 /**
- * @brief MainWindow::slotNetworkRandomRegular
- * Creates a pseudo-random k-regular network where every node has the same degree
+ * @brief Creates a pseudo-random k-regular network where every node has the same degree
+ * @param newNodes
+ * @param degree
+ * @param mode
+ * @param diag
  */
 void MainWindow::slotNetworkRandomRegular(const int &newNodes, const int &degree,
                                           const QString &mode, const bool &diag){
@@ -7831,7 +7835,31 @@ void MainWindow::slotNetworkRandomRingLattice(){
  */
 void MainWindow::slotNetworkWebCrawlerDialog() {
     qDebug () << "MW: slotNetworkWebCrawlerDialog() - canvas Width & Height already sent";
-    m_WebCrawlerDialog.exec() ;
+
+    m_WebCrawlerDialog = new DialogWebCrawler(this);
+
+    connect( m_WebCrawlerDialog, SIGNAL(
+                 userChoices(const QString &,
+                             const QStringList &,
+                             const QStringList &,
+                             const int&,
+                             const int&,
+                             const bool&,
+                             const bool&)
+                 ),
+             this, SLOT(
+                 slotNetworkWebCrawler (const QString &,
+                                        const QStringList &,
+                                        const QStringList &,
+                                        const int&,
+                                        const int&,
+                                        const bool&,
+                                        const bool&)
+                 )
+             );
+
+
+    m_WebCrawlerDialog->exec() ;
 }
 
 
@@ -7848,10 +7876,19 @@ void MainWindow::slotNetworkWebCrawlerDialog() {
  * @param extLinks
  * @param intLinks
  */
-void MainWindow::slotNetworkWebCrawler ( QString  seed, int maxNodes, int maxRecursion,
-                                bool extLinks, bool intLinks) {
+void MainWindow::slotNetworkWebCrawler ( const QString &urlSeed,
+                                         const QStringList &urlPatterns,
+                                         const QStringList &linkClasses,
+                                         const int &maxNodes,
+                                         const int &maxRecursion,
+                                         const bool &extLinks,
+                                         const bool &intLinks
+                                        ) {
+
     this->slotNetworkClose();
-    activeGraph->webCrawl( seed, maxNodes, maxRecursion,  extLinks, intLinks) ;
+    qDebug () << "MW::slotNetworkWebCrawler" << urlPatterns;
+    qDebug () << "MW::slotNetworkWebCrawler" << linkClasses;
+    activeGraph->webCrawl( urlSeed, maxNodes, maxRecursion,  extLinks, intLinks) ;
 
 }
 
@@ -7867,7 +7904,8 @@ void MainWindow::slotNetworkWebCrawler ( QString  seed, int maxNodes, int maxRec
  */
 void MainWindow::slotNetworkChanged(const int &graphStatus,
                                     const bool &undirected,
-                                    const int &vertices, const int &edges,
+                                    const int &vertices,
+                                    const int &edges,
                                     const float &density){
     qDebug()<<"MW::slotNetworkChanged()"
            <<"graphStatus" << graphStatus

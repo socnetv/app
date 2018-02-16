@@ -39,11 +39,8 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
 
     (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
 
+
     (ui.seedUrlEdit)->setFocus();
-
-    connect (ui.seedUrlEdit, &QLineEdit::textChanged,
-                     this, &DialogWebCrawler::checkErrors);
-
 
     ui.patternsIncludedTextEdit->setText("*");
     ui.patternsIncludedTextEdit->setToolTip("Enter, in separate lines, one or more "
@@ -59,7 +56,8 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
                                            "\n\nLeave * to crawl all urls no matter what class they have.");
 
 
-
+    connect (ui.seedUrlEdit, &QLineEdit::textChanged,
+                     this, &DialogWebCrawler::checkErrors);
 
     connect (ui.patternsIncludedTextEdit, &QTextEdit::textChanged,
              this, &DialogWebCrawler::checkErrors);
@@ -75,10 +73,12 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
 
     connect ( ui.buttonBox,SIGNAL(accepted()), this, SLOT(gatherData()) );
 
-    if ( !ui.extLinksCheckBox->isChecked()  &&!ui.intLinksCheckBox->isChecked() )
-    {
-        (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setDisabled(true);
-    }
+    extLinks=true;
+    intLinks=false;
+
+    ui.extLinksCheckBox->setChecked (true);
+    ui.intLinksCheckBox->setChecked (false);
+
 
 }
 
@@ -88,13 +88,16 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
 void DialogWebCrawler::checkErrors(){
     qDebug()<< "DialogWebCrawler::checkErrors...";
 
+    /* FLAGS  */
 
+    bool urlErrorFlag = false;
     bool patternErrorFlag = false;
     bool classesErrorFlag = false;
-    bool urlErrorFlag = false;
     bool checkboxesErrorFlag = false;
 
-    QString seedUrl = (ui.seedUrlEdit)->text();
+    // CHECK URL
+
+    seedUrl = (ui.seedUrlEdit)->text();
 
     qDebug()<< "DialogWebCrawler::checkErrors() initial seed url "
             << seedUrl
@@ -107,7 +110,7 @@ void DialogWebCrawler::checkErrors(){
 
     QUrl newUrl(seedUrl);
 
-    qDebug()<< "DialogWebCrawler::checkErrors()  QUrl " << newUrl.toString()
+    qDebug()<< "DialogWebCrawler::checkErrors()  - QUrl " << newUrl.toString()
             << " scheme " << newUrl.scheme()
             << " host " << newUrl.host()
             << " path " << newUrl.path();
@@ -122,7 +125,7 @@ void DialogWebCrawler::checkErrors(){
     }
 
     if (! newUrl.isValid() || newUrl.host() == "" || !newUrl.host().contains(".") ) {
-        qDebug()<< "DialogWebCrawler::checkErrors()  not valid URL";
+        qDebug()<< "DialogWebCrawler::checkErrors() - seedUrl not valid.";
         QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
         effect->setColor(QColor("red"));
         ui.seedUrlEdit->setGraphicsEffect(effect);
@@ -134,9 +137,22 @@ void DialogWebCrawler::checkErrors(){
             ui.seedUrlEdit->setGraphicsEffect(0);
             (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(true);
             urlErrorFlag = false;
+            seedUrl = newUrl.toString();
+            qDebug()<< "DialogWebCrawler::checkErrors()  final seed url " << newUrl
+                    << " scheme " << newUrl.scheme()
+                    << " host " << newUrl.host()
+                    << " path " << newUrl.path();
+
         }
     }
 
+    // CHECK MAX LIMITS  SPIN BOXES
+
+    maxLinksPerPage = (ui.maxLinksPerPageSpinBox) -> value();
+    totalUrlsToCrawl = (ui.totalUrlsToCrawlSpinBox) -> value();
+
+
+    // CHECK CHECKBOXES (AT LEAST ONE SHOULD BE ENABLED)
 
     if ( !ui.extLinksCheckBox->isChecked()  && !ui.intLinksCheckBox->isChecked() )
     {
@@ -147,14 +163,18 @@ void DialogWebCrawler::checkErrors(){
         if (!patternErrorFlag && !classesErrorFlag && !urlErrorFlag) {
             (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(true);
             checkboxesErrorFlag = false;
+            extLinks = ui.extLinksCheckBox->isChecked();
+            intLinks = ui.intLinksCheckBox->isChecked();
         }
     }
 
 
-    QStringList patternsToInclude = parseTextEditInput (ui.patternsIncludedTextEdit->toHtml());
+    // CHECK URL PATTERNS TO INCLUDE TEXTEDIT
+
+    urlPatterns = parseTextEditInput (ui.patternsIncludedTextEdit->toHtml());
 
 
-    if (patternsToInclude.size() == 0 ) {
+    if (urlPatterns.size() == 0 ) {
         QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
         effect->setColor(QColor("red"));
         ui.patternsIncludedTextEdit->setGraphicsEffect(effect);
@@ -169,9 +189,11 @@ void DialogWebCrawler::checkErrors(){
         }
     }
 
-    QStringList classesToInclude  = parseTextEditInput (ui.classesIncludedTextEdit->toHtml());
+    // CHECK LINK CLASSES TO INCLUDE TEXTEDIT
 
-    if (classesToInclude.size() == 0 ) {
+    linkClasses  = parseTextEditInput (ui.classesIncludedTextEdit->toHtml());
+
+    if (linkClasses.size() == 0 ) {
         QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
         effect->setColor(QColor("red"));
         ui.classesIncludedTextEdit->setGraphicsEffect(effect);
@@ -244,74 +266,19 @@ QStringList DialogWebCrawler::parseTextEditInput(const QString &html){
  * @brief gathers data from web crawler form
  */
 void DialogWebCrawler::gatherData(){
-    qDebug()<< "DialogWebCrawler::gatherData()...";
+    qDebug()<< "DialogWebCrawler::gatherData() - Emitting"
+            << "	seedUrl: " << seedUrl
+            << "	maxLinksPerPage " << maxLinksPerPage
+            << "  totalUrlsToCrawl " << totalUrlsToCrawl
+            << "urlPatterns" << urlPatterns
+            << "linkClasses" << linkClasses;
 
-    bool extLinks=true, intLinks=false;
-
-    QString seedUrl = (ui.seedUrlEdit)->text();
-
-    qDebug()<< "DialogWebCrawler::gatherData() initial seed url "
-            << seedUrl
-            << " simplifying and lowering it";
-
-    seedUrl = seedUrl.simplified().toLower() ;
-
-    qDebug()<< "DialogWebCrawler::gatherData() adding / to seed url ";
-    seedUrl = seedUrl + "/";
-
-    QUrl newUrl(seedUrl);
-
-    qDebug()<< "DialogWebCrawler::gatherData()  QUrl " << newUrl.toString()
-            << " scheme " << newUrl.scheme()
-            << " host " << newUrl.host()
-            << " path " << newUrl.path();
-
-    if ( newUrl.scheme() != "http"  && newUrl.scheme() != "https"  &&
-         newUrl.scheme() != "ftp" && newUrl.scheme() != "ftps") {
-        qDebug()<< "DialogWebCrawler::gatherData()  URL scheme missing "
-                << newUrl.scheme()
-                << " setting the default scheme http ";
-        newUrl = QUrl ("http://" + seedUrl);
-        qDebug() << newUrl;
-    }
-
-    if (! newUrl.isValid() || newUrl.host() == "") {
-        emit webCrawlerDialogError(seedUrl);
-        qDebug()<< "DialogWebCrawler::gatherData()  not valid URL";
-        return;
-    }
-
-    seedUrl = newUrl.toString();
-
-    qDebug()<< "DialogWebCrawler::gatherData()  final seed url " << newUrl
-            << " scheme " << newUrl.scheme()
-            << " host " << newUrl.host()
-            << " path " << newUrl.path();
-
-    int maxLinksPerPage = (ui.maxLinksPerPageSpinBox) -> value();
-    int totalUrlsToCrawl = (ui.totalUrlsToCrawlSpinBox) -> value();
-
-    if ( ui.extLinksCheckBox -> isChecked() ) {
-        qDebug()<< "	External links will be crawled... " ;
-        extLinks = true;
-    }
-    else {
-        qDebug()<< "	No external links... ";
-        extLinks = false;
-    }
-    if ( ui.intLinksCheckBox -> isChecked() ) {
-        qDebug()<< "	Internal links will be crawled too. " ;
-        intLinks = true;
-    }
-    else {
-        qDebug()<< "	No internal links. ";
-        intLinks = false;
-        if (!intLinks && !extLinks)
-            return;
-    }
-
-    qDebug()<< "	seedUrl: " << seedUrl;
-    qDebug()<< "	maxLinksPerPage " << maxLinksPerPage
-            << "  totalUrlsToCrawl " << totalUrlsToCrawl  ;
-    emit userChoices( seedUrl, totalUrlsToCrawl, maxLinksPerPage, extLinks, intLinks );
+    emit userChoices( seedUrl,
+                      urlPatterns,
+                      linkClasses,
+                      totalUrlsToCrawl,
+                      maxLinksPerPage,
+                      extLinks,
+                      intLinks
+                      );
 }

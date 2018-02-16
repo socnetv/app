@@ -248,6 +248,7 @@ public slots:
     void relationSet(int relNum=RAND_MAX, const bool notifyMW=true);
     void relationNext();
     void relationPrev();
+
     void canvasSizeSet(const int w, const int h);
     double canvasMaxRadius() const;
     float canvasMinDimension() const;
@@ -255,13 +256,20 @@ public slots:
     double canvasVisibleY(const double &y) const ;
     double canvasRandomX()  const;
     double canvasRandomY()  const;
+
     void vertexIsolatedAllToggle ( const bool &toggle);
     void vertexClickedSet(const int &v);
     void edgeClickedSet(const int &v1, const int &v2) ;
-    void edgeFilterByWeight (float, bool);		//Called by MW to filter edges over/under a weight
+
+    void edgeFilterByWeight (float, bool);
     void edgeFilterByRelation(int relation, bool status);
     void edgeFilterUnilateral(const bool &toggle);
-    void webCrawl(QString, int, int, bool extLinks, bool intLinks);	//Called by MW to start a web crawler...
+
+    void webCrawl(const QString &seed,
+                  const int &maxNodes,
+                  const int &maxRecursion,
+                  const bool &extLinks,
+                  const bool &intLinks);
 
     QString htmlEscaped (QString str) const;
 

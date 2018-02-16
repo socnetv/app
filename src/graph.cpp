@@ -2706,8 +2706,11 @@ void Graph::webCrawlTerminateThreads (QString reason){
  * @param extLinks
  * @param intLinks
  */
-void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
-                      bool extLinks, bool intLinks){
+void Graph::webCrawl( const QString &seed,
+                      const int &maxNodes,
+                      const int &maxRecursion,
+                      const bool &extLinks,
+                      const bool &intLinks){
 
     relationCurrentRename(tr("web"), true);
 

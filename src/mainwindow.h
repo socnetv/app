@@ -43,11 +43,12 @@
 #include <QThread>
 #include <QMetaType>
 
+
 #include <math.h>
 
 #include "graph.h"
 #include "dialogfilteredgesbyweight.h"
-#include "dialogwebcrawler.h"
+
 #include "dialogdatasetselect.h"
 
 static const QString VERSION="2.4";
@@ -82,6 +83,7 @@ class GraphicsWidget;
 class GraphicsEdge;
 class GraphicsNode;
 
+class DialogWebCrawler;
 class DialogNodeEdit;
 class DialogPreviewFile;
 class DialogRandErdosRenyi;
@@ -207,24 +209,32 @@ public slots:
     void slotNetworkRandomScaleFreeDialog();
 
     void slotNetworkRandomScaleFree(const int &newNodes,
-                                 const int &power,
-                                 const int &initialNodes,
-                                 const int &edgesPerStep,
-                                 const float &zeroAppeal,
-                                 const QString &mode);
+                                    const int &power,
+                                    const int &initialNodes,
+                                    const int &edgesPerStep,
+                                    const float &zeroAppeal,
+                                    const QString &mode);
 
     void slotNetworkRandomSmallWorldDialog();
 
     void slotNetworkRandomSmallWorld  (const int &newNodes,
-                                   const int &degree,
-                                   const float &beta,
-                                   const QString &mode,
-                                   const bool &diag);
+                                       const int &degree,
+                                       const float &beta,
+                                       const QString &mode,
+                                       const bool &diag);
 
     void slotNetworkRandomRingLattice();
 
     void slotNetworkWebCrawlerDialog();
-    void slotNetworkWebCrawler(QString, int, int, bool, bool);
+
+    void slotNetworkWebCrawler(const QString &urlSeed,
+                               const QStringList &urlPatterns,
+                               const QStringList &linkClasses,
+                               const int &maxNodes,
+                               const int &maxRecursion,
+                               const bool &extLinks,
+                               const bool &intLinks
+                               );
 
     //EDIT MENU
     void slotEditRelationsClear();
@@ -487,7 +497,7 @@ private:
     QMap<QString,QString> appSettings;
 
     DialogFilterEdgesByWeight m_DialogEdgeFilterByWeight;
-    DialogWebCrawler m_WebCrawlerDialog;
+    DialogWebCrawler *m_WebCrawlerDialog;
     DialogDataSetSelect m_datasetSelectDialog;
 
     DialogNodeEdit *m_nodeEditDialog;

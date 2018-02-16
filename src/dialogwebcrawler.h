@@ -40,16 +40,29 @@ class DialogWebCrawler: public QDialog
 {
 	Q_OBJECT
 public:
-	DialogWebCrawler (QWidget *parent = 0);
+    explicit DialogWebCrawler (QWidget *parent = 0);
+
 public slots:
     void checkErrors ();
 	void gatherData ();
     QStringList parseTextEditInput(const QString &html);
 signals:
-    void userChoices( QString, int, int, bool, bool);
+    void userChoices( const QString &seedUrl,
+                      const QStringList &,
+                      const QStringList &,
+                      const int &maxNodes,
+                      const int &maxLinks,
+                      const bool &extLinks,
+                      const bool &intLinks
+                      );
     void webCrawlerDialogError(QString);
 private:
-	Ui::DialogWebCrawler ui;
+    Ui::DialogWebCrawler ui;
+    QString seedUrl ;
+    int maxLinksPerPage, totalUrlsToCrawl;
+    bool extLinks, intLinks;
+    QStringList linkClasses;
+    QStringList urlPatterns;
 
 };
 
