@@ -265,9 +265,11 @@ public slots:
     void edgeFilterByRelation(int relation, bool status);
     void edgeFilterUnilateral(const bool &toggle);
 
-    void webCrawl(const QString &seed,
+    void webCrawl(const QString &urlSeed,
+                  const QStringList &urlPatterns,
+                  const QStringList &linkClasses,
                   const int &maxNodes,
-                  const int &maxRecursion,
+                  const int &maxLinksPerPage,
                   const bool &extLinks,
                   const bool &intLinks);
 

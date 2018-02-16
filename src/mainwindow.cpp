@@ -7880,7 +7880,7 @@ void MainWindow::slotNetworkWebCrawler ( const QString &urlSeed,
                                          const QStringList &urlPatterns,
                                          const QStringList &linkClasses,
                                          const int &maxNodes,
-                                         const int &maxRecursion,
+                                         const int &maxLinksPerPage,
                                          const bool &extLinks,
                                          const bool &intLinks
                                         ) {
@@ -7888,7 +7888,13 @@ void MainWindow::slotNetworkWebCrawler ( const QString &urlSeed,
     this->slotNetworkClose();
     qDebug () << "MW::slotNetworkWebCrawler" << urlPatterns;
     qDebug () << "MW::slotNetworkWebCrawler" << linkClasses;
-    activeGraph->webCrawl( urlSeed, maxNodes, maxRecursion,  extLinks, intLinks) ;
+    activeGraph->webCrawl( urlSeed,
+                           urlPatterns,
+                           linkClasses,
+                           maxNodes,
+                           maxLinksPerPage,
+                           extLinks,
+                           intLinks) ;
 
 }
 

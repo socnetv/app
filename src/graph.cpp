@@ -2706,9 +2706,11 @@ void Graph::webCrawlTerminateThreads (QString reason){
  * @param extLinks
  * @param intLinks
  */
-void Graph::webCrawl( const QString &seed,
+void Graph::webCrawl( const QString &urlSeed,
+                      const QStringList &urlPatterns,
+                      const QStringList &linkClasses,
                       const int &maxNodes,
-                      const int &maxRecursion,
+                      const int &maxLinksPerPage,
                       const bool &extLinks,
                       const bool &intLinks){
 
@@ -2717,7 +2719,7 @@ void Graph::webCrawl( const QString &seed,
     // TOFIX Due to multithreading, app crashes when crawler finishes its job.
 
     qDebug() << "Graph::webCrawl() - Graph thread:" << thread()
-             << "seed url:" << seed ;
+             << "seed url:" << urlSeed ;
 
     qDebug() << "Graph::webCrawl() - Creating wc_spider & wc_parser objects";
     wc_parser = new WebCrawler_Parser();
@@ -2770,19 +2772,20 @@ void Graph::webCrawl( const QString &seed,
 
     qDebug() << "Graph::webCrawl() - loading wc_parser & wc_spider data!";
 
-    wc_parser->load(seed,
+    wc_parser->load(urlSeed,
+                    urlPatterns,
+                    linkClasses,
                     maxNodes,
-                    maxRecursion,
+                    maxLinksPerPage,
                     extLinks,
                     intLinks);
 
-    wc_spider->load (seed,
+    wc_spider->load (urlSeed,
                      maxNodes,
-                     maxRecursion,
-                     extLinks, intLinks);
+                     maxLinksPerPage);
 
-    qDebug() << "Graph::webCrawl()  - Creating initial node 1, seed url:" << seed;
-    vertexCreateAtPosRandomWithLabel(1, seed, false);
+    qDebug() << "Graph::webCrawl()  - Creating initial node 1, seed url:" << urlSeed;
+    vertexCreateAtPosRandomWithLabel(1, urlSeed, false);
 
     qDebug() << "Graph::webCrawl() - Calling spider get() for that url!";
     emit operateSpider();

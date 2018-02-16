@@ -231,7 +231,7 @@ public slots:
                                const QStringList &urlPatterns,
                                const QStringList &linkClasses,
                                const int &maxNodes,
-                               const int &maxRecursion,
+                               const int &maxLinksPerPage,
                                const bool &extLinks,
                                const bool &intLinks
                                );

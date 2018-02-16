@@ -42,8 +42,10 @@ class WebCrawler_Parser : public QObject  {
 public:
     WebCrawler_Parser();
     ~WebCrawler_Parser();
-    void load ( QString seed,
-                int maxNodes,
+    void load (QString seed,
+               const QStringList &urlPatterns,
+               const QStringList &linkClasses,
+               int maxNodes,
                 int maxLinksPerPage,
                 bool extLinks,
                 bool intLinks);
@@ -66,6 +68,11 @@ private:
     int m_discoveredNodes;
     int m_maxLinksPerPage;
     bool m_extLinks, m_intLinks;
+    QStringList m_urlPatterns;
+    QStringList m_linkClasses;
+    QStringList::const_iterator constIterator;
+    bool m_urlPatternAllowed;
+    bool m_linkClassAllowed;
 };
 
 
@@ -74,11 +81,9 @@ class  WebCrawler_Spider : public QObject  {
 public:
     WebCrawler_Spider();
     ~WebCrawler_Spider();
-    void load (QString seed,
+    void load (const QString &seed,
                int maxNodes,
-               int maxLinksPerPage,
-               bool extLinks,
-               bool intLinks);
+               int maxLinksPerPage);
 
 public slots:
     void get();
@@ -96,7 +101,6 @@ private:
     int m_maxPages;
     int m_visitedNodes;
     int m_maxLinksPerPage;
-    bool m_extLinks, m_intLinks;
 
 };
 

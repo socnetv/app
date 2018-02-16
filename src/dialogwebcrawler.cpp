@@ -73,11 +73,11 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
 
     connect ( ui.buttonBox,SIGNAL(accepted()), this, SLOT(gatherData()) );
 
-    extLinks=true;
-    intLinks=false;
+    extLinks=false;
+    intLinks=true;
 
-    ui.extLinksCheckBox->setChecked (true);
-    ui.intLinksCheckBox->setChecked (false);
+    ui.extLinksCheckBox->setChecked (extLinks);
+    ui.intLinksCheckBox->setChecked (intLinks);
 
 
 }
@@ -105,8 +105,10 @@ void DialogWebCrawler::checkErrors(){
 
     seedUrl = seedUrl.simplified().toLower() ;
 
-    qDebug()<< "DialogWebCrawler::checkErrors() adding / to seed url ";
-    seedUrl = seedUrl + "/";
+    if (!seedUrl.endsWith("/")) {
+        qDebug()<< "DialogWebCrawler::checkErrors() adding / to seed url ";
+        seedUrl = seedUrl + "/";
+    }
 
     QUrl newUrl(seedUrl);
 
