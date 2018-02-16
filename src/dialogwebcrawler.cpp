@@ -121,11 +121,6 @@ void DialogWebCrawler::checkErrors(){
 
     seedUrl = seedUrl.simplified().toLower() ;
 
-    if (!seedUrl.endsWith("/")) {
-        qDebug()<< "DialogWebCrawler::checkErrors() adding / to seed url ";
-        //seedUrl = seedUrl + "/";
-    }
-
     QUrl newUrl(seedUrl);
 
     qDebug()<< "DialogWebCrawler::checkErrors()  - QUrl " << newUrl.toString()
@@ -133,14 +128,26 @@ void DialogWebCrawler::checkErrors(){
             << " host " << newUrl.host()
             << " path " << newUrl.path();
 
-    if ( newUrl.scheme() != "http"  && newUrl.scheme() != "https"  &&
-         newUrl.scheme() != "ftp" && newUrl.scheme() != "ftps") {
+
+    if ( newUrl.scheme().isEmpty() ||
+         ( newUrl.scheme() != "http"  && newUrl.scheme() != "https"  )) {
         qDebug()<< "DialogWebCrawler::checkErrors()  URL scheme missing "
                 << newUrl.scheme()
-                << " setting the default scheme http ";
-        newUrl = QUrl ("http://" + seedUrl);
+                << " setting the default scheme (http) ";
+        newUrl.setUrl("//" + seedUrl);
+        newUrl.setScheme("http");
         qDebug() << newUrl;
     }
+
+
+
+    if (newUrl.path().isEmpty() ) {
+        qDebug()<< "DialogWebCrawler::checkErrors() - seed url is a domain without a path. "
+                   "Adding default path / to seed url";
+
+        newUrl.setPath("/");
+    }
+
 
     if (! newUrl.isValid() || newUrl.host() == "" || !newUrl.host().contains(".") ) {
         qDebug()<< "DialogWebCrawler::checkErrors() - seedUrl not valid.";
@@ -188,7 +195,7 @@ void DialogWebCrawler::checkErrors(){
 
 
     // CHECK URL PATTERNS TO INCLUDE TEXTEDIT
-
+    qDebug()<< "DialogWebCrawler::checkErrors()  - checking allowed patterns ";
     urlPatternsIncluded = parseTextEditInput (ui.patternsIncludedTextEdit->toHtml());
 
 
@@ -200,6 +207,11 @@ void DialogWebCrawler::checkErrors(){
         patternsInError = true;
     }
     else {
+        if (urlPatternsIncluded.size() == 1 && urlPatternsIncluded.at(0) =="") {
+            urlPatternsIncluded.clear();
+            qDebug() << "DialogWebCrawler::checkErrors() - return empty urlPatterns (ALL)";
+        }
+
         if (!classesError  && !patternsExError && !urlError  && !checkboxesError) {
             ui.patternsIncludedTextEdit->setGraphicsEffect(0);
             (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(true);
@@ -209,7 +221,7 @@ void DialogWebCrawler::checkErrors(){
 
 
     // CHECK URL PATTERNS TO EXCLUDE TEXTEDIT
-
+    qDebug()<< "DialogWebCrawler::checkErrors()  - checking disallowed patterns ";
     urlPatternsExcluded = parseTextEditInput (ui.patternsExcludedTextEdit->toHtml());
 
 
@@ -260,8 +272,6 @@ void DialogWebCrawler::checkErrors(){
  */
 QStringList DialogWebCrawler::parseTextEditInput(const QString &html){
 
-    qDebug () << "DialogWebCrawler::parseTextEditInput";
-
     QStringList userInputParsed;
 
     if ( ! html.isEmpty() ) {
@@ -280,12 +290,15 @@ QStringList DialogWebCrawler::parseTextEditInput(const QString &html){
                qDebug () << "str ::" << str ;
                str.remove("<br />");
                str=str.simplified();
-               // remove wildcard
+
+
+               // remove wildcards, if there are any
                if (str.contains("*")) {
                    str.remove("*");
                }
 
                qDebug () << "str fin ::"  << str;
+
 
                // urls and classes cannot contain spaces...
                if (str.contains(" ")) {
