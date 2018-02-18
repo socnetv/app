@@ -5093,6 +5093,9 @@ void MainWindow::initApp(){
 
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
+    // first select none
+    graphicsWidget->selectNone();
+
     // Init basic variables
 
     inverseWeights=false;
@@ -7846,7 +7849,9 @@ void MainWindow::slotNetworkWebCrawlerDialog() {
                              const int&,
                              const int&,
                              const bool&,
-                             const bool&)
+                             const bool&,
+                             const bool&,
+                             const bool &)
                  ),
              this, SLOT(
                  slotNetworkWebCrawler (const QString &,
@@ -7856,7 +7861,9 @@ void MainWindow::slotNetworkWebCrawlerDialog() {
                                         const int&,
                                         const int&,
                                         const bool&,
-                                        const bool&)
+                                        const bool&,
+                                        const bool&,
+                                        const bool &)
                  )
              );
 
@@ -7885,7 +7892,9 @@ void MainWindow::slotNetworkWebCrawler ( const QString &urlSeed,
                                          const int &maxNodes,
                                          const int &maxLinksPerPage,
                                          const bool &extLinks,
-                                         const bool &intLinks
+                                         const bool &intLinks,
+                                         const bool &selfLinks,
+                                         const bool &delayedRequests
                                         ) {
 
     this->slotNetworkClose();
@@ -7898,7 +7907,9 @@ void MainWindow::slotNetworkWebCrawler ( const QString &urlSeed,
                            maxNodes,
                            maxLinksPerPage,
                            extLinks,
-                           intLinks) ;
+                           intLinks,
+                           selfLinks,
+                           delayedRequests) ;
 
 }
 

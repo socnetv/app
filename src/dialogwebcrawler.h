@@ -54,13 +54,15 @@ signals:
                       const int &maxNodes,
                       const int &maxLinks,
                       const bool &extLinks,
-                      const bool &intLinks
+                      const bool &intLinks,
+                      const bool &selfLinks,
+                      const bool &delayedRequests
                       );
     void webCrawlerDialogError(QString);
 private:
     Ui::DialogWebCrawler ui;
     QString seedUrl ;
-    int maxLinksPerPage, totalUrlsToCrawl;
+    int maxLinksPerPage, maxUrlsToCrawl;
     bool extLinks, intLinks;
     QStringList linkClasses;
     QStringList urlPatternsIncluded;

@@ -272,7 +272,9 @@ public slots:
                   const int &maxNodes,
                   const int &maxLinksPerPage,
                   const bool &extLinks,
-                  const bool &intLinks);
+                  const bool &intLinks,
+                  const bool &selfLinks,
+                  const bool &delayedRequests);
 
     QString htmlEscaped (QString str) const;
 

@@ -66,9 +66,25 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
                                            "\n\nDo not enter spaces."
                                            "\n\nLeave * to crawl all urls no matter what class they have.");
 
+    extLinks=false;
+    intLinks=true;
+
+    ui.extLinksCheckBox->setChecked (extLinks);
+    ui.intLinksCheckBox->setChecked (intLinks);
+
+    ui.selfLinksCheckBox->setChecked(false);
+
+    ui.waitCheckBox ->setChecked(true);
 
     connect (ui.seedUrlEdit, &QLineEdit::textChanged,
                      this, &DialogWebCrawler::checkErrors);
+
+    connect (ui.maxUrlsToCrawlSpinBox, &QSpinBox::editingFinished,
+                     this, &DialogWebCrawler::checkErrors);
+
+    connect (ui.maxLinksPerPageSpinBox, &QSpinBox::editingFinished,
+                     this, &DialogWebCrawler::checkErrors);
+
 
     connect (ui.patternsIncludedTextEdit, &QTextEdit::textChanged,
              this, &DialogWebCrawler::checkErrors);
@@ -88,14 +104,9 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
 
     connect ( ui.buttonBox,SIGNAL(accepted()), this, SLOT(gatherData()) );
 
-    extLinks=false;
-    intLinks=true;
-
-    ui.extLinksCheckBox->setChecked (extLinks);
-    ui.intLinksCheckBox->setChecked (intLinks);
-
 
 }
+
 
 /**
  * @brief Checks crawler form for user input errors
@@ -174,7 +185,7 @@ void DialogWebCrawler::checkErrors(){
     // CHECK MAX LIMITS  SPIN BOXES
 
     maxLinksPerPage = (ui.maxLinksPerPageSpinBox) -> value();
-    totalUrlsToCrawl = (ui.totalUrlsToCrawlSpinBox) -> value();
+    maxUrlsToCrawl = (ui.maxUrlsToCrawlSpinBox) -> value();
 
 
     // CHECK CHECKBOXES (AT LEAST ONE SHOULD BE ENABLED)
@@ -331,7 +342,7 @@ void DialogWebCrawler::gatherData(){
     qDebug()<< "DialogWebCrawler::gatherData() - Emitting" << endl
             << "	seedUrl: " << seedUrl << endl
             << "	maxLinksPerPage " << maxLinksPerPage << endl
-            << "	totalUrlsToCrawl " << totalUrlsToCrawl << endl
+            << "	totalUrlsToCrawl " << maxUrlsToCrawl << endl
             << "	urlPatternsIncluded" << urlPatternsIncluded << endl
             << "	urlPatternsExcluded" << urlPatternsExcluded << endl
             << "	linkClasses" << linkClasses << endl;
@@ -340,9 +351,11 @@ void DialogWebCrawler::gatherData(){
                       urlPatternsIncluded,
                       urlPatternsExcluded,
                       linkClasses,
-                      totalUrlsToCrawl,
+                      maxUrlsToCrawl,
                       maxLinksPerPage,
                       extLinks,
-                      intLinks
+                      intLinks,
+                      ui.selfLinksCheckBox->isChecked(),
+                      ui.waitCheckBox ->isChecked()
                       );
 }

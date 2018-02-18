@@ -2681,12 +2681,13 @@ void Graph::webCrawlTerminateThreads (QString reason){
                 << "Checking if wc_spiderThread is running...";
     if (wc_spiderThread.isRunning() ) {
         qDebug() << "Graph::webCrawlTerminateThreads() - deleting wc_spider pointer";
-        delete wc_spider;
-        wc_spider= 0;  // see why here: https://goo.gl/tQxpGA
+//        delete wc_spider;
+//        wc_spider= 0;  // see why here: https://goo.gl/tQxpGA
 
         qDebug() << "Graph::webCrawlTerminateThreads()  - wc_spiderThread running. "
                     "Calling wc_spiderThread.quit()";
         wc_spiderThread.quit();
+        wc_parserThread.quit();
 
         //layoutVertexSizeByIndegree();
      }
@@ -2713,7 +2714,9 @@ void Graph::webCrawl(const QString &urlSeed,
                       const int &maxNodes,
                       const int &maxLinksPerPage,
                       const bool &extLinks,
-                      const bool &intLinks){
+                      const bool &intLinks,
+                     const bool &selfLinks,
+                     const bool &delayedRequests){
 
     relationCurrentRename(tr("web"), true);
 
@@ -2780,11 +2783,12 @@ void Graph::webCrawl(const QString &urlSeed,
                     maxNodes,
                     maxLinksPerPage,
                     extLinks,
-                    intLinks);
+                    intLinks,
+                    selfLinks);
 
     wc_spider->load (urlSeed,
                      maxNodes,
-                     maxLinksPerPage);
+                     delayedRequests);
 
     qDebug() << "Graph::webCrawl()  - Creating initial node 1, seed url:" << urlSeed;
     vertexCreateAtPosRandomWithLabel(1, urlSeed, false);

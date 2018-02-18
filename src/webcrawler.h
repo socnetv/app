@@ -42,14 +42,15 @@ class WebCrawler_Parser : public QObject  {
 public:
     WebCrawler_Parser();
     ~WebCrawler_Parser();
-    void load (QString seed,
+    void load (const QString &seed,
                const QStringList &urlPatternsIncluded,
                const QStringList &urlPatternsExcluded,
                const QStringList &linkClasses,
-               int maxNodes,
-                int maxLinksPerPage,
-                bool extLinks,
-                bool intLinks);
+               const int &maxNodes,
+               const int &maxLinksPerPage,
+               const bool &extLinks,
+               const bool &intLinks,
+               const bool &selfLinks);
 
 public slots:
     void parse(QNetworkReply *reply);
@@ -65,10 +66,10 @@ private:
     QByteArray ba;
     QMap <QUrl, int> knownUrls;
     QUrl  m_seed;
-    int m_maxPages;
+    int m_maxNodes;
     int m_discoveredNodes;
     int m_maxLinksPerPage;
-    bool m_extLinks, m_intLinks;
+    bool m_extLinks, m_intLinks, m_selfLinks ;
     QStringList m_urlPatternsIncluded;
     QString urlPattern;
     QStringList m_urlPatternsExcluded;
@@ -86,8 +87,8 @@ public:
     WebCrawler_Spider();
     ~WebCrawler_Spider();
     void load (const QString &seed,
-               int maxNodes,
-               int maxLinksPerPage);
+               const int &maxNodes,
+               const bool &delayedRequests);
 
 public slots:
     void get();
@@ -98,13 +99,14 @@ signals:
     void finished (QString);
 private:
     QNetworkAccessManager *http;
-    QNetworkRequest *request;
+    QNetworkRequest request;
     QNetworkReply *reply;
     QUrl currentUrl ;
     QString  m_seed;
-    int m_maxPages;
+    int m_maxNodes;
     int m_visitedNodes;
-    int m_maxLinksPerPage;
+    int m_wait_msecs;
+    bool m_delayedRequests;
 
 };
 
