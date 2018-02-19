@@ -48,7 +48,7 @@ QQueue<QUrl> frontier;
  * @brief spider's constructor - does nothing
  */
 WebCrawler_Spider::WebCrawler_Spider() {
-    qDebug() << "   wc_spider::WebCrawler_Spider() - thread():" << thread();
+    qDebug() << "   wc_spider::WebCrawler_Spider() - thread() - " << thread();
 }
 
 
@@ -65,7 +65,7 @@ WebCrawler_Spider::WebCrawler_Spider() {
 void WebCrawler_Spider::load(const QString &url,
                              const int &maxN,
                              const bool &delayedRequests) {
-    qDebug() << "   wc_spider::load() - thread():" << thread()
+    qDebug() << "   wc_spider::load() - thread() - " << thread()
              << "Initializing vars ...";
 
     m_seed=url;                             // the initial url/domain we will crawl
@@ -95,43 +95,37 @@ void WebCrawler_Spider::load(const QString &url,
 *  to wc_parser thread parse() method to parse them
  */
 void WebCrawler_Spider::get(){
-    qDebug() << "   wc_spider::get():";
-    do { 	//repeat forever....
+    qDebug() << "   wc_spider::get() - ";
 
+    //repeat forever....
+    do {
         //  or until we crawl all urls in frontier.
         if (frontier.size() ==0 ) {
-            qDebug () <<"   wc_spider::get() #### Frontier is empty: "
-                     <<frontier.size() << " - we will stop now "  ;
+            qDebug () <<"##   wc_spider::get() - Frontier is empty. "
+                        "No more urls to crawl. Breaking loop. ##"  ;
             break;
         }
 
         // or until we have reached m_maxNodes
         if (m_maxNodes>0) {
             if (m_visitedNodes == m_maxNodes ) {
-                qDebug () <<"   wc_spider::get(): #### Reached m_maxNodes!"
-                         << " - STOP" ;
+                qDebug () <<"##   wc_spider::get() - Reached m_maxNodes!"
+                         << "STOP ##" ;
                 emit finished("message from spider: visitedNodes > maxnodes. ");
                 break;
             }
         }
 
-        qDebug() << "   wc_spider::get():"
-                 <<" frontier size " << frontier.size()
+        qDebug() << "   wc_spider::get() - frontier size " << frontier.size()
                 << " - Take the first url from frontier  ";
 
         currentUrl = frontier.dequeue();
 
-        qDebug() << "   wc_spider::get():  currentUrl: "
-                 <<  currentUrl;
-
-
-        qDebug() << "   wc_spider::get(): currentUrl not visited."
-                 << " Increasing visitedNodes to: " << m_visitedNodes + 1
-                 << " Let us visit it.";
-
-        qDebug() << "   wc_spider::get(): currentUrl: "
-                 <<  currentUrl
-                  << " downloading html ";
+        qDebug() << "   wc_spider::get() - url: "
+                 <<  currentUrl << endl
+                 << "url not visited. "
+                 << "Increasing visitedNodes to" << m_visitedNodes + 1
+                  << "Downloading html...";
 
         //request = new QNetworkRequest;
         request.setUrl(currentUrl);
@@ -141,12 +135,13 @@ void WebCrawler_Spider::get(){
 
         if (m_delayedRequests) {
             m_wait_msecs = rand() %1000;
-            qDebug() << "   wc_spider::get(): Sleeping for" << m_wait_msecs << "msecs";
+            qDebug() << "   wc_spider::get() - Sleeping for" << m_wait_msecs << "msecs";
             QThread::msleep(m_wait_msecs);
         }
 
-        qDebug() << "   wc_spider::get(): Calling http->get() - http->thread(): "
-                 << http->thread() ;
+        qDebug() << "   wc_spider::get() - calling http->get() for url"
+                 <<  currentUrl;
+        qDebug() << "   wc_spider::get() - http->thread():" << http->thread() ;
 
         QNetworkReply *reply =  http->get(request) ;
         Q_UNUSED(reply);
@@ -155,7 +150,7 @@ void WebCrawler_Spider::get(){
 
     } while ( 1 );
 
-    qDebug() << "   wc_spider::get() Finished!";
+    qDebug() << "==   wc_spider::get() - Finished infinite loop!";
 }
 
 
@@ -175,7 +170,10 @@ WebCrawler_Spider::~WebCrawler_Spider() {
     qDebug() << "   wc_spider::~WebCrawler_Spider() - deleting http object";
     m_visitedNodes = 0;
     delete http;
-    //http->deleteLater();
+    http=0;
+
+    qDebug() << "   wc_spider::~WebCrawler_Spider() - deleting reply object";
+
 }
 
 
@@ -214,7 +212,11 @@ void WebCrawler_Parser::load(const QString &url,
               << "Initializing variables ";
 
     // Initialize user-defined control variables and limits
-    m_seed=QUrl (url);                              // the initial url/domain we will crawl
+
+    m_seed=QUrl(url);                              // the initial url/domain we will crawl
+    if (m_seed.path() == "/") {
+        m_seed.setPath("");
+    }
     m_urlPatternsIncluded = urlPatternsIncluded;    // list of url patterns to include
     m_urlPatternsExcluded = urlPatternsExcluded;    // list of url patterns to include
     m_linkClasses = linkClasses;                    // list of link classes to include
@@ -234,8 +236,8 @@ void WebCrawler_Parser::load(const QString &url,
     frontier.enqueue(m_seed);
     knownUrls[m_seed]=m_discoveredNodes;
 
-    qDebug() << "   wc_parser::load()  seed: " << m_seed
-             << " seed_domain: " << m_seed.host()
+    qDebug() << "   wc_parser::load() - seed:" << m_seed
+             << " seed_host: " << m_seed.host()
              << " Added seed to frontier queue and knownUrls map. "
              << " Node " << m_discoveredNodes << " should be already created. "
              << " m_maxNodes " << m_maxNodes
@@ -256,7 +258,7 @@ void WebCrawler_Parser::load(const QString &url,
  * @param reply
  */
 void WebCrawler_Parser::parse(QNetworkReply *reply){
-    qDebug () << "   wc_parser::parse() thread " << this->thread();
+    qDebug () << "   wc_parser::parse() - thread:" << this->thread();
 
     // Find to which node the response HTML belongs to
     // Get this from the reply object request method
@@ -272,12 +274,12 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
               << " path " << path;
 
 
-//    qDebug () << "   wc_parser::parse(): original locationHeader"
+//    qDebug () << "   wc_parser::parse() -  original locationHeader"
 //              << reply->header(QNetworkRequest::LocationHeader) ;
-//    qDebug () << "   wc_parser::parse(): decoded locationHeader" << locationHeader ;
+//    qDebug () << "   wc_parser::parse() -  decoded locationHeader" << locationHeader ;
 
-//    qDebug () << "   wc_parser::parse(): encoded requestUrl  " << requestUrl;
-//    qDebug () << "   wc_parser::parse(): decoded requestUrl " << requestUrlStr;
+//    qDebug () << "   wc_parser::parse() -  encoded requestUrl  " << requestUrl;
+//    qDebug () << "   wc_parser::parse() -  decoded requestUrl " << requestUrlStr;
 
 
     // Check for redirects
@@ -299,9 +301,8 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
     ba=reply->readAll();            // read all data from the reply into a bytearray
     QString page(ba);               // construct a QString from the bytearray
 
-
     QString md5(QCryptographicHash::hash(ba,QCryptographicHash::Md5).toHex());
-    qDebug () << "   wc_parser::parse(): md5" << md5.toLocal8Bit();
+    qDebug () << "   wc_parser::parse() - MD5 sum:" << md5.toLocal8Bit();
 
 
     // If there are no links inside the HTML source, return
@@ -309,11 +310,11 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
 
         //FIXME: Frameset pages are not parsed! See docs/manual.html for example.
 
-        qDebug() << "   wc_parser::parse(): ### Empty or not useful html from "
+        qDebug() << "##   wc_parser::parse() - Empty or not useful html from "
                  << requestUrl
                  << " page size " << page.size()
                  << " \npage contents: " << page
-                 << " RETURN";
+                 << " RETURN ##";
 
         return;
 
@@ -322,22 +323,22 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
     //    qDebug() <<  " \npage contents: " << page << endl << endl;
 
     // Delete html head
-    qDebug() << "   wc_parser::parse(): erasing <head></head>";
+    qDebug() << "   wc_parser::parse() - Erasing <head></head>";
     start=page.indexOf ("<head");		//Find head pos -- deliberately open tag
     end=page.indexOf ("</head>");		//Find head pos
     if ( start != -1 && end != -1 ) {
         page = page.remove(start, end);		//erase head
     }
     else if ( start == -1  ) {
-        qDebug() << "   wc_parser::parse(): ERROR IN locating tag <head> start";
+        qDebug() << "   wc_parser::parse() - ERROR IN locating tag <head> start";
     }
     else if ( end == -1  ) {
-        qDebug() << "   wc_parser::parse(): ERROR IN locating tag </head> end";
+        qDebug() << "   wc_parser::parse() - ERROR IN locating tag </head> end";
     }
 
     // Delete all scripts from page source
     while (page.contains("<script")) {
-        qDebug () << "   wc_parser::parse(): deleting scripts";
+        qDebug () << "   wc_parser::parse() - Deleting scripts";
         start=page.indexOf ("<script");		//Find pos -- deliberately open tag
         end=page.indexOf ("</script>");		//Find pos
         if ( start != -1 && end != -1 ) {
@@ -351,8 +352,8 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
 
         if (m_maxNodes>0) {
             if (m_discoveredNodes >= m_maxNodes ) {
-                qDebug () <<"!!   wc_parser::parse(): Reached m_maxNodes! STOP ";
-                emit finished("message from parse(): discoveredNodes > maxNodes");
+                qDebug () <<"!!   wc_parser::parse() - Reached m_maxNodes! STOP ";
+                emit finished("message from parse() -  discoveredNodes > maxNodes");
                 return;
             }
         }
@@ -389,19 +390,24 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
 
         if (!newUrl.isValid()) {
             invalidUrlsInPage ++;
-            qDebug() << "   wc_parser::parse(): found INVALID newUrl "
+            qDebug() << "   wc_parser::parse() - found INVALID newUrl "
                         << newUrl.toString()
                         << " in page " << requestUrlStr
                         << " Will CONTINUE only if invalidUrlsInPage < 200";
             if (invalidUrlsInPage > 200) {
-                qDebug() << "   wc_parser::parse(): INVALID newUrls > 200";
+                qDebug() << "   wc_parser::parse() -  INVALID newUrls > 200";
                 emit finished("invalidUrlsInPage > 200");
                 return;
             }
             continue;
         }
 
-        qDebug() << "@@   wc_parser::parse(): found VALID newUrl: "
+        // TODO - REMOVE LAST / FROM EVERY PATH NOT ONLY ROOT PATH
+        if (newUrl.path() == "/") {
+            newUrl.setPath("");
+        }
+
+        qDebug() << "@@   wc_parser::parse() - found VALID newUrl: "
                  << newUrl.toString();
 
 
@@ -421,7 +427,7 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
               newUrl.fileName().endsWith(".js", Qt::CaseInsensitive) ||
               newUrl.fileName().endsWith(".css", Qt::CaseInsensitive) ||
               newUrl.fileName().endsWith(".rsd", Qt::CaseInsensitive)   )    {
-                qDebug()<< "!!   wc_parser::parse(): # newUrl "
+                qDebug()<< "!!   wc_parser::parse() -  # newUrl "
                         << " seems a page resource or anchor (rss, favicon, etc) "
                         << "Skipping...";
                 continue;
@@ -438,13 +444,13 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
              if (urlPattern.isEmpty())
                  continue;
              if ( newUrl.toString().contains( urlPattern ) ) {
-                 qDebug() << "--   wc_parser::parse(): newUrl in allowed url patterns:"
+                 qDebug() << "--   wc_parser::parse() -  newUrl in allowed url patterns:"
                           << urlPattern
                           <<"Parsing";
                  break;
              }
              else {
-                 qDebug() << "!!   wc_parser::parse(): newUrl not in allowed url patterns. CONTINUE ";
+                 qDebug() << "!!   wc_parser::parse() -  newUrl not in allowed url patterns. CONTINUE ";
                  m_urlPatternAllowed = false;
              }
 
@@ -460,14 +466,14 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
              if (urlPattern.isEmpty())
                  continue;
              if ( newUrl.toString().contains( urlPattern ) ) {
-                 qDebug() << "!!   wc_parser::parse(): newUrl in excluded url patterns:"
+                 qDebug() << "!!   wc_parser::parse() -  newUrl in excluded url patterns:"
                           << urlPattern
                           << "CONTINUE ";
                 m_urlPatternNotAllowed = true;
                 break;
              }
              else {
-                 qDebug() << "--   wc_parser::parse(): newUrl not in excluded url patterns. Parsing";
+                 qDebug() << "--   wc_parser::parse() -  newUrl not in excluded url patterns. Parsing";
              }
 
          }
@@ -479,75 +485,82 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
                 newUrl = requestUrl.resolved(newUrl);
                 newUrlStr = newUrl.toString();
 
-                qDebug() << "   wc_parser::parse(): isRelative TRUE"
+                qDebug() << "   wc_parser::parse() - RELATIVE url"
                             << " host: " << host
                             << " resolved url "
                             << newUrl.toString();
 
                 if (!m_intLinks ){
-                    qDebug()<< "   wc_parser::parse(): m_IntLinks = FALSE"
+                    qDebug()<< "   wc_parser::parse() - Internal urls forbidden."
                             << " SKIPPING node creation";
                             continue;
                 }
 
                 if (requestUrl.path() == newUrl.path()) {
                     if  (m_selfLinks) {
-                        qDebug()<< "   wc_parser::parse(): m_IntLinks = TRUE"
+                        qDebug()<< "   wc_parser::parse() - "
                                 << " requestUrl.path() = newUrl.path()"
                                 <<  " Creating self link";
 
                         newLink(sourceNode, newUrl, false);
                     }
                     else {
-                        qDebug()<< "   wc_parser::parse(): m_IntLinks = TRUE"
-                                << " requestUrl.path() = newUrl.path()"
-                                <<  " Self links not allowed. Continue.";
+                        qDebug()<< "   wc_parser::parse() - "
+                                << "requestUrl.path() = newUrl.path()"
+                                <<  "Self links not allowed. CONTINUE.";
                     }
 
                 }
                 else {
-                    qDebug()<< "   wc_parser::parse(): m_IntLinks = TRUE"
+                    qDebug()<< "   wc_parser::parse() - Internal links allowed."
                             <<  " Creating new node and ADDING it to frontier...";
                     this->newLink(sourceNode, newUrl, true);
 
                 }
             }
             else {
-                qDebug() << "   wc_parser::parse(): isRelative FALSE";
+                qDebug() << "   wc_parser::parse() - ABSOLUTE url.";
 
                 if ( newUrl.scheme() != "http"  && newUrl.scheme() != "https"  &&
                           newUrl.scheme() != "ftp" && newUrl.scheme() != "ftps") {
-                    qDebug() << "   wc_parser::parse(): found INVALID newUrl SCHEME"
+                    qDebug() << "   wc_parser::parse() - found INVALID newUrl SCHEME"
                                 << newUrl.toString();
                     continue;
                 }
 
                 if (  newUrl.host() != host  ) {
-                    qDebug()<< "   wc_parser::parse(): absolute newUrl "
-                             <<  " is EXTERNAL ";
+                    qDebug()<< "   wc_parser::parse() - absolute newUrl EXTERNAL.";
                     if ( !m_extLinks ) {
-                        qDebug()<< "   wc_parser::parse(): m_extLinks = false . "
+                        qDebug()<< "   wc_parser::parse() - External urls forbidden."
                                 <<" Creating new node but NOT ADDING it to frontier...";
-                        this->newLink(sourceNode, newUrl, false);
+                        newLink(sourceNode, newUrl, false);
                     }
                     else {
-                        qDebug()<< "   wc_parser::parse():  m_extLinks = true  "
+                        qDebug()<< "   wc_parser::parse() - External urls allowed."
                                 <<" Creating new node and ADDING it to frontier...";
-                        this->newLink(sourceNode, newUrl, true);
+                        newLink(sourceNode, newUrl, true);
                     }
                 }
                 else {
-                    qDebug()<< "   wc_parser::parse(): absolute newUrl"
-                            << " is INTERNAL ";
+                    qDebug()<< "   wc_parser::parse() - absolute newUrl INTERNAL.";
 
                     if (!m_intLinks){
-                        qDebug()<< "   wc_parser::parse(): m_IntLinks = FALSE"
+                        qDebug()<< "   wc_parser::parse() - Internal urls forbidden."
                                   << " SKIPPING node creation";
                         continue;
                     }
-                    qDebug()<< "   wc_parser::parse(): m_IntLinks = TRUE"
+
+                    if (  newUrl.path () == path ) {
+                        qDebug()<< "   wc_parser::parse() - "
+                                << "requestUrl.path() = newUrl.path()"
+                                <<  "Self links not allowed. CONTINUE.";
+                        continue;
+                    }
+
+
+                    qDebug()<< "   wc_parser::parse() -  Internal urls allowed."
                             <<" Creating new node and ADDING it to frontier...";
-                    this->newLink(sourceNode, newUrl, true);
+                    newLink(sourceNode, newUrl, true);
                 }
             }
 
@@ -555,7 +568,7 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
 
         validUrlsInPage ++;
 
-        qDebug() << "   wc_parser::parse(): validUrlsInPage " << validUrlsInPage;
+        qDebug() << "   wc_parser::parse() - validUrlsInPage " << validUrlsInPage;
 
         // If the user has specified a maxLinksPerPage limit then,
         // if we have reached it, stop parsing this page
@@ -581,13 +594,12 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
  * @param enqueue_to_frontier
  */
 void WebCrawler_Parser::newLink(int s, QUrl target,  bool enqueue_to_frontier) {
-    qDebug() << "   wc_parser::newLink() : from s " <<  s
-                << " to target " << target.toString();
+    qDebug() << "   wc_parser::newLink() - source" <<  s << "target" << target.toString();
 
     if (m_maxNodes>0) {
         if (m_discoveredNodes >= m_maxNodes ) {
-            qDebug () <<"   wc_parser::newLink(): #### Seems we have reached m_maxNodes!"
-                     << " - STOP!" ;
+            qDebug () <<"##   wc_parser::newLink() -  We have reached m_maxNodes!"
+                     << " - STOP! ###" ;
             emit finished("maxpages from newLink");
             return;
         }
@@ -597,32 +609,40 @@ void WebCrawler_Parser::newLink(int s, QUrl target,  bool enqueue_to_frontier) {
     // check if the new url has been discovered previously
     QMap<QUrl, int>::const_iterator index = knownUrls.find(target);
     if (   index!= knownUrls.end() ) {
-        qDebug()<< "--   wc_parser::newLink(): target already discovered "
-                << " in knownUrls. Creating edge from "
-                << s << " to " << index.value();
-        emit signalCreateEdge (s, index.value() );
+        qDebug()<< "--   wc_parser::newLink() - target already discovered "
+                << " in knownUrls as node:" << index.value();
+        if  (s !=index.value()) {
+            qDebug()<< "--   wc_parser::newLink() - creating link"
+                    << s << "->"
+                    << index.value()
+                    << "then RETURN.";
+            emit signalCreateEdge (s, index.value() );
+        }
+        else {
+            qDebug()<< "--   wc_parser::newLink() - Self links not allowed. RETURN.";
+        }
         return;
     }
 
     m_discoveredNodes++;
     knownUrls[target]=m_discoveredNodes;
     emit signalCreateNode( m_discoveredNodes, target.toString(), false);
-    qDebug()<< "**   wc_parser::newLink(): Creating node " << m_discoveredNodes
+    qDebug()<< "**   wc_parser::newLink() - Creating node " << m_discoveredNodes
             << " url "<< target.toString();
 
     if (enqueue_to_frontier) {
 
         frontier.enqueue(target);
-        qDebug()<< "**   wc_parser::newLink(): Enqueuing new node to frontier "
+        qDebug()<< "**   wc_parser::newLink() - Enqueuing new node to frontier "
                    << " frontier size: "<<  frontier.size();
 
         emit startSpider();
     }
     else {
-        qDebug()<< "##   wc_parser::newLink(): NOT enqueuing to frontier";
+        qDebug()<< "##   wc_parser::newLink() - NOT enqueuing to frontier";
     }
 
-    qDebug()<< "--   wc_parser::newLink(): Creating edge from "
+    qDebug()<< "--   wc_parser::newLink() - Creating edge from "
             << s << " to " << m_discoveredNodes;
 
     emit signalCreateEdge (s, m_discoveredNodes);
@@ -633,9 +653,14 @@ void WebCrawler_Parser::newLink(int s, QUrl target,  bool enqueue_to_frontier) {
 
 
 WebCrawler_Parser::~WebCrawler_Parser() {
+        qDebug() << "   wc_parser::~WebCrawler_Parser() - clearing vars";
         ba.clear();
         frontier.clear();
         knownUrls.clear();
+        m_urlPatternsIncluded.clear();
+        urlPattern="";
+        m_urlPatternsExcluded.clear();
+        m_linkClasses.clear();
         m_discoveredNodes = 0;
 
 

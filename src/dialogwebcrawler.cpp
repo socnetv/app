@@ -59,13 +59,6 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
                                             "\n\nLeave empty to crawl all urls.");
 
 
-    ui.classesIncludedTextEdit->setText("*");
-    ui.classesIncludedTextEdit->setToolTip("<b>ALLOWED LINK CLASSES</b>\n"
-                                           "Enter, in separate lines, one or more link classes to crawl."
-                                           "\nI.e. \nlink \ngraph"
-                                           "\n\nDo not enter spaces."
-                                           "\n\nLeave * to crawl all urls no matter what class they have.");
-
     extLinks=false;
     intLinks=true;
 
@@ -93,9 +86,6 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
              this, &DialogWebCrawler::checkErrors);
 
 
-    connect (ui.classesIncludedTextEdit, &QTextEdit::textChanged,
-             this, &DialogWebCrawler::checkErrors);
-
     connect (ui.extLinksCheckBox, &QCheckBox::stateChanged,
              this, &DialogWebCrawler::checkErrors);
 
@@ -119,7 +109,6 @@ void DialogWebCrawler::checkErrors(){
     bool urlError  = false;
     bool patternsInError = false;
     bool patternsExError = false;
-    bool classesError  = false;
     bool checkboxesError = false;
 
     // CHECK URL
@@ -169,7 +158,7 @@ void DialogWebCrawler::checkErrors(){
         urlError  = true;
     }
     else {
-        if (!patternsInError && !patternsExError && !classesError  && !checkboxesError ) {
+        if (!patternsInError && !patternsExError   && !checkboxesError ) {
             ui.seedUrlEdit->setGraphicsEffect(0);
             (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(true);
             urlError  = false;
@@ -196,7 +185,7 @@ void DialogWebCrawler::checkErrors(){
         checkboxesError = true;
     }
     else {
-        if (!patternsInError && !patternsExError && !classesError  && !urlError ) {
+        if (!patternsInError && !patternsExError && !urlError ) {
             (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(true);
             checkboxesError = false;
             extLinks = ui.extLinksCheckBox->isChecked();
@@ -223,7 +212,7 @@ void DialogWebCrawler::checkErrors(){
             qDebug() << "DialogWebCrawler::checkErrors() - return empty urlPatterns (ALL)";
         }
 
-        if (!classesError  && !patternsExError && !urlError  && !checkboxesError) {
+        if ( !patternsExError && !urlError  && !checkboxesError) {
             ui.patternsIncludedTextEdit->setGraphicsEffect(0);
             (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(true);
             patternsInError = false;
@@ -246,31 +235,13 @@ void DialogWebCrawler::checkErrors(){
         }
     }
     else {
-        if (!classesError && !patternsInError && !urlError && !checkboxesError) {
+        if ( !patternsInError && !urlError && !checkboxesError) {
             ui.patternsExcludedTextEdit->setGraphicsEffect(0);
             (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(true);
             patternsExError = false;
         }
     }
 
-    // CHECK LINK CLASSES TO INCLUDE TEXTEDIT
-
-    linkClasses  = parseTextEditInput (ui.classesIncludedTextEdit->toHtml());
-
-    if (linkClasses.size() == 0 ) {
-        QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
-        effect->setColor(QColor("red"));
-        ui.classesIncludedTextEdit->setGraphicsEffect(effect);
-        (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setDisabled(true);
-        classesError  = true;
-    }
-    else {
-        if (!patternsInError && !patternsExError && !urlError  && !checkboxesError) {
-            ui.classesIncludedTextEdit->setGraphicsEffect(0);
-            (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(true);
-            classesError  = false;
-        }
-    }
 
 
 
@@ -314,7 +285,7 @@ QStringList DialogWebCrawler::parseTextEditInput(const QString &html){
                // urls and classes cannot contain spaces...
                if (str.contains(" ")) {
                    userInputParsed.clear();
-                   qDebug () << "urls and classes cannot contain spaces... Break." ;
+                   qDebug () << "urls cannot contain spaces... Break." ;
                    break;
                }
 

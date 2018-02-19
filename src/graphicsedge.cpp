@@ -43,8 +43,8 @@ static const double Pi = 3.14159265;
 static double TwoPi = 2.0 * Pi;
 
 static const int EDGE_DIRECTED = 0;
-static const int EDGE_DIRECTED_OPPOSITE_EXISTS = 1;
-static const int EDGE_RECIPROCAL_UNDIRECTED = 2;
+static const int EDGE_DIRECTED_RECIPROCATED = 1;
+static const int EDGE_UNDIRECTED = 2;
 
 GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
              GraphicsNode *from,
@@ -344,7 +344,7 @@ void GraphicsEdge::adjust(){
     sourcePoint = line.p1() + edgeOffset ;
     targetPoint = line.p2() - edgeOffset ;
 
-//    if (m_edgeType == EDGE_DIRECTED_OPPOSITE_EXISTS ) {
+//    if (m_edgeType == EDGE_DIRECTED_RECIPROCATED ) {
 //        if (m_directed_first ) {
 //            sourcePoint -= QPointF(4,4);
 //            targetPoint -= QPointF(4,4);
@@ -423,7 +423,7 @@ void GraphicsEdge::adjust(){
                                  << targetPoint
                                  );
 
-            if (m_edgeType == EDGE_RECIPROCAL_UNDIRECTED || m_edgeType == EDGE_DIRECTED_OPPOSITE_EXISTS ) {
+            if (m_edgeType == EDGE_UNDIRECTED || m_edgeType == EDGE_DIRECTED_RECIPROCATED ) {
     //            qDebug() << "**** GraphicsEdge::paint() This edge is SYMMETRIC! "
     //                     << " So, we need to create Arrow at src node as well";
                 QPointF srcArrowP1 = sourcePoint + QPointF(sin(angle +Pi / 3) * m_arrowSize,
@@ -485,13 +485,17 @@ QRectF GraphicsEdge::boundingRect() const {
 }
 
 
-void GraphicsEdge::setDirectedWithOpposite(){
-    qDebug()<< "GraphicsEdge::setDirectedWithOpposite() - "
+/**
+ * @brief Transforms edge A -> B to reciprocated A <-> B.
+ * This means actor A is linked to B and actor B is linked to A
+ */
+void GraphicsEdge::setDirectedReciprocated(){
+    qDebug()<< "GraphicsEdge::setDirectedReciprocated() - "
             << source->nodeNumber()
             << "->"
             << target->nodeNumber();
     prepareGeometryChange();
-    m_edgeType = EDGE_DIRECTED_OPPOSITE_EXISTS;
+    m_edgeType = EDGE_DIRECTED_RECIPROCATED;
     m_directed_first= true;
     adjust();
 }
@@ -502,7 +506,7 @@ void GraphicsEdge::setDirectedWithOpposite(){
 void GraphicsEdge::setUndirected(){
     qDebug()<< "GraphicsEdge::setUndirected()";
     prepareGeometryChange();
-    m_edgeType = EDGE_RECIPROCAL_UNDIRECTED;
+    m_edgeType = EDGE_UNDIRECTED;
     m_directed_first= false;
     m_drawArrows = false;
     adjust();
@@ -510,7 +514,7 @@ void GraphicsEdge::setUndirected(){
 
 
 bool GraphicsEdge::isUndirected() {
-    return ( m_edgeType == EDGE_RECIPROCAL_UNDIRECTED ) ? true:false;
+    return ( m_edgeType == EDGE_UNDIRECTED ) ? true:false;
 }
 
 

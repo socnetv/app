@@ -47,8 +47,8 @@
 using namespace std;
 
 static const int EDGE_DIRECTED                 = 0;
-static const int EDGE_DIRECTED_OPPOSITE_EXISTS = 1;
-static const int EDGE_RECIPROCAL_UNDIRECTED    = 2;
+static const int EDGE_DIRECTED_RECIPROCATED = 1;
+static const int EDGE_UNDIRECTED    = 2;
 
 static const int FILE_GRAPHML           = 1;  // .GRAPHML .XML
 static const int FILE_PAJEK             = 2;  // .PAJ .NET
@@ -310,7 +310,7 @@ signals:
     void signalEdgeClickedInfo (const int &v1=0,
                                 const int &v2=0,
                                 const float &weight=0,
-                                const bool &undirected=false);
+                                const int &type=0);
     void signalRelationAddToMW(const QString &newRelation, const bool &changeRelation=true);
     void signalRelationsClear();
     void signalRelationRenamedToMW(const QString newRelName);

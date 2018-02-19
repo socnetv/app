@@ -1610,10 +1610,10 @@ void Graph::edgeCreate(const int &v1, const int &v2, const float &weight,
     // check whether there is already such an edge
     // (see #713617 - https://bugs.launchpad.net/socnetv/+bug/713617)
     if (!edgeExists(v1,v2)){
-        if ( type == EDGE_RECIPROCAL_UNDIRECTED ) {
+        if ( type == EDGE_UNDIRECTED ) {
 
-            qDebug()<< "-- Graph::edgeCreate() - "
-                    << "Creating RECIPROCAL edge - emitting drawEdge signal to GW";
+            qDebug()<< "-- Graph::edgeCreate() - Creating UNDIRECTED edge."
+                      << "Emitting drawEdge signal to GW";
 
             edgeAdd ( v1, v2, weight, type, label, ( (weight==0) ? "blue" :  color  ) );
             emit drawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), type,
@@ -1621,18 +1621,18 @@ void Graph::edgeCreate(const int &v1, const int &v2, const float &weight,
         }
         else if ( edgeExists( v2, v1) )  {
 
-            qDebug()<<"-- Graph::edgeCreate() - Opposite arc exists. "
-                   << "  Emitting drawEdge to GW ";
+            qDebug()<<"-- Graph::edgeCreate() - Creating reciprocated directed edge."
+                   << "Emitting drawEdge to GW";
 
-            edgeAdd ( v1, v2, weight, EDGE_DIRECTED_OPPOSITE_EXISTS , label, color);
-            emit drawEdge(v1, v2, weight, label, color, EDGE_DIRECTED_OPPOSITE_EXISTS,
+            edgeAdd ( v1, v2, weight, EDGE_DIRECTED_RECIPROCATED , label, color);
+            emit drawEdge(v1, v2, weight, label, color, EDGE_DIRECTED_RECIPROCATED,
                           drawArrows, bezier, initEdgeWeightNumbers);
             m_undirected = false;
         }
         else {
 
-            qDebug()<< "-- Graph::edgeCreate() - "
-                       << "Opposite arc does not exist. Emitting drawEdge to GW...";
+            qDebug()<< "-- Graph::edgeCreate() - Creating directed edge. Opposite arc does not exist."
+                    << "Emitting drawEdge to GW...";
 
             edgeAdd ( v1, v2, weight, EDGE_DIRECTED, label, ( (weight==0) ? "blue" :  color  )   );
             emit drawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), EDGE_DIRECTED,
@@ -1706,11 +1706,11 @@ void Graph::edgeAdd (const int &v1, const int &v2, const float &weight,
     if ( weight != 1 && weight!=0) {
         m_isWeighted=true; //not binary graph
     }
-    if (type == EDGE_DIRECTED_OPPOSITE_EXISTS ){
+    if (type == EDGE_DIRECTED_RECIPROCATED ){
         // make existing opposite edge reciprocal
 
     }
-    else if (type == EDGE_RECIPROCAL_UNDIRECTED){
+    else if (type == EDGE_UNDIRECTED){
         //create opposite edge and declare both reciprocal.
         m_graph [ target ]->edgeAddTo(v1, weight );
         m_graph [ source ]->edgeAddFrom(v2, weight);
@@ -1834,27 +1834,42 @@ void Graph::edgeFilterUnilateral(const bool &toggle) {
 
 
 /**
- * @brief Graph::vertexClickedSet
+ * @brief Called from GraphicsWidget::edgeClicked() signal
+ * which is emitted when the user clicks on an edge.
+ * Parameters are the source and target node of the edge.
+ * It emits signalEdgeClickedInfo() to MW, which displays a relevant
+ * message on the status bar.
  * @param v1
+ * @param v2
  */
 void Graph::edgeClickedSet(const int &v1, const int &v2) {
     qDebug() << "Graph::edgeClickedSet() "
              << v1
              << "->"
              << v2;
+
     m_clickedEdge.v1=v1;
     m_clickedEdge.v2=v2;
 
+    // Clear status bar message
     if (m_clickedEdge.v1 == 0 && m_clickedEdge.v2==0) {
         emit signalEdgeClickedInfo();
     }
     else {
+        // Check if there is such an tie indeed
         float weight = m_graph[ vpos[ m_clickedEdge.v1] ]->hasEdgeTo(m_clickedEdge.v2);
-        bool undirected=false;
-        if ( edgeExists(m_clickedEdge.v1,m_clickedEdge.v2, true) && graphUndirected() ) {
-            undirected=true;
+        int type=EDGE_DIRECTED;
+        // Check if the opposite tie exists. If yes, this is a reciprocated tie
+        if ( edgeExists(m_clickedEdge.v1,m_clickedEdge.v2, true)  ) {
+            if (graphUndirected()) {
+                type=EDGE_UNDIRECTED;
+            }
+            else {
+                type=EDGE_DIRECTED_RECIPROCATED;
+            }
         }
-        emit signalEdgeClickedInfo( m_clickedEdge.v1 ,m_clickedEdge.v2, weight, undirected);
+
+        emit signalEdgeClickedInfo( m_clickedEdge.v1 ,m_clickedEdge.v2, weight, type);
     }
 
 }
@@ -2351,7 +2366,7 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
             for (int j=i+1; j < vList.size(); ++j ) {
                 if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
                     edgeCreate(vList.value(i), vList.value(j),1.0,
-                               initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
+                               initEdgeColor, EDGE_UNDIRECTED );
                 }
                 else {
                     edgeUndirectedSet(vList.value(i), vList.value(j), weight);
@@ -2369,7 +2384,7 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
                 if ( center == vList.value(j))
                      continue;
                 edgeCreate(center, vList.value(j),1.0,
-                           initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
+                           initEdgeColor, EDGE_UNDIRECTED );
             }
             else {
                 edgeUndirectedSet(center, vList.value(j), weight);
@@ -2383,7 +2398,7 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
             j= ( i == vList.size()-1) ? 0:i+1;
             if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
                 edgeCreate(vList.value(i), vList.value(j),1.0,
-                           initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
+                           initEdgeColor, EDGE_UNDIRECTED );
             }
             else {
                 edgeUndirectedSet(vList.value(i), vList.value(j), weight);
@@ -2400,7 +2415,7 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
             j= i+1;
             if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
                 edgeCreate(vList.value(i), vList.value(j),1.0,
-                           initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
+                           initEdgeColor, EDGE_UNDIRECTED );
             }
             else {
                 edgeUndirectedSet(vList.value(i), vList.value(j), weight);
@@ -2678,19 +2693,28 @@ int Graph:: verticesWithReciprocalEdges(){
  */
 void Graph::webCrawlTerminateThreads (QString reason){
     qDebug() << "Graph::webCrawlTerminateThreads() - reason " << reason
-                << "Checking if wc_spiderThread is running...";
+                << "Checking wc_spiderThread...";
     if (wc_spiderThread.isRunning() ) {
-        qDebug() << "Graph::webCrawlTerminateThreads() - deleting wc_spider pointer";
+//        qDebug() << "Graph::webCrawlTerminateThreads() - deleting wc_spider pointer";
 //        delete wc_spider;
 //        wc_spider= 0;  // see why here: https://goo.gl/tQxpGA
 
         qDebug() << "Graph::webCrawlTerminateThreads()  - wc_spiderThread running. "
                     "Calling wc_spiderThread.quit()";
         wc_spiderThread.quit();
+
+     }
+
+
+    qDebug() << "Graph::webCrawlTerminateThreads() - Checking wc_parserThread...";
+    if (wc_parserThread.isRunning() ) {
+
+        qDebug() << "Graph::webCrawlTerminateThreads()  - wc_parserThread running. "
+                    "Calling wc_parserThread.quit()";
         wc_parserThread.quit();
 
-        //layoutVertexSizeByIndegree();
      }
+
 
 }
 
@@ -3379,7 +3403,7 @@ void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
         v2 = (vertices.at(1)).toInt();
         qDebug() << "Graph::graphSymmetrizeStrongTies() - calling edgeCreate for"
                  << v1 << "--"<<v2;
-        edgeCreate( v1, v2, 1, initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED, true, false,
+        edgeCreate( v1, v2, 1, initEdgeColor, EDGE_UNDIRECTED, true, false,
                     QString::null, false);
         ++it2;
     }
@@ -3447,7 +3471,7 @@ void Graph::graphCocitation(){
                         << v1 << "<->" << v2
                         << "because CT(" << i+1 << "," <<  j+1 << ") = " << weight;
                 edgeCreate( v1, v2, weight, initEdgeColor,
-                            EDGE_RECIPROCAL_UNDIRECTED, true, false,
+                            EDGE_UNDIRECTED, true, false,
                             QString::null, false);
             }
 
@@ -3535,7 +3559,7 @@ void Graph::edgeUndirectedSet(const long int &v1, const long int &v2,
     if ( invertWeight == 0 ) {
         qDebug() << "Graph::edgeUndirectedSet(): opposite  " << v1
                  << " <- " <<  v2 << " does not exist - Add it to Graph." ;
-        edgeAdd(v2,v1, weight, EDGE_DIRECTED_OPPOSITE_EXISTS, "", initEdgeColor);
+        edgeAdd(v2,v1, weight, EDGE_DIRECTED_RECIPROCATED, "", initEdgeColor);
     }
     else {
         qDebug() << "Graph::edgeUndirectedSet(): opposite  " << v1
@@ -9445,7 +9469,7 @@ void Graph::randomNetErdosCreate(const int &N,
                                     <<" create undirected Edge no "
                                     << edgeCount;
                         edgeCreate(i+1, j+1, 1, initEdgeColor,
-                                   EDGE_RECIPROCAL_UNDIRECTED, false, false,
+                                   EDGE_UNDIRECTED, false, false,
                                    QString::null, false);
                     }
                     else {
@@ -9490,7 +9514,7 @@ void Graph::randomNetErdosCreate(const int &N,
                 qDebug() << "Graph::randomNetErdosCreate() - create "
                             << " undirected Edge no " << edgeCount;
                 edgeCreate(source, target, 1, initEdgeColor,
-                           EDGE_RECIPROCAL_UNDIRECTED, false, false,
+                           EDGE_UNDIRECTED, false, false,
                            QString::null, false);
             }
             else {
@@ -9571,7 +9595,7 @@ void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
                 target = target-N;
             qDebug("Creating Link between %i  and %i", i+1, target+1);
             edgeCreate(i+1, target+1, 1, initEdgeColor,
-                       EDGE_RECIPROCAL_UNDIRECTED, false, false,
+                       EDGE_UNDIRECTED, false, false,
                        QString::null, false);
         }
         if (updateProgress) {
@@ -9653,7 +9677,7 @@ void Graph::randomNetScaleFreeCreate (const int &N,
             qDebug() << "Graph::randomNetScaleFreeCreate() ---- "
                         "Creating initial edge " << i+1 << " <-> " << j+1;
             edgeCreate (i+1, j+1, 1, initEdgeColor,
-                        EDGE_RECIPROCAL_UNDIRECTED, false, false,
+                        EDGE_UNDIRECTED, false, false,
                         QString::null, false);
         }
         emit signalProgressBoxUpdate( ++progressCounter );
@@ -9724,7 +9748,7 @@ void Graph::randomNetScaleFreeCreate (const int &N,
                                     "Creating pref.att. reciprocal edge "
                                  <<  i+1 << " <-> " << j+1;
                         edgeCreate (i+1, j+1, 1, initEdgeColor,
-                                    EDGE_RECIPROCAL_UNDIRECTED, false, false,
+                                    EDGE_UNDIRECTED, false, false,
                                     QString::null, false);
                         newEdges ++;
 
@@ -9734,7 +9758,7 @@ void Graph::randomNetScaleFreeCreate (const int &N,
                                     "Creating pref.att. directed edge "
                                  <<  i+1 << " <-> " << j+1;
                         edgeCreate (i+1, j+1, 1, initEdgeColor,
-                                    EDGE_DIRECTED_OPPOSITE_EXISTS, true, false,
+                                    EDGE_DIRECTED_RECIPROCATED, true, false,
                                     QString::null, false);
                         newEdges ++;
 
@@ -9817,7 +9841,7 @@ void Graph::randomNetSmallWorldCreate (const int &N, const int &degree,
                         if (rand() % 100 > 0.5) {
                             qDebug("Creating new link!");
                             edgeCreate(i, candidate, 1, initEdgeColor,
-                                       EDGE_RECIPROCAL_UNDIRECTED, false, false,
+                                       EDGE_UNDIRECTED, false, false,
                                        QString::null, false);
                             break;
                         }
@@ -9988,7 +10012,7 @@ void Graph::randomNetRegularCreate(const int &N,
 
         edgeCreate(m_edge[0].toInt(0), m_edge[1].toInt(0), 1,
                 initEdgeColor,
-                (m_undirected) ? EDGE_RECIPROCAL_UNDIRECTED : EDGE_DIRECTED,
+                (m_undirected) ? EDGE_UNDIRECTED : EDGE_DIRECTED,
                 (m_undirected) ? false:true,
                 false,
                 QString::null, false);
@@ -20271,14 +20295,17 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
                 << "moving it to new pos" << xm << ym;
       m_graph[m]->setX(xm);
       m_graph[m]->setY(ym);
-      emit setNodePos( pnm,  xm,  ym);
+      //emit setNodePos( pnm,  xm,  ym);
 
     } // end while (Delta_max > epsilon) {
 
     qDebug () << "Graph::layoutForceDirectedKamadaKawai() - "
                  "Delta_max =< epsilon -- RETURN";
 
+    for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1) {
 
+        emit setNodePos( (*v1)->name(),  (*v1)->pos().x(),  (*v1)->pos().y());
+    }
     emit signalProgressBoxKill();
 
     graphModifiedSet(GRAPH_CHANGED_POSITIONS);

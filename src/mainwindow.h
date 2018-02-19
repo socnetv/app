@@ -284,7 +284,7 @@ public slots:
     void slotEditEdgeInfoStatusBar (const int &v1,
                                     const int &v2,
                                     const float &weight,
-                                    const bool &undirected);
+                                    const int &type);
 
     void slotEditEdgeOpenContextMenu() ;
     void slotEditEdgeAdd();

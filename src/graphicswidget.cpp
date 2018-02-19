@@ -108,8 +108,7 @@ void GraphicsWidget::paintEvent ( QPaintEvent * event ){
 
 
 /**
- * @brief GraphicsWidget::clear
- * Clears the scene and all hashes, lists, var etc
+ * @brief Clears the scene and all hashes, lists, var etc
  */
 void GraphicsWidget::clear() {
     qDebug() << "GW::clear() - clearing hashes";
@@ -126,10 +125,12 @@ void GraphicsWidget::clear() {
     qDebug() << "GW::clear() - finished clearing hashes";
 }
 
+
+
 /**
- * @brief GraphicsWidget::relationSet
- * Called from Graph::signalRelationChangedToGW(int) signal
- * @param relation
+ * @brief Changes the current relation
+ * Called from Graph::signalRelationChangedToGW(int) signal.
+  * @param relation
  */
 void GraphicsWidget::relationSet(int relation) {
     qDebug() << "GraphicsWidget::relationSet() to " << relation;
@@ -139,8 +140,7 @@ void GraphicsWidget::relationSet(int relation) {
 
 
 /**
- * @brief GraphicsWidget::drawNode
- * Adds a new node onto the scene
+ * @brief Adds a new node onto the scene
  * Called from Graph::vertexCreate method primarily when we load files
  * It is also called in the end when the user presses "Add Node" button or
  * the user double clicks (mouseDoubleClickEvent() calls Graph::vertexCreate)
@@ -190,8 +190,7 @@ void GraphicsWidget::drawNode( const int &num, const int &nodeSize,
 
 
 /**
- * @brief GraphicsWidget::drawEdge
- * Draws an edge from source to target Node.
+ * @brief Draws an edge from source to target Node.
  * Used when we do not have references to nodes but only nodeNumbers:
     a) when we load a network file
     b) when the user clicks on the AddLink button on the MW.
@@ -221,17 +220,18 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
 
            << " - nodeHash reports "<< nodeHash.size()<<" nodes.";
 
-    if (type != EDGE_DIRECTED_OPPOSITE_EXISTS ) {
+    if (type != EDGE_DIRECTED_RECIPROCATED ) {
 
-        GraphicsEdge *edge=new GraphicsEdge (this,
-                             nodeHash.value(source), nodeHash.value(target),
-                             weight, label, color,
-                             Qt::SolidLine,
-                             type,
-                             drawArrows,
-                             (source==target) ? true: bezier,
-                             weightNumbers,
-                                             m_edgeHighlighting);
+        GraphicsEdge *edge=new GraphicsEdge (
+                    this,
+                    nodeHash.value(source), nodeHash.value(target),
+                    weight, label, color,
+                    Qt::SolidLine,
+                    type,
+                    drawArrows,
+                    (source==target) ? true: bezier,
+                    weightNumbers,
+                    m_edgeHighlighting);
 
         edgesHash.insert(edgeName, edge);
     }
@@ -239,7 +239,7 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
         edgeName = QString::number(m_curRelation) + QString(":") +
                 QString::number(target) + QString(">")+ QString::number(source);
         qDebug("GW::drawEdge() - making existing edge between %i and %i reciprocal. Name: "+edgeName.toUtf8(), source, target );
-        edgesHash.value(edgeName)->setDirectedWithOpposite();
+        edgesHash.value(edgeName)->setDirectedReciprocated();
 
     }
     //	qDebug()<< "Scene items now: "<< scene()->items().size() << " - GW items now: "<< items().size();
@@ -249,12 +249,14 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
 
 
 
-/** 	
-    Called when the user middle-clicks on two nodes consecutively. .
-    It saves the source & target nodes that were clicked
-    On the second middle-click, it emits the userMiddleClicked() signal to MW,
-    which will notify activeGraph, which in turn will signal back to drawEdge()...
-*/
+/**
+ * @brief Creates a new edge, when the user middle-clicks on two nodes consecutively
+ * On the first middle-click, it saves the first node (source).
+ * On the second middle-click, it saves the second node as target and emits the signal
+ * userMiddleClicked() to MW which will notify activeGraph,
+ * which in turn will signal back to drawEdge().
+ * @param node
+ */
 void GraphicsWidget::startEdge(GraphicsNode *node){
     if (secondDoubleClick){
         qDebug()<< "GW::startEdge() - this is the second double click. "
@@ -274,12 +276,13 @@ void GraphicsWidget::startEdge(GraphicsNode *node){
 
 
 
-/** 
-    This is called from each node when the user clicks on it.
-    It emits the userClickedNode signal to MW which is used to
+/**
+ * @brief Called when the user clicks or double-click on a node.
+ * It emits the userClickedNode signal to MW which is used to
     - display node info on the status bar
     - notify context menus for the clicked node.
-*/
+ * @param node
+ */
 void GraphicsWidget::nodeClicked(GraphicsNode *node){
     qDebug () << "GW::nodeClicked() - Emitting userClickedNode()";
     if (clickedEdgeExists) edgeClicked(0);
@@ -288,13 +291,14 @@ void GraphicsWidget::nodeClicked(GraphicsNode *node){
 
 
 
-/** 
-    This is called from each edge when the user clicks on it.
-    It emits the userClickedEdge signal to Graph which is used to
+/**
+ * @brief Called when the user clicks on an edge.
+    Emits the userClickedEdge signal to Graph which is used to:
     - display edge info on the status bar
     - notify context menus for the clicked edge.
-    Also, it makes source and target nodes to stand out of other nodes.
-*/
+    Also, it highlights source and target nodes
+ * @param edge
+ */
 void GraphicsWidget::edgeClicked(GraphicsEdge *edge){
     qDebug() <<"GW::edgeClicked()";
     if (clickedEdgeExists) {
@@ -335,8 +339,7 @@ void GraphicsWidget::edgeClicked(GraphicsEdge *edge){
 
 
 /**
- * @brief GraphicsWidget::moveNode
- * Called from activeGraph to update node coordinates on the canvas
+ * @brief Called from activeGraph to update node coordinates on the canvas
  * @param num
  * @param x
  * @param y
@@ -351,7 +354,8 @@ void GraphicsWidget::moveNode(const int &num, const qreal &x, const qreal &y){
 
 
 /**
- * @brief Called from Graph signal eraseNode(int)
+ * @brief Erases a node.
+ * Called from Graph signal eraseNode(int)
  * @param number
  */
 void GraphicsWidget::eraseNode(const long int &number){
@@ -387,7 +391,7 @@ void GraphicsWidget::eraseNode(const long int &number){
 
 
 /**
- * @brief GraphicsWidget::eraseEdge
+ * @brief Erases an edge.
  * Called from MW/Graph when erasing edges using vertex numbers
  * Also called when transforming directed edges to undirected.
  * @param sourceNode
@@ -421,15 +425,12 @@ void GraphicsWidget::eraseEdge(const long int &source, const long int &target){
 
 
 
-
-
-
 /**
- * @brief GraphicsWidget::removeItem
- * @param node
+ * @brief Removes a node item from the scene.
  * Called from GraphicsNode::~GraphicsNode() to remove itself from nodeHash, scene and
  * be deleted
- */
+ * @param node
+  */
 void GraphicsWidget::removeItem( GraphicsNode *node){
     long int i=node->nodeNumber();
     qDebug() << "GW::removeItem(node) - number: " <<  i;
@@ -452,10 +453,11 @@ void GraphicsWidget::removeItem( GraphicsNode *node){
 
 
 /**
- * @brief GraphicsWidget::removeItem
- * @param edge
+ * @brief Removes an edge item from the scene.
  * Called from GraphicsEdge::~GraphicsEdge() to remove itself from edgesHash and scene and
  * be deleted
+ * @param edge
+ *
  */
 void GraphicsWidget::removeItem( GraphicsEdge * edge){
     qDebug() << "GW::removeItem(edge)" ;
@@ -473,7 +475,7 @@ void GraphicsWidget::removeItem( GraphicsEdge * edge){
 
 
 /**
- * @brief GraphicsWidget::removeItem
+ * @brief Removes an edge weight number item from the scene.
  * @param edgeWeight
  */
 void GraphicsWidget::removeItem( GraphicsEdgeWeight *edgeWeight){
@@ -486,8 +488,10 @@ void GraphicsWidget::removeItem( GraphicsEdgeWeight *edgeWeight){
              << " view items: " << items().size();
 }
 
+
+
 /**
- * @brief GraphicsWidget::removeItem
+ * @brief Removes an edge label item from the scene.
  * @param edgeLabel
  */
 void GraphicsWidget::removeItem( GraphicsEdgeLabel *edgeLabel){
@@ -500,8 +504,9 @@ void GraphicsWidget::removeItem( GraphicsEdgeLabel *edgeLabel){
              << " view items: " << items().size();
 }
 
+
 /**
- * @brief GraphicsWidget::removeItem
+ * @brief Removes a node label item from the scene.
  * @param nodeLabel
  */
 void GraphicsWidget::removeItem( GraphicsNodeLabel *nodeLabel){
@@ -518,7 +523,7 @@ void GraphicsWidget::removeItem( GraphicsNodeLabel *nodeLabel){
 
 
 /**
- * @brief GraphicsWidget::removeItem
+ * @brief Removes a node number item from the scene.
  * @param nodeNumber
  */
 void GraphicsWidget::removeItem( GraphicsNodeNumber *nodeNumber){
@@ -537,11 +542,8 @@ void GraphicsWidget::removeItem( GraphicsNodeNumber *nodeNumber){
 
 
 
-
-
 /**
- * @brief GraphicsWidget::setNodeColor
- * Sets the color of an node.
+ * @brief Sets the color of an node.
  * Called from MW when the user changes the color of a node (right-clicking).
  * @param nodeNumber
  * @param color
@@ -555,10 +557,14 @@ bool GraphicsWidget::setNodeColor(const long int &nodeNumber,
 }
 
 
+
 /**
-    Sets the shape of an node.
+ * @brief Sets the shape of an node.
     Called from MW when the user changes the shape of a node
-*/
+ * @param nodeNumber
+ * @param shape
+ * @return
+ */
 bool GraphicsWidget::setNodeShape(const long &nodeNumber, const QString &shape){
     qDebug() << "GW::setNodeShape() : " << shape;
     nodeHash.value(nodeNumber) -> setShape(shape);
@@ -569,7 +575,10 @@ bool GraphicsWidget::setNodeShape(const long &nodeNumber, const QString &shape){
 
 
 
-
+/**
+ * @brief GraphicsWidget::setNodeNumberVisibility
+ * @param toggle
+ */
 void GraphicsWidget::setNodeNumberVisibility(const bool &toggle){
     qDebug()<< "GW::setNodeNumberVisibility()" << toggle;
     foreach ( GraphicsNode *m_node, nodeHash) {
@@ -578,6 +587,11 @@ void GraphicsWidget::setNodeNumberVisibility(const bool &toggle){
     m_nodeNumberVisibility = toggle;
 }
 
+
+/**
+ * @brief GraphicsWidget::setNodeLabelsVisibility
+ * @param toggle
+ */
 void GraphicsWidget::setNodeLabelsVisibility (const bool &toggle){
     qDebug()<< "GW::setNodeLabelsVisibility()" << toggle;
     foreach ( GraphicsNode *m_node, nodeHash) {
@@ -620,9 +634,6 @@ void   GraphicsWidget::setNumbersInsideNodes(const bool &toggle){
 
 
 
-
-
-
 /**
     Sets initial node size from MW.
     It is Called from MW on startup and when user changes it.
@@ -635,13 +646,10 @@ void GraphicsWidget::setInitNodeSize(int size){
 
 
 
-
-
-
 /**
- * @brief GraphicsWidget::setInitZoomIndex
- * Passes initial zoom setting
+ * @brief Passes initial zoom setting
  * Called from MW on startup
+ * @param zoomIndex
  */
 void GraphicsWidget::setInitZoomIndex(int zoomIndex) {
     m_zoomIndex = zoomIndex;
@@ -669,7 +677,7 @@ void GraphicsWidget::setNodeVisibility(long int number, bool toggle){
 
 
 /**
- * @brief GraphicsWidget::setNodeSize
+ * @brief Changes the size of a node
  * @param number
  * @param size
  * @return
@@ -1433,9 +1441,10 @@ void GraphicsWidget::zoomOut (int level){
 
 
 /**
- * @brief GraphicsWidget::zoomIn
- * @param level
+ * @brief Changes the zoom level of the scene.
  * Called from MW magnifier button
+ * @param level
+ *
  */
 void GraphicsWidget::zoomIn(int level){
 
@@ -1509,8 +1518,7 @@ void GraphicsWidget::changeMatrixRotation(int angle){
 }
 
 /**
- * @brief GraphicsWidget::reset
- * Resets the transformation matrix to the identity matrix ( default zoom and scale )
+ * @brief Resets the transformation matrix to the identity matrix ( default zoom and scale )
  */
 void GraphicsWidget::reset() {
     m_currentRotationAngle=0;
@@ -1522,10 +1530,9 @@ void GraphicsWidget::reset() {
 
 
 /**
- * @brief GraphicsWidget::resizeEvent
- * @param e
- * Repositions guides then emits resized() signal to MW and eventually Graph
+ * @brief Repositions guides then emits resized() signal to MW and eventually Graph
  * which does the node repositioning maintaining proportions
+ * @param e
  */
 void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
     if (transformationActive)  {

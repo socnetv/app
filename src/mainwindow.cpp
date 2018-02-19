@@ -9040,14 +9040,14 @@ void MainWindow::slotEditNodeInfoStatusBar (const int &number,
 
 
 /**
- * @brief Called by GW::selectedEdge signal when the user clickes on an edge
+ * @brief Called by GW::selectedEdge signal when the user clicks on an edge
  * Displays information about the clicked edge on the statusbar
  * @param edge
  */
 void MainWindow::slotEditEdgeInfoStatusBar (const int &v1,
                                             const  int &v2,
                                             const float &weight,
-                                            const bool &undirected) {
+                                            const int &type) {
     qDebug()<<"MW::slotEditEdgeInfoStatusBar()"
            << v1
            << "->"
@@ -9061,17 +9061,28 @@ void MainWindow::slotEditEdgeInfoStatusBar (const int &v1,
 
     if (v1 ==0 || v2 == 0) return;
 
-    if ( undirected ) {
+    if ( type == EDGE_UNDIRECTED ) {
             statusMessage(  QString
-                        (tr("Symmetric edge %1 <--> %2 of weight %3 has been selected. "
+                        (tr("Undirected edge %1 <--> %2 of weight %3 has been selected. "
                                    "Click anywhere else to unselect it."))
                     .arg( v1 ).arg( v2 )
                     .arg( weight )
                             );
             rightPanelClickedEdgeHeaderLabel->setText(tr("Clicked Edge"));
     }
-    else {
-        statusMessage(  QString(tr("Arc %1 --> %2 of weight %3 has been selected. "
+    else if (type == EDGE_DIRECTED_RECIPROCATED){
+        statusMessage(  QString
+                    (tr("Directed edge %1 <--> %2 of weight %3 has been selected. "
+                        "Opposite exists. "
+                               "Click anywhere else to unselect it."))
+                .arg( v1 ).arg( v2 )
+                .arg( weight )
+                        );
+        rightPanelClickedEdgeHeaderLabel->setText(tr("Clicked Edge"));
+
+    }
+    else{
+        statusMessage(  QString(tr("Directed edge %1 --> %2 of weight %3 has been selected. "
                                    "Click again to unselect it."))
                         .arg( v1 ).arg( v2 )
                         .arg( weight )

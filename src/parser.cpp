@@ -961,7 +961,7 @@ bool Parser::loadPajek(){
                 bezier=false;
                 qDebug()<< "Parser-loadPajek(): EDGES: Create edge between " << source << " - "<< target;
                 emit edgeCreate(source, target, edgeWeight, edgeColor,
-                                EDGE_RECIPROCAL_UNDIRECTED, arrows, bezier, edgeLabel);
+                                EDGE_UNDIRECTED, arrows, bezier, edgeLabel);
                 totalLinks=totalLinks+2;
 
             } //end if EDGES
@@ -1088,7 +1088,7 @@ bool Parser::loadPajek(){
     //The network has been loaded. Tell MW the statistics and network type
     emit networkFileLoaded(FILE_PAJEK, fileName, networkName,
                            totalNodes, totalLinks,
-                           ( (has_arcs) ? EDGE_DIRECTED: EDGE_RECIPROCAL_UNDIRECTED));
+                           ( (has_arcs) ? EDGE_DIRECTED: EDGE_UNDIRECTED));
 
 
     return true;
@@ -1319,7 +1319,7 @@ bool Parser::loadTwoModeSociomatrix(){
                         edgeWeight = 1;
                         qDebug() << " Actor " << i << " on the same event as actor " << k << ". Creating edge ";
                         emit edgeCreate(i, k, edgeWeight, initEdgeColor,
-                                        EDGE_RECIPROCAL_UNDIRECTED, arrows, bezier);
+                                        EDGE_UNDIRECTED, arrows, bezier);
                         totalLinks++;
                     }
                 }
@@ -1337,7 +1337,7 @@ bool Parser::loadTwoModeSociomatrix(){
 
     qDebug() << "Parser: Two-mode SM network has been loaded. Tell MW the statistics and network type";
     emit networkFileLoaded(FILE_TWOMODE, fileName,networkName,
-                           totalNodes, totalLinks, EDGE_RECIPROCAL_UNDIRECTED);
+                           totalNodes, totalLinks, EDGE_UNDIRECTED);
 
     return true;
 
@@ -1572,7 +1572,7 @@ void Parser::readGraphMLElementGraph(QXmlStreamReader &xml){
             << defaultDirection;
     if (defaultDirection=="undirected"){
         qDebug()<< "Parser::readGraphMLElementGraph() - this is an undirected graph ";
-        edgeDirType=EDGE_RECIPROCAL_UNDIRECTED;
+        edgeDirType=EDGE_UNDIRECTED;
         arrows=false;
     }
     else {
@@ -1783,7 +1783,7 @@ void Parser::readGraphMLElementEdge(QXmlStreamAttributes &xmlStreamAttr){
     bool_edge= true;
 
     if ( edge_directed=="false" || (edge_directed.contains("false"),Qt::CaseInsensitive) ) {
-        edgeDirType=EDGE_RECIPROCAL_UNDIRECTED;
+        edgeDirType=EDGE_UNDIRECTED;
         qDebug()<< "Parser::readGraphMLElementEdge() - UNDIRECTED";
     }
     else {
@@ -2201,7 +2201,7 @@ void Parser::createMissingNodeEdges(){
                 }
                 if (!edgeMissingNodesListData[2].isEmpty() ){
                     if ( (edgeMissingNodesListData[2]).contains("2") )
-                        edgeDirType=EDGE_RECIPROCAL_UNDIRECTED;
+                        edgeDirType=EDGE_UNDIRECTED;
 
                 }
                 qDebug()<<"Parser::createMissingNodeEdges() - signal edgeCreate "
@@ -2246,7 +2246,7 @@ bool Parser::loadGML(){
     node_id= QString::null;
     arrows=true;
     bezier=false;
-    edgeDirType=EDGE_RECIPROCAL_UNDIRECTED;
+    edgeDirType=EDGE_UNDIRECTED;
     totalNodes=0;
     while (!ts.atEnd() )   {
         floatOK= false;
@@ -2605,7 +2605,7 @@ bool Parser::loadDot(){
             }
             else if ( str.contains("graph", Qt::CaseInsensitive) ) {
                 lineElement=str.split(" ");
-                edgeDirType=EDGE_RECIPROCAL_UNDIRECTED;
+                edgeDirType=EDGE_UNDIRECTED;
                 if (lineElement[1] !="{" ) networkName=lineElement[1];
                 qDebug() << "This is a DOT GRAPH named " << networkName;
                 continue;
@@ -2817,7 +2817,7 @@ bool Parser::loadDot(){
                     nodeSequence=str.split("--");
                 else
                     nodeSequence=str.split("-");
-                edgeDirType=EDGE_RECIPROCAL_UNDIRECTED;
+                edgeDirType=EDGE_UNDIRECTED;
             }
             else { 											//is directed
                 nodeSequence=str.split("->");
