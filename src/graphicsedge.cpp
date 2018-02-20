@@ -78,10 +78,10 @@ GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
 
     m_directed_first = false;
 
-    m_offsetFromNode = 6;           // controls the extra offset from source/target node center
+    m_minOffsetFromNode = 6;           // controls the minimum offset from source/target node center
 
-    m_offsetFromSourceNode=source->size()+m_offsetFromNode;  // offsets edge from the centre of source node
-    m_offsetFromTargetNode=target->size()+m_offsetFromNode;  // offsets edge from the centre of target node
+    m_offsetFromSourceNode=source->size()+m_minOffsetFromNode;  // offsets edge from the centre of source node
+    m_offsetFromTargetNode=target->size()+m_minOffsetFromNode;  // offsets edge from the centre of target node
 
     m_arrowSize=4;                   // controls the width of the edge arrow
 
@@ -277,7 +277,7 @@ void GraphicsEdge::setSourceNode(GraphicsNode *node) {
  * @param offset
  */
 void GraphicsEdge::setSourceNodeSize(const int &size){
-    m_offsetFromSourceNode=size + m_offsetFromNode;
+    m_offsetFromSourceNode=size + m_minOffsetFromNode;
     adjust();
 }
 
@@ -305,7 +305,7 @@ void GraphicsEdge::setTargetNode(GraphicsNode *node){
  * @param offset
  */
 void GraphicsEdge::setTargetNodeSize(const int & size){
-    m_offsetFromTargetNode=size + m_offsetFromNode;
+    m_offsetFromTargetNode=size + m_minOffsetFromNode;
     adjust();
 }
 
@@ -317,6 +317,16 @@ int GraphicsEdge::targetNodeNumber() {
     return target->nodeNumber();
 }
 
+
+/**
+* @brief Updates Minimum Offset From Node and calls adjust to update the edge
+* @param offset
+*/
+void GraphicsEdge::setMinimumOffsetFromNode(const int &offset) {
+    m_minOffsetFromNode = offset;
+    m_offsetFromTargetNode = target->size() + m_minOffsetFromNode;
+    adjust();
+}
 
 /**
  * @brief Leaves some empty space (offset) from node -

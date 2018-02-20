@@ -409,6 +409,9 @@ public slots:
     void slotOptionsNodeNumbersInside(bool toggle);
     void slotOptionsNodeLabelsVisibility(bool toggle);
     void slotOptionsEdgesVisibility(bool toggle);
+    void slotOptionsEdgeOffsetFromNode(const int &offset,
+                                       const int &v1=0,
+                                       const int &v2=0);
     void slotOptionsEdgeLabelsVisibility(bool toggle);
     void slotOptionsEdgeWeightNumbersVisibility(bool toggle);
     void slotOptionsEdgeWeightsDuringComputation(bool);

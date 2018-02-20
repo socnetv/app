@@ -329,8 +329,8 @@ QMap<QString,QString> MainWindow::initSettings(){
     appSettings["initNodeNumberDistance"] = "2";
 
     appSettings["initNodeLabelsVisibility"] = "false";
-    appSettings["initNodeLabelSize"]="6";
-    appSettings["initNodeLabelColor"]="#00aa00";
+    appSettings["initNodeLabelSize"]="8";
+    appSettings["initNodeLabelColor"]="#8d8d8d";
     appSettings["initNodeLabelDistance"] = "6";
 
     appSettings["initEdgesVisibility"]="true";
@@ -339,6 +339,7 @@ QMap<QString,QString> MainWindow::initSettings(){
     appSettings["initEdgeColorNegative"]="red";
     appSettings["initEdgeColorZero"]="blue";
     appSettings["initEdgeArrows"]="true";
+    appSettings["initEdgeOffsetFromNode"] = "7";
     appSettings["initEdgeThicknessPerWeight"]="true";
     appSettings["initEdgeWeightNumbersVisibility"]="false";
     appSettings["initEdgeWeightNumberSize"] = "7";
@@ -582,6 +583,9 @@ void MainWindow::slotOpenSettingsDialog() {
 
     connect( m_settingsDialog, &DialogSettings::setEdgeArrowsVisibility,
              this, &MainWindow::slotOptionsEdgeArrowsVisibility);
+
+    connect( m_settingsDialog, &DialogSettings::setEdgeOffsetFromNode,
+             this, &MainWindow::slotOptionsEdgeOffsetFromNode);
 
     connect( m_settingsDialog, &DialogSettings::setEdgeColor,
              this, &MainWindow::slotEditEdgeColorAll);
@@ -12650,6 +12654,50 @@ void MainWindow::slotOptionsEdgeThicknessPerWeight(bool toogle) {
     }
 }
 
+
+
+
+
+
+/**
+ * @brief Changes the distance of edge arrows from nodes
+ * Called from Edit menu option and DialogSettings
+ * if offset=0, asks the user to enter a new offset
+ * if v1=0 and v2=0, it changes all edges
+ * @param v1
+ * @param v2
+ * @param offset
+ */
+void MainWindow::slotOptionsEdgeOffsetFromNode(const int &offset, const int &v1, const int &v2) {
+    bool ok=false;
+    qDebug() << "MW::slotOptionsEdgeOffsetFromNode - new offset " << offset;
+    int newOffset=offset;
+
+    if (!newOffset) {
+        newOffset = QInputDialog::getInt(
+                    this, "Change edge offset",
+                    tr("Change all edges offset from their nodes to: (1-16)"),
+                    appSettings["initNodeLabelDistance"].toInt(0,10), 1, 16, 1, &ok );
+        if (!ok) {
+            statusMessage( tr("Change edge offset aborted.") );
+            return;
+        }
+    }
+
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+
+    if (v1 && v2) { //change one edge offset only
+        graphicsWidget->setEdgeOffsetFromNode(v1,v2,newOffset);
+    }
+    else { //change all
+        appSettings["initEdgeOffsetFromNode"] = QString::number(newOffset);
+        graphicsWidget->setEdgeOffsetFromNode(v1,v2,newOffset);
+    }
+
+    QApplication::restoreOverrideCursor();
+
+    statusMessage( tr("Changed edge offset from nodes. Ready.") );
+}
 
 
 

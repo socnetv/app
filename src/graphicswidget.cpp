@@ -70,8 +70,10 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
 //        nodeHash.reserve(1000);
 
         m_edgeHighlighting = true;
+        m_edgeMinOffsetFromNode=6;
         m_nodeNumberVisibility = true;
         m_nodeLabelVisibility = true;
+
 
         /* "QGraphicsScene applies an indexing algorithm to the scene, to speed up
          * item discovery functions like items() and itemAt().
@@ -683,24 +685,24 @@ void GraphicsWidget::setNodeVisibility(long int number, bool toggle){
  * @return
  */
 bool GraphicsWidget::setNodeSize(const long int &number, const int &size ){
-    qDebug () << " GraphicsWidget::setNodeSize() node: "<< number
+    qDebug () << "GW::setNodeSize() node: "<< number
               << " new size "<< size;
     if  ( nodeHash.contains (number) ) {
         if (size>0){
-            qDebug() << "GW: setNodeSize(): for "<< number << " to " << size ;
+            qDebug() << "GW::setNodeSize(): for "<< number << " to " << size ;
             nodeHash.value(number) -> setSize(size);
             return true;
 
         }
         else {
-            qDebug() << "GW: setNodeSize(): for "<< number
+            qDebug() << "GW::setNodeSize(): for "<< number
                      << " to initial size" << m_nodeSize;
             nodeHash.value(number) -> setSize(m_nodeSize);
             return true;
 
         }
     }
-    qDebug() << "GW: setNodeSize(): cannot find node " << number;
+    qDebug() << "GW::setNodeSize(): cannot find node " << number;
     return false;
 }
 
@@ -710,9 +712,9 @@ bool GraphicsWidget::setNodeSize(const long int &number, const int &size ){
  * @return
  */
 void GraphicsWidget::setAllNodeSize(const int &size ){
-    qDebug() << "GW: setAllNodeSize() ";
+    qDebug() << "GW::setAllNodeSize() ";
     foreach ( GraphicsNode *m_node, nodeHash ) {
-            qDebug() << "GW: setAllNodeSize(): "<< m_node->nodeNumber() << " to new size " << size ;
+            qDebug() << "GW::setAllNodeSize(): "<< m_node->nodeNumber() << " to new size " << size ;
             m_node -> setSize(size);
     }
 }
@@ -1004,6 +1006,49 @@ void GraphicsWidget::setEdgeArrowsVisibility(const bool &toggle){
             edge->showArrows(toggle);
         }
     }
+
+}
+
+
+
+/**
+ * @brief Changes the Offset of an edge (or all edges) from source and target nodes.
+ * @param source
+ * @param target
+ * @param offset
+ */
+void GraphicsWidget::setEdgeOffsetFromNode(const long int &source,
+                                           const long int &target,
+                                           const int &offset){
+    qDebug() << "GW::setEdgeOffsetFromNode() : " << source << "->" << target
+             << " = " << offset;
+
+    if (source && target) {
+
+        QString edgeName =  QString::number(m_curRelation) + QString(":") +
+                QString::number( source ) + QString(">")+ QString::number( target );
+
+        qDebug()<<"GW::setEdgeWeight() -" << edgeName <<  " new offset "  << offset;
+        if  ( edgesHash.contains (edgeName) ) {
+            edgesHash.value(edgeName) -> setMinimumOffsetFromNode(offset);
+            return;
+        }
+
+
+    }
+    // if source == target == 0, then we change all edges'offset.
+    else {
+        QList<QGraphicsItem *> list = scene()->items();
+        for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
+            if ( (*item)->type() ==TypeEdge){
+                GraphicsEdge *edge = (GraphicsEdge*) (*item);
+                edge->setMinimumOffsetFromNode(offset);
+            }
+        }
+
+
+    }
+
 
 }
 

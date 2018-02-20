@@ -264,6 +264,8 @@ DialogSettings::DialogSettings(
     }
 
 
+    ui->edgeOffsetFromNodeSpin->setValue( m_appSettings["initEdgeOffsetFromNode"].toInt(0, 10) );
+
     ui->edgeWeightNumbersChkBox-> setChecked(
                 (m_appSettings["initEdgeWeightNumbersVisibility"] == "true") ? true: false
                                                                   );
@@ -404,6 +406,9 @@ DialogSettings::DialogSettings(
              this, &DialogSettings::getEdgeShape);
     connect (ui->edgeShapeRadioBezier, &QRadioButton::clicked,
              this, &DialogSettings::getEdgeShape);
+
+    connect(ui->edgeOffsetFromNodeSpin, SIGNAL(valueChanged(int)),
+            this, SLOT(getEdgeOffsetFromNode(int)) );
 
     connect (ui->edgeWeightNumbersChkBox, &QCheckBox::stateChanged,
                      this, &DialogSettings::getEdgeWeightNumbersVisibility);
@@ -780,6 +785,19 @@ void DialogSettings::getEdgeShape(){
     qDebug()<< "DialogSettings::getEdgeShape() - new default shape " <<
                m_appSettings["initEdgeShape"];
     emit setEdgeShape(m_appSettings["initEdgeShape"], 0);
+}
+
+
+
+
+/**
+ * @brief Changes the edge offset from source and target nodes
+ * @param size
+ */
+void DialogSettings::getEdgeOffsetFromNode( int offset) {
+    qDebug()<< "DialogSettings::getEdgeOffsetFromNode() - new offset:" << offset;
+    m_appSettings["initEdgeOffsetFromNode"]= QString::number(offset);
+    emit setEdgeOffsetFromNode(offset);
 }
 
 

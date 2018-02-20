@@ -150,6 +150,10 @@ public slots:
     void setEdgeLabel(const long int &, const long int&, const QString &);
     void setEdgeColor(const long int &, const long int&, const QString &);
     void edgeClicked(GraphicsEdge *);
+
+    void setEdgeOffsetFromNode(const long int &source,
+                               const long int &target,
+                               const int &offset);
     void setEdgeArrowsVisibility(const bool &toggle);
     void setEdgeWeightNumbersVisibility (const bool &toggle);
     void setEdgeLabelsVisibility(const bool &toggle);
@@ -199,6 +203,7 @@ private:
     int m_curRelation, m_nodeSize;
     int m_currentRotationAngle;
     int m_zoomIndex, markedNodeOrigSize,markedEdgeSourceOrigSize, markedEdgeTargetOrigSize;
+    int m_edgeMinOffsetFromNode;
     double m_currentScaleFactor;
     qreal fX,fY, factor;
     QString m_nodeLabel, m_numberColor, m_labelColor;

@@ -69,6 +69,7 @@ public slots:
     void getEdgeColorNegative();
     void getEdgeColorZero();
     void getEdgeShape();
+    void getEdgeOffsetFromNode( int offset);
     void getEdgeWeightNumbersVisibility(const bool &toggle);
     void getEdgeLabelsVisibility(const bool &toggle);
 
@@ -109,6 +110,7 @@ signals:
     void setEdgeArrowsVisibility (const bool &toggle);
     void setEdgeColor(const QColor, const int &);
     void setEdgeShape(const QString, const long int);
+    void setEdgeOffsetFromNode(const int&offset, const int &v1=0, const int &v2=0);
     void setEdgeWeightNumbersVisibility(const bool &toggle);
     void setEdgeLabelsVisibility(const bool &toggle);
     void saveSettings();

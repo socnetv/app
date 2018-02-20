@@ -74,7 +74,7 @@ public:
     void setSourceNodeSize(const int & size);
     void setTargetNodeSize(const int & size);
 
-    void setOffsetFromNode(const int & offset);
+    void setMinimumOffsetFromNode(const int & offset);
 
     void removeRefs();
 
@@ -132,7 +132,7 @@ private:
     QPointF sourcePoint, targetPoint;
     qreal m_arrowSize;
 
-    qreal m_offsetFromNode;
+    qreal m_minOffsetFromNode;
     qreal m_offsetFromTargetNode, m_offsetFromSourceNode;
 
     Qt::PenStyle m_style;
