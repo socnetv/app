@@ -4862,12 +4862,12 @@ void MainWindow::initSignalSlots() {
                                                 const long int &,
                                                 const float &) ) );
 
-    connect( activeGraph, SIGNAL( setEdgeUndirected(const long int &,
+    connect( activeGraph, SIGNAL( signalEdgeReciprocated(const long int &,
                                                    const long int &,
-                                                   const float &)),
-             graphicsWidget, SLOT( setEdgeUndirected(const long int &,
+                                                   const bool &)),
+             graphicsWidget, SLOT( setEdgeReciprocated(const long int &,
                                                 const long int &,
-                                                const float &) ) );
+                                                const bool &) ) );
 
     connect( activeGraph, SIGNAL( setEdgeColor(const long int &,
                                                    const long int &,
@@ -9074,7 +9074,7 @@ void MainWindow::slotEditEdgeInfoStatusBar (const int &v1,
                             );
             rightPanelClickedEdgeHeaderLabel->setText(tr("Clicked Edge"));
     }
-    else if (type == EDGE_DIRECTED_RECIPROCATED){
+    else if (type == EDGE_RECIPROCATED){
         statusMessage(  QString
                     (tr("Directed edge %1 <--> %2 of weight %3 has been selected. "
                         "Opposite exists. "
@@ -9099,9 +9099,9 @@ void MainWindow::slotEditEdgeInfoStatusBar (const int &v1,
 
 
 /**
- * @brief MainWindow::slotEditEdgeOpenContextMenu
+ * @brief Popups a context menu with edge- related options
  * Called by GW::openEdgeMenu when the user right-clicks on an edge
- * Popups a context menu with edge- related options
+ *
  */
 void MainWindow::slotEditEdgeOpenContextMenu() {
     int source=activeGraph->edgeClicked().v1;

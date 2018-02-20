@@ -145,7 +145,8 @@ public slots:
                   const bool &weightNumbers=false);
     void eraseEdge(const long int &source, const long int &target);
     void setEdgeVisibility (int relation, int, int, bool);
-    bool setEdgeUndirected(const long int &, const long int &, const float &);
+    bool setEdgeReciprocated(const long int &, const long int &,
+                             const bool &undirected=false);
     bool setEdgeWeight(const long int &, const long int &, const float &);
     void setEdgeLabel(const long int &, const long int&, const QString &);
     void setEdgeColor(const long int &, const long int&, const QString &);

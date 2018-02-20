@@ -43,7 +43,7 @@ static const double Pi = 3.14159265;
 static double TwoPi = 2.0 * Pi;
 
 static const int EDGE_DIRECTED = 0;
-static const int EDGE_DIRECTED_RECIPROCATED = 1;
+static const int EDGE_RECIPROCATED = 1;
 static const int EDGE_UNDIRECTED = 2;
 
 GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
@@ -354,7 +354,7 @@ void GraphicsEdge::adjust(){
     sourcePoint = line.p1() + edgeOffset ;
     targetPoint = line.p2() - edgeOffset ;
 
-//    if (m_edgeType == EDGE_DIRECTED_RECIPROCATED ) {
+//    if (m_edgeType == EDGE_RECIPROCATED ) {
 //        if (m_directed_first ) {
 //            sourcePoint -= QPointF(4,4);
 //            targetPoint -= QPointF(4,4);
@@ -433,7 +433,7 @@ void GraphicsEdge::adjust(){
                                  << targetPoint
                                  );
 
-            if (m_edgeType == EDGE_UNDIRECTED || m_edgeType == EDGE_DIRECTED_RECIPROCATED ) {
+            if (m_edgeType == EDGE_UNDIRECTED || m_edgeType == EDGE_RECIPROCATED ) {
     //            qDebug() << "**** GraphicsEdge::paint() This edge is SYMMETRIC! "
     //                     << " So, we need to create Arrow at src node as well";
                 QPointF srcArrowP1 = sourcePoint + QPointF(sin(angle +Pi / 3) * m_arrowSize,
@@ -499,14 +499,19 @@ QRectF GraphicsEdge::boundingRect() const {
  * @brief Transforms edge A -> B to reciprocated A <-> B.
  * This means actor A is linked to B and actor B is linked to A
  */
-void GraphicsEdge::setDirectedReciprocated(){
-    qDebug()<< "GraphicsEdge::setDirectedReciprocated() - "
+void GraphicsEdge::setReciprocated(const bool &undirected){
+    qDebug()<< "GraphicsEdge::setReciprocated() - "
             << source->nodeNumber()
             << "->"
             << target->nodeNumber();
     prepareGeometryChange();
-    m_edgeType = EDGE_DIRECTED_RECIPROCATED;
+    m_edgeType = EDGE_RECIPROCATED;
     m_directed_first= true;
+
+    if (undirected) {
+        m_edgeType = EDGE_UNDIRECTED;
+        m_drawArrows = false;
+    }
     adjust();
 }
 

@@ -97,7 +97,7 @@ public:
 
     void setUndirected();
     bool isUndirected();
-    void setDirectedReciprocated();
+    void setReciprocated(const bool &undirected=false);
 
     float width() const;
 

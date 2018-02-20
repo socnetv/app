@@ -222,7 +222,7 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
 
            << " - nodeHash reports "<< nodeHash.size()<<" nodes.";
 
-    if (type != EDGE_DIRECTED_RECIPROCATED ) {
+    if (type != EDGE_RECIPROCATED ) {
 
         GraphicsEdge *edge=new GraphicsEdge (
                     this,
@@ -241,7 +241,7 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
         edgeName = QString::number(m_curRelation) + QString(":") +
                 QString::number(target) + QString(">")+ QString::number(source);
         qDebug("GW::drawEdge() - making existing edge between %i and %i reciprocal. Name: "+edgeName.toUtf8(), source, target );
-        edgesHash.value(edgeName)->setDirectedReciprocated();
+        edgesHash.value(edgeName)->setReciprocated();
 
     }
     //	qDebug()<< "Scene items now: "<< scene()->items().size() << " - GW items now: "<< items().size();
@@ -302,7 +302,8 @@ void GraphicsWidget::nodeClicked(GraphicsNode *node){
  * @param edge
  */
 void GraphicsWidget::edgeClicked(GraphicsEdge *edge){
-    qDebug() <<"GW::edgeClicked()";
+    qDebug() <<"GW::edgeClicked() - (un)marking edge and emitting userClickedEdge()";
+
     if (clickedEdgeExists) {
         //unselect them, restore their color
         markedEdgeSource->setSelected(false);
@@ -413,13 +414,15 @@ void GraphicsWidget::eraseEdge(const long int &source, const long int &target){
 
     if ( edgesHash.contains(edgeName) ) {
         delete edgesHash.value(edgeName);
+        qDebug() << "GW::eraseEdge() - deleted "
+                 << " scene items: " << scene()->items().size()
+                 << " view items: " << items().size()
+                 << " edgesHash.count: " << edgesHash.count();
+    }
+    else {
+        qDebug() << "GW::eraseEdge() - no such edge to delete";
     }
 
-
-    qDebug() << "GW::eraseEdge() - deleted "
-             << " scene items: " << scene()->items().size()
-             << " view items: " << items().size()
-             << " edgesHash.count: " << edgesHash.count();
 
 }
 
@@ -939,29 +942,29 @@ void GraphicsWidget::setEdgeColor(const long int &source,
 
 
 /**
- * @brief GraphicsWidget::setEdgeUndirected
+ * @brief GraphicsWidget::setEdgeReciprocated
  * Makes an edge undirected
  * @param source
  * @param target
  * @param weight
  * @return
  */
-bool GraphicsWidget::setEdgeUndirected(const long int &source,
+bool GraphicsWidget::setEdgeReciprocated(const long int &source,
                                        const long int &target,
-                                       const float &weight){
-    qDebug() << "GW::setEdgeUndirected() : " << source << "->" << target
-             << " = " << weight;
+                                       const bool &undirected){
+    qDebug() << "GW::setEdgeReciprocated() : " << source << "->" << target
+             << " undirected " << undirected;
 
     QString edgeName =  QString::number(m_curRelation) + QString(":") +
             QString::number( source ) + QString(">")+ QString::number( target );
 
-    qDebug()<<"GW::setEdgeUndirected() - checking edgesHash for:" << edgeName ;
+    qDebug()<<"GW::setEdgeReciprocated() - checking edgesHash for:" << edgeName ;
     if  ( edgesHash.contains (edgeName) ) {
-        qDebug()<<"GW::setEdgeUndirected() - edge exists in edgesHash. "
-                  << " Transforming it to undirected";
-        edgesHash.value(edgeName) -> setUndirected();
+        qDebug()<<"GW::setEdgeReciprocated() - edge exists in edgesHash. "
+                  << " Transforming it to reciprocated";
+        edgesHash.value(edgeName) -> setReciprocated(undirected);
 
-        qDebug()<<"GW::setEdgeUndirected() - removing opposite edge "
+        qDebug()<<"GW::setEdgeReciprocated() - removing opposite edge "
                << target << " -> " << source ;
         eraseEdge(target, source);
 
@@ -1349,7 +1352,8 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
             qDebug() << "GW::mousePressEvent() - click at:"
                      << e->pos() << "~"<< p
                      << "SelectedItems:" << scene()->selectedItems().count()
-                     << "Single click on an edge. Emitting edgeClicked()";
+                     << endl
+                     << "Single click on an edge. Calling edgeClicked()";
             edgeClicked(edge);
             if ( e->button()==Qt::LeftButton ) {
                 qDebug() << "GW::mousePressEvent() - left click on an edge ";
