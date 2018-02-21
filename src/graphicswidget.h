@@ -65,6 +65,8 @@ public:
     ~GraphicsWidget();
     void clear();
 
+    QString createEdgeName(const int &v1, const int &v2, const int &relation=0);
+
     void setInitNodeSize(int);
     void setInitZoomIndex (int);
 
@@ -150,7 +152,7 @@ public slots:
     bool setEdgeWeight(const long int &, const long int &, const float &);
     void setEdgeLabel(const long int &, const long int&, const QString &);
     void setEdgeColor(const long int &, const long int&, const QString &);
-    void edgeClicked(GraphicsEdge *);
+    void edgeClicked(GraphicsEdge *, const bool &openMenu=false);
 
     void setEdgeOffsetFromNode(const long int &source,
                                const long int &target,
@@ -180,14 +182,13 @@ signals:
     void userMiddleClicked(const int &, const int &);
     void userClickOnEmptySpace(const QPointF &p);
     void openNodeMenu();
-    void openEdgeMenu();
     void openContextMenu(const QPointF p);
     void userNodeMoved(const int &, const int &, const int &);
     //void userSelectedItems(const int nodes, const int edges);
     void userSelectedItems(const QList<int> selectedNodes,
                            const QList<SelectedEdge> selectedEdges);
     void userClickedNode(const int &nodeNumber);
-    void userClickedEdge(const int &source, const int &target);
+    void userClickedEdge(const int &source, const int &target, const bool &openMenu=false);
     void zoomChanged(const int);
     void rotationChanged(const int);
     void resized(const int, const int);

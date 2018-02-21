@@ -719,6 +719,13 @@ void Graph::vertexCreateAtPos(const QPointF &p){
                     QString::null, initVertexLabelColor, initVertexLabelSize,
                     p, initVertexShape, true
                     );
+
+    emit statusMessage(  tr("New node (numbered %1) added at position (%2,%3)")
+                   .arg(vertexNumberMax())
+                   .arg( p.x() )
+                   .arg( p.y() )
+                   ) ;
+
 }
 
 
@@ -1837,12 +1844,12 @@ void Graph::edgeFilterUnilateral(const bool &toggle) {
  * @brief Called from GraphicsWidget::edgeClicked()
  * which is emitted when the user clicks on an edge.
  * Parameters are the source and target node of the edge.
- * It emits signalEdgeClickedInfo() to MW, which displays a relevant
+ * It emits signalEdgeClicked() to MW, which displays a relevant
  * message on the status bar.
  * @param v1
  * @param v2
  */
-void Graph::edgeClickedSet(const int &v1, const int &v2) {
+void Graph::edgeClickedSet(const int &v1, const int &v2, const bool &openMenu) {
     qDebug() << "Graph::edgeClickedSet() "
              << v1
              << "->"
@@ -1853,11 +1860,12 @@ void Graph::edgeClickedSet(const int &v1, const int &v2) {
 
     // Clear status bar message
     if (m_clickedEdge.v1 == 0 && m_clickedEdge.v2==0) {
-        emit signalEdgeClickedInfo();
+        emit signalEdgeClicked();
     }
     else {
-        // Check if there is such an tie indeed
+        qDebug()<< " Check if there is such an tie indeed";
         float weight = m_graph[ vpos[ m_clickedEdge.v1] ]->hasEdgeTo(m_clickedEdge.v2);
+        qDebug()<< " weight" << weight;
         int type=EDGE_DIRECTED;
         // Check if the opposite tie exists. If yes, this is a reciprocated tie
         if ( edgeExists(m_clickedEdge.v1,m_clickedEdge.v2, true)  ) {
@@ -1868,8 +1876,8 @@ void Graph::edgeClickedSet(const int &v1, const int &v2) {
                 type=EDGE_RECIPROCATED;
             }
         }
-
-        emit signalEdgeClickedInfo( m_clickedEdge.v1 ,m_clickedEdge.v2, weight, type);
+        m_clickedEdge.type = type;
+        emit signalEdgeClicked( m_clickedEdge.v1 ,m_clickedEdge.v2, weight, type, openMenu);
     }
 
 }
@@ -1889,8 +1897,8 @@ ClickedEdge Graph::edgeClicked() {
    Complexity:  O(logN) for vpos retrieval + O(1) for QList index retrieval + O(logN) for checking edge(v2)
  * @param v1
  * @param v2
- * @param reciprocated if true, check if there is v1<->v2 is reciprocated
- * @return zero if arc does not exist or non-zero if arc exists
+ * @param reciprocated: if true, checks if the edge is reciprocated (v1<->v2)
+ * @return zero if arc or reciprocated edge does not exist or non-zero if arc /reciprocated edge exists
  */
 float Graph::edgeExists (const long int &v1, const long int &v2, const bool &checkReciprocal) {
     edgeWeightTemp = 0;
@@ -1898,10 +1906,8 @@ float Graph::edgeExists (const long int &v1, const long int &v2, const bool &che
 
     if (!checkReciprocal) {
         return edgeWeightTemp;
-
     }
     else { //check if edge is reciprocal
-
        if  ( edgeWeightTemp!=0 ) {
            edgeReverseWeightTemp = m_graph[ vpos[v2] ]->hasEdgeTo(v1);
            if  ( edgeWeightTemp == edgeReverseWeightTemp  ){
@@ -1909,7 +1915,7 @@ float Graph::edgeExists (const long int &v1, const long int &v2, const bool &che
            }
        }
     }
-    return edgeWeightTemp;
+    return 0;
 }
 
 

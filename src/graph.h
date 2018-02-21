@@ -118,6 +118,7 @@ typedef QVector<QString> V_str;
 struct ClickedEdge {
     int v1;
     int v2;
+    int type;
 };
 
 
@@ -259,7 +260,7 @@ public slots:
 
     void vertexIsolatedAllToggle ( const bool &toggle);
     void vertexClickedSet(const int &v);
-    void edgeClickedSet(const int &v1, const int &v2) ;
+    void edgeClickedSet(const int &v1, const int &v2, const bool &openMenu=false) ;
 
     void edgeFilterByWeight (float, bool);
     void edgeFilterByRelation(int relation, bool status);
@@ -307,10 +308,11 @@ signals:
                                     const int &inDegree=0,
                                     const int &outDegree=0,
                                     const float &clc=0);
-    void signalEdgeClickedInfo (const int &v1=0,
-                                const int &v2=0,
-                                const float &weight=0,
-                                const int &type=0);
+    void signalEdgeClicked (const int &v1=0,
+                            const int &v2=0,
+                            const float &weight=0,
+                            const int &type=0,
+                            const bool &openMenu=false);
     void signalRelationAddToMW(const QString &newRelation, const bool &changeRelation=true);
     void signalRelationsClear();
     void signalRelationRenamedToMW(const QString newRelName);

@@ -4758,8 +4758,8 @@ void MainWindow::initSignalSlots() {
 
     connect( graphicsWidget, SIGNAL(
                  userDoubleClickNewNode(const QPointF &) ),
-             this, SLOT(
-                 slotEditNodeAddWithMouse(const QPointF &) ) ) ;
+             activeGraph, SLOT(
+                 vertexCreateAtPos(const QPointF &) ) ) ;
 
     connect( graphicsWidget, SIGNAL( userMiddleClicked(const int &, const int &) ),
              this, SLOT( slotEditEdgeCreate(const int &, const int &) ) 	);
@@ -4768,8 +4768,6 @@ void MainWindow::initSignalSlots() {
     connect( graphicsWidget, SIGNAL( openNodeMenu() ),
              this, SLOT( slotEditNodeOpenContextMenu() ) ) ;
 
-    connect( graphicsWidget, SIGNAL( openEdgeMenu() ),
-             this, SLOT( slotEditEdgeOpenContextMenu() ) ) ;
 
     connect (graphicsWidget, &GraphicsWidget::openContextMenu,
              this, &MainWindow::slotEditOpenContextMenu);
@@ -4941,8 +4939,8 @@ void MainWindow::initSignalSlots() {
     connect( activeGraph, &Graph::signalNodeClickedInfo ,
              this, &MainWindow::slotEditNodeInfoStatusBar );
 
-    connect ( activeGraph, &Graph::signalEdgeClickedInfo,
-             this, &MainWindow::slotEditEdgeInfoStatusBar );
+    connect ( activeGraph, &Graph::signalEdgeClicked,
+             this, &MainWindow::slotEditEdgeClicked );
 
 
     connect( activeGraph,
@@ -8151,23 +8149,6 @@ void MainWindow::slotEditNodeAdd() {
 
 
 
-/**
- * @brief MainWindow::slotEditNodeAddWithMouse
- * Called by GW when user double-clicks at p to add a new node
- * Calls Graph::vertexCreateAtPos() method to add the new vertex
- * @param p
- */
-void MainWindow::slotEditNodeAddWithMouse( const QPointF &p) {
-    qDebug()<< "MW::slotEditNodeAddWithMouse() - "
-               "Calling activeGraph::vertexCreateAtPos()";
-    activeGraph->vertexCreateAtPos(p);
-    statusMessage(  tr("New node (numbered %1) added at position (%2,%3)")
-                   .arg(activeGraph->vertexNumberMax())
-                   .arg( p.x() )
-                   .arg( p.y() )
-                   ) ;
-}
-
 
 
 /**
@@ -9048,22 +9029,27 @@ void MainWindow::slotEditNodeInfoStatusBar (const int &number,
  * Displays information about the clicked edge on the statusbar
  * @param edge
  */
-void MainWindow::slotEditEdgeInfoStatusBar (const int &v1,
+void MainWindow::slotEditEdgeClicked (const int &v1,
                                             const  int &v2,
                                             const float &weight,
-                                            const int &type) {
-    qDebug()<<"MW::slotEditEdgeInfoStatusBar()"
+                                            const int &type,
+                                            const bool &openMenu) {
+    qDebug()<<"MW::slotEditEdgeClicked()"
            << v1
            << "->"
            << v2
-           << "="
-           << weight;
+           << "=" << weight
+           << "type" << type
+           << "openMenu"<<openMenu;
 
     rightPanelClickedEdgeSourceLCD->display(v1);
     rightPanelClickedEdgeTargetLCD->display(v2);
     rightPanelClickedEdgeWeightLCD->display(weight);
 
     if (v1 ==0 || v2 == 0) return;
+
+
+    QString edgeName;
 
     if ( type == EDGE_UNDIRECTED ) {
             statusMessage(  QString
@@ -9073,16 +9059,22 @@ void MainWindow::slotEditEdgeInfoStatusBar (const int &v1,
                     .arg( weight )
                             );
             rightPanelClickedEdgeHeaderLabel->setText(tr("Clicked Edge"));
+            if (openMenu) {
+                edgeName=QString("EDGE: ") + QString::number(v1)+QString(" -- ")+QString::number(v2);
+            }
     }
     else if (type == EDGE_RECIPROCATED){
         statusMessage(  QString
-                    (tr("Directed edge %1 <--> %2 of weight %3 has been selected. "
+                    (tr("Reciprocated edge %1 <--> %2 of weight %3 has been selected. "
                         "Opposite exists. "
                                "Click anywhere else to unselect it."))
                 .arg( v1 ).arg( v2 )
                 .arg( weight )
                         );
         rightPanelClickedEdgeHeaderLabel->setText(tr("Clicked Edge"));
+        if (openMenu) {
+            edgeName=QString("RECIPROCATED EDGE: ") + QString::number(v1)+QString(" <--> ")+QString::number(v2);
+        }
 
     }
     else{
@@ -9092,6 +9084,15 @@ void MainWindow::slotEditEdgeInfoStatusBar (const int &v1,
                         .arg( weight )
                         );
         rightPanelClickedEdgeHeaderLabel->setText(tr("Clicked Directed Edge"));
+
+        if (openMenu) {
+            edgeName=QString("DIRECTED EDGE: ") + QString::number(v1)+QString(" --> ")+QString::number(v2);
+        }
+
+    }
+
+    if (openMenu) {
+        slotEditEdgeOpenContextMenu(edgeName);
     }
 }
 
@@ -9099,18 +9100,16 @@ void MainWindow::slotEditEdgeInfoStatusBar (const int &v1,
 
 
 /**
- * @brief Popups a context menu with edge- related options
- * Called by GW::openEdgeMenu when the user right-clicks on an edge
- *
- */
-void MainWindow::slotEditEdgeOpenContextMenu() {
-    int source=activeGraph->edgeClicked().v1;
-    int target=activeGraph->edgeClicked().v2;
-    qDebug("MW: slotEditEdgeOpenContextMenu() for edge %i-%i at %i, %i",source, target, QCursor::pos().x(), QCursor::pos().y());
-    QString edgeName=QString::number(source)+QString("->")+QString::number(target);
+* @brief Popups a context menu with edge-related options
+ * Called when the user right-clicks on an edge
+* @param str
+*/
+void MainWindow::slotEditEdgeOpenContextMenu(const QString &str) {
+    qDebug()<< "MW: slotEditEdgeOpenContextMenu() for" << str
+            << "at"<< QCursor::pos().x() << "," << QCursor::pos().y();
     //make the menu
-    QMenu *edgeContextMenu = new QMenu(edgeName, this);
-    edgeContextMenu -> addAction( "## EDGE " + edgeName + " ##  ");
+    QMenu *edgeContextMenu = new QMenu(str, this);
+    edgeContextMenu -> addAction( str );
     edgeContextMenu -> addSeparator();
     edgeContextMenu -> addAction( editEdgeRemoveAct );
     edgeContextMenu -> addAction( editEdgeWeightAct );
@@ -9119,6 +9118,7 @@ void MainWindow::slotEditEdgeOpenContextMenu() {
     edgeContextMenu -> exec(QCursor::pos() );
     delete  edgeContextMenu;
 }
+
 
 
 /**
@@ -9250,6 +9250,8 @@ void MainWindow::slotEditEdgeRemove(){
 
     int min=0, max=0, sourceNode=-1, targetNode=-1;
     bool ok=false;
+    bool removeOpposite = false;
+
     min=activeGraph->vertexNumberMin();
     max=activeGraph->vertexNumberMax();
 
@@ -9272,8 +9274,11 @@ void MainWindow::slotEditEdgeRemove(){
             statusMessage( "Remove edge operation cancelled." );
             return;
         }
-        if ( activeGraph->edgeExists(sourceNode, targetNode)!=0 ) {
-            activeGraph->edgeRemove(sourceNode, targetNode);
+        if ( activeGraph->edgeExists(sourceNode, targetNode, true)!=0 ) {
+            removeOpposite=true;
+        }
+        else if ( activeGraph->edgeExists(sourceNode, targetNode, false)!=0 ) {
+            removeOpposite=false;
         }
         else {
             QMessageBox::critical(
@@ -9285,11 +9290,40 @@ void MainWindow::slotEditEdgeRemove(){
 
     }
     else {
-        sourceNode = activeGraph->edgeClicked().v1;
-        targetNode = activeGraph->edgeClicked().v2;
-        activeGraph->edgeRemove(sourceNode, targetNode);
+        if (activeGraph->edgeClicked().type == EDGE_RECIPROCATED) {
+            QStringList items;
+            QString arcA = QString::number(activeGraph->edgeClicked().v1)+ " --> "+QString::number(activeGraph->edgeClicked().v2);
+            QString arcB = QString::number(activeGraph->edgeClicked().v2)+ " --> "+QString::number(activeGraph->edgeClicked().v1);
+            items << arcA
+                  << arcB
+                  << "Both";
+            ok = false;
+            QString selectedArc = QInputDialog::getItem(this, tr("Select edge"),
+                                                 tr("This is a reciprocated edge. "
+                                                    "Select direction to remove:"), items, 0, false, &ok);
+            if ( selectedArc == arcA ) {
+                sourceNode = activeGraph->edgeClicked().v1;
+                targetNode = activeGraph->edgeClicked().v2;
+            }
+            else if ( selectedArc == arcB ) {
+                sourceNode = activeGraph->edgeClicked().v2;
+                targetNode = activeGraph->edgeClicked().v1;
+            }
+            else {  // both
+                removeOpposite=true;
+            }
+
+        }
+        else {
+            sourceNode = activeGraph->edgeClicked().v1;
+            targetNode = activeGraph->edgeClicked().v2;
+        }
+
 
     }
+
+    activeGraph->edgeRemove(sourceNode, targetNode, removeOpposite);
+
     qDebug()<< "MW::slotEditEdgeRemove() -"
               << "View items now:"<< graphicsWidget->items().size()
                << "Scene items now:"<< graphicsWidget->scene()->items().size();

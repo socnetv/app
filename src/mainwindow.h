@@ -260,7 +260,7 @@ public slots:
                                    const float &clc=0);
     void slotEditNodePosition(const int &nodeNumber, const int &x, const int &y);
     void slotEditNodeAdd();
-    void slotEditNodeAddWithMouse(const QPointF &);
+
     void slotEditNodeFind();
     void slotEditNodeRemove();
     void slotEditNodeOpenContextMenu();
@@ -281,12 +281,13 @@ public slots:
     void slotEditNodeLabelsColor(QColor color=QColor());
     void slotEditNodeLabelDistance(int v1=0, int newSize=0);
 
-    void slotEditEdgeInfoStatusBar (const int &v1,
+    void slotEditEdgeClicked (const int &v1,
                                     const int &v2,
                                     const float &weight,
-                                    const int &type);
+                                    const int &type,
+                                    const bool &openMenu=false);
 
-    void slotEditEdgeOpenContextMenu() ;
+    void slotEditEdgeOpenContextMenu(const QString &str="") ;
     void slotEditEdgeAdd();
     void slotEditEdgeCreate (const int &source, const int &target,
                              const float &weight=1);

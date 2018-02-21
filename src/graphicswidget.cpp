@@ -91,7 +91,21 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
 
 
 
-    }
+}
+
+
+/**
+ * @brief creates a QString of the edge name
+ * @param v1
+ * @param v2
+ * @param relation
+ * @return
+ */
+QString GraphicsWidget::createEdgeName(const int &v1, const int &v2, const int &relation) {
+    edgeName = QString::number(relation ? relation : m_curRelation) + QString(":")
+            + QString::number(v1) + QString(">")+ QString::number(v2);
+    return edgeName;
+}
 
 
 
@@ -213,8 +227,8 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
                               const bool &bezier,
                               const bool &weightNumbers){
 
-    edgeName = QString::number(m_curRelation) + QString(":")
-            + QString::number(source) + QString(">")+ QString::number(target);
+    edgeName = createEdgeName(source, target);
+
     qDebug()<<"GW::drawEdge() - "<< edgeName
            << " weight "<<weight
            << " label " << label
@@ -238,8 +252,7 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
         edgesHash.insert(edgeName, edge);
     }
     else {
-        edgeName = QString::number(m_curRelation) + QString(":") +
-                QString::number(target) + QString(">")+ QString::number(source);
+        edgeName = createEdgeName(target,source);
         qDebug("GW::drawEdge() - making existing edge between %i and %i reciprocal. Name: "+edgeName.toUtf8(), source, target );
         edgesHash.value(edgeName)->setReciprocated();
 
@@ -301,7 +314,7 @@ void GraphicsWidget::nodeClicked(GraphicsNode *node){
     Also, it highlights source and target nodes
  * @param edge
  */
-void GraphicsWidget::edgeClicked(GraphicsEdge *edge){
+void GraphicsWidget::edgeClicked(GraphicsEdge *edge, const bool &openMenu){
     qDebug() <<"GW::edgeClicked() - (un)marking edge and emitting userClickedEdge()";
 
     if (clickedEdgeExists) {
@@ -328,8 +341,8 @@ void GraphicsWidget::edgeClicked(GraphicsEdge *edge){
     markedEdgeTarget->setSize(2*markedEdgeTargetOrigSize-1);
 
     emit userClickedEdge(edge->sourceNode()->nodeNumber(),
-                         edge->targetNode()->nodeNumber()
-                         );
+                         edge->targetNode()->nodeNumber(),
+                         openMenu);
 }
 
 
@@ -406,11 +419,7 @@ void GraphicsWidget::eraseEdge(const long int &source, const long int &target){
              << " view items: " << items().size()
              << " edgesHash.count: " << edgesHash.count();
 
-
-    edgeName =  QString::number(m_curRelation) + QString(":") +
-            QString::number( source )
-            + QString(">")
-            + QString::number( target );
+    edgeName = createEdgeName(source,target);
 
     if ( edgesHash.contains(edgeName) ) {
         delete edgesHash.value(edgeName);
@@ -466,10 +475,7 @@ void GraphicsWidget::removeItem( GraphicsNode *node){
  */
 void GraphicsWidget::removeItem( GraphicsEdge * edge){
     qDebug() << "GW::removeItem(edge)" ;
-    edgeName =  QString::number(m_curRelation) + QString(":") +
-            QString::number( edge->sourceNodeNumber() )
-            + QString(">")
-            + QString::number( edge->targetNodeNumber() );
+    edgeName = createEdgeName(edge->sourceNodeNumber(), edge->targetNodeNumber() ) ;
     edgesHash.remove(edgeName);
     scene()->removeItem(edge);
     edge->deleteLater();
@@ -901,8 +907,7 @@ void GraphicsWidget::setEdgeLabel(const long int &source,
                                   const long int &target,
                                   const QString &label){
 
-    QString edgeName =  QString::number(m_curRelation) + QString(":") +
-            QString::number( source ) + QString(">")+ QString::number( target );
+    edgeName = createEdgeName( source, target );
 
     qDebug()<<"GW::setEdgeLabel() -" << edgeName <<  " new label "  << label;
     if  ( edgesHash.contains (edgeName) ) {
@@ -925,8 +930,7 @@ void GraphicsWidget::setEdgeColor(const long int &source,
                                   const long int &target,
                                   const QString &color){
 
-    QString edgeName =  QString::number(m_curRelation) + QString(":") +
-            QString::number( source ) + QString(">")+ QString::number( target );
+    edgeName =  createEdgeName( source, target );
 
     qDebug()<<"GW::setEdgeColor() -" << edgeName <<  " new color "  << color;
     if  ( edgesHash.contains (edgeName) ) {
@@ -955,8 +959,7 @@ bool GraphicsWidget::setEdgeReciprocated(const long int &source,
     qDebug() << "GW::setEdgeReciprocated() : " << source << "->" << target
              << " undirected " << undirected;
 
-    QString edgeName =  QString::number(m_curRelation) + QString(":") +
-            QString::number( source ) + QString(">")+ QString::number( target );
+    edgeName = createEdgeName( source, target );
 
     qDebug()<<"GW::setEdgeReciprocated() - checking edgesHash for:" << edgeName ;
     if  ( edgesHash.contains (edgeName) ) {
@@ -986,8 +989,7 @@ bool GraphicsWidget::setEdgeWeight(const long int &source,
     qDebug() << "GW::setEdgeWeight() : " << source << "->" << target
              << " = " << weight;
 
-    QString edgeName =  QString::number(m_curRelation) + QString(":") +
-            QString::number( source ) + QString(">")+ QString::number( target );
+    edgeName = createEdgeName( source, target );
 
     qDebug()<<"GW::setEdgeWeight() -" << edgeName <<  " new weight "  << weight;
     if  ( edgesHash.contains (edgeName) ) {
@@ -1101,8 +1103,8 @@ void   GraphicsWidget::setEdgeHighlighting(const bool &toggle){
 *	Changes the visibility of an GraphicsView edge (number, label, edge, etc)
 */
 void GraphicsWidget::setEdgeVisibility(int relation, int source, int target, bool toggle){
-    QString edgeName =  QString::number(relation) + QString(":") +
-            QString::number( source ) + QString(">")+ QString::number( target );
+
+    edgeName = createEdgeName( source, target, relation );
 
     if  ( edgesHash.contains (edgeName) ) {
         qDebug()<<"GW: setEdgeVisibility(). relation " << relation
@@ -1275,13 +1277,14 @@ QList<SelectedEdge> GraphicsWidget::selectedEdges() {
 
 
 
-/** 	
-    Starts a new node when the user double-clicks somewhere
-    Emits userDoubleClicked to MW::slotEditNodeAddWithMouse() which
-        - displays node info on MW status bar and
-        - calls Graph::vertexCreate(), which in turn calls this->drawNode()...
-        Yes, we make a full circle! :)
-*/
+
+/**
+ * @brief Starts the new node creation process when the user double-clicks somewhere:
+    Emits userDoubleClicked to Graph::vertexCreate(),
+    which in turn calls this->drawNode() to create and displays node info on MW status bar
+    Yes, it's a full circle!
+ * @param e
+ */
 void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
 
     if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
@@ -1324,6 +1327,7 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
 
     // bool ctrlKey = (e->modifiers() == Qt::ControlModifier);
 
+
     //  emit selectedItems(m_selectedItems);
 
     if ( QGraphicsItem *item = itemAt(e->pos() )   ) {
@@ -1354,15 +1358,19 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
                      << "SelectedItems:" << scene()->selectedItems().count()
                      << endl
                      << "Single click on an edge. Calling edgeClicked()";
-            edgeClicked(edge);
+
             if ( e->button()==Qt::LeftButton ) {
                 qDebug() << "GW::mousePressEvent() - left click on an edge ";
+                edgeClicked(edge);
                 //	graphicsWidget->startNodeMovement(0);
             }
             else if ( e->button()==Qt::RightButton ) {
                 qDebug() << "GW::mousePressEvent() - right click on an edge."
                          << "Emitting openEdgeContextMenu()";
-                emit openEdgeMenu();
+                edgeClicked(edge, true);
+            }
+            else {
+                edgeClicked(edge);
             }
             QGraphicsView::mousePressEvent(e);
             return;
