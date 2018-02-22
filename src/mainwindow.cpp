@@ -3819,7 +3819,7 @@ void MainWindow::initPanels(){
 
     QLabel *toolBoxEditNodeSubgraphSelectLabel  = new QLabel;
     toolBoxEditNodeSubgraphSelectLabel->setText(tr("Subgraph:"));
-    toolBoxEditNodeSubgraphSelectLabel->setMinimumWidth(115);
+    toolBoxEditNodeSubgraphSelectLabel->setMinimumWidth(90);
     toolBoxEditNodeSubgraphSelect = new QComboBox;
     toolBoxEditNodeSubgraphSelect->setStatusTip(
                 tr("Create a basic subgraph with selected nodes."));
@@ -3845,11 +3845,11 @@ void MainWindow::initPanels(){
                        << "Cycle"
                        << "Line";
     toolBoxEditNodeSubgraphSelect->addItems(editNodeSubgraphCommands);
-    toolBoxEditNodeSubgraphSelect->setMinimumWidth(115);
+    toolBoxEditNodeSubgraphSelect->setMinimumWidth(120);
 
     QLabel *toolBoxEdgeModeSelectLabel  = new QLabel;
     toolBoxEdgeModeSelectLabel->setText(tr("Edge Mode:"));
-    toolBoxEdgeModeSelectLabel->setMinimumWidth(115);
+    toolBoxEdgeModeSelectLabel->setMinimumWidth(90);
     toolBoxEditEdgeModeSelect = new QComboBox;
     toolBoxEditEdgeModeSelect->setStatusTip(
                 tr("Select an edge creation mode: directed or undirected."));
@@ -3862,12 +3862,12 @@ void MainWindow::initPanels(){
     edgeModeCommands << "Directed"
                      << "Undirected";
     toolBoxEditEdgeModeSelect->addItems(edgeModeCommands);
-    toolBoxEditEdgeModeSelect->setMinimumWidth(115);
+    toolBoxEditEdgeModeSelect->setMinimumWidth(120);
 
 
     QLabel *toolBoxSymmetrizeSelectLabel  = new QLabel;
     toolBoxSymmetrizeSelectLabel->setText(tr("Symmetrize:"));
-    toolBoxSymmetrizeSelectLabel->setMinimumWidth(115);
+    toolBoxSymmetrizeSelectLabel->setMinimumWidth(90);
     toolBoxEditEdgeSymmetrizeSelect = new QComboBox;
     toolBoxEditEdgeSymmetrizeSelect->setStatusTip(
                 tr("Select a method to symmetrize the network, i.e. tranform all directed edges to undirected."));
@@ -3923,7 +3923,7 @@ void MainWindow::initPanels(){
                        << "Strong ties"
                        << "Cocitation";
     toolBoxEditEdgeSymmetrizeSelect->addItems(symmetrizeCommands);
-    toolBoxEditEdgeSymmetrizeSelect->setMinimumWidth(115);
+    toolBoxEditEdgeSymmetrizeSelect->setMinimumWidth(120);
 
 
     //create a grid layout for Edit buttons
@@ -3952,14 +3952,14 @@ void MainWindow::initPanels(){
     //create a groupbox "Edit" - Inside, display the grid layout of widgets
     QGroupBox *editGroupBox= new QGroupBox(tr("Edit"));
     editGroupBox->setLayout(EditGrid);
-    editGroupBox->setMaximumWidth(280);
+    editGroupBox->setMaximumWidth(255);
     editGroupBox->setMinimumHeight(100);
 
 
     //create widgets for the "Analysis" box
     QLabel *toolBoxAnalysisMatricesSelectLabel = new QLabel;
     toolBoxAnalysisMatricesSelectLabel->setText(tr("Matrix:"));
-    toolBoxAnalysisMatricesSelectLabel->setMinimumWidth(115);
+    toolBoxAnalysisMatricesSelectLabel->setMinimumWidth(90);
     toolBoxAnalysisMatricesSelect = new QComboBox;
     toolBoxAnalysisMatricesSelect -> setStatusTip(
                 tr("Select which matrix to compute and display, based on the adjacency matrix of the current network."));
@@ -3979,13 +3979,13 @@ void MainWindow::initPanels(){
                           << "Degree Matrix"
                           << "Laplacian Matrix";
     toolBoxAnalysisMatricesSelect->addItems(graphMatricesList);
-    toolBoxAnalysisMatricesSelect->setMinimumWidth(115);
+    toolBoxAnalysisMatricesSelect->setMinimumWidth(120);
 
 
 
     QLabel *toolBoxAnalysisCohesionSelectLabel = new QLabel;
     toolBoxAnalysisCohesionSelectLabel->setText(tr("Cohesion:"));
-    toolBoxAnalysisCohesionSelectLabel->setMinimumWidth(115);
+    toolBoxAnalysisCohesionSelectLabel->setMinimumWidth(90);
     toolBoxAnalysisCohesionSelect = new QComboBox;
     toolBoxAnalysisCohesionSelect -> setStatusTip(
                 tr("Select a graph-theoretic metric to compute, i.e. distances, walks, graph diameter, eccentricity."));
@@ -4011,13 +4011,13 @@ void MainWindow::initPanels(){
                           << "Reachability Matrix"
                           << "Clustering Coefficient";
     toolBoxAnalysisCohesionSelect->addItems(graphPropertiesList);
-    toolBoxAnalysisCohesionSelect->setMinimumWidth(115);
+    toolBoxAnalysisCohesionSelect->setMinimumWidth(120);
 
 
 
     QLabel *toolBoxAnalysisProminenceSelectLabel  = new QLabel;
     toolBoxAnalysisProminenceSelectLabel->setText(tr("Prominence:"));
-    toolBoxAnalysisProminenceSelectLabel->setMinimumWidth(115);
+    toolBoxAnalysisProminenceSelectLabel->setMinimumWidth(90);
     toolBoxAnalysisProminenceSelect = new QComboBox;
     toolBoxAnalysisProminenceSelect -> setStatusTip(
                 tr("Select a prominence metric to compute for each actor and the whole network. ")
@@ -4053,12 +4053,12 @@ void MainWindow::initPanels(){
                        << "PageRank Prestige"
                        << "Proximity Prestige";
     toolBoxAnalysisProminenceSelect->addItems(prominenceCommands);
-    toolBoxAnalysisProminenceSelect->setMinimumWidth(115);
+    toolBoxAnalysisProminenceSelect->setMinimumWidth(120);
 
 
     QLabel *toolBoxAnalysisCommunitiesSelectLabel  = new QLabel;
     toolBoxAnalysisCommunitiesSelectLabel->setText(tr("Communities:"));
-    toolBoxAnalysisCommunitiesSelectLabel->setMinimumWidth(115);
+    toolBoxAnalysisCommunitiesSelectLabel->setMinimumWidth(90);
     toolBoxAnalysisCommunitiesSelect = new QComboBox;
     toolBoxAnalysisCommunitiesSelect->setStatusTip(
                 tr("Select a community detection metric / cohesive subgroup algorithm, i.e. cliques, triad census etc."));
@@ -4077,14 +4077,14 @@ void MainWindow::initPanels(){
                            << "Cliques"
                            << "Triad Census";
     toolBoxAnalysisCommunitiesSelect->addItems(communitiesCommands);
-    toolBoxAnalysisCommunitiesSelect->setMinimumWidth(115);
+    toolBoxAnalysisCommunitiesSelect->setMinimumWidth(120);
 
 
 
 
     QLabel *toolBoxAnalysisStrEquivalenceSelectLabel  = new QLabel;
     toolBoxAnalysisStrEquivalenceSelectLabel->setText(tr("Equivalence:"));
-    toolBoxAnalysisStrEquivalenceSelectLabel->setMinimumWidth(115);
+    toolBoxAnalysisStrEquivalenceSelectLabel->setMinimumWidth(90);
     toolBoxAnalysisStrEquivalenceSelect = new QComboBox;
     toolBoxAnalysisStrEquivalenceSelect->setStatusTip(
                 tr("Select a metric to measure structural equivalence, "
@@ -4106,7 +4106,7 @@ void MainWindow::initPanels(){
                          << "Dissimilarities"
                          << "Hierarchical Clustering";
     toolBoxAnalysisStrEquivalenceSelect->addItems(connectivityCommands);
-    toolBoxAnalysisStrEquivalenceSelect->setMinimumWidth(115);
+    toolBoxAnalysisStrEquivalenceSelect->setMinimumWidth(120);
 
 
     //create layout for analysis options
@@ -4129,14 +4129,14 @@ void MainWindow::initPanels(){
     //create a box and set the above layout inside
     QGroupBox *analysisBox= new QGroupBox(tr("Analyze"));
     analysisBox->setMinimumHeight(170);
-    analysisBox->setMaximumWidth(280);
+    analysisBox->setMaximumWidth(255);
     analysisBox->setLayout (analysisGrid );
 
 
     //create widgets for the "Visualization By Index" box
     QLabel *toolBoxLayoutByIndexSelectLabel = new QLabel;
     toolBoxLayoutByIndexSelectLabel->setText(tr("Index:"));
-    toolBoxLayoutByIndexSelectLabel->setMinimumWidth(110);
+    toolBoxLayoutByIndexSelectLabel->setMinimumWidth(90);
     toolBoxLayoutByIndexSelect = new QComboBox;
     toolBoxLayoutByIndexSelect->setStatusTip(tr("Select a prominence-based layout model"));
     toolBoxLayoutByIndexSelect->setToolTip(tr("Apply a prominence-based layout model"));
@@ -4167,7 +4167,7 @@ void MainWindow::initPanels(){
 
     QLabel *toolBoxLayoutByIndexTypeLabel = new QLabel;
     toolBoxLayoutByIndexTypeLabel->setText(tr("Layout Type:"));
-    toolBoxLayoutByIndexTypeLabel->setMinimumWidth(10);
+    toolBoxLayoutByIndexTypeLabel->setMinimumWidth(90);
     toolBoxLayoutByIndexTypeSelect = new QComboBox;
     toolBoxLayoutByIndexTypeSelect->setStatusTip(
                 tr("Select layout type for the selected model"));
@@ -4208,7 +4208,7 @@ void MainWindow::initPanels(){
     // create widgets for the "Force-Directed Models" Box
     QLabel *toolBoxLayoutForceDirectedSelectLabel = new QLabel;
     toolBoxLayoutForceDirectedSelectLabel->setText(tr("Model:"));
-    toolBoxLayoutForceDirectedSelectLabel->setMinimumWidth(110);
+    toolBoxLayoutForceDirectedSelectLabel->setMinimumWidth(90);
     toolBoxLayoutForceDirectedSelect = new QComboBox;
     QStringList modelsList;
     modelsList << tr("None")
@@ -4300,7 +4300,7 @@ void MainWindow::initPanels(){
 
 
     QGroupBox *visualizationBox= new QGroupBox(tr("Visualize"));
-    visualizationBox->setMaximumWidth(280);
+    visualizationBox->setMaximumWidth(255);
     visualizationBox->setLayout (visualizationBoxLayout );
 
     //Parent box with vertical layout for all boxes of Controls
@@ -4385,7 +4385,7 @@ void MainWindow::initPanels(){
     rightPanelSelectedHeaderLabel->setFont(labelFont);
 
     QLabel *rightPanelSelectedNodesLabel = new QLabel;
-    rightPanelSelectedNodesLabel->setText(tr("Selected Nodes"));
+    rightPanelSelectedNodesLabel->setText(tr("Nodes"));
     rightPanelSelectedNodesLabel->setStatusTip(tr("The number of selected nodes (vertices)."));
     rightPanelSelectedNodesLabel->setToolTip(tr("The number of selected nodes (vertices)."));
     rightPanelSelectedNodesLCD=new QLCDNumber(7);
@@ -4394,7 +4394,7 @@ void MainWindow::initPanels(){
     rightPanelSelectedNodesLCD->setToolTip(tr("The number of selected nodes (vertices)."));
 
     rightPanelSelectedEdgesLabel = new QLabel;
-    rightPanelSelectedEdgesLabel->setText(tr("Selected Arcs"));
+    rightPanelSelectedEdgesLabel->setText(tr("Arcs"));
     rightPanelSelectedEdgesLabel->setStatusTip(tr("The number of selected edges."));
     rightPanelSelectedEdgesLabel->setToolTip(tr("The number of selected edges."));
     rightPanelSelectedEdgesLCD=new QLCDNumber(7);
@@ -4837,8 +4837,11 @@ void MainWindow::initSignalSlots() {
                  )
              ) ;
 
-    connect( activeGraph, SIGNAL( eraseEdge(const long int &, const long int &)),
-             graphicsWidget, SLOT( eraseEdge(const long int &, const long int &) ) );
+
+
+    connect( activeGraph, &Graph::signalEraseEdge,
+                     graphicsWidget,&GraphicsWidget::eraseEdge);
+
 
 
     connect( activeGraph, SIGNAL( drawEdge( const int&, const int&, const float &,
@@ -7965,7 +7968,7 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
         }
         rightPanelNetworkTypeLabel-> setText ("Network Type: Undirected");
         rightPanelEdgesLabel->setText(tr("Total Edges"));
-        rightPanelSelectedEdgesLabel->setText( tr("Selected Edges") );
+        rightPanelSelectedEdgesLabel->setText( tr("Edges") );
         editEdgeUndirectedAllAct->setChecked(true);
     }
     else {
@@ -7990,7 +7993,7 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
             toolBoxEditEdgeModeSelect->setCurrentIndex(0);
         }
         rightPanelEdgesLabel->setText(tr("Total Arcs"));
-        rightPanelSelectedEdgesLabel->setText( tr("Selected Arcs")  );
+        rightPanelSelectedEdgesLabel->setText( tr("Arcs")  );
         editEdgeUndirectedAllAct->setChecked(false);
     }
     rightPanelEdgesLCD->display(edges);
@@ -8239,7 +8242,7 @@ void MainWindow::slotEditNodeRemove() {
     }
 
     else {
-        int doomedJim=-1, min=-1, max=-1;
+        int nodeNumber=-1, min=-1, max=-1;
         bool ok=false;
         min = activeGraph->vertexNumberMin();
         max = activeGraph->vertexNumberMax();
@@ -8249,7 +8252,7 @@ void MainWindow::slotEditNodeRemove() {
             return;
         }
         else  {
-            doomedJim =  QInputDialog::getInt(
+            nodeNumber =  QInputDialog::getInt(
                         this,
                         tr("Remove node"),
                         tr("Choose a node to remove between ("
@@ -8260,9 +8263,9 @@ void MainWindow::slotEditNodeRemove() {
                 return;
             }
         }
-        qDebug ("MW: removing vertex with number %i from Graph", doomedJim);
-        activeGraph->vertexRemove(doomedJim);
-        qDebug("MW: removeNode() completed. Node %i removed completely.",doomedJim);
+        qDebug ("MW: removing vertex with number %i from Graph", nodeNumber);
+        activeGraph->vertexRemove(nodeNumber);
+        qDebug("MW: removeNode() completed. Node %i removed completely.",nodeNumber);
         statusMessage( tr("Node removed completely. Ready. ") );
     }
 }
@@ -9030,10 +9033,11 @@ void MainWindow::slotEditNodeInfoStatusBar (const int &number,
  * @param edge
  */
 void MainWindow::slotEditEdgeClicked (const int &v1,
-                                            const  int &v2,
-                                            const float &weight,
-                                            const int &type,
-                                            const bool &openMenu) {
+                                      const  int &v2,
+                                      const float &weight,
+                                      const int &type,
+                                      const bool &openMenu) {
+
     qDebug()<<"MW::slotEditEdgeClicked()"
            << v1
            << "->"
@@ -9046,8 +9050,9 @@ void MainWindow::slotEditEdgeClicked (const int &v1,
     rightPanelClickedEdgeTargetLCD->display(v2);
     rightPanelClickedEdgeWeightLCD->display(weight);
 
-    if (v1 ==0 || v2 == 0) return;
-
+    if (v1 ==0 || v2 == 0) {
+        return;
+    }
 
     QString edgeName;
 
@@ -9274,11 +9279,11 @@ void MainWindow::slotEditEdgeRemove(){
             statusMessage( "Remove edge operation cancelled." );
             return;
         }
-        if ( activeGraph->edgeExists(sourceNode, targetNode, true)!=0 ) {
-            removeOpposite=true;
-        }
-        else if ( activeGraph->edgeExists(sourceNode, targetNode, false)!=0 ) {
+        if ( activeGraph->edgeExists(sourceNode, targetNode, false)!=0 ) {
             removeOpposite=false;
+            if ( activeGraph->graphUndirected() ) {
+                removeOpposite=true;
+            }
         }
         else {
             QMessageBox::critical(

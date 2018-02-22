@@ -65,11 +65,11 @@ public:
     ~GraphicsWidget();
     void clear();
 
-    QString createEdgeName(const int &v1, const int &v2, const int &relation=0);
+    QString createEdgeName(const int &v1, const int &v2, const int &relation=-1);
 
     void setInitNodeSize(int);
-    void setInitZoomIndex (int);
 
+    void setInitZoomIndex (int);
 
     GraphicsNode* hasNode(QString text);
     bool setMarkedNode(QString text);
@@ -145,7 +145,7 @@ public slots:
                   const bool &drawArrows=true,
                   const bool &bezier=false,
                   const bool &weightNumbers=false);
-    void eraseEdge(const long int &source, const long int &target);
+    void eraseEdge(const long int &source, const long int &target, const bool &removeOpposite=false);
     void setEdgeVisibility (int relation, int, int, bool);
     bool setEdgeDirectionType(const long int &,
                               const long int &,

@@ -504,6 +504,9 @@ void Graph::relationSet(int relNum, const bool notifyMW){
 
     VList::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        qDebug() << "++ Graph::relationSet(int) - changing relation of vertex"
+                 << (*it)->name()
+                 << "to" << relNum;
         if ( ! (*it)->isEnabled() )
             continue;
        (*it)->relationSet(relNum);
@@ -874,32 +877,31 @@ int Graph::vertexNumberMin() {
 
 
 /**
- * @brief Graph::vertexRemove
- * Removes the vertex named Doomed from the graph
- * First, it removes all edges to Doomed from other vertices
+ * @brief Removes the vertex v1 from the graph
+ * First, it removes all edges to doomed from other vertices
  * Then it changes the vpos of all subsequent vertices inside m_graph
  * Finally, it removes the vertex.
- * @param Doomed
+ * @param int v1
  */
-void Graph::vertexRemove(long int Doomed){
-    qDebug() << "Graph::vertexRemove() - doomed: "
-             << m_graph[ vpos[Doomed] ]->name()
-             << "  vpos: " << vpos[Doomed]
+void Graph::vertexRemove(const long int &v1){
+    qDebug() << "Graph::vertexRemove() - v: "
+             << m_graph[ vpos[v1] ]->name()
+             << "  vpos: " << vpos[v1]
              << " Removing all inbound and outbound edges ";
-    long int doomedPos=vpos[Doomed];
+    long int doomedPos=vpos[v1];
 
-    //Remove links to Doomed from each other vertex
+    //Remove links to v1 from each other vertex
     VList::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if  ( (*it)->hasEdgeTo(Doomed) != 0) {
+        if  ( (*it)->hasEdgeTo(v1) != 0) {
             qDebug()<< "Graph::vertexRemove() - vertex " << (*it)->name()
-                    << " has outbound Edge to "<< Doomed << ". Removing it.";
-            (*it)->edgeRemoveTo(Doomed);
+                    << " has outbound Edge to "<< v1 << ". Removing it.";
+            (*it)->edgeRemoveTo(v1);
         }
-        if (  (*it)->hasEdgeFrom(Doomed) != 0 ) {
+        if (  (*it)->hasEdgeFrom(v1) != 0 ) {
             qDebug()<< "Graph::vertexRemove() - vertex " << (*it)->name()
-                    << " has inbound Edge from "<< Doomed << ". Removing it.";
-            (*it)->edgeRemoveFrom(Doomed);
+                    << " has inbound Edge from "<< v1 << ". Removing it.";
+            (*it)->edgeRemoveFrom(v1);
         }
     }
 
@@ -940,12 +942,12 @@ void Graph::vertexRemove(long int Doomed){
 
     order=false;
 
-    if (vertexClicked()==Doomed)
+    if (vertexClicked()==v1)
         vertexClickedSet(0);
 
     graphModifiedSet(GRAPH_CHANGED_VERTICES);
 
-    emit eraseNode(Doomed);
+    emit eraseNode(v1);
 }
 
 
@@ -1076,11 +1078,11 @@ void Graph::vertexClickedSet(const int &v1) {
     qDebug()<<"Graph::vertexClickedSet() - " << v1;
     m_vertexClicked = v1;
     if (v1 == 0) {
-        signalNodeClickedInfo(0);
+        emit signalNodeClickedInfo(0);
     }
     else {
         edgeClickedSet(0,0);
-        signalNodeClickedInfo( v1,
+        emit signalNodeClickedInfo( v1,
                            vertexPos(v1),
                            vertexLabel(v1),
                            vertexDegreeIn(v1),
@@ -1732,6 +1734,7 @@ void Graph::edgeAdd (const int &v1, const int &v2, const float &weight,
 
 /**
  * @brief Removes the directed arc v1 -> v2 or, if the graph is undirected, the edge v1 <-> v2
+ * Emits eraseEdge to GW to delete the graphics item.
  * @param v1
  * @param v2
  * @param removeOpposite if true also removes the opposite edge
@@ -1756,7 +1759,7 @@ void Graph::edgeRemove (const long int &v1,
         }
     }
 
-    emit eraseEdge(v1,v2);
+    emit signalEraseEdge(v1,v2, (graphUndirected() || removeOpposite ));
 
     graphModifiedSet(GRAPH_CHANGED_EDGES);
 }
@@ -1766,14 +1769,22 @@ void Graph::edgeRemove (const long int &v1,
 
 /**
  * @brief Changes the canvas visibility of an edge
- * Called from GraphVertex when edgeFilterByWeight is called
+ * Called from
+ * GraphVertex::edgeFilterByRelation
+ * GraphVertex::edgeFilterByWeight
+ * GraphVertex::setOutEdgeEnabled
+ * GraphVertex::edgeFilterUnilateral
  * @param relation
  * @param source
  * @param target
  * @param visible
  */
 void Graph::edgeVisibilitySet ( int relation,  int source, int target, bool visible) {
-    //qDebug() << "Graph: edgeVisibilitySet  - emitting signal to GW";
+    qDebug() << "Graph::edgeVisibilitySet()  - source" << source
+             << "target" << target
+             << "relation"<< relation
+             << "visible"<< visible
+             << "emitting signal to GW";
     emit setEdgeVisibility ( relation, source, target, visible);
 }
 
@@ -2569,7 +2580,9 @@ void Graph::graphSelectionChanged(const QList<int> selectedVertices,
     m_verticesSelected = selectedVertices;
     m_selectedEdges = selectedEdges;
 
-    qDebug() << "Graph::graphSelectionChanged()" << m_verticesSelected;
+    qDebug() << "Graph::graphSelectionChanged() - Vertices"
+             << m_verticesSelected
+             << "Edges" <<m_selectedEdges ;
 
     emit signalSelectionChanged(m_verticesSelected.size(), m_selectedEdges.size());
 

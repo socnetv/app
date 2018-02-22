@@ -109,8 +109,9 @@ GraphVertex::GraphVertex(const long int &name) {
 * @param newRel
 */
 void GraphVertex::relationSet(int newRel) {
-    qDebug() << "GraphVertex::relationSet() - Current: " << m_curRelation
-                << " new: " << newRel;
+    qDebug() << "GraphVertex::relationSet() - vertex:" << name()
+             << "current relation:" << m_curRelation
+             << "settting new relation: " << newRel;
     // first make false all edges of current relation
     edgeFilterByRelation(m_curRelation, false);
     // then make true all edges of new relation
@@ -384,8 +385,8 @@ void GraphVertex::edgeFilterUnilateral(const bool &toggle){
  * @param relation
  */
 void GraphVertex::edgeFilterByRelation(int relation, bool status ){
-    qDebug() << "GraphVertex::edgeFilterByRelation() - GraphVertex " << this->m_name
-                << " filtering edges of relation " << relation << " to " << status;
+    qDebug() << "GraphVertex::edgeFilterByRelation() - Vertex" << name()
+                << "Setting edges of relation" << relation << "to" << status;
     int target=0;
     float weight =0;
     int edgeRelation=0;
@@ -396,9 +397,10 @@ void GraphVertex::edgeFilterByRelation(int relation, bool status ){
         if ( edgeRelation == relation ) {
             target=it1.key();
             weight = it1.value().second.first;
-            qDebug() << "GraphVertex::edgeFilterByRelation() - outLink "
+            qDebug() << "GraphVertex::edgeFilterByRelation() - outLink"
                      << m_name << " -> " << target
-                        << "  - emitting to GW to be " << status ;
+                     << " of relation" << relation
+                     << "Emitting to GW to be" << status ;
             it1.setValue(pair_i_fb(relation, pair_f_b(weight, status) ));
             emit setEdgeVisibility ( relation, m_name, target, status );
         }

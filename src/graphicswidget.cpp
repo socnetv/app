@@ -95,14 +95,14 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
 
 
 /**
- * @brief creates a QString of the edge name
+ * @brief creates a QString of the edge name - used for indexing edgesHash
  * @param v1
  * @param v2
  * @param relation
  * @return
  */
 QString GraphicsWidget::createEdgeName(const int &v1, const int &v2, const int &relation) {
-    edgeName = QString::number(relation ? relation : m_curRelation) + QString(":")
+    edgeName = QString::number((relation != -1) ? relation : m_curRelation) + QString(":")
             + QString::number(v1) + QString(">")+ QString::number(v2);
     return edgeName;
 }
@@ -186,7 +186,7 @@ void GraphicsWidget::drawNode( const int &num, const int &nodeSize,
     qDebug()<< "GW::drawNode() - Draw new node:" << num
             << " at:" << p.x() << ", "<< p.y() ;
 
-    //Draw node
+    // Draw node
     GraphicsNode *jim= new GraphicsNode (
                 this, num, nodeSize, nodeColor, nodeShape,
                 m_nodeNumberVisibility, m_nodeNumbersInside, numberColor, numberSize, numberDistance,
@@ -195,7 +195,7 @@ void GraphicsWidget::drawNode( const int &num, const int &nodeSize,
                 p
                 );
 
-    //add new node to a container to ease finding, edge creation etc
+    // Add new node to a container to ease finding, edge creation etc
     nodeHash.insert(num, jim);
 }
 
@@ -230,9 +230,9 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
     edgeName = createEdgeName(source, target);
 
     qDebug()<<"GW::drawEdge() - "<< edgeName
-           << " weight "<<weight
-           << " label " << label
-           << " type " << type
+           << "weight:"<<weight
+           << "label:" << label
+           << "direction type:" << type
            << " - nodeHash reports "<< nodeHash.size()<<" nodes.";
 
     if (type != EDGE_RECIPROCATED ) {
@@ -254,7 +254,7 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
         // if type is EDGE_RECIPROCATED, we just need to change the direction type
         // of the existing opposite edge.
         edgeName = createEdgeName(target,source);
-        qDebug("GW::drawEdge() - making existing edge between %i and %i reciprocal. Name: "+edgeName.toUtf8(), source, target );
+        qDebug()<< "GW::drawEdge() - Reciprocating existing directed edge"<<edgeName;
         edgesHash.value(edgeName)->setDirectionType(type);
 
     }
@@ -293,8 +293,8 @@ void GraphicsWidget::startEdge(GraphicsNode *node){
 
 
 /**
- * @brief Called when the user clicks or double-click on a node.
- * It emits the userClickedNode signal to MW which is used to
+ * @brief Called when the user clicks or double-clicks on a node.
+ * Clears clickedEdge and emits the userClickedNode signal to Graph to
     - display node info on the status bar
     - notify context menus for the clicked node.
  * @param node
@@ -328,18 +328,26 @@ void GraphicsWidget::edgeClicked(GraphicsEdge *edge, const bool &openMenu){
         clickedEdgeExists=false;
         return;
     }
+    if (!edge) { return; }
+
+    clickedEdgeExists=true;
+
     markedEdgeSource=edge->sourceNode();
     markedEdgeTarget=edge->targetNode();
-    clickedEdgeExists=true;
+
     // select nodes to change their color
     markedEdgeSource->setSelected(true);
     markedEdgeTarget->setSelected(true);
+
     // save their original size
     markedEdgeSourceOrigSize=markedEdgeSource->size();
     markedEdgeTargetOrigSize=markedEdgeTarget->size();
+
     //now, make them larger
     markedEdgeSource->setSize(2*markedEdgeSourceOrigSize-1);
     markedEdgeTarget->setSize(2*markedEdgeTargetOrigSize-1);
+
+    qDebug() <<"GW::edgeClicked() - clickedEdgeExists"<<clickedEdgeExists;
 
     emit userClickedEdge(edge->sourceNode()->nodeNumber(),
                          edge->targetNode()->nodeNumber(),
@@ -414,7 +422,7 @@ void GraphicsWidget::eraseNode(const long int &number){
  * @param sourceNode
  * @param targetNode
  */
-void GraphicsWidget::eraseEdge(const long int &source, const long int &target){
+void GraphicsWidget::eraseEdge(const long int &source, const long int &target, const bool &removeOpposite){
 
     edgeName = createEdgeName(source,target);
 
@@ -429,6 +437,12 @@ void GraphicsWidget::eraseEdge(const long int &source, const long int &target){
                  << " scene items: " << scene()->items().size()
                  << " view items: " << items().size()
                  << " edgesHash.count: " << edgesHash.count();
+        if (removeOpposite) {
+
+        }
+        else {
+            drawEdge(target, source, 1,"");
+        }
     }
     else {
         //check opposite edge. If it exists, then transform it to directed
@@ -439,6 +453,7 @@ void GraphicsWidget::eraseEdge(const long int &source, const long int &target){
             qDebug() << "GW::eraseEdge() - Opposite exists. Check if is reciprocated";
             if ( edgesHash.value(edgeName)->directionType() == EDGE_RECIPROCATED ) {
                 edgesHash.value(edgeName)->setDirectionType(EDGE_DIRECTED);
+                return;
             }
         }
         qDebug() << "GW::eraseEdge() - no such edge to delete";
@@ -980,10 +995,6 @@ bool GraphicsWidget::setEdgeDirectionType(const long int &source,
                   << " Transforming it to reciprocated";
         edgesHash.value(edgeName) -> setDirectionType(dirType);
 
-//        qDebug()<<"GW::setEdgeDirectionType() - removing opposite edge "
-//               << target << " -> " << source ;
-//        eraseEdge(target, source);
-
         return true;
     }
     return false;
@@ -1119,15 +1130,25 @@ void GraphicsWidget::setEdgeVisibility(int relation, int source, int target, boo
 
     edgeName = createEdgeName( source, target, relation );
 
+    qDebug()<<"GW::setEdgeVisibility() - trying to set edge"<<edgeName<<"to"<<toggle;
+
     if  ( edgesHash.contains (edgeName) ) {
-        qDebug()<<"GW: setEdgeVisibility(). relation " << relation
-               << " : " << source  << " ->  "<< target << " to " << toggle;
+        qDebug()<<"GW::setEdgeVisibility() - edge" << edgeName
+               << "set to" << toggle;
         edgesHash.value(edgeName) -> setVisible(toggle);
         edgesHash.value(edgeName) -> setEnabled(toggle);
         return;
     }
-    qDebug()<<"GW: setEdgeVisibility(). Cannot find edge " << relation
-           << " : " << source  << " ->  "<< target ;
+    edgeName = createEdgeName( target, source, relation );
+    qDebug()<<"GW: setEdgeVisibility() - trying to set edge"<<edgeName<<"to"<<toggle;
+    if  ( edgesHash.contains (edgeName) ) {
+        qDebug()<<"GW::setEdgeVisibility() - reciprocated edge" << edgeName
+               << "set to" << toggle;
+        edgesHash.value(edgeName) -> setVisible(toggle);
+        edgesHash.value(edgeName) -> setEnabled(toggle);
+        return;
+    }
+    qDebug()<<"GW::setEdgeVisibility() - Cannot find edge" << edgeName << "or the opposite in the edgesHash";
 
 }
 
@@ -1231,12 +1252,15 @@ void GraphicsWidget::selectNone(){
  */
 void GraphicsWidget::getSelectedItems() {
 
-    qDebug() <<"GW::getSelectedItems()";
+    qDebug() <<"GW::getSelectedItems() -"
+            << "selectedNodes"<< selectedNodes()
+            << "selectedEdges"<< selectedEdges();
 
-    if (!clickedEdgeExists)
-       // emit userSelectedItems(nodes, edges);
+    if (clickedEdgeExists) {
+    }
 
-        emit userSelectedItems(selectedNodes(), selectedEdges());
+    emit userSelectedItems(selectedNodes(), selectedEdges());
+
 }
 
 
@@ -1249,6 +1273,7 @@ QList<QGraphicsItem *> GraphicsWidget::selectedItems(){
     qDebug() <<"GW::selectedItems()";
     return scene()->selectedItems();
 }
+
 
 /**
  * @brief Returns a QList of selected node numbers
@@ -1340,18 +1365,26 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
 
     // bool ctrlKey = (e->modifiers() == Qt::ControlModifier);
 
-
-    //  emit selectedItems(m_selectedItems);
-
     if ( QGraphicsItem *item = itemAt(e->pos() )   ) {
+
+        //
+        // if user clicked on some item
+        //
+
         if (GraphicsNode *node = qgraphicsitem_cast<GraphicsNode *>(item)) {
-            qDebug() << "GW::mousePressEvent() - click at:"
+
+            //
+            // if user clicked on a node
+            //
+
+            qDebug() << "GW::mousePressEvent() - Single click on a node at:"
                      << e->pos() << "~"<< p
                      << "SelectedItems " << scene()->selectedItems().count()
-                     << "Single click on a node. "
-                        "Setting selected and emitting nodeClicked";
+                     << "Setting selected and emitting nodeClicked";
+
             node->setSelected(true);
             nodeClicked(node);
+
             if ( e->button()==Qt::RightButton ) {
                 qDebug() << "GW::mousePressEvent() - Right-click on node. "
                             "Emitting openNodeMenu() ";
@@ -1365,7 +1398,11 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
             QGraphicsView::mousePressEvent(e);
             return;
         }
+
         if (GraphicsEdge *edge = qgraphicsitem_cast<GraphicsEdge *>(item)) {
+            //
+            // if user clicked on an edge
+            //
             qDebug() << "GW::mousePressEvent() - click at:"
                      << e->pos() << "~"<< p
                      << "SelectedItems:" << scene()->selectedItems().count()
@@ -1373,12 +1410,12 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
                      << "Single click on an edge. Calling edgeClicked()";
 
             if ( e->button()==Qt::LeftButton ) {
-                qDebug() << "GW::mousePressEvent() - left click on an edge ";
+                qDebug() << "GW::mousePressEvent() - Left click on an edge ";
                 edgeClicked(edge);
                 //	graphicsWidget->startNodeMovement(0);
             }
             else if ( e->button()==Qt::RightButton ) {
-                qDebug() << "GW::mousePressEvent() - right click on an edge."
+                qDebug() << "GW::mousePressEvent() - Right click on an edge."
                          << "Emitting openEdgeContextMenu()";
                 edgeClicked(edge, true);
             }
@@ -1388,26 +1425,33 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
             QGraphicsView::mousePressEvent(e);
             return;
         }
-    }
-
-    //        if ( selectedItems().count() > 0 && ctrlKey ) {
-    //            qDebug() << "GW::mousePressEvent() - opening selection context menu ";
-    //            emit openContextMenu(p);
-    //        }
-
-    else if ( e->button() == Qt::RightButton   ) {
-        qDebug() << "GW::mousePressEvent() - click at:"
-                 << e->pos() << "~"<< p
-                 << "SelectedItems:" << scene()->selectedItems().count()
-                 << "Right click on empty space. Emitting openContextMenu()";
-        emit openContextMenu(p);
-    }
+    }    
     else {
-        qDebug() << "GW::mousePressEvent() - click at:"
-                 << e->pos() << "~"<< p
-                 << "SelectedItems:" << scene()->selectedItems().count()
-                 << "Left click on empty space. Emitting userClickOnEmptySpace()";
-        emit userClickOnEmptySpace(p);
+        if ( e->button() == Qt::RightButton   ) {
+            //
+            // user clicked on empty space, but with right button
+            // so we open the context menu
+            //
+            qDebug() << "GW::mousePressEvent() - Right click on empty space at:"
+                     << e->pos() << "~"<< p
+                     << "SelectedItems:" << scene()->selectedItems().count()
+                     << "Emitting openContextMenu(p)";
+            emit openContextMenu(p);
+        }
+        else {
+            //
+            //  user left-clicked on empty space
+            //
+            qDebug() << "GW::mousePressEvent() - Left click on empty space at:"
+                     << e->pos() << "~"<< p
+                     << "SelectedItems:" << scene()->selectedItems().count()
+                     << "Emitting userClickOnEmptySpace(p)";
+            edgeClicked(0);
+            emit userClickOnEmptySpace(p);
+            qDebug() << "GW::mousePressEvent() - tHAT WAS A Left click on empty space at:"
+                     << e->pos() << "~"<< p
+                     << "SelectedItems:" << scene()->selectedItems().count();
+        }
     }
     QGraphicsView::mousePressEvent(e);
 

@@ -333,14 +333,19 @@ signals:
                    const QPointF &p
                     );
 
-    void eraseNode (long int);						//erase node from GW
-    //call GW to draw an edge
+    //signal to GW to erase a node
+    void eraseNode (long int );
+
+    //signal GW to draw an edge
     void drawEdge ( const int &v1, const int &v2, const float &weight,
                     const QString &label="",
                     const QString &color="black",
                     const int &type=0, const bool arrows=true,
                     const bool &bezier=false,  const bool &weightNumbers=false);
-    void eraseEdge(const long int &, const long int &);					//emited from edgeRemove() to GW to clear the edge item.
+
+    //signal to
+    void signalEraseEdge(const long int &v1, const long int &v2, const bool &removeOpposite);
+
     void setEdgeVisibility (int, int, int, bool);			// emitted from each GraphVertex
     void setVertexVisibility(long int, bool);		//notifies GW to disable a node
     void setNodePos(const int &, const qreal &, const qreal &);
@@ -433,7 +438,7 @@ public:
 
     int vertexExists(const long int &v1 );
     int vertexExists(const QString &label);
-    void vertexRemove (long int );
+    void vertexRemove (const long int &v1);
 
     void vertexSizeInit (const long int);
     void vertexSizeSet(const long int &v, const int &newsize );
