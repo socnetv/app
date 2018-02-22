@@ -682,22 +682,20 @@ void Graph::vertexCreate(const int &num, const int &nodeSize, const QString &nod
     int value = 1;
     qDebug() << "Graph::vertexCreate() - vertex:" << num
                 << "signalMW:" << signalMW
-                   << "- Calling vertexAdd() and emitting drawNode() to GW";
+                   << "- Calling vertexAdd() and emitting signalDrawNode() to GW";
     vertexAdd ( num, value, nodeSize,  nodeColor,
                numColor, numSize,
                label, labelColor, labelSize, p, nodeShape);
 
 
-    emit drawNode( num, nodeSize, nodeShape, nodeColor,
+    emit signalDrawNode( num, nodeSize, nodeShape, nodeColor,
                    numColor, numSize, initVertexNumberDistance,
                    label,
                    labelColor, labelSize, initVertexLabelDistance,
                    p );
 
-    qDebug() << "Graph::vertexCreate() - vertex:" << num << "created. CALLING graphModifiedSet().";
+    qDebug() << "Graph::vertexCreate() - vertex:" << num << "created. Calling graphModifiedSet().";
     graphModifiedSet(GRAPH_CHANGED_VERTICES, signalMW);
-
-    qDebug() << "Graph::vertexCreate() - vertex:" << num << "created. RETURNING.";
 
     //draw new user-clicked nodes with the same color with that of the file loaded
     initVertexColor=nodeColor;
@@ -947,7 +945,7 @@ void Graph::vertexRemove(const long int &v1){
 
     graphModifiedSet(GRAPH_CHANGED_VERTICES);
 
-    emit eraseNode(v1);
+    emit signalRemoveNode(v1);
 }
 
 
@@ -1625,7 +1623,7 @@ void Graph::edgeCreate(const int &v1, const int &v2, const float &weight,
                       << "Emitting drawEdge signal to GW";
 
             edgeAdd ( v1, v2, weight, type, label, ( (weight==0) ? "blue" :  color  ) );
-            emit drawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), type,
+            emit signalDrawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), type,
                           drawArrows, bezier, initEdgeWeightNumbers);
         }
         else if ( edgeExists( v2, v1 ) )  {
@@ -1634,7 +1632,7 @@ void Graph::edgeCreate(const int &v1, const int &v2, const float &weight,
                    << "Emitting drawEdge to GW";
 
             edgeAdd ( v1, v2, weight, EDGE_RECIPROCATED , label, color);
-            emit drawEdge(v1, v2, weight, label, color, EDGE_RECIPROCATED,
+            emit signalDrawEdge(v1, v2, weight, label, color, EDGE_RECIPROCATED,
                           drawArrows, bezier, initEdgeWeightNumbers);
             m_undirected = false;
         }
@@ -1644,7 +1642,7 @@ void Graph::edgeCreate(const int &v1, const int &v2, const float &weight,
                     << "Emitting drawEdge to GW...";
 
             edgeAdd ( v1, v2, weight, EDGE_DIRECTED, label, ( (weight==0) ? "blue" :  color  )   );
-            emit drawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), EDGE_DIRECTED,
+            emit signalDrawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), EDGE_DIRECTED,
                           drawArrows, bezier, initEdgeWeightNumbers);
             m_undirected = false;
             m_symmetric=false;
@@ -1734,7 +1732,7 @@ void Graph::edgeAdd (const int &v1, const int &v2, const float &weight,
 
 /**
  * @brief Removes the directed arc v1 -> v2 or, if the graph is undirected, the edge v1 <-> v2
- * Emits eraseEdge to GW to delete the graphics item.
+ * Emits signalRemoveEdge to GW to delete the graphics item.
  * @param v1
  * @param v2
  * @param removeOpposite if true also removes the opposite edge
@@ -1742,8 +1740,8 @@ void Graph::edgeAdd (const int &v1, const int &v2, const float &weight,
 void Graph::edgeRemove (const long int &v1,
                         const long int &v2,
                         const bool &removeOpposite) {
-    qDebug ()<< "Graph::edgeRemove() - edge " << v1 << " vpos " << vpos[v1]
-                << " ->" << v2 << " to be removed from graph";
+    qDebug ()<< "Graph::edgeRemove() - edge" << v1 << "[" << vpos[v1]
+                << "] --> " << v2 << " to be removed. RemoveOpposite:" <<removeOpposite;
     m_graph [ vpos[v1] ]->edgeRemoveTo(v2);
     m_graph [ vpos[v2] ]->edgeRemoveFrom(v1);
 
@@ -1759,7 +1757,7 @@ void Graph::edgeRemove (const long int &v1,
         }
     }
 
-    emit signalEraseEdge(v1,v2, (graphUndirected() || removeOpposite ));
+    emit signalRemoveEdge(v1,v2, (graphUndirected() || removeOpposite ));
 
     graphModifiedSet(GRAPH_CHANGED_EDGES);
 }
@@ -1874,9 +1872,9 @@ void Graph::edgeClickedSet(const int &v1, const int &v2, const bool &openMenu) {
         emit signalEdgeClicked();
     }
     else {
-        qDebug()<< " Check if there is such an tie indeed";
+
         float weight = m_graph[ vpos[ m_clickedEdge.v1] ]->hasEdgeTo(m_clickedEdge.v2);
-        qDebug()<< " weight" << weight;
+        qDebug() << "Graph::edgeClickedSet() - clicked edge weight:"<< weight;
         int type=EDGE_DIRECTED;
         // Check if the opposite tie exists. If yes, this is a reciprocated tie
         if ( edgeExists(m_clickedEdge.v1,m_clickedEdge.v2, true)  ) {

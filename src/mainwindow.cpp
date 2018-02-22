@@ -4795,9 +4795,9 @@ void MainWindow::initSignalSlots() {
 
     connect(resetSlidersBtn, SIGNAL(clicked()), graphicsWidget, SLOT(reset()));
 
-
+    //
     // Signals between activeGraph and graphicsWidget
-
+    //
 
     connect( graphicsWidget, &GraphicsWidget::userSelectedItems,
                      activeGraph,&Graph::graphSelectionChanged);
@@ -4817,7 +4817,7 @@ void MainWindow::initSignalSlots() {
 
     connect( activeGraph,
              SIGNAL(
-                 drawNode( const int &, const int &, const QString &,
+                 signalDrawNode( const int &, const int &, const QString &,
                            const QString &,
                            const QString &, const int &, const int &,
                            const QString &,
@@ -4838,13 +4838,12 @@ void MainWindow::initSignalSlots() {
              ) ;
 
 
-
-    connect( activeGraph, &Graph::signalEraseEdge,
-                     graphicsWidget,&GraphicsWidget::eraseEdge);
-
+    connect( activeGraph, &Graph::signalRemoveEdge,
+                     graphicsWidget,&GraphicsWidget::removeEdge);
 
 
-    connect( activeGraph, SIGNAL( drawEdge( const int&, const int&, const float &,
+
+    connect( activeGraph, SIGNAL( signalDrawEdge( const int&, const int&, const float &,
                                              const QString &, const QString &,
                                              const int&, const bool&,
                                              const bool&,
@@ -4885,8 +4884,8 @@ void MainWindow::initSignalSlots() {
                                                 const long int &,
                                                 const QString &) ) );
 
-    connect( activeGraph, SIGNAL( eraseNode(long int) ),
-             graphicsWidget, SLOT(  eraseNode(long int) ) );
+    connect( activeGraph,&Graph::signalRemoveNode,
+             graphicsWidget,  &GraphicsWidget::removeNode  );
 
     connect( activeGraph, SIGNAL( setEdgeVisibility (int, int, int, bool) ),
              graphicsWidget, SLOT(  setEdgeVisibility (int, int, int, bool) ) );
@@ -4932,9 +4931,9 @@ void MainWindow::initSignalSlots() {
     connect( activeGraph, SIGNAL(signalRelationChangedToGW(int)),
              graphicsWidget, SLOT( relationSet(int))  ) ;
 
-
+    //
     //SIGNALS BETWEEN ACTIVEGRAPH AND MAINWINDOW
-
+    //
     connect( activeGraph, &Graph::signalSelectionChanged,
                      this, &MainWindow::slotEditSelectionChanged);
 
@@ -5015,9 +5014,9 @@ void MainWindow::initSignalSlots() {
               this, &MainWindow::slotProgressBoxDestroy);
 
 
-
+    //
     //signals and slots inside MainWindow
-
+    //
 
     connect( editRelationAddAct, SIGNAL(triggered()),
              this, SLOT(slotEditRelationAdd()) );
@@ -8231,7 +8230,7 @@ void MainWindow::slotEditNodeRemove() {
     if ( nodesSelected > 0) {
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
         int removeCounter = 0;
-        qDebug() << "MW::removeNode() multiple selected to remove";
+        qDebug() << "MW::slotEditNodeRemove() multiple selected to remove";
         foreach (int nodeNumber, activeGraph->graphSelectedVertices() ) {
                activeGraph->vertexRemove(nodeNumber);
                ++removeCounter ;
@@ -8263,9 +8262,9 @@ void MainWindow::slotEditNodeRemove() {
                 return;
             }
         }
-        qDebug ("MW: removing vertex with number %i from Graph", nodeNumber);
+        qDebug ("MW::slotEditNodeRemove() - removing vertex with number %i from Graph", nodeNumber);
         activeGraph->vertexRemove(nodeNumber);
-        qDebug("MW: removeNode() completed. Node %i removed completely.",nodeNumber);
+        qDebug("MW::slotEditNodeRemove() - Completed. Node %i removed completely.",nodeNumber);
         statusMessage( tr("Node removed completely. Ready. ") );
     }
 }
@@ -9028,7 +9027,7 @@ void MainWindow::slotEditNodeInfoStatusBar (const int &number,
 
 
 /**
- * @brief Called by GW::selectedEdge signal when the user clicks on an edge
+ * @brief Called by Graph::signalEdgeClicked when the user clicks on an edge
  * Displays information about the clicked edge on the statusbar
  * @param edge
  */
@@ -9127,8 +9126,7 @@ void MainWindow::slotEditEdgeOpenContextMenu(const QString &str) {
 
 
 /**
- * @brief MainWindow::slotEditEdgeAdd
- * Adds a new edge between two nodes specified by the user.
+ * @brief Adds a new edge between two nodes specified by the user.
  * Called when user clicks on the MW button/menu item "Add edge"
  */
 void MainWindow::slotEditEdgeAdd(){
@@ -9212,8 +9210,7 @@ void MainWindow::slotEditEdgeAdd(){
 
 
 /**
- * @brief MainWindow::slotEditEdgeCreate
- * helper to slotEditEdgeAdd() above
+ * @brief Helper to slotEditEdgeAdd() above
  * Also called from GW::userMiddleClicked() signal when user creates edges with middle-clicks
  * Calls Graph::edgeCreate method to add the new edge to the active Graph
   * @param source
@@ -9243,8 +9240,7 @@ void MainWindow::slotEditEdgeCreate (const int &source, const int &target,
 
 
 /**
- * @brief MainWindow::slotEditEdgeRemove
- * Erases the clicked edge. Otherwise asks the user to specify one edge.
+ * @brief Removes a clicked edge. Otherwise asks the user to specify one edge.
  * First deletes arc reference from object nodeVector then deletes arc item from scene
  */
 void MainWindow::slotEditEdgeRemove(){
@@ -9344,7 +9340,7 @@ void MainWindow::slotEditEdgeRemove(){
 
 
 /**
- * @brief MainWindow::slotEditEdgeLabel
+ * @brief Changes the label of an edge.
  */
 void MainWindow::slotEditEdgeLabel(){
     qDebug() << "MW::slotEditEdgeLabel()";
@@ -9418,8 +9414,7 @@ void MainWindow::slotEditEdgeLabel(){
 
 
 /**
- * @brief MainWindow::slotEditEdgeColorAll
- * It changes the color of all edges weighted below threshold to parameter color
+ * @brief Changes the color of all edges weighted below threshold to parameter color
  * If color is not valid, it opens a QColorDialog
  * If threshold == RAND_MAX it changes the color of all edges.
  * Called from Edit -> Edges menu option and Settings Dialog.
@@ -9464,8 +9459,7 @@ void MainWindow::slotEditEdgeColorAll(QColor color, const int threshold){
 
 
 /**
- * @brief MainWindow::slotEditEdgeColor
- * Changes the color of the clicked edge.
+ * @brief Changes the color of the clicked edge.
  * If no edge is clicked, then it asks the user to specify one.
  */
 void MainWindow::slotEditEdgeColor(){
@@ -9543,8 +9537,7 @@ void MainWindow::slotEditEdgeColor(){
 
 
 /**
- * @brief MainWindow::slotEditEdgeWeight
- * Changes the weight of the clicked edge.
+ * @brief Changes the weight of the clicked edge.
  * If no edge is clicked, asks the user to specify an Edge.
  */
 void MainWindow::slotEditEdgeWeight(){
@@ -9620,8 +9613,7 @@ void MainWindow::slotEditEdgeWeight(){
 
 
 /**
- * @brief MainWindow::slotEditEdgeSymmetrizeAll
- * Symmetrize the ties between every two connected nodes.
+ * @brief Symmetrizes the ties between every two connected nodes.
  * If there is an arc from Node A to Node B,
  * then a new arc from Node B to Node is created of the same weight.
  * Thus, all arcs become reciprocal and the network becomes symmetric
@@ -9708,8 +9700,7 @@ void MainWindow::slotEditEdgeSymmetrizeStrongTies(){
 }
 
 /**
- * @brief MainWindow::slotEditEdgeUndirectedAll
- * Tranforms all directed arcs to undirected edges.
+ * @brief Tranforms all directed arcs to undirected edges.
  * The result is a undirected and symmetric network
  */
 void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
@@ -9806,8 +9797,7 @@ void MainWindow::slotFilterNodes(){
 }
 
 /**
- * @brief MainWindow::slotEditFilterNodesIsolates
- *Calls Graph::vertexIsolatedAllToggle to toggle visibility of isolated vertices
+ * @brief Calls Graph::vertexIsolatedAllToggle to toggle visibility of isolated vertices
  */
 void MainWindow::slotEditFilterNodesIsolates(bool checked){
     Q_UNUSED(checked);
@@ -9821,11 +9811,11 @@ void MainWindow::slotEditFilterNodesIsolates(bool checked){
 }
 
 
+
 /**
-*	Shows a dialog from where the user may  
-*	filter edges according to their weight 
-*	All edges weighted more (or less) than the specified weight  will be disabled.
-*/ 
+ * @brief Shows a dialog from where the user may filter edges according to their weight
+ * All edges weighted more (or less) than the specified weight  will be disabled.
+ */
 void MainWindow::slotEditFilterEdgesByWeightDialog() {
     if ( !activeEdges()  )   {
         statusMessage(  QString(tr("Load a network file first. \nThen you may ask me to compute something!"))  );
@@ -9837,10 +9827,10 @@ void MainWindow::slotEditFilterEdgesByWeightDialog() {
 
 
 /**
- * @brief MainWindow::slotEditFilterEdgesUnilateral
- * @param checked
- * Calls Graph::edgeFilterUnilateral( bool). If bool==true, all unilateral
+ * @brief Calls Graph::edgeFilterUnilateral(bool). If bool==true, all unilateral
  * edges are filtered out.
+ * @param checked
+ *
  */
 void MainWindow::slotEditFilterEdgesUnilateral(bool checked) {
     Q_UNUSED(checked);
@@ -9997,8 +9987,7 @@ void MainWindow::slotLayoutKamadaKawai(){
 
 
 /**
- * @brief
- * Checks sender text() to find out who QMenu item was pressed
+ * @brief Checks sender text() to find out who QMenu item was pressed
  * calls slotLayoutRadialByProminenceIndex(QString)
  */
 void MainWindow::slotLayoutRadialByProminenceIndex(){

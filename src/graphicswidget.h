@@ -116,7 +116,7 @@ public slots:
                    const int &labelDistance,
                    const QPointF &p
                     );
-    void eraseNode(const long int &number);
+    void removeNode(const long int &number);
     void setNodeVisibility(long int, bool );	//Called from Graph via MW
     void nodeClicked(GraphicsNode *);
     void moveNode(const int &num, const qreal &x, const qreal &y);	//Called from Graph when creating random nets.
@@ -137,7 +137,8 @@ public slots:
     bool setNodeLabel(long int , QString );
     bool setNodeLabelDistance(const long int &, const int &distance=0);
 
-    void drawEdge(const int &source, const int &target,
+    void drawEdge(const int &source,
+                  const int &target,
                   const float &weight,
                   const QString &label="",
                   const QString &color="black",
@@ -145,14 +146,23 @@ public slots:
                   const bool &drawArrows=true,
                   const bool &bezier=false,
                   const bool &weightNumbers=false);
-    void eraseEdge(const long int &source, const long int &target, const bool &removeOpposite=false);
+
+    void removeEdge(const long int &source,
+                    const long int &target,
+                    const bool &removeOpposite=false);
+
     void setEdgeVisibility (int relation, int, int, bool);
+
     bool setEdgeDirectionType(const long int &,
                               const long int &,
                               const int &dirType=false);
+
     bool setEdgeWeight(const long int &, const long int &, const float &);
+
     void setEdgeLabel(const long int &, const long int&, const QString &);
+
     void setEdgeColor(const long int &, const long int&, const QString &);
+
     void edgeClicked(GraphicsEdge *, const bool &openMenu=false);
 
     void setEdgeOffsetFromNode(const long int &source,

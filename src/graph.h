@@ -323,7 +323,7 @@ signals:
                                 const int &selectedEdges);
 
     /** Signals to GraphicsWidget */
-    void drawNode( const int &num, const int &size, const QString &nodeShape,
+    void signalDrawNode( const int &num, const int &size, const QString &nodeShape,
                    const QString &nodeColor,
                    const QString &numberColor, const int &numSize,
                    const int &numDistance,
@@ -334,17 +334,21 @@ signals:
                     );
 
     //signal to GW to erase a node
-    void eraseNode (long int );
+    void signalRemoveNode (long int );
 
     //signal GW to draw an edge
-    void drawEdge ( const int &v1, const int &v2, const float &weight,
-                    const QString &label="",
-                    const QString &color="black",
-                    const int &type=0, const bool arrows=true,
-                    const bool &bezier=false,  const bool &weightNumbers=false);
+    void signalDrawEdge ( const int &v1,
+                          const int &v2,
+                          const float &weight,
+                          const QString &label="",
+                          const QString &color="black",
+                          const int &type=0,
+                          const bool &drawArrows=true,
+                          const bool &bezier=false,
+                          const bool &weightNumbers=false);
 
-    //signal to
-    void signalEraseEdge(const long int &v1, const long int &v2, const bool &removeOpposite);
+    //signal to GW
+    void signalRemoveEdge(const long int &v1, const long int &v2, const bool &removeOpposite);
 
     void setEdgeVisibility (int, int, int, bool);			// emitted from each GraphVertex
     void setVertexVisibility(long int, bool);		//notifies GW to disable a node
