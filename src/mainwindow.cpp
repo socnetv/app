@@ -4860,12 +4860,12 @@ void MainWindow::initSignalSlots() {
                                                 const long int &,
                                                 const float &) ) );
 
-    connect( activeGraph, SIGNAL( signalEdgeReciprocated(const long int &,
-                                                   const long int &,
-                                                   const bool &)),
-             graphicsWidget, SLOT( setEdgeReciprocated(const long int &,
-                                                const long int &,
-                                                const bool &) ) );
+    connect( activeGraph, SIGNAL( signalEdgeType(const long int &,
+                                                 const long int &,
+                                                 const int &)),
+             graphicsWidget, SLOT( setEdgeDirectionType(const long int &,
+                                                        const long int &,
+                                                        const int &) ) );
 
     connect( activeGraph, SIGNAL( setEdgeColor(const long int &,
                                                    const long int &,

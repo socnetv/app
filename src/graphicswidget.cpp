@@ -233,7 +233,6 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
            << " weight "<<weight
            << " label " << label
            << " type " << type
-
            << " - nodeHash reports "<< nodeHash.size()<<" nodes.";
 
     if (type != EDGE_RECIPROCATED ) {
@@ -252,9 +251,11 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
         edgesHash.insert(edgeName, edge);
     }
     else {
+        // if type is EDGE_RECIPROCATED, we just need to change the direction type
+        // of the existing opposite edge.
         edgeName = createEdgeName(target,source);
         qDebug("GW::drawEdge() - making existing edge between %i and %i reciprocal. Name: "+edgeName.toUtf8(), source, target );
-        edgesHash.value(edgeName)->setReciprocated();
+        edgesHash.value(edgeName)->setDirectionType(type);
 
     }
     //	qDebug()<< "Scene items now: "<< scene()->items().size() << " - GW items now: "<< items().size();
@@ -414,21 +415,32 @@ void GraphicsWidget::eraseNode(const long int &number){
  * @param targetNode
  */
 void GraphicsWidget::eraseEdge(const long int &source, const long int &target){
-    qDebug() << "GW::eraseEdge(): " << source << " -> " << target
+
+    edgeName = createEdgeName(source,target);
+
+    qDebug() << "GW::eraseEdge() - " << edgeName
              << " scene items: " << scene()->items().size()
              << " view items: " << items().size()
              << " edgesHash.count: " << edgesHash.count();
 
-    edgeName = createEdgeName(source,target);
-
     if ( edgesHash.contains(edgeName) ) {
         delete edgesHash.value(edgeName);
-        qDebug() << "GW::eraseEdge() - deleted "
+        qDebug() << "GW::eraseEdge() - Deleted " << edgeName
                  << " scene items: " << scene()->items().size()
                  << " view items: " << items().size()
                  << " edgesHash.count: " << edgesHash.count();
     }
     else {
+        //check opposite edge. If it exists, then transform it to directed
+        edgeName = createEdgeName(target, source);
+        qDebug() << "GW::eraseEdge() - Edge did not exist, checking opposite:"
+                 << edgeName;
+        if ( edgesHash.contains(edgeName) ) {
+            qDebug() << "GW::eraseEdge() - Opposite exists. Check if is reciprocated";
+            if ( edgesHash.value(edgeName)->directionType() == EDGE_RECIPROCATED ) {
+                edgesHash.value(edgeName)->setDirectionType(EDGE_DIRECTED);
+            }
+        }
         qDebug() << "GW::eraseEdge() - no such edge to delete";
     }
 
@@ -946,30 +958,31 @@ void GraphicsWidget::setEdgeColor(const long int &source,
 
 
 /**
- * @brief GraphicsWidget::setEdgeReciprocated
- * Makes an edge undirected
- * @param source
+ * @brief Changes the direction type of an existing edge
+  * @param source
  * @param target
- * @param weight
+ * @param directionType
  * @return
  */
-bool GraphicsWidget::setEdgeReciprocated(const long int &source,
-                                       const long int &target,
-                                       const bool &undirected){
-    qDebug() << "GW::setEdgeReciprocated() : " << source << "->" << target
-             << " undirected " << undirected;
+bool GraphicsWidget::setEdgeDirectionType(const long int &source,
+                                          const long int &target,
+                                          const int &dirType){
+    qDebug() << "GW::setEdgeDirectionType() : "
+             << source
+             << "->" << target
+             << "type" << dirType;
 
     edgeName = createEdgeName( source, target );
+    qDebug()<<"GW::setEdgeDirectionType() - checking edgesHash for:" << edgeName ;
 
-    qDebug()<<"GW::setEdgeReciprocated() - checking edgesHash for:" << edgeName ;
     if  ( edgesHash.contains (edgeName) ) {
-        qDebug()<<"GW::setEdgeReciprocated() - edge exists in edgesHash. "
+        qDebug()<<"GW::setEdgeDirectionType() - edge exists in edgesHash. "
                   << " Transforming it to reciprocated";
-        edgesHash.value(edgeName) -> setReciprocated(undirected);
+        edgesHash.value(edgeName) -> setDirectionType(dirType);
 
-        qDebug()<<"GW::setEdgeReciprocated() - removing opposite edge "
-               << target << " -> " << source ;
-        eraseEdge(target, source);
+//        qDebug()<<"GW::setEdgeDirectionType() - removing opposite edge "
+//               << target << " -> " << source ;
+//        eraseEdge(target, source);
 
         return true;
     }

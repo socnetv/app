@@ -894,7 +894,7 @@ void Graph::vertexRemove(long int Doomed){
         if  ( (*it)->hasEdgeTo(Doomed) != 0) {
             qDebug()<< "Graph::vertexRemove() - vertex " << (*it)->name()
                     << " has outbound Edge to "<< Doomed << ". Removing it.";
-            (*it)->edgeRemoveTo(Doomed) ;
+            (*it)->edgeRemoveTo(Doomed);
         }
         if (  (*it)->hasEdgeFrom(Doomed) != 0 ) {
             qDebug()<< "Graph::vertexRemove() - vertex " << (*it)->name()
@@ -1731,10 +1731,10 @@ void Graph::edgeAdd (const int &v1, const int &v2, const float &weight,
 
 
 /**
- * @brief Removes the edge (arc) between v1 and v2
+ * @brief Removes the directed arc v1 -> v2 or, if the graph is undirected, the edge v1 <-> v2
  * @param v1
  * @param v2
- * @param undirected if true it also removes the opposite edge
+ * @param removeOpposite if true also removes the opposite edge
  */
 void Graph::edgeRemove (const long int &v1,
                         const long int &v2,
@@ -1751,7 +1751,7 @@ void Graph::edgeRemove (const long int &v1,
         m_symmetric=true;
     }
     else {
-        if ( edgeExists(v2,v1) !=0) {
+        if ( edgeExists(v2,v1) !=0 ) {
             m_symmetric=false;
         }
     }
@@ -2367,22 +2367,31 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
     int weight;
 
     bool drawArrows = !graphUndirected();
-    int edgeType=graphUndirected()  ?  EDGE_UNDIRECTED : EDGE_DIRECTED;
+    int edgeType=graphUndirected()  ?  EDGE_UNDIRECTED : EDGE_RECIPROCATED;
 
     if (type == SUBGRAPH_CLIQUE) {
 
         for (int i=0; i < vList.size(); ++i ) {
             for (int j=i+1; j < vList.size(); ++j ) {
+
                 if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
-                    edgeCreate(vList.value(i),
-                               vList.value(j),
-                               1.0,
-                               initEdgeColor,
-                               edgeType,
-                               drawArrows);
+
+                    if ( (weight=edgeExists( vList.value(j), vList.value(i) ) ) ) {
+                        edgeTypeSet( vList.value(j), vList.value(i), weight, edgeType );
+                    }
+                    else {
+                        edgeCreate(vList.value(i),
+                                   vList.value(j),
+                                   1.0,
+                                   initEdgeColor,
+                                   EDGE_UNDIRECTED,
+                                   drawArrows);
+                        edgeTypeSet( vList.value(i), vList.value(j), weight, edgeType );
+                    }
+
                 }
                 else {
-                    edgeReciprocatedSet(vList.value(i), vList.value(j), weight,graphUndirected());
+                    edgeTypeSet( vList.value(i), vList.value(j), weight, edgeType );
                 }
             }
         }
@@ -2396,15 +2405,23 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
             if ( ! (weight=edgeExists( center, vList.value(j) ) ) ) {
                 if ( center == vList.value(j))
                      continue;
-                edgeCreate(center,
-                           vList.value(j),
-                           1.0,
-                           initEdgeColor,
-                           edgeType,
-                           drawArrows);
+
+                if ( (weight=edgeExists( vList.value(j), center ) ) ) {
+                    edgeTypeSet( vList.value(j), center, weight, edgeType );
+                }
+                else {
+                    edgeCreate(center,
+                               vList.value(j),
+                               1.0,
+                               initEdgeColor,
+                               EDGE_UNDIRECTED,
+                               drawArrows);
+                    edgeTypeSet( center, vList.value(j), weight, edgeType );
+                }
+
             }
             else {
-                edgeReciprocatedSet(center, vList.value(j), weight, graphUndirected());
+                edgeTypeSet( center, vList.value(j), weight, edgeType );
             }
 
         }
@@ -2414,15 +2431,24 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
         for (int i=0; i < vList.size(); ++i ) {
             j= ( i == vList.size()-1) ? 0:i+1;
             if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
-                edgeCreate(vList.value(i),
-                           vList.value(j),
-                           1.0,
-                           initEdgeColor,
-                           edgeType,
-                           drawArrows);
+
+                if ( (weight=edgeExists( vList.value(j), vList.value(i) ) ) ) {
+                    edgeTypeSet( vList.value(j), vList.value(i), weight, edgeType );
+                }
+                else {
+                    edgeCreate(vList.value(i),
+                               vList.value(j),
+                               1.0,
+                               initEdgeColor,
+                               EDGE_UNDIRECTED,
+                               drawArrows);
+                    edgeTypeSet( vList.value(i), vList.value(j), weight, edgeType );
+                }
+
+
             }
             else {
-                edgeReciprocatedSet(vList.value(i), vList.value(j), weight, graphUndirected());
+                edgeTypeSet( vList.value(i), vList.value(j), weight, edgeType );
             }
 
         }
@@ -2435,15 +2461,24 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
             if ( i == vList.size()-1 ) break;
             j= i+1;
             if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
-                edgeCreate(vList.value(i),
-                           vList.value(j),
-                           1.0,
-                           initEdgeColor,
-                           edgeType,
-                           drawArrows);
+
+                if ( (weight=edgeExists( vList.value(j), vList.value(i) ) ) ) {
+                    edgeTypeSet( vList.value(j), vList.value(i), weight, edgeType );
+                }
+                else {
+                    edgeCreate(vList.value(i),
+                               vList.value(j),
+                               1.0,
+                               initEdgeColor,
+                               EDGE_UNDIRECTED,
+                               drawArrows);
+                    edgeTypeSet( vList.value(i), vList.value(j), weight, edgeType );
+                }
+
+
             }
             else {
-                edgeReciprocatedSet(vList.value(i), vList.value(j), weight,graphUndirected());
+                edgeTypeSet( vList.value(i), vList.value(j), weight, edgeType );
             }
 
         }
@@ -3547,7 +3582,7 @@ void Graph::graphUndirectedSet(const bool &toggle, const bool &signalMW){
                      << " v1 " << v1
                      << " -> " << v2 << " = "
                      << " weight " << weight;
-            edgeReciprocatedSet(v1,v2, weight, true);
+            edgeTypeSet(v1,v2, weight, EDGE_UNDIRECTED);
             ++it1;
         }
     }
@@ -3573,32 +3608,49 @@ bool Graph::graphUndirected() {
 
 
 /**
- * @brief Tranforms an edge to reciprocated
+ * @brief Changes the direction type of an existing edge
+ * Mainly called from Graph::verticesCreateSubgraph()
+ * Also called from graphUndirectedSet
  * @param v1
  * @param v2
  * @param weight
  */
-void Graph::edgeReciprocatedSet(const long int &v1,
-                                const long int &v2,
-                                const float &weight,
-                                const bool &undirected) {
-    qDebug() << "Graph::edgeReciprocatedSet(): " << v1
-             << " -> " <<  v2  ;
+void Graph::edgeTypeSet(const long int &v1,
+                        const long int &v2,
+                        const float &weight,
+                        const int &dirType) {
 
-    float inverseWeight = edgeExists ( v2, v1 ) ;
+    qDebug() << "Graph::edgeTypeSet(): " << v1
+             << " -> " <<  v2  << "edgeType" << dirType;
 
-    if ( inverseWeight == 0 ) {
-        qDebug() << "Graph::edgeReciprocatedSet(): opposite  " << v1
-                 << " <- " <<  v2 << " does not exist - Add it to Graph." ;
-        edgeAdd(v2,v1, weight, EDGE_RECIPROCATED, "", initEdgeColor);
+    if (dirType!=EDGE_DIRECTED) {
+
+        // check for opposite edge
+        float inverseWeight = edgeExists ( v2, v1 ) ;
+
+        if ( inverseWeight == 0 ) {
+            // if the opposite edge does not exist, add it
+            qDebug() << "Graph::edgeTypeSet(): opposite  " << v1
+                     << " <- " <<  v2 << " does not exist - Add it to Graph." ;
+            // Note: Even if dirType=EDGE_UNDIRECTED we add the opposite edge as EDGE_RECIPROCATED
+            edgeAdd(v2,v1, weight, EDGE_RECIPROCATED, "", initEdgeColor);
+        }
+        else {
+            if ( dirType  == EDGE_UNDIRECTED ) {
+                // if the opposite edge does exist, equal edge weights
+                // TOFIX: how do we decide which of the two weights to keep?
+                qDebug() << "Graph::edgeTypeSet(): opposite  " << v1
+                         << " <- " <<  v2 << " exists - equaling weights." ;
+                if ( weight!= inverseWeight ) {
+                    edgeWeightSet(v2,v1,weight);
+                }
+            }
+            else {
+                // if dirType is EDGE_RECIPROCATED we don't need  to equalize weights
+            }
+        }
+        emit signalEdgeType( v1, v2, dirType );
     }
-    else {
-        qDebug() << "Graph::edgeReciprocatedSet(): opposite  " << v1
-                 << " <- " <<  v2 << " exists - Checking if edge weights not equal." ;
-        if (weight!= inverseWeight )
-            edgeWeightSet(v2,v1,weight);
-    }
-    emit signalEdgeReciprocated(v1, v2, undirected);
 
     //graphModifiedSet(GRAPH_CHANGED_EDGES);
     //m_undirected = true;

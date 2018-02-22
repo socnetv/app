@@ -46,9 +46,10 @@
 
 using namespace std;
 
-static const int EDGE_DIRECTED                 = 0;
+static const int EDGE_DIRECTED = 0;
 static const int EDGE_RECIPROCATED = 1;
-static const int EDGE_UNDIRECTED    = 2;
+static const int EDGE_UNDIRECTED = 2;
+
 
 static const int FILE_GRAPHML           = 1;  // .GRAPHML .XML
 static const int FILE_PAJEK             = 2;  // .PAJ .NET
@@ -354,9 +355,9 @@ signals:
     void setNodeLabelDistance(const long int &, const int &);
 
     void setEdgeWeight (const long int &v1, const long int &v2, const float &weight);
-    void signalEdgeReciprocated(const long int &v1,
-                                const long int &v2,
-                                const bool &undirected);
+    void signalEdgeType(const long int &v1,
+                        const long int &v2,
+                        const int &type);
     void setEdgeColor(const long int &v1,
                          const long int &v2,
                          const QString &color);
@@ -526,9 +527,10 @@ public:
     void edgeRemove (const long int &v1, const long int &v2,
                      const bool &removeOpposite=false);
     bool edgeSymmetric(const long &v1, const long &v2);
-    void edgeReciprocatedSet(const long int &v1, const long int &v2,
-                             const float &w,
-                             const bool &undirected=false);
+    void edgeTypeSet(const long int &v1,
+                     const long int &v2,
+                     const float &w,
+                     const int &dirType=EDGE_DIRECTED);
 
     void edgeWeightSet (const long int &v1, const long int &v2,
                         const float &w,

@@ -39,12 +39,15 @@
 #include "graphicsedgelabel.h"
 
 
-static const double Pi = 3.14159265;
-static double TwoPi = 2.0 * Pi;
 
 static const int EDGE_DIRECTED = 0;
 static const int EDGE_RECIPROCATED = 1;
 static const int EDGE_UNDIRECTED = 2;
+
+
+static const double Pi = 3.14159265;
+static double TwoPi = 2.0 * Pi;
+
 
 GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
              GraphicsNode *from,
@@ -74,9 +77,7 @@ GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
 
     m_drawArrows=drawArrows;        // controls if edge will have arrows or not
 
-    m_edgeType=type;
-
-    m_directed_first = false;
+    m_edgeDirType=type;
 
     m_minOffsetFromNode = 6;           // controls the minimum offset from source/target node center
 
@@ -99,7 +100,7 @@ GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
             << target->nodeNumber()
             <<" = " << m_weight
             <<" label " << m_label
-            <<" edgeType " << m_edgeType;
+            <<" edgeType " << m_edgeDirType;
 
     if (m_drawWeightNumber) {
         addWeightNumber();
@@ -354,18 +355,6 @@ void GraphicsEdge::adjust(){
     sourcePoint = line.p1() + edgeOffset ;
     targetPoint = line.p2() - edgeOffset ;
 
-//    if (m_edgeType == EDGE_RECIPROCATED ) {
-//        if (m_directed_first ) {
-//            sourcePoint -= QPointF(4,4);
-//            targetPoint -= QPointF(4,4);
-//        }
-//        else {
-//            sourcePoint += QPointF(4,4);
-//            targetPoint += QPointF(4,4);
-
-//        }
-
-//    }
 
     if (m_drawWeightNumber)
         weightNumber->setPos(
@@ -433,7 +422,7 @@ void GraphicsEdge::adjust(){
                                  << targetPoint
                                  );
 
-            if (m_edgeType == EDGE_UNDIRECTED || m_edgeType == EDGE_RECIPROCATED ) {
+            if (m_edgeDirType == EDGE_UNDIRECTED || m_edgeDirType == EDGE_RECIPROCATED ) {
     //            qDebug() << "**** GraphicsEdge::paint() This edge is SYMMETRIC! "
     //                     << " So, we need to create Arrow at src node as well";
                 QPointF srcArrowP1 = sourcePoint + QPointF(sin(angle +Pi / 3) * m_arrowSize,
@@ -496,41 +485,34 @@ QRectF GraphicsEdge::boundingRect() const {
 
 
 /**
- * @brief Transforms edge A -> B to reciprocated A <-> B.
- * This means actor A is linked to B and actor B is linked to A
- */
-void GraphicsEdge::setReciprocated(const bool &undirected){
-    qDebug()<< "GraphicsEdge::setReciprocated() - "
+ * @brief Changes the direction type of edge A -> B
+  */
+void GraphicsEdge::setDirectionType(const int &dirType){
+    qDebug()<< "GraphicsEdge::setDirectionType() - "
             << source->nodeNumber()
             << "->"
-            << target->nodeNumber();
+            << target->nodeNumber()
+            << "direction type"
+            << dirType;
     prepareGeometryChange();
-    m_edgeType = EDGE_RECIPROCATED;
-    m_directed_first= true;
-
-    if (undirected) {
-        m_edgeType = EDGE_UNDIRECTED;
+    m_edgeDirType = dirType;
+    m_drawArrows = true;
+    if (m_edgeDirType==EDGE_UNDIRECTED) {
         m_drawArrows = false;
     }
     adjust();
 }
 
 
-
-
-void GraphicsEdge::setUndirected(){
-    qDebug()<< "GraphicsEdge::setUndirected()";
-    prepareGeometryChange();
-    m_edgeType = EDGE_UNDIRECTED;
-    m_directed_first= false;
-    m_drawArrows = false;
-    adjust();
+/**
+ * @brief returns the direction type of this edge
+ * @return
+ */
+int GraphicsEdge::directionType() {
+    return m_edgeDirType ;
 }
 
 
-bool GraphicsEdge::isUndirected() {
-    return ( m_edgeType == EDGE_UNDIRECTED ) ? true:false;
-}
 
 
 void GraphicsEdge::setStyle( const Qt::PenStyle  &style ) {
@@ -569,11 +551,22 @@ QPen GraphicsEdge::pen() const {
 
 }
 
+
+/**
+ * @brief GraphicsEdge::setState
+ * @param state
+ */
 void GraphicsEdge::setState(const int &state) {
     //NOTE: DO NOT USE HERE: prepareGeometryChange()
     m_state=state;
 }
 
+
+/**
+ * @brief GraphicsEdge::paint
+ * @param painter
+ * @param option
+ */
 void GraphicsEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *){
     if (!source || !target)
         return;
@@ -608,9 +601,11 @@ void GraphicsEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 }
 
 
-/** 
-    Controls the width of the edge; is a function of edge weight
-*/
+
+/**
+ * @brief Returns the width of the edge as a function of edge weight
+ * @return
+ */
 float GraphicsEdge::width() const{
     if ( fabs(m_weight) > 1  )  {
         return 1+log(fabs(m_weight)) ;
@@ -637,6 +632,7 @@ void GraphicsEdge::highlight(const bool &flag) {
     }
 }
 
+
 /**
  * @brief Toggles edge highlighting
  * @param toggle
@@ -646,7 +642,11 @@ void GraphicsEdge::setHighlighting(const bool &toggle) {
 
 }
 
-/** handles the events of a click on an edge*/
+
+/**
+ * @brief handles the events of a click on an edge
+ * @param event
+ */
 void GraphicsEdge::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     qDebug() <<"GraphicsEdge::mousePressEvent()";
     QGraphicsItem::mousePressEvent(event);

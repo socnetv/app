@@ -51,6 +51,10 @@ static const int EDGE_STATE_REGULAR = 0;
 static const int EDGE_STATE_HIGHLIGHT = 1;
 static const int EDGE_STATE_HOVER = 2;
 
+
+
+
+
 class GraphicsEdge : public QObject, public QGraphicsItem {
     Q_OBJECT
     Q_INTERFACES (QGraphicsItem)
@@ -63,13 +67,18 @@ public:
          const bool &weightNumbers=false,
                  const bool &highlighting=true);
     ~GraphicsEdge();
+
     enum { Type = UserType + 2 };
     int type() const { return Type; }
+
     GraphicsNode *sourceNode() const;
     void setSourceNode(GraphicsNode *node);
 
     GraphicsNode *targetNode() const;
     void setTargetNode(GraphicsNode *node);
+
+    int sourceNodeNumber();
+    int targetNodeNumber();
 
     void setSourceNodeSize(const int & size);
     void setTargetNodeSize(const int & size);
@@ -77,9 +86,6 @@ public:
     void setMinimumOffsetFromNode(const int & offset);
 
     void removeRefs();
-
-    int sourceNodeNumber();
-    int targetNodeNumber();
 
     void setWeight( const float  &w) ;
     float weight() const;
@@ -95,9 +101,8 @@ public:
 
     void showArrows(const bool &);
 
-    void setUndirected();
-    bool isUndirected();
-    void setReciprocated(const bool &undirected=false);
+    void setDirectionType(const int &dirType=0);
+    int directionType();
 
     float width() const;
 
@@ -144,10 +149,10 @@ private:
 
     float m_weight;
     int tox1, tox2, toy1, toy2, size;
-    int m_edgeType;
+    int m_edgeDirType;
     double rad, theta, theta1, theta2;
     qreal angle, line_length, line_dx, line_dy;
-    bool m_Bezier, m_drawArrows, m_directed_first, m_drawWeightNumber;
+    bool m_Bezier, m_drawArrows, m_drawWeightNumber;
     bool m_drawLabel, m_hoverHighlighting;
 };
 
