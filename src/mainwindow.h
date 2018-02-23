@@ -658,14 +658,31 @@ private:
     float randomErdosEdgeProb;
     QString initFileCodec;
 
-    QLabel *rightPanelEdgesLabel, *rightPanelSelectedEdgesLabel, *rightPanelNetworkTypeLabel ;
-    QLabel *rightPanelClickedEdgeHeaderLabel;
-    QLCDNumber *rightPanelClickedNodeInDegreeLCD, *rightPanelClickedNodeOutDegreeLCD;
-    QLCDNumber *rightPanelClickedNodeLCD, *rightPanelClickedNodeClucofLCD;
-    QLCDNumber *rightPanelNodesLCD, *rightPanelEdgesLCD, *rightPanelDensityLCD;
-    QLCDNumber *rightPanelSelectedNodesLCD, *rightPanelSelectedEdgesLCD;
-    QLCDNumber *rightPanelClickedEdgeSourceLCD, *rightPanelClickedEdgeTargetLCD;
-    QLCDNumber *rightPanelClickedEdgeWeightLCD;
+    QLabel *rightPanelNetworkTypeLCD ;
+    QLabel *rightPanelEdgesLabel;
+
+    QLabel *rightPanelClickedNodeHeaderLabel;
+    QLabel *rightPanelNodesLCD;
+    QLabel *rightPanelEdgesLCD;
+    QLabel *rightPanelDensityLCD;
+
+    QLabel *rightPanelClickedNodeLCD;
+    QLabel *rightPanelClickedNodeInDegreeLCD;
+    QLabel *rightPanelClickedNodeOutDegreeLCD;
+    QLabel *rightPanelClickedNodeClucofLCD;
+
+    QLabel *rightPanelSelectedNodesLCD;
+    QLabel *rightPanelSelectedEdgesLCD;
+    QLabel *rightPanelSelectedEdgesLabel;
+
+
+    QLabel *rightPanelClickedEdgeNameLabel;
+    QLabel *rightPanelClickedEdgeNameLCD;
+    QLabel *rightPanelClickedEdgeWeightLabel;
+    QLabel *rightPanelClickedEdgeWeightLCD;
+    QLabel *rightPanelClickedEdgeReciprocalWeightLabel;
+    QLabel *rightPanelClickedEdgeReciprocalWeightLCD;
+
     QDateTime actualDateTime, actualDate, actualTime;
     QTime eTime;     //used  to time algorithms.
 

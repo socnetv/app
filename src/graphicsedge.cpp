@@ -643,13 +643,50 @@ void GraphicsEdge::setHighlighting(const bool &toggle) {
 }
 
 
+
+void GraphicsEdge::setClicked(const bool &toggle) {
+    qDebug()<<"GraphicsEdge::setClicked()";
+    if (!toggle) {
+        qDebug()<<"GraphicsEdge::setClicked() - restoring connected nodes";
+
+        //unselect them, restore their color
+        source->setSelected(false);
+        target->setSelected(false);
+        //restore their size
+        source->setSize(sourceOrigSize);
+        target->setSize(targetOrigSize);
+
+        qDebug()<<"GraphicsEdge::setClicked() - Restored source and target nodes";
+    }
+    else {
+        qDebug()<<"GraphicsEdge::setClicked() - making connected nodes larger";
+        // tell nodes to change their color
+        source->setSelected(true);
+        target->setSelected(true);
+
+        // save their original size
+        sourceOrigSize=source->size();
+        targetOrigSize=target->size();
+
+        //now, make them larger
+        source->setSize(2*sourceOrigSize-1);
+        target->setSize(2*targetOrigSize-1);
+
+        qDebug()<<"GraphicsEdge::setClicked() - Made connected nodes larger";
+
+    }
+
+
+}
+
 /**
  * @brief handles the events of a click on an edge
  * @param event
  */
-void GraphicsEdge::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    qDebug() <<"GraphicsEdge::mousePressEvent()";
-    QGraphicsItem::mousePressEvent(event);
+void GraphicsEdge::mousePressEvent(QGraphicsSceneMouseEvent *e) {
+    qDebug() << "GraphicsEdge::mousePressEvent() - click on an edge ";
+    //setClicked();
+    QGraphicsItem::mousePressEvent(e);
 }
 
 
@@ -657,6 +694,7 @@ void GraphicsEdge::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
 GraphicsEdge::~GraphicsEdge(){
     qDebug() << "GraphicsEdge::~GraphicsEdge() - self-destructing edge " << sourceNodeNumber()<< "->" << targetNodeNumber();
+
     removeRefs();
     if (m_drawWeightNumber)
         graphicsWidget->removeItem(weightNumber);

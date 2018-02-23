@@ -52,11 +52,8 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
 
         qDebug() << "GW::GraphicsWidget(*sc, *MW)";
 
-
         qRegisterMetaType<SelectedEdge>("SelectedEdge");
         qRegisterMetaType<QList<SelectedEdge> >();
-
-
 
         secondDoubleClick=false;
         transformationActive = false;
@@ -65,7 +62,7 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         m_currentScaleFactor = 1;
         m_currentRotationAngle = 0;
         markedNodeExist=false; //used in findNode()
-        clickedEdgeExists = false; //used in selecting and edge
+        clickedEdge=0;
 //        edgesHash.reserve(1000);
 //        nodeHash.reserve(1000);
 
@@ -86,8 +83,6 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
 
         connect ( scene() , &QGraphicsScene::selectionChanged,
                      this, &GraphicsWidget::getSelectedItems);
-
-
 
 
 
@@ -135,7 +130,7 @@ void GraphicsWidget::clear() {
     scene()->clear();
     m_curRelation=0;
     markedNodeExist=false;
-    clickedEdgeExists = false;
+    clickedEdge=0;
     firstNode=0;
     secondDoubleClick=false;
     qDebug() << "GW::clear() - finished clearing hashes";
@@ -301,7 +296,7 @@ void GraphicsWidget::startEdge(GraphicsNode *node){
  */
 void GraphicsWidget::nodeClicked(GraphicsNode *node){
     qDebug () << "GW::nodeClicked() - Emitting userClickedNode()";
-    if (clickedEdgeExists) edgeClicked(0);
+    if (clickedEdge) edgeClicked(0);
     emit userClickedNode(node->nodeNumber());
 }
 
@@ -316,64 +311,50 @@ void GraphicsWidget::nodeClicked(GraphicsNode *node){
  * @param edge
  */
 void GraphicsWidget::edgeClicked(GraphicsEdge *edge, const bool &openMenu){
+    qDebug() <<"### GW::edgeClicked()";
+    if (edge) {
+        if (clickedEdge) {
+            if (clickedEdge != edge) {
+                qDebug() <<"### GW::edgeClicked() - unmarking previously clicked edge";
+                clickedEdge->setClicked(false);
+                qDebug() <<"### GW::edgeClicked() - marking newly clicked edge";
+                clickedEdge=edge;
+                clickedEdge->setClicked(true);
 
+            }
+            else if (clickedEdge == edge && !openMenu){
+                clickedEdge->setClicked(false);
+            }
 
-    if (clickedEdgeExists ) {
-        if (!openMenu) {
-            qDebug() <<"GW::edgeClicked() - clicked edge exists. Unmarking marked edge and return.";
-            //unselect them, restore their color
-            markedEdgeSource->setSelected(false);
-            markedEdgeTarget->setSelected(false);
-            //restore their size
-            markedEdgeSource->setSize(markedEdgeSourceOrigSize);
-            markedEdgeTarget->setSize(markedEdgeTargetOrigSize);
-            clickedEdgeExists=false;
-        }
-
-        if (edge) {
-            qDebug() <<"GW::edgeClicked() -emitting userClickedEdge";
-
-            emit userClickedEdge(edge->sourceNode()->nodeNumber(),
-                                 edge->targetNode()->nodeNumber(),
-                                 openMenu);
         }
         else {
-            qDebug() <<"GW::edgeClicked() - No edge clicked. Returning";
+            qDebug() <<"### GW::edgeClicked() - no previously clicked edge";
+            qDebug() <<"### GW::edgeClicked() - setting new clicked edge";
+            clickedEdge=edge;
+            edge->setClicked(true);
         }
-        return;
-    }
-    if (!clickedEdgeExists && edge) {
-        qDebug() <<"GW::edgeClicked() - marking edge and emitting userClickedEdge()";
-        clickedEdgeExists=true;
 
-        markedEdgeSource=edge->sourceNode();
-        markedEdgeTarget=edge->targetNode();
-
-        // select nodes to change their color
-        markedEdgeSource->setSelected(true);
-        markedEdgeTarget->setSelected(true);
-
-        // save their original size
-        markedEdgeSourceOrigSize=markedEdgeSource->size();
-        markedEdgeTargetOrigSize=markedEdgeTarget->size();
-
-        //now, make them larger
-        markedEdgeSource->setSize(2*markedEdgeSourceOrigSize-1);
-        markedEdgeTarget->setSize(2*markedEdgeTargetOrigSize-1);
-        qDebug() <<"GW::edgeClicked() -emitting userClickedEdge";
+        qDebug() <<"### GW::edgeClicked() - emitting userClickedEdge() to MW";
         emit userClickedEdge(edge->sourceNode()->nodeNumber(),
                              edge->targetNode()->nodeNumber(),
                              openMenu);
 
     }
-    qDebug() <<"GW::edgeClicked() -emitting userClickedEdge";
-    emit userClickedEdge(0,0,openMenu);
+    else {
+        if (clickedEdge) {
+            qDebug() <<"### GW::edgeClicked() - with zero parameters. Clearing previously clicked edge";
+            clickedEdge->setClicked(false);
+        }
+
+        qDebug() <<"### GW::edgeClicked() - with zero parameters. Unsetting clickedEdge";
+        clickedEdge=0;
+        emit userClickedEdge(0,0,openMenu);
+
+    }
+
+
 
 }
-
-
-
-
 
 
 
@@ -521,10 +502,14 @@ void GraphicsWidget::removeItem( GraphicsNode *node){
  *
  */
 void GraphicsWidget::removeItem( GraphicsEdge * edge){
-    qDebug() << "GW::removeItem(edge)" ;
+    qDebug() << "GW::removeItem(edge) - calling edgeClicked(0)" ;
+    edgeClicked(0);
     edgeName = createEdgeName(edge->sourceNodeNumber(), edge->targetNodeNumber() ) ;
+    qDebug() << "GW::removeItem(edge) - removing edge from edges hash" ;
     edgesHash.remove(edgeName);
+    qDebug() << "GW::removeItem(edge) - removing edge scene" ;
     scene()->removeItem(edge);
+    qDebug() << "GW::removeItem(edge) - calling edge->deleteLater()" ;
     edge->deleteLater();
     qDebug() << "GW::removeItem(edge) - edge erased! "
              << " scene items now: " << scene()->items().size()
@@ -984,7 +969,6 @@ void GraphicsWidget::setEdgeColor(const long int &source,
         edgesHash.value(edgeName) -> setColor(color);
     }
 
-
 }
 
 
@@ -1030,8 +1014,6 @@ bool GraphicsWidget::setEdgeDirectionType(const long int &source,
 bool GraphicsWidget::setEdgeWeight(const long int &source,
                                    const long int &target,
                                    const float &weight){
-    qDebug() << "GW::setEdgeWeight() : " << source << "->" << target
-             << " = " << weight;
 
     edgeName = createEdgeName( source, target );
 
@@ -1040,6 +1022,20 @@ bool GraphicsWidget::setEdgeWeight(const long int &source,
         edgesHash.value(edgeName) -> setWeight(weight);
         return true;
     }
+
+    else {
+        //check opposite edge. If it exists, then transform it to directed
+        edgeName = createEdgeName(target, source);
+        qDebug() << "GW::setEdgeWeight() - Edge did not exist, checking for opposite:"
+                 << edgeName;
+        if ( edgesHash.contains(edgeName) ) {
+            qDebug() << "GW::setEdgeWeight() - Opposite edge exists. Check if it is reciprocated";
+            edgesHash.value(edgeName) -> setWeight(weight);
+            return true;
+        }
+        qDebug() << "GW::setEdgeWeight() - No such edge to delete";
+    }
+
     return false;
 
 }
@@ -1232,10 +1228,10 @@ void GraphicsWidget::clearGuides(){
 
 
 /**
- * @brief GraphicsWidget::selectAll
- * Called from MW. Clears any clickedNode info and sets a selection rect
+ * @brief Clears any clickedNode info and sets a selection rectangle
  * in the scene, which signals QGraphicsScene::selectionChanged signal to update
  * selectedNodes and selectedEdges.
+ * Called from MW.
  */
 void GraphicsWidget::selectAll(){
     QPainterPath path;
@@ -1249,10 +1245,10 @@ void GraphicsWidget::selectAll(){
 
 
 /**
- * @brief GraphicsWidget::selectNone
- * Called from MW. Clears any clickedNode info and any previous selection rect
+ * @brief Clears any clickedNode info and any previous selection rect
  * in the scene, which again signals selectionChanged() to update selectedNodes
  * and selectedEdges to zero.
+ * Called from MW.
  */
 void GraphicsWidget::selectNone(){
     qDebug() << "GraphicsWidget::selectNone()";
@@ -1275,9 +1271,6 @@ void GraphicsWidget::getSelectedItems() {
     qDebug() <<"GW::getSelectedItems() -"
             << "selectedNodes"<< selectedNodes()
             << "selectedEdges"<< selectedEdges();
-
-    if (clickedEdgeExists) {
-    }
 
     emit userSelectedItems(selectedNodes(), selectedEdges());
 
@@ -1426,7 +1419,7 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
             qDebug() << "GW::mousePressEvent() - Single click on edge at:"
                      << e->pos() << "~"<< p
                      << "SelectedItems:" << scene()->selectedItems().count();
-
+            emit userClickedNode(0);
             if ( e->button()==Qt::LeftButton ) {
                 qDebug() << "GW::mousePressEvent() - Left click on an edge ";
                 edgeClicked(edge);

@@ -4316,9 +4316,21 @@ void MainWindow::initPanels(){
 
     //create widgets for Properties/Statistics group/tab
 
-    rightPanelNetworkTypeLabel = new QLabel;
-    rightPanelNetworkTypeLabel-> setText ("Network Type: Undirected");
-    rightPanelNetworkTypeLabel->setStatusTip(tr("Directed data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
+
+
+
+    QLabel *rightPanelNetworkHeader = new QLabel;
+    QFont labelFont = rightPanelNetworkHeader ->font();
+    labelFont.setWeight(QFont::Bold);
+    rightPanelNetworkHeader-> setText (tr("Network"));
+    rightPanelNetworkHeader->setFont(labelFont);
+
+
+    QLabel *rightPanelNetworkTypeLabel = new QLabel;
+    rightPanelNetworkTypeLabel-> setText ("Type:");
+    rightPanelNetworkTypeLabel->setStatusTip(
+                tr("The type of the network: directed or undirected. "
+                   "Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
 
     rightPanelNetworkTypeLabel->setToolTip(tr("The loaded network, if any, is directed and \n"
                                 "any link you add between nodes will be a directed arc.\n"
@@ -4333,43 +4345,63 @@ void MainWindow::initPanels(){
                                 "toggle the option Edit -> Edges -> Undirected \n"
                                 "or press CTRL+E+U"));
 
-    QFont labelFont = rightPanelNetworkTypeLabel ->font();
-    labelFont.setWeight(QFont::Bold);
-    rightPanelNetworkTypeLabel ->setFont(labelFont);
-    rightPanelNetworkTypeLabel ->setFixedWidth(195);
+
+    rightPanelNetworkTypeLCD = new QLabel;
+    rightPanelNetworkTypeLCD->setAlignment(Qt::AlignRight);
+    rightPanelNetworkTypeLCD->setText (tr("Directed"));
+    rightPanelNetworkTypeLCD->setStatusTip(
+                tr("Directed data mode. "
+                   "Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
+
+    rightPanelNetworkTypeLCD->setToolTip(tr("The loaded network, if any, is directed and \n"
+                                "any link you add between nodes will be a directed arc.\n"
+                                "If you want to work with undirected edges and/or \n"
+                                "transform the loaded network (if any) to undirected \n"
+                                "toggle the option Edit -> Edges -> Undirected \n"
+                                "or press CTRL+E+U"));
+    rightPanelNetworkTypeLCD->setWhatsThis(tr("The loaded network, if any, is directed and \n"
+                                "any link you add between nodes will be a directed arc.\n"
+                                "If you want to work with undirected edges and/or \n"
+                                "transform the loaded network (if any) to undirected \n"
+                                "toggle the option Edit -> Edges -> Undirected \n"
+                                "or press CTRL+E+U"));
+
+    rightPanelNetworkTypeLCD ->setMinimumWidth(75);
+
 
 
     QLabel *rightPanelNodesLabel = new QLabel;
-    rightPanelNodesLabel->setText(tr("Total Nodes"));
-    rightPanelNodesLabel->setStatusTip(tr("The total number of actors (nodes or vertices) in the social network."));
+    rightPanelNodesLabel->setText(tr("Nodes:"));
+    rightPanelNodesLabel->setStatusTip(tr("The total number of actors (nodes or vertices) "
+                                          "in this social network."));
     rightPanelNodesLabel->setToolTip(tr("The total number of actors \n"
-                                        "(nodes or vertices) in the social network."));
+                                        "(nodes or vertices) in this social network."));
 
-    rightPanelNodesLCD=new QLCDNumber(7);
-    rightPanelNodesLCD->setSegmentStyle(QLCDNumber::Flat);
+    rightPanelNodesLCD=new QLabel;
+    rightPanelNodesLCD->setAlignment(Qt::AlignRight);
     rightPanelNodesLCD->setStatusTip(tr("The total number of actors (nodes or vertices) in the social network."));
     rightPanelNodesLCD->setToolTip(tr("This is the total number of actors \n"
                                       "(nodes or vertices) in the social network."));
 
     rightPanelEdgesLabel = new QLabel;
-    rightPanelEdgesLabel->setText(tr("Total Arcs"));
+    rightPanelEdgesLabel->setText(tr("Arcs:"));
     rightPanelEdgesLabel->setStatusTip(tr("The total number of edges (links between actors) in the social network."));
-    rightPanelEdgesLabel->setToolTip(tr("This is the total number of edges \n"
+    rightPanelEdgesLabel->setToolTip(tr("This is the total number of (directed) edges \n"
                                         "(links between actors) in the social network."));
 
-    rightPanelEdgesLCD=new QLCDNumber(7);
-    rightPanelEdgesLCD->setSegmentStyle(QLCDNumber::Flat);
+    rightPanelEdgesLCD=new QLabel;
+    rightPanelEdgesLCD->setAlignment(Qt::AlignRight);
     rightPanelEdgesLCD->setStatusTip(tr("The total number of directed edges in the social network."));
     rightPanelEdgesLCD->setToolTip(tr("This is the total number of directed edges \n"
                                         "(links between actors) in the social network."));
 
 
     QLabel *rightPanelDensityLabel = new QLabel;
-    rightPanelDensityLabel->setText(tr("Density"));
+    rightPanelDensityLabel->setText(tr("Density:"));
     rightPanelDensityLabel->setToolTip(tr("The density of a social network is the ratio of existing \n"
                                   "edges to all possible edges ( n*(n-1) ) between nodes."));
-    rightPanelDensityLCD=new QLCDNumber(7);
-    rightPanelDensityLCD->setSegmentStyle(QLCDNumber::Flat);
+    rightPanelDensityLCD=new QLabel;
+    rightPanelDensityLCD->setAlignment(Qt::AlignRight);
     rightPanelDensityLCD->setStatusTip(tr("The network density, the ratio of existing "
                                 "edges to all possible edges ( n*(n-1) ) between nodes."));
     rightPanelDensityLCD->setToolTip(tr("This is the density of the network. \n"
@@ -4385,20 +4417,24 @@ void MainWindow::initPanels(){
     rightPanelSelectedHeaderLabel->setFont(labelFont);
 
     QLabel *rightPanelSelectedNodesLabel = new QLabel;
-    rightPanelSelectedNodesLabel->setText(tr("Nodes"));
+    rightPanelSelectedNodesLabel->setText(tr("Nodes:"));
     rightPanelSelectedNodesLabel->setStatusTip(tr("The number of selected nodes (vertices)."));
     rightPanelSelectedNodesLabel->setToolTip(tr("The number of selected nodes (vertices)."));
-    rightPanelSelectedNodesLCD=new QLCDNumber(7);
-    rightPanelSelectedNodesLCD->setSegmentStyle(QLCDNumber::Flat);
+
+    rightPanelSelectedNodesLCD=new QLabel;
+    rightPanelSelectedNodesLCD->setAlignment(Qt::AlignRight);
+    rightPanelSelectedNodesLCD->setText("0");
     rightPanelSelectedNodesLCD->setStatusTip(tr("The number of selected nodes (vertices)."));
     rightPanelSelectedNodesLCD->setToolTip(tr("The number of selected nodes (vertices)."));
 
     rightPanelSelectedEdgesLabel = new QLabel;
-    rightPanelSelectedEdgesLabel->setText(tr("Arcs"));
+    rightPanelSelectedEdgesLabel->setText(tr("Arcs:"));
     rightPanelSelectedEdgesLabel->setStatusTip(tr("The number of selected edges."));
     rightPanelSelectedEdgesLabel->setToolTip(tr("The number of selected edges."));
-    rightPanelSelectedEdgesLCD=new QLCDNumber(7);
-    rightPanelSelectedEdgesLCD->setSegmentStyle(QLCDNumber::Flat);
+
+    rightPanelSelectedEdgesLCD=new QLabel;
+    rightPanelSelectedEdgesLCD->setText("0");
+    rightPanelSelectedEdgesLCD->setAlignment(Qt::AlignRight);
     rightPanelSelectedEdgesLCD->setStatusTip(tr("The number of selected edges."));
     rightPanelSelectedEdgesLCD->setToolTip(tr("The number of selected edges."));
 
@@ -4406,7 +4442,7 @@ void MainWindow::initPanels(){
     QLabel *verticalSpaceLabel2 = new QLabel;
     verticalSpaceLabel2-> setText ("");
 
-    QLabel *rightPanelClickedNodeHeaderLabel = new QLabel;
+    rightPanelClickedNodeHeaderLabel = new QLabel;
     rightPanelClickedNodeHeaderLabel-> setText (tr("Clicked Node"));
     rightPanelClickedNodeHeaderLabel->setFont(labelFont);
 
@@ -4414,8 +4450,8 @@ void MainWindow::initPanels(){
     rightPanelClickedNodeLabel -> setText (tr("Number:"));
     rightPanelClickedNodeLabel -> setToolTip (tr("The node number of the last clicked node."));
     rightPanelClickedNodeLabel -> setStatusTip( tr("The node number of the last clicked node. Zero means no node clicked."));
-    rightPanelClickedNodeLCD =new QLCDNumber(5);
-    rightPanelClickedNodeLCD ->setSegmentStyle(QLCDNumber::Flat);
+    rightPanelClickedNodeLCD = new QLabel;
+    rightPanelClickedNodeLCD -> setAlignment(Qt::AlignRight);
     rightPanelClickedNodeLCD -> setToolTip (tr("This is the node number of the last clicked node. \n"
                                                "Becomes zero when you click on something other than a node."));
     rightPanelClickedNodeLCD -> setStatusTip( tr("The node number of the last clicked node. Zero if you clicked something else."));
@@ -4424,8 +4460,8 @@ void MainWindow::initPanels(){
     rightPanelClickedNodeInDegreeLabel -> setText (tr("In-Degree:"));
     rightPanelClickedNodeInDegreeLabel -> setToolTip (tr("The inDegree of a node is the sum of all inbound edge weights."));
     rightPanelClickedNodeInDegreeLabel -> setStatusTip (tr("The inDegree of a node is the sum of all inbound edge weights."));
-    rightPanelClickedNodeInDegreeLCD=new QLCDNumber(5);
-    rightPanelClickedNodeInDegreeLCD -> setSegmentStyle(QLCDNumber::Flat);
+    rightPanelClickedNodeInDegreeLCD = new QLabel;
+    rightPanelClickedNodeInDegreeLCD -> setAlignment(Qt::AlignRight);
     rightPanelClickedNodeInDegreeLCD -> setStatusTip (tr("The sum of all inbound edge weights of the last clicked node. "
                                                        "Zero if you clicked something else."));
     rightPanelClickedNodeInDegreeLCD -> setToolTip (tr("This is the sum of all inbound edge weights of last clicked node. \n"
@@ -4435,8 +4471,8 @@ void MainWindow::initPanels(){
     rightPanelClickedNodeOutDegreeLabel -> setText (tr("Out-Degree:"));
     rightPanelClickedNodeOutDegreeLabel -> setToolTip (tr("The outDegree of a node is the sum of all outbound edge weights."));
     rightPanelClickedNodeOutDegreeLabel -> setStatusTip (tr("The outDegree of a node is the sum of all outbound edge weights."));
-    rightPanelClickedNodeOutDegreeLCD=new QLCDNumber(5);
-    rightPanelClickedNodeOutDegreeLCD -> setSegmentStyle(QLCDNumber::Flat);
+    rightPanelClickedNodeOutDegreeLCD=new QLabel;
+    rightPanelClickedNodeOutDegreeLCD -> setAlignment(Qt::AlignRight);
     rightPanelClickedNodeOutDegreeLCD -> setStatusTip (tr("The sum of all outbound edge weights of the last clicked node. "
                                                           "Zero if you clicked something else."));
     rightPanelClickedNodeOutDegreeLCD -> setToolTip (tr("This is the sum of all outbound edge weights of the last clicked node. \n"
@@ -4464,8 +4500,8 @@ void MainWindow::initPanels(){
                    "This value is automatically calculated only if vertices < 500.\n"
                    "If your network is larger than 500 vertices, compute CluCof "
                    "from the menu Analysis > Clustering Coefficient "));
-    rightPanelClickedNodeClucofLCD = new QLCDNumber(5);
-    rightPanelClickedNodeClucofLCD -> setSegmentStyle(QLCDNumber::Flat);
+    rightPanelClickedNodeClucofLCD = new QLabel;
+    rightPanelClickedNodeClucofLCD -> setAlignment(Qt::AlignRight);
     rightPanelClickedNodeClucofLCD -> setStatusTip( tr("The Clustering Coefficient of the last clicked node. "
                                                        "Zero when you click on something else."));
     rightPanelClickedNodeClucofLCD -> setWhatsThis(
@@ -4495,85 +4531,92 @@ void MainWindow::initPanels(){
     QLabel *verticalSpaceLabel3 = new QLabel;
     verticalSpaceLabel3-> setText ("");
 
-    rightPanelClickedEdgeHeaderLabel = new QLabel;
+    QLabel * rightPanelClickedEdgeHeaderLabel = new QLabel;
     rightPanelClickedEdgeHeaderLabel-> setText (tr("Clicked Edge"));
     rightPanelClickedEdgeHeaderLabel->setFont(labelFont);
 
-    QLabel *rightPanelClickedEdgeSourceLabel = new QLabel;
-    rightPanelClickedEdgeSourceLabel -> setText (tr("Edge source:"));
-    rightPanelClickedEdgeSourceLabel -> setToolTip (tr("The number of the last clicked edge source node."));
-    rightPanelClickedEdgeSourceLCD =new QLCDNumber(5);
-    rightPanelClickedEdgeSourceLCD ->setSegmentStyle(QLCDNumber::Flat);
-    rightPanelClickedEdgeSourceLCD -> setToolTip (tr("This is the node number of the last clicked edge source node. \n"
+    rightPanelClickedEdgeNameLabel = new QLabel;
+    rightPanelClickedEdgeNameLabel -> setText (tr("Name:"));
+    rightPanelClickedEdgeNameLabel -> setToolTip (tr("The name of the last clicked edge."));
+    rightPanelClickedEdgeNameLCD = new QLabel;
+    rightPanelClickedEdgeNameLCD -> setAlignment(Qt::AlignRight);
+    rightPanelClickedEdgeNameLCD -> setToolTip (tr("This is the name of the last clicked edge. \n"
                                                      "Becomes zero when you click on somethingto other than an edge"));
-    rightPanelClickedEdgeSourceLCD -> setStatusTip (tr("The node number of the last clicked edge source node."
+    rightPanelClickedEdgeNameLCD -> setStatusTip (tr("The name of the last clicked edge."
                                                        "Zero when you click on something else."));
-    QLabel *rightPanelClickedEdgeTargetLabel = new QLabel;
-    rightPanelClickedEdgeTargetLabel -> setText (tr("Edge target:"));
-    rightPanelClickedEdgeTargetLabel -> setToolTip (tr("The number of the target node."));
-    rightPanelClickedEdgeTargetLCD =new QLCDNumber(5);
-    rightPanelClickedEdgeTargetLCD ->setSegmentStyle(QLCDNumber::Flat);
-    rightPanelClickedEdgeTargetLCD -> setToolTip (tr("This is the node number of the last clicked edge target node. \n"
-                                                     "Becomes zero when you click on something other than an edge"));
-    rightPanelClickedEdgeTargetLCD -> setStatusTip (tr("The node number of the last clicked edge target node."
-                                                       "Zero when you click on something else."));
-    QLabel *rightPanelClickedEdgeWeightLabel = new QLabel;
-    rightPanelClickedEdgeWeightLabel -> setText (tr("Edge weight:"));
+
+
+    rightPanelClickedEdgeWeightLabel = new QLabel;
+    rightPanelClickedEdgeWeightLabel -> setText (tr("Weight:"));
     rightPanelClickedEdgeWeightLabel -> setToolTip (tr("The weight of the clicked edge."));
-    rightPanelClickedEdgeWeightLCD =new QLCDNumber(5);
-    rightPanelClickedEdgeWeightLCD ->setSegmentStyle(QLCDNumber::Flat);
+    rightPanelClickedEdgeWeightLCD =new QLabel;
+    rightPanelClickedEdgeWeightLCD -> setAlignment(Qt::AlignRight);
     rightPanelClickedEdgeWeightLCD -> setToolTip (tr("This is the weight of the last clicked edge. \n"
                                                        "Becomes zero when you click on something other than an edge"));
     rightPanelClickedEdgeWeightLCD -> setStatusTip (tr("The weight of the last clicked edge. "
                                                          "Zero when you click on something else."));
+
+
+    rightPanelClickedEdgeReciprocalWeightLabel = new QLabel;
+    rightPanelClickedEdgeReciprocalWeightLabel -> setText (tr(""));
+    rightPanelClickedEdgeReciprocalWeightLabel -> setToolTip (tr("The weight of the reciprocal edge."));
+    rightPanelClickedEdgeReciprocalWeightLCD =new QLabel;
+    rightPanelClickedEdgeReciprocalWeightLCD -> setAlignment(Qt::AlignRight);
+    rightPanelClickedEdgeReciprocalWeightLCD -> setToolTip (tr("This is the reciprocal weight of the last clicked reciprocated edge. \n"
+                                                                   "Becomes zero when you click on something other than an edge"));
+    rightPanelClickedEdgeReciprocalWeightLCD -> setStatusTip (tr("The reciprocal weight of the last clicked reciprocated edge. \n"
+                                                                 "Becomes zero when you click on something other than an edge"));
+
 
     //create a grid layout
     QGridLayout *propertiesGrid = new QGridLayout();
     propertiesGrid -> setColumnMinimumWidth(0, 10);
     propertiesGrid -> setColumnMinimumWidth(1, 10);
 
-    propertiesGrid -> addWidget(rightPanelNetworkTypeLabel , 0,0);
-    propertiesGrid -> addWidget(rightPanelNodesLabel, 1,0);
-    propertiesGrid -> addWidget(rightPanelNodesLCD,1,1);
-    propertiesGrid -> addWidget(rightPanelEdgesLabel, 2,0);
-    propertiesGrid -> addWidget(rightPanelEdgesLCD,2,1);
-    propertiesGrid -> addWidget(rightPanelDensityLabel, 3,0);
-    propertiesGrid -> addWidget(rightPanelDensityLCD,3,1);
+    propertiesGrid -> addWidget(rightPanelNetworkHeader , 0,0);
+    propertiesGrid -> addWidget(rightPanelNetworkTypeLabel , 1,0);
+    propertiesGrid -> addWidget(rightPanelNetworkTypeLCD , 1,1);
+    propertiesGrid -> addWidget(rightPanelNodesLabel, 2,0);
+    propertiesGrid -> addWidget(rightPanelNodesLCD,2,1);
+    propertiesGrid -> addWidget(rightPanelEdgesLabel, 3,0);
+    propertiesGrid -> addWidget(rightPanelEdgesLCD,3,1);
+    propertiesGrid -> addWidget(rightPanelDensityLabel, 4,0);
+    propertiesGrid -> addWidget(rightPanelDensityLCD,4,1);
 
-    propertiesGrid -> addWidget(verticalSpaceLabel1, 4,0);
+    propertiesGrid -> addWidget(verticalSpaceLabel1, 5,0);
 
-    propertiesGrid -> addWidget(rightPanelSelectedHeaderLabel, 5,0,1,2);
-    propertiesGrid -> addWidget(rightPanelSelectedNodesLabel , 6,0);
-    propertiesGrid -> addWidget(rightPanelSelectedNodesLCD ,6,1);
-    propertiesGrid -> addWidget(rightPanelSelectedEdgesLabel, 7,0);
-    propertiesGrid -> addWidget(rightPanelSelectedEdgesLCD, 7,1);
+    propertiesGrid -> addWidget(rightPanelSelectedHeaderLabel, 6,0,1,2);
+    propertiesGrid -> addWidget(rightPanelSelectedNodesLabel , 7,0);
+    propertiesGrid -> addWidget(rightPanelSelectedNodesLCD ,7,1);
+    propertiesGrid -> addWidget(rightPanelSelectedEdgesLabel, 8,0);
+    propertiesGrid -> addWidget(rightPanelSelectedEdgesLCD, 8,1);
 
-    propertiesGrid -> addWidget(verticalSpaceLabel2, 8,0);
-    propertiesGrid -> addWidget(rightPanelClickedNodeHeaderLabel, 9,0,1,2);
-    propertiesGrid -> addWidget(rightPanelClickedNodeLabel , 10,0);
-    propertiesGrid -> addWidget(rightPanelClickedNodeLCD ,10,1);
-    propertiesGrid -> addWidget(rightPanelClickedNodeInDegreeLabel, 11,0);
-    propertiesGrid -> addWidget(rightPanelClickedNodeInDegreeLCD,11,1);
-    propertiesGrid -> addWidget(rightPanelClickedNodeOutDegreeLabel, 12,0);
-    propertiesGrid -> addWidget(rightPanelClickedNodeOutDegreeLCD,12,1);
-    propertiesGrid -> addWidget(rightPanelClickedNodeClucofLabel, 13,0);
-    propertiesGrid -> addWidget(rightPanelClickedNodeClucofLCD,13,1);
+    propertiesGrid -> addWidget(verticalSpaceLabel2, 9,0);
+    propertiesGrid -> addWidget(rightPanelClickedNodeHeaderLabel, 10,0,1,2);
+    propertiesGrid -> addWidget(rightPanelClickedNodeLabel , 11,0);
+    propertiesGrid -> addWidget(rightPanelClickedNodeLCD ,11,1);
+    propertiesGrid -> addWidget(rightPanelClickedNodeInDegreeLabel, 12,0);
+    propertiesGrid -> addWidget(rightPanelClickedNodeInDegreeLCD,12,1);
+    propertiesGrid -> addWidget(rightPanelClickedNodeOutDegreeLabel, 13,0);
+    propertiesGrid -> addWidget(rightPanelClickedNodeOutDegreeLCD,13,1);
+    propertiesGrid -> addWidget(rightPanelClickedNodeClucofLabel, 14,0);
+    propertiesGrid -> addWidget(rightPanelClickedNodeClucofLCD,14,1);
 
     propertiesGrid -> addWidget(verticalSpaceLabel3, 15,0);
     propertiesGrid -> addWidget(rightPanelClickedEdgeHeaderLabel, 16,0,1,2);
-    propertiesGrid -> addWidget(rightPanelClickedEdgeSourceLabel , 17,0);
-    propertiesGrid -> addWidget(rightPanelClickedEdgeSourceLCD ,17,1);
-    propertiesGrid -> addWidget(rightPanelClickedEdgeTargetLabel , 18,0);
-    propertiesGrid -> addWidget(rightPanelClickedEdgeTargetLCD ,18,1);
-    propertiesGrid -> addWidget(rightPanelClickedEdgeWeightLabel , 19,0);
-    propertiesGrid -> addWidget(rightPanelClickedEdgeWeightLCD ,19,1);
+    propertiesGrid -> addWidget(rightPanelClickedEdgeNameLabel , 17,0);
+    propertiesGrid -> addWidget(rightPanelClickedEdgeNameLCD ,17,1);
+    propertiesGrid -> addWidget(rightPanelClickedEdgeWeightLabel , 18,0);
+    propertiesGrid -> addWidget(rightPanelClickedEdgeWeightLCD ,18,1);
+    propertiesGrid -> addWidget(rightPanelClickedEdgeReciprocalWeightLabel , 19,0);
+    propertiesGrid -> addWidget(rightPanelClickedEdgeReciprocalWeightLCD ,19,1);
 
 
     propertiesGrid -> setRowStretch(20,1);   //make an invisible row stretch to rest of height
 
     //create a panel with title
     rightPanel = new QGroupBox(tr("Statistics Panel"));
-    rightPanel->setMaximumWidth(210);
+    rightPanel->setMaximumWidth(180);
     rightPanel -> setLayout (propertiesGrid);
 
 
@@ -5174,13 +5217,13 @@ void MainWindow::initApp(){
     /** Clear LCDs **/
     slotNetworkChanged(0, 0, 0, 0, 0);
 
-    rightPanelClickedNodeInDegreeLCD->display(0);
-    rightPanelClickedNodeOutDegreeLCD->display(0);
-    rightPanelClickedNodeClucofLCD->display(0);
-    rightPanelClickedNodeLCD->display(0);
-    rightPanelClickedEdgeSourceLCD->display(0);
-    rightPanelClickedEdgeTargetLCD->display(0);
-    rightPanelClickedEdgeWeightLCD->display(0);
+    rightPanelClickedNodeInDegreeLCD->setText("-");
+    rightPanelClickedNodeOutDegreeLCD->setText("-");
+    rightPanelClickedNodeClucofLCD->setText("-");
+    rightPanelClickedNodeLCD->setText("-");
+    rightPanelClickedEdgeNameLCD->setText("-");
+    rightPanelClickedEdgeWeightLCD->setText("-");
+    rightPanelClickedEdgeReciprocalWeightLCD->setText("");
 
     /** Clear toolbox and menu checkboxes **/
     toolBoxEditEdgeSymmetrizeSelect->setCurrentIndex(0);
@@ -7943,18 +7986,20 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
         networkSave->setIcon(QIcon(":/images/save.png"));
         networkSave->setEnabled(true);
     }
-    rightPanelNodesLCD->display(vertices);
+
+    rightPanelNodesLCD->setText (QString::number(vertices));
     if ( undirected ) {
+
         rightPanelEdgesLCD->setStatusTip(tr("Shows the total number of undirected edges in the network."));
         rightPanelEdgesLCD->setToolTip(tr("The total number of undirected edges in the network."));
-        rightPanelNetworkTypeLabel->setStatusTip(tr("Undirected data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
-        rightPanelNetworkTypeLabel->setToolTip(tr("The loaded network, if any, is undirected and \n"
+        rightPanelNetworkTypeLCD->setStatusTip(tr("Undirected data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
+        rightPanelNetworkTypeLCD->setToolTip(tr("The loaded network, if any, is undirected and \n"
                                     "any edge you add between nodes will be undirected.\n"
                                     "If you want to work with directed edges and/or \n"
                                     "transform the loaded network (if any) to directed \n"
                                     "disable the option Edit -> Edges -> Undirected \n"
                                     "or press CTRL+E+U"));
-        rightPanelNetworkTypeLabel->setWhatsThis(tr("The loaded network, if any, is undirected and \n"
+        rightPanelNetworkTypeLCD->setWhatsThis(tr("The loaded network, if any, is undirected and \n"
                                     "any edge you add between nodes will be undirected.\n"
                                     "If you want to work with directed edges and/or \n"
                                     "transform the loaded network (if any) to directed \n"
@@ -7965,38 +8010,47 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
         if (toolBoxEditEdgeModeSelect->currentIndex()==0) {
             toolBoxEditEdgeModeSelect->setCurrentIndex(1);
         }
-        rightPanelNetworkTypeLabel-> setText ("Network Type: Undirected");
-        rightPanelEdgesLabel->setText(tr("Total Edges"));
-        rightPanelSelectedEdgesLabel->setText( tr("Edges") );
+        rightPanelNetworkTypeLCD-> setText ("Undirected");
+
+        rightPanelEdgesLabel->setText(tr("Edges:"));
+        rightPanelEdgesLabel->setStatusTip(
+                    tr("Shows the total number of undirected edges in the network.")
+                    );
+        rightPanelEdgesLabel->setToolTip(tr("The total number of undirected edges in the network."));
+
+        rightPanelSelectedEdgesLabel->setText( tr("Edges:"));
         editEdgeUndirectedAllAct->setChecked(true);
     }
     else {
         rightPanelEdgesLCD->setStatusTip(tr("Shows the total number of directed edges in the network."));
         rightPanelEdgesLCD->setToolTip(tr("The total number of directed edges in the network."));
-        rightPanelNetworkTypeLabel->setStatusTip(tr("Directed data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
-        rightPanelNetworkTypeLabel->setToolTip(tr("The loaded network, if any, is directed and \n"
+        rightPanelNetworkTypeLCD->setStatusTip(tr("Directed data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
+        rightPanelNetworkTypeLCD->setToolTip(tr("The loaded network, if any, is directed and \n"
                                     "any link you add between nodes will be a directed arc.\n"
                                     "If you want to work with undirected edges and/or \n"
                                     "transform the loaded network (if any) to undirected \n"
                                     "enable the option Edit -> Edges -> Undirected \n"
                                     "or press CTRL+E+U"));
-        rightPanelNetworkTypeLabel->setWhatsThis(tr("The loaded network, if any, is directed and \n"
+        rightPanelNetworkTypeLCD->setWhatsThis(tr("The loaded network, if any, is directed and \n"
                                     "any link you add between nodes will be a directed arc.\n"
                                     "If you want to work with undirected edges and/or \n"
                                     "transform the loaded network (if any) to undirected \n"
                                     "enable the option Edit -> Edges -> Undirected \n"
                                     "or press CTRL+E+U"));
 
-        rightPanelNetworkTypeLabel-> setText ("Network Type: Directed");
+        rightPanelNetworkTypeLCD-> setText ("Directed");
         if (toolBoxEditEdgeModeSelect->currentIndex()==1) {
             toolBoxEditEdgeModeSelect->setCurrentIndex(0);
         }
-        rightPanelEdgesLabel->setText(tr("Total Arcs"));
-        rightPanelSelectedEdgesLabel->setText( tr("Arcs")  );
+        rightPanelEdgesLabel->setText(tr("Arcs:"));
+        rightPanelEdgesLabel->setStatusTip(tr("Shows the total number of directed edges (arcs) in the network."));
+        rightPanelEdgesLabel->setToolTip(tr("The total number of directed edges (arcs) in the network."));
+
+        rightPanelSelectedEdgesLabel->setText( tr("Arcs:")  );
         editEdgeUndirectedAllAct->setChecked(false);
     }
-    rightPanelEdgesLCD->display(edges);
-    rightPanelDensityLCD->display( density );
+    rightPanelEdgesLCD->setText(QString::number(edges));
+    rightPanelDensityLCD->setText(QString::number(density ));
 
     qDebug()<<"MW::slotNetworkChanged() - finished updating mainwindow !";
 }
@@ -8083,13 +8137,13 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
  */
 void MainWindow::slotEditClickOnEmptySpace(const QPointF &p) {
     qDebug() << "MW::slotEditClickOnEmptySpace()";
-    rightPanelClickedNodeLCD->display (0);
-    rightPanelClickedNodeInDegreeLCD->display (0);
-    rightPanelClickedNodeOutDegreeLCD->display (0);
-    rightPanelClickedNodeClucofLCD->display(0);
+    rightPanelClickedNodeLCD->setText ("0");
+    rightPanelClickedNodeInDegreeLCD->setText ("0");
+    rightPanelClickedNodeOutDegreeLCD->setText("0");
+    rightPanelClickedNodeClucofLCD->setText("0");
     activeGraph->vertexClickedSet(0);
     activeGraph->edgeClickedSet(0,0);
-    statusMessage( tr("Position (%1,%2): Nothing here. Cleared any selection. Double-click to create a new node." )
+    statusMessage( tr("Position (%1,%2): Double-click to create a new node." )
                    .arg(p.x())
                    .arg(p.y())  );
 }
@@ -8948,8 +9002,8 @@ void MainWindow::slotEditNodeOpenContextMenu() {
  */
 void MainWindow::slotEditSelectionChanged(const int &selNodes, const int &selEdges) {
     qDebug()<< "MW::slotEditSelectionChanged()";
-    rightPanelSelectedNodesLCD->display(selNodes);
-    rightPanelSelectedEdgesLCD->display(selEdges);
+    rightPanelSelectedNodesLCD->setText(QString::number(selNodes));
+    rightPanelSelectedEdgesLCD->setText(QString::number(selEdges));
 
     if (selNodes > 1 ){
         editNodeRemoveAct->setText(tr("Remove ")
@@ -8985,10 +9039,12 @@ void MainWindow::slotEditSelectionChanged(const int &selNodes, const int &selEdg
 
     }
 
-    statusMessage(  tr("Selected %1 nodes and %2 edges")
-                     .arg( selNodes )
-                     .arg( selEdges )
-                     );
+
+    // DO NOT post a message on the status bar on high frequently called functions like this
+//    statusMessage(  tr("Selected %1 nodes and %2 edges")
+//                     .arg( selNodes )
+//                     .arg( selEdges )
+//                     );
 }
 
 
@@ -9006,10 +9062,10 @@ void MainWindow::slotEditNodeInfoStatusBar (const int &number,
                                              const int &outDegree,
                                              const float &clc) {
     qDebug()<<"MW::slotEditNodeInfoStatusBar()";
-    rightPanelClickedNodeLCD->display (number);
-    rightPanelClickedNodeInDegreeLCD->display (inDegree);
-    rightPanelClickedNodeOutDegreeLCD->display (outDegree);
-    rightPanelClickedNodeClucofLCD->display(clc);
+    rightPanelClickedNodeLCD->setText (QString::number(number));
+    rightPanelClickedNodeInDegreeLCD->setText ( QString::number (inDegree) ) ;
+    rightPanelClickedNodeOutDegreeLCD->setText ( QString::number (outDegree) ) ;
+    rightPanelClickedNodeClucofLCD->setText ( QString::number (clc) ) ;
 
     if (number!=0)  {
 
@@ -9045,11 +9101,12 @@ void MainWindow::slotEditEdgeClicked (const int &v1,
            << "type" << type
            << "openMenu"<<openMenu;
 
-    rightPanelClickedEdgeSourceLCD->display(v1);
-    rightPanelClickedEdgeTargetLCD->display(v2);
-    rightPanelClickedEdgeWeightLCD->display(weight);
 
     if (v1 ==0 || v2 == 0) {
+        rightPanelClickedEdgeNameLCD->setText("-");
+        rightPanelClickedEdgeWeightLCD->setText("-");
+        rightPanelClickedEdgeReciprocalWeightLCD->setText("");
+
         return;
     }
 
@@ -9062,7 +9119,11 @@ void MainWindow::slotEditEdgeClicked (const int &v1,
                     .arg( v1 ).arg( v2 )
                     .arg( weight )
                             );
-            rightPanelClickedEdgeHeaderLabel->setText(tr("Clicked Edge"));
+            rightPanelClickedEdgeNameLCD->setText(QString::number(v1)+QString(" -- ")+QString::number(v2));
+            rightPanelClickedEdgeWeightLabel->setText(tr("Weight:"));
+            rightPanelClickedEdgeWeightLCD->setText(QString::number(weight));
+            rightPanelClickedEdgeReciprocalWeightLabel->setText("");
+            rightPanelClickedEdgeReciprocalWeightLCD->setText("");
             if (openMenu) {
                 edgeName=QString("EDGE: ") + QString::number(v1)+QString(" -- ")+QString::number(v2);
             }
@@ -9075,7 +9136,11 @@ void MainWindow::slotEditEdgeClicked (const int &v1,
                 .arg( v1 ).arg( v2 )
                 .arg( weight )
                         );
-        rightPanelClickedEdgeHeaderLabel->setText(tr("Clicked Edge"));
+        rightPanelClickedEdgeNameLCD->setText(QString::number(v1)+QString(" <--> ")+QString::number(v2));
+        rightPanelClickedEdgeWeightLabel->setText(tr("Weight:"));
+        rightPanelClickedEdgeWeightLCD->setText(QString::number(weight));
+        rightPanelClickedEdgeReciprocalWeightLabel->setText("Recipr.:");
+        rightPanelClickedEdgeReciprocalWeightLCD->setText("-");
         if (openMenu) {
             edgeName=QString("RECIPROCATED EDGE: ") + QString::number(v1)+QString(" <--> ")+QString::number(v2);
         }
@@ -9087,7 +9152,11 @@ void MainWindow::slotEditEdgeClicked (const int &v1,
                         .arg( v1 ).arg( v2 )
                         .arg( weight )
                         );
-        rightPanelClickedEdgeHeaderLabel->setText(tr("Clicked Directed Edge"));
+        rightPanelClickedEdgeNameLCD->setText(QString::number(v1)+QString(" --> ")+QString::number(v2));
+        rightPanelClickedEdgeWeightLabel->setText(tr("Weight:"));
+        rightPanelClickedEdgeWeightLCD->setText(QString::number(weight));
+        rightPanelClickedEdgeReciprocalWeightLabel->setText("");
+        rightPanelClickedEdgeReciprocalWeightLCD->setText("");
 
         if (openMenu) {
             edgeName=QString("DIRECTED EDGE: ") + QString::number(v1)+QString(" --> ")+QString::number(v2);
@@ -9311,6 +9380,8 @@ void MainWindow::slotEditEdgeRemove(){
                 targetNode = activeGraph->edgeClicked().v1;
             }
             else {  // both
+                sourceNode = activeGraph->edgeClicked().v1;
+                targetNode = activeGraph->edgeClicked().v2;
                 removeOpposite=true;
             }
 
@@ -9551,12 +9622,14 @@ void MainWindow::slotEditEdgeWeight(){
     float newWeight=1.0;
     int min=activeGraph->vertexNumberMin();
     int max=activeGraph->vertexNumberMax();
-
+    bool changeBothEdges=false;
     bool ok=false;
+
+
     if ( activeGraph->edgeClicked().v1==0 || activeGraph->edgeClicked().v2==0 ) {
         sourceNode=QInputDialog::getInt(
                     this,
-                    "Change edge weight",
+                    "Edge weight",
                     tr("Select edge source node:  ("+
                        QString::number(min).toLatin1()+"..."+
                        QString::number(max).toLatin1()+"):"),
@@ -9568,7 +9641,7 @@ void MainWindow::slotEditEdgeWeight(){
 
         targetNode=QInputDialog::getInt(
                     this,
-                    "Change edge weight...",
+                    "Edge weight",
                     tr("Select edge target node:  ("+
                        QString::number(min).toLatin1()+"..."+
                        QString::number(max).toLatin1()+"):"),
@@ -9582,24 +9655,64 @@ void MainWindow::slotEditEdgeWeight(){
     }
     else {
         qDebug() << "MW: slotEditEdgeWeight() - an Edge has already been clicked";
-        sourceNode=activeGraph->edgeClicked().v1;
-        targetNode=activeGraph->edgeClicked().v2;
+
+        if (activeGraph->edgeClicked().type == EDGE_RECIPROCATED) {
+            QStringList items;
+            QString arcA = QString::number(activeGraph->edgeClicked().v1)+ " --> "+QString::number(activeGraph->edgeClicked().v2);
+            QString arcB = QString::number(activeGraph->edgeClicked().v2)+ " --> "+QString::number(activeGraph->edgeClicked().v1);
+            items << arcA
+                  << arcB
+                  << "Both";
+            ok = false;
+            QString selectedArc = QInputDialog::getItem(this, tr("Select edge"),
+                                                 tr("This is a reciprocated edge. "
+                                                    "Select direction:"), items, 0, false, &ok);
+            if ( selectedArc == arcA ) {
+                sourceNode = activeGraph->edgeClicked().v1;
+                targetNode = activeGraph->edgeClicked().v2;
+            }
+            else if ( selectedArc == arcB ) {
+                sourceNode = activeGraph->edgeClicked().v2;
+                targetNode = activeGraph->edgeClicked().v1;
+            }
+            else {  // both
+                sourceNode = activeGraph->edgeClicked().v1;
+                targetNode = activeGraph->edgeClicked().v2;
+                changeBothEdges=true;
+            }
+
+        }
+        else {
+            sourceNode = activeGraph->edgeClicked().v1;
+            targetNode = activeGraph->edgeClicked().v2;
+        }
+
+
         qDebug() << "MW: slotEditEdgeWeight() from "
                  << sourceNode << " to " << targetNode;
 
     }
 
     float oldWeight= 0;
+
+    QString dialogTitle="Edge " + QString::number(sourceNode) + "->" + QString::number(targetNode);
+
+    bool undirected = activeGraph->graphUndirected();
+
     if ( ( oldWeight= activeGraph->edgeWeight(sourceNode, targetNode)) != 0 ) {
+
+        if (changeBothEdges || undirected ){
+            dialogTitle="Edge " + QString::number(sourceNode) + "<->" + QString::number(targetNode);
+        }
         newWeight=(float) QInputDialog::getDouble(
                     this,
-                    "Change edge weight...",
-                    tr("New edge Weight: "),
+                    dialogTitle,
+                    tr("New edge weight: "),
                     oldWeight, -100, 100 ,1, &ok ) ;
 
         if (ok) {
             activeGraph->edgeWeightSet(sourceNode, targetNode, newWeight,
-                                      activeGraph->graphUndirected()
+                                      undirected|| changeBothEdges
                                       );
         }
         else {

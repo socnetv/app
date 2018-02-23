@@ -1877,7 +1877,7 @@ void Graph::edgeClickedSet(const int &v1, const int &v2, const bool &openMenu) {
         qDebug() << "Graph::edgeClickedSet() - clicked edge weight:"<< weight;
         int type=EDGE_DIRECTED;
         // Check if the opposite tie exists. If yes, this is a reciprocated tie
-        if ( edgeExists(m_clickedEdge.v1,m_clickedEdge.v2, true)  ) {
+        if ( edgeExists(m_clickedEdge.v2,m_clickedEdge.v1, false)  ) {
             if (graphUndirected()) {
                 type=EDGE_UNDIRECTED;
             }

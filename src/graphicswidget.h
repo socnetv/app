@@ -225,8 +225,10 @@ private:
     bool secondDoubleClick, markedNodeExist, clickedEdgeExists;
     bool m_nodeNumbersInside, m_nodeNumberVisibility, m_nodeLabelVisibility;
     bool m_edgeHighlighting;
-    GraphicsNode *firstNode, *secondNode, *markedNode1, *markedEdgeSource;
-    GraphicsNode *markedEdgeTarget, *tempNode ;
+    GraphicsNode *firstNode, *secondNode, *markedNode1;
+    GraphicsNode *markedEdgeSource;
+    GraphicsNode *markedEdgeTarget;
+    GraphicsEdge *clickedEdge;
 };
 
 #endif
