@@ -3756,15 +3756,16 @@ void MainWindow::initToolBar(){
     editRelationChangeCombo->setMinimumWidth(180);
     editRelationChangeCombo->setCurrentIndex(0);
     editRelationChangeCombo->setToolTip(
-                tr("Current relation. To rename it, write new name and press Enter."));
+                tr("<p><b>Current relation<b></p>"
+                   "<p>To rename the current relation, write new name and press Enter.</p>"));
     editRelationChangeCombo->setStatusTip(
-                tr("Name of the current relation. "
-                   "To rename it, write a new name and press Enter. To select another relation use Down arrow"));
+                tr("<p><b>Name of the current relation.</b></p> "
+                   "<p>To rename it, write a new name and press Enter. To select another relation use Down arrow.</p>"));
     editRelationChangeCombo->setWhatsThis(
-                tr("Relations combo\n\n"
-                   "This combo box displays the current relation. \n"
-                   "To rename the current relation, write a new name and press Enter. "
-                   "To select another relation (if any), click the Down arrow."));
+                tr("<p><b>Relations combo</b></p>"
+                   "<p>This combo box displays the current relation. </p>"
+                   "<p>To rename the current relation, write a new name and press Enter. </p>"
+                   "<p>To select another relation (if any), click the Down arrow.</p>"));
 
     toolBar -> addWidget(editRelationChangeCombo);
     toolBar -> addAction (editRelationNextAct);
@@ -3824,20 +3825,34 @@ void MainWindow::initPanels(){
     toolBoxEditNodeSubgraphSelect->setStatusTip(
                 tr("Create a basic subgraph with selected nodes."));
     toolBoxEditNodeSubgraphSelect->setToolTip(
-                tr("Create a basic subgraph (star, clique, line, etc) "
-                   "with selected nodes. \n"
-                   "There must be some nodes selected!"));
+                tr("<p><b>Subgraph creation</b></p> "
+                   "<p>Create a basic subgraph from selected nodes.</p>"
+                   "<p>Select some nodes with your mouse and then click on one of these"
+                   "options to create a basic subgraph with them. </p>"
+                   "<p>You can create a star, clique, line, etc subgraph.</p>"
+                   "<p>There must be some nodes selected!</p>"));
     toolBoxEditNodeSubgraphSelect->setWhatsThis(
-                        tr("Subgraph\n\n"
-                           "Creates basic subgraphs with all selected nodes: star, clique, line, etc."));
+                tr("<p><b>Subgraph creation</b></p> "
+                   "<p>Create a basic subgraph from selected nodes.</p>"
+                   "<p>Select some nodes with your mouse and then click on one of these"
+                   "options to create a basic subgraph with them. </p>"
+                   "<p>You can create a star, clique, line, etc subgraph.</p>"
+                   "<p>There must be some nodes selected!</p>"));
 
     toolBoxEditNodeSubgraphSelectLabel->setToolTip(
-                tr("Create a basic subgraph (star, clique, line, etc) "
-                   "with selected nodes. \n"
-                   "There must be some nodes selected!"));
+                tr("<p><b>Subgraph creation</b></p> "
+                   "<p>Create a basic subgraph from selected nodes.</p>"
+                   "<p>Select some nodes with your mouse and then click on one of these"
+                   "options to create a basic subgraph with them. </p>"
+                   "<p>You can create a star, clique, line, etc subgraph.</p>"
+                   "<p>There must be some nodes selected!</p>"));
     toolBoxEditNodeSubgraphSelectLabel->setWhatsThis(
-                        tr("Subgraph\n\n"
-                           "Creates basic subgraphs with all selected nodes: star, clique, line, etc."));
+                tr("<p><b>Subgraph creation</b></p> "
+                   "<p>Create a basic subgraph from selected nodes.</p>"
+                   "<p>Select some nodes with your mouse and then click on one of these"
+                   "options to create a basic subgraph with them. </p>"
+                   "<p>You can create a star, clique, line, etc subgraph.</p>"
+                   "<p>There must be some nodes selected!</p>"));
     QStringList editNodeSubgraphCommands;
     editNodeSubgraphCommands << "Select"
                        << "Clique"
@@ -3852,12 +3867,23 @@ void MainWindow::initPanels(){
     toolBoxEdgeModeSelectLabel->setMinimumWidth(90);
     toolBoxEditEdgeModeSelect = new QComboBox;
     toolBoxEditEdgeModeSelect->setStatusTip(
-                tr("Select an edge creation mode: directed or undirected."));
+                tr("Select the edge mode: directed or undirected."));
     toolBoxEditEdgeModeSelect->setToolTip(
-                tr("Select an edge creation mode: directed or undirected."));
+                tr("<p><b>Edge mode</b></p>"
+                   "<p>In social networks and graphs, edges can be directed or undirected "
+                   "(and the corresponding network is called directed or undirected as well).</p>"
+                   "<p>This option lets you choose what the kind of edges you want in your network.<p>"
+                   "<p>By selecting an option here, all edges of the network will change automatically. <p>"
+                   "<p>For instance, if the network is directed and and you select \"undirected\" "
+                   "then all the directed edges will become undirected <p>"));
             toolBoxEditEdgeModeSelect->setWhatsThis(
-                        tr("Edge mode\n\n"
-                           "Select what mode to use when creating new edges."));
+                        tr("<p><b>Edge mode</b></p>"
+                           "<p>In social networks and graphs, edges can be directed or undirected "
+                           "(and the corresponding network is called directed or undirected as well).</p>"
+                           "<p>This option lets you choose what the kind of edges you want in your network.<p>"
+                           "<p>By selecting an option here, all edges of the network will change automatically. <p>"
+                           "<p>For instance, if the network is directed and and you select \"undirected\" "
+                           "then all the directed edges will become undirected <p>"));
     QStringList edgeModeCommands;
     edgeModeCommands << "Directed"
                      << "Undirected";
@@ -3872,51 +3898,55 @@ void MainWindow::initPanels(){
     toolBoxEditEdgeSymmetrizeSelect->setStatusTip(
                 tr("Select a method to symmetrize the network, i.e. tranform all directed edges to undirected."));
     toolBoxEditEdgeSymmetrizeSelect->setToolTip(
-                        tr("Select a method to symmetrize the network: \n\n"
-                           "Symmetrize Directed Edges:\n"
-                           "Makes all directed arcs in this relation reciprocal. \n"
-                           "That is, if there is an arc from node A to node B \n"
-                           "then a new arc from node B to node A is created \n"
-                           "with the same weight.\n\n"
+                        tr("<p><b>Symmetrize Network</b></p>"
+                           "<p>Select a method to symmetrize the network. Available methods: </p>"
+                           "<p><em>Symmetrize Directed Edges:</em></p>"
+                           "<p>Makes all directed arcs in this relation reciprocal. "
+                           "That is, if there is an arc from node A to node B "
+                           "then a new arc from node B to node A is created "
+                           "with the same weight.</p>"
 
-                           "Symmetrize Edges by examining Strong Ties:\n"
-                           "Creates a new symmetric relation by keeping strong ties only. \n"
-                           "In the new relation, a tie will exist between actor A and \n"
-                           "actor B only when both arcs A -> B and B -> A are present \n"
-                           "in the current or all relations. \n\n"
+                           "<p><em>Symmetrize Edges by examining Strong Ties:</em></p>"
+                           "<p>Creates a new symmetric relation by keeping strong ties only. "
+                           "In the new relation, a tie will exist between actor A and "
+                           "actor B only when both arcs A -> B and B -> A are present "
+                           "in the current or all relations. </p>"
 
-                           "Symmetrize Edges by examining Cocitation:\n"
-                           "Creates a new symmetric relation by connecting actors \n"
-                           "that are cocitated by others. \n"
-                           "In the new relation, an edge will exist between actor i and \n"
-                           "actor j only if C(i,j) > 0, where C the Cocitation Matrix. "
+                           "<p><em>Symmetrize Edges by examining Cocitation:</em></p>"
+                           "<p>Creates a new symmetric relation by connecting actors "
+                           "that are cocitated by others. "
+                           "In the new relation, an edge will exist between actor i and "
+                           "actor j only if C(i,j) > 0, where C the Cocitation Matrix. </p>"
                            ));
 
     toolBoxEditEdgeSymmetrizeSelect->setWhatsThis(
-                        tr("Select a method to symmetrize the network: \n\n"
-                           "Symmetrize Directed Edges\n"
-                           "Makes all directed arcs in this relation reciprocal. "
-                           "That is, if there is an arc from node A to node B \n"
-                           "then a new arc from node B to node A is created \n"
-                           "with the same weight.\n\n"
+                tr("<p><b>Symmetrize Network</b></p>"
+                   "<p>Select a method to symmetrize the network. Available methods: </p>"
+                   "<p><em>Symmetrize Directed Edges:</em></p>"
+                   "<p>Makes all directed arcs in this relation reciprocal. "
+                   "That is, if there is an arc from node A to node B "
+                   "then a new arc from node B to node A is created "
+                   "with the same weight.</p>"
 
-                           "Symmetrize Edges by examining Strong Ties:\n"
-                           "Creates a new symmetric relation by keeping strong ties only. "
-                           "That is, a strong tie exists between actor A and actor B "
-                           "only when both arcs A -> B and B -> A are present. "
-                           "If the network is multi-relational, it asks you whether "
-                           "ties in the current relation or all relations are to be considered. \n\n"
+                   "<p><em>Symmetrize Edges by examining Strong Ties:</em></p>"
+                   "<p>Creates a new symmetric relation by keeping strong ties only. "
+                   "In the new relation, a tie will exist between actor A and "
+                   "actor B only when both arcs A -> B and B -> A are present "
+                   "in the current or all relations. "
+                   "If the network is multi-relational, it asks you whether "
+                   "ties in the current relation or all relations are to be considered</p>"
 
-                           "Symmetrize Edges by examining Cocitation:\n"
-                           "Creates a new symmetric relation by connecting actors "
-                           "that are cocitated by others. "
-                           "In the new relation, an edge will exist between actor i and "
-                           "actor j only if C(i,j) > 0, where C the Cocitation Matrix. "
-                           "Thus the actor pairs cited by more common neighbors will appear "
-                           "with a stronger tie between them than pairs those cited by fewer "
-                           "common neighbors. "
+                   "<p><em>Symmetrize Edges by examining Cocitation:</em></p>"
+                   "<p>Creates a new symmetric relation by connecting actors "
+                   "that are cocitated by others. "
+                   "In the new relation, an edge will exist between actor i and "
+                   "actor j only if C(i,j) > 0, where C the Cocitation Matrix. "
+                   "Thus the actor pairs cited by more common neighbors will appear "
+                   "with a stronger tie between them than pairs those cited by fewer "
+                   "common neighbors.</p>"
+                   ));
 
-                           ));
+
     QStringList symmetrizeCommands;
     symmetrizeCommands << "Select"
                        << "Directed ties"
@@ -3964,11 +3994,32 @@ void MainWindow::initPanels(){
     toolBoxAnalysisMatricesSelect -> setStatusTip(
                 tr("Select which matrix to compute and display, based on the adjacency matrix of the current network."));
     toolBoxAnalysisMatricesSelect -> setToolTip(
-                tr("The adjacency matrix and other matrices based on the adjacency \n"
-                   "matrix of the current network, i.e. Cocitation, Degree Matrix etc."));
+                tr("<p><b>Matrix Analysis</b></p>"
+                   "<p>Compute and display the adjacency matrix and other matrices "
+                   "based on the adjacency matrix of the current network. "
+                   "Available options:"
+                   "<p><em>Adjacency Matrix</em></p>"
+                   "<p><em>Adjacency Matrix Plot</em></p>"
+                   "<p><em>Inverse of Adjacency Matrix</em></p>"
+                   "<p><em>Transpose of Adjacency Matrix</em></p>"
+                   "<p><em>Cocitation Matrix </em></p>"
+                   "<p><em>Degree Matrix </em></p>"
+                   "<p><em>Laplacian Matrix </em></p>"
+                   ));
+
     toolBoxAnalysisMatricesSelect -> setWhatsThis(
-                tr("Analyze Matrices\n\n"
-                   "Compute and display matrices based on the adjacency matrix of the current network."));
+                tr("<p><b>Matrix Analysis</b></p>"
+                   "<p>Compute and display the adjacency matrix and other matrices "
+                   "based on the adjacency matrix of the current network. "
+                   "Available options:"
+                   "<p><em>Adjacency Matrix</em></p>"
+                   "<p><em>Adjacency Matrix Plot</em></p>"
+                   "<p><em>Inverse of Adjacency Matrix</em></p>"
+                   "<p><em>Transpose of Adjacency Matrix</em></p>"
+                   "<p><em>Cocitation Matrix </em></p>"
+                   "<p><em>Degree Matrix </em></p>"
+                   "<p><em>Laplacian Matrix </em></p>"
+                   ));
     QStringList graphMatricesList;
     graphMatricesList << "Select"
                           << "Adjacency"
@@ -4139,12 +4190,45 @@ void MainWindow::initPanels(){
     toolBoxLayoutByIndexSelectLabel->setMinimumWidth(90);
     toolBoxLayoutByIndexSelect = new QComboBox;
     toolBoxLayoutByIndexSelect->setStatusTip(tr("Select a prominence-based layout model"));
-    toolBoxLayoutByIndexSelect->setToolTip(tr("Apply a prominence-based layout model"));
+    toolBoxLayoutByIndexSelect->setToolTip(
+                tr("Select a prominence-based layout model. \n\n"
+                   "Available indices:\n"
+                   "Degree Centrality (DC): \n"
+                   "In undirected networks, the DC of each node u is the sum of edges \n"
+                   "attached to it. \n"
+                   "In directed networks, the DC is the sum of outbound arcs from node u \n"
+                   "to all adjacent nodes (also called \"outDegree Centrality\").\n"
+                   "In weighted networks, the DC score is the sum of weights of outbound \n"
+                   "edges from node u to all adjacent nodes\n."
+                   "Note: To compute inDegree Centrality, use the Degree Prestige measure.\n\n"
+                   "Closeness Centrality:\n"
+                   ""
+                   "IR Closeness Centrality:\n"
+                   ""
+                   "Betweenness Centrality:\n"
+                   ""
+                   "Stress Centrality:\n"
+                   ""
+                   "Eccentricity Centrality:\n"
+                   ""
+                   "Power Centrality:\n"
+                   ""
+                   "Information Centrality:\n"
+                   ""
+                   "Eigenvector Centrality:\n"
+                   ""
+                   "Degree Prestige:\n"
+                   ""
+                   "PageRank Prestige:\n"
+                   ""
+                   "Proximity Prestige:\n"
+                   ""
+                   ""));
     toolBoxLayoutByIndexSelect->setWhatsThis(
-                tr("Visualize by prominence index\n\n"
-                   "Apply a prominence-based layout model to the network. \n"
-                   "For instance, you can apply a degree centrality layout. "
-                   "For each prominence index, you can select a radial or level layout type."));
+                tr("<p><b>Visualize by prominence index</b></p>"
+                   "<p>Apply a prominence-based layout model to the network.</p>"
+                   "<p>For instance, you can apply a degree centrality layout. </p>"
+                   "<p>For each prominence index, you can select a radial or level layout type.</p>"));
     QStringList indicesList;
     indicesList << "None"
                 << "Random"
@@ -4172,11 +4256,13 @@ void MainWindow::initPanels(){
     toolBoxLayoutByIndexTypeSelect->setStatusTip(
                 tr("Select layout type for the selected model"));
     toolBoxLayoutByIndexTypeSelect->setToolTip(
-                tr("Select radial or level layout type (you must select an index above)"));
+                tr("<p><b>Layout Type</b></p>"
+                   "</p>Select a layout type (radial, level, node size or node color) "
+                   "for the selected prominence-based model you want to apply to the network.</p>"));
     toolBoxLayoutByIndexTypeSelect->setWhatsThis(
-                tr("Layout Type\n\n"
-                   "Select a layout type (radial or level) for the selected prominence-based model "
-                   "you want to apply to the network."));
+                tr("<p><b>Layout Type</b></p>"
+                   "</p>Select a layout type (radial, level, node size or node color)"
+                   "for the selected prominence-based model you want to apply to the network.</p>"));
     QStringList layoutTypes;
     layoutTypes << "Radial" << "On Levels" << "Node Size"<< "Node Color";
     toolBoxLayoutByIndexTypeSelect->addItems(layoutTypes);
@@ -4202,6 +4288,12 @@ void MainWindow::initPanels(){
     //create a box and set the above layout inside
     QGroupBox *layoutByIndexBox= new QGroupBox(tr("By Prominence Index"));
     layoutByIndexBox->setMinimumHeight(120);
+    layoutByIndexBox->setToolTip(
+                    tr("<p><b>Visualize by prominence index</b/></p>"
+                       "<p>Apply a prominence-based layout model to the network. </p>"
+                       "<p>For instance, you can apply a Degree Centrality layout. </p>"
+                       "<p>For each prominence index, you must select a layout type:</p>"
+                       "<p>Radial, Levels, NodeSize or NodeColor</p>"));
     layoutByIndexBox->setLayout (layoutByIndexGrid );
 
 
@@ -4223,52 +4315,58 @@ void MainWindow::initPanels(){
     toolBoxLayoutForceDirectedSelect->setStatusTip (
                             tr("Select a Force-Directed layout model. "));
     toolBoxLayoutForceDirectedSelect->setToolTip (
-                tr("Select a Force-Directed Placement layout model to embed to the network.\n"
-                   "Available models: \n\n"
-                   "Kamada-Kawai\n"
-                   "The most efficient model of the Spring Embedder family, where \n"
-                   "the optimal layout is that of minimum total spring energy, \n"
-                   "which is computed as the square summation of the differences \n"
-                   "between desirable distances and real ones for all pairs of vertices."
+                tr("<p><b>Select a Force-Directed Placement layout model to embed to the network.</b></p>"
+                   "<p>Available models: </p>"
+                   "<p>Kamada-Kawai</p>"
+                   "<p>The best variant of the Spring Embedder family of models. "
+                   "<p>In this the graph is considered to be a dynamic system where "
+                   "every edge is between two actors is a 'spring' of a desirable "
+                   "length, which corresponds to their graph theoretic distance. </p>"
+                   "<p>In this way, the optimal layout of the graph \n"
+                   "is the state with the minimum imbalance. The degree of "
+                   "imbalance is formulated as the total spring energy: "
+                   "the square summation of the differences between desirable "
+                   "distances and real ones for all pairs of vertices.</p>"
 
-                   "Fruchterman-Reingold \n"
-                   "Similar to Eades Spring Embedder but more efficient. \n"
-                   "Again adjacent vertices attract each each other but, unlike "
-                   "Eades, all vertices repel each other.\n\n"
+                   "<p>Fruchterman-Reingold</p>"
+                   "<p>In this model, the vertices behave as atomic particles "
+                   "or celestial bodies, exerting attractive and repulsive "
+                   "forces to each other. Again, only vertices that are "
+                   "neighbours  attract each other but, unlike Eades Spring "
+                   "Embedder, all vertices repel each other.</p>"
 
-                   "Eades \n"
-                   "A spring-gravitational model, the oldest one, where \n"
-                   "connected nodes attract each other and all nodes repel all \n"
-                   "other non-adjacent nodes. \n\n"
-
+                   "<p>Eades Spring Embedder</p>"
+                   "<p>A spring-gravitational model, where each node is "
+                   "regarded as physical object (ring) repelling all other non-adjacent "
+                   "nodes, while springs between connected nodes attract them.</p>"
 
                    )
                 );
     toolBoxLayoutForceDirectedSelect->setWhatsThis(
-                tr("Visualize by a Force-Directed Placement layout model.\n\n"
-                   "Available models: \n\n"
-                   "Kamada-Kawai\n"
-                   "The best variant of the Spring Embedder family of models. "
-                   "In this the graph is considered to be a dynamic system where "
+                tr("<p><b>Visualize by a Force-Directed Placement layout model.</b></p> "
+                   "<p>Available models: </p>"
+                   "<p><em>Kamada-Kawai</em></p>"
+                   "<p>The best variant of the Spring Embedder family of models. "
+                   "<p>In this the graph is considered to be a dynamic system where "
                    "every edge is between two actors is a 'spring' of a desirable "
-                   "length, which corresponds to their graph theoretic distance. \n"
-                   "In this way, the optimal layout of the graph "
+                   "length, which corresponds to their graph theoretic distance. </p>"
+                   "<p>In this way, the optimal layout of the graph \n"
                    "is the state with the minimum imbalance. The degree of "
                    "imbalance is formulated as the total spring energy: "
                    "the square summation of the differences between desirable "
-                   "distances and real ones for all pairs of vertices."
+                   "distances and real ones for all pairs of vertices.</p>"
 
-                   "Fruchterman-Reingold\n"
-                   "In this model, the vertices behave as atomic particles "
+                   "<p>Fruchterman-Reingold</p>"
+                   "<p>In this model, the vertices behave as atomic particles "
                    "or celestial bodies, exerting attractive and repulsive "
                    "forces to each other. Again, only vertices that are "
                    "neighbours  attract each other but, unlike Eades Spring "
-                   "Embedder, all vertices repel each other.\n\n"
+                   "Embedder, all vertices repel each other.</p>"
 
-                   "Eades Spring Embedder\n"
-                   "A spring-gravitational model, where each node is "
-                   "regarded as physical object (ring) repelling all other non-adjacent"
-                   "nodes, while springs between connected nodes attract them. \n\n"
+                   "<p>Eades Spring Embedder</p>"
+                   "<p>A spring-gravitational model, where each node is "
+                   "regarded as physical object (ring) repelling all other non-adjacent "
+                   "nodes, while springs between connected nodes attract them.</p>"
 
                    )
                 );
@@ -4332,18 +4430,20 @@ void MainWindow::initPanels(){
                 tr("The type of the network: directed or undirected. "
                    "Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
 
-    rightPanelNetworkTypeLabel->setToolTip(tr("The loaded network, if any, is directed and \n"
-                                "any link you add between nodes will be a directed arc.\n"
-                                "If you want to work with undirected edges and/or \n"
-                                "transform the loaded network (if any) to undirected \n"
-                                "toggle the option Edit -> Edges -> Undirected \n"
-                                "or press CTRL+E+U"));
-    rightPanelNetworkTypeLabel->setWhatsThis(tr("The loaded network, if any, is directed and \n"
-                                "any link you add between nodes will be a directed arc.\n"
-                                "If you want to work with undirected edges and/or \n"
-                                "transform the loaded network (if any) to undirected \n"
-                                "toggle the option Edit -> Edges -> Undirected \n"
-                                "or press CTRL+E+U"));
+    rightPanelNetworkTypeLabel->setToolTip(\
+                tr("The loaded network, if any, is directed and \n"
+                   "any link you add between nodes will be a directed arc.\n"
+                   "If you want to work with undirected edges and/or \n"
+                   "transform the loaded network (if any) to undirected \n"
+                   "toggle the option Edit -> Edges -> Undirected \n"
+                   "or press CTRL+E+U"));
+    rightPanelNetworkTypeLabel->setWhatsThis(
+                tr("The loaded network, if any, is directed and \n"
+                   "any link you add between nodes will be a directed arc.\n"
+                   "If you want to work with undirected edges and/or \n"
+                   "transform the loaded network (if any) to undirected \n"
+                   "toggle the option Edit -> Edges -> Undirected \n"
+                   "or press CTRL+E+U"));
 
 
     rightPanelNetworkTypeLCD = new QLabel;
@@ -4353,18 +4453,20 @@ void MainWindow::initPanels(){
                 tr("Directed data mode. "
                    "Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
 
-    rightPanelNetworkTypeLCD->setToolTip(tr("The loaded network, if any, is directed and \n"
-                                "any link you add between nodes will be a directed arc.\n"
-                                "If you want to work with undirected edges and/or \n"
-                                "transform the loaded network (if any) to undirected \n"
-                                "toggle the option Edit -> Edges -> Undirected \n"
-                                "or press CTRL+E+U"));
-    rightPanelNetworkTypeLCD->setWhatsThis(tr("The loaded network, if any, is directed and \n"
-                                "any link you add between nodes will be a directed arc.\n"
-                                "If you want to work with undirected edges and/or \n"
-                                "transform the loaded network (if any) to undirected \n"
-                                "toggle the option Edit -> Edges -> Undirected \n"
-                                "or press CTRL+E+U"));
+    rightPanelNetworkTypeLCD->setToolTip(
+                tr("The loaded network, if any, is directed and \n"
+                   "any link you add between nodes will be a directed arc.\n"
+                   "If you want to work with undirected edges and/or \n"
+                   "transform the loaded network (if any) to undirected \n"
+                   "toggle the option Edit -> Edges -> Undirected \n"
+                   "or press CTRL+E+U"));
+    rightPanelNetworkTypeLCD->setWhatsThis(
+                tr("The loaded network, if any, is directed and \n"
+                   "any link you add between nodes will be a directed arc.\n"
+                   "If you want to work with undirected edges and/or \n"
+                   "transform the loaded network (if any) to undirected \n"
+                   "toggle the option Edit -> Edges -> Undirected \n"
+                   "or press CTRL+E+U"));
 
     rightPanelNetworkTypeLCD ->setMinimumWidth(75);
 
@@ -4372,16 +4474,20 @@ void MainWindow::initPanels(){
 
     QLabel *rightPanelNodesLabel = new QLabel;
     rightPanelNodesLabel->setText(tr("Nodes:"));
-    rightPanelNodesLabel->setStatusTip(tr("The total number of actors (nodes or vertices) "
-                                          "in this social network."));
-    rightPanelNodesLabel->setToolTip(tr("The total number of actors \n"
-                                        "(nodes or vertices) in this social network."));
+    rightPanelNodesLabel->setStatusTip(
+                tr("The total number of actors (nodes or vertices) "
+                   "in this social network."));
+    rightPanelNodesLabel->setToolTip(
+                tr("The total number of actors \n"
+                   "(nodes or vertices) in this social network."));
 
     rightPanelNodesLCD=new QLabel;
     rightPanelNodesLCD->setAlignment(Qt::AlignRight);
-    rightPanelNodesLCD->setStatusTip(tr("The total number of actors (nodes or vertices) in the social network."));
-    rightPanelNodesLCD->setToolTip(tr("This is the total number of actors \n"
-                                      "(nodes or vertices) in the social network."));
+    rightPanelNodesLCD->setStatusTip(
+                tr("The total number of actors (nodes or vertices) in the social network."));
+    rightPanelNodesLCD->setToolTip(
+                tr("This is the total number of actors \n"
+                   "(nodes or vertices) in the social network."));
 
     rightPanelEdgesLabel = new QLabel;
     rightPanelEdgesLabel->setText(tr("Arcs:"));
