@@ -6396,7 +6396,7 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
 
 
 /**
- * @brief Saves the network in a new file
+ * @brief Saves the network in a new file. Always uses the graphml extension.
  */
 void MainWindow::slotNetworkSaveAs() {
     qDebug() << "MW::slotNetworkSaveAs()";
@@ -6408,20 +6408,27 @@ void MainWindow::slotNetworkSaveAs() {
                 getLastPath(), tr("GraphML (*.graphml *.xml);;All (*)") );
     if (!fn.isEmpty())  {
         if  ( QFileInfo(fn).suffix().isEmpty() ){
+            fn.append(".graphml");
             slotHelpMessageToUser (
                         USER_MSG_INFO,
                         tr("Appending .graphml"),
                         tr("Missing Extension. \n"
-                           "Appending a standard .graphml to the given filename.")
+                           "Appended the standard .graphml extension to the given filename.\n"
+                           "Final Filename: ") + QFileInfo(fn).fileName()
                         );
-            fn.append(".graphml");
         }
-        /** \todo  Change the suffix automatically to graphML even if the user
-         * has selected other?
-         */
-        if ( !QFileInfo(fn).suffix().contains("graphML") ||
-             !QFileInfo(fn).suffix().contains("xml") ) {
-            //fn = QFileInfo(fn).absoluteDir() + QFileInfo(fn).baseName()
+        else if ( !QFileInfo(fn).suffix().contains("graphml",  Qt::CaseInsensitive) &&
+             !QFileInfo(fn).suffix().contains("xml",  Qt::CaseInsensitive)  ) {
+            fn = QFileInfo(fn).absolutePath() + "/"  + QFileInfo(fn).baseName();
+            fn.append(".graphml");
+            slotHelpMessageToUser (
+                        USER_MSG_INFO,
+                        tr("Appending .graphml"),
+                        tr("Wrong Extension. \n"
+                           "Appended a standard .graphml to the given filename. \n"
+                           "Final Filename: ") + QFileInfo(fn).fileName()
+                        );
+
         }
         fileName=fn;
         QFileInfo fileInfo (fileName);
@@ -11834,7 +11841,7 @@ void MainWindow::slotAnalyzeReachabilityMatrix(){
         m_textEditors << ed;
     }
 
-    statusMessage("Reachability matrix saved as: " + QDir::toNativeSeparators(fn) );
+    statusMessage(tr("Reachability matrix saved as: ") + QDir::toNativeSeparators(fn) );
 }
 
 
@@ -11916,7 +11923,7 @@ void MainWindow::slotAnalyzeClusteringHierarchical(const QString &matrix,
         m_textEditors << ed;
     }
 
-    statusMessage("Hierarchical Cluster Analysis saved as: " + QDir::toNativeSeparators(fn));
+    statusMessage(tr("Hierarchical Cluster Analysis saved as: ") + QDir::toNativeSeparators(fn));
 
 }
 
@@ -11950,7 +11957,7 @@ void MainWindow::slotAnalyzeCommunitiesCliqueCensus(){
         m_textEditors << ed;
     }
 
-    statusMessage("Clique Census saved as: " + QDir::toNativeSeparators(fn));
+    statusMessage(tr("Clique Census saved as: ") + QDir::toNativeSeparators(fn));
 }
 
 
@@ -11984,7 +11991,7 @@ void MainWindow::slotAnalyzeClusteringCoefficient (){
         m_textEditors << ed;
     }
 
-    statusMessage("Clustering Coefficients saved as: " + QDir::toNativeSeparators(fn));
+    statusMessage(tr("Clustering Coefficients saved as: ") + QDir::toNativeSeparators(fn));
 }
 
 
@@ -12046,7 +12053,7 @@ void MainWindow::slotAnalyzeSimilarityMatching(const QString &matrix,
         m_textEditors << ed;
     }
 
-    statusMessage("Similarity matrix saved as: " + QDir::toNativeSeparators(fn));
+    statusMessage(tr("Similarity matrix saved as: ") + QDir::toNativeSeparators(fn));
 }
 
 
@@ -12099,7 +12106,7 @@ void MainWindow::slotAnalyzeSimilarityPearson(const QString &matrix,
         m_textEditors << ed;
     }
 
-    statusMessage("Pearson correlation coefficients matrix saved as: " + QDir::toNativeSeparators(fn));
+    statusMessage(tr("Pearson correlation coefficients matrix saved as: ") + QDir::toNativeSeparators(fn));
 }
 
 
@@ -12129,7 +12136,7 @@ void MainWindow::slotAnalyzeCommunitiesTriadCensus() {
         m_textEditors << ed;
     }
 
-    statusMessage("Triad Census saved as: " + QDir::toNativeSeparators(fn));
+    statusMessage(tr("Triad Census saved as: ") + QDir::toNativeSeparators(fn));
 }
 
 
