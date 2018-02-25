@@ -3818,41 +3818,25 @@ void MainWindow::initPanels(){
      *  create widgets for the Control Panel
      */
 
+    QString helpMessage = "";
+
     QLabel *toolBoxEditNodeSubgraphSelectLabel  = new QLabel;
     toolBoxEditNodeSubgraphSelectLabel->setText(tr("Subgraph:"));
     toolBoxEditNodeSubgraphSelectLabel->setMinimumWidth(90);
     toolBoxEditNodeSubgraphSelect = new QComboBox;
     toolBoxEditNodeSubgraphSelect->setStatusTip(
                 tr("Create a basic subgraph with selected nodes."));
-    toolBoxEditNodeSubgraphSelect->setToolTip(
-                tr("<p><b>Subgraph creation</b></p> "
-                   "<p>Create a basic subgraph from selected nodes.</p>"
-                   "<p>Select some nodes with your mouse and then click on one of these"
-                   "options to create a basic subgraph with them. </p>"
-                   "<p>You can create a star, clique, line, etc subgraph.</p>"
-                   "<p>There must be some nodes selected!</p>"));
-    toolBoxEditNodeSubgraphSelect->setWhatsThis(
-                tr("<p><b>Subgraph creation</b></p> "
-                   "<p>Create a basic subgraph from selected nodes.</p>"
-                   "<p>Select some nodes with your mouse and then click on one of these"
-                   "options to create a basic subgraph with them. </p>"
-                   "<p>You can create a star, clique, line, etc subgraph.</p>"
-                   "<p>There must be some nodes selected!</p>"));
+    helpMessage = tr("<p><b>Subgraph creation</b></p> "
+                     "<p>Create a basic subgraph from selected nodes.</p>"
+                     "<p>Select some nodes with your mouse and then click on one of these"
+                     "options to create a basic subgraph with them. </p>"
+                     "<p>You can create a star, clique, line, etc subgraph.</p>"
+                     "<p>There must be some nodes selected!</p>");
+    toolBoxEditNodeSubgraphSelect->setToolTip( helpMessage );
+    toolBoxEditNodeSubgraphSelect->setWhatsThis( helpMessage );
 
-    toolBoxEditNodeSubgraphSelectLabel->setToolTip(
-                tr("<p><b>Subgraph creation</b></p> "
-                   "<p>Create a basic subgraph from selected nodes.</p>"
-                   "<p>Select some nodes with your mouse and then click on one of these"
-                   "options to create a basic subgraph with them. </p>"
-                   "<p>You can create a star, clique, line, etc subgraph.</p>"
-                   "<p>There must be some nodes selected!</p>"));
-    toolBoxEditNodeSubgraphSelectLabel->setWhatsThis(
-                tr("<p><b>Subgraph creation</b></p> "
-                   "<p>Create a basic subgraph from selected nodes.</p>"
-                   "<p>Select some nodes with your mouse and then click on one of these"
-                   "options to create a basic subgraph with them. </p>"
-                   "<p>You can create a star, clique, line, etc subgraph.</p>"
-                   "<p>There must be some nodes selected!</p>"));
+    toolBoxEditNodeSubgraphSelectLabel->setToolTip( helpMessage);
+    toolBoxEditNodeSubgraphSelectLabel->setWhatsThis( helpMessage );
     QStringList editNodeSubgraphCommands;
     editNodeSubgraphCommands << "Select"
                        << "Clique"
@@ -3862,28 +3846,22 @@ void MainWindow::initPanels(){
     toolBoxEditNodeSubgraphSelect->addItems(editNodeSubgraphCommands);
     toolBoxEditNodeSubgraphSelect->setMinimumWidth(120);
 
+
     QLabel *toolBoxEdgeModeSelectLabel  = new QLabel;
     toolBoxEdgeModeSelectLabel->setText(tr("Edge Mode:"));
     toolBoxEdgeModeSelectLabel->setMinimumWidth(90);
     toolBoxEditEdgeModeSelect = new QComboBox;
     toolBoxEditEdgeModeSelect->setStatusTip(
                 tr("Select the edge mode: directed or undirected."));
-    toolBoxEditEdgeModeSelect->setToolTip(
-                tr("<p><b>Edge mode</b></p>"
-                   "<p>In social networks and graphs, edges can be directed or undirected "
-                   "(and the corresponding network is called directed or undirected as well).</p>"
-                   "<p>This option lets you choose what the kind of edges you want in your network.<p>"
-                   "<p>By selecting an option here, all edges of the network will change automatically. <p>"
-                   "<p>For instance, if the network is directed and and you select \"undirected\" "
-                   "then all the directed edges will become undirected <p>"));
-            toolBoxEditEdgeModeSelect->setWhatsThis(
-                        tr("<p><b>Edge mode</b></p>"
-                           "<p>In social networks and graphs, edges can be directed or undirected "
-                           "(and the corresponding network is called directed or undirected as well).</p>"
-                           "<p>This option lets you choose what the kind of edges you want in your network.<p>"
-                           "<p>By selecting an option here, all edges of the network will change automatically. <p>"
-                           "<p>For instance, if the network is directed and and you select \"undirected\" "
-                           "then all the directed edges will become undirected <p>"));
+    helpMessage = tr("<p><b>Edge mode</b></p>"
+                     "<p>In social networks and graphs, edges can be directed or undirected "
+                     "(and the corresponding network is called directed or undirected as well).</p>"
+                     "<p>This option lets you choose what the kind of edges you want in your network.<p>"
+                     "<p>By selecting an option here, all edges of the network will change automatically. <p>"
+                     "<p>For instance, if the network is directed and and you select \"undirected\" "
+                     "then all the directed edges will become undirected <p>");
+    toolBoxEditEdgeModeSelect->setToolTip( helpMessage );
+            toolBoxEditEdgeModeSelect->setWhatsThis( helpMessage );
     QStringList edgeModeCommands;
     edgeModeCommands << "Directed"
                      << "Undirected";
@@ -3897,55 +3875,28 @@ void MainWindow::initPanels(){
     toolBoxEditEdgeSymmetrizeSelect = new QComboBox;
     toolBoxEditEdgeSymmetrizeSelect->setStatusTip(
                 tr("Select a method to symmetrize the network, i.e. tranform all directed edges to undirected."));
-    toolBoxEditEdgeSymmetrizeSelect->setToolTip(
-                        tr("<p><b>Symmetrize Network</b></p>"
-                           "<p>Select a method to symmetrize the network. Available methods: </p>"
-                           "<p><em>Symmetrize Directed Edges:</em></p>"
-                           "<p>Makes all directed arcs in this relation reciprocal. "
-                           "That is, if there is an arc from node A to node B "
-                           "then a new arc from node B to node A is created "
-                           "with the same weight.</p>"
+    helpMessage = tr("<p><b>Symmetrize Network</b></p>"
+                     "<p>Select a method to symmetrize the network. Available methods: </p>"
+                     "<p><em>Symmetrize Directed Edges:</em></p>"
+                     "<p>Makes all directed arcs in this relation reciprocal. "
+                     "That is, if there is an arc from node A to node B "
+                     "then a new arc from node B to node A is created "
+                     "with the same weight.</p>"
 
-                           "<p><em>Symmetrize Edges by examining Strong Ties:</em></p>"
-                           "<p>Creates a new symmetric relation by keeping strong ties only. "
-                           "In the new relation, a tie will exist between actor A and "
-                           "actor B only when both arcs A -> B and B -> A are present "
-                           "in the current or all relations. </p>"
+                     "<p><em>Symmetrize Edges by examining Strong Ties:</em></p>"
+                     "<p>Creates a new symmetric relation by keeping strong ties only. "
+                     "In the new relation, a tie will exist between actor A and "
+                     "actor B only when both arcs A -> B and B -> A are present "
+                     "in the current or all relations. </p>"
 
-                           "<p><em>Symmetrize Edges by examining Cocitation:</em></p>"
-                           "<p>Creates a new symmetric relation by connecting actors "
-                           "that are cocitated by others. "
-                           "In the new relation, an edge will exist between actor i and "
-                           "actor j only if C(i,j) > 0, where C the Cocitation Matrix. </p>"
-                           ));
-
-    toolBoxEditEdgeSymmetrizeSelect->setWhatsThis(
-                tr("<p><b>Symmetrize Network</b></p>"
-                   "<p>Select a method to symmetrize the network. Available methods: </p>"
-                   "<p><em>Symmetrize Directed Edges:</em></p>"
-                   "<p>Makes all directed arcs in this relation reciprocal. "
-                   "That is, if there is an arc from node A to node B "
-                   "then a new arc from node B to node A is created "
-                   "with the same weight.</p>"
-
-                   "<p><em>Symmetrize Edges by examining Strong Ties:</em></p>"
-                   "<p>Creates a new symmetric relation by keeping strong ties only. "
-                   "In the new relation, a tie will exist between actor A and "
-                   "actor B only when both arcs A -> B and B -> A are present "
-                   "in the current or all relations. "
-                   "If the network is multi-relational, it asks you whether "
-                   "ties in the current relation or all relations are to be considered</p>"
-
-                   "<p><em>Symmetrize Edges by examining Cocitation:</em></p>"
-                   "<p>Creates a new symmetric relation by connecting actors "
-                   "that are cocitated by others. "
-                   "In the new relation, an edge will exist between actor i and "
-                   "actor j only if C(i,j) > 0, where C the Cocitation Matrix. "
-                   "Thus the actor pairs cited by more common neighbors will appear "
-                   "with a stronger tie between them than pairs those cited by fewer "
-                   "common neighbors.</p>"
-                   ));
-
+                     "<p><em>Symmetrize Edges by examining Cocitation:</em></p>"
+                     "<p>Creates a new symmetric relation by connecting actors "
+                     "that are cocitated by others. "
+                     "In the new relation, an edge will exist between actor i and "
+                     "actor j only if C(i,j) > 0, where C the Cocitation Matrix. </p>"
+                     );
+    toolBoxEditEdgeSymmetrizeSelect->setToolTip( helpMessage );
+    toolBoxEditEdgeSymmetrizeSelect->setWhatsThis( helpMessage );
 
     QStringList symmetrizeCommands;
     symmetrizeCommands << "Select"
@@ -3992,34 +3943,22 @@ void MainWindow::initPanels(){
     toolBoxAnalysisMatricesSelectLabel->setMinimumWidth(90);
     toolBoxAnalysisMatricesSelect = new QComboBox;
     toolBoxAnalysisMatricesSelect -> setStatusTip(
-                tr("Select which matrix to compute and display, based on the adjacency matrix of the current network."));
-    toolBoxAnalysisMatricesSelect -> setToolTip(
-                tr("<p><b>Matrix Analysis</b></p>"
-                   "<p>Compute and display the adjacency matrix and other matrices "
-                   "based on the adjacency matrix of the current network. "
-                   "Available options:"
-                   "<p><em>Adjacency Matrix</em></p>"
-                   "<p><em>Adjacency Matrix Plot</em></p>"
-                   "<p><em>Inverse of Adjacency Matrix</em></p>"
-                   "<p><em>Transpose of Adjacency Matrix</em></p>"
-                   "<p><em>Cocitation Matrix </em></p>"
-                   "<p><em>Degree Matrix </em></p>"
-                   "<p><em>Laplacian Matrix </em></p>"
-                   ));
-
-    toolBoxAnalysisMatricesSelect -> setWhatsThis(
-                tr("<p><b>Matrix Analysis</b></p>"
-                   "<p>Compute and display the adjacency matrix and other matrices "
-                   "based on the adjacency matrix of the current network. "
-                   "Available options:"
-                   "<p><em>Adjacency Matrix</em></p>"
-                   "<p><em>Adjacency Matrix Plot</em></p>"
-                   "<p><em>Inverse of Adjacency Matrix</em></p>"
-                   "<p><em>Transpose of Adjacency Matrix</em></p>"
-                   "<p><em>Cocitation Matrix </em></p>"
-                   "<p><em>Degree Matrix </em></p>"
-                   "<p><em>Laplacian Matrix </em></p>"
-                   ));
+                tr("Select which matrix to compute and display, based on the "
+                   "adjacency matrix of the current network."));
+    helpMessage = tr("<p><b>Matrix Analysis</b></p>"
+                     "<p>Compute and display the adjacency matrix and other matrices "
+                     "based on the adjacency matrix of the current network. "
+                     "Available options:"
+                     "<p><em>Adjacency Matrix</em></p>"
+                     "<p><em>Adjacency Matrix Plot</em></p>"
+                     "<p><em>Inverse of Adjacency Matrix</em></p>"
+                     "<p><em>Transpose of Adjacency Matrix</em></p>"
+                     "<p><em>Cocitation Matrix </em></p>"
+                     "<p><em>Degree Matrix </em></p>"
+                     "<p><em>Laplacian Matrix </em></p>"
+                     );
+    toolBoxAnalysisMatricesSelect -> setToolTip( helpMessage );
+    toolBoxAnalysisMatricesSelect -> setWhatsThis( helpMessage );
     QStringList graphMatricesList;
     graphMatricesList << "Select"
                           << "Adjacency"
@@ -4040,12 +3979,45 @@ void MainWindow::initPanels(){
     toolBoxAnalysisCohesionSelect = new QComboBox;
     toolBoxAnalysisCohesionSelect -> setStatusTip(
                 tr("Select a graph-theoretic metric to compute, i.e. distances, walks, graph diameter, eccentricity."));
-    toolBoxAnalysisCohesionSelect -> setToolTip(
-                tr("Basic graph-theoretic metrics, such as distances, walks, \n"
-                   "graph diameter, eccentricity, clustering coefficient, etc."));
-    toolBoxAnalysisCohesionSelect -> setWhatsThis(
-                tr("Analyze Cohesion\n\n"
-                   "Compute basic graph-theoretic metrics, i.e. distances, walks, graph diameter, eccentricity."));
+    helpMessage =
+            tr("<p><b>Analyze Cohesion</b></p>"
+               "<p><Compute basic graph-theoretic metrics. "
+
+               "<p><em>Reciprocity:</em><p>"
+               "<p>Measures the likelihood that pairs of nodes in a directed network are mutually linked.</p>"
+
+               "<p><em>Symmetry:</em><p>"
+               "<p>Checks if the directed network is symmetric or not.<p>"
+
+               "<p><em>Distances:</em></p>"
+               "<p>Computes the matrix of geodesic distances between all pairs of nodes.<p>"
+
+               "<p><em>Average Distance:</em></p>"
+               "<p>Computes the average distance between all nodes.<p>"
+
+               "<p><em>Graph Diameter:</em></p>"
+               "<p>The maximum distance between any two nodes in the network.</p>"
+
+               "<p><em>Walks:</em></p>"
+               "<p>A walk is a sequence of edges and vertices (nodes), where "
+               "each edge's endpoints are the two vertices adjacent to it. "
+               "In a walk, vertices and edges may repeat."
+
+               "<p><em>Eccentricity:</em></p>"
+               "<p>The Eccentricity of each node is how far, at most, is from every other actor in the network.</p>"
+
+               "<p><em>Reachability:</em></p>"
+               "<p>Creates a matrix where an element (i,j) = 1 only if the actors i and j are reachable.</p>"
+
+               "<p><em>Clustering Coefficient (CLC):</em></p>"
+               "<p>The CLC score of each node  is the proportion of actual links "
+               "between its neighbors divided by the number of links that could "
+               "possibly exist between them. "
+               "Quantifies how close each actor and its neighbors are to form "
+               "a complete subgraph (clique)");
+    toolBoxAnalysisCohesionSelect -> setToolTip( helpMessage );
+    toolBoxAnalysisCohesionSelect -> setWhatsThis(helpMessage);
+
     QStringList graphPropertiesList;
     graphPropertiesList << "Select"
                           << "Reciprocity"
@@ -4071,24 +4043,79 @@ void MainWindow::initPanels(){
     toolBoxAnalysisProminenceSelectLabel->setMinimumWidth(90);
     toolBoxAnalysisProminenceSelect = new QComboBox;
     toolBoxAnalysisProminenceSelect -> setStatusTip(
-                tr("Select a prominence metric to compute for each actor and the whole network. ")
+                tr("Select a prominence metric to compute for each actor "
+                   "and the whole network. ")
                 );
-    toolBoxAnalysisProminenceSelect -> setToolTip(
-                tr("Metrics to understand how 'prominent' or important each \n"
-                   "actor (node) is inside the network, i.e.\n Betweenness Centrality, \n"
-                   "Eigenvector Centrality, PageRank etc.")
-                );
-    toolBoxAnalysisProminenceSelect -> setWhatsThis(
-                tr("Analyze Prominence\n\n"
-                   "Computes various metrics to see how 'prominent' or "
-                   "important each actor (node) is inside the network.\n\n"
-                "Centrality metrics quantify how central is each node by examining "
-                   "its ties and its geodesic distances (shortest path lengths) to other nodes. "
-                "Most Centrality indices were designed for undirected graphs.\n\n"
-                "Prestige indices focus on \"choices received\" to a node. "
-                "These indices measure the nominations or ties to each node from all others (or inLinks). "
-                "Prestige indices are suitable (and can be calculated only) on directed graphs.")
-                );
+    helpMessage = tr("<p><b>Prominence Analysis</b></p>"
+                     "<p>Compute metrics to measure how <em>prominent</em> (important) "
+                     "each actor (node) is inside the network. </p>"
+                     "<p>Centrality metrics quantify how central is each node by examining "
+                     "its ties and its geodesic distances (shortest path lengths) to other nodes. "
+                     "Most Centrality indices were designed for undirected graphs. </p>"
+
+                     "<p>Prestige indices focus on \"choices received\" to a node. "
+                     "These indices measure the nominations or ties to each node from all others (or inLinks). "
+                     "Prestige indices are suitable (and can be calculated only) on directed graphs.</p>"
+
+                     "<p>Available measures:</p>"
+
+                     "<p><em>Degree Centrality (DC) </em></p>"
+                     "<p>The sum of outbound edges or the sum of weights of outbound "
+                     "edges from each node <em>i</em> to all adjacent nodes. Note: This is "
+                     "the outDegree Centrality. To compute inDegree Centrality, "
+                     "use the Degree Prestige measure.</p>"
+
+                     "<p><em>Closeness Centrality (CC):</em></p>"
+                     "The inverted sum of geodesic distances from each node <em>u</em> "
+                     "to all other nodes. "
+
+                     "<p><em>IR Closeness Centrality (IRCC):</em></p>"
+                     "<p>The ratio of the fraction of nodes reachable by each node <em>u</em> "
+                     "to the average distance of these nodes from <em>u</em>.</p>"
+
+                     "<p><em>Betweenness Centrality (BC):</em></p>"
+                     "<p>The sum of delta<sub>(s,t,u)</sub> for all s,t ∈ V where "
+                     "delta<sub>(s,t,u)</sub> is the ratio of all geodesics between nodes "
+                     "<em>s</em> and <em>t</em> which run through node <em>u</em>.</p> "
+
+                     "<p><em>Stress Centrality (SC):</em></p>"
+                     "<p>The sum of sigma<sub>(s,t,u)</sub> for all s,t ∈ V where "
+                     "sigma<sub>(s,t,u)</sub> is the number of geodesics between nodes "
+                     "<em>s</em> and <em>t</em> which run through node <em>u</em>.</p> "
+
+                     "<p><em>Eccentricity Centrality (EC):</em></p>"
+                     "<p>The inverse maximum geodesic distance from node <em>u</em> to "
+                     "all other nodes in the network."
+
+                     "<p><em>Power Centrality (PC):</em></p>"
+                     "<p>The sum of the sizes of all N<sub>th</sub>-order neighbourhoods "
+                     "of node <em>u</em> with weight 1/n.</p>"
+
+                     "<p><em>Information Centrality (IC):</em></p>"
+                     "<p>Measures the information flow through all paths between actors weighted by "
+                     "strength of tie and distance.</p>"
+
+                     "<p><em>Eigenvector Centrality (EVC):</em></p>"
+                     "<p>The EVC score of each node <em>i</em> is the i<sub>th</sub> element of the "
+                     "leading eigenvector of the adjacency matrix, that is the "
+                     "eigenvector corresponding to the largest positive eigenvalue. "
+
+                     "<p><em>Degree Prestige (DP):</em></p>"
+                     "<p>Also known as InDegree Centrality, it is the sum of inbound edges to a node <em>u</em> "
+                     "from all adjacent nodes. </p>"
+
+                     "<p><em>PageRank Prestige (PRP):</em></p>"
+                     "<p>For each node <em>u</em> counts all inbound links (edges) to it, but "
+                     "it normalizes each inbound link from another node <em>v</em> by the outDegree of <em>v</em>. </p>"
+
+                     "<p><em>Proximity Prestige (PP):</em></p>"
+                     "<p>The ratio of the proportion of nodes who can reach each node <em>u</em> "
+                     "to the average distance these nodes are from it. Similar to Closeness Centrality "
+                     "but it counts only inbound distances to each actor, thus it is a measure of actor prestige.</p>"
+                     );
+    toolBoxAnalysisProminenceSelect -> setToolTip( helpMessage );
+    toolBoxAnalysisProminenceSelect -> setWhatsThis( helpMessage);
+
     QStringList prominenceCommands;
     prominenceCommands << "Select"
                        << "Degree Centr."
@@ -4113,16 +4140,14 @@ void MainWindow::initPanels(){
     toolBoxAnalysisCommunitiesSelect = new QComboBox;
     toolBoxAnalysisCommunitiesSelect->setStatusTip(
                 tr("Select a community detection metric / cohesive subgroup algorithm, i.e. cliques, triad census etc."));
-    toolBoxAnalysisCommunitiesSelect->setToolTip(
-                tr("Community detection metrics and cohesive subgroup algorithms, \n"
-                   "i.e. cliques, triad census etc."));
-            toolBoxAnalysisCommunitiesSelect->setWhatsThis(
-                        tr("Analyze Communities\n\n"
-                           "Community detection metrics and cohesive subgroup algorithms, "
-                           "(i.e. cliques, triad census etc), to identify "
-                           "meaningful subgraphs in the graph."
-                           "For instance, select cliques to count and identify "
-                           "all maximal cliques of actors in the network. "));
+    helpMessage = tr("<p><b>Community Analysis</b></p>"
+                     "<p>Community detection metrics and cohesive subgroup algorithms, "
+                     "(i.e. cliques, triad census etc), to identify "
+                     "meaningful subgraphs in the graph.</p>"
+                     "<p>For instance, select cliques to count and identify "
+                     "all maximal cliques of actors in the network. </p>");
+    toolBoxAnalysisCommunitiesSelect->setToolTip( helpMessage );
+    toolBoxAnalysisCommunitiesSelect->setWhatsThis( helpMessage );
     QStringList communitiesCommands;
     communitiesCommands << "Select"
                            << "Cliques"
@@ -4141,15 +4166,16 @@ void MainWindow::initPanels(){
                 tr("Select a metric to measure structural equivalence, "
                    "i.e. Pearson Coefficients, tie profile similarities, "
                    "hierarchical clustering, etc."));
-    toolBoxAnalysisStrEquivalenceSelect->setToolTip(
-                tr("Structural equivalence measures and visualization algorithms, \n"
-                   "i.e. Pearson Coefficients, tie profile similarities, \n"
-                   "hierarchical clustering"));
-    toolBoxAnalysisStrEquivalenceSelect->setWhatsThis(
-                tr("Analyze Structural Equivalence\\n\n"
-                   "Structural equivalence measures and visualization algorithms, "
-                   "i.e. Pearson Coefficients, tie profile similarities, "
-                   "hierarchical clustering "));
+    helpMessage =  tr("<p><b>Structural Equivalence Analysis</b></p>"
+                      "<p>Select one of the available structural equivalence "
+                      "measures and visualization algorithms. <p>"
+                      "<p>Available options</p>"
+                      "<p><em>Pearson Coefficients<.em></p>"
+                      "<p><em>Tie profile similarities</em></p>"
+                      "<p><em>Dissimilarities</em></p>"
+                      "<p><em>Hierarchical Clustering Analysis</em></p>");
+    toolBoxAnalysisStrEquivalenceSelect->setToolTip( helpMessage );
+    toolBoxAnalysisStrEquivalenceSelect->setWhatsThis( helpMessage );
     QStringList connectivityCommands;
     connectivityCommands << "Select"
                          << "Pearson Coefficients"
@@ -4190,45 +4216,70 @@ void MainWindow::initPanels(){
     toolBoxLayoutByIndexSelectLabel->setMinimumWidth(90);
     toolBoxLayoutByIndexSelect = new QComboBox;
     toolBoxLayoutByIndexSelect->setStatusTip(tr("Select a prominence-based layout model"));
-    toolBoxLayoutByIndexSelect->setToolTip(
-                tr("Select a prominence-based layout model. \n\n"
-                   "Available indices:\n"
-                   "Degree Centrality (DC): \n"
-                   "In undirected networks, the DC of each node u is the sum of edges \n"
-                   "attached to it. \n"
-                   "In directed networks, the DC is the sum of outbound arcs from node u \n"
-                   "to all adjacent nodes (also called \"outDegree Centrality\").\n"
-                   "In weighted networks, the DC score is the sum of weights of outbound \n"
-                   "edges from node u to all adjacent nodes\n."
-                   "Note: To compute inDegree Centrality, use the Degree Prestige measure.\n\n"
-                   "Closeness Centrality:\n"
-                   ""
-                   "IR Closeness Centrality:\n"
-                   ""
-                   "Betweenness Centrality:\n"
-                   ""
-                   "Stress Centrality:\n"
-                   ""
-                   "Eccentricity Centrality:\n"
-                   ""
-                   "Power Centrality:\n"
-                   ""
-                   "Information Centrality:\n"
-                   ""
-                   "Eigenvector Centrality:\n"
-                   ""
-                   "Degree Prestige:\n"
-                   ""
-                   "PageRank Prestige:\n"
-                   ""
-                   "Proximity Prestige:\n"
-                   ""
-                   ""));
-    toolBoxLayoutByIndexSelect->setWhatsThis(
-                tr("<p><b>Visualize by prominence index</b></p>"
-                   "<p>Apply a prominence-based layout model to the network.</p>"
-                   "<p>For instance, you can apply a degree centrality layout. </p>"
-                   "<p>For each prominence index, you can select a radial or level layout type.</p>"));
+    helpMessage = tr("<p><b>Visualize by prominence index</b></p>"
+                     "<p>Apply a prominence-based layout model to the network.</p>"
+                     "<p>For instance, you can apply a degree centrality layout. </p>"
+
+                     "<p>Note: For each prominence index, you must select a layout type (below).</p>"
+
+                     "<p>Available measures:</p>"
+
+                     "<p><em>Degree Centrality (DC) </em></p>"
+                     "<p>The sum of outbound edges or the sum of weights of outbound "
+                     "edges from each node <em>i</em> to all adjacent nodes. Note: This is "
+                     "the outDegree Centrality. To compute inDegree Centrality, "
+                     "use the Degree Prestige measure.</p>"
+
+                     "<p><em>Closeness Centrality (CC):</em></p>"
+                     "The inverted sum of geodesic distances from each node <em>u</em> "
+                     "to all other nodes. "
+
+                     "<p><em>IR Closeness Centrality (IRCC):</em></p>"
+                     "<p>The ratio of the fraction of nodes reachable by each node <em>u</em> "
+                     "to the average distance of these nodes from <em>u</em>.</p>"
+
+                     "<p><em>Betweenness Centrality (BC):</em></p>"
+                     "<p>The sum of delta<sub>(s,t,u)</sub> for all s,t ∈ V where "
+                     "delta<sub>(s,t,u)</sub> is the ratio of all geodesics between nodes "
+                     "<em>s</em> and <em>t</em> which run through node <em>u</em>.</p> "
+
+                     "<p><em>Stress Centrality (SC):</em></p>"
+                     "<p>The sum of sigma<sub>(s,t,u)</sub> for all s,t ∈ V where "
+                     "sigma<sub>(s,t,u)</sub> is the number of geodesics between nodes "
+                     "<em>s</em> and <em>t</em> which run through node <em>u</em>.</p> "
+
+                     "<p><em>Eccentricity Centrality (EC):</em></p>"
+                     "<p>The inverse maximum geodesic distance from node <em>u</em> to "
+                     "all other nodes in the network."
+
+                     "<p><em>Power Centrality (PC):</em></p>"
+                     "<p>The sum of the sizes of all N<sub>th</sub>-order neighbourhoods "
+                     "of node <em>u</em> with weight 1/n.</p>"
+
+                     "<p><em>Information Centrality (IC):</em></p>"
+                     "<p>Measures the information flow through all paths between actors weighted by "
+                     "strength of tie and distance.</p>"
+
+                     "<p><em>Eigenvector Centrality (EVC):</em></p>"
+                     "<p>The EVC score of each node <em>i</em> is the i<sub>th</sub> element of the "
+                     "leading eigenvector of the adjacency matrix, that is the "
+                     "eigenvector corresponding to the largest positive eigenvalue. "
+
+                     "<p><em>Degree Prestige (DP):</em></p>"
+                     "<p>Also known as InDegree Centrality, it is the sum of inbound edges to a node <em>u</em> "
+                     "from all adjacent nodes. </p>"
+
+                     "<p><em>PageRank Prestige (PRP):</em></p>"
+                     "<p>For each node <em>u</em> counts all inbound links (edges) to it, but "
+                     "it normalizes each inbound link from another node <em>v</em> by the outDegree of <em>v</em>. </p>"
+
+                     "<p><em>Proximity Prestige (PP):</em></p>"
+                     "<p>The ratio of the proportion of nodes who can reach each node <em>u</em> "
+                     "to the average distance these nodes are from it. Similar to Closeness Centrality "
+                     "but it counts only inbound distances to each actor, thus it is a measure of actor prestige.</p>"
+                     );
+    toolBoxLayoutByIndexSelect->setToolTip( helpMessage );
+    toolBoxLayoutByIndexSelect->setWhatsThis( helpMessage );
     QStringList indicesList;
     indicesList << "None"
                 << "Random"
@@ -4255,14 +4306,11 @@ void MainWindow::initPanels(){
     toolBoxLayoutByIndexTypeSelect = new QComboBox;
     toolBoxLayoutByIndexTypeSelect->setStatusTip(
                 tr("Select layout type for the selected model"));
-    toolBoxLayoutByIndexTypeSelect->setToolTip(
-                tr("<p><b>Layout Type</b></p>"
-                   "</p>Select a layout type (radial, level, node size or node color) "
-                   "for the selected prominence-based model you want to apply to the network.</p>"));
-    toolBoxLayoutByIndexTypeSelect->setWhatsThis(
-                tr("<p><b>Layout Type</b></p>"
-                   "</p>Select a layout type (radial, level, node size or node color)"
-                   "for the selected prominence-based model you want to apply to the network.</p>"));
+    helpMessage = tr("<p><b>Layout Type</b></p>"
+                     "</p>Select a layout type (radial, level, node size or node color)"
+                     "for the selected prominence-based model you want to apply to the network.</p>");
+    toolBoxLayoutByIndexTypeSelect->setToolTip( helpMessage );
+    toolBoxLayoutByIndexTypeSelect->setWhatsThis( helpMessage );
     QStringList layoutTypes;
     layoutTypes << "Radial" << "On Levels" << "Node Size"<< "Node Color";
     toolBoxLayoutByIndexTypeSelect->addItems(layoutTypes);
@@ -4288,12 +4336,12 @@ void MainWindow::initPanels(){
     //create a box and set the above layout inside
     QGroupBox *layoutByIndexBox= new QGroupBox(tr("By Prominence Index"));
     layoutByIndexBox->setMinimumHeight(120);
-    layoutByIndexBox->setToolTip(
-                    tr("<p><b>Visualize by prominence index</b/></p>"
-                       "<p>Apply a prominence-based layout model to the network. </p>"
-                       "<p>For instance, you can apply a Degree Centrality layout. </p>"
-                       "<p>For each prominence index, you must select a layout type:</p>"
-                       "<p>Radial, Levels, NodeSize or NodeColor</p>"));
+    helpMessage = tr("<p><b>Visualize by prominence index</b/></p>"
+                     "<p>Apply a prominence-based layout model to the network. </p>"
+                     "<p>For instance, you can apply a Degree Centrality layout. </p>"
+                     "<p>For each prominence index, you must select a layout type:</p>"
+                     "<p>Radial, Levels, NodeSize or NodeColor</p>");
+    layoutByIndexBox->setToolTip( helpMessage );
     layoutByIndexBox->setLayout (layoutByIndexGrid );
 
 
@@ -4314,62 +4362,35 @@ void MainWindow::initPanels(){
     toolBoxLayoutForceDirectedSelect->setMinimumWidth(120);
     toolBoxLayoutForceDirectedSelect->setStatusTip (
                             tr("Select a Force-Directed layout model. "));
-    toolBoxLayoutForceDirectedSelect->setToolTip (
-                tr("<p><b>Select a Force-Directed Placement layout model to embed to the network.</b></p>"
-                   "<p>Available models: </p>"
-                   "<p>Kamada-Kawai</p>"
-                   "<p>The best variant of the Spring Embedder family of models. "
-                   "<p>In this the graph is considered to be a dynamic system where "
-                   "every edge is between two actors is a 'spring' of a desirable "
-                   "length, which corresponds to their graph theoretic distance. </p>"
-                   "<p>In this way, the optimal layout of the graph \n"
-                   "is the state with the minimum imbalance. The degree of "
-                   "imbalance is formulated as the total spring energy: "
-                   "the square summation of the differences between desirable "
-                   "distances and real ones for all pairs of vertices.</p>"
+    helpMessage = tr("<p><b>Visualize by a Force-Directed Placement layout model.</b></p> "
+                     "<p>Available models: </p>"
 
-                   "<p>Fruchterman-Reingold</p>"
-                   "<p>In this model, the vertices behave as atomic particles "
-                   "or celestial bodies, exerting attractive and repulsive "
-                   "forces to each other. Again, only vertices that are "
-                   "neighbours  attract each other but, unlike Eades Spring "
-                   "Embedder, all vertices repel each other.</p>"
+                     "<p><em>Kamada-Kawai</em></p>"
+                     "<p>The best variant of the Spring Embedder family of models. "
+                     "<p>In this the graph is considered to be a dynamic system where "
+                     "every edge is between two actors is a 'spring' of a desirable "
+                     "length, which corresponds to their graph theoretic distance. </p>"
+                     "<p>In this way, the optimal layout of the graph \n"
+                     "is the state with the minimum imbalance. The degree of "
+                     "imbalance is formulated as the total spring energy: "
+                     "the square summation of the differences between desirable "
+                     "distances and real ones for all pairs of vertices.</p>"
 
-                   "<p>Eades Spring Embedder</p>"
-                   "<p>A spring-gravitational model, where each node is "
-                   "regarded as physical object (ring) repelling all other non-adjacent "
-                   "nodes, while springs between connected nodes attract them.</p>"
+                     "<p><em>Fruchterman-Reingold:</em></p>"
+                     "<p>In this model, the vertices behave as atomic particles "
+                     "or celestial bodies, exerting attractive and repulsive "
+                     "forces to each other. Again, only vertices that are "
+                     "neighbours  attract each other but, unlike Eades Spring "
+                     "Embedder, all vertices repel each other.</p>"
 
-                   )
-                );
-    toolBoxLayoutForceDirectedSelect->setWhatsThis(
-                tr("<p><b>Visualize by a Force-Directed Placement layout model.</b></p> "
-                   "<p>Available models: </p>"
-                   "<p><em>Kamada-Kawai</em></p>"
-                   "<p>The best variant of the Spring Embedder family of models. "
-                   "<p>In this the graph is considered to be a dynamic system where "
-                   "every edge is between two actors is a 'spring' of a desirable "
-                   "length, which corresponds to their graph theoretic distance. </p>"
-                   "<p>In this way, the optimal layout of the graph \n"
-                   "is the state with the minimum imbalance. The degree of "
-                   "imbalance is formulated as the total spring energy: "
-                   "the square summation of the differences between desirable "
-                   "distances and real ones for all pairs of vertices.</p>"
+                     "<p><em>Eades Spring Embedder:</em></p>"
+                     "<p>A spring-gravitational model, where each node is "
+                     "regarded as physical object (ring) repelling all other non-adjacent "
+                     "nodes, while springs between connected nodes attract them.</p>"
 
-                   "<p>Fruchterman-Reingold</p>"
-                   "<p>In this model, the vertices behave as atomic particles "
-                   "or celestial bodies, exerting attractive and repulsive "
-                   "forces to each other. Again, only vertices that are "
-                   "neighbours  attract each other but, unlike Eades Spring "
-                   "Embedder, all vertices repel each other.</p>"
-
-                   "<p>Eades Spring Embedder</p>"
-                   "<p>A spring-gravitational model, where each node is "
-                   "regarded as physical object (ring) repelling all other non-adjacent "
-                   "nodes, while springs between connected nodes attract them.</p>"
-
-                   )
-                );
+                     );
+    toolBoxLayoutForceDirectedSelect->setToolTip ( helpMessage );
+    toolBoxLayoutForceDirectedSelect->setWhatsThis( helpMessage );
 
     toolBoxLayoutForceDirectedApplyButton = new QPushButton(tr("Apply"));
     toolBoxLayoutForceDirectedApplyButton->setFocusPolicy(Qt::NoFocus);
