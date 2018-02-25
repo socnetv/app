@@ -6349,23 +6349,27 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
     QFileInfo fileInfo (fileName);
     fileNameNoPath = fileInfo.fileName();
 
+    // if the specified format is one of the supported ones, just save it.
     if ( activeGraph->graphFileFormatExportSupported( fileFormat ) )
     {
         activeGraph->graphSave(fileName, fileFormat ) ;
     }
+    // if it is GraphML or new file not saved yet, just save it.
     else if (activeGraph->graphFileFormat()==FILE_GRAPHML ||
              ( activeGraph->graphSaved() && !activeGraph->graphLoaded() )
              )
-    {	//new file or GraphML
+    {
         activeGraph->graphSave(fileName, FILE_GRAPHML);
     }
-
+    // check whether Graph thinks this is supported.
     else if ( activeGraph->graphFileFormatExportSupported(
                   activeGraph->graphFileFormat()
                   ) )
     {
         activeGraph->graphSave(fileName, activeGraph->graphFileFormat() ) ;
     }
+    // In any other case, save in GraphML.
+    // First, inform the user that we will save in that format.
     else
     {
         switch(
@@ -6381,6 +6385,10 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
                )
         {
         case QMessageBox::Yes:
+            fileName = QFileInfo(fileName).absolutePath() + "/"  + QFileInfo(fileName).baseName();
+            fileName.append(".graphml");
+            fileNameNoPath = QFileInfo (fileName).fileName();
+            setLastPath(fileName); // store this path
              activeGraph->graphSave(fileName, FILE_GRAPHML);
             break;
         case QMessageBox::Cancel:
