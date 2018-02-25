@@ -6767,18 +6767,19 @@ void MainWindow::slotNetworkFileLoad(const QString m_fileName,
             m_fileFormat == FILE_EDGELIST_WEIGHTED ) {
         bool ok;
         QString delimiter =
-                QInputDialog::getText(this, tr("Enter column delimiter"),
-                                      tr("SocNetV supports edge list formatted files"
-                                         "with arbitrary column delimiters. \n"
-                                         "The default delimiter is one or more spaces.\n"
-                                         "If the column delimiter in this file is "
-                                         "other than simple space or TAB, \n"
-                                         "please enter it below.\n"
-                                         "For instance, if the delimiter is a "
-                                         "comma or pipe enter \",\" or \"|\" respectively.\n"
-                                         "Leave empty to use space or TAB as delimiter."),
-                                      QLineEdit::Normal,
-                                      QString(""), &ok);
+                QInputDialog::getText(
+                    this, tr("Column delimiter in Edgelist file "),
+                    tr("SocNetV supports edge list formatted files "
+                       "with arbitrary column delimiters. \n"
+                       "The default delimiter is one or more spaces.\n\n"
+                       "If the column delimiter in this file is "
+                       "other than simple space or TAB, \n"
+                       "please enter it below.\n\n"
+                       "For instance, if the delimiter is a "
+                       "comma or pipe enter \",\" or \"|\" respectively.\n\n"
+                       "Leave empty to use space or TAB as delimiter."),
+                    QLineEdit::Normal,
+                    QString(""), &ok);
         if (!ok || delimiter.isEmpty() || delimiter.isNull() ) {
             delimiter=" ";
         }
