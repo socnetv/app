@@ -1644,12 +1644,13 @@ void MainWindow::initActions(){
     layoutRadialProminence_EC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_6);
     layoutRadialProminence_EC_Act ->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
-                    "proportional to their Eccentricity Centrality."));
+                    "proportional to their Eccentricity Centrality (aka Harary Graph Centrality)."));
     layoutRadialProminence_EC_Act->
             setWhatsThis(
                 tr("Eccentricity Centrality (EC) Radial Layout\n\n"
                     "Repositions all nodes on concentric circles of radius "
-                    "inversely proportional to their Eccentricity Centrality score. "
+                    "inversely proportional to their Eccentricity Centrality "
+                   "(aka Harary Graph Centrality) score. "
                     "Nodes having higher EC are closer to the centre."
                     ));
     connect(layoutRadialProminence_EC_Act, SIGNAL(triggered()),
@@ -1843,12 +1844,13 @@ void MainWindow::initActions(){
     layoutLevelProminence_EC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_6);
     layoutLevelProminence_EC_Act ->setStatusTip(
                 tr("Place nodes on horizontal levels of height "
-                     "proportional to their Eccentricity Centrality."));
+                     "proportional to their Eccentricity Centrality (aka Harary Graph Centrality)."));
     layoutLevelProminence_EC_Act->
              setWhatsThis(
                  tr("Eccentricity Centrality (EC) Levels Layout\n\n"
                      "Repositions all nodes on horizontal levels of height"
-                     "proportional to their Eccentricity Centrality score. "
+                     "proportional to their Eccentricity Centrality "
+                    "(aka Harary Graph Centrality) score. "
                      "Nodes having higher EC are closer to the top."
                     ));
     connect(layoutLevelProminence_EC_Act, SIGNAL(triggered()),
@@ -2045,12 +2047,12 @@ void MainWindow::initActions(){
     layoutNodeSizeProminence_EC_Act -> setShortcut(Qt::ALT+ Qt::Key_6);
     layoutNodeSizeProminence_EC_Act ->setStatusTip(
                 tr("Resize all nodes to be "
-                     "proportional to their Eccentricity Centrality."));
+                     "proportional to their Eccentricity Centrality (aka Harary Graph Centrality)."));
     layoutNodeSizeProminence_EC_Act->
              setWhatsThis(
                  tr("Eccentricity Centrality (EC) NodeSizes Layout\n\n"
                      "Changes the size of all nodes to be "
-                     "proportional to their Eccentricity Centrality score. "
+                     "proportional to their Eccentricity Centrality (aka Harary Graph Centrality) score. "
                      "Nodes having higher EC will appear bigger."
                     ));
     connect(layoutNodeSizeProminence_EC_Act, SIGNAL(triggered()),
@@ -2261,12 +2263,12 @@ void MainWindow::initActions(){
                 );
     layoutNodeColorProminence_EC_Act ->setStatusTip(
                 tr("Change the color of all nodes to "
-                     "reflect their Eccentricity Centrality."));
+                     "reflect their Eccentricity Centrality (aka Harary Graph Centrality)."));
     layoutNodeColorProminence_EC_Act->
              setWhatsThis(
                  tr("Eccentricity Centrality (EC) NodeColors Layout\n\n"
                      "Changes the color of all nodes to "
-                     "reflect their Eccentricity Centrality score. "
+                     "reflect their Eccentricity Centrality (aka Harary Graph Centrality) score. "
                      "Nodes having higher EC will have warmer color (i.e. red)."
                     ));
     connect(layoutNodeColorProminence_EC_Act, SIGNAL(triggered()),
@@ -2963,9 +2965,11 @@ void MainWindow::initActions(){
 
     cEccentAct = new QAction(tr("Eccentricity Centrality (EC)"), this);
     cEccentAct-> setShortcut(Qt::CTRL + Qt::Key_6);
-    cEccentAct->setStatusTip(tr("Compute Eccentricity Centrality indices for each node."));
+    cEccentAct->setStatusTip(tr("Compute Eccentricity Centrality (aka Harary Graph Centrality) scores for each node."));
     cEccentAct->setWhatsThis(
-                tr("Eccentricity Centrality (EC)\n\n For each node i, "
+                tr("Eccentricity Centrality (EC)\n\n "
+                   "This index is also known as Harary Graph Centrality. "
+                   "For each node i, "
                    "the EC is the inverse of the maximum geodesic distance "
                    "of that v to all other nodes in the network. \n"
                    "Nodes with high EC have short distances to all other nodes "
@@ -4084,7 +4088,7 @@ void MainWindow::initPanels(){
                      "<em>s</em> and <em>t</em> which run through node <em>u</em>.</p> "
 
                      "<p><em>Eccentricity Centrality (EC):</em></p>"
-                     "<p>The inverse maximum geodesic distance from node <em>u</em> to "
+                     "<p>Also known as Harary Graph Centrality. The inverse maximum geodesic distance from node <em>u</em> to "
                      "all other nodes in the network."
 
                      "<p><em>Power Centrality (PC):</em></p>"
@@ -4249,7 +4253,7 @@ void MainWindow::initPanels(){
                      "<em>s</em> and <em>t</em> which run through node <em>u</em>.</p> "
 
                      "<p><em>Eccentricity Centrality (EC):</em></p>"
-                     "<p>The inverse maximum geodesic distance from node <em>u</em> to "
+                     "<p>Also known as Harary Graph Centrality. The inverse maximum geodesic distance from node <em>u</em> to "
                      "all other nodes in the network."
 
                      "<p><em>Power Centrality (PC):</em></p>"

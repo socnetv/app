@@ -7832,9 +7832,10 @@ void Graph::writeCentralityEccentricity(const QString fileName,
             << "</p>";
 
     outText << "<p class=\"description\">"
-            << tr("The EC index of a node u is the inverse maximum geodesic distance "
+            << tr("The EC score of a node u is the inverse maximum geodesic distance "
                   "from u to all other nodes in the network.")
             << "<br />"
+            << tr("This index is also known as <em>Harary Graph Centrality</em>. ")
             << tr("EC is standardized.")
             << "</p>";
 
