@@ -371,20 +371,24 @@ bool Parser::loadDL(){
 
 
         //
-        // Check if keywords are given in other lines
+        // Check if keywords are given in other lines, which do not start with DL
         //
-        if ( !str.contains("DL",Qt::CaseInsensitive) &&
-             ( str.contains("n =",Qt::CaseInsensitive) ||
-             str.contains("n=",Qt::CaseInsensitive)  ||
-             str.contains("nm=",Qt::CaseInsensitive)  ||
-             str.contains("nm =",Qt::CaseInsensitive)  ||
-             str.contains("format =",Qt::CaseInsensitive)  ||
-             str.contains("format=",Qt::CaseInsensitive) ) )
+        if ( ! str.contains("DL",Qt::CaseInsensitive) &&
+             (  str.contains("n =",Qt::CaseInsensitive) ||
+                str.contains("n=",Qt::CaseInsensitive)  ||
+                str.contains("nm=",Qt::CaseInsensitive)  ||
+                str.contains("nm =",Qt::CaseInsensitive)  ||
+                str.contains("nr=",Qt::CaseInsensitive)  ||
+                str.contains("nr =",Qt::CaseInsensitive)  ||
+                str.contains("nc=",Qt::CaseInsensitive)  ||
+                str.contains("nc =",Qt::CaseInsensitive)  ||
+                str.contains("format =",Qt::CaseInsensitive)  ||
+                str.contains("format=",Qt::CaseInsensitive) ) )
         {
 
-            // check if this line contains one "="
+            // check if this line contains precisely one "="
             if ( str.count("=",Qt::CaseInsensitive) == 1 ) {
-
+                // then one of the above keywords is declared here
                 tempList = str.split("=", QString::SkipEmptyParts);
 
                 label = tempList[0].simplified();
