@@ -281,12 +281,14 @@ bool Parser::loadDL(){
     QString prevLineStr=QString::null;
     QString label=QString::null;
     QString value=QString::null;
-    QString tempStr=QString::null;
+    QString dlFormat=QString::null;
 
     int lineCounter = 0;
     int source=1;
     int target=1;
     int NM=0;
+    int NR=0;
+    int NC=0;
     int nodeSum=0;
     int relationCounter=0;
 
@@ -346,66 +348,12 @@ bool Parser::loadDL(){
         if (  str.startsWith("DL",Qt::CaseInsensitive) ) {
 
             if ( str.contains(",") ) {
+
                 // If it is a DL file and contains a comma in the first line,
                 // then the line might declare some keywords (N, NM, FORMAT)
                 // this happens in R's sna output files
-
                 lineElement = str.split(",", QString::SkipEmptyParts);
-
-                for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
-                    tempStr = (*it1);
-                    qDebug()<< "element: " << tempStr.toLatin1() ;
-
-                    if ( tempStr.startsWith("DL", Qt::CaseInsensitive )){
-                        // remove DL
-                        tempStr.remove("DL",Qt::CaseInsensitive);
-                        tempStr=tempStr.simplified();
-                    }
-                    // check if this element contains a "="
-                    if ( tempStr.contains("=",Qt::CaseInsensitive)  ) {
-
-                        tempList = tempStr.split("=", QString::SkipEmptyParts);
-
-                        label = tempList[0].simplified();
-                        value= tempList[1].simplified();
-
-                        if (  label == "n" || label  == "N" ) {
-                            qDebug() << "Parser::loadDL() - N is declared to be : "
-                                     << value ;
-                            totalNodes=value.toInt(&intOK,10);
-                            if (!intOK) {
-                                qDebug() << "Parser::loadDL() - N conversion error..." ;
-                                //emit something here...
-                                errorMessage = tr("Cannot convert N value to integer");
-                                return false;
-                            }
-                        }
-                        else if (  label == "nm" || label  == "NM" ) {
-                            qDebug() << "Parser::loadDL() - NM is declared to be : "
-                                     << value ;
-                            NM = value.toInt(&intOK,10);
-                            if (!intOK) {
-                                qDebug() << "Parser::loadDL() - N conversion error..." ;
-                                //emit something here...
-                                errorMessage = tr("Cannot convert NM value to integer");
-                                return false;
-                            }
-                        }
-                        else if (  label == "format" || label  == "FORMAT" ) {
-                            qDebug() << "Parser::loadDL() - FORMAT is declared to be : "
-                                     << value ;
-                            if (value.contains("FULLMATRIX",Qt::CaseInsensitive)) {
-                                fullmatrixFormat=true;
-                                qDebug() << "Parser::loadDL() - FORMAT fullmatrix detected" ;
-                            }
-                            else if (value.contains("edgelist",Qt::CaseInsensitive) ){
-                                edgelist1Format=true;
-                                qDebug() << "Parser::loadDL() - FORMAT edgelist detected" ;
-                            }
-                        }
-                    } // end if contains "=" in first line (network properties)
-
-                } // end for lineElement
+                readDLKeywords(lineElement, totalNodes, NM, NR, NC, fullmatrixFormat, edgelist1Format);
 
             } //  end if str.contains(",")
 
@@ -413,68 +361,13 @@ bool Parser::loadDL(){
             // but contains at least one "=" then we have keywords space separated.
             else if (str.contains("=")){
 
+                // this is space separated
                 lineElement = str.split(" ", QString::SkipEmptyParts);
-
-                for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
-                    tempStr = (*it1);
-                    qDebug()<< "element: " << tempStr.toLatin1() ;
-
-                    if ( tempStr.startsWith("DL", Qt::CaseInsensitive )){
-                        // remove DL
-                        tempStr.remove("DL",Qt::CaseInsensitive);
-                        tempStr=tempStr.simplified();
-                    }
-                    // check if this element contains a "="
-                    if ( tempStr.contains("=",Qt::CaseInsensitive)  ) {
-
-                        tempList = tempStr.split("=", QString::SkipEmptyParts);
-
-                        label = tempList[0].simplified();
-                        value= tempList[1].simplified();
-
-                        if (  label == "n" || label  == "N" ) {
-                            qDebug() << "Parser::loadDL() - N is declared to be : "
-                                     << value ;
-                            totalNodes=value.toInt(&intOK,10);
-                            if (!intOK) {
-                                qDebug() << "Parser::loadDL() - N conversion error..." ;
-                                //emit something here...
-                                errorMessage = tr("Cannot convert N value to integer");
-                                return false;
-                            }
-                        }
-                        else if (  label == "nm" || label  == "NM" ) {
-                            qDebug() << "Parser::loadDL() - NM is declared to be : "
-                                     << value ;
-                            NM = value.toInt(&intOK,10);
-                            if (!intOK) {
-                                qDebug() << "Parser::loadDL() - N conversion error..." ;
-                                //emit something here...
-                                errorMessage = tr("Cannot convert NM value to integer");
-                                return false;
-                            }
-                        }
-                        else if (  label == "format" || label  == "FORMAT" ) {
-                            qDebug() << "Parser::loadDL() - FORMAT is declared to be : "
-                                     << value ;
-                            if (value.contains("FULLMATRIX",Qt::CaseInsensitive)) {
-                                fullmatrixFormat=true;
-                                qDebug() << "Parser::loadDL() - FORMAT fullmatrix detected" ;
-                            }
-                            else if (value.contains("edgelist",Qt::CaseInsensitive) ){
-                                edgelist1Format=true;
-                                qDebug() << "Parser::loadDL() - FORMAT edgelist detected" ;
-                            }
-                        }
-                    } // end if element contains "=" (network properties)
-
-                } // end for lineElement
+                readDLKeywords(lineElement, totalNodes, NM, NR, NC, fullmatrixFormat, edgelist1Format);
 
             } // end else if contains =
 
         } // end if startsWith("DL")
-
-
 
 
         //
@@ -513,9 +406,31 @@ bool Parser::loadDL(){
                              << value ;
                     NM = value.toInt(&intOK,10);
                     if (!intOK) {
-                        qDebug() << "Parser::loadDL() - N conversion error..." ;
+                        qDebug() << "Parser::loadDL() - NM conversion error..." ;
                         //emit something here...
                         errorMessage = tr("Cannot convert NM value to integer");
+                        return false;
+                    }
+                }
+                else if (  label == "nr" || label  == "NR" ) {
+                    qDebug() << "Parser::loadDL() - NR is declared to be : "
+                             << value ;
+                    NR = value.toInt(&intOK,10);
+                    if (!intOK) {
+                        qDebug() << "Parser::loadDL() - NR conversion error..." ;
+                        //emit something here...
+                        errorMessage = tr("Cannot convert NR value to integer");
+                        return false;
+                    }
+                }
+                else if (  label == "nc" || label  == "NC" ) {
+                    qDebug() << "Parser::loadDL() - NC is declared to be : "
+                             << value ;
+                    NC = value.toInt(&intOK,10);
+                    if (!intOK) {
+                        qDebug() << "Parser::loadDL() - NC conversion error..." ;
+                        //emit something here...
+                        errorMessage = tr("Cannot convert NC value to integer");
                         return false;
                     }
                 }
@@ -533,118 +448,21 @@ bool Parser::loadDL(){
                 }
             } // end if count 1 "=" in line (network properties)
 
-            // check if this line contains one "="
+            // check if this line contains more than one "="
             else if  ( str.count("=",Qt::CaseInsensitive) > 1 ) {
 
                  if (str.contains(",")) {
-
                     // this is comma separated
-
                     lineElement = str.split(",", QString::SkipEmptyParts);
-
-                    for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
-                        tempStr = (*it1);
-                        qDebug()<< "element: " << tempStr.toLatin1() ;
-
-                        tempList = tempStr.split("=", QString::SkipEmptyParts);
-
-                        label = tempList[0].simplified();
-                        value= tempList[1].simplified();
-
-                        if (  label == "n" || label  == "N" ) {
-                            qDebug() << "Parser::loadDL() - N is declared to be : "
-                                     << value ;
-                            totalNodes=value.toInt(&intOK,10);
-                            if (!intOK) {
-                                qDebug() << "Parser::loadDL() - N conversion error..." ;
-                                //emit something here...
-                                errorMessage = tr("Cannot convert N value to integer");
-                                return false;
-                            }
-                        }
-                        else if (  label == "nm" || label  == "NM" ) {
-                            qDebug() << "Parser::loadDL() - NM is declared to be : "
-                                     << value ;
-                            NM = value.toInt(&intOK,10);
-                            if (!intOK) {
-                                qDebug() << "Parser::loadDL() - N conversion error..." ;
-                                //emit something here...
-                                errorMessage = tr("Cannot convert NM value to integer");
-                                return false;
-                            }
-                        }
-                        else if (  label == "format" || label  == "FORMAT" ) {
-                            qDebug() << "Parser::loadDL() - FORMAT is declared to be : "
-                                     << value ;
-                            if (value.contains("FULLMATRIX",Qt::CaseInsensitive)) {
-                                fullmatrixFormat=true;
-                                qDebug() << "Parser::loadDL() - FORMAT fullmatrix detected" ;
-                            }
-                            else if (value.contains("edgelist",Qt::CaseInsensitive) ){
-                                edgelist1Format=true;
-                                qDebug() << "Parser::loadDL() - FORMAT edgelist detected" ;
-                            }
-                        } // end format
-
-
-                    } // end for lineElement
-
+                   readDLKeywords(lineElement, totalNodes, NM, NR, NC, fullmatrixFormat, edgelist1Format);
                  } // end else if contains comma
+
                  // check if line contains space i.e. "NR=18 NC=14"
                  else if (str.contains(" ")) {
-
-                     // this is comma separated
-
+                     // this is space separated
                      lineElement = str.split(" ", QString::SkipEmptyParts);
-
-                     for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
-                         tempStr = (*it1);
-                         qDebug()<< "element: " << tempStr.toLatin1() ;
-
-                         tempList = tempStr.split("=", QString::SkipEmptyParts);
-
-                         label = tempList[0].simplified();
-                         value= tempList[1].simplified();
-
-                         if (  label == "n" || label  == "N" ) {
-                             qDebug() << "Parser::loadDL() - N is declared to be : "
-                                      << value ;
-                             totalNodes=value.toInt(&intOK,10);
-                             if (!intOK) {
-                                 qDebug() << "Parser::loadDL() - N conversion error..." ;
-                                 //emit something here...
-                                 errorMessage = tr("Cannot convert N value to integer");
-                                 return false;
-                             }
-                         }
-                         else if (  label == "nm" || label  == "NM" ) {
-                             qDebug() << "Parser::loadDL() - NM is declared to be : "
-                                      << value ;
-                             NM = value.toInt(&intOK,10);
-                             if (!intOK) {
-                                 qDebug() << "Parser::loadDL() - N conversion error..." ;
-                                 //emit something here...
-                                 errorMessage = tr("Cannot convert NM value to integer");
-                                 return false;
-                             }
-                         }
-                         else if (  label == "format" || label  == "FORMAT" ) {
-                             qDebug() << "Parser::loadDL() - FORMAT is declared to be : "
-                                      << value ;
-                             if (value.contains("FULLMATRIX",Qt::CaseInsensitive)) {
-                                 fullmatrixFormat=true;
-                                 qDebug() << "Parser::loadDL() - FORMAT fullmatrix detected" ;
-                             }
-                             else if (value.contains("edgelist",Qt::CaseInsensitive) ){
-                                 edgelist1Format=true;
-                                 qDebug() << "Parser::loadDL() - FORMAT edgelist detected" ;
-                             }
-                         } // end format
-
-
-                     } // end for lineElement
-
-                  } // end else if contains comma
+                     readDLKeywords(lineElement, totalNodes, NM, NR, NC, fullmatrixFormat, edgelist1Format);
+                  } // end else if contains space
 
             } // end if str.count("=") > 1 in line (network properties)
 
@@ -745,6 +563,14 @@ bool Parser::loadDL(){
             // check if we haven't created any nodes...
             if (!nodesCreated_flag) {
 
+                // check if there were NR and NC declared (then this is two-mode)
+                if (NR != 0 && NC != 0) {
+                    //emit something
+                    errorMessage = tr("UCINET declared NR=") + QString::number(NR)
+                            + tr(" and NC=") + QString::number(NC)
+                            + tr(" aka a two-mode net which is not yet supported.");
+                    return false;
+                }
                 // check if we have found row labels
 
                 if ( rowLabels.count() == 0 ) {
@@ -932,6 +758,114 @@ bool Parser::loadDL(){
 
 }
 
+
+
+bool Parser::readDLKeywords(QStringList &strList,
+                            int &N,
+                            int &NM,
+                            int &NR,
+                            int &NC,
+                            bool &fullmatrixFormat,
+                            bool &edgelist1Format){
+    QStringList tempList;
+    QString tempStr=QString::null;
+    QString label=QString::null;
+    QString value=QString::null;
+    bool intOK=false;
+
+    for (QStringList::Iterator it1 = strList.begin(); it1!=strList.end(); ++it1)   {
+        tempStr = (*it1);
+        qDebug() << "Parser::readDLKeywords() - element:" << tempStr.toLatin1() ;
+
+        if ( tempStr.startsWith("DL", Qt::CaseInsensitive )){
+            // remove DL
+            tempStr.remove("DL",Qt::CaseInsensitive);
+            tempStr=tempStr.simplified();
+            qDebug() << "Parser::readDLKeywords() - element contained DL. Removed it:"
+                     << tempStr;
+        }
+
+        // check if this element contains a "="
+        if ( tempStr.count() > 0  ) {
+
+            if (tempStr.contains("=",Qt::CaseInsensitive)) {
+                qDebug() << "Parser::readDLKeywords() - splitting element at = sign";
+
+                tempList = tempStr.split("=", QString::SkipEmptyParts);
+
+                label = tempList[0].simplified();
+                value= tempList[1].simplified();
+
+                if (  label == "n" || label  == "N" ) {
+                    qDebug() << "Parser::readDLKeywords() - N is declared to be : "
+                             << value ;
+                    N=value.toInt(&intOK,10);
+                    if (!intOK) {
+                        qDebug() << "Parser::loadDL() - N conversion error..." ;
+                        //emit something here...
+                        errorMessage = tr("Cannot convert N value to integer");
+                        return false;
+                    }
+                }
+                else if (  label == "nm" || label  == "NM" ) {
+                    qDebug() << "Parser::readDLKeywords() - NM is declared to be : "
+                             << value ;
+                    NM = value.toInt(&intOK,10);
+                    if (!intOK) {
+                        qDebug() << "Parser::readDLKeywords() - NM conversion error..." ;
+                        //emit something here...
+                        errorMessage = tr("Cannot convert NM value to integer");
+                        return false;
+                    }
+                }
+                else if (  label == "nr" || label  == "NR" ) {
+                    qDebug() << "Parser::readDLKeywords() - NR is declared to be : "
+                             << value ;
+                    NR = value.toInt(&intOK,10);
+                    if (!intOK) {
+                        qDebug() << "Parser::readDLKeywords() - NR conversion error..." ;
+                        //emit something here...
+                        errorMessage = tr("Cannot convert NR value to integer");
+                        return false;
+                    }
+                }
+                else if (  label == "nc" || label  == "NC" ) {
+                    qDebug() << "Parser::readDLKeywords() - NC is declared to be : "
+                             << value ;
+                    NC = value.toInt(&intOK,10);
+                    if (!intOK) {
+                        qDebug() << "Parser::readDLKeywords() - NC conversion error..." ;
+                        //emit something here...
+                        errorMessage = tr("Cannot convert NC value to integer");
+                        return false;
+                    }
+                }
+                else if (  label == "format" || label  == "FORMAT" ) {
+                    qDebug() << "Parser::readDLKeywords() - FORMAT is declared to be : "
+                             << value ;
+                    if (value.contains("FULLMATRIX",Qt::CaseInsensitive)) {
+                        fullmatrixFormat=true;
+                        qDebug() << "Parser::readDLKeywords() - FORMAT fullmatrix detected" ;
+                    }
+                    else if (value.contains("edgelist",Qt::CaseInsensitive) ){
+                        edgelist1Format=true;
+                        qDebug() << "Parser::readDLKeywords() - FORMAT edgelist detected" ;
+                    }
+                } // end format
+            } // end if contains =
+            else {
+                return false;
+            }
+
+
+        } // end if > 0
+
+
+
+
+    } // end for lineElement
+    return true;
+}
 
 
 

@@ -94,6 +94,8 @@ public:
 	bool loadGML();
 	bool loadGW();
 	bool loadDL();
+    bool readDLKeywords(QStringList &strList, int &N, int &NM, int &NR, int &NC, bool &fullmatrixFormat, bool &edgelist1Format);
+
     bool loadEdgeListSimple(const QString &delimiter);
     bool loadEdgeListWeighed(const QString &delimiter);
 	bool loadTwoModeSociomatrix();
