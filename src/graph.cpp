@@ -10972,16 +10972,25 @@ void Graph::writeCliqueCensus( const QString fileName,
 
     VList::const_iterator it, it2;
 
+    QString pMsg = tr("Computing Clique Census and writing it to a file. \nPlease wait...");
+    emit statusMessage(pMsg);
+    emit signalProgressBoxCreate(2*N,pMsg);
+
+    // compute clique census
+    pMsg = tr("Computing Clique Census. Please wait..") ;
+    emit statusMessage ( pMsg );
+    qDebug() << "Graph::writeCliqueCensus() - calling graphCliques";
+    cliqueCensusRecursion = 0;
     graphCliques();
+
+    pMsg = tr("Writing Clique Census to file. Please wait..") ;
+    emit statusMessage ( pMsg );
+
 
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     outText << htmlHead;
     outText.setRealNumberPrecision(m_precision);
-
-    QString pMsg = tr("Writing Clique Census to file. \nPlease wait...");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N,pMsg);
 
     outText << "<h1>";
     outText << tr("CLIQUE CENSUS (CLQs) REPORT");
@@ -11113,8 +11122,6 @@ void Graph::writeCliqueCensus( const QString fileName,
     }
     outText << "</tbody></table>";
 
-    emit signalProgressBoxUpdate(N / 5);
-
 
     outText << "<p>"
             << "<span class=\"info\">"
@@ -11164,7 +11171,6 @@ void Graph::writeCliqueCensus( const QString fileName,
 
     outText << "</tbody></table>";
 
-    emit signalProgressBoxUpdate(2 * N / 5);
 
     outText << "<p>"
             << "<span class=\"info\">"
@@ -11173,7 +11179,8 @@ void Graph::writeCliqueCensus( const QString fileName,
             << tr("Actors")
             << "</p>";
 
-
+   pMsg = tr("Computing HCA for Cliques. Please wait..") ;
+   emit statusMessage ( pMsg );
    graphClusteringHierarchical(CLQM,
                                varLocation,
                                graphMetricStrToType("Euclidean"),
@@ -11184,10 +11191,13 @@ void Graph::writeCliqueCensus( const QString fileName,
                                false,
                                true);
 
+   pMsg = tr("Writing HCA for Cliques. Please wait..") ;
+   emit statusMessage ( pMsg );
+
    writeClusteringHierarchicalResultsToStream(outText, N, dendrogram);
 
 
-   emit signalProgressBoxUpdate(3 * N / 5);
+
 
    outText << "<p>"
            << "<span class=\"info\">"
@@ -11197,7 +11207,7 @@ void Graph::writeCliqueCensus( const QString fileName,
            << "</p>";
 
 
-  emit signalProgressBoxUpdate(4 * N / 5);
+  emit signalProgressBoxUpdate(2 * N);
 
    outText << "<p>"
            << "<span class=\"info\">"
@@ -11296,8 +11306,7 @@ void Graph:: graphCliqueAdd(const QList<int> &clique){
  */
 void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X) {
 
-    QString pMsg = tr("Computing Clique Census. \nPlease wait..") ;
-    emit statusMessage ( pMsg );
+    cliqueCensusRecursion ++ ;
 
     qDebug () << "Graph::graphCliques() - check if we are at initialization step";
     if (R.isEmpty() && P.isEmpty() && X.isEmpty()){
@@ -11307,10 +11316,14 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X) {
         R.reserve( V );
         X.reserve( V );
         P=verticesSet();
-        CLQM.zeroMatrix(V,V);
+        CLQM.zeroMatrix(V,V);  //co-membership matrix CLQM
         m_cliques.clear();
+
         VList::const_iterator it;
+        int vertex=0;
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)     {
+            vertex = (*it)->name();
+            neighboursHash[ vertex ] = vertexNeighborhoodList(vertex).toSet();
             (*it)->clearCliques();
         }
     }
@@ -11325,18 +11338,24 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X) {
     }
 
     int v;
+
     QSet<int> N;
 
     QSet<int> temp, temp1, temp2;
 
     QSet<int>::iterator i = P.begin();
+
+    int counter = 0;
+
     while( i != P.end()) {
+        counter ++ ;
         v = *i;
         qDebug() << "Graph::graphCliques() - v:" << v
                  << " P:" << P << " P.count=" <<P.count()
                  << " R:" << R
                  << " X:" << X ;
-        N = vertexNeighborhoodList(v).toSet(); //fixme
+        N = neighboursHash[ v ];
+        //N = vertexNeighborhoodList(v).toSet(); //fixme
         if (N.count() == 1 && N.contains(v)) {
             qDebug() << "Graph::graphCliques() - v:" << v
                      << "has only a tie to itself";
@@ -11344,7 +11363,8 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X) {
             ++i;
             continue;
         }
-        QSet<int> addv; addv.insert(v); // dummy set with just v
+        QSet<int> addv;
+        addv.insert(v); // dummy set with just v
         temp = R+addv;
         temp1 = P&N;
         temp2 = X&N;
@@ -11355,8 +11375,17 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X) {
                     << endl << "P ⋂ N(v):" << temp1
                     << endl << "X ⋂ N(v):" << temp2;
 
+        if (cliqueCensusRecursion==1) {
+            emit signalProgressBoxUpdate(counter);
+            emit statusMessage ( tr("Finding cliques: Recursive backtracking for actor ") + QString::number(v));
+
+        }
         // find all clique extensions of R that contain v
+
         graphCliques( R+addv, P&N, X&N );
+
+
+
         qDebug() << "Graph::graphCliques() - v:" << v
                   << "Returned from recursive call. Moving v:"<<  v
                   <<" from P to X to be excluded in the future.";
@@ -11372,8 +11401,7 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X) {
         //++i;
     }
 
-
-
+    cliqueCensusRecursion -- ;
 }
 
 /**

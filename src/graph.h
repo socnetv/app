@@ -1001,6 +1001,7 @@ private:
     QHash <int, int> m_vertexPairsUnilaterallyConnected;
 
     QMap <int, L_int > m_cliques;
+    QHash <int, QSet<int> > neighboursHash;
 
     QList <float> m_clusteringLevel;
     QMap <int, V_int> m_clustersPerSequence;
@@ -1099,6 +1100,8 @@ private:
     bool calculatedGraphDensity, calculatedGraphWeighted;
     bool calculatedGraphConnectedness;
     bool m_undirected, m_symmetric, m_isWeighted, m_graphDisconnected;
+
+    int cliqueCensusRecursion;
 
     QString VERSION, fileName, m_graphName, initEdgeColor, initVertexColor,
         initVertexNumberColor, initVertexLabelColor, initVertexShape;
