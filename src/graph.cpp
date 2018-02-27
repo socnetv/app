@@ -6228,8 +6228,6 @@ void Graph::centralityEigenvector(const bool &considerWeights,
         return;
     }
 
-    //float nom=0, denom=0,  SEVC=0;
-
     classesEVC=0;
     discreteEVCs.clear();
     sumEVC=0;
@@ -7345,7 +7343,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     outText.setRealNumberPrecision(m_precision);
 
     outText << "<h1>";
-    outText << tr("BETWEENESS CENTRALITY (BC)");
+    outText << tr("BETWEENNESS CENTRALITY (BC)");
     outText << "</h1>";
 
     outText << "<p>"
@@ -7507,7 +7505,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
 
     if (!considerWeights) {
         outText << "<h2>";
-        outText << tr("GROUP BETWEENESS CENTRALISATION (GBC)")
+        outText << tr("GROUP BETWEENNESS CENTRALISATION (GBC)")
                 << "</h2>";
         outText << "<p>";
         outText << "<span class=\"info\">"
