@@ -11952,8 +11952,8 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
     //DSM.printMatrixConsole();
 
     if (DSM.illDefined()) {
-        DSM.clear();
-        STR_EQUIV.clear();
+//        DSM.clear();
+//        STR_EQUIV.clear();
         emit statusMessage("ERROR computing dissimilarities matrix");
         return false;
     }
