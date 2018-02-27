@@ -13782,7 +13782,10 @@ void MainWindow::slotHelpCheckUpdateParse(QNetworkReply *reply) {
         {
         case QMessageBox::Yes:
              statusMessage( tr("Opening SocNetV website in your default web browser....") );
-            QDesktopServices::openUrl(QUrl("http://socnetv.org/downloads?app=" + VERSION));
+            QDesktopServices::openUrl(QUrl
+                                      ("http://socnetv.org/downloads"
+                                       "?utm_source=application&utm_medium=banner&utm_campaign=socnetv"+ VERSION
+                                           ));
             break;
         case QMessageBox::No:
             break;
