@@ -5,7 +5,7 @@
  
                          dialogdatasetselect.cpp  -  description
                              -------------------
-    copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
+    copyright         : (C) 2005-2018 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
 
  ***************************************************************************/

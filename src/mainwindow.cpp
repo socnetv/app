@@ -5,7 +5,7 @@
 
 -                           mainwindow.cpp  -  description
                              -------------------
-    copyright         : (C) 2005-2017 by Dimitris B. Kalamaras
+    copyright         : (C) 2005-2018 by Dimitris B. Kalamaras
     blog              : http://dimitris.apeiro.gr
     project site      : http://socnetv.org
 
@@ -13840,7 +13840,7 @@ void MainWindow::slotHelpCheckUpdateParse(QNetworkReply *reply) {
 */
 void MainWindow::slotHelpAbout(){
     int randomCookie=rand()%fortuneCookie.count();
-    QString BUILD="Wed Jul  5 14:27:58 EEST 2017";
+QString BUILD="Tue Feb 27 21:07:49 EET 2018";
     QMessageBox::about(
                 this, tr("About SocNetV"),
                         tr("<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)") +
@@ -13849,7 +13849,7 @@ void MainWindow::slotHelpAbout(){
 
                         tr("<p>Website: <a href=\"http://socnetv.org\">http://socnetv.org</a></p>")+
 
-                        tr("<p>(C) 2005-2017 by Dimitris V. Kalamaras</p>")+
+                        tr("<p>(C) 2005-2018 by Dimitris V. Kalamaras</p>")+
                         tr("<p><a href=\"http://socnetv.org/contact\">Have questions? Contact us!</a></p>")+
 
                         tr("<p><b>Fortune cookie: </b><br> \"")  + fortuneCookie[randomCookie]  + "\"" +

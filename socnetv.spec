@@ -94,7 +94,7 @@ BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 
 %description
-SocNetV (Social Network Visualiser) is a flexible, user-friendly 
+SocNetV (Social Network Visualizer) is a flexible, user-friendly 
 free software application for social network analysis and 
 visualisation. 
 
@@ -199,12 +199,12 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 #CHANGELOG SECTION
 #
 %changelog
-* Wed Jul 5 2017 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.4-1
-- Started development version 2.4
+* Tue Feb 28 2018 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.4-1
+- Synced with new stable version from upstream
 * Wed Jul 5 2017 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.3-1
-- Synced with new stable version 2.4 from upstream
+- Synced with new stable version from upstream
 * Sat Jan 21 2017 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.2-1
-- Synced with new stable version 2.2 from upstream
+- Synced with new stable version from upstream
 * Wed Sep 28 2016 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.1-1
 - Synced with new stable version from upstream.
 * Tue Sep 13 2016 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.0-2
