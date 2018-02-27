@@ -1674,7 +1674,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
     }
     qDebug() << "Matrix::distancesMatrix() - FINISHED - Returning matrix:";
-    T->printMatrixConsole();
+    //T->printMatrixConsole();
     return *T;
 }
 
