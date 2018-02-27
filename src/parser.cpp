@@ -297,6 +297,7 @@ bool Parser::loadDL(){
     bool data_flag=false;
     bool relation_flag=false;
     bool nodesCreated_flag=false;
+    bool twoMode_flag=true;
 
     bool fullmatrixFormat=false;
     bool edgelist1Format=false;
@@ -527,8 +528,8 @@ bool Parser::loadDL(){
                          << " to rowLabels";
                 rowLabels << label;
             }
-
         }
+
         else if (colLabels_flag) {
             // try to read col labels
 
@@ -545,8 +546,6 @@ bool Parser::loadDL(){
             }
 
         }
-
-
         else if ( relation_flag ){
             relation=str;
             if ( relationsList.contains(relation) ) {
@@ -561,7 +560,6 @@ bool Parser::loadDL(){
             }
         }
 
-
         else if ( data_flag ) {
 
             // check if we haven't created any nodes...
@@ -569,14 +567,15 @@ bool Parser::loadDL(){
 
                 // check if there were NR and NC declared (then this is two-mode)
                 if (NR != 0 && NC != 0) {
+                    twoMode_flag=true;
                     //emit something
-                    errorMessage = tr("UCINET declared NR=") + QString::number(NR)
-                            + tr(" and NC=") + QString::number(NC)
-                            + tr(" aka a two-mode net which is not yet supported.");
-                    return false;
+//                    errorMessage = tr("UCINET declared NR=") + QString::number(NR)
+//                            + tr(" and NC=") + QString::number(NC)
+//                            + tr(" aka a two-mode net which is not yet supported.");
+//                    return false;
                 }
-                // check if we have found row labels
 
+                // check if we have found row labels
                 if ( rowLabels.count() == 0 ) {
                     // no labels found
                     qDebug() << "Parser::loadDL() -Nodes have not been created yet."
@@ -586,7 +585,7 @@ bool Parser::loadDL(){
                     nodeSum = totalNodes;
 
                 }
-                if ( rowLabels.count() == 1 ) {
+                else if ( rowLabels.count() == 1 ) {
                     // only one label line was found
                     // probably contains a comma to separate labels
                     // split it
@@ -613,79 +612,166 @@ bool Parser::loadDL(){
                         createRandomNodes(nodeSum, label,1);
                     }
                 }
+
+                if (twoMode_flag) {
+
+                    // check if we have found col labels
+                    if ( colLabels.count() == 0 ) {
+                        // no  col labels found
+                        qDebug() << "Parser::loadDL() -Nodes have not been created yet."
+                                 << "No node labels found."
+                                 << "Calling createRandomNodes(NC) for all columns" ;
+                        createRandomNodes(totalNodes, QString::null, NC);
+
+                    }
+                    else if ( colLabels.count() == 1 ) {
+                        // only one col label line was found
+                        // probably contains a comma to separate labels
+                        // split it
+                        qDebug() << "Parser::loadDL() -Nodes have not been created yet."
+                                 << "One line for col label found."
+                                 << "Splitting at a comma and calling createRandomNodes(1) for each label" ;
+                        tempList = colLabels[0].split(",", QString::SkipEmptyParts);
+                        for (QStringList::Iterator it1 = tempList.begin(); it1!=tempList.end(); ++it1)   {
+                            label = (*it1);
+                            nodeSum++;
+                            createRandomNodes(nodeSum, label,1);
+
+                        }
+                    }
+                    else {
+                        // multiple  col label lines were found
+                        qDebug() << "Parser::loadDL() -Nodes have not been created yet."
+                                 << "Multiple col label lines were found."
+                                 << "Calling createRandomNodes(1) for each label" ;
+                        for (QStringList::Iterator it1 = colLabels.begin(); it1!=colLabels.end(); ++it1)   {
+                            label = (*it1);
+                            nodeSum++;
+                            createRandomNodes(nodeSum, label,1);
+                        }
+                    }
+
+                }
                 nodesCreated_flag = true;
-            }
+
+            } // endif nodesCreated
 
             if ( fullmatrixFormat ) {
 
-                qDebug() << "Parser::loadDL() - reading edges in fullmatrix format";
+                if (!twoMode_flag) {
 
-                //SPLIT EACH LINE (ON EMPTY SPACE CHARACTERS)
-                if (!prevLineStr.isEmpty()) {
-                    str=(prevLineStr.append(" ")).append(str) ;
-                    qDebug() << "Parser::loadDL() -prevLineStr not empty - "
-                                "prepending it to str - new str: \n" << str;
-                    str=str.simplified();
-                }
-                qDebug() << "Parser::loadDL() - splitting str to elements ";
-                lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
-                qDebug() << "Parser::loadDL() - line elements " << lineElement.count();
-                if (lineElement.count() < totalNodes ) {
-                    qDebug() << "Parser::loadDL() -This line has "
-                             << lineElement.count()
-                             << " elements, expected "
-                             << totalNodes << " - appending next line";
-                    prevLineStr=str;
-                    continue;
-                }
-                prevLineStr.clear();
-                target=1;
-                if (source==1 && relationCounter>0){
-                    qDebug() << "Parser::loadDL() - we are at source 1. "
-                                "Checking relationList";
-                    relation = relationsList[ relationCounter ];
-                    qDebug() << "Parser::loadDL() - "
-                                "WE ARE THE FIRST DATASET/MATRIX"
-                             << " source node counter is " << source
-                             << " and relation to " << relation<< ": "
-                             << relationCounter;
-                    emit relationSet (relationCounter);
-                }
-                else if (source>totalNodes) {
-                    source=1;
-                    relationCounter++;
-                    relation = relationsList[ relationCounter ];
-                    qDebug() << "Parser::loadDL() - "
-                                "LOOKS LIKE WE ENTERED A NEW DATASET/MATRIX "
-                             << " init source node counter to " << source
-                             << " and relation to " << relation << ": "
-                             << relationCounter;
-                    emit relationSet (relationCounter);
+                    qDebug() << "Parser::loadDL() - reading edges in fullmatrix format";
+
+                    //SPLIT EACH LINE (ON EMPTY SPACE CHARACTERS)
+                    if (!prevLineStr.isEmpty()) {
+                        str=(prevLineStr.append(" ")).append(str) ;
+                        qDebug() << "Parser::loadDL() -prevLineStr not empty - "
+                                    "prepending it to str - new str: \n" << str;
+                        str=str.simplified();
+                    }
+                    qDebug() << "Parser::loadDL() - splitting str to elements ";
+                    lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+                    qDebug() << "Parser::loadDL() - line elements " << lineElement.count();
+                    if (lineElement.count() < totalNodes ) {
+                        qDebug() << "Parser::loadDL() -This line has "
+                                 << lineElement.count()
+                                 << " elements, expected "
+                                 << totalNodes << " - appending next line";
+                        prevLineStr=str;
+                        continue;
+                    }
+                    prevLineStr.clear();
+                    target=1;
+                    if (source==1 && relationCounter>0){
+                        qDebug() << "Parser::loadDL() - we are at source 1. "
+                                    "Checking relationList";
+                        relation = relationsList[ relationCounter ];
+                        qDebug() << "Parser::loadDL() - "
+                                    "WE ARE THE FIRST DATASET/MATRIX"
+                                 << " source node counter is " << source
+                                 << " and relation to " << relation<< ": "
+                                 << relationCounter;
+                        emit relationSet (relationCounter);
+                    }
+                    else if (source>totalNodes) {
+                        source=1;
+                        relationCounter++;
+                        relation = relationsList[ relationCounter ];
+                        qDebug() << "Parser::loadDL() - "
+                                    "LOOKS LIKE WE ENTERED A NEW DATASET/MATRIX "
+                                 << " init source node counter to " << source
+                                 << " and relation to " << relation << ": "
+                                 << relationCounter;
+                        emit relationSet (relationCounter);
+                    }
+                    else {
+                        qDebug() << "Parser::loadDL() - source node counter is " << source;
+                    }
+
+                    for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
+                        //qDebug()<< (*it1).toLatin1() ;
+                        if ( (*it1)!="0"){
+                            edgeWeight=(*it1).toFloat(&floatOK);
+                            qDebug() << "Parser::loadDL() - relation "
+                                     << relationCounter
+                                     << " found edge from "
+                                     << source << " to " << target
+                                     << " weight " << edgeWeight
+                                     << " emitting edgeCreate() to parent" ;
+
+                            emit edgeCreate( source, target, edgeWeight, initEdgeColor,
+                                             EDGE_DIRECTED, arrows, bezier);
+                            totalLinks++;
+                            qDebug() << "Parser::loadDL() - TotalLinks= " << totalLinks;
+
+                        }
+                        target++;
+                    } // end for
+
+                    source++;
+
                 }
                 else {
-                    qDebug() << "Parser::loadDL() - source node counter is " << source;
-                }
-
-                for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
-                    //qDebug()<< (*it1).toLatin1() ;
-                    if ( (*it1)!="0"){
-                        edgeWeight=(*it1).toFloat(&floatOK);
-                        qDebug() << "Parser::loadDL() - relation "
-                                 << relationCounter
-                                 << " found edge from "
-                                 << source << " to " << target
-                                 << " weight " << edgeWeight
-                                 << " emitting edgeCreate() to parent" ;
-
-                        emit edgeCreate( source, target, edgeWeight, initEdgeColor,
-                                         EDGE_DIRECTED, arrows, bezier);
-                        totalLinks++;
-                        qDebug() << "Parser::loadDL() - TotalLinks= " << totalLinks;
+                    // two-mode
+                    target=NR+1;
+                    qDebug() << "Parser::loadDL() - this is a two-mode fullmatrix file. "
+                                "Splitting str to elements:";
+                    lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+                    qDebug()<< "Parser::loadDL() - lineElement:" << lineElement;
+                    if (lineElement.count() != NC) {
+                        qDebug() << "Parser::loadDL() - Not a two-mode fullmatrix UCINET "
+                                    "formatted file. Aborting!!";
+                        file.close();
+                        //emit something...
+                        errorMessage = tr("UCINET two-mode fullmatrix file declared ") + QString::number(NC) + tr(" columns initially, "
+                                          "but I found a different number ") + QString::number(lineElement.count()) + tr(" of matrix columns");
+                        return false;
 
                     }
-                    target++;
+                    for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
+                        //qDebug()<< (*it1).toLatin1() ;
+                        if ( (*it1)!="0"){
+                            edgeWeight=(*it1).toFloat(&floatOK);
+                            qDebug() << "Parser::loadDL() - relation "
+                                     << relationCounter
+                                     << " found edge from "
+                                     << source << " to " << target
+                                     << " weight " << edgeWeight
+                                     << " emitting edgeCreate() to parent" ;
+
+                            emit edgeCreate( source, target, edgeWeight, initEdgeColor,
+                                             EDGE_DIRECTED, arrows, bezier);
+                            totalLinks++;
+                            qDebug() << "Parser::loadDL() - TotalLinks= " << totalLinks;
+
+                        }
+                        target++;
+                    } // end for
+
+                    source++;
+
                 }
-                source++;
+
 
             } // END FULLMATRIX FORMAT READING
 
@@ -733,7 +819,7 @@ bool Parser::loadDL(){
     } // end while there are more lines
 
     //sanity check
-    if (nodeSum != totalNodes) {
+    if (!twoMode_flag && nodeSum != totalNodes) {
         qDebug()<< "Error: aborting";
         //emit something
         errorMessage = tr("UCINET declared ") + QString::number(totalNodes) + tr(" actors initially, "
