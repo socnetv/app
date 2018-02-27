@@ -5940,7 +5940,7 @@ void Graph::writeCentralityInformation(const QString fileName,
 
 
     outText << "<h2>";
-    outText << tr("GROUP INFORMATION CENTRALISATION (GIC)")
+    outText << tr("GROUP INFORMATION CENTRALIZATION (GIC)")
             << "</h2>";
 
     outText << "<p>"
@@ -6173,7 +6173,7 @@ void Graph::writeCentralityEigenvector(const QString fileName,
 
 
     outText << "<h2>";
-    outText << tr("GROUP EIGENVECTOR CENTRALISATION (GEC)")
+    outText << tr("GROUP EIGENVECTOR CENTRALIZATION (GEC)")
             << "</h2>";
 
     outText << "<p>"
@@ -6416,7 +6416,7 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
     //    qDebug() << "Graph::centralityDegree() - sumSDC  " << sumSDC
     //             << " vertices " << N << " meanSDC = sumSDC / N = " << meanSDC;
 
-    // Calculate Variance and the Degree Centralisation of the whole graph.
+    // Calculate Variance and the Degree Centralization of the whole graph.
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if (dropIsolates && (*it)->isIsolated() ) {
             continue;
@@ -6662,7 +6662,7 @@ void Graph::writeCentralityDegree ( const QString fileName,
 
     if (!considerWeights) {
         outText << "<h2>";
-        outText << tr("GROUP DEGREE CENTRALISATION (GDC)")
+        outText << tr("GROUP DEGREE CENTRALIZATION (GDC)")
                 << "</h2>";
         outText << "<p>";
         outText << "<span class=\"info\">"
@@ -6693,7 +6693,7 @@ void Graph::writeCentralityDegree ( const QString fileName,
         outText << "<p class=\"description\">"
                 << tr("Because this graph is weighted, we cannot compute Group Centralization")
                 << "<br />"
-                << tr("You can use variance as a group-level centralisation measure.")
+                << tr("You can use variance as a group-level centralization measure.")
                 << "</p>";
 
     outText << "<p>&nbsp;</p>";
@@ -6930,7 +6930,7 @@ void Graph::writeCentralityCloseness( const QString fileName,
 
     if (!considerWeights) {
         outText << "<h2>";
-        outText << tr("GROUP CLOSENESS CENTRALISATION (GCC)")
+        outText << tr("GROUP CLOSENESS CENTRALIZATION (GCC)")
                 << "</h2>";
         outText << "<p>";
         outText << "<span class=\"info\">"
@@ -6964,7 +6964,7 @@ void Graph::writeCentralityCloseness( const QString fileName,
         outText << "<p class=\"description\">"
                 << tr("Because this graph is weighted, we cannot compute Group Centralization")
                 << "<br />"
-                << tr("You can use variance as a group-level centralisation measure.")
+                << tr("You can use variance as a group-level centralization measure.")
                 << "</p>";
 
     outText << "<p>&nbsp;</p>";
@@ -7505,7 +7505,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
 
     if (!considerWeights) {
         outText << "<h2>";
-        outText << tr("GROUP BETWEENNESS CENTRALISATION (GBC)")
+        outText << tr("GROUP BETWEENNESS CENTRALIZATION (GBC)")
                 << "</h2>";
         outText << "<p>";
         outText << "<span class=\"info\">"
@@ -7537,7 +7537,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
         outText << "<p class=\"description\">"
                 << tr("Because this graph is weighted, we cannot compute Group Centralization")
                 << "<br />"
-                << tr("You can use variance as a group-level centralisation measure.")
+                << tr("You can use variance as a group-level centralization measure.")
                 << "</p>";
 
     outText << "<p>&nbsp;</p>";
@@ -8174,7 +8174,7 @@ void Graph::writeCentralityPower(const QString fileName,
 
     if (!considerWeights) {
         outText << "<h2>";
-        outText << tr("GROUP POWER CENTRALISATION (GPC)")
+        outText << tr("GROUP POWER CENTRALIZATION (GPC)")
                 << "</h2>";
         outText << "<p>";
         outText << "<span class=\"info\">"
@@ -8652,7 +8652,7 @@ void Graph::writePrestigeDegree (const QString fileName,
         outText << "<p class=\"description\">"
                 << tr("Because this graph is weighted, we cannot compute Group Centralization")
                 << "<br />"
-                << tr("You can use variance as a group-level centralisation measure.")
+                << tr("You can use variance as a group-level centralization measure.")
                 << "</p>";
 
     outText << "<p>&nbsp;</p>";
