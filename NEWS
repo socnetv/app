@@ -1,15 +1,22 @@
-Social Networks Visualiser (SocNetV) 
+Social Networks Visualizer (SocNetV) 
 
 
 SocNetV News
 -==========-
 
-Aug 2017
+Feb 2018
 =======
-- Version 2.4 released. New features:
-  Kamada-Kawai layout
-  ....
-  ....
+- Version 2.4 released with many new features:
+  New Force-Directed Placement layout: Kamada-Kawai.
+  New layout type by prominence score: Node colors.
+  Less clutter in visualization due to reciprocated edges. These are now being drawn in a single line.
+  Improved memory consumption during user interaction with large networks
+  Improved web crawler with pattern include and exclude options
+  Improved Statistics Panel.
+  Performance options in Settings dialog
+  Improved UCINET format support (fullmatrix two-mode and edgelist).
+  New "Check for updates" procedure.
+  Much improved stability. See Changelog for bugs closed.
 
 
 Jul 2017
