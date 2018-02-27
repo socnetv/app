@@ -28,8 +28,8 @@ INSTALLS += target pixmap documentation manpage translations doc
 
 
 TEMPLATE = app
-#CONFIG  += qt thread warn_on release
-CONFIG  += qt thread warn_on debug
+CONFIG  += qt thread warn_on release
+#CONFIG  += qt thread warn_on debug
 
 LANGUAGE = C++
 
