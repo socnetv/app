@@ -5366,10 +5366,9 @@ void MainWindow::initApp(){
     /** Clear toolbox and menu checkboxes **/
     toolBoxEditEdgeSymmetrizeSelect->setCurrentIndex(0);
     toolBoxEditEdgeModeSelect->setCurrentIndex(0);
-    toolBoxAnalysisCommunitiesSelect->setCurrentIndex(0);
-    toolBoxAnalysisStrEquivalenceSelect->setCurrentIndex(0);
-    toolBoxAnalysisCohesionSelect->setCurrentIndex(0);
-    toolBoxAnalysisProminenceSelect->setCurrentIndex(0);
+
+    initComboBoxes();
+
     toolBoxLayoutByIndexSelect->setCurrentIndex(0);
     toolBoxLayoutByIndexTypeSelect ->setCurrentIndex(0);
     toolBoxLayoutForceDirectedSelect->setCurrentIndex(0);
@@ -5416,6 +5415,14 @@ void MainWindow::initApp(){
 }
 
 
+void MainWindow::initComboBoxes() {
+    toolBoxAnalysisCommunitiesSelect->setCurrentIndex(0);
+    toolBoxAnalysisStrEquivalenceSelect->setCurrentIndex(0);
+    toolBoxAnalysisCohesionSelect->setCurrentIndex(0);
+    toolBoxAnalysisProminenceSelect->setCurrentIndex(0);
+    toolBoxAnalysisMatricesSelect->setCurrentIndex(0);
+    toolBoxEditNodeSubgraphSelect->setCurrentIndex(0);
+}
 
 /**
  * @brief Updates the Recent Files QActions in the menu
@@ -5622,6 +5629,9 @@ void MainWindow::toolBoxEditNodeSubgraphSelectChanged(int selectedIndex) {
         slotEditNodeSelectedToLine();
         break;
     };
+
+    qDebug()<< "MW::toolBoxEditNodeSubgraphSelectChanged() - initComboBoxes() ";
+    initComboBoxes();
 }
 
 
@@ -5687,6 +5697,10 @@ void MainWindow::toolBoxAnalysisMatricesSelectChanged(int selectedIndex) {
         slotAnalyzeMatrixLaplacian();
         break;
     };
+
+    qDebug()<< "MW::toolBoxAnalysisMatricesSelectChanged() - initComboBoxes() ";
+    initComboBoxes();
+
 }
 
 
@@ -5744,7 +5758,8 @@ void MainWindow::toolBoxAnalysisCohesionSelectChanged(int selectedIndex) {
         break;
     };
 
-
+    qDebug()<< "MW::toolBoxAnalysisCohesionSelectChanged() - initComboBoxes() ";
+    initComboBoxes();
 }
 
 
@@ -5773,6 +5788,8 @@ void MainWindow::toolBoxAnalysisCommunitiesSelectChanged(int selectedIndex) {
         slotAnalyzeCommunitiesTriadCensus();
         break;
     };
+    qDebug()<< "MW::toolBoxAnalysisCommunitiesSelectChanged() - initComboBoxes() ";
+    initComboBoxes();
 
 }
 
@@ -5810,6 +5827,8 @@ void MainWindow::toolBoxAnalysisStrEquivalenceSelectChanged(int selectedIndex) {
         break;
     };
 
+    qDebug()<< "MW::toolBoxAnalysisStrEquivalenceSelectChanged() - initComboBoxes() ";
+    initComboBoxes();
 }
 
 
@@ -5866,6 +5885,8 @@ void MainWindow::toolBoxAnalysisProminenceSelectChanged(int selectedIndex) {
         break;
     };
 
+    qDebug()<< "MW::toolBoxAnalysisProminenceSelectChanged() - initComboBoxes() ";
+    initComboBoxes();
 }
 
 /**

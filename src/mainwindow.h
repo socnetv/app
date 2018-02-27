@@ -133,6 +133,8 @@ public:
 
     void initApp();
 
+    void initComboBoxes();
+
     void setLastPath(QString filePath);
     QString getLastPath();
     void createFortuneCookies();
