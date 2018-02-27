@@ -448,7 +448,8 @@ public slots:
     //HELP MENU
     void slotHelpTips();
     void slotHelp();
-    void slotHelpCheckUpdates();
+    void slotHelpCheckUpdateDialog();
+    void slotHelpCheckUpdateParse(QNetworkReply *reply);
     void slotHelpCreateTips();
     void slotHelpAbout();
     void slotAboutQt();
@@ -687,6 +688,10 @@ private:
     QDateTime actualDateTime, actualDate, actualTime;
     QTime eTime;     //used  to time algorithms.
 
+
+    QNetworkAccessManager *http;
+    QNetworkRequest request;
+    QNetworkReply *reply;
 
 };
 #endif 

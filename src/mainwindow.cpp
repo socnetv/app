@@ -3301,7 +3301,7 @@ void MainWindow::initActions(){
                                          "Open a browser to SocNetV website so "
                                          "that you can check yourself for updates"));
     connect(helpCheckUpdatesApp, SIGNAL(triggered()),
-            this, SLOT(slotHelpCheckUpdates()));
+            this, SLOT(slotHelpCheckUpdateDialog()));
 
     helpAboutApp = new QAction(tr("About SocNetV"), this);
     helpAboutApp->setStatusTip(tr("About SocNetV"));
@@ -13700,22 +13700,117 @@ void MainWindow::slotHelp(){
 
 
 /**
- * @brief MainWindow::slotHelpCheckUpdates
+ * @brief MainWindow::slotHelpCheckUpdateDialog
  * Opens a web browser to SocNetV website.
  */
-void MainWindow::slotHelpCheckUpdates() {
-    statusMessage( tr("Opening SocNetV website in your default web browser....") );
-    QDesktopServices::openUrl(QUrl("http://socnetv.org/downloads?app=" + VERSION));
+void MainWindow::slotHelpCheckUpdateDialog() {
+    qDebug() << "MW::slotHelpCheckUpdateDialog()";
+
+    http = new QNetworkAccessManager(this);
+
+    qDebug() << "MW::slotHelpCheckUpdateDialog() - Connecting http finished signal";
+
+    connect ( http, &QNetworkAccessManager::finished,
+              this, &MainWindow::slotHelpCheckUpdateParse );
+
+    request.setUrl(QUrl("http://socnetv.org/latestversion.txt"));
+    request.setRawHeader(
+                "User-Agent",
+                "SocNetV harmless spider - see http://socnetv.org");
+
+    qDebug() << "MW::slotHelpCheckUpdateDialog() - making the call...";
+    QNetworkReply *reply =  http->get(request) ;
+    Q_UNUSED(reply);
+
 }
 
+void MainWindow::slotHelpCheckUpdateParse(QNetworkReply *reply) {
+    qDebug() << "MW::slotHelpCheckUpdateParse(reply)";
 
+    QByteArray ba;
+
+    ba=reply->readAll();
+
+    QString REMOTEVERSION(ba);
+    REMOTEVERSION = REMOTEVERSION.simplified();
+
+    if (REMOTEVERSION.isEmpty()) {
+        slotHelpMessageToUserError("Error connecting to http://socnetv.org. "
+                                   "Please, check your internet connection and try again.");
+        return;
+    }
+
+    QString remoteVersionStr = REMOTEVERSION;
+    QString localVersionStr = VERSION;
+    int localVersion=0;
+    int remoteVersion=0;
+
+    bool ok1=false;
+    bool ok2=false;
+
+    localVersionStr.remove(".");
+    localVersion = localVersionStr.toInt(&ok1, 10);
+    qDebug() << "MW::slotHelpCheckUpdateParse(reply) - localVersion:" << localVersion;
+    if (!ok1) {
+        slotHelpMessageToUserError("Error in current version string. "
+                                   "Please, conduct our developer team.");
+        return;
+    }
+
+    remoteVersionStr.remove(".");
+    remoteVersion = remoteVersionStr.toInt(&ok2, 10);
+    qDebug() << "MW::slotHelpCheckUpdateParse(reply) - remoteVersion:" << remoteVersion;
+    if (!ok2) {
+        slotHelpMessageToUserError("Error getting newest version details from http://socnetv.org. "
+                                   "Please, try again.");
+        return;
+
+    }
+
+    if( remoteVersion > localVersion ) {
+        switch( slotHelpMessageToUser(
+                    USER_MSG_QUESTION,
+                    tr("Newer SocNetV version available!"),
+                    tr("<p>Your version: ")+ VERSION+ "</p><p>" +
+                    tr("<p>Remote version: <b>")+REMOTEVERSION + "</b></p>",
+                    tr("<p><b>There is a newer SocNetV version available! </b></p>"
+                       "<p>Do you want to download the latest version now? </p> "
+                       "<p>Press Yes, and I will open your default web browser for you "
+                       "to download the latest SocNetV package...</p>"),
+                    QMessageBox::Yes|QMessageBox::No, QMessageBox::Yes
+                    ) )
+        {
+        case QMessageBox::Yes:
+             statusMessage( tr("Opening SocNetV website in your default web browser....") );
+            QDesktopServices::openUrl(QUrl("http://socnetv.org/downloads?app=" + VERSION));
+            break;
+        case QMessageBox::No:
+            break;
+        case QMessageBox::Cancel:
+            //userCancelled = true;
+            break;
+        case QMessageBox::NoButton:
+        default: // just for sanity
+            break;
+        }
+    }
+    else {
+        slotHelpMessageToUserInfo(
+                    tr("<p>Your version: ")+ VERSION+ "</p>" +
+                    tr("<p>Remote version: ")+REMOTEVERSION + "</p>" +
+                    tr("<p>You are running the latest and greatest version of SocNetV. <br />"
+                       "Nothing to do!</p>")
+                    );
+    }
+
+}
 
 /**
     Displays the following message!!
 */
 void MainWindow::slotHelpAbout(){
     int randomCookie=rand()%fortuneCookie.count();
-QString BUILD="Wed Jul  5 14:27:58 EEST 2017";
+    QString BUILD="Wed Jul  5 14:27:58 EEST 2017";
     QMessageBox::about(
                 this, tr("About SocNetV"),
                         tr("<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)") +
