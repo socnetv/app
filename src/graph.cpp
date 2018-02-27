@@ -10952,6 +10952,7 @@ void Graph::writeCliqueCensus( const QString fileName,
 
     Q_UNUSED(considerWeights);
 
+    QString varLocation = "Both";
     bool dendrogram = true;
 
     QFile file ( fileName );
@@ -11174,6 +11175,7 @@ void Graph::writeCliqueCensus( const QString fileName,
 
 
    graphClusteringHierarchical(CLQM,
+                               varLocation,
                                graphMetricStrToType("Euclidean"),
                                CLUSTERING_COMPLETE_LINKAGE,
                                false,
@@ -11421,6 +11423,7 @@ int Graph::graphCliquesOfSize(const int &size){
  * @param dropIsolates
  */
 void Graph::writeClusteringHierarchical(const QString &fileName,
+                                        const QString &varLocation,
                                         const QString &matrix,
                                         const QString &metric,
                                         const QString &method,
@@ -11436,10 +11439,9 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
 
     qDebug()<< "Graph::writeClusteringHierarchical() - matrix:"
             << matrix
-            << "metric"
-            << metric
-            << "method"
-            << method
+            << "varLocation" << varLocation
+            << "metric" << metric
+            << "method" << method
             << "considerWeights:"<<considerWeights
             << "inverseWeights:"<<inverseWeights
             << "dropIsolates:" << dropIsolates;
@@ -11471,6 +11473,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
     }
 
     graphClusteringHierarchical(STR_EQUIV,
+                                varLocation,
                                 graphMetricStrToType(metric),
                                 graphClusteringMethodStrToType(method),
                                 diagonal,
@@ -11822,6 +11825,7 @@ void Graph::writeClusteringHierarchicalResultsToStream(QTextStream& outText,
  * @param dropIsolates
  */
 void Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
+                                        const QString &varLocation,
                                         const int &metric,
                                         const int &method,
                                         const bool &diagonal,
@@ -11841,8 +11845,6 @@ void Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
 
     qDebug() << "Graph::graphClusteringHierarchical() - STR_EQUIV matrix:";
     //STR_EQUIV.printMatrixConsole(true);
-
-    QString varLocation = "Rows";
 
     float min=RAND_MAX;
     float max=0;

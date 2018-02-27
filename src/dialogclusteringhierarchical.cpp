@@ -56,6 +56,14 @@ DialogClusteringHierarchical::DialogClusteringHierarchical (QWidget *parent,
                 << "Complete-linkage (maximum)"
                 << "Average-linkage (UPGMA)";
 
+    variablesLocationList
+            << "Rows"
+            << "Columns"
+            << "Both";
+
+    ui.variablesLocationSelect -> insertItems( 1, variablesLocationList );
+    ui.variablesLocationSelect -> setCurrentIndex(2);
+
     ui.matrixSelect -> insertItems( 1, matrixList );
     if (preselectMatrix == "Distances") {
         ui.matrixSelect  -> setCurrentIndex(1);
@@ -89,6 +97,8 @@ void DialogClusteringHierarchical::gatherData(){
 
     QString matrix = ui.matrixSelect ->currentText();
 
+    QString varLocation = ui.variablesLocationSelect ->currentText();
+
     QString metric= (( ui.metricSelect ->isEnabled() ) ?
                                     ui.metricSelect ->currentText()  :
                                     "-" );
@@ -103,7 +113,7 @@ void DialogClusteringHierarchical::gatherData(){
             << matrix
             << metric
             << linkage;
-    emit userChoices( matrix, metric, linkage,diagonal, diagram );
+    emit userChoices( matrix, varLocation, metric, linkage,diagonal, diagram );
 }
 
 

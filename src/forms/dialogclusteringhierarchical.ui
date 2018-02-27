@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>550</width>
-    <height>450</height>
+    <height>465</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -22,7 +22,7 @@
   <property name="minimumSize">
    <size>
     <width>550</width>
-    <height>450</height>
+    <height>460</height>
    </size>
   </property>
   <property name="maximumSize">
@@ -39,7 +39,7 @@
   <property name="windowTitle">
    <string>Hierarchical Clustering</string>
   </property>
-  <layout class="QFormLayout" name="formLayout">
+  <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0" colspan="2">
     <widget class="QLabel" name="description">
      <property name="sizePolicy">
@@ -65,10 +65,16 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="0" colspan="2">
+   <item row="1" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLabel" name="label_2">
+       <property name="minimumSize">
+        <size>
+         <width>170</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="text">
         <string>Input matrix:</string>
        </property>
@@ -92,10 +98,49 @@
      </item>
     </layout>
    </item>
+   <item row="2" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QLabel" name="label_5">
+       <property name="minimumSize">
+        <size>
+         <width>170</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Variables in:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="variablesLocationSelect">
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::StrongFocus</enum>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Rows: &lt;/span&gt;Correlate outbound ties (or distances, depending on the selected matrix above) between pairs of actors.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Columns: &lt;/span&gt;Correlate inbound ties (or distances, depending on the selected matrix above) between pairs of actors.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Both: &lt;/span&gt;Correlate both outbound and inbound ties (or distances, depending on the selected matrix above) between pairs of actors. In this case, the input matrix is expanded by listing row vectors followed by column vectors. This is useful only when you have directed data.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
    <item row="3" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <widget class="QLabel" name="label_4">
+       <property name="minimumSize">
+        <size>
+         <width>170</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="text">
         <string>Distance/dissimilarity metric:</string>
        </property>
@@ -119,10 +164,16 @@
      </item>
     </layout>
    </item>
-   <item row="5" column="0" colspan="2">
+   <item row="4" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLabel" name="label_3">
+       <property name="minimumSize">
+        <size>
+         <width>170</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="text">
         <string>Clustering method (criterion):</string>
        </property>
@@ -146,7 +197,7 @@
      </item>
     </layout>
    </item>
-   <item row="7" column="0">
+   <item row="5" column="0">
     <widget class="QCheckBox" name="diagonalCheckBox">
      <property name="statusTip">
       <string>Enable to include matrix diagonal in calculations</string>
@@ -156,7 +207,7 @@
      </property>
     </widget>
    </item>
-   <item row="8" column="0" colspan="2">
+   <item row="6" column="0">
     <widget class="QCheckBox" name="diagramCheckBox">
      <property name="statusTip">
       <string>Enable to include matrix diagonal in calculations</string>
@@ -166,7 +217,7 @@
      </property>
     </widget>
    </item>
-   <item row="9" column="1">
+   <item row="7" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -179,7 +230,7 @@
      </property>
     </spacer>
    </item>
-   <item row="11" column="1">
+   <item row="8" column="1">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="font">
       <font>

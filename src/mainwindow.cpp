@@ -4146,10 +4146,16 @@ void MainWindow::initPanels(){
                 tr("Select a community detection metric / cohesive subgroup algorithm, i.e. cliques, triad census etc."));
     helpMessage = tr("<p><b>Community Analysis</b></p>"
                      "<p>Community detection metrics and cohesive subgroup algorithms, "
-                     "(i.e. cliques, triad census etc), to identify "
-                     "meaningful subgraphs in the graph.</p>"
-                     "<p>For instance, select cliques to count and identify "
-                     "all maximal cliques of actors in the network. </p>");
+                     "to identify meaningful subgraphs in the graph.</p>"
+                     "<p><b>Available metrics</b></p>"
+                     "<p><em>Clique Census:</em><p>"
+                     "<p>Computes aggregate counts of all maximal cliques of actors by size, "
+                     " actor by clique analysis, clique co-memberships</p>"
+                     "<p><em>Triad Census:</em><p>"
+                     "<p>Computes the Holland, Leinhardt and Davis triad census, which "
+                     "counts all differrent classes of triads coded according to their"
+                     "number of Mutual, Asymmetric and Non-existest dyads (M-A-N scheme)</p>"
+                     );
     toolBoxAnalysisCommunitiesSelect->setToolTip( helpMessage );
     toolBoxAnalysisCommunitiesSelect->setWhatsThis( helpMessage );
     QStringList communitiesCommands;
@@ -11613,61 +11619,6 @@ void MainWindow::slotAnalyzeEccentricity(){
 
 
 
-/**
- * @brief Displays the DialogDissimilarities dialog.
- */
-void MainWindow::slotAnalyzeStrEquivalenceDissimilaritiesDialog() {
-    qDebug()<< "MW::slotAnalyzeStrEquivalenceDissimilaritiesDialog()";
-
-    m_dialogdissimilarities = new DialogDissimilarities(this);
-
-    connect( m_dialogdissimilarities, &DialogDissimilarities::userChoices,
-             this, &MainWindow::slotAnalyzeDissimilaritiesTieProfile );
-
-    m_dialogdissimilarities->exec();
-
-}
-
-
-
-
-
-/**
- * @brief Invokes calculation of pair-wise tie profile dissimilarities of the
- * network, then displays it.
- * @param metric
- * @param varLocation
- * @param diagonal
- */
-void MainWindow::slotAnalyzeDissimilaritiesTieProfile(const QString &metric,
-                                                       const QString &varLocation,
-                                                       const bool &diagonal){
-    qDebug() << "MW::slotAnalyzeDissimilaritiesTieProfile()";
-    if ( !activeNodes()    )  {
-        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
-        return;
-    }
-
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-tie-profile-dissimilarities-"+dateTime+".html";
-
-    askAboutWeights();
-
-    activeGraph->writeMatrixDissimilarities(fn, metric, varLocation,diagonal,
-                                            optionsEdgeWeightConsiderAct->isChecked());
-
-    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else {
-        TextEditor *ed = new TextEditor(fn,this,true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Tie profile dissimilarities matrix saved as: ")+QDir::toNativeSeparators(fn));
-}
-
 
 
 /**
@@ -11860,72 +11811,26 @@ void MainWindow::slotAnalyzeReachabilityMatrix(){
 
 
 
-/**
- * @brief Displays the slotAnalyzeStrEquivalenceClusteringHierarchicalDialog dialog.
- */
-void MainWindow::slotAnalyzeStrEquivalenceClusteringHierarchicalDialog() {
-    qDebug()<< "MW::slotAnalyzeStrEquivalenceClusteringHierarchicalDialog()";
 
+
+
+
+/**
+ * @brief Calls Graph::writeClusteringCoefficient() to write Clustering Coefficients
+ * into a file, and displays it.
+ */
+void MainWindow::slotAnalyzeClusteringCoefficient (){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
-    QString preselectMatrix = "Adjacency";
-
-    if (!activeGraph->graphWeighted()) {
-        preselectMatrix = "Distances";
-    }
-    m_dialogClusteringHierarchical = new DialogClusteringHierarchical(this, preselectMatrix);
-
-    connect( m_dialogClusteringHierarchical, &DialogClusteringHierarchical::userChoices,
-             this, &MainWindow::slotAnalyzeClusteringHierarchical );
-
-    m_dialogClusteringHierarchical->exec();
-
-}
-
-
-
-/**
- * @brief Called from DialogClusteringHierarchical with user choices. Calls
- * Graph::writeClusteringHierarchical() to compute and write HCA and displays the report.
- * @param matrix
- * @param similarityMeasure
- * @param linkageCriterion
- * @param diagonal
- */
-void MainWindow::slotAnalyzeClusteringHierarchical(const QString &matrix,
-                                                   const QString &metric,
-                                                   const QString &method,
-                                                   const bool &diagonal,
-                                                   const bool &diagram){
-
-    qDebug()<< "MW::slotAnalyzeClusteringHierarchical()";
-
-    // No need to check as this method is called from a dialog which didi check for nodes
-//    if ( !activeNodes()   )  {
-//        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
-//        return;
-//    }
-
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-clustering-hierarchical-"+dateTime+".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-clustering-coefficient-"+dateTime+".html";
 
     bool considerWeights=true;
-    bool inverseWeights=false;
-    bool dropIsolates=true;
 
-    activeGraph->writeClusteringHierarchical(fn,
-                                            matrix,
-                                            metric,
-                                            method,
-                                            diagonal,
-                                            diagram,
-                                            considerWeights,
-                                            inverseWeights,
-                                            dropIsolates);
-
+    activeGraph->writeClusteringCoefficient(fn, considerWeights);
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -11936,9 +11841,12 @@ void MainWindow::slotAnalyzeClusteringHierarchical(const QString &matrix,
         m_textEditors << ed;
     }
 
-    statusMessage(tr("Hierarchical Cluster Analysis saved as: ") + QDir::toNativeSeparators(fn));
-
+    statusMessage(tr("Clustering Coefficients saved as: ") + QDir::toNativeSeparators(fn));
 }
+
+
+
+
 
 
 
@@ -11976,153 +11884,6 @@ void MainWindow::slotAnalyzeCommunitiesCliqueCensus(){
 
 
 
-
-
-/**
- * @brief Calls Graph::writeClusteringCoefficient() to write Clustering Coefficients
- * into a file, and displays it.
- */
-void MainWindow::slotAnalyzeClusteringCoefficient (){
-    if ( !activeNodes()   )  {
-        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
-        return;
-    }
-
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-clustering-coefficient-"+dateTime+".html";
-
-    bool considerWeights=true;
-
-    activeGraph->writeClusteringCoefficient(fn, considerWeights);
-
-    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else {
-        TextEditor *ed = new TextEditor(fn,this,true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Clustering Coefficients saved as: ") + QDir::toNativeSeparators(fn));
-}
-
-
-/**
- * @brief Displays the DialogSimilarityMatches dialog.
- */
-void MainWindow::slotAnalyzeStrEquivalenceSimilarityMeasureDialog() {
-    qDebug()<< "MW::slotAnalyzeStrEquivalenceSimilarityMeasureDialog()";
-
-    if ( !activeNodes()  )  {
-        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
-        return;
-    }
-
-    m_dialogSimilarityMatches = new DialogSimilarityMatches(this);
-
-    connect( m_dialogSimilarityMatches, &DialogSimilarityMatches::userChoices,
-             this, &MainWindow::slotAnalyzeSimilarityMatching );
-
-    m_dialogSimilarityMatches->exec();
-
-}
-
-
-
-
-/**
- * @brief Calls Graph::writeMatrixSimilarityMatching() to write Exact Matches
- * similarity matrix into a file, and displays it.
- *
- */
-void MainWindow::slotAnalyzeSimilarityMatching(const QString &matrix,
-                                       const QString &varLocation,
-                                       const QString &measure,
-                                       const bool &diagonal) {
-    if ( !activeNodes()   )  {
-        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
-        return;
-    }
-
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-similarity-matches"+dateTime+".html";
-
-    bool considerWeights=true;
-
-    activeGraph->writeMatrixSimilarityMatching( fn,
-                                               measure,
-                                               matrix,
-                                               varLocation,
-                                               diagonal,
-                                               considerWeights);
-
-    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else {
-        TextEditor *ed = new TextEditor(fn,this,true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Similarity matrix saved as: ") + QDir::toNativeSeparators(fn));
-}
-
-
-
-/**
- * @brief Calls the m_dialogSimilarityPearson to display the Pearson statistics dialog
- */
-void MainWindow::slotAnalyzeStrEquivalencePearsonDialog(){
-    qDebug()<< "MW::slotAnalyzeStrEquivalencePearsonDialog()";
-    if ( !activeNodes()   )  {
-        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
-        return;
-    }
-    m_dialogSimilarityPearson = new DialogSimilarityPearson(this);
-
-    connect( m_dialogSimilarityPearson, &DialogSimilarityPearson::userChoices,
-             this, &MainWindow::slotAnalyzeSimilarityPearson );
-
-    m_dialogSimilarityPearson->exec();
-}
-
-
-
-/**
- * @brief Calls Graph::writeMatrixSimilarityPearson() to write Pearson
- * Correlation Coefficients into a file, and displays it.
- *
- */
-void MainWindow::slotAnalyzeSimilarityPearson(const QString &matrix,
-                                       const QString &varLocation,
-                                       const bool &diagonal) {
-    if ( !activeNodes()   )  {
-        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
-        return;
-    }
-
-    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-similarity-pearson-"+dateTime+".html";
-
-    bool considerWeights=true;
-
-    activeGraph->writeMatrixSimilarityPearson( fn, considerWeights, matrix, varLocation,diagonal);
-
-    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else {
-        TextEditor *ed = new TextEditor(fn,this,true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Pearson correlation coefficients matrix saved as: ") + QDir::toNativeSeparators(fn));
-}
-
-
 /**
 *	Calls Graph to conduct and write a triad census into a file, then displays it.
 */
@@ -12151,6 +11912,303 @@ void MainWindow::slotAnalyzeCommunitiesTriadCensus() {
 
     statusMessage(tr("Triad Census saved as: ") + QDir::toNativeSeparators(fn));
 }
+
+
+
+/**
+ * @brief Displays the DialogSimilarityMatches dialog.
+ */
+void MainWindow::slotAnalyzeStrEquivalenceSimilarityMeasureDialog() {
+    qDebug()<< "MW::slotAnalyzeStrEquivalenceSimilarityMeasureDialog()";
+
+    if ( !activeNodes()  )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    m_dialogSimilarityMatches = new DialogSimilarityMatches(this);
+
+    connect( m_dialogSimilarityMatches, &DialogSimilarityMatches::userChoices,
+             this, &MainWindow::slotAnalyzeStrEquivalenceSimilarityByMeasure );
+
+    m_dialogSimilarityMatches->exec();
+
+}
+
+
+
+
+/**
+ * @brief Calls Graph::writeMatrixSimilarityMatching() to write a
+ * similarity matrix according to given measure into a file, and displays it.
+ *
+ */
+void MainWindow::slotAnalyzeStrEquivalenceSimilarityByMeasure(const QString &matrix,
+                                       const QString &varLocation,
+                                       const QString &measure,
+                                       const bool &diagonal) {
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString metric;
+    if (measure.contains("Simple",Qt::CaseInsensitive))
+        metric = "simple-matching" ;
+    else if (measure.contains("Jaccard",Qt::CaseInsensitive))
+        metric ="jaccard" ;
+    else if (measure.contains("None",Qt::CaseInsensitive))
+        metric = "none";
+    else if (measure.contains("Hamming",Qt::CaseInsensitive))
+        metric ="hamming";
+    else if (measure.contains("Cosine",Qt::CaseInsensitive))
+        metric ="cosine";
+    else if (measure.contains("Euclidean",Qt::CaseInsensitive))
+        metric ="euclidean";
+    else if (measure.contains("Manhattan",Qt::CaseInsensitive))
+        metric ="manhattan";
+    else if (measure.contains("Pearson ",Qt::CaseInsensitive))
+        metric = "pearson";
+    else if (measure.contains("Chebyshev",Qt::CaseInsensitive))
+        metric = "chebyshev";
+
+
+    QString fn = appSettings["dataDir"] + "socnetv-report-equivalence-similarity-"+metric+"-"+dateTime+".html";
+
+    bool considerWeights=true;
+
+    activeGraph->writeMatrixSimilarityMatching( fn,
+                                               measure,
+                                               matrix,
+                                               varLocation,
+                                               diagonal,
+                                               considerWeights);
+
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
+    statusMessage(tr("Similarity matrix saved as: ") + QDir::toNativeSeparators(fn));
+}
+
+
+
+
+/**
+ * @brief Displays the DialogDissimilarities dialog.
+ */
+void MainWindow::slotAnalyzeStrEquivalenceDissimilaritiesDialog() {
+    qDebug()<< "MW::slotAnalyzeStrEquivalenceDissimilaritiesDialog()";
+
+    m_dialogdissimilarities = new DialogDissimilarities(this);
+
+    connect( m_dialogdissimilarities, &DialogDissimilarities::userChoices,
+             this, &MainWindow::slotAnalyzeStrEquivalenceDissimilaritiesTieProfile );
+
+    m_dialogdissimilarities->exec();
+
+}
+
+
+
+
+
+/**
+ * @brief Invokes calculation of pair-wise tie profile dissimilarities of the
+ * network, then displays it.
+ * @param metric
+ * @param varLocation
+ * @param diagonal
+ */
+void MainWindow::slotAnalyzeStrEquivalenceDissimilaritiesTieProfile(const QString &metric,
+                                                       const QString &varLocation,
+                                                       const bool &diagonal){
+    qDebug() << "MW::slotAnalyzeStrEquivalenceDissimilaritiesTieProfile()";
+    if ( !activeNodes()    )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString metricStr;
+    if (metric.contains("Simple",Qt::CaseInsensitive))
+        metricStr = "simple-matching" ;
+    else if (metric.contains("Jaccard",Qt::CaseInsensitive))
+        metricStr ="jaccard" ;
+    else if (metric.contains("None",Qt::CaseInsensitive))
+        metricStr = "none";
+    else if (metric.contains("Hamming",Qt::CaseInsensitive))
+        metricStr ="hamming";
+    else if (metric.contains("Cosine",Qt::CaseInsensitive))
+        metricStr ="cosine";
+    else if (metric.contains("Euclidean",Qt::CaseInsensitive))
+        metricStr ="euclidean";
+    else if (metric.contains("Manhattan",Qt::CaseInsensitive))
+        metricStr ="manhattan";
+    else if (metric.contains("Pearson ",Qt::CaseInsensitive))
+        metricStr = "pearson";
+    else if (metric.contains("Chebyshev",Qt::CaseInsensitive))
+        metricStr = "chebyshev";
+
+    QString fn = appSettings["dataDir"] + "socnetv-report-equivalence-dissimilarities-"+metricStr+"-"+dateTime+".html";
+
+
+    askAboutWeights();
+
+    activeGraph->writeMatrixDissimilarities(fn, metric, varLocation,diagonal,
+                                            optionsEdgeWeightConsiderAct->isChecked());
+
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
+    statusMessage(tr("Tie profile dissimilarities matrix saved as: ")+QDir::toNativeSeparators(fn));
+}
+
+
+
+/**
+ * @brief Calls the m_dialogSimilarityPearson to display the Pearson statistics dialog
+ */
+void MainWindow::slotAnalyzeStrEquivalencePearsonDialog(){
+    qDebug()<< "MW::slotAnalyzeStrEquivalencePearsonDialog()";
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+    m_dialogSimilarityPearson = new DialogSimilarityPearson(this);
+
+    connect( m_dialogSimilarityPearson, &DialogSimilarityPearson::userChoices,
+             this, &MainWindow::slotAnalyzeStrEquivalencePearson );
+
+    m_dialogSimilarityPearson->exec();
+}
+
+
+
+/**
+ * @brief Calls Graph::writeMatrixSimilarityPearson() to write Pearson
+ * Correlation Coefficients into a file, and displays it.
+ *
+ */
+void MainWindow::slotAnalyzeStrEquivalencePearson(const QString &matrix,
+                                                  const QString &varLocation,
+                                                  const bool &diagonal) {
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-equivalence-pearson-coefficients-"+dateTime+".html";
+
+    bool considerWeights=true;
+
+    activeGraph->writeMatrixSimilarityPearson( fn, considerWeights, matrix, varLocation, diagonal);
+
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
+    statusMessage(tr("Pearson correlation coefficients matrix saved as: ") + QDir::toNativeSeparators(fn));
+}
+
+
+
+/**
+ * @brief Displays the slotAnalyzeStrEquivalenceClusteringHierarchicalDialog dialog.
+ */
+void MainWindow::slotAnalyzeStrEquivalenceClusteringHierarchicalDialog() {
+    qDebug()<< "MW::slotAnalyzeStrEquivalenceClusteringHierarchicalDialog()";
+
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    QString preselectMatrix = "Adjacency";
+
+    if (!activeGraph->graphWeighted()) {
+        preselectMatrix = "Distances";
+    }
+    m_dialogClusteringHierarchical = new DialogClusteringHierarchical(this, preselectMatrix);
+
+    connect( m_dialogClusteringHierarchical, &DialogClusteringHierarchical::userChoices,
+             this, &MainWindow::slotAnalyzeStrEquivalenceClusteringHierarchical );
+
+    m_dialogClusteringHierarchical->exec();
+
+}
+
+
+
+/**
+ * @brief Called from DialogClusteringHierarchical with user choices. Calls
+ * Graph::writeClusteringHierarchical() to compute and write HCA and displays the report.
+ * @param matrix
+ * @param similarityMeasure
+ * @param linkageCriterion
+ * @param diagonal
+ */
+void MainWindow::slotAnalyzeStrEquivalenceClusteringHierarchical(const QString &matrix,
+                                                                 const QString &varLocation,
+                                                                 const QString &metric,
+                                                                 const QString &method,
+                                                                 const bool &diagonal,
+                                                                 const bool &diagram){
+
+    qDebug()<< "MW::slotAnalyzeStrEquivalenceClusteringHierarchical()";
+
+
+    QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-equivalence-hierarchical-clustering-"+dateTime+".html";
+
+    bool considerWeights=true;
+    bool inverseWeights=false;
+    bool dropIsolates=true;
+
+    activeGraph->writeClusteringHierarchical(fn,
+                                             varLocation,
+                                             matrix,
+                                             metric,
+                                             method,
+                                             diagonal,
+                                             diagram,
+                                             considerWeights,
+                                             inverseWeights,
+                                             dropIsolates);
+
+
+    if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else {
+        TextEditor *ed = new TextEditor(fn,this,true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
+    statusMessage(tr("Hierarchical Cluster Analysis saved as: ") + QDir::toNativeSeparators(fn));
+
+}
+
+
 
 
 /**

@@ -382,24 +382,25 @@ public slots:
 
 
     void slotAnalyzeStrEquivalenceClusteringHierarchicalDialog();
-    void slotAnalyzeClusteringHierarchical(const QString &matrix,
-                                           const QString &metric,
-                                           const QString &method,
-                                           const bool &diagonal=false,
-                                           const bool &diagram=false);
+    void slotAnalyzeStrEquivalenceClusteringHierarchical(const QString &matrix,
+                                                         const QString &varLocation,
+                                                         const QString &metric,
+                                                         const QString &method,
+                                                         const bool &diagonal=false,
+                                                         const bool &diagram=false);
     void slotAnalyzeStrEquivalenceDissimilaritiesDialog();
-    void slotAnalyzeDissimilaritiesTieProfile(const QString &metric,
+    void slotAnalyzeStrEquivalenceDissimilaritiesTieProfile(const QString &metric,
                                                const QString &varLocation,
                                                const bool &diagonal);
 
     void slotAnalyzeStrEquivalenceSimilarityMeasureDialog();
-    void slotAnalyzeSimilarityMatching(const QString &matrix,
+    void slotAnalyzeStrEquivalenceSimilarityByMeasure(const QString &matrix,
                                const QString &varLocation,
                                const QString &measure,
                                const bool &diagonal);
 
     void slotAnalyzeStrEquivalencePearsonDialog();
-    void slotAnalyzeSimilarityPearson(const QString &matrix,
+    void slotAnalyzeStrEquivalencePearson(const QString &matrix,
                                const QString &varLocation,
                                const bool &diagonal=false);
 

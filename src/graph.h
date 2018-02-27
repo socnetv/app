@@ -738,6 +738,7 @@ public:
 
 
     void writeClusteringHierarchical(const QString &fileName,
+                                     const QString &varLocation,
                                      const QString &matrix = "Adjancency",
                                      const QString &metric = "Manhattan",
                                      const QString &method = "Complete",
@@ -834,6 +835,7 @@ public:
     int graphCliquesOfSize(const int &size );
 
     void graphClusteringHierarchical(Matrix &STR_EQUIV,
+                                     const QString &varLocation,
                                      const int &metric,
                                      const int &method,
                                      const bool &diagonal=false,

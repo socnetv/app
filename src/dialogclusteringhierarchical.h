@@ -42,6 +42,7 @@ public slots:
 	void gatherData();
 signals:
     void userChoices(const QString &matrix,
+                     const QString &varLocation,
                      const QString &similarityMeasure,
                      const QString &linkageCriterion,
                      const bool &diagonal,
@@ -54,7 +55,7 @@ private slots:
     void matrixChanged(const QString &matrix);
 private:
     Ui::DialogClusteringHierarchical ui;
-    QStringList matrixList, measureList, linkageList;
+    QStringList matrixList, measureList, linkageList, variablesLocationList;
 
 };
 
