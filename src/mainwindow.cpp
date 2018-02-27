@@ -4511,6 +4511,7 @@ void MainWindow::initPanels(){
     rightPanelNodesLabel->setToolTip(
                 tr("The total number of actors \n"
                    "(nodes or vertices) in this social network."));
+    rightPanelNodesLabel ->setMinimumWidth(80);
 
     rightPanelNodesLCD=new QLabel;
     rightPanelNodesLCD->setAlignment(Qt::AlignRight);
@@ -4753,7 +4754,7 @@ void MainWindow::initPanels(){
 
     //create a panel with title
     rightPanel = new QGroupBox(tr("Statistics Panel"));
-    rightPanel->setMaximumWidth(180);
+    rightPanel->setMaximumWidth(190);
     rightPanel -> setLayout (propertiesGrid);
 
 
