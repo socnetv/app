@@ -737,7 +737,7 @@ public:
     void writePrestigePageRank(const QString, const bool Isolates=false);
 
 
-    void writeClusteringHierarchical(const QString &fileName,
+    bool writeClusteringHierarchical(const QString &fileName,
                                      const QString &varLocation,
                                      const QString &matrix = "Adjancency",
                                      const QString &metric = "Manhattan",
@@ -752,9 +752,8 @@ public:
                                                     const int N,
                                                const bool &dendrogram = false);
 
-    void writeCliqueCensus(
-            const QString fileName, const bool considerWeights
-            );
+    bool writeCliqueCensus( const QString &fileName,
+                            const bool considerWeights);
 
     void writeClusteringCoefficient(const QString, const bool);
 
@@ -834,7 +833,7 @@ public:
     int graphCliquesContaining(const int &actor, const int &size=0);
     int graphCliquesOfSize(const int &size );
 
-    void graphClusteringHierarchical(Matrix &STR_EQUIV,
+    bool graphClusteringHierarchical(Matrix &STR_EQUIV,
                                      const QString &varLocation,
                                      const int &metric,
                                      const int &method,

@@ -254,6 +254,8 @@ public:
                         const bool &printInfinity=true);
     bool printMatrixConsole(bool debug=true);
 
+    bool illDefined();
+
 private:
     MatrixRow *row;
     int m_rows;

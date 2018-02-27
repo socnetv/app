@@ -10942,7 +10942,7 @@ void Graph::writeTriadCensus( const QString fileName,
  * @param fileName
  * @param considerWeights
  */
-void Graph::writeCliqueCensus( const QString fileName,
+bool Graph::writeCliqueCensus(const QString &fileName,
                                const bool considerWeights) {
 
     QTime computationTimer;
@@ -10959,7 +10959,7 @@ void Graph::writeCliqueCensus( const QString fileName,
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
-        return;
+        return false;
     }
 
     long int N = vertices();
@@ -11181,7 +11181,7 @@ void Graph::writeCliqueCensus( const QString fileName,
 
    pMsg = tr("Computing HCA for Cliques. Please wait..") ;
    emit statusMessage ( pMsg );
-   graphClusteringHierarchical(CLQM,
+   if (! graphClusteringHierarchical(CLQM,
                                varLocation,
                                graphMetricStrToType("Euclidean"),
                                CLUSTERING_COMPLETE_LINKAGE,
@@ -11189,7 +11189,12 @@ void Graph::writeCliqueCensus( const QString fileName,
                                true,
                                true,
                                false,
-                               true);
+                               true) ) {
+       file.close();
+       emit statusMessage( "Error completing HCA analysis");
+       emit signalProgressBoxKill();
+       return false;
+   }
 
    pMsg = tr("Writing HCA for Cliques. Please wait..") ;
    emit statusMessage ( pMsg );
@@ -11231,6 +11236,8 @@ void Graph::writeCliqueCensus( const QString fileName,
     file.close();
 
     emit signalProgressBoxKill();
+
+    return true;
 }
 
 
@@ -11450,7 +11457,7 @@ int Graph::graphCliquesOfSize(const int &size){
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::writeClusteringHierarchical(const QString &fileName,
+bool Graph::writeClusteringHierarchical(const QString &fileName,
                                         const QString &varLocation,
                                         const QString &matrix,
                                         const QString &metric,
@@ -11480,7 +11487,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
-        return;
+        return false;
     }
 
     emit statusMessage ( tr("Computing hierarchical clustering. Please wait... "));
@@ -11500,15 +11507,20 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
         break;
     }
 
-    graphClusteringHierarchical(STR_EQUIV,
-                                varLocation,
-                                graphMetricStrToType(metric),
-                                graphClusteringMethodStrToType(method),
-                                diagonal,
-                                dendrogram,
-                                considerWeights,
-                                inverseWeights,
-                                dropIsolates);
+    if (! graphClusteringHierarchical(STR_EQUIV,
+                                      varLocation,
+                                      graphMetricStrToType(metric),
+                                      graphClusteringMethodStrToType(method),
+                                      diagonal,
+                                      dendrogram,
+                                      considerWeights,
+                                      inverseWeights,
+                                      dropIsolates) ) {
+        qDebug()<< "Graph::writeClusteringHierarchical() - HCA failed. Returning...";
+        emit statusMessage( "Error completing HCA analysis");
+        emit signalProgressBoxKill();
+        return false;
+    }
 
     QTextStream outText ( &file );
     outText.setCodec("UTF-8");
@@ -11613,11 +11625,15 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
     emit signalProgressBoxUpdate( N);
     emit signalProgressBoxKill();
 
+    return true;
+
 }
 
 
 /**
  * @brief Writes Hierarchical Clustering results to given output stream
+ * Before running this methos, the method Graph::graphClusteringHierarchical()
+ * must execute and return true. Otherwise, the result is unpredictable...
  * @param outText
  * @param N
  * @param dendrogram
@@ -11852,7 +11868,7 @@ void Graph::writeClusteringHierarchicalResultsToStream(QTextStream& outText,
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
+bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
                                         const QString &varLocation,
                                         const int &metric,
                                         const int &method,
@@ -11934,6 +11950,13 @@ void Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
     qDebug() << "Graph::graphClusteringHierarchical() -"
              << "initial matrix DSM contents:";
     //DSM.printMatrixConsole();
+
+    if (DSM.illDefined()) {
+        DSM.clear();
+        STR_EQUIV.clear();
+        emit statusMessage("ERROR computing dissimilarities matrix");
+        return false;
+    }
 
     clusteredItems.reserve(N);
     if (diagram) {
@@ -12194,6 +12217,8 @@ void Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
     qDebug()<< "m_clustersByName" <<m_clustersByName;
 
     emit signalProgressBoxKill();
+
+    return true;
 }
 
 
@@ -12466,7 +12491,7 @@ void Graph::graphMatrixDissimilaritiesCreate(Matrix &INPUT_MATRIX,
     DSM = INPUT_MATRIX.distancesMatrix(metric, varLocation, diagonal, considerWeights);
 
 //    qDebug()<<"Graph::graphMatrixDissimilaritiesCreate() - matrix DSM:";
-//    DSM.printMatrixConsole(true);
+    //DSM.printMatrixConsole(true);
 }
 
 

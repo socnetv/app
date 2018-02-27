@@ -2612,3 +2612,25 @@ bool Matrix::printMatrixConsole(bool debug){
 }
 
 
+/**
+ * @brief  Checks if matrix is ill-defined (contains at least an inf element)
+ * @return
+ */
+bool Matrix::illDefined(){
+    qDebug() << "Matrix::illDefined() " ;
+
+    for (int r = 0; r < rows(); ++r) {
+        for (int c = 0; c < cols(); ++c) {
+            if ( item(r,c) < RAND_MAX  ) {
+            }
+            else {
+                qDebug() << "Matrix::illDefined() - matrix ill-defined: TRUE" ;
+                return true;
+
+            }
+        }
+    }
+    return false;
+}
+
+

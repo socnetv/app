@@ -11889,7 +11889,9 @@ void MainWindow::slotAnalyzeCommunitiesCliqueCensus(){
 
     bool considerWeights=true;
 
-    activeGraph->writeCliqueCensus(fn, considerWeights);
+    if (! activeGraph->writeCliqueCensus(fn, considerWeights) ) {
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12205,16 +12207,19 @@ void MainWindow::slotAnalyzeStrEquivalenceClusteringHierarchical(const QString &
     bool inverseWeights=false;
     bool dropIsolates=true;
 
-    activeGraph->writeClusteringHierarchical(fn,
-                                             varLocation,
-                                             matrix,
-                                             metric,
-                                             method,
-                                             diagonal,
-                                             diagram,
-                                             considerWeights,
-                                             inverseWeights,
-                                             dropIsolates);
+    if (! activeGraph->writeClusteringHierarchical(fn,
+                                                   varLocation,
+                                                   matrix,
+                                                   metric,
+                                                   method,
+                                                   diagonal,
+                                                   diagram,
+                                                   considerWeights,
+                                                   inverseWeights,
+                                                   dropIsolates) ){
+
+        return;
+    }
 
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
