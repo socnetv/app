@@ -16,7 +16,7 @@
 
 
 %define name    socnetv
-%define version 2.4
+%define version 2.5
 %define release 1
 %define prefix  /usr/local
 %define lastrev %(LANG=en_US.UTF-8 && date +"%a %b %e %Y")
@@ -198,6 +198,8 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 #CHANGELOG SECTION
 #
 %changelog
+* Wed Feb 28 2018 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.5-1
+- started development
 * Wed Feb 28 2018 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.4-2
 - Synced with fixed table version from upstream
 * Tue Feb 27 2018 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.4-1

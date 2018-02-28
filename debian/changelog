@@ -1,3 +1,9 @@
+socnetv (2.5-1) xenial; urgency=medium
+
+  * Started development
+
+ -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Wed, 28 Feb 2018 17:18:03 +0300
+
 socnetv (2.4-2) xenial; urgency=medium
 
   * Fixed upstream version 2.4. See http://socnetv.org/ChangeLog
