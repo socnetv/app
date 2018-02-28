@@ -71,7 +71,6 @@ License:	GPL-3.0
 Group:		Productivity/Scientific/Math 
 URL:		http://socnetv.org/
 Vendor: 	Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
-#Source0:	SocNetV-%{version}.tar.hhh
 Source0:	https://github.com/%{name}/app/archive/master.zip
 Distribution:   %{distr}
 Prefix:		%{prefix}
