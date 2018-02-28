@@ -198,6 +198,8 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 #CHANGELOG SECTION
 #
 %changelog
+* Wed Feb 28 2018 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.4-2
+- Synced with fixed table version from upstream
 * Tue Feb 27 2018 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.4-1
 - Synced with new stable version from upstream
 * Wed Jul 5 2017 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.3-1
