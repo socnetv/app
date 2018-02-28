@@ -297,7 +297,7 @@ bool Parser::loadDL(){
     bool data_flag=false;
     bool relation_flag=false;
     bool nodesCreated_flag=false;
-    bool twoMode_flag=true;
+    bool twoMode_flag=false;
 
     bool fullmatrixFormat=false;
     bool edgelist1Format=false;
@@ -349,7 +349,7 @@ bool Parser::loadDL(){
         if (  str.startsWith("DL",Qt::CaseInsensitive) ) {
 
             if ( str.contains(",") ) {
-
+                qDebug() << "Parser::loadDL() - DL starting line contains a comma" ;
                 // If it is a DL file and contains a comma in the first line,
                 // then the line might declare some keywords (N, NM, FORMAT)
                 // this happens in R's sna output files
@@ -361,7 +361,7 @@ bool Parser::loadDL(){
             // if the line contains DL, does not contain any comma
             // but contains at least one "=" then we have keywords space separated.
             else if (str.contains("=")){
-
+                qDebug() << "Parser::loadDL() - DL starting line contains a = but not a comma" ;
                 // this is space separated
                 lineElement = str.split(" ", QString::SkipEmptyParts);
                 readDLKeywords(lineElement, totalNodes, NM, NR, NC, fullmatrixFormat, edgelist1Format);
@@ -389,6 +389,7 @@ bool Parser::loadDL(){
 
             // check if this line contains precisely one "="
             if ( str.count("=",Qt::CaseInsensitive) == 1 ) {
+                 qDebug() << "Parser::loadDL() - Line contains just one = " ;
                 // then one of the above keywords is declared here
                 tempList = str.split("=", QString::SkipEmptyParts);
 
@@ -455,7 +456,7 @@ bool Parser::loadDL(){
 
             // check if this line contains more than one "="
             else if  ( str.count("=",Qt::CaseInsensitive) > 1 ) {
-
+                qDebug() << "Parser::loadDL() - Line contains multiple = " ;
                  if (str.contains(",")) {
                     // this is comma separated
                     lineElement = str.split(",", QString::SkipEmptyParts);
@@ -566,8 +567,10 @@ bool Parser::loadDL(){
             if (!nodesCreated_flag) {
 
                 // check if there were NR and NC declared (then this is two-mode)
+                qDebug() << "Parser::loadDL() - check if NR != 0 (two mode net).";
                 if (NR != 0 && NC != 0) {
                     twoMode_flag=true;
+                    qDebug() << "Parser::loadDL() - this is a two-mode net.";
                     //emit something
 //                    errorMessage = tr("UCINET declared NR=") + QString::number(NR)
 //                            + tr(" and NC=") + QString::number(NC)
