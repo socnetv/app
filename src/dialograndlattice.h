@@ -3,9 +3,11 @@
  version: 2.5
  Written in Qt
 
-                         dialograndsmallworld.h  -  description
+                         dialograndlattice.h  -  description
                              -------------------
     copyright            : (C) 2005-2018 by Dimitris B. Kalamaras
+    email                : dimitris.kalamaras@gmail.com
+    website:             : http://dimitris.apeiro.gr
     project site         : http://socnetv.org
 
  ***************************************************************************/
@@ -25,39 +27,39 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef DIALOGRANDSMALLWORLD_H
-#define DIALOGRANDSMALLWORLD_H
+
+#ifndef DIALOGRANDLATTICE_H
+#define DIALOGRANDLATTICE_H
 
 #include <QDialog>
 
-#include "ui_dialograndsmallworld.h"
+#include "ui_dialograndlattice.h"
 
-class DialogRandSmallWorld : public QDialog
+class DialogRandLattice : public QDialog
 {
     Q_OBJECT
 public:
-    explicit DialogRandSmallWorld(QWidget *parent = 0);
+    explicit DialogRandLattice(QWidget *parent = 0);
 
-public slots:
-    void checkErrors();
-    void gatherData();
-    void setModeDirected();
-    void setModeUndirected();
-    void setDiag();
-    void modifyDegree(int value);
 
 signals:
     void userChoices( const int nodes,
-                      const int degree,
-                      const float prob,
+                      const int dima,
+                      const int dimb,
+                      const int nei,
                       const QString mode,
                       const bool diag);
+public slots:
+//    void checkErrors(const int &i);
+//    void gatherData();
+//    void setModeDirected();
+//    void setModeUndirected();
+//    void setDiag();
+//    void modifyDegree(int value);
+
 private:
-    QString mode;
-    int nodes, degree;
-    float bprob;
-    bool diag;
-    Ui::DialogRandSmallWorld *ui;
+
+    Ui::DialogRandLattice ui;
 
 };
 

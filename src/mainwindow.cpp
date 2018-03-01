@@ -55,6 +55,7 @@
 #include "dialograndsmallworld.h"
 #include "dialograndscalefree.h"
 #include "dialograndregular.h"
+#include "dialograndlattice.h"
 #include "dialogsettings.h"
 #include "dialognodeedit.h"
 #include "dialogsimilaritypearson.h"
@@ -742,6 +743,8 @@ void MainWindow::initActions(){
     qDebug()<< "MW::initActions()";
     printer = new QPrinter;
 
+
+
     /**
     Network menu actions
     */
@@ -751,7 +754,7 @@ void MainWindow::initActions(){
     networkNew->setToolTip(tr("New network"));
     networkNew->setWhatsThis(tr("New\n\n"
                                 "Creates a new social network. "
-                                "Firtst, checks if current network needs to be saved."));
+                                "First, checks if current network needs to be saved."));
     connect(networkNew, SIGNAL(triggered()), this, SLOT(slotNetworkNew()));
 
     networkOpen = new QAction(QIcon(":/images/open.png"), tr("&Open"), this);
@@ -921,10 +924,11 @@ void MainWindow::initActions(){
     openTextEditorAct ->setShortcut(Qt::SHIFT+Qt::Key_F5);
     openTextEditorAct->setStatusTip(tr("Open a text editor "
                                        "to take notes, copy/paste network data, etc"));
-    openTextEditorAct->setWhatsThis(tr("Text Editor\n\n"
-                                       "Opens a simple text editor where you can "
-                                       "copy paste network data, of any supported format, "
-                                       "and save to a file. Then you can import that file to SocNetV..."));
+    openTextEditorAct->setWhatsThis(
+                tr("<p><b>Text Editor</b></p>"
+                   "<p>Opens a simple text editor where you can "
+                   "copy paste network data, of any supported format, "
+                   "and save to a file. Then you can import that file to SocNetV. </p>"));
     connect(openTextEditorAct, SIGNAL(triggered()), this, SLOT(slotNetworkTextEditor()));
 
 
@@ -940,12 +944,13 @@ void MainWindow::initActions(){
                                      tr("View Adjacency Matrix"),  this);
     networkViewSociomatrixAct ->setShortcut(Qt::Key_F6);
     networkViewSociomatrixAct->setStatusTip(tr("Display the adjacency matrix of the network."));
-    networkViewSociomatrixAct->setWhatsThis(tr("View Adjacency Matrix\n\n"
-                                        "Displays the adjacency matrix of the active network. \n\n"
-                                        "The adjacency matrix of a social network is a matrix "
-                                        "where each element a(i,j) is equal to the weight "
-                                        "of the arc from actor (node) i to actor j. "
-                                        "If the actors are not connected, then a(i,j)=0. "));
+    networkViewSociomatrixAct->setWhatsThis(
+                tr("<p><b>View Adjacency Matrix</b></p>"
+                   "<p>Displays the adjacency matrix of the active network. </p>"
+                   "<p>The adjacency matrix of a social network is a matrix "
+                   "where each element a(i,j) is equal to the weight "
+                   "of the arc from actor (node) i to actor j. "
+                   "<p>If the actors are not connected, then a(i,j)=0. </p>"));
     connect(networkViewSociomatrixAct, SIGNAL(triggered()),
             this, SLOT(slotNetworkViewSociomatrix()));
 
@@ -953,14 +958,15 @@ void MainWindow::initActions(){
     networkViewSociomatrixPlotAct = new QAction(QIcon(":/images/adjacencyplot.png"),
                                      tr("Plot Adjacency Matrix (text)"),  this);
     networkViewSociomatrixPlotAct ->setShortcut(Qt::SHIFT + Qt::Key_F6);
-    networkViewSociomatrixPlotAct->setStatusTip(tr("Plots the adjacency matrix in a text file using unicode characters."));
+    networkViewSociomatrixPlotAct->setStatusTip(
+                tr("Plots the adjacency matrix in a text file using unicode characters."));
     networkViewSociomatrixPlotAct->setWhatsThis(
-                tr("Plot Adjacency Matrix (text)\n\n"
-                   "Plots the adjacency matrix in a text file using "
-                   "unicode characters. \n\n"
-                   "In every element (i,j) of the \"image\", "
+                tr("<p><b>Plot Adjacency Matrix (text)</b></p>"
+                   "<p>Plots the adjacency matrix in a text file using "
+                   "unicode characters. </p>"
+                   "<p>In every element (i,j) of the \"image\", "
                    "a black square means actors i and j are connected"
-                   "whereas a white square means they are disconnected."
+                   "whereas a white square means they are disconnected.</p>"
                    ));
     connect(networkViewSociomatrixPlotAct, SIGNAL(triggered()),
             this, SLOT(slotNetworkViewSociomatrixPlotText()));
@@ -969,112 +975,143 @@ void MainWindow::initActions(){
     networkDataSetSelectAct = new QAction(QIcon(":/images/petersengraph.png"),
                                      tr("Create From Known Data Sets"),  this);
     networkDataSetSelectAct ->setShortcut(Qt::Key_F7);
-    networkDataSetSelectAct->setStatusTip(tr("Create a social network using one of the \'famous\' "
-                                             "social network data sets included in SocNetV."));
-    networkDataSetSelectAct->setWhatsThis(tr("Known Data Sets\n\n"
-                                        "SocNetV includes a number of known "
-                                        "(also called famous) data sets in Social Network Analysis, "
-                                        "such as Krackhardt's high-tech managers, etc. "
-                                             "Click this menu item or press F7 to select a data set.  "
-                                        ""));
+    networkDataSetSelectAct->setStatusTip(
+                tr("Create a social network using one of the \'famous\' "
+                   "social network data sets included in SocNetV."));
+    networkDataSetSelectAct->setWhatsThis(
+                tr("<p><b>Famous Data Sets</b></p>"
+                   "<p>SocNetV includes a number of known "
+                   "(also called famous) data sets in Social Network Analysis, "
+                   "such as Krackhardt's high-tech managers, etc. "
+                   "Click this menu item or press F7 to select a data set.</p> "
+                   ));
     connect(networkDataSetSelectAct, SIGNAL(triggered()),
             this, SLOT(slotNetworkDataSetSelect()));
 
 
-    createErdosRenyiRandomNetworkAct = new QAction(QIcon(":/images/erdos.png"),
+
+    networkRandomErdosRenyiAct = new QAction(QIcon(":/images/erdos.png"),
                                                    tr("Erdős–Rényi"),  this);
-    createErdosRenyiRandomNetworkAct -> setShortcut(
+    networkRandomErdosRenyiAct -> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_E)
                 );
-    createErdosRenyiRandomNetworkAct->setStatusTip(tr("Create a random network "
-                                                      "according to the Erdős–Rényi model"));
-    createErdosRenyiRandomNetworkAct->setWhatsThis(
-                tr("Erdős–Rényi \n\n"
-                "Creates a random network either of G(n, p) model or G(n,M) model.\n"
-                "In the first, edges are created with Bernoulli trials (probability p).\n"
-                "In the second, a graph of exactly M edges is created."));
-    connect(createErdosRenyiRandomNetworkAct, SIGNAL(triggered()),
+    networkRandomErdosRenyiAct->setStatusTip(
+                tr("Create a random network according to the Erdős–Rényi model"));
+    networkRandomErdosRenyiAct->setWhatsThis(
+                tr("<p><b>Erdős–Rényi </b></p>"
+                "<p>Creates a random network either of G(n, p) model or G(n,M) model. </p>"
+                "<p>The former model creates edges with Bernoulli trials (probability p).</p>"
+                "<p>The latter creates a graph of exactly M edges.</p>"));
+    connect(networkRandomErdosRenyiAct, SIGNAL(triggered()),
             this, SLOT(slotNetworkRandomErdosRenyiDialog()));
 
-    createLatticeNetworkAct = new QAction( QIcon(":/images/net1.png"),
+
+
+    networkRandomLatticeRingAct = new QAction( QIcon(":/images/net1.png"),
                                            tr("Ring Lattice"), this);
-    createLatticeNetworkAct -> setShortcut(
+    networkRandomLatticeRingAct -> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_L)
                 );
-    createLatticeNetworkAct->setStatusTip(tr("Create a ring lattice random network."));
-    createLatticeNetworkAct->setWhatsThis(
-                tr("Ring Lattice \n\n")+
-                tr("A ring lattice is a graph with N vertices each connected to d neighbors, d / 2 on each side."));
-    connect(createLatticeNetworkAct, SIGNAL(triggered()), this, SLOT(slotNetworkRandomRingLattice()));
+    networkRandomLatticeRingAct->setStatusTip(tr("Create a ring lattice random network."));
+    networkRandomLatticeRingAct->setWhatsThis(
+                tr("<p><b>Ring Lattice </b></p>"
+                   "<p>Creates a ring lattice random network. </p>"
+                   "<p>A ring lattice is a graph with N vertices each connected to d neighbors, d / 2 on each side.</p>"));
+    connect(networkRandomLatticeRingAct, SIGNAL(triggered()),
+            this, SLOT(slotNetworkRandomRingLattice()));
 
-    createRegularRandomNetworkAct = new QAction(QIcon(":/images/net.png"), tr("d-Regular"), this);
-    createRegularRandomNetworkAct -> setShortcut(
+
+    networkRandomRegularSameDegreeAct = new QAction(QIcon(":/images/net.png"), tr("d-Regular"), this);
+    networkRandomRegularSameDegreeAct -> setShortcut(
                         QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_R)
                         );
-    createRegularRandomNetworkAct->setStatusTip(
-                tr("Create a d-regular random network, where every actor has the same degree d."));
-    createRegularRandomNetworkAct->setWhatsThis(
-                tr("d-Regular \n\n") +
-                tr("A random network where each actor has the same "
-                   "number d of neighbours, aka the same degree d "));
-    connect(createRegularRandomNetworkAct, SIGNAL(triggered()),
+    networkRandomRegularSameDegreeAct->setStatusTip(
+                tr("Create a d-regular random network, "
+                   "where every actor has the same degree d."));
+    networkRandomRegularSameDegreeAct->setWhatsThis(
+                tr("<p><b>d-Regular</b></p>"
+                   "<p>Creates a random network where each actor has the same "
+                   "number <em>d</em> of neighbours, aka the same degree d.</p>"));
+    connect(networkRandomRegularSameDegreeAct, SIGNAL(triggered()),
             this, SLOT(slotNetworkRandomRegularDialog()));
 
-    createGaussianRandomNetworkAct = new QAction(tr("Gaussian"),	this);
-    createGaussianRandomNetworkAct -> setShortcut(
+
+    networkRandomGaussianAct = new QAction(tr("Gaussian"),	this);
+    networkRandomGaussianAct -> setShortcut(
                     QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_G)
                     );
-    createGaussianRandomNetworkAct->setStatusTip(tr("Create a Gaussian distributed random network."));
-    createGaussianRandomNetworkAct->setWhatsThis(tr("Gaussian \n\nCreates a random network of Gaussian distribution"));
-    connect(createGaussianRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotNetworkRandomGaussian()));
+    networkRandomGaussianAct->setStatusTip(tr("Create a Gaussian distributed random network."));
+    networkRandomGaussianAct->setWhatsThis(tr("Gaussian \n\nCreates a random network of Gaussian distribution"));
+    connect(networkRandomGaussianAct, SIGNAL(triggered()), this, SLOT(slotNetworkRandomGaussian()));
 
-    createSmallWorldRandomNetworkAct = new QAction(QIcon(":/images/sw.png"), tr("Small World"),	this);
-    createSmallWorldRandomNetworkAct-> setShortcut(
+
+    networkRandomSmallWorldAct = new QAction(QIcon(":/images/sw.png"), tr("Small World"),	this);
+    networkRandomSmallWorldAct-> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_W)
                 );
-    createSmallWorldRandomNetworkAct->setStatusTip(tr("Create a small-world random network."));
-    createSmallWorldRandomNetworkAct ->
-            setWhatsThis(
-                tr("Small World \n\n") +
-                tr("A Small World, according to the Watts and Strogatz model, "
-                   "is a random network with short average path lengths and high clustering coefficient."));
-    connect(createSmallWorldRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotNetworkRandomSmallWorldDialog()));
+    networkRandomSmallWorldAct->setStatusTip(tr("Create a small-world random network."));
+    networkRandomSmallWorldAct ->setWhatsThis(
+                tr("<p><b>Small World </b></p>"
+                   "<p>Creates a random small-world network, according to the "
+                   "Watts & Strogatz model. </p>"
+                   "<p>A small-world network has short average path lengths and "
+                   "high clustering coefficient.</p>"));
+    connect(networkRandomSmallWorldAct, SIGNAL(triggered()), this, SLOT(slotNetworkRandomSmallWorldDialog()));
 
-    createScaleFreeRandomNetworkAct = new QAction(
+
+    networkRandomScaleFreeAct = new QAction(
                 QIcon(":/images/scalefree.png"), tr("Scale-free"),	this);
 
-    createScaleFreeRandomNetworkAct->setShortcut(
+    networkRandomScaleFreeAct->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_S)
                 );
-    createScaleFreeRandomNetworkAct->setStatusTip(
+    networkRandomScaleFreeAct->setStatusTip(
                 tr("Create a random network with power-law degree distribution."));
-    createScaleFreeRandomNetworkAct->
-            setWhatsThis(
-                tr("Scale-free (power-law)\n\n") +
-                tr("A scale-free network is a network whose degree distribution follows a power law."
+    networkRandomScaleFreeAct->setWhatsThis(
+                tr("<p><b>Scale-free (power-law)</b></p>"
+                   "<p>A scale-free network is a network whose degree distribution "
+                   "follows a power law."
                    " SocNetV generates random scale-free networks according to the "
-                   " Barabási–Albert (BA) model using a preferential attachment mechanism."));
-    connect(createScaleFreeRandomNetworkAct, SIGNAL(triggered()),
+                   " Barabási–Albert (BA) model using a preferential attachment mechanism.</p>"));
+    connect(networkRandomScaleFreeAct, SIGNAL(triggered()),
             this, SLOT(slotNetworkRandomScaleFreeDialog()));
 
 
 
-    webCrawlerAct = new QAction(QIcon(":/images/webcrawler2.png"), tr("Web Crawler"),	this);
-    webCrawlerAct->setShortcut(Qt::SHIFT+Qt::Key_C);
-    webCrawlerAct->setEnabled(true);
-    webCrawlerAct->setStatusTip(tr("Create a network from all links found in a given website"
+
+    networkRandomLatticeAct = new QAction(QIcon(":/images/lattice.png"), tr("Lattice"), this);
+    networkRandomLatticeAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_T)
+                );
+    networkRandomLatticeAct->setStatusTip(tr("Create a lattice network."));
+    networkRandomLatticeAct ->setWhatsThis(
+                tr("<p><b>Lattice </b></p>"
+                   "<p>Creates a random lattice network</p>"));
+    connect(networkRandomLatticeAct, SIGNAL(triggered()), this, SLOT(slotNetworkRandomLatticeDialog()));
+
+
+    networkWebCrawlerAct = new QAction(QIcon(":/images/webcrawler2.png"), tr("Web Crawler"),	this);
+    networkWebCrawlerAct->setShortcut(Qt::SHIFT+Qt::Key_C);
+    networkWebCrawlerAct->setEnabled(true);
+    networkWebCrawlerAct->setStatusTip(tr("Create a network from all links found in a given website"
                                    "Shift+C"));
-    webCrawlerAct->setWhatsThis(tr("Web Crawler \n\n"
-                                   "A Web crawler is a built-in bot, which "
-                                   "starts with a given URL (website or webpage) "
-                                   "to visit. As the algorithm crawls this webpage, "
-                                   "it identifies all the links in the page and adds "
-                                   "them to a list of URLs (called frontier). "
-                                   "Then, all the URLs from the frontier are "
-                                   "recursively visited. You must provide maximum "
-                                   "recursion level (how many URLs from the frontier "
-                                   "will be visited) and maximum running time, along "
-                                   "with the initial web address..."));
+    networkWebCrawlerAct->setWhatsThis(
+                tr("<p><b>Web Crawler </b></p>"
+                   "<p>Creates a network of linked webpages, starting "
+                   "from an initial webpage using the built-in Web Crawler. </p>"
+                   "<p>The web crawler visits the given URL (website or webpage) "
+                   "and parses its contents to find links to other pages (internal or external). "
+                   "If there are such links, it adds them to a list of URLs (called frontier). "
+                   "Then, all the URLs in the frontier list are visited in a FIFO order "
+                   "and parsed to find more links which are also added to frontier. "
+                   "The process repeats until it reaches user-defined "
+                   "limits: </p>"
+                   "<p>Maximum urls to visit (max nodes in the resulting network)</p> "
+                   "<p>Maximum links per page</p>"
+                   "<p>Except the initial url and the limits, you can also "
+                   "specify patterns of urls to include or exclude, "
+                   "types of links to follow (internal, external or both) as well as "
+                   "if you want delay between requests (strongly advised)</p>."));
 
 
 
@@ -3366,15 +3403,16 @@ void MainWindow::initMenuBar() {
     randomNetworkMenu -> setIcon(QIcon(":/images/random.png"));
     networkMenu ->addMenu (randomNetworkMenu);
 
-    randomNetworkMenu -> addAction (createScaleFreeRandomNetworkAct);
-    randomNetworkMenu -> addAction (createSmallWorldRandomNetworkAct);
-    randomNetworkMenu -> addAction (createErdosRenyiRandomNetworkAct );
-    randomNetworkMenu -> addAction (createRegularRandomNetworkAct);
-    randomNetworkMenu -> addAction (createLatticeNetworkAct);
-    // createGaussianRandomNetworkAct -> addTo(randomNetworkMenu);
+    randomNetworkMenu -> addAction (networkRandomScaleFreeAct);
+    randomNetworkMenu -> addAction (networkRandomSmallWorldAct);
+    randomNetworkMenu -> addAction (networkRandomErdosRenyiAct );
+    randomNetworkMenu -> addAction (networkRandomRegularSameDegreeAct);
+    randomNetworkMenu -> addAction (networkRandomLatticeRingAct);
+    randomNetworkMenu -> addAction (networkRandomLatticeAct);
+    // networkRandomGaussianAct -> addTo(randomNetworkMenu);
     networkMenu->addSeparator();
 
-    networkMenu  -> addAction(webCrawlerAct);
+    networkMenu  -> addAction(networkWebCrawlerAct);
 
     networkMenu  -> addSeparator();
     networkMenu  -> addAction(networkSave);
@@ -5210,7 +5248,7 @@ void MainWindow::initSignalSlots() {
              activeGraph, SLOT( edgeFilterByWeight (float, bool) ) );
 
 
-    connect(webCrawlerAct, SIGNAL(triggered()), this, SLOT(slotNetworkWebCrawlerDialog()));
+    connect(networkWebCrawlerAct, SIGNAL(triggered()), this, SLOT(slotNetworkWebCrawlerDialog()));
 
 
     connect( &m_datasetSelectDialog, SIGNAL( userChoices( QString) ),
@@ -7981,11 +8019,11 @@ void MainWindow::slotNetworkRandomRegular(const int &newNodes, const int &degree
                              //+ tr("\nClustering coefficient: ")+QString::number(clucof)
                              , "OK",0);
 
-
-
     statusMessage( tr( "d-regular network created. " ) );
 
 }
+
+
 
 
 
@@ -8048,6 +8086,66 @@ void MainWindow::slotNetworkRandomRingLattice(){
 }
 
 
+
+
+
+
+
+
+/**
+ * @brief Called from DialogRandLattice
+ */
+void MainWindow::slotNetworkRandomLatticeDialog()
+{
+    qDebug() << "MW::slotRandomRegularDialog()";
+    statusMessage( tr("Generate a lattice network. "));
+    m_randLatticeDialog = new DialogRandLattice(this);
+
+    connect( m_randLatticeDialog, &DialogRandLattice::userChoices,
+             this, &MainWindow::slotNetworkRandomLattice);
+
+    m_randLatticeDialog->exec();
+
+}
+
+
+
+/**
+ * @brief Creates a lattice network, i.e. a connected network whose drawing
+ * forms a regular tiling
+   Lattices are also known as meshes or grids.
+ * @param newNodes
+ * @param degree
+ * @param mode
+ * @param diag
+ */
+void MainWindow::slotNetworkRandomLattice(const int &newNodes,
+                                          const int &rows,
+                                          const int &cols,
+                                          const int &nei,
+                                          const QString &mode,
+                                          const bool &diag){
+
+
+    initApp();
+
+    // activeGraph->randomNetLatticeCreate (newNodes,rows, cols,mode, diag);
+
+    setWindowTitle("Untitled lattice network");
+
+    //float avGraphDistance=activeGraph->graphDistanceGeodesicAverage();
+    //float clucof=activeGraph->clusteringCoefficient();
+    QMessageBox::information(this, "Lattice network",
+                             tr("Lattice network created.\n")
+//                             +tr("\nNodes: ")+ QString::number(nodeCount)+
+//                             tr("\nEdges: ") +  QString::number( edgeCount )
+                             //+  tr("\nAverage path length: ") + QString::number(avGraphDistance)
+                             //+ tr("\nClustering coefficient: ")+QString::number(clucof)
+                             , "OK",0);
+
+    statusMessage( tr( "Lattice network created. " ) );
+
+}
 
 
 

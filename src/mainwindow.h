@@ -94,6 +94,7 @@ class DialogSimilarityMatches;
 class DialogDissimilarities;
 class DialogClusteringHierarchical;
 class DialogRandRegular;
+class DialogRandLattice;
 class DialogSettings;
 class TextEditor;
 
@@ -226,6 +227,14 @@ public slots:
                                        const bool &diag);
 
     void slotNetworkRandomRingLattice();
+
+    void slotNetworkRandomLatticeDialog();
+    void slotNetworkRandomLattice(const int &newNodes,
+                                  const int &rows,
+                                  const int &cols,
+                                  const int &nei,
+                                  const QString &mode,
+                                  const bool &diag);
 
     void slotNetworkWebCrawlerDialog();
 
@@ -515,6 +524,7 @@ private:
     DialogRandSmallWorld *m_randSmallWorldDialog;
     DialogRandScaleFree *m_randScaleFreeDialog;
     DialogRandRegular *m_randRegularDialog;
+    DialogRandLattice *m_randLatticeDialog;
     DialogSettings *m_settingsDialog;
     DialogSimilarityPearson *m_dialogSimilarityPearson;
     DialogSimilarityMatches *m_dialogSimilarityMatches;
@@ -572,9 +582,13 @@ private:
     QAction *networkViewFileAct, *openTextEditorAct, *networkViewSociomatrixAct,
     *networkDataSetSelectAct, *networkViewSociomatrixPlotAct;
 
-    QAction *createErdosRenyiRandomNetworkAct, *createGaussianRandomNetworkAct;
-    QAction *createLatticeNetworkAct, *createScaleFreeRandomNetworkAct;
-    QAction *createSmallWorldRandomNetworkAct, *createRegularRandomNetworkAct;
+    QAction *networkRandomErdosRenyiAct;
+    QAction *networkRandomGaussianAct;
+    QAction *networkRandomLatticeRingAct;
+    QAction *networkRandomScaleFreeAct;
+    QAction *networkRandomSmallWorldAct;
+    QAction *networkRandomRegularSameDegreeAct;
+    QAction *networkRandomLatticeAct;
 
     QAction *optionsNodeNumbersVisibilityAct, *optionsNodeLabelsVisibilityAct, *optionsNodeNumbersInsideAct;
     QAction *editNodeSelectNoneAct, *editNodeSelectAllAct;
@@ -599,7 +613,7 @@ private:
     QAction *backgroundImageAct,*helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
     QAction *helpCheckUpdatesApp;
     QAction *openSettingsAct;
-    QAction *webCrawlerAct;
+    QAction *networkWebCrawlerAct;
 
     QAction *netDensity, *analyzeGraphReciprocityAct, *analyzeGraphSymmetryAct;
     QAction *analyzeGraphDistanceAct, *averGraphDistanceAct;
