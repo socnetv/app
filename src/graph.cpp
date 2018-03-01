@@ -9474,8 +9474,7 @@ void Graph::writePrestigePageRank(const QString fileName,
 
 
 /**
- * @brief Graph::randomizeThings
- *  Adds a little universal randomness :)
+ * @brief Adds a little universal randomness :)
  */
 void Graph::randomizeThings()   {
     time_t now;				/* define 'now'. time_t is probably a typedef	*/
@@ -9484,6 +9483,7 @@ void Graph::randomizeThings()   {
 
     srand( (unsigned int ) now);
 }
+
 
 
 
@@ -9636,77 +9636,17 @@ void Graph::randomNetErdosCreate(const int &N,
 
 
 
+
+
 /**
- * @brief Graph::randomNetRingLatticeCreate
- * Creates a random ring lattice network.
- * @param vert
- * @param degree
- * @param x0
- * @param y0
- * @param radius
- * @param updateProgress
+ * @brief Creates a scale-free random-network network
+ * @param N
+ * @param power
+ * @param m0
+ * @param m
+ * @param alpha
+ * @param mode
  */
-void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
-                                        const bool updateProgress)
-{
-    qDebug("Graph: createRingLatticeNetwork");
-    int x=0;
-    int y=0;
-    int progressCounter=0;
-
-    double x0 = canvasWidth/2.0;
-    double y0 =canvasHeight/2.0;
-    double radius = canvasMaxRadius();
-    double rad= (2.0* Pi/ N );
-
-    graphUndirectedSet(true);
-
-    randomizeThings();
-
-    vpos.reserve(N);
-
-    QString pMsg  = tr( "Creating ring-lattice network. \n"
-                        "Please wait..." );
-    emit statusMessage( pMsg );
-    emit signalProgressBoxCreate (N, pMsg );
-
-    for (int i=0; i< N ; i++) {
-        x=x0 + radius * cos(i * rad);
-        y=y0 + radius * sin(i * rad);
-        vertexCreate( i+1,initVertexSize,initVertexColor,
-                        initVertexNumberColor, initVertexNumberSize,
-                        QString::number (i+1), initVertexLabelColor,  initVertexLabelSize,
-                        QPoint(x, y), initVertexShape, false);
-        qDebug("Graph: createPhysicistLatticeNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
-    }
-    int target = 0;
-    for (int i=0;i<N; i++){
-        qDebug("Creating links for node %i = ", i+1);
-        for (int j=0; j< degree/2 ; j++) {
-            target = i + j+1 ;
-            if ( target > (N-1))
-                target = target-N;
-            qDebug("Creating Link between %i  and %i", i+1, target+1);
-            edgeCreate(i+1, target+1, 1, initEdgeColor,
-                       EDGE_UNDIRECTED, false, false,
-                       QString::null, false);
-        }
-        if (updateProgress) {
-            emit signalProgressBoxUpdate( ++progressCounter );
-        }
-    }
-
-    if (updateProgress) {
-        relationCurrentRename(tr("ring-lattice"), true);
-        emit signalProgressBoxKill();
-    }
-
-
-    graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES, updateProgress);
-}
-
-
-
 void Graph::randomNetScaleFreeCreate (const int &N,
                                        const int &power,
                                        const int &m0,
@@ -9881,8 +9821,7 @@ void Graph::randomNetScaleFreeCreate (const int &N,
 
 
 /**
- * @brief Graph::randomNetSmallWorldCreate
- * Creates a small world network
+ * @brief Creates a small world random network
  * @param vert
  * @param degree
  * @param beta
@@ -9962,8 +9901,7 @@ void Graph::randomNetSmallWorldCreate (const int &N, const int &degree,
 
 
 /**
- * @brief Graph::randomNetRegularCreate
- * Creates a random network where nodes have the same degree.
+ * @brief Creates a random network where nodes have the same degree.
  * @param vert
  * @param degree
  */
@@ -10122,6 +10060,261 @@ void Graph::randomNetRegularCreate(const int &N,
     }
 
     relationCurrentRename(tr("d-regular"), true);
+
+    emit signalProgressBoxKill();
+
+    graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
+
+}
+
+
+
+
+/**
+ * @brief Creates a random ring lattice network.
+ * @param vert
+ * @param degree
+ * @param x0
+ * @param y0
+ * @param radius
+ * @param updateProgress
+ */
+void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
+                                        const bool updateProgress)
+{
+    qDebug("Graph: createRingLatticeNetwork");
+    int x=0;
+    int y=0;
+    int progressCounter=0;
+
+    double x0 = canvasWidth/2.0;
+    double y0 =canvasHeight/2.0;
+    double radius = canvasMaxRadius();
+    double rad= (2.0* Pi/ N );
+
+    graphUndirectedSet(true);
+
+    randomizeThings();
+
+    vpos.reserve(N);
+
+    QString pMsg  = tr( "Creating ring-lattice network. \n"
+                        "Please wait..." );
+    emit statusMessage( pMsg );
+    emit signalProgressBoxCreate (N, pMsg );
+
+    for (int i=0; i< N ; i++) {
+        x=x0 + radius * cos(i * rad);
+        y=y0 + radius * sin(i * rad);
+        vertexCreate( i+1,initVertexSize,initVertexColor,
+                        initVertexNumberColor, initVertexNumberSize,
+                        QString::number (i+1), initVertexLabelColor,  initVertexLabelSize,
+                        QPoint(x, y), initVertexShape, false);
+        qDebug("Graph: createPhysicistLatticeNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
+    }
+    int target = 0;
+    for (int i=0;i<N; i++){
+        qDebug("Creating links for node %i = ", i+1);
+        for (int j=0; j< degree/2 ; j++) {
+            target = i + j+1 ;
+            if ( target > (N-1))
+                target = target-N;
+            qDebug("Creating Link between %i  and %i", i+1, target+1);
+            edgeCreate(i+1, target+1, 1, initEdgeColor,
+                       EDGE_UNDIRECTED, false, false,
+                       QString::null, false);
+        }
+        if (updateProgress) {
+            emit signalProgressBoxUpdate( ++progressCounter );
+        }
+    }
+
+    if (updateProgress) {
+        relationCurrentRename(tr("ring-lattice"), true);
+        emit signalProgressBoxKill();
+    }
+
+
+    graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES, updateProgress);
+}
+
+
+
+
+
+
+
+/**
+ * @brief Creates a lattice network
+ * @param N
+ * @param length
+ * @param dimension
+ * @param neighborhood
+ * @param mode
+ * @param diag
+ */
+void Graph::randomNetLatticeCreate(const int &N,
+                                   const int &length,
+                                   const int &dimension,
+                                   const int &neighborhoodLength,
+                                   const QString &mode,
+                                   const bool &diag){
+    qDebug() << "Graph::randomNetLatticeCreate()";
+    Q_UNUSED(diag);
+    m_undirected = (mode == "graph") ? true: false;
+
+    int x = 0;
+    int y = 0;
+    int nCount = 0;
+    double nodeHPadding = 0;
+    double nodeVPadding = 0;
+    double canvasPadding = 100;
+    float progressCounter=0;
+    float progressFraction =0;//(m_undirected) ? 2/(float) degree : 1/(float) degree;
+
+    int target = 0;
+    int edgeCount = 0;
+    QList<QString> latticeEdges;
+    QStringList firstEdgeVertices, secondEdgeVertices, m_edge;
+    QString edge;
+    QString oppEdge;
+
+
+    randomizeThings();
+    vpos.reserve(N);
+
+    QString pMsg = tr( "Creating lattice network. \n"
+                       "Please wait..." );
+    emit statusMessage( pMsg );
+    emit signalProgressBoxCreate (N, pMsg );
+
+
+    // create vertices
+
+    qDebug()<< "Graph::randomNetLatticeCreate() - creating vertices";
+
+    nCount = 0;
+    canvasPadding =
+    nodeHPadding= ( canvasWidth - canvasPadding )  / (double) length;
+    nodeVPadding= ( canvasHeight - canvasPadding ) / (double) length;
+    for (int i=0; i< length ; i++) {
+        // compute latitude
+        y = nodeVPadding * (i+1);
+        for (int j=0; j< length ; j++) {
+            nCount ++ ;
+            // compute longitude
+            x = nodeHPadding * (j+1);
+
+            qDebug() << "Graph::randomNetLatticeCreate() - creating new vertex at"
+                     << x << "," << y;
+
+            // create vertex
+            vertexCreate(
+                        nCount, initVertexSize,initVertexColor,
+                        initVertexNumberColor, initVertexNumberSize,
+                        QString::number (nCount), initVertexLabelColor, initVertexLabelSize,
+                        QPoint(x, y), initVertexShape,false
+                        );
+        }
+    }
+
+    // create edges
+
+    qDebug()<< "Graph::randomNetLatticeCreate() - Creating edges";
+
+    if (mode=="graph") {
+
+        // undirected graph
+
+        for (int i=1;i<=N; i++){
+
+            qDebug()<< "Graph::randomNetLatticeCreate() - "
+                       "Creating undirected edges for node  "<< i;
+
+            for (int j=1; j< neighborhoodLength+1 ; j++) {
+
+                for (int p = 0; p < 2; p++ ) {
+
+                    for (int q = 0; q < 2; q++ ) {
+
+                        target = i + pow((-1), p) * j * pow (length, q);
+
+                        if ( target < 1 || target > N  ) {
+                            continue;
+                        }
+
+                        if ( i % length == 0  && target == i + 1) {
+                            continue;
+                        }
+                        qDebug()<< "Graph::randomNetLatticeCreate() - "
+                                << i << "<->"<< target;
+                        edge = QString::number(i)+"<->"+QString::number(target);
+                        oppEdge = QString::number(i)+"<->"+QString::number(target);
+                        if ( !latticeEdges.contains(edge) && !latticeEdges.contains(oppEdge) ) {
+                            latticeEdges.append(QString::number(i)+"<->"+QString::number(target));
+                            edgeCount ++;
+                        }
+
+                    }
+                }
+
+
+                //// up
+                // target = i-j*length;
+                //// pre
+                //target = i-j;
+
+                //// same
+                // i
+
+                //// next
+                //target = i+j;
+
+                //// down
+                //target = i+j*length;
+
+
+            }
+        }
+
+    }
+
+    else {
+
+        // directed graph
+
+    }
+
+
+
+    // draw edges
+
+    for (int i = 0; i < latticeEdges.size(); ++i) {
+
+        m_edge = latticeEdges.at(i).split("<->");
+        qDebug() << "Graph::randomNetLatticeCreate() -"
+                 << "Drawing undirected Edge no" << i + 1 << ":"
+                 << m_edge[0].toInt(0) << "<->" << m_edge[1].toInt(0);
+
+        edgeCreate(m_edge[0].toInt(0), m_edge[1].toInt(0), 1,
+                initEdgeColor,
+                (m_undirected) ? EDGE_UNDIRECTED : EDGE_DIRECTED,
+                (m_undirected) ? false:true,
+                false,
+                QString::null, false);
+//        edgeCount++;
+        progressCounter +=progressFraction;
+//        qDebug() << "Graph::randomNetLatticeCreate() -"
+//                    << "progressCounter " << progressCounter
+//                    << "fmod ( progressCounter, 1.0) = "
+//                 << fmod ( progressCounter, 1.0);
+//        if ( fmod ( progressCounter, 1.0) == 0) {
+//            emit signalProgressBoxUpdate( (int) progressCounter );
+//        }
+
+    }
+
+    relationCurrentRename(tr("lattice"), true);
 
     emit signalProgressBoxKill();
 

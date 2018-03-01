@@ -48,10 +48,20 @@ DialogRandLattice::DialogRandLattice(QWidget *parent) : QDialog(parent)
     connect ( ui.buttonBox, &QDialogButtonBox::accepted,
               this, &DialogRandLattice::gatherData );
 
+
+    connect(ui.lengthSpinBox, SIGNAL(valueChanged(int)),
+            this, SLOT(lengthChanged(int)));
+
+
     ui.buttonBox -> button (QDialogButtonBox::Ok) -> setDefault(true);
 
 }
 
+
+
+void DialogRandLattice::lengthChanged(int l) {
+    ui.nodesSpinBox->setValue(l*l);
+}
 
 
 
@@ -60,17 +70,17 @@ void DialogRandLattice::gatherData() {
     nodes = ui.nodesSpinBox->value();
     length = ui.lengthSpinBox->value();
     dimension = ui.dimSpinBox->value();
+    neighLength = ui.neiSpinBox->value();
     mode = (ui.directedRadioButton->isChecked() ? "digraph" : "graph" );
     diag = (ui.diagCheckBox -> isChecked() ? true : false);
-        nei=0;
     qDebug() << "nodes " << nodes ;
     qDebug() << "length " << length;
     qDebug() << "dimension " << dimension;
-    qDebug() << "nei" << nei;
+    qDebug() << "neighLength" << neighLength;
     qDebug() << "mode " << mode;
     qDebug() << "diag " << diag;
 
-    emit userChoices(nodes, length, dimension, nei, mode, diag);
+    emit userChoices(nodes, length, dimension, neighLength, mode, diag);
 
 }
 

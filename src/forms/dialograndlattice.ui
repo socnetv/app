@@ -141,7 +141,7 @@
         <number>9999</number>
        </property>
        <property name="value">
-        <number>100</number>
+        <number>25</number>
        </property>
       </widget>
      </item>
@@ -268,13 +268,13 @@
         <number>2</number>
        </property>
        <property name="maximum">
-        <number>9999</number>
+        <number>3</number>
        </property>
        <property name="singleStep">
-        <number>2</number>
+        <number>1</number>
        </property>
        <property name="value">
-        <number>5</number>
+        <number>2</number>
        </property>
       </widget>
      </item>
@@ -330,16 +330,16 @@
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the mean edge degree each new node will have&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="minimum">
-        <number>2</number>
+        <number>1</number>
        </property>
        <property name="maximum">
-        <number>9999</number>
+        <number>6</number>
        </property>
        <property name="singleStep">
-        <number>2</number>
+        <number>1</number>
        </property>
        <property name="value">
-        <number>5</number>
+        <number>1</number>
        </property>
       </widget>
      </item>

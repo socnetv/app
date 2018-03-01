@@ -43,15 +43,16 @@ public:
 
 
 signals:
-    void userChoices( const int nodes,
-                      const int length,
-                      const int dimension,
-                      const int nei,
-                      const QString mode,
-                      const bool diag);
+    void userChoices( const int &nodes,
+                      const int &length,
+                      const int &dimension,
+                      const int &neighLength,
+                      const QString &mode,
+                      const bool &diag);
 public slots:
 //    void checkErrors(const int &i);
     void gatherData();
+    void lengthChanged(int l);
 //    void setModeDirected();
 //    void setModeUndirected();
 //    void setDiag();
@@ -63,7 +64,7 @@ private:
     int nodes;
     int length;
     int dimension;
-    int nei;
+    int neighLength;
     QString mode;
     bool diag;
 };

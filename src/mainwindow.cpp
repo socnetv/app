@@ -1215,6 +1215,8 @@ void MainWindow::initActions(){
 
     editNodeAddAct = new QAction(QIcon(":/images/add.png"), tr("Add Node"), this);
     editNodeAddAct->setShortcut(Qt::CTRL + Qt::Key_Period);
+    editNodeAddAct->setStatusTip(tr("Add a new node to the network. "
+                                    "Alternately, press Ctrl+. or double-click on the canvas. "));
     editNodeAddAct->setToolTip(
                 tr("Add a new node to the network (Ctrl+.). \n\n"
                    "You can also create a new node \n"
@@ -1437,12 +1439,12 @@ void MainWindow::initActions(){
     editEdgeSymmetrizeAllAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_S));
     editEdgeSymmetrizeAllAct->setStatusTip(tr("Make all arcs in this relation reciprocal (thus, a symmetric graph)."));
     editEdgeSymmetrizeAllAct->setWhatsThis(
-                tr("Symmetrize Directed Edges\n\n"
-                   "Makes all directed arcs in this relation reciprocal. \n"
-                   "If there is an arc from node A to node B \n"
+                tr("<p><b>Symmetrize Directed Edges</b></p>"
+                   "<p>Makes all directed arcs in this relation reciprocal. "
+                   "<p>If there is an arc from node A to node B \n"
                    "then a new arc from node B to node A is created \n"
-                   "with the same weight"
-                   "The result is a symmetric network"));
+                   "with the same weight. </p>"
+                   "<p>The result is a symmetric network.</p>"));
     connect(editEdgeSymmetrizeAllAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeSymmetrizeAll()));
 
 
@@ -3865,6 +3867,8 @@ void MainWindow::initPanels(){
     QLabel *toolBoxEditNodeSubgraphSelectLabel  = new QLabel;
     toolBoxEditNodeSubgraphSelectLabel->setText(tr("Subgraph:"));
     toolBoxEditNodeSubgraphSelectLabel->setMinimumWidth(90);
+    toolBoxEditNodeSubgraphSelectLabel->setStatusTip(
+                tr("Create a basic subgraph with selected nodes."));
     toolBoxEditNodeSubgraphSelect = new QComboBox;
     toolBoxEditNodeSubgraphSelect->setStatusTip(
                 tr("Create a basic subgraph with selected nodes."));
@@ -4547,8 +4551,10 @@ void MainWindow::initPanels(){
                 tr("The total number of actors (nodes or vertices) "
                    "in this social network."));
     rightPanelNodesLabel->setToolTip(
-                tr("The total number of actors \n"
-                   "(nodes or vertices) in this social network."));
+                tr("<p><b>Nodes</b></p>"
+                   "<p>Each actor in a social netwok is visualized as a node (or vertex) "
+                   "in a graph. This is total number of actors "
+                   "(nodes or vertices) in this social network.</p>"));
     rightPanelNodesLabel ->setMinimumWidth(80);
 
     rightPanelNodesLCD=new QLabel;
@@ -4574,15 +4580,22 @@ void MainWindow::initPanels(){
 
     QLabel *rightPanelDensityLabel = new QLabel;
     rightPanelDensityLabel->setText(tr("Density:"));
-    rightPanelDensityLabel->setToolTip(tr("The density of a social network is the ratio of existing \n"
-                                  "edges to all possible edges ( n*(n-1) ) between nodes."));
+    rightPanelDensityLabel->setStatusTip(tr("The density d is the ratio of existing edges to all possible edges"));
+    helpMessage = tr("<p><b>Density</b></p>"
+                     "<p>The density <em>d</em> of a social network is the ratio of "
+                     "existing edges to all possible edges ( n*(n-1) ) between the "
+                     "nodes of the network</p>.");
+    rightPanelDensityLabel->setToolTip( helpMessage );
+    rightPanelDensityLabel->setWhatsThis( helpMessage );
+
     rightPanelDensityLCD=new QLabel;
     rightPanelDensityLCD->setAlignment(Qt::AlignRight);
     rightPanelDensityLCD->setStatusTip(tr("The network density, the ratio of existing "
                                 "edges to all possible edges ( n*(n-1) ) between nodes."));
-    rightPanelDensityLCD->setToolTip(tr("This is the density of the network. \n"
-                              "The density of a network is the ratio of existing \n"
-                              "edges to all possible edges ( n*(n-1) ) between nodes."));
+    rightPanelDensityLCD->setToolTip(
+                tr("<p>This is the density of the network. "
+                   "<p>The density of a network is the ratio of existing "
+                   "edges to all possible edges ( n*(n-1) ) between nodes.</p>"));
 
 
 
@@ -4656,52 +4669,29 @@ void MainWindow::initPanels(){
 
     QLabel *rightPanelClickedNodeClucofLabel  = new QLabel;
     rightPanelClickedNodeClucofLabel -> setText (tr("Clu.Coef."));
-    rightPanelClickedNodeClucofLabel -> setWhatsThis(
-                tr("The Clustering Coefficient quantifies how close the clicked \n"
-                   "vertex and its neighbors are to being a clique. \n"
-                   "The value is the proportion of Edges between the vertices \n"
-                   "within the neighbourhood of the clicked vertex, \n"
-                   "divided by the number of Edges that could possibly exist "
-                   "between them. \n\n"
-                   "This value is automatically calculated only if vertices < 500.\n"
-                   "If your network is larger than 500 vertices, compute CluCof "
-                   "from the menu Analysis > Clustering Coefficient "));
-    rightPanelClickedNodeClucofLabel -> setToolTip (
-                tr("The Clustering Coefficient quantifies how close the clicked \n"
-                   "vertex and its neighbors are to being a clique. \n\n"
-                   "The value is the proportion of Edges between the vertices \n"
-                   "within the neighbourhood of the clicked vertex, \n"
-                   "divided by the number of Edges that could possibly exist \n"
-                   "between them. \n\n"
-                   "This value is automatically calculated only if vertices < 500.\n"
-                   "If your network is larger than 500 vertices, compute CluCof "
-                   "from the menu Analysis > Clustering Coefficient "));
+    helpMessage = tr("<p></p>Clustering Coefficient of the active node. </b></p>"
+                     "<p>The Clustering Coefficient quantifies how close the clicked "
+                     "vertex and its neighbors are to being a clique. "
+                     "The value is the proportion of Edges between the vertices "
+                     "within the neighbourhood of the clicked vertex, "
+                     "divided by the number of Edges that could possibly exist "
+                     "between them. "
+                     "<p>This value is automatically calculated only if vertices < 500."
+                     "<p>If your network is larger than 500 vertices, compute CluCof "
+                     "from the menu Analysis > Clustering Coefficient.</p>");
+    rightPanelClickedNodeClucofLabel -> setWhatsThis( helpMessage );
+    rightPanelClickedNodeClucofLabel -> setToolTip ( helpMessage );
+    rightPanelClickedNodeClucofLabel -> setStatusTip(
+                    tr("The Clustering Coefficient of the last clicked node. "
+                       "Zero when you click on something else."));
     rightPanelClickedNodeClucofLCD = new QLabel;
     rightPanelClickedNodeClucofLCD -> setAlignment(Qt::AlignRight);
-    rightPanelClickedNodeClucofLCD -> setStatusTip( tr("The Clustering Coefficient of the last clicked node. "
-                                                       "Zero when you click on something else."));
-    rightPanelClickedNodeClucofLCD -> setWhatsThis(
-                tr("The Clustering Coefficient of the active node. \n"
-                   "The Clustering Coefficient quantifies how close the clicked \n"
-                       "vertex and its neighbors are to being a clique. \n"
-                       "The value is the proportion of Edges between the vertices \n"
-                       "within the neighbourhood of the clicked vertex, \n"
-                       "divided by the number of Edges that could possibly exist "
-                       "between them. \n\n"
-                       "This value is automatically calculated only if vertices < 500.\n"
-                       "If your network is larger than 500 vertices, compute CluCof "
-                       "from the menu Analysis > Clustering Coefficient "));
-    rightPanelClickedNodeClucofLCD  -> setToolTip (
-                tr("The Clustering Coefficient of the active node. \n"
-                   "The Clustering Coefficient quantifies how close the clicked \n"
-                   "vertex and its neighbors are to being a clique. \n"
-                   "The value is the proportion of Edges between the vertices \n"
-                   "within the neighbourhood of the clicked vertex, \n"
-                   "divided by the number of Edges that could possibly exist "
-                   "between them. \n\n"
-                   "This value is automatically calculated only if vertices < 500.\n"
-                   "If your network is larger than 500 vertices, compute CluCof  \n"
-                   "from the menu Analysis > Clustering Coefficient "));
+    rightPanelClickedNodeClucofLCD -> setStatusTip(
+                tr("The Clustering Coefficient of the last clicked node. "
+                   "Zero when you click on something else."));
+
+    rightPanelClickedNodeClucofLCD -> setWhatsThis( helpMessage );
+    rightPanelClickedNodeClucofLCD  -> setToolTip ( helpMessage );
 
 
     QLabel *verticalSpaceLabel3 = new QLabel;
@@ -4714,6 +4704,7 @@ void MainWindow::initPanels(){
     rightPanelClickedEdgeNameLabel = new QLabel;
     rightPanelClickedEdgeNameLabel -> setText (tr("Name:"));
     rightPanelClickedEdgeNameLabel -> setToolTip (tr("The name of the last clicked edge."));
+    rightPanelClickedEdgeNameLabel -> setStatusTip (tr("The name of the last clicked edge."));
     rightPanelClickedEdgeNameLCD = new QLabel;
     rightPanelClickedEdgeNameLCD -> setAlignment(Qt::AlignRight);
     rightPanelClickedEdgeNameLCD -> setToolTip (tr("This is the name of the last clicked edge. \n"
@@ -4724,7 +4715,9 @@ void MainWindow::initPanels(){
 
     rightPanelClickedEdgeWeightLabel = new QLabel;
     rightPanelClickedEdgeWeightLabel -> setText (tr("Weight:"));
+    rightPanelClickedEdgeWeightLabel -> setStatusTip (tr("The weight of the clicked edge."));
     rightPanelClickedEdgeWeightLabel -> setToolTip (tr("The weight of the clicked edge."));
+
     rightPanelClickedEdgeWeightLCD =new QLabel;
     rightPanelClickedEdgeWeightLCD -> setAlignment(Qt::AlignRight);
     rightPanelClickedEdgeWeightLCD -> setToolTip (tr("This is the weight of the last clicked edge. \n"
@@ -4736,6 +4729,7 @@ void MainWindow::initPanels(){
     rightPanelClickedEdgeReciprocalWeightLabel = new QLabel;
     rightPanelClickedEdgeReciprocalWeightLabel -> setText (tr(""));
     rightPanelClickedEdgeReciprocalWeightLabel -> setToolTip (tr("The weight of the reciprocal edge."));
+    rightPanelClickedEdgeReciprocalWeightLabel -> setStatusTip (tr("The weight of the reciprocal edge."));
     rightPanelClickedEdgeReciprocalWeightLCD =new QLabel;
     rightPanelClickedEdgeReciprocalWeightLCD -> setAlignment(Qt::AlignRight);
     rightPanelClickedEdgeReciprocalWeightLCD -> setToolTip (tr("This is the reciprocal weight of the last clicked reciprocated edge. \n"
@@ -8097,7 +8091,7 @@ void MainWindow::slotNetworkRandomRingLattice(){
  */
 void MainWindow::slotNetworkRandomLatticeDialog()
 {
-    qDebug() << "MW::slotRandomRegularDialog()";
+    qDebug() << "MW::slotNetworkRandomLatticeDialog()";
     statusMessage( tr("Generate a lattice network. "));
     m_randLatticeDialog = new DialogRandLattice(this);
 
@@ -8126,10 +8120,11 @@ void MainWindow::slotNetworkRandomLattice(const int &newNodes,
                                           const QString &mode,
                                           const bool &diag){
 
+    qDebug() << "MW::slotNetworkRandomLattice()";
 
     initApp();
 
-    // activeGraph->randomNetLatticeCreate (newNodes,rows, cols,mode, diag);
+    activeGraph->randomNetLatticeCreate (newNodes, length, dimension, nei, mode, diag);
 
     setWindowTitle("Untitled lattice network");
 
