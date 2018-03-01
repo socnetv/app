@@ -45,5 +45,32 @@ DialogRandLattice::DialogRandLattice(QWidget *parent) : QDialog(parent)
 
     //
 
+    connect ( ui.buttonBox, &QDialogButtonBox::accepted,
+              this, &DialogRandLattice::gatherData );
+
+    ui.buttonBox -> button (QDialogButtonBox::Ok) -> setDefault(true);
+
+}
+
+
+
+
+void DialogRandLattice::gatherData() {
+    qDebug() << "DialogRandSmallWorld::gatherData() " ;
+    nodes = ui.nodesSpinBox->value();
+    dima = ui.dimaSpinBox->value();
+    dimb = ui.dimbSpinBox->value();
+    mode = (ui.directedRadioButton->isChecked() ? "digraph" : "graph" );
+    diag = (ui.diagCheckBox -> isChecked() ? true : false);
+        nei=0;
+    qDebug() << "nodes " << nodes ;
+    qDebug() << "dima " << dima;
+    qDebug() << "dimb " << dimb;
+    qDebug() << "nei" << nei;
+    qDebug() << "mode " << mode;
+    qDebug() << "diag " << diag;
+
+    emit userChoices(nodes, dima, dimb, nei, mode, diag);
+
 }
 

@@ -51,7 +51,7 @@ signals:
                       const bool diag);
 public slots:
 //    void checkErrors(const int &i);
-//    void gatherData();
+    void gatherData();
 //    void setModeDirected();
 //    void setModeUndirected();
 //    void setDiag();
@@ -60,7 +60,12 @@ public slots:
 private:
 
     Ui::DialogRandLattice ui;
-
+    int nodes;
+    int dima;
+    int dimb;
+    int nei;
+    QString mode;
+    bool diag;
 };
 
 #endif
