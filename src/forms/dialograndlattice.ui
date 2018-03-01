@@ -179,12 +179,12 @@
         </font>
        </property>
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dimension &lt;span style=&quot; font-style:italic;&quot;&gt;x&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Size &lt;span style=&quot; font-style:italic;&quot;&gt;l &lt;/span&gt;in each dimension &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QSpinBox" name="dimaSpinBox">
+      <widget class="QSpinBox" name="lengthSpinBox">
        <property name="minimumSize">
         <size>
          <width>110</width>
@@ -225,7 +225,7 @@
    <item row="6" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QLabel" name="probLabel">
+      <widget class="QLabel" name="dimLabel">
        <property name="sizePolicy">
         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
          <horstretch>0</horstretch>
@@ -244,12 +244,12 @@
         </font>
        </property>
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dimension &lt;span style=&quot; font-style:italic;&quot;&gt;y&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dimension &lt;span style=&quot; font-style:italic;&quot;&gt;dim&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QSpinBox" name="dimbSpinBox">
+      <widget class="QSpinBox" name="dimSpinBox">
        <property name="minimumSize">
         <size>
          <width>110</width>

@@ -230,8 +230,8 @@ public slots:
 
     void slotNetworkRandomLatticeDialog();
     void slotNetworkRandomLattice(const int &newNodes,
-                                  const int &rows,
-                                  const int &cols,
+                                  const int &length,
+                                  const int &dimension,
                                   const int &nei,
                                   const QString &mode,
                                   const bool &diag);

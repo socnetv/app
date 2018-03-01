@@ -44,8 +44,8 @@ public:
 
 signals:
     void userChoices( const int nodes,
-                      const int dima,
-                      const int dimb,
+                      const int length,
+                      const int dimension,
                       const int nei,
                       const QString mode,
                       const bool diag);
@@ -61,8 +61,8 @@ private:
 
     Ui::DialogRandLattice ui;
     int nodes;
-    int dima;
-    int dimb;
+    int length;
+    int dimension;
     int nei;
     QString mode;
     bool diag;
