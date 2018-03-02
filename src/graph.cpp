@@ -10082,7 +10082,7 @@ void Graph::randomNetRegularCreate(const int &N,
 void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
                                         const bool updateProgress)
 {
-    qDebug("Graph: createRingLatticeNetwork");
+    qDebug()<< "Graph::createRingLatticeNetwork()";
     int x=0;
     int y=0;
     int progressCounter=0;
@@ -10110,7 +10110,7 @@ void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
                         initVertexNumberColor, initVertexNumberSize,
                         QString::number (i+1), initVertexLabelColor,  initVertexLabelSize,
                         QPoint(x, y), initVertexShape, false);
-        qDebug("Graph: createPhysicistLatticeNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
+        qDebug("Graph::createRingLatticeNetwork(): new node i=%i, at x=%i, y=%i", i+1, x,y);
     }
     int target = 0;
     for (int i=0;i<N; i++){
@@ -10175,12 +10175,13 @@ void Graph::randomNetLatticeCreate(const int &N,
     int target = 0;
     int edgeCount = 0;
     QList<QString> latticeEdges;
-    QStringList firstEdgeVertices, secondEdgeVertices, m_edge;
+    QStringList m_edge;
     QString edge;
     QString oppEdge;
 
 
     randomizeThings();
+
     vpos.reserve(N);
 
     QString pMsg = tr( "Creating lattice network. \n"
@@ -10194,26 +10195,37 @@ void Graph::randomNetLatticeCreate(const int &N,
     qDebug()<< "Graph::randomNetLatticeCreate() - creating vertices";
 
     nCount = 0;
-    canvasPadding =
-    nodeHPadding= ( canvasWidth - canvasPadding )  / (double) length;
-    nodeVPadding= ( canvasHeight - canvasPadding ) / (double) length;
-    for (int i=0; i< length ; i++) {
-        // compute latitude
-        y = nodeVPadding * (i+1);
-        for (int j=0; j< length ; j++) {
+    canvasPadding = 20;
+    nodeHPadding= ( canvasWidth )  / (double) ( length + 2);
+    nodeVPadding= ( canvasHeight ) / (double) ( length + 2);
+    qDebug()<< "Graph::randomNetLatticeCreate() - "
+               "canvasPadding" << canvasPadding
+            << "nodeHPadding"<<nodeHPadding;
+    for (int i=0; i < length ; i++) {
+
+        // compute vertical pos
+        y =  canvasPadding + nodeVPadding * (i+1) ;
+
+        for (int j=0; j < length ; j++) {
             nCount ++ ;
-            // compute longitude
-            x = nodeHPadding * (j+1);
+            // compute horizontal pos
+            x = canvasPadding + nodeHPadding * (j+1) ;
 
             qDebug() << "Graph::randomNetLatticeCreate() - creating new vertex at"
                      << x << "," << y;
 
             // create vertex
             vertexCreate(
-                        nCount, initVertexSize,initVertexColor,
-                        initVertexNumberColor, initVertexNumberSize,
-                        QString::number (nCount), initVertexLabelColor, initVertexLabelSize,
-                        QPoint(x, y), initVertexShape,false
+                        nCount, initVertexSize,
+                        initVertexColor,
+                        initVertexNumberColor,
+                        initVertexNumberSize,
+                        QString::number (nCount),
+                        initVertexLabelColor,
+                        initVertexLabelSize,
+                        QPoint(x, y),
+                        initVertexShape,
+                        false
                         );
         }
     }
@@ -10239,15 +10251,35 @@ void Graph::randomNetLatticeCreate(const int &N,
 
                         target = i + pow((-1), p) * j * pow (length, q);
 
-                        if ( target < 1 || target > N  ) {
+
+
+                        if ( i % length == 0  && target == i + 1) {
+                            qDebug()<< "Graph::randomNetLatticeCreate() - "
+                                    << i << "<->"<< target << "OOB RIGHT";
+
+                            continue;
+                        }
+                        if ( i % length == 1  && target == i - 1) {
+                            qDebug()<< "Graph::randomNetLatticeCreate() - "
+                                    << i << "<->"<< target << "OOB LEFT";
+
+                            continue;
+                        }
+                        if ( target > N  ) {
+                            qDebug()<< "Graph::randomNetLatticeCreate() - "
+                                    << i << "<->"<< target << "OOB DOWN";
+                            target = target % N ;
                             continue;
                         }
 
-                        if ( i % length == 0  && target == i + 1) {
+                        if ( target < 1 ) {
+                            qDebug()<< "Graph::randomNetLatticeCreate() - "
+                                    << i << "<->"<< target << "OOB UP";
+                            target =  N - target ;
                             continue;
                         }
                         qDebug()<< "Graph::randomNetLatticeCreate() - "
-                                << i << "<->"<< target;
+                                << i << "<->"<< target << "OK";
                         edge = QString::number(i)+"<->"+QString::number(target);
                         oppEdge = QString::number(i)+"<->"+QString::number(target);
                         if ( !latticeEdges.contains(edge) && !latticeEdges.contains(oppEdge) ) {
