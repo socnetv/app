@@ -10158,9 +10158,9 @@ void Graph::randomNetLatticeCreate(const int &N,
                                    const int &dimension,
                                    const int &neighborhoodLength,
                                    const QString &mode,
-                                   const bool &diag){
+                                   const bool &circular){
     qDebug() << "Graph::randomNetLatticeCreate()";
-    Q_UNUSED(diag);
+    Q_UNUSED(circular);
     m_undirected = (mode == "graph") ? true: false;
 
     int x = 0;

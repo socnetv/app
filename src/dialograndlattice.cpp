@@ -43,7 +43,11 @@ DialogRandLattice::DialogRandLattice(QWidget *parent) : QDialog(parent)
 {
     ui.setupUi(this);
 
-    //
+    ui.circularCheckBox -> setText("false");
+    ui.nodesSpinBox->setEnabled(false);
+
+    connect ( ui.circularCheckBox, &QCheckBox::toggled ,
+              this, &DialogRandLattice::circularChanged);
 
     connect ( ui.buttonBox, &QDialogButtonBox::accepted,
               this, &DialogRandLattice::gatherData );
@@ -57,7 +61,15 @@ DialogRandLattice::DialogRandLattice(QWidget *parent) : QDialog(parent)
 
 }
 
+void DialogRandLattice::circularChanged(const bool &toggle) {
+    if (toggle) {
+        ui.circularCheckBox -> setText("true");
+    }
+    else {
+        ui.circularCheckBox -> setText("false");
+    }
 
+}
 
 void DialogRandLattice::lengthChanged(int l) {
     ui.nodesSpinBox->setValue(l*l);
@@ -72,15 +84,15 @@ void DialogRandLattice::gatherData() {
     dimension = ui.dimSpinBox->value();
     neighLength = ui.neiSpinBox->value();
     mode = (ui.directedRadioButton->isChecked() ? "digraph" : "graph" );
-    diag = (ui.diagCheckBox -> isChecked() ? true : false);
+    circular = (ui.circularCheckBox -> isChecked() ? true : false);
     qDebug() << "nodes " << nodes ;
     qDebug() << "length " << length;
     qDebug() << "dimension " << dimension;
     qDebug() << "neighLength" << neighLength;
     qDebug() << "mode " << mode;
-    qDebug() << "diag " << diag;
+    qDebug() << "diag " << circular;
 
-    emit userChoices(nodes, length, dimension, neighLength, mode, diag);
+    emit userChoices(nodes, length, dimension, neighLength, mode, circular);
 
 }
 

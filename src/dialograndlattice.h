@@ -52,6 +52,7 @@ signals:
 public slots:
 //    void checkErrors(const int &i);
     void gatherData();
+    void circularChanged(const bool &toggle);
     void lengthChanged(int l);
 //    void setModeDirected();
 //    void setModeUndirected();
@@ -66,7 +67,7 @@ private:
     int dimension;
     int neighLength;
     QString mode;
-    bool diag;
+    bool circular;
 };
 
 #endif

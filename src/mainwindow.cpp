@@ -8118,13 +8118,13 @@ void MainWindow::slotNetworkRandomLattice(const int &newNodes,
                                           const int &dimension,
                                           const int &nei,
                                           const QString &mode,
-                                          const bool &diag){
+                                          const bool &circular){
 
     qDebug() << "MW::slotNetworkRandomLattice()";
 
     initApp();
 
-    activeGraph->randomNetLatticeCreate (newNodes, length, dimension, nei, mode, diag);
+    activeGraph->randomNetLatticeCreate (newNodes, length, dimension, nei, mode, circular);
 
     setWindowTitle("Untitled lattice network");
 

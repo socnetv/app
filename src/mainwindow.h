@@ -234,7 +234,7 @@ public slots:
                                   const int &dimension,
                                   const int &nei,
                                   const QString &mode,
-                                  const bool &diag);
+                                  const bool &circular);
 
     void slotNetworkWebCrawlerDialog();
 

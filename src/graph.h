@@ -919,7 +919,7 @@ public:
                                 const int &dimension,
                                 const int &neighborhoodLength,
                                 const QString &mode,
-                                const bool &diag);
+                                const bool &circular=false);
 
     int factorial (int);
 
