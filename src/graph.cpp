@@ -368,8 +368,7 @@ void Graph::clear(const QString &reason) {
 
 
 /**
- * @brief Graph::canvasSizeSet
- * Called when MW and GraphicsWidget resizes to update canvasWidth and canvasHeight
+ * @brief Called on MW resizing to update node positions and canvasWidth and canvasHeight
  * @param w
  * @param h
  */
@@ -471,8 +470,7 @@ double Graph::canvasRandomY() const {
 
 
 /**
- * @brief Graph::relationSet
- * Changes m_curRelation to relNum.
+ * @brief Changes m_curRelation to relNum.
  * If relNum==RAND_MAX, changes to last added relation.
  * Then calls GraphVertex::relationSet() for all enabled vertices, to disable edges
  * of the old relation and enable edges of the new relation
@@ -1017,8 +1015,7 @@ int Graph::vertexExists(const long int &v1){
 
 
 /**
- * @brief Graph::vertexExists
- * Checks if there is a vertex with a specific label in the graph
+ * @brief Checks if there is a vertex with a specific label in the graph
  * Returns the vpos or -1
  * Complexity:  O(N)
  * @param label
@@ -1134,8 +1131,7 @@ int Graph::vertexSize(const long &v ) {
 
 
 /**
- * @brief Graph::vertexSizeAllSet
- * Changes the size.of all vertices
+ * @brief Changes the size.of all vertices
  * @param size
  */
 void Graph::vertexSizeAllSet(const int size) {
@@ -1194,8 +1190,7 @@ QString Graph::vertexShape(const int &v1){
 
 
 /**
- * @brief Graph::vertexShapeAllSet
- * Changes the shape.of all vertices
+ * @brief Changes the shape.of all vertices
  * @param shape
  */
 void Graph::vertexShapeAllSet(const QString shape) {
@@ -1255,8 +1250,7 @@ void Graph::vertexColorInit(const QString &color){
 
 
 /**
- * @brief Graph::vertexColorAllSet
- * Changes the color of all vertices and updates default vertex color
+ * @brief Changes the color of all vertices and updates default vertex color
  * @param color
  */
 void Graph::vertexColorAllSet(const QString &color) {
@@ -1306,8 +1300,7 @@ void Graph::vertexNumberSizeInit (const int &size) {
 
 
 /**
- * @brief Graph::vertexNumberSizeSet
- * Changes the size.of vertex v number
+ * @brief Changes the size.of vertex v number
  * @param v
  * @param size
  */
@@ -1319,7 +1312,7 @@ void Graph::vertexNumberSizeSet(const long int &v, const int &size) {
 
 
 /**
- * @brief Graph::vertexNumberSizeSetAll
+ * @brief Changes the size.of all vertex numbers
  * @param size
  */
 void Graph::vertexNumberSizeSetAll(const int &size) {
@@ -1343,15 +1336,18 @@ void Graph::vertexNumberSizeSetAll(const int &size) {
 }
 
 
-//Changes the initial distance of vertices numbers
+
+/**
+ * @brief Changes the initial distance of vertex numbers
+ * @param distance
+ */
 void Graph::vertexNumberDistanceInit(const int &distance) {
     initVertexNumberDistance = distance;
 }
 
 
 /**
- * @brief Graph::vertexNumberDistanceSet
- * Changes the distance.of vertex v number from the vertex
+ * @brief Changes the distance.of vertex v number from the vertex
  * @param v
  * @param size
  */
@@ -1364,8 +1360,7 @@ void Graph::vertexNumberDistanceSet(const long int &v, const int &newDistance) {
 
 
 /**
- * @brief Graph::vertexNumberDistanceSetAll
- * Changes the distance.of all vertex number from their vertices
+ * @brief Changes the distance.of all vertex number from their vertices
  * @param size
  */
 void Graph::vertexNumberDistanceSetAll(const int &newDistance) {
@@ -1395,8 +1390,7 @@ void Graph::vertexNumberDistanceSetAll(const int &newDistance) {
 
 
 /**
- * @brief Graph::vertexLabelSet
- * Changes the label of a vertex v1
+ * @brief Changes the label of a vertex v1
  * @param v1
  * @param label
  */
@@ -1484,9 +1478,8 @@ void Graph::vertexLabelSizeAllSet(const int &size) {
 
 
 /**
- * @brief Graph::vertexLabelColorAllSet
- * Changes the label color of all vertices
- * @param size
+ * @brief Changes the label color of all vertices
+ * @param color
  */
 void Graph::vertexLabelColorAllSet(const QString &color) {
     qDebug() << "*** Graph::vertexLabelColorAllSet() "
@@ -1510,8 +1503,7 @@ void Graph::vertexLabelColorAllSet(const QString &color) {
 
 
 /**
- * @brief Graph::vertexLabelColorSet
- * Changes the label color of vertex v1
+ * @brief Changes the label color of vertex v1
  * @param v1
  * @param color
  */
@@ -1535,8 +1527,7 @@ void Graph::vertexLabelColorInit(QString color){
 
 
 /**
- * @brief Graph::vertexLabelDistanceSet
- * Changes the distance.of vertex v label from the vertex
+ * @brief Changes the distance.of vertex v label from the vertex
  * @param v
  * @param size
  */
@@ -1549,8 +1540,7 @@ void Graph::vertexLabelDistanceSet(const long int &v, const int &newDistance) {
 
 
 /**
- * @brief Graph::vertexLabelDistanceAllSet
- * Changes the distance.of all vertex labels from their vertices
+ * @brief Changes the distance.of all vertex labels from their vertices
  * @param size
  */
 void Graph::vertexLabelDistanceAllSet(const int &newDistance) {
@@ -1577,8 +1567,7 @@ void Graph::vertexLabelDistanceAllSet(const int &newDistance) {
 
 
 /**
- * @brief Graph::vertexLabelDistanceInit
- * Changes the default distance of vertex labels
+ * @brief Changes the default distance of vertex labels
  * @param distance
  */
 void Graph::vertexLabelDistanceInit(const int &distance) {
@@ -1829,6 +1818,7 @@ void Graph::edgeFilterByRelation(int relation, bool status){
        (*it)->edgeFilterByRelation ( relation, status );
     }
 }
+
 
 /**
  * @brief Enables or disables unilateral edges in current relationship.
@@ -2730,28 +2720,32 @@ bool Graph::graphWeighted(){
 }
 
 
+
 /**
-    Returns the sum of vertices having edgesOutbound
-*/
+ * @brief Returns the sum of vertices having edgesOutbound
+ * @return
+ */
 int Graph::verticesWithOutboundEdges(){
     return outboundEdgesVert;
 }
 
+
 /**
-    Returns the sum of vertices having edgesInbound
-*/
+ * @brief Returns the sum of vertices having edgesInbound
+ * @return
+ */
 int Graph::verticesWithInboundEdges(){
     return inboundEdgesVert;
 }
 
 
 /**
-    Returns the sum of vertices having reciprocal edges
-*/
+ * @brief Returns the sum of vertices having reciprocal edges
+ * @return
+ */
 int Graph:: verticesWithReciprocalEdges(){
     return reciprocalEdgesVert;
 }
-
 
 
 
@@ -3764,7 +3758,7 @@ void Graph::graphMatrixReachabilityCreate() {
 
 
 /**
- * @brief Returns the geodesic distance (lenght of shortest path)
+ * @brief Returns the geodesic distance (length of shortest path)
  * from vertex v1 to vertex v2
  * @param v1
  * @param v2
@@ -3773,8 +3767,8 @@ void Graph::graphMatrixReachabilityCreate() {
  * @return
  */
 int Graph::graphDistanceGeodesic(const int v1, const int v2,
-                    const bool considerWeights,
-                    const bool inverseWeights){
+                                 const bool considerWeights,
+                                 const bool inverseWeights){
     qDebug() <<"Graph::graphDistanceGeodesic()";
     graphDistanceGeodesicCompute(false, considerWeights, inverseWeights, false);
     return m_graph[ vpos[v1] ]->distance(v2);
@@ -3791,7 +3785,7 @@ int Graph::graphDistanceGeodesic(const int v1, const int v2,
  * @return
  */
 int Graph::graphDiameter(const bool considerWeights,
-                    const bool inverseWeights){
+                         const bool inverseWeights){
     qDebug () << "Graph::graphDiameter()" ;
     graphDistanceGeodesicCompute(false, considerWeights, inverseWeights, false);
     return m_graphDiameter;
@@ -4003,15 +3997,15 @@ int Graph::graphConnectedness(const bool updateProgress) {
 
 
 /**
- * @brief Creates the shortest paths (geodesic) matrix SIGMA
- * Each SIGMA(i,j) element is the number of shortest paths (geodesics) from i and j
+ * @brief Creates the matrix SIGMA of shortest paths (geodesics) between vertices
+ * Each SIGMA(i,j) is the number of shortest paths (geodesics) from i and j
  * @param considerWeights
  * @param inverseWeights
  * @param dropIsolates
  */
 void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
-                                 const bool &inverseWeights,
-                                 const bool &dropIsolates) {
+                                           const bool &inverseWeights,
+                                           const bool &dropIsolates) {
     qDebug() << "Graph::graphMatrixShortestPathsCreate()";
 
     if ( !calculatedDistances || graphModified() ) {
@@ -4097,14 +4091,14 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
 
 
 /**
- * @brief Creates the Geodesic Distances matrix
+ * @brief Creates the matrix DM of geodesic distances between vertices
  * @param considerWeights
  * @param inverseWeights
  * @param dropIsolates
  */
 void Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
-                                 const bool &inverseWeights,
-                                 const bool &dropIsolates) {
+                                              const bool &inverseWeights,
+                                              const bool &dropIsolates) {
     qDebug() << "Graph::graphMatrixDistanceGeodesicCreate()";
 
     if ( !calculatedDistances || graphModified() ) {
@@ -5038,10 +5032,13 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
             c) Each vertex u popped from prQ is pushed to a stack Stack
 
 */
-void Graph::dijkstra(const int &s, const int &si, const bool &computeCentralities,
+void Graph::dijkstra(const int &s, const int &si,
+                     const bool &computeCentralities,
                      const bool &inverseWeights,
                      const bool &dropIsolates){
+
     Q_UNUSED(dropIsolates);
+
     int u=0,ui=0, w=0, wi=0, v=0, temp=0;
     int relation=0;
     float  weight=0, dist_u=0,  dist_w=0;
@@ -5396,8 +5393,8 @@ void Graph::writeMatrixDistancesPlainText (const QString &fn,
  * @param inverseWeights
  */
 void Graph::writeMatrixShortestPathsPlainText(const QString &fn,
-                                         const bool &considerWeights,
-                                         const bool &inverseWeights) {
+                                              const bool &considerWeights,
+                                              const bool &inverseWeights) {
 
     qDebug()<< "Graph::writeMatrixShortestPathsPlainText()";
 
@@ -5433,9 +5430,8 @@ void Graph::writeMatrixShortestPathsPlainText(const QString &fn,
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::writeEccentricity(
-        const QString fileName, const bool considerWeights,
-        const bool inverseWeights, const bool dropIsolates)
+void Graph::writeEccentricity(const QString fileName, const bool considerWeights,
+                              const bool inverseWeights, const bool dropIsolates)
 {
 
     QTime computationTimer;
@@ -5985,7 +5981,14 @@ void Graph::writeCentralityInformation(const QString fileName,
 
 
 
-//Writes the eigenvector centralities to a file
+
+/**
+ * @brief Writes the eigenvector centralities to a file
+ * @param fileName
+ * @param considerWeights
+ * @param inverseWeights
+ * @param dropIsolates
+ */
 void Graph::writeCentralityEigenvector(const QString fileName,
                                        const bool &considerWeights,
                                        const bool &inverseWeights,
@@ -6319,7 +6322,12 @@ void Graph::centralityEigenvector(const bool &considerWeights,
 
 
 
-//Calculates the degree (outDegree) centrality of each vertex - diagonal included
+
+/**
+ * @brief Calculates the degree (outDegree) centrality of each vertex - diagonal included
+ * @param weights
+ * @param dropIsolates
+ */
 void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
     qDebug("Graph::centralityDegree()");
     if (!graphModified() && calculatedDC ) {
@@ -6456,7 +6464,7 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
 
 
 /**
- * @brief Graph::writeCentralityDegree
+ * @brief Writes the Degree Centrality to a file
  * @param fileName
  * @param considerWeights
  * @param dropIsolates
@@ -6989,8 +6997,9 @@ void Graph::writeCentralityCloseness( const QString fileName,
 
 
 /**
- * @brief Graph::centralityClosenessIR
- * Improved node-level centrality closeness index which focuses on the
+ * @brief Computes an "improved" closeness centrality index, IRCC, which can be used
+ * on disconnected graphs.
+ * IRCC is an improved node-level centrality closeness index which focuses on the
  * influence range of each node (the set of nodes that are reachable from it)
  * For each node v, this index calculates the fraction of nodes in its influence
  * range and divides it by the average distance of those nodes from v,
@@ -7098,7 +7107,14 @@ void Graph::centralityClosenessIR(const bool considerWeights,
 
 
 
-//Writes the "improved" closeness centrality indices to a file
+
+/**
+ * @brief Writes the "improved" closeness centrality indices to a file
+ * @param fileName
+ * @param considerWeights
+ * @param inverseWeights
+ * @param dropIsolates
+ */
 void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
                                                    const bool considerWeights,
                                                    const bool inverseWeights,
@@ -7559,7 +7575,14 @@ void Graph::writeCentralityBetweenness(const QString fileName,
 
 
 
-//Writes the Stress centralities to a file
+
+/**
+ * @brief Writes the Stress centralities to a file
+ * @param fileName
+ * @param considerWeights
+ * @param inverseWeights
+ * @param dropIsolates
+ */
 void Graph::writeCentralityStress( const QString fileName,
                                    const bool considerWeights,
                                    const bool inverseWeights,
@@ -7771,7 +7794,7 @@ void Graph::writeCentralityStress( const QString fileName,
 
 
 /**
- * @brief Graph::writeCentralityEccentricity
+ * @brief Writes the Eccentricity centralities (aka Harary Graph Centrality) to a file
  * @param fileName
  * @param considerWeights
  * @param inverseWeights
@@ -7972,7 +7995,7 @@ void Graph::writeCentralityEccentricity(const QString fileName,
 
 
 /**
- * @brief Graph::writeCentralityPower
+ * @brief Writes Power Centralities to a file
  * @param fileName
  * @param considerWeights
  * @param inverseWeights
@@ -8230,8 +8253,7 @@ void Graph::writeCentralityPower(const QString fileName,
 
 
 /**
- * @brief Graph::prestigeDegree
-*	Calculates Degree Prestige (in-degree) of each vertex - diagonal included
+ * @brief Computes the Degree Prestige (in-degree) of each vertex - diagonal included
 *	Also the mean value and the variance of the in-degrees.
  * @param weights
  * @param dropIsolates
@@ -8417,7 +8439,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
 
 
 /**
- * @brief Graph::writePrestigeDegree
+ * @brief Writes the Degree Prestige of each node to a file
  * @param fileName
  * @param considerWeights
  * @param dropIsolates
@@ -9011,8 +9033,7 @@ void Graph::writePrestigeProximity( const QString fileName,
 
 
 /**
- * @brief Graph::prestigePageRank
- * Calculates the PageRank Prestige of each vertex
+ * @brief Calculates the PageRank Prestige of each vertex
  * @param dropIsolates
  */
 void Graph::prestigePageRank(const bool &dropIsolates){
@@ -9256,8 +9277,7 @@ void Graph::prestigePageRank(const bool &dropIsolates){
 
 
 /**
- * @brief Graph::writePrestigePageRank
- * Writes the PageRank indices to a file
+ * @brief Writes the PageRank scores of vertices to a file
  * @param fileName
  * @param dropIsolates
  */
@@ -10358,8 +10378,7 @@ void Graph::randomNetLatticeCreate(const int &N,
 
 
 /**
- * @brief Graph::walksBetween
- * Calculates and returns the number of walks of a given length between v1 and v2
+ * @brief Calculates and returns the number of walks of a given length between v1 and v2
  * @param v1
  * @param v2
  * @param length
@@ -10723,8 +10742,7 @@ QList<int> Graph::vertexinfluenceRange(int v1){
 
 
 /**
- * @brief Graph::vertexinfluenceDomain
- *  Returns the influence domain of vertex v1, namely the set of nodes who can
+ * @brief Returns the influence domain of vertex v1, namely the set of nodes who can
  *  reach v1
  *  This function applies to digraphs only
  * @param v1
