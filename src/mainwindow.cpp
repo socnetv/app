@@ -57,6 +57,7 @@
 #include "dialograndregular.h"
 #include "dialograndlattice.h"
 #include "dialogsettings.h"
+#include "forms/dialognodefind.h"
 #include "dialognodeedit.h"
 #include "dialogsimilaritypearson.h"
 #include "dialogsimilaritymatches.h"
@@ -1211,7 +1212,7 @@ void MainWindow::initActions(){
                                      "Finds a node with a given number or label and "
                                      "highlights it by doubling its size. "
                                      "Ctrl+F again resizes back the node"));
-    connect(editNodeFindAct, SIGNAL(triggered()), this, SLOT(slotEditNodeFind()) );
+    connect(editNodeFindAct, SIGNAL(triggered()), this, SLOT(slotEditNodeFindDialog()) );
 
     editNodeAddAct = new QAction(QIcon(":/images/add.png"), tr("Add Node"), this);
     editNodeAddAct->setShortcut(Qt::CTRL + Qt::Key_Period);
@@ -8476,16 +8477,40 @@ void MainWindow::slotEditNodeAdd() {
 
 
 /**
- * @brief MainWindow::slotEditNodeFind
+ * @brief Opens the node find dialog
  * Calls GW::setMarkedNode() to find a node by its number or label.
  * The node is then marked.
  */
-void MainWindow::slotEditNodeFind(){
+void MainWindow::slotEditNodeFindDialog(){
     qDebug() << "MW::slotEditNodeFind()";
     if ( !activeNodes() ) {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
+
+
+    m_nodeFindDialog = new DialogNodeFind(this) ;
+
+    connect( m_nodeFindDialog, &DialogNodeFind::userChoices,
+             this, &MainWindow::slotEditNodeFindDialog);
+
+    m_nodeFindDialog->exec();
+
+    statusMessage( tr("Node properties dialog opened. Ready. ") );
+
+    return;
+
+
+}
+
+
+/**
+ * @brief MainWindow::slotEditNodeFind
+ * @param list
+ */
+void MainWindow::slotEditNodeFind(const QStringList &list, const QString &type)
+{
+
 
     if ( markedNodesExist ) {				// if a node has been already marked
         graphicsWidget->setMarkedNode(""); 	// call setMarkedNode to just unmark it.
@@ -8513,6 +8538,7 @@ void MainWindow::slotEditNodeFind(){
                                      tr("Sorry. There is no such node in this network. \n Try again."), "OK",0);
         }
     }
+
 }
 
 

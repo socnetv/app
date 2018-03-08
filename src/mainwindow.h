@@ -84,6 +84,7 @@ class GraphicsEdge;
 class GraphicsNode;
 
 class DialogWebCrawler;
+class DialogNodeFind;
 class DialogNodeEdit;
 class DialogPreviewFile;
 class DialogRandErdosRenyi;
@@ -272,7 +273,8 @@ public slots:
     void slotEditNodePosition(const int &nodeNumber, const int &x, const int &y);
     void slotEditNodeAdd();
 
-    void slotEditNodeFind();
+    void slotEditNodeFindDialog();
+    void slotEditNodeFind(const QStringList &list, const QString &type);
     void slotEditNodeRemove();
     void slotEditNodeOpenContextMenu();
     void slotEditNodePropertiesDialog();
@@ -520,6 +522,7 @@ private:
     DialogDataSetSelect m_datasetSelectDialog;
 
     DialogNodeEdit *m_nodeEditDialog;
+    DialogNodeFind *m_nodeFindDialog;
     DialogRandErdosRenyi *m_randErdosRenyiDialog;
     DialogRandSmallWorld *m_randSmallWorldDialog;
     DialogRandScaleFree *m_randScaleFreeDialog;

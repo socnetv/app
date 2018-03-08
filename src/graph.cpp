@@ -872,6 +872,17 @@ int Graph::vertexNumberMin() {
 
 
 
+bool Graph::vertexFindByNumber (const QStringList &numList) {
+    qDebug() << "Graph::vertexFindByNumber() - list:" << numList;
+}
+
+
+
+bool Graph::vertexFindByLabel (const QStringList &labelList) {
+    qDebug() << "Graph::vertexFindByLabel() - list:" << labelList;
+}
+
+
 /**
  * @brief Removes the vertex v1 from the graph
  * First, it removes all edges to doomed from other vertices
@@ -2553,6 +2564,9 @@ bool Graph::graphLoaded() const {
     qDebug() << "Graph::graphLoaded() - " << (( graphFileFormat() != FILE_UNRECOGNIZED ) ? true: false );
     return ( graphFileFormat() != FILE_UNRECOGNIZED ) ? true: false;
 }
+
+
+
 
 
 

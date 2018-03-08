@@ -100,18 +100,23 @@ GraphicsNode::GraphicsNode(GraphicsWidget* gw, const int &num, const int &size,
 
 
 
-/** 
-    Used by MW::slotChangeNodeColor
-*/
+
+/**
+ * @brief Changes the color of the node
+ * @param color string
+ */
 void GraphicsNode::setColor(QString str) {
     prepareGeometryChange();
     m_col=QColor(str);
     update();
 }
 
-/** 
-    Used by MW::slotEditNodeFind()
-*/
+
+/**
+ * @brief Changes the color of the node (overloaded)
+ * Also used when the user searches for a node
+ * @param color
+ */
 void GraphicsNode::setColor(QColor color){
     prepareGeometryChange();
     m_col=color;

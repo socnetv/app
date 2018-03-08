@@ -53,7 +53,8 @@ FORMS += src/forms/dialogfilteredgesbyweight.ui \
          src/forms/dialogsimilaritymatches.ui \
          src/forms/dialogdissimilarities.ui \
          src/forms/dialogclusteringhierarchical.ui \  
-    src/forms/dialograndlattice.ui
+    src/forms/dialograndlattice.ui \
+    src/forms/dialognodefind.ui
 
 HEADERS += src/graphicswidget.h \
            src/graphicsedge.h \
@@ -84,7 +85,8 @@ HEADERS += src/graphicswidget.h \
 	   src/dialogsimilaritymatches.h \
 	   src/dialogdissimilarities.h \
  	   src/dialogclusteringhierarchical.h \ 
-           src/dialograndlattice.h
+           src/dialograndlattice.h \
+    src/forms/dialognodefind.h
 
 SOURCES += src/graphicswidget.cpp \
            src/graphicsedge.cpp \
@@ -116,7 +118,8 @@ SOURCES += src/graphicswidget.cpp \
 	   src/dialogsimilaritymatches.cpp \ 
 	   src/dialogdissimilarities.cpp \
 	   src/dialogclusteringhierarchical.cpp \ 
-           src/dialograndlattice.cpp
+           src/dialograndlattice.cpp \
+    src/forms/dialognodefind.cpp
 
 
 
