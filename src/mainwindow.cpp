@@ -48,21 +48,21 @@
 #include "graphicsnodenumber.h"
 
 
-#include "dialogwebcrawler.h"
-#include "dialogfilteredgesbyweight.h"
-#include "dialogpreviewfile.h"
-#include "dialogranderdosrenyi.h"
-#include "dialograndsmallworld.h"
-#include "dialograndscalefree.h"
-#include "dialograndregular.h"
-#include "dialograndlattice.h"
-#include "dialogsettings.h"
+#include "forms/dialogwebcrawler.h"
+#include "forms/dialogfilteredgesbyweight.h"
+#include "forms/dialogpreviewfile.h"
+#include "forms/dialogranderdosrenyi.h"
+#include "forms/dialograndsmallworld.h"
+#include "forms/dialograndscalefree.h"
+#include "forms/dialograndregular.h"
+#include "forms/dialograndlattice.h"
+#include "forms/dialogsettings.h"
 #include "forms/dialognodefind.h"
-#include "dialognodeedit.h"
-#include "dialogsimilaritypearson.h"
-#include "dialogsimilaritymatches.h"
-#include "dialogclusteringhierarchical.h"
-#include "dialogdissimilarities.h"
+#include "forms/dialognodeedit.h"
+#include "forms/dialogsimilaritypearson.h"
+#include "forms/dialogsimilaritymatches.h"
+#include "forms/dialogclusteringhierarchical.h"
+#include "forms/dialogdissimilarities.h"
 
 
 
@@ -623,6 +623,19 @@ void MainWindow::initGraph() {
 
 //    activeGraph->moveToThread(&graphThread);
 //    graphThread.start();
+
+    prominenceIndexList  << "Degree Centr."
+                << "Closeness Centr."
+                << "IR Closeness Centr."
+                << "Betweenness Centr."
+                << "Stress Centr."
+                << "Eccentricity Centr."
+                << "Power Centr."
+                << "Information Centr."
+                << "Eigenvector Centr"
+                << "Degree Prestige"
+                << "PageRank Prestige"
+                << "Proximity Prestige";
 
     qDebug() << "MW::MainWindow() - activeGraph thread now:" << activeGraph->thread();
 
@@ -4164,19 +4177,7 @@ void MainWindow::initPanels(){
     toolBoxAnalysisProminenceSelect -> setWhatsThis( helpMessage);
 
     QStringList prominenceCommands;
-    prominenceCommands << "Select"
-                       << "Degree Centr."
-                       << "Closeness Centr."
-                       << "IR Closeness Centr."
-                       << "Betweenness Centr."
-                       << "Stress Centr."
-                       << "Eccentricity Centr."
-                       << "Power Centr."
-                       << "Information Centr."
-                       << "Eigenvector Centr"
-                       << "Degree Prestige"
-                       << "PageRank Prestige"
-                       << "Proximity Prestige";
+    prominenceCommands << "Select" << prominenceIndexList;
     toolBoxAnalysisProminenceSelect->addItems(prominenceCommands);
     toolBoxAnalysisProminenceSelect->setMinimumWidth(120);
 
@@ -4333,22 +4334,10 @@ void MainWindow::initPanels(){
                      );
     toolBoxLayoutByIndexSelect->setToolTip( helpMessage );
     toolBoxLayoutByIndexSelect->setWhatsThis( helpMessage );
-    QStringList indicesList;
-    indicesList << "None"
-                << "Random"
-                << "Degree Centr."
-                << "Closeness Centr."
-                << "IR Closeness Centr."
-                << "Betweenness Centr."
-                << "Stress Centr."
-                << "Eccentricity Centr."
-                << "Power Centr."
-                << "Information Centr."
-                << "Eigenvector Centr."
-                << "Degree Prestige"
-                << "PageRank Prestige"
-                << "Proximity Prestige";
-    toolBoxLayoutByIndexSelect->addItems(indicesList);
+    QStringList layoutCommandsList;
+    layoutCommandsList << "None" << "Random" << prominenceIndexList;
+
+    toolBoxLayoutByIndexSelect->addItems(layoutCommandsList);
     toolBoxLayoutByIndexSelect->setMinimumHeight(20);
     toolBoxLayoutByIndexSelect->setMinimumWidth(120);
 
@@ -5239,15 +5228,11 @@ void MainWindow::initSignalSlots() {
              this, SLOT(slotEditRelationRename()) ) ;
 
 
-    connect( &m_DialogEdgeFilterByWeight, SIGNAL( userChoices( float, bool) ),
-             activeGraph, SLOT( edgeFilterByWeight (float, bool) ) );
-
 
     connect(networkWebCrawlerAct, SIGNAL(triggered()), this, SLOT(slotNetworkWebCrawlerDialog()));
 
 
-    connect( &m_datasetSelectDialog, SIGNAL( userChoices( QString) ),
-             this, SLOT( slotNetworkDataSetRecreate(QString) ) );
+
 
     connect(zoomInAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomIn()) );
     connect(zoomOutAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomOut()) );
@@ -7685,7 +7670,13 @@ void MainWindow::slotNetworkViewSociomatrixPlotText(){
  */
 void MainWindow::slotNetworkDataSetSelect(){
     qDebug()<< "MW::slotNetworkDataSetSelect()";
-    m_datasetSelectDialog.exec();
+
+    m_datasetSelectDialog = new DialogDataSetSelect(this);
+    connect( m_datasetSelectDialog, SIGNAL( userChoices( QString) ),
+             this, SLOT( slotNetworkDataSetRecreate(QString) ) );
+
+
+    m_datasetSelectDialog->exec();
 }
 
 
@@ -8482,17 +8473,17 @@ void MainWindow::slotEditNodeAdd() {
  * The node is then marked.
  */
 void MainWindow::slotEditNodeFindDialog(){
-    qDebug() << "MW::slotEditNodeFind()";
+    qDebug() << "MW::slotEditNodeFindDialog()";
     if ( !activeNodes() ) {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
 
-    m_nodeFindDialog = new DialogNodeFind(this) ;
+    m_nodeFindDialog = new DialogNodeFind(this, prominenceIndexList) ;
 
     connect( m_nodeFindDialog, &DialogNodeFind::userChoices,
-             this, &MainWindow::slotEditNodeFindDialog);
+             this, &MainWindow::slotEditNodeFind);
 
     m_nodeFindDialog->exec();
 
@@ -8511,6 +8502,9 @@ void MainWindow::slotEditNodeFindDialog(){
 void MainWindow::slotEditNodeFind(const QStringList &list, const QString &type)
 {
 
+    qDebug() << "MW::slotEditNodeFind()" << list << type;
+
+    return;
 
     if ( markedNodesExist ) {				// if a node has been already marked
         graphicsWidget->setMarkedNode(""); 	// call setMarkedNode to just unmark it.
@@ -10228,7 +10222,12 @@ void MainWindow::slotEditFilterEdgesByWeightDialog() {
         statusMessage(  QString(tr("Load a network file first. \nThen you may ask me to compute something!"))  );
         return;
     }
-    m_DialogEdgeFilterByWeight.exec() ;
+
+    m_DialogEdgeFilterByWeight = new DialogFilterEdgesByWeight(this);
+    connect( m_DialogEdgeFilterByWeight, SIGNAL( userChoices( float, bool) ),
+             activeGraph, SLOT( edgeFilterByWeight (float, bool) ) );
+
+    m_DialogEdgeFilterByWeight->exec() ;
 }
 
 

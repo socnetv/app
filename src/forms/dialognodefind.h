@@ -39,10 +39,11 @@ class DialogNodeFind : public QDialog
     Q_OBJECT
 
 public:
-    explicit DialogNodeFind(QWidget *parent = 0);
+    explicit DialogNodeFind(QWidget *parent = 0, QStringList indexList=QStringList());
     ~DialogNodeFind();
 
 public slots:
+    void setError(const bool &toggle);
     void checkErrors ();
     void gatherData ();
 signals:
@@ -52,6 +53,10 @@ signals:
 private:
     Ui::DialogNodeFind *ui;
     QStringList list;
+    QString searchType;
+    QStringList tempListA;
+    QStringList tempListB;
+    QString str;
 };
 
 #endif // DIALOGNODEFIND_H

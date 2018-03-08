@@ -37,6 +37,7 @@
 #include <QGraphicsEffect>
 
 #include "dialognodeedit.h"
+#include "ui_dialognodeedit.h"
 
 DialogNodeEdit::DialogNodeEdit(QWidget *parent,
                                const QString &l,

@@ -47,9 +47,10 @@
 #include <math.h>
 
 #include "graph.h"
-#include "dialogfilteredgesbyweight.h"
 
-#include "dialogdatasetselect.h"
+#include "forms/dialogfilteredgesbyweight.h"
+
+#include "forms/dialogdatasetselect.h"
 
 static const QString VERSION="2.5";
 
@@ -517,9 +518,12 @@ private:
 
     QMap<QString,QString> appSettings;
 
-    DialogFilterEdgesByWeight m_DialogEdgeFilterByWeight;
+    QStringList prominenceIndexList;
+
+    DialogFilterEdgesByWeight *m_DialogEdgeFilterByWeight;
+
     DialogWebCrawler *m_WebCrawlerDialog;
-    DialogDataSetSelect m_datasetSelectDialog;
+    DialogDataSetSelect *m_datasetSelectDialog;
 
     DialogNodeEdit *m_nodeEditDialog;
     DialogNodeFind *m_nodeFindDialog;
