@@ -44,10 +44,11 @@ public:
 
 public slots:
     void setError(const bool &toggle);
+    void getIndex(const QString &indexStr);
     void checkErrors ();
     void gatherData ();
 signals:
-    void userChoices( const QStringList &list, const QString &type);
+    void userChoices( const QStringList &list, const QString &type, const QString &index=QString::null);
 
 
 private:
@@ -57,6 +58,7 @@ private:
     QStringList tempListA;
     QStringList tempListB;
     QString str;
+    QString index;
 };
 
 #endif // DIALOGNODEFIND_H

@@ -51,9 +51,14 @@ DialogNodeFind::DialogNodeFind(QWidget *parent, QStringList indexList) :
     ui->indexCombo->setEnabled(false);
 
 
-    connect ( ui->labelsRadioBtn,SIGNAL(clicked(bool)), this, SLOT(checkErrors()) );
-    connect ( ui->numbersRadioBtn,SIGNAL(clicked(bool)), this, SLOT(checkErrors()) );
-    connect ( ui->indexRadioBtn,SIGNAL(clicked(bool)), this, SLOT(checkErrors()) );
+    connect ( ui->labelsRadioBtn,SIGNAL(clicked(bool)), this, SLOT( checkErrors() ) );
+    connect ( ui->numbersRadioBtn,SIGNAL(clicked(bool)), this, SLOT( checkErrors() ) );
+    connect ( ui->indexRadioBtn,SIGNAL(clicked(bool)), this, SLOT( checkErrors() ) );
+
+    connect (ui->indexCombo, &QComboBox::currentTextChanged,
+             this, &DialogNodeFind::getIndex);
+
+//    connect ( ui->indexCombo, SIGNAL(currentTextChanged(QString)), this, SLOT( checkErrors(QString) ) );
 
     connect ( ui->plainTextEdit,SIGNAL(textChanged()), this, SLOT(checkErrors()) );
 
@@ -85,9 +90,14 @@ void DialogNodeFind::setError(const bool &toggle) {
         ui->plainTextEdit->setGraphicsEffect(0);
         ui->buttonBox -> button (QDialogButtonBox::Ok) -> setEnabled(true);
      }
+}
 
 
+void DialogNodeFind::getIndex(const QString &indexStr) {
 
+    index = ui->indexCombo->currentText();
+
+    qDebug() << "DialogNodeFind::getIndex() str"<<indexStr << "index" << index;
 
 }
 
@@ -115,7 +125,7 @@ void DialogNodeFind::checkErrors()
         ui->textEditLabel->setText("Enter index score to search (i.e. > 0.5)");
         ui->indexLabel->setEnabled(true);
         ui->indexCombo->setEnabled(true);
-        searchType = "index";
+        searchType = "score";
     }
 
     qDebug()<< "DialogNodeFind::checkErrors() - search type:" << searchType;
@@ -196,7 +206,7 @@ void DialogNodeFind::checkErrors()
         // user wants to search nodes by their index score
         // user has to enter > or < and a threshold
         // and to select the desired index.
-
+        index = ui->indexCombo->currentText();
 
 
     }
@@ -207,6 +217,6 @@ void DialogNodeFind::gatherData()
 {
    qDebug()<< "DialogNodeFind::gatherData()" << list;
       qDebug()<< "DialogNodeFind::gatherData() type" << searchType;
-   emit userChoices( list, searchType  );
+   emit userChoices( list, searchType, index );
 
 }

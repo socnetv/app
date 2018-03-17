@@ -62,6 +62,18 @@ static const int FILE_EDGELIST_SIMPLE   = 8;  // .CSV, .TXT, .LIST, LST
 static const int FILE_TWOMODE           = 9;  // .2SM .AFF
 static const int FILE_UNRECOGNIZED      =-1;  // UNRECOGNIZED FILE FORMAT
 
+static const int INDEX_DC   = 1;
+static const int INDEX_CC   = 2;
+static const int INDEX_IRCC = 3;
+static const int INDEX_BC   = 4;
+static const int INDEX_SC   = 5;
+static const int INDEX_EC   = 6;
+static const int INDEX_PC   = 7;
+static const int INDEX_IC   = 8;
+static const int INDEX_EVC  = 9;
+static const int INDEX_DP   = 10;
+static const int INDEX_PRP  = 11;
+static const int INDEX_PP   = 12;
 
 static const int GRAPH_CHANGED_NONE                = 0;
 static const int GRAPH_CHANGED_MINOR_OPTIONS       = 1;
@@ -443,7 +455,7 @@ public:
     int vertexExists(const long int &v1 );
     int vertexExists(const QString &label);
 
-    bool vertexFindByNumber (const QStringList &numList) ;
+    bool vertexFindByNumber (const QStringList &searchList) ;
     bool vertexFindByLabel (const QStringList &labelList) ;
 
     void vertexRemove (const long int &v1);

@@ -275,7 +275,9 @@ public slots:
     void slotEditNodeAdd();
 
     void slotEditNodeFindDialog();
-    void slotEditNodeFind(const QStringList &list, const QString &type);
+    void slotEditNodeFind(const QStringList &list,
+                          const QString &searchType,
+                          const QString &indexStr=QString::null);
     void slotEditNodeRemove();
     void slotEditNodeOpenContextMenu();
     void slotEditNodePropertiesDialog();

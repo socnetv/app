@@ -8499,10 +8499,51 @@ void MainWindow::slotEditNodeFindDialog(){
  * @brief MainWindow::slotEditNodeFind
  * @param list
  */
-void MainWindow::slotEditNodeFind(const QStringList &list, const QString &type)
+void MainWindow::slotEditNodeFind(const QStringList &list,
+                                  const QString &searchType,
+                                  const QString &indexStr)
 {
 
-    qDebug() << "MW::slotEditNodeFind()" << list << type;
+    qDebug() << "MW::slotEditNodeFind() - nodes:" << list << "search type:"<< searchType;
+    int index = 0;
+    if (searchType == "numbers"){
+        activeGraph->vertexFindByNumber(list);
+    }
+    else if (searchType == "labels"){
+        activeGraph->vertexFindByLabel(list);
+    }
+    else if (searchType == "score"){
+
+        if ( indexStr.contains("Degree Centr") )
+            index=INDEX_DC;
+        else if ( indexStr.contains("Closeness Centr") &&
+                  !indexStr.contains("IR"))
+            index=INDEX_CC;
+        else if ( indexStr.contains("Influence Range Closeness Centrality")  ||
+                  indexStr.contains("IR Closeness")
+                  )
+            index=INDEX_IRCC;
+        else if ( indexStr.contains("Betweenness Centr"))
+            index=INDEX_BC;
+        else if (indexStr.contains("Stress Centr"))
+            index=INDEX_SC;
+        else if (indexStr.contains("Eccentricity Centr"))
+            index=INDEX_EC;
+        else if (indexStr.contains("Power Centr"))
+            index=INDEX_PC;
+        else if (indexStr.contains("Information Centr"))
+            index=INDEX_IC;
+        else if (indexStr.contains("Eigenvector Centr"))
+            index=INDEX_EVC;
+        else if (indexStr.contains("Degree Prestige"))
+            index=INDEX_DP;
+        else if (indexStr.contains("PageRank Prestige"))
+            index=INDEX_PRP;
+        else if (indexStr.contains("Proximity Prestige"))
+            index=INDEX_PP;
+
+    }
+
 
     return;
 
@@ -10431,32 +10472,32 @@ void MainWindow::slotLayoutRadialByProminenceIndex(QString choice=""){
     QString prominenceIndexName = choice;
     slotLayoutGuides(true);
     if ( prominenceIndexName.contains("Degree Centr") )
-        userChoice=1;
+        userChoice=INDEX_DC;
     else if ( prominenceIndexName.contains("Closeness Centr") &&
               !prominenceIndexName.contains("IR"))
-        userChoice=2;
+        userChoice=INDEX_CC;
     else if ( prominenceIndexName.contains("Influence Range Closeness Centrality")  ||
               prominenceIndexName.contains("IR Closeness")
               )
-        userChoice=3;
+        userChoice=INDEX_IRCC;
     else if ( prominenceIndexName.contains("Betweenness Centr"))
-        userChoice=4;
+        userChoice=INDEX_BC;
     else if (prominenceIndexName.contains("Stress Centr"))
-        userChoice=5;
+        userChoice=INDEX_SC;
     else if (prominenceIndexName.contains("Eccentricity Centr"))
-        userChoice=6;
+        userChoice=INDEX_EC;
     else if (prominenceIndexName.contains("Power Centr"))
-        userChoice=7;
+        userChoice=INDEX_PC;
     else if (prominenceIndexName.contains("Information Centr"))
-        userChoice=8;
+        userChoice=INDEX_IC;
     else if (prominenceIndexName.contains("Eigenvector Centr"))
-        userChoice=9;
+        userChoice=INDEX_EVC;
     else if (prominenceIndexName.contains("Degree Prestige"))
-        userChoice=10;
+        userChoice=INDEX_DP;
     else if (prominenceIndexName.contains("PageRank Prestige"))
-        userChoice=11;
+        userChoice=INDEX_PRP;
     else if (prominenceIndexName.contains("Proximity Prestige"))
-        userChoice=12;
+        userChoice=INDEX_PP;
 
     qDebug() << "MainWindow::slotLayoutRadialByProminenceIndex() "
              << "prominenceIndexName " << prominenceIndexName
