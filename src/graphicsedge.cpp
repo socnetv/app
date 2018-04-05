@@ -575,7 +575,7 @@ void GraphicsEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 
      //if the edge is being dragged around, darken it!
      if (option->state & QStyle::State_Selected) {
-         setZValue(ZValueEdgeHighlighted);
+         //setZValue(ZValueEdgeHighlighted);
          setState(EDGE_STATE_HOVER);
      }
      else if (option->state & QStyle::State_MouseOver) {
@@ -598,6 +598,58 @@ void GraphicsEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
     painter->setPen(pen());
 
     painter->drawPath(m_path);
+}
+
+
+
+QVariant GraphicsEdge::itemChange(GraphicsItemChange change, const QVariant &value){
+
+    switch (change) {
+    case ItemPositionHasChanged :
+    {
+
+        break;
+    }
+    case ItemEnabledHasChanged:{
+        qDebug() << "GraphicsNode::itemChange - enabled changed";
+        if (ItemEnabledHasChanged) {
+            return 1;
+        }
+        else{
+            return 0;
+        }
+    }
+    case ItemSelectedHasChanged:{
+        qDebug() << "GraphicsEdge::itemChange - selected changed";
+        if (value.toBool()) {
+            setZValue(ZValueEdgeHighlighted);
+            setHighlighted(true);
+            source->setSelected(true);
+            target->setSelected(true);
+        }
+        else{
+            setZValue(ZValueEdge);
+            setHighlighted(false);
+            source->setSelected(false);
+            target->setSelected(false);
+        }
+    }
+    case ItemVisibleHasChanged:
+    {
+        qDebug() << "GraphicsEdge::itemChange - visible changed";
+        if (ItemVisibleHasChanged){
+            return 1;
+        }
+        else{
+            return 0;
+        }
+    }
+    default:
+    {
+        break;
+    }
+    };
+    return QGraphicsItem::itemChange(change, value);
 }
 
 
@@ -644,40 +696,6 @@ void GraphicsEdge::setHighlighting(const bool &toggle) {
 
 
 
-void GraphicsEdge::setClicked(const bool &toggle) {
-    qDebug()<<"GraphicsEdge::setClicked()";
-    if (!toggle) {
-        qDebug()<<"GraphicsEdge::setClicked() - restoring connected nodes";
-
-        //unselect them, restore their color
-        source->setSelected(false);
-        target->setSelected(false);
-        //restore their size
-        //source->setSize(sourceOrigSize);
-        //target->setSize(targetOrigSize);
-
-        qDebug()<<"GraphicsEdge::setClicked() - Restored source and target nodes";
-    }
-    else {
-        qDebug()<<"GraphicsEdge::setClicked() - making connected nodes larger";
-        // tell nodes to change their color
-        source->setSelected(true);
-        target->setSelected(true);
-
-        // save their original size
-        //sourceOrigSize=source->size();
-        //targetOrigSize=target->size();
-
-        //now, make them larger
-        //source->setSize(2*sourceOrigSize-1);
-        //target->setSize(2*targetOrigSize-1);
-
-        qDebug()<<"GraphicsEdge::setClicked() - Made connected nodes larger";
-
-    }
-
-
-}
 
 /**
  * @brief handles the events of a click on an edge

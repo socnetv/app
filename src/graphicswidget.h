@@ -118,7 +118,7 @@ public slots:
                     );
     void removeNode(const long int &number);
     void setNodeVisibility(long int, bool );	//Called from Graph via MW
-    void nodeClicked(GraphicsNode *);
+    void setNodeClicked(GraphicsNode *);
     void moveNode(const int &num, const qreal &x, const qreal &y);	//Called from Graph when creating random nets.
 
     bool setNodeSize(const long int &nodeNumber, const int &size=0);
@@ -163,7 +163,7 @@ public slots:
 
     void setEdgeColor(const long int &, const long int&, const QString &);
 
-    void edgeClicked(GraphicsEdge *, const bool &openMenu=false);
+    void setEdgeClicked(GraphicsEdge *, const bool &openMenu=false);
 
     void setEdgeOffsetFromNode(const long int &source,
                                const long int &target,
@@ -215,7 +215,7 @@ private:
     QList<SelectedEdge> m_selectedEdges;
     int m_curRelation, m_nodeSize;
     int m_currentRotationAngle;
-    int m_zoomIndex, markedNodeOrigSize,markedEdgeSourceOrigSize, markedEdgeTargetOrigSize;
+    int m_zoomIndex, markedEdgeSourceOrigSize, markedEdgeTargetOrigSize;
     int m_edgeMinOffsetFromNode;
     double m_currentScaleFactor;
     qreal fX,fY, factor;
@@ -225,7 +225,7 @@ private:
     bool secondDoubleClick, markedNodeExist, clickedEdgeExists;
     bool m_nodeNumbersInside, m_nodeNumberVisibility, m_nodeLabelVisibility;
     bool m_edgeHighlighting;
-    GraphicsNode *firstNode, *secondNode, *markedNode1;
+    GraphicsNode *firstNode, *secondNode;
     GraphicsNode *markedEdgeSource;
     GraphicsNode *markedEdgeTarget;
     GraphicsEdge *clickedEdge;

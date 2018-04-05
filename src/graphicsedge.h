@@ -121,7 +121,6 @@ public:
 
     QPainterPath shape() const;
 
-    void setClicked(const bool &toggle=true);
 
 public slots:
     void adjust ();
@@ -129,7 +128,9 @@ public slots:
 protected:
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
+
 
 
 private:

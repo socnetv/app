@@ -66,7 +66,7 @@ GraphicsNode::GraphicsNode(GraphicsWidget* gw, const int &num, const int &size,
 
     m_shape=shape;
     m_col_str=color;
-    m_col=QColor(color);
+    m_col=m_col_orig=QColor(color);
 
     m_hasNumber=showNumbers;
     m_hasNumberInside = numbersInside;
@@ -91,6 +91,7 @@ GraphicsNode::GraphicsNode(GraphicsWidget* gw, const int &num, const int &size,
 
     m_edgeHighLighting = edgeHighlighting;
 
+    setZValue(ZValueNode);
     setShape(m_shape);
 
     setPos(p);
@@ -147,7 +148,12 @@ void GraphicsNode::setSize(const int &size){
 
 
 
-/**  Used by MainWindow::findNode() and GraphicsEdge::GraphicsEdge()  */
+
+/**
+ * @brief Returns the esoteric size of the node.
+ * Used by GraphicsEdge::GraphicsEdge()
+ * @return
+ */
 int GraphicsNode::size() const{
     return m_size;
 }
@@ -212,19 +218,21 @@ void GraphicsNode::setShape(const QString shape) {
 
 
 
-/* 
-*	Returns the shape of the node as a path (an accurate outline of the item's shape)
-*	Used by the collision algorithm in collidesWithItem() 
-*/
+/**
+ * @brief Returns the shape of the node as a path (an accurate outline of the item's shape)
+*	Used by the collision algorithm in collidesWithItem()
+ * @return
+ */
 QPainterPath GraphicsNode::shape() const {
     //qDebug ("GraphicsNode: shape()");
     return (m_path);
 }
 
 
-/*
- *  Returns the bounding rectangle of the node
- *  That is the rectangle where all painting will take place.
+/**
+ * @brief Returns the bounding rectangle of the node:
+ * The rectangle where all painting will take place.
+ * @return
  */
 QRectF GraphicsNode::boundingRect() const {
     qreal adjust = 5;
@@ -232,9 +240,6 @@ QRectF GraphicsNode::boundingRect() const {
 }
 
 
-/** 
-
-*/
 /**
  * @brief Does the actual painting using the QPainterPath created by the setShape()
  * Called by GraphicsView and GraphicsNode methods in every update()
@@ -244,26 +249,15 @@ QRectF GraphicsNode::boundingRect() const {
 void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) {
     //	painter->setClipRect( option->exposedRect );
 
-    //if the node is selected or being dragged around, darken it!
-    if (option->state & QStyle::State_Selected) {
-        painter->setBrush(m_col.dark(150));
-        setZValue(ZValueNodeHighlighted);
+    if (option->state & QStyle::State_MouseOver) {
+            painter->setBrush(m_col.darker(120));
+            setZValue(ZValueNodeHighlighted);
     }
-    else if (option->state & QStyle::State_MouseOver) {
-        //qDebug()<< " node : mouse over";
-        painter->setBrush(m_col.dark(150));
-        setZValue(ZValueNodeHighlighted);
-    }
-    //else if (option->state & QStyle::State_Sunken) {
-    //qDebug()<< " node : sunken ";
-    //painter->setBrush(m_col_dark.dark(160));
-    //}
-    else { //no, just paint it with the usual color.
-        //qDebug()<< " node : nothing";
-       // setSize( m_size_orig);
-        setZValue(ZValueNode);
+    else {
         painter->setBrush(m_col);
+        setZValue(ZValueNode);
     }
+
     painter->setPen(QPen(QColor("#222"), 0));
 
     painter->drawPath (m_path);
@@ -310,6 +304,7 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
     switch (change) {
     case ItemPositionHasChanged :
     {
+         qDebug() << "GraphicsNode::itemChange - position changed";
         //setCacheMode( QGraphicsItem::ItemCoordinateCache );
         foreach (GraphicsEdge *edge, inEdgeList)  //Move each inEdge of this node
             edge->adjust();
@@ -330,6 +325,7 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
         break;
     }
     case ItemEnabledHasChanged:{
+        qDebug() << "GraphicsNode::itemChange - enabled changed";
         if (ItemEnabledHasChanged) {
             return 1;
         }
@@ -338,18 +334,38 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
         }
     }
     case ItemSelectedHasChanged:{
+        qDebug() << "GraphicsNode::itemChange - selected changed";
         if (value.toBool()) {
-            qDebug()<< "NOED SELECTED";
+            setZValue(ZValueNodeHighlighted);
             m_size_orig = m_size;
             setSize(m_size * 2 - 1);
+            m_col_orig = m_col;
+            setColor(m_col.darker(120));
+
+            if (m_edgeHighLighting) {
+                foreach (GraphicsEdge *edge, inEdgeList)
+                    edge->setHighlighted(true);
+                foreach (GraphicsEdge *edge, outEdgeList)
+                    edge->setHighlighted(true);
+            }
+
         }
         else{
-            qDebug()<< "NODE UNSELECTED";
+            setZValue(ZValueNode);
             setSize(m_size_orig);
+            setColor(m_col_orig);
+
+            if (m_edgeHighLighting) {
+                    foreach (GraphicsEdge *edge, inEdgeList)
+                        edge->setHighlighted(false);
+                    foreach (GraphicsEdge *edge, outEdgeList)
+                        edge->setHighlighted(false);
+            }
         }
     }
     case ItemVisibleHasChanged:
     {
+        qDebug() << "GraphicsNode::itemChange - visible changed";
         if (ItemVisibleHasChanged){
             return 1;
         }
@@ -369,12 +385,15 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
 
 /** handles the events of a click on a node */
 void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+
     QGraphicsItem::mousePressEvent(event);
 }
 
 
 void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     update();
+
+
     QGraphicsItem::mouseReleaseEvent(event);
 }
 
@@ -384,12 +403,7 @@ void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
  * @param event
  */
 void GraphicsNode::hoverEnterEvent(QGraphicsSceneHoverEvent *event) {
-    if (m_edgeHighLighting) {
-        foreach (GraphicsEdge *edge, inEdgeList)
-            edge->setHighlighted(true);
-        foreach (GraphicsEdge *edge, outEdgeList)
-            edge->setHighlighted(true);
-    }
+
     QGraphicsItem::hoverEnterEvent(event);
 }
 
@@ -399,12 +413,6 @@ void GraphicsNode::hoverEnterEvent(QGraphicsSceneHoverEvent *event) {
  * @param event
  */
 void GraphicsNode::hoverLeaveEvent(QGraphicsSceneHoverEvent *event){
-    if (m_edgeHighLighting) {
-            foreach (GraphicsEdge *edge, inEdgeList)
-                edge->setHighlighted(false);
-            foreach (GraphicsEdge *edge, outEdgeList)
-                edge->setHighlighted(false);
-    }
     QGraphicsItem::hoverLeaveEvent(event);
 }
 

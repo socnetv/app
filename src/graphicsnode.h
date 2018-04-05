@@ -46,10 +46,6 @@ static const int ZValueNode = 100;
 static const int ZValueNodeHighlighted = 110;
 
 
-static const int NODE_STATE_REGULAR = 0;
-static const int NODE_STATE_HIGHLIGHT = 1;
-static const int NOED_STATE_HOVER = 2;
-
 
 /**
 *  This is actually a container-class.
@@ -148,7 +144,7 @@ private:
     int m_labelDistance;
     long int m_num;
     QString  m_shape,  m_col_str, m_numColor, m_labelText, m_labelColor;
-    QColor m_col;
+    QColor m_col, m_col_orig;
     bool m_hasNumber, m_hasLabel, m_hasNumberInside, m_edgeHighLighting;
     /**Lists of elements attached to this node */
     list<GraphicsEdge*> inEdgeList, outEdgeList;
