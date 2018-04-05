@@ -64,8 +64,9 @@ DialogNodeFind::DialogNodeFind(QWidget *parent, QStringList indexList) :
 
     connect ( ui->buttonBox,SIGNAL(accepted()), this, SLOT(gatherData()) );
 
-    (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
+    ui->plainTextEdit->setFocus();
 
+    (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
 
 }
 

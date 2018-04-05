@@ -391,14 +391,14 @@ void GraphicsWidget::removeNode(const long int &number){
         qDebug() << "GW::removeNode() - found node"
                  <<  number<< " Deleting :)" ;
 
-        if ( nodeHash.value(number) == markedNode1 ) {
-            qDebug() << "GW::removeNode() - node marked by the user. Unmarking then deleting.";
-            setMarkedNode("");
+//        if ( nodeHash.value(number) == markedNode1 ) {
+//            qDebug() << "GW::removeNode() - node marked by the user. Unmarking then deleting.";
+//            setNodesMarked("");
 
-        }
-        else {
-            qDebug() << "GW::removeNode() - node not marked by the user. Deleting.";
-        }
+//        }
+//        else {
+//            qDebug() << "GW::removeNode() - node not marked by the user. Deleting.";
+//        }
         delete nodeHash.value(number);
     }
 
@@ -748,11 +748,11 @@ bool GraphicsWidget::setNodeSize(const long int &number, const int &size ){
 }
 
 /**
- * @brief GraphicsWidget::setAllNodeSize
+ * @brief Changes the size of all nodes.
  * @param size
  * @return
  */
-void GraphicsWidget::setAllNodeSize(const int &size ){
+void GraphicsWidget::setNodeSizeAll(const int &size ){
     qDebug() << "GW::setAllNodeSize() ";
     foreach ( GraphicsNode *m_node, nodeHash ) {
             qDebug() << "GW::setAllNodeSize(): "<< m_node->nodeNumber() << " to new size " << size ;
@@ -763,7 +763,7 @@ void GraphicsWidget::setAllNodeSize(const int &size ){
 
 
 /**
- * @brief GraphicsWidget::setNodeNumberSize
+ * @brief Changs the number size of a node
  * @param number
  * @param size
  */
@@ -785,7 +785,7 @@ bool GraphicsWidget::setNodeNumberSize(const long int &number, const int &size){
 
 
 /**
- * @brief GraphicsWidget::setNodeNumberDistance
+ * @brief Changes the distance of the number of a node.
  * @param number
  * @param distance
  */
@@ -809,7 +809,7 @@ bool GraphicsWidget::setNodeNumberDistance( const long int &number, const int &d
 
 
 /**
- * @brief GraphicsWidget::setNodeLabelColor
+ * @brief Changes the label color of a node to 'color'.
  * @param number
  * @param color
  */
@@ -828,7 +828,7 @@ bool GraphicsWidget::setNodeLabelColor(const long int &number, const QString &co
 
 
 /**
- * @brief GraphicsWidget::setNodeLabelSize
+ * @brief Changes the label size of a node to 'size'.
  * @param number
  * @param size
  */
@@ -900,23 +900,36 @@ GraphicsNode* GraphicsWidget::hasNode( QString text ){
      Marks (by double-sizing and highlighting) or unmarks a node, given its number or label.
      Called by MW:slotEditNodeFind()
 */
-bool GraphicsWidget::setMarkedNode(QString nodeText){
-    qDebug ("GW: setMarkedNode()");
-    if (markedNodeExist) {
-        markedNode1->setSelected(false);		//unselect it, so that it restores its color
-        markedNode1->setSize(markedNodeOrigSize);	//restore its size
-        markedNodeExist=false;
-        return true;
+bool GraphicsWidget::setNodesMarked(QList<int> list){
+    qDebug() << "GW::setNodesMarked()" << list;
+
+    foreach ( int nodeNumber, list) {
+        if  ( nodeHash.contains (nodeNumber) ) {
+            qDebug() << "GW::setNodesMarked(): setSelected node:"<< nodeNumber;
+            nodeHash.value(nodeNumber) ->setSelected(true) ;
+        }
+        else {
+            qDebug() << "GW::setNodesMarked(): cannot find node:"<< nodeNumber;
+            return false;
+        }
+
     }
 
-    markedNode1 = hasNode (nodeText);
-    if (!markedNodeExist)
-        return false;
+//    if (markedNodeExist) {
+//        markedNode1->setSelected(false);		//unselect it, so that it restores its color
+//        markedNode1->setSize(markedNodeOrigSize);	//restore its size
+//        markedNodeExist=false;
+//        return true;
+//    }
 
-    markedNode1->setSelected(true);		//select it, so that it changes color
-    markedNodeOrigSize=markedNode1->size(); // save its original size
-    markedNode1->setSize(2*markedNodeOrigSize-1);	//now, make it larger
-    return true;
+//    markedNode1 = hasNode (nodeText);
+//    if (!markedNodeExist)
+//        return false;
+
+//    markedNode1->setSelected(true);		//select it, so that it changes color
+//    markedNodeOrigSize=markedNode1->size(); // save its original size
+//    markedNode1->setSize(2*markedNodeOrigSize-1);	//now, make it larger
+//    return true;
 }
 
 

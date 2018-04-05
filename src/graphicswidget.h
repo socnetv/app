@@ -72,7 +72,7 @@ public:
     void setInitZoomIndex (int);
 
     GraphicsNode* hasNode(QString text);
-    bool setMarkedNode(QString text);
+    bool setNodesMarked(QList<int> list);
 
     QList<QGraphicsItem *> selectedItems();
     QList<int> selectedNodes();
@@ -122,7 +122,7 @@ public slots:
     void moveNode(const int &num, const qreal &x, const qreal &y);	//Called from Graph when creating random nets.
 
     bool setNodeSize(const long int &nodeNumber, const int &size=0);
-    void setAllNodeSize(const int &size=0);
+    void setNodeSizeAll(const int &size=0);
 
     bool setNodeShape(const long int &nodeNumber, const QString &shape);
     bool setNodeColor(const long int &, const QString &color);

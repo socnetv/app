@@ -5005,18 +5005,17 @@ void MainWindow::initSignalSlots() {
     connect( graphicsWidget, &GraphicsWidget::userSelectedItems,
                      activeGraph,&Graph::graphSelectionChanged);
 
-
-
-    connect( activeGraph,
-             SIGNAL( addGuideCircle(const double&, const double&, const double&) ),
-             graphicsWidget,
-             SLOT(  addGuideCircle(const double&, const double&, const double&) ) ) ;
+    connect( activeGraph, &Graph::addGuideCircle,
+             graphicsWidget,&GraphicsWidget::addGuideCircle ) ;
 
     connect( activeGraph, SIGNAL( addGuideHLine(const double&) ),
              graphicsWidget, SLOT(  addGuideHLine(const double&) ) ) ;
 
     connect( activeGraph, SIGNAL( setNodePos(const int &, const qreal &, const qreal &) ),
              graphicsWidget, SLOT( moveNode(const int &, const qreal &, const qreal &) ) ) ;
+
+    connect( activeGraph,&Graph::signalNodesFound,
+             graphicsWidget,  &GraphicsWidget::setNodesMarked  );
 
     connect( activeGraph,
              SIGNAL(
@@ -5040,10 +5039,43 @@ void MainWindow::initSignalSlots() {
                  )
              ) ;
 
+    connect( activeGraph,&Graph::signalRemoveNode,
+             graphicsWidget,  &GraphicsWidget::removeNode  );
+
+    connect( activeGraph, SIGNAL( setVertexVisibility(long int, bool)  ),
+             graphicsWidget, SLOT(  setNodeVisibility (long int ,  bool) ) );
+
+    connect( activeGraph, SIGNAL( setNodeSize(const long int &, const int &)  ),
+             graphicsWidget, SLOT(  setNodeSize (const long int &, const int &) ) );
+
+    connect( activeGraph, SIGNAL( setNodeColor(long int,QString))  ,
+             graphicsWidget, SLOT(  setNodeColor(long int, QString) ) );
+
+    connect( activeGraph, SIGNAL( setNodeShape(long int,QString))  ,
+             graphicsWidget, SLOT(  setNodeShape(long int, QString) ) );
+
+    connect( activeGraph, SIGNAL( setNodeNumberSize(const long int &, const int &)  ),
+             graphicsWidget, SLOT(  setNodeNumberSize (const long int &, const int &) ) );
+
+    connect( activeGraph, SIGNAL( setNodeNumberDistance(const long int &, const int &)  ),
+             graphicsWidget, SLOT( setNodeNumberDistance (const long int &, const int &) ) );
+
+    connect( activeGraph, &Graph::setNodeLabel ,
+             graphicsWidget, &GraphicsWidget::setNodeLabel );
+
+    connect( activeGraph,&Graph::setNodeLabelColor,
+             graphicsWidget,  &GraphicsWidget::setNodeLabelColor  );
+
+    connect( activeGraph, SIGNAL( setNodeLabelSize(const long int &, const int &)  ),
+             graphicsWidget, SLOT(  setNodeLabelSize (const long int &, const int &) ) );
+
+    connect( activeGraph, SIGNAL( setNodeLabelDistance(const long int &, const int &)  ),
+             graphicsWidget, SLOT( setNodeLabelDistance (const long int &, const int &) ) );
+
+
 
     connect( activeGraph, &Graph::signalRemoveEdge,
                      graphicsWidget,&GraphicsWidget::removeEdge);
-
 
 
     connect( activeGraph, SIGNAL( signalDrawEdge( const int&, const int&, const float &,
@@ -5087,42 +5119,9 @@ void MainWindow::initSignalSlots() {
                                                 const long int &,
                                                 const QString &) ) );
 
-    connect( activeGraph,&Graph::signalRemoveNode,
-             graphicsWidget,  &GraphicsWidget::removeNode  );
 
     connect( activeGraph, SIGNAL( setEdgeVisibility (int, int, int, bool) ),
              graphicsWidget, SLOT(  setEdgeVisibility (int, int, int, bool) ) );
-
-    connect( activeGraph, SIGNAL( setVertexVisibility(long int, bool)  ),
-             graphicsWidget, SLOT(  setNodeVisibility (long int ,  bool) ) );
-
-    connect( activeGraph, SIGNAL( setNodeSize(const long int &, const int &)  ),
-             graphicsWidget, SLOT(  setNodeSize (const long int &, const int &) ) );
-
-    connect( activeGraph, SIGNAL( setNodeColor(long int,QString))  ,
-             graphicsWidget, SLOT(  setNodeColor(long int, QString) ) );
-
-    connect( activeGraph, SIGNAL( setNodeShape(long int,QString))  ,
-             graphicsWidget, SLOT(  setNodeShape(long int, QString) ) );
-
-    connect( activeGraph, SIGNAL( setNodeNumberSize(const long int &, const int &)  ),
-             graphicsWidget, SLOT(  setNodeNumberSize (const long int &, const int &) ) );
-
-    connect( activeGraph, SIGNAL( setNodeNumberDistance(const long int &, const int &)  ),
-             graphicsWidget, SLOT( setNodeNumberDistance (const long int &, const int &) ) );
-
-    connect( activeGraph, &Graph::setNodeLabel ,
-             graphicsWidget, &GraphicsWidget::setNodeLabel );
-
-    connect( activeGraph,&Graph::setNodeLabelColor,
-             graphicsWidget,  &GraphicsWidget::setNodeLabelColor  );
-
-
-    connect( activeGraph, SIGNAL( setNodeLabelSize(const long int &, const int &)  ),
-             graphicsWidget, SLOT(  setNodeLabelSize (const long int &, const int &) ) );
-
-    connect( activeGraph, SIGNAL( setNodeLabelDistance(const long int &, const int &)  ),
-             graphicsWidget, SLOT( setNodeLabelDistance (const long int &, const int &) ) );
 
 
     connect( graphicsWidget, &GraphicsWidget::userClickedNode,
@@ -8469,8 +8468,6 @@ void MainWindow::slotEditNodeAdd() {
 
 /**
  * @brief Opens the node find dialog
- * Calls GW::setMarkedNode() to find a node by its number or label.
- * The node is then marked.
  */
 void MainWindow::slotEditNodeFindDialog(){
     qDebug() << "MW::slotEditNodeFindDialog()";
@@ -8546,7 +8543,7 @@ void MainWindow::slotEditNodeFind(const QStringList &list,
 
 
     return;
-
+/*
     if ( markedNodesExist ) {				// if a node has been already marked
         graphicsWidget->setMarkedNode(""); 	// call setMarkedNode to just unmark it.
         markedNodesExist=false;
@@ -8573,7 +8570,7 @@ void MainWindow::slotEditNodeFind(const QStringList &list,
                                      tr("Sorry. There is no such node in this network. \n Try again."), "OK",0);
         }
     }
-
+*/
 }
 
 

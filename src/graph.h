@@ -365,6 +365,7 @@ signals:
     void setEdgeVisibility (int, int, int, bool);			// emitted from each GraphVertex
     void setVertexVisibility(long int, bool);		//notifies GW to disable a node
     void setNodePos(const int &, const qreal &, const qreal &);
+    void signalNodesFound(const QList<int> foundList);
     void setNodeSize(const long int &v, const int &size);
     void setNodeShape(const long int v, const QString &shape);
     void setNodeColor(const long int v, const QString &color);

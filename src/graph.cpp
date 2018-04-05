@@ -921,7 +921,7 @@ int Graph::vertexExists(const QString &label){
 bool Graph::vertexFindByNumber (const QStringList &searchList) {
     qDebug() << "Graph::vertexFindByNumber() - searchList:" << searchList;
     QString vStr;
-    QList<int> list;
+    QList<int> foundList;
     QStringList notFound;
     int v=-1;
     bool intOk=false;
@@ -929,13 +929,12 @@ bool Graph::vertexFindByNumber (const QStringList &searchList) {
         vStr = searchList.at(i);
         v = vStr.toInt(&intOk);
         if (intOk) {
-            qDebug() << "v" << v;
             if ( vertexExists(v) ) {
                 qDebug() << "v" << v << "exists. Adding it to list";
-                list << v;
-
+                foundList << v;
             }
             else {
+                qDebug() << "v" << v << "does not exist. Adding it to notFound list";
                 notFound << vStr;
             }
         }
@@ -945,8 +944,8 @@ bool Graph::vertexFindByNumber (const QStringList &searchList) {
 
     }
 
-    if ( !list.isEmpty() ) {
-        //emit signalNodesFound(list);
+    if ( !foundList.isEmpty() ) {
+        emit signalNodesFound(foundList);
     }
     if ( !notFound.isEmpty() ){
         //emit signalNodesNotFound(notFound);
