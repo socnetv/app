@@ -70,22 +70,22 @@ HEADERS += src/graphicswidget.h \
            src/matrix.h \
            src/texteditor.h \
   	   src/parser.h \
-	   src/dialogfilteredgesbyweight.h \
-           src/dialogwebcrawler.h \
-	   src/webcrawler.h \
-	   src/dialogdatasetselect.h \
-	   src/dialogpreviewfile.h \
-	   src/dialognodeedit.h \
-	   src/dialogranderdosrenyi.h \
-	   src/dialograndsmallworld.h \
-	   src/dialograndscalefree.h \
-	   src/dialograndregular.h \
-	   src/dialogsettings.h \
-	   src/dialogsimilaritypearson.h \
-	   src/dialogsimilaritymatches.h \
-	   src/dialogdissimilarities.h \
- 	   src/dialogclusteringhierarchical.h \ 
-           src/dialograndlattice.h \
+           src/webcrawler.h \
+	   src/forms/dialogfilteredgesbyweight.h \
+           src/forms/dialogwebcrawler.h \
+	   src/forms/dialogdatasetselect.h \
+	   src/forms/dialogpreviewfile.h \
+	   src/forms/dialognodeedit.h \
+	   src/forms/dialogranderdosrenyi.h \
+	   src/forms/dialograndsmallworld.h \
+	   src/forms/dialograndscalefree.h \
+	   src/forms/dialograndregular.h \
+	   src/forms/dialogsettings.h \
+	   src/forms/dialogsimilaritypearson.h \
+	   src/forms/dialogsimilaritymatches.h \
+	   src/forms/dialogdissimilarities.h \
+ 	   src/forms/dialogclusteringhierarchical.h \ 
+           src/forms/dialograndlattice.h \
     src/forms/dialognodefind.h
 
 SOURCES += src/graphicswidget.cpp \
@@ -103,22 +103,22 @@ SOURCES += src/graphicswidget.cpp \
            src/matrix.cpp \
            src/texteditor.cpp \
            src/parser.cpp \
-	   src/dialogfilteredgesbyweight.cpp \
-           src/dialogwebcrawler.cpp \
-	   src/webcrawler.cpp \
-	   src/dialogdatasetselect.cpp \
-	   src/dialogpreviewfile.cpp \
-	   src/dialognodeedit.cpp \
-	   src/dialogranderdosrenyi.cpp \
-	   src/dialograndsmallworld.cpp \
-	   src/dialograndregular.cpp \
-	   src/dialograndscalefree.cpp \
-	   src/dialogsettings.cpp \
-	   src/dialogsimilaritypearson.cpp \
-	   src/dialogsimilaritymatches.cpp \ 
-	   src/dialogdissimilarities.cpp \
-	   src/dialogclusteringhierarchical.cpp \ 
-           src/dialograndlattice.cpp \
+           src/webcrawler.cpp \
+	   src/forms/dialogfilteredgesbyweight.cpp \
+           src/forms/dialogwebcrawler.cpp \
+	   src/forms/dialogdatasetselect.cpp \
+	   src/forms/dialogpreviewfile.cpp \
+	   src/forms/dialognodeedit.cpp \
+	   src/forms/dialogranderdosrenyi.cpp \
+	   src/forms/dialograndsmallworld.cpp \
+	   src/forms/dialograndregular.cpp \
+	   src/forms/dialograndscalefree.cpp \
+	   src/forms/dialogsettings.cpp \
+	   src/forms/dialogsimilaritypearson.cpp \
+	   src/forms/dialogsimilaritymatches.cpp \ 
+	   src/forms/dialogdissimilarities.cpp \
+	   src/forms/dialogclusteringhierarchical.cpp \ 
+           src/forms/dialograndlattice.cpp \
     src/forms/dialognodefind.cpp
 
 

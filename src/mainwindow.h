@@ -47,9 +47,9 @@
 #include <math.h>
 
 #include "graph.h"
-#include "dialogfilteredgesbyweight.h"
+#include "forms/dialogfilteredgesbyweight.h"
 
-#include "dialogdatasetselect.h"
+#include "forms/dialogdatasetselect.h"
 
 static const QString VERSION="2.5";
 
