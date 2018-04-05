@@ -45,6 +45,12 @@ static const int TypeNode = QGraphicsItem::UserType+1;
 static const int ZValueNode = 100;
 static const int ZValueNodeHighlighted = 110;
 
+
+static const int NODE_STATE_REGULAR = 0;
+static const int NODE_STATE_HIGHLIGHT = 1;
+static const int NOED_STATE_HOVER = 2;
+
+
 /**
 *  This is actually a container-class.
 *  Contains the graphical objects called Nodes,
@@ -72,6 +78,7 @@ public:
     enum { Type = UserType + 1 };
     int type() const { return Type; }
 
+
     QRectF boundingRect() const;
     QPainterPath shape() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
@@ -85,6 +92,7 @@ public:
 
     void setSize(const int &);
     int size() const;
+
 
     void setShape (const QString);
     QString nodeShape() {return m_shape;}
@@ -132,7 +140,12 @@ private:
     QPainterPath m_path;
     QPointF newPos;
     QPolygonF *m_poly_t;
-    int  m_size, m_numSize, m_labelSize, m_numberDistance, m_labelDistance;
+    int m_size, m_size_orig;
+    int m_state;
+    int m_numSize;
+    int m_labelSize;
+    int m_numberDistance;
+    int m_labelDistance;
     long int m_num;
     QString  m_shape,  m_col_str, m_numColor, m_labelText, m_labelColor;
     QColor m_col;

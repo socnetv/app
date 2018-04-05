@@ -880,13 +880,19 @@ int Graph::vertexNumberMin() {
  * @return
  */
 int Graph::vertexExists(const long int &v1){
-    qDebug () << "Graph: vertexExists() v: " << v1
+    qDebug () << "Graph::vertexExists() - check for number v:" << v1
               <<  " with vpos " << vpos[v1]
                   << " named " << m_graph[ vpos[v1] ] ->name();
-    if (  m_graph[ vpos[v1] ] ->name() == v1)
-        return vpos[v1];
-    else
-        return -1;
+    if ( vpos.contains(v1) ) {
+        if (  m_graph[ vpos[v1] ] -> name() == v1 ) {
+            return vpos[v1];
+        }
+        else{
+            qDebug () << "Graph::vertexExists() - error in vpos for number v:" << v1;
+        }
+    }
+
+    return -1;
 }
 
 
@@ -899,11 +905,11 @@ int Graph::vertexExists(const long int &v1){
  * @return vpos or -1
  */
 int Graph::vertexExists(const QString &label){
-    qDebug ()<<"Graph: vertexExists() - check for label "<< label.toUtf8()  ;
+    qDebug ()<<"Graph::vertexExists() - check for label:"<< label.toUtf8()  ;
     VList::const_iterator it;
     int i=0;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( (*it) ->label() == label)  { //maybe contains?
+        if ( (*it) ->label() == label )  { //maybe contains?
 //            qDebug()<< "Graph: vertexExists() at pos %i" << i;
             return i;
         }
@@ -929,7 +935,7 @@ bool Graph::vertexFindByNumber (const QStringList &searchList) {
         vStr = searchList.at(i);
         v = vStr.toInt(&intOk);
         if (intOk) {
-            if ( vertexExists(v) ) {
+            if ( vertexExists(v) != -1 ) {
                 qDebug() << "v" << v << "exists. Adding it to list";
                 foundList << v;
             }

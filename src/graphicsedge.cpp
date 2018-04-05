@@ -620,8 +620,8 @@ float GraphicsEdge::width() const{
  * This is done, when the user hovers over the node.
  * @param flag
  */
-void GraphicsEdge::highlight(const bool &flag) {
-    //qDebug()<< "GraphicsEdge::highlight() - " << flag;
+void GraphicsEdge::setHighlighted(const bool &flag) {
+    //qDebug()<< "GraphicsEdge::setHighlighted() - " << flag;
     if (flag && m_hoverHighlighting) {
         prepareGeometryChange();
         setState(EDGE_STATE_HIGHLIGHT);
@@ -634,7 +634,7 @@ void GraphicsEdge::highlight(const bool &flag) {
 
 
 /**
- * @brief Toggles edge highlighting
+ * @brief Toggles edge highlighting on or off
  * @param toggle
  */
 void GraphicsEdge::setHighlighting(const bool &toggle) {
@@ -653,8 +653,8 @@ void GraphicsEdge::setClicked(const bool &toggle) {
         source->setSelected(false);
         target->setSelected(false);
         //restore their size
-        source->setSize(sourceOrigSize);
-        target->setSize(targetOrigSize);
+        //source->setSize(sourceOrigSize);
+        //target->setSize(targetOrigSize);
 
         qDebug()<<"GraphicsEdge::setClicked() - Restored source and target nodes";
     }
@@ -665,12 +665,12 @@ void GraphicsEdge::setClicked(const bool &toggle) {
         target->setSelected(true);
 
         // save their original size
-        sourceOrigSize=source->size();
-        targetOrigSize=target->size();
+        //sourceOrigSize=source->size();
+        //targetOrigSize=target->size();
 
         //now, make them larger
-        source->setSize(2*sourceOrigSize-1);
-        target->setSize(2*targetOrigSize-1);
+        //source->setSize(2*sourceOrigSize-1);
+        //target->setSize(2*targetOrigSize-1);
 
         qDebug()<<"GraphicsEdge::setClicked() - Made connected nodes larger";
 

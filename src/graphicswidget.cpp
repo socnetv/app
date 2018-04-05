@@ -1432,7 +1432,7 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
             qDebug() << "GW::mousePressEvent() - Single click on edge at:"
                      << e->pos() << "~"<< p
                      << "SelectedItems:" << scene()->selectedItems().count();
-            emit userClickedNode(0);
+            //emit userClickedNode(0);
             if ( e->button()==Qt::LeftButton ) {
                 qDebug() << "GW::mousePressEvent() - Left click on an edge ";
                 edgeClicked(edge);

@@ -1215,16 +1215,13 @@ void MainWindow::initActions(){
     editNodeSelectNoneAct->setWhatsThis(tr("Deselect all\n\n Clears the node selection"));
     connect(editNodeSelectNoneAct, SIGNAL(triggered()), this, SLOT(slotEditNodeSelectNone()));
 
-    editNodeFindAct = new QAction(QIcon(":/images/find.png"), tr("Find Node"), this);
+    editNodeFindAct = new QAction(QIcon(":/images/find.png"), tr("Find Nodes "), this);
     editNodeFindAct->setShortcut(Qt::CTRL + Qt::Key_F);
-    editNodeFindAct->setToolTip(tr("Find an actor by its number or label and highlight it. "
-                                     "Press Ctrl+F again to undo."));
-    editNodeFindAct->setStatusTip(tr("Find an actor by its number or label and highlight it. "
-                                 "Press Ctrl+F again to undo."));
+    editNodeFindAct->setToolTip(tr("Find and select one or more actors by their number or label."));
+    editNodeFindAct->setStatusTip(tr("Find and select one or more actors by number or label. "));
     editNodeFindAct->setWhatsThis(tr("Find Node\n\n"
-                                     "Finds a node with a given number or label and "
-                                     "highlights it by doubling its size. "
-                                     "Ctrl+F again resizes back the node"));
+                                     "Finds one or more nodes by their number or label and "
+                                     "highlights them by doubling its size. "));
     connect(editNodeFindAct, SIGNAL(triggered()), this, SLOT(slotEditNodeFindDialog()) );
 
     editNodeAddAct = new QAction(QIcon(":/images/add.png"), tr("Add Node"), this);

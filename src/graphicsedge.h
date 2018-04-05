@@ -116,7 +116,7 @@ public:
     QString color() const ;
     QString colorToPajek();
 
-    void highlight (const bool &flag);
+    void setHighlighted (const bool &flag);
     void setHighlighting (const bool &toggle);
 
     QPainterPath shape() const;
