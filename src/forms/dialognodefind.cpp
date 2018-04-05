@@ -31,7 +31,10 @@
 #include <QDebug>
 #include <QPushButton>
 
-DialogNodeFind::DialogNodeFind(QWidget *parent) :
+#include <QGraphicsColorizeEffect>
+
+
+DialogNodeFind::DialogNodeFind(QWidget *parent, QStringList indexList) :
     QDialog(parent),
     ui(new Ui::DialogNodeFind)
 {
@@ -39,10 +42,26 @@ DialogNodeFind::DialogNodeFind(QWidget *parent) :
 
     ui->labelsRadioBtn->setAutoExclusive(true);
     ui->numbersRadioBtn->setAutoExclusive(true);
+    ui->indexRadioBtn->setAutoExclusive(true);
 
     ui->numbersRadioBtn->setChecked(true);
 
+    ui->indexCombo->insertItems(0, indexList);
+    ui->indexLabel->setEnabled(false);
+    ui->indexCombo->setEnabled(false);
+
+
+    connect ( ui->labelsRadioBtn,SIGNAL(clicked(bool)), this, SLOT( checkErrors() ) );
+    connect ( ui->numbersRadioBtn,SIGNAL(clicked(bool)), this, SLOT( checkErrors() ) );
+    connect ( ui->indexRadioBtn,SIGNAL(clicked(bool)), this, SLOT( checkErrors() ) );
+
+    connect (ui->indexCombo, &QComboBox::currentTextChanged,
+             this, &DialogNodeFind::getIndex);
+
+//    connect ( ui->indexCombo, SIGNAL(currentTextChanged(QString)), this, SLOT( checkErrors(QString) ) );
+
     connect ( ui->plainTextEdit,SIGNAL(textChanged()), this, SLOT(checkErrors()) );
+
     connect ( ui->buttonBox,SIGNAL(accepted()), this, SLOT(gatherData()) );
 
     (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
@@ -52,55 +71,152 @@ DialogNodeFind::DialogNodeFind(QWidget *parent) :
 
 DialogNodeFind::~DialogNodeFind()
 {
+    tempListA.clear();
+    tempListB.clear();
+
     delete ui;
+}
+
+
+void DialogNodeFind::setError(const bool &toggle) {
+
+    if (  toggle  ) {
+         QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
+         effect->setColor(QColor("red"));
+         ui->plainTextEdit->setGraphicsEffect(effect);
+         ui->buttonBox -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+     }
+     else {
+        ui->plainTextEdit->setGraphicsEffect(0);
+        ui->buttonBox -> button (QDialogButtonBox::Ok) -> setEnabled(true);
+     }
+}
+
+
+void DialogNodeFind::getIndex(const QString &indexStr) {
+
+    index = ui->indexCombo->currentText();
+
+    qDebug() << "DialogNodeFind::getIndex() str"<<indexStr << "index" << index;
+
 }
 
 void DialogNodeFind::checkErrors()
 {
+
     QString needle = ui->plainTextEdit->toPlainText();
-    qDebug()<< "DialogNodeFind::checkErrors() text entered:"
-            << ui->plainTextEdit->toPlainText();
+
+    qDebug()<< "DialogNodeFind::checkErrors() - raw text entered:"
+            << needle;
+
+    if ( ui->numbersRadioBtn->isChecked() ) {
+        ui->textEditLabel->setText("Enter node numbers to find (line by line or csv)");
+        searchType = "numbers";
+        ui->indexLabel->setEnabled(false);
+        ui->indexCombo->setEnabled(false);
+    }
+    else if ( ui->labelsRadioBtn->isChecked() ) {
+        ui->textEditLabel->setText("Enter node labels to find (line by line or csv)");
+        searchType = "labels";
+        ui->indexLabel->setEnabled(false);
+        ui->indexCombo->setEnabled(false);
+    }
+    else if ( ui->indexRadioBtn->isChecked() ) {
+        ui->textEditLabel->setText("Enter index score to search (i.e. > 0.5)");
+        ui->indexLabel->setEnabled(true);
+        ui->indexCombo->setEnabled(true);
+        searchType = "score";
+    }
+
+    qDebug()<< "DialogNodeFind::checkErrors() - search type:" << searchType;
 
     list.clear();
+    tempListA.clear();
+    tempListB.clear();
 
-    if (ui->numbersRadioBtn->isChecked()) {
+    if (  needle.isEmpty()  ) {
+        setError(true);
+    }
+     else {
+        setError(false);
+     }
+
+
+    if (! ui->indexRadioBtn->isChecked()) {
+
+        // user wants to search by numbers or labels
+        // user has to enter a CSV or line separated list of values
+
         if (needle.contains("\n") && needle.contains(",")) {
             // error you cannot enter both?
-            return;
+           // return;
         }
-        if (needle.contains("\n")) { // user entered multiple lines
-           list = needle.split("\n");
-        }
-        else if (needle.contains(",")) { // user entered multiple lines
-           list = needle.split(",");
-        }
-        else if (needle.contains("-")  ) {
 
+        // check if user entered multiple lines
+        tempListA = needle.split("\n",QString::SkipEmptyParts);
+
+        for (int i = 0; i < tempListA.size(); ++i) {
+
+            // take every linefeed separated value
+            str = tempListA.at(i).toLocal8Bit().constData();
+
+            qDebug()<< "DialogNodeFind::checkErrors() - line:" << i << "str:" << str;
+
+            // check if user has entered comma
+            tempListB = str.split(",",QString::SkipEmptyParts);
+
+            for (int j = 0; j < tempListB.size(); ++j) {
+
+                // take every comma separated value
+                str = tempListB.at(j).toLocal8Bit().constData();
+
+                qDebug()<< "DialogNodeFind::checkErrors() - line:" << i
+                        << "element at pos:" << j << "is:" << str;
+
+                if (ui->numbersRadioBtn->isChecked()) {
+                    // user wants to search by numbers
+                    // check if str contains a dash
+                    if (str.contains ("-")) {
+                        //str.split("-")
+                    }
+                    else {
+
+                        if (str.contains(QRegExp("\\D+"))) {
+                            qDebug()<< "DialogNodeFind::checkErrors() - error! not number" << str;
+                            setError(true);
+                        }
+                        else {
+                            qDebug()<< "DialogNodeFind::checkErrors() - adding number" << str;
+                            list << str;
+                        }
+                    }
+
+                }
+                else {
+                    // user wants to search by labels
+                    qDebug()<< "DialogNodeFind::checkErrors() - adding label" << str;
+                    list << str;
+                }
+
+            }
         }
-        else { // user entered only one number
-            list << needle;
-        }
+
+    }
+    else  {
+        // user wants to search nodes by their index score
+        // user has to enter > or < and a threshold
+        // and to select the desired index.
+        index = ui->indexCombo->currentText();
 
 
     }
-    else {
-        if (needle.contains("\n")) { // user entered multiple lines
-           list = needle.split("\n");
-        }
-        else if (needle.contains(",")) { // user entered multiple lines
-           list = needle.split(",");
-        }
-        else { // user entered only one label
-            list << needle;
-        }
-    }
+
 }
 
 void DialogNodeFind::gatherData()
 {
    qDebug()<< "DialogNodeFind::gatherData()" << list;
-   QString searchType = ui->labelsRadioBtn->isChecked() ? "labels" : "numbers";
-   qDebug()<< "DialogNodeFind::gatherData() type" << searchType;
-   emit userChoices( list, searchType  );
+      qDebug()<< "DialogNodeFind::gatherData() type" << searchType;
+   emit userChoices( list, searchType, index );
 
 }

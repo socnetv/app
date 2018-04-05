@@ -624,6 +624,19 @@ void MainWindow::initGraph() {
 //    activeGraph->moveToThread(&graphThread);
 //    graphThread.start();
 
+    prominenceIndexList  << "Degree Centr."
+                << "Closeness Centr."
+                << "IR Closeness Centr."
+                << "Betweenness Centr."
+                << "Stress Centr."
+                << "Eccentricity Centr."
+                << "Power Centr."
+                << "Information Centr."
+                << "Eigenvector Centr"
+                << "Degree Prestige"
+                << "PageRank Prestige"
+                << "Proximity Prestige";
+
     qDebug() << "MW::MainWindow() - activeGraph thread now:" << activeGraph->thread();
 
 }
@@ -4164,19 +4177,7 @@ void MainWindow::initPanels(){
     toolBoxAnalysisProminenceSelect -> setWhatsThis( helpMessage);
 
     QStringList prominenceCommands;
-    prominenceCommands << "Select"
-                       << "Degree Centr."
-                       << "Closeness Centr."
-                       << "IR Closeness Centr."
-                       << "Betweenness Centr."
-                       << "Stress Centr."
-                       << "Eccentricity Centr."
-                       << "Power Centr."
-                       << "Information Centr."
-                       << "Eigenvector Centr"
-                       << "Degree Prestige"
-                       << "PageRank Prestige"
-                       << "Proximity Prestige";
+    prominenceCommands << "Select" << prominenceIndexList;
     toolBoxAnalysisProminenceSelect->addItems(prominenceCommands);
     toolBoxAnalysisProminenceSelect->setMinimumWidth(120);
 
@@ -4333,22 +4334,10 @@ void MainWindow::initPanels(){
                      );
     toolBoxLayoutByIndexSelect->setToolTip( helpMessage );
     toolBoxLayoutByIndexSelect->setWhatsThis( helpMessage );
-    QStringList indicesList;
-    indicesList << "None"
-                << "Random"
-                << "Degree Centr."
-                << "Closeness Centr."
-                << "IR Closeness Centr."
-                << "Betweenness Centr."
-                << "Stress Centr."
-                << "Eccentricity Centr."
-                << "Power Centr."
-                << "Information Centr."
-                << "Eigenvector Centr."
-                << "Degree Prestige"
-                << "PageRank Prestige"
-                << "Proximity Prestige";
-    toolBoxLayoutByIndexSelect->addItems(indicesList);
+    QStringList layoutCommandsList;
+    layoutCommandsList << "None" << "Random" << prominenceIndexList;
+
+    toolBoxLayoutByIndexSelect->addItems(layoutCommandsList);
     toolBoxLayoutByIndexSelect->setMinimumHeight(20);
     toolBoxLayoutByIndexSelect->setMinimumWidth(120);
 
@@ -5239,15 +5228,11 @@ void MainWindow::initSignalSlots() {
              this, SLOT(slotEditRelationRename()) ) ;
 
 
-    connect( &m_DialogEdgeFilterByWeight, SIGNAL( userChoices( float, bool) ),
-             activeGraph, SLOT( edgeFilterByWeight (float, bool) ) );
-
 
     connect(networkWebCrawlerAct, SIGNAL(triggered()), this, SLOT(slotNetworkWebCrawlerDialog()));
 
 
-    connect( &m_datasetSelectDialog, SIGNAL( userChoices( QString) ),
-             this, SLOT( slotNetworkDataSetRecreate(QString) ) );
+
 
     connect(zoomInAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomIn()) );
     connect(zoomOutAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomOut()) );
@@ -7685,7 +7670,13 @@ void MainWindow::slotNetworkViewSociomatrixPlotText(){
  */
 void MainWindow::slotNetworkDataSetSelect(){
     qDebug()<< "MW::slotNetworkDataSetSelect()";
-    m_datasetSelectDialog.exec();
+
+    m_datasetSelectDialog = new DialogDataSetSelect(this);
+    connect( m_datasetSelectDialog, SIGNAL( userChoices( QString) ),
+             this, SLOT( slotNetworkDataSetRecreate(QString) ) );
+
+
+    m_datasetSelectDialog->exec();
 }
 
 
@@ -8482,17 +8473,17 @@ void MainWindow::slotEditNodeAdd() {
  * The node is then marked.
  */
 void MainWindow::slotEditNodeFindDialog(){
-    qDebug() << "MW::slotEditNodeFind()";
+    qDebug() << "MW::slotEditNodeFindDialog()";
     if ( !activeNodes() ) {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
 
-    m_nodeFindDialog = new DialogNodeFind(this) ;
+    m_nodeFindDialog = new DialogNodeFind(this, prominenceIndexList) ;
 
     connect( m_nodeFindDialog, &DialogNodeFind::userChoices,
-             this, &MainWindow::slotEditNodeFindDialog);
+             this, &MainWindow::slotEditNodeFind);
 
     m_nodeFindDialog->exec();
 
@@ -8508,9 +8499,53 @@ void MainWindow::slotEditNodeFindDialog(){
  * @brief MainWindow::slotEditNodeFind
  * @param list
  */
-void MainWindow::slotEditNodeFind(const QStringList &list, const QString &type)
+void MainWindow::slotEditNodeFind(const QStringList &list,
+                                  const QString &searchType,
+                                  const QString &indexStr)
 {
 
+    qDebug() << "MW::slotEditNodeFind() - nodes:" << list << "search type:"<< searchType;
+    int index = 0;
+    if (searchType == "numbers"){
+        activeGraph->vertexFindByNumber(list);
+    }
+    else if (searchType == "labels"){
+        activeGraph->vertexFindByLabel(list);
+    }
+    else if (searchType == "score"){
+
+        if ( indexStr.contains("Degree Centr") )
+            index=INDEX_DC;
+        else if ( indexStr.contains("Closeness Centr") &&
+                  !indexStr.contains("IR"))
+            index=INDEX_CC;
+        else if ( indexStr.contains("Influence Range Closeness Centrality")  ||
+                  indexStr.contains("IR Closeness")
+                  )
+            index=INDEX_IRCC;
+        else if ( indexStr.contains("Betweenness Centr"))
+            index=INDEX_BC;
+        else if (indexStr.contains("Stress Centr"))
+            index=INDEX_SC;
+        else if (indexStr.contains("Eccentricity Centr"))
+            index=INDEX_EC;
+        else if (indexStr.contains("Power Centr"))
+            index=INDEX_PC;
+        else if (indexStr.contains("Information Centr"))
+            index=INDEX_IC;
+        else if (indexStr.contains("Eigenvector Centr"))
+            index=INDEX_EVC;
+        else if (indexStr.contains("Degree Prestige"))
+            index=INDEX_DP;
+        else if (indexStr.contains("PageRank Prestige"))
+            index=INDEX_PRP;
+        else if (indexStr.contains("Proximity Prestige"))
+            index=INDEX_PP;
+
+    }
+
+
+    return;
 
     if ( markedNodesExist ) {				// if a node has been already marked
         graphicsWidget->setMarkedNode(""); 	// call setMarkedNode to just unmark it.
@@ -10228,7 +10263,12 @@ void MainWindow::slotEditFilterEdgesByWeightDialog() {
         statusMessage(  QString(tr("Load a network file first. \nThen you may ask me to compute something!"))  );
         return;
     }
-    m_DialogEdgeFilterByWeight.exec() ;
+
+    m_DialogEdgeFilterByWeight = new DialogFilterEdgesByWeight(this);
+    connect( m_DialogEdgeFilterByWeight, SIGNAL( userChoices( float, bool) ),
+             activeGraph, SLOT( edgeFilterByWeight (float, bool) ) );
+
+    m_DialogEdgeFilterByWeight->exec() ;
 }
 
 
@@ -10432,32 +10472,32 @@ void MainWindow::slotLayoutRadialByProminenceIndex(QString choice=""){
     QString prominenceIndexName = choice;
     slotLayoutGuides(true);
     if ( prominenceIndexName.contains("Degree Centr") )
-        userChoice=1;
+        userChoice=INDEX_DC;
     else if ( prominenceIndexName.contains("Closeness Centr") &&
               !prominenceIndexName.contains("IR"))
-        userChoice=2;
+        userChoice=INDEX_CC;
     else if ( prominenceIndexName.contains("Influence Range Closeness Centrality")  ||
               prominenceIndexName.contains("IR Closeness")
               )
-        userChoice=3;
+        userChoice=INDEX_IRCC;
     else if ( prominenceIndexName.contains("Betweenness Centr"))
-        userChoice=4;
+        userChoice=INDEX_BC;
     else if (prominenceIndexName.contains("Stress Centr"))
-        userChoice=5;
+        userChoice=INDEX_SC;
     else if (prominenceIndexName.contains("Eccentricity Centr"))
-        userChoice=6;
+        userChoice=INDEX_EC;
     else if (prominenceIndexName.contains("Power Centr"))
-        userChoice=7;
+        userChoice=INDEX_PC;
     else if (prominenceIndexName.contains("Information Centr"))
-        userChoice=8;
+        userChoice=INDEX_IC;
     else if (prominenceIndexName.contains("Eigenvector Centr"))
-        userChoice=9;
+        userChoice=INDEX_EVC;
     else if (prominenceIndexName.contains("Degree Prestige"))
-        userChoice=10;
+        userChoice=INDEX_DP;
     else if (prominenceIndexName.contains("PageRank Prestige"))
-        userChoice=11;
+        userChoice=INDEX_PRP;
     else if (prominenceIndexName.contains("Proximity Prestige"))
-        userChoice=12;
+        userChoice=INDEX_PP;
 
     qDebug() << "MainWindow::slotLayoutRadialByProminenceIndex() "
              << "prominenceIndexName " << prominenceIndexName

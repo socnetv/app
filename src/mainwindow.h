@@ -47,8 +47,14 @@
 #include <math.h>
 
 #include "graph.h"
+<<<<<<< HEAD
 #include "forms/dialogfilteredgesbyweight.h"
 
+=======
+
+#include "forms/dialogfilteredgesbyweight.h"
+
+>>>>>>> 796f5316f8bd7de5a234b4964e14ed3a591b4bbe
 #include "forms/dialogdatasetselect.h"
 
 static const QString VERSION="2.5";
@@ -274,7 +280,9 @@ public slots:
     void slotEditNodeAdd();
 
     void slotEditNodeFindDialog();
-    void slotEditNodeFind(const QStringList &list, const QString &type);
+    void slotEditNodeFind(const QStringList &list,
+                          const QString &searchType,
+                          const QString &indexStr=QString::null);
     void slotEditNodeRemove();
     void slotEditNodeOpenContextMenu();
     void slotEditNodePropertiesDialog();
@@ -517,9 +525,12 @@ private:
 
     QMap<QString,QString> appSettings;
 
-    DialogFilterEdgesByWeight m_DialogEdgeFilterByWeight;
+    QStringList prominenceIndexList;
+
+    DialogFilterEdgesByWeight *m_DialogEdgeFilterByWeight;
+
     DialogWebCrawler *m_WebCrawlerDialog;
-    DialogDataSetSelect m_datasetSelectDialog;
+    DialogDataSetSelect *m_datasetSelectDialog;
 
     DialogNodeEdit *m_nodeEditDialog;
     DialogNodeFind *m_nodeFindDialog;

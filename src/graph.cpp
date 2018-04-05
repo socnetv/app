@@ -871,13 +871,95 @@ int Graph::vertexNumberMin() {
 
 
 
-
-bool Graph::vertexFindByNumber (const QStringList &numList) {
-    qDebug() << "Graph::vertexFindByNumber() - list:" << numList;
+/**
+ * @brief Graph::vertexExists
+ * Checks if there is a specific vertex in the graph.
+ * Returns the vpos or -1
+ * Complexity:  O(logN) for vpos retrieval
+ * @param num
+ * @return
+ */
+int Graph::vertexExists(const long int &v1){
+    qDebug () << "Graph: vertexExists() v: " << v1
+              <<  " with vpos " << vpos[v1]
+                  << " named " << m_graph[ vpos[v1] ] ->name();
+    if (  m_graph[ vpos[v1] ] ->name() == v1)
+        return vpos[v1];
+    else
+        return -1;
 }
 
 
 
+/**
+ * @brief Checks if there is a vertex with a specific label in the graph
+ * Returns the vpos or -1
+ * Complexity:  O(N)
+ * @param label
+ * @return vpos or -1
+ */
+int Graph::vertexExists(const QString &label){
+    qDebug ()<<"Graph: vertexExists() - check for label "<< label.toUtf8()  ;
+    VList::const_iterator it;
+    int i=0;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( (*it) ->label() == label)  { //maybe contains?
+//            qDebug()<< "Graph: vertexExists() at pos %i" << i;
+            return i;
+        }
+        i++;
+    }
+    return -1;
+}
+
+
+/**
+ * @brief Finds vertices by their number
+ * @param numList
+ * @return
+ */
+bool Graph::vertexFindByNumber (const QStringList &searchList) {
+    qDebug() << "Graph::vertexFindByNumber() - searchList:" << searchList;
+    QString vStr;
+    QList<int> list;
+    QStringList notFound;
+    int v=-1;
+    bool intOk=false;
+    for (int i = 0; i < searchList.size(); ++i) {
+        vStr = searchList.at(i);
+        v = vStr.toInt(&intOk);
+        if (intOk) {
+            qDebug() << "v" << v;
+            if ( vertexExists(v) ) {
+                qDebug() << "v" << v << "exists. Adding it to list";
+                list << v;
+
+            }
+            else {
+                notFound << vStr;
+            }
+        }
+        else {
+            qDebug() << "cannot read" << vStr;
+        }
+
+    }
+
+    if ( !list.isEmpty() ) {
+        //emit signalNodesFound(list);
+    }
+    if ( !notFound.isEmpty() ){
+        //emit signalNodesNotFound(notFound);
+    }
+
+}
+
+
+/**
+ * @brief Finds vertices by their label
+ * @param labelList
+ * @return
+ */
 bool Graph::vertexFindByLabel (const QStringList &labelList) {
     qDebug() << "Graph::vertexFindByLabel() - list:" << labelList;
 }
@@ -991,7 +1073,7 @@ void Graph::vertexIsolatedAllToggle(const bool &toggle){
 
 
 /**
- * @brief Graph::vertexIsolated
+ * @brief Checks if vertex is isolated
  * @param v1
  * @return
  */
@@ -1005,46 +1087,6 @@ bool Graph::vertexIsolated(const long int &v1) const{
 }
 
 
-/**
- * @brief Graph::vertexExists
- * Checks if there is a specific vertex in the graph.
- * Returns the vpos or -1
- * Complexity:  O(logN) for vpos retrieval
- * @param num
- * @return
- */
-int Graph::vertexExists(const long int &v1){
-    qDebug () << "Graph: vertexExists() v: " << v1
-              <<  " with vpos " << vpos[v1]
-                  << " named " << m_graph[ vpos[v1] ] ->name();
-    if (  m_graph[ vpos[v1] ] ->name() == v1)
-        return vpos[v1];
-    else
-        return -1;
-}
-
-
-
-/**
- * @brief Checks if there is a vertex with a specific label in the graph
- * Returns the vpos or -1
- * Complexity:  O(N)
- * @param label
- * @return vpos or -1
- */
-int Graph::vertexExists(const QString &label){
-    qDebug ()<<"Graph: vertexExists() - check for label "<< label.toUtf8()  ;
-    VList::const_iterator it;
-    int i=0;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( (*it) ->label() == label)  {
-//            qDebug()<< "Graph: vertexExists() at pos %i" << i;
-            return i;
-        }
-        i++;
-    }
-    return -1;
-}
 
 
 

@@ -31,8 +31,10 @@
 
 #include <QDialog>
 
-#include "ui_dialognodeedit.h"
 
+namespace Ui {
+class DialogNodeEdit;
+}
 
 class DialogNodeEdit : public QDialog
 {
