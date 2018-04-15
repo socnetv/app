@@ -936,11 +936,13 @@ bool Graph::vertexFindByNumber (const QStringList &numList) {
         v = vStr.toInt(&intOk);
         if (intOk) {
             if ( vertexExists(v) != -1 ) {
-                qDebug() << "v" << v << "exists. Adding it to list";
+                qDebug() << "Graph::vertexFindByNumber() - v" << v
+                         << "exists. Adding it to list";
                 foundList << v;
             }
             else {
-                qDebug() << "v" << v << "does not exist. Adding it to notFound list";
+                qDebug() << "Graph::vertexFindByNumber() - v" << v
+                         << "does not exist. Adding it to notFound list";
                 notFound << vStr;
             }
         }
@@ -976,14 +978,15 @@ bool Graph::vertexFindByLabel (const QStringList &labelList) {
         vLabel = labelList.at(i);
 
         if ( ( vFoundPos = vertexExists(vLabel) ) != -1 ) {
-            qDebug() << "vertex with label" << vLabel << "exists. Adding it to list";
-            foundList << m_graph[ vpos [vFoundPos] ]->name();
+            qDebug() << "Graph::vertexFindByNumber() - vertex with label" << vLabel
+                     << "exists. Adding it to list";
+            foundList << m_graph[ vFoundPos ]->name();
         }
         else {
-            qDebug() << "vertex with label" << vLabel << "exists. Adding it to notFound list ";
+            qDebug() << "Graph::vertexFindByNumber() - vertex with label" << vLabel
+                     << "does not exist. Adding it to notFound list ";
             notFound << vLabel;
         }
-
 
     }
 

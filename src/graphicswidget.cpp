@@ -830,7 +830,7 @@ bool GraphicsWidget::setNodeLabelSize(const long int &number, const int &size){
 
 
 /**
- * @brief GraphicsWidget::setNodeLabelDistance
+ * @brief Changes the distance of a node label
  * @param number
  * @param distance
  */
@@ -858,7 +858,6 @@ bool GraphicsWidget::setNodeLabelDistance( const long int &number, const int &di
  * @return
  */
 GraphicsNode* GraphicsWidget::hasNode( QString text ){
-
     bool ok = false;
     foreach ( GraphicsNode *candidate, nodeHash) {
         if ( 	candidate->nodeNumber()==text.toInt(&ok, 10)  ||
@@ -876,31 +875,22 @@ GraphicsNode* GraphicsWidget::hasNode( QString text ){
 
 
 /**
-     Marks (by double-sizing and highlighting) or unmarks a node, given its number or label.
-     Called by MW:slotEditNodeFind()
-*/
-bool GraphicsWidget::setNodesMarked(QList<int> list){
+ * @brief Highlights all nodes in list
+ * Called by MW:slotEditNodeFind()
+ * @param list
+ */
+void GraphicsWidget::setNodesMarked(QList<int> list){
     qDebug() << "GW::setNodesMarked()" << list;
-
     foreach ( int nodeNumber, list) {
         if  ( nodeHash.contains (nodeNumber) ) {
-            qDebug() << "GW::setNodesMarked(): setSelected node:"<< nodeNumber;
+            qDebug() << "GW::setNodesMarked() - setSelected node:"<< nodeNumber;
             nodeHash.value(nodeNumber) ->setSelected(true) ;
         }
         else {
-            qDebug() << "GW::setNodesMarked(): cannot find node:"<< nodeNumber;
-            return false;
+            qDebug() << "GW::setNodesMarked() - cannot find node:"<< nodeNumber;
         }
-
     }
-
 }
-
-
-
-
-
-
 
 
 
@@ -927,8 +917,7 @@ void GraphicsWidget::setEdgeLabel(const long int &source,
 }
 
 /**
- * @brief GraphicsWidget::setEdgeColor
- * Sets the color of an edge.
+ * @brief Sets the color of an edge.
  * Called from MW when the user changes the color of an edge (right-clicking).
  * Also called from Graph when all edge colors need to be changed.
  * @param source
@@ -985,9 +974,13 @@ bool GraphicsWidget::setEdgeDirectionType(const long int &source,
 
 
 /**
-    Changes/Sets the weight of an edge.
+ * @brief Sets the weight of an edge.
     Called from MW when the user changes the weight of an edge (right-clicking).
-*/
+ * @param source
+ * @param target
+ * @param weight
+ * @return
+ */
 bool GraphicsWidget::setEdgeWeight(const long int &source,
                                    const long int &target,
                                    const float &weight){
@@ -1018,7 +1011,10 @@ bool GraphicsWidget::setEdgeWeight(const long int &source,
 }
 
 
-
+/**
+ * @brief Toggles the visibility of all edge arrows
+ * @param toggle
+ */
 void GraphicsWidget::setEdgeArrowsVisibility(const bool &toggle){
     qDebug()<< "GW::setEdgeArrowsVisibility()" << toggle;
     QList<QGraphicsItem *> list = scene()->items();
@@ -1034,7 +1030,7 @@ void GraphicsWidget::setEdgeArrowsVisibility(const bool &toggle){
 
 
 /**
- * @brief Changes the Offset of an edge (or all edges) from source and target nodes.
+ * @brief Changes the offset of an edge (or all edges) from source and target nodes.
  * @param source
  * @param target
  * @param offset
@@ -1074,6 +1070,10 @@ void GraphicsWidget::setEdgeOffsetFromNode(const long int &source,
 
 }
 
+/**
+ * @brief Toggles all edge weight numbers visibility
+ * @param toggle
+ */
 void GraphicsWidget::setEdgeWeightNumbersVisibility (const bool &toggle){
     qDebug()<< "GW::setEdgeWeightNumbersVisibility()" << toggle;
     foreach ( GraphicsEdge *m_edge, edgesHash) {
@@ -1083,7 +1083,10 @@ void GraphicsWidget::setEdgeWeightNumbersVisibility (const bool &toggle){
 
 
 
-
+/**
+ * @brief Toggles all edge labels visibility
+ * @param toggle
+ */
 void GraphicsWidget::setEdgeLabelsVisibility (const bool &toggle){
     qDebug()<< "GW::setEdgeLabelsVisibility()" << toggle
                << "edgesHash.count: " << edgesHash.count();
@@ -1116,9 +1119,14 @@ void   GraphicsWidget::setEdgeHighlighting(const bool &toggle){
 }
 
 
+
 /**
-*	Changes the visibility of an GraphicsView edge (number, label, edge, etc)
-*/
+ * @brief Changes the visibility of an GraphicsView edge (number, label, edge, etc)
+ * @param relation
+ * @param source
+ * @param target
+ * @param toggle
+ */
 void GraphicsWidget::setEdgeVisibility(int relation, int source, int target, bool toggle){
 
     edgeName = createEdgeName( source, target, relation );
@@ -1148,8 +1156,10 @@ void GraphicsWidget::setEdgeVisibility(int relation, int source, int target, boo
 
 
 /**
-*	Changes the visibility of all items of certain type (i.e. number, label, edge, etc)
-*/
+ * @brief Changes the visibility of all items of certain type (i.e. number, label, edge, etc)
+ * @param type
+ * @param visible
+ */
 void GraphicsWidget::setAllItemsVisibility(int type, bool visible){
     QList<QGraphicsItem *> list = scene()->items();
     for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
@@ -1442,12 +1452,11 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
 
 
 /**
- * @brief GraphicsWidget::mouseReleaseEvent
- * @param e
- * Called when user releases a mouse button, after a click.
+ * @brief  Called when user releases a mouse button, after a click.
  * First sees what was in the canvas position where the user clicked
  * If a node was underneath, it calls userNodeMoved() signal for every node
  * in scene selectedItems
+ * @param e
  */
 void GraphicsWidget::mouseReleaseEvent( QMouseEvent * e ) {
 
@@ -1517,9 +1526,9 @@ void GraphicsWidget::wheelEvent(QWheelEvent *e) {
 
 
 /**
- * @brief GraphicsWidget::zoomOut
+ * @brief Called from MW magnifier button
  * @param level
- * Called from MW magnifier button
+ *
  */
 void GraphicsWidget::zoomOut (int level){
 
@@ -1559,9 +1568,9 @@ void GraphicsWidget::zoomIn(int level){
 
 
 /**
- * @brief GraphicsWidget::changeMatrixScale
+ * @brief Initiated from MW zoomSlider and rotateSlider widgets
  * @param value
- * Initiated from MW zoomSlider and rotateSlider widgets
+ *
  */
 void GraphicsWidget::changeMatrixScale(int value) {
     transformationActive = true;

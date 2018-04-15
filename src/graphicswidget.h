@@ -72,7 +72,7 @@ public:
     void setInitZoomIndex (int);
 
     GraphicsNode* hasNode(QString text);
-    bool setNodesMarked(QList<int> list);
+    void setNodesMarked(QList<int> list);
 
     QList<QGraphicsItem *> selectedItems();
     QList<int> selectedNodes();
