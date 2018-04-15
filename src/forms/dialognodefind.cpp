@@ -98,9 +98,9 @@ void DialogNodeFind::setError(const bool &toggle) {
  */
 void DialogNodeFind::getIndex(const QString &indexStr) {
 
-    index = ui->indexCombo->currentText();
+    selectedIndex = ui->indexCombo->currentText();
 
-    qDebug() << "DialogNodeFind::getIndex() str"<<indexStr << "index" << index;
+    qDebug() << "DialogNodeFind::getIndex() str"<<indexStr << "index" << selectedIndex;
 
 }
 
@@ -211,8 +211,23 @@ void DialogNodeFind::checkErrors()
     else  {
         // user wants to search nodes by their index score
         // user has to enter > or < and a threshold
-        // and to select the desired index.
-        index = ui->indexCombo->currentText();
+        // and select the desired index.
+        selectedIndex = ui->indexCombo->currentText();
+        // check if user entered multiple lines
+        tempListA = textEntered.split("\n",QString::SkipEmptyParts);
+
+        for (int i = 0; i < tempListA.size(); ++i) {
+
+            // take every linefeed separated value
+            str = tempListA.at(i).toLocal8Bit().constData();
+            if (str.contains (">") || str.contains ("<")) {
+                list << str;
+            }
+            else {
+                qDebug()<< "DialogNodeFind::checkErrors() - error! search by index without > or <" ;
+                setError(true);
+            }
+        }
 
 
     }
@@ -227,6 +242,6 @@ void DialogNodeFind::getUserChoices()
 {
    qDebug()<< "DialogNodeFind::getUserChoices()" << list;
       qDebug()<< "DialogNodeFind::getUserChoices() type" << searchType;
-   emit userChoices( list, searchType, index );
+   emit userChoices( list, searchType, selectedIndex );
 
 }

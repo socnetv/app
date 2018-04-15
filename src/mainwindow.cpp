@@ -8470,7 +8470,10 @@ void MainWindow::slotEditNodeFindDialog(){
         return;
     }
 
-
+    //@TODO - prominenceIndexList should be either
+    // the list of all computes indices
+    // or the last computed indice
+    // or empty if the user has not computed any index yet.
     m_nodeFindDialog = new DialogNodeFind(this, prominenceIndexList) ;
 
     connect( m_nodeFindDialog, &DialogNodeFind::userChoices,
@@ -8495,7 +8498,9 @@ void MainWindow::slotEditNodeFind(const QStringList &list,
                                   const QString &indexStr)
 {
 
-    qDebug() << "MW::slotEditNodeFind() - nodes:" << list << "search type:"<< searchType;
+    qDebug() << "MW::slotEditNodeFind() - nodes:" << list
+             << "search type:"<< searchType
+             << "indexStr"<<indexStr;
     int index = 0;
     if (searchType == "numbers"){
         activeGraph->vertexFindByNumber(list);
@@ -8532,6 +8537,8 @@ void MainWindow::slotEditNodeFind(const QStringList &list,
             index=INDEX_PRP;
         else if (indexStr.contains("Proximity Prestige"))
             index=INDEX_PP;
+
+        activeGraph->vertexFindByIndexScore(index, list);
 
     }
 

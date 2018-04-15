@@ -1000,6 +1000,85 @@ bool Graph::vertexFindByLabel (const QStringList &labelList) {
 }
 
 
+
+
+/**
+ * @brief Finds vertices by their index score
+ * @param QStringList
+ * @return
+ */
+bool Graph::vertexFindByIndexScore(const int &index, const QStringList &thresholds) {
+    qDebug()<<"Graph::vertexFindByIndexScore() - index"<< index
+           << "threshold list" << thresholds;
+    QList<int> foundList;
+
+    if ( ! graphModified() && calculatedDC ) {
+
+        VList::const_iterator it;
+        QString thresholdStr="";
+        bool gtThan=false;
+        bool floatOk=false;
+        float threshold=0;
+        for (int i = 0; i < thresholds.size(); ++i) {
+
+            thresholdStr = thresholds.at(i);
+            gtThan=false;
+            if (thresholdStr.startsWith(">")) {
+                gtThan = true;
+                thresholdStr.remove(">");
+                qDebug()<< "Graph::vertexFindByIndexScore() - thresholdStr starts with > ";
+            }
+            else if (thresholdStr.startsWith("<"))  {
+                gtThan = false;
+                thresholdStr.remove("<");
+                qDebug()<< "Graph::vertexFindByIndexScore() - thresholdStr starts with < ";
+            }
+            else {
+                qDebug()<< "Graph::vertexFindByIndexScore() - thresholdStr does not start with > or <";
+                continue;
+            }
+            threshold = thresholdStr.toFloat(&floatOk);
+            if (!floatOk) {
+                qDebug()<< "Graph::vertexFindByIndexScore() - cannot convert thresholdStr to float";
+                continue;
+            }
+            else {
+                qDebug()<< "Graph::vertexFindByIndexScore() - threshold"<<threshold;
+            }
+            for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+                switch (index) {
+                case INDEX_DC:
+                    if (gtThan) {
+                        if ( (*it)->DC() > threshold ) {
+                            qDebug() << "Graph::vertexFindByIndexScore() - vertex" << (*it)->name()
+                                     << "matches. Adding it to foundList";
+                            foundList << (*it)->name();
+                        }
+                    }
+                    else {
+                        if ( (*it)->DC() < threshold ) {
+                            qDebug() << "Graph::vertexFindByIndexScore() - vertex" << (*it)->name()
+                                     << "matches. Adding it to foundList";
+                            foundList << (*it)->name();
+                        }
+                    }
+                    break;
+                default:
+                    break;
+                }
+
+            }
+        }
+    }
+
+    if ( !foundList.isEmpty() ) {
+        emit signalNodesFound(foundList);
+    }
+
+}
+
+
+
 /**
  * @brief Removes the vertex v1 from the graph
  * First, it removes all edges to doomed from other vertices

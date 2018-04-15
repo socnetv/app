@@ -458,6 +458,7 @@ public:
 
     bool vertexFindByNumber (const QStringList &numList) ;
     bool vertexFindByLabel (const QStringList &labelList) ;
+    bool vertexFindByIndexScore(const int &index, const QStringList &thresholds);
 
     void vertexRemove (const long int &v1);
 
