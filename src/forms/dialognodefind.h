@@ -41,16 +41,15 @@ class DialogNodeFind : public QDialog
 public:
     explicit DialogNodeFind(QWidget *parent = 0, QStringList indexList=QStringList());
     ~DialogNodeFind();
-
 public slots:
     void setError(const bool &toggle);
     void getIndex(const QString &indexStr);
     void checkErrors ();
-    void gatherData ();
+    void getUserChoices ();
 signals:
-    void userChoices( const QStringList &list, const QString &type, const QString &index=QString::null);
-
-
+    void userChoices( const QStringList &list,
+                      const QString &type,
+                      const QString &index=QString::null);
 private:
     Ui::DialogNodeFind *ui;
     QStringList list;

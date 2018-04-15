@@ -51,7 +51,7 @@ signals:
                       const bool &diag);
 public slots:
 //    void checkErrors(const int &i);
-    void gatherData();
+    void getUserChoices();
     void circularChanged(const bool &toggle);
     void lengthChanged(int l);
 //    void setModeDirected();

@@ -39,14 +39,13 @@ public:
     DialogDissimilarities (QWidget *parent = 0);
     ~DialogDissimilarities();
 public slots:
-	void gatherData();
+	void getUserChoices();
 signals:
     void userChoices(const QString &metric,
                      const QString &varLocation,
                      const bool &diagonal);
 private slots:
     void on_buttonBox_accepted();
-
     void on_buttonBox_rejected();
 
 private:

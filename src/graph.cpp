@@ -876,8 +876,8 @@ int Graph::vertexNumberMin() {
  * Checks if there is a specific vertex in the graph.
  * Returns the vpos or -1
  * Complexity:  O(logN) for vpos retrieval
- * @param num
- * @return
+ * @param vertex number
+ * @return vertex pos or -1
  */
 int Graph::vertexExists(const long int &v1){
     qDebug () << "Graph::vertexExists() - check for number v:" << v1
@@ -909,7 +909,7 @@ int Graph::vertexExists(const QString &label){
     VList::const_iterator it;
     int i=0;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( (*it) ->label() == label )  { //maybe contains?
+        if ( (*it) ->label().contains( label, Qt::CaseInsensitive ) )  {
 //            qDebug()<< "Graph: vertexExists() at pos %i" << i;
             return i;
         }
@@ -920,19 +920,19 @@ int Graph::vertexExists(const QString &label){
 
 
 /**
- * @brief Finds vertices by their number
- * @param numList
+ * @brief Finds vertices in searchList by their number
+ * @param QStringList
  * @return
  */
-bool Graph::vertexFindByNumber (const QStringList &searchList) {
-    qDebug() << "Graph::vertexFindByNumber() - searchList:" << searchList;
+bool Graph::vertexFindByNumber (const QStringList &numList) {
+    qDebug() << "Graph::vertexFindByNumber() - searchList:" << numList;
     QString vStr;
     QList<int> foundList;
     QStringList notFound;
     int v=-1;
     bool intOk=false;
-    for (int i = 0; i < searchList.size(); ++i) {
-        vStr = searchList.at(i);
+    for (int i = 0; i < numList.size(); ++i) {
+        vStr = numList.at(i);
         v = vStr.toInt(&intOk);
         if (intOk) {
             if ( vertexExists(v) != -1 ) {
@@ -962,11 +962,38 @@ bool Graph::vertexFindByNumber (const QStringList &searchList) {
 
 /**
  * @brief Finds vertices by their label
- * @param labelList
+ * @param QStringList
  * @return
  */
 bool Graph::vertexFindByLabel (const QStringList &labelList) {
     qDebug() << "Graph::vertexFindByLabel() - list:" << labelList;
+
+    QString vLabel;
+    QList<int> foundList;
+    int vFoundPos = -1;
+    QStringList notFound;
+    for (int i = 0; i < labelList.size(); ++i) {
+        vLabel = labelList.at(i);
+
+        if ( ( vFoundPos = vertexExists(vLabel) ) != -1 ) {
+            qDebug() << "vertex with label" << vLabel << "exists. Adding it to list";
+            foundList << m_graph[ vpos [vFoundPos] ]->name();
+        }
+        else {
+            qDebug() << "vertex with label" << vLabel << "exists. Adding it to notFound list ";
+            notFound << vLabel;
+        }
+
+
+    }
+
+    if ( !foundList.isEmpty() ) {
+        emit signalNodesFound(foundList);
+    }
+    if ( !notFound.isEmpty() ){
+        //emit signalNodesNotFound(notFound);
+    }
+
 }
 
 

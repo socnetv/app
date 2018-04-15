@@ -50,7 +50,7 @@ DialogRandErdosRenyi::DialogRandErdosRenyi(QWidget *parent, const float eprob) :
     diag = false;
 
     connect ( ui.buttonBox, &QDialogButtonBox::accepted,
-              this, &DialogRandErdosRenyi::gatherData );
+              this, &DialogRandErdosRenyi::getUserChoices );
 
     ui.buttonBox -> button (QDialogButtonBox::Ok) -> setDefault(true);
 
@@ -136,8 +136,8 @@ void DialogRandErdosRenyi::checkErrors() {
     }
 }
 
-void DialogRandErdosRenyi::gatherData() {
-    qDebug() << "DialogRandErdosRenyi::gatherData() " ;
+void DialogRandErdosRenyi::getUserChoices() {
+    qDebug() << "DialogRandErdosRenyi::getUserChoices() " ;
     nodes = ui.nodesSpinBox->value();
     model = ( ui.gnpRadioButton->isChecked() ) ? "G(n,p)" : "G(n,M)";
     if (  ui.gnpRadioButton->isChecked() ) {

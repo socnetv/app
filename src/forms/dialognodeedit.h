@@ -48,7 +48,7 @@ public:
     ~DialogNodeEdit();
 public slots:
     void checkErrors ();
-    void gatherData ();
+    void getUserChoices ();
     void selectColor();
 signals:
     void userChoices( const QString, const int, const QString, const QColor, const QString);
@@ -62,9 +62,6 @@ private:
     int nodeSize;
     QPixmap pixmap;
     Ui::DialogNodeEdit *ui;
-
-
-
 };
 
 #endif

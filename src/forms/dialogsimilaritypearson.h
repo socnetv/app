@@ -30,25 +30,23 @@
 
 #include <QDialog>
 #include "ui_dialogsimilaritypearson.h"
- 
+
 
 class DialogSimilarityPearson: public QDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
     DialogSimilarityPearson (QWidget *parent = 0);
     ~DialogSimilarityPearson();
 public slots:
-	void gatherData();
+    void getUserChoices();
 signals:
     void userChoices(const QString &matrix,
                      const QString &varLocation,
                      const bool &diagonal);
 private slots:
     void on_buttonBox_accepted();
-
     void on_buttonBox_rejected();
-
 private:
     Ui::DialogSimilarityPearson ui;
     QStringList matrixList, variablesLocationList;

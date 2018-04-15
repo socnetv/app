@@ -30,16 +30,16 @@
 
 #include <QDialog>
 #include "ui_dialogsimilaritymatches.h"
- 
+
 
 class DialogSimilarityMatches: public QDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
     DialogSimilarityMatches (QWidget *parent = 0);
     ~DialogSimilarityMatches();
 public slots:
-	void gatherData();
+    void getUserChoices();
 signals:
     void userChoices(const QString &matrix,
                      const QString &varLocation,
@@ -47,9 +47,7 @@ signals:
                      const bool &diagonal);
 private slots:
     void on_buttonBox_accepted();
-
     void on_buttonBox_rejected();
-
 private:
     Ui::DialogSimilarityMatches ui;
     QStringList matrixList, variablesLocationList, measureList;

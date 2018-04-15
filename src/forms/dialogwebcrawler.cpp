@@ -92,7 +92,7 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
     connect (ui.intLinksCheckBox, &QCheckBox::stateChanged,
              this, &DialogWebCrawler::checkErrors);
 
-    connect ( ui.buttonBox,SIGNAL(accepted()), this, SLOT(gatherData()) );
+    connect ( ui.buttonBox,SIGNAL(accepted()), this, SLOT(getUserChoices()) );
 
 
 }
@@ -309,8 +309,8 @@ QStringList DialogWebCrawler::parseTextEditInput(const QString &html){
 /**
  * @brief gathers data from web crawler form
  */
-void DialogWebCrawler::gatherData(){
-    qDebug()<< "DialogWebCrawler::gatherData() - Emitting" << endl
+void DialogWebCrawler::getUserChoices(){
+    qDebug()<< "DialogWebCrawler::getUserChoices() - Emitting" << endl
             << "	seedUrl: " << seedUrl << endl
             << "	maxLinksPerPage " << maxLinksPerPage << endl
             << "	totalUrlsToCrawl " << maxUrlsToCrawl << endl

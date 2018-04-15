@@ -48,7 +48,7 @@ DialogRandRegular::DialogRandRegular(QWidget *parent) :
     diag = false;
 
     connect ( ui.buttonBox, &QDialogButtonBox::accepted,
-              this, &DialogRandRegular::gatherData );
+              this, &DialogRandRegular::getUserChoices );
 
     ui.buttonBox -> button (QDialogButtonBox::Ok) -> setDefault(true);
 
@@ -121,8 +121,8 @@ void DialogRandRegular::checkErrors(const int &i) {
          }
 }
 
-void DialogRandRegular::gatherData() {
-    qDebug() << "DialogRandRegular::gatherData() " ;
+void DialogRandRegular::getUserChoices() {
+    qDebug() << "DialogRandRegular::getUserChoices() " ;
     nodes = ui.nodesSpinBox->value();
     degree= ui.degreeSpinBox->value();
     mode = (ui.directedRadioButton->isChecked() ? "digraph" : "graph" );

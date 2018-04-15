@@ -50,7 +50,7 @@ DialogRandSmallWorld::DialogRandSmallWorld(QWidget *parent) :
     diag = false;
 
     connect ( ui->buttonBox, &QDialogButtonBox::accepted,
-              this, &DialogRandSmallWorld::gatherData );
+              this, &DialogRandSmallWorld::getUserChoices );
 
     ui->buttonBox -> button (QDialogButtonBox::Ok) -> setDefault(true);
 
@@ -117,11 +117,11 @@ void DialogRandSmallWorld::checkErrors() {
     //         ui->gnmRadioButton->setGraphicsEffect(0);
     //         (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
     //     }
-    //gatherData();
+    //getUserChoices();
 }
 
-void DialogRandSmallWorld::gatherData() {
-    qDebug() << "DialogRandSmallWorld::gatherData() " ;
+void DialogRandSmallWorld::getUserChoices() {
+    qDebug() << "DialogRandSmallWorld::getUserChoices() " ;
     nodes = ui->nodesSpinBox->value();
     bprob = ui->probDoubleSpinBox->value();
     degree= ui->degreeSpinBox->value();

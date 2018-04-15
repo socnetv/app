@@ -5308,9 +5308,6 @@ void MainWindow::initApp(){
     networkSave->setIcon(QIcon(":/images/saved.png"));
     networkSave->setEnabled(true);
 
-    markedNodesExist=false;	//used by slotEditNodeFind()
-
-
     /** Clear previous network data */
     activeGraph->clear();
     activeGraph->setSocNetV_Version(VERSION);

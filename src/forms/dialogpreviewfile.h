@@ -51,7 +51,6 @@ signals:
 private slots:
     void updateTextEdit();
     void accept();
-
 private:
     QByteArray encodedData;
     QString decodedStr, fileName;

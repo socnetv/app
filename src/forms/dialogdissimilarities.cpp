@@ -61,7 +61,7 @@ DialogDissimilarities::DialogDissimilarities (QWidget *parent) : QDialog (parent
 
 
 
-void DialogDissimilarities::gatherData(){
+void DialogDissimilarities::getUserChoices(){
     qDebug()<< "DialogDissimilarities: gathering Data!...";
     QString varLocation = (ui.variablesLocationSelect) ->currentText();
     QString metric = (ui.metricSelect)->currentText();
@@ -76,7 +76,7 @@ void DialogDissimilarities::gatherData(){
 
 void DialogDissimilarities::on_buttonBox_accepted()
 {
-    this->gatherData();
+    this->getUserChoices();
     this->accept();
 }
 

@@ -92,8 +92,11 @@ void DialogClusteringHierarchical::matrixChanged(const QString &matrix) {
             << matrix;
 }
 
-void DialogClusteringHierarchical::gatherData(){
-    qDebug()<< "DialogClusteringHierarchical: gathering Data!...";
+/**
+ * @brief Gets user choices
+ */
+void DialogClusteringHierarchical::getUserChoices(){
+    qDebug()<< "DialogClusteringHierarchical::getUserChoices!...";
 
     QString matrix = ui.matrixSelect ->currentText();
 
@@ -119,7 +122,7 @@ void DialogClusteringHierarchical::gatherData(){
 
 void DialogClusteringHierarchical::on_buttonBox_accepted()
 {
-    this->gatherData();
+    this->getUserChoices();
     this->accept();
 }
 

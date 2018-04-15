@@ -30,16 +30,16 @@
 
 #include <QDialog>
 #include "ui_dialogclusteringhierarchical.h"
- 
+
 
 class DialogClusteringHierarchical: public QDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
     DialogClusteringHierarchical (QWidget *parent = 0, QString preselectMatrix = "");
     ~DialogClusteringHierarchical();
 public slots:
-	void gatherData();
+    void getUserChoices();
 signals:
     void userChoices(const QString &matrix,
                      const QString &varLocation,
@@ -49,9 +49,7 @@ signals:
                      const bool &diagram);
 private slots:
     void on_buttonBox_accepted();
-
     void on_buttonBox_rejected();
-
     void matrixChanged(const QString &matrix);
 private:
     Ui::DialogClusteringHierarchical ui;

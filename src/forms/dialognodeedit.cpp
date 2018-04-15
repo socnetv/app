@@ -76,7 +76,7 @@ DialogNodeEdit::DialogNodeEdit(QWidget *parent,
     pixmap.fill(nodeColor);
     ui->colorButton->setIcon(QIcon(pixmap));
 
-    connect ( ui->buttonBox,SIGNAL(accepted()), this, SLOT(gatherData()) );
+    connect ( ui->buttonBox,SIGNAL(accepted()), this, SLOT(getUserChoices()) );
 
     (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
 
@@ -92,8 +92,8 @@ DialogNodeEdit::DialogNodeEdit(QWidget *parent,
 
 
 
-void DialogNodeEdit::gatherData(){
-    qDebug()<< " DialogNodeEdit::gatherData()" ;
+void DialogNodeEdit::getUserChoices(){
+    qDebug()<< " DialogNodeEdit::getUserChoices()" ;
     nodeLabel = ui->labelEdit->text();
     nodeSize = ui->sizeSpin->value();
     nodeValue = ui->valueEdit->text();
@@ -140,7 +140,7 @@ void DialogNodeEdit::checkErrors() {
         ui->labelEdit->setGraphicsEffect(0);
         (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
     }
-    //gatherData();
+    //getUserChoices();
 }
 
 void DialogNodeEdit::selectColor() {

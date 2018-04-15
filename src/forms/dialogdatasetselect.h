@@ -30,21 +30,20 @@
 
 #include <QDialog>
 #include "ui_dialogdatasetselect.h"
- 
+
 
 class DialogDataSetSelect: public QDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
     DialogDataSetSelect (QWidget *parent = 0);
     ~DialogDataSetSelect();
 public slots:
-	void gatherData();
+    void getUserChoices();
 signals:
-	void userChoices(QString);	
+    void userChoices(QString);
 private slots:
     void on_buttonBox_accepted();
-
     void on_buttonBox_rejected();
 
 private:

@@ -46,7 +46,7 @@ DialogRandScaleFree::DialogRandScaleFree(QWidget *parent) :
     diag = false;
 
     connect ( ui.buttonBox, &QDialogButtonBox::accepted,
-              this, &DialogRandScaleFree::gatherData );
+              this, &DialogRandScaleFree::getUserChoices );
 
     ui.buttonBox -> button (QDialogButtonBox::Ok) -> setDefault(true);
 
@@ -104,11 +104,11 @@ void DialogRandScaleFree::checkErrors() {
     //         ui.gnmRadioButton->setGraphicsEffect(0);
     //         (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
     //     }
-    //gatherData();
+    //getUserChoices();
 }
 
-void DialogRandScaleFree::gatherData() {
-    qDebug() << "DialogRandScaleFree::gatherData() " ;
+void DialogRandScaleFree::getUserChoices() {
+    qDebug() << "DialogRandScaleFree::getUserChoices() " ;
     nodes = ui.nodesSpinBox->value();
     power = ui.powerSpinBox->value();
     initialNodes = ui.initialNodesSpinBox->value();

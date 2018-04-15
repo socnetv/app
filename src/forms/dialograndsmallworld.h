@@ -40,7 +40,7 @@ public:
 
 public slots:
     void checkErrors();
-    void gatherData();
+    void getUserChoices();
     void setModeDirected();
     void setModeUndirected();
     void setDiag();

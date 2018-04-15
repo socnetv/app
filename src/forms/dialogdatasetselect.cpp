@@ -94,7 +94,7 @@ DialogDataSetSelect::DialogDataSetSelect (QWidget *parent) :
 
 
 
-void DialogDataSetSelect::gatherData(){
+void DialogDataSetSelect::getUserChoices(){
     qDebug()<< "DialogDataSetSelect: gathering Data!...";
     int index = (ui->selectBox) -> currentIndex();
     QString dataset_name = datasets_filenames[index];
@@ -106,7 +106,7 @@ void DialogDataSetSelect::gatherData(){
 
 void DialogDataSetSelect::on_buttonBox_accepted()
 {
-    this->gatherData();
+    this->getUserChoices();
     this->accept();
 }
 

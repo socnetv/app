@@ -50,10 +50,9 @@ DialogNodeFind::DialogNodeFind(QWidget *parent, QStringList indexList) :
     ui->indexLabel->setEnabled(false);
     ui->indexCombo->setEnabled(false);
 
-
-    connect ( ui->labelsRadioBtn,SIGNAL(clicked(bool)), this, SLOT( checkErrors() ) );
-    connect ( ui->numbersRadioBtn,SIGNAL(clicked(bool)), this, SLOT( checkErrors() ) );
-    connect ( ui->indexRadioBtn,SIGNAL(clicked(bool)), this, SLOT( checkErrors() ) );
+    connect ( ui->labelsRadioBtn, SIGNAL(clicked(bool)), this, SLOT( checkErrors() ) );
+    connect ( ui->numbersRadioBtn, SIGNAL(clicked(bool)), this, SLOT( checkErrors() ) );
+    connect ( ui->indexRadioBtn, SIGNAL(clicked(bool)), this, SLOT( checkErrors() ) );
 
     connect (ui->indexCombo, &QComboBox::currentTextChanged,
              this, &DialogNodeFind::getIndex);
@@ -62,7 +61,7 @@ DialogNodeFind::DialogNodeFind(QWidget *parent, QStringList indexList) :
 
     connect ( ui->plainTextEdit,SIGNAL(textChanged()), this, SLOT(checkErrors()) );
 
-    connect ( ui->buttonBox,SIGNAL(accepted()), this, SLOT(gatherData()) );
+    connect ( ui->buttonBox,SIGNAL(accepted()), this, SLOT(getUserChoices()) );
 
     ui->plainTextEdit->setFocus();
 
@@ -70,11 +69,11 @@ DialogNodeFind::DialogNodeFind(QWidget *parent, QStringList indexList) :
 
 }
 
+
 DialogNodeFind::~DialogNodeFind()
 {
     tempListA.clear();
     tempListB.clear();
-
     delete ui;
 }
 
@@ -93,7 +92,10 @@ void DialogNodeFind::setError(const bool &toggle) {
      }
 }
 
-
+/**
+ * @brief Gets the selected index
+ * @param indexStr
+ */
 void DialogNodeFind::getIndex(const QString &indexStr) {
 
     index = ui->indexCombo->currentText();
@@ -102,13 +104,16 @@ void DialogNodeFind::getIndex(const QString &indexStr) {
 
 }
 
+/**
+ * @brief Checks for various input errors
+ */
 void DialogNodeFind::checkErrors()
 {
 
-    QString needle = ui->plainTextEdit->toPlainText();
+    QString textEntered = ui->plainTextEdit->toPlainText();
 
     qDebug()<< "DialogNodeFind::checkErrors() - raw text entered:"
-            << needle;
+            << textEntered;
 
     if ( ui->numbersRadioBtn->isChecked() ) {
         ui->textEditLabel->setText("Enter node numbers to find (line by line or csv)");
@@ -135,7 +140,7 @@ void DialogNodeFind::checkErrors()
     tempListA.clear();
     tempListB.clear();
 
-    if (  needle.isEmpty()  ) {
+    if (  textEntered.isEmpty()  ) {
         setError(true);
     }
      else {
@@ -148,13 +153,13 @@ void DialogNodeFind::checkErrors()
         // user wants to search by numbers or labels
         // user has to enter a CSV or line separated list of values
 
-        if (needle.contains("\n") && needle.contains(",")) {
+        if (textEntered.contains("\n") && textEntered.contains(",")) {
             // error you cannot enter both?
            // return;
         }
 
         // check if user entered multiple lines
-        tempListA = needle.split("\n",QString::SkipEmptyParts);
+        tempListA = textEntered.split("\n",QString::SkipEmptyParts);
 
         for (int i = 0; i < tempListA.size(); ++i) {
 
@@ -214,10 +219,14 @@ void DialogNodeFind::checkErrors()
 
 }
 
-void DialogNodeFind::gatherData()
+
+/**
+ * @brief Gathers user input and emits userChoices signal
+ */
+void DialogNodeFind::getUserChoices()
 {
-   qDebug()<< "DialogNodeFind::gatherData()" << list;
-      qDebug()<< "DialogNodeFind::gatherData() type" << searchType;
+   qDebug()<< "DialogNodeFind::getUserChoices()" << list;
+      qDebug()<< "DialogNodeFind::getUserChoices() type" << searchType;
    emit userChoices( list, searchType, index );
 
 }

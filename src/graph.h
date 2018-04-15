@@ -456,7 +456,7 @@ public:
     int vertexExists(const long int &v1 );
     int vertexExists(const QString &label);
 
-    bool vertexFindByNumber (const QStringList &searchList) ;
+    bool vertexFindByNumber (const QStringList &numList) ;
     bool vertexFindByLabel (const QStringList &labelList) ;
 
     void vertexRemove (const long int &v1);

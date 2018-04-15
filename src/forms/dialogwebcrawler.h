@@ -34,17 +34,17 @@
 #include <QDialog>
 
 #include "ui_dialogwebcrawler.h"
- 
+
 
 class DialogWebCrawler: public QDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
     explicit DialogWebCrawler (QWidget *parent = 0);
 
 public slots:
     void checkErrors ();
-	void gatherData ();
+    void getUserChoices ();
     QStringList parseTextEditInput(const QString &html);
 signals:
     void userChoices( const QString &seedUrl,

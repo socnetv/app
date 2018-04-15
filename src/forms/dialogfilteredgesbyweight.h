@@ -32,17 +32,17 @@
 #include <QDialog>
 
 #include "ui_dialogfilteredgesbyweight.h"
- 
+
 
 class DialogFilterEdgesByWeight : public QDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
     DialogFilterEdgesByWeight (QWidget *parent = 0);
 public slots:
-	void gatherData ();
+    void getUserChoices ();
 signals:
-	void userChoices( float, bool);	
+    void userChoices( float, bool);
 private:
     Ui::DialogFilterEdgesByWeight ui;
 

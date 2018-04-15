@@ -40,7 +40,7 @@ public:
 
 public slots:
     void checkErrors();
-    void gatherData();
+    void getUserChoices();
     void gnmModel();
     void gnpModel();
     void setModeDirected();
@@ -58,7 +58,6 @@ private:
     QString model;
     QString mode;
     int nodes, edges;
-
     bool diag;
     Ui::DialogRandErdosRenyi ui;
 };

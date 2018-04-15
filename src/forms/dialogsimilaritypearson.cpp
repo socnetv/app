@@ -56,7 +56,7 @@ DialogSimilarityPearson::DialogSimilarityPearson (QWidget *parent) : QDialog (pa
 
 
 
-void DialogSimilarityPearson::gatherData(){
+void DialogSimilarityPearson::getUserChoices(){
     qDebug()<< "DialogSimilarityPearson: gathering Data!...";
     QString matrix = (ui.matrixSelect) ->currentText();
     QString varLocation = (ui.variablesLocationSelect) ->currentText();
@@ -70,7 +70,7 @@ void DialogSimilarityPearson::gatherData(){
 
 void DialogSimilarityPearson::on_buttonBox_accepted()
 {
-    this->gatherData();
+    this->getUserChoices();
     this->accept();
 }
 

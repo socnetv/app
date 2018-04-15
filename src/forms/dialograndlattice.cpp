@@ -50,7 +50,7 @@ DialogRandLattice::DialogRandLattice(QWidget *parent) : QDialog(parent)
               this, &DialogRandLattice::circularChanged);
 
     connect ( ui.buttonBox, &QDialogButtonBox::accepted,
-              this, &DialogRandLattice::gatherData );
+              this, &DialogRandLattice::getUserChoices );
 
 
     connect(ui.lengthSpinBox, SIGNAL(valueChanged(int)),
@@ -77,8 +77,8 @@ void DialogRandLattice::lengthChanged(int l) {
 
 
 
-void DialogRandLattice::gatherData() {
-    qDebug() << "DialogRandSmallWorld::gatherData() " ;
+void DialogRandLattice::getUserChoices() {
+    qDebug() << "DialogRandSmallWorld::getUserChoices() " ;
     nodes = ui.nodesSpinBox->value();
     length = ui.lengthSpinBox->value();
     dimension = ui.dimSpinBox->value();

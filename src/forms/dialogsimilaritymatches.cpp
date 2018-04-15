@@ -65,7 +65,7 @@ DialogSimilarityMatches::DialogSimilarityMatches (QWidget *parent) : QDialog (pa
 
 
 
-void DialogSimilarityMatches::gatherData(){
+void DialogSimilarityMatches::getUserChoices(){
     qDebug()<< "DialogSimilarityMatches: gathering Data!...";
     QString matrix = (ui.matrixSelect) ->currentText();
     QString varLocation = (ui.variablesLocationSelect) ->currentText();
@@ -83,7 +83,7 @@ void DialogSimilarityMatches::gatherData(){
 
 void DialogSimilarityMatches::on_buttonBox_accepted()
 {
-    this->gatherData();
+    this->getUserChoices();
     this->accept();
 }
 
