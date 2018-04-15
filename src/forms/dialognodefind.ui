@@ -23,7 +23,7 @@
    <item row="0" column="0" colspan="2">
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>Select how to search nodes (by number, by label, or by index) and enter below what you want to find</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select how to search nodes (by their number, by their label, or by index score) and enter below what you want to find. Nodes found will be highlighted.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
@@ -52,7 +52,7 @@
      <item>
       <widget class="QRadioButton" name="indexRadioBtn">
        <property name="text">
-        <string>By Index</string>
+        <string>By Index Score</string>
        </property>
       </widget>
      </item>
@@ -61,7 +61,7 @@
    <item row="2" column="0" colspan="2">
     <widget class="QLabel" name="textEditLabel">
      <property name="text">
-      <string>Enter node numbers to find:</string>
+      <string>Search for these numbers (enter line by line or csv):</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>

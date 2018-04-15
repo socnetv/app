@@ -8646,9 +8646,8 @@ void MainWindow::slotEditNodeRemove() {
 
 
 /**
- * @brief MainWindow::slotEditNodePropertiesDialog
- * Reads values from selected nodes
- * then open Node Properties dialog
+ * @brief Opens Node Properties dialog for the selected nodes.
+ * If no nodes are selected, prompts the user for a node number
  */
 void MainWindow::slotEditNodePropertiesDialog() {
 
@@ -8723,8 +8722,7 @@ void MainWindow::slotEditNodePropertiesDialog() {
 
 
 /**
- * @brief MainWindow::slotEditNodeProperties
- * Applies new (user-defined) values to all selected nodes
+ * @brief Applies new (user-defined) values to all selected nodes
  * Called on exit from DialogNodeEdit
  * @param label
  * @param size
@@ -8733,8 +8731,8 @@ void MainWindow::slotEditNodePropertiesDialog() {
  * @param shape
  */
 void MainWindow::slotEditNodeProperties( const QString label, const int size,
-                                     const QString value, const QColor color,
-                                     const QString shape) {
+                                         const QString value, const QColor color,
+                                         const QString shape) {
 
     int selectedNodesCount = activeGraph->graphSelectedVerticesCount();
 
@@ -8765,20 +8763,23 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
         int nodeNumber = 0;
         foreach (nodeNumber, activeGraph->graphSelectedVertices() ) {
             qDebug()<< "MW::slotEditNodeProperties() - node " << nodeNumber;
-            qDebug()<< "MW::slotEditNodeProperties() - updating label ";
-            if ( selectedNodesCount > 1 )
-            {
-                activeGraph->vertexLabelSet(
-                            nodeNumber,
-                            label + QString::number(nodeNumber)
-                            );
+            if ( !label.isEmpty() ) {
+                qDebug()<< "MW::slotEditNodeProperties() - updating label ";
+                if ( selectedNodesCount > 1 )
+                {
+                    activeGraph->vertexLabelSet(
+                                nodeNumber,
+                                label + QString::number(nodeNumber)
+                                );
+                }
+                else {
+                    activeGraph->vertexLabelSet( nodeNumber, label );
+                }
+                // turn on labels visibility if they are hidden
+                if ( appSettings["initNodeLabelsVisibility"] != "true") {
+                    slotOptionsNodeLabelsVisibility(true);
+                }
             }
-            else
-                activeGraph->vertexLabelSet( nodeNumber, label );
-
-            if ( label !="" && appSettings["initNodeLabelsVisibility"] != "true")
-                slotOptionsNodeLabelsVisibility(true);
-
 
             qDebug()<< "MW::slotEditNodeProperties() - updating color ";
             activeGraph->vertexColorSet( nodeNumber, color.name());
