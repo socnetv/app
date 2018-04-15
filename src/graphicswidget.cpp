@@ -368,15 +368,6 @@ void GraphicsWidget::removeNode(const long int &number){
     if ( nodeHash.contains(number) ) {
         qDebug() << "GW::removeNode() - found node"
                  <<  number<< " Deleting :)" ;
-
-//        if ( nodeHash.value(number) == markedNode1 ) {
-//            qDebug() << "GW::removeNode() - node marked by the user. Unmarking then deleting.";
-//            setNodesMarked("");
-
-//        }
-//        else {
-//            qDebug() << "GW::removeNode() - node not marked by the user. Deleting.";
-//        }
         delete nodeHash.value(number);
     }
 

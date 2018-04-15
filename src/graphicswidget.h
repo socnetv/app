@@ -222,7 +222,7 @@ private:
     QString m_nodeLabel, m_numberColor, m_labelColor;
     QString edgeName;
     bool transformationActive;
-    bool secondDoubleClick, markedNodeExist, clickedEdgeExists;
+    bool secondDoubleClick, clickedEdgeExists;
     bool m_nodeNumbersInside, m_nodeNumberVisibility, m_nodeLabelVisibility;
     bool m_edgeHighlighting;
     GraphicsNode *firstNode, *secondNode;
