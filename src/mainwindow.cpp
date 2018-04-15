@@ -8537,34 +8537,6 @@ void MainWindow::slotEditNodeFind(const QStringList &list,
 
 
     return;
-/*
-    if ( markedNodesExist ) {				// if a node has been already marked
-        graphicsWidget->setMarkedNode(""); 	// call setMarkedNode to just unmark it.
-        markedNodesExist=false;
-        statusMessage( tr("Node unmarked.") );
-        return;								// and return to MW
-    }
-
-    bool ok=false;
-    QString nodeText = QInputDialog::getText(this, tr("Find Node"),
-                                             tr("Enter node label or node number:"),
-                                             QLineEdit::Normal,QString::null, &ok );
-    if (!ok) {
-        statusMessage( tr("Find node operation cancelled.") );
-        return;
-    }
-
-    else {
-        if	( graphicsWidget->setMarkedNode(nodeText) ) {
-            markedNodesExist=true;
-            statusMessage( tr("Node found and marked. Press Ctrl+F again to unmark...") );
-        }
-        else {
-            QMessageBox::information(this, tr("Find Node"),
-                                     tr("Sorry. There is no such node in this network. \n Try again."), "OK",0);
-        }
-    }
-*/
 }
 
 

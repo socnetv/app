@@ -860,7 +860,7 @@ GraphicsNode* GraphicsWidget::hasNode( QString text ){
         }
 
     }
-    return 0;	//dummy return. We check markedNodeExist flag first...
+    return 0;	//dummy return.
 }
 
 
