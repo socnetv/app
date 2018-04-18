@@ -2478,14 +2478,21 @@ void MainWindow::initActions(){
     layoutFDP_KamadaKawai_Act-> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_K));
     layoutFDP_KamadaKawai_Act->setStatusTip(
-                tr("Repelling forces between all nodes, and attracting forces between adjacent nodes."));
+                tr("Embeds the Kamada-Kawai FDP layout model, the best variant of the Spring Embedder family of models."));
     layoutFDP_KamadaKawai_Act->setWhatsThis(
-                tr("Fruchterman-Reingold Layout\n\n "
-                   "Embeds a layout all nodes according to a model in which	repelling "
-                   "forces are used between every pair of nodes, while attracting "
-                   "forces are used only between adjacent nodes. "
-                   "The algorithm continues until the system retains its equilibrium state where "
-                   "all forces cancel each other."));
+                tr(
+                     "<p><em>Kamada-Kawai</em></p>"
+                     "<p>The best variant of the Spring Embedder family of models. "
+                     "<p>In this the graph is considered to be a dynamic system where "
+                     "every edge is between two actors is a 'spring' of a desirable "
+                     "length, which corresponds to their graph theoretic distance. </p>"
+                     "<p>In this way, the optimal layout of the graph \n"
+                     "is the state with the minimum imbalance. The degree of "
+                     "imbalance is formulated as the total spring energy: "
+                     "the square summation of the differences between desirable "
+                     "distances and real ones for all pairs of vertices.</p>"
+
+                ));
     connect(layoutFDP_KamadaKawai_Act, SIGNAL(triggered()), this, SLOT(slotLayoutKamadaKawai()));
 
 
