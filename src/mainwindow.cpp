@@ -7138,6 +7138,8 @@ bool MainWindow::slotNetworkExportPNG(){
     }
     setLastPath(fn); // store this path
     tempFileNameNoPath=fn.split ("/");
+    QString name = tempFileNameNoPath.last();
+    name.truncate(name.lastIndexOf("."));
     qDebug("slotExportPNG: grabbing canvas");
     QPixmap picture;
     picture=QPixmap::grabWidget(graphicsWidget, graphicsWidget->rect());
@@ -7148,10 +7150,10 @@ bool MainWindow::slotNetworkExportPNG(){
     if (appSettings["printLogo"]=="true") {
         QImage logo(":/images/socnetv-logo.png");
         p.drawImage(5,5, logo);
-        p.drawText(7,47,tempFileNameNoPath.last());
+        p.drawText(7,47,name);
     }
     else
-        p.drawText(5,15,tempFileNameNoPath.last());
+        p.drawText(5,15,name);
     p.end();
     qDebug("slotExportPNG: checking filename");
     if (fn.contains("png", Qt::CaseInsensitive) ) {
@@ -7194,7 +7196,8 @@ bool MainWindow::slotNetworkExportBMP(){
     }
     setLastPath(fn); // store this path
     tempFileNameNoPath=fn.split ("/");
-
+    QString name = tempFileNameNoPath.last();
+    name.truncate(name.lastIndexOf("."));
     QPixmap picture;
     qDebug("slotNetworkExportBMP: grabbing canvas");
     picture=QPixmap::grabWidget(graphicsWidget, graphicsWidget->viewport()->rect());
@@ -7205,10 +7208,10 @@ bool MainWindow::slotNetworkExportBMP(){
     if (appSettings["printLogo"]=="true") {
         QImage logo(":/images/socnetv-logo.png");
         p.drawImage(5,5, logo);
-        p.drawText(7,47,tempFileNameNoPath.last());
+        p.drawText(7,47,name);
     }
     else
-        p.drawText(5,15,tempFileNameNoPath.last());
+        p.drawText(5,15,name);
     p.end();
     qDebug("slotNetworkExportBMP: checking file");
     if (fn.contains(format, Qt::CaseInsensitive) ) {
