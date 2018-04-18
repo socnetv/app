@@ -4035,10 +4035,10 @@ void MainWindow::initPanels(){
     toolBoxAnalysisCohesionSelectLabel->setMinimumWidth(90);
     toolBoxAnalysisCohesionSelect = new QComboBox;
     toolBoxAnalysisCohesionSelect -> setStatusTip(
-                tr("Select a graph-theoretic metric to compute, i.e. distances, walks, graph diameter, eccentricity."));
+                tr("Select a graph-theoretic measure, i.e. distances, walks, graph diameter, eccentricity."));
     helpMessage =
             tr("<p><b>Analyze Cohesion</b></p>"
-               "<p><Compute basic graph-theoretic metrics. "
+               "<p><Compute basic graph-theoretic measures. "
 
                "<p><em>Reciprocity:</em><p>"
                "<p>Measures the likelihood that pairs of nodes in a directed network are mutually linked.</p>"
@@ -4104,9 +4104,10 @@ void MainWindow::initPanels(){
                    "and the whole network. ")
                 );
     helpMessage = tr("<p><b>Prominence Analysis</b></p>"
-                     "<p>Compute metrics to measure how <em>prominent</em> (important) "
+                     "<p>Compute Centrality and Prestige indices, to measure how "
+                     "<em>prominent</em> (important) "
                      "each actor (node) is inside the network. </p>"
-                     "<p>Centrality metrics quantify how central is each node by examining "
+                     "<p>Centrality measures quantify how central is each node by examining "
                      "its ties and its geodesic distances (shortest path lengths) to other nodes. "
                      "Most Centrality indices were designed for undirected graphs. </p>"
 
@@ -4184,11 +4185,11 @@ void MainWindow::initPanels(){
     toolBoxAnalysisCommunitiesSelectLabel->setMinimumWidth(90);
     toolBoxAnalysisCommunitiesSelect = new QComboBox;
     toolBoxAnalysisCommunitiesSelect->setStatusTip(
-                tr("Select a community detection metric / cohesive subgroup algorithm, i.e. cliques, triad census etc."));
+                tr("Select a community detection measure / cohesive subgroup algorithm, i.e. cliques, triad census etc."));
     helpMessage = tr("<p><b>Community Analysis</b></p>"
-                     "<p>Community detection metrics and cohesive subgroup algorithms, "
+                     "<p>Community detection measures and cohesive subgroup algorithms, "
                      "to identify meaningful subgraphs in the graph.</p>"
-                     "<p><b>Available metrics</b></p>"
+                     "<p><b>Available measures</b></p>"
                      "<p><em>Clique Census:</em><p>"
                      "<p>Computes aggregate counts of all maximal cliques of actors by size, "
                      " actor by clique analysis, clique co-memberships</p>"
@@ -4214,7 +4215,7 @@ void MainWindow::initPanels(){
     toolBoxAnalysisStrEquivalenceSelectLabel->setMinimumWidth(90);
     toolBoxAnalysisStrEquivalenceSelect = new QComboBox;
     toolBoxAnalysisStrEquivalenceSelect->setStatusTip(
-                tr("Select a metric to measure structural equivalence, "
+                tr("Select a method to measure structural equivalence, "
                    "i.e. Pearson Coefficients, tie profile similarities, "
                    "hierarchical clustering, etc."));
     helpMessage =  tr("<p><b>Structural Equivalence Analysis</b></p>"
