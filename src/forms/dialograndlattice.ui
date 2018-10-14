@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>570</width>
-    <height>420</height>
+    <height>468</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -69,7 +69,7 @@
       <enum>QFrame::Sunken</enum>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Generate a lattice network. You can select how many dimensions the lattice will have (i.e. d=2 for a two-dimensional lattice) and the length of each dimension (i.e. l=3 for a 3x3 lattice of 9 nodes). &lt;/p&gt;&lt;p&gt;Read more in the manual.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Generate a lattice network. You can select how many dimensions the lattice will have (i.e. d=2 for a two-dimensional lattice) and the length of each dimension (i.e. l=3 for a 3x3 lattice of 9 nodes). Read more in the manual.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
