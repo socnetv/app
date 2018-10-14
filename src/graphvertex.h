@@ -65,7 +65,7 @@ class GraphVertex : public QObject{
 public:
 
     GraphVertex(Graph* parent,
-           const long int &name,
+           const int &name,
            const int &val,
            const int &relation,
            const int &size,
@@ -78,28 +78,28 @@ public:
            const QPointF &p,
            const QString &shape);
 
-    GraphVertex(const long int &name);
+    GraphVertex(const int &name);
 
     ~GraphVertex();
 
-    long int name() const { return m_name; }
+    int name() const { return m_name; }
 
-    void setName (const long int &name) { m_name=name; }
+    void setName (const int &name) { m_name=name; }
 
     void setEnabled (const bool &flag ) { m_enabled=flag; }
     bool isEnabled () const { return m_enabled; }
 
     void relationSet(int newRel) ;
 
-    void edgeAddTo (const long int &v2, const float &weight);
-    void edgeAddFrom(const long int &v1, const float &weight);
+    void edgeAddTo (const int &v2, const float &weight);
+    void edgeAddFrom(const int &v1, const float &weight);
 
-    void changeOutEdgeWeight (long int target, float weight);
+    void changeOutEdgeWeight (const int target, float weight);
 
-    void setOutEdgeEnabled (long int, bool);
+    void setOutEdgeEnabled (const int, bool);
 
-    void edgeRemoveTo (long int target);
-    void edgeRemoveFrom(long int source);
+    void edgeRemoveTo (const int target);
+    void edgeRemoveFrom(const int source);
 
     QHash<int, float> outEdgesEnabledHash(const bool &allRelations=false);
     QHash<int,float>* outEdgesAllRelationsUniqueHash();
@@ -107,25 +107,25 @@ public:
     QHash<int,float> reciprocalEdgesHash();
     QList<int> neighborhoodList();
 
-    long int outEdges();
-    long int outEdgesConst() const ;
+    int outEdges();
+    int outEdgesConst() const ;
 
-    long int inEdges();
-    long int inEdgesConst() const ;
+    int inEdges();
+    int inEdgesConst() const ;
 
-    long int degreeOut();
-    long int outDegreeConst();
-    long int degreeIn();
-    long int inDegreeConst();
-    long int localDegree();
+    int degreeOut();
+    int outDegreeConst();
+    int degreeIn();
+    int inDegreeConst();
+    int localDegree();
 
-    float distance(const long int &v1) ;
-    void setDistance (const long int &v1, const float &d) ;
+    float distance(const int &v1) ;
+    void setDistance (const int &v1, const float &d) ;
     void reserveDistance(const int &N);
     void clearDistance();
 
-    int shortestPaths(const long int &v1) ;
-    void setShortestPaths(const long int &v1, const int &sp) ;
+    int shortestPaths(const int &v1) ;
+    void setShortestPaths(const int &v1, const int &sp) ;
     void reserveShortestPaths(const int &N);
     void clearShortestPaths();
 
@@ -136,11 +136,11 @@ public:
 
     /* Returns true if there is an outLink from this vertex */
     bool isOutLinked() { return (outEdges() > 0) ? true:false;}
-    float hasEdgeTo(const long int &v, const bool &allRelations=false);
+    float hasEdgeTo(const int &v, const bool &allRelations=false);
 
     /* Returns true if there is an outLink from this vertex */
     bool isInLinked() { return  (inEdges() > 0) ? true:false;}
-    float hasEdgeFrom (const long int &v, const bool &allRelations=false);
+    float hasEdgeFrom (const int &v, const bool &allRelations=false);
 
     bool isIsolated() { return !(isOutLinked() | isInLinked()) ; }
     void setIsolated(bool isolated) {m_isolated = isolated; }
@@ -197,16 +197,16 @@ public:
     void set_dispY (float y) { m_disp.ry() = y ; }
 
 
-    void setOutLinkColor(const long int &v2,
+    void setOutLinkColor(const int &v2,
                          const QString &color) { m_outLinkColors[v2]=color; }
-    QString outLinkColor(const long int &v2) {
+    QString outLinkColor(const int &v2) {
         return ( m_outLinkColors.contains(v2) ) ? m_outLinkColors.value(v2) : "black";
     }
 
 
-    void setOutEdgeLabel(const long int &v2,
+    void setOutEdgeLabel(const int &v2,
                          const QString &label) { m_outEdgeLabels[v2]=label; }
-    QString outEdgeLabel(const long int &v2) const {
+    QString outEdgeLabel(const int &v2) const {
         return ( m_outEdgeLabels.contains(v2) ) ? m_outEdgeLabels.value(v2) : QString::null;
     }
 
@@ -216,7 +216,7 @@ public:
 
     void clearPs()	;
 
-    void appendToPs(long  int vertex ) ;
+    void appendToPs( int vertex ) ;
     L_int Ps(void);
 
     //used in reciprocity report
@@ -312,8 +312,8 @@ protected:
 
 private:
     Graph *parentGraph;
-    long int m_name,  m_outEdgesCounter, m_inEdgesCounter, m_outDegree, m_inDegree, m_localDegree;
-    long int m_outEdgesNonSym, m_inEdgesNonSym, m_outEdgesSym;
+    int m_name,  m_outEdgesCounter, m_inEdgesCounter, m_outDegree, m_inDegree, m_localDegree;
+    int m_outEdgesNonSym, m_inEdgesNonSym, m_outEdgesSym;
     int m_value, m_size, m_labelSize, m_numberSize, m_numberDistance, m_labelDistance;
     int m_curRelation;
     bool m_reciprocalLinked, m_enabled, m_hasCLC, m_isolated;

@@ -79,7 +79,7 @@ public:
     QPainterPath shape() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
-    long int nodeNumber() {return m_num;}
+    int nodeNumber() {return m_num;}
 
     void addInLink( GraphicsEdge *edge ) ;
     void deleteInLink(GraphicsEdge*);
@@ -142,7 +142,7 @@ private:
     int m_labelSize;
     int m_numberDistance;
     int m_labelDistance;
-    long int m_num;
+    int m_num;
     QString  m_shape,  m_col_str, m_numColor, m_labelText, m_labelColor;
     QColor m_col, m_col_orig;
     bool m_hasNumber, m_hasLabel, m_hasNumberInside, m_edgeHighLighting;

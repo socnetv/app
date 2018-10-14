@@ -879,7 +879,7 @@ int Graph::vertexNumberMin() {
  * @param vertex number
  * @return vertex pos or -1
  */
-int Graph::vertexExists(const long int &v1){
+int Graph::vertexExists(const int &v1){
     qDebug () << "Graph::vertexExists() - check for number v:" << v1
               <<  " with vpos " << vpos[v1]
                   << " named " << m_graph[ vpos[v1] ] ->name();
@@ -1086,12 +1086,12 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
  * Finally, it removes the vertex.
  * @param int v1
  */
-void Graph::vertexRemove(const long int &v1){
+void Graph::vertexRemove(const int &v1){
     qDebug() << "Graph::vertexRemove() - v: "
              << m_graph[ vpos[v1] ]->name()
              << "  vpos: " << vpos[v1]
              << " Removing all inbound and outbound edges ";
-    long int doomedPos=vpos[v1];
+    int doomedPos=vpos[v1];
 
     //Remove links to v1 from each other vertex
     VList::const_iterator it;
@@ -1110,7 +1110,7 @@ void Graph::vertexRemove(const long int &v1){
 
     qDebug()<< "Graph::vertexRemove() - Finished with vertices. "
                "Update the vpos which maps vertices inside m_graph " ;
-    long int prevIndex=doomedPos;
+    int prevIndex=doomedPos;
 
     qDebug()<< "Graph::vertexRemove() - Updating vpos of all subsequent vertices ";
     H_Int::const_iterator it1=vpos.cbegin();
@@ -1191,7 +1191,7 @@ void Graph::vertexIsolatedAllToggle(const bool &toggle){
  * @param v1
  * @return
  */
-bool Graph::vertexIsolated(const long int &v1) const{
+bool Graph::vertexIsolated(const int &v1) const{
     if (  m_graph[ vpos[v1] ] -> isIsolated() ) {
         qDebug()<<"Graph::vertexIsolated() - vertex:"<< v1 << "isolated";
         return true;
@@ -1267,7 +1267,7 @@ int Graph::vertexClicked() const {
  * Initialization function
  * @param size
  */
-void Graph::vertexSizeInit (const long int size) {
+void Graph::vertexSizeInit (const int size) {
     initVertexSize=size;
 }
 
@@ -1280,7 +1280,7 @@ void Graph::vertexSizeInit (const long int size) {
  * @param v
  * @param size
  */
-void Graph::vertexSizeSet(const long int &v, const int &size) {
+void Graph::vertexSizeSet(const int &v, const int &size) {
     m_graph[ vpos[v] ]->setSize(size);
 
     graphModifiedSet(GRAPH_CHANGED_VERTICES_METADATA);
@@ -1292,7 +1292,7 @@ void Graph::vertexSizeSet(const long int &v, const int &size) {
  * @param v
  * @return int
  */
-int Graph::vertexSize(const long &v ) {
+int Graph::vertexSize(const int &v ) {
     return m_graph[ vpos[v] ]-> size();
 }
 
@@ -1387,7 +1387,7 @@ void Graph::vertexShapeAllSet(const QString shape) {
  * @param v1
  * @param color
  */
-void Graph::vertexColorSet(const long int &v1, const QString &color){
+void Graph::vertexColorSet(const int &v1, const QString &color){
     qDebug()<< "Graph: vertexColorSet for "<< v1 << ", vpos " << vpos[v1]<< " with color "<< color;
     m_graph[ vpos[v1] ]->setColor ( color );
     emit setNodeColor ( m_graph[ vpos[v1] ]-> name(), color );
@@ -1400,7 +1400,7 @@ void Graph::vertexColorSet(const long int &v1, const QString &color){
  * @param v1
  * @return
  */
-QColor Graph::vertexColor(const long int &v1){
+QColor Graph::vertexColor(const int &v1){
     return  QColor ( m_graph[ vpos[v1] ] -> color() ) ;
 }
 
@@ -1471,7 +1471,7 @@ void Graph::vertexNumberSizeInit (const int &size) {
  * @param v
  * @param size
  */
-void Graph::vertexNumberSizeSet(const long int &v, const int &size) {
+void Graph::vertexNumberSizeSet(const int &v, const int &size) {
     m_graph[ vpos[v] ]->setNumberSize (size);
 
     graphModifiedSet(GRAPH_CHANGED_MINOR_OPTIONS);
@@ -1518,7 +1518,7 @@ void Graph::vertexNumberDistanceInit(const int &distance) {
  * @param v
  * @param size
  */
-void Graph::vertexNumberDistanceSet(const long int &v, const int &newDistance) {
+void Graph::vertexNumberDistanceSet(const int &v, const int &newDistance) {
     m_graph[ vpos[v] ]->setNumberDistance (newDistance);
 
     graphModifiedSet(GRAPH_CHANGED_MINOR_OPTIONS);
@@ -1579,7 +1579,7 @@ void Graph::vertexLabelSet(int v1, QString label){
  * @param v1
  * @return
  */
-QString Graph::vertexLabel(const long int &v1){
+QString Graph::vertexLabel(const int &v1){
     return m_graph[ vpos[v1] ]->label ();
 }
 
@@ -1603,7 +1603,7 @@ void Graph::vertexLabelSizeInit(int newSize) {
  * @param v1
  * @param size
  */
-void Graph::vertexLabelSizeSet(const long int &v1, const int &size) {
+void Graph::vertexLabelSizeSet(const int &v1, const int &size) {
     qDebug()<< "Graph: vertexLabelSizeSet for "<< v1 << ", vpos "
             << vpos[v1]<< " with size "<< size;
     m_graph[ vpos[v1] ] -> setLabelSize ( size );
@@ -1698,7 +1698,7 @@ void Graph::vertexLabelColorInit(QString color){
  * @param v
  * @param size
  */
-void Graph::vertexLabelDistanceSet(const long int &v, const int &newDistance) {
+void Graph::vertexLabelDistanceSet(const int &v, const int &newDistance) {
     m_graph[ vpos[v] ]->setLabelDistance (newDistance);
 
     graphModifiedSet(GRAPH_CHANGED_MINOR_OPTIONS);
@@ -1893,8 +1893,8 @@ void Graph::edgeAdd (const int &v1, const int &v2, const float &weight,
  * @param v2
  * @param removeOpposite if true also removes the opposite edge
  */
-void Graph::edgeRemove (const long int &v1,
-                        const long int &v2,
+void Graph::edgeRemove (const int &v1,
+                        const int &v2,
                         const bool &removeOpposite) {
     qDebug ()<< "Graph::edgeRemove() - edge" << v1 << "[" << vpos[v1]
                 << "] --> " << v2 << " to be removed. RemoveOpposite:" <<removeOpposite;
@@ -2066,7 +2066,7 @@ ClickedEdge Graph::edgeClicked() {
  * @param reciprocated: if true, checks if the edge is reciprocated (v1<->v2)
  * @return zero if arc or reciprocated edge does not exist or non-zero if arc /reciprocated edge exists
  */
-float Graph::edgeExists (const long int &v1, const long int &v2, const bool &checkReciprocal) {
+float Graph::edgeExists (const int &v1, const int &v2, const bool &checkReciprocal) {
     edgeWeightTemp = 0;
     edgeWeightTemp = m_graph[ vpos[v1] ]->hasEdgeTo(v2);
 
@@ -2093,7 +2093,7 @@ float Graph::edgeExists (const long int &v1, const long int &v2, const bool &che
  * @param v2
  * @return
  */
-bool Graph::edgeSymmetric(const long int &v1, const long int &v2){
+bool Graph::edgeSymmetric(const int &v1, const int &v2){
     qDebug() << "***Graph: edgeSymmetric()";
     if ( ( edgeExists( v1, v2 , true) ) !=0 ) {
         return true;
@@ -2161,7 +2161,7 @@ int Graph::vertexEdgesInbound (int v1) {
  * @param v2
  * @param weight
  */
-void Graph::edgeWeightSet (const long &v1, const long &v2,
+void Graph::edgeWeightSet (const int &v1, const int &v2,
                            const float &weight, const bool &undirected) {
     qDebug() << "Graph::edgeWeightSet() - " << v1 << "[" << vpos[v1]
                 << "] ->" << v2 << "[" << vpos[v2] << "]" << " = " << weight;
@@ -2187,7 +2187,7 @@ void Graph::edgeWeightSet (const long &v1, const long &v2,
  * @param v2
  * @return float
  */
-float Graph::edgeWeight (const long &v1, const long &v2) const{
+float Graph::edgeWeight (const int &v1, const int &v2) const{
     return m_graph[ vpos[v1] ]->hasEdgeTo(v2);
 }
 
@@ -2283,7 +2283,7 @@ bool Graph::edgeColorAllSet(const QString &color, const int &threshold){
  * @param v2
  * @param color
  */
-void Graph::edgeColorSet(const long &v1, const long &v2, const QString &color){
+void Graph::edgeColorSet(const int &v1, const int &v2, const QString &color){
     qDebug()<< "Graph::edgeColorSet() - "<< v1 << " -> "<< v2
             <<" vpos ("<< vpos[v1]<< " -> "<<vpos[v2]<<")"
            <<" new color "<< color;
@@ -2306,7 +2306,7 @@ void Graph::edgeColorSet(const long &v1, const long &v2, const QString &color){
  * @param v2
  * @return
  */
-QString Graph::edgeColor (const long &v1, const long &v2){
+QString Graph::edgeColor (const int &v1, const int &v2){
     return m_graph[ vpos[v1] ]->outLinkColor(v2);
 }
 
@@ -2319,7 +2319,7 @@ QString Graph::edgeColor (const long &v1, const long &v2){
  * @param v2
  * @param weight
  */
-void Graph::edgeLabelSet (const long &v1, const long &v2, const QString &label) {
+void Graph::edgeLabelSet (const int &v1, const int &v2, const QString &label) {
     qDebug() << "Graph::edgeLabelSet()  " << v1 << "[" << vpos[v1]
                 << "] -> " << v2 << "[" << vpos[v2] << "]" << " label " << label;
     m_graph[ vpos[v1] ]->setOutEdgeLabel(v2, label);
@@ -2336,7 +2336,7 @@ void Graph::edgeLabelSet (const long &v1, const long &v2, const QString &label) 
  * @param v2
  * @return
  */
-QString Graph::edgeLabel (const long int &v1, const long int &v2) const {
+QString Graph::edgeLabel (const int &v1, const int &v2) const {
    return m_graph [ vpos[v1] ]->outEdgeLabel(v2);
 }
 
@@ -3790,8 +3790,8 @@ bool Graph::graphUndirected() {
  * @param v2
  * @param weight
  */
-void Graph::edgeTypeSet(const long int &v1,
-                        const long int &v2,
+void Graph::edgeTypeSet(const int &v1,
+                        const int &v2,
                         const float &weight,
                         const int &dirType) {
 
@@ -11375,7 +11375,7 @@ bool Graph::writeCliqueCensus(const QString &fileName,
         return false;
     }
 
-    long int N = vertices();
+    int N = vertices();
     int cliqueCounter=0;
     int rowCounter = 0;
     int cliqueSize = 0;
@@ -13399,7 +13399,7 @@ float Graph::numberOfTriples(int v1){
  * @param v1
  * @return
  */
-float Graph::clusteringCoefficientLocal(const long int &v1){
+float Graph::clusteringCoefficientLocal(const int &v1){
     if ( !graphModified() && (m_graph[ vpos [v1] ] -> hasCLC() ) )  {
         float clucof=m_graph[ vpos [v1] ] ->CLC();
         qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") - "
@@ -19478,7 +19478,7 @@ bool Graph::graphMatrixAdjacencyInvert(const QString &method){
     qDebug()<<"Graph::graphMatrixAdjacencyInvert() ";
 
     bool considerWeights=false;
-    long int i=0, j=0;
+    int i=0, j=0;
     bool isSingular=true;
 
     bool dropIsolates=true; // always drop isolates else AM will be singular

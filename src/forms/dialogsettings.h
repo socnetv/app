@@ -93,7 +93,7 @@ signals:
     void setCanvasIndexMethod(const QString &text);
 
     void setNodeColor(QColor);
-    void setNodeShape(const QString, const long int);
+    void setNodeShape(const QString, const int);
     void setNodeSize(int, const bool &);
     void setNodeNumbersVisibility(bool);
     void setNodeNumbersInside(bool);

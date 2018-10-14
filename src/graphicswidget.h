@@ -44,7 +44,7 @@ class GraphicsEdgeWeight;
 class GraphicsEdgeLabel;
 
 typedef QHash<QString, GraphicsEdge*> H_StrToEdge;
-typedef QHash <long int, GraphicsNode*> H_NumToNode;
+typedef QHash <int, GraphicsNode*> H_NumToNode;
 
 using namespace std;
 
@@ -116,26 +116,26 @@ public slots:
                    const int &labelDistance,
                    const QPointF &p
                     );
-    void removeNode(const long int &number);
-    void setNodeVisibility(long int, bool );	//Called from Graph via MW
+    void removeNode(const int &number);
+    void setNodeVisibility(int, bool );	//Called from Graph via MW
     void setNodeClicked(GraphicsNode *);
     void moveNode(const int &num, const qreal &x, const qreal &y);	//Called from Graph when creating random nets.
 
-    bool setNodeSize(const long int &nodeNumber, const int &size=0);
+    bool setNodeSize(const int &nodeNumber, const int &size=0);
     void setNodeSizeAll(const int &size=0);
 
-    bool setNodeShape(const long int &nodeNumber, const QString &shape);
-    bool setNodeColor(const long int &, const QString &color);
+    bool setNodeShape(const int &nodeNumber, const QString &shape);
+    bool setNodeColor(const int &, const QString &color);
 
     void setNodeNumberVisibility(const bool &toggle);
-    bool setNodeNumberSize(const long int &, const int &size=0);
-    bool setNodeNumberDistance(const long int &, const int &distance=0);
+    bool setNodeNumberSize(const int &, const int &size=0);
+    bool setNodeNumberDistance(const int &, const int &distance=0);
 
     void setNodeLabelsVisibility(const bool &toggle);
-    bool setNodeLabelColor(const long int &number, const QString &color="green");
-    bool setNodeLabelSize(const long int &, const int &size=0);
-    bool setNodeLabel(long int , QString );
-    bool setNodeLabelDistance(const long int &, const int &distance=0);
+    bool setNodeLabelColor(const int &number, const QString &color="green");
+    bool setNodeLabelSize(const int &, const int &size=0);
+    bool setNodeLabel(const int & , QString );
+    bool setNodeLabelDistance(const int &, const int &distance=0);
 
     void drawEdge(const int &source,
                   const int &target,
@@ -147,26 +147,26 @@ public slots:
                   const bool &bezier=false,
                   const bool &weightNumbers=false);
 
-    void removeEdge(const long int &source,
-                    const long int &target,
+    void removeEdge(const int &source,
+                    const int &target,
                     const bool &removeOpposite=false);
 
     void setEdgeVisibility (int relation, int, int, bool);
 
-    bool setEdgeDirectionType(const long int &,
-                              const long int &,
+    bool setEdgeDirectionType(const int &,
+                              const int &,
                               const int &dirType=false);
 
-    bool setEdgeWeight(const long int &, const long int &, const float &);
+    bool setEdgeWeight(const int &, const int &, const float &);
 
-    void setEdgeLabel(const long int &, const long int&, const QString &);
+    void setEdgeLabel(const int &, const int&, const QString &);
 
-    void setEdgeColor(const long int &, const long int&, const QString &);
+    void setEdgeColor(const int &, const int&, const QString &);
 
     void setEdgeClicked(GraphicsEdge *, const bool &openMenu=false);
 
-    void setEdgeOffsetFromNode(const long int &source,
-                               const long int &target,
+    void setEdgeOffsetFromNode(const int &source,
+                               const int &target,
                                const int &offset);
     void setEdgeArrowsVisibility(const bool &toggle);
     void setEdgeWeightNumbersVisibility (const bool &toggle);

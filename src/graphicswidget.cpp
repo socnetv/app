@@ -359,7 +359,7 @@ void GraphicsWidget::moveNode(const int &num, const qreal &x, const qreal &y){
  * Called from Graph signalEraseNode(int)
  * @param number
  */
-void GraphicsWidget::removeNode(const long int &number){
+void GraphicsWidget::removeNode(const int &number){
         qDebug() << "GW::removeNode() - node " << number
                  << " scene items: " << scene()->items().size()
                  << " view items: " << items().size()
@@ -388,8 +388,8 @@ void GraphicsWidget::removeNode(const long int &number){
  * @param sourceNode
  * @param targetNode
  */
-void GraphicsWidget::removeEdge(const long int &source,
-                                const long int &target,
+void GraphicsWidget::removeEdge(const int &source,
+                                const int &target,
                                 const bool &removeOpposite){
 
     edgeName = createEdgeName(source,target);
@@ -443,7 +443,7 @@ void GraphicsWidget::removeEdge(const long int &source,
  * @param node
   */
 void GraphicsWidget::removeItem( GraphicsNode *node){
-    long int i=node->nodeNumber();
+    int i=node->nodeNumber();
     qDebug() << "GW::removeItem(node) - number: " <<  i;
     if (firstNode == node) {
         qDebug() << "GW::removeItem(node) - number: " <<  i
@@ -561,7 +561,7 @@ void GraphicsWidget::removeItem( GraphicsNodeNumber *nodeNumber){
  * @param color
  * @return
  */
-bool GraphicsWidget::setNodeColor(const long int &nodeNumber,
+bool GraphicsWidget::setNodeColor(const int &nodeNumber,
                                   const QString &color){
     qDebug() << "GW::setNodeColor() : " << color;
     nodeHash.value(nodeNumber) -> setColor(color);
@@ -577,7 +577,7 @@ bool GraphicsWidget::setNodeColor(const long int &nodeNumber,
  * @param shape
  * @return
  */
-bool GraphicsWidget::setNodeShape(const long &nodeNumber, const QString &shape){
+bool GraphicsWidget::setNodeShape(const int &nodeNumber, const QString &shape){
     qDebug() << "GW::setNodeShape() : " << shape;
     nodeHash.value(nodeNumber) -> setShape(shape);
     return true;
@@ -619,7 +619,7 @@ void GraphicsWidget::setNodeLabelsVisibility (const bool &toggle){
  * @param label
  * @return
  */
-bool GraphicsWidget::setNodeLabel(long int nodeNumber, QString label){
+bool GraphicsWidget::setNodeLabel(const int &nodeNumber, QString label){
     qDebug() << "GW::setNodeLabel() : " << label;
     nodeHash.value(nodeNumber) -> setLabelText (label);
     return true;
@@ -676,7 +676,7 @@ void GraphicsWidget::setInitZoomIndex(int zoomIndex) {
 /**
 *	Changes the visibility of a Node
 */
-void GraphicsWidget::setNodeVisibility(long int number, bool toggle){
+void GraphicsWidget::setNodeVisibility(int number, bool toggle){
     if  ( nodeHash.contains (number) ) {
         qDebug() << "GW::setNodeVisibility() - node"
                  << number << " set to " << toggle;
@@ -694,7 +694,7 @@ void GraphicsWidget::setNodeVisibility(long int number, bool toggle){
  * @param size
  * @return
  */
-bool GraphicsWidget::setNodeSize(const long int &number, const int &size ){
+bool GraphicsWidget::setNodeSize(const int &number, const int &size ){
     qDebug () << "GW::setNodeSize() node: "<< number
               << " new size "<< size;
     if  ( nodeHash.contains (number) ) {
@@ -736,7 +736,7 @@ void GraphicsWidget::setNodeSizeAll(const int &size ){
  * @param number
  * @param size
  */
-bool GraphicsWidget::setNodeNumberSize(const long int &number, const int &size){
+bool GraphicsWidget::setNodeNumberSize(const int &number, const int &size){
     qDebug () << " GraphicsWidget::setNodeNumberSize() node number: "<< number
               << " new number size "<< size;
     if  ( nodeHash.contains (number) ) {
@@ -758,7 +758,7 @@ bool GraphicsWidget::setNodeNumberSize(const long int &number, const int &size){
  * @param number
  * @param distance
  */
-bool GraphicsWidget::setNodeNumberDistance( const long int &number, const int &distance ){
+bool GraphicsWidget::setNodeNumberDistance(const int &number, const int &distance ){
     qDebug () << "GW::setNodeNumberDistance() node number: "<< number
               << " new number distance "<< distance;
     if  ( nodeHash.contains (number) ) {
@@ -782,7 +782,7 @@ bool GraphicsWidget::setNodeNumberDistance( const long int &number, const int &d
  * @param number
  * @param color
  */
-bool GraphicsWidget::setNodeLabelColor(const long int &number, const QString &color){
+bool GraphicsWidget::setNodeLabelColor(const int &number, const QString &color){
     qDebug () << "GW::setNodeLabelColor() - node number: "<< number
               << " new Label color"<< color;
     if  ( nodeHash.contains (number) ) {
@@ -801,7 +801,7 @@ bool GraphicsWidget::setNodeLabelColor(const long int &number, const QString &co
  * @param number
  * @param size
  */
-bool GraphicsWidget::setNodeLabelSize(const long int &number, const int &size){
+bool GraphicsWidget::setNodeLabelSize(const int &number, const int &size){
     qDebug () << "GW::setNodeLabelSize() - node number: "<< number
               << " new Label size "<< size;
     if  ( nodeHash.contains (number) ) {
@@ -825,7 +825,7 @@ bool GraphicsWidget::setNodeLabelSize(const long int &number, const int &size){
  * @param number
  * @param distance
  */
-bool GraphicsWidget::setNodeLabelDistance( const long int &number, const int &distance ){
+bool GraphicsWidget::setNodeLabelDistance( const int &number, const int &distance ){
     qDebug () << "GW::setNodeLabelDistance() - node number: "<< number
               << " new label distance "<< distance;
     if  ( nodeHash.contains (number) ) {
@@ -893,8 +893,8 @@ void GraphicsWidget::setNodesMarked(QList<int> list){
  * @param target
  * @param label
  */
-void GraphicsWidget::setEdgeLabel(const long int &source,
-                                  const long int &target,
+void GraphicsWidget::setEdgeLabel(const int &source,
+                                  const int &target,
                                   const QString &label){
 
     edgeName = createEdgeName( source, target );
@@ -915,8 +915,8 @@ void GraphicsWidget::setEdgeLabel(const long int &source,
  * @param target
  * @param color
  */
-void GraphicsWidget::setEdgeColor(const long int &source,
-                                  const long int &target,
+void GraphicsWidget::setEdgeColor(const int &source,
+                                  const int &target,
                                   const QString &color){
 
     edgeName =  createEdgeName( source, target );
@@ -940,8 +940,8 @@ void GraphicsWidget::setEdgeColor(const long int &source,
  * @param directionType
  * @return
  */
-bool GraphicsWidget::setEdgeDirectionType(const long int &source,
-                                          const long int &target,
+bool GraphicsWidget::setEdgeDirectionType(const int &source,
+                                          const int &target,
                                           const int &dirType){
     qDebug() << "GW::setEdgeDirectionType() : "
              << source
@@ -972,8 +972,8 @@ bool GraphicsWidget::setEdgeDirectionType(const long int &source,
  * @param weight
  * @return
  */
-bool GraphicsWidget::setEdgeWeight(const long int &source,
-                                   const long int &target,
+bool GraphicsWidget::setEdgeWeight(const int &source,
+                                   const int &target,
                                    const float &weight){
 
     edgeName = createEdgeName( source, target );
@@ -1026,8 +1026,8 @@ void GraphicsWidget::setEdgeArrowsVisibility(const bool &toggle){
  * @param target
  * @param offset
  */
-void GraphicsWidget::setEdgeOffsetFromNode(const long int &source,
-                                           const long int &target,
+void GraphicsWidget::setEdgeOffsetFromNode(const int &source,
+                                           const int &target,
                                            const int &offset){
     qDebug() << "GW::setEdgeOffsetFromNode() : " << source << "->" << target
              << " = " << offset;

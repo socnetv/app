@@ -5047,23 +5047,23 @@ void MainWindow::initSignalSlots() {
     connect( activeGraph,&Graph::signalRemoveNode,
              graphicsWidget,  &GraphicsWidget::removeNode  );
 
-    connect( activeGraph, SIGNAL( setVertexVisibility(long int, bool)  ),
-             graphicsWidget, SLOT(  setNodeVisibility (long int ,  bool) ) );
+    connect( activeGraph, SIGNAL( setVertexVisibility(int, bool)  ),
+             graphicsWidget, SLOT(  setNodeVisibility (int ,  bool) ) );
 
-    connect( activeGraph, SIGNAL( setNodeSize(const long int &, const int &)  ),
-             graphicsWidget, SLOT(  setNodeSize (const long int &, const int &) ) );
+    connect( activeGraph, SIGNAL( setNodeSize(const int &, const int &)  ),
+             graphicsWidget, SLOT(  setNodeSize (const int &, const int &) ) );
 
-    connect( activeGraph, SIGNAL( setNodeColor(long int,QString))  ,
-             graphicsWidget, SLOT(  setNodeColor(long int, QString) ) );
+    connect( activeGraph, SIGNAL( setNodeColor(const int &,QString))  ,
+             graphicsWidget, SLOT(  setNodeColor(const int &, QString) ) );
 
-    connect( activeGraph, SIGNAL( setNodeShape(long int,QString))  ,
-             graphicsWidget, SLOT(  setNodeShape(long int, QString) ) );
+    connect( activeGraph, SIGNAL( setNodeShape(const int &,QString))  ,
+             graphicsWidget, SLOT(  setNodeShape(const int &, QString) ) );
 
-    connect( activeGraph, SIGNAL( setNodeNumberSize(const long int &, const int &)  ),
-             graphicsWidget, SLOT(  setNodeNumberSize (const long int &, const int &) ) );
+    connect( activeGraph, SIGNAL( setNodeNumberSize(const int &, const int &)  ),
+             graphicsWidget, SLOT(  setNodeNumberSize (const int &, const int &) ) );
 
-    connect( activeGraph, SIGNAL( setNodeNumberDistance(const long int &, const int &)  ),
-             graphicsWidget, SLOT( setNodeNumberDistance (const long int &, const int &) ) );
+    connect( activeGraph, SIGNAL( setNodeNumberDistance(const int &, const int &)  ),
+             graphicsWidget, SLOT( setNodeNumberDistance (const int &, const int &) ) );
 
     connect( activeGraph, &Graph::setNodeLabel ,
              graphicsWidget, &GraphicsWidget::setNodeLabel );
@@ -5071,11 +5071,11 @@ void MainWindow::initSignalSlots() {
     connect( activeGraph,&Graph::setNodeLabelColor,
              graphicsWidget,  &GraphicsWidget::setNodeLabelColor  );
 
-    connect( activeGraph, SIGNAL( setNodeLabelSize(const long int &, const int &)  ),
-             graphicsWidget, SLOT(  setNodeLabelSize (const long int &, const int &) ) );
+    connect( activeGraph, SIGNAL( setNodeLabelSize(const int &, const int &)  ),
+             graphicsWidget, SLOT(  setNodeLabelSize (const int &, const int &) ) );
 
-    connect( activeGraph, SIGNAL( setNodeLabelDistance(const long int &, const int &)  ),
-             graphicsWidget, SLOT( setNodeLabelDistance (const long int &, const int &) ) );
+    connect( activeGraph, SIGNAL( setNodeLabelDistance(const int &, const int &)  ),
+             graphicsWidget, SLOT( setNodeLabelDistance (const int &, const int &) ) );
 
 
 
@@ -5095,33 +5095,33 @@ void MainWindow::initSignalSlots() {
                                              const bool&) )  ) ;
 
 
-    connect( activeGraph, SIGNAL( setEdgeWeight(const long int &,
-                                                   const long int &,
+    connect( activeGraph, SIGNAL( setEdgeWeight(const int &,
+                                                   const int &,
                                                    const float &)),
-             graphicsWidget, SLOT( setEdgeWeight(const long int &,
-                                                const long int &,
+             graphicsWidget, SLOT( setEdgeWeight(const int &,
+                                                const int &,
                                                 const float &) ) );
 
-    connect( activeGraph, SIGNAL( signalEdgeType(const long int &,
-                                                 const long int &,
+    connect( activeGraph, SIGNAL( signalEdgeType(const int &,
+                                                 const int &,
                                                  const int &)),
-             graphicsWidget, SLOT( setEdgeDirectionType(const long int &,
-                                                        const long int &,
+             graphicsWidget, SLOT( setEdgeDirectionType(const int &,
+                                                        const int &,
                                                         const int &) ) );
 
-    connect( activeGraph, SIGNAL( setEdgeColor(const long int &,
-                                                   const long int &,
+    connect( activeGraph, SIGNAL( setEdgeColor(const int &,
+                                                   const int &,
                                                    const QString &)),
-             graphicsWidget, SLOT( setEdgeColor(const long int &,
-                                                const long int &,
+             graphicsWidget, SLOT( setEdgeColor(const int &,
+                                                const int &,
                                                 const QString &) ) );
 
 
-    connect( activeGraph, SIGNAL( setEdgeLabel(const long int &,
-                                                   const long int &,
+    connect( activeGraph, SIGNAL( setEdgeLabel(const int &,
+                                                   const int &,
                                                    const QString &)),
-             graphicsWidget, SLOT( setEdgeLabel(const long int &,
-                                                const long int &,
+             graphicsWidget, SLOT( setEdgeLabel(const int &,
+                                                const int &,
                                                 const QString &) ) );
 
 
@@ -11547,7 +11547,7 @@ void MainWindow::slotAnalyzeDistance(){
         return;
     }
     bool ok=false;
-    long int  min=1, max=1, i=-1, j=-1;
+    int  min=1, max=1, i=-1, j=-1;
     min=activeGraph->vertexNumberMin();
     max=activeGraph->vertexNumberMax();
     i=QInputDialog::getInt(this, tr("Distance between two nodes"),

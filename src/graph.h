@@ -116,11 +116,11 @@ class QPointF;
 
 typedef QList<GraphVertex*> VList;
 typedef QHash <QString, int> H_StrToInt;
-typedef QHash <long int, long int> H_Int;
-typedef QHash <float, long int> H_f_i;
+typedef QHash <int, int> H_Int;
+typedef QHash <float, int> H_f_i;
 typedef QPair <float, bool> pair_f_b;
 typedef QPair <int, pair_f_b > pair_i_fb;
-typedef QHash < int, pair_i_fb > H_edges;
+typedef QHash <int, pair_i_fb > H_edges;
 typedef QHash<QString, bool> H_StrToBool;
 typedef QList<int> L_int;
 typedef QVector<int> V_int;
@@ -346,7 +346,7 @@ signals:
                     );
 
     //signal to GW to erase a node
-    void signalRemoveNode (long int );
+    void signalRemoveNode (int );
 
     //signal GW to draw an edge
     void signalDrawEdge ( const int &v1,
@@ -360,31 +360,31 @@ signals:
                           const bool &weightNumbers=false);
 
     //signal to GW
-    void signalRemoveEdge(const long int &v1, const long int &v2, const bool &removeOpposite);
+    void signalRemoveEdge(const int &v1, const int &v2, const bool &removeOpposite);
 
     void setEdgeVisibility (int, int, int, bool);			// emitted from each GraphVertex
-    void setVertexVisibility(long int, bool);		//notifies GW to disable a node
+    void setVertexVisibility(int, bool);		//notifies GW to disable a node
     void setNodePos(const int &, const qreal &, const qreal &);
     void signalNodesFound(const QList<int> foundList);
-    void setNodeSize(const long int &v, const int &size);
-    void setNodeShape(const long int v, const QString &shape);
-    void setNodeColor(const long int v, const QString &color);
-    void setNodeLabel(long int, QString);
-    void setNodeNumberSize(const long int &, const int &);
-    void setNodeNumberDistance(const long int &, const int &);
-    void setNodeLabelSize(const long int &, const int &);
-    void setNodeLabelColor(const long int &, const QString &color);
-    void setNodeLabelDistance(const long int &, const int &);
+    void setNodeSize(const int &v, const int &size);
+    void setNodeShape(const int &v, const QString &shape);
+    void setNodeColor(const int &v, const QString &color);
+    void setNodeLabel(const int &v, QString);
+    void setNodeNumberSize(const int &, const int &);
+    void setNodeNumberDistance(const int &, const int &);
+    void setNodeLabelSize(const int &, const int &);
+    void setNodeLabelColor(const int &, const QString &color);
+    void setNodeLabelDistance(const int &, const int &);
 
-    void setEdgeWeight (const long int &v1, const long int &v2, const float &weight);
-    void signalEdgeType(const long int &v1,
-                        const long int &v2,
+    void setEdgeWeight (const int &v1, const int &v2, const float &weight);
+    void signalEdgeType(const int &v1,
+                        const int &v2,
                         const int &type);
-    void setEdgeColor(const long int &v1,
-                         const long int &v2,
+    void setEdgeColor(const int &v1,
+                         const int &v2,
                          const QString &color);
-    void setEdgeLabel (const long int &v1,
-                       const long int &v2,
+    void setEdgeLabel (const int &v1,
+                       const int &v2,
                        const QString &label);
     void addGuideCircle(const double&, const double&, const double&);
     void addGuideHLine (const double&y0);
@@ -451,21 +451,21 @@ public:
     int vertexDegreeIn(int);
     QList<int> vertexNeighborhoodList(const int &v1);
 
-    bool vertexIsolated(const long int &v1) const;
+    bool vertexIsolated(const int &v1) const;
 
-    int vertexExists(const long int &v1 );
+    int vertexExists(const int &v1 );
     int vertexExists(const QString &label);
 
     bool vertexFindByNumber (const QStringList &numList) ;
     bool vertexFindByLabel (const QStringList &labelList) ;
     bool vertexFindByIndexScore(const int &index, const QStringList &thresholds);
 
-    void vertexRemove (const long int &v1);
+    void vertexRemove (const int &v1);
 
-    void vertexSizeInit (const long int);
-    void vertexSizeSet(const long int &v, const int &newsize );
+    void vertexSizeInit (const int);
+    void vertexSizeSet(const int &v, const int &newsize );
     void vertexSizeAllSet(const int newsize);
-    int vertexSize(const long int &v);
+    int vertexSize(const int &v);
 
     void vertexShapeInit (const QString);
     void vertexShapeSet(const int v, const QString shape);
@@ -473,30 +473,30 @@ public:
     QString vertexShape(const int &v);
 
     void vertexColorInit (const QString &color);
-    void vertexColorSet(const long &v, const QString &color);
+    void vertexColorSet(const int &v, const QString &color);
     void vertexColorAllSet(const QString &color);
-    QColor vertexColor(const long int &v);
+    QColor vertexColor(const int &v);
 
     void vertexNumberColorInit ( QString color);
     void vertexNumberSizeInit (const int &size);
-    void vertexNumberSizeSet(const long int &v, const int &newsize );
+    void vertexNumberSizeSet(const int &v, const int &newsize );
     void vertexNumberSizeSetAll (const int &size);
     void vertexNumberDistanceInit (const int &distance);
-    void vertexNumberDistanceSet(const long int &v, const int &newDistance );
+    void vertexNumberDistanceSet(const int &v, const int &newDistance );
     void vertexNumberDistanceSetAll (const int &newDistance);
 
 
     void vertexLabelsVisibilitySet(bool toggle);
     void vertexLabelSizeInit(int newSize);
-    void vertexLabelSizeSet(const long int &v, const int &newsize );
+    void vertexLabelSizeSet(const int &v, const int &newsize );
     void vertexLabelSizeAllSet (const int &);
     void vertexLabelColorInit(QString color);
     void vertexLabelSet(int v, QString label);
     void vertexLabelColorSet(int v1, QString color);
     void vertexLabelColorAllSet(const QString &color);
-    QString vertexLabel(const long int &v1);
+    QString vertexLabel(const int &v1);
     void vertexLabelDistanceInit (const int &distance);
-    void vertexLabelDistanceSet(const long int &v, const int &newDistance );
+    void vertexLabelDistanceSet(const int &v, const int &newDistance );
     void vertexLabelDistanceAllSet (const int &newDistance);
 
 
@@ -549,29 +549,29 @@ public:
     /* EDGES */
     int edgesEnabled();
     ClickedEdge edgeClicked();
-    float edgeExists(const long &v1, const long &v2, const bool &checkReciprocal=false);
+    float edgeExists(const int &v1, const int &v2, const bool &checkReciprocal=false);
 
-    void edgeRemove (const long int &v1, const long int &v2,
+    void edgeRemove (const int &v1, const int &v2,
                      const bool &removeOpposite=false);
-    bool edgeSymmetric(const long &v1, const long &v2);
-    void edgeTypeSet(const long int &v1,
-                     const long int &v2,
+    bool edgeSymmetric(const int &v1, const int &v2);
+    void edgeTypeSet(const int &v1,
+                     const int &v2,
                      const float &w,
                      const int &dirType=EDGE_DIRECTED);
 
-    void edgeWeightSet (const long int &v1, const long int &v2,
+    void edgeWeightSet (const int &v1, const int &v2,
                         const float &w,
                         const bool &undirected=false);
-    float edgeWeight(const long int &v1, const long int &v2) const;
+    float edgeWeight(const int &v1, const int &v2) const;
     void edgeWeightNumbersVisibilitySet (const bool &toggle);
 
-    void edgeLabelSet(const long int &v1, const long int &v2, const QString &label);
-    QString edgeLabel (const long int &v1, const long int &v2) const;
+    void edgeLabelSet(const int &v1, const int &v2, const QString &label);
+    QString edgeLabel (const int &v1, const int &v2) const;
     void edgeLabelsVisibilitySet (const bool &toggle);
 
     void edgeColorInit(const QString &);
-    void edgeColorSet(const long int &v1, const long int &v2, const QString &color);
-    QString edgeColor (const long int &v1, const long int &v2);
+    void edgeColorSet(const int &v1, const int &v2, const QString &color);
+    QString edgeColor (const int &v1, const int &v2);
     bool edgeColorAllSet(const QString &color, const int &threshold=RAND_MAX);
 
     //GRAPH methods
@@ -860,7 +860,7 @@ public:
                                      const bool &considerWeights=true,
                                      const bool &inverseWeights=false,
                                      const bool &dropIsolates=false);
-    float clusteringCoefficientLocal(const long int &v1);
+    float clusteringCoefficientLocal(const int &v1);
     float clusteringCoefficient (const bool updateProgress=false);
 
     bool graphTriadCensus();
@@ -1093,7 +1093,7 @@ private:
     /** General & initialisation variables */
 
     int graphModifiedFlag;
-    long int m_totalVertices, m_totalEdges, m_graphDiameter, initVertexSize;
+    int m_totalVertices, m_totalEdges, m_graphDiameter, initVertexSize;
     int initVertexLabelSize, initVertexNumberSize;
     int initVertexNumberDistance, initVertexLabelDistance;
     bool order;

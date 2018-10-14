@@ -31,7 +31,7 @@
 #include "graphvertex.h"
 
 GraphVertex::GraphVertex(Graph* parent,
-               const long &name,
+               const int &name,
                const int &val,
                const int &relation,
                const int &size,
@@ -86,7 +86,7 @@ GraphVertex::GraphVertex(Graph* parent,
  * @brief constructor with default values
  * @param name
  */
-GraphVertex::GraphVertex(const long int &name) {
+GraphVertex::GraphVertex(const int &name) {
     qDebug() << "GraphVertex::GraphVertex() - "<<  name << " using default values";
     m_name=name;
 	m_value=1;
@@ -139,7 +139,7 @@ QString GraphVertex::colorToPajek(){
  * @param target
  * @param weight
  */
-void GraphVertex::edgeAddTo (const long &v2, const float &weight) {
+void GraphVertex::edgeAddTo (const int &v2, const float &weight) {
     qDebug() <<"GraphVertex::edgeAddTo() - new outbound edge"
             << name() << " -> "<< v2 << " weight "<< weight
                << " relation " << m_curRelation;
@@ -154,7 +154,7 @@ void GraphVertex::edgeAddTo (const long &v2, const float &weight) {
  * @param target
  * @param status
  */
-void GraphVertex::setOutEdgeEnabled (long int target, bool status){
+void GraphVertex::setOutEdgeEnabled (const int target, bool status){
     qDebug () << "GraphVertex::setOutEdgeEnabled - set outEdge to " << target
               << " as " << status
                  << ". Finding outLink...";
@@ -189,7 +189,7 @@ void GraphVertex::setOutEdgeEnabled (long int target, bool status){
  * @param source
  * @param weight
  */
-void GraphVertex::edgeAddFrom (const long int &v1, const float &weight) {
+void GraphVertex::edgeAddFrom (const int &v1, const float &weight) {
     qDebug() <<"GraphVertex::edgeAddFrom() - new inbound edge"
             << name() << " <- "<< v1 << " weight "<< weight
                << " relation " << m_curRelation;
@@ -199,7 +199,7 @@ void GraphVertex::edgeAddFrom (const long int &v1, const float &weight) {
 
 
 
-void GraphVertex::changeOutEdgeWeight(long int target, float weight){
+void GraphVertex::changeOutEdgeWeight(const int target, float weight){
     qDebug() << "GraphVertex::changeEdgeWeightTo " << target << " weight " << weight ;
     qDebug() << " *** m_outEdges.count " <<
                 m_outEdges.count();
@@ -227,7 +227,7 @@ void GraphVertex::changeOutEdgeWeight(long int target, float weight){
  * @brief Removes outbound edge to vertex v2
  * @param v2
  */
-void GraphVertex::edgeRemoveTo (long int v2) {
+void GraphVertex::edgeRemoveTo (const int v2) {
     qDebug() << "GraphVertex: edgeRemoveTo() - vertex " << m_name
              << " has " <<outEdges() << " out-links. Removing link to "<< v2 ;
 
@@ -259,7 +259,7 @@ void GraphVertex::edgeRemoveTo (long int v2) {
  * @brief Removes the inbound edge from vertex v2
  * @param v2
  */
-void GraphVertex::edgeRemoveFrom(long int v2){
+void GraphVertex::edgeRemoveFrom(const int v2){
     qDebug() << "GraphVertex::edgeRemoveFrom() - vertex " << m_name
              << " has " <<  inEdges() << "  in-edges. RemovingEdgeFrom " << v2 ;
 
@@ -416,9 +416,9 @@ void GraphVertex::edgeFilterByRelation(int relation, bool status ){
 /**
  * @brief Returns the number of active outbound arcs, aka the number of
  * outEdges, from this vertex for the current relation
- * @return long int
+ * @return int
  */
-long int GraphVertex::outEdges() {
+int GraphVertex::outEdges() {
     m_outEdgesCounter = 0;
     int relation=0;
     bool edgeStatus = false;
@@ -441,9 +441,9 @@ long int GraphVertex::outEdges() {
 /**
  * @brief Returns the number of active outbound arcs
  * Needs to have outEdges called before the call to this method
- * @return long int
+ * @return int
  */
-long int GraphVertex::outEdgesConst() const {
+int GraphVertex::outEdgesConst() const {
     return m_outEdgesCounter;
 }
 
@@ -606,9 +606,9 @@ QList<int> GraphVertex::neighborhoodList(){
 /**
  * @brief Returns the number of active inbound arcs, aka the number of
  * inEdges, to this vertex for the current relation
- * @return long int
+ * @return int
  */
-long int GraphVertex::inEdges() {
+int GraphVertex::inEdges() {
     m_inEdgesCounter = 0;
     int relation=0;
     bool edgeStatus = false;
@@ -662,9 +662,9 @@ QHash<int,float>* GraphVertex::inEdgesEnabledHash() {
 /**
  * @brief Returns the number of active inbound arcs
  * Needs to have inEdges called before the call to this method
- * @return long int
+ * @return int
  */
-long int GraphVertex::inEdgesConst() const {
+int GraphVertex::inEdgesConst() const {
     return m_inEdgesCounter;
 }
 
@@ -672,9 +672,9 @@ long int GraphVertex::inEdgesConst() const {
 
 /**
  * @brief Returns the degreeOut (the sum of all enabled outEdges weights) of this vertex
- * @return long int
+ * @return int
  */
-long int GraphVertex::degreeOut() {
+int GraphVertex::degreeOut() {
     qDebug() << "GraphVertex::degreeOut()";
     m_outDegree=0;
     float m_weight=0;
@@ -695,15 +695,15 @@ long int GraphVertex::degreeOut() {
     return m_outDegree;
 }
 
-long int GraphVertex::outDegreeConst() {
+int GraphVertex::outDegreeConst() {
     return m_outDegree;
 }
 
 /**
  * @brief Returns the degreeIn (the sum of all enabled inEdges weights) of this vertex
- * @return long int
+ * @return int
  */
-long int GraphVertex::degreeIn() {
+int GraphVertex::degreeIn() {
     qDebug() << "GraphVertex::degreeIn()";
     m_inDegree=0;
     float m_weight=0;
@@ -726,7 +726,7 @@ long int GraphVertex::degreeIn() {
 }
 
 
-long int GraphVertex::inDegreeConst() {
+int GraphVertex::inDegreeConst() {
     return m_inDegree;
 }
 
@@ -734,8 +734,7 @@ long int GraphVertex::inDegreeConst() {
 /**
     localDegree is the degreeOut + degreeIn minus the edges counted twice.
 */
-long int GraphVertex::localDegree(){
-	long int v2=0;
+int GraphVertex::localDegree(){  int v2=0;
     int relation = 0;
     bool edgeStatus=false;
     m_localDegree = (degreeOut() + degreeIn() );
@@ -765,7 +764,7 @@ long int GraphVertex::localDegree(){
  * @param v2
  * @return
  */
-float GraphVertex::hasEdgeTo(const long int &v2, const bool &allRelations){
+float GraphVertex::hasEdgeTo(const int &v2, const bool &allRelations){
     float m_weight=0;
     bool edgeStatus=false;
     H_edges::const_iterator it1=m_outEdges.find(v2);
@@ -808,7 +807,7 @@ float GraphVertex::hasEdgeTo(const long int &v2, const bool &allRelations){
  * @param v2
  * @return
  */
-float GraphVertex::hasEdgeFrom(const long int &v2, const bool &allRelations){
+float GraphVertex::hasEdgeFrom(const int &v2, const bool &allRelations){
     float m_weight=0;
     bool edgeStatus=false;
     H_edges::iterator it1=m_inEdges.find(v2);
@@ -854,7 +853,7 @@ float GraphVertex::hasEdgeFrom(const long int &v2, const bool &allRelations){
  * @param v1
  * @param dist
  */
-void GraphVertex::setDistance (const long int &v1, const float &d) {
+void GraphVertex::setDistance (const int &v1, const float &d) {
 //    qDebug() <<"GraphVertex::setDistance() - dist"
 //            << name() << " --> "<< v1 << " = "<< d
 //               << " relation " << m_curRelation;
@@ -876,7 +875,7 @@ void GraphVertex::reserveDistance (const int &N) {
  * If d to v1 has not been set previously, then return RAND_MAX
  * @param v1
  */
-float GraphVertex::distance (const long int &v1) {
+float GraphVertex::distance (const int &v1) {
     float d=RAND_MAX;
     int relation=0;
     H_distance::const_iterator it1=m_distance.constFind(v1);
@@ -911,7 +910,7 @@ void GraphVertex::clearDistance() {
  * @param v1
  * @param sp
  */
-void GraphVertex::setShortestPaths (const long int &v1, const int &sp) {
+void GraphVertex::setShortestPaths (const int &v1, const int &sp) {
 //    qDebug() <<"GraphVertex::setShortestPaths() - sp"
 //            << name() << " --> "<< v1 << " = "<< sp
 //               << " relation " << m_curRelation;
@@ -923,7 +922,7 @@ void GraphVertex::setShortestPaths (const long int &v1, const int &sp) {
  * If it has not been set previously, then return 0
  * @param v1
  */
-int GraphVertex::shortestPaths (const long int &v1) {
+int GraphVertex::shortestPaths (const int &v1) {
     int sp=0;
     int relation=0;
     H_shortestPaths::const_iterator it1=m_shortestPaths.constFind(v1);
@@ -993,7 +992,7 @@ void GraphVertex::clearPs()	{
 	myPs.clear();
 }
 	
-void GraphVertex::appendToPs(long  int vertex ) {
+void GraphVertex::appendToPs(int vertex ) {
     qDebug()<<"GraphVertex::appendToPs() - vertex:"
            << name() << "adding" <<  vertex << " to myPs";
 	myPs.append(vertex); 
