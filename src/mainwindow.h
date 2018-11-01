@@ -80,23 +80,32 @@ QT_END_NAMESPACE
 using namespace std;
 
 class GraphicsWidget;
+
 class GraphicsEdge;
 class GraphicsNode;
 
-class DialogWebCrawler;
 class DialogNodeFind;
 class DialogNodeEdit;
+
+class DialogEdgeDichotomization;
+
 class DialogPreviewFile;
+
 class DialogRandErdosRenyi;
 class DialogRandSmallWorld;
 class DialogRandScaleFree;
+class DialogRandRegular;
+class DialogRandLattice;
+
 class DialogSimilarityPearson;
 class DialogSimilarityMatches;
 class DialogDissimilarities;
 class DialogClusteringHierarchical;
-class DialogRandRegular;
-class DialogRandLattice;
+
+class DialogWebCrawler;
+
 class DialogSettings;
+
 class TextEditor;
 
 
@@ -318,6 +327,9 @@ public slots:
     void slotEditEdgeSymmetrizeCocitation();
     void slotEditEdgeUndirectedAll(const bool &toggle);
 
+    void slotEditEdgeDichotomizationDialog();
+    void slotEditEdgeDichotomization(const float threshold);
+
     void slotFilterNodes();
     void slotEditFilterNodesIsolates(bool checked);
     void slotEditFilterEdgesByWeightDialog();
@@ -528,6 +540,9 @@ private:
 
     DialogNodeEdit *m_nodeEditDialog;
     DialogNodeFind *m_nodeFindDialog;
+
+    DialogEdgeDichotomization *m_edgeDichotomizationDialog;
+
     DialogRandErdosRenyi *m_randErdosRenyiDialog;
     DialogRandSmallWorld *m_randSmallWorldDialog;
     DialogRandScaleFree *m_randScaleFreeDialog;
@@ -612,6 +627,7 @@ private:
     QAction *editFilterEdgesUnilateralAct;
     QAction *transformNodes2EdgesAct, *editEdgeSymmetrizeAllAct;
     QAction *editEdgeSymmetrizeStrongTiesAct, *editEdgeUndirectedAllAct;
+    QAction *editEdgeDichotomizeAct;
     QAction *changeBackColorAct, *editNodeColorAll, *editEdgeColorAllAct,
             *editNodeNumbersColorAct,*editNodeLabelsColorAct,
             *editEdgesCocitationAct;

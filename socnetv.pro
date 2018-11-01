@@ -41,20 +41,21 @@ QT += printsupport
 
 INCLUDEPATH  += ./src
 FORMS += src/forms/dialogfilteredgesbyweight.ui \
+    src/forms/dialogsettings.ui \
     src/forms/dialogwebcrawler.ui \
-    src/forms/dialognodeedit.ui \
     src/forms/dialogdatasetselect.ui \
     src/forms/dialograndsmallworld.ui \
     src/forms/dialograndscalefree.ui \
     src/forms/dialogranderdosrenyi.ui \
     src/forms/dialograndregular.ui \
-    src/forms/dialogsettings.ui \
+    src/forms/dialograndlattice.ui \
     src/forms/dialogsimilaritypearson.ui \
     src/forms/dialogsimilaritymatches.ui \
     src/forms/dialogdissimilarities.ui \
     src/forms/dialogclusteringhierarchical.ui \  
-    src/forms/dialograndlattice.ui \
-    src/forms/dialognodefind.ui
+    src/forms/dialognodeedit.ui \
+    src/forms/dialognodefind.ui \
+    src/forms/dialogedgedichotomization.ui
 
 HEADERS += src/graphicswidget.h \
     src/graphicsedge.h \
@@ -72,6 +73,7 @@ HEADERS += src/graphicswidget.h \
     src/parser.h \
     src/webcrawler.h \
     src/forms/dialogfilteredgesbyweight.h \
+    src/forms/dialogedgedichotomization.h \
     src/forms/dialogwebcrawler.h \
     src/forms/dialogdatasetselect.h \
     src/forms/dialogpreviewfile.h \
@@ -105,6 +107,7 @@ SOURCES += src/graphicswidget.cpp \
     src/parser.cpp \
     src/webcrawler.cpp \
     src/forms/dialogfilteredgesbyweight.cpp \
+    src/forms/dialogedgedichotomization.cpp \
     src/forms/dialogwebcrawler.cpp \
     src/forms/dialogdatasetselect.cpp \
     src/forms/dialogpreviewfile.cpp \

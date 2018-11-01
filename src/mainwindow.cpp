@@ -47,18 +47,23 @@
 #include "graphicsedge.h"
 #include "graphicsnodenumber.h"
 
+#include "forms/dialogsettings.h"
 
 #include "forms/dialogwebcrawler.h"
-#include "forms/dialogfilteredgesbyweight.h"
 #include "forms/dialogpreviewfile.h"
+
 #include "forms/dialogranderdosrenyi.h"
 #include "forms/dialograndsmallworld.h"
 #include "forms/dialograndscalefree.h"
 #include "forms/dialograndregular.h"
 #include "forms/dialograndlattice.h"
-#include "forms/dialogsettings.h"
+
 #include "forms/dialognodefind.h"
 #include "forms/dialognodeedit.h"
+
+#include "forms/dialogfilteredgesbyweight.h"
+#include "forms/dialogedgedichotomization.h"
+
 #include "forms/dialogsimilaritypearson.h"
 #include "forms/dialogsimilaritymatches.h"
 #include "forms/dialogclusteringhierarchical.h"
@@ -1446,6 +1451,8 @@ void MainWindow::initActions(){
                                          "Changes the color of all Edges"));
     connect(editEdgeColorAllAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeColorAll()));
 
+
+
     editEdgeSymmetrizeAllAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Symmetrize Directed Edges"), this);
     editEdgeSymmetrizeAllAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_S));
     editEdgeSymmetrizeAllAct->setStatusTip(tr("Make all arcs in this relation reciprocal (thus, a symmetric graph)."));
@@ -1497,7 +1504,7 @@ void MainWindow::initActions(){
                                             "connecting actors that are cocitated by others."));
     editEdgesCocitationAct->setWhatsThis(
                 tr("Symmetrize Edges by examing Strong Ties\n\n"
-                   "Create a new symmetric relation by connecting actors "
+                   "Creates a new symmetric relation by connecting actors "
                    "that are cocitated by others. \n"
                    "In the new relation, an edge will exist between actor i and "
                    "actor j only if C(i,j) > 0, where C the Cocitation Matrix. "
@@ -1507,6 +1514,27 @@ void MainWindow::initActions(){
                    "The resulting relation is symmetric."));
     connect(editEdgesCocitationAct, SIGNAL(triggered()),
             this, SLOT(slotEditEdgeSymmetrizeCocitation()));
+
+
+    editEdgeDichotomizeAct= new QAction(QIcon(":/images/dichotomization.png"), tr("Dichotomization"), this);
+    editEdgeDichotomizeAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_D));
+    editEdgeDichotomizeAct->setStatusTip(tr("Create a new binary relation/graph in a valued network "
+                                            "using edge dichotomization."));
+    editEdgeDichotomizeAct->setWhatsThis(
+                tr("Dichotomize Edges\n\n"
+                   "Creates a new binary relation in a valued network using "
+                   "edge dichotomization according to threshold value. \n"
+                   "In the new dichotomized relation, an edge will exist between actor i and "
+                   "actor j only if e(i,j) > threshold, where threshold is a user-defined value."
+                   "Thus the dichotomization procedure is as follows: "
+                   "Choose a threshold value, set all ties with equal or higher values "
+                   "to equal one, and all lower to equal zero."
+                   "The result is a binary (dichotomized) graph. "
+                   "The process is also known as compression and slicing"));
+    connect(editEdgeDichotomizeAct, SIGNAL(triggered()),
+            this, SLOT(slotEditEdgeDichotomizationDialog()));
+
+
 
 
     transformNodes2EdgesAct = new QAction( tr("Transform Nodes to Edges"),this);
@@ -10079,6 +10107,55 @@ void MainWindow::slotEditEdgeSymmetrizeCocitation(){
 
 
 
+
+/**
+ * @brief Opens up the edge dichotomization dialog
+  */
+void MainWindow::slotEditEdgeDichotomizationDialog(){
+
+    // @TODO: Check if the network is already binary and abord?
+
+    if ( activeEdges() ==0 )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
+        return;
+    }
+    qDebug() << "MW: slotEditEdgeDichotomizationDialog() - "
+                "spawning edgeDichotomizationDialog";
+
+    m_edgeDichotomizationDialog = new DialogEdgeDichotomization(this) ;
+
+    connect( m_edgeDichotomizationDialog, &DialogEdgeDichotomization::userChoices,
+             this, &MainWindow::slotEditEdgeDichotomization);
+
+    m_edgeDichotomizationDialog->exec();
+
+    statusMessage( tr("Edge dichotomization dialog opened. Ready. ") );
+
+}
+
+
+
+/**
+ * @brief Creates a new binary relation in a valued network using
+ * edge dichotomization according to threshold value.
+  */
+void MainWindow::slotEditEdgeDichotomization(const float threshold){
+    if ( activeEdges() ==0 )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
+        return;
+    }
+    qDebug("MW: slotEditEdgeDichotomization() calling graphDichotomization()");
+    //activeGraph->graphDichotomization();
+    slotHelpMessageToUser(USER_MSG_INFO,tr("New binary relation added."),
+                          tr("New dichotomized relation created"),
+                             tr("A new relation called \"%1\" has been added to the network. "
+                                "using the given dichotomization threshold. ").
+                          arg("Binary"));
+
+
+    statusMessage( tr("Edge dichotomization finished. Ready. ") );
+
+}
 
 
 /**
