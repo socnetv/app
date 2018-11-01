@@ -3553,11 +3553,15 @@ void MainWindow::initMenuBar() {
     editEdgeMenu -> addAction(editEdgeAddAct);
     editEdgeMenu -> addAction(editEdgeRemoveAct);
     editEdgeMenu -> addSeparator();
-    editEdgeMenu -> addAction (editEdgeSymmetrizeAllAct);
-    editEdgeMenu -> addAction (editEdgeSymmetrizeStrongTiesAct);
-    editEdgeMenu -> addAction (editEdgesCocitationAct);
     editEdgeMenu -> addAction (editEdgeUndirectedAllAct);
     editEdgeMenu -> addSeparator();
+    editEdgeMenu -> addAction (editEdgeSymmetrizeAllAct);
+    editEdgeMenu -> addAction (editEdgeSymmetrizeStrongTiesAct);
+    editEdgeMenu -> addSeparator();
+    editEdgeMenu -> addAction (editEdgeDichotomizeAct);
+    editEdgeMenu -> addSeparator();
+    editEdgeMenu -> addAction (editEdgesCocitationAct);
+
     editEdgeMenu -> addAction(editEdgeLabelAct);
     editEdgeMenu -> addAction(editEdgeColorAct);
     editEdgeMenu -> addAction(editEdgeWeightAct);
