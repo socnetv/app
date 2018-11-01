@@ -601,6 +601,8 @@ public:
 
     void graphCocitation();
 
+    void graphDichotomization(const float threshold);
+
     void graphUndirectedSet(const bool &toggle, const bool &signalMW=true);
     bool graphUndirected();
 

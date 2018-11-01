@@ -10140,8 +10140,8 @@ void MainWindow::slotEditEdgeDichotomizationDialog(){
 
 
 /**
- * @brief Creates a new binary relation in a valued network using
- * edge dichotomization according to threshold value.
+ * @brief Calls Graph::graphDichotomization() to create a new binary relation
+ * in a valued network using edge dichotomization according to threshold value.
   */
 void MainWindow::slotEditEdgeDichotomization(const float threshold){
     if ( activeEdges() ==0 )  {
@@ -10149,10 +10149,10 @@ void MainWindow::slotEditEdgeDichotomization(const float threshold){
         return;
     }
     qDebug("MW: slotEditEdgeDichotomization() calling graphDichotomization()");
-    //activeGraph->graphDichotomization();
+    activeGraph->graphDichotomization(threshold);
     slotHelpMessageToUser(USER_MSG_INFO,tr("New binary relation added."),
                           tr("New dichotomized relation created"),
-                             tr("A new relation called \"%1\" has been added to the network. "
+                             tr("A new relation called \"%1\" has been added to the network, "
                                 "using the given dichotomization threshold. ").
                           arg("Binary"));
 

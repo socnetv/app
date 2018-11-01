@@ -3723,7 +3723,83 @@ void Graph::graphCocitation(){
 }
 
 
+/**
+ * @brief Creates a new binary relation in a valued network using edge
+ * dichotomization according to the threshold value.
+ * @param threshold
+ */
+void Graph::graphDichotomization(const float threshold) {
+    qDebug()<< "Graph::graphDichotomization()"
+            << "initial relations"<<relations();
 
+    int y=0, v2=0, v1=0, weight;
+    float invertWeight=0;
+
+    VList::const_iterator it;
+
+    QHash<int,float> outEdgesAll;
+    QHash<int,float>::const_iterator it1;
+
+    QHash<QString,float> *binaryTies = new QHash<QString,float>;
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        v1 = (*it)->name();
+        qDebug() << "Graph::graphDichotomization() - v" << v1
+                    << "iterate over outEdges in all relations";
+        outEdgesAll=(*it)->outEdgesEnabledHash(false);
+        it1=outEdgesAll.cbegin();
+        while ( it1!=outEdgesAll.cend() ){
+            v2 = it1.key();
+            weight = it1.value();
+            y=vpos[ v2 ];
+            qDebug() << "Graph::graphDichotomization() - "
+                     << v1 << "->" << v2 << "=" << weight << "Checking opposite.";
+            if (weight>threshold) {
+                if (!binaryTies->contains(QString::number(v1)+"--"+QString::number(v2) ) ) {
+                    qDebug() << "Graph::graphDichotomization() - " << v1
+                             << "--" << v2 << " over threshold. Adding";
+                    binaryTies->insert(QString::number(v1)+"--"+QString::number(v2), 1);
+                }
+                else {
+                    qDebug() << "Graph::graphDichotomization() - " << v1
+                             << "--" << v2 << " exists. Binary Tie already found. Continue";
+                }
+            }
+            ++it1;
+        }
+    }
+
+
+    relationAdd("Binary-"+QString::number(threshold),true);
+
+    QHash<QString,float>::const_iterator it2;
+    it2=binaryTies->constBegin();
+    QStringList vertices;
+    qDebug() << "Graph::graphDichotomization() - creating binary tie edges";
+    while ( it2!=binaryTies->constEnd() ){
+        vertices = it2.key().split("--");
+        qDebug() << "Graph::graphDichotomization() - binary tie " <<it2.key()
+                 << "vertices.at(0)" << vertices.at(0)
+                 << "vertices.at(1)" << vertices.at(1);
+        v1 = (vertices.at(0)).toInt();
+        v2 = (vertices.at(1)).toInt();
+        qDebug() << "Graph::graphDichotomization() - calling edgeCreate for"
+                 << v1 << "--"<<v2;
+        edgeCreate( v1, v2, 1, initEdgeColor, EDGE_UNDIRECTED, true, false,
+                    QString::null, false);
+        ++it2;
+    }
+
+    //delete outEdgesAll;
+    delete binaryTies;
+    m_symmetric=true;
+
+    graphModifiedSet(GRAPH_CHANGED_EDGES);
+    qDebug()<< "Graph::graphDichotomization()"
+            << "final relations"<<relations();
+
+
+}
 
 /**
  * @brief Transforms the graph to undirected
