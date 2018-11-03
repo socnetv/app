@@ -4962,8 +4962,10 @@ void MainWindow::initWindowLayout() {
 
     qDebug () << "MW::initWindowLayout - resize to 1280x900";
     resize(1280,900);
+    setWindowState(windowState() ^ Qt::WindowFullScreen);
 
-    showMaximized();
+    //showMaximized();
+    //setGeometry(0, 0, 1200,600);
 
     qDebug () << "MW::initWindowLayout() - Finished";
 
