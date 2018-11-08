@@ -87,6 +87,7 @@ Graph::Graph() {
     calculatedDP=false;
     calculatedDC=false;
     calculatedIC=false;
+    calculatedEVC=false;
     calculatedCentralities=false;
     calculatedIRCC=false;
     calculatedPP=false;
@@ -345,6 +346,7 @@ void Graph::clear(const QString &reason) {
     calculatedDP=false;
     calculatedDC=false;
     calculatedIC=false;
+    calculatedEVC=false;
     calculatedIRCC=false;
     calculatedPP=false;
     calculatedPRP=false;
@@ -6251,7 +6253,7 @@ void Graph::writeCentralityEigenvector(const QString fileName,
     }
     QTextStream outText ( &file );
     outText.setCodec("UTF-8");
-    if (graphModified() || !calculatedIC ) {
+    if (graphModified() || !calculatedEVC ) {
             emit statusMessage ( (tr("Calculating EVC scores...")) );
             centralityEigenvector(considerWeights, inverseWeights,dropIsolates);
     }
@@ -6559,6 +6561,8 @@ void Graph::centralityEigenvector(const bool &considerWeights,
     // group eigenvector centralization measure is
     // S(cmax - c(vi)) divided by the maximum value possible,
     // where c(vi) is the eigenvector centrality of vertex vi.
+
+    calculatedEVC=true;
 
     emit signalProgressBoxUpdate( N );
     emit signalProgressBoxKill();
@@ -14385,6 +14389,7 @@ void Graph::graphSave(const QString &fileName,
             calculatedPP = false;
             calculatedIRCC = false;
             calculatedIC = false;
+            calculatedEVC=false;
             calculatedPRP = false;
         }
         graphModifiedSet(GRAPH_CHANGED_NONE);
