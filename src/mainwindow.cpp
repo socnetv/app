@@ -505,16 +505,16 @@ void MainWindow::slotOpenSettingsDialog() {
 
 
     connect( m_settingsDialog, &DialogSettings::setToolBar,
-             this, &MainWindow::slotOptionsToolbarVisibility);
+             this, &MainWindow::slotOptionsWindowToolbarVisibility);
 
     connect( m_settingsDialog, &DialogSettings::setStatusBar,
-             this, &MainWindow::slotOptionsStatusBarVisibility);
+             this, &MainWindow::slotOptionsWindowStatusbarVisibility);
 
     connect( m_settingsDialog, &DialogSettings::setLeftPanel,
-             this, &MainWindow::slotOptionsLeftPanelVisibility);
+             this, &MainWindow::slotOptionsWindowLeftPanelVisibility);
 
     connect( m_settingsDialog, &DialogSettings::setRightPanel,
-             this, &MainWindow::slotOptionsRightPanelVisibility);
+             this, &MainWindow::slotOptionsWindowRightPanelVisibility);
 
     connect( m_settingsDialog, &DialogSettings::setCanvasBgColor,
                      this, &MainWindow::slotOptionsBackgroundColor);
@@ -3344,6 +3344,23 @@ void MainWindow::initActions(){
     connect(backgroundImageAct, SIGNAL(triggered(bool)),
             this, SLOT(slotOptionsBackgroundImageSelect(bool)));
 
+
+    fullScreenModeAct = new QAction(tr("Full screen (this session)"),	this);
+    fullScreenModeAct->setShortcut(Qt::Key_F11);
+    fullScreenModeAct->setStatusTip(
+                tr("Toggle full screen mode (for this session only)"));
+    fullScreenModeAct->setWhatsThis(
+                tr("Full Screen Mode\n\n"
+                   "Enable to show application window in full screen mode. "
+                   "This setting will apply to this session only. \n"
+                   "To permanently change it, use Settings & Preferences"));
+    fullScreenModeAct->setCheckable(true);
+    fullScreenModeAct->setChecked(false);
+    connect(fullScreenModeAct, SIGNAL(triggered(bool)),
+            this, SLOT(slotOptionsWindowFullScreen(bool)));
+
+
+
     openSettingsAct = new QAction(QIcon(":/images/appsettings.png"), tr("Settings"),	this);
     openSettingsAct->setShortcut(Qt::CTRL + Qt::Key_Comma);
     openSettingsAct->setEnabled(true);
@@ -3800,6 +3817,9 @@ void MainWindow::initMenuBar() {
     optionsMenu -> addMenu (viewOptionsMenu);
     viewOptionsMenu -> addAction (changeBackColorAct);
     viewOptionsMenu -> addAction (backgroundImageAct);
+
+    optionsMenu -> addSeparator();
+    optionsMenu -> addAction(fullScreenModeAct);
 
     optionsMenu -> addSeparator();
     optionsMenu -> addAction (openSettingsAct);
@@ -4953,16 +4973,15 @@ void MainWindow::initWindowLayout() {
 
     // set panels visibility
     if ( appSettings["showRightPanel"] == "false") {
-        slotOptionsRightPanelVisibility(false);
+        slotOptionsWindowRightPanelVisibility(false);
     }
 
     if ( appSettings["showLeftPanel"] == "false") {
-        slotOptionsLeftPanelVisibility(false);
+        slotOptionsWindowLeftPanelVisibility(false);
     }
 
     qDebug () << "MW::initWindowLayout - resize to 1280x900";
     resize(1280,900);
-    setWindowState(windowState() ^ Qt::WindowFullScreen);
 
     //showMaximized();
     //setGeometry(0, 0, 1200,600);
@@ -13754,13 +13773,26 @@ void MainWindow::slotOptionsBackgroundImage() {
 
 
 
+/**
+ * @brief Toggles full screen mode (F11)
+ * @param toggle
+ */
+void MainWindow::slotOptionsWindowFullScreen(bool toggle) {
+    if (toggle== false)   {
+        setWindowState(windowState() ^ Qt::WindowFullScreen);
+        statusMessage( tr("Full screen mode off. Press F11 again to enter full screen.") );
+    } else {
+        setWindowState(windowState() ^ Qt::WindowFullScreen);
+        statusMessage( tr("Full screen mode on. Press F11 again to exit full screen.") );
+    }
+}
 
 /**
- * @brief MainWindow::slotOptionsToolbarVisibility
+ * @brief Turns Toolbar on or off
  * @param toggle
- * Turns Toolbar on or off
+ *
  */
-void MainWindow::slotOptionsToolbarVisibility(bool toggle) {
+void MainWindow::slotOptionsWindowToolbarVisibility(bool toggle) {
     statusMessage( tr("Toggle toolbar..."));
     if (toggle== false)   {
         toolBar->hide();
@@ -13778,11 +13810,10 @@ void MainWindow::slotOptionsToolbarVisibility(bool toggle) {
 
 
 /**
- * @brief MainWindow::slotOptionsStatusBarVisibility
+ * @brief Turns window statusbar on or off
  * @param toggle
- * Turns Statusbar on or off
  */
-void MainWindow::slotOptionsStatusBarVisibility(bool toggle) {
+void MainWindow::slotOptionsWindowStatusbarVisibility(bool toggle) {
     statusMessage( tr("Toggle statusbar..."));
 
     if (toggle == false)   {
@@ -13800,10 +13831,10 @@ void MainWindow::slotOptionsStatusBarVisibility(bool toggle) {
 
 
 /**
- * @brief MainWindow::slotOptionsLeftPanelVisibility
+ * @brief MainWindow::slotOptionsWindowLeftPanelVisibility
  * @param toggle
  */
-void MainWindow::slotOptionsLeftPanelVisibility(bool toggle) {
+void MainWindow::slotOptionsWindowLeftPanelVisibility(bool toggle) {
     statusMessage( tr("Toggle left panel..."));
 
     if (toggle == false)   {
@@ -13821,10 +13852,10 @@ void MainWindow::slotOptionsLeftPanelVisibility(bool toggle) {
 
 
 /**
- * @brief MainWindow::slotOptionsRightPanelVisibility
+ * @brief MainWindow::slotOptionsWindowRightPanelVisibility
  * @param toggle
  */
-void MainWindow::slotOptionsRightPanelVisibility(bool toggle) {
+void MainWindow::slotOptionsWindowRightPanelVisibility(bool toggle) {
     statusMessage( tr("Toggle left panel..."));
 
     if (toggle == false)   {

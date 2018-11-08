@@ -448,13 +448,15 @@ public slots:
     void slotOptionsEdgesBezier(bool toggle);
     void slotOptionsEdgeArrowsVisibility(bool toggle);
 
-
     void slotOptionsEmbedLogoExporting(bool toggle);
     void slotOptionsProgressDialogVisibility(bool toggle);
-    void slotOptionsToolbarVisibility(bool toggle);
-    void slotOptionsStatusBarVisibility(bool toggle);
-    void slotOptionsLeftPanelVisibility(bool toggle);
-    void slotOptionsRightPanelVisibility(bool toggle);
+
+    void slotOptionsWindowToolbarVisibility(bool toggle);
+    void slotOptionsWindowStatusbarVisibility(bool toggle);
+    void slotOptionsWindowLeftPanelVisibility(bool toggle);
+    void slotOptionsWindowRightPanelVisibility(bool toggle);
+    void slotOptionsWindowFullScreen(bool toogle);
+
     void slotOptionsDebugMessages(bool toggle);
 
     void slotOptionsBackgroundColor(QColor color=QColor());
@@ -628,13 +630,16 @@ private:
     QAction *transformNodes2EdgesAct, *editEdgeSymmetrizeAllAct;
     QAction *editEdgeSymmetrizeStrongTiesAct, *editEdgeUndirectedAllAct;
     QAction *editEdgeDichotomizeAct;
-    QAction *changeBackColorAct, *editNodeColorAll, *editEdgeColorAllAct,
+    QAction *editNodeColorAll, *editEdgeColorAllAct,
             *editNodeNumbersColorAct,*editNodeLabelsColorAct,
             *editEdgesCocitationAct;
-    QAction *optionsEdgeThicknessPerWeightAct, *optionsEdgeWeightNumbersAct, *optionsEdgesVisibilityAct;
-    QAction *optionsEdgeArrowsAct, *drawEdgesBezier,*optionsEdgeWeightConsiderAct;
+    QAction *optionsEdgeThicknessPerWeightAct, *optionsEdgeWeightNumbersAct;
+    QAction *optionsEdgesVisibilityAct;
+    QAction *optionsEdgeArrowsAct, *drawEdgesBezier, *optionsEdgeWeightConsiderAct;
     QAction *optionsEdgeLabelsAct;
-    QAction *backgroundImageAct,*helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
+    QAction *backgroundImageAct,*changeBackColorAct;
+    QAction *fullScreenModeAct;
+    QAction *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
     QAction *helpCheckUpdatesApp;
     QAction *openSettingsAct;
     QAction *networkWebCrawlerAct;
