@@ -793,10 +793,18 @@ float Matrix::distanceEuclidean(float x[], int n) {
 
 /**
  * @brief Implementation of the Power method which computes the
- * leading eigenvector (eigenvector centrality) of this matrix
- * and returns it as vector x.
- * @param n
+ * leading eigenvector x of this matrix, that is the eigenvector
+ * corresponding to the largest positive eigenvalue.
+ * In the process, it also computes min and max values.
+ * Used in Eigenvector Centrality (EVC).
  * @param x
+ * @param xsum
+ * @param xmax
+ * @param xmaxi
+ * @param xmin
+ * @param xmini
+ * @param eps
+ * @param maxIter
  */
 void Matrix::powerIteration (float x[], float &xsum,
                              float &xmax, int &xmaxi,
@@ -821,9 +829,16 @@ void Matrix::powerIteration (float x[], float &xsum,
         productByVector(x, tmp, false);
 
         // calculate the euclidean length of the resulting vector
+        // which will be the denominator in the vector normatization
         norm = distanceEuclidean(tmp, n);
+        // norm should never be zero, but in case there is
+        // numerical error, we set it to 1
+        if (!norm) {
+            qDebug() << "Matrix::powerIteration() - norm = 0 !!!";
+        }
+        //norm = (norm == 0) ? 1 : norm;
 
-        // normalize tmp to unit vector for next iteration
+        // normalize vector tmp to unit vector for next iteration
         xsum = 0;
         for(int i = 0; i < n; i++) {
            tmp[i] = tmp[i] / norm;
