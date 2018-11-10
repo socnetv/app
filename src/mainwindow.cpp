@@ -3937,6 +3937,7 @@ void MainWindow::initPanels(){
     QLabel *toolBoxEditNodeSubgraphSelectLabel  = new QLabel;
     toolBoxEditNodeSubgraphSelectLabel->setText(tr("Subgraph:"));
     toolBoxEditNodeSubgraphSelectLabel->setMinimumWidth(90);
+    this->setStyleSheet("QLabel {font-size:10px}");
     toolBoxEditNodeSubgraphSelectLabel->setStatusTip(
                 tr("Create a basic subgraph with selected nodes."));
     toolBoxEditNodeSubgraphSelect = new QComboBox;
@@ -4532,11 +4533,10 @@ void MainWindow::initPanels(){
     leftPanel = new QGroupBox(tr("Control Panel"));
     leftPanel -> setLayout (editGrid);
 
-    //create widgets for Properties/Statistics group/tab
 
-
-
-
+    //
+    // Create widgets for Properties/Statistics group/tab
+    //
     QLabel *rightPanelNetworkHeader = new QLabel;
     QFont labelFont = rightPanelNetworkHeader ->font();
     labelFont.setWeight(QFont::Bold);
@@ -4863,7 +4863,9 @@ void MainWindow::initWindowLayout() {
     QSize iconSize(size, size);
     iconSize.setHeight(16);
     iconSize.setWidth(16);
+    //
     // Zoom slider
+    //
     zoomInBtn = new QToolButton;
     zoomInBtn->setShortcut(Qt::CTRL + Qt::Key_Plus);
     zoomInBtn->setToolTip(tr("Zoom in (Ctrl++)"));
@@ -4906,8 +4908,9 @@ void MainWindow::initWindowLayout() {
     zoomSliderLayout->addWidget(zoomInBtn);
     zoomSliderLayout->addWidget(zoomSlider);
     zoomSliderLayout->addWidget(zoomOutBtn);
-
+    //
     // Rotate slider
+    //
     rotateLeftBtn = new QToolButton;
     rotateLeftBtn->setAutoRepeat(true);
     rotateLeftBtn->setShortcut(Qt::CTRL + Qt::Key_Left);
@@ -4980,10 +4983,10 @@ void MainWindow::initWindowLayout() {
         slotOptionsWindowLeftPanelVisibility(false);
     }
 
-    qDebug () << "MW::initWindowLayout - resize to 1280x900";
-    resize(1280,900);
+    qDebug () << "MW::initWindowLayout - resize to 1200x750";
+    resize(1200,750);
 
-    //showMaximized();
+    showMaximized();
     //setGeometry(0, 0, 1200,600);
 
     qDebug () << "MW::initWindowLayout() - Finished";
