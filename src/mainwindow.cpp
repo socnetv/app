@@ -5139,12 +5139,12 @@ void MainWindow::initSignalSlots() {
                      graphicsWidget,&GraphicsWidget::removeEdge);
 
 
-    connect( activeGraph, SIGNAL( signalDrawEdge( const int&, const int&, const float &,
+    connect( activeGraph, SIGNAL( signalDrawEdge( const int&, const int&, const qreal &,
                                              const QString &, const QString &,
                                              const int&, const bool&,
                                              const bool&,
                                              const bool&)),
-             graphicsWidget, SLOT( drawEdge( const int&, const int&, const float &,
+             graphicsWidget, SLOT( drawEdge( const int&, const int&, const qreal &,
                                              const QString &,const QString &,
                                              const int &, const bool&,
                                              const bool &,
@@ -5153,10 +5153,10 @@ void MainWindow::initSignalSlots() {
 
     connect( activeGraph, SIGNAL( setEdgeWeight(const int &,
                                                    const int &,
-                                                   const float &)),
+                                                   const qreal &)),
              graphicsWidget, SLOT( setEdgeWeight(const int &,
                                                 const int &,
-                                                const float &) ) );
+                                                const qreal &) ) );
 
     connect( activeGraph, SIGNAL( signalEdgeType(const int &,
                                                  const int &,
@@ -5211,11 +5211,11 @@ void MainWindow::initSignalSlots() {
     connect( activeGraph,
              SIGNAL( signalGraphModified(const int &, const bool &,
                                   const int &, const int &,
-                                  const float &) ),
+                                  const qreal &) ),
              this,
              SLOT( slotNetworkChanged(const int &, const bool &,
                                       const int &, const int &,
-                                      const float &) ) ) ;
+                                      const qreal &) ) ) ;
 
     connect( activeGraph, SIGNAL( signalGraphLoaded( const int &,
                                                       const QString &,
@@ -7687,7 +7687,7 @@ void MainWindow::slotNetworkViewSociomatrixPlotText(){
 
     bool simpler = false;
     if ( N > 999 ) {
-        float MB = (N * N * 10)/(1024*1024);
+        qreal MB = (N * N * 10)/(1024*1024);
         switch ( slotHelpMessageToUser(
                      USER_MSG_QUESTION,tr("Very large network to plot!"),
                      tr("Warning: Really large network"),
@@ -7837,7 +7837,7 @@ void MainWindow::slotNetworkRandomErdosRenyiDialog(){
 void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
                                        const QString model,
                                        const int edges,
-                                       const float eprob,
+                                       const qreal eprob,
                                        const QString mode,
                                        const bool diag)
 {
@@ -7862,7 +7862,7 @@ void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
 
     double threshold = log(newNodes)/newNodes;
 
-    //float clucof=activeGraph->clusteringCoefficient();
+    //qreal clucof=activeGraph->clusteringCoefficient();
 
     if ( (eprob ) > threshold )
         QMessageBox::information(
@@ -7928,7 +7928,7 @@ void MainWindow::slotNetworkRandomScaleFree ( const int &newNodes,
                                           const int &power,
                                           const int &initialNodes,
                                           const int &edgesPerStep,
-                                          const float &zeroAppeal,
+                                          const qreal &zeroAppeal,
                                           const QString &mode)
 {
     qDebug() << "MW::slotNetworkRandomScaleFree()";
@@ -7945,8 +7945,8 @@ void MainWindow::slotNetworkRandomScaleFree ( const int &newNodes,
 
     setWindowTitle("Untitled scale-free network");
 
-    //float avGraphDistance=activeGraph->graphDistanceGeodesicAverage();
-    //float clucof=activeGraph->clusteringCoefficient();
+    //qreal avGraphDistance=activeGraph->graphDistanceGeodesicAverage();
+    //qreal clucof=activeGraph->clusteringCoefficient();
     QMessageBox::information(this, "New scale-free network",
                              tr("Scale-free random network created.\n")
 //                             +tr("\nNodes: ")+ QString::number(nodesSelected)+
@@ -7989,7 +7989,7 @@ void MainWindow::slotNetworkRandomSmallWorldDialog()
  */
 void MainWindow::slotNetworkRandomSmallWorld(const int &newNodes,
                                             const int &degree,
-                                            const float &beta,
+                                            const qreal &beta,
                                             const QString &mode,
                                             const bool &diag)
 {
@@ -8002,8 +8002,8 @@ void MainWindow::slotNetworkRandomSmallWorld(const int &newNodes,
 
     setWindowTitle("Untitled small-world network");
 
-    //float avGraphDistance=activeGraph->graphDistanceGeodesicAverage();
-    //float clucof=activeGraph->clusteringCoefficient();
+    //qreal avGraphDistance=activeGraph->graphDistanceGeodesicAverage();
+    //qreal clucof=activeGraph->clusteringCoefficient();
     QMessageBox::information(this, "New Small World network",
                              tr("Small world network created.\n")
 //                             +tr("\nNodes: ")+ QString::number(nodeCount)+
@@ -8055,8 +8055,8 @@ void MainWindow::slotNetworkRandomRegular(const int &newNodes, const int &degree
 
     setWindowTitle("Untitled d-regular network");
 
-    //float avGraphDistance=activeGraph->graphDistanceGeodesicAverage();
-    //float clucof=activeGraph->clusteringCoefficient();
+    //qreal avGraphDistance=activeGraph->graphDistanceGeodesicAverage();
+    //qreal clucof=activeGraph->clusteringCoefficient();
     QMessageBox::information(this, "New d-Regular network",
                              tr("d-Regular network created.\n")
 //                             +tr("\nNodes: ")+ QString::number(nodeCount)+
@@ -8118,8 +8118,8 @@ void MainWindow::slotNetworkRandomRingLattice(){
 
 
     setWindowTitle("Untitled ring-lattice network");
-    //float avGraphDistance=activeGraph->graphDistanceGeodesicAverage();
-    //float clucof=activeGraph->clusteringCoefficient();
+    //qreal avGraphDistance=activeGraph->graphDistanceGeodesicAverage();
+    //qreal clucof=activeGraph->clusteringCoefficient();
     QMessageBox::information(this, "New Ring Lattice",
                              tr("Ring lattice network created.\n")
 //                             +tr("\nNodes: ")+ QString::number(activeNodes())+
@@ -8180,8 +8180,8 @@ void MainWindow::slotNetworkRandomLattice(const int &newNodes,
 
     setWindowTitle("Untitled lattice network");
 
-    //float avGraphDistance=activeGraph->graphDistanceGeodesicAverage();
-    //float clucof=activeGraph->clusteringCoefficient();
+    //qreal avGraphDistance=activeGraph->graphDistanceGeodesicAverage();
+    //qreal clucof=activeGraph->clusteringCoefficient();
     QMessageBox::information(this, "Lattice network",
                              tr("Lattice network created.\n")
 //                             +tr("\nNodes: ")+ QString::number(nodeCount)+
@@ -8294,7 +8294,7 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
                                     const bool &undirected,
                                     const int &vertices,
                                     const int &edges,
-                                    const float &density){
+                                    const qreal &density){
     qDebug()<<"MW::slotNetworkChanged()"
            <<"graphStatus" << graphStatus
              <<"undirected" << undirected
@@ -9427,7 +9427,7 @@ void MainWindow::slotEditNodeInfoStatusBar (const int &number,
                                              const QString &label,
                                              const int &inDegree,
                                              const int &outDegree,
-                                             const float &clc) {
+                                             const qreal &clc) {
     qDebug()<<"MW::slotEditNodeInfoStatusBar()";
     rightPanelClickedNodeLCD->setText (QString::number(number));
     rightPanelClickedNodeInDegreeLCD->setText ( QString::number (inDegree) ) ;
@@ -9456,7 +9456,7 @@ void MainWindow::slotEditNodeInfoStatusBar (const int &number,
  */
 void MainWindow::slotEditEdgeClicked (const int &v1,
                                       const  int &v2,
-                                      const float &weight,
+                                      const qreal &weight,
                                       const int &type,
                                       const bool &openMenu) {
 
@@ -9573,7 +9573,7 @@ void MainWindow::slotEditEdgeAdd(){
     }
 
     int sourceNode=-1, targetNode=-1;
-    float weight=1; 	//weight of this new edge should be one...
+    qreal weight=1; 	//weight of this new edge should be one...
     bool ok=false;
     int min=activeGraph->vertexNumberMin();
     int max=activeGraph->vertexNumberMax();
@@ -9654,7 +9654,7 @@ void MainWindow::slotEditEdgeAdd(){
  * @param weight
  */
 void MainWindow::slotEditEdgeCreate (const int &source, const int &target,
-                                     const float &weight) {
+                                     const qreal &weight) {
     qDebug()<< "MW::slotEditEdgeCreate() - edge"
             << source << "->" << target << "weight" << weight
             << "Setting user settings and calling Graph::edgeCreate(...)";
@@ -9986,7 +9986,7 @@ void MainWindow::slotEditEdgeWeight(){
 
     qDebug("MW::slotEditEdgeWeight()");
     int  sourceNode=-1, targetNode=-1;
-    float newWeight=1.0;
+    qreal newWeight=1.0;
     int min=activeGraph->vertexNumberMin();
     int max=activeGraph->vertexNumberMax();
     bool changeBothEdges=false;
@@ -10060,7 +10060,7 @@ void MainWindow::slotEditEdgeWeight(){
 
     }
 
-    float oldWeight= 0;
+    qreal oldWeight= 0;
 
     QString dialogTitle="Edge " + QString::number(sourceNode) + "->" + QString::number(targetNode);
 
@@ -10071,7 +10071,7 @@ void MainWindow::slotEditEdgeWeight(){
         if (changeBothEdges || undirected ){
             dialogTitle="Edge " + QString::number(sourceNode) + "<->" + QString::number(targetNode);
         }
-        newWeight=(float) QInputDialog::getDouble(
+        newWeight=(qreal) QInputDialog::getDouble(
                     this,
                     dialogTitle,
                     tr("New edge weight: "),
@@ -10167,7 +10167,7 @@ void MainWindow::slotEditEdgeDichotomizationDialog(){
  * @brief Calls Graph::graphDichotomization() to create a new binary relation
  * in a valued network using edge dichotomization according to threshold value.
   */
-void MainWindow::slotEditEdgeDichotomization(const float threshold){
+void MainWindow::slotEditEdgeDichotomization(const qreal threshold){
     if ( activeEdges() ==0 )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
@@ -10352,8 +10352,8 @@ void MainWindow::slotEditFilterEdgesByWeightDialog() {
     }
 
     m_DialogEdgeFilterByWeight = new DialogFilterEdgesByWeight(this);
-    connect( m_DialogEdgeFilterByWeight, SIGNAL( userChoices( float, bool) ),
-             activeGraph, SLOT( edgeFilterByWeight (float, bool) ) );
+    connect( m_DialogEdgeFilterByWeight, SIGNAL( userChoices( qreal, bool) ),
+             activeGraph, SLOT( edgeFilterByWeight (qreal, bool) ) );
 
     m_DialogEdgeFilterByWeight->exec() ;
 }
@@ -11838,7 +11838,7 @@ void MainWindow::slotAnalyzeDistanceAverage() {
 
     statusMessage(  tr("Computing Average Graph Distance. Please wait...") );
 
-    float averGraphDistance=activeGraph->graphDistanceGeodesicAverage(
+    qreal averGraphDistance=activeGraph->graphDistanceGeodesicAverage(
                 optionsEdgeWeightConsiderAct->isChecked(),
                 inverseWeights,
                 editFilterNodesIsolatesAct->isChecked() );

@@ -64,7 +64,7 @@ static const int METRIC_CHEBYSHEV_MAXIMUM= 7;
 class MatrixRow {
 public:
     MatrixRow (int cols=0) {
-        cell=new (nothrow) float [m_cols=cols];
+        cell=new (nothrow) qreal [m_cols=cols];
 		Q_CHECK_PTR( cell );
         for (int i=0;i<m_cols; i++) {
             cell[i]=0;
@@ -77,7 +77,7 @@ public:
         if (this != &a){
             if (a.m_cols!=m_cols) {
                 delete [] cell;
-                cell=new (nothrow) float[m_cols=a.m_cols];
+                cell=new (nothrow) qreal[m_cols=a.m_cols];
                 Q_CHECK_PTR( cell);
             }
             for (int i=0;i<m_cols; i++) {
@@ -87,15 +87,15 @@ public:
         return *this;
     }
 	
-	float column ( int c ) const {
+    qreal column ( int c ) const {
 		return cell[c];
 	}
 
 
-    float& operator [] (const int k) { return cell[k]; }
+    qreal& operator [] (const int k) { return cell[k]; }
 
 	
-	void setColumn (int index, float elem) {
+    void setColumn (int index, qreal elem) {
 		cell[index]=elem;
 	}
 
@@ -106,7 +106,7 @@ public:
 
     void resize(int cols) {
 		delete [] cell;
-        cell=new (nothrow) float[m_cols=cols];
+        cell=new (nothrow) qreal[m_cols=cols];
 		Q_CHECK_PTR( cell);
         for (int i=0;i<m_cols; i++) {
 			cell[i]=0;
@@ -118,7 +118,7 @@ public:
     }
 
 private:
-	float *cell;
+    qreal *cell;
     int m_cols;
 };
 
@@ -138,12 +138,12 @@ public:
 
     void resize (const int m, const int n) ;
 
-    float item( int r, int c ) ;
+    qreal item( int r, int c ) ;
 
-    void setItem(const int r, const int c, const float elem );
+    void setItem(const int r, const int c, const qreal elem );
 
     //WARNING: operator() is slow! Avoid using it.
-    float  operator ()  (const int r, const int c) { return  row[r].column(c);  }
+    qreal  operator ()  (const int r, const int c) { return  row[r].column(c);  }
 
     MatrixRow& operator []  (const int &r)  { return row[r]; }
 
@@ -155,9 +155,9 @@ public:
 
     int  size() { return m_rows * m_cols; }
 
-    void findMinMaxValues(float&min, float&max, bool &hasRealNumbers);
+    void findMinMaxValues(qreal&min, qreal&max, bool &hasRealNumbers);
 
-    void NeighboursNearestFarthest(float&min,float&max,
+    void NeighboursNearestFarthest(qreal&min,qreal&max,
                           int &imin, int &jmin,
                           int &imax, int &jmax);
 
@@ -167,7 +167,7 @@ public:
 
     void zeroMatrix (const int m, const int n);
 
-    void fillMatrix (float value );
+    void fillMatrix (qreal value );
 
     Matrix& subtractFromI () ;
 
@@ -191,24 +191,24 @@ public:
 
     void swapRows(int rowA,int rowB);
 
-    void multiplyScalar(const float &f);
-    void multiplyRow(int row, float value);
+    void multiplyScalar(const qreal &f);
+    void multiplyRow(int row, qreal value);
 
-    void productByVector (float in[], float out[], const bool &leftMultiply=false);
+    void productByVector (qreal in[], qreal out[], const bool &leftMultiply=false);
 
     Matrix & pow (int n, bool symmetry=false)  ;
     Matrix & expBySquaring2 (Matrix &Y, Matrix &X, int n, bool symmetry=false);
 
-    float distanceManhattan(float x[], float y[] , int n);
-    float distanceEuclidean(float x[], int n);
+    qreal distanceManhattan(qreal x[], qreal y[] , int n);
+    qreal distanceEuclidean(qreal x[], int n);
 
-    void powerIteration (float x[] ,
-                         float &xsum,
-                         float &xmax,
+    void powerIteration (qreal x[] ,
+                         qreal &xsum,
+                         qreal &xmax,
                          int &xmaxi,
-                         float &xmin,
+                         qreal &xmin,
                          int &xmini,
-                         const float eps, const int &maxIter);
+                         const qreal eps, const int &maxIter);
 
     Matrix& degreeMatrix();
 
@@ -223,11 +223,11 @@ public:
 
     Matrix& inverse(Matrix &a);
 
-    bool solve(float b[]);
+    bool solve(qreal b[]);
 
-    bool ludcmp (Matrix &a, const int &n, int indx[], float &d ) ;
+    bool ludcmp (Matrix &a, const int &n, int indx[], qreal &d ) ;
 
-    void lubksb (Matrix &a, const int &n, int indx[], float b[]);
+    void lubksb (Matrix &a, const int &n, int indx[], qreal b[]);
 
 
     Matrix& distancesMatrix(const int &metric,

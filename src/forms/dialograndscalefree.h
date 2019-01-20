@@ -50,7 +50,7 @@ signals:
                       const int &power,
                       const int &initialNodes,
                       const int &edgesPerStep,
-                      const float &zeroAppeal,
+                      const qreal &zeroAppeal,
                       const QString &mode);
 private:
     QString mode;
@@ -58,7 +58,7 @@ private:
     int initialNodes; // m0
     int edgesPerStep; //m
     int power;
-    float zeroAppeal; // a
+    qreal zeroAppeal; // a
     bool diag;
     Ui::DialogRandScaleFree ui;
 

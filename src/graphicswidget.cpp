@@ -213,7 +213,7 @@ void GraphicsWidget::drawNode( const int &num, const int &nodeSize,
  * @param bezier
  */
 void GraphicsWidget::drawEdge(const int &source, const int &target,
-                              const float &weight,
+                              const qreal &weight,
                               const QString &label,
                               const QString &color,
                               const int &type,
@@ -974,7 +974,7 @@ bool GraphicsWidget::setEdgeDirectionType(const int &source,
  */
 bool GraphicsWidget::setEdgeWeight(const int &source,
                                    const int &target,
-                                   const float &weight){
+                                   const qreal &weight){
 
     edgeName = createEdgeName( source, target );
 
@@ -1504,7 +1504,7 @@ void GraphicsWidget::wheelEvent(QWheelEvent *e) {
     qDebug("GW: Mouse wheel event");
     qDebug() << "GW: delta = " << e->delta();
     if (ctrlKey) {
-        float m_scale = e->delta() / qreal(600);
+        qreal m_scale = e->delta() / qreal(600);
         qDebug("GW: m_scale = %f", m_scale);
         if ( m_scale > 0)
             zoomIn(1);

@@ -187,7 +187,7 @@ public slots:
     void slotNetworkImportTwoModeSM();
     void slotNetworkChanged(const int &graphStatus, const bool &undirected,
                             const int &vertices, const int &edges,
-                            const float &density);
+                            const qreal &density);
     void slotNetworkSave(const int &fileFormat=-1);
     void slotNetworkSaveAs();
     void slotNetworkClose();
@@ -210,7 +210,7 @@ public slots:
     void slotNetworkRandomErdosRenyi( const int N,
                                const QString model,
                                const int edges,
-                               const float eprob,
+                               const qreal eprob,
                                const QString mode,
                                const bool diag) ;
     void slotNetworkRandomRegularDialog();
@@ -225,14 +225,14 @@ public slots:
                                     const int &power,
                                     const int &initialNodes,
                                     const int &edgesPerStep,
-                                    const float &zeroAppeal,
+                                    const qreal &zeroAppeal,
                                     const QString &mode);
 
     void slotNetworkRandomSmallWorldDialog();
 
     void slotNetworkRandomSmallWorld  (const int &newNodes,
                                        const int &degree,
-                                       const float &beta,
+                                       const qreal &beta,
                                        const QString &mode,
                                        const bool &diag);
 
@@ -278,7 +278,7 @@ public slots:
                                    const QString &label,
                                    const int &inDegree,
                                    const int &outDegree,
-                                   const float &clc=0);
+                                   const qreal &clc=0);
     void slotEditNodePosition(const int &nodeNumber, const int &x, const int &y);
     void slotEditNodeAdd();
 
@@ -307,14 +307,14 @@ public slots:
 
     void slotEditEdgeClicked (const int &v1,
                                     const int &v2,
-                                    const float &weight,
+                                    const qreal &weight,
                                     const int &type,
                                     const bool &openMenu=false);
 
     void slotEditEdgeOpenContextMenu(const QString &str="") ;
     void slotEditEdgeAdd();
     void slotEditEdgeCreate (const int &source, const int &target,
-                             const float &weight=1);
+                             const qreal &weight=1);
     void slotEditEdgeRemove();
     void slotEditEdgeLabel();
     void slotEditEdgeColor();
@@ -328,7 +328,7 @@ public slots:
     void slotEditEdgeUndirectedAll(const bool &toggle);
 
     void slotEditEdgeDichotomizationDialog();
-    void slotEditEdgeDichotomization(const float threshold);
+    void slotEditEdgeDichotomization(const qreal threshold);
 
     void slotFilterNodes();
     void slotEditFilterNodesIsolates(bool checked);
@@ -701,7 +701,7 @@ private:
     //QString VERSION;
 
     bool inverseWeights, askedAboutWeights;
-    float randomErdosEdgeProb;
+    qreal randomErdosEdgeProb;
     QString initFileCodec;
 
     QLabel *rightPanelNetworkTypeLCD ;

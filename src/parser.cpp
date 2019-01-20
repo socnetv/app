@@ -994,7 +994,7 @@ bool Parser::loadPajek(){
     int coordIndex=-1, labelIndex=-1;
     unsigned long int lineCounter=0;
     int pos=-1, relationCounter=0;
-    float weight=1;
+    qreal weight=1;
     QString relation;
     list<int> listDummiesPajek;
     totalLinks=0;
@@ -2348,7 +2348,7 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
     }
     else if ( keyName.value(key_id) == "size of arrow"  && keyFor.value(key_id) == "edge" ) {
         conv_OK=false;
-        float temp = key_value.toFloat( &conv_OK );
+        qreal temp = key_value.toFloat( &conv_OK );
         if (!conv_OK) arrowSize = 1;
         else  arrowSize = temp;
         qDebug()<< "Parser::readGraphMLElementData() - Data found. Edge arrow size: "
@@ -2377,7 +2377,7 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
 void Parser::readGraphMLElementNodeGraphics(QXmlStreamReader &xml) {
     qDebug()<< "Parser::readGraphMLElementNodeGraphics() - element name "
             << xml.name().toString();
-    float tempX =-1, tempY=-1, temp=-1;
+    qreal tempX =-1, tempY=-1, temp=-1;
     QString color;
     QXmlStreamAttributes xmlStreamAttr = xml.attributes();
 
@@ -2452,7 +2452,7 @@ void Parser::readGraphMLElementEdgeGraphics(QXmlStreamReader &xml) {
     qDebug()<< "Parser::readGraphMLElementEdgeGraphics() - element name "
             << xml.name().toString();
 
-    float tempX =-1, tempY=-1, temp=-1;
+    qreal tempX =-1, tempY=-1, temp=-1;
     QString color, tempString;
     QXmlStreamAttributes xmlStreamAttr = xml.attributes();
 
@@ -2812,14 +2812,14 @@ bool Parser::loadGML(){
                         randX = (tempList.at(1)).toFloat(&floatOK);
                         if (!floatOK) {
                             errorMessage = tr("Not a proper GML-formatted file. "
-                                              "Node center tag at line %1 cannot be converted to float.")
+                                              "Node center tag at line %1 cannot be converted to qreal.")
                                     .arg(fileLine);
                             return false;
                         }
                         randY = tempList.at(3).toFloat(&floatOK);
                         if (!floatOK) {
                             errorMessage = tr("Not a proper GML-formatted file. "
-                                              "Node center tag at line %1 cannot be converted to float.")
+                                              "Node center tag at line %1 cannot be converted to qreal.")
                                     .arg(fileLine);
                             return false;
                         }
@@ -2936,7 +2936,7 @@ bool Parser::loadDot(){
     edgeColor="black";
     nodeShape="";
     edgeWeight=1.0;
-    float nodeValue=1.0;
+    qreal nodeValue=1.0;
     bool netProperties = false;
     QStringList labels;
     QList<QString> nodeSequence;   //holds edges
@@ -3324,7 +3324,7 @@ bool Parser::loadDot(){
 
 
 
-void Parser::readDotProperties(QString str, float &nValue, QString &label,
+void Parser::readDotProperties(QString str, qreal &nValue, QString &label,
                            QString &shape, QString &color, QString &fontName,
                            QString &fontColor ){
     int next=0;
@@ -3465,7 +3465,7 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
     // so that we can create the discovered nodes by either their increasing nodeNumber
     // (if nodesWithLabels == true) or by their actual number in the file (if nodesWithLabels == false).
     priority_queue<Actor, vector<Actor>, CompareActors> nodeQ;
-    QHash<QString, float> edgeList;
+    QHash<QString, qreal> edgeList;
     QString str, edgeKey,edgeKeyDelimiter="====>" ;
     QStringList lineElement, edgeElement;
     // one or more digits
@@ -3705,7 +3705,7 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
     }
 
     //create edges one by one
-    QHash<QString, float>::const_iterator edge = edgeList.constBegin();
+    QHash<QString, qreal>::const_iterator edge = edgeList.constBegin();
     while (edge!= edgeList.constEnd()) {
 
         qDebug() << "Parser::loadEdgeListWeighed() - creating edge named"
@@ -3769,7 +3769,7 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
     // so that we can create the discovered nodes by either their increasing nodeNumber
     // (if nodesWithLabels == true) or by their actual number in the file (if nodesWithLabels == false).
     priority_queue<Actor, vector<Actor>, CompareActors> nodeQ;
-    QHash<QString, float> edgeList;
+    QHash<QString, qreal> edgeList;
 
     QRegularExpression onlyDigitsExp("^\\d+$");
 
@@ -3997,7 +3997,7 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
 
 
     //create edges one by one
-    QHash<QString, float>::const_iterator edge = edgeList.constBegin();
+    QHash<QString, qreal>::const_iterator edge = edgeList.constBegin();
      while (edge!= edgeList.constEnd()) {
 
          qDebug() << "Parser::loadEdgeListWeighed() - creating edge named"

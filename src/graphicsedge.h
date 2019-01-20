@@ -60,7 +60,7 @@ class GraphicsEdge : public QObject, public QGraphicsItem {
     Q_INTERFACES (QGraphicsItem)
 
 public:
-    GraphicsEdge(GraphicsWidget *, GraphicsNode*, GraphicsNode*, const float &weight,
+    GraphicsEdge(GraphicsWidget *, GraphicsNode*, GraphicsNode*, const qreal &weight,
          const QString &label, const QString &color,
          const Qt::PenStyle &style,
          const int&type, const bool & drawArrows, const bool &bezier,
@@ -87,8 +87,8 @@ public:
 
     void removeRefs();
 
-    void setWeight( const float  &w) ;
-    float weight() const;
+    void setWeight( const qreal  &w) ;
+    qreal weight() const;
     void addWeightNumber ();
     //void deleteWeightNumber();
     void setWeightNumberVisibility  (const bool &toggle);
@@ -104,7 +104,7 @@ public:
     void setDirectionType(const int &dirType=0);
     int directionType();
 
-    float width() const;
+    qreal width() const;
 
     QPen pen() const;
     void setState(const int &state);
@@ -150,7 +150,7 @@ private:
 
     QString m_color, m_colorNegative, m_label;
 
-    float m_weight;
+    qreal m_weight;
     int tox1, tox2, toy1, toy2, size;
     int sourceOrigSize;
     int targetOrigSize;

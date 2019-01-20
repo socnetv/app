@@ -125,7 +125,7 @@ void Matrix::resize (const int m, const int n) {
  * @param max value
  * Complexity: O(n^2)
  */
-void Matrix::findMinMaxValues (float &min, float & max, bool &hasRealNumbers){
+void Matrix::findMinMaxValues (qreal &min, qreal & max, bool &hasRealNumbers){
     max=0;
     min=RAND_MAX;
     hasRealNumbers = false;
@@ -153,7 +153,7 @@ void Matrix::findMinMaxValues (float &min, float & max, bool &hasRealNumbers){
  * @param max value
  * Complexity: O(n^2)
  */
-void Matrix::NeighboursNearestFarthest (float &min, float & max,
+void Matrix::NeighboursNearestFarthest (qreal &min, qreal & max,
                                int &imin, int &jmin,
                                int &imax, int &jmax){
     max=0;
@@ -225,7 +225,7 @@ void Matrix::zeroMatrix(const int m, const int n) {
  * @param c
  * @return
  */
-float Matrix::item( int r, int c ){
+qreal Matrix::item( int r, int c ){
     return row[r].column(c);
 }
 
@@ -237,7 +237,7 @@ float Matrix::item( int r, int c ){
  * @param c
  * @param elem
  */
-void Matrix::setItem( const int r, const int c, const float elem ) {
+void Matrix::setItem( const int r, const int c, const qreal elem ) {
     row [ r ].setColumn(c, elem);
 }
 
@@ -317,7 +317,7 @@ void Matrix::deleteRowColumn(int erased){
  * @brief Fills a matrix with a given value
  * @param value
  */
-void Matrix::fillMatrix(float value )   {
+void Matrix::fillMatrix(qreal value )   {
     for (int i=0;i< rows() ; i++)
         for (int j=0;j< cols(); j++)
             setItem(i,j, value);
@@ -351,7 +351,7 @@ Matrix& Matrix::subtractFromI ()  {
  */
 void Matrix::swapRows(int rowA,int rowB){
     qDebug()<<"   swapRow() "<< rowA+1 << " with " << rowB+1;
-    float *tempRow = new  (nothrow) float [ rows() ];
+    qreal *tempRow = new  (nothrow) qreal [ rows() ];
     Q_CHECK_PTR(tempRow);
     for ( int j=0; j<  rows(); j++) {
       tempRow[j] = item (rowB, j);
@@ -366,12 +366,12 @@ void Matrix::swapRows(int rowA,int rowB){
 
 
 /**
-* @brief Scalar Multiplication. Multiplies this by float f
+* @brief Scalar Multiplication. Multiplies this by qreal f
 *  and returns the product matrix of the same dim
   * Allows to use P.multiplyScalar(f)
   * @param f
 */
-void Matrix::multiplyScalar (const float  & f) {
+void Matrix::multiplyScalar (const qreal  & f) {
         qDebug()<< "Matrix::multiplyScalar() with f " << f;
         for (int i=0;i< rows();i++) {
             for (int j=0;j<cols();j++) {
@@ -386,7 +386,7 @@ void Matrix::multiplyScalar (const float  & f) {
  * @param row
  * @param value
  */
-void Matrix::multiplyRow(int row, float value) {
+void Matrix::multiplyRow(int row, qreal value) {
     qDebug()<<"   multiplyRow() "<< row+1 << " by value " << value;
     for ( int j=0; j<  rows(); j++) {
         setItem ( row, j,  value * item (row, j) );
@@ -594,7 +594,7 @@ void Matrix::product(Matrix &A, Matrix & B, bool symmetry)  {
 
     Matrix *P = new Matrix(A.rows(), B.cols());
 
-    float prod = 0;
+    qreal prod = 0;
 
     for (int i=0;i< A.rows();i++) {
         for (int j=0;j<B.cols();j++) {
@@ -734,7 +734,7 @@ Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
  * @param out output array
  * @param leftMultiply
  */
-void Matrix::productByVector (float in[], float out[], const bool &leftMultiply) {
+void Matrix::productByVector (qreal in[], qreal out[], const bool &leftMultiply) {
     int n = rows();
     int m = cols();
 
@@ -764,8 +764,8 @@ void Matrix::productByVector (float in[], float out[], const bool &leftMultiply)
  * @param y
  * @return
  */
-float Matrix::distanceManhattan(float x[], float y[], int n) {
-    float norm = 0;
+qreal Matrix::distanceManhattan(qreal x[], qreal y[], int n) {
+    qreal norm = 0;
     for(int i = 0; i < n; i++) {
         norm += fabs (x[i] - y[i]);
     }
@@ -781,8 +781,8 @@ float Matrix::distanceManhattan(float x[], float y[], int n) {
  * @param n
  * @return
  */
-float Matrix::distanceEuclidean(float x[], int n) {
-    float norm = 0;
+qreal Matrix::distanceEuclidean(qreal x[], int n) {
+    qreal norm = 0;
     for (int i = 0; i < n; i++) {
          norm += x[i] * x[i];
     }
@@ -806,23 +806,23 @@ float Matrix::distanceEuclidean(float x[], int n) {
  * @param eps
  * @param maxIter
  */
-void Matrix::powerIteration (float x[], float &xsum,
-                             float &xmax, int &xmaxi,
-                             float &xmin, int &xmini,
-                             const float eps, const int &maxIter) {
+void Matrix::powerIteration (qreal x[], qreal &xsum,
+                             qreal &xmax, int &xmaxi,
+                             qreal &xmin, int &xmini,
+                             const qreal eps, const int &maxIter) {
     qDebug() << "Matrix::powerIteration() - maxIter"
              << maxIter
              <<"initial x"
             <<x;
     int n = rows();
-    float norm = 0, distance=0;
-    float *tmp;
-    tmp=new (nothrow) float [n];
+    qreal norm = 0, distance=0;
+    qreal *tmp;
+    tmp=new (nothrow) qreal [n];
     Q_CHECK_PTR( tmp );
 
     xsum = 0;
     int iter = 0;
-    QVector<float> vec(n);
+    QVector<qreal> vec(n);
     do {
         // calculate the matrix-by-vector product Ax and
         // store the result to vector tmp
@@ -938,7 +938,7 @@ Matrix& Matrix::cocitationMatrix() {
 Matrix& Matrix::degreeMatrix() {
     Matrix *S = new Matrix(rows(), cols());
     qDebug()<< "Matrix::degreeMatrix()";
-    float degree=0;
+    qreal degree=0;
     for (int i=0;i< rows();i++) {
         degree = 0;
         for (int j=0;j<cols();j++) {
@@ -991,7 +991,7 @@ Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
     identityMatrix( n );
 
 	int l=0, m_pivotLine=0;
-	float m_pivot=0, temp_pivot=0, elim_coef=0;
+    qreal m_pivot=0, temp_pivot=0, elim_coef=0;
 
     for ( int j=0; j< n; j++) { // for n, it is the last diagonal element of A
 	    l=j+1;
@@ -1074,13 +1074,13 @@ Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
  * Code adapted from Knuth's Numerical Recipes in C, pp 46
  *
  */
-bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], float &d) {
+bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d) {
     qDebug () << "Matrix::ludcmp () - decomposing matrix a to L*U";
     int i=0, j=0, imax=0, k;
-    float big,temp;
-    //vv=vector<float>(1,n);
-    float *vv;            // vv stores the implicit scaling of each row
-    vv=new (nothrow) float [n];
+    qreal big,temp;
+    //vv=vector<qreal>(1,n);
+    qreal *vv;            // vv stores the implicit scaling of each row
+    vv=new (nothrow) qreal [n];
     Q_CHECK_PTR( vv );
 
 //    QTextStream stream(stdout);
@@ -1200,11 +1200,11 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], float &d) {
 * Code adapted from Knuth's Numerical Recipes in C, pp 47
  *
  */
-void Matrix::lubksb(Matrix &a, const int &n, int indx[], float b[])
+void Matrix::lubksb(Matrix &a, const int &n, int indx[], qreal b[])
 {
     qDebug () << "Matrix::lubksb() - ";
     int i, j, ii=0,ip;
-    float sum;
+    qreal sum;
     for ( i=0;i<n;i++) {  // When ii is set to a positive value, it will become the
         ip=indx[i];       // index of the first nonvanishing element of b. We now
         sum=b[ip];        // do the forward substitution, equation (2.3.6). The
@@ -1238,7 +1238,7 @@ void Matrix::lubksb(Matrix &a, const int &n, int indx[], float b[])
 Matrix& Matrix::inverse(Matrix &a)
 {
     int i,j, n=a.rows();
-    float d, col[n];
+    qreal d, col[n];
 
     int indx[n];
     qDebug () << "Matrix::inverse() - inverting matrix a - size " << n;
@@ -1281,7 +1281,7 @@ Matrix& Matrix::inverse(Matrix &a)
  * @param b vector
  * @return
  */
-bool Matrix::solve(float b[])
+bool Matrix::solve(qreal b[])
 {
 
     Matrix *A = new Matrix(this->rows(), this->cols());
@@ -1290,7 +1290,7 @@ bool Matrix::solve(float b[])
 
 
     int n=rows();
-    float d;
+    qreal d;
 
     int indx[n];
 
@@ -1335,16 +1335,16 @@ Matrix& Matrix::distancesMatrix(const int &metric,
             << "diagonal"<<diagonal;
 
     int N = 0;
-    float sum = 0;
-    float distance = 0;
-    float distTemp = 0;
-    float ties = 0;
-    float max = 0 ; // for Chebyshev metric
+    qreal sum = 0;
+    qreal distance = 0;
+    qreal distTemp = 0;
+    qreal ties = 0;
+    qreal max = 0 ; // for Chebyshev metric
     if (varLocation=="Rows") {
 
         N = rows() ;
 
-        QVector<float> mean (N,0); // holds mean values
+        QVector<qreal> mean (N,0); // holds mean values
 
         qDebug()<< "Matrix::distancesMatrix() - input matrix:";
         //this->printMatrixConsole();
@@ -1454,7 +1454,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
         N = rows() ;
 
-        QVector<float> mean (N,0); // holds mean values
+        QVector<qreal> mean (N,0); // holds mean values
 
         qDebug()<< "Matrix::distancesMatrix() -"
                 <<"input matrix";
@@ -1565,7 +1565,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
         CM.zeroMatrix(M,N);
 
-        QVector<float> mean (N,0); // holds mean values
+        QVector<qreal> mean (N,0); // holds mean values
 
         //create augmented matrix (concatenated rows and columns) from input matrix
         for (int i = 0 ; i < N  ; i++ ) {
@@ -1717,18 +1717,18 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
             << "varLocation"<< varLocation;
 
     int N = 0;
-    float sum = 0;
-    float matchRatio = 0;
-    float matches = 0;
-    float ties = 0;
-    float magn_i=0, magn_k=0;
+    qreal sum = 0;
+    qreal matchRatio = 0;
+    qreal matches = 0;
+    qreal ties = 0;
+    qreal magn_i=0, magn_k=0;
     if (varLocation=="Rows") {
 
         N = AM.rows() ;
 
         this->zeroMatrix(N,N);
 
-        QVector<float> mean (N,0); // holds mean values
+        QVector<qreal> mean (N,0); // holds mean values
 
         qDebug()<< "Matrix::similarityMatrix() -"
                 <<"input matrix";
@@ -1829,7 +1829,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
 
         this->zeroMatrix(N,N);
 
-        QVector<float> mean (N,0); // holds mean values
+        QVector<qreal> mean (N,0); // holds mean values
 
         qDebug()<< "Matrix::similarityMatrix() -"
                 <<"input matrix";
@@ -1932,7 +1932,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
         this->zeroMatrix(N,N);
         CM.zeroMatrix(M,N);
 
-        QVector<float> mean (N,0); // holds mean values
+        QVector<qreal> mean (N,0); // holds mean values
 
 
         //create augmented matrix (concatenated rows and columns) from input matrix
@@ -2064,12 +2064,12 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
             << "varLocation"<< varLocation;
 
     int N = 0;
-    float sumi = 0;
-    float sumk = 0;
-    float varianceTimesNi = 0; // = sqrDeviationsFromMean
-    float varianceTimesNk = 0; // = sqrDeviationsFromMean
-    float covariance = 0;
-    float pcc = 0;
+    qreal sumi = 0;
+    qreal sumk = 0;
+    qreal varianceTimesNi = 0; // = sqrDeviationsFromMean
+    qreal varianceTimesNk = 0; // = sqrDeviationsFromMean
+    qreal covariance = 0;
+    qreal pcc = 0;
 
 
     if (varLocation=="Rows") {
@@ -2078,8 +2078,8 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
 
         this->zeroMatrix(N,N);
 
-        QVector<float> mean (N,0); // holds mean values
-        QVector<float> sigma(N,0);
+        QVector<qreal> mean (N,0); // holds mean values
+        QVector<qreal> sigma(N,0);
         qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
                 <<"input matrix";
         //AM.printMatrixConsole(true);
@@ -2099,8 +2099,8 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                     sumi += AM.item(i,j);
                     sumk += AM.item(k,j);
                 }
-                mean[i] = sumi / ( (diagonal) ? (float) N : (float) (N-2) ) ;
-                mean[k] = sumk / ( (diagonal) ? (float) N : (float) (N-2) ) ;
+                mean[i] = sumi / ( (diagonal) ? (qreal) N : (qreal) (N-2) ) ;
+                mean[k] = sumk / ( (diagonal) ? (qreal) N : (qreal) (N-2) ) ;
                 varianceTimesNi = 0;
                 varianceTimesNk = 0;
                 for (int j = 0 ; j < N ; j++ ) {
@@ -2161,8 +2161,8 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
 
         this->zeroMatrix(N,N);
 
-        QVector<float> mean (N,0); // holds mean values
-        QVector<float> sigma(N,0);
+        QVector<qreal> mean (N,0); // holds mean values
+        QVector<qreal> sigma(N,0);
 
         qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
                 <<"input matrix";
@@ -2184,8 +2184,8 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                     sumi += AM.item(j,i);
                     sumk += AM.item(j,k);
                 }
-                mean[i] = sumi / ( (diagonal) ? (float) N : (float) (N-2) ) ;
-                mean[k] = sumk / ( (diagonal) ? (float) N : (float) (N-2) ) ;
+                mean[i] = sumi / ( (diagonal) ? (qreal) N : (qreal) (N-2) ) ;
+                mean[k] = sumk / ( (diagonal) ? (qreal) N : (qreal) (N-2) ) ;
                 varianceTimesNi = 0;
                 varianceTimesNk = 0;
                 for (int j = 0 ; j < N ; j++ ) {
@@ -2239,8 +2239,8 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
 
         CM.zeroMatrix(M,N);
 
-        QVector<float> mean (N,0); // holds mean values
-        QVector<float> sigma(N,0);
+        QVector<qreal> mean (N,0); // holds mean values
+        QVector<qreal> sigma(N,0);
 
 
         //create augmented matrix (concatenated rows and columns) from input matrix
@@ -2271,8 +2271,8 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                     sumi += CM.item(j,i);
                     sumk += CM.item(j,k);
                 }
-                mean[i] = sumi / ( (diagonal) ? (float) M : (float) (M-4) ) ;
-                mean[k] = sumk / ( (diagonal) ? (float) M : (float) (M-4) ) ;
+                mean[i] = sumi / ( (diagonal) ? (qreal) M : (qreal) (M-4) ) ;
+                mean[k] = sumk / ( (diagonal) ? (qreal) M : (qreal) (M-4) ) ;
                 varianceTimesNi = 0;
                 varianceTimesNk = 0;
                 for (int j = 0 ; j < M; j++ ) {
@@ -2344,7 +2344,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
 QTextStream& operator <<  (QTextStream& os, Matrix& m){
     qDebug() << "Matrix: << Matrix";
     int actorNumber=1, fieldWidth = 13;
-    float maxVal, minVal, maxAbsVal, element;
+    qreal maxVal, minVal, maxAbsVal, element;
     bool hasRealNumbers=false;
 
     m.findMinMaxValues(minVal, maxVal, hasRealNumbers);
@@ -2468,7 +2468,7 @@ bool Matrix::printHTMLTable(QTextStream& os,
                             const bool &printInfinity){
     qDebug() << "Matrix::printHTMLTable()";
     int elementLabel=0, rowCount = 0;
-    float maxVal, minVal, element;
+    qreal maxVal, minVal, element;
     bool hasRealNumbers=false;
 
     findMinMaxValues(minVal, maxVal, hasRealNumbers);

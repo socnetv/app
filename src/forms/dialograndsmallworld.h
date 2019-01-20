@@ -49,13 +49,13 @@ public slots:
 signals:
     void userChoices( const int nodes,
                       const int degree,
-                      const float prob,
+                      const qreal prob,
                       const QString mode,
                       const bool diag);
 private:
     QString mode;
     int nodes, degree;
-    float bprob;
+    qreal bprob;
     bool diag;
     Ui::DialogRandSmallWorld *ui;
 

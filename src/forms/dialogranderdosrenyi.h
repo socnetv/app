@@ -36,7 +36,7 @@ class DialogRandErdosRenyi  : public QDialog
 {
     Q_OBJECT
 public:
-    explicit DialogRandErdosRenyi(QWidget *parent=0, const float eprob = 0);
+    explicit DialogRandErdosRenyi(QWidget *parent=0, const qreal eprob = 0);
 
 public slots:
     void checkErrors();
@@ -51,7 +51,7 @@ signals:
     void userChoices( const int nodes,
                       const QString model,
                       const int edges,
-                      const float eprob,
+                      const qreal eprob,
                       const QString mode,
                       const bool diag);
 private:

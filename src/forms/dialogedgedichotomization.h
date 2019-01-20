@@ -42,7 +42,7 @@ public:
 public slots:
     void getUserChoices ();
 signals:
-    void userChoices( float threshold);
+    void userChoices( qreal threshold);
 private:
     Ui::DialogEdgeDichotomization ui;
 

@@ -117,8 +117,8 @@ class QPointF;
 typedef QList<GraphVertex*> VList;
 typedef QHash <QString, int> H_StrToInt;
 typedef QHash <int, int> H_Int;
-typedef QHash <float, int> H_f_i;
-typedef QPair <float, bool> pair_f_b;
+typedef QHash <qreal, int> H_f_i;
+typedef QPair <qreal, bool> pair_f_b;
 typedef QPair <int, pair_f_b > pair_i_fb;
 typedef QHash <int, pair_i_fb > H_edges;
 typedef QHash<QString, bool> H_StrToBool;
@@ -241,7 +241,7 @@ public slots:
 
 
     /** Slots to signals from GraphicsWidget and Parser*/
-    void edgeCreate  (const int &v1, const int &v2, const float &weight,
+    void edgeCreate  (const int &v1, const int &v2, const qreal &weight,
                       const QString &color ,
                       const int &type=0,
                       const bool &drawArrows=true, const bool &bezier=false,
@@ -265,7 +265,7 @@ public slots:
 
     void canvasSizeSet(const int w, const int h);
     double canvasMaxRadius() const;
-    float canvasMinDimension() const;
+    qreal canvasMinDimension() const;
     double canvasVisibleX(const double &x) const ;
     double canvasVisibleY(const double &y) const ;
     double canvasRandomX()  const;
@@ -275,7 +275,7 @@ public slots:
     void vertexClickedSet(const int &v);
     void edgeClickedSet(const int &v1, const int &v2, const bool &openMenu=false) ;
 
-    void edgeFilterByWeight (float, bool);
+    void edgeFilterByWeight (qreal, bool);
     void edgeFilterByRelation(int relation, bool status);
     void edgeFilterUnilateral(const bool &toggle);
 
@@ -301,7 +301,7 @@ signals:
                       const bool &undirected,
                       const int &vertices,
                       const int &edges,
-                      const float &density);
+                      const qreal &density);
 
     void signalGraphLoaded (const int &fileType,
                             const QString &fileName=QString::null,
@@ -320,10 +320,10 @@ signals:
                                     const QString &label=QString::null,
                                     const int &inDegree=0,
                                     const int &outDegree=0,
-                                    const float &clc=0);
+                                    const qreal &clc=0);
     void signalEdgeClicked (const int &v1=0,
                             const int &v2=0,
-                            const float &weight=0,
+                            const qreal &weight=0,
                             const int &type=0,
                             const bool &openMenu=false);
     void signalRelationAddToMW(const QString &newRelation, const bool &changeRelation=true);
@@ -351,7 +351,7 @@ signals:
     //signal GW to draw an edge
     void signalDrawEdge ( const int &v1,
                           const int &v2,
-                          const float &weight,
+                          const qreal &weight,
                           const QString &label="",
                           const QString &color="black",
                           const int &type=0,
@@ -376,7 +376,7 @@ signals:
     void setNodeLabelColor(const int &, const QString &color);
     void setNodeLabelDistance(const int &, const int &);
 
-    void setEdgeWeight (const int &v1, const int &v2, const float &weight);
+    void setEdgeWeight (const int &v1, const int &v2, const qreal &weight);
     void signalEdgeType(const int &v1,
                         const int &v2,
                         const int &type);
@@ -549,20 +549,20 @@ public:
     /* EDGES */
     int edgesEnabled();
     ClickedEdge edgeClicked();
-    float edgeExists(const int &v1, const int &v2, const bool &checkReciprocal=false);
+    qreal edgeExists(const int &v1, const int &v2, const bool &checkReciprocal=false);
 
     void edgeRemove (const int &v1, const int &v2,
                      const bool &removeOpposite=false);
     bool edgeSymmetric(const int &v1, const int &v2);
     void edgeTypeSet(const int &v1,
                      const int &v2,
-                     const float &w,
+                     const qreal &w,
                      const int &dirType=EDGE_DIRECTED);
 
     void edgeWeightSet (const int &v1, const int &v2,
-                        const float &w,
+                        const qreal &w,
                         const bool &undirected=false);
-    float edgeWeight(const int &v1, const int &v2) const;
+    qreal edgeWeight(const int &v1, const int &v2) const;
     void edgeWeightNumbersVisibilitySet (const bool &toggle);
 
     void edgeLabelSet(const int &v1, const int &v2, const QString &label);
@@ -590,10 +590,10 @@ public:
 
     int graphGeodesics();
 
-    float graphDensity();
+    qreal graphDensity();
     bool graphWeighted();
 
-    float graphReciprocity();
+    qreal graphReciprocity();
 
     bool graphSymmetric();
     void graphSymmetrize();
@@ -601,7 +601,7 @@ public:
 
     void graphCocitation();
 
-    void graphDichotomization(const float threshold);
+    void graphDichotomization(const qreal threshold);
 
     void graphUndirectedSet(const bool &toggle, const bool &signalMW=true);
     bool graphUndirected();
@@ -796,7 +796,7 @@ public:
                               const bool considerWeights,
                               const bool inverseWeights);
 
-    float graphDistanceGeodesicAverage(const bool considerWeights,
+    qreal graphDistanceGeodesicAverage(const bool considerWeights,
                                const bool inverseWeights, const bool dropIsolates);
 
     void graphDistanceGeodesicCompute(const bool &computeCentralities=false,
@@ -845,7 +845,7 @@ public:
     void writeReachabilityMatrixPlainText(const QString &fn, const bool &dropIsolates=false);
 
 
-    float numberOfTriples(int v1);
+    qreal numberOfTriples(int v1);
 
     /* CLIQUES, CLUSTERING, TRIADS */
     void graphCliques(QSet<int> R=QSet<int>(), QSet<int> P=QSet<int>(), QSet<int> X=QSet<int>() );
@@ -862,8 +862,8 @@ public:
                                      const bool &considerWeights=true,
                                      const bool &inverseWeights=false,
                                      const bool &dropIsolates=false);
-    float clusteringCoefficientLocal(const int &v1);
-    float clusteringCoefficient (const bool updateProgress=false);
+    qreal clusteringCoefficientLocal(const int &v1);
+    qreal clusteringCoefficient (const bool updateProgress=false);
 
     bool graphTriadCensus();
     void triadType_examine_MAN_label(int, int, int, GraphVertex*,  GraphVertex*, GraphVertex* );
@@ -912,7 +912,7 @@ public:
     void randomNetErdosCreate (  const int &N,
                                  const QString &model,
                                  const int &m,
-                                 const float &p,
+                                 const qreal &p,
                                  const QString &mode,
                                  const bool &diag);
 
@@ -920,7 +920,7 @@ public:
                                     const int &power,
                                     const int &m0,
                                     const int &m,
-                                    const float &alpha,
+                                    const qreal &alpha,
                                     const QString &mode);
 
     void randomNetSmallWorldCreate(const int &N, const int &degree,
@@ -983,7 +983,7 @@ private:
                       const QString &labelColor, const int &labelSize,
                       const QPointF &p, const QString &shape );
 
-    void edgeAdd (const int &v1, const int &v2, const float &weight,
+    void edgeAdd (const int &v1, const int &v2, const qreal &weight,
                   const int &type,
                   const QString &label,
                   const QString &color
@@ -997,12 +997,12 @@ private:
                   const bool &dropIsolates=false);
 
     void minmax(
-                float C, GraphVertex *v, float &max, float &min,
+                qreal C, GraphVertex *v, qreal &max, qreal &min,
                 int &maxNode, int &minNode
               ) ;
-    void resolveClasses (float C, H_StrToInt &discreteClasses, int &classes);
+    void resolveClasses (qreal C, H_StrToInt &discreteClasses, int &classes);
     void resolveClasses (
-                        float C, H_StrToInt &discreteClasses,
+                        qreal C, H_StrToInt &discreteClasses,
                         int &classes, int name
                         );
 
@@ -1029,7 +1029,7 @@ private:
     QMap <int, L_int > m_cliques;
     QHash <int, QSet<int> > neighboursHash;
 
-    QList <float> m_clusteringLevel;
+    QList <qreal> m_clusteringLevel;
     QMap <int, V_int> m_clustersPerSequence;
 
 
@@ -1048,34 +1048,34 @@ private:
 
     int m_precision, m_fieldWidth, m_curRelation, m_fileFormat, m_vertexClicked;
     ClickedEdge m_clickedEdge;
-    float edgeWeightTemp, edgeReverseWeightTemp;
-    float meanSDC, varianceSDC;
-    float meanSCC, varianceSCC;
-    float meanIRCC, varianceIRCC;
-    float meanSBC, varianceSBC;
-    float meanSSC, varianceSSC;
-    float meanEC, varianceEC;
-    float meanSPC, varianceSPC;
-    float meanIC, varianceIC;
-    float meanEVC, varianceEVC;
-    float meanSDP, varianceSDP;
-    float meanPP, variancePP;
-    float meanPRP, variancePRP;
-    float minEccentricity, maxEccentricity;
-    float minSDP, maxSDP, sumDP, sumSDP, groupDP;
-    float minSDC, maxSDC, sumDC, sumSDC, groupDC;
-    float minSCC, maxSCC, nomSCC, denomSCC, sumCC, sumSCC, groupCC, maxIndexCC;
-    float minIRCC, maxIRCC, nomIRCC, denomIRCC, sumIRCC, groupIRCC;
-    float minSBC, maxSBC, nomSBC, denomSBC, sumBC, sumSBC, groupSBC, maxIndexBC;
-    float minSPC, maxSPC, nomSPC, denomSPC, t_sumIC, sumSPC, groupSPC, maxIndexPC;
-    float minSSC, maxSSC, sumSC, sumSSC, groupSC, maxIndexSC;
-    float minEC, maxEC, nomEC, denomEC, sumEC, groupEC, maxIndexEC;
-    float minIC, maxIC, nomIC, denomIC, sumIC, maxIndexIC;
-    float minEVC, maxEVC, nomEVC, denomEVC, sumEVC, sumSEVC, groupEVC;
-    float minPRP, maxPRP, nomPRC, denomPRC, sumPC, t_sumPRP, sumPRP;
-    float minPP, maxPP, nomPP, denomPP, sumPP, groupPP;
+    qreal edgeWeightTemp, edgeReverseWeightTemp;
+    qreal meanSDC, varianceSDC;
+    qreal meanSCC, varianceSCC;
+    qreal meanIRCC, varianceIRCC;
+    qreal meanSBC, varianceSBC;
+    qreal meanSSC, varianceSSC;
+    qreal meanEC, varianceEC;
+    qreal meanSPC, varianceSPC;
+    qreal meanIC, varianceIC;
+    qreal meanEVC, varianceEVC;
+    qreal meanSDP, varianceSDP;
+    qreal meanPP, variancePP;
+    qreal meanPRP, variancePRP;
+    qreal minEccentricity, maxEccentricity;
+    qreal minSDP, maxSDP, sumDP, sumSDP, groupDP;
+    qreal minSDC, maxSDC, sumDC, sumSDC, groupDC;
+    qreal minSCC, maxSCC, nomSCC, denomSCC, sumCC, sumSCC, groupCC, maxIndexCC;
+    qreal minIRCC, maxIRCC, nomIRCC, denomIRCC, sumIRCC, groupIRCC;
+    qreal minSBC, maxSBC, nomSBC, denomSBC, sumBC, sumSBC, groupSBC, maxIndexBC;
+    qreal minSPC, maxSPC, nomSPC, denomSPC, t_sumIC, sumSPC, groupSPC, maxIndexPC;
+    qreal minSSC, maxSSC, sumSC, sumSSC, groupSC, maxIndexSC;
+    qreal minEC, maxEC, nomEC, denomEC, sumEC, groupEC, maxIndexEC;
+    qreal minIC, maxIC, nomIC, denomIC, sumIC, maxIndexIC;
+    qreal minEVC, maxEVC, nomEVC, denomEVC, sumEVC, sumSEVC, groupEVC;
+    qreal minPRP, maxPRP, nomPRC, denomPRC, sumPC, t_sumPRP, sumPRP;
+    qreal minPP, maxPP, nomPP, denomPP, sumPP, groupPP;
 
-    float minCLC, maxCLC, averageCLC,varianceCLC, d_factor;
+    qreal minCLC, maxCLC, averageCLC,varianceCLC, d_factor;
     int maxNodeCLC, minNodeCLC;
     int classesSDP, maxNodeDP, minNodeDP;
     int classesSDC, maxNodeSDC, minNodeSDC;
@@ -1090,7 +1090,7 @@ private:
     int classesPRP, maxNodePRP, minNodePRP;
     int classesPP, maxNodePP, minNodePP;
     int classesEVC, maxNodeEVC, minNodeEVC;
-    float sizeOfComponent;
+    qreal sizeOfComponent;
 
     /** General & initialisation variables */
 
@@ -1100,9 +1100,9 @@ private:
     int initVertexNumberDistance, initVertexLabelDistance;
     bool order;
     bool initEdgeWeightNumbers, initEdgeLabels;
-    float m_graphAverageDistance, m_graphGeodesicsCount;
-    float m_graphDensity;
-    float m_graphReciprocityArc, m_graphReciprocityDyad;
+    qreal m_graphAverageDistance, m_graphGeodesicsCount;
+    qreal m_graphDensity;
+    qreal m_graphReciprocityArc, m_graphReciprocityDyad;
     int m_graphReciprocityTiesReciprocated;
     int m_graphReciprocityTiesNonSymmetric;
     int m_graphReciprocityTiesTotal;
@@ -1113,7 +1113,7 @@ private:
     int m_graphConnectedness;
     int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
     //int timerId;
-    int canvasWidth, canvasHeight;
+    qreal canvasWidth, canvasHeight;
     bool calculatedEdges;
     bool calculatedVertices, calculatedVerticesList, calculatedVerticesSet;
     bool calculatedAdjacencyMatrix, calculatedDistances, calculatedCentralities;

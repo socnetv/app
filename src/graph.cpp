@@ -37,6 +37,7 @@
 #include <QColor>
 #include <QTextCodec>
 #include <QFileInfo>
+#include <QtGlobal>
 
 #include <cstdlib>		//allows the use of RAND_MAX macro 
 #include <math.h>
@@ -376,9 +377,9 @@ void Graph::clear(const QString &reason) {
  */
 void Graph::canvasSizeSet(const int w, const int h){
 
-    float fX=  (float)(w)/(float)(canvasWidth);
-    float fY= (float)(h)/(float)(canvasHeight);
-    float newX, newY;
+    qreal fX =  (static_cast <qreal> (w)) / canvasWidth;
+    qreal fY =  (static_cast <qreal> (h)) / canvasHeight;
+    qreal newX, newY;
 
     qDebug() << "Graph::canvasSizeSet() - new size (" << w << ", " << h<<")"
              << "adjusting node positions, if any.";
@@ -409,7 +410,7 @@ double Graph::canvasMaxRadius () const {
  * @brief Graph::canvasMinDimension
  * @return
  */
-float Graph::canvasMinDimension() const {
+qreal Graph::canvasMinDimension() const {
     return ( canvasHeight < canvasWidth ) ? canvasHeight-30 : canvasWidth-30;
 }
 
@@ -450,9 +451,8 @@ double Graph::canvasVisibleY(const double &y) const {
  * inside the canvas usable area
  */
 double Graph::canvasRandomX()  const {
-    return qMin (
-                canvasWidth - 30.0 , qMax (30.0 , (double) (rand()%canvasWidth) )
-                );
+    qreal randX = static_cast <qreal> ( rand() % static_cast <int> (canvasWidth) );
+    return qMin ( canvasWidth - 30.0 , qMax ( 30.0 , randX ) );
 }
 
 
@@ -463,9 +463,8 @@ double Graph::canvasRandomX()  const {
  * inside the canvas usable area
  */
 double Graph::canvasRandomY() const {
-    return qMin (
-                canvasHeight - 30.0 , qMax (30.0 , (double) (rand()%canvasHeight) )
-                );
+    qreal randY = static_cast <qreal> ( rand() % static_cast <int> (canvasHeight) );
+    return qMin ( canvasHeight - 30.0 , qMax (30.0 , randY ) );
 }
 
 
@@ -922,7 +921,7 @@ int Graph::vertexExists(const QString &label){
 
 
 /**
- * @brief Finds vertices in searchList by their number
+ * @brief Finds vertices in strList by their number
  * @param QStringList
  * @return
  */
@@ -933,6 +932,7 @@ bool Graph::vertexFindByNumber (const QStringList &numList) {
     QStringList notFound;
     int v=-1;
     bool intOk=false;
+    bool searchResult = false;
     for (int i = 0; i < numList.size(); ++i) {
         vStr = numList.at(i);
         v = vStr.toInt(&intOk);
@@ -955,11 +955,14 @@ bool Graph::vertexFindByNumber (const QStringList &numList) {
     }
 
     if ( !foundList.isEmpty() ) {
+        searchResult = true;
         emit signalNodesFound(foundList);
     }
     if ( !notFound.isEmpty() ){
         //emit signalNodesNotFound(notFound);
     }
+
+    return searchResult;
 
 }
 
@@ -976,6 +979,7 @@ bool Graph::vertexFindByLabel (const QStringList &labelList) {
     QList<int> foundList;
     int vFoundPos = -1;
     QStringList notFound;
+    bool searchResult = false;
     for (int i = 0; i < labelList.size(); ++i) {
         vLabel = labelList.at(i);
 
@@ -993,12 +997,14 @@ bool Graph::vertexFindByLabel (const QStringList &labelList) {
     }
 
     if ( !foundList.isEmpty() ) {
+        searchResult = true;
         emit signalNodesFound(foundList);
     }
     if ( !notFound.isEmpty() ){
         //emit signalNodesNotFound(notFound);
     }
 
+    return searchResult;
 }
 
 
@@ -1013,14 +1019,14 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
     qDebug()<<"Graph::vertexFindByIndexScore() - index"<< index
            << "threshold list" << thresholds;
     QList<int> foundList;
-
+    bool searchResult = false;
     if ( ! graphModified() && calculatedDC ) {
 
         VList::const_iterator it;
         QString thresholdStr="";
         bool gtThan=false;
         bool floatOk=false;
-        float threshold=0;
+        qreal threshold=0;
         for (int i = 0; i < thresholds.size(); ++i) {
 
             thresholdStr = thresholds.at(i);
@@ -1074,9 +1080,11 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
     }
 
     if ( !foundList.isEmpty() ) {
+        searchResult = true;
         emit signalNodesFound(foundList);
     }
 
+    return searchResult;
 }
 
 
@@ -1761,7 +1769,7 @@ void Graph::vertexLabelDistanceInit(const int &distance) {
  * @param drawArrows
  * @param bezier
  */
-void Graph::edgeCreate(const int &v1, const int &v2, const float &weight,
+void Graph::edgeCreate(const int &v1, const int &v2, const qreal &weight,
                         const QString &color,
                         const int &type,
                         const bool &drawArrows, const bool &bezier,
@@ -1832,7 +1840,7 @@ void Graph::edgeCreate(const int &v1, const int &v2, const float &weight,
  */
 void Graph::edgeCreateWebCrawler (const int &source, const int &target){
     qDebug()<< " Graph::edgeCreateWebCrawler() - from " << source << " to " << target ;
-    float weight = 1.0;
+    qreal weight = 1.0;
     bool drawArrows=true;
     bool bezier=false;
 
@@ -1851,7 +1859,7 @@ void Graph::edgeCreateWebCrawler (const int &source, const int &target){
  * @param color
  * @param type
  */
-void Graph::edgeAdd (const int &v1, const int &v2, const float &weight,
+void Graph::edgeAdd (const int &v1, const int &v2, const qreal &weight,
                      const int &type,
                      const QString &label,
                      const QString &color) {
@@ -1956,7 +1964,7 @@ void Graph::edgeVisibilitySet ( int relation,  int source, int target, bool visi
  * @param m_threshold
  * @param overThreshold
  */
-void Graph::edgeFilterByWeight(float m_threshold, bool overThreshold){
+void Graph::edgeFilterByWeight(qreal m_threshold, bool overThreshold){
     if (overThreshold)
         qDebug() << "Graph: edgeFilterByWeight() over " << m_threshold ;
     else
@@ -2032,7 +2040,7 @@ void Graph::edgeClickedSet(const int &v1, const int &v2, const bool &openMenu) {
     }
     else {
 
-        float weight = m_graph[ vpos[ m_clickedEdge.v1] ]->hasEdgeTo(m_clickedEdge.v2);
+        qreal weight = m_graph[ vpos[ m_clickedEdge.v1] ]->hasEdgeTo(m_clickedEdge.v2);
         qDebug() << "Graph::edgeClickedSet() - clicked edge weight:"<< weight;
         int type=EDGE_DIRECTED;
         // Check if the opposite tie exists. If yes, this is a reciprocated tie
@@ -2068,7 +2076,7 @@ ClickedEdge Graph::edgeClicked() {
  * @param reciprocated: if true, checks if the edge is reciprocated (v1<->v2)
  * @return zero if arc or reciprocated edge does not exist or non-zero if arc /reciprocated edge exists
  */
-float Graph::edgeExists (const int &v1, const int &v2, const bool &checkReciprocal) {
+qreal Graph::edgeExists (const int &v1, const int &v2, const bool &checkReciprocal) {
     edgeWeightTemp = 0;
     edgeWeightTemp = m_graph[ vpos[v1] ]->hasEdgeTo(v2);
 
@@ -2164,7 +2172,7 @@ int Graph::vertexEdgesInbound (int v1) {
  * @param weight
  */
 void Graph::edgeWeightSet (const int &v1, const int &v2,
-                           const float &weight, const bool &undirected) {
+                           const qreal &weight, const bool &undirected) {
     qDebug() << "Graph::edgeWeightSet() - " << v1 << "[" << vpos[v1]
                 << "] ->" << v2 << "[" << vpos[v2] << "]" << " = " << weight;
     m_graph [ vpos[v1] ]->changeOutEdgeWeight(v2, weight);
@@ -2187,9 +2195,9 @@ void Graph::edgeWeightSet (const int &v1, const int &v2,
  * @brief Returns the weight of the edge v1 -> v2
  * @param v1
  * @param v2
- * @return float
+ * @return qreal
  */
-float Graph::edgeWeight (const int &v1, const int &v2) const{
+qreal Graph::edgeWeight (const int &v1, const int &v2) const{
     return m_graph[ vpos[v1] ]->hasEdgeTo(v2);
 }
 
@@ -2228,8 +2236,8 @@ bool Graph::edgeColorAllSet(const QString &color, const int &threshold){
     qDebug()<< "Graph::edgeColorAllSet() - new color: " << color;
     int target=0, source=0;
     edgeColorInit(color);
-    QHash<int,float> enabledOutEdges;
-    QHash<int,float>::const_iterator it1;
+    QHash<int,qreal> enabledOutEdges;
+    QHash<int,qreal>::const_iterator it1;
     VList::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
 
@@ -2532,7 +2540,7 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
     qDebug()<<"Graph::verticesCreateSubgraph() - type:" << type
                << "vList:" << vList;
 
-    int weight;
+    qreal weight;
 
     bool drawArrows = !graphUndirected();
     int edgeType=graphUndirected()  ?  EDGE_UNDIRECTED : EDGE_RECIPROCATED;
@@ -2819,7 +2827,7 @@ int Graph::graphSelectedEdgesCount() const {
  * in the current relation.
  * @return
  */
-float Graph::graphDensity() {
+qreal Graph::graphDensity() {
     qDebug()<< "Graph::graphDensity() - checking if graph modified... ";
     if (!graphModified() && calculatedGraphDensity) {
         qDebug()<< "Graph::graphDensity() - graph not modified and"
@@ -2831,8 +2839,8 @@ float Graph::graphDensity() {
     int V=vertices();
     if (V!=0 && V!=1) {
         m_graphDensity = (graphUndirected()) ?
-                    (float) 2* edgesEnabled() / (float)(V*(V-1.0)) :
-                    (float) edgesEnabled() / (float)(V*(V-1.0)) ;
+                    (qreal) 2* edgesEnabled() / (qreal)(V*(V-1.0)) :
+                    (qreal) edgesEnabled() / (qreal)(V*(V-1.0)) ;
     }
     else {
         m_graphDensity = 0;
@@ -2857,7 +2865,7 @@ bool Graph::graphWeighted(){
                 << m_isWeighted;
         return m_isWeighted;
     }
-    float m_weight=0;
+    qreal m_weight=0;
     VList::const_iterator it, it1;
     int N = vertices();
     int progressCounter = 0;
@@ -3071,7 +3079,7 @@ void Graph::webCrawl(const QString &urlSeed,
 
  * @return
  */
-float Graph::graphReciprocity(){
+qreal Graph::graphReciprocity(){
 
 
     qDebug() << "Graph::graphReciprocity() ";
@@ -3090,13 +3098,13 @@ float Graph::graphReciprocity(){
     m_graphReciprocityPairsReciprocated=0;
     m_graphReciprocityPairsTotal=0;
 
-    float weight = 0, reciprocalWeight = 0;
+    qreal weight = 0, reciprocalWeight = 0;
 
     int y=0, v2=0, v1=0;
 
-    QHash<int,float> enabledOutEdges;
+    QHash<int,qreal> enabledOutEdges;
 
-    QHash<int,float>::const_iterator hit;
+    QHash<int,qreal>::const_iterator hit;
     VList::const_iterator it, it1;
 
     H_StrToBool totalDyads;
@@ -3173,12 +3181,12 @@ float Graph::graphReciprocity(){
     }
     //delete enabledOutEdges;
 
-    m_graphReciprocityArc = (float) m_graphReciprocityTiesReciprocated / (float) m_graphReciprocityTiesTotal;
+    m_graphReciprocityArc = (qreal) m_graphReciprocityTiesReciprocated / (qreal) m_graphReciprocityTiesTotal;
 
     m_graphReciprocityPairsReciprocated = reciprocatedDyads.count();
     m_graphReciprocityPairsTotal = totalDyads.count();
 
-    m_graphReciprocityDyad = (float) m_graphReciprocityPairsReciprocated / (float) m_graphReciprocityPairsTotal;
+    m_graphReciprocityDyad = (qreal) m_graphReciprocityPairsReciprocated / (qreal) m_graphReciprocityPairsTotal;
 
     qDebug() << "Graph: graphReciprocity() - Finished. Arc reciprocity:"
              << m_graphReciprocityTiesReciprocated
@@ -3237,12 +3245,12 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
     int rowCount=0;
     int progressCounter=0;
     int N = vertices();
-    float tiesSym=0;
-    float tiesNonSym=0;
-    float tiesOutNonSym=0;
-    float tiesInNonSym=0;
-    float tiesOutNonSymTotalOut=0;
-    float tiesInNonSymTotalIn=0;
+    qreal tiesSym=0;
+    qreal tiesNonSym=0;
+    qreal tiesOutNonSym=0;
+    qreal tiesInNonSym=0;
+    qreal tiesOutNonSymTotalOut=0;
+    qreal tiesInNonSymTotalIn=0;
 
 
     QString pMsg = tr("Writing Reciprocity to file. \nPlease wait...");
@@ -3372,17 +3380,17 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
                  << (*it)->outEdgesReciprocated();
 
         // Symmetric: Total number of reciprocated ties involving this actor divided by the number of ties to and from her.
-        tiesSym =(float)   (*it)->outEdgesReciprocated() / (float)  ( (*it)->outEdges() + (*it)->inEdges());
+        tiesSym =(qreal)   (*it)->outEdgesReciprocated() / (qreal)  ( (*it)->outEdges() + (*it)->inEdges());
         // non Symmetric: One minus symmetric
         tiesNonSym = 1 - tiesSym;
         // nonSym Out/NonSym. Proportion of non-symmetric outgoing ties to the total non-symmetric ties.
-        tiesOutNonSym = ((*it)->outEdgesNonSym() || (*it)->inEdgesNonSym()) ? (float) (*it)->outEdgesNonSym() / (float) ((*it)->outEdgesNonSym() + (*it)->inEdgesNonSym()) : 0;
+        tiesOutNonSym = ((*it)->outEdgesNonSym() || (*it)->inEdgesNonSym()) ? (qreal) (*it)->outEdgesNonSym() / (qreal) ((*it)->outEdgesNonSym() + (*it)->inEdgesNonSym()) : 0;
         // nonSym In/NonSym. Proportion of non-symmetric incoming ties to the total non-symmetric ties.
-        tiesInNonSym =  ((*it)->outEdgesNonSym() || (*it)->inEdgesNonSym()) ?  (float) (*it)->inEdgesNonSym() / (float)  ((*it)->outEdgesNonSym() + (*it)->inEdgesNonSym()) : 0;
+        tiesInNonSym =  ((*it)->outEdgesNonSym() || (*it)->inEdgesNonSym()) ?  (qreal) (*it)->inEdgesNonSym() / (qreal)  ((*it)->outEdgesNonSym() + (*it)->inEdgesNonSym()) : 0;
         // nonSym Out/Out. Proportion of non-symmetric outgoing ties to the total outgoing ties.
-        tiesOutNonSymTotalOut = ( (*it)->outEdges() != 0) ? (float)  (*it)->outEdgesNonSym() /(float) (*it)->outEdges() : 0;
+        tiesOutNonSymTotalOut = ( (*it)->outEdges() != 0) ? (qreal)  (*it)->outEdgesNonSym() /(qreal) (*it)->outEdges() : 0;
         // nonSym In/In. Proportion of non-symmetric incoming ties to the total incoming ties.
-        tiesInNonSymTotalIn = ( (*it)->inEdges() != 0) ? (float)  (*it)->inEdgesNonSym() / (float) (*it)->inEdges() : 0;
+        tiesInNonSymTotalIn = ( (*it)->inEdges() != 0) ? (qreal)  (*it)->inEdgesNonSym() / (qreal) (*it)->inEdges() : 0;
 
         outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
                 <<"<td>"
@@ -3479,11 +3487,11 @@ bool Graph::graphSymmetric(){
     }
     m_symmetric=true;
     int v2=0, v1=0;
-    float weight = 0;
+    qreal weight = 0;
 
-    QHash<int,float> enabledOutEdges;
+    QHash<int,qreal> enabledOutEdges;
 
-    QHash<int,float>::const_iterator hit;
+    QHash<int,qreal>::const_iterator hit;
     VList::const_iterator lit;
 
 
@@ -3532,9 +3540,9 @@ void Graph::graphSymmetrize(){
     qDebug()<< "Graph::graphSymmetrize";
     VList::const_iterator it;
     int v2=0, v1=0, weight;
-    float invertWeight=0;
-    QHash<int,float> enabledOutEdges;
-    QHash<int,float>::const_iterator it1;
+    qreal invertWeight=0;
+    QHash<int,qreal> enabledOutEdges;
+    QHash<int,qreal>::const_iterator it1;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         v1 = (*it)->name();
         qDebug() << "Graph:graphSymmetrize() - iterate over edges of v1 " << v1;
@@ -3582,14 +3590,14 @@ void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
     qDebug()<< "Graph::graphSymmetrizeStrongTies()"
             << "initial relations"<<relations();
     int y=0, v2=0, v1=0, weight;
-    float invertWeight=0;
+    qreal invertWeight=0;
 
     VList::const_iterator it;
 
-    QHash<int,float> outEdgesAll;
-    QHash<int,float>::const_iterator it1;
+    QHash<int,qreal> outEdgesAll;
+    QHash<int,qreal>::const_iterator it1;
 
-    QHash<QString,float> *strongTies = new QHash<QString,float>;
+    QHash<QString,qreal> *strongTies = new QHash<QString,qreal>;
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         v1 = (*it)->name();
@@ -3627,7 +3635,7 @@ void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
 
     relationAdd("Strong Ties",true);
 
-    QHash<QString,float>::const_iterator it2;
+    QHash<QString,qreal>::const_iterator it2;
     it2=strongTies->constBegin();
     QStringList vertices;
     qDebug() << "Graph::graphSymmetrizeStrongTies() - creating strong tie edges";
@@ -3730,19 +3738,19 @@ void Graph::graphCocitation(){
  * dichotomization according to the threshold value.
  * @param threshold
  */
-void Graph::graphDichotomization(const float threshold) {
+void Graph::graphDichotomization(const qreal threshold) {
     qDebug()<< "Graph::graphDichotomization()"
             << "initial relations"<<relations();
 
-    int y=0, v2=0, v1=0, weight;
-    float invertWeight=0;
+    int y = 0, v2 = 0, v1 = 0;
+    qreal weight = 0;
 
     VList::const_iterator it;
 
-    QHash<int,float> outEdgesAll;
-    QHash<int,float>::const_iterator it1;
+    QHash<int,qreal> outEdgesAll;
+    QHash<int,qreal>::const_iterator it1;
 
-    QHash<QString,float> *binaryTies = new QHash<QString,float>;
+    QHash<QString,qreal> *binaryTies = new QHash<QString,qreal>;
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         v1 = (*it)->name();
@@ -3774,7 +3782,7 @@ void Graph::graphDichotomization(const float threshold) {
 
     relationAdd("Binary-"+QString::number(threshold),true);
 
-    QHash<QString,float>::const_iterator it2;
+    QHash<QString,qreal>::const_iterator it2;
     it2=binaryTies->constBegin();
     QStringList vertices;
     qDebug() << "Graph::graphDichotomization() - creating binary tie edges";
@@ -3820,8 +3828,8 @@ void Graph::graphUndirectedSet(const bool &toggle, const bool &signalMW){
     }
     VList::const_iterator it;
     int v2=0, v1=0, weight;
-    QHash<int,float> enabledOutEdges;
-    QHash<int,float>::const_iterator it1;
+    QHash<int,qreal> enabledOutEdges;
+    QHash<int,qreal>::const_iterator it1;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         v1 = (*it)->name();
         qDebug() << "Graph::graphUndirectedSet() - iterate over edges of v1 " << v1;
@@ -3870,7 +3878,7 @@ bool Graph::graphUndirected() {
  */
 void Graph::edgeTypeSet(const int &v1,
                         const int &v2,
-                        const float &weight,
+                        const qreal &weight,
                         const int &dirType) {
 
     qDebug() << "Graph::edgeTypeSet(): " << v1
@@ -3879,7 +3887,7 @@ void Graph::edgeTypeSet(const int &v1,
     if (dirType!=EDGE_DIRECTED) {
 
         // check for opposite edge
-        float inverseWeight = edgeExists ( v2, v1 ) ;
+        qreal inverseWeight = edgeExists ( v2, v1 ) ;
 
         if ( inverseWeight == 0 ) {
             // if the opposite edge does not exist, add it
@@ -4048,7 +4056,7 @@ int Graph::graphDiameter(const bool considerWeights,
  * @param dropIsolates
  * @return
  */
-float Graph::graphDistanceGeodesicAverage(const bool considerWeights,
+qreal Graph::graphDistanceGeodesicAverage(const bool considerWeights,
                                   const bool inverseWeights,
                                   const bool dropIsolates){
 
@@ -4508,13 +4516,13 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 
         qDebug() << "Graph::graphDistanceGeodesicCompute() - Initializing variables";
 
-        float CC=0, BC=0, SC= 0, eccentricity=0, EC=0, PC=0;
-        float SCC=0, SBC=0, SSC=0, SEC=0, SPC=0;
-        float tempVarianceBC=0, tempVarianceSC=0,tempVarianceEC=0;
-        float tempVarianceCC=0, tempVariancePC=0;
-        float sigma_u=0, sigma_w=0;
-        float delta_u=0, delta_w=0;
-        float d_sw=0, d_su=0;
+        qreal CC=0, BC=0, SC= 0, eccentricity=0, EC=0, PC=0;
+        qreal SCC=0, SBC=0, SSC=0, SEC=0, SPC=0;
+        qreal tempVarianceBC=0, tempVarianceSC=0,tempVarianceEC=0;
+        qreal tempVarianceCC=0, tempVariancePC=0;
+        qreal sigma_u=0, sigma_w=0;
+        qreal delta_u=0, delta_w=0;
+        qreal d_sw=0, d_su=0;
 
         m_graphDisconnected = false;
         H_f_i::const_iterator hfi ; // for Power Centrality
@@ -4759,7 +4767,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 
                             if ( m_graph[si]->shortestPaths(w) > 0 ) {
                                 //delta[u]=delta[u]+(1+delta[w])*(sigma[u]/sigma[w]) ;
-                                 d_su=delta_u + ( 1.0 + delta_w ) * ( (float) sigma_u / (float)sigma_w);
+                                 d_su=delta_u + ( 1.0 + delta_w ) * ( (qreal) sigma_u / (qreal)sigma_w);
                             }
                             else {
                                 d_su=delta_u;
@@ -4956,19 +4964,19 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                         "Computing mean centrality values...";
 
             // Compute mean values and prepare to compute variances
-            meanSBC = sumSBC /(float) N ;
+            meanSBC = sumSBC /(qreal) N ;
             varianceSBC=0;
             tempVarianceBC=0;
 
-            meanSCC = sumSCC /(float) N ;
+            meanSCC = sumSCC /(qreal) N ;
             varianceSCC=0;
             tempVarianceCC=0;
 
-            meanSPC = sumSPC /(float) N ;
+            meanSPC = sumSPC /(qreal) N ;
             varianceSPC=0;
             tempVariancePC=0;
 
-            meanEC = sumEC /(float) N ;
+            meanEC = sumEC /(qreal) N ;
             varianceEC=0;
             tempVarianceEC=0;
 
@@ -5023,15 +5031,15 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
             } // end for
 
             //compute final variances
-            varianceSBC  /=  (float) N;
-            varianceSCC  /=  (float) N;
-            varianceSPC  /=  (float) N;
+            varianceSBC  /=  (qreal) N;
+            varianceSCC  /=  (qreal) N;
+            varianceSPC  /=  (qreal) N;
 
-            varianceEC  /=  (float) N;
+            varianceEC  /=  (qreal) N;
 
 
             // calculate SC mean value and prepare to compute variance
-            meanSSC = sumSSC /(float) N ;
+            meanSSC = sumSSC /(qreal) N ;
             varianceSSC=0;
             tempVarianceSC=0;
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
@@ -5043,7 +5051,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                 varianceSSC  += tempVarianceSC;
             }
             //calculate final SC variance
-            varianceSSC  /=  (float) N;
+            varianceSSC  /=  (qreal) N;
 
             denomSPC = (  (N-2.0) ) / (2.0 );   //only for connected nets
             if (N < 3 )
@@ -5289,7 +5297,7 @@ void Graph::dijkstra(const int &s, const int &si,
 
     int u=0,ui=0, w=0, wi=0, v=0, temp=0;
     int relation=0;
-    float  weight=0, dist_u=0,  dist_w=0;
+    qreal  weight=0, dist_u=0,  dist_w=0;
     bool edgeStatus=false;
     H_edges::const_iterator it1;
     VList::const_iterator it;
@@ -5536,7 +5544,7 @@ void Graph::dijkstra(const int &s, const int &si,
  * @param maxNode
  * @param minNode
  */
-void Graph::minmax(float C, GraphVertex *v, float &max, float &min, int &maxNode, int &minNode) {
+void Graph::minmax(qreal C, GraphVertex *v, qreal &max, qreal &min, int &maxNode, int &minNode) {
     qDebug() << "MINMAX C = " <<  C << "  max = " << max << "  min = " << min << " name = " <<  v->name();
     if (C > max ) {
         max=C;
@@ -5560,7 +5568,7 @@ void Graph::minmax(float C, GraphVertex *v, float &max, float &min, int &maxNode
  * @param discreteClasses
  * @param classes
  */
-void Graph::resolveClasses(float C, H_StrToInt &discreteClasses, int &classes){
+void Graph::resolveClasses(qreal C, H_StrToInt &discreteClasses, int &classes){
     H_StrToInt::iterator it2;
     it2 = discreteClasses.find(QString::number(C));    //Amort. O(1) complexity
     if (it2 == discreteClasses.end() )	{
@@ -5578,7 +5586,7 @@ void Graph::resolveClasses(float C, H_StrToInt &discreteClasses, int &classes){
  * @param classes
  * @param vertex
  */
-void Graph::resolveClasses(float C, H_StrToInt &discreteClasses, int &classes, int vertex){
+void Graph::resolveClasses(qreal C, H_StrToInt &discreteClasses, int &classes, int vertex){
     H_StrToInt::iterator it2;
     Q_UNUSED(vertex);
     it2 = discreteClasses.find(QString::number(C));    //Amort. O(1) complexity
@@ -5705,7 +5713,7 @@ void Graph::writeEccentricity(const QString fileName, const bool considerWeights
     int progressCounter=0;
     int rowCount=0;
     int N = vertices();
-    float eccentr=0;
+    qreal eccentr=0;
 
     QString pMsg = tr("Writing Eccentricity scores to file. \nPlease wait...");
     emit statusMessage ( pMsg );
@@ -5886,8 +5894,8 @@ void Graph::centralityInformation(const bool considerWeights,
 
     int i=0, j=0;
 
-    float m_weight=0, weightSum=1, diagonalEntriesSum=0, rowSum=0;
-    float IC=0, SIC=0;
+    qreal m_weight=0, weightSum=1, diagonalEntriesSum=0, rowSum=0;
+    qreal IC=0, SIC=0;
     /* Note: isolated nodes must be dropped from the AM
         Otherwise, the SIGMA matrix might be singular, therefore non-invertible. */
     bool dropIsolates=true;
@@ -5957,8 +5965,8 @@ void Graph::centralityInformation(const bool considerWeights,
         minmax( SIC, (*it), maxIC, minIC, maxNodeIC, minNodeIC) ;
     }
 
-    float x=0;
-    meanIC = sumIC /(float) n ;
+    qreal x=0;
+    meanIC = sumIC /static_cast<qreal> (n) ;
 
     varianceIC=0;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -5967,7 +5975,7 @@ void Graph::centralityInformation(const bool considerWeights,
         varianceIC  += x;
     }
 
-    varianceIC  /=  (float) n;
+    varianceIC  /=  (qreal) n;
 
     calculatedIC = true;
 
@@ -6493,7 +6501,7 @@ void Graph::centralityEigenvector(const bool &considerWeights,
     int i = 0;
     int N = vertices(dropIsolates);
 
-    float EVC[N];
+    qreal EVC[N];
 
     graphMatrixAdjacencyCreate(dropIsolates, considerWeights,
                                inverseWeights, symmetrize);
@@ -6539,7 +6547,7 @@ void Graph::centralityEigenvector(const bool &considerWeights,
     emit statusMessage(tr("Leading eigenvector computed. "
                           "Analysing centralities. Please wait..."));
     i = 0;
-    meanEVC = sumEVC / (float) N;
+    meanEVC = sumEVC / (qreal) N;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
 
         if (!(*it)->isIsolated() && dropIsolates) {
@@ -6555,7 +6563,7 @@ void Graph::centralityEigenvector(const bool &considerWeights,
 
     }
 
-    varianceEVC=varianceEVC/(float) N;
+    varianceEVC=varianceEVC/(qreal) N;
 
 
     // group eigenvector centralization measure is
@@ -6584,8 +6592,8 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
         qDebug() << "Graph::centralityDegree() - graph not changed - returning";
         return;
     }
-    float DC=0, nom=0, denom=0,  SDC=0;
-    float weight;
+    qreal DC=0, nom=0, denom=0,  SDC=0;
+    qreal weight;
     classesSDC=0;
     discreteSDCs.clear();
     sumSDC=0;
@@ -6610,7 +6618,7 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
         DC=0;
         if (!(*it)->isIsolated()) {
             for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
-                if ( (weight=edgeExists( (*it)->name(), (*it1)->name() ) ) !=0  )   {
+                if ( (weight=edgeExists( (*it)->name(), (*it1)->name() ) ) != 0.0  )   {
 //                    qDebug() << "Graph::centralityDegree() - vertex "
 //                             <<  (*it)->name()
 //                             << " has edge to = " <<  (*it1)->name();
@@ -6670,7 +6678,7 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
     if (minSDC == maxSDC)
         maxNodeSDC=-1;
 
-    meanSDC = sumSDC / (float) N;
+    meanSDC = sumSDC / (qreal) N;
     //    qDebug() << "Graph::centralityDegree() - sumSDC  " << sumSDC
     //             << " vertices " << N << " meanSDC = sumSDC / N = " << meanSDC;
 
@@ -6685,7 +6693,7 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
 
 
     }
-    varianceSDC=varianceSDC/(float) N;
+    varianceSDC=varianceSDC/(qreal) N;
 
 //    qDebug() << "Graph::centralityDegree() - variance = " << varianceSDC;
     if (m_symmetric) {
@@ -6741,7 +6749,7 @@ void Graph::writeCentralityDegree ( const QString fileName,
 
     centralityDegree(considerWeights, dropIsolates);
 
-    float maxIndexDC=vertices(dropIsolates)-1.0;
+    qreal maxIndexDC=vertices(dropIsolates)-1.0;
 
     int rowCount=0;
     int N = vertices();
@@ -7275,10 +7283,10 @@ void Graph::centralityClosenessIR(const bool considerWeights,
     // calculate centralities
     VList::const_iterator it, jt;
     int progressCounter = 0;
-    float IRCC=0,SIRCC=0;
-    float Ji=0;
-    float dist=0;
-    float N=vertices(dropIsolates);
+    qreal IRCC=0,SIRCC=0;
+    qreal Ji=0;
+    qreal dist=0;
+    qreal N=vertices(dropIsolates);
     classesIRCC=0;
     discreteIRCCs.clear();
     sumIRCC=0;
@@ -7322,7 +7330,7 @@ void Graph::centralityClosenessIR(const bool considerWeights,
         // sanity check for IRCC=0 (=> node is disconnected)
         if (IRCC != 0)  {
             IRCC /= Ji;
-            IRCC =  ( Ji / (float) (N-1) ) / IRCC;
+            IRCC =  ( Ji / (qreal) (N-1) ) / IRCC;
         }
 
         sumIRCC += IRCC;
@@ -7333,7 +7341,7 @@ void Graph::centralityClosenessIR(const bool considerWeights,
 
     }
 
-    meanIRCC = sumIRCC / (float) N;
+    meanIRCC = sumIRCC / (qreal) N;
 
     if (minIRCC == maxIRCC)
         maxNodeIRCC=-1;
@@ -7345,7 +7353,7 @@ void Graph::centralityClosenessIR(const bool considerWeights,
         }
     }
 
-    varianceIRCC=varianceIRCC/(float) N;
+    varianceIRCC=varianceIRCC/(qreal) N;
 
     calculatedIRCC=true;
 
@@ -8525,11 +8533,11 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
     VList::const_iterator it;
     H_StrToInt::iterator it2;
 
-    QHash<int,float> *enabledInEdges = new QHash<int,float>;
-    QHash<int,float>::const_iterator hit;
+    QHash<int,qreal> *enabledInEdges = new QHash<int,qreal>;
+    QHash<int,qreal>::const_iterator hit;
 
-    float DP=0, SDP=0, nom=0, denom=0;
-    float weight;
+    qreal DP=0, SDP=0, nom=0, denom=0;
+    qreal weight;
 
     classesSDP=0;
     sumSDP=0;
@@ -8651,7 +8659,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
     if (minSDP == maxSDP)
         maxNodeDP=-1;
 
-    meanSDP = sumSDP / (float) N;
+    meanSDP = sumSDP / (qreal) N;
 
     qDebug("Graph: sumSDP = %f, meanSDP = %f", sumSDP, meanSDP);
 
@@ -8664,7 +8672,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
         nom+= maxSDP-SDP;
         varianceSDP += (SDP-meanSDP) * (SDP-meanSDP) ;
     }
-    varianceSDP=varianceSDP/(float) N;
+    varianceSDP=varianceSDP/(qreal) N;
 
     if (m_symmetric)
         denom=(N-1.0)*(N-2.0);
@@ -8714,7 +8722,7 @@ void Graph::writePrestigeDegree (const QString fileName,
 
     int N = vertices();
 
-    float maxIndexDP=N-1.0;
+    qreal maxIndexDP=N-1.0;
 
     int rowCount=0;
     int progressCounter = 0;
@@ -8965,10 +8973,10 @@ void Graph::prestigeProximity( const bool considerWeights,
 
     // calculate centralities
     VList::const_iterator it, jt;
-    float PP=0;
-    float dist=0;
-    float Ii=0;
-    float V=vertices(dropIsolates);
+    qreal PP=0;
+    qreal dist=0;
+    qreal Ii=0;
+    qreal V=vertices(dropIsolates);
     classesPP=0;
     discretePPs.clear();
     sumPP=0;
@@ -9306,17 +9314,17 @@ void Graph::prestigePageRank(const bool &dropIsolates){
     // Google creators set d to 0.85.
     d_factor = 0.85;
 
-    float PRP=0, oldPRP = 0;
-    float SPRP=0;
+    qreal PRP=0, oldPRP = 0;
+    qreal SPRP=0;
     int iterations = 1; // a counter
     int referrer;
-    float delta = 0.00001; // The delta where we will stop the iterative calculation
-    float maxDelta = RAND_MAX;
-    float sumInLinksPR = 0;  // temp var for inlinks sum PR
-    float transferedPRP = 0;
-    float inLinks = 0;       // temp var
-    float outLinks = 0;       // temp var
-    float t_variance=0;
+    qreal delta = 0.00001; // The delta where we will stop the iterative calculation
+    qreal maxDelta = RAND_MAX;
+    qreal sumInLinksPR = 0;  // temp var for inlinks sum PR
+    qreal transferedPRP = 0;
+    qreal inLinks = 0;       // temp var
+    qreal outLinks = 0;       // temp var
+    qreal t_variance=0;
     int N =  vertices(dropIsolates) ;
 
     VList::const_iterator it;
@@ -9335,7 +9343,7 @@ void Graph::prestigePageRank(const bool &dropIsolates){
 
         // At first, PR scores have probability distribution
         // from 0 to 1, so each one is set to 1/N
-        (*it)->setPRP( 1.0 / (float) N );
+        (*it)->setPRP( 1.0 / (qreal) N );
 
         // compute inEdges() to warm up inEdgesConst for everyone
         inLinks = (*it)->inEdges();
@@ -9424,7 +9432,7 @@ void Graph::prestigePageRank(const bool &dropIsolates){
                 ++jt;
             }
 
-            PRP = (1-d_factor) / (float) N + d_factor * sumInLinksPR;
+            PRP = (1-d_factor) / (qreal) N + d_factor * sumInLinksPR;
 
            (*it) -> setPRP ( PRP );
 
@@ -9472,7 +9480,7 @@ void Graph::prestigePageRank(const bool &dropIsolates){
     emit signalProgressBoxUpdate( 2* N / 3);
 
     if (N != 0 ) {
-        meanPRP = sumPRP / (float) N ;
+        meanPRP = sumPRP / (qreal) N ;
     }
     else {
         meanPRP = SPRP;
@@ -9511,7 +9519,7 @@ void Graph::prestigePageRank(const bool &dropIsolates){
 
 
     qDebug() << "PRP' Variance   " << variancePRP   << " N " << N ;
-    variancePRP  = variancePRP  / (float) N;
+    variancePRP  = variancePRP  / (qreal) N;
     qDebug() << "PRP' Variance: " << variancePRP   ;
 
     calculatedPRP= true;
@@ -9769,7 +9777,7 @@ void Graph::randomizeThings()   {
 void Graph::randomNetErdosCreate(const int &N,
                                    const QString &model,
                                    const int &m,
-                                   const float &p,
+                                   const qreal &p,
                                    const QString &mode,
                                    const bool &diag)
 {
@@ -9921,7 +9929,7 @@ void Graph::randomNetScaleFreeCreate (const int &N,
                                        const int &power,
                                        const int &m0,
                                        const int &m,
-                                       const float &alpha,
+                                       const qreal &alpha,
                                        const QString &mode)
 {
     qDebug() << "Graph::randomNetScaleFreeCreate() - max nodes n" << N
@@ -10183,8 +10191,8 @@ void Graph::randomNetRegularCreate(const int &N,
     m_undirected = (mode == "graph") ? true: false;
 
     int x = 0, y = 0 ;
-    float progressCounter=0;
-    float progressFraction =(m_undirected) ? 2/(float) degree : 1/(float) degree;
+    qreal progressCounter=0;
+    qreal progressFraction =(m_undirected) ? 2/(qreal) degree : 1/(qreal) degree;
 
     int target = 0;
     int edgeCount = 0;
@@ -10439,8 +10447,8 @@ void Graph::randomNetLatticeCreate(const int &N,
     double nodeHPadding = 0;
     double nodeVPadding = 0;
     double canvasPadding = 100;
-    float progressCounter=0;
-    float progressFraction =0;//(m_undirected) ? 2/(float) degree : 1/(float) degree;
+    qreal progressCounter=0;
+    qreal progressFraction =0;//(m_undirected) ? 2/(qreal) degree : 1/(qreal) degree;
 
     int target = 0;
     int edgeCount = 0;
@@ -11460,7 +11468,7 @@ bool Graph::writeCliqueCensus(const QString &fileName,
     int rowCounter = 0;
     int cliqueSize = 0;
     int actor2 = 0, actor1=0, index1=0, index2=0;
-    float numerator = 0;
+    qreal numerator = 0;
     QString listString;
 
     VList::const_iterator it, it2;
@@ -11604,7 +11612,7 @@ bool Graph::writeCliqueCensus(const QString &fileName,
 
                 }
                 outText <<"<td>"
-                        << fixed << (numerator/(float) cliqueSize)
+                        << fixed << (numerator/(qreal) cliqueSize)
                         <<"</td>";
 
             }
@@ -12141,7 +12149,7 @@ void Graph::writeClusteringHierarchicalResultsToStream(QTextStream& outText,
            << "dendrogram" << dendrogram;
 
     QMap<int, V_int>::const_iterator it;
-    float level;
+    qreal level;
 
     outText << "<pre>";
     outText <<"Seq" << "\t"<<"Level" << "\t"<< "Actors" <<endl;
@@ -12193,9 +12201,9 @@ void Graph::writeClusteringHierarchicalResultsToStream(QTextStream& outText,
 
         int actorNumber;
 
-        float maxLevelValue;
+        qreal maxLevelValue;
         QString clusterName;
-        QList<float> legendLevelsDone;
+        QList<qreal> legendLevelsDone;
 
         it = m_clustersPerSequence.constEnd();
         it--;
@@ -12383,10 +12391,10 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
     qDebug() << "Graph::graphClusteringHierarchical() - STR_EQUIV matrix:";
     //STR_EQUIV.printMatrixConsole(true);
 
-    float min=RAND_MAX;
-    float max=0;
+    qreal min=RAND_MAX;
+    qreal max=0;
     int imin, jmin, imax, jmax, mergedClusterIndex, deletedClusterIndex ;
-    float distanceNewCluster;
+    qreal distanceNewCluster;
 
     // temp vector stores cluster members at each clustering level
     QVector<int> clusteredItems;
@@ -13457,8 +13465,8 @@ void Graph::graphMatrixSimilarityPearsonCreate (Matrix &AM,
     Returns the number of triples of vertex v1
     A triple Υ at a vertex v is a path of length two for which v is the center vertex.
 */
-float Graph::numberOfTriples(int v1){
-    float totalDegree=0;
+qreal Graph::numberOfTriples(int v1){
+    qreal totalDegree=0;
     if (graphSymmetric()){
         totalDegree=vertexEdgesOutbound(v1);
         return totalDegree * (totalDegree -1.0) / 2.0;
@@ -13479,9 +13487,9 @@ float Graph::numberOfTriples(int v1){
  * @param v1
  * @return
  */
-float Graph::clusteringCoefficientLocal(const int &v1){
+qreal Graph::clusteringCoefficientLocal(const int &v1){
     if ( !graphModified() && (m_graph[ vpos [v1] ] -> hasCLC() ) )  {
-        float clucof=m_graph[ vpos [v1] ] ->CLC();
+        qreal clucof=m_graph[ vpos [v1] ] ->CLC();
         qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") - "
                  << " Not modified. Returning previous clucof = " << clucof;
         return clucof;
@@ -13499,7 +13507,7 @@ float Graph::clusteringCoefficientLocal(const int &v1){
         graphIsSymmetric = false;
     }
 
-    float clucof=0, denom = 0 , nom = 0;
+    qreal clucof=0, denom = 0 , nom = 0;
     int u1 = 0 , u2 = 0, k = 0;
 
     H_StrToBool neighborhoodEdges;
@@ -13509,11 +13517,11 @@ float Graph::clusteringCoefficientLocal(const int &v1){
              << "[" << vpos[v1] << "] "
              << " Checking adjacent edges " ;
 
-    QHash<int,float> reciprocalEdges ;
+    QHash<int,qreal> reciprocalEdges ;
     reciprocalEdges = m_graph [ vpos[v1] ] -> reciprocalEdgesHash();
 
-    QHash<int,float>::const_iterator it1;
-    QHash<int,float>::const_iterator it2;
+    QHash<int,qreal>::const_iterator it1;
+    QHash<int,qreal>::const_iterator it2;
 
     it1=reciprocalEdges.cbegin();
 
@@ -13649,14 +13657,14 @@ float Graph::clusteringCoefficientLocal(const int &v1){
  * @param updateProgress
  * @return
  */
-float Graph::clusteringCoefficient (const bool updateProgress){
+qreal Graph::clusteringCoefficient (const bool updateProgress){
     qDebug()<< "Graph::clusteringCoefficient()";
     averageCLC=0;
     varianceCLC=0;
     maxCLC=0; minCLC=1;
-    float temp=0;
-    float x=0;
-    float N = vertices();
+    qreal temp=0;
+    qreal x=0;
+    qreal N = vertices();
     int progressCounter = 0;
     VList::const_iterator vertex;
 
@@ -14155,12 +14163,12 @@ void Graph::graphLoad (	const QString m_fileName,
 
     connect (
                 file_parser, SIGNAL(
-                    edgeCreate (const int&, const int&, const float&,
+                    edgeCreate (const int&, const int&, const qreal&,
                                 const QString&, const int&,
                                 const bool&, const bool&,
                                 const QString&, const bool&)),
                 this, SLOT(
-                    edgeCreate (const int&, const int&, const float&,
+                    edgeCreate (const int&, const int&, const qreal&,
                                 const QString&, const int&,
                                 const bool&, const bool&,
                                 const QString&, const bool&) )
@@ -14413,7 +14421,7 @@ bool Graph::graphSaveToPajekFormat (const QString &fileName, \
                                     int maxWidth, int maxHeight
                                     )
 {
-    float weight=0;
+    qreal weight=0;
     QFileInfo fileInfo (fileName);
     QString fileNameNoPath = fileInfo.fileName();
 
@@ -14536,7 +14544,7 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
 {
 
 
-    float weight=0;
+    qreal weight=0;
     int source=0, target=0, edgeCount=0, m_size=1, m_labelSize;
     QString m_color, m_labelColor, m_label;
     bool openToken;
@@ -14549,8 +14557,8 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
     qDebug () << "Graph::graphSaveToGraphMLFormat() - file:" << fileName.toUtf8()
               << "networkName"<< networkName;
 
-    maxWidth = (maxWidth == 0) ? canvasWidth:maxWidth ;
-    maxHeight= (maxHeight== 0) ? canvasHeight:maxHeight;
+    maxWidth = (maxWidth == 0) ? (int)canvasWidth:maxWidth ;
+    maxHeight= (maxHeight== 0) ? (int)canvasHeight:maxHeight;
 
     QFile f( fileName );
     if ( !f.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
@@ -14705,7 +14713,7 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
                                 << "\" target=\"" << target << "\"";
 
                         openToken = true;
-                        if ( weight !=0 ) {
+                        if ( weight != 0 ) {
                             outText << "> \n";
                             outText << "      <data key=\"d8\">" << weight<<"</data>" <<" \n";
                             openToken=false;
@@ -19008,7 +19016,7 @@ void Graph::writeMatrixHTMLTable(QTextStream& outText,
 
     int rowCount=0, i=0, j=0;
     int N = vertices();
-    float maxVal, minVal, element;
+    qreal maxVal, minVal, element;
     bool hasRealNumbers=false;
 
     VList::const_iterator it, jt;
@@ -19134,7 +19142,7 @@ void Graph::writeMatrixAdjacencyTo(QTextStream& os,
                                    const bool &saveEdgeWeights){
     qDebug("Graph: adjacencyMatrix(), writing matrix with %i vertices", vertices());
     VList::const_iterator it, it1;
-    float weight=RAND_MAX;
+    qreal weight=RAND_MAX;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() ) continue;
         for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
@@ -19176,7 +19184,7 @@ void Graph::writeMatrixAdjacency (const QString fn,
     QTextStream outText( &file ); outText.setCodec("UTF-8");
 
     int sum=0;
-    float weight=0;
+    qreal weight=0;
     int rowCount=0;
     int N = vertices();
 
@@ -19315,7 +19323,7 @@ void Graph::writeMatrixAdjacencyPlot (const QString fn,
     int sum=0;
     int rowCount=0;
     int N = vertices();
-    float weight=0;
+    qreal weight=0;
     int progressCounter = 0;
     QString pMsg = tr("Plotting Adjacency Matrix. \nPlease wait...");
     emit statusMessage( pMsg );
@@ -19468,7 +19476,7 @@ void Graph::graphMatrixAdjacencyCreate(const bool dropIsolates,
              << "considerWeights" << considerWeights
              << "inverseWeights" << inverseWeights
              << "symmetrize" << symmetrize;
-    float m_weight=RAND_MAX;
+    qreal m_weight=RAND_MAX;
     int i=0, j=0;
     int N = vertices(dropIsolates,false,true), progressCounter=0;
     VList::const_iterator it, jt;
@@ -19779,7 +19787,7 @@ void Graph::layoutRadialRandom(const bool &guides){
 
     double maxRadius = canvasMaxRadius();
     //offset controls how far from the centre the central nodes be positioned
-    float offset=0.06, randomDecimal=0;
+    qreal offset=0.06, randomDecimal=0;
     int vert=vertices();
     int progressCounter=0;
     VList::const_iterator it;
@@ -19798,7 +19806,7 @@ void Graph::layoutRadialRandom(const bool &guides){
 
         emit signalProgressBoxUpdate(++progressCounter);
 
-        randomDecimal = (float ) ( rand()%100 ) / 100.0;
+        randomDecimal = (qreal ) ( rand() % 100 ) / 100.0;
         new_radius=(maxRadius- (randomDecimal - offset)*maxRadius);
 
         qDebug () << "Vertice " << (*it)->name()
@@ -19937,10 +19945,10 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
 
     double  i=0, std=0, norm=0;
     double new_x=0, new_y=0;
-    float C=0, maxC=0;
+    qreal C=0, maxC=0;
     double x0=0, y0=0, maxRadius=0, new_radius=0, rad=0;
     double maxWidth=0, maxHeight=0;
-    float offset=0;
+    qreal offset=0;
     int new_size=0;
     int progressCounter=0;
 
@@ -20231,7 +20239,7 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
             }
 
             default: {
-                new_size=ceil ( initVertexSize/2.0 + (float) initVertexSize * (norm));
+                new_size=ceil ( initVertexSize/2.0 + (qreal) initVertexSize * (norm));
                 break;
             }
 
@@ -20598,10 +20606,10 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
 
     int N=vertices();  // active actors
 
-    float K=1;  // constant
-    float L=0;  // the desirable length of a single edge.
-    float L0=0; // the length of a side of the display square area
-    float D=0;  // the graph diameter
+    qreal K=1;  // constant
+    qreal L=0;  // the desirable length of a single edge.
+    qreal L0=0; // the length of a side of the display square area
+    qreal D=0;  // the graph diameter
 
 
 
@@ -20609,28 +20617,28 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
     Matrix k; // the strength of the spring between pairs of particles/actors
 
     Matrix LIN_EQ_COEF(2,2);    // holds the coefficients of set of linear equations 11 and 12
-    float b[2];                 // holds the right hand vector of linear equations 11 and 12
+    qreal b[2];                 // holds the right hand vector of linear equations 11 and 12
 
-    float partDrvtEx = 0; // partial derivative of E by Xm
-    float partDrvtEy = 0; // partial derivative of E by Ym
-    float partDrvtExSec_m = 0; // partial second derivative of E by Xm
-    float partDrvtEySec_m = 0; // partial second derivative of E by Ym
-    float partDrvtExEySec_m = 0; // partial second derivative of E by Xm Ym
-    float partDrvtEyExSec_m = 0; // partial second derivative of E by Ym Xm
+    qreal partDrvtEx = 0; // partial derivative of E by Xm
+    qreal partDrvtEy = 0; // partial derivative of E by Ym
+    qreal partDrvtExSec_m = 0; // partial second derivative of E by Xm
+    qreal partDrvtEySec_m = 0; // partial second derivative of E by Ym
+    qreal partDrvtExEySec_m = 0; // partial second derivative of E by Xm Ym
+    qreal partDrvtEyExSec_m = 0; // partial second derivative of E by Ym Xm
 
-    float partDrvtEx_m = 0; // cache for partial derivative of E by Xm, for particle with max D_i
-    float partDrvtEy_m = 0; // cache for partial derivative of E by Ym, for particle with max D_i
+    qreal partDrvtEx_m = 0; // cache for partial derivative of E by Xm, for particle with max D_i
+    qreal partDrvtEy_m = 0; // cache for partial derivative of E by Ym, for particle with max D_i
 
-    float partDrvDenom = 0;
-    float xm=0,ym=0;
-    float xi=0,yi=0;
-    float xpm=0, ypm=0; // cache for pos of particle with max D_i
+    qreal partDrvDenom = 0;
+    qreal xm=0,ym=0;
+    qreal xi=0,yi=0;
+    qreal xpm=0, ypm=0; // cache for pos of particle with max D_i
 
-    float dx=0, dy=0;
+    qreal dx=0, dy=0;
 
-    float epsilon=0.1;
-    float Delta_m=0;
-    float Delta_max=epsilon + 0.0001;
+    qreal epsilon=0.1;
+    qreal Delta_m=0;
+    qreal Delta_max=epsilon + 0.0001;
 
 
     // Compute graph-theoretic distances dij for 1 <= i!=j <= n

@@ -100,7 +100,7 @@ public:
     bool loadEdgeListWeighed(const QString &delimiter);
 	bool loadTwoModeSociomatrix();
 
-    void readDotProperties(QString str, float &, QString &label,
+    void readDotProperties(QString str, qreal &, QString &label,
                        QString &shape, QString &color, QString &fontName,
                        QString &fontColor );
     bool readGraphML(QXmlStreamReader &);
@@ -139,7 +139,7 @@ signals:
                                          const bool &signalMW=false
                                          );
 
-    void edgeCreate (const int &source, const int &target, const float &weight,
+    void edgeCreate (const int &source, const int &target, const qreal &weight,
                      const QString &color, const int &edgeDirType,
                      const bool &arrows, const bool &bezier,
                      const QString &edgeLabel=QString::null,
@@ -176,8 +176,8 @@ private:
     int totalLinks, totalNodes, fileFormat, two_sm_mode, edgeDirType;
     int initNodeSize,  initNodeNumberSize, nodeNumberSize, initNodeLabelSize;
     int nodeLabelSize, source, target, nodeSize;
-	float initEdgeWeight, edgeWeight, arrowSize;
-	float bez_p1_x,bez_p1_y, bez_p2_x, bez_p2_y;
+    qreal initEdgeWeight, edgeWeight, arrowSize;
+    qreal bez_p1_x,bez_p1_y, bez_p2_x, bez_p2_y;
     bool missingNode;
 	bool arrows, bezier, conv_OK;
     bool bool_key, bool_node, bool_edge, fileContainsNodeColors;

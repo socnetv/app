@@ -34,7 +34,7 @@
 
 #include "dialogranderdosrenyi.h"
 
-DialogRandErdosRenyi::DialogRandErdosRenyi(QWidget *parent, const float eprob) :
+DialogRandErdosRenyi::DialogRandErdosRenyi(QWidget *parent, const qreal eprob) :
 
     QDialog(parent)
 {

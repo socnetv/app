@@ -45,7 +45,7 @@ DialogEdgeDichotomization::DialogEdgeDichotomization (QWidget *parent) : QDialog
 
 void DialogEdgeDichotomization::getUserChoices(){
     qDebug()<< "Dialog: gathering Data!...";
-    float my_threshold = static_cast <float> ( (ui.weightThreshold)->value() );
+    qreal my_threshold = ui.weightThreshold->value() ;
     qDebug()<< "DialogEdgeDichotomization::getUserChoices() - We will dichotomize edges according to threshold: " << my_threshold;
     qDebug()<< "Dialog: emitting userChoices" ;
     emit userChoices( my_threshold );

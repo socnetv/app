@@ -52,7 +52,7 @@ static double TwoPi = 2.0 * Pi;
 GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
              GraphicsNode *from,
              GraphicsNode *to,
-             const float &weight,
+             const qreal &weight,
              const QString &label,
              const QString &color,
              const Qt::PenStyle &style,
@@ -167,7 +167,7 @@ QString GraphicsEdge::colorToPajek() {
     Updates both the width and the weightNumber
  * @param w
  */
-void GraphicsEdge::setWeight(const float &w) {
+void GraphicsEdge::setWeight(const qreal &w) {
     qDebug() << "GraphicsEdge::setWeight() " << w;
     prepareGeometryChange();
     m_weight = w;
@@ -180,7 +180,7 @@ void GraphicsEdge::setWeight(const float &w) {
  * @brief Returns the weight/value of this edge
  * @return
  */
-float GraphicsEdge::weight() const {
+qreal GraphicsEdge::weight() const {
     qDebug() << "GraphicsEdge::weight() " << m_weight;
     return m_weight;
 }
@@ -658,7 +658,7 @@ QVariant GraphicsEdge::itemChange(GraphicsItemChange change, const QVariant &val
  * @brief Returns the width of the edge as a function of edge weight
  * @return
  */
-float GraphicsEdge::width() const{
+qreal GraphicsEdge::width() const{
     if ( fabs(m_weight) > 1  )  {
         return 1+log(fabs(m_weight)) ;
     }

@@ -139,7 +139,7 @@ public slots:
 
     void drawEdge(const int &source,
                   const int &target,
-                  const float &weight,
+                  const qreal &weight,
                   const QString &label="",
                   const QString &color="black",
                   const int &type=0,
@@ -157,7 +157,7 @@ public slots:
                               const int &,
                               const int &dirType=false);
 
-    bool setEdgeWeight(const int &, const int &, const float &);
+    bool setEdgeWeight(const int &, const int &, const qreal &);
 
     void setEdgeLabel(const int &, const int&, const QString &);
 
