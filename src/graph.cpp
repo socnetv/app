@@ -65,7 +65,7 @@ Graph::Graph() {
     m_graphName="";
     m_curRelation=0;
     m_fileFormat=FILE_UNRECOGNIZED;
-    m_undirected=false;
+    m_directed=true;
     m_isWeighted=false;
     m_graphDisconnected=false;
     m_symmetric=true;
@@ -323,7 +323,7 @@ void Graph::clear(const QString &reason) {
 
     order=true;		//returns true if the vpositions of the list is ordered.
 
-    m_undirected=false;
+    m_directed=true;
     m_isWeighted=false;
     m_graphDisconnected=false;
     m_symmetric=true;
@@ -357,7 +357,7 @@ void Graph::clear(const QString &reason) {
 
     qDebug()<< "Graph::clear() - m_graph cleared. Now reports size"
             << m_graph.size()
-               << "emitting graphModifiedSet()";
+               << "emitting graphSetModified()";
 
 
     graphLoadedTerminateParserThreads("clear");
@@ -365,7 +365,7 @@ void Graph::clear(const QString &reason) {
 
 
     if ( reason != "exit") {
-        graphModifiedSet(graphModifiedFlag,true);
+        graphSetModified(graphModifiedFlag,true);
     }
 }
 
@@ -390,7 +390,7 @@ void Graph::canvasSizeSet(const int w, const int h){
         (*it)->setX( newX ) ;
         (*it)->setY( newY );
         emit setNodePos((*it)->name(), newX , newY);
-        graphModifiedSet(GRAPH_CHANGED_POSITIONS,false);
+        graphSetModified(GRAPH_CHANGED_POSITIONS,false);
     }
     canvasWidth = w;
     canvasHeight= h;
@@ -516,8 +516,8 @@ void Graph::relationSet(int relNum, const bool notifyMW){
         emit signalRelationChangedToMW(m_curRelation);
         //notify GW to disable/enable the on screen edges.
         emit signalRelationChangedToGW(m_curRelation);
-        qDebug()<<"Graph::relationSet() - Calling graphModifiedSet(GRAPH_CHANGED_EDGES)";
-        graphModifiedSet(GRAPH_CHANGED_EDGES);
+        qDebug()<<"Graph::relationSet() - Calling graphSetModified(GRAPH_CHANGED_EDGES)";
+        graphSetModified(GRAPH_CHANGED_EDGES);
     }
 }
 
@@ -693,8 +693,8 @@ void Graph::vertexCreate(const int &num, const int &nodeSize, const QString &nod
                    labelColor, labelSize, initVertexLabelDistance,
                    p );
 
-    qDebug() << "Graph::vertexCreate() - vertex:" << num << "created. Calling graphModifiedSet().";
-    graphModifiedSet(GRAPH_CHANGED_VERTICES, signalMW);
+    qDebug() << "Graph::vertexCreate() - vertex:" << num << "created. Calling graphSetModified().";
+    graphSetModified(GRAPH_CHANGED_VERTICES, signalMW);
 
     //draw new user-clicked nodes with the same color with that of the file loaded
     initVertexColor=nodeColor;
@@ -1020,7 +1020,7 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
            << "threshold list" << thresholds;
     QList<int> foundList;
     bool searchResult = false;
-    if ( ! graphModified() && calculatedDC ) {
+    if ( ! graphIsModified() && calculatedDC ) {
 
         VList::const_iterator it;
         QString thresholdStr="";
@@ -1158,7 +1158,7 @@ void Graph::vertexRemove(const int &v1){
     if (vertexClicked()==v1)
         vertexClickedSet(0);
 
-    graphModifiedSet(GRAPH_CHANGED_VERTICES);
+    graphSetModified(GRAPH_CHANGED_VERTICES);
 
     emit signalRemoveNode(v1);
 }
@@ -1187,7 +1187,7 @@ void Graph::vertexIsolatedAllToggle(const bool &toggle){
                      << "is isolated. Toggling it and emitting setVertexVisibility signal to GW...";
             (*it)->setEnabled (toggle) ;
 
-            graphModifiedSet(GRAPH_CHANGED_VERTICES);
+            graphSetModified(GRAPH_CHANGED_VERTICES);
 
             emit setVertexVisibility( (*it)-> name(), toggle );
         }
@@ -1226,7 +1226,7 @@ void Graph::vertexPosSet(const int &v1, const int &x, const int &y){
 
     m_graph[ vpos[v1] ]->setX( x );
     m_graph[ vpos[v1] ]->setY( y );
-    graphModifiedSet(GRAPH_CHANGED_POSITIONS,false);
+    graphSetModified(GRAPH_CHANGED_POSITIONS,false);
 }
 
 
@@ -1293,7 +1293,7 @@ void Graph::vertexSizeInit (const int size) {
 void Graph::vertexSizeSet(const int &v, const int &size) {
     m_graph[ vpos[v] ]->setSize(size);
 
-    graphModifiedSet(GRAPH_CHANGED_VERTICES_METADATA);
+    graphSetModified(GRAPH_CHANGED_VERTICES_METADATA);
     emit setNodeSize(v, size);
 }
 
@@ -1324,7 +1324,7 @@ void Graph::vertexSizeAllSet(const int size) {
             emit setNodeSize((*it)->name(), size);
         }
     }
-    graphModifiedSet(GRAPH_CHANGED_VERTICES_METADATA);
+    graphSetModified(GRAPH_CHANGED_VERTICES_METADATA);
 }
 
 
@@ -1349,7 +1349,7 @@ void Graph::vertexShapeSet(const int v1, const QString shape){
     m_graph[ vpos[v1] ]->setShape(shape);
     emit setNodeShape(v1, shape);
 
-    graphModifiedSet(GRAPH_CHANGED_VERTICES_METADATA);
+    graphSetModified(GRAPH_CHANGED_VERTICES_METADATA);
 }
 
 
@@ -1384,7 +1384,7 @@ void Graph::vertexShapeAllSet(const QString shape) {
         }
     }
 
-    graphModifiedSet(GRAPH_CHANGED_VERTICES_METADATA);
+    graphSetModified(GRAPH_CHANGED_VERTICES_METADATA);
 }
 
 
@@ -1402,7 +1402,7 @@ void Graph::vertexColorSet(const int &v1, const QString &color){
     m_graph[ vpos[v1] ]->setColor ( color );
     emit setNodeColor ( m_graph[ vpos[v1] ]-> name(), color );
 
-    graphModifiedSet(GRAPH_CHANGED_VERTICES_METADATA);
+    graphSetModified(GRAPH_CHANGED_VERTICES_METADATA);
 }
 
 /**
@@ -1447,7 +1447,7 @@ void Graph::vertexColorAllSet(const QString &color) {
         }
     }
 
-    graphModifiedSet(GRAPH_CHANGED_VERTICES_METADATA);
+    graphSetModified(GRAPH_CHANGED_VERTICES_METADATA);
 
 }
 
@@ -1484,7 +1484,7 @@ void Graph::vertexNumberSizeInit (const int &size) {
 void Graph::vertexNumberSizeSet(const int &v, const int &size) {
     m_graph[ vpos[v] ]->setNumberSize (size);
 
-    graphModifiedSet(GRAPH_CHANGED_MINOR_OPTIONS);
+    graphSetModified(GRAPH_CHANGED_MINOR_OPTIONS);
 }
 
 
@@ -1509,7 +1509,7 @@ void Graph::vertexNumberSizeSetAll(const int &size) {
         }
     }
 
-    graphModifiedSet(GRAPH_CHANGED_MINOR_OPTIONS);
+    graphSetModified(GRAPH_CHANGED_MINOR_OPTIONS);
 }
 
 
@@ -1531,7 +1531,7 @@ void Graph::vertexNumberDistanceInit(const int &distance) {
 void Graph::vertexNumberDistanceSet(const int &v, const int &newDistance) {
     m_graph[ vpos[v] ]->setNumberDistance (newDistance);
 
-    graphModifiedSet(GRAPH_CHANGED_MINOR_OPTIONS);
+    graphSetModified(GRAPH_CHANGED_MINOR_OPTIONS);
     emit setNodeNumberDistance(v, newDistance);
 }
 
@@ -1557,7 +1557,7 @@ void Graph::vertexNumberDistanceSetAll(const int &newDistance) {
         }
     }
 
-    graphModifiedSet(GRAPH_CHANGED_MINOR_OPTIONS);
+    graphSetModified(GRAPH_CHANGED_MINOR_OPTIONS);
 }
 
 
@@ -1578,7 +1578,7 @@ void Graph::vertexLabelSet(int v1, QString label){
     m_graph[ vpos[v1] ]->setLabel ( label);
     emit setNodeLabel ( m_graph[ vpos[v1] ]-> name(), label);
 
-    graphModifiedSet(GRAPH_CHANGED_VERTICES_METADATA);
+    graphSetModified(GRAPH_CHANGED_VERTICES_METADATA);
 }
 
 
@@ -1619,7 +1619,7 @@ void Graph::vertexLabelSizeSet(const int &v1, const int &size) {
     m_graph[ vpos[v1] ] -> setLabelSize ( size );
     emit setNodeLabelSize ( v1, size);
 
-    graphModifiedSet(GRAPH_CHANGED_MINOR_OPTIONS);
+    graphSetModified(GRAPH_CHANGED_MINOR_OPTIONS);
 
 }
 
@@ -1647,7 +1647,7 @@ void Graph::vertexLabelSizeAllSet(const int &size) {
         }
     }
 
-    graphModifiedSet(GRAPH_CHANGED_MINOR_OPTIONS);
+    graphSetModified(GRAPH_CHANGED_MINOR_OPTIONS);
 }
 
 
@@ -1675,7 +1675,7 @@ void Graph::vertexLabelColorAllSet(const QString &color) {
         }
     }
 
-    graphModifiedSet(GRAPH_CHANGED_MINOR_OPTIONS);
+    graphSetModified(GRAPH_CHANGED_MINOR_OPTIONS);
 }
 
 
@@ -1687,7 +1687,7 @@ void Graph::vertexLabelColorAllSet(const QString &color) {
 void Graph::vertexLabelColorSet(int v1, QString color){
     m_graph[ vpos[v1] ]->setLabelColor(color);
     emit setNodeLabelColor(v1, color);
-    graphModifiedSet(GRAPH_CHANGED_MINOR_OPTIONS);
+    graphSetModified(GRAPH_CHANGED_MINOR_OPTIONS);
 }
 
 
@@ -1711,7 +1711,7 @@ void Graph::vertexLabelColorInit(QString color){
 void Graph::vertexLabelDistanceSet(const int &v, const int &newDistance) {
     m_graph[ vpos[v] ]->setLabelDistance (newDistance);
 
-    graphModifiedSet(GRAPH_CHANGED_MINOR_OPTIONS);
+    graphSetModified(GRAPH_CHANGED_MINOR_OPTIONS);
     emit setNodeLabelDistance(v, newDistance);
 }
 
@@ -1737,7 +1737,7 @@ void Graph::vertexLabelDistanceAllSet(const int &newDistance) {
         }
     }
 
-    graphModifiedSet(GRAPH_CHANGED_MINOR_OPTIONS);
+    graphSetModified(GRAPH_CHANGED_MINOR_OPTIONS);
 }
 
 
@@ -1800,7 +1800,7 @@ void Graph::edgeCreate(const int &v1, const int &v2, const qreal &weight,
             edgeAdd ( v1, v2, weight, EDGE_RECIPROCATED , label, color);
             emit signalDrawEdge(v1, v2, weight, label, color, EDGE_RECIPROCATED,
                           drawArrows, bezier, initEdgeWeightNumbers);
-            m_undirected = false;
+            m_directed = true;
         }
         else {
 
@@ -1810,7 +1810,7 @@ void Graph::edgeCreate(const int &v1, const int &v2, const qreal &weight,
             edgeAdd ( v1, v2, weight, EDGE_DIRECTED, label, ( (weight==0) ? "blue" :  color  )   );
             emit signalDrawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), EDGE_DIRECTED,
                           drawArrows, bezier, initEdgeWeightNumbers);
-            m_undirected = false;
+            m_directed = true;
             m_symmetric=false;
         }
     }
@@ -1824,7 +1824,7 @@ void Graph::edgeCreate(const int &v1, const int &v2, const qreal &weight,
     // have the same color with those of the file loaded,
     initEdgeColor=color;
 
-    graphModifiedSet(GRAPH_CHANGED_EDGES, signalMW);
+    graphSetModified(GRAPH_CHANGED_EDGES, signalMW);
 
 }
 
@@ -1877,7 +1877,7 @@ void Graph::edgeAdd (const int &v1, const int &v2, const qreal &weight,
     m_graph[ source ]->setOutEdgeLabel(v2, label);
 
     if ( weight != 1 && weight!=0) {
-        m_isWeighted=true; //not binary graph
+        graphSetWeighted(true);
     }
     if (type == EDGE_RECIPROCATED ){
         // make existing opposite edge reciprocal
@@ -1897,7 +1897,8 @@ void Graph::edgeAdd (const int &v1, const int &v2, const qreal &weight,
 
 
 /**
- * @brief Removes the directed arc v1 -> v2 or, if the graph is undirected, the edge v1 <-> v2
+ * @brief Removes the directed arc v1 -> v2
+ * or, if the graph is undirected, the edge v1 <-> v2
  * Emits signalRemoveEdge to GW to delete the graphics item.
  * @param v1
  * @param v2
@@ -1911,8 +1912,7 @@ void Graph::edgeRemove (const int &v1,
     m_graph [ vpos[v1] ]->edgeRemoveTo(v2);
     m_graph [ vpos[v2] ]->edgeRemoveFrom(v1);
 
-
-    if (graphUndirected() || removeOpposite ) { // remove opposite edge
+    if ( graphIsUndirected() || removeOpposite ) { // remove opposite edge too
         m_graph [ vpos[v2] ]->edgeRemoveTo(v1);
         m_graph [ vpos[v1] ]->edgeRemoveFrom(v2);
         m_symmetric=true;
@@ -1923,9 +1923,9 @@ void Graph::edgeRemove (const int &v1,
         }
     }
 
-    emit signalRemoveEdge(v1,v2, (graphUndirected() || removeOpposite ));
+    emit signalRemoveEdge(v1,v2, ( graphIsDirected() || removeOpposite ));
 
-    graphModifiedSet(GRAPH_CHANGED_EDGES);
+    graphSetModified(GRAPH_CHANGED_EDGES);
 }
 
 
@@ -1975,7 +1975,7 @@ void Graph::edgeFilterByWeight(qreal m_threshold, bool overThreshold){
             (*it)->edgeFilterByWeight ( m_threshold, overThreshold );
     }
 
-    graphModifiedSet(GRAPH_CHANGED_EDGES);
+    graphSetModified(GRAPH_CHANGED_EDGES);
     emit statusMessage(tr("Edges have been filtered."));
 }
 
@@ -2009,7 +2009,7 @@ void Graph::edgeFilterUnilateral(const bool &toggle) {
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
             (*it)->edgeFilterUnilateral ( toggle );
     }
-    graphModifiedSet(GRAPH_CHANGED_EDGES);
+    graphSetModified(GRAPH_CHANGED_EDGES);
     emit statusMessage(tr("Unilateral edges have been temporarily disabled."));
 }
 
@@ -2045,7 +2045,7 @@ void Graph::edgeClickedSet(const int &v1, const int &v2, const bool &openMenu) {
         int type=EDGE_DIRECTED;
         // Check if the opposite tie exists. If yes, this is a reciprocated tie
         if ( edgeExists(m_clickedEdge.v2,m_clickedEdge.v1, false)  ) {
-            if (graphUndirected()) {
+            if ( !graphIsDirected() ) {
                 type=EDGE_UNDIRECTED;
             }
             else {
@@ -2121,10 +2121,11 @@ bool Graph::edgeSymmetric(const int &v1, const int &v2){
  */
 int Graph::edgesEnabled() {
     qDebug()<< "Graph::edgesEnabled() - checking if graph modified... ";
-    if ( !graphModified() && calculatedEdges ) {
+    int enabledEdges = (( graphIsUndirected() ) ? m_totalEdges / 2 : m_totalEdges);
+    if ( !graphIsModified() && calculatedEdges ) {
         qDebug()<< "Graph::edgesEnabled() - Graph unchanged, edges: "
-                   <<     ((graphUndirected()) ? m_totalEdges / 2 : m_totalEdges);
-       return (graphUndirected()) ? m_totalEdges / 2 : m_totalEdges;
+                   <<  enabledEdges;
+       return enabledEdges;
     }
 
     m_totalEdges = 0;
@@ -2135,7 +2136,8 @@ int Graph::edgesEnabled() {
     }
     qDebug() << "Graph::edgesEnabled() - edges recounted: " <<  m_totalEdges;
     calculatedEdges = true;
-    return (graphUndirected()) ? m_totalEdges / 2 : m_totalEdges;
+    enabledEdges = (( graphIsUndirected() ) ? m_totalEdges / 2 : m_totalEdges);
+    return enabledEdges;
 }
 
 
@@ -2183,7 +2185,7 @@ void Graph::edgeWeightSet (const int &v1, const int &v2,
 
     emit setEdgeWeight(v1,v2, weight);
 
-    graphModifiedSet(GRAPH_CHANGED_EDGES);
+    graphSetModified(GRAPH_CHANGED_EDGES);
 
 }
 
@@ -2278,7 +2280,7 @@ bool Graph::edgeColorAllSet(const QString &color, const int &threshold){
     }
     //delete enabledOutEdges;
 
-    graphModifiedSet(GRAPH_CHANGED_EDGES_METADATA);
+    graphSetModified(GRAPH_CHANGED_EDGES_METADATA);
 
     return true;
 
@@ -2299,12 +2301,12 @@ void Graph::edgeColorSet(const int &v1, const int &v2, const QString &color){
            <<" new color "<< color;
     m_graph[ vpos[v1] ]->setOutLinkColor(v2, color);
     emit setEdgeColor(v1, v2, color);
-    if (graphSymmetric()) {
+    if ( graphIsSymmetric() ) {
         m_graph[ vpos[v2] ]->setOutLinkColor(v1, color);
         emit setEdgeColor(v2, v1, color);
     }
 
-    graphModifiedSet(GRAPH_CHANGED_EDGES_METADATA);
+    graphSetModified(GRAPH_CHANGED_EDGES_METADATA);
 }
 
 
@@ -2336,7 +2338,7 @@ void Graph::edgeLabelSet (const int &v1, const int &v2, const QString &label) {
 
     emit setEdgeLabel(v1,v2, label);
 
-    graphModifiedSet(GRAPH_CHANGED_EDGES_METADATA);
+    graphSetModified(GRAPH_CHANGED_EDGES_METADATA);
 }
 
 
@@ -2407,7 +2409,7 @@ QList<int> Graph::vertexNeighborhoodList(const int &v1) {
  */
 int Graph::vertices(const bool &dropIsolates, const bool &countAll, const bool &recount) {
 
-    if ( !graphModified() && m_totalVertices!=0 && calculatedVertices && !recount) {
+    if ( !graphIsModified() && m_totalVertices!=0 && calculatedVertices && !recount) {
         qDebug()<< "Graph::vertices() - Graph not modified, vertices: "
                    << m_totalVertices;
         return m_totalVertices;
@@ -2448,7 +2450,7 @@ int Graph::vertices(const bool &dropIsolates, const bool &countAll, const bool &
  * @return
  */
 QList<int> Graph::verticesListIsolated(){
-    if (!graphModified() && calculatedIsolates ){
+    if (!graphIsModified() && calculatedIsolates ){
         qDebug()<< "Graph::verticesListIsolated() - graph not modified and "
                    "already calculated isolates. Returning list as is:"
                 <<m_verticesIsolatedList;
@@ -2480,7 +2482,7 @@ QList<int> Graph::verticesListIsolated(){
  */
 QList<int> Graph::verticesList(){
     qDebug()<< "Graph::verticesList()";
-    if (!graphModified() && !m_verticesList.isEmpty() && calculatedVerticesList ){
+    if (!graphIsModified() && !m_verticesList.isEmpty() && calculatedVerticesList ){
         return m_verticesList;
     }
     VList::const_iterator it;
@@ -2502,7 +2504,7 @@ QList<int> Graph::verticesList(){
  */
 QSet<int> Graph::verticesSet(){
     qDebug()<< "Graph::verticesSet()";
-    if (!graphModified() && !m_verticesSet.isEmpty() && calculatedVerticesSet ){
+    if (!graphIsModified() && !m_verticesSet.isEmpty() && calculatedVerticesSet ){
         return m_verticesSet;
     }
     VList::const_iterator it;
@@ -2542,8 +2544,8 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
 
     qreal weight;
 
-    bool drawArrows = !graphUndirected();
-    int edgeType=graphUndirected()  ?  EDGE_UNDIRECTED : EDGE_RECIPROCATED;
+    bool drawArrows = graphIsDirected();
+    int edgeType = ( graphIsUndirected() ) ?  EDGE_UNDIRECTED : EDGE_RECIPROCATED;
 
     if (type == SUBGRAPH_CLIQUE) {
 
@@ -2675,7 +2677,7 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
  * @param graphChangedFlag
  * @param signalMW
  */
-void Graph::graphModifiedSet(const int &graphNewStatus, const bool &signalMW){
+void Graph::graphSetModified(const int &graphNewStatus, const bool &signalMW){
 
     if (graphNewStatus >0 && graphNewStatus < 10){ //minor changes, i.e. vertex positions, labels, etc
         graphModifiedFlag = (graphModifiedFlag > 10 ) ? graphModifiedFlag : graphNewStatus ;
@@ -2686,17 +2688,17 @@ void Graph::graphModifiedSet(const int &graphNewStatus, const bool &signalMW){
 
 
     if (signalMW) {
-        qDebug()<<"Graph::graphModifiedSet() - m_symmetric:" << m_symmetric
+        qDebug()<<"Graph::graphSetModified() - m_symmetric:" << m_symmetric
                   << "graphModifiedFlag:" << graphModifiedFlag
                   << "Emitting signal signalGraphModified()";
         emit signalGraphModified(graphModifiedFlag,
-                                 graphUndirected(),
+                                 graphIsDirected(),
                                  m_totalVertices,
                                  edgesEnabled(),
                                  graphDensity());
         return;
     }
-    qDebug()<<"Graph::graphModifiedSet() - m_symmetric " << m_symmetric
+    qDebug()<<"Graph::graphSetModified() - m_symmetric " << m_symmetric
               << "graphModifiedFlag" << graphModifiedFlag
               << "Not emitting any signal to MW";
 }
@@ -2707,8 +2709,8 @@ void Graph::graphModifiedSet(const int &graphNewStatus, const bool &signalMW){
  * else false
  * @return
  */
-bool Graph::graphModified() const {
-    qDebug() << "Graph::graphModified() - graphModifiedFlag:" << graphModifiedFlag ;
+bool Graph::graphIsModified() const {
+    qDebug() << "Graph::graphIsModified() - graphModifiedFlag:" << graphModifiedFlag ;
     return (graphModifiedFlag > 10 ) ? true: false;
 }
 
@@ -2829,7 +2831,7 @@ int Graph::graphSelectedEdgesCount() const {
  */
 qreal Graph::graphDensity() {
     qDebug()<< "Graph::graphDensity() - checking if graph modified... ";
-    if (!graphModified() && calculatedGraphDensity) {
+    if (!graphIsModified() && calculatedGraphDensity) {
         qDebug()<< "Graph::graphDensity() - graph not modified and"
                    "already calculated density. Returning last value:"
                 << m_graphDensity;
@@ -2838,7 +2840,7 @@ qreal Graph::graphDensity() {
 
     int V=vertices();
     if (V!=0 && V!=1) {
-        m_graphDensity = (graphUndirected()) ?
+        m_graphDensity = (graphIsUndirected()) ?
                     (qreal) 2* edgesEnabled() / (qreal)(V*(V-1.0)) :
                     (qreal) edgesEnabled() / (qreal)(V*(V-1.0)) ;
     }
@@ -2857,11 +2859,10 @@ qreal Graph::graphDensity() {
  *  Complexity: O(n^2)
  * @return
  */
-bool Graph::graphWeighted(){
-
-    qDebug()<< "Graph::graphWeighted()";
-    if ( ! graphModified() && calculatedGraphWeighted )     {
-        qDebug()<< "Graph::graphWeighted() - graph not modified. Return: "
+bool Graph::graphIsWeighted(){
+    qDebug()<< "Graph::graphIsWeighted()";
+    if ( ! graphIsModified() && calculatedGraphWeighted ) {
+        qDebug()<< "Graph::graphIsWeighted() - graph not modified. Return: "
                 << m_isWeighted;
         return m_isWeighted;
     }
@@ -2881,25 +2882,32 @@ bool Graph::graphWeighted(){
        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
            m_weight = edgeExists ( (*it1)->name(), (*it)->name() ) ;
             if ( m_weight  != 1  && m_weight  != 0 )   {
-                qDebug()<< "Graph: graphWeighted() - true. Graph is edge-weighted.";
-                m_isWeighted=true;
+                qDebug()<< "Graph: graphIsWeighted() - true. Graph is edge-weighted.";
+                graphSetWeighted(true);
                 break;
             }
         }
-       if (m_isWeighted)
+       if (m_isWeighted) {
            break;
+       }
 
     }
     calculatedGraphWeighted = true;
-    qDebug()<< "Graph::graphWeighted() - result" << m_isWeighted;
+    qDebug()<< "Graph::graphIsWeighted() - result" << m_isWeighted;
 
     emit signalProgressBoxKill();
-
 
     return m_isWeighted;
 }
 
 
+/**
+ * @brief Sets the graph to be weighted / valued edges.
+ * @param toggle
+ */
+void Graph::graphSetWeighted(const bool &toggle){
+    m_isWeighted = toggle;
+}
 
 /**
  * @brief Returns the sum of vertices having edgesOutbound
@@ -3083,7 +3091,7 @@ qreal Graph::graphReciprocity(){
 
 
     qDebug() << "Graph::graphReciprocity() ";
-    if (!graphModified() && calculatedGraphReciprocity){
+    if (!graphIsModified() && calculatedGraphReciprocity){
         qDebug() << "Graph::graphReciprocity() - graph not modified and "
                     "already calculated reciprocity. Returning previous result: "
                  << m_graphReciprocityArc;
@@ -3233,7 +3241,7 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
     QTextStream outText ( &file );
     outText.setCodec("UTF-8");
 
-    if (graphModified() || !calculatedGraphReciprocity){
+    if (graphIsModified() || !calculatedGraphReciprocity){
 
         qDebug() << "Graph::writeReciprocity() - graph modified or "
                     "reciprocity not computed yet. Recomputing. ";
@@ -3477,10 +3485,10 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
  * @brief Returns TRUE if the adjacency matrix of the current relation is symmetric
  * @return bool
  */
-bool Graph::graphSymmetric(){
-    qDebug() << "Graph::graphSymmetric() ";
-    if (!graphModified() && calculatedGraphSymmetry){
-        qDebug() << "Graph::graphSymmetric() - graph not modified and "
+bool Graph::graphIsSymmetric(){
+    qDebug() << "Graph::graphIsSymmetric() ";
+    if ( !graphIsModified() && calculatedGraphSymmetry ){
+        qDebug() << "Graph::graphIsSymmetric() - graph not modified and "
                     "already calculated symmetry. Returning previous result: "
                  << m_symmetric;
         return m_symmetric;
@@ -3514,7 +3522,7 @@ bool Graph::graphSymmetric(){
             if ( edgeExists ( v2, v1 )  != weight) {
 
                 m_symmetric=false;
-//                qDebug() <<"Graph::graphSymmetric() - "
+//                qDebug() <<"Graph::graphIsSymmetric() - "
 //                         << " graph not symmetric because "
 //                         << v1 << " -> " << v2 << " weight " << weight
 //                         << " differs from " << v2 << " -> " << v1 ;
@@ -3525,7 +3533,7 @@ bool Graph::graphSymmetric(){
         }
     }
     //delete enabledOutEdges;
-    qDebug() << "Graph: graphSymmetric() - Finished. Result:"  << m_symmetric;
+    qDebug() << "Graph: graphIsSymmetric() - Finished. Result:"  << m_symmetric;
     calculatedGraphSymmetry = true;
     return m_symmetric;
 }
@@ -3575,7 +3583,7 @@ void Graph::graphSymmetrize(){
 
     m_symmetric=true;
 
-    graphModifiedSet(GRAPH_CHANGED_EDGES);
+    graphSetModified(GRAPH_CHANGED_EDGES);
 }
 
 
@@ -3657,7 +3665,7 @@ void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
     delete strongTies;
     m_symmetric=true;
 
-    graphModifiedSet(GRAPH_CHANGED_EDGES);
+    graphSetModified(GRAPH_CHANGED_EDGES);
     qDebug()<< "Graph::graphSymmetrizeStrongTies()"
             << "final relations"<<relations();
 }
@@ -3727,7 +3735,7 @@ void Graph::graphCocitation(){
 
     m_symmetric=true;
 
-    graphModifiedSet(GRAPH_CHANGED_EDGES);
+    graphSetModified(GRAPH_CHANGED_EDGES);
     qDebug()<< "Graph::graphCocitation()"
             << "final relations"<<relations();
 }
@@ -3735,7 +3743,7 @@ void Graph::graphCocitation(){
 
 /**
  * @brief Creates a new binary relation in a valued network using edge
- * dichotomization according to the threshold value.
+ * dichotomization according to the threshold parameter.
  * @param threshold
  */
 void Graph::graphDichotomization(const qreal threshold) {
@@ -3779,7 +3787,6 @@ void Graph::graphDichotomization(const qreal threshold) {
         }
     }
 
-
     relationAdd("Binary-"+QString::number(threshold),true);
 
     QHash<QString,qreal>::const_iterator it2;
@@ -3804,42 +3811,74 @@ void Graph::graphDichotomization(const qreal threshold) {
     delete binaryTies;
     m_symmetric=true;
 
-    graphModifiedSet(GRAPH_CHANGED_EDGES);
+    graphSetModified(GRAPH_CHANGED_EDGES);
     qDebug()<< "Graph::graphDichotomization()"
             << "final relations"<<relations();
 
+}
+
+
+
+/**
+ * @brief Toggles the graph directed or undirected
+ */
+void Graph::graphSetDirected(const bool &toggle, const bool &signalMW){
+
+    qDebug() << "Graph::graphSetDirected() : " << toggle ;
+
+    if ( !toggle ) {
+        Graph::graphSetUndirected(true);
+    }
+
+    if (toggle == graphIsDirected() ) {
+        qDebug() << "Graph::graphSetDirected() - toggle same as now, nothing to do.";
+        return;
+    }
+
+    m_directed = true;
+
+    if (m_directed) {
+        graphSetModified(GRAPH_CHANGED_EDGES, signalMW);
+        return;
+    }
 
 }
 
-/**
- * @brief Transforms the graph to undirected
- */
-void Graph::graphUndirectedSet(const bool &toggle, const bool &signalMW){
 
-    if (toggle == m_undirected) {
-        qDebug() << "Graph::graphUndirectedSet() - toggle == m_undirected =="<<toggle;
+
+/**
+ * @brief Toggles the graph undirected
+ */
+void Graph::graphSetUndirected(const bool &toggle, const bool &signalMW){
+
+    qDebug() << "Graph::graphSetUndirected() : " << toggle ;
+
+    if ( !toggle ) {
+        Graph::graphSetDirected(true);
         return;
     }
-    qDebug() << "Graph::graphUndirectedSet()";
-    if (!toggle) {
-        m_undirected=false;
-        graphModifiedSet(GRAPH_CHANGED_EDGES, signalMW);
+
+    if (toggle == graphIsUndirected()) {
+        qDebug() << "Graph::graphSetUndirected() - toggle same as now, nothing to do.";
         return;
     }
+
+    m_directed = false;
+
     VList::const_iterator it;
     int v2=0, v1=0, weight;
     QHash<int,qreal> enabledOutEdges;
     QHash<int,qreal>::const_iterator it1;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         v1 = (*it)->name();
-        qDebug() << "Graph::graphUndirectedSet() - iterate over edges of v1 " << v1;
+        qDebug() << "Graph::graphSetDirected() - iterate over edges of v1 " << v1;
         enabledOutEdges=(*it)->outEdgesEnabledHash();
         it1=enabledOutEdges.cbegin();
         while ( it1!=enabledOutEdges.cend() ){
             v2 = it1.key();
             weight = it1.value();
 
-            qDebug() << "Graph::graphUndirectedSet() - "
+            qDebug() << "Graph::graphSetDirected() - "
                      << " v1 " << v1
                      << " -> " << v2 << " = "
                      << " weight " << weight;
@@ -3849,9 +3888,20 @@ void Graph::graphUndirectedSet(const bool &toggle, const bool &signalMW){
     }
     //delete enabledOutEdges;
 
-    m_symmetric=m_undirected=true;
+    m_symmetric=true;
 
-    graphModifiedSet(GRAPH_CHANGED_EDGES, signalMW);
+    graphSetModified(GRAPH_CHANGED_EDGES, signalMW);
+}
+
+
+
+/**
+ * @brief Returns true if graph is directed
+ * @return
+ */
+bool Graph::graphIsDirected() {
+    qDebug() << "Graph::graphIsDirected() -" << m_directed;
+    return m_directed;
 }
 
 
@@ -3861,10 +3911,12 @@ void Graph::graphUndirectedSet(const bool &toggle, const bool &signalMW){
  * @brief Returns true if graph is undirected
  * @return
  */
-bool Graph::graphUndirected() {
-    qDebug() << "Graph::graphUndirected() -" <<m_undirected;
-    return m_undirected;
+bool Graph::graphIsUndirected() {
+    qDebug() << "Graph::graphIsUndirected() -" << !m_directed;
+    return !m_directed;
 }
+
+
 
 
 
@@ -3913,8 +3965,8 @@ void Graph::edgeTypeSet(const int &v1,
         emit signalEdgeType( v1, v2, dirType );
     }
 
-    //graphModifiedSet(GRAPH_CHANGED_EDGES);
-    //m_undirected = true;
+    //graphSetModified(GRAPH_CHANGED_EDGES);
+
 }
 
 
@@ -3942,7 +3994,7 @@ bool Graph::graphReachable(const int &v1, const int &v2) {
 void Graph::graphMatrixReachabilityCreate() {
     qDebug() << "Graph::graphMatrixReachabilityCreate()";
 
-    if ( !calculatedDistances || graphModified() ) {
+    if ( !calculatedDistances || graphIsModified() ) {
         graphDistanceGeodesicCompute(false);
     }
 
@@ -4126,7 +4178,7 @@ int Graph::graphConnectedness(const bool updateProgress) {
 
     qDebug() << "Graph::graphConnectedness() ";
 
-    if (calculatedGraphConnectedness && !graphModified()) {
+    if (calculatedGraphConnectedness && !graphIsModified()) {
         qDebug()<< "Graph::graphConnectedness() - graph unmodified. Returning:"
                 << m_graphConnectedness;
         return m_graphConnectedness;
@@ -4134,7 +4186,7 @@ int Graph::graphConnectedness(const bool updateProgress) {
 
     //initially if graph is undirected, assume it is connected.
     // if is directed, assume it is strongly connected.
-    if ( graphUndirected() ) {
+    if ( graphIsUndirected() ) {
         m_graphConnectedness = 1;
     }
     else {
@@ -4168,7 +4220,7 @@ int Graph::graphConnectedness(const bool updateProgress) {
 
         for (jt=it; jt!=m_graph.cend(); ++jt) {
 
-            if ( graphUndirected() ) {
+            if ( graphIsUndirected() ) {
 
                 if ( (*it)->distance( (*jt)-> name() ) == RAND_MAX ) {
                     // not connected because there is no path connecting (i,j)
@@ -4214,7 +4266,7 @@ int Graph::graphConnectedness(const bool updateProgress) {
     }
 
 
-    if ( graphUndirected() ) {
+    if ( graphIsDirected() ) {
         if ( m_vertexPairsNotConnected.count()>0) {
             if (isolatedVertices)
                 m_graphConnectedness = -1;
@@ -4264,7 +4316,7 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
                                            const bool &dropIsolates) {
     qDebug() << "Graph::graphMatrixShortestPathsCreate()";
 
-    if ( !calculatedDistances || graphModified() ) {
+    if ( !calculatedDistances || graphIsModified() ) {
         graphDistanceGeodesicCompute(false,considerWeights,inverseWeights, dropIsolates);
     }
 
@@ -4357,7 +4409,7 @@ void Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
                                               const bool &dropIsolates) {
     qDebug() << "Graph::graphMatrixDistanceGeodesicCreate()";
 
-    if ( !calculatedDistances || graphModified() ) {
+    if ( !calculatedDistances || graphIsModified() ) {
         graphDistanceGeodesicCompute(false,considerWeights,inverseWeights, dropIsolates);
     }
 
@@ -4472,7 +4524,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
              << "inverseWeights:"<<inverseWeights
              << "dropIsolates:" << dropIsolates;
 
-    if ( !graphModified() && calculatedDistances && !computeCentralities)  {
+    if ( !graphIsModified() && calculatedDistances && !computeCentralities)  {
         qDebug() << "Graph::graphDistanceGeodesicCompute() - not modified. Return.";
         return;
     }
@@ -4496,7 +4548,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
     emit statusMessage ( pMsg  );
     emit signalProgressBoxCreate(N, pMsg );
 
-    m_symmetric = graphSymmetric();
+    m_symmetric = graphIsSymmetric();
     qDebug() << "Graph::graphDistanceGeodesicCompute() - m_symmetric"
                 << m_symmetric ;
 
@@ -5704,7 +5756,7 @@ void Graph::writeEccentricity(const QString fileName, const bool considerWeights
     QTextStream outText ( &file );
     outText.setCodec("UTF-8");
 
-    if ( !calculatedDistances || !calculatedCentralities || graphModified() ) {
+    if ( !calculatedDistances || !calculatedCentralities || graphIsModified() ) {
         graphDistanceGeodesicCompute(true, considerWeights,
                              inverseWeights, dropIsolates);
 
@@ -5878,7 +5930,7 @@ void Graph::centralityInformation(const bool considerWeights,
                                   const bool inverseWeights){
     qDebug()<< "Graph::centralityInformation()";
 
-    if (calculatedIC && !graphModified()) {
+    if (calculatedIC && !graphIsModified()) {
         return;
     }
 
@@ -6012,7 +6064,7 @@ void Graph::writeCentralityInformation(const QString fileName,
     QTextStream outText ( &file );
     outText.setCodec("UTF-8");
 
-    if (graphModified() || !calculatedIC ) {
+    if ( graphIsModified() || !calculatedIC ) {
             centralityInformation(considerWeights, inverseWeights);
     }
 
@@ -6261,7 +6313,7 @@ void Graph::writeCentralityEigenvector(const QString fileName,
     }
     QTextStream outText ( &file );
     outText.setCodec("UTF-8");
-    if (graphModified() || !calculatedEVC ) {
+    if (graphIsModified() || !calculatedEVC ) {
             emit statusMessage ( (tr("Calculating EVC scores...")) );
             centralityEigenvector(considerWeights, inverseWeights,dropIsolates);
     }
@@ -6482,7 +6534,7 @@ void Graph::centralityEigenvector(const bool &considerWeights,
                                   const bool &dropIsolates) {
 
     qDebug("Graph::centralityEigenvector()");
-    if (!graphModified() && calculatedEVC ) {
+    if (!graphIsModified() && calculatedEVC ) {
         qDebug() << "Graph::centralityEigenvector() - graph not changed - returning";
         return;
     }
@@ -6588,7 +6640,7 @@ void Graph::centralityEigenvector(const bool &considerWeights,
  */
 void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
     qDebug("Graph::centralityDegree()");
-    if (!graphModified() && calculatedDC ) {
+    if ( !graphIsModified() && calculatedDC ) {
         qDebug() << "Graph::centralityDegree() - graph not changed - returning";
         return;
     }
@@ -7009,7 +7061,7 @@ void Graph::writeCentralityCloseness( const QString fileName,
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    if (graphModified() || !calculatedCentralities ) {
+    if ( graphIsModified() || !calculatedCentralities ) {
             graphDistanceGeodesicCompute(true, considerWeights,
                                  inverseWeights, dropIsolates);
     }
@@ -7270,13 +7322,13 @@ void Graph::centralityClosenessIR(const bool considerWeights,
                                               const bool inverseWeights,
                                               const bool dropIsolates){
     qDebug()<< "Graph::centralityClosenessIR()";
-    if (!graphModified() && calculatedIRCC ) {
+    if ( !graphIsModified() && calculatedIRCC ) {
         qDebug() << "Graph::centralityClosenessIR() - "
                     " graph not changed - returning";
         return;
     }
 
-     if (!calculatedDistances || graphModified()) {
+     if ( !calculatedDistances || graphIsModified() ) {
          graphDistanceGeodesicCompute(false,considerWeights,inverseWeights,dropIsolates);
      }
 
@@ -7597,7 +7649,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    if (graphModified() || !calculatedCentralities ) {
+    if ( graphIsModified() || !calculatedCentralities ) {
         graphDistanceGeodesicCompute(true, considerWeights, inverseWeights, dropIsolates);
     }
     else {
@@ -7857,7 +7909,7 @@ void Graph::writeCentralityStress( const QString fileName,
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    if (graphModified() || !calculatedCentralities ) {
+    if ( graphIsModified() || !calculatedCentralities ) {
         graphDistanceGeodesicCompute(true, considerWeights, inverseWeights,dropIsolates);
     }
     else {
@@ -8073,7 +8125,7 @@ void Graph::writeCentralityEccentricity(const QString fileName,
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    if (graphModified() || !calculatedCentralities ) {
+    if ( graphIsModified() || !calculatedCentralities ) {
         graphDistanceGeodesicCompute(true, considerWeights, inverseWeights,dropIsolates);
     }
     else {
@@ -8275,7 +8327,7 @@ void Graph::writeCentralityPower(const QString fileName,
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    if (graphModified() || !calculatedCentralities ) {
+    if ( graphIsModified() || !calculatedCentralities ) {
         graphDistanceGeodesicCompute(true, considerWeights, inverseWeights, dropIsolates);
     }
     else {
@@ -8520,7 +8572,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
 
     qDebug()<< "Graph::prestigeDegree()";
 
-    if (!graphModified() && calculatedDP ) {
+    if ( !graphIsModified() && calculatedDP ) {
         qDebug() << "Graph::prestigeDegree() - "
                     " graph not changed - returning";
         return;
@@ -8963,7 +9015,7 @@ void Graph::prestigeProximity( const bool considerWeights,
                                const bool inverseWeights,
                                const bool dropIsolates){
     qDebug()<< "Graph::prestigeProximity()";
-    if (!graphModified() && calculatedPP ) {
+    if ( !graphIsModified() && calculatedPP ) {
         qDebug() << "Graph::prestigeProximity() - "
                     " graph not changed - returning";
         return;
@@ -9298,7 +9350,7 @@ void Graph::prestigePageRank(const bool &dropIsolates){
 
     qDebug()<< "Graph::prestigePageRank()";
 
-    if (! graphModified() && calculatedPRP ) {
+    if ( !graphIsModified() && calculatedPRP ) {
         qDebug() << " graph not changed - return ";
         return;
     }
@@ -9789,7 +9841,7 @@ void Graph::randomNetErdosCreate(const int &N,
                 << " diag " << diag;
 
     if (mode=="graph") {
-        graphUndirectedSet(true);
+        graphSetDirected(false);
     }
     vpos.reserve(N);
 
@@ -9905,7 +9957,7 @@ void Graph::randomNetErdosCreate(const int &N,
     emit signalProgressBoxUpdate((m != 0 ? m:N));
     emit signalProgressBoxKill();
 
-    graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
+    graphSetModified(GRAPH_CHANGED_VERTICES_AND_EDGES);
 
 
 }
@@ -9941,7 +9993,7 @@ void Graph::randomNetScaleFreeCreate (const int &N,
     randomizeThings();
 
     if (mode=="graph") {
-        graphUndirectedSet(true);
+        graphSetDirected(false);
     }
 
     int x=0;
@@ -10085,9 +10137,9 @@ void Graph::randomNetScaleFreeCreate (const int &N,
 
     relationCurrentRename(tr("scale-free"),true);
     qDebug() << "Graph::randomNetScaleFreeCreate() - finished. Calling "
-                "graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES)";
+                "graphSetModified(GRAPH_CHANGED_VERTICES_AND_EDGES)";
 
-    graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
+    graphSetModified(GRAPH_CHANGED_VERTICES_AND_EDGES);
 
     emit signalProgressBoxKill();
 
@@ -10115,7 +10167,7 @@ void Graph::randomNetSmallWorldCreate (const int &N, const int &degree,
              << "First creating a ring lattice";
 
     if (mode=="graph") {
-        graphUndirectedSet(true);
+        graphSetDirected(false);
     }
 
     randomNetRingLatticeCreate(N, degree, true);
@@ -10170,7 +10222,7 @@ void Graph::randomNetSmallWorldCreate (const int &N, const int &degree,
 
     layoutVertexSizeByIndegree();
 
-    graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
+    graphSetModified(GRAPH_CHANGED_VERTICES_AND_EDGES);
 }
 
 
@@ -10188,11 +10240,14 @@ void Graph::randomNetRegularCreate(const int &N,
                                       const QString &mode, const bool &diag){
     qDebug() << "Graph::randomNetRegularCreate()";
     Q_UNUSED(diag);
-    m_undirected = (mode == "graph") ? true: false;
+
+    if (mode=="graph") {
+        graphSetDirected(false);
+    }
 
     int x = 0, y = 0 ;
     qreal progressCounter=0;
-    qreal progressFraction =(m_undirected) ? 2/(qreal) degree : 1/(qreal) degree;
+    qreal progressFraction =(graphIsUndirected()) ? 2/(qreal) degree : 1/(qreal) degree;
 
     int target = 0;
     int edgeCount = 0;
@@ -10282,8 +10337,8 @@ void Graph::randomNetRegularCreate(const int &N,
                secondEdgeVertices[0] == secondEdgeVertices[1] ||
                m_edges.contains( firstEdgeVertices[0] + "->" + secondEdgeVertices[1] ) ||
                m_edges.contains( secondEdgeVertices[0] + "->" + firstEdgeVertices[1] ) ||
-               (m_undirected && m_edges.contains( secondEdgeVertices[1] + "->" + firstEdgeVertices[0]) )||
-               (m_undirected && m_edges.contains( firstEdgeVertices[1] + "->" + secondEdgeVertices[0] ) ) ) {
+               (graphIsUndirected() && m_edges.contains( secondEdgeVertices[1] + "->" + firstEdgeVertices[0]) )||
+               (graphIsUndirected() && m_edges.contains( firstEdgeVertices[1] + "->" + secondEdgeVertices[0] ) ) ) {
 
             firstEdge = m_edges.at(rand() % m_edges.size()) ;
             firstEdgeVertices = firstEdge.split("->");
@@ -10321,8 +10376,8 @@ void Graph::randomNetRegularCreate(const int &N,
 
         edgeCreate(m_edge[0].toInt(0), m_edge[1].toInt(0), 1,
                 initEdgeColor,
-                (m_undirected) ? EDGE_UNDIRECTED : EDGE_DIRECTED,
-                (m_undirected) ? false:true,
+                (graphIsUndirected()) ? EDGE_UNDIRECTED : EDGE_DIRECTED,
+                (graphIsUndirected()) ? false:true,
                 false,
                 QString::null, false);
         edgeCount++;
@@ -10341,7 +10396,7 @@ void Graph::randomNetRegularCreate(const int &N,
 
     emit signalProgressBoxKill();
 
-    graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
+    graphSetModified(GRAPH_CHANGED_VERTICES_AND_EDGES);
 
 }
 
@@ -10370,7 +10425,7 @@ void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
     double radius = canvasMaxRadius();
     double rad= (2.0* Pi/ N );
 
-    graphUndirectedSet(true);
+    graphSetDirected(false);
 
     randomizeThings();
 
@@ -10413,7 +10468,7 @@ void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
     }
 
 
-    graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES, updateProgress);
+    graphSetModified(GRAPH_CHANGED_VERTICES_AND_EDGES, updateProgress);
 }
 
 
@@ -10439,7 +10494,10 @@ void Graph::randomNetLatticeCreate(const int &N,
                                    const bool &circular){
     qDebug() << "Graph::randomNetLatticeCreate()";
     Q_UNUSED(circular);
-    m_undirected = (mode == "graph") ? true: false;
+
+    if (mode=="graph") {
+        graphSetDirected(false);
+    }
 
     int x = 0;
     int y = 0;
@@ -10448,7 +10506,7 @@ void Graph::randomNetLatticeCreate(const int &N,
     double nodeVPadding = 0;
     double canvasPadding = 100;
     qreal progressCounter=0;
-    qreal progressFraction =0;//(m_undirected) ? 2/(qreal) degree : 1/(qreal) degree;
+    qreal progressFraction =0;
 
     int target = 0;
     int edgeCount = 0;
@@ -10608,8 +10666,8 @@ void Graph::randomNetLatticeCreate(const int &N,
 
         edgeCreate(m_edge[0].toInt(0), m_edge[1].toInt(0), 1,
                 initEdgeColor,
-                (m_undirected) ? EDGE_UNDIRECTED : EDGE_DIRECTED,
-                (m_undirected) ? false:true,
+                (graphIsUndirected()) ? EDGE_UNDIRECTED : EDGE_DIRECTED,
+                (graphIsUndirected()) ? false:true,
                 false,
                 QString::null, false);
 //        edgeCount++;
@@ -10628,7 +10686,7 @@ void Graph::randomNetLatticeCreate(const int &N,
 
     emit signalProgressBoxKill();
 
-    graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
+    graphSetModified(GRAPH_CHANGED_VERTICES_AND_EDGES);
 
 }
 
@@ -10949,7 +11007,7 @@ QList<int> Graph::vertexinfluenceRange(int v1){
 
     qDebug() << "Graph::vertexinfluenceRange() - vertex:"<< v1;
 
-    if ( !calculatedDistances || graphModified() ) {
+    if ( !calculatedDistances || graphIsModified() ) {
         graphDistanceGeodesicCompute(false);
     }
 
@@ -11009,7 +11067,7 @@ QList<int> Graph::vertexinfluenceRange(int v1){
 QList<int> Graph::vertexinfluenceDomain(int v1){
     qDebug() << "Graph::vertexinfluenceDomain() - vertex:"<< v1;
 
-    if ( !calculatedDistances || graphModified() ) {
+    if ( !calculatedDistances || graphIsModified() ) {
         graphDistanceGeodesicCompute(false);
     }
 
@@ -11317,7 +11375,7 @@ void Graph::writeTriadCensus( const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     emit statusMessage ( (tr("Computing triad census. Please wait....")) );
-    if (graphModified() || !calculatedTriad) {
+    if ( graphIsModified() || !calculatedTriad) {
         if (!graphTriadCensus()){
             qDebug() << "Error in graphTriadCensus(). Exiting...";
             file.close();
@@ -13467,7 +13525,7 @@ void Graph::graphMatrixSimilarityPearsonCreate (Matrix &AM,
 */
 qreal Graph::numberOfTriples(int v1){
     qreal totalDegree=0;
-    if (graphSymmetric()){
+    if (graphIsSymmetric()){
         totalDegree=vertexEdgesOutbound(v1);
         return totalDegree * (totalDegree -1.0) / 2.0;
     }
@@ -13488,7 +13546,7 @@ qreal Graph::numberOfTriples(int v1){
  * @return
  */
 qreal Graph::clusteringCoefficientLocal(const int &v1){
-    if ( !graphModified() && (m_graph[ vpos [v1] ] -> hasCLC() ) )  {
+    if ( !graphIsModified() && (m_graph[ vpos [v1] ] -> hasCLC() ) )  {
         qreal clucof=m_graph[ vpos [v1] ] ->CLC();
         qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") - "
                  << " Not modified. Returning previous clucof = " << clucof;
@@ -13498,13 +13556,13 @@ qreal Graph::clusteringCoefficientLocal(const int &v1){
     qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") - "
             << " Graph changed or clucof not calculated.";
 
-    bool graphIsSymmetric = false;
+    bool isSymmetric = false;
 
-    if ( graphSymmetric() ) {
-        graphIsSymmetric = true;
+    if ( graphIsSymmetric() ) {
+        isSymmetric = true;
     }
     else {
-        graphIsSymmetric = false;
+        isSymmetric = false;
     }
 
     qreal clucof=0, denom = 0 , nom = 0;
@@ -13576,7 +13634,7 @@ qreal Graph::clusteringCoefficientLocal(const int &v1){
                 QString edge = QString::number(u1) + "->" + QString::number(u2);
                 QString revedge = QString::number(u2) + "->" + QString::number(u1);
 
-                if ( graphIsSymmetric ) {
+                if ( isSymmetric ) {
                     if ( ! neighborhoodEdges.contains(edge) &&
                          ! neighborhoodEdges.contains(revedge)  )    {
                         neighborhoodEdges.insert(edge, true);
@@ -13618,7 +13676,7 @@ qreal Graph::clusteringCoefficientLocal(const int &v1){
     if ( nom == 0)
         return 0;	//stop if we're at a leaf.
 
-    if ( graphIsSymmetric ){
+    if ( isSymmetric ){
         k=reciprocalEdges.count();  //k_{i} is the number of neighbours of a vertex
         denom =	k * (k -1.0) / 2.0;
 
@@ -14180,15 +14238,15 @@ void Graph::graphLoad (	const QString m_fileName,
                                                       QString,
                                                       int,
                                                       int,
-                                                      bool,
+                                                      int,
                                                       const QString &)
                                     ),
                 this, SLOT(graphFileLoaded( const int &,
                                             const QString &,
                                             const QString &,
                                             const int &,
-                                            const int&,
-                                            const bool&,
+                                            const int &,
+                                            const int &,
                                             const QString &)
                            )
                 );
@@ -14250,8 +14308,7 @@ void Graph::graphLoadedTerminateParserThreads(QString reason) {
 
 
 /**
- * @brief Graph::graphFileLoaded
- * Updates MW  with the loaded file type (0=nofile, 1=Pajek, 2=Adjacency etc)
+ * @brief Updates MW  with the loaded file type (0=nofile, 1=Pajek, 2=Adjacency etc)
  * Called from Parser on file parsing end or file error.
  * @param type
  * @param netName
@@ -14264,7 +14321,7 @@ void Graph::graphFileLoaded (const int &fileType,
                              const QString &netName,
                              const int &totalNodes,
                              const int &totalLinks,
-                             const bool &undirected,
+                             const int &edgeDirType,
                              const QString &message)
 {
     if ( fileType == FILE_UNRECOGNIZED ) {
@@ -14286,7 +14343,13 @@ void Graph::graphFileLoaded (const int &fileType,
     else
         m_graphName=(fileName.split("/").last()).split("/").first();
 
-    m_undirected = undirected;
+    if ( edgeDirType == EDGE_DIRECTED ) {
+        this->graphSetDirected(true);
+    }
+    else {
+        this->graphSetDirected(false);
+    }
+
     m_fileFormat = fileType;
 
     qDebug() << "Graph::graphFileLoaded() - "
@@ -14295,9 +14358,9 @@ void Graph::graphFileLoaded (const int &fileType,
                 << " name " << graphName()
                 << " nodes " << totalNodes
                 << " links " << totalLinks
-                << " undirected " << undirected;
+                << " edgeDirType " << edgeDirType;
 
-    graphModifiedSet(GRAPH_CHANGED_NEW);
+    graphSetModified(GRAPH_CHANGED_NEW);
 
     emit signalGraphLoaded (fileType,
                             fileName,
@@ -14306,7 +14369,7 @@ void Graph::graphFileLoaded (const int &fileType,
                             totalLinks,
                             message);
 
-    graphModifiedSet(GRAPH_CHANGED_NONE);
+    graphSetModified(GRAPH_CHANGED_NONE);
     qDebug ()<< "Graph::graphFileLoaded()  -check parser if running...";
 
 }
@@ -14365,8 +14428,9 @@ void Graph::graphSave(const QString &fileName,
     case FILE_GRAPHVIZ: {
         qDebug() << "Graph::graphSave() - GraphViz/Dot formatted file";
         saved=graphSaveToDotFormat(fileName);
+        break;
     }
-    case FILE_GRAPHML: {			// GraphML
+    case FILE_GRAPHML: {
         qDebug() << "Graph::graphSave() - GraphML formatted file";
         saved=graphSaveToGraphMLFormat(fileName);
         break;
@@ -14378,7 +14442,7 @@ void Graph::graphSave(const QString &fileName,
     }
     };
     if (saved) {
-        if (graphModified()) {
+        if ( graphIsModified() ) {
             calculatedGraphConnectedness = false;
             calculatedGraphReciprocity = false;
             calculatedGraphSymmetry = false;
@@ -14400,7 +14464,7 @@ void Graph::graphSave(const QString &fileName,
             calculatedEVC=false;
             calculatedPRP = false;
         }
-        graphModifiedSet(GRAPH_CHANGED_NONE);
+        graphSetModified(GRAPH_CHANGED_NONE);
         signalGraphSaved(fileType);
     }
     else {
@@ -14529,10 +14593,8 @@ bool Graph::graphSaveToAdjacencyFormat (const QString &fileName,
 
 
 
-bool Graph::graphSaveToDotFormat (QString fileName)
-{
+bool Graph::graphSaveToDotFormat (QString fileName){
     Q_UNUSED(fileName);
-
     return true;
 }
 
@@ -14540,8 +14602,7 @@ bool Graph::graphSaveToDotFormat (QString fileName)
 
 bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
                                       QString networkName,
-                                      int maxWidth, int maxHeight)
-{
+                                      int maxWidth, int maxHeight) {
 
 
     qreal weight=0;
@@ -14630,7 +14691,7 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
         relationSet( i , false);
         qDebug()<< "Graph::graphSaveToGraphMLFormat() - writing graph tag. Relation" << relationName ;
 
-        if (graphUndirected())
+        if (graphIsUndirected())
             outText << "  <graph id=\""
                     << (( relations()==1 ) ? networkName : relationName)
                                                       << "\" edgedefault=\"undirected\"> \n";
@@ -14688,7 +14749,7 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
 
         qDebug() << "Graph::graphSaveToGraphMLFormat() - writing edges data";
         edgeCount=0;
-        if (!graphUndirected()) {
+        if (graphIsDirected()) {
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
             {
                 for (jt=m_graph.begin(); jt!=m_graph.end(); jt++)
@@ -19720,7 +19781,7 @@ void Graph::writeMatrixLaplacianPlainText(const QString &fn) {
 //void Graph::timerEvent(QTimerEvent *event) {
 //    qDebug("Graph: timerEvent()");
 //    Q_UNUSED(event);
-//    if (!graphModified()) {
+//    if (!graphIsModified()) {
 //        qDebug("Timer will be KILLED since no vertex is movin any more...");
 //        killTimer(timerId);
 //        timerId = 0;
@@ -19766,7 +19827,7 @@ void Graph::layoutRandom(){
 
     emit signalProgressBoxKill();
 
-    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
+    graphSetModified(GRAPH_CHANGED_POSITIONS);
 }
 
 
@@ -19832,7 +19893,7 @@ void Graph::layoutRadialRandom(const bool &guides){
     }
 
     emit signalProgressBoxKill();
-    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
+    graphSetModified(GRAPH_CHANGED_POSITIONS);
 }
 
 
@@ -19885,7 +19946,7 @@ void Graph::layoutCircular (const double &x0, const double &y0,
 
     emit signalProgressBoxKill();
 
-    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
+    graphSetModified(GRAPH_CHANGED_POSITIONS);
 
 }
 
@@ -19985,36 +20046,36 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
         // do nothing
     }
     else if ( prominenceIndex == 1) {
-        if (graphModified() || !calculatedDC )
+        if ( graphIsModified() || !calculatedDC )
             centralityDegree(true, dropIsolates);
     }
     else if ( prominenceIndex == 3 ){
-        if (graphModified() || !calculatedIRCC )
+        if ( graphIsModified() || !calculatedIRCC )
             centralityClosenessIR();
     }
     else if ( prominenceIndex == 8 ) {
-        if (graphModified() || !calculatedIC )
+        if ( graphIsModified() || !calculatedIC )
             centralityInformation();
     }
     else if ( prominenceIndex == 9){
-        if (graphModified() || !calculatedEVC )
+        if ( graphIsModified() || !calculatedEVC )
             centralityEigenvector(true, dropIsolates);
     }
 
     else if ( prominenceIndex == 10){
-        if (graphModified() || !calculatedDP )
+        if ( graphIsModified() || !calculatedDP )
             prestigeDegree(true, dropIsolates);
     }
     else if ( prominenceIndex == 11 ) {
-        if (graphModified() || !calculatedPRP )
+        if ( graphIsModified() || !calculatedPRP )
             prestigePageRank();
     }
     else if ( prominenceIndex == 12 ){
-        if (graphModified() || !calculatedPP )
+        if ( graphIsModified() || !calculatedPP )
             prestigeProximity(considerWeights, inverseWeights);
     }
     else{
-        if (graphModified() || !calculatedCentralities )
+        if ( graphIsModified() || !calculatedCentralities )
             graphDistanceGeodesicCompute(true, considerWeights,
                                    inverseWeights, dropIsolates);
     }
@@ -20290,7 +20351,7 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
 
     emit signalProgressBoxKill();
 
-    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
+    graphSetModified(GRAPH_CHANGED_POSITIONS);
 }
 
 
@@ -20958,7 +21019,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
     }
     emit signalProgressBoxKill();
 
-    graphModifiedSet(GRAPH_CHANGED_POSITIONS);
+    graphSetModified(GRAPH_CHANGED_POSITIONS);
 
 
 }

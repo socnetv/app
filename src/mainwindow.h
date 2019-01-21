@@ -185,7 +185,7 @@ public slots:
     void slotNetworkImportDL();
     void slotNetworkImportEdgeList();
     void slotNetworkImportTwoModeSM();
-    void slotNetworkChanged(const int &graphStatus, const bool &undirected,
+    void slotNetworkChanged(const int &graphStatus, const bool &directed,
                             const int &vertices, const int &edges,
                             const qreal &density);
     void slotNetworkSave(const int &fileFormat=-1);

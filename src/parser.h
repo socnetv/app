@@ -149,7 +149,7 @@ signals:
                            QString netName,
                            int totalNodes,
                            int totalLinks,
-                           bool edgeDirType,
+                           int edgeDirType,
                            const QString &message=QString::null);
 
 

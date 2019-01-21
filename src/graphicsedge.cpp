@@ -601,26 +601,21 @@ void GraphicsEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 }
 
 
-
+/**
+ * @brief Called when the edge changes, i.e. moves, becomes disabled or changes its visibility
+ * @param change
+ * @param value
+ * @return
+ */
 QVariant GraphicsEdge::itemChange(GraphicsItemChange change, const QVariant &value){
-
     switch (change) {
-    case ItemPositionHasChanged :
-    {
-
+    case ItemPositionHasChanged: {
         break;
     }
-    case ItemEnabledHasChanged:{
-        qDebug() << "GraphicsNode::itemChange - enabled changed";
-        if (ItemEnabledHasChanged) {
-            return 1;
-        }
-        else{
-            return 0;
-        }
+    case ItemEnabledHasChanged: {
+        break;
     }
-    case ItemSelectedHasChanged:{
-        qDebug() << "GraphicsEdge::itemChange - selected changed";
+    case ItemSelectedHasChanged: {
         if (value.toBool()) {
             setZValue(ZValueEdgeHighlighted);
             setHighlighted(true);
@@ -633,19 +628,12 @@ QVariant GraphicsEdge::itemChange(GraphicsItemChange change, const QVariant &val
             source->setSelected(false);
             target->setSelected(false);
         }
+        break;
     }
-    case ItemVisibleHasChanged:
-    {
-        qDebug() << "GraphicsEdge::itemChange - visible changed";
-        if (ItemVisibleHasChanged){
-            return 1;
-        }
-        else{
-            return 0;
-        }
+    case ItemVisibleHasChanged: {
+        break;
     }
-    default:
-    {
+    default: {
         break;
     }
     };

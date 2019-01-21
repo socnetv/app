@@ -7420,7 +7420,7 @@ void MainWindow::slotNetworkExportSM(){
 
 
     bool saveEdgeWeights=false;
-    if (activeGraph->graphWeighted() )  {
+    if (activeGraph->graphIsWeighted() )  {
         switch (
                 slotHelpMessageToUser(USER_MSG_QUESTION,
                                   tr("Weighted graph. Social network with valued/weighted edges"),
@@ -8291,13 +8291,13 @@ void MainWindow::slotNetworkWebCrawler ( const QString &urlSeed,
  * Also called from activeGraph and graphicsWidget.
  */
 void MainWindow::slotNetworkChanged(const int &graphStatus,
-                                    const bool &undirected,
+                                    const bool &directed,
                                     const int &vertices,
                                     const int &edges,
                                     const qreal &density){
     qDebug()<<"MW::slotNetworkChanged()"
            <<"graphStatus" << graphStatus
-             <<"undirected" << undirected
+             <<"directed" << directed
             <<"vertices" << vertices
            <<"edges" <<edges
           << "density"<<density;
@@ -8308,7 +8308,7 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
     }
 
     rightPanelNodesLCD->setText (QString::number(vertices));
-    if ( undirected ) {
+    if ( !directed ) {
 
         rightPanelEdgesLCD->setStatusTip(tr("Shows the total number of undirected edges in the network."));
         rightPanelEdgesLCD->setToolTip(tr("The total number of undirected edges in the network."));
@@ -9713,7 +9713,7 @@ void MainWindow::slotEditEdgeRemove(){
         }
         if ( activeGraph->edgeExists(sourceNode, targetNode, false)!=0 ) {
             removeOpposite=false;
-            if ( activeGraph->graphUndirected() ) {
+            if ( activeGraph->graphIsUndirected() ) {
                 removeOpposite=true;
             }
         }
@@ -10064,7 +10064,7 @@ void MainWindow::slotEditEdgeWeight(){
 
     QString dialogTitle="Edge " + QString::number(sourceNode) + "->" + QString::number(targetNode);
 
-    bool undirected = activeGraph->graphUndirected();
+    bool undirected = activeGraph->graphIsUndirected();
 
     if ( ( oldWeight= activeGraph->edgeWeight(sourceNode, targetNode)) != 0 ) {
 
@@ -10235,7 +10235,7 @@ void MainWindow::slotEditEdgeSymmetrizeStrongTies(){
 void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
     qDebug()<<"MW: slotEditEdgeUndirectedAll() - calling Graph::graphUndirectedSet()";
     if (toggle) {
-        activeGraph->graphUndirectedSet(toggle);
+        activeGraph->graphSetUndirected(true);
         optionsEdgeArrowsAct->setChecked(false);
         if (activeEdges() !=0 ) {
             statusMessage(tr("Undirected data mode. "
@@ -10249,7 +10249,7 @@ void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
         }
     }
     else {
-        activeGraph->graphUndirectedSet(toggle);
+        activeGraph->graphSetDirected(true);
         optionsEdgeArrowsAct->trigger();
         optionsEdgeArrowsAct->setChecked(true);
         if (activeEdges() !=0 ) {
@@ -10273,8 +10273,8 @@ void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
   */
 void MainWindow::slotEditEdgeMode(const int &mode){
     if (mode==1) {
-        qDebug()<<"MW: slotEditEdgeMode() - Calling Graph::graphUndirectedSet(true)";
-        activeGraph->graphUndirectedSet(true);
+        qDebug()<<"MW: slotEditEdgeMode() - Calling Graph::graphSetUndirected()";
+        activeGraph->graphSetUndirected(true);
         qDebug()<<"MW: slotEditEdgeMode() - Disabling optionsEdgeArrowsAct checkbox";
         optionsEdgeArrowsAct->setChecked(false);
         if (activeEdges() !=0 ) {
@@ -10289,8 +10289,8 @@ void MainWindow::slotEditEdgeMode(const int &mode){
         }
     }
     else {
-        qDebug()<<"MW: slotEditEdgeMode() - calling Graph::graphUndirectedSet(false)";
-        activeGraph->graphUndirectedSet(false);
+        qDebug()<<"MW: slotEditEdgeMode() - calling Graph::graphSetDirected()";
+        activeGraph->graphSetDirected(true);
         qDebug()<<"MW: slotEditEdgeMode() - Triggering optionsEdgeArrowsAct checkbox";
         optionsEdgeArrowsAct->trigger();
         qDebug()<<"MW: slotEditEdgeMode() - disabling optionsEdgeArrowsAct checkbox";
@@ -11372,7 +11372,7 @@ void MainWindow::slotAnalyzeSymmetryCheck(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    if (activeGraph->graphSymmetric())
+    if (activeGraph->graphIsSymmetric())
         QMessageBox::information(this,
                                  "Symmetry",
                                  tr("The adjacency matrix is symmetric."
@@ -11558,7 +11558,7 @@ void MainWindow::askAboutWeights(const bool userTriggered){
     qDebug() << "MW::askAboutWeights() - checking if graph weighted.";
 
     if (userTriggered) {
-        if (!activeGraph->graphWeighted()  ){
+        if (!activeGraph->graphIsWeighted()  ){
             slotHelpMessageToUser(USER_MSG_INFO,
                                   tr("Non-Weighted Network"),
                                   tr("You do not work on a weighted network at the moment. \n"
@@ -11571,7 +11571,7 @@ void MainWindow::askAboutWeights(const bool userTriggered){
         }
     }
     else {
-        if (!activeGraph->graphWeighted()  ){
+        if (!activeGraph->graphIsWeighted()  ){
             optionsEdgeWeightConsiderAct->setChecked(false);
             return;
         }
@@ -11677,7 +11677,7 @@ void MainWindow::slotAnalyzeDistance(){
 
     qDebug() << "source " << i  << " target" <<  j;
 
-    if (activeGraph->graphSymmetric() && i>j) {
+    if (activeGraph->graphIsSymmetric() && i>j) {
         qSwap(i,j);
     }
 
@@ -11795,7 +11795,7 @@ void MainWindow::slotAnalyzeDiameter() {
                 optionsEdgeWeightConsiderAct->isChecked(),
                 inverseWeights);
 
-    if ( activeGraph->graphWeighted() ) {
+    if ( activeGraph->graphIsWeighted() ) {
         if (optionsEdgeWeightConsiderAct->isChecked()) {
             QMessageBox::information(this, "Diameter",
                                      tr("Diameter =  ")
@@ -12414,7 +12414,7 @@ void MainWindow::slotAnalyzeStrEquivalenceClusteringHierarchicalDialog() {
 
     QString preselectMatrix = "Adjacency";
 
-    if (!activeGraph->graphWeighted()) {
+    if (!activeGraph->graphIsWeighted()) {
         preselectMatrix = "Distances";
     }
     m_dialogClusteringHierarchical = new DialogClusteringHierarchical(this, preselectMatrix);
@@ -12709,7 +12709,7 @@ void MainWindow::slotAnalyzePrestigeDegree(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    if (activeGraph->graphSymmetric()) {
+    if (activeGraph->graphIsSymmetric()) {
         QMessageBox::warning(
                     this,
                     "Warning",
@@ -13215,7 +13215,7 @@ void MainWindow::slotOptionsEdgeArrowsVisibility(bool toggle){
 void MainWindow::slotOptionsEdgeWeightsDuringComputation(bool toggle) {
     askedAboutWeights=false;
     askAboutWeights(toggle);
-    activeGraph->graphModifiedSet(GRAPH_CHANGED_EDGES);
+    activeGraph->graphSetModified(GRAPH_CHANGED_EDGES);
 }
 
 

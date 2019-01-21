@@ -174,7 +174,7 @@ class GraphDistancesCompare {
     \todo Enrich Node properties dialog
     \todo Update app icons
     \todo - CHECK weighted networks results (IRCC and distance matrix with other combinations)
-    \todo - CHECK graphWeighted corner case results, when !graphModified.
+    \todo - CHECK graphIsWeighted corner case results, when !graphIsModified.
     \todo - CHECK graphConnectedness() algorithm implementation (m_vertexPairsUnilaterallyConnected)
 
   \bug Create d-regular, undirected, ask for closeness, it says we are on a disconnected graph
@@ -230,7 +230,7 @@ public slots:
                          const QString &netName=QString::null,
                          const int &totalNodes=0,
                          const int &totalLinks=0,
-                         const bool &undirected=false,
+                         const int &edgeDirType=0,
                          const QString &message=QString::null);
 
     void vertexRemoveDummyNode(int);
@@ -400,7 +400,7 @@ public:
     /* INIT AND CLEAR*/
     Graph();
     void clear(const QString &reason="");
-    ~Graph();			//destroy object
+    ~Graph();
 
     void setSocNetV_Version (QString ver) { VERSION = ver; }
 
@@ -575,8 +575,8 @@ public:
     bool edgeColorAllSet(const QString &color, const int &threshold=RAND_MAX);
 
     //GRAPH methods
-    void graphModifiedSet(const int &graphNewStatus, const bool&signalMW=true);
-    bool graphModified() const ;
+    void graphSetModified(const int &graphNewStatus, const bool&signalMW=true);
+    bool graphIsModified() const ;
     bool graphSaved() const;
     bool graphLoaded() const;
 
@@ -591,11 +591,13 @@ public:
     int graphGeodesics();
 
     qreal graphDensity();
-    bool graphWeighted();
+
+    bool graphIsWeighted();
+    void graphSetWeighted(const bool &toggle=true);
 
     qreal graphReciprocity();
 
-    bool graphSymmetric();
+    bool graphIsSymmetric();
     void graphSymmetrize();
     void graphSymmetrizeStrongTies(const bool &allRelations=false);
 
@@ -603,8 +605,10 @@ public:
 
     void graphDichotomization(const qreal threshold);
 
-    void graphUndirectedSet(const bool &toggle, const bool &signalMW=true);
-    bool graphUndirected();
+    void graphSetDirected(const bool &toggle=true, const bool &signalMW=true);
+    void graphSetUndirected(const bool &toggle=true, const bool &signalMW=true);
+    bool graphIsDirected();
+    bool graphIsUndirected();
 
     void graphMatrixAdjacencyCreate(const bool dropIsolates=false,
                                const bool considerWeights=true,
@@ -1125,7 +1129,7 @@ private:
     bool calculatedGraphSymmetry, calculatedGraphReciprocity;
     bool calculatedGraphDensity, calculatedGraphWeighted;
     bool calculatedGraphConnectedness;
-    bool m_undirected, m_symmetric, m_isWeighted, m_graphDisconnected;
+    bool m_directed, m_symmetric, m_isWeighted, m_graphDisconnected;
 
     int cliqueCensusRecursion;
 

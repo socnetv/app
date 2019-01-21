@@ -291,8 +291,7 @@ void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 
 
 /**
- * @brief GraphicsNode::itemChange
- * Called when the node moves or becomes disabled or changes its visibility
+ * @brief Called when the node changes, i.e. moves, becomes disabled or changes its visibility
  * Propagates the changes to connected elements, i.e. edges, numbers, etc.
  *  Checks if the node is inside the scene.
  * @param change
@@ -302,9 +301,7 @@ void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &value) {
 
     switch (change) {
-    case ItemPositionHasChanged :
-    {
-         qDebug() << "GraphicsNode::itemChange - position changed";
+    case ItemPositionHasChanged: {
         //setCacheMode( QGraphicsItem::ItemCoordinateCache );
         foreach (GraphicsEdge *edge, inEdgeList)  //Move each inEdge of this node
             edge->adjust();
@@ -321,20 +318,12 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
         if (m_hasLabel) {
             m_label->setPos( -m_size, m_labelDistance+m_size);
         }
-
         break;
     }
     case ItemEnabledHasChanged:{
-        qDebug() << "GraphicsNode::itemChange - enabled changed";
-        if (ItemEnabledHasChanged) {
-            return 1;
-        }
-        else{
-            return 0;
-        }
+        break;
     }
     case ItemSelectedHasChanged:{
-        qDebug() << "GraphicsNode::itemChange - selected changed";
         if (value.toBool()) {
             setZValue(ZValueNodeHighlighted);
             m_size_orig = m_size;
@@ -362,16 +351,11 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
                         edge->setHighlighted(false);
             }
         }
+        break;
     }
     case ItemVisibleHasChanged:
     {
-        qDebug() << "GraphicsNode::itemChange - visible changed";
-        if (ItemVisibleHasChanged){
-            return 1;
-        }
-        else{
-            return 0;
-        }
+        break;
     }
     default:
     {
@@ -385,7 +369,6 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
 
 /** handles the events of a click on a node */
 void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-
     QGraphicsItem::mousePressEvent(event);
 }
 
