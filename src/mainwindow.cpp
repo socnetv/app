@@ -168,7 +168,6 @@ MainWindow::~MainWindow() {
 
     terminateThreads("~MainWindow()");
 
-
     delete printer;
     delete scene;
     delete graphicsWidget;
@@ -177,6 +176,7 @@ MainWindow::~MainWindow() {
         ed->close();
         delete ed;
     }
+
     m_textEditors.clear();
 
     codecs.clear();
@@ -266,7 +266,7 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
 /**
  * @brief Resizes the scene when the window is resized.
  */
-void MainWindow::resizeEvent( QResizeEvent * ){
+void MainWindow::resizeEvent( QResizeEvent * ) {
 
     qDebug() << "MW::resizeEvent():  Window resized to"
              << width()
@@ -294,7 +294,8 @@ void MainWindow::resizeEvent( QResizeEvent * ){
   * @brief Initializes default (or user-defined) app settings
   *
   */
-QMap<QString,QString> MainWindow::initSettings(){
+QMap<QString,QString> MainWindow::initSettings() {
+
     qDebug()<< "MW::initSettings";
 
     printDebug = false; // comment it to stop debug override
