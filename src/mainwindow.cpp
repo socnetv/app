@@ -1045,7 +1045,7 @@ void MainWindow::initActions(){
 
     networkRandomErdosRenyiAct = new QAction(QIcon(":/images/erdos.png"),
                                              tr("Erdős–Rényi"),  this);
-    networkRandomErdosRenyiAct -> setShortcut(
+    networkRandomErdosRenyiAct->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_E)
                 );
     networkRandomErdosRenyiAct->setStatusTip(
@@ -1062,7 +1062,7 @@ void MainWindow::initActions(){
 
     networkRandomLatticeRingAct = new QAction( QIcon(":/images/net1.png"),
                                                tr("Ring Lattice"), this);
-    networkRandomLatticeRingAct -> setShortcut(
+    networkRandomLatticeRingAct->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_L)
                 );
     networkRandomLatticeRingAct->setStatusTip(tr("Create a ring lattice random network."));
@@ -1075,7 +1075,7 @@ void MainWindow::initActions(){
 
 
     networkRandomRegularSameDegreeAct = new QAction(QIcon(":/images/net.png"), tr("d-Regular"), this);
-    networkRandomRegularSameDegreeAct -> setShortcut(
+    networkRandomRegularSameDegreeAct->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_R)
                 );
     networkRandomRegularSameDegreeAct->setStatusTip(
@@ -1090,7 +1090,7 @@ void MainWindow::initActions(){
 
 
     networkRandomGaussianAct = new QAction(tr("Gaussian"),	this);
-    networkRandomGaussianAct -> setShortcut(
+    networkRandomGaussianAct->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_G)
                 );
     networkRandomGaussianAct->setStatusTip(tr("Create a Gaussian distributed random network."));
@@ -1507,7 +1507,7 @@ void MainWindow::initActions(){
                 tr("Symmetrize Edges by examing Strong Ties\n\n"
                    "Creates a new symmetric relation by keeping strong ties only. \n"
                    "That is, a strong tie exists between actor A and actor B \n"
-                   "only when both arcs A -> B and B -> A are present. \n"
+                   "only when both arcs A->B and B->A are present. \n"
                    "If the network is multi-relational, it asks you whether \n"
                    "ties in the current relation or all relations are to be considered. \n"
                    "The resulting relation is symmetric."));
@@ -1525,8 +1525,8 @@ void MainWindow::initActions(){
                    "The result is a undirected and symmetric network."
                    "After that, every new edge you add, will be undirected too."
                    "If you disable this, then all edges become directed again."));
-    editEdgeUndirectedAllAct -> setCheckable(true);
-    editEdgeUndirectedAllAct -> setChecked(false);
+    editEdgeUndirectedAllAct->setCheckable(true);
+    editEdgeUndirectedAllAct->setChecked(false);
     connect(editEdgeUndirectedAllAct, SIGNAL(triggered(bool)),
             this, SLOT(slotEditEdgeUndirectedAll(bool)));
 
@@ -1582,7 +1582,7 @@ void MainWindow::initActions(){
 
 
     filterNodesAct = new QAction(tr("Filter Nodes"), this);
-    filterNodesAct -> setEnabled(false);
+    filterNodesAct->setEnabled(false);
     //filterNodesAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_F));
     filterNodesAct->setStatusTip(tr("Filters Nodes of some value out of the network"));
     filterNodesAct->setWhatsThis(tr("Filter Nodes\n\n"
@@ -1590,33 +1590,33 @@ void MainWindow::initActions(){
     connect(filterNodesAct, SIGNAL(triggered()), this, SLOT(slotFilterNodes()));
 
     editFilterNodesIsolatesAct = new QAction(tr("Disable Isolate Nodes"), this);
-    editFilterNodesIsolatesAct -> setEnabled(true);
-    editFilterNodesIsolatesAct -> setCheckable(true);
-    editFilterNodesIsolatesAct -> setChecked(false);
-    editFilterNodesIsolatesAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_F));
-    editFilterNodesIsolatesAct -> setStatusTip(tr("Temporarily filter out nodes with no edges"));
-    editFilterNodesIsolatesAct -> setWhatsThis(tr("Filter Isolate Nodes\n\n"
+    editFilterNodesIsolatesAct->setEnabled(true);
+    editFilterNodesIsolatesAct->setCheckable(true);
+    editFilterNodesIsolatesAct->setChecked(false);
+    editFilterNodesIsolatesAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_F));
+    editFilterNodesIsolatesAct->setStatusTip(tr("Temporarily filter out nodes with no edges"));
+    editFilterNodesIsolatesAct->setWhatsThis(tr("Filter Isolate Nodes\n\n"
                                                   "Enables or disables displaying of isolate nodes. "
                                                   "Isolate nodes are those with no edges..."));
     connect(editFilterNodesIsolatesAct, SIGNAL(toggled(bool)),
             this, SLOT(slotEditFilterNodesIsolates(bool)));
 
     editFilterEdgesByWeightAct = new QAction(QIcon(":/images/filter_list_48px.svg"), tr("Filter Edges by Weight"), this);
-    editFilterEdgesByWeightAct -> setEnabled(true);
-    editFilterEdgesByWeightAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_F));
-    editFilterEdgesByWeightAct -> setStatusTip(tr("Temporarily filter edges of some weight out of the network"));
-    editFilterEdgesByWeightAct -> setWhatsThis(tr("Filter Edges\n\n"
+    editFilterEdgesByWeightAct->setEnabled(true);
+    editFilterEdgesByWeightAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_F));
+    editFilterEdgesByWeightAct->setStatusTip(tr("Temporarily filter edges of some weight out of the network"));
+    editFilterEdgesByWeightAct->setWhatsThis(tr("Filter Edges\n\n"
                                                   "Filters Edge of some specific weight out of the network."));
     connect(editFilterEdgesByWeightAct , SIGNAL(triggered()),
             this, SLOT(slotEditFilterEdgesByWeightDialog()));
 
     editFilterEdgesUnilateralAct = new QAction(tr("Disable unilateral edges"), this);
-    editFilterEdgesUnilateralAct -> setEnabled(true);
-    editFilterEdgesUnilateralAct -> setCheckable(true);
-    editFilterEdgesUnilateralAct -> setChecked(false);
-    editFilterEdgesUnilateralAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_R));
-    editFilterEdgesUnilateralAct -> setStatusTip(tr("Temporarily disable all unilateral (non-reciprocal) edges in this relation. Keeps only \"strong\" ties."));
-    editFilterEdgesUnilateralAct -> setWhatsThis(tr("Unilateral edges\n\n"
+    editFilterEdgesUnilateralAct->setEnabled(true);
+    editFilterEdgesUnilateralAct->setCheckable(true);
+    editFilterEdgesUnilateralAct->setChecked(false);
+    editFilterEdgesUnilateralAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_R));
+    editFilterEdgesUnilateralAct->setStatusTip(tr("Temporarily disable all unilateral (non-reciprocal) edges in this relation. Keeps only \"strong\" ties."));
+    editFilterEdgesUnilateralAct->setWhatsThis(tr("Unilateral edges\n\n"
                                                     "In directed networks, a tie between two actors "
                                                     "is unilateral when only one actor identifies the other "
                                                     "as connected (i.e. friend, vote, etc). "
@@ -1636,8 +1636,8 @@ void MainWindow::initActions(){
     Layout menu actions
     */
     strongColorationAct = new QAction ( tr("Strong Structural"), this);
-    strongColorationAct -> setStatusTip( tr("Nodes are assigned the same color if they have identical in and out neighborhoods") );
-    strongColorationAct -> setWhatsThis( tr("Click this to colorize nodes; Nodes are assigned the same color if they have identical in and out neighborhoods"));
+    strongColorationAct->setStatusTip( tr("Nodes are assigned the same color if they have identical in and out neighborhoods") );
+    strongColorationAct->setWhatsThis( tr("Click this to colorize nodes; Nodes are assigned the same color if they have identical in and out neighborhoods"));
     connect(strongColorationAct, SIGNAL(triggered() ), this, SLOT(slotLayoutColorationStrongStructural()) );
 
     regularColorationAct = new QAction ( tr("Regular"), this);
@@ -1646,23 +1646,23 @@ void MainWindow::initActions(){
                 tr("Nodes are assigned the same color if they have "
                    "neighborhoods of the same set of colors") );
     regularColorationAct
-            -> setWhatsThis(
+           ->setWhatsThis(
                 tr("Click this to colorize nodes; "
                    "Nodes are assigned the same color if they have neighborhoods "
                    "of the same set of colors"));
     connect(regularColorationAct, SIGNAL(triggered() ), this, SLOT(slotLayoutColorationRegular()) );//TODO
 
     layoutRandomAct = new QAction( tr("Random"),this);
-    layoutRandomAct -> setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_0);
-    layoutRandomAct -> setStatusTip(tr("Layout the network actors in random positions."));
-    layoutRandomAct -> setWhatsThis(tr("Random Layout\n\n "
+    layoutRandomAct->setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_0);
+    layoutRandomAct->setStatusTip(tr("Layout the network actors in random positions."));
+    layoutRandomAct->setWhatsThis(tr("Random Layout\n\n "
                                        "This layout algorithm repositions all "
                                        "network actors in random positions."));
     connect(layoutRandomAct, SIGNAL(triggered()), this, SLOT(slotLayoutRandom()));
 
 
     layoutRandomRadialAct = new QAction(tr("Random Circles"),	this);
-    layoutRandomRadialAct -> setShortcut(Qt::CTRL+Qt::ALT+Qt::Key_0);
+    layoutRandomRadialAct->setShortcut(Qt::CTRL+Qt::ALT+Qt::Key_0);
     layoutRandomRadialAct ->setStatusTip(tr("Layout the network in random concentric circles"));
     layoutRandomRadialAct->
             setWhatsThis(
@@ -1673,7 +1673,7 @@ void MainWindow::initActions(){
 
 
     layoutRadialProminence_DC_Act = new QAction( tr("Degree Centrality"),	this);
-    layoutRadialProminence_DC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_1);
+    layoutRadialProminence_DC_Act->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_1);
     layoutRadialProminence_DC_Act
             ->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
@@ -1689,9 +1689,9 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutRadialByProminenceIndex()) );
 
     layoutRadialProminence_CC_Act = new QAction( tr("Closeness Centrality"), this);
-    layoutRadialProminence_CC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_2);
+    layoutRadialProminence_CC_Act->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_2);
     layoutRadialProminence_CC_Act
-            -> setStatusTip(
+           ->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
                    "proportional to their Closeness Centrality."));
     layoutRadialProminence_CC_Act->
@@ -1707,7 +1707,7 @@ void MainWindow::initActions(){
 
     layoutRadialProminence_IRCC_Act = new QAction(
                 tr("Influence Range Closeness Centrality"),	this);
-    layoutRadialProminence_IRCC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_3);
+    layoutRadialProminence_IRCC_Act->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_3);
     layoutRadialProminence_IRCC_Act
             ->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
@@ -1723,7 +1723,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutRadialByProminenceIndex()));
 
     layoutRadialProminence_BC_Act = new QAction( tr("Betweenness Centrality"), this);
-    layoutRadialProminence_BC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_4);
+    layoutRadialProminence_BC_Act->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_4);
     layoutRadialProminence_BC_Act ->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
                    "proportional to their Betweenness Centrality."));
@@ -1738,7 +1738,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutRadialByProminenceIndex()));
 
     layoutRadialProminence_SC_Act = new QAction( tr("Stress Centrality"),	this);
-    layoutRadialProminence_SC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_5);
+    layoutRadialProminence_SC_Act->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_5);
     layoutRadialProminence_SC_Act ->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
                    "proportional to their Stress Centrality."));
@@ -1753,7 +1753,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutRadialByProminenceIndex()));
 
     layoutRadialProminence_EC_Act = new QAction( tr("Eccentricity Centrality"),	this);
-    layoutRadialProminence_EC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_6);
+    layoutRadialProminence_EC_Act->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_6);
     layoutRadialProminence_EC_Act ->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
                    "proportional to their Eccentricity Centrality (aka Harary Graph Centrality)."));
@@ -1770,7 +1770,7 @@ void MainWindow::initActions(){
 
 
     layoutRadialProminence_PC_Act = new QAction( tr("Power Centrality"),	this);
-    layoutRadialProminence_PC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_7);
+    layoutRadialProminence_PC_Act->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_7);
     layoutRadialProminence_PC_Act ->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
                    "proportional to their Power Centrality."));
@@ -1786,9 +1786,9 @@ void MainWindow::initActions(){
 
 
     layoutRadialProminence_IC_Act = new QAction( tr("Information Centrality"),	this);
-    layoutRadialProminence_IC_Act -> setEnabled(true);
-    layoutRadialProminence_IC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_8);
-    layoutRadialProminence_IC_Act -> setStatusTip(
+    layoutRadialProminence_IC_Act->setEnabled(true);
+    layoutRadialProminence_IC_Act->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_8);
+    layoutRadialProminence_IC_Act->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
                    "proportional to their Information Centrality."));
     layoutRadialProminence_IC_Act->
@@ -1803,9 +1803,9 @@ void MainWindow::initActions(){
 
 
     layoutRadialProminence_EVC_Act = new QAction( tr("Eigenvector Centrality"),	this);
-    layoutRadialProminence_EVC_Act -> setEnabled(true);
-    layoutRadialProminence_EVC_Act -> setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_9);
-    layoutRadialProminence_EVC_Act -> setStatusTip(
+    layoutRadialProminence_EVC_Act->setEnabled(true);
+    layoutRadialProminence_EVC_Act->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_9);
+    layoutRadialProminence_EVC_Act->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
                    "proportional to their Eigenvector Centrality."));
     layoutRadialProminence_EVC_Act->
@@ -1870,7 +1870,7 @@ void MainWindow::initActions(){
 
 
     layoutLevelProminence_DC_Act = new QAction( tr("Degree Centrality"), this);
-    layoutLevelProminence_DC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_1);
+    layoutLevelProminence_DC_Act->setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_1);
     layoutLevelProminence_DC_Act
             ->setStatusTip(
                 tr("Place all nodes on horizontal levels of height "
@@ -1887,9 +1887,9 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutLevelByProminenceIndex()) );
 
     layoutLevelProminence_CC_Act = new QAction( tr("Closeness Centrality"), this);
-    layoutLevelProminence_CC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_2);
+    layoutLevelProminence_CC_Act->setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_2);
     layoutLevelProminence_CC_Act
-            -> setStatusTip(
+           ->setStatusTip(
                 tr("Place all nodes on horizontal levels of height "
                    "proportional to their Closeness Centrality."));
     layoutLevelProminence_CC_Act->
@@ -1906,7 +1906,7 @@ void MainWindow::initActions(){
 
     layoutLevelProminence_IRCC_Act = new QAction(
                 tr("Influence Range Closeness Centrality"),	this);
-    layoutLevelProminence_IRCC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_3);
+    layoutLevelProminence_IRCC_Act->setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_3);
     layoutLevelProminence_IRCC_Act
             ->setStatusTip(
                 tr("Place all nodes on horizontal levels of height "
@@ -1923,7 +1923,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutLevelByProminenceIndex()));
 
     layoutLevelProminence_BC_Act = new QAction( tr("Betweenness Centrality"), this);
-    layoutLevelProminence_BC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_4);
+    layoutLevelProminence_BC_Act->setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_4);
     layoutLevelProminence_BC_Act ->setStatusTip(
                 tr("Place all nodes on horizontal levels of height "
                    "proportional to their Betweenness Centrality."));
@@ -1938,7 +1938,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutLevelByProminenceIndex()));
 
     layoutLevelProminence_SC_Act = new QAction( tr("Stress Centrality"),	this);
-    layoutLevelProminence_SC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_5);
+    layoutLevelProminence_SC_Act->setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_5);
     layoutLevelProminence_SC_Act ->setStatusTip(
                 tr("Place nodes on horizontal levels of height "
                    "proportional to their Stress Centrality."));
@@ -1953,7 +1953,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutLevelByProminenceIndex()));
 
     layoutLevelProminence_EC_Act = new QAction( tr("Eccentricity Centrality"),	this);
-    layoutLevelProminence_EC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_6);
+    layoutLevelProminence_EC_Act->setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_6);
     layoutLevelProminence_EC_Act ->setStatusTip(
                 tr("Place nodes on horizontal levels of height "
                    "proportional to their Eccentricity Centrality (aka Harary Graph Centrality)."));
@@ -1970,7 +1970,7 @@ void MainWindow::initActions(){
 
 
     layoutLevelProminence_PC_Act = new QAction( tr("Power Centrality"),	this);
-    layoutLevelProminence_PC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_7);
+    layoutLevelProminence_PC_Act->setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_7);
     layoutLevelProminence_PC_Act ->setStatusTip(
                 tr("Place nodes on horizontal levels of height "
                    "proportional to their Power Centrality."));
@@ -1987,7 +1987,7 @@ void MainWindow::initActions(){
 
     layoutLevelProminence_IC_Act = new QAction( tr("Information Centrality"),	this);
     layoutLevelProminence_IC_Act ->setEnabled(true);
-    layoutLevelProminence_IC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_8);
+    layoutLevelProminence_IC_Act->setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_8);
     layoutLevelProminence_IC_Act ->setStatusTip(
                 tr("Place nodes on horizontal levels of height "
                    "proportional to their Information Centrality."));
@@ -2003,7 +2003,7 @@ void MainWindow::initActions(){
 
     layoutLevelProminence_EVC_Act = new QAction( tr("Eigenvector Centrality"),	this);
     layoutLevelProminence_EVC_Act ->setEnabled(true);
-    layoutLevelProminence_EVC_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_9);
+    layoutLevelProminence_EVC_Act->setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_9);
     layoutLevelProminence_EVC_Act ->setStatusTip(
                 tr(
                     "Place nodes on horizontal levels of height "
@@ -2021,7 +2021,7 @@ void MainWindow::initActions(){
 
 
     layoutLevelProminence_DP_Act = new QAction( tr("Degree Prestige"),	this);
-    layoutLevelProminence_DP_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_I);
+    layoutLevelProminence_DP_Act->setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_I);
     layoutLevelProminence_DP_Act ->setStatusTip(
                 tr("Place nodes on horizontal levels of height "
                    "proportional to their Degree Prestige."));
@@ -2036,9 +2036,9 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutLevelByProminenceIndex()));
 
     layoutLevelProminence_PRP_Act = new QAction( tr("PageRank Prestige"),	this);
-    layoutLevelProminence_PRP_Act -> setEnabled(true);
-    layoutLevelProminence_PRP_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_K);
-    layoutLevelProminence_PRP_Act -> setStatusTip(
+    layoutLevelProminence_PRP_Act->setEnabled(true);
+    layoutLevelProminence_PRP_Act->setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_K);
+    layoutLevelProminence_PRP_Act->setStatusTip(
                 tr("Place nodes on horizontal levels of height "
                    "proportional to their PageRank Prestige."));
     layoutLevelProminence_PRP_Act->
@@ -2053,9 +2053,9 @@ void MainWindow::initActions(){
 
 
     layoutLevelProminence_PP_Act = new QAction( tr("Proximity Prestige"),	this);
-    layoutLevelProminence_PP_Act -> setEnabled(true);
-    layoutLevelProminence_PP_Act -> setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_Y);
-    layoutLevelProminence_PP_Act -> setStatusTip(
+    layoutLevelProminence_PP_Act->setEnabled(true);
+    layoutLevelProminence_PP_Act->setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_Y);
+    layoutLevelProminence_PP_Act->setStatusTip(
                 tr("Place nodes on horizontal levels of height "
                    "proportional to their Proximity Prestige."));
     layoutLevelProminence_PP_Act->
@@ -2072,7 +2072,7 @@ void MainWindow::initActions(){
 
 
     layoutNodeSizeProminence_DC_Act = new QAction( tr("Degree Centrality"), this);
-    layoutNodeSizeProminence_DC_Act -> setShortcut(Qt::ALT+ Qt::Key_1);
+    layoutNodeSizeProminence_DC_Act->setShortcut(Qt::ALT+ Qt::Key_1);
     layoutNodeSizeProminence_DC_Act
             ->setStatusTip(
                 tr("Resize all nodes to be "
@@ -2090,9 +2090,9 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutNodeSizeByProminenceIndex()) );
 
     layoutNodeSizeProminence_CC_Act = new QAction( tr("Closeness Centrality"), this);
-    layoutNodeSizeProminence_CC_Act -> setShortcut(Qt::ALT+ Qt::Key_2);
+    layoutNodeSizeProminence_CC_Act->setShortcut(Qt::ALT+ Qt::Key_2);
     layoutNodeSizeProminence_CC_Act
-            -> setStatusTip(
+           ->setStatusTip(
                 tr("Resize all nodes to be "
                    "proportional to their Closeness Centrality."));
     layoutNodeSizeProminence_CC_Act->
@@ -2109,7 +2109,7 @@ void MainWindow::initActions(){
 
     layoutNodeSizeProminence_IRCC_Act = new QAction(
                 tr("Influence Range Closeness Centrality"),	this);
-    layoutNodeSizeProminence_IRCC_Act -> setShortcut(Qt::ALT+ Qt::Key_3);
+    layoutNodeSizeProminence_IRCC_Act->setShortcut(Qt::ALT+ Qt::Key_3);
     layoutNodeSizeProminence_IRCC_Act
             ->setStatusTip(
                 tr("Resize all nodes to be proportional "
@@ -2126,7 +2126,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutNodeSizeByProminenceIndex()));
 
     layoutNodeSizeProminence_BC_Act = new QAction( tr("Betweenness Centrality"), this);
-    layoutNodeSizeProminence_BC_Act -> setShortcut(Qt::ALT+ Qt::Key_4);
+    layoutNodeSizeProminence_BC_Act->setShortcut(Qt::ALT+ Qt::Key_4);
     layoutNodeSizeProminence_BC_Act ->setStatusTip(
                 tr("Resize all nodes to be "
                    "proportional to their Betweenness Centrality."));
@@ -2141,7 +2141,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutNodeSizeByProminenceIndex()));
 
     layoutNodeSizeProminence_SC_Act = new QAction( tr("Stress Centrality"),	this);
-    layoutNodeSizeProminence_SC_Act -> setShortcut(Qt::ALT+ Qt::Key_5);
+    layoutNodeSizeProminence_SC_Act->setShortcut(Qt::ALT+ Qt::Key_5);
     layoutNodeSizeProminence_SC_Act ->setStatusTip(
                 tr( "Resize all nodes to be  "
                     "proportional to their Stress Centrality."));
@@ -2156,7 +2156,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutNodeSizeByProminenceIndex()));
 
     layoutNodeSizeProminence_EC_Act = new QAction( tr("Eccentricity Centrality"),	this);
-    layoutNodeSizeProminence_EC_Act -> setShortcut(Qt::ALT+ Qt::Key_6);
+    layoutNodeSizeProminence_EC_Act->setShortcut(Qt::ALT+ Qt::Key_6);
     layoutNodeSizeProminence_EC_Act ->setStatusTip(
                 tr("Resize all nodes to be "
                    "proportional to their Eccentricity Centrality (aka Harary Graph Centrality)."));
@@ -2172,7 +2172,7 @@ void MainWindow::initActions(){
 
 
     layoutNodeSizeProminence_PC_Act = new QAction( tr("Power Centrality"),	this);
-    layoutNodeSizeProminence_PC_Act -> setShortcut(Qt::ALT+ Qt::Key_7);
+    layoutNodeSizeProminence_PC_Act->setShortcut(Qt::ALT+ Qt::Key_7);
     layoutNodeSizeProminence_PC_Act ->setStatusTip(
                 tr("Resize all nodes to be "
                    "proportional to their Power Centrality."));
@@ -2189,7 +2189,7 @@ void MainWindow::initActions(){
 
     layoutNodeSizeProminence_IC_Act = new QAction( tr("Information Centrality"),	this);
     layoutNodeSizeProminence_IC_Act ->setEnabled(true);
-    layoutNodeSizeProminence_IC_Act -> setShortcut(Qt::ALT+ Qt::Key_8);
+    layoutNodeSizeProminence_IC_Act->setShortcut(Qt::ALT+ Qt::Key_8);
     layoutNodeSizeProminence_IC_Act ->setStatusTip(
                 tr("Resize all nodes to be "
                    "proportional to their Information Centrality."));
@@ -2205,7 +2205,7 @@ void MainWindow::initActions(){
 
     layoutNodeSizeProminence_EVC_Act = new QAction( tr("Eigenvector Centrality"),	this);
     layoutNodeSizeProminence_EVC_Act ->setEnabled(true);
-    layoutNodeSizeProminence_EVC_Act -> setShortcut(Qt::ALT+ Qt::Key_9);
+    layoutNodeSizeProminence_EVC_Act->setShortcut(Qt::ALT+ Qt::Key_9);
     layoutNodeSizeProminence_EVC_Act ->setStatusTip(
                 tr("Resize all nodes to be "
                    "proportional to their Eigenvector Centrality."));
@@ -2222,7 +2222,7 @@ void MainWindow::initActions(){
 
 
     layoutNodeSizeProminence_DP_Act = new QAction( tr("Degree Prestige"),	this);
-    layoutNodeSizeProminence_DP_Act -> setShortcut(Qt::ALT + Qt::Key_I);
+    layoutNodeSizeProminence_DP_Act->setShortcut(Qt::ALT + Qt::Key_I);
     layoutNodeSizeProminence_DP_Act ->setStatusTip(
                 tr("Resize all nodes to be "
                    "proportional to their Degree Prestige."));
@@ -2237,9 +2237,9 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutNodeSizeByProminenceIndex()));
 
     layoutNodeSizeProminence_PRP_Act = new QAction( tr("PageRank Prestige"),	this);
-    layoutNodeSizeProminence_PRP_Act -> setEnabled(true);
-    layoutNodeSizeProminence_PRP_Act -> setShortcut(Qt::ALT+ Qt::Key_K);
-    layoutNodeSizeProminence_PRP_Act -> setStatusTip(
+    layoutNodeSizeProminence_PRP_Act->setEnabled(true);
+    layoutNodeSizeProminence_PRP_Act->setShortcut(Qt::ALT+ Qt::Key_K);
+    layoutNodeSizeProminence_PRP_Act->setStatusTip(
                 tr("Resize all nodes to be "
                    "proportional to their PageRank Prestige."));
     layoutNodeSizeProminence_PRP_Act->
@@ -2254,12 +2254,12 @@ void MainWindow::initActions(){
 
 
     layoutNodeSizeProminence_PP_Act = new QAction( tr("Proximity Prestige"),	this);
-    layoutNodeSizeProminence_PP_Act -> setEnabled(true);
-    layoutNodeSizeProminence_PP_Act -> setShortcut(
+    layoutNodeSizeProminence_PP_Act->setEnabled(true);
+    layoutNodeSizeProminence_PP_Act->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_S, Qt::CTRL + Qt::Key_R)
                 //Qt::ALT + Qt::Key_Y
                 );
-    layoutNodeSizeProminence_PP_Act -> setStatusTip(
+    layoutNodeSizeProminence_PP_Act->setStatusTip(
                 tr("Resize all nodes to be "
                    "proportional to their Proximity Prestige."));
     layoutNodeSizeProminence_PP_Act->
@@ -2277,7 +2277,7 @@ void MainWindow::initActions(){
 
 
     layoutNodeColorProminence_DC_Act = new QAction( tr("Degree Centrality"), this);
-    layoutNodeColorProminence_DC_Act -> setShortcut(
+    layoutNodeColorProminence_DC_Act->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_C, Qt::CTRL + Qt::Key_1)
                 );
     layoutNodeColorProminence_DC_Act
@@ -2296,11 +2296,11 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutNodeColorByProminenceIndex()) );
 
     layoutNodeColorProminence_CC_Act = new QAction( tr("Closeness Centrality"), this);
-    layoutNodeColorProminence_CC_Act -> setShortcut(
+    layoutNodeColorProminence_CC_Act->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_C, Qt::CTRL + Qt::Key_2)
                 );
     layoutNodeColorProminence_CC_Act
-            -> setStatusTip(
+           ->setStatusTip(
                 tr("Change the color of all nodes to "
                    "reflect their Closeness Centrality."));
     layoutNodeColorProminence_CC_Act->
@@ -2317,7 +2317,7 @@ void MainWindow::initActions(){
 
     layoutNodeColorProminence_IRCC_Act = new QAction(
                 tr("Influence Range Closeness Centrality"),	this);
-    layoutNodeColorProminence_IRCC_Act -> setShortcut(
+    layoutNodeColorProminence_IRCC_Act->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_C, Qt::CTRL + Qt::Key_3)
                 );
     layoutNodeColorProminence_IRCC_Act
@@ -2336,7 +2336,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutNodeColorByProminenceIndex()));
 
     layoutNodeColorProminence_BC_Act = new QAction( tr("Betweenness Centrality"), this);
-    layoutNodeColorProminence_BC_Act -> setShortcut(
+    layoutNodeColorProminence_BC_Act->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_C, Qt::CTRL + Qt::Key_4)
                 );
     layoutNodeColorProminence_BC_Act ->setStatusTip(
@@ -2353,7 +2353,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutNodeColorByProminenceIndex()));
 
     layoutNodeColorProminence_SC_Act = new QAction( tr("Stress Centrality"),	this);
-    layoutNodeColorProminence_SC_Act -> setShortcut(
+    layoutNodeColorProminence_SC_Act->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_C, Qt::CTRL + Qt::Key_5)
                 );
     layoutNodeColorProminence_SC_Act ->setStatusTip(
@@ -2370,7 +2370,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutNodeColorByProminenceIndex()));
 
     layoutNodeColorProminence_EC_Act = new QAction( tr("Eccentricity Centrality"),	this);
-    layoutNodeColorProminence_EC_Act -> setShortcut(
+    layoutNodeColorProminence_EC_Act->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_C, Qt::CTRL + Qt::Key_6)
                 );
     layoutNodeColorProminence_EC_Act ->setStatusTip(
@@ -2388,7 +2388,7 @@ void MainWindow::initActions(){
 
 
     layoutNodeColorProminence_PC_Act = new QAction( tr("Power Centrality"),	this);
-    layoutNodeColorProminence_PC_Act -> setShortcut(
+    layoutNodeColorProminence_PC_Act->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_C, Qt::CTRL + Qt::Key_7)
                 );
     layoutNodeColorProminence_PC_Act ->setStatusTip(
@@ -2407,7 +2407,7 @@ void MainWindow::initActions(){
 
     layoutNodeColorProminence_IC_Act = new QAction( tr("Information Centrality"),	this);
     layoutNodeColorProminence_IC_Act ->setEnabled(true);
-    layoutNodeColorProminence_IC_Act -> setShortcut(
+    layoutNodeColorProminence_IC_Act->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_C, Qt::CTRL + Qt::Key_8)
                 );
     layoutNodeColorProminence_IC_Act ->setStatusTip(
@@ -2425,7 +2425,7 @@ void MainWindow::initActions(){
 
     layoutNodeColorProminence_EVC_Act = new QAction( tr("Eigenvector Centrality"),	this);
     layoutNodeColorProminence_EVC_Act ->setEnabled(true);
-    layoutNodeColorProminence_EVC_Act -> setShortcut(
+    layoutNodeColorProminence_EVC_Act->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_C, Qt::CTRL + Qt::Key_9)
                 );
     layoutNodeColorProminence_EVC_Act ->setStatusTip(
@@ -2444,7 +2444,7 @@ void MainWindow::initActions(){
 
 
     layoutNodeColorProminence_DP_Act = new QAction( tr("Degree Prestige"),	this);
-    layoutNodeColorProminence_DP_Act -> setShortcut(
+    layoutNodeColorProminence_DP_Act->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_C, Qt::CTRL + Qt::Key_D)
                 );
     layoutNodeColorProminence_DP_Act ->setStatusTip(
@@ -2461,11 +2461,11 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutNodeColorByProminenceIndex()));
 
     layoutNodeColorProminence_PRP_Act = new QAction( tr("PageRank Prestige"),	this);
-    layoutNodeColorProminence_PRP_Act -> setEnabled(true);
-    layoutNodeColorProminence_PRP_Act -> setShortcut(
+    layoutNodeColorProminence_PRP_Act->setEnabled(true);
+    layoutNodeColorProminence_PRP_Act->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_C, Qt::CTRL + Qt::Key_R)
                 );
-    layoutNodeColorProminence_PRP_Act -> setStatusTip(
+    layoutNodeColorProminence_PRP_Act->setStatusTip(
                 tr("Change the color of all nodes to "
                    "reflect their PageRank Prestige."));
     layoutNodeColorProminence_PRP_Act->
@@ -2480,11 +2480,11 @@ void MainWindow::initActions(){
 
 
     layoutNodeColorProminence_PP_Act = new QAction( tr("Proximity Prestige"),	this);
-    layoutNodeColorProminence_PP_Act -> setEnabled(true);
-    layoutNodeColorProminence_PP_Act -> setShortcut(
+    layoutNodeColorProminence_PP_Act->setEnabled(true);
+    layoutNodeColorProminence_PP_Act->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_C, Qt::CTRL + Qt::Key_P)
                 );
-    layoutNodeColorProminence_PP_Act -> setStatusTip(
+    layoutNodeColorProminence_PP_Act->setStatusTip(
                 tr("Change the color of all nodes to "
                    "reflect their Proximity Prestige."));
     layoutNodeColorProminence_PP_Act->
@@ -2578,7 +2578,7 @@ void MainWindow::initActions(){
 
     analyzeMatrixAdjInvertAct = new QAction(
                 QIcon(":/images/invertmatrix.png"), tr("Invert Adjacency Matrix"), this);
-    analyzeMatrixAdjInvertAct -> setShortcut(
+    analyzeMatrixAdjInvertAct->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_I)
                 );
     analyzeMatrixAdjInvertAct->setStatusTip(tr("Invert the adjacency matrix, if possible"));
@@ -2590,7 +2590,7 @@ void MainWindow::initActions(){
 
     analyzeMatrixAdjTransposeAct = new QAction(
                 QIcon(":/images/transposematrix.png"), tr("Transpose Adjacency Matrix"), this);
-    analyzeMatrixAdjTransposeAct -> setShortcut(
+    analyzeMatrixAdjTransposeAct->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_T)
                 );
     analyzeMatrixAdjTransposeAct->setStatusTip(tr("View the transpose of adjacency matrix"));
@@ -2602,7 +2602,7 @@ void MainWindow::initActions(){
 
     analyzeMatrixAdjCocitationAct = new QAction(
                 QIcon(":/images/cocitation.png"), tr("Cocitation Matrix"), this);
-    analyzeMatrixAdjCocitationAct -> setShortcut(
+    analyzeMatrixAdjCocitationAct->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_C)
                 );
     analyzeMatrixAdjCocitationAct->setStatusTip(tr("Compute the Cocitation matrix of this network."));
@@ -2617,7 +2617,7 @@ void MainWindow::initActions(){
 
     analyzeMatrixDegreeAct = new QAction(
                 QIcon(":/images/degreematrix.png"), tr("Degree Matrix"), this);
-    analyzeMatrixDegreeAct -> setShortcut(
+    analyzeMatrixDegreeAct->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_D)
                 );
     analyzeMatrixDegreeAct->setStatusTip(tr("Compute the Degree matrix of the network"));
@@ -2628,7 +2628,7 @@ void MainWindow::initActions(){
 
     analyzeMatrixLaplacianAct = new QAction(
                 QIcon(":/images/laplacian.png"), tr("Laplacian Matrix"), this);
-    analyzeMatrixLaplacianAct -> setShortcut(
+    analyzeMatrixLaplacianAct->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_L)
                 );
     analyzeMatrixLaplacianAct->setStatusTip(tr("Compute the Laplacian matrix of the network"));
@@ -2640,7 +2640,7 @@ void MainWindow::initActions(){
 
     analyzeGraphReciprocityAct = new QAction(
                 QIcon(":/images/symmetry-edge.png"), tr("Reciprocity"), this);
-    analyzeGraphReciprocityAct -> setShortcut(
+    analyzeGraphReciprocityAct->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_R)
                 );
     analyzeGraphReciprocityAct->setStatusTip(tr("Compute the arc and dyad reciprocity of the network."));
@@ -2667,7 +2667,7 @@ void MainWindow::initActions(){
 
     analyzeGraphSymmetryAct = new QAction(
                 QIcon(":/images/symmetry-edge.png"), tr("Symmetry Test"), this);
-    analyzeGraphSymmetryAct -> setShortcut(
+    analyzeGraphSymmetryAct->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_S)
                 );
     analyzeGraphSymmetryAct->setStatusTip(tr("Check whether the network is symmetric or not"));
@@ -2684,7 +2684,7 @@ void MainWindow::initActions(){
     analyzeGraphDistanceAct = new QAction(
                 QIcon(":/images/distance.png"), tr("Geodesic Distance between 2 nodes"), this
                 );
-    analyzeGraphDistanceAct -> setShortcut(
+    analyzeGraphDistanceAct->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_G) );
     analyzeGraphDistanceAct->setStatusTip(
                 tr("Compute the length of the shortest path (geodesic distance) between 2 nodes."));
@@ -2698,7 +2698,7 @@ void MainWindow::initActions(){
 
 
     analyzeMatrixDistancesGeodesicAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesic Distances Matrix"),this);
-    analyzeMatrixDistancesGeodesicAct -> setShortcut(
+    analyzeMatrixDistancesGeodesicAct->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_M) );
     analyzeMatrixDistancesGeodesicAct->
             setStatusTip(
@@ -2716,7 +2716,7 @@ void MainWindow::initActions(){
     connect(analyzeMatrixDistancesGeodesicAct, SIGNAL(triggered()), this, SLOT( slotAnalyzeMatrixDistances() ) );
 
     analyzeMatrixGeodesicsAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesics Matrix"),this);
-    analyzeMatrixGeodesicsAct -> setShortcut(
+    analyzeMatrixGeodesicsAct->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_P));
     analyzeMatrixGeodesicsAct->setStatusTip(tr("Compute the number of shortest paths (geodesics) between each pair of nodes "));
     analyzeMatrixGeodesicsAct->setWhatsThis(
@@ -2730,7 +2730,7 @@ void MainWindow::initActions(){
             this, SLOT( slotAnalyzeMatrixGeodesics()) );
 
     analyzeGraphDiameterAct = new QAction(QIcon(":/images/diameter.png"), tr("Graph Diameter"),this);
-    analyzeGraphDiameterAct -> setShortcut(
+    analyzeGraphDiameterAct->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_D));
     analyzeGraphDiameterAct->setStatusTip(tr("Compute the diameter of the network, "
                                              "the maximum geodesic distance between any actors."));
@@ -2740,7 +2740,7 @@ void MainWindow::initActions(){
     connect(analyzeGraphDiameterAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeDiameter()));
 
     averGraphDistanceAct = new QAction(QIcon(":/images/avdistance.png"), tr("Average Distance"),this);
-    averGraphDistanceAct -> setShortcut(
+    averGraphDistanceAct->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_A));
     averGraphDistanceAct->setStatusTip(tr("Compute the average length of shortest paths for all possible pairs of nodes."));
     averGraphDistanceAct->setWhatsThis(
@@ -2774,7 +2774,7 @@ void MainWindow::initActions(){
 
 
     analyzeGraphConnectednessAct = new QAction(QIcon(":/images/distance.png"),  tr("Connectedness"), this);
-    analyzeGraphConnectednessAct -> setShortcut(
+    analyzeGraphConnectednessAct->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_C) );
     analyzeGraphConnectednessAct->setStatusTip(tr("Check whether the network is a connected "
                                                   "graph, a weakly connected digraph or "
@@ -2837,7 +2837,7 @@ void MainWindow::initActions(){
 
 
     clusteringCoefAct = new QAction(QIcon(":/images/clucof.png"), tr("Local and Network Clustering Coefficient"),this);
-    clusteringCoefAct -> setShortcut(
+    clusteringCoefAct->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_L) );
     clusteringCoefAct->setStatusTip(tr("Compute the Watts & Strogatz Clustering Coefficient for every actor and the network average."));
     clusteringCoefAct->setWhatsThis(tr("Local and Network Clustering Coefficient\n\n"
@@ -2933,7 +2933,7 @@ void MainWindow::initActions(){
 
     analyzeStrEquivalenceTieProfileDissimilaritiesAct = new QAction(QIcon(":/images/dm.png"),
                                                                     tr("Tie Profile Dissimilarities/Distances"),this);
-    analyzeStrEquivalenceTieProfileDissimilaritiesAct -> setShortcut(
+    analyzeStrEquivalenceTieProfileDissimilaritiesAct->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_T, Qt::CTRL + Qt::Key_T) );
     analyzeStrEquivalenceTieProfileDissimilaritiesAct->
             setStatusTip(
@@ -3418,7 +3418,7 @@ void MainWindow::initActions(){
     Help menu actions
     */
     helpApp = new QAction(QIcon(":/images/help_48px.svg"), tr("Manual"),	this);
-    helpApp -> setShortcut(Qt::Key_F1);
+    helpApp->setShortcut(Qt::Key_F1);
     helpApp->setStatusTip(tr("Read the manual..."));
     helpApp->setWhatsThis(tr("Manual\n\nDisplays the documentation of SocNetV"));
     connect(helpApp, SIGNAL(triggered()), this, SLOT(slotHelp()));
@@ -3465,9 +3465,9 @@ void MainWindow::initMenuBar() {
     qDebug()<< "MW::initMenuBar()";
     /** menuBar entry networkMenu */
     networkMenu = menuBar()->addMenu(tr("&Network"));
-    networkMenu -> addAction(networkNew);
-    networkMenu -> addAction(networkOpen);
-    networkMenu -> addSeparator();
+    networkMenu->addAction(networkNew);
+    networkMenu->addAction(networkOpen);
+    networkMenu->addSeparator();
     recentFilesSubMenu = new QMenu(tr("Recent files..."));
     for (int i = 0; i < MaxRecentFiles; ++i)
         recentFilesSubMenu->addAction(recentFileActs[i]);
@@ -3475,66 +3475,66 @@ void MainWindow::initMenuBar() {
     slotNetworkFileRecentUpdateActions();
 
     networkMenu ->addMenu (recentFilesSubMenu );
-    networkMenu -> addSeparator();
+    networkMenu->addSeparator();
     importSubMenu = new QMenu(tr("Import ..."));
-    importSubMenu -> setIcon(QIcon(":/images/import.png"));
-    importSubMenu -> addAction(networkImportGML);
-    importSubMenu -> addAction(networkImportPajek);
-    importSubMenu -> addAction(networkImportSM);
-    importSubMenu -> addAction(networkImportTwoModeSM);
-    importSubMenu -> addAction(networkImportList);
-    importSubMenu -> addAction(networkImportDL);
-    importSubMenu -> addAction(networkImportDot);
+    importSubMenu->setIcon(QIcon(":/images/import.png"));
+    importSubMenu->addAction(networkImportGML);
+    importSubMenu->addAction(networkImportPajek);
+    importSubMenu->addAction(networkImportSM);
+    importSubMenu->addAction(networkImportTwoModeSM);
+    importSubMenu->addAction(networkImportList);
+    importSubMenu->addAction(networkImportDL);
+    importSubMenu->addAction(networkImportDot);
     networkMenu ->addMenu (importSubMenu);
 
-    networkMenu -> addSeparator();
-    networkMenu -> addAction (openTextEditorAct);
-    networkMenu -> addAction (networkViewFileAct);
-    networkMenu -> addSeparator();
-    networkMenu -> addAction (networkViewSociomatrixAct);
-    networkMenu -> addAction (networkViewSociomatrixPlotAct);
-    networkMenu -> addSeparator();
-
-    networkMenu -> addAction (networkDataSetSelectAct);
-    networkMenu -> addSeparator();
-
-    randomNetworkMenu = new QMenu(tr("Create Random Network..."));
-    randomNetworkMenu -> setIcon(QIcon(":/images/random.png"));
-    networkMenu ->addMenu (randomNetworkMenu);
-
-    randomNetworkMenu -> addAction (networkRandomScaleFreeAct);
-    randomNetworkMenu -> addAction (networkRandomSmallWorldAct);
-    randomNetworkMenu -> addAction (networkRandomErdosRenyiAct );
-    randomNetworkMenu -> addAction (networkRandomRegularSameDegreeAct);
-    randomNetworkMenu -> addAction (networkRandomLatticeRingAct);
-    randomNetworkMenu -> addAction (networkRandomLatticeAct);
-    // networkRandomGaussianAct -> addTo(randomNetworkMenu);
+    networkMenu->addSeparator();
+    networkMenu->addAction (openTextEditorAct);
+    networkMenu->addAction (networkViewFileAct);
+    networkMenu->addSeparator();
+    networkMenu->addAction (networkViewSociomatrixAct);
+    networkMenu->addAction (networkViewSociomatrixPlotAct);
     networkMenu->addSeparator();
 
-    networkMenu  -> addAction(networkWebCrawlerAct);
+    networkMenu->addAction (networkDataSetSelectAct);
+    networkMenu->addSeparator();
 
-    networkMenu  -> addSeparator();
-    networkMenu  -> addAction(networkSave);
-    networkMenu  -> addAction(networkSaveAs);
-    networkMenu  -> addSeparator();
+    randomNetworkMenu = new QMenu(tr("Create Random Network..."));
+    randomNetworkMenu->setIcon(QIcon(":/images/random.png"));
+    networkMenu ->addMenu (randomNetworkMenu);
 
-    exportSubMenu = networkMenu  -> addMenu(tr("Export..."));
+    randomNetworkMenu->addAction (networkRandomScaleFreeAct);
+    randomNetworkMenu->addAction (networkRandomSmallWorldAct);
+    randomNetworkMenu->addAction (networkRandomErdosRenyiAct );
+    randomNetworkMenu->addAction (networkRandomRegularSameDegreeAct);
+    randomNetworkMenu->addAction (networkRandomLatticeRingAct);
+    randomNetworkMenu->addAction (networkRandomLatticeAct);
+    // networkRandomGaussianAct->addTo(randomNetworkMenu);
+    networkMenu->addSeparator();
 
-    exportSubMenu -> addAction (networkExportBMP);
-    exportSubMenu -> addAction (networkExportPNG);
-    exportSubMenu -> addAction (networkExportPDF);
-    exportSubMenu -> addSeparator();
-    exportSubMenu -> addAction (networkExportSM);
-    exportSubMenu -> addAction (networkExportPajek);
-    //exportSubMenu -> addAction (networkExportList);
-    //exportSubMenu -> addAction (networkExportDL);
-    //exportSubMenu -> addAction (networkExportGW);
+    networkMenu ->addAction(networkWebCrawlerAct);
 
-    networkMenu  -> addSeparator();
-    networkMenu  -> addAction(networkPrint);
-    networkMenu  -> addSeparator();
-    networkMenu  -> addAction(networkClose);
-    networkMenu  -> addAction(networkQuit);
+    networkMenu ->addSeparator();
+    networkMenu ->addAction(networkSave);
+    networkMenu ->addAction(networkSaveAs);
+    networkMenu ->addSeparator();
+
+    exportSubMenu = networkMenu ->addMenu(tr("Export..."));
+
+    exportSubMenu->addAction (networkExportBMP);
+    exportSubMenu->addAction (networkExportPNG);
+    exportSubMenu->addAction (networkExportPDF);
+    exportSubMenu->addSeparator();
+    exportSubMenu->addAction (networkExportSM);
+    exportSubMenu->addAction (networkExportPajek);
+    //exportSubMenu->addAction (networkExportList);
+    //exportSubMenu->addAction (networkExportDL);
+    //exportSubMenu->addAction (networkExportGW);
+
+    networkMenu ->addSeparator();
+    networkMenu ->addAction(networkPrint);
+    networkMenu ->addSeparator();
+    networkMenu ->addAction(networkClose);
+    networkMenu ->addAction(networkQuit);
 
 
 
@@ -3543,182 +3543,182 @@ void MainWindow::initMenuBar() {
 
     editMenu = menuBar()->addMenu(tr("&Edit"));
 
-    editMenu -> addAction (editRelationPreviousAct);
-    editMenu -> addAction (editRelationNextAct);
-    editMenu -> addAction (editRelationAddAct);
-    editMenu -> addAction (editRelationRenameAct);
+    editMenu->addAction (editRelationPreviousAct);
+    editMenu->addAction (editRelationNextAct);
+    editMenu->addAction (editRelationAddAct);
+    editMenu->addAction (editRelationRenameAct);
 
-    editMenu -> addSeparator();
+    editMenu->addSeparator();
 
-    editMenu -> addAction ( zoomInAct );
-    editMenu -> addAction ( zoomOutAct );
+    editMenu->addAction ( zoomInAct );
+    editMenu->addAction ( zoomOutAct );
 
-    editMenu -> addSeparator();
+    editMenu->addSeparator();
 
-    editMenu -> addAction ( editRotateLeftAct );
-    editMenu -> addAction ( editRotateRightAct );
+    editMenu->addAction ( editRotateLeftAct );
+    editMenu->addAction ( editRotateRightAct );
 
-    editMenu -> addSeparator();
-    editMenu -> addAction (editResetSlidersAct );
+    editMenu->addSeparator();
+    editMenu->addAction (editResetSlidersAct );
 
-    editMenu -> addSeparator();
+    editMenu->addSeparator();
     editNodeMenu = new QMenu(tr("Nodes..."));
-    editNodeMenu -> setIcon(QIcon(":/images/node.png"));
-    editMenu -> addMenu ( editNodeMenu );
-    editNodeMenu -> addAction (editNodeSelectAllAct);
-    editNodeMenu -> addAction (editNodeSelectNoneAct);
+    editNodeMenu->setIcon(QIcon(":/images/node.png"));
+    editMenu->addMenu ( editNodeMenu );
+    editNodeMenu->addAction (editNodeSelectAllAct);
+    editNodeMenu->addAction (editNodeSelectNoneAct);
 
-    editNodeMenu -> addSeparator();
+    editNodeMenu->addSeparator();
 
-    editNodeMenu -> addAction (editNodeFindAct);
-    editNodeMenu -> addAction (editNodeAddAct);
-    editNodeMenu -> addAction (editNodeRemoveAct);
+    editNodeMenu->addAction (editNodeFindAct);
+    editNodeMenu->addAction (editNodeAddAct);
+    editNodeMenu->addAction (editNodeRemoveAct);
 
-    editNodeMenu -> addSeparator();
+    editNodeMenu->addSeparator();
 
-    editNodeMenu -> addAction (editNodePropertiesAct);
+    editNodeMenu->addAction (editNodePropertiesAct);
 
-    editNodeMenu -> addSeparator();
+    editNodeMenu->addSeparator();
 
-    editNodeMenu -> addAction (editNodeSelectedToCliqueAct);
-    editNodeMenu -> addAction (editNodeSelectedToStarAct);
-    editNodeMenu -> addAction (editNodeSelectedToCycleAct);
-    editNodeMenu -> addAction (editNodeSelectedToLineAct);
+    editNodeMenu->addAction (editNodeSelectedToCliqueAct);
+    editNodeMenu->addAction (editNodeSelectedToStarAct);
+    editNodeMenu->addAction (editNodeSelectedToCycleAct);
+    editNodeMenu->addAction (editNodeSelectedToLineAct);
 
-    editNodeMenu -> addSeparator();
+    editNodeMenu->addSeparator();
 
-    editNodeMenu -> addAction (editNodeColorAll);
-    editNodeMenu -> addAction (editNodeSizeAllAct);
-    editNodeMenu -> addAction (editNodeShapeAll);
-    editNodeMenu -> addSeparator();
-    editNodeMenu -> addAction (editNodeNumbersSizeAct);
-    editNodeMenu -> addAction (editNodeNumbersColorAct);
-    editNodeMenu -> addSeparator();
-    editNodeMenu -> addAction (editNodeLabelsSizeAct);
-    editNodeMenu -> addAction (editNodeLabelsColorAct);
+    editNodeMenu->addAction (editNodeColorAll);
+    editNodeMenu->addAction (editNodeSizeAllAct);
+    editNodeMenu->addAction (editNodeShapeAll);
+    editNodeMenu->addSeparator();
+    editNodeMenu->addAction (editNodeNumbersSizeAct);
+    editNodeMenu->addAction (editNodeNumbersColorAct);
+    editNodeMenu->addSeparator();
+    editNodeMenu->addAction (editNodeLabelsSizeAct);
+    editNodeMenu->addAction (editNodeLabelsColorAct);
 
 
     editEdgeMenu = new QMenu(tr("Edges..."));
-    editEdgeMenu -> setIcon(QIcon(":/images/line.png"));
+    editEdgeMenu->setIcon(QIcon(":/images/line.png"));
     editMenu-> addMenu (editEdgeMenu);
-    editEdgeMenu -> addAction(editEdgeAddAct);
-    editEdgeMenu -> addAction(editEdgeRemoveAct);
-    editEdgeMenu -> addSeparator();
-    editEdgeMenu -> addAction (editEdgeUndirectedAllAct);
-    editEdgeMenu -> addSeparator();
-    editEdgeMenu -> addAction (editEdgeSymmetrizeAllAct);
-    editEdgeMenu -> addAction (editEdgeSymmetrizeStrongTiesAct);
-    editEdgeMenu -> addSeparator();
-    editEdgeMenu -> addAction (editEdgeDichotomizeAct);
-    editEdgeMenu -> addSeparator();
-    editEdgeMenu -> addAction (editEdgesCocitationAct);
+    editEdgeMenu->addAction(editEdgeAddAct);
+    editEdgeMenu->addAction(editEdgeRemoveAct);
+    editEdgeMenu->addSeparator();
+    editEdgeMenu->addAction (editEdgeUndirectedAllAct);
+    editEdgeMenu->addSeparator();
+    editEdgeMenu->addAction (editEdgeSymmetrizeAllAct);
+    editEdgeMenu->addAction (editEdgeSymmetrizeStrongTiesAct);
+    editEdgeMenu->addSeparator();
+    editEdgeMenu->addAction (editEdgeDichotomizeAct);
+    editEdgeMenu->addSeparator();
+    editEdgeMenu->addAction (editEdgesCocitationAct);
 
-    editEdgeMenu -> addAction(editEdgeLabelAct);
-    editEdgeMenu -> addAction(editEdgeColorAct);
-    editEdgeMenu -> addAction(editEdgeWeightAct);
-    editEdgeMenu -> addSeparator();
-    editEdgeMenu -> addAction (editEdgeColorAllAct);
+    editEdgeMenu->addAction(editEdgeLabelAct);
+    editEdgeMenu->addAction(editEdgeColorAct);
+    editEdgeMenu->addAction(editEdgeWeightAct);
+    editEdgeMenu->addSeparator();
+    editEdgeMenu->addAction (editEdgeColorAllAct);
 
-    //   transformNodes2EdgesAct -> addTo (editMenu);
+    //   transformNodes2EdgesAct->addTo (editMenu);
 
     editMenu ->addSeparator();
     filterMenu = new QMenu ( tr("Filter..."));
-    filterMenu -> setIcon(QIcon(":/images/filter_list_48px.svg"));
+    filterMenu->setIcon(QIcon(":/images/filter_list_48px.svg"));
     editMenu ->addMenu(filterMenu);
 
-    filterMenu -> addAction(filterNodesAct );
-    filterMenu -> addAction(editFilterNodesIsolatesAct );
-    filterMenu -> addAction(editFilterEdgesByWeightAct );
-    filterMenu -> addAction(editFilterEdgesUnilateralAct);
+    filterMenu->addAction(filterNodesAct );
+    filterMenu->addAction(editFilterNodesIsolatesAct );
+    filterMenu->addAction(editFilterEdgesByWeightAct );
+    filterMenu->addAction(editFilterEdgesUnilateralAct);
 
 
     /** menuBar entry: analyze menu */
     analysisMenu = menuBar()->addMenu(tr("&Analyze"));
     matrixMenu = new QMenu(tr("Adjacency Matrix and Matrices..."));
-    matrixMenu -> setIcon(QIcon(":/images/sm.png"));
-    analysisMenu -> addMenu (matrixMenu);
-    matrixMenu -> addAction (networkViewSociomatrixAct);
-    matrixMenu -> addAction (networkViewSociomatrixPlotAct);
-    matrixMenu -> addSeparator();
-    matrixMenu -> addAction (analyzeMatrixAdjInvertAct);
-    matrixMenu -> addSeparator();
-    matrixMenu -> addAction(analyzeMatrixAdjTransposeAct);
-    matrixMenu -> addSeparator();
-    matrixMenu -> addAction(analyzeMatrixAdjCocitationAct);
-    matrixMenu -> addSeparator();
-    matrixMenu -> addAction (analyzeMatrixDegreeAct);
-    matrixMenu -> addAction (analyzeMatrixLaplacianAct);
-    //	analysisMenu -> addAction (netDensity);
+    matrixMenu->setIcon(QIcon(":/images/sm.png"));
+    analysisMenu->addMenu (matrixMenu);
+    matrixMenu->addAction (networkViewSociomatrixAct);
+    matrixMenu->addAction (networkViewSociomatrixPlotAct);
+    matrixMenu->addSeparator();
+    matrixMenu->addAction (analyzeMatrixAdjInvertAct);
+    matrixMenu->addSeparator();
+    matrixMenu->addAction(analyzeMatrixAdjTransposeAct);
+    matrixMenu->addSeparator();
+    matrixMenu->addAction(analyzeMatrixAdjCocitationAct);
+    matrixMenu->addSeparator();
+    matrixMenu->addAction (analyzeMatrixDegreeAct);
+    matrixMenu->addAction (analyzeMatrixLaplacianAct);
+    //	analysisMenu->addAction (netDensity);
 
-    analysisMenu -> addSeparator();
+    analysisMenu->addSeparator();
     cohesionMenu = new QMenu(tr("Cohesion..."));
-    cohesionMenu -> setIcon(QIcon(":/images/distances.png"));
-    analysisMenu -> addMenu(cohesionMenu);
-    cohesionMenu -> addAction (analyzeGraphReciprocityAct);
-    cohesionMenu -> addAction (analyzeGraphSymmetryAct);
-    cohesionMenu -> addSection("Graph distances");
-    cohesionMenu -> addAction (analyzeGraphDistanceAct);
-    cohesionMenu -> addAction (averGraphDistanceAct);
-    cohesionMenu -> addSeparator();
-    cohesionMenu -> addAction (analyzeMatrixDistancesGeodesicAct);
-    cohesionMenu -> addAction (analyzeMatrixGeodesicsAct);
-    cohesionMenu -> addSeparator();
-    cohesionMenu -> addAction (analyzeGraphEccentricityAct);
-    cohesionMenu -> addAction (analyzeGraphDiameterAct);
-    cohesionMenu  -> addSeparator();
-    cohesionMenu -> addAction(analyzeGraphConnectednessAct);
-    cohesionMenu  -> addSeparator();
-    cohesionMenu -> addAction (analyzeGraphWalksAct);
-    cohesionMenu -> addAction (analyzeGraphWalksTotalAct);
-    cohesionMenu  -> addSeparator();
-    cohesionMenu -> addAction (analyzeMatrixReachabilityAct);
-    cohesionMenu -> addSeparator();
-    cohesionMenu -> addAction (clusteringCoefAct);
+    cohesionMenu->setIcon(QIcon(":/images/distances.png"));
+    analysisMenu->addMenu(cohesionMenu);
+    cohesionMenu->addAction (analyzeGraphReciprocityAct);
+    cohesionMenu->addAction (analyzeGraphSymmetryAct);
+    cohesionMenu->addSection("Graph distances");
+    cohesionMenu->addAction (analyzeGraphDistanceAct);
+    cohesionMenu->addAction (averGraphDistanceAct);
+    cohesionMenu->addSeparator();
+    cohesionMenu->addAction (analyzeMatrixDistancesGeodesicAct);
+    cohesionMenu->addAction (analyzeMatrixGeodesicsAct);
+    cohesionMenu->addSeparator();
+    cohesionMenu->addAction (analyzeGraphEccentricityAct);
+    cohesionMenu->addAction (analyzeGraphDiameterAct);
+    cohesionMenu ->addSeparator();
+    cohesionMenu->addAction(analyzeGraphConnectednessAct);
+    cohesionMenu ->addSeparator();
+    cohesionMenu->addAction (analyzeGraphWalksAct);
+    cohesionMenu->addAction (analyzeGraphWalksTotalAct);
+    cohesionMenu ->addSeparator();
+    cohesionMenu->addAction (analyzeMatrixReachabilityAct);
+    cohesionMenu->addSeparator();
+    cohesionMenu->addAction (clusteringCoefAct);
 
 
     analysisMenu->addSeparator();
     // CENTRALITIES
     centrlMenu = new QMenu(tr("Centrality and Prestige indices..."));
-    centrlMenu -> setIcon(QIcon(":/images/centrality.png"));
+    centrlMenu->setIcon(QIcon(":/images/centrality.png"));
     analysisMenu->addMenu(centrlMenu);
-    centrlMenu -> addSection(QIcon(":/images/centrality.png"), tr("Centrality"));
+    centrlMenu->addSection(QIcon(":/images/centrality.png"), tr("Centrality"));
 
-    centrlMenu -> addAction (cDegreeAct);
-    centrlMenu -> addAction (cClosenessAct);
-    centrlMenu -> addAction (cInfluenceRangeClosenessAct);
-    centrlMenu -> addAction (cBetweennessAct);
-    centrlMenu -> addAction (cStressAct);
-    centrlMenu -> addAction (cEccentAct);
-    centrlMenu -> addAction (cPowerAct);
-    centrlMenu -> addAction (cInformationAct);
-    centrlMenu -> addAction (cEigenvectorAct);
-    centrlMenu -> addSection(QIcon(":/images/prestige.png"), tr("Prestige"));
-    centrlMenu -> addAction (cInDegreeAct);
-    centrlMenu -> addAction (cPageRankAct);
-    centrlMenu -> addAction (cProximityPrestigeAct);
+    centrlMenu->addAction (cDegreeAct);
+    centrlMenu->addAction (cClosenessAct);
+    centrlMenu->addAction (cInfluenceRangeClosenessAct);
+    centrlMenu->addAction (cBetweennessAct);
+    centrlMenu->addAction (cStressAct);
+    centrlMenu->addAction (cEccentAct);
+    centrlMenu->addAction (cPowerAct);
+    centrlMenu->addAction (cInformationAct);
+    centrlMenu->addAction (cEigenvectorAct);
+    centrlMenu->addSection(QIcon(":/images/prestige.png"), tr("Prestige"));
+    centrlMenu->addAction (cInDegreeAct);
+    centrlMenu->addAction (cPageRankAct);
+    centrlMenu->addAction (cProximityPrestigeAct);
 
 
-    analysisMenu -> addSeparator();
+    analysisMenu->addSeparator();
     // COMMUNITIES & SUBGROUPS
     communitiesMenu = new QMenu(tr("Communities and Subgroups..."));
-    communitiesMenu -> setIcon(QIcon(":/images/clustering.png"));
-    analysisMenu -> addMenu(communitiesMenu);
-    communitiesMenu -> addAction (analyzeCommunitiesCliquesAct);
-    communitiesMenu -> addSeparator();
-    communitiesMenu -> addAction (analyzeCommunitiesTriadCensusAct);
+    communitiesMenu->setIcon(QIcon(":/images/clustering.png"));
+    analysisMenu->addMenu(communitiesMenu);
+    communitiesMenu->addAction (analyzeCommunitiesCliquesAct);
+    communitiesMenu->addSeparator();
+    communitiesMenu->addAction (analyzeCommunitiesTriadCensusAct);
 
 
     analysisMenu->addSeparator();
     // STRUCTURAL EQUIVALENCE
     strEquivalenceMenu = new QMenu(tr("Structural Equivalence..."));
-    strEquivalenceMenu -> setIcon(QIcon(":/images/similarity.png"));
-    analysisMenu -> addMenu (strEquivalenceMenu);
-    strEquivalenceMenu -> addAction (analyzeStrEquivalencePearsonAct);
-    strEquivalenceMenu -> addAction(analyzeStrEquivalenceMatchesAct);
-    strEquivalenceMenu -> addSeparator();
-    strEquivalenceMenu -> addAction (analyzeStrEquivalenceTieProfileDissimilaritiesAct);
-    strEquivalenceMenu -> addSeparator();
-    strEquivalenceMenu -> addAction (analyzeStrEquivalenceClusteringHierarchicalAct);
+    strEquivalenceMenu->setIcon(QIcon(":/images/similarity.png"));
+    analysisMenu->addMenu (strEquivalenceMenu);
+    strEquivalenceMenu->addAction (analyzeStrEquivalencePearsonAct);
+    strEquivalenceMenu->addAction(analyzeStrEquivalenceMatchesAct);
+    strEquivalenceMenu->addSeparator();
+    strEquivalenceMenu->addAction (analyzeStrEquivalenceTieProfileDissimilaritiesAct);
+    strEquivalenceMenu->addSeparator();
+    strEquivalenceMenu->addAction (analyzeStrEquivalenceClusteringHierarchicalAct);
 
 
 
@@ -3726,146 +3726,146 @@ void MainWindow::initMenuBar() {
 
     layoutMenu = menuBar()->addMenu(tr("&Layout"));
     //   colorationMenu = new QPopupMenu();
-    //   layoutMenu -> insertItem (tr("Colorization"), colorationMenu);
-    //   strongColorationAct -> addTo(colorationMenu);
+    //   layoutMenu->insertItem (tr("Colorization"), colorationMenu);
+    //   strongColorationAct->addTo(colorationMenu);
     //   regularColorationAct-> addTo(colorationMenu);
     //   layoutMenu->insertSeparator();
     randomLayoutMenu = new QMenu(tr("Random..."));
-    layoutMenu -> addMenu (randomLayoutMenu );
-    randomLayoutMenu ->  addAction(layoutRandomAct);
-    randomLayoutMenu ->  addAction( layoutRandomRadialAct );
+    layoutMenu->addMenu (randomLayoutMenu );
+    randomLayoutMenu-> addAction(layoutRandomAct);
+    randomLayoutMenu-> addAction( layoutRandomRadialAct );
     layoutMenu->addSeparator();
 
     layoutRadialProminenceMenu = new QMenu(tr("Radial by prominence index..."));
-    layoutRadialProminenceMenu -> setIcon(QIcon(":/images/circular.png"));
-    layoutMenu -> addMenu (layoutRadialProminenceMenu);
-    layoutRadialProminenceMenu -> addAction (layoutRadialProminence_DC_Act);
-    layoutRadialProminenceMenu -> addAction (layoutRadialProminence_CC_Act);
-    layoutRadialProminenceMenu -> addAction (layoutRadialProminence_IRCC_Act);
-    layoutRadialProminenceMenu -> addAction (layoutRadialProminence_BC_Act);
-    layoutRadialProminenceMenu -> addAction (layoutRadialProminence_SC_Act);
-    layoutRadialProminenceMenu -> addAction (layoutRadialProminence_EC_Act);
-    layoutRadialProminenceMenu -> addAction (layoutRadialProminence_PC_Act);
-    layoutRadialProminenceMenu -> addAction (layoutRadialProminence_IC_Act);
-    layoutRadialProminenceMenu -> addAction (layoutRadialProminence_EVC_Act);
-    layoutRadialProminenceMenu -> addAction (layoutRadialProminence_DP_Act);
-    layoutRadialProminenceMenu -> addAction (layoutRadialProminence_PRP_Act);
-    layoutRadialProminenceMenu -> addAction (layoutRadialProminence_PP_Act);
+    layoutRadialProminenceMenu->setIcon(QIcon(":/images/circular.png"));
+    layoutMenu->addMenu (layoutRadialProminenceMenu);
+    layoutRadialProminenceMenu->addAction (layoutRadialProminence_DC_Act);
+    layoutRadialProminenceMenu->addAction (layoutRadialProminence_CC_Act);
+    layoutRadialProminenceMenu->addAction (layoutRadialProminence_IRCC_Act);
+    layoutRadialProminenceMenu->addAction (layoutRadialProminence_BC_Act);
+    layoutRadialProminenceMenu->addAction (layoutRadialProminence_SC_Act);
+    layoutRadialProminenceMenu->addAction (layoutRadialProminence_EC_Act);
+    layoutRadialProminenceMenu->addAction (layoutRadialProminence_PC_Act);
+    layoutRadialProminenceMenu->addAction (layoutRadialProminence_IC_Act);
+    layoutRadialProminenceMenu->addAction (layoutRadialProminence_EVC_Act);
+    layoutRadialProminenceMenu->addAction (layoutRadialProminence_DP_Act);
+    layoutRadialProminenceMenu->addAction (layoutRadialProminence_PRP_Act);
+    layoutRadialProminenceMenu->addAction (layoutRadialProminence_PP_Act);
 
     layoutMenu->addSeparator();
 
     layoutLevelProminenceMenu = new QMenu (tr("On Levels by prominence index..."));
-    layoutLevelProminenceMenu -> setIcon(QIcon(":/images/net3.png"));
-    layoutMenu -> addMenu (layoutLevelProminenceMenu);
-    layoutLevelProminenceMenu -> addAction (layoutLevelProminence_DC_Act);
-    layoutLevelProminenceMenu -> addAction (layoutLevelProminence_CC_Act);
-    layoutLevelProminenceMenu -> addAction (layoutLevelProminence_IRCC_Act);
-    layoutLevelProminenceMenu -> addAction (layoutLevelProminence_BC_Act);
-    layoutLevelProminenceMenu -> addAction (layoutLevelProminence_SC_Act);
-    layoutLevelProminenceMenu -> addAction (layoutLevelProminence_EC_Act);
-    layoutLevelProminenceMenu -> addAction (layoutLevelProminence_PC_Act);
-    layoutLevelProminenceMenu -> addAction (layoutLevelProminence_IC_Act);
-    layoutLevelProminenceMenu -> addAction (layoutLevelProminence_EVC_Act);
-    layoutLevelProminenceMenu -> addAction (layoutLevelProminence_DP_Act);
-    layoutLevelProminenceMenu -> addAction (layoutLevelProminence_PRP_Act);
-    layoutLevelProminenceMenu -> addAction (layoutLevelProminence_PP_Act);
+    layoutLevelProminenceMenu->setIcon(QIcon(":/images/net3.png"));
+    layoutMenu->addMenu (layoutLevelProminenceMenu);
+    layoutLevelProminenceMenu->addAction (layoutLevelProminence_DC_Act);
+    layoutLevelProminenceMenu->addAction (layoutLevelProminence_CC_Act);
+    layoutLevelProminenceMenu->addAction (layoutLevelProminence_IRCC_Act);
+    layoutLevelProminenceMenu->addAction (layoutLevelProminence_BC_Act);
+    layoutLevelProminenceMenu->addAction (layoutLevelProminence_SC_Act);
+    layoutLevelProminenceMenu->addAction (layoutLevelProminence_EC_Act);
+    layoutLevelProminenceMenu->addAction (layoutLevelProminence_PC_Act);
+    layoutLevelProminenceMenu->addAction (layoutLevelProminence_IC_Act);
+    layoutLevelProminenceMenu->addAction (layoutLevelProminence_EVC_Act);
+    layoutLevelProminenceMenu->addAction (layoutLevelProminence_DP_Act);
+    layoutLevelProminenceMenu->addAction (layoutLevelProminence_PRP_Act);
+    layoutLevelProminenceMenu->addAction (layoutLevelProminence_PP_Act);
 
     layoutMenu->addSeparator();
 
     layoutNodeSizeProminenceMenu = new QMenu (tr("Node Size by prominence index..."));
-    layoutNodeSizeProminenceMenu -> setIcon(QIcon(":/images/node.png"));
-    layoutMenu -> addMenu (layoutNodeSizeProminenceMenu);
-    layoutNodeSizeProminenceMenu -> addAction (layoutNodeSizeProminence_DC_Act);
-    layoutNodeSizeProminenceMenu -> addAction (layoutNodeSizeProminence_CC_Act);
-    layoutNodeSizeProminenceMenu -> addAction (layoutNodeSizeProminence_IRCC_Act);
-    layoutNodeSizeProminenceMenu -> addAction (layoutNodeSizeProminence_BC_Act);
-    layoutNodeSizeProminenceMenu -> addAction (layoutNodeSizeProminence_SC_Act);
-    layoutNodeSizeProminenceMenu -> addAction (layoutNodeSizeProminence_EC_Act);
-    layoutNodeSizeProminenceMenu -> addAction (layoutNodeSizeProminence_PC_Act);
-    layoutNodeSizeProminenceMenu -> addAction (layoutNodeSizeProminence_IC_Act);
-    layoutNodeSizeProminenceMenu -> addAction (layoutNodeSizeProminence_EVC_Act);
-    layoutNodeSizeProminenceMenu -> addAction (layoutNodeSizeProminence_DP_Act);
-    layoutNodeSizeProminenceMenu -> addAction (layoutNodeSizeProminence_PRP_Act);
-    layoutNodeSizeProminenceMenu -> addAction (layoutNodeSizeProminence_PP_Act);
+    layoutNodeSizeProminenceMenu->setIcon(QIcon(":/images/node.png"));
+    layoutMenu->addMenu (layoutNodeSizeProminenceMenu);
+    layoutNodeSizeProminenceMenu->addAction (layoutNodeSizeProminence_DC_Act);
+    layoutNodeSizeProminenceMenu->addAction (layoutNodeSizeProminence_CC_Act);
+    layoutNodeSizeProminenceMenu->addAction (layoutNodeSizeProminence_IRCC_Act);
+    layoutNodeSizeProminenceMenu->addAction (layoutNodeSizeProminence_BC_Act);
+    layoutNodeSizeProminenceMenu->addAction (layoutNodeSizeProminence_SC_Act);
+    layoutNodeSizeProminenceMenu->addAction (layoutNodeSizeProminence_EC_Act);
+    layoutNodeSizeProminenceMenu->addAction (layoutNodeSizeProminence_PC_Act);
+    layoutNodeSizeProminenceMenu->addAction (layoutNodeSizeProminence_IC_Act);
+    layoutNodeSizeProminenceMenu->addAction (layoutNodeSizeProminence_EVC_Act);
+    layoutNodeSizeProminenceMenu->addAction (layoutNodeSizeProminence_DP_Act);
+    layoutNodeSizeProminenceMenu->addAction (layoutNodeSizeProminence_PRP_Act);
+    layoutNodeSizeProminenceMenu->addAction (layoutNodeSizeProminence_PP_Act);
 
     layoutMenu->addSeparator();
 
     layoutNodeColorProminenceMenu = new QMenu (tr("Node Color by prominence index..."));
-    layoutNodeColorProminenceMenu -> setIcon(QIcon(":/images/nodecolor.png"));
-    layoutMenu -> addMenu (layoutNodeColorProminenceMenu);
-    layoutNodeColorProminenceMenu -> addAction (layoutNodeColorProminence_DC_Act);
-    layoutNodeColorProminenceMenu -> addAction (layoutNodeColorProminence_CC_Act);
-    layoutNodeColorProminenceMenu -> addAction (layoutNodeColorProminence_IRCC_Act);
-    layoutNodeColorProminenceMenu -> addAction (layoutNodeColorProminence_BC_Act);
-    layoutNodeColorProminenceMenu -> addAction (layoutNodeColorProminence_SC_Act);
-    layoutNodeColorProminenceMenu -> addAction (layoutNodeColorProminence_EC_Act);
-    layoutNodeColorProminenceMenu -> addAction (layoutNodeColorProminence_PC_Act);
-    layoutNodeColorProminenceMenu -> addAction (layoutNodeColorProminence_IC_Act);
-    layoutNodeColorProminenceMenu -> addAction (layoutNodeColorProminence_EVC_Act);
-    layoutNodeColorProminenceMenu -> addAction (layoutNodeColorProminence_DP_Act);
-    layoutNodeColorProminenceMenu -> addAction (layoutNodeColorProminence_PRP_Act);
-    layoutNodeColorProminenceMenu -> addAction (layoutNodeColorProminence_PP_Act);
+    layoutNodeColorProminenceMenu->setIcon(QIcon(":/images/nodecolor.png"));
+    layoutMenu->addMenu (layoutNodeColorProminenceMenu);
+    layoutNodeColorProminenceMenu->addAction (layoutNodeColorProminence_DC_Act);
+    layoutNodeColorProminenceMenu->addAction (layoutNodeColorProminence_CC_Act);
+    layoutNodeColorProminenceMenu->addAction (layoutNodeColorProminence_IRCC_Act);
+    layoutNodeColorProminenceMenu->addAction (layoutNodeColorProminence_BC_Act);
+    layoutNodeColorProminenceMenu->addAction (layoutNodeColorProminence_SC_Act);
+    layoutNodeColorProminenceMenu->addAction (layoutNodeColorProminence_EC_Act);
+    layoutNodeColorProminenceMenu->addAction (layoutNodeColorProminence_PC_Act);
+    layoutNodeColorProminenceMenu->addAction (layoutNodeColorProminence_IC_Act);
+    layoutNodeColorProminenceMenu->addAction (layoutNodeColorProminence_EVC_Act);
+    layoutNodeColorProminenceMenu->addAction (layoutNodeColorProminence_DP_Act);
+    layoutNodeColorProminenceMenu->addAction (layoutNodeColorProminence_PRP_Act);
+    layoutNodeColorProminenceMenu->addAction (layoutNodeColorProminence_PP_Act);
 
 
     layoutMenu->addSeparator();
 
     layoutForceDirectedMenu = new QMenu (tr("Force-Directed Placement..."));
-    layoutForceDirectedMenu -> setIcon(QIcon(":/images/force.png"));
-    layoutMenu -> addMenu (layoutForceDirectedMenu);
-    layoutForceDirectedMenu -> addAction (layoutFDP_KamadaKawai_Act);
-    layoutForceDirectedMenu -> addAction (layoutFDP_FR_Act);
-    layoutForceDirectedMenu -> addAction (layoutFDP_Eades_Act);
+    layoutForceDirectedMenu->setIcon(QIcon(":/images/force.png"));
+    layoutMenu->addMenu (layoutForceDirectedMenu);
+    layoutForceDirectedMenu->addAction (layoutFDP_KamadaKawai_Act);
+    layoutForceDirectedMenu->addAction (layoutFDP_FR_Act);
+    layoutForceDirectedMenu->addAction (layoutFDP_Eades_Act);
 
     layoutMenu->addSeparator();
-    layoutMenu -> addAction (layoutGuidesAct);
+    layoutMenu->addAction (layoutGuidesAct);
 
 
     /** menuBar entry optionsMenu  */
     optionsMenu = menuBar()->addMenu(tr("&Options"));
     nodeOptionsMenu=new QMenu(tr("Nodes..."));
-    nodeOptionsMenu -> setIcon(QIcon(":/images/nodes.png"));
+    nodeOptionsMenu->setIcon(QIcon(":/images/nodes.png"));
 
-    optionsMenu -> addMenu (nodeOptionsMenu);
-    nodeOptionsMenu -> addAction (optionsNodeNumbersVisibilityAct);
-    nodeOptionsMenu -> addAction (optionsNodeLabelsVisibilityAct);
-    nodeOptionsMenu -> addAction (optionsNodeNumbersInsideAct);
+    optionsMenu->addMenu (nodeOptionsMenu);
+    nodeOptionsMenu->addAction (optionsNodeNumbersVisibilityAct);
+    nodeOptionsMenu->addAction (optionsNodeLabelsVisibilityAct);
+    nodeOptionsMenu->addAction (optionsNodeNumbersInsideAct);
 
     edgeOptionsMenu=new QMenu(tr("Edges..."));
-    edgeOptionsMenu -> setIcon(QIcon(":/images/line.png"));
+    edgeOptionsMenu->setIcon(QIcon(":/images/line.png"));
 
-    optionsMenu -> addMenu (edgeOptionsMenu);
-    edgeOptionsMenu -> addAction (optionsEdgesVisibilityAct);
-    edgeOptionsMenu -> addSeparator();
-    edgeOptionsMenu -> addAction (optionsEdgeWeightNumbersAct);
-    edgeOptionsMenu -> addAction (optionsEdgeWeightConsiderAct);
-    edgeOptionsMenu -> addAction (optionsEdgeThicknessPerWeightAct);
-    edgeOptionsMenu -> addSeparator();
-    edgeOptionsMenu -> addAction (optionsEdgeLabelsAct);
-    edgeOptionsMenu -> addSeparator();
-    edgeOptionsMenu -> addAction (optionsEdgeArrowsAct );
-    edgeOptionsMenu -> addSeparator();
-    edgeOptionsMenu -> addAction (drawEdgesBezier);
+    optionsMenu->addMenu (edgeOptionsMenu);
+    edgeOptionsMenu->addAction (optionsEdgesVisibilityAct);
+    edgeOptionsMenu->addSeparator();
+    edgeOptionsMenu->addAction (optionsEdgeWeightNumbersAct);
+    edgeOptionsMenu->addAction (optionsEdgeWeightConsiderAct);
+    edgeOptionsMenu->addAction (optionsEdgeThicknessPerWeightAct);
+    edgeOptionsMenu->addSeparator();
+    edgeOptionsMenu->addAction (optionsEdgeLabelsAct);
+    edgeOptionsMenu->addSeparator();
+    edgeOptionsMenu->addAction (optionsEdgeArrowsAct );
+    edgeOptionsMenu->addSeparator();
+    edgeOptionsMenu->addAction (drawEdgesBezier);
 
     viewOptionsMenu = new QMenu (tr("&Canvas..."));
-    viewOptionsMenu -> setIcon(QIcon(":/images/view.png"));
-    optionsMenu -> addMenu (viewOptionsMenu);
-    viewOptionsMenu -> addAction (changeBackColorAct);
-    viewOptionsMenu -> addAction (backgroundImageAct);
+    viewOptionsMenu->setIcon(QIcon(":/images/view.png"));
+    optionsMenu->addMenu (viewOptionsMenu);
+    viewOptionsMenu->addAction (changeBackColorAct);
+    viewOptionsMenu->addAction (backgroundImageAct);
 
-    optionsMenu -> addSeparator();
-    optionsMenu -> addAction(fullScreenModeAct);
+    optionsMenu->addSeparator();
+    optionsMenu->addAction(fullScreenModeAct);
 
-    optionsMenu -> addSeparator();
-    optionsMenu -> addAction (openSettingsAct);
+    optionsMenu->addSeparator();
+    optionsMenu->addAction (openSettingsAct);
 
 
     /**  menuBar entry helpMenu */
     helpMenu = menuBar()->addMenu(tr("&Help"));
-    helpMenu -> addAction (helpApp);
-    helpMenu -> addAction (tipsApp);
-    helpMenu -> addSeparator();
-    helpMenu -> addAction (helpCheckUpdatesApp);
-    helpMenu -> addSeparator();
+    helpMenu->addAction (helpApp);
+    helpMenu->addAction (tipsApp);
+    helpMenu->addSeparator();
+    helpMenu->addAction (helpCheckUpdatesApp);
+    helpMenu->addSeparator();
     helpMenu-> addAction (helpAboutApp);
     helpMenu-> addAction (helpAboutQt);
 
@@ -3884,20 +3884,20 @@ void MainWindow::initToolBar(){
 
     toolBar = addToolBar("operations");
 
-    toolBar -> addAction (networkNew);
-    toolBar -> addAction (networkOpen);
-    toolBar -> addAction (networkSave);
-    toolBar -> addAction (networkPrint);
-    toolBar -> addSeparator();
+    toolBar->addAction (networkNew);
+    toolBar->addAction (networkOpen);
+    toolBar->addAction (networkSave);
+    toolBar->addAction (networkPrint);
+    toolBar->addSeparator();
 
 
-    toolBar -> addSeparator();
+    toolBar->addSeparator();
 
     //Create relation select widget
     QLabel *labelRelationSelect= new QLabel;
     labelRelationSelect ->setText(tr("Relations:"));
-    toolBar -> addWidget (labelRelationSelect);
-    toolBar -> addAction (editRelationPreviousAct);
+    toolBar->addWidget (labelRelationSelect);
+    toolBar->addAction (editRelationPreviousAct);
     editRelationChangeCombo = new QComboBox;
     editRelationChangeCombo ->setEditable(true);
     editRelationChangeCombo ->setInsertPolicy(QComboBox::InsertAtCurrent);
@@ -3915,41 +3915,41 @@ void MainWindow::initToolBar(){
                    "<p>To rename the current relation, write a new name and press Enter. </p>"
                    "<p>To select another relation (if any), click the Down arrow.</p>"));
 
-    toolBar -> addWidget(editRelationChangeCombo);
-    toolBar -> addAction (editRelationNextAct);
-    toolBar -> addAction (editRelationAddAct);
+    toolBar->addWidget(editRelationChangeCombo);
+    toolBar->addAction (editRelationNextAct);
+    toolBar->addAction (editRelationAddAct);
 
-    toolBar -> addSeparator();
+    toolBar->addSeparator();
     QLabel *labelEditNodes= new QLabel;
     labelEditNodes ->setText(tr("Nodes:"));
-    toolBar -> addWidget (labelEditNodes);
-    toolBar -> addAction (editNodeAddAct);
-    toolBar -> addAction (editNodeRemoveAct);
-    toolBar -> addAction (editNodeFindAct);
-    toolBar -> addAction(editNodePropertiesAct );
-    toolBar -> addSeparator();
+    toolBar->addWidget (labelEditNodes);
+    toolBar->addAction (editNodeAddAct);
+    toolBar->addAction (editNodeRemoveAct);
+    toolBar->addAction (editNodeFindAct);
+    toolBar->addAction(editNodePropertiesAct );
+    toolBar->addSeparator();
     QLabel *labelEditEdges= new QLabel;
     labelEditEdges ->setText(tr("Edges:"));
-    toolBar -> addWidget (labelEditEdges);
+    toolBar->addWidget (labelEditEdges);
 
-    toolBar -> addAction (editEdgeAddAct);
-    toolBar -> addAction (editEdgeRemoveAct);
-    toolBar -> addAction (editFilterEdgesByWeightAct);
-    toolBar -> addSeparator();
+    toolBar->addAction (editEdgeAddAct);
+    toolBar->addAction (editEdgeRemoveAct);
+    toolBar->addAction (editFilterEdgesByWeightAct);
+    toolBar->addSeparator();
     QLabel *labelApplicationIcons = new QLabel;
     labelApplicationIcons ->setText(tr("Settings:"));
-    toolBar -> addWidget(labelApplicationIcons);
-    toolBar -> addAction(openSettingsAct);
-    toolBar -> addSeparator();
-    toolBar -> addAction ( QWhatsThis::createAction (this));
-    toolBar -> setIconSize(QSize(16,16));
-    toolBar -> addSeparator();
+    toolBar->addWidget(labelApplicationIcons);
+    toolBar->addAction(openSettingsAct);
+    toolBar->addSeparator();
+    toolBar->addAction ( QWhatsThis::createAction (this));
+    toolBar->setIconSize(QSize(16,16));
+    toolBar->addSeparator();
 
     styleSheetCheck = new QCheckBox("Load Style", this);
     connect( styleSheetCheck,&QCheckBox::clicked,
              this,  &MainWindow::loadStyleSheet );
 
-    toolBar -> addWidget(styleSheetCheck);
+    toolBar->addWidget(styleSheetCheck);
 
     qDebug()<< "MW::initToolBar() - Finished";
 }
@@ -4043,7 +4043,7 @@ void MainWindow::initPanels(){
                      "<p><em>Symmetrize Edges by examining Strong Ties:</em></p>"
                      "<p>Creates a new symmetric relation by keeping strong ties only. "
                      "In the new relation, a tie will exist between actor A and "
-                     "actor B only when both arcs A -> B and B -> A are present "
+                     "actor B only when both arcs A->B and B->A are present "
                      "in the current or all relations. </p>"
 
                      "<p><em>Symmetrize Edges by examining Cocitation:</em></p>"
@@ -4067,15 +4067,15 @@ void MainWindow::initPanels(){
     //create a grid layout for Edit buttons
 
     QGridLayout *editGrid = new QGridLayout;
-    editGrid -> addWidget(toolBoxEditNodeSubgraphSelectLabel, 0,0);
-    editGrid -> addWidget(toolBoxEditNodeSubgraphSelect, 0,1);
-    editGrid -> addWidget(toolBoxEdgeModeSelectLabel,1,0);
-    editGrid -> addWidget(toolBoxEditEdgeModeSelect,1,1);
-    editGrid -> addWidget(toolBoxSymmetrizeSelectLabel,2,0);
-    editGrid -> addWidget(toolBoxEditEdgeSymmetrizeSelect,2,1);
+    editGrid->addWidget(toolBoxEditNodeSubgraphSelectLabel, 0,0);
+    editGrid->addWidget(toolBoxEditNodeSubgraphSelect, 0,1);
+    editGrid->addWidget(toolBoxEdgeModeSelectLabel,1,0);
+    editGrid->addWidget(toolBoxEditEdgeModeSelect,1,1);
+    editGrid->addWidget(toolBoxSymmetrizeSelectLabel,2,0);
+    editGrid->addWidget(toolBoxEditEdgeSymmetrizeSelect,2,1);
 
-    editGrid -> setSpacing(5);
-    editGrid -> setContentsMargins(15, 5, 15, 5);
+    editGrid->setSpacing(5);
+    editGrid->setContentsMargins(15, 5, 15, 5);
 
     //create a groupbox "Edit" - Inside, display the grid layout of widgets
     QGroupBox *editGroupBox= new QGroupBox(tr("Edit"));
@@ -4088,7 +4088,7 @@ void MainWindow::initPanels(){
     toolBoxAnalysisMatricesSelectLabel->setText(tr("Matrix:"));
     toolBoxAnalysisMatricesSelectLabel->setMinimumWidth(90);
     toolBoxAnalysisMatricesSelect = new QComboBox;
-    toolBoxAnalysisMatricesSelect -> setStatusTip(
+    toolBoxAnalysisMatricesSelect->setStatusTip(
                 tr("Select which matrix to compute and display, based on the "
                    "adjacency matrix of the current network."));
     helpMessage = tr("<p><b>Matrix Analysis</b></p>"
@@ -4103,8 +4103,8 @@ void MainWindow::initPanels(){
                      "<p><em>Degree Matrix </em></p>"
                      "<p><em>Laplacian Matrix </em></p>"
                      );
-    toolBoxAnalysisMatricesSelect -> setToolTip( helpMessage );
-    toolBoxAnalysisMatricesSelect -> setWhatsThis( helpMessage );
+    toolBoxAnalysisMatricesSelect->setToolTip( helpMessage );
+    toolBoxAnalysisMatricesSelect->setWhatsThis( helpMessage );
     QStringList graphMatricesList;
     graphMatricesList << "Select"
                       << "Adjacency"
@@ -4123,7 +4123,7 @@ void MainWindow::initPanels(){
     toolBoxAnalysisCohesionSelectLabel->setText(tr("Cohesion:"));
     toolBoxAnalysisCohesionSelectLabel->setMinimumWidth(90);
     toolBoxAnalysisCohesionSelect = new QComboBox;
-    toolBoxAnalysisCohesionSelect -> setStatusTip(
+    toolBoxAnalysisCohesionSelect->setStatusTip(
                 tr("Select a graph-theoretic measure, i.e. distances, walks, graph diameter, eccentricity."));
     helpMessage =
             tr("<p><b>Analyze Cohesion</b></p>"
@@ -4161,8 +4161,8 @@ void MainWindow::initPanels(){
                "possibly exist between them. "
                "Quantifies how close each actor and its neighbors are to form "
                "a complete subgraph (clique)</p>");
-    toolBoxAnalysisCohesionSelect -> setToolTip( helpMessage );
-    toolBoxAnalysisCohesionSelect -> setWhatsThis(helpMessage);
+    toolBoxAnalysisCohesionSelect->setToolTip( helpMessage );
+    toolBoxAnalysisCohesionSelect->setWhatsThis(helpMessage);
 
     QStringList graphPropertiesList;
     graphPropertiesList << "Select"
@@ -4188,7 +4188,7 @@ void MainWindow::initPanels(){
     toolBoxAnalysisProminenceSelectLabel->setText(tr("Prominence:"));
     toolBoxAnalysisProminenceSelectLabel->setMinimumWidth(90);
     toolBoxAnalysisProminenceSelect = new QComboBox;
-    toolBoxAnalysisProminenceSelect -> setStatusTip(
+    toolBoxAnalysisProminenceSelect->setStatusTip(
                 tr("Select a prominence metric to compute for each actor "
                    "and the whole network. ")
                 );
@@ -4260,8 +4260,8 @@ void MainWindow::initPanels(){
                      "to the average distance these nodes are from it. Similar to Closeness Centrality "
                      "but it counts only inbound distances to each actor, thus it is a measure of actor prestige.</p>"
                      );
-    toolBoxAnalysisProminenceSelect -> setToolTip( helpMessage );
-    toolBoxAnalysisProminenceSelect -> setWhatsThis( helpMessage);
+    toolBoxAnalysisProminenceSelect->setToolTip( helpMessage );
+    toolBoxAnalysisProminenceSelect->setWhatsThis( helpMessage);
 
     QStringList prominenceCommands;
     prominenceCommands << "Select" << prominenceIndexList;
@@ -4329,19 +4329,19 @@ void MainWindow::initPanels(){
 
     //create layout for analysis options
     QGridLayout *analysisGrid = new QGridLayout();
-    analysisGrid -> addWidget(toolBoxAnalysisMatricesSelectLabel, 0,0);
-    analysisGrid -> addWidget(toolBoxAnalysisMatricesSelect, 0,1);
-    analysisGrid -> addWidget(toolBoxAnalysisCohesionSelectLabel, 1,0);
-    analysisGrid -> addWidget(toolBoxAnalysisCohesionSelect, 1,1);
-    analysisGrid -> addWidget(toolBoxAnalysisProminenceSelectLabel, 2,0);
-    analysisGrid -> addWidget(toolBoxAnalysisProminenceSelect, 2,1);
-    analysisGrid -> addWidget(toolBoxAnalysisCommunitiesSelectLabel, 3,0);
-    analysisGrid -> addWidget(toolBoxAnalysisCommunitiesSelect, 3,1);
-    analysisGrid -> addWidget(toolBoxAnalysisStrEquivalenceSelectLabel, 4,0);
-    analysisGrid -> addWidget(toolBoxAnalysisStrEquivalenceSelect, 4,1);
+    analysisGrid->addWidget(toolBoxAnalysisMatricesSelectLabel, 0,0);
+    analysisGrid->addWidget(toolBoxAnalysisMatricesSelect, 0,1);
+    analysisGrid->addWidget(toolBoxAnalysisCohesionSelectLabel, 1,0);
+    analysisGrid->addWidget(toolBoxAnalysisCohesionSelect, 1,1);
+    analysisGrid->addWidget(toolBoxAnalysisProminenceSelectLabel, 2,0);
+    analysisGrid->addWidget(toolBoxAnalysisProminenceSelect, 2,1);
+    analysisGrid->addWidget(toolBoxAnalysisCommunitiesSelectLabel, 3,0);
+    analysisGrid->addWidget(toolBoxAnalysisCommunitiesSelect, 3,1);
+    analysisGrid->addWidget(toolBoxAnalysisStrEquivalenceSelectLabel, 4,0);
+    analysisGrid->addWidget(toolBoxAnalysisStrEquivalenceSelect, 4,1);
 
-    analysisGrid -> setSpacing(5);
-    analysisGrid -> setContentsMargins(15, 5, 15, 5);
+    analysisGrid->setSpacing(5);
+    analysisGrid->setContentsMargins(15, 5, 15, 5);
 
 
     //create a box and set the above layout inside
@@ -4455,13 +4455,13 @@ void MainWindow::initPanels(){
 
     //create layout for visualisation by index options
     QGridLayout *layoutByIndexGrid = new QGridLayout();
-    layoutByIndexGrid -> addWidget(toolBoxLayoutByIndexSelectLabel, 0,0);
-    layoutByIndexGrid -> addWidget(toolBoxLayoutByIndexSelect, 0,1);
-    layoutByIndexGrid -> addWidget(toolBoxLayoutByIndexTypeLabel, 1,0);
-    layoutByIndexGrid -> addWidget(toolBoxLayoutByIndexTypeSelect, 1,1);
-    layoutByIndexGrid -> addWidget(toolBoxLayoutByIndexApplyButton, 2,1);
-    layoutByIndexGrid -> setSpacing(5);
-    layoutByIndexGrid -> setContentsMargins(5, 5, 5, 5);
+    layoutByIndexGrid->addWidget(toolBoxLayoutByIndexSelectLabel, 0,0);
+    layoutByIndexGrid->addWidget(toolBoxLayoutByIndexSelect, 0,1);
+    layoutByIndexGrid->addWidget(toolBoxLayoutByIndexTypeLabel, 1,0);
+    layoutByIndexGrid->addWidget(toolBoxLayoutByIndexTypeSelect, 1,1);
+    layoutByIndexGrid->addWidget(toolBoxLayoutByIndexApplyButton, 2,1);
+    layoutByIndexGrid->setSpacing(5);
+    layoutByIndexGrid->setContentsMargins(5, 5, 5, 5);
 
     //create a box and set the above layout inside
     QGroupBox *layoutByIndexBox= new QGroupBox(tr("By Prominence Index"));
@@ -4530,11 +4530,11 @@ void MainWindow::initPanels(){
 
     //create layout for dynamic visualisation
     QGridLayout *layoutForceDirectedGrid = new QGridLayout();
-    layoutForceDirectedGrid -> addWidget(toolBoxLayoutForceDirectedSelectLabel, 0,0);
-    layoutForceDirectedGrid -> addWidget(toolBoxLayoutForceDirectedSelect, 0,1);
-    layoutForceDirectedGrid -> addWidget(toolBoxLayoutForceDirectedApplyButton, 1,1);
-    layoutForceDirectedGrid -> setSpacing(5);
-    layoutForceDirectedGrid -> setContentsMargins(5,5, 5, 5);
+    layoutForceDirectedGrid->addWidget(toolBoxLayoutForceDirectedSelectLabel, 0,0);
+    layoutForceDirectedGrid->addWidget(toolBoxLayoutForceDirectedSelect, 0,1);
+    layoutForceDirectedGrid->addWidget(toolBoxLayoutForceDirectedApplyButton, 1,1);
+    layoutForceDirectedGrid->setSpacing(5);
+    layoutForceDirectedGrid->setContentsMargins(5,5, 5, 5);
 
     //create a box for dynamic layout options
     QGroupBox *layoutDynamicBox= new QGroupBox(tr("By Force-Directed Model"));
@@ -4545,8 +4545,8 @@ void MainWindow::initPanels(){
 
     //Parent box with vertical layout for all layout/visualization boxes
     QVBoxLayout *visualizationBoxLayout = new QVBoxLayout;
-    visualizationBoxLayout -> addWidget(layoutByIndexBox);
-    visualizationBoxLayout -> addWidget(layoutDynamicBox);
+    visualizationBoxLayout->addWidget(layoutByIndexBox);
+    visualizationBoxLayout->addWidget(layoutDynamicBox);
 
 
     QGroupBox *visualizationBox= new QGroupBox(tr("Visualize"));
@@ -4555,15 +4555,16 @@ void MainWindow::initPanels(){
 
     //Parent box with vertical layout for all boxes of Controls
     QGridLayout *controlGrid = new QGridLayout;
-    controlGrid -> addWidget(editGroupBox, 0,0);
-    controlGrid -> addWidget(analysisBox, 1, 0);
-    controlGrid -> addWidget(visualizationBox, 2, 0);
-    controlGrid -> setRowStretch(3,1);   //fix stretch
+    controlGrid->addWidget(editGroupBox, 0,0);
+    controlGrid->addWidget(analysisBox, 1, 0);
+    controlGrid->addWidget(visualizationBox, 2, 0);
+    controlGrid->setRowStretch(3,1);   //fix stretch
 
     //create a box with title
     leftPanel = new QGroupBox(tr("Control Panel"));
-    leftPanel -> setMaximumWidth(220);
-    leftPanel -> setLayout (controlGrid);
+    leftPanel->setMinimumWidth(220);
+    leftPanel->setObjectName("leftPanel");
+    leftPanel->setLayout (controlGrid);
 
 
     //
@@ -4580,21 +4581,21 @@ void MainWindow::initPanels(){
     rightPanelNetworkTypeLabel-> setText ("Type:");
     rightPanelNetworkTypeLabel->setStatusTip(
                 tr("The type of the network: directed or undirected. "
-                   "Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
+                   "Toggle the menu option Edit->Edges->Undirected Edges to change it"));
 
     rightPanelNetworkTypeLabel->setToolTip(\
                 tr("The loaded network, if any, is directed and \n"
                    "any link you add between nodes will be a directed arc.\n"
                    "If you want to work with undirected edges and/or \n"
                    "transform the loaded network (if any) to undirected \n"
-                   "toggle the option Edit -> Edges -> Undirected \n"
+                   "toggle the option Edit->Edges->Undirected \n"
                    "or press CTRL+E+U"));
     rightPanelNetworkTypeLabel->setWhatsThis(
                 tr("The loaded network, if any, is directed and \n"
                    "any link you add between nodes will be a directed arc.\n"
                    "If you want to work with undirected edges and/or \n"
                    "transform the loaded network (if any) to undirected \n"
-                   "toggle the option Edit -> Edges -> Undirected \n"
+                   "toggle the option Edit->Edges->Undirected \n"
                    "or press CTRL+E+U"));
 
 
@@ -4603,21 +4604,21 @@ void MainWindow::initPanels(){
     rightPanelNetworkTypeLCD->setText (tr("Directed"));
     rightPanelNetworkTypeLCD->setStatusTip(
                 tr("Directed data mode. "
-                   "Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
+                   "Toggle the menu option Edit->Edges->Undirected Edges to change it"));
 
     rightPanelNetworkTypeLCD->setToolTip(
                 tr("The loaded network, if any, is directed and \n"
                    "any link you add between nodes will be a directed arc.\n"
                    "If you want to work with undirected edges and/or \n"
                    "transform the loaded network (if any) to undirected \n"
-                   "toggle the option Edit -> Edges -> Undirected \n"
+                   "toggle the option Edit->Edges->Undirected \n"
                    "or press CTRL+E+U"));
     rightPanelNetworkTypeLCD->setWhatsThis(
                 tr("The loaded network, if any, is directed and \n"
                    "any link you add between nodes will be a directed arc.\n"
                    "If you want to work with undirected edges and/or \n"
                    "transform the loaded network (if any) to undirected \n"
-                   "toggle the option Edit -> Edges -> Undirected \n"
+                   "toggle the option Edit->Edges->Undirected \n"
                    "or press CTRL+E+U"));
 
     rightPanelNetworkTypeLCD ->setMinimumWidth(75);
@@ -4679,7 +4680,7 @@ void MainWindow::initPanels(){
 
 
     QLabel *verticalSpaceLabel1 = new QLabel;
-    verticalSpaceLabel1 -> setText ("");
+    verticalSpaceLabel1->setText ("");
     QLabel *rightPanelSelectedHeaderLabel = new QLabel;
     rightPanelSelectedHeaderLabel-> setText (tr("Selection"));
     rightPanelSelectedHeaderLabel->setFont(labelFont);
@@ -4715,39 +4716,39 @@ void MainWindow::initPanels(){
     rightPanelClickedNodeHeaderLabel->setFont(labelFont);
 
     QLabel *rightPanelClickedNodeLabel = new QLabel;
-    rightPanelClickedNodeLabel -> setText (tr("Number:"));
-    rightPanelClickedNodeLabel -> setToolTip (tr("The node number of the last clicked node."));
-    rightPanelClickedNodeLabel -> setStatusTip( tr("The node number of the last clicked node. Zero means no node clicked."));
+    rightPanelClickedNodeLabel->setText (tr("Number:"));
+    rightPanelClickedNodeLabel->setToolTip (tr("The node number of the last clicked node."));
+    rightPanelClickedNodeLabel->setStatusTip( tr("The node number of the last clicked node. Zero means no node clicked."));
     rightPanelClickedNodeLCD = new QLabel;
-    rightPanelClickedNodeLCD -> setAlignment(Qt::AlignRight);
-    rightPanelClickedNodeLCD -> setToolTip (tr("This is the node number of the last clicked node. \n"
+    rightPanelClickedNodeLCD->setAlignment(Qt::AlignRight);
+    rightPanelClickedNodeLCD->setToolTip (tr("This is the node number of the last clicked node. \n"
                                                "Becomes zero when you click on something other than a node."));
-    rightPanelClickedNodeLCD -> setStatusTip( tr("The node number of the last clicked node. Zero if you clicked something else."));
+    rightPanelClickedNodeLCD->setStatusTip( tr("The node number of the last clicked node. Zero if you clicked something else."));
 
     QLabel *rightPanelClickedNodeInDegreeLabel = new QLabel;
-    rightPanelClickedNodeInDegreeLabel -> setText (tr("In-Degree:"));
-    rightPanelClickedNodeInDegreeLabel -> setToolTip (tr("The inDegree of a node is the sum of all inbound edge weights."));
-    rightPanelClickedNodeInDegreeLabel -> setStatusTip (tr("The inDegree of a node is the sum of all inbound edge weights."));
+    rightPanelClickedNodeInDegreeLabel->setText (tr("In-Degree:"));
+    rightPanelClickedNodeInDegreeLabel->setToolTip (tr("The inDegree of a node is the sum of all inbound edge weights."));
+    rightPanelClickedNodeInDegreeLabel->setStatusTip (tr("The inDegree of a node is the sum of all inbound edge weights."));
     rightPanelClickedNodeInDegreeLCD = new QLabel;
-    rightPanelClickedNodeInDegreeLCD -> setAlignment(Qt::AlignRight);
-    rightPanelClickedNodeInDegreeLCD -> setStatusTip (tr("The sum of all inbound edge weights of the last clicked node. "
+    rightPanelClickedNodeInDegreeLCD->setAlignment(Qt::AlignRight);
+    rightPanelClickedNodeInDegreeLCD->setStatusTip (tr("The sum of all inbound edge weights of the last clicked node. "
                                                          "Zero if you clicked something else."));
-    rightPanelClickedNodeInDegreeLCD -> setToolTip (tr("This is the sum of all inbound edge weights of last clicked node. \n"
+    rightPanelClickedNodeInDegreeLCD->setToolTip (tr("This is the sum of all inbound edge weights of last clicked node. \n"
                                                        "Becomes zero when you click on something other than a node."));
 
     QLabel *rightPanelClickedNodeOutDegreeLabel = new QLabel;
-    rightPanelClickedNodeOutDegreeLabel -> setText (tr("Out-Degree:"));
-    rightPanelClickedNodeOutDegreeLabel -> setToolTip (tr("The outDegree of a node is the sum of all outbound edge weights."));
-    rightPanelClickedNodeOutDegreeLabel -> setStatusTip (tr("The outDegree of a node is the sum of all outbound edge weights."));
+    rightPanelClickedNodeOutDegreeLabel->setText (tr("Out-Degree:"));
+    rightPanelClickedNodeOutDegreeLabel->setToolTip (tr("The outDegree of a node is the sum of all outbound edge weights."));
+    rightPanelClickedNodeOutDegreeLabel->setStatusTip (tr("The outDegree of a node is the sum of all outbound edge weights."));
     rightPanelClickedNodeOutDegreeLCD=new QLabel;
-    rightPanelClickedNodeOutDegreeLCD -> setAlignment(Qt::AlignRight);
-    rightPanelClickedNodeOutDegreeLCD -> setStatusTip (tr("The sum of all outbound edge weights of the last clicked node. "
+    rightPanelClickedNodeOutDegreeLCD->setAlignment(Qt::AlignRight);
+    rightPanelClickedNodeOutDegreeLCD->setStatusTip (tr("The sum of all outbound edge weights of the last clicked node. "
                                                           "Zero if you clicked something else."));
-    rightPanelClickedNodeOutDegreeLCD -> setToolTip (tr("This is the sum of all outbound edge weights of the last clicked node. \n"
+    rightPanelClickedNodeOutDegreeLCD->setToolTip (tr("This is the sum of all outbound edge weights of the last clicked node. \n"
                                                         "Becomes zero when you click on something other than a node."));
 
     QLabel *rightPanelClickedNodeClucofLabel  = new QLabel;
-    rightPanelClickedNodeClucofLabel -> setText (tr("Clu.Coef."));
+    rightPanelClickedNodeClucofLabel->setText (tr("Clu.Coef."));
     helpMessage = tr("<p></p>Clustering Coefficient of the active node. </b></p>"
                      "<p>The Clustering Coefficient quantifies how close the clicked "
                      "vertex and its neighbors are to being a clique. "
@@ -4758,19 +4759,19 @@ void MainWindow::initPanels(){
                      "<p>This value is automatically calculated only if vertices < 500."
                      "<p>If your network is larger than 500 vertices, compute CluCof "
                      "from the menu Analysis > Clustering Coefficient.</p>");
-    rightPanelClickedNodeClucofLabel -> setWhatsThis( helpMessage );
-    rightPanelClickedNodeClucofLabel -> setToolTip ( helpMessage );
-    rightPanelClickedNodeClucofLabel -> setStatusTip(
+    rightPanelClickedNodeClucofLabel->setWhatsThis( helpMessage );
+    rightPanelClickedNodeClucofLabel->setToolTip ( helpMessage );
+    rightPanelClickedNodeClucofLabel->setStatusTip(
                 tr("The Clustering Coefficient of the last clicked node. "
                    "Zero when you click on something else."));
     rightPanelClickedNodeClucofLCD = new QLabel;
-    rightPanelClickedNodeClucofLCD -> setAlignment(Qt::AlignRight);
-    rightPanelClickedNodeClucofLCD -> setStatusTip(
+    rightPanelClickedNodeClucofLCD->setAlignment(Qt::AlignRight);
+    rightPanelClickedNodeClucofLCD->setStatusTip(
                 tr("The Clustering Coefficient of the last clicked node. "
                    "Zero when you click on something else."));
 
-    rightPanelClickedNodeClucofLCD -> setWhatsThis( helpMessage );
-    rightPanelClickedNodeClucofLCD  -> setToolTip ( helpMessage );
+    rightPanelClickedNodeClucofLCD->setWhatsThis( helpMessage );
+    rightPanelClickedNodeClucofLCD ->setToolTip ( helpMessage );
 
 
     QLabel *verticalSpaceLabel3 = new QLabel;
@@ -4781,92 +4782,92 @@ void MainWindow::initPanels(){
     rightPanelClickedEdgeHeaderLabel->setFont(labelFont);
 
     rightPanelClickedEdgeNameLabel = new QLabel;
-    rightPanelClickedEdgeNameLabel -> setText (tr("Name:"));
-    rightPanelClickedEdgeNameLabel -> setToolTip (tr("The name of the last clicked edge."));
-    rightPanelClickedEdgeNameLabel -> setStatusTip (tr("The name of the last clicked edge."));
+    rightPanelClickedEdgeNameLabel->setText (tr("Name:"));
+    rightPanelClickedEdgeNameLabel->setToolTip (tr("The name of the last clicked edge."));
+    rightPanelClickedEdgeNameLabel->setStatusTip (tr("The name of the last clicked edge."));
     rightPanelClickedEdgeNameLCD = new QLabel;
-    rightPanelClickedEdgeNameLCD -> setAlignment(Qt::AlignRight);
-    rightPanelClickedEdgeNameLCD -> setToolTip (tr("This is the name of the last clicked edge. \n"
+    rightPanelClickedEdgeNameLCD->setAlignment(Qt::AlignRight);
+    rightPanelClickedEdgeNameLCD->setToolTip (tr("This is the name of the last clicked edge. \n"
                                                    "Becomes zero when you click on somethingto other than an edge"));
-    rightPanelClickedEdgeNameLCD -> setStatusTip (tr("The name of the last clicked edge."
+    rightPanelClickedEdgeNameLCD->setStatusTip (tr("The name of the last clicked edge."
                                                      "Zero when you click on something else."));
 
 
     rightPanelClickedEdgeWeightLabel = new QLabel;
-    rightPanelClickedEdgeWeightLabel -> setText (tr("Weight:"));
-    rightPanelClickedEdgeWeightLabel -> setStatusTip (tr("The weight of the clicked edge."));
-    rightPanelClickedEdgeWeightLabel -> setToolTip (tr("The weight of the clicked edge."));
+    rightPanelClickedEdgeWeightLabel->setText (tr("Weight:"));
+    rightPanelClickedEdgeWeightLabel->setStatusTip (tr("The weight of the clicked edge."));
+    rightPanelClickedEdgeWeightLabel->setToolTip (tr("The weight of the clicked edge."));
 
     rightPanelClickedEdgeWeightLCD =new QLabel;
-    rightPanelClickedEdgeWeightLCD -> setAlignment(Qt::AlignRight);
-    rightPanelClickedEdgeWeightLCD -> setToolTip (tr("This is the weight of the last clicked edge. \n"
+    rightPanelClickedEdgeWeightLCD->setAlignment(Qt::AlignRight);
+    rightPanelClickedEdgeWeightLCD->setToolTip (tr("This is the weight of the last clicked edge. \n"
                                                      "Becomes zero when you click on something other than an edge"));
-    rightPanelClickedEdgeWeightLCD -> setStatusTip (tr("The weight of the last clicked edge. "
+    rightPanelClickedEdgeWeightLCD->setStatusTip (tr("The weight of the last clicked edge. "
                                                        "Zero when you click on something else."));
 
 
     rightPanelClickedEdgeReciprocalWeightLabel = new QLabel;
-    rightPanelClickedEdgeReciprocalWeightLabel -> setText (tr(""));
-    rightPanelClickedEdgeReciprocalWeightLabel -> setToolTip (tr("The weight of the reciprocal edge."));
-    rightPanelClickedEdgeReciprocalWeightLabel -> setStatusTip (tr("The weight of the reciprocal edge."));
+    rightPanelClickedEdgeReciprocalWeightLabel->setText (tr(""));
+    rightPanelClickedEdgeReciprocalWeightLabel->setToolTip (tr("The weight of the reciprocal edge."));
+    rightPanelClickedEdgeReciprocalWeightLabel->setStatusTip (tr("The weight of the reciprocal edge."));
     rightPanelClickedEdgeReciprocalWeightLCD =new QLabel;
-    rightPanelClickedEdgeReciprocalWeightLCD -> setAlignment(Qt::AlignRight);
-    rightPanelClickedEdgeReciprocalWeightLCD -> setToolTip (tr("This is the reciprocal weight of the last clicked reciprocated edge. \n"
+    rightPanelClickedEdgeReciprocalWeightLCD->setAlignment(Qt::AlignRight);
+    rightPanelClickedEdgeReciprocalWeightLCD->setToolTip (tr("This is the reciprocal weight of the last clicked reciprocated edge. \n"
                                                                "Becomes zero when you click on something other than an edge"));
-    rightPanelClickedEdgeReciprocalWeightLCD -> setStatusTip (tr("The reciprocal weight of the last clicked reciprocated edge. \n"
+    rightPanelClickedEdgeReciprocalWeightLCD->setStatusTip (tr("The reciprocal weight of the last clicked reciprocated edge. \n"
                                                                  "Becomes zero when you click on something other than an edge"));
 
 
     //create a grid layout
     QGridLayout *propertiesGrid = new QGridLayout();
-    propertiesGrid -> setColumnMinimumWidth(0, 10);
-    propertiesGrid -> setColumnMinimumWidth(1, 10);
+    propertiesGrid->setColumnMinimumWidth(0, 10);
+    propertiesGrid->setColumnMinimumWidth(1, 10);
 
-    propertiesGrid -> addWidget(rightPanelNetworkHeader , 0,0);
-    propertiesGrid -> addWidget(rightPanelNetworkTypeLabel , 1,0);
-    propertiesGrid -> addWidget(rightPanelNetworkTypeLCD , 1,1);
-    propertiesGrid -> addWidget(rightPanelNodesLabel, 2,0);
-    propertiesGrid -> addWidget(rightPanelNodesLCD,2,1);
-    propertiesGrid -> addWidget(rightPanelEdgesLabel, 3,0);
-    propertiesGrid -> addWidget(rightPanelEdgesLCD,3,1);
-    propertiesGrid -> addWidget(rightPanelDensityLabel, 4,0);
-    propertiesGrid -> addWidget(rightPanelDensityLCD,4,1);
+    propertiesGrid->addWidget(rightPanelNetworkHeader , 0,0);
+    propertiesGrid->addWidget(rightPanelNetworkTypeLabel , 1,0);
+    propertiesGrid->addWidget(rightPanelNetworkTypeLCD , 1,1);
+    propertiesGrid->addWidget(rightPanelNodesLabel, 2,0);
+    propertiesGrid->addWidget(rightPanelNodesLCD,2,1);
+    propertiesGrid->addWidget(rightPanelEdgesLabel, 3,0);
+    propertiesGrid->addWidget(rightPanelEdgesLCD,3,1);
+    propertiesGrid->addWidget(rightPanelDensityLabel, 4,0);
+    propertiesGrid->addWidget(rightPanelDensityLCD,4,1);
 
-    propertiesGrid -> addWidget(verticalSpaceLabel1, 5,0);
+    propertiesGrid->addWidget(verticalSpaceLabel1, 5,0);
 
-    propertiesGrid -> addWidget(rightPanelSelectedHeaderLabel, 6,0,1,2);
-    propertiesGrid -> addWidget(rightPanelSelectedNodesLabel , 7,0);
-    propertiesGrid -> addWidget(rightPanelSelectedNodesLCD ,7,1);
-    propertiesGrid -> addWidget(rightPanelSelectedEdgesLabel, 8,0);
-    propertiesGrid -> addWidget(rightPanelSelectedEdgesLCD, 8,1);
+    propertiesGrid->addWidget(rightPanelSelectedHeaderLabel, 6,0,1,2);
+    propertiesGrid->addWidget(rightPanelSelectedNodesLabel , 7,0);
+    propertiesGrid->addWidget(rightPanelSelectedNodesLCD ,7,1);
+    propertiesGrid->addWidget(rightPanelSelectedEdgesLabel, 8,0);
+    propertiesGrid->addWidget(rightPanelSelectedEdgesLCD, 8,1);
 
-    propertiesGrid -> addWidget(verticalSpaceLabel2, 9,0);
-    propertiesGrid -> addWidget(rightPanelClickedNodeHeaderLabel, 10,0,1,2);
-    propertiesGrid -> addWidget(rightPanelClickedNodeLabel , 11,0);
-    propertiesGrid -> addWidget(rightPanelClickedNodeLCD ,11,1);
-    propertiesGrid -> addWidget(rightPanelClickedNodeInDegreeLabel, 12,0);
-    propertiesGrid -> addWidget(rightPanelClickedNodeInDegreeLCD,12,1);
-    propertiesGrid -> addWidget(rightPanelClickedNodeOutDegreeLabel, 13,0);
-    propertiesGrid -> addWidget(rightPanelClickedNodeOutDegreeLCD,13,1);
-    propertiesGrid -> addWidget(rightPanelClickedNodeClucofLabel, 14,0);
-    propertiesGrid -> addWidget(rightPanelClickedNodeClucofLCD,14,1);
+    propertiesGrid->addWidget(verticalSpaceLabel2, 9,0);
+    propertiesGrid->addWidget(rightPanelClickedNodeHeaderLabel, 10,0,1,2);
+    propertiesGrid->addWidget(rightPanelClickedNodeLabel , 11,0);
+    propertiesGrid->addWidget(rightPanelClickedNodeLCD ,11,1);
+    propertiesGrid->addWidget(rightPanelClickedNodeInDegreeLabel, 12,0);
+    propertiesGrid->addWidget(rightPanelClickedNodeInDegreeLCD,12,1);
+    propertiesGrid->addWidget(rightPanelClickedNodeOutDegreeLabel, 13,0);
+    propertiesGrid->addWidget(rightPanelClickedNodeOutDegreeLCD,13,1);
+    propertiesGrid->addWidget(rightPanelClickedNodeClucofLabel, 14,0);
+    propertiesGrid->addWidget(rightPanelClickedNodeClucofLCD,14,1);
 
-    propertiesGrid -> addWidget(verticalSpaceLabel3, 15,0);
-    propertiesGrid -> addWidget(rightPanelClickedEdgeHeaderLabel, 16,0,1,2);
-    propertiesGrid -> addWidget(rightPanelClickedEdgeNameLabel , 17,0);
-    propertiesGrid -> addWidget(rightPanelClickedEdgeNameLCD ,17,1);
-    propertiesGrid -> addWidget(rightPanelClickedEdgeWeightLabel , 18,0);
-    propertiesGrid -> addWidget(rightPanelClickedEdgeWeightLCD ,18,1);
-    propertiesGrid -> addWidget(rightPanelClickedEdgeReciprocalWeightLabel , 19,0);
-    propertiesGrid -> addWidget(rightPanelClickedEdgeReciprocalWeightLCD ,19,1);
+    propertiesGrid->addWidget(verticalSpaceLabel3, 15,0);
+    propertiesGrid->addWidget(rightPanelClickedEdgeHeaderLabel, 16,0,1,2);
+    propertiesGrid->addWidget(rightPanelClickedEdgeNameLabel , 17,0);
+    propertiesGrid->addWidget(rightPanelClickedEdgeNameLCD ,17,1);
+    propertiesGrid->addWidget(rightPanelClickedEdgeWeightLabel , 18,0);
+    propertiesGrid->addWidget(rightPanelClickedEdgeWeightLCD ,18,1);
+    propertiesGrid->addWidget(rightPanelClickedEdgeReciprocalWeightLabel , 19,0);
+    propertiesGrid->addWidget(rightPanelClickedEdgeReciprocalWeightLCD ,19,1);
 
 
-    propertiesGrid -> setRowStretch(20,1);   //make an invisible row stretch to rest of height
+    propertiesGrid->setRowStretch(20,1);   //make an invisible row stretch to rest of height
 
     //create a panel with title
     rightPanel = new QGroupBox(tr("Statistics Panel"));
     rightPanel->setMaximumWidth(190);
-    rightPanel -> setLayout (propertiesGrid);
+    rightPanel->setLayout (propertiesGrid);
 
 
     qDebug()<< "MW::initPanels() - Finished";
@@ -5018,7 +5019,7 @@ void MainWindow::initWindowLayout() {
     qDebug () << "MW::initWindowLayout - resize to 1200x750";
     resize(1200,750);
 
-    showMaximized();
+    //showMaximized();
     //setGeometry(0, 0, 1200,600);
 
     qDebug () << "MW::initWindowLayout() - Finished";
@@ -6003,7 +6004,7 @@ void MainWindow::toolBoxAnalysisProminenceSelectChanged(int selectedIndex) {
 void MainWindow::toolBoxLayoutByIndexApplyBtnPressed(){
     qDebug()<<"MW::toolBoxLayoutByIndexApplyBtnPressed()";
     int selectedIndex = toolBoxLayoutByIndexSelect->currentIndex();
-    QString selectedIndexText = toolBoxLayoutByIndexSelect -> currentText();
+    QString selectedIndexText = toolBoxLayoutByIndexSelect->currentText();
     int selectedLayoutType = toolBoxLayoutByIndexTypeSelect ->currentIndex();
     qDebug()<<"MW::toolBoxLayoutByIndexApplyBtnPressed() - selected index is "
            << selectedIndexText << " : " << selectedIndex
@@ -6044,7 +6045,7 @@ void MainWindow::toolBoxLayoutByIndexApplyBtnPressed(){
 void MainWindow::toolBoxLayoutForceDirectedApplyBtnPressed(){
     qDebug()<<"MW::toolBoxLayoutForceDirectedApplyBtnPressed()";
     int selectedModel = toolBoxLayoutForceDirectedSelect->currentIndex();
-    QString selectedModelText = toolBoxLayoutForceDirectedSelect -> currentText();
+    QString selectedModelText = toolBoxLayoutForceDirectedSelect->currentText();
     qDebug() << " selected index is " << selectedModelText << " : "
              << selectedModel;
 
@@ -8344,18 +8345,18 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
 
         rightPanelEdgesLCD->setStatusTip(tr("Shows the total number of undirected edges in the network."));
         rightPanelEdgesLCD->setToolTip(tr("The total number of undirected edges in the network."));
-        rightPanelNetworkTypeLCD->setStatusTip(tr("Undirected data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
+        rightPanelNetworkTypeLCD->setStatusTip(tr("Undirected data mode. Toggle the menu option Edit->Edges->Undirected Edges to change it"));
         rightPanelNetworkTypeLCD->setToolTip(tr("The loaded network, if any, is undirected and \n"
                                                 "any edge you add between nodes will be undirected.\n"
                                                 "If you want to work with directed edges and/or \n"
                                                 "transform the loaded network (if any) to directed \n"
-                                                "disable the option Edit -> Edges -> Undirected \n"
+                                                "disable the option Edit->Edges->Undirected \n"
                                                 "or press CTRL+E+U"));
         rightPanelNetworkTypeLCD->setWhatsThis(tr("The loaded network, if any, is undirected and \n"
                                                   "any edge you add between nodes will be undirected.\n"
                                                   "If you want to work with directed edges and/or \n"
                                                   "transform the loaded network (if any) to directed \n"
-                                                  "disable the option Edit -> Edges -> Undirected \n"
+                                                  "disable the option Edit->Edges->Undirected \n"
                                                   "or press CTRL+E+U"));
 
 
@@ -8376,18 +8377,18 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
     else {
         rightPanelEdgesLCD->setStatusTip(tr("Shows the total number of directed edges in the network."));
         rightPanelEdgesLCD->setToolTip(tr("The total number of directed edges in the network."));
-        rightPanelNetworkTypeLCD->setStatusTip(tr("Directed data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
+        rightPanelNetworkTypeLCD->setStatusTip(tr("Directed data mode. Toggle the menu option Edit->Edges->Undirected Edges to change it"));
         rightPanelNetworkTypeLCD->setToolTip(tr("The loaded network, if any, is directed and \n"
                                                 "any link you add between nodes will be a directed arc.\n"
                                                 "If you want to work with undirected edges and/or \n"
                                                 "transform the loaded network (if any) to undirected \n"
-                                                "enable the option Edit -> Edges -> Undirected \n"
+                                                "enable the option Edit->Edges->Undirected \n"
                                                 "or press CTRL+E+U"));
         rightPanelNetworkTypeLCD->setWhatsThis(tr("The loaded network, if any, is directed and \n"
                                                   "any link you add between nodes will be a directed arc.\n"
                                                   "If you want to work with undirected edges and/or \n"
                                                   "transform the loaded network (if any) to undirected \n"
-                                                  "enable the option Edit -> Edges -> Undirected \n"
+                                                  "enable the option Edit->Edges->Undirected \n"
                                                   "or press CTRL+E+U"));
 
         rightPanelNetworkTypeLCD-> setText ("Directed");
@@ -8426,24 +8427,24 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
 
     int nodesSelected = activeGraph->graphSelectedVerticesCount();
 
-    contextMenu -> addAction( "## Selected nodes: "
+    contextMenu->addAction( "## Selected nodes: "
                               + QString::number(  nodesSelected ) + " ##  ");
 
-    contextMenu -> addSeparator();
+    contextMenu->addSeparator();
 
     if (nodesSelected > 0) {
-        contextMenu -> addAction(editNodePropertiesAct );
-        contextMenu -> addSeparator();
-        contextMenu -> addAction(editNodeRemoveAct );
+        contextMenu->addAction(editNodePropertiesAct );
+        contextMenu->addSeparator();
+        contextMenu->addAction(editNodeRemoveAct );
         if (nodesSelected > 1 ){
             editNodeRemoveAct->setText(tr("Remove ")
                                        + QString::number(nodesSelected)
                                        + tr(" nodes"));
-            contextMenu -> addSeparator();
-            contextMenu -> addAction(editNodeSelectedToCliqueAct);
-            contextMenu -> addAction(editNodeSelectedToStarAct);
-            contextMenu -> addAction(editNodeSelectedToCycleAct);
-            contextMenu -> addAction(editNodeSelectedToLineAct);
+            contextMenu->addSeparator();
+            contextMenu->addAction(editNodeSelectedToCliqueAct);
+            contextMenu->addAction(editNodeSelectedToStarAct);
+            contextMenu->addAction(editNodeSelectedToCycleAct);
+            contextMenu->addAction(editNodeSelectedToLineAct);
 
         }
         else {
@@ -8451,32 +8452,32 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
                                        + QString::number(nodesSelected)
                                        + tr(" node"));
         }
-        contextMenu -> addSeparator();
+        contextMenu->addSeparator();
     }
 
-    contextMenu -> addAction( editNodeAddAct );
-    contextMenu -> addSeparator();
-    contextMenu -> addAction( editEdgeAddAct );
-    contextMenu -> addSeparator();
+    contextMenu->addAction( editNodeAddAct );
+    contextMenu->addSeparator();
+    contextMenu->addAction( editEdgeAddAct );
+    contextMenu->addSeparator();
 
     QMenu *options=new QMenu("Options", this);
-    contextMenu -> addMenu(options );
+    contextMenu->addMenu(options );
 
-    options -> addAction (openSettingsAct  );
-    options -> addSeparator();
-    options -> addAction (editNodeSizeAllAct );
-    options -> addAction (editNodeShapeAll  );
-    options -> addAction (editNodeColorAll );
-    options -> addAction (optionsNodeNumbersVisibilityAct);
-    options -> addAction (optionsNodeLabelsVisibilityAct);
-    options -> addSeparator();
-    options -> addAction (editEdgeColorAllAct  );
-    options -> addSeparator();
-    options -> addAction (changeBackColorAct  );
-    options -> addAction (backgroundImageAct  );
+    options->addAction (openSettingsAct  );
+    options->addSeparator();
+    options->addAction (editNodeSizeAllAct );
+    options->addAction (editNodeShapeAll  );
+    options->addAction (editNodeColorAll );
+    options->addAction (optionsNodeNumbersVisibilityAct);
+    options->addAction (optionsNodeLabelsVisibilityAct);
+    options->addSeparator();
+    options->addAction (editEdgeColorAllAct  );
+    options->addSeparator();
+    options->addAction (changeBackColorAct  );
+    options->addAction (backgroundImageAct  );
 
     //QCursor::pos() is good only for menus not related with node coordinates
-    contextMenu -> exec(QCursor::pos() );
+    contextMenu->exec(QCursor::pos() );
     delete  contextMenu;
 }
 
@@ -9096,7 +9097,7 @@ void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
  * If shape == null, prompts the user a list of available node shapes to select.
  * Then changes the shape of all nodes/vertices accordingly.
  * If vertex is non-zero, changes the shape of that node only.
- * Called when user clicks on Edit -> Node > Change all nodes shapes
+ * Called when user clicks on Edit->Node > Change all nodes shapes
  * Called from DialogSettings when the user has selected a new default node shape
  * Calls Graph::vertexShapeAllSet(QString)
  * @param shape
@@ -9359,35 +9360,35 @@ void MainWindow::slotEditNodeOpenContextMenu() {
     Q_CHECK_PTR( nodeContextMenu );  //displays "out of memory" if needed
     int nodesSelected = activeGraph->graphSelectedVerticesCount();
     if ( nodesSelected == 1) {
-        nodeContextMenu -> addAction(
+        nodeContextMenu->addAction(
                     tr("## NODE ") + QString::number(activeGraph->vertexClicked()) + " ##  "
                     );
     }
     else {
-        nodeContextMenu -> addAction(
+        nodeContextMenu->addAction(
                     tr("## NODE ") + QString::number(activeGraph->vertexClicked())
                     + " ##  " + tr(" (selected nodes: ")
                     + QString::number ( nodesSelected ) + ")");
     }
 
-    nodeContextMenu -> addSeparator();
+    nodeContextMenu->addSeparator();
 
-    nodeContextMenu -> addAction(editNodePropertiesAct );
+    nodeContextMenu->addAction(editNodePropertiesAct );
 
-    nodeContextMenu -> addSeparator();
+    nodeContextMenu->addSeparator();
 
-    nodeContextMenu -> addAction(editEdgeAddAct);
+    nodeContextMenu->addAction(editEdgeAddAct);
 
-    nodeContextMenu -> addSeparator();
+    nodeContextMenu->addSeparator();
 
-    nodeContextMenu -> addAction(editNodeRemoveAct );
+    nodeContextMenu->addAction(editNodeRemoveAct );
 
 
-    nodeContextMenu -> addSeparator();
+    nodeContextMenu->addSeparator();
 
 
     //QCursor::pos() is good only for menus not related with node coordinates
-    nodeContextMenu -> exec(QCursor::pos() );
+    nodeContextMenu->exec(QCursor::pos() );
     delete  nodeContextMenu;
 
 }
@@ -9581,13 +9582,13 @@ void MainWindow::slotEditEdgeOpenContextMenu(const QString &str) {
             << "at"<< QCursor::pos().x() << "," << QCursor::pos().y();
     //make the menu
     QMenu *edgeContextMenu = new QMenu(str, this);
-    edgeContextMenu -> addAction( str );
-    edgeContextMenu -> addSeparator();
-    edgeContextMenu -> addAction( editEdgeRemoveAct );
-    edgeContextMenu -> addAction( editEdgeWeightAct );
-    edgeContextMenu -> addAction( editEdgeLabelAct );
-    edgeContextMenu -> addAction( editEdgeColorAct );
-    edgeContextMenu -> exec(QCursor::pos() );
+    edgeContextMenu->addAction( str );
+    edgeContextMenu->addSeparator();
+    edgeContextMenu->addAction( editEdgeRemoveAct );
+    edgeContextMenu->addAction( editEdgeWeightAct );
+    edgeContextMenu->addAction( editEdgeLabelAct );
+    edgeContextMenu->addAction( editEdgeColorAct );
+    edgeContextMenu->exec(QCursor::pos() );
     delete  edgeContextMenu;
 }
 
@@ -9610,7 +9611,7 @@ void MainWindow::slotEditEdgeAdd(){
     int min=activeGraph->vertexNumberMin();
     int max=activeGraph->vertexNumberMax();
 
-    if (min==max) return;		//if there is only one node -> no edge
+    if (min==max) return;		//if there is only one node->no edge
 
     if ( ! activeGraph->vertexClicked() ) {
         sourceNode=QInputDialog::getInt(
@@ -9867,7 +9868,7 @@ void MainWindow::slotEditEdgeLabel(){
                                            tr("Enter label: ") );
 
     if ( !label.isEmpty()) {
-        qDebug() << "MW::slotEditEdgeLabel() - " << sourceNode << " -> "
+        qDebug() << "MW::slotEditEdgeLabel() - " << sourceNode << "->"
                  << targetNode << " new label " << label;
         activeGraph->edgeLabelSet( sourceNode, targetNode, label);
         slotOptionsEdgeLabelsVisibility(true);
@@ -9887,7 +9888,7 @@ void MainWindow::slotEditEdgeLabel(){
  * @brief Changes the color of all edges weighted below threshold to parameter color
  * If color is not valid, it opens a QColorDialog
  * If threshold == RAND_MAX it changes the color of all edges.
- * Called from Edit -> Edges menu option and Settings Dialog.
+ * Called from Edit->Edges menu option and Settings Dialog.
  * @param color = QColor()
  * @param threshold = RAND_MAX
  */
@@ -9991,7 +9992,7 @@ void MainWindow::slotEditEdgeColor(){
 
     if ( color.isValid()) {
         QString newColor=color.name();
-        qDebug() << "MW::slotEditEdgeColor() - " << sourceNode << " -> "
+        qDebug() << "MW::slotEditEdgeColor() - " << sourceNode << "->"
                  << targetNode << " newColor "
                  << newColor;
         activeGraph->edgeColorSet( sourceNode, targetNode, newColor);
@@ -13148,7 +13149,7 @@ void MainWindow::slotOptionsNodeNumbersInside(bool toggle){
         slotOptionsNodeNumbersVisibility(true);
 
     appSettings["initNodeNumbersInside"] = (toggle) ? "true":"false";
-    graphicsWidget -> setNumbersInsideNodes(toggle);
+    graphicsWidget->setNumbersInsideNodes(toggle);
     optionsNodeNumbersVisibilityAct->setChecked (toggle);
 
     if (toggle){
@@ -13644,14 +13645,14 @@ void MainWindow::slotOptionsCanvasIndexMethod(const QString &method) {
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
     if ( method == "BspTreeIndex" ) {  // Qt default
-        graphicsWidget->scene() -> setItemIndexMethod(QGraphicsScene::BspTreeIndex);
+        graphicsWidget->scene()->setItemIndexMethod(QGraphicsScene::BspTreeIndex);
 
     }
     else if ( method == "NoIndex" ) {  // for animated scenes
-        graphicsWidget->scene() -> setItemIndexMethod(QGraphicsScene::NoIndex);
+        graphicsWidget->scene()->setItemIndexMethod(QGraphicsScene::NoIndex);
     }
     else { // default
-        graphicsWidget->scene() -> setItemIndexMethod(QGraphicsScene::BspTreeIndex);
+        graphicsWidget->scene()->setItemIndexMethod(QGraphicsScene::BspTreeIndex);
     }
 
     appSettings["canvasIndexMethod"] = method;
@@ -13930,11 +13931,11 @@ void MainWindow::slotHelpCreateTips(){
              "When you start SocNetV for the first time, the application uses "
              "the 'directed data' mode; every edge you create is directed. "
              "To enter the 'undirected data' mode, press CTRL+E+U or enable the "
-             "menu option Edit -> Edges -> Undirected Edges ");
+             "menu option Edit->Edges->Undirected Edges ");
     tips+=tr("If your screen is small, and the canvas appears even smaller "
              "hide the Control and/or Statistics panel. Then the canvas "
              "will expand to the whole application window. "
-             "Open the Settings/Preferences dialog -> Window options and "
+             "Open the Settings/Preferences dialog->Window options and "
              "disable the two panels.");
     tips+=tr("A scale-free network is a network whose degree distribution follows a power law. "
              "SocNetV generates random scale-free networks according to the "
