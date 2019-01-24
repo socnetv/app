@@ -1211,13 +1211,13 @@ void MainWindow::initActions(){
                                            "Renames the current relation of the network (if any)."));
 
 
-    zoomInAct = new QAction(QIcon(":/images/zoomin.png"), tr("Zoom In"), this);
+    zoomInAct = new QAction(QIcon(":/images/zoom_in_24px.svg"), tr("Zoom In"), this);
     zoomInAct->setStatusTip(tr("Zoom in. Better, use the canvas button or press Ctrl++ or press Cltr and use mouse wheel."));
     zoomInAct->setToolTip(tr("Zoom in. Better, use the canvas button or (Ctrl++)"));
     zoomInAct->setWhatsThis(tr("Zoom In.\n\nZooms in the actual network"));
 
 
-    zoomOutAct = new QAction(QIcon(":/images/zoomout.png"), tr("Zoom Out"), this);
+    zoomOutAct = new QAction(QIcon(":/images/zoom_in_24px.svg"), tr("Zoom Out"), this);
     zoomOutAct->setStatusTip(tr("Zoom out. Better, use the canvas button or press Ctrl+- or press Cltr and use mouse wheel."));
     zoomOutAct->setToolTip(tr("Zoom in. Better, use the canvas button or (Ctrl+-)"));
     zoomOutAct->setWhatsThis(tr("Zoom Out.\n\nZooms out of the actual network"));
@@ -1300,7 +1300,7 @@ void MainWindow::initActions(){
 
     connect(editNodeRemoveAct, SIGNAL(triggered()), this, SLOT(slotEditNodeRemove()));
 
-    editNodePropertiesAct = new QAction(QIcon(":/images/properties.png"),tr("Selected Node Properties"), this);
+    editNodePropertiesAct = new QAction(QIcon(":/images/node_properties_24px.svg"),tr("Selected Node Properties"), this);
     editNodePropertiesAct ->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_Period );
     editNodePropertiesAct->setToolTip(tr("Change the basic properties of the selected node(s) \n\n"
                                          "There must be some nodes on the canvas!"));
@@ -1366,7 +1366,7 @@ void MainWindow::initActions(){
             this, SLOT(slotEditNodeSelectedToLine()));
 
 
-    editNodeColorAll = new QAction(QIcon(":/images/nodecolor.png"), tr("Change All Nodes Color (this session)"),	this);
+    editNodeColorAll = new QAction(QIcon(":/images/colorize_48px.svg"), tr("Change All Nodes Color (this session)"),	this);
     editNodeColorAll->setStatusTip(tr("Choose a new color for all nodes (in this session only)."));
     editNodeColorAll->setWhatsThis(tr("Nodes Color\n\n"
                                       "Changes all nodes color at once. \n"
@@ -1374,7 +1374,7 @@ void MainWindow::initActions(){
                                       "To permanently change it, use Settings & Preferences"));
     connect(editNodeColorAll, SIGNAL(triggered()), this, SLOT(slotEditNodeColorAll()) );
 
-    editNodeSizeAllAct = new QAction(QIcon(":/images/resize.png"), tr("Change All Nodes Size (this session)"),	this);
+    editNodeSizeAllAct = new QAction(QIcon(":/images/size_select_24px.svg"), tr("Change All Nodes Size (this session)"),	this);
     editNodeSizeAllAct->setStatusTip(tr("Change the size of all nodes (in this session only)"));
     editNodeSizeAllAct->setWhatsThis(tr("Change All Nodes Size\n\n"
                                         "Click to select and apply a new size for all nodes at once. \n"
@@ -1382,7 +1382,7 @@ void MainWindow::initActions(){
                                         "To permanently change it, use Settings & Preferences"));
     connect(editNodeSizeAllAct, SIGNAL(triggered()), this, SLOT(slotEditNodeSizeAll()) );
 
-    editNodeShapeAll = new QAction(QIcon(":/images/nodeshape.png"), tr("Change All Nodes Shape (this session)"),	this);
+    editNodeShapeAll = new QAction(QIcon(":/images/format_shapes_48px.svg"), tr("Change All Nodes Shape (this session)"),	this);
     editNodeShapeAll->setStatusTip(tr("Change the shape of all nodes (this session only)"));
     editNodeShapeAll->setWhatsThis(tr("Change All Nodes Shape\n\n"
                                       "Click to select and apply a new shape for all nodes at once."
@@ -1403,7 +1403,7 @@ void MainWindow::initActions(){
             this, SLOT( slotEditNodeNumberSize(  )) );
 
 
-    editNodeNumbersColorAct = new QAction(QIcon(":/images/nodenumbercolor.png"),
+    editNodeNumbersColorAct = new QAction(QIcon(":/images/format_color_text_48px.svg"),
                                           tr("Change All Node Numbers Color (this session)"),	this);
     editNodeNumbersColorAct->setStatusTip(tr("Change the color of the numbers of all nodes."
                                              "(in this session only)"));
@@ -1414,7 +1414,7 @@ void MainWindow::initActions(){
                                              "To permanently change it, use Settings & Preferences"));
     connect(editNodeNumbersColorAct, SIGNAL(triggered()), this, SLOT(slotEditNodeNumbersColor()));
 
-    editNodeLabelsSizeAct = new QAction(QIcon(":/images/nodelabelsize.png"), tr("Change All Node Labels Size (this session)"), this);
+    editNodeLabelsSizeAct = new QAction(QIcon(":/images/format_textsize_48px.svg"), tr("Change All Node Labels Size (this session)"), this);
     editNodeLabelsSizeAct->setStatusTip(tr("Change the font size of the labels of all nodes"
                                            "(this session only)"));
     editNodeLabelsSizeAct->setWhatsThis(tr("Node Labels Size\n\n"
@@ -1423,7 +1423,7 @@ void MainWindow::initActions(){
                                            "To permanently change it, use Settings & Preferences"));
     connect(editNodeLabelsSizeAct, SIGNAL(triggered()), this, SLOT(slotEditNodeLabelSize()) );
 
-    editNodeLabelsColorAct = new QAction(QIcon(":/images/nodelabelcolor.png"), tr("Change All Node Labels Color (this session)"),	this);
+    editNodeLabelsColorAct = new QAction(QIcon(":/images/format_color_text_48px.svg"), tr("Change All Node Labels Color (this session)"),	this);
     editNodeLabelsColorAct->setStatusTip(tr("Change the color of the labels of all nodes "
                                             "(for this session only)"));
     editNodeLabelsColorAct->setWhatsThis(tr("Labels Color\n\n"
@@ -1460,26 +1460,26 @@ void MainWindow::initActions(){
                                        "nodes for the edge to remove."));
     connect(editEdgeRemoveAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeRemove()));
 
-    editEdgeLabelAct = new QAction(QIcon(":/images/letters.png"), tr("Change Edge Label"), this);
+    editEdgeLabelAct = new QAction(QIcon(":/images/format_textsize_48px.svg"), tr("Change Edge Label"), this);
     editEdgeLabelAct->setStatusTip(tr("Change the Label of an Edge"));
     editEdgeLabelAct->setWhatsThis(tr("Change Edge Label\n\n"
                                       "Changes the label of an Edge"));
     connect(editEdgeLabelAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeLabel()));
 
 
-    editEdgeColorAct = new QAction(QIcon(":/images/colorize.png"),tr("Change Edge Color"),	this);
+    editEdgeColorAct = new QAction(QIcon(":/images/colorize_48px.svg"),tr("Change Edge Color"),	this);
     editEdgeColorAct->setStatusTip(tr("Change the Color of an Edge"));
     editEdgeColorAct->setWhatsThis(tr("Change Edge Color\n\n"
                                       "Changes the Color of an Edge"));
     connect(editEdgeColorAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeColor()));
 
-    editEdgeWeightAct = new QAction(QIcon(":/images/edgeweight.png") ,tr("Change Edge Weight"), this);
+    editEdgeWeightAct = new QAction(QIcon(":/images/line_weight_48px.svg") ,tr("Change Edge Weight"), this);
     editEdgeWeightAct->setStatusTip(tr("Change the weight of an Edge"));
     editEdgeWeightAct->setWhatsThis(tr("Edge Weight\n\n"
                                        "Changes the Weight of an Edge"));
     connect(editEdgeWeightAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeWeight()));
 
-    editEdgeColorAllAct = new QAction(QIcon(":/images/edgecolor.png"), tr("Change All Edges Color"), this);
+    editEdgeColorAllAct = new QAction(QIcon(":/images/colorize_48px.svg"), tr("Change All Edges Color"), this);
     editEdgeColorAllAct->setStatusTip(tr("Change the color of all Edges."));
     editEdgeColorAllAct->setWhatsThis(tr("All Edges Color\n\n"
                                          "Changes the color of all Edges"));
@@ -3355,7 +3355,7 @@ void MainWindow::initActions(){
             this, SLOT(slotOptionsEdgesBezier(bool)) );
 
 
-    changeBackColorAct = new QAction(QIcon(":/images/color.png"), tr("Change Background Color"), this);
+    changeBackColorAct = new QAction(QIcon(":/images/format_color_fill_48px.svg"), tr("Change Background Color"), this);
     changeBackColorAct->setStatusTip(tr("Change the canvasbackground color"));
     changeBackColorAct->setWhatsThis(tr("Background Color\n\n"
                                         "Changes the background color of the canvas"));
@@ -3831,7 +3831,7 @@ void MainWindow::initMenuBar() {
     nodeOptionsMenu->addAction (optionsNodeNumbersInsideAct);
 
     edgeOptionsMenu=new QMenu(tr("Edges..."));
-    edgeOptionsMenu->setIcon(QIcon(":/images/line.png"));
+    edgeOptionsMenu->setIcon(QIcon(":/images/edges_48px.svg"));
 
     optionsMenu->addMenu (edgeOptionsMenu);
     edgeOptionsMenu->addAction (optionsEdgesVisibilityAct);
@@ -3888,15 +3888,13 @@ void MainWindow::initToolBar(){
     toolBar->addAction (networkOpen);
     toolBar->addAction (networkSave);
     toolBar->addAction (networkPrint);
-    toolBar->addSeparator();
-
 
     toolBar->addSeparator();
 
     //Create relation select widget
-    QLabel *labelRelationSelect= new QLabel;
-    labelRelationSelect ->setText(tr("Relations:"));
-    toolBar->addWidget (labelRelationSelect);
+//    QLabel *labelRelationSelect= new QLabel;
+//    labelRelationSelect ->setText(tr("Relations:"));
+//    toolBar->addWidget (labelRelationSelect);
     toolBar->addAction (editRelationPreviousAct);
     editRelationChangeCombo = new QComboBox;
     editRelationChangeCombo ->setEditable(true);
@@ -3920,25 +3918,30 @@ void MainWindow::initToolBar(){
     toolBar->addAction (editRelationAddAct);
 
     toolBar->addSeparator();
-    QLabel *labelEditNodes= new QLabel;
-    labelEditNodes ->setText(tr("Nodes:"));
-    toolBar->addWidget (labelEditNodes);
+
+//    QLabel *labelEditNodes= new QLabel;
+//    labelEditNodes ->setText(tr("Nodes:"));
+//    toolBar->addWidget (labelEditNodes);
     toolBar->addAction (editNodeAddAct);
     toolBar->addAction (editNodeRemoveAct);
     toolBar->addAction (editNodeFindAct);
     toolBar->addAction(editNodePropertiesAct );
+
     toolBar->addSeparator();
-    QLabel *labelEditEdges= new QLabel;
-    labelEditEdges ->setText(tr("Edges:"));
-    toolBar->addWidget (labelEditEdges);
+
+//    QLabel *labelEditEdges= new QLabel;
+//    labelEditEdges ->setText(tr("Edges:"));
+//    toolBar->addWidget (labelEditEdges);
 
     toolBar->addAction (editEdgeAddAct);
     toolBar->addAction (editEdgeRemoveAct);
     toolBar->addAction (editFilterEdgesByWeightAct);
+
     toolBar->addSeparator();
-    QLabel *labelApplicationIcons = new QLabel;
-    labelApplicationIcons ->setText(tr("Settings:"));
-    toolBar->addWidget(labelApplicationIcons);
+
+//    QLabel *labelApplicationIcons = new QLabel;
+//    labelApplicationIcons ->setText(tr("Settings:"));
+//    toolBar->addWidget(labelApplicationIcons);
     toolBar->addAction(openSettingsAct);
     toolBar->addSeparator();
     toolBar->addAction ( QWhatsThis::createAction (this));
@@ -4909,7 +4912,7 @@ void MainWindow::initWindowLayout() {
     zoomInBtn->setAutoRepeat(true);
     zoomInBtn->setAutoRepeatInterval(33);
     zoomInBtn->setAutoRepeatDelay(0);
-    zoomInBtn->setIcon(QPixmap(":/images/zoomin.png"));
+    zoomInBtn->setIcon(QPixmap(":/images/zoom_in_24px.svg"));
     zoomInBtn->setIconSize(iconSize);
 
     zoomOutBtn = new QToolButton;
@@ -4923,7 +4926,7 @@ void MainWindow::initWindowLayout() {
     zoomOutBtn->setAutoRepeat(true);
     zoomOutBtn->setAutoRepeatInterval(33);
     zoomOutBtn->setAutoRepeatDelay(0);
-    zoomOutBtn->setIcon(QPixmap(":/images/zoomout.png"));
+    zoomOutBtn->setIcon(QPixmap(":/images/zoom_out_24px.svg"));
     zoomOutBtn->setIconSize(iconSize);
 
     zoomSlider = new QSlider;

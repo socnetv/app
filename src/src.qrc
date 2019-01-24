@@ -134,5 +134,17 @@
         <file>images/clear_48px.svg</file>
         <file>images/add_48px.svg</file>
         <file>images/search_48px.svg</file>
+        <file>images/zoom_in_24px.svg</file>
+        <file>images/zoom_out_24px.svg</file>
+        <file>images/colorize_48px.svg</file>
+        <file>images/format_color_text_48px.svg</file>
+        <file>images/format_color_fill_48px.svg</file>
+        <file>images/format_shapes_48px.svg</file>
+        <file>images/size_select_24px.svg</file>
+        <file>images/resize.svg</file>
+        <file>images/format_textsize_48px.svg</file>
+        <file>images/line_weight_48px.svg</file>
+        <file>images/node_properties_24px.svg</file>
+        <file>images/edges_48px.svg</file>
     </qresource>
 </RCC>

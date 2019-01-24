@@ -22,6 +22,16 @@ QStatusBar {
     font-size: 11px;
 }
 
+QMainWindow::separator {
+    background: yellow;
+    width: 10px; /* when vertical */
+    height: 10px; /* when horizontal */
+}
+
+QMainWindow::separator:hover {
+    background: red;
+}
+
 QGridLayout {
     margin:0;
     padding:0;
@@ -62,6 +72,13 @@ QMenu::item:selected {
     background: #0277BD;
     color: #fff;
 }
+
+QMenu::separator {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+
 
 QToolBar {
     background-color: #eceff1;
@@ -143,23 +160,7 @@ QPushButton#toolBoxLayoutForceDirectedApplyButton {
 }
 
 
-/* A QLabel is a QFrame ... */
-QLabel {
-    border: none;
-    padding: 0;
-    background: none;
-}
-/* A QToolTip is a QLabel ... */
-QToolTip {
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    padding: 5px;
-    border-radius: 1px;
-    opacity: 100;
-    font-size: 11px;
-}
-
-
-QComboBox, QLineEdit, QSpinBox, QTextEdit, QListView {
+QComboBox, QLineEdit, QTextEdit, QListView {
     background-color: rgba(255, 255, 255, 0.1);
     color: #444;
     selection-color: #fff;
@@ -206,4 +207,24 @@ QStatusBar {
     padding: 5px 0;
     border: 0px none;
     padding-top: 0;
+}
+
+
+
+
+/* A QLabel is a QFrame ... */
+QLabel {
+    border: none;
+    padding: 0;
+    background: none;
+}
+/* A QToolTip is a QLabel ... */
+QToolTip {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 5px;
+    border-radius: 2px;
+    opacity: 300;
+    min-width: 500px;
+    max-width: 600px;
+    font-size: 11px;
 }
