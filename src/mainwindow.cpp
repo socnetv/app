@@ -972,7 +972,7 @@ void MainWindow::initActions(){
     connect(networkQuit, SIGNAL(triggered()), this, SLOT(close()));
 
 
-    openTextEditorAct = new QAction(QIcon(":/images/texteditor.png"),
+    openTextEditorAct = new QAction(QIcon(":/images/text_edit_48px.svg"),
                                     tr("Open Text Editor"),this);
     openTextEditorAct ->setShortcut(Qt::SHIFT+Qt::Key_F5);
     openTextEditorAct->setStatusTip(tr("Open a text editor "
