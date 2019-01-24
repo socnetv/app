@@ -17,6 +17,7 @@ QListView,
 QStatusBar {
     background-color: #546e7a;
     background-color: #f8f9fa;
+    background-color: #eceff1;
     color: #111;
     font-size: 11px;
 }
@@ -26,7 +27,7 @@ QGridLayout {
     padding:0;
 }
 QMenuBar {
-    background-color: #f8f9fa;
+    background-color: #eceff1;
     padding: 5px 0;
     border: 0px none;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
@@ -45,7 +46,7 @@ QMenuBar::item:selected { /* when selected using mouse or keyboard */
 }
 
 QMenu {
-    background-color: #f8f9fa;
+    background-color: #eceff1;
     color: #222;
     margin: 0; /* no spacing around the menu */
     padding: 0px 10px ;
@@ -63,7 +64,7 @@ QMenu::item:selected {
 }
 
 QToolBar {
-    background-color: #f8f9fa;
+    background-color: #eceff1;
     opacity: 200;
     border: 0 none;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
@@ -201,7 +202,7 @@ QComboBox::down-arrow {
 }
 
 QStatusBar {
-    background-color: #f8f9fa;
+    background-color: #eceff1;
     padding: 5px 0;
     border: 0px none;
     padding-top: 0;
