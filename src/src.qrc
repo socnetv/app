@@ -118,5 +118,21 @@
         <file>images/filter_list_48px.svg</file>
         <file>images/print_48px.svg</file>
         <file>images/file_download_48px.svg</file>
+        <file>images/refresh_48px.svg</file>
+        <file>images/settings_48px.svg</file>
+        <file>images/rotate_right_48px.svg</file>
+        <file>images/rotate_left_48px.svg</file>
+        <file>images/open_48px.svg</file>
+        <file>images/new_folder_48px.svg</file>
+        <file>images/chevron_right_48px.svg</file>
+        <file>images/chevron_left_48px.svg</file>
+        <file>images/edge_add_48px.svg</file>
+        <file>images/edge_remove_48px.svg</file>
+        <file>images/help_48px.svg</file>
+        <file>images/node_remove_48px.svg</file>
+        <file>images/node_add_48px.svg</file>
+        <file>images/clear_48px.svg</file>
+        <file>images/add_48px.svg</file>
+        <file>images/search_48px.svg</file>
     </qresource>
 </RCC>

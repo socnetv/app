@@ -801,7 +801,7 @@ void MainWindow::initActions(){
     /**
     Network menu actions
     */
-    networkNew = new QAction(QIcon(":/images/new.png"), tr("&New"),  this);
+    networkNew = new QAction(QIcon(":/images/new_folder_48px.svg"), tr("&New"),  this);
     networkNew->setShortcut(Qt::CTRL+Qt::Key_N);
     networkNew->setStatusTip(tr("Create a new network"));
     networkNew->setToolTip(tr("New network"));
@@ -810,7 +810,7 @@ void MainWindow::initActions(){
                                 "First, checks if current network needs to be saved."));
     connect(networkNew, SIGNAL(triggered()), this, SLOT(slotNetworkNew()));
 
-    networkOpen = new QAction(QIcon(":/images/open.png"), tr("&Open"), this);
+    networkOpen = new QAction(QIcon(":/images/open_48px.svg"), tr("&Open"), this);
     networkOpen->setShortcut(Qt::CTRL+Qt::Key_O);
     networkOpen->setToolTip(tr("Open network"));
     networkOpen->setStatusTip(tr("Open a GraphML formatted file of social network data."));
@@ -826,27 +826,27 @@ void MainWindow::initActions(){
                 this, SLOT(slotNetworkFileLoadRecent()));
     }
 
-    networkImportGML = new QAction( QIcon(":/images/open.png"), tr("&GML"), this);
+    networkImportGML = new QAction( QIcon(":/images/open_48px.svg"), tr("&GML"), this);
     networkImportGML->setStatusTip(tr("Import GML-formatted file"));
     networkImportGML->setWhatsThis(tr("Import GML\n\n"
                                       "Imports a social network from a GML-formatted file"));
     connect(networkImportGML, SIGNAL(triggered()), this, SLOT(slotNetworkImportGML()));
 
 
-    networkImportPajek = new QAction( QIcon(":/images/open.png"), tr("&Pajek"), this);
+    networkImportPajek = new QAction( QIcon(":/images/open_48px.svg"), tr("&Pajek"), this);
     networkImportPajek->setStatusTip(tr("Import Pajek-formatted file"));
     networkImportPajek->setWhatsThis(tr("Import Pajek \n\n"
                                         "Imports a social network from a Pajek-formatted file"));
     connect(networkImportPajek, SIGNAL(triggered()), this, SLOT(slotNetworkImportPajek()));
 
 
-    networkImportSM = new QAction( QIcon(":/images/open.png"), tr("&Adjacency Matrix"), this);
+    networkImportSM = new QAction( QIcon(":/images/open_48px.svg"), tr("&Adjacency Matrix"), this);
     networkImportSM->setStatusTip(tr("Import Adjacency matrix"));
     networkImportSM->setWhatsThis(tr("Import Sociomatrix \n\n"
                                      "Imports a social network from an Adjacency matrix-formatted file"));
     connect(networkImportSM, SIGNAL(triggered()), this, SLOT(slotNetworkImportSM()));
 
-    networkImportDot = new QAction( QIcon(":/images/open.png"), tr("GraphViz (.dot)"), this);
+    networkImportDot = new QAction( QIcon(":/images/open_48px.svg"), tr("GraphViz (.dot)"), this);
     networkImportDot->setStatusTip(tr("Import dot file"));
     networkImportDot->setWhatsThis(tr("Import GraphViz \n\n"
                                       "Imports a social network from an GraphViz formatted file"));
@@ -854,14 +854,14 @@ void MainWindow::initActions(){
             this, SLOT(slotNetworkImportDot()));
 
 
-    networkImportDL = new QAction( QIcon(":/images/open.png"), tr("UCINET (.dl)..."), this);
+    networkImportDL = new QAction( QIcon(":/images/open_48px.svg"), tr("UCINET (.dl)..."), this);
     networkImportDL->setStatusTip(tr("ImportDL-formatted file (UCINET)"));
     networkImportDL->setWhatsThis(tr("Import UCINET\n\n"
                                      "Imports social network data from a DL-formatted file"));
     connect(networkImportDL, SIGNAL(triggered()), this, SLOT(slotNetworkImportDL()));
 
 
-    networkImportList = new QAction( QIcon(":/images/open.png"), tr("&Edge list"), this);
+    networkImportList = new QAction( QIcon(":/images/open_48px.svg"), tr("&Edge list"), this);
     networkImportList->setStatusTip(tr("Import an edge list file. "));
     networkImportList->setWhatsThis(
                 tr("Import edge list\n\n"
@@ -873,7 +873,7 @@ void MainWindow::initActions(){
             this, SLOT(slotNetworkImportEdgeList()));
 
 
-    networkImportTwoModeSM = new QAction( QIcon(":/images/open.png"), tr("&Two Mode Sociomatrix"), this);
+    networkImportTwoModeSM = new QAction( QIcon(":/images/open_48px.svg"), tr("&Two Mode Sociomatrix"), this);
     networkImportTwoModeSM->setStatusTip(tr("Import two-mode sociomatrix (affiliation network) file"));
     networkImportTwoModeSM->setWhatsThis(tr("Import Two-Mode Sociomatrix \n\n"
                                             "Imports a two-mode network from a sociomatrix file. "
@@ -1172,14 +1172,14 @@ void MainWindow::initActions(){
     Edit menu actions
     */
 
-    editRelationNextAct = new QAction(QIcon(":/images/nextrelation.png"),
+    editRelationNextAct = new QAction(QIcon(":/images/chevron_right_48px.svg"),
                                       tr("Next Relation"),  this);
     editRelationNextAct->setShortcut(Qt::ALT + Qt::Key_Right);
     editRelationNextAct->setToolTip(tr("Goto next graph relation (ALT+Right)"));
     editRelationNextAct->setStatusTip(tr("Load the next relation of the network (if any)."));
     editRelationNextAct->setWhatsThis(tr("Next Relation\n\nLoads the next relation of the network (if any)"));
 
-    editRelationPreviousAct = new QAction(QIcon(":/images/prevrelation.png"),
+    editRelationPreviousAct = new QAction(QIcon(":/images/chevron_left_48px.svg"),
                                           tr("Previous Relation"),  this);
     editRelationPreviousAct->setShortcut(Qt::ALT + Qt::Key_Left);
     editRelationPreviousAct->setToolTip(
@@ -1190,7 +1190,7 @@ void MainWindow::initActions(){
                 tr("Previous Relation\n\n"
                    "Loads the previous relation of the network (if any)"));
 
-    editRelationAddAct = new QAction(QIcon(":/images/addrelation.png"),
+    editRelationAddAct = new QAction(QIcon(":/images/add_48px.svg"),
                                      tr("Add New Relation"),  this);
     editRelationAddAct->setShortcut(Qt::ALT + Qt::CTRL + Qt::Key_N);
     editRelationAddAct->setToolTip(
@@ -1223,19 +1223,19 @@ void MainWindow::initActions(){
     zoomOutAct->setWhatsThis(tr("Zoom Out.\n\nZooms out of the actual network"));
 
 
-    editRotateLeftAct = new QAction(QIcon(":/images/rotateleft.png"), tr("Rotate counterclockwise"), this);
+    editRotateLeftAct = new QAction(QIcon(":/images/rotate_left_48px.svg"), tr("Rotate counterclockwise"), this);
     editRotateLeftAct->setToolTip(tr("Rotate counterclockwise. Better, use the canvas button or (Ctrl+Left Arrow)"));
     editRotateLeftAct->setStatusTip(tr("Rotate counterclockwise. Better, use the canvas button or Ctrl+Left Arrow"));
     editRotateLeftAct ->setWhatsThis(tr("Rotates the network counterclockwise (Ctrl+Left Arrow)"));
 
 
-    editRotateRightAct = new QAction(QIcon(":/images/rotateright.png"), tr("Rotate clockwise"), this);
+    editRotateRightAct = new QAction(QIcon(":/images/rotate_right_48px.svg"), tr("Rotate clockwise"), this);
     editRotateRightAct->setStatusTip(tr("Rotate clockwise. Better, use the canvas button or (Ctrl+Right Arrow)"));
     editRotateRightAct->setToolTip(tr("Rotate clockwise. Better, use the canvas button or (Ctrl+Right Arrow)"));
     editRotateRightAct ->setWhatsThis(tr("Rotates the network clockwise (Ctrl+Right Arrow)"));
 
 
-    editResetSlidersAct = new QAction(QIcon(":/images/reset.png"), tr("Reset Zoom and Rotation"), this);
+    editResetSlidersAct = new QAction(QIcon(":/images/refresh_48px.svg"), tr("Reset Zoom and Rotation"), this);
     editResetSlidersAct->setStatusTip(tr("Reset zoom and rotation to zero (Ctrl+0)"));
     editResetSlidersAct->setToolTip(tr("Reset zoom and rotation to zero (Ctrl+0)"));
     editResetSlidersAct->setWhatsThis(tr("Reset zoom and rotation to zero (Ctrl+0)"));
@@ -1254,7 +1254,7 @@ void MainWindow::initActions(){
     editNodeSelectNoneAct->setWhatsThis(tr("Deselect all\n\n Clears the node selection"));
     connect(editNodeSelectNoneAct, SIGNAL(triggered()), this, SLOT(slotEditNodeSelectNone()));
 
-    editNodeFindAct = new QAction(QIcon(":/images/find.png"), tr("Find Nodes "), this);
+    editNodeFindAct = new QAction(QIcon(":/images/search_48px.svg"), tr("Find Nodes "), this);
     editNodeFindAct->setShortcut(Qt::CTRL + Qt::Key_F);
     editNodeFindAct->setToolTip(tr("Find and select one or more actors by their number or label."));
     editNodeFindAct->setStatusTip(tr("Find and select one or more actors by number or label. "));
@@ -1263,7 +1263,7 @@ void MainWindow::initActions(){
                                      "highlights them by doubling its size. "));
     connect(editNodeFindAct, SIGNAL(triggered()), this, SLOT(slotEditNodeFindDialog()) );
 
-    editNodeAddAct = new QAction(QIcon(":/images/add.png"), tr("Add Node"), this);
+    editNodeAddAct = new QAction(QIcon(":/images/node_add_48px.svg"), tr("Add Node"), this);
     editNodeAddAct->setShortcut(Qt::CTRL + Qt::Key_Period);
     editNodeAddAct->setStatusTip(tr("Add a new node to the network. "
                                     "Alternately, press Ctrl+. or double-click on the canvas. "));
@@ -1282,7 +1282,7 @@ void MainWindow::initActions(){
 
     connect(editNodeAddAct, SIGNAL(triggered()), this, SLOT(slotEditNodeAdd()));
 
-    editNodeRemoveAct = new QAction(QIcon(":/images/remove.png"),tr("Remove Node"), this);
+    editNodeRemoveAct = new QAction(QIcon(":/images/node_remove_48px.svg"),tr("Remove Node"), this);
     editNodeRemoveAct ->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_Period);
     //Single key shortcuts with backspace or del do no work in Mac http://goo.gl/7hz7Dx
     editNodeRemoveAct->setToolTip(tr("Remove selected node(s). \n\n"
@@ -1432,7 +1432,7 @@ void MainWindow::initActions(){
                                             "To permanently change it, use Settings & Preferences"));
     connect(editNodeLabelsColorAct, SIGNAL(triggered()), this, SLOT(slotEditNodeLabelsColor()));
 
-    editEdgeAddAct = new QAction(QIcon(":/images/connect.png"), tr("Add Edge (arc)"),this);
+    editEdgeAddAct = new QAction(QIcon(":/images/edge_add_48px.svg"), tr("Add Edge (arc)"),this);
     editEdgeAddAct->setShortcut(Qt::CTRL + Qt::Key_Slash);
     editEdgeAddAct->setStatusTip(tr("Add a directed edge (arc) from a node to another"));
     editEdgeAddAct->setToolTip(
@@ -1447,7 +1447,7 @@ void MainWindow::initActions(){
                 );
     connect(editEdgeAddAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeAdd()));
 
-    editEdgeRemoveAct = new QAction(QIcon(":/images/disconnect.png"), tr("Remove Edge"), this);
+    editEdgeRemoveAct = new QAction(QIcon(":/images/edge_remove_48px.svg"), tr("Remove Edge"), this);
     editEdgeRemoveAct ->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_Slash);
     editEdgeRemoveAct ->setToolTip(tr("Remove selected edges from the network (Ctrl+Alt+/). \n\n"
                                       "If no edge has been clicked or selected, you will be prompted \n"
@@ -1601,7 +1601,7 @@ void MainWindow::initActions(){
     connect(editFilterNodesIsolatesAct, SIGNAL(toggled(bool)),
             this, SLOT(slotEditFilterNodesIsolates(bool)));
 
-    editFilterEdgesByWeightAct = new QAction(QIcon(":/images/filter.png"), tr("Filter Edges by Weight"), this);
+    editFilterEdgesByWeightAct = new QAction(QIcon(":/images/filter_list_48px.svg"), tr("Filter Edges by Weight"), this);
     editFilterEdgesByWeightAct -> setEnabled(true);
     editFilterEdgesByWeightAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_F));
     editFilterEdgesByWeightAct -> setStatusTip(tr("Temporarily filter edges of some weight out of the network"));
@@ -3395,7 +3395,7 @@ void MainWindow::initActions(){
 
 
 
-    openSettingsAct = new QAction(QIcon(":/images/appsettings.png"), tr("Settings"),	this);
+    openSettingsAct = new QAction(QIcon(":/images/settings_48px.svg"), tr("Settings"),	this);
     openSettingsAct->setShortcut(Qt::CTRL + Qt::Key_Comma);
     openSettingsAct->setEnabled(true);
     openSettingsAct->setToolTip(
@@ -3417,7 +3417,7 @@ void MainWindow::initActions(){
     /**
     Help menu actions
     */
-    helpApp = new QAction(QIcon(":/images/help.png"), tr("Manual"),	this);
+    helpApp = new QAction(QIcon(":/images/help_48px.svg"), tr("Manual"),	this);
     helpApp -> setShortcut(Qt::Key_F1);
     helpApp->setStatusTip(tr("Read the manual..."));
     helpApp->setWhatsThis(tr("Manual\n\nDisplays the documentation of SocNetV"));
@@ -3623,7 +3623,7 @@ void MainWindow::initMenuBar() {
 
     editMenu ->addSeparator();
     filterMenu = new QMenu ( tr("Filter..."));
-    filterMenu -> setIcon(QIcon(":/images/filter.png"));
+    filterMenu -> setIcon(QIcon(":/images/filter_list_48px.svg"));
     editMenu ->addMenu(filterMenu);
 
     filterMenu -> addAction(filterNodesAct );
@@ -4001,7 +4001,7 @@ void MainWindow::initPanels(){
                              << "Cycle"
                              << "Line";
     toolBoxEditNodeSubgraphSelect->addItems(editNodeSubgraphCommands);
-    toolBoxEditNodeSubgraphSelect->setMinimumWidth(120);
+    toolBoxEditNodeSubgraphSelect->setMinimumWidth(90);
 
 
     QLabel *toolBoxEdgeModeSelectLabel  = new QLabel;
@@ -4562,6 +4562,7 @@ void MainWindow::initPanels(){
 
     //create a box with title
     leftPanel = new QGroupBox(tr("Control Panel"));
+    leftPanel -> setMaximumWidth(220);
     leftPanel -> setLayout (controlGrid);
 
 
@@ -4945,7 +4946,7 @@ void MainWindow::initWindowLayout() {
     rotateLeftBtn = new QToolButton;
     rotateLeftBtn->setAutoRepeat(true);
     rotateLeftBtn->setShortcut(Qt::CTRL + Qt::Key_Left);
-    rotateLeftBtn->setIcon(QPixmap(":/images/rotateleft.png"));
+    rotateLeftBtn->setIcon(QPixmap(":/images/rotate_left_48px.svg"));
     rotateLeftBtn->setToolTip(tr("Rotate counterclockwise (Ctrl+Left Arrow)"));
     rotateLeftBtn->setStatusTip(tr("Rotate counterclockwise (Ctrl+Left Arrow)"));
     rotateLeftBtn->setWhatsThis(tr("Rotates counterclockwise (Ctrl+Left Arrow)"));
@@ -4954,7 +4955,7 @@ void MainWindow::initWindowLayout() {
     rotateRightBtn = new QToolButton;
     rotateRightBtn->setAutoRepeat(true);
     rotateRightBtn->setShortcut(Qt::CTRL + Qt::Key_Right);
-    rotateRightBtn ->setIcon(QPixmap(":/images/rotateright.png"));
+    rotateRightBtn ->setIcon(QPixmap(":/images/rotate_right_48px.svg"));
     rotateRightBtn->setToolTip(tr("Rotate clockwise (Ctrl+Right Arrow)"));
     rotateRightBtn->setStatusTip(tr("Rotate clockwise (Ctrl+Right Arrow)"));
     rotateRightBtn->setWhatsThis(tr("Rotates clockwise (Ctrl+Right Arrow)"));
@@ -4984,7 +4985,7 @@ void MainWindow::initWindowLayout() {
     resetSlidersBtn->setStatusTip(tr("Reset zoom and rotation to zero (or press Ctrl+0)"));
     resetSlidersBtn->setToolTip(tr("Reset zoom and rotation to zero (Ctrl+0)"));
     resetSlidersBtn->setWhatsThis(tr("Reset zoom and rotation to zero (Ctrl+0)"));
-    resetSlidersBtn->setIcon(QPixmap(":/images/reset.png"));
+    resetSlidersBtn->setIcon(QPixmap(":/images/refresh_48px.svg"));
     resetSlidersBtn ->setIconSize(iconSize);
     resetSlidersBtn->setEnabled(true);
 
