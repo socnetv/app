@@ -1,0 +1,150 @@
+/* Customize any plain widget that is a child of a QMainWindow. */
+QMainWindow > .QWidget {
+    background-color: #546e7a;
+    color: #fff;
+    font-size: 10px;
+}
+
+QMenuBar,
+QMenu,
+QDialog,
+QToolBar,
+QGroupBox,
+QRadioButton,
+QLabel,
+QPushButton,
+QComboBox,
+QLineEdit,
+QSpinBox,
+QTextEdit,
+QListView {
+    font-size:12px;
+    background-color: #546e7a;
+    color: #fff;
+}
+
+QMenuBar {
+    background-color: #546e7a;
+    padding: 5px;
+
+}
+
+QMenuBar::item {
+    spacing: 5px; /* spacing between menu bar items */
+    padding: 1px 5px;
+    background: transparent;
+    border-radius: 0px;
+    color: #ddd;
+}
+
+QMenuBar::item:selected { /* when selected using mouse or keyboard */
+    background: #819ca9;
+}
+
+QMenu {
+    background-color: #819ca9;
+    margin: 5px 0 0 0; /* no spacing around the menu */
+    padding: 25px ;
+}
+QMenu::item {
+    padding: 5px 25px 5px 20px;
+    border: 1px solid transparent; /* reserve space for selection border */
+}
+
+QMenu::item:selected {
+    border-color: rgba(0, 0, 0, 0.2);
+    background: #546e7a;
+}
+
+QToolBar {
+    background-color: #819ca9;
+    opacity: 200;
+    border-width: 0px;
+    border-color: transparent;
+    color: #fff;
+    padding: 3px;
+}
+
+QGroupBox {
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    margin-top: 20px; /* leave space at the top for the title */
+}
+
+QGroupBox::title {
+    /*subcontrol-position: top left;
+    padding:0;*/
+    color: #ddd;
+    font-style: italic;
+    font-size: 9px;
+
+}
+
+/* Nice to have the background color change when hovered. */
+QRadioButton:hover, QCheckBox:hover {
+    background-color: wheat;
+}
+
+/* We provide a min-width and min-height for push buttons
+   so that they look elegant regardless of the width of the text. */
+QPushButton {
+    background-color: #0277bd;
+    color: #ffffff;
+    border-width: 1px;
+    border-color: rgba(0, 0, 0, 0.2);
+    border-style: solid;
+    border-radius: 2;
+    padding: 0 16px;
+    min-width: 9ex;
+    min-height: 2.5ex;
+}
+
+QPushButton:hover {
+   background-color: #29434e;
+}
+
+/* Increase the padding, so the text is shifted when the button is
+   pressed. */
+QPushButton:pressed {
+    background-color: #d0d67c;
+}
+
+
+
+/* A QLabel is a QFrame ... */
+QLabel {
+    border: none;
+    padding: 0;
+    background: none;
+    color: #fff;
+}
+/* A QToolTip is a QLabel ... */
+QToolTip {
+     border: 2px solid darkkhaki;
+    padding: 5px;
+    border-radius: 3px;
+    opacity: 200;
+}
+
+
+QComboBox, QLineEdit, QSpinBox, QTextEdit, QListView {
+    background-color: #29434e;
+    color: #fff;
+    selection-color: #eee;
+    selection-background-color: #0277bd;
+    font-size: 10px;
+    border-color: rgba(0, 0, 0, 0.2);
+
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    selection-background-color: lightgray;
+}
+
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 15px;
+    border-left-width: 1px;
+    border-left-color: transparent;
+}

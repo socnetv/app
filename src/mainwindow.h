@@ -130,6 +130,9 @@ public:
     MainWindow(const QString &f);
     ~MainWindow();
 
+    void loadStyleSheet(const bool checked);
+    void loadStyleSheetByName(const QString &sheetName);
+
     void initGraph();
     void terminateThreads(const QString &reason);
     void initView();
@@ -561,7 +564,6 @@ private:
     QList<QTextCodec *> codecs;
     QString userSelectedCodecName;
 
-
     QList<TextEditor *> m_textEditors;
 
     QPrinter *printer;
@@ -642,6 +644,9 @@ private:
     QAction *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
     QAction *helpCheckUpdatesApp;
     QAction *openSettingsAct;
+
+    QCheckBox *styleSheetCheck;
+
     QAction *networkWebCrawlerAct;
 
     QAction *netDensity, *analyzeGraphReciprocityAct, *analyzeGraphSymmetryAct;
@@ -680,7 +685,6 @@ private:
     *layoutNodeColorProminence_PC_Act, *layoutNodeColorProminence_BC_Act, *layoutNodeColorProminence_IC_Act,
     *layoutNodeColorProminence_EVC_Act,
     *layoutNodeColorProminence_IRCC_Act,*layoutNodeColorProminence_PRP_Act, *layoutNodeColorProminence_PP_Act;
-
 
     QAction *strongColorationAct, *regularColorationAct;
     QAction *layoutFDP_Eades_Act, *layoutFDP_FR_Act;
@@ -731,7 +735,6 @@ private:
 
     QDateTime actualDateTime, actualDate, actualTime;
     QTime eTime;     //used  to time algorithms.
-
 
     QNetworkAccessManager *http;
     QNetworkRequest request;

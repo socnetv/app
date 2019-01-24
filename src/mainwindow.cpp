@@ -71,7 +71,6 @@
 
 
 
-
 bool printDebug = false;
 
 
@@ -122,6 +121,8 @@ MainWindow::MainWindow(const QString & m_fileName) {
     appSettings = initSettings();
 
     qInstallMessageHandler( myMessageOutput);
+
+    // loadStyleSheet();
 
     initGraph();
 
@@ -284,9 +285,6 @@ void MainWindow::resizeEvent( QResizeEvent * ) {
                 );
 
 }
-
-
-
 
 
 
@@ -609,6 +607,41 @@ void MainWindow::slotOpenSettingsDialog() {
     m_settingsDialog->exec();
 
     qDebug ()<< appSettings["initBackgroundImage"] ;
+
+}
+
+
+
+/**
+ * @brief Loads a Qt StyleSheet (.qss file defined in project resources)
+ * @param sheetName
+ */
+void MainWindow::loadStyleSheet(const bool checked = true ){
+    if ( checked ) {
+        loadStyleSheetByName("default");
+    }
+    else {
+        loadStyleSheetByName("");
+    }
+
+}
+
+
+
+/**
+ * @brief Loads a Qt StyleSheet (.qss file defined in project resources)
+ * @param sheetName
+ */
+void MainWindow::loadStyleSheetByName(const QString &sheetName) {
+
+    QString styleSheet = "";
+    if ( !sheetName.isEmpty() ) {
+        QFile file(":/qss/" + sheetName.toLower() + ".qss");
+        file.open(QFile::ReadOnly);
+        styleSheet = QString::fromLatin1(file.readAll());
+
+    }
+    qApp->setStyleSheet(styleSheet);
 
 }
 
@@ -3910,6 +3943,13 @@ void MainWindow::initToolBar(){
     toolBar -> addSeparator();
     toolBar -> addAction ( QWhatsThis::createAction (this));
     toolBar -> setIconSize(QSize(16,16));
+    toolBar -> addSeparator();
+
+    styleSheetCheck = new QCheckBox("Load Style", this);
+    connect( styleSheetCheck,&QCheckBox::clicked,
+             this,  &MainWindow::loadStyleSheet );
+
+    toolBar -> addWidget(styleSheetCheck);
 
     qDebug()<< "MW::initToolBar() - Finished";
 }
@@ -3938,7 +3978,6 @@ void MainWindow::initPanels(){
     QLabel *toolBoxEditNodeSubgraphSelectLabel  = new QLabel;
     toolBoxEditNodeSubgraphSelectLabel->setText(tr("Subgraph:"));
     toolBoxEditNodeSubgraphSelectLabel->setMinimumWidth(90);
-    this->setStyleSheet("QLabel {font-size:10px}");
     toolBoxEditNodeSubgraphSelectLabel->setStatusTip(
                 tr("Create a basic subgraph with selected nodes."));
     toolBoxEditNodeSubgraphSelect = new QComboBox;
@@ -8100,23 +8139,23 @@ void MainWindow::slotNetworkRandomRingLattice(){
         statusMessage( "You did not enter an integer. Aborting.");
         return;
     }
+
     int degree = QInputDialog::getInt(
                 this,
                 tr("Create ring lattice..."),
                 tr("Now, enter an even number d. \n"
                    "This is the total number of edges each new node will have:"),
                 2, 2, newNodes-1, 2, &ok);
-    if ( (degree% 2)==1 ) {
+
+    if ( (degree % 2) == 1 ) {
         QMessageBox::critical(this, "Error",tr(" Sorry. I cannot create such a network. "
                                                "Degree must be even number"), "OK",0);
         return;
     }
 
-
     initApp();
 
     activeGraph->randomNetRingLatticeCreate(newNodes, degree, true );
-
 
     setWindowTitle("Untitled ring-lattice network");
     //qreal avGraphDistance=activeGraph->graphDistanceGeodesicAverage();

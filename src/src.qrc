@@ -113,5 +113,6 @@
         <file>images/transposematrix.png</file>
         <file>images/cocitation.png</file>
         <file>images/webcrawler2.png</file>
+        <file>qss/default.qss</file>
     </qresource>
 </RCC>
