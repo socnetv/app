@@ -1500,7 +1500,7 @@ void MainWindow::initActions(){
     connect(editEdgeSymmetrizeAllAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeSymmetrizeAll()));
 
 
-    editEdgeSymmetrizeStrongTiesAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Symmetrize Edges by Strong Ties"), this);
+    editEdgeSymmetrizeStrongTiesAct= new QAction(QIcon(":/images/symmetrize_48px.svg"), tr("Symmetrize Edges by Strong Ties"), this);
     editEdgeSymmetrizeStrongTiesAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_T));
     editEdgeSymmetrizeStrongTiesAct->setStatusTip(tr("Create a new symmetric relation by counting reciprocated ties only (strong ties)."));
     editEdgeSymmetrizeStrongTiesAct->setWhatsThis(
@@ -3599,7 +3599,7 @@ void MainWindow::initMenuBar() {
 
 
     editEdgeMenu = new QMenu(tr("Edges..."));
-    editEdgeMenu->setIcon(QIcon(":/images/line.png"));
+    editEdgeMenu->setIcon(QIcon(":/images/edges_48px.svg"));
     editMenu-> addMenu (editEdgeMenu);
     editEdgeMenu->addAction(editEdgeAddAct);
     editEdgeMenu->addAction(editEdgeRemoveAct);

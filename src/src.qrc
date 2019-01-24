@@ -146,5 +146,6 @@
         <file>images/line_weight_48px.svg</file>
         <file>images/node_properties_24px.svg</file>
         <file>images/edges_48px.svg</file>
+        <file>images/symmetrize_48px.svg</file>
     </qresource>
 </RCC>
