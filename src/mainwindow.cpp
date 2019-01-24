@@ -884,14 +884,14 @@ void MainWindow::initActions(){
             this, SLOT(slotNetworkImportTwoModeSM()));
 
 
-    networkSave = new QAction(QIcon(":/images/save.png"), tr("&Save"),  this);
+    networkSave = new QAction(QIcon(":/images/file_download_48px.svg"), tr("&Save"),  this);
     networkSave->setShortcut(Qt::CTRL+Qt::Key_S);
     networkSave->setStatusTip(tr("Save social network to a file"));
     networkSave->setWhatsThis(tr("Save.\n\n"
                                  "Saves the social network to file"));
     connect(networkSave, SIGNAL(triggered()), this, SLOT(slotNetworkSave()));
 
-    networkSaveAs = new QAction(QIcon(":/images/save.png"), tr("Save &As..."),  this);
+    networkSaveAs = new QAction(QIcon(":/images/file_download_48px.svg"), tr("Save &As..."),  this);
     networkSaveAs->setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_S);
     networkSaveAs->setStatusTip(tr("Save network under a new filename"));
     networkSaveAs->setWhatsThis(tr("Save As\n\n"
@@ -917,33 +917,33 @@ void MainWindow::initActions(){
                                       "Exports the social network to a PDF document"));
     connect(networkExportPDF, SIGNAL(triggered()), this, SLOT(slotNetworkExportPDF()));
 
-    networkExportSM = new QAction( QIcon(":/images/save.png"), tr("&Adjacency Matrix"), this);
+    networkExportSM = new QAction( QIcon(":/images/file_download_48px.svg"), tr("&Adjacency Matrix"), this);
     networkExportSM->setStatusTip(tr("Export social network to an adjacency/sociomatrix file"));
     networkExportSM->setWhatsThis(tr("Export network to Adjacency format\n\n"
                                      "Exports the social network to an "
                                      "adjacency matrix-formatted file"));
     connect(networkExportSM, SIGNAL(triggered()), this, SLOT(slotNetworkExportSM()));
 
-    networkExportPajek = new QAction( QIcon(":/images/save.png"), tr("&Pajek"), this);
+    networkExportPajek = new QAction( QIcon(":/images/file_download_48px.svg"), tr("&Pajek"), this);
     networkExportPajek->setStatusTip(tr("Export social network to a Pajek-formatted file"));
     networkExportPajek->setWhatsThis(tr("Export Pajek \n\n"
                                         "Exports the social network to a Pajek-formatted file"));
     connect(networkExportPajek, SIGNAL(triggered()), this, SLOT(slotNetworkExportPajek()));
 
 
-    networkExportList = new QAction( QIcon(":/images/save.png"), tr("&List"), this);
+    networkExportList = new QAction( QIcon(":/images/file_download_48px.svg"), tr("&List"), this);
     networkExportList->setStatusTip(tr("Export to List-formatted file. "));
     networkExportList->setWhatsThis(tr("Export List\n\n"
                                        "Exports the network to a List-formatted file"));
     connect(networkExportList, SIGNAL(triggered()), this, SLOT(slotNetworkExportList()));
 
-    networkExportDL = new QAction( QIcon(":/images/save.png"), tr("&DL..."), this);
+    networkExportDL = new QAction( QIcon(":/images/file_download_48px.svg"), tr("&DL..."), this);
     networkExportDL->setStatusTip(tr("Export network to UCINET-formatted file"));
     networkExportDL->setWhatsThis(tr("Export UCINET\n\n"
                                      "Exports the active network to a DL-formatted"));
     connect(networkExportDL, SIGNAL(triggered()), this, SLOT(slotNetworkExportDL()));
 
-    networkExportGW = new QAction( QIcon(":/images/save.png"), tr("&GW..."), this);
+    networkExportGW = new QAction( QIcon(":/images/file_download_48px.svg"), tr("&GW..."), this);
     networkExportGW->setStatusTip(tr("Export to GW-formatted file"));
     networkExportGW->setWhatsThis(tr("Export\n\n"
                                      "Exports the active network to a GW formatted file"));
@@ -954,7 +954,7 @@ void MainWindow::initActions(){
     networkClose->setWhatsThis(tr("Close \n\nCloses the actual network"));
     connect(networkClose, SIGNAL(triggered()), this, SLOT(slotNetworkClose()));
 
-    networkPrint = new QAction(QIcon(":/images/print.png"), tr("&Print"), this);
+    networkPrint = new QAction(QIcon(":/images/print_48px.svg"), tr("&Print"), this);
     networkPrint->setShortcut(Qt::CTRL+Qt::Key_P);
     networkPrint->setStatusTip(tr("Send the currrent social network to the printer"));
     networkPrint->setWhatsThis(tr("Print \n\n"
@@ -4065,34 +4065,23 @@ void MainWindow::initPanels(){
 
 
     //create a grid layout for Edit buttons
-    QGridLayout *editNodesGrid = new QGridLayout;
-    editNodesGrid -> addWidget(toolBoxEditNodeSubgraphSelectLabel, 0,0);
-    editNodesGrid -> addWidget(toolBoxEditNodeSubgraphSelect, 0,1);
 
-    QGroupBox *editNodesGroupBox= new QGroupBox(tr("Nodes"));
-    editNodesGroupBox->setLayout(editNodesGrid);
+    QGridLayout *editGrid = new QGridLayout;
+    editGrid -> addWidget(toolBoxEditNodeSubgraphSelectLabel, 0,0);
+    editGrid -> addWidget(toolBoxEditNodeSubgraphSelect, 0,1);
+    editGrid -> addWidget(toolBoxEdgeModeSelectLabel,1,0);
+    editGrid -> addWidget(toolBoxEditEdgeModeSelect,1,1);
+    editGrid -> addWidget(toolBoxSymmetrizeSelectLabel,2,0);
+    editGrid -> addWidget(toolBoxEditEdgeSymmetrizeSelect,2,1);
 
-    QGridLayout *editEdgeGrid = new QGridLayout;
-    editEdgeGrid -> addWidget(toolBoxEdgeModeSelectLabel,0,0);
-    editEdgeGrid -> addWidget(toolBoxEditEdgeModeSelect,0,1);
-    editEdgeGrid -> addWidget(toolBoxSymmetrizeSelectLabel,1,0);
-    editEdgeGrid -> addWidget(toolBoxEditEdgeSymmetrizeSelect,1,1);
-
-    QGroupBox *editEdgeGroupBox= new QGroupBox(tr("Edges"));
-    editEdgeGroupBox->setLayout(editEdgeGrid);
-
-    QGridLayout *EditGrid = new QGridLayout;
-    EditGrid -> addWidget(editNodesGroupBox, 0,0,1,2);
-    EditGrid -> addWidget(editEdgeGroupBox,1,0,1,2);
-    EditGrid -> setSpacing(5);
-    EditGrid -> setContentsMargins(5, 5, 5, 5);
+    editGrid -> setSpacing(5);
+    editGrid -> setContentsMargins(15, 5, 15, 5);
 
     //create a groupbox "Edit" - Inside, display the grid layout of widgets
     QGroupBox *editGroupBox= new QGroupBox(tr("Edit"));
-    editGroupBox->setLayout(EditGrid);
+    editGroupBox->setLayout(editGrid);
     editGroupBox->setMaximumWidth(255);
     editGroupBox->setMinimumHeight(100);
-
 
     //create widgets for the "Analysis" box
     QLabel *toolBoxAnalysisMatricesSelectLabel = new QLabel;
@@ -4171,7 +4160,7 @@ void MainWindow::initPanels(){
                "between its neighbors divided by the number of links that could "
                "possibly exist between them. "
                "Quantifies how close each actor and its neighbors are to form "
-               "a complete subgraph (clique)");
+               "a complete subgraph (clique)</p>");
     toolBoxAnalysisCohesionSelect -> setToolTip( helpMessage );
     toolBoxAnalysisCohesionSelect -> setWhatsThis(helpMessage);
 
@@ -4458,6 +4447,7 @@ void MainWindow::initPanels(){
     toolBoxLayoutByIndexTypeSelect->setMinimumWidth(120);
 
     toolBoxLayoutByIndexApplyButton = new QPushButton(tr("Apply"));
+    toolBoxLayoutByIndexApplyButton->setObjectName ("toolBoxLayoutByIndexApplyButton");
     toolBoxLayoutByIndexApplyButton->setFocusPolicy(Qt::NoFocus);
     toolBoxLayoutByIndexApplyButton->setMinimumHeight(20);
     toolBoxLayoutByIndexApplyButton->setMaximumWidth(60);
@@ -4533,6 +4523,7 @@ void MainWindow::initPanels(){
     toolBoxLayoutForceDirectedSelect->setWhatsThis( helpMessage );
 
     toolBoxLayoutForceDirectedApplyButton = new QPushButton(tr("Apply"));
+    toolBoxLayoutForceDirectedApplyButton->setObjectName ("toolBoxLayoutForceDirectedApplyButton");
     toolBoxLayoutForceDirectedApplyButton->setFocusPolicy(Qt::NoFocus);
     toolBoxLayoutForceDirectedApplyButton->setMinimumHeight(20);
     toolBoxLayoutForceDirectedApplyButton->setMaximumWidth(60);
@@ -4563,15 +4554,15 @@ void MainWindow::initPanels(){
     visualizationBox->setLayout (visualizationBoxLayout );
 
     //Parent box with vertical layout for all boxes of Controls
-    QGridLayout *editGrid = new QGridLayout;
-    editGrid -> addWidget(editGroupBox, 0,0);
-    editGrid -> addWidget(analysisBox, 1, 0);
-    editGrid -> addWidget(visualizationBox, 2, 0);
-    editGrid -> setRowStretch(3,1);   //fix stretch
+    QGridLayout *controlGrid = new QGridLayout;
+    controlGrid -> addWidget(editGroupBox, 0,0);
+    controlGrid -> addWidget(analysisBox, 1, 0);
+    controlGrid -> addWidget(visualizationBox, 2, 0);
+    controlGrid -> setRowStretch(3,1);   //fix stretch
 
     //create a box with title
     leftPanel = new QGroupBox(tr("Control Panel"));
-    leftPanel -> setLayout (editGrid);
+    leftPanel -> setLayout (controlGrid);
 
 
     //
@@ -5409,7 +5400,7 @@ void MainWindow::initApp(){
 
     initFileCodec= "UTF-8";
 
-    networkSave->setIcon(QIcon(":/images/saved.png"));
+    networkSave->setIcon(QIcon(":/images/file_download_48px.svg"));
     networkSave->setEnabled(true);
 
     /** Clear previous network data */
@@ -6611,7 +6602,7 @@ void MainWindow::slotNetworkSaved(const int &status)
         statusMessage( tr("Error! Could not save this file: %1").arg (fileNameNoPath));
     }
     else {
-        networkSave->setIcon(QIcon(":/images/saved.png"));
+        networkSave->setIcon(QIcon(":/images/file_download_48px.svg"));
         networkSave->setEnabled(false);
         setWindowTitle( fileNameNoPath );
         statusMessage( tr("Network saved under filename: %1").arg (fileNameNoPath));
@@ -7055,7 +7046,7 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
                                             " which is the file-format using Import Menu.","OK",0);
         break;
     }
-    networkSave->setIcon(QIcon(":/images/saved.png"));
+    networkSave->setIcon(QIcon(":/images/file_download_48px.svg"));
     networkSave->setEnabled(false);
 
     QApplication::restoreOverrideCursor();
@@ -8343,7 +8334,7 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
        << "density"<<density;
 
     if (graphStatus) {
-        networkSave->setIcon(QIcon(":/images/save.png"));
+        networkSave->setIcon(QIcon(":/images/file_download_48px.svg"));
         networkSave->setEnabled(true);
     }
 
@@ -8546,7 +8537,7 @@ void MainWindow::slotEditNodePosition(const int &nodeNumber,
     qDebug("MW::slotEditNodePosition() for %i with x %i and y %i", nodeNumber, x, y);
     activeGraph->vertexPosSet(nodeNumber, x, y);
     if (!activeGraph->graphSaved()) {
-        networkSave->setIcon(QIcon(":/images/save.png"));
+        networkSave->setIcon(QIcon(":/images/file_download_48px.svg"));
         networkSave->setEnabled(true);
     }
 }

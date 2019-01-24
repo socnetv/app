@@ -114,5 +114,9 @@
         <file>images/cocitation.png</file>
         <file>images/webcrawler2.png</file>
         <file>qss/default.qss</file>
+        <file>images/arrow_down_48px.svg</file>
+        <file>images/filter_list_48px.svg</file>
+        <file>images/print_48px.svg</file>
+        <file>images/file_download_48px.svg</file>
     </qresource>
 </RCC>
