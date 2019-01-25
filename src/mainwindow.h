@@ -204,7 +204,10 @@ public slots:
     bool slotNetworkExportBMP();
     bool slotNetworkExportPNG();
     void slotNetworkExportPDFDialog();
-    void slotNetworkExportPDF(QString &filename, const int &dpi, const QPrinter::PrinterMode printerMode);
+    void slotNetworkExportPDF(QString &filename,
+                              const QPrinter::Orientation &orientation,
+                              const int &dpi,
+                              const QPrinter::PrinterMode printerMode);
     void slotNetworkExportPajek();
     void slotNetworkExportSM();
     bool slotNetworkExportDL();

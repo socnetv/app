@@ -41,6 +41,21 @@ DialogExportPDF::DialogExportPDF (QWidget *parent) : QDialog (parent)
     resList << "Screen" << "Print";
     ui.qualitySelect->addItems(resList);
 
+
+    QList<int> dpiList;
+
+    int dpi=0;
+    QPrinter p;
+    foreach (dpi, p.supportedResolutions()) {
+        ui.resolutionSelect->addItem(QString::number(dpi));
+    }
+
+
+
+    QStringList orientationList;
+    orientationList << "Portrait" << "Landscape";
+    ui.orientationSelect->addItems(orientationList);
+
     /**
      * dialog signals to slots
      */
@@ -63,12 +78,15 @@ DialogExportPDF::DialogExportPDF (QWidget *parent) : QDialog (parent)
  */
 void DialogExportPDF::getFilename(){
 
-    QString m_fileName = QFileDialog::getSaveFileName(this, tr("Save to pdf"),
+    m_fileName = QFileDialog::getSaveFileName(this, tr("Save to pdf"),
                                                     "",
                                                     tr("PDF (*.pdf)"));
 
     if (!m_fileName.isEmpty()) {
         if (QFileInfo(m_fileName).suffix().isEmpty()) {
+            m_fileName.append(".pdf");
+        }
+        else if ( QString::compare( QFileInfo(m_fileName).suffix() , "pdf", Qt::CaseInsensitive) ) {
             m_fileName.append(".pdf");
         }
         ui.fileEdit->setText(m_fileName);
@@ -104,6 +122,14 @@ void DialogExportPDF::getUserChoices(){
         getFilename();
     }
 
+
+    if ( ui.orientationSelect->currentText().contains("Portrait")) {
+        m_orientation = QPrinter::Portrait;
+    }
+    else {
+        m_orientation = QPrinter::Landscape;
+    }
+
     qDebug()<< "Dialog: emitting userChoices" ;
-    emit userChoices( m_fileName, m_dpi, m_printerMode );
+    emit userChoices( m_fileName, m_orientation, m_dpi, m_printerMode );
 }

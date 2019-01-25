@@ -44,9 +44,13 @@ public slots:
     void getPrinterMode(const QString &mode);
     void getUserChoices ();
 signals:
-    void userChoices( QString &filename, const int &dpi, const QPrinter::PrinterMode printerMode);
+    void userChoices( QString &filename,
+                      const QPrinter::Orientation &orientation,
+                      const int &dpi,
+                      const QPrinter::PrinterMode printerMode);
 private:
     QString m_fileName;
+    QPrinter::Orientation m_orientation;
     QPrinter::PrinterMode m_printerMode;
     int m_dpi;
     Ui::DialogExportPDF ui;

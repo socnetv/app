@@ -813,9 +813,8 @@ void MainWindow::initView() {
  */
 void MainWindow::initActions(){
     qDebug()<< "MW::initActions()";
+
     printer = new QPrinter;
-
-
 
     /**
     Network menu actions
@@ -6669,7 +6668,7 @@ void MainWindow::slotNetworkClose() {
 void MainWindow::slotNetworkPrint() {
     statusMessage( tr("Printing..."));
     QPrintDialog dialog(printer, this);
-    if ( dialog.exec() )   {
+    if ( dialog.exec() == QDialog::Accepted )   {
         QPainter painter(printer);
         graphicsWidget->render(&painter);
     };
@@ -7382,6 +7381,7 @@ void MainWindow::slotNetworkExportPDFDialog()
  *
  */
 void MainWindow::slotNetworkExportPDF(QString &m_fileName,
+                                      const QPrinter::Orientation &orientation,
                                       const int &dpi,
                                       const QPrinter::PrinterMode printerMode=QPrinter::ScreenResolution
                                       ){
@@ -7401,6 +7401,7 @@ void MainWindow::slotNetworkExportPDF(QString &m_fileName,
         // dont set to HighResolution - it breaks pdf export
         QPrinter printer(printerMode);
         printer.setOutputFormat(QPrinter::PdfFormat);
+        printer.setOrientation(orientation);
         printer.setOutputFileName(m_fileName);
         QPainter p;
         p.begin(&printer);
