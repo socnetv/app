@@ -648,7 +648,23 @@ void MainWindow::loadStyleSheetByName(const QString &sheetName) {
 
 }
 
-
+/**
+ * @brief Fixes known bugs in QProgressDialog class.
+   i.e. Workaround for macOS-only Qt bug: QTBUG-65750, QTBUG-70357.
+   QProgressDialog too small and too narrow to fit the text of its label
+ * @param dialog
+ */
+void MainWindow::polishProgressDialog(QProgressDialog* dialog)
+{
+#ifdef Q_OS_MAC
+    // Workaround for macOS-only Qt bug; see: QTBUG-65750, QTBUG-70357.
+    const int margin = dialog->fontMetrics().width("X");
+    dialog->resize(dialog->width() + 2 * margin, dialog->height());
+    dialog->show();
+#else
+    Q_UNUSED(dialog);
+#endif
+}
 
 
 /**
@@ -13098,13 +13114,21 @@ void MainWindow::slotProgressBoxCreate(const int &max, const QString &msg){
                                                            0,
                                                            duration,
                                                            this);
+        polishProgressDialog(progressBox);
+
         progressBox->setWindowModality(Qt::WindowModal);
+        progressBox->setWindowModality(Qt::ApplicationModal);
+
         connect ( activeGraph, &Graph::signalProgressBoxUpdate,
                   progressBox, &QProgressDialog::setValue );
 
         progressBox->setMinimumDuration(0);
         progressBox->setAutoClose(true);
         progressBox->setAutoReset(true);
+
+
+
+
         progressDialogs.push(progressBox);
     }
 

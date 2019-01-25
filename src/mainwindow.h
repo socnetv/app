@@ -135,6 +135,8 @@ public:
     void loadStyleSheet(const bool checked);
     void loadStyleSheetByName(const QString &sheetName);
 
+    void polishProgressDialog(QProgressDialog* dialog);
+
     void initGraph();
     void terminateThreads(const QString &reason);
     void initView();
