@@ -148,5 +148,10 @@
         <file>images/edges_48px.svg</file>
         <file>images/symmetrize_48px.svg</file>
         <file>images/text_edit_48px.svg</file>
+        <file>images/file_upload_48px.svg</file>
+        <file>images/layout_levels_24px.svg</file>
+        <file>images/export_photo_48px.svg</file>
+        <file>images/export_pdf_48px.svg</file>
+        <file>images/random_48px.svg</file>
     </qresource>
 </RCC>

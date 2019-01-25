@@ -104,6 +104,8 @@ class DialogClusteringHierarchical;
 
 class DialogWebCrawler;
 
+class DialogExportPDF;
+
 class DialogSettings;
 
 class TextEditor;
@@ -199,7 +201,8 @@ public slots:
     void slotNetworkViewSociomatrixPlotText();
     bool slotNetworkExportBMP();
     bool slotNetworkExportPNG();
-    bool slotNetworkExportPDF();
+    void slotNetworkExportPDFDialog();
+    void slotNetworkExportPDF(QString &filename, const int &dpi, const QPrinter::PrinterMode printerMode);
     void slotNetworkExportPajek();
     void slotNetworkExportSM();
     bool slotNetworkExportDL();
@@ -543,6 +546,8 @@ private:
     DialogWebCrawler *m_WebCrawlerDialog;
     DialogDataSetSelect *m_datasetSelectDialog;
 
+    DialogExportPDF *m_dialogExportPDF;
+
     DialogNodeEdit *m_nodeEditDialog;
     DialogNodeFind *m_nodeFindDialog;
 
@@ -553,12 +558,12 @@ private:
     DialogRandScaleFree *m_randScaleFreeDialog;
     DialogRandRegular *m_randRegularDialog;
     DialogRandLattice *m_randLatticeDialog;
+
     DialogSettings *m_settingsDialog;
     DialogSimilarityPearson *m_dialogSimilarityPearson;
     DialogSimilarityMatches *m_dialogSimilarityMatches;
     DialogDissimilarities *m_dialogdissimilarities;
     DialogClusteringHierarchical *m_dialogClusteringHierarchical;
-
 
     DialogPreviewFile *m_dialogPreviewFile;
     QList<QTextCodec *> codecs;

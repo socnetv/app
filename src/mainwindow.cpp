@@ -50,7 +50,10 @@
 #include "forms/dialogsettings.h"
 
 #include "forms/dialogwebcrawler.h"
+
 #include "forms/dialogpreviewfile.h"
+
+#include "forms/dialogexportpdf.h"
 
 #include "forms/dialogranderdosrenyi.h"
 #include "forms/dialograndsmallworld.h"
@@ -898,24 +901,24 @@ void MainWindow::initActions(){
                                    "Saves the social network under a new filename"));
     connect(networkSaveAs, SIGNAL(triggered()), this, SLOT(slotNetworkSaveAs()));
 
-    networkExportBMP = new QAction(QIcon(":/images/image.png"), tr("&BMP..."), this);
+    networkExportBMP = new QAction(QIcon(":/images/export_photo_48px.svg"), tr("&BMP..."), this);
     networkExportBMP->setStatusTip(tr("Export social network to BMP image"));
     networkExportBMP->setWhatsThis(tr("Export BMP\n\n"
                                       "Exports the social network to a BMP image"));
     connect(networkExportBMP, SIGNAL(triggered()), this, SLOT(slotNetworkExportBMP()));
 
-    networkExportPNG = new QAction( QIcon(":/images/image.png"), tr("&PNG..."), this);
+    networkExportPNG = new QAction( QIcon(":/images/export_photo_48px.svg"), tr("&PNG..."), this);
     networkExportPNG->setStatusTip(tr("Export social network to PNG image"));
     networkExportPNG->setWhatsThis(tr("Export PNG \n\n"
                                       "Exports the social network to a PNG image"));
     connect(networkExportPNG, SIGNAL(triggered()), this, SLOT(slotNetworkExportPNG()));
 
 
-    networkExportPDF = new QAction( QIcon(":/images/pdf.png"), tr("&PDF..."), this);
+    networkExportPDF = new QAction( QIcon(":/images/export_pdf_48px.svg"), tr("&PDF..."), this);
     networkExportPDF->setStatusTip(tr("Export social network to PDF"));
     networkExportPDF->setWhatsThis(tr("Export PDF\n\n"
                                       "Exports the social network to a PDF document"));
-    connect(networkExportPDF, SIGNAL(triggered()), this, SLOT(slotNetworkExportPDF()));
+    connect(networkExportPDF, SIGNAL(triggered()), this, SLOT(slotNetworkExportPDFDialog()));
 
     networkExportSM = new QAction( QIcon(":/images/file_download_48px.svg"), tr("&Adjacency Matrix"), this);
     networkExportSM->setStatusTip(tr("Export social network to an adjacency/sociomatrix file"));
@@ -3477,7 +3480,7 @@ void MainWindow::initMenuBar() {
     networkMenu ->addMenu (recentFilesSubMenu );
     networkMenu->addSeparator();
     importSubMenu = new QMenu(tr("Import ..."));
-    importSubMenu->setIcon(QIcon(":/images/import.png"));
+    importSubMenu->setIcon(QIcon(":/images/file_upload_48px.svg"));
     importSubMenu->addAction(networkImportGML);
     importSubMenu->addAction(networkImportPajek);
     importSubMenu->addAction(networkImportSM);
@@ -3499,7 +3502,7 @@ void MainWindow::initMenuBar() {
     networkMenu->addSeparator();
 
     randomNetworkMenu = new QMenu(tr("Create Random Network..."));
-    randomNetworkMenu->setIcon(QIcon(":/images/random.png"));
+    randomNetworkMenu->setIcon(QIcon(":/images/random_48px.svg"));
     networkMenu ->addMenu (randomNetworkMenu);
 
     randomNetworkMenu->addAction (networkRandomScaleFreeAct);
@@ -3755,7 +3758,7 @@ void MainWindow::initMenuBar() {
     layoutMenu->addSeparator();
 
     layoutLevelProminenceMenu = new QMenu (tr("On Levels by prominence index..."));
-    layoutLevelProminenceMenu->setIcon(QIcon(":/images/net3.png"));
+    layoutLevelProminenceMenu->setIcon(QIcon(":/images/layout_levels_24px.svg"));
     layoutMenu->addMenu (layoutLevelProminenceMenu);
     layoutLevelProminenceMenu->addAction (layoutLevelProminence_DC_Act);
     layoutLevelProminenceMenu->addAction (layoutLevelProminence_CC_Act);
@@ -7334,6 +7337,27 @@ bool MainWindow::slotNetworkExportBMP(){
 
 
 
+/**
+ * @brief Opens the Export to PDF Dialog
+ */
+void MainWindow::slotNetworkExportPDFDialog()
+{
+    qDebug() << "MW::slotNetworkExportPDFDialog()";
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    statusMessage( tr("Opening PDF export dialog. "));
+    m_dialogExportPDF = new DialogExportPDF(this);
+
+    connect( m_dialogExportPDF, &DialogExportPDF::userChoices,
+             this, &MainWindow::slotNetworkExportPDF);
+
+    m_dialogExportPDF->exec();
+}
+
+
 
 
 /**
@@ -7341,26 +7365,25 @@ bool MainWindow::slotNetworkExportBMP(){
  * @return
  *
  */
-bool MainWindow::slotNetworkExportPDF(){
+void MainWindow::slotNetworkExportPDF(QString &m_fileName,
+                                      const int &dpi,
+                                      const QPrinter::PrinterMode printerMode=QPrinter::ScreenResolution
+                                      ){
     qDebug()<< "MW::slotNetworkExportPDF()";
-    if ( !activeNodes() )  {
-        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
-        return false;
-    }
 
-    QString m_fileName = QFileDialog::getSaveFileName(
-                this, tr("Export to PDF"), getLastPath(),
-                tr("Portable Document Format files (*.pdf)"));
+//    QString m_fileName = QFileDialog::getSaveFileName(
+//                this, tr("Export to PDF"), getLastPath(),
+//                tr("Portable Document Format files (*.pdf)"));
     if (m_fileName.isEmpty())  {
         statusMessage( tr("Saving aborted"));
-        return false;
+        return;
     }
     else {
         if (QFileInfo(m_fileName).suffix().isEmpty())
             m_fileName.append(".pdf");
 
         // dont set to HighResolution - it breaks pdf export
-        QPrinter printer(QPrinter::ScreenResolution);
+        QPrinter printer(printerMode);
         printer.setOutputFormat(QPrinter::PdfFormat);
         printer.setOutputFileName(m_fileName);
         QPainter p;
@@ -7376,7 +7399,7 @@ bool MainWindow::slotNetworkExportPDF(){
                              tr("File saved as: ")+tempFileNameNoPath.last() ,
                              "OK",0);
     statusMessage(  tr("Exporting completed") );
-    return true;
+
 }
 
 

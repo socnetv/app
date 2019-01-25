@@ -636,13 +636,13 @@ Matrix& Matrix::productSym( Matrix &a, Matrix & b)  {
                     if ( i>k ) {
                         if (a.item(k,i)!=0 && b.item(k,j)!=0)
                             setItem(i,j, item(i,j)+a.item(k,i)*b.item(k,j));
-                        }
-                        else {
-                            if (a.item(i,k)!=0 && b.item(k,j)!=0)
-                                setItem(i,j, item(i,j)+a.item(i,k)*b.item(k,j));
-                        }
+                    }
+                    else {
+                        if (a.item(i,k)!=0 && b.item(k,j)!=0)
+                            setItem(i,j, item(i,j)+a.item(i,k)*b.item(k,j));
+                    }
         }
-        return *this;
+    return *this;
 }
 
 

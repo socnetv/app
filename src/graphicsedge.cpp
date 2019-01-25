@@ -619,14 +619,14 @@ QVariant GraphicsEdge::itemChange(GraphicsItemChange change, const QVariant &val
         if (value.toBool()) {
             setZValue(ZValueEdgeHighlighted);
             setHighlighted(true);
-            source->setSelected(true);
-            target->setSelected(true);
+            //source->setSelected(true);
+            //target->setSelected(true);
         }
         else{
             setZValue(ZValueEdge);
             setHighlighted(false);
-            source->setSelected(false);
-            target->setSelected(false);
+            //source->setSelected(false);
+            //target->setSelected(false);
         }
         break;
     }

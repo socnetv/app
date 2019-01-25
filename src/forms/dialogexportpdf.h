@@ -2,8 +2,8 @@
  SocNetV: Social Network Visualizer
  version: 2.5
  Written in Qt
- 
-                         dialogedgedichotomization.h  -  description
+
+                         dialogexportpdf.h  -  description
                              -------------------
     copyright         : (C) 2005-2018 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -25,27 +25,33 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef DIALOGEDGEDICHOTOMIZATION_H
-#define DIALOGEDGEDICHOTOMIZATION_H
+#ifndef DIALOGEXPORTPDF_H
+#define DIALOGEXPORTPDF_H
 
 #include <QDialog>
+#include <QPrinter>
 
-#include "ui_dialogedgedichotomization.h"
+#include "ui_dialogexportpdf.h"
 
 
-class DialogEdgeDichotomization : public QDialog
+class DialogExportPDF : public QDialog
 {
     Q_OBJECT
 public:
-    DialogEdgeDichotomization (QWidget *parent = 0);
+    DialogExportPDF (QWidget *parent = 0);
 public slots:
+    void getFilename();
+    void getPrinterMode(const QString &mode);
     void getUserChoices ();
 signals:
-    void userChoices( qreal threshold);
+    void userChoices( QString &filename, const int &dpi, const QPrinter::PrinterMode printerMode);
 private:
-    Ui::DialogEdgeDichotomization ui;
+    QString m_fileName;
+    QPrinter::PrinterMode m_printerMode;
+    int m_dpi;
+    Ui::DialogExportPDF ui;
+
 
 };
 
-
-#endif 
+#endif // DIALOGEXPORTPDF_H

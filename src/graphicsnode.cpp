@@ -321,6 +321,7 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
         break;
     }
     case ItemEnabledHasChanged:{
+        qDebug() << "GraphicsNode::itemChange - enabled changed";
         break;
     }
     case ItemSelectedHasChanged:{
@@ -375,8 +376,6 @@ void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
 void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     update();
-
-
     QGraphicsItem::mouseReleaseEvent(event);
 }
 
