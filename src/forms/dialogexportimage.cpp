@@ -3,7 +3,7 @@
  version: 2.5
  Written in Qt
 
-                         dialogexportpdf.cpp  -  description
+                         dialogexportimage.cpp  -  description
                              -------------------
     copyright         : (C) 2005-2018 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -25,52 +25,39 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#include "dialogexportpdf.h"
-#include "graphicswidget.h"
-#include "ui_dialogexportpdf.h"
+#include "dialogexportimage.h"
+#include "ui_dialogexportimage.h"
 
 #include <QPushButton>
+#include <QImageWriter>
 #include <QDebug>
 #include <QGraphicsColorizeEffect>
 #include <QFileDialog>
 
-DialogExportPDF::DialogExportPDF (QWidget *parent ) :
-    QDialog (parent),
-    ui(new Ui::DialogExportPDF)
+
+DialogExportImage::DialogExportImage(QWidget *parent) :
+    QDialog(parent),
+    ui(new Ui::DialogExportImage)
 {
     ui->setupUi(this);
+    QStringList imgFormats;
+    QByteArray bytes;
+    foreach (bytes, QImageWriter::supportedImageFormats()) {
+        imgFormats << QString(bytes);
+    }
 
-    m_fileName = "";
-
-    m_dpi = 75;
-    m_printerMode = QPrinter::ScreenResolution;
-    m_orientation = QPrinter::Portrait;
-
-    // printer modes
-    QStringList resList;
-    resList << "Screen" << "Print";
-    ui->qualitySelect->addItems(resList);
-
-    QStringList dpiList;
-    dpiList << "75" << "300" << "600" << "1200";
-    ui->resolutionSelect->addItems(dpiList);
-    ui->resolutionSelect->setDisabled(true);
-
-    QStringList orientationList;
-    orientationList << "Portrait" << "Landscape";
-    ui->orientationSelect->addItems(orientationList);
+    ui->formatSelect->addItems(imgFormats);
 
     /**
      * dialog signals to slots
      */
 
     connect (ui->fileDirSelectButton, &QToolButton::clicked,
-             this, &DialogExportPDF::getFilename);
+             this, &DialogExportImage::getFilename);
 
-    connect(ui->qualitySelect, SIGNAL ( currentIndexChanged (const QString &)),
-          this, SLOT(getPrinterMode(const QString &)) );
+    connect(ui->formatSelect, SIGNAL(currentIndexChanged (const QString &)),
+          this, SLOT ( getFormat(const QString &)) );
 
-    connect ( ui->buttonBox,SIGNAL(accepted()), this, SLOT(getUserChoices()) );
 
     /**
       * set default button
@@ -78,31 +65,36 @@ DialogExportPDF::DialogExportPDF (QWidget *parent ) :
     (ui->buttonBox) -> button (QDialogButtonBox::Cancel) -> setDefault(true);
     (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
 
-
 }
 
-
-
-DialogExportPDF::~DialogExportPDF()
+DialogExportImage::~DialogExportImage()
 {
     delete ui;
 }
 
 
-void DialogExportPDF::checkFilename(const QString &fileName){
+/**
+ * @brief Gets the filename of the Image
+ */
+void DialogExportImage::getFilename(){
 
-    m_fileName = fileName;
+    QString m_format = ui->formatSelect->currentText().toLower();
+    QString m_filter = m_format.toUpper() + " (*." + m_format + ")";
+    QString m_fileName = QFileDialog::getSaveFileName(this, tr("Save to image"),
+                                                    "",
+                                                    m_filter);
+
+
 
     if (!m_fileName.isEmpty() && QFileInfo(m_fileName).absoluteDir().exists() ) {
         if ( QFileInfo(m_fileName).suffix().isEmpty() ) {
-            m_fileName.append(".pdf");
+            m_fileName.append("." +m_format);
         }
         else if (  QString::compare(
-                      QFileInfo(m_fileName).suffix() , "pdf", Qt::CaseInsensitive
+                      QFileInfo(m_fileName).suffix() , m_format, Qt::CaseInsensitive
                       )
                   ) {
-            qDebug() << "suffix() : " << QFileInfo(m_fileName).suffix();
-            m_fileName.append(".pdf");
+            m_fileName.append("." +m_format);
         }
         ui->fileEdit->setText(m_fileName);
         ui->fileEdit->setGraphicsEffect(0);
@@ -123,64 +115,28 @@ void DialogExportPDF::checkFilename(const QString &fileName){
 
 }
 
-/**
- * @brief Gets the filename of the PDF
- */
-void DialogExportPDF::getFilename(){
-
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save to pdf"),
-                                                    "",
-                                                    tr("PDF (*.pdf)"));
-
-    checkFilename(fileName);
-}
-
 
 
 /**
- * @brief Gets printer quality mode
+ * @brief Gets the file format of the Image
  */
-void DialogExportPDF::getPrinterMode(const QString &mode){
-    if (!mode.isEmpty() ) {
-//        m_appSettings["canvasUpdateMode"] = mode;
-        if ( mode == "screen" ){
-            m_printerMode = QPrinter::ScreenResolution;
-        }
-        else if ( mode == "print" ) {
-            m_printerMode = QPrinter::PrinterResolution;
-
-        }
+void DialogExportImage::getFormat(const QString &format){
+    QString m_format = format.toLower();
+    qDebug() << m_format;
+    QString m_fileName = ui->fileEdit->text();
+    qDebug() << m_fileName;
+    qDebug() << QFileInfo(m_fileName).suffix();
+    if (  QString::compare(
+                          QFileInfo(m_fileName).suffix() , m_format, Qt::CaseInsensitive
+                          )
+          ) {
+        m_fileName = QFileInfo(m_fileName).absolutePath() + QDir::separator() + QFileInfo(m_fileName).completeBaseName().append("."+m_format);
+        qDebug() << m_fileName;
     }
+
+    ui->fileEdit->setText(m_fileName);
 }
 
 
 
 
-void DialogExportPDF::getUserChoices(){
-    qDebug()<< "Dialog: gathering Data!...";
-
-    // User might have entered the filename manually!
-    if (m_fileName.isEmpty()) {
-        getFilename();
-    }
-
-    if ( ui->qualitySelect->currentText().contains("Screen")){
-        m_printerMode = QPrinter::ScreenResolution;
-    }
-    else {
-        m_printerMode = QPrinter::PrinterResolution;
-    }
-
-    m_dpi = ui->resolutionSelect->currentText().toInt();
-
-    if ( ui->orientationSelect->currentText().contains("Portrait")) {
-        m_orientation = QPrinter::Portrait;
-    }
-    else {
-        m_orientation = QPrinter::Landscape;
-    }
-
-    qDebug()<< "Dialog: emitting userChoices" ;
-
-    emit userChoices( m_fileName, m_orientation, m_dpi, m_printerMode );
-}

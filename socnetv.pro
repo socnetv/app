@@ -56,7 +56,8 @@ FORMS += src/forms/dialogfilteredgesbyweight.ui \
     src/forms/dialognodeedit.ui \
     src/forms/dialognodefind.ui \
     src/forms/dialogedgedichotomization.ui \
-    src/forms/dialogexportpdf.ui
+    src/forms/dialogexportpdf.ui \
+    src/forms/dialogexportimage.ui
 
 HEADERS += src/graphicswidget.h \
     src/graphicsedge.h \
@@ -90,7 +91,8 @@ HEADERS += src/graphicswidget.h \
     src/forms/dialogclusteringhierarchical.h \ 
     src/forms/dialograndlattice.h \
     src/forms/dialognodefind.h \
-    src/forms/dialogexportpdf.h
+    src/forms/dialogexportpdf.h \
+    src/forms/dialogexportimage.h
 
 SOURCES += src/graphicswidget.cpp \
     src/graphicsedge.cpp \
@@ -125,7 +127,8 @@ SOURCES += src/graphicswidget.cpp \
     src/forms/dialogclusteringhierarchical.cpp \ 
     src/forms/dialograndlattice.cpp \
     src/forms/dialognodefind.cpp \
-    src/forms/dialogexportpdf.cpp
+    src/forms/dialogexportpdf.cpp \
+    src/forms/dialogexportimage.cpp
 
 
 

@@ -105,6 +105,7 @@ class DialogClusteringHierarchical;
 class DialogWebCrawler;
 
 class DialogExportPDF;
+class DialogExportImage;
 
 class DialogSettings;
 
@@ -203,8 +204,9 @@ public slots:
     void slotNetworkViewSociomatrixPlotText();
     bool slotNetworkExportBMP();
     bool slotNetworkExportPNG();
+    void slotNetworkExportImageDialog();
     void slotNetworkExportPDFDialog();
-    void slotNetworkExportPDF(QString &filename,
+    void slotNetworkExportPDF(QString &pdfName,
                               const QPrinter::Orientation &orientation,
                               const int &dpi,
                               const QPrinter::PrinterMode printerMode);
@@ -552,6 +554,7 @@ private:
     DialogDataSetSelect *m_datasetSelectDialog;
 
     DialogExportPDF *m_dialogExportPDF;
+    DialogExportImage *m_dialogExportImage;
 
     DialogNodeEdit *m_nodeEditDialog;
     DialogNodeFind *m_nodeFindDialog;
@@ -576,7 +579,8 @@ private:
 
     QList<TextEditor *> m_textEditors;
 
-    QPrinter *printer;
+    QPrinter *printer, *printerPDF;
+
     QToolBar *toolBar;
 
     QGroupBox *leftPanel, *rightPanel ;

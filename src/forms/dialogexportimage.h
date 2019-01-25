@@ -3,7 +3,7 @@
  version: 2.5
  Written in Qt
 
-                         dialogexportpdf.h  -  description
+                         dialogexportimage.h  -  description
                              -------------------
     copyright         : (C) 2005-2018 by Dimitris B. Kalamaras
     project site      : http://socnetv.org
@@ -25,42 +25,29 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef DIALOGEXPORTPDF_H
-#define DIALOGEXPORTPDF_H
+
+#ifndef DIALOGEXPORTIMAGE_H
+#define DIALOGEXPORTIMAGE_H
 
 #include <QDialog>
-#include <QPrinter>
-
 
 namespace Ui {
-class DialogExportPDF;
+class DialogExportImage;
 }
 
-
-class DialogExportPDF : public QDialog
+class DialogExportImage : public QDialog
 {
     Q_OBJECT
+
 public:
-    explicit DialogExportPDF (QWidget *parent = nullptr );
-    ~DialogExportPDF();
+    explicit DialogExportImage(QWidget *parent = 0);
+    ~DialogExportImage();
 public slots:
-    void checkFilename(const QString &fileName = QString::null);
     void getFilename();
-    void getPrinterMode(const QString &mode);
-    void getUserChoices ();
-signals:
-    void userChoices( QString &filename,
-                      const QPrinter::Orientation &orientation,
-                      const int &dpi,
-                      const QPrinter::PrinterMode printerMode);
+    void getFormat(const QString &format);
+
 private:
-    QString m_fileName;
-    int m_dpi;
-    QPrinter::Orientation m_orientation;
-    QPrinter::PrinterMode m_printerMode;
-    Ui::DialogExportPDF *ui;
-
-
+    Ui::DialogExportImage *ui;
 };
 
-#endif // DIALOGEXPORTPDF_H
+#endif // DIALOGEXPORTIMAGE_H
