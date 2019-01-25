@@ -84,10 +84,10 @@ void DialogExportPDF::getFilename(){
 void DialogExportPDF::getPrinterMode(const QString &mode){
     if (!mode.isEmpty() ) {
 //        m_appSettings["canvasUpdateMode"] = mode;
-        if ( mode ==  'screen' ){
+        if ( mode == "screen" ){
             m_printerMode = QPrinter::ScreenResolution;
         }
-        else if ( mode ==  'print' ) {
+        else if ( mode == "print" ) {
             m_printerMode = QPrinter::PrinterResolution;
 
         }
