@@ -4896,25 +4896,29 @@ void MainWindow::initPanels(){
     series->setName("spline");
 
     series->append(0, 6);
-    series->append(2, 4);
-    series->append(3, 8);
-    series->append(7, 4);
-    series->append(10, 5);
-    *series << QPointF(11, 1) << QPointF(13, 3) << QPointF(17, 6) << QPointF(18, 3) << QPointF(20, 2);
+    series->append(1, 4);
+    series->append(2, 8);
+    series->append(3, 4);
+    series->append(5, 5);
+    *series << QPointF(6, 1) << QPointF(7, 3) << QPointF(8, 6) << QPointF(9, 3) << QPointF(10, 2);
 
     Chart *chart = new Chart(this);
-    chart->setSeries(series);
-    //QChart *chart = new QChart();
-//    chart->legend()->hide();
-//    chart->addSeries(series);
-//    chart->setTitle("Simple");
-//    chart->setTitleFont(QFont("Times",7));
-//    chart->createDefaultAxes();
+    chart->setTheme();
+    chart->setBackgroundBrush(QBrush(Qt::transparent));
+    chart->setChartBackgroundBrush();
+    chart->setChartBackgroundPen();
+    chart->addSeries(series);
+    chart->setTitle("Simple");
+    chart->toggleLegend(false);
+    chart->createDefaultAxes();
+    chart->setMargins(QMargins());
+
+    chart->setRenderHint(QPainter::Antialiasing);
+    chart->setMinimumWidth(300);
+    chart->setMinimumHeight(200);
+    chart->setFrameShape(QFrame::NoFrame);
+
 //    chart->axes(Qt::Vertical).first()->setRange(0, 10);
-//    chart->setTheme(QChart::ChartThemeQt);
-//    chart->setBackgroundBrush(QBrush(Qt::transparent));
-//    chart->setBackgroundPen(QPen(Qt::transparent));
-//    chart->setMargins(QMargins(0,0,0,0));
 //    chart->axisX()->setLabelsFont(QFont("Times", 7));
 //    chart->axisY()->setLabelsFont(QFont("Times", 7));
 //    QPen axisPen;
@@ -4923,11 +4927,6 @@ void MainWindow::initPanels(){
 //    axisPen.setStyle(Qt::SolidLine);
 //    chart->axisY()->setLinePen(axisPen);
 
-//    QChartView *chartView = new QChartView(chart);
-//    chartView->setRenderHint(QPainter::Antialiasing);
-//    chartView->setMinimumWidth(300);
-//    chartView->setMinimumHeight(200);
-//    chartView->setFrameShape(QFrame::NoFrame);
     propertiesGrid->addWidget(chart,20,0,2,2);
     propertiesGrid->setColumnStretch(20,1);
     propertiesGrid->setRowStretch(20,1);   //make an invisible row stretch to rest of height

@@ -27,8 +27,17 @@ public:
     explicit Chart ( QChart *ch = Q_NULLPTR, QWidget *parent = Q_NULLPTR );
     ~Chart();
 
-    void setSeries(QSplineSeries *series);
+    void setTitle(const QString &title = QString::null);
+    void addSeries(QSplineSeries *series);
     void appendToSeries (const QPointF &p);
+    void createDefaultAxes();
+
+    void setTheme(QChart::ChartTheme theme=QChart::ChartThemeQt);
+    void setChartBackgroundBrush(const QBrush & brush = QBrush(Qt::transparent));
+    void setChartBackgroundPen(const QBrush & brush = QBrush(Qt::transparent));
+    void setMargins(const QMargins &margins = QMargins());
+    void toggleLegend(const bool &toggle = false);
+
 private:
     QChart *m_chart;
     QSplineSeries *m_series;

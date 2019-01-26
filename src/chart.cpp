@@ -35,11 +35,7 @@ Chart::Chart(QWidget *parent) :
 {
 
     qDebug() << "Chart(QWidget *parent) ";
-
-    m_chart->legend()->hide();
-    m_chart->setTitle("Simple");
-    m_chart->setTitleFont(QFont("Times",7));
-
+    this->setChart(m_chart);
 
 }
 
@@ -85,11 +81,87 @@ Chart::~Chart(){
 
 }
 
-void Chart::setSeries(QSplineSeries *series) {
+
+/**
+ * @brief Toggle the legend of the QChart
+ * @param toggle
+ */
+void Chart::toggleLegend(const bool &toggle){
+    if (toggle) {
+        m_chart->legend()->show();
+    }
+    else {
+        m_chart->legend()->hide();
+    }
+
+}
+/**
+ * @brief Sets the background brush of the QChart
+ * @param brush
+ */
+void Chart::setChartBackgroundBrush(const QBrush & brush) {
+   m_chart->setBackgroundBrush(brush);
+}
+
+
+/**
+ * @brief Sets the background pen of the QChart
+ * @param brush
+ */
+void Chart::setChartBackgroundPen(const QBrush & brush) {
+   m_chart->setBackgroundBrush(brush);
+}
+
+
+/**
+ * @brief Set the theme of the QChart
+ * @param theme
+ */
+void Chart::setTheme(QChart::ChartTheme theme) {
+    m_chart->setTheme(theme);
+}
+/**
+ * @brief Set the margins of the QChart
+ * @param margins
+ */
+void Chart::setMargins(const QMargins &margins){
+    m_chart->setMargins(margins);
+}
+
+
+/**
+ * @brief Set the title of the QChart
+ * @param title
+ */
+void Chart::setTitle(const QString &title){
+    qDebug() << "Chart::setTitle()" ;
+    m_chart->setTitleFont(QFont("Times",7));
+    m_chart->setTitle(title);
+}
+
+
+/**
+ * @brief Creates default axes. Must be called AFTER loading a series to the chart
+ */
+void Chart::createDefaultAxes(){
+    qDebug() << "Chart::createDefaultAxes()" ;
+    m_chart->createDefaultAxes();
+}
+
+/**
+ * @brief Add series to chart
+ * @param series
+ */
+void Chart::addSeries(QSplineSeries *series) {
+    qDebug() << "Chart::addSeries()" ;
   //  m_series = series;
     m_chart->addSeries(series);
 }
 
+/**
+ * @brief Chart::appendToSeries ??
+ * @param p
+ */
 void Chart::appendToSeries(const QPointF &p) {
     m_series->append(p);
 //    m_chart->addSeries();
