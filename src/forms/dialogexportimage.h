@@ -40,7 +40,7 @@ class DialogExportImage : public QDialog
     Q_OBJECT
 
 public:
-    explicit DialogExportImage(QWidget *parent = 0);
+    explicit DialogExportImage(QWidget *parent = Q_NULLPTR);
     ~DialogExportImage();
     void changeCompressionRange(const int &min, const int &max, const int &step);
     void changeQualityRange(const int &min, const int &max, const int &step);

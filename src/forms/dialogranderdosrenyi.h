@@ -36,7 +36,7 @@ class DialogRandErdosRenyi  : public QDialog
 {
     Q_OBJECT
 public:
-    explicit DialogRandErdosRenyi(QWidget *parent=0, const qreal eprob = 0);
+    explicit DialogRandErdosRenyi ( QWidget *parent = Q_NULLPTR, const qreal eprob = 0);
 
 public slots:
     void checkErrors();

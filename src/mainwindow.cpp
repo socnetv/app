@@ -38,6 +38,10 @@
 #include <QProgressDialog>
 #include <QKeySequence>
 
+#include <QtCharts/QChart>
+#include <QtCharts/QChartView>
+#include <QtCharts/QSplineSeries>
+
 
 #include "mainwindow.h"
 #include "texteditor.h"
@@ -73,7 +77,7 @@
 #include "forms/dialogclusteringhierarchical.h"
 #include "forms/dialogdissimilarities.h"
 
-
+QT_CHARTS_USE_NAMESPACE
 
 bool printDebug = false;
 
@@ -868,7 +872,7 @@ void MainWindow::initActions(){
                                      "Imports a social network from an Adjacency matrix-formatted file"));
     connect(networkImportSM, SIGNAL(triggered()), this, SLOT(slotNetworkImportSM()));
 
-    networkImportDot = new QAction( QIcon(":/images/open_48px.svg"), tr("GraphViz (.dot)"), this);
+    networkImportDot = new QAction( QIcon(":/images/open_48px.svg"), tr("Graph&Viz (.dot)"), this);
     networkImportDot->setStatusTip(tr("Import dot file"));
     networkImportDot->setWhatsThis(tr("Import GraphViz \n\n"
                                       "Imports a social network from an GraphViz formatted file"));
@@ -876,7 +880,7 @@ void MainWindow::initActions(){
             this, SLOT(slotNetworkImportDot()));
 
 
-    networkImportDL = new QAction( QIcon(":/images/open_48px.svg"), tr("UCINET (.dl)..."), this);
+    networkImportDL = new QAction( QIcon(":/images/open_48px.svg"), tr("&UCINET (.dl)..."), this);
     networkImportDL->setStatusTip(tr("ImportDL-formatted file (UCINET)"));
     networkImportDL->setWhatsThis(tr("Import UCINET\n\n"
                                      "Imports social network data from a DL-formatted file"));
@@ -913,30 +917,30 @@ void MainWindow::initActions(){
                                  "Saves the social network to file"));
     connect(networkSave, SIGNAL(triggered()), this, SLOT(slotNetworkSave()));
 
-    networkSaveAs = new QAction(QIcon(":/images/file_download_48px.svg"), tr("Save &As..."),  this);
+    networkSaveAs = new QAction(QIcon(":/images/file_download_48px.svg"), tr("Save As..."),  this);
     networkSaveAs->setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_S);
     networkSaveAs->setStatusTip(tr("Save network under a new filename"));
     networkSaveAs->setWhatsThis(tr("Save As\n\n"
                                    "Saves the social network under a new filename"));
     connect(networkSaveAs, SIGNAL(triggered()), this, SLOT(slotNetworkSaveAs()));
 
-    networkExportBMP = new QAction(QIcon(":/images/export_photo_48px.svg"), tr("&BMP..."), this);
-    networkExportBMP->setStatusTip(tr("Export social network to BMP image"));
-    networkExportBMP->setWhatsThis(tr("Export to BMP\n\n"
-                                      "Exports the social network to a BMP image"));
-    connect(networkExportBMP, SIGNAL(triggered()), this, SLOT(slotNetworkExportImageDialog()));
+    networkExportImage = new QAction(QIcon(":/images/export_photo_48px.svg"), tr("Export to I&mage..."), this);
+    networkExportImage->setStatusTip(tr("Export the visible part of the network to image"));
+    networkExportImage->setWhatsThis(tr("Export to Image\n\n"
+                                      "Exports the visible part of the current social network to an image"));
+    connect(networkExportImage, SIGNAL(triggered()), this, SLOT(slotNetworkExportImageDialog()));
 
-    networkExportPNG = new QAction( QIcon(":/images/export_photo_48px.svg"), tr("&PNG..."), this);
-    networkExportPNG->setStatusTip(tr("Export social network to PNG image"));
+    networkExportPNG = new QAction( QIcon(":/images/export_photo_48px.svg"), tr("Export to &PNG..."), this);
+    networkExportPNG->setStatusTip(tr("Export visible network to PNG image"));
     networkExportPNG->setWhatsThis(tr("Export to PNG \n\n"
                                       "Exports the social network to a PNG image"));
     connect(networkExportPNG, SIGNAL(triggered()), this, SLOT(slotNetworkExportPNG()));
 
 
-    networkExportPDF = new QAction( QIcon(":/images/export_pdf_48px.svg"), tr("&PDF..."), this);
-    networkExportPDF->setStatusTip(tr("Export the visible part of the current network to a PDF file"));
+    networkExportPDF = new QAction( QIcon(":/images/export_pdf_48px.svg"), tr("E&xport to PDF..."), this);
+    networkExportPDF->setStatusTip(tr("Export the visible part of the network to a PDF file"));
     networkExportPDF->setWhatsThis(tr("Export to PDF\n\n"
-                                      "Exports the visible part of the current network to a PDF document."));
+                                      "Exports the visible part of the current social network to a PDF document."));
     connect(networkExportPDF, SIGNAL(triggered()), this, SLOT(slotNetworkExportPDFDialog()));
 
     networkExportSM = new QAction( QIcon(":/images/file_download_48px.svg"), tr("&Adjacency Matrix"), this);
@@ -995,7 +999,7 @@ void MainWindow::initActions(){
 
 
     openTextEditorAct = new QAction(QIcon(":/images/text_edit_48px.svg"),
-                                    tr("Open Text Editor"),this);
+                                    tr("Open &Text Editor"),this);
     openTextEditorAct ->setShortcut(Qt::SHIFT+Qt::Key_F5);
     openTextEditorAct->setStatusTip(tr("Open a text editor "
                                        "to take notes, copy/paste network data, etc"));
@@ -1008,7 +1012,7 @@ void MainWindow::initActions(){
 
 
     networkViewFileAct = new QAction(QIcon(":/images/networkfile.png"),
-                                     tr("View Loaded File"),this);
+                                     tr("&View Loaded File"),this);
     networkViewFileAct ->setShortcut(Qt::Key_F5);
     networkViewFileAct->setStatusTip(tr("Display the loaded social network file."));
     networkViewFileAct->setWhatsThis(tr("View Loaded File\n\n"
@@ -1016,7 +1020,7 @@ void MainWindow::initActions(){
     connect(networkViewFileAct, SIGNAL(triggered()), this, SLOT(slotNetworkFileView()));
 
     networkViewSociomatrixAct = new QAction(QIcon(":/images/sm.png"),
-                                            tr("View Adjacency Matrix"),  this);
+                                            tr("View &Adjacency Matrix"),  this);
     networkViewSociomatrixAct ->setShortcut(Qt::Key_F6);
     networkViewSociomatrixAct->setStatusTip(tr("Display the adjacency matrix of the network."));
     networkViewSociomatrixAct->setWhatsThis(
@@ -1031,7 +1035,7 @@ void MainWindow::initActions(){
 
 
     networkViewSociomatrixPlotAct = new QAction(QIcon(":/images/adjacencyplot.png"),
-                                                tr("Plot Adjacency Matrix (text)"),  this);
+                                                tr("P&lot Adjacency Matrix (text)"),  this);
     networkViewSociomatrixPlotAct ->setShortcut(Qt::SHIFT + Qt::Key_F6);
     networkViewSociomatrixPlotAct->setStatusTip(
                 tr("Plots the adjacency matrix in a text file using unicode characters."));
@@ -1048,7 +1052,7 @@ void MainWindow::initActions(){
 
 
     networkDataSetSelectAct = new QAction(QIcon(":/images/petersengraph.png"),
-                                          tr("Create From Known Data Sets"),  this);
+                                          tr("Create From &Known Data Sets"),  this);
     networkDataSetSelectAct ->setShortcut(Qt::Key_F7);
     networkDataSetSelectAct->setStatusTip(
                 tr("Create a social network using one of the \'famous\' "
@@ -1165,7 +1169,7 @@ void MainWindow::initActions(){
     connect(networkRandomLatticeAct, SIGNAL(triggered()), this, SLOT(slotNetworkRandomLatticeDialog()));
 
 
-    networkWebCrawlerAct = new QAction(QIcon(":/images/webcrawler2.png"), tr("Web Crawler"),	this);
+    networkWebCrawlerAct = new QAction(QIcon(":/images/webcrawler2.png"), tr("&Web Crawler"),	this);
     networkWebCrawlerAct->setShortcut(Qt::SHIFT+Qt::Key_C);
     networkWebCrawlerAct->setEnabled(true);
     networkWebCrawlerAct->setStatusTip(tr("Create a network from all links found in a given website"
@@ -3490,7 +3494,7 @@ void MainWindow::initMenuBar() {
     networkMenu->addAction(networkNew);
     networkMenu->addAction(networkOpen);
     networkMenu->addSeparator();
-    recentFilesSubMenu = new QMenu(tr("Recent files..."));
+    recentFilesSubMenu = new QMenu(tr("Recent &files..."));
     for (int i = 0; i < MaxRecentFiles; ++i)
         recentFilesSubMenu->addAction(recentFileActs[i]);
 
@@ -3498,7 +3502,7 @@ void MainWindow::initMenuBar() {
 
     networkMenu ->addMenu (recentFilesSubMenu );
     networkMenu->addSeparator();
-    importSubMenu = new QMenu(tr("Import ..."));
+    importSubMenu = new QMenu(tr("&Import ..."));
     importSubMenu->setIcon(QIcon(":/images/file_upload_48px.svg"));
     importSubMenu->addAction(networkImportGML);
     importSubMenu->addAction(networkImportPajek);
@@ -3520,7 +3524,7 @@ void MainWindow::initMenuBar() {
     networkMenu->addAction (networkDataSetSelectAct);
     networkMenu->addSeparator();
 
-    randomNetworkMenu = new QMenu(tr("Create Random Network..."));
+    randomNetworkMenu = new QMenu(tr("Create &Random Network..."));
     randomNetworkMenu->setIcon(QIcon(":/images/random_48px.svg"));
     networkMenu ->addMenu (randomNetworkMenu);
 
@@ -3540,12 +3544,10 @@ void MainWindow::initMenuBar() {
     networkMenu ->addAction(networkSaveAs);
     networkMenu ->addSeparator();
 
-    exportSubMenu = networkMenu ->addMenu(tr("Export..."));
-
-    exportSubMenu->addAction (networkExportBMP);
-    exportSubMenu->addAction (networkExportPNG);
-    exportSubMenu->addAction (networkExportPDF);
-    exportSubMenu->addSeparator();
+    networkMenu->addAction (networkExportImage);
+    networkMenu->addAction (networkExportPDF);
+    networkMenu->addSeparator();
+    exportSubMenu = networkMenu ->addMenu(tr("Export to other..."));
     exportSubMenu->addAction (networkExportSM);
     exportSubMenu->addAction (networkExportPajek);
     //exportSubMenu->addAction (networkExportList);
@@ -4888,6 +4890,30 @@ void MainWindow::initPanels(){
     propertiesGrid->addWidget(rightPanelClickedEdgeReciprocalWeightLCD ,19,1);
 
 
+    QSplineSeries *series = new QSplineSeries();
+    series->setName("spline");
+
+    series->append(0, 6);
+    series->append(2, 4);
+    series->append(3, 8);
+    series->append(7, 4);
+    series->append(10, 5);
+    *series << QPointF(11, 1) << QPointF(13, 3) << QPointF(17, 6) << QPointF(18, 3) << QPointF(20, 2);
+
+    QChart *chart = new QChart();
+    chart->legend()->hide();
+    chart->addSeries(series);
+    chart->setTitle("Simple spline chart example");
+    chart->createDefaultAxes();
+    chart->axes(Qt::Vertical).first()->setRange(0, 10);
+
+    QChartView *chartView = new QChartView(chart);
+    chartView->setRenderHint(QPainter::Antialiasing);
+    chartView->setMinimumWidth(300);
+    chartView->setMinimumHeight(200);
+
+    propertiesGrid->addWidget(chartView,20,0,2,2);
+    propertiesGrid->setColumnStretch(20,1);
     propertiesGrid->setRowStretch(20,1);   //make an invisible row stretch to rest of height
 
     //create a panel with title
@@ -7242,7 +7268,7 @@ void MainWindow::slotEditRelationRename(QString newName) {
 
 
 /**
- * @brief Exports the network to a PNG image - Mediocre Quality but smaller file
+ * @brief Obsolete - Exports the network to a PNG image
  * @return
  *
  */
@@ -7296,67 +7322,6 @@ bool MainWindow::slotNetworkExportPNG(){
 
     return true;
 }
-
-
-
-
-/**
- * @brief Exports the network to a BMP image - Better Quality but larger file
- * @return
- */
-bool MainWindow::slotNetworkExportBMP(){
-    qDebug(	"slotNetworkExportBMP()");
-    if ( !activeNodes() )  {
-        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
-        return false;
-    }
-    QString format="bmp";
-    QString fn = QFileDialog::getSaveFileName(
-                this,tr("Save Image as"), getLastPath(),tr("Image Files (*.bmp)"));
-    if (fn.isEmpty())  {
-        statusMessage( tr("Saving aborted") );
-        return false;
-    }
-    setLastPath(fn); // store this path
-    tempFileNameNoPath=fn.split ("/");
-    QString name = tempFileNameNoPath.last();
-    name.truncate(name.lastIndexOf("."));
-    QPixmap picture;
-    qDebug("slotNetworkExportBMP: grabbing canvas");
-    picture=QPixmap::grabWidget(graphicsWidget, graphicsWidget->viewport()->rect());
-    QPainter p;
-    qDebug("slotNetworkExportBMP: adding logo");
-    p.begin(&picture);
-    p.setFont(QFont ("Helvetica", 10, QFont::Normal, false));
-    if (appSettings["printLogo"]=="true") {
-        QImage logo(":/images/socnetv-logo.png");
-        p.drawImage(5,5, logo);
-        p.drawText(7,47,name);
-    }
-    else
-        p.drawText(5,15,name);
-    p.end();
-    qDebug("slotNetworkExportBMP: checking file");
-    if (fn.contains(format, Qt::CaseInsensitive) ) {
-        picture.toImage().save(fn, format.toLatin1());
-        QMessageBox::information(this, tr("Export to BMP..."),
-                                 tr("Image Saved as: ")+tempFileNameNoPath.last(), "OK",0);
-    }
-    else {
-        picture.toImage().save(fn+"."+format, format.toLatin1());
-        QMessageBox::information(this, tr("Export to BMP..."),
-                                 tr("Image Saved as: ")+tempFileNameNoPath.last()+"."+format , "OK",0);
-    }
-    qDebug()<< "Exporting BMP to "<< fn;
-
-    statusMessage( tr("Exporting completed") );
-    qDebug("Export finished!");
-    return true;
-}
-
-
-
-
 
 
 
@@ -7481,6 +7446,8 @@ void MainWindow::slotNetworkExportPDF(QString &pdfName,
                                       const QPrinter::PrinterMode printerMode=QPrinter::ScreenResolution
                                       ){
     qDebug()<< "MW::slotNetworkExportPDF()";
+
+    Q_UNUSED(dpi);
 
     if (pdfName.isEmpty())  {
         statusMessage( tr("Saving aborted"));

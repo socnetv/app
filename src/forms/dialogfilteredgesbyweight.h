@@ -38,7 +38,7 @@ class DialogFilterEdgesByWeight : public QDialog
 {
     Q_OBJECT
 public:
-    DialogFilterEdgesByWeight (QWidget *parent = 0);
+    explicit DialogFilterEdgesByWeight (QWidget *parent = Q_NULLPTR);
 public slots:
     void getUserChoices ();
 signals:

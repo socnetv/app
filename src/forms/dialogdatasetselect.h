@@ -36,7 +36,7 @@ class DialogDataSetSelect: public QDialog
 {
     Q_OBJECT
 public:
-    DialogDataSetSelect (QWidget *parent = 0);
+    DialogDataSetSelect (QWidget *parent = Q_NULLPTR);
     ~DialogDataSetSelect();
 public slots:
     void getUserChoices();

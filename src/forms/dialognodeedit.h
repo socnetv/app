@@ -40,7 +40,7 @@ class DialogNodeEdit : public QDialog
 {
     Q_OBJECT
 public:
-    explicit DialogNodeEdit(QWidget *parent = 0,
+    explicit DialogNodeEdit(QWidget *parent = Q_NULLPTR,
                             const QString &l = "",
                             const int &s = 8,
                             const QColor &c= QColor("red"),

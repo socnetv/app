@@ -202,7 +202,7 @@ public slots:
     void slotNetworkPrint();
     void slotNetworkViewSociomatrix();
     void slotNetworkViewSociomatrixPlotText();
-    bool slotNetworkExportBMP();
+
     bool slotNetworkExportPNG();
 
     void slotNetworkExportImageDialog();
@@ -622,7 +622,7 @@ private:
 
     QAction *networkNew, *networkOpen, *networkSave, *networkSaveAs,
     *networkClose, *networkPrint,*networkQuit;
-    QAction *networkExportBMP, *networkExportPNG, *networkExportPajek,
+    QAction *networkExportImage, *networkExportPNG, *networkExportPajek,
     *networkExportPDF, *networkExportDL, *networkExportGW, *networkExportSM,
     *networkExportList;
     QAction *networkImportPajek, *networkImportGML, *networkImportSM, *networkImportList,

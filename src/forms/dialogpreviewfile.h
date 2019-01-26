@@ -42,7 +42,7 @@ class DialogPreviewFile : public QDialog
 {
     Q_OBJECT
 public:
-    explicit DialogPreviewFile(QWidget *parent = 0);
+    explicit DialogPreviewFile(QWidget *parent = Q_NULLPTR);
     void setCodecList(const QList<QTextCodec *> &list);
     void setEncodedData(const QByteArray &data, const QString, const int );
     QString decodedString() const { return decodedStr; }

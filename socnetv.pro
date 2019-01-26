@@ -38,6 +38,7 @@ QT += xml
 QT += network
 QT += widgets
 QT += printsupport 
+QT += charts
 
 INCLUDEPATH  += ./src
 FORMS += src/forms/dialogfilteredgesbyweight.ui \

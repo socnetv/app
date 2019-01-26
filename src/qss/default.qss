@@ -253,3 +253,10 @@ QToolTip {
 QProgressDialog {
     min-width: 400px;
 }
+
+QChart,
+QChartView {
+    background-color:red;
+    margin:0;
+    padding:0;
+}

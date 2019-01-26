@@ -41,7 +41,7 @@ class TextEditor : public QMainWindow
 
 public:
     TextEditor(const QString &fileName ,
-               QWidget *parent=0 , const bool &format=false);
+               QWidget *parent= Q_NULLPTR , const bool &format=false);
 
 protected:
 	void closeEvent(QCloseEvent *event);

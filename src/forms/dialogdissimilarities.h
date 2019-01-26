@@ -36,7 +36,7 @@ class DialogDissimilarities: public QDialog
 {
 	Q_OBJECT
 public:
-    DialogDissimilarities (QWidget *parent = 0);
+    DialogDissimilarities (QWidget *parent = Q_NULLPTR);
     ~DialogDissimilarities();
 public slots:
 	void getUserChoices();

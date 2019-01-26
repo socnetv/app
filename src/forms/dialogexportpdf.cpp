@@ -46,11 +46,12 @@ DialogExportPDF::DialogExportPDF (QWidget *parent ) :
     m_printerMode = QPrinter::ScreenResolution;
     m_orientation = QPrinter::Portrait;
 
-    // printer modes
+    // Populate printer modes
     QStringList resList;
     resList << "Screen" << "Print";
     ui->qualitySelect->addItems(resList);
 
+    // Populate dpi (currently only 75dpi is supported)
     QStringList dpiList;
     dpiList << "75" << "300" << "600" << "1200";
     ui->resolutionSelect->addItems(dpiList);
@@ -60,10 +61,7 @@ DialogExportPDF::DialogExportPDF (QWidget *parent ) :
     orientationList << "Portrait" << "Landscape";
     ui->orientationSelect->addItems(orientationList);
 
-    /**
-     * dialog signals to slots
-     */
-
+    // Connect dialog signals to slots
     connect (ui->fileDirSelectButton, &QToolButton::clicked,
              this, &DialogExportPDF::getFilename);
 
@@ -72,12 +70,13 @@ DialogExportPDF::DialogExportPDF (QWidget *parent ) :
 
     connect ( ui->buttonBox,SIGNAL(accepted()), this, SLOT(getUserChoices()) );
 
-    /**
-      * set default button
-      */
+    // Set Cancel as default button
+    // The OK button disabled until user selects a file.
     (ui->buttonBox) -> button (QDialogButtonBox::Cancel) -> setDefault(true);
     (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
 
+    // Set which widget will have focus
+    ui->fileDirSelectButton->setFocus(Qt::OtherFocusReason);
 
 }
 

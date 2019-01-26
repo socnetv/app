@@ -37,7 +37,7 @@ class DialogEdgeDichotomization : public QDialog
 {
     Q_OBJECT
 public:
-    DialogEdgeDichotomization (QWidget *parent = 0);
+    explicit DialogEdgeDichotomization (QWidget *parent = Q_NULLPTR);
 public slots:
     void getUserChoices ();
 signals:

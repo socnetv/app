@@ -82,6 +82,9 @@ DialogExportImage::DialogExportImage(QWidget *parent) :
     (ui->buttonBox) -> button (QDialogButtonBox::Cancel) -> setDefault(true);
     (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
 
+    // Set which widget will have focus
+    ui->fileDirSelectButton->setFocus(Qt::OtherFocusReason);
+
 }
 
 

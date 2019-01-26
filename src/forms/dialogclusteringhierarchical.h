@@ -36,7 +36,7 @@ class DialogClusteringHierarchical: public QDialog
 {
     Q_OBJECT
 public:
-    DialogClusteringHierarchical (QWidget *parent = 0, QString preselectMatrix = "");
+    DialogClusteringHierarchical (QWidget *parent = Q_NULLPTR, QString preselectMatrix = "");
     ~DialogClusteringHierarchical();
 public slots:
     void getUserChoices();
