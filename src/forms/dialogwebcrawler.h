@@ -40,7 +40,7 @@ class DialogWebCrawler: public QDialog
 {
     Q_OBJECT
 public:
-    explicit DialogWebCrawler (QWidget *parent = 0);
+    explicit DialogWebCrawler (QWidget *parent = Q_NULLPTR);
 
 public slots:
     void checkErrors ();

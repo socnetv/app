@@ -39,8 +39,7 @@ class DialogRandLattice : public QDialog
 {
     Q_OBJECT
 public:
-    explicit DialogRandLattice(QWidget *parent = 0);
-
+    explicit DialogRandLattice(QWidget *parent = Q_NULLPTR);
 
 signals:
     void userChoices( const int &nodes,
@@ -49,6 +48,7 @@ signals:
                       const int &neighLength,
                       const QString &mode,
                       const bool &diag);
+
 public slots:
 //    void checkErrors(const int &i);
     void getUserChoices();

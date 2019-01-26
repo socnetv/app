@@ -36,7 +36,7 @@ class DialogRandScaleFree : public QDialog
 {
     Q_OBJECT
 public:
-    explicit DialogRandScaleFree(QWidget *parent = 0);
+    explicit DialogRandScaleFree(QWidget *parent = Q_NULLPTR);
 
 public slots:
     void checkErrors();

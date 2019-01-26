@@ -75,6 +75,7 @@ HEADERS += src/graphicswidget.h \
     src/texteditor.h \
     src/parser.h \
     src/webcrawler.h \
+    src/chart.h \
     src/forms/dialogfilteredgesbyweight.h \
     src/forms/dialogedgedichotomization.h \
     src/forms/dialogwebcrawler.h \
@@ -111,6 +112,7 @@ SOURCES += src/graphicswidget.cpp \
     src/texteditor.cpp \
     src/parser.cpp \
     src/webcrawler.cpp \
+    src/chart.cpp \
     src/forms/dialogfilteredgesbyweight.cpp \
     src/forms/dialogedgedichotomization.cpp \
     src/forms/dialogwebcrawler.cpp \
@@ -130,6 +132,7 @@ SOURCES += src/graphicswidget.cpp \
     src/forms/dialognodefind.cpp \
     src/forms/dialogexportpdf.cpp \
     src/forms/dialogexportimage.cpp
+
 
 
 

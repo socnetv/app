@@ -36,7 +36,7 @@ class DialogRandSmallWorld : public QDialog
 {
     Q_OBJECT
 public:
-    explicit DialogRandSmallWorld(QWidget *parent = 0);
+    explicit DialogRandSmallWorld(QWidget *parent = Q_NULLPTR);
 
 public slots:
     void checkErrors();

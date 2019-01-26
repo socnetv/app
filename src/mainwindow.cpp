@@ -51,6 +51,8 @@
 #include "graphicsedge.h"
 #include "graphicsnodenumber.h"
 
+#include "chart.h"
+
 #include "forms/dialogsettings.h"
 
 #include "forms/dialogwebcrawler.h"
@@ -4900,19 +4902,33 @@ void MainWindow::initPanels(){
     series->append(10, 5);
     *series << QPointF(11, 1) << QPointF(13, 3) << QPointF(17, 6) << QPointF(18, 3) << QPointF(20, 2);
 
-    QChart *chart = new QChart();
-    chart->legend()->hide();
-    chart->addSeries(series);
-    chart->setTitle("Simple spline chart example");
-    chart->createDefaultAxes();
-    chart->axes(Qt::Vertical).first()->setRange(0, 10);
+    Chart *chart = new Chart(this);
+    chart->setSeries(series);
+    //QChart *chart = new QChart();
+//    chart->legend()->hide();
+//    chart->addSeries(series);
+//    chart->setTitle("Simple");
+//    chart->setTitleFont(QFont("Times",7));
+//    chart->createDefaultAxes();
+//    chart->axes(Qt::Vertical).first()->setRange(0, 10);
+//    chart->setTheme(QChart::ChartThemeQt);
+//    chart->setBackgroundBrush(QBrush(Qt::transparent));
+//    chart->setBackgroundPen(QPen(Qt::transparent));
+//    chart->setMargins(QMargins(0,0,0,0));
+//    chart->axisX()->setLabelsFont(QFont("Times", 7));
+//    chart->axisY()->setLabelsFont(QFont("Times", 7));
+//    QPen axisPen;
+//    axisPen.setBrush( QBrush(QColor(0,0,0,0)) );
+//    axisPen.setWidthF(0.5);
+//    axisPen.setStyle(Qt::SolidLine);
+//    chart->axisY()->setLinePen(axisPen);
 
-    QChartView *chartView = new QChartView(chart);
-    chartView->setRenderHint(QPainter::Antialiasing);
-    chartView->setMinimumWidth(300);
-    chartView->setMinimumHeight(200);
-
-    propertiesGrid->addWidget(chartView,20,0,2,2);
+//    QChartView *chartView = new QChartView(chart);
+//    chartView->setRenderHint(QPainter::Antialiasing);
+//    chartView->setMinimumWidth(300);
+//    chartView->setMinimumHeight(200);
+//    chartView->setFrameShape(QFrame::NoFrame);
+    propertiesGrid->addWidget(chart,20,0,2,2);
     propertiesGrid->setColumnStretch(20,1);
     propertiesGrid->setRowStretch(20,1);   //make an invisible row stretch to rest of height
 

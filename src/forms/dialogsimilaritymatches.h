@@ -36,7 +36,7 @@ class DialogSimilarityMatches: public QDialog
 {
     Q_OBJECT
 public:
-    DialogSimilarityMatches (QWidget *parent = 0);
+    DialogSimilarityMatches (QWidget *parent = Q_NULLPTR);
     ~DialogSimilarityMatches();
 public slots:
     void getUserChoices();

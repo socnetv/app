@@ -38,7 +38,7 @@ class DialogRandRegular : public QDialog
 {
     Q_OBJECT
 public:
-    explicit DialogRandRegular(QWidget *parent = 0);
+    explicit DialogRandRegular(QWidget *parent = Q_NULLPTR);
 
 public slots:
     void checkErrors(const int &i);

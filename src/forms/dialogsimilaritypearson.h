@@ -36,7 +36,7 @@ class DialogSimilarityPearson: public QDialog
 {
     Q_OBJECT
 public:
-    DialogSimilarityPearson (QWidget *parent = 0);
+    DialogSimilarityPearson (QWidget *parent = Q_NULLPTR);
     ~DialogSimilarityPearson();
 public slots:
     void getUserChoices();

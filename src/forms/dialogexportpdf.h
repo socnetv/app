@@ -41,7 +41,7 @@ class DialogExportPDF : public QDialog
 {
     Q_OBJECT
 public:
-    explicit DialogExportPDF (QWidget *parent = nullptr );
+    explicit DialogExportPDF (QWidget *parent = Q_NULLPTR );
     ~DialogExportPDF();
 public slots:
     void checkFilename(const QString &fileName = QString::null);
