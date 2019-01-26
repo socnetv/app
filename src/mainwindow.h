@@ -204,7 +204,14 @@ public slots:
     void slotNetworkViewSociomatrixPlotText();
     bool slotNetworkExportBMP();
     bool slotNetworkExportPNG();
+
     void slotNetworkExportImageDialog();
+    void slotNetworkExportImage ( const QString &filename,
+                                  const QByteArray &format,
+                                  const int &quality,
+                                  const int &compression
+                                  );
+
     void slotNetworkExportPDFDialog();
     void slotNetworkExportPDF(QString &pdfName,
                               const QPrinter::Orientation &orientation,

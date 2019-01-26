@@ -42,9 +42,20 @@ class DialogExportImage : public QDialog
 public:
     explicit DialogExportImage(QWidget *parent = 0);
     ~DialogExportImage();
+    void changeCompressionRange(const int &min, const int &max, const int &step);
+    void changeQualityRange(const int &min, const int &max, const int &step);
+
 public slots:
     void getFilename();
     void getFormat(const QString &format);
+    void getUserChoices();
+
+signals:
+    void userChoices( const QString &filename,
+                      const QByteArray &format,
+                      const int &quality,
+                      const int &compression
+                      );
 
 private:
     Ui::DialogExportImage *ui;

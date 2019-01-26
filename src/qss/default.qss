@@ -19,7 +19,7 @@ QStatusBar {
     background-color: #f8f9fa;
     background-color: #eceff1;
     color: #111;
-    font-size: 11px;
+    font-size: 12px;
 }
 
 QMainWindow::separator {
@@ -245,9 +245,9 @@ QToolTip {
     padding: 5px;
     border-radius: 2px;
     opacity: 300;
-    min-width: 500px;
+    min-width: 300px;
     max-width: 600px;
-    font-size: 11px;
+    font-size: 12px;
 }
 
 QProgressDialog {

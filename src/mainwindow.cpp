@@ -3971,8 +3971,9 @@ void MainWindow::initToolBar(){
     toolBar->addSeparator();
 
     styleSheetCheck = new QCheckBox("Load Style", this);
-    connect( styleSheetCheck,&QCheckBox::clicked,
+    connect( styleSheetCheck,&QCheckBox::toggled,
              this,  &MainWindow::loadStyleSheet );
+    styleSheetCheck->setChecked(true);
 
     toolBar->addWidget(styleSheetCheck);
 
@@ -4455,7 +4456,7 @@ void MainWindow::initPanels(){
 
 
     QLabel *toolBoxLayoutByIndexTypeLabel = new QLabel;
-    toolBoxLayoutByIndexTypeLabel->setText(tr("Layout Type:"));
+    toolBoxLayoutByIndexTypeLabel->setText(tr("Type:"));
     toolBoxLayoutByIndexTypeLabel->setMinimumWidth(90);
     toolBoxLayoutByIndexTypeSelect = new QComboBox;
     toolBoxLayoutByIndexTypeSelect->setStatusTip(
@@ -4574,7 +4575,7 @@ void MainWindow::initPanels(){
     visualizationBoxLayout->addWidget(layoutDynamicBox);
 
 
-    QGroupBox *visualizationBox= new QGroupBox(tr("Visualize"));
+    QGroupBox *visualizationBox= new QGroupBox(tr("Layout"));
     visualizationBox->setMaximumWidth(255);
     visualizationBox->setLayout (visualizationBoxLayout );
 
@@ -7374,12 +7375,74 @@ void MainWindow::slotNetworkExportImageDialog()
 
     m_dialogExportImage = new DialogExportImage(this);
 
-//    connect( m_dialogExportImage, &DialogExportImage::userChoices,
-//             this, &MainWindow::slotNetworkExportImage);
+    connect( m_dialogExportImage, &DialogExportImage::userChoices,
+             this, &MainWindow::slotNetworkExportImage);
 
     m_dialogExportImage->exec();
 }
 
+
+
+/**
+ * @brief Exports the network to a an image
+ * @return
+ */
+void MainWindow::slotNetworkExportImage( const QString &filename,
+                                         const QByteArray &format,
+                                         const int &quality,
+                                         const int &compression
+                                         ) {
+    qDebug() << "slotNetworkExportImage()";
+
+    if (filename.isEmpty())  {
+        statusMessage( tr("Saving aborted") );
+        return;
+    }
+    setLastPath(filename); // store this path
+    tempFileNameNoPath=filename.split ("/");
+    QString name = tempFileNameNoPath.last();
+    name.truncate(name.lastIndexOf("."));
+
+    // Grab network from canvas
+    qDebug() << "slotNetworkExportImage(): grabbing canvas";
+    QPixmap picture;
+    picture=QPixmap::grabWidget(graphicsWidget, graphicsWidget->viewport()->rect());
+
+    QPainter p;
+    qDebug() << "slotNetworkExportImage(): adding name (and logo)";
+    p.begin(&picture);
+    p.setFont(QFont ("Helvetica", 10, QFont::Normal, false));
+    if (appSettings["printLogo"]=="true") {
+        QImage logo(":/images/socnetv-logo.png");
+        p.drawImage(5,5, logo);
+        p.drawText(7,47,name);
+    }
+    else
+        p.drawText(5,15,name);
+    p.end();
+
+    qDebug() << "slotNetworkExportImage(): saving to file";
+
+    QImageWriter imgWriter;
+    imgWriter.setFormat(format);
+    imgWriter.setQuality(quality);
+    imgWriter.setCompression(compression);
+    imgWriter.setFileName(filename);
+    if ( imgWriter.write(picture.toImage()) ) {
+        QMessageBox::information(this, tr("Export to image..."),
+                                 tr("Image Saved as: ")+tempFileNameNoPath.last(), "OK",0);
+
+        statusMessage( tr("Image exporting completed.") );
+    }
+    else {
+        slotHelpMessageToUser(USER_MSG_CRITICAL, "Error", "error exporing image", imgWriter.errorString());
+
+    }
+
+
+
+
+}
 
 
 

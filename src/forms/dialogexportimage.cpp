@@ -40,37 +40,88 @@ DialogExportImage::DialogExportImage(QWidget *parent) :
     ui(new Ui::DialogExportImage)
 {
     ui->setupUi(this);
+
+    // Get supported Image formats
     QStringList imgFormats;
     QByteArray bytes;
     foreach (bytes, QImageWriter::supportedImageFormats()) {
         imgFormats << QString(bytes);
     }
-
     ui->formatSelect->addItems(imgFormats);
 
-    /**
-     * dialog signals to slots
-     */
-
-    connect (ui->fileDirSelectButton, &QToolButton::clicked,
+    // Connect dialog signals to slots
+    connect ( ui->fileDirSelectButton, &QToolButton::clicked,
              this, &DialogExportImage::getFilename);
 
-    connect(ui->formatSelect, SIGNAL(currentIndexChanged (const QString &)),
+    connect ( ui->formatSelect, SIGNAL(currentIndexChanged (const QString &)),
           this, SLOT ( getFormat(const QString &)) );
 
+    connect ( ui->buttonBox,SIGNAL(accepted()), this, SLOT(getUserChoices()) );
 
-    /**
-      * set default button
-      */
+    // Prepare Quality slider and spin box, and connect them
+    changeQualityRange(1,100,1);
+
+    connect ( ui->qualitySlider, SIGNAL(valueChanged(int)),
+              ui->qualitySpinBox,SLOT(setValue(int)) );
+
+    connect ( ui->qualitySpinBox, SIGNAL(valueChanged(int)),
+              ui->qualitySlider,SLOT(setValue(int)) );
+    ui->qualitySlider->setValue(100);
+
+    // Prepare Compression slider and spin box, and connect them
+    changeCompressionRange(1,100,1);
+    connect ( ui->compressionSlider, SIGNAL(valueChanged(int)),
+              ui->compressionSpinBox,SLOT(setValue(int)) );
+
+    connect ( ui->compressionSpinBox, SIGNAL(valueChanged(int)),
+              ui->compressionSlider,SLOT(setValue(int)) );
+    ui->compressionSlider->setValue(0);
+
+    // Set default button
+    // OK button is disabled until user has selected a filename.
     (ui->buttonBox) -> button (QDialogButtonBox::Cancel) -> setDefault(true);
     (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
 
 }
 
+
+/**
+ * @brief DialogExportImage::~DialogExportImage
+ */
 DialogExportImage::~DialogExportImage()
 {
     delete ui;
 }
+
+
+/**
+ * @brief Changes Compression widgets range and stepping
+ * @param min
+ * @param max
+ * @param step
+ */
+void DialogExportImage::changeCompressionRange(const int &min, const int &max, const int &step) {
+    ui->compressionSlider->setSingleStep(step);
+    ui->compressionSlider->setTickInterval(step);
+    ui->compressionSpinBox->setSingleStep(step);
+    ui->compressionSpinBox->setRange(min,max);
+}
+
+
+/**
+ * @brief Changes Quality widgets range and stepping
+ * @param min
+ * @param max
+ * @param step
+ */
+void DialogExportImage::changeQualityRange(const int &min, const int &max, const int &step){
+    ui->qualitySlider->setSingleStep(step);
+    ui->qualitySlider->setTickInterval(step);
+    ui->qualitySpinBox->setSingleStep(step);
+    ui->qualitySpinBox->setRange(min,max);
+
+}
+
 
 
 /**
@@ -83,7 +134,6 @@ void DialogExportImage::getFilename(){
     QString m_fileName = QFileDialog::getSaveFileName(this, tr("Save to image"),
                                                     "",
                                                     m_filter);
-
 
 
     if (!m_fileName.isEmpty() && QFileInfo(m_fileName).absoluteDir().exists() ) {
@@ -138,5 +188,21 @@ void DialogExportImage::getFormat(const QString &format){
 }
 
 
+void DialogExportImage::getUserChoices(){
+
+    QByteArray m_format = ui->formatSelect->currentText().toLower().toUtf8();
+    QString m_fileName = ui->fileEdit->text();
+    int m_quality = ui->qualitySpinBox->value();
+    int m_compression = ui->compressionSpinBox->value();
+
+    qDebug()<< "user choices: "
+            << m_fileName
+            << m_format
+            << m_quality
+            << m_compression;
+
+    emit userChoices(m_fileName, m_format, m_quality, m_compression);
+
+}
 
 
