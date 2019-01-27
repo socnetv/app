@@ -6769,6 +6769,7 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
 
     emit signalProgressBoxUpdate(N);
     emit signalProgressBoxKill();
+    emit signalUpdateChart(discreteSDCs);
 }
 
 

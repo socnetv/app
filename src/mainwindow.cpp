@@ -4892,44 +4892,65 @@ void MainWindow::initPanels(){
     propertiesGrid->addWidget(rightPanelClickedEdgeReciprocalWeightLCD ,19,1);
 
 
+    // Create our mini chart
+    // q: which data will we populate it initially?
     QSplineSeries *series = new QSplineSeries();
     series->setName("spline");
 
-    series->append(0, 6);
-    series->append(1, 4);
-    series->append(2, 8);
-    series->append(3, 4);
-    series->append(5, 5);
-    *series << QPointF(6, 1) << QPointF(7, 3) << QPointF(8, 6) << QPointF(9, 3) << QPointF(10, 2);
+//    series->append(0, 6);
+//    series->append(1, 4);
+//    series->append(2, 8);
+//    series->append(3, 4);
+//    series->append(5, 5);
+//    *series << QPointF(6, 1) << QPointF(7, 3) << QPointF(8, 6) << QPointF(9, 3) << QPointF(10, 2);
 
-    Chart *chart = new Chart(this);
+    chart = new Chart(this);
     chart->setTheme();
     chart->setBackgroundBrush(QBrush(Qt::transparent));
     chart->setChartBackgroundBrush();
     chart->setChartBackgroundPen();
-    chart->addSeries(series);
-    chart->setTitle("Simple");
-    chart->toggleLegend(false);
-    chart->createDefaultAxes();
+//    chart->addSeries(series);
+//    chart->setTitle("Degree", QFont("Times",8));
+//    chart->toggleLegend(false);
+//    chart->createDefaultAxes();
     chart->setMargins(QMargins());
-
     chart->setRenderHint(QPainter::Antialiasing);
-    chart->setMinimumWidth(300);
-    chart->setMinimumHeight(200);
-    chart->setFrameShape(QFrame::NoFrame);
 
-//    chart->axes(Qt::Vertical).first()->setRange(0, 10);
-//    chart->axisX()->setLabelsFont(QFont("Times", 7));
-//    chart->axisY()->setLabelsFont(QFont("Times", 7));
+    int chartHeight = 200;
+//    chart->setMinimumWidth(200);
+//    chart->setMaximumHeight(chartHeight);
+//    chart->setMinimumHeight(chartHeight);
+//    chart->setFrameShape(QFrame::NoFrame);
+//    chart->setFrameShape(QFrame::Box);
+
+//    chart->setAxisXRange(0,10);
+//    chart->setAxisYRange(0,10);
+//    chart->setAxisXLabelFont(QFont("Times", 7));
+//    chart->setAxisYLabelFont(QFont("Times", 7));
+
 //    QPen axisPen;
 //    axisPen.setBrush( QBrush(QColor(0,0,0,0)) );
 //    axisPen.setWidthF(0.5);
 //    axisPen.setStyle(Qt::SolidLine);
-//    chart->axisY()->setLinePen(axisPen);
+//    chart->setAxisYLinePen(axisPen);
 
-    propertiesGrid->addWidget(chart,20,0,2,2);
-    propertiesGrid->setColumnStretch(20,1);
-    propertiesGrid->setRowStretch(20,1);   //make an invisible row stretch to rest of height
+    propertiesGrid->addWidget(chart,20,0,1,2);
+    propertiesGrid->setRowMinimumHeight(20,chartHeight);
+    propertiesGrid->setRowStretch(20,0);
+
+    // We need some margin form the edge of the chart to the messageLabel below,
+    // but setRowStretch is not enough. So, we add a spacer!
+    QSpacerItem *spacer = new QSpacerItem (100, 10,
+                                           QSizePolicy::MinimumExpanding,
+                                           QSizePolicy::MinimumExpanding);
+    propertiesGrid->addItem(spacer, 22,0,3,2);
+    propertiesGrid->setRowStretch(22,1);   //allow this row to stretch
+
+    // Add the message label, this will be displayed in the down-right corner.
+    QLabel *rightPanelMessageLabel = new QLabel;
+    rightPanelMessageLabel-> setText ("https://socnetv.org");
+    propertiesGrid->addWidget(rightPanelMessageLabel, 25, 0, 1, 2);
+    propertiesGrid->setRowStretch(25,0);   // stop row from stretching
 
     //create a panel with title
     rightPanel = new QGroupBox(tr("Statistics Panel"));
@@ -5294,6 +5315,7 @@ void MainWindow::initSignalSlots() {
     connect( activeGraph, SIGNAL(signalRelationChangedToGW(int)),
              graphicsWidget, SLOT( relationSet(int))  ) ;
 
+
     //
     //SIGNALS BETWEEN ACTIVEGRAPH AND MAINWINDOW
     //
@@ -5369,13 +5391,14 @@ void MainWindow::initSignalSlots() {
     connect ( activeGraph, &Graph::signalRelationRenamedToMW,
               this, &MainWindow::slotEditRelationRename );
 
-
     connect ( activeGraph, &Graph::signalProgressBoxCreate,
               this, &MainWindow::slotProgressBoxCreate);
 
     connect ( activeGraph, &Graph::signalProgressBoxKill,
               this, &MainWindow::slotProgressBoxDestroy);
 
+    connect(activeGraph, SIGNAL(signalUpdateChart(H_StrToInt)),
+            this, SLOT(slotUpdateChart(H_StrToInt)) );
 
     //
     //signals and slots inside MainWindow
@@ -5388,10 +5411,7 @@ void MainWindow::initSignalSlots() {
              this, SLOT(slotEditRelationRename()) ) ;
 
 
-
     connect(networkWebCrawlerAct, SIGNAL(triggered()), this, SLOT(slotNetworkWebCrawlerDialog()));
-
-
 
 
     connect(zoomInAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomIn()) );
@@ -8527,7 +8547,23 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
 
 
 
+void MainWindow::slotUpdateChart(H_StrToInt distribution) {
 
+    qDebug() << "slotUpdateChart()";
+
+    QSplineSeries *series = new QSplineSeries();
+    series->setName("spline");
+
+    QHashIterator<QString, int> i(distribution);
+    while (i.hasNext()) {
+        i.next();
+        //cout << i.key() << ": " << i.value() << endl;
+        series->append(i.key().toInt(), i.value());
+
+    }
+    chart->addSeries(series);
+    chart->createDefaultAxes();
+}
 
 
 

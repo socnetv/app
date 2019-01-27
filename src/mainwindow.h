@@ -47,7 +47,6 @@
 #include <math.h>
 
 #include "graph.h"
-
 #include "forms/dialogfilteredgesbyweight.h"
 #include "forms/dialogdatasetselect.h"
 
@@ -59,6 +58,9 @@ static const int USER_MSG_CRITICAL_NO_NETWORK=2;
 static const int USER_MSG_CRITICAL_NO_EDGES=3;
 static const int USER_MSG_QUESTION=4;
 static const int USER_MSG_QUESTION_CUSTOM=5;
+
+
+typedef QHash <QString, int> H_StrToInt;
 
 
 QT_BEGIN_NAMESPACE
@@ -83,6 +85,8 @@ class GraphicsWidget;
 
 class GraphicsEdge;
 class GraphicsNode;
+
+class Chart;
 
 class DialogNodeFind;
 class DialogNodeEdit;
@@ -129,7 +133,6 @@ class MainWindow : public QMainWindow
 
 public:
 
-
     MainWindow(const QString &f);
     ~MainWindow();
 
@@ -160,8 +163,6 @@ public:
 
     int activeEdges();
     int activeNodes();
-
-
 
 public slots:
     //NETWORK MENU
@@ -407,8 +408,6 @@ public slots:
     void slotAnalyzeReachabilityMatrix();
     void slotAnalyzeConnectedness();
 
-
-
     void slotAnalyzeCentralityDegree();
     void slotAnalyzeCentralityCloseness();
     void slotAnalyzeCentralityClosenessIR();
@@ -423,10 +422,8 @@ public slots:
     void slotAnalyzePrestigePageRank();
     void slotAnalyzePrestigeProximity();
 
-
     void slotAnalyzeCommunitiesCliqueCensus();
     void slotAnalyzeCommunitiesTriadCensus();
-
 
     void slotAnalyzeStrEquivalenceClusteringHierarchicalDialog();
     void slotAnalyzeStrEquivalenceClusteringHierarchical(const QString &matrix,
@@ -435,6 +432,7 @@ public slots:
                                                          const QString &method,
                                                          const bool &diagonal=false,
                                                          const bool &diagram=false);
+
     void slotAnalyzeStrEquivalenceDissimilaritiesDialog();
     void slotAnalyzeStrEquivalenceDissimilaritiesTieProfile(const QString &metric,
                                                const QString &varLocation,
@@ -451,6 +449,7 @@ public slots:
                                const QString &varLocation,
                                const bool &diagonal=false);
 
+    void slotUpdateChart(H_StrToInt distribution);
 
     //OPTIONS MENU
     void slotOpenSettingsDialog();
@@ -552,6 +551,8 @@ private:
     Graph *activeGraph;
 
     QMap<QString,QString> appSettings;
+
+    Chart *chart;
 
     QStringList prominenceIndexList;
 

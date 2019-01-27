@@ -1,10 +1,37 @@
+/***************************************************************************
+ SocNetV: Social Network Visualizer
+ version: 2.5
+ Written in Qt
+
+                         chart.h  -  description
+                             -------------------
+    copyright         : (C) 2005-2018 by Dimitris B. Kalamaras
+    project site      : http://socnetv.org
+
+ ***************************************************************************/
+
+/*******************************************************************************
+*     This program is free software: you can redistribute it and/or modify     *
+*     it under the terms of the GNU General Public License as published by     *
+*     the Free Software Foundation, either version 3 of the License, or        *
+*     (at your option) any later version.                                      *
+*                                                                              *
+*     This program is distributed in the hope that it will be useful,          *
+*     but WITHOUT ANY WARRANTY; without even the implied warranty of           *
+*     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            *
+*     GNU General Public License for more details.                             *
+*                                                                              *
+*     You should have received a copy of the GNU General Public License        *
+*     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
+********************************************************************************/
+
+
+
 #include "chart.h"
 
 #include <QtCharts/QChart>
 #include <QtCharts/QSplineSeries>
 
-
-#include <QtCharts/QChartView>
 #include <QtCharts/QPieSeries>
 #include <QtCharts/QPieSlice>
 #include <QtCharts/QAbstractBarSeries>
@@ -17,25 +44,20 @@
 #include <QtCharts/QScatterSeries>
 #include <QtCharts/QAreaSeries>
 #include <QtCharts/QLegend>
-#include <QtWidgets/QGridLayout>
-#include <QtWidgets/QFormLayout>
-#include <QtWidgets/QComboBox>
-#include <QtWidgets/QSpinBox>
-#include <QtWidgets/QCheckBox>
-#include <QtWidgets/QGroupBox>
-#include <QtWidgets/QLabel>
-#include <QtCore/QTime>
 #include <QtCharts/QBarCategoryAxis>
+#include <QtCore/QTime>
 
 #include <QtDebug>
+
+
 
 Chart::Chart(QWidget *parent) :
     QChartView (parent ),
     m_chart(new QChart)
 {
-
     qDebug() << "Chart(QWidget *parent) ";
-    this->setChart(m_chart);
+
+    setChart(m_chart);
 
 }
 
@@ -45,41 +67,78 @@ Chart::Chart(QChart *ch, QWidget *parent) :
 
     qDebug() << "Chart(QChart *ch, QWidget *parent) ";
 
-    QSplineSeries *m_series = new QSplineSeries;
-
-
-    m_chart = new QChart();
-    m_chart->legend()->hide();
-    m_chart->addSeries(m_series);
-    m_chart->setTitle("Simple");
-    m_chart->setTitleFont(QFont("Times",7));
-    m_chart->createDefaultAxes();
-    m_chart->axes(Qt::Vertical).first()->setRange(0, 10);
-    m_chart->setTheme(QChart::ChartThemeQt);
-    m_chart->setBackgroundBrush(QBrush(Qt::transparent));
-    m_chart->setBackgroundPen(QPen(Qt::transparent));
-    m_chart->setMargins(QMargins(0,0,0,0));
-    m_chart->axisX()->setLabelsFont(QFont("Times", 7));
-    m_chart->axisY()->setLabelsFont(QFont("Times", 7));
-    QPen axisPen;
-    axisPen.setBrush( QBrush(QColor(0,0,0,0)) );
-    axisPen.setWidthF(0.5);
-    axisPen.setStyle(Qt::SolidLine);
-    m_chart->axisY()->setLinePen(axisPen);
-
-    this->setChart(m_chart);
-    setRenderHint(QPainter::Antialiasing);
-    setMinimumWidth(300);
-    setMinimumHeight(200);
-    setFrameShape(QFrame::NoFrame);
-
-
 }
+
 
 
 Chart::~Chart(){
 
 }
+
+
+/**
+ * @brief Set the range of the (first) horizontal axis
+ * @param from
+ * @param to
+ */
+void Chart::setAxisXRange(const int &from, const int &to){
+    m_chart->axes(Qt::Horizontal).first()->setRange(from, to);
+
+}
+
+
+/**
+ * @brief Set the range of the vertical axis
+ * @param from
+ * @param to
+ */
+void Chart::setAxisYRange(const int &from, const int &to){
+    m_chart->axes(Qt::Vertical).first()->setRange(from, to);
+}
+
+
+
+/**
+ * @brief Set the label font of the horizontal axis
+ * @param font
+ */
+void Chart::setAxisXLabelFont(const QFont &font){
+    m_chart->axisX()->setLabelsFont(font);
+}
+
+
+
+/**
+ * @brief Set the label font of the vertical axis
+ * @param font
+ */
+void Chart::setAxisYLabelFont(const QFont &font){
+    m_chart->axisY()->setLabelsFont(font);
+}
+
+
+
+
+/**
+ * @brief Set the line pen of the horizontal axis
+ * @param font
+ */
+void Chart::setAxisXLinePen(const QPen &pen){
+    m_chart->axisX()->setLinePen(pen);
+}
+
+
+
+/**
+ * @brief Set the line pen of the vertical axis
+ * @param font
+ */
+void Chart::setAxisYLinePen(const QPen &pen){
+    m_chart->axisY()->setLinePen(pen);
+
+}
+
+
 
 
 /**
@@ -133,9 +192,9 @@ void Chart::setMargins(const QMargins &margins){
  * @brief Set the title of the QChart
  * @param title
  */
-void Chart::setTitle(const QString &title){
+void Chart::setTitle(const QString &title, const QFont &font){
     qDebug() << "Chart::setTitle()" ;
-    m_chart->setTitleFont(QFont("Times",7));
+    m_chart->setTitleFont(font);
     m_chart->setTitle(title);
 }
 

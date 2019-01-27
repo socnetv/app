@@ -334,6 +334,8 @@ signals:
     void signalSelectionChanged(const int &selectedVertices,
                                 const int &selectedEdges);
 
+    void signalUpdateChart(H_StrToInt distribution);
+
     /** Signals to GraphicsWidget */
     void signalDrawNode( const int &num, const int &size, const QString &nodeShape,
                    const QString &nodeColor,
