@@ -6,7 +6,7 @@
                          graph.h  -  description
                              -------------------
     copyright         : (C) 2005-2018 by Dimitris B. Kalamaras
-    project site      : http://socnetv.org
+    project site      : https://socnetv.org
 
  ***************************************************************************/
 
@@ -35,6 +35,10 @@
 #include <QHash>
 #include <QTextStream>
 #include <QThread>
+
+#include <QtCharts/QChartGlobal>
+#include <QtCharts/QSplineSeries>
+
 //FYI: stack is a wrapper around <deque> in C++, see: www.cplusplus.com/reference/stl/stack
 #include <stack>
 #include <map>
@@ -43,6 +47,11 @@
 #include "matrix.h"
 #include "parser.h"
 #include "webcrawler.h"
+
+QT_BEGIN_NAMESPACE
+class QPointF;
+QT_END_NAMESPACE
+
 
 using namespace std;
 
@@ -108,9 +117,6 @@ static const int MATRIX_DISTANCES_MANHATTAN= 13;
 static const int MATRIX_DISTANCES_JACCARD= 14;
 static const int MATRIX_DISTANCES_HAMMING= 15;
 static const int MATRIX_DISTANCES_CHEBYSHEV= 16;
-
-
-class QPointF;
 
 
 
@@ -334,7 +340,6 @@ signals:
     void signalSelectionChanged(const int &selectedVertices,
                                 const int &selectedEdges);
 
-    void signalUpdateChart(H_StrToInt distribution);
 
     /** Signals to GraphicsWidget */
     void signalDrawNode( const int &num, const int &size, const QString &nodeShape,
@@ -818,8 +823,11 @@ public:
                                      const bool &inverseWeights=true,
                                      const bool &dropIsolates=false) ;
 
+    void centralityDistribution(const int &index); //, QSplineSeries *series);
+
     void centralityDegree(const bool &weights=true,
                           const bool &dropIsolates=false);
+
     void centralityInformation(const bool considerWeights=false,
                                const bool inverseWeights=false);
     void centralityEigenvector(const bool &considerWeights=false,

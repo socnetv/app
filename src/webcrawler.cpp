@@ -6,7 +6,7 @@
                          webcrawler.cpp  -  description
                              -------------------
     copyright         : (C) 2005-2018 by Dimitris B. Kalamaras
-    project site      : http://socnetv.org
+    project site      : https://socnetv.org
 
  ***************************************************************************/
 
@@ -131,7 +131,7 @@ void WebCrawler_Spider::get(){
         request.setUrl(currentUrl);
         request.setRawHeader(
                     "User-Agent",
-                    "SocNetV harmless spider - see http://socnetv.org");
+                    "SocNetV harmless spider - see https://socnetv.org");
 
         if (m_delayedRequests) {
             m_wait_msecs = rand() %1000;

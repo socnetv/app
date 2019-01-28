@@ -6,7 +6,7 @@
                          dialognodefind.cpp  -  description
                              -------------------
     copyright         : (C) 2005-2018 by Dimitris B. Kalamaras
-    project site      : http://socnetv.org
+    project site      : https://socnetv.org
 
  ***************************************************************************/
 

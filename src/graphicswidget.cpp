@@ -6,7 +6,7 @@
                         graphicswidget.cpp description
                              -------------------
     copyright         : (C) 2005-2018 by Dimitris B. Kalamaras
-    project site      : http://socnetv.org
+    project site      : https://socnetv.org
 
  ***************************************************************************/
 
@@ -35,6 +35,7 @@
 #include <math.h>
 
 #include "mainwindow.h"
+
 #include "graphicsnode.h"
 #include "graphicsedge.h"
 #include "graphicsnodenumber.h"
@@ -229,7 +230,7 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
            << "direction type:" << type
            << " - nodeHash reports "<< nodeHash.size()<<" nodes.";
 
-    if (type != EDGE_RECIPROCATED ) {
+    if ( type != EDGE_RECIPROCATED ) {
 
         GraphicsEdge *edge=new GraphicsEdge (
                     this,

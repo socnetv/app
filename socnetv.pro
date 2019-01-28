@@ -60,7 +60,15 @@ FORMS += src/forms/dialogfilteredgesbyweight.ui \
     src/forms/dialogexportpdf.ui \
     src/forms/dialogexportimage.ui
 
-HEADERS += src/graphicswidget.h \
+HEADERS += src/mainwindow.h \
+    src/texteditor.h \
+    src/graph.h \
+    src/graphvertex.h \
+    src/matrix.h \
+    src/parser.h \
+    src/webcrawler.h \
+    src/chart.h \
+    src/graphicswidget.h \
     src/graphicsedge.h \
     src/graphicsedgeweight.h \
     src/graphicsedgelabel.h \
@@ -68,14 +76,6 @@ HEADERS += src/graphicswidget.h \
     src/graphicsnode.h \
     src/graphicsnodelabel.h \
     src/graphicsnodenumber.h \
-    src/graph.h \
-    src/graphvertex.h \
-    src/mainwindow.h \
-    src/matrix.h \
-    src/texteditor.h \
-    src/parser.h \
-    src/webcrawler.h \
-    src/chart.h \
     src/forms/dialogfilteredgesbyweight.h \
     src/forms/dialogedgedichotomization.h \
     src/forms/dialogwebcrawler.h \
@@ -96,7 +96,16 @@ HEADERS += src/graphicswidget.h \
     src/forms/dialogexportpdf.h \
     src/forms/dialogexportimage.h
 
-SOURCES += src/graphicswidget.cpp \
+SOURCES += src/main.cpp \
+    src/mainwindow.cpp \
+    src/texteditor.cpp \
+    src/graph.cpp \
+    src/graphvertex.cpp \
+    src/matrix.cpp \
+    src/parser.cpp \
+    src/webcrawler.cpp \
+    src/chart.cpp \
+    src/graphicswidget.cpp \
     src/graphicsedge.cpp \
     src/graphicsedgeweight.cpp \
     src/graphicsedgelabel.cpp \
@@ -104,15 +113,6 @@ SOURCES += src/graphicswidget.cpp \
     src/graphicsnode.cpp \
     src/graphicsnodelabel.cpp \
     src/graphicsnodenumber.cpp \
-    src/graph.cpp \
-    src/graphvertex.cpp \
-    src/main.cpp \
-    src/mainwindow.cpp \
-    src/matrix.cpp \
-    src/texteditor.cpp \
-    src/parser.cpp \
-    src/webcrawler.cpp \
-    src/chart.cpp \
     src/forms/dialogfilteredgesbyweight.cpp \
     src/forms/dialogedgedichotomization.cpp \
     src/forms/dialogwebcrawler.cpp \

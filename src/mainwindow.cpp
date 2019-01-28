@@ -7,7 +7,7 @@
                              -------------------
     copyright         : (C) 2005-2018 by Dimitris B. Kalamaras
     blog              : http://dimitris.apeiro.gr
-    project site      : http://socnetv.org
+    project site      : https://socnetv.org
 
  ***************************************************************************/
 
@@ -37,11 +37,10 @@
 #include <QPrintDialog>
 #include <QProgressDialog>
 #include <QKeySequence>
+#include <QDateTime>
 
 #include <QtCharts/QChart>
 #include <QtCharts/QChartView>
-#include <QtCharts/QSplineSeries>
-
 
 #include "mainwindow.h"
 #include "texteditor.h"
@@ -79,7 +78,7 @@
 #include "forms/dialogclusteringhierarchical.h"
 #include "forms/dialogdissimilarities.h"
 
-QT_CHARTS_USE_NAMESPACE
+
 
 bool printDebug = false;
 
@@ -5397,8 +5396,6 @@ void MainWindow::initSignalSlots() {
     connect ( activeGraph, &Graph::signalProgressBoxKill,
               this, &MainWindow::slotProgressBoxDestroy);
 
-    connect(activeGraph, SIGNAL(signalUpdateChart(H_StrToInt)),
-            this, SLOT(slotUpdateChart(H_StrToInt)) );
 
     //
     //signals and slots inside MainWindow
@@ -8547,20 +8544,15 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
 
 
 
-void MainWindow::slotUpdateChart(H_StrToInt distribution) {
+void MainWindow::slotUpdateChart(const int &index) {
 
     qDebug() << "slotUpdateChart()";
 
     QSplineSeries *series = new QSplineSeries();
     series->setName("spline");
 
-    QHashIterator<QString, int> i(distribution);
-    while (i.hasNext()) {
-        i.next();
-        //cout << i.key() << ": " << i.value() << endl;
-        series->append(i.key().toInt(), i.value());
+    activeGraph->centralityDistribution(index);//, *series);
 
-    }
     chart->addSeries(series);
     chart->createDefaultAxes();
 }
@@ -12698,6 +12690,8 @@ void MainWindow::slotAnalyzeCentralityDegree(){
         m_textEditors << ed;
     }
 
+    slotUpdateChart(INDEX_DC);
+
     statusMessage(tr("Out-Degree Centralities saved as: ") + QDir::toNativeSeparators(fn));
 }
 
@@ -14171,15 +14165,15 @@ void MainWindow::slotHelpCreateTips(){
  */
 void MainWindow::slotHelp(){
     statusMessage( tr("Opening the SocNetV Manual in your default web browser....") );
-    QDesktopServices::openUrl(QUrl("http://socnetv.org/docs/index.html"));
+    QDesktopServices::openUrl(QUrl("https://socnetv.org/docs/index.html"));
 }
 
 
 
 
 /**
- * @brief MainWindow::slotHelpCheckUpdateDialog
- * Opens a web browser to SocNetV website.
+ * @brief On user demand, makes a network request to SocNetV website to
+ * download the latest version text file.
  */
 void MainWindow::slotHelpCheckUpdateDialog() {
     qDebug() << "MW::slotHelpCheckUpdateDialog()";
@@ -14190,18 +14184,21 @@ void MainWindow::slotHelpCheckUpdateDialog() {
 
     connect ( http, &QNetworkAccessManager::finished,
               this, &MainWindow::slotHelpCheckUpdateParse );
-
-    request.setUrl(QUrl("http://socnetv.org/latestversion.txt"));
+    QNetworkRequest request (QUrl("https://socnetv.org/latestversion.txt"));
     request.setRawHeader(
                 "User-Agent",
-                "SocNetV harmless spider - see http://socnetv.org");
-
+                "SocNetV harmless spider - see https://socnetv.org");
     qDebug() << "MW::slotHelpCheckUpdateDialog() - making the call...";
     QNetworkReply *reply =  http->get(request) ;
     Q_UNUSED(reply);
 
 }
 
+
+/**
+ * @brief Parses the reply from the network request we do in slotHelpCheckUpdateDialog
+ * @param reply
+ */
 void MainWindow::slotHelpCheckUpdateParse(QNetworkReply *reply) {
     qDebug() << "MW::slotHelpCheckUpdateParse(reply)";
 
@@ -14213,7 +14210,7 @@ void MainWindow::slotHelpCheckUpdateParse(QNetworkReply *reply) {
     REMOTEVERSION = REMOTEVERSION.simplified();
 
     if (REMOTEVERSION.isEmpty()) {
-        slotHelpMessageToUserError("Error connecting to http://socnetv.org. "
+        slotHelpMessageToUserError("Error connecting to https://socnetv.org. "
                                    "Please, check your internet connection and try again.");
         return;
     }
@@ -14239,7 +14236,7 @@ void MainWindow::slotHelpCheckUpdateParse(QNetworkReply *reply) {
     remoteVersion = remoteVersionStr.toInt(&ok2, 10);
     qDebug() << "MW::slotHelpCheckUpdateParse(reply) - remoteVersion:" << remoteVersion;
     if (!ok2) {
-        slotHelpMessageToUserError("Error getting newest version details from http://socnetv.org. "
+        slotHelpMessageToUserError("Error getting newest version details from https://socnetv.org. "
                                    "Please, try again.");
         return;
 
@@ -14261,7 +14258,7 @@ void MainWindow::slotHelpCheckUpdateParse(QNetworkReply *reply) {
         case QMessageBox::Yes:
             statusMessage( tr("Opening SocNetV website in your default web browser....") );
             QDesktopServices::openUrl(QUrl
-                                      ("http://socnetv.org/downloads"
+                                      ("https://socnetv.org/downloads"
                                        "?utm_source=application&utm_medium=banner&utm_campaign=socnetv"+ VERSION
                                        ));
             break;
@@ -14298,10 +14295,10 @@ void MainWindow::slotHelpAbout(){
                 tr("<p><b>Version</b>: ") + VERSION + "</p>" +
                 tr("<p><b>Build</b>: ")  + BUILD + " </p>" +
 
-                tr("<p>Website: <a href=\"http://socnetv.org\">http://socnetv.org</a></p>")+
+                tr("<p>Website: <a href=\"https://socnetv.org\">https://socnetv.org</a></p>")+
 
                 tr("<p>(C) 2005-2018 by Dimitris V. Kalamaras</p>")+
-                tr("<p><a href=\"http://socnetv.org/contact\">Have questions? Contact us!</a></p>")+
+                tr("<p><a href=\"https://socnetv.org/contact\">Have questions? Contact us!</a></p>")+
 
                 tr("<p><b>Fortune cookie: </b><br> \"")  + fortuneCookie[randomCookie]  + "\"" +
 

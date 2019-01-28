@@ -6,7 +6,7 @@
                          graphicswidget.h  -  description
                              -------------------
     copyright         : (C) 2005-2018 by Dimitris B. Kalamaras
-    project site      : http://socnetv.org
+    project site      : https://socnetv.org
 
  ***************************************************************************/
 
@@ -29,9 +29,8 @@
 #define GRAPHICSWIDGET_H
 
 
-
 #include <QGraphicsView>
-#include <QMetaType>
+//#include <QMetaType>
 
 class MainWindow;
 
@@ -48,12 +47,9 @@ typedef QHash <int, GraphicsNode*> H_NumToNode;
 
 using namespace std;
 
-
 typedef QPair<int, int> SelectedEdge;
 
 Q_DECLARE_METATYPE(SelectedEdge)
-
-
 
 
 class GraphicsWidget : public QGraphicsView {

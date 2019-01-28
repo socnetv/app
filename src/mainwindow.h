@@ -7,7 +7,7 @@
                              -------------------
     copyright         : (C) 2005-2018 by Dimitris B. Kalamaras
     blog              : http://dimitris.apeiro.gr
-    project site      : http://socnetv.org
+    project site      : https://socnetv.org
 
  ***************************************************************************/
 
@@ -41,12 +41,12 @@
 #include <QMessageBox>
 #include <QStack>
 #include <QThread>
-#include <QMetaType>
-
+//#include <QMetaType>
 
 #include <math.h>
 
-#include "graph.h"
+#include "graph.h"    // needed here for static vars declared in Graph
+
 #include "forms/dialogfilteredgesbyweight.h"
 #include "forms/dialogdatasetselect.h"
 
@@ -59,9 +59,7 @@ static const int USER_MSG_CRITICAL_NO_EDGES=3;
 static const int USER_MSG_QUESTION=4;
 static const int USER_MSG_QUESTION_CUSTOM=5;
 
-
 typedef QHash <QString, int> H_StrToInt;
-
 
 QT_BEGIN_NAMESPACE
 class QGraphicsScene;
@@ -77,6 +75,10 @@ class QComboBox;
 class QGroupBox;
 class QTabWidget;
 class QSpinBox;
+class QNetworkReply;
+class QDateTime;
+class QNetworkAccessManager;
+class QNetworkRequest;
 QT_END_NAMESPACE
 
 using namespace std;
@@ -422,6 +424,8 @@ public slots:
     void slotAnalyzePrestigePageRank();
     void slotAnalyzePrestigeProximity();
 
+    void slotUpdateChart(const int &index);
+
     void slotAnalyzeCommunitiesCliqueCensus();
     void slotAnalyzeCommunitiesTriadCensus();
 
@@ -449,7 +453,7 @@ public slots:
                                const QString &varLocation,
                                const bool &diagonal=false);
 
-    void slotUpdateChart(H_StrToInt distribution);
+
 
     //OPTIONS MENU
     void slotOpenSettingsDialog();
@@ -759,7 +763,6 @@ private:
     QTime eTime;     //used  to time algorithms.
 
     QNetworkAccessManager *http;
-    QNetworkRequest request;
     QNetworkReply *reply;
 
 };

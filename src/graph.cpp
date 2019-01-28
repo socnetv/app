@@ -8,7 +8,7 @@
     copyright            : (C) 2005-2018 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
     website:             : http://dimitris.apeiro.gr
-    project site         : http://socnetv.org
+    project site         : https://socnetv.org
 
 *******************************************************************************/
 
@@ -29,15 +29,38 @@
 
 
 #include "graph.h"
+
+#include <QtGlobal>
 #include <QFile>
 #include <QtMath>
 #include <QPointF>
-#include <QDebug>		//used for qDebug messages
+#include <QDebug>
 #include <QHash>
 #include <QColor>
 #include <QTextCodec>
 #include <QFileInfo>
-#include <QtGlobal>
+
+#include <QSplineSeries>
+
+
+#include <QtCharts/QChart>
+#include <QtCharts/QSplineSeries>
+
+#include <QtCharts/QPieSeries>
+#include <QtCharts/QPieSlice>
+#include <QtCharts/QAbstractBarSeries>
+#include <QtCharts/QPercentBarSeries>
+#include <QtCharts/QStackedBarSeries>
+#include <QtCharts/QBarSeries>
+#include <QtCharts/QBarSet>
+#include <QtCharts/QLineSeries>
+#include <QtCharts/QSplineSeries>
+#include <QtCharts/QScatterSeries>
+#include <QtCharts/QAreaSeries>
+#include <QtCharts/QLegend>
+#include <QtCharts/QBarCategoryAxis>
+#include <QtCore/QTime>
+
 
 #include <cstdlib>		//allows the use of RAND_MAX macro 
 #include <math.h>
@@ -3465,7 +3488,7 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Reciprocity Report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -5904,7 +5927,7 @@ void Graph::writeEccentricity(const QString fileName, const bool considerWeights
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Eccentricity Report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -6269,7 +6292,7 @@ void Graph::writeCentralityInformation(const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Information Centrality report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -6508,7 +6531,7 @@ void Graph::writeCentralityEigenvector(const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Eigenvector Centrality report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -6769,10 +6792,86 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
 
     emit signalProgressBoxUpdate(N);
     emit signalProgressBoxKill();
-    emit signalUpdateChart(discreteSDCs);
+
 }
 
 
+/**
+ * @brief Computes the distribution of a centrality index scores.
+ * The result is returned as QSplineSeries series
+ * @param index
+ * @param series
+ */
+void Graph::centralityDistribution(const int &index ){ //, QSplineSeries *series) {
+
+    qDebug() << "Graph::centralityDistribution()";
+
+    H_StrToInt discreteClasses;
+
+    switch (index) {
+    case 0: {
+        break;
+    }
+    case INDEX_DC : {
+        discreteClasses = discreteSDCs;
+        break;
+    }
+    case INDEX_CC : {
+        discreteClasses = discreteCCs;
+        break;
+    }
+    case INDEX_IRCC : {
+        discreteClasses = discreteIRCCs;
+        break;
+    }
+    case INDEX_BC : {
+        discreteClasses = discreteBCs;
+        break;
+    }
+    case INDEX_SC : {
+        discreteClasses = discreteSCs;
+        break;
+    }
+    case INDEX_EC : {
+        discreteClasses = discreteECs;
+        break;
+    }
+    case INDEX_PC : {
+        discreteClasses = discretePCs;
+        break;
+    }
+    case INDEX_IC : {
+        discreteClasses = discreteICs;
+        break;
+    }
+    case INDEX_EVC : {
+        discreteClasses = discreteEVCs;
+        break;
+    }
+    case INDEX_DP : {
+        discreteClasses = discreteDPs;
+        break;
+    }
+    case INDEX_PRP : {
+        discreteClasses = discretePRPs;
+        break;
+    }
+    case INDEX_PP : {
+        discreteClasses = discretePPs;
+        break;
+    }
+    };
+
+
+    QHashIterator<QString, int> i(discreteClasses);
+    while (i.hasNext()) {
+        i.next();
+        //cout << i.key() << ": " << i.value() << endl;
+        //series.append(i.key().toInt(), i.value());
+
+    }
+
+}
 
 /**
  * @brief Writes the Degree Centrality to a file
@@ -7018,7 +7117,7 @@ void Graph::writeCentralityDegree ( const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Degree Centrality report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -7289,7 +7388,7 @@ void Graph::writeCentralityCloseness( const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Closeness Centrality report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -7609,7 +7708,7 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Influence Range Closeness Centrality report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -7870,7 +7969,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Betweenness Centrality report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -8089,7 +8188,7 @@ void Graph::writeCentralityStress( const QString fileName,
 
     outText << "<p class=\"small\">";
     outText << tr("Stress Centrality report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -8288,7 +8387,7 @@ void Graph::writeCentralityEccentricity(const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Eccentricity Centrality report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -8542,7 +8641,7 @@ void Graph::writeCentralityPower(const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Power Centrality report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -8991,7 +9090,7 @@ void Graph::writePrestigeDegree (const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Degree Prestige report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -9325,7 +9424,7 @@ void Graph::writePrestigeProximity( const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Proximity Prestige report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -9784,7 +9883,7 @@ void Graph::writePrestigePageRank(const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("PageRank Prestige report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -10983,7 +11082,7 @@ void Graph::writeMatrixWalks (const QString &fn,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Walks report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -11342,7 +11441,7 @@ void Graph::writeClusteringCoefficient( const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Clustering Coefficient report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -11480,7 +11579,7 @@ void Graph::writeTriadCensus( const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Triad Census report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -11785,7 +11884,7 @@ bool Graph::writeCliqueCensus(const QString &fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Clique Census Report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -12171,7 +12270,7 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Hierarchical Cluster Analysis report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -13015,7 +13114,7 @@ void Graph::writeMatrixDissimilarities(const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Dissimilarity Matrix Report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -13215,7 +13314,7 @@ void Graph::writeMatrixSimilarityMatching(const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Similarity Matrix by Matching Measure Report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -13387,7 +13486,7 @@ void Graph::writeMatrixSimilarityPearson(const QString fileName,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Pearson Correlation Coefficients Report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -19036,7 +19135,7 @@ void Graph::writeMatrix (const QString &fn,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Matrix report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -19345,7 +19444,7 @@ void Graph::writeMatrixAdjacency (const QString fn,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Adjacency matrix report, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -19500,7 +19599,7 @@ void Graph::writeMatrixAdjacencyPlot (const QString fn,
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Adjacency matrix plot, <br />");
-    outText << tr("Created by <a href=\"http://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
                .arg(VERSION).arg( actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) ) ;
     outText << "<br />";
     outText << tr("Computation time: %1 msecs").arg( computationTimer.elapsed() );
@@ -20046,32 +20145,32 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
     if ( prominenceIndex == 0) {
         // do nothing
     }
-    else if ( prominenceIndex == 1) {
+    else if ( prominenceIndex == INDEX_DC ) {
         if ( graphIsModified() || !calculatedDC )
             centralityDegree(true, dropIsolates);
     }
-    else if ( prominenceIndex == 3 ){
+    else if ( prominenceIndex == INDEX_IRCC ){
         if ( graphIsModified() || !calculatedIRCC )
             centralityClosenessIR();
     }
-    else if ( prominenceIndex == 8 ) {
+    else if ( prominenceIndex == INDEX_IC ) {
         if ( graphIsModified() || !calculatedIC )
             centralityInformation();
     }
-    else if ( prominenceIndex == 9){
+    else if ( prominenceIndex == INDEX_EVC ){
         if ( graphIsModified() || !calculatedEVC )
             centralityEigenvector(true, dropIsolates);
     }
 
-    else if ( prominenceIndex == 10){
+    else if ( prominenceIndex == INDEX_DP ){
         if ( graphIsModified() || !calculatedDP )
             prestigeDegree(true, dropIsolates);
     }
-    else if ( prominenceIndex == 11 ) {
+    else if ( prominenceIndex == INDEX_PRP ) {
         if ( graphIsModified() || !calculatedPRP )
             prestigePageRank();
     }
-    else if ( prominenceIndex == 12 ){
+    else if ( prominenceIndex == INDEX_PP ){
         if ( graphIsModified() || !calculatedPP )
             prestigeProximity(considerWeights, inverseWeights);
     }
@@ -20111,74 +20210,73 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
             C=0;maxC=0;
             break;
         }
-        case 1 : {
+        case INDEX_DC : {
             C=(*it)->SDC();
             std= (*it)->SDC();
             maxC=maxSDC;
             break;
         }
-        case 2 : {
+        case INDEX_CC : {
             C=(*it)->CC();
             std= (*it)->SCC();
             maxC=maxSCC;
             break;
         }
-        case 3 : {
+        case INDEX_IRCC : {
             C=(*it)->IRCC();
             std= (*it)->SIRCC();
             maxC=maxIRCC;
             break;
         }
-        case 4 : {
+        case INDEX_BC : {
             C=(*it)->BC();
             std= (*it)->SBC();
             maxC=maxSBC;
             break;
         }
-        case 5 : {
+        case INDEX_SC : {
             C=(*it)->SC();
             std= (*it)->SSC();
             maxC=maxSSC;
             break;
         }
-        case 6 : {
+        case INDEX_EC : {
             C=(*it)->EC();
             std= (*it)->SEC();
             maxC=maxEC;
             break;
         }
-        case 7 : {
+        case INDEX_PC : {
             C=(*it)->PC();
             std= (*it)->SPC();
             maxC=maxSPC;
             break;
         }
-        case 8 : {
+        case INDEX_IC : {
             C=(*it)->IC();
             std= (*it)->SIC();
             maxC=maxIC;
             break;
         }
-        case 9 : {
+        case INDEX_EVC : {
             C=(*it)->EVC();
             std= (*it)->SEVC();
             maxC=1;
             break;
         }
-
-        case 10 : {
+        case INDEX_DP : {
             C=(*it)->SDP();
             std= (*it)->SDP();
             maxC=maxSDP;
             break;
         }
-        case 11 : {
+        case INDEX_PRP : {
             C=(*it)->PRP();
             std= (*it)->SPRP();
             maxC=1;
             break;
         }
-        case 12 : {
+        case INDEX_PP : {
             C=(*it)->PP();
             std= (*it)->SPP();
             maxC=maxPP;
