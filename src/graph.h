@@ -37,7 +37,8 @@
 #include <QThread>
 
 #include <QtCharts/QChartGlobal>
-#include <QtCharts/QSplineSeries>
+#include <QSplineSeries>
+
 
 //FYI: stack is a wrapper around <deque> in C++, see: www.cplusplus.com/reference/stl/stack
 #include <stack>
@@ -52,6 +53,7 @@ QT_BEGIN_NAMESPACE
 class QPointF;
 QT_END_NAMESPACE
 
+QT_CHARTS_USE_NAMESPACE
 
 using namespace std;
 
@@ -168,6 +170,35 @@ class GraphDistancesCompare {
        if (t1.distance == t2.distance)
             return t1.target > t2.target;
        return t1.distance > t2.distance;  //minimum priority
+       // Returns true if t1 is closer than t2
+       // else
+    }
+};
+
+
+
+
+
+class PairVF
+{
+public:
+    qreal value;
+    qreal frequency;
+
+    PairVF(qreal v, qreal f)
+        : value(v), frequency(f)
+    {
+
+    }
+};
+
+
+// implement a min-priority queue
+class PairVFCompare {
+    public:
+    bool operator()(PairVF& v1, PairVF& v2)
+    {
+       return v1.value > v2.value; //minimum priority
        // Returns true if t1 is closer than t2
        // else
     }
@@ -823,7 +854,7 @@ public:
                                      const bool &inverseWeights=true,
                                      const bool &dropIsolates=false) ;
 
-    void centralityDistribution(const int &index); //, QSplineSeries *series);
+    void prominenceDistribution(const int &index, QSplineSeries *series);
 
     void centralityDegree(const bool &weights=true,
                           const bool &dropIsolates=false);

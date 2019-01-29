@@ -40,26 +40,7 @@
 #include <QTextCodec>
 #include <QFileInfo>
 
-#include <QSplineSeries>
-
-
-#include <QtCharts/QChart>
-#include <QtCharts/QSplineSeries>
-
-#include <QtCharts/QPieSeries>
-#include <QtCharts/QPieSlice>
-#include <QtCharts/QAbstractBarSeries>
-#include <QtCharts/QPercentBarSeries>
-#include <QtCharts/QStackedBarSeries>
-#include <QtCharts/QBarSeries>
-#include <QtCharts/QBarSet>
-#include <QtCharts/QLineSeries>
-#include <QtCharts/QSplineSeries>
-#include <QtCharts/QScatterSeries>
-#include <QtCharts/QAreaSeries>
-#include <QtCharts/QLegend>
-#include <QtCharts/QBarCategoryAxis>
-#include <QtCore/QTime>
+//#include <QSplineSeries>
 
 
 #include <cstdlib>		//allows the use of RAND_MAX macro 
@@ -6802,9 +6783,9 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
  * @param index
  * @param series
  */
-void Graph::centralityDistribution(const int &index ){ //, QSplineSeries *series) {
+void Graph::prominenceDistribution(const int &index, QSplineSeries *series) {
 
-    qDebug() << "Graph::centralityDistribution()";
+    qDebug() << "Graph::prominenceDistribution()";
 
     H_StrToInt discreteClasses;
 
@@ -6862,15 +6843,20 @@ void Graph::centralityDistribution(const int &index ){ //, QSplineSeries *series
     }
     };
 
-
+    priority_queue<PairVF, vector<PairVF>, PairVFCompare> seriesPQ;
     QHashIterator<QString, int> i(discreteClasses);
     while (i.hasNext()) {
         i.next();
-        //cout << i.key() << ": " << i.value() << endl;
-        //series.append(i.key().toInt(), i.value());
-
+        qDebug() << i.key() << ": " << i.value() << endl;
+        seriesPQ.push(PairVF(i.key().toDouble(), i.value()));
     }
 
+    while (!seriesPQ.empty()) {
+
+        qDebug() << seriesPQ.top().value << " : " << seriesPQ.top().frequency << endl;
+        series->append( seriesPQ.top().value, seriesPQ.top().frequency  );
+        seriesPQ.pop();
+    }
 }
 
 /**

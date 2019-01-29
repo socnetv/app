@@ -29,9 +29,8 @@
 
 #include "chart.h"
 
+#include <QDebug>
 #include <QtCharts/QChart>
-#include <QtCharts/QSplineSeries>
-
 #include <QtCharts/QPieSeries>
 #include <QtCharts/QPieSlice>
 #include <QtCharts/QAbstractBarSeries>
@@ -46,8 +45,6 @@
 #include <QtCharts/QLegend>
 #include <QtCharts/QBarCategoryAxis>
 #include <QtCore/QTime>
-
-#include <QDebug>
 
 
 

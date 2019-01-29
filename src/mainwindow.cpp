@@ -41,6 +41,7 @@
 
 #include <QtCharts/QChart>
 #include <QtCharts/QChartView>
+#include <QSplineSeries>
 
 #include "mainwindow.h"
 #include "texteditor.h"
@@ -4893,8 +4894,8 @@ void MainWindow::initPanels(){
 
     // Create our mini chart
     // q: which data will we populate it initially?
-    QSplineSeries *series = new QSplineSeries();
-    series->setName("spline");
+//    QSplineSeries *series = new QSplineSeries();
+//    series->setName("spline");
 
 //    series->append(0, 6);
 //    series->append(1, 4);
@@ -8542,20 +8543,6 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
 }
 
 
-
-
-void MainWindow::slotUpdateChart(const int &index) {
-
-    qDebug() << "slotUpdateChart()";
-
-    QSplineSeries *series = new QSplineSeries();
-    series->setName("spline");
-
-    activeGraph->centralityDistribution(index);//, *series);
-
-    chart->addSeries(series);
-    chart->createDefaultAxes();
-}
 
 
 
@@ -12690,7 +12677,7 @@ void MainWindow::slotAnalyzeCentralityDegree(){
         m_textEditors << ed;
     }
 
-    slotUpdateChart(INDEX_DC);
+    slotAnalyzeProminenceDistributionChart(INDEX_DC);
 
     statusMessage(tr("Out-Degree Centralities saved as: ") + QDir::toNativeSeparators(fn));
 }
@@ -13199,6 +13186,62 @@ void MainWindow::slotAnalyzeCentralityEccentricity(){
 
     statusMessage(tr("Eccentricity Centralities saved as: ")+ QDir::toNativeSeparators(fn));
 }
+
+
+
+
+/**
+ * @brief Show a chart with the distribution of a Prominence Score
+ * @param index
+ */
+void MainWindow::slotAnalyzeProminenceDistributionChart(const int &index) {
+
+    qDebug() << "slotAnalyzeProminenceDistributionChart()";
+
+//    QSplineSeries series;// = new QSplineSeries();
+//    series.setName("spline");
+
+//    activeGraph->prominenceDistribution(index, series);
+
+   QSplineSeries *series = new QSplineSeries();
+
+   activeGraph->prominenceDistribution(index, series);
+
+//    series->append(0, 6);
+//    series->append(1, 4);
+//    series->append(2, 8);
+//        series->append(3, 4);
+//        series->append(5, 5);
+       // *series << QPointF(6, 1) << QPointF(7, 3) << QPointF(8, 6) << QPointF(9, 3) << QPointF(10, 2);
+
+
+    chart->addSeries(series);
+    chart->setTitle("Degree", QFont("Times",8));
+    chart->toggleLegend(false);
+    chart->createDefaultAxes();
+
+//        chart->setMinimumWidth(200);
+//        chart->setMaximumHeight(chartHeight);
+//        chart->setMinimumHeight(chartHeight);
+        chart->setFrameShape(QFrame::NoFrame);
+        chart->setFrameShape(QFrame::Box);
+
+        //chart->setAxisXRange(0,10);
+        //chart->setAxisYRange(0,10);
+        chart->setAxisXLabelFont(QFont("Times", 7));
+        chart->setAxisYLabelFont(QFont("Times", 7));
+
+        QPen axisPen;
+        axisPen.setBrush( QBrush(QColor(0,0,0,0)) );
+        axisPen.setWidthF(0.5);
+        axisPen.setStyle(Qt::SolidLine);
+        chart->setAxisYLinePen(axisPen);
+
+
+
+
+}
+
 
 
 

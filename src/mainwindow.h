@@ -78,7 +78,6 @@ class QSpinBox;
 class QNetworkReply;
 class QDateTime;
 class QNetworkAccessManager;
-class QNetworkRequest;
 QT_END_NAMESPACE
 
 using namespace std;
@@ -424,7 +423,7 @@ public slots:
     void slotAnalyzePrestigePageRank();
     void slotAnalyzePrestigeProximity();
 
-    void slotUpdateChart(const int &index);
+    void slotAnalyzeProminenceDistributionChart(const int &index);
 
     void slotAnalyzeCommunitiesCliqueCensus();
     void slotAnalyzeCommunitiesTriadCensus();
