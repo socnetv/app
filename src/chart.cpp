@@ -214,13 +214,21 @@ void Chart::addSeries(QSplineSeries *series) {
     m_chart->addSeries(series);
 }
 
+
+
 /**
- * @brief Chart::appendToSeries ??
+ * @brief Adds the data point p(qreal,qreal) to the series.
  * @param p
  */
 void Chart::appendToSeries(const QPointF &p) {
     m_series->append(p);
-//    m_chart->addSeries();
-
+    // *m_series<<p;
 }
 
+
+/**
+ * @brief Removes and deletes all series objects that have been added to the chart.
+ */
+void Chart::removeAllSeries() {
+    m_chart->removeAllSeries();
+}

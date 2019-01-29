@@ -4893,46 +4893,41 @@ void MainWindow::initPanels(){
 
 
     // Create our mini chart
-    // q: which data will we populate it initially?
-//    QSplineSeries *series = new QSplineSeries();
-//    series->setName("spline");
-
-//    series->append(0, 6);
-//    series->append(1, 4);
-//    series->append(2, 8);
-//    series->append(3, 4);
-//    series->append(5, 5);
-//    *series << QPointF(6, 1) << QPointF(7, 3) << QPointF(8, 6) << QPointF(9, 3) << QPointF(10, 2);
 
     chart = new Chart(this);
     chart->setTheme();
     chart->setBackgroundBrush(QBrush(Qt::transparent));
     chart->setChartBackgroundBrush();
     chart->setChartBackgroundPen();
-//    chart->addSeries(series);
-//    chart->setTitle("Degree", QFont("Times",8));
-//    chart->toggleLegend(false);
-//    chart->createDefaultAxes();
-    chart->setMargins(QMargins());
+    chart->setTitle("Chart", QFont("Times",8));
+    chart->toggleLegend(false);
     chart->setRenderHint(QPainter::Antialiasing);
 
     int chartHeight = 200;
-//    chart->setMinimumWidth(200);
-//    chart->setMaximumHeight(chartHeight);
-//    chart->setMinimumHeight(chartHeight);
-//    chart->setFrameShape(QFrame::NoFrame);
-//    chart->setFrameShape(QFrame::Box);
+    chart->setMinimumWidth(200);
+    chart->setMaximumHeight(chartHeight);
+    chart->setMinimumHeight(chartHeight);
+    chart->setFrameShape(QFrame::NoFrame);
+    chart->setFrameShape(QFrame::Box);
 
-//    chart->setAxisXRange(0,10);
-//    chart->setAxisYRange(0,10);
-//    chart->setAxisXLabelFont(QFont("Times", 7));
-//    chart->setAxisYLabelFont(QFont("Times", 7));
+    // Q: Populate it with dummy point
+    QSplineSeries *series = new QSplineSeries();
+    *series << QPointF(0,0);
 
-//    QPen axisPen;
-//    axisPen.setBrush( QBrush(QColor(0,0,0,0)) );
-//    axisPen.setWidthF(0.5);
-//    axisPen.setStyle(Qt::SolidLine);
-//    chart->setAxisYLinePen(axisPen);
+    chart->addSeries(series);
+    chart->createDefaultAxes();
+
+    chart->setAxisXRange(0,10);
+    chart->setAxisYRange(0,10);
+    chart->setAxisXLabelFont(QFont("Times", 7));
+    chart->setAxisYLabelFont(QFont("Times", 7));
+
+    QPen axisPen;
+    axisPen.setBrush( QBrush(QColor(0,0,0,0)) );
+    axisPen.setWidthF(0.5);
+    axisPen.setStyle(Qt::SolidLine);
+    chart->setAxisYLinePen(axisPen);
+    chart->setMargins(QMargins());
 
     propertiesGrid->addWidget(chart,20,0,1,2);
     propertiesGrid->setRowMinimumHeight(20,chartHeight);
@@ -12788,6 +12783,8 @@ void MainWindow::slotAnalyzeCentralityCloseness(){
         m_textEditors << ed;
     }
 
+    slotAnalyzeProminenceDistributionChart(INDEX_CC);
+
     statusMessage(tr("Closeness Centralities  saved as: ") + QDir::toNativeSeparators(fn));
 }
 
@@ -13201,44 +13198,32 @@ void MainWindow::slotAnalyzeProminenceDistributionChart(const int &index) {
 //    QSplineSeries series;// = new QSplineSeries();
 //    series.setName("spline");
 
-//    activeGraph->prominenceDistribution(index, series);
+    // Clear chart from old series.
+   chart->removeAllSeries();
 
+   // Create new series
    QSplineSeries *series = new QSplineSeries();
 
+   // Call Graph to compute index distribution
+   // and return it to 'series'
    activeGraph->prominenceDistribution(index, series);
 
-//    series->append(0, 6);
-//    series->append(1, 4);
-//    series->append(2, 8);
-//        series->append(3, 4);
-//        series->append(5, 5);
-       // *series << QPointF(6, 1) << QPointF(7, 3) << QPointF(8, 6) << QPointF(9, 3) << QPointF(10, 2);
+   // Add series to chart
+   chart->addSeries(series);
+   chart->setTitle("Degree", QFont("Times",8));
+   chart->toggleLegend(false);
+   chart->createDefaultAxes();
 
+   //chart->setAxisXRange(0,10);
+   //chart->setAxisYRange(0,10);
+   chart->setAxisXLabelFont(QFont("Times", 7));
+   chart->setAxisYLabelFont(QFont("Times", 7));
 
-    chart->addSeries(series);
-    chart->setTitle("Degree", QFont("Times",8));
-    chart->toggleLegend(false);
-    chart->createDefaultAxes();
-
-//        chart->setMinimumWidth(200);
-//        chart->setMaximumHeight(chartHeight);
-//        chart->setMinimumHeight(chartHeight);
-        chart->setFrameShape(QFrame::NoFrame);
-        chart->setFrameShape(QFrame::Box);
-
-        //chart->setAxisXRange(0,10);
-        //chart->setAxisYRange(0,10);
-        chart->setAxisXLabelFont(QFont("Times", 7));
-        chart->setAxisYLabelFont(QFont("Times", 7));
-
-        QPen axisPen;
-        axisPen.setBrush( QBrush(QColor(0,0,0,0)) );
-        axisPen.setWidthF(0.5);
-        axisPen.setStyle(Qt::SolidLine);
-        chart->setAxisYLinePen(axisPen);
-
-
-
+   QPen axisPen;
+   axisPen.setBrush( QBrush(QColor(0,0,0,0)) );
+   axisPen.setWidthF(0.5);
+   axisPen.setStyle(Qt::SolidLine);
+   chart->setAxisYLinePen(axisPen);
 
 }
 

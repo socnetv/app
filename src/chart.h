@@ -57,6 +57,7 @@ public:
     void setTitle(const QString &title = QString::null, const QFont &font=QFont());
     void addSeries(QSplineSeries *series);
     void appendToSeries (const QPointF &p);
+    void removeAllSeries();
     void createDefaultAxes();
     void setAxisXRange(const int &from, const int &to);
     void setAxisYRange(const int &from, const int &to);

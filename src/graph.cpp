@@ -5617,19 +5617,25 @@ void Graph::minmax(qreal C, GraphVertex *v, qreal &max, qreal &min, int &maxNode
 
 
 /**
- * @brief Calculates the number of discrete centrality classes of all vertices
-    It stores that number in a QHash<QString,int> type where the centrality value is the key.
-    Called from graphDistanceGeodesicCompute()
+ * @brief Checks if score C is a new prominence class
+ * If yes, it stores that number in a QHash<QString,int> type where the score is the key.
+ * If no, increases the frequency of this prominence score by 1
+ * Called from graphDistanceGeodesicCompute()
  * @param C
  * @param discreteClasses
  * @param classes
  */
 void Graph::resolveClasses(qreal C, H_StrToInt &discreteClasses, int &classes){
+    int frq = 0;
     H_StrToInt::iterator it2;
     it2 = discreteClasses.find(QString::number(C));    //Amort. O(1) complexity
     if (it2 == discreteClasses.end() )	{
         classes++;
         discreteClasses.insert(QString::number(C), classes);
+    }
+    else {
+        frq = it2.value() ;
+        discreteClasses.insert(QString::number(C), frq + 1);
     }
 }
 
@@ -5643,12 +5649,17 @@ void Graph::resolveClasses(qreal C, H_StrToInt &discreteClasses, int &classes){
  * @param vertex
  */
 void Graph::resolveClasses(qreal C, H_StrToInt &discreteClasses, int &classes, int vertex){
+    int frq = 0;
     H_StrToInt::iterator it2;
     Q_UNUSED(vertex);
     it2 = discreteClasses.find(QString::number(C));    //Amort. O(1) complexity
     if (it2 == discreteClasses.end() )	{
         classes++;
-        discreteClasses.insert(QString::number(C), classes);
+        discreteClasses.insert(QString::number(C), 1);
+    }
+    else {
+        frq = it2.value() ;
+        discreteClasses.insert(QString::number(C), frq + 1);
     }
 }
 
@@ -6847,7 +6858,7 @@ void Graph::prominenceDistribution(const int &index, QSplineSeries *series) {
     QHashIterator<QString, int> i(discreteClasses);
     while (i.hasNext()) {
         i.next();
-        qDebug() << i.key() << ": " << i.value() << endl;
+        qDebug() << "discreteClasses: " << i.key() << ": " << i.value() << endl;
         seriesPQ.push(PairVF(i.key().toDouble(), i.value()));
     }
 
