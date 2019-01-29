@@ -1,4 +1,4 @@
-[![socnetv](/src/images/socnetv.png)](http://socnetv.org) SocNetV - Social Network Visualizer
+[![socnetv](/src/images/socnetv.png)](https://socnetv.org) SocNetV - Social Network Visualizer
 ====================================
 
 
@@ -66,7 +66,7 @@ The documentation is also Free, licensed under the Free Documentation License (F
 2. Availability & License
 -------------------------
 
-Official Website: http://socnetv.org
+Official Website: https://socnetv.org
 Email: info@socnetv.org
 
 Author: Dimitris V. Kalamaras 
@@ -105,7 +105,7 @@ You can install SocNetV :
 SocNetV binary packages are available for Windows, MacOS and Linux.
 
 You can download a binary package for your Operating System from the project's
-webpage at: http://socnetv.org/downloads
+webpage at: https://socnetv.org/downloads
 
 If there is no package for your OS, please download and compile the source code.
 
