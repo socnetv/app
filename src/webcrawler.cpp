@@ -147,7 +147,10 @@ void WebCrawler_Spider::get(){
         Q_UNUSED(reply);
         m_visitedNodes++;
 
-
+        if ( QThread::currentThread()->isInterruptionRequested() ) {
+            qDebug() << "==   wc_spider::get() - Thread isInterruptionRequested() - RETURN!!!";
+             return;
+         }
     } while ( 1 );
 
     qDebug() << "==   wc_spider::get() - Finished infinite loop!";

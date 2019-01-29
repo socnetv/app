@@ -69,7 +69,9 @@ Chart::Chart(QChart *ch, QWidget *parent) :
 
 
 Chart::~Chart(){
-
+    qDebug()<< "~Chart() - deleting pointers";
+    delete m_chart;
+    delete m_series;
 }
 
 
@@ -211,7 +213,15 @@ void Chart::createDefaultAxes(){
 void Chart::addSeries(QSplineSeries *series) {
     qDebug() << "Chart::addSeries()" ;
   //  m_series = series;
-    m_chart->addSeries(series);
+    if (series) {
+     m_chart->addSeries(series);
+    }
+    else {
+        m_series = new QSplineSeries();
+        *m_series << QPointF(0,0);
+        m_chart->addSeries(m_series);
+    }
+
 }
 
 

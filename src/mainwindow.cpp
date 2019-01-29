@@ -184,6 +184,7 @@ MainWindow::~MainWindow() {
 
     delete scene;
     delete graphicsWidget;
+    delete chart;
 
     foreach ( TextEditor *ed, m_textEditors) {
         ed->close();
@@ -253,10 +254,13 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
     terminateThreads("closeEvent()");
 
     qDebug() << "MW::closeEvent() - Deleting other objects/pointers...";
+
     delete printer;
     delete printerPDF;
     delete graphicsWidget;
+    delete activeGraph;
     delete scene;
+    delete chart;
 
     qDebug() << "MW::closeEvent() - Clearing and deleting text editors...";
     foreach ( TextEditor *ed, m_textEditors) {
@@ -4914,20 +4918,20 @@ void MainWindow::initPanels(){
     QSplineSeries *series = new QSplineSeries();
     *series << QPointF(0,0);
 
-    chart->addSeries(series);
-    chart->createDefaultAxes();
+//    chart->addSeries();
+//    chart->createDefaultAxes();
 
-    chart->setAxisXRange(0,10);
-    chart->setAxisYRange(0,10);
-    chart->setAxisXLabelFont(QFont("Times", 7));
-    chart->setAxisYLabelFont(QFont("Times", 7));
+//    chart->setAxisXRange(0,10);
+//    chart->setAxisYRange(0,10);
+//    chart->setAxisXLabelFont(QFont("Times", 7));
+//    chart->setAxisYLabelFont(QFont("Times", 7));
 
-    QPen axisPen;
-    axisPen.setBrush( QBrush(QColor(0,0,0,0)) );
-    axisPen.setWidthF(0.5);
-    axisPen.setStyle(Qt::SolidLine);
-    chart->setAxisYLinePen(axisPen);
-    chart->setMargins(QMargins());
+//    QPen axisPen;
+//    axisPen.setBrush( QBrush(QColor(0,0,0,0)) );
+//    axisPen.setWidthF(0.5);
+//    axisPen.setStyle(Qt::SolidLine);
+//    chart->setAxisYLinePen(axisPen);
+//    chart->setMargins(QMargins());
 
     propertiesGrid->addWidget(chart,20,0,1,2);
     propertiesGrid->setRowMinimumHeight(20,chartHeight);
@@ -5539,7 +5543,11 @@ void MainWindow::initApp(){
                 );
     }
 
-
+    /** Clear Chart */
+    chart->removeAllSeries();
+    chart->addSeries();
+    chart->createDefaultAxes();
+    chart->setMargins(QMargins());
     /** Clear LCDs **/
     slotNetworkChanged(0, 0, 0, 0, 0);
 
@@ -5550,6 +5558,7 @@ void MainWindow::initApp(){
     rightPanelClickedEdgeNameLCD->setText("-");
     rightPanelClickedEdgeWeightLCD->setText("-");
     rightPanelClickedEdgeReciprocalWeightLCD->setText("");
+
 
     /** Clear toolbox and menu checkboxes **/
     toolBoxEditEdgeSymmetrizeSelect->setCurrentIndex(0);

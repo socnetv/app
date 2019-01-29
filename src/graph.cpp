@@ -242,6 +242,8 @@ Graph::Graph() {
 Graph::~Graph() {
     qDebug()<<"Graph::~Graph() - Calling clear()";
     clear("exit");
+    delete file_parser;
+
 }
 
 
@@ -324,7 +326,6 @@ void Graph::clear(const QString &reason) {
     m_clickedEdge.v1=0;
     m_clickedEdge.v2=0;
 
-
     order=true;		//returns true if the vpositions of the list is ordered.
 
     m_directed=true;
@@ -367,11 +368,11 @@ void Graph::clear(const QString &reason) {
     graphLoadedTerminateParserThreads("clear");
     webCrawlTerminateThreads("clear");
 
-
     if ( reason != "exit") {
         graphSetModified(graphModifiedFlag,true);
     }
 }
+
 
 
 /**
@@ -2951,24 +2952,23 @@ int Graph:: verticesWithReciprocalEdges(){
 void Graph::webCrawlTerminateThreads (QString reason){
     qDebug() << "Graph::webCrawlTerminateThreads() - reason " << reason
                 << "Checking wc_spiderThread...";
-    if (wc_spiderThread.isRunning() ) {
-//        qDebug() << "Graph::webCrawlTerminateThreads() - deleting wc_spider pointer";
-//        delete wc_spider;
-//        wc_spider= 0;  // see why here: https://goo.gl/tQxpGA
-
+    while (wc_spiderThread.isRunning() ) {
         qDebug() << "Graph::webCrawlTerminateThreads()  - wc_spiderThread running. "
                     "Calling wc_spiderThread.quit()";
+        wc_spiderThread.requestInterruption();
         wc_spiderThread.quit();
+        wc_spiderThread.wait();
 
      }
 
 
     qDebug() << "Graph::webCrawlTerminateThreads() - Checking wc_parserThread...";
-    if (wc_parserThread.isRunning() ) {
+    while (wc_parserThread.isRunning() ) {
 
         qDebug() << "Graph::webCrawlTerminateThreads()  - wc_parserThread running. "
                     "Calling wc_parserThread.quit()";
         wc_parserThread.quit();
+        wc_parserThread.wait();
 
      }
 

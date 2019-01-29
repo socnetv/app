@@ -55,7 +55,7 @@ public:
     ~Chart();
 
     void setTitle(const QString &title = QString::null, const QFont &font=QFont());
-    void addSeries(QSplineSeries *series);
+    void addSeries(QSplineSeries *series = Q_NULLPTR );
     void appendToSeries (const QPointF &p);
     void removeAllSeries();
     void createDefaultAxes();
