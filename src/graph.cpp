@@ -1034,6 +1034,7 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
            << "threshold list" << thresholds;
     QList<int> foundList;
     bool searchResult = false;
+    // TODO Support other prominence scores.
     if ( ! graphIsModified() && calculatedDC ) {
 
         VList::const_iterator it;
