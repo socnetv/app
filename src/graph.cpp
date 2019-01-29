@@ -259,11 +259,20 @@ void Graph::clear(const QString &reason) {
     m_graph.clear();
     vpos.clear();
 
-    discreteDPs.clear(); discreteSDCs.clear(); discreteCCs.clear();
-    discreteBCs.clear(); discreteSCs.clear(); discreteIRCCs.clear();
-    discreteECs.clear(); discreteEccentricities.clear();
-    discretePCs.clear(); discreteICs.clear();  discretePRPs.clear();
+    discreteDPs.clear();
+    discreteSDCs.clear();
+    discreteCCs.clear();
+    discreteBCs.clear();
+    discreteSCs.clear();
+    discreteIRCCs.clear();
+    discreteECs.clear();
+    discreteEccentricities.clear();
+    discretePCs.clear();
+    discreteICs.clear();
+    discretePRPs.clear();
     discretePPs.clear();
+    discreteEVCs.clear();
+
     if ( DM.size() > 0) {
         qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
         DM.clear();
@@ -5631,7 +5640,7 @@ void Graph::resolveClasses(qreal C, H_StrToInt &discreteClasses, int &classes){
     it2 = discreteClasses.find(QString::number(C));    //Amort. O(1) complexity
     if (it2 == discreteClasses.end() )	{
         classes++;
-        discreteClasses.insert(QString::number(C), classes);
+        discreteClasses.insert(QString::number(C), 1);
     }
     else {
         frq = it2.value() ;
@@ -6569,6 +6578,7 @@ void Graph::centralityEigenvector(const bool &considerWeights,
     int N = vertices(dropIsolates);
 
     qreal EVC[N];
+    qreal SEVC = 0;
 
     graphMatrixAdjacencyCreate(dropIsolates, considerWeights,
                                inverseWeights, symmetrize);
@@ -6613,8 +6623,11 @@ void Graph::centralityEigenvector(const bool &considerWeights,
 
     emit statusMessage(tr("Leading eigenvector computed. "
                           "Analysing centralities. Please wait..."));
+
     i = 0;
+
     meanEVC = sumEVC / (qreal) N;
+
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
 
         if (!(*it)->isIsolated() && dropIsolates) {
@@ -6622,7 +6635,10 @@ void Graph::centralityEigenvector(const bool &considerWeights,
         }
 
         (*it) -> setEVC( EVC[i]);
-        (*it) -> setSEVC( EVC[i] / maxEVC);
+        SEVC = EVC[i] / maxEVC ;
+        (*it) -> setSEVC( SEVC );
+
+        resolveClasses(SEVC, discreteEVCs, classesEVC);
 
         varianceEVC += (EVC[i]-meanEVC) * (EVC[i]-meanEVC) ;
 
@@ -6672,7 +6688,6 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
     int N=vertices(dropIsolates);
 
     VList::const_iterator it, it1;
-    H_StrToInt::iterator it2;
 
     QString pMsg =  tr("Computing out-Degree Centralities. \nPlease wait...");
     emit statusMessage( pMsg );
@@ -6724,12 +6739,8 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
 
         sumSDC+=SDC;
 
-        it2 = discreteSDCs.find(QString::number(SDC));
-        if (it2 == discreteSDCs.end() )	{
-            classesSDC++;
-           // qDebug("This is a new DC class");
-            discreteSDCs.insert ( QString::number(SDC), classesSDC );
-        }
+        resolveClasses(SDC, discreteSDCs, classesSDC );
+
         //qDebug() << "DC classes =  " << classesSDC;
 
         if (maxSDC < SDC ) {
@@ -6805,50 +6816,62 @@ void Graph::prominenceDistribution(const int &index, QSplineSeries *series) {
         break;
     }
     case INDEX_DC : {
+        series->setName("(out)Degree");
         discreteClasses = discreteSDCs;
         break;
     }
     case INDEX_CC : {
+        series->setName("Closeness");
         discreteClasses = discreteCCs;
         break;
     }
     case INDEX_IRCC : {
+        series->setName("IRCC");
         discreteClasses = discreteIRCCs;
         break;
     }
     case INDEX_BC : {
+        series->setName("Betweenness");
         discreteClasses = discreteBCs;
         break;
     }
     case INDEX_SC : {
+        series->setName("Stress");
         discreteClasses = discreteSCs;
         break;
     }
     case INDEX_EC : {
+        series->setName("Eccentricity");
         discreteClasses = discreteECs;
         break;
     }
     case INDEX_PC : {
+        series->setName("Power");
         discreteClasses = discretePCs;
         break;
     }
     case INDEX_IC : {
+        series->setName("Information");
         discreteClasses = discreteICs;
         break;
     }
     case INDEX_EVC : {
+        series->setName("Eigenvector");
         discreteClasses = discreteEVCs;
         break;
     }
     case INDEX_DP : {
+        series->setName("Prestige Degree");
         discreteClasses = discreteDPs;
         break;
     }
     case INDEX_PRP : {
+        series->setName("Pagerank");
         discreteClasses = discretePRPs;
         break;
     }
     case INDEX_PP : {
+        series->setName("Proximity");
         discreteClasses = discretePPs;
         break;
     }
@@ -6863,7 +6886,6 @@ void Graph::prominenceDistribution(const int &index, QSplineSeries *series) {
     }
 
     while (!seriesPQ.empty()) {
-
         qDebug() << seriesPQ.top().value << " : " << seriesPQ.top().frequency << endl;
         series->append( seriesPQ.top().value, seriesPQ.top().frequency  );
         seriesPQ.pop();
@@ -8680,7 +8702,6 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
     int progressCounter = 0;
 
     VList::const_iterator it;
-    H_StrToInt::iterator it2;
 
     QHash<int,qreal> *enabledInEdges = new QHash<int,qreal>;
     QHash<int,qreal>::const_iterator hit;
@@ -8784,13 +8805,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
         qDebug() << "Graph::prestigeDegree - vertex " <<  (*it)->name() << " DP  "
                  << DP << " SDP " << (*it)->SDP ();
 
-        it2 = discreteDPs.find(QString::number(SDP));
-
-        if (it2 == discreteDPs.end() )	{
-            classesSDP++;
-            qDebug("This is a new DP class");
-            discreteDPs.insert ( QString::number(SDP), classesSDP );
-        }
+        resolveClasses(SDP, discreteDPs, classesSDP);
 
         qDebug("DP classes = %i ", classesSDP);
 
@@ -9133,14 +9148,12 @@ void Graph::prestigeProximity( const bool considerWeights,
     minPP=V-1;
     variancePP=0;
     meanPP=0;
-    H_StrToInt::iterator it2;
 
     int progressCounter = 0;
 
     QString pMsg = tr("Computing Proximity Prestige scores. \nPlease wait ...");
     emit statusMessage( pMsg );
     emit signalProgressBoxCreate(V,pMsg);
-
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
 
@@ -9191,12 +9204,8 @@ void Graph::prestigeProximity( const bool considerWeights,
         (*it) -> setPP ( PP ) ;
         (*it) -> setSPP ( PP ) ; // PP is already stdized
 
-        it2 = discretePPs.find(QString::number(PP));
-        if (it2 == discretePPs.end() )	{
-            classesPP++;
-            qDebug() << "PP = " << (*it) -> PP() <<  " - this is a new PP class" ;
-            discretePPs.insert ( QString::number(PP), classesPP );
-        }
+        resolveClasses(PP, discretePPs, classesPP);
+
         //qDebug("PP classes = %i ", classesPP);
         if (maxPP < PP ) {
             maxPP = PP ;

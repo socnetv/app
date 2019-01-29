@@ -72,6 +72,8 @@ public:
     void setMargins(const QMargins &margins = QMargins());
     void toggleLegend(const bool &toggle = false);
 
+    void resetToTrivial();
+
 private:
     QChart *m_chart;
     QSplineSeries *m_series;

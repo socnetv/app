@@ -4903,7 +4903,6 @@ void MainWindow::initPanels(){
     chart->setBackgroundBrush(QBrush(Qt::transparent));
     chart->setChartBackgroundBrush();
     chart->setChartBackgroundPen();
-    chart->setTitle("Chart", QFont("Times",8));
     chart->toggleLegend(false);
     chart->setRenderHint(QPainter::Antialiasing);
 
@@ -4914,24 +4913,8 @@ void MainWindow::initPanels(){
     chart->setFrameShape(QFrame::NoFrame);
     chart->setFrameShape(QFrame::Box);
 
-    // Q: Populate it with dummy point
-    QSplineSeries *series = new QSplineSeries();
-    *series << QPointF(0,0);
-
-//    chart->addSeries();
-//    chart->createDefaultAxes();
-
-//    chart->setAxisXRange(0,10);
-//    chart->setAxisYRange(0,10);
-//    chart->setAxisXLabelFont(QFont("Times", 7));
-//    chart->setAxisYLabelFont(QFont("Times", 7));
-
-//    QPen axisPen;
-//    axisPen.setBrush( QBrush(QColor(0,0,0,0)) );
-//    axisPen.setWidthF(0.5);
-//    axisPen.setStyle(Qt::SolidLine);
-//    chart->setAxisYLinePen(axisPen);
-//    chart->setMargins(QMargins());
+    // Nothing else to do with chart.
+    // MW::initApp() will populate it with a dummy point.
 
     propertiesGrid->addWidget(chart,20,0,1,2);
     propertiesGrid->setRowMinimumHeight(20,chartHeight);
@@ -5544,10 +5527,8 @@ void MainWindow::initApp(){
     }
 
     /** Clear Chart */
-    chart->removeAllSeries();
-    chart->addSeries();
-    chart->createDefaultAxes();
-    chart->setMargins(QMargins());
+    chart->resetToTrivial();
+
     /** Clear LCDs **/
     slotNetworkChanged(0, 0, 0, 0, 0);
 
@@ -12831,6 +12812,8 @@ void MainWindow::slotAnalyzeCentralityClosenessIR(){
         m_textEditors << ed;
     }
 
+    slotAnalyzeProminenceDistributionChart(INDEX_IRCC);
+
     statusMessage(tr("Influence Range Closeness Centralities saved as: ")+QDir::toNativeSeparators(fn));
 }
 
@@ -12865,6 +12848,8 @@ void MainWindow::slotAnalyzeCentralityBetweenness(){
         ed->show();
         m_textEditors << ed;
     }
+
+    slotAnalyzeProminenceDistributionChart(INDEX_BC);
 
     statusMessage(tr("Betweenness Centralities saved as: ")+QDir::toNativeSeparators(fn));
 }
@@ -12910,6 +12895,8 @@ void MainWindow::slotAnalyzePrestigeDegree(){
         m_textEditors << ed;
     }
 
+    slotAnalyzeProminenceDistributionChart(INDEX_DP);
+
     statusMessage(tr("Degree Prestige (in-degree) indices saved as: ") + QDir::toNativeSeparators(fn));
 }
 
@@ -12942,6 +12929,8 @@ void MainWindow::slotAnalyzePrestigePageRank(){
         m_textEditors << ed;
     }
 
+    slotAnalyzeProminenceDistributionChart(INDEX_PRP);
+
     statusMessage(tr("PageRank Prestige indices saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
@@ -12973,7 +12962,7 @@ void MainWindow::slotAnalyzePrestigeProximity(){
         ed->show();
         m_textEditors << ed;
     }
-
+    slotAnalyzeProminenceDistributionChart(INDEX_PP);
     statusMessage(tr("Proximity Prestige indices saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
@@ -13038,7 +13027,7 @@ void MainWindow::slotAnalyzeCentralityInformation(){
         ed->show();
         m_textEditors << ed;
     }
-
+    slotAnalyzeProminenceDistributionChart(INDEX_IC);
     statusMessage(tr("Information Centralities saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
@@ -13077,7 +13066,7 @@ void MainWindow::slotAnalyzeCentralityEigenvector(){
         ed->show();
         m_textEditors << ed;
     }
-
+    slotAnalyzeProminenceDistributionChart(INDEX_EVC);
     statusMessage(tr("Eigenvector Centralities saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
@@ -13115,7 +13104,7 @@ void MainWindow::slotAnalyzeCentralityStress(){
         ed->show();
         m_textEditors << ed;
     }
-
+    slotAnalyzeProminenceDistributionChart(INDEX_SC);
     statusMessage(tr("Stress Centralities saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
@@ -13153,7 +13142,7 @@ void MainWindow::slotAnalyzeCentralityPower(){
         ed->show();
         m_textEditors << ed;
     }
-
+    slotAnalyzeProminenceDistributionChart(INDEX_PC);
     statusMessage(tr("Gil-Schmidt Power Centralities saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
@@ -13189,7 +13178,7 @@ void MainWindow::slotAnalyzeCentralityEccentricity(){
         ed->show();
         m_textEditors << ed;
     }
-
+    slotAnalyzeProminenceDistributionChart(INDEX_EC);
     statusMessage(tr("Eccentricity Centralities saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
@@ -13204,9 +13193,6 @@ void MainWindow::slotAnalyzeProminenceDistributionChart(const int &index) {
 
     qDebug() << "slotAnalyzeProminenceDistributionChart()";
 
-//    QSplineSeries series;// = new QSplineSeries();
-//    series.setName("spline");
-
     // Clear chart from old series.
    chart->removeAllSeries();
 
@@ -13216,10 +13202,12 @@ void MainWindow::slotAnalyzeProminenceDistributionChart(const int &index) {
    // Call Graph to compute index distribution
    // and return it to 'series'
    activeGraph->prominenceDistribution(index, series);
-
+   // series->setBrush(QBrush(QColor(0,0,0)));
+   // series->setPen(QPen(QColor(0,0,0)));
    // Add series to chart
    chart->addSeries(series);
-   chart->setTitle("Degree", QFont("Times",8));
+
+   chart->setTitle(series->name(), QFont("Times",8));
    chart->toggleLegend(false);
    chart->createDefaultAxes();
 

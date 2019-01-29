@@ -56,6 +56,7 @@ Chart::Chart(QWidget *parent) :
 
     setChart(m_chart);
 
+    m_chart->setAnimationOptions(QChart::SeriesAnimations);
 }
 
 Chart::Chart(QChart *ch, QWidget *parent) :
@@ -82,7 +83,6 @@ Chart::~Chart(){
  */
 void Chart::setAxisXRange(const int &from, const int &to){
     m_chart->axes(Qt::Horizontal).first()->setRange(from, to);
-
 }
 
 
@@ -241,4 +241,28 @@ void Chart::appendToSeries(const QPointF &p) {
  */
 void Chart::removeAllSeries() {
     m_chart->removeAllSeries();
+}
+
+
+
+void Chart::resetToTrivial() {
+    removeAllSeries();
+    addSeries();
+    createDefaultAxes();
+    setTitle("Chart", QFont("Times",8));
+
+    setMargins(QMargins());
+
+    setAxisXRange(0,1);
+    setAxisYRange(0,1);
+    setAxisXLabelFont(QFont("Times", 7));
+    setAxisYLabelFont(QFont("Times", 7));
+
+    QPen axisPen;
+    axisPen.setBrush( QBrush(QColor(0,0,0,0)) );
+    axisPen.setWidthF(0.5);
+    axisPen.setStyle(Qt::SolidLine);
+    setAxisYLinePen(axisPen);
+    setMargins(QMargins());
+
 }
