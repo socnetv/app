@@ -37,7 +37,7 @@
 #include <QThread>
 
 #include <QtCharts/QChartGlobal>
-#include <QSplineSeries>
+
 
 
 //FYI: stack is a wrapper around <deque> in C++, see: www.cplusplus.com/reference/stl/stack
@@ -52,6 +52,14 @@
 QT_BEGIN_NAMESPACE
 class QPointF;
 QT_END_NAMESPACE
+
+
+QT_CHARTS_BEGIN_NAMESPACE
+class QSplineSeries;
+class QBarSeries;
+class QBarSet;
+QT_CHARTS_END_NAMESPACE
+
 
 QT_CHARTS_USE_NAMESPACE
 
@@ -855,6 +863,7 @@ public:
                                      const bool &dropIsolates=false) ;
 
     void prominenceDistribution(const int &index, QSplineSeries *series);
+    void prominenceDistribution(const int &index, QBarSeries *series, QBarSet *set);
 
     void centralityDegree(const bool &weights=true,
                           const bool &dropIsolates=false);

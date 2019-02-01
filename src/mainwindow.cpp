@@ -13198,7 +13198,7 @@ void MainWindow::slotAnalyzeProminenceDistributionChart(const int &index) {
 
    // Create new series
    QSplineSeries *series = new QSplineSeries();
-
+   // QBarSet *set =
    // Call Graph to compute index distribution
    // and return it to 'series'
    activeGraph->prominenceDistribution(index, series);

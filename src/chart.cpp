@@ -210,7 +210,7 @@ void Chart::createDefaultAxes(){
  * @brief Add series to chart
  * @param series
  */
-void Chart::addSeries(QSplineSeries *series) {
+void Chart::addSeries(QAbstractSeries *series) {
     qDebug() << "Chart::addSeries()" ;
   //  m_series = series;
     if (series) {

@@ -40,7 +40,9 @@
 #include <QTextCodec>
 #include <QFileInfo>
 
-//#include <QSplineSeries>
+#include <QSplineSeries>
+#include <QBarSeries>
+#include <QBarSet>
 
 
 #include <cstdlib>		//allows the use of RAND_MAX macro 
@@ -6888,10 +6890,119 @@ void Graph::prominenceDistribution(const int &index, QSplineSeries *series) {
 
     while (!seriesPQ.empty()) {
         qDebug() << seriesPQ.top().value << " : " << seriesPQ.top().frequency << endl;
+        if ( series->type() == QAbstractSeries::SeriesTypeSpline) {
         series->append( seriesPQ.top().value, seriesPQ.top().frequency  );
+        }
+
         seriesPQ.pop();
     }
 }
+
+
+
+
+
+
+/**
+ * @brief Computes the distribution of a centrality index scores.
+ * The result is returned as QSplineSeries series
+ * @param index
+ * @param series
+ */
+void Graph::prominenceDistribution(const int &index, QBarSeries *series, QBarSet *set) {
+
+    qDebug() << "Graph::prominenceDistribution() - bars";
+
+    H_StrToInt discreteClasses;
+
+    switch (index) {
+    case 0: {
+        break;
+    }
+    case INDEX_DC : {
+        series->setName("(out)Degree");
+        discreteClasses = discreteSDCs;
+        break;
+    }
+    case INDEX_CC : {
+        series->setName("Closeness");
+        discreteClasses = discreteCCs;
+        break;
+    }
+    case INDEX_IRCC : {
+        series->setName("IRCC");
+        discreteClasses = discreteIRCCs;
+        break;
+    }
+    case INDEX_BC : {
+        series->setName("Betweenness");
+        discreteClasses = discreteBCs;
+        break;
+    }
+    case INDEX_SC : {
+        series->setName("Stress");
+        discreteClasses = discreteSCs;
+        break;
+    }
+    case INDEX_EC : {
+        series->setName("Eccentricity");
+        discreteClasses = discreteECs;
+        break;
+    }
+    case INDEX_PC : {
+        series->setName("Power");
+        discreteClasses = discretePCs;
+        break;
+    }
+    case INDEX_IC : {
+        series->setName("Information");
+        discreteClasses = discreteICs;
+        break;
+    }
+    case INDEX_EVC : {
+        series->setName("Eigenvector");
+        discreteClasses = discreteEVCs;
+        break;
+    }
+    case INDEX_DP : {
+        series->setName("Prestige Degree");
+        discreteClasses = discreteDPs;
+        break;
+    }
+    case INDEX_PRP : {
+        series->setName("Pagerank");
+        discreteClasses = discretePRPs;
+        break;
+    }
+    case INDEX_PP : {
+        series->setName("Proximity");
+        discreteClasses = discretePPs;
+        break;
+    }
+    };
+
+    priority_queue<PairVF, vector<PairVF>, PairVFCompare> seriesPQ;
+    QHashIterator<QString, int> i(discreteClasses);
+    while (i.hasNext()) {
+        i.next();
+        qDebug() << "discreteClasses: " << i.key() << ": " << i.value() << endl;
+        seriesPQ.push(PairVF(i.key().toDouble(), i.value()));
+    }
+
+    while (!seriesPQ.empty()) {
+        qDebug() << seriesPQ.top().value << " : " << seriesPQ.top().frequency << endl;
+        if ( series->type() == QAbstractSeries::SeriesTypeBar) {
+
+        // series->attachAxis();
+        set->append( seriesPQ.top().frequency );
+        }
+
+        seriesPQ.pop();
+    }
+    series->append( set  );
+}
+
+
 
 /**
  * @brief Writes the Degree Centrality to a file
