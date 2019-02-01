@@ -58,6 +58,7 @@ QT_CHARTS_BEGIN_NAMESPACE
 class QSplineSeries;
 class QBarSeries;
 class QBarSet;
+class QBarCategoryAxis;
 QT_CHARTS_END_NAMESPACE
 
 
@@ -863,7 +864,10 @@ public:
                                      const bool &dropIsolates=false) ;
 
     void prominenceDistribution(const int &index, QSplineSeries *series);
-    void prominenceDistribution(const int &index, QBarSeries *series, QBarSet *set);
+    void prominenceDistribution(const int &index,
+                                QBarSeries *series,
+                                QBarSet *set,
+                                QBarCategoryAxis *axisX);
 
     void centralityDegree(const bool &weights=true,
                           const bool &dropIsolates=false);

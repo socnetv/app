@@ -44,6 +44,7 @@
 #include <QtCharts/QAreaSeries>
 #include <QtCharts/QLegend>
 #include <QtCharts/QBarCategoryAxis>
+
 #include <QtCore/QTime>
 
 
@@ -178,6 +179,9 @@ void Chart::setChartBackgroundPen(const QBrush & brush) {
 void Chart::setTheme(QChart::ChartTheme theme) {
     m_chart->setTheme(theme);
 }
+
+
+
 /**
  * @brief Set the margins of the QChart
  * @param margins
@@ -207,7 +211,54 @@ void Chart::createDefaultAxes(){
 }
 
 /**
- * @brief Add series to chart
+ * @brief Removes all previously attached X,Y axes from the QChart
+ */
+void Chart::removeAllAxes(){
+    m_chart->removeAxis( m_chart->axisX() );
+    m_chart->removeAxis( m_chart->axisY() );
+}
+
+/**
+ * @brief Adds the axis axis to the chart and attaches it to the series series
+ * as a bottom-aligned horizontal axis.
+ * The chart takes ownership of both the axis  and the series.
+ * Any horizontal axes previously attached to the series are deleted.
+ * @param axis
+ * @param series
+ */
+void Chart::setAxisX(QAbstractAxis *axis, QAbstractSeries *series) {
+    m_chart->setAxisX(axis, series);
+
+}
+
+
+/**
+ * @brief Adds the axis axis to the chart and attaches it to the series series
+ * as a left-aligned horizontal axis.
+ * The chart takes ownership of both the axis  and the series.
+ * Any vertical axes previously attached to the series are deleted.
+ * @param axis
+ * @param series
+ */
+void Chart::setAxisY(QAbstractAxis *axis, QAbstractSeries *series) {
+    m_chart->setAxisY(axis, series);
+}
+
+/**
+ * @brief Add Axis axis to the QChart. Does not delete previously attached axis
+ * @param axis
+ * @param alignment
+ */
+void Chart::addAxis(QAbstractAxis *axis, Qt::Alignment alignment) {
+    m_chart->addAxis(axis,alignment);
+    // We could also check if m_series and do:
+    // barSeries->attachAxis(axisY);
+}
+
+
+/**
+ * @brief Add QAbstractSeries series to chart
+ * If no series are passed, a new QSplineSeries is created with 1 point at (0,0)
  * @param series
  */
 void Chart::addSeries(QAbstractSeries *series) {
@@ -242,6 +293,7 @@ void Chart::appendToSeries(const QPointF &p) {
 void Chart::removeAllSeries() {
     m_chart->removeAllSeries();
 }
+
 
 
 

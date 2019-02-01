@@ -43,7 +43,7 @@
 #include <QSplineSeries>
 #include <QBarSeries>
 #include <QBarSet>
-
+#include <QBarCategoryAxis>
 
 #include <cstdlib>		//allows the use of RAND_MAX macro 
 #include <math.h>
@@ -6902,14 +6902,16 @@ void Graph::prominenceDistribution(const int &index, QSplineSeries *series) {
 
 
 
-
 /**
  * @brief Computes the distribution of a centrality index scores.
- * The result is returned as QSplineSeries series
+ * The result is returned as QBarSet set and QStringList strX for axisX
+ * They are then used in QBarSeries series
  * @param index
  * @param series
+ * @param set
+ * @param strX
  */
-void Graph::prominenceDistribution(const int &index, QBarSeries *series, QBarSet *set) {
+void Graph::prominenceDistribution(const int &index, QBarSeries *series, QBarSet *set, QBarCategoryAxis *axisX) {
 
     qDebug() << "Graph::prominenceDistribution() - bars";
 
@@ -6988,18 +6990,28 @@ void Graph::prominenceDistribution(const int &index, QBarSeries *series, QBarSet
         qDebug() << "discreteClasses: " << i.key() << ": " << i.value() << endl;
         seriesPQ.push(PairVF(i.key().toDouble(), i.value()));
     }
+    int size = seriesPQ.size();
+    QString min = QString::null;
+    QString max = QString::null;
 
     while (!seriesPQ.empty()) {
         qDebug() << seriesPQ.top().value << " : " << seriesPQ.top().frequency << endl;
         if ( series->type() == QAbstractSeries::SeriesTypeBar) {
-
-        // series->attachAxis();
-        set->append( seriesPQ.top().frequency );
+            set->append( seriesPQ.top().frequency );
+            axisX->append(QString::number( seriesPQ.top().value ));
+            if (size == seriesPQ.size() ) {
+                min = QString::number( seriesPQ.top().value );
+            }
+            if ( seriesPQ.size() == 1 ) {
+                max = QString::number( seriesPQ.top().value );
+            }
         }
-
         seriesPQ.pop();
     }
-    series->append( set  );
+    axisX->setMin(min);
+    axisX->setMax(max);
+
+    series->append( set );
 }
 
 

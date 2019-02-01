@@ -40,6 +40,7 @@ QT_END_NAMESPACE
 QT_CHARTS_BEGIN_NAMESPACE
 class QSplineSeries;
 class QChart;
+class QAbstractAxis;
 QT_CHARTS_END_NAMESPACE
 
 
@@ -58,11 +59,19 @@ public:
     void addSeries(QAbstractSeries *series = Q_NULLPTR );
     void appendToSeries (const QPointF &p);
     void removeAllSeries();
+
     void createDefaultAxes();
+    void removeAllAxes();
+    void setAxisX(QAbstractAxis *axis, QAbstractSeries *series = Q_NULLPTR);
+    void setAxisY(QAbstractAxis *axis, QAbstractSeries *series = Q_NULLPTR);
+    void addAxis(QAbstractAxis *axis, Qt::Alignment alignment);
+
     void setAxisXRange(const int &from, const int &to);
     void setAxisYRange(const int &from, const int &to);
+
     void setAxisXLabelFont(const QFont &font=QFont());
     void setAxisYLabelFont(const QFont &font=QFont());
+
     void setAxisXLinePen(const QPen &pen);
     void setAxisYLinePen(const QPen &pen);
 

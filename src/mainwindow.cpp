@@ -42,6 +42,10 @@
 #include <QtCharts/QChart>
 #include <QtCharts/QChartView>
 #include <QSplineSeries>
+#include <QBarSeries>
+#include <QBarCategoryAxis>
+#include <QValueAxis>
+#include <QBarSet>
 
 #include "mainwindow.h"
 #include "texteditor.h"
@@ -13194,33 +13198,55 @@ void MainWindow::slotAnalyzeProminenceDistributionChart(const int &index) {
     qDebug() << "slotAnalyzeProminenceDistributionChart()";
 
     // Clear chart from old series.
-   chart->removeAllSeries();
+    chart->removeAllSeries();
 
-   // Create new series
-   QSplineSeries *series = new QSplineSeries();
-   // QBarSet *set =
-   // Call Graph to compute index distribution
-   // and return it to 'series'
-   activeGraph->prominenceDistribution(index, series);
-   // series->setBrush(QBrush(QColor(0,0,0)));
-   // series->setPen(QPen(QColor(0,0,0)));
-   // Add series to chart
-   chart->addSeries(series);
+    // Remove all axes
+    chart->removeAllAxes();
 
-   chart->setTitle(series->name(), QFont("Times",8));
-   chart->toggleLegend(false);
-   chart->createDefaultAxes();
+    // Create new series
+    QSplineSeries *series = new QSplineSeries();
+    QBarSeries *barSeries = new QBarSeries();
+    QBarSet *barSet = new QBarSet("");
+    QBarCategoryAxis *axisX = new QBarCategoryAxis();
 
-   //chart->setAxisXRange(0,10);
-   //chart->setAxisYRange(0,10);
-   chart->setAxisXLabelFont(QFont("Times", 7));
-   chart->setAxisYLabelFont(QFont("Times", 7));
+    // Call Graph to compute index distribution
+    // and return it to 'series'
+    //activeGraph->prominenceDistribution(index, series);
 
-   QPen axisPen;
-   axisPen.setBrush( QBrush(QColor(0,0,0,0)) );
-   axisPen.setWidthF(0.5);
-   axisPen.setStyle(Qt::SolidLine);
-   chart->setAxisYLinePen(axisPen);
+    activeGraph->prominenceDistribution(index,barSeries,barSet,axisX);
+
+    // series->setBrush(QBrush(QColor(0,0,0)));
+    // series->setPen(QPen(QColor(0,0,0)));
+
+    // Add series to chart
+//    chart->addSeries(series);
+
+    barSeries->setLabelsAngle(90);
+    chart->addSeries(barSeries);
+
+    chart->setTitle(series->name(), QFont("Times",8));
+    chart->toggleLegend(false);
+//    chart->createDefaultAxes();
+
+
+    chart->setAxisX(axisX, barSeries);
+    qDebug() << "axisX min: " << axisX->min() << " max: " << axisX->max();
+
+    QValueAxis *axisY = new QValueAxis;
+    //axisY->setRange (0,15);
+    chart->setAxisY(axisY, barSeries);
+
+
+    QPen axisPen;
+    axisPen.setBrush( QBrush(QColor(0,0,0,0)) );
+    axisPen.setWidthF(0.5);
+    axisPen.setStyle(Qt::SolidLine);
+    chart->setAxisYLinePen(axisPen);
+
+    //chart->setAxisXRange(0,10);
+    //chart->setAxisYRange(0,10);
+    chart->setAxisXLabelFont(QFont("Times", 5));
+    chart->setAxisYLabelFont(QFont("Times", 7));
 
 }
 
