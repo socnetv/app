@@ -153,5 +153,16 @@
         <file>images/export_photo_48px.svg</file>
         <file>images/export_pdf_48px.svg</file>
         <file>images/random_48px.svg</file>
+        <file>images/node_size_48px.svg</file>
+        <file>images/radial_layout_48px.svg</file>
+        <file>images/color_layout_48px.svg</file>
+        <file>images/relation_edit_48px.svg</file>
+        <file>images/node_48px.svg</file>
+        <file>images/fullscreen_48px.svg</file>
+        <file>images/science_48px.svg</file>
+        <file>images/system_update_alt_48px.svg</file>
+        <file>images/view_file_48px.svg</file>
+        <file>images/recent_48px.svg</file>
+        <file>images/code_48px.svg</file>
     </qresource>
 </RCC>

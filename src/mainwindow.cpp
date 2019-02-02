@@ -1021,7 +1021,7 @@ void MainWindow::initActions(){
     connect(openTextEditorAct, SIGNAL(triggered()), this, SLOT(slotNetworkTextEditor()));
 
 
-    networkViewFileAct = new QAction(QIcon(":/images/networkfile.png"),
+    networkViewFileAct = new QAction(QIcon(":/images/code_48px.svg"),
                                      tr("&View Loaded File"),this);
     networkViewFileAct ->setShortcut(Qt::Key_F5);
     networkViewFileAct->setStatusTip(tr("Display the loaded social network file."));
@@ -1061,7 +1061,7 @@ void MainWindow::initActions(){
             this, SLOT(slotNetworkViewSociomatrixPlotText()));
 
 
-    networkDataSetSelectAct = new QAction(QIcon(":/images/petersengraph.png"),
+    networkDataSetSelectAct = new QAction(QIcon(":/images/science_48px.svg"),
                                           tr("Create From &Known Data Sets"),  this);
     networkDataSetSelectAct ->setShortcut(Qt::Key_F7);
     networkDataSetSelectAct->setStatusTip(
@@ -1239,7 +1239,7 @@ void MainWindow::initActions(){
                    "Adds a new relation to the active network. "
                    "Nodes will be preserved, edges will be removed. "));
 
-    editRelationRenameAct = new QAction(QIcon(":/images/edit-rename.png"),
+    editRelationRenameAct = new QAction(QIcon(":/images/relation_edit_48px.svg"),
                                         tr("Rename Relation"),  this);
     editRelationRenameAct->setToolTip(tr("Rename current relation"));
     editRelationRenameAct->setStatusTip(tr("Rename the current relation of the network (if any)."));
@@ -3399,7 +3399,7 @@ void MainWindow::initActions(){
             this, SLOT(slotOptionsBackgroundColor()));
 
 
-    backgroundImageAct = new QAction(tr("Background Image (this session)"),	this);
+    backgroundImageAct = new QAction(QIcon(":/images/export_photo_48px.svg"), tr("Background Image (this session)"),	this);
     backgroundImageAct->setStatusTip(
                 tr("Select and display a custom image in the background"
                    "(for this session only)"));
@@ -3415,7 +3415,7 @@ void MainWindow::initActions(){
             this, SLOT(slotOptionsBackgroundImageSelect(bool)));
 
 
-    fullScreenModeAct = new QAction(tr("Full screen (this session)"),	this);
+    fullScreenModeAct = new QAction(QIcon(":/images/fullscreen_48px.svg"), tr("Full screen (this session)"),	this);
     fullScreenModeAct->setShortcut(Qt::Key_F11);
     fullScreenModeAct->setStatusTip(
                 tr("Toggle full screen mode (for this session only)"));
@@ -3466,7 +3466,7 @@ void MainWindow::initActions(){
 
 
     helpCheckUpdatesApp = new QAction(
-                QIcon(":/images/download.png"), tr("Check for Updates"),	this);
+                QIcon(":/images/system_update_alt_48px.svg"), tr("Check for Updates"),	this);
     helpCheckUpdatesApp->setStatusTip(tr("Open a browser to SocNetV website "
                                          "to check for a new version..."));
     helpCheckUpdatesApp->setWhatsThis(tr("Check Updates\n\n"
@@ -3505,6 +3505,7 @@ void MainWindow::initMenuBar() {
     networkMenu->addAction(networkOpen);
     networkMenu->addSeparator();
     recentFilesSubMenu = new QMenu(tr("Recent &files..."));
+    recentFilesSubMenu ->setIcon(QIcon(":/images/recent_48px.svg"));
     for (int i = 0; i < MaxRecentFiles; ++i)
         recentFilesSubMenu->addAction(recentFileActs[i]);
 
@@ -3597,7 +3598,7 @@ void MainWindow::initMenuBar() {
 
     editMenu->addSeparator();
     editNodeMenu = new QMenu(tr("Nodes..."));
-    editNodeMenu->setIcon(QIcon(":/images/node.png"));
+    editNodeMenu->setIcon(QIcon(":/images/node_48px.svg"));
     editMenu->addMenu ( editNodeMenu );
     editNodeMenu->addAction (editNodeSelectAllAct);
     editNodeMenu->addAction (editNodeSelectNoneAct);
@@ -3771,7 +3772,7 @@ void MainWindow::initMenuBar() {
     layoutMenu->addSeparator();
 
     layoutRadialProminenceMenu = new QMenu(tr("Radial by prominence index..."));
-    layoutRadialProminenceMenu->setIcon(QIcon(":/images/circular.png"));
+    layoutRadialProminenceMenu->setIcon(QIcon(":/images/radial_layout_48px.svg"));
     layoutMenu->addMenu (layoutRadialProminenceMenu);
     layoutRadialProminenceMenu->addAction (layoutRadialProminence_DC_Act);
     layoutRadialProminenceMenu->addAction (layoutRadialProminence_CC_Act);
@@ -3807,7 +3808,7 @@ void MainWindow::initMenuBar() {
     layoutMenu->addSeparator();
 
     layoutNodeSizeProminenceMenu = new QMenu (tr("Node Size by prominence index..."));
-    layoutNodeSizeProminenceMenu->setIcon(QIcon(":/images/node.png"));
+    layoutNodeSizeProminenceMenu->setIcon(QIcon(":/images/node_size_48px.svg"));
     layoutMenu->addMenu (layoutNodeSizeProminenceMenu);
     layoutNodeSizeProminenceMenu->addAction (layoutNodeSizeProminence_DC_Act);
     layoutNodeSizeProminenceMenu->addAction (layoutNodeSizeProminence_CC_Act);
@@ -3825,7 +3826,7 @@ void MainWindow::initMenuBar() {
     layoutMenu->addSeparator();
 
     layoutNodeColorProminenceMenu = new QMenu (tr("Node Color by prominence index..."));
-    layoutNodeColorProminenceMenu->setIcon(QIcon(":/images/nodecolor.png"));
+    layoutNodeColorProminenceMenu->setIcon(QIcon(":/images/color_layout_48px.svg"));
     layoutMenu->addMenu (layoutNodeColorProminenceMenu);
     layoutNodeColorProminenceMenu->addAction (layoutNodeColorProminence_DC_Act);
     layoutNodeColorProminenceMenu->addAction (layoutNodeColorProminence_CC_Act);
@@ -3857,7 +3858,7 @@ void MainWindow::initMenuBar() {
     /** menuBar entry optionsMenu  */
     optionsMenu = menuBar()->addMenu(tr("&Options"));
     nodeOptionsMenu=new QMenu(tr("Nodes..."));
-    nodeOptionsMenu->setIcon(QIcon(":/images/nodes.png"));
+    nodeOptionsMenu->setIcon(QIcon(":/images/node_48px.svg"));
 
     optionsMenu->addMenu (nodeOptionsMenu);
     nodeOptionsMenu->addAction (optionsNodeNumbersVisibilityAct);
