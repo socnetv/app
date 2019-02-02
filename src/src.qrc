@@ -164,5 +164,10 @@
         <file>images/view_file_48px.svg</file>
         <file>images/recent_48px.svg</file>
         <file>images/code_48px.svg</file>
+        <file>images/wallpaper_48px.svg</file>
+        <file>images/assessment_48px.svg</file>
+        <file>images/select_all_48px.svg</file>
+        <file>images/communities_48px.svg</file>
+        <file>images/centrality_48px.svg</file>
     </qresource>
 </RCC>

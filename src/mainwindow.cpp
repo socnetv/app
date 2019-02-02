@@ -1278,7 +1278,7 @@ void MainWindow::initActions(){
 
 
 
-    editNodeSelectAllAct = new QAction(QIcon(":/images/selectall.png"), tr("Select All"), this);
+    editNodeSelectAllAct = new QAction(QIcon(":/images/select_all_48px.svg"), tr("Select All"), this);
     editNodeSelectAllAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_A));
     editNodeSelectAllAct->setStatusTip(tr("Select all nodes"));
     editNodeSelectAllAct->setWhatsThis(tr("Select All\n\nSelects all nodes in the network"));
@@ -3399,7 +3399,7 @@ void MainWindow::initActions(){
             this, SLOT(slotOptionsBackgroundColor()));
 
 
-    backgroundImageAct = new QAction(QIcon(":/images/export_photo_48px.svg"), tr("Background Image (this session)"),	this);
+    backgroundImageAct = new QAction(QIcon(":/images/wallpaper_48px.svg"), tr("Background Image (this session)"),	this);
     backgroundImageAct->setStatusTip(
                 tr("Select and display a custom image in the background"
                    "(for this session only)"));
@@ -3687,7 +3687,7 @@ void MainWindow::initMenuBar() {
 
     analysisMenu->addSeparator();
     cohesionMenu = new QMenu(tr("Cohesion..."));
-    cohesionMenu->setIcon(QIcon(":/images/distances.png"));
+    cohesionMenu->setIcon(QIcon(":/images/assessment_48px.svg"));
     analysisMenu->addMenu(cohesionMenu);
     cohesionMenu->addAction (analyzeGraphReciprocityAct);
     cohesionMenu->addAction (analyzeGraphSymmetryAct);
@@ -3710,13 +3710,12 @@ void MainWindow::initMenuBar() {
     cohesionMenu->addSeparator();
     cohesionMenu->addAction (clusteringCoefAct);
 
-
     analysisMenu->addSeparator();
+
     // CENTRALITIES
     centrlMenu = new QMenu(tr("Centrality and Prestige indices..."));
-    centrlMenu->setIcon(QIcon(":/images/centrality.png"));
+    centrlMenu->setIcon(QIcon(":/images/centrality_48px.svg"));
     analysisMenu->addMenu(centrlMenu);
-    centrlMenu->addSection(QIcon(":/images/centrality.png"), tr("Centrality"));
 
     centrlMenu->addAction (cDegreeAct);
     centrlMenu->addAction (cClosenessAct);
@@ -3727,7 +3726,7 @@ void MainWindow::initMenuBar() {
     centrlMenu->addAction (cPowerAct);
     centrlMenu->addAction (cInformationAct);
     centrlMenu->addAction (cEigenvectorAct);
-    centrlMenu->addSection(QIcon(":/images/prestige.png"), tr("Prestige"));
+    centrlMenu->addSeparator();
     centrlMenu->addAction (cInDegreeAct);
     centrlMenu->addAction (cPageRankAct);
     centrlMenu->addAction (cProximityPrestigeAct);
@@ -3736,7 +3735,7 @@ void MainWindow::initMenuBar() {
     analysisMenu->addSeparator();
     // COMMUNITIES & SUBGROUPS
     communitiesMenu = new QMenu(tr("Communities and Subgroups..."));
-    communitiesMenu->setIcon(QIcon(":/images/clustering.png"));
+    communitiesMenu->setIcon(QIcon(":/images/communities_48px.svg"));
     analysisMenu->addMenu(communitiesMenu);
     communitiesMenu->addAction (analyzeCommunitiesCliquesAct);
     communitiesMenu->addSeparator();
@@ -3756,7 +3755,6 @@ void MainWindow::initMenuBar() {
     strEquivalenceMenu->addAction (analyzeStrEquivalenceClusteringHierarchicalAct);
 
 
-
     /** menuBar entry layoutMenu  */
 
     layoutMenu = menuBar()->addMenu(tr("&Layout"));
@@ -3766,6 +3764,7 @@ void MainWindow::initMenuBar() {
     //   regularColorationAct-> addTo(colorationMenu);
     //   layoutMenu->insertSeparator();
     randomLayoutMenu = new QMenu(tr("Random..."));
+    randomLayoutMenu ->setIcon(QIcon(":/images/random_48px.svg"));
     layoutMenu->addMenu (randomLayoutMenu );
     randomLayoutMenu-> addAction(layoutRandomAct);
     randomLayoutMenu-> addAction( layoutRandomRadialAct );
@@ -5588,7 +5587,7 @@ void MainWindow::initApp(){
     setWindowTitle(tr("Social Network Visualizer ")+VERSION);
 
     QApplication::restoreOverrideCursor();
-
+    QApplication::restoreOverrideCursor();
     setCursor(Qt::ArrowCursor);
 
     statusMessage( tr("Ready"));
@@ -6327,6 +6326,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
              ! m_fileName.endsWith(".paj",Qt::CaseInsensitive )  &&
              ! m_fileName.endsWith(".pajek",Qt::CaseInsensitive ) &&
              ! m_fileName.endsWith(".dl",Qt::CaseInsensitive ) &&
+             ! m_fileName.endsWith(".dat",Qt::CaseInsensitive ) &&
              ! m_fileName.endsWith(".gml",Qt::CaseInsensitive ) &&
              ! m_fileName.endsWith(".wlst",Qt::CaseInsensitive ) &&
              ! m_fileName.endsWith(".wlist",Qt::CaseInsensitive )&&
