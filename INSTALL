@@ -51,9 +51,17 @@ Compile from source code
 
 To compile and install SocNetV from source you need the Qt5 toolkit 
 development libraries. Qt is an open source C++ toolkit published under the GPL.
-Qt5 is preinstalled in most Linux distributions and it is available for 
+Qt5 is available in most Linux distributions repositories and it is available for 
 Windows and Mac OS X.  If you do not have Qt5 installed, please download and 
 install it from https://www.qt.io/developers
+
+At the least, you will need the following packages:
+
+openSUSE: libqt5-qtbase, libqt5-qtbase-devel, libQt5Charts5-devel, libqt5-qttools
+
+Fedora: qt5-qtbase,qt5-qtbase-devel, qt5-qtcharts-devel, qt5-qttools
+
+Debian: qt5-default, libqt5charts5-dev
 
 Once you have Qt5 installed in your OS, you are ready to compile SocNetV from source.
 All you have to do is to type in the following commands in order to decompress the 
