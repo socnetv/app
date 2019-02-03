@@ -6993,24 +6993,26 @@ void Graph::prominenceDistribution(const int &index, QBarSeries *series, QBarSet
     int size = seriesPQ.size();
     QString min = QString::null;
     QString max = QString::null;
+    QString value = QString::null;
 
     while (!seriesPQ.empty()) {
         qDebug() << seriesPQ.top().value << " : " << seriesPQ.top().frequency << endl;
         if ( series->type() == QAbstractSeries::SeriesTypeBar) {
             set->append( seriesPQ.top().frequency );
-            axisX->append(QString::number( seriesPQ.top().value ));
+            value = QString::number(  seriesPQ.top().value, 'f', 2);
+            axisX->append( value );
             if (size == seriesPQ.size() ) {
-                min = QString::number( seriesPQ.top().value );
+                min = value;
             }
             if ( seriesPQ.size() == 1 ) {
-                max = QString::number( seriesPQ.top().value );
+                max = value;
             }
         }
         seriesPQ.pop();
     }
     axisX->setMin(min);
     axisX->setMax(max);
-
+    qDebug() << "axisX min: " << axisX->min() << " max: " << axisX->max();
     series->append( set );
 }
 

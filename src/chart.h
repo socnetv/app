@@ -69,13 +69,21 @@ public:
     void setAxisXRange(const int &from, const int &to);
     void setAxisYRange(const int &from, const int &to);
 
-    void setAxisXLabelFont(const QFont &font=QFont());
-    void setAxisYLabelFont(const QFont &font=QFont());
+    void setAxesThemeDefault ();
 
-    void setAxisXLinePen(const QPen &pen);
-    void setAxisYLinePen(const QPen &pen);
+    void setAxisXLabelFont(const QFont &font=QFont("Helvetica", 5 ));
+    void setAxisYLabelFont(const QFont &font=QFont("Helvetica", 6 ));
+
+    void setAxisXLinePen(const QPen &pen = QPen(QColor("#d0d0d0"), 1,Qt::SolidLine) );
+    void setAxisYLinePen(const QPen &pen = QPen(QColor("#d0d0d0"), 1,Qt::SolidLine) );
+
+    void setAxisXGridLinePen(const QPen &pen = QPen(QColor("#e0e0e0"), 1,Qt::DotLine) );
+    void setAxisYGridLinePen(const QPen &pen = QPen(QColor("#e0e0e0"), 1,Qt::DotLine) );
+
 
     void setTheme(QChart::ChartTheme theme=QChart::ChartThemeQt);
+    void setThemeSmallWidget(const int minWidth, const int minHeight);
+
     void setChartBackgroundBrush(const QBrush & brush = QBrush(Qt::transparent));
     void setChartBackgroundPen(const QBrush & brush = QBrush(Qt::transparent));
     void setMargins(const QMargins &margins = QMargins());

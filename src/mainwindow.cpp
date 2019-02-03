@@ -4899,23 +4899,10 @@ void MainWindow::initPanels(){
     propertiesGrid->addWidget(rightPanelClickedEdgeReciprocalWeightLabel , 19,0);
     propertiesGrid->addWidget(rightPanelClickedEdgeReciprocalWeightLCD ,19,1);
 
-
     // Create our mini chart
-
     chart = new Chart(this);
-    chart->setTheme();
-    chart->setBackgroundBrush(QBrush(Qt::transparent));
-    chart->setChartBackgroundBrush();
-    chart->setChartBackgroundPen();
-    chart->toggleLegend(false);
-    chart->setRenderHint(QPainter::Antialiasing);
-
     int chartHeight = 200;
-    chart->setMinimumWidth(200);
-    chart->setMaximumHeight(chartHeight);
-    chart->setMinimumHeight(chartHeight);
-    chart->setFrameShape(QFrame::NoFrame);
-    chart->setFrameShape(QFrame::Box);
+    chart->setThemeSmallWidget(chartHeight,chartHeight);
 
     // Nothing else to do with chart.
     // MW::initApp() will populate it with a dummy point.
@@ -4938,7 +4925,7 @@ void MainWindow::initPanels(){
     propertiesGrid->addWidget(rightPanelMessageLabel, 25, 0, 1, 2);
     propertiesGrid->setRowStretch(25,0);   // stop row from stretching
 
-    //create a panel with title
+    // Create a panel with title
     rightPanel = new QGroupBox(tr("Statistics Panel"));
     rightPanel->setMaximumWidth(190);
     rightPanel->setLayout (propertiesGrid);
@@ -13200,54 +13187,53 @@ void MainWindow::slotAnalyzeProminenceDistributionChart(const int &index) {
 
     // Clear chart from old series.
     chart->removeAllSeries();
-
     // Remove all axes
     chart->removeAllAxes();
 
     // Create new series
-    QSplineSeries *series = new QSplineSeries();
+   // QSplineSeries *series = new QSplineSeries();
     QBarSeries *barSeries = new QBarSeries();
     QBarSet *barSet = new QBarSet("");
     QBarCategoryAxis *axisX = new QBarCategoryAxis();
 
     // Call Graph to compute index distribution
-    // and return it to 'series'
+    // and return it to QSplineSeries 'series'
     //activeGraph->prominenceDistribution(index, series);
 
+    // Call Graph to compute index distribution
+    // and return it to QBarSet
     activeGraph->prominenceDistribution(index,barSeries,barSet,axisX);
 
-    // series->setBrush(QBrush(QColor(0,0,0)));
-    // series->setPen(QPen(QColor(0,0,0)));
-
     // Add series to chart
-//    chart->addSeries(series);
-
-    barSeries->setLabelsAngle(90);
+    //chart->addSeries(series);
     chart->addSeries(barSeries);
 
-    chart->setTitle(series->name(), QFont("Times",8));
+    // Set Chart title and remove legend
+    chart->setTitle(barSeries->name() + QString(" dist."), QFont("Times",8));
     chart->toggleLegend(false);
-//    chart->createDefaultAxes();
+    chart->setToolTip(tr("This chart shows the distribution of the last prominence index"));
 
+    // Set the style of the lines and bars
+    //series->setBrush(QBrush(QColor(0,0,0)));
+    //series->setPen(QPen(QColor(0,0,0)));
 
+    barSeries->setBarWidth(0.5);
+
+    // Attach axes to the Chart.
+    //    chart->createDefaultAxes();
+
+    // Instead of calling createDefaultAxes
+    // we use our own axes
+    axisX->setLabelsAngle(-80);
+    axisX->setShadesVisible(false);
     chart->setAxisX(axisX, barSeries);
-    qDebug() << "axisX min: " << axisX->min() << " max: " << axisX->max();
 
     QValueAxis *axisY = new QValueAxis;
-    //axisY->setRange (0,15);
     chart->setAxisY(axisY, barSeries);
 
+    // Apply our theme to axes:
+    chart->setAxesThemeDefault();
 
-    QPen axisPen;
-    axisPen.setBrush( QBrush(QColor(0,0,0,0)) );
-    axisPen.setWidthF(0.5);
-    axisPen.setStyle(Qt::SolidLine);
-    chart->setAxisYLinePen(axisPen);
-
-    //chart->setAxisXRange(0,10);
-    //chart->setAxisYRange(0,10);
-    chart->setAxisXLabelFont(QFont("Times", 5));
-    chart->setAxisYLabelFont(QFont("Times", 7));
 
 }
 
