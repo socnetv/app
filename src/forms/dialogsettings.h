@@ -99,7 +99,7 @@ signals:
     void setNodeNumbersInside(bool);
     void setNodeNumberSize(const int v, const int &size, const bool prompt);
     void setNodeNumberDistance(const int v, const int &);
-    void setNodeNumberColor(const QColor);
+    void setNodeNumberColor(const int &v, const QColor);
     void setNodeLabelsVisibility(const bool &);
     void setNodeLabelColor(const QColor);
     void setNodeLabelSize(const int v, const int &);

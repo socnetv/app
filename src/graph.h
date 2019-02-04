@@ -417,11 +417,12 @@ signals:
     void setNodeShape(const int &v, const QString &shape);
     void setNodeColor(const int &v, const QString &color);
     void setNodeLabel(const int &v, QString);
-    void setNodeNumberSize(const int &, const int &);
-    void setNodeNumberDistance(const int &, const int &);
-    void setNodeLabelSize(const int &, const int &);
-    void setNodeLabelColor(const int &, const QString &color);
-    void setNodeLabelDistance(const int &, const int &);
+    void setNodeNumberColor(const int &v, const QString &color);
+    void setNodeNumberSize(const int &v, const int &size);
+    void setNodeNumberDistance(const int &v, const int &distance);
+    void setNodeLabelSize(const int &v, const int &size);
+    void setNodeLabelColor(const int &v, const QString &color);
+    void setNodeLabelDistance(const int &v, const int &distance);
 
     void setEdgeWeight (const int &v1, const int &v2, const qreal &weight);
     void signalEdgeType(const int &v1,
@@ -524,7 +525,9 @@ public:
     void vertexColorAllSet(const QString &color);
     QColor vertexColor(const int &v);
 
-    void vertexNumberColorInit ( QString color);
+    void vertexNumberColorInit (const QString &color);
+    void vertexNumberColorSet(const int &v=0, const QString &color = "#000000" );
+
     void vertexNumberSizeInit (const int &size);
     void vertexNumberSizeSet(const int &v, const int &newsize );
     void vertexNumberSizeSetAll (const int &size);

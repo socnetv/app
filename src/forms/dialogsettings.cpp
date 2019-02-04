@@ -629,7 +629,7 @@ void DialogSettings::getNodeNumberColor(){
         m_pixmap.fill(m_nodeNumberColor);
         ui->nodeNumberColorBtn->setIcon(QIcon(m_pixmap));
         (m_appSettings)["initNodeNumberColor"] = m_nodeNumberColor.name();
-        emit setNodeNumberColor(m_nodeNumberColor);
+        emit setNodeNumberColor(0,m_nodeNumberColor);
     }
     else {
         // user pressed Cancel

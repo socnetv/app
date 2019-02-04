@@ -5209,6 +5209,9 @@ void MainWindow::initSignalSlots() {
     connect( activeGraph, SIGNAL( setNodeShape(const int &,QString))  ,
              graphicsWidget, SLOT(  setNodeShape(const int &, QString) ) );
 
+    connect( activeGraph, SIGNAL( setNodeNumberColor(const int &, QString)  ),
+              graphicsWidget, SLOT(  setNodeNumberColor (const int &, QString) ) );
+
     connect( activeGraph, SIGNAL( setNodeNumberSize(const int &, const int &)  ),
              graphicsWidget, SLOT(  setNodeNumberSize (const int &, const int &) ) );
 
@@ -9284,12 +9287,12 @@ void MainWindow::slotEditNodeNumberSize(int v1, int newSize, const bool prompt) 
 
 
 /**
- * @brief MainWindow::slotEditNodeNumbersColor
- * Changes the color of all nodes' numbers.
+ * @brief Changes the text color of all node numbers
  * Called from Edit menu option and Settings dialog.
- * Asks the user to enter a new node number color
+ * If color is invalid, asks the user to enter a new node number color
+ * @param color
  */
-void MainWindow::slotEditNodeNumbersColor(QColor color){
+void MainWindow::slotEditNodeNumbersColor(const int &v1, QColor color){
     qDebug() << "MW:slotEditNodeNumbersColor() - new color " << color;
     if (!color.isValid()) {
         color = QColorDialog::getColor( QColor ( appSettings["initNodeNumberColor"] ),
@@ -9298,19 +9301,19 @@ void MainWindow::slotEditNodeNumbersColor(QColor color){
     }
 
     if (color.isValid()) {
+
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        QList<QGraphicsItem *> list= graphicsWidget->scene()->items();
-        for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
-            if ( (*it)->type() == TypeNumber) 		{
-                GraphicsNodeNumber *jimNumber = (GraphicsNodeNumber *) (*it);
-                jimNumber->update();
-                jimNumber->setDefaultTextColor(color);
-            }
+        if (v1) {
+            activeGraph->vertexNumberColorSet(v1, color.name());
+
         }
-        appSettings["initNodeNumberColor"] = color.name();
-        activeGraph->vertexNumberColorInit( color.name() );
+        else {
+            appSettings["initNodeNumberColor"] = color.name();
+            activeGraph->vertexNumberColorSet(0, color.name());
+        }
+
         QApplication::restoreOverrideCursor();
-        statusMessage( tr("Numbers' colors changed. Ready. ")  );
+        statusMessage( tr("Node number color changed. Ready. ")  );
     }
     else {
         // user pressed Cancel

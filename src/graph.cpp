@@ -1471,14 +1471,45 @@ void Graph::vertexColorAllSet(const QString &color) {
 
 
 /**
- * @brief Graph::vertexNumberColorInit
- * Changes the initial color of vertices numbers
+ * @brief Changes the initial color of the vertex numbers
  * @param color
  */
-void Graph::vertexNumberColorInit (QString color) {
+void Graph::vertexNumberColorInit (const QString &color) {
     initVertexNumberColor = color;
 }
 
+
+
+/**
+ * @brief Graph::vertexColorSet
+ * Changes the color of vertex v1
+ * @param v1
+ * @param color
+ */
+void Graph::vertexNumberColorSet(const int &v1, const QString &color){
+    qDebug()<< "Graph::vertexNumberColorSet() - v1: "<< v1 << " color:"<< color;
+    if ( v1  ) {
+        m_graph[ vpos[v1] ]->setNumberColor ( color );
+        emit setNodeNumberColor ( m_graph[ vpos[v1] ]-> name(), color );
+    }
+    else {
+        qDebug()<< "Graph::vertexNumberColorSet() - changing color in all node numbers";
+        vertexNumberColorInit(color);
+        VList::const_iterator it;
+        for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+            if ( ! (*it)->isEnabled() ){
+                continue;
+            }
+            else {
+                qDebug() << "Graph::vertexNumberColorSet() - vertex " << (*it)->name()
+                         << " new color " << color;
+                (*it)->setNumberColor(color) ;
+                emit setNodeNumberColor ( (*it)-> name(), color );
+            }
+        }
+    }
+    graphSetModified(GRAPH_CHANGED_VERTICES_METADATA);
+}
 
 
 

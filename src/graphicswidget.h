@@ -123,6 +123,7 @@ public slots:
     bool setNodeShape(const int &nodeNumber, const QString &shape);
     bool setNodeColor(const int &, const QString &color);
 
+    void setNodeNumberColor(const int &nodeNumber, const QString &color);
     void setNodeNumberVisibility(const bool &toggle);
     bool setNodeNumberSize(const int &, const int &size=0);
     bool setNodeNumberDistance(const int &, const int &distance=0);

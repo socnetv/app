@@ -518,6 +518,7 @@ void GraphicsWidget::removeItem( GraphicsEdgeLabel *edgeLabel){
 }
 
 
+
 /**
  * @brief Removes a node label item from the scene.
  * @param nodeLabel
@@ -586,19 +587,6 @@ bool GraphicsWidget::setNodeShape(const int &nodeNumber, const QString &shape){
 }
 
 
-
-
-/**
- * @brief GraphicsWidget::setNodeNumberVisibility
- * @param toggle
- */
-void GraphicsWidget::setNodeNumberVisibility(const bool &toggle){
-    qDebug()<< "GW::setNodeNumberVisibility()" << toggle;
-    foreach ( GraphicsNode *m_node, nodeHash) {
-        m_node->setNumberVisibility(toggle);
-    }
-    m_nodeNumberVisibility = toggle;
-}
 
 
 /**
@@ -732,23 +720,55 @@ void GraphicsWidget::setNodeSizeAll(const int &size ){
 
 
 
+
 /**
- * @brief Changs the number size of a node
+ * @brief Toggles the visibility of node numbers
+ * @param toggle
+ */
+void GraphicsWidget::setNodeNumberVisibility(const bool &toggle){
+    qDebug()<< "GW::setNodeNumberVisibility()" << toggle;
+    foreach ( GraphicsNode *m_node, nodeHash) {
+        m_node->setNumberVisibility(toggle);
+    }
+    m_nodeNumberVisibility = toggle;
+}
+
+
+
+
+/**
+ * @brief Changes the color of a node number
+ * @param nodeNumber
+ * @param color
+ */
+void GraphicsWidget::setNodeNumberColor(const int &nodeNumber, const QString &color) {
+    qDebug () << " GraphicsWidget::setNodeNumberColor() - node:"<< nodeNumber
+              << " new number color"<< color;
+    if  ( nodeHash.contains (nodeNumber) ) {
+        if (!color.isNull()){
+            nodeHash.value(nodeNumber) ->setNumberColor(color) ;
+        }
+    }
+    qDebug() << "GW::setNodeNumberColor(): cannot find node " << nodeNumber;
+}
+
+
+/**
+ * @brief Changes the size of the number of a node
  * @param number
  * @param size
  */
 bool GraphicsWidget::setNodeNumberSize(const int &number, const int &size){
-    qDebug () << " GraphicsWidget::setNodeNumberSize() node number: "<< number
+    qDebug () << " GraphicsWidget::setNodeNumberSize() - node: "<< number
               << " new number size "<< size;
     if  ( nodeHash.contains (number) ) {
         if (size>0){
-            qDebug() << "GW: setNodeNumberSize(): for "<< number << " to " << size ;
             nodeHash.value(number) ->setNumberSize(size) ;
             return true;
 
         }
     }
-    qDebug() << "GW: setNodeSize(): cannot find node " << number;
+    qDebug() << "GW::setNodeNumberSize() - cannot find node " << number;
     return false;
 }
 
@@ -760,18 +780,16 @@ bool GraphicsWidget::setNodeNumberSize(const int &number, const int &size){
  * @param distance
  */
 bool GraphicsWidget::setNodeNumberDistance(const int &number, const int &distance ){
-    qDebug () << "GW::setNodeNumberDistance() node number: "<< number
+    qDebug () << "GW::setNodeNumberDistance() - node: "<< number
               << " new number distance "<< distance;
     if  ( nodeHash.contains (number) ) {
         if (distance>=0){
-            qDebug() << "GW::setNodeNumberDistance(): for "<< number
-                     << " to " << distance ;
             nodeHash.value(number) ->setNumberDistance(distance) ;
             return true;
 
         }
     }
-    qDebug() << "GW::setNodeNumberSize(): cannot find node " << number;
+    qDebug() << "GW::setNodeNumberDistance() - cannot find node " << number;
     return false;
 }
 
@@ -810,7 +828,6 @@ bool GraphicsWidget::setNodeLabelSize(const int &number, const int &size){
             qDebug() << "GW::setNodeLabelSize(): for "<< number << " to " << size ;
             nodeHash.value(number) ->setLabelSize(size);
             return true;
-
         }
     }
     qDebug() << "GW:setNodeLabelSize() - cannot find node " << number;
