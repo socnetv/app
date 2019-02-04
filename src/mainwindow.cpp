@@ -13214,7 +13214,11 @@ void MainWindow::slotAnalyzeProminenceDistributionChart(const int &index) {
     // Set Chart title and remove legend
     chart->setTitle(barSeries->name() + QString(" dist."), QFont("Times",8));
     chart->toggleLegend(false);
-    chart->setToolTip(tr("This chart shows the distribution of the last prominence index"));
+    chart->setToolTip( tr("The distribution of ") +
+                       barSeries->name() + " index scores. \n"
+                       " Min value: " + axisX->min() + "\n"
+                       " Max value: " + axisX->max()
+                       );
 
     // Set the style of the lines and bars
     //series->setBrush(QBrush(QColor(0,0,0)));
