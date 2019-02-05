@@ -671,11 +671,10 @@ void Graph::relationsClear(){
 
 */
 /**
- * @brief Creates a vertex
+ * @brief Creates a new vertex
  * Main vertex creation slot, associated with homonymous signal from Parser.
- * Adds a vertex to the Graph and calls editNodeAdd of GraphicsWidget
- * The new vertex is named i and stores its color, label, label color, shape and position p.
- * p holds the desired position of the new node.
+ * Adds a vertex to the Graph and signals drawNode to GraphicsWidget
+ * The new vertex has number num and specific color, label, label color, shape and position p.
  * @param num
  * @param size
  * @param nodeColor
@@ -688,29 +687,57 @@ void Graph::relationsClear(){
  * @param nodeShape
  * @param signalMW
  */
-void Graph::vertexCreate(const int &num, const int &nodeSize, const QString &nodeColor,
-                         const QString &numColor, const int &numSize,
-                         const QString &label, const QString &labelColor,
+void Graph::vertexCreate(const int &num,
+                         const int &nodeSize,
+                         const QString &nodeColor,
+                         const QString &numColor,
+                         const int &numSize,
+                         const QString &label,
+                         const QString &labelColor,
                          const int &labelSize,
-                         const QPointF &p, const QString &nodeShape, const QString &nodeIconPath,
-                         const bool &signalMW){
+                         const QPointF &p,
+                         const QString &nodeShape,
+                         const QString &nodeIconPath,
+                         const bool &signalMW) {
+
     int value = 1;
+
     qDebug() << "Graph::vertexCreate() - vertex:" << num
              << "shape:" << nodeShape
              << "icon:" << nodeIconPath
                 << "signalMW:" << signalMW
                    << "- Calling vertexAdd() and emitting signalDrawNode() to GW";
-    vertexAdd ( num, value, nodeSize,  nodeColor,
-               numColor, numSize,
-               label, labelColor, labelSize, p, nodeShape, nodeIconPath);
+
+    vertexAdd ( num,
+                value,
+                nodeSize,
+                nodeColor,
+                numColor,
+                numSize,
+                label,
+                labelColor,
+                labelSize,
+                p,
+                nodeShape,
+                nodeIconPath);
 
 
-    emit signalDrawNode( p, num, nodeSize, nodeShape,  nodeIconPath, nodeColor,
-                   numColor, numSize, initVertexNumberDistance,
-                   label,
-                   labelColor, labelSize, initVertexLabelDistance);
+    emit signalDrawNode( p,
+                         num,
+                         nodeSize,
+                         nodeShape,
+                         nodeIconPath,
+                         nodeColor,
+                         numColor,
+                         numSize,
+                         initVertexNumberDistance,
+                         label,
+                         labelColor,
+                         labelSize,
+                         initVertexLabelDistance);
 
     qDebug() << "Graph::vertexCreate() - vertex:" << num << "created. Calling graphSetModified().";
+
     graphSetModified(GRAPH_CHANGED_VERTICES, signalMW);
 
     //draw new user-clicked nodes with the same color with that of the file loaded
@@ -722,21 +749,22 @@ void Graph::vertexCreate(const int &num, const int &nodeSize, const QString &nod
 
 
 /**
- * @brief Graph::vertexCreateAtPos
- * @param p  The clicked pos of the new node.
-
+ * @brief Create a new vertex a a giver position
  * Called from GW, with i and p as parameters.
  * Calls the main creation slot with init node values.
+ * @param p  The clicked pos of the new node.
  */
 void Graph::vertexCreateAtPos(const QPointF &p){
     int i = vertexNumberMax() +1;
+
     qDebug() << "Graph::vertexCreateAtPos() - vertex:" << i << " pos:" << p;
-    vertexCreate(	i, initVertexSize,  initVertexColor,
-                    initVertexNumberColor, initVertexNumberSize,
-                    QString::null, initVertexLabelColor, initVertexLabelSize,
-                    p, initVertexShape, initVertexIconPath,
-                    true
-                    );
+
+    vertexCreate( i, initVertexSize,  initVertexColor,
+                  initVertexNumberColor, initVertexNumberSize,
+                  QString::null, initVertexLabelColor, initVertexLabelSize,
+                  p, initVertexShape, initVertexIconPath,
+                  true
+                  );
 
     emit statusMessage(  tr("New node (numbered %1) added at position (%2,%3)")
                    .arg(vertexNumberMax())
@@ -831,25 +859,45 @@ void Graph::vertexRemoveDummyNode(int i){
  * @param p
  * @param shape
  */
-void Graph::vertexAdd ( const int &v1, const int &val, const int &size,
-                        const QString &color, const QString &numColor,
-                        const int &numSize, const QString &label,
-                        const QString &labelColor, const int &labelSize,
-                        const QPointF &p, const QString &shape,
-                        const QString &iconPath){
+void Graph::vertexAdd ( const int &v1,
+                        const int &val,
+                        const int &size,
+                        const QString &color,
+                        const QString &numColor,
+                        const int &numSize,
+                        const QString &label,
+                        const QString &labelColor,
+                        const int &labelSize,
+                        const QPointF &p,
+                        const QString &shape,
+                        const QString &iconPath) {
 
     qDebug() << "Graph::vertexAdd() ";
+
     if (order)
         vpos[v1]=m_totalVertices;
     else
         vpos[v1]=m_graph.size();
 
     m_graph.append(
-                new GraphVertex
-                (this, v1, val, m_curRelation , size, color, numColor, numSize,
-                 label, labelColor, labelSize, p, shape,iconPath
-                 )
+                new GraphVertex (
+                    this,
+                    v1,
+                    val,
+                    m_curRelation ,
+                    size,
+                    color,
+                    numColor,
+                    numSize,
+                    label,
+                    labelColor,
+                    labelSize,
+                    p,
+                    shape,
+                    iconPath
+                    )
                 );
+
     m_totalVertices++;
 
 //    qDebug() << "Graph: vertexAdd(): vertex" << m_graph.back()->name()
@@ -1413,8 +1461,7 @@ void Graph::vertexShapeAllSet(const QString &shape, const QString &iconPath) {
 
 
 /**
- * @brief Graph::vertexColorSet
- * Changes the color of vertex v1
+ * @brief Changes the color of vertex v1
  * @param v1
  * @param color
  */
@@ -1623,7 +1670,7 @@ void Graph::vertexNumberDistanceSetAll(const int &newDistance) {
  * @param v1
  * @param label
  */
-void Graph::vertexLabelSet(int v1, QString label){
+void Graph::vertexLabelSet(const int &v1, const QString &label){
     qDebug()<< "Graph::vertexLabelSet() - vertex "<< v1
             << "vpos " << vpos[v1]
                << "new label"<< label;
@@ -14460,24 +14507,30 @@ void Graph::graphLoad (	const QString m_fileName,
                 ) ;
 
 
-    connect (
-                file_parser, SIGNAL( createNode (const int &,const int &,
-                                                 const QString &, const QString &,
-                                                 const int&, const QString &,
-                                                 const QString &, const int&,
-                                                 const QPointF&,
-                                                 const QString &,
-                                                 const QString &iconPath,
-                                                 const bool &) ),
-                this, SLOT( vertexCreate( const int &, const int &,
-                                          const QString &, const QString &,
-                                          const int &, const QString &,
-                                          const QString &, const int &,
-                                          const QPointF &,
-                                          const QString &,
-                                          const QString &iconPath,
-                                          const bool &) )
-                ) ;
+    connect ( file_parser, &Parser::createNode, this, &Graph::vertexCreate );
+
+//    connect (
+//                file_parser, SIGNAL( createNode (const int &,const int &,
+//                                                 const QString &, const QString &,
+//                                                 const int&, const QString &,
+//                                                 const QString &, const int&,
+//                                                 const QPointF&,
+//                                                 const QString &,
+//                                                 const QString &iconPath,
+//                                                 const bool &) ),
+//                this, SLOT( vertexCreate( const int &,
+//                                          const int &,
+//                                          const QString &,
+//                                          const QString &,
+//                                          const int &,
+//                                          const QString &,
+//                                          const QString &,
+//                                          const int &,
+//                                          const QPointF &,
+//                                          const QString &,
+//                                          const QString &iconPath,
+//                                          const bool &) )
+//                ) ;
 
     connect (
                 file_parser, SIGNAL (createNodeAtPosRandom(const bool &)),

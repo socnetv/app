@@ -54,11 +54,12 @@ Q_DECLARE_METATYPE(SelectedEdge)
 
 class GraphicsWidget : public QGraphicsView {
     Q_OBJECT
+
 public:
 
     GraphicsWidget(QGraphicsScene *m_scene, MainWindow *m_parent);
-
     ~GraphicsWidget();
+
     void clear();
 
     QString createEdgeName(const int &v1, const int &v2, const int &relation=-1);
@@ -89,7 +90,9 @@ public:
     void setAllItemsVisibility(int, bool);
 
     void removeAllItems(int);
+
 protected:
+
     void wheelEvent(QWheelEvent *event);
     void mouseDoubleClickEvent ( QMouseEvent * e );
     void mousePressEvent ( QMouseEvent * e );
@@ -109,19 +112,24 @@ public slots:
                   const QString &nodeShape,
                   const QString &nodeIconPath,
                   const QString &nodeColor,
-                  const QString &numberColor, const int &numberSize,
+                  const QString &numberColor,
+                  const int &numberSize,
                   const int &numberDistance,
-                  const QString &nodeLabel, const QString &labelColor,
-                  const int &labelSize, const int &labelDistance);
+                  const QString &nodeLabel,
+                  const QString &labelColor,
+                  const int &labelSize,
+                  const int &labelDistance);
     void removeNode(const int &number);
     void setNodeVisibility(int, bool );	//Called from Graph via MW
     void setNodeClicked(GraphicsNode *);
-    void moveNode(const int &num, const qreal &x, const qreal &y);	//Called from Graph when creating random nets.
+    void moveNode(const int &num, const qreal &x, const qreal &y);
 
     bool setNodeSize(const int &nodeNumber, const int &size=0);
     void setNodeSizeAll(const int &size=0);
 
-    bool setNodeShape(const int &nodeNumber, const QString &shape, const QString &iconPath=QString::null);
+    bool setNodeShape(const int &nodeNumber,
+                      const QString &shape,
+                      const QString &iconPath=QString::null);
     bool setNodeColor(const int &, const QString &color);
 
     void setNodeNumberColor(const int &nodeNumber, const QString &color);
@@ -132,7 +140,7 @@ public slots:
     void setNodeLabelsVisibility(const bool &toggle);
     bool setNodeLabelColor(const int &number, const QString &color="green");
     bool setNodeLabelSize(const int &, const int &size=0);
-    bool setNodeLabel(const int & , QString );
+    bool setNodeLabel(const int & , const QString &label);
     bool setNodeLabelDistance(const int &, const int &distance=0);
 
     void drawEdge(const int &source,
@@ -202,7 +210,6 @@ signals:
     void rotationChanged(const int);
     void resized(const int, const int);
     void setCursor(Qt::CursorShape);
-
 
 
 private:

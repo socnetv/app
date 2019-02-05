@@ -5175,33 +5175,37 @@ void MainWindow::initSignalSlots() {
              graphicsWidget,  &GraphicsWidget::setNodesMarked  );
 
     connect( activeGraph,
-             SIGNAL(
-                 signalDrawNode( const QPointF &,
-                                 const int &,
-                                 const int &,
-                                 const QString &,
-                                 const QString &,
-                                 const QString &,
-                                 const QString &, const int &, const int &,
-                                 const QString &,
-                                 const QString &, const int &, const int &
-
-                                 )
-                 ),
+             SIGNAL( signalDrawNode( const QPointF &,
+                                     const int &,
+                                     const int &,
+                                     const QString &,
+                                     const QString &,
+                                     const QString &,
+                                     const QString &,
+                                     const int &,
+                                     const int &,
+                                     const QString &,
+                                     const QString &,
+                                     const int &,
+                                     const int &
+                                     )
+                     ),
              graphicsWidget,
-             SLOT(
-                 drawNode( const QPointF &,
-                           const int &,
-                           const int &,
-                           const QString &,
-                           const QString &,
-                           const QString &,
-                           const QString &, const int &, const int &,
-                           const QString &,
-                           const QString &, const int &, const int &
-
-                           )
-                 )
+             SLOT( drawNode( const QPointF &,
+                             const int &,
+                             const int &,
+                             const QString &,
+                             const QString &,
+                             const QString &,
+                             const QString &,
+                             const int &,
+                             const int &,
+                             const QString &,
+                             const QString &,
+                             const int &,
+                             const int &
+                             )
+                   )
              ) ;
 
     connect( activeGraph,&Graph::signalRemoveNode,
@@ -5213,8 +5217,8 @@ void MainWindow::initSignalSlots() {
     connect( activeGraph, SIGNAL( setNodeSize(const int &, const int &)  ),
              graphicsWidget, SLOT(  setNodeSize (const int &, const int &) ) );
 
-    connect( activeGraph, SIGNAL( setNodeColor(const int &,QString))  ,
-             graphicsWidget, SLOT(  setNodeColor(const int &, QString) ) );
+    connect( activeGraph, SIGNAL( setNodeColor(const int &, const QString &))  ,
+             graphicsWidget, SLOT(  setNodeColor(const int &, const QString &) ) );
 
     connect( activeGraph, SIGNAL( setNodeShape(const int &,const QString&, const QString &))  ,
              graphicsWidget, SLOT(  setNodeShape(const int &, const QString&,const QString &) ) );

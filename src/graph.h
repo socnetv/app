@@ -264,13 +264,19 @@ public slots:
     void relationCurrentRename(const QString &newName, const bool &notifyMW=false);
 
     /** Slots to signals from Parser */
-    void vertexCreate(const int &num, const int &size, const QString &nodeColor,
-                       const QString &numColor, const int &numSize,
-                       const QString &label, const QString &lColor,
-                       const int &labelSize, const QPointF &p, const QString &nodeShape,
-                      const QString &nodeIconPath = QString::null,
-                       const bool &signalMW = false
-                        );//Main vertex creation call
+    void vertexCreate ( const int &num,
+                        const int &size,
+                        const QString &nodeColor,
+                        const QString &numColor,
+                        const int &numSize,
+                        const QString &label,
+                        const QString &lColor,
+                        const int &labelSize,
+                        const QPointF &p,
+                        const QString &nodeShape,
+                        const QString &nodeIconPath = QString::null,
+                        const bool &signalMW = false
+            );
 
     void graphFileLoaded(const int &fileType,
                          const QString &fName=QString::null,
@@ -421,7 +427,7 @@ signals:
     void setNodeSize(const int &v, const int &size);
     void setNodeShape(const int &v, const QString &shape, const QString &iconPath=QString::null);
     void setNodeColor(const int &v, const QString &color);
-    void setNodeLabel(const int &v, QString);
+    void setNodeLabel(const int &v, const QString &label);
     void setNodeNumberColor(const int &v, const QString &color);
     void setNodeNumberSize(const int &v, const int &size);
     void setNodeNumberDistance(const int &v, const int &distance);
@@ -546,7 +552,7 @@ public:
     void vertexLabelSizeSet(const int &v, const int &newsize );
     void vertexLabelSizeAllSet (const int &);
     void vertexLabelColorInit(QString color);
-    void vertexLabelSet(int v, QString label);
+    void vertexLabelSet(const int &v, const QString &label);
     void vertexLabelColorSet(int v1, QString color);
     void vertexLabelColorAllSet(const QString &color);
     QString vertexLabel(const int &v1);

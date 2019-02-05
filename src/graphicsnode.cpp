@@ -42,23 +42,37 @@
 
 
 
-GraphicsNode::GraphicsNode(GraphicsWidget* gw, const int &num, const int &size,
-           const QString &color, const QString &shape, const QString &iconPath,
-           const bool &showNumbers, const bool &numbersInside,
-           const QString &numberColor, const int &numberSize,
-           const int &numDistance,
-           const bool &showLabels,  const QString &label, const QString &labelColor,
-           const int &labelSize, const int &labelDistance, const bool &edgeHighlighting,
-           QPointF p
-           ) : graphicsWidget (gw)
+GraphicsNode::GraphicsNode ( GraphicsWidget* gw,
+                             const int &num,
+                             const int &size,
+                             const QString &color,
+                             const QString &shape,
+                             const QString &iconPath,
+                             const bool &showNumbers,
+                             const bool &numbersInside,
+                             const QString &numberColor,
+                             const int &numberSize,
+                             const int &numDistance,
+                             const bool &showLabels,
+                             const QString &label,
+                             const QString &labelColor,
+                             const int &labelSize,
+                             const int &labelDistance,
+                             const bool &edgeHighlighting,
+                             QPointF p
+                             ) : graphicsWidget (gw)
 {
-    qDebug()<<"GraphicsNode::GraphicsNode() - Node"<< num << "initializing...";
+    qDebug()<<"GraphicsNode::GraphicsNode() - New node:"<< num << "initializing...";
     graphicsWidget->scene()->addItem(this); //Without this nodes don't appear on the screen...
 
     setFlags(ItemSendsGeometryChanges | ItemIsSelectable | ItemIsMovable );
-    //setCacheMode(QGraphicsItem::ItemCoordinateCache); //QT < 4.6 if a cache mode is set, nodes do not respond to hover events
 
-    setCacheMode(QGraphicsItem::NoCache); //QT < 4.6 if a cache mode is set, nodes do not respond to hover events
+    //QT < 4.6 if a cache mode is set, nodes do not respond to hover events
+    //setCacheMode(QGraphicsItem::ItemCoordinateCache);
+
+    //QT < 4.6 if a cache mode is set, nodes do not respond to hover events
+    setCacheMode(QGraphicsItem::NoCache);
+
     setAcceptHoverEvents(true);
 
     m_num=num;
@@ -107,9 +121,9 @@ GraphicsNode::GraphicsNode(GraphicsWidget* gw, const int &num, const int &size,
  * @brief Changes the color of the node
  * @param color string
  */
-void GraphicsNode::setColor(QString str) {
+void GraphicsNode::setColor(const QString &colorStr) {
     prepareGeometryChange();
-    m_col=QColor(str);
+    m_col=QColor(colorStr);
     update();
 }
 
@@ -221,7 +235,10 @@ void GraphicsNode::setShape(const QString shape, const QString &iconPath) {
     }
     else if ( m_shape == "icon" ) {
         path.addRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size );
-        m_iconPath = iconPath;
+        if (!iconPath.isEmpty()) {
+            m_iconPath = iconPath;
+        }
+
     }
     m_path = path;
     update();
@@ -491,7 +508,7 @@ void GraphicsNode::deleteLabel(){
 }
 
 
-void GraphicsNode::setLabelText ( QString label) {
+void GraphicsNode::setLabelText (const QString &label) {
     qDebug()<< "GraphicsNode::setLabelText()";
     prepareGeometryChange();
     m_labelText = label;

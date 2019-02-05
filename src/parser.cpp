@@ -1239,13 +1239,20 @@ bool Parser::loadPajek(){
                     //qDebug()<< "Parser-loadPajek(): Creating dummy node number num = "<< num;
                     //qDebug()<<"Creating node at "<< randX<<","<< randY;
 
-                    emit createNode(
-                                num, initNodeSize, nodeColor,
-                                initNodeNumberColor, initNodeNumberSize,
-                                label, lineElement[3], initNodeLabelSize,
-                            QPointF(randX, randY),
-                            nodeShape, QString::null, false
-                            );
+                    emit createNode( num,
+                                     initNodeSize,
+                                     nodeColor,
+                                     initNodeNumberColor,
+                                     initNodeNumberSize,
+                                     label,
+                                     lineElement[3],
+                                    initNodeLabelSize,
+                                    QPointF(randX, randY),
+                                    nodeShape,
+                                    QString::null,
+                                    false
+                                    );
+
                     listDummiesPajek.push_back(num);
                     miss++;
                 }
@@ -1280,11 +1287,18 @@ bool Parser::loadPajek(){
                     randX=rand()%gwWidth;
                     randY=rand()%gwHeight;
                     emit createNode(
-                                num,initNodeSize, initNodeColor,
-                                initNodeNumberColor, initNodeNumberSize,
-                                QString::number(i), initNodeLabelColor,initNodeLabelSize,
+                                num,
+                                initNodeSize,
+                                initNodeColor,
+                                initNodeNumberColor,
+                                initNodeNumberSize,
+                                QString::number(i),
+                                initNodeLabelColor,
+                                initNodeLabelSize,
                                 QPointF(randX, randY),
-                                initNodeShape,QString::null,  false
+                                initNodeShape,
+                                QString::null,
+                                false
                                 );
                 }
                 j=totalNodes;
@@ -1577,11 +1591,18 @@ bool Parser::loadAdjacency(){
                 qDebug()<<"Parser-loadAdjacency(): Calling createNode() for node "<< j+1
                        <<" No coords found. Using random "<<randX <<", " << randY;
 
-                emit createNode( j+1,initNodeSize,  initNodeColor,
-                                 initNodeNumberColor, initNodeNumberSize,
-                                 QString::number(j+1), initNodeLabelColor, initNodeLabelSize,
+                emit createNode( j+1,
+                                 initNodeSize,
+                                 initNodeColor,
+                                 initNodeNumberColor,
+                                 initNodeNumberSize,
+                                 QString::number(j+1),
+                                 initNodeLabelColor,
+                                 initNodeLabelSize,
                                  QPointF(randX, randY),
-                                 initNodeShape,QString::null, false
+                                 initNodeShape,
+                                 QString::null,
+                                 false
                                  );
             }
         }
@@ -2136,16 +2157,25 @@ void Parser::endGraphMLElementNode(QXmlStreamReader &xml){
             bool_node = false;
         return;
     }
+
     qDebug()<<"Parser::endGraphMLElementNode() - signal to create node "
            << " nodenumber "<< totalNodes  << " id " << node_id
            << " label " << nodeLabel << " coords " <<randX << ", " <<randY;
-    emit createNode(
-                totalNodes, nodeSize, nodeColor,
-                nodeNumberColor, nodeNumberSize,
-                nodeLabel, nodeLabelColor, nodeLabelSize,
-                QPointF(randX,randY),
-                nodeShape, QString::null, false
-                );
+
+    emit createNode( totalNodes,
+                     nodeSize,
+                     nodeColor,
+                     nodeNumberColor,
+                     nodeNumberSize,
+                     nodeLabel,
+                     nodeLabelColor,
+                     nodeLabelSize,
+                     QPointF(randX,randY),
+                     nodeShape,
+                     QString::null,
+                     false
+                     );
+
     bool_node = false;
 
 }

@@ -188,13 +188,25 @@ void GraphicsWidget::drawNode( const QPointF &p,
             << "nodeIconPath"<<nodeIconPath;
 
     // Draw node
-    GraphicsNode *jim= new GraphicsNode (
-                this, num, nodeSize, nodeColor, nodeShape, nodeIconPath,
-                m_nodeNumberVisibility, m_nodeNumbersInside, numberColor, numberSize, numberDistance,
-                m_nodeLabelVisibility, nodeLabel, labelColor, labelSize, labelDistance,
-                m_edgeHighlighting,
-                p
-                );
+    GraphicsNode *jim= new GraphicsNode ( this,
+                                          num,
+                                          nodeSize,
+                                          nodeColor,
+                                          nodeShape,
+                                          nodeIconPath,
+                                          m_nodeNumberVisibility,
+                                          m_nodeNumbersInside,
+                                          numberColor,
+                                          numberSize,
+                                          numberDistance,
+                                          m_nodeLabelVisibility,
+                                          nodeLabel,
+                                          labelColor,
+                                          labelSize,
+                                          labelDistance,
+                                          m_edgeHighlighting,
+                                          p
+                                          );
 
     // Add new node to a container to ease finding, edge creation etc
     nodeHash.insert(num, jim);
@@ -586,7 +598,9 @@ bool GraphicsWidget::setNodeColor(const int &nodeNumber,
  * @param shape
  * @return
  */
-bool GraphicsWidget::setNodeShape(const int &nodeNumber, const QString &shape, const QString &iconPath){
+bool GraphicsWidget::setNodeShape(const int &nodeNumber,
+                                  const QString &shape,
+                                  const QString &iconPath){
     qDebug() << "GW::setNodeShape() : " << shape;
     nodeHash.value(nodeNumber) -> setShape(shape,iconPath);
     return true;
@@ -615,7 +629,7 @@ void GraphicsWidget::setNodeLabelsVisibility (const bool &toggle){
  * @param label
  * @return
  */
-bool GraphicsWidget::setNodeLabel(const int &nodeNumber, QString label){
+bool GraphicsWidget::setNodeLabel(const int &nodeNumber, const QString &label){
     qDebug() << "GW::setNodeLabel() : " << label;
     nodeHash.value(nodeNumber) -> setLabelText (label);
     return true;

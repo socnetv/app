@@ -60,20 +60,31 @@ class GraphicsNode :  public QObject,  public QGraphicsItem {
     Q_INTERFACES (QGraphicsItem)
 
 public:
-    GraphicsNode (GraphicsWidget* gw, const int &num, const int &size,
-          const QString &color, const QString &shape, const QString &iconPath,
-          const bool &showNumbers, const bool &numbersInside,
-          const QString &numberColor, const int &numberSize, const int &numDistance,
-          const bool &showLabels, const QString &label, const QString &labelColor,
-          const int &labelSize, const int &labelDistance,
-                  const bool &edgeHighlighting,
-          QPointF p
-          );
+
+    GraphicsNode ( GraphicsWidget* gw,
+                   const int &num,
+                   const int &size,
+                   const QString &color,
+                   const QString &shape,
+                   const QString &iconPath,
+                   const bool &showNumbers,
+                   const bool &numbersInside,
+                   const QString &numberColor,
+                   const int &numberSize,
+                   const int &numDistance,
+                   const bool &showLabels,
+                   const QString &label,
+                   const QString &labelColor,
+                   const int &labelSize,
+                   const int &labelDistance,
+                   const bool &edgeHighlighting,
+                   QPointF p
+                   );
+
     ~GraphicsNode();
 
     enum { Type = UserType + 1 };
     int type() const { return Type; }
-
 
     QRectF boundingRect() const;
     QPainterPath shape() const;
@@ -92,7 +103,7 @@ public:
     void setShape (const QString, const QString &iconPath=QString::null);
     QString nodeShape() {return m_shape;}
 
-    void setColor(QString str);
+    void setColor(const QString &colorStr);
     void setColor(QColor color);
     QString color ();
 
@@ -101,7 +112,7 @@ public:
     void deleteLabel();
     void setLabelVisibility(const bool &toggle);
     void setLabelSize(const int &size);
-    void setLabelText ( QString label) ;
+    void setLabelText ( const QString &label) ;
     void setLabelColor (const QString &color) ;
     QString labelText();
     void setLabelDistance(const int &distance);
@@ -117,20 +128,27 @@ public:
 
     void setEdgeHighLighting(const bool &toggle) ;
 
+
 protected:
+
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
+
 signals: 
+
     void nodeClicked(GraphicsNode*);
     void startEdge(GraphicsNode *);
     void adjustOutEdge();
     void adjustInEdge();
     void removeOutEdge();
     void removeInEdge();
+
+
 private:
+
     GraphicsWidget *graphicsWidget;
     QPainterPath m_path;
     QPointF newPos;

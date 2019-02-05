@@ -31,18 +31,19 @@
 #include "graphvertex.h"
 
 GraphVertex::GraphVertex(Graph* parent,
-               const int &name,
-               const int &val,
-               const int &relation,
-               const int &size,
-               const QString &color,
-               const QString &numColor,
-               const int &numSize,
-               const QString &label,
-               const QString &labelColor,
-               const int &labelSize,
-               const QPointF &p,
-               const QString &shape, const QString &iconPath): parentGraph (parent)
+                         const int &name,
+                         const int &val,
+                         const int &relation,
+                         const int &size,
+                         const QString &color,
+                         const QString &numColor,
+                         const int &numSize,
+                         const QString &label,
+                         const QString &labelColor,
+                         const int &labelSize,
+                         const QPointF &p,
+                         const QString &shape,
+                         const QString &iconPath ): parentGraph (parent)
 { 
     qDebug() << "GraphVertex::GraphVertex() - vertex:"<<  name << "initializing...";
     m_name=name;

@@ -28,16 +28,18 @@
 #include "graphicsnodelabel.h"
 #include "graphicsnode.h"
 #include <QFont>
-
+#include <QDebug>
 
 GraphicsNodeLabel::GraphicsNodeLabel(GraphicsNode *jim , const QString &text,  const int &size) :
     QGraphicsTextItem(jim) {
+
     source=jim;
     setParentItem(jim); //auto disables child items like this, when node is disabled.
     setPlainText( text );
     setFont( QFont ("Times", size, QFont::Light, true) );
     setZValue(ZValueNodeLabel);
     setAcceptHoverEvents(false);
+    qDebug() << "GraphicsNodeLabel() - initialized";
 }
 
 
