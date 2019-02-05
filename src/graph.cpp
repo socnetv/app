@@ -4821,7 +4821,10 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 
                 // Compute Closeness Centrality
                 if ( (*it)->CC() != 0 )  {
-                    qreal Ji = influenceRanges.values( (*it)->name() ).count();
+                    qreal Ji = influenceRanges.uniqueKeys().count();
+                    qDebug() << "influenceRange for " << (*it)->name() << "are"
+                             << influenceRanges.uniqueKeys()
+                             << " Ji " <<Ji ;
                     (*it)->setIRCC( CC / Ji );
                     CC=1.0/(*it)->CC();  //Closeness centrality must be inverted
                 }
@@ -5323,14 +5326,14 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
             w = it1.key();
           //  weight = it1.value().second.first;
             wi=vpos[ w ];
-            qDebug("BFS: u=%i is connected with node %i of vpos wi=%i. ", u, w, wi);
+            qDebug("BFS: u=%i is connected with node w=%i of vpos wi=%i. ", u, w, wi);
 
             qDebug("BFS: Start path discovery");
 
             //if distance (s,w) is infinite, w found for the first time.
             if ( m_graph [ si ]->distance( w ) == RAND_MAX ) {
 
-                qDebug("BFS: first time visiting w=%i. Enqueuing w to the end of Q", w);
+                qDebug("BFS: First time visiting w=%i. Enqueuing w to the end of Q", w);
 
                 Q.push(w);
 
@@ -5339,8 +5342,8 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
                 dist_u=m_graph [ si ]->distance( u );
                 dist_w = dist_u + 1;
 
-                qDebug() << "BFS: Setting dist_w = d ( s" << s << " -> w"<<w
-                         << "equal to dist_u=d(s,u) plus 1. New dist_w" << dist_w ;
+                qDebug() << "BFS: Setting dist_w = d ( s" << s << ", w"<<w
+                         << ") equal to dist_u=d(s,u) plus 1. New dist_w" << dist_w ;
 ;
                 m_graph[si]->setDistance(w,dist_w);
 
@@ -5353,11 +5356,11 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
                         <<")=" <<
                           m_graph[si]->distance(w)
                        << " - inserting " << w
-                       << " to inflRange J of " << s
+                       << " to influenceRange J of" << s
                        << " - and " << s
-                       << " to inflDomain I of "<< w;
+                       << " to influenceDomain I of"<< w;
 
-                influenceRanges.insertMulti(s,w);
+                influenceRanges.insert(w,s);
 
                 if (computeCentralities){
                     qDebug()<<"BFS: Calculate PC: store the number of nodes at distance "
