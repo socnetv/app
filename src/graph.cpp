@@ -4714,8 +4714,10 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
             for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
-                // Set all pair-wise distances to RAND_MAX
-               // (*it)->setDistance((*it1)->name(), RAND_MAX);  // NOT NEEDED WE DO IT INSIDE GraphVertex::distance()
+                // All pair-wise distances are set to RAND_MAX by default
+                // inside GraphVertex::distance()
+                // so we don't need to explicitly set them here.
+                // We just clear distance hashmap of each actor.
                 (*it)->clearDistance();
                 // Set all pair-wise shortest-path counts (sigmas) to 0
                // (*it)->setShortestPaths((*it1)->name(), 0);
@@ -4732,6 +4734,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                 (*it)->setEccentricity( 0.0 );
                 (*it)->setEC( 0.0 );
                 (*it)->setCC( 0.0 );
+                (*it)->setIRCC( 0.0 );
                 (*it)->setPC( 0.0 );
 
             }
@@ -4818,6 +4821,8 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 
                 // Compute Closeness Centrality
                 if ( (*it)->CC() != 0 )  {
+                    qreal Ji = influenceRanges.values( (*it)->name() ).count();
+                    (*it)->setIRCC( CC / Ji );
                     CC=1.0/(*it)->CC();  //Closeness centrality must be inverted
                 }
                 else {
@@ -5352,6 +5357,7 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
                        << " - and " << s
                        << " to inflDomain I of "<< w;
 
+                influenceRanges.insertMulti(s,w);
 
                 if (computeCentralities){
                     qDebug()<<"BFS: Calculate PC: store the number of nodes at distance "
@@ -5363,6 +5369,8 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
                                 );
                     qDebug()<<"BFS: Calculate CC: the sum of distances (will invert it l8r)";
                     m_graph [si]->setCC (m_graph [si]->CC() + dist_w);
+                    m_graph [si]->setIRCC (m_graph [si]->IRCC() + dist_w);
+
                     qDebug()<<"BFS: Calculate Eccentricity: the maximum distance ";
                     if (m_graph [si]->eccentricity() < dist_w )
                         m_graph [si]->setEccentricity(dist_w);
@@ -5644,6 +5652,7 @@ void Graph::dijkstra(const int &s, const int &si,
                            <<  sizeOfNthOrderNeighborhood.value(dist_w,0);
 
                     m_graph [si]->setCC (m_graph [si]->CC() + dist_w);
+                    m_graph [si]->setIRCC (m_graph [si]->IRCC() + dist_w);
 
                     qDebug() << "    --- dijkstra: Compute Centralities: "
                               "For CC: sum of distances ="

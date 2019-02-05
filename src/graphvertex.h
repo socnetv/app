@@ -301,9 +301,14 @@ public:
 
     void clearCliques() {  m_cliques.clear();    }
 
-    //hold all outbound and inbound edges of this vertex.
+    //Hashes of all outbound and inbound edges of this vertex.
     H_edges m_outEdges, m_inEdges;
+
+    //Hash dictionary of this vertex pair-wise distances to all other vertices for each relationship
+    //The key is the relationship
+    //The value is a QPair < int target, qreal weight >
     H_distance m_distance;
+
     H_shortestPaths m_shortestPaths;
 
 signals:
