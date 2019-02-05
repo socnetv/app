@@ -857,9 +857,9 @@ public:
 
     int graphDiameter(const bool considerWeights, const bool inverseWeights);
 
-    int graphDistanceGeodesic(const int v1, const int v2,
-                              const bool considerWeights,
-                              const bool inverseWeights);
+    int graphDistanceGeodesic(const int &v1, const int &v2,
+                              const bool &considerWeights=false,
+                              const bool &inverseWeights=true);
 
     qreal graphDistanceGeodesicAverage(const bool considerWeights,
                                const bool inverseWeights, const bool dropIsolates);

@@ -4172,9 +4172,9 @@ void Graph::graphMatrixReachabilityCreate() {
  * @param inverseWeights
  * @return
  */
-int Graph::graphDistanceGeodesic(const int v1, const int v2,
-                                 const bool considerWeights,
-                                 const bool inverseWeights){
+int Graph::graphDistanceGeodesic(const int &v1, const int &v2,
+                                 const bool &considerWeights,
+                                 const bool &inverseWeights){
     qDebug() <<"Graph::graphDistanceGeodesic()";
     graphDistanceGeodesicCompute(false, considerWeights, inverseWeights, false);
     return m_graph[ vpos[v1] ]->distance(v2);
@@ -11336,10 +11336,15 @@ void Graph::writeMatrixWalks (const QString &fn,
 
 
 
+
 /**
- *  Returns the influence range of vertex v1, namely the set of nodes who are
+ * @brief Returns the influence range of vertex v1, namely the set of nodes who are
  *  reachable from v1 (See Wasserman and Faust, pp.200-201, based on Lin, 1976).
+ * The Influence Range of vertex v can also be defined as:
+ * Ji = Sum [ D(v,j), iff D(v,j) != inf  ] for every j in V, where j!=v and D the distance matrix
  *  This function is for digraphs only
+ * @param v1
+ * @return
  */
 QList<int> Graph::vertexinfluenceRange(int v1){
 
@@ -11371,13 +11376,13 @@ QList<int> Graph::vertexinfluenceRange(int v1){
         target = (*jt)->name();
 
         if  ( ! (*jt)->isEnabled()  ) {
-            qDebug() << "Graph::vertexinfluenceDomain() - target:"
+            qDebug() << "Graph::vertexinfluenceRange() - target:"
                      << target << "disabled. SKIP";
             continue;
         }
 
-        if ((*jt)->distance( v1 ) != RAND_MAX ) {
-            qDebug() << "Graph::vertexinfluenceDomain() - v1 can reach:" << target;
+        if ( graphDistanceGeodesic(v1, target) != RAND_MAX ) {
+            qDebug() << "Graph::vertexinfluenceRange() - v1 can reach:" << target;
             influenceRanges.insertMulti(v1,target);
 
         }
@@ -11387,9 +11392,6 @@ QList<int> Graph::vertexinfluenceRange(int v1){
 
     return influenceRanges.values(v1);
 
-
-
-
 }
 
 
@@ -11398,6 +11400,8 @@ QList<int> Graph::vertexinfluenceRange(int v1){
 /**
  * @brief Returns the influence domain of vertex v1, namely the set of nodes who can
  *  reach v1
+ * The Influence Domain Ii of vertex v can also be defined as:
+ * Ii = Sum [ D(i,v), iff D(i,v) != inf  ] for every in V, where i!=v and D the distance matrix
  *  This function applies to digraphs only
  * @param v1
  * @return
@@ -11409,7 +11413,7 @@ QList<int> Graph::vertexinfluenceDomain(int v1){
         graphDistanceGeodesicCompute(false);
     }
 
-    VList::const_iterator jt;
+    VList::const_iterator it;
 
     int N = vertices( false, false, true);
 
@@ -11424,19 +11428,19 @@ QList<int> Graph::vertexinfluenceDomain(int v1){
     emit statusMessage ( pMsg );
     emit signalProgressBoxCreate(N,pMsg);
 
-    for (jt=m_graph.cbegin(); jt!=m_graph.cend(); ++jt) {
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
 
         emit signalProgressBoxUpdate(++progressCounter);
 
-        source = (*jt)->name();
+        source = (*it)->name();
 
-        if  ( ! (*jt)->isEnabled()  ) {
+        if  ( ! (*it)->isEnabled()  ) {
             qDebug() << "Graph::vertexinfluenceDomain() - "
                      << source << "disabled. SKIP";
             continue;
         }
 
-        if ((*jt)->distance( v1 ) != RAND_MAX ) {
+        if ((*it)->distance( v1 ) != RAND_MAX ) {
             qDebug() << "Graph::vertexinfluenceDomain() - v1 reachable from:" << source;
             influenceDomains.insertMulti(v1,source);
 
