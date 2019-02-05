@@ -66,12 +66,13 @@ GraphVertex::GraphVertex(Graph* parent,
 //    m_inEdges.reserve(1000);
 //    m_neighborhoodList.reserve(1000);
 
-    m_outEdgesCounter=0;
-    m_inEdgesCounter=0;
-    m_outDegree=0;
-    m_inDegree=0;
-    m_localDegree=0;
-    m_Eccentricity=0;
+    m_outEdgesCounter = 0;
+    m_inEdgesCounter = 0;
+    m_outDegree = 0;
+    m_inDegree = 0;
+    m_localDegree = 0;
+    m_Eccentricity = 0;
+    m_distanceSum = 0;
     m_DC=0; m_SDC=0; m_DP=0; m_SDP=0; m_CC=0; m_SCC=0; m_BC=0; m_SBC=0;
     m_SC=0; m_SSC=0; m_IRCC=0; m_SIRCC=0;
     m_CLC=0; m_hasCLC=false;

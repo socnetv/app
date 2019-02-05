@@ -235,6 +235,8 @@ public:
     qreal DC() { return m_DC;}          /* Returns vertex Degree Centrality*/
     qreal SDC() { return m_SDC;}		/* Returns standard vertex Degree Centrality*/
 
+    void setDistanceSum (const qreal &c) { m_distanceSum = c; }
+    qreal distanceSum () { return m_distanceSum; }
     void setCC (const qreal &c){ m_CC=c;}		/* sets vertex Closeness Centrality*/
     void setSCC (const qreal &c ) { m_SCC=c;}	/* sets standard vertex Closeness Centrality*/
     qreal CC() { return m_CC;}		/* Returns vertex Closeness Centrality*/
@@ -329,6 +331,7 @@ private:
     qreal m_DC, m_SDC, m_DP, m_SDP, m_CC, m_SCC, m_BC, m_SBC, m_IRCC, m_SIRCC, m_SC, m_SSC;
     qreal m_PC, m_SPC, m_SIC, m_IC, m_SPRC, m_PRC;
     qreal m_PP, m_SPP, m_EVC, m_SEVC;
+    qreal m_distanceSum;
 
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape, m_iconPath;
     QPointF m_disp;

@@ -527,6 +527,10 @@ void Graph::relationSet(int relNum, const bool notifyMW){
        (*it)->relationSet(relNum);
     }
     m_curRelation = relNum;
+
+    // Check if isWeighted so that multiple-relation networks are properly loaded.
+    graphIsWeighted();
+
     if (notifyMW) {
         //notify MW to change combo box relation name
         emit signalRelationChangedToMW(m_curRelation);
@@ -2176,15 +2180,17 @@ ClickedEdge Graph::edgeClicked() {
  * @return zero if arc or reciprocated edge does not exist or non-zero if arc /reciprocated edge exists
  */
 qreal Graph::edgeExists (const int &v1, const int &v2, const bool &checkReciprocal) {
+
     edgeWeightTemp = 0;
     edgeWeightTemp = m_graph[ vpos[v1] ]->hasEdgeTo(v2);
-
+    qDebug() << "Graph::edgeExists() - " << v1 << "->" << v2 << "=" << edgeWeightTemp  ;
     if (!checkReciprocal) {
         return edgeWeightTemp;
     }
     else { //check if edge is reciprocal
        if  ( edgeWeightTemp!=0 ) {
            edgeReverseWeightTemp = m_graph[ vpos[v2] ]->hasEdgeTo(v1);
+           qDebug() << "Graph::edgeExists() - and " << v2 << "->" << v1 << "=" << edgeWeightTemp  ;
            if  ( edgeWeightTemp == edgeReverseWeightTemp  ){
                    return edgeWeightTemp;
            }
@@ -3005,6 +3011,7 @@ bool Graph::graphIsWeighted(){
  * @param toggle
  */
 void Graph::graphSetWeighted(const bool &toggle){
+    qDebug() << "Graph::graphSetWeighted() - set m_isWeighted =" << toggle;
     m_isWeighted = toggle;
 }
 
@@ -4207,19 +4214,32 @@ int Graph::graphDiameter(const bool considerWeights,
  * @return
  */
 qreal Graph::graphDistanceGeodesicAverage(const bool considerWeights,
-                                  const bool inverseWeights,
-                                  const bool dropIsolates){
+                                          const bool inverseWeights,
+                                          const bool dropIsolates){
 
     Q_UNUSED(considerWeights);
     Q_UNUSED(inverseWeights);
 
+    qDebug() <<"Graph::graphDistanceGeodesicAverage() - m_graphAverageDistance"
+            <<m_graphAverageDistance
+            <<"calling graphConnectedness()";
+
     graphConnectedness();
+
+    qDebug() <<"Graph::graphDistanceGeodesicAverage() - m_graphAverageDistance now"
+            <<m_graphAverageDistance;
+
 
     qDebug() <<"Graph::graphDistanceGeodesicAverage() - m_vertexPairsNotConnected " <<
                m_vertexPairsNotConnected.count();
+
     int N=vertices(dropIsolates);//TOFIX
+    qDebug() <<"Graph::graphDistanceGeodesicAverage() - N" << N;
     if (m_graphAverageDistance!=0) {
         if (m_vertexPairsNotConnected.count()==0) {
+            qDebug() <<"Graph::graphDistanceGeodesicAverage() - returning value:"
+                    << m_graphAverageDistance / ( N * ( N-1.0 ) );
+
             return m_graphAverageDistance / ( N * ( N-1.0 ) );
         }
         else {
@@ -4301,7 +4321,7 @@ int Graph::graphConnectedness(const bool updateProgress) {
     m_vertexPairsNotConnected.clear();
     m_vertexPairsUnilaterallyConnected.clear();
 
-   // int isolatedVertices=verticesListIsolated().count();
+    // int isolatedVertices=verticesListIsolated().count();
     bool isolatedVertices = false;
 
     if (updateProgress) {
@@ -4673,6 +4693,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
         qreal sigma_u=0, sigma_w=0;
         qreal delta_u=0, delta_w=0;
         qreal d_sw=0, d_su=0;
+        qreal pairDistance = 0;
 
         m_graphDisconnected = false;
         H_f_i::const_iterator hfi ; // for Power Centrality
@@ -4821,11 +4842,6 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 
                 // Compute Closeness Centrality
                 if ( (*it)->CC() != 0 )  {
-                    qreal Ji = influenceRanges.uniqueKeys().count();
-                    qDebug() << "influenceRange for " << (*it)->name() << "are"
-                             << influenceRanges.uniqueKeys()
-                             << " Ji " <<Ji ;
-                    (*it)->setIRCC( CC / Ji );
                     CC=1.0/(*it)->CC();  //Closeness centrality must be inverted
                 }
                 else {
@@ -4971,8 +4987,11 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 
 
         // check if there are disconnected nodes
+        // and get the distance sums
         qDebug() << "Checking if there are disconnected nodes";
+
         m_graphDisconnected = false;
+
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
 
             if ( ! (*it)->isEnabled() ) {
@@ -4980,7 +4999,9 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                 continue;
             }
 
-            for ( it1=it; it1!=m_graph.cend(); ++it1){
+            pairDistance = 0;
+
+            for ( it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
 
                 if ( ! (*it1)->isEnabled() ) {
                     qDebug()<< "   actor j" <<  (*it1)->name() << "disabled. SKIP/CONTINUE";
@@ -4990,30 +5011,29 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                     qDebug()<< "   == actor j" <<  (*it1)->name() << "SKIP/CONTINUE";
                     continue;
                 }
-
-                if ( (*it)-> distance ( (*it1)->name() ) == RAND_MAX) {
+                pairDistance = (*it)-> distance ( (*it1)->name() );
+                if ( pairDistance == RAND_MAX) {
                     m_verticesInfiniteEccentricity.append((*it)->name());
                     (*it)->setEccentricity( RAND_MAX );
+                    m_graphDisconnected = true;
 
                     qDebug()<< "actor i" <<  (*it)->name()
                             << "has infinite eccentricity. "
                                "There is no path from i to j"
                             << (*it1)->name();
 
-                    if ( (*it1)-> distance ( (*it)->name() ) == RAND_MAX) {
-                        m_verticesInfiniteEccentricity.append((*it1)->name());
-                       m_graphDisconnected = true;
-                        (*it1)->setEccentricity( RAND_MAX );
-                       qDebug()<< "actor j" <<  (*it1)->name()
-                               << "has also infinite eccentricity. "
-                                  "There is no path from j to i"
-                               << (*it1)->name();
-
-                    }
                 }
+                else {
 
+                    qDebug()<< "actor i" <<  (*it)->name()
+                            <<"distanceSum" << (*it)->distanceSum();
+                    (*it)->setDistanceSum( (*it)->distanceSum() + pairDistance);
 
+                }
             }
+            qDebug()<< "actor i" <<  (*it)->name()
+                    <<"Final distanceSum" << (*it)->distanceSum();
+
 
             if (computeCentralities) {
 
@@ -5354,13 +5374,7 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
                 qDebug()<< "== BFS  - d("
                         << s <<"," << w
                         <<")=" <<
-                          m_graph[si]->distance(w)
-                       << " - inserting " << w
-                       << " to influenceRange J of" << s
-                       << " - and " << s
-                       << " to influenceDomain I of"<< w;
-
-                influenceRanges.insert(w,s);
+                          m_graph[si]->distance(w) ;
 
                 if (computeCentralities){
                     qDebug()<<"BFS: Calculate PC: store the number of nodes at distance "
@@ -5372,7 +5386,6 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
                                 );
                     qDebug()<<"BFS: Calculate CC: the sum of distances (will invert it l8r)";
                     m_graph [si]->setCC (m_graph [si]->CC() + dist_w);
-                    m_graph [si]->setIRCC (m_graph [si]->IRCC() + dist_w);
 
                     qDebug()<<"BFS: Calculate Eccentricity: the maximum distance ";
                     if (m_graph [si]->eccentricity() < dist_w )
@@ -5621,11 +5634,7 @@ void Graph::dijkstra(const int &s, const int &si,
                             "Set d ( s=" << s << ", w="<< w
                          << " ) = "<< dist_w << "="<< m_graph[si]->distance(w)
                          << " m_graphAverageDistance ="
-                         << m_graphAverageDistance
-                       << "Inserting" << w
-                       << "to inflRange J of" << s
-                       << "and" << s
-                       << "to inflDomain I of"<< w;
+                         << m_graphAverageDistance;
 
 
                 if ( dist_w > m_graphDiameter){
@@ -5642,6 +5651,7 @@ void Graph::dijkstra(const int &s, const int &si,
                     m_graph[si]->setShortestPaths(w, 1);
                 }
 
+
                 if (computeCentralities){
 
                     sizeOfNthOrderNeighborhood.insert(
@@ -5655,7 +5665,6 @@ void Graph::dijkstra(const int &s, const int &si,
                            <<  sizeOfNthOrderNeighborhood.value(dist_w,0);
 
                     m_graph [si]->setCC (m_graph [si]->CC() + dist_w);
-                    m_graph [si]->setIRCC (m_graph [si]->IRCC() + dist_w);
 
                     qDebug() << "    --- dijkstra: Compute Centralities: "
                               "For CC: sum of distances ="
@@ -7725,6 +7734,10 @@ void Graph::centralityClosenessIR(const bool considerWeights,
                     << ","<< (*jt)->name() << ") =" << dist << "sumD" << sumD << " Ji"<<Ji;
 
         }
+
+        qDebug()<< "Graph::centralityClosenessIR() - " << (*it)->name()
+                << " sumD"<< sumD
+                << "distanceSum" << (*it)->distanceSum();
 
         // sanity check for sumD=0 (=> node is disconnected)
         if (sumD != 0)  {
