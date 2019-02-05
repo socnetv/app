@@ -95,7 +95,7 @@ public:
     void edgeAddTo (const int &v2, const qreal &weight);
     void edgeAddFrom(const int &v1, const qreal &weight);
 
-    void changeOutEdgeWeight (const int target, qreal weight);
+    void changeOutEdgeWeight (const int &target, const qreal &weight);
 
     void setOutEdgeEnabled (const int, bool);
 
@@ -132,7 +132,7 @@ public:
 
 
     /* sets eccentricity */
-    void setEccentricity (qreal c){ m_Eccentricity=c;}
+    void setEccentricity (const qreal &c){ m_Eccentricity=c;}
     qreal eccentricity() { return m_Eccentricity;}
 
     /* Returns true if there is an outLink from this vertex */
@@ -212,12 +212,12 @@ public:
     }
 
 
-    void setDelta (qreal c){ m_delta=c;} 		/* Sets vertex pair dependancy */
+    void setDelta (const qreal &c){ m_delta=c;} 		/* Sets vertex pair dependancy */
     qreal delta() { return m_delta;}		/* Returns vertex pair dependancy */
 
     void clearPs()	;
 
-    void appendToPs( int vertex ) ;
+    void appendToPs(const int &vertex ) ;
     L_int Ps(void);
 
     //used in reciprocity report
@@ -230,67 +230,67 @@ public:
     void setInEdgesNonSym(int inEdgesNonSym=-1) { m_inEdgesNonSym = (inEdgesNonSym!=-1) ?  inEdgesNonSym :  m_inEdgesNonSym+1;  }
     int inEdgesNonSym() { return m_inEdgesNonSym; }
 
-    void setDC (qreal c){ m_DC=c;} 	/* Sets vertex Degree Centrality*/
-    void setSDC (qreal c ) { m_SDC=c;}	/* Sets standard vertex Degree Centrality*/
+    void setDC (const qreal &c){ m_DC=c;} 	/* Sets vertex Degree Centrality*/
+    void setSDC (const qreal &c ) { m_SDC=c;}	/* Sets standard vertex Degree Centrality*/
     qreal DC() { return m_DC;}          /* Returns vertex Degree Centrality*/
     qreal SDC() { return m_SDC;}		/* Returns standard vertex Degree Centrality*/
 
-    void setCC (qreal c){ m_CC=c;}		/* sets vertex Closeness Centrality*/
-    void setSCC (qreal c ) { m_SCC=c;}	/* sets standard vertex Closeness Centrality*/
+    void setCC (const qreal &c){ m_CC=c;}		/* sets vertex Closeness Centrality*/
+    void setSCC (const qreal &c ) { m_SCC=c;}	/* sets standard vertex Closeness Centrality*/
     qreal CC() { return m_CC;}		/* Returns vertex Closeness Centrality*/
     qreal SCC() { return m_SCC; }		/* Returns standard vertex Closeness Centrality*/
 
-    void setIRCC (qreal c){ m_IRCC=c;}		/* sets vertex IRCC */
-    void setSIRCC (qreal c ) { m_SIRCC=c;}	/* sets standard vertex IRCC */
+    void setIRCC (const qreal &c){ m_IRCC=c;}		/* sets vertex IRCC */
+    void setSIRCC (const qreal &c ) { m_SIRCC=c;}	/* sets standard vertex IRCC */
     qreal IRCC() { return m_IRCC;}		/* Returns vertex IRCC */
     qreal SIRCC() { return m_SIRCC; }		/* Returns standard vertex IRCC*/
 
-    void setBC(qreal c){ m_BC=c;}		/* sets s vertex Betweenness Centrality*/
-    void setSBC (qreal c ) { m_SBC=c;}	/* sets standard vertex Betweenness Centrality*/
+    void setBC(const qreal &c){ m_BC=c;}		/* sets s vertex Betweenness Centrality*/
+    void setSBC (const qreal &c ) { m_SBC=c;}	/* sets standard vertex Betweenness Centrality*/
     qreal BC() { return m_BC;}		/* Returns vertex Betweenness Centrality*/
     qreal SBC() { return m_SBC; }		/* Returns standard vertex Betweenness Centrality*/
 
-    void setSC (qreal c){ m_SC=c;}  	/* sets vertex Stress Centrality*/
-    void setSSC (qreal c ) { m_SSC=c;}	/* sets standard vertex Stress Centrality*/
+    void setSC (const qreal &c){ m_SC=c;}  	/* sets vertex Stress Centrality*/
+    void setSSC (const qreal &c ) { m_SSC=c;}	/* sets standard vertex Stress Centrality*/
     qreal SC() { return m_SC;}		/* Returns vertex Stress Centrality*/
     qreal SSC() { return m_SSC; }		/* Returns standard vertex Stress Centrality*/
 
-    void setEC(qreal dist) { m_EC=dist;}	/* Sets max Geodesic Distance to all other vertices*/
-    void setSEC(qreal c) {m_SEC=c;}
+    void setEC(const qreal &dist) { m_EC=dist;}	/* Sets max Geodesic Distance to all other vertices*/
+    void setSEC(const qreal &c) {m_SEC=c;}
     qreal EC() { return m_EC;}		/* Returns max Geodesic Distance to all other vertices*/
     qreal SEC() { return m_SEC;}
 
-    void setPC (qreal c){ m_PC=c;}		/* sets vertex Power Centrality*/
-    void setSPC (qreal c ) { m_SPC=c;}	/* sets standard vertex Power Centrality*/
+    void setPC (const qreal &c){ m_PC=c;}		/* sets vertex Power Centrality*/
+    void setSPC (const qreal &c ) { m_SPC=c;}	/* sets standard vertex Power Centrality*/
     qreal PC() { return m_PC;}		/* Returns vertex Power Centrality*/
     qreal SPC() { return m_SPC; }		/* Returns standard vertex Power Centrality*/
 
-    void setIC (qreal c){ m_IC=c;}		/* sets vertex Information Centrality*/
-    void setSIC (qreal c ) { m_SIC=c;}	/* sets standard vertex Information Centrality*/
+    void setIC (const qreal &c){ m_IC=c;}		/* sets vertex Information Centrality*/
+    void setSIC (const qreal &c ) { m_SIC=c;}	/* sets standard vertex Information Centrality*/
     qreal IC() { return m_IC;}		/* Returns vertex Information  Centrality*/
     qreal SIC() { return m_SIC; }		/* Returns standard vertex Information Centrality*/
 
-    void setDP (qreal c){ m_DP=c;} 	/* Sets vertex Degree Prestige */
-    void setSDP (qreal c ) { m_SDP=c;}	/* Sets standard vertex Degree Prestige */
+    void setDP (const qreal &c){ m_DP=c;} 	/* Sets vertex Degree Prestige */
+    void setSDP (const qreal &c ) { m_SDP=c;}	/* Sets standard vertex Degree Prestige */
     qreal DP() { return m_DP;}		/* Returns vertex Degree Prestige */
     qreal SDP() { return m_SDP;}		/* Returns standard vertex Degree Prestige */
 
-    void setPRP (qreal c){ m_PRC=c;}		/* sets vertex PageRank*/
-    void setSPRP (qreal c ) { m_SPRC=c;}	/* sets standard vertex PageRank*/
+    void setPRP (const qreal &c){ m_PRC=c;}		/* sets vertex PageRank*/
+    void setSPRP (const qreal &c ) { m_SPRC=c;}	/* sets standard vertex PageRank*/
     qreal PRP() { return m_PRC;}		/* Returns vertex PageRank */
     qreal SPRP() { return m_SPRC; }		/* Returns standard vertex PageRank*/
 
-    void setPP (qreal c){ m_PP=c;}		/* sets vertex Proximity Prestige */
-    void setSPP (qreal c ) { m_SPP=c;}	/* sets standard vertex Proximity Prestige */
+    void setPP (const qreal &c){ m_PP=c;}		/* sets vertex Proximity Prestige */
+    void setSPP (const qreal &c ) { m_SPP=c;}	/* sets standard vertex Proximity Prestige */
     qreal PP() { return m_PP;}		/* Returns vertex Proximity Prestige */
     qreal SPP() { return m_SPP; }		/* Returns standard vertex Proximity Prestige */
 
     qreal CLC() { return m_CLC;	}
-    void setCLC(qreal clucof)  { m_CLC=clucof; m_hasCLC=true; }
-    bool hasCLC() { 	return m_hasCLC; }
+    void setCLC(const qreal &clucof)  { m_CLC=clucof; m_hasCLC=true; }
+    bool hasCLC() {  return m_hasCLC; }
 
-    void setEVC (qreal c){ m_EVC=c;} 	/* Sets vertex Degree Centrality*/
-    void setSEVC (qreal c ) { m_SEVC=c;}	/* Sets standard vertex Degree Centrality*/
+    void setEVC (const qreal &c){ m_EVC=c;} 	/* Sets vertex Degree Centrality*/
+    void setSEVC (const qreal &c ) { m_SEVC=c;}	/* Sets standard vertex Degree Centrality*/
     qreal EVC() { return m_EVC;}		/* Returns vertex Degree Centrality*/
     qreal SEVC() { return m_SEVC;}		/* Returns standard vertex Degree Centrality*/
 

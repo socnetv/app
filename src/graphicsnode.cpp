@@ -234,7 +234,7 @@ void GraphicsNode::setShape(const QString shape, const QString &iconPath) {
         path.closeSubpath();
     }
     else if ( m_shape == "icon" ) {
-        path.addRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size );
+        path.addRect (-m_size , -m_size , 2*m_size , 2*m_size );
         if (!iconPath.isEmpty()) {
             m_iconPath = iconPath;
         }

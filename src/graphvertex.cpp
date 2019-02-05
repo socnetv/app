@@ -201,7 +201,7 @@ void GraphVertex::edgeAddFrom (const int &v1, const qreal &weight) {
 
 
 
-void GraphVertex::changeOutEdgeWeight(const int target, qreal weight){
+void GraphVertex::changeOutEdgeWeight(const int &target, const qreal &weight){
     qDebug() << "GraphVertex::changeEdgeWeightTo " << target << " weight " << weight ;
     qDebug() << " *** m_outEdges.count " <<
                 m_outEdges.count();
@@ -994,7 +994,7 @@ void GraphVertex::clearPs()	{
 	myPs.clear();
 }
 	
-void GraphVertex::appendToPs(int vertex ) {
+void GraphVertex::appendToPs(const int &vertex ) {
     qDebug()<<"GraphVertex::appendToPs() - vertex:"
            << name() << "adding" <<  vertex << " to myPs";
 	myPs.append(vertex); 
