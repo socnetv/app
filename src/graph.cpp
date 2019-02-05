@@ -4638,7 +4638,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 
 
     //drop isolated vertices from calculations (i.e. std C and group C).
-    int N = vertices(dropIsolates,false);
+    int N = vertices(dropIsolates,false,true);
     int E = edgesEnabled();
 
 
@@ -7665,7 +7665,9 @@ void Graph::centralityClosenessIR(const bool considerWeights,
     qreal IRCC=0,SIRCC=0;
     qreal Ji=0;
     qreal dist=0;
-    qreal N=vertices(dropIsolates);
+    qreal sumD=0;
+    qreal averageD=0;
+    qreal N=vertices(dropIsolates,false, true);
     classesIRCC=0;
     discreteIRCCs.clear();
     sumIRCC=0;
@@ -7679,12 +7681,15 @@ void Graph::centralityClosenessIR(const bool considerWeights,
     emit statusMessage( pMsg );
     emit signalProgressBoxCreate(N,pMsg);
 
+    qDebug()<< "Graph::centralityClosenessIR() - dropIsolates"<< dropIsolates;
+    qDebug()<< "Graph::centralityClosenessIR() - computing scores for actors: " << N;
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
 
         emit signalProgressBoxUpdate(++progressCounter);
 
         IRCC=0;
+        sumD=0;
         Ji = 0;
         if ((*it)->isIsolated()) {
             continue;
@@ -7701,15 +7706,21 @@ void Graph::centralityClosenessIR(const bool considerWeights,
             dist = (*it)->distance( (*jt)->name() );
 
             if (dist != RAND_MAX ) {
-                IRCC += dist;
+                sumD += dist;
                 Ji ++; // compute |Ji|
             }
+            qDebug()<< "Graph::centralityClosenessIR() - dist(" << (*it)->name()
+                    << ","<< (*jt)->name() << ") =" << dist << "sumD" << sumD << " Ji"<<Ji;
+
         }
 
-        // sanity check for IRCC=0 (=> node is disconnected)
-        if (IRCC != 0)  {
-            IRCC /= Ji;
-            IRCC =  ( Ji / (qreal) (N-1) ) / IRCC;
+        // sanity check for sumD=0 (=> node is disconnected)
+        if (sumD != 0)  {
+            averageD = sumD / Ji;
+            qDebug()<< "Graph::centralityClosenessIR() - averageD = sumD /  Ji"<<averageD ;
+            qDebug()<< "Graph::centralityClosenessIR() - Ji / (N-1)"<< Ji << "/" << N-1;
+            IRCC =  ( Ji / (qreal) (N-1) ) / averageD;
+            qDebug()<< "Graph::centralityClosenessIR() - [ Ji / (N-1) ] / [ sumD / Ji]" << IRCC ;
         }
 
         sumIRCC += IRCC;
