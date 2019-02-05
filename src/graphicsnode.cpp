@@ -43,7 +43,7 @@
 
 
 GraphicsNode::GraphicsNode(GraphicsWidget* gw, const int &num, const int &size,
-           const QString &color, const QString &shape,
+           const QString &color, const QString &shape, const QString &iconPath,
            const bool &showNumbers, const bool &numbersInside,
            const QString &numberColor, const int &numberSize,
            const int &numDistance,
@@ -65,6 +65,8 @@ GraphicsNode::GraphicsNode(GraphicsWidget* gw, const int &num, const int &size,
     m_size=size;
 
     m_shape=shape;
+    m_iconPath = iconPath;
+
     m_col_str=color;
     m_col=m_col_orig=QColor(color);
 
@@ -92,7 +94,7 @@ GraphicsNode::GraphicsNode(GraphicsWidget* gw, const int &num, const int &size,
     m_edgeHighLighting = edgeHighlighting;
 
     setZValue(ZValueNode);
-    setShape(m_shape);
+    setShape(m_shape,m_iconPath);
 
     setPos(p);
     qDebug()<< "GraphicsNode::GraphicsNode() - Created at position:"  << x()<<","<<y();
@@ -162,8 +164,13 @@ int GraphicsNode::size() const{
 
 
 
-/**  Called every time the user needs to change the shape of an node. */
-void GraphicsNode::setShape(const QString shape) {
+
+/**
+ * @brief Sets the shape of the node by creating a path where all painting will be done
+ * Called every time the user needs to change the shape of an node.
+ * @param shape
+ */
+void GraphicsNode::setShape(const QString shape, const QString &iconPath) {
     prepareGeometryChange();
     m_shape=shape;
     qDebug()<< "GraphicsNode::setShape() - Node:" << nodeNumber()
@@ -211,6 +218,10 @@ void GraphicsNode::setShape(const QString shape) {
         path.lineTo( 0, 1*m_size);
         path.lineTo(-m_size, 0) ;
         path.closeSubpath();
+    }
+    else if ( m_shape == "icon" ) {
+        path.addRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size );
+        m_iconPath = iconPath;
     }
     m_path = path;
     update();
@@ -260,7 +271,14 @@ void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 
     painter->setPen(QPen(QColor("#222"), 0));
 
-    painter->drawPath (m_path);
+    if (m_shape == "icon") {
+        QPixmap pix(m_iconPath);
+        painter->drawPixmap(-m_size, -m_size, 2*m_size, 2*m_size, pix);
+    }
+    else {
+        painter->drawPath (m_path);
+    }
+
 
     if (m_hasNumberInside && m_hasNumber) {
         // m_path->setFillRule(Qt::WindingFill);

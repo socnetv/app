@@ -671,7 +671,7 @@ void Graph::relationsClear(){
 
 */
 /**
- * @brief Graph::vertexCreate
+ * @brief Creates a vertex
  * Main vertex creation slot, associated with homonymous signal from Parser.
  * Adds a vertex to the Graph and calls editNodeAdd of GraphicsWidget
  * The new vertex is named i and stores its color, label, label color, shape and position p.
@@ -692,22 +692,23 @@ void Graph::vertexCreate(const int &num, const int &nodeSize, const QString &nod
                          const QString &numColor, const int &numSize,
                          const QString &label, const QString &labelColor,
                          const int &labelSize,
-                         const QPointF &p, const QString &nodeShape,
+                         const QPointF &p, const QString &nodeShape, const QString &nodeIconPath,
                          const bool &signalMW){
     int value = 1;
     qDebug() << "Graph::vertexCreate() - vertex:" << num
+             << "shape:" << nodeShape
+             << "icon:" << nodeIconPath
                 << "signalMW:" << signalMW
                    << "- Calling vertexAdd() and emitting signalDrawNode() to GW";
     vertexAdd ( num, value, nodeSize,  nodeColor,
                numColor, numSize,
-               label, labelColor, labelSize, p, nodeShape);
+               label, labelColor, labelSize, p, nodeShape, nodeIconPath);
 
 
-    emit signalDrawNode( num, nodeSize, nodeShape, nodeColor,
+    emit signalDrawNode( p, num, nodeSize, nodeShape,  nodeIconPath, nodeColor,
                    numColor, numSize, initVertexNumberDistance,
                    label,
-                   labelColor, labelSize, initVertexLabelDistance,
-                   p );
+                   labelColor, labelSize, initVertexLabelDistance);
 
     qDebug() << "Graph::vertexCreate() - vertex:" << num << "created. Calling graphSetModified().";
     graphSetModified(GRAPH_CHANGED_VERTICES, signalMW);
@@ -733,7 +734,8 @@ void Graph::vertexCreateAtPos(const QPointF &p){
     vertexCreate(	i, initVertexSize,  initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     QString::null, initVertexLabelColor, initVertexLabelSize,
-                    p, initVertexShape, true
+                    p, initVertexShape, initVertexIconPath,
+                    true
                     );
 
     emit statusMessage(  tr("New node (numbered %1) added at position (%2,%3)")
@@ -765,7 +767,7 @@ void Graph::vertexCreateAtPosRandom(const bool &signalMW){
     vertexCreate( vertexNumberMax()+1, initVertexSize, initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     QString::null, initVertexLabelColor, initVertexLabelSize,
-                    p, initVertexShape, signalMW
+                    p, initVertexShape, initVertexIconPath, signalMW
                     );
 }
 
@@ -792,7 +794,7 @@ void Graph::vertexCreateAtPosRandomWithLabel(const int &i,
     vertexCreate( (i<0)?vertexNumberMax() +1:i, initVertexSize,  initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     label, initVertexLabelColor,  initVertexLabelSize,
-                    p, initVertexShape, signalMW
+                    p, initVertexShape, initVertexIconPath, signalMW
                     );
 
 }
@@ -833,7 +835,8 @@ void Graph::vertexAdd ( const int &v1, const int &val, const int &size,
                         const QString &color, const QString &numColor,
                         const int &numSize, const QString &label,
                         const QString &labelColor, const int &labelSize,
-                        const QPointF &p, const QString &shape ){
+                        const QPointF &p, const QString &shape,
+                        const QString &iconPath){
 
     qDebug() << "Graph::vertexAdd() ";
     if (order)
@@ -844,7 +847,7 @@ void Graph::vertexAdd ( const int &v1, const int &val, const int &size,
     m_graph.append(
                 new GraphVertex
                 (this, v1, val, m_curRelation , size, color, numColor, numSize,
-                 label, labelColor, labelSize, p, shape
+                 label, labelColor, labelSize, p, shape,iconPath
                  )
                 );
     m_totalVertices++;
@@ -1350,8 +1353,9 @@ void Graph::vertexSizeAllSet(const int size) {
  * @brief Graph::vertexShapeInit
  * @param shape
  */
-void Graph::vertexShapeInit(const QString shape) {
+void Graph::vertexShapeInit(const QString shape, const QString &iconPath) {
     initVertexShape=shape;
+    initVertexIconPath=iconPath;
 }
 
 
@@ -1387,17 +1391,17 @@ QString Graph::vertexShape(const int &v1){
  * @brief Changes the shape.of all vertices
  * @param shape
  */
-void Graph::vertexShapeAllSet(const QString shape) {
+void Graph::vertexShapeAllSet(const QString &shape, const QString &iconPath) {
     qDebug() << "Graph::vertexShapeAllSet - shape " <<shape;
-    vertexShapeInit(shape);
+    vertexShapeInit(shape, iconPath);
     VList::const_iterator it;
     for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() ){
             continue;
         }
         else {
-            (*it)->setShape(shape);
-            emit setNodeShape((*it)->name(), shape);
+            (*it)->setShape(shape, iconPath);
+            emit setNodeShape((*it)->name(), shape, iconPath);
         }
     }
 
@@ -10125,11 +10129,11 @@ void Graph::randomNetErdosCreate(const int &N,
         int x=canvasRandomX();
         int y=canvasRandomY();
         qDebug("Graph: randomNetErdosCreate, new node i=%i, at x=%i, y=%i", i+1, x,y);
-        vertexCreate (
+        vertexCreate(
                     i+1, initVertexSize, initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     QString::number (i+1), initVertexLabelColor, initVertexLabelSize,
-                    QPoint(x, y), initVertexShape, false
+                    QPoint(x, y), initVertexShape, initVertexIconPath, false
                     );
     }
 
@@ -10292,7 +10296,7 @@ void Graph::randomNetScaleFreeCreate (const int &N,
                     i+1, initVertexSize,initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     QString::number (i+1), initVertexLabelColor, initVertexLabelSize,
-                    QPoint(x, y), initVertexShape,false
+                    QPoint(x, y), initVertexShape, initVertexIconPath, false
                     );
     }
 
@@ -10326,7 +10330,7 @@ void Graph::randomNetScaleFreeCreate (const int &N,
                     i+1, initVertexSize,initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     QString::number (i+1), initVertexLabelColor, initVertexLabelSize,
-                    QPoint(x, y), initVertexShape,false
+                    QPoint(x, y), initVertexShape,initVertexIconPath, false
                     );
 
         emit signalProgressBoxUpdate( ++progressCounter );
@@ -10539,7 +10543,7 @@ void Graph::randomNetRegularCreate(const int &N,
                     i+1, initVertexSize,initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     QString::number (i+1), initVertexLabelColor, initVertexLabelSize,
-                    QPoint(x, y), initVertexShape,false
+                    QPoint(x, y), initVertexShape,initVertexIconPath, false
                     );
     }
 
@@ -10705,7 +10709,7 @@ void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
         vertexCreate( i+1,initVertexSize,initVertexColor,
                         initVertexNumberColor, initVertexNumberSize,
                         QString::number (i+1), initVertexLabelColor,  initVertexLabelSize,
-                        QPoint(x, y), initVertexShape, false);
+                        QPoint(x, y), initVertexShape, initVertexIconPath, false);
         qDebug("Graph::createRingLatticeNetwork(): new node i=%i, at x=%i, y=%i", i+1, x,y);
     }
     int target = 0;
@@ -10824,6 +10828,7 @@ void Graph::randomNetLatticeCreate(const int &N,
                         initVertexLabelSize,
                         QPoint(x, y),
                         initVertexShape,
+                        initVertexIconPath,
                         false
                         );
         }
@@ -14460,13 +14465,17 @@ void Graph::graphLoad (	const QString m_fileName,
                                                  const QString &, const QString &,
                                                  const int&, const QString &,
                                                  const QString &, const int&,
-                                                 const QPointF&, const QString &,
+                                                 const QPointF&,
+                                                 const QString &,
+                                                 const QString &iconPath,
                                                  const bool &) ),
                 this, SLOT( vertexCreate( const int &, const int &,
                                           const QString &, const QString &,
                                           const int &, const QString &,
                                           const QString &, const int &,
-                                          const QPointF &, const QString &,
+                                          const QPointF &,
+                                          const QString &,
+                                          const QString &iconPath,
                                           const bool &) )
                 ) ;
 

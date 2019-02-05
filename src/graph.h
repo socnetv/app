@@ -268,7 +268,8 @@ public slots:
                        const QString &numColor, const int &numSize,
                        const QString &label, const QString &lColor,
                        const int &labelSize, const QPointF &p, const QString &nodeShape,
-                       const bool &signalMW
+                      const QString &nodeIconPath = QString::null,
+                       const bool &signalMW = false
                         );//Main vertex creation call
 
     void graphFileLoaded(const int &fileType,
@@ -382,14 +383,18 @@ signals:
 
 
     /** Signals to GraphicsWidget */
-    void signalDrawNode( const int &num, const int &size, const QString &nodeShape,
+    void signalDrawNode( const QPointF &p,
+                         const int &num,
+                         const int &size,
+                         const QString &nodeShape,
+                         const QString &nodeIconPath,
                    const QString &nodeColor,
                    const QString &numberColor, const int &numSize,
                    const int &numDistance,
                    const QString &label,
                    const QString &labelColor, const int &labelSize,
-                   const int &labelDistance,
-                   const QPointF &p
+                   const int &labelDistance
+
                     );
 
     //signal to GW to erase a node
@@ -414,7 +419,7 @@ signals:
     void setNodePos(const int &, const qreal &, const qreal &);
     void signalNodesFound(const QList<int> foundList);
     void setNodeSize(const int &v, const int &size);
-    void setNodeShape(const int &v, const QString &shape);
+    void setNodeShape(const int &v, const QString &shape, const QString &iconPath=QString::null);
     void setNodeColor(const int &v, const QString &color);
     void setNodeLabel(const int &v, QString);
     void setNodeNumberColor(const int &v, const QString &color);
@@ -515,9 +520,9 @@ public:
     void vertexSizeAllSet(const int newsize);
     int vertexSize(const int &v);
 
-    void vertexShapeInit (const QString);
+    void vertexShapeInit (const QString, const QString &iconPath=QString::null);
     void vertexShapeSet(const int v, const QString shape);
-    void vertexShapeAllSet(const QString shape);
+    void vertexShapeAllSet(const QString &shape, const QString &iconPath=QString::null);
     QString vertexShape(const int &v);
 
     void vertexColorInit (const QString &color);
@@ -1038,11 +1043,11 @@ private:
     WebCrawler_Spider *wc_spider;
 
     /** private member functions */
-    void vertexAdd  ( const int &v1, const int &val, const int &size,
+    void vertexAdd  (const int &v1, const int &val, const int &size,
                       const QString &color, const QString &numColor,
                       const int &numSize, const QString &label,
                       const QString &labelColor, const int &labelSize,
-                      const QPointF &p, const QString &shape );
+                      const QPointF &p, const QString &shape , const QString &iconPath=QString::null);
 
     void edgeAdd (const int &v1, const int &v2, const qreal &weight,
                   const int &type,
@@ -1191,7 +1196,8 @@ private:
     int cliqueCensusRecursion;
 
     QString VERSION, fileName, m_graphName, initEdgeColor, initVertexColor,
-        initVertexNumberColor, initVertexLabelColor, initVertexShape;
+        initVertexNumberColor, initVertexLabelColor;
+    QString initVertexShape, initVertexIconPath;
     QString htmlHead, htmlHeadLight, htmlEnd;
 
     QDateTime actualDateTime;

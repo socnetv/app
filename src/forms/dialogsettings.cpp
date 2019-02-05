@@ -31,6 +31,7 @@
 #include <QColorDialog>
 #include <QSpinBox>
 #include <QTextStream>
+#include <QPushButton>
 #include <QMap>
 #include <QtDebug>
 
@@ -163,6 +164,9 @@ DialogSettings::DialogSettings(
     m_pixmap.fill( m_nodeColor );
     ui->nodeColorBtn->setIcon(QIcon(m_pixmap));
 
+    ui->nodeIconSelectButton->setEnabled(false);
+    ui->nodeIconSelectEdit->setEnabled(false);
+
     if (m_appSettings["initNodeShape"] == "box") {
         ui->nodeShapeRadioBox->setChecked(true);
     }
@@ -180,6 +184,13 @@ DialogSettings::DialogSettings(
     }
     else if (m_appSettings["initNodeShape"] == "star") {
         ui->nodeShapeRadioStar->setChecked(true);
+    }
+    else if (m_appSettings["initNodeShape"] == "icon") {
+        ui->nodeShapeRadioIcon->setChecked(true);
+        ui->nodeIconSelectButton->setEnabled(true);
+        ui->nodeIconSelectEdit->setEnabled(true);
+        ui->nodeIconSelectEdit->setText (m_appSettings["initNodeIconPath"]);
+
     }
     else { // default
        ui->nodeShapeRadioCircle->setChecked(true);
@@ -361,6 +372,10 @@ DialogSettings::DialogSettings(
              this, &DialogSettings::getNodeShape);
     connect (ui->nodeShapeRadioStar, &QRadioButton::clicked,
              this, &DialogSettings::getNodeShape);
+    connect (ui->nodeShapeRadioIcon, &QRadioButton::clicked,
+             this, &DialogSettings::getNodeShape);
+    connect (ui->nodeIconSelectButton, &QToolButton::clicked,
+             this, &DialogSettings::getNodeIconFile);
 
 
     connect(ui->nodeSizeSpin, SIGNAL(valueChanged(int)),
@@ -543,6 +558,7 @@ void DialogSettings::getNodeColor(){
 void DialogSettings::getNodeShape(){
 
     QString nodeShape;
+
     if ( ui->nodeShapeRadioBox->isChecked () ){
        m_appSettings["initNodeShape"]  = "box";
     }
@@ -561,12 +577,56 @@ void DialogSettings::getNodeShape(){
     else if ( ui->nodeShapeRadioStar->isChecked() ){
         m_appSettings["initNodeShape"]  = "star";
     }
+    else if (ui->nodeShapeRadioIcon->isChecked()) {
+        m_appSettings["initNodeShape"]  = "icon";
+    }
     else {
         m_appSettings["initNodeShape"] = "box";
     }
+
+
     qDebug()<< "DialogSettings::getNodeShape() - new default shape " << nodeShape;
-    emit setNodeShape(m_appSettings["initNodeShape"], 0);
+     if (ui->nodeShapeRadioIcon->isChecked()) {
+        // enable textedit and file button and raise file dialog
+         ui->nodeIconSelectButton->setEnabled(true);
+         ui->nodeIconSelectEdit->setEnabled(true);
+         ui->nodeIconSelectEdit->setText (m_appSettings["initNodeIconPath"]);
+         //ui->nodeIconSelectButton->click();
+     }
+     else {
+         ui->nodeIconSelectButton->setEnabled(false);
+         ui->nodeIconSelectEdit->setEnabled(false);
+         ui->nodeIconSelectEdit->setText ("");
+         emit setNodeShape(m_appSettings["initNodeShape"], 0);
+     }
+
 }
+
+
+
+void DialogSettings::getNodeIconFile(){
+
+    QString m_nodeIconFile = QFileDialog::getOpenFileName(this, tr("Select a new data dir"),
+                                                    ui->nodeIconSelectEdit->text(),
+                                                    tr("PNG Images (*.png);;JPEG Images ( *.jpg);;All files (*.*)")
+                                                           );
+    if (!m_nodeIconFile.isEmpty()) {
+       ui->nodeIconSelectEdit->setText(m_nodeIconFile);
+       m_appSettings["initNodeIconPath"]= m_nodeIconFile;
+       (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
+       emit setNodeShape(m_appSettings["initNodeShape"], 0, m_appSettings["initNodeIconPath"]);
+    }
+    else {
+        // user pressed Cancel ?
+        // stop
+        if ( ui->nodeIconSelectEdit->text().isEmpty() ) {
+            (ui->buttonBox) -> button (QDialogButtonBox::Cancel) -> setDefault(true);
+            (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+        }
+    }
+
+}
+
 
 
 /**

@@ -1244,7 +1244,7 @@ bool Parser::loadPajek(){
                                 initNodeNumberColor, initNodeNumberSize,
                                 label, lineElement[3], initNodeLabelSize,
                             QPointF(randX, randY),
-                            nodeShape, false
+                            nodeShape, QString::null, false
                             );
                     listDummiesPajek.push_back(num);
                     miss++;
@@ -1262,7 +1262,7 @@ bool Parser::loadPajek(){
                         initNodeNumberColor, initNodeNumberSize,
                         label, initNodeLabelColor, initNodeLabelSize,
                         QPointF(randX, randY),
-                        nodeShape, false
+                        nodeShape, QString::null, false
                         );
             initNodeColor=nodeColor;
         }
@@ -1284,7 +1284,7 @@ bool Parser::loadPajek(){
                                 initNodeNumberColor, initNodeNumberSize,
                                 QString::number(i), initNodeLabelColor,initNodeLabelSize,
                                 QPointF(randX, randY),
-                                initNodeShape, false
+                                initNodeShape,QString::null,  false
                                 );
                 }
                 j=totalNodes;
@@ -1581,7 +1581,7 @@ bool Parser::loadAdjacency(){
                                  initNodeNumberColor, initNodeNumberSize,
                                  QString::number(j+1), initNodeLabelColor, initNodeLabelSize,
                                  QPointF(randX, randY),
-                                 initNodeShape, false
+                                 initNodeShape,QString::null, false
                                  );
             }
         }
@@ -1690,7 +1690,7 @@ bool Parser::loadTwoModeSociomatrix(){
                          initNodeNumberColor, initNodeNumberSize,
                          QString::number(i), initNodeLabelColor, initNodeLabelSize,
                          QPointF(randX, randY),
-                         initNodeShape, false
+                         initNodeShape, QString::null, false
                          );
         j=1;
         qDebug()<< "Parser-loadTwoModeSociomatrix(): reading actor affiliations...";
@@ -2144,7 +2144,7 @@ void Parser::endGraphMLElementNode(QXmlStreamReader &xml){
                 nodeNumberColor, nodeNumberSize,
                 nodeLabel, nodeLabelColor, nodeLabelSize,
                 QPointF(randX,randY),
-                nodeShape, false
+                nodeShape, QString::null, false
                 );
     bool_node = false;
 
@@ -2887,7 +2887,7 @@ bool Parser::loadGML(){
                             initNodeNumberColor, initNodeNumberSize,
                             nodeLabel , initNodeLabelColor, initNodeLabelSize,
                             QPointF(randX,randY),
-                            nodeShape, false
+                            nodeShape, QString::null, false
                             );
 
             }
@@ -3110,7 +3110,7 @@ bool Parser::loadDot(){
                             initNodeNumberColor, initNodeNumberSize,
                             nodeLabel , initNodeLabelColor, initNodeLabelSize,
                             QPointF(randX,randY),
-                            initNodeShape, false
+                            initNodeShape,QString::null,  false
                             );
                 // Note that we push the numbered nodelabel whereas we create
                 // the node with its file specified node label.
@@ -3162,7 +3162,7 @@ bool Parser::loadDot(){
                             initNodeNumberColor, initNodeNumberSize,
                             nodeLabel , initNodeLabelColor, initNodeLabelSize,
                             QPointF(randX,randY),
-                            initNodeShape, false
+                            initNodeShape,QString::null,  false
                             );
                 nodesDiscovered.push_back( node  );			// Note that we push the numbered nodelabel whereas we create the node with its file specified node label.
                 qDebug()<<" * Total nodes" << totalNodes<< " nodesDiscovered  "<< nodesDiscovered.size() ;
@@ -3234,7 +3234,7 @@ bool Parser::loadDot(){
                                 initNodeNumberColor, initNodeNumberSize,
                                 node , initNodeLabelColor, initNodeLabelSize,
                                 QPointF(randX,randY),
-                                initNodeShape, false
+                                initNodeShape, QString::null, false
                                 );
                     nodesDiscovered.push_back( node  );
                     qDebug()<<" * Total totalNodes "
@@ -3292,7 +3292,7 @@ bool Parser::loadDot(){
                                 initNodeNumberColor, initNodeNumberSize,
                                 label, initNodeLabelColor, initNodeLabelSize,
                                 QPointF(randX,randY),
-                                nodeShape, false
+                                nodeShape, QString::null, false
                                 );
                     aNum=totalNodes;
                     nodesDiscovered.push_back( node);
@@ -3679,7 +3679,7 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
                              node.key,
                              initNodeLabelColor, initNodeLabelSize,
                              QPointF(randX, randY),
-                             initNodeShape,
+                             initNodeShape,QString::null,
                              false
                              );
         }
@@ -3696,7 +3696,7 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
                              node.key,
                              initNodeLabelColor, initNodeLabelSize,
                              QPointF(randX, randY),
-                             initNodeShape,
+                             initNodeShape,QString::null,
                              false
                              );
 
@@ -3970,7 +3970,7 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
                               node.key,
                               initNodeLabelColor, initNodeLabelSize,
                               QPointF(randX, randY),
-                              initNodeShape,
+                              initNodeShape,QString::null,
                               false
                               );
          }
@@ -3987,7 +3987,7 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
                               node.key,
                               initNodeLabelColor, initNodeLabelSize,
                               QPointF(randX, randY),
-                              initNodeShape,
+                              initNodeShape,QString::null,
                               false
                               );
 

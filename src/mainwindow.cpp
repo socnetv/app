@@ -348,6 +348,7 @@ QMap<QString,QString> MainWindow::initSettings() {
     appSettings["initNodeSize"]= "10";
     appSettings["initNodeColor"]="red";
     appSettings["initNodeShape"]="circle";
+    appSettings["initNodeIconPath"]="";
 
     appSettings["initNodeNumbersVisibility"] = "true";
     appSettings["initNodeNumberSize"]="0";
@@ -5174,22 +5175,30 @@ void MainWindow::initSignalSlots() {
 
     connect( activeGraph,
              SIGNAL(
-                 signalDrawNode( const int &, const int &, const QString &,
+                 signalDrawNode( const QPointF &,
+                                 const int &,
+                                 const int &,
+                                 const QString &,
+                                 const QString &,
                                  const QString &,
                                  const QString &, const int &, const int &,
                                  const QString &,
-                                 const QString &, const int &, const int &,
-                                 const QPointF &
+                                 const QString &, const int &, const int &
+
                                  )
                  ),
              graphicsWidget,
              SLOT(
-                 drawNode( const int &, const int &, const QString &,
+                 drawNode( const QPointF &,
+                           const int &,
+                           const int &,
+                           const QString &,
+                           const QString &,
                            const QString &,
                            const QString &, const int &, const int &,
                            const QString &,
-                           const QString &, const int &, const int &,
-                           const QPointF &
+                           const QString &, const int &, const int &
+
                            )
                  )
              ) ;
@@ -5206,8 +5215,8 @@ void MainWindow::initSignalSlots() {
     connect( activeGraph, SIGNAL( setNodeColor(const int &,QString))  ,
              graphicsWidget, SLOT(  setNodeColor(const int &, QString) ) );
 
-    connect( activeGraph, SIGNAL( setNodeShape(const int &,QString))  ,
-             graphicsWidget, SLOT(  setNodeShape(const int &, QString) ) );
+    connect( activeGraph, SIGNAL( setNodeShape(const int &,const QString&, const QString &))  ,
+             graphicsWidget, SLOT(  setNodeShape(const int &, const QString&,const QString &) ) );
 
     connect( activeGraph, SIGNAL( setNodeNumberColor(const int &, QString)  ),
               graphicsWidget, SLOT(  setNodeNumberColor (const int &, QString) ) );
@@ -5470,7 +5479,7 @@ void MainWindow::initApp(){
     activeGraph->clear();
     activeGraph->setSocNetV_Version(VERSION);
 
-    activeGraph->vertexShapeInit(appSettings["initNodeShape"]);
+    activeGraph->vertexShapeInit(appSettings["initNodeShape"], appSettings["initNodeIconPath"]);
     activeGraph->vertexSizeInit(appSettings["initNodeSize"].toInt(0, 10));
     activeGraph->vertexColorInit( appSettings["initNodeColor"] );
 
@@ -9204,7 +9213,7 @@ void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
 
 
 /**
- * @brief MainWindow::slotEditNodeShape
+ * @brief Change the shape of a node
  * If shape == null, prompts the user a list of available node shapes to select.
  * Then changes the shape of all nodes/vertices accordingly.
  * If vertex is non-zero, changes the shape of that node only.
@@ -9214,7 +9223,8 @@ void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
  * @param shape
  * @param vertex
  */
-void MainWindow::slotEditNodeShape(QString shape, const int vertex) {
+void MainWindow::slotEditNodeShape(QString shape, const int vertex,
+                                   const QString &nodeIconPath) {
     qDebug() << "MW::slotEditNodeShape() - vertex " << vertex
              << " (0 means all) - new shape " << shape;
 
@@ -9239,7 +9249,7 @@ void MainWindow::slotEditNodeShape(QString shape, const int vertex) {
     }
 
     if (vertex == 0) { //change all nodes shapes
-        activeGraph->vertexShapeAllSet(shape);
+        activeGraph->vertexShapeAllSet(shape, nodeIconPath);
         appSettings["initNodeShape"] = shape;
         statusMessage(tr("All shapes have been changed. Ready."));
     }

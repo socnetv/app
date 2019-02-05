@@ -76,7 +76,8 @@ public:
            const QString &labelColor,
            const int &labelSize,
            const QPointF &p,
-           const QString &shape);
+           const QString &shape,
+                const QString &iconPath);
 
     GraphVertex(const int &name);
 
@@ -153,7 +154,7 @@ public:
     void setSize(const int &size ) { m_size=size; }
     int size()  const { return m_size; }
 
-    void setShape(const QString &shape) { m_shape=shape; }
+    void setShape(const QString &shape, const QString &iconPath = QString::null) { m_shape=shape; m_iconPath=iconPath;}
     QString shape() const { return m_shape; }
 
     void setColor(const QString &color) { m_color=color; }
@@ -324,7 +325,7 @@ private:
     qreal m_PC, m_SPC, m_SIC, m_IC, m_SPRC, m_PRC;
     qreal m_PP, m_SPP, m_EVC, m_SEVC;
 
-    QString m_color, m_numberColor, m_label, m_labelColor, m_shape;
+    QString m_color, m_numberColor, m_label, m_labelColor, m_shape, m_iconPath;
     QPointF m_disp;
 
     QHash<int,qreal> m_reciprocalEdges;

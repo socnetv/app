@@ -52,6 +52,7 @@ public slots:
     void validateSettings();
     void getNodeColor();
     void getNodeShape();
+    void getNodeIconFile();
     void getNodeSize(int);
     void getNodeNumbersVisibility (bool toggle);
     void getNodeNumbersInside(bool toggle);
@@ -93,7 +94,7 @@ signals:
     void setCanvasIndexMethod(const QString &text);
 
     void setNodeColor(QColor);
-    void setNodeShape(const QString, const int);
+    void setNodeShape(const QString, const int, const QString &nodeIconPath=QString::null);
     void setNodeSize(int, const bool &);
     void setNodeNumbersVisibility(bool);
     void setNodeNumbersInside(bool);

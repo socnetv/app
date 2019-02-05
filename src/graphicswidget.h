@@ -103,15 +103,16 @@ public slots:
 
     void relationSet(int relation);
 
-    void drawNode(const int &num, const int &nodeSize,
-                   const QString &nodeShape, const QString &nodeColor,
-                   const QString &numberColor, const int &numberSize,
-                   const int &numberDistance,
-                   const QString &nodeLabel,
-                   const QString &labelColor, const int &labelSize,
-                   const int &labelDistance,
-                   const QPointF &p
-                    );
+    void drawNode(const QPointF &p,
+                  const int &num,
+                  const int &nodeSize,
+                  const QString &nodeShape,
+                  const QString &nodeIconPath,
+                  const QString &nodeColor,
+                  const QString &numberColor, const int &numberSize,
+                  const int &numberDistance,
+                  const QString &nodeLabel, const QString &labelColor,
+                  const int &labelSize, const int &labelDistance);
     void removeNode(const int &number);
     void setNodeVisibility(int, bool );	//Called from Graph via MW
     void setNodeClicked(GraphicsNode *);
@@ -120,7 +121,7 @@ public slots:
     bool setNodeSize(const int &nodeNumber, const int &size=0);
     void setNodeSizeAll(const int &size=0);
 
-    bool setNodeShape(const int &nodeNumber, const QString &shape);
+    bool setNodeShape(const int &nodeNumber, const QString &shape, const QString &iconPath=QString::null);
     bool setNodeColor(const int &, const QString &color);
 
     void setNodeNumberColor(const int &nodeNumber, const QString &color);

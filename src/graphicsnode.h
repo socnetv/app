@@ -61,7 +61,7 @@ class GraphicsNode :  public QObject,  public QGraphicsItem {
 
 public:
     GraphicsNode (GraphicsWidget* gw, const int &num, const int &size,
-          const QString &color, const QString &shape,
+          const QString &color, const QString &shape, const QString &iconPath,
           const bool &showNumbers, const bool &numbersInside,
           const QString &numberColor, const int &numberSize, const int &numDistance,
           const bool &showLabels, const QString &label, const QString &labelColor,
@@ -89,8 +89,7 @@ public:
     void setSize(const int &);
     int size() const;
 
-
-    void setShape (const QString);
+    void setShape (const QString, const QString &iconPath=QString::null);
     QString nodeShape() {return m_shape;}
 
     void setColor(QString str);
@@ -143,7 +142,8 @@ private:
     int m_numberDistance;
     int m_labelDistance;
     int m_num;
-    QString  m_shape,  m_col_str, m_numColor, m_labelText, m_labelColor;
+    QString  m_shape, m_iconPath;
+    QString m_col_str, m_numColor, m_labelText, m_labelColor;
     QColor m_col, m_col_orig;
     bool m_hasNumber, m_hasLabel, m_hasNumberInside, m_edgeHighLighting;
     /**Lists of elements attached to this node */

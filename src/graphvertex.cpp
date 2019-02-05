@@ -42,7 +42,7 @@ GraphVertex::GraphVertex(Graph* parent,
                const QString &labelColor,
                const int &labelSize,
                const QPointF &p,
-               const QString &shape): parentGraph (parent)
+               const QString &shape, const QString &iconPath): parentGraph (parent)
 { 
     qDebug() << "GraphVertex::GraphVertex() - vertex:"<<  name << "initializing...";
     m_name=name;
@@ -55,6 +55,7 @@ GraphVertex::GraphVertex(Graph* parent,
 	m_labelColor=labelColor;
 	m_labelSize=labelSize;
 	m_shape=shape;
+    m_iconPath=iconPath;
 	m_x=p.x();
 	m_y=p.y();
     //FIXME m_outLinkColors list need update when we remove vertices/edges
