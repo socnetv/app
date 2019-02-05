@@ -417,16 +417,17 @@ QMap<QString,QString> MainWindow::initSettings() {
         qDebug()<< "MW::initSettings - settings file exist - Reading it";
         QFile file(settingsFilePath);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            QMessageBox::critical(this, "File Read Error", tr("Error! \n"
-                                                              "I cannot read the settings file "
-                                                              "in \n" + settingsFilePath.toLocal8Bit() +
-                                                              "\n"
-                                                              "You can continue using SocNetV with default "
-                                                              "settings but any changes to them will not "
-                                                              " be saved for future sessions \n"
-                                                              "Please, check permissions in your home folder "
-                                                              " and conduct the developer."
-                                                              ),
+            QMessageBox::critical(this, "File Read Error",
+                                  tr("Error! \n"
+                                     "I cannot read the settings file "
+                                     "in \n" + settingsFilePath.toLocal8Bit() +
+                                     "\n"
+                                     "You can continue using SocNetV with default "
+                                     "settings but any changes to them will not "
+                                     " be saved for future sessions \n"
+                                     "Please, check permissions in your home folder "
+                                     " and conduct the developer."
+                                     ),
                                   QMessageBox::Ok, 0);
             return appSettings;
         }
@@ -5528,6 +5529,8 @@ void MainWindow::initApp(){
                     QBrush(QColor (appSettings["initBackgroundColor"]))
                 );
     }
+
+    slotOptionsCanvasIndexMethod (appSettings["canvasIndexMethod"]) ;
 
     /** Clear Chart */
     chart->resetToTrivial();

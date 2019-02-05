@@ -348,6 +348,7 @@ void GraphicsWidget::setEdgeClicked(GraphicsEdge *edge, const bool &openMenu){
 
 /**
  * @brief Called from activeGraph to update node coordinates on the canvas
+ * while creating random networks.
  * @param num
  * @param x
  * @param y
