@@ -88,6 +88,12 @@ QToolBar {
     padding: 5px 10px;
 }
 
+
+QToolBar::separator{
+    height: 5px;
+    width: 15px;
+}
+
 QGroupBox {
     border: 0 none;
     border-top: 1px solid rgba(0, 0, 0, 0.1);
@@ -113,7 +119,7 @@ QGroupBox#leftPanel {
 }
 
 /* Nice to have the background color change when hovered. */
-QRadioButton:hover, QCheckBox:hover {
+QSpinBox:hover, QRadioButton:hover, QCheckBox:hover {
     background-color: #e2e2e2;
 }
 
@@ -160,7 +166,7 @@ QPushButton#toolBoxLayoutForceDirectedApplyButton {
     border: none;
     padding: 5px 0px;
     margin:0;
-    min-width: 120px;
+    min-width: 130px;
     min-height: 2.5ex;
     text-align:center;
 }
@@ -170,9 +176,13 @@ QToolButton {
     border:1px solid rgba(0, 0, 0, 0.1);
     border-top: 1px solid rgba(255, 255, 255, 0.3);
     border-left:1px solid rgba(255, 255, 255, 0.3);
+    min-width: 20px;
 }
+
+
 QToolBar QToolButton {
     border:0 none;
+    min-width: 25px;
 }
 
 QToolButton:hover {
