@@ -238,6 +238,7 @@ Graph::Graph() {
 }
 
 
+
 /**
  * @brief Graph::~Graph
  */
@@ -245,7 +246,6 @@ Graph::~Graph() {
     qDebug()<<"Graph::~Graph() - Calling clear()";
     clear("exit");
     delete file_parser;
-
 }
 
 
@@ -256,7 +256,8 @@ Graph::~Graph() {
     Clears all vertices
 */
 void Graph::clear(const QString &reason) {
-   qDebug()<< "Graph::clear() - m_graph reports size "<<m_graph.size();
+   qDebug()<< "Graph::clear() - Clearing graph... "
+              "m_graph reports size "<<m_graph.size();
     qDeleteAll(m_graph.begin(), m_graph.end());
     m_graph.clear();
     vpos.clear();
@@ -371,15 +372,15 @@ void Graph::clear(const QString &reason) {
 
     graphModifiedFlag=false;
 
-    qDebug()<< "Graph::clear() - m_graph cleared. Now reports size"
+    qDebug()<< "Graph::clear() - Clearing ended. m_graph size"
             << m_graph.size()
-               << "emitting graphSetModified()";
-
+               << "Asking parser and crawler threads to terminate";
 
     graphLoadedTerminateParserThreads("clear");
     webCrawlTerminateThreads("clear");
 
     if ( reason != "exit") {
+        qDebug()<< "Graph::clear() - Clearing end. Emitting graphSetModified()";
         graphSetModified(graphModifiedFlag,true);
     }
 }
@@ -410,7 +411,10 @@ void Graph::canvasSizeSet(const int w, const int h){
     }
     canvasWidth = w;
     canvasHeight= h;
-
+    statusMessage(tr("Canvas size: (%1, %2)px")
+                  .arg(QString::number(canvasWidth))
+                  .arg(QString::number(canvasHeight))
+                  );
     qDebug() << "Graph::canvasSizeSet() - finished";
 }
 
@@ -677,7 +681,7 @@ void Graph::relationsClear(){
 /**
  * @brief Creates a new vertex
  * Main vertex creation slot, associated with homonymous signal from Parser.
- * Adds a vertex to the Graph and signals drawNode to GraphicsWidget
+ * Adds a vertex to the Graph and signals drawNode to GW
  * The new vertex has number num and specific color, label, label color, shape and position p.
  * @param num
  * @param size
@@ -1860,7 +1864,7 @@ void Graph::vertexLabelDistanceInit(const int &distance) {
 /**
  * @brief Checks a) if edge exists and b) if the opposite edge exists
  * Calls edgeAdd to add the new edge to the Graph,
- * then emits drawEdge() which calls GraphicsWidget::drawEdge() to draw the new edge.
+ * then emits drawEdge() which calls GW::drawEdge() to draw the new edge.
  * Called from homonymous signal of Parser class.
  * Also called from MW when user clicks on the "add link" button
  * Also called (via MW) from GW when user middle-clicks on two nodes.
@@ -2120,7 +2124,7 @@ void Graph::edgeFilterUnilateral(const bool &toggle) {
 
 
 /**
- * @brief Called from GraphicsWidget::edgeClicked()
+ * @brief Called from GW::edgeClicked()
  * which is emitted when the user clicks on an edge.
  * Parameters are the source and target node of the edge.
  * It emits signalEdgeClicked() to MW, which displays a relevant
@@ -3059,21 +3063,17 @@ void Graph::webCrawlTerminateThreads (QString reason){
         wc_spiderThread.requestInterruption();
         wc_spiderThread.quit();
         wc_spiderThread.wait();
-
      }
 
-
     qDebug() << "Graph::webCrawlTerminateThreads() - Checking wc_parserThread...";
+
     while (wc_parserThread.isRunning() ) {
 
         qDebug() << "Graph::webCrawlTerminateThreads()  - wc_parserThread running. "
                     "Calling wc_parserThread.quit()";
         wc_parserThread.quit();
         wc_parserThread.wait();
-
      }
-
-
 }
 
 

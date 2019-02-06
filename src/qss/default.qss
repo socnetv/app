@@ -185,14 +185,14 @@ QComboBox, QLineEdit, QTextEdit, QListView {
     color: #444;
     selection-color: #fff;
     selection-background-color: #0277BD;
-    selection-border: 0 none;
+    /* selection-border: 0 none; */
     font-size: 10px;
     border: 0 none;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-
-QComboBox:on { /* shift the text when the popup opens */
+/* shift the text when the popup opens */
+QComboBox:on {
 
 }
 

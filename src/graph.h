@@ -459,7 +459,7 @@ public:
     /* INIT AND CLEAR*/
     Graph();
     void clear(const QString &reason="");
-    ~Graph();
+        ~Graph();
 
     void setSocNetV_Version (QString ver) { VERSION = ver; }
 

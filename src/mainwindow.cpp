@@ -138,8 +138,6 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     initGraph();
 
-    setMinimumSize(1024,750); //set MW minimum size, before creating canvas
-
     initView();         //init our network "canvas"
 
     /** functions that invoke all other construction parts **/
@@ -157,13 +155,13 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     initApp();          //  load and initialise default app parameters
 
+    graphicsWidget->setFocus();
+
     // Check if user-provided network file on startup
     qDebug() << "MW::MainWindow() Checking if user provided file on startup...";
     if (!m_fileName.isEmpty()) {
         slotNetworkFileChoose( m_fileName );
     }
-
-    graphicsWidget->setFocus();
 
     statusMessage( tr("Welcome to Social Network Visualizer, Version ")+VERSION);
 
@@ -291,16 +289,11 @@ void MainWindow::resizeEvent( QResizeEvent * ) {
     qDebug() << "MW::resizeEvent():  Window resized to"
              << width()
              << ","
-             << height()
-             <<"Calling activeGraph->canvasSizeSet() to set canvas width and height";
-
-    activeGraph->canvasSizeSet(graphicsWidget->width(),graphicsWidget->height());
+             << height();
 
     statusMessage(
-                QString(
-                    tr("Window resized to (%1, %2)px. Canvas size: (%3, %4) px"))
+                 tr("Window resized to (%1, %2)px.")
                 .arg(width()).arg(height())
-                .arg(graphicsWidget->width()).arg(graphicsWidget->height())
                 );
 
 }
@@ -5073,10 +5066,9 @@ void MainWindow::initWindowLayout() {
     }
 
     qDebug () << "MW::initWindowLayout - resize to 1200x750";
-    resize(1200,750);
+    //resize(1200,750);
 
-    //showMaximized();
-    //setGeometry(0, 0, 1200,600);
+    setMinimumSize(1200,750); //set MW minimum size, before creating canvas
 
     qDebug () << "MW::initWindowLayout() - Finished";
 
@@ -5461,7 +5453,6 @@ void MainWindow::initApp(){
     graphicsWidget->selectNone();
 
     // Init basic variables
-
     inverseWeights=false;
     askedAboutWeights=false;
 
