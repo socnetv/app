@@ -65,6 +65,12 @@ DialogSettings::DialogSettings(
 
 
     /**
+      * Style options
+      */
+    ui->stylesheetDefaultChkBox->setChecked(true);
+
+
+    /**
      * window options
      */
     ui->leftPanelChkBox->setChecked(
@@ -303,6 +309,10 @@ DialogSettings::DialogSettings(
 
     connect (ui->printLogoChkBox, &QCheckBox::stateChanged,
              this, &DialogSettings::setPrintLogo);
+
+
+    connect( ui->stylesheetDefaultChkBox,&QCheckBox::clicked,
+             this,  &DialogSettings::setStyleSheetDefault);
 
 
     connect (ui->progressDialogChkBox, &QCheckBox::stateChanged,

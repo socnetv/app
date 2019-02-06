@@ -136,8 +136,6 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     qInstallMessageHandler( myMessageOutput);
 
-    // loadStyleSheet();
-
     initGraph();
 
     setMinimumSize(1024,750); //set MW minimum size, before creating canvas
@@ -525,6 +523,8 @@ void MainWindow::slotOpenSettingsDialog() {
     connect( m_settingsDialog, &DialogSettings::setPrintLogo,
              this, &MainWindow::slotOptionsEmbedLogoExporting);
 
+    connect (m_settingsDialog, &DialogSettings::setStyleSheetDefault,
+             this, &MainWindow::slotStyleSheetDefault);
 
     connect( m_settingsDialog, &DialogSettings::setToolBar,
              this, &MainWindow::slotOptionsWindowToolbarVisibility);
@@ -636,37 +636,38 @@ void MainWindow::slotOpenSettingsDialog() {
 
 
 /**
- * @brief Loads a Qt StyleSheet (.qss file defined in project resources)
+ * @brief Toggles the use of SocNetV default Qt StyleSheet
+ * (.qss file defined in project resources)
  * @param sheetName
  */
-void MainWindow::loadStyleSheet(const bool checked = true ){
+void MainWindow::slotStyleSheetDefault(const bool checked = true ){
     if ( checked ) {
-        loadStyleSheetByName("default");
+        slotStyleSheetByName(":/qss/default.qss");
     }
     else {
-        loadStyleSheetByName("");
+        slotStyleSheetByName("");
     }
-
 }
 
 
 
 /**
- * @brief Loads a Qt StyleSheet (.qss file defined in project resources)
+ * @brief Loads a custom Qt StyleSheet (.qss file)
+ * If sheetFileName is empty, the app uses platform-specific Qt style
  * @param sheetName
  */
-void MainWindow::loadStyleSheetByName(const QString &sheetName) {
+void MainWindow::slotStyleSheetByName(const QString &sheetFileName) {
 
     QString styleSheet = "";
-    if ( !sheetName.isEmpty() ) {
-        QFile file(":/qss/" + sheetName.toLower() + ".qss");
+    if ( !sheetFileName.isEmpty() ) {
+        QFile file(sheetFileName);
         file.open(QFile::ReadOnly);
         styleSheet = QString::fromLatin1(file.readAll());
-
     }
     qApp->setStyleSheet(styleSheet);
-
 }
+
+
 
 /**
  * @brief Fixes known bugs in QProgressDialog class.
@@ -3982,14 +3983,6 @@ void MainWindow::initToolBar(){
     toolBar->addSeparator();
     toolBar->addAction ( QWhatsThis::createAction (this));
     toolBar->setIconSize(QSize(16,16));
-    toolBar->addSeparator();
-
-    styleSheetCheck = new QCheckBox("Load Style", this);
-    connect( styleSheetCheck,&QCheckBox::toggled,
-             this,  &MainWindow::loadStyleSheet );
-    styleSheetCheck->setChecked(true);
-
-    toolBar->addWidget(styleSheetCheck);
 
     qDebug()<< "MW::initToolBar() - Finished";
 }

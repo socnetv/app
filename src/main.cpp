@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     QTranslator tor( 0 );
     QLocale locale;
 
-    // set the location where your .qm files are in load() below as the last parameter instead of "."
+    // set the location where .qm files are in load() below as the last parameter instead of "."
     // for development, use "/" to use the english original as
     // .qm files are stored in the base project directory.
 
@@ -76,8 +76,21 @@ int main(int argc, char *argv[])
         }
 
     }
+
+    // Create our MainWindow
     MainWindow *socnetv=new MainWindow(option);
 
+    // Load our default stylesheet
+    QString sheetName = "default.qss";
+    QFile file(":/qss/" + sheetName );
+    file.open(QFile::ReadOnly);
+    QString styleSheet = QString::fromLatin1(file.readAll());
+    file.close();
+
+    // Apply our default stylesheet
+    qApp->setStyleSheet(styleSheet);
+
+    // Show the application
     socnetv->show();
 
     return app.exec();

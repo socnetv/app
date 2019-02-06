@@ -137,8 +137,8 @@ public:
     MainWindow(const QString &f);
     ~MainWindow();
 
-    void loadStyleSheet(const bool checked);
-    void loadStyleSheetByName(const QString &sheetName);
+    void slotStyleSheetDefault(const bool checked);
+    void slotStyleSheetByName(const QString &sheetFileName);
 
     void polishProgressDialog(QProgressDialog* dialog);
 
