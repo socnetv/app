@@ -26,6 +26,7 @@
 ********************************************************************************/
 
 #include <QApplication>		//core Qt functionality
+#include <QFile>
 #include <QTranslator>		//for text translations
 #include <QLocale>
 #include <iostream>			//used for cout

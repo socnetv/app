@@ -5068,7 +5068,7 @@ void MainWindow::initWindowLayout() {
     qDebug () << "MW::initWindowLayout - resize to 1200x750";
     //resize(1200,750);
 
-    setMinimumSize(1200,750); //set MW minimum size, before creating canvas
+    setMinimumSize(1200,750);
 
     qDebug () << "MW::initWindowLayout() - Finished";
 
