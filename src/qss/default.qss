@@ -15,8 +15,6 @@ QSpinBox,
 QTextEdit,
 QListView,
 QStatusBar {
-    background-color: #546e7a;
-    background-color: #f8f9fa;
     background-color: #eceff1;
     color: #111;
     font-size: 12px;
@@ -53,6 +51,7 @@ QMenuBar::item {
 
 QMenuBar::item:selected { /* when selected using mouse or keyboard */
     background: #0277BD;
+    color: #fff;
 }
 
 QMenu {
@@ -110,14 +109,12 @@ QGroupBox::title {
 }
 
 QGroupBox#leftPanel {
-    background: #eee;
     padding:0;
-    margin:-;
-
 }
+
 /* Nice to have the background color change when hovered. */
 QRadioButton:hover, QCheckBox:hover {
-    background-color: wheat;
+    background-color: #e2e2e2;
 }
 
 /* We provide a min-width and min-height for push buttons
@@ -140,11 +137,20 @@ QPushButton:hover {
 /* Increase the padding, so the text is shifted when the button is
    pressed. */
 QPushButton:pressed {
-    background-color: #d0d67c;
+    background-color: #00ff11;
 }
 /* make the default button prominent */
 QPushButton:default {
-    border-color: navy;
+    border-color: #505F69;
+}
+
+
+QPushButton:disabled {
+    background-color: #32414B;
+    border: 1px solid #32414B;
+    color: #787878;
+    border-radius: 4px;
+    padding: 3px;
 }
 
 QPushButton#toolBoxLayoutByIndexApplyButton,
@@ -170,7 +176,7 @@ QToolBar QToolButton {
 }
 
 QToolButton:hover {
-    background-color: #f2f2f2;
+    background-color: #e2e2e2;
 }
 QToolButton:pressed {
     background-color: #d2d2d2;
@@ -191,9 +197,28 @@ QComboBox, QLineEdit, QTextEdit, QListView {
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
+
+QComboBox {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    selection-background-color: #0277BD; /* #1464A0; */
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+QComboBox:hover {
+    background-color: #eaeaea;
+}
 /* shift the text when the popup opens */
 QComboBox:on {
 
+}
+
+QComboBox:disabled {
+    background-color: #19232D;
+    color: #787878;
 }
 
 QGroupBox#leftPanel QComboBox {
@@ -205,7 +230,7 @@ QComboBox QAbstractItemView {
     padding: 0;
     margin:0;
     min-width:200px;
-    background-color: #fafafa;
+    background-color: #fff;
 }
 
 QComboBox::drop-down {
@@ -239,6 +264,8 @@ QLabel {
     padding: 0;
     background: none;
 }
+
+
 /* A QToolTip is a QLabel ... */
 QToolTip {
     border: 1px solid rgba(0, 0, 0, 0.1);
@@ -256,7 +283,7 @@ QProgressDialog {
 
 QChart,
 QChartView {
-    background-color:red;
+    background-color:transparent;
     margin:0;
     padding:0;
 }
