@@ -4033,8 +4033,8 @@ void MainWindow::initPanels(){
                              << "Random scale-free network"
                              << "Random small-worldfree network"
                              << "Random Erdős–Rényi network"
-                             << "Random d-regular network"
                              << "Random lattice network"
+                             << "Random d-regular network"
                              << "Random ring-lattice network"
                              << "With Web Crawler";
     toolBoxNetworkAutoCreateSelect->addItems(networkAutoCreateSelectCommands);
