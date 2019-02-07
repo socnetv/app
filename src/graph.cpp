@@ -1422,9 +1422,9 @@ void Graph::vertexShapeInit(const QString shape, const QString &iconPath) {
  * @param v1
  * @param shape
  */
-void Graph::vertexShapeSet(const int v1, const QString shape){
-    m_graph[ vpos[v1] ]->setShape(shape);
-    emit setNodeShape(v1, shape);
+void Graph::vertexShapeSet(const int &v1, const QString &shape, const QString &iconPath){
+    m_graph[ vpos[v1] ]->setShape(shape, iconPath);
+    emit setNodeShape(v1, shape, iconPath);
 
     graphSetModified(GRAPH_CHANGED_VERTICES_METADATA);
 }
@@ -1442,6 +1442,9 @@ QString Graph::vertexShape(const int &v1){
 
 }
 
+QString Graph::vertexShapeIconPath(const int &v1) {
+    return m_graph[ vpos[v1] ]->shapeIconPath();
+}
 
 /**
  * @brief Changes the shape.of all vertices

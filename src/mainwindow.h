@@ -59,6 +59,7 @@ static const int USER_MSG_CRITICAL_NO_EDGES=3;
 static const int USER_MSG_QUESTION=4;
 static const int USER_MSG_QUESTION_CUSTOM=5;
 
+
 typedef QHash <QString, int> H_StrToInt;
 
 QT_BEGIN_NAMESPACE

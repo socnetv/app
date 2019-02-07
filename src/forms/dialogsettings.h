@@ -31,6 +31,10 @@
 #include <QDialog>
 #include <QMap>
 
+
+
+
+
 namespace Ui {
 class DialogSettings;
 }
@@ -51,7 +55,7 @@ public slots:
     void getCanvasIndexMethod(const QString &text);
     void validateSettings();
     void getNodeColor();
-    void getNodeShape();
+    void getNodeShapeIndex(const int &shape);
     void getNodeIconFile();
     void getNodeSize(int);
     void getNodeNumbersVisibility (bool toggle);

@@ -170,36 +170,63 @@ DialogSettings::DialogSettings(
     m_pixmap.fill( m_nodeColor );
     ui->nodeColorBtn->setIcon(QIcon(m_pixmap));
 
+    QStringList shapesList;
+    QStringList iconList;
+    shapesList << "Square"
+                << "Circle"
+                << "Diamond"
+                << "Ellipse"
+                << "Triangle"
+                << "Star"
+                << "Bug"
+                << "Custom Icon";
+    iconList << ":/images/box.png"
+             << ":/images/circle.png"
+             << ":/images/diamond.png"
+             << ":/images/ellipse.png"
+             << ":/images/triangle.png"
+             << ":/images/star.png"
+             << ":/images/bugs.png"
+             << ":/images/export_photo_48px.svg";
+
+    ui->nodeShapeComboBox->addItems(shapesList);
+
+    for (int i = 0; i < shapesList.size(); ++i) {
+       ui->nodeShapeComboBox->setItemIcon(i, QIcon(iconList[i]));
+    }
+
     ui->nodeIconSelectButton->setEnabled(false);
     ui->nodeIconSelectEdit->setEnabled(false);
 
     if (m_appSettings["initNodeShape"] == "box") {
-        ui->nodeShapeRadioBox->setChecked(true);
+        ui->nodeShapeComboBox->setCurrentIndex(0);
     }
     else if (m_appSettings["initNodeShape"] == "circle") {
-        ui->nodeShapeRadioCircle->setChecked(true);
+        ui->nodeShapeComboBox->setCurrentIndex(1);
     }
     else if (m_appSettings["initNodeShape"] == "diamond") {
-        ui->nodeShapeRadioDiamond->setChecked(true);
+        ui->nodeShapeComboBox->setCurrentIndex(2);
     }
     else if (m_appSettings["initNodeShape"] == "ellipse") {
-        ui->nodeShapeRadioEllipse->setChecked(true);
+        ui->nodeShapeComboBox->setCurrentIndex(3);
     }
     else if (m_appSettings["initNodeShape"] == "triangle") {
-        ui->nodeShapeRadioTriangle->setChecked(true);
+        ui->nodeShapeComboBox->setCurrentIndex(4);
     }
     else if (m_appSettings["initNodeShape"] == "star") {
-        ui->nodeShapeRadioStar->setChecked(true);
+        ui->nodeShapeComboBox->setCurrentIndex(5);
     }
-    else if (m_appSettings["initNodeShape"] == "icon") {
-        ui->nodeShapeRadioIcon->setChecked(true);
+    else if (m_appSettings["initNodeShape"] == "bugs") {
+        ui->nodeShapeComboBox->setCurrentIndex(6);
+    }
+    else if (m_appSettings["initNodeShape"] == "custom") {
+        ui->nodeShapeComboBox->setCurrentIndex(7);
         ui->nodeIconSelectButton->setEnabled(true);
         ui->nodeIconSelectEdit->setEnabled(true);
         ui->nodeIconSelectEdit->setText (m_appSettings["initNodeIconPath"]);
-
     }
     else { // default
-       ui->nodeShapeRadioCircle->setChecked(true);
+       ui->nodeShapeComboBox->setCurrentIndex(1);
     }
 
     ui->nodeSizeSpin->setValue( m_appSettings["initNodeSize"].toInt(0, 10) );
@@ -368,22 +395,9 @@ DialogSettings::DialogSettings(
 
 
 
+    connect (ui->nodeShapeComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+             this, &DialogSettings::getNodeShapeIndex);
 
-
-    connect (ui->nodeShapeRadioBox, &QRadioButton::clicked,
-             this, &DialogSettings::getNodeShape);
-    connect (ui->nodeShapeRadioCircle, &QRadioButton::clicked,
-             this, &DialogSettings::getNodeShape);
-    connect (ui->nodeShapeRadioDiamond, &QRadioButton::clicked,
-             this, &DialogSettings::getNodeShape);
-    connect (ui->nodeShapeRadioEllipse, &QRadioButton::clicked,
-             this, &DialogSettings::getNodeShape);
-    connect (ui->nodeShapeRadioTriangle, &QRadioButton::clicked,
-             this, &DialogSettings::getNodeShape);
-    connect (ui->nodeShapeRadioStar, &QRadioButton::clicked,
-             this, &DialogSettings::getNodeShape);
-    connect (ui->nodeShapeRadioIcon, &QRadioButton::clicked,
-             this, &DialogSettings::getNodeShape);
     connect (ui->nodeIconSelectButton, &QToolButton::clicked,
              this, &DialogSettings::getNodeIconFile);
 
@@ -562,46 +576,48 @@ void DialogSettings::getNodeColor(){
 }
 
 
+
 /**
  * @brief DialogSettings::getNodeShape
+ * @param shape
  */
-void DialogSettings::getNodeShape(){
+void DialogSettings::getNodeShapeIndex(const int &shape){
 
-    QString nodeShape;
-
-    if ( ui->nodeShapeRadioBox->isChecked () ){
-       m_appSettings["initNodeShape"]  = "box";
-    }
-    else if ( ui->nodeShapeRadioCircle->isChecked() ){
-       m_appSettings["initNodeShape"]  = "circle";
-    }
-    else if ( ui->nodeShapeRadioDiamond->isChecked() ){
-       m_appSettings["initNodeShape"]  = "diamond";
-    }
-    else if ( ui->nodeShapeRadioEllipse->isChecked() ){
+    switch (shape) {
+    case 0:
+        m_appSettings["initNodeShape"]  = "box";
+        break;
+    case 1:
+        m_appSettings["initNodeShape"]  = "circle";
+        break;
+    case 2:
+        m_appSettings["initNodeShape"]  = "diamond";
+        break;
+    case 3:
         m_appSettings["initNodeShape"]  = "ellipse";
-    }
-    else if ( ui->nodeShapeRadioTriangle->isChecked() ){
+        break;
+    case 4:
         m_appSettings["initNodeShape"]  = "triangle";
-    }
-    else if ( ui->nodeShapeRadioStar->isChecked() ){
+        break;
+    case 5:
         m_appSettings["initNodeShape"]  = "star";
-    }
-    else if (ui->nodeShapeRadioIcon->isChecked()) {
-        m_appSettings["initNodeShape"]  = "icon";
-    }
-    else {
-        m_appSettings["initNodeShape"] = "box";
+        break;
+    case 6:
+        m_appSettings["initNodeShape"]  = "bugs";
+        break;
+    case 7:
+        m_appSettings["initNodeShape"]  = "custom";
+        break;
+    default:
+        break;
     }
 
-
-    qDebug()<< "DialogSettings::getNodeShape() - new default shape " << nodeShape;
-     if (ui->nodeShapeRadioIcon->isChecked()) {
+    qDebug()<< "DialogSettings::getNodeShape() - new default shape " << m_appSettings["initNodeShape"];
+     if ( shape == 7) {
         // enable textedit and file button and raise file dialog
          ui->nodeIconSelectButton->setEnabled(true);
          ui->nodeIconSelectEdit->setEnabled(true);
          ui->nodeIconSelectEdit->setText (m_appSettings["initNodeIconPath"]);
-         //ui->nodeIconSelectButton->click();
      }
      else {
          ui->nodeIconSelectButton->setEnabled(false);

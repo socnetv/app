@@ -233,7 +233,7 @@ void GraphicsNode::setShape(const QString shape, const QString &iconPath) {
         path.lineTo(-m_size, 0) ;
         path.closeSubpath();
     }
-    else if ( m_shape == "icon" ) {
+    else if ( m_shape == "custom" ) {
         path.addRect (-m_size , -m_size , 2*m_size , 2*m_size );
         if (!iconPath.isEmpty()) {
             m_iconPath = iconPath;
@@ -288,7 +288,7 @@ void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 
     painter->setPen(QPen(QColor("#222"), 0));
 
-    if (m_shape == "icon") {
+    if (m_shape == "custom") {
         QPixmap pix(m_iconPath);
         painter->drawPixmap(-m_size, -m_size, 2*m_size, 2*m_size, pix);
     }

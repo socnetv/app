@@ -40,37 +40,83 @@
 #include "ui_dialognodeedit.h"
 
 DialogNodeEdit::DialogNodeEdit(QWidget *parent,
-                               const QString &l,
-                               const int &s,
-                               const QColor &col,
-                               const QString &sh) :
+                               const QString &label,
+                               const int &size,
+                               const QColor &color,
+                               const QString &shape,
+                               const QString &path) :
     QDialog(parent),
-    ui(new Ui::DialogNodeEdit)
+    ui(new Ui::DialogNodeEdit),
+    nodeLabel(label),
+    nodeSize(size),
+    nodeColor(color),
+    nodeShape(shape),
+    iconPath(path)
 {
     ui->setupUi(this);
-    nodeSize = s;
-    nodeColor = col;
-    nodeShape = sh;
-    nodeLabel = l;
 
     ui->labelEdit->setText(nodeLabel);
     ui->sizeSpin->setValue(nodeSize);
 
+    QStringList shapesList;
+    QStringList iconList;
+    shapesList << "Square"
+                << "Circle"
+                << "Diamond"
+                << "Ellipse"
+                << "Triangle"
+                << "Star"
+                << "Bug"
+                << "Custom Icon";
+    iconList << ":/images/box.png"
+             << ":/images/circle.png"
+             << ":/images/diamond.png"
+             << ":/images/ellipse.png"
+             << ":/images/triangle.png"
+             << ":/images/star.png"
+             << ":/images/bugs.png"
+             << ":/images/export_photo_48px.svg";
+
+    ui->nodeShapeComboBox->addItems(shapesList);
+
+    for (int i = 0; i < shapesList.size(); ++i) {
+       ui->nodeShapeComboBox->setItemIcon(i, QIcon(iconList[i]));
+    }
+
+    ui->nodeIconSelectButton->setEnabled(false);
+    ui->nodeIconSelectEdit->setEnabled(false);
+
     if ( nodeShape == "box"  ){
-       ui->boxRadio->setChecked (true);
+       ui->nodeShapeComboBox->setCurrentIndex(0);
     }
     else if ( nodeShape == "circle"  ){
-        ui->circleRadio->setChecked (true);
+        ui->nodeShapeComboBox->setCurrentIndex(1);
      }
     else if ( nodeShape == "diamond"  ){
-        ui->diamondRadio->setChecked (true);
+        ui->nodeShapeComboBox->setCurrentIndex(2);
      }
     else if ( nodeShape == "ellipse"  ){
-        ui->ellipseRadio->setChecked (true);
+        ui->nodeShapeComboBox->setCurrentIndex(3);
      }
     else if ( nodeShape == "triangle"  ){
-        ui->triangleRadio->setChecked (true);
+        ui->nodeShapeComboBox->setCurrentIndex(4);
      }
+    else if ( nodeShape == "star" ) {
+        ui->nodeShapeComboBox->setCurrentIndex(5);
+    }
+    else if ( nodeShape == "bugs" ) {
+        ui->nodeShapeComboBox->setCurrentIndex(6);
+    }
+    else if ( nodeShape == "custom" ) {
+        ui->nodeShapeComboBox->setCurrentIndex(7);
+        ui->nodeIconSelectButton->setEnabled(true);
+        ui->nodeIconSelectEdit->setEnabled(true);
+        ui->nodeIconSelectEdit->setText(iconPath);
+        if (!iconPath.isEmpty()) {
+            ui->nodeShapeComboBox->setItemIcon(7, QIcon(iconPath));
+        }
+    }
+
 
     pixmap = QPixmap(60,20) ;
     pixmap.fill(nodeColor);
@@ -98,27 +144,37 @@ void DialogNodeEdit::getUserChoices(){
     nodeSize = ui->sizeSpin->value();
     nodeValue = ui->valueEdit->text();
     nodeShape = "circle";
-    if ( ui->boxRadio->isChecked () ){
-       nodeShape  = "box";
-    }
-    else if ( ui->circleRadio->isChecked() ){
-       nodeShape  = "circle";
-    }
-    else if ( ui->diamondRadio->isChecked() ){
-       nodeShape  = "diamond";
-    }
-    else if ( ui->ellipseRadio->isChecked() ){
-        nodeShape  = "ellipse";
-    }
-    else if ( ui->triangleRadio->isChecked() ){
-        nodeShape  = "triangle";
-    }
-    else if ( ui->starRadio->isChecked() ){
-        nodeShape  = "star";
-    }
-    else {
+    int nodeShapeIndex = ui->nodeShapeComboBox->currentIndex();
+
+    switch (nodeShapeIndex) {
+    case 0:
         nodeShape  = "box";
+        break;
+    case 1:
+        nodeShape  = "circle";
+        break;
+    case 2:
+        nodeShape  = "diamond";
+        break;
+    case 3:
+        nodeShape  = "ellipse";
+        break;
+    case 4:
+        nodeShape  = "triangle";
+        break;
+    case 5:
+        nodeShape  = "star";
+        break;
+    case 6:
+        nodeShape  = "bugs";
+        break;
+    case 7:
+        nodeShape  = "custom";
+        break;
+    default:
+        break;
     }
+
 
     emit userChoices(nodeLabel,nodeSize,nodeValue,nodeColor,nodeShape);
 }

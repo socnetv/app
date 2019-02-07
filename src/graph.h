@@ -71,6 +71,19 @@ static const int EDGE_RECIPROCATED = 1;
 static const int EDGE_UNDIRECTED = 2;
 
 
+enum NodeShape{
+    Box,
+    Circle,
+    Diamond,
+    Ellipse,
+    Triangle,
+    Star,
+    Bugs,
+    Icon
+};
+
+
+
 static const int FILE_GRAPHML           = 1;  // .GRAPHML .XML
 static const int FILE_PAJEK             = 2;  // .PAJ .NET
 static const int FILE_ADJACENCY         = 3;  // .ADJ .CSV .SM
@@ -527,9 +540,10 @@ public:
     int vertexSize(const int &v);
 
     void vertexShapeInit (const QString, const QString &iconPath=QString::null);
-    void vertexShapeSet(const int v, const QString shape);
+    void vertexShapeSet(const int &v, const QString &shape, const QString &iconPath=QString::null);
     void vertexShapeAllSet(const QString &shape, const QString &iconPath=QString::null);
     QString vertexShape(const int &v);
+    QString vertexShapeIconPath(const int &v);
 
     void vertexColorInit (const QString &color);
     void vertexColorSet(const int &v, const QString &color);

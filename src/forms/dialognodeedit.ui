@@ -6,20 +6,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>464</width>
-    <height>280</height>
+    <width>450</width>
+    <height>350</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>450</width>
-    <height>280</height>
+    <height>350</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>500</width>
-    <height>300</height>
+    <width>600</width>
+    <height>450</height>
    </size>
   </property>
   <property name="font">
@@ -38,7 +38,6 @@
       <widget class="QLabel" name="label">
        <property name="font">
         <font>
-         <family>Sans Serif</family>
          <pointsize>10</pointsize>
         </font>
        </property>
@@ -48,12 +47,34 @@
       </widget>
      </item>
      <item>
+      <spacer name="horizontalSpacer_5">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
       <widget class="QLineEdit" name="labelEdit">
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="font">
         <font>
          <family>Sans Serif</family>
          <pointsize>10</pointsize>
         </font>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter a node label. &lt;/p&gt;&lt;p&gt;If multiple nodes are selected, the label you define here will be set to all of them, along with a numerical suffix, i.e. if you enter &amp;quot;Jim&amp;quot;, then the selected actors will be labeled &amp;quot;Jim1&amp;quot;, &amp;quot;Jim2&amp;quot;, &amp;quot;Jim3&amp;quot; and so on. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
@@ -65,12 +86,11 @@
       <widget class="QLabel" name="label_2">
        <property name="font">
         <font>
-         <family>Sans Serif</family>
          <pointsize>10</pointsize>
         </font>
        </property>
        <property name="text">
-        <string>Node size (default 8)</string>
+        <string>Node size</string>
        </property>
       </widget>
      </item>
@@ -95,11 +115,20 @@
      </item>
      <item>
       <widget class="QSpinBox" name="sizeSpin">
+       <property name="minimumSize">
+        <size>
+         <width>60</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="font">
         <font>
          <family>Sans Serif</family>
          <pointsize>10</pointsize>
         </font>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the size of the node. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Default node size: 8&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="value">
         <number>8</number>
@@ -117,7 +146,6 @@
        </property>
        <property name="font">
         <font>
-         <family>Sans Serif</family>
          <pointsize>10</pointsize>
         </font>
        </property>
@@ -166,7 +194,6 @@
       <widget class="QLabel" name="label_4">
        <property name="font">
         <font>
-         <family>Sans Serif</family>
          <pointsize>10</pointsize>
         </font>
        </property>
@@ -227,7 +254,6 @@
       <widget class="QLabel" name="label_5">
        <property name="font">
         <font>
-         <family>Sans Serif</family>
          <pointsize>10</pointsize>
         </font>
        </property>
@@ -247,6 +273,9 @@
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::MinimumExpanding</enum>
+       </property>
        <property name="sizeHint" stdset="0">
         <size>
          <width>40</width>
@@ -256,113 +285,100 @@
       </spacer>
      </item>
      <item>
-      <widget class="QRadioButton" name="boxRadio">
-       <property name="font">
-        <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-        </font>
+      <widget class="QComboBox" name="nodeShapeComboBox">
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
        </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="icon">
-        <iconset resource="../src.qrc">
-         <normaloff>:/images/box.png</normaloff>:/images/box.png</iconset>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QRadioButton" name="circleRadio">
-       <property name="font">
-        <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="icon">
-        <iconset resource="../src.qrc">
-         <normaloff>:/images/circle.png</normaloff>:/images/circle.png</iconset>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QRadioButton" name="diamondRadio">
-       <property name="font">
-        <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="icon">
-        <iconset resource="../src.qrc">
-         <normaloff>:/images/diamond.png</normaloff>:/images/diamond.png</iconset>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QRadioButton" name="ellipseRadio">
-       <property name="font">
-        <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="icon">
-        <iconset resource="../src.qrc">
-         <normaloff>:/images/ellipse.png</normaloff>:/images/ellipse.png</iconset>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QRadioButton" name="triangleRadio">
-       <property name="font">
-        <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="icon">
-        <iconset resource="../src.qrc">
-         <normaloff>:/images/triangle.png</normaloff>:/images/triangle.png</iconset>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QRadioButton" name="starRadio">
-       <property name="font">
-        <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-        </font>
+       <property name="maximumSize">
+        <size>
+         <width>300</width>
+         <height>16777215</height>
+        </size>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node shape: Triangle&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Change all node shapes to &amp;quot;triangle&amp;quot;.&lt;/p&gt;&lt;p&gt;This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the &amp;quot;triangle&amp;quot; shape will be saved and it will be used in all future SocNetV sessions to create new nodes (except when loading network files which declare specific shapes for nodes).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="icon">
-        <iconset resource="../src.qrc">
-         <normaloff>:/images/star.png</normaloff>:/images/star.png</iconset>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select a node shape. &lt;/p&gt;&lt;p&gt;If you select &amp;quot;Icon&amp;quot; then you must click on the custom icon button (below) to select the desired icon file from your filesystem. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
     </layout>
    </item>
    <item row="5" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_25">
+     <item>
+      <widget class="QLabel" name="label_24">
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Background image&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click the button on the right to select a new background image.&lt;/p&gt;&lt;p&gt;If the file does not exist, the default background color will be used.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and will be the default of the application every time you run SocNetV - until you change it again.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Custom Icon</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_24">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>30</width>
+         <height>28</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="nodeIconSelectEdit">
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Background image&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is the path of the default background image. &lt;/p&gt;&lt;p&gt;Click the button on the right to select a new background image.&lt;/p&gt;&lt;p&gt;If the file does not exist, the default background color will be used.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and will be the default of the application every time you run SocNetV - until you change it again.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="whatsThis">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Background image&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is the path of the default background image. &lt;/p&gt;&lt;p&gt;Click the button on the right to select a new background image.&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. If the file does not exist, the default background color will be used.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="nodeIconSelectButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>60</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Background image&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click this button to select a new background image.&lt;/p&gt;&lt;p&gt;If the file does not exist, the default background color will be used.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and will be the default of the application every time you run SocNetV - until you change it again.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="whatsThis">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Background image&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click this button to select a new background image.&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. If the file does not exist, the default background color will be used.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>...</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="6" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="font">
       <font>
@@ -380,9 +396,7 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../src.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>buttonBox</sender>

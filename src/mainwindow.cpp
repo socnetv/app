@@ -8945,26 +8945,31 @@ void MainWindow::slotEditNodeRemove() {
 void MainWindow::slotEditNodePropertiesDialog() {
 
     qDebug() << "MW::slotEditNodePropertiesDialog()";
+
     if ( !activeNodes() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
+
     int min=-1, max=-1, size = appSettings["initNodeSize"].toInt(0, 10);
     int nodeNumber = 0;
     int selectedNodesCount = activeGraph->graphSelectedVerticesCount();
     QColor color = QColor(appSettings["initNodeColor"]);
     QString shape= appSettings["initNodeShape"];
+    QString iconPath = QString::null;
     QString label="";
     bool ok=false;
 
-
     if ( selectedNodesCount  == 0) {
+
         min = activeGraph->vertexNumberMin();
         max = activeGraph->vertexNumberMax();
+
         qDebug() << "MW::slotEditNodePropertiesDialog() - no node selected"
                  << "min node number " << min
                  << "max node number " << max
                  << "opening inputdialog";
+
         if (min==-1 || max==-1 ) {
             qDebug("ERROR in finding min max nodeNumbers. Abort");
             return;
@@ -8981,6 +8986,12 @@ void MainWindow::slotEditNodePropertiesDialog() {
             statusMessage( "Node properties cancelled." );
             return;
         }
+        label = activeGraph->vertexLabel( nodeNumber );
+        color = activeGraph->vertexColor( nodeNumber );
+        shape = activeGraph->vertexShape( nodeNumber);
+        size =  activeGraph->vertexSize ( nodeNumber);
+        iconPath = activeGraph->vertexShapeIconPath ( nodeNumber);
+
     }
     else   {
         foreach (nodeNumber, activeGraph->graphSelectedVertices() ) {
@@ -8990,12 +9001,14 @@ void MainWindow::slotEditNodePropertiesDialog() {
             if ( selectedNodesCount > 1 ) {
                 color = activeGraph->vertexColor( nodeNumber );
                 shape = activeGraph->vertexShape( nodeNumber);
+                iconPath = activeGraph->vertexShapeIconPath ( nodeNumber);
                 size = activeGraph->vertexSize ( nodeNumber);
             }
             else {
                 label = activeGraph->vertexLabel( nodeNumber );
                 color = activeGraph->vertexColor( nodeNumber );
                 shape = activeGraph->vertexShape( nodeNumber);
+                iconPath = activeGraph->vertexShapeIconPath ( nodeNumber);
                 size = activeGraph->vertexSize ( nodeNumber);
             }
         }
@@ -9003,7 +9016,7 @@ void MainWindow::slotEditNodePropertiesDialog() {
 
     //@todo add some grouping function here?
 
-    m_nodeEditDialog = new DialogNodeEdit(this, label, size, color, shape) ;
+    m_nodeEditDialog = new DialogNodeEdit(this, label, size, color, shape, iconPath) ;
 
     connect( m_nodeEditDialog, &DialogNodeEdit::userChoices,
              this, &MainWindow::slotEditNodeProperties );
@@ -9324,17 +9337,25 @@ void MainWindow::slotEditNodeShape(QString shape, const int vertex,
 
     if (shape==QString::null) {
         bool ok=false;
-        QStringList lst;
-        lst << "box"<< "circle"<< "diamond"
-            << "ellipse"<< "triangle" << "star";
-        int curShapeIndex = lst.indexOf(appSettings["initNodeShape"]);
+        QStringList shapesList;
+        shapesList  << "box"
+                    << "circle"
+                    << "diamond"
+                    << "ellipse"
+                    << "triangle"
+                    << "star"
+                    << "bugs"
+                    << "custom";
+
+        int curShapeIndex = shapesList.indexOf(appSettings["initNodeShape"]);
+
         if ( curShapeIndex == -1 ) {
             curShapeIndex=1;
         }
         shape = QInputDialog::getItem(this,
                                       "Node shape",
                                       "Select a shape for all nodes: ",
-                                      lst, curShapeIndex, true, &ok);
+                                      shapesList, curShapeIndex, true, &ok);
         if ( !ok ) {
             //user pressed Cancel
             statusMessage(tr("Change node shapes aborted."));

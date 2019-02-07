@@ -41,10 +41,11 @@ class DialogNodeEdit : public QDialog
     Q_OBJECT
 public:
     explicit DialogNodeEdit(QWidget *parent = Q_NULLPTR,
-                            const QString &l = "",
-                            const int &s = 8,
-                            const QColor &c= QColor("red"),
-                            const QString &sh = "circle");
+                            const QString &label = "",
+                            const int &size = 8,
+                            const QColor &color= QColor("red"),
+                            const QString &shape = "circle",
+                            const QString &path=QString::null);
     ~DialogNodeEdit();
 public slots:
     void checkErrors ();
@@ -57,6 +58,7 @@ signals:
 private:
     QColor nodeColor;
     QString nodeShape;
+    QString iconPath;
     QString nodeValue;
     QString nodeLabel;
     int nodeSize;

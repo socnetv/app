@@ -83,7 +83,7 @@
              <widget class="QLineEdit" name="dataDirEdit">
               <property name="minimumSize">
                <size>
-                <width>220</width>
+                <width>250</width>
                 <height>0</height>
                </size>
               </property>
@@ -97,6 +97,12 @@
             </item>
             <item>
              <widget class="QToolButton" name="dataDirSelectButton">
+              <property name="minimumSize">
+               <size>
+                <width>60</width>
+                <height>0</height>
+               </size>
+              </property>
               <property name="cursor">
                <cursorShape>PointingHandCursor</cursorShape>
               </property>
@@ -437,7 +443,7 @@
               </property>
               <property name="minimumSize">
                <size>
-                <width>35</width>
+                <width>60</width>
                 <height>0</height>
                </size>
               </property>
@@ -520,7 +526,7 @@
               </property>
               <property name="minimumSize">
                <size>
-                <width>35</width>
+                <width>60</width>
                 <height>0</height>
                </size>
               </property>
@@ -929,145 +935,15 @@ p, li { white-space: pre-wrap; }
              </spacer>
             </item>
             <item>
-             <widget class="QRadioButton" name="nodeShapeRadioBox">
-              <property name="font">
-               <font>
-                <family>DejaVu Sans</family>
-                <pointsize>11</pointsize>
-               </font>
+             <widget class="QComboBox" name="nodeShapeComboBox">
+              <property name="minimumSize">
+               <size>
+                <width>200</width>
+                <height>0</height>
+               </size>
               </property>
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node shape: Square&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Change all node shapes to &amp;quot;square&amp;quot; or &amp;quot;box&amp;quot;.&lt;/p&gt;&lt;p&gt;This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the &amp;quot;box&amp;quot; shape will be saved and it will be used in all future SocNetV sessions to create new nodes (except when loading network files which declare specific shapes for nodes).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="whatsThis">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default node shape&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click on any shape to select a new node shape for all nodes. This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the default node shape will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="icon">
-               <iconset resource="../src.qrc">
-                <normaloff>:/images/box.png</normaloff>:/images/box.png</iconset>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="nodeShapeRadioCircle">
-              <property name="font">
-               <font>
-                <family>DejaVu Sans</family>
-                <pointsize>11</pointsize>
-               </font>
-              </property>
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node shape: Circle&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Change all node shapes to &amp;quot;circle&amp;quot;.&lt;/p&gt;&lt;p&gt;This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the &amp;quot;circle&amp;quot; shape will be saved and it will be used in all future SocNetV sessions to create new nodes (except when loading network files which declare specific shapes for nodes).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="icon">
-               <iconset resource="../src.qrc">
-                <normaloff>:/images/circle.png</normaloff>:/images/circle.png</iconset>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="nodeShapeRadioDiamond">
-              <property name="font">
-               <font>
-                <family>DejaVu Sans</family>
-                <pointsize>11</pointsize>
-               </font>
-              </property>
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node shape: Diamond&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Change all node shapes to &amp;quot;diamond&amp;quot;.&lt;/p&gt;&lt;p&gt;This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the &amp;quot;diamond&amp;quot; shape will be saved and it will be used in all future SocNetV sessions to create new nodes (except when loading network files which declare specific shapes for nodes).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="icon">
-               <iconset resource="../src.qrc">
-                <normaloff>:/images/diamond.png</normaloff>:/images/diamond.png</iconset>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="nodeShapeRadioEllipse">
-              <property name="font">
-               <font>
-                <family>DejaVu Sans</family>
-                <pointsize>11</pointsize>
-               </font>
-              </property>
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node shape: Ellipse&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Change all node shapes to &amp;quot;ellipse&amp;quot;.&lt;/p&gt;&lt;p&gt;This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the &amp;quot;ellipse&amp;quot; shape will be saved and it will be used in all future SocNetV sessions when creating new nodes (except when loading network files which declare specific shapes for nodes).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="icon">
-               <iconset resource="../src.qrc">
-                <normaloff>:/images/ellipse.png</normaloff>:/images/ellipse.png</iconset>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="nodeShapeRadioTriangle">
-              <property name="font">
-               <font>
-                <family>DejaVu Sans</family>
-                <pointsize>11</pointsize>
-               </font>
-              </property>
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node shape: Star&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Change all node shapes to &amp;quot;star&amp;quot;.&lt;/p&gt;&lt;p&gt;This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the &amp;quot;star&amp;quot; shape will be saved and it will be used in all future SocNetV sessions to create new nodes (except when loading network files which declare specific shapes for nodes).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="icon">
-               <iconset resource="../src.qrc">
-                <normaloff>:/images/triangle.png</normaloff>:/images/triangle.png</iconset>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="nodeShapeRadioStar">
-              <property name="font">
-               <font>
-                <family>DejaVu Sans</family>
-                <pointsize>11</pointsize>
-               </font>
-              </property>
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node shape: Triangle&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Change all node shapes to &amp;quot;triangle&amp;quot;.&lt;/p&gt;&lt;p&gt;This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the &amp;quot;triangle&amp;quot; shape will be saved and it will be used in all future SocNetV sessions to create new nodes (except when loading network files which declare specific shapes for nodes).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="icon">
-               <iconset resource="../src.qrc">
-                <normaloff>:/images/star.png</normaloff>:/images/star.png</iconset>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="nodeShapeRadioIcon">
-              <property name="font">
-               <font>
-                <family>DejaVu Sans</family>
-                <pointsize>11</pointsize>
-               </font>
-              </property>
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node shape: Icon&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Change all node shapes to &amp;quot;icon&amp;quot;. The icon file must be defined below in the &amp;quot;Custom Icon&amp;quot; widget.&lt;/p&gt;&lt;p&gt;This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the &amp;quot;icon&amp;quot; shape will be saved and it will be used in all future SocNetV sessions to create new nodes (except when loading network files which declare specific shapes for nodes).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="icon">
-               <iconset resource="../src.qrc">
-                <normaloff>:/images/export_photo_48px.svg</normaloff>:/images/export_photo_48px.svg</iconset>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select a node shape. &lt;/p&gt;&lt;p&gt;If you select &amp;quot;Icon&amp;quot; then you must click on the custom icon button (below) to select the desired icon file from your filesystem. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
              </widget>
             </item>
@@ -1124,7 +1000,7 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="minimumSize">
                <size>
-                <width>35</width>
+                <width>60</width>
                 <height>0</height>
                </size>
               </property>
@@ -1174,6 +1050,12 @@ p, li { white-space: pre-wrap; }
             </item>
             <item>
              <widget class="QSpinBox" name="nodeSizeSpin">
+              <property name="minimumSize">
+               <size>
+                <width>60</width>
+                <height>0</height>
+               </size>
+              </property>
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
@@ -1302,6 +1184,12 @@ p, li { white-space: pre-wrap; }
             </item>
             <item>
              <widget class="QSpinBox" name="nodeNumberDistanceSpin">
+              <property name="minimumSize">
+               <size>
+                <width>60</width>
+                <height>0</height>
+               </size>
+              </property>
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
@@ -1373,6 +1261,12 @@ p, li { white-space: pre-wrap; }
             </item>
             <item>
              <widget class="QSpinBox" name="nodeNumberSizeSpin">
+              <property name="minimumSize">
+               <size>
+                <width>60</width>
+                <height>0</height>
+               </size>
+              </property>
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
@@ -1527,6 +1421,12 @@ p, li { white-space: pre-wrap; }
             </item>
             <item>
              <widget class="QSpinBox" name="nodeLabelSizeSpin">
+              <property name="minimumSize">
+               <size>
+                <width>60</width>
+                <height>0</height>
+               </size>
+              </property>
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
@@ -1579,6 +1479,12 @@ p, li { white-space: pre-wrap; }
             </item>
             <item>
              <widget class="QSpinBox" name="nodeLabelDistanceSpin">
+              <property name="minimumSize">
+               <size>
+                <width>60</width>
+                <height>0</height>
+               </size>
+              </property>
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
@@ -1958,6 +1864,12 @@ p, li { white-space: pre-wrap; }
             </item>
             <item>
              <widget class="QSpinBox" name="edgeOffsetFromNodeSpin">
+              <property name="minimumSize">
+               <size>
+                <width>60</width>
+                <height>0</height>
+               </size>
+              </property>
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
@@ -2102,6 +2014,12 @@ p, li { white-space: pre-wrap; }
             </item>
             <item>
              <widget class="QSpinBox" name="edgeWeightNumberSizeSpin">
+              <property name="minimumSize">
+               <size>
+                <width>60</width>
+                <height>0</height>
+               </size>
+              </property>
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
@@ -2246,6 +2164,12 @@ p, li { white-space: pre-wrap; }
               <property name="enabled">
                <bool>false</bool>
               </property>
+              <property name="minimumSize">
+               <size>
+                <width>60</width>
+                <height>0</height>
+               </size>
+              </property>
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
@@ -2284,9 +2208,7 @@ p, li { white-space: pre-wrap; }
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../src.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>buttonBox</sender>

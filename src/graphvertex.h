@@ -156,6 +156,7 @@ public:
 
     void setShape(const QString &shape, const QString &iconPath = QString::null) { m_shape=shape; m_iconPath=iconPath;}
     QString shape() const { return m_shape; }
+    QString shapeIconPath() {return m_iconPath; }
 
     void setColor(const QString &color) { m_color=color; }
     QString color() const { return m_color; }

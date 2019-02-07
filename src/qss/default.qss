@@ -308,9 +308,10 @@ QComboBox:hover {
 QComboBox:on {
 
 }
-
+QToolButton:disabled,
+QLineEdit:disabled,
 QComboBox:disabled {
-    background-color: #19232D;
+    background-color: #eee;
     color: #787878;
 }
 
