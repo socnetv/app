@@ -262,7 +262,7 @@ QToolButton:pressed {
     border-left:1px solid rgba(0, 0, 0, 0.1);
 }
 
-QComboBox, QLineEdit, QTextEdit, QListView {
+QComboBox, QLineEdit, QTextEdit,QPlainTextEdit, QListView {
     background-color: #fafafa;
     color: #333;
     selection-color: #fff;
@@ -281,8 +281,9 @@ QLineEdit, QTextEdit {
 QToolButton:focus,
 QComboBox:focus,
 QComboBox:hover,
-QLineEdit:focus, QTextEdit:focus,
-QLineEdit:hover, QTextEdit:hover{
+QLineEdit:focus, QLineEdit:hover,
+QPlainTextEdit:focus, QPlainTextEdit:hover
+QTextEdit:focus, QTextEdit:hover{
     border: 1px solid #babdbe;
 }
 
@@ -342,7 +343,100 @@ QComboBox QAbstractItemView {
 
 
 QScrollBar {
-    }
+}
+
+
+QScrollBar:horizontal {
+    height: 10px;
+    margin: 0;
+    border: 1px solid #d2d2d2;
+    border-radius: 0px;
+    background-color: #e2e2e2;
+}
+
+
+QScrollBar:vertical {
+    width: 10px;
+    margin: 0;
+    border: 1px solid #d2d2d2;
+    border-radius: 0px;
+    background-color: #e2e2e2;
+}
+
+
+QScrollBar::handle:horizontal {
+    background-color: #787878;
+    border: 1px solid #32414B;
+    border-radius: 4px;
+    min-width: 5px;
+}
+
+
+QScrollBar::handle:vertical {
+    background-color: #787878;
+    border: 1px solid #32414B;
+    border-radius: 4px;
+    min-width: 5px;
+}
+
+
+QScrollBar::handle:horizontal:hover {
+    background-color: #03a9f4;
+    border: 1px solid #03a9f4;
+}
+
+
+QScrollBar::handle:vertical:hover {
+    background-color: #03a9f4;
+    border: 1px solid #03a9f4;
+}
+
+QScrollBar::add-line:horizontal {
+    margin: 0;
+    border-image: none;
+    background: transparent;
+    border: 0 none;
+    width: 0;
+    height: 0;
+    subcontrol-position: right;
+    subcontrol-origin: margin;
+}
+
+QScrollBar::sub-line:horizontal {
+    margin: 0;
+    border-image: none;
+    background: transparent;
+    border: 0 none;
+    height: 0;
+    width: 0;
+    subcontrol-position: left;
+    subcontrol-origin: margin;
+}
+
+
+QScrollBar::sub-line:vertical {
+    margin: 0;
+    border-image: none;
+    background: transparent;
+    border: 0 none;
+    height: 0px;
+    width: 0px;
+    subcontrol-position: top;
+    subcontrol-origin: margin;
+}
+
+QScrollBar::add-line:vertical {
+    margin: 0;
+    border-image: none;
+    background: transparent;
+    border: 0 none;
+    height: 0px;
+    width: 0px;
+    subcontrol-position: bottom;
+    subcontrol-origin: margin;
+}
+
+
 
 QSlider {
 }

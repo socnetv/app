@@ -1075,74 +1075,6 @@ void MainWindow::initActions(){
 
 
 
-    networkRandomErdosRenyiAct = new QAction(QIcon(":/images/erdos.png"),
-                                             tr("Erdős–Rényi"),  this);
-    networkRandomErdosRenyiAct->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_E)
-                );
-    networkRandomErdosRenyiAct->setStatusTip(
-                tr("Create a random network according to the Erdős–Rényi model"));
-    networkRandomErdosRenyiAct->setWhatsThis(
-                tr("<p><b>Erdős–Rényi </b></p>"
-                   "<p>Creates a random network either of G(n, p) model or G(n,M) model. </p>"
-                   "<p>The former model creates edges with Bernoulli trials (probability p).</p>"
-                   "<p>The latter creates a graph of exactly M edges.</p>"));
-    connect(networkRandomErdosRenyiAct, SIGNAL(triggered()),
-            this, SLOT(slotNetworkRandomErdosRenyiDialog()));
-
-
-
-    networkRandomLatticeRingAct = new QAction( QIcon(":/images/net1.png"),
-                                               tr("Ring Lattice"), this);
-    networkRandomLatticeRingAct->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_L)
-                );
-    networkRandomLatticeRingAct->setStatusTip(tr("Create a ring lattice random network."));
-    networkRandomLatticeRingAct->setWhatsThis(
-                tr("<p><b>Ring Lattice </b></p>"
-                   "<p>Creates a ring lattice random network. </p>"
-                   "<p>A ring lattice is a graph with N vertices each connected to d neighbors, d / 2 on each side.</p>"));
-    connect(networkRandomLatticeRingAct, SIGNAL(triggered()),
-            this, SLOT(slotNetworkRandomRingLattice()));
-
-
-    networkRandomRegularSameDegreeAct = new QAction(QIcon(":/images/net.png"), tr("d-Regular"), this);
-    networkRandomRegularSameDegreeAct->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_R)
-                );
-    networkRandomRegularSameDegreeAct->setStatusTip(
-                tr("Create a d-regular random network, "
-                   "where every actor has the same degree d."));
-    networkRandomRegularSameDegreeAct->setWhatsThis(
-                tr("<p><b>d-Regular</b></p>"
-                   "<p>Creates a random network where each actor has the same "
-                   "number <em>d</em> of neighbours, aka the same degree d.</p>"));
-    connect(networkRandomRegularSameDegreeAct, SIGNAL(triggered()),
-            this, SLOT(slotNetworkRandomRegularDialog()));
-
-
-    networkRandomGaussianAct = new QAction(tr("Gaussian"),	this);
-    networkRandomGaussianAct->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_G)
-                );
-    networkRandomGaussianAct->setStatusTip(tr("Create a Gaussian distributed random network."));
-    networkRandomGaussianAct->setWhatsThis(tr("Gaussian \n\nCreates a random network of Gaussian distribution"));
-    connect(networkRandomGaussianAct, SIGNAL(triggered()), this, SLOT(slotNetworkRandomGaussian()));
-
-
-    networkRandomSmallWorldAct = new QAction(QIcon(":/images/sw.png"), tr("Small World"),	this);
-    networkRandomSmallWorldAct-> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_W)
-                );
-    networkRandomSmallWorldAct->setStatusTip(tr("Create a small-world random network."));
-    networkRandomSmallWorldAct ->setWhatsThis(
-                tr("<p><b>Small World </b></p>"
-                   "<p>Creates a random small-world network, according to the "
-                   "Watts & Strogatz model. </p>"
-                   "<p>A small-world network has short average path lengths and "
-                   "high clustering coefficient.</p>"));
-    connect(networkRandomSmallWorldAct, SIGNAL(triggered()), this, SLOT(slotNetworkRandomSmallWorldDialog()));
-
 
     networkRandomScaleFreeAct = new QAction(
                 QIcon(":/images/scalefree.png"), tr("Scale-free"),	this);
@@ -1163,6 +1095,38 @@ void MainWindow::initActions(){
 
 
 
+    networkRandomSmallWorldAct = new QAction(QIcon(":/images/sw.png"), tr("Small World"),	this);
+    networkRandomSmallWorldAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_W)
+                );
+    networkRandomSmallWorldAct->setStatusTip(tr("Create a small-world random network."));
+    networkRandomSmallWorldAct ->setWhatsThis(
+                tr("<p><b>Small World </b></p>"
+                   "<p>Creates a random small-world network, according to the "
+                   "Watts & Strogatz model. </p>"
+                   "<p>A small-world network has short average path lengths and "
+                   "high clustering coefficient.</p>"));
+    connect(networkRandomSmallWorldAct, SIGNAL(triggered()), this, SLOT(slotNetworkRandomSmallWorldDialog()));
+
+
+    networkRandomErdosRenyiAct = new QAction(QIcon(":/images/erdos.png"),
+                                             tr("Erdős–Rényi"),  this);
+    networkRandomErdosRenyiAct->setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_E)
+                );
+    networkRandomErdosRenyiAct->setStatusTip(
+                tr("Create a random network according to the Erdős–Rényi model"));
+    networkRandomErdosRenyiAct->setWhatsThis(
+                tr("<p><b>Erdős–Rényi </b></p>"
+                   "<p>Creates a random network either of G(n, p) model or G(n,M) model. </p>"
+                   "<p>The former model creates edges with Bernoulli trials (probability p).</p>"
+                   "<p>The latter creates a graph of exactly M edges.</p>"));
+    connect(networkRandomErdosRenyiAct, SIGNAL(triggered()),
+            this, SLOT(slotNetworkRandomErdosRenyiDialog()));
+
+
+
+
 
     networkRandomLatticeAct = new QAction(QIcon(":/images/lattice.png"), tr("Lattice"), this);
     networkRandomLatticeAct-> setShortcut(
@@ -1173,6 +1137,48 @@ void MainWindow::initActions(){
                 tr("<p><b>Lattice </b></p>"
                    "<p>Creates a random lattice network</p>"));
     connect(networkRandomLatticeAct, SIGNAL(triggered()), this, SLOT(slotNetworkRandomLatticeDialog()));
+
+
+    networkRandomRegularSameDegreeAct = new QAction(QIcon(":/images/net.png"), tr("d-Regular"), this);
+    networkRandomRegularSameDegreeAct->setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_R)
+                );
+    networkRandomRegularSameDegreeAct->setStatusTip(
+                tr("Create a d-regular random network, "
+                   "where every actor has the same degree d."));
+    networkRandomRegularSameDegreeAct->setWhatsThis(
+                tr("<p><b>d-Regular</b></p>"
+                   "<p>Creates a random network where each actor has the same "
+                   "number <em>d</em> of neighbours, aka the same degree d.</p>"));
+    connect(networkRandomRegularSameDegreeAct, SIGNAL(triggered()),
+            this, SLOT(slotNetworkRandomRegularDialog()));
+
+
+
+    networkRandomLatticeRingAct = new QAction( QIcon(":/images/net1.png"),
+                                               tr("Ring Lattice"), this);
+    networkRandomLatticeRingAct->setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_L)
+                );
+    networkRandomLatticeRingAct->setStatusTip(tr("Create a ring lattice random network."));
+    networkRandomLatticeRingAct->setWhatsThis(
+                tr("<p><b>Ring Lattice </b></p>"
+                   "<p>Creates a ring lattice random network. </p>"
+                   "<p>A ring lattice is a graph with N vertices each connected to d neighbors, d / 2 on each side.</p>"));
+    connect(networkRandomLatticeRingAct, SIGNAL(triggered()),
+            this, SLOT(slotNetworkRandomRingLattice()));
+
+
+
+    networkRandomGaussianAct = new QAction(tr("Gaussian"),	this);
+    networkRandomGaussianAct->setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_G)
+                );
+    networkRandomGaussianAct->setStatusTip(tr("Create a Gaussian distributed random network."));
+    networkRandomGaussianAct->setWhatsThis(tr("Gaussian \n\nCreates a random network of Gaussian distribution"));
+    connect(networkRandomGaussianAct, SIGNAL(triggered()), this, SLOT(slotNetworkRandomGaussian()));
+
+
 
 
     networkWebCrawlerAct = new QAction(QIcon(":/images/webcrawler2.png"), tr("&Web Crawler"),	this);
@@ -1198,6 +1204,7 @@ void MainWindow::initActions(){
                    "types of links to follow (internal, external or both) as well as "
                    "if you want delay between requests (strongly advised)</p>."));
 
+    connect(networkWebCrawlerAct, SIGNAL(triggered()), this, SLOT(slotNetworkWebCrawlerDialog()));
 
 
     /**
@@ -3538,9 +3545,9 @@ void MainWindow::initMenuBar() {
     randomNetworkMenu->addAction (networkRandomScaleFreeAct);
     randomNetworkMenu->addAction (networkRandomSmallWorldAct);
     randomNetworkMenu->addAction (networkRandomErdosRenyiAct );
+    randomNetworkMenu->addAction (networkRandomLatticeAct);
     randomNetworkMenu->addAction (networkRandomRegularSameDegreeAct);
     randomNetworkMenu->addAction (networkRandomLatticeRingAct);
-    randomNetworkMenu->addAction (networkRandomLatticeAct);
     // networkRandomGaussianAct->addTo(randomNetworkMenu);
     networkMenu->addSeparator();
 
@@ -4001,6 +4008,42 @@ void MainWindow::initPanels(){
 
     QString helpMessage = "";
 
+
+    QLabel *toolBoxNetworkAutoCreateSelectLabel  = new QLabel;
+    toolBoxNetworkAutoCreateSelectLabel->setText(tr("Auto Create:"));
+    toolBoxNetworkAutoCreateSelectLabel->setMinimumWidth(90);
+    toolBoxNetworkAutoCreateSelectLabel->setStatusTip(
+                tr("Create a network automatically (famous, random, or by using the web crawler)."));
+    toolBoxNetworkAutoCreateSelect = new QComboBox;
+    toolBoxNetworkAutoCreateSelect->setStatusTip(
+                tr("Create a network automatically (famous, random, or by using the web crawler)."));
+    helpMessage = tr("<p><b>Auto network creation</b></p> "
+                     "<p>Create a new network automatically.</p>"
+                     "<p>You may create a random network, recreate famous data-sets "
+                     "or use the built-in web crawler to create a network of webpages. </p>"
+                     );
+    toolBoxNetworkAutoCreateSelect->setToolTip( helpMessage );
+    toolBoxNetworkAutoCreateSelect->setWhatsThis( helpMessage );
+
+    toolBoxNetworkAutoCreateSelect->setToolTip( helpMessage);
+    toolBoxNetworkAutoCreateSelect->setWhatsThis( helpMessage );
+    QStringList networkAutoCreateSelectCommands;
+    networkAutoCreateSelectCommands << "Select"
+                             << "Famous data sets"
+                             << "Random scale-free network"
+                             << "Random small-worldfree network"
+                             << "Random Erdős–Rényi network"
+                             << "Random d-regular network"
+                             << "Random lattice network"
+                             << "Random ring-lattice network"
+                             << "With Web Crawler";
+    toolBoxNetworkAutoCreateSelect->addItems(networkAutoCreateSelectCommands);
+
+    toolBoxNetworkAutoCreateSelect->setMinimumWidth(90);
+
+
+
+
     QLabel *toolBoxEditNodeSubgraphSelectLabel  = new QLabel;
     toolBoxEditNodeSubgraphSelectLabel->setText(tr("Subgraph:"));
     toolBoxEditNodeSubgraphSelectLabel->setMinimumWidth(90);
@@ -4093,18 +4136,21 @@ void MainWindow::initPanels(){
     //create a grid layout for Edit buttons
 
     QGridLayout *editGrid = new QGridLayout;
-    editGrid->addWidget(toolBoxEditNodeSubgraphSelectLabel, 0,0);
-    editGrid->addWidget(toolBoxEditNodeSubgraphSelect, 0,1);
-    editGrid->addWidget(toolBoxEdgeModeSelectLabel,1,0);
-    editGrid->addWidget(toolBoxEditEdgeModeSelect,1,1);
-    editGrid->addWidget(toolBoxSymmetrizeSelectLabel,2,0);
-    editGrid->addWidget(toolBoxEditEdgeSymmetrizeSelect,2,1);
+    editGrid->addWidget(toolBoxNetworkAutoCreateSelectLabel, 0,0);
+    editGrid->addWidget(toolBoxNetworkAutoCreateSelect, 0,1);
+
+    editGrid->addWidget(toolBoxEditNodeSubgraphSelectLabel, 1,0);
+    editGrid->addWidget(toolBoxEditNodeSubgraphSelect, 1,1);
+    editGrid->addWidget(toolBoxEdgeModeSelectLabel,2,0);
+    editGrid->addWidget(toolBoxEditEdgeModeSelect,2,1);
+    editGrid->addWidget(toolBoxSymmetrizeSelectLabel,3,0);
+    editGrid->addWidget(toolBoxEditEdgeSymmetrizeSelect,3,1);
 
     editGrid->setSpacing(5);
     editGrid->setContentsMargins(15, 5, 15, 5);
 
-    //create a groupbox "Edit" - Inside, display the grid layout of widgets
-    QGroupBox *editGroupBox= new QGroupBox(tr("Edit"));
+    //create a groupbox "Network" - Inside, display the grid layout of widgets
+    QGroupBox *editGroupBox= new QGroupBox(tr("Network"));
     editGroupBox->setLayout(editGrid);
     editGroupBox->setMaximumWidth(255);
     editGroupBox->setMinimumHeight(100);
@@ -5384,9 +5430,6 @@ void MainWindow::initSignalSlots() {
              this, SLOT(slotEditRelationRename()) ) ;
 
 
-    connect(networkWebCrawlerAct, SIGNAL(triggered()), this, SLOT(slotNetworkWebCrawlerDialog()));
-
-
     connect(zoomInAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomIn()) );
     connect(zoomOutAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomOut()) );
     connect(editRotateLeftAct, SIGNAL(triggered()), graphicsWidget, SLOT( rotateLeft()) );
@@ -5396,6 +5439,9 @@ void MainWindow::initSignalSlots() {
     connect( layoutGuidesAct, SIGNAL(triggered(bool)),
              this, SLOT(slotLayoutGuides(bool)));
 
+
+    connect(toolBoxNetworkAutoCreateSelect, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            this, &MainWindow::toolBoxNetworkAutoCreateSelectChanged);
 
     connect(toolBoxEditNodeSubgraphSelect, SIGNAL (currentIndexChanged(int) ),
             this, SLOT(toolBoxEditNodeSubgraphSelectChanged(int) ) );
@@ -5593,6 +5639,7 @@ void MainWindow::initComboBoxes() {
     toolBoxAnalysisCohesionSelect->setCurrentIndex(0);
     toolBoxAnalysisProminenceSelect->setCurrentIndex(0);
     toolBoxAnalysisMatricesSelect->setCurrentIndex(0);
+    toolBoxNetworkAutoCreateSelect->setCurrentIndex(0);
     toolBoxEditNodeSubgraphSelect->setCurrentIndex(0);
 }
 
@@ -5777,12 +5824,56 @@ int MainWindow::slotHelpMessageToUser(const int type,
 
 
 
+
+/**
+ * @brief Called from MW, when user selects something in the Network Auto Create
+ * selectbox of the toolbox
+ * @param selectedIndex
+ */
+void MainWindow::toolBoxNetworkAutoCreateSelectChanged(const int &selectedIndex) {
+    qDebug()<< "MW::toolBoxNetworkAutoCreateSelectChanged "
+               "selected text index: " << selectedIndex;
+    switch(selectedIndex){
+    case 0:
+        break;
+    case 1: // famous data-sets
+        slotNetworkDataSetSelect();
+        break;
+    case 2: // scale-free
+        slotNetworkRandomScaleFreeDialog();
+        break;
+    case 3: // sw
+        slotNetworkRandomSmallWorldDialog();
+        break;
+    case 4: // erdos
+        slotNetworkRandomErdosRenyiDialog();
+        break;
+    case 5: // lattice
+        slotNetworkRandomLatticeDialog();
+        break;
+    case 6: // d-regular
+        slotNetworkRandomRegularDialog();
+        break;
+    case 7: // ring lattice
+        slotNetworkRandomRingLattice();
+        break;
+    case 8: // web crawler
+        slotNetworkWebCrawlerDialog();
+        break;
+
+    };
+
+    qDebug()<< "MW::toolBoxEditNodeSubgraphSelectChanged() - initComboBoxes() ";
+    initComboBoxes();
+}
+
+
 /**
  * @brief Called from MW, when user selects something in the Subgraph from Selected
  * Nodes selectbox of the toolbox
  * @param selectedIndex
  */
-void MainWindow::toolBoxEditNodeSubgraphSelectChanged(int selectedIndex) {
+void MainWindow::toolBoxEditNodeSubgraphSelectChanged(const int &selectedIndex) {
     qDebug()<< "MW::toolBoxEditNodeSubgraphSelectChanged "
                "selected text index: " << selectedIndex;
     switch(selectedIndex){
@@ -5815,7 +5906,7 @@ void MainWindow::toolBoxEditNodeSubgraphSelectChanged(int selectedIndex) {
  * selectbox of the toolbox
  * @param selectedIndex
  */
-void MainWindow::toolBoxEditEdgeSymmetrizeSelectChanged(int selectedIndex) {
+void MainWindow::toolBoxEditEdgeSymmetrizeSelectChanged(const int &selectedIndex) {
     qDebug()<< "MW::toolBoxEditEdgeSymmetrizeSelectChanged "
                "selected text index: " << selectedIndex;
     switch(selectedIndex){
@@ -5841,7 +5932,7 @@ void MainWindow::toolBoxEditEdgeSymmetrizeSelectChanged(int selectedIndex) {
  * selectbox of the toolbox
  * @param selectedIndex
  */
-void MainWindow::toolBoxAnalysisMatricesSelectChanged(int selectedIndex) {
+void MainWindow::toolBoxAnalysisMatricesSelectChanged(const int &selectedIndex) {
     qDebug()<< "MW::toolBoxAnalysisMatricesSelectChanged "
                "selected text index: " << selectedIndex;
     switch(selectedIndex){
@@ -5883,7 +5974,7 @@ void MainWindow::toolBoxAnalysisMatricesSelectChanged(int selectedIndex) {
  * selectbox of the toolbox to compute basic graph theoretic / network properties
  * @param selectedIndex
  */
-void MainWindow::toolBoxAnalysisCohesionSelectChanged(int selectedIndex) {
+void MainWindow::toolBoxAnalysisCohesionSelectChanged(const int &selectedIndex) {
     qDebug()<< "MW::toolBoxAnalysisCohesionSelectChanged "
                "selected text index: " << selectedIndex;
     switch(selectedIndex){
@@ -5945,7 +6036,7 @@ void MainWindow::toolBoxAnalysisCohesionSelectChanged(int selectedIndex) {
  * @param selectedIndex
  *
  */
-void MainWindow::toolBoxAnalysisCommunitiesSelectChanged(int selectedIndex) {
+void MainWindow::toolBoxAnalysisCommunitiesSelectChanged(const int &selectedIndex) {
     qDebug()<< "MW::toolBoxAnalysisCommunitiesSelectChanged "
                "selected text index: " << selectedIndex;
     switch(selectedIndex){
@@ -5975,7 +6066,7 @@ void MainWindow::toolBoxAnalysisCommunitiesSelectChanged(int selectedIndex) {
  * @param selectedIndex
  *
  */
-void MainWindow::toolBoxAnalysisStrEquivalenceSelectChanged(int selectedIndex) {
+void MainWindow::toolBoxAnalysisStrEquivalenceSelectChanged(const int &selectedIndex) {
     qDebug()<< "MW::toolBoxAnalysisStrEquivalenceSelectChanged "
                "selected text index: " << selectedIndex;
     switch(selectedIndex){
@@ -6013,7 +6104,7 @@ void MainWindow::toolBoxAnalysisStrEquivalenceSelectChanged(int selectedIndex) {
  * @param selectedIndex
  *
  */
-void MainWindow::toolBoxAnalysisProminenceSelectChanged(int selectedIndex) {
+void MainWindow::toolBoxAnalysisProminenceSelectChanged(const int &selectedIndex) {
     qDebug()<< "MW::toolBoxAnalysisProminenceSelectChanged "
                "selected text index: " << selectedIndex;
     switch(selectedIndex){

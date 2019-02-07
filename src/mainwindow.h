@@ -523,13 +523,14 @@ public slots:
 
 
     //Called from MW, when user highlights something in the toolbox Comboboxes
-    void toolBoxEditNodeSubgraphSelectChanged(int);
-    void toolBoxEditEdgeSymmetrizeSelectChanged(int);
-    void toolBoxAnalysisMatricesSelectChanged(int);
-    void toolBoxAnalysisCohesionSelectChanged(int);
-    void toolBoxAnalysisStrEquivalenceSelectChanged(int);
-    void toolBoxAnalysisProminenceSelectChanged(int);
-    void toolBoxAnalysisCommunitiesSelectChanged(int);
+    void toolBoxNetworkAutoCreateSelectChanged(const int &selectedIndex);
+    void toolBoxEditNodeSubgraphSelectChanged(const int&selectedIndex);
+    void toolBoxEditEdgeSymmetrizeSelectChanged(const int&selectedIndex);
+    void toolBoxAnalysisMatricesSelectChanged(const int&selectedIndex);
+    void toolBoxAnalysisCohesionSelectChanged(const int&selectedIndex);
+    void toolBoxAnalysisStrEquivalenceSelectChanged(const int&selectedIndex);
+    void toolBoxAnalysisProminenceSelectChanged(const int&selectedIndex);
+    void toolBoxAnalysisCommunitiesSelectChanged(const int&selectedIndex);
     void toolBoxLayoutByIndexApplyBtnPressed();
     void toolBoxLayoutForceDirectedApplyBtnPressed();
 
@@ -609,9 +610,10 @@ private:
     QMenu *randomLayoutMenu, *layoutRadialProminenceMenu, *layoutLevelProminenceMenu;
     QMenu *layoutForceDirectedMenu, *layoutNodeSizeProminenceMenu, *layoutNodeColorProminenceMenu;
     QMenu *colorationMenu;
-    QComboBox *toolBoxEditNodeSubgraphSelect, *toolBoxEditEdgeModeSelect,
-    *toolBoxEditEdgeSymmetrizeSelect, *toolBoxAnalysisCohesionSelect,
-    *toolBoxAnalysisStrEquivalenceSelect,
+
+    QComboBox *toolBoxNetworkAutoCreateSelect, *toolBoxEditNodeSubgraphSelect,
+              *toolBoxEditEdgeModeSelect, *toolBoxEditEdgeSymmetrizeSelect;
+    QComboBox *toolBoxAnalysisCohesionSelect, *toolBoxAnalysisStrEquivalenceSelect,
     *toolBoxAnalysisProminenceSelect, *toolBoxAnalysisCommunitiesSelect,
     *toolBoxAnalysisMatricesSelect;
     QComboBox *toolBoxLayoutByIndexSelect, *toolBoxLayoutByIndexTypeSelect;
