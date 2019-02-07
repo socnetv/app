@@ -5116,8 +5116,13 @@ void MainWindow::initWindowLayout() {
     qDebug () << "MW::initWindowLayout - resize to 1200x750";
     //resize(1200,750);
 
+
 #ifdef Q_OS_LINUX
     setMinimumSize(1200,750);
+#elif defined(Q_OS_MACOS)
+    setMinimumSize(1200,750);
+#elif defined(Q_OS_WIN)
+    setMinimumSize(1200,800);
 #else
     setMinimumSize(1200,750);
     showMaximized();
