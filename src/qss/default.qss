@@ -15,7 +15,7 @@ QSpinBox,
 QTextEdit,
 QListView,
 QStatusBar {
-    background-color: #eceff1;
+    background-color: #eceff1;  /* blue-gray */
     color: #111;
     font-size: 12px;
 }
@@ -27,7 +27,7 @@ QMainWindow::separator {
 }
 
 QMainWindow::separator:hover {
-    background: red;
+    background: #babdbe;
 }
 
 QGridLayout {
@@ -38,7 +38,7 @@ QMenuBar {
     background-color: #eceff1;
     padding: 5px 0;
     border: 0px none;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid #ddd;
 }
 
 QMenuBar::item {
@@ -52,6 +52,8 @@ QMenuBar::item {
 QMenuBar::item:selected { /* when selected using mouse or keyboard */
     background: #0277BD;
     color: #fff;
+    background: #03a9f4;
+    color: #000;
 }
 
 QMenu {
@@ -68,8 +70,8 @@ QMenu::item {
 
 QMenu::item:selected {
     border-color: rgba(0, 0, 0, 0.2);
-    background: #0277BD;
-    color: #fff;
+    background: #03a9f4;
+    color: #000;
 }
 
 QMenu::separator {
@@ -94,169 +96,6 @@ QToolBar::separator{
     width: 15px;
 }
 
-QGroupBox {
-    border: 0 none;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-    margin:0;
-    margin-top: 15px; /* leave space at the top for the title */
-    padding:0;
-}
-
-QGroupBox::title {
-    subcontrol-position: top left;
-    subcontrol-origin: margin;
-    left: 0px;
-    padding: 0px 5px 0px 5px;
-    font-style:italic;
-    color: #000;
-    font-size: 9px;
-    line-height: 9px;
-    margin: 0px;
-}
-
-QGroupBox#leftPanel {
-    padding:0;
-}
-
-/* Nice to have the background color change when hovered. */
-QSpinBox:hover, QRadioButton:hover, QCheckBox:hover {
-    background-color: #e2e2e2;
-}
-
-/* We provide a min-width and min-height for push buttons
-   so that they look elegant regardless of the width of the text. */
-QPushButton {
-    background-color: #0277BD;
-    color: #fff;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 2;
-    padding: 5px 16px;
-    min-width: 100px;
-    min-height: 2.5ex;
-    text-align: center;
-}
-
-QPushButton:hover {
-   background-color: #29434e;
-}
-
-/* Increase the padding, so the text is shifted when the button is
-   pressed. */
-QPushButton:pressed {
-    background-color: #00ff11;
-}
-/* make the default button prominent */
-QPushButton:default {
-    border-color: #505F69;
-}
-
-
-QPushButton:disabled {
-    background-color: #32414B;
-    border: 1px solid #32414B;
-    color: #787878;
-    border-radius: 4px;
-    padding: 3px;
-}
-
-QPushButton#toolBoxLayoutByIndexApplyButton,
-QPushButton#toolBoxLayoutForceDirectedApplyButton {
-    subcontrol-origin: padding;
-    background-color: green;
-    border: none;
-    padding: 5px 0px;
-    margin:0;
-    min-width: 130px;
-    min-height: 2.5ex;
-    text-align:center;
-}
-
-
-QToolButton {
-    border:1px solid rgba(0, 0, 0, 0.1);
-    border-top: 1px solid rgba(255, 255, 255, 0.3);
-    border-left:1px solid rgba(255, 255, 255, 0.3);
-    min-width: 20px;
-}
-
-
-QToolBar QToolButton {
-    border:0 none;
-    min-width: 25px;
-}
-
-QToolButton:hover {
-    background-color: #e2e2e2;
-}
-QToolButton:pressed {
-    background-color: #d2d2d2;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-    border-left:1px solid rgba(0, 0, 0, 0.1);
-}
-
-QComboBox, QLineEdit, QTextEdit, QListView {
-    background-color: rgba(255, 255, 255, 0.1);
-    background-color: #fafafa;
-    color: #444;
-    selection-color: #fff;
-    selection-background-color: #0277BD;
-    /* selection-border: 0 none; */
-    font-size: 10px;
-    border: 0 none;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-
-QComboBox {
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    selection-background-color: #0277BD; /* #1464A0; */
-    padding-top: 2px;
-    padding-bottom: 2px;
-    padding-left: 4px;
-    padding-right: 4px;
-}
-
-QComboBox:hover {
-    background-color: #eaeaea;
-}
-/* shift the text when the popup opens */
-QComboBox:on {
-
-}
-
-QComboBox:disabled {
-    background-color: #19232D;
-    color: #787878;
-}
-
-QGroupBox#leftPanel QComboBox {
-    min-width: 120px;
-    max-width: 120px;
-}
-QComboBox QAbstractItemView {
-    border: 1px solid rgba(0, 0, 0, 0.04);
-    padding: 0;
-    margin:0;
-    min-width:200px;
-    background-color: #fff;
-}
-
-QComboBox::drop-down {
-    subcontrol-origin: padding;
-    subcontrol-position: top right;
-    width: 15px;
-    border-left-width: 0px;
-    border-left-color: transparent;
-    border-left-style: solid; /* just a single line */
-}
-QComboBox::down-arrow {
-    image: url(:images/arrow_down_48px.svg);
-    width: 16px;
-    height: 16px;
-    color: #ddd;
-}
 
 QStatusBar {
     background-color: #eceff1;
@@ -266,7 +105,12 @@ QStatusBar {
 }
 
 
-
+QFrame {
+    border: 1px solid #babdbe;
+    border-radius: 2px;
+    border: 0 none;
+    padding: 1px;
+}
 
 /* A QLabel is a QFrame ... */
 QLabel {
@@ -290,10 +134,297 @@ QToolTip {
 QProgressDialog {
     min-width: 400px;
 }
+QProgressDialog QPushButton {
+    background: #ddd;
+}
+QProgressBar {
+    background-color: transparent;
+    color: #333;
+    border: 1px solid #babdbe;
+    text-align: center;
+}
 
+QProgressBar::chunk {
+    background-color: #66bb6a;
+    width: 20px;
+}
 QChart,
 QChartView {
     background-color:transparent;
     margin:0;
     padding:0;
 }
+
+
+QGroupBox {
+    border: 0 none;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    margin:0;
+    margin-top: 15px; /* leave space at the top for the title */
+    padding:0;
+}
+
+QGroupBox::title {
+    subcontrol-position: top left;
+    subcontrol-origin: margin;
+    left: 0px;
+    padding: 0px 5px 0px 5px;
+    font-style:italic;
+    color: #444;
+    font-size: 9px;
+    line-height: 9px;
+    margin: 0px;
+}
+
+QGroupBox#leftPanel {
+    padding:0;
+}
+
+/* Nice to have the background color change when hovered. */
+QSpinBox:hover, QRadioButton:hover, QCheckBox:hover {
+    background-color: #e2e2e2;
+}
+
+/* We provide a min-width and min-height for push buttons
+   so that they look elegant regardless of the width of the text. */
+QPushButton {
+    background: #03a9f4;
+    color: #000;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+    padding: 5px 16px;
+    min-width: 100px;
+    min-height: 2.5ex;
+    text-align: center;
+}
+
+QPushButton:hover {
+    background-color:#babdbe;
+}
+
+/* Increase the padding, so the text is shifted when the button is
+   pressed. */
+QPushButton:pressed {
+    background-color: #007ac1;
+    color: #fff;
+}
+/* make the default button prominent */
+QPushButton:default {
+    border-color: #505F69;
+}
+
+
+QPushButton:disabled {
+    background-color: #32414B;
+    border: 1px solid #32414B;
+    color: #787878;
+    border-radius: 4px;
+    padding: 3px;
+}
+
+QPushButton#toolBoxLayoutByIndexApplyButton,
+QPushButton#toolBoxLayoutForceDirectedApplyButton {
+    subcontrol-origin: padding;
+    background: #03a9f4;
+    color: #000;
+    border: none;
+    padding: 5px 0px;
+    margin:0;
+    min-width: 130px;
+    min-height: 2.5ex;
+    text-align:center;
+}
+
+
+QToolButton {
+    border:1px solid rgba(0, 0, 0, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    border-left:1px solid rgba(255, 255, 255, 0.3);
+    min-width: 20px;
+}
+
+
+QToolBar QToolButton {
+    border:0 none;
+    min-width: 20px;
+    padding: 10px;
+    border-radius:5px;
+}
+
+QToolButton:hover {
+    background-color: #e2e2e2;
+}
+
+QToolButton:pressed {
+    background-color: #d2d2d2;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-left:1px solid rgba(0, 0, 0, 0.1);
+}
+
+QComboBox, QLineEdit, QTextEdit, QListView {
+    background-color: #fafafa;
+    color: #333;
+    selection-color: #fff;
+    selection-background-color: #0277BD;
+    /* selection-border: 0 none; */
+    font-size: 10px;
+    border: 0 none;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+
+QLineEdit, QTextEdit {
+    min-height: 20px;
+}
+QToolButton:focus,
+QComboBox:focus,
+QComboBox:hover,
+QLineEdit:focus, QTextEdit:focus,
+QLineEdit:hover, QTextEdit:hover{
+    border: 1px solid #babdbe;
+}
+
+
+QComboBox {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    selection-background-color: #67daff;
+    selection-color: #000;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+QComboBox:hover {
+    background-color: #eaeaea;
+}
+/* shift the text when the popup opens */
+QComboBox:on {
+
+}
+
+QComboBox:disabled {
+    background-color: #19232D;
+    color: #787878;
+}
+
+QGroupBox#leftPanel QComboBox {
+    min-width: 120px;
+    max-width: 120px;
+}
+
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 15px;
+    border-left-width: 0px;
+    border-left-color: transparent;
+    border-left-style: solid; /* just a single line */
+}
+QComboBox::down-arrow {
+    image: url(:images/arrow_down_48px.svg);
+    width: 16px;
+    height: 16px;
+    color: #ddd;
+}
+
+
+QComboBox QAbstractItemView {
+    border: 0 none;
+    padding: 0;
+    margin:0;
+    min-width:200px;
+    background-color: #fff;
+}
+
+
+QScrollBar {
+    }
+
+QSlider {
+}
+
+QSlider::groove:horizontal {
+    border: 1px solid #999999;
+    height: 2px; /* auto expands to the size of the slider by default */
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #e4e4e4, stop:0.5 #b4b4b4, stop:1 #e4e4e4);
+    margin: 1px 0;
+}
+
+QSlider::handle:horizontal {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #b4b4b4, stop:1 #8f8f8f);
+    border: 1px solid #5c5c5c;
+    width: 18px;
+    height: 10px;
+    margin: -3px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+    border-radius: 2px;
+}
+
+
+QSlider::groove:vertical{
+    border: 1px solid #babdbe;
+    width: 2px; /* auto expands to the size of the slider by default */
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #B1B1B1, stop:1 #e4e4e4);
+    margin: 3px 0;
+}
+
+QSlider::handle:vertical {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #b4b4b4, stop:1 #8f8f8f);
+    border: 1px solid #5c5c5c;
+    width : 2px;
+    height: 20px;
+    margin: 0 -3px; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+    border-radius: 2px;
+}
+
+QSlider::handle:vertical:hover,
+QSlider::handle:horizontal:hover{
+    border: 1px solid #5c5c5c;
+    background: #03a9f4;
+}
+
+
+
+QTabWidget::pane { /* The tab widget frame */
+    border:0 none;
+    border-top: 1px solid #babdbe;
+}
+
+QTabWidget::tab-bar {
+    left: 5px; /* move to the right by 5px */
+}
+
+/* Style the tab using the tab sub-control. Note that
+    it reads QTabBar _not_ QTabWidget */
+QTabBar::tab {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #E1E1E1, stop: 0.4 #DDDDDD,
+                                stop: 0.5 #D8D8D8, stop: 1.0 #babdbe);
+    border: 1px solid #babdbe;
+    border-bottom-color: transparent; /* same as the pane color */
+    border-bottom: 0 none;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    min-width: 8ex;
+    padding: 2px;
+}
+
+QTabBar::tab:selected, QTabBar::tab:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #fafafa, stop: 0.4 #f4f4f4,
+                                stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);
+}
+
+QTabBar::tab:selected {
+    border-color: #9B9B9B;
+    border-bottom-color: transparent; /* same as pane color */
+}
+
+QTabBar::tab:!selected {
+    margin-top: 3px; /* make non-selected tabs look smaller */
+}
+
+
