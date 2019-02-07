@@ -5118,7 +5118,7 @@ void MainWindow::initWindowLayout() {
 
 #ifdef Q_OS_LINUX
     setMinimumSize(1200,750);
-#elif
+#else
     setMinimumSize(1200,750);
     showMaximized();
 #endif
