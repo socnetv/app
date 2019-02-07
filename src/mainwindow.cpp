@@ -5116,7 +5116,7 @@ void MainWindow::initWindowLayout() {
     qDebug () << "MW::initWindowLayout - resize to 1200x750";
     //resize(1200,750);
 
-    setMinimumSize(1200,800);
+    setMinimumSize(1200,760);
 
     qDebug () << "MW::initWindowLayout() - Finished";
 
