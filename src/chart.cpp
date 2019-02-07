@@ -328,7 +328,6 @@ void Chart::setThemeSmallWidget(const int minWidth, const int minHeight) {
     setMaximumHeight(minHeight);
     setMinimumHeight(minHeight);
     setFrameShape(QFrame::NoFrame);
-    setFrameShape(QFrame::Box);
 
 }
 

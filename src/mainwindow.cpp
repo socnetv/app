@@ -744,6 +744,7 @@ void MainWindow::initView() {
 
     //create a view widget for this scene
     graphicsWidget=new GraphicsWidget(scene,this);
+    graphicsWidget->setObjectName("graphicsWidget");
 
     bool toggle = false;
 
@@ -4962,6 +4963,7 @@ void MainWindow::initPanels(){
     // Create a panel with title
     rightPanel = new QGroupBox(tr("Statistics Panel"));
     rightPanel->setMaximumWidth(190);
+    rightPanel->setObjectName("rightPanel");
     rightPanel->setLayout (propertiesGrid);
 
 
@@ -5114,7 +5116,7 @@ void MainWindow::initWindowLayout() {
     qDebug () << "MW::initWindowLayout - resize to 1200x750";
     //resize(1200,750);
 
-    setMinimumSize(1200,750);
+    setMinimumSize(1200,800);
 
     qDebug () << "MW::initWindowLayout() - Finished";
 

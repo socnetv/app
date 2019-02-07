@@ -106,10 +106,12 @@ QStatusBar {
 
 
 QFrame {
+}
+QFrame#graphicsWidget {
     border: 1px solid #babdbe;
-    border-radius: 2px;
-    border: 0 none;
-    padding: 1px;
+}
+QGroupBox#rightPanel QFrame {
+   border: 0 none;
 }
 
 /* A QLabel is a QFrame ... */
