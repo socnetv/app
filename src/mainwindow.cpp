@@ -136,9 +136,10 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     qInstallMessageHandler( myMessageOutput);
 
-    initGraph();
-
     initView();         //init our network "canvas"
+
+
+    initGraph();
 
     /** functions that invoke all other construction parts **/
     initActions();      //register and construct menu Actions
@@ -688,7 +689,7 @@ void MainWindow::initGraph() {
 
     qDebug() << "MW::initGraph()";
 
-    activeGraph = new Graph();
+    activeGraph = new Graph(graphicsWidget);
 
     qDebug() << "MW::initGraph() - activeGraph created on thread:" << activeGraph->thread()
              << "moving it to new thread ";

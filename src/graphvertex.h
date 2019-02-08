@@ -64,7 +64,7 @@ class GraphVertex : public QObject{
 
 public:
 
-    GraphVertex(Graph* parent,
+    GraphVertex(Graph* parentGraph,
            const int &name,
            const int &val,
            const int &relation,
@@ -320,7 +320,7 @@ signals:
 protected:
 
 private:
-    Graph *parentGraph;
+    Graph *m_graph;
     int m_name,  m_outEdgesCounter, m_inEdgesCounter, m_outDegree, m_inDegree, m_localDegree;
     int m_outEdgesNonSym, m_inEdgesNonSym, m_outEdgesSym;
     int m_value, m_size, m_labelSize, m_numberSize, m_numberDistance, m_labelDistance;

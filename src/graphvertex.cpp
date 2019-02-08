@@ -30,7 +30,11 @@
 #include "graph.h"
 #include "graphvertex.h"
 
-GraphVertex::GraphVertex(Graph* parent,
+#include "graphicsnode.h"
+
+
+
+GraphVertex::GraphVertex(Graph* parentGraph,
                          const int &name,
                          const int &val,
                          const int &relation,
@@ -43,9 +47,10 @@ GraphVertex::GraphVertex(Graph* parent,
                          const int &labelSize,
                          const QPointF &p,
                          const QString &shape,
-                         const QString &iconPath ): parentGraph (parent)
+                         const QString &iconPath ): m_graph (parentGraph)
 { 
     qDebug() << "GraphVertex::GraphVertex() - vertex:"<<  name << "initializing...";
+
     m_name=name;
 	m_value=val;
 	m_size=size;
@@ -80,7 +85,29 @@ GraphVertex::GraphVertex(Graph* parent,
     m_enabled = true;
 
     connect (this, SIGNAL (setEdgeVisibility ( int, int, int, bool) ),
-             parent, SLOT (edgeVisibilitySet (int, int, int, bool)) );
+             m_graph, SLOT (edgeVisibilitySet (int, int, int, bool)) );
+
+
+//    GraphicsNode *jim= new GraphicsNode ( m_graph->canvas(),
+//                                          m_name,
+//                                          m_size,
+//                                          m_color,
+//                                          m_shape,
+//                                          m_iconPath,
+//                                          true,
+//                                          true,
+//                                          m_numberColor,
+//                                          m_numberSize,
+//                                          8,
+//                                          false,
+//                                          m_label,
+//                                          m_labelColor,
+//                                          m_labelSize,
+//                                          8,
+//                                          true,
+//                                          p
+//                                          );
+
 
 }
 

@@ -52,13 +52,17 @@
 
 
 
+#include "graphicsnode.h"
+#include "graphicsedge.h"
+
 
 
 /**
  * @brief Graph::Graph
  * constructor
  */
-Graph::Graph() {
+Graph::Graph(GraphicsWidget *graphicsWidget) {
+    m_canvas = graphicsWidget;
     m_totalVertices=0;
     m_totalEdges=0;
     outboundEdgesVert=0;
@@ -1898,8 +1902,10 @@ void Graph::edgeCreate(const int &v1, const int &v2, const qreal &weight,
                       << "Emitting drawEdge signal to GW";
 
             edgeAdd ( v1, v2, weight, type, label, ( (weight==0) ? "blue" :  color  ) );
-            emit signalDrawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), type,
-                          drawArrows, bezier, initEdgeWeightNumbers);
+            m_canvas->drawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), type,
+                             drawArrows, bezier, initEdgeWeightNumbers);
+//            emit signalDrawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), type,
+//                          drawArrows, bezier, initEdgeWeightNumbers);
         }
         else if ( edgeExists( v2, v1 ) )  {
 
@@ -1907,8 +1913,10 @@ void Graph::edgeCreate(const int &v1, const int &v2, const qreal &weight,
                    << "Emitting drawEdge to GW";
 
             edgeAdd ( v1, v2, weight, EdgeType::Reciprocated , label, color);
-            emit signalDrawEdge(v1, v2, weight, label, color, EdgeType::Reciprocated,
-                          drawArrows, bezier, initEdgeWeightNumbers);
+            m_canvas->drawEdge(v1, v2, weight, label, color, EdgeType::Reciprocated,
+                             drawArrows, bezier, initEdgeWeightNumbers);
+//            emit signalDrawEdge(v1, v2, weight, label, color, EdgeType::Reciprocated,
+//                          drawArrows, bezier, initEdgeWeightNumbers);
             m_directed = true;
         }
         else {
@@ -1917,8 +1925,10 @@ void Graph::edgeCreate(const int &v1, const int &v2, const qreal &weight,
                     << "Emitting drawEdge to GW...";
 
             edgeAdd ( v1, v2, weight, EdgeType::Directed, label, ( (weight==0) ? "blue" :  color  )   );
-            emit signalDrawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), EdgeType::Directed,
-                          drawArrows, bezier, initEdgeWeightNumbers);
+            m_canvas->drawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), EdgeType::Directed,
+                             drawArrows, bezier, initEdgeWeightNumbers);
+//            emit signalDrawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), EdgeType::Directed,
+//                          drawArrows, bezier, initEdgeWeightNumbers);
             m_directed = true;
             m_symmetric=false;
         }

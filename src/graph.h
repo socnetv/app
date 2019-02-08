@@ -47,6 +47,7 @@
 #include "matrix.h"
 #include "parser.h"
 #include "webcrawler.h"
+#include "graphicswidget.h"
 
 QT_BEGIN_NAMESPACE
 class QPointF;
@@ -349,12 +350,13 @@ public:
     };
 
     /* INIT AND CLEAR*/
-    Graph();
+    Graph(GraphicsWidget *graphicsWidget);
     void clear(const QString &reason="");
         ~Graph();
 
     void setSocNetV_Version (QString ver) { VERSION = ver; }
 
+    GraphicsWidget *canvas() { return m_canvas; }
 
     /*FILES (READ AND WRITE)*/
     QString graphName() const;
@@ -935,6 +937,8 @@ private:
      * A vertex stores all the info: links, colours, etc
     */
     VList m_graph;
+
+    GraphicsWidget *m_canvas;
 
     Parser *file_parser;	//file loader threaded class.
 
