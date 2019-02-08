@@ -94,7 +94,8 @@ HEADERS += src/mainwindow.h \
     src/forms/dialograndlattice.h \
     src/forms/dialognodefind.h \
     src/forms/dialogexportpdf.h \
-    src/forms/dialogexportimage.h
+    src/forms/dialogexportimage.h \
+    src/global.h
 
 SOURCES += src/main.cpp \
     src/mainwindow.cpp \

@@ -46,13 +46,12 @@
 #include <QBarCategoryAxis>
 
 #include <cstdlib>		//allows the use of RAND_MAX macro 
-#include <math.h>
+
 #include <queue>		//for BFS queue Q
 #include <ctime>        // for randomizeThings
 
 
 
-static qreal Pi = 3.14159265;
 
 
 /**
@@ -70,7 +69,7 @@ Graph::Graph() {
 
     m_graphName="";
     m_curRelation=0;
-    m_fileFormat=FILE_UNRECOGNIZED;
+    m_fileFormat=FILE_TYPE::UNRECOGNIZED;
     m_directed=true;
     m_isWeighted=false;
     m_graphDisconnected=false;
@@ -112,9 +111,9 @@ Graph::Graph() {
 //   edgesHash.reserve(40000);
 
 
-    m_graphFileFormatExportSupported<< FILE_GRAPHML
-                               << FILE_PAJEK
-                               << FILE_ADJACENCY;
+    m_graphFileFormatExportSupported<< FILE_TYPE::GRAPHML
+                               << FILE_TYPE::PAJEK
+                               << FILE_TYPE::ADJACENCY;
 
     randomizeThings();
 
@@ -326,7 +325,7 @@ void Graph::clear(const QString &reason) {
     relationsClear();
     relationAdd(tr(("unnamed")));
 
-    m_fileFormat=FILE_UNRECOGNIZED;
+    m_fileFormat=FILE_TYPE::UNRECOGNIZED;
 
     m_graphName="";
     m_totalVertices=0;
@@ -407,7 +406,7 @@ void Graph::canvasSizeSet(const int w, const int h){
         (*it)->setX( newX ) ;
         (*it)->setY( newY );
         emit setNodePos((*it)->name(), newX , newY);
-        graphSetModified(GRAPH_CHANGED_POSITIONS,false);
+        graphSetModified(GraphChange::ChangedPositions,false);
     }
     canvasWidth = w;
     canvasHeight= h;
@@ -540,8 +539,8 @@ void Graph::relationSet(int relNum, const bool notifyMW){
         emit signalRelationChangedToMW(m_curRelation);
         //notify GW to disable/enable the on screen edges.
         emit signalRelationChangedToGW(m_curRelation);
-        qDebug()<<"Graph::relationSet() - Calling graphSetModified(GRAPH_CHANGED_EDGES)";
-        graphSetModified(GRAPH_CHANGED_EDGES);
+        qDebug()<<"Graph::relationSet() - Calling graphSetModified(GraphChange::ChangedEdges)";
+        graphSetModified(GraphChange::ChangedEdges);
     }
 }
 
@@ -746,7 +745,7 @@ void Graph::vertexCreate(const int &num,
 
     qDebug() << "Graph::vertexCreate() - vertex:" << num << "created. Calling graphSetModified().";
 
-    graphSetModified(GRAPH_CHANGED_VERTICES, signalMW);
+    graphSetModified(GraphChange::ChangedVertices, signalMW);
 
     //draw new user-clicked nodes with the same color with that of the file loaded
     initVertexColor=nodeColor;
@@ -1131,7 +1130,7 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
             }
             for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
                 switch (index) {
-                case INDEX_DC:
+                case IndexType::DC:
                     if (gtThan) {
                         if ( (*it)->DC() > threshold ) {
                             qDebug() << "Graph::vertexFindByIndexScore() - vertex" << (*it)->name()
@@ -1234,7 +1233,7 @@ void Graph::vertexRemove(const int &v1){
     if (vertexClicked()==v1)
         vertexClickedSet(0);
 
-    graphSetModified(GRAPH_CHANGED_VERTICES);
+    graphSetModified(GraphChange::ChangedVertices);
 
     emit signalRemoveNode(v1);
 }
@@ -1263,7 +1262,7 @@ void Graph::vertexIsolatedAllToggle(const bool &toggle){
                      << "is isolated. Toggling it and emitting setVertexVisibility signal to GW...";
             (*it)->setEnabled (toggle) ;
 
-            graphSetModified(GRAPH_CHANGED_VERTICES);
+            graphSetModified(GraphChange::ChangedVertices);
 
             emit setVertexVisibility( (*it)-> name(), toggle );
         }
@@ -1302,7 +1301,7 @@ void Graph::vertexPosSet(const int &v1, const int &x, const int &y){
 
     m_graph[ vpos[v1] ]->setX( x );
     m_graph[ vpos[v1] ]->setY( y );
-    graphSetModified(GRAPH_CHANGED_POSITIONS,false);
+    graphSetModified(GraphChange::ChangedPositions,false);
 }
 
 
@@ -1369,7 +1368,7 @@ void Graph::vertexSizeInit (const int size) {
 void Graph::vertexSizeSet(const int &v, const int &size) {
     m_graph[ vpos[v] ]->setSize(size);
 
-    graphSetModified(GRAPH_CHANGED_VERTICES_METADATA);
+    graphSetModified(GraphChange::ChangedVerticesMetadata);
     emit setNodeSize(v, size);
 }
 
@@ -1400,7 +1399,7 @@ void Graph::vertexSizeAllSet(const int size) {
             emit setNodeSize((*it)->name(), size);
         }
     }
-    graphSetModified(GRAPH_CHANGED_VERTICES_METADATA);
+    graphSetModified(GraphChange::ChangedVerticesMetadata);
 }
 
 
@@ -1426,7 +1425,7 @@ void Graph::vertexShapeSet(const int &v1, const QString &shape, const QString &i
     m_graph[ vpos[v1] ]->setShape(shape, iconPath);
     emit setNodeShape(v1, shape, iconPath);
 
-    graphSetModified(GRAPH_CHANGED_VERTICES_METADATA);
+    graphSetModified(GraphChange::ChangedVerticesMetadata);
 }
 
 
@@ -1464,7 +1463,7 @@ void Graph::vertexShapeAllSet(const QString &shape, const QString &iconPath) {
         }
     }
 
-    graphSetModified(GRAPH_CHANGED_VERTICES_METADATA);
+    graphSetModified(GraphChange::ChangedVerticesMetadata);
 }
 
 
@@ -1481,7 +1480,7 @@ void Graph::vertexColorSet(const int &v1, const QString &color){
     m_graph[ vpos[v1] ]->setColor ( color );
     emit setNodeColor ( m_graph[ vpos[v1] ]-> name(), color );
 
-    graphSetModified(GRAPH_CHANGED_VERTICES_METADATA);
+    graphSetModified(GraphChange::ChangedVerticesMetadata);
 }
 
 /**
@@ -1526,7 +1525,7 @@ void Graph::vertexColorAllSet(const QString &color) {
         }
     }
 
-    graphSetModified(GRAPH_CHANGED_VERTICES_METADATA);
+    graphSetModified(GraphChange::ChangedVerticesMetadata);
 
 }
 
@@ -1570,7 +1569,7 @@ void Graph::vertexNumberColorSet(const int &v1, const QString &color){
             }
         }
     }
-    graphSetModified(GRAPH_CHANGED_VERTICES_METADATA);
+    graphSetModified(GraphChange::ChangedVerticesMetadata);
 }
 
 
@@ -1594,7 +1593,7 @@ void Graph::vertexNumberSizeInit (const int &size) {
 void Graph::vertexNumberSizeSet(const int &v, const int &size) {
     m_graph[ vpos[v] ]->setNumberSize (size);
 
-    graphSetModified(GRAPH_CHANGED_MINOR_OPTIONS);
+    graphSetModified(GraphChange::ChangedMinorOptions);
 }
 
 
@@ -1619,7 +1618,7 @@ void Graph::vertexNumberSizeSetAll(const int &size) {
         }
     }
 
-    graphSetModified(GRAPH_CHANGED_MINOR_OPTIONS);
+    graphSetModified(GraphChange::ChangedMinorOptions);
 }
 
 
@@ -1641,7 +1640,7 @@ void Graph::vertexNumberDistanceInit(const int &distance) {
 void Graph::vertexNumberDistanceSet(const int &v, const int &newDistance) {
     m_graph[ vpos[v] ]->setNumberDistance (newDistance);
 
-    graphSetModified(GRAPH_CHANGED_MINOR_OPTIONS);
+    graphSetModified(GraphChange::ChangedMinorOptions);
     emit setNodeNumberDistance(v, newDistance);
 }
 
@@ -1667,7 +1666,7 @@ void Graph::vertexNumberDistanceSetAll(const int &newDistance) {
         }
     }
 
-    graphSetModified(GRAPH_CHANGED_MINOR_OPTIONS);
+    graphSetModified(GraphChange::ChangedMinorOptions);
 }
 
 
@@ -1688,7 +1687,7 @@ void Graph::vertexLabelSet(const int &v1, const QString &label){
     m_graph[ vpos[v1] ]->setLabel ( label);
     emit setNodeLabel ( m_graph[ vpos[v1] ]-> name(), label);
 
-    graphSetModified(GRAPH_CHANGED_VERTICES_METADATA);
+    graphSetModified(GraphChange::ChangedVerticesMetadata);
 }
 
 
@@ -1729,7 +1728,7 @@ void Graph::vertexLabelSizeSet(const int &v1, const int &size) {
     m_graph[ vpos[v1] ] -> setLabelSize ( size );
     emit setNodeLabelSize ( v1, size);
 
-    graphSetModified(GRAPH_CHANGED_MINOR_OPTIONS);
+    graphSetModified(GraphChange::ChangedMinorOptions);
 
 }
 
@@ -1757,7 +1756,7 @@ void Graph::vertexLabelSizeAllSet(const int &size) {
         }
     }
 
-    graphSetModified(GRAPH_CHANGED_MINOR_OPTIONS);
+    graphSetModified(GraphChange::ChangedMinorOptions);
 }
 
 
@@ -1785,7 +1784,7 @@ void Graph::vertexLabelColorAllSet(const QString &color) {
         }
     }
 
-    graphSetModified(GRAPH_CHANGED_MINOR_OPTIONS);
+    graphSetModified(GraphChange::ChangedMinorOptions);
 }
 
 
@@ -1797,7 +1796,7 @@ void Graph::vertexLabelColorAllSet(const QString &color) {
 void Graph::vertexLabelColorSet(int v1, QString color){
     m_graph[ vpos[v1] ]->setLabelColor(color);
     emit setNodeLabelColor(v1, color);
-    graphSetModified(GRAPH_CHANGED_MINOR_OPTIONS);
+    graphSetModified(GraphChange::ChangedMinorOptions);
 }
 
 
@@ -1821,7 +1820,7 @@ void Graph::vertexLabelColorInit(QString color){
 void Graph::vertexLabelDistanceSet(const int &v, const int &newDistance) {
     m_graph[ vpos[v] ]->setLabelDistance (newDistance);
 
-    graphSetModified(GRAPH_CHANGED_MINOR_OPTIONS);
+    graphSetModified(GraphChange::ChangedMinorOptions);
     emit setNodeLabelDistance(v, newDistance);
 }
 
@@ -1847,7 +1846,7 @@ void Graph::vertexLabelDistanceAllSet(const int &newDistance) {
         }
     }
 
-    graphSetModified(GRAPH_CHANGED_MINOR_OPTIONS);
+    graphSetModified(GraphChange::ChangedMinorOptions);
 }
 
 
@@ -1893,7 +1892,7 @@ void Graph::edgeCreate(const int &v1, const int &v2, const qreal &weight,
     // check whether there is already such an edge
     // (see #713617 - https://bugs.launchpad.net/socnetv/+bug/713617)
     if (!edgeExists(v1,v2)){
-        if ( type == EDGE_UNDIRECTED ) {
+        if ( type == EdgeType::Undirected ) {
 
             qDebug()<< "-- Graph::edgeCreate() - Creating UNDIRECTED edge."
                       << "Emitting drawEdge signal to GW";
@@ -1907,8 +1906,8 @@ void Graph::edgeCreate(const int &v1, const int &v2, const qreal &weight,
             qDebug()<<"-- Graph::edgeCreate() - Creating RECIPROCAL edge."
                    << "Emitting drawEdge to GW";
 
-            edgeAdd ( v1, v2, weight, EDGE_RECIPROCATED , label, color);
-            emit signalDrawEdge(v1, v2, weight, label, color, EDGE_RECIPROCATED,
+            edgeAdd ( v1, v2, weight, EdgeType::Reciprocated , label, color);
+            emit signalDrawEdge(v1, v2, weight, label, color, EdgeType::Reciprocated,
                           drawArrows, bezier, initEdgeWeightNumbers);
             m_directed = true;
         }
@@ -1917,8 +1916,8 @@ void Graph::edgeCreate(const int &v1, const int &v2, const qreal &weight,
             qDebug()<< "-- Graph::edgeCreate() - Creating directed edge. Opposite arc does not exist."
                     << "Emitting drawEdge to GW...";
 
-            edgeAdd ( v1, v2, weight, EDGE_DIRECTED, label, ( (weight==0) ? "blue" :  color  )   );
-            emit signalDrawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), EDGE_DIRECTED,
+            edgeAdd ( v1, v2, weight, EdgeType::Directed, label, ( (weight==0) ? "blue" :  color  )   );
+            emit signalDrawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), EdgeType::Directed,
                           drawArrows, bezier, initEdgeWeightNumbers);
             m_directed = true;
             m_symmetric=false;
@@ -1934,7 +1933,7 @@ void Graph::edgeCreate(const int &v1, const int &v2, const qreal &weight,
     // have the same color with those of the file loaded,
     initEdgeColor=color;
 
-    graphSetModified(GRAPH_CHANGED_EDGES, signalMW);
+    graphSetModified(GraphChange::ChangedEdges, signalMW);
 
 }
 
@@ -1954,7 +1953,7 @@ void Graph::edgeCreateWebCrawler (const int &source, const int &target){
     bool drawArrows=true;
     bool bezier=false;
 
-    edgeCreate(source, target, weight, initEdgeColor, EDGE_DIRECTED, drawArrows, bezier);
+    edgeCreate(source, target, weight, initEdgeColor, EdgeType::Directed, drawArrows, bezier);
 }
 
 
@@ -1989,11 +1988,11 @@ void Graph::edgeAdd (const int &v1, const int &v2, const qreal &weight,
     if ( weight != 1 && weight!=0) {
         graphSetWeighted(true);
     }
-    if (type == EDGE_RECIPROCATED ){
+    if (type == EdgeType::Reciprocated ){
         // make existing opposite edge reciprocal
 
     }
-    else if (type == EDGE_UNDIRECTED){
+    else if (type == EdgeType::Undirected){
         //create opposite edge
         m_graph [ target ]->edgeAddTo(v1, weight );
         m_graph [ source ]->edgeAddFrom(v2, weight);
@@ -2035,7 +2034,7 @@ void Graph::edgeRemove (const int &v1,
 
     emit signalRemoveEdge(v1,v2, ( graphIsDirected() || removeOpposite ));
 
-    graphSetModified(GRAPH_CHANGED_EDGES);
+    graphSetModified(GraphChange::ChangedEdges);
 }
 
 
@@ -2085,7 +2084,7 @@ void Graph::edgeFilterByWeight(qreal m_threshold, bool overThreshold){
             (*it)->edgeFilterByWeight ( m_threshold, overThreshold );
     }
 
-    graphSetModified(GRAPH_CHANGED_EDGES);
+    graphSetModified(GraphChange::ChangedEdges);
     emit statusMessage(tr("Edges have been filtered."));
 }
 
@@ -2119,7 +2118,7 @@ void Graph::edgeFilterUnilateral(const bool &toggle) {
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
             (*it)->edgeFilterUnilateral ( toggle );
     }
-    graphSetModified(GRAPH_CHANGED_EDGES);
+    graphSetModified(GraphChange::ChangedEdges);
     emit statusMessage(tr("Unilateral edges have been temporarily disabled."));
 }
 
@@ -2152,14 +2151,14 @@ void Graph::edgeClickedSet(const int &v1, const int &v2, const bool &openMenu) {
 
         qreal weight = m_graph[ vpos[ m_clickedEdge.v1] ]->hasEdgeTo(m_clickedEdge.v2);
         qDebug() << "Graph::edgeClickedSet() - clicked edge weight:"<< weight;
-        int type=EDGE_DIRECTED;
+        int type=EdgeType::Directed;
         // Check if the opposite tie exists. If yes, this is a reciprocated tie
         if ( edgeExists(m_clickedEdge.v2,m_clickedEdge.v1, false)  ) {
             if ( !graphIsDirected() ) {
-                type=EDGE_UNDIRECTED;
+                type=EdgeType::Undirected;
             }
             else {
-                type=EDGE_RECIPROCATED;
+                type=EdgeType::Reciprocated;
             }
         }
         m_clickedEdge.type = type;
@@ -2297,7 +2296,7 @@ void Graph::edgeWeightSet (const int &v1, const int &v2,
 
     emit setEdgeWeight(v1,v2, weight);
 
-    graphSetModified(GRAPH_CHANGED_EDGES);
+    graphSetModified(GraphChange::ChangedEdges);
 
 }
 
@@ -2392,7 +2391,7 @@ bool Graph::edgeColorAllSet(const QString &color, const int &threshold){
     }
     //delete enabledOutEdges;
 
-    graphSetModified(GRAPH_CHANGED_EDGES_METADATA);
+    graphSetModified(GraphChange::ChangedEdgesMetadata);
 
     return true;
 
@@ -2418,7 +2417,7 @@ void Graph::edgeColorSet(const int &v1, const int &v2, const QString &color){
         emit setEdgeColor(v2, v1, color);
     }
 
-    graphSetModified(GRAPH_CHANGED_EDGES_METADATA);
+    graphSetModified(GraphChange::ChangedEdgesMetadata);
 }
 
 
@@ -2450,7 +2449,7 @@ void Graph::edgeLabelSet (const int &v1, const int &v2, const QString &label) {
 
     emit setEdgeLabel(v1,v2, label);
 
-    graphSetModified(GRAPH_CHANGED_EDGES_METADATA);
+    graphSetModified(GraphChange::ChangedEdgesMetadata);
 }
 
 
@@ -2657,7 +2656,7 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
     qreal weight;
 
     bool drawArrows = graphIsDirected();
-    int edgeType = ( graphIsUndirected() ) ?  EDGE_UNDIRECTED : EDGE_RECIPROCATED;
+    int edgeType = ( graphIsUndirected() ) ?  EdgeType::Undirected : EdgeType::Reciprocated;
 
     if (type == SUBGRAPH_CLIQUE) {
 
@@ -2674,7 +2673,7 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
                                    vList.value(j),
                                    1.0,
                                    initEdgeColor,
-                                   EDGE_UNDIRECTED,
+                                   EdgeType::Undirected,
                                    drawArrows);
                         edgeTypeSet( vList.value(i), vList.value(j), weight, edgeType );
                     }
@@ -2704,7 +2703,7 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
                                vList.value(j),
                                1.0,
                                initEdgeColor,
-                               EDGE_UNDIRECTED,
+                               EdgeType::Undirected,
                                drawArrows);
                     edgeTypeSet( center, vList.value(j), weight, edgeType );
                 }
@@ -2730,7 +2729,7 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
                                vList.value(j),
                                1.0,
                                initEdgeColor,
-                               EDGE_UNDIRECTED,
+                               EdgeType::Undirected,
                                drawArrows);
                     edgeTypeSet( vList.value(i), vList.value(j), weight, edgeType );
                 }
@@ -2760,7 +2759,7 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
                                vList.value(j),
                                1.0,
                                initEdgeColor,
-                               EDGE_UNDIRECTED,
+                               EdgeType::Undirected,
                                drawArrows);
                     edgeTypeSet( vList.value(i), vList.value(j), weight, edgeType );
                 }
@@ -2841,8 +2840,8 @@ bool Graph::graphSaved() const {
  * @return
  */
 bool Graph::graphLoaded() const {
-    qDebug() << "Graph::graphLoaded() - " << (( graphFileFormat() != FILE_UNRECOGNIZED ) ? true: false );
-    return ( graphFileFormat() != FILE_UNRECOGNIZED ) ? true: false;
+    qDebug() << "Graph::graphLoaded() - " << (( graphFileFormat() != FILE_TYPE::UNRECOGNIZED ) ? true: false );
+    return ( graphFileFormat() != FILE_TYPE::UNRECOGNIZED ) ? true: false;
 }
 
 
@@ -3691,7 +3690,7 @@ void Graph::graphSymmetrize(){
 
     m_symmetric=true;
 
-    graphSetModified(GRAPH_CHANGED_EDGES);
+    graphSetModified(GraphChange::ChangedEdges);
 }
 
 
@@ -3764,7 +3763,7 @@ void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
         v2 = (vertices.at(1)).toInt();
         qDebug() << "Graph::graphSymmetrizeStrongTies() - calling edgeCreate for"
                  << v1 << "--"<<v2;
-        edgeCreate( v1, v2, 1, initEdgeColor, EDGE_UNDIRECTED, true, false,
+        edgeCreate( v1, v2, 1, initEdgeColor, EdgeType::Undirected, true, false,
                     QString::null, false);
         ++it2;
     }
@@ -3773,7 +3772,7 @@ void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
     delete strongTies;
     m_symmetric=true;
 
-    graphSetModified(GRAPH_CHANGED_EDGES);
+    graphSetModified(GraphChange::ChangedEdges);
     qDebug()<< "Graph::graphSymmetrizeStrongTies()"
             << "final relations"<<relations();
 }
@@ -3832,7 +3831,7 @@ void Graph::graphCocitation(){
                         << v1 << "<->" << v2
                         << "because CT(" << i+1 << "," <<  j+1 << ") = " << weight;
                 edgeCreate( v1, v2, weight, initEdgeColor,
-                            EDGE_UNDIRECTED, true, false,
+                            EdgeType::Undirected, true, false,
                             QString::null, false);
             }
 
@@ -3843,7 +3842,7 @@ void Graph::graphCocitation(){
 
     m_symmetric=true;
 
-    graphSetModified(GRAPH_CHANGED_EDGES);
+    graphSetModified(GraphChange::ChangedEdges);
     qDebug()<< "Graph::graphCocitation()"
             << "final relations"<<relations();
 }
@@ -3910,7 +3909,7 @@ void Graph::graphDichotomization(const qreal threshold) {
         v2 = (vertices.at(1)).toInt();
         qDebug() << "Graph::graphDichotomization() - calling edgeCreate for"
                  << v1 << "--"<<v2;
-        edgeCreate( v1, v2, 1, initEdgeColor, EDGE_UNDIRECTED, true, false,
+        edgeCreate( v1, v2, 1, initEdgeColor, EdgeType::Undirected, true, false,
                     QString::null, false);
         ++it2;
     }
@@ -3919,7 +3918,7 @@ void Graph::graphDichotomization(const qreal threshold) {
     delete binaryTies;
     m_symmetric=true;
 
-    graphSetModified(GRAPH_CHANGED_EDGES);
+    graphSetModified(GraphChange::ChangedEdges);
     qDebug()<< "Graph::graphDichotomization()"
             << "final relations"<<relations();
 
@@ -3946,7 +3945,7 @@ void Graph::graphSetDirected(const bool &toggle, const bool &signalMW){
     m_directed = true;
 
     if (m_directed) {
-        graphSetModified(GRAPH_CHANGED_EDGES, signalMW);
+        graphSetModified(GraphChange::ChangedEdges, signalMW);
         return;
     }
 
@@ -3990,7 +3989,7 @@ void Graph::graphSetUndirected(const bool &toggle, const bool &signalMW){
                      << " v1 " << v1
                      << " -> " << v2 << " = "
                      << " weight " << weight;
-            edgeTypeSet(v1,v2, weight, EDGE_UNDIRECTED);
+            edgeTypeSet(v1,v2, weight, EdgeType::Undirected);
             ++it1;
         }
     }
@@ -3998,7 +3997,7 @@ void Graph::graphSetUndirected(const bool &toggle, const bool &signalMW){
 
     m_symmetric=true;
 
-    graphSetModified(GRAPH_CHANGED_EDGES, signalMW);
+    graphSetModified(GraphChange::ChangedEdges, signalMW);
 }
 
 
@@ -4044,7 +4043,7 @@ void Graph::edgeTypeSet(const int &v1,
     qDebug() << "Graph::edgeTypeSet(): " << v1
              << " -> " <<  v2  << "edgeType" << dirType;
 
-    if (dirType!=EDGE_DIRECTED) {
+    if (dirType!=EdgeType::Directed) {
 
         // check for opposite edge
         qreal inverseWeight = edgeExists ( v2, v1 ) ;
@@ -4053,11 +4052,11 @@ void Graph::edgeTypeSet(const int &v1,
             // if the opposite edge does not exist, add it
             qDebug() << "Graph::edgeTypeSet(): opposite  " << v1
                      << " <- " <<  v2 << " does not exist - Add it to Graph." ;
-            // Note: Even if dirType=EDGE_UNDIRECTED we add the opposite edge as EDGE_RECIPROCATED
-            edgeAdd(v2,v1, weight, EDGE_RECIPROCATED, "", initEdgeColor);
+            // Note: Even if dirType=EdgeType::Undirected we add the opposite edge as EdgeType::Reciprocated
+            edgeAdd(v2,v1, weight, EdgeType::Reciprocated, "", initEdgeColor);
         }
         else {
-            if ( dirType  == EDGE_UNDIRECTED ) {
+            if ( dirType  == EdgeType::Undirected ) {
                 // if the opposite edge does exist, equal edge weights
                 // TOFIX: how do we decide which of the two weights to keep?
                 qDebug() << "Graph::edgeTypeSet(): opposite  " << v1
@@ -4067,13 +4066,13 @@ void Graph::edgeTypeSet(const int &v1,
                 }
             }
             else {
-                // if dirType is EDGE_RECIPROCATED we don't need  to equalize weights
+                // if dirType is EdgeType::Reciprocated we don't need  to equalize weights
             }
         }
         emit signalEdgeType( v1, v2, dirType );
     }
 
-    //graphSetModified(GRAPH_CHANGED_EDGES);
+    //graphSetModified(GraphChange::ChangedEdges);
 
 }
 
@@ -6924,62 +6923,62 @@ void Graph::prominenceDistribution(const int &index, QSplineSeries *series) {
     case 0: {
         break;
     }
-    case INDEX_DC : {
+    case IndexType::DC : {
         series->setName("(out)Degree");
         discreteClasses = discreteSDCs;
         break;
     }
-    case INDEX_CC : {
+    case IndexType::CC : {
         series->setName("Closeness");
         discreteClasses = discreteCCs;
         break;
     }
-    case INDEX_IRCC : {
+    case IndexType::IRCC : {
         series->setName("IRCC");
         discreteClasses = discreteIRCCs;
         break;
     }
-    case INDEX_BC : {
+    case IndexType::BC : {
         series->setName("Betweenness");
         discreteClasses = discreteBCs;
         break;
     }
-    case INDEX_SC : {
+    case IndexType::SC : {
         series->setName("Stress");
         discreteClasses = discreteSCs;
         break;
     }
-    case INDEX_EC : {
+    case IndexType::EC : {
         series->setName("Eccentricity");
         discreteClasses = discreteECs;
         break;
     }
-    case INDEX_PC : {
+    case IndexType::PC : {
         series->setName("Power");
         discreteClasses = discretePCs;
         break;
     }
-    case INDEX_IC : {
+    case IndexType::IC : {
         series->setName("Information");
         discreteClasses = discreteICs;
         break;
     }
-    case INDEX_EVC : {
+    case IndexType::EVC : {
         series->setName("Eigenvector");
         discreteClasses = discreteEVCs;
         break;
     }
-    case INDEX_DP : {
+    case IndexType::DP : {
         series->setName("Prestige Degree");
         discreteClasses = discreteDPs;
         break;
     }
-    case INDEX_PRP : {
+    case IndexType::PRP : {
         series->setName("Pagerank");
         discreteClasses = discretePRPs;
         break;
     }
-    case INDEX_PP : {
+    case IndexType::PP : {
         series->setName("Proximity");
         discreteClasses = discretePPs;
         break;
@@ -7027,62 +7026,62 @@ void Graph::prominenceDistribution(const int &index, QBarSeries *series, QBarSet
     case 0: {
         break;
     }
-    case INDEX_DC : {
+    case IndexType::DC : {
         series->setName("(out)Degree");
         discreteClasses = discreteSDCs;
         break;
     }
-    case INDEX_CC : {
+    case IndexType::CC : {
         series->setName("Closeness");
         discreteClasses = discreteCCs;
         break;
     }
-    case INDEX_IRCC : {
+    case IndexType::IRCC : {
         series->setName("IRCC");
         discreteClasses = discreteIRCCs;
         break;
     }
-    case INDEX_BC : {
+    case IndexType::BC : {
         series->setName("Betweenness");
         discreteClasses = discreteBCs;
         break;
     }
-    case INDEX_SC : {
+    case IndexType::SC : {
         series->setName("Stress");
         discreteClasses = discreteSCs;
         break;
     }
-    case INDEX_EC : {
+    case IndexType::EC : {
         series->setName("Eccentricity");
         discreteClasses = discreteECs;
         break;
     }
-    case INDEX_PC : {
+    case IndexType::PC : {
         series->setName("Power");
         discreteClasses = discretePCs;
         break;
     }
-    case INDEX_IC : {
+    case IndexType::IC : {
         series->setName("Information");
         discreteClasses = discreteICs;
         break;
     }
-    case INDEX_EVC : {
+    case IndexType::EVC : {
         series->setName("Eigenvector");
         discreteClasses = discreteEVCs;
         break;
     }
-    case INDEX_DP : {
+    case IndexType::DP : {
         series->setName("Prestige Degree");
         discreteClasses = discreteDPs;
         break;
     }
-    case INDEX_PRP : {
+    case IndexType::PRP : {
         series->setName("Pagerank");
         discreteClasses = discretePRPs;
         break;
     }
-    case INDEX_PP : {
+    case IndexType::PP : {
         series->setName("Proximity");
         discreteClasses = discretePPs;
         break;
@@ -10245,7 +10244,7 @@ void Graph::randomNetErdosCreate(const int &N,
                                     <<" create undirected Edge no "
                                     << edgeCount;
                         edgeCreate(i+1, j+1, 1, initEdgeColor,
-                                   EDGE_UNDIRECTED, false, false,
+                                   EdgeType::Undirected, false, false,
                                    QString::null, false);
                     }
                     else {
@@ -10254,7 +10253,7 @@ void Graph::randomNetErdosCreate(const int &N,
                                     << edgeCount;
 
                         edgeCreate(i+1, j+1, 1, initEdgeColor,
-                                   EDGE_DIRECTED, true, false,
+                                   EdgeType::Directed, true, false,
                                    QString::null, false);
                     }
                 }
@@ -10290,14 +10289,14 @@ void Graph::randomNetErdosCreate(const int &N,
                 qDebug() << "Graph::randomNetErdosCreate() - create "
                             << " undirected Edge no " << edgeCount;
                 edgeCreate(source, target, 1, initEdgeColor,
-                           EDGE_UNDIRECTED, false, false,
+                           EdgeType::Undirected, false, false,
                            QString::null, false);
             }
             else {
                 qDebug() << "Graph::randomNetErdosCreate() - create "
                             << " directed Edge no " << edgeCount;
                 edgeCreate(source, target, 1, initEdgeColor,
-                           EDGE_DIRECTED, true, false,
+                           EdgeType::Directed, true, false,
                            QString::null, false);
             }
           emit signalProgressBoxUpdate(++progressCounter );
@@ -10310,7 +10309,7 @@ void Graph::randomNetErdosCreate(const int &N,
     emit signalProgressBoxUpdate((m != 0 ? m:N));
     emit signalProgressBoxKill();
 
-    graphSetModified(GRAPH_CHANGED_VERTICES_AND_EDGES);
+    graphSetModified(GraphChange::ChangedVerticesEdges);
 
 
 }
@@ -10357,7 +10356,7 @@ void Graph::randomNetScaleFreeCreate (const int &N,
     double x0 = canvasWidth/2.0;
     double y0 =canvasHeight/2.0;
     double radius = canvasMaxRadius();
-    double rad= (2.0* Pi/ N );
+    double rad= (2.0* M_PI/ N );
     double  prob_j = 0, prob=0;
     int progressCounter=0;
 
@@ -10393,7 +10392,7 @@ void Graph::randomNetScaleFreeCreate (const int &N,
             qDebug() << "Graph::randomNetScaleFreeCreate() ---- "
                         "Creating initial edge " << i+1 << " <-> " << j+1;
             edgeCreate (i+1, j+1, 1, initEdgeColor,
-                        EDGE_UNDIRECTED, false, false,
+                        EdgeType::Undirected, false, false,
                         QString::null, false);
         }
         emit signalProgressBoxUpdate( ++progressCounter );
@@ -10464,7 +10463,7 @@ void Graph::randomNetScaleFreeCreate (const int &N,
                                     "Creating pref.att. undirected edge "
                                  <<  i+1 << " <-> " << j+1;
                         edgeCreate (i+1, j+1, 1, initEdgeColor,
-                                    EDGE_UNDIRECTED, false, false,
+                                    EdgeType::Undirected, false, false,
                                     QString::null, false);
                         newEdges ++;
 
@@ -10474,7 +10473,7 @@ void Graph::randomNetScaleFreeCreate (const int &N,
                                     "Creating pref.att. directed edge "
                                  <<  i+1 << " <-> " << j+1;
                         edgeCreate (i+1, j+1, 1, initEdgeColor,
-                                    EDGE_DIRECTED, true, false,
+                                    EdgeType::Directed, true, false,
                                     QString::null, false);
                         newEdges ++;
 
@@ -10490,9 +10489,9 @@ void Graph::randomNetScaleFreeCreate (const int &N,
 
     relationCurrentRename(tr("scale-free"),true);
     qDebug() << "Graph::randomNetScaleFreeCreate() - finished. Calling "
-                "graphSetModified(GRAPH_CHANGED_VERTICES_AND_EDGES)";
+                "graphSetModified(GraphChange::ChangedVerticesEdges)";
 
-    graphSetModified(GRAPH_CHANGED_VERTICES_AND_EDGES);
+    graphSetModified(GraphChange::ChangedVerticesEdges);
 
     emit signalProgressBoxKill();
 
@@ -10556,7 +10555,7 @@ void Graph::randomNetSmallWorldCreate (const int &N, const int &degree,
                         if (rand() % 100 > 0.5) {
                             qDebug("Creating new link!");
                             edgeCreate(i, candidate, 1, initEdgeColor,
-                                       EDGE_UNDIRECTED, false, false,
+                                       EdgeType::Undirected, false, false,
                                        QString::null, false);
                             break;
                         }
@@ -10575,7 +10574,7 @@ void Graph::randomNetSmallWorldCreate (const int &N, const int &degree,
 
     layoutVertexSizeByIndegree();
 
-    graphSetModified(GRAPH_CHANGED_VERTICES_AND_EDGES);
+    graphSetModified(GraphChange::ChangedVerticesEdges);
 }
 
 
@@ -10729,7 +10728,7 @@ void Graph::randomNetRegularCreate(const int &N,
 
         edgeCreate(m_edge[0].toInt(0), m_edge[1].toInt(0), 1,
                 initEdgeColor,
-                (graphIsUndirected()) ? EDGE_UNDIRECTED : EDGE_DIRECTED,
+                (graphIsUndirected()) ? EdgeType::Undirected : EdgeType::Directed,
                 (graphIsUndirected()) ? false:true,
                 false,
                 QString::null, false);
@@ -10749,7 +10748,7 @@ void Graph::randomNetRegularCreate(const int &N,
 
     emit signalProgressBoxKill();
 
-    graphSetModified(GRAPH_CHANGED_VERTICES_AND_EDGES);
+    graphSetModified(GraphChange::ChangedVerticesEdges);
 
 }
 
@@ -10776,7 +10775,7 @@ void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
     double x0 = canvasWidth/2.0;
     double y0 =canvasHeight/2.0;
     double radius = canvasMaxRadius();
-    double rad= (2.0* Pi/ N );
+    double rad= (2.0* M_PI/ N );
 
     graphSetDirected(false);
 
@@ -10807,7 +10806,7 @@ void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
                 target = target-N;
             qDebug("Creating Link between %i  and %i", i+1, target+1);
             edgeCreate(i+1, target+1, 1, initEdgeColor,
-                       EDGE_UNDIRECTED, false, false,
+                       EdgeType::Undirected, false, false,
                        QString::null, false);
         }
         if (updateProgress) {
@@ -10821,7 +10820,7 @@ void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
     }
 
 
-    graphSetModified(GRAPH_CHANGED_VERTICES_AND_EDGES, updateProgress);
+    graphSetModified(GraphChange::ChangedVerticesEdges, updateProgress);
 }
 
 
@@ -11020,7 +11019,7 @@ void Graph::randomNetLatticeCreate(const int &N,
 
         edgeCreate(m_edge[0].toInt(0), m_edge[1].toInt(0), 1,
                 initEdgeColor,
-                (graphIsUndirected()) ? EDGE_UNDIRECTED : EDGE_DIRECTED,
+                (graphIsUndirected()) ? EdgeType::Undirected : EdgeType::Directed,
                 (graphIsUndirected()) ? false:true,
                 false,
                 QString::null, false);
@@ -11040,7 +11039,7 @@ void Graph::randomNetLatticeCreate(const int &N,
 
     emit signalProgressBoxKill();
 
-    graphSetModified(GRAPH_CHANGED_VERTICES_AND_EDGES);
+    graphSetModified(GraphChange::ChangedVerticesEdges);
 
 }
 
@@ -12101,7 +12100,7 @@ bool Graph::writeCliqueCensus(const QString &fileName,
    if (! graphClusteringHierarchical(CLQM,
                                varLocation,
                                graphMetricStrToType("Euclidean"),
-                               CLUSTERING_COMPLETE_LINKAGE,
+                               Clustering::Complete_Linkage,
                                false,
                                true,
                                true,
@@ -12775,9 +12774,9 @@ void Graph::writeClusteringHierarchicalResultsToStream(QTextStream& outText,
  * dissimilarities matrix using a user-specified metric, i.e. euclidean distance.
  * The method parameter defines how to compute distances (similarities) between
  * a new cluster the old clusters. Valid values can be:
- * - CLUSTERING_SINGLE_LINKAGE: "single-link" or "connectedness" or "minimum"
- * - CLUSTERING_COMPLETE_LINKAGE: "complete-link" or "diameter" or "maximum"
- * - CLUSTERING_AVERAGE_LINKAGE: "average-link" or UPGMA
+ * - Clustering::Single_Linkage: "single-link" or "connectedness" or "minimum"
+ * - Clustering::Complete_Linkage: "complete-link" or "diameter" or "maximum"
+ * - Clustering::Average_Linkage: "average-link" or UPGMA
  * @param matrix
  * @param metric
  * @param method
@@ -13058,7 +13057,7 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
             distanceNewCluster = 0;
 
             switch (method) {
-            case CLUSTERING_SINGLE_LINKAGE: //"single-linkage":
+            case Clustering::Single_Linkage: //"single-linkage":
                 if (i==j) {
                     distanceNewCluster = 0;
                 }
@@ -13071,7 +13070,7 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
                         << " ? minimum DSM("<<i+1<<","<<j+1<<" ="<<distanceNewCluster;
                 break;
 
-            case CLUSTERING_COMPLETE_LINKAGE: // "complete-linkage":
+            case Clustering::Complete_Linkage: // "complete-linkage":
                 if (i==j) {
                     distanceNewCluster = 0;
                 }
@@ -13085,7 +13084,7 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
                         << " ? maximum DSM("<<i+1<<","<<j+1<<" ="<<distanceNewCluster;
                 break;
 
-            case CLUSTERING_AVERAGE_LINKAGE: //mean or "average-linkage" or UPGMA
+            case Clustering::Average_Linkage: //mean or "average-linkage" or UPGMA
                 if (i==j) {
                     distanceNewCluster = 0;
                 }
@@ -14692,8 +14691,8 @@ void Graph::graphFileLoaded (const int &fileType,
                              const int &edgeDirType,
                              const QString &message)
 {
-    if ( fileType == FILE_UNRECOGNIZED ) {
-        qDebug() << "Graph::graphFileLoaded() - FILE_UNRECOGNIZED. "
+    if ( fileType == FILE_TYPE::UNRECOGNIZED ) {
+        qDebug() << "Graph::graphFileLoaded() - FILE_TYPE::UNRECOGNIZED. "
                     "Emitting signalGraphLoaded with error message "
                  << message;
         emit signalGraphLoaded (fileType,
@@ -14711,7 +14710,7 @@ void Graph::graphFileLoaded (const int &fileType,
     else
         m_graphName=(fileName.split("/").last()).split("/").first();
 
-    if ( edgeDirType == EDGE_DIRECTED ) {
+    if ( edgeDirType == EdgeType::Directed ) {
         this->graphSetDirected(true);
     }
     else {
@@ -14728,7 +14727,7 @@ void Graph::graphFileLoaded (const int &fileType,
                 << " links " << totalLinks
                 << " edgeDirType " << edgeDirType;
 
-    graphSetModified(GRAPH_CHANGED_NEW);
+    graphSetModified(GraphChange::ChangedNew);
 
     emit signalGraphLoaded (fileType,
                             fileName,
@@ -14737,7 +14736,7 @@ void Graph::graphFileLoaded (const int &fileType,
                             totalLinks,
                             message);
 
-    graphSetModified(GRAPH_CHANGED_NONE);
+    graphSetModified(GraphChange::ChangedNone);
     qDebug ()<< "Graph::graphFileLoaded()  -check parser if running...";
 
 }
@@ -14783,28 +14782,28 @@ void Graph::graphSave(const QString &fileName,
     bool saved = false;
     m_fileFormat = fileType;
     switch (fileType) {
-    case FILE_PAJEK : {
+    case FILE_TYPE::PAJEK : {
         qDebug() << "Graph::graphSave() - Pajek formatted file";
         saved=graphSaveToPajekFormat(fileName, graphName(), canvasWidth, canvasHeight) ;
         break;
     }
-    case FILE_ADJACENCY: {
+    case FILE_TYPE::ADJACENCY: {
         qDebug() << "Graph::graphSave() - Adjacency formatted file";
         saved=graphSaveToAdjacencyFormat(fileName, saveEdgeWeights) ;
         break;
     }
-    case FILE_GRAPHVIZ: {
+    case FILE_TYPE::GRAPHVIZ: {
         qDebug() << "Graph::graphSave() - GraphViz/Dot formatted file";
         saved=graphSaveToDotFormat(fileName);
         break;
     }
-    case FILE_GRAPHML: {
+    case FILE_TYPE::GRAPHML: {
         qDebug() << "Graph::graphSave() - GraphML formatted file";
         saved=graphSaveToGraphMLFormat(fileName);
         break;
     }
     default: {
-        m_fileFormat = FILE_UNRECOGNIZED;
+        m_fileFormat = FILE_TYPE::UNRECOGNIZED;
         qDebug() << "Graph::graphSave() - Error! Unrecognized fileType";
         break;
     }
@@ -14832,7 +14831,7 @@ void Graph::graphSave(const QString &fileName,
             calculatedEVC=false;
             calculatedPRP = false;
         }
-        graphSetModified(GRAPH_CHANGED_NONE);
+        graphSetModified(GraphChange::ChangedNone);
         signalGraphSaved(fileType);
     }
     else {
@@ -20195,7 +20194,7 @@ void Graph::layoutRandom(){
 
     emit signalProgressBoxKill();
 
-    graphSetModified(GRAPH_CHANGED_POSITIONS);
+    graphSetModified(GraphChange::ChangedPositions);
 }
 
 
@@ -20246,7 +20245,7 @@ void Graph::layoutRadialRandom(const bool &guides){
                   << " new radius " << new_radius;
 
         //Calculate new position
-        rad= (2.0* Pi/ vert );
+        rad= (2.0* M_PI/ vert );
         new_x=x0 + new_radius * cos(i * rad);
         new_y=y0 + new_radius * sin(i * rad);
         (*it)->setX( new_x );
@@ -20261,7 +20260,7 @@ void Graph::layoutRadialRandom(const bool &guides){
     }
 
     emit signalProgressBoxKill();
-    graphSetModified(GRAPH_CHANGED_POSITIONS);
+    graphSetModified(GraphChange::ChangedPositions);
 }
 
 
@@ -20296,7 +20295,7 @@ void Graph::layoutCircular (const double &x0, const double &y0,
         }
 
         //Calculate new position
-        rad= (2.0* Pi/ N );
+        rad= (2.0* M_PI/ N );
         new_x=x0 + newRadius * cos(i * rad);
         new_y=y0 + newRadius * sin(i * rad);
         (*it)->setX( new_x );
@@ -20314,7 +20313,7 @@ void Graph::layoutCircular (const double &x0, const double &y0,
 
     emit signalProgressBoxKill();
 
-    graphSetModified(GRAPH_CHANGED_POSITIONS);
+    graphSetModified(GraphChange::ChangedPositions);
 
 }
 
@@ -20413,32 +20412,32 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
     if ( prominenceIndex == 0) {
         // do nothing
     }
-    else if ( prominenceIndex == INDEX_DC ) {
+    else if ( prominenceIndex == IndexType::DC ) {
         if ( graphIsModified() || !calculatedDC )
             centralityDegree(true, dropIsolates);
     }
-    else if ( prominenceIndex == INDEX_IRCC ){
+    else if ( prominenceIndex == IndexType::IRCC ){
         if ( graphIsModified() || !calculatedIRCC )
             centralityClosenessIR();
     }
-    else if ( prominenceIndex == INDEX_IC ) {
+    else if ( prominenceIndex == IndexType::IC ) {
         if ( graphIsModified() || !calculatedIC )
             centralityInformation();
     }
-    else if ( prominenceIndex == INDEX_EVC ){
+    else if ( prominenceIndex == IndexType::EVC ){
         if ( graphIsModified() || !calculatedEVC )
             centralityEigenvector(true, dropIsolates);
     }
 
-    else if ( prominenceIndex == INDEX_DP ){
+    else if ( prominenceIndex == IndexType::DP ){
         if ( graphIsModified() || !calculatedDP )
             prestigeDegree(true, dropIsolates);
     }
-    else if ( prominenceIndex == INDEX_PRP ) {
+    else if ( prominenceIndex == IndexType::PRP ) {
         if ( graphIsModified() || !calculatedPRP )
             prestigePageRank();
     }
-    else if ( prominenceIndex == INDEX_PP ){
+    else if ( prominenceIndex == IndexType::PP ){
         if ( graphIsModified() || !calculatedPP )
             prestigeProximity(considerWeights, inverseWeights);
     }
@@ -20478,73 +20477,73 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
             C=0;maxC=0;
             break;
         }
-        case INDEX_DC : {
+        case IndexType::DC : {
             C=(*it)->SDC();
             std= (*it)->SDC();
             maxC=maxSDC;
             break;
         }
-        case INDEX_CC : {
+        case IndexType::CC : {
             C=(*it)->CC();
             std= (*it)->SCC();
             maxC=maxSCC;
             break;
         }
-        case INDEX_IRCC : {
+        case IndexType::IRCC : {
             C=(*it)->IRCC();
             std= (*it)->SIRCC();
             maxC=maxIRCC;
             break;
         }
-        case INDEX_BC : {
+        case IndexType::BC : {
             C=(*it)->BC();
             std= (*it)->SBC();
             maxC=maxSBC;
             break;
         }
-        case INDEX_SC : {
+        case IndexType::SC : {
             C=(*it)->SC();
             std= (*it)->SSC();
             maxC=maxSSC;
             break;
         }
-        case INDEX_EC : {
+        case IndexType::EC : {
             C=(*it)->EC();
             std= (*it)->SEC();
             maxC=maxEC;
             break;
         }
-        case INDEX_PC : {
+        case IndexType::PC : {
             C=(*it)->PC();
             std= (*it)->SPC();
             maxC=maxSPC;
             break;
         }
-        case INDEX_IC : {
+        case IndexType::IC : {
             C=(*it)->IC();
             std= (*it)->SIC();
             maxC=maxIC;
             break;
         }
-        case INDEX_EVC : {
+        case IndexType::EVC : {
             C=(*it)->EVC();
             std= (*it)->SEVC();
             maxC=1;
             break;
         }
-        case INDEX_DP : {
+        case IndexType::DP : {
             C=(*it)->SDP();
             std= (*it)->SDP();
             maxC=maxSDP;
             break;
         }
-        case INDEX_PRP : {
+        case IndexType::PRP : {
             C=(*it)->PRP();
             std= (*it)->SPRP();
             maxC=1;
             break;
         }
-        case INDEX_PP : {
+        case IndexType::PP : {
             C=(*it)->PP();
             std= (*it)->SPP();
             maxC=maxPP;
@@ -20583,7 +20582,7 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
 
             };
 
-            rad= (2.0* Pi/ N );
+            rad= (2.0* M_PI/ N );
             new_x=x0 + new_radius * cos(i * rad);
             new_y=y0 + new_radius * sin(i * rad);
 
@@ -20718,7 +20717,7 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
 
     emit signalProgressBoxKill();
 
-    graphSetModified(GRAPH_CHANGED_POSITIONS);
+    graphSetModified(GraphChange::ChangedPositions);
 }
 
 
@@ -21386,7 +21385,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
     }
     emit signalProgressBoxKill();
 
-    graphSetModified(GRAPH_CHANGED_POSITIONS);
+    graphSetModified(GraphChange::ChangedPositions);
 
 
 }
@@ -21845,13 +21844,13 @@ int Graph::graphMetricStrToType(const QString &metricStr) const {
 QString Graph::graphClusteringMethodTypeToString(const int &methodType) const {
     QString methodStr;
     switch (methodType) {
-    case CLUSTERING_SINGLE_LINKAGE:
+    case Clustering::Single_Linkage:
         methodStr = "Single-linkage (minumum)";
         break;
-    case CLUSTERING_COMPLETE_LINKAGE:
+    case Clustering::Complete_Linkage:
         methodStr = "Complete-linkage (maximum)";
         break;
-    case CLUSTERING_AVERAGE_LINKAGE:
+    case Clustering::Average_Linkage:
         methodStr = "Average-linkage (UPGMA)";
         break;
     default:
@@ -21867,15 +21866,15 @@ QString Graph::graphClusteringMethodTypeToString(const int &methodType) const {
  * @return
  */
 int Graph::graphClusteringMethodStrToType(const QString &method) const {
-    int methodType=CLUSTERING_AVERAGE_LINKAGE;
+    int methodType=Clustering::Average_Linkage;
     if (method.contains("Single", Qt::CaseInsensitive)) {
-        methodType = CLUSTERING_SINGLE_LINKAGE;
+        methodType = Clustering::Single_Linkage;
     }
     else if (method.contains("Complete", Qt::CaseInsensitive)) {
-        methodType = CLUSTERING_COMPLETE_LINKAGE;
+        methodType = Clustering::Complete_Linkage;
     }
     else if (method.contains("Average", Qt::CaseInsensitive)) {
-        methodType = CLUSTERING_AVERAGE_LINKAGE;
+        methodType = Clustering::Average_Linkage;
     }
     return methodType;
 }

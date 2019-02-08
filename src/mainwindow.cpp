@@ -5288,22 +5288,11 @@ void MainWindow::initSignalSlots() {
              graphicsWidget, SLOT( setNodeLabelDistance (const int &, const int &) ) );
 
 
-
     connect( activeGraph, &Graph::signalRemoveEdge,
              graphicsWidget,&GraphicsWidget::removeEdge);
 
 
-    connect( activeGraph, SIGNAL( signalDrawEdge( const int&, const int&, const qreal &,
-                                                  const QString &, const QString &,
-                                                  const int&, const bool&,
-                                                  const bool&,
-                                                  const bool&)),
-             graphicsWidget, SLOT( drawEdge( const int&, const int&, const qreal &,
-                                             const QString &,const QString &,
-                                             const int &, const bool&,
-                                             const bool &,
-                                             const bool&) )  ) ;
-
+    connect (activeGraph, &Graph::signalDrawEdge, graphicsWidget,&GraphicsWidget::drawEdge);
 
     connect( activeGraph, SIGNAL( setEdgeWeight(const int &,
                                                 const int &,
@@ -6324,32 +6313,32 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
 
         // prepare supported filetype extensions
         switch (fileType){
-        case FILE_GRAPHML:
+        case FILE_TYPE::GRAPHML:
             fileType_filter = tr("GraphML (*.graphml *.xml);;All (*)");
             break;
-        case FILE_PAJEK:
+        case FILE_TYPE::PAJEK:
             fileType_filter = tr("Pajek (*.net *.paj *.pajek);;All (*)");
             break;
-        case FILE_ADJACENCY:
+        case FILE_TYPE::ADJACENCY:
             fileType_filter = tr("Adjacency (*.csv *.sm *.adj *.txt);;All (*)");
             break;
-        case FILE_GRAPHVIZ:
+        case FILE_TYPE::GRAPHVIZ:
             fileType_filter = tr("GraphViz (*.dot);;All (*)");
             break;
-        case FILE_UCINET:
+        case FILE_TYPE::UCINET:
             fileType_filter = tr("UCINET (*.dl *.dat);;All (*)");
             break;
-        case FILE_GML:
+        case FILE_TYPE::GML:
             fileType_filter = tr("GML (*.gml);;All (*)");
             break;
 
-        case FILE_EDGELIST_WEIGHTED:
+        case FILE_TYPE::EDGELIST_WEIGHTED:
             fileType_filter = tr("Weighted Edge List (*.csv *.txt *.list *.edgelist *.lst *.wlst);;All (*)");
             break;
-        case FILE_EDGELIST_SIMPLE:
+        case FILE_TYPE::EDGELIST_SIMPLE:
             fileType_filter = tr("Simple Edge List (*.csv *.txt *.list *.edgelist *.lst);;All (*)");
             break;
-        case FILE_TWOMODE:
+        case FILE_TYPE::TWOMODE:
             fileType_filter = tr("Two-Mode Sociomatrix (*.2sm *.aff);;All (*)");
             break;
         default:	//All
@@ -6412,7 +6401,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
      * If checkSelectFileType==FALSE, then it loads the file with given fileType.
      *
      */
-    if (checkSelectFileType || m_fileFormat==FILE_UNRECOGNIZED) {
+    if (checkSelectFileType || m_fileFormat==FILE_TYPE::UNRECOGNIZED) {
         // This happens only on application startup or on loading a recent file.
         if ( ! m_fileName.endsWith(".graphml",Qt::CaseInsensitive ) &&
              ! m_fileName.endsWith(".net",Qt::CaseInsensitive ) &&
@@ -6466,31 +6455,31 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
                         fileTypes, 0, false, &ok);
             if (ok && !userFileType.isEmpty()) {
                 if (userFileType == "GraphML") {
-                    m_fileFormat=FILE_GRAPHML;
+                    m_fileFormat=FILE_TYPE::GRAPHML;
                 }
                 else if (userFileType == "GraphML") {
-                    m_fileFormat=FILE_PAJEK;
+                    m_fileFormat=FILE_TYPE::PAJEK;
                 }
                 else if (userFileType == "GML") {
-                    m_fileFormat=FILE_GML;
+                    m_fileFormat=FILE_TYPE::GML;
                 }
                 else if (userFileType == "UCINET") {
-                    m_fileFormat=FILE_UCINET;
+                    m_fileFormat=FILE_TYPE::UCINET;
                 }
                 else if (userFileType == "Adjacency") {
-                    m_fileFormat=FILE_ADJACENCY;
+                    m_fileFormat=FILE_TYPE::ADJACENCY;
                 }
                 else if (userFileType == "GraphViz") {
-                    m_fileFormat=FILE_GRAPHVIZ;
+                    m_fileFormat=FILE_TYPE::GRAPHVIZ;
                 }
                 else if (userFileType == "Edge List (weighted)") {
-                    m_fileFormat=FILE_EDGELIST_WEIGHTED;
+                    m_fileFormat=FILE_TYPE::EDGELIST_WEIGHTED;
                 }
                 else if (userFileType == "Edge List (simple, non-weighted)") {
-                    m_fileFormat=FILE_EDGELIST_SIMPLE;
+                    m_fileFormat=FILE_TYPE::EDGELIST_SIMPLE;
                 }
                 else if (userFileType == "Two-mode sociomatrix") {
-                    m_fileFormat=FILE_TWOMODE;
+                    m_fileFormat=FILE_TYPE::TWOMODE;
                 }
 
             }
@@ -6507,43 +6496,43 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
 
         else if (m_fileName.endsWith(".graphml",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".xml",Qt::CaseInsensitive ) ) {
-            m_fileFormat=FILE_GRAPHML;
+            m_fileFormat=FILE_TYPE::GRAPHML;
         }
         else if (m_fileName.endsWith(".net",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".paj",Qt::CaseInsensitive )  ||
                  m_fileName.endsWith(".pajek",Qt::CaseInsensitive ) ) {
-            m_fileFormat=FILE_PAJEK;
+            m_fileFormat=FILE_TYPE::PAJEK;
         }
         else if (m_fileName.endsWith(".dl",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".dat",Qt::CaseInsensitive ) ) {
-            m_fileFormat=FILE_UCINET;
+            m_fileFormat=FILE_TYPE::UCINET;
         }
         else if (m_fileName.endsWith(".sm",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".csv",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".adj",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".txt",Qt::CaseInsensitive )) {
-            m_fileFormat=FILE_ADJACENCY;
+            m_fileFormat=FILE_TYPE::ADJACENCY;
         }
         else if (m_fileName.endsWith(".dot",Qt::CaseInsensitive ) ) {
-            m_fileFormat=FILE_GRAPHVIZ;
+            m_fileFormat=FILE_TYPE::GRAPHVIZ;
         }
         else if (m_fileName.endsWith(".gml",Qt::CaseInsensitive ) ) {
-            m_fileFormat=FILE_GML;
+            m_fileFormat=FILE_TYPE::GML;
         }
         else if (m_fileName.endsWith(".list",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".lst",Qt::CaseInsensitive )  ) {
-            m_fileFormat=FILE_EDGELIST_SIMPLE;
+            m_fileFormat=FILE_TYPE::EDGELIST_SIMPLE;
         }
         else if (m_fileName.endsWith(".wlist",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".wlst",Qt::CaseInsensitive )  ) {
-            m_fileFormat=FILE_EDGELIST_WEIGHTED;
+            m_fileFormat=FILE_TYPE::EDGELIST_WEIGHTED;
         }
         else if (m_fileName.endsWith(".2sm",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".aff",Qt::CaseInsensitive )  ) {
-            m_fileFormat=FILE_TWOMODE;
+            m_fileFormat=FILE_TYPE::TWOMODE;
         }
         else
-            m_fileFormat=FILE_UNRECOGNIZED;
+            m_fileFormat=FILE_TYPE::UNRECOGNIZED;
     }
 
 
@@ -6572,45 +6561,45 @@ void MainWindow::slotNetworkFileDialogRejected() {
 void MainWindow::slotNetworkFileDialogFilterSelected(const QString &filter) {
     qDebug() << "MW::slotNetworkFileDialogFilterSelected() - filter" << filter;
     if (filter.startsWith("GraphML",Qt::CaseInsensitive ) ) {
-        fileType=FILE_GRAPHML;
-        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_GRAPHML";
+        fileType=FILE_TYPE::GRAPHML;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_TYPE::GRAPHML";
     }
     else if (filter.contains("PAJEK",Qt::CaseInsensitive ) ) {
-        fileType=FILE_PAJEK;
-        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_PAJEK";
+        fileType=FILE_TYPE::PAJEK;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_TYPE::PAJEK";
     }
     else if (filter.contains("DL",Qt::CaseInsensitive ) ||
              filter.contains("UCINET",Qt::CaseInsensitive ) ) {
-        fileType=FILE_UCINET;
-        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_UCINET";
+        fileType=FILE_TYPE::UCINET;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_TYPE::UCINET";
     }
     else if (filter.contains("Adjancency",Qt::CaseInsensitive ) ) {
-        fileType=FILE_ADJACENCY;
-        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_ADJACENCY";
+        fileType=FILE_TYPE::ADJACENCY;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_TYPE::ADJACENCY";
     }
     else if (filter.contains("GraphViz",Qt::CaseInsensitive ) ) {
-        fileType=FILE_GRAPHVIZ;
-        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_GRAPHVIZ";
+        fileType=FILE_TYPE::GRAPHVIZ;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_TYPE::GRAPHVIZ";
     }
     else if (filter.contains("GML",Qt::CaseInsensitive ) ) {
-        fileType=FILE_GML;
-        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_GML";
+        fileType=FILE_TYPE::GML;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_TYPE::GML";
     }
     else if (filter.contains("Simple Edge List",Qt::CaseInsensitive ) ) {
-        fileType=FILE_EDGELIST_SIMPLE;
-        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_EDGELIST_SIMPLE";
+        fileType=FILE_TYPE::EDGELIST_SIMPLE;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_TYPE::EDGELIST_SIMPLE";
     }
     else if (filter.contains("Weighted Edge List",Qt::CaseInsensitive ) ) {
-        fileType=FILE_EDGELIST_WEIGHTED;
-        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_EDGELIST_WEIGHTED";
+        fileType=FILE_TYPE::EDGELIST_WEIGHTED;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_TYPE::EDGELIST_WEIGHTED";
     }
     else if (filter.contains("Two-Mode",Qt::CaseInsensitive )  ) {
-        fileType=FILE_TWOMODE;
-        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_TWOMODE";
+        fileType=FILE_TYPE::TWOMODE;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_TYPE::TWOMODE";
     }
     else {
-        fileType=FILE_UNRECOGNIZED;
-        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_UNRECOGNIZED";
+        fileType=FILE_TYPE::UNRECOGNIZED;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_TYPE::UNRECOGNIZED";
     }
 
 
@@ -6628,7 +6617,7 @@ void MainWindow::slotNetworkFileDialogFileSelected(const QString &fileName) {
              << "calling slotNetworkFileChoose() with fileType" << fileType;
     slotNetworkFileChoose( fileName,
                            fileType,
-                           (  (fileType==FILE_UNRECOGNIZED) ? true : false )
+                           (  (fileType==FILE_TYPE::UNRECOGNIZED) ? true : false )
                            );
 }
 
@@ -6663,11 +6652,11 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
         activeGraph->graphSave(fileName, fileFormat ) ;
     }
     // if it is GraphML or new file not saved yet, just save it.
-    else if (activeGraph->graphFileFormat()==FILE_GRAPHML ||
+    else if (activeGraph->graphFileFormat()==FILE_TYPE::GRAPHML ||
              ( activeGraph->graphSaved() && !activeGraph->graphLoaded() )
              )
     {
-        activeGraph->graphSave(fileName, FILE_GRAPHML);
+        activeGraph->graphSave(fileName, FILE_TYPE::GRAPHML);
     }
     // check whether Graph thinks this is supported.
     else if ( activeGraph->graphFileFormatExportSupported(
@@ -6697,7 +6686,7 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
             fileName.append(".graphml");
             fileNameNoPath = QFileInfo (fileName).fileName();
             setLastPath(fileName); // store this path
-            activeGraph->graphSave(fileName, FILE_GRAPHML);
+            activeGraph->graphSave(fileName, FILE_TYPE::GRAPHML);
             break;
         case QMessageBox::Cancel:
         case QMessageBox::No:
@@ -6750,7 +6739,7 @@ void MainWindow::slotNetworkSaveAs() {
         QFileInfo fileInfo (fileName);
         fileNameNoPath = fileInfo.fileName();
         setLastPath(fileName); // store this path
-        slotNetworkSave(FILE_GRAPHML);
+        slotNetworkSave(FILE_TYPE::GRAPHML);
     }
     else  {
         statusMessage( tr("Saving aborted"));
@@ -6831,7 +6820,7 @@ void MainWindow::slotNetworkPrint() {
  */
 void MainWindow::slotNetworkImportGraphML(){
     bool m_checkSelectFileType = false;
-    slotNetworkFileChoose( QString::null, FILE_GRAPHML, m_checkSelectFileType);
+    slotNetworkFileChoose( QString::null, FILE_TYPE::GRAPHML, m_checkSelectFileType);
 }
 
 
@@ -6841,7 +6830,7 @@ void MainWindow::slotNetworkImportGraphML(){
  */
 void MainWindow::slotNetworkImportGML(){
     bool m_checkSelectFileType = false;
-    slotNetworkFileChoose( QString::null, FILE_GML, m_checkSelectFileType);
+    slotNetworkFileChoose( QString::null, FILE_TYPE::GML, m_checkSelectFileType);
 }
 
 /**
@@ -6849,7 +6838,7 @@ void MainWindow::slotNetworkImportGML(){
  */
 void MainWindow::slotNetworkImportPajek(){
     bool m_checkSelectFileType = false;
-    slotNetworkFileChoose( QString::null, FILE_PAJEK, m_checkSelectFileType);
+    slotNetworkFileChoose( QString::null, FILE_TYPE::PAJEK, m_checkSelectFileType);
 }
 
 
@@ -6860,7 +6849,7 @@ void MainWindow::slotNetworkImportPajek(){
  */
 void MainWindow::slotNetworkImportSM(){
     bool m_checkSelectFileType = false;
-    slotNetworkFileChoose( QString::null, FILE_ADJACENCY, m_checkSelectFileType);
+    slotNetworkFileChoose( QString::null, FILE_TYPE::ADJACENCY, m_checkSelectFileType);
 }
 
 
@@ -6871,7 +6860,7 @@ void MainWindow::slotNetworkImportSM(){
  */
 void MainWindow::slotNetworkImportDot(){
     bool m_checkSelectFileType = false;
-    slotNetworkFileChoose( QString::null ,FILE_GRAPHVIZ, m_checkSelectFileType);
+    slotNetworkFileChoose( QString::null ,FILE_TYPE::GRAPHVIZ, m_checkSelectFileType);
 }
 
 
@@ -6885,7 +6874,7 @@ void MainWindow::slotNetworkImportDot(){
  */
 void MainWindow::slotNetworkImportDL(){
     bool m_checkSelectFileType = false;
-    slotNetworkFileChoose( QString::null, FILE_UCINET, m_checkSelectFileType);
+    slotNetworkFileChoose( QString::null, FILE_TYPE::UCINET, m_checkSelectFileType);
 }
 
 
@@ -6923,11 +6912,11 @@ void MainWindow::slotNetworkImportEdgeList(){
     {
     case 1:
         qDebug() << "***  MW::slotNetworkImportEdgeList - Weighted list selected! " ;
-        slotNetworkFileChoose( QString::null, FILE_EDGELIST_WEIGHTED, m_checkSelectFileType);
+        slotNetworkFileChoose( QString::null, FILE_TYPE::EDGELIST_WEIGHTED, m_checkSelectFileType);
         break;
     case 2:
         qDebug() << "***  MW: slotNetworkImportEdgeList - Simple list selected! " ;
-        slotNetworkFileChoose( QString::null, FILE_EDGELIST_SIMPLE, m_checkSelectFileType);
+        slotNetworkFileChoose( QString::null, FILE_TYPE::EDGELIST_SIMPLE, m_checkSelectFileType);
         break;
     }
 }
@@ -6939,7 +6928,7 @@ void MainWindow::slotNetworkImportEdgeList(){
  */
 void MainWindow::slotNetworkImportTwoModeSM(){
     bool m_checkSelectFileType = false;
-    slotNetworkFileChoose( QString::null, FILE_TWOMODE, m_checkSelectFileType);
+    slotNetworkFileChoose( QString::null, FILE_TYPE::TWOMODE, m_checkSelectFileType);
 }
 
 
@@ -7054,7 +7043,7 @@ void MainWindow::slotNetworkFileLoad(const QString m_fileName,
     QString delimiter=QString::null;
     int two_sm_mode = 0;
 
-    if ( m_fileFormat == FILE_TWOMODE ) {
+    if ( m_fileFormat == FILE_TYPE::TWOMODE ) {
         switch(
                slotHelpMessageToUser (
                    USER_MSG_QUESTION_CUSTOM,
@@ -7079,8 +7068,8 @@ void MainWindow::slotNetworkFileLoad(const QString m_fileName,
         }
     }
 
-    if ( m_fileFormat == FILE_EDGELIST_SIMPLE ||
-         m_fileFormat == FILE_EDGELIST_WEIGHTED ) {
+    if ( m_fileFormat == FILE_TYPE::EDGELIST_SIMPLE ||
+         m_fileFormat == FILE_TYPE::EDGELIST_WEIGHTED ) {
         bool ok;
         QString delimiter =
                 QInputDialog::getText(
@@ -7631,7 +7620,7 @@ void MainWindow::slotNetworkExportPajek()
         return;
     }
 
-    activeGraph->graphSave(fileName, FILE_PAJEK);
+    activeGraph->graphSave(fileName, FILE_TYPE::PAJEK);
 }
 
 
@@ -7700,7 +7689,7 @@ void MainWindow::slotNetworkExportSM(){
 
     }
 
-    activeGraph->graphSave(fileName, FILE_ADJACENCY,  saveEdgeWeights ) ;
+    activeGraph->graphSave(fileName, FILE_TYPE::ADJACENCY,  saveEdgeWeights ) ;
 
 }
 
@@ -8008,32 +7997,32 @@ void MainWindow::slotNetworkDataSetRecreate (const QString m_fileName) {
     activeGraph->writeDataSetToFile(appSettings["dataDir"], m_fileName);
 
     if (m_fileName.endsWith(".graphml")) {
-        m_fileFormat=FILE_GRAPHML;
+        m_fileFormat=FILE_TYPE::GRAPHML;
     }
     else if (m_fileName.endsWith(".pajek") || m_fileName.endsWith(".paj") ||
              m_fileName.endsWith(".net")) {
-        m_fileFormat=FILE_PAJEK;
+        m_fileFormat=FILE_TYPE::PAJEK;
     }
     else if (m_fileName.endsWith(".sm") || m_fileName.endsWith(".adj")) {
-        m_fileFormat=FILE_ADJACENCY;
+        m_fileFormat=FILE_TYPE::ADJACENCY;
     }
     else if (m_fileName.endsWith(".dot")) {
-        m_fileFormat=FILE_GRAPHVIZ;
+        m_fileFormat=FILE_TYPE::GRAPHVIZ;
     }
     else if (m_fileName.endsWith(".dl")) {
-        m_fileFormat=FILE_UCINET;
+        m_fileFormat=FILE_TYPE::UCINET;
     }
     else if (m_fileName.endsWith(".gml")) {
-        m_fileFormat=FILE_GML;
+        m_fileFormat=FILE_TYPE::GML;
     }
     else if (m_fileName.endsWith(".wlst")) {
-        m_fileFormat=FILE_EDGELIST_WEIGHTED;
+        m_fileFormat=FILE_TYPE::EDGELIST_WEIGHTED;
     }
     else if (m_fileName.endsWith(".lst")) {
-        m_fileFormat=FILE_EDGELIST_SIMPLE;
+        m_fileFormat=FILE_TYPE::EDGELIST_SIMPLE;
     }
     else if (m_fileName.endsWith(".2sm")) {
-        m_fileFormat=FILE_TWOMODE;
+        m_fileFormat=FILE_TYPE::TWOMODE;
     }
 
     slotNetworkFileLoad(appSettings["dataDir"]+m_fileName, "UTF-8", m_fileFormat);
@@ -8825,32 +8814,32 @@ void MainWindow::slotEditNodeFind(const QStringList &list,
     else if (searchType == "score"){
 
         if ( indexStr.contains("Degree Centr") )
-            index=INDEX_DC;
+            index=IndexType::DC;
         else if ( indexStr.contains("Closeness Centr") &&
                   !indexStr.contains("IR"))
-            index=INDEX_CC;
+            index=IndexType::CC;
         else if ( indexStr.contains("Influence Range Closeness Centrality")  ||
                   indexStr.contains("IR Closeness")
                   )
-            index=INDEX_IRCC;
+            index=IndexType::IRCC;
         else if ( indexStr.contains("Betweenness Centr"))
-            index=INDEX_BC;
+            index=IndexType::BC;
         else if (indexStr.contains("Stress Centr"))
-            index=INDEX_SC;
+            index=IndexType::SC;
         else if (indexStr.contains("Eccentricity Centr"))
-            index=INDEX_EC;
+            index=IndexType::EC;
         else if (indexStr.contains("Power Centr"))
-            index=INDEX_PC;
+            index=IndexType::PC;
         else if (indexStr.contains("Information Centr"))
-            index=INDEX_IC;
+            index=IndexType::IC;
         else if (indexStr.contains("Eigenvector Centr"))
-            index=INDEX_EVC;
+            index=IndexType::EVC;
         else if (indexStr.contains("Degree Prestige"))
-            index=INDEX_DP;
+            index=IndexType::DP;
         else if (indexStr.contains("PageRank Prestige"))
-            index=INDEX_PRP;
+            index=IndexType::PRP;
         else if (indexStr.contains("Proximity Prestige"))
-            index=INDEX_PP;
+            index=IndexType::PP;
 
         activeGraph->vertexFindByIndexScore(index, list);
 
@@ -9036,9 +9025,12 @@ void MainWindow::slotEditNodePropertiesDialog() {
  * @param color
  * @param shape
  */
-void MainWindow::slotEditNodeProperties( const QString label, const int size,
-                                         const QString value, const QColor color,
-                                         const QString shape) {
+void MainWindow::slotEditNodeProperties(const QString &label,
+                                        const int &size,
+                                        const QString &value,
+                                        const QColor &color,
+                                        const QString &shape,
+                                        const QString &iconPath) {
 
     int selectedNodesCount = activeGraph->graphSelectedVerticesCount();
 
@@ -9062,7 +9054,7 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
         qDebug()<< "MW::slotEditNodeProperties() - updating size ";
         activeGraph->vertexSizeSet( activeGraph->vertexClicked(), size);
         qDebug()<< "MW::slotEditNodeProperties() - updating shape ";
-        activeGraph->vertexShapeSet( activeGraph->vertexClicked(), shape);
+        activeGraph->vertexShapeSet( activeGraph->vertexClicked(), shape, iconPath );
     }
     else {
         //some nodes are selected
@@ -9092,7 +9084,7 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
             qDebug()<< "MW::slotEditNodeProperties() - updating size ";
             activeGraph->vertexSizeSet(nodeNumber,size);
             qDebug()<< "MW::slotEditNodeProperties() - updating shape ";
-            activeGraph->vertexShapeSet( nodeNumber, shape);
+            activeGraph->vertexShapeSet( nodeNumber, shape, iconPath);
         }
     }
 
@@ -9345,7 +9337,7 @@ void MainWindow::slotEditNodeShape(QString shape, const int vertex,
                     << "triangle"
                     << "star"
                     << "bugs"
-                    << "custom";
+                    << "custom icon";
 
         int curShapeIndex = shapesList.indexOf(appSettings["initNodeShape"]);
 
@@ -9748,7 +9740,7 @@ void MainWindow::slotEditEdgeClicked (const int &v1,
 
     QString edgeName;
 
-    if ( type == EDGE_UNDIRECTED ) {
+    if ( type == EdgeType::Undirected ) {
         statusMessage(  QString
                         (tr("Undirected edge %1 <--> %2 of weight %3 has been selected. "
                             "Click anywhere else to unselect it."))
@@ -9764,7 +9756,7 @@ void MainWindow::slotEditEdgeClicked (const int &v1,
             edgeName=QString("EDGE: ") + QString::number(v1)+QString(" -- ")+QString::number(v2);
         }
     }
-    else if (type == EDGE_RECIPROCATED){
+    else if (type == EdgeType::Reciprocated){
         statusMessage(  QString
                         (tr("Reciprocated edge %1 <--> %2 of weight %3 has been selected. "
                             "Opposite exists. "
@@ -9996,7 +9988,7 @@ void MainWindow::slotEditEdgeRemove(){
 
     }
     else {
-        if (activeGraph->edgeClicked().type == EDGE_RECIPROCATED) {
+        if (activeGraph->edgeClicked().type == EdgeType::Reciprocated) {
             QStringList items;
             QString arcA = QString::number(activeGraph->edgeClicked().v1)+ " --> "+QString::number(activeGraph->edgeClicked().v2);
             QString arcB = QString::number(activeGraph->edgeClicked().v2)+ " --> "+QString::number(activeGraph->edgeClicked().v1);
@@ -10292,7 +10284,7 @@ void MainWindow::slotEditEdgeWeight(){
     else {
         qDebug() << "MW: slotEditEdgeWeight() - an Edge has already been clicked";
 
-        if (activeGraph->edgeClicked().type == EDGE_RECIPROCATED) {
+        if (activeGraph->edgeClicked().type == EdgeType::Reciprocated) {
             QStringList items;
             QString arcA = QString::number(activeGraph->edgeClicked().v1)+ " --> "+QString::number(activeGraph->edgeClicked().v2);
             QString arcB = QString::number(activeGraph->edgeClicked().v2)+ " --> "+QString::number(activeGraph->edgeClicked().v1);
@@ -10828,32 +10820,32 @@ void MainWindow::slotLayoutRadialByProminenceIndex(QString choice=""){
     QString prominenceIndexName = choice;
     slotLayoutGuides(true);
     if ( prominenceIndexName.contains("Degree Centr") )
-        userChoice=INDEX_DC;
+        userChoice=IndexType::DC;
     else if ( prominenceIndexName.contains("Closeness Centr") &&
               !prominenceIndexName.contains("IR"))
-        userChoice=INDEX_CC;
+        userChoice=IndexType::CC;
     else if ( prominenceIndexName.contains("Influence Range Closeness Centrality")  ||
               prominenceIndexName.contains("IR Closeness")
               )
-        userChoice=INDEX_IRCC;
+        userChoice=IndexType::IRCC;
     else if ( prominenceIndexName.contains("Betweenness Centr"))
-        userChoice=INDEX_BC;
+        userChoice=IndexType::BC;
     else if (prominenceIndexName.contains("Stress Centr"))
-        userChoice=INDEX_SC;
+        userChoice=IndexType::SC;
     else if (prominenceIndexName.contains("Eccentricity Centr"))
-        userChoice=INDEX_EC;
+        userChoice=IndexType::EC;
     else if (prominenceIndexName.contains("Power Centr"))
-        userChoice=INDEX_PC;
+        userChoice=IndexType::PC;
     else if (prominenceIndexName.contains("Information Centr"))
-        userChoice=INDEX_IC;
+        userChoice=IndexType::IC;
     else if (prominenceIndexName.contains("Eigenvector Centr"))
-        userChoice=INDEX_EVC;
+        userChoice=IndexType::EVC;
     else if (prominenceIndexName.contains("Degree Prestige"))
-        userChoice=INDEX_DP;
+        userChoice=IndexType::DP;
     else if (prominenceIndexName.contains("PageRank Prestige"))
-        userChoice=INDEX_PRP;
+        userChoice=IndexType::PRP;
     else if (prominenceIndexName.contains("Proximity Prestige"))
-        userChoice=INDEX_PP;
+        userChoice=IndexType::PP;
 
     qDebug() << "MainWindow::slotLayoutRadialByProminenceIndex() "
              << "prominenceIndexName " << prominenceIndexName
@@ -12782,7 +12774,7 @@ void MainWindow::slotAnalyzeCentralityDegree(){
         m_textEditors << ed;
     }
 
-    slotAnalyzeProminenceDistributionChart(INDEX_DC);
+    slotAnalyzeProminenceDistributionChart(IndexType::DC);
 
     statusMessage(tr("Out-Degree Centralities saved as: ") + QDir::toNativeSeparators(fn));
 }
@@ -12893,7 +12885,7 @@ void MainWindow::slotAnalyzeCentralityCloseness(){
         m_textEditors << ed;
     }
 
-    slotAnalyzeProminenceDistributionChart(INDEX_CC);
+    slotAnalyzeProminenceDistributionChart(IndexType::CC);
 
     statusMessage(tr("Closeness Centralities  saved as: ") + QDir::toNativeSeparators(fn));
 }
@@ -12932,7 +12924,7 @@ void MainWindow::slotAnalyzeCentralityClosenessIR(){
         m_textEditors << ed;
     }
 
-    slotAnalyzeProminenceDistributionChart(INDEX_IRCC);
+    slotAnalyzeProminenceDistributionChart(IndexType::IRCC);
 
     statusMessage(tr("Influence Range Closeness Centralities saved as: ")+QDir::toNativeSeparators(fn));
 }
@@ -12969,7 +12961,7 @@ void MainWindow::slotAnalyzeCentralityBetweenness(){
         m_textEditors << ed;
     }
 
-    slotAnalyzeProminenceDistributionChart(INDEX_BC);
+    slotAnalyzeProminenceDistributionChart(IndexType::BC);
 
     statusMessage(tr("Betweenness Centralities saved as: ")+QDir::toNativeSeparators(fn));
 }
@@ -13015,7 +13007,7 @@ void MainWindow::slotAnalyzePrestigeDegree(){
         m_textEditors << ed;
     }
 
-    slotAnalyzeProminenceDistributionChart(INDEX_DP);
+    slotAnalyzeProminenceDistributionChart(IndexType::DP);
 
     statusMessage(tr("Degree Prestige (in-degree) indices saved as: ") + QDir::toNativeSeparators(fn));
 }
@@ -13049,7 +13041,7 @@ void MainWindow::slotAnalyzePrestigePageRank(){
         m_textEditors << ed;
     }
 
-    slotAnalyzeProminenceDistributionChart(INDEX_PRP);
+    slotAnalyzeProminenceDistributionChart(IndexType::PRP);
 
     statusMessage(tr("PageRank Prestige indices saved as: ")+ QDir::toNativeSeparators(fn));
 }
@@ -13082,7 +13074,7 @@ void MainWindow::slotAnalyzePrestigeProximity(){
         ed->show();
         m_textEditors << ed;
     }
-    slotAnalyzeProminenceDistributionChart(INDEX_PP);
+    slotAnalyzeProminenceDistributionChart(IndexType::PP);
     statusMessage(tr("Proximity Prestige indices saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
@@ -13147,7 +13139,7 @@ void MainWindow::slotAnalyzeCentralityInformation(){
         ed->show();
         m_textEditors << ed;
     }
-    slotAnalyzeProminenceDistributionChart(INDEX_IC);
+    slotAnalyzeProminenceDistributionChart(IndexType::IC);
     statusMessage(tr("Information Centralities saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
@@ -13186,7 +13178,7 @@ void MainWindow::slotAnalyzeCentralityEigenvector(){
         ed->show();
         m_textEditors << ed;
     }
-    slotAnalyzeProminenceDistributionChart(INDEX_EVC);
+    slotAnalyzeProminenceDistributionChart(IndexType::EVC);
     statusMessage(tr("Eigenvector Centralities saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
@@ -13224,7 +13216,7 @@ void MainWindow::slotAnalyzeCentralityStress(){
         ed->show();
         m_textEditors << ed;
     }
-    slotAnalyzeProminenceDistributionChart(INDEX_SC);
+    slotAnalyzeProminenceDistributionChart(IndexType::SC);
     statusMessage(tr("Stress Centralities saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
@@ -13262,7 +13254,7 @@ void MainWindow::slotAnalyzeCentralityPower(){
         ed->show();
         m_textEditors << ed;
     }
-    slotAnalyzeProminenceDistributionChart(INDEX_PC);
+    slotAnalyzeProminenceDistributionChart(IndexType::PC);
     statusMessage(tr("Gil-Schmidt Power Centralities saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
@@ -13298,7 +13290,7 @@ void MainWindow::slotAnalyzeCentralityEccentricity(){
         ed->show();
         m_textEditors << ed;
     }
-    slotAnalyzeProminenceDistributionChart(INDEX_EC);
+    slotAnalyzeProminenceDistributionChart(IndexType::EC);
     statusMessage(tr("Eccentricity Centralities saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
@@ -13572,7 +13564,7 @@ void MainWindow::slotOptionsEdgeArrowsVisibility(bool toggle){
 void MainWindow::slotOptionsEdgeWeightsDuringComputation(bool toggle) {
     askedAboutWeights=false;
     askAboutWeights(toggle);
-    activeGraph->graphSetModified(GRAPH_CHANGED_EDGES);
+    activeGraph->graphSetModified(activeGraph->GraphChange::ChangedEdges);
 }
 
 

@@ -38,12 +38,11 @@
 
 #include <QtCharts/QChartGlobal>
 
-
-
 //FYI: stack is a wrapper around <deque> in C++, see: www.cplusplus.com/reference/stl/stack
 #include <stack>
 #include <map>
 
+#include "global.h"
 #include "graphvertex.h"
 #include "matrix.h"
 #include "parser.h"
@@ -62,85 +61,12 @@ class QBarCategoryAxis;
 QT_CHARTS_END_NAMESPACE
 
 
+
 QT_CHARTS_USE_NAMESPACE
 
+SOCNETV_USE_NAMESPACE
+
 using namespace std;
-
-static const int EDGE_DIRECTED = 0;
-static const int EDGE_RECIPROCATED = 1;
-static const int EDGE_UNDIRECTED = 2;
-
-
-enum NodeShape{
-    Box,
-    Circle,
-    Diamond,
-    Ellipse,
-    Triangle,
-    Star,
-    Bugs,
-    Icon
-};
-
-
-
-static const int FILE_GRAPHML           = 1;  // .GRAPHML .XML
-static const int FILE_PAJEK             = 2;  // .PAJ .NET
-static const int FILE_ADJACENCY         = 3;  // .ADJ .CSV .SM
-static const int FILE_GRAPHVIZ          = 4;  // .DOT
-static const int FILE_UCINET            = 5;  // .DL .DAT
-static const int FILE_GML               = 6;  // .GML
-static const int FILE_EDGELIST_WEIGHTED = 7;  // .CSV, .TXT, .LIST, LST, WLST
-static const int FILE_EDGELIST_SIMPLE   = 8;  // .CSV, .TXT, .LIST, LST
-static const int FILE_TWOMODE           = 9;  // .2SM .AFF
-static const int FILE_UNRECOGNIZED      =-1;  // UNRECOGNIZED FILE FORMAT
-
-static const int INDEX_DC   = 1;
-static const int INDEX_CC   = 2;
-static const int INDEX_IRCC = 3;
-static const int INDEX_BC   = 4;
-static const int INDEX_SC   = 5;
-static const int INDEX_EC   = 6;
-static const int INDEX_PC   = 7;
-static const int INDEX_IC   = 8;
-static const int INDEX_EVC  = 9;
-static const int INDEX_DP   = 10;
-static const int INDEX_PRP  = 11;
-static const int INDEX_PP   = 12;
-
-static const int GRAPH_CHANGED_NONE                = 0;
-static const int GRAPH_CHANGED_MINOR_OPTIONS       = 1;
-static const int GRAPH_CHANGED_VERTICES_METADATA   = 2;
-static const int GRAPH_CHANGED_EDGES_METADATA      = 3;
-static const int GRAPH_CHANGED_POSITIONS           = 4;
-static const int GRAPH_CHANGED_VERTICES            = 11;
-static const int GRAPH_CHANGED_EDGES               = 12;
-static const int GRAPH_CHANGED_VERTICES_AND_EDGES  = 13;
-static const int GRAPH_CHANGED_NEW                 = 14;
-
-static const int CLUSTERING_SINGLE_LINKAGE   = 0; //"single-link" or minimum
-static const int CLUSTERING_COMPLETE_LINKAGE = 1; // "complete-link or maximum
-static const int CLUSTERING_AVERAGE_LINKAGE  = 2;
-
-static const int SUBGRAPH_CLIQUE = 1;
-static const int SUBGRAPH_STAR   = 2;
-static const int SUBGRAPH_CYCLE  = 3;
-static const int SUBGRAPH_LINE   = 4;
-
-static const int MATRIX_ADJACENCY        = 1;
-static const int MATRIX_DISTANCES        = 2;
-static const int MATRIX_DEGREE           = 3;
-static const int MATRIX_LAPLACIAN        = 4;
-static const int MATRIX_ADJACENCY_INVERSE = 5;
-static const int MATRIX_GEODESICS        = 6;
-static const int MATRIX_REACHABILITY     = 7;
-static const int MATRIX_ADJACENCY_TRANSPOSE = 8;
-static const int MATRIX_COCITATION = 9;
-static const int MATRIX_DISTANCES_EUCLIDEAN = 12;
-static const int MATRIX_DISTANCES_MANHATTAN= 13;
-static const int MATRIX_DISTANCES_JACCARD= 14;
-static const int MATRIX_DISTANCES_HAMMING= 15;
-static const int MATRIX_DISTANCES_CHEBYSHEV= 16;
 
 
 
@@ -158,81 +84,12 @@ typedef QVector<QString> V_str;
 
 
 
-struct ClickedEdge {
-    int v1;
-    int v2;
-    int type;
-};
-
-
-
-typedef QPair<int, int> SelectedEdge;
-
-
-
-class GraphDistance
-{
-public:
-    int target;
-    int distance;
-
-    GraphDistance(int t, int dist)
-        : target(t), distance(dist)
-    {
-
-    }
-};
-
-
-// implement a min-priority queue
-class GraphDistancesCompare {
-    public:
-    bool operator()(GraphDistance& t1, GraphDistance& t2)
-    {
-       if (t1.distance == t2.distance)
-            return t1.target > t2.target;
-       return t1.distance > t2.distance;  //minimum priority
-       // Returns true if t1 is closer than t2
-       // else
-    }
-};
-
-
-
-
-
-class PairVF
-{
-public:
-    qreal value;
-    qreal frequency;
-
-    PairVF(qreal v, qreal f)
-        : value(v), frequency(f)
-    {
-
-    }
-};
-
-
-// implement a min-priority queue
-class PairVFCompare {
-    public:
-    bool operator()(PairVF& v1, PairVF& v2)
-    {
-       return v1.value > v2.value; //minimum priority
-       // Returns true if t1 is closer than t2
-       // else
-    }
-};
 
 
 /**
   TODO & KNOWN BUGS:
     \todo Group edge editing: i.e. change weight or color.
-    \todo Enrich Node properties dialog
-    \todo Update app icons
-    \todo - CHECK weighted networks results (IRCC and distance matrix with other combinations)
+     \todo - CHECK weighted networks results (IRCC and distance matrix with other combinations)
     \todo - CHECK graphIsWeighted corner case results, when !graphIsModified.
     \todo - CHECK graphConnectedness() algorithm implementation (m_vertexPairsUnilaterallyConnected)
 
@@ -242,7 +99,7 @@ class PairVFCompare {
   \bug Pajek files with no ic / label in nodes are displayed without colors???
   \bug wrong default edge colors (not the ones used by Settings) after loading GraphML files.
   \bug Resizing the MW view does not resize/reposition the layout guides
-  \bug Fruchterman-Reingold model fixes some nodes to (1,1) breaking the layout
+
 
 
   TODO
@@ -468,7 +325,29 @@ signals:
     void  operateSpider();
 
 
-public: 	
+public:
+
+    enum GraphChange {
+        ChangedNone                = 0,
+        ChangedMinorOptions        = 1,
+        ChangedVerticesMetadata    = 2,
+        ChangedEdgesMetadata       = 3,
+        ChangedPositions           = 4,
+        ChangedVertices            = 11,
+        ChangedEdges               = 12,
+        ChangedVerticesEdges       = 13,
+        ChangedNew                 = 14,
+    };
+
+
+
+    enum Clustering {
+        Single_Linkage   = 0, //"single-link" or minimum
+        Complete_Linkage = 1, // "complete-link or maximum
+        Average_Linkage  = 2, //mean or "average-linkage" or UPGMA
+
+    };
+
     /* INIT AND CLEAR*/
     Graph();
     void clear(const QString &reason="");
@@ -632,7 +511,7 @@ public:
     void edgeTypeSet(const int &v1,
                      const int &v2,
                      const qreal &w,
-                     const int &dirType=EDGE_DIRECTED);
+                     const int &dirType=EdgeType::Directed);
 
     void edgeWeightSet (const int &v1, const int &v2,
                         const qreal &w,

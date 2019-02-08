@@ -207,7 +207,7 @@
       <widget class="QSpinBox" name="maxLinksPerPageSpinBox">
        <property name="minimumSize">
         <size>
-         <width>63</width>
+         <width>50</width>
          <height>0</height>
         </size>
        </property>

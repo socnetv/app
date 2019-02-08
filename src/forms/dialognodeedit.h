@@ -49,10 +49,16 @@ public:
     ~DialogNodeEdit();
 public slots:
     void checkErrors ();
+    void getNodeShape(const int &nodeShapeIndex);
     void getUserChoices ();
     void selectColor();
 signals:
-    void userChoices( const QString, const int, const QString, const QColor, const QString);
+    void userChoices( const QString &label,
+                      const int &size,
+                      const QString &value,
+                      const QColor &color,
+                      const QString &shape,
+                      const QString &iconPath=QString::null);
     void nodeEditDialogError(QString);
 
 private:

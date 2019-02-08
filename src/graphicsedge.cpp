@@ -32,21 +32,14 @@
 #include <QtDebug>                  //used for qDebug messages
 #include <cmath>
 
+#include "global.h"
 #include "graphicswidget.h"
 #include "graphicsedge.h"
 #include "graphicsnode.h"
 #include "graphicsedgeweight.h"
 #include "graphicsedgelabel.h"
-
-
-
-static const int EDGE_DIRECTED = 0;
-static const int EDGE_RECIPROCATED = 1;
-static const int EDGE_UNDIRECTED = 2;
-
-
-static const double Pi = 3.14159265;
-static double TwoPi = 2.0 * Pi;
+// #include <QPaintEngine>
+SOCNETV_USE_NAMESPACE
 
 
 GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
@@ -118,7 +111,10 @@ GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
     setZValue(ZValueEdge);
 
     setBoundingRegionGranularity(0);
+    // When using QGraphicsItem::ItemCoordinateCache
+    // we should unset it before exporting canvas content to PDF.
     //setCacheMode (QGraphicsItem::ItemCoordinateCache);
+    //setCacheMode(QGraphicsItem::DeviceCoordinateCache);
 
     adjust();
 }
@@ -398,7 +394,7 @@ void GraphicsEdge::adjust(){
         //		qDebug() << " acos() " << ::acos( line_dx  / line_length ) ;
 
         if ( line_dy  >= 0)
-            angle = TwoPi - angle;
+            angle = M_PI_X_2 - angle;
 
 
 //            qDebug() << "*** GraphicsEdge::paint(). Constructing arrows. "
@@ -407,10 +403,10 @@ void GraphicsEdge::adjust(){
 //                     << " length: " << line_length
 //                     << " angle: "<< angle;
 
-            QPointF destArrowP1 = targetPoint + QPointF(sin(angle - Pi / 3) * m_arrowSize,
-                                                        cos(angle - Pi / 3) * m_arrowSize);
-            QPointF destArrowP2 = targetPoint + QPointF(sin(angle - Pi + Pi / 3) * m_arrowSize,
-                                                        cos(angle - Pi + Pi / 3) * m_arrowSize);
+            QPointF destArrowP1 = targetPoint + QPointF(sin(angle - M_PI_3) * m_arrowSize,
+                                                        cos(angle - M_PI_3) * m_arrowSize);
+            QPointF destArrowP2 = targetPoint + QPointF(sin(angle - M_PI + M_PI_3) * m_arrowSize,
+                                                        cos(angle - M_PI + M_PI_3) * m_arrowSize);
 //            qDebug() << "*** GraphicsEdge::paint() destArrowP1 "
 //                     <<  destArrowP1.x() << "," << destArrowP1.y()
 //                      << "  destArrowP2 " <<  destArrowP2.x() << "," << destArrowP2.y();
@@ -422,13 +418,13 @@ void GraphicsEdge::adjust(){
                                  << targetPoint
                                  );
 
-            if (m_edgeDirType == EDGE_UNDIRECTED || m_edgeDirType == EDGE_RECIPROCATED ) {
+            if (m_edgeDirType == EdgeType::Undirected || m_edgeDirType == EdgeType::Reciprocated ) {
     //            qDebug() << "**** GraphicsEdge::paint() This edge is SYMMETRIC! "
     //                     << " So, we need to create Arrow at src node as well";
-                QPointF srcArrowP1 = sourcePoint + QPointF(sin(angle +Pi / 3) * m_arrowSize,
-                                                           cos(angle +Pi / 3) * m_arrowSize);
-                QPointF srcArrowP2 = sourcePoint + QPointF(sin(angle +Pi - Pi  / 3) * m_arrowSize,
-                                                           cos(angle +Pi - Pi / 3) * m_arrowSize);
+                QPointF srcArrowP1 = sourcePoint + QPointF(sin(angle +M_PI_3) * m_arrowSize,
+                                                           cos(angle +M_PI_3) * m_arrowSize);
+                QPointF srcArrowP2 = sourcePoint + QPointF(sin(angle +M_PI - M_PI_3) * m_arrowSize,
+                                                           cos(angle +M_PI - M_PI_3) * m_arrowSize);
 
                 path.addPolygon ( QPolygonF()
                                      << sourcePoint
@@ -497,7 +493,7 @@ void GraphicsEdge::setDirectionType(const int &dirType){
     prepareGeometryChange();
     m_edgeDirType = dirType;
     m_drawArrows = true;
-    if (m_edgeDirType==EDGE_UNDIRECTED) {
+    if (m_edgeDirType==EdgeType::Undirected) {
         m_drawArrows = false;
     }
     adjust();
@@ -571,7 +567,8 @@ void GraphicsEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
     if (!source || !target)
         return;
 
-    //qDebug() <<"@@@ GraphicsEdge::paint()";
+    //qDebug() <<"@@@ GraphicsEdge::paint() on" << painter->paintEngine()->type();
+     //painter->setClipRect();
 
      //if the edge is being dragged around, darken it!
      if (option->state & QStyle::State_Selected) {

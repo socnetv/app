@@ -38,7 +38,7 @@
 #include "graphicsedge.h"
 #include "graphicsnodelabel.h"
 #include "graphicsnodenumber.h"
-#include <math.h>
+
 
 
 

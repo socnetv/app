@@ -30,12 +30,12 @@
 #include <QGraphicsScene>
 #include <QResizeEvent>
 #include <QMouseEvent>
+#include <QtMath>
 #include <QDebug>
 #include <QWheelEvent>
-#include <math.h>
+
 
 #include "mainwindow.h"
-
 #include "graphicsnode.h"
 #include "graphicsedge.h"
 #include "graphicsnodenumber.h"
@@ -64,7 +64,7 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         m_currentRotationAngle = 0;
 
         clickedEdge=0;
-//        edgesHash.reserve(1000);
+        edgesHash.reserve(50000);
 //        nodeHash.reserve(1000);
 
         m_edgeHighlighting = true;
@@ -82,6 +82,8 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         */
         scene() -> setItemIndexMethod(QGraphicsScene::BspTreeIndex); //NoIndex (for anime)
 
+
+        //setInteractive(false);
         connect ( scene() , &QGraphicsScene::selectionChanged,
                      this, &GraphicsWidget::getSelectedItems);
 
@@ -248,7 +250,7 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
            << "direction type:" << type
            << " - nodeHash reports "<< nodeHash.size()<<" nodes.";
 
-    if ( type != EDGE_RECIPROCATED ) {
+    if ( type != EdgeType::Reciprocated ) {
 
         GraphicsEdge *edge=new GraphicsEdge (
                     this,
@@ -264,7 +266,7 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
         edgesHash.insert(edgeName, edge);
     }
     else {
-        // if type is EDGE_RECIPROCATED, we just need to change the direction type
+        // if type is EdgeType::Reciprocated, we just need to change the direction type
         // of the existing opposite edge.
         edgeName = createEdgeName(target,source);
         qDebug()<< "GW::drawEdge() - Reciprocating existing directed edge"<<edgeName;
@@ -423,7 +425,7 @@ void GraphicsWidget::removeEdge(const int &source,
     if ( edgesHash.contains(edgeName) ) {
         int directionType = edgesHash.value(edgeName)->directionType();
         delete edgesHash.value(edgeName);
-        if (directionType == EDGE_RECIPROCATED) {
+        if (directionType == EdgeType::Reciprocated) {
             if (!removeOpposite) {
                 drawEdge(target, source, 1,"");
             }
@@ -441,8 +443,8 @@ void GraphicsWidget::removeEdge(const int &source,
                  << edgeName;
         if ( edgesHash.contains(edgeName) ) {
             qDebug() << "GW::removeEdge() - Opposite edge exists. Check if it is reciprocated";
-            if ( edgesHash.value(edgeName)->directionType() == EDGE_RECIPROCATED ) {
-                edgesHash.value(edgeName)->setDirectionType(EDGE_DIRECTED);
+            if ( edgesHash.value(edgeName)->directionType() == EdgeType::Reciprocated ) {
+                edgesHash.value(edgeName)->setDirectionType(EdgeType::Directed);
                 return;
             }
         }

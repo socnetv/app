@@ -43,7 +43,6 @@
 #include <QThread>
 //#include <QMetaType>
 
-#include <math.h>
 
 #include "graph.h"    // needed here for static vars declared in Graph
 
@@ -312,8 +311,13 @@ public slots:
     void slotEditNodeRemove();
     void slotEditNodeOpenContextMenu();
     void slotEditNodePropertiesDialog();
-    void slotEditNodeProperties( const QString, const int, const QString,
-                             const QColor, const QString);
+    void slotEditNodeProperties( const QString &label,
+                                 const int &size,
+                                 const QString &value,
+                                 const QColor &color,
+                                 const QString &shape,
+                                 const QString &iconPath
+                                 );
     void slotEditNodeSelectedToClique();
     void slotEditNodeSelectedToStar();
     void slotEditNodeSelectedToCycle();

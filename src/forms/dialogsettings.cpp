@@ -35,6 +35,14 @@
 #include <QMap>
 #include <QtDebug>
 
+
+
+#include "global.h"
+
+
+SOCNETV_USE_NAMESPACE
+
+
 DialogSettings::DialogSettings(
         QMap<QString, QString> &appSettings,
         QWidget *parent) :
@@ -584,13 +592,13 @@ void DialogSettings::getNodeColor(){
 void DialogSettings::getNodeShapeIndex(const int &shape){
 
     switch (shape) {
-    case 0:
+    case NodeShape::Box:
         m_appSettings["initNodeShape"]  = "box";
         break;
-    case 1:
+    case NodeShape::Circle:
         m_appSettings["initNodeShape"]  = "circle";
         break;
-    case 2:
+    case NodeShape::Diamond:
         m_appSettings["initNodeShape"]  = "diamond";
         break;
     case 3:
@@ -637,6 +645,7 @@ void DialogSettings::getNodeIconFile(){
                                                     tr("PNG Images (*.png);;JPEG Images ( *.jpg);;All files (*.*)")
                                                            );
     if (!m_nodeIconFile.isEmpty()) {
+        qDebug() << m_nodeIconFile;
        ui->nodeIconSelectEdit->setText(m_nodeIconFile);
        m_appSettings["initNodeIconPath"]= m_nodeIconFile;
        (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);

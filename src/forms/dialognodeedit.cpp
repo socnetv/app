@@ -25,7 +25,10 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
+#include "dialognodeedit.h"
+#include "ui_dialognodeedit.h"
 
+#include <QGlobalStatic>
 #include <QDebug>
 #include <QLineEdit>
 #include <QSpinBox>
@@ -36,8 +39,6 @@
 #include <QPixmap>
 #include <QGraphicsEffect>
 
-#include "dialognodeedit.h"
-#include "ui_dialognodeedit.h"
 
 DialogNodeEdit::DialogNodeEdit(QWidget *parent,
                                const QString &label,
@@ -134,7 +135,67 @@ DialogNodeEdit::DialogNodeEdit(QWidget *parent,
     connect (ui->colorButton, &QToolButton::clicked,
              this, &DialogNodeEdit::selectColor);
 
+    connect (ui->nodeShapeComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+             this, &DialogNodeEdit::getNodeShape);
 }
+
+
+
+/**
+ * @brief DialogNodeEdit::getNodeShape
+ * @param shape
+ */
+void DialogNodeEdit::getNodeShape(const int &nodeShapeIndex){
+
+
+    switch (nodeShapeIndex) {
+    case 0:
+        nodeShape  = "box";
+        break;
+    case 1:
+        nodeShape  = "circle";
+        break;
+    case 2:
+        nodeShape  = "diamond";
+        break;
+    case 3:
+        nodeShape  = "ellipse";
+        break;
+    case 4:
+        nodeShape  = "triangle";
+        break;
+    case 5:
+        nodeShape  = "star";
+        break;
+    case 6:
+        nodeShape  = "bugs";
+        break;
+    case 7:
+        nodeShape  = "custom";
+        break;
+    default:
+        break;
+    }
+
+        qDebug()<< "DialogNodeEdit::getNodeShape() - new node shape " << nodeShape;
+
+    if ( nodeShapeIndex == 7) {
+        // enable textedit and file button and raise file dialog
+
+        ui->nodeIconSelectButton->setEnabled(true);
+        ui->nodeIconSelectEdit->setEnabled(true);
+        ui->nodeIconSelectEdit->setText(iconPath);
+        if (!iconPath.isEmpty()) {
+            ui->nodeShapeComboBox->setItemIcon(7, QIcon(iconPath));
+        }
+    }
+    else {
+        ui->nodeIconSelectButton->setEnabled(false);
+        ui->nodeIconSelectEdit->setEnabled(false);
+        ui->nodeIconSelectEdit->setText ("");
+    }
+}
+
 
 
 
