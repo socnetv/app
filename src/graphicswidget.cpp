@@ -1049,12 +1049,16 @@ bool GraphicsWidget::setEdgeWeight(const int &source,
  */
 void GraphicsWidget::setEdgeArrowsVisibility(const bool &toggle){
     qDebug()<< "GW::setEdgeArrowsVisibility()" << toggle;
-    QList<QGraphicsItem *> list = scene()->items();
-    for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
-        if ( (*item)->type() ==TypeEdge){
-            GraphicsEdge *edge = (GraphicsEdge*) (*item);
-            edge->showArrows(toggle);
-        }
+//    QList<QGraphicsItem *> list = scene()->items();
+//    for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
+//        if ( (*item)->type() ==TypeEdge){
+//            GraphicsEdge *edge = (GraphicsEdge*) (*item);
+//            edge->showArrows(toggle);
+//        }
+//    }
+
+    foreach ( GraphicsEdge *m_edge, edgesHash) {
+        m_edge->showArrows(toggle);
     }
 
 }
