@@ -92,7 +92,7 @@ public:
 
     void relationSet(int newRel) ;
 
-    void edgeAddTo (const int &v2, const qreal &weight);
+    void edgeAddTo (const int &v2, const qreal &weight, const QString &color=QString(), const QString &label=QString());
     void edgeAddFrom(const int &v1, const qreal &weight);
 
     void changeOutEdgeWeight (const int &target, const qreal &weight);

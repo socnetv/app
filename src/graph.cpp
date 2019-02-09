@@ -1990,10 +1990,10 @@ void Graph::edgeAdd (const int &v1, const int &v2, const qreal &weight,
             << "] to vertex "<< v2 << "["<< target << "] of weight "<<weight
             << " and label " << label;
 
-    m_graph [ source ]->edgeAddTo(v2, weight );
+    m_graph [ source ]->edgeAddTo(v2, weight, color, label );
     m_graph [ target ]->edgeAddFrom(v1, weight);
-    m_graph[ source ]->setOutLinkColor(v2, color);
-    m_graph[ source ]->setOutEdgeLabel(v2, label);
+//    m_graph[ source ]->setOutLinkColor(v2, color);
+//    m_graph[ source ]->setOutEdgeLabel(v2, label);
 
     if ( weight != 1 && weight!=0) {
         graphSetWeighted(true);

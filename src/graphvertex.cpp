@@ -66,10 +66,10 @@ GraphVertex::GraphVertex(Graph* parentGraph,
 	m_y=p.y();
     //FIXME m_outLinkColors list need update when we remove vertices/edges
     //m_outLinkColors.reserve(2000);
-//    m_outEdgeLabels.reserve(1000);
-//    m_outEdges.reserve(1000);
-//    m_inEdges.reserve(1000);
-//    m_neighborhoodList.reserve(1000);
+    m_outEdgeLabels.reserve(2000);
+    m_outEdges.reserve(2000);
+    m_inEdges.reserve(2000);
+    m_neighborhoodList.reserve(1000);
 
     m_outEdgesCounter = 0;
     m_inEdgesCounter = 0;
@@ -169,13 +169,15 @@ QString GraphVertex::colorToPajek(){
  * @param target
  * @param weight
  */
-void GraphVertex::edgeAddTo (const int &v2, const qreal &weight) {
+void GraphVertex::edgeAddTo (const int &v2, const qreal &weight, const QString &color, const QString &label) {
     qDebug() <<"GraphVertex::edgeAddTo() - new outbound edge"
             << name() << " -> "<< v2 << " weight "<< weight
                << " relation " << m_curRelation;
     // do not use [] operator - silently creates an item if key do not exist
     m_outEdges.insertMulti(
                 v2, pair_i_fb(m_curRelation, pair_f_b(weight, true) ) );
+    setOutLinkColor(v2, color);
+    setOutEdgeLabel(v2, label);
 }
 
 

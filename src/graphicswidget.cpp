@@ -64,8 +64,8 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         m_currentRotationAngle = 0;
 
         clickedEdge=0;
-        edgesHash.reserve(50000);
-//        nodeHash.reserve(1000);
+        edgesHash.reserve(150000);
+        nodeHash.reserve(2000);
 
         m_edgeHighlighting = true;
         m_edgeMinOffsetFromNode=6;
