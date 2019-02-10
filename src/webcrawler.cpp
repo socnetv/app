@@ -269,7 +269,9 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
     QString requestUrlStr = requestUrl.toString();
     QString locationHeader = reply->header(QNetworkRequest::LocationHeader).toString();
     int sourceNode = knownUrls [ requestUrl ];
+    QString scheme = requestUrl.scheme();
     QString host = requestUrl.host();
+    QUrl baseUrl = QUrl( scheme + "://" + host);
     QString path = requestUrl.path();
     qDebug() << "   wc_parser::parse() - HTML of url "
              << requestUrlStr << " sourceNode " << sourceNode;
@@ -325,29 +327,32 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
 
     //    qDebug() <<  " \npage contents: " << page << endl << endl;
 
-    // Delete html head
-    qDebug() << "   wc_parser::parse() - Erasing <head></head>";
-    start=page.indexOf ("<head");		//Find head pos -- deliberately open tag
-    end=page.indexOf ("</head>");		//Find head pos
+    // We only search inside <body>...</body> tags
+    qDebug() << "   wc_parser::parse() - Finding <body></body> tags";
+    start=page.indexOf ("<body");
+    end=page.indexOf ("</body>");
     if ( start != -1 && end != -1 ) {
-        page = page.remove(start, end);		//erase head
+        page = page.remove(0, start);       // remove everything until <body>
+        end=page.indexOf ("</body>");       // find new index pos of </body>
+        page = page.left(end);              // keep everything until </body>
     }
     else if ( start == -1  ) {
-        qDebug() << "   wc_parser::parse() - ERROR IN locating tag <head> start";
+        qDebug() << "   wc_parser::parse() - ERROR IN opening <body> tag";
     }
     else if ( end == -1  ) {
-        qDebug() << "   wc_parser::parse() - ERROR IN locating tag </head> end";
+        qDebug() << "   wc_parser::parse() - ERROR IN locating closing </body> tag";
     }
 
+
     // Delete all scripts from page source
-    while (page.contains("<script")) {
-        qDebug () << "   wc_parser::parse() - Deleting scripts";
-        start=page.indexOf ("<script");		//Find pos -- deliberately open tag
-        end=page.indexOf ("</script>");		//Find pos
-        if ( start != -1 && end != -1 ) {
-            page = page.remove(start, end);		//erase head
-        }
-    }
+//    while (page.contains("<script")) {
+//        start=page.indexOf ("<script");		//Find pos
+//        end=page.indexOf ("</script>");		//Find pos
+//        qDebug () << "   wc_parser::parse() - Deleting <script> inside body at pos: "<<start;
+//        if ( start != -1 && end != -1 ) {
+//            page.remove(start, end-start);
+//        }
+//    }
 
 
     // Main Loop: While there are more links in the page, parse them
@@ -388,8 +393,14 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
         newUrlStr=page.left(end);			//Save new url to newUrl :)
 
         newUrlStr=newUrlStr.simplified();
+        qDebug() << "   wc_parser::parse() - found newUrlStr "<< newUrlStr;
 
         newUrl = QUrl(newUrlStr);
+
+        if (newUrl.isRelative()) {
+            qDebug() << "   wc_parser::parse() - newUrl is RELATIVE. Merging baseUrl with this";
+            newUrl=baseUrl.resolved(newUrl);
+        }
 
         if (!newUrl.isValid()) {
             invalidUrlsInPage ++;
