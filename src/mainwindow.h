@@ -276,11 +276,13 @@ public slots:
                                const QStringList &linkClasses,
                                const int &maxNodes,
                                const int &maxLinksPerPage,
-                               const bool &extLinks,
                                const bool &intLinks,
                                const bool &childLinks,
                                const bool &parentLinks,
                                const bool &selfLinks,
+                               const bool &extLinksIncluded,
+                               const bool &extLinksCrawl,
+                               const bool &socialLinks,
                                const bool &delayedRequests);
 
     //EDIT MENU

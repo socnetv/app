@@ -3107,11 +3107,13 @@ void Graph::webCrawl(const QString &seedUrl,
                       const QStringList &linkClasses,
                       const int &maxNodes,
                       const int &maxLinksPerPage,
-                      const bool &extLinks,
                       const bool &intLinks,
                      const bool &childLinks,
                      const bool &parentLinks,
                      const bool &selfLinks,
+                      const bool &extLinksIncluded,
+                      const bool &extLinksCrawl,
+                      const bool &socialLinks,
                      const bool &delayedRequests){
 
     relationCurrentRename(tr("web"), true);
@@ -3184,11 +3186,13 @@ void Graph::webCrawl(const QString &seedUrl,
                     linkClasses,
                     maxNodes,
                     maxLinksPerPage,
-                    extLinks,
                     intLinks,
                     childLinks,
                     parentLinks,
-                    selfLinks);
+                    selfLinks,
+                    extLinksIncluded,
+                    extLinksCrawl,
+                    socialLinks);
 
     wc_spider->load (http,
                      wc_parser,

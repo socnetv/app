@@ -197,11 +197,14 @@ void WebCrawler_Parser::load(const QString &url,
                              const QStringList &linkClasses,
                              const int &maxN,
                              const int &maxLinksPerPage,
-                             const bool &extLinks,
                              const bool &intLinks,
                              const bool &childLinks,
                              const bool &parentLinks,
-                             const bool &selfLinks) {
+                             const bool &selfLinks,
+                             const bool &extLinksIncluded,
+                             const bool &extLinksCrawl,
+                             const bool &socialLinks
+                             ) {
 
     qDebug () << "   wc_parser::load() - thread():"
               << thread()
@@ -218,11 +221,25 @@ void WebCrawler_Parser::load(const QString &url,
     m_linkClasses = linkClasses;                    // list of link classes to include
     m_maxNodes=maxN;                                // max urls we'll check == max nodes in the social network
     m_maxLinksPerPage = maxLinksPerPage;            // max links per page to search for
-    m_extLinks = extLinks;
+
     m_intLinks = intLinks;
     m_selfLinks = selfLinks;
     m_childLinks = childLinks;
     m_parentLinks = parentLinks;
+
+    m_extLinksIncluded = extLinksIncluded;
+    m_extLinksCrawl = extLinksCrawl;
+    m_socialLinks = socialLinks;
+    m_socialLinksExcluded << "facebook.com"
+                          << "twitter.com"
+                          << "linkedin.com"
+                          << "instagram.com"
+                          << "pinterest.com"
+                          << "telegram.org"
+                          << "telegram.me"
+                          << "youtube.com"
+                          << "reddit.com"
+                          << "plus.google.com";
 
     //clear global variables
     frontier.clear();                               // the Url buffer (global)
@@ -240,8 +257,10 @@ void WebCrawler_Parser::load(const QString &url,
              << " Node " << m_discoveredNodes << " should be already created. "
              << " m_maxNodes " << m_maxNodes
              << " m_maxLinksPerPage " << m_maxLinksPerPage
-             << " m_extLinks " << m_extLinks
-             << " m_intLinks " << m_intLinks;
+             << " m_intLinks " << m_intLinks
+             << " m_extLinksIncluded " << m_extLinksIncluded
+             << " m_extLinksCrawl"<<m_extLinksCrawl
+             << " m_socialLinks"<<m_socialLinks;
 
 }
 
@@ -340,7 +359,7 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
 
 
     // Main Loop: While there are more links in the page, parse them
-    while (page.contains("href")) {
+    while (page.contains(" href")) {
 
         if (m_maxNodes>0) {
             if (m_discoveredNodes >= m_maxNodes ) {
@@ -354,7 +373,12 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
         // all whitespace sequence becomes single space
         page=page.simplified();
 
-        start=page.indexOf ("href");		//Find its pos
+        start=page.indexOf (" href");		//Find its pos
+        // Why " href" instead of "href"?
+        // Because href might be inside random strings/tokens or
+        // even in share links (ie. whatsapp://sadadasd &href=url)
+        // By searching for " href" we avoid some of these cases, without
+        // introducing other serious problems.
 
         page = page.remove(0, start);		//erase everything up to href
 
@@ -528,15 +552,39 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
 
                 if (  newUrl.host() != host  ) {
                     qDebug()<< "   wc_parser::parse() - newUrl ABSOLUTE & EXTERNAL.";
-                    if ( !m_extLinks ) {
-                        qDebug()<< "   wc_parser::parse() - External URLs forbidden."
-                                <<" Creating new node but NOT ADDING it to frontier...";
-                        newLink(sourceNode, newUrl, false);
+                    if ( !m_extLinksIncluded ) {
+                        qDebug()<< "   wc_parser::parse() - External URLs forbidden. CONTINUE";
+                        continue;
                     }
                     else {
-                        qDebug()<< "   wc_parser::parse() - External URLs allowed."
-                                <<" Creating new node and ADDING it to frontier...";
-                        newLink(sourceNode, newUrl, true);
+                        m_urlIsSocial = false;
+                        if ( !m_socialLinks ) {
+                            for (constIterator = m_socialLinksExcluded.constBegin();
+                                 constIterator != m_socialLinksExcluded.constEnd();
+                                 ++constIterator)  {
+                                urlPattern = (*constIterator).toLocal8Bit().constData();
+                                if ( newUrl.host().contains ( urlPattern) ) {
+                                    m_urlIsSocial = true;
+                                    break;
+                                }
+                            }
+                            if ( m_urlIsSocial) {
+                                qDebug() << "!!   wc_parser::parse() -  newUrl in excluded social links:"
+                                         << urlPattern
+                                         << "CONTINUE ";
+                                continue;
+                            }
+                        }
+                        if ( m_extLinksCrawl ) {
+                            qDebug()<< "   wc_parser::parse() - External URLs included and to be crawled."
+                                    <<" Creating new node and ADDING it to frontier...";
+                            newLink(sourceNode, newUrl, true);
+                        }
+                        else {
+                            qDebug()<< "   wc_parser::parse() - External URLs included but not to be crawled."
+                                    <<" Creating new node but NOT ADDING it to frontier...";
+                            newLink(sourceNode, newUrl, false);
+                        }
                     }
                 }
                 else {

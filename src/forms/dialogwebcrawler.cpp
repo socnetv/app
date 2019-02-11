@@ -43,34 +43,25 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
     (ui.seedUrlEdit)->setFocus();
 
     ui.patternsIncludedTextEdit->setText("*");
-    ui.patternsIncludedTextEdit->setToolTip("<b>ALLOWED URL PATTERNS</b>\n"
-                                            "Enter, in separate lines, one or more "
-                                            "url patterns to <b>include</b> while crawling. "
-                                            "\nI.e. example.com/pattern/*"
-                                            "\n\nDo not enter spaces."
-                                            "\n\nLeave * to crawl all urls.");
-
     ui.patternsExcludedTextEdit->setText("");
-    ui.patternsExcludedTextEdit->setToolTip("<b>NOT ALLOWED URL PATTERNS</b>\n"
-                                            "Enter, in separate lines, one or more "
-                                            "url patterns to <b>exclude</b> while crawling. "
-                                            "\nI.e. example.com/pattern/*"
-                                            "\n\nDo not enter spaces."
-                                            "\n\nLeave empty to crawl all urls.");
 
-
+    extLinksIncluded=false;
+    socialLinks=false;
     extLinks=false;
     intLinks=true;
     childLinks=true;
     parentLinks=false;
 
-    ui.extLinksCheckBox->setChecked (extLinks);
+    ui.intLinksCheckBox->setChecked (intLinks);
     ui.childLinksCheckBox->setChecked(childLinks);
     ui.parentLinksCheckBox->setChecked(parentLinks);
-    ui.intLinksCheckBox->setChecked (intLinks);
+
+    ui.extLinksIncludedCheckBox->setChecked(extLinksIncluded);
+    ui.extLinksCheckBox->setChecked (extLinks);
+
+    ui.socialLinksCheckBox->setChecked(socialLinks);
 
     ui.selfLinksCheckBox->setChecked(false);
-
     ui.waitCheckBox ->setChecked(true);
 
     connect (ui.seedUrlEdit, &QLineEdit::textChanged,
@@ -90,7 +81,8 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
              this, &DialogWebCrawler::checkErrors);
 
 
-    connect (ui.extLinksCheckBox, &QCheckBox::stateChanged,
+
+    connect (ui.intLinksCheckBox, &QCheckBox::stateChanged,
              this, &DialogWebCrawler::checkErrors);
 
     connect (ui.childLinksCheckBox, &QCheckBox::stateChanged,
@@ -99,8 +91,17 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
     connect (ui.parentLinksCheckBox, &QCheckBox::stateChanged,
              this, &DialogWebCrawler::checkErrors);
 
-    connect (ui.intLinksCheckBox, &QCheckBox::stateChanged,
+
+    connect (ui.extLinksIncludedCheckBox, &QCheckBox::stateChanged,
              this, &DialogWebCrawler::checkErrors);
+
+    connect (ui.extLinksCheckBox, &QCheckBox::stateChanged,
+             this, &DialogWebCrawler::checkErrors);
+
+
+    connect (ui.socialLinksCheckBox, &QCheckBox::stateChanged,
+             this, &DialogWebCrawler::checkErrors);
+
 
     connect ( ui.buttonBox,SIGNAL(accepted()), this, SLOT(getUserChoices()) );
 
@@ -189,22 +190,79 @@ void DialogWebCrawler::checkErrors(){
 
     // CHECK CHECKBOXES (AT LEAST ONE SHOULD BE ENABLED)
 
-    if ( !ui.extLinksCheckBox->isChecked()  && !ui.intLinksCheckBox->isChecked() )
+    if ( !ui.extLinksIncludedCheckBox->isChecked()  && !ui.intLinksCheckBox->isChecked() )
     {
         (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setDisabled(true);
+
         checkboxesError = true;
+        QGraphicsColorizeEffect *effect1 = new QGraphicsColorizeEffect;
+        QGraphicsColorizeEffect *effect2 = new QGraphicsColorizeEffect;
+        effect1->setColor(QColor("red"));
+        effect2->setColor(QColor("red"));
+        ui.extLinksIncludedCheckBox->setGraphicsEffect(effect1);
+        ui.intLinksCheckBox->setGraphicsEffect(effect2);
+
+        ui.selfLinksCheckBox->setEnabled(false);
+        ui.parentLinksCheckBox->setEnabled(false);
+        ui.childLinksCheckBox->setEnabled(false);
+        ui.selfLinksCheckBox->setChecked(false),
+        ui.parentLinksCheckBox->setChecked(false);
+        ui.childLinksCheckBox->setChecked(false);
+
+        ui.extLinksCheckBox->setEnabled(false);
+        ui.extLinksCheckBox->setChecked(false);
+        ui.socialLinksCheckBox->setChecked(false);
+        ui.socialLinksCheckBox->setEnabled(false);
+
     }
     else {
+        ui.extLinksIncludedCheckBox->setGraphicsEffect(0);
+        ui.intLinksCheckBox->setGraphicsEffect(0);
+
         if (!patternsInError && !patternsExError && !urlError ) {
             (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(true);
             checkboxesError = false;
-            extLinks = ui.extLinksCheckBox->isChecked();
+
             intLinks = ui.intLinksCheckBox->isChecked();
+            extLinksIncluded = ui.extLinksIncludedCheckBox->isChecked();
+            extLinks = ui.extLinksCheckBox->isChecked();
+            socialLinks = ui.socialLinksCheckBox->isChecked();
+
             if (!intLinks) {
                 ui.selfLinksCheckBox->setChecked(false),
                 ui.parentLinksCheckBox->setChecked(false);
                 ui.childLinksCheckBox->setChecked(false);
+                ui.selfLinksCheckBox->setEnabled(false);
+                ui.parentLinksCheckBox->setEnabled(false);
+                ui.childLinksCheckBox->setEnabled(false);
             }
+            else {
+                ui.selfLinksCheckBox->setEnabled(true);
+                ui.parentLinksCheckBox->setEnabled(true);
+                ui.childLinksCheckBox->setEnabled(true);
+                ui.selfLinksCheckBox->setCheckable(true);
+                ui.parentLinksCheckBox->setCheckable(true);
+                ui.childLinksCheckBox->setCheckable(true);
+
+            }
+
+            if (!extLinksIncluded) {
+                ui.extLinksCheckBox->setEnabled(false);
+                ui.extLinksCheckBox->setChecked(false);
+                ui.socialLinksCheckBox->setChecked(false);
+                ui.socialLinksCheckBox->setEnabled(false);
+            }
+            else {
+                ui.extLinksCheckBox->setEnabled(true);
+                ui.socialLinksCheckBox->setEnabled(true);
+                ui.extLinksCheckBox->setCheckable(true);
+                ui.socialLinksCheckBox->setCheckable(true);
+
+            }
+            if (extLinks) {
+                ui.extLinksIncludedCheckBox->setChecked(true);
+            }
+
         }
     }
 
@@ -339,11 +397,13 @@ void DialogWebCrawler::getUserChoices(){
                       linkClasses,
                       maxUrlsToCrawl,
                       maxLinksPerPage,
-                      extLinks,
                       intLinks,
                       ui.childLinksCheckBox->isChecked(),
                       ui.parentLinksCheckBox->isChecked(),
                       ui.selfLinksCheckBox->isChecked(),
-                      ui.waitCheckBox ->isChecked()
+                      ui.waitCheckBox ->isChecked(),
+                      ui.extLinksIncludedCheckBox->isChecked(),
+                      ui.extLinksCheckBox->isChecked(),
+                      ui.socialLinksCheckBox ->isChecked()
                       );
 }

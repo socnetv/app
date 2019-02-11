@@ -48,11 +48,13 @@ public:
                const QStringList &linkClasses,
                const int &maxNodes,
                const int &maxLinksPerPage,
-               const bool &extLinks,
                const bool &intLinks,
                const bool &childLinks,
                const bool &parentLinks,
-               const bool &selfLinks);
+               const bool &selfLinks,
+               const bool &extLinksIncluded,
+               const bool &extLinksCrawl,
+               const bool &socialLinks);
 
 public slots:
     void parse(QNetworkReply *reply);
@@ -71,15 +73,21 @@ private:
     int m_maxNodes;
     int m_discoveredNodes;
     int m_maxLinksPerPage;
-    bool m_extLinks;
+
     bool m_intLinks;
     bool m_childLinks;
     bool m_parentLinks;
     bool m_selfLinks ;
+    bool m_extLinksIncluded;
+    bool m_extLinksCrawl;
+    bool m_socialLinks;
+    bool m_urlIsSocial;
+
     QStringList m_urlPatternsIncluded;
     QString urlPattern;
     QStringList m_urlPatternsExcluded;
     QStringList m_linkClasses;
+    QStringList m_socialLinksExcluded;
     QStringList::const_iterator constIterator;
     bool m_urlPatternAllowed;
     bool m_urlPatternNotAllowed;
