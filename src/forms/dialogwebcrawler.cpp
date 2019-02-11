@@ -61,8 +61,12 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
 
     extLinks=false;
     intLinks=true;
+    childLinks=true;
+    parentLinks=false;
 
     ui.extLinksCheckBox->setChecked (extLinks);
+    ui.childLinksCheckBox->setChecked(childLinks);
+    ui.parentLinksCheckBox->setChecked(parentLinks);
     ui.intLinksCheckBox->setChecked (intLinks);
 
     ui.selfLinksCheckBox->setChecked(false);
@@ -87,6 +91,12 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
 
 
     connect (ui.extLinksCheckBox, &QCheckBox::stateChanged,
+             this, &DialogWebCrawler::checkErrors);
+
+    connect (ui.childLinksCheckBox, &QCheckBox::stateChanged,
+             this, &DialogWebCrawler::checkErrors);
+
+    connect (ui.parentLinksCheckBox, &QCheckBox::stateChanged,
              this, &DialogWebCrawler::checkErrors);
 
     connect (ui.intLinksCheckBox, &QCheckBox::stateChanged,
@@ -190,6 +200,11 @@ void DialogWebCrawler::checkErrors(){
             checkboxesError = false;
             extLinks = ui.extLinksCheckBox->isChecked();
             intLinks = ui.intLinksCheckBox->isChecked();
+            if (!intLinks) {
+                ui.selfLinksCheckBox->setChecked(false),
+                ui.parentLinksCheckBox->setChecked(false);
+                ui.childLinksCheckBox->setChecked(false);
+            }
         }
     }
 
@@ -326,6 +341,8 @@ void DialogWebCrawler::getUserChoices(){
                       maxLinksPerPage,
                       extLinks,
                       intLinks,
+                      ui.childLinksCheckBox->isChecked(),
+                      ui.parentLinksCheckBox->isChecked(),
                       ui.selfLinksCheckBox->isChecked(),
                       ui.waitCheckBox ->isChecked()
                       );

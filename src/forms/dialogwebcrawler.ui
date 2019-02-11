@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>500</width>
-    <height>655</height>
+    <height>650</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -58,7 +58,7 @@
       <enum>QFrame::NoFrame</enum>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use the built-in web crawler to scan the HTML code of a given initial URL (i.e. a website) and map all internal or external links to other pages found there. &lt;/p&gt;&lt;p&gt;As new urls are discovered, the crawler follows them to scan their HTML code for links as well. For more details, see the Manual. &lt;/p&gt;&lt;p&gt;Enter the initial URL below and change crawling parameters if you like.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use the built-in web crawler to scan the HTML code of a given initial URL (i.e. a website) and map all internal or external links to other pages found there. &lt;/p&gt;&lt;p&gt;As new URLs are discovered, the crawler follows them to scan their HTML code for links as well. For more details, see the Manual. &lt;/p&gt;&lt;p&gt;Enter the initial URL below and change crawling parameters if you like.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
@@ -125,7 +125,7 @@
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the total urls to be crawled. &lt;/p&gt;&lt;p&gt;This is the total nodes the result network will have. &lt;/p&gt;&lt;p&gt;Set value to 0, if you don't want any limits...&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
-        <string>Max urls  to crawl</string>
+        <string>Max URLs  to crawl</string>
        </property>
       </widget>
      </item>
@@ -253,58 +253,92 @@
     </layout>
    </item>
    <item row="6" column="0">
-    <widget class="QCheckBox" name="intLinksCheckBox">
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Crawl Internal Links &lt;/span&gt;&lt;/p&gt;&lt;p&gt;If enabled, the crawler will scan and map &lt;span style=&quot; font-weight:600;&quot;&gt;internal links &lt;/span&gt;(i.e. pages within the initial website). &lt;/p&gt;&lt;p&gt;If you do not want to crawl internal links, disable this option. &lt;/p&gt;&lt;p&gt;Default is to crawl internal links.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="text">
-      <string>Crawl internal links</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
+    <layout class="QVBoxLayout" name="verticalLayout_4">
+     <item>
+      <widget class="QCheckBox" name="intLinksCheckBox">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Crawl Internal Links &lt;/span&gt;&lt;/p&gt;&lt;p&gt;If enabled, the crawler will scan and map &lt;span style=&quot; font-weight:600;&quot;&gt;internal links &lt;/span&gt;(i.e. pages within the initial website). &lt;/p&gt;&lt;p&gt;If you do not want to crawl internal links, disable this option. &lt;/p&gt;&lt;p&gt;Default is to crawl internal links.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Crawl internal links</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="childLinksCheckBox">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Crawl child links&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If enabled, the crawler will map &lt;span style=&quot; font-weight:600;&quot;&gt;child URLs&lt;/span&gt;&lt;/p&gt;&lt;p&gt;A URL is a &lt;span style=&quot; font-style:italic;&quot;&gt;childUrl &lt;/span&gt;of another URL if the two URLs share the same scheme and authority, and this latter URL's path is a parent of the path of &lt;span style=&quot; font-style:italic;&quot;&gt;childUrl&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;For instance, www.socnetv.org/docs/manual.html is a child URL of www.socnetv.org/docs/ &lt;/p&gt;&lt;p&gt;If you don't want to crawl child URLs, disable this option. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Child links</string>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="parentLinksCheckBox">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Crawl parent links&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If enabled, the crawler will map &lt;span style=&quot; font-weight:600;&quot;&gt;parent URLs&lt;/span&gt;. &lt;/p&gt;&lt;p&gt;A URL is a &lt;span style=&quot; font-style:italic;&quot;&gt;parent &lt;/span&gt;of another URL if the two URLs share the same scheme and authority, and the former URL's path is a parent of the path of the latter URL. &lt;/p&gt;&lt;p&gt;For instance, the URL www.socnetv.org/docs/ is a parent URL of www.socnetv.org/docs/manual.html&lt;/p&gt;&lt;p&gt;If you don't want to crawl parent links, disable this option. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Parent links</string>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item row="6" column="1">
-    <widget class="QCheckBox" name="extLinksCheckBox">
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Crawl external links&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If enabled, the crawler will map &lt;span style=&quot; font-weight:600;&quot;&gt;external links&lt;/span&gt;. &lt;/p&gt;&lt;p&gt;For instance, if you start crawling from www.supersyntages.gr and we find there a link to another domain, i.e. www.linuxinsider.gr, then we will go outside of supersyntages.gr and crawl linuxinsider.gr too. &lt;/p&gt;&lt;p&gt;If you don't want to crawl external links, disable this option. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="text">
-      <string>Crawl external links</string>
-     </property>
-     <property name="checked">
-      <bool>false</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="0">
-    <widget class="QCheckBox" name="selfLinksCheckBox">
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled the application will draw a &lt;span style=&quot; font-weight:600;&quot;&gt;self-link&lt;/span&gt; when a page contains a link to itself. &lt;/p&gt;&lt;p&gt;Default is not to allow self-links.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="text">
-      <string>Allow Self-Links</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
+    <layout class="QVBoxLayout" name="verticalLayout_3">
+     <item>
+      <widget class="QCheckBox" name="extLinksCheckBox">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Crawl external links&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If enabled, the crawler will map &lt;span style=&quot; font-weight:600;&quot;&gt;external links&lt;/span&gt;. &lt;/p&gt;&lt;p&gt;For instance, if you start crawling from www.supersyntages.gr and we find there a link to another domain, i.e. www.linuxinsider.gr, then we will go outside of supersyntages.gr and crawl linuxinsider.gr too. &lt;/p&gt;&lt;p&gt;If you don't want to crawl external links, disable this option. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Crawl external links</string>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="selfLinksCheckBox">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled the application will draw a &lt;span style=&quot; font-weight:600;&quot;&gt;self-link&lt;/span&gt; when a page contains a link to itself. &lt;/p&gt;&lt;p&gt;Default is not to allow self-links.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Allow Self-Links</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="waitCheckBox">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Wait for a random number of milliseconds (&lt;span style=&quot; font-weight:600;&quot;&gt;0-1000&lt;/span&gt;) between network requests.  &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Use of this option is recommended, as it lightens the server load by making the requests less frequent.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;By default this option is enabled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Delay between requests</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item row="7" column="1">
-    <widget class="QCheckBox" name="waitCheckBox">
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Wait for a random number of milliseconds (&lt;span style=&quot; font-weight:600;&quot;&gt;0-1000&lt;/span&gt;) between network requests.  &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Use of this option is recommended, as it lightens the server load by making the requests less frequent.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;By default this option is enabled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="text">
-      <string>Wait (delay) between requests</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="1">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="enabled">
       <bool>true</bool>

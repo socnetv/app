@@ -8448,31 +8448,33 @@ void MainWindow::slotNetworkWebCrawlerDialog() {
 
     m_WebCrawlerDialog = new DialogWebCrawler(this);
 
-    connect( m_WebCrawlerDialog, SIGNAL(
-                 userChoices(const QString &,
-                             const QStringList &,
-                             const QStringList &,
-                             const QStringList &,
-                             const int&,
-                             const int&,
-                             const bool&,
-                             const bool&,
-                             const bool&,
-                             const bool &)
-                 ),
-             this, SLOT(
-                 slotNetworkWebCrawler (const QString &,
-                                        const QStringList &,
-                                        const QStringList &,
-                                        const QStringList &,
-                                        const int&,
-                                        const int&,
-                                        const bool&,
-                                        const bool&,
-                                        const bool&,
-                                        const bool &)
-                 )
-             );
+    connect (m_WebCrawlerDialog, &DialogWebCrawler::userChoices,
+             this, &MainWindow::slotNetworkWebCrawler);
+//    connect( m_WebCrawlerDialog, SIGNAL(
+//                 userChoices(const QString &,
+//                             const QStringList &,
+//                             const QStringList &,
+//                             const QStringList &,
+//                             const int&,
+//                             const int&,
+//                             const bool&,
+//                             const bool&,
+//                             const bool&,
+//                             const bool &)
+//                 ),
+//             this, SLOT(
+//                 slotNetworkWebCrawler (const QString &,
+//                                        const QStringList &,
+//                                        const QStringList &,
+//                                        const QStringList &,
+//                                        const int&,
+//                                        const int&,
+//                                        const bool&,
+//                                        const bool&,
+//                                        const bool&,
+//                                        const bool &)
+//                 )
+//             );
 
 
     m_WebCrawlerDialog->exec() ;
@@ -8500,6 +8502,8 @@ void MainWindow::slotNetworkWebCrawler ( const QString &urlSeed,
                                          const int &maxLinksPerPage,
                                          const bool &extLinks,
                                          const bool &intLinks,
+                                         const bool &childLinks,
+                                         const bool &parentLinks,
                                          const bool &selfLinks,
                                          const bool &delayedRequests
                                          ) {
@@ -8515,6 +8519,8 @@ void MainWindow::slotNetworkWebCrawler ( const QString &urlSeed,
                            maxLinksPerPage,
                            extLinks,
                            intLinks,
+                           childLinks,
+                           parentLinks,
                            selfLinks,
                            delayedRequests) ;
 

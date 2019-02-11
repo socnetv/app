@@ -50,6 +50,8 @@ public:
                const int &maxLinksPerPage,
                const bool &extLinks,
                const bool &intLinks,
+               const bool &childLinks,
+               const bool &parentLinks,
                const bool &selfLinks);
 
 public slots:
@@ -69,7 +71,11 @@ private:
     int m_maxNodes;
     int m_discoveredNodes;
     int m_maxLinksPerPage;
-    bool m_extLinks, m_intLinks, m_selfLinks ;
+    bool m_extLinks;
+    bool m_intLinks;
+    bool m_childLinks;
+    bool m_parentLinks;
+    bool m_selfLinks ;
     QStringList m_urlPatternsIncluded;
     QString urlPattern;
     QStringList m_urlPatternsExcluded;

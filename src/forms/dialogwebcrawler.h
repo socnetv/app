@@ -55,6 +55,8 @@ signals:
                       const int &maxLinks,
                       const bool &extLinks,
                       const bool &intLinks,
+                      const bool &childLinks,
+                      const bool &parentLinks,
                       const bool &selfLinks,
                       const bool &delayedRequests
                       );
@@ -64,6 +66,7 @@ private:
     QString seedUrl ;
     int maxLinksPerPage, maxUrlsToCrawl;
     bool extLinks, intLinks;
+    bool childLinks, parentLinks;
     QStringList linkClasses;
     QStringList urlPatternsIncluded;
     QStringList urlPatternsExcluded;

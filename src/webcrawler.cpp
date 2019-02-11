@@ -208,6 +208,8 @@ void WebCrawler_Parser::load(const QString &url,
                              const int &maxLinksPerPage,
                              const bool &extLinks,
                              const bool &intLinks,
+                             const bool &childLinks,
+                             const bool &parentLinks,
                              const bool &selfLinks) {
 
     qDebug () << "   wc_parser::load() - thread():"
@@ -228,6 +230,8 @@ void WebCrawler_Parser::load(const QString &url,
     m_extLinks = extLinks;
     m_intLinks = intLinks;
     m_selfLinks = selfLinks;
+    m_childLinks = childLinks;
+    m_parentLinks = parentLinks;
 
     //clear global variables
     frontier.clear();                               // the Url buffer (global)
@@ -265,16 +269,16 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
 
     // Find to which node the response HTML belongs to
     // Get this from the reply object request method
-    QUrl requestUrl = reply->request().url();
-    QString requestUrlStr = requestUrl.toString();
+    QUrl currentUrl = reply->request().url();
+    QString currentUrlStr = currentUrl.toString();
     QString locationHeader = reply->header(QNetworkRequest::LocationHeader).toString();
-    int sourceNode = knownUrls [ requestUrl ];
-    QString scheme = requestUrl.scheme();
-    QString host = requestUrl.host();
+    int sourceNode = knownUrls [ currentUrl ];
+    QString scheme = currentUrl.scheme();
+    QString host = currentUrl.host();
     QUrl baseUrl = QUrl( scheme + "://" + host);
-    QString path = requestUrl.path();
+    QString path = currentUrl.path();
     qDebug() << "   wc_parser::parse() - HTML of url "
-             << requestUrlStr << " sourceNode " << sourceNode;
+             << currentUrlStr << " sourceNode " << sourceNode;
     qDebug() << "   wc_parser::parse() - host " << host
               << " path " << path;
 
@@ -283,15 +287,15 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
 //              << reply->header(QNetworkRequest::LocationHeader) ;
 //    qDebug () << "   wc_parser::parse() -  decoded locationHeader" << locationHeader ;
 
-//    qDebug () << "   wc_parser::parse() -  encoded requestUrl  " << requestUrl;
-//    qDebug () << "   wc_parser::parse() -  decoded requestUrl " << requestUrlStr;
+//    qDebug () << "   wc_parser::parse() -  encoded currentUrl  " << currentUrl;
+//    qDebug () << "   wc_parser::parse() -  decoded currentUrl " << currentUrlStr;
 
 
     // Check for redirects
-    if ( locationHeader != "" && locationHeader != requestUrlStr ) {
+    if ( locationHeader != "" && locationHeader != currentUrlStr ) {
         qDebug () << "&&   wc_parser::parse() Location response header "
                   << locationHeader
-                  << " differs from requestUrl " << requestUrlStr
+                  << " differs from currentUrl " << currentUrlStr
                   << " Creating node redirect - Creating edge - RETURN ";
         newLink( sourceNode, locationHeader , true );
         return;
@@ -316,7 +320,7 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
         //FIXME: Frameset pages are not parsed! See docs/manual.html for example.
 
         qDebug() << "##   wc_parser::parse() - Empty or not useful html from "
-                 << requestUrl
+                 << currentUrl
                  << " page size " << page.size()
                  << " \npage contents: " << page
                  << " RETURN ##";
@@ -342,17 +346,6 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
     else if ( end == -1  ) {
         qDebug() << "   wc_parser::parse() - ERROR IN locating closing </body> tag";
     }
-
-
-    // Delete all scripts from page source
-//    while (page.contains("<script")) {
-//        start=page.indexOf ("<script");		//Find pos
-//        end=page.indexOf ("</script>");		//Find pos
-//        qDebug () << "   wc_parser::parse() - Deleting <script> inside body at pos: "<<start;
-//        if ( start != -1 && end != -1 ) {
-//            page.remove(start, end-start);
-//        }
-//    }
 
 
     // Main Loop: While there are more links in the page, parse them
@@ -406,7 +399,7 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
             invalidUrlsInPage ++;
             qDebug() << "   wc_parser::parse() - found INVALID newUrl "
                         << newUrl.toString()
-                        << " in page " << requestUrlStr
+                        << " in page " << currentUrlStr
                         << " Will CONTINUE only if invalidUrlsInPage < 200";
             if (invalidUrlsInPage > 200) {
                 qDebug() << "   wc_parser::parse() -  INVALID newUrls > 200";
@@ -496,83 +489,92 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
         if (m_urlPatternAllowed && !m_urlPatternNotAllowed) {
 
             if ( newUrl.isRelative() ) {
-                newUrl = requestUrl.resolved(newUrl);
+                newUrl = currentUrl.resolved(newUrl);
                 newUrlStr = newUrl.toString();
 
-                qDebug() << "   wc_parser::parse() - RELATIVE url"
+                qDebug() << "   wc_parser::parse() - newUrl is RELATIVE."
                             << " host: " << host
                             << " resolved url "
                             << newUrl.toString();
 
                 if (!m_intLinks ){
-                    qDebug()<< "   wc_parser::parse() - Internal urls forbidden."
+                    qDebug()<< "   wc_parser::parse() - Internal URLs forbidden."
                             << " SKIPPING node creation";
                             continue;
                 }
 
-                if (requestUrl.path() == newUrl.path()) {
+                if (currentUrl.path() == newUrl.path()) {
                     if  (m_selfLinks) {
                         qDebug()<< "   wc_parser::parse() - "
-                                << " requestUrl.path() = newUrl.path()"
                                 <<  " Creating self link";
 
                         newLink(sourceNode, newUrl, false);
                     }
                     else {
                         qDebug()<< "   wc_parser::parse() - "
-                                << "requestUrl.path() = newUrl.path()"
+                                << "currentUrl.path() = newUrl.path()"
                                 <<  "Self links not allowed. CONTINUE.";
                     }
 
                 }
                 else {
-                    qDebug()<< "   wc_parser::parse() - Internal links allowed."
+                    qDebug()<< "   wc_parser::parse() - Internal URLs allowed."
                             <<  " Creating new node and ADDING it to frontier...";
                     this->newLink(sourceNode, newUrl, true);
 
                 }
             }
             else {
-                qDebug() << "   wc_parser::parse() - ABSOLUTE url.";
+                qDebug() << "   wc_parser::parse() - newUrl is ABSOLUTE.";
 
                 if ( newUrl.scheme() != "http"  && newUrl.scheme() != "https"  &&
                           newUrl.scheme() != "ftp" && newUrl.scheme() != "ftps") {
-                    qDebug() << "   wc_parser::parse() - found INVALID newUrl SCHEME"
-                                << newUrl.toString();
+                    qDebug() << "   wc_parser::parse() - INVALID newUrl SCHEME"
+                                << newUrl.toString()
+                                << "CONTINUE.";
                     continue;
                 }
 
                 if (  newUrl.host() != host  ) {
-                    qDebug()<< "   wc_parser::parse() - absolute newUrl EXTERNAL.";
+                    qDebug()<< "   wc_parser::parse() - newUrl ABSOLUTE & EXTERNAL.";
                     if ( !m_extLinks ) {
-                        qDebug()<< "   wc_parser::parse() - External urls forbidden."
+                        qDebug()<< "   wc_parser::parse() - External URLs forbidden."
                                 <<" Creating new node but NOT ADDING it to frontier...";
                         newLink(sourceNode, newUrl, false);
                     }
                     else {
-                        qDebug()<< "   wc_parser::parse() - External urls allowed."
+                        qDebug()<< "   wc_parser::parse() - External URLs allowed."
                                 <<" Creating new node and ADDING it to frontier...";
                         newLink(sourceNode, newUrl, true);
                     }
                 }
                 else {
-                    qDebug()<< "   wc_parser::parse() - absolute newUrl INTERNAL.";
+                    qDebug()<< "   wc_parser::parse() - newUrl ABSOLUTE & INTERNAL.";
 
                     if (!m_intLinks){
-                        qDebug()<< "   wc_parser::parse() - Internal urls forbidden."
+                        qDebug()<< "   wc_parser::parse() - Internal URLs forbidden."
                                   << " SKIPPING node creation";
                         continue;
                     }
 
-                    if (  newUrl.path () == path ) {
+                    if (  newUrl.path () == path && !m_selfLinks) {
                         qDebug()<< "   wc_parser::parse() - "
-                                << "requestUrl.path() = newUrl.path()"
-                                <<  "Self links not allowed. CONTINUE.";
+                                <<  "Self links forbidden. CONTINUE.";
                         continue;
                     }
 
+                    if ( newUrl.isParentOf(currentUrl) && !m_parentLinks ) {
+                        qDebug()<< "   wc_parser::parse() - "
+                                << "Parent URLs forbidden. CONTINUE";
+                        continue;
+                    }
+                    if ( currentUrl.isParentOf(newUrl) && !m_childLinks ) {
+                        qDebug()<< "   wc_parser::parse() - "
+                                << "Child URLs forbidden. CONTINUE";
+                        continue;
+                    }
 
-                    qDebug()<< "   wc_parser::parse() -  Internal urls allowed."
+                    qDebug()<< "   wc_parser::parse() -  Internal, absolute newURL allowed."
                             <<" Creating new node and ADDING it to frontier...";
                     newLink(sourceNode, newUrl, true);
                 }

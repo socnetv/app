@@ -3109,6 +3109,8 @@ void Graph::webCrawl(const QString &urlSeed,
                       const int &maxLinksPerPage,
                       const bool &extLinks,
                       const bool &intLinks,
+                     const bool &childLinks,
+                     const bool &parentLinks,
                      const bool &selfLinks,
                      const bool &delayedRequests){
 
@@ -3178,6 +3180,8 @@ void Graph::webCrawl(const QString &urlSeed,
                     maxLinksPerPage,
                     extLinks,
                     intLinks,
+                    childLinks,
+                    parentLinks,
                     selfLinks);
 
     wc_spider->load (urlSeed,
@@ -3867,7 +3871,7 @@ void Graph::graphDichotomization(const qreal threshold) {
     qDebug()<< "Graph::graphDichotomization()"
             << "initial relations"<<relations();
 
-    int y = 0, v2 = 0, v1 = 0;
+    int v2 = 0, v1 = 0;
     qreal weight = 0;
 
     VList::const_iterator it;
@@ -3886,7 +3890,7 @@ void Graph::graphDichotomization(const qreal threshold) {
         while ( it1!=outEdgesAll.cend() ){
             v2 = it1.key();
             weight = it1.value();
-            y=vpos[ v2 ];
+
             qDebug() << "Graph::graphDichotomization() - "
                      << v1 << "->" << v2 << "=" << weight << "Checking opposite.";
             if (weight>threshold) {
@@ -7105,7 +7109,7 @@ void Graph::prominenceDistribution(const int &index, QBarSeries *series, QBarSet
         qDebug() << "discreteClasses: " << i.key() << ": " << i.value() << endl;
         seriesPQ.push(PairVF(i.key().toDouble(), i.value()));
     }
-    int size = seriesPQ.size();
+    unsigned int initialSize = seriesPQ.size();
     QString min = QString::null;
     QString max = QString::null;
     QString value = QString::null;
@@ -7116,7 +7120,7 @@ void Graph::prominenceDistribution(const int &index, QBarSeries *series, QBarSet
             set->append( seriesPQ.top().frequency );
             value = QString::number(  seriesPQ.top().value, 'f', 2);
             axisX->append( value );
-            if (size == seriesPQ.size() ) {
+            if ( initialSize == seriesPQ.size() ) {
                 min = value;
             }
             if ( seriesPQ.size() == 1 ) {

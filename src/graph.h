@@ -211,6 +211,8 @@ public slots:
                   const int &maxLinksPerPage,
                   const bool &extLinks,
                   const bool &intLinks,
+                  const bool &childLinks,
+                  const bool &parentLinks,
                   const bool &selfLinks,
                   const bool &delayedRequests);
 
