@@ -5491,7 +5491,7 @@ void MainWindow::initSignalSlots() {
  * Used on app start and especially when erasing a network to start a new one
  */
 void MainWindow::initApp(){
-    qDebug()<<"MW::initApp() - START INITIALIZATION on thread" << thread();
+    qDebug()<<"MW::initApp() - START INITIALISATION ON THREAD" << thread();
 
     statusMessage( tr("Application initialization. Please wait..."));
 
@@ -5629,7 +5629,7 @@ void MainWindow::initApp(){
     setCursor(Qt::ArrowCursor);
 
     statusMessage( tr("Ready"));
-    qDebug()<< "MW::initApp() - INITIALISATION END on thread" << thread();
+    qDebug()<< "MW::initApp() - END INITIALISATION ON THREAD" << thread();
 
 
 }
@@ -8450,32 +8450,6 @@ void MainWindow::slotNetworkWebCrawlerDialog() {
 
     connect (m_WebCrawlerDialog, &DialogWebCrawler::userChoices,
              this, &MainWindow::slotNetworkWebCrawler);
-//    connect( m_WebCrawlerDialog, SIGNAL(
-//                 userChoices(const QString &,
-//                             const QStringList &,
-//                             const QStringList &,
-//                             const QStringList &,
-//                             const int&,
-//                             const int&,
-//                             const bool&,
-//                             const bool&,
-//                             const bool&,
-//                             const bool &)
-//                 ),
-//             this, SLOT(
-//                 slotNetworkWebCrawler (const QString &,
-//                                        const QStringList &,
-//                                        const QStringList &,
-//                                        const QStringList &,
-//                                        const int&,
-//                                        const int&,
-//                                        const bool&,
-//                                        const bool&,
-//                                        const bool&,
-//                                        const bool &)
-//                 )
-//             );
-
 
     m_WebCrawlerDialog->exec() ;
 }
@@ -8508,9 +8482,11 @@ void MainWindow::slotNetworkWebCrawler ( const QString &urlSeed,
                                          const bool &delayedRequests
                                          ) {
 
-    this->slotNetworkClose();
-    qDebug () << "MW::slotNetworkWebCrawler" << urlPatternsIncluded;
-    qDebug () << "MW::slotNetworkWebCrawler" << linkClasses;
+    slotNetworkClose();
+    qDebug () << "MW::slotNetworkWebCrawler() - urlPatternsIncluded"
+              << urlPatternsIncluded;
+    qDebug () << "MW::slotNetworkWebCrawler() - linkClasses"
+              << linkClasses;
     activeGraph->webCrawl( urlSeed,
                            urlPatternsIncluded,
                            urlPatternsExcluded,

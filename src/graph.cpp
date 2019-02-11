@@ -3101,7 +3101,7 @@ void Graph::webCrawlTerminateThreads (QString reason){
  * @param extLinks
  * @param intLinks
  */
-void Graph::webCrawl(const QString &urlSeed,
+void Graph::webCrawl(const QString &seedUrl,
                       const QStringList &urlPatternsIncluded,
                       const QStringList &urlPatternsExcluded,
                       const QStringList &linkClasses,
@@ -3119,15 +3119,15 @@ void Graph::webCrawl(const QString &urlSeed,
     // TOFIX Due to multithreading, app crashes when crawler finishes its job.
 
     qDebug() << "Graph::webCrawl() - Graph thread:" << thread()
-             << "seed url:" << urlSeed ;
+             << "seedUrl:" << seedUrl ;
 
     qDebug() << "Graph::webCrawl() - Creating wc_spider & wc_parser objects";
     wc_parser = new WebCrawler_Parser();
     wc_spider = new WebCrawler_Spider ();
 
-    qDebug() << "Graph::webCrawl() - Moving wc_parser from thread:"
+    qDebug() << "Graph::webCrawl() - Moving out wc_parser, wc_spider from thread:"
              << wc_parser->thread()
-             << "and wc_spider from thread:"
+             << ","
              << wc_spider->thread();
     wc_parser->moveToThread(&wc_parserThread);
     wc_spider->moveToThread(&wc_spiderThread);
@@ -3136,16 +3136,14 @@ void Graph::webCrawl(const QString &urlSeed,
              << "and wc_spider to thread:"
              << wc_spider->thread();
 
+    qDebug() << "Graph::webCrawl() - Creating http object";
+    QNetworkAccessManager *http = new QNetworkAccessManager(this);
+
 
     qDebug() << "Graph::webCrawl() - Connecting signals from/to parser & spider";
-    connect(&wc_parserThread, &QThread::finished,
-            wc_parser, &QObject::deleteLater);
-
-    connect(&wc_spiderThread, &QThread::finished,
-            wc_spider, &QObject::deleteLater);
 
     connect(this, &Graph::operateSpider,
-            wc_spider, &WebCrawler_Spider::get);
+            wc_spider, &WebCrawler_Spider::visitUrls);
 
     connect(wc_parser, &WebCrawler_Parser::signalCreateNode,
             this, &Graph::vertexCreateAtPosRandomWithLabel);
@@ -3153,26 +3151,34 @@ void Graph::webCrawl(const QString &urlSeed,
     connect(wc_parser, &WebCrawler_Parser::signalCreateEdge,
             this, &Graph::edgeCreateWebCrawler);
 
+      connect (wc_spider, &WebCrawler_Spider::getUrl,
+               http, &QNetworkAccessManager::get);
+
+    connect ( http, &QNetworkAccessManager::finished,
+               wc_parser, &WebCrawler_Parser::parse );
+
+    connect (wc_parser, &WebCrawler_Parser::startSpider,
+             wc_spider, &WebCrawler_Spider::visitUrls );
+
     connect (wc_spider, &WebCrawler_Spider::finished,
              this, &Graph::webCrawlTerminateThreads);
 
     connect (wc_parser, &WebCrawler_Parser::finished,
              this, &Graph::webCrawlTerminateThreads);
 
-    connect (wc_spider, &WebCrawler_Spider::parse,
-             wc_parser, &WebCrawler_Parser::parse );
+    connect(&wc_parserThread, &QThread::finished,
+            wc_parser, &QObject::deleteLater);
 
-    connect (wc_parser, &WebCrawler_Parser::startSpider,
-             wc_spider, &WebCrawler_Spider::get );
-
+    connect(&wc_spiderThread, &QThread::finished,
+            wc_spider, &QObject::deleteLater);
 
     qDebug() << "Graph::webCrawl() - Starting wc_parser & wc_spider threads!";
     wc_parserThread.start();
     wc_spiderThread.start();
 
-    qDebug() << "Graph::webCrawl() - loading wc_parser & wc_spider data!";
+    qDebug() << "Graph::webCrawl() - loading wc_parser & wc_spider. seedUrl:" << seedUrl;
 
-    wc_parser->load(urlSeed,
+    wc_parser->load(seedUrl,
                     urlPatternsIncluded,
                     urlPatternsExcluded,
                     linkClasses,
@@ -3184,12 +3190,14 @@ void Graph::webCrawl(const QString &urlSeed,
                     parentLinks,
                     selfLinks);
 
-    wc_spider->load (urlSeed,
+    wc_spider->load (http,
+                     wc_parser,
+                     seedUrl,
                      maxNodes,
                      delayedRequests);
 
-    qDebug() << "Graph::webCrawl()  - Creating initial node 1, seed url:" << urlSeed;
-    vertexCreateAtPosRandomWithLabel(1, urlSeed, false);
+    qDebug() << "Graph::webCrawl()  - Creating initial node 1, seedUrl:" << seedUrl;
+    vertexCreateAtPosRandomWithLabel(1, seedUrl, false);
 
     qDebug() << "Graph::webCrawl() - Calling spider get() for that url!";
     emit operateSpider();
@@ -10860,7 +10868,7 @@ void Graph::randomNetLatticeCreate(const int &N,
                                    const bool &circular){
     qDebug() << "Graph::randomNetLatticeCreate()";
     Q_UNUSED(circular);
-
+    Q_UNUSED(dimension);
     if (mode=="graph") {
         graphSetDirected(false);
     }

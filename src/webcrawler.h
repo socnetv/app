@@ -92,20 +92,21 @@ class  WebCrawler_Spider : public QObject  {
 public:
     WebCrawler_Spider();
     ~WebCrawler_Spider();
-    void load (const QString &seed,
+    void load (QNetworkAccessManager *NetworkManager, WebCrawler_Parser *wc_parser,
+               const QString &seed,
                const int &maxNodes,
                const bool &delayedRequests);
 
 public slots:
-    void get();
-    void httpFinished(QNetworkReply *reply);
+    void visitUrls();
 
 signals:
+    void getUrl(const QNetworkRequest &request);
     void parse(QNetworkReply *reply);
     void finished (QString);
 private:
-    QNetworkAccessManager *http;
-    QNetworkRequest request;
+    //QNetworkAccessManager *manager;
+
     QNetworkReply *reply;
     QUrl currentUrl ;
     QString  m_seed;

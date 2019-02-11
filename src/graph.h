@@ -203,7 +203,7 @@ public slots:
     void edgeFilterByRelation(int relation, bool status);
     void edgeFilterUnilateral(const bool &toggle);
 
-    void webCrawl(const QString &urlSeed,
+    void webCrawl(const QString &seedUrl,
                   const QStringList &urlPatternsIncluded,
                   const QStringList &urlPatternsExcluded,
                   const QStringList &linkClasses,

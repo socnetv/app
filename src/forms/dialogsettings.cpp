@@ -27,6 +27,7 @@
 
 #include "dialogsettings.h"
 #include "ui_dialogsettings.h"
+
 #include <QFileDialog>
 #include <QColorDialog>
 #include <QSpinBox>

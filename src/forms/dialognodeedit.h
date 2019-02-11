@@ -62,12 +62,12 @@ signals:
     void nodeEditDialogError(QString);
 
 private:
+    QString nodeLabel;
+    int nodeSize;
     QColor nodeColor;
     QString nodeShape;
     QString iconPath;
     QString nodeValue;
-    QString nodeLabel;
-    int nodeSize;
     QPixmap pixmap;
     Ui::DialogNodeEdit *ui;
 };

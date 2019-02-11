@@ -54,34 +54,35 @@ WebCrawler_Spider::WebCrawler_Spider() {
 
 /**
  * @brief  Called from Graph to init variables.
- * Connects http NetworkManager signal to httpfinished() slot
- * which in turn emits http reply to WebCrawler_Parser
- * @param url
+  * @param url
  * @param maxN
  * @param maxLinksPerPage
  * @param extLinks
  * @param intLinks
  */
-void WebCrawler_Spider::load(const QString &url,
+void WebCrawler_Spider::load(QNetworkAccessManager *NetworkManager,
+                             WebCrawler_Parser *wc_parser,
+                             const QString &url,
                              const int &maxN,
                              const bool &delayedRequests) {
     qDebug() << "   wc_spider::load() - thread() - " << thread()
              << "Initializing vars ...";
 
+    //manager = NetworkManager;
+
+    QNetworkAccessManager *manager= new QNetworkAccessManager(this);
+
+    connect (this, &WebCrawler_Spider::getUrl,
+             manager, &QNetworkAccessManager::get);
+
+    connect ( manager, &QNetworkAccessManager::finished,
+               wc_parser, &WebCrawler_Parser::parse );
+
+
     m_seed=url;                             // the initial url/domain we will crawl
     m_maxNodes=maxN;                        // maximum urls we'll check == max nodes in the resulted network
     m_delayedRequests = delayedRequests;    // controls if we will wait between requests
     m_visitedNodes = 0;
-
-    qDebug() << "   wc_spider::load() - Creating http object";
-    http = new QNetworkAccessManager(this);
-
-    qDebug() << "   wc_spider::load() - Connecting http finished signal";
-    connect ( http, &QNetworkAccessManager::finished,
-              this, &WebCrawler_Spider::httpFinished );
-
-    qDebug () << "  wc_spider::load() - http->thread() "
-              << http->thread() ;
 
 }
 
@@ -91,10 +92,8 @@ void WebCrawler_Spider::load(const QString &url,
 /**
  * @brief Spider main functionality
  * Takes urls from frontier queue and downloads their HTML source code.
-*  When http signals finished(), the httpFinished() slot passes the response data
-*  to wc_parser thread parse() method to parse them
  */
-void WebCrawler_Spider::get(){
+void WebCrawler_Spider::visitUrls(){
     qDebug() << "   wc_spider::get() - ";
 
     //repeat forever....
@@ -128,22 +127,23 @@ void WebCrawler_Spider::get(){
                   << "Downloading html...";
 
         //request = new QNetworkRequest;
+        QNetworkRequest request;
         request.setUrl(currentUrl);
         request.setRawHeader(
                     "User-Agent",
                     "SocNetV harmless spider - see https://socnetv.org");
 
         if (m_delayedRequests) {
-            m_wait_msecs = rand() %1000;
+            m_wait_msecs = rand() % 1000;
             qDebug() << "   wc_spider::get() - Sleeping for" << m_wait_msecs << "msecs";
             QThread::msleep(m_wait_msecs);
         }
 
-        qDebug() << "   wc_spider::get() - calling http->get() for url"
+        qDebug() << "   wc_spider::get() - emitting getUrl() to NetworkManager for url"
                  <<  currentUrl;
-        qDebug() << "   wc_spider::get() - http->thread():" << http->thread() ;
 
-        QNetworkReply *reply =  http->get(request) ;
+        emit getUrl(request);
+
         Q_UNUSED(reply);
         m_visitedNodes++;
 
@@ -157,23 +157,14 @@ void WebCrawler_Spider::get(){
 }
 
 
-/**
- * @brief Called when QNetworkAccessManager http emits finished()
- * Emits parse with the reply object to WebCrawler_Parser::parse()
- * @param reply
- */
-void WebCrawler_Spider::httpFinished(QNetworkReply *reply){
-    qDebug() << "   wc_spider::httpFinished()";
-    emit parse (reply);
-}
 
 
 
 WebCrawler_Spider::~WebCrawler_Spider() {
     qDebug() << "   wc_spider::~WebCrawler_Spider() - deleting http object";
     m_visitedNodes = 0;
-    delete http;
-    http=0;
+//    delete manager;
+//    manager=0;
 
     qDebug() << "   wc_spider::~WebCrawler_Spider() - deleting reply object";
 
@@ -258,7 +249,7 @@ void WebCrawler_Parser::load(const QString &url,
 
 
 /**
- * @brief Called from WebCrawler_Spider::parse() signal when http has finished.
+ * @brief Called when NetworkManager has finished.
  * This method does the actual parsing of each page's html source from the reply bytearray.
  * First, we start by reading all from http reply to a QString called page.
  * Then we parse the page string, searching for url substrings.

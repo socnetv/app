@@ -47,12 +47,12 @@ DialogNodeEdit::DialogNodeEdit(QWidget *parent,
                                const QString &shape,
                                const QString &path) :
     QDialog(parent),
-    ui(new Ui::DialogNodeEdit),
     nodeLabel(label),
     nodeSize(size),
     nodeColor(color),
     nodeShape(shape),
-    iconPath(path)
+    iconPath(path),
+    ui(new Ui::DialogNodeEdit)
 {
     ui->setupUi(this);
 
