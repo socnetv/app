@@ -1,10 +1,10 @@
 [Desktop Entry]
+Name=Social Network Visualiser (SocNetV)
 X-SuSE-translate=true
-Name=SocNetV
 GenericName=Social Network Visualizer 
 Comment=Social Network Analysis and Visualization software
 Exec=socnetv
-Icon=socnetv
-Categories=Education;Science;Math;Qt;
 Terminal=false
 Type=Application
+Icon=socnetv
+Categories=Education;Science;Math;Qt;
