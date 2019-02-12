@@ -424,9 +424,8 @@ public:
     void vertexSizeAllSet(const int newsize);
     int vertexSize(const int &v);
 
-    void vertexShapeInit (const QString, const QString &iconPath=QString::null);
+    void vertexShapeSetDefault (const QString, const QString &iconPath=QString::null);
     void vertexShapeSet(const int &v, const QString &shape, const QString &iconPath=QString::null);
-    void vertexShapeAllSet(const QString &shape, const QString &iconPath=QString::null);
     QString vertexShape(const int &v);
     QString vertexShapeIconPath(const int &v);
 
@@ -441,6 +440,7 @@ public:
     void vertexNumberSizeInit (const int &size);
     void vertexNumberSizeSet(const int &v, const int &newsize );
     void vertexNumberSizeSetAll (const int &size);
+
     void vertexNumberDistanceInit (const int &distance);
     void vertexNumberDistanceSet(const int &v, const int &newDistance );
     void vertexNumberDistanceSetAll (const int &newDistance);
@@ -451,6 +451,7 @@ public:
     void vertexLabelSizeSet(const int &v, const int &newsize );
     void vertexLabelSizeAllSet (const int &);
     void vertexLabelColorInit(QString color);
+
     void vertexLabelSet(const int &v, const QString &label);
     void vertexLabelColorSet(int v1, QString color);
     void vertexLabelColorAllSet(const QString &color);

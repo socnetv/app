@@ -2082,6 +2082,11 @@ void Parser::readGraphMLElementDefaultValue(QXmlStreamReader &xml) {
                 << key_value << " is for nodes shape";
         initNodeShape= key_value;
     }
+    if (keyName.value(key_id) == "custom-icon" && keyFor.value(key_id) == "node" ) {
+        qDebug()<< "Parser::readGraphMLElementDefaultValue() - key default value "
+                << key_value << " is for nodes custom-icon path";
+        initIconPath = key_value;
+    }
     if (keyName.value(key_id) == "color" && keyFor.value(key_id) == "node" ) {
         qDebug()<< "Parser::readGraphMLElementDefaultValue() - key default value "
                 << key_value << " is for nodes color";
@@ -2172,7 +2177,7 @@ void Parser::endGraphMLElementNode(QXmlStreamReader &xml){
                      nodeLabelSize,
                      QPointF(randX,randY),
                      nodeShape,
-                     QString::null,
+                     initIconPath,
                      false
                      );
 

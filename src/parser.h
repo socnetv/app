@@ -173,7 +173,7 @@ private:
 	QMultiMap<int, int> firstModeMultiMap, secondModeMultiMap;
 	QXmlStreamReader *xml;
     QString fileName, userSelectedCodecName, networkName, initNodeColor;
-    QString initEdgeColor, initNodeShape, initNodeNumberColor, initNodeLabelColor;
+    QString initEdgeColor, initNodeShape, initIconPath, initNodeNumberColor, initNodeLabelColor;
     QString initEdgeLabel, delimiter, errorMessage;
     QString nodeColor, edgeColor, edgeType, nodeShape, nodeLabel, edgeLabel;
     QString nodeNumberColor, nodeLabelColor;

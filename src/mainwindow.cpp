@@ -5516,7 +5516,7 @@ void MainWindow::initApp(){
     activeGraph->clear();
     activeGraph->setSocNetV_Version(VERSION);
 
-    activeGraph->vertexShapeInit(appSettings["initNodeShape"], appSettings["initNodeIconPath"]);
+    activeGraph->vertexShapeSetDefault(appSettings["initNodeShape"], appSettings["initNodeIconPath"]);
     activeGraph->vertexSizeInit(appSettings["initNodeSize"].toInt(0, 10));
     activeGraph->vertexColorInit( appSettings["initNodeColor"] );
 
@@ -6624,12 +6624,12 @@ void MainWindow::slotNetworkFileDialogFileSelected(const QString &fileName) {
 
 
 /**
- * @brief Saves the network to a file.
- * First check if a fileName is currently used
+ * @brief Saves the network to a file by calling Graph::graphSave().
+ * First, it checks if a fileName is currently set
  * If not, calls slotNetworkSaveAs (which prompts for a fileName before returning here)
- * If a fileName is currently set, it checks if fileFormat is supported for export
- * If not supported, and the file is new, just tries to save in GraphML
- * For other exporing options the user is informed to use the export menu.
+ * If a fileName is set, it checks if fileFormat is supported and saves the network.
+ * If not supported, or the file is new, just tries to save in GraphML
+ * For other exporting options the user is informed to use the export menu.
  */
 void MainWindow::slotNetworkSave(const int &fileFormat) {
     statusMessage( tr("Saving file..."));
@@ -6644,6 +6644,7 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
         slotNetworkSaveAs();
         return;
     }
+
     QFileInfo fileInfo (fileName);
     fileNameNoPath = fileInfo.fileName();
 
@@ -6652,14 +6653,14 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
     {
         activeGraph->graphSave(fileName, fileFormat ) ;
     }
-    // if it is GraphML or new file not saved yet, just save it.
+    // else if it is GraphML or new file not saved yet, just save it.
     else if (activeGraph->graphFileFormat()==FILE_TYPE::GRAPHML ||
              ( activeGraph->graphSaved() && !activeGraph->graphLoaded() )
              )
     {
         activeGraph->graphSave(fileName, FILE_TYPE::GRAPHML);
     }
-    // check whether Graph thinks this is supported.
+    // else check whether Graph thinks this is supported and save it
     else if ( activeGraph->graphFileFormatExportSupported(
                   activeGraph->graphFileFormat()
                   ) )
@@ -9343,7 +9344,7 @@ void MainWindow::slotEditNodeShape(QString shape, const int vertex,
     }
 
     if (vertex == 0) { //change all nodes shapes
-        activeGraph->vertexShapeAllSet(shape, nodeIconPath);
+        activeGraph->vertexShapeSet(-1, shape, nodeIconPath);
         appSettings["initNodeShape"] = shape;
         statusMessage(tr("All shapes have been changed. Ready."));
     }

@@ -44,6 +44,7 @@
 #include <QBarSeries>
 #include <QBarSet>
 #include <QBarCategoryAxis>
+#include <QPixmap>
 
 #include <cstdlib>		//allows the use of RAND_MAX macro 
 
@@ -1409,10 +1410,11 @@ void Graph::vertexSizeAllSet(const int size) {
 
 
 /**
- * @brief Graph::vertexShapeInit
+ * @brief Sets the default vertex shape and iconPath
+ * Called by MW::initApp()
  * @param shape
  */
-void Graph::vertexShapeInit(const QString shape, const QString &iconPath) {
+void Graph::vertexShapeSetDefault(const QString shape, const QString &iconPath) {
     initVertexShape=shape;
     initVertexIconPath=iconPath;
 }
@@ -1420,23 +1422,43 @@ void Graph::vertexShapeInit(const QString shape, const QString &iconPath) {
 
 
 /**
- * @brief Graph::vertexShapeSet
- * Changes the shape.of vertex v
+ * @brief Changes the shape and iconPath of vertex v1, or all vertices if v1=-1
  * @param v1
  * @param shape
+ * @param iconPath
  */
 void Graph::vertexShapeSet(const int &v1, const QString &shape, const QString &iconPath){
-    m_graph[ vpos[v1] ]->setShape(shape, iconPath);
-    emit setNodeShape(v1, shape, iconPath);
 
+    if ( v1 == -1 ) {
+        qDebug() << "Graph::vertexShapeSet() for all vertices"
+                 << "new shape:" << shape
+                 << "iconPath:" << iconPath;
+        vertexShapeSetDefault(shape, iconPath);
+        VList::const_iterator it;
+        for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+            if ( ! (*it)->isEnabled() ){
+                continue;
+            }
+            else {
+                (*it)->setShape(shape, iconPath);
+                emit setNodeShape((*it)->name(), shape, iconPath);
+            }
+        }
+    }
+    else {
+        qDebug() << "Graph::vertexShapeSet() for vertex:" << v1
+                 << "new shape:" << shape
+                 << "iconPath:" <<iconPath;
+        m_graph[ vpos[v1] ]->setShape(shape, iconPath);
+        emit setNodeShape(v1, shape, iconPath);
+    }
     graphSetModified(GraphChange::ChangedVerticesMetadata);
 }
 
 
 
 /**
- * @brief Graph::vertexShape
- * Returns the shape of this vertex
+ * @brief Returns the shape of this vertex
  * @param v1
  * @return
  */
@@ -1445,29 +1467,13 @@ QString Graph::vertexShape(const int &v1){
 
 }
 
+/**
+ * @brief Returns the IconPath of vertex v1
+ * @param v1
+ * @return
+ */
 QString Graph::vertexShapeIconPath(const int &v1) {
     return m_graph[ vpos[v1] ]->shapeIconPath();
-}
-
-/**
- * @brief Changes the shape.of all vertices
- * @param shape
- */
-void Graph::vertexShapeAllSet(const QString &shape, const QString &iconPath) {
-    qDebug() << "Graph::vertexShapeAllSet - shape " <<shape;
-    vertexShapeInit(shape, iconPath);
-    VList::const_iterator it;
-    for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( ! (*it)->isEnabled() ){
-            continue;
-        }
-        else {
-            (*it)->setShape(shape, iconPath);
-            emit setNodeShape((*it)->name(), shape, iconPath);
-        }
-    }
-
-    graphSetModified(GraphChange::ChangedVerticesMetadata);
 }
 
 
@@ -14792,10 +14798,9 @@ bool Graph::graphFileFormatExportSupported(const int &fileFormat) const {
 }
 
 /**
- * @brief Graph::graphSave
- * Our almost universal graph saver. :)
+ * @brief Our almost universal graph saving method. :)
  * Actually it just checks the requested file type and
- * calls the right saveGraphTo...() method
+ * calls the corresponding saveGraphTo...() method
  * @param fileName
  * @param fileType
   * @return
@@ -14993,6 +14998,14 @@ bool Graph::graphSaveToDotFormat (QString fileName){
 
 
 
+/**
+ * @brief Saves the current graph to fileName in GraphML format
+ * @param fileName
+ * @param networkName
+ * @param maxWidth
+ * @param maxHeight
+ * @return
+ */
 bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
                                       QString networkName,
                                       int maxWidth, int maxHeight) {
@@ -15005,6 +15018,12 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
 
     QFileInfo fileInfo (fileName);
     QString fileNameNoPath = fileInfo.fileName();
+
+    QString dirPath= fileInfo.canonicalPath();
+    qDebug () << "Graph::graphSaveToGraphMLFormat() - Will save network to dirPath:" << dirPath;
+    QString iconPath = QString();
+    QString iconFileName = QString ();
+    QString copyIconFileNamePath = QString();
 
     networkName  = (networkName == "") ? graphName().toHtmlEscaped(): networkName;
     networkName  = (networkName == "unnamed") ? fileNameNoPath.toHtmlEscaped().left(fileNameNoPath.lastIndexOf('.')): networkName;
@@ -15057,6 +15076,27 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
     outText <<	"  <key id=\"d5\" for=\"node\" attr.name=\"shape\" attr.type=\"string\"> \n"
                 "    <default>" << initVertexShape << "</default> \n"
                 "  </key> \n";
+
+    iconPath = initVertexIconPath;
+    iconFileName = QFileInfo(iconPath).fileName();
+    copyIconFileNamePath = dirPath +  "/" + iconFileName;
+    if ( ! QFile(copyIconFileNamePath).exists() ) {
+        if  ( QFile::copy(iconPath, copyIconFileNamePath) )  {
+            qDebug () << "Graph::graphSaveToGraphMLFormat() - default iconFile saved to: " << copyIconFileNamePath;
+        }
+        else {
+            qDebug () << "Graph::graphSaveToGraphMLFormat() - ERROR saving default iconFile to: " << copyIconFileNamePath;
+        }
+
+    }
+    else {
+        qDebug () << "Graph::graphSaveToGraphMLFormat() - default iconFile already exists in: " << copyIconFileNamePath;
+    }
+
+    outText <<	"  <key id=\"d51\" for=\"node\" attr.name=\"custom-icom\" attr.type=\"string\"> \n"
+                "    <default>" << iconFileName << "</default> \n"
+                "  </key> \n";
+
     outText <<	"  <key id=\"d6\" for=\"node\" attr.name=\"label.color\" attr.type=\"string\"> \n"
                 "    <default>" << initVertexLabelColor << "</default> \n"
                 "  </key> \n";
@@ -15127,6 +15167,27 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
 
             outText << "      <data key=\"d5\">" << (*it)->shape() <<"</data>\n";
 
+            if ((*it)->shape() == "custom" ) {
+                iconPath = (*it)->shapeIconPath();
+                iconFileName = QFileInfo(iconPath).fileName();
+                copyIconFileNamePath = dirPath +  "/" + iconFileName;
+                if ( ! QFile(copyIconFileNamePath).exists() ) {
+                    if  ( QFile::copy(iconPath, copyIconFileNamePath) )  {
+                        qDebug () << "Graph::graphSaveToGraphMLFormat() - iconFile for" << (*it)->name()
+                                     << "saved to: " << copyIconFileNamePath;
+                    }
+                    else {
+                        qDebug () << "Graph::graphSaveToGraphMLFormat() - ERROR saving iconFile for" << (*it)->name()
+                                     << "saved to: " << copyIconFileNamePath;
+                    }
+
+                }
+                else {
+                    qDebug () << "Graph::graphSaveToGraphMLFormat() - iconFile for" << (*it)->name()
+                                 << "already exists in:" << copyIconFileNamePath;
+                }
+                outText << "      <data key=\"d51\">" << iconFileName <<"</data>\n";
+            }
 
             if (  QString::compare ( initVertexLabelColor, m_labelColor,  Qt::CaseInsensitive) != 0) {
                 outText << "      <data key=\"d6\">" << m_labelColor <<"</data>\n";
