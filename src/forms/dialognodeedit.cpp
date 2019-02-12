@@ -28,6 +28,8 @@
 #include "dialognodeedit.h"
 #include "ui_dialognodeedit.h"
 
+#include "global.h"
+
 #include <QGlobalStatic>
 #include <QDebug>
 #include <QLineEdit>
@@ -39,6 +41,7 @@
 #include <QPixmap>
 #include <QGraphicsEffect>
 
+SOCNETV_USE_NAMESPACE
 
 DialogNodeEdit::DialogNodeEdit(QWidget *parent,
                                const QString &label,
@@ -149,28 +152,28 @@ void DialogNodeEdit::getNodeShape(const int &nodeShapeIndex){
 
 
     switch (nodeShapeIndex) {
-    case 0:
+    case NodeShape::Box:
         nodeShape  = "box";
         break;
-    case 1:
+    case NodeShape::Circle:
         nodeShape  = "circle";
         break;
-    case 2:
+    case NodeShape::Diamond:
         nodeShape  = "diamond";
         break;
-    case 3:
+    case NodeShape::Ellipse:
         nodeShape  = "ellipse";
         break;
-    case 4:
+    case NodeShape::Triangle:
         nodeShape  = "triangle";
         break;
-    case 5:
+    case NodeShape::Star:
         nodeShape  = "star";
         break;
-    case 6:
+    case NodeShape::Bugs:
         nodeShape  = "bugs";
         break;
-    case 7:
+    case NodeShape::Custom:
         nodeShape  = "custom";
         break;
     default:
@@ -179,14 +182,14 @@ void DialogNodeEdit::getNodeShape(const int &nodeShapeIndex){
 
         qDebug()<< "DialogNodeEdit::getNodeShape() - new node shape " << nodeShape;
 
-    if ( nodeShapeIndex == 7) {
+    if ( nodeShapeIndex == NodeShape::Custom ) {
         // enable textedit and file button and raise file dialog
 
         ui->nodeIconSelectButton->setEnabled(true);
         ui->nodeIconSelectEdit->setEnabled(true);
         ui->nodeIconSelectEdit->setText(iconPath);
         if (!iconPath.isEmpty()) {
-            ui->nodeShapeComboBox->setItemIcon(7, QIcon(iconPath));
+            ui->nodeShapeComboBox->setItemIcon(NodeShape::Custom, QIcon(iconPath));
         }
     }
     else {
@@ -208,28 +211,28 @@ void DialogNodeEdit::getUserChoices(){
     int nodeShapeIndex = ui->nodeShapeComboBox->currentIndex();
 
     switch (nodeShapeIndex) {
-    case 0:
+    case NodeShape::Box:
         nodeShape  = "box";
         break;
-    case 1:
+    case NodeShape::Circle:
         nodeShape  = "circle";
         break;
-    case 2:
+    case NodeShape::Diamond:
         nodeShape  = "diamond";
         break;
-    case 3:
+    case NodeShape::Ellipse:
         nodeShape  = "ellipse";
         break;
-    case 4:
+    case NodeShape::Triangle:
         nodeShape  = "triangle";
         break;
-    case 5:
+    case NodeShape::Star:
         nodeShape  = "star";
         break;
-    case 6:
+    case NodeShape::Bugs:
         nodeShape  = "bugs";
         break;
-    case 7:
+    case NodeShape::Custom:
         nodeShape  = "custom";
         break;
     default:

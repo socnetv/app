@@ -9300,22 +9300,21 @@ void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
 
 
 /**
- * @brief Change the shape of a node
+ * @brief Change the shape of a node or all nodes.
  * If shape == null, prompts the user a list of available node shapes to select.
  * Then changes the shape of all nodes/vertices accordingly.
  * If vertex is non-zero, changes the shape of that node only.
  * Called when user clicks on Edit->Node > Change all nodes shapes
  * Called from DialogSettings when the user has selected a new default node shape
- * Calls Graph::vertexShapeAllSet(QString)
- * @param shape
+  * @param shape
  * @param vertex
  */
-void MainWindow::slotEditNodeShape(QString shape, const int vertex,
-                                   const QString &nodeIconPath) {
+void MainWindow::slotEditNodeShape(const int &vertex, QString shape,
+                                   QString nodeIconPath) {
     qDebug() << "MW::slotEditNodeShape() - vertex " << vertex
              << " (0 means all) - new shape " << shape;
 
-    if (shape==QString::null) {
+    if ( shape.isNull() ) {
         bool ok=false;
         QStringList shapesList;
         shapesList  << "box"
@@ -9325,7 +9324,7 @@ void MainWindow::slotEditNodeShape(QString shape, const int vertex,
                     << "triangle"
                     << "star"
                     << "bugs"
-                    << "custom icon";
+                    << "custom";
 
         int curShapeIndex = shapesList.indexOf(appSettings["initNodeShape"]);
 
@@ -9341,6 +9340,17 @@ void MainWindow::slotEditNodeShape(QString shape, const int vertex,
             statusMessage(tr("Change node shapes aborted."));
             return;
         }
+        if (shape=="custom") {
+            nodeIconPath = QFileDialog::getOpenFileName(
+                        this, tr("Select an icon"), getLastPath(),
+                        tr("All (*);;PNG (*.png);;JPG (*.jpg)")
+                        );
+            if (nodeIconPath.isNull() ) {
+                //user pressed Cancel
+                statusMessage(tr("Change node shapes aborted."));
+                return;
+            }
+        }
     }
 
     if (vertex == 0) { //change all nodes shapes
@@ -9349,7 +9359,7 @@ void MainWindow::slotEditNodeShape(QString shape, const int vertex,
         statusMessage(tr("All shapes have been changed. Ready."));
     }
     else { //only one
-        activeGraph->vertexShapeSet( vertex, shape);
+        activeGraph->vertexShapeSet( vertex, shape, nodeIconPath);
         statusMessage(tr("Node shape has been changed. Ready."));
     }
 }

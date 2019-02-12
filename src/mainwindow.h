@@ -328,7 +328,9 @@ public slots:
     void slotEditNodeSelectedToLine();
     void slotEditNodeColorAll(QColor color=QColor());
     void slotEditNodeSizeAll(int newSize=0, const bool &normalized=false);
-    void slotEditNodeShape(QString shape=QString::null, const int vertex = 0, const QString &nodeIconPath=QString::null);
+    void slotEditNodeShape(const int &vertex = 0,
+                           QString shape=QString::null,
+                           QString nodeIconPath=QString::null);
     void slotEditNodeNumberSize(int v1=0, int newSize=0, const bool prompt=true);
     void slotEditNodeNumberDistance(int v1=0, int newSize=0);
     void slotEditNodeNumbersColor(const int &v1=0, QColor color=QColor());

@@ -28,6 +28,7 @@
 #include "parser.h"
 
 #include <QFile>
+#include <QFileInfo>
 #include <QXmlStreamReader>
 #include <QXmlStreamAttributes>
 #include <QTextStream>
@@ -1777,10 +1778,13 @@ bool Parser::loadGraphML(){
     edgeColor="black";
     arrows=true;
     edgeDirType=EdgeType::Directed;
+
     QFile file ( fileName );
     if ( ! file.open(QIODevice::ReadOnly )) {
         return false;
     }
+
+    fileDirPath= QFileInfo(fileName).canonicalPath();
 
     //QXmlStreamReader *xml = new QXmlStreamReader();
     QXmlStreamReader xml;
@@ -2007,10 +2011,10 @@ void Parser::readGraphMLElementGraph(QXmlStreamReader &xml){
 
 
 
-// this method is needed because the QXmlStreamReader::hasAttribute
-// has been implemented in Qt 4.5. Therefore we need this ugly hack to 
-// be able to compile SocNetV in all previous Qt4 version. :(
-//FIXME: This will be obsolete soon
+// this method was needed because the QXmlStreamReader::hasAttribute
+// has been implemented in Qt 4.5. Therefore we needed this ugly hack to
+// be able to compile SocNetV in Qt4 versions. :(
+//FIXME: OBSOLETE
 bool Parser::xmlStreamHasAttribute( QXmlStreamAttributes &xmlStreamAttr, QString str) const
 {
     int size = xmlStreamAttr.size();
@@ -2036,22 +2040,22 @@ void Parser::readGraphMLElementKey ( QXmlStreamAttributes &xmlStreamAttr )
     keyFor [key_id] = key_what;
     qDebug()<< "Parser::readGraphMLElementKey() - key for "<< key_what;
 
-    // if (xmlStreamAttr.hasAttribute("attr.name") ) {  // to be enabled in later versions..
-    if ( xmlStreamHasAttribute( xmlStreamAttr , QString ("attr.name") ) ) {
+    if (xmlStreamAttr.hasAttribute("attr.name") ) {  // to be enabled in later versions..
+    // if ( xmlStreamHasAttribute( xmlStreamAttr , QString ("attr.name") ) ) {
         key_name =xmlStreamAttr.value("attr.name").toString();
         keyName [key_id] = key_name;
         qDebug()<< "Parser::readGraphMLElementKey() - key attr.name "
                 << key_name;
     }
-    //if (xmlStreamAttr.hasAttribute("attr.type") ) {
-    if ( xmlStreamHasAttribute( xmlStreamAttr , QString ("attr.type") ) ) {
+    if (xmlStreamAttr.hasAttribute("attr.type") ) {
+    //if ( xmlStreamHasAttribute( xmlStreamAttr , QString ("attr.type") ) ) {
         key_type=xmlStreamAttr.value("attr.type").toString();
         keyType [key_id] = key_type;
         qDebug()<< "Parser::readGraphMLElementKey() - key attr.type "
                 << key_type;
     }
-    //else if (xmlStreamAttr.hasAttribute("yfiles.type") ) {
-    else if ( xmlStreamHasAttribute( xmlStreamAttr , QString ("yfiles.type") ) ) {
+    else if (xmlStreamAttr.hasAttribute("yfiles.type") ) {
+    //else if ( xmlStreamHasAttribute( xmlStreamAttr , QString ("yfiles.type") ) ) {
         key_type=xmlStreamAttr.value("yfiles.type").toString();
         keyType [key_id] = key_type;
         qDebug()<< "Parser::readGraphMLElementKey() - key yfiles.type "
@@ -2084,8 +2088,16 @@ void Parser::readGraphMLElementDefaultValue(QXmlStreamReader &xml) {
     }
     if (keyName.value(key_id) == "custom-icon" && keyFor.value(key_id) == "node" ) {
         qDebug()<< "Parser::readGraphMLElementDefaultValue() - key default value "
-                << key_value << " is for nodes custom-icon path";
-        initIconPath = key_value;
+                << key_value << " is for node custom-icon path";
+        initNodeCustomIcon = key_value;
+        initNodeCustomIcon = fileDirPath + "/"  + initNodeCustomIcon;
+        qDebug()<< "Parser::readGraphMLElementDefaultValue() - initNodeCustomIcon full path:"
+                << initNodeCustomIcon ;
+        if (QFileInfo(initNodeCustomIcon).exists()){
+            qDebug()<< "Parser::readGraphMLElementDefaultValue() - file exists!";
+        }
+
+
     }
     if (keyName.value(key_id) == "color" && keyFor.value(key_id) == "node" ) {
         qDebug()<< "Parser::readGraphMLElementDefaultValue() - key default value "
@@ -2137,6 +2149,7 @@ void Parser::readGraphMLElementNode(QXmlStreamReader &xml){
     //Some might change when reading element data, some will stay the same...
     nodeColor = initNodeColor;
     nodeShape = initNodeShape;
+    nodeIconPath = initNodeCustomIcon;
     nodeSize = initNodeSize;
     nodeNumberSize=initNodeNumberSize;
     nodeNumberColor=initNodeNumberColor;
@@ -2177,7 +2190,7 @@ void Parser::endGraphMLElementNode(QXmlStreamReader &xml){
                      nodeLabelSize,
                      QPointF(randX,randY),
                      nodeShape,
-                     initIconPath,
+                     ( nodeIconPath.isEmpty() ? initNodeCustomIcon: nodeIconPath),
                      false
                      );
 
@@ -2271,7 +2284,7 @@ void Parser::endGraphMLElementEdge(QXmlStreamReader &xml){
 
 /*
  * this method reads data for edges and nodes
- * called at a data element (usually nested inside a node an edge element)
+ * called at a data element (usually nested inside a node or an edge element)
  */
 void Parser::readGraphMLElementData (QXmlStreamReader &xml){
     QXmlStreamAttributes xmlStreamAttr = xml.attributes();
@@ -2358,6 +2371,14 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
                 << key_value << " for this node";
         nodeShape= key_value;
     }
+    else if (keyName.value(key_id) == "custom-icon" && keyFor.value(key_id) == "node" ) {
+        qDebug()<< "Parser::readGraphMLElementData() - Data found. Node custom-icon path: "
+                << key_value << " for this node";
+        nodeIconPath = key_value;
+        nodeIconPath = fileDirPath + ("/") + nodeIconPath;
+        qDebug()<< "Parser::readGraphMLElementData() - full node custom-icon path: "
+                    << nodeIconPath  ;
+    }
     else if (keyName.value(key_id) == "color" && keyFor.value(key_id) == "edge" ) {
         qDebug()<< "Parser::readGraphMLElementData() - Data found. Edge color: "
                 << key_value << " for this edge";
@@ -2417,14 +2438,15 @@ void Parser::readGraphMLElementNodeGraphics(QXmlStreamReader &xml) {
     QXmlStreamAttributes xmlStreamAttr = xml.attributes();
 
     if ( xml.name() == "Geometry" ) {
-
-        if ( xmlStreamHasAttribute ( xmlStreamAttr, "x") ) {
+        if ( xmlStreamAttr.hasAttribute("x") ) {
+        //if ( xmlStreamHasAttribute ( xmlStreamAttr, "x") ) {
             conv_OK=false;
             tempX = xml.attributes().value("x").toString().toFloat (&conv_OK) ;
             if (conv_OK)
                 randX = tempX;
         }
-        if ( xmlStreamHasAttribute ( xmlStreamAttr, "y") ) {
+        if ( xmlStreamAttr.hasAttribute("y") ) {
+        //if ( xmlStreamHasAttribute ( xmlStreamAttr, "y") ) {
             conv_OK=false;
             tempY = xml.attributes().value("y").toString().toFloat (&conv_OK) ;
             if (conv_OK)
@@ -2432,7 +2454,8 @@ void Parser::readGraphMLElementNodeGraphics(QXmlStreamReader &xml) {
         }
         qDebug()<< "Parser::readGraphMLElementNodeGraphics() - Node Coordinates: "
                 << tempX << " " << tempY << " Using coordinates" << randX<< " "<<randY;
-        if (xmlStreamHasAttribute ( xmlStreamAttr, "width") ) {
+        if ( xmlStreamAttr.hasAttribute("width") ) {
+        //if (xmlStreamHasAttribute ( xmlStreamAttr, "width") ) {
             conv_OK=false;
             temp = xmlStreamAttr.value("width").toString().toFloat (&conv_OK) ;
             if (conv_OK)
@@ -2440,7 +2463,8 @@ void Parser::readGraphMLElementNodeGraphics(QXmlStreamReader &xml) {
             qDebug()<< "Parser::readGraphMLElementNodeGraphics() - Node Size: "
                     << temp<< " Using nodesize" << nodeSize;
         }
-        if (xmlStreamHasAttribute ( xmlStreamAttr, "shape") ) {
+        if ( xmlStreamAttr.hasAttribute("shape") ) {
+        //if (xmlStreamHasAttribute ( xmlStreamAttr, "shape") ) {
             nodeShape = xmlStreamAttr.value("shape").toString();
             qDebug()<< "Parser::readGraphMLElementNodeGraphics() - Node Shape: "
                     << nodeShape;
@@ -2448,7 +2472,8 @@ void Parser::readGraphMLElementNodeGraphics(QXmlStreamReader &xml) {
 
     }
     else if (xml.name() == "Fill" ){
-        if ( xmlStreamHasAttribute ( xmlStreamAttr, "color") ) {
+        if ( xmlStreamAttr.hasAttribute("color") ) {
+        //if ( xmlStreamHasAttribute ( xmlStreamAttr, "color") ) {
             nodeColor= xmlStreamAttr.value("color").toString();
             qDebug()<< "Parser::readGraphMLElementNodeGraphics() - Node color: "
                     << nodeColor;
@@ -2472,7 +2497,8 @@ void Parser::readGraphMLElementNodeGraphics(QXmlStreamReader &xml) {
         }
     }
     else if (xml.name() == "Shape" ) {
-        if ( xmlStreamHasAttribute ( xmlStreamAttr, "type") ) {
+        if ( xmlStreamAttr.hasAttribute("type") ) {
+        //if ( xmlStreamHasAttribute ( xmlStreamAttr, "type") ) {
             nodeShape= xmlStreamAttr.value("type").toString();
             qDebug()<< "Parser::readGraphMLElementNodeGraphics() - Node shape: "
                     << nodeShape;
@@ -2492,32 +2518,32 @@ void Parser::readGraphMLElementEdgeGraphics(QXmlStreamReader &xml) {
     QXmlStreamAttributes xmlStreamAttr = xml.attributes();
 
     if ( xml.name() == "Path" ) {
-        //if ( xmlStreamAttr.hasAttribute("sx") ) {
-        if ( xmlStreamHasAttribute ( xmlStreamAttr, "sx") ) {
+        if ( xmlStreamAttr.hasAttribute("sx") ) {
+        //if ( xmlStreamHasAttribute ( xmlStreamAttr, "sx") ) {
             conv_OK=false;
             tempX = xmlStreamAttr.value("sx").toString().toFloat (&conv_OK) ;
             if (conv_OK)
                 bez_p1_x = tempX;
             else bez_p1_x = 0 ;
         }
-        //if ( xmlStreamAttr.hasAttribute("sy") ) {
-        if ( xmlStreamHasAttribute ( xmlStreamAttr, "sy") ) {
+        if ( xmlStreamAttr.hasAttribute("sy") ) {
+        //if ( xmlStreamHasAttribute ( xmlStreamAttr, "sy") ) {
             conv_OK=false;
             tempY = xmlStreamAttr.value("sy").toString().toFloat (&conv_OK) ;
             if (conv_OK)
                 bez_p1_y = tempY;
             else bez_p1_y = 0 ;
         }
-        //if ( xmlStreamAttr.hasAttribute("tx") ) {
-        if ( xmlStreamHasAttribute ( xmlStreamAttr, "tx") ) {
+        if ( xmlStreamAttr.hasAttribute("tx") ) {
+        //if ( xmlStreamHasAttribute ( xmlStreamAttr, "tx") ) {
             conv_OK=false;
             tempX = xmlStreamAttr.value("tx").toString().toFloat (&conv_OK) ;
             if (conv_OK)
                 bez_p2_x = tempX;
             else bez_p2_x = 0 ;
         }
-        //if ( xmlStreamAttr.hasAttribute("ty") ) {
-        if ( xmlStreamHasAttribute ( xmlStreamAttr, "ty") ) {
+        if ( xmlStreamAttr.hasAttribute("ty") ) {
+        //if ( xmlStreamHasAttribute ( xmlStreamAttr, "ty") ) {
             conv_OK=false;
             tempY = xmlStreamAttr.value("ty").toString().toFloat (&conv_OK) ;
             if (conv_OK)
@@ -2528,17 +2554,20 @@ void Parser::readGraphMLElementEdgeGraphics(QXmlStreamReader &xml) {
                 << bez_p1_x << " " << bez_p1_y << " " << bez_p2_x << " " << bez_p2_y;
     }
     else if (xml.name() == "LineStyle" ){
-        if ( xmlStreamHasAttribute ( xmlStreamAttr, "color") ) {
+        if ( xmlStreamAttr.hasAttribute("color") ) {
+        //if ( xmlStreamHasAttribute ( xmlStreamAttr, "color") ) {
             edgeColor= xmlStreamAttr.value("color").toString();
             qDebug()<< "Parser::readGraphMLElementEdgeGraphics() - Edge color: "
                     << edgeColor;
         }
-        if ( xmlStreamHasAttribute ( xmlStreamAttr, "type") ) {
+        if ( xmlStreamAttr.hasAttribute("type") ) {
+        //if ( xmlStreamHasAttribute ( xmlStreamAttr, "type") ) {
             edgeType= xmlStreamAttr.value("type").toString();
             qDebug()<< "Parser::readGraphMLElementEdgeGraphics() - Edge type: "
                     << edgeType;
         }
-        if ( xmlStreamHasAttribute ( xmlStreamAttr, "width") ) {
+        if ( xmlStreamAttr.hasAttribute("width") ) {
+        //if ( xmlStreamHasAttribute ( xmlStreamAttr, "width") ) {
             temp = xmlStreamAttr.value("width").toString().toFloat (&conv_OK) ;
             if (conv_OK)
                 edgeWeight = temp;
@@ -2550,12 +2579,14 @@ void Parser::readGraphMLElementEdgeGraphics(QXmlStreamReader &xml) {
 
     }
     else if ( xml.name() == "Arrows" ) {
-        if ( xmlStreamHasAttribute ( xmlStreamAttr, "source") ) {
+        if ( xmlStreamAttr.hasAttribute("source") ) {
+        //if ( xmlStreamHasAttribute ( xmlStreamAttr, "source") ) {
             tempString = xmlStreamAttr.value("source").toString();
             qDebug()<< "Parser::readGraphMLElementEdgeGraphics() - Edge source arrow type: "
                     << tempString;
         }
-        if ( xmlStreamHasAttribute ( xmlStreamAttr, "target") ) {
+        if ( xmlStreamAttr.hasAttribute("target") ) {
+        //if ( xmlStreamHasAttribute ( xmlStreamAttr, "target") ) {
             tempString = xmlStreamAttr.value("target").toString();
             qDebug()<< "Parser::readGraphMLElementEdgeGraphics() - Edge target arrow type: "
                     << tempString;

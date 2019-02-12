@@ -15093,7 +15093,7 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
         qDebug () << "Graph::graphSaveToGraphMLFormat() - default iconFile already exists in: " << copyIconFileNamePath;
     }
 
-    outText <<	"  <key id=\"d51\" for=\"node\" attr.name=\"custom-icom\" attr.type=\"string\"> \n"
+    outText <<	"  <key id=\"d51\" for=\"node\" attr.name=\"custom-icon\" attr.type=\"string\"> \n"
                 "    <default>" << iconFileName << "</default> \n"
                 "  </key> \n";
 

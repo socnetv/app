@@ -179,16 +179,15 @@ DialogSettings::DialogSettings(
     m_pixmap.fill( m_nodeColor );
     ui->nodeColorBtn->setIcon(QIcon(m_pixmap));
 
-    QStringList shapesList;
-    QStringList iconList;
-    shapesList << "Square"
-                << "Circle"
-                << "Diamond"
-                << "Ellipse"
-                << "Triangle"
-                << "Star"
-                << "Bug"
-                << "Custom Icon";
+
+    shapesList << "square"
+                << "circle"
+                << "diamond"
+                << "ellipse"
+                << "triangle"
+                << "star"
+                << "bugs"
+                << "custom";
     iconList << ":/images/box.png"
              << ":/images/circle.png"
              << ":/images/diamond.png"
@@ -204,39 +203,60 @@ DialogSettings::DialogSettings(
        ui->nodeShapeComboBox->setItemIcon(i, QIcon(iconList[i]));
     }
 
+
     ui->nodeIconSelectButton->setEnabled(false);
     ui->nodeIconSelectEdit->setEnabled(false);
 
-    if (m_appSettings["initNodeShape"] == "box") {
-        ui->nodeShapeComboBox->setCurrentIndex(0);
+    int index = -1;
+    if ( (index = shapesList.indexOf(m_appSettings["initNodeShape"])) != -1 ){
+        ui->nodeShapeComboBox->setCurrentIndex(index);
+        if ( index == NodeShape::Custom ) {
+            ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Custom);
+            ui->nodeShapeComboBox->setItemIcon(NodeShape::Custom, QIcon(m_appSettings["initNodeIconPath"]));
+
+            ui->nodeIconSelectButton->setEnabled(true);
+            ui->nodeIconSelectEdit->setEnabled(true);
+            ui->nodeIconSelectEdit->setText (m_appSettings["initNodeIconPath"]);
+
+        }
     }
-    else if (m_appSettings["initNodeShape"] == "circle") {
-        ui->nodeShapeComboBox->setCurrentIndex(1);
+    else {
+        ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Circle);
     }
-    else if (m_appSettings["initNodeShape"] == "diamond") {
-        ui->nodeShapeComboBox->setCurrentIndex(2);
-    }
-    else if (m_appSettings["initNodeShape"] == "ellipse") {
-        ui->nodeShapeComboBox->setCurrentIndex(3);
-    }
-    else if (m_appSettings["initNodeShape"] == "triangle") {
-        ui->nodeShapeComboBox->setCurrentIndex(4);
-    }
-    else if (m_appSettings["initNodeShape"] == "star") {
-        ui->nodeShapeComboBox->setCurrentIndex(5);
-    }
-    else if (m_appSettings["initNodeShape"] == "bugs") {
-        ui->nodeShapeComboBox->setCurrentIndex(6);
-    }
-    else if (m_appSettings["initNodeShape"] == "custom") {
-        ui->nodeShapeComboBox->setCurrentIndex(7);
-        ui->nodeIconSelectButton->setEnabled(true);
-        ui->nodeIconSelectEdit->setEnabled(true);
-        ui->nodeIconSelectEdit->setText (m_appSettings["initNodeIconPath"]);
-    }
-    else { // default
-       ui->nodeShapeComboBox->setCurrentIndex(1);
-    }
+
+
+//    if (m_appSettings["initNodeShape"] == "box") {
+//        ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Box);
+//    }
+//    else if (m_appSettings["initNodeShape"] == "circle") {
+//        ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Circle);
+//    }
+//    else if (m_appSettings["initNodeShape"] == "diamond") {
+//        ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Diamond);
+//    }
+//    else if (m_appSettings["initNodeShape"] == "ellipse") {
+//        ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Ellipse);
+//    }
+//    else if (m_appSettings["initNodeShape"] == "triangle") {
+//        ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Triangle);
+//    }
+//    else if (m_appSettings["initNodeShape"] == "star") {
+//        ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Star);
+//    }
+//    else if (m_appSettings["initNodeShape"] == "bugs") {
+//        ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Bugs);
+//    }
+//    else if (m_appSettings["initNodeShape"] == "custom") {
+//        ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Custom);
+//        ui->nodeShapeComboBox->setItemIcon(NodeShape::Custom, QIcon(m_appSettings["initNodeIconPath"]));
+
+//        ui->nodeIconSelectButton->setEnabled(true);
+//        ui->nodeIconSelectEdit->setEnabled(true);
+//        ui->nodeIconSelectEdit->setText (m_appSettings["initNodeIconPath"]);
+//    }
+//    else { // default
+//       ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Circle);
+//    }
 
     ui->nodeSizeSpin->setValue( m_appSettings["initNodeSize"].toInt(0, 10) );
 
@@ -592,47 +612,52 @@ void DialogSettings::getNodeColor(){
  */
 void DialogSettings::getNodeShapeIndex(const int &shape){
 
-    switch (shape) {
-    case NodeShape::Box:
-        m_appSettings["initNodeShape"]  = "box";
-        break;
-    case NodeShape::Circle:
-        m_appSettings["initNodeShape"]  = "circle";
-        break;
-    case NodeShape::Diamond:
-        m_appSettings["initNodeShape"]  = "diamond";
-        break;
-    case 3:
-        m_appSettings["initNodeShape"]  = "ellipse";
-        break;
-    case 4:
-        m_appSettings["initNodeShape"]  = "triangle";
-        break;
-    case 5:
-        m_appSettings["initNodeShape"]  = "star";
-        break;
-    case 6:
-        m_appSettings["initNodeShape"]  = "bugs";
-        break;
-    case 7:
-        m_appSettings["initNodeShape"]  = "custom";
-        break;
-    default:
-        break;
-    }
+    m_appSettings["initNodeShape"] = shapesList[shape];
+//    switch (shape) {
+//    case NodeShape::Box:
+//        m_appSettings["initNodeShape"]  = "box";
+//        break;
+//    case NodeShape::Circle:
+//        m_appSettings["initNodeShape"]  = "circle";
+//        break;
+//    case NodeShape::Diamond:
+//        m_appSettings["initNodeShape"]  = "diamond";
+//        break;
+//    case NodeShape::Ellipse:
+//        m_appSettings["initNodeShape"]  = "ellipse";
+//        break;
+//    case NodeShape::Triangle:
+//        m_appSettings["initNodeShape"]  = "triangle";
+//        break;
+//    case NodeShape::Star:
+//        m_appSettings["initNodeShape"]  = "star";
+//        break;
+//    case NodeShape::Bugs:
+//        m_appSettings["initNodeShape"]  = "bugs";
+//        break;
+//    case NodeShape::Custom:
+//        m_appSettings["initNodeShape"]  = "custom";
+//        break;
+//    default:
+//        break;
+//    }
 
     qDebug()<< "DialogSettings::getNodeShape() - new default shape " << m_appSettings["initNodeShape"];
-     if ( shape == 7) {
+
+     if ( shape == NodeShape::Custom ) {
         // enable textedit and file button and raise file dialog
          ui->nodeIconSelectButton->setEnabled(true);
          ui->nodeIconSelectEdit->setEnabled(true);
          ui->nodeIconSelectEdit->setText (m_appSettings["initNodeIconPath"]);
+         if (!m_appSettings["initNodeIconPath"].isEmpty()) {
+             emit setNodeShape(0, m_appSettings["initNodeShape"], m_appSettings["initNodeIconPath"]);
+         }
      }
      else {
          ui->nodeIconSelectButton->setEnabled(false);
          ui->nodeIconSelectEdit->setEnabled(false);
          ui->nodeIconSelectEdit->setText ("");
-         emit setNodeShape(m_appSettings["initNodeShape"], 0);
+         emit setNodeShape(0, m_appSettings["initNodeShape"], QString() );
      }
 
 }
@@ -641,7 +666,7 @@ void DialogSettings::getNodeShapeIndex(const int &shape){
 
 void DialogSettings::getNodeIconFile(){
 
-    QString m_nodeIconFile = QFileDialog::getOpenFileName(this, tr("Select a new data dir"),
+    QString m_nodeIconFile = QFileDialog::getOpenFileName(this, tr("Select a new icon"),
                                                     ui->nodeIconSelectEdit->text(),
                                                     tr("PNG Images (*.png);;JPEG Images ( *.jpg);;All files (*.*)")
                                                            );
@@ -649,8 +674,9 @@ void DialogSettings::getNodeIconFile(){
         qDebug() << m_nodeIconFile;
        ui->nodeIconSelectEdit->setText(m_nodeIconFile);
        m_appSettings["initNodeIconPath"]= m_nodeIconFile;
+       ui->nodeShapeComboBox->setItemIcon(NodeShape::Custom, QIcon(m_nodeIconFile));
        (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
-       emit setNodeShape(m_appSettings["initNodeShape"], 0, m_appSettings["initNodeIconPath"]);
+       emit setNodeShape(0, m_appSettings["initNodeShape"],  m_appSettings["initNodeIconPath"]);
     }
     else {
         // user pressed Cancel ?

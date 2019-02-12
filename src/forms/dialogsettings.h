@@ -99,7 +99,7 @@ signals:
     void setCanvasIndexMethod(const QString &text);
 
     void setNodeColor(QColor);
-    void setNodeShape(const QString, const int, const QString &nodeIconPath=QString::null);
+    void setNodeShape(const int &num, QString , QString nodeIconPath=QString::null);
     void setNodeSize(int, const bool &);
     void setNodeNumbersVisibility(bool);
     void setNodeNumbersInside(bool);
@@ -126,6 +126,9 @@ private:
      //QString m_nodeShape;
      QColor m_bgColor, m_nodeColor, m_nodeNumberColor, m_nodeLabelColor;
      QColor m_edgeColor, m_edgeColorNegative,m_edgeColorZero, m_edgeWeightNumberColor;
+     QStringList shapesList;
+     QStringList iconList;
+
 };
 
 #endif
