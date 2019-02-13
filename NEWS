@@ -6,12 +6,17 @@ SocNetV News
 
 Feb 2019
 ========
-- Version 2.5 released with new features and bugfixes.
+- Version 2.5 released with new features and bugfixes:
   Prominence scores distribution in report
   Prominence scores distribution mini-chart in app sidebar
   Edge dichotomization algorithm
   High quality theme, inspired from Material Design, 
   for uniform look'n'feel of SocNetV across all OSes.
+  Support for non-integer edge weights while importing Adjacency
+  Support for (double) edge weights in GraphML, Pajek, edgelists etc.
+  Thus, edge weights can now be any valid numerical characters including 
+  the plus/minus sign, the characters g and e used in scientific notation, 
+  and the decimal point.
   
 
 Feb 2018
