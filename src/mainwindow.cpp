@@ -918,19 +918,19 @@ void MainWindow::initActions(){
             this, SLOT(slotNetworkImportTwoModeSM()));
 
 
-    networkSave = new QAction(QIcon(":/images/file_download_48px.svg"), tr("&Save"),  this);
-    networkSave->setShortcut(Qt::CTRL+Qt::Key_S);
-    networkSave->setStatusTip(tr("Save social network to a file"));
-    networkSave->setWhatsThis(tr("Save.\n\n"
+    networkSaveAct = new QAction(QIcon(":/images/file_download_48px.svg"), tr("&Save"),  this);
+    networkSaveAct->setShortcut(Qt::CTRL+Qt::Key_S);
+    networkSaveAct->setStatusTip(tr("Save social network to a file"));
+    networkSaveAct->setWhatsThis(tr("Save.\n\n"
                                  "Saves the social network to file"));
-    connect(networkSave, SIGNAL(triggered()), this, SLOT(slotNetworkSave()));
+    connect(networkSaveAct, SIGNAL(triggered()), this, SLOT(slotNetworkSave()));
 
-    networkSaveAs = new QAction(QIcon(":/images/file_download_48px.svg"), tr("Save As..."),  this);
-    networkSaveAs->setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_S);
-    networkSaveAs->setStatusTip(tr("Save network under a new filename"));
-    networkSaveAs->setWhatsThis(tr("Save As\n\n"
+    networkSaveAsAct = new QAction(QIcon(":/images/file_download_48px.svg"), tr("Save As..."),  this);
+    networkSaveAsAct->setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_S);
+    networkSaveAsAct->setStatusTip(tr("Save network under a new filename"));
+    networkSaveAsAct->setWhatsThis(tr("Save As\n\n"
                                    "Saves the social network under a new filename"));
-    connect(networkSaveAs, SIGNAL(triggered()), this, SLOT(slotNetworkSaveAs()));
+    connect(networkSaveAsAct, SIGNAL(triggered()), this, SLOT(slotNetworkSaveAs()));
 
     networkExportImage = new QAction(QIcon(":/images/export_photo_48px.svg"), tr("Export to I&mage..."), this);
     networkExportImage->setStatusTip(tr("Export the visible part of the network to image"));
@@ -3556,8 +3556,8 @@ void MainWindow::initMenuBar() {
     networkMenu ->addAction(networkWebCrawlerAct);
 
     networkMenu ->addSeparator();
-    networkMenu ->addAction(networkSave);
-    networkMenu ->addAction(networkSaveAs);
+    networkMenu ->addAction(networkSaveAct);
+    networkMenu ->addAction(networkSaveAsAct);
     networkMenu ->addSeparator();
 
     networkMenu->addAction (networkExportImage);
@@ -3925,7 +3925,7 @@ void MainWindow::initToolBar(){
 
     toolBar->addAction (networkNew);
     toolBar->addAction (networkOpen);
-    toolBar->addAction (networkSave);
+    toolBar->addAction (networkSaveAct);
     toolBar->addAction (networkPrint);
 
     toolBar->addSeparator();
@@ -5509,8 +5509,8 @@ void MainWindow::initApp(){
 
     initFileCodec= "UTF-8";
 
-    networkSave->setIcon(QIcon(":/images/file_download_48px.svg"));
-    networkSave->setEnabled(true);
+    networkSaveAct->setIcon(QIcon(":/images/file_download_48px.svg"));
+    networkSaveAct->setEnabled(true);
 
     /** Clear previous network data */
     activeGraph->clear();
@@ -6256,9 +6256,11 @@ QString MainWindow::getLastPath() {
  * @brief Sets the last path used by user to open/save something
  * @param filePath
  */
-void MainWindow::setLastPath(QString filePath) {
+void MainWindow::setLastPath(const QString &filePath) {
     qDebug()<< "MW::setLastPath() for " << filePath;
-    appSettings["lastUsedDirPath"] = QFileInfo(filePath).dir().absolutePath();
+    QString currentPath = QFileInfo(filePath).dir().absolutePath();
+    QDir::setCurrent(currentPath);
+    appSettings["lastUsedDirPath"] = currentPath;
 
     if (    !QFileInfo(filePath).completeSuffix().toLower().contains( "bmp" ) &&
             !QFileInfo(filePath).completeSuffix().toLower().contains( "jpg" ) &&
@@ -6646,6 +6648,7 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
     }
 
     QFileInfo fileInfo (fileName);
+
     fileNameNoPath = fileInfo.fileName();
 
     // if the specified format is one of the supported ones, just save it.
@@ -6703,7 +6706,8 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
 
 
 /**
- * @brief Saves the network in a new file. Always uses the graphml extension.
+ * @brief Saves the network in a new GraphML file.
+ * Always uses the GraphML format and extension.
  */
 void MainWindow::slotNetworkSaveAs() {
     qDebug() << "MW::slotNetworkSaveAs()";
@@ -6713,7 +6717,9 @@ void MainWindow::slotNetworkSaveAs() {
                 this,
                 tr("Save Network to GraphML File Named..."),
                 getLastPath(), tr("GraphML (*.graphml *.xml);;All (*)") );
+
     if (!fn.isEmpty())  {
+
         if  ( QFileInfo(fn).suffix().isEmpty() ){
             fn.append(".graphml");
             slotHelpMessageToUser (
@@ -6763,8 +6769,8 @@ void MainWindow::slotNetworkSaved(const int &status)
         statusMessage( tr("Error! Could not save this file: %1").arg (fileNameNoPath));
     }
     else {
-        networkSave->setIcon(QIcon(":/images/file_download_48px.svg"));
-        networkSave->setEnabled(false);
+        networkSaveAct->setIcon(QIcon(":/images/file_download_48px.svg"));
+        networkSaveAct->setEnabled(false);
         setWindowTitle( fileNameNoPath );
         statusMessage( tr("Network saved under filename: %1").arg (fileNameNoPath));
     }
@@ -7207,8 +7213,8 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
                                             " which is the file-format using Import Menu.","OK",0);
         break;
     }
-    networkSave->setIcon(QIcon(":/images/file_download_48px.svg"));
-    networkSave->setEnabled(false);
+    networkSaveAct->setIcon(QIcon(":/images/file_download_48px.svg"));
+    networkSaveAct->setEnabled(false);
 
     QApplication::restoreOverrideCursor();
 }
@@ -8530,8 +8536,8 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
        << "density"<<density;
 
     if (graphStatus) {
-        networkSave->setIcon(QIcon(":/images/file_download_48px.svg"));
-        networkSave->setEnabled(true);
+        networkSaveAct->setIcon(QIcon(":/images/file_download_48px.svg"));
+        networkSaveAct->setEnabled(true);
     }
 
     rightPanelNodesLCD->setText (QString::number(vertices));
@@ -8730,8 +8736,8 @@ void MainWindow::slotEditNodePosition(const int &nodeNumber,
     qDebug("MW::slotEditNodePosition() for %i with x %i and y %i", nodeNumber, x, y);
     activeGraph->vertexPosSet(nodeNumber, x, y);
     if (!activeGraph->graphSaved()) {
-        networkSave->setIcon(QIcon(":/images/file_download_48px.svg"));
-        networkSave->setEnabled(true);
+        networkSaveAct->setIcon(QIcon(":/images/file_download_48px.svg"));
+        networkSaveAct->setEnabled(true);
     }
 }
 

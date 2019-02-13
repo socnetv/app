@@ -158,7 +158,7 @@ public:
 
     void initComboBoxes();
 
-    void setLastPath(QString filePath);
+    void setLastPath(const QString &filePath);
     QString getLastPath();
     void createFortuneCookies();
 
@@ -637,7 +637,7 @@ private:
 
     QSlider *zoomSlider, *rotateSlider;
 
-    QAction *networkNew, *networkOpen, *networkSave, *networkSaveAs,
+    QAction *networkNew, *networkOpen, *networkSaveAct, *networkSaveAsAct,
     *networkClose, *networkPrint,*networkQuit;
     QAction *networkExportImage, *networkExportPNG, *networkExportPajek,
     *networkExportPDF, *networkExportDL, *networkExportGW, *networkExportSM,

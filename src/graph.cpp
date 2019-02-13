@@ -14995,6 +14995,12 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
 
     QString dirPath= fileInfo.canonicalPath();
     qDebug () << "Graph::graphSaveToGraphMLFormat() - Will save network to dirPath:" << dirPath;
+
+    QString iconsDir = dirPath + fileInfo.baseName();
+
+//    if ( QDir(iconsDir).exists() ) {
+
+//    }
     QString iconPath = QString();
     QString iconFileName = QString ();
     QString copyIconFileNamePath = QString();
