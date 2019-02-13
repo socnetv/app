@@ -189,10 +189,10 @@ public slots:
     void slotNetworkFileView();
     void slotNetworkImportGraphML();
     void slotNetworkImportPajek();
-    void slotNetworkImportSM();
-    void slotNetworkImportDot();
+    void slotNetworkImportAdjacency();
+    void slotNetworkImportGraphviz();
     void slotNetworkImportGML();
-    void slotNetworkImportDL();
+    void slotNetworkImportUcinet();
     void slotNetworkImportEdgeList();
     void slotNetworkImportTwoModeSM();
     void slotNetworkChanged(const int &graphStatus, const bool &directed,
@@ -637,13 +637,13 @@ private:
 
     QSlider *zoomSlider, *rotateSlider;
 
-    QAction *networkNew, *networkOpen, *networkSaveAct, *networkSaveAsAct,
-    *networkClose, *networkPrint,*networkQuit;
-    QAction *networkExportImage, *networkExportPNG, *networkExportPajek,
-    *networkExportPDF, *networkExportDL, *networkExportGW, *networkExportSM,
-    *networkExportList;
-    QAction *networkImportPajek, *networkImportGML, *networkImportSM, *networkImportList,
-    *networkImportDot , *networkImportDL, *networkImportTwoModeSM;
+    QAction *networkNewAct, *networkOpenAct, *networkSaveAct, *networkSaveAsAct,
+    *networkCloseAct, *networkPrintAct,*networkQuitAct;
+    QAction *networkExportImageAct, *networkExportPNGAct, *networkExportPajek,
+    *networkExportPDFAct, *networkExportDLAct, *networkExportGWAct, *networkExportSMAct,
+    *networkExportListAct;
+    QAction *networkImportPajekAct, *networkImportGMLAct, *networkImportAdjAct, *networkImportListAct,
+    *networkImportGraphvizAct , *networkImportUcinetAct, *networkImportTwoModeSM;
     QAction *networkViewFileAct, *openTextEditorAct, *networkViewSociomatrixAct,
     *networkDataSetSelectAct, *networkViewSociomatrixPlotAct;
 

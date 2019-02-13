@@ -832,25 +832,27 @@ void MainWindow::initActions(){
 
     printer = new QPrinter;
     printerPDF = new QPrinter;
+
+
     /**
     Network menu actions
     */
-    networkNew = new QAction(QIcon(":/images/new_folder_48px.svg"), tr("&New"),  this);
-    networkNew->setShortcut(Qt::CTRL+Qt::Key_N);
-    networkNew->setStatusTip(tr("Create a new network"));
-    networkNew->setToolTip(tr("New network"));
-    networkNew->setWhatsThis(tr("New\n\n"
+    networkNewAct = new QAction(QIcon(":/images/new_folder_48px.svg"), tr("&New"),  this);
+    networkNewAct->setShortcut(Qt::CTRL+Qt::Key_N);
+    networkNewAct->setStatusTip(tr("Create a new network"));
+    networkNewAct->setToolTip(tr("New network"));
+    networkNewAct->setWhatsThis(tr("New\n\n"
                                 "Creates a new social network. "
                                 "First, checks if current network needs to be saved."));
-    connect(networkNew, SIGNAL(triggered()), this, SLOT(slotNetworkNew()));
+    connect(networkNewAct, SIGNAL(triggered()), this, SLOT(slotNetworkNew()));
 
-    networkOpen = new QAction(QIcon(":/images/open_48px.svg"), tr("&Open"), this);
-    networkOpen->setShortcut(Qt::CTRL+Qt::Key_O);
-    networkOpen->setToolTip(tr("Open network"));
-    networkOpen->setStatusTip(tr("Open a GraphML formatted file of social network data."));
-    networkOpen->setWhatsThis(tr("Open\n\n"
+    networkOpenAct = new QAction(QIcon(":/images/open_48px.svg"), tr("&Open"), this);
+    networkOpenAct->setShortcut(Qt::CTRL+Qt::Key_O);
+    networkOpenAct->setToolTip(tr("Open network"));
+    networkOpenAct->setStatusTip(tr("Open a GraphML formatted file of social network data."));
+    networkOpenAct->setWhatsThis(tr("Open\n\n"
                                  "Opens a file of a social network in GraphML format"));
-    connect(networkOpen, SIGNAL(triggered()), this, SLOT(slotNetworkFileChoose()));
+    connect(networkOpenAct, SIGNAL(triggered()), this, SLOT(slotNetworkFileChoose()));
 
 
     for (int i = 0; i < MaxRecentFiles; ++i) {
@@ -860,50 +862,50 @@ void MainWindow::initActions(){
                 this, SLOT(slotNetworkFileLoadRecent()));
     }
 
-    networkImportGML = new QAction( QIcon(":/images/open_48px.svg"), tr("&GML"), this);
-    networkImportGML->setStatusTip(tr("Import GML-formatted file"));
-    networkImportGML->setWhatsThis(tr("Import GML\n\n"
+    networkImportGMLAct = new QAction( QIcon(":/images/open_48px.svg"), tr("&GML"), this);
+    networkImportGMLAct->setStatusTip(tr("Import GML-formatted file"));
+    networkImportGMLAct->setWhatsThis(tr("Import GML\n\n"
                                       "Imports a social network from a GML-formatted file"));
-    connect(networkImportGML, SIGNAL(triggered()), this, SLOT(slotNetworkImportGML()));
+    connect(networkImportGMLAct, SIGNAL(triggered()), this, SLOT(slotNetworkImportGML()));
 
 
-    networkImportPajek = new QAction( QIcon(":/images/open_48px.svg"), tr("&Pajek"), this);
-    networkImportPajek->setStatusTip(tr("Import Pajek-formatted file"));
-    networkImportPajek->setWhatsThis(tr("Import Pajek \n\n"
+    networkImportPajekAct = new QAction( QIcon(":/images/open_48px.svg"), tr("&Pajek"), this);
+    networkImportPajekAct->setStatusTip(tr("Import Pajek-formatted file"));
+    networkImportPajekAct->setWhatsThis(tr("Import Pajek \n\n"
                                         "Imports a social network from a Pajek-formatted file"));
-    connect(networkImportPajek, SIGNAL(triggered()), this, SLOT(slotNetworkImportPajek()));
+    connect(networkImportPajekAct, SIGNAL(triggered()), this, SLOT(slotNetworkImportPajek()));
 
 
-    networkImportSM = new QAction( QIcon(":/images/open_48px.svg"), tr("&Adjacency Matrix"), this);
-    networkImportSM->setStatusTip(tr("Import Adjacency matrix"));
-    networkImportSM->setWhatsThis(tr("Import Sociomatrix \n\n"
+    networkImportAdjAct = new QAction( QIcon(":/images/open_48px.svg"), tr("&Adjacency Matrix"), this);
+    networkImportAdjAct->setStatusTip(tr("Import Adjacency matrix"));
+    networkImportAdjAct->setWhatsThis(tr("Import Sociomatrix \n\n"
                                      "Imports a social network from an Adjacency matrix-formatted file"));
-    connect(networkImportSM, SIGNAL(triggered()), this, SLOT(slotNetworkImportSM()));
+    connect(networkImportAdjAct, SIGNAL(triggered()), this, SLOT(slotNetworkImportAdjacency()));
 
-    networkImportDot = new QAction( QIcon(":/images/open_48px.svg"), tr("Graph&Viz (.dot)"), this);
-    networkImportDot->setStatusTip(tr("Import dot file"));
-    networkImportDot->setWhatsThis(tr("Import GraphViz \n\n"
-                                      "Imports a social network from an GraphViz formatted file"));
-    connect(networkImportDot, SIGNAL(triggered()),
-            this, SLOT(slotNetworkImportDot()));
+    networkImportGraphvizAct = new QAction( QIcon(":/images/open_48px.svg"), tr("Graph&Viz (.dot)"), this);
+    networkImportGraphvizAct->setStatusTip(tr("Import dot file"));
+    networkImportGraphvizAct->setWhatsThis(tr("Import GraphViz \n\n"
+                                      "Imports a social network from a GraphViz formatted file"));
+    connect(networkImportGraphvizAct, SIGNAL(triggered()),
+            this, SLOT(slotNetworkImportGraphviz()));
 
 
-    networkImportDL = new QAction( QIcon(":/images/open_48px.svg"), tr("&UCINET (.dl)..."), this);
-    networkImportDL->setStatusTip(tr("ImportDL-formatted file (UCINET)"));
-    networkImportDL->setWhatsThis(tr("Import UCINET\n\n"
+    networkImportUcinetAct = new QAction( QIcon(":/images/open_48px.svg"), tr("&UCINET (.dl)..."), this);
+    networkImportUcinetAct->setStatusTip(tr("ImportDL-formatted file (UCINET)"));
+    networkImportUcinetAct->setWhatsThis(tr("Import UCINET\n\n"
                                      "Imports social network data from a DL-formatted file"));
-    connect(networkImportDL, SIGNAL(triggered()), this, SLOT(slotNetworkImportDL()));
+    connect(networkImportUcinetAct, SIGNAL(triggered()), this, SLOT(slotNetworkImportUcinet()));
 
 
-    networkImportList = new QAction( QIcon(":/images/open_48px.svg"), tr("&Edge list"), this);
-    networkImportList->setStatusTip(tr("Import an edge list file. "));
-    networkImportList->setWhatsThis(
+    networkImportListAct = new QAction( QIcon(":/images/open_48px.svg"), tr("&Edge list"), this);
+    networkImportListAct->setStatusTip(tr("Import an edge list file. "));
+    networkImportListAct->setWhatsThis(
                 tr("Import edge list\n\n"
                    "Import a network from an edgelist file. "
                    "SocNetV supports EdgeList files with edge weights "
                    "as well as simple EdgeList files where the edges are non-value (see manual)"
                    ));
-    connect(networkImportList, SIGNAL(triggered()),
+    connect(networkImportListAct, SIGNAL(triggered()),
             this, SLOT(slotNetworkImportEdgeList()));
 
 
@@ -932,31 +934,31 @@ void MainWindow::initActions(){
                                    "Saves the social network under a new filename"));
     connect(networkSaveAsAct, SIGNAL(triggered()), this, SLOT(slotNetworkSaveAs()));
 
-    networkExportImage = new QAction(QIcon(":/images/export_photo_48px.svg"), tr("Export to I&mage..."), this);
-    networkExportImage->setStatusTip(tr("Export the visible part of the network to image"));
-    networkExportImage->setWhatsThis(tr("Export to Image\n\n"
+    networkExportImageAct = new QAction(QIcon(":/images/export_photo_48px.svg"), tr("Export to I&mage..."), this);
+    networkExportImageAct->setStatusTip(tr("Export the visible part of the network to image"));
+    networkExportImageAct->setWhatsThis(tr("Export to Image\n\n"
                                       "Exports the visible part of the current social network to an image"));
-    connect(networkExportImage, SIGNAL(triggered()), this, SLOT(slotNetworkExportImageDialog()));
+    connect(networkExportImageAct, SIGNAL(triggered()), this, SLOT(slotNetworkExportImageDialog()));
 
-    networkExportPNG = new QAction( QIcon(":/images/export_photo_48px.svg"), tr("Export to &PNG..."), this);
-    networkExportPNG->setStatusTip(tr("Export visible network to PNG image"));
-    networkExportPNG->setWhatsThis(tr("Export to PNG \n\n"
+    networkExportPNGAct = new QAction( QIcon(":/images/export_photo_48px.svg"), tr("Export to &PNG..."), this);
+    networkExportPNGAct->setStatusTip(tr("Export visible network to PNG image"));
+    networkExportPNGAct->setWhatsThis(tr("Export to PNG \n\n"
                                       "Exports the social network to a PNG image"));
-    connect(networkExportPNG, SIGNAL(triggered()), this, SLOT(slotNetworkExportPNG()));
+    connect(networkExportPNGAct, SIGNAL(triggered()), this, SLOT(slotNetworkExportPNG()));
 
 
-    networkExportPDF = new QAction( QIcon(":/images/export_pdf_48px.svg"), tr("E&xport to PDF..."), this);
-    networkExportPDF->setStatusTip(tr("Export the visible part of the network to a PDF file"));
-    networkExportPDF->setWhatsThis(tr("Export to PDF\n\n"
+    networkExportPDFAct = new QAction( QIcon(":/images/export_pdf_48px.svg"), tr("E&xport to PDF..."), this);
+    networkExportPDFAct->setStatusTip(tr("Export the visible part of the network to a PDF file"));
+    networkExportPDFAct->setWhatsThis(tr("Export to PDF\n\n"
                                       "Exports the visible part of the current social network to a PDF document."));
-    connect(networkExportPDF, SIGNAL(triggered()), this, SLOT(slotNetworkExportPDFDialog()));
+    connect(networkExportPDFAct, SIGNAL(triggered()), this, SLOT(slotNetworkExportPDFDialog()));
 
-    networkExportSM = new QAction( QIcon(":/images/file_download_48px.svg"), tr("&Adjacency Matrix"), this);
-    networkExportSM->setStatusTip(tr("Export social network to an adjacency/sociomatrix file"));
-    networkExportSM->setWhatsThis(tr("Export network to Adjacency format\n\n"
+    networkExportSMAct = new QAction( QIcon(":/images/file_download_48px.svg"), tr("&Adjacency Matrix"), this);
+    networkExportSMAct->setStatusTip(tr("Export social network to an adjacency/sociomatrix file"));
+    networkExportSMAct->setWhatsThis(tr("Export network to Adjacency format\n\n"
                                      "Exports the social network to an "
                                      "adjacency matrix-formatted file"));
-    connect(networkExportSM, SIGNAL(triggered()), this, SLOT(slotNetworkExportSM()));
+    connect(networkExportSMAct, SIGNAL(triggered()), this, SLOT(slotNetworkExportSM()));
 
     networkExportPajek = new QAction( QIcon(":/images/file_download_48px.svg"), tr("&Pajek"), this);
     networkExportPajek->setStatusTip(tr("Export social network to a Pajek-formatted file"));
@@ -965,45 +967,45 @@ void MainWindow::initActions(){
     connect(networkExportPajek, SIGNAL(triggered()), this, SLOT(slotNetworkExportPajek()));
 
 
-    networkExportList = new QAction( QIcon(":/images/file_download_48px.svg"), tr("&List"), this);
-    networkExportList->setStatusTip(tr("Export to List-formatted file. "));
-    networkExportList->setWhatsThis(tr("Export List\n\n"
+    networkExportListAct = new QAction( QIcon(":/images/file_download_48px.svg"), tr("&List"), this);
+    networkExportListAct->setStatusTip(tr("Export to List-formatted file. "));
+    networkExportListAct->setWhatsThis(tr("Export List\n\n"
                                        "Exports the network to a List-formatted file"));
-    connect(networkExportList, SIGNAL(triggered()), this, SLOT(slotNetworkExportList()));
+    connect(networkExportListAct, SIGNAL(triggered()), this, SLOT(slotNetworkExportList()));
 
-    networkExportDL = new QAction( QIcon(":/images/file_download_48px.svg"), tr("&DL..."), this);
-    networkExportDL->setStatusTip(tr("Export network to UCINET-formatted file"));
-    networkExportDL->setWhatsThis(tr("Export UCINET\n\n"
+    networkExportDLAct = new QAction( QIcon(":/images/file_download_48px.svg"), tr("&DL..."), this);
+    networkExportDLAct->setStatusTip(tr("Export network to UCINET-formatted file"));
+    networkExportDLAct->setWhatsThis(tr("Export UCINET\n\n"
                                      "Exports the active network to a DL-formatted"));
-    connect(networkExportDL, SIGNAL(triggered()), this, SLOT(slotNetworkExportDL()));
+    connect(networkExportDLAct, SIGNAL(triggered()), this, SLOT(slotNetworkExportDL()));
 
-    networkExportGW = new QAction( QIcon(":/images/file_download_48px.svg"), tr("&GW..."), this);
-    networkExportGW->setStatusTip(tr("Export to GW-formatted file"));
-    networkExportGW->setWhatsThis(tr("Export\n\n"
+    networkExportGWAct = new QAction( QIcon(":/images/file_download_48px.svg"), tr("&GW..."), this);
+    networkExportGWAct->setStatusTip(tr("Export to GW-formatted file"));
+    networkExportGWAct->setWhatsThis(tr("Export\n\n"
                                      "Exports the active network to a GW formatted file"));
-    connect(networkExportGW, SIGNAL(triggered()), this, SLOT(slotNetworkExportGW()));
+    connect(networkExportGWAct, SIGNAL(triggered()), this, SLOT(slotNetworkExportGW()));
 
-    networkClose = new QAction( tr("&Close"), this);
-    networkClose->setStatusTip(tr("Close the actual network"));
-    networkClose->setWhatsThis(tr("Close \n\nCloses the actual network"));
-    connect(networkClose, SIGNAL(triggered()), this, SLOT(slotNetworkClose()));
+    networkCloseAct = new QAction( tr("&Close"), this);
+    networkCloseAct->setStatusTip(tr("Close the actual network"));
+    networkCloseAct->setWhatsThis(tr("Close \n\nCloses the actual network"));
+    connect(networkCloseAct, SIGNAL(triggered()), this, SLOT(slotNetworkClose()));
 
-    networkPrint = new QAction(QIcon(":/images/print_48px.svg"), tr("&Print"), this);
-    networkPrint->setShortcut(Qt::CTRL+Qt::Key_P);
-    networkPrint->setStatusTip(tr("Send the currrent social network to the printer"));
-    networkPrint->setWhatsThis(tr("Print \n\n"
+    networkPrintAct = new QAction(QIcon(":/images/print_48px.svg"), tr("&Print"), this);
+    networkPrintAct->setShortcut(Qt::CTRL+Qt::Key_P);
+    networkPrintAct->setStatusTip(tr("Send the currrent social network to the printer"));
+    networkPrintAct->setWhatsThis(tr("Print \n\n"
                                   "Sends whatever is viewable on "
                                   "the canvas to your printer. \n"
                                   "To print the whole social network, "
                                   "you might want to zoom-out."));
-    connect(networkPrint, SIGNAL(triggered()), this, SLOT(slotNetworkPrint()));
+    connect(networkPrintAct, SIGNAL(triggered()), this, SLOT(slotNetworkPrint()));
 
-    networkQuit = new QAction(QIcon(":/images/exit.png"), tr("E&xit"), this);
-    networkQuit->setShortcut(Qt::CTRL+Qt::Key_Q);
-    networkQuit->setStatusTip(tr("Quit SocNetV. Are you sure?"));
-    networkQuit->setWhatsThis(tr("Exit\n\n"
+    networkQuitAct = new QAction(QIcon(":/images/exit.png"), tr("E&xit"), this);
+    networkQuitAct->setShortcut(Qt::CTRL+Qt::Key_Q);
+    networkQuitAct->setStatusTip(tr("Quit SocNetV. Are you sure?"));
+    networkQuitAct->setWhatsThis(tr("Exit\n\n"
                                  "Quits the application"));
-    connect(networkQuit, SIGNAL(triggered()), this, SLOT(close()));
+    connect(networkQuitAct, SIGNAL(triggered()), this, SLOT(close()));
 
 
     openTextEditorAct = new QAction(QIcon(":/images/text_edit_48px.svg"),
@@ -3506,8 +3508,8 @@ void MainWindow::initMenuBar() {
     qDebug()<< "MW::initMenuBar()";
     /** menuBar entry networkMenu */
     networkMenu = menuBar()->addMenu(tr("&Network"));
-    networkMenu->addAction(networkNew);
-    networkMenu->addAction(networkOpen);
+    networkMenu->addAction(networkNewAct);
+    networkMenu->addAction(networkOpenAct);
     networkMenu->addSeparator();
     recentFilesSubMenu = new QMenu(tr("Recent &files..."));
     recentFilesSubMenu ->setIcon(QIcon(":/images/recent_48px.svg"));
@@ -3520,13 +3522,13 @@ void MainWindow::initMenuBar() {
     networkMenu->addSeparator();
     importSubMenu = new QMenu(tr("&Import ..."));
     importSubMenu->setIcon(QIcon(":/images/file_upload_48px.svg"));
-    importSubMenu->addAction(networkImportGML);
-    importSubMenu->addAction(networkImportPajek);
-    importSubMenu->addAction(networkImportSM);
+    importSubMenu->addAction(networkImportGMLAct);
+    importSubMenu->addAction(networkImportPajekAct);
+    importSubMenu->addAction(networkImportAdjAct);
     importSubMenu->addAction(networkImportTwoModeSM);
-    importSubMenu->addAction(networkImportList);
-    importSubMenu->addAction(networkImportDL);
-    importSubMenu->addAction(networkImportDot);
+    importSubMenu->addAction(networkImportListAct);
+    importSubMenu->addAction(networkImportUcinetAct);
+    importSubMenu->addAction(networkImportGraphvizAct);
     networkMenu ->addMenu (importSubMenu);
 
     networkMenu->addSeparator();
@@ -3560,21 +3562,21 @@ void MainWindow::initMenuBar() {
     networkMenu ->addAction(networkSaveAsAct);
     networkMenu ->addSeparator();
 
-    networkMenu->addAction (networkExportImage);
-    networkMenu->addAction (networkExportPDF);
+    networkMenu->addAction (networkExportImageAct);
+    networkMenu->addAction (networkExportPDFAct);
     networkMenu->addSeparator();
     exportSubMenu = networkMenu ->addMenu(tr("Export to other..."));
-    exportSubMenu->addAction (networkExportSM);
+    exportSubMenu->addAction (networkExportSMAct);
     exportSubMenu->addAction (networkExportPajek);
     //exportSubMenu->addAction (networkExportList);
     //exportSubMenu->addAction (networkExportDL);
     //exportSubMenu->addAction (networkExportGW);
 
     networkMenu ->addSeparator();
-    networkMenu ->addAction(networkPrint);
+    networkMenu ->addAction(networkPrintAct);
     networkMenu ->addSeparator();
-    networkMenu ->addAction(networkClose);
-    networkMenu ->addAction(networkQuit);
+    networkMenu ->addAction(networkCloseAct);
+    networkMenu ->addAction(networkQuitAct);
 
 
 
@@ -3923,10 +3925,10 @@ void MainWindow::initToolBar(){
 
     toolBar = addToolBar("operations");
 
-    toolBar->addAction (networkNew);
-    toolBar->addAction (networkOpen);
+    toolBar->addAction (networkNewAct);
+    toolBar->addAction (networkOpenAct);
     toolBar->addAction (networkSaveAct);
-    toolBar->addAction (networkPrint);
+    toolBar->addAction (networkPrintAct);
 
     toolBar->addSeparator();
 
@@ -6855,7 +6857,7 @@ void MainWindow::slotNetworkImportPajek(){
 /**
  * @brief Imports a network from a Adjacency matrix formatted file
  */
-void MainWindow::slotNetworkImportSM(){
+void MainWindow::slotNetworkImportAdjacency(){
     bool m_checkSelectFileType = false;
     slotNetworkFileChoose( QString::null, FILE_TYPE::ADJACENCY, m_checkSelectFileType);
 }
@@ -6866,7 +6868,7 @@ void MainWindow::slotNetworkImportSM(){
 /**
  * @brief Imports a network from a Dot (GraphViz) formatted file
  */
-void MainWindow::slotNetworkImportDot(){
+void MainWindow::slotNetworkImportGraphviz(){
     bool m_checkSelectFileType = false;
     slotNetworkFileChoose( QString::null ,FILE_TYPE::GRAPHVIZ, m_checkSelectFileType);
 }
@@ -6880,7 +6882,7 @@ void MainWindow::slotNetworkImportDot(){
 /**
  * @brief Imports a network from a UCINET formatted file
  */
-void MainWindow::slotNetworkImportDL(){
+void MainWindow::slotNetworkImportUcinet(){
     bool m_checkSelectFileType = false;
     slotNetworkFileChoose( QString::null, FILE_TYPE::UCINET, m_checkSelectFileType);
 }
