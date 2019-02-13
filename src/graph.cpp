@@ -14583,28 +14583,6 @@ void Graph::graphLoad (	const QString m_fileName,
 
     connect ( file_parser, &Parser::createNode, this, &Graph::vertexCreate );
 
-//    connect (
-//                file_parser, SIGNAL( createNode (const int &,const int &,
-//                                                 const QString &, const QString &,
-//                                                 const int&, const QString &,
-//                                                 const QString &, const int&,
-//                                                 const QPointF&,
-//                                                 const QString &,
-//                                                 const QString &iconPath,
-//                                                 const bool &) ),
-//                this, SLOT( vertexCreate( const int &,
-//                                          const int &,
-//                                          const QString &,
-//                                          const QString &,
-//                                          const int &,
-//                                          const QString &,
-//                                          const QString &,
-//                                          const int &,
-//                                          const QPointF &,
-//                                          const QString &,
-//                                          const QString &iconPath,
-//                                          const bool &) )
-//                ) ;
 
     connect (
                 file_parser, SIGNAL (createNodeAtPosRandom(const bool &)),
@@ -14618,18 +14596,21 @@ void Graph::graphLoad (	const QString m_fileName,
                                const int &,const QString &, const bool &) )
                 );
 
-    connect (
-                file_parser, SIGNAL(
-                    edgeCreate (const int&, const int&, const qreal&,
-                                const QString&, const int&,
-                                const bool&, const bool&,
-                                const QString&, const bool&)),
-                this, SLOT(
-                    edgeCreate (const int&, const int&, const qreal&,
-                                const QString&, const int&,
-                                const bool&, const bool&,
-                                const QString&, const bool&) )
-                );
+    connect (file_parser, &Parser::edgeCreate,
+             this,&Graph::edgeCreate);
+
+//    connect (
+//                file_parser, SIGNAL(
+//                    edgeCreate (const int&, const int&, const qreal&,
+//                                const QString&, const int&,
+//                                const bool&, const bool&,
+//                                const QString&, const bool&)),
+//                this, SLOT(
+//                    edgeCreate (const int&, const int&, const qreal&,
+//                                const QString&, const int&,
+//                                const bool&, const bool&,
+//                                const QString&, const bool&) )
+//                );
 
     connect (
                 file_parser, SIGNAL(networkFileLoaded(int,

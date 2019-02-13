@@ -1502,42 +1502,53 @@ bool Parser::loadPajek(){
 
 
 
-
 /**
-    Tries to load the file as adjacency sociomatrix-formatted. If not it returns -1
-*/
+ * @brief Tries to load the file as adjacency sociomatrix-formatted.
+ * If not it returns -1
+ * @return bool
+ */
 bool Parser::loadAdjacency(){
-    qDebug("\n\nParser: loadAdjacency()");
+
+    qDebug()<< "\n\nParser: loadAdjacency()";
+
     QFile file ( fileName );
     if ( ! file.open(QIODevice::ReadOnly )) {
         return false;
     }
+
     QTextStream ts( &file );
+
     ts.setCodec(userSelectedCodecName.toUtf8());
-    QString str;
-    QStringList lineElement;
-    int i=0, j=0, newCount=0, lastCount=0;
-    bool intOK=false;
+
+    QString rowStr;
+    QString edgeStr;
+    QStringList currentRow;
+    int i=0, j=0, colCount=0, lastCount=0;
+    bool conversionOK=false;
+
     relationsList.clear();
     totalNodes=0;
     edgeWeight=1.0;
     totalLinks=0;
-    i=1;
-    while ( i < 11 &&  !ts.atEnd() )   {
-        str= ts.readLine() ;
-        str=str.simplified();
 
-        if ( isComment(str) )
+    i=1;
+
+    // Initially, do a small 11-row read to understand what kind of file this is
+    while ( i < 11 &&  !ts.atEnd() ) {
+
+        rowStr= ts.readLine().simplified() ; // transforms "/t", "  ", etc to plain " ".
+
+        if ( isComment(rowStr) )
             continue;
 
-        if ( str.contains("vertices",Qt::CaseInsensitive)
-             || str.contains("network",Qt::CaseInsensitive)
-             || str.contains("graph",Qt::CaseInsensitive)
-             || str.contains("digraph",Qt::CaseInsensitive)
-             || str.contains("DL",Qt::CaseInsensitive)
-             || str.contains("list",Qt::CaseInsensitive)
-             || str.contains("graphml",Qt::CaseInsensitive)
-             || str.contains("xml",Qt::CaseInsensitive)
+        if ( rowStr.contains("vertices",Qt::CaseInsensitive)
+             || rowStr.contains("network",Qt::CaseInsensitive)
+             || rowStr.contains("graph",Qt::CaseInsensitive)
+             || rowStr.contains("digraph",Qt::CaseInsensitive)
+             || rowStr.contains("DL",Qt::CaseInsensitive)
+             || rowStr.contains("list",Qt::CaseInsensitive)
+             || rowStr.contains("graphml",Qt::CaseInsensitive)
+             || rowStr.contains("xml",Qt::CaseInsensitive)
              ) {
             qDebug()<< "*** Parser:loadAdjacency(): Not an Adjacency-formatted file. Aborting!!";
             file.close();
@@ -1546,14 +1557,20 @@ bool Parser::loadAdjacency(){
                                     "not only numbers and delimiters as expected.");
             return false;
         }
-        if ( str.contains (","))
-            newCount = (str.split(",")).count();
-        else
-            newCount = (str.split(" ")).count();
-        qDebug() << str;
-        qDebug() << "newCount "<<newCount << " i " << i;
-        if  ( (newCount != lastCount && i>1 ) || (newCount < i) ) {
-            // line element count differ, therefore this can't be an adjacency matrix
+
+        // Check what is the delimiter -- we support comma or space(s)
+        if ( rowStr.contains (",")) {
+            colCount = (rowStr.split(",")).count();
+        }
+        else {
+            colCount = (rowStr.split(" ")).count();
+        }
+
+        qDebug() << "row" << i << ":"<< rowStr;
+        qDebug() << "colCount:"<<colCount ;
+
+        if  ( (colCount != lastCount && i>1 ) || (colCount < i) ) {
+            // row columns differ from lastCaount, therefore this can't be an adjacency matrix
             qDebug()<< "*** Parser:loadAdjacency(): Not an Adjacency-formatted file. Aborting!!";
             file.close();
             errorMessage = tr("Error reading Adjacency-formatted file. "
@@ -1561,36 +1578,52 @@ bool Parser::loadAdjacency(){
             return false;
         }
 
-        lastCount=newCount;
+        lastCount=colCount;
 
         i++;
-    }
 
+    }  // end while
+
+    // RESET file and row counter
     ts.reset();
     ts.seek(0);
     i=0;
 
-
+    // Now do the full read
     while ( !ts.atEnd() )   {
-        str= ts.readLine() ;
-        str=str.simplified();  // transforms "/t", "  ", etc to plain " ".
 
-        if ( isComment(str) )
+        rowStr= ts.readLine().simplified();
+
+        if ( isComment(rowStr) )
             continue;
 
-        if ( str.contains (","))
-            lineElement=str.split(",");
-        else
-            lineElement=str.split(" ");
+        if ( rowStr.contains (",")) {
+            currentRow=rowStr.split(",");
+        }
+        else {
+            currentRow=rowStr.split(" ");
+        }
+
         if (i == 0 ) {
-            totalNodes=lineElement.count();
-            qDebug("Parser-loadAdjacency(): There are %i nodes in this file", totalNodes);
+
+            // Since a sociomatrix is NxN matrix,
+            // the number of items in the first row
+            // is the total nodes declared in this file.
+            totalNodes=currentRow.count();
+
+            qDebug()<< "Parser-loadAdjacency(): Nodes to be created:"<< totalNodes;
+
+            // We know how many nodes there are in this adjacency sociomatrix
+            // thus we create them, one by one.
+
             for (j=0; j<totalNodes; j++) {
 
+                // compute random position for this node
                 randX=rand()%gwWidth;
                 randY=rand()%gwHeight;
+
                 qDebug()<<"Parser-loadAdjacency(): Calling createNode() for node "<< j+1
-                       <<" No coords found. Using random "<<randX <<", " << randY;
+                       <<" using random position:"<<randX <<", " << randY;
 
                 emit createNode( j+1,
                                  initNodeSize,
@@ -1606,29 +1639,55 @@ bool Parser::loadAdjacency(){
                                  false
                                  );
             }
+            qDebug() << "Parser-loadAdjacency(): Finished creating nodes";
         }
-        qDebug("Parser-loadAdjacency(): Finished creation of nodes");
-        if ( totalNodes != (int) lineElement.count() )  {
+
+        // Check the number of items in this line,
+        // if it is different that totalNodes, then return with an error
+        if ( totalNodes != (int) currentRow.count() )  {
             errorMessage = tr("Error reading Adjacency-formatted file. "
-                                    "Matrix row %1 has different number of elements from previous row.").arg(i);
+                                    "Matrix row %1 has different number of items than previous row.").arg(i);
             return false;
         }
+
+        // Edge creation loop
+        // Create the edges declared in current row.
         j=0;
-        for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
-            if ( (*it1)!="0"){
-                edgeWeight =(*it1).toFloat(&intOK);
+
+        qDebug()<< "Parser-loadAdjacency(): Starting edge creation loop for row:" << i+1;
+
+        for (QStringList::Iterator it1 = currentRow.begin(); it1!=currentRow.end(); ++it1)  {
+            edgeStr = (*it1);
+            edgeWeight =edgeStr.toDouble(&conversionOK);
+
+            if ( !conversionOK )  {
+                errorMessage = tr("Error reading Adjacency-formatted file. "
+                                        "Element (%1,%2) can be converted.").arg(i+1).arg(j+1);
+                return false;
+            }
+
+            if ( edgeWeight ){
+
                 arrows=true;
                 bezier=false;
+
+                qDebug() << "Parser-loadAdjacency(): New edge: " << i+1 << "->" <<  j+1
+                         << "has weight" << edgeWeight << "TotalLinks: " << totalLinks+1;
+
                 emit edgeCreate(i+1, j+1, edgeWeight, initEdgeColor, EdgeType::Directed, arrows, bezier);
+
                 totalLinks++;
-                qDebug() << "Parser-loadAdjacency(): Link from i=" << i+1 << " to j=" <<  j+1
-                         << "weight=" << edgeWeight << ". TotalLinks= " << totalLinks;
+
             }
 
             j++;
-        }
+
+        } // end edge creation loop
+
         i++;
-    }
+
+    }  // end full while
+
     file.close();
 
     if (relationsList.count() == 0 ) {
