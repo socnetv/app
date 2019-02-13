@@ -9239,9 +9239,8 @@ void MainWindow::slotEditNodeSelectedToLine() {
 
 
 /**
- * @brief MainWindow::slotEditNodeColorAll
- * Changes the color of all nodes to parameter color
- * Calls  activeGraph->vertexColorAllSet to do the work
+ * @brief Changes the color of all nodes to parameter color
+ * Calls  activeGraph->vertexColorSet to do the work
  * If parameter color is invalid, opens a QColorDialog to
  * select a new node color for all nodes.
  * Called from Settings Dialog and Edit menu option
@@ -9258,7 +9257,7 @@ void MainWindow::slotEditNodeColorAll(QColor color){
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
         qDebug() << "MW::slotEditNodeColorAll() : "
                  << appSettings["initNodeColor"];
-        activeGraph->vertexColorAllSet(appSettings["initNodeColor"]);
+        activeGraph->vertexColorSet(0, appSettings["initNodeColor"]);
         QApplication::restoreOverrideCursor();
         statusMessage( tr("Ready. ")  );
     }
@@ -9272,9 +9271,8 @@ void MainWindow::slotEditNodeColorAll(QColor color){
 
 
 /**
- * @brief MainWindow::slotEditNodeSizeAll
- * Changes the size of nodes to newSize.
- * Calls activeGraph->vertexSizeAllSet to do the work.
+ * @brief Changes the size of nodes to newSize.
+ * Calls activeGraph->vertexSizeSet to do the work.
  * Called from Edit menu item, DialogSettings
  * If newSize = 0 asks the user a new size for all nodes
  * If normalized = true, changes node sizes according to their plethos
@@ -9301,7 +9299,7 @@ void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
 
     appSettings["initNodeSize"]= QString::number(newSize);
 
-    activeGraph->vertexSizeAllSet(newSize);
+    activeGraph->vertexSizeSet(0, newSize);
 
     statusMessage(tr("Ready"));
     return;
@@ -9381,8 +9379,7 @@ void MainWindow::slotEditNodeShape(const int &vertex, QString shape,
 
 
 /**
- * @brief MainWindow::slotEditNodeNumberSize
- * Changes the size of one or all node numbers.
+ * @brief Changes the size of one or all node numbers.
  * Called from Edit menu option and DialogSettings
  * if newSize=0, asks the user to enter a new node number font size
  * if v1=0, it changes all node numbers
@@ -9406,7 +9403,7 @@ void MainWindow::slotEditNodeNumberSize(int v1, int newSize, const bool prompt) 
     }
     else { //change all
         appSettings["initNodeNumberSize"] = QString::number(newSize);
-        activeGraph->vertexNumberSizeSetAll(newSize);
+        activeGraph->vertexNumberSizeSet(0, newSize);
     }
     statusMessage( tr("Changed node numbers size. Ready.") );
 }
@@ -9452,8 +9449,7 @@ void MainWindow::slotEditNodeNumbersColor(const int &v1, QColor color){
 
 
 /**
- * @brief MainWindow::slotEditNodeNumberDistance
- * Changes the distance of one or all node numbers from their nodes.
+ * @brief Changes the distance of one or all node numbers from their nodes.
  * Called from Edit menu option and DialogSettings
  * if newDistance=0, asks the user to enter a new node number distance
  * if v1=0, it changes all node number distances
@@ -9478,7 +9474,7 @@ void MainWindow::slotEditNodeNumberDistance(int v1, int newDistance) {
     }
     else { //change all
         appSettings["initNodeNumberDistance"] = QString::number(newDistance);
-        activeGraph->vertexNumberDistanceSetAll(newDistance);
+        activeGraph->vertexNumberDistanceSet(0, newDistance);
     }
     statusMessage( tr("Changed node number distance. Ready.") );
 }
@@ -9486,15 +9482,14 @@ void MainWindow::slotEditNodeNumberDistance(int v1, int newDistance) {
 
 
 /**
- * @brief MainWindow::slotEditNodeLabelSize
- * Changes the size of one or all node Labels.
+ * @brief Changes the size of one or all node Labels.
  * Called from Edit menu option and DialogSettings
  * if newSize=0, asks the user to enter a new node Label font size
  * if v1=0, it changes all node Labels
  * @param v1
  * @param newSize
  */
-void MainWindow::slotEditNodeLabelSize(int v1, int newSize) {
+void MainWindow::slotEditNodeLabelSize(const int v1, int newSize) {
     bool ok=false;
     qDebug() << "MW::slotEditNodeLabelSize - newSize " << newSize;
     if (!newSize) {
@@ -9511,7 +9506,7 @@ void MainWindow::slotEditNodeLabelSize(int v1, int newSize) {
     }
     else { //change all
         appSettings["initNodeLabelSize"] = QString::number(newSize);
-        activeGraph->vertexLabelSizeAllSet(newSize);
+        activeGraph->vertexLabelSizeSet(0, newSize);
     }
     statusMessage( tr("Changed node label size. Ready.") );
 }
@@ -9523,12 +9518,11 @@ void MainWindow::slotEditNodeLabelSize(int v1, int newSize) {
 
 
 /**
- * @brief MainWindow::slotEditNodeLabelsColor
- * Changes the color of all nodes' labels.
+ * @brief Changes the color of all node labels.
  * Asks the user to enter a new node label color
  */
 void MainWindow::slotEditNodeLabelsColor(QColor color){
-    qDebug() << "MW:slotEditNodeNumbersColor() - new color " << color;
+    qDebug() << "MW::slotEditNodeNumbersColor() - new color " << color;
     if (!color.isValid()) {
         color = QColorDialog::getColor( QColor ( appSettings["initNodeLabelColor"] ),
                 this,
@@ -9536,7 +9530,7 @@ void MainWindow::slotEditNodeLabelsColor(QColor color){
     }
     if (color.isValid()) {
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        activeGraph->vertexLabelColorAllSet(color.name());
+        activeGraph->vertexLabelColorSet(0, color.name());
         appSettings["initNodeLabelColor"] = color.name();
         optionsNodeLabelsVisibilityAct->setChecked(true);
         QApplication::restoreOverrideCursor();

@@ -421,8 +421,7 @@ public:
 
     void vertexSizeInit (const int);
     void vertexSizeSet(const int &v, const int &newsize );
-    void vertexSizeAllSet(const int newsize);
-    int vertexSize(const int &v);
+    int vertexSize(const int &v) const;
 
     void vertexShapeSetDefault (const QString, const QString &iconPath=QString::null);
     void vertexShapeSet(const int &v, const QString &shape, const QString &iconPath=QString::null);
@@ -431,39 +430,35 @@ public:
 
     void vertexColorInit (const QString &color);
     void vertexColorSet(const int &v, const QString &color);
-    void vertexColorAllSet(const QString &color);
-    QColor vertexColor(const int &v);
+    QColor vertexColor(const int &v) const;
 
     void vertexNumberColorInit (const QString &color);
     void vertexNumberColorSet(const int &v=0, const QString &color = "#000000" );
 
     void vertexNumberSizeInit (const int &size);
     void vertexNumberSizeSet(const int &v, const int &newsize );
-    void vertexNumberSizeSetAll (const int &size);
 
     void vertexNumberDistanceInit (const int &distance);
     void vertexNumberDistanceSet(const int &v, const int &newDistance );
-    void vertexNumberDistanceSetAll (const int &newDistance);
-
-
-    void vertexLabelsVisibilitySet(bool toggle);
-    void vertexLabelSizeInit(int newSize);
-    void vertexLabelSizeSet(const int &v, const int &newsize );
-    void vertexLabelSizeAllSet (const int &);
-    void vertexLabelColorInit(QString color);
 
     void vertexLabelSet(const int &v, const QString &label);
-    void vertexLabelColorSet(int v1, QString color);
-    void vertexLabelColorAllSet(const QString &color);
-    QString vertexLabel(const int &v1);
+    QString vertexLabel(const int &v) const;
+    void vertexLabelsVisibilitySet(bool toggle);
+
+    void vertexLabelSizeInit(int newSize);
+    void vertexLabelSizeSet(const int &v, const int &labelSize );
+
+    void vertexLabelColorInit(QString color);
+    void vertexLabelColorSet(const int &v1, const QString &color);
+
     void vertexLabelDistanceInit (const int &distance);
     void vertexLabelDistanceSet(const int &v, const int &newDistance );
     void vertexLabelDistanceAllSet (const int &newDistance);
 
 
-
     void vertexPosSet(const int &v, const int &x, const int &y);
-    QPointF vertexPos(const int &v1);
+    QPointF vertexPos(const int &v1) const;
+
     int vertexClicked() const;
 
     int vertices(const bool &dropIsolates=false, const bool &countAll=false, const bool &recount=false) ;

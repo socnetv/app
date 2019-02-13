@@ -83,11 +83,16 @@ Parser::~Parser () {
  */
 void Parser::load(const QString fn,
                   const QString m_codec,
-                  const int iNS, const QString iNC, const QString iNSh,
-                  const QString iNNC, const int iNNS,
-                  const QString iNLC, const int iNLS ,
+                  const int iNS,
+                  const QString iNC,
+                  const QString iNSh,
+                  const QString iNNC,
+                  const int iNNS,
+                  const QString iNLC,
+                  const int iNLS ,
                   const QString iEC,
-                  const int width, const int height,
+                  const int width,
+                  const int height,
                   const int fFormat,
                   const int sm_mode,
                   const QString delim)  {
@@ -117,12 +122,15 @@ void Parser::load(const QString fn,
     randY=0;
     fileFormat= fFormat;
     two_sm_mode = sm_mode;
-    if (!delim.isNull() && !delim.isEmpty())
+
+    if (!delim.isNull() && !delim.isEmpty()) {
         delimiter = delim;
-    else delimiter=" ";
+    }
+    else {
+        delimiter=" ";
+    }
 
     xml=0;
-    errorMessage=QString::null;
 
     qDebug()<< "**** Parser::load() - networkName "<< networkName
             << " fileFormat "<< fileFormat

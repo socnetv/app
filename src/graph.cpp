@@ -64,7 +64,9 @@
  * constructor
  */
 Graph::Graph(GraphicsWidget *graphicsWidget) {
+
     m_canvas = graphicsWidget;
+
     m_totalVertices=0;
     m_totalEdges=0;
     outboundEdgesVert=0;
@@ -105,7 +107,9 @@ Graph::Graph(GraphicsWidget *graphicsWidget) {
     calculatedPP=false;
     calculatedPRP=false;
     calculatedTriad=false;
+
     m_precision = 3;
+
     m_vertexClicked = 0;
     m_clickedEdge.v1=0;
     m_clickedEdge.v2=0;
@@ -113,9 +117,6 @@ Graph::Graph(GraphicsWidget *graphicsWidget) {
     file_parser = 0;
     wc_parser = 0;
     wc_spider = 0;
-
-//   edgesHash.reserve(40000);
-
 
     m_graphFileFormatExportSupported<< FILE_TYPE::GRAPHML
                                << FILE_TYPE::PAJEK
@@ -1316,17 +1317,18 @@ void Graph::vertexPosSet(const int &v1, const int &x, const int &y){
  * @param v1
  * @return
  */
-QPointF Graph::vertexPos(const int &v1){
+QPointF Graph::vertexPos(const int &v1) const{
     return m_graph[ vpos[v1] ]->pos();
 }
 
+
+
 /**
- * @brief Graph::vertexClickedSet
- * @param v1
- * Called from GW::userClickedNode(int) to update clicked vertex number and
+ * @brief Called from GW::userClickedNode(int) to update clicked vertex number and
  * signal signalNodeClickedInfo(node info) to MW which shows node info on the
  * status bar.
- */
+ * @param v1
+  */
 void Graph::vertexClickedSet(const int &v1) {
     qDebug()<<"Graph::vertexClickedSet() - " << v1;
     m_vertexClicked = v1;
@@ -1365,47 +1367,44 @@ void Graph::vertexSizeInit (const int size) {
 
 
 /**
- * @brief Graph::vertexSizeSet
- * Changes the size.of vertex v
- * Called from MW Node Properties
+ * @brief Changes the size.of a vertex v or all vertices if v=0
+ * Called from MW (i.e. user changing node properties)
  * @param v
  * @param size
  */
 void Graph::vertexSizeSet(const int &v, const int &size) {
-    m_graph[ vpos[v] ]->setSize(size);
+    if (v) {
+        qDebug()<< "Graph::vertexSizeSet() - for vertex" << v <<"new size" << size;
+        m_graph[ vpos[v] ]->setSize(size);
+        emit setNodeSize(v, size);
+    }
+    else {
+        qDebug()<< "Graph::vertexSizeSet() - for all vertices, new size" << size;
+        vertexSizeInit(size);
+        VList::const_iterator it;
+        for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+            if ( ! (*it)->isEnabled() ){
+                continue;
+            }
+            else {
+                (*it)->setSize(size) ;
+                emit setNodeSize((*it)->name(), size);
+            }
+        }
+
+    }
 
     graphSetModified(GraphChange::ChangedVerticesMetadata);
-    emit setNodeSize(v, size);
+
 }
 
 /**
- * @brief Graph::vertexSize
+ * @brief Returns the size of vertex v
  * @param v
  * @return int
  */
-int Graph::vertexSize(const int &v ) {
+int Graph::vertexSize( const int &v ) const {
     return m_graph[ vpos[v] ]-> size();
-}
-
-
-/**
- * @brief Changes the size.of all vertices
- * @param size
- */
-void Graph::vertexSizeAllSet(const int size) {
-    qDebug()<< "Graph::vertexSizeAllSet() - new size" << size;
-    vertexSizeInit(size);
-    VList::const_iterator it;
-    for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( ! (*it)->isEnabled() ){
-            continue;
-        }
-        else {
-            (*it)->setSize(size) ;
-            emit setNodeSize((*it)->name(), size);
-        }
-    }
-    graphSetModified(GraphChange::ChangedVerticesMetadata);
 }
 
 
@@ -1487,19 +1486,38 @@ QString Graph::vertexShapeIconPath(const int &v1) {
  * @param color
  */
 void Graph::vertexColorSet(const int &v1, const QString &color){
-    qDebug()<< "Graph: vertexColorSet for "<< v1 << ", vpos " << vpos[v1]<< " with color "<< color;
-    m_graph[ vpos[v1] ]->setColor ( color );
-    emit setNodeColor ( m_graph[ vpos[v1] ]-> name(), color );
 
+    if (v1) {
+        qDebug()<< "Graph::vertexColorSet() - vertex"<< v1 << "new color"<< color;
+        m_graph[ vpos[v1] ]->setColor ( color );
+        emit setNodeColor ( m_graph[ vpos[v1] ]-> name(), color );
+    }
+    else {
+        qDebug()<< "Graph::vertexColorSet() - for all vertices, new color"<< color;
+        vertexColorInit(color);
+        VList::const_iterator it;
+        for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+            if ( ! (*it)->isEnabled() ){
+                continue;
+            }
+            else {
+                qDebug() << "Graph::vertexColorSet() - for all, setting vertex" << (*it)->name()
+                         << " new color" << color;
+                (*it)->setColor(color) ;
+                emit setNodeColor ( (*it)-> name(), color );
+            }
+        }
+    }
     graphSetModified(GraphChange::ChangedVerticesMetadata);
 }
+
 
 /**
  * @brief Graph::vertexColor
  * @param v1
  * @return
  */
-QColor Graph::vertexColor(const int &v1){
+QColor Graph::vertexColor(const int &v1) const {
     return  QColor ( m_graph[ vpos[v1] ] -> color() ) ;
 }
 
@@ -1515,30 +1533,6 @@ void Graph::vertexColorInit(const QString &color){
 
 
 
-/**
- * @brief Changes the color of all vertices and updates default vertex color
- * @param color
- */
-void Graph::vertexColorAllSet(const QString &color) {
-    qDebug() << "*** Graph::vertexColorAllSet() "
-                << " to " << color;
-    vertexColorInit(color);
-    VList::const_iterator it;
-    for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( ! (*it)->isEnabled() ){
-            continue;
-        }
-        else {
-            qDebug() << "Graph::vertexColorAllSet() vertex " << (*it)->name()
-                     << " new color " << color;
-            (*it)->setColor(color) ;
-            emit setNodeColor ( (*it)-> name(), color );
-        }
-    }
-
-    graphSetModified(GraphChange::ChangedVerticesMetadata);
-
-}
 
 
 
@@ -1586,8 +1580,7 @@ void Graph::vertexNumberColorSet(const int &v1, const QString &color){
 
 
 /**
- * @brief Graph::vertexNumberSizeInit
- * Changes the initial size of vertices numbers
+ * @brief Changes the initial size of vertex numbers
  * @param size
  */
 void Graph::vertexNumberSizeInit (const int &size) {
@@ -1597,35 +1590,31 @@ void Graph::vertexNumberSizeInit (const int &size) {
 
 
 /**
- * @brief Changes the size.of vertex v number
+ * @brief Changes the size of vertex v number
  * @param v
  * @param size
  */
 void Graph::vertexNumberSizeSet(const int &v, const int &size) {
-    m_graph[ vpos[v] ]->setNumberSize (size);
 
-    graphSetModified(GraphChange::ChangedMinorOptions);
-}
-
-
-/**
- * @brief Changes the size.of all vertex numbers
- * @param size
- */
-void Graph::vertexNumberSizeSetAll(const int &size) {
-    qDebug() << "*** Graph::vertexNumberSizeSetAll() "
-                << " to " << size;
-    vertexNumberSizeInit(size);
-    VList::const_iterator it;
-    for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( ! (*it)->isEnabled() ){
-            continue;
-        }
-        else {
-            qDebug() << "Graph::vertexNumberSizeSetAll() vertex " << (*it)->name()
-                     << " new size " << size;
-            (*it)->setNumberSize(size) ;
-            emit setNodeNumberSize ( (*it)-> name(), size);
+    if (v) {
+        qDebug() << "Graph::vertexNumberSizeSet() - for vertex"<< v <<"new number size" << size;
+        m_graph[ vpos[v] ]->setNumberSize (size);
+        emit setNodeNumberSize ( m_graph[ vpos[v] ]->name(), size);
+    }
+    else {
+        qDebug() << "Graph::vertexNumberSizeSet() - for all vertices, new number size" << size;
+        vertexNumberSizeInit(size);
+        VList::const_iterator it;
+        for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+            if ( ! (*it)->isEnabled() ){
+                continue;
+            }
+            else {
+                qDebug() << "Graph::vertexNumberSizeSet() - for all, setting vertex"<< (*it)->name()
+                         << " new number size " << size;
+                (*it)->setNumberSize(size) ;
+                emit setNodeNumberSize ( (*it)-> name(), size);
+            }
         }
     }
 
@@ -1649,36 +1638,39 @@ void Graph::vertexNumberDistanceInit(const int &distance) {
  * @param size
  */
 void Graph::vertexNumberDistanceSet(const int &v, const int &newDistance) {
-    m_graph[ vpos[v] ]->setNumberDistance (newDistance);
+    if (v) {
+        qDebug() << "Graph::vertexNumberDistanceSet() - for vertex" << v
+                 << "new number distance"
+                 << newDistance;
 
-    graphSetModified(GraphChange::ChangedMinorOptions);
-    emit setNodeNumberDistance(v, newDistance);
-}
-
-
-/**
- * @brief Changes the distance.of all vertex number from their vertices
- * @param size
- */
-void Graph::vertexNumberDistanceSetAll(const int &newDistance) {
-    qDebug() << "*** Graph::vertexNumberDistanceSetAll() "
-                << " to " << newDistance;
-    vertexNumberDistanceInit(newDistance);
-    VList::const_iterator it;
-    for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( ! (*it)->isEnabled() ){
-            continue;
-        }
-        else {
-            qDebug() << "Graph::vertexNumberDistanceSetAll() vertex " << (*it)->name()
-                     << " new distance " << newDistance;
-            (*it)->setNumberDistance(newDistance) ;
-            emit setNodeNumberDistance ( (*it)-> name(), newDistance);
-        }
+        m_graph[ vpos[v] ]->setNumberDistance (newDistance);
+        emit setNodeNumberDistance(v, newDistance);
     }
+    else {
+        qDebug() << "Graph::vertexNumberDistanceSet() - for all vertices, "
+                    "new number distance"
+                 << newDistance;
+        vertexNumberDistanceInit(newDistance);
+        VList::const_iterator it;
+        for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+            if ( ! (*it)->isEnabled() ){
+                continue;
+            }
+            else {
+                qDebug() << "Graph::vertexNumberDistanceSet() - for all, setting vertex"
+                         << (*it)->name()
+                         << "new number distance" << newDistance;
+                (*it)->setNumberDistance(newDistance) ;
+                emit setNodeNumberDistance ( (*it)-> name(), newDistance);
+            }
+        }
 
+    }
     graphSetModified(GraphChange::ChangedMinorOptions);
+
 }
+
+
 
 
 
@@ -1704,13 +1696,12 @@ void Graph::vertexLabelSet(const int &v1, const QString &label){
 
 
 /**
- * @brief Graph::vertexLabel
- * Returns the label of a vertex v1
+ * @brief Returns the label of a vertex v1
  * @param v1
  * @return
  */
-QString Graph::vertexLabel(const int &v1){
-    return m_graph[ vpos[v1] ]->label ();
+QString Graph::vertexLabel(const int &v) const{
+    return m_graph[ vpos[v] ]->label ();
 }
 
 
@@ -1728,46 +1719,39 @@ void Graph::vertexLabelSizeInit(int newSize) {
 
 
 /**
- * @brief Graph::vertexLabelSizeSet
- * Changes the label size of vertex v1
+ * @brief Changes the label size of vertex v1 or all vertices if v1=0
  * @param v1
  * @param size
  */
-void Graph::vertexLabelSizeSet(const int &v1, const int &size) {
-    qDebug()<< "Graph: vertexLabelSizeSet for "<< v1 << ", vpos "
-            << vpos[v1]<< " with size "<< size;
-    m_graph[ vpos[v1] ] -> setLabelSize ( size );
-    emit setNodeLabelSize ( v1, size);
-
-    graphSetModified(GraphChange::ChangedMinorOptions);
-
-}
-
-
-
-/**
- * @brief Graph::vertexLabelSizeAllSet
- * Changes the label size of all vertices
- * @param size
- */
-void Graph::vertexLabelSizeAllSet(const int &size) {
-    qDebug() << "*** Graph::vertexLabelSizeAllSet() "
-                << " to " << size;
-    vertexLabelSizeInit(size);
-    VList::const_iterator it;
-    for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( ! (*it)->isEnabled() ){
-            continue;
-        }
-        else {
-            qDebug() << "Graph::vertexLabelSizeAllSet() vertex " << (*it)->name()
-                     << " new size " << size;
-            (*it)->setLabelSize(size) ;
-            emit setNodeLabelSize ( (*it)-> name(), size);
+void Graph::vertexLabelSizeSet(const int &v1, const int &labelSize) {
+    if (v1) {
+        qDebug()<< "Graph::vertexLabelSizeSet() - vertex"<< v1
+                << "new label size "<< labelSize;
+        m_graph[ vpos[v1] ] -> setLabelSize ( labelSize );
+        emit setNodeLabelSize ( v1, labelSize);
+    }
+    else {
+        qDebug() << "Graph::vertexLabelSizeSet() - for all vertices, new label size"
+                 << labelSize;
+        vertexLabelSizeInit(labelSize);
+        VList::const_iterator it;
+        for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+            if ( ! (*it)->isEnabled() ){
+                continue;
+            }
+            else {
+                qDebug() << "Graph::vertexLabelSizeSet() - for all, set vertex"
+                            << (*it)->name()
+                            << "new label size"
+                            << labelSize;
+                (*it)->setLabelSize(labelSize) ;
+                emit setNodeLabelSize ( (*it)-> name(), labelSize);
+            }
         }
     }
 
     graphSetModified(GraphChange::ChangedMinorOptions);
+
 }
 
 
@@ -1775,39 +1759,39 @@ void Graph::vertexLabelSizeAllSet(const int &size) {
 
 
 /**
- * @brief Changes the label color of all vertices
- * @param color
- */
-void Graph::vertexLabelColorAllSet(const QString &color) {
-    qDebug() << "*** Graph::vertexLabelColorAllSet() "
-                << " to " << color;
-    vertexLabelColorInit(color);
-    VList::const_iterator it;
-    for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( ! (*it)->isEnabled() ){
-            continue;
-        }
-        else {
-            qDebug() << "Graph::vertexLabelColorAllSet() vertex " << (*it)->name()
-                     << " new color" << color;
-            (*it)->setLabelColor(color);
-            emit setNodeLabelColor( (*it)-> name(), color);
-        }
-    }
-
-    graphSetModified(GraphChange::ChangedMinorOptions);
-}
-
-
-/**
- * @brief Changes the label color of vertex v1
+ * @brief Changes the label color of vertex v1 or all vertices if v1 = 0
  * @param v1
  * @param color
  */
-void Graph::vertexLabelColorSet(int v1, QString color){
-    m_graph[ vpos[v1] ]->setLabelColor(color);
-    emit setNodeLabelColor(v1, color);
+void Graph::vertexLabelColorSet(const int &v1, const QString &color){
+    if (v1) {
+        qDebug() << "Graph::vertexLabelColorSet() - for vertex" << v1
+                 << "new label color" << color;
+        m_graph[ vpos[v1] ]->setLabelColor(color);
+        emit setNodeLabelColor(v1, color);
+    }
+    else {
+        qDebug() << "Graph::vertexLabelColorSet() - for all vertices, "
+                    "new label color" << color;
+        vertexLabelColorInit(color);
+        VList::const_iterator it;
+        for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+            if ( ! (*it)->isEnabled() ){
+                continue;
+            }
+            else {
+                qDebug() << "Graph::vertexLabelColorSet() - for all, set vertex"
+                         << v1
+                         << "new label color"
+                         << color;
+                (*it)->setLabelColor(color);
+                emit setNodeLabelColor( (*it)-> name(), color);
+            }
+        }
+    }
     graphSetModified(GraphChange::ChangedMinorOptions);
+
+
 }
 
 
@@ -14644,12 +14628,16 @@ void Graph::graphLoad (	const QString m_fileName,
     file_parser->load(
                 m_fileName,
                 m_codecName,
-                initVertexSize, initVertexColor,
+                initVertexSize,
+                initVertexColor,
                 initVertexShape,
-                initVertexNumberColor, initVertexNumberSize,
-                initVertexLabelColor, initVertexLabelSize,
+                initVertexNumberColor,
+                initVertexNumberSize,
+                initVertexLabelColor,
+                initVertexLabelSize,
                 initEdgeColor,
-                canvasWidth, canvasHeight,
+                canvasWidth,
+                canvasHeight,
                 fileFormat,
                 two_sm_mode,
                 delimiter
