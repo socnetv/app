@@ -239,6 +239,8 @@ void WebCrawler_Parser::load(const QString &url,
                           << "telegram.me"
                           << "youtube.com"
                           << "reddit.com"
+                          << "tumblr.com"
+                          << "flickr.com"
                           << "plus.google.com";
 
     //clear global variables
