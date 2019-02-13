@@ -9100,10 +9100,11 @@ void MainWindow::slotEditNodeSelectedToClique () {
 
     int selectedNodesCount = activeGraph->graphSelectedVerticesCount();
 
-    if ( selectedNodesCount == 0 ) {
-        slotHelpMessageToUser(USER_MSG_INFO,tr("No nodes selected."),
-                              tr("Cannot create new clique. No nodes are selected."),
-                              tr("Select some nodes first.")
+    if ( selectedNodesCount < 3 ) {
+        slotHelpMessageToUser(USER_MSG_INFO,tr("Not enough nodes selected."),
+                              tr("Cannot create new clique because you have "
+                                 "not selected enough nodes."),
+                              tr("Select at least three nodes first.")
                               );
         return;
     }
@@ -9132,13 +9133,15 @@ void MainWindow::slotEditNodeSelectedToStar() {
 
     int selectedNodesCount = activeGraph->graphSelectedVerticesCount();
 
-    if ( selectedNodesCount == 0 ) {
-        slotHelpMessageToUser(USER_MSG_INFO,tr("No nodes selected."),
-                              tr("Cannot create star subgraph. No nodes are selected."),
-                              tr("Select some nodes first.")
+    if ( selectedNodesCount < 3 ) {
+        slotHelpMessageToUser(USER_MSG_INFO,tr("Not enough nodes selected."),
+                              tr("Cannot create new star subgraph because you have "
+                                 "not selected enough nodes."),
+                              tr("Select at least three nodes first.")
                               );
         return;
     }
+
     int center;
     bool ok=false;
 
@@ -9159,9 +9162,9 @@ void MainWindow::slotEditNodeSelectedToStar() {
     activeGraph->verticesCreateSubgraph(QList<int> (), SUBGRAPH_STAR,center);
 
     slotHelpMessageToUser(USER_MSG_INFO,tr("Star subgraph created."),
-                          tr("A new star subgraph has been created from ") +
+                          tr("A new star subgraph has been created with ") +
                           QString::number( selectedNodesCount )
-                          + tr(" nodes")
+                          + tr(" nodes.")
                           );
 }
 
@@ -9180,10 +9183,11 @@ void MainWindow::slotEditNodeSelectedToCycle() {
 
     int selectedNodesCount = activeGraph->graphSelectedVerticesCount();
 
-    if ( selectedNodesCount == 0 ) {
-        slotHelpMessageToUser(USER_MSG_INFO,tr("No nodes selected."),
-                              tr("Cannot create cycle subgraph. No nodes are selected."),
-                              tr("Select some nodes first.")
+    if ( selectedNodesCount < 3 ) {
+        slotHelpMessageToUser(USER_MSG_INFO,tr("Not enough nodes selected."),
+                              tr("Cannot create new cycle subgraph because you have "
+                                 "not selected enough nodes."),
+                              tr("Select at least three nodes first.")
                               );
         return;
     }
@@ -9191,9 +9195,9 @@ void MainWindow::slotEditNodeSelectedToCycle() {
     activeGraph->verticesCreateSubgraph(QList<int> (),SUBGRAPH_CYCLE);
 
     slotHelpMessageToUser(USER_MSG_INFO,tr("Cycle subgraph created."),
-                          tr("A new cycle subgraph has been created from ")
+                          tr("A new cycle subgraph has been created with ")
                           + QString::number( selectedNodesCount )
-                          + tr(" nodes")
+                          + tr(" select nodes.")
                           );
 }
 
@@ -9212,10 +9216,11 @@ void MainWindow::slotEditNodeSelectedToLine() {
 
     int selectedNodesCount = activeGraph->graphSelectedVerticesCount();
 
-    if ( selectedNodesCount == 0 ) {
-        slotHelpMessageToUser(USER_MSG_INFO,tr("No nodes selected."),
-                              tr("Cannot create line subgraph. No nodes are selected."),
-                              tr("Select some nodes first.")
+    if ( selectedNodesCount < 3 ) {
+        slotHelpMessageToUser(USER_MSG_INFO,tr("Not enough nodes selected."),
+                              tr("Cannot create new line subgraph because you have "
+                                 "not selected enough nodes."),
+                              tr("Select at least three nodes first.")
                               );
         return;
     }
@@ -9223,9 +9228,9 @@ void MainWindow::slotEditNodeSelectedToLine() {
     activeGraph->verticesCreateSubgraph(QList<int> (),SUBGRAPH_LINE);
 
     slotHelpMessageToUser(USER_MSG_INFO,tr("Line subgraph created."),
-                          tr("A new line subgraph has been created from ")
+                          tr("A new line subgraph has been created with ")
                           + QString::number( selectedNodesCount )
-                          + tr(" nodes")
+                          + tr(" selected nodes.")
                           );
 }
 
