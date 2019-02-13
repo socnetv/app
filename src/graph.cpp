@@ -1888,11 +1888,15 @@ void Graph::vertexLabelDistanceInit(const int &distance) {
  * @param drawArrows
  * @param bezier
  */
-void Graph::edgeCreate(const int &v1, const int &v2, const qreal &weight,
-                        const QString &color,
-                        const int &type,
-                        const bool &drawArrows, const bool &bezier,
-                        const QString &label, const bool &signalMW){
+void Graph::edgeCreate(const int &v1,
+                       const int &v2,
+                       const qreal &weight,
+                       const QString &color,
+                       const int &type,
+                       const bool &drawArrows,
+                       const bool &bezier,
+                       const QString &label,
+                       const bool &signalMW){
 
     qDebug() <<"-- Graph::edgeCreate() - " << v1 << " -> " << v2
            << " weight " << weight
@@ -1984,7 +1988,8 @@ void Graph::edgeCreateWebCrawler (const int &source, const int &target){
  * @param color
  * @param type
  */
-void Graph::edgeAdd (const int &v1, const int &v2, const qreal &weight,
+void Graph::edgeAdd (const int &v1, const int &v2,
+                     const qreal &weight,
                      const int &type,
                      const QString &label,
                      const QString &color) {
@@ -14599,18 +14604,6 @@ void Graph::graphLoad (	const QString m_fileName,
     connect (file_parser, &Parser::edgeCreate,
              this,&Graph::edgeCreate);
 
-//    connect (
-//                file_parser, SIGNAL(
-//                    edgeCreate (const int&, const int&, const qreal&,
-//                                const QString&, const int&,
-//                                const bool&, const bool&,
-//                                const QString&, const bool&)),
-//                this, SLOT(
-//                    edgeCreate (const int&, const int&, const qreal&,
-//                                const QString&, const int&,
-//                                const bool&, const bool&,
-//                                const QString&, const bool&) )
-//                );
 
     connect (
                 file_parser, SIGNAL(networkFileLoaded(int,

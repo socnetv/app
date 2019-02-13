@@ -283,6 +283,7 @@ bool Parser::loadDL(){
     QString label=QString::null;
     QString value=QString::null;
     QString dlFormat=QString::null;
+    QString edgeStr;
 
     int lineCounter = 0;
     int source=1;
@@ -304,7 +305,7 @@ bool Parser::loadDL(){
     bool edgelist1Format=false;
 
     bool intOK=false;
-    bool floatOK=false;
+    bool conversionOK=false;
 
     QStringList lineElement;
     QStringList tempList;
@@ -713,9 +714,17 @@ bool Parser::loadDL(){
                     }
 
                     for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
-                        //qDebug()<< (*it1).toLatin1() ;
-                        if ( (*it1)!="0"){
-                            edgeWeight=(*it1).toFloat(&floatOK);
+
+                        edgeStr = (*it1);
+                        edgeWeight=(*it1).toDouble(&conversionOK);
+                        if ( !conversionOK )  {
+                            errorMessage = tr("Error reading loadDL-formatted fullmatrix file. "
+                                                    "in edge (%1->%2), the weight (%3) cannot be converted.").arg(source).arg(target).arg(edgeWeight);
+                            return false;
+                        }
+
+                        if ( edgeWeight ){
+
                             qDebug() << "Parser::loadDL() - relation "
                                      << relationCounter
                                      << " found edge from "
@@ -753,9 +762,17 @@ bool Parser::loadDL(){
 
                     }
                     for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
-                        //qDebug()<< (*it1).toLatin1() ;
-                        if ( (*it1)!="0"){
-                            edgeWeight=(*it1).toFloat(&floatOK);
+
+                        edgeStr = (*it1);
+                        edgeWeight=(*it1).toDouble(&conversionOK);
+                        if ( !conversionOK )  {
+                            errorMessage = tr("Error reading loadDL-formatted two-mode file. "
+                                                    "in edge (%1->%2), the weight (%3) cannot be converted.").arg(source).arg(target).arg(edgeWeight);
+                            return false;
+                        }
+
+                        if ( edgeWeight ){
+
                             qDebug() << "Parser::loadDL() - relation "
                                      << relationCounter
                                      << " found edge from "
@@ -797,11 +814,13 @@ bool Parser::loadDL(){
 
                 source =  (lineElement[0]).toInt(&intOK);
                 target =  (lineElement[1]).toInt(&intOK);
+
                 qDebug() << "Parser::loadDL() - source node "
                          << source  << " target node " << target;
 
-                edgeWeight=(lineElement[2]).toDouble(&intOK);
-                if (intOK) {
+                edgeWeight=(lineElement[2]).toDouble(&conversionOK);
+
+                if (conversionOK) {
                     qDebug() << "Parser::loadDL() -list file declares edge weight: "
                              << edgeWeight;
                 }
@@ -1305,10 +1324,13 @@ bool Parser::loadPajek(){
                 j=totalNodes;
             }
             if (edges_flag && !arcs_flag)   {  /**EDGES */
+
                 qDebug("Parser-loadPajek(): ==== Reading edges ====");
                 qDebug()<<lineElement;
+
                 source =  lineElement[0].toInt(&ok, 10);
                 target = lineElement[1].toInt(&ok,10);
+
                 if (source == 0 || target == 0 ) {
                     errorMessage = tr("Pajek-formatted file declares edge "
                                             "with a zero source or target nodeNumber. "
@@ -1316,19 +1338,25 @@ bool Parser::loadPajek(){
                     return false;  //  i --> (i-1)   internally
                 }
                 else if (source < 0 && target >0  ) {  //weights come first...
-                    edgeWeight  = lineElement[0].toFloat(&ok);
+
+                    edgeWeight  = lineElement[0].toDouble(&ok);
+
                     source=  lineElement[1].toInt(&ok, 10);
+
                     if (lineElement.count()>2) {
                         target = lineElement[2].toInt(&ok,10);
                     }
                     else {
                         target = lineElement[1].toInt(&ok,10);  //self link
                     }
+
                 }
-                else if (lineElement.count()>2)
-                    edgeWeight =lineElement[2].toFloat(&ok);
-                else
+                else if (lineElement.count()>2) {
+                    edgeWeight =lineElement[2].toDouble(&ok);
+                }
+                else {
                     edgeWeight =1.0;
+                }
 
                 //qDebug()<<"Parser-loadPajek(): weight "<< weight;
 
@@ -1369,9 +1397,11 @@ bool Parser::loadPajek(){
 
             } //end if EDGES
             else if (!edges_flag && arcs_flag)   {  /** ARCS */
+
                 //qDebug("Parser-loadPajek(): === Reading arcs ===");
                 source=  lineElement[0].toInt(&ok, 10);
                 target = lineElement[1].toInt(&ok,10);
+
                 if (source == 0 || target == 0 ) {
                     errorMessage = tr("Pajek-formatted file declares arc "
                                             "with a zero source or target nodeNumber. "
@@ -1379,19 +1409,24 @@ bool Parser::loadPajek(){
                     return false;   //  i --> (i-1)   internally
                 }
                 else if (source < 0 && target >0 ) {  //weights come first...
-                    edgeWeight  = lineElement[0].toFloat(&ok);
+
+                    edgeWeight  = lineElement[0].toDouble(&ok);
                     source=  lineElement[1].toInt(&ok, 10);
+
                     if (lineElement.count()>2) {
                         target = lineElement[2].toInt(&ok,10);
                     }
                     else {
                         target = lineElement[1].toInt(&ok,10);  //self link
                     }
+
                 }
-                else if (lineElement.count()>2)
-                    edgeWeight  =lineElement[2].toFloat(&ok);
-                else
+                else if (lineElement.count()>2) {
+                    edgeWeight  =lineElement[2].toDouble(&ok);
+                }
+                else {
                     edgeWeight =1.0;
+                }
 
                 if (lineElement.contains("c", Qt::CaseSensitive ) ) {
                     //qDebug("Parser-loadPajek(): file with link colours");
@@ -2179,7 +2214,7 @@ void Parser::readGraphMLElementDefaultValue(QXmlStreamReader &xml) {
         qDebug()<< "Parser::readGraphMLElementDefaultValue() - key default value "
                 << key_value << " is for edges weight";
         conv_OK=false;
-        initEdgeWeight= key_value.toFloat(&conv_OK);
+        initEdgeWeight= key_value.toDouble(&conv_OK);
         if (!conv_OK)
             initEdgeWeight = 1;
     }
@@ -2450,7 +2485,7 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
     }
     else if ( ( keyName.value(key_id) == "value" ||  keyName.value(key_id) == "weight" ) && keyFor.value(key_id) == "edge" ) {
         conv_OK=false;
-        edgeWeight= key_value.toFloat( &conv_OK );
+        edgeWeight= key_value.toDouble( &conv_OK );
         if (!conv_OK)
             edgeWeight = 1.0;
         if (missingNode){
@@ -3597,7 +3632,7 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
     QRegularExpression onlyDigitsExp("^\\d+$");
 
     bool nodesWithLabels = false;
-    bool floatOK = false;
+    bool conversionOK = false;
     int fileLine = 1;
     totalNodes=0;
     edgeWeight=1.0;
@@ -3755,8 +3790,8 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
             qDebug()<< "Parser::loadEdgeListWeighed() - target already found, continue";
         }
 
-        edgeWeight = edge_weight.toFloat(&floatOK);
-        if (floatOK) {
+        edgeWeight = edge_weight.toDouble(&conversionOK);
+        if (conversionOK) {
             qDebug()<< "Parser::loadEdgeListWeighed() - read edge weight"
                     << edgeWeight;
         }
