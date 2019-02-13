@@ -32,6 +32,7 @@
 
 #include <QtGlobal>
 #include <QFile>
+#include <QDir>
 #include <QtMath>
 #include <QPointF>
 #include <QDebug>
@@ -14993,14 +14994,19 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
     QFileInfo fileInfo (fileName);
     QString fileNameNoPath = fileInfo.fileName();
 
-    QString dirPath= fileInfo.canonicalPath();
-    qDebug () << "Graph::graphSaveToGraphMLFormat() - Will save network to dirPath:" << dirPath;
+    QString saveDirPath= fileInfo.canonicalPath();
 
-    QString iconsDir = dirPath + fileInfo.baseName();
+    qDebug () << "Graph::graphSaveToGraphMLFormat() - Will save network to directory:" << saveDirPath;
 
-//    if ( QDir(iconsDir).exists() ) {
+    QString iconsSubDir = fileInfo.baseName() + "_" + fileInfo.suffix() +"_images";
+    QString iconsDirPath = saveDirPath + "/" + iconsSubDir;
 
-//    }
+    QDir saveDir(saveDirPath);
+
+    if ( saveDir.mkpath( iconsDirPath ) ){
+        qDebug () << "Graph::graphSaveToGraphMLFormat() - created icons directory:" << iconsDirPath;
+    }
+
     QString iconPath = QString();
     QString iconFileName = QString ();
     QString copyIconFileNamePath = QString();
@@ -15059,7 +15065,7 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
 
     iconPath = initVertexIconPath;
     iconFileName = QFileInfo(iconPath).fileName();
-    copyIconFileNamePath = dirPath +  "/" + iconFileName;
+    copyIconFileNamePath = iconsDirPath + "/" + iconFileName;
     if ( ! QFile(copyIconFileNamePath).exists() ) {
         if  ( QFile::copy(iconPath, copyIconFileNamePath) )  {
             qDebug () << "Graph::graphSaveToGraphMLFormat() - default iconFile saved to: " << copyIconFileNamePath;
@@ -15074,7 +15080,7 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
     }
 
     outText <<	"  <key id=\"d51\" for=\"node\" attr.name=\"custom-icon\" attr.type=\"string\"> \n"
-                "    <default>" << iconFileName << "</default> \n"
+                "    <default>" << iconsSubDir + "/"+ iconFileName << "</default> \n"
                 "  </key> \n";
 
     outText <<	"  <key id=\"d6\" for=\"node\" attr.name=\"label.color\" attr.type=\"string\"> \n"
@@ -15150,7 +15156,7 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
             if ((*it)->shape() == "custom" ) {
                 iconPath = (*it)->shapeIconPath();
                 iconFileName = QFileInfo(iconPath).fileName();
-                copyIconFileNamePath = dirPath +  "/" + iconFileName;
+                copyIconFileNamePath = iconsDirPath + "/" + iconFileName;
                 if ( ! QFile(copyIconFileNamePath).exists() ) {
                     if  ( QFile::copy(iconPath, copyIconFileNamePath) )  {
                         qDebug () << "Graph::graphSaveToGraphMLFormat() - iconFile for" << (*it)->name()
@@ -15166,7 +15172,7 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
                     qDebug () << "Graph::graphSaveToGraphMLFormat() - iconFile for" << (*it)->name()
                                  << "already exists in:" << copyIconFileNamePath;
                 }
-                outText << "      <data key=\"d51\">" << iconFileName <<"</data>\n";
+                outText << "      <data key=\"d51\">" << iconsSubDir + "/"+ iconFileName <<"</data>\n";
             }
 
             if (  QString::compare ( initVertexLabelColor, m_labelColor,  Qt::CaseInsensitive) != 0) {
