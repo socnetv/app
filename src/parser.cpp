@@ -1859,12 +1859,14 @@ bool Parser::loadTwoModeSociomatrix(){
 
 
 /**
-    Tries to load a file as GraphML (not GML) formatted network.
-    If not it returns -1
-*/
+ * @brief Tries to load a file as GraphML (not GML) formatted network.
+ * If not GraphML, it returns false
+ * @return
+ */
 bool Parser::loadGraphML(){
 
     qDebug("\n\nParser: loadGraphML()");
+
     totalNodes=0;
     totalLinks=0;
     nodeHash.clear();
@@ -1941,48 +1943,74 @@ bool Parser::loadGraphML(){
                         << xml.namespaceUri().toString()
                         << "Calling readGraphML()";
                 if (! readGraphML(xml) ) {
-                    return false;
+                    //return false;
+                    break;
                 }
             }
             else {	//not a GraphML doc, return false.
                 xml.raiseError(
                             QObject::tr(" loadGraphML(): not a GraphML file."));
-                qDebug()<< "*** loadGraphML(): Error in startElement "
+                qDebug()<< "### Parser::loadGraphML(): Error in startElement "
                         << " The file is not an GraphML version 1.0 file ";
-                file.close();
                 errorMessage = tr("XML at startElement but element name not graphml.");
-                return false;
+                break;
             }
         }
         else if  ( xml.tokenString() == "Invalid" ){
             xml.raiseError(
                         QObject::tr(" loadGraphML(): invalid GraphML or encoding."));
-            qDebug()<< "*** loadGraphML(): Cannot find  startElement"
+            qDebug()<< "### Parser::loadGraphML(): Cannot find startElement"
                     << " The file is not valid GraphML or has invalid encoding";
-            file.close();
             errorMessage = tr("XML tokenString at line %1 invalid.").arg(xml.lineNumber());
-            return false;
+            break;
         }
-    }
+    } // end while
 
-    emit relationSet (0);
-    //The network has been loaded. Tell MW the statistics and network type
-    emit networkFileLoaded(FILE_TYPE::GRAPHML, fileName, networkName,
-                           totalNodes, totalLinks,
-                           edgeDirType);
     //clear our mess - remove every hash element...
     keyFor.clear();
     keyName.clear();
     keyType.clear();
     keyDefaultValue.clear();
     nodeHash.clear();
+    edgeMissingNodesList.clear();
+    file.close();
+
+    // if there was an error return false with error string
+    if (xml.hasError()) {
+        qDebug()<< "### Parser::loadGraphML() - xmls has error! "
+                   "Returning false with errorString" << xml.errorString();
+        errorMessage =
+                    tr("XML has error at line %1, token name %2:\n\n%3")
+                    .arg(xml.lineNumber())
+                    .arg(xml.name().toString())
+                    .arg(xml.errorString());
+        xml.clear();
+        return false;
+    }
+
+    xml.clear();
+
+    // if there was no error the rewind to first relation and emit signal
+    emit relationSet (0);
+
+    //The network has been loaded. Tell MW the statistics and network type
+    emit networkFileLoaded(FILE_TYPE::GRAPHML,
+                           fileName,
+                           networkName,
+                           totalNodes,
+                           totalLinks,
+                           edgeDirType);
+
+
     return true;
 }
 
 
-/*
+/**
+ * @brief Checks the xml token name and calls the appropriate function.
  * Called from loadGraphML
- * This method checks the xml token name and calls the appropriate function.
+ * @param xml
+ * @return
  */
 bool Parser::readGraphML(QXmlStreamReader &xml){
     qDebug()<< " Parser::readGraphML() " ;
@@ -1992,21 +2020,13 @@ bool Parser::readGraphML(QXmlStreamReader &xml){
     //Q_ASSERT(xml.isStartElement() && xml.name() == "graph");
 
     while (!xml.atEnd()) { //start reading until QXmlStreamReader end().
+
         xml.readNext();	//read next token
 
         qDebug()<< "Parser::readGraphML() - line:" << xml.lineNumber();
-        if (xml.hasError()) {
-            qDebug()<< "Parser::readGraphML() - xml.hasError():" << xml.errorString();
-            errorMessage =
-                        tr("XML has error at line %1, token name %2:\n%3")
-                        .arg(xml.lineNumber())
-                        .arg(xml.name().toString())
-                        .arg(xml.errorString());
-            return false;
-        }
 
         if (xml.isStartElement()) {	//new token (graph, node, or edge) here
-            qDebug()<< "Parser::readGraphML() - start of element: "
+            qDebug()<< "Parser::readGraphML() - isStartElement() : "
                     << xml.name().toString() ;
             if (xml.name() == "graph")	//graph definition token
                 readGraphMLElementGraph(xml);
@@ -2069,7 +2089,14 @@ bool Parser::readGraphML(QXmlStreamReader &xml){
             else if (xml.name() == "edge")	//edge definition end
                 endGraphMLElementEdge(xml);
         }
+
+        if (xml.hasError()) {
+            qDebug()<< "Parser::readGraphML() - xml has error:" << xml.errorString();
+            return false;
+        }
+
     }
+
     // call createMissingNodeEdges() to create any edges with missing nodes
     createMissingNodeEdges();
 
@@ -2077,8 +2104,12 @@ bool Parser::readGraphML(QXmlStreamReader &xml){
 }
 
 
-// this method reads a graph definition 
-// called at Graph element
+
+/**
+ * @brief Reads a graph definition
+ * Called at Graph element
+ * @param xml
+ */
 void Parser::readGraphMLElementGraph(QXmlStreamReader &xml){
     qDebug()<< "Parser::readGraphMLElementGraph";
     QXmlStreamAttributes xmlStreamAttr = xml.attributes();
@@ -2167,15 +2198,22 @@ void Parser::readGraphMLElementKey ( QXmlStreamAttributes &xmlStreamAttr )
 }
 
 
-// this method reads default key values 
-// called at a default element (usually nested inside key element)
+
+/**
+ * @brief Reads default key values
+ * Called at a default element (usually nested inside key element)
+ * @param xml
+ */
 void Parser::readGraphMLElementDefaultValue(QXmlStreamReader &xml) {
+
     qDebug()<< "Parser::readGraphMLElementDefaultValue()";
 
     key_value=xml.readElementText();
     keyDefaultValue [key_id] = key_value;	//key_id is already stored
+
     qDebug()<< "Parser::readGraphMLElementDefaultValue() - key default value is "
             << key_value;
+
     if (keyName.value(key_id) == "size" && keyFor.value(key_id) == "node" ) {
         qDebug()<< "Parser::readGraphMLElementDefaultValue() - key default value "
                 << key_value << " is for node size";
@@ -2196,10 +2234,13 @@ void Parser::readGraphMLElementDefaultValue(QXmlStreamReader &xml) {
         qDebug()<< "Parser::readGraphMLElementDefaultValue() - initNodeCustomIcon full path:"
                 << initNodeCustomIcon ;
         if (QFileInfo(initNodeCustomIcon).exists()){
-            qDebug()<< "Parser::readGraphMLElementDefaultValue() - file exists!";
+            qDebug()<< "Parser::readGraphMLElementDefaultValue() - custom icon file exists!";
         }
-
-
+        else {
+            qDebug()<< "Parser::readGraphMLElementDefaultValue() - custom icon file does not exists!";
+            xml.raiseError(
+                        QObject::tr(" Default custom icon for nodes does not exist in the filesystem. \nThe declared icon file was: \n%1").arg(initNodeCustomIcon));
+        }
     }
     if (keyName.value(key_id) == "color" && keyFor.value(key_id) == "node" ) {
         qDebug()<< "Parser::readGraphMLElementDefaultValue() - key default value "
