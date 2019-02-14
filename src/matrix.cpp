@@ -734,7 +734,9 @@ Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
  * @param out output array
  * @param leftMultiply
  */
-void Matrix::productByVector (qreal in[], qreal out[], const bool &leftMultiply) {
+void Matrix::productByVector (std::vector<qreal> &in,
+                              std::vector<qreal> &out,
+                              const bool &leftMultiply) {
     int n = rows();
     int m = cols();
 
@@ -764,7 +766,12 @@ void Matrix::productByVector (qreal in[], qreal out[], const bool &leftMultiply)
  * @param y
  * @return
  */
-qreal Matrix::distanceManhattan(qreal x[], qreal y[], int n) {
+qreal Matrix::distanceManhattan(
+        //qreal x[],
+        //qreal x[],
+        std::vector<qreal> &x,
+        std::vector<qreal> &y,
+        int n) {
     qreal norm = 0;
     for(int i = 0; i < n; i++) {
         norm += fabs (x[i] - y[i]);
@@ -781,7 +788,7 @@ qreal Matrix::distanceManhattan(qreal x[], qreal y[], int n) {
  * @param n
  * @return
  */
-qreal Matrix::distanceEuclidean(qreal x[], int n) {
+qreal Matrix::distanceEuclidean(std::vector<qreal> &x, int n) {
     qreal norm = 0;
     for (int i = 0; i < n; i++) {
          norm += x[i] * x[i];
@@ -806,37 +813,55 @@ qreal Matrix::distanceEuclidean(qreal x[], int n) {
  * @param eps
  * @param maxIter
  */
-void Matrix::powerIteration (qreal x[], qreal &xsum,
-                             qreal &xmax, int &xmaxi,
-                             qreal &xmin, int &xmini,
-                             const qreal eps, const int &maxIter) {
+void Matrix::powerIteration (//qreal x[],
+                              std::vector<qreal> &x,
+                              qreal &xsum,
+                              qreal &xmax,
+                              int &xmaxi,
+                              qreal &xmin,
+                              int &xmini,
+                              const qreal eps,
+                              const int &maxIter) {
+
     qDebug() << "Matrix::powerIteration() - maxIter"
              << maxIter
              <<"initial x"
             <<x;
+
     int n = rows();
     qreal norm = 0, distance=0;
-    qreal *tmp;
-    tmp=new (nothrow) qreal [n];
-    Q_CHECK_PTR( tmp );
 
+//    qreal *tmp;
+//    tmp=new (nothrow) qreal [n];
+//    Q_CHECK_PTR( tmp );
+
+    std::vector<qreal> tmp(n,0);
+    x.reserve(n);
+    qDebug()<<tmp;
     xsum = 0;
     int iter = 0;
-    QVector<qreal> vec(n);
+
+
     do {
+        qDebug() << "Matrix::powerIteration() - iteration"
+                 << iter ;
         // calculate the matrix-by-vector product Ax and
         // store the result to vector tmp
         productByVector(x, tmp, false);
 
         // calculate the euclidean length of the resulting vector
-        // which will be the denominator in the vector normatization
+        // which will be the denominator in the vector normalization
         norm = distanceEuclidean(tmp, n);
+
+        qDebug() << "Matrix::powerIteration() - norm" << norm;
+
         // norm should never be zero, but in case there is
         // numerical error, we set it to 1
         if (!norm) {
-            qDebug() << "Matrix::powerIteration() - norm = 0 !!!";
+            qDebug() << "### Matrix::powerIteration() - norm = 0 !!!";
+            norm = 1;
         }
-        //norm = (norm == 0) ? 1 : norm;
+
 
         // normalize vector tmp to unit vector for next iteration
         xsum = 0;
@@ -846,12 +871,10 @@ void Matrix::powerIteration (qreal x[], qreal &xsum,
         // calculate the manhattan distance between the new and prev vectors
         distance = distanceManhattan (tmp, x, n);
 
-        vec.clear();
 
         xmax = 0 ;
         xmin = RAND_MAX;
         for(int i = 0; i < n; i++) {
-           vec.append(tmp[i]);
            x[i] = tmp[i];
            xsum += x[i];
            if (x[i] > xmax) {
@@ -865,9 +888,9 @@ void Matrix::powerIteration (qreal x[], qreal &xsum,
         }
 
 
-        qDebug() << "Matrix::powerIteration() - iteration"
+        qDebug() << "Matrix::powerIteration() - end of iteration"
                  << iter << endl
-                 << "x" << vec  << endl
+                 << "x" << x  << endl
                  << "distance from previous x " << distance
                  << "sum" << xsum
                  << "xmax" << xmax
@@ -879,7 +902,8 @@ void Matrix::powerIteration (qreal x[], qreal &xsum,
 
     } while ( distance > eps);
 
-    delete [] tmp;
+    // delete [] tmp;
+    tmp.clear();
 }
 
 

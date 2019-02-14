@@ -6716,7 +6716,9 @@ void Graph::centralityEigenvector(const bool &considerWeights,
     int i = 0;
     int N = vertices(dropIsolates);
 
-    qreal EVC[N];
+    //qreal EVC[N];
+    std::vector<qreal> EVC;
+    EVC.reserve(N);
     qreal SEVC = 0;
 
     graphMatrixAdjacencyCreate(dropIsolates, considerWeights,
@@ -6730,6 +6732,8 @@ void Graph::centralityEigenvector(const bool &considerWeights,
 
     if (useDegrees) {
 
+        qDebug() << "Graph::centralityEigenvector() - Using outDegree for initial EVC vector";
+
         emit statusMessage(tr("Computing outDegrees. Please wait..."));
 
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -6738,21 +6742,23 @@ void Graph::centralityEigenvector(const bool &considerWeights,
                 continue;
             }
 
-            EVC[i] = (*it)->degreeOut();
+            // EVC[i] = (*it)->degreeOut();
+            EVC.push_back((*it)->degreeOut());
 
             i++;
         }
 
     }
     else {
+        qDebug() << "Graph::centralityEigenvector() - Using unit initial EVC vector";
        for (int i = 0 ; i < N ; i++) {
-            EVC[i] = 1;
+//            EVC[i] = 1;
+            EVC.push_back(1);
         }
 
     }
 
     emit signalProgressBoxUpdate( N / 3);
-
 
     AM.powerIteration(EVC, sumEVC, maxEVC, maxNodeEVC,
                       minEVC, minNodeEVC,
@@ -20487,8 +20493,6 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
 
 
     emit statusMessage(tr("Computing centrality/prestige scores. Please wait..."));
-
-
 
     //first compute centrality indices if needed
 

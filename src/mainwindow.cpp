@@ -11361,13 +11361,13 @@ void MainWindow::slotLayoutNodeSizeByProminenceIndex(QString choice=""){
 
 
 /**
- * @brief
- * Checks sender text() to find out who QMenu item was pressed
+ * @brief Checks sender text() to find out who QMenu item was pressed
  * and what prominence index was chosen
  * calls slotLayoutNodeColorByProminenceIndex(QString)
   */
 void MainWindow::slotLayoutNodeColorByProminenceIndex(){
-    if ( !activeNodes()   )  {
+
+    if ( !activeNodes() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }

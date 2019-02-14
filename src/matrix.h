@@ -34,6 +34,7 @@
 #include <QtGlobal>
 #include <QString>  //for static const QString declares below
 #include <utility>      // std::pair, std::make_pair
+#include <vector>
 
 using namespace std; //or else compiler groans for nothrow
 
@@ -194,15 +195,16 @@ public:
     void multiplyScalar(const qreal &f);
     void multiplyRow(int row, qreal value);
 
-    void productByVector (qreal in[], qreal out[], const bool &leftMultiply=false);
+    void productByVector (std::vector<qreal> &in, std::vector<qreal> &out, const bool &leftMultiply=false);
 
     Matrix & pow (int n, bool symmetry=false)  ;
     Matrix & expBySquaring2 (Matrix &Y, Matrix &X, int n, bool symmetry=false);
 
-    qreal distanceManhattan(qreal x[], qreal y[] , int n);
-    qreal distanceEuclidean(qreal x[], int n);
+    qreal distanceManhattan(std::vector<qreal> &x, std::vector<qreal> &y, int n);
+    qreal distanceEuclidean(std::vector<qreal> &x, int n);
 
-    void powerIteration (qreal x[] ,
+    void powerIteration (//qreal x[] ,
+                         std::vector<qreal> &x,
                          qreal &xsum,
                          qreal &xmax,
                          int &xmaxi,
