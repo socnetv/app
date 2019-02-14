@@ -180,7 +180,7 @@ DialogSettings::DialogSettings(
     ui->nodeColorBtn->setIcon(QIcon(m_pixmap));
 
 
-    shapesList << "square"
+    shapesList << "box"
                 << "circle"
                 << "diamond"
                 << "ellipse"
@@ -607,44 +607,21 @@ void DialogSettings::getNodeColor(){
 
 
 /**
- * @brief DialogSettings::getNodeShape
+ * @brief Gets the index of the selected shape in the ui::nodeShapeComboBox
+ * If custom shape, it enables and sets the nodeIconSelectEdit/nodeIconSelectButton
+ * Then it emits setNodeShape
  * @param shape
  */
 void DialogSettings::getNodeShapeIndex(const int &shape){
 
     m_appSettings["initNodeShape"] = shapesList[shape];
-//    switch (shape) {
-//    case NodeShape::Box:
-//        m_appSettings["initNodeShape"]  = "box";
-//        break;
-//    case NodeShape::Circle:
-//        m_appSettings["initNodeShape"]  = "circle";
-//        break;
-//    case NodeShape::Diamond:
-//        m_appSettings["initNodeShape"]  = "diamond";
-//        break;
-//    case NodeShape::Ellipse:
-//        m_appSettings["initNodeShape"]  = "ellipse";
-//        break;
-//    case NodeShape::Triangle:
-//        m_appSettings["initNodeShape"]  = "triangle";
-//        break;
-//    case NodeShape::Star:
-//        m_appSettings["initNodeShape"]  = "star";
-//        break;
-//    case NodeShape::Bugs:
-//        m_appSettings["initNodeShape"]  = "bugs";
-//        break;
-//    case NodeShape::Custom:
-//        m_appSettings["initNodeShape"]  = "custom";
-//        break;
-//    default:
-//        break;
-//    }
 
-    qDebug()<< "DialogSettings::getNodeShape() - new default shape " << m_appSettings["initNodeShape"];
+    qDebug()<< "DialogSettings::getNodeShapeIndex() - "
+               "new default shape"
+            << shapesList[shape];
 
      if ( shape == NodeShape::Custom ) {
+
         // enable textedit and file button and raise file dialog
          ui->nodeIconSelectButton->setEnabled(true);
          ui->nodeIconSelectEdit->setEnabled(true);
@@ -657,6 +634,7 @@ void DialogSettings::getNodeShapeIndex(const int &shape){
          ui->nodeIconSelectButton->setEnabled(false);
          ui->nodeIconSelectEdit->setEnabled(false);
          ui->nodeIconSelectEdit->setText ("");
+         // emit signal
          emit setNodeShape(0, m_appSettings["initNodeShape"], QString() );
      }
 

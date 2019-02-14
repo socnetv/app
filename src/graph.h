@@ -427,6 +427,7 @@ public:
     void vertexShapeSet(const int &v, const QString &shape, const QString &iconPath=QString::null);
     QString vertexShape(const int &v);
     QString vertexShapeIconPath(const int &v);
+    bool graphHasVertexCustomIcons () const { return m_graphHasVertexCustomIcons; }
 
     void vertexColorInit (const QString &color);
     void vertexColorSet(const int &v, const QString &color);
@@ -1078,6 +1079,7 @@ private:
     int m_graphReciprocityPairsReciprocated;
     int m_graphReciprocityPairsTotal;
 
+    bool m_graphHasVertexCustomIcons;
 
     int m_graphConnectedness;
     int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;

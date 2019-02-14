@@ -378,6 +378,8 @@ void Graph::clear(const QString &reason) {
 
     graphModifiedFlag=false;
 
+    m_graphHasVertexCustomIcons = false;
+
     qDebug()<< "Graph::clear() - Clearing ended. m_graph size"
             << m_graph.size()
                << "Asking parser and crawler threads to terminate";
@@ -1417,6 +1419,13 @@ int Graph::vertexSize( const int &v ) const {
 void Graph::vertexShapeSetDefault(const QString shape, const QString &iconPath) {
     initVertexShape=shape;
     initVertexIconPath=iconPath;
+    if ( ! iconPath.isEmpty() ) {
+        m_graphHasVertexCustomIcons = true;
+    }
+    else {
+        m_graphHasVertexCustomIcons = false;
+    }
+
 }
 
 
@@ -15051,26 +15060,28 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
                 "    <default>" << initVertexShape << "</default> \n"
                 "  </key> \n";
 
-    iconPath = initVertexIconPath;
-    iconFileName = QFileInfo(iconPath).fileName();
-    copyIconFileNamePath = iconsDirPath + "/" + iconFileName;
-    if ( ! QFile(copyIconFileNamePath).exists() ) {
-        if  ( QFile::copy(iconPath, copyIconFileNamePath) )  {
-            qDebug () << "Graph::graphSaveToGraphMLFormat() - default iconFile saved to: " << copyIconFileNamePath;
+    if ( graphHasVertexCustomIcons()) {
+
+        iconPath = initVertexIconPath;
+        iconFileName = QFileInfo(iconPath).fileName();
+        copyIconFileNamePath = iconsDirPath + "/" + iconFileName;
+        if ( ! QFile(copyIconFileNamePath).exists() ) {
+            if  ( QFile::copy(iconPath, copyIconFileNamePath) )  {
+                qDebug () << "Graph::graphSaveToGraphMLFormat() - default iconFile saved to: " << copyIconFileNamePath;
+            }
+            else {
+                qDebug () << "Graph::graphSaveToGraphMLFormat() - ERROR saving default iconFile to: " << copyIconFileNamePath;
+            }
+
         }
         else {
-            qDebug () << "Graph::graphSaveToGraphMLFormat() - ERROR saving default iconFile to: " << copyIconFileNamePath;
+            qDebug () << "Graph::graphSaveToGraphMLFormat() - default iconFile already exists in: " << copyIconFileNamePath;
         }
 
+        outText <<	"  <key id=\"d51\" for=\"node\" attr.name=\"custom-icon\" attr.type=\"string\"> \n"
+                    "    <default>" << iconsSubDir + "/"+ iconFileName << "</default> \n"
+                                                                          "  </key> \n";
     }
-    else {
-        qDebug () << "Graph::graphSaveToGraphMLFormat() - default iconFile already exists in: " << copyIconFileNamePath;
-    }
-
-    outText <<	"  <key id=\"d51\" for=\"node\" attr.name=\"custom-icon\" attr.type=\"string\"> \n"
-                "    <default>" << iconsSubDir + "/"+ iconFileName << "</default> \n"
-                "  </key> \n";
-
     outText <<	"  <key id=\"d6\" for=\"node\" attr.name=\"label.color\" attr.type=\"string\"> \n"
                 "    <default>" << initVertexLabelColor << "</default> \n"
                 "  </key> \n";

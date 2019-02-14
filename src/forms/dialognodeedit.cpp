@@ -64,7 +64,7 @@ DialogNodeEdit::DialogNodeEdit(QWidget *parent,
 
     QStringList shapesList;
     QStringList iconList;
-    shapesList << "Square"
+    shapesList << "Box"
                 << "Circle"
                 << "Diamond"
                 << "Ellipse"

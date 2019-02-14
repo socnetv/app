@@ -9323,7 +9323,9 @@ void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
 void MainWindow::slotEditNodeShape(const int &vertex, QString shape,
                                    QString nodeIconPath) {
     qDebug() << "MW::slotEditNodeShape() - vertex " << vertex
-             << " (0 means all) - new shape " << shape;
+             << "(0 means all)"
+             <<"new shape" << shape
+            << "nodeIconPath"<<nodeIconPath;
 
     if ( shape.isNull() ) {
         bool ok=false;
@@ -9367,6 +9369,7 @@ void MainWindow::slotEditNodeShape(const int &vertex, QString shape,
     if (vertex == 0) { //change all nodes shapes
         activeGraph->vertexShapeSet(-1, shape, nodeIconPath);
         appSettings["initNodeShape"] = shape;
+        appSettings["initNodeIconPath"] = nodeIconPath;
         statusMessage(tr("All shapes have been changed. Ready."));
     }
     else { //only one

@@ -198,7 +198,7 @@ void GraphicsNode::setShape(const QString shape, const QString &iconPath) {
     else if ( m_shape == "ellipse") {
         path.addEllipse(-m_size, -m_size, 2*m_size, 1.7* m_size);
     }
-    else if ( m_shape == "box" || m_shape == "rectangle"  ) {  //rectangle: for GraphML/GML compliance
+    else if ( m_shape == "box" || m_shape == "rectangle" || m_shape == "square"  ) {  //rectangle: for GraphML/GML compliance
         path.addRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size );
     }
     else if (m_shape == "roundrectangle"  ) {  //roundrectangle: GraphML only

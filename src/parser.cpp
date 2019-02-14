@@ -2323,19 +2323,37 @@ void Parser::endGraphMLElementNode(QXmlStreamReader &xml){
            << " nodenumber "<< totalNodes  << " id " << node_id
            << " label " << nodeLabel << " coords " <<randX << ", " <<randY;
 
-    emit createNode( totalNodes,
-                     nodeSize,
-                     nodeColor,
-                     nodeNumberColor,
-                     nodeNumberSize,
-                     nodeLabel,
-                     nodeLabelColor,
-                     nodeLabelSize,
-                     QPointF(randX,randY),
-                     nodeShape,
-                     ( nodeIconPath.isEmpty() ? initNodeCustomIcon: nodeIconPath),
-                     false
-                     );
+    if ( nodeShape == "custom") {
+        emit createNode( totalNodes,
+                         nodeSize,
+                         nodeColor,
+                         nodeNumberColor,
+                         nodeNumberSize,
+                         nodeLabel,
+                         nodeLabelColor,
+                         nodeLabelSize,
+                         QPointF(randX,randY),
+                         nodeShape,
+                         ( nodeIconPath.isEmpty() ? initNodeCustomIcon: nodeIconPath),
+                         false
+                         );
+    }
+    else {
+        emit createNode( totalNodes,
+                         nodeSize,
+                         nodeColor,
+                         nodeNumberColor,
+                         nodeNumberSize,
+                         nodeLabel,
+                         nodeLabelColor,
+                         nodeLabelSize,
+                         QPointF(randX,randY),
+                         nodeShape,
+                         QString(),
+                         false
+                         );
+    }
+
 
     bool_node = false;
 
