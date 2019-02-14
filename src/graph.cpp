@@ -14980,7 +14980,8 @@ bool Graph::graphSaveToDotFormat (QString fileName){
  */
 bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
                                       QString networkName,
-                                      int maxWidth, int maxHeight) {
+                                      int maxWidth,
+                                      int maxHeight) {
 
 
     qreal weight=0;
@@ -15000,8 +15001,15 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
 
     QDir saveDir(saveDirPath);
 
-    if ( saveDir.mkpath( iconsDirPath ) ){
-        qDebug () << "Graph::graphSaveToGraphMLFormat() - created icons directory:" << iconsDirPath;
+    // Check if there are nodes with custom icons in the network
+    if ( graphHasVertexCustomIcons()) {
+        // There are custom node icons in this net.
+        // We need to save these custom icons to a folder
+        // Create a subdir inside the directory where the actual network file
+        // is about to be saved. All custom icons will be copied one-by-one there.
+        if ( saveDir.mkpath( iconsDirPath ) ){
+            qDebug () << "Graph::graphSaveToGraphMLFormat() - created icons directory:" << iconsDirPath;
+        }
     }
 
     QString iconPath = QString();
@@ -15060,8 +15068,10 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
                 "    <default>" << initVertexShape << "</default> \n"
                 "  </key> \n";
 
+    // Check if there are nodes with custom icons in this network
     if ( graphHasVertexCustomIcons()) {
-
+        // There are custom icons, so we will copy the default custom icon
+        // to the subdir we created earlier
         iconPath = initVertexIconPath;
         iconFileName = QFileInfo(iconPath).fileName();
         copyIconFileNamePath = iconsDirPath + "/" + iconFileName;
@@ -15077,11 +15087,12 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
         else {
             qDebug () << "Graph::graphSaveToGraphMLFormat() - default iconFile already exists in: " << copyIconFileNamePath;
         }
-
+        // And we write a new key (id 51) in our graphml for this default custom icon
         outText <<	"  <key id=\"d51\" for=\"node\" attr.name=\"custom-icon\" attr.type=\"string\"> \n"
                     "    <default>" << iconsSubDir + "/"+ iconFileName << "</default> \n"
                                                                           "  </key> \n";
-    }
+    } // end check if custom icons exist
+
     outText <<	"  <key id=\"d6\" for=\"node\" attr.name=\"label.color\" attr.type=\"string\"> \n"
                 "    <default>" << initVertexLabelColor << "</default> \n"
                 "  </key> \n";
@@ -15309,8 +15320,8 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
 
 
 /**
- * @brief Graph::writeDataSetToFile
- * Writes a known dataset to the given file
+ * @brief Writes a "famous" dataset to the given file
+ * Datasets are hardcoded! They are exported in the given fileName...
  * @param fileName
  */
 void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
