@@ -20512,8 +20512,16 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
             centralityInformation();
     }
     else if ( prominenceIndex == IndexType::EVC ){
-        if ( graphIsModified() || !calculatedEVC )
+        if ( graphIsModified() || !calculatedEVC ) {
             centralityEigenvector(true, dropIsolates);
+            qDebug() << "minEVC"<<minEVC
+                     << "maxEVC"<<maxEVC;
+            if ( isinf ( minEVC ) && isinf ( maxEVC ) ) {
+                emit statusMessage("Cannot compute EVC");
+                emit signalProgressBoxKill();
+                return;
+            }
+        }
     }
 
     else if ( prominenceIndex == IndexType::DP ){

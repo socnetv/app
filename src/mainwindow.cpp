@@ -10970,7 +10970,7 @@ void MainWindow::slotLayoutRadialByProminenceIndex(QString choice=""){
                 inverseWeights,
                 editFilterNodesIsolatesAct->isChecked() || dropIsolates);
 
-    statusMessage( tr("Nodes in inner circles have higher %1 score. ").arg(prominenceIndexName ) );
+    // statusMessage( tr("Nodes in inner circles have higher %1 score. ").arg(prominenceIndexName ) );
 
 }
 
