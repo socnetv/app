@@ -12773,6 +12773,12 @@ void MainWindow::slotAnalyzeCentralityDegree(){
                 optionsEdgeWeightConsiderAct->isChecked(),
                 editFilterNodesIsolatesAct->isChecked() );
 
+    statusMessage(tr("Creating Out-Degree Centralities distribution histogram..."));
+
+    slotAnalyzeProminenceDistributionChart(IndexType::DC);
+
+    statusMessage(tr("Opening Out-Degree Centralities report..."));
+
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
     }
@@ -12782,9 +12788,7 @@ void MainWindow::slotAnalyzeCentralityDegree(){
         m_textEditors << ed;
     }
 
-    slotAnalyzeProminenceDistributionChart(IndexType::DC);
-
-    statusMessage(tr("Out-Degree Centralities saved as: ") + QDir::toNativeSeparators(fn));
+    statusMessage(tr("Out-Degree Centralities report saved as: ") + QDir::toNativeSeparators(fn));
 }
 
 
@@ -12883,6 +12887,11 @@ void MainWindow::slotAnalyzeCentralityCloseness(){
                 inverseWeights,
                 editFilterNodesIsolatesAct->isChecked() || dropIsolates);
 
+    statusMessage(tr("Creating Closeness Centralities distribution histogram..."));
+
+    slotAnalyzeProminenceDistributionChart(IndexType::CC);
+
+    statusMessage(tr("Opening Closeness Centralities report..."));
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12893,9 +12902,7 @@ void MainWindow::slotAnalyzeCentralityCloseness(){
         m_textEditors << ed;
     }
 
-    slotAnalyzeProminenceDistributionChart(IndexType::CC);
-
-    statusMessage(tr("Closeness Centralities  saved as: ") + QDir::toNativeSeparators(fn));
+    statusMessage(tr("Closeness Centralities report saved as: ") + QDir::toNativeSeparators(fn));
 }
 
 
@@ -12923,6 +12930,12 @@ void MainWindow::slotAnalyzeCentralityClosenessIR(){
                 inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
 
+    statusMessage(tr("Creating Influence Range Closeness Centralities distribution histogram..."));
+
+    slotAnalyzeProminenceDistributionChart(IndexType::IRCC);
+
+    statusMessage(tr("Opening Influence Range Closeness Centralities report..."));
+
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
     }
@@ -12932,9 +12945,7 @@ void MainWindow::slotAnalyzeCentralityClosenessIR(){
         m_textEditors << ed;
     }
 
-    slotAnalyzeProminenceDistributionChart(IndexType::IRCC);
-
-    statusMessage(tr("Influence Range Closeness Centralities saved as: ")+QDir::toNativeSeparators(fn));
+    statusMessage(tr("Influence Range Closeness Centralities report saved as: ")+QDir::toNativeSeparators(fn));
 }
 
 
@@ -12959,6 +12970,11 @@ void MainWindow::slotAnalyzeCentralityBetweenness(){
                 inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
 
+    statusMessage(tr("Creating Betweenness Centralities distribution histogram..."));
+
+    slotAnalyzeProminenceDistributionChart(IndexType::BC);
+
+    statusMessage(tr("Opening Betweenness Centralities report..."));
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12969,9 +12985,7 @@ void MainWindow::slotAnalyzeCentralityBetweenness(){
         m_textEditors << ed;
     }
 
-    slotAnalyzeProminenceDistributionChart(IndexType::BC);
-
-    statusMessage(tr("Betweenness Centralities saved as: ")+QDir::toNativeSeparators(fn));
+    statusMessage(tr("Betweenness Centralities report saved as: ")+QDir::toNativeSeparators(fn));
 }
 
 
@@ -13006,6 +13020,12 @@ void MainWindow::slotAnalyzePrestigeDegree(){
                                      optionsEdgeWeightConsiderAct->isChecked(),
                                      editFilterNodesIsolatesAct->isChecked() );
 
+    statusMessage(tr("Creating Degree Prestige (in-degree) distribution histogram..."));
+
+    slotAnalyzeProminenceDistributionChart(IndexType::DP);
+
+    statusMessage(tr("Opening Degree Prestige (in-degree) report..."));
+
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
     }
@@ -13015,9 +13035,7 @@ void MainWindow::slotAnalyzePrestigeDegree(){
         m_textEditors << ed;
     }
 
-    slotAnalyzeProminenceDistributionChart(IndexType::DP);
-
-    statusMessage(tr("Degree Prestige (in-degree) indices saved as: ") + QDir::toNativeSeparators(fn));
+    statusMessage(tr("Degree Prestige (in-degree) report saved as: ") + QDir::toNativeSeparators(fn));
 }
 
 
@@ -13036,9 +13054,13 @@ void MainWindow::slotAnalyzePrestigePageRank(){
 
     askAboutWeights();
 
-
     activeGraph->writePrestigePageRank(fn, editFilterNodesIsolatesAct->isChecked());
 
+    statusMessage(tr("Creating PageRank Prestige distribution histogram..."));
+
+    slotAnalyzeProminenceDistributionChart(IndexType::PRP);
+
+    statusMessage(tr("Opening PageRank Prestige report..."));
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -13049,9 +13071,7 @@ void MainWindow::slotAnalyzePrestigePageRank(){
         m_textEditors << ed;
     }
 
-    slotAnalyzeProminenceDistributionChart(IndexType::PRP);
-
-    statusMessage(tr("PageRank Prestige indices saved as: ")+ QDir::toNativeSeparators(fn));
+    statusMessage(tr("PageRank Prestige report saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
 
@@ -13074,6 +13094,12 @@ void MainWindow::slotAnalyzePrestigeProximity(){
     activeGraph->writePrestigeProximity(fn, true, false ,
                                         editFilterNodesIsolatesAct->isChecked());
 
+    statusMessage(tr("Creating Proximity Prestige distribution histogram..."));
+
+    slotAnalyzeProminenceDistributionChart(IndexType::PP);
+
+    statusMessage(tr("Opening Proximity Prestige report..."));
+
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
     }
@@ -13082,8 +13108,8 @@ void MainWindow::slotAnalyzePrestigeProximity(){
         ed->show();
         m_textEditors << ed;
     }
-    slotAnalyzeProminenceDistributionChart(IndexType::PP);
-    statusMessage(tr("Proximity Prestige indices saved as: ")+ QDir::toNativeSeparators(fn));
+
+    statusMessage(tr("Proximity Prestige report saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
 
@@ -13139,6 +13165,13 @@ void MainWindow::slotAnalyzeCentralityInformation(){
                 optionsEdgeWeightConsiderAct->isChecked(),
                 inverseWeights);
 
+
+    statusMessage(tr("Creating Information Centralities distribution histogram..."));
+
+    slotAnalyzeProminenceDistributionChart(IndexType::IC);
+
+    statusMessage(tr("Opening Information Centralities report..."));
+
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
     }
@@ -13147,8 +13180,8 @@ void MainWindow::slotAnalyzeCentralityInformation(){
         ed->show();
         m_textEditors << ed;
     }
-    slotAnalyzeProminenceDistributionChart(IndexType::IC);
-    statusMessage(tr("Information Centralities saved as: ")+ QDir::toNativeSeparators(fn));
+
+    statusMessage(tr("Information Centralities report saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
 
@@ -13178,6 +13211,13 @@ void MainWindow::slotAnalyzeCentralityEigenvector(){
                 inverseWeights,
                 dropIsolates);
 
+
+    statusMessage(tr("Creating Eigenvector Centralities distribution histogram..."));
+
+    slotAnalyzeProminenceDistributionChart(IndexType::EVC);
+
+    statusMessage(tr("Opening Eigenvector Centralities report..."));
+
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
     }
@@ -13186,8 +13226,8 @@ void MainWindow::slotAnalyzeCentralityEigenvector(){
         ed->show();
         m_textEditors << ed;
     }
-    slotAnalyzeProminenceDistributionChart(IndexType::EVC);
-    statusMessage(tr("Eigenvector Centralities saved as: ")+ QDir::toNativeSeparators(fn));
+
+    statusMessage(tr("Eigenvector Centralities report saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
 
@@ -13215,6 +13255,11 @@ void MainWindow::slotAnalyzeCentralityStress(){
                 inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
 
+    statusMessage(tr("Creating Stress Centralities distribution histogram..."));
+
+    slotAnalyzeProminenceDistributionChart(IndexType::SC);
+
+    statusMessage(tr("Opening Stress Centralities report..."));
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -13224,8 +13269,8 @@ void MainWindow::slotAnalyzeCentralityStress(){
         ed->show();
         m_textEditors << ed;
     }
-    slotAnalyzeProminenceDistributionChart(IndexType::SC);
-    statusMessage(tr("Stress Centralities saved as: ")+ QDir::toNativeSeparators(fn));
+
+    statusMessage(tr("Stress Centralities report saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
 
@@ -13253,7 +13298,11 @@ void MainWindow::slotAnalyzeCentralityPower(){
                 inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
 
+    statusMessage(tr("Creating Gil-Schmidt Power Centralities distribution histogram..."));
 
+    slotAnalyzeProminenceDistributionChart(IndexType::PC);
+
+    statusMessage(tr("Opening Gil-Schmidt Power Centralities report..."));
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
     }
@@ -13262,8 +13311,8 @@ void MainWindow::slotAnalyzeCentralityPower(){
         ed->show();
         m_textEditors << ed;
     }
-    slotAnalyzeProminenceDistributionChart(IndexType::PC);
-    statusMessage(tr("Gil-Schmidt Power Centralities saved as: ")+ QDir::toNativeSeparators(fn));
+
+    statusMessage(tr("Gil-Schmidt Power Centralities report saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
 
@@ -13290,6 +13339,12 @@ void MainWindow::slotAnalyzeCentralityEccentricity(){
                 inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
 
+    statusMessage(tr("Creating Eccentricity Centralities distribution histogram..."));
+
+    slotAnalyzeProminenceDistributionChart(IndexType::EC);
+
+    statusMessage(tr("Opening Closeness Centralities report..."));
+
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
     }
@@ -13298,8 +13353,8 @@ void MainWindow::slotAnalyzeCentralityEccentricity(){
         ed->show();
         m_textEditors << ed;
     }
-    slotAnalyzeProminenceDistributionChart(IndexType::EC);
-    statusMessage(tr("Eccentricity Centralities saved as: ")+ QDir::toNativeSeparators(fn));
+
+    statusMessage(tr("Eccentricity Centralities report saved as: ")+ QDir::toNativeSeparators(fn));
 }
 
 
@@ -13337,7 +13392,7 @@ void MainWindow::slotAnalyzeProminenceDistributionChart(const int &index) {
     chart->addSeries(barSeries);
 
     // Set Chart title and remove legend
-    chart->setTitle(barSeries->name() + QString(" dist."), QFont("Times",8));
+    chart->setTitle(barSeries->name() + QString(" distribution"), QFont("Times",7));
     chart->toggleLegend(false);
     chart->setToolTip( tr("The distribution of ") +
                        barSeries->name() + " index scores. \n"

@@ -196,6 +196,10 @@ void DialogNodeEdit::getNodeShape(const int &nodeShapeIndex){
             ui->nodeShapeComboBox->setItemIcon(NodeShape::Custom, QIcon(iconPath));
         }
         else {
+            QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
+            effect->setColor(QColor("red"));
+            ui->nodeIconSelectButton->setGraphicsEffect(effect);
+            ui->nodeIconSelectEdit->setGraphicsEffect(effect);
             (ui->buttonBox) -> button (QDialogButtonBox::Cancel) -> setDefault(true);
             (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
         }
@@ -205,6 +209,8 @@ void DialogNodeEdit::getNodeShape(const int &nodeShapeIndex){
         ui->nodeIconSelectEdit->setEnabled(false);
         ui->nodeIconSelectEdit->setText ("");
         iconPath = QString();
+        ui->nodeIconSelectButton->setGraphicsEffect(0);
+        ui->nodeIconSelectEdit->setGraphicsEffect(0);
         (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
         (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
     }
@@ -280,6 +286,10 @@ void DialogNodeEdit::getUserChoices(){
     emit userChoices(nodeLabel,nodeSize,nodeValue,nodeColor,nodeShape, iconPath);
 }
 
+
+/**
+ * @brief DialogNodeEdit::checkErrors
+ */
 void DialogNodeEdit::checkErrors() {
     qDebug()<< " DialogNodeEdit::checkErrors()" ;
     QString userLabel = ui->labelEdit->text();
@@ -299,6 +309,8 @@ void DialogNodeEdit::checkErrors() {
     }
     //getUserChoices();
 }
+
+
 
 void DialogNodeEdit::selectColor() {
     qDebug()<< " DialogNodeEdit::selectColor()" ;
