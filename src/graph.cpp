@@ -4779,8 +4779,6 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
                     // Closeness zero at this point means 
                     // this actor is has not any outLinks
                     CC=0;
-                     m_graphIsConnected = false;
-                     (*it)->setEccentricity( RAND_MAX );
                 }
                 (*it)->setCC( CC );
 
@@ -4953,7 +4951,7 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
 
                     qDebug()<< "actor i" <<  (*it)->name()
                             << "has infinite eccentricity. "
-                               "There is no path from i to j"
+                               "There is no path from it to actor j"
                             << (*it1)->name();
 
                 }
