@@ -92,7 +92,6 @@ typedef QVector<QString> V_str;
   \todo Group edge editing: i.e. change weight or color.
   \todo - CHECK weighted networks results (IRCC and distance matrix with other combinations)
   \todo - CHECK graphIsWeighted corner case results, when !graphIsModified.
-  \todo - CHECK graphConnectedness() algorithm implementation (m_vertexPairsUnilaterallyConnected)
 
   \bug Create d-regular, undirected, ask for closeness, it says we are on a disconnected graph
   \bug Crash on Graphml files with textlabels instead of nodenumbers (i.e. nets/killer.graphml)
@@ -672,6 +671,8 @@ public:
 
     bool graphIsUndirected();
 
+    bool graphIsConnected();
+
     void graphMatrixAdjacencyCreate(const bool dropIsolates=false,
                                     const bool considerWeights=true,
                                     const bool inverseWeights=false,
@@ -862,7 +863,8 @@ public:
 
 
     /* DISTANCES, CENTRALITIES & PROMINENCE MEASURES */
-    int graphConnectedness(const bool updateProgress=false) ;
+
+    int graphConnectednessFull (const bool updateProgress=false) ;
 
     bool graphReachable(const int &v1, const int &v2) ;
 
@@ -1180,7 +1182,7 @@ private:
 
     QList<int> m_verticesList;
     QList<int> m_verticesIsolatedList;
-    QList<int> m_verticesInfiniteEccentricity;
+
     QList<int> m_verticesSelected;
 
     QSet<int> m_verticesSet;
@@ -1188,6 +1190,7 @@ private:
     QList<SelectedEdge> m_selectedEdges;
 
     QHash <int, int> influenceRanges, influenceDomains;
+
     QHash <int, int> m_vertexPairsNotConnected;
     QHash <int, int> m_vertexPairsUnilaterallyConnected;
 
@@ -1196,7 +1199,6 @@ private:
 
     QList <qreal> m_clusteringLevel;
     QMap <int, V_int> m_clustersPerSequence;
-
 
     QMap<QString, V_int> m_clustersByName;
     QMap<int, V_str> m_clusterPairNamesPerSeq;
@@ -1212,7 +1214,9 @@ private:
     H_StrToInt discretePCs, discreteICs,  discretePRPs, discretePPs, discreteEVCs;
 
     int m_precision, m_fieldWidth, m_curRelation, m_fileFormat, m_vertexClicked;
+
     ClickedEdge m_clickedEdge;
+
     qreal edgeWeightTemp, edgeReverseWeightTemp;
     qreal meanSDC, varianceSDC;
     qreal meanSCC, varianceSCC;
@@ -1276,7 +1280,6 @@ private:
 
     bool m_graphHasVertexCustomIcons;
 
-    int m_graphConnectedness;
     int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
     //int timerId;
     qreal canvasWidth, canvasHeight;
@@ -1290,8 +1293,7 @@ private:
     bool calculatedTriad;
     bool calculatedGraphSymmetry, calculatedGraphReciprocity;
     bool calculatedGraphDensity, calculatedGraphWeighted;
-    bool calculatedGraphConnectedness;
-    bool m_directed, m_symmetric, m_isWeighted, m_graphDisconnected;
+    bool m_directed, m_symmetric, m_isWeighted, m_graphIsConnected;
 
     int cliqueCensusRecursion;
 

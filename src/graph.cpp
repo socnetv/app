@@ -80,12 +80,11 @@ Graph::Graph(GraphicsWidget *graphicsWidget) {
     m_fileFormat=FILE_TYPE::UNRECOGNIZED;
     m_directed=true;
     m_isWeighted=false;
-    m_graphDisconnected=false;
+    m_graphIsConnected=true; // empty/null graph is considered connected
     m_symmetric=true;
     m_graphDensity = -1;
     fileName ="";
 
-    calculatedGraphConnectedness = false;
     calculatedGraphReciprocity = false;
     calculatedGraphSymmetry = false;
     calculatedGraphWeighted = false;
@@ -321,6 +320,7 @@ void Graph::clear(const QString &reason) {
 
     m_verticesList.clear();
     m_verticesSet.clear();
+
     m_verticesIsolatedList.clear();
     m_vertexPairsNotConnected.clear();
     m_vertexPairsUnilaterallyConnected.clear();
@@ -348,11 +348,10 @@ void Graph::clear(const QString &reason) {
 
     m_directed=true;
     m_isWeighted=false;
-    m_graphDisconnected=false;
+    m_graphIsConnected=true; // empty/null graph is considered connected.
     m_symmetric=true;
     m_graphDensity = -1;
 
-    calculatedGraphConnectedness = false;
     calculatedGraphReciprocity = false;
     calculatedGraphSymmetry = false;
     calculatedGraphWeighted = false;
@@ -2572,7 +2571,6 @@ int Graph::vertices(const bool &dropIsolates, const bool &countAll, const bool &
  * Graph::graphMatrixAdjacencyCreate()
  * Graph::writeMatrixAdjacencyInvert()
  * Graph::centralityInformation()
- * Graph::graphConnectedness()
  * @return
  */
 QList<int> Graph::verticesListIsolated(){
@@ -4255,9 +4253,9 @@ qreal Graph::graphDistanceGeodesicAverage(const bool considerWeights,
 
     qDebug() <<"Graph::graphDistanceGeodesicAverage() - m_graphAverageDistance"
             <<m_graphAverageDistance
-            <<"calling graphConnectedness()";
+            <<"calling graphIsConnected()";
 
-    graphConnectedness();
+    bool isConnected = graphIsConnected();
 
     qDebug() <<"Graph::graphDistanceGeodesicAverage() - m_graphAverageDistance now"
             <<m_graphAverageDistance;
@@ -4305,151 +4303,32 @@ int Graph::graphGeodesics()  {
 }
 
 
+
+
+
 /**
- * @brief Excamines the Connectedness of the graph and returns an integer code.
- * @return int:
-
- * 2: strongly connected digraph (exists path from i to j and vice versa for every i,j)
- * 1: connected undirected graph
- * 0: not connected undirected graph no isolates
- * -1: not connected undirected graph with isolates
- * -2: unilaterally connected digraph (exists path only from i to j or from j to i, not both)
- * -3  disconnected digraph (there are unconnected pairs, with isolates).
- * -4  disconnected digraph (there are unconnected pairs, no isolates).
- *
- * Used by
- * MW::slotConnectedness()
- * MW::slotAnalyzeCentralityCloseness()
- * MW::slotLayoutRadialByProminenceIndex(QString )
- * MW::slotLayoutNodeSizeByProminenceIndex(QString )
- * MW::slotLayoutLevelByProminenceIndex(QString )
- *
+ * @brief Checks if the graph is connected, in the sense of a topological space,
+ * i.e., there is a path from any vertex to any other vertex in the graph.
+ * Called from MW::slotConnectedness()
+ * @return bool
  */
-int Graph::graphConnectedness(const bool updateProgress) {
+bool Graph::graphIsConnected() {
 
-    qDebug() << "Graph::graphConnectedness() ";
+    qDebug() << "Graph::graphIsConnected() ";
 
-    if (calculatedGraphConnectedness && !graphIsModified()) {
-        qDebug()<< "Graph::graphConnectedness() - graph unmodified. Returning:"
-                << m_graphConnectedness;
-        return m_graphConnectedness;
-    }
-
-    //initially if graph is undirected, assume it is connected.
-    // if is directed, assume it is strongly connected.
-    if ( graphIsUndirected() ) {
-        m_graphConnectedness = 1;
-    }
-    else {
-        m_graphConnectedness = 2;
+    if ( calculatedDistances && !graphIsModified()) {
+        qDebug()<< "Graph::graphIsConnected() - graph unmodified. Returning:"
+                << m_graphIsConnected;
+        return m_graphIsConnected;
     }
 
     graphDistancesGeodesic(false, false,false,false);
 
-    int progressCounter=0;
-    int N = vertices();
+    return m_graphIsConnected;
 
-    VList::const_iterator it, jt;
-
-    m_vertexPairsNotConnected.clear();
-    m_vertexPairsUnilaterallyConnected.clear();
-
-    // int isolatedVertices=verticesListIsolated().count();
-    bool isolatedVertices = false;
-
-    if (updateProgress) {
-        QString pMsg = tr("Computing Network Connectedness. \nPlease wait...");
-        emit statusMessage(  pMsg );
-        emit signalProgressBoxCreate(N,pMsg);
-    }
-
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
-
-        if (updateProgress) {
-            emit signalProgressBoxUpdate(++progressCounter);
-        }
-
-        for (jt=it; jt!=m_graph.cend(); ++jt) {
-
-            if ( graphIsUndirected() ) {
-
-                if ( (*it)->distance( (*jt)-> name() ) == RAND_MAX ) {
-                    // not connected because there is no path connecting (i,j)
-                    m_vertexPairsNotConnected.insertMulti((*it)-> name(),(*jt)-> name());
-                    if ( (*it)->isIsolated() || (*jt)->isIsolated() ) {
-                        isolatedVertices = true;
-                    }
-                }
-
-            }
-            else {
-                if ( (*it)->distance( (*jt)-> name() ) != RAND_MAX ) {
-                    if ( (*jt)->distance( (*it)-> name() ) == RAND_MAX ) {
-                        // unilaterly connected because there is only a path i -> j
-                        m_vertexPairsUnilaterallyConnected.insertMulti((*it)-> name(),(*jt)-> name());
-                        //m_vertexPairsNotConnected.insertMulti(j,i);
-                    }
-                    else {
-                        //strongly connected pair
-                    }
-
-                }
-                else {
-                    if ( (*jt)->distance( (*it)-> name() ) == RAND_MAX ) {
-                        //  not connected because there is no path connecting (i,j) or (j,i)
-                        m_vertexPairsNotConnected.insertMulti( (*it)-> name(),(*jt)-> name() );
-                        if ( (*it)->isIsolated() || (*jt)->isIsolated() ) {
-                            isolatedVertices = true;
-                        }
-                    }
-                    else {
-                        // unilaterly connected because there is only a path j -> i
-                        m_vertexPairsUnilaterallyConnected.insertMulti((*jt)-> name(),(*it)-> name() );
-                    }
-
-                }
-
-            }
-
-
-        }
-
-    }
-
-
-    if ( graphIsDirected() ) {
-        if ( m_vertexPairsNotConnected.count()>0) {
-            if (isolatedVertices)
-                m_graphConnectedness = -1;
-            else
-                m_graphConnectedness = 0;
-        }
-        else
-            m_graphConnectedness = 1;
-
-    }
-    else {
-        if (m_vertexPairsNotConnected.count()>0) {
-            if (isolatedVertices)
-                m_graphConnectedness = -3;
-            else
-                m_graphConnectedness = -4;
-        }
-        else if (m_vertexPairsUnilaterallyConnected.count() > 0) {
-            m_graphConnectedness = -2;
-        }
-        else
-            m_graphConnectedness = 2;
-    }
-
-
-    if (updateProgress) {
-        emit signalProgressBoxKill();
-    }
-
-    calculatedGraphConnectedness = true;
-    return m_graphConnectedness;
 }
+
+
 
 
 
@@ -4714,7 +4593,16 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
                 (*it)->setShortestPaths((*it1)->name(), 0);
             }
         }
-        m_graphDisconnected = true;
+        if ( N < 2 ) {
+            //singleton graph consisting of a single isolated node
+            //is considered connected
+            m_graphIsConnected = true;
+        }
+        else {
+            //any non-empty and non-singleton graph with zero edges is disconnected
+            m_graphIsConnected = false;
+        }
+
     }
     else {
 
@@ -4729,10 +4617,12 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
         qreal d_sw=0, d_su=0;
         qreal pairDistance = 0;
 
-        m_graphDisconnected = false;
+        m_graphIsConnected = true;
+
         H_f_i::const_iterator hfi ; // for Power Centrality
 
         qDebug() << "Graph: graphDistancesGeodesic() - initialising centrality variables ";
+
         maxSCC=0; minSCC=RAND_MAX; nomSCC=0; denomSCC=0; groupCC=0; maxNodeSCC=0;
         minNodeSCC=0; sumSCC=0; sumCC=0;
         discreteCCs.clear(); classesSCC=0;
@@ -4751,13 +4641,20 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
         maxSPC=0; minSPC=RAND_MAX; maxNodeSPC=0; minNodeSPC=0; sumSPC=0;
         maxEC=0; minEC=RAND_MAX; nomEC=0; denomEC=0; groupEC=0; maxNodeEC=0;
         minNodeEC=0; sumEC=0;
+
         discreteECs.clear(); classesEC=0;
 
         m_graphDiameter=0;
         calculatedDistances = false;
         m_graphAverageDistance=0;
         m_graphGeodesicsCount = 0; //non zero distances
-        m_verticesInfiniteEccentricity.clear(); // counts vertices with infinite eccentricity
+
+        // Stores vertex pairs not connected
+        // Vertices in keys have
+        // Infinite Eccentricity
+        // Zero Eccentricity Centrality
+        // Zero Closeness Centrality
+        m_vertexPairsNotConnected.clear();
 
         qDebug() << "	m_graphDiameter "<< m_graphDiameter
                  << " m_graphAverageDistance " <<m_graphAverageDistance;
@@ -4779,7 +4676,7 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
                 (*it)->clearShortestPaths();
             }
 
-            //Zero centrality indeces of each vertex
+            //Zero centrality scores for each vertex
             if (computeCentralities) {
 
                 qDebug() << " Graph:graphDistancesGeodesic() -"
@@ -4879,7 +4776,11 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
                     CC=1.0/(*it)->CC();  //Closeness centrality must be inverted
                 }
                 else {
+                    // Closeness zero at this point means 
+                    // this actor is has not any outLinks
                     CC=0;
+                     m_graphIsConnected = false;
+                     (*it)->setEccentricity( RAND_MAX );
                 }
                 (*it)->setCC( CC );
 
@@ -5021,7 +4922,7 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
         // and get the distance sums
         qDebug() << "Checking if there are disconnected nodes";
 
-        m_graphDisconnected = false;
+        m_graphIsConnected = true;
 
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
 
@@ -5042,11 +4943,13 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
                     qDebug()<< "   == actor j" <<  (*it1)->name() << "SKIP/CONTINUE";
                     continue;
                 }
+                
                 pairDistance = (*it)-> distance ( (*it1)->name() );
+                
                 if ( pairDistance == RAND_MAX) {
-                    m_verticesInfiniteEccentricity.append((*it)->name());
+                    m_vertexPairsNotConnected.insertMulti((*it)->name(), (*it1)->name());
                     (*it)->setEccentricity( RAND_MAX );
-                    m_graphDisconnected = true;
+                    m_graphIsConnected = false;
 
                     qDebug()<< "actor i" <<  (*it)->name()
                             << "has infinite eccentricity. "
@@ -5061,7 +4964,8 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
                     (*it)->setDistanceSum( (*it)->distanceSum() + pairDistance);
 
                 }
-            }
+            } // end for
+            
             qDebug()<< "actor i" <<  (*it)->name()
                     <<"Final distanceSum" << (*it)->distanceSum();
 
@@ -5070,9 +4974,11 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
 
                 // Compute Eccentricity (max geodesic distance)
                 eccentricity = (*it)->eccentricity();
+                
                 qDebug() << "actor"
                          << (*it)->name()
                         << "eccentricity" << eccentricity;
+                
                 if ( eccentricity != RAND_MAX ) {
 
                     //Find min/max Eccentricity
@@ -5102,7 +5008,8 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
                             << "EC=0 (disconnected graph)";
 
                 }
-            }
+                
+            } // end if compute centralities
 
         } // end for disconnected checking
 
@@ -5337,6 +5244,7 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
 
     //set distance of s from s equal to 0
     m_graph[si]->setDistance(s,0);
+
     //set sigma of s from s equal to 1
     m_graph[si]->setShortestPaths(s,1);
 
@@ -5397,6 +5305,7 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
                          << ") equal to dist_u=d(s,u) plus 1. New dist_w" << dist_w ;
 ;
                 m_graph[si]->setDistance(w,dist_w);
+
 
                 m_graphAverageDistance += dist_w;
                 m_graphGeodesicsCount++;
@@ -5513,6 +5422,7 @@ void Graph::dijkstra(const int &s, const int &si,
 
     //set d( s, s ) = 0
     m_graph[si]->setDistance(s,0);
+
     //set sp ( s , s ) = 1
     m_graph[si]->setShortestPaths(s,1);
 
@@ -14825,7 +14735,6 @@ void Graph::graphSave(const QString &fileName,
     };
     if (saved) {
         if ( graphIsModified() ) {
-            calculatedGraphConnectedness = false;
             calculatedGraphReciprocity = false;
             calculatedGraphSymmetry = false;
             calculatedGraphWeighted = false;
