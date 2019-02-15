@@ -4666,9 +4666,10 @@ void Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
  * @param dropIsolates
  */
 void Graph::graphDistancesGeodesic(const bool &computeCentralities,
-                                 const bool &considerWeights,
-                                 const bool &inverseWeights,
-                                 const bool &dropIsolates) {
+                                   const bool &considerWeights,
+                                   const bool &inverseWeights,
+                                   const bool &dropIsolates) {
+
     qDebug() << "Graph::graphDistancesGeodesic()"
              << "centralities" << computeCentralities
              << "considerWeights:"<<considerWeights
@@ -4681,7 +4682,7 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
     }
 
     VList::const_iterator it, it1;
-    QList<int>::iterator it2;
+    QList<int>::const_iterator it2;
 
     int w=0, u=0,s=0, i=0, si=0, ui=0, wi=0;
 
@@ -4952,7 +4953,7 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
                                "LOOP over every vertex u in Ps of w"<<w;
 
                     if (lst.size() > 0) // just in case...do a sanity check
-                        for ( it2=lst.begin(); it2 != lst.end(); it2++ ){
+                        for ( it2=lst.cbegin(); it2 != lst.cend(); it2++ ){
                             u=(*it2);
                             ui=vpos[u];
                             sigma_u=m_graph[si]->shortestPaths(u);
@@ -4983,7 +4984,8 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
                                     << " to u" << u;
 
                             m_graph[ui]->setDelta( d_su);
-                        }
+
+                        } // end for
 
                     qDebug()<< "***** PHASE 2 (BC/ACCUMULATION): "
                                "Adding delta_w to BC of w";
@@ -5002,9 +5004,10 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
                                    "s" << s << "vpos" << si << "BC = d_sw" << d_sw;
 
                         m_graph[wi]->setBC (d_sw);
-                    }
 
-                }
+                    } // END if
+
+                } // END while stack
 
             } // END if computeCentralities
 
