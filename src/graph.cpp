@@ -20006,7 +20006,6 @@ void Graph::graphMatrixAdjacencyCreate(const bool dropIsolates,
     qDebug() << "Graph::graphMatrixAdjacencyCreate() -resizing AM to"<< N;
     AM.resize(N, N);
 
-
     QString pMsg = tr ("Creating Adjacency Matrix. \nPlease wait...");
     emit statusMessage (pMsg);
     emit signalProgressBoxCreate(N, pMsg);
