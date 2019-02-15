@@ -4119,7 +4119,7 @@ void Graph::edgeTypeSet(const int &v1,
  */
 bool Graph::graphReachable(const int &v1, const int &v2) {
     qDebug()<< "Graph::reachable()";
-    graphDistanceGeodesicCompute(false);
+    graphDistancesGeodesic(false);
     return ( m_graph[ vpos[v1] ] ->distance( v2) != RAND_MAX ) ? true: false;
 }
 
@@ -4133,7 +4133,7 @@ void Graph::graphMatrixReachabilityCreate() {
     qDebug() << "Graph::graphMatrixReachabilityCreate()";
 
     if ( !calculatedDistances || graphIsModified() ) {
-        graphDistanceGeodesicCompute(false);
+        graphDistancesGeodesic(false);
     }
 
     VList::const_iterator it, jt;
@@ -4216,7 +4216,7 @@ int Graph::graphDistanceGeodesic(const int &v1, const int &v2,
                                  const bool &considerWeights,
                                  const bool &inverseWeights){
     qDebug() <<"Graph::graphDistanceGeodesic()";
-    graphDistanceGeodesicCompute(false, considerWeights, inverseWeights, false);
+    graphDistancesGeodesic(false, considerWeights, inverseWeights, false);
     return m_graph[ vpos[v1] ]->distance(v2);
 }
 
@@ -4233,7 +4233,7 @@ int Graph::graphDistanceGeodesic(const int &v1, const int &v2,
 int Graph::graphDiameter(const bool considerWeights,
                          const bool inverseWeights){
     qDebug () << "Graph::graphDiameter()" ;
-    graphDistanceGeodesicCompute(false, considerWeights, inverseWeights, false);
+    graphDistancesGeodesic(false, considerWeights, inverseWeights, false);
     return m_graphDiameter;
 }
 
@@ -4296,7 +4296,7 @@ qreal Graph::graphDistanceGeodesicAverage(const bool considerWeights,
 int Graph::graphGeodesics()  {
     qDebug()<< "Graph::graphGeodesics()";
 
-    graphDistanceGeodesicCompute(false, false,false,false);
+    graphDistancesGeodesic(false, false,false,false);
 
     qDebug()<< "Graph::graphGeodesics() - geodesics:" << m_graphGeodesicsCount;
     return m_graphGeodesicsCount;
@@ -4344,7 +4344,7 @@ int Graph::graphConnectedness(const bool updateProgress) {
         m_graphConnectedness = 2;
     }
 
-    graphDistanceGeodesicCompute(false, false,false,false);
+    graphDistancesGeodesic(false, false,false,false);
 
     int progressCounter=0;
     int N = vertices();
@@ -4468,7 +4468,7 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
     qDebug() << "Graph::graphMatrixShortestPathsCreate()";
 
     if ( !calculatedDistances || graphIsModified() ) {
-        graphDistanceGeodesicCompute(false,considerWeights,inverseWeights, dropIsolates);
+        graphDistancesGeodesic(false,considerWeights,inverseWeights, dropIsolates);
     }
 
     VList::const_iterator it, jt;
@@ -4561,7 +4561,7 @@ void Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
     qDebug() << "Graph::graphMatrixDistanceGeodesicCreate()";
 
     if ( !calculatedDistances || graphIsModified() ) {
-        graphDistanceGeodesicCompute(false,considerWeights,inverseWeights, dropIsolates);
+        graphDistancesGeodesic(false,considerWeights,inverseWeights, dropIsolates);
     }
 
     VList::const_iterator it, jt;
@@ -4665,18 +4665,18 @@ void Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
+void Graph::graphDistancesGeodesic(const bool &computeCentralities,
                                  const bool &considerWeights,
                                  const bool &inverseWeights,
                                  const bool &dropIsolates) {
-    qDebug() << "Graph::graphDistanceGeodesicCompute()"
+    qDebug() << "Graph::graphDistancesGeodesic()"
              << "centralities" << computeCentralities
              << "considerWeights:"<<considerWeights
              << "inverseWeights:"<<inverseWeights
              << "dropIsolates:" << dropIsolates;
 
     if ( !graphIsModified() && calculatedDistances && !computeCentralities)  {
-        qDebug() << "Graph::graphDistanceGeodesicCompute() - not modified. Return.";
+        qDebug() << "Graph::graphDistancesGeodesic() - not modified. Return.";
         return;
     }
 
@@ -4687,7 +4687,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 
     int progressCounter=0;
 
-    qDebug() << "Graph::graphDistanceGeodesicCompute() - Recomputing geodesic distances.";
+    qDebug() << "Graph::graphDistancesGeodesic() - Recomputing geodesic distances.";
 
 
     //drop isolated vertices from calculations (i.e. std C and group C).
@@ -4700,7 +4700,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
     emit signalProgressBoxCreate(N, pMsg );
 
     m_symmetric = graphIsSymmetric();
-    qDebug() << "Graph::graphDistanceGeodesicCompute() - m_symmetric"
+    qDebug() << "Graph::graphDistancesGeodesic() - m_symmetric"
                 << m_symmetric ;
 
     if ( E == 0 ) {
@@ -4717,7 +4717,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
     }
     else {
 
-        qDebug() << "Graph::graphDistanceGeodesicCompute() - Initializing variables";
+        qDebug() << "Graph::graphDistancesGeodesic() - Initializing variables";
 
         qreal CC=0, BC=0, SC= 0, eccentricity=0, EC=0, PC=0;
         qreal SCC=0, SBC=0, SSC=0, SEC=0, SPC=0;
@@ -4731,7 +4731,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
         m_graphDisconnected = false;
         H_f_i::const_iterator hfi ; // for Power Centrality
 
-        qDebug() << "Graph: graphDistanceGeodesicCompute() - initialising centrality variables ";
+        qDebug() << "Graph: graphDistancesGeodesic() - initialising centrality variables ";
         maxSCC=0; minSCC=RAND_MAX; nomSCC=0; denomSCC=0; groupCC=0; maxNodeSCC=0;
         minNodeSCC=0; sumSCC=0; sumCC=0;
         discreteCCs.clear(); classesSCC=0;
@@ -4781,7 +4781,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
             //Zero centrality indeces of each vertex
             if (computeCentralities) {
 
-                qDebug() << " Graph:graphDistanceGeodesicCompute() -"
+                qDebug() << " Graph:graphDistancesGeodesic() -"
                             "Initializing actor centrality indices";
                 (*it)->setBC( 0.0 );
                 (*it)->setSC( 0.0 );
@@ -4796,7 +4796,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
         }
 
 
-        qDebug() << "Graph: graphDistanceGeodesicCompute() - "
+        qDebug() << "Graph: graphDistancesGeodesic() - "
                     " initialising variables for max centrality scores";
         if (m_symmetric) {
             maxIndexBC= ( N == 2 ) ? 1 : ( N-1.0 ) * ( N-2.0 ) / 2.0;
@@ -4947,11 +4947,6 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 
                     qDebug()<< "***** PHASE 2 (BC/ACCUMULATION): "
                                "preLOOP: Size of predecessors list Ps[w]"<< lst.size();
-                    qDebug() << "Ps[w]" ;
-
-                    for ( it2=lst.begin(); it2 != lst.end(); it2++ ){
-                        qDebug() << (*it2);
-                    }
 
                     qDebug()<< "***** PHASE 2 (BC/ACCUMULATION): "
                                "LOOP over every vertex u in Ps of w"<<w;
@@ -5110,7 +5105,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 
         if (computeCentralities) {
 
-            qDebug() << "Graph: graphDistanceGeodesicCompute() - "
+            qDebug() << "Graph: graphDistancesGeodesic() - "
                         "Computing centralities...";
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
                 if ( dropIsolates && (*it)->isIsolated() ){
@@ -5171,7 +5166,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
                          << " PC: "<< (*it)->PC();
             } // end for
 
-            qDebug() << "Graph: graphDistanceGeodesicCompute() -"
+            qDebug() << "Graph: graphDistancesGeodesic() -"
                         "Computing mean centrality values...";
 
             // Compute mean values and prepare to compute variances
@@ -5191,7 +5186,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
             varianceEC=0;
             tempVarianceEC=0;
 
-            qDebug() << "Graph: graphDistanceGeodesicCompute() - "
+            qDebug() << "Graph: graphDistancesGeodesic() - "
                         "Computing std centralities ...";
 
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
@@ -5291,7 +5286,7 @@ void Graph::graphDistanceGeodesicCompute(const bool &computeCentralities,
 
     calculatedDistances=true;
 
-    qDebug() << "Graph::graphDistanceGeodesicCompute()- FINISHED computing distances";
+    qDebug() << "Graph::graphDistancesGeodesic()- FINISHED computing distances";
 
 
     emit signalProgressBoxKill();
@@ -5524,7 +5519,7 @@ void Graph::dijkstra(const int &s, const int &si,
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
         v=vpos[ (*it)->name() ];
         if (v != s ){
-            // NOTE: d(i,j) init to RAND_MAX already done in graphDistanceGeodesicCompute
+            // NOTE: d(i,j) init to RAND_MAX already done in graphDistancesGeodesic
 //            qDebug() << " push " << v << " to prQ with infinite distance from s";
 //            prQ.push(GraphDistance(v,RAND_MAX));
             //TODO // Previous node in optimal path from source
@@ -5740,7 +5735,7 @@ void Graph::dijkstra(const int &s, const int &si,
 
 
 /**
- * @brief Computes minimum and maximum centralities during graphDistanceGeodesicCompute()
+ * @brief Computes minimum and maximum centralities during graphDistancesGeodesic()
  * @param C
  * @param v
  * @param max
@@ -5768,7 +5763,7 @@ void Graph::minmax(qreal C, GraphVertex *v, qreal &max, qreal &min, int &maxNode
  * @brief Checks if score C is a new prominence class
  * If yes, it stores that number in a QHash<QString,int> type where the score is the key.
  * If no, increases the frequency of this prominence score by 1
- * Called from graphDistanceGeodesicCompute()
+ * Called from graphDistancesGeodesic()
  * @param C
  * @param discreteClasses
  * @param classes
@@ -5920,7 +5915,7 @@ void Graph::writeEccentricity(const QString fileName, const bool considerWeights
     outText.setCodec("UTF-8");
 
     if ( !calculatedDistances || !calculatedCentralities || graphIsModified() ) {
-        graphDistanceGeodesicCompute(true, considerWeights,
+        graphDistancesGeodesic(true, considerWeights,
                              inverseWeights, dropIsolates);
 
     }
@@ -7028,9 +7023,9 @@ void Graph::prominenceDistribution(const int &index, QSplineSeries *series) {
     };
 
     priority_queue<PairVF, vector<PairVF>, PairVFCompare> seriesPQ;
-    QHashIterator<QString, int> i(discreteClasses);
-    while (i.hasNext()) {
-        i.next();
+
+    QHash<QString, int>::const_iterator i;
+     for (i = discreteClasses.constBegin(); i != discreteClasses.constEnd(); ++i) {
         qDebug() << "discreteClasses: " << i.key() << ": " << i.value() << endl;
         seriesPQ.push(PairVF(i.key().toDouble(), i.value()));
     }
@@ -7058,7 +7053,10 @@ void Graph::prominenceDistribution(const int &index, QSplineSeries *series) {
  * @param set
  * @param strX
  */
-void Graph::prominenceDistribution(const int &index, QBarSeries *series, QBarSet *set, QBarCategoryAxis *axisX) {
+void Graph::prominenceDistribution(const int &index,
+                                   QBarSeries *series,
+                                   QBarSet *set,
+                                   QBarCategoryAxis *axisX) {
 
     qDebug() << "Graph::prominenceDistribution() - bars";
 
@@ -7132,10 +7130,6 @@ void Graph::prominenceDistribution(const int &index, QBarSeries *series, QBarSet
 
     priority_queue<PairVF, vector<PairVF>, PairVFCompare> seriesPQ;
 
-    // Is this const ?
-//    QHashIterator<QString, int> i(discreteClasses);
-//    while (i.hasNext()) {
-//        i.next();
     QHash<QString, int>::const_iterator i;
      for (i = discreteClasses.constBegin(); i != discreteClasses.constEnd(); ++i) {
         qDebug() << "discreteClasses: " << i.key() << ": " << i.value() << endl;
@@ -7458,7 +7452,7 @@ void Graph::writeCentralityCloseness( const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if ( graphIsModified() || !calculatedCentralities ) {
-            graphDistanceGeodesicCompute(true, considerWeights,
+            graphDistancesGeodesic(true, considerWeights,
                                  inverseWeights, dropIsolates);
     }
     else {
@@ -7725,7 +7719,7 @@ void Graph::centralityClosenessIR(const bool considerWeights,
     }
 
      if ( !calculatedDistances || graphIsModified() ) {
-         graphDistanceGeodesicCompute(false,considerWeights,inverseWeights,dropIsolates);
+         graphDistancesGeodesic(false,considerWeights,inverseWeights,dropIsolates);
      }
 
     // calculate centralities
@@ -8061,7 +8055,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if ( graphIsModified() || !calculatedCentralities ) {
-        graphDistanceGeodesicCompute(true, considerWeights, inverseWeights, dropIsolates);
+        graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
     }
     else {
         qDebug() << "Graph::writeCentralityBetweenness() -"
@@ -8321,7 +8315,7 @@ void Graph::writeCentralityStress( const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if ( graphIsModified() || !calculatedCentralities ) {
-        graphDistanceGeodesicCompute(true, considerWeights, inverseWeights,dropIsolates);
+        graphDistancesGeodesic(true, considerWeights, inverseWeights,dropIsolates);
     }
     else {
         qDebug() << " graph not modified, and centralities calculated. Returning";
@@ -8537,7 +8531,7 @@ void Graph::writeCentralityEccentricity(const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if ( graphIsModified() || !calculatedCentralities ) {
-        graphDistanceGeodesicCompute(true, considerWeights, inverseWeights,dropIsolates);
+        graphDistancesGeodesic(true, considerWeights, inverseWeights,dropIsolates);
     }
     else {
         qDebug() << " graph not modified, and centralities calculated. Returning";
@@ -8739,7 +8733,7 @@ void Graph::writeCentralityPower(const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if ( graphIsModified() || !calculatedCentralities ) {
-        graphDistanceGeodesicCompute(true, considerWeights, inverseWeights, dropIsolates);
+        graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
     }
     else {
         qDebug() << " graph not modified, and centralities calculated. Returning";
@@ -9425,7 +9419,7 @@ void Graph::prestigeProximity( const bool considerWeights,
         return;
     }
 
-    graphDistanceGeodesicCompute(false,considerWeights, inverseWeights,inverseWeights);
+    graphDistancesGeodesic(false,considerWeights, inverseWeights,inverseWeights);
 
     // calculate centralities
     VList::const_iterator it, jt;
@@ -11412,7 +11406,7 @@ QList<int> Graph::vertexinfluenceRange(int v1){
     qDebug() << "Graph::vertexinfluenceRange() - vertex:"<< v1;
 
     if ( !calculatedDistances || graphIsModified() ) {
-        graphDistanceGeodesicCompute(false);
+        graphDistancesGeodesic(false);
     }
 
     VList::const_iterator jt;
@@ -11471,7 +11465,7 @@ QList<int> Graph::vertexinfluenceDomain(int v1){
     qDebug() << "Graph::vertexinfluenceDomain() - vertex:"<< v1;
 
     if ( !calculatedDistances || graphIsModified() ) {
-        graphDistanceGeodesicCompute(false);
+        graphDistancesGeodesic(false);
     }
 
     VList::const_iterator it;
@@ -11543,7 +11537,7 @@ void Graph::writeReachabilityMatrixPlainText(const QString &fn, const bool &drop
     outText << "Two nodes are reachable if there is a walk between them (their geodesic distance is non-zero). \n";
     outText << "If nodes i and j are reachable then XR(i,j)=1 otherwise XR(i,j)=0.\n\n";
 
-    graphDistanceGeodesicCompute(false,false,false,dropIsolates);
+    graphDistancesGeodesic(false,false,false,dropIsolates);
 
     outText << XRM ;
 
@@ -13222,7 +13216,7 @@ void Graph::writeMatrixSimilarityMatchingPlain(const QString fileName,
         graphMatrixSimilarityMatchingCreate(AM, SCM, measure, varLocation, diagonal, considerWeights);
     }
     else if (matrix == "Distances") {
-        graphDistanceGeodesicCompute();
+        graphDistancesGeodesic();
         graphMatrixSimilarityMatchingCreate(DM, SCM, measure, varLocation, diagonal, considerWeights);
     }
     else {
@@ -13502,7 +13496,7 @@ void Graph::writeMatrixSimilarityMatching(const QString fileName,
                                 varLocation, diagonal, considerWeights);
     }
     else if (matrix == "Distances") {
-        graphDistanceGeodesicCompute();
+        graphDistancesGeodesic();
         graphMatrixSimilarityMatchingCreate(DM, SCM, measureInt,
                                 varLocation, diagonal, considerWeights);
     }
@@ -13693,7 +13687,7 @@ void Graph::writeMatrixSimilarityPearson(const QString fileName,
         graphMatrixSimilarityPearsonCreate(AM, PCC, varLocation,diagonal);
     }
     else if (matrix == "Distances") {
-        graphDistanceGeodesicCompute();
+        graphDistancesGeodesic();
         graphMatrixSimilarityPearsonCreate(DM, PCC, varLocation,diagonal);
     }
     else {
@@ -13835,7 +13829,7 @@ void Graph::writeMatrixSimilarityPearsonPlainText(const QString fileName,
         graphMatrixSimilarityPearsonCreate(AM, PCC, varLocation,diagonal);
     }
     else if (matrix == "Distances") {
-        graphDistanceGeodesicCompute();
+        graphDistancesGeodesic();
         graphMatrixSimilarityPearsonCreate(DM, PCC, varLocation,diagonal);
     }
     else {
@@ -20539,7 +20533,7 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
     }
     else{
         if ( graphIsModified() || !calculatedCentralities )
-            graphDistanceGeodesicCompute(true, considerWeights,
+            graphDistancesGeodesic(true, considerWeights,
                                    inverseWeights, dropIsolates);
     }
 
