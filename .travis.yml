@@ -30,4 +30,4 @@ script:
   - unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
   - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -bundle-non-qt-libs
   - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -appimage 
-  - curl --upload-file ./SocNetV*.AppImage https://transfer.sh/SocNetV-git.$(git rev-parse --short HEAD)-x86_64.AppImage
+  - curl --upload-file ./Social*.AppImage https://transfer.sh/SocNetV-git.$(git rev-parse --short HEAD)-x86_64.AppImage

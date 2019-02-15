@@ -2,30 +2,7 @@ lessThan(QT_VERSION, 5.0) {
     error("SocNetV requires at least Qt 5.0!")
 }
 
-# START added for ArchLinux / openSUSE compatibility
-INSTALLPATH = /
-target.path = $$[INSTALLPATH]usr/bin
 TARGET = socnetv
-
-pixmap.path = $$[INSTALLPATH]usr/share/pixmaps
-pixmap.files = src/images/socnetv.png
-
-documentation.path = $$[INSTALLPATH]usr/share/doc/socnetv
-documentation.files = manual
-
-manpage.path = $$[INSTALLPATH]usr/share/man/man1
-manpage.files = man/socnetv.1.gz
-
-translations.path = $$[INSTALLPATH]usr/share/socnetv
-translations.files = translations
-
-doc.path = $$[INSTALLPATH]usr/share/doc/socnetv
-doc.files = license changelog.gz NEWS README.md TODO COPYING AUTHORS INSTALL
-
-INSTALLS += target pixmap documentation manpage translations doc
-
-# END
-
 
 TEMPLATE = app
 #CONFIG  += qt thread warn_on release
@@ -135,26 +112,50 @@ SOURCES += src/main.cpp \
     src/forms/dialogexportimage.cpp
 
 
-
-
-# Extra optimization flags
-#win32 {
-#  QMAKE_CXXFLAGS += -msse -mfpmath=sse -ffast-math  
-#}
-#unix:!macx{
-#  QMAKE_CXXFLAGS += -ffast-math  
-#}
-#macx {
-#  QMAKE_CXXFLAGS += -msse  -ffast-math 
-#}
-
-
 RESOURCES = src/src.qrc
+    
+
+
 win32 {
-     RC_FILE = src/icon.rc
+  RC_FILE = src/icon.rc
+  TARGET = SocNetV
 }
 
-macx:ICON = src/images/socnetv.icns
+unix:!macx{
+
+  INSTALLPATH = /
+  target.path = $$[INSTALLPATH]usr/bin
+  TARGET = socnetv
+
+  pixmap.path = $$[INSTALLPATH]usr/share/pixmaps
+  pixmap.files = src/images/socnetv.png
+
+  documentation.path = $$[INSTALLPATH]usr/share/doc/socnetv
+  documentation.files = manual
+
+  desktop.path = $$[INSTALLPATH]usr/share/applications
+  desktop.files = socnetv.desktop
+  
+  manpage.path = $$[INSTALLPATH]usr/share/man/man1
+  manpage.files = man/socnetv.1.gz
+
+  translations.path = $$[INSTALLPATH]usr/share/socnetv
+  translations.files = translations
+
+  doc.path = $$[INSTALLPATH]usr/share/doc/socnetv
+  doc.files = license changelog.gz NEWS README.md TODO COPYING AUTHORS INSTALL
+
+  INSTALLS += pixmap documentation manpage translations doc desktop
+
+}
+
+macx {
+  ICON = src/images/socnetv.icns
+  TARGET = SocNetV
+}
+
+
+INSTALLS += target
 
 
 TRANSLATIONS    = translations/socnetv_es.ts \ 
