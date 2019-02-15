@@ -225,39 +225,6 @@ DialogSettings::DialogSettings(
     }
 
 
-//    if (m_appSettings["initNodeShape"] == "box") {
-//        ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Box);
-//    }
-//    else if (m_appSettings["initNodeShape"] == "circle") {
-//        ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Circle);
-//    }
-//    else if (m_appSettings["initNodeShape"] == "diamond") {
-//        ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Diamond);
-//    }
-//    else if (m_appSettings["initNodeShape"] == "ellipse") {
-//        ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Ellipse);
-//    }
-//    else if (m_appSettings["initNodeShape"] == "triangle") {
-//        ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Triangle);
-//    }
-//    else if (m_appSettings["initNodeShape"] == "star") {
-//        ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Star);
-//    }
-//    else if (m_appSettings["initNodeShape"] == "bugs") {
-//        ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Bugs);
-//    }
-//    else if (m_appSettings["initNodeShape"] == "custom") {
-//        ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Custom);
-//        ui->nodeShapeComboBox->setItemIcon(NodeShape::Custom, QIcon(m_appSettings["initNodeIconPath"]));
-
-//        ui->nodeIconSelectButton->setEnabled(true);
-//        ui->nodeIconSelectEdit->setEnabled(true);
-//        ui->nodeIconSelectEdit->setText (m_appSettings["initNodeIconPath"]);
-//    }
-//    else { // default
-//       ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Circle);
-//    }
-
     ui->nodeSizeSpin->setValue( m_appSettings["initNodeSize"].toInt(0, 10) );
 
     ui->nodeNumbersChkBox->setChecked(

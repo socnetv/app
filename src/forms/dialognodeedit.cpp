@@ -31,6 +31,7 @@
 #include "global.h"
 
 #include <QGlobalStatic>
+#include <QFileDialog>
 #include <QDebug>
 #include <QLineEdit>
 #include <QSpinBox>
@@ -140,6 +141,9 @@ DialogNodeEdit::DialogNodeEdit(QWidget *parent,
 
     connect (ui->nodeShapeComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
              this, &DialogNodeEdit::getNodeShape);
+
+    connect (ui->nodeIconSelectButton, &QToolButton::clicked,
+             this, &DialogNodeEdit::getNodeIconFile);
 }
 
 
@@ -191,15 +195,47 @@ void DialogNodeEdit::getNodeShape(const int &nodeShapeIndex){
         if (!iconPath.isEmpty()) {
             ui->nodeShapeComboBox->setItemIcon(NodeShape::Custom, QIcon(iconPath));
         }
+        else {
+            (ui->buttonBox) -> button (QDialogButtonBox::Cancel) -> setDefault(true);
+            (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+        }
     }
     else {
         ui->nodeIconSelectButton->setEnabled(false);
         ui->nodeIconSelectEdit->setEnabled(false);
         ui->nodeIconSelectEdit->setText ("");
+        iconPath = QString();
+        (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
+        (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
     }
 }
 
 
+
+
+
+void DialogNodeEdit::getNodeIconFile(){
+
+    QString m_nodeIconFile = QFileDialog::getOpenFileName(this, tr("Select a new icon"),
+                                                    ui->nodeIconSelectEdit->text(),
+                                                    tr("PNG Images (*.png);;JPEG Images ( *.jpg);;All files (*.*)")
+                                                           );
+    if (!m_nodeIconFile.isEmpty()) {
+        qDebug() << m_nodeIconFile;
+       ui->nodeIconSelectEdit->setText(m_nodeIconFile);
+       ui->nodeShapeComboBox->setItemIcon(NodeShape::Custom, QIcon(m_nodeIconFile));
+       (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
+    }
+    else {
+        // user pressed Cancel ?
+        // stop
+        if ( ui->nodeIconSelectEdit->text().isEmpty() ) {
+            (ui->buttonBox) -> button (QDialogButtonBox::Cancel) -> setDefault(true);
+            (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+        }
+    }
+
+}
 
 
 void DialogNodeEdit::getUserChoices(){
@@ -234,13 +270,14 @@ void DialogNodeEdit::getUserChoices(){
         break;
     case NodeShape::Custom:
         nodeShape  = "custom";
+        iconPath = ui->nodeIconSelectEdit->text();
         break;
     default:
         break;
     }
 
 
-    emit userChoices(nodeLabel,nodeSize,nodeValue,nodeColor,nodeShape);
+    emit userChoices(nodeLabel,nodeSize,nodeValue,nodeColor,nodeShape, iconPath);
 }
 
 void DialogNodeEdit::checkErrors() {

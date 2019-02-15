@@ -50,6 +50,7 @@ public:
 public slots:
     void checkErrors ();
     void getNodeShape(const int &nodeShapeIndex);
+    void getNodeIconFile();
     void getUserChoices ();
     void selectColor();
 signals:
