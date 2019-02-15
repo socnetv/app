@@ -161,10 +161,7 @@ SOCNETV_BEGIN_NAMESPACE
         qreal frequency;
 
         PairVF(qreal v, qreal f)
-            : value(v), frequency(f)
-        {
-
-        }
+            : value(v), frequency(f)  { }
     };
 
 

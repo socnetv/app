@@ -13394,8 +13394,8 @@ void MainWindow::slotAnalyzeProminenceDistributionChart(const int &index) {
     // Set Chart title and remove legend
     chart->setTitle(barSeries->name() + QString(" distribution"), QFont("Times",7));
     chart->toggleLegend(false);
-    chart->setToolTip( tr("The distribution of ") +
-                       barSeries->name() + " index scores. \n"
+    chart->setToolTip( tr("Distribution of ") +
+                       barSeries->name() + ":\n"
                        " Min value: " + axisX->min() + "\n"
                        " Max value: " + axisX->max()
                        );

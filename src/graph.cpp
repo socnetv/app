@@ -7131,9 +7131,13 @@ void Graph::prominenceDistribution(const int &index, QBarSeries *series, QBarSet
     };
 
     priority_queue<PairVF, vector<PairVF>, PairVFCompare> seriesPQ;
-    QHashIterator<QString, int> i(discreteClasses);
-    while (i.hasNext()) {
-        i.next();
+
+    // Is this const ?
+//    QHashIterator<QString, int> i(discreteClasses);
+//    while (i.hasNext()) {
+//        i.next();
+    QHash<QString, int>::const_iterator i;
+     for (i = discreteClasses.constBegin(); i != discreteClasses.constEnd(); ++i) {
         qDebug() << "discreteClasses: " << i.key() << ": " << i.value() << endl;
         seriesPQ.push(PairVF(i.key().toDouble(), i.value()));
     }
