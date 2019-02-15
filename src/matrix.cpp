@@ -734,9 +734,11 @@ Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
  * @param out output array
  * @param leftMultiply
  */
-void Matrix::productByVector (std::vector<qreal> &in,
-                              std::vector<qreal> &out,
-                              const bool &leftMultiply) {
+void Matrix::productByVector (
+        qreal in[],
+        qreal out[],
+        const bool &leftMultiply) {
+
     int n = rows();
     int m = cols();
 
@@ -767,10 +769,8 @@ void Matrix::productByVector (std::vector<qreal> &in,
  * @return
  */
 qreal Matrix::distanceManhattan(
-        //qreal x[],
-        //qreal x[],
-        std::vector<qreal> &x,
-        std::vector<qreal> &y,
+        qreal x[],
+        qreal y[],
         int n) {
     qreal norm = 0;
     for(int i = 0; i < n; i++) {
@@ -788,7 +788,9 @@ qreal Matrix::distanceManhattan(
  * @param n
  * @return
  */
-qreal Matrix::distanceEuclidean(std::vector<qreal> &x, int n) {
+qreal Matrix::distanceEuclidean(
+        qreal x[],
+        int n) {
     qreal norm = 0;
     for (int i = 0; i < n; i++) {
          norm += x[i] * x[i];
@@ -803,7 +805,10 @@ qreal Matrix::distanceEuclidean(std::vector<qreal> &x, int n) {
  * leading eigenvector x of this matrix, that is the eigenvector
  * corresponding to the largest positive eigenvalue.
  * In the process, it also computes min and max values.
- * Used in Eigenvector Centrality (EVC).
+ * Used by Eigenvector Centrality (EVC).
+ * We use C arrays instead of std::vectors or anything else,
+ * as we know from start the size (n) of vectors x and tmp
+ * This approach is faster than using std::vector when n > 1000
  * @param x
  * @param xsum
  * @param xmax
@@ -813,41 +818,41 @@ qreal Matrix::distanceEuclidean(std::vector<qreal> &x, int n) {
  * @param eps
  * @param maxIter
  */
-void Matrix::powerIteration (//qreal x[],
-                              std::vector<qreal> &x,
-                              qreal &xsum,
-                              qreal &xmax,
-                              int &xmaxi,
-                              qreal &xmin,
-                              int &xmini,
-                              const qreal eps,
-                              const int &maxIter) {
+void Matrix::powerIteration (
+        qreal x[],
+        qreal &xsum,
+        qreal &xmax,
+        int &xmaxi,
+        qreal &xmin,
+        int &xmini,
+        const qreal eps,
+        const int &maxIter) {
 
     qDebug() << "Matrix::powerIteration() - maxIter"
              << maxIter
              <<"initial x"
-            <<x;
+            << x;
 
     int n = rows();
     qreal norm = 0, distance=0;
 
-//    qreal *tmp;
-//    tmp=new (nothrow) qreal [n];
-//    Q_CHECK_PTR( tmp );
+    qreal *tmp;
+    tmp=new (nothrow) qreal [n];
+    Q_CHECK_PTR( tmp );
 
-    std::vector<qreal> tmp(n,0);
-    x.reserve(n);
-    qDebug()<<tmp;
     xsum = 0;
     int iter = 0;
-
 
     do {
         qDebug() << "Matrix::powerIteration() - iteration"
                  << iter ;
+
         // calculate the matrix-by-vector product Ax and
         // store the result to vector tmp
         productByVector(x, tmp, false);
+
+        qDebug() << "Matrix::powerIteration() - tmp = Ax ="
+                 << tmp;
 
         // calculate the euclidean length of the resulting vector
         // which will be the denominator in the vector normalization
@@ -868,6 +873,9 @@ void Matrix::powerIteration (//qreal x[],
         for(int i = 0; i < n; i++) {
            tmp[i] = tmp[i] / norm;
         }
+        qDebug() << "Matrix::powerIteration() - tmp / norm "
+                 << tmp;
+
         // calculate the manhattan distance between the new and prev vectors
         distance = distanceManhattan (tmp, x, n);
 
@@ -902,8 +910,7 @@ void Matrix::powerIteration (//qreal x[],
 
     } while ( distance > eps);
 
-    // delete [] tmp;
-    tmp.clear();
+     delete [] tmp;
 }
 
 

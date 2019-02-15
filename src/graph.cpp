@@ -6592,7 +6592,7 @@ void Graph::writeCentralityEigenvector(const QString fileName,
                 << "</td><td>"
                 << (*it)->SEVC()
                 << "</td><td>"
-                << (*it)->EVC() / sumEVC
+                << (*it)->EVC() / ( sumEVC ? sumEVC : 1)
                 << "</td><td>"
                 << (100* ((*it)->SEVC()))
                 << "</td>"
@@ -6716,9 +6716,8 @@ void Graph::centralityEigenvector(const bool &considerWeights,
     int i = 0;
     int N = vertices(dropIsolates);
 
-    //qreal EVC[N];
-    std::vector<qreal> EVC;
-    EVC.reserve(N);
+    qreal *EVC = new (nothrow) qreal [N];
+    Q_CHECK_PTR( EVC );
     qreal SEVC = 0;
 
     graphMatrixAdjacencyCreate(dropIsolates, considerWeights,
@@ -6742,8 +6741,7 @@ void Graph::centralityEigenvector(const bool &considerWeights,
                 continue;
             }
 
-            // EVC[i] = (*it)->degreeOut();
-            EVC.push_back((*it)->degreeOut());
+             EVC[i] = (*it)->degreeOut();
 
             i++;
         }
@@ -6752,8 +6750,7 @@ void Graph::centralityEigenvector(const bool &considerWeights,
     else {
         qDebug() << "Graph::centralityEigenvector() - Using unit initial EVC vector";
        for (int i = 0 ; i < N ; i++) {
-//            EVC[i] = 1;
-            EVC.push_back(1);
+            EVC[i] = 1;
         }
 
     }
@@ -6780,7 +6777,13 @@ void Graph::centralityEigenvector(const bool &considerWeights,
         }
 
         (*it) -> setEVC( EVC[i]);
-        SEVC = EVC[i] / maxEVC ;
+        if ( maxEVC != 0 ) {
+            SEVC = EVC[i] / maxEVC ;
+        }
+        else {
+             SEVC = 0 ;
+        }
+
         (*it) -> setSEVC( SEVC );
 
         resolveClasses(SEVC, discreteEVCs, classesEVC);
@@ -6799,6 +6802,8 @@ void Graph::centralityEigenvector(const bool &considerWeights,
     // where c(vi) is the eigenvector centrality of vertex vi.
 
     calculatedEVC=true;
+
+    delete [] EVC;
 
     emit signalProgressBoxUpdate( N );
     emit signalProgressBoxKill();
@@ -20514,13 +20519,6 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
     else if ( prominenceIndex == IndexType::EVC ){
         if ( graphIsModified() || !calculatedEVC ) {
             centralityEigenvector(true, dropIsolates);
-            qDebug() << "minEVC"<<minEVC
-                     << "maxEVC"<<maxEVC;
-            if ( isinf ( minEVC ) && isinf ( maxEVC ) ) {
-                emit statusMessage("Cannot compute EVC");
-                emit signalProgressBoxKill();
-                return;
-            }
         }
     }
 
