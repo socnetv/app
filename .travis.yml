@@ -8,7 +8,7 @@ before_install:
     - sudo apt-get update -qq
     
 install: 
-    - sudo apt-get -y install qt58base qt58charts-no-lgpl
+    - sudo apt-get -y install qt58base qt58charts-no-lgpl qt58svg 
     - source /opt/qt58/bin/qt58-env.sh
 
 script:
@@ -17,6 +17,7 @@ script:
   - make INSTALL_ROOT=appdir install; find appdir/
     # cp appdir/usr/share/applications/socnetv.desktop ./appdir
     #- cp appdir/usr/share/pixmaps/socnetv.png .  
+  - find /opt/qt58/plugins
   - wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" 
   - chmod a+x linuxdeployqt*.AppImage
   - unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
