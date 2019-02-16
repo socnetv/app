@@ -123,26 +123,29 @@ win32 {
 
 unix:!macx{
 
-  INSTALLPATH = /
-  target.path = $$[INSTALLPATH]usr/bin
+  isEmpty(PREFIX) {
+        PREFIX = /usr/local
+  }
+
+  target.path = $$PREFIX/bin
   TARGET = socnetv
 
-  pixmap.path = $$[INSTALLPATH]usr/share/pixmaps
+  pixmap.path = $$PREFIX/share/pixmaps
   pixmap.files = src/images/socnetv.png
 
-  documentation.path = $$[INSTALLPATH]usr/share/doc/socnetv
+  documentation.path = $$PREFIX/share/doc/socnetv
   documentation.files = manual
 
-  desktop.path = $$[INSTALLPATH]usr/share/applications
+  desktop.path = $$PREFIX/share/applications
   desktop.files = socnetv.desktop
   
-  manpage.path = $$[INSTALLPATH]usr/share/man/man1
+  manpage.path = $$PREFIX/share/man/man1
   manpage.files = man/socnetv.1.gz
 
-  translations.path = $$[INSTALLPATH]usr/share/socnetv
+  translations.path = $$PREFIX/share/socnetv
   translations.files = translations
 
-  doc.path = $$[INSTALLPATH]usr/share/doc/socnetv
+  doc.path = $$PREFIX/share/doc/socnetv
   doc.files = license changelog.gz NEWS README.md TODO COPYING AUTHORS INSTALL
 
   INSTALLS += pixmap documentation manpage translations doc desktop
