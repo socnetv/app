@@ -702,47 +702,60 @@ void Graph::relationsClear(){
  * @param nodeShape
  * @param signalMW
  */
-void Graph::vertexCreate(const int &num,
-                         const int &nodeSize,
-                         const QString &nodeColor,
+void Graph::vertexCreate(const int &number,
+                         const int &size,
+                         const QString &color,
                          const QString &numColor,
                          const int &numSize,
                          const QString &label,
                          const QString &labelColor,
                          const int &labelSize,
                          const QPointF &p,
-                         const QString &nodeShape,
-                         const QString &nodeIconPath,
+                         const QString &shape,
+                         const QString &iconPath,
                          const bool &signalMW) {
 
     int value = 1;
 
-    qDebug() << "Graph::vertexCreate() - vertex:" << num
-             << "shape:" << nodeShape
-             << "icon:" << nodeIconPath
+    qDebug() << "Graph::vertexCreate() - vertex:" << number
+             << "shape:" << shape
+             << "icon:" << iconPath
              << "signalMW:" << signalMW
-             << "- Calling vertexAdd() and emitting signalDrawNode() to GW";
+             << "- Adding new vertex and emitting signalDrawNode() to GW";
 
-    vertexAdd ( num,
-                value,
-                nodeSize,
-                nodeColor,
-                numColor,
-                numSize,
-                label,
-                labelColor,
-                labelSize,
-                p,
-                nodeShape,
-                nodeIconPath);
+    if (order)
+        vpos[number]=m_totalVertices;
+    else
+        vpos[number]=m_graph.size();
+
+    m_graph.append(
+                new GraphVertex (
+                    this,
+                    number,
+                    value,
+                    m_curRelation ,
+                    size,
+                    color,
+                    numColor,
+                    numSize,
+                    label,
+                    labelColor,
+                    labelSize,
+                    p,
+                    shape,
+                    iconPath
+                    )
+                );
+
+    m_totalVertices++;
 
 
     emit signalDrawNode( p,
-                         num,
-                         nodeSize,
-                         nodeShape,
-                         nodeIconPath,
-                         nodeColor,
+                         number,
+                         size,
+                         shape,
+                         iconPath,
+                         color,
                          numColor,
                          numSize,
                          initVertexNumberDistance,
@@ -751,17 +764,18 @@ void Graph::vertexCreate(const int &num,
                          labelSize,
                          initVertexLabelDistance);
 
-    qDebug() << "Graph::vertexCreate() - vertex:" << num << "created. Calling graphSetModified().";
+    qDebug() << "Graph::vertexCreate() - Added new vertex:" << number
+             << "Calling graphSetModified().";
 
     graphSetModified(GraphChange::ChangedVertices, signalMW);
 
-    //to draw new user-clicked nodes with the same style of the file loaded:
+    //to draw new vertices by user with the same style of the file loaded:
     //save color, size and shape as init values
-    initVertexColor=nodeColor;
-    initVertexSize=nodeSize;
-    initVertexShape=nodeShape;
-    if (nodeShape=="custom"){
-        initVertexIconPath=nodeIconPath;
+    initVertexColor=color;
+    initVertexSize=size;
+    initVertexShape=shape;
+    if (shape=="custom"){
+        initVertexIconPath=iconPath;
     }
 } 
 
@@ -860,71 +874,6 @@ void Graph::vertexRemoveDummyNode(int i){
 
 }
 
-
-
-/**
- * @brief  Adds a vertex named v1, valued val, sized nszm colored nc, labeled nl,
- * labelColored lc, shaped nsp, at point p.
- * This method is called by vertexCreate() method
- * @param v1
- * @param val
- * @param size
- * @param color
- * @param numColor
- * @param numSize
- * @param label
- * @param labelColor
- * @param labelSize
- * @param p
- * @param shape
- */
-void Graph::vertexAdd ( const int &v1,
-                        const int &val,
-                        const int &size,
-                        const QString &color,
-                        const QString &numColor,
-                        const int &numSize,
-                        const QString &label,
-                        const QString &labelColor,
-                        const int &labelSize,
-                        const QPointF &p,
-                        const QString &shape,
-                        const QString &iconPath) {
-
-    qDebug() << "Graph::vertexAdd() ";
-
-    if (order)
-        vpos[v1]=m_totalVertices;
-    else
-        vpos[v1]=m_graph.size();
-
-    m_graph.append(
-                new GraphVertex (
-                    this,
-                    v1,
-                    val,
-                    m_curRelation ,
-                    size,
-                    color,
-                    numColor,
-                    numSize,
-                    label,
-                    labelColor,
-                    labelSize,
-                    p,
-                    shape,
-                    iconPath
-                    )
-                );
-
-    m_totalVertices++;
-
-//    qDebug() << "Graph: vertexAdd(): vertex" << m_graph.back()->name()
-//             << " appended with vpos= "<<vpos[v1]
-//             << " Now, m_graph size " << m_graph.size()
-//             << ". New vertex position: " << p.x() << "," << p.y();
-
-}
 
 
 
@@ -1462,6 +1411,7 @@ void Graph::vertexShapeSet(const int &v1, const QString &shape, const QString &i
                  << "new shape:" << shape
                  << "iconPath:" <<iconPath;
         m_graph[ vpos[v1] ]->setShape(shape, iconPath);
+        if (shape=="custom") { m_graphHasVertexCustomIcons = true; }
         emit setNodeShape(v1, shape, iconPath);
     }
     graphSetModified(GraphChange::ChangedVerticesMetadata);
@@ -14940,6 +14890,10 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
         else {
             qDebug () << "Graph::graphSaveToGraphMLFormat() - ERROR creating subdir!";
         }
+    }
+    else {
+        qDebug () << "Graph::graphSaveToGraphMLFormat() - No custom node icons."
+                     << "Nothing to do";
     }
 
     QString iconPath = QString();

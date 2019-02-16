@@ -137,17 +137,17 @@ public slots:
     void relationCurrentRename(const QString &newName, const bool &notifyMW=false);
 
     /** Slots to signals from Parser */
-    void vertexCreate ( const int &num,
+    void vertexCreate (const int &number,
                         const int &size,
-                        const QString &nodeColor,
+                        const QString &color,
                         const QString &numColor,
                         const int &numSize,
                         const QString &label,
-                        const QString &lColor,
+                        const QString &labelColor,
                         const int &labelSize,
                         const QPointF &p,
-                        const QString &nodeShape,
-                        const QString &nodeIconPath = QString::null,
+                        const QString &shape,
+                        const QString &iconPath = QString::null,
                         const bool &signalMW = false
             );
 
@@ -1124,19 +1124,6 @@ private:
     WebCrawler_Spider *wc_spider;
 
     /** private member functions */
-
-    void vertexAdd  (const int &v1,
-                     const int &val,
-                     const int &size,
-                     const QString &color,
-                     const QString &numColor,
-                     const int &numSize,
-                     const QString &label,
-                     const QString &labelColor,
-                     const int &labelSize,
-                     const QPointF &p,
-                     const QString &shape,
-                     const QString &iconPath=QString::null);
 
     void edgeAdd (const int &v1,
                   const int &v2,
