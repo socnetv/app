@@ -720,8 +720,8 @@ void Graph::vertexCreate(const int &num,
     qDebug() << "Graph::vertexCreate() - vertex:" << num
              << "shape:" << nodeShape
              << "icon:" << nodeIconPath
-                << "signalMW:" << signalMW
-                   << "- Calling vertexAdd() and emitting signalDrawNode() to GW";
+             << "signalMW:" << signalMW
+             << "- Calling vertexAdd() and emitting signalDrawNode() to GW";
 
     vertexAdd ( num,
                 value,
@@ -755,10 +755,14 @@ void Graph::vertexCreate(const int &num,
 
     graphSetModified(GraphChange::ChangedVertices, signalMW);
 
-    //draw new user-clicked nodes with the same color with that of the file loaded
+    //to draw new user-clicked nodes with the same style of the file loaded:
+    //save color, size and shape as init values
     initVertexColor=nodeColor;
-    initVertexShape=nodeShape;
     initVertexSize=nodeSize;
+    initVertexShape=nodeShape;
+    if (nodeShape=="custom"){
+        initVertexIconPath=nodeIconPath;
+    }
 } 
 
 
@@ -14913,7 +14917,8 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
 
     QString saveDirPath= fileInfo.canonicalPath();
 
-    qDebug () << "Graph::graphSaveToGraphMLFormat() - Will save network to directory:" << saveDirPath;
+    qDebug () << "Graph::graphSaveToGraphMLFormat() - Save to directory:"
+              << saveDirPath;
 
     QString iconsSubDir = fileInfo.baseName() + "_" + fileInfo.suffix() +"_images";
     QString iconsDirPath = saveDirPath + "/" + iconsSubDir;
@@ -14922,12 +14927,18 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
 
     // Check if there are nodes with custom icons in the network
     if ( graphHasVertexCustomIcons()) {
+        qDebug () << "Graph::graphSaveToGraphMLFormat() - Custom node icons exist."
+                  <<  "Creating images subdir" << iconsDirPath;
         // There are custom node icons in this net.
         // We need to save these custom icons to a folder
         // Create a subdir inside the directory where the actual network file
         // is about to be saved. All custom icons will be copied one-by-one there.
         if ( saveDir.mkpath( iconsDirPath ) ){
-            qDebug () << "Graph::graphSaveToGraphMLFormat() - created icons directory:" << iconsDirPath;
+            qDebug () << "Graph::graphSaveToGraphMLFormat() - created icons subdir"
+                      << iconsDirPath;
+        }
+        else {
+            qDebug () << "Graph::graphSaveToGraphMLFormat() - ERROR creating subdir!";
         }
     }
 

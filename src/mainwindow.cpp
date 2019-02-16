@@ -8979,10 +8979,13 @@ void MainWindow::slotEditNodePropertiesDialog() {
 
     }
     else   {
+        qDebug() << "MW::slotEditNodePropertiesDialog() - "
+                    "selectedNodesCount" << selectedNodesCount;
+
         foreach (nodeNumber, activeGraph->graphSelectedVertices() ) {
             qDebug() << "MW::slotEditNodePropertiesDialog() "
-                        "changing properties for selected node "
-                     << nodeNumber ;
+                        "reading properties of selected node"
+                     << nodeNumber;
             if ( selectedNodesCount > 1 ) {
                 color = activeGraph->vertexColor( nodeNumber );
                 shape = activeGraph->vertexShape( nodeNumber);
@@ -9000,6 +9003,13 @@ void MainWindow::slotEditNodePropertiesDialog() {
     }
 
     //@todo add some grouping function here?
+
+    qDebug() << "MW::slotEditNodePropertiesDialog() - opening DialogNodeEdit."
+             << "label"<<label
+             << "size"<<size
+             << "color"<<color
+             << "shape"<<shape
+             << "iconPath"<<iconPath;
 
     m_nodeEditDialog = new DialogNodeEdit(this, label, size, color, shape, iconPath) ;
 

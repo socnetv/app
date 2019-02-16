@@ -2315,12 +2315,12 @@ void Parser::endGraphMLElementNode(QXmlStreamReader &xml){
     if (relationsList.count() > 1 ) {
         qDebug()<<"Parser::endGraphMLElementNode() - multirelational data"
                   "skipping node creation. Node should have been created in earlier relation";
-            bool_node = false;
+        bool_node = false;
         return;
     }
 
     qDebug()<<"Parser::endGraphMLElementNode() - signal to create node "
-           << " nodenumber "<< totalNodes  << " id " << node_id
+           << totalNodes  << " id " << node_id
            << " label " << nodeLabel << " coords " <<randX << ", " <<randY;
 
     if ( nodeShape == "custom") {
@@ -2443,30 +2443,41 @@ void Parser::endGraphMLElementEdge(QXmlStreamReader &xml){
 }
 
 
-/*
- * this method reads data for edges and nodes
+/**
+ * @brief Reads data for edges and nodes
  * called at a data element (usually nested inside a node or an edge element)
+ * @param xml
  */
 void Parser::readGraphMLElementData (QXmlStreamReader &xml){
+
     QXmlStreamAttributes xmlStreamAttr = xml.attributes();
     key_id = xmlStreamAttr.value("key").toString();
     key_value=xml.text().toString();
+
     qDebug()<< "Parser::readGraphMLElementData() - key_id: "
             <<  key_id <<  " key_value "<< key_value;
+
     if (key_value.trimmed() == "")
     {
-        qDebug()<< "Parser::readGraphMLElementData() - text: " << key_value;
+        qDebug()<< "Parser::readGraphMLElementData() - empty key_value: "
+                << key_value
+                << "reading more xml.text()...";
+
         xml.readNext();
+
         key_value=xml.text().toString();
-        qDebug()<< "Parser::readGraphMLElementData() - text: " << key_value;
-        if (  key_value.trimmed() != "" ) { //if there's simple text after the StartElement,
+
+        qDebug()<< "Parser::readGraphMLElementData() - now key_value: " << key_value;
+
+        if (  key_value.trimmed() != "" ) {
+            //if there's simple text after the StartElement,
             qDebug()<< "Parser::readGraphMLElementData() - key_id " << key_id
                     << " value is simple text " <<key_value ;
         }
         else {  //no text, probably more tags. Return...
             qDebug()<< "Parser::readGraphMLElementData() - key_id " << key_id
                     << " for " <<keyFor.value(key_id)
-                    << ". More elements nested here, continuing";
+                    << ". More elements nested here. Returning";
             return;
         }
 

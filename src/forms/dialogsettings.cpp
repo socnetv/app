@@ -36,6 +36,7 @@
 #include <QMap>
 #include <QtDebug>
 
+#include <QGraphicsColorizeEffect>
 
 
 #include "global.h"
@@ -203,24 +204,37 @@ DialogSettings::DialogSettings(
        ui->nodeShapeComboBox->setItemIcon(i, QIcon(iconList[i]));
     }
 
-
     ui->nodeIconSelectButton->setEnabled(false);
     ui->nodeIconSelectEdit->setEnabled(false);
 
     int index = -1;
     if ( (index = shapesList.indexOf(m_appSettings["initNodeShape"])) != -1 ){
-        ui->nodeShapeComboBox->setCurrentIndex(index);
-        if ( index == NodeShape::Custom ) {
-            ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Custom);
-            ui->nodeShapeComboBox->setItemIcon(NodeShape::Custom, QIcon(m_appSettings["initNodeIconPath"]));
 
+        ui->nodeShapeComboBox->setCurrentIndex(index);
+
+        if ( index == NodeShape::Custom ) {
+
+            ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Custom);
             ui->nodeIconSelectButton->setEnabled(true);
             ui->nodeIconSelectEdit->setEnabled(true);
             ui->nodeIconSelectEdit->setText (m_appSettings["initNodeIconPath"]);
-
+            if ( ! m_appSettings["initNodeIconPath"].isEmpty() ) {
+                ui->nodeShapeComboBox->setItemIcon(
+                            NodeShape::Custom,
+                            QIcon(m_appSettings["initNodeIconPath"]));
+            }
+            else {
+                QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
+                effect->setColor(QColor("red"));
+                ui->nodeIconSelectButton->setGraphicsEffect(effect);
+                ui->nodeIconSelectEdit->setGraphicsEffect(effect);
+                (ui->buttonBox) -> button (QDialogButtonBox::Cancel) -> setDefault(true);
+                (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+            }
         }
     }
     else {
+        // default -- should never happen...
         ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Circle);
     }
 
@@ -593,14 +607,29 @@ void DialogSettings::getNodeShapeIndex(const int &shape){
          ui->nodeIconSelectButton->setEnabled(true);
          ui->nodeIconSelectEdit->setEnabled(true);
          ui->nodeIconSelectEdit->setText (m_appSettings["initNodeIconPath"]);
+
          if (!m_appSettings["initNodeIconPath"].isEmpty()) {
              emit setNodeShape(0, m_appSettings["initNodeShape"], m_appSettings["initNodeIconPath"]);
          }
+         else {
+             QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
+             effect->setColor(QColor("red"));
+             ui->nodeIconSelectButton->setGraphicsEffect(effect);
+             ui->nodeIconSelectEdit->setGraphicsEffect(effect);
+             (ui->buttonBox) -> button (QDialogButtonBox::Cancel) -> setDefault(true);
+             (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+         }
+
      }
      else {
          ui->nodeIconSelectButton->setEnabled(false);
          ui->nodeIconSelectEdit->setEnabled(false);
          ui->nodeIconSelectEdit->setText ("");
+         ui->nodeIconSelectButton->setGraphicsEffect(0);
+         ui->nodeIconSelectEdit->setGraphicsEffect(0);
+         (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
+         (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
+
          // emit signal
          emit setNodeShape(0, m_appSettings["initNodeShape"], QString() );
      }

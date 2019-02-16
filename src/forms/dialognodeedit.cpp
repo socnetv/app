@@ -40,7 +40,7 @@
 #include <QPushButton>
 #include <QColorDialog>
 #include <QPixmap>
-#include <QGraphicsEffect>
+#include <QGraphicsColorizeEffect>
 
 SOCNETV_USE_NAMESPACE
 
@@ -65,14 +65,14 @@ DialogNodeEdit::DialogNodeEdit(QWidget *parent,
 
     QStringList shapesList;
     QStringList iconList;
-    shapesList << "Box"
-                << "Circle"
-                << "Diamond"
-                << "Ellipse"
-                << "Triangle"
-                << "Star"
-                << "Bug"
-                << "Custom Icon";
+    shapesList << "box"
+                << "circle"
+                << "diamond"
+                << "ellipse"
+                << "triangle"
+                << "star"
+                << "bugs"
+                << "custom";
     iconList << ":/images/box.png"
              << ":/images/circle.png"
              << ":/images/diamond.png"
@@ -89,7 +89,7 @@ DialogNodeEdit::DialogNodeEdit(QWidget *parent,
     }
 
     ui->nodeIconSelectButton->setEnabled(false);
-    ui->nodeIconSelectEdit->setEnabled(false);
+    ui->nodeIconSelectEdit->setEnabled(false);/*
 
     if ( nodeShape == "box"  ){
        ui->nodeShapeComboBox->setCurrentIndex(0);
@@ -120,8 +120,39 @@ DialogNodeEdit::DialogNodeEdit(QWidget *parent,
         if (!iconPath.isEmpty()) {
             ui->nodeShapeComboBox->setItemIcon(7, QIcon(iconPath));
         }
-    }
+    }*/
 
+
+    int index = -1;
+    if ( (index = shapesList.indexOf(nodeShape)) != -1 ){
+
+        ui->nodeShapeComboBox->setCurrentIndex(index);
+
+        if ( index == NodeShape::Custom ) {
+
+            ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Custom);
+            ui->nodeIconSelectButton->setEnabled(true);
+            ui->nodeIconSelectEdit->setEnabled(true);
+            ui->nodeIconSelectEdit->setText (iconPath);
+            if ( ! iconPath.isEmpty() ) {
+                ui->nodeShapeComboBox->setItemIcon(
+                            NodeShape::Custom,
+                            QIcon(iconPath));
+            }
+            else {
+                QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
+                effect->setColor(QColor("red"));
+                ui->nodeIconSelectButton->setGraphicsEffect(effect);
+                ui->nodeIconSelectEdit->setGraphicsEffect(effect);
+                (ui->buttonBox) -> button (QDialogButtonBox::Cancel) -> setDefault(true);
+                (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+            }
+        }
+    }
+    else {
+        // default -- should never happen...
+        ui->nodeShapeComboBox->setCurrentIndex(NodeShape::Circle);
+    }
 
     pixmap = QPixmap(60,20) ;
     pixmap.fill(nodeColor);
@@ -194,6 +225,9 @@ void DialogNodeEdit::getNodeShape(const int &nodeShapeIndex){
         ui->nodeIconSelectEdit->setText(iconPath);
         if (!iconPath.isEmpty()) {
             ui->nodeShapeComboBox->setItemIcon(NodeShape::Custom, QIcon(iconPath));
+            ui->nodeIconSelectButton->setGraphicsEffect(0);
+            ui->nodeIconSelectEdit->setGraphicsEffect(0);
+
         }
         else {
             QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
@@ -229,6 +263,8 @@ void DialogNodeEdit::getNodeIconFile(){
     if (!m_nodeIconFile.isEmpty()) {
         qDebug() << m_nodeIconFile;
        ui->nodeIconSelectEdit->setText(m_nodeIconFile);
+       ui->nodeIconSelectButton->setGraphicsEffect(0);
+       ui->nodeIconSelectEdit->setGraphicsEffect(0);
        ui->nodeShapeComboBox->setItemIcon(NodeShape::Custom, QIcon(m_nodeIconFile));
        (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
     }
