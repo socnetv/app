@@ -224,8 +224,8 @@ void DialogNodeEdit::getNodeIconFile(){
 
     QString m_nodeIconFile = QFileDialog::getOpenFileName(this, tr("Select a new icon"),
                                                     ui->nodeIconSelectEdit->text(),
-                                                    tr("PNG Images (*.png);;JPEG Images ( *.jpg);;All files (*.*)")
-                                                           );
+                                                    tr("Images (*.png *.jpg *.jpeg *.svg);;All (*.*)")
+                                                          );
     if (!m_nodeIconFile.isEmpty()) {
         qDebug() << m_nodeIconFile;
        ui->nodeIconSelectEdit->setText(m_nodeIconFile);

@@ -9356,7 +9356,7 @@ void MainWindow::slotEditNodeShape(const int &vertex, QString shape,
         if (shape=="custom") {
             nodeIconPath = QFileDialog::getOpenFileName(
                         this, tr("Select an icon"), getLastPath(),
-                        tr("All (*);;PNG (*.png);;JPG (*.jpg)")
+                        tr("Images (*.png *.jpg *.jpeg *.svg);;All (*.*)")
                         );
             if (nodeIconPath.isNull() ) {
                 //user pressed Cancel
@@ -13805,7 +13805,7 @@ void MainWindow::slotOptionsBackgroundImageSelect(bool toggle) {
     else   {
         m_fileName = QFileDialog::getOpenFileName(
                     this, tr("Select one image"), getLastPath(),
-                    tr("All (*);;PNG (*.png);;JPG (*.jpg)")
+                    tr("Images (*.png *.jpg *.jpeg);;All (*.*)")
                     );
         if (m_fileName.isNull() )
             appSettings["initBackgroundImage"] = "";
