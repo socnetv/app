@@ -238,7 +238,10 @@ void GraphicsNode::setShape(const QString shape, const QString &iconPath) {
         if (!iconPath.isEmpty()) {
             m_iconPath = iconPath;
         }
-
+    }
+    else {
+        path.addRect (-m_size , -m_size , 2*m_size , 2*m_size );
+        m_iconPath = ":/images/bugs.png";
     }
     m_path = path;
     update();
@@ -291,6 +294,15 @@ void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
     if (m_shape == "custom") {
         QPixmap pix(m_iconPath);
         painter->drawPixmap(-m_size, -m_size, 2*m_size, 2*m_size, pix);
+    }
+    else if ( m_shape == "bugs" ) {
+        // QPixmaps are stored in video card memory
+        // QImages are not
+        // But QImages can run in separate threads
+        QImage image(m_iconPath);
+        painter->drawImage(QRectF(-m_size, -m_size, 2*m_size, 2*m_size) , image);
+//        QPixmap pix(m_iconPath);
+//        painter->drawPixmap(-m_size, -m_size, 2*m_size, 2*m_size, pix);
     }
     else {
         painter->drawPath (m_path);
