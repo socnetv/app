@@ -40,6 +40,8 @@ class GraphicsNode;
 class GraphicsEdgeWeight;
 class GraphicsEdgeLabel;
 
+QT_USE_NAMESPACE
+
 using namespace std;
 
 
@@ -80,6 +82,12 @@ public:
     int sourceNodeNumber();
     int targetNodeNumber();
 
+    qreal dx() const;
+
+    qreal dy() const;
+
+    qreal length() const;
+
     void setSourceNodeSize(const int & size);
     void setTargetNodeSize(const int & size);
 
@@ -113,7 +121,8 @@ public:
     Qt::PenStyle style() const;
 
     void setColor( const QString &str) ;
-    QString color() const ;
+    //QString color() const ;
+    QColor color() const;
     QString colorToPajek();
 
     void setHighlighted (const bool &flag);
@@ -138,6 +147,7 @@ private:
     GraphicsNode *source, *target;
     QPainterPath m_path, *m_path_up, *m_path_down, *m_path_shape;
     QPointF sourcePoint, targetPoint;
+    QPointF edgeOffset;
     qreal m_arrowSize;
 
     qreal m_minOffsetFromNode;
@@ -148,14 +158,15 @@ private:
     GraphicsEdgeWeight* weightNumber;
     GraphicsEdgeLabel* edgeLabel;
 
-    QString m_color, m_colorNegative, m_label;
+    QString  m_colorNegative, m_label;
+    QColor m_color;
 
     qreal m_weight, m_width;
     int tox1, tox2, toy1, toy2, size;
     int sourceOrigSize;
     int targetOrigSize;
     int m_edgeDirType;
-    double rad, theta, theta1, theta2;
+
     qreal angle, line_length, line_dx, line_dy;
 
     bool m_Bezier, m_drawArrows, m_drawWeightNumber;

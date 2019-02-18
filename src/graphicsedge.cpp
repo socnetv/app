@@ -67,7 +67,7 @@ GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
     m_style = style;
     m_state = EDGE_STATE_REGULAR ;
 
-    m_color=color;                  // saves the color of the edge
+    m_color=QColor(color);                  // saves the color of the edge
 
     m_drawArrows=drawArrows;        // controls if edge will have arrows or not
 
@@ -146,25 +146,27 @@ void GraphicsEdge::removeRefs(){
 
 
 void GraphicsEdge::setColor( const QString &str) {
-    m_color=str;
+    m_color=QColor(str);
     prepareGeometryChange();
 }
 
 
 
-QString GraphicsEdge::color() const{
+QColor GraphicsEdge::color() const{
     return m_color;
 }
+
 
 /**
  * @brief Called from Graph::graphSaveToPajekFormat()
  * @return
  */
 QString GraphicsEdge::colorToPajek() {
-    if (m_color.startsWith("#")) {
-        return  ("RGB"+m_color.right( m_color.size()-1 )).toUpper()  ;
+    QString m_colorStr = m_color.name();
+    if (m_colorStr.startsWith("#")) {
+        return  ("RGB"+m_colorStr.right( m_colorStr.size()-1 )).toUpper()  ;
     }
-    return m_color;
+    return m_colorStr;
 }
 
 /**
@@ -340,20 +342,45 @@ void GraphicsEdge::setMinimumOffsetFromNode(const int &offset) {
     adjust();
 }
 
+
+
+qreal GraphicsEdge::dx() const
+{
+    return target->x() - source->x();
+}
+
+qreal GraphicsEdge::dy() const
+{
+    return target->y() - source->y();
+}
+
+qreal GraphicsEdge::length() const
+{ return sqrt ( dx() * dx()  + dy() * dy() ) ; }
+
+
+
+
 /**
  * @brief Leaves some empty space (offset) from node -
  * make the edge weight appear on the centre of the edge
  */
 void GraphicsEdge::adjust(){
    // qDebug() << "GraphicsEdge::adjust()";
-    if (!source || !target)
+    if (!source || !target) {
         return;
-    //QLineF line(mapFromItem(source, 0, 0), mapFromItem(target, 0, 0));
-    QLineF line(source->x(), source->y(), target->x(), target->y());
-    QPointF edgeOffset;
-    line_length = line.length();
-    line_dx = line.dx();
-    line_dy = line.dy();
+    }
+
+//    QLineF line(source->x(), source->y(), target->x(), target->y());
+    //QPointF edgeOffset;
+
+    //line_length = line.length();
+//    line_dx = line.dx();
+//    line_dy = line.dy();
+
+    line_length = length();
+    line_dx = dx();
+    line_dy = dy();
+
     if (source!=target) {
         edgeOffset = QPointF(
                     (line_dx * m_offsetFromTargetNode) / line_length,
@@ -363,19 +390,23 @@ void GraphicsEdge::adjust(){
 
     prepareGeometryChange();
 
-    sourcePoint = line.p1() + edgeOffset ;
-    targetPoint = line.p2() - edgeOffset ;
+//    sourcePoint = line.p1() + edgeOffset ;
+//    targetPoint = line.p2() - edgeOffset ;
+
+    sourcePoint = source->pos() + edgeOffset ;
+    targetPoint = target->pos() - edgeOffset ;
 
 
-    if (m_drawWeightNumber)
+    if (m_drawWeightNumber) {
         weightNumber->setPos(
                     -20 + (source->x()+target->x())/2.0,
                     -20+ (source->y()+target->y())/2.0 );
-
-    if (m_drawLabel)
+    }
+    if (m_drawLabel) {
         edgeLabel->setPos(
                     5+ (source->x()+target->x())/2.0,
                     5+ (source->y()+target->y())/2.0 );
+    }
 
     //Define the path upon which we' ll draw the line
     QPainterPath path(sourcePoint);
@@ -388,6 +419,9 @@ void GraphicsEdge::adjust(){
         }
         else {
             qDebug() << "*** GraphicsEdge::paint(). Constructing a bezier curve";
+            QPointF c = QPointF( targetPoint.x() - sourcePoint.x(),
+                                 targetPoint.y() - targetPoint.y());
+            path.cubicTo( sourcePoint, c, targetPoint);
         }
     }
     else { //self-link
@@ -475,10 +509,11 @@ void GraphicsEdge::adjust(){
  */
 QPainterPath GraphicsEdge::shape () const {
     //qDebug()<<"GraphicsEdge::shape()";		//too many debug messages...
-    QPainterPath m_path_shape = m_path;
-    m_path_shape.addPath(m_path.translated(1,1));
-    m_path_shape.addPath(m_path.translated(-1,-1));
-    return m_path_shape;
+//    QPainterPath m_path_shape = m_path;
+//    m_path_shape.addPath(m_path.translated(1,1));
+//    m_path_shape.addPath(m_path.translated(-1,-1));
+//    return m_path_shape;
+    return m_path;
 } 
 
 
@@ -489,6 +524,7 @@ QPainterPath GraphicsEdge::shape () const {
  * @return
  */
 QRectF GraphicsEdge::boundingRect() const {
+   //qDebug()<<"GraphicsEdge::boundingRect()";		//too many debug messages...
     if (!source || !target)
         return QRectF();
     return m_path.controlPointRect();
@@ -545,19 +581,19 @@ QPen GraphicsEdge::pen() const {
     case EDGE_STATE_REGULAR:
         //qDebug() << "GraphicsEdge::pen() - returning pen for state REGULAR"  ;
         if (m_weight < 0 ){
-            return  QPen(QColor(m_color), width(), Qt::DashLine, Qt::RoundCap, Qt::RoundJoin);
+            return  QPen(m_color, m_width, Qt::DashLine, Qt::RoundCap, Qt::RoundJoin);
         }
-        return QPen(QColor(m_color), width(), style(), Qt::RoundCap, Qt::RoundJoin);
+        return QPen(m_color, m_width, m_style, Qt::RoundCap, Qt::RoundJoin);
         break;
     case EDGE_STATE_HIGHLIGHT: // selected
         //qDebug() << "GraphicsEdge::pen() - returning pen for state HIGHLIGHTED"  ;
-        return QPen(QColor("red"), width(), style(), Qt::RoundCap, Qt::RoundJoin);
+        return QPen( QColor("red"), m_width, m_style, Qt::RoundCap, Qt::RoundJoin);
     case EDGE_STATE_HOVER: // hover
         //qDebug() << "GraphicsEdge::pen() - returning pen for state HOVER"  ;
-        return QPen(QColor("red"), width()+1, style(), Qt::RoundCap, Qt::RoundJoin);
+        return QPen(QColor("red"), m_width+1, m_style, Qt::RoundCap, Qt::RoundJoin);
     default:
         //qDebug() << "GraphicsEdge::pen() - returning pen for state DEFAULT"  ;
-        return QPen(QColor(m_color), width(), style(), Qt::RoundCap, Qt::RoundJoin);
+        return QPen(m_color, m_width, m_style, Qt::RoundCap, Qt::RoundJoin);
     }
 
 }
@@ -608,6 +644,9 @@ void GraphicsEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
      }
     // set painter pen to correct edge pen
     painter->setPen(pen());
+
+    // set painter brush to paint inside the arrow
+    painter->setBrush( m_color );
 
     painter->drawPath(m_path);
 }
