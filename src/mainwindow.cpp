@@ -355,7 +355,7 @@ QMap<QString,QString> MainWindow::initSettings() {
 
     appSettings["initEdgesVisibility"]="true";
     appSettings["initEdgeShape"]="line"; //bezier
-    appSettings["initEdgeColor"]="black";
+    appSettings["initEdgeColor"]="#555";
     appSettings["initEdgeColorNegative"]="red";
     appSettings["initEdgeColorZero"]="blue";
     appSettings["initEdgeArrows"]="true";
@@ -6333,10 +6333,10 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
             break;
 
         case FileType::EDGELIST_WEIGHTED:
-            fileType_filter = tr("Weighted Edge List (*.csv *.txt *.list *.edgelist *.lst *.wlst);;All (*)");
+            fileType_filter = tr("Weighted Edge List (*.txt *.list *.edgelist *.lst *.wlst);;All (*)");
             break;
         case FileType::EDGELIST_SIMPLE:
-            fileType_filter = tr("Simple Edge List (*.csv *.txt *.list *.edgelist *.lst);;All (*)");
+            fileType_filter = tr("Simple Edge List (*.txt *.list *.edgelist *.lst);;All (*)");
             break;
         case FileType::TWOMODE:
             fileType_filter = tr("Two-Mode Sociomatrix (*.2sm *.aff);;All (*)");
@@ -6348,8 +6348,8 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
                                  "UCINET (*.dl *.dat);;"
                                  "Adjacency (*.csv *.adj *.sm *.txt);;"
                                  "GraphViz (*.dot);;"
-                                 "Weighted Edge List (*.csv *.txt *.edgelist *.list *.lst *.wlst);;"
-                                 "Simple Edge List (*.csv *.txt *.edgelist *.list *.lst);;"
+                                 "Weighted Edge List (*.txt *.edgelist *.list *.lst *.wlst);;"
+                                 "Simple Edge List (*.txt *.edgelist *.list *.lst);;"
                                  "Two-Mode Sociomatrix (*.2sm *.aff);;"
                                  "All (*)");
             break;
@@ -6402,6 +6402,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
      *
      */
     if (checkSelectFileType || m_fileFormat==FileType::UNRECOGNIZED) {
+
         // This happens only on application startup or on loading a recent file.
         if ( ! m_fileName.endsWith(".graphml",Qt::CaseInsensitive ) &&
              ! m_fileName.endsWith(".net",Qt::CaseInsensitive ) &&
@@ -6413,8 +6414,12 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
              ! m_fileName.endsWith(".wlst",Qt::CaseInsensitive ) &&
              ! m_fileName.endsWith(".wlist",Qt::CaseInsensitive )&&
              ! m_fileName.endsWith(".2sm",Qt::CaseInsensitive ) &&
-             ! m_fileName.endsWith(".aff",Qt::CaseInsensitive )) {
-            //ambigious
+             ! m_fileName.endsWith(".sm",Qt::CaseInsensitive ) &&
+             ! m_fileName.endsWith(".csv",Qt::CaseInsensitive ) &&
+             ! m_fileName.endsWith(".aff",Qt::CaseInsensitive ))
+        {
+            //ambigious file type. Open an input dialog for the user to choose
+            // what kind of network file this is.
 
             tempFileNameNoPath=m_fileName.split ("/");
             QStringList fileTypes;
@@ -6573,7 +6578,7 @@ void MainWindow::slotNetworkFileDialogFilterSelected(const QString &filter) {
         fileType=FileType::UCINET;
         qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FileType::UCINET";
     }
-    else if (filter.contains("Adjancency",Qt::CaseInsensitive ) ) {
+    else if (filter.contains("Adjacency",Qt::CaseInsensitive ) ) {
         fileType=FileType::ADJACENCY;
         qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FileType::ADJACENCY";
     }
@@ -7825,13 +7830,14 @@ void MainWindow::slotNetworkFileView(){
 
         if ( !activeGraph->graphLoaded() ) {
             // new network, not saved yet
-            int response = slotHelpMessageToUser(USER_MSG_QUESTION,
-                                                 tr("New network not saved yet. You might want to save it first."),
-                                                 tr("This new network you created has not been saved yet."),
-                                                 tr("Do you want to open a file dialog to save your work "
-                                                    "(then I will display the file)?"),
-                                                 QMessageBox::Yes|QMessageBox::No,QMessageBox::Yes
-                                                 );
+            int response = slotHelpMessageToUser(
+                        USER_MSG_QUESTION,
+                        tr("New network not saved yet. You might want to save it first."),
+                        tr("This new network you created has not been saved yet."),
+                        tr("Do you want to open a file dialog to save your work "
+                           "(then I will display the file)?"),
+                        QMessageBox::Yes|QMessageBox::No,QMessageBox::Yes
+                        );
             if (  response == QMessageBox::Yes ) {
                 slotNetworkSaveAs();
             }
@@ -7839,12 +7845,13 @@ void MainWindow::slotNetworkFileView(){
         }
         else {
             // loaded network, but modified
-            int response = slotHelpMessageToUser(USER_MSG_QUESTION,
-                                                 tr("Current network has been modified. Save to the original file?"),
-                                                 tr("Current social network has been modified since last save."),
-                                                 tr("Do you want to save it to the original file?"),
-                                                 QMessageBox::Yes|QMessageBox::No,QMessageBox::Yes
-                                                 );
+            int response = slotHelpMessageToUser(
+                        USER_MSG_QUESTION,
+                        tr("Current network has been modified. Save to the original file?"),
+                        tr("Current social network has been modified since last save."),
+                        tr("Do you want to save it to the original file?"),
+                        QMessageBox::Yes|QMessageBox::No,QMessageBox::Yes
+                        );
             if ( response ==  QMessageBox::Yes ){
                 slotNetworkSave();
             }else if (response ==QMessageBox::No ) {

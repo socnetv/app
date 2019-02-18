@@ -842,7 +842,7 @@ public:
 
     bool writeClusteringHierarchical(const QString &fileName,
                                      const QString &varLocation,
-                                     const QString &matrix = "Adjancency",
+                                     const QString &matrix = "Adjacency",
                                      const QString &metric = "Manhattan",
                                      const QString &method = "Complete",
                                      const bool &diagonal = false,

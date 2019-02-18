@@ -2761,11 +2761,13 @@ void Graph::graphSetModified(const int &graphNewStatus, const bool &signalMW){
 
     if ( graphNewStatus == GraphChange::ChangedNew ) {
         qDebug()<<"Graph::graphSetModified() - not saved...";
+        m_graphHasChanged=graphNewStatus;
         emit signalGraphSavedStatus(FileType::NOT_SAVED);
         return;
     }
     else if ( graphNewStatus == GraphChange::ChangedNone ) {
         qDebug()<<"Graph::graphSetModified() - no changes, graph is saved...";
+        m_graphHasChanged=graphNewStatus;
         emit signalGraphSavedStatus(true);
         return;
 
@@ -6059,7 +6061,7 @@ void Graph::centralityInformation(const bool considerWeights,
     }
 
     emit signalProgressBoxUpdate(n/3);
-    emit statusMessage ( tr("Computing inverse adjancecy matrix. Please wait...") );
+    emit statusMessage ( tr("Computing inverse adjacency matrix. Please wait...") );
 
     invM.inverse(WM);
 
