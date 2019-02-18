@@ -10981,6 +10981,7 @@ void Graph::randomNetLatticeCreate(const int &N,
     emit signalProgressBoxKill();
 
     graphSetModified(GraphChange::ChangedNew);
+    // FIXME
 
 }
 
