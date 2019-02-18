@@ -2617,8 +2617,15 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
     if (vList.isEmpty()) {
         vList = m_verticesSelected;
     }
+
     qDebug()<<"Graph::verticesCreateSubgraph() - type:" << type
                << "vList:" << vList;
+
+    int progressCounter = 0;
+    QString pMsg = tr("Creating subgraph. \nPlease wait...");
+    emit statusMessage( pMsg);
+    emit signalProgressBoxCreate(vList.size(),pMsg);
+
 
     qreal weight;
 
@@ -2628,6 +2635,9 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
     if (type == SUBGRAPH_CLIQUE) {
 
         for (int i=0; i < vList.size(); ++i ) {
+
+            emit signalProgressBoxUpdate(++progressCounter);
+
             for (int j=i+1; j < vList.size(); ++j ) {
 
                 if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
@@ -2658,6 +2668,8 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
 
         for (int j=0; j < vList.size(); ++j ) {
 
+            emit signalProgressBoxUpdate(++progressCounter);
+
             if ( ! (weight=edgeExists( center, vList.value(j) ) ) ) {
                 if ( center == vList.value(j))
                      continue;
@@ -2685,6 +2697,9 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
     else if (type == SUBGRAPH_CYCLE)  {
         int j=0;
         for (int i=0; i < vList.size(); ++i ) {
+
+            emit signalProgressBoxUpdate(++progressCounter);
+
             j= ( i == vList.size()-1) ? 0:i+1;
             if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
 
@@ -2714,6 +2729,9 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
     else if (type == SUBGRAPH_LINE)  {
         int j=0;
         for (int i=0; i < vList.size(); ++i ) {
+
+            emit signalProgressBoxUpdate(++progressCounter);
+
             if ( i == vList.size()-1 ) break;
             j= i+1;
             if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
@@ -2741,8 +2759,10 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
 
     }
     else {
+        emit signalProgressBoxKill();
         return;
     }
+    emit signalProgressBoxKill();
 
 }
 

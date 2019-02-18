@@ -9138,6 +9138,7 @@ void MainWindow::slotEditNodeSelectedToClique () {
                           tr("A new clique has been created from ") + QString::number(selectedNodesCount)
                           + tr(" nodes")
                           );
+
 }
 
 
@@ -9189,6 +9190,7 @@ void MainWindow::slotEditNodeSelectedToStar() {
                           QString::number( selectedNodesCount )
                           + tr(" nodes.")
                           );
+
 }
 
 
@@ -9222,6 +9224,7 @@ void MainWindow::slotEditNodeSelectedToCycle() {
                           + QString::number( selectedNodesCount )
                           + tr(" select nodes.")
                           );
+
 }
 
 
@@ -9255,6 +9258,7 @@ void MainWindow::slotEditNodeSelectedToLine() {
                           + QString::number( selectedNodesCount )
                           + tr(" selected nodes.")
                           );
+
 }
 
 
