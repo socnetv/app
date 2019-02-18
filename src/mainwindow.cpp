@@ -371,7 +371,7 @@ QMap<QString,QString> MainWindow::initSettings() {
     appSettings["initBackgroundImage"]="";
     appSettings["printDebug"] = (printDebug) ? "true" : "false";
     appSettings["viewReportsInSystemBrowser"] = "true";
-    appSettings["showProgressBar"] = "true";
+    appSettings["showProgressBar"] = "false";
     appSettings["showToolBar"] = "true";
     appSettings["showStatusBar"] = "true";
     appSettings["antialiasing"] = "true";

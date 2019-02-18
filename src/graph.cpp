@@ -10434,7 +10434,7 @@ void Graph::randomNetScaleFreeCreate (const int &N,
     qDebug() << "Graph::randomNetScaleFreeCreate() - finished. Calling "
                 "graphSetModified(GraphChange::ChangedNew)";
 
-    graphSetModified(GraphChange::ChangedNew);
+    graphSetModified(GraphChange::ChangedVerticesEdges);
 
     emit signalProgressBoxKill();
 
@@ -10517,7 +10517,7 @@ void Graph::randomNetSmallWorldCreate (const int &N, const int &degree,
 
     layoutVertexSizeByIndegree();
 
-    graphSetModified(GraphChange::ChangedNew);
+    graphSetModified(GraphChange::ChangedVerticesEdges);
 }
 
 
@@ -10691,7 +10691,7 @@ void Graph::randomNetRegularCreate(const int &N,
 
     emit signalProgressBoxKill();
 
-    graphSetModified(GraphChange::ChangedNew);
+    graphSetModified(GraphChange::ChangedVerticesEdges);
 
 }
 
@@ -10762,8 +10762,8 @@ void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
         emit signalProgressBoxKill();
     }
 
+    graphSetModified(GraphChange::ChangedVerticesEdges, updateProgress);
 
-    graphSetModified(GraphChange::ChangedNew, updateProgress);
 }
 
 
@@ -10982,8 +10982,7 @@ void Graph::randomNetLatticeCreate(const int &N,
 
     emit signalProgressBoxKill();
 
-    graphSetModified(GraphChange::ChangedNew);
-    // FIXME
+    graphSetModified(GraphChange::ChangedVerticesEdges);
 
 }
 
