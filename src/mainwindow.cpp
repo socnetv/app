@@ -5357,26 +5357,11 @@ void MainWindow::initSignalSlots() {
     connect (activeGraph, &Graph::signalGraphModified,
              this, &MainWindow::slotNetworkChanged);
 
+    connect (activeGraph, &Graph::signalGraphLoaded,
+             this, &MainWindow::slotNetworkFileLoaded);
 
-    connect( activeGraph, SIGNAL( signalGraphLoaded( const int &,
-                                                     const QString &,
-                                                     const QString &,
-                                                     const int &,
-                                                     const int &,
-                                                     const QString &)
-                                  ),
-             this, SLOT( slotNetworkFileLoaded( const int &,
-                                                const QString &,
-                                                const QString &,
-                                                const int &,
-                                                const int &,
-                                                const QString &)
-                         )
-             ) ;
-
-
-    connect( activeGraph, SIGNAL( signalGraphSaved( const int &) ),
-             this, SLOT( slotNetworkSavedStatus( const int &) ) ) ;
+    connect( activeGraph, &Graph::signalGraphSavedStatus,
+             this, &MainWindow::slotNetworkSavedStatus);
 
     connect( activeGraph, SIGNAL( statusMessage (QString) ),
              this, SLOT( statusMessage (QString) ) ) ;
@@ -6775,11 +6760,13 @@ void MainWindow::slotNetworkSavedStatus (const int &status) {
 
     }
     else if (status == 0) {
+        // Network needs saving
         // UX: Maybe change it to a more prominent color for the user to see?
         // networkSaveAct->setIcon(QIcon(":/images/file_download_48px.svg"));
         networkSaveAct->setEnabled(true);
     }
     else {
+        // Network is saved.
         networkSaveAct->setEnabled(false);
         setWindowTitle( fileNameNoPath );
         statusMessage( tr("Network saved under filename: %1").arg (fileNameNoPath));
@@ -7149,6 +7136,9 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
     qDebug()<< "MW::slotNetworkFileLoaded() - type " << type;
 
     if (type > 0) {
+        // We have loaded a file with success.
+        // Update our window and save path in settings
+
         fileName=fName;
         previous_fileName=fileName;
         QFileInfo fileInfo (fileName);
@@ -7195,31 +7185,31 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
         break;
 
     case 2:
-        statusMessage( QString(tr("Pajek formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ));
+        statusMessage( tr("Pajek formatted network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( netName ).arg( totalNodes ).arg(totalEdges ));
         break;
 
     case 3:
-        statusMessage( QString(tr("Adjacency formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
+        statusMessage( tr("Adjacency formatted network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
 
     case 4:
-        statusMessage( QString(tr("GraphViz (Dot) formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
+        statusMessage( tr("GraphViz (Dot) formatted network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
 
     case 5:
-        statusMessage( QString(tr("UCINET formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
+        statusMessage( tr("UCINET formatted network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
     case 6:
-        statusMessage( QString(tr("GML formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
+        statusMessage( tr("GML formatted network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
     case 7:
-        statusMessage( QString(tr("Weighted list formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
+        statusMessage( tr("Weighted list formatted network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
     case 8:
-        statusMessage( QString(tr("Simple list formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
+        statusMessage( tr("Simple list formatted network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
     case 9:
-        statusMessage( QString(tr("Two-mode affiliation network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
+        statusMessage( tr("Two-mode affiliation network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
 
     default: // just for sanity
@@ -7227,6 +7217,7 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
                                             " which is the file-format using Import Menu.","OK",0);
         break;
     }
+
     networkSaveAct->setIcon(QIcon(":/images/file_download_48px.svg"));
     networkSaveAct->setEnabled(false);
 

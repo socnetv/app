@@ -2790,19 +2790,40 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
 void Graph::graphSetModified(const int &graphNewStatus, const bool &signalMW){
 
     if ( graphNewStatus == GraphChange::ChangedNew ) {
-        qDebug()<<"Graph::graphSetModified() - not saved...";
+
+        // this is called from:
+        // graphFileLoaded() after successful loading
+
+        qDebug()<<"Graph::graphSetModified() - new, thus saved..."
+                  "emit signalGraphModified()";
+
         m_graphHasChanged=graphNewStatus;
-        emit signalGraphSavedStatus(FileType::NOT_SAVED);
+
+        emit signalGraphModified(graphIsDirected(),
+                                 m_totalVertices,
+                                 edgesEnabled(),
+                                 graphDensity());
+
         return;
     }
     else if ( graphNewStatus == GraphChange::ChangedNone ) {
+
+        // this is called from:
+        // graphSaved() after successful saving
+
         qDebug()<<"Graph::graphSetModified() - no changes, graph is saved...";
+
         m_graphHasChanged=graphNewStatus;
+
         emit signalGraphSavedStatus(true);
+
         return;
 
     }
     else if ( graphNewStatus > GraphChange::ChangedMajor ) {
+
+        // This is called from any method that alters V or E in G:
+        // thus all prior computations are invalid
 
         qDebug()<<"Graph::graphSetModified() - major changes!";
 
@@ -2843,16 +2864,20 @@ void Graph::graphSetModified(const int &graphNewStatus, const bool &signalMW){
 
     }
     else if ( graphNewStatus > GraphChange::ChangedMinorOptions) {
-        //minor changes, i.e. vertex positions, labels, etc
-        // do not change status if current status is > ChangedMajor
+
+        // this is called from Graph methods that inflict minor changes,
+        // i.e. changing vertex positions, labels, etc
+
+        // We do not change status if current status is > ChangedMajor
         if ( m_graphHasChanged < GraphChange::ChangedMajor) {
             m_graphHasChanged = graphNewStatus;
         }
         qDebug()<<"Graph::graphSetModified() - minor changes but needs saving...";
-        emit signalGraphSavedStatus(FileType::NOT_SAVED);
+        emit signalGraphSavedStatus(false);
         return;
     }
-    else { // ChangedNew or ChangedNone
+    else {
+        qDebug()<<"Graph::graphSetModified() - Strange. I should not reach this code...";
         m_graphHasChanged=graphNewStatus;
     }
 
@@ -10463,7 +10488,7 @@ void Graph::randomNetScaleFreeCreate (const int &N,
 
     relationCurrentRename(tr("scale-free"),true);
     qDebug() << "Graph::randomNetScaleFreeCreate() - finished. Calling "
-                "graphSetModified(GraphChange::ChangedNew)";
+                "graphSetModified()";
 
     graphSetModified(GraphChange::ChangedVerticesEdges);
 
@@ -14650,6 +14675,9 @@ void Graph::graphFileLoaded (const int &fileType,
         return;
 
     }
+
+    qDebug() << "Graph::graphFileLoaded()";
+
     fileName = fName;
     if (netName != "")
         m_graphName=netName ;
@@ -14666,14 +14694,18 @@ void Graph::graphFileLoaded (const int &fileType,
     m_fileFormat = fileType;
 
     qDebug() << "Graph::graphFileLoaded() - "
-                << " type " << fileType
-                << " filename " << fileName
-                << " name " << graphName()
-                << " nodes " << totalNodes
-                << " links " << totalLinks
-                << " edgeDirType " << edgeDirType;
+                << " type" << fileType
+                << " filename" << fileName
+                << " name" << graphName()
+                << " node " << totalNodes
+                << " links" << totalLinks
+                << " edgeDirType" << edgeDirType;
+
+    qDebug() << "Graph::graphFileLoaded() -  Call graphSetModified";
 
     graphSetModified(GraphChange::ChangedNew);
+
+    qDebug() << "Graph::graphFileLoaded() -  emit signalGraphLoaded()";
 
     emit signalGraphLoaded (fileType,
                             fileName,
@@ -14682,7 +14714,6 @@ void Graph::graphFileLoaded (const int &fileType,
                             totalLinks,
                             message);
 
-    graphSetModified(GraphChange::ChangedNone);
     qDebug ()<< "Graph::graphFileLoaded()  -check parser if running...";
 
 }
@@ -14756,7 +14787,7 @@ void Graph::graphSave(const QString &fileName,
         graphSetModified(GraphChange::ChangedNone);
     }
     else {
-        signalGraphSavedStatus(FileType::UNRECOGNIZED);
+        emit signalGraphSavedStatus(FileType::UNRECOGNIZED);
     }
 
 }
