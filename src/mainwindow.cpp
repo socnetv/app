@@ -10365,7 +10365,7 @@ void MainWindow::slotEditEdgeWeight(){
                     this,
                     dialogTitle,
                     tr("New edge weight: "),
-                    oldWeight, -100, 100 ,1, &ok ) ;
+                    oldWeight, -RAND_MAX, RAND_MAX ,1, &ok ) ;
 
         if (ok) {
             activeGraph->edgeWeightSet(sourceNode, targetNode, newWeight,

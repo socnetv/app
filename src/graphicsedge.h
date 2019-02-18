@@ -150,13 +150,14 @@ private:
 
     QString m_color, m_colorNegative, m_label;
 
-    qreal m_weight;
+    qreal m_weight, m_width;
     int tox1, tox2, toy1, toy2, size;
     int sourceOrigSize;
     int targetOrigSize;
     int m_edgeDirType;
     double rad, theta, theta1, theta2;
     qreal angle, line_length, line_dx, line_dy;
+
     bool m_Bezier, m_drawArrows, m_drawWeightNumber;
     bool m_drawLabel, m_hoverHighlighting;
     bool m_isClicked;

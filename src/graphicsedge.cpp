@@ -39,6 +39,7 @@
 #include "graphicsedgeweight.h"
 #include "graphicsedgelabel.h"
 // #include <QPaintEngine>
+
 SOCNETV_USE_NAMESPACE
 
 
@@ -80,6 +81,14 @@ GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
     m_arrowSize=4;                   // controls the width of the edge arrow
 
     m_weight = weight ;              // saves the weight/value of this edge
+
+    if ( fabs(m_weight) > 1  )  {
+        m_width = 1+log ( 1+ log(fabs(m_weight) )) ;
+    }
+    else {
+        m_width = fabs(m_weight) ;
+    }
+
     m_Bezier = bezier;               // controls if it will appear as line or curve
 
     m_label = label;
@@ -167,6 +176,12 @@ void GraphicsEdge::setWeight(const qreal &w) {
     qDebug() << "GraphicsEdge::setWeight() " << w;
     prepareGeometryChange();
     m_weight = w;
+    if ( fabs(m_weight) > 1  )  {
+        m_width = 1+log ( 1+ log(fabs(m_weight) )) ;
+    }
+    else {
+        m_width = fabs(m_weight) ;
+    }
     if (m_drawWeightNumber)
         weightNumber->setPlainText (QString::number(w));
 }
@@ -525,7 +540,7 @@ Qt::PenStyle GraphicsEdge::style() const{
  * @return
  */
 QPen GraphicsEdge::pen() const {
-
+    //qDebug() << "GraphicsEdge::pen() - returning pen "  ;
     switch (m_state) {
     case EDGE_STATE_REGULAR:
         //qDebug() << "GraphicsEdge::pen() - returning pen for state REGULAR"  ;
@@ -644,10 +659,11 @@ QVariant GraphicsEdge::itemChange(GraphicsItemChange change, const QVariant &val
  * @return
  */
 qreal GraphicsEdge::width() const{
-    if ( fabs(m_weight) > 1  )  {
-        return 1+log(fabs(m_weight)) ;
-    }
-    return fabs(m_weight) ;
+//    if ( fabs(m_weight) > 1  )  {
+//        return 1+log ( 1+ log(fabs(m_weight) )) ;
+//    }
+//    return fabs(m_weight) ;
+    return m_width;
 }
 
 
