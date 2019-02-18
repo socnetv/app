@@ -1,36 +1,36 @@
 socnetv (2.5-1) xenial; urgency=medium
 
-  * Started development
+  * New upstream version 2.5. See https://socnetv.org/ChangeLog
 
- -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Wed, 28 Feb 2018 17:18:03 +0300
+ -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Tue, 19 Feb 2019 01:00:00 +0300
 
 socnetv (2.4-2) xenial; urgency=medium
 
-  * Fixed upstream version 2.4. See http://socnetv.org/ChangeLog
+  * Fixed upstream version 2.4. See https://socnetv.org/ChangeLog
 
  -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Wed, 28 Feb 2018 14:18:03 +0300
 
 socnetv (2.4-1) xenial; urgency=medium
 
-  * New upstream version 2.4. See http://socnetv.org/ChangeLog
+  * New upstream version 2.4. See https://socnetv.org/ChangeLog
 
  -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Tue, 27 Feb 2018 21:18:03 +0300
 
 socnetv (2.3-1) xenial; urgency=medium
 
-  * New upstream version 2.3. See http://socnetv.org/ChangeLog
+  * New upstream version 2.3. See https://socnetv.org/ChangeLog
 
  -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Wed, 05 Jul 2017 11:18:03 +0300
 
 socnetv (2.2-1) xenial; urgency=medium
 
-  * New upstream version 2.2. See http://socnetv.org/ChangeLog
+  * New upstream version 2.2. See https://socnetv.org/ChangeLog
 
  -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Sat, 21 Jan 2017 22:13:03 +0300
 
 socnetv (2.1-1) vivid; urgency=medium
 
-  * New upstream version 2.1. See http://socnetv.sf.net/ChangeLog  
+  * New upstream version 2.1. See https://socnetv.org/ChangeLog  
 
  -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Wed, 28 Sep 2016 22:13:03 +0300
 
@@ -42,25 +42,25 @@ socnetv (2.0-4) vivid; urgency=medium
 
 socnetv (2.0-3) trusty; urgency=medium
 
-  * New upstream version 2.0. See http://socnetv.sf.net/ChangeLog
+  * New upstream version 2.0. See https://socnetv.org/ChangeLog
 
  -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Mon, 12 Sep 2016 22:13:03 +0300
 
 socnetv (1.9-3) trusty; urgency=medium
 
-  * New upstream version 1.9. See http://socnetv.sf.net/ChangeLog 
+  * New upstream version 1.9. See https://socnetv.org/ChangeLog 
 
  -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Tue, 23 Jun 2015 17:13:03 +0300
 
 socnetv (1.8-3) trusty; urgency=medium
 
-  * New upstream version. See http://socnetv.sf.net/ChangeLog
+  * New upstream version. See https://socnetv.org/ChangeLog
 
  -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Fri, 05 Jun 2015 16:13:03 +0300
 
 socnetv (1.7-3) trusty; urgency=medium
 
-  * New upstream version. See http://socnetv.sf.net/ChangeLog
+  * New upstream version. See https://socnetv.org/ChangeLog
 
  -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Wed, 20 May 2015 16:13:03 +0300
 
@@ -72,13 +72,13 @@ socnetv (1.6-3) trusty; urgency=medium
 
 socnetv (1.6-1) trusty; urgency=medium
 
-  * New upstream version. See http://socnetv.sf.net/ChangeLog
+  * New upstream version. See https://socnetv.org/ChangeLog
 
  -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Mon, 11 May 2015 14:12:55 +0300
 
 socnetv (1.5-3) trusty; urgency=medium
 
-  * New upstream version. See http://socnetv.sf.net/ChangeLog
+  * New upstream version. See https://socnetv.org/ChangeLog
 
  -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Fri, 10 Oct 2014 15:14:34 +0300
 

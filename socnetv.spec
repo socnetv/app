@@ -1,6 +1,6 @@
 # spec file for package socnetv
 #
-# Copyright (c) 2016 Dimitris Kalamaras dimitris.kalamaras@gmail.com
+# Copyright (c) 2019 Dimitris Kalamaras dimitris.kalamaras@gmail.com
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -69,7 +69,7 @@ Release:	%{release}
 Summary:	A Social Networks Analyser and Visualiser
 License:	GPL-3.0	
 Group:		Productivity/Scientific/Math 
-URL:		http://socnetv.org/
+URL:		https://socnetv.org/
 Vendor: 	Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 Source0:	https://github.com/%{name}/app/archive/master.zip
 Distribution:   %{distr}
@@ -199,8 +199,8 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 #CHANGELOG SECTION
 #
 %changelog
-* Wed Feb 28 2018 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.5-1
-- started development
+* Tue Feb 19 2019 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.5-1
+- Synced with new stable version from upstream
 * Wed Feb 28 2018 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.4-2
 - Synced with fixed table version from upstream
 * Tue Feb 27 2018 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.4-1
