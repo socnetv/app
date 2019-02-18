@@ -48,7 +48,8 @@ SOCNETV_BEGIN_NAMESPACE
     };
 
 
-    enum FILE_TYPE {
+    enum FileType {
+         NOT_SAVED         = 0,  //  New network not saved yet or modified network
          GRAPHML           = 1,  // .GRAPHML .XML
          PAJEK             = 2,  // .PAJ .NET
          ADJACENCY         = 3,  // .ADJ .CSV .SM

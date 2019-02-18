@@ -73,11 +73,11 @@ Graph::Graph(GraphicsWidget *graphicsWidget) {
     inboundEdgesVert=0;
     reciprocalEdgesVert=0;
     order=true;		//returns true if the indexes of the list is ordered.
-    graphModifiedFlag=false;
+    m_graphHasChanged=false;
 
     m_graphName="";
     m_curRelation=0;
-    m_fileFormat=FILE_TYPE::UNRECOGNIZED;
+    m_fileFormat=FileType::NOT_SAVED;
     m_directed=true;
     m_isWeighted=false;
     m_graphIsConnected=true; // empty/null graph is considered connected
@@ -117,9 +117,9 @@ Graph::Graph(GraphicsWidget *graphicsWidget) {
     wc_parser = 0;
     wc_spider = 0;
 
-    m_graphFileFormatExportSupported<< FILE_TYPE::GRAPHML
-                               << FILE_TYPE::PAJEK
-                               << FILE_TYPE::ADJACENCY;
+    m_graphFileFormatExportSupported<< FileType::GRAPHML
+                               << FileType::PAJEK
+                               << FileType::ADJACENCY;
 
     randomizeThings();
 
@@ -332,7 +332,7 @@ void Graph::clear(const QString &reason) {
     relationsClear();
     relationAdd(tr(("unnamed")));
 
-    m_fileFormat=FILE_TYPE::UNRECOGNIZED;
+    m_fileFormat=FileType::NOT_SAVED;
 
     m_graphName="";
     m_totalVertices=0;
@@ -375,7 +375,7 @@ void Graph::clear(const QString &reason) {
     calculatedPRP=false;
     calculatedTriad=false;
 
-    graphModifiedFlag=false;
+    m_graphHasChanged=false;
 
     m_graphHasVertexCustomIcons = false;
 
@@ -388,7 +388,7 @@ void Graph::clear(const QString &reason) {
 
     if ( reason != "exit") {
         qDebug()<< "Graph::clear() - Clearing end. Emitting graphSetModified()";
-        graphSetModified(graphModifiedFlag,true);
+        graphSetModified(m_graphHasChanged,true);
     }
 }
 
@@ -547,7 +547,7 @@ void Graph::relationSet(int relNum, const bool notifyMW){
         emit signalRelationChangedToMW(m_curRelation);
         //notify GW to disable/enable the on screen edges.
         emit signalRelationChangedToGW(m_curRelation);
-        qDebug()<<"Graph::relationSet() - Calling graphSetModified(GraphChange::ChangedEdges)";
+        qDebug()<<"Graph::relationSet() - Calling graphSetModified()";
         graphSetModified(GraphChange::ChangedEdges);
     }
 }
@@ -1056,7 +1056,7 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
     QList<int> foundList;
     bool searchResult = false;
     // TODO Support other prominence scores.
-    if ( ! graphIsModified() && calculatedDC ) {
+    if ( calculatedDC ) {
 
         VList::const_iterator it;
         QString thresholdStr="";
@@ -2201,7 +2201,7 @@ bool Graph::edgeSymmetric(const int &v1, const int &v2){
 int Graph::edgesEnabled() {
     qDebug()<< "Graph::edgesEnabled() - checking if graph modified... ";
     int enabledEdges = (( graphIsUndirected() ) ? m_totalEdges / 2 : m_totalEdges);
-    if ( !graphIsModified() && calculatedEdges ) {
+    if ( calculatedEdges ) {
         qDebug()<< "Graph::edgesEnabled() - Graph unchanged, edges: "
                    <<  enabledEdges;
        return enabledEdges;
@@ -2488,7 +2488,7 @@ QList<int> Graph::vertexNeighborhoodList(const int &v1) {
  */
 int Graph::vertices(const bool &dropIsolates, const bool &countAll, const bool &recount) {
 
-    if ( !graphIsModified() && m_totalVertices!=0 && calculatedVertices && !recount) {
+    if ( m_totalVertices!=0 && calculatedVertices && !recount) {
         qDebug()<< "Graph::vertices() - Graph not modified, vertices: "
                    << m_totalVertices;
         return m_totalVertices;
@@ -2528,7 +2528,7 @@ int Graph::vertices(const bool &dropIsolates, const bool &countAll, const bool &
  * @return
  */
 QList<int> Graph::verticesListIsolated(){
-    if (!graphIsModified() && calculatedIsolates ){
+    if ( calculatedIsolates ){
         qDebug()<< "Graph::verticesListIsolated() - graph not modified and "
                    "already calculated isolates. Returning list as is:"
                 <<m_verticesIsolatedList;
@@ -2560,7 +2560,7 @@ QList<int> Graph::verticesListIsolated(){
  */
 QList<int> Graph::verticesList(){
     qDebug()<< "Graph::verticesList()";
-    if (!graphIsModified() && !m_verticesList.isEmpty() && calculatedVerticesList ){
+    if ( !m_verticesList.isEmpty() && calculatedVerticesList ){
         return m_verticesList;
     }
     VList::const_iterator it;
@@ -2582,7 +2582,7 @@ QList<int> Graph::verticesList(){
  */
 QSet<int> Graph::verticesSet(){
     qDebug()<< "Graph::verticesSet()";
-    if (!graphIsModified() && !m_verticesSet.isEmpty() && calculatedVerticesSet ){
+    if ( !m_verticesSet.isEmpty() && calculatedVerticesSet ){
         return m_verticesSet;
     }
     VList::const_iterator it;
@@ -2752,33 +2752,81 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
 
 /**
  * @brief Sets the graph modification status.
+ * If there are major changes, then signalGraphModified is emitted
+ * In any case, SignalGraphSavedStatus is emitted.
  * @param graphChangedFlag
  * @param signalMW
  */
 void Graph::graphSetModified(const int &graphNewStatus, const bool &signalMW){
 
-    if (graphNewStatus >0 && graphNewStatus < 10){ //minor changes, i.e. vertex positions, labels, etc
-        graphModifiedFlag = (graphModifiedFlag > 10 ) ? graphModifiedFlag : graphNewStatus ;
-    }
-    else {
-        graphModifiedFlag=graphNewStatus;
-    }
-
-
-    if (signalMW) {
-        qDebug()<<"Graph::graphSetModified() - m_symmetric:" << m_symmetric
-                  << "graphModifiedFlag:" << graphModifiedFlag
-                  << "Emitting signal signalGraphModified()";
-        emit signalGraphModified(graphModifiedFlag,
-                                 graphIsDirected(),
-                                 m_totalVertices,
-                                 edgesEnabled(),
-                                 graphDensity());
+    if ( graphNewStatus == GraphChange::ChangedNew ) {
+        qDebug()<<"Graph::graphSetModified() - not saved...";
+        emit signalGraphSavedStatus(FileType::NOT_SAVED);
         return;
     }
-    qDebug()<<"Graph::graphSetModified() - m_symmetric " << m_symmetric
-              << "graphModifiedFlag" << graphModifiedFlag
-              << "Not emitting any signal to MW";
+    else if ( graphNewStatus == GraphChange::ChangedNone ) {
+        qDebug()<<"Graph::graphSetModified() - no changes, graph is saved...";
+        emit signalGraphSavedStatus(true);
+        return;
+
+    }
+    else if ( graphNewStatus > GraphChange::ChangedMajor ) {
+
+        qDebug()<<"Graph::graphSetModified() - major changes!";
+
+        m_graphHasChanged=graphNewStatus;
+
+        // Init all calculated* flags to false, as all prior computations
+        // are now invalid and we need to recompute any of them
+        calculatedGraphReciprocity = false;
+        calculatedGraphSymmetry = false;
+        calculatedGraphWeighted = false;
+        calculatedGraphDensity = false;
+        calculatedEdges = false;
+        calculatedVertices = false;
+        calculatedVerticesList=false;
+        calculatedVerticesSet = false;
+        calculatedIsolates = false;
+        calculatedTriad = false;
+        calculatedAdjacencyMatrix = false;
+        calculatedDistances = false;
+        calculatedCentralities = false;
+        calculatedDP = false;
+        calculatedDC = false;
+        calculatedPP = false;
+        calculatedIRCC = false;
+        calculatedIC = false;
+        calculatedEVC=false;
+        calculatedPRP = false;
+
+        if (signalMW) {
+
+            qDebug()<<"Graph::graphSetModified() - emit signalGraphModified()";
+            emit signalGraphModified(graphIsDirected(),
+                                     m_totalVertices,
+                                     edgesEnabled(),
+                                     graphDensity());
+            return;
+        }
+
+    }
+    else if ( graphNewStatus > GraphChange::ChangedMinorOptions) {
+        //minor changes, i.e. vertex positions, labels, etc
+        // do not change status if current status is > ChangedMajor
+        if ( m_graphHasChanged < GraphChange::ChangedMajor) {
+            m_graphHasChanged = graphNewStatus;
+        }
+        qDebug()<<"Graph::graphSetModified() - minor changes but needs saving...";
+        emit signalGraphSavedStatus(FileType::NOT_SAVED);
+        return;
+    }
+    else { // ChangedNew or ChangedNone
+        m_graphHasChanged=graphNewStatus;
+    }
+
+
+
+
 }
 
 
@@ -2788,8 +2836,12 @@ void Graph::graphSetModified(const int &graphNewStatus, const bool &signalMW){
  * @return
  */
 bool Graph::graphIsModified() const {
-    qDebug() << "Graph::graphIsModified() - graphModifiedFlag:" << graphModifiedFlag ;
-    return (graphModifiedFlag > 10 ) ? true: false;
+    qDebug() << "Graph::graphIsModified() - m_graphHasChanged:" << m_graphHasChanged ;
+    if ( m_graphHasChanged > GraphChange::ChangedMajor
+         && m_graphHasChanged != GraphChange::ChangedNew ) {
+        return true;
+    }
+    return false;
 }
 
 /**
@@ -2797,18 +2849,19 @@ bool Graph::graphIsModified() const {
  * @return
  */
 bool Graph::graphSaved() const {
-    qDebug() << "Graph::graphSaved() - graphModifiedFlag:" << graphModifiedFlag ;
-    return (graphModifiedFlag == 0 ) ? true: false;
+    qDebug() << "Graph::graphSaved() - m_graphHasChanged:" << m_graphHasChanged ;
+    return (m_graphHasChanged == 0 ) ? true: false;
 }
 
 
+
 /**
- * @brief Graph::graphLoaded
+ * @brief Returns if a graph has been loaded from a file.
  * @return
  */
 bool Graph::graphLoaded() const {
-    qDebug() << "Graph::graphLoaded() - " << (( graphFileFormat() != FILE_TYPE::UNRECOGNIZED ) ? true: false );
-    return ( graphFileFormat() != FILE_TYPE::UNRECOGNIZED ) ? true: false;
+    qDebug() << "Graph::graphLoaded() - " << (( graphFileFormat() != FileType::UNRECOGNIZED ) ? true: false );
+    return ( graphFileFormat() != FileType::UNRECOGNIZED ) ? true: false;
 }
 
 
@@ -2908,14 +2961,15 @@ int Graph::graphSelectedEdgesCount() const {
  * @return
  */
 qreal Graph::graphDensity() {
-    qDebug()<< "Graph::graphDensity() - checking if graph modified... ";
-    if (!graphIsModified() && calculatedGraphDensity) {
+
+    if ( calculatedGraphDensity ) {
         qDebug()<< "Graph::graphDensity() - graph not modified and"
                    "already calculated density. Returning last value:"
                 << m_graphDensity;
         return m_graphDensity;
     }
 
+    qDebug()<< "Graph::graphDensity() - computing...";
     int V=vertices();
     if (V!=0 && V!=1) {
         m_graphDensity = (graphIsUndirected()) ?
@@ -2938,12 +2992,15 @@ qreal Graph::graphDensity() {
  * @return
  */
 bool Graph::graphIsWeighted(){
-    qDebug()<< "Graph::graphIsWeighted()";
-    if ( ! graphIsModified() && calculatedGraphWeighted ) {
+
+    if ( calculatedGraphWeighted ) {
         qDebug()<< "Graph::graphIsWeighted() - graph not modified. Return: "
                 << m_isWeighted;
         return m_isWeighted;
     }
+
+    qDebug()<< "Graph::graphIsWeighted()";
+
     qreal m_weight=0;
     VList::const_iterator it, it1;
     int N = vertices();
@@ -3179,14 +3236,18 @@ void Graph::webCrawl(const QString &seedUrl,
  */
 qreal Graph::graphReciprocity(){
 
+    qDebug()<< "Graph::graphReciprocity()";
 
-    qDebug() << "Graph::graphReciprocity() ";
-    if (!graphIsModified() && calculatedGraphReciprocity){
+    if ( calculatedGraphReciprocity ){
         qDebug() << "Graph::graphReciprocity() - graph not modified and "
                     "already calculated reciprocity. Returning previous result: "
                  << m_graphReciprocityArc;
         return m_graphReciprocityArc;
     }
+
+    qDebug() << "Graph::graphReciprocity() - Computing...";
+
+    emit statusMessage ( (tr("Calculating the Arc Reciprocity of the graph...")) );
 
     m_graphReciprocityArc=0;
     m_graphReciprocityDyad=0;
@@ -3315,13 +3376,13 @@ qreal Graph::graphReciprocity(){
  */
 void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
 {
+    qDebug() << "Graph::writeReciprocity()";
 
     Q_UNUSED(considerWeights);
 
     QTime computationTimer;
     computationTimer.start();
 
-    qDebug() << "Graph::writeReciprocity";
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
@@ -3331,14 +3392,7 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
     QTextStream outText ( &file );
     outText.setCodec("UTF-8");
 
-    if (graphIsModified() || !calculatedGraphReciprocity){
-
-        qDebug() << "Graph::writeReciprocity() - graph modified or "
-                    "reciprocity not computed yet. Recomputing. ";
-
-        m_graphReciprocityArc = graphReciprocity();
-
-    }
+    m_graphReciprocityArc = graphReciprocity();
 
     int rowCount=0;
     int progressCounter=0;
@@ -3577,7 +3631,8 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
  */
 bool Graph::graphIsSymmetric(){
     qDebug() << "Graph::graphIsSymmetric() ";
-    if ( !graphIsModified() && calculatedGraphSymmetry ){
+
+    if ( calculatedGraphSymmetry ){
         qDebug() << "Graph::graphIsSymmetric() - graph not modified and "
                     "already calculated symmetry. Returning previous result: "
                  << m_symmetric;
@@ -4084,9 +4139,8 @@ bool Graph::graphReachable(const int &v1, const int &v2) {
 void Graph::graphMatrixReachabilityCreate() {
     qDebug() << "Graph::graphMatrixReachabilityCreate()";
 
-    if ( !calculatedDistances || graphIsModified() ) {
-        graphDistancesGeodesic(false);
-    }
+
+    graphDistancesGeodesic(false);
 
     VList::const_iterator it, jt;
 
@@ -4270,7 +4324,7 @@ bool Graph::graphIsConnected() {
 
     qDebug() << "Graph::graphIsConnected() ";
 
-    if ( calculatedDistances && !graphIsModified()) {
+    if ( calculatedDistances ) {
         qDebug()<< "Graph::graphIsConnected() - graph unmodified. Returning:"
                 << m_graphIsConnected;
         return m_graphIsConnected;
@@ -4300,9 +4354,7 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
                                            const bool &dropIsolates) {
     qDebug() << "Graph::graphMatrixShortestPathsCreate()";
 
-    if ( !calculatedDistances || graphIsModified() ) {
-        graphDistancesGeodesic(false,considerWeights,inverseWeights, dropIsolates);
-    }
+    graphDistancesGeodesic(false,considerWeights,inverseWeights, dropIsolates);
 
     VList::const_iterator it, jt;
 
@@ -4393,9 +4445,8 @@ void Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
                                               const bool &dropIsolates) {
     qDebug() << "Graph::graphMatrixDistanceGeodesicCreate()";
 
-    if ( !calculatedDistances || graphIsModified() ) {
-        graphDistancesGeodesic(false,considerWeights,inverseWeights, dropIsolates);
-    }
+
+    graphDistancesGeodesic(false,considerWeights,inverseWeights, dropIsolates);
 
     VList::const_iterator it, jt;
 
@@ -4509,7 +4560,13 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
              << "inverseWeights:"<<inverseWeights
              << "dropIsolates:" << dropIsolates;
 
-    if ( !graphIsModified() && calculatedDistances && !computeCentralities)  {
+    if (computeCentralities) {
+        if ( calculatedCentralities ) {
+            qDebug() << "Graph::graphDistancesGeodesic() - Centralities calculated. Return.";
+            return;
+        }
+    }
+    else if ( calculatedDistances )  {
         qDebug() << "Graph::graphDistancesGeodesic() - not modified. Return.";
         return;
     }
@@ -5779,7 +5836,7 @@ void Graph::writeEccentricity(const QString fileName, const bool considerWeights
     QTextStream outText ( &file );
     outText.setCodec("UTF-8");
 
-    if ( !calculatedDistances || !calculatedCentralities || graphIsModified() ) {
+    if ( !calculatedCentralities  ) {
         graphDistancesGeodesic(true, considerWeights,
                              inverseWeights, dropIsolates);
 
@@ -5951,9 +6008,11 @@ void Graph::writeEccentricity(const QString fileName, const bool considerWeights
  */
 void Graph::centralityInformation(const bool considerWeights,
                                   const bool inverseWeights){
+
     qDebug()<< "Graph::centralityInformation()";
 
-    if (calculatedIC && !graphIsModified()) {
+    if ( calculatedIC ) {
+        qDebug()<< "Graph::centralityInformation() - already computed. Return.";
         return;
     }
 
@@ -5978,7 +6037,6 @@ void Graph::centralityInformation(const bool considerWeights,
     int n=vertices(dropIsolates,false,true);
 
     graphMatrixAdjacencyCreate(dropIsolates, considerWeights, inverseWeights, symmetrize);
-
 
 
     QString pMsg = tr("Computing Information Centralities. \nPlease wait...");
@@ -6072,6 +6130,7 @@ void Graph::centralityInformation(const bool considerWeights,
 void Graph::writeCentralityInformation(const QString fileName,
                                        const bool considerWeights,
                                        const bool inverseWeights){
+
     qDebug() << "Graph::writeCentralityInformation()";
 
     QTime computationTimer;
@@ -6087,9 +6146,7 @@ void Graph::writeCentralityInformation(const QString fileName,
     QTextStream outText ( &file );
     outText.setCodec("UTF-8");
 
-    if ( graphIsModified() || !calculatedIC ) {
-            centralityInformation(considerWeights, inverseWeights);
-    }
+    centralityInformation(considerWeights, inverseWeights);
 
     VList::const_iterator it;
 
@@ -6336,10 +6393,8 @@ void Graph::writeCentralityEigenvector(const QString fileName,
     }
     QTextStream outText ( &file );
     outText.setCodec("UTF-8");
-    if (graphIsModified() || !calculatedEVC ) {
-            emit statusMessage ( (tr("Calculating EVC scores...")) );
-            centralityEigenvector(considerWeights, inverseWeights,dropIsolates);
-    }
+
+    centralityEigenvector(considerWeights, inverseWeights,dropIsolates);
 
     VList::const_iterator it;
 
@@ -6556,11 +6611,14 @@ void Graph::centralityEigenvector(const bool &considerWeights,
                                   const bool &inverseWeights,
                                   const bool &dropIsolates) {
 
-    qDebug("Graph::centralityEigenvector()");
-    if (!graphIsModified() && calculatedEVC ) {
-        qDebug() << "Graph::centralityEigenvector() - graph not changed - returning";
+    qDebug() << "Graph::centralityEigenvector()";
+
+    if ( calculatedEVC ) {
+        qDebug() << "Graph::centralityEigenvector() - Already computed. Return.";
         return;
     }
+
+    emit statusMessage ( (tr("Calculating EVC scores...")) );
 
     classesEVC=0;
     discreteEVCs.clear();
@@ -6681,7 +6739,7 @@ void Graph::centralityEigenvector(const bool &considerWeights,
  */
 void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
     qDebug("Graph::centralityDegree()");
-    if ( !graphIsModified() && calculatedDC ) {
+    if ( calculatedDC ) {
         qDebug() << "Graph::centralityDegree() - graph not changed - returning";
         return;
     }
@@ -7308,6 +7366,7 @@ void Graph::writeCentralityCloseness( const QString fileName,
              << "considerWeights"<<considerWeights
              << "inverseWeights"<<inverseWeights
              << "dropIsolates" << dropIsolates;
+
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
         qDebug()<< "Error opening file!";
@@ -7316,14 +7375,7 @@ void Graph::writeCentralityCloseness( const QString fileName,
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    if ( graphIsModified() || !calculatedCentralities ) {
-            graphDistancesGeodesic(true, considerWeights,
-                                 inverseWeights, dropIsolates);
-    }
-    else {
-        qDebug() << "Graph::writeCentralityCloseness() - graph not modified, "
-                    "and centralities calculated. Writing file...";
-    }
+    graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
 
     int rowCount=0;
     int N = vertices();
@@ -7577,15 +7629,13 @@ void Graph::centralityClosenessIR(const bool considerWeights,
                                               const bool inverseWeights,
                                               const bool dropIsolates){
     qDebug()<< "Graph::centralityClosenessIR()";
-    if ( !graphIsModified() && calculatedIRCC ) {
+    if ( calculatedIRCC ) {
         qDebug() << "Graph::centralityClosenessIR() - "
                     " graph not changed - returning";
         return;
     }
 
-     if ( !calculatedDistances || graphIsModified() ) {
-         graphDistancesGeodesic(false,considerWeights,inverseWeights,dropIsolates);
-     }
+    graphDistancesGeodesic(false,considerWeights,inverseWeights,dropIsolates);
 
     // calculate centralities
     VList::const_iterator it, jt;
@@ -7908,6 +7958,8 @@ void Graph::writeCentralityBetweenness(const QString fileName,
                                         const bool inverseWeights,
                                        const bool dropIsolates) {
 
+    qDebug() << "Graph::writeCentralityBetweenness()";
+
     QTime computationTimer;
     computationTimer.start();
 
@@ -7919,13 +7971,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    if ( graphIsModified() || !calculatedCentralities ) {
-        graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
-    }
-    else {
-        qDebug() << "Graph::writeCentralityBetweenness() -"
-                    "No need to recompute Distances/Centralities. Writing file.";
-    }
+    graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
 
     int rowCount=0, progressCounter=0;
     int N = vertices();
@@ -8168,6 +8214,8 @@ void Graph::writeCentralityStress( const QString fileName,
                                    const bool inverseWeights,
                                    const bool dropIsolates) {
 
+    qDebug() << "Graph::writeCentralityStress()";
+
     QTime computationTimer;
     computationTimer.start();
 
@@ -8179,12 +8227,7 @@ void Graph::writeCentralityStress( const QString fileName,
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    if ( graphIsModified() || !calculatedCentralities ) {
-        graphDistancesGeodesic(true, considerWeights, inverseWeights,dropIsolates);
-    }
-    else {
-        qDebug() << " graph not modified, and centralities calculated. Returning";
-    }
+    graphDistancesGeodesic(true, considerWeights, inverseWeights,dropIsolates);
 
     VList::const_iterator it;
 
@@ -8384,6 +8427,9 @@ void Graph::writeCentralityEccentricity(const QString fileName,
                                          const bool considerWeights,
                                          const bool inverseWeights,
                                         const bool dropIsolates) {
+
+    qDebug() << "Graph::writeCentralityEccentricity()";
+
     QTime computationTimer;
     computationTimer.start();
 
@@ -8395,12 +8441,7 @@ void Graph::writeCentralityEccentricity(const QString fileName,
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    if ( graphIsModified() || !calculatedCentralities ) {
-        graphDistancesGeodesic(true, considerWeights, inverseWeights,dropIsolates);
-    }
-    else {
-        qDebug() << " graph not modified, and centralities calculated. Returning";
-    }
+    graphDistancesGeodesic(true, considerWeights, inverseWeights,dropIsolates);
 
     VList::const_iterator it;
 
@@ -8586,6 +8627,8 @@ void Graph::writeCentralityPower(const QString fileName,
                                   const bool inverseWeights,
                                  const bool dropIsolates) {
 
+    qDebug() << "Graph::writeCentralityPower()";
+
     QTime computationTimer;
     computationTimer.start();
 
@@ -8597,12 +8640,7 @@ void Graph::writeCentralityPower(const QString fileName,
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    if ( graphIsModified() || !calculatedCentralities ) {
-        graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
-    }
-    else {
-        qDebug() << " graph not modified, and centralities calculated. Returning";
-    }
+    graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
 
     VList::const_iterator it;
 
@@ -8842,7 +8880,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
 
     qDebug()<< "Graph::prestigeDegree()";
 
-    if ( !graphIsModified() && calculatedDP ) {
+    if ( calculatedDP ) {
         qDebug() << "Graph::prestigeDegree() - "
                     " graph not changed - returning";
         return;
@@ -9278,7 +9316,7 @@ void Graph::prestigeProximity( const bool considerWeights,
                                const bool inverseWeights,
                                const bool dropIsolates){
     qDebug()<< "Graph::prestigeProximity()";
-    if ( !graphIsModified() && calculatedPP ) {
+    if ( calculatedPP ) {
         qDebug() << "Graph::prestigeProximity() - "
                     " graph not changed - returning";
         return;
@@ -9607,7 +9645,7 @@ void Graph::prestigePageRank(const bool &dropIsolates){
 
     qDebug()<< "Graph::prestigePageRank()";
 
-    if ( !graphIsModified() && calculatedPRP ) {
+    if ( calculatedPRP ) {
         qDebug() << " graph not changed - return ";
         return;
     }
@@ -10215,8 +10253,6 @@ void Graph::randomNetErdosCreate(const int &N,
     emit signalProgressBoxKill();
 
     graphSetModified(GraphChange::ChangedVerticesEdges);
-
-
 }
 
 
@@ -10394,9 +10430,9 @@ void Graph::randomNetScaleFreeCreate (const int &N,
 
     relationCurrentRename(tr("scale-free"),true);
     qDebug() << "Graph::randomNetScaleFreeCreate() - finished. Calling "
-                "graphSetModified(GraphChange::ChangedVerticesEdges)";
+                "graphSetModified(GraphChange::ChangedNew)";
 
-    graphSetModified(GraphChange::ChangedVerticesEdges);
+    graphSetModified(GraphChange::ChangedNew);
 
     emit signalProgressBoxKill();
 
@@ -10479,7 +10515,7 @@ void Graph::randomNetSmallWorldCreate (const int &N, const int &degree,
 
     layoutVertexSizeByIndegree();
 
-    graphSetModified(GraphChange::ChangedVerticesEdges);
+    graphSetModified(GraphChange::ChangedNew);
 }
 
 
@@ -10653,7 +10689,7 @@ void Graph::randomNetRegularCreate(const int &N,
 
     emit signalProgressBoxKill();
 
-    graphSetModified(GraphChange::ChangedVerticesEdges);
+    graphSetModified(GraphChange::ChangedNew);
 
 }
 
@@ -10725,7 +10761,7 @@ void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
     }
 
 
-    graphSetModified(GraphChange::ChangedVerticesEdges, updateProgress);
+    graphSetModified(GraphChange::ChangedNew, updateProgress);
 }
 
 
@@ -10944,7 +10980,7 @@ void Graph::randomNetLatticeCreate(const int &N,
 
     emit signalProgressBoxKill();
 
-    graphSetModified(GraphChange::ChangedVerticesEdges);
+    graphSetModified(GraphChange::ChangedNew);
 
 }
 
@@ -11270,9 +11306,7 @@ QList<int> Graph::vertexinfluenceRange(int v1){
 
     qDebug() << "Graph::vertexinfluenceRange() - vertex:"<< v1;
 
-    if ( !calculatedDistances || graphIsModified() ) {
-        graphDistancesGeodesic(false);
-    }
+    graphDistancesGeodesic(false);
 
     VList::const_iterator jt;
 
@@ -11329,9 +11363,7 @@ QList<int> Graph::vertexinfluenceRange(int v1){
 QList<int> Graph::vertexinfluenceDomain(int v1){
     qDebug() << "Graph::vertexinfluenceDomain() - vertex:"<< v1;
 
-    if ( !calculatedDistances || graphIsModified() ) {
-        graphDistancesGeodesic(false);
-    }
+    graphDistancesGeodesic(false);
 
     VList::const_iterator it;
 
@@ -11623,6 +11655,8 @@ void Graph::writeClusteringCoefficient( const QString fileName,
 void Graph::writeTriadCensus( const QString fileName,
                               const bool considerWeights) {
 
+    qDebug() << "Graph::writeTriadCensus()";
+
     QTime computationTimer;
     computationTimer.start();
 
@@ -11637,7 +11671,8 @@ void Graph::writeTriadCensus( const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     emit statusMessage ( (tr("Computing triad census. Please wait....")) );
-    if ( graphIsModified() || !calculatedTriad) {
+
+    if (  !calculatedTriad) {
         if (!graphTriadCensus()){
             qDebug() << "Error in graphTriadCensus(). Exiting...";
             file.close();
@@ -14569,8 +14604,8 @@ void Graph::graphFileLoaded (const int &fileType,
                              const int &edgeDirType,
                              const QString &message)
 {
-    if ( fileType == FILE_TYPE::UNRECOGNIZED ) {
-        qDebug() << "Graph::graphFileLoaded() - FILE_TYPE::UNRECOGNIZED. "
+    if ( fileType == FileType::UNRECOGNIZED ) {
+        qDebug() << "Graph::graphFileLoaded() - FileType::UNRECOGNIZED. "
                     "Emitting signalGraphLoaded with error message "
                  << message;
         emit signalGraphLoaded (fileType,
@@ -14622,17 +14657,16 @@ void Graph::graphFileLoaded (const int &fileType,
 
 
 /**
- * @brief graphFileFormat
+ * @brief Returns the format of the last file opened
  * @return
- * Returns the format of the last file opened
- */
+  */
 int Graph::graphFileFormat() const {
     return m_fileFormat;
 }
 
 
 /**
- * @brief Graph::graphFileFormatExportSupported
+ * @brief Returns true if the fileFormat is supported for saving
  * @param fileFormat
  * @return
  */
@@ -14659,59 +14693,37 @@ void Graph::graphSave(const QString &fileName,
     bool saved = false;
     m_fileFormat = fileType;
     switch (fileType) {
-    case FILE_TYPE::PAJEK : {
+    case FileType::PAJEK : {
         qDebug() << "Graph::graphSave() - Pajek formatted file";
         saved=graphSaveToPajekFormat(fileName, graphName(), canvasWidth, canvasHeight) ;
         break;
     }
-    case FILE_TYPE::ADJACENCY: {
+    case FileType::ADJACENCY: {
         qDebug() << "Graph::graphSave() - Adjacency formatted file";
         saved=graphSaveToAdjacencyFormat(fileName, saveEdgeWeights) ;
         break;
     }
-    case FILE_TYPE::GRAPHVIZ: {
+    case FileType::GRAPHVIZ: {
         qDebug() << "Graph::graphSave() - GraphViz/Dot formatted file";
         saved=graphSaveToDotFormat(fileName);
         break;
     }
-    case FILE_TYPE::GRAPHML: {
+    case FileType::GRAPHML: {
         qDebug() << "Graph::graphSave() - GraphML formatted file";
         saved=graphSaveToGraphMLFormat(fileName);
         break;
     }
     default: {
-        m_fileFormat = FILE_TYPE::UNRECOGNIZED;
+        m_fileFormat = FileType::UNRECOGNIZED;
         qDebug() << "Graph::graphSave() - Error! Unrecognized fileType";
         break;
     }
     };
     if (saved) {
-        if ( graphIsModified() ) {
-            calculatedGraphReciprocity = false;
-            calculatedGraphSymmetry = false;
-            calculatedGraphWeighted = false;
-            calculatedGraphDensity = false;
-            calculatedEdges = false;
-            calculatedVertices = false;
-            calculatedVerticesList=false;
-            calculatedVerticesSet = false;
-            calculatedIsolates = false;
-            calculatedAdjacencyMatrix = false;
-            calculatedDistances = false;
-            calculatedCentralities = false;
-            calculatedDP = false;
-            calculatedDC = false;
-            calculatedPP = false;
-            calculatedIRCC = false;
-            calculatedIC = false;
-            calculatedEVC=false;
-            calculatedPRP = false;
-        }
         graphSetModified(GraphChange::ChangedNone);
-        signalGraphSaved(fileType);
     }
     else {
-         signalGraphSaved(0);
+        signalGraphSavedStatus(FileType::UNRECOGNIZED);
     }
 
 }
@@ -20377,39 +20389,29 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
         // do nothing
     }
     else if ( prominenceIndex == IndexType::DC ) {
-        if ( graphIsModified() || !calculatedDC )
-            centralityDegree(true, dropIsolates);
+        centralityDegree(true, dropIsolates);
     }
     else if ( prominenceIndex == IndexType::IRCC ){
-        if ( graphIsModified() || !calculatedIRCC )
-            centralityClosenessIR();
+        centralityClosenessIR();
     }
     else if ( prominenceIndex == IndexType::IC ) {
-        if ( graphIsModified() || !calculatedIC )
-            centralityInformation();
+        centralityInformation();
     }
     else if ( prominenceIndex == IndexType::EVC ){
-        if ( graphIsModified() || !calculatedEVC ) {
-            centralityEigenvector(true, dropIsolates);
-        }
+        centralityEigenvector(true, dropIsolates);
     }
-
     else if ( prominenceIndex == IndexType::DP ){
-        if ( graphIsModified() || !calculatedDP )
-            prestigeDegree(true, dropIsolates);
+        prestigeDegree(true, dropIsolates);
     }
     else if ( prominenceIndex == IndexType::PRP ) {
-        if ( graphIsModified() || !calculatedPRP )
-            prestigePageRank();
+        prestigePageRank();
     }
     else if ( prominenceIndex == IndexType::PP ){
-        if ( graphIsModified() || !calculatedPP )
-            prestigeProximity(considerWeights, inverseWeights);
+        prestigeProximity(considerWeights, inverseWeights);
     }
     else{
-        if ( graphIsModified() || !calculatedCentralities )
-            graphDistancesGeodesic(true, considerWeights,
-                                   inverseWeights, dropIsolates);
+        graphDistancesGeodesic(true, considerWeights,
+                               inverseWeights, dropIsolates);
     }
 
 

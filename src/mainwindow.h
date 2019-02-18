@@ -185,7 +185,7 @@ public slots:
                                const int &totalEdges=0,
                                const QString &message=QString::null);
     void slotNetworkFileLoadRecent();
-    void slotNetworkSaved(const int &status);
+    void slotNetworkSavedStatus(const int &status);
     void slotNetworkFileView();
     void slotNetworkImportGraphML();
     void slotNetworkImportPajek();
@@ -195,7 +195,8 @@ public slots:
     void slotNetworkImportUcinet();
     void slotNetworkImportEdgeList();
     void slotNetworkImportTwoModeSM();
-    void slotNetworkChanged(const int &graphStatus, const bool &directed,
+
+    void slotNetworkChanged(const bool &directed,
                             const int &vertices, const int &edges,
                             const qreal &density);
     void slotNetworkSave(const int &fileFormat=-1);

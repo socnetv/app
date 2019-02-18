@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
- <!-- Created by SocNetV 2.1 --> 
+ <!-- Created by SocNetV 2.5 --> 
 <graphml xmlns="http://graphml.graphdrawing.org/xmlns"       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance "       xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns       http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
   <key id="d0" for="node" attr.name="label" attr.type="string"> 
     <default></default> 
@@ -20,10 +20,10 @@
     <default>circle</default> 
   </key> 
   <key id="d6" for="node" attr.name="label.color" attr.type="string"> 
-    <default>#00aa00</default> 
+    <default>#8d8d8d</default> 
   </key> 
   <key id="d7" for="node" attr.name="label.size" attr.type="string"> 
-    <default>6</default> 
+    <default>8</default> 
   </key> 
   <key id="d8" for="edge" attr.name="weight" attr.type="double"> 
     <default>1.0</default> 
@@ -37,69 +37,102 @@
   <graph id="G" edgedefault="undirected"> 
     <node id="1"> 
       <data key="d0">n0</data>
-      <data key="d1">0.957447</data>
-      <data key="d2">0.0386152</data>
+      <data key="d1">0.746685</data>
+      <data key="d2">0.222718</data>
+      <data key="d4">#0000ff</data>
       <data key="d5">circle</data>
+      <data key="d6">#00aa00</data>
+      <data key="d7">6</data>
     </node>
     <node id="2"> 
       <data key="d0">n1</data>
-      <data key="d1">0.957447</data>
-      <data key="d2">0.395473</data>
+      <data key="d1">0.846434</data>
+      <data key="d2">0.418541</data>
+      <data key="d4">#0000ff</data>
       <data key="d5">circle</data>
+      <data key="d6">#00aa00</data>
+      <data key="d7">6</data>
     </node>
     <node id="3"> 
       <data key="d0">n2</data>
-      <data key="d1">0.737589</data>
-      <data key="d2">0.14514</data>
+      <data key="d1">0.713681</data>
+      <data key="d2">0.366466</data>
+      <data key="d4">#ffe200</data>
       <data key="d5">circle</data>
+      <data key="d6">#00aa00</data>
+      <data key="d7">6</data>
     </node>
     <node id="4"> 
       <data key="d0">n3</data>
-      <data key="d1">0.4</data>
-      <data key="d2">0.151798</data>
+      <data key="d1">0.585052</data>
+      <data key="d2">0.429958</data>
+      <data key="d4">#ff0000</data>
       <data key="d5">circle</data>
+      <data key="d6">#00aa00</data>
+      <data key="d7">6</data>
     </node>
     <node id="5"> 
       <data key="d0">n4</data>
-      <data key="d1">0.10922</data>
-      <data key="d2">0.166445</data>
+      <data key="d1">0.445105</data>
+      <data key="d2">0.384369</data>
+      <data key="d4">#00ffe6</data>
       <data key="d5">circle</data>
+      <data key="d6">#00aa00</data>
+      <data key="d7">6</data>
     </node>
     <node id="6"> 
       <data key="d0">n5</data>
-      <data key="d1">0.402837</data>
-      <data key="d2">0.483356</data>
+      <data key="d1">0.514991</data>
+      <data key="d2">0.559816</data>
+      <data key="d4">#c8ff00</data>
       <data key="d5">circle</data>
+      <data key="d6">#00aa00</data>
+      <data key="d7">6</data>
     </node>
     <node id="7"> 
       <data key="d0">n6</data>
-      <data key="d1">0.093617</data>
-      <data key="d2">0.509987</data>
+      <data key="d1">0.372244</data>
+      <data key="d2">0.510142</data>
+      <data key="d4">#84ff00</data>
       <data key="d5">circle</data>
+      <data key="d6">#00aa00</data>
+      <data key="d7">6</data>
     </node>
     <node id="8"> 
       <data key="d0">n7</data>
-      <data key="d1">0.50922</data>
-      <data key="d2">0.720373</data>
+      <data key="d1">0.440836</data>
+      <data key="d2">0.684773</data>
+      <data key="d4">#00fffb</data>
       <data key="d5">circle</data>
+      <data key="d6">#00aa00</data>
+      <data key="d7">6</data>
     </node>
     <node id="9"> 
       <data key="d0">n8</data>
-      <data key="d1">0.283688</data>
-      <data key="d2">0.824234</data>
+      <data key="d1">0.300595</data>
+      <data key="d2">0.639113</data>
+      <data key="d4">#ffe600</data>
       <data key="d5">circle</data>
+      <data key="d6">#00aa00</data>
+      <data key="d7">6</data>
     </node>
     <node id="10"> 
       <data key="d0">n9</data>
-      <data key="d1">0.0312057</data>
-      <data key="d2">0.932091</data>
+      <data key="d1">0.217446</data>
+      <data key="d2">0.750817</data>
+      <data key="d4">#0000ff</data>
       <data key="d5">circle</data>
+      <data key="d6">#00aa00</data>
+      <data key="d7">6</data>
     </node>
     <node id="11"> 
       <data key="d0">n10</data>
-      <data key="d1">0.716312</data>
-      <data key="d2">0.92277</data>
+      <data key="d1">0.162686</data>
+      <data key="d2">0.639564</data>
+      <data key="d4">#0000ff</data>
       <data key="d5">circle</data>
+      <data key="d6">#00aa00</data>
+      <data key="d7">6</data>
     </node>
     <edge id="e1" directed="false" source="1" target="3"> 
       <data key="d8">1</data> 

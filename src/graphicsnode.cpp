@@ -180,18 +180,28 @@ int GraphicsNode::size() const{
 
 
 /**
- * @brief Sets the shape of the node by creating a path where all painting will be done
+ * @brief Sets the shape of the node and prepares the corresponding QPainterPath
+ * m_path which will be drawn by our painter in GraphicsNode::paint().
+ * The only exception is when the shape is 'custom'. In that case, the painter
+ * will paint a pixmap with the custom node icon (loaded from iconPath).
+ * However, even in that case we are still creating a QPainterPath, because this
+ * is needed by QGraphicsNode::shape() function which is responsible for collision
+ * detection and needs to return a path with an accurate outline of the item's shape.
  * Called every time the user needs to change the shape of an node.
  * @param shape
  */
 void GraphicsNode::setShape(const QString shape, const QString &iconPath) {
+
     prepareGeometryChange();
+
     m_shape=shape;
+
     qDebug()<< "GraphicsNode::setShape() - Node:" << nodeNumber()
             << "shape:" << m_shape
             << "pos:"<<  x() << "," <<  y();
 
     QPainterPath path;
+
     if ( m_shape == "circle") {
         path.addEllipse (-m_size, -m_size, 2*m_size, 2*m_size);
     }
@@ -239,9 +249,13 @@ void GraphicsNode::setShape(const QString shape, const QString &iconPath) {
             m_iconPath = iconPath;
         }
     }
-    else {
+    else if (m_shape == "bugs") {
         path.addRect (-m_size , -m_size , 2*m_size , 2*m_size );
         m_iconPath = ":/images/bugs.png";
+    }
+    else {
+        // If shape is not supported, we draw a circle.
+        path.addEllipse (-m_size, -m_size, 2*m_size, 2*m_size);
     }
     m_path = path;
     update();
@@ -250,13 +264,20 @@ void GraphicsNode::setShape(const QString shape, const QString &iconPath) {
 
 
 /**
- * @brief Returns the shape of the node as a path (an accurate outline of the item's shape)
-*	Used by the collision algorithm in collidesWithItem()
+ * @brief Returns the shape of the node as a path in local coordinates.
+ * The shape is used for many things, including collision detection, hit tests,
+ * and for the QGraphicsScene::items() functions.
+ * We could ommit reimplementing this and have the default QGraphicsItem::shape()
+ * return a simple rectangular shape through boundingRect() but we opt to return
+ * an accurate outline of the item's shape.
  * @return
  */
 QPainterPath GraphicsNode::shape() const {
-    //qDebug ("GraphicsNode: shape()");
+
+    //qDebug() << "GraphicsNode::shape()";
+
     return (m_path);
+
 }
 
 
@@ -266,8 +287,10 @@ QPainterPath GraphicsNode::shape() const {
  * @return
  */
 QRectF GraphicsNode::boundingRect() const {
-    qreal adjust = 5;
-    return QRectF(-m_size -adjust , -m_size-adjust , 2*m_size+adjust , 2*m_size +adjust);
+    //qDebug()<< "GraphicsNode::boundingRect() " << m_path.controlPointRect();
+    return m_path.controlPointRect();
+    //qreal adjust = 5;
+    // return QRectF(-m_size -adjust , -m_size-adjust , 2*m_size+adjust , 2*m_size +adjust);
 }
 
 
@@ -281,30 +304,28 @@ void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
     //	painter->setClipRect( option->exposedRect );
 
     if (option->state & QStyle::State_MouseOver) {
-            painter->setBrush(m_col.darker(120));
-            setZValue(ZValueNodeHighlighted);
+        painter->setBrush(m_col.darker(120));
+        setZValue(ZValueNodeHighlighted);
     }
     else {
         painter->setBrush(m_col);
         setZValue(ZValueNode);
     }
 
-    painter->setPen(QPen(QColor("#222"), 0));
-
     if (m_shape == "custom") {
         QPixmap pix(m_iconPath);
         painter->drawPixmap(-m_size, -m_size, 2*m_size, 2*m_size, pix);
     }
     else if ( m_shape == "bugs" ) {
-        // QPixmaps are stored in video card memory
-        // QImages are not
-        // But QImages can run in separate threads
-        QImage image(m_iconPath);
-        painter->drawImage(QRectF(-m_size, -m_size, 2*m_size, 2*m_size) , image);
-//        QPixmap pix(m_iconPath);
-//        painter->drawPixmap(-m_size, -m_size, 2*m_size, 2*m_size, pix);
+        // See:
+        // https://techbase.kde.org/Development/Tutorials/Graphics/Performance
+//        QImage image(m_iconPath);
+//        painter->drawImage(QRectF(-m_size, -m_size, 2*m_size, 2*m_size) , image);
+        QPixmap pix(m_iconPath);
+        painter->drawPixmap(-m_size, -m_size, 2*m_size, 2*m_size, pix);
     }
     else {
+        painter->setPen(QPen(QColor("#222"), 0));
         painter->drawPath (m_path);
     }
 

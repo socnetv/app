@@ -251,8 +251,9 @@ signals:
 
     void signalProgressBoxUpdate(const int &count=0 );
 
-    void signalGraphModified(const int &graphStatus,
-                             const bool &undirected,
+    void signalGraphSavedStatus(const int &status);
+
+    void signalGraphModified(const bool &undirected,
                              const int &vertices,
                              const int &edges,
                              const qreal &density);
@@ -264,7 +265,7 @@ signals:
                             const int &totalLinks=0,
                             const QString &message=QString::null );
 
-    void signalGraphSaved(const int &status);
+
 
     void statusMessage (const QString &message);
 
@@ -385,6 +386,7 @@ public:
         ChangedVerticesMetadata    = 2,
         ChangedEdgesMetadata       = 3,
         ChangedPositions           = 4,
+        ChangedMajor               = 10,
         ChangedVertices            = 11,
         ChangedEdges               = 12,
         ChangedVerticesEdges       = 13,
@@ -1250,7 +1252,7 @@ private:
 
     /** General & initialisation variables */
 
-    int graphModifiedFlag;
+    int m_graphHasChanged;
     int m_totalVertices, m_totalEdges, m_graphDiameter, initVertexSize;
     int initVertexLabelSize, initVertexNumberSize;
     int initVertexNumberDistance, initVertexLabelDistance;

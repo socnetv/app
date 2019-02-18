@@ -139,59 +139,59 @@ void Parser::load(const QString fn,
     errorMessage=QString::null;
 
     switch (fileFormat){
-    case FILE_TYPE::GRAPHML:
+    case FileType::GRAPHML:
         qDebug()<< "Parser::load() - calling loadGraphML()";
         if (loadGraphML()){
             qDebug()<< "Parser::load() - that was GRAPHML-formatted file";
         }
         break;
-    case FILE_TYPE::PAJEK:
+    case FileType::PAJEK:
         qDebug()<< "Parser::load() - calling loadPajek()";
         if ( loadPajek() ) {
             qDebug()<< "Parser::load() - that was PAJEK formatted file";
         }
         break;
-    case FILE_TYPE::ADJACENCY:
+    case FileType::ADJACENCY:
         qDebug()<< "Parser::load() - calling loadAdjacency()";
         if (loadAdjacency() ) {
             qDebug()<< "Parser::load() - that was ADJACENCY-formatted file";
         }
         break;
-    case FILE_TYPE::GRAPHVIZ:
+    case FileType::GRAPHVIZ:
         qDebug()<< "Parser::load() - calling loadDot()";
         if (loadDot() ) {
            qDebug()<< "Parser::load() - that was GRAPHVIZ-formatted file";
         }
         break;
-    case FILE_TYPE::UCINET:
+    case FileType::UCINET:
         qDebug()<< "Parser::load() - calling loadDL()";
         if (loadDL() ){
             qDebug()<< "Parser::load() - that was UCINET-formatted file";
         }
         break;
 
-    case FILE_TYPE::GML:
+    case FileType::GML:
         qDebug()<< "Parser::load() - calling loadGML()";
         if (loadGML() ){
             qDebug()<< "Parser::load() - that was GML-formatted file";
         }
         break;
 
-    case FILE_TYPE::EDGELIST_WEIGHTED:
+    case FileType::EDGELIST_WEIGHTED:
         qDebug()<< "Parser::load() - calling loadEdgeListWeighted()";
         if (loadEdgeListWeighed(delimiter) ){
             qDebug()<< "Parser::load() - that was weighted EDGELIST-formatted file";
                     }
         break;
 
-    case FILE_TYPE::EDGELIST_SIMPLE:
+    case FileType::EDGELIST_SIMPLE:
         qDebug()<< "Parser::load() - calling loadEdgeListSimple()";
         if (loadEdgeListSimple(delimiter) ){
             qDebug()<< "Parser::load() - that was simple EDGELIST-formatted file";
         }
         break;
 
-    case FILE_TYPE::TWOMODE:
+    case FileType::TWOMODE:
         qDebug()<< "Parser::load() - calling loadTwoModeSociomatrix()";
         if (loadTwoModeSociomatrix() ){
             qDebug()<< "Parser::load() - that was weigted TWOMODE-formatted file";
@@ -232,7 +232,7 @@ void Parser::load(const QString fn,
 void Parser::loadFileError(const QString &errorMessage) {
     qDebug()<<"Parser::loadFileError() - errorMessage:"
            <<errorMessage;
-    emit networkFileLoaded(FILE_TYPE::UNRECOGNIZED,
+    emit networkFileLoaded(FileType::UNRECOGNIZED,
                            QString::null,
                            QString::null,
                            0,
@@ -867,7 +867,7 @@ bool Parser::loadDL(){
     emit relationSet (0);
     qDebug() << "Parser::loadDL() - FINISHED - "
                 "emitting networkFileLoaded() and clearing arrays";
-    emit networkFileLoaded(FILE_TYPE::UCINET, fileName, networkName,
+    emit networkFileLoaded(FileType::UCINET, fileName, networkName,
                            totalNodes, totalLinks, EdgeType::Directed);
 
     lineElement.clear();
@@ -1532,7 +1532,7 @@ bool Parser::loadPajek(){
     emit relationSet (0);
 
     //The network has been loaded. Tell MW the statistics and network type
-    emit networkFileLoaded(FILE_TYPE::PAJEK, fileName, networkName,
+    emit networkFileLoaded(FileType::PAJEK, fileName, networkName,
                            totalNodes, totalLinks,
                            ( (has_arcs) ? EdgeType::Directed: EdgeType::Undirected));
 
@@ -1738,7 +1738,7 @@ bool Parser::loadAdjacency(){
     }
 
     qDebug() << "Parser: SM network has been loaded. Tell MW the statistics and network type";
-    emit networkFileLoaded(FILE_TYPE::ADJACENCY, fileName, networkName,
+    emit networkFileLoaded(FileType::ADJACENCY, fileName, networkName,
                            totalNodes, totalLinks, EdgeType::Directed);
 
     return true;
@@ -1848,7 +1848,7 @@ bool Parser::loadTwoModeSociomatrix(){
     }
 
     qDebug() << "Parser: Two-mode SM network has been loaded. Tell MW the statistics and network type";
-    emit networkFileLoaded(FILE_TYPE::TWOMODE, fileName,networkName,
+    emit networkFileLoaded(FileType::TWOMODE, fileName,networkName,
                            totalNodes, totalLinks, EdgeType::Undirected);
 
     return true;
@@ -1994,7 +1994,7 @@ bool Parser::loadGraphML(){
     emit relationSet (0);
 
     //The network has been loaded. Tell MW the statistics and network type
-    emit networkFileLoaded(FILE_TYPE::GRAPHML,
+    emit networkFileLoaded(FileType::GRAPHML,
                            fileName,
                            networkName,
                            totalNodes,
@@ -3153,7 +3153,7 @@ bool Parser::loadGML(){
         emit addRelation( "unnamed" );
     }
     //The network has been loaded. Tell MW the statistics and network type
-    emit networkFileLoaded(FILE_TYPE::GML, fileName, networkName, totalNodes, totalLinks, edgeDirType);
+    emit networkFileLoaded(FileType::GML, fileName, networkName, totalNodes, totalLinks, edgeDirType);
     qDebug() << "Parser-loadGML()";
     return true;
 }
@@ -3553,7 +3553,7 @@ bool Parser::loadDot(){
     }
 
     //The network has been loaded. Tell MW the statistics and network type
-    emit networkFileLoaded(FILE_TYPE::GRAPHVIZ, fileName, networkName,
+    emit networkFileLoaded(FileType::GRAPHVIZ, fileName, networkName,
                            totalNodes, totalLinks, edgeDirType);
     return true;
 }
@@ -3977,7 +3977,7 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
     }
 
     //The network has been loaded. Tell MW the statistics and network type
-    emit networkFileLoaded(FILE_TYPE::EDGELIST_WEIGHTED, fileName, networkName,
+    emit networkFileLoaded(FileType::EDGELIST_WEIGHTED, fileName, networkName,
                            totalNodes, totalLinks, edgeDirType);
     qDebug() << "Parser::loadEdgeListWeighed() - END. Returning.";
 
@@ -4268,7 +4268,7 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
      }
 
     //The network has been loaded. Tell MW the statistics and network type
-    emit networkFileLoaded(FILE_TYPE::EDGELIST_SIMPLE, fileName, networkName, totalNodes, totalLinks, edgeDirType);
+    emit networkFileLoaded(FileType::EDGELIST_SIMPLE, fileName, networkName, totalNodes, totalLinks, edgeDirType);
     qDebug() << "Parser-loadEdgeListSimple() ending and returning...";
     return true;
 
