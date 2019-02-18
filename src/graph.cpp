@@ -11732,9 +11732,9 @@ void Graph::writeTriadCensus( const QString fileName,
                   "The triad types are coded and labeled according to their number of mutual, asymmetric and non-existent (null) dyads. <br />"
                   "SocNetV follows the M-A-N labeling scheme, as described by Holland, Leinhardt and Davis in their studies. <br />"
                    "In the M-A-N scheme, each triad type has a label with four characters: <br />")
-            << tr("- The first character is the number of mutual (M) duads in the triad. Possible values: 0, 1, 2, 3.<br />"
-                  "- The second character is the number of asymmetric (A) duads in the triad. Possible values: 0, 1, 2, 3.<br />"
-                  "- The third character is the number of null (N) duads in the triad. Possible values: 0, 1, 2, 3.<br />"
+            << tr("- The first character is the number of mutual (M) dyads in the triad. Possible values: 0, 1, 2, 3.<br />"
+                  "- The second character is the number of asymmetric (A) dyads in the triad. Possible values: 0, 1, 2, 3.<br />"
+                  "- The third character is the number of null (N) dyads in the triad. Possible values: 0, 1, 2, 3.<br />"
                   "- The fourth character is infered from features or the nature of the triad, i.e. presence of cycle or transitivity. "
                    "Possible values: none, D (\"Down\"), U (\"Up\"), C (\"Cyclic\"), T (\"Transitive\")")
             << "<br /></p>";
