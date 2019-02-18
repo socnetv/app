@@ -144,10 +144,19 @@ protected:
 
 private:
     GraphicsWidget *graphicsWidget;
+
     GraphicsNode *source, *target;
-    QPainterPath m_path, *m_path_up, *m_path_down, *m_path_shape;
+
+    GraphicsEdgeWeight* weightNumber;
+
+    GraphicsEdgeLabel* edgeLabel;
+
+    QPainterPath m_path;
+
     QPointF sourcePoint, targetPoint;
+
     QPointF edgeOffset;
+
     qreal m_arrowSize;
 
     qreal m_minOffsetFromNode;
@@ -155,16 +164,12 @@ private:
 
     Qt::PenStyle m_style;
     int m_state;
-    GraphicsEdgeWeight* weightNumber;
-    GraphicsEdgeLabel* edgeLabel;
 
     QString  m_colorNegative, m_label;
     QColor m_color;
 
     qreal m_weight, m_width;
-    int tox1, tox2, toy1, toy2, size;
-    int sourceOrigSize;
-    int targetOrigSize;
+
     int m_edgeDirType;
 
     qreal angle, line_length, line_dx, line_dy;
