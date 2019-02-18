@@ -355,7 +355,7 @@ QMap<QString,QString> MainWindow::initSettings() {
 
     appSettings["initEdgesVisibility"]="true";
     appSettings["initEdgeShape"]="line"; //bezier
-    appSettings["initEdgeColor"]="#555";
+    appSettings["initEdgeColor"]="#666666";
     appSettings["initEdgeColorNegative"]="red";
     appSettings["initEdgeColorZero"]="blue";
     appSettings["initEdgeArrows"]="true";
@@ -418,7 +418,7 @@ QMap<QString,QString> MainWindow::initSettings() {
                                      "settings but any changes to them will not "
                                      " be saved for future sessions \n"
                                      "Please, check permissions in your home folder "
-                                     " and conduct the developer."
+                                     " and contact the developer team."
                                      ),
                                   QMessageBox::Ok, 0);
             return appSettings;
@@ -465,7 +465,7 @@ void MainWindow::saveSettings() {
                                  "settings but any changes to them will not "
                                  " be saved for future sessions \n"
                                  "Please, check permissions in your home folder "
-                                 " and conduct the developer."
+                                 " and contact the developer team."
                                  ),
                               QMessageBox::Ok, 0);
         return;
@@ -12184,7 +12184,7 @@ void MainWindow::slotAnalyzeCommunitiesCliqueCensus(){
 
 
 /**
-*	Calls Graph to conduct and write a triad census into a file, then displays it.
+*	Calls Graph to compute and write a triad census into a file, then displays it.
 */
 void MainWindow::slotAnalyzeCommunitiesTriadCensus() {
 
@@ -14142,7 +14142,7 @@ void MainWindow::slotHelpCheckUpdateParse(QNetworkReply *reply) {
     qDebug() << "MW::slotHelpCheckUpdateParse(reply) - localVersion:" << localVersion;
     if (!ok1) {
         slotHelpMessageToUserError("Error in current version string. "
-                                   "Please, conduct our developer team.");
+                                   "Please, contact our developer team.");
         return;
     }
 
