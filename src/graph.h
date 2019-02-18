@@ -1260,6 +1260,7 @@ private:
     bool initEdgeWeightNumbers, initEdgeLabels;
     qreal m_graphAverageDistance, m_graphGeodesicsCount;
     qreal m_graphDensity;
+    qreal m_graphSumDistance;
     qreal m_graphReciprocityArc, m_graphReciprocityDyad;
     int m_graphReciprocityTiesReciprocated;
     int m_graphReciprocityTiesNonSymmetric;
@@ -1282,7 +1283,7 @@ private:
     bool calculatedTriad;
     bool calculatedGraphSymmetry, calculatedGraphReciprocity;
     bool calculatedGraphDensity, calculatedGraphWeighted;
-    bool m_directed, m_symmetric, m_isWeighted, m_graphIsConnected;
+    bool m_graphIsDirected, m_graphIsSymmetric, m_graphIsWeighted, m_graphIsConnected;
 
     int cliqueCensusRecursion;
 

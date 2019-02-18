@@ -69,19 +69,19 @@ Graph::Graph(GraphicsWidget *graphicsWidget) {
 
     m_totalVertices=0;
     m_totalEdges=0;
-    outboundEdgesVert=0;
-    inboundEdgesVert=0;
-    reciprocalEdgesVert=0;
+
     order=true;		//returns true if the indexes of the list is ordered.
     m_graphHasChanged=false;
 
     m_graphName="";
     m_curRelation=0;
     m_fileFormat=FileType::NOT_SAVED;
-    m_directed=true;
-    m_isWeighted=false;
+
+    m_graphIsDirected=true;
+    m_graphIsWeighted=false;
     m_graphIsConnected=true; // empty/null graph is considered connected
-    m_symmetric=true;
+    m_graphIsSymmetric=true;
+
     m_graphDensity = -1;
     fileName ="";
 
@@ -335,22 +335,32 @@ void Graph::clear(const QString &reason) {
     m_fileFormat=FileType::NOT_SAVED;
 
     m_graphName="";
+
     m_totalVertices=0;
     m_totalEdges=0;
+
     outboundEdgesVert=0;
     inboundEdgesVert=0;
     reciprocalEdgesVert=0;
+
     m_vertexClicked = 0;
     m_clickedEdge.v1=0;
     m_clickedEdge.v2=0;
 
     order=true;		//returns true if the vpositions of the list is ordered.
 
-    m_directed=true;
-    m_isWeighted=false;
+    m_graphIsDirected=true;
+    m_graphIsWeighted=false;
     m_graphIsConnected=true; // empty/null graph is considered connected.
-    m_symmetric=true;
+    m_graphIsSymmetric=true;
+
     m_graphDensity = -1;
+    m_graphDiameter=0;
+
+    m_graphAverageDistance=0;
+    m_graphSumDistance = 0;
+
+    m_graphGeodesicsCount = 0; //non zero distances
 
     calculatedGraphReciprocity = false;
     calculatedGraphSymmetry = false;
@@ -1874,7 +1884,7 @@ void Graph::edgeCreate(const int &v1,
                              drawArrows, bezier, initEdgeWeightNumbers);
 //            emit signalDrawEdge(v1, v2, weight, label, color, EdgeType::Reciprocated,
 //                          drawArrows, bezier, initEdgeWeightNumbers);
-            m_directed = true;
+            m_graphIsDirected = true;
         }
         else {
 
@@ -1886,8 +1896,8 @@ void Graph::edgeCreate(const int &v1,
                              drawArrows, bezier, initEdgeWeightNumbers);
 //            emit signalDrawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), EdgeType::Directed,
 //                          drawArrows, bezier, initEdgeWeightNumbers);
-            m_directed = true;
-            m_symmetric=false;
+            m_graphIsDirected = true;
+            m_graphIsSymmetric=false;
         }
     }
     else {
@@ -1992,11 +2002,11 @@ void Graph::edgeRemove (const int &v1,
     if ( graphIsUndirected() || removeOpposite ) { // remove opposite edge too
         m_graph [ vpos[v2] ]->edgeRemoveTo(v1);
         m_graph [ vpos[v1] ]->edgeRemoveFrom(v2);
-        m_symmetric=true;
+        m_graphIsSymmetric=true;
     }
     else {
         if ( edgeExists(v2,v1) !=0 ) {
-            m_symmetric=false;
+            m_graphIsSymmetric=false;
         }
     }
 
@@ -3017,8 +3027,8 @@ bool Graph::graphIsWeighted(){
 
     if ( calculatedGraphWeighted ) {
         qDebug()<< "Graph::graphIsWeighted() - graph not modified. Return: "
-                << m_isWeighted;
-        return m_isWeighted;
+                << m_graphIsWeighted;
+        return m_graphIsWeighted;
     }
 
     qDebug()<< "Graph::graphIsWeighted()";
@@ -3044,17 +3054,17 @@ bool Graph::graphIsWeighted(){
                 break;
             }
         }
-       if (m_isWeighted) {
+       if (m_graphIsWeighted) {
            break;
        }
 
     }
     calculatedGraphWeighted = true;
-    qDebug()<< "Graph::graphIsWeighted() - result" << m_isWeighted;
+    qDebug()<< "Graph::graphIsWeighted() - result" << m_graphIsWeighted;
 
     emit signalProgressBoxKill();
 
-    return m_isWeighted;
+    return m_graphIsWeighted;
 }
 
 
@@ -3063,8 +3073,8 @@ bool Graph::graphIsWeighted(){
  * @param toggle
  */
 void Graph::graphSetWeighted(const bool &toggle){
-    qDebug() << "Graph::graphSetWeighted() - set m_isWeighted =" << toggle;
-    m_isWeighted = toggle;
+    qDebug() << "Graph::graphSetWeighted() - set m_graphIsWeighted =" << toggle;
+    m_graphIsWeighted = toggle;
 }
 
 /**
@@ -3657,10 +3667,10 @@ bool Graph::graphIsSymmetric(){
     if ( calculatedGraphSymmetry ){
         qDebug() << "Graph::graphIsSymmetric() - graph not modified and "
                     "already calculated symmetry. Returning previous result: "
-                 << m_symmetric;
-        return m_symmetric;
+                 << m_graphIsSymmetric;
+        return m_graphIsSymmetric;
     }
-    m_symmetric=true;
+    m_graphIsSymmetric=true;
     int v2=0, v1=0;
     qreal weight = 0;
 
@@ -3688,7 +3698,7 @@ bool Graph::graphIsSymmetric(){
 
             if ( edgeExists ( v2, v1 )  != weight) {
 
-                m_symmetric=false;
+                m_graphIsSymmetric=false;
 //                qDebug() <<"Graph::graphIsSymmetric() - "
 //                         << " graph not symmetric because "
 //                         << v1 << " -> " << v2 << " weight " << weight
@@ -3700,9 +3710,9 @@ bool Graph::graphIsSymmetric(){
         }
     }
     //delete enabledOutEdges;
-    qDebug() << "Graph: graphIsSymmetric() - Finished. Result:"  << m_symmetric;
+    qDebug() << "Graph: graphIsSymmetric() - Finished. Result:"  << m_graphIsSymmetric;
     calculatedGraphSymmetry = true;
-    return m_symmetric;
+    return m_graphIsSymmetric;
 }
 
 
@@ -3748,7 +3758,7 @@ void Graph::graphSymmetrize(){
     }
     //delete enabledOutEdges;
 
-    m_symmetric=true;
+    m_graphIsSymmetric=true;
 
     graphSetModified(GraphChange::ChangedEdges);
 }
@@ -3762,8 +3772,10 @@ void Graph::graphSymmetrize(){
  * @param allRelations
  */
 void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
+
     qDebug()<< "Graph::graphSymmetrizeStrongTies()"
             << "initial relations"<<relations();
+
     int y=0, v2=0, v1=0, weight;
     qreal invertWeight=0;
 
@@ -3830,7 +3842,7 @@ void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
 
     //delete outEdgesAll;
     delete strongTies;
-    m_symmetric=true;
+    m_graphIsSymmetric=true;
 
     graphSetModified(GraphChange::ChangedEdges);
     qDebug()<< "Graph::graphSymmetrizeStrongTies()"
@@ -3900,7 +3912,7 @@ void Graph::graphCocitation(){
         i++;
     }
 
-    m_symmetric=true;
+    m_graphIsSymmetric=true;
 
     graphSetModified(GraphChange::ChangedEdges);
     qDebug()<< "Graph::graphCocitation()"
@@ -3976,7 +3988,7 @@ void Graph::graphDichotomization(const qreal threshold) {
 
     //delete outEdgesAll;
     delete binaryTies;
-    m_symmetric=true;
+    m_graphIsSymmetric=true;
 
     graphSetModified(GraphChange::ChangedEdges);
     qDebug()<< "Graph::graphDichotomization()"
@@ -4002,9 +4014,9 @@ void Graph::graphSetDirected(const bool &toggle, const bool &signalMW){
         return;
     }
 
-    m_directed = true;
+    m_graphIsDirected = true;
 
-    if (m_directed) {
+    if (m_graphIsDirected) {
         graphSetModified(GraphChange::ChangedEdges, signalMW);
         return;
     }
@@ -4030,7 +4042,7 @@ void Graph::graphSetUndirected(const bool &toggle, const bool &signalMW){
         return;
     }
 
-    m_directed = false;
+    m_graphIsDirected = false;
 
     VList::const_iterator it;
     int v2=0, v1=0, weight;
@@ -4055,7 +4067,7 @@ void Graph::graphSetUndirected(const bool &toggle, const bool &signalMW){
     }
     //delete enabledOutEdges;
 
-    m_symmetric=true;
+    m_graphIsSymmetric=true;
 
     graphSetModified(GraphChange::ChangedEdges, signalMW);
 }
@@ -4067,8 +4079,8 @@ void Graph::graphSetUndirected(const bool &toggle, const bool &signalMW){
  * @return
  */
 bool Graph::graphIsDirected() {
-    qDebug() << "Graph::graphIsDirected() -" << m_directed;
-    return m_directed;
+    qDebug() << "Graph::graphIsDirected() -" << m_graphIsDirected;
+    return m_graphIsDirected;
 }
 
 
@@ -4079,8 +4091,8 @@ bool Graph::graphIsDirected() {
  * @return
  */
 bool Graph::graphIsUndirected() {
-    qDebug() << "Graph::graphIsUndirected() -" << !m_directed;
-    return !m_directed;
+    qDebug() << "Graph::graphIsUndirected() -" << !m_graphIsDirected;
+    return !m_graphIsDirected;
 }
 
 
@@ -4278,39 +4290,17 @@ qreal Graph::graphDistanceGeodesicAverage(const bool considerWeights,
                                           const bool inverseWeights,
                                           const bool dropIsolates){
 
-    Q_UNUSED(considerWeights);
-    Q_UNUSED(inverseWeights);
-
-    qDebug() <<"Graph::graphDistanceGeodesicAverage() - m_graphAverageDistance"
-            <<m_graphAverageDistance
-            <<"calling graphIsConnected()";
-
-    bool isConnected = graphIsConnected();
-
-    qDebug() <<"Graph::graphDistanceGeodesicAverage() - m_graphAverageDistance now"
-            <<m_graphAverageDistance;
 
 
-    qDebug() <<"Graph::graphDistanceGeodesicAverage() - m_vertexPairsNotConnected " <<
-               m_vertexPairsNotConnected.count();
+    qDebug() <<"Graph::graphDistanceGeodesicAverage() - Computing distances...";
 
-    int N=vertices(dropIsolates);//TOFIX
-    qDebug() <<"Graph::graphDistanceGeodesicAverage() - N" << N;
-    if (m_graphAverageDistance!=0) {
-        if (m_vertexPairsNotConnected.count()==0) {
-            qDebug() <<"Graph::graphDistanceGeodesicAverage() - returning value:"
-                    << m_graphAverageDistance / ( N * ( N-1.0 ) );
+    graphDistancesGeodesic(false, considerWeights, inverseWeights, dropIsolates);
 
-            return m_graphAverageDistance / ( N * ( N-1.0 ) );
-        }
-        else {
-            //TODO In not connected nets, it would be nice to ask the user what to do
-            // with unconnected pairs (make M or drop (default?)
-            return m_graphAverageDistance / m_graphGeodesicsCount;
-        }
-    }
-    else return 0;
+    qDebug() <<"Graph::graphDistanceGeodesicAverage() - "
+             << "average distance:"
+             << m_graphAverageDistance;
 
+    return m_graphAverageDistance;
 
 }
 
@@ -4589,7 +4579,7 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
         }
     }
     else if ( calculatedDistances )  {
-        qDebug() << "Graph::graphDistancesGeodesic() - not modified. Return.";
+        qDebug() << "Graph::graphDistancesGeodesic() - graph not modified. Return.";
         return;
     }
 
@@ -4612,9 +4602,9 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
     emit statusMessage ( pMsg  );
     emit signalProgressBoxCreate(N, pMsg );
 
-    m_symmetric = graphIsSymmetric();
-    qDebug() << "Graph::graphDistancesGeodesic() - m_symmetric"
-                << m_symmetric ;
+    m_graphIsSymmetric = graphIsSymmetric();
+    qDebug() << "Graph::graphDistancesGeodesic() - m_graphIsSymmetric"
+                << m_graphIsSymmetric ;
 
     if ( E == 0 ) {
 
@@ -4680,6 +4670,7 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
         m_graphDiameter=0;
         calculatedDistances = false;
         m_graphAverageDistance=0;
+        m_graphSumDistance = 0;
         m_graphGeodesicsCount = 0; //non zero distances
 
         // Stores vertex pairs not connected
@@ -4729,12 +4720,12 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
 
         qDebug() << "Graph: graphDistancesGeodesic() - "
                     " initialising variables for max centrality scores";
-        if (m_symmetric) {
+        if (m_graphIsSymmetric) {
             maxIndexBC= ( N == 2 ) ? 1 : ( N-1.0 ) * ( N-2.0 ) / 2.0;
             maxIndexSC= ( N == 2 ) ? 1 : ( N-1.0 ) * ( N-2.0 ) / 2.0;
             maxIndexCC=N-1.0;
             maxIndexPC=N-1.0;
-            qDebug("############# m_symmetric - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
+            qDebug("############# m_graphIsSymmetric - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
         }
         else {
 
@@ -5044,6 +5035,26 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
 
         } // end for disconnected checking
 
+        // Compute average path length...
+        if (m_vertexPairsNotConnected.count()==0) {
+
+            m_graphAverageDistance = m_graphSumDistance / ( N * ( N-1.0 ) );
+            qDebug() <<"Graph::graphDistancesGeodesic() - Average distance:"
+                    << m_graphAverageDistance ;
+
+        }
+        else {
+
+            //TODO In not connected nets, it would be nice to ask the user what to do
+            // with unconnected pairs (make M or drop (default?)
+            qDebug() <<"Graph::graphDistancesGeodesic() - Average distance:"
+                    << m_graphAverageDistance ;
+            m_graphAverageDistance = m_graphSumDistance / m_graphGeodesicsCount;
+
+
+        }
+
+
         if (computeCentralities) {
 
             qDebug() << "Graph: graphDistancesGeodesic() - "
@@ -5066,7 +5077,7 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
                 minmax( SPC, (*it), maxSPC, minSPC, maxNodeSPC, minNodeSPC) ;
 
                 // Compute std BC, classes and min/maxSBC
-                if (m_symmetric) {
+                if (m_graphIsSymmetric) {
                     qDebug()<< "Betweenness centrality must be divided by"
                             <<" two if the graph is undirected";
                     (*it)->setBC ( (*it)->BC()/2.0);
@@ -5090,7 +5101,7 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
 
                 //prepare to compute stdSC
                 SC=(*it)->SC();
-                if (m_symmetric){
+                if (m_graphIsSymmetric){
                     (*it)->setSC(SC/2.0);
                     SC=(*it)->SC();
                     qDebug() << "SC of " <<(*it)->name()
@@ -5338,7 +5349,7 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
                 m_graph[si]->setDistance(w,dist_w);
 
 
-                m_graphAverageDistance += dist_w;
+                m_graphSumDistance += dist_w;
                 m_graphGeodesicsCount++;
 
 
@@ -5599,14 +5610,14 @@ void Graph::dijkstra(const int &s, const int &si,
                 // and also provides contain()
                 m_graph[si]->setDistance(w,dist_w);
 
-                m_graphAverageDistance += dist_w;
+                m_graphSumDistance += dist_w;
                 m_graphGeodesicsCount++;
 
                 qDebug() << "    --- dijkstra: "
                             "Set d ( s=" << s << ", w="<< w
                          << " ) = "<< dist_w << "="<< m_graph[si]->distance(w)
-                         << " m_graphAverageDistance ="
-                         << m_graphAverageDistance;
+                         << " m_graphSumDistance ="
+                         << m_graphSumDistance;
 
 
                 if ( dist_w > m_graphDiameter){
@@ -6801,7 +6812,7 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
 
                     //check here if the matrix is symmetric - we need this below
                     if (  edgeExists ( (*it1)->name(), (*it)->name() , true ) == 0   )
-                        m_symmetric = false;
+                        m_graphIsSymmetric = false;
                 }
             }
         }
@@ -6864,7 +6875,7 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
     varianceSDC=varianceSDC/(qreal) N;
 
 //    qDebug() << "Graph::centralityDegree() - variance = " << varianceSDC;
-    if (m_symmetric) {
+    if (m_graphIsSymmetric) {
         // we divide by N-1 because we use std C values
         denom= (N-1.0)*(N-2.0)  / (N-1.0);
     }
@@ -8928,7 +8939,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
     discreteDPs.clear();
     varianceSDP=0;
     meanSDP=0;
-    m_symmetric = true;
+    m_graphIsSymmetric = true;
 
 
     QString pMsg = tr("Computing Degree Prestige (in-Degree). \n Please wait ...");
@@ -8985,7 +8996,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
                 DP++;
             }
             if (  edgeExists ( v1, v2)  != weight) {
-                m_symmetric=false;
+                m_graphIsSymmetric=false;
             }
             ++hit;
         }
@@ -9049,7 +9060,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
     }
     varianceSDP=varianceSDP/(qreal) N;
 
-    if (m_symmetric)
+    if (m_graphIsSymmetric)
         denom=(N-1.0)*(N-2.0);
     else
         denom=(N-1.0)*(N-1.0);

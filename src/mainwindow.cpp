@@ -11851,7 +11851,9 @@ void MainWindow::slotAnalyzeDiameter() {
 
 
 
-/**  Displays the  average shortest path length (average graph distance) */
+/**
+ * @brief Displays the average shortest path length (average graph distance)
+ */
 void MainWindow::slotAnalyzeDistanceAverage() {
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -11867,10 +11869,28 @@ void MainWindow::slotAnalyzeDistanceAverage() {
                 inverseWeights,
                 editFilterNodesIsolatesAct->isChecked() );
 
-    QMessageBox::information(this,
-                             "Average Graph Distance",
-                             "The average shortest path length is  = " +
-                             QString::number(averGraphDistance), "OK",0);
+    bool isConnected = activeGraph->graphIsConnected();
+
+    if ( isConnected ) {
+
+        QMessageBox::information(this,
+                                 "Average Graph Distance",
+                                 "The average shortest path length in this "
+                                 "connected network is the sum of pair-wise distances "
+                                 "divided by N * (N - 1). \n\n"
+                                 "Average distance: " +
+                                 QString::number(averGraphDistance), "OK",0);
+    }
+    else {
+        QMessageBox::information(this,
+                                 "Average Graph Distance",
+                                 "The average shortest path length in this "
+                                 "disconnected network is the sum of pair-wise distances "
+                                 "divided by the number of existing geodesics. \n\n"
+                                 "Average distance: " +
+                                 QString::number(averGraphDistance), "OK",0);
+
+    }
 
     statusMessage( tr("Average geodesic distance computed. Ready.") );
 
