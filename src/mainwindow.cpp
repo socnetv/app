@@ -136,8 +136,9 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     qInstallMessageHandler( myMessageOutput);
 
-    initView();         //init our network "canvas"
+    setMinimumSize(1024,750); //set MW minimum size, before creating canvas
 
+    initView();         //init our network "canvas"
 
     initGraph();
 
@@ -5146,7 +5147,7 @@ void MainWindow::initWindowLayout() {
         slotOptionsWindowLeftPanelVisibility(false);
     }
 
-    qDebug () << "MW::initWindowLayout - resize to 1200x750";
+    qDebug () << "MW::initWindowLayout - resizing to 1200x750";
     //resize(1200,750);
 
 

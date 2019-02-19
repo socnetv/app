@@ -2283,8 +2283,11 @@ void Parser::readGraphMLElementNode(QXmlStreamReader &xml){
     QXmlStreamAttributes xmlStreamAttr = xml.attributes();
     node_id = (xmlStreamAttr.value("id")).toString();
     totalNodes++;
-    qDebug()<<"Parser::readGraphMLElementNode() - node id "<<  node_id
-           << " index " << totalNodes << " added to nodeHash ";
+    qDebug()<<"Parser::readGraphMLElementNode() "
+           << "node id "<<  node_id
+           << "index " << totalNodes
+           << "added to nodeHash"
+           << "gwWidth, gwHeight "<< gwWidth<< "," <<gwHeight;
 
     nodeHash[node_id]=totalNodes;
 

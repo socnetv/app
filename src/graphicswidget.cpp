@@ -65,7 +65,7 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
 
         clickedEdge=0;
         edgesHash.reserve(150000);
-        nodeHash.reserve(2000);
+        nodeHash.reserve(10000);
 
         m_edgeHighlighting = true;
         m_edgeMinOffsetFromNode=6;

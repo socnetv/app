@@ -62,7 +62,9 @@ public:
 
     void clear();
 
-    QString createEdgeName(const int &v1, const int &v2, const int &relation=-1);
+    QString createEdgeName(const int &v1,
+                           const int &v2,
+                           const int &relation=-1);
 
     void setInitNodeSize(int);
 

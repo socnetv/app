@@ -70,6 +70,13 @@ Graph::Graph(GraphicsWidget *graphicsWidget) {
     m_totalVertices=0;
     m_totalEdges=0;
 
+    // We do init these two vars here, because they only get their values
+    // on MW::resizeEvent which might happen after we have started creating
+    // nodes.
+    // For instance, this happens when we load a network from command line...
+    canvasWidth = 700;
+    canvasHeight = 600;
+
     order=true;		//returns true if the indexes of the list is ordered.
     m_graphHasChanged=false;
 
@@ -1868,9 +1875,22 @@ void Graph::edgeCreate(const int &v1,
             qDebug()<< "-- Graph::edgeCreate() - Creating UNDIRECTED edge."
                       << "Emitting drawEdge signal to GW";
 
-            edgeAdd ( v1, v2, weight, type, label, ( (weight==0) ? "blue" :  color  ) );
-            m_canvas->drawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), type,
-                             drawArrows, bezier, initEdgeWeightNumbers);
+            edgeAdd ( v1, v2,
+                      weight,
+                      type,
+                      label,
+                      ( (weight==0) ? "blue" :  color  )
+                      );
+
+            m_canvas->drawEdge( v1, v2,
+                                weight,
+                                label,
+                                ( (weight==0) ? "blue" :  color  ),
+                                type,
+                                drawArrows,
+                                bezier,
+                                initEdgeWeightNumbers);
+
 //            emit signalDrawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), type,
 //                          drawArrows, bezier, initEdgeWeightNumbers);
         }
@@ -1879,9 +1899,23 @@ void Graph::edgeCreate(const int &v1,
             qDebug()<<"-- Graph::edgeCreate() - Creating RECIPROCAL edge."
                    << "Emitting drawEdge to GW";
 
-            edgeAdd ( v1, v2, weight, EdgeType::Reciprocated , label, color);
-            m_canvas->drawEdge(v1, v2, weight, label, color, EdgeType::Reciprocated,
-                             drawArrows, bezier, initEdgeWeightNumbers);
+            edgeAdd ( v1,
+                      v2,
+                      weight,
+                      EdgeType::Reciprocated ,
+                      label,
+                      color);
+
+            m_canvas->drawEdge( v1,
+                                v2,
+                                weight,
+                                label,
+                                color,
+                                EdgeType::Reciprocated,
+                                drawArrows,
+                                bezier,
+                                initEdgeWeightNumbers);
+
 //            emit signalDrawEdge(v1, v2, weight, label, color, EdgeType::Reciprocated,
 //                          drawArrows, bezier, initEdgeWeightNumbers);
             m_graphIsDirected = true;
@@ -1891,15 +1925,33 @@ void Graph::edgeCreate(const int &v1,
             qDebug()<< "-- Graph::edgeCreate() - Creating directed edge. Opposite arc does not exist."
                     << "Emitting drawEdge to GW...";
 
-            edgeAdd ( v1, v2, weight, EdgeType::Directed, label, ( (weight==0) ? "blue" :  color  )   );
-            m_canvas->drawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), EdgeType::Directed,
-                             drawArrows, bezier, initEdgeWeightNumbers);
+            edgeAdd ( v1,
+                      v2,
+                      weight,
+                      EdgeType::Directed,
+                      label,
+                      ( (weight==0) ? "blue" :  color  )
+                      );
+
+            m_canvas->drawEdge( v1,
+                                v2,
+                                weight,
+                                label,
+                                ( (weight==0) ? "blue" :  color  ),
+                                EdgeType::Directed,
+                                drawArrows,
+                                bezier,
+                                initEdgeWeightNumbers
+                                );
+
 //            emit signalDrawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), EdgeType::Directed,
 //                          drawArrows, bezier, initEdgeWeightNumbers);
+
             m_graphIsDirected = true;
             m_graphIsSymmetric=false;
         }
     }
+
     else {
         qDebug() << "-- Graph::edgeCreate() - "
                     << "Edge " << v1 << " -> " << v2
@@ -1937,7 +1989,8 @@ void Graph::edgeCreateWebCrawler (const int &source, const int &target){
 
 
 /**
- * @brief Adds an edge between v1 and v2
+ * @brief Adds a directed edge from v1 to v2
+ * If type == EdgeType::Undirected then it also adds the directed edge v2 -> v1
  * @param v1
  * @param v2
  * @param weight
@@ -1960,8 +2013,6 @@ void Graph::edgeAdd (const int &v1, const int &v2,
 
     m_graph [ source ]->edgeAddTo(v2, weight, color, label );
     m_graph [ target ]->edgeAddFrom(v1, weight);
-//    m_graph[ source ]->setOutLinkColor(v2, color);
-//    m_graph[ source ]->setOutEdgeLabel(v2, label);
 
     if ( weight != 1 && weight!=0) {
         graphSetWeighted(true);
