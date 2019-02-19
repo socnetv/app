@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.5
+ version: 2.5-beta
  Written in Qt
  
                          graph.h  -  description
                              -------------------
-    copyright         : (C) 2005-2018 by Dimitris B. Kalamaras
+    copyright         : (C) 2005-2019 by Dimitris B. Kalamaras
     project site      : https://socnetv.org
 
  ***************************************************************************/

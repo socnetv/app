@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.5
+ version: 2.5-beta
  Written in Qt
  
                          mainwindow.h  -  description
                              -------------------
-    copyright         : (C) 2005-2018 by Dimitris B. Kalamaras
+    copyright         : (C) 2005-2019 by Dimitris B. Kalamaras
     blog              : http://dimitris.apeiro.gr
     project site      : https://socnetv.org
 
@@ -49,7 +49,7 @@
 #include "forms/dialogfilteredgesbyweight.h"
 #include "forms/dialogdatasetselect.h"
 
-static const QString VERSION="2.5";
+static const QString VERSION="2.5-beta";
 
 static const int USER_MSG_INFO=0;
 static const int USER_MSG_CRITICAL=1;
