@@ -39,6 +39,8 @@
 #include <QKeySequence>
 #include <QDateTime>
 
+#include <QtSvg>  // for SVG icons
+
 #include <QtCharts/QChart>
 #include <QtCharts/QChartView>
 #include <QSplineSeries>

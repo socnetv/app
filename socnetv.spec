@@ -46,7 +46,7 @@
 
 %if %{is_fedora}
 %define distr Fedora
-%define breqr qt5-qtbase,qt5-qtbase-devel, qt5-qtcharts-devel, qt5-qttools, fedora-release, desktop-file-utils
+%define breqr qt5-qtbase,qt5-qtbase-devel, qt5-qtcharts-devel, qt5-qtsvg-devel, qt5-qttools, fedora-release, desktop-file-utils
 %define qmake /usr/bin/qmake-qt5
 %define lrelease /usr/bin/lrelease
 %endif
@@ -55,7 +55,7 @@
 
 %if %{is_suse}
 %define distr SUSE	# %(head -1 /etc/SuSE-release)
-%define breqr libqt5-qtbase, libqt5-qtbase-devel, libQt5Charts5-devel, libqt5-qttools, unzip, update-desktop-files
+%define breqr libqt5-qtbase, libqt5-qtbase-devel, libqt5-qtsvg-devel, libQt5Charts5-devel, libqt5-qttools, unzip, update-desktop-files
 %define qmake /usr/bin/qmake-qt5
 %define lrelease /usr/bin/lrelease
 %endif
@@ -81,6 +81,7 @@ BuildRequires:  pkgconfig(Qt5PrintSupport)
 BuildRequires:  pkgconfig(Qt5Widgets)
 BuildRequires:  pkgconfig(Qt5Network)
 BuildRequires:  pkgconfig(Qt5Charts)
+BuildRequires:  pkgconfig(Qt5Svg)
 Provides:       %{name} = %{version}
 Obsoletes:      %{name} < %{version}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
