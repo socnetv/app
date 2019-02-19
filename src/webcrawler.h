@@ -100,7 +100,9 @@ class  WebCrawler_Spider : public QObject  {
 public:
     WebCrawler_Spider();
     ~WebCrawler_Spider();
-    void load (QNetworkAccessManager *NetworkManager, WebCrawler_Parser *wc_parser,
+    void load (
+              //QNetworkAccessManager *NetworkManager,
+            WebCrawler_Parser *wc_parser,
                const QString &seed,
                const int &maxNodes,
                const bool &delayedRequests);

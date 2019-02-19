@@ -60,7 +60,8 @@ WebCrawler_Spider::WebCrawler_Spider() {
  * @param extLinks
  * @param intLinks
  */
-void WebCrawler_Spider::load(QNetworkAccessManager *NetworkManager,
+void WebCrawler_Spider::load(
+        //QNetworkAccessManager *NetworkManager,
                              WebCrawler_Parser *wc_parser,
                              const QString &url,
                              const int &maxN,
@@ -68,7 +69,7 @@ void WebCrawler_Spider::load(QNetworkAccessManager *NetworkManager,
     qDebug() << "   wc_spider::load() - thread() - " << thread()
              << "Initializing vars ...";
 
-    //manager = NetworkManager;
+    //Q_UNUSED(NetworkManager);
 
     QNetworkAccessManager *manager= new QNetworkAccessManager(this);
 

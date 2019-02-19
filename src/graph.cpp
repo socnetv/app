@@ -3260,8 +3260,8 @@ void Graph::webCrawl(const QString &seedUrl,
              << "and wc_spider to thread:"
              << wc_spider->thread();
 
-    qDebug() << "Graph::webCrawl() - Creating http object";
-    QNetworkAccessManager *http = new QNetworkAccessManager(this);
+//    qDebug() << "Graph::webCrawl() - Creating http object";
+//    QNetworkAccessManager *http = new QNetworkAccessManager(this);
 
 
     qDebug() << "Graph::webCrawl() - Connecting signals from/to parser & spider";
@@ -3275,11 +3275,11 @@ void Graph::webCrawl(const QString &seedUrl,
     connect(wc_parser, &WebCrawler_Parser::signalCreateEdge,
             this, &Graph::edgeCreateWebCrawler);
 
-      connect (wc_spider, &WebCrawler_Spider::getUrl,
-               http, &QNetworkAccessManager::get);
+//      connect (wc_spider, &WebCrawler_Spider::getUrl,
+//               http, &QNetworkAccessManager::get);
 
-    connect ( http, &QNetworkAccessManager::finished,
-               wc_parser, &WebCrawler_Parser::parse );
+//    connect ( http, &QNetworkAccessManager::finished,
+//               wc_parser, &WebCrawler_Parser::parse );
 
     connect (wc_parser, &WebCrawler_Parser::startSpider,
              wc_spider, &WebCrawler_Spider::visitUrls );
@@ -3316,7 +3316,8 @@ void Graph::webCrawl(const QString &seedUrl,
                     extLinksCrawl,
                     socialLinks);
 
-    wc_spider->load (http,
+    wc_spider->load (
+                //http,
                      wc_parser,
                      seedUrl,
                      maxNodes,
