@@ -315,6 +315,36 @@ QMap<QString,QString> MainWindow::initSettings() {
     createFortuneCookies();
     slotHelpCreateTips();
 
+    // Populate icons and shapes lists
+    // Note: When you add a new shape and icon, you must also:
+    // 1. Add a new enum in NodeShape (global.h)
+    // 2. Add a new branch in GraphicsNode::setShape() and paint()
+    // 3. Add a new branch in DialogNodeEdit: getNodeShape() and getUserChoices()
+    nodeShapeList  << "box"
+                   << "circle"
+                   << "diamond"
+                   << "ellipse"
+                   << "triangle"
+                   << "star"
+                   << "person"
+                   << "bugs"
+                   << "heart"
+                   << "dice"
+                   << "custom";
+
+    iconPathList << ":/images/box.png"
+                 << ":/images/circle.png"
+                 << ":/images/diamond.png"
+                 << ":/images/ellipse.png"
+                 << ":/images/triangle.png"
+                 << ":/images/star.png"
+                 << ":/images/person.svg"
+                 << ":/images/bugs.png"
+                 << ":/images/heart.svg"
+                 << ":/images/random.png"
+                 << ":/images/export_photo_48px.svg";
+
+
     // Call slotNetworkAvailableTextCodecs to setup a list of all supported codecs
     qDebug() << "MW::initSettings - calling slotNetworkAvailableTextCodecs" ;
     slotNetworkAvailableTextCodecs();
@@ -503,7 +533,7 @@ void MainWindow::slotOpenSettingsDialog() {
 
     // build dialog
 
-    m_settingsDialog = new DialogSettings( appSettings, this);
+    m_settingsDialog = new DialogSettings( appSettings, nodeShapeList, iconPathList, this);
 
     connect( m_settingsDialog, &DialogSettings::saveSettings,
              this, &MainWindow::saveSettings);
@@ -9013,7 +9043,14 @@ void MainWindow::slotEditNodePropertiesDialog() {
              << "shape"<<shape
              << "iconPath"<<iconPath;
 
-    m_nodeEditDialog = new DialogNodeEdit(this, label, size, color, shape, iconPath) ;
+    m_nodeEditDialog = new DialogNodeEdit(this,
+                                          nodeShapeList,
+                                          iconPathList,
+                                          label,
+                                          size,
+                                          color,
+                                          shape,
+                                          iconPath) ;
 
     connect( m_nodeEditDialog, &DialogNodeEdit::userChoices,
              this, &MainWindow::slotEditNodeProperties );
@@ -9344,18 +9381,10 @@ void MainWindow::slotEditNodeShape(const int &vertex, QString shape,
             << "nodeIconPath"<<nodeIconPath;
 
     if ( shape.isNull() ) {
-        bool ok=false;
-        QStringList shapesList;
-        shapesList  << "box"
-                    << "circle"
-                    << "diamond"
-                    << "ellipse"
-                    << "triangle"
-                    << "star"
-                    << "bugs"
-                    << "custom";
 
-        int curShapeIndex = shapesList.indexOf(appSettings["initNodeShape"]);
+        bool ok=false;
+
+        int curShapeIndex = nodeShapeList.indexOf(appSettings["initNodeShape"]);
 
         if ( curShapeIndex == -1 ) {
             curShapeIndex=1;
@@ -9363,7 +9392,7 @@ void MainWindow::slotEditNodeShape(const int &vertex, QString shape,
         shape = QInputDialog::getItem(this,
                                       "Node shape",
                                       "Select a shape for all nodes: ",
-                                      shapesList, curShapeIndex, true, &ok);
+                                      nodeShapeList, curShapeIndex, true, &ok);
         if ( !ok ) {
             //user pressed Cancel
             statusMessage(tr("Change node shapes aborted."));
@@ -9379,6 +9408,9 @@ void MainWindow::slotEditNodeShape(const int &vertex, QString shape,
                 statusMessage(tr("Change node shapes aborted."));
                 return;
             }
+        }
+        else {
+            nodeIconPath = iconPathList [ nodeShapeList.indexOf(shape) ];
         }
     }
 

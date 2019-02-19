@@ -43,7 +43,10 @@ SOCNETV_BEGIN_NAMESPACE
         Ellipse,
         Triangle,
         Star,
+        Person,
         Bugs,
+        Heart,
+        Dice,
         Custom
     };
 

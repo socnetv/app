@@ -44,7 +44,10 @@ class DialogSettings : public QDialog
     Q_OBJECT
 
 public:
-    explicit DialogSettings(QMap<QString, QString> &appSettings, QWidget *parent = Q_NULLPTR );
+    explicit DialogSettings(QMap<QString, QString> &appSettings,
+                            const QStringList &nodeShapeList,
+                            const QStringList &iconPathList,
+                            QWidget *parent = Q_NULLPTR );
     ~DialogSettings();
 
 public slots:
@@ -121,14 +124,13 @@ signals:
     void saveSettings();
 private:
      QMap<QString, QString> &m_appSettings ;
-     Ui::DialogSettings *ui;
      QPixmap m_pixmap;
      //QString m_nodeShape;
      QColor m_bgColor, m_nodeColor, m_nodeNumberColor, m_nodeLabelColor;
      QColor m_edgeColor, m_edgeColorNegative,m_edgeColorZero, m_edgeWeightNumberColor;
-     QStringList shapesList;
-     QStringList iconList;
-
+     QStringList m_shapeList;
+     QStringList m_iconList;
+     Ui::DialogSettings *ui;
 };
 
 #endif

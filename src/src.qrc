@@ -34,8 +34,6 @@
         <file>images/ellipse.png</file>
         <file>images/symmetry.png</file>
         <file>images/plines.png</file>
-        <file>images/zoomin.png</file>
-        <file>images/zoomout.png</file>
         <file>images/connect.png</file>
         <file>images/disconnect.png</file>
         <file>images/resize.png</file>
@@ -169,5 +167,7 @@
         <file>images/select_all_48px.svg</file>
         <file>images/communities_48px.svg</file>
         <file>images/centrality_48px.svg</file>
+        <file>images/heart.svg</file>
+        <file>images/person.svg</file>
     </qresource>
 </RCC>

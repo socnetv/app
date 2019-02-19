@@ -45,12 +45,16 @@
 SOCNETV_USE_NAMESPACE
 
 DialogNodeEdit::DialogNodeEdit(QWidget *parent,
+                               const QStringList &nodeShapeList,
+                               const QStringList &iconPathList,
                                const QString &label,
                                const int &size,
                                const QColor &color,
                                const QString &shape,
                                const QString &path) :
     QDialog(parent),
+    m_shapeList(nodeShapeList),
+    m_iconList(iconPathList),
     nodeLabel(label),
     nodeSize(size),
     nodeColor(color),
@@ -63,68 +67,17 @@ DialogNodeEdit::DialogNodeEdit(QWidget *parent,
     ui->labelEdit->setText(nodeLabel);
     ui->sizeSpin->setValue(nodeSize);
 
-    QStringList shapesList;
-    QStringList iconList;
-    shapesList << "box"
-                << "circle"
-                << "diamond"
-                << "ellipse"
-                << "triangle"
-                << "star"
-                << "bugs"
-                << "custom";
-    iconList << ":/images/box.png"
-             << ":/images/circle.png"
-             << ":/images/diamond.png"
-             << ":/images/ellipse.png"
-             << ":/images/triangle.png"
-             << ":/images/star.png"
-             << ":/images/bugs.png"
-             << ":/images/export_photo_48px.svg";
+    ui->nodeShapeComboBox->addItems(m_shapeList);
 
-    ui->nodeShapeComboBox->addItems(shapesList);
-
-    for (int i = 0; i < shapesList.size(); ++i) {
-       ui->nodeShapeComboBox->setItemIcon(i, QIcon(iconList[i]));
+    for (int i = 0; i < m_shapeList.size(); ++i) {
+       ui->nodeShapeComboBox->setItemIcon(i, QIcon(m_iconList[i]));
     }
 
     ui->nodeIconSelectButton->setEnabled(false);
-    ui->nodeIconSelectEdit->setEnabled(false);/*
-
-    if ( nodeShape == "box"  ){
-       ui->nodeShapeComboBox->setCurrentIndex(0);
-    }
-    else if ( nodeShape == "circle"  ){
-        ui->nodeShapeComboBox->setCurrentIndex(1);
-     }
-    else if ( nodeShape == "diamond"  ){
-        ui->nodeShapeComboBox->setCurrentIndex(2);
-     }
-    else if ( nodeShape == "ellipse"  ){
-        ui->nodeShapeComboBox->setCurrentIndex(3);
-     }
-    else if ( nodeShape == "triangle"  ){
-        ui->nodeShapeComboBox->setCurrentIndex(4);
-     }
-    else if ( nodeShape == "star" ) {
-        ui->nodeShapeComboBox->setCurrentIndex(5);
-    }
-    else if ( nodeShape == "bugs" ) {
-        ui->nodeShapeComboBox->setCurrentIndex(6);
-    }
-    else if ( nodeShape == "custom" ) {
-        ui->nodeShapeComboBox->setCurrentIndex(7);
-        ui->nodeIconSelectButton->setEnabled(true);
-        ui->nodeIconSelectEdit->setEnabled(true);
-        ui->nodeIconSelectEdit->setText(iconPath);
-        if (!iconPath.isEmpty()) {
-            ui->nodeShapeComboBox->setItemIcon(7, QIcon(iconPath));
-        }
-    }*/
-
+    ui->nodeIconSelectEdit->setEnabled(false);
 
     int index = -1;
-    if ( (index = shapesList.indexOf(nodeShape)) != -1 ){
+    if ( (index = m_shapeList.indexOf(nodeShape)) != -1 ){
 
         ui->nodeShapeComboBox->setCurrentIndex(index);
 
@@ -205,8 +158,17 @@ void DialogNodeEdit::getNodeShape(const int &nodeShapeIndex){
     case NodeShape::Star:
         nodeShape  = "star";
         break;
+    case NodeShape::Person:
+        nodeShape  = "person";
+        break;
     case NodeShape::Bugs:
         nodeShape  = "bugs";
+        break;
+    case NodeShape::Heart:
+        nodeShape  = "heart";
+        break;
+    case NodeShape::Dice:
+        nodeShape  = "dice";
         break;
     case NodeShape::Custom:
         nodeShape  = "custom";
@@ -280,6 +242,9 @@ void DialogNodeEdit::getNodeIconFile(){
 }
 
 
+/**
+ * @brief DialogNodeEdit::getUserChoices
+ */
 void DialogNodeEdit::getUserChoices(){
     qDebug()<< " DialogNodeEdit::getUserChoices()" ;
     nodeLabel = ui->labelEdit->text();
@@ -307,9 +272,23 @@ void DialogNodeEdit::getUserChoices(){
     case NodeShape::Star:
         nodeShape  = "star";
         break;
+    case NodeShape::Person:
+        nodeShape  = "person";
+        iconPath = m_iconList [nodeShapeIndex];
+        break;
     case NodeShape::Bugs:
         nodeShape  = "bugs";
+        iconPath = m_iconList [nodeShapeIndex];
         break;
+    case NodeShape::Heart:
+        nodeShape  = "heart";
+        iconPath = m_iconList [nodeShapeIndex];
+        break;
+    case NodeShape::Dice:
+        nodeShape  = "dice";
+        iconPath = m_iconList [nodeShapeIndex];
+        break;
+
     case NodeShape::Custom:
         nodeShape  = "custom";
         iconPath = ui->nodeIconSelectEdit->text();

@@ -571,6 +571,9 @@ private:
     Chart *chart;
 
     QStringList prominenceIndexList;
+    QStringList recentFiles;
+    QStringList iconPathList;
+    QStringList nodeShapeList;
 
     DialogFilterEdgesByWeight *m_DialogEdgeFilterByWeight;
 
@@ -737,7 +740,8 @@ private:
     QString fileName, previous_fileName, fileNameNoPath, progressMsg;
     QString settingsFilePath, settingsDir ;
     QStringList fortuneCookie;
-    QStringList tempFileNameNoPath, tips, recentFiles;
+    QStringList tempFileNameNoPath, tips;
+
     int statusBarDuration, progressCounter;
     int fileType, maxNodes;
     int fortuneCookiesCounter;

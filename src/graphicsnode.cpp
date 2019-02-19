@@ -199,6 +199,7 @@ void GraphicsNode::setShape(const QString shape, const QString &iconPath) {
 
     qDebug()<< "GraphicsNode::setShape() - Node:" << nodeNumber()
             << "shape:" << m_shape
+            << "iconPath" << iconPath
             << "pos:"<<  x() << "," <<  y();
 
     QPainterPath path;
@@ -250,9 +251,32 @@ void GraphicsNode::setShape(const QString shape, const QString &iconPath) {
             m_iconPath = iconPath;
         }
     }
-    else if (m_shape == "bugs") {
+    else if (m_shape == "bugs"   ||
+             m_shape == "heart"  ||
+             m_shape == "dice"   ||
+             m_shape == "person" ) {
         path.addRect (-m_size , -m_size , 2*m_size , 2*m_size );
-        m_iconPath = ":/images/bugs.png";
+        // we update iconPath only if it's not empty
+        // this is to allow internal GraphicsNode methods to call us
+        // without always passing the current iconPath again and again.
+        if (!iconPath.isEmpty()) {
+            m_iconPath = iconPath;
+        }
+        else {
+            if ( m_shape == "person" ) {
+                m_iconPath = ":/images/person.svg";
+            }
+
+            if ( m_shape == "bugs" ) {
+                m_iconPath = ":/images/bugs.png";
+            }
+            else if ( m_shape == "heart") {
+                m_iconPath = ":/images/heart.svg";
+            }
+            else if ( m_shape == "dice" ) {
+                m_iconPath = ":/images/random.png";
+            }
+        }
     }
     else {
         // If shape is not supported, we draw a circle.
@@ -317,7 +341,10 @@ void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
         QPixmap pix(m_iconPath);
         painter->drawPixmap(-m_size, -m_size, 2*m_size, 2*m_size, pix);
     }
-    else if ( m_shape == "bugs" ) {
+    else if ( m_shape == "person"    ||
+              m_shape == "bugs"    ||
+              m_shape == "heart"   ||
+              m_shape == "dice"     ) {
         // See:
         // https://techbase.kde.org/Development/Tutorials/Graphics/Performance
 //        QImage image(m_iconPath);

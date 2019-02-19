@@ -45,11 +45,14 @@
 SOCNETV_USE_NAMESPACE
 
 
-DialogSettings::DialogSettings(
-        QMap<QString, QString> &appSettings,
-        QWidget *parent) :
+DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
+                                const QStringList &nodeShapeList,
+                                const QStringList &iconPathList,
+                                QWidget *parent) :
     QDialog(parent),
     m_appSettings(appSettings),
+    m_shapeList(nodeShapeList),
+    m_iconList(iconPathList),
     ui(new Ui::DialogSettings)
 {
     ui->setupUi(this);
@@ -181,34 +184,19 @@ DialogSettings::DialogSettings(
     ui->nodeColorBtn->setIcon(QIcon(m_pixmap));
 
 
-    shapesList << "box"
-                << "circle"
-                << "diamond"
-                << "ellipse"
-                << "triangle"
-                << "star"
-                << "bugs"
-                << "custom";
-    iconList << ":/images/box.png"
-             << ":/images/circle.png"
-             << ":/images/diamond.png"
-             << ":/images/ellipse.png"
-             << ":/images/triangle.png"
-             << ":/images/star.png"
-             << ":/images/bugs.png"
-             << ":/images/export_photo_48px.svg";
 
-    ui->nodeShapeComboBox->addItems(shapesList);
 
-    for (int i = 0; i < shapesList.size(); ++i) {
-       ui->nodeShapeComboBox->setItemIcon(i, QIcon(iconList[i]));
+    ui->nodeShapeComboBox->addItems(m_shapeList);
+
+    for (int i = 0; i < m_shapeList.size(); ++i) {
+       ui->nodeShapeComboBox->setItemIcon(i, QIcon(m_iconList[i]));
     }
 
     ui->nodeIconSelectButton->setEnabled(false);
     ui->nodeIconSelectEdit->setEnabled(false);
 
     int index = -1;
-    if ( (index = shapesList.indexOf(m_appSettings["initNodeShape"])) != -1 ){
+    if ( (index = m_shapeList.indexOf(m_appSettings["initNodeShape"])) != -1 ){
 
         ui->nodeShapeComboBox->setCurrentIndex(index);
 
@@ -595,11 +583,11 @@ void DialogSettings::getNodeColor(){
  */
 void DialogSettings::getNodeShapeIndex(const int &shape){
 
-    m_appSettings["initNodeShape"] = shapesList[shape];
+    m_appSettings["initNodeShape"] = m_shapeList[shape];
 
     qDebug()<< "DialogSettings::getNodeShapeIndex() - "
                "new default shape"
-            << shapesList[shape];
+            << m_shapeList[shape];
 
      if ( shape == NodeShape::Custom ) {
 
@@ -631,7 +619,9 @@ void DialogSettings::getNodeShapeIndex(const int &shape){
          (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
 
          // emit signal
-         emit setNodeShape(0, m_appSettings["initNodeShape"], QString() );
+         // instead of empty iconPath string, we always emit iconPathList[shape]
+         // this is to allow passing the path to built-in icons i.e. hearts.
+         emit setNodeShape(0, m_appSettings["initNodeShape"], m_iconList[shape] );
      }
 
 }
