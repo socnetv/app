@@ -3,7 +3,7 @@
 
 
 
-1. Overview
+# 1. Overview
 ------------
 
 Social Network Visualizer (SocNetV) is a cross-platform, user-friendly free
@@ -63,7 +63,7 @@ same license.
 The documentation is also Free, licensed under the Free Documentation License (FDL).
 
 
-2. Availability & License
+# 2. Availability & License
 -------------------------
 
 Official Website: https://socnetv.org
@@ -89,7 +89,7 @@ with SocNetV. See Section 6 (bug reporting) below.
 
 
 
-3. Installation
+# 3. Installation
 ---------------
 
 SocNetV is multi-platform, which means that it can be installed and run in every
