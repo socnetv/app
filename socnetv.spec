@@ -209,6 +209,7 @@ echo " ### FILES SECTION ###"
 %defattr(-,root,root)
 %{_bindir}/%{name}
 %{_datadir}/applications/%{name}.desktop
+%{_datadir}/%{name}/translations/*
 %{_datadir}/pixmaps/%{name}.png
 %{_mandir}/man1/*
 %doc changelog.gz NEWS README.md TODO COPYING AUTHORS INSTALL 
