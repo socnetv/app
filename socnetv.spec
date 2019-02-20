@@ -140,7 +140,7 @@ chmod -R a-x+X COPYING changelog.gz INSTALL NEWS README.md TODO man src
 find . -type f -name '*~' -delete
 find . -type f -name '*.bak' -delete
 rm -f config.log config.status Makefile socnetv.spec socnetv.mak
-sed -i -e 's/PREFIX = \/usr\/local/PREFIX = ./g' socnetv.pro
+sed -i -e 's/PREFIX = \/usr/PREFIX = ./g' socnetv.pro
 
 #
 #MAKE SECTION
