@@ -136,8 +136,7 @@ Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 
 ## %setup 
 %setup -q -n app-master  ## because master.zip unpacks to app-master/ 
-chmod -R a-x+X COPYING changelog.gz INSTALL NEWS README.md TODO man nets src
-chmod 644 nets/*
+chmod -R a-x+X COPYING changelog.gz INSTALL NEWS README.md TODO man src
 find . -type f -name '*~' -delete
 find . -type f -name '*.bak' -delete
 rm -f config.log config.status Makefile socnetv.spec socnetv.mak

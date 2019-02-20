@@ -1,3 +1,9 @@
+socnetv (2.5-2) xenial; urgency=medium
+
+  *  Fixed bug in debian package creation
+
+ -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Wed, 20 Feb 2019 14:59:14 +0200
+
 socnetv (2.5-1) xenial; urgency=medium
 
   * New upstream beta version 2.5-beta. See https://socnetv.org/ChangeLog

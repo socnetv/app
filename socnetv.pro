@@ -125,31 +125,34 @@ win32 {
 unix:!macx{
 
   isEmpty(PREFIX) {
-        PREFIX = /usr/local
+    PREFIX = /usr/local
   }
-
-  target.path = $$PREFIX/bin
+  # workaround for Debian/Ubuntu deb-helper
+  equals(PREFIX,"/usr") {
+    PREFIX = usr
+  }
+  target.path = $${PREFIX}/bin
   TARGET = socnetv
 
-  pixmap.path = $$PREFIX/share/pixmaps
+  pixmap.path = $${PREFIX}/share/pixmaps
   pixmap.files = src/images/socnetv.png
 
-  documentation.path = $$PREFIX/share/doc/socnetv
-  documentation.files = manual
+#  documentation.path = $${PREFIX}/share/doc/socnetv
+#  documentation.files = manual
 
-  desktop.path = $$PREFIX/share/applications
+  desktop.path = $${PREFIX}/share/applications
   desktop.files = socnetv.desktop
   
-  manpage.path = $$PREFIX/share/man/man1
+  manpage.path = $${PREFIX}/share/man/man1
   manpage.files = man/socnetv.1.gz
 
-  translations.path = $$PREFIX/share/socnetv
+  translations.path = $${PREFIX}/share/socnetv
   translations.files = translations
 
-  doc.path = $$PREFIX/share/doc/socnetv
+  doc.path = $${PREFIX}/share/doc/socnetv
   doc.files = license changelog.gz NEWS README.md TODO COPYING AUTHORS INSTALL
 
-  INSTALLS += pixmap documentation manpage translations doc desktop
+  INSTALLS += pixmap desktop manpage translations doc
 
 }
 
