@@ -1,2 +1,3 @@
 version=3
-https://launchpad.net/socnetv/+download  https://launchpad.net/socnetv/.*/.*/\+download/SocNetV-([0-9.]+)\.tar\.bz2
+opts=filenamemangle=s/.+\/v?(\d[0-9.]+)\.tar\.gz/$1\.tar\.gz/ \
+  https://github.com/socnetv/app/releases .*/v?(\d[0-9.]+)\.tar\.gz

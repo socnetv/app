@@ -1,7 +1,0 @@
-digraph mydot {
-node [color=red, shape=box];
-a -> b -> c  ->d
-node [color=pink, shape=circle];
-d->e->a->f->j->k->l->o
-[weight=1, color=gray];
-}
