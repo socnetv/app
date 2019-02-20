@@ -180,8 +180,9 @@ make install INSTALL_ROOT="%buildroot"
 # NOTE %make_install is a macro available starting rpm-4.10. It is equivalent to `make install DESTDIR="%{?buildroot}"`. 
 # I left it out to use INSTALL_ROOT directly...
 
-echo "### CREATING DIRECTORIES ###"
-
+# We do not need this anymore.
+# qmake's Makefile defines copying for us and make does the job...
+#echo "### CREATING DIRECTORIES ###"
 #mkdir -p %{buildroot}%{_bindir}
 #mkdir -p %{buildroot}%{_datadir}/pixmaps/
 #mkdir -p %{buildroot}%{_datadir}/applications/
@@ -209,6 +210,8 @@ echo " ### FILES SECTION ###"
 %defattr(-,root,root)
 %{_bindir}/%{name}
 %{_datadir}/applications/%{name}.desktop
+%dir %{_datadir}/%{name}/
+%dir %{_datadir}/%{name}/translations/
 %{_datadir}/%{name}/translations/*
 %{_datadir}/pixmaps/%{name}.png
 %{_mandir}/man1/*
