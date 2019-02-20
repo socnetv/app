@@ -18,6 +18,7 @@ script:
   - find .
   - mkdir -p appdir/usr/
   - sudo mv /usr/local appdir/ ; sudo chown -R $USER .  # move all from /usr/local to appdir
+  - find appdir/
     #- make INSTALL_ROOT=appdir install; find appdir/
   - cp appdir/usr/share/applications/socnetv.desktop ./appdir
   - cp appdir/usr/share/pixmaps/socnetv.png .  

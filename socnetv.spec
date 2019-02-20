@@ -156,9 +156,7 @@ echo "###"
 #
 #INSTALL SECTION
 #
-echo "###"
-echo "### INSTALL SECTION"
-echo "###"
+echo "###### INSTALL SECTION ######"
 
 %install
 %if %{is_fedora}
@@ -166,9 +164,7 @@ desktop-file-validate %{name}.desktop
 #desktop-file-install --add-category="Math" --delete-original  --dir=%{buildroot}%{_datadir}/applications  %{buildroot}/%{_datadir}/applnk/Edutainment/%{name}.desktop
 %endif
 
-echo "###"
-echo "### CALLING MAKE INSTALL "
-echo "###"
+echo "### CALLING MAKE INSTALL ###"
 
 make install INSTALL_ROOT="%buildroot"
 
@@ -176,9 +172,7 @@ make install INSTALL_ROOT="%buildroot"
 # NOTE %make_install is a macro available starting rpm-4.10. It is equivalent to `make install DESTDIR="%{?buildroot}"`. 
 # I left it out to use INSTALL_ROOT directly...
 
-echo "###"
-echo "### CREATING DIRECTORIES"
-echo "###"
+echo "### CREATING DIRECTORIES ###"
 
 mkdir -p %{buildroot}%{_bindir}
 mkdir -p %{buildroot}%{_datadir}/pixmaps/
@@ -191,9 +185,7 @@ cp -r man/socnetv.1.gz %{buildroot}%{_mandir}/man1
 
 rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 
-echo "###"
-echo "### CLEAN SECTION"
-echo "###"
+echo "### CLEAN SECTION ###"
 
 %clean
 [ -d %{buildroot} -a "%{buildroot}" != "" ] && %__rm -rf  %{buildroot}
@@ -203,9 +195,7 @@ echo "###"
 #
 #FILES SECTION
 #
-echo " ###"
-echo " ### FILES SECTION "
-echo " ###"
+echo " ### FILES SECTION ###"
 
 %files
 %defattr(-,root,root)
