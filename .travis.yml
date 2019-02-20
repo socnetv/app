@@ -12,11 +12,15 @@ install:
     - source /opt/qt58/bin/qt58-env.sh
 
 script:
-  - qmake PREFIX=/
+  - qmake # default: all go to /usr/local
   - make -j4
-  - make INSTALL_ROOT=appdir install; find appdir/
-    # cp appdir/usr/share/applications/socnetv.desktop ./appdir
-    #- cp appdir/usr/share/pixmaps/socnetv.png .  
+  - make install
+  - find .
+  - mkdir -p appdir/usr/
+  - mv ./usr/local appdir/
+    #- make INSTALL_ROOT=appdir install; find appdir/
+  - cp appdir/usr/share/applications/socnetv.desktop ./appdir
+  - cp appdir/usr/share/pixmaps/socnetv.png .  
   - find /opt/qt58/plugins
   - wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" 
   - chmod a+x linuxdeployqt*.AppImage
