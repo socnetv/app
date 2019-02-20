@@ -124,13 +124,15 @@ win32 {
 
 unix:!macx{
 
-  isEmpty(PREFIX) {
-    PREFIX = /usr/local
-  }
-  # workaround for Debian/Ubuntu deb-helper
-  equals(PREFIX,"/usr") {
-    PREFIX = usr
-  }
+#  isEmpty(PREFIX) {
+#    PREFIX = /usr/local
+#  }
+#  # workaround for Debian/Ubuntu deb-helper
+#  equals(PREFIX,"/usr") {
+#    PREFIX = usr
+#  }
+
+  PREFIX = /usr
   target.path = $${PREFIX}/bin
   TARGET = socnetv
 

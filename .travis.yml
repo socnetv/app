@@ -12,14 +12,10 @@ install:
     - source /opt/qt58/bin/qt58-env.sh
 
 script:
-  - qmake # default: all go to /usr/local
+  - qmake # default: all go to /usr
   - make -j4
-  - sudo make install
   - find .
-  - mkdir -p appdir/usr/
-  - sudo mv /usr/local appdir/ ; sudo chown -R $USER .  # move all from /usr/local to appdir
-  - find appdir/
-    #- make INSTALL_ROOT=appdir install; find appdir/
+  - make INSTALL_ROOT=appdir install; find appdir/
   - cp appdir/usr/share/applications/socnetv.desktop ./appdir
   - cp appdir/usr/share/pixmaps/socnetv.png .  
   - find /opt/qt58/plugins
