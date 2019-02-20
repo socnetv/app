@@ -141,20 +141,22 @@ Ubuntu/Debian are advised to add our own repositories to their systems.
 
 In Debian and Ubuntu, add our repository and install SocNetV with these commands:
 
+```
 sudo add-apt-repository ppa:dimitris-kalamaras/ppa
 sudo apt-get update
 sudo apt-get install socnetv
+```
 
 In Fedora and openSUSE, choose and add the correct repository for your distro version 
-from here: 
-https://download.opensuse.org/repositories/home:/oxy86/ 
+from here: https://download.opensuse.org/repositories/home:/oxy86/ 
 
 Once you add the repo, install SocNetV using the command (Fedora):
 sudo yum install socnetv
 
 or (openSUSE): 
+```
 sudo zypper in socnetv
-
+```
 
 
 ## b) Compile from Source Code
@@ -180,21 +182,21 @@ https://github.com/socnetv/app/releases/latest, i.e. SocNetV-2.x.tar.gz
 Then type in the following commands in order to decompress the
 SocNetV tarball and build it. Replace 2.X with the version you downloaded.
 
-1) untar zxfv SocNetV-2.X.tar.gz
-
-2) cd socnetv-2.X
-
-3) qmake
-
-4) make
-
-5) sudo make install or su -c 'make install'
+```
+untar zxfv SocNetV-2.X.tar.gz
+cd socnetv-2.X
+qmake
+make
+sudo make install # or su -c 'make install'
+```
 
 Probably you have already done the first 2 steps, so just type in 'qmake' or 'qmake-qt5'.
 
 When you finish compiling and installing, run the application typing:
 
+```
 socnetv
+```
 
 or go to Start Menu > Mathematics  > SocNetV.
 
