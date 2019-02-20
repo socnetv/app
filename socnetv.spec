@@ -145,6 +145,9 @@ sed -i -e 's/PREFIX = \/usr\/local/PREFIX = ./g' socnetv.pro
 #
 #MAKE SECTION
 #
+echo "###"
+echo "### MAKE SECTION"
+echo "###"
 
 %build
 %{qmake}
@@ -153,6 +156,9 @@ sed -i -e 's/PREFIX = \/usr\/local/PREFIX = ./g' socnetv.pro
 #
 #INSTALL SECTION
 #
+echo "###"
+echo "### INSTALL SECTION"
+echo "###"
 
 %install
 %if %{is_fedora}
@@ -160,10 +166,19 @@ desktop-file-validate %{name}.desktop
 #desktop-file-install --add-category="Math" --delete-original  --dir=%{buildroot}%{_datadir}/applications  %{buildroot}/%{_datadir}/applnk/Edutainment/%{name}.desktop
 %endif
 
+echo "###"
+echo "### CALLING MAKE INSTALL "
+echo "###"
 
+make install INSTALL_ROOT="%buildroot"
 
-%make_install
+# %make_install
+# NOTE %make_install is a macro available starting rpm-4.10. It is equivalent to `make install DESTDIR="%{?buildroot}"`. 
+# I left it out to use INSTALL_ROOT directly...
 
+echo "###"
+echo "### CREATING DIRECTORIES"
+echo "###"
 
 mkdir -p %{buildroot}%{_bindir}
 mkdir -p %{buildroot}%{_datadir}/pixmaps/
@@ -176,6 +191,10 @@ cp -r man/socnetv.1.gz %{buildroot}%{_mandir}/man1
 
 rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 
+echo "###"
+echo "### CLEAN SECTION"
+echo "###"
+
 %clean
 [ -d %{buildroot} -a "%{buildroot}" != "" ] && %__rm -rf  %{buildroot}
 
@@ -184,6 +203,9 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 #
 #FILES SECTION
 #
+echo " ###"
+echo " ### FILES SECTION "
+echo " ###"
 
 %files
 %defattr(-,root,root)
