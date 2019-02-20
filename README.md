@@ -102,11 +102,11 @@ as explained further below.
 ## a) Install a binary package or installer (Linux/MacOS/Windows)
 
 You can download an installer or a binary package for your Operating System from the
-project's Downloads page: http://socnetv.org/downloads
+project's Downloads page: https://socnetv.org/downloads
 
 Follow the instructions below to install it in your system.
 
-Install in Windows
+### Install in Windows
 
 To install SocNetV in Windows, download the latest SocNetV Windows installer from
 the Downloads page, and double-click on the executable to start the installation.
@@ -117,7 +117,7 @@ Start Menu shortcut will be created.
 
 Afterwards you can run the application from your Start menu.
 
-Install in MacOS
+### Install in MacOS
 
 To install SocNetV in Mac, download the latest SocNetV MacOS installer from
 the Downloads page, and double-click on the executable to start the installation.
@@ -126,7 +126,7 @@ The application will be installed in your Applications.
 Please note that the first time you run SocNetV, you may need to double click on
 the SocNetV application icon holding down the META key.
 
-Install in Linux
+### Install in Linux
 
 To run the latest version of SocNetV in Linux, download the latest Linux AppImage from
 the project's Downloads page.
@@ -147,7 +147,7 @@ sudo apt-get install socnetv
 
 In Fedora and openSUSE, choose and add the correct repository for your distro version 
 from here: 
-http://download.opensuse.org/repositories/home:/oxy86/ 
+https://download.opensuse.org/repositories/home:/oxy86/ 
 
 Once you add the repo, install SocNetV using the command (Fedora):
 sudo yum install socnetv
