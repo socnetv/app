@@ -14,10 +14,10 @@ install:
 script:
   - qmake # default: all go to /usr/local
   - make -j4
-  - make install
+  - sudo make install
   - find .
   - mkdir -p appdir/usr/
-  - mv ./usr/local appdir/
+  - sudo mv /usr/local appdir/ ; sudo chown -R $USER .  # move all from /usr/local to appdir
     #- make INSTALL_ROOT=appdir install; find appdir/
   - cp appdir/usr/share/applications/socnetv.desktop ./appdir
   - cp appdir/usr/share/pixmaps/socnetv.png .  
