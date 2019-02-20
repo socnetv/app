@@ -130,24 +130,32 @@ Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 #
 #PREPARATION SECTION
 #
-
+echo "### PREP SECTION ###"
 
 %prep
 
-## %setup 
+echo "### SETUP folder app-master ###" 
 %setup -q -n app-master  ## because master.zip unpacks to app-master/ 
+
+echo "### SHOWING FILES ###"
+find .
+
+echo "### CHANGING OWNERSHIP AND REMOVING FILES ###"
 chmod -R a-x+X COPYING changelog.gz INSTALL NEWS README.md TODO man src
 find . -type f -name '*~' -delete
 find . -type f -name '*.bak' -delete
 rm -f config.log config.status Makefile socnetv.spec socnetv.mak
-sed -i -e 's/PREFIX = \/usr/PREFIX = ./g' socnetv.pro
+
+# We do not need this replace hack anymore
+# because by default our .pro uses /usr as PREFIX and 
+# qmake adds a useful INSTALL_ROOT variable in front of PREFIX
+# so we can use this scheme directly in our make install below
+# sed -i -e 's/PREFIX = \/usr/PREFIX = ./g' socnetv.pro
 
 #
 #MAKE SECTION
 #
-echo "###"
-echo "### MAKE SECTION"
-echo "###"
+echo "### MAKE SECTION ###"
 
 %build
 %{qmake}
@@ -174,14 +182,14 @@ make install INSTALL_ROOT="%buildroot"
 
 echo "### CREATING DIRECTORIES ###"
 
-mkdir -p %{buildroot}%{_bindir}
-mkdir -p %{buildroot}%{_datadir}/pixmaps/
-mkdir -p %{buildroot}%{_datadir}/applications/
-mkdir -p %{buildroot}%{_mandir}/man1/
-cp -r socnetv %{buildroot}%{_bindir}/%{name}
-cp -r src/images/socnetv.png %{buildroot}%{_datadir}/pixmaps/%{name}.png
-cp -r socnetv.desktop %{buildroot}%{_datadir}/applications/
-cp -r man/socnetv.1.gz %{buildroot}%{_mandir}/man1
+#mkdir -p %{buildroot}%{_bindir}
+#mkdir -p %{buildroot}%{_datadir}/pixmaps/
+#mkdir -p %{buildroot}%{_datadir}/applications/
+#mkdir -p %{buildroot}%{_mandir}/man1/
+#cp -r socnetv %{buildroot}%{_bindir}/%{name}
+#cp -r src/images/socnetv.png %{buildroot}%{_datadir}/pixmaps/%{name}.png
+#cp -r socnetv.desktop %{buildroot}%{_datadir}/applications/
+#cp -r man/socnetv.1.gz %{buildroot}%{_mandir}/man1
 
 rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 
