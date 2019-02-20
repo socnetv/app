@@ -12,7 +12,7 @@ install:
     - source /opt/qt58/bin/qt58-env.sh
 
 script:
-  - qmake PREFIX=/usr
+  - qmake PREFIX=.
   - make -j4
   - make INSTALL_ROOT=appdir install; find appdir/
     # cp appdir/usr/share/applications/socnetv.desktop ./appdir
