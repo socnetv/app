@@ -127,7 +127,24 @@ SOCNETV_BEGIN_NAMESPACE
     typedef QPair<int, int> SelectedEdge;
 
 
-
+    class MyEdge {
+    public:
+        int source;
+        int target;
+        double weight;
+        int type;
+        MyEdge() { source=0; target=0;weight=0;type=0;}
+        MyEdge (const int &from, const int &to, const double &w =0, const int &type=0)
+            : source(from), target(to), weight(w), type(type)  {  }
+        // Copy constructor
+        MyEdge (const MyEdge &edge) {
+            source = edge.source;
+            target = edge.target;
+            weight = edge.weight;
+            type = edge.type;
+        }
+        ~MyEdge(){}
+    };
 
     class GraphDistance
     {
@@ -188,6 +205,7 @@ SOCNETV_BEGIN_NAMESPACE
 SOCNETV_END_NAMESPACE
 
 
+Q_DECLARE_METATYPE(SOCNETV_NAMESPACE::MyEdge)
 
 
 

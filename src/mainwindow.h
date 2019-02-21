@@ -44,6 +44,8 @@
 //#include <QMetaType>
 
 
+#include "global.h"
+
 #include "graph.h"    // needed here for static vars declared in Graph
 
 #include "forms/dialogfilteredgesbyweight.h"
@@ -81,6 +83,8 @@ class QNetworkAccessManager;
 QT_END_NAMESPACE
 
 using namespace std;
+
+SOCNETV_USE_NAMESPACE
 
 class GraphicsWidget;
 
@@ -339,10 +343,7 @@ public slots:
     void slotEditNodeLabelsColor(QColor color=QColor());
     void slotEditNodeLabelDistance(int v1=0, int newSize=0);
 
-    void slotEditEdgeClicked (const int &v1,
-                                    const int &v2,
-                                    const qreal &weight,
-                                    const int &type,
+    void slotEditEdgeClicked (const MyEdge &edge=MyEdge(),
                                     const bool &openMenu=false);
 
     void slotEditEdgeOpenContextMenu(const QString &str="") ;

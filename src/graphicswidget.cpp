@@ -417,10 +417,10 @@ void GraphicsWidget::removeEdge(const int &source,
     edgeName = createEdgeName(source,target);
 
     qDebug() << "GW::removeEdge() - " << edgeName
-             << "removeOpposite"<<removeOpposite;
-//             << " scene items: " << scene()->items().size()
-//             << " view items: " << items().size()
-//             << " edgesHash.count: " << edgesHash.count();
+             << "removeOpposite"<<removeOpposite
+             << " scene items: " << scene()->items().size()
+             << " view items: " << items().size()
+             << " edgesHash.count: " << edgesHash.count();
 
     if ( edgesHash.contains(edgeName) ) {
         int directionType = edgesHash.value(edgeName)->directionType();
@@ -430,10 +430,10 @@ void GraphicsWidget::removeEdge(const int &source,
                 drawEdge(target, source, 1,"");
             }
         }
-            qDebug() << "GW::removeEdge() - Deleted edge" << edgeName;
-//                 << " scene items: " << scene()->items().size()
-//                 << " view items: " << items().size()
-//                 << " edgesHash.count: " << edgesHash.count();
+            qDebug() << "GW::removeEdge() - Deleted edge" << edgeName
+                 << " scene items: " << scene()->items().size()
+                 << " view items: " << items().size()
+                 << " edgesHash.count: " << edgesHash.count();
 
     }
     else {

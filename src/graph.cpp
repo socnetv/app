@@ -65,6 +65,8 @@
  */
 Graph::Graph(GraphicsWidget *graphicsWidget) {
 
+            qRegisterMetaType<MyEdge>("MyEdge");
+
     m_canvas = graphicsWidget;
 
     m_totalVertices=0;
@@ -117,8 +119,8 @@ Graph::Graph(GraphicsWidget *graphicsWidget) {
     m_precision = 3;
 
     m_vertexClicked = 0;
-    m_clickedEdge.v1=0;
-    m_clickedEdge.v2=0;
+    m_clickedEdge.source=0;
+    m_clickedEdge.target=0;
 
     file_parser = 0;
     wc_parser = 0;
@@ -351,8 +353,8 @@ void Graph::clear(const QString &reason) {
     reciprocalEdgesVert=0;
 
     m_vertexClicked = 0;
-    m_clickedEdge.v1=0;
-    m_clickedEdge.v2=0;
+    m_clickedEdge.source=0;
+    m_clickedEdge.target=0;
 
     order=true;		//returns true if the vpositions of the list is ordered.
 
@@ -2067,7 +2069,29 @@ void Graph::edgeRemove (const int &v1,
 }
 
 
+/**
+ * @brief Removes a SelectedEdge
+ * @param selectedEdge
+ * @param removeOpposite
+ */
+void Graph::edgeRemoveSelected (SelectedEdge &selectedEdge,
+                                const bool &removeOpposite){
+    qDebug()<< "Graph::edgeRemoveSelected()" << selectedEdge;
+    edgeRemove( selectedEdge.first, selectedEdge.second, removeOpposite);
+}
 
+
+/**
+ * @brief Removes all selected edges
+ */
+void Graph::edgeRemoveSelectedAll() {
+    qDebug()<< "Graph::edgeRemoveSelectedAll()";
+
+    foreach (SelectedEdge edgeToRemove, graphSelectedEdges()) {
+        qDebug() << "Graph::edgeRemoveSelectedAll() - About to remove" << edgeToRemove;
+        edgeRemoveSelected( edgeToRemove, true );
+    }
+}
 
 /**
  * @brief Changes the canvas visibility of an edge
@@ -2169,20 +2193,20 @@ void Graph::edgeClickedSet(const int &v1, const int &v2, const bool &openMenu) {
              << "->"
              << v2;
 
-    m_clickedEdge.v1=v1;
-    m_clickedEdge.v2=v2;
+    m_clickedEdge.source=v1;
+    m_clickedEdge.target=v2;
 
     // Clear status bar message
-    if (m_clickedEdge.v1 == 0 && m_clickedEdge.v2==0) {
+    if (m_clickedEdge.source == 0 && m_clickedEdge.target==0) {
         emit signalEdgeClicked();
     }
     else {
 
-        qreal weight = m_graph[ vpos[ m_clickedEdge.v1] ]->hasEdgeTo(m_clickedEdge.v2);
+        qreal weight = m_graph[ vpos[ m_clickedEdge.source] ]->hasEdgeTo(m_clickedEdge.target);
         qDebug() << "Graph::edgeClickedSet() - clicked edge weight:"<< weight;
         int type=EdgeType::Directed;
         // Check if the opposite tie exists. If yes, this is a reciprocated tie
-        if ( edgeExists(m_clickedEdge.v2,m_clickedEdge.v1, false)  ) {
+        if ( edgeExists(m_clickedEdge.target,m_clickedEdge.source, false)  ) {
             if ( !graphIsDirected() ) {
                 type=EdgeType::Undirected;
             }
@@ -2191,7 +2215,9 @@ void Graph::edgeClickedSet(const int &v1, const int &v2, const bool &openMenu) {
             }
         }
         m_clickedEdge.type = type;
-        emit signalEdgeClicked( m_clickedEdge.v1 ,m_clickedEdge.v2, weight, type, openMenu);
+        //emit signalEdgeClicked( m_clickedEdge.source ,m_clickedEdge.target, weight, type, openMenu);
+
+        emit signalEdgeClicked( m_clickedEdge, openMenu);
     }
 
 }
@@ -2200,7 +2226,7 @@ void Graph::edgeClickedSet(const int &v1, const int &v2, const bool &openMenu) {
  * @brief Returns clicked edge
  * @return
  */
-ClickedEdge Graph::edgeClicked() {
+MyEdge Graph::edgeClicked() {
     return m_clickedEdge;
 }
 

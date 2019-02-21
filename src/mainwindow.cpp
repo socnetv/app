@@ -57,6 +57,7 @@
 #include "graphicsedge.h"
 #include "graphicsnodenumber.h"
 
+
 #include "chart.h"
 
 #include "forms/dialogsettings.h"
@@ -9780,11 +9781,13 @@ void MainWindow::slotEditNodeInfoStatusBar (const int &number,
  * Displays information about the clicked edge on the statusbar
  * @param edge
  */
-void MainWindow::slotEditEdgeClicked (const int &v1,
-                                      const  int &v2,
-                                      const qreal &weight,
-                                      const int &type,
+void MainWindow::slotEditEdgeClicked (const MyEdge &edge,
                                       const bool &openMenu) {
+
+    int v1 = edge.source;
+    int v2 = edge.target;
+    qreal weight = edge.weight;
+    int type = edge.type;
 
     qDebug()<<"MW::slotEditEdgeClicked()"
            << v1
@@ -10006,6 +10009,9 @@ void MainWindow::slotEditEdgeCreate (const int &source, const int &target,
  * First deletes arc reference from object nodeVector then deletes arc item from scene
  */
 void MainWindow::slotEditEdgeRemove(){
+
+    qDebug() << "MW::slotEditEdgeRemove()";
+
     if ( !activeNodes() || activeEdges() ==0 )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
@@ -10018,7 +10024,11 @@ void MainWindow::slotEditEdgeRemove(){
     min=activeGraph->vertexNumberMin();
     max=activeGraph->vertexNumberMax();
 
-    if (!activeGraph->edgeClicked().v1 || !activeGraph->edgeClicked().v2 ) {
+    if ( ! activeGraph->graphSelectedEdgesCount() ) {
+
+        qDebug() << "MW::slotEditEdgeRemove() - No edge selected. "
+                    "Prompting user to select...";
+
         sourceNode=QInputDialog::getInt(
                     this,tr("Remove edge"),
                     tr("Source node:  (")+QString::number(min)+
@@ -10053,35 +10063,59 @@ void MainWindow::slotEditEdgeRemove(){
 
     }
     else {
+
+        if ( activeGraph->graphSelectedEdgesCount() > 1) {
+
+            qDebug() << "MW::slotEditEdgeRemove() - Multiple edges selected. "
+                        "Calling Graph to remove all of them...";
+
+            activeGraph->edgeRemoveSelectedAll();
+            return;
+        }
+
+        qDebug() << "MW::slotEditEdgeRemove() - One edge selected: "
+                 << activeGraph->edgeClicked().source
+                 << "->"
+                 << activeGraph->edgeClicked().target;
+
         if (activeGraph->edgeClicked().type == EdgeType::Reciprocated) {
+
             QStringList items;
-            QString arcA = QString::number(activeGraph->edgeClicked().v1)+ " --> "+QString::number(activeGraph->edgeClicked().v2);
-            QString arcB = QString::number(activeGraph->edgeClicked().v2)+ " --> "+QString::number(activeGraph->edgeClicked().v1);
+
+            QString arcA = QString::number( activeGraph->edgeClicked().source) + " --> "
+                    +QString::number(activeGraph->edgeClicked().target);
+            QString arcB = QString::number( activeGraph->edgeClicked().target)+ " --> "
+                    +QString::number(activeGraph->edgeClicked().source);
+
             items << arcA
                   << arcB
                   << "Both";
+
             ok = false;
-            QString selectedArc = QInputDialog::getItem(this, tr("Select edge"),
-                                                        tr("This is a reciprocated edge. "
-                                                           "Select direction to remove:"), items, 0, false, &ok);
+
+            QString selectedArc = QInputDialog::getItem(
+                        this, tr("Select edge"),
+                        tr("This is a reciprocated edge. "
+                           "Select direction to remove:"), items, 0, false, &ok);
+
             if ( selectedArc == arcA ) {
-                sourceNode = activeGraph->edgeClicked().v1;
-                targetNode = activeGraph->edgeClicked().v2;
+                sourceNode = activeGraph->edgeClicked().source;
+                targetNode = activeGraph->edgeClicked().target;
             }
             else if ( selectedArc == arcB ) {
-                sourceNode = activeGraph->edgeClicked().v2;
-                targetNode = activeGraph->edgeClicked().v1;
+                sourceNode = activeGraph->edgeClicked().target;
+                targetNode = activeGraph->edgeClicked().source;
             }
             else {  // both
-                sourceNode = activeGraph->edgeClicked().v1;
-                targetNode = activeGraph->edgeClicked().v2;
+                sourceNode = activeGraph->edgeClicked().source;
+                targetNode = activeGraph->edgeClicked().target;
                 removeOpposite=true;
             }
 
         }
         else {
-            sourceNode = activeGraph->edgeClicked().v1;
-            targetNode = activeGraph->edgeClicked().v2;
+            sourceNode = activeGraph->edgeClicked().source;
+            targetNode = activeGraph->edgeClicked().target;
         }
 
 
@@ -10119,7 +10153,7 @@ void MainWindow::slotEditEdgeLabel(){
     int min=activeGraph->vertexNumberMin();
     int max=activeGraph->vertexNumberMax();
 
-    if (!activeGraph->edgeClicked().v1 || !activeGraph->edgeClicked().v2 )
+    if (!activeGraph->edgeClicked().source || !activeGraph->edgeClicked().target )
     {	//no edge clicked. Ask user to define an edge.
         sourceNode=QInputDialog::getInt(this,
                                         "Change edge label",
@@ -10153,8 +10187,8 @@ void MainWindow::slotEditEdgeLabel(){
     }
     else
     {	//edge has been clicked.
-        sourceNode = activeGraph->edgeClicked().v1;
-        targetNode = activeGraph->edgeClicked().v2;
+        sourceNode = activeGraph->edgeClicked().source;
+        targetNode = activeGraph->edgeClicked().target;
     }
 
     QString label = QInputDialog::getText( this, tr("Change edge label"),
@@ -10239,7 +10273,7 @@ void MainWindow::slotEditEdgeColor(){
     int min=activeGraph->vertexNumberMin();
     int max=activeGraph->vertexNumberMax();
 
-    if (!activeGraph->edgeClicked().v1 || !activeGraph->edgeClicked().v2)
+    if (!activeGraph->edgeClicked().source || !activeGraph->edgeClicked().target)
     {	//no edge clicked. Ask user to define an edge.
         sourceNode=QInputDialog::getInt(this,
                                         "Change edge color",
@@ -10273,8 +10307,8 @@ void MainWindow::slotEditEdgeColor(){
     }
     else
     {	//edge has been clicked.
-        sourceNode = activeGraph->edgeClicked().v1;
-        targetNode = activeGraph->edgeClicked().v2;
+        sourceNode = activeGraph->edgeClicked().source;
+        targetNode = activeGraph->edgeClicked().target;
     }
     QString curColor = activeGraph->edgeColor(sourceNode, targetNode);
     if (!QColor(curColor).isValid()) {
@@ -10319,7 +10353,7 @@ void MainWindow::slotEditEdgeWeight(){
     bool ok=false;
 
 
-    if ( activeGraph->edgeClicked().v1==0 || activeGraph->edgeClicked().v2==0 ) {
+    if ( activeGraph->edgeClicked().source==0 || activeGraph->edgeClicked().target==0 ) {
         sourceNode=QInputDialog::getInt(
                     this,
                     "Edge weight",
@@ -10351,8 +10385,8 @@ void MainWindow::slotEditEdgeWeight(){
 
         if (activeGraph->edgeClicked().type == EdgeType::Reciprocated) {
             QStringList items;
-            QString arcA = QString::number(activeGraph->edgeClicked().v1)+ " --> "+QString::number(activeGraph->edgeClicked().v2);
-            QString arcB = QString::number(activeGraph->edgeClicked().v2)+ " --> "+QString::number(activeGraph->edgeClicked().v1);
+            QString arcA = QString::number(activeGraph->edgeClicked().source)+ " --> "+QString::number(activeGraph->edgeClicked().target);
+            QString arcB = QString::number(activeGraph->edgeClicked().target)+ " --> "+QString::number(activeGraph->edgeClicked().source);
             items << arcA
                   << arcB
                   << "Both";
@@ -10361,23 +10395,23 @@ void MainWindow::slotEditEdgeWeight(){
                                                         tr("This is a reciprocated edge. "
                                                            "Select direction:"), items, 0, false, &ok);
             if ( selectedArc == arcA ) {
-                sourceNode = activeGraph->edgeClicked().v1;
-                targetNode = activeGraph->edgeClicked().v2;
+                sourceNode = activeGraph->edgeClicked().source;
+                targetNode = activeGraph->edgeClicked().target;
             }
             else if ( selectedArc == arcB ) {
-                sourceNode = activeGraph->edgeClicked().v2;
-                targetNode = activeGraph->edgeClicked().v1;
+                sourceNode = activeGraph->edgeClicked().target;
+                targetNode = activeGraph->edgeClicked().source;
             }
             else {  // both
-                sourceNode = activeGraph->edgeClicked().v1;
-                targetNode = activeGraph->edgeClicked().v2;
+                sourceNode = activeGraph->edgeClicked().source;
+                targetNode = activeGraph->edgeClicked().target;
                 changeBothEdges=true;
             }
 
         }
         else {
-            sourceNode = activeGraph->edgeClicked().v1;
-            targetNode = activeGraph->edgeClicked().v2;
+            sourceNode = activeGraph->edgeClicked().source;
+            targetNode = activeGraph->edgeClicked().target;
         }
 
 

@@ -278,10 +278,13 @@ signals:
                                     const int &outDegree=0,
                                     const qreal &clc=0);
 
-    void signalEdgeClicked (const int &v1=0,
-                            const int &v2=0,
-                            const qreal &weight=0,
-                            const int &type=0,
+//    void signalEdgeClicked (const int &v1=0,
+//                            const int &v2=0,
+//                            const qreal &weight=0,
+//                            const int &type=0,
+//                            const bool &openMenu=false);
+
+    void signalEdgeClicked (const MyEdge &edge=MyEdge(),
                             const bool &openMenu=false);
 
     void signalRelationAddToMW(const QString &newRelation,
@@ -582,7 +585,7 @@ public:
 
     int edgesEnabled();
 
-    ClickedEdge edgeClicked();
+    MyEdge edgeClicked();
 
     qreal edgeExists(const int &v1,
                      const int &v2,
@@ -591,6 +594,11 @@ public:
     void edgeRemove (const int &v1,
                      const int &v2,
                      const bool &removeOpposite=false);
+
+    void edgeRemoveSelected (SelectedEdge &selectedEdge,
+                             const bool &removeOpposite);
+
+    void edgeRemoveSelectedAll();
 
     bool edgeSymmetric(const int &v1, const int &v2);
 
@@ -1204,7 +1212,7 @@ private:
 
     int m_precision, m_fieldWidth, m_curRelation, m_fileFormat, m_vertexClicked;
 
-    ClickedEdge m_clickedEdge;
+    MyEdge m_clickedEdge;
 
     qreal edgeWeightTemp, edgeReverseWeightTemp;
     qreal meanSDC, varianceSDC;
