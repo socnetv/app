@@ -44,6 +44,7 @@ SOCNETV_BEGIN_NAMESPACE
         Triangle,
         Star,
         Person,
+        PersonB,
         Bugs,
         Heart,
         Dice,

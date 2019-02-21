@@ -169,5 +169,6 @@
         <file>images/centrality_48px.svg</file>
         <file>images/heart.svg</file>
         <file>images/person.svg</file>
+        <file>images/person-bw.svg</file>
     </qresource>
 </RCC>

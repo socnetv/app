@@ -161,6 +161,9 @@ void DialogNodeEdit::getNodeShape(const int &nodeShapeIndex){
     case NodeShape::Person:
         nodeShape  = "person";
         break;
+    case NodeShape::PersonB:
+        nodeShape  = "person-b";
+        break;
     case NodeShape::Bugs:
         nodeShape  = "bugs";
         break;
@@ -274,6 +277,10 @@ void DialogNodeEdit::getUserChoices(){
         break;
     case NodeShape::Person:
         nodeShape  = "person";
+        iconPath = m_iconList [nodeShapeIndex];
+        break;
+    case NodeShape::PersonB:
+        nodeShape  = "person-b";
         iconPath = m_iconList [nodeShapeIndex];
         break;
     case NodeShape::Bugs:

@@ -254,7 +254,8 @@ void GraphicsNode::setShape(const QString shape, const QString &iconPath) {
     else if (m_shape == "bugs"   ||
              m_shape == "heart"  ||
              m_shape == "dice"   ||
-             m_shape == "person" ) {
+             m_shape == "person" ||
+             m_shape == "person-b" ) {
         path.addRect (-m_size , -m_size , 2*m_size , 2*m_size );
         // we update iconPath only if it's not empty
         // this is to allow internal GraphicsNode methods to call us
@@ -341,7 +342,8 @@ void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
         QPixmap pix(m_iconPath);
         painter->drawPixmap(-m_size, -m_size, 2*m_size, 2*m_size, pix);
     }
-    else if ( m_shape == "person"    ||
+    else if ( m_shape == "person"  ||
+              m_shape == "person-b"  ||
               m_shape == "bugs"    ||
               m_shape == "heart"   ||
               m_shape == "dice"     ) {
