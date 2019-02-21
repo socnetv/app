@@ -2215,6 +2215,7 @@ void Graph::edgeClickedSet(const int &v1, const int &v2, const bool &openMenu) {
             }
         }
         m_clickedEdge.type = type;
+        m_clickedEdge.weight = weight;
         //emit signalEdgeClicked( m_clickedEdge.source ,m_clickedEdge.target, weight, type, openMenu);
 
         emit signalEdgeClicked( m_clickedEdge, openMenu);
