@@ -359,7 +359,7 @@ void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
         painter->drawPath (m_path);
     }
 
-
+    //@TODO FIX NUMBER SIZE WHEN TOGGLING IN/OUT OF NODE SHAPE
     if (m_hasNumberInside && m_hasNumber) {
         // m_path->setFillRule(Qt::WindingFill);
         painter->setPen(QPen(QColor(m_numColor), 0));
