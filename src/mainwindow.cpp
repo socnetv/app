@@ -4547,8 +4547,10 @@ void MainWindow::initPanels(){
     toolBoxLayoutByIndexTypeSelect->setStatusTip(
                 tr("Select layout type for the selected model"));
     helpMessage = tr("<p><b>Layout Type</b></p>"
-                     "</p>Select a layout type (radial, level, node size or node color)"
-                     "for the selected prominence-based model you want to apply to the network.</p>");
+                     "</p>Select a layout type (radial, level, node size or node color) "
+                     "for the selected prominence-based model you want to apply to the "
+                     "network. Please note that node coloring works only for basic shapes "
+                     "(box, circle, etc) not for image icons.</p>");
     toolBoxLayoutByIndexTypeSelect->setToolTip( helpMessage );
     toolBoxLayoutByIndexTypeSelect->setWhatsThis( helpMessage );
     QStringList layoutTypes;
@@ -4581,7 +4583,9 @@ void MainWindow::initPanels(){
                      "<p>Apply a prominence-based layout model to the network. </p>"
                      "<p>For instance, you can apply a Degree Centrality layout. </p>"
                      "<p>For each prominence index, you must select a layout type:</p>"
-                     "<p>Radial, Levels, NodeSize or NodeColor</p>");
+                     "<p>Radial, Levels, NodeSize or NodeColor.</p>"
+                     "<p>Please note that node coloring works only for basic shapes "
+                     "(box, circle, etc) not for image icons.</p>");
     layoutByIndexBox->setToolTip( helpMessage );
     layoutByIndexBox->setLayout (layoutByIndexGrid );
 
