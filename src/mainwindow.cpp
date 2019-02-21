@@ -14172,6 +14172,10 @@ void MainWindow::slotHelpCheckUpdateParse(QNetworkReply *reply) {
     bool ok1=false;
     bool ok2=false;
 
+    if (localVersionStr.contains("beta")) {
+        localVersionStr.remove("beta");
+        localVersionStr.remove("-");
+    }
     localVersionStr.remove(".");
     localVersion = localVersionStr.toInt(&ok1, 10);
     qDebug() << "MW::slotHelpCheckUpdateParse(reply) - localVersion:" << localVersion;
