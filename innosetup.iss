@@ -1,5 +1,5 @@
 #define APPTITLE "SocNetV"
-#define RELEASEFOLDER ".\release\"
+#define RELEASEFOLDER "release\"
 #define EXECUTABLE RELEASEFOLDER + APPTITLE + ".exe"
 #define NUMERICVERSION GetFileVersion(EXECUTABLE)
 #define VERSION "trunk" ; GetFileVersionString(EXECUTABLE)
@@ -18,7 +18,7 @@ Compression=lzma/ultra
 DefaultDirName={pf}\{#APPTITLE}
 DefaultGroupName={#APPTITLE}
 DisableProgramGroupPage=true
-LicenseFile={#RELEASEFOLDER}LICENCE.txt
+LicenseFile={#RELEASEFOLDER}LICENSE.txt
 InternalCompressLevel=ultra
 OutputBaseFilename={#APPTITLE}-{#VERSION}
 OutputDir=.
