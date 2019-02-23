@@ -63,7 +63,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: {#RELEASEFOLDER}; DestDir: "{app}"; Flags: ignoreversion
+Source: {#RELEASEFOLDER}*; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#APPTITLE}"; Filename: "{app}\{#APPTITLE}.exe"
