@@ -6,7 +6,7 @@ branches:
 install:
   - set QTDIR=C:\Qt\5.12.1\mingw73_64
   - choco install -y InnoSetup
-  - set PATH=%QTDIR%\bin;%PATH%;"C:\Program Files (x86)\Inno Setup 5"
+  - set PATH=%QTDIR%\bin;%PATH%;"C:\Program Files (x86)\Inno Setup 5";%PATH%
   - cmd: dir C:\Qt\5.12.1
   - cmd: dir C:\Qt\5.12.1\mingw73_64
   - cmd: dir C:\Qt\5.12.1\mingw73_64\bin
