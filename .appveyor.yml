@@ -25,4 +25,4 @@ after_build:
 artifacts:
   - path: Output\socnetv-*.exe
   - path: release
-type: zip
+    #type: zip
