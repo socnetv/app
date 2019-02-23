@@ -3,6 +3,20 @@ branches:
     - master
       #   - devel
 
+# # Do not build on tags (GitHub and BitBucket)
+# skip_tags: true
+
+# # Start builds on tags only (GitHub and BitBucket)
+# skip_non_tags: true
+
+# Including commits with particular message or from specific user
+only_commits:
+  #message: /build/                # Start a new build if message contains 'build'
+  author: dimitris.kalamaras@gmail.com      # Start a new build for commit of user with email jack@company.com
+
+# clone directory
+clone_folder: c:\projects\socnetv
+
 install:
   - set QTDIR=C:\Qt\5.12.1\mingw73_64
   - choco install -y InnoSetup
@@ -13,7 +27,12 @@ install:
 build_script:
   - qmake socnetv.pro
   - mingw32-make
-# after_build:
+
+after_build:
+  - cmd: echo "check folder contents"
+  - cmd: dir C:\projects
+  - cmd: dir C:\projects\socnetv
+  
 #   - windeployqt release/socnetv.exe
   # - cmd: cp win32/KArchive/lib/libKF5Archive.dll.a release"
   # - cmd: cp win32/KArchive/bin/libKF5Archive.dll release"
@@ -29,3 +48,14 @@ build_script:
 #   - path: Output\socnetv-*.exe
 #   - path: release
 #     #type: zip
+
+
+# deploy: 
+# # Deploy to GitHub Releases
+#   - provider: GitHub
+#     artifact: /.*\.nupkg/           # upload all NuGet packages to release assets
+#     draft: false
+#     prerelease: false
+#     on:
+#       branch: master                # release from master branch only
+#       APPVEYOR_REPO_TAG: true       # deploy on tag push only
