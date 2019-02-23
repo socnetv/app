@@ -2,7 +2,7 @@
 #define RELEASEFOLDER "release\"
 #define EXECUTABLE RELEASEFOLDER + APPTITLE + ".exe"
 #define NUMERICVERSION GetFileVersion(EXECUTABLE)
-#define VERSION "trunk" ; GetFileVersionString(EXECUTABLE)
+#define VERSION "latest" 
 #define URL "https://socnetv.org"
 #define COPYRIGHT "2004-2018 " + URL
 
@@ -20,14 +20,14 @@ DefaultGroupName={#APPTITLE}
 DisableProgramGroupPage=true
 LicenseFile={#RELEASEFOLDER}LICENSE.txt
 InternalCompressLevel=ultra
-OutputBaseFilename={#APPTITLE}-{#VERSION}
+OutputBaseFilename={#APPTITLE}-{#VERSION}-"windows-installer"
 OutputDir=.
 OutputManifestFile=Setup-Manifest.txt
 ShowLanguageDialog=no
 SolidCompression=yes
 VersionInfoCompany={#URL}
 VersionInfoCopyright=Copyright (C) {#COPYRIGHT}
-VersionInfoDescription=Keyboard-oriented high-precision scientific calculator
+VersionInfoDescription=Social Network Analysis and Visualization application
 VersionInfoTextVersion={#VERSION}
 VersionInfoVersion={#NUMERICVERSION}
 WizardImageFile=compiler:WizModernImage-IS.bmp
@@ -63,7 +63,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: {#EXECUTABLE}; DestDir: "{app}"; Flags: ignoreversion
+Source: {#RELEASEFOLDER}; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#APPTITLE}"; Filename: "{app}\{#APPTITLE}.exe"

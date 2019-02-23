@@ -65,8 +65,8 @@ after_build:
   - cmd: dir C:\projects\socnetv
   - cmd: dir C:\projects\socnetv\release  
 
-# artifacts:
-#   - path: release\socnetv-*.exe
+artifacts:
+  - path: SocNetV-*-windows-installer.exe
 #   - path: release
 #     #type: zip
 
@@ -74,7 +74,7 @@ after_build:
 # deploy: 
 # # Deploy to GitHub Releases
 #   - provider: GitHub
-#     artifact: /.*\.nupkg/           # upload all NuGet packages to release assets
+#     artifact: /SocNetV.*installer\.exe/           # upload all NuGet packages to release assets
 #     draft: false
 #     prerelease: false
 #     on:
