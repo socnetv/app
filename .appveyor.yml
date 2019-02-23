@@ -9,6 +9,8 @@ branches:
 # # Start builds on tags only (GitHub and BitBucket)
 # skip_non_tags: true
 
+ #continuous
+
 # Including commits with particular message or from specific user
 only_commits:
   #message: /build/                # Start a new build if message contains 'build'
@@ -35,7 +37,7 @@ install:
 build_script:
   - cmd: echo "Running qmake..."  
   - qmake socnetv.pro
-  - cmd: echo "Building starts here with mingw32..."    
+  - cmd: echo "BUILDING starts here with mingw32..."    
   - mingw32-make
 
 after_build:
@@ -53,10 +55,14 @@ after_build:
   # - cmd: cp win32/zlib1.dll release"
   # - cmd: cp win32/liblzma-5.dll release"
   # - cmd: cp win32/libbz2-1.dll release"
-  # - cmd: cp LICENSE release/LICENSE.txt"
-  # - iscc innosetup.iss
-  # - rm release/*.o
-  # - rm release/*.cpp
+  - cmd: cp COPYING release/LICENSE.txt"
+  - cmd: echo "Running Innosetup..."
+  - iscc innosetup.iss
+  - cmd: echo "Deleting *.o and *.cpp..."  
+  - rm release/*.o
+  - rm release/*.cpp
+  - cmd: echo "check folder contents again..."
+  - cmd: dir C:\projects\socnetv\release  
 
 # artifacts:
 #   - path: release\socnetv-*.exe
