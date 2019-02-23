@@ -120,7 +120,6 @@ RESOURCES = src/src.qrc
 win32 {
   RC_FILE = src/icon.rc
   TARGET = SocNetV
-  target.path = bin/
 }
 
 unix:!macx{
