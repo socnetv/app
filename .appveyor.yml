@@ -42,8 +42,11 @@ after_build:
   - cmd: dir C:\projects
   - cmd: dir C:\projects\socnetv
   - cmd: dir C:\projects\socnetv\release  
+  - cmd: echo "Executing windeployqt"
+  - windeployqt release/socnetv.exe
+  - cmd: echo "check folder contents again..."
+  - cmd: dir C:\projects\socnetv\release  
 
-#   - windeployqt release/socnetv.exe
   # - cmd: cp win32/KArchive/lib/libKF5Archive.dll.a release"
   # - cmd: cp win32/KArchive/bin/libKF5Archive.dll release"
   # - cmd: cp win32/zlib1.dll release"
