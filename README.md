@@ -1,3 +1,4 @@
+[![travis](https://travis-ci.org/socnetv/app.svg?branch=master)](https://travis-ci.org/socnetv/app)
 [![appveyor](https://img.shields.io/appveyor/ci/oxy86/app.svg)](https://ci.appveyor.com/project/oxy86/app)
 ====================================
 
