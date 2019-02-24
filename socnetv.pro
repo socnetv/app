@@ -160,13 +160,16 @@ unix:!macx{
   manpage.path = $${PREFIX}/share/man/man1
   manpage.files = man/socnetv.1.gz
 
+  appstream.path = $${PREFIX}/share/metainfo
+  appstream.files = socnetv.appdata.xml
+
   translations.path = $${PREFIX}/share/socnetv
   translations.files = translations
 
   doc.path = $${PREFIX}/share/doc/socnetv
   doc.files = license changelog.gz NEWS README.md TODO COPYING AUTHORS INSTALL
 
-  INSTALLS += pixmap desktop manpage translations doc
+  INSTALLS += pixmap desktop manpage translations doc appstream
 
 }
 
