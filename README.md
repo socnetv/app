@@ -1,5 +1,5 @@
-[![travis](https://travis-ci.org/socnetv/app.svg?branch=master)](https://travis-ci.org/socnetv/app)
-[![appveyor](https://img.shields.io/appveyor/ci/oxy86/app.svg)](https://ci.appveyor.com/project/oxy86/app)
+[![travis](https://travis-ci.org/socnetv/app.svg?branch=master&logo=travis)](https://travis-ci.org/socnetv/app)
+[![appveyor](https://img.shields.io/appveyor/ci/oxy86/app.svg?logo=appveyor)](https://ci.appveyor.com/project/oxy86/app)
 ====================================
 
 [![socnetv](/src/images/socnetv.png)](https://socnetv.org) SocNetV - Social Network Visualizer
