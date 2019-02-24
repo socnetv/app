@@ -1,4 +1,4 @@
-version:  '2.5-beta.{build}'
+version:  'continuous.{build}'
 
 branches:
   only:
@@ -6,7 +6,9 @@ branches:
       #   - devel
   except:
     - # Do not build tags that we create when we or travis upload to GitHub Releases
+    - # does not work see https://github.com/appveyor/ci/issues/1493
     - /^(?i:continuous)$/
+    - /continuous/
 
 # # Do not build on tags (GitHub and BitBucket)
 # skip_tags: true
@@ -45,28 +47,32 @@ build_script:
 
 after_build:
   - cmd: echo "check folder contents"
-  - cmd: dir C:\projects
   - cmd: dir C:\projects\socnetv
   - cmd: dir C:\projects\socnetv\release  
+
   - cmd: echo "Executing windeployqt"
   - windeployqt release/socnetv.exe
+
   - cmd: echo "check folder contents again..."
   - cmd: dir C:\projects\socnetv\release  
 
+  - cmd: echo "Deleting *.o and *.cpp..."  
+  - cmd: del C:\projects\socnetv\release\*.cpp
+  - cmd: del C:\projects\socnetv\release\*.o
+
+  - cmd: echo "check folder contents again..."
+  - cmd: dir C:\projects\socnetv\release  
 
   - cmd: cp COPYING release/LICENSE.txt"
+
   - cmd: echo "Running Innosetup..."
   - iscc innosetup.iss
   - cmd: type Setup-Manifest.txt
-  - cmd: echo "Deleting *.o and *.cpp..."  
-  - rm release/*.o
-  - rm release/*.cpp
-  - cmd: echo "check project folder contents again..."
-  - cmd: dir C:\projects\socnetv
-  - cmd: dir C:\projects\socnetv\release  
+
 
 artifacts:
   - path: SocNetV-*-installer.exe
+
 
 # Deploy to GitHub Releases
 deploy: 
@@ -82,12 +88,13 @@ deploy:
   #   branch: master                # release from master branch only
   #   APPVEYOR_REPO_TAG: false      # deploy on tag push only
 
-# Notify me
+
+# Notify developer on any change
 notifications:
   # Email
   - provider: Email
     to:
       - dimitris.kalamaras@gmail.com
-    subject: 'Build {{status}}'                  # optional
+    subject: '[socnetv/app] build {{status}}'                  # optional
     message: "{{message}}, {{commitId}}, ..."    # optional
     on_build_status_changed: true
