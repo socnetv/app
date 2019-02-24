@@ -1,4 +1,4 @@
-[https://img.shields.io/appveyor/ci/oxy86/app.svg](https://ci.appveyor.com/project/oxy86/app)
+[![appveyor](https://img.shields.io/appveyor/ci/oxy86/app.svg)](https://ci.appveyor.com/project/oxy86/app)
 
 ====================================
 [![socnetv](/src/images/socnetv.png)](https://socnetv.org) SocNetV - Social Network Visualizer
