@@ -1,4 +1,6 @@
-version: 2.5
+version:  '1.0.{build}'
+
+#continuous
 
 branches:
   only:
@@ -69,11 +71,14 @@ artifacts:
 
 # Deploy to GitHub Releases
 deploy: 
-  provider: GitHub
-  description: 'Release description'
-  artifact: /SocNetV.*installer\.exe/
-  draft: true
-  prerelease: false
+  - provider: GitHub
+    tag: continuous
+    description: 'Release description'
+    artifact: /SocNetV.*installer\.exe/
+    auth_token:
+      secure: owdxko+lS3nNcxIsxL4OTdfZ5UPwudTp2vtk8TlErxd0/tqAfsPGmZ8BjN5sYTTk # your encrypted token from GitHub    
+    draft: true
+    prerelease: false
   # on:
   #   branch: master                # release from master branch only
   #   APPVEYOR_REPO_TAG: false      # deploy on tag push only
