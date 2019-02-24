@@ -67,7 +67,7 @@ after_build:
   - cmd: dir C:\projects\socnetv\release  
 
 artifacts:
-  - path: SocNetV-*-windows-installer.exe
+  - path: SocNetV-*-installer.exe
 #   - path: release
 #     #type: zip
 
