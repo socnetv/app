@@ -1,5 +1,6 @@
 [![travis](https://img.shields.io/travis/socnetv/app.svg?branch=master&logo=travis)](https://travis-ci.org/socnetv/app)
 [![appveyor](https://img.shields.io/appveyor/ci/oxy86/app.svg?logo=appveyor)](https://ci.appveyor.com/project/oxy86/app)
+[![license](https://img.shields.io/github/license/socnetv/app.svg)](https://github.com/socnetv/app/blob/master/COPYING)
 ====================================
 
 [![socnetv](/src/images/socnetv.png)](https://socnetv.org) SocNetV - Social Network Visualizer
