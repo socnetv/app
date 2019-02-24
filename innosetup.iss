@@ -1,33 +1,37 @@
-#define APPTITLE "SocNetV"
+#define APPTITLE "Social Network Visualizer"
+#define APPSHORT "SocNetV"
 #define RELEASEFOLDER "release\"
-#define EXECUTABLE RELEASEFOLDER + APPTITLE + ".exe"
-#define NUMERICVERSION GetFileVersion(EXECUTABLE)
-#define VERSION "latest" 
+#define EXECUTABLE APPSHORT + ".exe"
+#define NUMERICVERSION GetFileVersion(RELEASEFOLDER+EXECUTABLE)
+#define VERSION "2.4-beta" 
 #define URL "https://socnetv.org"
 #define COPYRIGHT "2004-2018 " + URL
 
 [Setup]
 AllowNoIcons=yes
 AppName={#APPTITLE}
+AppId={#APPSHORT}
 AppPublisher={#APPTITLE}
 AppPublisherURL={#URL}
 AppSupportURL={#URL}
 AppUpdatesURL={#URL}
+AppContact=info@socnetv.org
 AppVerName={#APPTITLE} {#VERSION}
 Compression=lzma/ultra
-DefaultDirName={pf}\{#APPTITLE}
+DefaultDirName={pf}\{#APPSHORT}
 DefaultGroupName={#APPTITLE}
 DisableProgramGroupPage=true
 LicenseFile={#RELEASEFOLDER}LICENSE.txt
 InternalCompressLevel=ultra
-OutputBaseFilename={#APPTITLE}-{#VERSION}-installer
+OutputBaseFilename={#APPSHORT}-{#VERSION}-installer
 OutputDir=.
 OutputManifestFile=Setup-Manifest.txt
 ShowLanguageDialog=no
 SolidCompression=yes
+VersionInfoProductName={#APPTITLE}
 VersionInfoCompany={#URL}
 VersionInfoCopyright=Copyright (C) {#COPYRIGHT}
-VersionInfoDescription=Social Network Analysis and Visualization application
+VersionInfoDescription={#APPTITLE} Setup
 VersionInfoTextVersion={#VERSION}
 VersionInfoVersion={#NUMERICVERSION}
 WizardImageFile=compiler:WizModernImage-IS.bmp
@@ -66,11 +70,11 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 Source: {#RELEASEFOLDER}*; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\{#APPTITLE}"; Filename: "{app}\{#APPTITLE}.exe"
+Name: "{group}\{#APPTITLE}"; Filename: "{app}\{#EXECUTABLE}"
 Name: "{group}\{cm:UninstallProgram,{#APPTITLE}}"; Filename: "{uninstallexe}"
-Name: "{userdesktop}\{#APPTITLE}"; Filename: "{app}\{#APPTITLE}.exe"; Tasks: desktopicon
-;Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#APPTITLE}"; Filename: "{app}\{#APPTITLE}.exe"; Tasks: quicklaunchicon
+Name: "{userdesktop}\{#APPTITLE}"; Filename: "{app}\{#EXECUTABLE}"; Tasks: desktopicon
+Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#APPTITLE}"; Filename: "{app}\{#EXECUTABLE}"; Tasks: quicklaunchicon
 
 [Run]
-Filename: "{app}\{#APPTITLE}.exe"; Description: "{cm:LaunchProgram,{#APPTITLE}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#EXECUTABLE}"; Description: "{cm:LaunchProgram,{#APPTITLE}}"; Flags: nowait postinstall skipifsilent
 

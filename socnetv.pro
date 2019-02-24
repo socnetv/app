@@ -116,22 +116,33 @@ SOURCES += src/main.cpp \
 RESOURCES = src/src.qrc
     
 
-
+# This is Windows only
 win32 {
   RC_FILE = src/icon.rc
   TARGET = SocNetV
   target.path = release/
 }
 
+# This is Linux/Unix only
 unix:!macx{
 
 #  isEmpty(PREFIX) {
 #    PREFIX = /usr/local
 #  }
 #  # workaround for Debian/Ubuntu deb-helper
-#  equals(PREFIX,"/usr") {
-#    PREFIX = usr
-#  }
+#  equals(PREFIX,"/usr/local") {
+#    PREFIX = /usr/local
+#  } else {
+#  PREFIX = /usr
+}
+
+# No matter what PREFIX the user enters when
+# executing qmake to create the Makefile,
+# we always set it to be /usr because 
+# it simplifies the .travis CI and .deb creation
+# The user may still install to a different folder
+# with the command:
+# make INSTALL_ROOT=<folder> install; 
 
   PREFIX = /usr
   target.path = $${PREFIX}/bin
@@ -159,6 +170,7 @@ unix:!macx{
 
 }
 
+# This is MacOS only
 macx {
   ICON = src/images/socnetv.icns
   TARGET = SocNetV
