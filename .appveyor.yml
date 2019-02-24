@@ -1,3 +1,5 @@
+version: 2.5
+
 branches:
   only:
     - master
@@ -50,11 +52,7 @@ after_build:
   - cmd: echo "check folder contents again..."
   - cmd: dir C:\projects\socnetv\release  
 
-  # - cmd: cp win32/KArchive/lib/libKF5Archive.dll.a release"
-  # - cmd: cp win32/KArchive/bin/libKF5Archive.dll release"
-  # - cmd: cp win32/zlib1.dll release"
-  # - cmd: cp win32/liblzma-5.dll release"
-  # - cmd: cp win32/libbz2-1.dll release"
+
   - cmd: cp COPYING release/LICENSE.txt"
   - cmd: echo "Running Innosetup..."
   - iscc innosetup.iss
@@ -68,8 +66,6 @@ after_build:
 
 artifacts:
   - path: SocNetV-*-installer.exe
-#   - path: release
-#     #type: zip
 
 # Deploy to GitHub Releases
 deploy: 
