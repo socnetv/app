@@ -134,7 +134,7 @@ unix:!macx{
 #    PREFIX = /usr/local
 #  } else {
 #  PREFIX = /usr
-}
+#}
 
 # No matter what PREFIX the user enters when
 # executing qmake to create the Makefile,
