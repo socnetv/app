@@ -1,3 +1,9 @@
+
+branches:
+  except:
+    - # Do not build tags that we create when we upload to GitHub Releases
+    - /^(?i:continuous)$/
+
 language: cpp
 
 os:
@@ -40,9 +46,9 @@ install:
 #  Run the build script
 
 script:
-  -  if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then chmod +x travis_build_linux ; fi
+  -  if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then chmod +x ./travis_build_linux ; fi
   - '[ "$TRAVIS_OS_NAME" != linux ] || ./.travis_build_linux.sh'
-  -  if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then chmod +x travis_build_macos ; fi  
+  -  if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then chmod +x ./travis_build_macos ; fi  
   - '[ "$TRAVIS_OS_NAME" != osx ] || ./.travis_build_macos.sh'
   # - qmake # default: all go to /usr
   # - make -j4
@@ -63,7 +69,3 @@ after_success:
    - wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
    - bash upload.sh Social*.AppImage*
 
-branches:
-  except:
-    - # Do not build tags that we create when we upload to GitHub Releases
-    - /^(?i:continuous)$/
