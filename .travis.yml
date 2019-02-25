@@ -14,16 +14,14 @@ compiler:
 
 matrix:
   include:
-    - os: linux
-      compiler: gcc
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - unzip
-    - os: osx
-      compiler: clang
+  - os: linux
+    compiler: gcc
+    env: FAILURES=true
+  - os: osx
+    compiler: clang
+    env: FAILURES=true
+  allow_failures:
+  - env: FAILURES=TRUE
 
 
 before_install:
