@@ -53,18 +53,6 @@ script:
   - '[ "$TRAVIS_OS_NAME" != linux ] || ./.travis_build_linux.sh'
   -  if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then chmod +x .travis_build_macos.sh ; fi  
   - '[ "$TRAVIS_OS_NAME" != osx ] || ./.travis_build_macos.sh'
-  # - qmake # default: all go to /usr
-  # - make -j4
-  # - find .
-  # - make INSTALL_ROOT=appdir install; find appdir/
-  # - cp appdir/usr/share/applications/socnetv.desktop ./appdir
-  # - cp appdir/usr/share/pixmaps/socnetv.png .  
-  # - find /opt/qt58/plugins
-  # - wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" 
-  # - chmod a+x linuxdeployqt*.AppImage
-  # - unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
-  #   # - ./linuxdeployqt*.AppImage /usr/share/applications/*.desktop -bundle-non-qt-libs
-  # - ./linuxdeployqt*.AppImage appdir/usr/share/applications/*.desktop -appimage -extra-plugins=iconengines,imageformats
 
 after_success:
    - ls -lsh  

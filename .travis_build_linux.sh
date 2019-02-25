@@ -8,6 +8,8 @@ echo "*****************************"
 project_dir=$(pwd)
 echo "Project dir is: ${project_dir}"
 
+echo "TRAVIS_TAG is: $TRAVIS_TAG"
+echo "TRAVIS_COMMIT is: $TRAVIS_COMMIT"
 
 if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     source /opt/qt58/bin/qt58-env.sh
@@ -23,6 +25,7 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
     # - ./linuxdeployqt*.AppImage /usr/share/applications/*.desktop -bundle-non-qt-libs
     ./linuxdeployqt*.AppImage appdir/usr/share/applications/*.desktop -appimage -extra-plugins=iconengines,imageformats
+
 
 elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
 	# nothing

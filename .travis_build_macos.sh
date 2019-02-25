@@ -15,6 +15,8 @@ echo "Project dir is: ${project_dir}"
 VERSION=`git rev-parse --short HEAD`
 echo "Version is: ${VERSION}"
 
+echo "TRAVIS_TAG is: $TRAVIS_TAG"
+echo "TRAVIS_COMMIT is: $TRAVIS_COMMIT"
 
 # Output macOS version
 echo "macOS version is:"
