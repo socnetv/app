@@ -11,12 +11,26 @@ APP_NAME="SocNetV"
 project_dir=$(pwd)
 echo "Project dir is: ${project_dir}"
 
-# Check version
-VERSION=`git rev-parse --short HEAD`
-echo "Version is: ${VERSION}"
 
 echo "TRAVIS_TAG is: $TRAVIS_TAG"
 echo "TRAVIS_COMMIT is: $TRAVIS_COMMIT"
+echo "SOCNETV_VERSION is: $SOCNETV_VERSION"
+
+LAST_COMMIT_SHORT=$(git rev-parse --short HEAD)
+echo "LAST_COMMIT_SHORT is: $LAST_COMMIT_SHORT"
+
+# linuxdeployqt always uses the output of 'git rev-parse --short HEAD' as the version.
+# We can change this by exporting $VERSION environment variable 
+
+if [ ! -z "$TRAVIS_TAG" ] ; then
+    # If this is a tag, then version will be the tag, i.e. 2.5 or 2.5-beta
+    VERSION=${TRAVIS_TAG}
+else 
+    # If this is not a tag, the we want version to be like "2.5-beta-a0be9cd"
+    VERSION=${SOCNETV_VERSION}-${LAST_COMMIT_SHORT}
+fi
+
+
 
 # Output macOS version
 echo "macOS version is:"

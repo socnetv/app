@@ -21,6 +21,8 @@ dist: trusty
 # explicitly define our build
 # maybe add a linux/clang pair ?
 matrix:
+  global:
+    - SOCNETV_VERSION=2.5-beta # We use it to name packages on non-tagged commits
   include:
     - os: linux
       compiler: gcc
