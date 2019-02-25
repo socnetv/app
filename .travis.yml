@@ -44,7 +44,7 @@ before_install:
 
 
 install: 
-  #  Install any required packages and dependencies 
+  - echo "Install any required packages and dependencies";
   - chmod +x .travis_install.sh
   - ./.travis_install.sh
 

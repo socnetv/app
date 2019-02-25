@@ -1,9 +1,10 @@
 #!/bin/bash
 
-
+echo "Building SocNetV for macOS..."
 
 # Hold on to current directory
 project_dir=$(pwd)
+echo "Project dir is: ${project_dir}"
 
 # Output macOS version
 sw_vers

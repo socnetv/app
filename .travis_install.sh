@@ -1,6 +1,12 @@
 #!/bin/bash
 
-echo "Installing Qt5...";
+echo "Installing Qt5..."
+
+
+# Check current directory
+project_dir=$(pwd)
+echo "Project dir is: ${project_dir}"
+
 
 if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     sudo apt-get -y install qt58base qt58charts-no-lgpl qt58svg 

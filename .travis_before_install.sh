@@ -1,6 +1,11 @@
 #!/bin/bash
 
-echo "Adding Qt5 repos and updating platform...";
+echo "Adding Qt5 repos and updating platform..."
+
+# Check current directory
+project_dir=$(pwd)
+echo "Project dir is: ${project_dir}"
+
 
 if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
 	# Install base Qt5 repos for linux

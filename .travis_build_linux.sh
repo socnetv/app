@@ -1,10 +1,11 @@
 #!/bin/bash
 
-# Hold on to current directory
+echo "Building SocNetV for linux..."
+
+# Check current directory
 project_dir=$(pwd)
+echo "Project dir is: ${project_dir}"
 
-
-echo "Building Qt5...";
 
 if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     source /opt/qt58/bin/qt58-env.sh
