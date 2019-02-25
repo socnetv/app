@@ -32,5 +32,5 @@ else
 fi
 
 echo "Done!"
-
+# always return zero
 exit 0

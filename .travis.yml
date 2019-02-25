@@ -12,16 +12,39 @@ compiler:
   - clang 
   - gcc
 
+matrix:
+  include:
+    - os: osx
+      compiler: clang
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - unzip
+
+
 before_install:
   # Info about OS
   - uname -a
+  - chmod +x .travis_before_install.sh
   - ./.travis_before_install.sh
-    
+
+
+#  Install any dependencies required
+
 install: 
+  - chmod +x .travis_install.sh
   - ./.travis_install.sh
 
+#  Run the build script
+
 script:
+    -  if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then chmod +x travis_build_linux ; fi
   - '[ "$TRAVIS_OS_NAME" != linux ] || ./.travis_build_linux.sh'
+  -  if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then chmod +x travis_build_macos ; fi  
   - '[ "$TRAVIS_OS_NAME" != osx ] || ./.travis_build_macos.sh'
   # - qmake # default: all go to /usr
   # - make -j4
