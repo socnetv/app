@@ -1,6 +1,8 @@
 #!/bin/bash
 
+echo "******************"
 echo "Installing Qt5..."
+echo "******************"
 
 
 # Check current directory

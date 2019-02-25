@@ -1,6 +1,8 @@
 #!/bin/bash
 
+echo "******************************************"
 echo "Adding Qt5 repos and updating platform..."
+echo "******************************************"
 
 # Check current directory
 project_dir=$(pwd)

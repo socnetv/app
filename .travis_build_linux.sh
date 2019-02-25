@@ -1,6 +1,8 @@
 #!/bin/bash
 
+echo "*****************************"
 echo "Building SocNetV for linux..."
+echo "*****************************"
 
 # Check current directory
 project_dir=$(pwd)
