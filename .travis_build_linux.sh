@@ -7,6 +7,7 @@ project_dir=$(pwd)
 echo "Building Qt5...";
 
 if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
+    source /opt/qt58/bin/qt58-env.sh
     qmake # default: all go to /usr
     make -j4
     find .
@@ -21,12 +22,8 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     ./linuxdeployqt*.AppImage appdir/usr/share/applications/*.desktop -appimage -extra-plugins=iconengines,imageformats
 
 elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
-	# We install Qt5 via brew,
-    qmake # default: all go to /usr
-    make -j4
-    find .
-    make INSTALL_ROOT=appdir install; find appdir/
-
+	# nothing
+    echo "Strange..."
 else
 	exit 1
 fi

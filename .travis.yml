@@ -18,6 +18,8 @@ dist: trusty
 #   - clang 
 #   - gcc
 
+# explicitly define our build
+# maybe add a linux/clang pair ?
 matrix:
   include:
     - os: linux
@@ -34,21 +36,21 @@ matrix:
 
 
 before_install:
-  # Info about OS
+  # Get Info about OS
   - uname -a
+  # Add repositories etc
   - chmod +x .travis_before_install.sh
   - ./.travis_before_install.sh
 
 
-#  Install any dependencies required
-
 install: 
+  #  Install any required packages and dependencies 
   - chmod +x .travis_install.sh
   - ./.travis_install.sh
 
-#  Run the build script
 
 script:
+  #  Run the build script
   -  if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then chmod +x .travis_build_linux.sh ; fi
   - '[ "$TRAVIS_OS_NAME" != linux ] || ./.travis_build_linux.sh'
   -  if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then chmod +x .travis_build_macos.sh ; fi  

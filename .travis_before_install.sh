@@ -3,12 +3,13 @@
 echo "Adding Qt5 repos and updating platform...";
 
 if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
+	# Install base Qt5 repos for linux
     sudo apt-get -qq update
     sudo add-apt-repository ppa:beineri/opt-qt58-trusty -y
     sudo apt-get update -qq
 
 elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
-	# We install Qt5 via brew,
+	# Update brew, we will use it ltr to install Qt5
 	brew update
 else
 	exit 1

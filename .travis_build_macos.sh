@@ -17,9 +17,10 @@ sw_vers
 echo "Building YourApp..."
 cd ${project_dir}
 qmake -config release
-make
+make -j4
 
 # Build and run your tests here
+find .
 
 # Package your app
 echo "Packaging YourApp..."
