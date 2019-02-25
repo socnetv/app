@@ -26,6 +26,9 @@ matrix:
     - os: osx
       compiler: clang
       env: FAILURES=true
+  exclude:
+    - os: osx
+      compiler: gcc      
   allow_failures:
     - env: FAILURES=TRUE
 
