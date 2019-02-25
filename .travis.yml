@@ -14,8 +14,6 @@ compiler:
 
 matrix:
   include:
-    - os: osx
-      compiler: clang
     - os: linux
       compiler: gcc
       addons:
@@ -24,6 +22,8 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - unzip
+    - os: osx
+      compiler: clang
 
 
 before_install:
