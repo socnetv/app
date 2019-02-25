@@ -6,17 +6,17 @@ branches:
 
 language: cpp
 
-os:
-  - linux
-  - osx
+# os:
+#   - linux
+#   - osx
 
 sudo: require
 
 dist: trusty
 
-compiler:
-  - clang 
-  - gcc
+# compiler:
+#   - clang 
+#   - gcc
 
 matrix:
   include:
