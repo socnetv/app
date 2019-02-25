@@ -49,9 +49,9 @@ install:
 #  Run the build script
 
 script:
-  -  if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then chmod +x ./travis_build_linux ; fi
+  -  if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then chmod +x ./travis_build_linux.sh ; fi
   - '[ "$TRAVIS_OS_NAME" != linux ] || ./.travis_build_linux.sh'
-  -  if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then chmod +x ./travis_build_macos ; fi  
+  -  if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then chmod +x ./travis_build_macos.sh ; fi  
   - '[ "$TRAVIS_OS_NAME" != osx ] || ./.travis_build_macos.sh'
   # - qmake # default: all go to /usr
   # - make -j4
