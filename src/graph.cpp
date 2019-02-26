@@ -6285,6 +6285,8 @@ void Graph::writeCentralityInformation(const QString fileName,
 
     centralityInformation(considerWeights, inverseWeights);
 
+    prominenceDistribution(IndexType::IC);
+
     VList::const_iterator it;
 
     bool dropIsolates = true;  // by default IC needs to exclude isolates
@@ -6532,6 +6534,8 @@ void Graph::writeCentralityEigenvector(const QString fileName,
     outText.setCodec("UTF-8");
 
     centralityEigenvector(considerWeights, inverseWeights,dropIsolates);
+
+    prominenceDistribution(IndexType::EVC);
 
     VList::const_iterator it;
 
@@ -7113,80 +7117,83 @@ void Graph::prominenceDistribution(const int &index, QSplineSeries *series) {
  * @param set
  * @param strX
  */
-void Graph::prominenceDistribution(const int &index,
-                                   QBarSeries *series,
-                                   QBarSet *set,
-                                   QBarCategoryAxis *axisX) {
+void Graph::prominenceDistribution(const int &index) {
 
     qDebug() << "Graph::prominenceDistribution() - bars";
 
     H_StrToInt discreteClasses;
+
+
+    barSeries = new QBarSeries();
+    barSet = new QBarSet("");
+    axisX = new QBarCategoryAxis();
 
     switch (index) {
     case 0: {
         break;
     }
     case IndexType::DC : {
-        series->setName("(out)Degree");
+        barSeries->setName("(out)Degree");
         discreteClasses = discreteSDCs;
         break;
     }
     case IndexType::CC : {
-        series->setName("Closeness");
+        barSeries->setName("Closeness");
         discreteClasses = discreteCCs;
         break;
     }
     case IndexType::IRCC : {
-        series->setName("IRCC");
+        barSeries->setName("IRCC");
         discreteClasses = discreteIRCCs;
         break;
     }
     case IndexType::BC : {
-        series->setName("Betweenness");
+        barSeries->setName("Betweenness");
         discreteClasses = discreteBCs;
         break;
     }
     case IndexType::SC : {
-        series->setName("Stress");
+        barSeries->setName("Stress");
         discreteClasses = discreteSCs;
         break;
     }
     case IndexType::EC : {
-        series->setName("Eccentricity");
+        barSeries->setName("Eccentricity");
         discreteClasses = discreteECs;
         break;
     }
     case IndexType::PC : {
-        series->setName("Power");
+        barSeries->setName("Power");
         discreteClasses = discretePCs;
         break;
     }
     case IndexType::IC : {
-        series->setName("Information");
+        barSeries->setName("Information");
         discreteClasses = discreteICs;
         break;
     }
     case IndexType::EVC : {
-        series->setName("Eigenvector");
+        barSeries->setName("Eigenvector");
         discreteClasses = discreteEVCs;
         break;
     }
     case IndexType::DP : {
-        series->setName("Prestige Degree");
+        barSeries->setName("Prestige Degree");
         discreteClasses = discreteDPs;
         break;
     }
     case IndexType::PRP : {
-        series->setName("Pagerank");
+        barSeries->setName("Pagerank");
         discreteClasses = discretePRPs;
         break;
     }
     case IndexType::PP : {
-        series->setName("Proximity");
+        barSeries->setName("Proximity");
         discreteClasses = discretePPs;
         break;
     }
     };
+
 
     priority_queue<PairVF, vector<PairVF>, PairVFCompare> seriesPQ;
 
@@ -7202,8 +7209,8 @@ void Graph::prominenceDistribution(const int &index,
 
     while (!seriesPQ.empty()) {
         qDebug() << seriesPQ.top().value << " : " << seriesPQ.top().frequency << endl;
-        if ( series->type() == QAbstractSeries::SeriesTypeBar) {
-            set->append( seriesPQ.top().frequency );
+        if ( barSeries->type() == QAbstractSeries::SeriesTypeBar) {
+            barSet->append( seriesPQ.top().frequency );
             value = QString::number(  seriesPQ.top().value, 'f', 2);
             axisX->append( value );
             if ( initialSize == seriesPQ.size() ) {
@@ -7218,7 +7225,9 @@ void Graph::prominenceDistribution(const int &index,
     axisX->setMin(min);
     axisX->setMax(max);
     qDebug() << "axisX min: " << axisX->min() << " max: " << axisX->max();
-    series->append( set );
+    barSeries->append( barSet );
+
+    emit signalPromininenceDistributionChartUpdate(barSeries, barSet, axisX);
 }
 
 
@@ -7250,6 +7259,8 @@ void Graph::writeCentralityDegree ( const QString fileName,
     outText.setCodec("UTF-8");
 
     centralityDegree(considerWeights, dropIsolates);
+
+    prominenceDistribution(IndexType::DC);
 
     qreal maxIndexDC=vertices(dropIsolates)-1.0;
 
@@ -7513,6 +7524,8 @@ void Graph::writeCentralityCloseness( const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
+
+    prominenceDistribution(IndexType::CC);
 
     int rowCount=0;
     int N = vertices();
@@ -7900,6 +7913,8 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
 
     centralityClosenessIR(considerWeights,inverseWeights, dropIsolates);
 
+    prominenceDistribution(IndexType::IRCC);
+
     int rowCount=0;
     int N = vertices();
     int progressCounter = 0;
@@ -8109,6 +8124,8 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
+
+    prominenceDistribution(IndexType::BC);
 
     int rowCount=0, progressCounter=0;
     int N = vertices();
@@ -8366,6 +8383,8 @@ void Graph::writeCentralityStress( const QString fileName,
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights,dropIsolates);
 
+    prominenceDistribution(IndexType::SC);
+
     VList::const_iterator it;
 
     int rowCount=0;
@@ -8580,6 +8599,8 @@ void Graph::writeCentralityEccentricity(const QString fileName,
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights,dropIsolates);
 
+    prominenceDistribution(IndexType::EC);
+
     VList::const_iterator it;
 
         int rowCount=0;
@@ -8778,6 +8799,8 @@ void Graph::writeCentralityPower(const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
+
+    prominenceDistribution(IndexType::PC);
 
     VList::const_iterator it;
 
@@ -9208,6 +9231,8 @@ void Graph::writePrestigeDegree (const QString fileName,
 
     prestigeDegree(considerWeights, dropIsolates);
 
+    prominenceDistribution(IndexType::DP);
+
     VList::const_iterator it;
 
     int N = vertices();
@@ -9596,6 +9621,8 @@ void Graph::writePrestigeProximity( const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     prestigeProximity(considerWeights, inverseWeights, dropIsolates);
+
+    prominenceDistribution(IndexType::PP);
 
     VList::const_iterator it;
 
@@ -10037,6 +10064,8 @@ void Graph::writePrestigePageRank(const QString fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     prestigePageRank(dropIsolates);
+
+    prominenceDistribution(IndexType::PRP);
 
     VList::const_iterator it;
 

@@ -436,6 +436,10 @@ public slots:
     void slotAnalyzePrestigePageRank();
     void slotAnalyzePrestigeProximity();
 
+    void slotAnalyzeProminenceDistributionChartUpdate(QBarSeries *barSeries,
+                                                      QBarSet *barSet,
+                                                      QBarCategoryAxis *axisX
+                                                       );
     void slotAnalyzeProminenceDistributionChart(const int &index);
 
     void slotAnalyzeCommunitiesCliqueCensus();

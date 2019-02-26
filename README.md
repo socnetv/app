@@ -28,7 +28,9 @@ a social network of connected webpages.
 network properties, produce beautiful HTML reports and embed visualization 
 layouts to the network.
 
-Main features:
+[![socnetv](https://socnetv.org/data/uploads/screenshots/25/socnetv-25-padget-power-centrality-size-distribution.png)](https://socnetv.org)
+
+# 2. Features
 
 - Standard graph-theoretic and network cohesion metrics, such as density, 
 diameter, geodesics and distances, connectedness, eccentricity, 

@@ -302,6 +302,10 @@ signals:
                                 const int &selectedEdges);
 
 
+    void signalPromininenceDistributionChartUpdate(QBarSeries *barSeries,
+                                                   QBarSet *barSet,
+                                                   QBarCategoryAxis *axisX);
+
     /** Signals to GraphicsWidget */
     void signalDrawNode( const QPointF &p,
                          const int &num,
@@ -907,10 +911,7 @@ public:
     void prominenceDistribution(const int &index,
                                 QSplineSeries *series);
 
-    void prominenceDistribution(const int &index,
-                                QBarSeries *series,
-                                QBarSet *set,
-                                QBarCategoryAxis *axisX);
+    void prominenceDistribution(const int &index);
 
     void centralityDegree(const bool &weights=true,
                           const bool &dropIsolates=false);
@@ -1132,6 +1133,11 @@ private:
 
     WebCrawler_Parser *wc_parser;
     WebCrawler_Spider *wc_spider;
+
+
+    QBarSeries *barSeries;
+    QBarSet *barSet;
+    QBarCategoryAxis *axisX;
 
     /** private member functions */
 
