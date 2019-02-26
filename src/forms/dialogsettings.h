@@ -52,7 +52,8 @@ public:
 
 public slots:
     void getDataDir();
-    void getRealNumberPrecision(const int &precision);
+    void getReportsRealNumberPrecision(const int &precision);
+    void getReportsLabelsLength(const int &length);
     void getCanvasBgColor();
     void getCanvasBgImage();
     void getCanvasUpdateMode(const QString &text);
@@ -84,6 +85,7 @@ public slots:
 signals:
     void setStyleSheetDefault(const bool &toggle);
     void setReportsRealNumberPrecision(const int &precision);
+    void setReportsLabelLength(const int &length);
     void setProgressDialog(bool);
     void setToolBar(bool);
     void setStatusBar(bool);

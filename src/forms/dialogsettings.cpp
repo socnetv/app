@@ -70,6 +70,9 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
     ui->reportsRealNumberPrecisionSpin->
             setValue(m_appSettings["initReportsRealNumberPrecision"].toInt(0, 10) );
 
+    ui->reportsLabelsLengthSpin->
+            setValue(m_appSettings["initReportsLabelsLength"].toInt(0, 10) );
+
 
     //debugging
     ui->printDebugChkBox->setChecked(
@@ -336,7 +339,10 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
 
 
     connect(ui->reportsRealNumberPrecisionSpin, SIGNAL(valueChanged(int)),
-            this, SLOT(getRealNumberPrecision(int)) );
+            this, SLOT(getReportsRealNumberPrecision(int)) );
+
+    connect (ui->reportsLabelsLengthSpin, SIGNAL(valueChanged(int)),
+             this, SLOT(getReportsLabelsLength(int)));
 
     connect (ui->printLogoChkBox, &QCheckBox::stateChanged,
              this, &DialogSettings::setPrintLogo);
@@ -495,12 +501,22 @@ void DialogSettings::getDataDir(){
 
 
 /**
- * @brief DialogSettings::getNodeSize
+ * @brief Get the real number precision
  * @param size
  */
-void DialogSettings::getRealNumberPrecision( const int &precision) {
+void DialogSettings::getReportsRealNumberPrecision( const int &precision) {
     m_appSettings["initReportsRealNumberPrecision"]= QString::number(precision);
     emit setReportsRealNumberPrecision(precision);
+}
+
+
+/**
+ * @brief Get the real number precision
+ * @param size
+ */
+void DialogSettings::getReportsLabelsLength( const int &length) {
+    m_appSettings["initReportsLabelsLength"]= QString::number(length);
+    emit setReportsLabelLength(length);
 }
 
 

@@ -162,7 +162,7 @@ QGroupBox {
     border: 0 none;
     border-top: 1px solid rgba(0, 0, 0, 0.1);
     margin:0;
-    margin-top: 15px; /* leave space at the top for the title */
+    margin-top: 17px; /* leave space at the top for the title */
     padding:0;
 }
 
@@ -236,8 +236,15 @@ QPushButton#toolBoxLayoutForceDirectedApplyButton {
     min-height: 2.5ex;
     text-align:center;
 }
-
-
+QPushButton#toolBoxLayoutForceDirectedApplyButton:hover,
+QPushButton#toolBoxLayoutByIndexApplyButton:hover {
+   background-color:#babdbe;
+}
+QPushButton#toolBoxLayoutForceDirectedApplyButton:pressed,
+QPushButton#toolBoxLayoutByIndexApplyButton:pressed {
+   background-color:#007ac1;
+   color: #fff;
+}
 QToolButton {
     border:1px solid rgba(0, 0, 0, 0.1);
     border-top: 1px solid rgba(255, 255, 255, 0.3);

@@ -427,6 +427,7 @@ QMap<QString,QString> MainWindow::initSettings() {
     appSettings["initStatusBarDuration"] = "5000";
     appSettings["randomErdosEdgeProbability"] = "0.04";
     appSettings["initReportsRealNumberPrecision"] = "6";
+    appSettings["initReportsLabelsLength"] = "16";
 
     // Try to load settings configuration file
     // First check if our settings folder exist
@@ -545,8 +546,11 @@ void MainWindow::slotOpenSettingsDialog() {
     connect( m_settingsDialog, &DialogSettings::saveSettings,
              this, &MainWindow::saveSettings);
 
-    connect (m_settingsDialog,
-             &DialogSettings::setReportsRealNumberPrecision, activeGraph, &Graph::setReportsRealNumberPrecision);
+    connect (m_settingsDialog,&DialogSettings::setReportsRealNumberPrecision,
+             activeGraph, &Graph::setReportsRealNumberPrecision);
+
+    connect (m_settingsDialog,&DialogSettings::setReportsLabelLength,
+             activeGraph, &Graph::setReportsLabelLength);
 
     connect( m_settingsDialog, &DialogSettings::setDebugMsgs,
              this, &MainWindow::slotOptionsDebugMessages);
@@ -4579,7 +4583,7 @@ void MainWindow::initPanels(){
     layoutByIndexGrid->addWidget(toolBoxLayoutByIndexTypeSelect, 1,1);
     layoutByIndexGrid->addWidget(toolBoxLayoutByIndexApplyButton, 2,1);
     layoutByIndexGrid->setSpacing(5);
-    layoutByIndexGrid->setContentsMargins(5, 5, 5, 5);
+    layoutByIndexGrid->setContentsMargins(15, 5, 15, 5);
 
     //create a box and set the above layout inside
     QGroupBox *layoutByIndexBox= new QGroupBox(tr("By Prominence Index"));
@@ -4592,6 +4596,7 @@ void MainWindow::initPanels(){
                      "<p>Please note that node coloring works only for basic shapes "
                      "(box, circle, etc) not for image icons.</p>");
     layoutByIndexBox->setToolTip( helpMessage );
+    layoutByIndexBox->setMaximumWidth(255);
     layoutByIndexBox->setLayout (layoutByIndexGrid );
 
 
@@ -4654,11 +4659,12 @@ void MainWindow::initPanels(){
     layoutForceDirectedGrid->addWidget(toolBoxLayoutForceDirectedSelect, 0,1);
     layoutForceDirectedGrid->addWidget(toolBoxLayoutForceDirectedApplyButton, 1,1);
     layoutForceDirectedGrid->setSpacing(5);
-    layoutForceDirectedGrid->setContentsMargins(5,5, 5, 5);
+    layoutForceDirectedGrid->setContentsMargins(15, 5, 15, 5);
 
     //create a box for dynamic layout options
     QGroupBox *layoutDynamicBox= new QGroupBox(tr("By Force-Directed Model"));
     layoutDynamicBox->setMinimumHeight(90);
+    layoutDynamicBox->setMaximumWidth(255);
     layoutDynamicBox->setLayout (layoutForceDirectedGrid );
 
 
@@ -5558,9 +5564,13 @@ void MainWindow::initApp(){
 
     activeGraph->edgeColorInit(appSettings["initEdgeColor"]);
 
-    activeGraph->edgeWeightNumbersVisibilitySet( (appSettings["initEdgeWeightNumbersVisibility"] == "true") ? true:false
-                                                                                                              );
+    activeGraph->edgeWeightNumbersVisibilitySet(
+                (appSettings["initEdgeWeightNumbersVisibility"] == "true") ? true:false
+                                                                             );
 
+    activeGraph->setReportsRealNumberPrecision(appSettings["initReportsRealNumberPrecision"].toInt());
+
+    activeGraph->setReportsLabelLength(appSettings["initReportsLabelsLength"].toInt());
 
     /** Clear graphicsWidget scene and reset settings and transformations **/
     graphicsWidget->clear();
@@ -14124,7 +14134,7 @@ void MainWindow::slotHelpCreateTips(){
              "- double-click somewhere on the canvas \n"
              "- or press the keyboard shortcut CTRL+. (dot)\n"
              "- or press the Add Node button on the left panel");
-    tips+=tr("SocNetV supports working with either undirected or directed data. "
+    tips+=tr("SocNetV can work with either undirected or directed data. "
              "When you start SocNetV for the first time, the application uses "
              "the 'directed data' mode; every edge you create is directed. "
              "To enter the 'undirected data' mode, press CTRL+E+U or enable the "
@@ -14179,6 +14189,9 @@ void MainWindow::slotHelpCreateTips(){
     tips+=tr("Edge information is displayed on the Status bar, when you left-click on it.");
     tips+=tr("Save your work often, especially when working with large data sets. "
              "SocNetV alogorithms are faster when working with saved data. ");
+
+    tips+=tr("You can change the precision of real numbers in reports.  "
+             "Go to Settings > General and change it under Reports > Real number precision. ");
 
     tips+=tr("The Closeness Centrality (CC) of a node v, is the inverse sum of "
              "the shortest distances between v and every other node. CC is "

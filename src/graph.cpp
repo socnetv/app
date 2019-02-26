@@ -116,7 +116,8 @@ Graph::Graph(GraphicsWidget *graphicsWidget) {
     calculatedPRP=false;
     calculatedTriad=false;
 
-    m_precision = 6;
+    m_reportsRealPrecision = 6;
+    m_reportsLabelLength = 8;
 
     m_vertexClicked = 0;
     m_clickedEdge.source=0;
@@ -3547,7 +3548,7 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
 
     outText << htmlHead;
 
-    outText.setRealNumberPrecision(m_precision);
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
 
     outText << "<h1>";
     outText << tr("RECIPROCITY (r) REPORT");
@@ -3684,7 +3685,7 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
                 <<"<td>"
                 << (*it)->name()
                 << "</td><td>"
-                << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                 << "</td><td>"
                 << tiesSym
                 //<< ((eccentr == 0) ? "\xE2\x88\x9E" : QString::number(eccentr) )
@@ -5897,7 +5898,7 @@ void Graph::writeMatrixDistancesPlainText (const QString &fn,
     }
     QTextStream outText(&file);
     outText.setCodec("UTF-8");
-    outText.setRealNumberPrecision(m_precision);
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
     outText << "-Social Network Visualizer "<<  VERSION <<endl;
     outText << tr("Network name: ")<< graphName()<< endl<<endl;
     outText << "Distance matrix: \n";
@@ -5991,7 +5992,7 @@ void Graph::writeEccentricity(const QString fileName, const bool considerWeights
 
     outText << htmlHead;
 
-    outText.setRealNumberPrecision(m_precision);
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
 
     outText << "<h1>";
     outText << tr("ECCENTRICITY (e) REPORT");
@@ -6064,7 +6065,7 @@ void Graph::writeEccentricity(const QString fileName, const bool considerWeights
                 <<"<td>"
                 << (*it)->name()
                 << "</td><td>"
-                << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                 << "</td><td>"
                 << ((eccentr == 0 || eccentr == RAND_MAX ) ? "\xE2\x88\x9E" : QString::number(eccentr) )
                 << "</td>"
@@ -6300,7 +6301,7 @@ void Graph::writeCentralityInformation(const QString fileName,
     emit statusMessage( pMsg );
     emit signalProgressBoxCreate(N,pMsg);
 
-    outText.setRealNumberPrecision(m_precision);
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
 
     outText << htmlHead;
 
@@ -6388,7 +6389,7 @@ void Graph::writeCentralityInformation(const QString fileName,
                     <<"<td>"
                    << (*it)->name()
                    << "</td><td>"
-                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                    << "</td><td>"
                    << "--"
                    << "</td><td>"
@@ -6404,7 +6405,7 @@ void Graph::writeCentralityInformation(const QString fileName,
                     <<"<td>"
                    << (*it)->name()
                    << "</td><td>"
-                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                    << "</td><td>"
                    << (*it)->IC()
                    << "</td><td>"
@@ -6547,7 +6548,7 @@ void Graph::writeCentralityEigenvector(const QString fileName,
     emit statusMessage( pMsg );
     emit signalProgressBoxCreate(N,pMsg);
 
-    outText.setRealNumberPrecision(m_precision);
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
 
     outText << htmlHead;
 
@@ -6642,7 +6643,7 @@ void Graph::writeCentralityEigenvector(const QString fileName,
                 <<"<td>"
                 << (*it)->name()
                 << "</td><td>"
-                << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                 << "</td><td>"
                 << (*it)->EVC()
                 << "</td><td>"
@@ -7271,7 +7272,7 @@ void Graph::writeCentralityDegree ( const QString fileName,
 
     outText << htmlHead;
 
-    outText.setRealNumberPrecision(m_precision);
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
 
     QString pMsg =  tr("Writing out-Degree Centralities. \nPlease wait...");
     emit statusMessage( pMsg );
@@ -7358,7 +7359,7 @@ void Graph::writeCentralityDegree ( const QString fileName,
                     <<"<td>"
                    << (*it)->name()
                    << "</td><td>"
-                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                    << "</td><td>"
                    << "--"
                    << "</td><td>"
@@ -7373,7 +7374,7 @@ void Graph::writeCentralityDegree ( const QString fileName,
                     <<"<td>"
                     << (*it)->name()
                     << "</td><td>"
-                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                     << "</td><td>"
                     << (*it)->DC()
                     << "</td><td>"
@@ -7513,7 +7514,8 @@ void Graph::writeCentralityCloseness( const QString fileName,
     qDebug() << "Graph::writeCentralityCloseness()"
              << "considerWeights"<<considerWeights
              << "inverseWeights"<<inverseWeights
-             << "dropIsolates" << dropIsolates;
+             << "dropIsolates" << dropIsolates
+             << "m_reportsLabelLength" <<m_reportsLabelLength;
 
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
@@ -7537,7 +7539,7 @@ void Graph::writeCentralityCloseness( const QString fileName,
 
     outText << htmlHead;
 
-    outText.setRealNumberPrecision(m_precision);
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
 
     outText << "<h1>";
     outText << tr("CLOSENESS CENTRALITY (CC) REPORT");
@@ -7622,7 +7624,7 @@ void Graph::writeCentralityCloseness( const QString fileName,
                     <<"<td>"
                    << (*it)->name()
                    << "</td><td>"
-                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                    << "</td><td>"
                    << "--"
                    << "</td><td>"
@@ -7637,7 +7639,7 @@ void Graph::writeCentralityCloseness( const QString fileName,
                     <<"<td>"
                     << (*it)->name()
                     << "</td><td>"
-                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                     << "</td><td>"
                     << (*it)->CC()
                     << "</td><td>"
@@ -7927,7 +7929,7 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
 
     outText << htmlHead;
 
-    outText.setRealNumberPrecision(m_precision);
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
 
     outText << "<h1>";
     outText << tr("INFLUENCE RANGE CLOSENESS CENTRALITY (IRCC)");
@@ -8007,7 +8009,7 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
                     <<"<td>"
                    << (*it)->name()
                    << "</td><td>"
-                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                    << "</td><td>"
                    << "--"
                    << "</td><td>"
@@ -8020,7 +8022,7 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
                     <<"<td>"
                     << (*it)->name()
                     << "</td><td>"
-                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                     << "</td><td>"
                     << (*it)->IRCC()
                     << "</td><td>"
@@ -8136,7 +8138,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
 
     outText << htmlHead;
 
-    outText.setRealNumberPrecision(m_precision);
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
 
     outText << "<h1>";
     outText << tr("BETWEENNESS CENTRALITY (BC)");
@@ -8218,7 +8220,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
                     <<"<td>"
                    << (*it)->name()
                    << "</td><td>"
-                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                    << "</td><td>"
                    << "--"
                    << "</td><td>"
@@ -8233,7 +8235,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
                     <<"<td>"
                     << (*it)->name()
                     << "</td><td>"
-                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                     << "</td><td>"
                     << (*it)->BC()
                     << "</td><td>"
@@ -8398,7 +8400,7 @@ void Graph::writeCentralityStress( const QString fileName,
 
     outText << htmlHead;
 
-    outText.setRealNumberPrecision(m_precision);
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
 
     outText << "<h1>";
     outText << tr("STRESS CENTRALITY (SC)");
@@ -8475,7 +8477,7 @@ void Graph::writeCentralityStress( const QString fileName,
                     <<"<td>"
                    << (*it)->name()
                    << "</td><td>"
-                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                    << "</td><td>"
                    << "--"
                    << "</td><td>"
@@ -8490,7 +8492,7 @@ void Graph::writeCentralityStress( const QString fileName,
                     <<"<td>"
                    << (*it)->name()
                    << "</td><td>"
-                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                    << "</td><td>"
                    << (*it)->SC()
                    << "</td><td>"
@@ -8613,7 +8615,7 @@ void Graph::writeCentralityEccentricity(const QString fileName,
 
     outText << htmlHead;
 
-    outText.setRealNumberPrecision(m_precision);
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
 
     outText << "<h1>";
     outText << tr("ECCENTRICITY CENTRALITY (EC)");
@@ -8683,7 +8685,7 @@ void Graph::writeCentralityEccentricity(const QString fileName,
                     <<"<td>"
                    << (*it)->name()
                    << "</td><td>"
-                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                    << "</td><td>"
                    << "--"
                    << "</td><td>"
@@ -8696,7 +8698,7 @@ void Graph::writeCentralityEccentricity(const QString fileName,
                     <<"<td>"
                     << (*it)->name()
                     << "</td><td>"
-                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                     << "</td><td>"
                     << (*it)->EC()
                     << "</td><td>"
@@ -8814,7 +8816,7 @@ void Graph::writeCentralityPower(const QString fileName,
 
     outText << htmlHead;
 
-    outText.setRealNumberPrecision(m_precision);
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
 
     outText << "<h1>";
     outText << tr("POWER CENTRALITY (PC)");
@@ -8892,7 +8894,7 @@ void Graph::writeCentralityPower(const QString fileName,
                     <<"<td>"
                    << (*it)->name()
                    << "</td><td>"
-                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                    << "</td><td>"
                    << "--"
                    << "</td><td>"
@@ -8907,7 +8909,7 @@ void Graph::writeCentralityPower(const QString fileName,
                     <<"<td>"
                     << (*it)->name()
                     << "</td><td>"
-                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                     << "</td><td>"
                     << (*it)->PC()
                     << "</td><td>"
@@ -9249,7 +9251,7 @@ void Graph::writePrestigeDegree (const QString fileName,
 
     outText << htmlHead;
 
-    outText.setRealNumberPrecision(m_precision);
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
 
     outText << "<h1>";
     outText << tr("DEGREE PRESTIGE (DP)");
@@ -9333,7 +9335,7 @@ void Graph::writePrestigeDegree (const QString fileName,
                     <<"<td>"
                    << (*it)->name()
                    << "</td><td>"
-                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                    << "</td><td>"
                    << "--"
                    << "</td><td>"
@@ -9348,7 +9350,7 @@ void Graph::writePrestigeDegree (const QString fileName,
                     <<"<td>"
                     << (*it)->name()
                     << "</td><td>"
-                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                     << "</td><td>"
                     << (*it)->DP()
                     << "</td><td>"
@@ -9637,7 +9639,7 @@ void Graph::writePrestigeProximity( const QString fileName,
 
     outText << htmlHead;
 
-    outText.setRealNumberPrecision(m_precision);
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
 
     outText << "<h1>";
     outText << tr("PROXIMITY PRESTIGE (PP)");
@@ -9711,7 +9713,7 @@ void Graph::writePrestigeProximity( const QString fileName,
                     <<"<td>"
                    << (*it)->name()
                    << "</td><td>"
-                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                    << "</td><td>"
                    << "--"
                    << "</td><td>"
@@ -9724,7 +9726,7 @@ void Graph::writePrestigeProximity( const QString fileName,
                     <<"<td>"
                     << (*it)->name()
                     << "</td><td>"
-                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                     << "</td><td>"
                     << (*it)->PP()
                     << "</td><td>"
@@ -10077,7 +10079,7 @@ void Graph::writePrestigePageRank(const QString fileName,
     emit statusMessage( pMsg ) ;
     emit signalProgressBoxCreate(N,pMsg);
 
-    outText.setRealNumberPrecision(m_precision);
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
 
     outText << htmlHead;
 
@@ -10168,7 +10170,7 @@ void Graph::writePrestigePageRank(const QString fileName,
                     <<"<td>"
                    << (*it)->name()
                    << "</td><td>"
-                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                   << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                    << "</td><td>"
                    << "--"
                    << "</td><td>"
@@ -10183,7 +10185,7 @@ void Graph::writePrestigePageRank(const QString fileName,
                     <<"<td>"
                     << (*it)->name()
                     << "</td><td>"
-                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                    << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                     << "</td><td>"
                     << (*it)->PRP()
                     << "</td><td>"
@@ -11646,7 +11648,7 @@ void Graph::writeClusteringCoefficient( const QString fileName,
     emit statusMessage ( pMsg );
     emit signalProgressBoxCreate(N,pMsg);
 
-    outText.setRealNumberPrecision(m_precision);
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
 
     outText << htmlHead;
 
@@ -11731,7 +11733,7 @@ void Graph::writeClusteringCoefficient( const QString fileName,
                 <<"<td>"
                 << (*it)->name()
                 << "</td><td>"
-                << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(10) : "-" )
+                << ( (! ( (*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-" )
                 << "</td><td>"
                 << (*it)->CLC()
                 << "</td><td>"
@@ -12012,7 +12014,7 @@ bool Graph::writeCliqueCensus(const QString &fileName,
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     outText << htmlHead;
-    outText.setRealNumberPrecision(m_precision);
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
 
     outText << "<h1>";
     outText << tr("CLIQUE CENSUS (CLQs) REPORT");
@@ -12553,7 +12555,7 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
 
 
 
-    outText.setRealNumberPrecision(m_precision);
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
     outText.reset();
 
 
@@ -13292,7 +13294,7 @@ void Graph::writeMatrixSimilarityMatchingPlain(const QString fileName,
     emit statusMessage ( tr("Writing similarity coefficients to file: ")
                          + fileName );
 
-    outText.setRealNumberPrecision(m_precision);
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
 
     outText << tr("SIMILARITY MATRIX: MATCHING COEFFICIENTS (SMMC)") << endl<< endl;
 
@@ -13397,7 +13399,7 @@ void Graph::writeMatrixDissimilarities(const QString fileName,
     emit statusMessage ( tr("Writing tie profile dissimilarities to file: ")
                          + fileName );
 
-    outText.setRealNumberPrecision(m_precision);
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
 
 
     outText << htmlHead;
@@ -13574,7 +13576,7 @@ void Graph::writeMatrixSimilarityMatching(const QString fileName,
     emit statusMessage( pMsg );
     emit signalProgressBoxCreate(1, pMsg);
 
-    outText.setRealNumberPrecision(m_precision);
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
 
     outText << htmlHead;
 
@@ -13764,7 +13766,7 @@ void Graph::writeMatrixSimilarityPearson(const QString fileName,
     emit statusMessage ( tr("Writing Pearson coefficients to file: ")
                          + fileName );
 
-    outText.setRealNumberPrecision(m_precision);
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
 
     outText << htmlHead;
 
@@ -13906,7 +13908,7 @@ void Graph::writeMatrixSimilarityPearsonPlainText(const QString fileName,
     emit statusMessage ( tr("Writing Pearson coefficients to file: ")
                          + fileName );
 
-    outText.setRealNumberPrecision(m_precision);
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
 
     outText << tr("PEARSON CORRELATION COEFFICIENTS (PCC) MATRIX") << endl<<endl;
 
@@ -15387,9 +15389,22 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
 
 
 
-
+/**
+ * @brief Sets the precision (number of fraction digits) the app will use
+ * when writing real numbers in reports.
+ * @param precision
+ */
 void Graph::setReportsRealNumberPrecision(const int &precision) {
-    m_precision = precision;
+    m_reportsRealPrecision = precision;
+}
+
+
+/**
+ * @brief Sets the length of labels in reports
+ * @param length
+ */
+void Graph::setReportsLabelLength(const int &length){
+    m_reportsLabelLength = length;
 }
 
 

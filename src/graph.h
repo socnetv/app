@@ -717,6 +717,8 @@ public:
     /* REPORT EXPORTS */
 
     void setReportsRealNumberPrecision (const int & precision);
+    void setReportsLabelLength(const int &length);
+
     void writeDataSetToFile(const QString dir, const QString );
 
     void writeMatrixAdjacencyTo(QTextStream& os,
@@ -1217,7 +1219,9 @@ private:
     H_StrToInt discreteIRCCs, discreteECs, discreteEccentricities;
     H_StrToInt discretePCs, discreteICs,  discretePRPs, discretePPs, discreteEVCs;
 
-    int m_precision, m_fieldWidth, m_curRelation, m_fileFormat, m_vertexClicked;
+    int m_reportsRealPrecision;
+    int m_reportsLabelLength;
+    int m_fieldWidth, m_curRelation, m_fileFormat, m_vertexClicked;
 
     MyEdge m_clickedEdge;
 
