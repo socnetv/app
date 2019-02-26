@@ -75,8 +75,8 @@ Email: info@socnetv.org
 Author: Dimitris V. Kalamaras 
 Blog:   https://dimitris.apeiro.gr
 
-SocNetV is a cross-platform application, developed in C++ and Qt5.
-Qt is an open source software development platform published under the GPL.
+SocNetV is a cross-platform application developed in C++ and Qt5, an open source 
+software development platform published under the GPL.
 
 This means you can compile and run SocNetV on any Operating System supported by Qt.
 See available packages and installation instructions below.
@@ -125,25 +125,30 @@ Afterwards you can run the application from your Start menu.
 
 ### Install in MacOS
 
-To install SocNetV in Mac, download the latest SocNetV MacOS installer from
-the Downloads page, and double-click on the executable to start the installation.
-The application will be installed in your Applications.
+To install SocNetV in Mac, download the latest SocNetV MacOS package from
+the Downloads page, and double-click on it. 
+
+If the package is an installer, the installation will start immediately and the application 
+will be installed automatically in your Applications.
+
+Otherwise, if the package is just an macOS image disk, then double-click on it to open and drag 
+the SocNetV icon/executable to your Applications.
 
 Please note that the first time you run SocNetV, you may need to double click on
 the SocNetV application icon holding down the META key.
 
 ### Install in Linux
 
-To run the latest version of SocNetV in Linux, download the latest Linux AppImage from
+To run the latest and greatest version of SocNetV in Linux, download the latest Linux AppImage from
 the project's Downloads page.
 
-Make the file executable and double-click on it to run SocNetV.
+Then, make the .appimage file executable and double-click on it to run SocNetV. That's it. :)
 
-Please note that a version of SocNetV is available in the repositories of most Linux distributions.
-However that is not always the most recent and updated version.
+Please note that a version of SocNetV is also available in the repositories of most Linux distributions.
+However that is not always the most recent version. We urge you to use the latest version 
+available from our website instead.
 
-To install the latest and greatest SocNetV version, users of openSUSE, Fedora and
-Ubuntu/Debian are advised to add our own repositories to their systems.
+Users of openSUSE, Fedora and Ubuntu/Debian may also add our own repositories to their systems.
 
 In Debian and Ubuntu, add our repository and install SocNetV with these commands:
 
