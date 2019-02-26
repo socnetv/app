@@ -716,6 +716,7 @@ public:
 
     /* REPORT EXPORTS */
 
+    void setReportsRealNumberPrecision (const int & precision);
     void writeDataSetToFile(const QString dir, const QString );
 
     void writeMatrixAdjacencyTo(QTextStream& os,

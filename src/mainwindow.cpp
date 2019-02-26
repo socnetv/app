@@ -426,6 +426,7 @@ QMap<QString,QString> MainWindow::initSettings() {
     appSettings["printLogo"] = "true";
     appSettings["initStatusBarDuration"] = "5000";
     appSettings["randomErdosEdgeProbability"] = "0.04";
+    appSettings["initReportsRealNumberPrecision"] = "6";
 
     // Try to load settings configuration file
     // First check if our settings folder exist
@@ -543,6 +544,9 @@ void MainWindow::slotOpenSettingsDialog() {
 
     connect( m_settingsDialog, &DialogSettings::saveSettings,
              this, &MainWindow::saveSettings);
+
+    connect (m_settingsDialog,
+             &DialogSettings::setReportsRealNumberPrecision, activeGraph, &Graph::setReportsRealNumberPrecision);
 
     connect( m_settingsDialog, &DialogSettings::setDebugMsgs,
              this, &MainWindow::slotOptionsDebugMessages);

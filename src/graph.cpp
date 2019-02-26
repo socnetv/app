@@ -116,7 +116,7 @@ Graph::Graph(GraphicsWidget *graphicsWidget) {
     calculatedPRP=false;
     calculatedTriad=false;
 
-    m_precision = 3;
+    m_precision = 6;
 
     m_vertexClicked = 0;
     m_clickedEdge.source=0;
@@ -15385,6 +15385,12 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
     return true;
 }
 
+
+
+
+void Graph::setReportsRealNumberPrecision(const int &precision) {
+    m_precision = precision;
+}
 
 
 /**

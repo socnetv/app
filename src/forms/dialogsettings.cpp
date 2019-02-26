@@ -66,6 +66,10 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
                 (appSettings["printLogo"] == "true") ? true:false
                 );
 
+    // reports
+    ui->reportsRealNumberPrecisionSpin->
+            setValue(m_appSettings["initReportsRealNumberPrecision"].toInt(0, 10) );
+
 
     //debugging
     ui->printDebugChkBox->setChecked(
@@ -182,7 +186,6 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
     m_pixmap = QPixmap(60,20) ;
     m_pixmap.fill( m_nodeColor );
     ui->nodeColorBtn->setIcon(QIcon(m_pixmap));
-
 
 
 
@@ -331,6 +334,9 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
     connect (ui->printDebugChkBox, &QCheckBox::stateChanged,
              this, &DialogSettings::setDebugMsgs);
 
+
+    connect(ui->reportsRealNumberPrecisionSpin, SIGNAL(valueChanged(int)),
+            this, SLOT(getRealNumberPrecision(int)) );
 
     connect (ui->printLogoChkBox, &QCheckBox::stateChanged,
              this, &DialogSettings::setPrintLogo);
@@ -483,6 +489,18 @@ void DialogSettings::getDataDir(){
        m_appSettings["dataDir"]= m_dataDir;
     }
 
+}
+
+
+
+
+/**
+ * @brief DialogSettings::getNodeSize
+ * @param size
+ */
+void DialogSettings::getRealNumberPrecision( const int &precision) {
+    m_appSettings["initReportsRealNumberPrecision"]= QString::number(precision);
+    emit setReportsRealNumberPrecision(precision);
 }
 
 
