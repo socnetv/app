@@ -80,7 +80,8 @@ Matrix::Matrix(const Matrix &b) {
  * Destructor
  */
 Matrix::~Matrix() {
-    delete [] row;
+    if ( rows() )
+        delete [] row;
 }
 
 
@@ -1269,9 +1270,15 @@ void Matrix::lubksb(Matrix &a, const int &n, int indx[], qreal b[])
 Matrix& Matrix::inverse(Matrix &a)
 {
     int i,j, n=a.rows();
-    qreal d, col[n];
+    qreal d;
+    //qreal *col = new qreal[n];
+    qreal *col = new  (nothrow) qreal [ n ];
+    Q_CHECK_PTR(col);
 
-    int indx[n];
+    //int indx[n];
+    int *indx = new  (nothrow) int [ n ];
+    Q_CHECK_PTR(indx);
+
     qDebug () << "Matrix::inverse() - inverting matrix a - size " << n;
     if (n==0) {
         return (*this);
@@ -1323,7 +1330,9 @@ bool Matrix::solve(qreal b[])
     int n=rows();
     qreal d;
 
-    int indx[n];
+//    int indx[n];
+    int *indx = new  (nothrow) int [ n ];
+    Q_CHECK_PTR(indx);
 
     qDebug () << "Matrix::solve() - solving A x  - size " << n;
     if (n==0) {

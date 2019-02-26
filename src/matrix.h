@@ -72,7 +72,7 @@ public:
         }
 	}
 
-    ~MatrixRow() { m_cols=0 ; delete [] cell;}
+    ~MatrixRow() {  if (m_cols) delete [] cell; m_cols=0 ; }
 	
     MatrixRow& operator =(MatrixRow & a) {
         if (this != &a){

@@ -73,7 +73,7 @@ Chart::Chart(QChart *ch, QWidget *parent) :
 Chart::~Chart(){
     qDebug()<< "~Chart() - deleting pointers";
     delete m_chart;
-    delete m_series;
+    //m_series->clear();
 }
 
 
