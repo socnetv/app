@@ -19,10 +19,10 @@ software application for social network analysis and visualization.
 
 With SocNetV you can:
 
-- Draw social networks with a few clicks on a virtual canvas, load 
+- Draw social networks with a few clicks on a virtual canvas, load your
 field data from a file in a supported format (GraphML, GraphViz, EdgeList, GML, 
-Adjacency, Edgelist, Pajek, UCINET, etc.) or crawl the internet to create 
-a social network of connected webpages.
+Adjacency, Edgelist, Pajek, UCINET, etc.), automatically recreate famous data sets or 
+crawl the internet to create a social network of connected webpages.
 
 - Edit actors and ties through point-and-click, analyse graph and social 
 network properties, produce beautiful HTML reports and embed visualization 
@@ -38,10 +38,9 @@ clustering coefficient, walks, reciprocity etc.
 
 - Matrix routines: Adjacency plot, Laplacian matrix, Degree matrix, Cocitation, etc.
 
-- Advanced structural measures for social network analysis
-such as centrality and prestige indices (i.e. eigenvector and closeness centrality,
-betweenness centrality, information centrality, power centrality, proximity and
-pagerank prestige), 
+- Advanced structural measures for social network analysis such as centrality and prestige 
+indices (i.e. eigenvector and closeness centrality, betweenness centrality, information centrality, 
+power centrality, proximity and pagerank prestige), 
 
 - Community detection algorithms such as triad census, clique census, etc.
 
@@ -59,21 +58,16 @@ for meaningful visualizations of your social network data.
 - Multirelational loading and editing. You can load a network consisting of multiple 
 relations or create a network on your own and add multiple relations to it. 
 
-- Built-in web crawler, allowing you to automatically create networks from links found in a given initial URL.
+- Built-in web crawler allowing you to automatically create networks from links found in a given initial URL.
 
 - Comprehensive documentation, both online and while running the 
 application, which explains each feature and algorithm of SocNetV in detail.
 
 - Binary packages and installers for Windows, Linux and MacOS.
 
-The program is Free Software, licensed under the GNU General Public License 3 (GPL3).
-You can copy it as many times as you wish, or modify it, provided you keep the 
-same license. 
-
-The documentation is also Free, licensed under the Free Documentation License (FDL).
 
 
-# 2. Availability & License
+# 3. Availability & License
 
 Official Website: https://socnetv.org
 Email: info@socnetv.org
@@ -85,20 +79,21 @@ SocNetV is a cross-platform application, developed in C++ and Qt5.
 Qt is an open source software development platform published under the GPL.
 
 This means you can compile and run SocNetV on any Operating System supported by Qt.
-See installation instructions in Section 3 below.
+See available packages and installation instructions below.
 
 SocNetV is Free Software, distributed under the General Public Licence Version 3 
 (see the COPYING file for details). 
+The documentation is also Free, licensed under the Free Documentation License (FDL).
 
 The application is not a "finished" product. Therefore, there is no warranty of 
 efficiency, correctness or usability. 
 
 Nevertheless, we are looking forward to help you if you experience any problems 
-with SocNetV. See Section 6 (bug reporting) below.
+with SocNetV! See bug reporting below.
 
 
 
-# 3. Installation
+# 4. Installation
 
 SocNetV is multi-platform, which means that it can be installed and run in every
 Operating System supported by the Qt toolkit.
@@ -213,7 +208,7 @@ or go to Start Menu > Mathematics  > SocNetV.
 
 
 
-# 4. Command Line Options
+# 5. Command Line Options
 	
 SocNetV is primarily a GUI program. Nevertheless, some command line options 
 are available. Type:
@@ -224,9 +219,9 @@ to start socnetv with network named filename.net loaded.
 
 
 
-# 5. Usage & documentation
+# 6. Usage & documentation
 
-For usage documentation, there are tooltips and What's This help messages
+To help you work with the application, there are tooltips and What's This help messages
 inside the application, when running SocNetV.
 
 To see the full documentation, press F1 to display the SocNetV Manual.
@@ -234,7 +229,7 @@ To see the full documentation, press F1 to display the SocNetV Manual.
 The manual is also available online at the project's website.
 
 
-# 6. Bug reporting & contact
+# 7. Bug reporting & contact
 
 If you have a bug report or a feature request, please file it
 in our github issue tracker:
