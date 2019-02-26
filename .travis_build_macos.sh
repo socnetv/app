@@ -67,7 +67,7 @@ echo "Creating dmg archive..."
 echo "TAG_NAME is ${TAG_NAME}"
 
 macdeployqt ${APP_NAME}.app -dmg
-mv ${APP_NAME}.dmg "${APP_NAME}_${VERSION}.dmg"
+mv ${APP_NAME}.dmg "${APP_NAME}-${VERSION}.dmg"
 
 # You can use the appdmg command line app to create your dmg file if
 # you want to use a custom background and icon arrangement. I'm still
@@ -80,7 +80,7 @@ cp "${project_dir}/README.md" "README.md"
 cp "${project_dir}/COPYING" "LICENSE"
 
 echo "Packaging zip archive..."
-7z a ${APP_NAME}_${VERSION}_macos.zip "${APP_NAME}_${VERSION}.dmg" "README.md" "LICENSE"
+7z a ${APP_NAME}-${VERSION}-macos.zip "${APP_NAME}-${VERSION}.dmg" "README.md" "LICENSE"
 
 echo "Check what we have created..."
 find . -type f -name "${APP_NAME}*"

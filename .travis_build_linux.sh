@@ -21,10 +21,10 @@ echo "LAST_COMMIT_SHORT is: $LAST_COMMIT_SHORT"
 
 if [ ! -z "$TRAVIS_TAG" ] ; then
     # If this is a tag, then version will be the tag, i.e. 2.5 or 2.5-beta
-    VERSION=${TRAVIS_TAG}
+    export VERSION=${TRAVIS_TAG}
 else 
     # If this is not a tag, the we want version to be like "2.5-beta-a0be9cd"
-    VERSION=${SOCNETV_VERSION}-${LAST_COMMIT_SHORT}
+    export VERSION=${SOCNETV_VERSION}-${LAST_COMMIT_SHORT}
 fi
 
 
