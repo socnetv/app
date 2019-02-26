@@ -28,7 +28,7 @@ install:
   - cmd: echo "Setting Qt environment..."
   - set QTDIR=C:\Qt\5.12.1\mingw73_64
 #  - cmd: echo "Check Qt folders..."      
-#  - cmd: dir C:\Qt\Tools
+  - cmd: dir C:\Qt\Tools
 #  - cmd: dir C:\Qt\Tools\mingw730_64\bin
 #  - cmd: dir C:\Qt\5.12.1\mingw73_64
 #  - cmd: dir C:\Qt\5.12.1\mingw73_64\bin
@@ -41,7 +41,7 @@ install:
   - set PATH=%QTDIR%\bin;C:\Qt\Tools\mingw730_64\bin;%PATH%;"C:\Program Files (x86)\Inno Setup 5"
 build_script:
   - cmd: echo "Running qmake..."  
-  - qmake socnetv.pro
+  - qmake "CONFIG+=release" socnetv.pro
   - cmd: echo "BUILDING starts here with mingw32..."    
   - mingw32-make
 
