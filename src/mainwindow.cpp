@@ -428,6 +428,7 @@ QMap<QString,QString> MainWindow::initSettings() {
     appSettings["randomErdosEdgeProbability"] = "0.04";
     appSettings["initReportsRealNumberPrecision"] = "6";
     appSettings["initReportsLabelsLength"] = "16";
+    appSettings["initReportsChartType"] = "0";
 
     // Try to load settings configuration file
     // First check if our settings folder exist
@@ -551,6 +552,9 @@ void MainWindow::slotOpenSettingsDialog() {
 
     connect (m_settingsDialog,&DialogSettings::setReportsLabelLength,
              activeGraph, &Graph::setReportsLabelLength);
+
+    connect (m_settingsDialog, &DialogSettings::setReportsChartType,
+             activeGraph, &Graph::setReportsChartType);
 
     connect( m_settingsDialog, &DialogSettings::setDebugMsgs,
              this, &MainWindow::slotOptionsDebugMessages);
@@ -13139,11 +13143,28 @@ void MainWindow::slotAnalyzeCentralityEccentricity(){
 
 
 
-void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(
-        QBarSeries *barSeries,
-        QBarSet *barSet,
-        QBarCategoryAxis *axisX
-        ) {
+void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *series,
+                                                              QAbstractAxis *axisX
+                                                              ) {
+
+    if (series == Q_NULLPTR) {
+        chart->resetToTrivial();
+        chart->removeAllSeries();
+        return;
+
+    }
+
+
+    switch (series->type()) {
+    case QAbstractSeries::SeriesTypeBar	:
+        //;
+        (static_cast <QBarSeries> (series)).setBarWidth(0.5);
+        break;
+    default:
+        break;
+    }
+
+
 
     qDebug() << "slotAnalyzeProminenceDistributionChartUpdate()";
 
@@ -13154,34 +13175,35 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(
 
     // Add series to chart
     //chart->addSeries(series);
-    chart->addSeries(barSeries);
+    chart->addSeries(series);
 
     // Set Chart title and remove legend
-    chart->setTitle(barSeries->name() + QString(" distribution"), QFont("Times",7));
+    chart->setTitle(series->name() + QString(" distribution"), QFont("Times",7));
+
     chart->toggleLegend(false);
+
     chart->setToolTip( tr("Distribution of ") +
-                       barSeries->name() + ":\n"
-                       " Min value: " + axisX->min() + "\n"
-                       " Max value: " + axisX->max()
+                       series->name() + ":\n"
                        );
+//                       " Min value: " + axisX->min() + "\n"
+//                       " Max value: " + axisX->max()
+//                       );
 
     // Set the style of the lines and bars
     //series->setBrush(QBrush(QColor(0,0,0)));
     //series->setPen(QPen(QColor(0,0,0)));
 
-    barSeries->setBarWidth(0.5);
+    // NOT USED: Attach axes to the Chart.
+    // chart->createDefaultAxes();
 
-    // Attach axes to the Chart.
-    //    chart->createDefaultAxes();
-
-    // Instead of calling createDefaultAxes
+    // Instead of calling createDefaultAxes()
     // we use our own axes
     axisX->setLabelsAngle(-80);
     axisX->setShadesVisible(false);
-    chart->setAxisX(axisX, barSeries);
+    chart->setAxisX(axisX, series);
 
     QValueAxis *axisY = new QValueAxis;
-    chart->setAxisY(axisY, barSeries);
+    chart->setAxisY(axisY, series);
 
     // Apply our theme to axes:
     chart->setAxesThemeDefault();

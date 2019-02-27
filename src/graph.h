@@ -37,6 +37,7 @@
 #include <QThread>
 
 #include <QtCharts/QChartGlobal>
+#include <QAbstractSeries>
 
 //FYI: stack is a wrapper around <deque> in C++, see: www.cplusplus.com/reference/stl/stack
 #include <stack>
@@ -55,8 +56,11 @@ QT_END_NAMESPACE
 
 
 QT_CHARTS_BEGIN_NAMESPACE
+class QAbstractSeries;
+class QAbstractAxis;
 class QSplineSeries;
 class QBarSeries;
+class QAreaSeries;
 class QBarSet;
 class QBarCategoryAxis;
 QT_CHARTS_END_NAMESPACE
@@ -302,9 +306,8 @@ signals:
                                 const int &selectedEdges);
 
 
-    void signalPromininenceDistributionChartUpdate(QBarSeries *barSeries,
-                                                   QBarSet *barSet,
-                                                   QBarCategoryAxis *axisX);
+    void signalPromininenceDistributionChartUpdate(QAbstractSeries *series,
+                                                   QAbstractAxis *axisX=Q_NULLPTR);
 
     /** Signals to GraphicsWidget */
     void signalDrawNode( const QPointF &p,
@@ -718,6 +721,7 @@ public:
 
     void setReportsRealNumberPrecision (const int & precision);
     void setReportsLabelLength(const int &length);
+    void setReportsChartType(const int &type);
 
     void writeDataSetToFile(const QString dir, const QString );
 
@@ -912,9 +916,13 @@ public:
                                         const bool &dropIsolates=false) ;
 
     void prominenceDistribution(const int &index,
-                                QSplineSeries *series);
+                                const ChartType &type=ChartType::Spline);
 
-    void prominenceDistribution(const int &index);
+    void prominenceDistributionBars(const H_StrToInt &discreteClasses,
+                                    const QString &name);
+
+    void prominenceDistributionSpline(const H_StrToInt &discreteClasses,
+                                const QString &name);
 
     void centralityDegree(const bool &weights=true,
                           const bool &dropIsolates=false);
@@ -1137,11 +1145,6 @@ private:
     WebCrawler_Parser *wc_parser;
     WebCrawler_Spider *wc_spider;
 
-
-    QBarSeries *barSeries;
-    QBarSet *barSet;
-    QBarCategoryAxis *axisX;
-
     /** private member functions */
 
     void edgeAdd (const int &v1,
@@ -1221,6 +1224,8 @@ private:
 
     int m_reportsRealPrecision;
     int m_reportsLabelLength;
+    ChartType m_reportsChartType;
+
     int m_fieldWidth, m_curRelation, m_fileFormat, m_vertexClicked;
 
     MyEdge m_clickedEdge;

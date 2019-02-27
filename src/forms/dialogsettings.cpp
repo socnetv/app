@@ -74,6 +74,32 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
             setValue(m_appSettings["initReportsLabelsLength"].toInt(0, 10) );
 
 
+    QStringList chartTypesList;
+    chartTypesList << "None" << "Lines" << "Bars" ;
+    ui->reportsChartTypeSelect->addItems(chartTypesList);
+
+    switch (appSettings["initReportsChartType"].toInt()) {
+    case ChartType::None:
+        ui->reportsChartTypeSelect->setCurrentText( "None");
+        break;
+    case ChartType::Spline:
+        ui->reportsChartTypeSelect->setCurrentText( "Lines");
+        break;
+    case ChartType::Area:
+        ui->reportsChartTypeSelect->setCurrentText( "Area");
+        break;
+    case ChartType::Bars:
+        ui->reportsChartTypeSelect->setCurrentText( "Bars");
+        break;
+    default:
+        ui->reportsChartTypeSelect->setCurrentText( "Lines");
+        break;
+    }
+
+    qDebug() << "reportsChartTypeSelect"
+             << ui->reportsChartTypeSelect->currentText();
+
+
     //debugging
     ui->printDebugChkBox->setChecked(
                 (appSettings["printDebug"] == "true") ? true:false
@@ -344,6 +370,11 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
     connect (ui->reportsLabelsLengthSpin, SIGNAL(valueChanged(int)),
              this, SLOT(getReportsLabelsLength(int)));
 
+
+    connect(ui->reportsChartTypeSelect, SIGNAL ( currentIndexChanged (const int &)),
+          this, SLOT(getReportsChartType(const int &)) );
+
+
     connect (ui->printLogoChkBox, &QCheckBox::stateChanged,
              this, &DialogSettings::setPrintLogo);
 
@@ -518,6 +549,20 @@ void DialogSettings::getReportsLabelsLength( const int &length) {
     m_appSettings["initReportsLabelsLength"]= QString::number(length);
     emit setReportsLabelLength(length);
 }
+
+
+
+/**
+ * @brief Gets the chart type in reports
+ */
+void DialogSettings::getReportsChartType(const int &type){
+    //if (!type.isEmpty() ) {
+    qDebug() << "DialogSettings::getReportsChartType() - type: " << type;
+        m_appSettings["initReportsChartType"] = type-1;
+        emit setReportsChartType(type-1);
+    //}
+}
+
 
 
 /**
