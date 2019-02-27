@@ -28,7 +28,7 @@ install:
   - cmd: echo "APPVEYOR_REPO_COMMIT"
   - cmd: echo %APPVEYOR_REPO_COMMIT%
   - cmd: echo "APPVEYOR_REPO_TAG"
-  - cmd: ecgo %APPVEYOR_REPO_TAG%
+  - cmd: echo %APPVEYOR_REPO_TAG%
 
   - cmd: echo "Setting last commit short id"
   - cmd: git rev-parse --short HEAD > MYVER.txt
