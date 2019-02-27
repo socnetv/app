@@ -44,6 +44,9 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     # export VERSION=... # linuxdeployqt uses this for naming the file
     ./linuxdeployqt*.AppImage appdir/usr/share/applications/*.desktop -appimage -extra-plugins=iconengines,imageformats
 
+    echo "Check what we have created..."
+    find . -type f -name "*AppImage"
+
 
 elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
 	# nothing here, go away...
