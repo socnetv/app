@@ -12628,10 +12628,6 @@ void MainWindow::slotAnalyzeCentralityDegree(){
                 optionsEdgeWeightConsiderAct->isChecked(),
                 editFilterNodesIsolatesAct->isChecked() );
 
-    statusMessage(tr("Creating Out-Degree Centralities distribution histogram..."));
-
-//    slotAnalyzeProminenceDistributionChart(IndexType::DC);
-
     statusMessage(tr("Opening Out-Degree Centralities report..."));
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
@@ -12670,10 +12666,6 @@ void MainWindow::slotAnalyzeCentralityCloseness(){
                 optionsEdgeWeightConsiderAct->isChecked(),
                 inverseWeights,
                 editFilterNodesIsolatesAct->isChecked() || dropIsolates);
-
-    statusMessage(tr("Creating Closeness Centralities distribution histogram..."));
-
-//    slotAnalyzeProminenceDistributionChart(IndexType::CC);
 
     statusMessage(tr("Opening Closeness Centralities report..."));
 
@@ -12714,10 +12706,6 @@ void MainWindow::slotAnalyzeCentralityClosenessIR(){
                 inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
 
-    statusMessage(tr("Creating Influence Range Closeness Centralities distribution histogram..."));
-
-//    slotAnalyzeProminenceDistributionChart(IndexType::IRCC);
-
     statusMessage(tr("Opening Influence Range Closeness Centralities report..."));
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
@@ -12753,10 +12741,6 @@ void MainWindow::slotAnalyzeCentralityBetweenness(){
                 fn, optionsEdgeWeightConsiderAct->isChecked(),
                 inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
-
-    statusMessage(tr("Creating Betweenness Centralities distribution histogram..."));
-
-//    slotAnalyzeProminenceDistributionChart(IndexType::BC);
 
     statusMessage(tr("Opening Betweenness Centralities report..."));
 
@@ -12804,10 +12788,6 @@ void MainWindow::slotAnalyzePrestigeDegree(){
                                      optionsEdgeWeightConsiderAct->isChecked(),
                                      editFilterNodesIsolatesAct->isChecked() );
 
-    statusMessage(tr("Creating Degree Prestige (in-degree) distribution histogram..."));
-
-//    slotAnalyzeProminenceDistributionChart(IndexType::DP);
-
     statusMessage(tr("Opening Degree Prestige (in-degree) report..."));
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
@@ -12839,10 +12819,6 @@ void MainWindow::slotAnalyzePrestigePageRank(){
     askAboutWeights();
 
     activeGraph->writePrestigePageRank(fn, editFilterNodesIsolatesAct->isChecked());
-
-    statusMessage(tr("Creating PageRank Prestige distribution histogram..."));
-
-//    slotAnalyzeProminenceDistributionChart(IndexType::PRP);
 
     statusMessage(tr("Opening PageRank Prestige report..."));
 
@@ -12877,10 +12853,6 @@ void MainWindow::slotAnalyzePrestigeProximity(){
 
     activeGraph->writePrestigeProximity(fn, true, false ,
                                         editFilterNodesIsolatesAct->isChecked());
-
-    statusMessage(tr("Creating Proximity Prestige distribution histogram..."));
-
-//    slotAnalyzeProminenceDistributionChart(IndexType::PP);
 
     statusMessage(tr("Opening Proximity Prestige report..."));
 
@@ -12949,11 +12921,6 @@ void MainWindow::slotAnalyzeCentralityInformation(){
                 optionsEdgeWeightConsiderAct->isChecked(),
                 inverseWeights);
 
-
-    statusMessage(tr("Creating Information Centralities distribution histogram..."));
-
-//    slotAnalyzeProminenceDistributionChart(IndexType::IC);
-
     statusMessage(tr("Opening Information Centralities report..."));
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
@@ -12995,11 +12962,6 @@ void MainWindow::slotAnalyzeCentralityEigenvector(){
                 inverseWeights,
                 dropIsolates);
 
-
-    statusMessage(tr("Creating Eigenvector Centralities distribution histogram..."));
-
-    //slotAnalyzeProminenceDistributionChart(IndexType::EVC);
-
     statusMessage(tr("Opening Eigenvector Centralities report..."));
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
@@ -13038,10 +13000,6 @@ void MainWindow::slotAnalyzeCentralityStress(){
                 optionsEdgeWeightConsiderAct->isChecked(),
                 inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
-
-    statusMessage(tr("Creating Stress Centralities distribution histogram..."));
-
-    //slotAnalyzeProminenceDistributionChart(IndexType::SC);
 
     statusMessage(tr("Opening Stress Centralities report..."));
 
@@ -13082,10 +13040,6 @@ void MainWindow::slotAnalyzeCentralityPower(){
                 inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
 
-    statusMessage(tr("Creating Gil-Schmidt Power Centralities distribution histogram..."));
-
-    //slotAnalyzeProminenceDistributionChart(IndexType::PC);
-
     statusMessage(tr("Opening Gil-Schmidt Power Centralities report..."));
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -13122,10 +13076,6 @@ void MainWindow::slotAnalyzeCentralityEccentricity(){
                 optionsEdgeWeightConsiderAct->isChecked(),
                 inverseWeights,
                 editFilterNodesIsolatesAct->isChecked());
-
-    statusMessage(tr("Creating Eccentricity Centralities distribution histogram..."));
-
-    // slotAnalyzeProminenceDistributionChart(IndexType::EC);
 
     statusMessage(tr("Opening Closeness Centralities report..."));
 
@@ -13209,70 +13159,6 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
     chart->setAxesThemeDefault();
 }
 
-
-/**
- * @brief Show a chart with the distribution of a Prominence Score
- * @param index
- */
-void MainWindow::slotAnalyzeProminenceDistributionChart(const int &index) {
-
-    qDebug() << "slotAnalyzeProminenceDistributionChart()";
-
-    // Clear chart from old series.
-    chart->removeAllSeries();
-    // Remove all axes
-    chart->removeAllAxes();
-
-    // Create new series
-   // QSplineSeries *series = new QSplineSeries();
-    QBarSeries *barSeries = new QBarSeries();
-    QBarSet *barSet = new QBarSet("");
-    QBarCategoryAxis *axisX = new QBarCategoryAxis();
-
-    // Call Graph to compute index distribution
-    // and return it to QSplineSeries 'series'
-    //activeGraph->prominenceDistribution(index, series);
-
-    // Call Graph to compute index distribution
-    // and return it to QBarSet
-   //activeGraph->prominenceDistribution(index,barSeries,barSet,axisX);
-
-    // Add series to chart
-    //chart->addSeries(series);
-    chart->addSeries(barSeries);
-
-    // Set Chart title and remove legend
-    chart->setTitle(barSeries->name() + QString(" distribution"), QFont("Times",7));
-    chart->toggleLegend(false);
-    chart->setToolTip( tr("Distribution of ") +
-                       barSeries->name() + ":\n"
-                       " Min value: " + axisX->min() + "\n"
-                       " Max value: " + axisX->max()
-                       );
-
-    // Set the style of the lines and bars
-    //series->setBrush(QBrush(QColor(0,0,0)));
-    //series->setPen(QPen(QColor(0,0,0)));
-
-    barSeries->setBarWidth(0.5);
-
-    // Attach axes to the Chart.
-    //    chart->createDefaultAxes();
-
-    // Instead of calling createDefaultAxes
-    // we use our own axes
-    axisX->setLabelsAngle(-80);
-    axisX->setShadesVisible(false);
-    chart->setAxisX(axisX, barSeries);
-
-    QValueAxis *axisY = new QValueAxis;
-    chart->setAxisY(axisY, barSeries);
-
-    // Apply our theme to axes:
-    chart->setAxesThemeDefault();
-
-
-}
 
 
 

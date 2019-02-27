@@ -439,7 +439,6 @@ public slots:
     void slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *series,
                                                       QAbstractAxis *axisX
                                                        );
-    void slotAnalyzeProminenceDistributionChart(const int &index);
 
     void slotAnalyzeCommunitiesCliqueCensus();
     void slotAnalyzeCommunitiesTriadCensus();

@@ -7097,17 +7097,19 @@ void Graph::prominenceDistribution(const int &index, const ChartType &type) {
     }
     };
 
-
     switch (type) {
     case ChartType::None:
         emit signalPromininenceDistributionChartUpdate(Q_NULLPTR, Q_NULLPTR);
         break;
     case ChartType::Spline:
+        emit statusMessage(tr("Creating prominence index distribution line chart..."));
         prominenceDistributionSpline(discreteClasses, seriesName );
         break;
     case ChartType::Area:
+        emit statusMessage(tr("Creating prominence index distribution area chart..."));
         break;
     case ChartType::Bars:
+        emit statusMessage(tr("Creating prominence index distribution bar chart..."));
         prominenceDistributionBars(discreteClasses, seriesName);
         break;
     default:
