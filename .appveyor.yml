@@ -25,9 +25,7 @@ only_commits:
 clone_folder: c:\projects\socnetv
 
 install:
-  - cmd: echo "APPVEYOR_REPO_COMMIT"
   - cmd: echo %APPVEYOR_REPO_COMMIT%
-  - cmd: echo "APPVEYOR_REPO_TAG"
   - cmd: echo %APPVEYOR_REPO_TAG%
 
   - cmd: echo "Setting last commit short id"
@@ -42,8 +40,7 @@ install:
 
   - cmd: echo "Setting BUILDNAME" 
   - cmd: if %APPVEYOR_REPO_TAG%==true set BUILDNAME=%APPVEYOR_REPO_TAG% 
-  - cmd: if %APPVEYOR_REPO_TAG%==false set BUILDNAME=%SOCNETV_VERSION%-%LAST_COMMIT%
-  - cmd: echo "BUILDNAME:"
+  - cmd: if %APPVEYOR_REPO_TAG%==false set BUILDNAME=%SOCNETV_VERSION%-%LAST_COMMIT_SHORT%
   - cmd: echo %BUILDNAME%
 
   - cmd: echo "Setting Qt environment..."
@@ -94,7 +91,7 @@ after_build:
   - cmd: dir SocNetV*.exe
 
   - cmd: echo "Renaming file"
-  - cmd: rename SocNetV-*installer.exe SocNetV-%BUILDNAME%-installer.exe
+  - cmd: rename SocNetV-*installer.exe SocNetV-%BUILDNAME%-windows-installer.exe
   - cmd: dir SocNetV*.exe  
   - cmd: dir
 
