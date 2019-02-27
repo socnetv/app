@@ -25,6 +25,10 @@ only_commits:
 clone_folder: c:\projects\socnetv
 
 install:
+  - cmd: echo "Setting last commit"
+  - set LAST_COMMIT=(git rev-parse --short HEAD)
+  - cmd: echo %LAST_COMMIT%
+
   - cmd: echo "Setting Qt environment..."
   - set QTDIR=C:\Qt\5.12.1\mingw73_64
 #  - cmd: echo "Check Qt folders..."      
@@ -70,9 +74,10 @@ after_build:
   - iscc innosetup.iss
   - cmd: type Setup-Manifest.txt
   - cmd: echo %APPVEYOR_REPO_COMMIT%
-  - cmd: if %APPVEYOR_REPO_TAG%=="true" rename SocNetV-*-installer.exe SocNetV-%APPVEYOR_REPO_TAG%-installer.exe
-  - cmd: if %APPVEYOR_REPO_TAG%=="" rename SocNetV-%SOCNETV_VERSION%-%APPVEYOR_REPO_COMMIT%-installer.exe
+  - cmd: if %APPVEYOR_REPO_TAG%==true set BUILDNAME=%APPVEYOR_REPO_TAG% else set BUILDNAME=%SOCNETV_VERSION%-%LAST_COMMIT%
+  - cmd: rename SocNetV-*installer.exe SocNetV-%BUILDNAME%-installer.exe
   - cmd: if %APPVEYOR_REPO_TAG%=="" dir SocNetV*.exe
+  - cmd: dir SocNetV*.exe  
   - cmd: dir
 
 artifacts:

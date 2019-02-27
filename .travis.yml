@@ -64,6 +64,6 @@ after_success:
    - wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
    - echo "Listing directory"
    - ls -lsh
-   - bash upload.sh *SocNetV*.AppImage*
-   - bash upload.sh *SocNetV*.zip*
+   - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then bash upload.sh *SocNetV*.AppImage* ; fi
+   - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then bash upload.sh *SocNetV*.zip* ; fi
 
