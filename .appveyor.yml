@@ -39,6 +39,7 @@ install:
   - choco install -y InnoSetup
   - cmd: echo "Setting paths..."    
   - set PATH=%QTDIR%\bin;C:\Qt\Tools\mingw730_64\bin;%PATH%;"C:\Program Files (x86)\Inno Setup 5"
+  - set SOCNETV_VERSION=2.5-beta
 build_script:
   - cmd: echo "Running qmake..."  
   - qmake socnetv.pro
@@ -68,6 +69,9 @@ after_build:
   - cmd: echo "Running Innosetup..."
   - iscc innosetup.iss
   - cmd: type Setup-Manifest.txt
+  - cmd: echo %APPVEYOR_REPO_COMMIT%
+  - cmd: if %APPVEYOR_REPO_TAG%=="true" rename SocNetV-*-installer.exe SocNetV-%APPVEYOR_REPO_TAG%-installer.exe
+  - cmd: if %APPVEYOR_REPO_TAG%=="" echo SocNetV-%SOCNETV_VERSION%-%APPVEYOR_REPO_COMMIT%-installer.exe
 
 
 artifacts:
