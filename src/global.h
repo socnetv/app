@@ -90,6 +90,12 @@ SOCNETV_BEGIN_NAMESPACE
     };
 
 
+    enum ChartType {
+        None = -1,
+        Spline = 0,
+        Area = 1,
+        Bars = 2
+    };
 
     static const int SUBGRAPH_CLIQUE = 1;
     static const int SUBGRAPH_STAR   = 2;
