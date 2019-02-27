@@ -39,9 +39,9 @@ install:
   - cmd: echo %SOCNETV_VERSION%
 
   - cmd: echo "Setting BUILDNAME" 
-  - cmd: if %APPVEYOR_REPO_TAG%==true if %APPVEYOR_REPO_TAG_NAME%=="continuous" set BUILDNAME=%SOCNETV_VERSION%_%LAST_COMMIT_SHORT% 
-  - cmd: if %APPVEYOR_REPO_TAG%==true if %APPVEYOR_REPO_TAG_NAME%!="continuous" set BUILDNAME=%APPVEYOR_REPO_TAG_NAME%_%LAST_COMMIT_SHORT% 
-  - cmd: if %APPVEYOR_REPO_TAG%==false set BUILDNAME=%SOCNETV_VERSION%-%LAST_COMMIT_SHORT%
+  - if %APPVEYOR_REPO_TAG%=="true" set BUILDNAME=%APPVEYOR_REPO_TAG_NAME%_%LAST_COMMIT_SHORT%  
+  - if %APPVEYOR_REPO_TAG%=="true" if %APPVEYOR_REPO_TAG_NAME%=="continuous" set BUILDNAME=%SOCNETV_VERSION%_%LAST_COMMIT_SHORT% 
+  - if %APPVEYOR_REPO_TAG%=="false" set BUILDNAME=%SOCNETV_VERSION%-%LAST_COMMIT_SHORT%
   - cmd: echo %BUILDNAME%
 
   - cmd: echo "Setting Qt environment..."
