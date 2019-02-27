@@ -42,6 +42,8 @@ install:
 
   - cmd: echo "Setting BUILDNAME" 
   - if %APPVEYOR_REPO_TAG%==true set BUILDNAME=%APPVEYOR_REPO_TAG% else set BUILDNAME=%SOCNETV_VERSION%-%LAST_COMMIT%
+  - cmd: echo "BUILDNAME:"
+  - cmd: echo %BUILDNAME%
 
   - cmd: echo "Setting Qt environment..."
   - set QTDIR=C:\Qt\5.12.1\mingw73_64
