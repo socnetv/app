@@ -26,8 +26,10 @@ clone_folder: c:\projects\socnetv
 
 install:
   - cmd: echo "Setting last commit"
-  - set LAST_COMMIT=(git rev-parse --short HEAD)
+  - cmd: git rev-parse --short HEAD > MYVER.txt
+  - cmd: set /p LAST_COMMIT= < MYVER.txt
   - cmd: echo %LAST_COMMIT%
+  - cmd: del MYVER.txt
 
   - cmd: echo "Setting Qt environment..."
   - set QTDIR=C:\Qt\5.12.1\mingw73_64
