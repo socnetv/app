@@ -25,11 +25,23 @@ only_commits:
 clone_folder: c:\projects\socnetv
 
 install:
-  - cmd: echo "Setting last commit"
+  - cmd: echo "APPVEYOR_REPO_COMMIT"
+  - cmd: echo %APPVEYOR_REPO_COMMIT%
+  - cmd: echo "APPVEYOR_REPO_TAG"
+  - cmd: ecgo %APPVEYOR_REPO_TAG%
+
+  - cmd: echo "Setting last commit short id"
   - cmd: git rev-parse --short HEAD > MYVER.txt
-  - cmd: set /p LAST_COMMIT= < MYVER.txt
-  - cmd: echo %LAST_COMMIT%
+  - cmd: set /p LAST_COMMIT_SHORT= < MYVER.txt
+  - cmd: echo %LAST_COMMIT_SHORT%
   - cmd: del MYVER.txt
+  - echo %APPVEYOR_REPO_COMMIT:~0,7%
+  - cmd: echo "Setting SocNetV current version"
+  - cmd: set SOCNETV_VERSION=2.5-beta
+  - cmd: echo %SOCNETV_VERSION%
+
+  - cmd: echo "Setting BUILDNAME" 
+  - if %APPVEYOR_REPO_TAG%==true set BUILDNAME=%APPVEYOR_REPO_TAG% else set BUILDNAME=%SOCNETV_VERSION%-%LAST_COMMIT%
 
   - cmd: echo "Setting Qt environment..."
   - set QTDIR=C:\Qt\5.12.1\mingw73_64
@@ -45,7 +57,7 @@ install:
   - choco install -y InnoSetup
   - cmd: echo "Setting paths..."    
   - set PATH=%QTDIR%\bin;C:\Qt\Tools\mingw730_64\bin;%PATH%;"C:\Program Files (x86)\Inno Setup 5"
-  - set SOCNETV_VERSION=2.5-beta
+
 build_script:
   - cmd: echo "Running qmake..."  
   - qmake "CONFIG+=release" socnetv.pro
@@ -75,10 +87,11 @@ after_build:
   - cmd: echo "Running Innosetup..."
   - iscc innosetup.iss
   - cmd: type Setup-Manifest.txt
-  - cmd: echo %APPVEYOR_REPO_COMMIT%
-  - cmd: if %APPVEYOR_REPO_TAG%==true set BUILDNAME=%APPVEYOR_REPO_TAG% else set BUILDNAME=%SOCNETV_VERSION%-%LAST_COMMIT%
+
+  - cmd: dir SocNetV*.exe
+
+  - cmd: echo "Renaming file"
   - cmd: rename SocNetV-*installer.exe SocNetV-%BUILDNAME%-installer.exe
-  - cmd: if %APPVEYOR_REPO_TAG%=="" dir SocNetV*.exe
   - cmd: dir SocNetV*.exe  
   - cmd: dir
 
