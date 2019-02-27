@@ -71,8 +71,9 @@ after_build:
   - cmd: type Setup-Manifest.txt
   - cmd: echo %APPVEYOR_REPO_COMMIT%
   - cmd: if %APPVEYOR_REPO_TAG%=="true" rename SocNetV-*-installer.exe SocNetV-%APPVEYOR_REPO_TAG%-installer.exe
-  - cmd: if %APPVEYOR_REPO_TAG%=="" echo SocNetV-%SOCNETV_VERSION%-%APPVEYOR_REPO_COMMIT%-installer.exe
-
+  - cmd: if %APPVEYOR_REPO_TAG%=="" rename SocNetV-%SOCNETV_VERSION%-%APPVEYOR_REPO_COMMIT%-installer.exe
+  - cmd: if %APPVEYOR_REPO_TAG%=="" dir SocNetV*.exe
+  - cmd: dir
 
 artifacts:
   - path: SocNetV-*-installer.exe
