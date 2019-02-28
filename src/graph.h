@@ -71,6 +71,9 @@ QT_CHARTS_USE_NAMESPACE
 
 SOCNETV_USE_NAMESPACE
 
+
+class Chart;
+
 using namespace std;
 
 
@@ -194,6 +197,8 @@ public slots:
 
 
     /** Slots to signals from MainWindow */
+
+    void setReportsChart(Chart *reportsChart);
 
     void relationSet(int relNum=RAND_MAX, const bool notifyMW=true);
 
@@ -1144,6 +1149,8 @@ private:
     VList m_graph;
 
     GraphicsWidget *m_canvas;
+
+    Chart *m_chart;
 
     Parser *file_parser;	//file loader threaded class.
 

@@ -55,7 +55,7 @@
 #include <queue>		//for BFS queue Q
 #include <ctime>        // for randomizeThings
 
-
+#include "chart.h"
 
 #include "graphicsnode.h"
 #include "graphicsedge.h"
@@ -268,6 +268,14 @@ Graph::~Graph() {
 }
 
 
+
+/**
+ * @brief Sets the Chart hidden widget used in HTML reports
+ * @param chart
+ */
+void Graph::setReportsChart ( Chart *chart)  {
+    m_chart = chart;
+}
 
 
 
@@ -7184,7 +7192,42 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
     axisX->setMin(min);
     axisX->setMax(max);
 
-    emit signalPromininenceDistributionChartUpdate(series, axisX, min, max);
+    // Clear chart from old series.
+   m_chart->removeAllSeries();
+    // Remove all axes
+   m_chart->removeAllAxes();
+
+   m_chart->addSeries(series);
+
+   m_chart->setTitle(series->name() + QString(" distribution"),
+                     QFont("Times",7));
+
+   m_chart->toggleLegend(false);
+
+   //m_chart->createDefaultAxes();
+
+   axisX->setLabelsAngle(-90);
+   axisX->setShadesVisible(false);
+
+   m_chart->setAxisX(axisX, series);
+
+   QValueAxis *axisY = new QValueAxis;
+   m_chart->setAxisY(axisY, series);
+   m_chart->resize(1000,700);
+
+   // Apply our theme to axes:
+   m_chart->setAxesThemeDefault();
+
+   //appSettings["dataDir"]=
+   //QPixmap p = m_chart->grab();
+   QPixmap p = m_chart->getPixmap();
+   //QPixmap p( m_chart->size() );
+   //m_chart->render( p );
+
+   p.save("/home/oxy86/socnetv-data//mychart.png", "PNG");
+
+   qDebug() << "Graph::prominenceDistributionSpline() - emitting signal to update";
+//    emit signalPromininenceDistributionChartUpdate(series, axisX, min, max);
 }
 
 

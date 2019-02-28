@@ -17,6 +17,8 @@ QT += widgets
 QT += printsupport 
 QT += charts
 QT += svg
+QT += testlib
+
 
 INCLUDEPATH  += ./src
 FORMS += src/forms/dialogfilteredgesbyweight.ui \

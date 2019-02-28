@@ -153,6 +153,10 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     initToolBar();      //build the toolbar
 
+    // Create our reports chart
+    reportsChart = new Chart(this);
+    reportsChart->hide();
+
     initPanels();      //build the toolbox
 
     initWindowLayout();   //init the application window, set layout etc
@@ -190,6 +194,7 @@ MainWindow::~MainWindow() {
 
     delete scene;
     delete graphicsWidget;
+    delete reportsChart;
     delete chart;
 
     foreach ( TextEditor *ed, m_textEditors) {
@@ -5460,6 +5465,8 @@ void MainWindow::initSignalSlots() {
     connect ( activeGraph, &Graph::signalPromininenceDistributionChartUpdate,
               this, &MainWindow::slotAnalyzeProminenceDistributionChartUpdate);
 
+    connect ( this, &MainWindow::signalSetReportsChart,
+              activeGraph,&Graph::setReportsChart);
 
     //
     //signals and slots inside MainWindow
@@ -5578,6 +5585,8 @@ void MainWindow::initApp(){
 
     activeGraph->setReportsLabelLength(appSettings["initReportsLabelsLength"].toInt());
     activeGraph->setReportsChartType(appSettings["initReportsChartType"].toInt());
+
+    emit signalSetReportsChart(reportsChart);
 
     /** Clear graphicsWidget scene and reset settings and transformations **/
     graphicsWidget->clear();

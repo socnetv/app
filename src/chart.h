@@ -91,6 +91,7 @@ public:
 
     void resetToTrivial();
 
+    QPixmap getPixmap();
 private:
     QChart *m_chart;
     QSplineSeries *m_series;

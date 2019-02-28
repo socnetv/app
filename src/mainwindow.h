@@ -563,6 +563,7 @@ protected:
     //	void myMessageOutput(QtMsgType type, const char *msg);
 signals:
     void signalRelationAddAndChange(const QString &relName, const bool &changeRelation=true);
+    void signalSetReportsChart(Chart *reportsChart);
 
 private:
 
@@ -574,6 +575,8 @@ private:
     QMap<QString,QString> appSettings;
 
     Chart *chart;
+    Chart *reportsChart;
+
 
     QStringList prominenceIndexList;
     QStringList recentFiles;

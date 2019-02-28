@@ -46,8 +46,8 @@
 #include <QtCharts/QBarCategoryAxis>
 
 #include <QtCore/QTime>
-
-
+#include <QTest>
+#include <QVBoxLayout>
 
 Chart::Chart(QWidget *parent) :
     QChartView (parent ),
@@ -381,5 +381,26 @@ void Chart::resetToTrivial() {
 
     setAxesThemeDefault();
 
+}
+
+
+QPixmap Chart::getPixmap()
+{
+    QWidget* w = new QWidget; //creating a temporary widget, which will enable to display the chart
+
+    w->resize(1024, 768);
+    QVBoxLayout *vl;
+    vl = new QVBoxLayout(w);
+    vl->addWidget(this); //'this' being the QChartView
+
+    w->show(); //showing the widget so it is resized and can be grabbed with the correct dimensions
+
+    QTest::qWait(500); //we need to wait for a little for the graph to be drawn otherwise you'll still have the same size problem
+
+    QPixmap pixmap = w->grab(); //retrieve the pixmap
+
+    w->hide(); //hiding the widget
+
+    return pixmap;
 }
 
