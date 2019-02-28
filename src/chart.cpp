@@ -60,13 +60,13 @@ Chart::Chart(QWidget *parent) :
     m_chart->setAnimationOptions(QChart::SeriesAnimations);
 }
 
-Chart::Chart(QChart *ch, QWidget *parent) :
-    QChartView (ch, parent )
-{
+//Chart::Chart(QChart *ch, QWidget *parent) :
+//    QChartView (ch, parent )
+//{
 
-    qDebug() << "Chart(QChart *ch, QWidget *parent) ";
+//    qDebug() << "Chart(QChart *ch, QWidget *parent) ";
 
-}
+//}
 
 
 

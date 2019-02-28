@@ -52,7 +52,7 @@ class Chart : public QChartView
     Q_OBJECT
 public:
     explicit Chart (QWidget *parent = Q_NULLPTR );
-    explicit Chart ( QChart *ch = Q_NULLPTR, QWidget *parent = Q_NULLPTR );
+    //explicit Chart ( QChart *ch = Q_NULLPTR, QWidget *parent = Q_NULLPTR );
     ~Chart();
 
     void setTitle(const QString &title = QString::null, const QFont &font=QFont());

@@ -7192,11 +7192,13 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
     axisX->setMin(min);
     axisX->setMax(max);
 
+   Chart *m_chart = new Chart(Q_NULLPTR);
     // Clear chart from old series.
    m_chart->removeAllSeries();
     // Remove all axes
    m_chart->removeAllAxes();
 
+   m_chart->show();
    m_chart->addSeries(series);
 
    m_chart->setTitle(series->name() + QString(" distribution"),
@@ -7224,7 +7226,7 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
    //QPixmap p( m_chart->size() );
    //m_chart->render( p );
 
-   p.save("/home/oxy86/socnetv-data//mychart.png", "PNG");
+   p.save("./mychart.png", "PNG");
 
    qDebug() << "Graph::prominenceDistributionSpline() - emitting signal to update";
 //    emit signalPromininenceDistributionChartUpdate(series, axisX, min, max);
