@@ -44,6 +44,7 @@
 #include <QtCharts/QChart>
 #include <QtCharts/QChartView>
 #include <QSplineSeries>
+#include <QAreaSeries>
 #include <QBarSeries>
 #include <QBarCategoryAxis>
 #include <QValueAxis>
@@ -5456,9 +5457,10 @@ void MainWindow::initSignalSlots() {
     connect ( activeGraph, &Graph::signalProgressBoxKill,
               this, &MainWindow::slotProgressBoxDestroy);
 
-
     connect ( activeGraph, &Graph::signalPromininenceDistributionChartUpdate,
               this, &MainWindow::slotAnalyzeProminenceDistributionChartUpdate);
+
+
     //
     //signals and slots inside MainWindow
     //
@@ -5575,6 +5577,7 @@ void MainWindow::initApp(){
     activeGraph->setReportsRealNumberPrecision(appSettings["initReportsRealNumberPrecision"].toInt());
 
     activeGraph->setReportsLabelLength(appSettings["initReportsLabelsLength"].toInt());
+    activeGraph->setReportsChartType(appSettings["initReportsChartType"].toInt());
 
     /** Clear graphicsWidget scene and reset settings and transformations **/
     graphicsWidget->clear();
@@ -13094,29 +13097,39 @@ void MainWindow::slotAnalyzeCentralityEccentricity(){
 
 
 void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *series,
-                                                              QAbstractAxis *axisX
-                                                              ) {
+                                                              QAbstractAxis *axisX,
+                                                              const qreal &min,
+                                                              const qreal &max) {
+
+
+    qDebug() << "slotAnalyzeProminenceDistributionChartUpdate()";
 
     if (series == Q_NULLPTR) {
         chart->resetToTrivial();
         chart->removeAllSeries();
         return;
-
     }
 
+    QPen sPen;
+    QBrush sBrush;
 
+    // Set the style of the lines and bars
     switch (series->type()) {
     case QAbstractSeries::SeriesTypeBar	:
-        //;
         (static_cast <QBarSeries> (series)).setBarWidth(0.5);
+        break;
+    case QAbstractSeries::SeriesTypeArea :
+        sPen.setColor( QColor( 0,0,0 ) );
+        sPen.setWidthF(1.0);
+        sBrush.setColor( QColor( 255,0,0) );
+        (static_cast <QAreaSeries> (series)).setPen( sPen );
+        (static_cast <QAreaSeries> (series)).setBrush(sBrush);
+
         break;
     default:
         break;
     }
 
-
-
-    qDebug() << "slotAnalyzeProminenceDistributionChartUpdate()";
 
     // Clear chart from old series.
     chart->removeAllSeries();
@@ -13124,7 +13137,6 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
     chart->removeAllAxes();
 
     // Add series to chart
-    //chart->addSeries(series);
     chart->addSeries(series);
 
     // Set Chart title and remove legend
@@ -13132,23 +13144,31 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
 
     chart->toggleLegend(false);
 
-    chart->setToolTip( tr("Distribution of ") +
-                       series->name() + ":\n"
-                       );
-//                       " Min value: " + axisX->min() + "\n"
-//                       " Max value: " + axisX->max()
-//                       );
 
-    // Set the style of the lines and bars
-    //series->setBrush(QBrush(QColor(0,0,0)));
-    //series->setPen(QPen(QColor(0,0,0)));
+    QString chartHelpMsg = tr("Distribution of %1 values:\n"
+                              "Min value: %2 \n"
+                              "Max value: %3 \n"
+                              "Please note that, due to the small size of this widget, \n"
+                              "if you display a distribution in Bar Chart where there are \n"
+                              "more than 10 values, the widget will not show all bars. \n"
+                              "In this case, use Line or Area Chart (from Settings). \n"
+                              "In any case, the large chart in the HTML report \n"
+                              "is better than this widget..."
+                           )
+            .arg(series->name() )
+            .arg(min, 0,'g',appSettings["initReportsRealNumberPrecision"].toInt(0, 10))
+            .arg(max, 0,'g',appSettings["initReportsRealNumberPrecision"].toInt(0, 10));
+
+    chart->setToolTip( chartHelpMsg );
+
+    chart->setWhatsThis( chartHelpMsg );
 
     // NOT USED: Attach axes to the Chart.
     // chart->createDefaultAxes();
 
     // Instead of calling createDefaultAxes()
     // we use our own axes
-    axisX->setLabelsAngle(-80);
+    axisX->setLabelsAngle(-90);
     axisX->setShadesVisible(false);
     chart->setAxisX(axisX, series);
 
@@ -13157,6 +13177,8 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
 
     // Apply our theme to axes:
     chart->setAxesThemeDefault();
+
+
 }
 
 

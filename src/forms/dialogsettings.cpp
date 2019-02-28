@@ -75,7 +75,7 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
 
 
     QStringList chartTypesList;
-    chartTypesList << "None" << "Lines" << "Bars" ;
+    chartTypesList << "None" << "Lines" << "Area" << "Bars" ;
     ui->reportsChartTypeSelect->addItems(chartTypesList);
 
     switch (appSettings["initReportsChartType"].toInt()) {
@@ -558,7 +558,7 @@ void DialogSettings::getReportsLabelsLength( const int &length) {
 void DialogSettings::getReportsChartType(const int &type){
     //if (!type.isEmpty() ) {
     qDebug() << "DialogSettings::getReportsChartType() - type: " << type;
-        m_appSettings["initReportsChartType"] = type-1;
+        m_appSettings["initReportsChartType"] = QString::number(type-1);
         emit setReportsChartType(type-1);
     //}
 }

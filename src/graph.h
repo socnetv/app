@@ -307,7 +307,9 @@ signals:
 
 
     void signalPromininenceDistributionChartUpdate(QAbstractSeries *series,
-                                                   QAbstractAxis *axisX=Q_NULLPTR);
+                                                   QAbstractAxis *axisX=Q_NULLPTR,
+                                                   const qreal &min=0,
+                                                   const qreal &max=0);
 
     /** Signals to GraphicsWidget */
     void signalDrawNode( const QPointF &p,
@@ -920,6 +922,9 @@ public:
 
     void prominenceDistributionBars(const H_StrToInt &discreteClasses,
                                     const QString &name);
+
+    void prominenceDistributionArea(const H_StrToInt &discreteClasses,
+                                const QString &name);
 
     void prominenceDistributionSpline(const H_StrToInt &discreteClasses,
                                 const QString &name);

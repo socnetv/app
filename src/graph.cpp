@@ -7107,6 +7107,7 @@ void Graph::prominenceDistribution(const int &index, const ChartType &type) {
         break;
     case ChartType::Area:
         emit statusMessage(tr("Creating prominence index distribution area chart..."));
+        prominenceDistributionArea(discreteClasses, seriesName);
         break;
     case ChartType::Bars:
         emit statusMessage(tr("Creating prominence index distribution bar chart..."));
@@ -7126,12 +7127,13 @@ void Graph::prominenceDistribution(const int &index, const ChartType &type) {
 
 /**
  * @brief Computes the distribution of a centrality index scores.
- * The result is returned as QSplineSeries series
+ * The distribution data are returned as QSplineSeries series to MW
+ * which in turn displays them on a Spline Chart
  * @param index
  * @param series
  */
 void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
-                                   const QString &name) {
+                                         const QString &name) {
 
     qDebug() << "Graph::prominenceDistributionSpline()";
 
@@ -7182,15 +7184,81 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
     axisX->setMin(min);
     axisX->setMax(max);
 
-    emit signalPromininenceDistributionChartUpdate(series, axisX);
+    emit signalPromininenceDistributionChartUpdate(series, axisX, min, max);
 }
 
 
 
 /**
  * @brief Computes the distribution of a centrality index scores.
- * The result is returned as QBarSet set and QStringList strX for axisX
- * They are then used in QBarSeries series
+ * The distribution data are returned as QAreaSeries series to MW
+ * which in turn displays them on a Area Chart
+ * @param index
+ * @param series
+ */
+void Graph::prominenceDistributionArea(const H_StrToInt &discreteClasses,
+                                       const QString &name) {
+
+    qDebug() << "Graph::prominenceDistributionArea()";
+
+    QAreaSeries *series = new QAreaSeries ();
+    QLineSeries *upperSeries = new QLineSeries();
+    QValueAxis *axisX = new QValueAxis ();
+
+    series->setName (name);
+
+    priority_queue<PairVF, vector<PairVF>, PairVFCompare> seriesPQ;
+
+    QHash<QString, int>::const_iterator i;
+
+     for (i = discreteClasses.constBegin(); i != discreteClasses.constEnd(); ++i) {
+
+        qDebug() << "discreteClasses: " << i.key() << ": " << i.value() << endl;
+
+        seriesPQ.push(PairVF(i.key().toDouble(), i.value()));
+
+    }
+
+     unsigned int initialSize = seriesPQ.size();
+     qreal min = 0;
+     qreal max = 0;
+     qreal value = 0;
+     qreal frequency = 0;
+
+    while (!seriesPQ.empty()) {
+
+        qDebug() << seriesPQ.top().value << " : "
+                 << seriesPQ.top().frequency << endl;
+
+        value =  seriesPQ.top().value;
+        frequency = seriesPQ.top().frequency;
+
+        upperSeries->append( value,  frequency );
+
+        if ( initialSize == seriesPQ.size() ) {
+            min = value;
+        }
+        if ( seriesPQ.size() == 1 ) {
+            max = value;
+        }
+
+
+        seriesPQ.pop();
+    }
+
+    axisX->setMin(min);
+    axisX->setMax(max);
+
+    series->setUpperSeries(upperSeries);
+    emit signalPromininenceDistributionChartUpdate(series, axisX, min, max);
+}
+
+
+
+/**
+ * @brief Computes the distribution of a centrality index scores.
+ * The distribution data are returned as QBarSeries series (with a QBarSet attached)
+ * to MW  which in turn displays them on a Bar Chart
  * @param index
  * @param series
  * @param set
@@ -7235,9 +7303,9 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
         qDebug() << "value:"<< value << " : "
                  << "frequency:"<< frequency << endl;
 
-        barSet->append( frequency );
-
         axisX->append( value );
+
+        barSet->append( frequency );
 
         if ( initialSize == seriesPQ.size() ) {
             min = value;
@@ -7257,7 +7325,7 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
 
     series->append( barSet );
 
-    emit signalPromininenceDistributionChartUpdate(series, axisX);
+    emit signalPromininenceDistributionChartUpdate(series, axisX, min.toDouble(), max.toDouble());
 }
 
 

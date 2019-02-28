@@ -437,7 +437,9 @@ public slots:
     void slotAnalyzePrestigeProximity();
 
     void slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *series,
-                                                      QAbstractAxis *axisX
+                                                      QAbstractAxis *axisX,
+                                                      const qreal &min,
+                                                      const qreal &max
                                                        );
 
     void slotAnalyzeCommunitiesCliqueCensus();
