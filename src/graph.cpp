@@ -7189,16 +7189,19 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
         seriesPQ.pop();
     }
 
-    axisX->setMin(min);
+    axisX->setMin(0);
     axisX->setMax(max);
 
    Chart *m_chart = new Chart(Q_NULLPTR);
-    // Clear chart from old series.
-   m_chart->removeAllSeries();
+
+   // Clear chart from old series.
+    m_chart->removeAllSeries();
+
     // Remove all axes
-   m_chart->removeAllAxes();
+    m_chart->removeAllAxes();
 
    m_chart->show();
+
    m_chart->addSeries(series);
 
    m_chart->setTitle(series->name() + QString(" distribution"),
@@ -7206,15 +7209,15 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
 
    m_chart->toggleLegend(false);
 
-   //m_chart->createDefaultAxes();
+   m_chart->createDefaultAxes();
+   m_chart->axes(Qt::Horizontal).first()->setMin(0);
+   m_chart->axes(Qt::Horizontal).first()->setMax(max);
+   m_chart->axes(Qt::Horizontal).first()->setLabelsAngle(-90);
+   m_chart->axes(Qt::Horizontal).first()->setShadesVisible(false);
 
-   axisX->setLabelsAngle(-90);
-   axisX->setShadesVisible(false);
+//   axisX->setLabelsAngle(-90);
+//   axisX->setShadesVisible(false);
 
-   m_chart->setAxisX(axisX, series);
-
-   QValueAxis *axisY = new QValueAxis;
-   m_chart->setAxisY(axisY, series);
    m_chart->resize(1000,700);
 
    // Apply our theme to axes:
@@ -7228,8 +7231,11 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
 
    p.save("./mychart.png", "PNG");
 
+   m_chart->hide();
+   delete m_chart;
+
    qDebug() << "Graph::prominenceDistributionSpline() - emitting signal to update";
-//    emit signalPromininenceDistributionChartUpdate(series, axisX, min, max);
+    emit signalPromininenceDistributionChartUpdate(series, axisX, min, max);
 }
 
 

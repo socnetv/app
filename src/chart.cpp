@@ -91,6 +91,9 @@ void Chart::addSeries(QAbstractSeries *series) {
      m_chart->addSeries(series);
     }
     else {
+        // default dummy series with one point
+        // We need this for resetToTrivial()
+        // to be able to call createDefaultAxes()
         m_series = new QSplineSeries();
         *m_series << QPointF(0,0);
         m_chart->addSeries(m_series);
@@ -126,9 +129,15 @@ void Chart::removeAllSeries() {
 void Chart::createDefaultAxes(){
     qDebug() << "Chart::createDefaultAxes()" ;
     m_chart->createDefaultAxes();
+
 }
 
 
+QList<QAbstractAxis *> Chart::axes(Qt::Orientations orientation,
+                            QAbstractSeries *series) const {
+
+    return m_chart->axes(orientation, series);
+}
 
 /**
  * @brief Removes all previously attached X,Y axes from the QChart
@@ -136,6 +145,13 @@ void Chart::createDefaultAxes(){
 void Chart::removeAllAxes(){
     m_chart->removeAxis( m_chart->axisX() );
     m_chart->removeAxis( m_chart->axisY() );
+
+    if ( m_chart->axes().size()>0)  {
+        foreach ( QAbstractAxis *axe, m_chart->axes() ) {
+            m_chart->removeAxis(axe);
+        }
+    }
+
 }
 
 
@@ -207,7 +223,7 @@ void Chart::setAxisYRange(const int &from, const int &to){
  * @param font
  */
 void Chart::setAxisXLabelFont(const QFont &font){
-    m_chart->axisX()->setLabelsFont(font);
+    m_chart->axes(Qt::Horizontal).first()->setLabelsFont(font);
 }
 
 
@@ -217,7 +233,7 @@ void Chart::setAxisXLabelFont(const QFont &font){
  * @param font
  */
 void Chart::setAxisYLabelFont(const QFont &font){
-    m_chart->axisY()->setLabelsFont(font);
+    m_chart->axes(Qt::Vertical).first()->setLabelsFont(font);
 }
 
 
@@ -228,7 +244,7 @@ void Chart::setAxisYLabelFont(const QFont &font){
  * @param font
  */
 void Chart::setAxisXLinePen(const QPen &pen){
-    m_chart->axisX()->setLinePen(pen);
+    m_chart->axes(Qt::Horizontal).first()->setLinePen(pen);
 }
 
 
@@ -238,7 +254,7 @@ void Chart::setAxisXLinePen(const QPen &pen){
  * @param font
  */
 void Chart::setAxisYLinePen(const QPen &pen){
-    m_chart->axisY()->setLinePen(pen);
+    m_chart->axes(Qt::Vertical).first()->setLinePen(pen);
 
 }
 
@@ -250,7 +266,7 @@ void Chart::setAxisYLinePen(const QPen &pen){
  * @param font
  */
 void Chart::setAxisXGridLinePen(const QPen &pen){
-    m_chart->axisX()->setGridLinePen(pen);
+    m_chart->axes(Qt::Horizontal).first()->setGridLinePen(pen);
 }
 
 
@@ -260,7 +276,7 @@ void Chart::setAxisXGridLinePen(const QPen &pen){
  * @param font
  */
 void Chart::setAxisYGridLinePen(const QPen &pen){
-    m_chart->axisY()->setGridLinePen(pen);
+    m_chart->axes(Qt::Vertical).first()->setGridLinePen(pen);
 
 }
 
@@ -373,7 +389,7 @@ void Chart::resetToTrivial() {
     removeAllSeries();
     addSeries();
     createDefaultAxes();
-    m_chart->axisX()->setLabelsAngle(-80);
+    m_chart->axes(Qt::Horizontal).first()->setLabelsAngle(-90);
     setTitle("Chart", QFont("Times",8));
 
     setAxisXRange(0,1);
@@ -386,21 +402,27 @@ void Chart::resetToTrivial() {
 
 QPixmap Chart::getPixmap()
 {
-    QWidget* w = new QWidget; //creating a temporary widget, which will enable to display the chart
+    //create a temporary widget, which will display the chart
+    QWidget* w = new QWidget;
 
     w->resize(1024, 768);
     QVBoxLayout *vl;
     vl = new QVBoxLayout(w);
-    vl->addWidget(this); //'this' being the QChartView
+    vl->addWidget(this);
 
-    w->show(); //showing the widget so it is resized and can be grabbed with the correct dimensions
+    //show the widget, resized so we can grab it with correct dimensions
+    w->show();
 
-    QTest::qWait(500); //we need to wait for a little for the graph to be drawn otherwise you'll still have the same size problem
+    // wait for the graph to be drawn otherwise we have size problems
+    QTest::qWait(500);
 
-    QPixmap pixmap = w->grab(); //retrieve the pixmap
+    //save windows to a pixmap
+    QPixmap pixmap = w->grab();
 
-    w->hide(); //hiding the widget
+    //hide the widget
+    w->hide();
 
+    w->deleteLater();
     return pixmap;
 }
 

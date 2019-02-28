@@ -61,6 +61,8 @@ public:
     void removeAllSeries();
 
     void createDefaultAxes();
+    QList<QAbstractAxis*> axes(Qt::Orientations orientation = Qt::Horizontal|Qt::Vertical,
+                               QAbstractSeries *series = Q_NULLPTR) const;
     void removeAllAxes();
     void setAxisX(QAbstractAxis *axis, QAbstractSeries *series = Q_NULLPTR);
     void setAxisY(QAbstractAxis *axis, QAbstractSeries *series = Q_NULLPTR);
