@@ -524,6 +524,8 @@ void DialogSettings::getDataDir(){
         }
        ui->dataDirEdit->setText(m_dataDir);
        m_appSettings["dataDir"]= m_dataDir;
+
+       emit setReportsDataDir (m_dataDir);
     }
 
 }

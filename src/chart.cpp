@@ -88,6 +88,7 @@ void Chart::addSeries(QAbstractSeries *series) {
     qDebug() << "Chart::addSeries()" ;
   //  m_series = series;
     if (series) {
+        qDebug() << "Chart::addSeries() - series name"<< series->name() ;
      m_chart->addSeries(series);
     }
     else {
@@ -117,6 +118,7 @@ void Chart::appendToSeries(const QPointF &p) {
  * @brief Removes and deletes all series objects that have been added to the chart.
  */
 void Chart::removeAllSeries() {
+    qDebug() <<"Chart::removeAllSeries() "  ;
     m_chart->removeAllSeries();
 }
 
@@ -143,8 +145,11 @@ QList<QAbstractAxis *> Chart::axes(Qt::Orientations orientation,
  * @brief Removes all previously attached X,Y axes from the QChart
  */
 void Chart::removeAllAxes(){
-    m_chart->removeAxis( m_chart->axisX() );
-    m_chart->removeAxis( m_chart->axisY() );
+//    m_chart->removeAxis( m_chart->axisX() );
+//    m_chart->removeAxis( m_chart->axisY() );
+
+    qDebug() << "Chart::removeAllAxes()";
+    qDebug() << "Chart::removeAllAxes() - m_chart axes: "<< m_chart->axes().size();
 
     if ( m_chart->axes().size()>0)  {
         foreach ( QAbstractAxis *axe, m_chart->axes() ) {
@@ -165,6 +170,7 @@ void Chart::removeAllAxes(){
  * @param series
  */
 void Chart::setAxisX(QAbstractAxis *axis, QAbstractSeries *series) {
+    qDebug()<<"Chart::setAxisX()";
     m_chart->setAxisX(axis, series);
 
 }
@@ -179,6 +185,7 @@ void Chart::setAxisX(QAbstractAxis *axis, QAbstractSeries *series) {
  * @param series
  */
 void Chart::setAxisY(QAbstractAxis *axis, QAbstractSeries *series) {
+    qDebug()<<"Chart::setAxisY()";
     m_chart->setAxisY(axis, series);
 }
 
@@ -386,6 +393,7 @@ void Chart::setAxesThemeDefault() {
 
 
 void Chart::resetToTrivial() {
+    qDebug()<< "Chart::resetToTrivial()";
     removeAllSeries();
     addSeries();
     createDefaultAxes();
@@ -422,6 +430,7 @@ QPixmap Chart::getPixmap()
     //hide the widget
     w->hide();
 
+    qDebug()<< "Chart::getPixmap() ends!";
     w->deleteLater();
     return pixmap;
 }

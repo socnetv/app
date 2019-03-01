@@ -725,7 +725,7 @@ public:
                                           const bool &considerWeights);
 
     /* REPORT EXPORTS */
-
+    void setReportsDataDir(const QString &reportsDir);
     void setReportsRealNumberPrecision (const int & precision);
     void setReportsLabelLength(const int &length);
     void setReportsChartType(const int &type);
@@ -923,16 +923,20 @@ public:
                                         const bool &dropIsolates=false) ;
 
     void prominenceDistribution(const int &index,
-                                const ChartType &type=ChartType::Spline);
+                                const ChartType &type,
+                                const QString &distImageFileName=QString());
 
     void prominenceDistributionBars(const H_StrToInt &discreteClasses,
-                                    const QString &name);
+                                    const QString &name,
+                                    const QString &distImageFileName);
 
     void prominenceDistributionArea(const H_StrToInt &discreteClasses,
-                                const QString &name);
+                                    const QString &name,
+                                    const QString &distImageFileName);
 
     void prominenceDistributionSpline(const H_StrToInt &discreteClasses,
-                                const QString &name);
+                                      const QString &seriesName,
+                                      const QString &distImageFileName);
 
     void centralityDegree(const bool &weights=true,
                           const bool &dropIsolates=false);
@@ -1234,6 +1238,7 @@ private:
     H_StrToInt discreteIRCCs, discreteECs, discreteEccentricities;
     H_StrToInt discretePCs, discreteICs,  discretePRPs, discretePPs, discreteEVCs;
 
+    QString m_reportsDataDir;
     int m_reportsRealPrecision;
     int m_reportsLabelLength;
     ChartType m_reportsChartType;

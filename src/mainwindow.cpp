@@ -154,8 +154,9 @@ MainWindow::MainWindow(const QString & m_fileName) {
     initToolBar();      //build the toolbar
 
     // Create our reports chart
-    reportsChart = new Chart(this);
-    reportsChart->hide();
+    //reportsChart = new Chart(this);
+//    reportsChart->hide();
+
 
     initPanels();      //build the toolbox
 
@@ -194,8 +195,7 @@ MainWindow::~MainWindow() {
 
     delete scene;
     delete graphicsWidget;
-    delete reportsChart;
-    delete chart;
+
 
     foreach ( TextEditor *ed, m_textEditors) {
         ed->close();
@@ -220,11 +220,13 @@ MainWindow::~MainWindow() {
  */
 void MainWindow::closeEvent( QCloseEvent* ce ) {
 
-    qDebug() << "MW::closeEvent() - Checking if Graph is saved...";
+    qDebug() << "MW::closeEvent() - Start closing app. Status message to user...";
 
     statusMessage( tr("Closing SocNetV. Bye!") );
 
     bool userCancelled=false;
+
+    qDebug() << "MW::closeEvent() - Checking if Graph is saved...";
 
     if ( activeGraph->graphSaved()  )  {
         ce->accept();
@@ -266,12 +268,17 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
 
     qDebug() << "MW::closeEvent() - Deleting other objects/pointers...";
 
+    qDebug() << "MW::closeEvent() - Deleting printer";
     delete printer;
+    qDebug() << "MW::closeEvent() - Deleting printerPDF";
     delete printerPDF;
+    qDebug() << "MW::closeEvent() - Deleting graphicsWidget";
     delete graphicsWidget;
+    qDebug() << "MW::closeEvent() - Deleting activeGraph";
     delete activeGraph;
+    qDebug() << "MW::closeEvent() - Deleting Scene";
     delete scene;
-    delete chart;
+//    delete chart;
 
     qDebug() << "MW::closeEvent() - Clearing and deleting text editors...";
     foreach ( TextEditor *ed, m_textEditors) {
@@ -286,7 +293,7 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
     qDebug() << "MW::closeEvent() - Clearing codecs...";
     codecs.clear();
 
-
+    qDebug() << "MW::closeEvent() - Finished. Bye!";
 }
 
 
@@ -369,10 +376,14 @@ QMap<QString,QString> MainWindow::initSettings() {
              this, &MainWindow::slotNetworkFileLoad );
 
     qDebug() << "MW::initSettings - creating default settings" ;
+
+    // Our settings are always saved to this folder.
     settingsDir = QDir::homePath() +QDir::separator() + "socnetv-data" + QDir::separator() ;
     settingsFilePath = settingsDir + "settings.conf";
 
-    // initially they are the same, but dataDir may be changed by the user
+    // dataDir is where our built-in datasets and reports are saved by default
+    // initially dataDir and settingsDir are the same, but dataDir may be
+    // changed by the user through Settings...
     QString dataDir= settingsDir ;
 
     maxNodes=5000;		//Max nodes used by createRandomNetwork dialogues
@@ -552,6 +563,9 @@ void MainWindow::slotOpenSettingsDialog() {
 
     connect( m_settingsDialog, &DialogSettings::saveSettings,
              this, &MainWindow::saveSettings);
+
+    connect (m_settingsDialog, &DialogSettings::setReportsDataDir,
+             activeGraph, &Graph::setReportsDataDir);
 
     connect (m_settingsDialog,&DialogSettings::setReportsRealNumberPrecision,
              activeGraph, &Graph::setReportsRealNumberPrecision);
@@ -5586,7 +5600,7 @@ void MainWindow::initApp(){
     activeGraph->setReportsLabelLength(appSettings["initReportsLabelsLength"].toInt());
     activeGraph->setReportsChartType(appSettings["initReportsChartType"].toInt());
 
-    emit signalSetReportsChart(reportsChart);
+    emit signalSetReportsDataDir(appSettings["dataDir"]);
 
     /** Clear graphicsWidget scene and reset settings and transformations **/
     graphicsWidget->clear();
@@ -6307,8 +6321,9 @@ QString MainWindow::getLastPath() {
 
 
 /**
- * @brief Sets the last path used by user to open/save something
- * @param filePath
+ * @brief Sets the last path used by user to open/save a network and adds the file
+ * to recent files...
+  * @param filePath
  */
 void MainWindow::setLastPath(const QString &filePath) {
     qDebug()<< "MW::setLastPath() for " << filePath;
@@ -8081,6 +8096,7 @@ void MainWindow::slotNetworkDataSetRecreate (const QString m_fileName) {
 
     qDebug()<< "MW::slotNetworkDataSetRecreate() datadir+fileName: "
             << appSettings["dataDir"]+m_fileName;
+
     activeGraph->writeDataSetToFile(appSettings["dataDir"], m_fileName);
 
     if (m_fileName.endsWith(".graphml")) {
@@ -13142,6 +13158,7 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
 
     // Clear chart from old series.
     chart->removeAllSeries();
+
     // Remove all axes
     chart->removeAllAxes();
 
@@ -13173,16 +13190,16 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
     chart->setWhatsThis( chartHelpMsg );
 
     // NOT USED: Attach axes to the Chart.
-    // chart->createDefaultAxes();
+     chart->createDefaultAxes();
 
-    // Instead of calling createDefaultAxes()
-    // we use our own axes
-    axisX->setLabelsAngle(-90);
-    axisX->setShadesVisible(false);
-    chart->setAxisX(axisX, series);
+//    // Instead of calling createDefaultAxes()
+//    // we use our own axes
+//    axisX->setLabelsAngle(-90);
+//    axisX->setShadesVisible(false);
+//    chart->setAxisX(axisX, series);
 
-    QValueAxis *axisY = new QValueAxis;
-    chart->setAxisY(axisY, series);
+//    QValueAxis *axisY = new QValueAxis;
+//    chart->setAxisY(axisY, series);
 
     // Apply our theme to axes:
     chart->setAxesThemeDefault();

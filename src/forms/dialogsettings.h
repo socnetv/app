@@ -86,10 +86,13 @@ public slots:
     void getEdgeLabelsVisibility(const bool &toggle);
 
 signals:
-    void setStyleSheetDefault(const bool &toggle);
+    void setReportsDataDir (const QString &dir);
+
     void setReportsRealNumberPrecision(const int &precision);
     void setReportsLabelLength(const int &length);
     void setReportsChartType(const int &type);
+
+    void setStyleSheetDefault(const bool &toggle);
 
     void setProgressDialog(bool);
     void setToolBar(bool);

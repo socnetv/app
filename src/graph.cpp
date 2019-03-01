@@ -119,6 +119,7 @@ Graph::Graph(GraphicsWidget *graphicsWidget) {
     calculatedPRP=false;
     calculatedTriad=false;
 
+    m_reportsDataDir = "";
     m_reportsRealPrecision = 6;
     m_reportsLabelLength = 8;
     m_reportsChartType  = ChartType::Spline;
@@ -6298,7 +6299,16 @@ void Graph::writeCentralityInformation(const QString fileName,
 
     centralityInformation(considerWeights, inverseWeights);
 
-    prominenceDistribution(IndexType::IC, m_reportsChartType);
+    QString distImageFileName ;
+
+    if ( m_reportsChartType != ChartType::None ) {
+
+        distImageFileName = QFileInfo(fileName).canonicalPath() +
+            QDir::separator() + QFileInfo(fileName).completeBaseName() + ".png";
+
+    }
+
+    prominenceDistribution(IndexType::IC, m_reportsChartType, distImageFileName);
 
     VList::const_iterator it;
 
@@ -6475,6 +6485,16 @@ void Graph::writeCentralityInformation(const QString fileName,
     outText << "</p>";
 
 
+    if ( m_reportsChartType != ChartType::None ) {
+        outText << "<h2>";
+        outText << tr("IC DISTRIBUTION")
+                << "</h2>";
+        outText << "<p>";
+        outText << "<img src=\""
+                << distImageFileName
+                 << "\" />";
+    }
+
     outText << "<h2>";
     outText << tr("GROUP INFORMATION CENTRALIZATION (GIC)")
             << "</h2>";
@@ -6548,7 +6568,16 @@ void Graph::writeCentralityEigenvector(const QString fileName,
 
     centralityEigenvector(considerWeights, inverseWeights,dropIsolates);
 
-    prominenceDistribution(IndexType::EVC, m_reportsChartType);
+    QString distImageFileName ;
+
+    if ( m_reportsChartType != ChartType::None ) {
+
+        distImageFileName = QFileInfo(fileName).canonicalPath() +
+            QDir::separator() + QFileInfo(fileName).completeBaseName() + ".png";
+
+    }
+
+    prominenceDistribution(IndexType::EVC, m_reportsChartType, distImageFileName);
 
     VList::const_iterator it;
 
@@ -6714,6 +6743,16 @@ void Graph::writeCentralityEigenvector(const QString fileName,
             <<"<br/>";
     outText << "</p>";
 
+
+    if ( m_reportsChartType != ChartType::None ) {
+        outText << "<h2>";
+        outText << tr("EVC DISTRIBUTION")
+                << "</h2>";
+        outText << "<p>";
+        outText << "<img src=\""
+                << distImageFileName
+                 << "\" />";
+    }
 
     outText << "<h2>";
     outText << tr("GROUP EIGENVECTOR CENTRALIZATION (GEC)")
@@ -7031,9 +7070,14 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
  * @param index
  * @param type
  */
-void Graph::prominenceDistribution(const int &index, const ChartType &type) {
+void Graph::prominenceDistribution(const int &index,
+                                   const ChartType &type,
+                                   const QString &distImageFileName) {
 
-    qDebug() << "Graph::prominenceDistribution() - Creating chart type: " << type;
+    qDebug() << "Graph::prominenceDistribution() - "
+             << "index" << index
+             << "chart type: " << type
+             << "distImageFileName" << distImageFileName;
 
     H_StrToInt discreteClasses;
 
@@ -7105,24 +7149,25 @@ void Graph::prominenceDistribution(const int &index, const ChartType &type) {
     }
     };
 
+
     switch (type) {
     case ChartType::None:
         emit signalPromininenceDistributionChartUpdate(Q_NULLPTR, Q_NULLPTR);
         break;
     case ChartType::Spline:
         emit statusMessage(tr("Creating prominence index distribution line chart..."));
-        prominenceDistributionSpline(discreteClasses, seriesName );
+        prominenceDistributionSpline(discreteClasses, seriesName,distImageFileName  );
         break;
     case ChartType::Area:
         emit statusMessage(tr("Creating prominence index distribution area chart..."));
-        prominenceDistributionArea(discreteClasses, seriesName);
+        prominenceDistributionArea(discreteClasses, seriesName, distImageFileName );
         break;
     case ChartType::Bars:
         emit statusMessage(tr("Creating prominence index distribution bar chart..."));
-        prominenceDistributionBars(discreteClasses, seriesName);
+        prominenceDistributionBars(discreteClasses, seriesName, distImageFileName );
         break;
     default:
-        prominenceDistributionSpline(discreteClasses, seriesName );
+        prominenceDistributionSpline(discreteClasses, seriesName, distImageFileName );
         break;
     }
 
@@ -7141,14 +7186,16 @@ void Graph::prominenceDistribution(const int &index, const ChartType &type) {
  * @param series
  */
 void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
-                                         const QString &name) {
+                                         const QString &seriesName,
+                                         const QString &distImageFileName) {
 
     qDebug() << "Graph::prominenceDistributionSpline()";
 
-    QSplineSeries *series = new QSplineSeries();
+    QLineSeries *series = new QLineSeries();
+        QLineSeries *series1 = new QLineSeries();
     QValueAxis *axisX = new QValueAxis ();
 
-    series->setName (name);
+    series->setName (seriesName);
 
     priority_queue<PairVF, vector<PairVF>, PairVFCompare> seriesPQ;
 
@@ -7177,7 +7224,7 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
         frequency = seriesPQ.top().frequency;
 
         series->append( value,  frequency );
-
+        series1->append( value,  frequency );
         if ( initialSize == seriesPQ.size() ) {
             min = value;
         }
@@ -7192,50 +7239,59 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
     axisX->setMin(0);
     axisX->setMax(max);
 
-   Chart *m_chart = new Chart(Q_NULLPTR);
+    if (!distImageFileName.isEmpty() ) {
+        qDebug() << "Graph::prominenceDistributionSpline() - "
+                 << "saving distribution image to" << distImageFileName ;
+        QChart *chart = new QChart();
+        QChartView *m_chart = new QChartView( chart );
+        //Chart *m_chart = new Chart(Q_NULLPTR);
 
-   // Clear chart from old series.
-    m_chart->removeAllSeries();
+        // Clear chart from old series.
+        //m_chart->removeAllSeries();
 
-    // Remove all axes
-    m_chart->removeAllAxes();
+        // Remove all axes
+        //m_chart->removeAllAxes();
 
-   m_chart->show();
+        m_chart->show();
 
-   m_chart->addSeries(series);
+        chart->addSeries(series);
+        //m_chart->addSeries(series);
 
-   m_chart->setTitle(series->name() + QString(" distribution"),
-                     QFont("Times",7));
+        //chart->setTitle("sdfsdf");
+//        m_chart->setTitle(series->name() + QString(" distribution"),
+//                          QFont("Times",7));
 
-   m_chart->toggleLegend(false);
+        //m_chart->toggleLegend(false);
 
-   m_chart->createDefaultAxes();
-   m_chart->axes(Qt::Horizontal).first()->setMin(0);
-   m_chart->axes(Qt::Horizontal).first()->setMax(max);
-   m_chart->axes(Qt::Horizontal).first()->setLabelsAngle(-90);
-   m_chart->axes(Qt::Horizontal).first()->setShadesVisible(false);
+        chart->createDefaultAxes();
 
-//   axisX->setLabelsAngle(-90);
-//   axisX->setShadesVisible(false);
+//        m_chart->createDefaultAxes();
+//        m_chart->axes(Qt::Vertical).first()->setMin(0);
+//        m_chart->axes(Qt::Horizontal).first()->setMin(0);
+//        m_chart->axes(Qt::Horizontal).first()->setMax(max);
+//        m_chart->axes(Qt::Horizontal).first()->setLabelsAngle(-90);
+//        m_chart->axes(Qt::Horizontal).first()->setShadesVisible(false);
 
-   m_chart->resize(1000,700);
+     //   axisX->setLabelsAngle(-90);
+     //   axisX->setShadesVisible(false);
+        QSize size = m_chart->size();
+        chart->resize(900,600);
+        m_chart->resize(1000,700);
 
-   // Apply our theme to axes:
-   m_chart->setAxesThemeDefault();
+        // Apply our theme to axes:
+        //m_chart->setAxesThemeDefault();
 
-   //appSettings["dataDir"]=
-   //QPixmap p = m_chart->grab();
-   QPixmap p = m_chart->getPixmap();
-   //QPixmap p( m_chart->size() );
-   //m_chart->render( p );
+        //QPixmap p = m_chart->getPixmap();
+        QPixmap p = m_chart->grab();
 
-   p.save("./mychart.png", "PNG");
+        p.save( distImageFileName, "PNG");
 
-   m_chart->hide();
-   delete m_chart;
+        //m_chart->hide();
+       // m_chart->resize(size);
+    }
 
    qDebug() << "Graph::prominenceDistributionSpline() - emitting signal to update";
-    emit signalPromininenceDistributionChartUpdate(series, axisX, min, max);
+   emit signalPromininenceDistributionChartUpdate(series1, axisX, min, max);
 }
 
 
@@ -7248,7 +7304,8 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
  * @param series
  */
 void Graph::prominenceDistributionArea(const H_StrToInt &discreteClasses,
-                                       const QString &name) {
+                                       const QString &name,
+                                       const QString &distImageFileName) {
 
     qDebug() << "Graph::prominenceDistributionArea()";
 
@@ -7301,6 +7358,11 @@ void Graph::prominenceDistributionArea(const H_StrToInt &discreteClasses,
     axisX->setMax(max);
 
     series->setUpperSeries(upperSeries);
+
+    if (!distImageFileName.isEmpty()) {
+
+    }
+
     emit signalPromininenceDistributionChartUpdate(series, axisX, min, max);
 }
 
@@ -7316,7 +7378,8 @@ void Graph::prominenceDistributionArea(const H_StrToInt &discreteClasses,
  * @param strX
  */
 void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
-                                       const QString &name) {
+                                       const QString &name,
+                                       const QString &distImageFileName) {
 
     qDebug() << "Graph::prominenceDistributionBars() - Creating chart type: bars";
 
@@ -7376,6 +7439,10 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
 
     series->append( barSet );
 
+    if (!distImageFileName.isEmpty()) {
+
+    }
+
     emit signalPromininenceDistributionChartUpdate(series, axisX, min.toDouble(), max.toDouble());
 }
 
@@ -7410,7 +7477,16 @@ void Graph::writeCentralityDegree ( const QString fileName,
 
     centralityDegree(considerWeights, dropIsolates);
 
-    prominenceDistribution(IndexType::DC, m_reportsChartType);
+    QString distImageFileName ;
+
+    if ( m_reportsChartType != ChartType::None ) {
+
+        distImageFileName = QFileInfo(fileName).canonicalPath() +
+            QDir::separator() + QFileInfo(fileName).completeBaseName() + ".png";
+
+    }
+
+    prominenceDistribution(IndexType::DC, m_reportsChartType,distImageFileName);
 
     qreal maxIndexDC=vertices(dropIsolates)-1.0;
 
@@ -7589,6 +7665,17 @@ void Graph::writeCentralityDegree ( const QString fileName,
     outText << "</p>";
 
 
+
+    if ( m_reportsChartType != ChartType::None ) {
+        outText << "<h2>";
+        outText << tr("DC DISTRIBUTION")
+                << "</h2>";
+        outText << "<p>";
+        outText << "<img src=\""
+                << distImageFileName
+                 << "\" />";
+    }
+
     if (!considerWeights) {
         outText << "<h2>";
         outText << tr("GROUP DEGREE CENTRALIZATION (GDC)")
@@ -7676,7 +7763,16 @@ void Graph::writeCentralityCloseness( const QString fileName,
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
 
-    prominenceDistribution(IndexType::CC, m_reportsChartType);
+    QString distImageFileName ;
+
+    if ( m_reportsChartType != ChartType::None ) {
+
+        distImageFileName = QFileInfo(fileName).canonicalPath() +
+            QDir::separator() + QFileInfo(fileName).completeBaseName() + ".png";
+
+    }
+
+    prominenceDistribution(IndexType::CC, m_reportsChartType,distImageFileName);
 
     int rowCount=0;
     int N = vertices();
@@ -7853,6 +7949,17 @@ void Graph::writeCentralityCloseness( const QString fileName,
             <<"<br/>";
     outText << "</p>";
 
+
+
+    if ( m_reportsChartType != ChartType::None ) {
+        outText << "<h2>";
+        outText << tr("CC DISTRIBUTION")
+                << "</h2>";
+        outText << "<p>";
+        outText << "<img src=\""
+                << distImageFileName
+                 << "\" />";
+    }
 
     if (!considerWeights) {
         outText << "<h2>";
@@ -8064,7 +8171,16 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
 
     centralityClosenessIR(considerWeights,inverseWeights, dropIsolates);
 
-    prominenceDistribution(IndexType::IRCC, m_reportsChartType);
+    QString distImageFileName ;
+
+    if ( m_reportsChartType != ChartType::None ) {
+
+        distImageFileName = QFileInfo(fileName).canonicalPath() +
+            QDir::separator() + QFileInfo(fileName).completeBaseName() + ".png";
+
+    }
+
+    prominenceDistribution(IndexType::IRCC, m_reportsChartType,distImageFileName);
 
     int rowCount=0;
     int N = vertices();
@@ -8227,6 +8343,16 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
             <<"<br/>";
     outText << "</p>";
 
+    if ( m_reportsChartType != ChartType::None ) {
+        outText << "<h2>";
+        outText << tr("IRCC DISTRIBUTION")
+                << "</h2>";
+        outText << "<p>";
+        outText << "<img src=\""
+                << distImageFileName
+                 << "\" />";
+    }
+
 
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
@@ -8276,7 +8402,16 @@ void Graph::writeCentralityBetweenness(const QString fileName,
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
 
-    prominenceDistribution(IndexType::BC, m_reportsChartType);
+    QString distImageFileName ;
+
+    if ( m_reportsChartType != ChartType::None ) {
+
+        distImageFileName = QFileInfo(fileName).canonicalPath() +
+            QDir::separator() + QFileInfo(fileName).completeBaseName() + ".png";
+
+    }
+
+    prominenceDistribution(IndexType::BC, m_reportsChartType, distImageFileName);
 
     int rowCount=0, progressCounter=0;
     int N = vertices();
@@ -8450,6 +8585,16 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     outText << "</p>";
 
 
+    if ( m_reportsChartType != ChartType::None ) {
+        outText << "<h2>";
+        outText << tr("BC DISTRIBUTION")
+                << "</h2>";
+        outText << "<p>";
+        outText << "<img src=\""
+                << distImageFileName
+                 << "\" />";
+    }
+
     if (!considerWeights) {
         outText << "<h2>";
         outText << tr("GROUP BETWEENNESS CENTRALIZATION (GBC)")
@@ -8534,7 +8679,16 @@ void Graph::writeCentralityStress( const QString fileName,
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights,dropIsolates);
 
-    prominenceDistribution(IndexType::SC, m_reportsChartType);
+    QString distImageFileName ;
+
+    if ( m_reportsChartType != ChartType::None ) {
+
+        distImageFileName = QFileInfo(fileName).canonicalPath() +
+            QDir::separator() + QFileInfo(fileName).completeBaseName() + ".png";
+
+    }
+
+    prominenceDistribution(IndexType::SC, m_reportsChartType, distImageFileName);
 
     VList::const_iterator it;
 
@@ -8705,6 +8859,16 @@ void Graph::writeCentralityStress( const QString fileName,
     outText << "</p>";
 
 
+    if ( m_reportsChartType != ChartType::None ) {
+        outText << "<h2>";
+        outText << tr("SC' DISTRIBUTION")
+                << "</h2>";
+        outText << "<p>";
+        outText << "<img src=\""
+                << distImageFileName
+                 << "\" />";
+    }
+
 
     outText << "<p class=\"small\">";
     outText << tr("Stress Centrality report, <br />");
@@ -8750,7 +8914,16 @@ void Graph::writeCentralityEccentricity(const QString fileName,
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights,dropIsolates);
 
-    prominenceDistribution(IndexType::EC, m_reportsChartType);
+    QString distImageFileName ;
+
+    if ( m_reportsChartType != ChartType::None ) {
+
+        distImageFileName = QFileInfo(fileName).canonicalPath() +
+            QDir::separator() + QFileInfo(fileName).completeBaseName() + ".png";
+
+    }
+
+    prominenceDistribution(IndexType::EC, m_reportsChartType, distImageFileName);
 
     VList::const_iterator it;
 
@@ -8904,6 +9077,16 @@ void Graph::writeCentralityEccentricity(const QString fileName,
     outText << "</p>";
 
 
+    if ( m_reportsChartType != ChartType::None ) {
+        outText << "<h2>";
+        outText << tr("EC DISTRIBUTION")
+                << "</h2>";
+        outText << "<p>";
+        outText << "<img src=\""
+                << distImageFileName
+                 << "\" />";
+    }
+
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
     outText << tr("Eccentricity Centrality report, <br />");
@@ -8951,7 +9134,17 @@ void Graph::writeCentralityPower(const QString fileName,
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
 
-    prominenceDistribution(IndexType::PC, m_reportsChartType);
+
+    QString distImageFileName ;
+
+    if ( m_reportsChartType != ChartType::None ) {
+
+        distImageFileName = QFileInfo(fileName).canonicalPath() +
+            QDir::separator() + QFileInfo(fileName).completeBaseName() + ".png";
+
+    }
+
+    prominenceDistribution(IndexType::PC, m_reportsChartType, distImageFileName);
 
     VList::const_iterator it;
 
@@ -9122,6 +9315,18 @@ void Graph::writeCentralityPower(const QString fileName,
             << varianceSPC
             <<"<br/>";
     outText << "</p>";
+
+
+
+    if ( m_reportsChartType != ChartType::None ) {
+        outText << "<h2>";
+        outText << tr("PC' DISTRIBUTION")
+                << "</h2>";
+        outText << "<p>";
+        outText << "<img src=\""
+                << distImageFileName
+                 << "\" />";
+    }
 
 
     if (!considerWeights) {
@@ -9382,7 +9587,17 @@ void Graph::writePrestigeDegree (const QString fileName,
 
     prestigeDegree(considerWeights, dropIsolates);
 
-    prominenceDistribution(IndexType::DP, m_reportsChartType);
+
+    QString distImageFileName ;
+
+    if ( m_reportsChartType != ChartType::None ) {
+
+        distImageFileName = QFileInfo(fileName).canonicalPath() +
+            QDir::separator() + QFileInfo(fileName).completeBaseName() + ".png";
+
+    }
+
+    prominenceDistribution(IndexType::DP, m_reportsChartType, distImageFileName);
 
     VList::const_iterator it;
 
@@ -9564,6 +9779,16 @@ void Graph::writePrestigeDegree (const QString fileName,
             <<"<br/>";
     outText << "</p>";
 
+
+    if ( m_reportsChartType != ChartType::None ) {
+        outText << "<h2>";
+        outText << tr("DP' DISTRIBUTION")
+                << "</h2>";
+        outText << "<p>";
+        outText << "<img src=\""
+                << distImageFileName
+                 << "\" />";
+    }
 
     if (!considerWeights) {
         outText << "<h2>";
@@ -9773,7 +9998,16 @@ void Graph::writePrestigeProximity( const QString fileName,
 
     prestigeProximity(considerWeights, inverseWeights, dropIsolates);
 
-    prominenceDistribution(IndexType::PP, m_reportsChartType);
+    QString distImageFileName ;
+
+    if ( m_reportsChartType != ChartType::None ) {
+
+        distImageFileName = QFileInfo(fileName).canonicalPath() +
+            QDir::separator() + QFileInfo(fileName).completeBaseName() + ".png";
+
+    }
+
+    prominenceDistribution(IndexType::PP, m_reportsChartType, fileName);
 
     VList::const_iterator it;
 
@@ -9930,6 +10164,17 @@ void Graph::writePrestigeProximity( const QString fileName,
             << variancePP
             <<"<br/>";
     outText << "</p>";
+
+
+    if ( m_reportsChartType != ChartType::None ) {
+        outText << "<h2>";
+        outText << tr("PP DISTRIBUTION")
+                << "</h2>";
+        outText << "<p>";
+        outText << "<img src=\""
+                << distImageFileName
+                 << "\" />";
+    }
 
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
@@ -10216,7 +10461,17 @@ void Graph::writePrestigePageRank(const QString fileName,
 
     prestigePageRank(dropIsolates);
 
-    prominenceDistribution(IndexType::PRP,m_reportsChartType);
+
+    QString distImageFileName ;
+
+    if ( m_reportsChartType != ChartType::None ) {
+
+        distImageFileName = QFileInfo(fileName).canonicalPath() +
+            QDir::separator() + QFileInfo(fileName).completeBaseName() + ".png";
+
+    }
+
+    prominenceDistribution(IndexType::PRP,m_reportsChartType,distImageFileName);
 
     VList::const_iterator it;
 
@@ -10391,6 +10646,17 @@ void Graph::writePrestigePageRank(const QString fileName,
             << variancePRP
             <<"<br/>";
     outText << "</p>";
+
+
+    if ( m_reportsChartType != ChartType::None ) {
+        outText << "<h2>";
+        outText << tr("PP DISTRIBUTION")
+                << "</h2>";
+        outText << "<p>";
+        outText << "<img src=\""
+                << distImageFileName
+                 << "\" />";
+    }
 
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
@@ -15537,7 +15803,16 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
 }
 
 
+/**
+ * @brief Sets the directory where reports are saved
+ * This is used when exporting prominence distribution images to be used in
+ * HTML reports.
+ * @param dir
+ */
+void Graph::setReportsDataDir(const QString &dir) {
+    m_reportsDataDir = dir;
 
+}
 /**
  * @brief Sets the precision (number of fraction digits) the app will use
  * when writing real numbers in reports.
