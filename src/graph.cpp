@@ -7257,14 +7257,16 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
         chart->addSeries(series);
         //m_chart->addSeries(series);
 
-        //chart->setTitle("sdfsdf");
+        chart->setTitle(series->name() + " distribution");
 //        m_chart->setTitle(series->name() + QString(" distribution"),
 //                          QFont("Times",7));
 
         //m_chart->toggleLegend(false);
+        chart->legend()->hide();
 
         chart->createDefaultAxes();
 
+        chart->axes(Qt::Vertical).first()->setMin(0);
 //        m_chart->createDefaultAxes();
 //        m_chart->axes(Qt::Vertical).first()->setMin(0);
 //        m_chart->axes(Qt::Horizontal).first()->setMin(0);
@@ -7286,7 +7288,7 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
 
         p.save( distImageFileName, "PNG");
 
-        //m_chart->hide();
+        m_chart->hide();
        // m_chart->resize(size);
     }
 
