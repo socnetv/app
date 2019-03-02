@@ -6487,7 +6487,7 @@ void Graph::writeCentralityInformation(const QString fileName,
 
     if ( m_reportsChartType != ChartType::None ) {
         outText << "<h2>";
-        outText << tr("IC DISTRIBUTION")
+        outText << tr("IC' DISTRIBUTION")
                 << "</h2>";
         outText << "<p>";
         outText << "<img src=\""
@@ -6746,7 +6746,7 @@ void Graph::writeCentralityEigenvector(const QString fileName,
 
     if ( m_reportsChartType != ChartType::None ) {
         outText << "<h2>";
-        outText << tr("EVC DISTRIBUTION")
+        outText << tr("EVC' DISTRIBUTION")
                 << "</h2>";
         outText << "<p>";
         outText << "<img src=\""
@@ -7192,10 +7192,12 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
     qDebug() << "Graph::prominenceDistributionSpline()";
 
     QLineSeries *series = new QLineSeries();
-        QLineSeries *series1 = new QLineSeries();
+    QLineSeries *series1 = new QLineSeries();
+
     QValueAxis *axisX = new QValueAxis ();
 
     series->setName (seriesName);
+    series1->setName (seriesName);
 
     priority_queue<PairVF, vector<PairVF>, PairVFCompare> seriesPQ;
 
@@ -7258,6 +7260,7 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
         //m_chart->addSeries(series);
 
         chart->setTitle(series->name() + " distribution");
+        chart->setTitleFont(QFont("Times",7));
 //        m_chart->setTitle(series->name() + QString(" distribution"),
 //                          QFont("Times",7));
 
@@ -7274,9 +7277,6 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
 //        m_chart->axes(Qt::Horizontal).first()->setLabelsAngle(-90);
 //        m_chart->axes(Qt::Horizontal).first()->setShadesVisible(false);
 
-     //   axisX->setLabelsAngle(-90);
-     //   axisX->setShadesVisible(false);
-        QSize size = m_chart->size();
         chart->resize(900,600);
         m_chart->resize(1000,700);
 
@@ -7289,7 +7289,8 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
         p.save( distImageFileName, "PNG");
 
         m_chart->hide();
-       // m_chart->resize(size);
+        m_chart->deleteLater();
+
     }
 
    qDebug() << "Graph::prominenceDistributionSpline() - emitting signal to update";
@@ -7670,7 +7671,7 @@ void Graph::writeCentralityDegree ( const QString fileName,
 
     if ( m_reportsChartType != ChartType::None ) {
         outText << "<h2>";
-        outText << tr("DC DISTRIBUTION")
+        outText << tr("DC' DISTRIBUTION")
                 << "</h2>";
         outText << "<p>";
         outText << "<img src=\""
@@ -7955,7 +7956,7 @@ void Graph::writeCentralityCloseness( const QString fileName,
 
     if ( m_reportsChartType != ChartType::None ) {
         outText << "<h2>";
-        outText << tr("CC DISTRIBUTION")
+        outText << tr("CC' DISTRIBUTION")
                 << "</h2>";
         outText << "<p>";
         outText << "<img src=\""
@@ -8589,7 +8590,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
 
     if ( m_reportsChartType != ChartType::None ) {
         outText << "<h2>";
-        outText << tr("BC DISTRIBUTION")
+        outText << tr("BC' DISTRIBUTION")
                 << "</h2>";
         outText << "<p>";
         outText << "<img src=\""
@@ -10009,7 +10010,7 @@ void Graph::writePrestigeProximity( const QString fileName,
 
     }
 
-    prominenceDistribution(IndexType::PP, m_reportsChartType, fileName);
+    prominenceDistribution(IndexType::PP, m_reportsChartType, distImageFileName);
 
     VList::const_iterator it;
 
@@ -10652,7 +10653,7 @@ void Graph::writePrestigePageRank(const QString fileName,
 
     if ( m_reportsChartType != ChartType::None ) {
         outText << "<h2>";
-        outText << tr("PP DISTRIBUTION")
+        outText << tr("PRP' DISTRIBUTION")
                 << "</h2>";
         outText << "<p>";
         outText << "<img src=\""

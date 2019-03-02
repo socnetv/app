@@ -87,7 +87,7 @@ QToolBar {
     border: 0 none;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     color: #666;
-    padding: 5px 10px;
+    padding: 0px 5px;
 }
 
 
@@ -162,20 +162,21 @@ QGroupBox {
     border: 0 none;
     border-top: 1px solid rgba(0, 0, 0, 0.1);
     margin:0;
-    margin-top: 17px; /* leave space at the top for the title */
-    padding:0;
+    margin-top: 18px; /* leave space at the top for the title */
+    padding:0px;
+    /* border: 1px solid #ddd; */
 }
 
 QGroupBox::title {
     subcontrol-position: top left;
     subcontrol-origin: margin;
     left: 0px;
-    padding: 0px 5px 0px 5px;
+    padding: 0px 0px 0px 0px;
     font-style:italic;
     color: #444;
     font-size: 9px;
     line-height: 9px;
-    margin: 0px;
+    margin: 2px 0 0 0;
 }
 
 QGroupBox#leftPanel {
@@ -256,7 +257,7 @@ QToolButton {
 QToolBar QToolButton {
     border:0 none;
     min-width: 20px;
-    padding: 10px;
+    padding: 5px 10px;
     border-radius:5px;
 }
 

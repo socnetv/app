@@ -4219,13 +4219,13 @@ void MainWindow::initPanels(){
     editGrid->addWidget(toolBoxEditEdgeSymmetrizeSelect,3,1);
 
     editGrid->setSpacing(5);
-    editGrid->setContentsMargins(15, 5, 15, 5);
+    editGrid->setContentsMargins(5, 5, 5, 5);
 
     //create a groupbox "Network" - Inside, display the grid layout of widgets
     QGroupBox *editGroupBox= new QGroupBox(tr("Network"));
     editGroupBox->setLayout(editGrid);
     editGroupBox->setMaximumWidth(255);
-    editGroupBox->setMinimumHeight(100);
+    editGroupBox->setMinimumHeight(130);
 
     //create widgets for the "Analysis" box
     QLabel *toolBoxAnalysisMatricesSelectLabel = new QLabel;
@@ -4485,12 +4485,12 @@ void MainWindow::initPanels(){
     analysisGrid->addWidget(toolBoxAnalysisStrEquivalenceSelect, 4,1);
 
     analysisGrid->setSpacing(5);
-    analysisGrid->setContentsMargins(15, 5, 15, 5);
+    analysisGrid->setContentsMargins(5, 5, 5, 5);
 
 
     //create a box and set the above layout inside
     QGroupBox *analysisBox= new QGroupBox(tr("Analyze"));
-    analysisBox->setMinimumHeight(170);
+    analysisBox->setMinimumHeight(180);
     analysisBox->setMaximumWidth(255);
     analysisBox->setLayout (analysisGrid );
 
@@ -4498,7 +4498,7 @@ void MainWindow::initPanels(){
     //create widgets for the "Visualization By Index" box
     QLabel *toolBoxLayoutByIndexSelectLabel = new QLabel;
     toolBoxLayoutByIndexSelectLabel->setText(tr("Index:"));
-    toolBoxLayoutByIndexSelectLabel->setMinimumWidth(90);
+    toolBoxLayoutByIndexSelectLabel->setMinimumWidth(70);
     toolBoxLayoutByIndexSelect = new QComboBox;
     toolBoxLayoutByIndexSelect->setStatusTip(tr("Select a prominence-based layout model"));
     helpMessage = tr("<p><b>Visualize by prominence index</b></p>"
@@ -4570,12 +4570,12 @@ void MainWindow::initPanels(){
 
     toolBoxLayoutByIndexSelect->addItems(layoutCommandsList);
     toolBoxLayoutByIndexSelect->setMinimumHeight(20);
-    toolBoxLayoutByIndexSelect->setMinimumWidth(120);
+    toolBoxLayoutByIndexSelect->setMinimumWidth(100);
 
 
     QLabel *toolBoxLayoutByIndexTypeLabel = new QLabel;
     toolBoxLayoutByIndexTypeLabel->setText(tr("Type:"));
-    toolBoxLayoutByIndexTypeLabel->setMinimumWidth(90);
+    toolBoxLayoutByIndexTypeLabel->setMinimumWidth(70);
     toolBoxLayoutByIndexTypeSelect = new QComboBox;
     toolBoxLayoutByIndexTypeSelect->setStatusTip(
                 tr("Select layout type for the selected model"));
@@ -4590,7 +4590,7 @@ void MainWindow::initPanels(){
     layoutTypes << "Radial" << "On Levels" << "Node Size"<< "Node Color";
     toolBoxLayoutByIndexTypeSelect->addItems(layoutTypes);
     toolBoxLayoutByIndexTypeSelect->setMinimumHeight(20);
-    toolBoxLayoutByIndexTypeSelect->setMinimumWidth(120);
+    toolBoxLayoutByIndexTypeSelect->setMinimumWidth(100);
 
     toolBoxLayoutByIndexApplyButton = new QPushButton(tr("Apply"));
     toolBoxLayoutByIndexApplyButton->setObjectName ("toolBoxLayoutByIndexApplyButton");
@@ -4607,7 +4607,7 @@ void MainWindow::initPanels(){
     layoutByIndexGrid->addWidget(toolBoxLayoutByIndexTypeSelect, 1,1);
     layoutByIndexGrid->addWidget(toolBoxLayoutByIndexApplyButton, 2,1);
     layoutByIndexGrid->setSpacing(5);
-    layoutByIndexGrid->setContentsMargins(15, 5, 15, 5);
+    layoutByIndexGrid->setContentsMargins(5, 5, 5, 5);
 
     //create a box and set the above layout inside
     QGroupBox *layoutByIndexBox= new QGroupBox(tr("By Prominence Index"));
@@ -4627,7 +4627,7 @@ void MainWindow::initPanels(){
     // create widgets for the "Force-Directed Models" Box
     QLabel *toolBoxLayoutForceDirectedSelectLabel = new QLabel;
     toolBoxLayoutForceDirectedSelectLabel->setText(tr("Model:"));
-    toolBoxLayoutForceDirectedSelectLabel->setMinimumWidth(90);
+    toolBoxLayoutForceDirectedSelectLabel->setMinimumWidth(70);
     toolBoxLayoutForceDirectedSelect = new QComboBox;
     QStringList modelsList;
     modelsList << tr("None")
@@ -4638,7 +4638,7 @@ void MainWindow::initPanels(){
 
     toolBoxLayoutForceDirectedSelect->addItems(modelsList);
     toolBoxLayoutForceDirectedSelect->setMinimumHeight(20);
-    toolBoxLayoutForceDirectedSelect->setMinimumWidth(120);
+    toolBoxLayoutForceDirectedSelect->setMinimumWidth(100);
     toolBoxLayoutForceDirectedSelect->setStatusTip (
                 tr("Select a Force-Directed layout model. "));
     helpMessage = tr("<p><b>Visualize by a Force-Directed Placement layout model.</b></p> "
@@ -4683,25 +4683,26 @@ void MainWindow::initPanels(){
     layoutForceDirectedGrid->addWidget(toolBoxLayoutForceDirectedSelect, 0,1);
     layoutForceDirectedGrid->addWidget(toolBoxLayoutForceDirectedApplyButton, 1,1);
     layoutForceDirectedGrid->setSpacing(5);
-    layoutForceDirectedGrid->setContentsMargins(15, 5, 15, 5);
+    layoutForceDirectedGrid->setContentsMargins(5, 5, 5, 5);
 
     //create a box for dynamic layout options
     QGroupBox *layoutDynamicBox= new QGroupBox(tr("By Force-Directed Model"));
     layoutDynamicBox->setMinimumHeight(90);
     layoutDynamicBox->setMaximumWidth(255);
     layoutDynamicBox->setLayout (layoutForceDirectedGrid );
-
+    layoutDynamicBox->setContentsMargins(5, 5, 5, 5);
 
 
     //Parent box with vertical layout for all layout/visualization boxes
     QVBoxLayout *visualizationBoxLayout = new QVBoxLayout;
     visualizationBoxLayout->addWidget(layoutByIndexBox);
     visualizationBoxLayout->addWidget(layoutDynamicBox);
-
+    visualizationBoxLayout->setContentsMargins(5,5,5,5);
 
     QGroupBox *visualizationBox= new QGroupBox(tr("Layout"));
     visualizationBox->setMaximumWidth(255);
     visualizationBox->setLayout (visualizationBoxLayout );
+    visualizationBox->setContentsMargins(5,5,5,5);
 
     //Parent box with vertical layout for all boxes of Controls
     QGridLayout *controlGrid = new QGridLayout;
@@ -4709,7 +4710,7 @@ void MainWindow::initPanels(){
     controlGrid->addWidget(analysisBox, 1, 0);
     controlGrid->addWidget(visualizationBox, 2, 0);
     controlGrid->setRowStretch(3,1);   //fix stretch
-
+    controlGrid->setContentsMargins(5, 5, 5, 5);
     //create a box with title
     leftPanel = new QGroupBox(tr("Control Panel"));
     leftPanel->setMinimumWidth(220);
@@ -5190,20 +5191,21 @@ void MainWindow::initWindowLayout() {
         slotOptionsWindowLeftPanelVisibility(false);
     }
 
-    qDebug () << "MW::initWindowLayout - resizing to 1200x750";
+    qDebug () << "MW::initWindowLayout - minimum size to 1200x700";
     //resize(1200,750);
 
 
 #ifdef Q_OS_LINUX
-    setMinimumSize(1200,750);
+    setMinimumSize(1200,700);
 #elif defined(Q_OS_MACOS)
-    setMinimumSize(1200,750);
+    setMinimumSize(1200,700);
 #elif defined(Q_OS_WIN)
-    setMinimumSize(1200,800);
+    setMinimumSize(1200,700);
 #else
-    setMinimumSize(1200,750);
-    showMaximized();
+    setMinimumSize(1200,700);
 #endif
+    qDebug () << "MW::initWindowLayout - show maximized";
+    showMaximized();
 
     qDebug () << "MW::initWindowLayout() - Finished";
 
