@@ -64,9 +64,11 @@ public:
     QList<QAbstractAxis*> axes(Qt::Orientations orientation = Qt::Horizontal|Qt::Vertical,
                                QAbstractSeries *series = Q_NULLPTR) const;
     void removeAllAxes();
+
+    void addAxis(QAbstractAxis *axis, Qt::Alignment alignment);
+
     void setAxisX(QAbstractAxis *axis, QAbstractSeries *series = Q_NULLPTR);
     void setAxisY(QAbstractAxis *axis, QAbstractSeries *series = Q_NULLPTR);
-    void addAxis(QAbstractAxis *axis, Qt::Alignment alignment);
 
     void setAxisXRange(const QVariant &min, const QVariant &max);
     void setAxisXMin(const QVariant &min);
@@ -74,6 +76,8 @@ public:
     void setAxisYMin(const QVariant &min);
 
     void setAxesThemeDefault ();
+
+    void setAxisXLabelsAngle (const int &angle);
 
     void setAxisXLabelFont(const QFont &font=QFont("Helvetica", 5 ));
     void setAxisYLabelFont(const QFont &font=QFont("Helvetica", 6 ));

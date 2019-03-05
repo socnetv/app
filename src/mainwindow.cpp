@@ -13135,10 +13135,13 @@ void MainWindow::slotAnalyzeCentralityEccentricity(){
 void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *series,
                                                               QAbstractAxis *axisX,
                                                               const qreal &min,
-                                                              const qreal &max) {
+                                                              const qreal &max,
+                                                              QAbstractAxis *axisY,
+                                                              const qreal &minF,
+                                                              const qreal &maxF) {
 
 
-    qDebug() << "slotAnalyzeProminenceDistributionChartUpdate()";
+    qDebug() << "MW::slotAnalyzeProminenceDistributionChartUpdate()";
 
     if (series == Q_NULLPTR) {
         chart->resetToTrivial();
@@ -13171,7 +13174,7 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
     chart->removeAllSeries();
 
     // Remove all axes
-    chart->removeAllAxes();
+    //chart->removeAllAxes();
 
     // Add series to chart
     chart->addSeries(series);
@@ -13200,23 +13203,52 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
 
     chart->setWhatsThis( chartHelpMsg );
 
-    // NOT USED: Attach axes to the Chart.
-     chart->createDefaultAxes();
+    bool useDefaultAxes = true;
 
-     chart->setAxisYMin(0);
-     chart->setAxisXMin(0);
+    if ( ! useDefaultAxes ) {
+        if ( axisX != Q_NULLPTR ) {
+            qDebug() << "MW::slotAnalyzeProminenceDistributionChartUpdate() - "
+                        "axisX not null. Setting it to chart";
+            chart->setAxisX(axisX, series);
+            chart->setAxisXLabelFont();
+            chart->setAxisXLinePen();
+            chart->setAxisXGridLinePen();
+        }
+        if ( axisY != Q_NULLPTR ){
+            qDebug() << "MW::slotAnalyzeProminenceDistributionChartUpdate() - "
+                        "axisY not null. Setting it to chart";
+            chart->setAxisY(axisY, series);
+            chart->setAxisYLabelFont();
+            chart->setAxisYLinePen();
+            chart->setAxisYGridLinePen();
+        }
+    }
 
-//    // Instead of calling createDefaultAxes()
-//    // we use our own axes
-//    axisX->setLabelsAngle(-90);
-//    axisX->setShadesVisible(false);
-//    chart->setAxisX(axisX, series);
 
-//    QValueAxis *axisY = new QValueAxis;
-//    chart->setAxisY(axisY, series);
+     if ( ( axisX == Q_NULLPTR && axisY == Q_NULLPTR ) || useDefaultAxes ){
 
-    // Apply our theme to axes:
-    chart->setAxesThemeDefault();
+         qDebug() << "MW::slotAnalyzeProminenceDistributionChartUpdate() - "
+                     "axisX and axisY null. Calling createDefaultAxes()";
+         chart->createDefaultAxes();
+
+         qDebug() << "MW::slotAnalyzeProminenceDistributionChartUpdate() - setting axis min";
+         chart->setAxisYMin(0);
+         chart->setAxisXMin(0);
+
+
+         // Apply our theme to axes:
+         chart->setAxesThemeDefault();
+
+         chart->setAxisXLabelsAngle(-90);
+         //    axisX->setShadesVisible(false);
+
+     }
+
+
+
+
+
+
 
 
 }

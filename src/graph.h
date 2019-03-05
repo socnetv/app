@@ -314,7 +314,10 @@ signals:
     void signalPromininenceDistributionChartUpdate(QAbstractSeries *series,
                                                    QAbstractAxis *axisX=Q_NULLPTR,
                                                    const qreal &min=0,
-                                                   const qreal &max=0);
+                                                   const qreal &max=0,
+                                                   QAbstractAxis *axisY=Q_NULLPTR,
+                                                   const qreal &minF=0,
+                                                   const qreal &maxF=0);
 
     /** Signals to GraphicsWidget */
     void signalDrawNode( const QPointF &p,

@@ -88,16 +88,17 @@ void Chart::addSeries(QAbstractSeries *series) {
     qDebug() << "Chart::addSeries()" ;
   //  m_series = series;
     if (series) {
-        qDebug() << "Chart::addSeries() - series name"<< series->name() ;
-     m_chart->addSeries(series);
+        m_chart->addSeries(series);
+        qDebug() << "Chart::addSeries() - added series with name"<< series->name() ;
     }
     else {
-        // default dummy series with one point
+        // default: a trivial series with one point
         // We need this for resetToTrivial()
         // to be able to call createDefaultAxes()
         m_series = new QSplineSeries();
         *m_series << QPointF(0,0);
         m_chart->addSeries(m_series);
+        qDebug() << "Chart::addSeries() - trivial series with one point created.";
     }
 
 }
@@ -145,13 +146,11 @@ QList<QAbstractAxis *> Chart::axes(Qt::Orientations orientation,
  * @brief Removes all previously attached X,Y axes from the QChart
  */
 void Chart::removeAllAxes(){
-//    m_chart->removeAxis( m_chart->axisX() );
-//    m_chart->removeAxis( m_chart->axisY() );
 
     qDebug() << "Chart::removeAllAxes()";
-    qDebug() << "Chart::removeAllAxes() - m_chart axes: "<< m_chart->axes().size();
 
-    if ( m_chart->axes().size()>0)  {
+    if ( ! m_chart->axes().isEmpty() )  {
+        qDebug() << "Chart::removeAllAxes() - m_chart axes: "<< m_chart->axes().size();
         foreach ( QAbstractAxis *axe, m_chart->axes() ) {
             m_chart->removeAxis(axe);
         }
@@ -169,13 +168,10 @@ void Chart::removeAllAxes(){
  * @param series
  */
 void Chart::setAxisX(QAbstractAxis *axis, QAbstractSeries *series) {
-    qDebug()<<"Chart::setAxisX()";
+    qDebug()<<"Chart::setAxisX() - Adding axis to chart";
+    addAxis(axis, Qt::AlignBottom);
+    qDebug()<<"Chart::setAxisX() - Attaching axis to series " << series->name();
     series->attachAxis(axis);
-    m_chart->addAxis(axis, Qt::AlignBottom);
-
-    // THIS IS QT_DEPRECATED
-    // m_chart->setAxisX(axis, series);
-    // DO NOT USE THIS
 }
 
 
@@ -187,10 +183,11 @@ void Chart::setAxisX(QAbstractAxis *axis, QAbstractSeries *series) {
  * @param series
  */
 void Chart::setAxisY(QAbstractAxis *axis, QAbstractSeries *series) {
-    qDebug()<<"Chart::setAxisY()";
-
+    qDebug()<<"Chart::setAxisY() - Adding axis to chart";
+    addAxis(axis, Qt::AlignLeft);
+    qDebug()<<"Chart::setAxisY() - Attaching axis to series " << series->name();
     series->attachAxis(axis);
-    m_chart->addAxis(axis, Qt::AlignLeft);
+
 
     // THIS IS QT_DEPRECATED
     // DO NOT USE THIS
@@ -206,6 +203,7 @@ void Chart::setAxisY(QAbstractAxis *axis, QAbstractSeries *series) {
  * @param alignment
  */
 void Chart::addAxis(QAbstractAxis *axis, Qt::Alignment alignment) {
+    qDebug()<< "Chart::addAxis()";
     m_chart->addAxis(axis,alignment);
     // We could also check if m_series and do:
     // barSeries->attachAxis(axisY);
@@ -255,6 +253,11 @@ void Chart::setAxisYMin(const QVariant &min){
 }
 
 
+
+void Chart::setAxisXLabelsAngle (const int &angle){
+    m_chart->axes(Qt::Horizontal).first()->setLabelsAngle(angle);
+
+}
 
 /**
  * @brief Set the label font of the horizontal axis
@@ -411,6 +414,7 @@ void Chart::setTitle(const QString &title, const QFont &font){
  * WARNING: Axes must be already attached to m_chart
  */
 void Chart::setAxesThemeDefault() {
+    qDebug()<< "Chart::setAxesThemeDefault()";
     setAxisXLabelFont();
     setAxisXLinePen();
     setAxisXGridLinePen();

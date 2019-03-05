@@ -7315,7 +7315,7 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
     }
 
    qDebug() << "Graph::prominenceDistributionSpline() - emitting signal to update";
-   emit signalPromininenceDistributionChartUpdate(series, axisX, min, max);
+   emit signalPromininenceDistributionChartUpdate(series, axisX, min, max, axisY, minF, maxF);
 }
 
 
@@ -7454,7 +7454,7 @@ void Graph::prominenceDistributionArea(const H_StrToInt &discreteClasses,
 
     }
 
-    emit signalPromininenceDistributionChartUpdate(series, axisX, min, max);
+    emit signalPromininenceDistributionChartUpdate(series, axisX, min, max, axisY, minF, maxF);
 }
 
 
@@ -7607,7 +7607,9 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
 
     }
 
-    emit signalPromininenceDistributionChartUpdate(series, axisX, min.toDouble(), max.toDouble());
+    emit signalPromininenceDistributionChartUpdate(series,
+                                                   axisX, min.toDouble(), max.toDouble(),
+                                                   axisY, minF, maxF);
 }
 
 

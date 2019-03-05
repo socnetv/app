@@ -439,7 +439,10 @@ public slots:
     void slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *series,
                                                       QAbstractAxis *axisX,
                                                       const qreal &min,
-                                                      const qreal &max
+                                                      const qreal &max,
+                                                      QAbstractAxis *axisY=Q_NULLPTR,
+                                                      const qreal &minF=0,
+                                                      const qreal &maxF=0
                                                        );
 
     void slotAnalyzeCommunitiesCliqueCensus();
