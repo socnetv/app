@@ -13123,6 +13123,15 @@ void MainWindow::slotAnalyzeCentralityEccentricity(){
 
 
 
+/**
+ * @brief Updates the distribution chart
+ * Called from Graph::signalPromininenceDistributionChartUpdate after computing
+ * the prominence index distribution.
+ * @param series
+ * @param axisX
+ * @param min
+ * @param max
+ */
 void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *series,
                                                               QAbstractAxis *axisX,
                                                               const qreal &min,
@@ -13168,7 +13177,7 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
     chart->addSeries(series);
 
     // Set Chart title and remove legend
-    chart->setTitle(series->name() + QString(" distribution"), QFont("Times",7));
+    chart->setTitle(series->name() + QString(" distribution"), QFont("Times",9));
 
     chart->toggleLegend(false);
 
@@ -13193,6 +13202,9 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
 
     // NOT USED: Attach axes to the Chart.
      chart->createDefaultAxes();
+
+     chart->setAxisYMin(0);
+     chart->setAxisXMin(0);
 
 //    // Instead of calling createDefaultAxes()
 //    // we use our own axes

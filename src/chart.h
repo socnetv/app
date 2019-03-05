@@ -68,8 +68,10 @@ public:
     void setAxisY(QAbstractAxis *axis, QAbstractSeries *series = Q_NULLPTR);
     void addAxis(QAbstractAxis *axis, Qt::Alignment alignment);
 
-    void setAxisXRange(const int &from, const int &to);
-    void setAxisYRange(const int &from, const int &to);
+    void setAxisXRange(const QVariant &min, const QVariant &max);
+    void setAxisXMin(const QVariant &min);
+    void setAxisYRange(const QVariant &min, const QVariant &max);
+    void setAxisYMin(const QVariant &min);
 
     void setAxesThemeDefault ();
 

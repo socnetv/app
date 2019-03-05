@@ -7195,6 +7195,7 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
     QLineSeries *series1 = new QLineSeries();
 
     QValueAxis *axisX = new QValueAxis ();
+    QValueAxis *axisY = new QValueAxis ();
 
     series->setName (seriesName);
     series1->setName (seriesName);
@@ -7215,7 +7216,10 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
      qreal min = 0;
      qreal max = 0;
      qreal value = 0;
+
      qreal frequency = 0;
+     qreal minF = RAND_MAX;
+     qreal maxF = 0;
 
     while (!seriesPQ.empty()) {
 
@@ -7227,6 +7231,14 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
 
         series->append( value,  frequency );
         series1->append( value,  frequency );
+
+        if ( frequency < minF ) {
+            minF = frequency;
+        }
+        if ( frequency > maxF ) {
+            maxF = frequency;
+        }
+
         if ( initialSize == seriesPQ.size() ) {
             min = value;
         }
@@ -7238,14 +7250,19 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
         seriesPQ.pop();
     }
 
-    axisX->setMin(0);
+    axisX->setMin(min);
     axisX->setMax(max);
+
+    axisY->setMin(minF);
+    axisY->setMax(maxF);
+
 
     if (!distImageFileName.isEmpty() ) {
         qDebug() << "Graph::prominenceDistributionSpline() - "
                  << "saving distribution image to" << distImageFileName ;
         QChart *chart = new QChart();
-        QChartView *m_chart = new QChartView( chart );
+        QChartView *chartView = new QChartView( chart );
+
         //Chart *m_chart = new Chart(Q_NULLPTR);
 
         // Clear chart from old series.
@@ -7254,12 +7271,12 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
         // Remove all axes
         //m_chart->removeAllAxes();
 
-        m_chart->show();
+        chartView->show();
 
-        chart->addSeries(series);
+        chart->addSeries(series1);
         //m_chart->addSeries(series);
 
-        chart->setTitle(series->name() + " distribution");
+        chart->setTitle(series1->name() + " distribution");
         chart->setTitleFont(QFont("Times",7));
 //        m_chart->setTitle(series->name() + QString(" distribution"),
 //                          QFont("Times",7));
@@ -7267,34 +7284,38 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
         //m_chart->toggleLegend(false);
         chart->legend()->hide();
 
-        chart->createDefaultAxes();
+        //chart->createDefaultAxes();
+
+        chart->addAxis(axisX, Qt::AlignBottom);
+        series1->attachAxis(axisX);
+        chart->addAxis(axisY, Qt::AlignLeft);
+        series1->attachAxis(axisY);
 
         chart->axes(Qt::Vertical).first()->setMin(0);
+        chart->axes(Qt::Horizontal).first()->setMin(0);
+
 //        m_chart->createDefaultAxes();
-//        m_chart->axes(Qt::Vertical).first()->setMin(0);
-//        m_chart->axes(Qt::Horizontal).first()->setMin(0);
-//        m_chart->axes(Qt::Horizontal).first()->setMax(max);
 //        m_chart->axes(Qt::Horizontal).first()->setLabelsAngle(-90);
 //        m_chart->axes(Qt::Horizontal).first()->setShadesVisible(false);
 
         chart->resize(900,600);
-        m_chart->resize(1000,700);
+        chartView->resize(1000,700);
 
         // Apply our theme to axes:
         //m_chart->setAxesThemeDefault();
 
         //QPixmap p = m_chart->getPixmap();
-        QPixmap p = m_chart->grab();
+        QPixmap p = chartView->grab();
 
         p.save( distImageFileName, "PNG");
 
-        m_chart->hide();
-        m_chart->deleteLater();
+        chartView->hide();
+        chartView->deleteLater();
 
     }
 
    qDebug() << "Graph::prominenceDistributionSpline() - emitting signal to update";
-   emit signalPromininenceDistributionChartUpdate(series1, axisX, min, max);
+   emit signalPromininenceDistributionChartUpdate(series, axisX, min, max);
 }
 
 
@@ -7313,10 +7334,15 @@ void Graph::prominenceDistributionArea(const H_StrToInt &discreteClasses,
     qDebug() << "Graph::prominenceDistributionArea()";
 
     QAreaSeries *series = new QAreaSeries ();
+    QAreaSeries *series1 = new QAreaSeries ();
+
     QLineSeries *upperSeries = new QLineSeries();
-    QValueAxis *axisX = new QValueAxis ();
+
+    QValueAxis *axisX = new QValueAxis();
+    QValueAxis *axisY = new QValueAxis();
 
     series->setName (name);
+    series1->setName (name);
 
     priority_queue<PairVF, vector<PairVF>, PairVFCompare> seriesPQ;
 
@@ -7334,7 +7360,10 @@ void Graph::prominenceDistributionArea(const H_StrToInt &discreteClasses,
      qreal min = 0;
      qreal max = 0;
      qreal value = 0;
+
      qreal frequency = 0;
+     qreal minF = RAND_MAX;
+     qreal maxF = 0;
 
     while (!seriesPQ.empty()) {
 
@@ -7345,6 +7374,13 @@ void Graph::prominenceDistributionArea(const H_StrToInt &discreteClasses,
         frequency = seriesPQ.top().frequency;
 
         upperSeries->append( value,  frequency );
+
+        if ( frequency < minF ) {
+            minF = frequency;
+        }
+        if ( frequency > maxF ) {
+            maxF = frequency;
+        }
 
         if ( initialSize == seriesPQ.size() ) {
             min = value;
@@ -7360,9 +7396,61 @@ void Graph::prominenceDistributionArea(const H_StrToInt &discreteClasses,
     axisX->setMin(min);
     axisX->setMax(max);
 
+    axisY->setMin(minF);
+    axisY->setMax(maxF);
+
     series->setUpperSeries(upperSeries);
+    series1->setUpperSeries(upperSeries);
 
     if (!distImageFileName.isEmpty()) {
+
+        qDebug() << "Graph::prominenceDistributionArea() - "
+                 << "saving distribution image to" << distImageFileName ;
+
+        QChart *chart = new QChart();
+        QChartView *chartView = new QChartView( chart );
+
+        //Chart *m_chart = new Chart(Q_NULLPTR);
+
+        chartView->show();
+
+        chart->addSeries(series1);
+        //m_chart->addSeries(series);
+
+        chart->setTitle(series->name() + " distribution");
+        chart->setTitleFont(QFont("Times",7));
+//        m_chart->setTitle(series->name() + QString(" distribution"),
+//                          QFont("Times",7));
+
+        //m_chart->toggleLegend(false);
+        chart->legend()->hide();
+
+        // chart->createDefaultAxes();
+
+        chart->addAxis(axisX, Qt::AlignBottom);
+        series1->attachAxis(axisX);
+        chart->addAxis(axisY, Qt::AlignLeft);
+        series1->attachAxis(axisY);
+
+        chart->axes(Qt::Vertical).first()->setMin(0);
+        chart->axes(Qt::Horizontal).first()->setMin(0);
+
+//        m_chart->axes(Qt::Horizontal).first()->setLabelsAngle(-90);
+//        m_chart->axes(Qt::Horizontal).first()->setShadesVisible(false);
+
+        chart->resize(900,600);
+        chartView->resize(1000,700);
+
+        // Apply our theme to axes:
+        //m_chart->setAxesThemeDefault();
+
+        //QPixmap p = m_chart->getPixmap();
+        QPixmap p = chartView->grab();
+
+        p.save( distImageFileName, "PNG");
+
+        chartView->hide();
+        chartView->deleteLater();
 
     }
 
@@ -7387,9 +7475,14 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
     qDebug() << "Graph::prominenceDistributionBars() - Creating chart type: bars";
 
     QBarSeries *series = new QBarSeries();
+    QBarSeries *series1 = new QBarSeries();
+
     series->setName (name);
+    series1->setName (name);
 
     QBarSet *barSet = new QBarSet("");
+
+    QValueAxis *axisY = new QValueAxis;
 
     QBarCategoryAxis *axisX = new QBarCategoryAxis();
 
@@ -7406,10 +7499,14 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
     }
 
     unsigned int initialSize = seriesPQ.size();
+
     QString min = QString::null;
     QString max = QString::null;
     QString value = QString::null;
+
     qreal frequency = 0;
+    qreal minF = RAND_MAX;
+    qreal maxF = 0;
 
     while (!seriesPQ.empty()) {
 
@@ -7423,6 +7520,13 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
         axisX->append( value );
 
         barSet->append( frequency );
+
+        if ( frequency < minF ) {
+            minF = frequency;
+        }
+        if ( frequency > maxF ) {
+            maxF = frequency;
+        }
 
         if ( initialSize == seriesPQ.size() ) {
             min = value;
@@ -7438,11 +7542,68 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
     axisX->setMin(min);
     axisX->setMax(max);
 
+    axisY->setMin(minF);
+    axisY->setMax(maxF);
+
     qDebug() << "axisX min: " << axisX->min() << " max: " << axisX->max();
 
     series->append( barSet );
+    series->attachAxis(axisX);
+    series->attachAxis(axisY);
 
     if (!distImageFileName.isEmpty()) {
+
+        qDebug() << "Graph::prominenceDistributionBars() - "
+                 << "saving distribution image to" << distImageFileName ;
+
+        series1->append( barSet );
+
+        QChart *chart = new QChart();
+        QChartView *chartView = new QChartView( chart );
+
+        //Chart *m_chart = new Chart(Q_NULLPTR);
+
+        chartView->show();
+
+        chart->addSeries(series1);
+
+        //m_chart->addSeries(series);
+
+        chart->setTitle(series->name() + " distribution");
+        chart->setTitleFont(QFont("Times",7));
+//        m_chart->setTitle(series->name() + QString(" distribution"),
+//                          QFont("Times",7));
+
+        //m_chart->toggleLegend(false);
+        chart->legend()->hide();
+
+//        chart->createDefaultAxes();
+
+        chart->addAxis(axisX, Qt::AlignBottom);
+        series1->attachAxis(axisX);
+        chart->addAxis(axisY, Qt::AlignLeft);
+        series1->attachAxis(axisY);
+
+        chart->axes(Qt::Vertical).first()->setMin(0);
+        chart->axes(Qt::Horizontal).first()->setMin(0);
+
+//        m_chart->axes(Qt::Horizontal).first()->setLabelsAngle(-90);
+//        m_chart->axes(Qt::Horizontal).first()->setShadesVisible(false);
+
+        chart->resize(900,600);
+        chartView->resize(1000,700);
+
+        // Apply our theme to axes:
+        //m_chart->setAxesThemeDefault();
+
+        //QPixmap p = m_chart->getPixmap();
+        QPixmap p = chartView->grab();
+
+        p.save( distImageFileName, "PNG");
+
+        chartView->hide();
+        chartView->deleteLater();
+
 
     }
 

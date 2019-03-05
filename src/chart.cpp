@@ -165,14 +165,17 @@ void Chart::removeAllAxes(){
  * @brief Adds the axis axis to the chart and attaches it to the series series
  * as a bottom-aligned horizontal axis.
  * The chart takes ownership of both the axis  and the series.
- * Any horizontal axes previously attached to the series are deleted.
- * @param axis
+  * @param axis
  * @param series
  */
 void Chart::setAxisX(QAbstractAxis *axis, QAbstractSeries *series) {
     qDebug()<<"Chart::setAxisX()";
-    m_chart->setAxisX(axis, series);
+    series->attachAxis(axis);
+    m_chart->addAxis(axis, Qt::AlignBottom);
 
+    // THIS IS QT_DEPRECATED
+    // m_chart->setAxisX(axis, series);
+    // DO NOT USE THIS
 }
 
 
@@ -180,13 +183,19 @@ void Chart::setAxisX(QAbstractAxis *axis, QAbstractSeries *series) {
  * @brief Adds the axis axis to the chart and attaches it to the series series
  * as a left-aligned horizontal axis.
  * The chart takes ownership of both the axis  and the series.
- * Any vertical axes previously attached to the series are deleted.
- * @param axis
+  * @param axis
  * @param series
  */
 void Chart::setAxisY(QAbstractAxis *axis, QAbstractSeries *series) {
     qDebug()<<"Chart::setAxisY()";
-    m_chart->setAxisY(axis, series);
+
+    series->attachAxis(axis);
+    m_chart->addAxis(axis, Qt::AlignLeft);
+
+    // THIS IS QT_DEPRECATED
+    // DO NOT USE THIS
+    // m_chart->setAxisY(axis, series);
+
 }
 
 
@@ -209,9 +218,20 @@ void Chart::addAxis(QAbstractAxis *axis, Qt::Alignment alignment) {
  * @param from
  * @param to
  */
-void Chart::setAxisXRange(const int &from, const int &to){
-    m_chart->axes(Qt::Horizontal).first()->setRange(from, to);
+void Chart::setAxisXRange(const QVariant &min, const QVariant &max){
+    m_chart->axes(Qt::Horizontal).first()->setRange(min, max);
 }
+
+
+/**
+ * @brief Sets the minimum value shown on the horizontal axis.
+ * @param from
+ * @param to
+ */
+void Chart::setAxisXMin(const QVariant &min){
+    m_chart->axes(Qt::Horizontal).first()->setMin(min);
+}
+
 
 
 /**
@@ -219,8 +239,19 @@ void Chart::setAxisXRange(const int &from, const int &to){
  * @param from
  * @param to
  */
-void Chart::setAxisYRange(const int &from, const int &to){
-    m_chart->axes(Qt::Vertical).first()->setRange(from, to);
+void Chart::setAxisYRange(const QVariant &min, const QVariant &max){
+    m_chart->axes(Qt::Vertical).first()->setRange(min, max);
+}
+
+
+
+/**
+ * @brief Sets the minimum value shown on the vertical axis.
+ * @param from
+ * @param to
+ */
+void Chart::setAxisYMin(const QVariant &min){
+    m_chart->axes(Qt::Vertical).first()->setMin(min);
 }
 
 
