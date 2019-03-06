@@ -79,8 +79,8 @@ public:
 
     void setAxisXLabelsAngle (const int &angle);
 
-    void setAxisXLabelFont(const QFont &font=QFont("Helvetica", 5 ));
-    void setAxisYLabelFont(const QFont &font=QFont("Helvetica", 6 ));
+    void setAxisXLabelFont(const QFont &font=QFont("Helvetica", 4 ));
+    void setAxisYLabelFont(const QFont &font=QFont("Helvetica", 4 ));
 
     void setAxisXLinePen(const QPen &pen = QPen(QColor("#d0d0d0"), 1,Qt::SolidLine) );
     void setAxisYLinePen(const QPen &pen = QPen(QColor("#d0d0d0"), 1,Qt::SolidLine) );

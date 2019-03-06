@@ -153,11 +153,6 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     initToolBar();      //build the toolbar
 
-    // Create our reports chart
-    //reportsChart = new Chart(this);
-//    reportsChart->hide();
-
-
     initPanels();      //build the toolbox
 
     initWindowLayout();   //init the application window, set layout etc
@@ -278,7 +273,7 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
     delete activeGraph;
     qDebug() << "MW::closeEvent() - Deleting Scene";
     delete scene;
-//    delete chart;
+//    delete miniChart;
 
     qDebug() << "MW::closeEvent() - Clearing and deleting text editors...";
     foreach ( TextEditor *ed, m_textEditors) {
@@ -5012,19 +5007,19 @@ void MainWindow::initPanels(){
     propertiesGrid->addWidget(rightPanelClickedEdgeReciprocalWeightLabel , 19,0);
     propertiesGrid->addWidget(rightPanelClickedEdgeReciprocalWeightLCD ,19,1);
 
-    // Create our mini chart
-    chart = new Chart(this);
-    int chartHeight = 200;
-    chart->setThemeSmallWidget(chartHeight,chartHeight);
+    // Create our mini miniChart
+    miniChart = new Chart(this);
+    int chartHeight = 250;
+    miniChart->setThemeSmallWidget(chartHeight,chartHeight);
 
-    // Nothing else to do with chart.
+    // Nothing else to do with miniChart.
     // MW::initApp() will populate it with a dummy point.
 
-    propertiesGrid->addWidget(chart,20,0,1,2);
-    propertiesGrid->setRowMinimumHeight(20,chartHeight);
+    propertiesGrid->addWidget(miniChart,20,0,1,2);
+    propertiesGrid->setRowMinimumHeight(20,chartHeight-50);
     propertiesGrid->setRowStretch(20,0);
 
-    // We need some margin form the edge of the chart to the messageLabel below,
+    // We need some margin form the edge of the miniChart to the messageLabel below,
     // but setRowStretch is not enough. So, we add a spacer!
     QSpacerItem *spacer = new QSpacerItem (100, 10,
                                            QSizePolicy::MinimumExpanding,
@@ -5481,9 +5476,6 @@ void MainWindow::initSignalSlots() {
     connect ( activeGraph, &Graph::signalPromininenceDistributionChartUpdate,
               this, &MainWindow::slotAnalyzeProminenceDistributionChartUpdate);
 
-    connect ( this, &MainWindow::signalSetReportsChart,
-              activeGraph,&Graph::setReportsChart);
-
     //
     //signals and slots inside MainWindow
     //
@@ -5639,7 +5631,7 @@ void MainWindow::initApp(){
     slotOptionsCanvasIndexMethod (appSettings["canvasIndexMethod"]) ;
 
     /** Clear Chart */
-    chart->resetToTrivial();
+    miniChart->resetToTrivial();
 
     /** Clear LCDs **/
     slotNetworkChanged(0, 0, 0, 0);
@@ -13124,7 +13116,7 @@ void MainWindow::slotAnalyzeCentralityEccentricity(){
 
 
 /**
- * @brief Updates the distribution chart
+ * @brief Updates the distribution miniChart
  * Called from Graph::signalPromininenceDistributionChartUpdate after computing
  * the prominence index distribution.
  * @param series
@@ -13144,25 +13136,22 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
     qDebug() << "MW::slotAnalyzeProminenceDistributionChartUpdate()";
 
     if (series == Q_NULLPTR) {
-        chart->resetToTrivial();
-        chart->removeAllSeries();
+        qDebug() << "MW::slotAnalyzeProminenceDistributionChartUpdate() - "
+                    "series is null! Resetting to trivial";
+        miniChart->resetToTrivial();
         return;
     }
 
-    QPen sPen;
-    QBrush sBrush;
 
     // Set the style of the lines and bars
     switch (series->type()) {
     case QAbstractSeries::SeriesTypeBar	:
-        (static_cast <QBarSeries> (series)).setBarWidth(0.5);
+        qDebug() << "MW::slotAnalyzeProminenceDistributionChartUpdate() - "
+                    "this an BarSeries";
         break;
     case QAbstractSeries::SeriesTypeArea :
-        sPen.setColor( QColor( 0,0,0 ) );
-        sPen.setWidthF(1.0);
-        sBrush.setColor( QColor( 255,0,0) );
-        (static_cast <QAreaSeries> (series)).setPen( sPen );
-        (static_cast <QAreaSeries> (series)).setBrush(sBrush);
+        qDebug() << "MW::slotAnalyzeProminenceDistributionChartUpdate() - "
+                    "this an AreaSeries";
 
         break;
     default:
@@ -13170,19 +13159,19 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
     }
 
 
-    // Clear chart from old series.
-    chart->removeAllSeries();
+    // Clear miniChart from old series.
+    miniChart->removeAllSeries();
 
     // Remove all axes
-    //chart->removeAllAxes();
+    miniChart->removeAllAxes();
 
-    // Add series to chart
-    chart->addSeries(series);
+    // Add series to miniChart
+    miniChart->addSeries(series);
 
     // Set Chart title and remove legend
-    chart->setTitle(series->name() + QString(" distribution"), QFont("Times",9));
+    miniChart->setTitle(series->name() + QString(" distribution"), QFont("Times",8));
 
-    chart->toggleLegend(false);
+    miniChart->toggleLegend(false);
 
 
     QString chartHelpMsg = tr("Distribution of %1 values:\n"
@@ -13199,28 +13188,33 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
             .arg(min, 0,'g',appSettings["initReportsRealNumberPrecision"].toInt(0, 10))
             .arg(max, 0,'g',appSettings["initReportsRealNumberPrecision"].toInt(0, 10));
 
-    chart->setToolTip( chartHelpMsg );
+    miniChart->setToolTip( chartHelpMsg );
 
-    chart->setWhatsThis( chartHelpMsg );
+    miniChart->setWhatsThis( chartHelpMsg );
 
-    bool useDefaultAxes = true;
+    // if true, then bar chart appears with default X axis (1,2,3 ...)
+    bool useDefaultAxes = false;
 
     if ( ! useDefaultAxes ) {
         if ( axisX != Q_NULLPTR ) {
             qDebug() << "MW::slotAnalyzeProminenceDistributionChartUpdate() - "
-                        "axisX not null. Setting it to chart";
-            chart->setAxisX(axisX, series);
-            chart->setAxisXLabelFont();
-            chart->setAxisXLinePen();
-            chart->setAxisXGridLinePen();
+                        "axisX not null. Setting it to miniChart";
+            miniChart->setAxisX(axisX, series);
+
+            miniChart->setAxisXMin(0);
+            miniChart->setAxisXLabelFont();
+            miniChart->setAxisXLinePen();
+            miniChart->setAxisXGridLinePen();
+            miniChart->setAxisXLabelsAngle(-90);
         }
         if ( axisY != Q_NULLPTR ){
             qDebug() << "MW::slotAnalyzeProminenceDistributionChartUpdate() - "
-                        "axisY not null. Setting it to chart";
-            chart->setAxisY(axisY, series);
-            chart->setAxisYLabelFont();
-            chart->setAxisYLinePen();
-            chart->setAxisYGridLinePen();
+                        "axisY not null. Setting it to miniChart";
+            miniChart->setAxisY(axisY, series);
+            miniChart->setAxisYMin(0);
+            miniChart->setAxisYLabelFont();
+            miniChart->setAxisYLinePen();
+            miniChart->setAxisYGridLinePen();
         }
     }
 
@@ -13229,17 +13223,16 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
 
          qDebug() << "MW::slotAnalyzeProminenceDistributionChartUpdate() - "
                      "axisX and axisY null. Calling createDefaultAxes()";
-         chart->createDefaultAxes();
+         miniChart->createDefaultAxes();
 
          qDebug() << "MW::slotAnalyzeProminenceDistributionChartUpdate() - setting axis min";
-         chart->setAxisYMin(0);
-         chart->setAxisXMin(0);
-
+         miniChart->setAxisYMin(0);
+         miniChart->setAxisXMin(0);
 
          // Apply our theme to axes:
-         chart->setAxesThemeDefault();
-
-         chart->setAxisXLabelsAngle(-90);
+         miniChart->setAxesThemeDefault();
+         miniChart->axes(Qt::Vertical).first()->setMax(maxF+1.0);
+         miniChart->setAxisXLabelsAngle(-90);
          //    axisX->setShadesVisible(false);
 
      }

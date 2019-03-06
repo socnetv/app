@@ -198,8 +198,6 @@ public slots:
 
     /** Slots to signals from MainWindow */
 
-    void setReportsChart(Chart *reportsChart);
-
     void relationSet(int relNum=RAND_MAX, const bool notifyMW=true);
 
     void relationNext();
@@ -1156,8 +1154,6 @@ private:
     VList m_graph;
 
     GraphicsWidget *m_canvas;
-
-    Chart *m_chart;
 
     Parser *file_parser;	//file loader threaded class.
 

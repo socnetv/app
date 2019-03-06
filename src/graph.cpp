@@ -270,15 +270,6 @@ Graph::~Graph() {
 
 
 
-/**
- * @brief Sets the Chart hidden widget used in HTML reports
- * @param chart
- */
-void Graph::setReportsChart ( Chart *chart)  {
-    m_chart = chart;
-}
-
-
 
 /**
     Clears all vertices
@@ -6490,7 +6481,7 @@ void Graph::writeCentralityInformation(const QString fileName,
         outText << tr("IC' DISTRIBUTION")
                 << "</h2>";
         outText << "<p>";
-        outText << "<img src=\""
+        outText << "<img style=\"width:100%;\" src=\""
                 << distImageFileName
                  << "\" />";
     }
@@ -6749,7 +6740,7 @@ void Graph::writeCentralityEigenvector(const QString fileName,
         outText << tr("EVC' DISTRIBUTION")
                 << "</h2>";
         outText << "<p>";
-        outText << "<img src=\""
+        outText << "<img style=\"width:100%;\" src=\""
                 << distImageFileName
                  << "\" />";
     }
@@ -7192,21 +7183,27 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
     qDebug() << "Graph::prominenceDistributionSpline()";
 
     QLineSeries *series = new QLineSeries();
-    QLineSeries *series1 = new QLineSeries();
-
+    series->setName (seriesName);
     QValueAxis *axisX = new QValueAxis ();
     QValueAxis *axisY = new QValueAxis ();
 
-    series->setName (seriesName);
+    // Used only for the large chart exported to PNG for the HTML report
+    QLineSeries *series1 = new QLineSeries();
     series1->setName (seriesName);
+    QValueAxis *axisX1 = new QValueAxis ();
+    QValueAxis *axisY1 = new QValueAxis ();
 
+    // The seriesPQ is a priority queue which will hold
+    // the (value,frequency) pairs ordered from smallest to larger value
+    // This is used further below to insert pairs to the series in an ordered way
     priority_queue<PairVF, vector<PairVF>, PairVFCompare> seriesPQ;
 
     QHash<QString, int>::const_iterator i;
 
      for (i = discreteClasses.constBegin(); i != discreteClasses.constEnd(); ++i) {
 
-        qDebug() << "discreteClasses: " << i.key() << ": " << i.value() << endl;
+        qDebug() << "Graph::prominenceDistributionSpline() - discreteClasses: "
+                 << i.key() << ": " << i.value() ;
 
         seriesPQ.push(PairVF(i.key().toDouble(), i.value()));
 
@@ -7222,9 +7219,9 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
      qreal maxF = 0;
 
     while (!seriesPQ.empty()) {
-
-        qDebug() << seriesPQ.top().value << " : "
-                 << seriesPQ.top().frequency << endl;
+        qDebug() << "Graph::prominenceDistributionSpline() - seriesPQ top is:"
+                 << seriesPQ.top().value << " : "
+                 << seriesPQ.top().frequency;
 
         value =  seriesPQ.top().value;
         frequency = seriesPQ.top().frequency;
@@ -7254,55 +7251,56 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
     axisX->setMax(max);
 
     axisY->setMin(minF);
-    axisY->setMax(maxF);
+    axisY->setMax(maxF+1.0);
 
+
+    QPen sPen (QColor( "#209fdf" ));
+    sPen.setWidthF(1);
+    QBrush sBrush( QColor( "#ff0000") );
+
+    series->setBrush(sBrush);
+    series->setPen(sPen);
 
     if (!distImageFileName.isEmpty() ) {
+
         qDebug() << "Graph::prominenceDistributionSpline() - "
                  << "saving distribution image to" << distImageFileName ;
+
+        axisX1->setMin(min);
+        axisX1->setMax(max);
+
+        axisY1->setMin(minF);
+        axisY1->setMax(maxF+1.0);
+
         QChart *chart = new QChart();
         QChartView *chartView = new QChartView( chart );
 
-        //Chart *m_chart = new Chart(Q_NULLPTR);
-
-        // Clear chart from old series.
-        //m_chart->removeAllSeries();
-
-        // Remove all axes
-        //m_chart->removeAllAxes();
-
-        chartView->show();
+        // Not needed?
+        // If we do show it, then it will show a brief flash of the window to the user!
+        // chartView->show();
 
         chart->addSeries(series1);
-        //m_chart->addSeries(series);
 
         chart->setTitle(series1->name() + " distribution");
-        chart->setTitleFont(QFont("Times",7));
-//        m_chart->setTitle(series->name() + QString(" distribution"),
-//                          QFont("Times",7));
+        chart->setTitleFont(QFont("Times",12));
 
-        //m_chart->toggleLegend(false);
         chart->legend()->hide();
 
         //chart->createDefaultAxes();
 
-        chart->addAxis(axisX, Qt::AlignBottom);
-        series1->attachAxis(axisX);
-        chart->addAxis(axisY, Qt::AlignLeft);
-        series1->attachAxis(axisY);
+        chart->addAxis(axisX1, Qt::AlignBottom);
+        series1->attachAxis(axisX1);
+        chart->addAxis(axisY1, Qt::AlignLeft);
+        series1->attachAxis(axisY1);
 
         chart->axes(Qt::Vertical).first()->setMin(0);
         chart->axes(Qt::Horizontal).first()->setMin(0);
+        chart->axes(Qt::Horizontal).first()->setLabelsAngle(-90);
 
-//        m_chart->createDefaultAxes();
-//        m_chart->axes(Qt::Horizontal).first()->setLabelsAngle(-90);
 //        m_chart->axes(Qt::Horizontal).first()->setShadesVisible(false);
 
-        chart->resize(900,600);
-        chartView->resize(1000,700);
-
-        // Apply our theme to axes:
-        //m_chart->setAxesThemeDefault();
+        chart->resize(2560,1440);
+        chartView->resize(2561,1441);
 
         //QPixmap p = m_chart->getPixmap();
         QPixmap p = chartView->grab();
@@ -7310,7 +7308,12 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
         p.save( distImageFileName, "PNG");
 
         chartView->hide();
-        chartView->deleteLater();
+        // Do not delete the ChartView
+        // If we do delete it, then it will also delete the axes
+        // which we have sent to MW to be displayed on the miniChart.
+        // The result will be app crash...
+//        chartView->deleteLater();
+        delete chartView;
 
     }
 
@@ -7334,16 +7337,20 @@ void Graph::prominenceDistributionArea(const H_StrToInt &discreteClasses,
     qDebug() << "Graph::prominenceDistributionArea()";
 
     QAreaSeries *series = new QAreaSeries ();
-    QAreaSeries *series1 = new QAreaSeries ();
-
+    series->setName (name);
     QLineSeries *upperSeries = new QLineSeries();
-
     QValueAxis *axisX = new QValueAxis();
     QValueAxis *axisY = new QValueAxis();
 
-    series->setName (name);
+    // Used only for the large chart exported to PNG for the HTML report
+    QAreaSeries *series1 = new QAreaSeries ();
     series1->setName (name);
+    QValueAxis *axisX1 = new QValueAxis();
+    QValueAxis *axisY1 = new QValueAxis();
 
+    // The seriesPQ is a priority queue which will hold
+    // the (value,frequency) pairs ordered from smallest to larger value
+    // This is used further below to insert pairs to the series in an ordered way
     priority_queue<PairVF, vector<PairVF>, PairVFCompare> seriesPQ;
 
     QHash<QString, int>::const_iterator i;
@@ -7397,52 +7404,60 @@ void Graph::prominenceDistributionArea(const H_StrToInt &discreteClasses,
     axisX->setMax(max);
 
     axisY->setMin(minF);
-    axisY->setMax(maxF);
+    axisY->setMax(maxF+1.0);
 
     series->setUpperSeries(upperSeries);
-    series1->setUpperSeries(upperSeries);
+
+    QPen sPen (QColor( "#666" ));
+    sPen.setWidthF(0.2);
+    QBrush sBrush( QColor( "#209fdf") );
+
+    series->setBrush(sBrush);
+    series->setPen(sPen);
+
 
     if (!distImageFileName.isEmpty()) {
 
         qDebug() << "Graph::prominenceDistributionArea() - "
                  << "saving distribution image to" << distImageFileName ;
 
+        axisX1->setMin(min);
+        axisX1->setMax(max);
+
+        axisY1->setMin(minF);
+        axisY1->setMax(maxF+1.0);
+
+        series1->setUpperSeries(upperSeries);
+
         QChart *chart = new QChart();
         QChartView *chartView = new QChartView( chart );
 
-        //Chart *m_chart = new Chart(Q_NULLPTR);
-
-        chartView->show();
+        // Not needed?
+        // If we do show it, then it will show a brief flash of the window to the user!
+        //chartView->show();
 
         chart->addSeries(series1);
-        //m_chart->addSeries(series);
 
         chart->setTitle(series->name() + " distribution");
-        chart->setTitleFont(QFont("Times",7));
-//        m_chart->setTitle(series->name() + QString(" distribution"),
-//                          QFont("Times",7));
+        chart->setTitleFont(QFont("Times",12));
 
-        //m_chart->toggleLegend(false);
         chart->legend()->hide();
 
         // chart->createDefaultAxes();
 
-        chart->addAxis(axisX, Qt::AlignBottom);
-        series1->attachAxis(axisX);
-        chart->addAxis(axisY, Qt::AlignLeft);
-        series1->attachAxis(axisY);
+        chart->addAxis(axisX1, Qt::AlignBottom);
+        series1->attachAxis(axisX1);
+        chart->addAxis(axisY1, Qt::AlignLeft);
+        series1->attachAxis(axisY1);
 
         chart->axes(Qt::Vertical).first()->setMin(0);
         chart->axes(Qt::Horizontal).first()->setMin(0);
+        chart->axes(Qt::Horizontal).first()->setLabelsAngle(-90);
 
-//        m_chart->axes(Qt::Horizontal).first()->setLabelsAngle(-90);
 //        m_chart->axes(Qt::Horizontal).first()->setShadesVisible(false);
 
-        chart->resize(900,600);
-        chartView->resize(1000,700);
-
-        // Apply our theme to axes:
-        //m_chart->setAxesThemeDefault();
+        chart->resize(2560,1440);
+        chartView->resize(2561,1441);
 
         //QPixmap p = m_chart->getPixmap();
         QPixmap p = chartView->grab();
@@ -7450,7 +7465,13 @@ void Graph::prominenceDistributionArea(const H_StrToInt &discreteClasses,
         p.save( distImageFileName, "PNG");
 
         chartView->hide();
-        chartView->deleteLater();
+
+        // Do not delete the ChartView
+        // If we do delete it, then it will also delete the axes
+        // which we have sent to MW to be displayed on the miniChart.
+        // The result will be app crash...
+//        chartView->deleteLater();
+        delete chartView;
 
     }
 
@@ -7475,17 +7496,21 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
     qDebug() << "Graph::prominenceDistributionBars() - Creating chart type: bars";
 
     QBarSeries *series = new QBarSeries();
-    QBarSeries *series1 = new QBarSeries();
-
     series->setName (name);
-    series1->setName (name);
-
     QBarSet *barSet = new QBarSet("");
-
     QValueAxis *axisY = new QValueAxis;
-
     QBarCategoryAxis *axisX = new QBarCategoryAxis();
 
+    // Used only for the large chart exported to PNG for the HTML report
+    QBarSeries *series1 = new QBarSeries();
+    series1->setName (name);
+    QBarSet *barSet1 = new QBarSet("");
+    QValueAxis *axisY1 = new QValueAxis;
+    QBarCategoryAxis *axisX1 = new QBarCategoryAxis();
+
+    // The seriesPQ is a priority queue which will hold
+    // the (value,frequency) pairs ordered from smallest to larger value
+    // This is used further below to insert pairs to the series in an ordered way
     priority_queue<PairVF, vector<PairVF>, PairVFCompare> seriesPQ;
 
     QHash<QString, int>::const_iterator i;
@@ -7510,7 +7535,7 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
 
     while (!seriesPQ.empty()) {
 
-        value = QString::number(  seriesPQ.top().value, 'f', 2);
+        value = QString::number(  seriesPQ.top().value, 'f', 6);
 
         frequency = seriesPQ.top().frequency;
 
@@ -7518,8 +7543,12 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
                  << "frequency:"<< frequency << endl;
 
         axisX->append( value );
-
         barSet->append( frequency );
+
+        if (!distImageFileName.isEmpty()) {
+            axisX1->append( value );
+            barSet1->append( frequency );
+        }
 
         if ( frequency < minF ) {
             minF = frequency;
@@ -7543,58 +7572,63 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
     axisX->setMax(max);
 
     axisY->setMin(minF);
-    axisY->setMax(maxF);
+    axisY->setMax(maxF+1.0);
 
     qDebug() << "axisX min: " << axisX->min() << " max: " << axisX->max();
 
     series->append( barSet );
-    series->attachAxis(axisX);
-    series->attachAxis(axisY);
+//    series->attachAxis(axisX);
+//    series->attachAxis(axisY);
+
+    QPen sPen (QColor( "#666" ));
+    sPen.setWidthF(0.2);
+    QBrush sBrush( QColor( "#209fdf") );
+
+    barSet->setBrush(sBrush);
+    barSet->setPen(sPen);
 
     if (!distImageFileName.isEmpty()) {
 
         qDebug() << "Graph::prominenceDistributionBars() - "
                  << "saving distribution image to" << distImageFileName ;
 
-        series1->append( barSet );
+        series1->append( barSet1 );
+
+
+        axisX1->setMin(min);
+        axisX1->setMax(max);
+
+        axisY1->setMin(minF);
+        axisY1->setMax(maxF+1.0);
 
         QChart *chart = new QChart();
         QChartView *chartView = new QChartView( chart );
 
-        //Chart *m_chart = new Chart(Q_NULLPTR);
-
-        chartView->show();
+        // Not needed?
+        // If we do show it, then it will show a brief flash of the window to the user!
+        //chartView->show();
 
         chart->addSeries(series1);
 
-        //m_chart->addSeries(series);
-
         chart->setTitle(series->name() + " distribution");
-        chart->setTitleFont(QFont("Times",7));
-//        m_chart->setTitle(series->name() + QString(" distribution"),
-//                          QFont("Times",7));
+        chart->setTitleFont(QFont("Times",12));
 
-        //m_chart->toggleLegend(false);
+
         chart->legend()->hide();
 
-//        chart->createDefaultAxes();
-
-        chart->addAxis(axisX, Qt::AlignBottom);
-        series1->attachAxis(axisX);
-        chart->addAxis(axisY, Qt::AlignLeft);
-        series1->attachAxis(axisY);
+        chart->addAxis(axisX1, Qt::AlignBottom);
+        series1->attachAxis(axisX1);
+        chart->addAxis(axisY1, Qt::AlignLeft);
+        series1->attachAxis(axisY1);
 
         chart->axes(Qt::Vertical).first()->setMin(0);
         chart->axes(Qt::Horizontal).first()->setMin(0);
+        chart->axes(Qt::Horizontal).first()->setLabelsAngle(-90);
 
-//        m_chart->axes(Qt::Horizontal).first()->setLabelsAngle(-90);
 //        m_chart->axes(Qt::Horizontal).first()->setShadesVisible(false);
 
-        chart->resize(900,600);
-        chartView->resize(1000,700);
-
-        // Apply our theme to axes:
-        //m_chart->setAxesThemeDefault();
+        chart->resize(2560,1440);
+        chartView->resize(2561,1441);
 
         //QPixmap p = m_chart->getPixmap();
         QPixmap p = chartView->grab();
@@ -7602,9 +7636,11 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
         p.save( distImageFileName, "PNG");
 
         chartView->hide();
-        chartView->deleteLater();
-
-
+        // Do not delete the ChartView if the axes / series are the same!
+        // If we do delete it, then it will also delete the axes
+        // which we have sent to MW to be displayed on the miniChart.
+        // The result will be app crash...
+        delete chartView;
     }
 
     emit signalPromininenceDistributionChartUpdate(series,
@@ -7837,7 +7873,7 @@ void Graph::writeCentralityDegree ( const QString fileName,
         outText << tr("DC' DISTRIBUTION")
                 << "</h2>";
         outText << "<p>";
-        outText << "<img src=\""
+        outText << "<img style=\"width:100%;\" src=\""
                 << distImageFileName
                  << "\" />";
     }
@@ -8122,7 +8158,7 @@ void Graph::writeCentralityCloseness( const QString fileName,
         outText << tr("CC' DISTRIBUTION")
                 << "</h2>";
         outText << "<p>";
-        outText << "<img src=\""
+        outText << "<img style=\"width:100%;\" src=\""
                 << distImageFileName
                  << "\" />";
     }
@@ -8514,7 +8550,7 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
         outText << tr("IRCC DISTRIBUTION")
                 << "</h2>";
         outText << "<p>";
-        outText << "<img src=\""
+        outText << "<img style=\"width:100%;\" src=\""
                 << distImageFileName
                  << "\" />";
     }
@@ -8756,7 +8792,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
         outText << tr("BC' DISTRIBUTION")
                 << "</h2>";
         outText << "<p>";
-        outText << "<img src=\""
+        outText << "<img style=\"width:100%;\" src=\""
                 << distImageFileName
                  << "\" />";
     }
@@ -9030,7 +9066,7 @@ void Graph::writeCentralityStress( const QString fileName,
         outText << tr("SC' DISTRIBUTION")
                 << "</h2>";
         outText << "<p>";
-        outText << "<img src=\""
+        outText << "<img style=\"width:100%;\" src=\""
                 << distImageFileName
                  << "\" />";
     }
@@ -9248,7 +9284,7 @@ void Graph::writeCentralityEccentricity(const QString fileName,
         outText << tr("EC DISTRIBUTION")
                 << "</h2>";
         outText << "<p>";
-        outText << "<img src=\""
+        outText << "<img style=\"width:100%;\" src=\""
                 << distImageFileName
                  << "\" />";
     }
@@ -9489,7 +9525,7 @@ void Graph::writeCentralityPower(const QString fileName,
         outText << tr("PC' DISTRIBUTION")
                 << "</h2>";
         outText << "<p>";
-        outText << "<img src=\""
+        outText << "<img style=\"width:100%;\" src=\""
                 << distImageFileName
                  << "\" />";
     }
@@ -9951,7 +9987,7 @@ void Graph::writePrestigeDegree (const QString fileName,
         outText << tr("DP' DISTRIBUTION")
                 << "</h2>";
         outText << "<p>";
-        outText << "<img src=\""
+        outText << "<img style=\"width:100%;\" src=\""
                 << distImageFileName
                  << "\" />";
     }
@@ -10337,7 +10373,7 @@ void Graph::writePrestigeProximity( const QString fileName,
         outText << tr("PP DISTRIBUTION")
                 << "</h2>";
         outText << "<p>";
-        outText << "<img src=\""
+        outText << "<img style=\"width:100%;\" src=\""
                 << distImageFileName
                  << "\" />";
     }
@@ -10819,7 +10855,7 @@ void Graph::writePrestigePageRank(const QString fileName,
         outText << tr("PRP' DISTRIBUTION")
                 << "</h2>";
         outText << "<p>";
-        outText << "<img src=\""
+        outText << "<img style=\"width:100%;\" src=\""
                 << distImageFileName
                  << "\" />";
     }
