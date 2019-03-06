@@ -1594,12 +1594,12 @@ void MainWindow::initActions(){
 
 
 
-    editEdgeSymmetrizeAllAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Symmetrize Directed Edges"), this);
+    editEdgeSymmetrizeAllAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Symmetrize All Directed Edges"), this);
     editEdgeSymmetrizeAllAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_S));
-    editEdgeSymmetrizeAllAct->setStatusTip(tr("Make all arcs in this relation reciprocal (thus, a symmetric graph)."));
+    editEdgeSymmetrizeAllAct->setStatusTip(tr("Make all directed ties to be reciprocated (thus, a symmetric graph)."));
     editEdgeSymmetrizeAllAct->setWhatsThis(
                 tr("<p><b>Symmetrize Directed Edges</b></p>"
-                   "<p>Makes all directed arcs in this relation reciprocal. "
+                   "<p>Makes all directed arcs in this relation to be reciprocated: "
                    "<p>If there is an arc from node A to node B \n"
                    "then a new arc from node B to node A is created \n"
                    "with the same weight. </p>"
@@ -1607,7 +1607,7 @@ void MainWindow::initActions(){
     connect(editEdgeSymmetrizeAllAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeSymmetrizeAll()));
 
 
-    editEdgeSymmetrizeStrongTiesAct= new QAction(QIcon(":/images/symmetrize_48px.svg"), tr("Symmetrize Edges by Strong Ties"), this);
+    editEdgeSymmetrizeStrongTiesAct= new QAction(QIcon(":/images/symmetrize_48px.svg"), tr("Symmetrize by Strong Ties"), this);
     editEdgeSymmetrizeStrongTiesAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_T));
     editEdgeSymmetrizeStrongTiesAct->setStatusTip(tr("Create a new symmetric relation by counting reciprocated ties only (strong ties)."));
     editEdgeSymmetrizeStrongTiesAct->setWhatsThis(
@@ -1639,7 +1639,7 @@ void MainWindow::initActions(){
 
 
 
-    editEdgesCocitationAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Cocitation Network"), this);
+    editEdgesCocitationAct= new QAction(QIcon(":/images/cocitation_48px.svg"), tr("Cocitation Network"), this);
     editEdgesCocitationAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_C));
     editEdgesCocitationAct->setStatusTip(tr("Create a new symmetric relation by "
                                             "connecting actors that are cocitated by others."));
@@ -1657,7 +1657,7 @@ void MainWindow::initActions(){
             this, SLOT(slotEditEdgeSymmetrizeCocitation()));
 
 
-    editEdgeDichotomizeAct= new QAction(QIcon(":/images/dichotomization.png"), tr("Dichotomization"), this);
+    editEdgeDichotomizeAct= new QAction(QIcon(":/images/filter_list_48px.svg"), tr("Dichotomize Valued Edges"), this);
     editEdgeDichotomizeAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_D));
     editEdgeDichotomizeAct->setStatusTip(tr("Create a new binary relation/graph in a valued network "
                                             "using edge dichotomization."));
@@ -3630,6 +3630,8 @@ void MainWindow::initMenuBar() {
     networkMenu->addAction (networkExportPDFAct);
     networkMenu->addSeparator();
     exportSubMenu = networkMenu ->addMenu(tr("Export to other..."));
+    exportSubMenu->setIcon ( QIcon(":/images/file_download_48px.svg") );
+
     exportSubMenu->addAction (networkExportSMAct);
     exportSubMenu->addAction (networkExportPajek);
     //exportSubMenu->addAction (networkExportList);
@@ -3713,12 +3715,12 @@ void MainWindow::initMenuBar() {
     editEdgeMenu->addAction (editEdgeUndirectedAllAct);
     editEdgeMenu->addSeparator();
     editEdgeMenu->addAction (editEdgeSymmetrizeAllAct);
+    editEdgeMenu->addSeparator();
     editEdgeMenu->addAction (editEdgeSymmetrizeStrongTiesAct);
+    editEdgeMenu->addAction (editEdgesCocitationAct);
     editEdgeMenu->addSeparator();
     editEdgeMenu->addAction (editEdgeDichotomizeAct);
     editEdgeMenu->addSeparator();
-    editEdgeMenu->addAction (editEdgesCocitationAct);
-
     editEdgeMenu->addAction(editEdgeLabelAct);
     editEdgeMenu->addAction(editEdgeColorAct);
     editEdgeMenu->addAction(editEdgeWeightAct);
