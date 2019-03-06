@@ -170,5 +170,9 @@
         <file>images/heart.svg</file>
         <file>images/person.svg</file>
         <file>images/person-bw.svg</file>
+        <file>images/close_24px.svg</file>
+        <file>images/exit_24px.svg</file>
+        <file>images/tip_24px.svg</file>
+        <file>images/about_24px.svg</file>
     </qresource>
 </RCC>

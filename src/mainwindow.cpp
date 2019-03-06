@@ -1048,7 +1048,8 @@ void MainWindow::initActions(){
                                      "Exports the active network to a GW formatted file"));
     connect(networkExportGWAct, SIGNAL(triggered()), this, SLOT(slotNetworkExportGW()));
 
-    networkCloseAct = new QAction( tr("&Close"), this);
+    networkCloseAct = new QAction(QIcon(":/images/close_24px.svg"), tr("&Close"), this);
+    networkCloseAct->setShortcut(Qt::CTRL+Qt::Key_W);
     networkCloseAct->setStatusTip(tr("Close the actual network"));
     networkCloseAct->setWhatsThis(tr("Close \n\nCloses the actual network"));
     connect(networkCloseAct, SIGNAL(triggered()), this, SLOT(slotNetworkClose()));
@@ -1063,7 +1064,7 @@ void MainWindow::initActions(){
                                   "you might want to zoom-out."));
     connect(networkPrintAct, SIGNAL(triggered()), this, SLOT(slotNetworkPrint()));
 
-    networkQuitAct = new QAction(QIcon(":/images/exit.png"), tr("E&xit"), this);
+    networkQuitAct = new QAction(QIcon(":/images/exit_24px.svg"), tr("E&xit"), this);
     networkQuitAct->setShortcut(Qt::CTRL+Qt::Key_Q);
     networkQuitAct->setStatusTip(tr("Quit SocNetV. Are you sure?"));
     networkQuitAct->setWhatsThis(tr("Exit\n\n"
@@ -3529,7 +3530,7 @@ void MainWindow::initActions(){
     helpApp->setWhatsThis(tr("Manual\n\nDisplays the documentation of SocNetV"));
     connect(helpApp, SIGNAL(triggered()), this, SLOT(slotHelp()));
 
-    tipsApp = new QAction(QIcon(":/images/help-hint.png"), tr("Tip of the Day"), this);
+    tipsApp = new QAction(QIcon(":/images/tip_24px.svg"), tr("Tip of the Day"), this);
     tipsApp->setStatusTip(tr("Read useful tips"));
     tipsApp->setWhatsThis(tr("Quick Tips\n\nDisplays some useful and quick tips"));
     connect(tipsApp, SIGNAL(triggered()), this, SLOT(slotHelpTips()));
@@ -3545,7 +3546,7 @@ void MainWindow::initActions(){
     connect(helpCheckUpdatesApp, SIGNAL(triggered()),
             this, SLOT(slotHelpCheckUpdateDialog()));
 
-    helpAboutApp = new QAction(tr("About SocNetV"), this);
+    helpAboutApp = new QAction(QIcon(":/images/about_24px.svg"), tr("About SocNetV"), this);
     helpAboutApp->setStatusTip(tr("About SocNetV"));
     helpAboutApp->setWhatsThis(tr("About\n\nBasic information about SocNetV"));
     connect(helpAboutApp, SIGNAL(triggered()), this, SLOT(slotHelpAbout()));
