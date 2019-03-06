@@ -1664,7 +1664,7 @@ void MainWindow::initActions(){
     editEdgeDichotomizeAct->setWhatsThis(
                 tr("Dichotomize Edges\n\n"
                    "Creates a new binary relation in a valued network using "
-                   "edge dichotomization according to threshold value. \n"
+                   "edge dichotomization according to a given threshold value. \n"
                    "In the new dichotomized relation, an edge will exist between actor i and "
                    "actor j only if e(i,j) > threshold, where threshold is a user-defined value."
                    "Thus the dichotomization procedure is as follows: "
@@ -4165,14 +4165,14 @@ void MainWindow::initPanels(){
     toolBoxEditEdgeModeSelect->setMinimumWidth(120);
 
 
-    QLabel *toolBoxSymmetrizeSelectLabel  = new QLabel;
-    toolBoxSymmetrizeSelectLabel->setText(tr("Symmetrize:"));
-    toolBoxSymmetrizeSelectLabel->setMinimumWidth(90);
-    toolBoxEditEdgeSymmetrizeSelect = new QComboBox;
-    toolBoxEditEdgeSymmetrizeSelect->setStatusTip(
-                tr("Select a method to symmetrize the network, i.e. tranform all directed edges to undirected."));
-    helpMessage = tr("<p><b>Symmetrize Network</b></p>"
-                     "<p>Select a method to symmetrize the network. Available methods: </p>"
+    QLabel *toolBoxEditEdgeTransformSelectLabel  = new QLabel;
+    toolBoxEditEdgeTransformSelectLabel->setText(tr("Transform:"));
+    toolBoxEditEdgeTransformSelectLabel->setMinimumWidth(90);
+    toolBoxEditEdgeTransformSelect = new QComboBox;
+    toolBoxEditEdgeTransformSelect->setStatusTip(
+                tr("Select a method to tranform the network, i.e. transform all directed edges to undirected."));
+    helpMessage = tr("<p><b>Transform Network Edges </b></p>"
+                     "<p>Select a method to transform network edges. Available methods: </p>"
                      "<p><em>Symmetrize Directed Edges:</em></p>"
                      "<p>Makes all directed arcs in this relation reciprocal. "
                      "That is, if there is an arc from node A to node B "
@@ -4190,17 +4190,24 @@ void MainWindow::initPanels(){
                      "that are cocitated by others. "
                      "In the new relation, an edge will exist between actor i and "
                      "actor j only if C(i,j) > 0, where C the Cocitation Matrix. </p>"
+                     "<p><em>Dichotomize Edges</em></p>"
+                     "<p>Creates a new binary relation in a valued network using "
+                     "edge dichotomization according to a given threshold value. "
+                     "In the new dichotomized relation, an edge will exist between actor i and "
+                     "actor j only if e(i,j) > threshold, where threshold is a user-defined value."
+                     "The process is also known as compression and slicing.</p>"
                      );
-    toolBoxEditEdgeSymmetrizeSelect->setToolTip( helpMessage );
-    toolBoxEditEdgeSymmetrizeSelect->setWhatsThis( helpMessage );
+    toolBoxEditEdgeTransformSelect->setToolTip( helpMessage );
+    toolBoxEditEdgeTransformSelect->setWhatsThis( helpMessage );
 
-    QStringList symmetrizeCommands;
-    symmetrizeCommands << "Select"
-                       << "Directed ties"
-                       << "Strong ties"
-                       << "Cocitation";
-    toolBoxEditEdgeSymmetrizeSelect->addItems(symmetrizeCommands);
-    toolBoxEditEdgeSymmetrizeSelect->setMinimumWidth(120);
+    QStringList edgeTransformCommands;
+    edgeTransformCommands << "Select"
+                       << "Symmetrize All Directed Ties"
+                       << "Symmetrize Strong Ties"
+                       << "Cocitation Network"
+                       << "Edge Dichotomization";
+    toolBoxEditEdgeTransformSelect->addItems(edgeTransformCommands);
+    toolBoxEditEdgeTransformSelect->setMinimumWidth(120);
 
 
     //create a grid layout for Edit buttons
@@ -4213,8 +4220,8 @@ void MainWindow::initPanels(){
     editGrid->addWidget(toolBoxEditNodeSubgraphSelect, 1,1);
     editGrid->addWidget(toolBoxEdgeModeSelectLabel,2,0);
     editGrid->addWidget(toolBoxEditEdgeModeSelect,2,1);
-    editGrid->addWidget(toolBoxSymmetrizeSelectLabel,3,0);
-    editGrid->addWidget(toolBoxEditEdgeSymmetrizeSelect,3,1);
+    editGrid->addWidget(toolBoxEditEdgeTransformSelectLabel,3,0);
+    editGrid->addWidget(toolBoxEditEdgeTransformSelect,3,1);
 
     editGrid->setSpacing(5);
     editGrid->setContentsMargins(5, 5, 5, 5);
@@ -5510,8 +5517,8 @@ void MainWindow::initSignalSlots() {
     connect(toolBoxEditEdgeModeSelect, SIGNAL (currentIndexChanged(int) ),
             this, SLOT(slotEditEdgeMode(int) ) );
 
-    connect(toolBoxEditEdgeSymmetrizeSelect, SIGNAL (currentIndexChanged(int) ),
-            this, SLOT(toolBoxEditEdgeSymmetrizeSelectChanged(int) ) );
+    connect(toolBoxEditEdgeTransformSelect, SIGNAL (currentIndexChanged(int) ),
+            this, SLOT(toolBoxEditEdgeTransformSelectChanged(int) ) );
 
     connect(toolBoxAnalysisMatricesSelect, SIGNAL (currentIndexChanged(int) ),
             this, SLOT(toolBoxAnalysisMatricesSelectChanged(int) ) );
@@ -5649,7 +5656,7 @@ void MainWindow::initApp(){
 
 
     /** Clear toolbox and menu checkboxes **/
-    toolBoxEditEdgeSymmetrizeSelect->setCurrentIndex(0);
+    toolBoxEditEdgeTransformSelect->setCurrentIndex(0);
     toolBoxEditEdgeModeSelect->setCurrentIndex(0);
 
     initComboBoxes();
@@ -5969,12 +5976,12 @@ void MainWindow::toolBoxEditNodeSubgraphSelectChanged(const int &selectedIndex) 
 
 
 /**
- * @brief Called from MW, when user selects something in the Edge Symmetrize
+ * @brief Called from MW, when user selects something in the Edge Transform
  * selectbox of the toolbox
  * @param selectedIndex
  */
-void MainWindow::toolBoxEditEdgeSymmetrizeSelectChanged(const int &selectedIndex) {
-    qDebug()<< "MW::toolBoxEditEdgeSymmetrizeSelectChanged "
+void MainWindow::toolBoxEditEdgeTransformSelectChanged(const int &selectedIndex) {
+    qDebug()<< "MW::toolBoxEditEdgeTransformSelectChanged "
                "selected text index: " << selectedIndex;
     switch(selectedIndex){
     case 0:
@@ -5988,6 +5995,10 @@ void MainWindow::toolBoxEditEdgeSymmetrizeSelectChanged(const int &selectedIndex
     case 3:
         slotEditEdgeSymmetrizeCocitation();
         break;
+    case 4:
+        slotEditEdgeDichotomizationDialog();
+        break;
+
     };
 }
 
@@ -13135,6 +13146,7 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
                                                               const qreal &minF,
                                                               const qreal &maxF) {
 
+    Q_UNUSED(minF);
 
     qDebug() << "MW::slotAnalyzeProminenceDistributionChartUpdate()";
 

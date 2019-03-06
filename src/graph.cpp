@@ -7248,14 +7248,14 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
     }
 
     axisX->setMin(min);
-    axisX->setMax(max);
+    axisX->setMax( 1 ); // allow some padding for corner cases
 
     axisY->setMin(minF);
     axisY->setMax(maxF+1.0);
 
 
     QPen sPen (QColor( "#209fdf" ));
-    sPen.setWidthF(1);
+    sPen.setWidthF(0.9);
     QBrush sBrush( QColor( "#ff0000") );
 
     series->setBrush(sBrush);
@@ -7267,7 +7267,7 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
                  << "saving distribution image to" << distImageFileName ;
 
         axisX1->setMin(min);
-        axisX1->setMax(max);
+        axisX1->setMax(1);
 
         axisY1->setMin(minF);
         axisY1->setMax(maxF+1.0);
@@ -7401,7 +7401,7 @@ void Graph::prominenceDistributionArea(const H_StrToInt &discreteClasses,
     }
 
     axisX->setMin(min);
-    axisX->setMax(max);
+    axisX->setMax(1);
 
     axisY->setMin(minF);
     axisY->setMax(maxF+1.0);
@@ -7422,7 +7422,7 @@ void Graph::prominenceDistributionArea(const H_StrToInt &discreteClasses,
                  << "saving distribution image to" << distImageFileName ;
 
         axisX1->setMin(min);
-        axisX1->setMax(max);
+        axisX1->setMax(1);
 
         axisY1->setMin(minF);
         axisY1->setMax(maxF+1.0);
@@ -7569,7 +7569,7 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
     } // end while
 
     axisX->setMin(min);
-    axisX->setMax(max);
+    axisX->setMax(QString::number(  1.0, 'f', 6));
 
     axisY->setMin(minF);
     axisY->setMax(maxF+1.0);
@@ -7577,8 +7577,6 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
     qDebug() << "axisX min: " << axisX->min() << " max: " << axisX->max();
 
     series->append( barSet );
-//    series->attachAxis(axisX);
-//    series->attachAxis(axisY);
 
     QPen sPen (QColor( "#666" ));
     sPen.setWidthF(0.2);
@@ -7596,7 +7594,7 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
 
 
         axisX1->setMin(min);
-        axisX1->setMax(max);
+        axisX1->setMax(QString::number(  1.0, 'f', 6));
 
         axisY1->setMin(minF);
         axisY1->setMax(maxF+1.0);

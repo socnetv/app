@@ -545,7 +545,7 @@ public slots:
     //Called from MW, when user highlights something in the toolbox Comboboxes
     void toolBoxNetworkAutoCreateSelectChanged(const int &selectedIndex);
     void toolBoxEditNodeSubgraphSelectChanged(const int&selectedIndex);
-    void toolBoxEditEdgeSymmetrizeSelectChanged(const int&selectedIndex);
+    void toolBoxEditEdgeTransformSelectChanged(const int&selectedIndex);
     void toolBoxAnalysisMatricesSelectChanged(const int&selectedIndex);
     void toolBoxAnalysisCohesionSelectChanged(const int&selectedIndex);
     void toolBoxAnalysisStrEquivalenceSelectChanged(const int&selectedIndex);
@@ -636,7 +636,7 @@ private:
     QMenu *colorationMenu;
 
     QComboBox *toolBoxNetworkAutoCreateSelect, *toolBoxEditNodeSubgraphSelect,
-              *toolBoxEditEdgeModeSelect, *toolBoxEditEdgeSymmetrizeSelect;
+              *toolBoxEditEdgeModeSelect, *toolBoxEditEdgeTransformSelect;
     QComboBox *toolBoxAnalysisCohesionSelect, *toolBoxAnalysisStrEquivalenceSelect,
     *toolBoxAnalysisProminenceSelect, *toolBoxAnalysisCommunitiesSelect,
     *toolBoxAnalysisMatricesSelect;
