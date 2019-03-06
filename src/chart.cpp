@@ -424,7 +424,7 @@ void Chart::setThemeSmallWidget(const int minWidth, const int minHeight) {
     setRenderHint(QPainter::Antialiasing);
 
     setMinimumWidth(minWidth);
-    setMaximumHeight(minHeight);
+    setMaximumHeight(1.5*minHeight);
     setMinimumHeight(minHeight);
     setFrameShape(QFrame::NoFrame);
 

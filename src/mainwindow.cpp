@@ -5009,14 +5009,14 @@ void MainWindow::initPanels(){
 
     // Create our mini miniChart
     miniChart = new Chart(this);
-    int chartHeight = 250;
+    int chartHeight = 140;
     miniChart->setThemeSmallWidget(chartHeight,chartHeight);
 
     // Nothing else to do with miniChart.
     // MW::initApp() will populate it with a dummy point.
 
     propertiesGrid->addWidget(miniChart,20,0,1,2);
-    propertiesGrid->setRowMinimumHeight(20,chartHeight);
+    propertiesGrid->setRowMinimumHeight(20, 1.5 * chartHeight);
     propertiesGrid->setRowStretch(20,0);
 
     // We need some margin form the edge of the miniChart to the messageLabel below,
