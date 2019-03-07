@@ -1075,69 +1075,197 @@ bool Graph::vertexFindByLabel (const QStringList &labelList) {
  * @return
  */
 bool Graph::vertexFindByIndexScore(const int &index, const QStringList &thresholds) {
+
     qDebug()<<"Graph::vertexFindByIndexScore() - index"<< index
            << "threshold list" << thresholds;
+
     QList<int> foundList;
+
     bool searchResult = false;
-    // TODO Support other prominence scores.
-    if ( calculatedDC ) {
 
-        VList::const_iterator it;
-        QString thresholdStr="";
-        bool gtThan=false;
-        bool floatOk=false;
-        qreal threshold=0;
-        for (int i = 0; i < thresholds.size(); ++i) {
+    VList::const_iterator it;
 
-            thresholdStr = thresholds.at(i);
-            gtThan=false;
-            if (thresholdStr.startsWith(">")) {
-                gtThan = true;
-                thresholdStr.remove(">");
-                qDebug()<< "Graph::vertexFindByIndexScore() - thresholdStr starts with > ";
+    QString thresholdStr="";
+
+    bool gtThan  = false;
+    bool gtEqual = false;
+    bool lsThan  = false;
+    bool lsEqual = false;
+    bool convertedOk=false;
+    qreal threshold=0;
+    qreal score=0;
+
+    //FIXME
+    bool dropIsolates=false;
+    bool considerWeights = true;
+    bool inverseWeights = true;
+
+    switch (index) {
+    case 0: {
+        // do nothing
+        break;
+    }
+    case IndexType::DC : {
+        centralityDegree(true, dropIsolates);
+        break;
+    }
+    case IndexType::IRCC : {
+        centralityClosenessIR();
+        break;
+    }
+    case IndexType::IC : {
+        centralityInformation();
+        break;
+    }
+    case IndexType::EVC : {
+        centralityEigenvector(true, dropIsolates);
+        break;
+    }
+    case IndexType::DP : {
+        prestigeDegree(true, dropIsolates);
+        break;
+    }
+    case IndexType::PRP : {
+        prestigePageRank();;
+        break;
+    }
+    case IndexType::PP : {
+        prestigeProximity(considerWeights, inverseWeights);
+        break;
+    }
+    default:
+        graphDistancesGeodesic(true, considerWeights,
+                                       inverseWeights, dropIsolates);
+        break;
+    };
+
+    for (int i = 0; i < thresholds.size(); ++i) {
+
+        thresholdStr = thresholds.at(i);
+        thresholdStr=thresholdStr.simplified();
+
+        gtThan  = false;
+        gtEqual = false;
+        lsThan  = false;
+        lsEqual = false;
+
+        convertedOk=false;
+
+        threshold=0;
+
+        if (thresholdStr.startsWith(">=")) {
+            gtEqual = true;
+            thresholdStr.remove(">=");
+            qDebug()<< "Graph::vertexFindByIndexScore() - thresholdStr starts with >=";
+        }
+        else if (thresholdStr.startsWith(">")) {
+            gtThan = true;
+            thresholdStr.remove(">");
+            qDebug()<< "Graph::vertexFindByIndexScore() - thresholdStr starts with > ";
+        }
+
+        else if (thresholdStr.startsWith("<=")) {
+            lsEqual = true;
+            thresholdStr.remove("<=");
+            qDebug()<< "Graph::vertexFindByIndexScore() - thresholdStr starts with >=";
+        }
+        else if (thresholdStr.startsWith("<"))  {
+            lsThan = true;
+            thresholdStr.remove("<");
+            qDebug()<< "Graph::vertexFindByIndexScore() - thresholdStr starts with < ";
+        }
+        else {
+            qDebug()<< "Graph::vertexFindByIndexScore() - thresholdStr does not start with > or <";
+            continue;
+        }
+
+        threshold = thresholdStr.toDouble(&convertedOk);
+
+        if (!convertedOk) {
+            qDebug()<< "Graph::vertexFindByIndexScore() - "
+                       "cannot convert thresholdStr to float";
+            continue;
+        }
+        else {
+            qDebug()<< "Graph::vertexFindByIndexScore() - "
+                       "threshold"<<threshold;
+        }
+
+        for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
+
+            switch (index) {
+            case 0: {
+                score=0;
+                break;
             }
-            else if (thresholdStr.startsWith("<"))  {
-                gtThan = false;
-                thresholdStr.remove("<");
-                qDebug()<< "Graph::vertexFindByIndexScore() - thresholdStr starts with < ";
+            case IndexType::DC : {
+                score=(*it)->SDC();
+                break;
             }
-            else {
-                qDebug()<< "Graph::vertexFindByIndexScore() - thresholdStr does not start with > or <";
-                continue;
+            case IndexType::CC : {
+                score=(*it)->SCC();
+                break;
             }
-            threshold = thresholdStr.toFloat(&floatOk);
-            if (!floatOk) {
-                qDebug()<< "Graph::vertexFindByIndexScore() - cannot convert thresholdStr to float";
-                continue;
+            case IndexType::IRCC : {
+                score=(*it)->SIRCC();
+                break;
             }
-            else {
-                qDebug()<< "Graph::vertexFindByIndexScore() - threshold"<<threshold;
+            case IndexType::BC : {
+                score=(*it)->SBC();
+                break;
             }
-            for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
-                switch (index) {
-                case IndexType::DC:
-                    if (gtThan) {
-                        if ( (*it)->DC() > threshold ) {
-                            qDebug() << "Graph::vertexFindByIndexScore() - vertex" << (*it)->name()
-                                     << "matches. Adding it to foundList";
-                            foundList << (*it)->name();
-                        }
-                    }
-                    else {
-                        if ( (*it)->DC() < threshold ) {
-                            qDebug() << "Graph::vertexFindByIndexScore() - vertex" << (*it)->name()
-                                     << "matches. Adding it to foundList";
-                            foundList << (*it)->name();
-                        }
-                    }
-                    break;
-                default:
-                    break;
+            case IndexType::SC : {
+                score=(*it)->SSC();
+                break;
+            }
+            case IndexType::EC : {
+                score=(*it)->SEC();
+                break;
+            }
+            case IndexType::PC : {
+                score=(*it)->SPC();
+                break;
+            }
+            case IndexType::IC : {
+                score=(*it)->SIC();
+                break;
+            }
+            case IndexType::EVC : {
+                score=(*it)->SEVC();
+                break;
+            }
+            case IndexType::DP : {
+                score=(*it)->SDP();
+                break;
+            }
+            case IndexType::PRP : {
+                score=(*it)->SPRP();
+                break;
+            }
+            case IndexType::PP : {
+                score=(*it)->SPP();
+                break;
+            }
+            };
+
+            if (gtThan) {
+                if ( score > threshold ) {
+                    qDebug() << "Graph::vertexFindByIndexScore() - vertex" << (*it)->name()
+                             << "matches. Adding it to foundList";
+                    foundList << (*it)->name();
                 }
-
             }
+            else {
+                if ( score < threshold ) {
+                    qDebug() << "Graph::vertexFindByIndexScore() - vertex" << (*it)->name()
+                             << "matches. Adding it to foundList";
+                    foundList << (*it)->name();
+                }
+            }
+
         }
     }
+
 
     if ( !foundList.isEmpty() ) {
         searchResult = true;

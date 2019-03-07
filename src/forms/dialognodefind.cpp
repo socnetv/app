@@ -220,7 +220,7 @@ void DialogNodeFind::checkErrors()
 
             // take every linefeed separated value
             str = tempListA.at(i).toLocal8Bit().constData();
-            if (str.contains (">") || str.contains ("<")) {
+            if (str.contains (">") || str.contains ("<") || str.contains ("=")) {
                 list << str;
             }
             else {

@@ -908,7 +908,7 @@ GraphicsNode* GraphicsWidget::hasNode( QString text ){
 
 /**
  * @brief Highlights all nodes in list
- * Called by MW:slotEditNodeFind()
+ * Called by Graph::signalNodesFound()
  * @param list
  */
 void GraphicsWidget::setNodesMarked(QList<int> list){
