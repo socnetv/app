@@ -174,7 +174,7 @@ Graph::Graph(GraphicsWidget *graphicsWidget) {
                        "border-collapse: collapse; border-spacing: 0; }"
                        "table.plot td.filled {background: #000;}"
                        ".pre {margin-top:0px; margin-bottom:0px;font-size:1px; line-height: 100%; white-space: nowrap; }"
-                       ".description {font-style: italic;color: #666;max-width: 107ch;}"
+                       ".description {font-style: italic;color: #666;max-width: 100%;}"
                        ".info {font-weight: bold;color: #333;}"
                        ".small {font-style: italic;color: #333; font-size: 90%;}"
                        ".dendrogram .row { clear:both; height: 16px; margin: 2px 0px; overflow:hidden; }"
@@ -6180,7 +6180,6 @@ void Graph::centralityInformation(const bool considerWeights,
 
     graphMatrixAdjacencyCreate(dropIsolates, considerWeights, inverseWeights, symmetrize);
 
-
     QString pMsg = tr("Computing Information Centralities. \nPlease wait...");
     emit statusMessage( pMsg );
     emit signalProgressBoxCreate(n,pMsg);
@@ -7051,7 +7050,59 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
 }
 
 
+/**
+ * @brief Returns the IndexType of the given prominence index name
+ * Called from MW::slotEditNodeFind, MW::slotLayoutRadialByProminenceIndex etc
+ * @param prominenceIndexName
+ */
+int Graph::getProminenceIndexByName(const QString &prominenceIndexName) {
 
+    qDebug()<< "Graph::getProminenceIndexByName() : " << prominenceIndexName;
+
+    if ( prominenceIndexName.contains("Degree Centr") ){
+        return IndexType::DC;
+    }
+    else if ( prominenceIndexName.contains("Closeness Centr") &&
+              !prominenceIndexName.contains("IR")){
+        return IndexType::CC;
+    }
+    else if ( prominenceIndexName.contains("Influence Range Closeness Centrality")  ||
+              prominenceIndexName.contains("IR Closeness")
+              ){
+        return IndexType::IRCC;
+    }
+    else if ( prominenceIndexName.contains("Betweenness Centr")){
+        return IndexType::BC;
+    }
+    else if (prominenceIndexName.contains("Stress Centr")){
+        return IndexType::SC;
+    }
+    else if (prominenceIndexName.contains("Eccentricity Centr")){
+        return IndexType::EC;
+    }
+    else if (prominenceIndexName.contains("Power Centr")){
+        return IndexType::PC;
+    }
+    else if (prominenceIndexName.contains("Information Centr")){
+        return IndexType::IC;
+    }
+    else if (prominenceIndexName.contains("Eigenvector Centr")){
+        return IndexType::EVC;
+    }
+    else if (prominenceIndexName.contains("Degree Prestige")){
+        return IndexType::DP;
+    }
+    else if (prominenceIndexName.contains("PageRank Prestige")){
+        return IndexType::PRP;
+    }
+    else if (prominenceIndexName.contains("Proximity Prestige")){
+        return IndexType::PP;
+    }
+    else
+        return 0;
+
+
+}
 
 
 /**
@@ -7069,6 +7120,9 @@ void Graph::prominenceDistribution(const int &index,
              << "index" << index
              << "chart type: " << type
              << "distImageFileName" << distImageFileName;
+
+    QString pMsg = tr("Computing Centrality Distribution. \nPlease wait...");
+    emit statusMessage(  pMsg );
 
     H_StrToInt discreteClasses;
 
@@ -8642,7 +8696,6 @@ void Graph::writeCentralityBetweenness(const QString fileName,
 
     outText << "<p class=\"description\">"
             << tr("The BC index of a node u is the sum of &delta;<sub>(s,t,u)</sub> for all s,t &isin; V ")
-            << "<br />"
             << tr("where &delta;<sub>(s,t,u)</sub> is the ratio of all geodesics between "
                   "s and t which run through u. ")
             << "<br />"
@@ -10713,7 +10766,7 @@ void Graph::writePrestigePageRank(const QString fileName,
                   "The PR values correspond to the principal eigenvector of the normalized link matrix.<br />"
 
                   "Note: In weighted relations, each backlink to a node u from another node v is considered "
-                  "to have weight=1 but it is normalized by the sum of outbound edge weights of v"
+                  "to have weight=1 but it is normalized by the sum of outbound edge weights of v. "
                   "Therefore, nodes with high outLink weights give smaller percentage of their PR to node u."
                   )
             << "<br />"
@@ -21275,7 +21328,7 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
     emit statusMessage(  pMsg );
     emit signalProgressBoxCreate(N,pMsg);
 
-    for  (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+    for  (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
 
         switch (prominenceIndex) {
         case 0: {
@@ -21523,6 +21576,9 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
     emit signalProgressBoxKill();
 
     graphSetModified(GraphChange::ChangedPositions);
+
+    prominenceDistribution(prominenceIndex, m_reportsChartType);
+
 }
 
 

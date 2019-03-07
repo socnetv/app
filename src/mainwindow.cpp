@@ -760,15 +760,16 @@ void MainWindow::initGraph() {
     //    activeGraph->moveToThread(&graphThread);
     //    graphThread.start();
 
-    prominenceIndexList  << "Degree Centr."
-                         << "Closeness Centr."
-                         << "IR Closeness Centr."
-                         << "Betweenness Centr."
-                         << "Stress Centr."
-                         << "Eccentricity Centr."
-                         << "Power Centr."
-                         << "Information Centr."
-                         << "Eigenvector Centr"
+    // Used in toolBoxAnalysisProminenceSelect and DialogNodeFind
+    prominenceIndexList  << "Degree Centrality"
+                         << "Closeness Centrality"
+                         << "IR Closeness Centrality"
+                         << "Betweenness Centrality"
+                         << "Stress Centrality"
+                         << "Eccentricity Centrality"
+                         << "Power Centrality"
+                         << "Information Centrality"
+                         << "Eigenvector Centrality"
                          << "Degree Prestige"
                          << "PageRank Prestige"
                          << "Proximity Prestige";
@@ -8898,7 +8899,9 @@ void MainWindow::slotEditNodeFind(const QStringList &list,
     qDebug() << "MW::slotEditNodeFind() - nodes:" << list
              << "search type:"<< searchType
              << "indexStr"<<indexStr;
-    int index = 0;
+
+    int indexType = 0;
+
     if (searchType == "numbers"){
         activeGraph->vertexFindByNumber(list);
     }
@@ -8907,35 +8910,9 @@ void MainWindow::slotEditNodeFind(const QStringList &list,
     }
     else if (searchType == "score"){
 
-        if ( indexStr.contains("Degree Centr") )
-            index=IndexType::DC;
-        else if ( indexStr.contains("Closeness Centr") &&
-                  !indexStr.contains("IR"))
-            index=IndexType::CC;
-        else if ( indexStr.contains("Influence Range Closeness Centrality")  ||
-                  indexStr.contains("IR Closeness")
-                  )
-            index=IndexType::IRCC;
-        else if ( indexStr.contains("Betweenness Centr"))
-            index=IndexType::BC;
-        else if (indexStr.contains("Stress Centr"))
-            index=IndexType::SC;
-        else if (indexStr.contains("Eccentricity Centr"))
-            index=IndexType::EC;
-        else if (indexStr.contains("Power Centr"))
-            index=IndexType::PC;
-        else if (indexStr.contains("Information Centr"))
-            index=IndexType::IC;
-        else if (indexStr.contains("Eigenvector Centr"))
-            index=IndexType::EVC;
-        else if (indexStr.contains("Degree Prestige"))
-            index=IndexType::DP;
-        else if (indexStr.contains("PageRank Prestige"))
-            index=IndexType::PRP;
-        else if (indexStr.contains("Proximity Prestige"))
-            index=IndexType::PP;
+        indexType = activeGraph->getProminenceIndexByName(indexStr);
 
-        activeGraph->vertexFindByIndexScore(index, list);
+        activeGraph->vertexFindByIndexScore(indexType, list);
 
     }
 
@@ -10965,53 +10942,29 @@ void MainWindow::slotLayoutRadialByProminenceIndex(){
  * Places all nodes on concentric circles according to their index score.
 *  More prominent nodes are closer to the centre of the screen.
  */
-void MainWindow::slotLayoutRadialByProminenceIndex(QString choice=""){
+void MainWindow::slotLayoutRadialByProminenceIndex(QString prominenceIndexName=""){
     qDebug() << "MainWindow::slotLayoutRadialByProminenceIndex() ";
     if ( !activeNodes() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    int userChoice = 0;
-    QString prominenceIndexName = choice;
+
     slotLayoutGuides(true);
-    if ( prominenceIndexName.contains("Degree Centr") )
-        userChoice=IndexType::DC;
-    else if ( prominenceIndexName.contains("Closeness Centr") &&
-              !prominenceIndexName.contains("IR"))
-        userChoice=IndexType::CC;
-    else if ( prominenceIndexName.contains("Influence Range Closeness Centrality")  ||
-              prominenceIndexName.contains("IR Closeness")
-              )
-        userChoice=IndexType::IRCC;
-    else if ( prominenceIndexName.contains("Betweenness Centr"))
-        userChoice=IndexType::BC;
-    else if (prominenceIndexName.contains("Stress Centr"))
-        userChoice=IndexType::SC;
-    else if (prominenceIndexName.contains("Eccentricity Centr"))
-        userChoice=IndexType::EC;
-    else if (prominenceIndexName.contains("Power Centr"))
-        userChoice=IndexType::PC;
-    else if (prominenceIndexName.contains("Information Centr"))
-        userChoice=IndexType::IC;
-    else if (prominenceIndexName.contains("Eigenvector Centr"))
-        userChoice=IndexType::EVC;
-    else if (prominenceIndexName.contains("Degree Prestige"))
-        userChoice=IndexType::DP;
-    else if (prominenceIndexName.contains("PageRank Prestige"))
-        userChoice=IndexType::PRP;
-    else if (prominenceIndexName.contains("Proximity Prestige"))
-        userChoice=IndexType::PP;
+
+    int indexType = 0;
+
+    indexType = activeGraph->getProminenceIndexByName(prominenceIndexName);
 
     qDebug() << "MainWindow::slotLayoutRadialByProminenceIndex() "
              << "prominenceIndexName " << prominenceIndexName
-             << " userChoice " << userChoice;
+             << "indexType" << indexType;
 
-    toolBoxLayoutByIndexSelect->setCurrentIndex(userChoice+1);
+    toolBoxLayoutByIndexSelect->setCurrentIndex(indexType+1);
     toolBoxLayoutByIndexTypeSelect->setCurrentIndex(0);
 
     bool dropIsolates=false;
 
-    if (userChoice==8 && activeNodes() > 200) {
+    if (indexType==IndexType::IC && activeNodes() > 200) {
         switch(
                QMessageBox::critical(
                    this, "Slow function warning",
@@ -11044,12 +10997,12 @@ void MainWindow::slotLayoutRadialByProminenceIndex(QString choice=""){
     graphicsWidget->clearGuides();
 
     activeGraph->layoutByProminenceIndex(
-                userChoice, 0,
+                indexType, 0,
                 optionsEdgeWeightConsiderAct->isChecked(),
                 inverseWeights,
                 editFilterNodesIsolatesAct->isChecked() || dropIsolates);
 
-    // statusMessage( tr("Nodes in inner circles have higher %1 score. ").arg(prominenceIndexName ) );
+    statusMessage( tr("Nodes in inner circles have higher %1 score. ").arg(prominenceIndexName ) );
 
 }
 
@@ -11088,53 +11041,27 @@ void MainWindow::slotLayoutLevelByProminenceIndex(){
 *  chosen prominence index.
 * More prominent nodes are closer to the top of the canvas
  */
-void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
+void MainWindow::slotLayoutLevelByProminenceIndex(QString prominenceIndexName=""){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    int userChoice = 0;
-    QString prominenceIndexName = choice;
+    int indexType = 0;
+
     slotLayoutGuides(true);
 
-    if ( prominenceIndexName.contains("Degree Centr") )
-        userChoice=1;
-    else if ( prominenceIndexName.contains("Closeness Centr") &&
-              !prominenceIndexName.contains("IR"))
-        userChoice=2;
-    else if ( prominenceIndexName.contains("Influence Range Closeness Centrality") ||
-              prominenceIndexName.contains("IR Closeness"))
-        userChoice=3;
-    else if ( prominenceIndexName.contains("Betweenness Centr"))
-        userChoice=4;
-    else if (prominenceIndexName.contains("Stress Centr"))
-        userChoice=5;
-    else if (prominenceIndexName.contains("Eccentricity Centr"))
-        userChoice=6;
-    else if (prominenceIndexName.contains("Power Centr"))
-        userChoice=7;
-    else if (prominenceIndexName.contains("Information Centr"))
-        userChoice=8;
-    else if (prominenceIndexName.contains("Eigenvector Centr"))
-        userChoice=9;
-    else if (prominenceIndexName.contains("Degree Prestige"))
-        userChoice=10;
-    else if (prominenceIndexName.contains("PageRank Prestige"))
-        userChoice=11;
-    else if (prominenceIndexName.contains("Proximity Prestige"))
-        userChoice=12;
-
+    indexType = activeGraph->getProminenceIndexByName(prominenceIndexName);
 
     qDebug() << "MainWindow::slotLayoutLevelByProminenceIndex() "
              << "prominenceIndexName " << prominenceIndexName
-             << " userChoice " << userChoice;
+             << "indexType" << indexType ;
 
-    toolBoxLayoutByIndexSelect->setCurrentIndex(userChoice+1);
+    toolBoxLayoutByIndexSelect->setCurrentIndex(indexType +1);
     toolBoxLayoutByIndexTypeSelect->setCurrentIndex(1);
 
     bool dropIsolates=false;
 
-    if (userChoice==8 && activeNodes() > 200) {
+    if (indexType ==IndexType::IC && activeNodes() > 200) {
         switch(
                QMessageBox::critical(
                    this, "Slow function warning",
@@ -11167,11 +11094,10 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
     graphicsWidget->clearGuides();
 
     activeGraph->layoutByProminenceIndex(
-                userChoice, 1,
+                indexType , 1,
                 optionsEdgeWeightConsiderAct->isChecked(),
                 inverseWeights,
                 editFilterNodesIsolatesAct->isChecked() || dropIsolates);
-
 
     statusMessage( tr("Nodes in upper levels have higher %1 score. ").arg(prominenceIndexName ) );
 
@@ -11209,53 +11135,28 @@ void MainWindow::slotLayoutNodeSizeByProminenceIndex(){
  * where the size of each node follows its prominence score
   * Called when selectbox changes in the toolbox
  */
-void MainWindow::slotLayoutNodeSizeByProminenceIndex(QString choice=""){
+void MainWindow::slotLayoutNodeSizeByProminenceIndex(QString prominenceIndexName=""){
     qDebug() << "MainWindow::slotLayoutNodeSizeByProminenceIndex() ";
     if ( !activeNodes() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    int userChoice = 0;
-    QString prominenceIndexName = choice;
 
-    if ( prominenceIndexName.contains("Degree Centr") )
-        userChoice=1;
-    else if ( prominenceIndexName.contains("Closeness Centr") &&
-              !prominenceIndexName.contains("IR"))
-        userChoice=2;
-    else if ( prominenceIndexName.contains("Influence Range Closeness Centrality") ||
-              prominenceIndexName.contains("IR Closeness"))
-        userChoice=3;
-    else if ( prominenceIndexName.contains("Betweenness Centr"))
-        userChoice=4;
-    else if (prominenceIndexName.contains("Stress Centr"))
-        userChoice=5;
-    else if (prominenceIndexName.contains("Eccentricity Centr"))
-        userChoice=6;
-    else if (prominenceIndexName.contains("Power Centr"))
-        userChoice=7;
-    else if (prominenceIndexName.contains("Information Centr"))
-        userChoice=8;
-    else if (prominenceIndexName.contains("Eigenvector Centr"))
-        userChoice=9;
-    else if (prominenceIndexName.contains("Degree Prestige"))
-        userChoice=10;
-    else if (prominenceIndexName.contains("PageRank Prestige"))
-        userChoice=11;
-    else if (prominenceIndexName.contains("Proximity Prestige"))
-        userChoice=12;
+    int indexType = 0;
+
+    indexType = activeGraph->getProminenceIndexByName(prominenceIndexName);
 
     qDebug() << "MainWindow::slotLayoutNodeSizeByProminenceIndex() "
              << "prominenceIndexName " << prominenceIndexName
-             << " userChoice " << userChoice;
+             << "indexType" << indexType;
 
-    toolBoxLayoutByIndexSelect->setCurrentIndex(userChoice+1);
+    toolBoxLayoutByIndexSelect->setCurrentIndex(indexType+1);
+
     toolBoxLayoutByIndexTypeSelect->setCurrentIndex(2);
 
-    //check if CC was selected and the graph is disconnected.
     bool dropIsolates=false;
 
-    if (userChoice==8 && activeNodes() > 200) {
+    if (indexType==IndexType::IC && activeNodes() > 200) {
         switch(
                QMessageBox::critical(
                    this, "Slow function warning",
@@ -11288,11 +11189,10 @@ void MainWindow::slotLayoutNodeSizeByProminenceIndex(QString choice=""){
     graphicsWidget->clearGuides();
 
     activeGraph->layoutByProminenceIndex(
-                userChoice, 2,
+                indexType, 2,
                 optionsEdgeWeightConsiderAct->isChecked(),
                 inverseWeights,
                 editFilterNodesIsolatesAct->isChecked() || dropIsolates);
-
 
     statusMessage( tr("Bigger nodes have greater %1 score.").arg(prominenceIndexName ) );
 }
@@ -11326,59 +11226,32 @@ void MainWindow::slotLayoutNodeColorByProminenceIndex(){
 
 
 /**
- * @brief Calls Graph::layoutVertexColorByProminenceIndex to apply a layout model
+ * @brief Calls Graph::layoutByProminenceIndex to apply a layout model
  * where the color of each node follows its prominence score
  * RED=rgb(255,0,0) most prominent
  * BLUE=rgb(0,0,255) least prominent
  * Called when selectbox changes in the toolbox
  */
-void MainWindow::slotLayoutNodeColorByProminenceIndex(QString choice=""){
+void MainWindow::slotLayoutNodeColorByProminenceIndex(QString prominenceIndexName=""){
     qDebug() << "MainWindow::slotLayoutNodeColorByProminenceIndex() ";
     if ( !activeNodes() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    int userChoice = 0;
-    QString prominenceIndexName = choice;
+    int indexType = 0;
 
-    if ( prominenceIndexName.contains("Degree Centr") )
-        userChoice=1;
-    else if ( prominenceIndexName.contains("Closeness Centr") &&
-              !prominenceIndexName.contains("IR"))
-        userChoice=2;
-    else if ( prominenceIndexName.contains("Influence Range Closeness Centrality") ||
-              prominenceIndexName.contains("IR Closeness"))
-        userChoice=3;
-    else if ( prominenceIndexName.contains("Betweenness Centr"))
-        userChoice=4;
-    else if (prominenceIndexName.contains("Stress Centr"))
-        userChoice=5;
-    else if (prominenceIndexName.contains("Eccentricity Centr"))
-        userChoice=6;
-    else if (prominenceIndexName.contains("Power Centr"))
-        userChoice=7;
-    else if (prominenceIndexName.contains("Information Centr"))
-        userChoice=8;
-    else if (prominenceIndexName.contains("Eigenvector Centr"))
-        userChoice=9;
-    else if (prominenceIndexName.contains("Degree Prestige"))
-        userChoice=10;
-    else if (prominenceIndexName.contains("PageRank Prestige"))
-        userChoice=11;
-    else if (prominenceIndexName.contains("Proximity Prestige"))
-        userChoice=12;
+    indexType = activeGraph->getProminenceIndexByName(prominenceIndexName);
 
     qDebug() << "MainWindow::slotLayoutNodeColorByProminenceIndex() "
              << "prominenceIndexName " << prominenceIndexName
-             << " userChoice " << userChoice;
+             << "indexType" << indexType;
 
-    toolBoxLayoutByIndexSelect->setCurrentIndex(userChoice+1);
+    toolBoxLayoutByIndexSelect->setCurrentIndex(indexType+1);
     toolBoxLayoutByIndexTypeSelect->setCurrentIndex(3);
 
-    //check if CC was selected and the graph is disconnected.
     bool dropIsolates=false;
 
-    if (userChoice==8 && activeNodes() > 200) {
+    if (indexType==8 && activeNodes() > 200) {
         switch(
                QMessageBox::critical(
                    this, "Slow function warning",
@@ -11412,12 +11285,12 @@ void MainWindow::slotLayoutNodeColorByProminenceIndex(QString choice=""){
 
 
     activeGraph->layoutByProminenceIndex(
-                userChoice, 3,
+                indexType, 3,
                 optionsEdgeWeightConsiderAct->isChecked(),
                 inverseWeights,
                 editFilterNodesIsolatesAct->isChecked() || dropIsolates);
 
-    statusMessage( tr("Nodes with red color have greater %1 score.").arg(prominenceIndexName));
+    statusMessage( tr("Nodes with warmer color have greater %1 score.").arg(prominenceIndexName));
 
 }
 

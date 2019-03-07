@@ -923,6 +923,8 @@ public:
                                         const bool &inverseWeights=true,
                                         const bool &dropIsolates=false) ;
 
+    int getProminenceIndexByName(const QString &prominenceIndexName);
+
     void prominenceDistribution(const int &index,
                                 const ChartType &type,
                                 const QString &distImageFileName=QString());

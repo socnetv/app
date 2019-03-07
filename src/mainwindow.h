@@ -378,16 +378,16 @@ public slots:
     void slotLayoutRadialRandom();
 
     void slotLayoutRadialByProminenceIndex();
-    void slotLayoutRadialByProminenceIndex(QString);
+    void slotLayoutRadialByProminenceIndex(QString prominenceIndexName);
 
     void slotLayoutLevelByProminenceIndex();
-    void slotLayoutLevelByProminenceIndex(QString);
+    void slotLayoutLevelByProminenceIndex(QString prominenceIndexName);
 
     void slotLayoutNodeSizeByProminenceIndex();
-    void slotLayoutNodeSizeByProminenceIndex(QString);
+    void slotLayoutNodeSizeByProminenceIndex(QString prominenceIndexName);
 
     void slotLayoutNodeColorByProminenceIndex();
-    void slotLayoutNodeColorByProminenceIndex(QString);
+    void slotLayoutNodeColorByProminenceIndex(QString prominenceIndexName);
 
     void slotLayoutSpringEmbedder();
     void slotLayoutFruchterman();
