@@ -5,7 +5,7 @@
 #define NUMERICVERSION GetFileVersion(RELEASEFOLDER+EXECUTABLE)
 #define VERSION "2.5" 
 #define URL "https://socnetv.org"
-#define COPYRIGHT "2004-2018 " + URL
+#define COPYRIGHT "2005-2018 " + URL
 
 [Setup]
 AllowNoIcons=yes
