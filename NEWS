@@ -1,4 +1,4 @@
-Social Networks Visualizer (SocNetV) 
+Social Network Visualizer (SocNetV) 
 
 
 SocNetV News
@@ -7,16 +7,17 @@ SocNetV News
 Feb 2019
 ========
 - Version 2.5 released with new features and bugfixes:
-  Prominence scores distribution in Qt5 Chart.
+  Prominence scores distribution in reports and in-app mini chart.
   Support for custom node icons (PNG, JPEG, SVG, etc).
   Edge dichotomization algorithm.
   High quality theme, inspired from Material Design, for uniform look'n'feel of SocNetV across all OSes.
   Support for (double) edge weights in all formats. 
   Improved export to PDF and Image (with lots of new formats).
   Improved web crawler.
-  Lattice generator.
+  Lattice network generator.
   Improved memory consumption and faster measure computations.
   Search and select multiple nodes by their numbers / labels / prominence scores.
+  Many bug fixes.
   
 
 Feb 2018

@@ -223,6 +223,8 @@ echo " ### FILES SECTION ###"
 #CHANGELOG SECTION
 #
 %changelog
+* Fri Mar 8 2019 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.5-3
+- Synced with new 2.5 version from upstream
 * Wed Feb 20 2019 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.5-2
 - Synced with new beta2 version from upstream
 * Tue Feb 19 2019 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.5-1
