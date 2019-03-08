@@ -18,7 +18,7 @@ QT += printsupport
 QT += charts
 QT += svg
 QT += testlib
-
+# testlib only needed to use QTest::qWait in Chart::getPixmap()...
 
 INCLUDEPATH  += ./src
 FORMS += src/forms/dialogfilteredgesbyweight.ui \
