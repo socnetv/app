@@ -214,6 +214,7 @@ echo " ### FILES SECTION ###"
 %dir %{_datadir}/%{name}/translations/
 %{_datadir}/%{name}/translations/*
 %{_datadir}/pixmaps/%{name}.png
+%{_datadir}/metainfo/%{name}.appdata.xml
 %{_mandir}/man1/*
 %doc changelog.gz NEWS README.md TODO COPYING AUTHORS INSTALL 
 
