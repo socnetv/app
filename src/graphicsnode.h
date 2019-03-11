@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.5
+ version: 2.6-dev
  Written in Qt
  
                          graphicsnode.h  -  description

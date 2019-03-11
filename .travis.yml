@@ -20,7 +20,7 @@ dist: trusty
 
 env: 
   global:
-    - SOCNETV_VERSION=2.5 # We use it to name packages on non-tagged commits
+    - SOCNETV_VERSION=2.6-dev # We use it to name packages on non-tagged commits
 
 # explicitly define our build
 # maybe add a linux/clang pair ?

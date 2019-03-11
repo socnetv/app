@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.5
+ version: 2.6-dev
  Written in Qt
 
 -                           mainwindow.cpp  -  description
@@ -102,14 +102,9 @@ void myMessageOutput (
         case QtDebugMsg:
             fprintf( stderr, "Debug: %s\n", localMsg.constData() );
             break;
-
-#if QT_VERSION >= 0x050500
         case QtInfoMsg:
             fprintf( stderr, "Info: %s\n", localMsg.constData() );
             break;
-
-#endif
-
         case QtWarningMsg:
             fprintf( stderr, "Warning: %s\n", localMsg.constData() );
             break;
@@ -132,13 +127,14 @@ void myMessageOutput (
  */
 MainWindow::MainWindow(const QString & m_fileName) {
 
+    qInstallMessageHandler( myMessageOutput);
+
+
     qDebug() << "MW::MainWindow() - Constructor running on thread:"<< thread();
 
     setWindowIcon (QIcon(":/images/socnetv.png"));
 
     appSettings = initSettings();
-
-    qInstallMessageHandler( myMessageOutput);
 
     setMinimumSize(1024,750); //set MW minimum size, before creating canvas
 
@@ -321,7 +317,7 @@ QMap<QString,QString> MainWindow::initSettings() {
 
     qDebug()<< "MW::initSettings";
 
-    printDebug = false; // comment it to stop debug override
+    //printDebug = false; // comment it to stop debug override
 
     // Create fortune cookies and tips
     createFortuneCookies();
@@ -417,7 +413,7 @@ QMap<QString,QString> MainWindow::initSettings() {
 
     appSettings["initBackgroundColor"]="white"; //"gainsboro";
     appSettings["initBackgroundImage"]="";
-    appSettings["printDebug"] = (printDebug) ? "true" : "false";
+    appSettings["printDebug"] = "false";
     appSettings["viewReportsInSystemBrowser"] = "true";
     appSettings["showProgressBar"] = "false";
     appSettings["showToolBar"] = "true";
@@ -14231,7 +14227,7 @@ void MainWindow::slotHelpCheckUpdateParse(QNetworkReply *reply) {
 */
 void MainWindow::slotHelpAbout(){
     int randomCookie=rand()%fortuneCookie.count();
-QString BUILD="Fri Mar  8 11:53:19 EET 2019";
+QString BUILD="Mon Mar 11 18:17:18 EET 2019";
     QMessageBox::about(
                 this, tr("About SocNetV"),
                 tr("<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)") +

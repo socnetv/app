@@ -3,7 +3,7 @@ version:  'continuous.{build}'
 branches:
   only:
     - master
-      #   - devel
+    - devel
   except:
     - # Do not build tags that we create when we or travis upload to GitHub Releases
     - # does not work see https://github.com/appveyor/ci/issues/1493
@@ -35,7 +35,7 @@ install:
   - cmd: del MYVER.txt
   - echo %APPVEYOR_REPO_COMMIT:~0,7%
   - cmd: echo "Setting SocNetV current version"
-  - cmd: set SOCNETV_VERSION=2.5
+  - cmd: set SOCNETV_VERSION=2.6-dev
   - cmd: echo %SOCNETV_VERSION%
 
   - cmd: echo "Setting BUILDNAME" 
