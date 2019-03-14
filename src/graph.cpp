@@ -4823,8 +4823,8 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
     VList::const_iterator it, it1;
     QList<int>::const_iterator it2;
 
-    int w=0, u=0,s=0, i=0, si=0, ui=0, wi=0;
-
+    int w=0, u=0,s=0, si=0, ui=0, wi=0;
+    //int i=0;
     int progressCounter=0;
 
     qDebug() << "Graph::graphDistancesGeodesic() - Recomputing geodesic distances.";
@@ -5002,14 +5002,12 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
                 while ( !Stack.empty() ) {
                     Stack.pop();
                 }
-                i=1;
+
                 qDebug()<< "***** PHASE 1 (SSSP): "
                            "...and for each vertex: empty list Ps of predecessors";
                 for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
                     (*it1)->clearPs();
-                    //initialize all sizeOfNthOrderNeighborhood to zero
-                    //sizeOfNthOrderNeighborhood.insert(i, 0);
-                    i++;
+
                 }
                 sizeOfNthOrderNeighborhood.clear();
             }
@@ -5913,10 +5911,13 @@ void Graph::dijkstra(const int &s, const int &si,
             }
 
             ++it1;
-        }
+
+        } // END loop for every outEdge of u
+
         qDebug() << "    --- dijkstra: LOOP END over every edge ("<< u <<", w ) e E... ";
 
-    }
+    } // END loop while prQ not empty
+
     qDebug() << "### dijkstra: LOOP END. prQ is empty - Returning.";
 }
 
