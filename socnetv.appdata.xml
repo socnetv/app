@@ -6,7 +6,7 @@
 	<name>Social Network Visualizer</name>
 	<summary>Social Network Analysis and Visualization software application</summary>
 	<description>
-		<p>Social Network Visualizer (SocNetV) is a cross-platform, user-friendly free software application for social network analysis and visualization. With SocNetV you can draw social networks with a few clicks on a virtual canvas, load field data from a file in a supported format (GraphML, GraphViz, Adjacency, EdgeList, GML, Pajek, UCINET, etc) or crawl the internet to create a social network of connected webpages. You can edit actors and ties through point-and-click, analyse graph and social network properties, produce beautiful HTML reports and embed visualization layouts to the network.
+		<p>Social Network Visualizer (SocNetV) is a cross-platform, user-friendly free software tool for social network analysis and visualization. With SocNetV you can draw social networks with a few clicks on a virtual canvas, load field data from a file in a supported format (GraphML, GraphViz, Adjacency, EdgeList, GML, Pajek, UCINET, etc) or crawl the internet to create a social network of connected webpages. You can edit actors and ties through point-and-click, analyse graph and social network properties, produce beautiful HTML reports and embed visualization layouts to the network.
 </p>
 	</description>
 	<launchable type="desktop-id">socnetv.desktop</launchable>
@@ -14,7 +14,7 @@
 	<url type="bugtracker">https://github.com/socnetv/app/issues</url>
 	<screenshots>
 		<screenshot type="default">
-			<image>https://socnetv.org/data/uploads/screenshots/24/socnetv-24-327-actors-proximity-centr-radial-nodecolor-zoom.png</image>
+			<image>https://socnetv.org/data/uploads/screenshots/25/socnetv-25-padget-power-centrality-size-distribution.png</image>
 		</screenshot>
 	</screenshots>
 	<provides>
