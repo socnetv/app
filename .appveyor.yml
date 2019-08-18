@@ -3,7 +3,7 @@ version:  'continuous.{build}'
 branches:
   only:
     - master
-    - devel
+    - develop
   except:
     - # Do not build tags that we create when we or travis upload to GitHub Releases
     - # does not work see https://github.com/appveyor/ci/issues/1493
