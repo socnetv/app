@@ -4868,6 +4868,7 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
 
         qDebug() << "Graph::graphDistancesGeodesic() - Initializing variables";
 
+        qreal distances_sum_for_s = 0, maxEdgeWeightInNetwork=0, tempEdgeWeight=0;
         qreal CC=0, BC=0, SC= 0, eccentricity=0, EC=0, PC=0;
         qreal SCC=0, SBC=0, SSC=0, SEC=0, SPC=0;
         qreal tempVarianceBC=0, tempVarianceSC=0,tempVarianceEC=0;
@@ -4935,6 +4936,16 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
                 // Set all pair-wise shortest-path counts (sigmas) to 0
                // (*it)->setShortestPaths((*it1)->name(), 0);
                 (*it)->clearShortestPaths();
+
+                if (considerWeights && inverseWeights) {
+                    // find the max weight in the network.
+                    // it will be used for maxCC below
+                    tempEdgeWeight = (*it)->hasEdgeTo((*it1)->name());
+                    if ( tempEdgeWeight > maxEdgeWeightInNetwork ) {
+                        maxEdgeWeightInNetwork = tempEdgeWeight;
+                    }
+                }
+
             }
 
             //Zero centrality scores for each vertex
@@ -4949,6 +4960,7 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
                 (*it)->setCC( 0.0 );
                 (*it)->setIRCC( 0.0 );
                 (*it)->setPC( 0.0 );
+
 
             }
 
@@ -4973,7 +4985,9 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
             qDebug("############# NOT SymmetricAdjacencyMatrix - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
         }
 
-
+        if (considerWeights && inverseWeights) {
+            maxIndexCC = maxIndexCC * (1.0 / maxEdgeWeightInNetwork);
+        }
 
         qDebug() << "*********** MAIN LOOP: "
                     "for every s in V solve the Single Source Shortest Path (SSSP) problem...";
@@ -4981,6 +4995,7 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
 
             s=(*it)->name();
             si=vpos[s];
+            distances_sum_for_s = 0;
 
             qDebug()<< "***** PHASE 1 (SSSP): "
                     << "Source vertex s" << s << "vpos" << si;
@@ -5030,16 +5045,7 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
 
             if (computeCentralities) {
 
-                // Compute Closeness Centrality
-                if ( (*it)->CC() != 0 )  {
-                    CC=1.0/(*it)->CC();  //Closeness centrality must be inverted
-                }
-                else {
-                    // Closeness zero at this point means 
-                    // this actor is has not any outLinks
-                    CC=0;
-                }
-                (*it)->setCC( CC );
+
 
                 qDebug()<< "***** PHASE 2 (CENTRALITIES): "
                            "s" << s << "vpos" << si << "CC" << CC;
@@ -5086,7 +5092,32 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
 
                 for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
                     (*it1)->setDelta(0.0);
+
+                    // compute sum of distances from current vertex to every other vertex
+
+                    distances_sum_for_s += (*it)->distance( (*it1)->name() ) ;
+                    qDebug() << "    Compute Centralities: "
+                               "For CC: sum of distances. distance(" << (*it1)->name()
+                             << "," <<  (*it1)->name() << ") = " << (*it)->distance( (*it1)->name() )
+                             << "new sum of distances for s =" << distances_sum_for_s;
+
                 }
+                qDebug() << "    Compute Centralities: "
+                          "For CC: total sum of distances for s =" << distances_sum_for_s;
+
+                m_graphSumDistance += distances_sum_for_s;
+                // Compute Closeness Centrality
+                if ( distances_sum_for_s != 0 )  {
+                    CC=1.0/distances_sum_for_s;  //Closeness centrality must be inverted
+                }
+                else {
+                    // Closeness zero at this point means
+                    // this actor is has not any outLinks
+                    CC=0;
+                }
+                (*it)->setCC( CC );
+
+
 
                 qDebug()<< "***** PHASE 2 (BC/ACCUMULATION): "
                            "Visit all vertices in reverse order of their discovery (from s = "
@@ -5688,13 +5719,14 @@ void Graph::dijkstra(const int &s, const int &si,
 
     int u=0,ui=0, w=0, wi=0, v=0, temp=0;
     int relation=0;
-    qreal  weight=0, dist_u=0,  dist_w=0;
+    qreal  weight=0, dist_u=0,  dist_w=0, old_dist_w=0;
     bool edgeStatus=false;
     H_edges::const_iterator it1;
     VList::const_iterator it;
 
     qDebug() << "### dijkstra: Construct a priority queue prQ of all vertices-distances";
 
+    // TODO: Check prQ functioanality in weighted graphs, where edge weight denotes value (not cost)
     priority_queue<GraphDistance, vector<GraphDistance>, GraphDistancesCompare> prQ;
 
     //set d( s, s ) = 0
@@ -5789,17 +5821,19 @@ void Graph::dijkstra(const int &s, const int &si,
                          << dist_u << "+" << weight <<  "=" <<dist_w ;
             }
 
+            old_dist_w = m_graph [ si ]->distance( w );
+
             qDebug() << "    --- dijkstra: RELAXATION: check if dist_w =" << dist_w
                      <<  "  shorter than current d(s=" << s <<",w="<<w <<")="
-                      <<m_graph [ si ]->distance( w );
+                      << old_dist_w;
 
-            if ( ( dist_w == m_graph [ si ]->distance( w ) ) &&  dist_w < RAND_MAX ) {
+            if ( ( dist_w == old_dist_w ) &&  dist_w < RAND_MAX ) {
 
                 qDebug() <<"    --- dijkstra: dist_w : " << dist_w
-                         <<  " ==  d(s,w) : " << m_graph [ si ]->distance( w ) ;
+                         <<  " ==  current d(s,w) : " << old_dist_w ;
 
                 temp = m_graph[si]->shortestPaths(w) + m_graph[si]->shortestPaths(u);
-
+                // WRONG! We do not know for sure that we are in a shortest path!!!
                 qDebug() <<"    --- dijkstra: Found ANOTHER SP from s =" << s
                         << " to w=" << w << " via u="<< u
                         << " - Setting Sigma(s, w) = "<< temp;
@@ -5833,10 +5867,10 @@ void Graph::dijkstra(const int &s, const int &si,
                 }
             }
 
-            else if (dist_w > 0 && dist_w < m_graph [ si ]->distance( w )  ) {
+            else if (dist_w > 0 && dist_w < old_dist_w  ) {
 
-                qDebug() <<"    --- dijkstra: dist_w =" << dist_w
-                         <<  " <  d(s,w) =" << m_graph [ si ]->distance( w )
+                qDebug() <<"    --- dijkstra: dist_w " << dist_w
+                         <<  " <  current d(s,w) =" << old_dist_w
                          << " Pushing w" << w<< "to prQ with distance"<< dist_w << "from s"<<s;
 
                 prQ.push(GraphDistance(w,dist_w));
@@ -5845,15 +5879,11 @@ void Graph::dijkstra(const int &s, const int &si,
                 // and also provides contain()
                 m_graph[si]->setDistance(w,dist_w);
 
-                m_graphSumDistance += dist_w;
                 m_graphGeodesicsCount++;
 
                 qDebug() << "    --- dijkstra: "
                             "Set d ( s=" << s << ", w="<< w
-                         << " ) = "<< dist_w << "="<< m_graph[si]->distance(w)
-                         << " m_graphSumDistance ="
-                         << m_graphSumDistance;
-
+                         << " ) = "<< dist_w << "="<< m_graph[si]->distance(w);
 
                 if ( dist_w > m_graphDiameter){
                     m_graphDiameter=dist_w;
@@ -5881,12 +5911,6 @@ void Graph::dijkstra(const int &s, const int &si,
                               "For PC: sizeOfNthOrderNeighborhood: number of nodes at distance "
                            << dist_w << "from s is "
                            <<  sizeOfNthOrderNeighborhood.value(dist_w,0);
-
-                    m_graph [si]->setCC (m_graph [si]->CC() + dist_w);
-
-                    qDebug() << "    --- dijkstra: Compute Centralities: "
-                              "For CC: sum of distances ="
-                           <<  m_graph [si]->CC() << " (will invert it l8r)";
 
                     if (m_graph [si]->eccentricity() < dist_w ) {
                         m_graph [si]->setEccentricity(dist_w);

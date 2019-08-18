@@ -162,7 +162,7 @@ private:
     int m_num;
     QString  m_shape, m_iconPath;
     QString m_col_str, m_numColor, m_labelText, m_labelColor;
-    QColor m_col, m_col_orig;
+    QColor m_col;
     bool m_hasNumber, m_hasLabel, m_hasNumberInside, m_edgeHighLighting;
     /**Lists of elements attached to this node */
     list<GraphicsEdge*> inEdgeList, outEdgeList;

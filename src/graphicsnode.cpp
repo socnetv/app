@@ -82,7 +82,7 @@ GraphicsNode::GraphicsNode ( GraphicsWidget* gw,
     m_iconPath = iconPath;
 
     m_col_str=color;
-    m_col=m_col_orig=QColor(color);
+    m_col=QColor(color);
 
     m_hasNumber=showNumbers;
     m_hasNumberInside = numbersInside;
@@ -123,6 +123,7 @@ GraphicsNode::GraphicsNode ( GraphicsWidget* gw,
  * @param color string
  */
 void GraphicsNode::setColor(const QString &colorStr) {
+    qDebug()<< "GraphicsNode::setColor() - newColorStr:"  << colorStr;
     prepareGeometryChange();
     m_col=QColor(colorStr);
     update();
@@ -135,6 +136,7 @@ void GraphicsNode::setColor(const QString &colorStr) {
  * @param color
  */
 void GraphicsNode::setColor(QColor color){
+    qDebug()<< "GraphicsNode::setColor() - new QColor:"  << color;
     prepareGeometryChange();
     m_col=color;
     m_col_str = m_col.name();
@@ -329,11 +331,15 @@ QRectF GraphicsNode::boundingRect() const {
 void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) {
     //	painter->setClipRect( option->exposedRect );
 
+    //qDebug()<< "GraphicsNode::paint() " << m_col;
+
     if (option->state & QStyle::State_MouseOver) {
+      //  qDebug()<< "GraphicsNode::paint() mouse over " << m_col;
         painter->setBrush(m_col.darker(120));
         setZValue(ZValueNodeHighlighted);
     }
     else {
+        //qDebug()<< "GraphicsNode::paint() - no mouse over " << m_col;
         painter->setBrush(m_col);
         setZValue(ZValueNode);
     }
@@ -427,7 +433,7 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
             setZValue(ZValueNodeHighlighted);
             m_size_orig = m_size;
             setSize(m_size * 2 - 1);
-            m_col_orig = m_col;
+
             setColor(m_col.darker(120));
 
             if (m_edgeHighLighting) {
@@ -441,7 +447,7 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
         else{
             setZValue(ZValueNode);
             setSize(m_size_orig);
-            setColor(m_col_orig);
+            setColor(m_col);
 
             if (m_edgeHighLighting) {
                     foreach (GraphicsEdge *edge, inEdgeList)

@@ -919,8 +919,8 @@ qreal GraphVertex::distance (const int &v1) {
         }
         ++it1;
     }
-    qDebug() <<"GraphVertex::distance() - d("
-               << name() << " --> "<< v1 << ") = "<< d;
+//    qDebug() <<"GraphVertex::distance() - d("
+//               << name() << " --> "<< v1 << ") = "<< d;
 
     return d;
 }
