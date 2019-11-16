@@ -17,7 +17,7 @@ QListView,
 QStatusBar {
     background-color: #eceff1;  /* blue-gray */
     color: #111;
-    font-size: 12px;
+    font-size: 100%;
 }
 
 QMainWindow::separator {
@@ -130,7 +130,7 @@ QToolTip {
     opacity: 300;
     min-width: 300px;
     max-width: 600px;
-    font-size: 12px;
+    font-size: 100%;
 }
 
 QProgressDialog {
@@ -174,8 +174,8 @@ QGroupBox::title {
     padding: 0px 0px 0px 0px;
     font-style:italic;
     color: #444;
-    font-size: 9px;
-    line-height: 9px;
+    font-size: 100%;
+    /* line-height: 16px; */
     margin: 2px 0 0 0;
 }
 
@@ -278,7 +278,7 @@ QComboBox, QLineEdit, QTextEdit,QPlainTextEdit, QListView {
     selection-color: #fff;
     selection-background-color: #0277BD;
     /* selection-border: 0 none; */
-    font-size: 10px;
+    font-size: 100%;
     border: 0 none;
     border: 1px solid #ddd;
     border-radius: 4px;
