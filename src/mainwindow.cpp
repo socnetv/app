@@ -4097,12 +4097,12 @@ void MainWindow::initPanels(){
     QStringList networkAutoCreateSelectCommands;
     networkAutoCreateSelectCommands << "Select"
                              << "Famous data sets"
-                             << "Random scale-free network"
-                             << "Random small-worldfree network"
-                             << "Random Erdős–Rényi network"
-                             << "Random lattice network"
-                             << "Random d-regular network"
-                             << "Random ring-lattice network"
+                             << "Random scale-free"
+                             << "Random small-world"
+                             << "Random Erdős–Rényi"
+                             << "Random lattice"
+                             << "Random d-regular"
+                             << "Random ring-lattice"
                              << "With Web Crawler";
     toolBoxNetworkAutoCreateSelect->addItems(networkAutoCreateSelectCommands);
 
