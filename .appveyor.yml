@@ -45,14 +45,15 @@ install:
   - cmd: echo %BUILDNAME%
 
   - cmd: echo "Setting Qt environment..."
-  - set QTDIR=C:\Qt\5.12.1\mingw73_64
   - cmd: echo "Check Qt folders (debug)..."
   - cmd: dir C:\Qt
+  - cmd: dir C:\Qt\5.13
   - cmd: dir C:\Qt\Tools
 #  - cmd: dir C:\Qt\Tools\mingw730_64\bin
-#  - cmd: dir C:\Qt\5.12.1\mingw73_64
-#  - cmd: dir C:\Qt\5.12.1\mingw73_64\bin
-#  - cmd: dir C:\Qt\5.12.1\mingw73_64\plugins  
+#  - cmd: dir C:\Qt\5.13\mingw73_64
+#  - cmd: dir C:\Qt\5.13\mingw73_64\bin
+#  - cmd: dir C:\Qt\5.13\mingw73_64\plugins
+  - set QTDIR=C:\Qt\5.13\mingw73_64
   - cmd: echo "Check project folder..."        
   - cmd: dir C:\projects\socnetv  
   - cmd: echo "Installing Innosetup..."  
