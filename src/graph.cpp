@@ -5106,13 +5106,21 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
                           "For CC: total sum of distances for s =" << distances_sum_for_s;
 
                 m_graphSumDistance += distances_sum_for_s;
+
                 // Compute Closeness Centrality
-                if ( distances_sum_for_s != 0 )  {
-                    CC=1.0/distances_sum_for_s;  //Closeness centrality must be inverted
+                if ( distances_sum_for_s != 0 && distances_sum_for_s < RAND_MAX)  {
+                    // Connected actor:
+                    // There is a path from this actor to all others
+                    // Invert the sum of distances and set it as CC
+                    CC=1.0/distances_sum_for_s;
                 }
                 else {
-                    // Closeness zero at this point means
-                    // this actor is has not any outLinks
+                    // Not connected actor. Cases:
+                    // a) Isolated: The actor has no outbound links
+                    // b) Disconnected graph: There is no path from this actor
+                    // to some of the other actors, which means her distance to
+                    // them is infinite
+                    // For these two cases, set CC as zero.
                     CC=0;
                 }
                 (*it)->setCC( CC );
