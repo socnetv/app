@@ -154,17 +154,17 @@ public slots:
                         const int &labelSize,
                         const QPointF &p,
                         const QString &shape,
-                        const QString &iconPath = QString::null,
+                        const QString &iconPath = QString(),
                         const bool &signalMW = false
             );
 
     void graphFileLoaded(const int &fileType,
-                         const QString &fName=QString::null,
-                         const QString &netName=QString::null,
+                         const QString &fName=QString(),
+                         const QString &netName=QString(),
                          const int &totalNodes=0,
                          const int &totalLinks=0,
                          const int &edgeDirType=0,
-                         const QString &message=QString::null);
+                         const QString &message=QString());
 
     void vertexRemoveDummyNode(int);
 
@@ -179,7 +179,7 @@ public slots:
                       const QString &color ,
                       const int &type=0,
                       const bool &drawArrows=true, const bool &bezier=false,
-                      const QString &label=QString::null,
+                      const QString &label=QString(),
                       const bool &signalMW=true);
 
     void edgeCreateWebCrawler (const int &source, const int &target);
@@ -266,11 +266,11 @@ signals:
                              const qreal &density);
 
     void signalGraphLoaded (const int &fileType,
-                            const QString &fileName=QString::null,
-                            const QString &netName=QString::null,
+                            const QString &fileName=QString(),
+                            const QString &netName=QString(),
                             const int &totalNodes=0,
                             const int &totalLinks=0,
-                            const QString &message=QString::null );
+                            const QString &message=QString() );
 
 
 
@@ -280,7 +280,7 @@ signals:
 
     void signalNodeClickedInfo(const int &number=0,
                                     const QPointF &p=QPointF(),
-                                    const QString &label=QString::null,
+                                    const QString &label=QString(),
                                     const int &inDegree=0,
                                     const int &outDegree=0,
                                     const qreal &clc=0);
@@ -358,7 +358,7 @@ signals:
 
     void setNodeSize(const int &v, const int &size);
 
-    void setNodeShape(const int &v, const QString &shape, const QString &iconPath=QString::null);
+    void setNodeShape(const int &v, const QString &shape, const QString &iconPath=QString());
 
     void setNodeColor(const int &v, const QString &color);
 
@@ -437,7 +437,7 @@ public:
                     const QString m_codecName,
                     const int format,
                     const int two_sm_mode,
-                    const QString delimiter=QString::null);
+                    const QString delimiter=QString());
 
     void graphSave(const QString &fileName,
                    const int &fileType,
@@ -512,9 +512,9 @@ public:
 
     int vertexSize(const int &v) const;
 
-    void vertexShapeSetDefault (const QString, const QString &iconPath=QString::null);
+    void vertexShapeSetDefault (const QString, const QString &iconPath=QString());
 
-    void vertexShapeSet(const int &v, const QString &shape, const QString &iconPath=QString::null);
+    void vertexShapeSet(const int &v, const QString &shape, const QString &iconPath=QString());
 
     QString vertexShape(const int &v);
 

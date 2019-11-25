@@ -6921,7 +6921,7 @@ void MainWindow::slotNetworkPrint() {
  */
 void MainWindow::slotNetworkImportGraphML(){
     bool m_checkSelectFileType = false;
-    slotNetworkFileChoose( QString::null, FileType::GRAPHML, m_checkSelectFileType);
+    slotNetworkFileChoose( QString(), FileType::GRAPHML, m_checkSelectFileType);
 }
 
 
@@ -6931,7 +6931,7 @@ void MainWindow::slotNetworkImportGraphML(){
  */
 void MainWindow::slotNetworkImportGML(){
     bool m_checkSelectFileType = false;
-    slotNetworkFileChoose( QString::null, FileType::GML, m_checkSelectFileType);
+    slotNetworkFileChoose( QString(), FileType::GML, m_checkSelectFileType);
 }
 
 /**
@@ -6939,7 +6939,7 @@ void MainWindow::slotNetworkImportGML(){
  */
 void MainWindow::slotNetworkImportPajek(){
     bool m_checkSelectFileType = false;
-    slotNetworkFileChoose( QString::null, FileType::PAJEK, m_checkSelectFileType);
+    slotNetworkFileChoose( QString(), FileType::PAJEK, m_checkSelectFileType);
 }
 
 
@@ -6950,7 +6950,7 @@ void MainWindow::slotNetworkImportPajek(){
  */
 void MainWindow::slotNetworkImportAdjacency(){
     bool m_checkSelectFileType = false;
-    slotNetworkFileChoose( QString::null, FileType::ADJACENCY, m_checkSelectFileType);
+    slotNetworkFileChoose( QString(), FileType::ADJACENCY, m_checkSelectFileType);
 }
 
 
@@ -6961,7 +6961,7 @@ void MainWindow::slotNetworkImportAdjacency(){
  */
 void MainWindow::slotNetworkImportGraphviz(){
     bool m_checkSelectFileType = false;
-    slotNetworkFileChoose( QString::null ,FileType::GRAPHVIZ, m_checkSelectFileType);
+    slotNetworkFileChoose( QString() ,FileType::GRAPHVIZ, m_checkSelectFileType);
 }
 
 
@@ -6975,7 +6975,7 @@ void MainWindow::slotNetworkImportGraphviz(){
  */
 void MainWindow::slotNetworkImportUcinet(){
     bool m_checkSelectFileType = false;
-    slotNetworkFileChoose( QString::null, FileType::UCINET, m_checkSelectFileType);
+    slotNetworkFileChoose( QString(), FileType::UCINET, m_checkSelectFileType);
 }
 
 
@@ -7013,11 +7013,11 @@ void MainWindow::slotNetworkImportEdgeList(){
     {
     case 1:
         qDebug() << "***  MW::slotNetworkImportEdgeList - Weighted list selected! " ;
-        slotNetworkFileChoose( QString::null, FileType::EDGELIST_WEIGHTED, m_checkSelectFileType);
+        slotNetworkFileChoose( QString(), FileType::EDGELIST_WEIGHTED, m_checkSelectFileType);
         break;
     case 2:
         qDebug() << "***  MW: slotNetworkImportEdgeList - Simple list selected! " ;
-        slotNetworkFileChoose( QString::null, FileType::EDGELIST_SIMPLE, m_checkSelectFileType);
+        slotNetworkFileChoose( QString(), FileType::EDGELIST_SIMPLE, m_checkSelectFileType);
         break;
     }
 }
@@ -7029,7 +7029,7 @@ void MainWindow::slotNetworkImportEdgeList(){
  */
 void MainWindow::slotNetworkImportTwoModeSM(){
     bool m_checkSelectFileType = false;
-    slotNetworkFileChoose( QString::null, FileType::TWOMODE, m_checkSelectFileType);
+    slotNetworkFileChoose( QString(), FileType::TWOMODE, m_checkSelectFileType);
 }
 
 
@@ -7141,7 +7141,7 @@ void MainWindow::slotNetworkFileLoad(const QString m_fileName,
     initApp();
 
     userSelectedCodecName = m_codecName; //var for future use in a Settings dialog
-    QString delimiter=QString::null;
+    QString delimiter=QString();
     int two_sm_mode = 0;
 
     if ( m_fileFormat == FileType::TWOMODE ) {
@@ -7382,13 +7382,13 @@ void MainWindow::slotEditRelationAdd(QString newRelationName, const bool &change
                        "For instance, enter \"friendship\" if the "
                        "edges of this relation refer to the set of \n"
                        "friendships between pairs of actors."),
-                    QLineEdit::Normal, QString::null, &ok );
+                    QLineEdit::Normal, QString(), &ok );
     }
     else {
         newRelationName = QInputDialog::getText(
                     this, tr("Add new relation"),
                     tr("Enter a name for the new relation (or press Cancel):"),
-                    QLineEdit::Normal,QString::null, &ok );
+                    QLineEdit::Normal,QString(), &ok );
     }
     if (ok && !newRelationName.isEmpty()){
         // user pressed OK, name entered
@@ -7450,7 +7450,7 @@ void MainWindow::slotEditRelationRename(QString newName) {
                     this,
                     tr("Rename current relation"),
                     tr("Enter a new name for this relation."),
-                    QLineEdit::Normal, QString::null, &ok );
+                    QLineEdit::Normal, QString(), &ok );
         if ( newName.isEmpty() || !ok ){
             slotHelpMessageToUser(USER_MSG_CRITICAL,
                                   tr("Not a valid name."),
@@ -9012,7 +9012,7 @@ void MainWindow::slotEditNodePropertiesDialog() {
     int selectedNodesCount = activeGraph->graphSelectedVerticesCount();
     QColor color = QColor(appSettings["initNodeColor"]);
     QString shape= appSettings["initNodeShape"];
-    QString iconPath = QString::null;
+    QString iconPath = QString();
     QString label="";
     bool ok=false;
 

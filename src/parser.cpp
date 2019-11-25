@@ -136,7 +136,7 @@ void Parser::load(const QString fn,
             << " fileFormat "<< fileFormat
               << "delim" << delim << "delimiter"<<delimiter;
 
-    errorMessage=QString::null;
+    errorMessage=QString();
 
     switch (fileFormat){
     case FileType::GRAPHML:
@@ -206,7 +206,7 @@ void Parser::load(const QString fn,
         break;
     }
 
-    if (errorMessage!=QString::null) {
+    if (errorMessage!=QString()) {
         loadFileError(errorMessage);
         return;
     }
@@ -233,8 +233,8 @@ void Parser::loadFileError(const QString &errorMessage) {
     qDebug()<<"Parser::loadFileError() - errorMessage:"
            <<errorMessage;
     emit networkFileLoaded(FileType::UNRECOGNIZED,
-                           QString::null,
-                           QString::null,
+                           QString(),
+                           QString(),
                            0,
                            0,
                            false,
@@ -285,12 +285,12 @@ bool Parser::loadDL(){
     QTextStream ts( &file );
     ts.setCodec(userSelectedCodecName.toUtf8());
 
-    QString str=QString::null;
-    QString relation=QString::null;
-    QString prevLineStr=QString::null;
-    QString label=QString::null;
-    QString value=QString::null;
-    QString dlFormat=QString::null;
+    QString str=QString();
+    QString relation=QString();
+    QString prevLineStr=QString();
+    QString label=QString();
+    QString value=QString();
+    QString dlFormat=QString();
     QString edgeStr;
 
     int lineCounter = 0;
@@ -594,7 +594,7 @@ bool Parser::loadDL(){
                     qDebug() << "Parser::loadDL() -Nodes have not been created yet."
                              << "No node labels found."
                              << "Calling createRandomNodes(N) for all" ;
-                    createRandomNodes(1, QString::null, totalNodes);
+                    createRandomNodes(1, QString(), totalNodes);
                     nodeSum = totalNodes;
 
                 }
@@ -634,7 +634,7 @@ bool Parser::loadDL(){
                         qDebug() << "Parser::loadDL() -Nodes have not been created yet."
                                  << "No node labels found."
                                  << "Calling createRandomNodes(NC) for all columns" ;
-                        createRandomNodes(totalNodes, QString::null, NC);
+                        createRandomNodes(totalNodes, QString(), NC);
 
                     }
                     else if ( colLabels.count() == 1 ) {
@@ -889,9 +889,9 @@ bool Parser::readDLKeywords(QStringList &strList,
                             bool &fullmatrixFormat,
                             bool &edgelist1Format){
     QStringList tempList;
-    QString tempStr=QString::null;
-    QString label=QString::null;
-    QString value=QString::null;
+    QString tempStr=QString();
+    QString label=QString();
+    QString value=QString();
     bool intOK=false;
 
     for (QStringList::Iterator it1 = strList.begin(); it1!=strList.end(); ++it1)   {
@@ -1008,7 +1008,7 @@ bool Parser::loadPajek(){
     nodeColor="";
     edgeColor="";
     nodeShape="";
-    initEdgeLabel = QString::null;
+    initEdgeLabel = QString();
     QStringList lineElement;
     bool ok=false, intOk=false, check1=false, check2=false;
     bool has_arcs=false;
@@ -1277,7 +1277,7 @@ bool Parser::loadPajek(){
                                     initNodeLabelSize,
                                     QPointF(randX, randY),
                                     nodeShape,
-                                    QString::null,
+                                    QString(),
                                     false
                                     );
 
@@ -1297,7 +1297,7 @@ bool Parser::loadPajek(){
                         initNodeNumberColor, initNodeNumberSize,
                         label, initNodeLabelColor, initNodeLabelSize,
                         QPointF(randX, randY),
-                        nodeShape, QString::null, false
+                        nodeShape, QString(), false
                         );
             initNodeColor=nodeColor;
         }
@@ -1325,7 +1325,7 @@ bool Parser::loadPajek(){
                                 initNodeLabelSize,
                                 QPointF(randX, randY),
                                 initNodeShape,
-                                QString::null,
+                                QString(),
                                 false
                                 );
                 }
@@ -1678,7 +1678,7 @@ bool Parser::loadAdjacency(){
                                  initNodeLabelSize,
                                  QPointF(randX, randY),
                                  initNodeShape,
-                                 QString::null,
+                                 QString(),
                                  false
                                  );
             }
@@ -1814,7 +1814,7 @@ bool Parser::loadTwoModeSociomatrix(){
                          initNodeNumberColor, initNodeNumberSize,
                          QString::number(i), initNodeLabelColor, initNodeLabelSize,
                          QPointF(randX, randY),
-                         initNodeShape, QString::null, false
+                         initNodeShape, QString(), false
                          );
         j=1;
         qDebug()<< "Parser-loadTwoModeSociomatrix(): reading actor affiliations...";
@@ -2872,7 +2872,7 @@ bool Parser::loadGML(){
 
     relationsList.clear();
 
-    node_id= QString::null;
+    node_id= QString();
     arrows=true;
     bezier=false;
     edgeDirType=EdgeType::Undirected;
@@ -3128,7 +3128,7 @@ bool Parser::loadGML(){
                             initNodeNumberColor, initNodeNumberSize,
                             nodeLabel , initNodeLabelColor, initNodeLabelSize,
                             QPointF(randX,randY),
-                            nodeShape, QString::null, false
+                            nodeShape, QString(), false
                             );
 
             }
@@ -3137,7 +3137,7 @@ bool Parser::loadGML(){
                 edgeKey = false;
                 edgeWeight = 1;
                 edgeColor = "black";
-                if (edgeLabel==QString::null) {
+                if (edgeLabel==QString()) {
                     edgeLabel = edge_source + "->" + edge_target;
                 }
                 emit edgeCreate(source,target, edgeWeight, edgeColor,
@@ -3351,7 +3351,7 @@ bool Parser::loadDot(){
                             initNodeNumberColor, initNodeNumberSize,
                             nodeLabel , initNodeLabelColor, initNodeLabelSize,
                             QPointF(randX,randY),
-                            initNodeShape,QString::null,  false
+                            initNodeShape,QString(),  false
                             );
                 // Note that we push the numbered nodelabel whereas we create
                 // the node with its file specified node label.
@@ -3403,7 +3403,7 @@ bool Parser::loadDot(){
                             initNodeNumberColor, initNodeNumberSize,
                             nodeLabel , initNodeLabelColor, initNodeLabelSize,
                             QPointF(randX,randY),
-                            initNodeShape,QString::null,  false
+                            initNodeShape,QString(),  false
                             );
                 nodesDiscovered.push_back( node  );			// Note that we push the numbered nodelabel whereas we create the node with its file specified node label.
                 qDebug()<<" * Total nodes" << totalNodes<< " nodesDiscovered  "<< nodesDiscovered.size() ;
@@ -3475,7 +3475,7 @@ bool Parser::loadDot(){
                                 initNodeNumberColor, initNodeNumberSize,
                                 node , initNodeLabelColor, initNodeLabelSize,
                                 QPointF(randX,randY),
-                                initNodeShape, QString::null, false
+                                initNodeShape, QString(), false
                                 );
                     nodesDiscovered.push_back( node  );
                     qDebug()<<" * Total totalNodes "
@@ -3533,7 +3533,7 @@ bool Parser::loadDot(){
                                 initNodeNumberColor, initNodeNumberSize,
                                 label, initNodeLabelColor, initNodeLabelSize,
                                 QPointF(randX,randY),
-                                nodeShape, QString::null, false
+                                nodeShape, QString(), false
                                 );
                     aNum=totalNodes;
                     nodesDiscovered.push_back( node);
@@ -3920,7 +3920,7 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
                              node.key,
                              initNodeLabelColor, initNodeLabelSize,
                              QPointF(randX, randY),
-                             initNodeShape,QString::null,
+                             initNodeShape,QString(),
                              false
                              );
         }
@@ -3937,7 +3937,7 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
                              node.key,
                              initNodeLabelColor, initNodeLabelSize,
                              QPointF(randX, randY),
-                             initNodeShape,QString::null,
+                             initNodeShape,QString(),
                              false
                              );
 
@@ -4211,7 +4211,7 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
                               node.key,
                               initNodeLabelColor, initNodeLabelSize,
                               QPointF(randX, randY),
-                              initNodeShape,QString::null,
+                              initNodeShape,QString(),
                               false
                               );
          }
@@ -4228,7 +4228,7 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
                               node.key,
                               initNodeLabelColor, initNodeLabelSize,
                               QPointF(randX, randY),
-                              initNodeShape,QString::null,
+                              initNodeShape,QString(),
                               false
                               );
 

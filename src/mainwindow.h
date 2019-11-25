@@ -172,7 +172,7 @@ public:
 public slots:
     //NETWORK MENU
     void slotNetworkNew();
-    void slotNetworkFileChoose(QString m_fileName = QString::null,
+    void slotNetworkFileChoose(QString m_fileName = QString(),
                                int m_fileFormat = -1,
                                const bool &checkSelectFileType = true);
     void slotNetworkFileDialogFileSelected(const QString &fileName);
@@ -183,11 +183,11 @@ public slots:
     bool slotNetworkFilePreview(const QString &, const int &);
     void slotNetworkFileLoad ( const QString, const QString, const int );
     void slotNetworkFileLoaded(const int &type,
-                               const QString &fName=QString::null,
-                               const QString &netName=QString::null,
+                               const QString &fName=QString(),
+                               const QString &netName=QString(),
                                const int &totalNodes=0,
                                const int &totalEdges=0,
-                               const QString &message=QString::null);
+                               const QString &message=QString());
     void slotNetworkFileLoadRecent();
     void slotNetworkSavedStatus(const int &status);
     void slotNetworkFileView();
@@ -292,10 +292,10 @@ public slots:
 
     //EDIT MENU
     void slotEditRelationsClear();
-    void slotEditRelationAdd(QString newRelationName=QString::null,
+    void slotEditRelationAdd(QString newRelationName=QString(),
                              const bool &changeRelation=true);
     void slotEditRelationChange(const int relIndex=RAND_MAX);
-    void slotEditRelationRename(QString newName=QString::null);
+    void slotEditRelationRename(QString newName=QString());
 
     void slotEditOpenContextMenu(const QPointF & mPos);
     void slotEditSelectionChanged (const int &selNodes, const int &selEdges);
@@ -316,7 +316,7 @@ public slots:
     void slotEditNodeFindDialog();
     void slotEditNodeFind(const QStringList &list,
                           const QString &searchType,
-                          const QString &indexStr=QString::null);
+                          const QString &indexStr=QString());
     void slotEditNodeRemove();
     void slotEditNodeOpenContextMenu();
     void slotEditNodePropertiesDialog();
@@ -334,8 +334,8 @@ public slots:
     void slotEditNodeColorAll(QColor color=QColor());
     void slotEditNodeSizeAll(int newSize=0, const bool &normalized=false);
     void slotEditNodeShape(const int &vertex = 0,
-                           QString shape=QString::null,
-                           QString nodeIconPath=QString::null);
+                           QString shape=QString(),
+                           QString nodeIconPath=QString());
     void slotEditNodeNumberSize(int v1=0, int newSize=0, const bool prompt=true);
     void slotEditNodeNumberDistance(int v1=0, int newSize=0);
     void slotEditNodeNumbersColor(const int &v1=0, QColor color=QColor());
@@ -524,16 +524,16 @@ public slots:
     void slotHelpCreateTips();
     void slotHelpAbout();
     void slotAboutQt();
-    void slotHelpMessageToUserInfo(const QString text=QString::null);
-    void slotHelpMessageToUserError(const QString text=QString::null);
+    void slotHelpMessageToUserInfo(const QString text=QString());
+    void slotHelpMessageToUserError(const QString text=QString());
     int slotHelpMessageToUser(const int type=0,
-                              const QString statusMsg=QString::null,
-                              const QString text=QString::null,
-                              const QString info=QString::null,
+                              const QString statusMsg=QString(),
+                              const QString text=QString(),
+                              const QString info=QString(),
                               QMessageBox::StandardButtons buttons=QMessageBox::NoButton,
                               QMessageBox::StandardButton defBtn=QMessageBox::Ok,
-                              const QString btn1=QString::null,
-                              const QString btn2=QString::null
+                              const QString btn1=QString(),
+                              const QString btn2=QString()
                                );
 
 

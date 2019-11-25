@@ -818,7 +818,7 @@ void Graph::vertexCreateAtPos(const QPointF &p){
 
     vertexCreate( i, initVertexSize,  initVertexColor,
                   initVertexNumberColor, initVertexNumberSize,
-                  QString::null, initVertexLabelColor, initVertexLabelSize,
+                  QString(), initVertexLabelColor, initVertexLabelSize,
                   p, initVertexShape, initVertexIconPath,
                   true
                   );
@@ -851,7 +851,7 @@ void Graph::vertexCreateAtPosRandom(const bool &signalMW){
     qDebug() << "Graph::vertexCreateAtPosRandom() - at:" << p;
     vertexCreate( vertexNumberMax()+1, initVertexSize, initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
-                    QString::null, initVertexLabelColor, initVertexLabelSize,
+                    QString(), initVertexLabelColor, initVertexLabelSize,
                     p, initVertexShape, initVertexIconPath, signalMW
                     );
 }
@@ -3981,7 +3981,7 @@ void Graph::graphSymmetrize(){
                 qDebug() << "Graph:graphSymmetrize(): s = " << v1
                          << " is NOT inLinked from y = " <<  v2  ;
                 edgeCreate( v2, v1, weight, initEdgeColor, false, true, false,
-                            QString::null, false);
+                            QString(), false);
             }
             else {
                 qDebug() << "Graph: graphSymmetrize(): v1 = " << v1
@@ -4073,7 +4073,7 @@ void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
         qDebug() << "Graph::graphSymmetrizeStrongTies() - calling edgeCreate for"
                  << v1 << "--"<<v2;
         edgeCreate( v1, v2, 1, initEdgeColor, EdgeType::Undirected, true, false,
-                    QString::null, false);
+                    QString(), false);
         ++it2;
     }
 
@@ -4141,7 +4141,7 @@ void Graph::graphCocitation(){
                         << "because CT(" << i+1 << "," <<  j+1 << ") = " << weight;
                 edgeCreate( v1, v2, weight, initEdgeColor,
                             EdgeType::Undirected, true, false,
-                            QString::null, false);
+                            QString(), false);
             }
 
             j++;
@@ -4219,7 +4219,7 @@ void Graph::graphDichotomization(const qreal threshold) {
         qDebug() << "Graph::graphDichotomization() - calling edgeCreate for"
                  << v1 << "--"<<v2;
         edgeCreate( v1, v2, 1, initEdgeColor, EdgeType::Undirected, true, false,
-                    QString::null, false);
+                    QString(), false);
         ++it2;
     }
 
@@ -7740,9 +7740,9 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
 
     unsigned int initialSize = seriesPQ.size();
 
-    QString min = QString::null;
-    QString max = QString::null;
-    QString value = QString::null;
+    QString min = QString();
+    QString max = QString();
+    QString value = QString();
 
     qreal frequency = 0;
     qreal minF = RAND_MAX;
@@ -11185,7 +11185,7 @@ void Graph::randomNetErdosCreate(const int &N,
                                     << edgeCount;
                         edgeCreate(i+1, j+1, 1, initEdgeColor,
                                    EdgeType::Undirected, false, false,
-                                   QString::null, false);
+                                   QString(), false);
                     }
                     else {
                         qDebug() << "Graph::randomNetErdosCreate() - "
@@ -11194,7 +11194,7 @@ void Graph::randomNetErdosCreate(const int &N,
 
                         edgeCreate(i+1, j+1, 1, initEdgeColor,
                                    EdgeType::Directed, true, false,
-                                   QString::null, false);
+                                   QString(), false);
                     }
                 }
                 else
@@ -11230,14 +11230,14 @@ void Graph::randomNetErdosCreate(const int &N,
                             << " undirected Edge no " << edgeCount;
                 edgeCreate(source, target, 1, initEdgeColor,
                            EdgeType::Undirected, false, false,
-                           QString::null, false);
+                           QString(), false);
             }
             else {
                 qDebug() << "Graph::randomNetErdosCreate() - create "
                             << " directed Edge no " << edgeCount;
                 edgeCreate(source, target, 1, initEdgeColor,
                            EdgeType::Directed, true, false,
-                           QString::null, false);
+                           QString(), false);
             }
           emit signalProgressBoxUpdate(++progressCounter );
         } while ( edgeCount != m );
@@ -11331,7 +11331,7 @@ void Graph::randomNetScaleFreeCreate (const int &N,
                         "Creating initial edge " << i+1 << " <-> " << j+1;
             edgeCreate (i+1, j+1, 1, initEdgeColor,
                         EdgeType::Undirected, false, false,
-                        QString::null, false);
+                        QString(), false);
         }
         emit signalProgressBoxUpdate( ++progressCounter );
     }
@@ -11402,7 +11402,7 @@ void Graph::randomNetScaleFreeCreate (const int &N,
                                  <<  i+1 << " <-> " << j+1;
                         edgeCreate (i+1, j+1, 1, initEdgeColor,
                                     EdgeType::Undirected, false, false,
-                                    QString::null, false);
+                                    QString(), false);
                         newEdges ++;
 
                     }
@@ -11412,7 +11412,7 @@ void Graph::randomNetScaleFreeCreate (const int &N,
                                  <<  i+1 << " <-> " << j+1;
                         edgeCreate (i+1, j+1, 1, initEdgeColor,
                                     EdgeType::Directed, true, false,
-                                    QString::null, false);
+                                    QString(), false);
                         newEdges ++;
 
                     }
@@ -11494,7 +11494,7 @@ void Graph::randomNetSmallWorldCreate (const int &N, const int &degree,
                             qDebug("Creating new link!");
                             edgeCreate(i, candidate, 1, initEdgeColor,
                                        EdgeType::Undirected, false, false,
-                                       QString::null, false);
+                                       QString(), false);
                             break;
                         }
                     }
@@ -11669,7 +11669,7 @@ void Graph::randomNetRegularCreate(const int &N,
                 (graphIsUndirected()) ? EdgeType::Undirected : EdgeType::Directed,
                 (graphIsUndirected()) ? false:true,
                 false,
-                QString::null, false);
+                QString(), false);
         edgeCount++;
         progressCounter +=progressFraction;
         qDebug() << "Graph::randomNetRegularCreate() -"
@@ -11745,7 +11745,7 @@ void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
             qDebug("Creating Link between %i  and %i", i+1, target+1);
             edgeCreate(i+1, target+1, 1, initEdgeColor,
                        EdgeType::Undirected, false, false,
-                       QString::null, false);
+                       QString(), false);
         }
         if (updateProgress) {
             emit signalProgressBoxUpdate( ++progressCounter );
@@ -11960,7 +11960,7 @@ void Graph::randomNetLatticeCreate(const int &N,
                 (graphIsUndirected()) ? EdgeType::Undirected : EdgeType::Directed,
                 (graphIsUndirected()) ? false:true,
                 false,
-                QString::null, false);
+                QString(), false);
 //        edgeCount++;
         progressCounter +=progressFraction;
 //        qDebug() << "Graph::randomNetLatticeCreate() -"
@@ -15606,8 +15606,8 @@ void Graph::graphFileLoaded (const int &fileType,
                     "Emitting signalGraphLoaded with error message "
                  << message;
         emit signalGraphLoaded (fileType,
-                                QString::null,
-                                QString::null,
+                                QString(),
+                                QString(),
                                 0,
                                 0,
                                 message);
@@ -16281,7 +16281,7 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
     }
     QTextStream outText( &file );
     outText.setCodec("UTF-8");
-    QString datasetDescription=QString::null;
+    QString datasetDescription=QString();
     qDebug()<< "		... writing dataset ";
     if ( fileName == "Campnet.paj") {
         qDebug()<< "		... to  " << fileName;

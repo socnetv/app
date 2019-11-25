@@ -86,7 +86,7 @@ public:
               const int iNNS, const QString iNLC, const int iNLS ,
               const QString iEC, const int w, const int h, const int format,
               const int sm_mode,
-           const QString delim=QString::null);
+           const QString delim=QString());
 	bool loadPajek();
 	bool loadAdjacency();
 	bool loadDot();
@@ -119,7 +119,7 @@ public:
     void createMissingNodeEdges();
 
 	bool isComment(QString str);  
-    void createRandomNodes(const int &fixedNum=1,const QString &label=QString::null,
+    void createRandomNodes(const int &fixedNum=1,const QString &label=QString(),
                            const int &newNodes=1);
 
     void loadFileError(const QString &errorMessage);
@@ -138,7 +138,7 @@ signals:
                      const int &lSize,
                      const QPointF &p,
                      const QString &shape,
-                     const QString &iconPath=QString::null,
+                     const QString &iconPath=QString(),
                      const bool &signalMW=false);
     void createNodeAtPosRandom(const bool &signalMW=false);
     void createNodeAtPosRandomWithLabel (const int &num,
@@ -149,7 +149,7 @@ signals:
     void edgeCreate (const int &source, const int &target, const qreal &weight,
                      const QString &color, const int &edgeDirType,
                      const bool &arrows, const bool &bezier,
-                     const QString &edgeLabel=QString::null,
+                     const QString &edgeLabel=QString(),
                      const bool &signalMW=false);
     void networkFileLoaded(int fileType,
                            QString fileName,
@@ -157,7 +157,7 @@ signals:
                            int totalNodes,
                            int totalLinks,
                            int edgeDirType,
-                           const QString &message=QString::null);
+                           const QString &message=QString());
 
 
 	void removeDummyNode (int);
