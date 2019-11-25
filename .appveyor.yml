@@ -46,7 +46,8 @@ install:
 
   - cmd: echo "Setting Qt environment..."
   - set QTDIR=C:\Qt\5.12.1\mingw73_64
-#  - cmd: echo "Check Qt folders..."      
+  - cmd: echo "Check Qt folders (debug)..."
+  - cmd: dir C:\Qt
   - cmd: dir C:\Qt\Tools
 #  - cmd: dir C:\Qt\Tools\mingw730_64\bin
 #  - cmd: dir C:\Qt\5.12.1\mingw73_64
