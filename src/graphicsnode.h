@@ -100,7 +100,7 @@ public:
     void setSize(const int &);
     int size() const;
 
-    void setShape (const QString, const QString &iconPath=QString::null);
+    void setShape (const QString, const QString &iconPath=QString());
     QString nodeShape() {return m_shape;}
 
     void setColor(const QString &colorStr);

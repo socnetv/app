@@ -55,7 +55,7 @@ public:
     //explicit Chart ( QChart *ch = Q_NULLPTR, QWidget *parent = Q_NULLPTR );
     ~Chart();
 
-    void setTitle(const QString &title = QString::null, const QFont &font=QFont());
+    void setTitle(const QString &title = QString(), const QFont &font=QFont());
     void addSeries(QAbstractSeries *series = Q_NULLPTR );
     void appendToSeries (const QPointF &p);
     void removeAllSeries();

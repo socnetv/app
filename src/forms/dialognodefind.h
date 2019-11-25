@@ -49,7 +49,7 @@ public slots:
 signals:
     void userChoices( const QStringList &list,
                       const QString &type,
-                      const QString &selectedIndex=QString::null);
+                      const QString &selectedIndex=QString());
 private:
     Ui::DialogNodeFind *ui;
     QStringList list;

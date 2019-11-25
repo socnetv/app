@@ -154,7 +154,7 @@ public:
     void setSize(const int &size ) { m_size=size; }
     int size()  const { return m_size; }
 
-    void setShape(const QString &shape, const QString &iconPath = QString::null) { m_shape=shape; m_iconPath=iconPath;}
+    void setShape(const QString &shape, const QString &iconPath = QString()) { m_shape=shape; m_iconPath=iconPath;}
     QString shape() const { return m_shape; }
     QString shapeIconPath() {return m_iconPath; }
 
@@ -209,7 +209,7 @@ public:
     void setOutEdgeLabel(const int &v2,
                          const QString &label) { m_outEdgeLabels[v2]=label; }
     QString outEdgeLabel(const int &v2) const {
-        return ( m_outEdgeLabels.contains(v2) ) ? m_outEdgeLabels.value(v2) : QString::null;
+        return ( m_outEdgeLabels.contains(v2) ) ? m_outEdgeLabels.value(v2) : QString();
     }
 
 

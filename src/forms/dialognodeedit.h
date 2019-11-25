@@ -47,7 +47,7 @@ public:
                             const int &size = 8,
                             const QColor &color= QColor("red"),
                             const QString &shape = "circle",
-                            const QString &path=QString::null);
+                            const QString &path=QString());
     ~DialogNodeEdit();
 public slots:
     void checkErrors ();
@@ -61,7 +61,7 @@ signals:
                       const QString &value,
                       const QColor &color,
                       const QString &shape,
-                      const QString &iconPath=QString::null);
+                      const QString &iconPath=QString());
     void nodeEditDialogError(QString);
 
 private:

@@ -44,7 +44,7 @@ public:
     explicit DialogExportPDF (QWidget *parent = Q_NULLPTR );
     ~DialogExportPDF();
 public slots:
-    void checkFilename(const QString &fileName = QString::null);
+    void checkFilename(const QString &fileName = QString());
     void getFilename();
     void getPrinterMode(const QString &mode);
     void getUserChoices ();

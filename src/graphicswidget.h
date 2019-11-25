@@ -131,7 +131,7 @@ public slots:
 
     bool setNodeShape(const int &nodeNumber,
                       const QString &shape,
-                      const QString &iconPath=QString::null);
+                      const QString &iconPath=QString());
     bool setNodeColor(const int &, const QString &color);
 
     void setNodeNumberColor(const int &nodeNumber, const QString &color);
