@@ -5097,7 +5097,7 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
 
                     distances_sum_for_s += (*it)->distance( (*it1)->name() ) ;
                     qDebug() << "    Compute Centralities: "
-                               "For CC: sum of distances. distance(" << (*it1)->name()
+                               "For CC: sum of distances. distance(" << (*it)->name()
                              << "," <<  (*it1)->name() << ") = " << (*it)->distance( (*it1)->name() )
                              << "new sum of distances for s =" << distances_sum_for_s;
 
