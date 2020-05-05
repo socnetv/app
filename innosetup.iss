@@ -1,11 +1,11 @@
 #define APPTITLE "Social Network Visualizer"
 #define APPSHORT "SocNetV"
-#define RELEASEFOLDER "release\"
+#define RELEASEFOLDER "debug\"
 #define EXECUTABLE APPSHORT + ".exe"
 #define NUMERICVERSION GetFileVersion(RELEASEFOLDER+EXECUTABLE)
 #define VERSION "2.6-dev" 
 #define URL "https://socnetv.org"
-#define COPYRIGHT "2005-2018 " + URL
+#define COPYRIGHT "2005-2020 " + URL
 
 [Setup]
 AllowNoIcons=yes
