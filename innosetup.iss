@@ -1,6 +1,6 @@
 #define APPTITLE "Social Network Visualizer"
 #define APPSHORT "SocNetV"
-#define RELEASEFOLDER "debug\"
+#define RELEASEFOLDER "release\"
 #define EXECUTABLE APPSHORT + ".exe"
 #define NUMERICVERSION GetFileVersion(RELEASEFOLDER+EXECUTABLE)
 #define VERSION "2.6-dev" 

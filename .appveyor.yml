@@ -38,7 +38,7 @@ install:
   - cmd: set SOCNETV_VERSION=2.6-dev
   - cmd: echo %SOCNETV_VERSION%
   - cmd: echo "Setting build type"
-  - cmd: set BUILD_TYPE=debug
+  - cmd: set BUILD_TYPE=release
   - cmd: echo %BUILD_TYPE%
 
   - cmd: echo "Setting BUILDNAME" 

@@ -5,8 +5,8 @@ lessThan(QT_VERSION, 5.0) {
 TARGET = socnetv
 
 TEMPLATE = app
-# CONFIG  += qt thread warn_on release
-CONFIG  += qt thread warn_on debug
+CONFIG  += qt thread warn_on release
+#CONFIG  += qt thread warn_on debug
 
 LANGUAGE = C++
 
