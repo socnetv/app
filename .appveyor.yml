@@ -37,6 +37,9 @@ install:
   - cmd: echo "Setting SocNetV current version"
   - cmd: set SOCNETV_VERSION=2.6-dev
   - cmd: echo %SOCNETV_VERSION%
+  - cmd: echo "Setting build type"
+  - cmd: set BUILD_TYPE=debug
+  - cmd: echo %BUILD_TYPE%
 
   - cmd: echo "Setting BUILDNAME" 
   - if "%APPVEYOR_REPO_TAG%"=="true" set BUILDNAME=%APPVEYOR_REPO_TAG_NAME%-%LAST_COMMIT_SHORT%  
@@ -63,29 +66,29 @@ install:
 
 build_script:
   - cmd: echo "Running qmake..."  
-  - qmake "CONFIG+=release" socnetv.pro
-  - cmd: echo "BUILDING starts here with mingw32..."    
+  - qmake "CONFIG+=%BUILD_TYPE%" socnetv.pro
+  - cmd: echo "BUILDING %BUILD_TYPE% starts here with mingw32..."
   - mingw32-make
 
 after_build:
   - cmd: echo "check folder contents"
   - cmd: dir C:\projects\socnetv
-  - cmd: dir C:\projects\socnetv\release  
+  - cmd: dir C:\projects\socnetv\%BUILD_TYPE%
 
   - cmd: echo "Executing windeployqt"
-  - windeployqt release/socnetv.exe
+  - windeployqt %BUILD_TYPE%/socnetv.exe
 
   - cmd: echo "check folder contents again..."
-  - cmd: dir C:\projects\socnetv\release  
+  - cmd: dir C:\projects\socnetv\%BUILD_TYPE%
 
   - cmd: echo "Deleting *.o and *.cpp..."  
-  - cmd: del C:\projects\socnetv\release\*.cpp
-  - cmd: del C:\projects\socnetv\release\*.o
+  - cmd: del C:\projects\socnetv\%BUILD_TYPE%\*.cpp
+  - cmd: del C:\projects\socnetv\%BUILD_TYPE%\*.o
 
   - cmd: echo "check folder contents again..."
-  - cmd: dir C:\projects\socnetv\release  
+  - cmd: dir C:\projects\socnetv\%BUILD_TYPE%
 
-  - cmd: cp COPYING release/LICENSE.txt"
+  - cmd: cp COPYING %BUILD_TYPE%/LICENSE.txt"
 
   - cmd: echo "Running Innosetup..."
   - iscc innosetup.iss
@@ -106,7 +109,7 @@ artifacts:
 deploy: 
   - provider: GitHub
     tag: continuous
-    description: 'Continuous Integration release'
+    description: 'AppVeyor Continuous Integration release'
     artifact: /SocNetV.*installer\.exe/
     auth_token:
       secure: owdxko+lS3nNcxIsxL4OTdfZ5UPwudTp2vtk8TlErxd0/tqAfsPGmZ8BjN5sYTTk # your encrypted token from GitHub    
