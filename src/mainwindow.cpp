@@ -12149,8 +12149,8 @@ void MainWindow::slotAnalyzeClusteringCoefficient (){
 
 
 /**
- * @brief Calls Graph:: writeCliqueCensus() to write the number of cliques (triangles)
-*  of each vertex into a file, then displays it.
+ * @brief Calls Graph:: writeCliqueCensus() to write the Clique Census
+*  into a file, then displays it.
  */
 void MainWindow::slotAnalyzeCommunitiesCliqueCensus(){
 

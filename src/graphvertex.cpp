@@ -593,7 +593,8 @@ QHash<int, qreal> GraphVertex::reciprocalEdgesHash(){
 
 
 /**
- * @brief Returns a list of all neighbors mutually connected to this vertex in the active relation
+ * @brief Returns a list of all neighbors mutually connected to this vertex in the active relation.
+ * The returned list does not include the vertex itself, even if it self-connected.
  * Same as calling GraphVertex::reciprocalEdgesHash().keys() which returns a QList of int keys,
  * where each key is a vertex reciprocally connected to this one.
  * @return  QList<int>
@@ -611,7 +612,7 @@ QList<int> GraphVertex::neighborhoodList(){
             edgeStatus=it1.value().second.second;
             if ( edgeStatus == true) {
                 m_weight=it1.value().second.first;
-                if (this->hasEdgeFrom (it1.key()) == m_weight ) {
+                if ( this->name() != it1.key() && this->hasEdgeFrom (it1.key()) == m_weight ) {
                     m_neighborhoodList << it1.key();
 //                qDebug() <<  "GraphVertex::neighborhoodList() - mutually connected neighbor="
 //                          << it1.key()
@@ -623,11 +624,11 @@ QList<int> GraphVertex::neighborhoodList(){
         ++it1;
     }
 
-    qDebug() << "GraphVertex::neighborhoodList() - of vertex " << this->name()
-             <<  "final list"
-              <<m_neighborhoodList
-                 <<" count"
-                 << m_neighborhoodList.count();
+//    qDebug() << "GraphVertex::neighborhoodList() - of vertex " << this->name()
+//             <<  "final list"
+//              <<m_neighborhoodList
+//                 <<" count"
+//                 << m_neighborhoodList.count();
 
 //    qDebug() <<  "GraphVertex::neighborhoodList() - reporting localDegree "
 //                 << this->localDegree();
@@ -849,23 +850,23 @@ qreal GraphVertex::hasEdgeFrom(const int &v2, const bool &allRelations){
                 edgeStatus=it1.value().second.second;
                 if ( edgeStatus == true) {
                     m_weight=it1.value().second.first;
-                    qDebug()<< "GraphVertex::hasEdgeFrom() - "<<  this->name()
-                            << "<-" << v2 << " = "<< m_weight;
+//                    qDebug()<< "GraphVertex::hasEdgeFrom() - "<<  this->name()
+//                            << "<-" << v2 << " = "<< m_weight;
                     return m_weight;
                 }
                 else {
-                    qDebug()<< "GraphVertex::hasEdgeFrom() - "<<  this->name()
-                            << "<-" << v2 << " = "<< m_weight
-                            << " but edgeStatus " << edgeStatus;
+//                    qDebug()<< "GraphVertex::hasEdgeFrom() - "<<  this->name()
+//                            << "<-" << v2 << " = "<< m_weight
+//                            << " but edgeStatus " << edgeStatus;
                     return 0;
                 }
             }
         }
         else {
                 m_weight=it1.value().second.first;
-                qDebug()<< "GraphVertex::hasEdgeFrom() - "<<  this->name()
-                        << "<-" << v2 << " = "<< m_weight
-                           << "relation"<<it1.value().first;
+//                qDebug()<< "GraphVertex::hasEdgeFrom() - "<<  this->name()
+//                        << "<-" << v2 << " = "<< m_weight
+//                           << "relation"<<it1.value().first;
                 return m_weight;
 
 

@@ -2692,7 +2692,7 @@ int Graph::vertexDegreeIn (int v1) {
  * @return  QList<int>
  */
 QList<int> Graph::vertexNeighborhoodList(const int &v1) {
-    qDebug()<< "Graph::vertexNeighborhoodList()";
+    //qDebug()<< "Graph::vertexNeighborhoodList()";
     return m_graph[ vpos[v1] ]-> neighborhoodList();
 }
 
@@ -12791,7 +12791,9 @@ void Graph::writeTriadCensus( const QString fileName,
 
 /**
  * @brief Graph::writeCliqueCensus
- * Writes the number of cliques (maximal connected subgraphs) of each vertex into a given file.
+ * Calls graphCliques() to compute all cliques (maximal connected subgraphs) of the network.
+ * Then writes the results into a file, along with the Actor by clique analysis,
+ * the Co-membership matrix and the Hierarchical clustering of overlap matrix
  * @param fileName
  * @param considerWeights
  */
@@ -12833,7 +12835,10 @@ bool Graph::writeCliqueCensus(const QString &fileName,
     pMsg = tr("Computing Clique Census. Please wait..") ;
     emit statusMessage ( pMsg );
     qDebug() << "Graph::writeCliqueCensus() - calling graphCliques";
-    cliqueCensusRecursion = 0;
+
+    csRecDepth = 0;
+
+    // Call graphCliques() to compute all cliques (maximal connected subgraphs) of the network.
     graphCliques();
 
     pMsg = tr("Writing Clique Census to file. Please wait..") ;
@@ -12910,7 +12915,10 @@ bool Graph::writeCliqueCensus(const QString &fileName,
     }
     outText << "</tbody></table>";
 
-
+    /**
+     * Write the actor by clique analysis matrix.
+     * For each actor-clique pair, we compute the proportion of clique members adjacent
+     */
     outText << "<p>"
             << "<span class=\"info\">"
             << tr("Actor by clique analysis: ")
@@ -12975,6 +12983,10 @@ bool Graph::writeCliqueCensus(const QString &fileName,
     }
     outText << "</tbody></table>";
 
+    /**
+     * Write the actor by actor analysis matrix.
+     * For each pair, we compute their clique co-membership
+     */
 
     outText << "<p>"
             << "<span class=\"info\">"
@@ -13023,6 +13035,10 @@ bool Graph::writeCliqueCensus(const QString &fileName,
     }
 
     outText << "</tbody></table>";
+
+    /**
+     * Write the Hierarchical clustering of overlap matrix
+     */
 
 
     outText << "<p>"
@@ -13105,16 +13121,16 @@ void Graph:: graphCliqueAdd(const QList<int> &clique){
 
     m_cliques.insertMulti(clique.count(), clique);
 
-    qDebug() << "Graph::graphCliqueAdd() - added clique:"
+    qDebug() << "Graph::graphCliqueAdd() - Added clique:"
              << clique
              << "of size"
              << clique.count()
-             << "total cliques:"
+             << "Total cliques:"
              << m_cliques.count();
     int index1=0, index2=0, cliqueCount=0;
     foreach (int actor1, clique) {
        index1 = vpos[actor1];
-       qDebug() << "Graph::graphCliqueAdd() - updating cliques in actor1:"
+       qDebug() << "Graph::graphCliqueAdd() - Updating cliques in actor1:"
                 << actor1
                 << "vpos:"
                 << index1;
@@ -13123,14 +13139,14 @@ void Graph:: graphCliqueAdd(const QList<int> &clique){
            index2 = vpos[actor2];
            cliqueCount = CLQM.item(index1, index2);
            CLQM.setItem( index1, index2, ( cliqueCount + 1)  );
-           qDebug() << "Graph::graphCliqueAdd() - upd. co-membership matrix CLQM"
+           qDebug() << "Graph::graphCliqueAdd() - Updated co-membership matrix CLQM"
                     << "actor1:"
                     << actor1
                     << "actor2:"
                     << actor2
                     <<"old matrix element: ("
                     << index1<<","<<index2 <<")="<<cliqueCount
-                    <<"upd:"
+                    <<" -- updated to:"
                     << CLQM.item(index1, index2);
        }
     }
@@ -13156,7 +13172,7 @@ void Graph:: graphCliqueAdd(const QList<int> &clique){
  * if there are no vertices, it either reports R as a maximal clique (if X is empty),
  * or backtracks.
  * For each vertex v chosen from P, it makes a recursive call in which v is added to R
- * and in which P and X are restricted to the neighbor set N(v) of v,
+ * and in which P and X are restricted to the neighbor set NBS(v) of v,
  * which finds and reports all clique extensions of R that contain v.
  * Then, it moves v from P to X to exclude it from consideration in future cliques
  * and continues with the next vertex in P.
@@ -13166,17 +13182,25 @@ void Graph:: graphCliqueAdd(const QList<int> &clique){
  */
 void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X) {
 
-    cliqueCensusRecursion ++ ;
+    csRecDepth ++ ;
 
-    qDebug () << "Graph::graphCliques() - check if we are at initialization step";
+    qDebug () << "Graph::graphCliques() - STARTS HERE. csRecDepth:"
+              << csRecDepth
+              << " - Check if we are at initialization step";
+
     if (R.isEmpty() && P.isEmpty() && X.isEmpty()){
-        qDebug() << "Graph::graphCliques() - initialization step. R, X empty and P=V(G)";
+
         int V = vertices() ;
         P.reserve( V );
         R.reserve( V );
         X.reserve( V );
         P=verticesSet();
+
+        qDebug() << "Graph::graphCliques() - initialization step. R, X empty and P=V(G): "
+                 << P;
+
         CLQM.zeroMatrix(V,V);  //co-membership matrix CLQM
+
         m_cliques.clear();
 
         VList::const_iterator it;
@@ -13184,85 +13208,123 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X) {
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)     {
             vertex = (*it)->name();
             neighboursHash[ vertex ] = vertexNeighborhoodList(vertex).toSet();
+            qDebug() << "Graph::graphCliques() - initialization step. NeighborhoodList of v"
+                     << vertex
+                     << ": "
+                     <<neighboursHash[ vertex ] ;
             (*it)->clearCliques();
         }
     }
 
-    qDebug() << "Graph::graphCliques() - check if P and X are both empty";
+    qDebug() << "Graph::graphCliques() - check if P and X are both empty (which would mean we have a clique in R)...";
+
     if (P.isEmpty() && X.isEmpty()) {
+
         qDebug() << "Graph::graphCliques() - P and X are both empty. MAXIMAL clique R=" << R;
 
         QList<int> clique = R.toList();
+
         graphCliqueAdd(clique);
+
+        csRecDepth -- ;
+
+        return;
 
     }
 
     int v;
 
-    QSet<int> N;
+    QSet<int> NBS;
 
-    QSet<int> temp, temp1, temp2;
+    QSet<int> Rnext, Pnext, Xnext;
 
     QSet<int>::iterator i = P.begin();
 
     int counter = 0;
 
+    // Loop over vertices in P, randomly
+
+    qDebug() << "Graph::graphCliques() - Start looping over vertices in P (randomly)";
+
     while( i != P.end()) {
+
         counter ++ ;
+
         v = *i;
-        qDebug() << "Graph::graphCliques() - v:" << v
+
+        qDebug() << "Graph::graphCliques() - CURRENT v:" << v
                  << " P:" << P << " P.count=" <<P.count()
                  << " R:" << R
                  << " X:" << X ;
-        N = neighboursHash[ v ];
-        //N = vertexNeighborhoodList(v).toSet(); //fixme
-        if (N.count() == 1 && N.contains(v)) {
+
+        NBS = neighboursHash[ v ];
+
+        if (NBS.count() == 1 && NBS.contains(v)) {
+
             qDebug() << "Graph::graphCliques() - v:" << v
                      << "has only a tie to itself";
-            //graphCliques( R, P, X );
-            ++i;
-            continue;
-        }
-        QSet<int> addv;
-        addv.insert(v); // dummy set with just v
-        temp = R+addv;
-        temp1 = P&N;
-        temp2 = X&N;
-        qDebug() << "Graph::graphCliques() - v:" << v
-                    << "Recursive call to graphCliques ( R ⋃ {v}, P ⋂ N(v), X ⋂ N(v) )"
-                    << endl << "N(v):" << N
-                    << endl << "R ⋃ {v}:" << temp
-                    << endl << "P ⋂ N(v):" << temp1
-                    << endl << "X ⋂ N(v):" << temp2;
 
-        if (cliqueCensusRecursion==1) {
+            //graphCliques( R, P, X );
+
+            ++i;
+
+            continue;
+
+        }
+
+        Rnext = R;
+        Rnext << v ;
+        Pnext = P&NBS;
+        Xnext = X&NBS;
+
+        qDebug() << "Graph::graphCliques() - v:" << v
+                    << "RECURSIVE CALL to graphCliques ( R ⋃ {v}, P ⋂ NB(v), X ⋂ NBS(v) )"
+                    << endl << "NBS(v):" << NBS
+                    << endl << "Rnext = R ⋃ {v}:" << Rnext
+                    << endl << "Pnext = P ⋂ NBS(v):" << Pnext
+                    << endl << "Xnext = X ⋂ NBS(v):" << Xnext;
+
+        if (csRecDepth==1) {
             emit signalProgressBoxUpdate(counter);
             emit statusMessage ( tr("Finding cliques: Recursive backtracking for actor ") + QString::number(v));
-
         }
+
         // find all clique extensions of R that contain v
+        try {
+            graphCliques( Rnext, Pnext, Xnext );
+        } catch (...) {
+            qDebug() << "Graph::graphCliques() - ERROR";
+            return;
+        }
 
-        graphCliques( R+addv, P&N, X&N );
 
+        // Set P = P \ v
+        i=P.erase(i);    //P-=v;
 
+        // Set X = X + v
+        X.insert(v);
 
         qDebug() << "Graph::graphCliques() - v:" << v
-                  << "Returned from recursive call. Moving v:"<<  v
-                  <<" from P to X to be excluded in the future.";
-        // P = P \ v
-        i=P.erase(i);    //P-=v;
-        // X = X + v
-        X.insert(v);
-        qDebug() << "Graph::graphCliques() - v:" << v << "FINISHED"
+                 << "RETURNED from recursive call - recDepth: "
+                 << csRecDepth
+                 << " Moved v:"<<  v
+                 <<" from P to X to be excluded in the future"
                  << " P=" << P << " P.count:" <<P.count()
                  << " R=" << R << " R.count:" <<R.count()
                  << " X=" << X << " X.count:" <<X.count()
                  << " Continuing with next v in P";
         //++i;
-    }
 
-    cliqueCensusRecursion -- ;
+    } //end while loop
+
+    qDebug() << "Graph::graphCliques() - FINISHED loop over P:" << P
+             << "at csRecDepth:" <<  csRecDepth;
+
+    csRecDepth -- ;
+
 }
+
+
 
 /**
     Returns the number of maximal cliques which include a given actor

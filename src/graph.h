@@ -1327,7 +1327,7 @@ private:
     bool calculatedGraphDensity, calculatedGraphWeighted;
     bool m_graphIsDirected, m_graphIsSymmetric, m_graphIsWeighted, m_graphIsConnected;
 
-    int cliqueCensusRecursion;
+    int csRecDepth;
 
     QString VERSION, fileName, m_graphName, initEdgeColor, initVertexColor,
         initVertexNumberColor, initVertexLabelColor;
