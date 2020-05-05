@@ -7501,7 +7501,7 @@ bool MainWindow::slotNetworkExportPNG(){
     name.truncate(name.lastIndexOf("."));
     qDebug("slotExportPNG: grabbing canvas");
     QPixmap picture;
-    picture=QPixmap::grabWidget(graphicsWidget, graphicsWidget->rect());
+    picture=graphicsWidget->grab(graphicsWidget->rect());
     qDebug("slotExportPNG: adding logo");
     QPainter p;
     p.begin(&picture);
@@ -7581,7 +7581,7 @@ void MainWindow::slotNetworkExportImage( const QString &filename,
     // Grab network from canvas
     qDebug() << "slotNetworkExportImage(): grabbing canvas";
     QPixmap picture;
-    picture=QPixmap::grabWidget(graphicsWidget, graphicsWidget->viewport()->rect());
+    picture = graphicsWidget->grab(graphicsWidget->viewport()->rect());
 
     QPainter p;
     qDebug() << "slotNetworkExportImage(): adding name (and logo)";

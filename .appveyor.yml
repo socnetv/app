@@ -115,6 +115,7 @@ deploy:
       secure: owdxko+lS3nNcxIsxL4OTdfZ5UPwudTp2vtk8TlErxd0/tqAfsPGmZ8BjN5sYTTk # your encrypted token from GitHub    
     draft: true
     prerelease: false
+    force_update: true
   # on:
   #   branch: master                # release from master branch only
   #   APPVEYOR_REPO_TAG: false      # deploy on tag push only
@@ -127,5 +128,5 @@ notifications:
     to:
       - dimitris.kalamaras@gmail.com
     subject: '[socnetv/app] build {{status}}'                  # optional
-    message: "{{message}}, {{commitId}}, ..."    # optional
+  #  message: "{{message}}, {{commitId}}, ..."    # optional
     on_build_status_changed: true
