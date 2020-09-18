@@ -11634,6 +11634,9 @@ void Graph::randomNetRegularCreate(const int &N,
             firstEdgeVertices = firstEdge.split("->");
             secondEdge = m_edges.at(rand() % m_edges.size()) ;
             secondEdgeVertices = secondEdge.split("->");
+            qDebug()<< "Graph::randomNetRegularCreate() - firstEdgeVertices:"
+                    << firstEdgeVertices
+                    << " secondEdgeVertices:" << secondEdgeVertices;
         }
         qDebug()<< "Graph::randomNetRegularCreate() - removing edges:"
                 <<firstEdge << secondEdge;

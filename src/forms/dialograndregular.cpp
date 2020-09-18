@@ -107,7 +107,10 @@ void DialogRandRegular::setDiag (){
 void DialogRandRegular::checkErrors(const int &i) {
     Q_UNUSED(i);
     qDebug()<< " DialogRandRegular::checkErrors()" ;
-        if ( ( ui.degreeSpinBox->value() * ui.nodesSpinBox->value() )  % 2 !=0 ) {
+        if (  ( ui.degreeSpinBox->value() * ui.nodesSpinBox->value() )  % 2 !=0  ||
+              ( (double) ui.degreeSpinBox->value() / (double) ui.nodesSpinBox->value() ) >= 0.5   ||
+               ui.nodesSpinBox->value() < 6
+           ) {
              QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
              effect->setColor(QColor("red"));
              ui.degreeSpinBox->setGraphicsEffect(effect);
