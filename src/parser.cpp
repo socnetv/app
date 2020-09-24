@@ -2,7 +2,7 @@
  SocNetV: Social Network Visualizer
  version: 2.5
  Written in Qt
- 
+
                          parser.cpp  -  description
                              -------------------
     copyright         : (C) 2005-2019 by Dimitris B. Kalamaras
@@ -1309,7 +1309,7 @@ bool Parser::loadPajek(){
                 totalNodes=j;
             }
             else if (j==0) {  //if there were no nodes at all, we need to create them now.
-                qDebug()<< "The Pajek file declares "<< totalNodes<< " but I didnt found any nodes. I will create them....";
+                qDebug()<< "The Pajek file declares "<< totalNodes<< " but I didn't found any nodes. I will create them....";
                 for (int num=j+1; num<= totalNodes; num++) {
                     qDebug() << "Parser-loadPajek(): Creating node number i = "<< num;
                     randX=rand()%gwWidth;
@@ -2162,7 +2162,7 @@ bool Parser::xmlStreamHasAttribute( QXmlStreamAttributes &xmlStreamAttr, QString
 
 
 
-// this method reads a key definition 
+// this method reads a key definition
 // called at key element
 void Parser::readGraphMLElementKey ( QXmlStreamAttributes &xmlStreamAttr )
 {
@@ -2310,7 +2310,7 @@ void Parser::readGraphMLElementNode(QXmlStreamReader &xml){
 
 
 // this method emits the node creation signal.
-// called at the end of a node element   
+// called at the end of a node element
 
 void Parser::endGraphMLElementNode(QXmlStreamReader &xml){
     Q_UNUSED(xml);
@@ -2429,7 +2429,7 @@ void Parser::readGraphMLElementEdge(QXmlStreamAttributes &xmlStreamAttr){
 
 
 // this method emits the edge creation signal.
-// called at the end of edge element   
+// called at the end of edge element
 void Parser::endGraphMLElementEdge(QXmlStreamReader &xml){
     Q_UNUSED(xml);
     if (missingNode) {

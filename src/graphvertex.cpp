@@ -1,8 +1,8 @@
 /***************************************************************************
- SocNetV: Social Network Visualizer 
+ SocNetV: Social Network Visualizer
  version: 2.5
  Written in Qt
- 
+
                          graphvertex.cpp  -  description
                              -------------------
     copyright         : (C) 2005-2019 by Dimitris B. Kalamaras
@@ -48,7 +48,7 @@ GraphVertex::GraphVertex(Graph* parentGraph,
                          const QPointF &p,
                          const QString &shape,
                          const QString &iconPath ): m_graph (parentGraph)
-{ 
+{
     qDebug() << "GraphVertex::GraphVertex() - vertex:"<<  name << "initializing...";
 
     m_name=name;
@@ -141,7 +141,7 @@ GraphVertex::GraphVertex(const int &name) {
 void GraphVertex::relationSet(int newRel) {
     qDebug() << "GraphVertex::relationSet() - vertex:" << name()
              << "current relation:" << m_curRelation
-             << "settting new relation: " << newRel;
+             << "setting new relation: " << newRel;
     // first make false all edges of current relation
     edgeFilterByRelation(m_curRelation, false);
     // then make true all edges of new relation
@@ -1020,14 +1020,14 @@ void GraphVertex::cliqueAdd (const QList<int> &clique) {
 /**
  * @brief GraphVertex::clearPs
  */
-void GraphVertex::clearPs()	{  
+void GraphVertex::clearPs()	{
 	myPs.clear();
 }
-	
+
 void GraphVertex::appendToPs(const int &vertex ) {
     qDebug()<<"GraphVertex::appendToPs() - vertex:"
            << name() << "adding" <<  vertex << " to myPs";
-	myPs.append(vertex); 
+	myPs.append(vertex);
 }
 
 
@@ -1066,5 +1066,3 @@ GraphVertex::~GraphVertex() {
     m_cliques.squeeze();
 
 }
-
-

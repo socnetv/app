@@ -2,7 +2,7 @@
  SocNetV: Social Network Visualizer
  version: 2.5
  Written in Qt
- 
+
                          graph.cpp  -  description
                              -------------------
     copyright            : (C) 2005-2019 by Dimitris B. Kalamaras
@@ -50,7 +50,7 @@
 #include <QValueAxis>
 #include <QPixmap>
 
-#include <cstdlib>		//allows the use of RAND_MAX macro 
+#include <cstdlib>		//allows the use of RAND_MAX macro
 
 #include <queue>		//for BFS queue Q
 #include <ctime>        // for randomizeThings
@@ -801,7 +801,7 @@ void Graph::vertexCreate(const int &number,
     if (shape=="custom"){
         initVertexIconPath=iconPath;
     }
-} 
+}
 
 
 
@@ -5037,7 +5037,7 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
                     CC=1.0/(*it)->CC();  //Closeness centrality must be inverted
                 }
                 else {
-                    // Closeness zero at this point means 
+                    // Closeness zero at this point means
                     // this actor is has not any outLinks
                     CC=0;
                 }
@@ -5202,9 +5202,9 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
                     qDebug()<< "   == actor j" <<  (*it1)->name() << "SKIP/CONTINUE";
                     continue;
                 }
-                
+
                 pairDistance = (*it)-> distance ( (*it1)->name() );
-                
+
                 if ( pairDistance == RAND_MAX) {
                     m_vertexPairsNotConnected.insertMulti((*it)->name(), (*it1)->name());
                     (*it)->setEccentricity( RAND_MAX );
@@ -5224,7 +5224,7 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
 
                 }
             } // end for
-            
+
             qDebug()<< "actor i" <<  (*it)->name()
                     <<"Final distanceSum" << (*it)->distanceSum();
 
@@ -5233,11 +5233,11 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
 
                 // Compute Eccentricity (max geodesic distance)
                 eccentricity = (*it)->eccentricity();
-                
+
                 qDebug() << "actor"
                          << (*it)->name()
                         << "eccentricity" << eccentricity;
-                
+
                 if ( eccentricity != RAND_MAX ) {
 
                     //Find min/max Eccentricity
@@ -5267,7 +5267,7 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
                             << "EC=0 (disconnected graph)";
 
                 }
-                
+
             } // end if compute centralities
 
         } // end for disconnected checking
@@ -5507,7 +5507,7 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
                 appends each neighbor y of u to the list , thus Ps stores all predecessors of y on all all shortest paths from s
             c) Each vertex u popped from Q is pushed to a stack Stack
 
-*/ 
+*/
 void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
                 const bool &dropIsolates){
     Q_UNUSED(dropIsolates);
@@ -12699,7 +12699,7 @@ void Graph::writeTriadCensus( const QString fileName,
             << tr("- The first character is the number of mutual (M) dyads in the triad. Possible values: 0, 1, 2, 3.<br />"
                   "- The second character is the number of asymmetric (A) dyads in the triad. Possible values: 0, 1, 2, 3.<br />"
                   "- The third character is the number of null (N) dyads in the triad. Possible values: 0, 1, 2, 3.<br />"
-                  "- The fourth character is infered from features or the nature of the triad, i.e. presence of cycle or transitivity. "
+                  "- The fourth character is inferred from features or the nature of the triad, i.e. presence of cycle or transitivity. "
                    "Possible values: none, D (\"Down\"), U (\"Up\"), C (\"Cyclic\"), T (\"Transitive\")")
             << "<br /></p>";
 
@@ -13233,7 +13233,7 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X) {
 
 /**
     Returns the number of maximal cliques which include a given actor
-*/	
+*/
 int Graph::graphCliquesContaining(const int &actor, const int &size){
     qDebug() << "*** Graph::graphCliquesContaining(" <<  actor << ")";
     int cliqueCounter = 0;
@@ -15146,7 +15146,7 @@ bool Graph::graphTriadCensus(){
 
 
 
-/** 
+/**
     Examines the triad type (in Mutual-Asymmetric-Null label format)
     and increases by one the proper frequency element
     inside QList::triadTypeFreqs
@@ -15366,7 +15366,7 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
 
 
 
-/** 
+/**
     Calculates and returns x! factorial...
     used in (n 2)p edges calculation
 */
@@ -20561,7 +20561,7 @@ void Graph::writeMatrixHTMLTable(QTextStream& outText,
 
 
 
-/** 
+/**
     Exports the adjacency matrix to a given textstream
 */
 void Graph::writeMatrixAdjacencyTo(QTextStream& os,
@@ -20590,7 +20590,7 @@ void Graph::writeMatrixAdjacencyTo(QTextStream& os,
 
 
 
-/** 
+/**
     Writes the adjacency matrix of G to a specified file fn
 */
 void Graph::writeMatrixAdjacency (const QString fn,
@@ -21138,7 +21138,7 @@ void Graph::writeMatrixLaplacianPlainText(const QString &fn) {
 }
 
 
-/**	
+/**
     This method is automatically invoked when a QTimerEvent occurs
     UNUSED
 */
@@ -22834,7 +22834,7 @@ QString Graph::graphClusteringMethodTypeToString(const int &methodType) const {
     QString methodStr;
     switch (methodType) {
     case Clustering::Single_Linkage:
-        methodStr = "Single-linkage (minumum)";
+        methodStr = "Single-linkage (minimum)";
         break;
     case Clustering::Complete_Linkage:
         methodStr = "Complete-linkage (maximum)";
@@ -22893,7 +22893,3 @@ QString Graph::htmlEscaped(QString str) const {
     return str;
 
 }
-
-
-
-

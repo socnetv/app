@@ -1626,10 +1626,10 @@ void MainWindow::initActions(){
     //TODO Separate action for Directed/Undirected graph drawing (without changing all existing edges).
     editEdgeUndirectedAllAct= new QAction( tr("Undirected Edges"), this);
     editEdgeUndirectedAllAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_U));
-    editEdgeUndirectedAllAct->setStatusTip(tr("Enable to tranform all arcs to undirected edges and hereafter work with undirected edges ."));
+    editEdgeUndirectedAllAct->setStatusTip(tr("Enable to transform all arcs to undirected edges and hereafter work with undirected edges ."));
     editEdgeUndirectedAllAct->setWhatsThis(
                 tr("Undirected Edges\n\n"
-                   "Tranforms all directed arcs to undirected edges. \n"
+                   "Transforms all directed arcs to undirected edges. \n"
                    "The result is a undirected and symmetric network."
                    "After that, every new edge you add, will be undirected too."
                    "If you disable this, then all edges become directed again."));
@@ -4171,7 +4171,7 @@ void MainWindow::initPanels(){
     toolBoxEditEdgeTransformSelectLabel->setMinimumWidth(90);
     toolBoxEditEdgeTransformSelect = new QComboBox;
     toolBoxEditEdgeTransformSelect->setStatusTip(
-                tr("Select a method to tranform the network, i.e. transform all directed edges to undirected."));
+                tr("Select a method to transform the network, i.e. transform all directed edges to undirected."));
     helpMessage = tr("<p><b>Transform Network Edges </b></p>"
                      "<p>Select a method to transform network edges. Available methods: </p>"
                      "<p><em>Symmetrize Directed Edges:</em></p>"
@@ -4434,7 +4434,7 @@ void MainWindow::initPanels(){
                      " actor by clique analysis, clique co-memberships</p>"
                      "<p><em>Triad Census:</em><p>"
                      "<p>Computes the Holland, Leinhardt and Davis triad census, which "
-                     "counts all differrent classes of triads coded according to their"
+                     "counts all different classes of triads coded according to their"
                      "number of Mutual, Asymmetric and Non-existest dyads (M-A-N scheme)</p>"
                      );
     toolBoxAnalysisCommunitiesSelect->setToolTip( helpMessage );
@@ -7837,7 +7837,7 @@ bool MainWindow::slotNetworkExportDL(){
 
 /**
     TODO: Exports the network to a GW-formatted file
-*/ 
+*/
 bool MainWindow::slotNetworkExportGW(){
     if ( !activeNodes() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -10622,7 +10622,7 @@ void MainWindow::slotEditEdgeSymmetrizeStrongTies(){
 }
 
 /**
- * @brief Tranforms all directed arcs to undirected edges.
+ * @brief Transforms all directed arcs to undirected edges.
  * The result is a undirected and symmetric network
  */
 void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
@@ -10706,9 +10706,9 @@ void MainWindow::slotEditEdgeMode(const int &mode){
 
 
 /**
-*	Filters Nodes by their value   
+*	Filters Nodes by their value
     TODO slotFilterNodes
-*	
+*
 */
 void MainWindow::slotFilterNodes(){
 
@@ -11342,7 +11342,7 @@ int MainWindow::activeEdges(){
 /**
 *	Returns the number of active nodes on the scene.
 */
-int MainWindow::activeNodes(){ 
+int MainWindow::activeNodes(){
     return activeGraph->vertices();
 }
 
@@ -13387,8 +13387,8 @@ void MainWindow::slotOptionsEdgesBezier(bool toggle){
  * @brief MainWindow::slotOptionsEdgeThicknessPerWeight
  * @param toggle
  */
-void MainWindow::slotOptionsEdgeThicknessPerWeight(bool toogle) {
-    if (toogle) {
+void MainWindow::slotOptionsEdgeThicknessPerWeight(bool toggle) {
+    if (toggle) {
 
     }
     else {
@@ -14312,6 +14312,3 @@ void MainWindow::createFortuneCookies(){
 void MainWindow::slotAboutQt(){
     QMessageBox::aboutQt(this, "About Qt - SocNetV");
 }
-
-
-
