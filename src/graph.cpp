@@ -12735,7 +12735,7 @@ void Graph::writeTriadCensus( const QString fileName,
             << tr("- The first character is the number of mutual (M) dyads in the triad. Possible values: 0, 1, 2, 3.<br />"
                   "- The second character is the number of asymmetric (A) dyads in the triad. Possible values: 0, 1, 2, 3.<br />"
                   "- The third character is the number of null (N) dyads in the triad. Possible values: 0, 1, 2, 3.<br />"
-                  "- The fourth character is infered from features or the nature of the triad, i.e. presence of cycle or transitivity. "
+                  "- The fourth character is inferred from features or the nature of the triad, i.e. presence of cycle or transitivity. "
                    "Possible values: none, D (\"Down\"), U (\"Up\"), C (\"Cyclic\"), T (\"Transitive\")")
             << "<br /></p>";
 

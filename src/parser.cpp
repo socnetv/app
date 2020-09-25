@@ -1309,7 +1309,7 @@ bool Parser::loadPajek(){
                 totalNodes=j;
             }
             else if (j==0) {  //if there were no nodes at all, we need to create them now.
-                qDebug()<< "The Pajek file declares "<< totalNodes<< " but I didnt found any nodes. I will create them....";
+                qDebug()<< "The Pajek file declares "<< totalNodes<< " but I didn't found any nodes. I will create them....";
                 for (int num=j+1; num<= totalNodes; num++) {
                     qDebug() << "Parser-loadPajek(): Creating node number i = "<< num;
                     randX=rand()%gwWidth;

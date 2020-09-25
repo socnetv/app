@@ -278,7 +278,7 @@ void Matrix::deleteRowColumn(int erased){
             if (i>=m_rows || j>=m_rows) {
                 setItem( i, j, RAND_MAX) ;
 //                qDebug() << "Matrix:deleteRowColumn() -"
-//                         <<"both i,j>=m_rows, corner case (will be deleted). Settting to RAND_MAX."
+//                         <<"both i,j>=m_rows, corner case (will be deleted). Setting to RAND_MAX."
 //                        << "New item value (" <<  i+1 << ", " << j+1 << ") ="<< item(i, j) ;
             }
             else if (i<erased && j< erased) {
