@@ -1563,9 +1563,10 @@ bool Parser::loadAdjacency(){
 
     ts.setCodec(userSelectedCodecName.toUtf8());
 
-    QString rowStr;
+    QString str;
     QString edgeStr;
     QStringList currentRow;
+    int fileLine=0, actualDataLine=0;
     int i=0, j=0, colCount=0, lastCount=0;
     bool conversionOK=false;
 
@@ -1579,37 +1580,47 @@ bool Parser::loadAdjacency(){
     // Initially, do a small 11-row read to understand what kind of file this is
     while ( i < 11 &&  !ts.atEnd() ) {
 
-        rowStr= ts.readLine().simplified() ; // transforms "/t", "  ", etc to plain " ".
+        fileLine ++ ;
 
-        if ( isComment(rowStr) )
+        str= ts.readLine().simplified() ; // transforms "/t", "  ", etc to plain " ".
+
+        if ( isComment(str) )
             continue;
 
-        if ( rowStr.contains("vertices",Qt::CaseInsensitive)
-             || rowStr.contains("network",Qt::CaseInsensitive)
-             || rowStr.contains("graph",Qt::CaseInsensitive)
-             || rowStr.contains("digraph",Qt::CaseInsensitive)
-             || rowStr.contains("DL",Qt::CaseInsensitive)
-             || rowStr.contains("list",Qt::CaseInsensitive)
-             || rowStr.contains("graphml",Qt::CaseInsensitive)
-             || rowStr.contains("xml",Qt::CaseInsensitive)
+        actualDataLine ++;
+
+        if (
+             str.contains("vertices",Qt::CaseInsensitive)
+             || str.contains("network",Qt::CaseInsensitive)
+             || str.contains("graph",Qt::CaseInsensitive)
+             || str.contains("digraph",Qt::CaseInsensitive)
+             || str.contains("DL n",Qt::CaseInsensitive)
+             || str == "DL"
+             || str == "dl"
+             || str.contains("list",Qt::CaseInsensitive)
+             || str.contains("graphml",Qt::CaseInsensitive)
+             || str.contains("xml",Qt::CaseInsensitive)
+
              ) {
             qDebug()<< "*** Parser:loadAdjacency(): Not an Adjacency-formatted file. Aborting!!";
             file.close();
+
             errorMessage = tr("Not an Adjacency-formatted file. "
-                                    "A non-comment line includes prohibited strings (i.e GraphML), "
-                                    "not only numbers and delimiters as expected.");
+                              "Non-comment line %1 includes keywords reserved by other file formats (i.e vertices, graphml, network, graph, digraph, DL, xml)")
+                    .arg(fileLine);
+
             return false;
         }
 
         // Check what is the delimiter -- we support comma or space(s)
-        if ( rowStr.contains (",")) {
-            colCount = (rowStr.split(",")).count();
+        if ( str.contains (",")) {
+            colCount = (str.split(",")).count();
         }
         else {
-            colCount = (rowStr.split(" ")).count();
+            colCount = (str.split(" ")).count();
         }
 
-        qDebug() << "row" << i << ":"<< rowStr;
+        qDebug() << "row" << i << ":"<< str;
         qDebug() << "colCount:"<<colCount ;
 
         if  ( (colCount != lastCount && i>1 ) || (colCount < i) ) {
@@ -1635,16 +1646,16 @@ bool Parser::loadAdjacency(){
     // Now do the full read
     while ( !ts.atEnd() )   {
 
-        rowStr= ts.readLine().simplified();
+        str= ts.readLine().simplified();
 
-        if ( isComment(rowStr) )
+        if ( isComment(str) )
             continue;
 
-        if ( rowStr.contains (",")) {
-            currentRow=rowStr.split(",");
+        if ( str.contains (",")) {
+            currentRow=str.split(",");
         }
         else {
-            currentRow=rowStr.split(" ");
+            currentRow=str.split(" ");
         }
 
         if (i == 0 ) {
@@ -1762,6 +1773,7 @@ bool Parser::loadTwoModeSociomatrix(){
     ts.setCodec(userSelectedCodecName.toUtf8());
     QString str;
     QStringList lineElement;
+    int fileLine=0, actualDataLine=0;
     int i=0, j=0,  newCount=0, lastCount=0;
     totalNodes=0;
     edgeWeight=1.0;
@@ -1769,15 +1781,18 @@ bool Parser::loadTwoModeSociomatrix(){
 
     while (  !ts.atEnd() )  {
         i++;
-        str= ts.readLine();
-        str=str.simplified();
+        fileLine ++ ;
+        str= ts.readLine().simplified();
         if ( isComment(str) )
             continue;
+        actualDataLine ++;
         if ( str.contains("vertices",Qt::CaseInsensitive)
              || str.contains("network",Qt::CaseInsensitive)
              || str.contains("graph",Qt::CaseInsensitive)
              || str.contains("digraph",Qt::CaseInsensitive)
-             || str.contains("DL",Qt::CaseInsensitive)
+             || str.contains("DL n",Qt::CaseInsensitive)
+             || str == "DL"
+             || str == "dl"
              || str.contains("list",Qt::CaseInsensitive)
              || str.contains("graphml",Qt::CaseInsensitive)
              || str.contains("xml",Qt::CaseInsensitive)
@@ -1785,8 +1800,8 @@ bool Parser::loadTwoModeSociomatrix(){
             qDebug()<< "*** Parser:loadTwoModeSociomatrix(): Not a two mode sociomatrix-formatted file. Aborting!!";
             file.close();
             errorMessage = tr("Not a two-mode sociomatrix formatted file. "
-                              "A non-comment line includes prohibited strings (i.e GraphML), "
-                              "not only numbers and delimiters as expected.");
+                             "Non-comment line %1 includes keywords reserved by other file formats (i.e vertices, graphml, network, graph, digraph, DL, xml)")
+                             .arg(fileLine);
             return false;
         }
         if ( str.contains (",")){
@@ -2864,7 +2879,7 @@ bool Parser::loadGML(){
     QRegularExpression onlyDigitsExp("^\\d+$");
     QStringList tempList;
     QString str;
-    int fileLine=0;
+    int fileLine=0, actualDataLine=0;
     bool floatOK= false;
     bool isPlanar = false, graphKey=false, graphicsKey=false,
             edgeKey=false, nodeKey=false, graphicsCenterKey=false;
@@ -2877,16 +2892,17 @@ bool Parser::loadGML(){
     bezier=false;
     edgeDirType=EdgeType::Undirected;
     totalNodes=0;
+
     while (!ts.atEnd() )   {
+
         floatOK= false;
         fileContainsNodeCoords = false;
         nodeShape = initNodeShape;
         nodeColor = true;
 
         fileLine++;
-        str= ts.readLine() ;
 
-        str=str.simplified();
+        str= ts.readLine().simplified();
 
         qDebug()<< "Parser::loadGML() - line"  << fileLine <<":"
                 << str;
@@ -2894,11 +2910,15 @@ bool Parser::loadGML(){
         if ( isComment(str) )
             continue;
 
-        if ( fileLine == 1 &&
+        actualDataLine ++;
+
+        if ( actualDataLine == 1 &&
              ( str.contains("vertices",Qt::CaseInsensitive)
              || str.contains("network",Qt::CaseInsensitive)
              || str.contains("digraph",Qt::CaseInsensitive)
-             || str.contains("DL",Qt::CaseInsensitive)
+             || str.contains("DL n",Qt::CaseInsensitive)
+             || str == "DL"
+             || str == "dl"
              || str.contains("list",Qt::CaseInsensitive)
              || str.contains("graphml",Qt::CaseInsensitive)
              || str.contains("xml",Qt::CaseInsensitive)
@@ -2906,8 +2926,8 @@ bool Parser::loadGML(){
                ) {
             qDebug()<< "*** Parser::loadGML(): Not a GML-formatted file. Aborting!!";
             errorMessage = tr("Not an GML-formatted file. "
-                              "Non-comment line %1 includes prohibited strings (i.e GraphML)")
-                    .arg(fileLine);
+                              "Non-comment line %1 includes keywords reserved by other file formats  (i.e vertices, graphml, network, digraph, DL, xml)")
+                              .arg(fileLine);
             file.close();
             return false;
         }
@@ -3168,7 +3188,7 @@ bool Parser::loadGML(){
 bool Parser::loadDot(){
 
     qDebug("\n\nParser: loadDotNetwork");
-    int fileLine=0, aNum=-1;
+    int fileLine=0, actualDataLine=0, aNum=-1;
     int start=0, end=0, next=0;
     QString label, node, nodeLabel, fontName, fontColor, edgeShape, edgeColor, edgeLabel, networkLabel;
     QString str, temp, prop, value ;
@@ -3198,22 +3218,27 @@ bool Parser::loadDot(){
     totalNodes=0;
 
     while (!ts.atEnd() )   {
-        str= ts.readLine() ;
-        str=str.simplified();
-        str=str.trimmed();
-
-        if ( isComment (str) )
-            continue;
 
         fileLine++;
 
         qDebug ()<<"Reading fileLine "<< fileLine;
+
+        str= ts.readLine().simplified().trimmed();
+
         qDebug ()<< str;
-        if ( fileLine == 1 ) {
+
+        if ( isComment (str) )
+            continue;
+
+        actualDataLine ++;
+
+        if ( actualDataLine == 1 ) {
             if ( str.contains("vertices",Qt::CaseInsensitive) 	//Pajek
                  || str.contains("network",Qt::CaseInsensitive)	//Pajek?
                  || str.contains("[",Qt::CaseInsensitive)    	// GML
-                 || str.contains("DL",Qt::CaseInsensitive) 		//DL format
+                 || str.contains("DL n",Qt::CaseInsensitive)    //DL format
+                 || str == "DL"
+                 || str == "dl"
                  || str.contains("list",Qt::CaseInsensitive)		//list
                  || str.startsWith("<graphml",Qt::CaseInsensitive)  // GraphML
                  || str.startsWith("<?xml",Qt::CaseInsensitive)
@@ -3221,7 +3246,7 @@ bool Parser::loadDot(){
                 qDebug() << "*** Parser:loadDot(): Not an GraphViz -formatted file. Aborting";
                 file.close();
                 errorMessage = tr("Not a GraphViz-formatted file. "
-                                  "First non-comment line includes prohibited strings (i.e GraphML).");
+                                  "First non-comment line includes keywords reserved by other file formats  (i.e vertices, graphml, network, DL, xml).");
                 return false;
             }
 
@@ -3714,7 +3739,7 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
 
     bool nodesWithLabels = false;
     bool conversionOK = false;
-    int fileLine = 1;
+    int fileLine = 0, actualDataLine=0;
     totalNodes=0;
     edgeWeight=1.0;
     edgeDirType=EdgeType::Directed;
@@ -3726,29 +3751,38 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
     qDebug()<< "*** Parser::loadEdgeListWeighed() - Initial file parsing "
                "to test integrity and edge naming scheme";
     while ( !ts.atEnd() )   {
-        str= ts.readLine() ;
 
-        qDebug()<< "Parser::loadEdgeListWeighed() - str" << str;
+        fileLine ++;
 
-        str=str.simplified();
+        str= ts.readLine().simplified().trimmed();
+
         qDebug()<< "Parser::loadEdgeListWeighed() - simplified str" << str;
+
         if ( isComment(str) )
             continue;
 
-        if ( str.contains("vertices",Qt::CaseInsensitive)
+        actualDataLine ++ ;
+
+        if (
+              actualDataLine == 1 &&
+
+             ( str.contains("vertices",Qt::CaseInsensitive)
              || str.contains("network",Qt::CaseInsensitive)
              || str.contains("graph",Qt::CaseInsensitive)
              || str.contains("digraph",Qt::CaseInsensitive)
-             || str.contains("DL",Qt::CaseInsensitive)
+             || str.contains("DL n",Qt::CaseInsensitive)    //DL format
+             || str == "DL"
+             || str == "dl"
              || str.contains("list",Qt::CaseInsensitive)
              || str.contains("graphml",Qt::CaseInsensitive)
              || str.contains("xml",Qt::CaseInsensitive)
+              )
              ) {
             qDebug()<< "Parser::loadEdgeListWeighed() - "
                        "Not a Weighted list-formatted file. Aborting!!";
             file.close();
             errorMessage = tr("Not an EdgeList-formatted file. "
-                              "A non-comment line includes prohibited strings (i.e GraphML)");
+                              "A non-comment line includes keywords reserved by other file formats (i.e vertices, graphml, network, graph, digraph, DL, xml)");
             return false;
         }
 
@@ -3786,10 +3820,12 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
                        "nodesWithLabels = true";
             nodesWithLabels = true;
         }
-        fileLine ++;
+
     }
 
     ts.seek(0);
+    fileLine = 0;
+
 
     qDebug()<< "*** Parser::loadEdgeListWeighed() - Initial file parsing finished. "
                "This is really a weighted edge list. Proceed to main parsing";
@@ -4001,7 +4037,7 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
     QString str, edgeKey,edgeKeyDelimiter="====>" ;
     QStringList lineElement,edgeElement;
     int columnCount=0;
-    int fileLine = 0;
+    int fileLine = 0, actualDataLine=0;
     bool nodesWithLabels= false;
     //@TODO Always use nodesWithLabels= true
 
@@ -4027,27 +4063,36 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
                "to test integrity and edge naming scheme";
 
     while ( !ts.atEnd() )   {
+
         fileLine++;
-        str= ts.readLine() ;
+
+        str= ts.readLine().simplified().trimmed();
+
         qDebug()<< "Parser::loadEdgeListSimple() - line "  << fileLine
                 << endl << str;
-        str=str.simplified();
 
-        if ( isComment(str) )
+        if ( isComment(str) ) {
             continue;
+        }
 
-        if ( str.contains("vertices",Qt::CaseInsensitive)
+        actualDataLine ++;
+
+        if ( actualDataLine == 1 &&
+             ( str.contains("vertices",Qt::CaseInsensitive)
              || str.contains("network",Qt::CaseInsensitive)
              || str.contains("graph",Qt::CaseInsensitive)
              || str.contains("digraph",Qt::CaseInsensitive)
-             || str.contains("DL",Qt::CaseInsensitive)
+             || str.contains("DL n",Qt::CaseInsensitive)
+             || str == "DL"
+             ||  str == "dl"
              || str.contains("list",Qt::CaseInsensitive)
              || str.contains("graphml",Qt::CaseInsensitive)
              || str.contains("xml",Qt::CaseInsensitive)
+              )
              ) {
             qDebug()<< "*** Parser:loadEdgeListSimple(): Not an EdgeList-formatted file. Aborting!!";
             errorMessage = tr("Not an EdgeList-formatted file. "
-                              "Non-comment line %1 includes prohibited strings (i.e GraphML)")
+                              "Non-comment line %1 includes keywords reserved by other file formats (i.e vertices, graphml, network, graph, digraph, DL, xml)")
                     .arg(fileLine);
             file.close();
             return false;
