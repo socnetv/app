@@ -1,3 +1,6 @@
+/**
+* https://doc.qt.io/Qt-5/stylesheet-syntax.html
+*/
 /* Customize any plain widget that is a child of a QMainWindow. */
 QMainWindow,
 QWidget,

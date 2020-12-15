@@ -22,12 +22,6 @@
     <height>450</height>
    </size>
   </property>
-  <property name="font">
-   <font>
-    <family>DejaVu Sans</family>
-    <pointsize>11</pointsize>
-   </font>
-  </property>
   <property name="windowTitle">
    <string>Node Properties</string>
   </property>
@@ -38,7 +32,7 @@
       <widget class="QLabel" name="label">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>8</pointsize>
         </font>
        </property>
        <property name="text">
@@ -48,6 +42,11 @@
      </item>
      <item>
       <spacer name="horizontalSpacer_5">
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
+       </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -69,8 +68,7 @@
        </property>
        <property name="font">
         <font>
-         <family>Sans Serif</family>
-         <pointsize>10</pointsize>
+         <pointsize>8</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -86,7 +84,7 @@
       <widget class="QLabel" name="label_2">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>8</pointsize>
         </font>
        </property>
        <property name="text">
@@ -98,8 +96,7 @@
       <spacer name="horizontalSpacer">
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
+         <pointsize>8</pointsize>
         </font>
        </property>
        <property name="orientation">
@@ -123,8 +120,7 @@
        </property>
        <property name="font">
         <font>
-         <family>Sans Serif</family>
-         <pointsize>10</pointsize>
+         <pointsize>8</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -146,7 +142,7 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>8</pointsize>
         </font>
        </property>
        <property name="text">
@@ -158,8 +154,7 @@
       <spacer name="horizontalSpacer_2">
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
+         <pointsize>8</pointsize>
         </font>
        </property>
        <property name="orientation">
@@ -180,8 +175,7 @@
        </property>
        <property name="font">
         <font>
-         <family>Sans Serif</family>
-         <pointsize>10</pointsize>
+         <pointsize>8</pointsize>
         </font>
        </property>
       </widget>
@@ -194,7 +188,7 @@
       <widget class="QLabel" name="label_4">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>8</pointsize>
         </font>
        </property>
        <property name="text">
@@ -206,8 +200,7 @@
       <spacer name="horizontalSpacer_3">
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
+         <pointsize>8</pointsize>
         </font>
        </property>
        <property name="orientation">
@@ -231,8 +224,7 @@
        </property>
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
+         <pointsize>8</pointsize>
         </font>
        </property>
        <property name="text">
@@ -254,7 +246,7 @@
       <widget class="QLabel" name="label_5">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>8</pointsize>
         </font>
        </property>
        <property name="text">
@@ -266,8 +258,7 @@
       <spacer name="horizontalSpacer_4">
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
+         <pointsize>8</pointsize>
         </font>
        </property>
        <property name="orientation">
@@ -298,6 +289,11 @@
          <height>16777215</height>
         </size>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
+       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select a node shape. &lt;/p&gt;&lt;p&gt;If you select &amp;quot;Icon&amp;quot; then you must click on the custom icon button (below) to select the desired icon file from your filesystem. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -311,7 +307,7 @@
       <widget class="QLabel" name="label_24">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>8</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -324,6 +320,11 @@
      </item>
      <item>
       <spacer name="horizontalSpacer_24">
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
+       </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -342,6 +343,11 @@
          <width>200</width>
          <height>0</height>
         </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
        </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Custom Icon &lt;/span&gt;&lt;/p&gt;&lt;p&gt;This box only shows the path of the selected custom icon file for all network nodes. If it is empty, it means you have not selected any image yet.&lt;/p&gt;&lt;p&gt;Click the button on the right to select a new image to be used as custom icon in all the nodes of the network.&lt;/p&gt;&lt;p&gt;Valid icons are images: JPG, PNG, JPEG, SVG etc.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and will be the default of the application every time you run SocNetV - until you change it again.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -365,6 +371,11 @@
          <height>0</height>
         </size>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
+       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Custom Icon &lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click this button to select a new custom icon for all nodes of the network. &lt;/p&gt;&lt;p&gt;Valid icons are images: JPG, PNG, JPEG, SVG etc.&lt;/p&gt;&lt;p&gt;If you don't select an image file, you must select one of the default shapes from the Node Shape menu above. &lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and will be the default of the application every time you run SocNetV - until you change it again.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -382,8 +393,7 @@
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="font">
       <font>
-       <family>Sans Serif</family>
-       <pointsize>9</pointsize>
+       <pointsize>8</pointsize>
       </font>
      </property>
      <property name="orientation">
