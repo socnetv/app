@@ -754,6 +754,8 @@ private:
     int statusBarDuration, progressCounter;
     int fileType, maxNodes;
     int fortuneCookiesCounter;
+    int windowMinWidth, windowMinHeight;
+
     //QString VERSION;
 
     bool inverseWeights, askedAboutWeights;

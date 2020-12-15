@@ -49,6 +49,9 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
 
+    qDebug() << QApplication::primaryScreen()->geometry();
+    qDebug() << QApplication::primaryScreen()->size();
+    qDebug() << QApplication::primaryScreen()->availableSize();
      qDebug() << QApplication::primaryScreen()->devicePixelRatio(); //the scale factor applied by the OS/Windowing system (e.g. 1 or 2)
      qDebug() << QApplication::primaryScreen()->logicalDotsPerInch(); // the logical DPI of the screen (e.g. 144 on Windows "Make everything bigger" 150%)
 

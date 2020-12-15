@@ -88,7 +88,7 @@
 #include "forms/dialogdissimilarities.h"
 
 
-
+//Assume no debugging messages
 bool printDebug = false;
 
 
@@ -129,14 +129,37 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     qInstallMessageHandler( myMessageOutput);
 
-
     qDebug() << "MW::MainWindow() - Constructor running on thread:"<< thread();
 
     setWindowIcon (QIcon(":/images/socnetv.png"));
 
     appSettings = initSettings();
 
-    setMinimumSize(1024,750); //set MW minimum size, before creating canvas
+    int primaryScreenWidth = QApplication::primaryScreen()->availableSize().width();
+    int primaryScreenHeight = QApplication::primaryScreen()->availableSize().height();
+    windowMinWidth = 1024;
+    windowMinHeight = 750;
+    if (primaryScreenWidth > 2439) {
+        windowMinWidth = 1440;
+    }
+    if (primaryScreenHeight> 1559) {
+        windowMinHeight = 1024;
+    }
+
+    qDebug () << "MW::initWindowLayout - primaryScreen size"<<primaryScreenWidth<<"x"<<primaryScreenHeight;
+    qDebug () << "MW::initWindowLayout - minimum size set to"<<windowMinWidth<<"x"<<windowMinHeight;
+
+    //set MW minimum size, before creating canvas
+    #ifdef Q_OS_LINUX
+        setMinimumSize(windowMinWidth,windowMinHeight);
+    #elif defined(Q_OS_MACOS)
+        setMinimumSize(windowMinWidth,windowMinHeight);
+    #elif defined(Q_OS_WIN)
+        setMinimumSize(windowMinWidth,windowMinHeight);
+    #else
+        setMinimumSize(windowMinWidth,windowMinHeight);
+    #endif
+
 
     initView();         //init our network "canvas"
 
@@ -5193,20 +5216,8 @@ void MainWindow::initWindowLayout() {
         slotOptionsWindowLeftPanelVisibility(false);
     }
 
-    qDebug () << "MW::initWindowLayout - minimum size to 1200x700";
-    //resize(1200,750);
 
-
-#ifdef Q_OS_LINUX
-    setMinimumSize(1200,700);
-#elif defined(Q_OS_MACOS)
-    setMinimumSize(1200,700);
-#elif defined(Q_OS_WIN)
-    setMinimumSize(1200,700);
-#else
-    setMinimumSize(1200,700);
-#endif
-    qDebug () << "MW::initWindowLayout - show maximized";
+    qDebug () << "MW::initWindowLayout - maximizing my window";
     showMaximized();
 
     qDebug () << "MW::initWindowLayout() - Finished";
