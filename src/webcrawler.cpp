@@ -122,7 +122,7 @@ void WebCrawler_Spider::visitUrls(){
         currentUrl = frontier.dequeue();
 
         qDebug() << "   wc_spider::get() - url: "
-                 <<  currentUrl << endl
+                 <<  currentUrl << Qt::endl
                  << "url not visited. "
                  << "Increasing visitedNodes to" << m_visitedNodes + 1
                   << "Downloading html...";
@@ -342,7 +342,7 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
 
     }
 
-    //    qDebug() <<  " \npage contents: " << page << endl << endl;
+    //    qDebug() <<  " \npage contents: " << page << Qt::endl << Qt::endl;
 
     // We only search inside <body>...</body> tags
     qDebug() << "   wc_parser::parse() - Finding <body></body> tags";
@@ -464,7 +464,7 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
          for (constIterator = m_urlPatternsIncluded.constBegin();
               constIterator != m_urlPatternsIncluded.constEnd();
               ++constIterator)  {
-             //qDebug() << (*constIterator).toLocal8Bit().constData() << endl;
+             //qDebug() << (*constIterator).toLocal8Bit().constData() << Qt::endl;
              urlPattern = (*constIterator).toLocal8Bit().constData();
              if (urlPattern.isEmpty())
                  continue;
@@ -486,7 +486,7 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
          for (constIterator = m_urlPatternsExcluded.constBegin();
               constIterator != m_urlPatternsExcluded.constEnd();
               ++constIterator)  {
-             //qDebug() << (*constIterator).toLocal8Bit().constData() << endl;
+             //qDebug() << (*constIterator).toLocal8Bit().constData() << Qt::endl;
              urlPattern = (*constIterator).toLocal8Bit().constData();
              if (urlPattern.isEmpty())
                  continue;

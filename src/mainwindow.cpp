@@ -546,7 +546,7 @@ void MainWindow::saveSettings() {
     QMap<QString, QString>::const_iterator it = appSettings.constBegin();
     while (it != appSettings.constEnd()) {
         qDebug() << "   setting: " <<  it.key() << " = " << it.value();
-        out << it.key() << " = " << it.value() << endl;
+        out << it.key() << " = " << it.value() << Qt::endl;
         ++it;
     }
 
@@ -555,7 +555,7 @@ void MainWindow::saveSettings() {
     for (int i = 0 ; i < recentFiles.size() ; ++i) {
         out << "recentFile_"+ QString::number(i+1)
             << " = "
-            << recentFiles.at(i) << endl;
+            << recentFiles.at(i) << Qt::endl;
     }
 
     file.close();
