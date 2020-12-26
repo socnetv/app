@@ -49,6 +49,7 @@
 #include <QBarCategoryAxis>
 #include <QValueAxis>
 #include <QPixmap>
+#include <QElapsedTimer>
 
 #include <cstdlib>		//allows the use of RAND_MAX macro 
 
@@ -3649,7 +3650,7 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
 
     Q_UNUSED(considerWeights);
 
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     QFile file ( fileName );
@@ -6125,7 +6126,7 @@ void Graph::writeEccentricity(const QString fileName, const bool considerWeights
                               const bool inverseWeights, const bool dropIsolates)
 {
 
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     qDebug() << "Graph::writeEccentricity()";
@@ -6435,7 +6436,7 @@ void Graph::writeCentralityInformation(const QString fileName,
 
     qDebug() << "Graph::writeCentralityInformation()";
 
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     QFile file ( fileName );
@@ -6705,7 +6706,7 @@ void Graph::writeCentralityEigenvector(const QString fileName,
                                        const bool &inverseWeights,
                                        const bool &dropIsolates){
 
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     QFile file ( fileName );
@@ -6829,7 +6830,7 @@ void Graph::writeCentralityEigenvector(const QString fileName,
 
         rowCount++;
 
-        outText << fixed;
+        outText << Qt::fixed;
 
         outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
                 <<"<td>"
@@ -7878,7 +7879,7 @@ void Graph::writeCentralityDegree ( const QString fileName,
             << considerWeights
             << " dropIsolates " <<dropIsolates;
 
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     QFile file ( fileName );
@@ -7992,7 +7993,7 @@ void Graph::writeCentralityDegree ( const QString fileName,
 
         emit signalProgressBoxUpdate(++progressCounter);
 
-        outText << fixed;
+        outText << Qt::fixed;
 
         if (dropIsolates && (*it)->isIsolated()) {
             outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
@@ -8159,7 +8160,7 @@ void Graph::writeCentralityCloseness( const QString fileName,
                                       const bool inverseWeights,
                                       const bool dropIsolates) {
 
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     qDebug() << "Graph::writeCentralityCloseness()"
@@ -8277,7 +8278,7 @@ void Graph::writeCentralityCloseness( const QString fileName,
 
         rowCount++;
 
-        outText <<fixed;
+        outText <<Qt::fixed;
 
         if (dropIsolates && (*it)->isIsolated()) {
             outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
@@ -8573,7 +8574,7 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
                                                    const bool inverseWeights,
                                                    const bool dropIsolates) {
 
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     QFile file ( fileName );
@@ -8682,7 +8683,7 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
 
         rowCount++;
 
-        outText <<fixed;
+        outText <<Qt::fixed;
 
         if (dropIsolates && (*it)->isIsolated()) {
             outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
@@ -8804,7 +8805,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
 
     qDebug() << "Graph::writeCentralityBetweenness()";
 
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     QFile file ( fileName );
@@ -8911,7 +8912,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
         emit signalProgressBoxUpdate(++progressCounter);
         rowCount++;
 
-        outText <<fixed;
+        outText <<Qt::fixed;
 
         if (dropIsolates && (*it)->isIsolated()) {
             outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
@@ -9080,7 +9081,7 @@ void Graph::writeCentralityStress( const QString fileName,
 
     qDebug() << "Graph::writeCentralityStress()";
 
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     QFile file ( fileName );
@@ -9187,7 +9188,7 @@ void Graph::writeCentralityStress( const QString fileName,
 
         rowCount++;
 
-        outText << fixed;
+        outText << Qt::fixed;
 
         if (dropIsolates && (*it)->isIsolated()) {
             outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
@@ -9315,7 +9316,7 @@ void Graph::writeCentralityEccentricity(const QString fileName,
 
     qDebug() << "Graph::writeCentralityEccentricity()";
 
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     QFile file ( fileName );
@@ -9414,7 +9415,7 @@ void Graph::writeCentralityEccentricity(const QString fileName,
 
         rowCount++;
 
-        outText << fixed;
+        outText << Qt::fixed;
 
         if (dropIsolates && (*it)->isIsolated()) {
             outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
@@ -9535,7 +9536,7 @@ void Graph::writeCentralityPower(const QString fileName,
 
     qDebug() << "Graph::writeCentralityPower()";
 
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     QFile file ( fileName );
@@ -9643,7 +9644,7 @@ void Graph::writeCentralityPower(const QString fileName,
 
         rowCount++;
 
-        outText << fixed;
+        outText << Qt::fixed;
 
         if (dropIsolates && (*it)->isIsolated()) {
             outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
@@ -9988,7 +9989,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
 void Graph::writePrestigeDegree (const QString fileName,
                                  const bool considerWeights,
                                  const bool dropIsolates) {
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     QFile file ( fileName );
@@ -10106,7 +10107,7 @@ void Graph::writePrestigeDegree (const QString fileName,
 
         rowCount++;
 
-        outText << fixed;
+        outText << Qt::fixed;
 
         if (dropIsolates && (*it)->isIsolated()) {
             outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
@@ -10399,7 +10400,7 @@ void Graph::writePrestigeProximity( const QString fileName,
                                     const bool considerWeights,
                                     const bool inverseWeights,
                                     const bool dropIsolates) {
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     QFile file ( fileName );
@@ -10503,7 +10504,7 @@ void Graph::writePrestigeProximity( const QString fileName,
 
         rowCount++;
 
-        outText << fixed;
+        outText << Qt::fixed;
 
         if (dropIsolates && (*it)->isIsolated()) {
             outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
@@ -10862,7 +10863,7 @@ void Graph::prestigePageRank(const bool &dropIsolates){
  */
 void Graph::writePrestigePageRank(const QString fileName,
                                   const bool dropIsolates){
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     QFile file ( fileName );
@@ -10981,7 +10982,7 @@ void Graph::writePrestigePageRank(const QString fileName,
 
         rowCount++;
 
-        outText << fixed;
+        outText << Qt::fixed;
 
         if (dropIsolates && (*it)->isIsolated()) {
             outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
@@ -12188,7 +12189,7 @@ void Graph::writeMatrixWalks (const QString &fn,
                               const int &length,
                               const bool &simpler) {
 
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     Q_UNUSED(simpler);
@@ -12456,7 +12457,7 @@ void Graph::writeReachabilityMatrixPlainText(const QString &fn, const bool &drop
 void Graph::writeClusteringCoefficient( const QString fileName,
                                         const bool considerWeights) {
 
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     Q_UNUSED(considerWeights);
@@ -12559,7 +12560,7 @@ void Graph::writeClusteringCoefficient( const QString fileName,
 
         rowCount++;
 
-        outText <<fixed;
+        outText <<Qt::fixed;
 
         outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
                 <<"<td>"
@@ -12657,7 +12658,7 @@ void Graph::writeTriadCensus( const QString fileName,
 
     qDebug() << "Graph::writeTriadCensus()";
 
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     Q_UNUSED(considerWeights);
@@ -12803,7 +12804,7 @@ void Graph::writeTriadCensus( const QString fileName,
 bool Graph::writeCliqueCensus(const QString &fileName,
                                const bool considerWeights) {
 
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     qDebug()<< "Graph::writeCliqueCensus() ";
@@ -12975,7 +12976,7 @@ bool Graph::writeCliqueCensus(const QString &fileName,
 
                 }
                 outText <<"<td>"
-                        << fixed << (numerator/(qreal) cliqueSize)
+                        << Qt::fixed << (numerator/(qreal) cliqueSize)
                         <<"</td>";
 
             }
@@ -13387,7 +13388,7 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
                                         const bool &dropIsolates) {
 
 
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     qDebug()<< "Graph::writeClusteringHierarchical() - matrix:"
@@ -13754,7 +13755,7 @@ void Graph::writeClusteringHierarchicalResultsToStream(QTextStream& outText,
                         << "\" x=\"" << diagramPaddingLeft  + diagramMaxWidth * (level / maxLevelValue) - 5
                         << "\" y=\""
                         << diagramPaddingTop  + rowHeight*(N)
-                        << "\" >" << fixed << level <<"</text>";
+                        << "\" >" << Qt::fixed << level <<"</text>";
                 legendLevelsDone.append(level);
             }
 
@@ -14269,7 +14270,7 @@ void Graph::writeMatrixDissimilarities(const QString fileName,
             << "varLocation" << varLocation
             << "diagonal"<<diagonal;
 
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     QFile file ( fileName );
@@ -14432,7 +14433,7 @@ void Graph::writeMatrixSimilarityMatching(const QString fileName,
                                    const bool &diagonal,
                                    const bool &considerWeights) {
 
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     int measureInt = graphMetricStrToType( measure );
@@ -14627,7 +14628,7 @@ void Graph::writeMatrixSimilarityPearson(const QString fileName,
                                    const QString &varLocation,
                                    const bool &diagonal) {
 
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     Q_UNUSED(considerWeights);
@@ -20168,7 +20169,7 @@ void Graph::writeMatrix (const QString &fn,
                          const QString &varLocation,
                          const bool &simpler) {
 
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     Q_UNUSED(simpler);
@@ -20597,7 +20598,7 @@ void Graph::writeMatrixHTMLTable(QTextStream& outText,
             if ( ! (*jt)->isEnabled() || (dropIsolates && (*jt)->isIsolated() ) ) {
                 continue;
             }
-            outText << fixed << right;
+            outText << Qt::fixed << right;
 
             outText <<"<td" << ((markDiag && (*it)->name() ==(*jt)->name() )? " class=\"diag\">" : ">");
 
@@ -20694,7 +20695,7 @@ void Graph::writeMatrixAdjacencyTo(QTextStream& os,
 void Graph::writeMatrixAdjacency (const QString fn,
                                   const bool &markDiag) {
 
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     qDebug()<<"Graph::writeMatrixAdjacency() to : " << fn;
@@ -20832,7 +20833,7 @@ void Graph::writeMatrixAdjacency (const QString fn,
 */
 void Graph::writeMatrixAdjacencyPlot (const QString fn,
                                       const bool &simpler) {
-    QTime computationTimer;
+    QElapsedTimer computationTimer;
     computationTimer.start();
 
     qDebug()<<"Graph::writeMatrixAdjacencyPlot() to : " << fn;
