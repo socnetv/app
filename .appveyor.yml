@@ -65,13 +65,15 @@ install:
 #  - cmd: dir C:\Qt\5.13\mingw73_64
 #  - cmd: dir C:\Qt\5.13\mingw73_64\bin
 #  - cmd: dir C:\Qt\5.13\mingw73_64\plugins
-  - set QTDIR=C:\Qt\5.13\mingw73_64
+#  - set QTDIR=C:\Qt\5.13\mingw73_64
+   - set QTDIR=C:\Qt\5.15\mingw81_64
+  mingw81_64
   - cmd: echo "Check project folder..."        
   - cmd: dir C:\projects\socnetv  
   - cmd: echo "Installing Innosetup..."  
   - choco install -y InnoSetup
   - cmd: echo "Setting paths..."    
-  - set PATH=%QTDIR%\bin;C:\Qt\Tools\mingw730_64\bin;%PATH%;"C:\Program Files (x86)\Inno Setup 5"
+  - set PATH=%QTDIR%\bin;C:\Qt\Tools\mingw810_64\bin;%PATH%;"C:\Program Files (x86)\Inno Setup 5"
 
 build_script:
   - cmd: echo "Running qmake..."  
