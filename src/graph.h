@@ -33,6 +33,7 @@
 #include <QDateTime> 	// used in exporting centrality files
 #include <QList>
 #include <QHash>
+#include <QMultiHash>
 #include <QTextStream>
 #include <QThread>
 
@@ -84,7 +85,7 @@ typedef QHash <int, int> H_Int;
 typedef QHash <qreal, int> H_f_i;
 typedef QPair <qreal, bool> pair_f_b;
 typedef QPair <int, pair_f_b > pair_i_fb;
-typedef QHash <int, pair_i_fb > H_edges;
+typedef QMultiHash <int, pair_i_fb > H_edges;
 typedef QHash<QString, bool> H_StrToBool;
 typedef QList<int> L_int;
 typedef QVector<int> V_int;

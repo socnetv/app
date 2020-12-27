@@ -1546,23 +1546,21 @@ void GraphicsWidget::mouseReleaseEvent( QMouseEvent * e ) {
 */
 void GraphicsWidget::wheelEvent(QWheelEvent *e) {
     bool ctrlKey = (e->modifiers() == Qt::ControlModifier);
-    qDebug("GW: Mouse wheel event");
-    qDebug() << "GW: delta = " << e->delta();
+    QPoint numDegrees =  e->angleDelta() / 8;
+    qDebug() << "GW: Mouse wheel event -  numDegrees = " << numDegrees;
     if (ctrlKey) {
-        qreal m_scale = e->delta() / qreal(600);
-        qDebug("GW: m_scale = %f", m_scale);
-        if ( m_scale > 0)
+        if ( numDegrees.x() > 0 || numDegrees.y() > 0)
             zoomIn(1);
-        else  if ( m_scale < 0)
+        else if ( numDegrees.x() < 0 || numDegrees.y() < 0)
             zoomOut(1);
-        else m_scale=1;
     }
 
 }
 
 
 /**
- * @brief Called from MW magnifier button
+ * @brief Called from MW (magnifier button and menu icon).
+ * By default it decreases the zoom factor by 1
  * @param level
  *
  */

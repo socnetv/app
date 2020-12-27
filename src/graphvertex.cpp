@@ -174,7 +174,7 @@ void GraphVertex::edgeAddTo (const int &v2, const qreal &weight, const QString &
             << name() << " -> "<< v2 << " weight "<< weight
                << " relation " << m_curRelation;
     // do not use [] operator - silently creates an item if key do not exist
-    m_outEdges.insertMulti(
+    m_outEdges.insert(
                 v2, pair_i_fb(m_curRelation, pair_f_b(weight, true) ) );
     setOutLinkColor(v2, color);
     setOutEdgeLabel(v2, label);
@@ -225,7 +225,7 @@ void GraphVertex::edgeAddFrom (const int &v1, const qreal &weight) {
     qDebug() <<"GraphVertex::edgeAddFrom() - new inbound edge"
             << name() << " <- "<< v1 << " weight "<< weight
                << " relation " << m_curRelation;
-    m_inEdges.insertMulti(
+    m_inEdges.insert(
                 v1, pair_i_fb (m_curRelation, pair_f_b(weight, true) ) );
 }
 
@@ -248,7 +248,7 @@ void GraphVertex::changeOutEdgeWeight(const int &target, const qreal &weight){
     qDebug() << " *** m_outEdges.count " <<
                 m_outEdges.count();
     qDebug() << " create new relation-weight pair ";
-    m_outEdges.insertMulti(
+    m_outEdges.insert(
                 target, pair_i_fb(m_curRelation, pair_f_b(weight, true) ) );
     qDebug() << " *** m_outEdges.count " << m_outEdges.count();
 }
@@ -576,7 +576,7 @@ QHash<int, qreal> GraphVertex::reciprocalEdgesHash(){
 //                    qDebug() << "GraphVertex::reciprocalEdgesHash() - of vertex "
 //                             << this->name()
 //                             << "Found reciprocal edge with   " << it1.key();
-                    m_reciprocalEdges.insertMulti(it1.key(), m_weight);
+                    m_reciprocalEdges.insert(it1.key(), m_weight);
                 }
             }
         }
@@ -1013,7 +1013,7 @@ void GraphVertex::cliqueAdd (const QList<int> &clique) {
            << name()
            << "in a clique with:"
            << clique;
-    m_cliques.insertMulti(clique.size(), clique);
+    m_cliques.insert(clique.size(), clique);
 }
 
 

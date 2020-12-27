@@ -32,6 +32,7 @@
 #include <QString>
 #include <QStringList>
 #include <QHash>
+#include <QMultiHash>
 #include <QList>
 #include <QPointF>
 #include <map>
@@ -50,7 +51,7 @@ typedef QHash <QString, int> H_StrToInt;
 
 typedef QPair <qreal, bool> pair_f_b;
 typedef QPair <int, pair_f_b > pair_i_fb;
-typedef QHash < int, pair_i_fb > H_edges;
+typedef QMultiHash < int, pair_i_fb > H_edges;
 
 typedef QPair <int, qreal > pair_i_f;
 typedef QHash < int, pair_i_f > H_distance;
@@ -337,9 +338,9 @@ private:
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape, m_iconPath;
     QPointF m_disp;
 
-    QHash<int,qreal> m_reciprocalEdges;
+    QMultiHash<int,qreal> m_reciprocalEdges;
     L_int myPs;
-    QHash <int, L_int> m_cliques;
+    QMultiHash <int, L_int> m_cliques;
     L_int m_neighborhoodList;
     H_IntToStr m_outLinkColors, m_outEdgeLabels;
 
