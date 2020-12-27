@@ -1559,8 +1559,8 @@ void GraphicsWidget::wheelEvent(QWheelEvent *e) {
 
 
 /**
- * @brief Called from MW (magnifier button and menu icon).
- * By default it decreases the zoom factor by 1
+ * @brief Called from MW (magnifier button and menu icon) to decrease the zoom level of the scene.
+ * By default it decreases zoom by 1
  * @param level
  *
  */
@@ -1579,8 +1579,8 @@ void GraphicsWidget::zoomOut (int level){
 
 
 /**
- * @brief Changes the zoom level of the scene.
- * Called from MW magnifier button
+ * @brief Called from MW (magnifier button and menu icon) to increase the zoom level of the scene.
+ * By default it increases zoom by 1
  * @param level
  *
  */

@@ -11169,8 +11169,8 @@ void Graph::randomNetErdosCreate(const int &N,
         qDebug() << "Graph::randomNetErdosCreate() - G(n,p) model...";
         for (int i=0;i<N; i++) {
             for (int j=0; j<N; j++) {
-                qDebug() << "Graph::randomNetErdosCreate() - Bernoulli trial "
-                       << "for edge " <<  i+1 << " -> " << j+1;
+//                qDebug() << "Graph::randomNetErdosCreate() - Bernoulli trial "
+//                       << "for edge " <<  i+1 << " -> " << j+1;
                 if (!diag && i==j) {
                     qDebug()<< " Graph::randomNetErdosCreate() - skip because "
                             << i+1 << " = " << j+1
@@ -11198,8 +11198,8 @@ void Graph::randomNetErdosCreate(const int &N,
                                    QString(), false);
                     }
                 }
-                else
-                    qDebug() << "Graph::randomNetErdosCreate() - do not create Edge";
+//                else
+//                    qDebug() << "Graph::randomNetErdosCreate() - do not create Edge";
             }
 
             emit signalProgressBoxUpdate(++progressCounter );
