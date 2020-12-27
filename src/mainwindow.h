@@ -292,6 +292,9 @@ public slots:
                                const bool &delayedRequests);
 
     //EDIT MENU
+    void slotEditDragModeSelection(bool);
+    void slotEditDragModeScroll(bool);
+
     void slotEditRelationsClear();
     void slotEditRelationAdd(QString newRelationName=QString(),
                              const bool &changeRelation=true);
@@ -670,7 +673,7 @@ private:
     QAction *networkRandomLatticeAct;
     QAction *networkWebCrawlerAct;
 
-    QAction *editModeDragAct, *editModeSelectAct;
+    QAction *editDragModeScrollAct, *editDragModeSelectAct;
     QAction *editNodeSelectNoneAct, *editNodeSelectAllAct;
     QAction *editNodeSelectedToStarAct, *editNodeSelectedToCycleAct;
     QAction *editNodeSelectedToLineAct, *editNodeSelectedToCliqueAct;

@@ -1302,24 +1302,24 @@ void MainWindow::initActions(){
     */
 
 
-
-    editModeDragAct = new QAction(QIcon(":/images/cursor-drag.svg"),
-                                  tr("Drag"),  this);
-    editModeDragAct->setCheckable(true);
-    editModeDragAct->setChecked(false);
-//    editModeDragAct->setShortcut(Qt::ALT + Qt::Key_Right);
-//    editModeDragAct->setToolTip(tr("Goto next graph relation (ALT+Right)"));
-//    editModeDragAct->setStatusTip(tr("Load the next relation of the network (if any)."));
-//    editModeDragAct->setWhatsThis(tr("Next Relation\n\nLoads the next relation of the network (if any)"));
-
-    editModeSelectAct = new QAction(QIcon(":/images/cursor-pointer.svg"),
+    editDragModeSelectAct = new QAction(QIcon(":/images/cursor-pointer.svg"),
                                   tr("Select"),  this);
-    editModeSelectAct->setCheckable(true);
-    editModeSelectAct->setChecked(true);
-//    editModeDragAct->setShortcut(Qt::ALT + Qt::Key_Right);
-//    editModeDragAct->setToolTip(tr("Goto next graph relation (ALT+Right)"));
-//    editModeDragAct->setStatusTip(tr("Load the next relation of the network (if any)."));
-//    editModeDragAct->setWhatsThis(tr("Next Relation\n\nLoads the next relation of the network (if any)"));
+    editDragModeSelectAct->setCheckable(true);
+    editDragModeSelectAct->setChecked(true);
+//    editDragModeScrollAct->setShortcut(Qt::ALT + Qt::Key_Right);
+//    editDragModeScrollAct->setToolTip(tr("Goto next graph relation (ALT+Right)"));
+//    editDragModeScrollAct->setStatusTip(tr("Load the next relation of the network (if any)."));
+//    editDragModeScrollAct->setWhatsThis(tr("Next Relation\n\nLoads the next relation of the network (if any)"));
+
+
+    editDragModeScrollAct = new QAction(QIcon(":/images/cursor-drag.svg"),
+                                  tr("Drag"),  this);
+    editDragModeScrollAct->setCheckable(true);
+    editDragModeScrollAct->setChecked(false);
+//    editDragModeScrollAct->setShortcut(Qt::ALT + Qt::Key_Right);
+//    editDragModeScrollAct->setToolTip(tr("Goto next graph relation (ALT+Right)"));
+//    editDragModeScrollAct->setStatusTip(tr("Load the next relation of the network (if any)."));
+//    editDragModeScrollAct->setWhatsThis(tr("Next Relation\n\nLoads the next relation of the network (if any)"));
 
 
 
@@ -4042,8 +4042,8 @@ void MainWindow::initToolBar(){
 
     toolBar->addSeparator();
 
-    toolBar->addAction (editModeSelectAct);
-    toolBar->addAction (editModeDragAct);
+    toolBar->addAction (editDragModeSelectAct);
+    toolBar->addAction (editDragModeScrollAct);
 
     toolBar->addSeparator();
 
@@ -5525,8 +5525,14 @@ void MainWindow::initSignalSlots() {
               this, &MainWindow::slotAnalyzeProminenceDistributionChartUpdate);
 
     //
-    //signals and slots inside MainWindow
+    // Signals and slots inside MainWindow
     //
+
+    connect( editDragModeSelectAct, &QAction::triggered,
+             this, &MainWindow::slotEditDragModeSelection );
+
+    connect( editDragModeScrollAct, &QAction::triggered,
+             this, &MainWindow::slotEditDragModeScroll );
 
     connect( editRelationAddAct, SIGNAL(triggered()),
              this, SLOT(slotEditRelationAdd()) );
@@ -7357,6 +7363,25 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
     QApplication::restoreOverrideCursor();
 }
 
+
+
+/**
+ * @brief Called from editDragModeSelectAct to toggle the drag mode (select or scroll).
+ */
+void MainWindow::slotEditDragModeSelection(bool checked){
+    qDebug() << "MW::slotEditDragModeSelection() - checked" << checked;
+    graphicsWidget->setDragMode(QGraphicsView::RubberBandDrag);
+}
+
+
+
+/**
+ * @brief Called from editDragModeSelectAct to toggle the drag mode (select or scroll).
+ */
+void MainWindow::slotEditDragModeScroll(bool checked){
+    qDebug() << "MW::slotEditDragModeScroll() - checked" << checked;
+    graphicsWidget->setDragMode(QGraphicsView::NoDrag);
+}
 
 
 /**
