@@ -21,6 +21,14 @@ only_commits:
   #message: /build/                # Start a new build if message contains 'build'
   author: dimitris.kalamaras@gmail.com      # Start a new build for commit of user with email jack@company.com
 
+
+#---------------------------------#
+#    environment configuration    #
+#---------------------------------#
+
+# Build worker image (VM template)
+image: Visual Studio 2019
+
 # clone directory
 clone_folder: c:\projects\socnetv
 
