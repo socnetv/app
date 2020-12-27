@@ -34,6 +34,7 @@
 #include <QtWidgets>
 #include <QtGlobal>
 #include <QtDebug>
+#include <QPageSize>
 #include <QPrintDialog>
 #include <QProgressDialog>
 #include <QKeySequence>
@@ -7662,9 +7663,10 @@ void MainWindow::slotNetworkExportPDFDialog()
  *
  */
 void MainWindow::slotNetworkExportPDF(QString &pdfName,
-                                      const QPrinter::Orientation &orientation,
+                                      const QPageLayout::Orientation &orientation,
                                       const int &dpi,
-                                      const QPrinter::PrinterMode printerMode=QPrinter::ScreenResolution
+                                      const QPrinter::PrinterMode printerMode=QPrinter::ScreenResolution,
+                                      const QPageSize &pageSize = QPageSize(QPageSize::A4)
                                       ){
     qDebug()<< "MW::slotNetworkExportPDF()";
 
@@ -7675,16 +7677,31 @@ void MainWindow::slotNetworkExportPDF(QString &pdfName,
         return;
     }
     else {
+
+        setLastPath(pdfName); // store this path
+        tempFileNameNoPath=pdfName.split ("/");
+        QString name = tempFileNameNoPath.last();
+        name.truncate(name.lastIndexOf("."));
+
+
         printerPDF = new QPrinter(printerMode);
         printerPDF->setOutputFormat(QPrinter::PdfFormat);
-        printerPDF->setOrientation(orientation);
-        printerPDF->setPaperSize(QPrinter::A4);
-        // printerPDF->setResolution(dpi);
         printerPDF->setOutputFileName(pdfName);
+        printerPDF->setPageOrientation(orientation);
+        printerPDF->setPageSize(pageSize);
+        // printerPDF->setResolution(dpi);
         QPainter p;
         p.begin(printerPDF);
         graphicsWidget->render(&p, QRect(0, 0, printerPDF->width(), printerPDF->height()),
                                 graphicsWidget->viewport()->rect());
+        p.setFont(QFont ("Helvetica", 8, QFont::Normal, false));
+        if (appSettings["printLogo"]=="true") {
+            QImage logo(":/images/socnetv-logo.png");
+            p.drawImage(5,5, logo);
+            p.drawText(7,47,name);
+        }
+        else
+            p.drawText(5,15,name);
         p.end();
         delete printerPDF;
     }

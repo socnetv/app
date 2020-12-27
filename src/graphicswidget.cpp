@@ -1608,13 +1608,14 @@ void GraphicsWidget::zoomIn(int level){
  */
 void GraphicsWidget::changeMatrixScale(int value) {
     transformationActive = true;
+    // Since the max value will be 500, the scaleFactor will be max 2 ^ 8 = 32
     qreal scaleFactor = pow(qreal(2), ( value - 250) / qreal(50) );
     m_currentScaleFactor = scaleFactor ;
     qDebug() << "GW: changeMatrixScale(): value " <<  value
              << " m_currentScaleFactor " << m_currentScaleFactor
               << " m_currentRotationAngle " << m_currentRotationAngle;
 
-    resetMatrix();
+    resetTransform();
     scale(m_currentScaleFactor, m_currentScaleFactor);
     rotate(m_currentRotationAngle);
 
@@ -1649,7 +1650,7 @@ void GraphicsWidget::changeMatrixRotation(int angle){
     qDebug() << "GW: changeMatrixRotation(): angle " <<  angle
               << " m_currentRotationAngle " << m_currentRotationAngle
               << " m_currentScaleFactor " << m_currentScaleFactor;
-    resetMatrix();
+    resetTransform();
     scale(m_currentScaleFactor, m_currentScaleFactor);
     rotate(angle);
 

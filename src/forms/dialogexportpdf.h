@@ -30,6 +30,7 @@
 
 #include <QDialog>
 #include <QPrinter>
+#include <QPageLayout>
 
 
 namespace Ui {
@@ -50,13 +51,14 @@ public slots:
     void getUserChoices ();
 signals:
     void userChoices( QString &filename,
-                      const QPrinter::Orientation &orientation,
+                      const QPageLayout::Orientation &orientation,
                       const int &dpi,
-                      const QPrinter::PrinterMode printerMode);
+                      const QPrinter::PrinterMode printerMode,
+                      const QPageSize &pageSize = QPageSize(QPageSize::A4));
 private:
     QString m_fileName;
     int m_dpi;
-    QPrinter::Orientation m_orientation;
+    QPageLayout::Orientation m_orientation;
     QPrinter::PrinterMode m_printerMode;
     Ui::DialogExportPDF *ui;
 

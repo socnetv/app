@@ -44,7 +44,7 @@ DialogExportPDF::DialogExportPDF (QWidget *parent ) :
 
     m_dpi = 75;
     m_printerMode = QPrinter::ScreenResolution;
-    m_orientation = QPrinter::Portrait;
+    m_orientation = QPageLayout::Portrait;
 
     // Populate printer modes
     QStringList resList;
@@ -173,10 +173,10 @@ void DialogExportPDF::getUserChoices(){
     m_dpi = ui->resolutionSelect->currentText().toInt();
 
     if ( ui->orientationSelect->currentText().contains("Portrait")) {
-        m_orientation = QPrinter::Portrait;
+        m_orientation = QPageLayout::Portrait;
     }
     else {
-        m_orientation = QPrinter::Landscape;
+        m_orientation = QPageLayout::Landscape;
     }
 
     qDebug()<< "Dialog: emitting userChoices" ;

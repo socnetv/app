@@ -5244,7 +5244,7 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
                 pairDistance = (*it)-> distance ( (*it1)->name() );
                 
                 if ( pairDistance == RAND_MAX) {
-                    m_vertexPairsNotConnected.insertMulti((*it)->name(), (*it1)->name());
+                    m_vertexPairsNotConnected.insert((*it)->name(), (*it1)->name());
                     (*it)->setEccentricity( RAND_MAX );
                     m_graphIsConnected = false;
 
@@ -12338,7 +12338,7 @@ QList<int> Graph::vertexinfluenceRange(int v1){
 
         if ( graphDistanceGeodesic(v1, target) != RAND_MAX ) {
             qDebug() << "Graph::vertexinfluenceRange() - v1 can reach:" << target;
-            influenceRanges.insertMulti(v1,target);
+            influenceRanges.insert(v1,target);
 
         }
     }
@@ -12395,7 +12395,7 @@ QList<int> Graph::vertexinfluenceDomain(int v1){
 
         if ((*it)->distance( v1 ) != RAND_MAX ) {
             qDebug() << "Graph::vertexinfluenceDomain() - v1 reachable from:" << source;
-            influenceDomains.insertMulti(v1,source);
+            influenceDomains.insert(v1,source);
 
         }
     }
@@ -13123,7 +13123,7 @@ bool Graph::writeCliqueCensus(const QString &fileName,
  */
 void Graph:: graphCliqueAdd(const QList<int> &clique){
 
-    m_cliques.insertMulti(clique.count(), clique);
+    m_cliques.insert(clique.count(), clique);
 
     qDebug() << "Graph::graphCliqueAdd() - Added clique:"
              << clique
@@ -13226,7 +13226,7 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X) {
 
         qDebug() << "Graph::graphCliques() - P and X are both empty. MAXIMAL clique R=" << R;
 
-        QList<int> clique = R.toList();
+        QList<int> clique = R.values();
 
         graphCliqueAdd(clique);
 
@@ -13583,7 +13583,7 @@ void Graph::writeClusteringHierarchicalResultsToStream(QTextStream& outText,
          outText << Qt::endl;
 
      }
-    outText << reset << "</pre>";
+    outText << Qt::reset << "</pre>";
 
     if (dendrogram) {
 
@@ -14194,20 +14194,20 @@ void Graph::writeMatrixSimilarityMatchingPlain(const QString fileName,
     outText << tr("SIMILARITY MATRIX: MATCHING COEFFICIENTS (SMMC)") << Qt::endl<< Qt::endl;
 
     outText << qSetPadChar('.') <<qSetFieldWidth(20)<< Qt::left
-            << tr("Network name: ")<< reset<< graphName()<< Qt::endl
+            << tr("Network name: ")<< Qt::reset<< graphName()<< Qt::endl
             << qSetPadChar('.') <<qSetFieldWidth(20)<< Qt::left
-            << tr("Input matrix: ")<< reset<< matrix << Qt::endl
+            << tr("Input matrix: ")<< Qt::reset<< matrix << Qt::endl
             << qSetPadChar('.') <<qSetFieldWidth(20)<< Qt::left
-            << tr("Variables in: ")<< reset<< ((varLocation != "Rows" && varLocation != "Columns") ? "Concatenated rows + columns " : varLocation)  << Qt::endl
+            << tr("Variables in: ")<< Qt::reset<< ((varLocation != "Rows" && varLocation != "Columns") ? "Concatenated rows + columns " : varLocation)  << Qt::endl
             << qSetPadChar('.') <<qSetFieldWidth(20)<< Qt::left
-            << tr("Matching measure: ") << reset ;
+            << tr("Matching measure: ") << Qt::reset ;
 
 
     outText << graphMetricTypeToString(measure);
 
     outText << Qt::endl
              << qSetPadChar('.') <<qSetFieldWidth(20)<< Qt::left
-            << tr("Diagonal: \t") << reset << ((diagonal) ? "Included" : "Not included") << Qt::endl << Qt::endl;
+            << tr("Diagonal: \t") << Qt::reset << ((diagonal) ? "Included" : "Not included") << Qt::endl << Qt::endl;
 
     outText << tr("Analysis results") <<Qt::endl<<Qt::endl;
     if (measure==METRIC_HAMMING_DISTANCE)
@@ -20598,7 +20598,7 @@ void Graph::writeMatrixHTMLTable(QTextStream& outText,
             if ( ! (*jt)->isEnabled() || (dropIsolates && (*jt)->isIsolated() ) ) {
                 continue;
             }
-            outText << Qt::fixed << right;
+            outText << Qt::fixed << Qt::right;
 
             outText <<"<td" << ((markDiag && (*it)->name() ==(*jt)->name() )? " class=\"diag\">" : ">");
 

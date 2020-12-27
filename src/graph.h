@@ -34,6 +34,7 @@
 #include <QList>
 #include <QHash>
 #include <QMultiHash>
+#include <QMultiMap>
 #include <QTextStream>
 #include <QThread>
 
@@ -1216,12 +1217,12 @@ private:
 
     QList<SelectedEdge> m_selectedEdges;
 
-    QHash <int, int> influenceRanges, influenceDomains;
+    QMultiHash <int, int> influenceRanges, influenceDomains;
 
-    QHash <int, int> m_vertexPairsNotConnected;
+    QMultiHash <int, int> m_vertexPairsNotConnected;
     QHash <int, int> m_vertexPairsUnilaterallyConnected;
 
-    QMap <int, L_int > m_cliques;
+    QMultiMap <int, L_int > m_cliques;
     QHash <int, QSet<int> > neighboursHash;
 
     QList <qreal> m_clusteringLevel;

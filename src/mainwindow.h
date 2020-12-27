@@ -71,7 +71,7 @@ class QCheckBox;
 class QProgressDialog;
 class QPushButton;
 class QToolButton;
-class QLCDNumber;
+class QPageSize;
 class QSlider;
 class QComboBox;
 class QGroupBox;
@@ -221,9 +221,10 @@ public slots:
 
     void slotNetworkExportPDFDialog();
     void slotNetworkExportPDF(QString &pdfName,
-                              const QPrinter::Orientation &orientation,
+                              const QPageLayout::Orientation &orientation,
                               const int &dpi,
-                              const QPrinter::PrinterMode printerMode);
+                              const QPrinter::PrinterMode printerMode,
+                              const QPageSize &pageSize);
     void slotNetworkExportPajek();
     void slotNetworkExportSM();
     bool slotNetworkExportDL();
