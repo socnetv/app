@@ -1164,7 +1164,6 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
             thresholdStr.remove(">");
             qDebug()<< "Graph::vertexFindByIndexScore() - thresholdStr starts with > ";
         }
-
         else if (thresholdStr.startsWith("<=")) {
             lsEqual = true;
             thresholdStr.remove("<=");
@@ -2695,6 +2694,19 @@ int Graph::vertexDegreeIn (int v1) {
 QList<int> Graph::vertexNeighborhoodList(const int &v1) {
     //qDebug()<< "Graph::vertexNeighborhoodList()";
     return m_graph[ vpos[v1] ]-> neighborhoodList();
+}
+
+
+/**
+ * @brief Returns the set of all vertices mutually connected to vertex v1 in the
+ * current relation
+ * @param v1
+ * @return  QList<int>
+ */
+QSet<int> Graph::vertexNeighborhoodSet(const int &v1) {
+    //qDebug()<< "Graph::vertexNeighborhoodList()";
+    QList<int> myNeightbors = m_graph[ vpos[v1] ]-> neighborhoodList();
+    return QSet<int>(myNeightbors.constBegin(),myNeightbors.constEnd());
 }
 
 
@@ -13211,7 +13223,7 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X) {
         int vertex=0;
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)     {
             vertex = (*it)->name();
-            neighboursHash[ vertex ] = vertexNeighborhoodList(vertex).toSet();
+            neighboursHash[ vertex ] = vertexNeighborhoodSet(vertex);
             qDebug() << "Graph::graphCliques() - initialization step. NeighborhoodList of v"
                      << vertex
                      << ": "

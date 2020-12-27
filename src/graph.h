@@ -494,6 +494,9 @@ public:
 
     QList<int> vertexNeighborhoodList(const int &v1);
 
+    QSet<int> vertexNeighborhoodSet(const int &v1);
+
+
     bool vertexIsolated(const int &v1) const;
 
     int vertexExists(const int &v1 );
