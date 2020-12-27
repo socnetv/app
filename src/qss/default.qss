@@ -208,8 +208,7 @@ QPushButton:hover {
     background-color:#babdbe;
 }
 
-/* Increase the padding, so the text is shifted when the button is
-   pressed. */
+QPushButton:checked,
 QPushButton:pressed {
     background-color: #007ac1;
     color: #fff;
@@ -249,6 +248,7 @@ QPushButton#toolBoxLayoutByIndexApplyButton:pressed {
    background-color:#007ac1;
    color: #fff;
 }
+
 QToolButton {
     border:1px solid rgba(0, 0, 0, 0.1);
     border-top: 1px solid rgba(255, 255, 255, 0.3);
@@ -273,6 +273,10 @@ QToolButton:pressed {
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-top: 1px solid rgba(0, 0, 0, 0.1);
     border-left:1px solid rgba(0, 0, 0, 0.1);
+}
+
+QToolButton:checked{
+    background-color: #d2d2d2;
 }
 
 QComboBox, QLineEdit, QTextEdit,QPlainTextEdit, QListView {

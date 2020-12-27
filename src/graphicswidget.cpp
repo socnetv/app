@@ -1397,6 +1397,9 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
 
     QPointF p = mapToScene(e->pos());
 
+    qDebug() << "GW::mousePressEvent() - Single click on a node at:"
+             << e->pos() << "~"<< p;
+
     // bool ctrlKey = (e->modifiers() == Qt::ControlModifier);
 
     if ( QGraphicsItem *item = itemAt(e->pos() )   ) {

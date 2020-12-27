@@ -175,5 +175,8 @@
         <file>images/tip_24px.svg</file>
         <file>images/about_24px.svg</file>
         <file>images/cocitation_48px.svg</file>
+        <file>images/cursor.svg</file>
+        <file>images/cursor-pointer.svg</file>
+        <file>images/cursor-drag.svg</file>
     </qresource>
 </RCC>

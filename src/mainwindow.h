@@ -668,8 +668,9 @@ private:
     QAction *networkRandomSmallWorldAct;
     QAction *networkRandomRegularSameDegreeAct;
     QAction *networkRandomLatticeAct;
+    QAction *networkWebCrawlerAct;
 
-    QAction *optionsNodeNumbersVisibilityAct, *optionsNodeLabelsVisibilityAct, *optionsNodeNumbersInsideAct;
+    QAction *editModeDragAct, *editModeSelectAct;
     QAction *editNodeSelectNoneAct, *editNodeSelectAllAct;
     QAction *editNodeSelectedToStarAct, *editNodeSelectedToCycleAct;
     QAction *editNodeSelectedToLineAct, *editNodeSelectedToCliqueAct;
@@ -687,19 +688,21 @@ private:
     QAction *editNodeColorAll, *editEdgeColorAllAct,
             *editNodeNumbersColorAct,*editNodeLabelsColorAct,
             *editEdgesCocitationAct;
+
+    QAction *optionsNodeNumbersVisibilityAct, *optionsNodeLabelsVisibilityAct, *optionsNodeNumbersInsideAct;
     QAction *optionsEdgeThicknessPerWeightAct, *optionsEdgeWeightNumbersAct;
     QAction *optionsEdgesVisibilityAct;
     QAction *optionsEdgeArrowsAct, *drawEdgesBezier, *optionsEdgeWeightConsiderAct;
     QAction *optionsEdgeLabelsAct;
     QAction *backgroundImageAct,*changeBackColorAct;
     QAction *fullScreenModeAct;
-    QAction *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
-    QAction *helpCheckUpdatesApp;
     QAction *openSettingsAct;
 
-    QCheckBox *styleSheetCheck;
+    QAction *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
+    QAction *helpCheckUpdatesApp;
 
-    QAction *networkWebCrawlerAct;
+
+
 
     QAction *netDensity, *analyzeGraphReciprocityAct, *analyzeGraphSymmetryAct;
     QAction *analyzeGraphDistanceAct, *averGraphDistanceAct;

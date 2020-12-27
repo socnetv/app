@@ -1301,6 +1301,28 @@ void MainWindow::initActions(){
     Edit menu actions
     */
 
+
+
+    editModeDragAct = new QAction(QIcon(":/images/cursor-drag.svg"),
+                                  tr("Drag"),  this);
+    editModeDragAct->setCheckable(true);
+    editModeDragAct->setChecked(false);
+//    editModeDragAct->setShortcut(Qt::ALT + Qt::Key_Right);
+//    editModeDragAct->setToolTip(tr("Goto next graph relation (ALT+Right)"));
+//    editModeDragAct->setStatusTip(tr("Load the next relation of the network (if any)."));
+//    editModeDragAct->setWhatsThis(tr("Next Relation\n\nLoads the next relation of the network (if any)"));
+
+    editModeSelectAct = new QAction(QIcon(":/images/cursor-pointer.svg"),
+                                  tr("Select"),  this);
+    editModeSelectAct->setCheckable(true);
+    editModeSelectAct->setChecked(true);
+//    editModeDragAct->setShortcut(Qt::ALT + Qt::Key_Right);
+//    editModeDragAct->setToolTip(tr("Goto next graph relation (ALT+Right)"));
+//    editModeDragAct->setStatusTip(tr("Load the next relation of the network (if any)."));
+//    editModeDragAct->setWhatsThis(tr("Next Relation\n\nLoads the next relation of the network (if any)"));
+
+
+
     editRelationNextAct = new QAction(QIcon(":/images/chevron_right_48px.svg"),
                                       tr("Next Relation"),  this);
     editRelationNextAct->setShortcut(Qt::ALT + Qt::Key_Right);
@@ -4020,6 +4042,11 @@ void MainWindow::initToolBar(){
 
     toolBar->addSeparator();
 
+    toolBar->addAction (editModeSelectAct);
+    toolBar->addAction (editModeDragAct);
+
+    toolBar->addSeparator();
+
     //Create relation select widget
 //    QLabel *labelRelationSelect= new QLabel;
 //    labelRelationSelect ->setText(tr("Relations:"));
@@ -5098,6 +5125,7 @@ void MainWindow::initWindowLayout() {
     QSize iconSize(size, size);
     iconSize.setHeight(16);
     iconSize.setWidth(16);
+
     //
     // Zoom slider
     //
