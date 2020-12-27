@@ -886,6 +886,7 @@ void MainWindow::initView() {
 
     // sets dragging the mouse over the scene while the left mouse button is pressed.
     graphicsWidget->setDragMode(QGraphicsView::RubberBandDrag);
+//    graphicsWidget->setDragMode(QGraphicsView::ScrollHandDrag);
 
     graphicsWidget->setFocusPolicy(Qt::StrongFocus);
     graphicsWidget->setFocus();
