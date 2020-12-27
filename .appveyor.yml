@@ -97,7 +97,7 @@ after_build:
 
   - cmd: echo "Running Innosetup..."
   - cmd: echo "Available Innosetup languages:"
-  - cmd: dir C:\Program Files (x86)\Inno Setup 6\Languages
+  - cmd: dir 'c:\program files (x86)\inno setup 6\iscc.exe'
   - iscc innosetup.iss
   - cmd: type Setup-Manifest.txt
 
