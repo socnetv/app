@@ -166,10 +166,10 @@ unix:!macx{
   appstream.files = socnetv.appdata.xml
 
   translations.path = $${PREFIX}/share/socnetv
-  translations.files = translations
+  translations.files = translations/socnetv_*.qm
 
   doc.path = $${PREFIX}/share/doc/socnetv
-  doc.files = license changelog.gz NEWS README.md TODO COPYING AUTHORS INSTALL
+  doc.files = changelog.gz NEWS README.md TODO COPYING AUTHORS INSTALL
 
   INSTALLS += pixmap desktop manpage translations doc appstream
 
@@ -186,7 +186,7 @@ INSTALLS += target
 
 
 TRANSLATIONS    = translations/socnetv_es.ts \ 
-		  translations/socnetv_el.ts 
+                  translations/socnetv_de.ts
 
 
 
