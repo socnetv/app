@@ -43,7 +43,7 @@ install:
   - cmd: del MYVER.txt
   - echo %APPVEYOR_REPO_COMMIT:~0,7%
   - cmd: echo "Setting SocNetV current version"
-  - cmd: set SOCNETV_VERSION=2.7-dev
+  - cmd: set SOCNETV_VERSION=2.7
   - cmd: echo %SOCNETV_VERSION%
   - cmd: echo "Setting build type"
   - cmd: set BUILD_TYPE=release

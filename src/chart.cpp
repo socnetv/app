@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.7-dev
+ version: 2.7
  Written in Qt
 
                          chart.h  -  description
