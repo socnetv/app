@@ -178,5 +178,6 @@
         <file>images/cursor.svg</file>
         <file>images/cursor-pointer.svg</file>
         <file>images/cursor-drag.svg</file>
+        <file>images/cursor-hand-drag.svg</file>
     </qresource>
 </RCC>

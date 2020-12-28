@@ -1312,7 +1312,7 @@ void MainWindow::initActions(){
         "In this mode, you can interact with the canvas: a) left-click or right-click on items (i.e. nodes, edges), b) move them by dragging them with your mouse and c) select multiple items with a rubber band."));
 
 
-    editDragModeScrollAct = new QAction(QIcon(":/images/cursor-drag.svg"),
+    editDragModeScrollAct = new QAction(QIcon(":/images/cursor-hand-drag.svg"),
                                   tr("Scroll/Pan"),  this);
     editDragModeScrollAct->setCheckable(true);
     editDragModeScrollAct->setChecked(false);
