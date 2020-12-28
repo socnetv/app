@@ -1,11 +1,11 @@
 /******************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.6-dev
+ version: 2.6
  Written in Qt
  
                          graph.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2019 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2020 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
     website:             : http://dimitris.apeiro.gr
     project site         : https://socnetv.org
@@ -256,9 +256,165 @@ Graph::Graph(GraphicsWidget *graphicsWidget) {
 
     htmlEnd = "</body></html>";
 
+
+
+
+
+    //
+    // Signals between activeGraph and graphicsWidget
+    //
+
+    connect( graphicsWidget, SIGNAL( resized(int, int)),
+             this, SLOT( canvasSizeSet(int,int)) ) ;
+
+    connect( graphicsWidget, SIGNAL(
+                 userDoubleClickNewNode(const QPointF &) ),
+             this, SLOT(
+                 vertexCreateAtPos(const QPointF &) ) ) ;
+
+    connect( graphicsWidget, &GraphicsWidget::userSelectedItems,
+             this,&Graph::graphSelectionChanged);
+
+    connect( this, &Graph::addGuideCircle,
+             graphicsWidget,&GraphicsWidget::addGuideCircle ) ;
+
+    connect( this, SIGNAL( addGuideHLine(const double&) ),
+             graphicsWidget, SLOT(  addGuideHLine(const double&) ) ) ;
+
+    connect( this, SIGNAL( setNodePos(const int &, const qreal &, const qreal &) ),
+             graphicsWidget, SLOT( moveNode(const int &, const qreal &, const qreal &) ) ) ;
+
+    connect( this,&Graph::signalNodesFound,
+             graphicsWidget,  &GraphicsWidget::setNodesMarked  );
+
+    connect( this,
+             SIGNAL( signalDrawNode( const QPointF &,
+                                     const int &,
+                                     const int &,
+                                     const QString &,
+                                     const QString &,
+                                     const QString &,
+                                     const QString &,
+                                     const int &,
+                                     const int &,
+                                     const QString &,
+                                     const QString &,
+                                     const int &,
+                                     const int &
+                                     )
+                     ),
+             graphicsWidget,
+             SLOT( drawNode( const QPointF &,
+                             const int &,
+                             const int &,
+                             const QString &,
+                             const QString &,
+                             const QString &,
+                             const QString &,
+                             const int &,
+                             const int &,
+                             const QString &,
+                             const QString &,
+                             const int &,
+                             const int &
+                             )
+                   )
+             ) ;
+
+    connect( this,&Graph::signalRemoveNode,
+             graphicsWidget,  &GraphicsWidget::removeNode  );
+
+    connect( this, SIGNAL( setVertexVisibility(int, bool)  ),
+             graphicsWidget, SLOT(  setNodeVisibility (int ,  bool) ) );
+
+    connect( this, SIGNAL( setNodeSize(const int &, const int &)  ),
+             graphicsWidget, SLOT(  setNodeSize (const int &, const int &) ) );
+
+    connect( this, SIGNAL( setNodeColor(const int &, const QString &))  ,
+             graphicsWidget, SLOT(  setNodeColor(const int &, const QString &) ) );
+
+    connect( this, SIGNAL( setNodeShape(const int &,const QString&, const QString &))  ,
+             graphicsWidget, SLOT(  setNodeShape(const int &, const QString&,const QString &) ) );
+
+    connect( this, SIGNAL( setNodeNumberColor(const int &, QString)  ),
+              graphicsWidget, SLOT(  setNodeNumberColor (const int &, QString) ) );
+
+    connect( this, SIGNAL( setNodeNumberSize(const int &, const int &)  ),
+             graphicsWidget, SLOT(  setNodeNumberSize (const int &, const int &) ) );
+
+    connect( this, SIGNAL( setNodeNumberDistance(const int &, const int &)  ),
+             graphicsWidget, SLOT( setNodeNumberDistance (const int &, const int &) ) );
+
+    connect( this, &Graph::setNodeLabel ,
+             graphicsWidget, &GraphicsWidget::setNodeLabel );
+
+    connect( this,&Graph::setNodeLabelColor,
+             graphicsWidget,  &GraphicsWidget::setNodeLabelColor  );
+
+    connect( this, SIGNAL( setNodeLabelSize(const int &, const int &)  ),
+             graphicsWidget, SLOT(  setNodeLabelSize (const int &, const int &) ) );
+
+    connect( this, SIGNAL( setNodeLabelDistance(const int &, const int &)  ),
+             graphicsWidget, SLOT( setNodeLabelDistance (const int &, const int &) ) );
+
+
+    connect( this, &Graph::signalRemoveEdge,
+             graphicsWidget,&GraphicsWidget::removeEdge);
+
+
+    connect (this, &Graph::signalDrawEdge, graphicsWidget,&GraphicsWidget::drawEdge);
+
+    connect( this, SIGNAL( setEdgeWeight(const int &,
+                                                const int &,
+                                                const qreal &)),
+             graphicsWidget, SLOT( setEdgeWeight(const int &,
+                                                 const int &,
+                                                 const qreal &) ) );
+
+    connect( this, SIGNAL( signalEdgeType(const int &,
+                                                 const int &,
+                                                 const int &)),
+             graphicsWidget, SLOT( setEdgeDirectionType(const int &,
+                                                        const int &,
+                                                        const int &) ) );
+
+    connect( this, SIGNAL( setEdgeColor(const int &,
+                                               const int &,
+                                               const QString &)),
+             graphicsWidget, SLOT( setEdgeColor(const int &,
+                                                const int &,
+                                                const QString &) ) );
+
+
+    connect( this, SIGNAL( setEdgeLabel(const int &,
+                                               const int &,
+                                               const QString &)),
+             graphicsWidget, SLOT( setEdgeLabel(const int &,
+                                                const int &,
+                                                const QString &) ) );
+
+
+    connect( this, SIGNAL( setEdgeVisibility (int, int, int, bool) ),
+             graphicsWidget, SLOT(  setEdgeVisibility (int, int, int, bool) ) );
+
+
+    connect( graphicsWidget, &GraphicsWidget::userClickedNode,
+             this, &Graph::vertexClickedSet );
+
+    connect( graphicsWidget, &GraphicsWidget::userClickedEdge,
+             this, &Graph::edgeClickedSet );
+
+    connect( this, SIGNAL(signalRelationChangedToGW(int)),
+             graphicsWidget, SLOT( relationSet(int))  ) ;
+
+
+
 }
 
 
+void Graph::initSignalSlots() {
+
+}
 
 /**
  * @brief Graph::~Graph

@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.6-dev
+ version: 2.6
  Written in Qt
 
 -                           mainwindow.cpp  -  description
                              -------------------
-    copyright         : (C) 2005-2019 by Dimitris B. Kalamaras
+    copyright         : (C) 2005-2020 by Dimitris B. Kalamaras
     blog              : http://dimitris.apeiro.gr
     project site      : https://socnetv.org
 
@@ -766,39 +766,6 @@ void MainWindow::polishProgressDialog(QProgressDialog* dialog)
 
 
 /**
- * @brief Initializes the Graph
- */
-void MainWindow::initGraph() {
-
-    qDebug() << "MW::initGraph()";
-
-    activeGraph = new Graph(graphicsWidget);
-
-    qDebug() << "MW::initGraph() - activeGraph created on thread:" << activeGraph->thread()
-             << "moving it to new thread ";
-
-    //    activeGraph->moveToThread(&graphThread);
-    //    graphThread.start();
-
-    // Used in toolBoxAnalysisProminenceSelect and DialogNodeFind
-    prominenceIndexList  << "Degree Centrality"
-                         << "Closeness Centrality"
-                         << "IR Closeness Centrality"
-                         << "Betweenness Centrality"
-                         << "Stress Centrality"
-                         << "Eccentricity Centrality"
-                         << "Power Centrality"
-                         << "Information Centrality"
-                         << "Eigenvector Centrality"
-                         << "Degree Prestige"
-                         << "PageRank Prestige"
-                         << "Proximity Prestige";
-
-    qDebug() << "MW::MainWindow() - activeGraph thread now:" << activeGraph->thread();
-
-}
-
-/**
  * @brief MainWindow::terminateThreads
  * @param reason
  */
@@ -824,7 +791,7 @@ void MainWindow::terminateThreads(const QString &reason) {
 void MainWindow::initView() {
     qDebug ()<< "MW::initView()";
 
-    //create a scene
+    //Create our scene
     scene=new QGraphicsScene();
 
     //create a view widget for this scene
@@ -906,6 +873,41 @@ void MainWindow::initView() {
              << graphicsWidget->height();
 }
 
+
+
+
+/**
+ * @brief Initializes the Graph
+ */
+void MainWindow::initGraph() {
+
+    qDebug() << "MW::initGraph()";
+
+    activeGraph = new Graph(graphicsWidget);
+
+    qDebug() << "MW::initGraph() - activeGraph created on thread:" << activeGraph->thread()
+             << "moving it to new thread ";
+
+    //    activeGraph->moveToThread(&graphThread);
+    //    graphThread.start();
+
+    // Used in toolBoxAnalysisProminenceSelect and DialogNodeFind
+    prominenceIndexList  << "Degree Centrality"
+                         << "Closeness Centrality"
+                         << "IR Closeness Centrality"
+                         << "Betweenness Centrality"
+                         << "Stress Centrality"
+                         << "Eccentricity Centrality"
+                         << "Power Centrality"
+                         << "Information Centrality"
+                         << "Eigenvector Centrality"
+                         << "Degree Prestige"
+                         << "PageRank Prestige"
+                         << "Proximity Prestige";
+
+    qDebug() << "MW::MainWindow() - activeGraph thread now:" << activeGraph->thread();
+
+}
 
 /**
  * @brief Initializes all QActions of the application
@@ -4789,7 +4791,7 @@ void MainWindow::initPanels(){
                 tr("The type of the network: directed or undirected. "
                    "Toggle the menu option Edit->Edges->Undirected Edges to change it"));
 
-    rightPanelNetworkTypeLabel->setToolTip(\
+    rightPanelNetworkTypeLabel->setToolTip(
                 tr("The loaded network, if any, is directed and \n"
                    "any link you add between nodes will be a directed arc.\n"
                    "If you want to work with undirected edges and/or \n"
@@ -5273,8 +5275,7 @@ void MainWindow::initSignalSlots() {
 
     // Signals between graphicsWidget and MainWindow
 
-    connect( graphicsWidget, SIGNAL( resized(int, int)),
-             activeGraph, SLOT( canvasSizeSet(int,int)) ) ;
+
 
     connect( graphicsWidget, &GraphicsWidget::setCursor,
              this,&MainWindow::setCursor);
@@ -5282,18 +5283,11 @@ void MainWindow::initSignalSlots() {
     connect( graphicsWidget,  &GraphicsWidget::userClickOnEmptySpace,
              this, &MainWindow::slotEditClickOnEmptySpace ) ;
 
-    connect( graphicsWidget, SIGNAL(
-                 userDoubleClickNewNode(const QPointF &) ),
-             activeGraph, SLOT(
-                 vertexCreateAtPos(const QPointF &) ) ) ;
-
     connect( graphicsWidget, SIGNAL( userMiddleClicked(const int &, const int &) ),
              this, SLOT( slotEditEdgeCreate(const int &, const int &) ) 	);
 
-
     connect( graphicsWidget, SIGNAL( openNodeMenu() ),
              this, SLOT( slotEditNodeOpenContextMenu() ) ) ;
-
 
     connect (graphicsWidget, &GraphicsWidget::openContextMenu,
              this, &MainWindow::slotEditOpenContextMenu);
@@ -5320,145 +5314,6 @@ void MainWindow::initSignalSlots() {
     connect(rotateRightBtn, SIGNAL(clicked()), graphicsWidget, SLOT(rotateRight()));
 
     connect(resetSlidersBtn, SIGNAL(clicked()), graphicsWidget, SLOT(reset()));
-
-    //
-    // Signals between activeGraph and graphicsWidget
-    //
-
-    connect( graphicsWidget, &GraphicsWidget::userSelectedItems,
-             activeGraph,&Graph::graphSelectionChanged);
-
-    connect( activeGraph, &Graph::addGuideCircle,
-             graphicsWidget,&GraphicsWidget::addGuideCircle ) ;
-
-    connect( activeGraph, SIGNAL( addGuideHLine(const double&) ),
-             graphicsWidget, SLOT(  addGuideHLine(const double&) ) ) ;
-
-    connect( activeGraph, SIGNAL( setNodePos(const int &, const qreal &, const qreal &) ),
-             graphicsWidget, SLOT( moveNode(const int &, const qreal &, const qreal &) ) ) ;
-
-    connect( activeGraph,&Graph::signalNodesFound,
-             graphicsWidget,  &GraphicsWidget::setNodesMarked  );
-
-    connect( activeGraph,
-             SIGNAL( signalDrawNode( const QPointF &,
-                                     const int &,
-                                     const int &,
-                                     const QString &,
-                                     const QString &,
-                                     const QString &,
-                                     const QString &,
-                                     const int &,
-                                     const int &,
-                                     const QString &,
-                                     const QString &,
-                                     const int &,
-                                     const int &
-                                     )
-                     ),
-             graphicsWidget,
-             SLOT( drawNode( const QPointF &,
-                             const int &,
-                             const int &,
-                             const QString &,
-                             const QString &,
-                             const QString &,
-                             const QString &,
-                             const int &,
-                             const int &,
-                             const QString &,
-                             const QString &,
-                             const int &,
-                             const int &
-                             )
-                   )
-             ) ;
-
-    connect( activeGraph,&Graph::signalRemoveNode,
-             graphicsWidget,  &GraphicsWidget::removeNode  );
-
-    connect( activeGraph, SIGNAL( setVertexVisibility(int, bool)  ),
-             graphicsWidget, SLOT(  setNodeVisibility (int ,  bool) ) );
-
-    connect( activeGraph, SIGNAL( setNodeSize(const int &, const int &)  ),
-             graphicsWidget, SLOT(  setNodeSize (const int &, const int &) ) );
-
-    connect( activeGraph, SIGNAL( setNodeColor(const int &, const QString &))  ,
-             graphicsWidget, SLOT(  setNodeColor(const int &, const QString &) ) );
-
-    connect( activeGraph, SIGNAL( setNodeShape(const int &,const QString&, const QString &))  ,
-             graphicsWidget, SLOT(  setNodeShape(const int &, const QString&,const QString &) ) );
-
-    connect( activeGraph, SIGNAL( setNodeNumberColor(const int &, QString)  ),
-              graphicsWidget, SLOT(  setNodeNumberColor (const int &, QString) ) );
-
-    connect( activeGraph, SIGNAL( setNodeNumberSize(const int &, const int &)  ),
-             graphicsWidget, SLOT(  setNodeNumberSize (const int &, const int &) ) );
-
-    connect( activeGraph, SIGNAL( setNodeNumberDistance(const int &, const int &)  ),
-             graphicsWidget, SLOT( setNodeNumberDistance (const int &, const int &) ) );
-
-    connect( activeGraph, &Graph::setNodeLabel ,
-             graphicsWidget, &GraphicsWidget::setNodeLabel );
-
-    connect( activeGraph,&Graph::setNodeLabelColor,
-             graphicsWidget,  &GraphicsWidget::setNodeLabelColor  );
-
-    connect( activeGraph, SIGNAL( setNodeLabelSize(const int &, const int &)  ),
-             graphicsWidget, SLOT(  setNodeLabelSize (const int &, const int &) ) );
-
-    connect( activeGraph, SIGNAL( setNodeLabelDistance(const int &, const int &)  ),
-             graphicsWidget, SLOT( setNodeLabelDistance (const int &, const int &) ) );
-
-
-    connect( activeGraph, &Graph::signalRemoveEdge,
-             graphicsWidget,&GraphicsWidget::removeEdge);
-
-
-    connect (activeGraph, &Graph::signalDrawEdge, graphicsWidget,&GraphicsWidget::drawEdge);
-
-    connect( activeGraph, SIGNAL( setEdgeWeight(const int &,
-                                                const int &,
-                                                const qreal &)),
-             graphicsWidget, SLOT( setEdgeWeight(const int &,
-                                                 const int &,
-                                                 const qreal &) ) );
-
-    connect( activeGraph, SIGNAL( signalEdgeType(const int &,
-                                                 const int &,
-                                                 const int &)),
-             graphicsWidget, SLOT( setEdgeDirectionType(const int &,
-                                                        const int &,
-                                                        const int &) ) );
-
-    connect( activeGraph, SIGNAL( setEdgeColor(const int &,
-                                               const int &,
-                                               const QString &)),
-             graphicsWidget, SLOT( setEdgeColor(const int &,
-                                                const int &,
-                                                const QString &) ) );
-
-
-    connect( activeGraph, SIGNAL( setEdgeLabel(const int &,
-                                               const int &,
-                                               const QString &)),
-             graphicsWidget, SLOT( setEdgeLabel(const int &,
-                                                const int &,
-                                                const QString &) ) );
-
-
-    connect( activeGraph, SIGNAL( setEdgeVisibility (int, int, int, bool) ),
-             graphicsWidget, SLOT(  setEdgeVisibility (int, int, int, bool) ) );
-
-
-    connect( graphicsWidget, &GraphicsWidget::userClickedNode,
-             activeGraph, &Graph::vertexClickedSet );
-
-    connect( graphicsWidget, &GraphicsWidget::userClickedEdge,
-             activeGraph, &Graph::edgeClickedSet );
-
-    connect( activeGraph, SIGNAL(signalRelationChangedToGW(int)),
-             graphicsWidget, SLOT( relationSet(int))  ) ;
 
 
     //
@@ -5651,7 +5506,7 @@ void MainWindow::initApp(){
 
     emit signalSetReportsDataDir(appSettings["dataDir"]);
 
-    /** Clear graphicsWidget scene and reset settings and transformations **/
+    /** Clear graphicsWidget and reset settings and transformations **/
     graphicsWidget->clear();
     rotateSlider->setValue(0);
     zoomSlider->setValue(250);
@@ -14336,7 +14191,7 @@ void MainWindow::slotHelpCheckUpdateParse(QNetworkReply *reply) {
 */
 void MainWindow::slotHelpAbout(){
     int randomCookie=rand()%fortuneCookie.count();
-QString BUILD="Mon Mar 11 18:17:18 EET 2019";
+QString BUILD="Mon 28 Dec 2020 01:42:35 PM EET";
     QMessageBox::about(
                 this, tr("About SocNetV"),
                 tr("<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)") +
@@ -14345,7 +14200,7 @@ QString BUILD="Mon Mar 11 18:17:18 EET 2019";
 
                 tr("<p>Website: <a href=\"https://socnetv.org\">https://socnetv.org</a></p>")+
 
-                tr("<p>(C) 2005-2019 by Dimitris V. Kalamaras</p>")+
+                tr("<p>(C) 2005-2020 by Dimitris V. Kalamaras</p>")+
                 tr("<p><a href=\"https://socnetv.org/contact\">Have questions? Contact us!</a></p>")+
 
                 tr("<p><b>Fortune cookie: </b><br> \"")  + fortuneCookie[randomCookie]  + "\"" +

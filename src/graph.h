@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.6-dev
+ version: 2.6
  Written in Qt
  
                          graph.h  -  description
                              -------------------
-    copyright         : (C) 2005-2019 by Dimitris B. Kalamaras
+    copyright         : (C) 2005-2020 by Dimitris B. Kalamaras
     project site      : https://socnetv.org
 
  ***************************************************************************/
@@ -424,8 +424,12 @@ public:
 
     /* INIT AND CLEAR*/
     Graph(GraphicsWidget *graphicsWidget);
+
+    void initSignalSlots();
+
     void clear(const QString &reason="");
-        ~Graph();
+
+    ~Graph();
 
     void setSocNetV_Version (QString ver) { VERSION = ver; }
 
