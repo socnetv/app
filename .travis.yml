@@ -12,7 +12,7 @@ language: cpp
 
 sudo: require
 
-dist: bionic
+dist: xenial
 
 # compiler:
 #   - clang 
