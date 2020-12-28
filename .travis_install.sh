@@ -11,9 +11,9 @@ echo "Project dir is: ${project_dir}"
 
 
 if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
-    sudo apt-get -y install qt58base qt58charts-no-lgpl qt58svg 
+    sudo apt-get -y install qt515base qt515charts-no-lgpl  qt515svg
     # sudo apt-get install qt5-default qttools5-dev qttools5-dev-tools qtbase5-dev qtbase5-dev-tools qttranslations5-l10n libqt5svg5-dev
-    source /opt/qt58/bin/qt58-env.sh
+    source /opt/qt515/bin/qt515-env.sh
 
 
 elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then

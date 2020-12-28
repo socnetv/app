@@ -10,9 +10,9 @@ echo "Project dir is: ${project_dir}"
 
 
 if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
-	# Install base Qt5 repos for linux
+    # Install base Qt5 repos for linux
     sudo apt-get -qq update
-    sudo add-apt-repository ppa:beineri/opt-qt58-trusty -y
+    sudo add-apt-repository ppa:beineri/opt-qt-5.15.2-bionic -y
     sudo apt-get update -qq
 
 elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then

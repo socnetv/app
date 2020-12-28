@@ -20,23 +20,23 @@ echo "LAST_COMMIT_SHORT is: $LAST_COMMIT_SHORT"
 # We can change this by exporting $VERSION environment variable 
 
 if [ ! -z "$TRAVIS_TAG" ] ; then
-    # If this is a tag, then version will be the tag, i.e. 2.5 or 2.5-beta
+    # If this is a tag, then version will be the tag, i.e. 2.6 or 2.6-beta
     export VERSION=${TRAVIS_TAG}
 else 
-    # If this is not a tag, the we want version to be like "2.5-beta-a0be9cd"
+    # If this is not a tag, the we want version to be like "2.6-beta-a0be9cd"
     export VERSION=${SOCNETV_VERSION}-${LAST_COMMIT_SHORT}
 fi
 
 
 if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
-    source /opt/qt58/bin/qt58-env.sh
+    source /opt/qt515/bin/qt515-env.sh
     qmake # default: all go to /usr
     make -j4
     find .
     make INSTALL_ROOT=appdir install; find appdir/
     cp appdir/usr/share/applications/socnetv.desktop ./appdir
     cp appdir/usr/share/pixmaps/socnetv.png .  
-    find /opt/qt58/plugins
+    find /opt/qt515/plugins
     wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" 
     chmod a+x linuxdeployqt*.AppImage
     unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
