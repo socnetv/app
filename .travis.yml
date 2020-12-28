@@ -10,7 +10,7 @@ language: cpp
 #   - linux
 #   - osx
 
-sudo: require
+# sudo: require # deprecated
 
 dist: xenial
 
@@ -24,7 +24,7 @@ env:
 
 # explicitly define our build
 # maybe add a linux/clang pair ?
-matrix:
+jobs:
   include:
     - os: linux
       compiler: gcc
