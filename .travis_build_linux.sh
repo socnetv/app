@@ -32,16 +32,28 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     source /opt/qt515/bin/qt515-env.sh
     qmake # default: all go to /usr
     make -j4
+
+    echo "Building finished! "
+    echo "Files in directory: "
     find .
-    make INSTALL_ROOT=appdir install; find appdir/
+    echo "Attempting make install in appdir: "
+    make INSTALL_ROOT=appdir install;
+    echo "Files in appdir: "
+    find appdir/
+    echo "Coppying .desktop file to ./appdir: "
     cp appdir/usr/share/applications/socnetv.desktop ./appdir
+    echo "Coppying socnetv.png in current dir: "
     cp appdir/usr/share/pixmaps/socnetv.png .  
+    echo "Checking contents of /opt/qtXX/plugins: "
     find /opt/qt515/plugins
+    echo "Downloading linuxdeployqt tool: "
     wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" 
+    echo "Make executable the linuxdeployqt tool: "
     chmod a+x linuxdeployqt*.AppImage
     unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
     # - ./linuxdeployqt*.AppImage /usr/share/applications/*.desktop -bundle-non-qt-libs
     # export VERSION=... # linuxdeployqt uses this for naming the file
+    echo "Run the linuxdeployqt tool: "
     ./linuxdeployqt*.AppImage appdir/usr/share/applications/*.desktop -appimage -extra-plugins=iconengines,imageformats
 
     echo "Check what we have created..."

@@ -11,6 +11,8 @@ echo "Project dir is: ${project_dir}"
 
 
 if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
+    sudo apt install mesa-common-dev
+#    sudo apt install libglu1-mesa-dev freeglut3-dev
     sudo apt-get -y install qt515base qt515charts-no-lgpl  qt515svg
     # sudo apt-get install qt5-default qttools5-dev qttools5-dev-tools qtbase5-dev qtbase5-dev-tools qttranslations5-l10n libqt5svg5-dev
     source /opt/qt515/bin/qt515-env.sh
