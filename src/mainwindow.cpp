@@ -886,7 +886,6 @@ void MainWindow::initView() {
 
     // sets dragging the mouse over the scene while the left mouse button is pressed.
     graphicsWidget->setDragMode(QGraphicsView::RubberBandDrag);
-//    graphicsWidget->setDragMode(QGraphicsView::ScrollHandDrag);
 
     graphicsWidget->setFocusPolicy(Qt::StrongFocus);
     graphicsWidget->setFocus();
@@ -7370,7 +7369,21 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
  */
 void MainWindow::slotEditDragModeSelection(bool checked){
     qDebug() << "MW::slotEditDragModeSelection() - checked" << checked;
-    graphicsWidget->setDragMode(QGraphicsView::RubberBandDrag);
+
+    editDragModeScrollAct -> setChecked(false);
+
+    if (editDragModeSelectAct ->isChecked()) {
+
+        graphicsWidget->setDragMode(QGraphicsView::RubberBandDrag);
+        graphicsWidget->setInteractive(true);
+    }
+    else {
+        graphicsWidget->setDragMode(QGraphicsView::NoDrag);
+        graphicsWidget->setInteractive(false);
+    }
+
+
+
 }
 
 
@@ -7380,7 +7393,19 @@ void MainWindow::slotEditDragModeSelection(bool checked){
  */
 void MainWindow::slotEditDragModeScroll(bool checked){
     qDebug() << "MW::slotEditDragModeScroll() - checked" << checked;
-    graphicsWidget->setDragMode(QGraphicsView::NoDrag);
+
+    editDragModeSelectAct ->setChecked(false);
+    graphicsWidget->setInteractive(false);
+
+    if ( editDragModeScrollAct -> isChecked() ) {
+
+        graphicsWidget->setDragMode(QGraphicsView::ScrollHandDrag);
+
+    }
+    else {
+        graphicsWidget->setDragMode(QGraphicsView::NoDrag);
+    }
+
 }
 
 
