@@ -1306,20 +1306,20 @@ void MainWindow::initActions(){
     editDragModeSelectAct->setCheckable(true);
     editDragModeSelectAct->setChecked(true);
 //    editDragModeSelectAct->setShortcut(Qt::ALT + Qt::Key_Right);
-    editDragModeSelectAct->setToolTip(tr("Toggle the select/move mode."));
+    editDragModeSelectAct->setToolTip(tr("Toggle the Select/Move drag mode."));
     editDragModeSelectAct->setStatusTip(tr("Enable this to be able to click and move items and also select them with a rubber band"));
     editDragModeSelectAct->setWhatsThis(tr("Drag Mode: Select/Move\n\n "
         "In this mode, you can interact with the canvas: a) left-click or right-click on items (i.e. nodes, edges), b) move them by dragging them with your mouse and c) select multiple items with a rubber band."));
 
 
-    editDragModeScrollAct = new QAction(QIcon(":/images/cursor-hand-scroll.svg"),
+    editDragModeScrollAct = new QAction(QIcon(":/images/cursor-hand-drag.svg"),
                                   tr("Scroll/Pan"),  this);
     editDragModeScrollAct->setCheckable(true);
     editDragModeScrollAct->setChecked(false);
 //    editDragModeScrollAct->setShortcut(Qt::ALT + Qt::Key_Right);
-    editDragModeScrollAct->setToolTip(tr("Toggle the scrolling/panning mode."));
-    editDragModeScrollAct->setStatusTip(tr("Enable this to easily scroll / pan the canvas by dragging the mouse around."));
-    editDragModeScrollAct->setWhatsThis(tr("Drag Mode: Scroll/Pan\n\n "
+    editDragModeScrollAct->setToolTip(tr("Toggle the Scrolling drag mode."));
+    editDragModeScrollAct->setStatusTip(tr("Enable this to easily scroll the canvas by dragging the mouse around."));
+    editDragModeScrollAct->setWhatsThis(tr("Drag Mode: Scrolling\n\n "
             "The cursor changes into a pointing hand, and dragging the mouse around will scroll the scrolbars. You will not be able to select any items or move them around."));
 
 
