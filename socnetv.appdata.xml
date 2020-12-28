@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-	<id>socnetv</id>
+        <id>org.socnetv.socnetv.desktop</id>
 	<metadata_license>CC0-1.0</metadata_license>
 	<project_license>GPL-2.0+</project_license>
 	<name>Social Network Visualizer</name>
@@ -17,6 +17,7 @@
 			<image>https://socnetv.org/data/uploads/screenshots/25/socnetv-25-padget-power-centrality-size-distribution.png</image>
 		</screenshot>
 	</screenshots>
+        <developer_name>Dimitris V. Kalamaras</developer_name>
 	<provides>
 		<id>socnetv.desktop</id>
 	</provides>
