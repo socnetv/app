@@ -20,7 +20,7 @@ dist: xenial
 
 env: 
   global:
-    - SOCNETV_VERSION=2.6 # We use it to name packages on non-tagged commits
+    - SOCNETV_VERSION=2.7-dev # We use it to name packages on non-tagged commits
 
 # explicitly define our build
 # maybe add a linux/clang pair ?
