@@ -339,8 +339,8 @@ QStringList DialogWebCrawler::parseTextEditInput(const QString &html){
             for (int i = 0; i < userInput.size(); ++i){
                if (i==0) continue;
                data = userInput.at(i).toLocal8Bit().constData();
-               //qDebug () << "split " << i << ":: " << data << Qt::endl;
-               //qDebug () << "first char > at ::" <<  data.indexOf('>',0) << Qt::endl;
+               //qDebug () << "split " << i << ":: " << data << endl;
+               //qDebug () << "first char > at ::" <<  data.indexOf('>',0) << endl;
                str = data.mid ( data.indexOf('>',0) +1, data.indexOf("</p>",0) - (data.indexOf('>',0) +1) );
                qDebug () << "str ::" << str ;
                str.remove("<br />");
@@ -373,7 +373,7 @@ QStringList DialogWebCrawler::parseTextEditInput(const QString &html){
         userInputParsed.clear();
     }
     qDebug () << "DialogWebCrawler::parseTextEditInput() - stringlist size"
-              << userInputParsed.size()<< Qt::endl;
+              << userInputParsed.size()<< endl;
     return userInputParsed;
 
 }
@@ -383,13 +383,13 @@ QStringList DialogWebCrawler::parseTextEditInput(const QString &html){
  * @brief gathers data from web crawler form
  */
 void DialogWebCrawler::getUserChoices(){
-    qDebug()<< "DialogWebCrawler::getUserChoices() - Emitting" << Qt::endl
-            << "	seedUrl: " << seedUrl << Qt::endl
-            << "	maxLinksPerPage " << maxLinksPerPage << Qt::endl
-            << "	totalUrlsToCrawl " << maxUrlsToCrawl << Qt::endl
-            << "	urlPatternsIncluded" << urlPatternsIncluded << Qt::endl
-            << "	urlPatternsExcluded" << urlPatternsExcluded << Qt::endl
-            << "	linkClasses" << linkClasses << Qt::endl;
+    qDebug()<< "DialogWebCrawler::getUserChoices() - Emitting" << endl
+            << "	seedUrl: " << seedUrl << endl
+            << "	maxLinksPerPage " << maxLinksPerPage << endl
+            << "	totalUrlsToCrawl " << maxUrlsToCrawl << endl
+            << "	urlPatternsIncluded" << urlPatternsIncluded << endl
+            << "	urlPatternsExcluded" << urlPatternsExcluded << endl
+            << "	linkClasses" << linkClasses << endl;
 
     emit userChoices( seedUrl,
                       urlPatternsIncluded,

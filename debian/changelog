@@ -1,3 +1,9 @@
+socnetv (2.6-2) xenial; urgency=medium
+
+  *  New fixed upstream version 2.6. See https://socnetv.org/ChangeLog
+
+ -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Mon, 28 Dec 2020 18:44:00 +0200
+
 socnetv (2.6-1) xenial; urgency=medium
 
   *  New upstream version 2.6. See https://socnetv.org/ChangeLog

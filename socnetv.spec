@@ -46,7 +46,7 @@
 
 %if %{is_fedora}
 %define distr Fedora
-%define breqr qt5-qtbase,qt5-qtbase-devel, qt5-qtcharts-devel, qt5-qtsvg-devel, qt5-qttools, fedora-release, desktop-file-utils
+%define breqr qt5-qtbase,qt5-qtbase-devel, qt5-qtcharts-devel, qt5-qtsvg-devel, qt5-qttools, fedora-release, desktop-file-utils, mesa-libGL-devel
 %define qmake /usr/bin/qmake-qt5
 %define lrelease /usr/bin/lrelease
 %endif
@@ -224,6 +224,8 @@ echo " ### FILES SECTION ###"
 #CHANGELOG SECTION
 #
 %changelog
+* Mon Dec 28 2020 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.6-2
+- Synced with fixed upstream development 2.6 version
 * Mon Dec 28 2020 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.6-1
 - Synced with upstream development 2.6 version
 * Fri Mar 8 2019 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.5-3

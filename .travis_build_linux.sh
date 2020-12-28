@@ -29,7 +29,7 @@ fi
 
 
 if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
-    source /opt/qt515/bin/qt515-env.sh
+    source /opt/qt512/bin/qt512-env.sh
     qmake # default: all go to /usr
     make -j4
 
@@ -45,7 +45,7 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     echo "Coppying socnetv.png in current dir: "
     cp appdir/usr/share/pixmaps/socnetv.png .  
     echo "Checking contents of /opt/qtXX/plugins: "
-    find /opt/qt515/plugins
+    find /opt/qt512/plugins
     echo "Downloading linuxdeployqt tool: "
     wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" 
     echo "Make executable the linuxdeployqt tool: "

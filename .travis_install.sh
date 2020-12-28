@@ -14,9 +14,9 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     sudo apt-get install mesa-common-dev
 #    sudo apt install libglu1-mesa-dev freeglut3-dev
     sudo apt-get install build-essential libgl1-mesa-dev
-    sudo apt-get -y install qt515base qt515charts-no-lgpl  qt515svg
+    sudo apt-get -y install qt512base qt512charts-no-lgpl  qt512svg
     # sudo apt-get install qt5-default qttools5-dev qttools5-dev-tools qtbase5-dev qtbase5-dev-tools qttranslations5-l10n libqt5svg5-dev
-    source /opt/qt515/bin/qt515-env.sh
+    source /opt/qt512/bin/qt512-env.sh
 
 
 elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then

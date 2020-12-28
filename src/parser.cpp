@@ -363,7 +363,7 @@ bool Parser::loadDL(){
                 // If it is a DL file and contains a comma in the first line,
                 // then the line might declare some keywords (N, NM, FORMAT)
                 // this happens in R's sna output files
-                lineElement = str.split(",", Qt::SkipEmptyParts);
+                lineElement = str.split(",", QString::SkipEmptyParts);
                 readDLKeywords(lineElement, totalNodes, NM, NR, NC, fullmatrixFormat, edgelist1Format);
 
             } //  end if str.contains(",")
@@ -373,7 +373,7 @@ bool Parser::loadDL(){
             else if (str.contains("=")){
                 qDebug() << "Parser::loadDL() - DL starting line contains a = but not a comma" ;
                 // this is space separated
-                lineElement = str.split(" ", Qt::SkipEmptyParts);
+                lineElement = str.split(" ", QString::SkipEmptyParts);
                 readDLKeywords(lineElement, totalNodes, NM, NR, NC, fullmatrixFormat, edgelist1Format);
 
             } // end else if contains =
@@ -401,7 +401,7 @@ bool Parser::loadDL(){
             if ( str.count("=",Qt::CaseInsensitive) == 1 ) {
                  qDebug() << "Parser::loadDL() - Line contains just one = " ;
                 // then one of the above keywords is declared here
-                tempList = str.split("=", Qt::SkipEmptyParts);
+                tempList = str.split("=", QString::SkipEmptyParts);
 
                 label = tempList[0].simplified();
                 value= tempList[1].simplified();
@@ -469,14 +469,14 @@ bool Parser::loadDL(){
                 qDebug() << "Parser::loadDL() - Line contains multiple = " ;
                  if (str.contains(",")) {
                     // this is comma separated
-                    lineElement = str.split(",", Qt::SkipEmptyParts);
+                    lineElement = str.split(",", QString::SkipEmptyParts);
                    readDLKeywords(lineElement, totalNodes, NM, NR, NC, fullmatrixFormat, edgelist1Format);
                  } // end else if contains comma
 
                  // check if line contains space i.e. "NR=18 NC=14"
                  else if (str.contains(" ")) {
                      // this is space separated
-                     lineElement = str.split(" ", Qt::SkipEmptyParts);
+                     lineElement = str.split(" ", QString::SkipEmptyParts);
                      readDLKeywords(lineElement, totalNodes, NM, NR, NC, fullmatrixFormat, edgelist1Format);
                   } // end else if contains space
 
@@ -605,7 +605,7 @@ bool Parser::loadDL(){
                     qDebug() << "Parser::loadDL() -Nodes have not been created yet."
                              << "One row for labels found."
                              << "Splitting at a comma and calling createRandomNodes(1) for each label" ;
-                    tempList = rowLabels[0].split(",", Qt::SkipEmptyParts);
+                    tempList = rowLabels[0].split(",", QString::SkipEmptyParts);
                     for (QStringList::Iterator it1 = tempList.begin(); it1!=tempList.end(); ++it1)   {
                         label = (*it1);
                         nodeSum++;
@@ -644,7 +644,7 @@ bool Parser::loadDL(){
                         qDebug() << "Parser::loadDL() -Nodes have not been created yet."
                                  << "One line for col label found."
                                  << "Splitting at a comma and calling createRandomNodes(1) for each label" ;
-                        tempList = colLabels[0].split(",", Qt::SkipEmptyParts);
+                        tempList = colLabels[0].split(",", QString::SkipEmptyParts);
                         for (QStringList::Iterator it1 = tempList.begin(); it1!=tempList.end(); ++it1)   {
                             label = (*it1);
                             nodeSum++;
@@ -683,7 +683,7 @@ bool Parser::loadDL(){
                         str=str.simplified();
                     }
                     qDebug() << "Parser::loadDL() - splitting str to elements ";
-                    lineElement=str.split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+                    lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
                     qDebug() << "Parser::loadDL() - line elements " << lineElement.count();
                     if (lineElement.count() < totalNodes ) {
                         qDebug() << "Parser::loadDL() -This line has "
@@ -757,7 +757,7 @@ bool Parser::loadDL(){
                     target=NR+1;
                     qDebug() << "Parser::loadDL() - this is a two-mode fullmatrix file. "
                                 "Splitting str to elements:";
-                    lineElement=str.split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+                    lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
                     qDebug()<< "Parser::loadDL() - lineElement:" << lineElement;
                     if (lineElement.count() != NC) {
                         qDebug() << "Parser::loadDL() - Not a two-mode fullmatrix UCINET "
@@ -807,7 +807,7 @@ bool Parser::loadDL(){
             if (edgelist1Format) {
                 // read edges in edgelist1 format
 
-                lineElement=str.split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+                lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
                 qDebug() << "Parser::loadDL() - edgelist str line:"<< str;
                 qDebug() << "Parser::loadDL() - edgelist data element:"<< lineElement;
                 if ( lineElement.count() != 3 ) {
@@ -912,7 +912,7 @@ bool Parser::readDLKeywords(QStringList &strList,
             if (tempStr.contains("=",Qt::CaseInsensitive)) {
                 qDebug() << "Parser::readDLKeywords() - splitting element at = sign";
 
-                tempList = tempStr.split("=", Qt::SkipEmptyParts);
+                tempList = tempStr.split("=", QString::SkipEmptyParts);
 
                 label = tempList[0].simplified();
                 value= tempList[1].simplified();
@@ -1099,7 +1099,7 @@ bool Parser::loadPajek(){
             qDebug("Parser-loadPajek(): headlines end here");
         }
         /**SPLIT EACH LINE (ON EMPTY SPACE CHARACTERS) IN SEVERAL ELEMENTS*/
-        lineElement=str.split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+        lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
 
         if ( str.contains( "*edges", Qt::CaseInsensitive) ) {
             edges_flag=true; arcs_flag=false; arcslist_flag=false; matrix_flag=false;
@@ -2979,7 +2979,7 @@ bool Parser::loadGML(){
             //describes identification number for an object
             if ( nodeKey ) {
                 totalNodes++;
-                node_id = str.split(" ",Qt::SkipEmptyParts).last();
+                node_id = str.split(" ",QString::SkipEmptyParts).last();
                 if (!node_id.contains(onlyDigitsExp)) {
                     errorMessage = tr("Not a proper GML-formatted file. "
                                       "Node id tag at line %1 has non-arithmetic value.")
@@ -2995,7 +2995,7 @@ bool Parser::loadGML(){
         else if ( str.startsWith("label ",Qt::CaseInsensitive) ) {
             //describes label
             if ( nodeKey ) {
-                nodeLabel = str.split(" ",Qt::SkipEmptyParts).last().remove("\"");
+                nodeLabel = str.split(" ",QString::SkipEmptyParts).last().remove("\"");
                 qDebug()<< "Parser::loadGML() - node label definition"
                            << "node" << totalNodes
                               <<"id"<< node_id
@@ -3004,7 +3004,7 @@ bool Parser::loadGML(){
                 //FIXME REMOVE ANY "
             }
             else if ( edgeKey ) {
-                edgeLabel = str.split(" ",Qt::SkipEmptyParts).last();
+                edgeLabel = str.split(" ",QString::SkipEmptyParts).last();
                 qDebug()<< "Parser::loadGML() - edge label definition"
                            << "edge" << totalLinks
                                 << "label" << edgeLabel;
@@ -3020,7 +3020,7 @@ bool Parser::loadGML(){
         }
         else if ( str.startsWith("source ",Qt::CaseInsensitive) ) {
             if (edgeKey) {
-                edge_source = str.split(" ",Qt::SkipEmptyParts).last();
+                edge_source = str.split(" ",QString::SkipEmptyParts).last();
                 //if edge_source
                 if (!edge_source.contains(onlyDigitsExp)) {
                     errorMessage = tr("Not a proper GML-formatted file. "
@@ -3035,7 +3035,7 @@ bool Parser::loadGML(){
         }
         else if ( str.startsWith("target ",Qt::CaseInsensitive) ) {
             if (edgeKey) {
-                edge_target = str.split(" ",Qt::SkipEmptyParts).last();
+                edge_target = str.split(" ",QString::SkipEmptyParts).last();
                 if (!edge_source.contains(onlyDigitsExp)) {
                     errorMessage = tr("Not a proper GML-formatted file. "
                                       "Edge target tag at line %1 has non-arithmetic value.")
@@ -3069,7 +3069,7 @@ bool Parser::loadGML(){
                         str.remove("[");
                         str.remove("]");
                         str = str.simplified();
-                        tempList = str.split(" ",Qt::SkipEmptyParts);
+                        tempList = str.split(" ",QString::SkipEmptyParts);
                         randX = (tempList.at(1)).toFloat(&floatOK);
                         if (!floatOK) {
                             errorMessage = tr("Not a proper GML-formatted file. "
@@ -3102,7 +3102,7 @@ bool Parser::loadGML(){
         else if ( str.startsWith("type",Qt::CaseInsensitive) ) {
             if (graphicsKey && nodeKey)  {
                 qDebug()<< "Parser::loadGML() - node graphics type start";
-                nodeShape = str.split(" ",Qt::SkipEmptyParts).last();
+                nodeShape = str.split(" ",QString::SkipEmptyParts).last();
                 if (nodeShape.isNull() || nodeShape.isEmpty() ) {
                     errorMessage = tr("Not a proper GML-formatted file. "
                                       "Node type tag at line %1 has no value.")
@@ -3115,7 +3115,7 @@ bool Parser::loadGML(){
         else if ( str.startsWith("fill",Qt::CaseInsensitive) ) {
             if (graphicsKey && nodeKey)  {
                 qDebug()<< "Parser::loadGML() - node graphics fill start";
-                nodeColor = str.split(" ",Qt::SkipEmptyParts).last();
+                nodeColor = str.split(" ",QString::SkipEmptyParts).last();
                 if (nodeColor.isNull() || nodeColor.isEmpty() ) {
                     errorMessage = tr("Not a proper GML-formatted file. "
                                       "Node fill tag at line %1 has no value.")
@@ -3688,7 +3688,7 @@ template<typename T> void print_queue(T& q) {
         qDebug() << q.top().key << " value: " << q.top().value << " ";
         q.pop();
     }
-    qDebug() << Qt::endl;
+    qDebug() << endl;
 }
 
 
@@ -4069,7 +4069,7 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
         str= ts.readLine().simplified().trimmed();
 
         qDebug()<< "Parser::loadEdgeListSimple() - line "  << fileLine
-                << Qt::endl << str;
+                << endl << str;
 
         if ( isComment(str) ) {
             continue;
@@ -4128,7 +4128,7 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
         str=str.simplified();
 
         qDebug()<< "Parser::loadEdgeListSimple() - line" << fileLine
-                << Qt::endl << str;
+                << endl << str;
 
         if ( isComment(str) )
             continue;
