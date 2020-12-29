@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer 
- version: 2.7
+ version: 2.8-dev
  Written in Qt
  
                          graphvertex.cpp  -  description

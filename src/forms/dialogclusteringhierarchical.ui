@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>576</height>
+    <height>511</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -33,7 +33,7 @@
   </property>
   <property name="font">
    <font>
-    <pointsize>9</pointsize>
+    <pointsize>12</pointsize>
    </font>
   </property>
   <property name="windowTitle">
@@ -107,7 +107,7 @@
      <property name="minimumSize">
       <size>
        <width>400</width>
-       <height>210</height>
+       <height>200</height>
       </size>
      </property>
      <property name="text">

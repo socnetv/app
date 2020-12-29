@@ -22,6 +22,11 @@
     <height>450</height>
    </size>
   </property>
+  <property name="font">
+   <font>
+    <pointsize>12</pointsize>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>Node Properties</string>
   </property>
@@ -32,7 +37,7 @@
       <widget class="QLabel" name="label">
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -44,7 +49,7 @@
       <spacer name="horizontalSpacer_5">
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="orientation">
@@ -68,7 +73,7 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -84,7 +89,7 @@
       <widget class="QLabel" name="label_2">
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -96,7 +101,7 @@
       <spacer name="horizontalSpacer">
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="orientation">
@@ -120,7 +125,7 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -142,7 +147,7 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -154,7 +159,7 @@
       <spacer name="horizontalSpacer_2">
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="orientation">
@@ -175,7 +180,7 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <pointsize>12</pointsize>
         </font>
        </property>
       </widget>
@@ -188,7 +193,7 @@
       <widget class="QLabel" name="label_4">
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -200,7 +205,7 @@
       <spacer name="horizontalSpacer_3">
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="orientation">
@@ -224,7 +229,7 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -246,7 +251,7 @@
       <widget class="QLabel" name="label_5">
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -258,7 +263,7 @@
       <spacer name="horizontalSpacer_4">
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="orientation">
@@ -291,7 +296,7 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -307,7 +312,7 @@
       <widget class="QLabel" name="label_24">
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -322,7 +327,7 @@
       <spacer name="horizontalSpacer_24">
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="orientation">
@@ -346,7 +351,7 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -373,7 +378,7 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -393,7 +398,7 @@
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="font">
       <font>
-       <pointsize>8</pointsize>
+       <pointsize>12</pointsize>
       </font>
      </property>
      <property name="orientation">

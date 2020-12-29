@@ -44,6 +44,7 @@
        <property name="font">
         <font>
          <family>Liberation Sans</family>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -53,6 +54,11 @@
      </item>
      <item>
       <widget class="QTextEdit" name="patternsIncludedTextEdit">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Allowed URL Patterns&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enter, in separate lines, one or more URL patterns to &lt;span style=&quot; font-weight:600;&quot;&gt;include&lt;/span&gt; while crawling. For example:&lt;/p&gt;&lt;p&gt;example.com/pattern/*&lt;/p&gt;&lt;p&gt;Do not enter spaces. Leave * to crawl all urls.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -64,6 +70,11 @@
     <layout class="QVBoxLayout" name="verticalLayout_4">
      <item>
       <widget class="QCheckBox" name="intLinksCheckBox">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Crawl Internal Links &lt;/span&gt;&lt;/p&gt;&lt;p&gt;If enabled, the crawler will include and map &lt;span style=&quot; font-weight:600;&quot;&gt;internal links, &lt;/span&gt; that is pages from the same domain (or, in other words, from the same host ) as the URL being parsed each time.&lt;/p&gt;&lt;p&gt;If you do not want to crawl internal links, disable this option.&lt;/p&gt;&lt;p&gt; Please note that you MUST enable either this option or the &amp;quot;Include external links&amp;quot; option, for the crawler to work.&lt;/p&gt;&lt;p&gt;Default is to crawl internal links only. &lt;/p&gt;&lt;p&gt;You can further refine what kind of internal links to follow with the two options below: Child links and Parent links. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -77,6 +88,11 @@
      </item>
      <item>
       <widget class="QCheckBox" name="childLinksCheckBox">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Crawl child links&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If enabled, the crawler will map &lt;span style=&quot; font-weight:600;&quot;&gt;child URLs&lt;/span&gt;&lt;/p&gt;&lt;p&gt;A URL is a &lt;span style=&quot; font-style:italic;&quot;&gt;childUrl &lt;/span&gt;of another URL if the two URLs share the same scheme and authority, and the latter URL's path is a parent of the path of &lt;span style=&quot; font-style:italic;&quot;&gt;childUrl&lt;/span&gt;. This applies only to internal URLs.&lt;/p&gt;&lt;p&gt;For instance, www.socnetv.org/docs/manual.html is a child URL of www.socnetv.org/docs/ &lt;/p&gt;&lt;p&gt;If you don't want to crawl child URLs, disable this option. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -90,6 +106,11 @@
      </item>
      <item>
       <widget class="QCheckBox" name="parentLinksCheckBox">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Crawl parent links&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If enabled, the crawler will map &lt;span style=&quot; font-weight:600;&quot;&gt;parent URLs&lt;/span&gt;. &lt;/p&gt;&lt;p&gt;A URL is a &lt;span style=&quot; font-style:italic;&quot;&gt;parent &lt;/span&gt;of another URL if the two URLs share the same scheme and authority, and the former URL's path is a parent of the path of the latter URL.  This applies to internal URLs.&lt;/p&gt;&lt;p&gt;For instance, the URL www.socnetv.org/docs/ is a parent URL of www.socnetv.org/docs/manual.html&lt;/p&gt;&lt;p&gt;If you don't want to crawl parent links, disable this option. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -107,6 +128,11 @@
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
       <widget class="QLabel" name="label_7">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>URL patterns to exclude</string>
        </property>
@@ -114,6 +140,11 @@
      </item>
      <item>
       <widget class="QTextEdit" name="patternsExcludedTextEdit">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Excluded URL Patterns&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enter, in separate lines, one or more URL patterns to &lt;span style=&quot; font-weight:600;&quot;&gt;exclude&lt;/span&gt; while crawling. For example:&lt;/p&gt;&lt;p&gt;example.com/pattern/*&lt;/p&gt;&lt;p&gt;Do not enter spaces. Leave blank to crawl all urls.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -134,6 +165,7 @@
        <property name="font">
         <font>
          <family>Liberation Sans</family>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -148,7 +180,7 @@
       <spacer name="horizontalSpacer_2">
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <pointsize>12</pointsize>
          <stylestrategy>PreferAntialias</stylestrategy>
         </font>
        </property>
@@ -174,6 +206,7 @@
        <property name="font">
         <font>
          <family>Liberation Sans</family>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -193,6 +226,11 @@
     <layout class="QVBoxLayout" name="verticalLayout_5">
      <item>
       <widget class="QCheckBox" name="socialLinksCheckBox">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Links to social media domains&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If enabled, the crawler will map (and possibly crawl) &lt;span style=&quot; font-weight:600;&quot;&gt;links to social media websites&lt;/span&gt;, such as twitter.com.&lt;/p&gt;&lt;p&gt;If disabled, the crawler will diregard any link to URLs in the following domains:&lt;/p&gt;&lt;p&gt;facebook.com&lt;br/&gt;twitter.com&lt;br/&gt;linkedin.com&lt;br/&gt;instagram.com&lt;br/&gt;pinterest.com&lt;br/&gt;telegram.org&lt;br/&gt;telegram.me&lt;br/&gt;youtube.com&lt;br/&gt;reddit.com&lt;br/&gt;plus.google.com&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Note&lt;/span&gt;: You can exclude more social media or define your custom social media exclusion list by typing domains in the &amp;quot;URL patterns to exclude&amp;quot; text edit above.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -206,6 +244,11 @@
      </item>
      <item>
       <widget class="QCheckBox" name="selfLinksCheckBox">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled the application will draw a &lt;span style=&quot; font-weight:600;&quot;&gt;self-link&lt;/span&gt; when a page contains a link to itself. &lt;/p&gt;&lt;p&gt;Default is not to allow self-links.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -219,6 +262,11 @@
      </item>
      <item>
       <spacer name="verticalSpacer">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
        <property name="orientation">
         <enum>Qt::Vertical</enum>
        </property>
@@ -236,6 +284,11 @@
     <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
       <widget class="QCheckBox" name="extLinksIncludedCheckBox">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Include external links&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If enabled, the crawler will map &lt;span style=&quot; font-weight:600;&quot;&gt;links to external domains&lt;/span&gt;. &lt;/p&gt;&lt;p&gt;For instance, if this option is enabled and you start crawling www.supersyntages.gr/ where there is a link to a page of a different domain, i.e. www.aggelies247.com/news, then a node &amp;quot;www.aggelies247.com/news&amp;quot; will be added to the network. &lt;/p&gt;&lt;p&gt;If you don't want to crawl external links at all, just disable this option. &lt;/p&gt;&lt;p&gt;Please note that you &lt;span style=&quot; font-weight:600;&quot;&gt;MUST &lt;/span&gt;enable either this option or the &amp;quot;Include internal links&amp;quot; option, for the crawler to work.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -249,6 +302,11 @@
      </item>
      <item>
       <widget class="QCheckBox" name="extLinksCheckBox">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Crawl external links&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If enabled, the crawler will &lt;span style=&quot; font-weight:600;&quot;&gt;map external links AND crawl them for new links as well.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;For instance, if you enable this option and start crawling the page at https://www.supersyntages.gr/ where there is a link to another domain, i.e. www.linuxinsider.gr, then the crawler will visit linuxinsider.gr too to find more links. &lt;/p&gt;&lt;p&gt;If you don't want to crawl external links, disable this option. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -262,6 +320,11 @@
      </item>
      <item>
       <widget class="QCheckBox" name="waitCheckBox">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Wait for a random number of milliseconds (&lt;span style=&quot; font-weight:600;&quot;&gt;0-1000&lt;/span&gt;) between network requests.  &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Use of this option is recommended, as it lightens the server load by making the requests less frequent.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;By default this option is enabled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -292,7 +355,7 @@
      <property name="font">
       <font>
        <family>Liberation Sans</family>
-       <pointsize>10</pointsize>
+       <pointsize>12</pointsize>
       </font>
      </property>
      <property name="autoFillBackground">
@@ -319,6 +382,7 @@
        <property name="font">
         <font>
          <family>Liberation Sans</family>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -328,6 +392,11 @@
      </item>
      <item>
       <spacer name="horizontalSpacer_3">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -362,6 +431,7 @@
        <property name="font">
         <font>
          <family>Liberation Sans</family>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -384,6 +454,7 @@
        <property name="font">
         <font>
          <family>Liberation Sans</family>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -398,7 +469,7 @@
       <spacer name="horizontalSpacer">
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <pointsize>12</pointsize>
          <stylestrategy>PreferAntialias</stylestrategy>
         </font>
        </property>
@@ -424,7 +495,7 @@
        <property name="font">
         <font>
          <family>Liberation Sans</family>
-         <pointsize>10</pointsize>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -457,7 +528,7 @@
      <property name="font">
       <font>
        <family>Sans Serif</family>
-       <pointsize>10</pointsize>
+       <pointsize>12</pointsize>
       </font>
      </property>
      <property name="orientation">

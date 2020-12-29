@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.7
+ version: 2.8-dev
  Written in Qt
 
 -                           mainwindow.cpp  -  description
@@ -14191,7 +14191,7 @@ void MainWindow::slotHelpCheckUpdateParse(QNetworkReply *reply) {
 */
 void MainWindow::slotHelpAbout(){
     int randomCookie=rand()%fortuneCookie.count();
-QString BUILD="Mon 28 Dec 2020 10:06:06 PM EET";
+QString BUILD="Tue Dec 29 23:30:03 EET 2020";
     QMessageBox::about(
                 this, tr("About SocNetV"),
                 tr("<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)") +

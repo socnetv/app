@@ -42,7 +42,7 @@
      <property name="font">
       <font>
        <family>MS Shell Dlg 2</family>
-       <pointsize>9</pointsize>
+       <pointsize>12</pointsize>
       </font>
      </property>
      <property name="currentIndex">
@@ -61,6 +61,12 @@
            <height>0</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>MS Shell Dlg 2</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
          <property name="title">
           <string>Data Exporting</string>
          </property>
@@ -69,6 +75,12 @@
            <layout class="QHBoxLayout" name="horizontalLayout">
             <item>
              <widget class="QLabel" name="label">
+              <property name="font">
+               <font>
+                <family>MS Shell Dlg 2</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default Save / Export folder &lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click the small button on the far right corner to select a folder, where all SocNetV files and reports will be saved by default. &lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and will be the default of the application every time you run SocNetV - until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -79,6 +91,12 @@
             </item>
             <item>
              <spacer name="horizontalSpacer">
+              <property name="font">
+               <font>
+                <family>MS Shell Dlg 2</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
@@ -98,6 +116,12 @@
                 <height>0</height>
                </size>
               </property>
+              <property name="font">
+               <font>
+                <family>MS Shell Dlg 2</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default Save / Export folder &lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is the path of the folder where all SocNetV files and reports will be saved. &lt;/p&gt;&lt;p&gt;Click the button on the right to select a new folder. &lt;/p&gt;&lt;p&gt;If the folder does not exist, it wil be created.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and will be the default of the application every time you run SocNetV - until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -113,6 +137,12 @@
                 <width>60</width>
                 <height>0</height>
                </size>
+              </property>
+              <property name="font">
+               <font>
+                <family>MS Shell Dlg 2</family>
+                <pointsize>12</pointsize>
+               </font>
               </property>
               <property name="cursor">
                <cursorShape>PointingHandCursor</cursorShape>
@@ -135,6 +165,12 @@
        </item>
        <item row="1" column="0">
         <spacer name="verticalSpacer_7">
+         <property name="font">
+          <font>
+           <family>MS Shell Dlg 2</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
@@ -153,6 +189,12 @@
            <width>470</width>
            <height>118</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>MS Shell Dlg 2</family>
+           <pointsize>12</pointsize>
+          </font>
          </property>
          <property name="title">
           <string>Reports</string>
@@ -174,6 +216,12 @@
                 <height>16777215</height>
                </size>
               </property>
+              <property name="font">
+               <font>
+                <family>MS Shell Dlg 2</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Label Length&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Change the length of labels &lt;span style=&quot; font-style:italic;&quot;&gt;in reports&lt;/span&gt;. Use the spin box to the right to change the number of digits SocNetV should write when generating reports with labels, i.e. node labels in centrality reports.&lt;/p&gt;&lt;p&gt;The length cannot be a negative value. The default value is 10.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default node number size.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -184,6 +232,12 @@
             </item>
             <item>
              <spacer name="horizontalSpacer_25">
+              <property name="font">
+               <font>
+                <family>MS Shell Dlg 2</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
@@ -212,7 +266,7 @@
               <property name="font">
                <font>
                 <family>DejaVu Sans Mono</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -244,6 +298,12 @@
                 <height>16777215</height>
                </size>
               </property>
+              <property name="font">
+               <font>
+                <family>MS Shell Dlg 2</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Real Number Precision&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Change the precision of real numbers &lt;span style=&quot; font-style:italic;&quot;&gt;in reports&lt;/span&gt;. Use the spin box on the right to select a new precision namely  the number of fraction digits SocNetV should write when generating reports with real numbers, i.e. centrality reports..&lt;/p&gt;&lt;p&gt;The precision cannot be a negative value. The default value is 6.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default node number size.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -254,6 +314,12 @@
             </item>
             <item>
              <spacer name="horizontalSpacer_26">
+              <property name="font">
+               <font>
+                <family>MS Shell Dlg 2</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
@@ -282,7 +348,7 @@
               <property name="font">
                <font>
                 <family>DejaVu Sans Mono</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -302,6 +368,12 @@
            <layout class="QHBoxLayout" name="horizontalLayout_27">
             <item>
              <widget class="QLabel" name="label_25">
+              <property name="font">
+               <font>
+                <family>MS Shell Dlg 2</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:600;&quot;&gt;Chart Type&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt;&quot;&gt;This is the chart type that is used in reports, i.e. to plot the distribution of a prominence index, such as Degree Centrality.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt;&quot;&gt;Use the select box on the right to select a chart type.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt;&quot;&gt;SocNetV supports the following chart types:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt;&quot;&gt;- Spline charts, which present data as a series of data points connected by lines. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt;&quot;&gt;- Area charts, which present data as an area bound by two lines.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt;&quot;&gt;- Bar charts, which present data as vertical bars. &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -315,7 +387,7 @@
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -343,6 +415,12 @@
                 <height>0</height>
                </size>
               </property>
+              <property name="font">
+               <font>
+                <family>MS Shell Dlg 2</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
               <property name="toolTip">
                <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -366,6 +444,12 @@ p, li { white-space: pre-wrap; }
        </item>
        <item row="3" column="0">
         <spacer name="verticalSpacer_3">
+         <property name="font">
+          <font>
+           <family>MS Shell Dlg 2</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
@@ -385,12 +469,24 @@ p, li { white-space: pre-wrap; }
            <height>0</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>MS Shell Dlg 2</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
          <property name="title">
           <string>Image Exporting</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_7">
           <item>
            <widget class="QCheckBox" name="printLogoChkBox">
+            <property name="font">
+             <font>
+              <family>MS Shell Dlg 2</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;SocNetV logo on exported images&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable the printing of a small SocNetV logo on exported PNG and BMP network images &lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
@@ -413,6 +509,12 @@ p, li { white-space: pre-wrap; }
        </item>
        <item row="5" column="0">
         <spacer name="verticalSpacer_5">
+         <property name="font">
+          <font>
+           <family>MS Shell Dlg 2</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
@@ -432,12 +534,24 @@ p, li { white-space: pre-wrap; }
            <height>0</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>MS Shell Dlg 2</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
          <property name="title">
           <string>Debugging and Progressing</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_6">
           <item>
            <widget class="QCheckBox" name="printDebugChkBox">
+            <property name="font">
+             <font>
+              <family>MS Shell Dlg 2</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Debug Messages&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable debug messages to strerr. &lt;/p&gt;&lt;p&gt;Once you enable this and press OK, you must close and run SocNetV again from the command line / terminal, in order to see the debug messages.&lt;/p&gt;&lt;p&gt;Enabling has a significant cpu cost but lets you know what SocNetV is actually doing.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and will be the default of the application every time you run SocNetV - until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
@@ -454,6 +568,12 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <widget class="QCheckBox" name="progressDialogChkBox">
+            <property name="font">
+             <font>
+              <family>MS Shell Dlg 2</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Progress Bars&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable the application Progress Bars.&lt;/p&gt;&lt;p&gt;Progress Bars may appear during time-cost operations. &lt;/p&gt;&lt;p&gt;Enabling Progress Bars has a significant cpu cost but lets you know about the progress of a given operation.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and will be the default of the application every time you run SocNetV - until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
@@ -476,6 +596,12 @@ p, li { white-space: pre-wrap; }
        </item>
        <item row="7" column="0">
         <spacer name="verticalSpacer_4">
+         <property name="font">
+          <font>
+           <family>MS Shell Dlg 2</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
@@ -501,12 +627,24 @@ p, li { white-space: pre-wrap; }
            <height>0</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>MS Shell Dlg 2</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
          <property name="title">
           <string>Application Style</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_8">
           <item>
            <widget class="QCheckBox" name="stylesheetDefaultChkBox">
+            <property name="font">
+             <font>
+              <family>MS Shell Dlg 2</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Debug Messages&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable debug messages to strerr. &lt;/p&gt;&lt;p&gt;Once you enable this and press OK, you must close and run SocNetV again from the command line / terminal, in order to see the debug messages.&lt;/p&gt;&lt;p&gt;Enabling has a significant cpu cost but lets you know what SocNetV is actually doing.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and will be the default of the application every time you run SocNetV - until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
@@ -526,6 +664,12 @@ p, li { white-space: pre-wrap; }
        </item>
        <item row="9" column="0">
         <spacer name="verticalSpacer_6">
+         <property name="font">
+          <font>
+           <family>MS Shell Dlg 2</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
@@ -545,6 +689,12 @@ p, li { white-space: pre-wrap; }
            <height>110</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>MS Shell Dlg 2</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
          <property name="title">
           <string>Window options</string>
          </property>
@@ -557,9 +707,21 @@ p, li { white-space: pre-wrap; }
             <height>67</height>
            </rect>
           </property>
+          <property name="font">
+           <font>
+            <family>MS Shell Dlg 2</family>
+            <pointsize>12</pointsize>
+           </font>
+          </property>
           <layout class="QGridLayout" name="gridLayout_2">
            <item row="0" column="0">
             <widget class="QCheckBox" name="leftPanelChkBox">
+             <property name="font">
+              <font>
+               <family>MS Shell Dlg 2</family>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Control panel&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable the Control panel (left panel)&lt;/p&gt;&lt;p&gt;The Control Panel is the widget at the left of the application window, where you can find essential functions and options for Editing, Analyzing and Visualizing your network data.&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
@@ -579,6 +741,12 @@ p, li { white-space: pre-wrap; }
            </item>
            <item row="0" column="1">
             <widget class="QCheckBox" name="showToolBarChkBox">
+             <property name="font">
+              <font>
+               <family>MS Shell Dlg 2</family>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Toolbar&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable the application toolbar.&lt;/p&gt;&lt;p&gt;The toolbar is the widget right below the menu, and carries useful icons. You can disable it if you like from here...&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
@@ -598,6 +766,12 @@ p, li { white-space: pre-wrap; }
            </item>
            <item row="1" column="0">
             <widget class="QCheckBox" name="rightPanelChkBox">
+             <property name="font">
+              <font>
+               <family>MS Shell Dlg 2</family>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Statistics panel&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable the statistics panel (right panel)&lt;/p&gt;&lt;p&gt;The Statistics panel is the widget at the right of the application window, where you can see statistics about the whole network such as node and edge/arc count, density etc as well as statistics about the last clicked node (in-degree, out-degree, clustering coefficient etc).&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
@@ -617,6 +791,12 @@ p, li { white-space: pre-wrap; }
            </item>
            <item row="1" column="1">
             <widget class="QCheckBox" name="showStatusBarChkBox">
+             <property name="font">
+              <font>
+               <family>MS Shell Dlg 2</family>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Statusbar&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable the application statusbar.&lt;/p&gt;&lt;p&gt;The statusbar is the widget at the bottom of the window, where messages appear. &lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
@@ -650,7 +830,7 @@ p, li { white-space: pre-wrap; }
          <property name="font">
           <font>
            <family>MS Shell Dlg 2</family>
-           <pointsize>9</pointsize>
+           <pointsize>12</pointsize>
           </font>
          </property>
          <property name="toolTip">
@@ -667,7 +847,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -683,7 +863,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -708,7 +888,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -740,7 +920,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -756,7 +936,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -781,7 +961,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -798,7 +978,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -814,7 +994,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -839,7 +1019,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -867,7 +1047,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -890,7 +1070,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -906,7 +1086,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -931,7 +1111,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -958,7 +1138,7 @@ p, li { white-space: pre-wrap; }
          <property name="font">
           <font>
            <family>MS Shell Dlg 2</family>
-           <pointsize>9</pointsize>
+           <pointsize>12</pointsize>
           </font>
          </property>
          <property name="title">
@@ -972,7 +1152,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -988,7 +1168,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -1013,7 +1193,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -1042,7 +1222,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -1058,7 +1238,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -1083,7 +1263,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -1107,7 +1287,7 @@ p, li { white-space: pre-wrap; }
             <property name="font">
              <font>
               <family>MS Shell Dlg 2</family>
-              <pointsize>9</pointsize>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="toolTip">
@@ -1131,7 +1311,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -1147,7 +1327,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -1172,7 +1352,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -1196,7 +1376,7 @@ p, li { white-space: pre-wrap; }
             <property name="font">
              <font>
               <family>MS Shell Dlg 2</family>
-              <pointsize>9</pointsize>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="toolTip">
@@ -1221,7 +1401,7 @@ p, li { white-space: pre-wrap; }
          <property name="font">
           <font>
            <family>MS Shell Dlg 2</family>
-           <pointsize>9</pointsize>
+           <pointsize>12</pointsize>
           </font>
          </property>
          <property name="title">
@@ -1233,7 +1413,7 @@ p, li { white-space: pre-wrap; }
             <property name="font">
              <font>
               <family>MS Shell Dlg 2</family>
-              <pointsize>9</pointsize>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="toolTip">
@@ -1257,7 +1437,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="text">
@@ -1270,7 +1450,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -1295,7 +1475,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -1324,7 +1504,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="text">
@@ -1337,7 +1517,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -1362,7 +1542,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -1388,7 +1568,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="text">
@@ -1401,7 +1581,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -1426,7 +1606,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -1460,7 +1640,7 @@ p, li { white-space: pre-wrap; }
          <property name="font">
           <font>
            <family>MS Shell Dlg 2</family>
-           <pointsize>9</pointsize>
+           <pointsize>12</pointsize>
           </font>
          </property>
          <property name="title">
@@ -1480,7 +1660,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -1499,7 +1679,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -1522,7 +1702,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -1541,7 +1721,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -1560,7 +1740,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -1582,7 +1762,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -1605,7 +1785,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -1624,7 +1804,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -1649,7 +1829,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -1681,7 +1861,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -1700,7 +1880,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -1725,7 +1905,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -1757,7 +1937,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -1776,7 +1956,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -1801,7 +1981,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -1833,7 +2013,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="text">
@@ -1846,7 +2026,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -1871,7 +2051,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -1904,7 +2084,7 @@ p, li { white-space: pre-wrap; }
          <property name="font">
           <font>
            <family>MS Shell Dlg 2</family>
-           <pointsize>9</pointsize>
+           <pointsize>12</pointsize>
           </font>
          </property>
          <property name="title">
@@ -1916,7 +2096,7 @@ p, li { white-space: pre-wrap; }
             <property name="font">
              <font>
               <family>MS Shell Dlg 2</family>
-              <pointsize>9</pointsize>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="toolTip">
@@ -1937,7 +2117,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="text">
@@ -1950,7 +2130,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -1975,7 +2155,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -2007,7 +2187,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="text">
@@ -2020,7 +2200,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -2045,7 +2225,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -2075,7 +2255,7 @@ p, li { white-space: pre-wrap; }
          <property name="font">
           <font>
            <family>MS Shell Dlg 2</family>
-           <pointsize>9</pointsize>
+           <pointsize>12</pointsize>
           </font>
          </property>
          <property name="title">
@@ -2087,7 +2267,7 @@ p, li { white-space: pre-wrap; }
             <property name="font">
              <font>
               <family>MS Shell Dlg 2</family>
-              <pointsize>9</pointsize>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="toolTip">
@@ -2108,7 +2288,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="text">
@@ -2121,7 +2301,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -2149,7 +2329,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -2178,7 +2358,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="text">
@@ -2191,7 +2371,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -2219,7 +2399,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>MS Shell Dlg 2</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -2247,6 +2427,12 @@ p, li { white-space: pre-wrap; }
       <layout class="QGridLayout" name="gridLayout_7">
        <item row="0" column="0">
         <widget class="QGroupBox" name="groupBox_2">
+         <property name="font">
+          <font>
+           <family>MS Shell Dlg 2</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Canvas Background&lt;/span&gt;&lt;/p&gt;&lt;p&gt;In this section, there are general settings for the canvas, such as the background color or image.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -2258,6 +2444,12 @@ p, li { white-space: pre-wrap; }
            <layout class="QHBoxLayout" name="horizontalLayout_3">
             <item>
              <widget class="QLabel" name="label_4">
+              <property name="font">
+               <font>
+                <family>MS Shell Dlg 2</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Background color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click the button on the right to select a new background color. &lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and will be the default of the application every time you run SocNetV - until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -2271,7 +2463,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -2302,7 +2494,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -2331,6 +2523,12 @@ p, li { white-space: pre-wrap; }
            <layout class="QHBoxLayout" name="horizontalLayout_2">
             <item>
              <widget class="QLabel" name="label_2">
+              <property name="font">
+               <font>
+                <family>MS Shell Dlg 2</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Background image&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click the button on the right to select a new background image.&lt;/p&gt;&lt;p&gt;If the file does not exist, the default background color will be used.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and will be the default of the application every time you run SocNetV - until you change it again.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -2341,6 +2539,12 @@ p, li { white-space: pre-wrap; }
             </item>
             <item>
              <spacer name="horizontalSpacer_2">
+              <property name="font">
+               <font>
+                <family>MS Shell Dlg 2</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
@@ -2359,6 +2563,12 @@ p, li { white-space: pre-wrap; }
                 <width>200</width>
                 <height>0</height>
                </size>
+              </property>
+              <property name="font">
+               <font>
+                <family>MS Shell Dlg 2</family>
+                <pointsize>12</pointsize>
+               </font>
               </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Background image&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is the path of the default background image. &lt;/p&gt;&lt;p&gt;Click the button on the right to select a new background image.&lt;/p&gt;&lt;p&gt;If the file does not exist, the default background color will be used.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and will be the default of the application every time you run SocNetV - until you change it again.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -2382,6 +2592,12 @@ p, li { white-space: pre-wrap; }
                 <height>0</height>
                </size>
               </property>
+              <property name="font">
+               <font>
+                <family>MS Shell Dlg 2</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Background image&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click this button to select a new background image.&lt;/p&gt;&lt;p&gt;If the file does not exist, the default background color will be used.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and will be the default of the application every time you run SocNetV - until you change it again.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -2397,6 +2613,12 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <spacer name="verticalSpacer_2">
+            <property name="font">
+             <font>
+              <family>MS Shell Dlg 2</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
             <property name="orientation">
              <enum>Qt::Vertical</enum>
             </property>
@@ -2413,6 +2635,12 @@ p, li { white-space: pre-wrap; }
        </item>
        <item row="1" column="0">
         <widget class="QGroupBox" name="groupBox_11">
+         <property name="font">
+          <font>
+           <family>MS Shell Dlg 2</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Performance Settings&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The following options influence the performance of the SocNetV canvas, inside which nodes and edges are being drawn. They affect the look of nodes and edges as well the precision and speed of the graphics engine.&lt;/p&gt;&lt;p&gt;Most of these settings have noticeable effects only in large networks. For instance, if you have a network with over 3000 actors and 10000 edges you might want to disable Antialiasing, Antialiasing Auto-adjustment and Smooth Pixmap Transformation while enabling Cache Background. &lt;/p&gt;&lt;p&gt;Also, if you need to visually interact with edges in a large network, you can experiment with the Update Mode setting to find which is suitable for your workload. The default setting &amp;quot;Full&amp;quot; means that the canvas is fully redrawn every time you make a small change.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -2422,6 +2650,12 @@ p, li { white-space: pre-wrap; }
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
            <widget class="QCheckBox" name="canvasAntialiasingChkBox">
+            <property name="font">
+             <font>
+              <family>MS Shell Dlg 2</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Anti-Aliasing&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable Anti-Aliasing. If enabled, the graphics engine will antialias edges of primitives if possible.  &lt;/p&gt;&lt;p&gt;Anti-aliasing is a technique which makes nodes, lines and text, smoother and fancier. But it comes at the cost of speed... &lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
@@ -2438,6 +2672,12 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <widget class="QCheckBox" name="canvasAntialiasingAutoAdjustChkBox">
+            <property name="font">
+             <font>
+              <family>MS Shell Dlg 2</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Antialiasing Auto-Adjustment&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable antialiasing auto-adjustment of exposed areas. Items that render antialiased lines on the boundaries of their bounding rectangle can end up rendering parts of the line outside. To prevent rendering artifacts, the graphics engine expands all exposed regions by 2 pixels in all directions. &lt;/p&gt;&lt;p&gt;If you disable this, SocNetV will no longer perform these adjustments, minimizing the areas that require redrawing, which improves performance. A common side effect is that items that do draw with antialiasing can leave painting traces behind on the scene as they are moved.&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
@@ -2454,6 +2694,12 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <widget class="QCheckBox" name="canvasSmoothPixmapTransformChkBox">
+            <property name="font">
+             <font>
+              <family>MS Shell Dlg 2</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Smooth pixmap transformations&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable smooth pixmap transformations. &lt;/p&gt;&lt;p&gt;If enabled, the engine will use a smooth pixmap transformation algorithm (such as bilinear) rather than nearest neighbor.&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
@@ -2470,6 +2716,12 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <widget class="QCheckBox" name="canvasSavePainterStateChkBox">
+            <property name="font">
+             <font>
+              <family>MS Shell Dlg 2</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Save Painter State&lt;/span&gt;&lt;/p&gt;&lt;p&gt;When rendering, the graphics engine can protect (&amp;quot;save&amp;quot;) the painter state when rendering the background or foreground, and when rendering each item. This allows us to leave the painter in an altered state. &lt;/p&gt;&lt;p&gt;However, if the items consistently do restore the state, you should disable this option to prevent the application from doing the same.&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
@@ -2486,6 +2738,12 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <widget class="QCheckBox" name="canvasCacheBackgroundChkBox">
+            <property name="font">
+             <font>
+              <family>MS Shell Dlg 2</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Cache Background&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable caching of the canvas background. &lt;/p&gt;&lt;p&gt;The graphics engine can cache pre-rendered content in a pixmap, which is then drawn onto the viewport. The purpose of such caching is to speed up the total rendering time for areas that are slow to render (i.e. texture, gradient and alpha blended backgrounds). &lt;/p&gt;&lt;p&gt;If enabled, the canvas background is cached by allocating one pixmap with the full size of the viewport. The cache is invalidated every time the view is transformed. However, when scrolling, only partial invalidation is required. &lt;/p&gt;&lt;p&gt;If not enabled, nothing is cached and all painting is done directly onto the viewport.&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
@@ -2502,6 +2760,12 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <widget class="QCheckBox" name="canvasEdgeHighlightingChkBox">
+            <property name="font">
+             <font>
+              <family>MS Shell Dlg 2</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Edge highlighting&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable highlighting of selected edges.&lt;/p&gt;&lt;p&gt;By default, SocNetV hughlights the edges you select with the mouse, as well as all edges connected to the selected node. Although a useful feature, this can slow down the application responsiveness when the network consists of thousand nodes and edges. &lt;/p&gt;&lt;p&gt;If disabled, selected edges will not be highlighted.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
@@ -2518,6 +2782,12 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <spacer name="verticalSpacer">
+            <property name="font">
+             <font>
+              <family>MS Shell Dlg 2</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
             <property name="orientation">
              <enum>Qt::Vertical</enum>
             </property>
@@ -2533,6 +2803,12 @@ p, li { white-space: pre-wrap; }
            <layout class="QHBoxLayout" name="horizontalLayout_22">
             <item>
              <widget class="QLabel" name="label_21">
+              <property name="font">
+               <font>
+                <family>MS Shell Dlg 2</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:600;&quot;&gt;Update Mode&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Sans Serif'; font-size:9pt;&quot;&gt;Use the drop-down menu on the right to select the update mode when the canvas changes. Usually you do not need to modify this property, but there are some cases where doing so can improve rendering performance. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Sans Serif'; font-size:9pt;&quot;&gt;The default value is Full, where the graphics engine will update the entire canvas when some of its contents change.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Sans Serif'; font-size:9pt; text-decoration: underline;&quot;&gt;Full&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Sans Serif'; font-size:9pt;&quot;&gt;When any visible part of the canvas changes or is reexposed, the engine will update the entire canvas. This approach is fastest when the engine spends more time figuring out what to draw than it would spend drawing (e.g., when very many small items are repeatedly updated). This is the default setting as it is the fastest with network of thousands of edges.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Sans Serif'; font-size:9pt; text-decoration: underline;&quot;&gt;Minimal&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Sans Serif'; font-size:9pt;&quot;&gt;The engine will determine the minimal region that requires a redraw, minimizing the time spent drawing by avoiding a redraw of areas that have not changed. Although this approach provides the best performance in general, if there are many small visible changes on the scene, the engine might end up spending more time finding the minimal approach than it will spend drawing.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Sans Serif'; font-size:9pt; text-decoration: underline;&quot;&gt;Bounding Rectangle &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Sans Serif'; font-size:9pt;&quot;&gt;The bounding rectangle of all changes in the canvas will be redrawn. This mode has the advantage that the engine searches only one region for changes, minimizing time spent determining what needs redrawing. The disadvantage is that areas that have not changed also need to be redrawn.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Sans Serif'; font-size:9pt; text-decoration: underline;&quot;&gt;None&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Sans Serif'; font-size:9pt;&quot;&gt;The engine will never update the canvas when something changes; This mode disables all item changes. Normally, you don't want to use this!&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -2546,7 +2822,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -2577,7 +2853,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -2616,6 +2892,12 @@ p, li { white-space: pre-wrap; }
            <layout class="QHBoxLayout" name="horizontalLayout_23">
             <item>
              <widget class="QLabel" name="label_22">
+              <property name="font">
+               <font>
+                <family>MS Shell Dlg 2</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Index Method&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Use the drop-down menu on the right to select the indexing algorithm of the graphics engine for managing positional information about items on the canvas.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;BspTreeIndex&lt;/span&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;: &lt;/span&gt;A Binary Space Partitioning tree is applied. All item location algorithms are of an order close to logarithmic complexity, by making use of binary search. Adding, moving and removing items is logarithmic. This approach is best for static scenes (i.e., scenes where most items do not move).&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;NoIndex&lt;/span&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;: &lt;/span&gt;No index is applied. Item location is of linear complexity, as all items on the scene are searched. Adding, moving and removing items, however, is done in constant time. This approach is ideal for dynamic scenes, where many items are added, moved or removed continuously.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -2629,7 +2911,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
-                <pointsize>11</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -2660,7 +2942,7 @@ p, li { white-space: pre-wrap; }
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
-                <pointsize>9</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -2692,7 +2974,7 @@ p, li { white-space: pre-wrap; }
      <property name="font">
       <font>
        <family>MS Shell Dlg 2</family>
-       <pointsize>9</pointsize>
+       <pointsize>12</pointsize>
       </font>
      </property>
      <property name="orientation">

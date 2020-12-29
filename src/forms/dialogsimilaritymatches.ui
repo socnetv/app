@@ -54,6 +54,11 @@
        <height>150</height>
       </size>
      </property>
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
      <property name="text">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Compute a &lt;span style=&quot; font-weight:600;&quot;&gt;similarity matrix&lt;/span&gt;, where each element (i,j) is the pair-wise similarity score of actors i and j according to the selected &amp;quot;matching&amp;quot; method. For example, the &amp;quot;Simple Matching&amp;quot; method counts the number of times that actors i and j have the same tie / distance (present or absent) to other actors. &lt;/p&gt;&lt;p&gt;Select input matrix and where the &amp;quot;variables&amp;quot; are. For instance, select Adjacency matrix and Rows to correlate the outbound ties between all pairs of actors. Select Both to correlate the both inbound and outbound ties. Hover over &amp;quot;Matching measure&amp;quot; select box for more info on each method.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
@@ -69,6 +74,11 @@
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLabel" name="label_2">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>Input matrix:</string>
        </property>
@@ -81,6 +91,11 @@
          <width>200</width>
          <height>0</height>
         </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
        </property>
        <property name="focusPolicy">
         <enum>Qt::StrongFocus</enum>
@@ -96,6 +111,11 @@
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLabel" name="label_3">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>Variables in:</string>
        </property>
@@ -108,6 +128,11 @@
          <width>200</width>
          <height>0</height>
         </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
        </property>
        <property name="focusPolicy">
         <enum>Qt::StrongFocus</enum>
@@ -123,6 +148,11 @@
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <widget class="QLabel" name="label_4">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>Matching measure:</string>
        </property>
@@ -136,6 +166,11 @@
          <height>0</height>
         </size>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
        <property name="focusPolicy">
         <enum>Qt::StrongFocus</enum>
        </property>
@@ -148,6 +183,11 @@
    </item>
    <item row="4" column="0">
     <widget class="QCheckBox" name="diagonalCheckBox">
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
      <property name="statusTip">
       <string>Enable to include matrix diagonal in calculations</string>
      </property>
@@ -158,6 +198,11 @@
    </item>
    <item row="5" column="1">
     <spacer name="verticalSpacer">
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
@@ -173,7 +218,7 @@
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="font">
       <font>
-       <pointsize>10</pointsize>
+       <pointsize>12</pointsize>
       </font>
      </property>
      <property name="orientation">
