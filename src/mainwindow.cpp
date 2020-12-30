@@ -88,6 +88,7 @@
 #include "forms/dialogclusteringhierarchical.h"
 #include "forms/dialogdissimilarities.h"
 
+#include "forms/dialogsysteminfo.h"
 
 //Assume no debugging messages
 bool printDebug = false;
@@ -3593,6 +3594,18 @@ void MainWindow::initActions(){
     connect(helpCheckUpdatesApp, SIGNAL(triggered()),
             this, SLOT(slotHelpCheckUpdateDialog()));
 
+
+    helpSystemInfoAct = new QAction(QIcon(":/images/about_24px.svg"), tr("System Information"),	this);
+    helpSystemInfoAct->setEnabled(true);
+    helpSystemInfoAct->setStatusTip(tr("Show information about your system"));
+    helpSystemInfoAct->setWhatsThis(
+                tr("<p><b>System Information</b></p>"
+                   "<p>Shows useful information about your system, "
+                   "which you can include in your bug reports. </p>"));
+
+    connect(helpSystemInfoAct, SIGNAL(triggered()), this, SLOT(slotHelpSystemInfo()));
+
+
     helpAboutApp = new QAction(QIcon(":/images/about_24px.svg"), tr("About SocNetV"), this);
     helpAboutApp->setStatusTip(tr("About SocNetV"));
     helpAboutApp->setWhatsThis(tr("About\n\nBasic information about SocNetV"));
@@ -4020,6 +4033,7 @@ void MainWindow::initMenuBar() {
     helpMenu->addSeparator();
     helpMenu->addAction (helpCheckUpdatesApp);
     helpMenu->addSeparator();
+    helpMenu->addAction(helpSystemInfoAct);
     helpMenu-> addAction (helpAboutApp);
     helpMenu-> addAction (helpAboutQt);
 
@@ -14189,6 +14203,24 @@ void MainWindow::slotHelpCheckUpdateParse(QNetworkReply *reply) {
     }
 
 }
+
+
+
+
+/**
+ * @brief MainWindow::slotHelpSystemInfo
+ * Shows a dialog with system information for bug reporting purposes
+ */
+void MainWindow::slotHelpSystemInfo() {
+    qDebug () << "MW: slotHelpSystemInfo()";
+
+    m_systemInfoDialog = new DialogSystemInfo(this);
+
+    m_systemInfoDialog->exec() ;
+}
+
+
+
 
 /**
     Displays the following message!!

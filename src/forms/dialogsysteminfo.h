@@ -2,11 +2,13 @@
  SocNetV: Social Network Visualizer
  version: 2.8-dev
  Written in Qt
-
-                         dialogpreviewfile.h  -  description
+ 
+                         dialogsysteminfo.h  -  description
                              -------------------
-    copyright         : (C) 2005-2018 by Dimitris B. Kalamaras
-    project site      : https://socnetv.org
+    copyright            : (C) 2005-2018 by Dimitris B. Kalamaras
+    email                : dimitris.kalamaras@gmail.com
+    website:             : http://dimitris.apeiro.gr
+    project site         : https://socnetv.org
 
  ***************************************************************************/
 
@@ -25,41 +27,22 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-
-#ifndef DIALOGPREVIEWFILE_H
-#define DIALOGPREVIEWFILE_H
+#ifndef DIALOGSYSTEMINFO_H
+#define DIALOGSYSTEMINFO_H
 
 #include <QDialog>
-#include <QList>
+#include "ui_dialogsysteminfo.h"
 
-class QComboBox;
-class QDialogButtonBox;
-class QLabel;
-class QTextCodec;
-class QTextEdit;
-
-class DialogPreviewFile : public QDialog
+class DialogSystemInfo: public QDialog
 {
     Q_OBJECT
 public:
-    explicit DialogPreviewFile(QWidget *parent = Q_NULLPTR);
-    void setCodecList(const QList<QTextCodec *> &list);
-    void setEncodedData(const QByteArray &data, const QString, const int );
-    QString decodedString() const { return decodedStr; }
-signals:
-    void loadNetworkFileWithCodec(const QString, const QString, const int);
-private slots:
-    void updateTextEdit();
-    void accept();
-private:
-    QByteArray encodedData;
-    QString decodedStr, fileName;
-    int format;
-    QComboBox *encodingComboBox;
-    QLabel *encodingLabel;
-    QTextEdit *textEdit;
-    QDialogButtonBox *buttonBox;
+    explicit DialogSystemInfo (QWidget *parent = Q_NULLPTR);
 
+private:
+    Ui::DialogSystemInfo *ui;
 };
+
+
 
 #endif

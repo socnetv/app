@@ -5,8 +5,8 @@ lessThan(QT_VERSION, 5.0) {
 TARGET = socnetv
 
 TEMPLATE = app
-CONFIG  += qt thread warn_on release
-#CONFIG  += qt thread warn_on debug
+#CONFIG  += qt thread warn_on release
+CONFIG  += qt thread warn_on debug
 
 LANGUAGE = C++
 
@@ -21,8 +21,10 @@ QT += testlib
 # testlib only needed to use QTest::qWait in Chart::getPixmap()...
 
 INCLUDEPATH  += ./src
+
 FORMS += src/forms/dialogfilteredgesbyweight.ui \
     src/forms/dialogsettings.ui \
+    src/forms/dialogsysteminfo.ui \
     src/forms/dialogwebcrawler.ui \
     src/forms/dialogdatasetselect.ui \
     src/forms/dialograndsmallworld.ui \
@@ -75,6 +77,7 @@ HEADERS += src/mainwindow.h \
     src/forms/dialognodefind.h \
     src/forms/dialogexportpdf.h \
     src/forms/dialogexportimage.h \
+    src/forms/dialogsysteminfo.h \
     src/global.h
 
 SOURCES += src/main.cpp \
@@ -112,7 +115,8 @@ SOURCES += src/main.cpp \
     src/forms/dialograndlattice.cpp \
     src/forms/dialognodefind.cpp \
     src/forms/dialogexportpdf.cpp \
-    src/forms/dialogexportimage.cpp
+    src/forms/dialogexportimage.cpp \
+    src/forms/dialogsysteminfo.cpp
 
 
 RESOURCES = src/src.qrc

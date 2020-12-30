@@ -118,6 +118,8 @@ class DialogExportImage;
 
 class DialogSettings;
 
+class DialogSystemInfo;
+
 class TextEditor;
 
 
@@ -526,6 +528,7 @@ public slots:
     void slotHelpCheckUpdateDialog();
     void slotHelpCheckUpdateParse(QNetworkReply *reply);
     void slotHelpCreateTips();
+    void slotHelpSystemInfo();
     void slotHelpAbout();
     void slotAboutQt();
     void slotHelpMessageToUserInfo(const QString text=QString());
@@ -588,8 +591,6 @@ private:
     QStringList iconPathList;
     QStringList nodeShapeList;
 
-    DialogFilterEdgesByWeight *m_DialogEdgeFilterByWeight;
-
     DialogWebCrawler *m_WebCrawlerDialog;
     DialogDataSetSelect *m_datasetSelectDialog;
 
@@ -600,6 +601,7 @@ private:
     DialogNodeFind *m_nodeFindDialog;
 
     DialogEdgeDichotomization *m_edgeDichotomizationDialog;
+    DialogFilterEdgesByWeight *m_DialogEdgeFilterByWeight;
 
     DialogRandErdosRenyi *m_randErdosRenyiDialog;
     DialogRandSmallWorld *m_randSmallWorldDialog;
@@ -607,11 +609,13 @@ private:
     DialogRandRegular *m_randRegularDialog;
     DialogRandLattice *m_randLatticeDialog;
 
-    DialogSettings *m_settingsDialog;
     DialogSimilarityPearson *m_dialogSimilarityPearson;
     DialogSimilarityMatches *m_dialogSimilarityMatches;
     DialogDissimilarities *m_dialogdissimilarities;
     DialogClusteringHierarchical *m_dialogClusteringHierarchical;
+
+    DialogSettings *m_settingsDialog;
+    DialogSystemInfo *m_systemInfoDialog;
 
     DialogPreviewFile *m_dialogPreviewFile;
     QList<QTextCodec *> codecs;
@@ -702,7 +706,7 @@ private:
     QAction *openSettingsAct;
 
     QAction *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
-    QAction *helpCheckUpdatesApp;
+    QAction *helpSystemInfoAct, *helpCheckUpdatesApp;
 
 
 
