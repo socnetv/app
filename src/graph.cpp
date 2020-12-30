@@ -1283,7 +1283,7 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
         break;
     }
     case IndexType::PRP : {
-        prestigePageRank();;
+        prestigePageRank();
         break;
     }
     case IndexType::PP : {
@@ -1292,9 +1292,9 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
     }
     default:
         graphDistancesGeodesic(true, considerWeights,
-                                       inverseWeights, dropIsolates);
+                               inverseWeights, dropIsolates);
         break;
-    };
+    }
 
     for (int i = 0; i < thresholds.size(); ++i) {
 
@@ -1402,7 +1402,7 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
                 score=(*it)->SPP();
                 break;
             }
-            };
+            }
 
             if (gtThan) {
                 if ( score > threshold ) {
@@ -1450,12 +1450,12 @@ void Graph::vertexRemove(const int &v1){
     //Remove links to v1 from each other vertex
     VList::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if  ( (*it)->hasEdgeTo(v1) != 0) {
+        if  ( qAbs((*it)->hasEdgeTo(v1) ) > 0) {
             qDebug()<< "Graph::vertexRemove() - vertex " << (*it)->name()
                     << " has outbound Edge to "<< v1 << ". Removing it.";
             (*it)->edgeRemoveTo(v1);
         }
-        if (  (*it)->hasEdgeFrom(v1) != 0 ) {
+        if (  qAbs((*it)->hasEdgeFrom(v1)) > 0 ) {
             qDebug()<< "Graph::vertexRemove() - vertex " << (*it)->name()
                     << " has inbound Edge from "<< v1 << ". Removing it.";
             (*it)->edgeRemoveFrom(v1);
@@ -7523,7 +7523,7 @@ void Graph::prominenceDistribution(const int &index,
         discreteClasses = discretePPs;
         break;
     }
-    };
+    }
 
 
     switch (type) {
@@ -7541,9 +7541,6 @@ void Graph::prominenceDistribution(const int &index,
     case ChartType::Bars:
         emit statusMessage(tr("Creating prominence index distribution bar chart..."));
         prominenceDistributionBars(discreteClasses, seriesName, distImageFileName );
-        break;
-    default:
-        prominenceDistributionSpline(discreteClasses, seriesName, distImageFileName );
         break;
     }
 
@@ -7633,7 +7630,7 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
     }
 
     axisX->setMin(min);
-    axisX->setMax( 1 ); // allow some padding for corner cases
+    axisX->setMax(max);
 
     axisY->setMin(minF);
     axisY->setMax(maxF+1.0);
@@ -7652,7 +7649,7 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
                  << "saving distribution image to" << distImageFileName ;
 
         axisX1->setMin(min);
-        axisX1->setMax(1);
+        axisX1->setMax(max);
 
         axisY1->setMin(minF);
         axisY1->setMax(maxF+1.0);
@@ -7786,7 +7783,7 @@ void Graph::prominenceDistributionArea(const H_StrToInt &discreteClasses,
     }
 
     axisX->setMin(min);
-    axisX->setMax(1);
+    axisX->setMax(max);
 
     axisY->setMin(minF);
     axisY->setMax(maxF+1.0);
@@ -7807,7 +7804,7 @@ void Graph::prominenceDistributionArea(const H_StrToInt &discreteClasses,
                  << "saving distribution image to" << distImageFileName ;
 
         axisX1->setMin(min);
-        axisX1->setMax(1);
+        axisX1->setMax(max);
 
         axisY1->setMin(minF);
         axisY1->setMax(maxF+1.0);
@@ -7954,7 +7951,7 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
     } // end while
 
     axisX->setMin(min);
-    axisX->setMax(QString::number(  1.0, 'f', 6));
+    axisX->setMax(max);
 
     axisY->setMin(minF);
     axisY->setMax(maxF+1.0);
@@ -7979,7 +7976,7 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
 
 
         axisX1->setMin(min);
-        axisX1->setMax(QString::number(  1.0, 'f', 6));
+        axisX1->setMax(max);
 
         axisY1->setMin(minF);
         axisY1->setMax(maxF+1.0);
