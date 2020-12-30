@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>490</width>
+    <width>500</width>
     <height>200</height>
    </rect>
   </property>
@@ -21,14 +21,14 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>460</width>
+    <width>500</width>
     <height>200</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>490</width>
-    <height>215</height>
+    <width>800</width>
+    <height>400</height>
    </size>
   </property>
   <property name="font">

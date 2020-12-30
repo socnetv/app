@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>550</width>
-    <height>342</height>
+    <width>700</width>
+    <height>350</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -21,13 +21,13 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>550</width>
-    <height>340</height>
+    <width>700</width>
+    <height>350</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>600</width>
+    <width>800</width>
     <height>600</height>
    </size>
   </property>
@@ -40,37 +40,22 @@
    <string>Tie profile dissimilarities</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0" colspan="2">
-    <widget class="QLabel" name="description">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>400</width>
-       <height>150</height>
-      </size>
-     </property>
+   <item row="6" column="1">
+    <widget class="QDialogButtonBox" name="buttonBox">
      <property name="font">
       <font>
        <pointsize>12</pointsize>
       </font>
      </property>
-     <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Compute a &lt;span style=&quot; font-weight:600;&quot;&gt;dissimilarities matrix&lt;/span&gt;, where each element (i,j) is the pair-wise distance / dissimilarity of actors i and j tie profiles to all other actors, according to a selected metric. &lt;/p&gt;&lt;p&gt;Select a distance metric. For example, the &amp;quot;Euclidean distance&amp;quot; is the square root of the sum of the squared differences of tie values that actors i and j have to other actors. Hover over &amp;quot;Distance Metric&amp;quot; select box for more info on each metric.&lt;/p&gt;&lt;p&gt;Also, specify where the &amp;quot;variables&amp;quot; are. For instance, select Rows to measure the outbound ties between all pairs of actors. Select Both to measure both inbound and outbound ties. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
-     <property name="textFormat">
-      <enum>Qt::RichText</enum>
-     </property>
-     <property name="wordWrap">
-      <bool>true</bool>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
     </widget>
    </item>
-   <item row="1" column="0" colspan="2">
+   <item row="2" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <widget class="QLabel" name="label_4">
@@ -107,7 +92,37 @@
      </item>
     </layout>
    </item>
-   <item row="2" column="0" colspan="2">
+   <item row="0" column="0" colspan="2">
+    <widget class="QLabel" name="description">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>400</width>
+       <height>150</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Compute a &lt;span style=&quot; font-weight:600;&quot;&gt;dissimilarities matrix&lt;/span&gt;, where each element (i,j) is the pair-wise distance / dissimilarity of actors i and j tie profiles to all other actors, according to a selected metric. &lt;/p&gt;&lt;p&gt;Select a distance metric. For example, the &amp;quot;Euclidean distance&amp;quot; is the square root of the sum of the squared differences of tie values that actors i and j have to other actors. Hover over &amp;quot;Distance Metric&amp;quot; select box for more info on each metric.&lt;/p&gt;&lt;p&gt;Also, specify where the &amp;quot;variables&amp;quot; are. For instance, select Rows to measure the outbound ties between all pairs of actors. Select Both to measure both inbound and outbound ties. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLabel" name="label_3">
@@ -144,22 +159,7 @@
      </item>
     </layout>
    </item>
-   <item row="3" column="0">
-    <widget class="QCheckBox" name="diagonalCheckBox">
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-     <property name="statusTip">
-      <string>Enable to include matrix diagonal in calculations</string>
-     </property>
-     <property name="text">
-      <string>Include input matrix diagonal</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="1">
+   <item row="5" column="1">
     <spacer name="verticalSpacer">
      <property name="font">
       <font>
@@ -177,20 +177,33 @@
      </property>
     </spacer>
    </item>
-   <item row="5" column="1">
-    <widget class="QDialogButtonBox" name="buttonBox">
+   <item row="4" column="0">
+    <widget class="QCheckBox" name="diagonalCheckBox">
      <property name="font">
       <font>
        <pointsize>12</pointsize>
       </font>
      </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+     <property name="statusTip">
+      <string>Enable to include matrix diagonal in calculations</string>
      </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     <property name="text">
+      <string>Include input matrix diagonal</string>
      </property>
     </widget>
+   </item>
+   <item row="1" column="0" colspan="2">
+    <spacer name="verticalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>15</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>

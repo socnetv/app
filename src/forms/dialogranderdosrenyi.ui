@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>560</width>
+    <width>615</width>
     <height>520</height>
    </rect>
   </property>
@@ -18,19 +18,19 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>560</width>
+    <width>615</width>
     <height>520</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>650</width>
-    <height>539</height>
+    <width>800</width>
+    <height>600</height>
    </size>
   </property>
   <property name="font">
    <font>
-    <pointsize>10</pointsize>
+    <pointsize>12</pointsize>
    </font>
   </property>
   <property name="windowTitle">
@@ -60,6 +60,7 @@
      <property name="font">
       <font>
        <family>Sans Serif</family>
+       <pointsize>12</pointsize>
       </font>
      </property>
      <property name="frameShape">
@@ -81,6 +82,11 @@
    </item>
    <item row="1" column="0">
     <widget class="Line" name="line">
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -105,6 +111,7 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -129,6 +136,7 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="minimum">
@@ -146,6 +154,11 @@
    </item>
    <item row="3" column="0">
     <widget class="Line" name="line_2">
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -170,6 +183,7 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -190,6 +204,7 @@
          <property name="font">
           <font>
            <family>Sans Serif</family>
+           <pointsize>12</pointsize>
           </font>
          </property>
          <property name="toolTip">
@@ -229,6 +244,7 @@ p, li { white-space: pre-wrap; }
          <property name="font">
           <font>
            <family>Sans Serif</family>
+           <pointsize>12</pointsize>
           </font>
          </property>
          <property name="toolTip">
@@ -251,6 +267,11 @@ p, li { white-space: pre-wrap; }
    </item>
    <item row="5" column="0">
     <widget class="Line" name="line_3">
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -278,6 +299,7 @@ p, li { white-space: pre-wrap; }
        <property name="font">
         <font>
          <family>Sans Serif</family>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -296,6 +318,7 @@ p, li { white-space: pre-wrap; }
        <property name="font">
         <font>
          <family>Sans Serif</family>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="minimum">
@@ -310,6 +333,11 @@ p, li { white-space: pre-wrap; }
    </item>
    <item row="7" column="0">
     <widget class="Line" name="line_4">
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -334,6 +362,7 @@ p, li { white-space: pre-wrap; }
        <property name="font">
         <font>
          <family>Sans Serif</family>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -358,6 +387,7 @@ p, li { white-space: pre-wrap; }
        <property name="font">
         <font>
          <family>Sans Serif</family>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="minimum">
@@ -378,6 +408,11 @@ p, li { white-space: pre-wrap; }
    </item>
    <item row="9" column="0">
     <widget class="Line" name="line_5">
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -402,6 +437,7 @@ p, li { white-space: pre-wrap; }
        <property name="font">
         <font>
          <family>Sans Serif</family>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -428,6 +464,7 @@ p, li { white-space: pre-wrap; }
          <property name="font">
           <font>
            <family>Sans Serif</family>
+           <pointsize>12</pointsize>
           </font>
          </property>
          <property name="text">
@@ -458,6 +495,7 @@ p, li { white-space: pre-wrap; }
          <property name="font">
           <font>
            <family>Sans Serif</family>
+           <pointsize>12</pointsize>
           </font>
          </property>
          <property name="text">
@@ -477,6 +515,11 @@ p, li { white-space: pre-wrap; }
    </item>
    <item row="11" column="0">
     <widget class="Line" name="line_6">
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -501,6 +544,7 @@ p, li { white-space: pre-wrap; }
        <property name="font">
         <font>
          <family>Sans Serif</family>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -527,6 +571,7 @@ p, li { white-space: pre-wrap; }
          <property name="font">
           <font>
            <family>Sans Serif</family>
+           <pointsize>12</pointsize>
           </font>
          </property>
          <property name="text">
@@ -543,6 +588,11 @@ p, li { white-space: pre-wrap; }
    </item>
    <item row="13" column="0">
     <widget class="Line" name="line_7">
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -553,7 +603,7 @@ p, li { white-space: pre-wrap; }
      <property name="font">
       <font>
        <family>Sans Serif</family>
-       <pointsize>10</pointsize>
+       <pointsize>12</pointsize>
        <weight>50</weight>
        <bold>false</bold>
       </font>

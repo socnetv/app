@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>570</width>
+    <width>600</width>
     <height>420</height>
    </rect>
   </property>
@@ -18,19 +18,19 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>570</width>
+    <width>600</width>
     <height>400</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>580</width>
-    <height>420</height>
+    <width>800</width>
+    <height>600</height>
    </size>
   </property>
   <property name="font">
    <font>
-    <pointsize>10</pointsize>
+    <pointsize>12</pointsize>
    </font>
   </property>
   <property name="windowTitle">
@@ -60,6 +60,7 @@
      <property name="font">
       <font>
        <family>Sans Serif</family>
+       <pointsize>12</pointsize>
       </font>
      </property>
      <property name="frameShape">
@@ -105,6 +106,7 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -129,6 +131,7 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -176,6 +179,7 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -194,6 +198,7 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -241,6 +246,7 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -265,6 +271,7 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="minimum">
@@ -309,6 +316,7 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -335,6 +343,7 @@
          <property name="font">
           <font>
            <family>Sans Serif</family>
+           <pointsize>12</pointsize>
           </font>
          </property>
          <property name="text">
@@ -365,6 +374,7 @@
          <property name="font">
           <font>
            <family>Sans Serif</family>
+           <pointsize>12</pointsize>
           </font>
          </property>
          <property name="text">
@@ -405,6 +415,7 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -431,6 +442,7 @@
          <property name="font">
           <font>
            <family>Sans Serif</family>
+           <pointsize>12</pointsize>
           </font>
          </property>
          <property name="toolTip">

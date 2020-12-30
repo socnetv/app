@@ -6,21 +6,26 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>500</width>
+    <width>600</width>
     <height>410</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>500</width>
+    <width>600</width>
     <height>410</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>600</width>
+    <width>800</width>
     <height>600</height>
    </size>
+  </property>
+  <property name="font">
+   <font>
+    <pointsize>12</pointsize>
+   </font>
   </property>
   <property name="windowTitle">
    <string>Find nodes (and select them)</string>
@@ -42,6 +47,7 @@
      </property>
      <property name="font">
       <font>
+       <pointsize>12</pointsize>
        <italic>false</italic>
       </font>
      </property>
@@ -120,7 +126,7 @@ p, li { white-space: pre-wrap; }
      <property name="minimumSize">
       <size>
        <width>0</width>
-       <height>0</height>
+       <height>40</height>
       </size>
      </property>
      <property name="text">

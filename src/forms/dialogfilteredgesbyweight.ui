@@ -6,19 +6,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>210</height>
+    <width>600</width>
+    <height>220</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>400</width>
-    <height>210</height>
+    <width>600</width>
+    <height>220</height>
    </size>
   </property>
   <property name="font">
    <font>
-    <pointsize>10</pointsize>
+    <pointsize>12</pointsize>
    </font>
   </property>
   <property name="windowTitle">
@@ -30,6 +30,7 @@
      <property name="font">
       <font>
        <family>Sans Serif</family>
+       <pointsize>12</pointsize>
       </font>
      </property>
      <property name="text">
@@ -62,6 +63,7 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -111,6 +113,7 @@
      <property name="font">
       <font>
        <family>Sans Serif</family>
+       <pointsize>12</pointsize>
       </font>
      </property>
      <property name="text">
@@ -123,6 +126,7 @@
      <property name="font">
       <font>
        <family>Sans Serif</family>
+       <pointsize>12</pointsize>
       </font>
      </property>
      <property name="text">
