@@ -12122,6 +12122,10 @@ void MainWindow::slotAnalyzeCommunitiesCliqueCensus(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
+    if (activeNodes() == 1 ) {
+        slotHelpMessageToUserError("Only one node is present, therefore 1 clique");
+        return;
+    }
 
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-clique-census-"+dateTime+".html";
