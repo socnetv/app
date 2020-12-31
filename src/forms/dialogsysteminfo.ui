@@ -34,7 +34,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>Generate network from web links</string>
+   <string>System Information</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
