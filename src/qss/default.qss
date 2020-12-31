@@ -186,10 +186,6 @@ QGroupBox#leftPanel {
     padding:0;
 }
 
-/* Nice to have the background color change when hovered. */
-QSpinBox:hover, QRadioButton:hover, QCheckBox:hover {
-    background-color: #e2e2e2;
-}
 
 /* We provide a min-width and min-height for push buttons
    so that they look elegant regardless of the width of the text. */
@@ -279,13 +275,16 @@ QToolButton:checked{
     background-color: #d2d2d2;
 }
 
-QComboBox, QLineEdit, QTextEdit,QPlainTextEdit, QListView {
+QSpinBox, QComboBox, QLineEdit, QTextEdit,QPlainTextEdit, QListView  {
     background-color: #fafafa;
     color: #333;
+
+}
+
+QComboBox, QLineEdit, QTextEdit,QPlainTextEdit, QListView {
     selection-color: #fff;
     selection-background-color: #0277BD;
     /* selection-border: 0 none; */
-    font-size: 100%;
     border: 0 none;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -302,6 +301,12 @@ QLineEdit:focus, QLineEdit:hover,
 QPlainTextEdit:focus, QPlainTextEdit:hover
 QTextEdit:focus, QTextEdit:hover{
     border: 1px solid #babdbe;
+}
+
+
+/* Nice to have the background color change when hovered. */
+QSpinBox:hover, QRadioButton:hover, QCheckBox:hover {
+    background-color: #e2e2e2;
 }
 
 
