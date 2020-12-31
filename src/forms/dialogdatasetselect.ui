@@ -31,11 +31,6 @@
     <height>400</height>
    </size>
   </property>
-  <property name="font">
-   <font>
-    <pointsize>10</pointsize>
-   </font>
-  </property>
   <property name="windowTitle">
    <string>Famous SNA data sets</string>
   </property>
@@ -47,11 +42,6 @@
        <width>400</width>
        <height>90</height>
       </size>
-     </property>
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-      </font>
      </property>
      <property name="text">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Automatically recreate and visualize known data sets of Social Network Analysis, such as Padgett's Florentine families, Zachary's Karate Club, Knoke's Bureaucracies, etc.&lt;/p&gt;&lt;p&gt;Select the data set you want to re-create from the list.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -73,11 +63,6 @@
          <width>300</width>
          <height>0</height>
         </size>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>11</pointsize>
-        </font>
        </property>
        <property name="focusPolicy">
         <enum>Qt::StrongFocus</enum>
@@ -104,11 +89,6 @@
    </item>
    <item row="3" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="font">
-      <font>
-       <pointsize>10</pointsize>
-      </font>
-     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>

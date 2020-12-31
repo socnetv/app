@@ -31,11 +31,6 @@
     <height>600</height>
    </size>
   </property>
-  <property name="font">
-   <font>
-    <pointsize>12</pointsize>
-   </font>
-  </property>
   <property name="windowTitle">
    <string>Tie profile dissimilarities</string>
   </property>
@@ -59,11 +54,6 @@
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <widget class="QLabel" name="label_4">
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
        <property name="text">
         <string>Distance metric:</string>
        </property>
@@ -106,13 +96,8 @@
        <height>150</height>
       </size>
      </property>
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Compute a &lt;span style=&quot; font-weight:600;&quot;&gt;dissimilarities matrix&lt;/span&gt;, where each element (i,j) is the pair-wise distance / dissimilarity of actors i and j tie profiles to all other actors, according to a selected metric. &lt;/p&gt;&lt;p&gt;Select a distance metric. For example, the &amp;quot;Euclidean distance&amp;quot; is the square root of the sum of the squared differences of tie values that actors i and j have to other actors. Hover over &amp;quot;Distance Metric&amp;quot; select box for more info on each metric.&lt;/p&gt;&lt;p&gt;Also, specify where the &amp;quot;variables&amp;quot; are. For instance, select Rows to measure the outbound ties between all pairs of actors. Select Both to measure both inbound and outbound ties. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Compute a &lt;span style=&quot; font-weight:600;&quot;&gt;dissimilarities matrix&lt;/span&gt;, where each element (i,j) is the pair-wise distance / dissimilarity of actors i and j tie profiles to all other actors, according to a selected metric. &lt;/p&gt;&lt;p&gt;Select a distance metric. For example, the &amp;quot;Euclidean distance&amp;quot; is the square root of the sum of the squared differences of tie values that actors i and j have to other actors. Hover over &amp;quot;Distance Metric&amp;quot; select box for more info on each metric.&lt;/p&gt;&lt;p&gt;Also, specify where the &amp;quot;variables&amp;quot; are. For instance, select Rows to measure the outbound ties between all pairs of actors.  Select Both to measure both inbound and outbound ties. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
@@ -126,11 +111,6 @@
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLabel" name="label_3">
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
        <property name="text">
         <string>Variables in:</string>
        </property>
@@ -179,11 +159,6 @@
    </item>
    <item row="4" column="0">
     <widget class="QCheckBox" name="diagonalCheckBox">
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
      <property name="statusTip">
       <string>Enable to include matrix diagonal in calculations</string>
      </property>
