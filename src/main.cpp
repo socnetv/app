@@ -26,8 +26,6 @@
 ********************************************************************************/
 
 #include <QApplication>		//core Qt functionality
-#include <QScreen>
-#include <QtDebug>
 #include <QFile>
 #include <QTranslator>		//for text translations
 #include <QLocale>
@@ -40,17 +38,9 @@ int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(src);
 
-    // Todo: debug highdpiscaling (Windows
-//    QApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
-//    QApplication::setAttribute(Qt::AA_Use96Dpi);
-
-//    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-//    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-
     QApplication app(argc, argv);
 
-
-     // Todo update/remove translations
+    // Todo update/remove translations
     QTranslator tor( 0 );
     QLocale locale;
 
