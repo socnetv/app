@@ -22,11 +22,6 @@
     <height>600</height>
    </size>
   </property>
-  <property name="font">
-   <font>
-    <pointsize>12</pointsize>
-   </font>
-  </property>
   <property name="windowTitle">
    <string>Find nodes (and select them)</string>
   </property>
@@ -47,7 +42,7 @@
      </property>
      <property name="font">
       <font>
-       <pointsize>12</pointsize>
+       <pointsize>13</pointsize>
        <italic>false</italic>
       </font>
      </property>

@@ -16,11 +16,6 @@
     <height>220</height>
    </size>
   </property>
-  <property name="font">
-   <font>
-    <pointsize>12</pointsize>
-   </font>
-  </property>
   <property name="windowTitle">
    <string>Filter edges</string>
   </property>
@@ -30,7 +25,7 @@
      <property name="font">
       <font>
        <family>Sans Serif</family>
-       <pointsize>12</pointsize>
+       <pointsize>13</pointsize>
       </font>
      </property>
      <property name="text">
@@ -63,7 +58,7 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
-         <pointsize>12</pointsize>
+         <pointsize>13</pointsize>
         </font>
        </property>
        <property name="text">
@@ -73,6 +68,11 @@
      </item>
      <item>
       <spacer name="horizontalSpacer">
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -95,7 +95,7 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
-         <pointsize>10</pointsize>
+         <pointsize>13</pointsize>
         </font>
        </property>
        <property name="decimals">
@@ -113,7 +113,7 @@
      <property name="font">
       <font>
        <family>Sans Serif</family>
-       <pointsize>12</pointsize>
+       <pointsize>13</pointsize>
       </font>
      </property>
      <property name="text">
@@ -126,7 +126,7 @@
      <property name="font">
       <font>
        <family>Sans Serif</family>
-       <pointsize>12</pointsize>
+       <pointsize>13</pointsize>
       </font>
      </property>
      <property name="text">
@@ -136,6 +136,11 @@
    </item>
    <item row="4" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="font">
+      <font>
+       <pointsize>13</pointsize>
+      </font>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>

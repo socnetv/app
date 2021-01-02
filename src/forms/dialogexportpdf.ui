@@ -30,11 +30,6 @@
     <layout class="QHBoxLayout" name="horizontalLayout_24">
      <item>
       <widget class="QLabel" name="label_23">
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
        <property name="text">
         <string>Page Orientation</string>
        </property>
@@ -45,7 +40,6 @@
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="orientation">
@@ -73,11 +67,6 @@
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
        <property name="toolTip">
         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -95,11 +84,6 @@ p, li { white-space: pre-wrap; }
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLabel" name="label">
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
        <property name="text">
         <string>Save to file:</string>
        </property>
@@ -107,11 +91,6 @@ p, li { white-space: pre-wrap; }
      </item>
      <item>
       <spacer name="horizontalSpacer">
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -131,11 +110,6 @@ p, li { white-space: pre-wrap; }
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;PDF filename&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The path and the filename of the PDF. &lt;/p&gt;&lt;p&gt;Click the button on the right to select a new filename.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -146,11 +120,6 @@ p, li { white-space: pre-wrap; }
      </item>
      <item>
       <widget class="QToolButton" name="fileDirSelectButton">
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
        <property name="cursor">
         <cursorShape>PointingHandCursor</cursorShape>
        </property>
@@ -171,11 +140,6 @@ p, li { white-space: pre-wrap; }
     <layout class="QHBoxLayout" name="horizontalLayout_25">
      <item>
       <widget class="QLabel" name="label_24">
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
        <property name="text">
         <string>Quality</string>
        </property>
@@ -186,7 +150,6 @@ p, li { white-space: pre-wrap; }
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="orientation">
@@ -214,11 +177,6 @@ p, li { white-space: pre-wrap; }
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
        <property name="toolTip">
         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -245,11 +203,6 @@ p, li { white-space: pre-wrap; }
    </item>
    <item row="4" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -262,11 +215,6 @@ p, li { white-space: pre-wrap; }
     <layout class="QHBoxLayout" name="horizontalLayout_22">
      <item>
       <widget class="QLabel" name="label_21">
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
        <property name="text">
         <string>Resolution (DPI)</string>
        </property>
@@ -277,7 +225,6 @@ p, li { white-space: pre-wrap; }
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="orientation">
@@ -304,11 +251,6 @@ p, li { white-space: pre-wrap; }
          <width>170</width>
          <height>0</height>
         </size>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
        </property>
        <property name="toolTip">
         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;

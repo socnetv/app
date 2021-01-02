@@ -28,11 +28,6 @@
     <height>600</height>
    </size>
   </property>
-  <property name="font">
-   <font>
-    <pointsize>12</pointsize>
-   </font>
-  </property>
   <property name="windowTitle">
    <string>Scale-free random network generator</string>
   </property>
@@ -60,7 +55,6 @@
      <property name="font">
       <font>
        <family>Sans Serif</family>
-       <pointsize>12</pointsize>
       </font>
      </property>
      <property name="frameShape">
@@ -106,7 +100,6 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
-         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -131,7 +124,6 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
-         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -179,7 +171,6 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
-         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -198,7 +189,6 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
-         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -249,7 +239,6 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
-         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -268,7 +257,6 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
-         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -319,7 +307,6 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
-         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -338,7 +325,6 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
-         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -389,7 +375,6 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
-         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -408,7 +393,6 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
-         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -456,7 +440,6 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
-         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -483,7 +466,6 @@
          <property name="font">
           <font>
            <family>Sans Serif</family>
-           <pointsize>12</pointsize>
           </font>
          </property>
          <property name="text">
@@ -514,7 +496,6 @@
          <property name="font">
           <font>
            <family>Sans Serif</family>
-           <pointsize>12</pointsize>
           </font>
          </property>
          <property name="text">
@@ -555,7 +536,6 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
-         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -582,7 +562,6 @@
          <property name="font">
           <font>
            <family>Sans Serif</family>
-           <pointsize>12</pointsize>
           </font>
          </property>
          <property name="toolTip">
@@ -602,11 +581,6 @@
    </item>
    <item row="15" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="font">
-      <font>
-       <pointsize>10</pointsize>
-      </font>
-     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>

@@ -22,11 +22,6 @@
     <height>800</height>
    </size>
   </property>
-  <property name="font">
-   <font>
-    <pointsize>9</pointsize>
-   </font>
-  </property>
   <property name="windowTitle">
    <string>Settings &amp; Preferences</string>
   </property>
@@ -42,7 +37,6 @@
      <property name="font">
       <font>
        <family>Ubuntu</family>
-       <pointsize>12</pointsize>
       </font>
      </property>
      <property name="currentIndex">
