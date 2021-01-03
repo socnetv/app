@@ -15,6 +15,7 @@ echo "Project dir is: ${project_dir}"
 echo "TRAVIS_TAG is: $TRAVIS_TAG"
 echo "TRAVIS_COMMIT is: $TRAVIS_COMMIT"
 echo "SOCNETV_VERSION is: $SOCNETV_VERSION"
+echo "TAG_NAME: ${TAG_NAME}"
 
 LAST_COMMIT_SHORT=$(git rev-parse --short HEAD)
 echo "LAST_COMMIT_SHORT is: $LAST_COMMIT_SHORT"
@@ -42,32 +43,50 @@ sw_vers
 
 # Build your app
 echo "*****************************"
-echo "Start building NOW..."
+echo "Building ${APP_NAME} ..."
 echo "*****************************"
 
 cd ${project_dir}
 qmake -config release
 make -j4
 
-# Build and run your tests here
+echo "Finished building -- dir contents now:"
 find .
+
 
 # Package your app
 echo "*****************************"
-echo "Packaging ${APP_NAME}..."
+echo "Packaging ${APP_NAME} ..."
 echo "*****************************"
+
+echo "Entering project dir ${project_dir} ..."
 cd ${project_dir}/
+# Verify dir
+pwd
 
 # Remove build directories that you don't want to deploy
+echo "Removing items we do not deploy from project dir ${project_dir}..."
 rm -rf moc
 rm -rf obj
 rm -rf qrc
 
-echo "Creating dmg archive..."
-echo "TAG_NAME is ${TAG_NAME}"
+echo "Contents of ${APP_NAME}.app:"
+find . -type f -name ${APP_NAME}.app
 
+echo "Calling macdeployqt to create dmg archive from ${APP_NAME}.app:"
 macdeployqt ${APP_NAME}.app -dmg
+
+echo "Finished macdeployqt -- ${APP_NAME}.app now has these files inside:"
+find . -type f -name ${APP_NAME}.app
+
+echo "Check if ${APP_NAME}.dmg has been created:"
+find . -type f -name ${APP_NAME}.dmg
+
+echo "Rename dmg archive to ${APP_NAME}-${VERSION}.dmg ..."
 mv ${APP_NAME}.dmg "${APP_NAME}-${VERSION}.dmg"
+
+echo "Calling productbuild to create product archive .pkg from ${APP_NAME}.app:"
+productbuild --component ${APP_NAME}.app /Applications "${APP_NAME}-${VERSION}.pkg"
 
 # You can use the appdmg command line app to create your dmg file if
 # you want to use a custom background and icon arrangement. I'm still
