@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.8
+ version: 2.9-dev
  Written in Qt
 
                          dialogexportimage.h  -  description

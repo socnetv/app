@@ -16,7 +16,7 @@
 
 
 %define name    socnetv
-%define version 2.8
+%define version 2.9-dev
 %define release 1
 %define prefix  /usr/local
 %define lastrev %(LANG=en_US.UTF-8 && date +"%a %b %e %Y")
@@ -224,6 +224,8 @@ echo " ### FILES SECTION ###"
 #CHANGELOG SECTION
 #
 %changelog
+* Sun Jan 03 2021 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.9-1
+- Dev v2.9
 * Sun Jan 03 2021 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.8-1
 - Upstream v2.8
 * Mon Dec 28 2020 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.7-1
