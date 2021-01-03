@@ -492,7 +492,7 @@ public slots:
     void slotOptionsEdgeLabelsVisibility(bool toggle);
     void slotOptionsEdgeWeightNumbersVisibility(bool toggle);
     void slotOptionsEdgeWeightsDuringComputation(bool);
-    void slotOptionsEdgeThicknessPerWeight(bool toogle);
+    void slotOptionsEdgeThicknessPerWeight(bool toggle);
     void slotOptionsEdgesBezier(bool toggle);
     void slotOptionsEdgeArrowsVisibility(bool toggle);
 
@@ -503,7 +503,7 @@ public slots:
     void slotOptionsWindowStatusbarVisibility(bool toggle);
     void slotOptionsWindowLeftPanelVisibility(bool toggle);
     void slotOptionsWindowRightPanelVisibility(bool toggle);
-    void slotOptionsWindowFullScreen(bool toogle);
+    void slotOptionsWindowFullScreen(bool toggle);
 
     void slotOptionsDebugMessages(bool toggle);
 
