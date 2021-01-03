@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.8-dev
+ version: 2.8
  Written in Qt
 
                          dialognodefind.cpp  -  description
                              -------------------
-    copyright         : (C) 2005-2018 by Dimitris B. Kalamaras
+    copyright         : (C) 2005-2021 by Dimitris B. Kalamaras
     project site      : https://socnetv.org
 
  ***************************************************************************/

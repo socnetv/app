@@ -1,8 +1,8 @@
 socnetv (2.8-1) xenial; urgency=medium
   
-  *  Started dev v2.8
+  *  New upstream v2.8
 
- -- Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>  Tue, 29 Dec 2020 20:44:00 +0200
+ -- Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>  Sun, 03 Jan 2021 17:44:00 +0200
 
 socnetv (2.7-1) xenial; urgency=medium
 

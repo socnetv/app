@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.8-dev
+ version: 2.8
  Written in Qt
 
 -                           mainwindow.cpp  -  description
                              -------------------
-    copyright         : (C) 2005-2020 by Dimitris B. Kalamaras
+    copyright         : (C) 2005-2021 by Dimitris B. Kalamaras
     blog              : http://dimitris.apeiro.gr
     project site      : https://socnetv.org
 
@@ -14227,7 +14227,7 @@ void MainWindow::slotHelpSystemInfo() {
 */
 void MainWindow::slotHelpAbout(){
     int randomCookie=rand()%fortuneCookie.count();
-QString BUILD="Tue Dec 29 23:30:03 EET 2020";
+QString BUILD="Sun 03 Jan 2021 05:44:02 PM EET";
     QMessageBox::about(
                 this, tr("About SocNetV"),
                 tr("<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)") +
@@ -14236,7 +14236,7 @@ QString BUILD="Tue Dec 29 23:30:03 EET 2020";
 
                 tr("<p>Website: <a href=\"https://socnetv.org\">https://socnetv.org</a></p>")+
 
-                tr("<p>(C) 2005-2020 by Dimitris V. Kalamaras</p>")+
+                tr("<p>(C) 2005-2021 by Dimitris V. Kalamaras</p>")+
                 tr("<p><a href=\"https://socnetv.org/contact\">Have questions? Contact us!</a></p>")+
 
                 tr("<p><b>Fortune cookie: </b><br> \"")  + fortuneCookie[randomCookie]  + "\"" +
