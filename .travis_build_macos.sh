@@ -71,19 +71,21 @@ rm -rf obj
 rm -rf qrc
 
 echo "Contents of ${APP_NAME}.app:"
-find . -type f -name ${APP_NAME}.app
+find ${APP_NAME}.app -type f
 
 echo "Calling macdeployqt to create dmg archive from ${APP_NAME}.app:"
 macdeployqt ${APP_NAME}.app -dmg
 
 echo "Finished macdeployqt -- ${APP_NAME}.app now has these files inside:"
-find . -type f -name ${APP_NAME}.app
+find ${APP_NAME}.app -type f
 
 echo "Check if ${APP_NAME}.dmg has been created:"
 find . -type f -name ${APP_NAME}.dmg
 
 echo "Rename dmg archive to ${APP_NAME}-${VERSION}.dmg ..."
 mv ${APP_NAME}.dmg "${APP_NAME}-${VERSION}.dmg"
+
+find . -type f -name *.dmg
 
 echo "Calling productbuild to create product archive .pkg from ${APP_NAME}.app:"
 productbuild --component ${APP_NAME}.app /Applications "${APP_NAME}-${VERSION}.pkg"
