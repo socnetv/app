@@ -141,7 +141,7 @@ GraphVertex::GraphVertex(const int &name) {
 void GraphVertex::relationSet(int newRel) {
     qDebug() << "GraphVertex::relationSet() - vertex:" << name()
              << "current relation:" << m_curRelation
-             << "settting new relation: " << newRel;
+             << "setting new relation: " << newRel;
     // first make false all edges of current relation
     edgeFilterByRelation(m_curRelation, false);
     // then make true all edges of new relation
