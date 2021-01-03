@@ -13365,8 +13365,8 @@ void MainWindow::slotOptionsEdgesBezier(bool toggle){
  * @brief MainWindow::slotOptionsEdgeThicknessPerWeight
  * @param toggle
  */
-void MainWindow::slotOptionsEdgeThicknessPerWeight(bool toogle) {
-    if (toogle) {
+void MainWindow::slotOptionsEdgeThicknessPerWeight(bool toggle) {
+    if (toggle) {
 
     }
     else {
