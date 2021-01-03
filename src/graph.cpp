@@ -23102,7 +23102,7 @@ QString Graph::graphClusteringMethodTypeToString(const int &methodType) const {
     QString methodStr;
     switch (methodType) {
     case Clustering::Single_Linkage:
-        methodStr = "Single-linkage (minumum)";
+        methodStr = "Single-linkage (minimum)";
         break;
     case Clustering::Complete_Linkage:
         methodStr = "Complete-linkage (maximum)";
