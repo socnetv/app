@@ -40,30 +40,39 @@ jobs:
 
 
 before_install:
-  # Add repositories etc
+  - echo "***********************************************";
+  - echo " Run script before install (to add repos etc)
+  - echo "***********************************************";
   - chmod +x .travis_before_install.sh
   - ./.travis_before_install.sh
 
 
-install: 
-  - echo "Install any required packages and dependencies";
+install:
+  - echo "***********************************************"; 
+  - echo " Run script to install any dependencies...";
+  - echo "***********************************************";
   - chmod +x .travis_install.sh
   - ./.travis_install.sh
 
 
 script:
-  #  Run the build script
+  - echo "***********************************************";
+  - echo " Run script to build the app...";
+  - echo "***********************************************";
   -  if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then chmod +x .travis_build_linux.sh ; fi
   - '[ "$TRAVIS_OS_NAME" != linux ] || ./.travis_build_linux.sh'
   -  if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then chmod +x .travis_build_macos.sh ; fi  
   - '[ "$TRAVIS_OS_NAME" != osx ] || ./.travis_build_macos.sh'
 
 after_success:
-   - ls -lsh  
-    #- curl --upload-file ./Social*.AppImage https://transfer.sh/SocNetV-git.$(git rev-parse --short HEAD)-x86_64.AppImage
-   - wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
-   - echo "Listing directory"
-   - ls -lsh
-   - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then bash upload.sh *SocNetV*.AppImage*; fi
-   - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then bash upload.sh *SocNetV*.zip*; bash upload.sh SocNetV*.pkg*; fi
+  - echo "***********************************************";
+  - echo " Finished building. Download upload.sh script ";
+  - echo "***********************************************";
+  - ls -lsh  
+  #- curl --upload-file ./Social*.AppImage https://transfer.sh/SocNetV-git.$(git rev-parse --short HEAD)-x86_64.AppImage
+  - wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
+  - echo "Listing directory"
+  - ls -lsh
+  - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then bash upload.sh *SocNetV*.AppImage*; fi
+  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then bash upload.sh *SocNetV*.zip*; bash upload.sh SocNetV*.pkg*; fi
 
