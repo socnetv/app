@@ -37,6 +37,10 @@ fi
 echo "macOS version is:"
 sw_vers
 
+# build env
+echo "Xcode build version:"
+xcrun -sdk macosx --show-sdk-path
+
 # Install npm appdmg if you want to create custom dmg files with it
 # npm install -g appdmg
 
