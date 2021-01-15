@@ -11,8 +11,7 @@ language: cpp
 #   - osx
 
 # sudo: require # deprecated
-
-dist: xenial
+# dist: xenial  # used further below in os:linux
 
 # compiler:
 #   - clang 
@@ -28,10 +27,12 @@ jobs:
   include:
     - os: linux
       compiler: gcc
+      dist: xenial
       env: FAILURES=true
     - os: osx
       compiler: clang
       env: FAILURES=true
+      osx_image: xcode11.6
   exclude:
     - os: osx
       compiler: gcc      
