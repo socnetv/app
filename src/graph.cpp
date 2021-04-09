@@ -5904,7 +5904,7 @@ void Graph::dijkstra(const int &s, const int &si,
 
     qDebug() << "### dijkstra: Construct a priority queue prQ of all vertices-distances";
 
-    // TODO: Check prQ functioanality in weighted graphs, where edge weight denotes value (not cost)
+    // TODO: Check prQ functionality in weighted graphs, where edge weight denotes value (not cost)
     priority_queue<GraphDistance, vector<GraphDistance>, GraphDistancesCompare> prQ;
 
     //set d( s, s ) = 0
@@ -5914,14 +5914,13 @@ void Graph::dijkstra(const int &s, const int &si,
     m_graph[si]->setShortestPaths(s,1);
 
 
-
-
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
         v=vpos[ (*it)->name() ];
         if (v != s ){
             // NOTE: d(i,j) init to RAND_MAX already done in graphDistancesGeodesic
 //            qDebug() << " push " << v << " to prQ with infinite distance from s";
 //            prQ.push(GraphDistance(v,RAND_MAX));
+
             //TODO // Previous node in optimal path from source
             //    previous[v]  := undefined
         }
