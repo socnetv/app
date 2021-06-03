@@ -12,17 +12,16 @@ echo "Project dir is: ${project_dir}"
 
 if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     sudo apt-get install mesa-common-dev
-#    sudo apt install libglu1-mesa-dev freeglut3-dev
     sudo apt-get install build-essential libgl1-mesa-dev
+    # You need to change this if you need to update to a more recent Qt version
     sudo apt-get -y install qt512base qt512charts-no-lgpl  qt512svg
-    # sudo apt-get install qt5-default qttools5-dev qttools5-dev-tools qtbase5-dev qtbase5-dev-tools qttranslations5-l10n libqt5svg5-dev
     source /opt/qt512/bin/qt512-env.sh
 
 
 elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
-	# We install Qt5 via brew
-    brew install qt p7zip
-    brew link --force qt
+    # We install Qt5 via brew -- Note we use qt@5 because brew install qt installs Qt6 by default...
+    brew install qt@5 p7zip
+    brew link --force qt@5
     # Add Qt binaries to path
     PATH=/usr/local/opt/qt/bin/:${PATH}
 
