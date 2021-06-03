@@ -214,6 +214,7 @@ void WebCrawler_Parser::load(const QString &url,
     // Initialize user-defined control variables and limits
 
     m_seed=QUrl(url);                              // the initial url/domain we will crawl
+
     if (m_seed.path() == "/") {
         m_seed.setPath("");
     }
