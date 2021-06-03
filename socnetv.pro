@@ -5,7 +5,7 @@ lessThan(QT_VERSION, 5.0) {
 TARGET = socnetv
 
 TEMPLATE = app
-CONFIG  += qt thread warn_on release
+CONFIG  += qt thread warn_off release
 #CONFIG  += qt thread warn_on debug
 
 LANGUAGE = C++
@@ -183,6 +183,8 @@ unix:!macx{
 macx {
   ICON = src/images/socnetv.icns
   TARGET = SocNetV
+  QMAKE_CXXFLAGS = -Wno-unused-variable -Wdeprecated-declarations
+  QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-unused-parameter -Wdeprecated-declarations
 }
 
 
