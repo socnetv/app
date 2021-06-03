@@ -67,7 +67,7 @@ find .
 
 # Package your app
 echo "*****************************"
-echo "Packaging ${APP_NAME} ${VERSION}"..."
+echo "Packaging ${APP_NAME} ${VERSION}..."
 echo "*****************************"
 
 echo "Entering project dir ${project_dir} ..."
@@ -120,8 +120,8 @@ echo "Creating zip archive..."
 echo "Check what we have created..."
 find . -type f -name "${APP_NAME}*"
 
-echo ""
+echo " "
 echo "travis_build_macos: DONE. Returning to main script..."
-echo ""
+echo " "
 
 exit 0
