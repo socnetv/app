@@ -19,7 +19,8 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
 
 
 elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
-    # We install Qt5 via brew -- Note we use qt@5 because brew install qt installs Qt6 by default...
+    # We install Qt5 via brew
+    # Note we use qt@5 to install Qt 5.15.2 because `brew install qt` would install Qt 6 by default...
     brew install qt@5 p7zip
     brew link --force qt@5
     # Add Qt binaries to path

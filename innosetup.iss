@@ -34,8 +34,9 @@ VersionInfoCopyright=Copyright (C) {#COPYRIGHT}
 VersionInfoDescription={#APPTITLE} Setup
 VersionInfoTextVersion={#VERSION}
 VersionInfoVersion={#NUMERICVERSION}
-WizardImageFile=compiler:WizModernImage-IS.bmp
-WizardSmallImageFile=compiler:WizModernSmallImage-IS.bmp
+; WizardImageFile=compiler:WizModernImage-IS.bmp
+; WizardSmallImageFile=compiler:WizModernSmallImage-IS.bmp
+WizardStyle=modern
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
