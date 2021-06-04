@@ -151,7 +151,6 @@ void DialogWebCrawler::checkErrors(){
     }
 
 
-
     if (newUrl.path().isEmpty() ) {
         qDebug()<< "DialogWebCrawler::checkErrors() - seed url is a domain without a path. "
                    "Adding default path / to seed url";
@@ -391,7 +390,10 @@ void DialogWebCrawler::getUserChoices(){
             << "	urlPatternsExcluded" << urlPatternsExcluded << endl
             << "	linkClasses" << linkClasses << endl;
 
-    emit userChoices( seedUrl,
+
+    QUrl startUrl(seedUrl);
+
+    emit userChoices( startUrl,
                       urlPatternsIncluded,
                       urlPatternsExcluded,
                       linkClasses,

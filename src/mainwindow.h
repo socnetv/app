@@ -278,7 +278,7 @@ public slots:
 
     void slotNetworkWebCrawlerDialog();
 
-    void slotNetworkWebCrawler(const QString &urlSeed,
+    void slotNetworkWebCrawler(const QUrl &startUrl,
                                const QStringList &urlPatternsIncluded,
                                const QStringList &urlPatternsExcluded,
                                const QStringList &linkClasses,
@@ -526,7 +526,7 @@ public slots:
     void slotHelpTips();
     void slotHelp();
     void slotHelpCheckUpdateDialog();
-    void slotHelpCheckUpdateParse(QNetworkReply *reply);
+    void slotHelpCheckUpdateParse();
     void slotHelpCreateTips();
     void slotHelpSystemInfo();
     void slotHelpAbout();
@@ -544,6 +544,8 @@ public slots:
                                );
 
 
+    void slotNetworkSslErrors();
+    void slotNetworkError();
 
     //Called by Graph to display some message to the user
     void statusMessage(const QString);
@@ -576,6 +578,8 @@ signals:
     void signalSetReportsDataDir(const QString &dataDir );
 
 private:
+
+    QNetworkAccessManager *networkManager;
 
     QGraphicsScene *scene;
     GraphicsWidget *graphicsWidget;
@@ -801,8 +805,6 @@ private:
     QDateTime actualDateTime, actualDate, actualTime;
     QTime eTime;     //used  to time algorithms.
 
-    QNetworkAccessManager *http;
-    QNetworkReply *reply;
 
 };
 #endif 

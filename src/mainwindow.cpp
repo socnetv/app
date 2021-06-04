@@ -163,6 +163,9 @@ MainWindow::MainWindow(const QString & m_fileName) {
     #endif
 
 
+    // Create network manager
+    networkManager = new QNetworkAccessManager(this);
+
     initView();         //init our network "canvas"
 
     initGraph();
@@ -183,6 +186,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
     initApp();          //  load and initialise default app parameters
 
     graphicsWidget->setFocus();
+
 
     // Check if user-provided network file on startup
     qDebug() << "MW::MainWindow() Checking if user provided file on startup...";
@@ -884,7 +888,7 @@ void MainWindow::initGraph() {
 
     qDebug() << "MW::initGraph()";
 
-    activeGraph = new Graph(graphicsWidget);
+    activeGraph = new Graph(graphicsWidget, networkManager);
 
     qDebug() << "MW::initGraph() - activeGraph created on thread:" << activeGraph->thread()
              << "moving it to new thread ";
@@ -1284,9 +1288,9 @@ void MainWindow::initActions(){
                    "from an initial webpage using the built-in Web Crawler. </p>"
                    "<p>The web crawler visits the given URL (website or webpage) "
                    "and parses its contents to find links to other pages (internal or external). "
-                   "If there are such links, it adds them to a list of URLs (called frontier). "
-                   "Then, all the URLs in the frontier list are visited in a FIFO order "
-                   "and parsed to find more links which are also added to frontier. "
+                   "If there are such links, it adds them to a queue of URLs. "
+                   "Then, all the URLs in the queue list are visited in a FIFO order "
+                   "and parsed to find more links which are also added to the url queue. "
                    "The process repeats until it reaches user-defined "
                    "limits: </p>"
                    "<p>Maximum urls to visit (max nodes in the resulting network)</p> "
@@ -8525,8 +8529,8 @@ void MainWindow::slotNetworkRandomLattice(const int &newNodes,
 
 /**
  * @brief MainWindow::slotNetworkWebCrawlerDialog
- * Shows a dialog where enters a website url
- * and the app creates a new network by crawling it
+ * Shows a dialog for the user to configure the webcrawler.
+ * The dialog passes the user options to slotNetworkWebCrawler()
  */
 void MainWindow::slotNetworkWebCrawlerDialog() {
     qDebug () << "MW: slotNetworkWebCrawlerDialog() - canvas Width & Height already sent";
@@ -8546,14 +8550,14 @@ void MainWindow::slotNetworkWebCrawlerDialog() {
 
 /**
  * @brief Called from m_WebCrawlerDialog. Clears the loaded network then
- * passes parameters to Graph::webCrawl function
+ * calls Graph::startWebCrawler() with the user options.
  * @param seed
  * @param maxNodes
  * @param maxRecursion
  * @param extLinks
  * @param intLinks
  */
-void MainWindow::slotNetworkWebCrawler (const QString &urlSeed,
+void MainWindow::slotNetworkWebCrawler (const QUrl &startUrl,
                                         const QStringList &urlPatternsIncluded,
                                         const QStringList &urlPatternsExcluded,
                                         const QStringList &linkClasses,
@@ -8569,25 +8573,26 @@ void MainWindow::slotNetworkWebCrawler (const QString &urlSeed,
                                         const bool &delayedRequests
                                         ) {
 
+    // Close the current network
     slotNetworkClose();
-    qDebug () << "MW::slotNetworkWebCrawler() - urlPatternsIncluded"
-              << urlPatternsIncluded;
-    qDebug () << "MW::slotNetworkWebCrawler() - linkClasses"
-              << linkClasses;
-    activeGraph->webCrawl( urlSeed,
-                           urlPatternsIncluded,
-                           urlPatternsExcluded,
-                           linkClasses,
-                           maxNodes,
-                           maxLinksPerPage,
-                           intLinks,
-                           childLinks,
-                           parentLinks,
-                           selfLinks,
-                           extLinksIncluded,
-                           extLinksCrawl,
-                           socialLinks,
-                           delayedRequests) ;
+
+    qDebug () << "MW::slotNetworkWebCrawler() - calling Graph::startWebCrawler() with user options.";
+    // Start the web crawler
+    activeGraph->startWebCrawler(
+                startUrl,
+                urlPatternsIncluded,
+                urlPatternsExcluded,
+                linkClasses,
+                maxNodes,
+                maxLinksPerPage,
+                intLinks,
+                childLinks,
+                parentLinks,
+                selfLinks,
+                extLinksIncluded,
+                extLinksCrawl,
+                socialLinks,
+                delayedRequests) ;
 
 }
 
@@ -14093,88 +14098,146 @@ void MainWindow::slotHelp(){
  * download the latest version text file.
  */
 void MainWindow::slotHelpCheckUpdateDialog() {
-    qDebug() << "MW::slotHelpCheckUpdateDialog()";
 
-    http = new QNetworkAccessManager(this);
+    QString url = "https://socnetv.org/latestversion.txt";
 
-    qDebug() << "MW::slotHelpCheckUpdateDialog() - Connecting http finished signal";
+    qDebug() << "MW::slotHelpCheckUpdateDialog() - Creating request object with url:" << url;
 
-    connect ( http, &QNetworkAccessManager::finished,
-              this, &MainWindow::slotHelpCheckUpdateParse );
-    QNetworkRequest request (QUrl("https://socnetv.org/latestversion.txt"));
+    // Create a network request object
+    QNetworkRequest request;
+
+    // Set request url
+    request.setUrl(QUrl(url));
+
+    // Set request headers
     request.setRawHeader(
                 "User-Agent",
                 "SocNetV harmless spider - see https://socnetv.org");
-    qDebug() << "MW::slotHelpCheckUpdateDialog() - making the call...";
-    QNetworkReply *reply =  http->get(request) ;
-    Q_UNUSED(reply);
+
+    // Create a network reply object through which we will make the call and handle the reply content
+    qDebug() << "MW::slotHelpCheckUpdateDialog() - Creating a network reply object  and making the call...";
+    QNetworkReply *reply =  networkManager->get(request) ;
+
+    // Connect signals and slots
+    connect(reply, &QNetworkReply::finished, this, &MainWindow::slotHelpCheckUpdateParse);
+    connect(reply, &QNetworkReply::errorOccurred,
+             this, &MainWindow::slotNetworkError);
+     connect(reply, &QNetworkReply::sslErrors,
+             this, &MainWindow::slotNetworkSslErrors);
 
 }
+
+
+/**
+*  Called on NetworkReply errors
+*/
+void MainWindow::slotNetworkError() {
+
+    slotHelpMessageToUserError("Network Error!  "
+                               "Please, check your internet connection and try again.");
+
+
+}
+
+/**
+*  Called on NetworkReply SSL errors
+*/
+void MainWindow::slotNetworkSslErrors() {
+
+    slotHelpMessageToUserError("SSL Error! "
+                               "Could not connect due to SSL error. Please, try again later. ");
+
+}
+
 
 
 /**
  * @brief Parses the reply from the network request we do in slotHelpCheckUpdateDialog
  * @param reply
  */
-void MainWindow::slotHelpCheckUpdateParse(QNetworkReply *reply) {
-    qDebug() << "MW::slotHelpCheckUpdateParse(reply)";
+void MainWindow::slotHelpCheckUpdateParse() {
 
-    QByteArray ba;
+    qDebug() << "MW::slotHelpCheckUpdateParse()";
 
-    ba=reply->readAll();
+    // Get network reply from the sender
+    QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
 
-    QString REMOTEVERSION(ba);
-    REMOTEVERSION = REMOTEVERSION.simplified();
+    QByteArray ba = reply->readAll();
 
-    if (REMOTEVERSION.isEmpty()) {
-        slotHelpMessageToUserError("Error connecting to https://socnetv.org. "
-                                   "Please, check your internet connection and try again.");
+    QString replyContent(ba);
+
+    // Simplify the reply
+    replyContent = replyContent.simplified();
+
+    // Delete reply later
+    reply->deleteLater();
+
+    // Check reply if empty
+    if (replyContent.isEmpty()) {
+        slotHelpMessageToUserError("Empty response from https://socnetv.org. "
+                                   "Could not get the latest version number. Please try again later...");
         return;
     }
 
-    QString remoteVersionStr = REMOTEVERSION;
-    QString localVersionStr = VERSION;
-    int localVersion=0;
-    int remoteVersion=0;
+    // Store the remote version string
+    QString remoteVersion = replyContent;
 
     bool ok1=false;
-    bool ok2=false;
 
+    // Remove . from reply content and convert it to integer
+    int remoteVersionInt = (replyContent.remove(".")).toInt(&ok1, 10);
+
+    qDebug() << "MW::slotHelpCheckUpdateParse() - remoteVersionInt:" << remoteVersionInt;
+
+    // Test if it has been converted
+    if (!ok1) {
+        slotHelpMessageToUserError("Could not understand the version number I got from https://socnetv.org. "
+                                   "Please, try again later...");
+        return;
+
+    }
+
+    // Get local version - we need this to compare the remote against it.
+    QString localVersionStr = VERSION;
+
+    // Check if we are on a beta/dev
     if (localVersionStr.contains("beta")) {
         localVersionStr.remove("beta");
         localVersionStr.remove("-");
     }
-    localVersionStr.remove(".");
-    localVersion = localVersionStr.toInt(&ok1, 10);
-    qDebug() << "MW::slotHelpCheckUpdateParse(reply) - localVersion:" << localVersion;
+    else if (localVersionStr.contains("dev")) {
+        localVersionStr.remove("dev");
+        localVersionStr.remove("-");
+    }
+
+    // Remove . from local version and convert it to integer
+    int localVersionInt = (localVersionStr.remove(".")).toInt(&ok1, 10);
+
+    qDebug() << "MW::slotHelpCheckUpdateParse() - localVersionInt:" << localVersionInt;
+
+    // Test if it has been converted
     if (!ok1) {
         slotHelpMessageToUserError("Error in current version string. "
                                    "Please, contact our developer team.");
         return;
     }
 
-    remoteVersionStr.remove(".");
-    remoteVersion = remoteVersionStr.toInt(&ok2, 10);
-    qDebug() << "MW::slotHelpCheckUpdateParse(reply) - remoteVersion:" << remoteVersion;
-    if (!ok2) {
-        slotHelpMessageToUserError("Error getting newest version details from https://socnetv.org. "
-                                   "Please, try again.");
-        return;
 
-    }
+    // Compare integer versions
+    if( remoteVersionInt > localVersionInt ) {
 
-    if( remoteVersion > localVersion ) {
         switch( slotHelpMessageToUser(
                     USER_MSG_QUESTION,
                     tr("Newer SocNetV version available!"),
                     tr("<p>Your version: ")+ VERSION+ "</p><p>" +
-                    tr("<p>Remote version: <b>")+REMOTEVERSION + "</b></p>",
+                    tr("<p>Remote version: <b>")+replyContent + "</b></p>",
                     tr("<p><b>There is a newer SocNetV version available! </b></p>"
                        "<p>Do you want to download the latest version now? </p> "
                        "<p>Press Yes, and I will open your default web browser for you "
                        "to download the latest SocNetV package...</p>"),
                     QMessageBox::Yes|QMessageBox::No, QMessageBox::Yes
                     ) )
+
         {
         case QMessageBox::Yes:
             statusMessage( tr("Opening SocNetV website in your default web browser....") );
@@ -14196,11 +14259,12 @@ void MainWindow::slotHelpCheckUpdateParse(QNetworkReply *reply) {
     else {
         slotHelpMessageToUserInfo(
                     tr("<p>Your version: ")+ VERSION+ "</p>" +
-                    tr("<p>Remote version: ")+REMOTEVERSION + "</p>" +
+                    tr("<p>Remote version: ")+remoteVersion + "</p>" +
                     tr("<p>You are running the latest and greatest version of SocNetV. <br />"
                        "Nothing to do!</p>")
                     );
     }
+
 
 }
 

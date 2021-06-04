@@ -49,8 +49,6 @@ using namespace std;
 Parser::Parser()
 {
     qDebug() << "Parser::Parser() - running on thread "  << this->thread() ;
-
-
 }
 
 

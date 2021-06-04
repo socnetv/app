@@ -30,6 +30,7 @@
 #ifndef WEBCRAWLERDIALOG_H
 #define WEBCRAWLERDIALOG_H
 
+class QUrl;
 
 #include <QDialog>
 
@@ -47,7 +48,7 @@ public slots:
     void getUserChoices ();
     QStringList parseTextEditInput(const QString &html);
 signals:
-    void userChoices( const QString &seedUrl,
+    void userChoices( const QUrl &startUrl,
                       const QStringList &,
                       const QStringList &,
                       const QStringList &,

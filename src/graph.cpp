@@ -50,6 +50,7 @@
 #include <QValueAxis>
 #include <QPixmap>
 #include <QElapsedTimer>
+#include <QNetworkAccessManager>
 
 #include <cstdlib>		//allows the use of RAND_MAX macro 
 
@@ -67,11 +68,13 @@
  * @brief Graph::Graph
  * constructor
  */
-Graph::Graph(GraphicsWidget *graphicsWidget) {
+Graph::Graph(GraphicsWidget *graphicsWidget, QNetworkAccessManager *networkManager) {
 
-            qRegisterMetaType<MyEdge>("MyEdge");
+    qRegisterMetaType<MyEdge>("MyEdge");
 
     m_canvas = graphicsWidget;
+
+    m_networkManager = networkManager;
 
     m_totalVertices=0;
     m_totalEdges=0;
@@ -130,8 +133,8 @@ Graph::Graph(GraphicsWidget *graphicsWidget) {
     m_clickedEdge.target=0;
 
     file_parser = 0;
-    wc_parser = 0;
-    wc_spider = 0;
+
+    web_crawler = 0;
 
     m_graphFileFormatExportSupported<< FileType::GRAPHML
                                << FileType::PAJEK
@@ -416,12 +419,14 @@ void Graph::initSignalSlots() {
 
 }
 
+
 /**
  * @brief Graph::~Graph
  */
 Graph::~Graph() {
     qDebug()<<"Graph::~Graph() - Calling clear()";
     clear("exit");
+
     delete file_parser;
 }
 
@@ -566,6 +571,11 @@ void Graph::clear(const QString &reason) {
 
     graphLoadedTerminateParserThreads("clear");
     webCrawlTerminateThreads("clear");
+
+//    if ( urlQueue->size() > 0 ) {
+//        urlQueue->clear();
+//    }
+
 
     if ( reason != "exit") {
         qDebug()<< "Graph::clear() - Clearing end. Emitting graphSetModified()";
@@ -3520,23 +3530,14 @@ int Graph:: verticesWithReciprocalEdges(){
  */
 void Graph::webCrawlTerminateThreads (QString reason){
     qDebug() << "Graph::webCrawlTerminateThreads() - reason " << reason
-                << "Checking wc_spiderThread...";
-    while (wc_spiderThread.isRunning() ) {
-        qDebug() << "Graph::webCrawlTerminateThreads()  - wc_spiderThread running. "
-                    "Calling wc_spiderThread.quit()";
-        wc_spiderThread.requestInterruption();
-        wc_spiderThread.quit();
-        wc_spiderThread.wait();
-     }
+                << "Checking webcrawlerThread...";
 
-    qDebug() << "Graph::webCrawlTerminateThreads() - Checking wc_parserThread...";
+    while (webcrawlerThread.isRunning() ) {
 
-    while (wc_parserThread.isRunning() ) {
-
-        qDebug() << "Graph::webCrawlTerminateThreads()  - wc_parserThread running. "
-                    "Calling wc_parserThread.quit()";
-        wc_parserThread.quit();
-        wc_parserThread.wait();
+        qDebug() << "Graph::webCrawlTerminateThreads()  - webcrawlerThread running. "
+                    "Calling webcrawlerThread.quit()";
+        webcrawlerThread.quit();
+        webcrawlerThread.wait();
      }
 }
 
@@ -3553,114 +3554,167 @@ void Graph::webCrawlTerminateThreads (QString reason){
  * @param extLinks
  * @param intLinks
  */
-void Graph::webCrawl(const QString &seedUrl,
-                      const QStringList &urlPatternsIncluded,
-                      const QStringList &urlPatternsExcluded,
-                      const QStringList &linkClasses,
-                      const int &maxNodes,
-                      const int &maxLinksPerPage,
-                      const bool &intLinks,
-                     const bool &childLinks,
-                     const bool &parentLinks,
-                     const bool &selfLinks,
-                      const bool &extLinksIncluded,
-                      const bool &extLinksCrawl,
-                      const bool &socialLinks,
-                     const bool &delayedRequests){
+void Graph::startWebCrawler(
+        const QUrl &startUrl,
+        const QStringList &urlPatternsIncluded,
+        const QStringList &urlPatternsExcluded,
+        const QStringList &linkClasses,
+        const int &maxNodes,
+        const int &maxLinksPerPage,
+        const bool &intLinks,
+        const bool &childLinks,
+        const bool &parentLinks,
+        const bool &selfLinks,
+        const bool &extLinksIncluded,
+        const bool &extLinksCrawl,
+        const bool &socialLinks,
+        const bool &delayedRequests){
 
+    // Rename current relation
     relationCurrentRename(tr("web"), true);
 
-    // TOFIX Due to multithreading, app crashes when crawler finishes its job.
+    qDebug() << "Graph::startWebCrawler() - "
+             << "Current Graph thread:" << thread()
+             << "startUrl:" << startUrl.toString()
+             << "Creating url queue and passing it to a new WebCrawler object";
 
-    qDebug() << "Graph::webCrawl() - Graph thread:" << thread()
-             << "seedUrl:" << seedUrl ;
 
-    qDebug() << "Graph::webCrawl() - Creating wc_spider & wc_parser objects";
+    // Initialize
+    m_crawler_max_urls = maxNodes;                      // maximum urls we'll visit (max nodes in the resulted network)
+    m_crawler_delayed_requests = delayedRequests;       // Controls if we will wait between requests
+    m_crawler_visited_urls = 0;                         // A counter of the urls visited.
 
-    wc_parser = new WebCrawler_Parser();
-    wc_spider = new WebCrawler_Spider ();
+    // Create a new url queue
+    urlQueue = new QQueue<QUrl>;
 
-    qDebug() << "Graph::webCrawl() - Moving out wc_parser, wc_spider from thread:"
-             << wc_parser->thread()
-             << ","
-             << wc_spider->thread();
+    // Enqueue the start QUrl
+    urlQueue->enqueue(startUrl);
 
-    wc_parser->moveToThread(&wc_parserThread);
+    // Create the web_crawler that will parse the download HTML and pass the urlQueue to it
+    web_crawler = new WebCrawler(
+                urlQueue,
+                startUrl,
+                urlPatternsIncluded,
+                urlPatternsExcluded,
+                linkClasses,
+                maxNodes,
+                maxLinksPerPage,
+                intLinks,
+                childLinks,
+                parentLinks,
+                selfLinks,
+                extLinksIncluded,
+                extLinksCrawl,
+                socialLinks);
 
-    wc_spider->moveToThread(&wc_spiderThread);
+    qDebug() << "Graph::startWebCrawler() - Moving out web_crawler from thread:"
+             << web_crawler->thread();
 
-    qDebug() << "Graph::webCrawl() - Moved wc_spider to thread:"
-             << wc_parser->thread()
-             << "and wc_spider to thread:"
-             << wc_spider->thread();
+    // Move the crawler to another thread
+    web_crawler->moveToThread(&webcrawlerThread);
 
-    qDebug() << "Graph::webCrawl() - Connecting signals from/to parser & spider";
+    qDebug() << "Graph::startWebCrawler() - Moved web_crawler to thread:"
+             << web_crawler->thread() ;
 
-    connect(this, &Graph::operateSpider,
-            wc_spider, &WebCrawler_Spider::visitUrls);
+    // Connect signals and slots
+    connect(web_crawler, &WebCrawler::signalStartSpider,
+            this, &Graph::webSpider);
 
-    connect(wc_parser, &WebCrawler_Parser::signalCreateNode,
+    connect(web_crawler, &WebCrawler::signalCreateNode,
             this, &Graph::vertexCreateAtPosRandomWithLabel);
 
-    connect(wc_parser, &WebCrawler_Parser::signalCreateEdge,
+    connect(web_crawler, &WebCrawler::signalCreateEdge,
             this, &Graph::edgeCreateWebCrawler);
 
-    connect (wc_parser, &WebCrawler_Parser::startSpider,
-             wc_spider, &WebCrawler_Spider::visitUrls );
-
-    connect (wc_spider, &WebCrawler_Spider::finished,
+    connect (web_crawler, &WebCrawler::finished,
              this, &Graph::webCrawlTerminateThreads);
 
-    connect (wc_parser, &WebCrawler_Parser::finished,
-             this, &Graph::webCrawlTerminateThreads);
+    connect(&webcrawlerThread, &QThread::finished,
+            web_crawler, &QObject::deleteLater);
 
-    connect(&wc_parserThread, &QThread::finished,
-            wc_parser, &QObject::deleteLater);
 
-    connect(&wc_spiderThread, &QThread::finished,
-            wc_spider, &QObject::deleteLater);
+    // Start the crawler thread, nothing will happen though
+    qDebug() << "Graph::startWebCrawler() - Starting webcrawlerThread!";
+    webcrawlerThread.start();
 
-    qDebug() << "Graph::webCrawl() - Starting wc_parser & wc_spider threads!";
+    // Create the initial vertex for the starting url
+    qDebug() << "Graph::startWebCrawler()  - Creating initial node 1, initialUrlStr:" << startUrl.toString();
+    vertexCreateAtPosRandomWithLabel(1, startUrl.toString(), false);
 
-    wc_parserThread.start();
+    // Call the spider to download the html code of the starting url .
+    this->webSpider();
 
-    wc_spiderThread.start();
-
-    qDebug() << "Graph::webCrawl() - loading wc_parser & wc_spider. seedUrl:" << seedUrl;
-
-    wc_parser->load(seedUrl,
-                    urlPatternsIncluded,
-                    urlPatternsExcluded,
-                    linkClasses,
-                    maxNodes,
-                    maxLinksPerPage,
-                    intLinks,
-                    childLinks,
-                    parentLinks,
-                    selfLinks,
-                    extLinksIncluded,
-                    extLinksCrawl,
-                    socialLinks);
-
-    wc_spider->load (
-                     wc_parser,
-                     seedUrl,
-                     maxNodes,
-                     delayedRequests);
-
-    qDebug() << "Graph::webCrawl()  - Creating initial node 1, seedUrl:" << seedUrl;
-
-    vertexCreateAtPosRandomWithLabel(1, seedUrl, false);
-
-    qDebug() << "Graph::webCrawl() - Calling spider get() for that url!";
-
-    emit operateSpider();
-
-    qDebug("Graph::webCrawl() - reach the end - See the threads running? ");
+    qDebug("Graph::startWebCrawler() - reach the end - See the threads running? ");
 }
 
 
+/**
+ * @brief Graph::webSpider
+ * Simple wrapper over the network manager. Takes urls from urlQueue, makes the network request and sends the network reply to the web crawler
+ */
+void Graph::webSpider(){
 
+    //repeat forever....
+    do {
+
+        //  Until we crawl all urls in urlQueue.
+        if ( urlQueue->size() == 0 ) {
+            qDebug () <<"Graph::webSpider() - urlQueue is empty. No more urls to crawl for now... "  ;
+            break;
+        }
+
+        // or until we have reached m_maxNodes
+        if (m_crawler_max_urls > 0 && m_crawler_visited_urls == m_crawler_max_urls) {
+                qDebug () << "Graph::webSpider() - Reached m_maxNodes. STOPPING." ;
+//                emit finished("message from spider: visitedNodes > maxnodes. ");
+                break;
+        }
+
+        // Take the first url awaiting in the queue
+        qDebug() << "Graph::webSpider() - urlQueue size " << urlQueue->size()
+                 << " - Taking the first url from the urlQueue  ";
+        QUrl currentUrl = urlQueue->dequeue();
+
+        qDebug() << "Graph::webSpider() - url to download: "
+                 <<  currentUrl
+                 << "Increasing visitedNodes to" << m_crawler_visited_urls + 1
+                 << "and downloading html...";
+
+        // Create a new network request object
+        qDebug() << "Graph::webSpider() - Creating a new QNetworkRequest for:" <<  currentUrl;
+        QNetworkRequest request;
+        request.setUrl(currentUrl);
+        request.setRawHeader(
+                    "User-Agent",
+                    "SocNetV harmless spider - see https://socnetv.org");
+
+        // Check if we need to add some delay in the request
+        if (m_crawler_delayed_requests) {
+            int m_wait_msecs = rand() % 1000;
+            qDebug() << "Graph::webSpider() - Sleeping for" << m_wait_msecs << "msecs";
+            QThread::msleep(m_wait_msecs);
+        }
+
+        // Create a new network reply object to save the response from the network manager request
+        qDebug() << "Graph::webSpider() - Creating a new QNetworkReply to save the network manager response for request:" << request.url().toString();
+        QNetworkReply *reply =  m_networkManager->get(request) ;
+
+        // Connect signals and slots
+        qDebug() << "Graph::webSpider() - Connecting QNetworkReply finished to web_crawler parse()";
+        connect(reply, &QNetworkReply::finished, web_crawler, &WebCrawler::parse );
+
+//        connect(reply, &QNetworkReply::errorOccurred,
+//                 parent, &MainWindow::slotNetworkError);
+//         connect(reply, &QNetworkReply::sslErrors,
+//                 parent, &MainWindow::slotNetworkSslErrors);
+
+        // increase counter
+        m_crawler_visited_urls++;
+
+
+    } while ( 1 );
+
+}
 
 
 

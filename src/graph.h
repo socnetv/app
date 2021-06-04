@@ -32,11 +32,14 @@
 #include <QObject>
 #include <QDateTime> 	// used in exporting centrality files
 #include <QList>
+#include <QQueue>
+#include <QUrl>
 #include <QHash>
 #include <QMultiHash>
 #include <QMultiMap>
 #include <QTextStream>
 #include <QThread>
+
 
 #include <QtCharts/QChartGlobal>
 #include <QAbstractSeries>
@@ -54,6 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 class QPointF;
+class QNetworkAccessManager;
 QT_END_NAMESPACE
 
 
@@ -134,8 +138,7 @@ typedef QVector<QString> V_str;
 class Graph:  public QObject{
     Q_OBJECT
     QThread file_parserThread;
-    QThread wc_parserThread;
-    QThread wc_spiderThread;
+    QThread webcrawlerThread;
 
 public slots:
 
@@ -234,20 +237,23 @@ public slots:
 
     void edgeFilterUnilateral(const bool &toggle);
 
-    void webCrawl(const QString &seedUrl,
-                  const QStringList &urlPatternsIncluded,
-                  const QStringList &urlPatternsExcluded,
-                  const QStringList &linkClasses,
-                  const int &maxNodes,
-                  const int &maxLinksPerPage,
-                  const bool &intLinks,
-                  const bool &childLinks,
-                  const bool &parentLinks,
-                  const bool &selfLinks,
-                  const bool &extLinksIncluded,
-                  const bool &extLinksCrawl,
-                  const bool &socialLinks,
-                  const bool &delayedRequests);
+    void startWebCrawler(
+            const QUrl &startUrl,
+            const QStringList &urlPatternsIncluded,
+            const QStringList &urlPatternsExcluded,
+            const QStringList &linkClasses,
+            const int &maxNodes,
+            const int &maxLinksPerPage,
+            const bool &intLinks,
+            const bool &childLinks,
+            const bool &parentLinks,
+            const bool &selfLinks,
+            const bool &extLinksIncluded,
+            const bool &extLinksCrawl,
+            const bool &socialLinks,
+            const bool &delayedRequests);
+
+    void webSpider();
 
     QString htmlEscaped (QString str) const;
 
@@ -394,10 +400,6 @@ signals:
 
 
 
-    /** Signals to Crawler threads */
-    void  operateSpider();
-
-
 public:
 
     enum GraphChange {
@@ -423,7 +425,7 @@ public:
     };
 
     /* INIT AND CLEAR*/
-    Graph(GraphicsWidget *graphicsWidget);
+    Graph(GraphicsWidget *graphicsWidget, QNetworkAccessManager *networkManager);
 
     void initSignalSlots();
 
@@ -1159,19 +1161,6 @@ protected:
 
 private:
 
-    /**
-     * List of pointers to the vertices.
-     * A vertex stores all the info: links, colours, etc
-    */
-    VList m_graph;
-
-    GraphicsWidget *m_canvas;
-
-    Parser *file_parser;	//file loader threaded class.
-
-    WebCrawler_Parser *wc_parser;
-    WebCrawler_Spider *wc_spider;
-
     /** private member functions */
 
     void edgeAdd (const int &v1,
@@ -1210,11 +1199,27 @@ private:
                            int &classes, int name);
 
 
+    VList m_graph;                              // List of pointers to the vertices. Each vertex stores all info: links, colors, etc
+
+    GraphicsWidget *m_canvas;                   // Will be set to the parent's graphics widget upon initialization
+
+    Parser *file_parser;                        // Our file loader threaded class.
+
+    QNetworkAccessManager *m_networkManager;    // Will be set to the parent's network manager upon initialization
+
+    WebCrawler *web_crawler;                     // Our web crawler threaded class. This will parse the downloaded HTML.
+    QQueue<QUrl> *urlQueue;                     // A queue where the crawler will put urls for the network manager to download
+
+    int m_crawler_max_urls;                      // maximum urls we'll visit (max nodes in the resulted network)
+    int m_crawler_delayed_requests;              // Controls if we will wait between requests
+    int m_crawler_visited_urls;                  // A counter of the urls visited.
+
+
     QList<QString> m_relationsList;
 
     QList<int> m_graphFileFormatExportSupported;
 
-    QList<int> triadTypeFreqs; 	//stores triad type frequencies
+    QList<int> triadTypeFreqs;                  //stores triad type frequencies
 
     QList<int> m_verticesList;
     QList<int> m_verticesIsolatedList;

@@ -62,7 +62,9 @@ GraphicsNode::GraphicsNode ( GraphicsWidget* gw,
                              QPointF p
                              ) : graphicsWidget (gw)
 {
-    qDebug()<<"GraphicsNode::GraphicsNode() - New node:"<< num << "initializing...";
+
+//    qDebug()<<"GraphicsNode::GraphicsNode() - New node:"<< num << "initializing...";
+
     graphicsWidget->scene()->addItem(this); //Without this nodes don't appear on the screen...
 
     setFlags(ItemSendsGeometryChanges | ItemIsSelectable | ItemIsMovable );
@@ -111,6 +113,7 @@ GraphicsNode::GraphicsNode ( GraphicsWidget* gw,
     setShape(m_shape,m_iconPath);
 
     setPos(p);
+
     qDebug()<< "GraphicsNode::GraphicsNode() - Created at pos:"  << x()<<","<<y()
             << "m_numSize" << m_numSize;
 

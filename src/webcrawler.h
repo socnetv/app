@@ -30,47 +30,63 @@
 
 #include <QNetworkReply>
 #include <QUrl>
+#include <QQueue>
 
+QT_BEGIN_NAMESPACE
 class QNetworkAccessManager;
 class QNetworkRequest;
+QT_END_NAMESPACE
+
+//class WebCrawler_Spider;
 
 using namespace std;
 
-
-class WebCrawler_Parser : public QObject  {
+/**
+ * @brief The WebCrawler class
+ * Parses HTML code it receives, locates urls inside it and puts them into a url queue (passed from the parent)
+ * while emitting signals to the parent to create new nodes and edges between them.
+ */
+class WebCrawler : public QObject  {
     Q_OBJECT
+    //    QThread wc_spiderThread;
 public:
-    WebCrawler_Parser();
-    ~WebCrawler_Parser();
-    void load (const QString &seed,
-               const QStringList &urlPatternsIncluded,
-               const QStringList &urlPatternsExcluded,
-               const QStringList &linkClasses,
-               const int &maxNodes,
-               const int &maxLinksPerPage,
-               const bool &intLinks,
-               const bool &childLinks,
-               const bool &parentLinks,
-               const bool &selfLinks,
-               const bool &extLinksIncluded,
-               const bool &extLinksCrawl,
-               const bool &socialLinks);
+
+    WebCrawler (
+            QQueue<QUrl> *urlQueue,
+            const QUrl &startUrl,
+            const QStringList &urlPatternsIncluded,
+            const QStringList &urlPatternsExcluded,
+            const QStringList &linkClasses,
+            const int &maxNodes,
+            const int &maxLinksPerPage,
+            const bool &intLinks,
+            const bool &childLinks,
+            const bool &parentLinks,
+            const bool &selfLinks,
+            const bool &extLinksIncluded,
+            const bool &extLinksCrawl,
+            const bool &socialLinks
+            );
+
+    ~WebCrawler();
 
 public slots:
-    void parse(QNetworkReply *reply);
+    void parse();
     void newLink(int s, QUrl target, bool enqueue_to_frontier);
+
 signals:
     void signalCreateNode(const int &no,
                           const QString &url,
                           const bool &signalMW=false);
     void signalCreateEdge (const int &source, const int &target);
-    void startSpider();
+    void signalStartSpider();
     void finished (QString);
+
 private:
-    QByteArray ba;
+    QQueue<QUrl> *m_urlQueue;
     QMap <QUrl, int> knownUrls;
-    QUrl  m_seed;
-    int m_maxNodes;
+    QUrl m_initialUrl;
+    int m_maxUrls;
     int m_discoveredNodes;
     int m_maxLinksPerPage;
 
@@ -95,36 +111,5 @@ private:
 };
 
 
-class  WebCrawler_Spider : public QObject  {
-    Q_OBJECT
-public:
-    WebCrawler_Spider();
-    ~WebCrawler_Spider();
-    void load (
-              //QNetworkAccessManager *NetworkManager,
-            WebCrawler_Parser *wc_parser,
-               const QString &seed,
-               const int &maxNodes,
-               const bool &delayedRequests);
-
-public slots:
-    void visitUrls();
-
-signals:
-    void getUrl(const QNetworkRequest &request);
-    void parse(QNetworkReply *reply);
-    void finished (QString);
-private:
-    //QNetworkAccessManager *manager;
-
-    QNetworkReply *reply;
-    QUrl currentUrl ;
-    QString  m_seed;
-    int m_maxNodes;
-    int m_visitedNodes;
-    int m_wait_msecs;
-    bool m_delayedRequests;
-
-};
 
 #endif
