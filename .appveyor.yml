@@ -61,8 +61,8 @@ install:
   - cmd: dir C:\Qt\5.15
   - cmd: dir C:\Qt\5.12
   - cmd: dir C:\Qt\Tools
-  #- set QTDIR=C:\Qt\5.15\mingw81_64
-  - set QTDIR=C:\Qt\5.12\mingw73_64
+  - set QTDIR=C:\Qt\5.15\mingw81_64
+  #- set QTDIR=C:\Qt\5.12\mingw73_64
 
   - cmd: echo "Check project folder..."        
   - cmd: dir C:\projects\socnetv  
