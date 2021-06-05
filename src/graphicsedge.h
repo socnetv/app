@@ -138,7 +138,7 @@ protected:
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+//    void mousePressEvent(QGraphicsSceneMouseEvent *event);
 
 
 

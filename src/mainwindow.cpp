@@ -124,23 +124,28 @@ void myMessageOutput (
 
 /**
  * @brief MainWindow::MainWindow
- * @param m_fileName
+ * @param m_fileName the file to load, if any.
  * MainWindow contruction method
  */
 MainWindow::MainWindow(const QString & m_fileName) {
 
     qInstallMessageHandler( myMessageOutput);
 
-    qDebug() << "MW::MainWindow() - Constructor running on thread:"<< thread();
+    qDebug() << "MW::MainWindow() - Constructor starting on thread:"<< thread();
 
     setWindowIcon (QIcon(":/images/socnetv.png"));
 
     appSettings = initSettings();
 
+    // Get host screen width and height
     int primaryScreenWidth = QApplication::primaryScreen()->availableSize().width();
     int primaryScreenHeight = QApplication::primaryScreen()->availableSize().height();
+
+    // Set a default min width and height
     windowMinWidth = 1024;
     windowMinHeight = 750;
+
+    // For large screens, use more generous min height and width.
     if (primaryScreenWidth > 2439) {
         windowMinWidth = 1440;
     }
@@ -148,10 +153,10 @@ MainWindow::MainWindow(const QString & m_fileName) {
         windowMinHeight = 1024;
     }
 
-    qDebug () << "MW::initWindowLayout - primaryScreen size"<<primaryScreenWidth<<"x"<<primaryScreenHeight;
-    qDebug () << "MW::initWindowLayout - minimum size set to"<<windowMinWidth<<"x"<<windowMinHeight;
+    qDebug () << "MW::MainWindow() - primaryScreen size: "<<primaryScreenWidth<<"x"<<primaryScreenHeight;
+    qDebug () << "MW::MainWindow() - Minimum MW size will be set to:"<<windowMinWidth<<"x"<<windowMinHeight;
 
-    //set MW minimum size, before creating canvas
+    // Set MW minimum size, before creating canvas
     #ifdef Q_OS_LINUX
         setMinimumSize(windowMinWidth,windowMinHeight);
     #elif defined(Q_OS_MACOS)
@@ -163,14 +168,18 @@ MainWindow::MainWindow(const QString & m_fileName) {
     #endif
 
 
-    // Create network manager
-    networkManager = new QNetworkAccessManager(this);
+    // Initialize widgets
+    qDebug() << "MW::MainWindow() - initialization of networkmanager, printer, view, graph, actions, menus, panels, signal/slots etc...";
 
-    initView();         //init our network "canvas"
+    networkManager = new QNetworkAccessManager(this);   // Create network manager
 
-    initGraph();
+    printer = new QPrinter;
+    printerPDF = new QPrinter;
 
-    /** functions that invoke all other construction parts **/
+    initView();         // Init our network "canvas"
+
+    initGraph();        // Init the graph
+
     initActions();      //register and construct menu Actions
 
     initMenuBar();      //construct the menu
@@ -187,7 +196,6 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     graphicsWidget->setFocus();
 
-
     // Check if user-provided network file on startup
     qDebug() << "MW::MainWindow() Checking if user provided file on startup...";
     if (!m_fileName.isEmpty()) {
@@ -195,6 +203,8 @@ MainWindow::MainWindow(const QString & m_fileName) {
     }
 
     statusMessage( tr("Welcome to Social Network Visualizer, Version ")+VERSION);
+
+    qDebug() << "MW::MainWindow() - Constructor finished initialization on thread:" << thread();
 
 }
 
@@ -204,12 +214,16 @@ MainWindow::MainWindow(const QString & m_fileName) {
  * @brief Deletes variables on MW closing
  */
 MainWindow::~MainWindow() {
+
     qDebug() << "MW::~MainWindow() Destruct function running...";
 
+    // Call init to clear all maps etc.
     initApp();
 
+    // Terminate any threads running
     terminateThreads("~MainWindow()");
 
+    // Delete devices
     delete printer;
     delete printerPDF;
 
@@ -240,18 +254,16 @@ MainWindow::~MainWindow() {
  */
 void MainWindow::closeEvent( QCloseEvent* ce ) {
 
-    qDebug() << "MW::closeEvent() - Start closing app. Status message to user...";
-
+    // Show a status message
+    qDebug() << "MW::closeEvent() - Received closing event. Show a status message to user...";
     statusMessage( tr("Closing SocNetV. Bye!") );
 
+    // Check if the graph has been save
     bool userCancelled=false;
-
     qDebug() << "MW::closeEvent() - Checking if Graph is saved...";
-
     if ( activeGraph->graphSaved()  )  {
         ce->accept();
         qDebug() << "MW::closeEvent() - Graph is already saved. ";
-
     }
     else {
         qDebug() << "MW::closeEvent() - Graph NOT saved. Asking the user.";
@@ -314,6 +326,28 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
     codecs.clear();
 
     qDebug() << "MW::closeEvent() - Finished. Bye!";
+}
+
+
+
+
+/**
+ * @brief MainWindow::terminateThreads
+ * @param reason
+ */
+void MainWindow::terminateThreads(const QString &reason) {
+    qDebug() << "MW::terminateThreads() - reason " << reason
+             <<" Checking if graphThread is running...";
+    if (graphThread.isRunning() ) {
+        qDebug() << "MW::terminateThreads() - graphThread running."
+                 << "Calling graphThread.quit();";
+        graphThread.quit();
+        qDebug() << "MW::terminateThreads() - deleting activeGraph and pointer";
+        delete activeGraph;
+        activeGraph = 0;  // see why here: https://goo.gl/tQxpGA
+    }
+
+
 }
 
 
@@ -444,7 +478,7 @@ QMap<QString,QString> MainWindow::initSettings() {
     appSettings["initBackgroundImage"]="";
     appSettings["printDebug"] = "false";
     appSettings["viewReportsInSystemBrowser"] = "true";
-    appSettings["showProgressBar"] = "false";
+    appSettings["showProgressBar"] = "true";
     appSettings["showToolBar"] = "true";
     appSettings["showStatusBar"] = "true";
     appSettings["antialiasing"] = "true";
@@ -770,36 +804,18 @@ void MainWindow::polishProgressDialog(QProgressDialog* dialog)
 }
 
 
-/**
- * @brief MainWindow::terminateThreads
- * @param reason
- */
-void MainWindow::terminateThreads(const QString &reason) {
-    qDebug() << "MW::terminateThreads() - reason " << reason
-             <<" Checking if graphThread is running...";
-    if (graphThread.isRunning() ) {
-        qDebug() << "MW::terminateThreads() - graphThread running."
-                 << "Calling graphThread.quit();";
-        graphThread.quit();
-        qDebug() << "MW::terminateThreads() - deleting activeGraph and pointer";
-        delete activeGraph;
-        activeGraph = 0;  // see why here: https://goo.gl/tQxpGA
-    }
-
-}
-
 
 /**
  * @brief Initializes the scene and the corresponding graphicsWidget,
  * The latter is a QGraphicsView canvas which is the main widget of SocNetV.
  */
 void MainWindow::initView() {
-    qDebug ()<< "MW::initView()";
+    qDebug ()<< "MW::initView() - creating scene and graphics widget";
 
     //Create our scene
     scene=new QGraphicsScene();
 
-    //create a view widget for this scene
+    //create a view widget and pass the scene and the our object as parent
     graphicsWidget=new GraphicsWidget(scene,this);
     graphicsWidget->setObjectName("graphicsWidget");
 
@@ -874,8 +890,8 @@ void MainWindow::initView() {
                                     " - To change/edit the properties of an edge, right-click on it."
                                     ""));
 
-    qDebug() << "MW::initView() - Finished initializing view:" << graphicsWidget->width()
-             << graphicsWidget->height();
+    qDebug() << "MW::initView() - Finished initializing. graphicsWidget size:"
+             << graphicsWidget->width() << "x" << graphicsWidget->height();
 }
 
 
@@ -886,29 +902,19 @@ void MainWindow::initView() {
  */
 void MainWindow::initGraph() {
 
-    qDebug() << "MW::initGraph()";
+    qDebug() << "MW::initGraph() - creating activeGraph object...";
 
     activeGraph = new Graph(graphicsWidget, networkManager);
 
     qDebug() << "MW::initGraph() - activeGraph created on thread:" << activeGraph->thread()
              << "moving it to new thread ";
 
-    //    activeGraph->moveToThread(&graphThread);
-    //    graphThread.start();
+    activeGraph->moveToThread(&graphThread);
 
-    // Used in toolBoxAnalysisProminenceSelect and DialogNodeFind
-    prominenceIndexList  << "Degree Centrality"
-                         << "Closeness Centrality"
-                         << "IR Closeness Centrality"
-                         << "Betweenness Centrality"
-                         << "Stress Centrality"
-                         << "Eccentricity Centrality"
-                         << "Power Centrality"
-                         << "Information Centrality"
-                         << "Eigenvector Centrality"
-                         << "Degree Prestige"
-                         << "PageRank Prestige"
-                         << "Proximity Prestige";
+    qDebug() << "MW::initGraph() - activeGraph moved to thread:" << activeGraph->thread();
+
+    qDebug() << "MW::initGraph() - starting new activeGraph thread...";
+    graphThread.start();
 
     qDebug() << "MW::MainWindow() - activeGraph thread now:" << activeGraph->thread();
 
@@ -919,11 +925,8 @@ void MainWindow::initGraph() {
  * Take a breath, the listing below is HUGE.
  */
 void MainWindow::initActions(){
-    qDebug()<< "MW::initActions()";
 
-    printer = new QPrinter;
-    printerPDF = new QPrinter;
-
+    qDebug()<< "MW::initActions()- initializing ";
 
     /**
     Network menu actions
@@ -4482,6 +4485,21 @@ void MainWindow::initPanels(){
     toolBoxAnalysisProminenceSelect->setToolTip( helpMessage );
     toolBoxAnalysisProminenceSelect->setWhatsThis( helpMessage);
 
+
+    // Used in toolBoxAnalysisProminenceSelect and DialogNodeFind
+    prominenceIndexList  << "Degree Centrality"
+                         << "Closeness Centrality"
+                         << "IR Closeness Centrality"
+                         << "Betweenness Centrality"
+                         << "Stress Centrality"
+                         << "Eccentricity Centrality"
+                         << "Power Centrality"
+                         << "Information Centrality"
+                         << "Eigenvector Centrality"
+                         << "Degree Prestige"
+                         << "PageRank Prestige"
+                         << "Proximity Prestige";
+
     QStringList prominenceCommands;
     prominenceCommands << "Select" << prominenceIndexList;
     toolBoxAnalysisProminenceSelect->addItems(prominenceCommands);
@@ -5289,11 +5307,9 @@ void MainWindow::initWindowLayout() {
  *
  */
 void MainWindow::initSignalSlots() {
-    qDebug ()<< "MW::initSignalSlots()";
+    qDebug ()<< "MW::initSignalSlots() - setting up signals/slots between widgets (graphicsWidget, activeGraph and MW)...";
 
     // Signals between graphicsWidget and MainWindow
-
-
 
     connect( graphicsWidget, &GraphicsWidget::setCursor,
              this,&MainWindow::setCursor);
@@ -5474,6 +5490,7 @@ void MainWindow::initSignalSlots() {
  * Used on app start and especially when erasing a network to start a new one
  */
 void MainWindow::initApp(){
+
     qDebug()<<"MW::initApp() - START INITIALISATION ON THREAD" << thread();
 
     statusMessage( tr("Application initialization. Please wait..."));
@@ -5619,6 +5636,7 @@ void MainWindow::initApp(){
     setCursor(Qt::ArrowCursor);
 
     statusMessage( tr("Ready"));
+
     qDebug()<< "MW::initApp() - END INITIALISATION ON THREAD" << thread();
 
 
@@ -5634,6 +5652,8 @@ void MainWindow::initComboBoxes() {
     toolBoxNetworkAutoCreateSelect->setCurrentIndex(0);
     toolBoxEditNodeSubgraphSelect->setCurrentIndex(0);
 }
+
+
 
 /**
  * @brief Updates the Recent Files QActions in the menu

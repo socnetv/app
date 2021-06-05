@@ -475,35 +475,35 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
 
 
 
-/** handles the events of a click on a node */
-void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    QGraphicsItem::mousePressEvent(event);
-}
+///** handles the events of a click on a node */
+//void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+//    QGraphicsItem::mousePressEvent(event);
+//}
 
 
-void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
-    update();
-    QGraphicsItem::mouseReleaseEvent(event);
-}
+//void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+//    update();
+//    QGraphicsItem::mouseReleaseEvent(event);
+//}
 
-/**
- * @brief GraphicsNode::hoverEnterEvent
- * on hover on node, it highlights all connected edges
- * @param event
- */
-void GraphicsNode::hoverEnterEvent(QGraphicsSceneHoverEvent *event) {
+///**
+// * @brief GraphicsNode::hoverEnterEvent
+// * on hover on node, it highlights all connected edges
+// * @param event
+// */
+//void GraphicsNode::hoverEnterEvent(QGraphicsSceneHoverEvent *event) {
 
-    QGraphicsItem::hoverEnterEvent(event);
-}
+//    QGraphicsItem::hoverEnterEvent(event);
+//}
 
-/**
- * @brief GraphicsNode::hoverLeaveEvent
- * Stops the connected edges highlighting
- * @param event
- */
-void GraphicsNode::hoverLeaveEvent(QGraphicsSceneHoverEvent *event){
-    QGraphicsItem::hoverLeaveEvent(event);
-}
+///**
+// * @brief GraphicsNode::hoverLeaveEvent
+// * Stops the connected edges highlighting
+// * @param event
+// */
+//void GraphicsNode::hoverLeaveEvent(QGraphicsSceneHoverEvent *event){
+//    QGraphicsItem::hoverLeaveEvent(event);
+//}
 
 
 

@@ -44,16 +44,16 @@ SOCNETV_USE_NAMESPACE
 
 
 GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
-             GraphicsNode *from,
-             GraphicsNode *to,
-             const qreal &weight,
-             const QString &label,
-             const QString &color,
-             const Qt::PenStyle &style,
-             const int &type,
-             const bool &drawArrows,
-             const bool &bezier,
-             const bool &weightNumbers, const bool &highlighting) : graphicsWidget(gw)
+                           GraphicsNode *from,
+                           GraphicsNode *to,
+                           const qreal &weight,
+                           const QString &label,
+                           const QString &color,
+                           const Qt::PenStyle &style,
+                           const int &type,
+                           const bool &drawArrows,
+                           const bool &bezier,
+                           const bool &weightNumbers, const bool &highlighting) : graphicsWidget(gw)
 {
 
     graphicsWidget->scene()->addItem(this);  //add edge to scene to be displayed
@@ -101,8 +101,8 @@ GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
             << "->"
             << target->nodeNumber()
             <<" = " << m_weight
-            <<" label " << m_label
-            <<" edgeType " << m_edgeDirType;
+           <<" label " << m_label
+          <<" edgeType " << m_edgeDirType;
 
     if (m_drawWeightNumber) {
         addWeightNumber();
@@ -365,17 +365,17 @@ qreal GraphicsEdge::length() const
  * make the edge weight appear on the centre of the edge
  */
 void GraphicsEdge::adjust(){
-   // qDebug() << "GraphicsEdge::adjust()";
+    // qDebug() << "GraphicsEdge::adjust()";
     if (!source || !target) {
         return;
     }
 
-//    QLineF line(source->x(), source->y(), target->x(), target->y());
+    //    QLineF line(source->x(), source->y(), target->x(), target->y());
     //QPointF edgeOffset;
 
     //line_length = line.length();
-//    line_dx = line.dx();
-//    line_dy = line.dy();
+    //    line_dx = line.dx();
+    //    line_dy = line.dy();
 
     line_length = length();
     line_dx = dx();
@@ -390,8 +390,8 @@ void GraphicsEdge::adjust(){
 
     prepareGeometryChange();
 
-//    sourcePoint = line.p1() + edgeOffset ;
-//    targetPoint = line.p2() - edgeOffset ;
+    //    sourcePoint = line.p1() + edgeOffset ;
+    //    targetPoint = line.p2() - edgeOffset ;
 
     sourcePoint = source->pos() + edgeOffset ;
     targetPoint = target->pos() - edgeOffset ;
@@ -427,8 +427,8 @@ void GraphicsEdge::adjust(){
     else { //self-link
         QPointF c1 = QPointF( targetPoint.x() -30,  targetPoint.y() -30 );
         QPointF c2 = QPointF( targetPoint.x() +30,  targetPoint.y() -30 );
-//        qDebug()<< "*** GraphicsEdge::paint(). Constructing a bezier self curve c1 "
-//                <<c1.x()<<","<<c1.y()  << " and c2 "<<c2.x()<<","<<c2.y();
+        //        qDebug()<< "*** GraphicsEdge::paint(). Constructing a bezier self curve c1 "
+        //                <<c1.x()<<","<<c1.y()  << " and c2 "<<c2.x()<<","<<c2.y();
         path.cubicTo( c1, c2, targetPoint);
     }
 
@@ -446,51 +446,51 @@ void GraphicsEdge::adjust(){
             angle = M_PI_X_2 - angle;
 
 
-//            qDebug() << "*** GraphicsEdge::paint(). Constructing arrows. "
-//                        "First Arrow at target node"
-//                     << "target-source: " << line_dx
-//                     << " length: " << line_length
-//                     << " angle: "<< angle;
+        //            qDebug() << "*** GraphicsEdge::paint(). Constructing arrows. "
+        //                        "First Arrow at target node"
+        //                     << "target-source: " << line_dx
+        //                     << " length: " << line_length
+        //                     << " angle: "<< angle;
 
-            QPointF destArrowP1 = targetPoint + QPointF(sin(angle - M_PI_3) * m_arrowSize,
-                                                        cos(angle - M_PI_3) * m_arrowSize);
-            QPointF destArrowP2 = targetPoint + QPointF(sin(angle - M_PI + M_PI_3) * m_arrowSize,
-                                                        cos(angle - M_PI + M_PI_3) * m_arrowSize);
-//            qDebug() << "*** GraphicsEdge::paint() destArrowP1 "
-//                     <<  destArrowP1.x() << "," << destArrowP1.y()
-//                      << "  destArrowP2 " <<  destArrowP2.x() << "," << destArrowP2.y();
+        QPointF destArrowP1 = targetPoint + QPointF(sin(angle - M_PI_3) * m_arrowSize,
+                                                    cos(angle - M_PI_3) * m_arrowSize);
+        QPointF destArrowP2 = targetPoint + QPointF(sin(angle - M_PI + M_PI_3) * m_arrowSize,
+                                                    cos(angle - M_PI + M_PI_3) * m_arrowSize);
+        //            qDebug() << "*** GraphicsEdge::paint() destArrowP1 "
+        //                     <<  destArrowP1.x() << "," << destArrowP1.y()
+        //                      << "  destArrowP2 " <<  destArrowP2.x() << "," << destArrowP2.y();
+
+        path.addPolygon ( QPolygonF()
+                          << targetPoint
+                          << destArrowP1
+                          << destArrowP2
+                          << targetPoint
+                          );
+
+        if (m_edgeDirType == EdgeType::Undirected || m_edgeDirType == EdgeType::Reciprocated ) {
+            //            qDebug() << "**** GraphicsEdge::paint() This edge is SYMMETRIC! "
+            //                     << " So, we need to create Arrow at src node as well";
+            QPointF srcArrowP1 = sourcePoint + QPointF(sin(angle +M_PI_3) * m_arrowSize,
+                                                       cos(angle +M_PI_3) * m_arrowSize);
+            QPointF srcArrowP2 = sourcePoint + QPointF(sin(angle +M_PI - M_PI_3) * m_arrowSize,
+                                                       cos(angle +M_PI - M_PI_3) * m_arrowSize);
 
             path.addPolygon ( QPolygonF()
-                                 << targetPoint
-                                 << destArrowP1
-                                 << destArrowP2
-                                 << targetPoint
-                                 );
+                              << sourcePoint
+                              << srcArrowP1
+                              << srcArrowP2
+                              <<sourcePoint
+                              );
 
-            if (m_edgeDirType == EdgeType::Undirected || m_edgeDirType == EdgeType::Reciprocated ) {
-    //            qDebug() << "**** GraphicsEdge::paint() This edge is SYMMETRIC! "
-    //                     << " So, we need to create Arrow at src node as well";
-                QPointF srcArrowP1 = sourcePoint + QPointF(sin(angle +M_PI_3) * m_arrowSize,
-                                                           cos(angle +M_PI_3) * m_arrowSize);
-                QPointF srcArrowP2 = sourcePoint + QPointF(sin(angle +M_PI - M_PI_3) * m_arrowSize,
-                                                           cos(angle +M_PI - M_PI_3) * m_arrowSize);
-
-                path.addPolygon ( QPolygonF()
-                                     << sourcePoint
-                                     << srcArrowP1
-                                     << srcArrowP2
-                                     <<sourcePoint
-                                     );
-
-            }
-            else {
-                // qDebug() << "*** GraphicsEdge::paint() Not symmetric edge. Finish";
-            }
+        }
+        else {
+            // qDebug() << "*** GraphicsEdge::paint() Not symmetric edge. Finish";
+        }
 
 
     }
     else {
-//        qDebug()<< "*** GraphicsEdge::paint(). This edge is self-link - CONTINUE!";
+        //        qDebug()<< "*** GraphicsEdge::paint(). This edge is self-link - CONTINUE!";
     }
 
 
@@ -509,10 +509,10 @@ void GraphicsEdge::adjust(){
  */
 QPainterPath GraphicsEdge::shape () const {
     //qDebug()<<"GraphicsEdge::shape()";		//too many debug messages...
-//    QPainterPath m_path_shape = m_path;
-//    m_path_shape.addPath(m_path.translated(1,1));
-//    m_path_shape.addPath(m_path.translated(-1,-1));
-//    return m_path_shape;
+    //    QPainterPath m_path_shape = m_path;
+    //    m_path_shape.addPath(m_path.translated(1,1));
+    //    m_path_shape.addPath(m_path.translated(-1,-1));
+    //    return m_path_shape;
     return m_path;
 } 
 
@@ -524,7 +524,7 @@ QPainterPath GraphicsEdge::shape () const {
  * @return
  */
 QRectF GraphicsEdge::boundingRect() const {
-   //qDebug()<<"GraphicsEdge::boundingRect()";		//too many debug messages...
+    //qDebug()<<"GraphicsEdge::boundingRect()";		//too many debug messages...
     if (!source || !target)
         return QRectF();
     return m_path.controlPointRect();
@@ -619,29 +619,29 @@ void GraphicsEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
         return;
 
     //qDebug() <<"@@@ GraphicsEdge::paint() on" << painter->paintEngine()->type();
-     //painter->setClipRect();
+    //painter->setClipRect();
 
-     //if the edge is being dragged around, darken it!
-     if (option->state & QStyle::State_Selected) {
-         //setZValue(ZValueEdgeHighlighted);
-         setState(EDGE_STATE_HOVER);
-     }
-     else if (option->state & QStyle::State_MouseOver) {
-         if (m_hoverHighlighting) {
-             setZValue(ZValueEdgeHighlighted);
-             setState(EDGE_STATE_HOVER);
-         }
-     }
-     else if (m_state==EDGE_STATE_HIGHLIGHT){
-         if (m_hoverHighlighting) {
-             setZValue(ZValueEdgeHighlighted);
-             setState(EDGE_STATE_HIGHLIGHT);
-         }
-     }
-     else {
-         setZValue(ZValueEdge);
-         setState(EDGE_STATE_REGULAR);
-     }
+    //if the edge is being dragged around, darken it!
+    if (option->state & QStyle::State_Selected) {
+        //setZValue(ZValueEdgeHighlighted);
+        setState(EDGE_STATE_HOVER);
+    }
+    else if (option->state & QStyle::State_MouseOver) {
+        if (m_hoverHighlighting) {
+            setZValue(ZValueEdgeHighlighted);
+            setState(EDGE_STATE_HOVER);
+        }
+    }
+    else if (m_state==EDGE_STATE_HIGHLIGHT){
+        if (m_hoverHighlighting) {
+            setZValue(ZValueEdgeHighlighted);
+            setState(EDGE_STATE_HIGHLIGHT);
+        }
+    }
+    else {
+        setZValue(ZValueEdge);
+        setState(EDGE_STATE_REGULAR);
+    }
     // set painter pen to correct edge pen
     painter->setPen(pen());
 
@@ -698,10 +698,10 @@ QVariant GraphicsEdge::itemChange(GraphicsItemChange change, const QVariant &val
  * @return
  */
 qreal GraphicsEdge::width() const{
-//    if ( fabs(m_weight) > 1  )  {
-//        return 1+log ( 1+ log(fabs(m_weight) )) ;
-//    }
-//    return fabs(m_weight) ;
+    //    if ( fabs(m_weight) > 1  )  {
+    //        return 1+log ( 1+ log(fabs(m_weight) )) ;
+    //    }
+    //    return fabs(m_weight) ;
     return m_width;
 }
 
@@ -737,15 +737,15 @@ void GraphicsEdge::setHighlighting(const bool &toggle) {
 
 
 
-/**
- * @brief handles the events of a click on an edge
- * @param event
- */
-void GraphicsEdge::mousePressEvent(QGraphicsSceneMouseEvent *e) {
-    qDebug() << "GraphicsEdge::mousePressEvent() - click on an edge ";
-    //setClicked();
-    QGraphicsItem::mousePressEvent(e);
-}
+///**
+// * @brief handles the events of a click on an edge
+// * @param event
+// */
+//void GraphicsEdge::mousePressEvent(QGraphicsSceneMouseEvent *e) {
+//    qDebug() << "GraphicsEdge::mousePressEvent() - click on an edge ";
+//    //setClicked();
+//    QGraphicsItem::mousePressEvent(e);
+//}
 
 
 

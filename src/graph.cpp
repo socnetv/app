@@ -72,7 +72,7 @@ Graph::Graph(GraphicsWidget *graphicsWidget, QNetworkAccessManager *networkManag
 
     qRegisterMetaType<MyEdge>("MyEdge");
 
-    m_canvas = graphicsWidget;
+    m_canvas = graphicsWidget;  // Do not directly use this...
 
     m_networkManager = networkManager;
 
@@ -2183,17 +2183,17 @@ void Graph::edgeCreate(const int &v1,
                       ( (weight==0) ? "blue" :  color  )
                       );
 
-            m_canvas->drawEdge( v1, v2,
-                                weight,
-                                label,
-                                ( (weight==0) ? "blue" :  color  ),
-                                type,
-                                drawArrows,
-                                bezier,
-                                initEdgeWeightNumbers);
+//            m_canvas->drawEdge( v1, v2,
+//                                weight,
+//                                label,
+//                                ( (weight==0) ? "blue" :  color  ),
+//                                type,
+//                                drawArrows,
+//                                bezier,
+//                                initEdgeWeightNumbers);
 
-//            emit signalDrawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), type,
-//                          drawArrows, bezier, initEdgeWeightNumbers);
+            emit signalDrawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), type,
+                          drawArrows, bezier, initEdgeWeightNumbers);
         }
         else if ( edgeExists( v2, v1 ) )  {
 
@@ -2207,18 +2207,18 @@ void Graph::edgeCreate(const int &v1,
                       label,
                       color);
 
-            m_canvas->drawEdge( v1,
-                                v2,
-                                weight,
-                                label,
-                                color,
-                                EdgeType::Reciprocated,
-                                drawArrows,
-                                bezier,
-                                initEdgeWeightNumbers);
+//            m_canvas->drawEdge( v1,
+//                                v2,
+//                                weight,
+//                                label,
+//                                color,
+//                                EdgeType::Reciprocated,
+//                                drawArrows,
+//                                bezier,
+//                                initEdgeWeightNumbers);
 
-//            emit signalDrawEdge(v1, v2, weight, label, color, EdgeType::Reciprocated,
-//                          drawArrows, bezier, initEdgeWeightNumbers);
+            emit signalDrawEdge(v1, v2, weight, label, color, EdgeType::Reciprocated,
+                          drawArrows, bezier, initEdgeWeightNumbers);
             m_graphIsDirected = true;
         }
         else {
@@ -2234,19 +2234,19 @@ void Graph::edgeCreate(const int &v1,
                       ( (weight==0) ? "blue" :  color  )
                       );
 
-            m_canvas->drawEdge( v1,
-                                v2,
-                                weight,
-                                label,
-                                ( (weight==0) ? "blue" :  color  ),
-                                EdgeType::Directed,
-                                drawArrows,
-                                bezier,
-                                initEdgeWeightNumbers
-                                );
+//            m_canvas->drawEdge( v1,
+//                                v2,
+//                                weight,
+//                                label,
+//                                ( (weight==0) ? "blue" :  color  ),
+//                                EdgeType::Directed,
+//                                drawArrows,
+//                                bezier,
+//                                initEdgeWeightNumbers
+//                                );
 
-//            emit signalDrawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), EdgeType::Directed,
-//                          drawArrows, bezier, initEdgeWeightNumbers);
+            emit signalDrawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), EdgeType::Directed,
+                          drawArrows, bezier, initEdgeWeightNumbers);
 
             m_graphIsDirected = true;
             m_graphIsSymmetric=false;

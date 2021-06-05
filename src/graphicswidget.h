@@ -57,11 +57,12 @@ class GraphicsWidget : public QGraphicsView {
 
 public:
 
-    GraphicsWidget(QGraphicsScene *m_scene, MainWindow *m_parent);
+     GraphicsWidget(QGraphicsScene *m_scene, MainWindow *m_parent);
     ~GraphicsWidget();
 
     void clear();
 
+    void toggleOpenGL(bool enabled=false);
     QString createEdgeName(const int &v1,
                            const int &v2,
                            const int &relation=-1);
@@ -100,7 +101,7 @@ protected:
     void mousePressEvent ( QMouseEvent * e );
     void mouseReleaseEvent(QMouseEvent * e );
     void resizeEvent( QResizeEvent *e );
-    void paintEvent ( QPaintEvent * event );
+//    void paintEvent ( QPaintEvent * event );
 
 public slots:
 

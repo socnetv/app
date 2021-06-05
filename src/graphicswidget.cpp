@@ -34,6 +34,11 @@
 #include <QDebug>
 #include <QWheelEvent>
 
+#ifndef QT_NO_OPENGL
+#include <QtOpenGL>
+#else
+#include <QtWidgets>
+#endif
 
 #include "mainwindow.h"
 #include "graphicsnode.h"
@@ -88,8 +93,18 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
                      this, &GraphicsWidget::getSelectedItems);
 
 
-
 }
+
+
+
+
+void GraphicsWidget::toggleOpenGL(bool enabled)
+{
+#ifndef QT_NO_OPENGL
+    setViewport(enabled ? new QGLWidget(QGLFormat(QGL::SampleBuffers)) : new QWidget);
+#endif
+}
+
 
 
 /**
@@ -107,16 +122,16 @@ QString GraphicsWidget::createEdgeName(const int &v1, const int &v2, const int &
 
 
 
-/**
-    http://thesmithfam.org/blog/2007/02/03/qt-improving-qgraphicsview-performance/#comment-7215
-*/
-void GraphicsWidget::paintEvent ( QPaintEvent * event ){
-//    qDebug()<<"GraphicsWidget::paintEvent ";
-//    QPaintEvent *newEvent=new QPaintEvent(event->region().boundingRect());
-//    QGraphicsView::paintEvent(newEvent);
-//    delete newEvent;
-     QGraphicsView::paintEvent(event);
-}
+///**
+//    http://thesmithfam.org/blog/2007/02/03/qt-improving-qgraphicsview-performance/#comment-7215
+//*/
+//void GraphicsWidget::paintEvent ( QPaintEvent * event ){
+////    qDebug()<<"GraphicsWidget::paintEvent ";
+////    QPaintEvent *newEvent=new QPaintEvent(event->region().boundingRect());
+////    QGraphicsView::paintEvent(newEvent);
+////    delete newEvent;
+//     QGraphicsView::paintEvent(event);
+//}
 
 
 

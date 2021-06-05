@@ -20,6 +20,7 @@ QT += charts
 QT += svg
 QT += testlib
 # testlib only needed to use QTest::qWait in Chart::getPixmap()...
+qtHaveModule(opengl): QT += opengl
 
 INCLUDEPATH  += ./src
 
