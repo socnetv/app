@@ -144,11 +144,6 @@
    </item>
    <item row="6" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>

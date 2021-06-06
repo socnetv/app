@@ -28,12 +28,6 @@
        <height>65</height>
       </size>
      </property>
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>13</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter a threshold value to dichotomize the edges of a valued network, in order to create a new binary relation.  All ties with equal or higher values will be set to 1, and all lower will be removed. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
@@ -61,11 +55,6 @@
      </property>
      <item>
       <widget class="QLabel" name="label">
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
-       </property>
        <property name="text">
         <string>Weight Threshold</string>
        </property>
@@ -97,11 +86,6 @@
          <width>80</width>
          <height>100</height>
         </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
        </property>
        <property name="decimals">
         <number>1</number>

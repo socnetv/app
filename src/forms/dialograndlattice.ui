@@ -52,11 +52,6 @@
        <height>75</height>
       </size>
      </property>
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-      </font>
-     </property>
      <property name="frameShape">
       <enum>QFrame::NoFrame</enum>
      </property>
@@ -97,11 +92,6 @@
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
-       </property>
        <property name="text">
         <string>Nodes</string>
        </property>
@@ -120,11 +110,6 @@
          <width>110</width>
          <height>0</height>
         </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
        </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Lattice Nodes &lt;/span&gt;&lt;/p&gt;&lt;p&gt;The resulting lattice will have this amount of nodes . &lt;/p&gt;&lt;p&gt;This value changes automatically as you modify the &lt;span style=&quot; font-style:italic;&quot;&gt;length l &lt;/span&gt;of each dimension (below).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -168,11 +153,6 @@
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
-       </property>
        <property name="text">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Length &lt;span style=&quot; font-style:italic;&quot;&gt;l &lt;/span&gt;in each dimension &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -185,11 +165,6 @@
          <width>110</width>
          <height>0</height>
         </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
        </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Length&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The size of the lattice in each dimension.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -233,11 +208,6 @@
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
-       </property>
        <property name="text">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dimension &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -250,11 +220,6 @@
          <width>110</width>
          <height>0</height>
         </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
        </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Dimension &lt;/span&gt;&lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;d&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The dimension of the lattice.&lt;/p&gt;&lt;p&gt;I.e. enter 2 for a two-dimensional lattice.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -298,11 +263,6 @@
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
-       </property>
        <property name="text">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Neighborhood &lt;span style=&quot; font-style:italic;&quot;&gt;n&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -315,11 +275,6 @@
          <width>110</width>
          <height>0</height>
         </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
        </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Neighborhood &lt;/span&gt;&lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;n&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The distance within which the neighbors on the lattice will be connected&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -363,11 +318,6 @@
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
-       </property>
        <property name="text">
         <string>Graph Mode</string>
        </property>
@@ -388,11 +338,6 @@
            <width>110</width>
            <height>0</height>
           </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Sans Serif</family>
-          </font>
          </property>
          <property name="text">
           <string>Undirected</string>
@@ -418,11 +363,6 @@
            <width>100</width>
            <height>0</height>
           </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Sans Serif</family>
-          </font>
          </property>
          <property name="text">
           <string>Directed</string>
@@ -459,11 +399,6 @@
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
-       </property>
        <property name="text">
         <string>Circular</string>
        </property>
@@ -484,11 +419,6 @@
            <width>110</width>
            <height>0</height>
           </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Sans Serif</family>
-          </font>
          </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, the lattice will be circular&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -514,12 +444,6 @@
    </item>
    <item row="14" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <stylestrategy>PreferDefault</stylestrategy>
-      </font>
-     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>

@@ -22,12 +22,6 @@
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
     <widget class="QLabel" name="label_2">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>13</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>With this temporary action, you will make invisible some links according to their weight. Select a threshold then click on the desired radiobox below:</string>
      </property>
@@ -55,12 +49,6 @@
      </property>
      <item>
       <widget class="QLabel" name="label">
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-         <pointsize>13</pointsize>
-        </font>
-       </property>
        <property name="text">
         <string>Weight Threshold</string>
        </property>
@@ -70,7 +58,7 @@
       <spacer name="horizontalSpacer">
        <property name="font">
         <font>
-         <pointsize>13</pointsize>
+         <family>Liberation Sans</family>
         </font>
        </property>
        <property name="orientation">
@@ -92,12 +80,6 @@
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-         <pointsize>13</pointsize>
-        </font>
-       </property>
        <property name="decimals">
         <number>1</number>
        </property>
@@ -110,12 +92,6 @@
    </item>
    <item row="2" column="0">
     <widget class="QRadioButton" name="overThresholdBt">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>13</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Filter edges with weight over threshold</string>
      </property>
@@ -123,12 +99,6 @@
    </item>
    <item row="3" column="0">
     <widget class="QRadioButton" name="belowThresholdBt">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>13</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Filter edges with weight below threshold</string>
      </property>
@@ -136,11 +106,6 @@
    </item>
    <item row="4" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="font">
-      <font>
-       <pointsize>13</pointsize>
-      </font>
-     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>

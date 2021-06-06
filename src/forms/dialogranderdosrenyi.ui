@@ -97,11 +97,6 @@
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
-       </property>
        <property name="text">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Nodes &lt;span style=&quot; font-style:italic;&quot;&gt;n&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -120,11 +115,6 @@
          <width>120</width>
          <height>0</height>
         </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
        </property>
        <property name="minimum">
         <number>0</number>
@@ -162,11 +152,6 @@
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
-       </property>
        <property name="text">
         <string>Model</string>
        </property>
@@ -181,11 +166,6 @@
            <width>120</width>
            <height>0</height>
           </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Sans Serif</family>
-          </font>
          </property>
          <property name="toolTip">
           <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -220,11 +200,6 @@ p, li { white-space: pre-wrap; }
            <width>100</width>
            <height>0</height>
           </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Sans Serif</family>
-          </font>
          </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This will create a new random network using &lt;span style=&quot; font-weight:600;&quot;&gt;G(n,M)&lt;/span&gt; model, where&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt; n&lt;/span&gt; is the number of nodes in the final graph&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt; M&lt;/span&gt; is the number of edges in the final graph&lt;/p&gt;&lt;p&gt;If you select this model, you must enter both the number of nodes n and the number of edges M&lt;/p&gt;&lt;p&gt;You may also select if the final network will be undirected or directed and if you want to allow nodes to link to themselves (diagonal non zero).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -270,11 +245,6 @@ p, li { white-space: pre-wrap; }
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
-       </property>
        <property name="text">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Edges &lt;span style=&quot; font-style:italic;&quot;&gt;M &lt;/span&gt;&lt;span style=&quot; color:#7c7c7c;&quot;&gt;for G(n,M) model only&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -287,11 +257,6 @@ p, li { white-space: pre-wrap; }
          <width>120</width>
          <height>0</height>
         </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
        </property>
        <property name="minimum">
         <number>10</number>
@@ -326,11 +291,6 @@ p, li { white-space: pre-wrap; }
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
-       </property>
        <property name="text">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Edge Probability &lt;span style=&quot; color:#7c7c7c;&quot;&gt;applicable only in G(n,p) model&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -349,11 +309,6 @@ p, li { white-space: pre-wrap; }
          <width>120</width>
          <height>0</height>
         </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
        </property>
        <property name="minimum">
         <double>0.010000000000000</double>
@@ -394,11 +349,6 @@ p, li { white-space: pre-wrap; }
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
-       </property>
        <property name="text">
         <string>Graph Mode</string>
        </property>
@@ -419,11 +369,6 @@ p, li { white-space: pre-wrap; }
            <width>120</width>
            <height>0</height>
           </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Sans Serif</family>
-          </font>
          </property>
          <property name="text">
           <string>Undirected</string>
@@ -449,11 +394,6 @@ p, li { white-space: pre-wrap; }
            <width>120</width>
            <height>0</height>
           </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Sans Serif</family>
-          </font>
          </property>
          <property name="text">
           <string>Directed</string>
@@ -493,11 +433,6 @@ p, li { white-space: pre-wrap; }
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
-       </property>
        <property name="text">
         <string>Allow diagonals (loops) or set to zero?</string>
        </property>
@@ -518,11 +453,6 @@ p, li { white-space: pre-wrap; }
            <width>120</width>
            <height>0</height>
           </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Sans Serif</family>
-          </font>
          </property>
          <property name="text">
           <string>Yes, allow</string>
@@ -545,13 +475,6 @@ p, li { white-space: pre-wrap; }
    </item>
    <item row="14" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <weight>50</weight>
-       <bold>false</bold>
-      </font>
-     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>

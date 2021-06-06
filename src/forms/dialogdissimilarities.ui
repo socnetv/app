@@ -37,11 +37,6 @@
   <layout class="QGridLayout" name="gridLayout">
    <item row="6" column="1">
     <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -66,11 +61,6 @@
          <width>200</width>
          <height>0</height>
         </size>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
        </property>
        <property name="focusPolicy">
         <enum>Qt::StrongFocus</enum>
@@ -123,11 +113,6 @@
          <width>200</width>
          <height>0</height>
         </size>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
        </property>
        <property name="focusPolicy">
         <enum>Qt::StrongFocus</enum>

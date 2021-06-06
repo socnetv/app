@@ -52,11 +52,6 @@
        <height>95</height>
       </size>
      </property>
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-      </font>
-     </property>
      <property name="frameShape">
       <enum>QFrame::NoFrame</enum>
      </property>
@@ -97,11 +92,6 @@
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
-       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The number n of nodes in the new Regular Network.&lt;/p&gt;&lt;p&gt;Note: For a &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt;-regular graph of &lt;span style=&quot; font-style:italic;&quot;&gt;n&lt;/span&gt; nodes, it is necessary that &lt;span style=&quot; font-style:italic;&quot;&gt;n &amp;gt;= d + 1 &lt;/span&gt;and &lt;span style=&quot; font-style:italic;&quot;&gt;n*d &lt;/span&gt;is even&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -123,11 +113,6 @@
          <width>110</width>
          <height>0</height>
         </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
        </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter number n of nodes in the new Regular Network.&lt;/p&gt;&lt;p&gt;Constraints:  &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;n &amp;gt; 6  &lt;/span&gt;and &lt;span style=&quot; font-style:italic;&quot;/&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;d/n &amp;gt; 0.5  &lt;/span&gt;and&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;n*d &lt;/span&gt;is even&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -171,11 +156,6 @@
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
-       </property>
        <property name="text">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Degree &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -188,11 +168,6 @@
          <width>110</width>
          <height>0</height>
         </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
        </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the degree &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt; each new node will have.&lt;/p&gt;&lt;p&gt;Constraints: &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;d/n &amp;gt; 0.5 &lt;/span&gt;and&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;n*d &lt;/span&gt;is even&lt;/p&gt;&lt;p&gt;In directed Graph Mode, this Degree &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt; option corresponds to the outDegree and the inDegree, which will be both equal to &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt; in the generated directed regular network. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -236,11 +211,6 @@
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
-       </property>
        <property name="text">
         <string>Graph Mode</string>
        </property>
@@ -261,11 +231,6 @@
            <width>110</width>
            <height>0</height>
           </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Sans Serif</family>
-          </font>
          </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Click &amp;quot;undirected&amp;quot; to generate an undirected &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt;-regular network &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -294,11 +259,6 @@
            <width>100</width>
            <height>0</height>
           </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Sans Serif</family>
-          </font>
          </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Click &amp;quot;directed&amp;quot; to generate a directed &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt;-regular network. &lt;/p&gt;&lt;p&gt;In this case, the Degree &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt; option above corresponds to the outDegree and the inDegree which will be both equal to &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt; in the generated regular network. &lt;/p&gt;&lt;p&gt;For instance, if you select &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt;=4 and &lt;span style=&quot; font-style:italic;&quot;&gt;Graph Mode&lt;/span&gt;=directed, then each new node will have outDegree=4 (four outbound edges) and inDegree=4 (four inbound edges). The inbound and outbound edges of each node will not necessarily be from / to the same nodes.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -338,11 +298,6 @@
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
-       </property>
        <property name="text">
         <string>Allow diagonals (loops) or set to zero?</string>
        </property>
@@ -363,11 +318,6 @@
            <width>110</width>
            <height>0</height>
           </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Sans Serif</family>
-          </font>
          </property>
          <property name="toolTip">
           <string>Check to allow loops (nodes linking to themselves) in the new network</string>
@@ -393,12 +343,6 @@
    </item>
    <item row="10" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <stylestrategy>PreferDefault</stylestrategy>
-      </font>
-     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>

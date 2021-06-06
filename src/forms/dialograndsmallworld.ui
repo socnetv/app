@@ -52,11 +52,6 @@
        <height>75</height>
       </size>
      </property>
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-      </font>
-     </property>
      <property name="frameShape">
       <enum>QFrame::NoFrame</enum>
      </property>
@@ -97,11 +92,6 @@
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
-       </property>
        <property name="text">
         <string>Nodes</string>
        </property>
@@ -120,11 +110,6 @@
          <width>110</width>
          <height>0</height>
         </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
        </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The resulting graph will have N nodes and N*d/2 edges&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -168,11 +153,6 @@
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
-       </property>
        <property name="text">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Mean Degree &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -185,11 +165,6 @@
          <width>110</width>
          <height>0</height>
         </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
        </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the mean edge degree each new node will have&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -233,11 +208,6 @@
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
-       </property>
        <property name="text">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Rewiring Probability &lt;span style=&quot; font-style:italic;&quot;&gt;β&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -256,11 +226,6 @@
          <width>110</width>
          <height>0</height>
         </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
        </property>
        <property name="minimum">
         <double>0.010000000000000</double>
@@ -301,11 +266,6 @@
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
-       </property>
        <property name="text">
         <string>Graph Mode</string>
        </property>
@@ -326,11 +286,6 @@
            <width>110</width>
            <height>0</height>
           </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Sans Serif</family>
-          </font>
          </property>
          <property name="text">
           <string>Undirected</string>
@@ -356,11 +311,6 @@
            <width>100</width>
            <height>0</height>
           </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Sans Serif</family>
-          </font>
          </property>
          <property name="text">
           <string>Directed</string>
@@ -397,11 +347,6 @@
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-        </font>
-       </property>
        <property name="text">
         <string>Allow diagonals (loops) or set to zero?</string>
        </property>
@@ -422,11 +367,6 @@
            <width>110</width>
            <height>0</height>
           </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Sans Serif</family>
-          </font>
          </property>
          <property name="toolTip">
           <string>Check to allow loops (nodes linking to themselves) in the new network</string>
@@ -452,12 +392,6 @@
    </item>
    <item row="12" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <stylestrategy>PreferDefault</stylestrategy>
-      </font>
-     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
