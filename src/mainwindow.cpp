@@ -14144,9 +14144,6 @@ void MainWindow::slotHelpCheckUpdateDialog() {
     #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
         connect(reply, &QNetworkReply::errorOccurred,
              this, &MainWindow::slotNetworkError);
-    #else
-        connect(reply, &QNetworkReply::error,
-                 this, &MainWindow::slotNetworkError);
     #endif
 
      connect(reply, &QNetworkReply::sslErrors,
