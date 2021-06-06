@@ -124,12 +124,9 @@ WebCrawler::WebCrawler(
  * Then we parse the page string, searching for url substrings.
  * @param reply
  */
-void WebCrawler::parse(){
+void WebCrawler::parse(QNetworkReply *reply){
 
     qDebug () << "WebCrawler::parse() - thread:" << this->thread();
-
-    // Get network reply from the sender
-    QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
 
     // Find to which node the response HTML belongs to
     // Get this from the reply object request method

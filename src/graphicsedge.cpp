@@ -121,7 +121,7 @@ GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
 
     setBoundingRegionGranularity(0);
     // When using QGraphicsItem::ItemCoordinateCache
-    // we should unset it before exporting canvas content to PDF.
+    // we should unset it before exporting graphicsWidget content to PDF.
     //setCacheMode (QGraphicsItem::ItemCoordinateCache);
     //setCacheMode(QGraphicsItem::DeviceCoordinateCache);
 

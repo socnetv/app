@@ -35,6 +35,7 @@
 QT_BEGIN_NAMESPACE
 class QNetworkAccessManager;
 class QNetworkRequest;
+class QNetworkReply;
 QT_END_NAMESPACE
 
 //class WebCrawler_Spider;
@@ -71,7 +72,7 @@ public:
     ~WebCrawler();
 
 public slots:
-    void parse();
+    void parse(QNetworkReply *reply);
     void newLink(int s, QUrl target, bool enqueue_to_frontier);
 
 signals:

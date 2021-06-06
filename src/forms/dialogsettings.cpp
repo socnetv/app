@@ -129,7 +129,7 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
 
 
     /**
-     * canvas options
+     * GraphicsWidget (canvas) options
      */
 
     m_bgColor = QColor (m_appSettings["initBackgroundColor"]);

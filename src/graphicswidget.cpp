@@ -376,7 +376,7 @@ void GraphicsWidget::setEdgeClicked(GraphicsEdge *edge, const bool &openMenu){
 
 
 /**
- * @brief Called from activeGraph to update node coordinates on the canvas
+ * @brief Called from activeGraph to update the coordinates of a GraphicsNode
  * while creating random networks.
  * @param num
  * @param x
@@ -1299,7 +1299,7 @@ void GraphicsWidget::selectNone(){
 /**
  * @brief Emits selected nodes and edges to Graph and MW
  * Called by QGraphicsScene::selectionChanged signal whenever the user
- * makes a selection on the canvas.
+ * makes a selection.
  * Emits selectedNodes and selectedEdges lists to
  * Graph::graphSelectionChanged() which then signals to
  * MW::slotEditSelectionChanged to display counts on app window.
@@ -1517,7 +1517,7 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
 
 /**
  * @brief  Called when user releases a mouse button, after a click.
- * First sees what was in the canvas position where the user clicked
+ * First sees what was in the position where the user clicked
  * If a node was underneath, it calls userNodeMoved() signal for every node
  * in scene selectedItems
  * @param e

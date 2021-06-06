@@ -50,7 +50,7 @@ static const int ZValueNodeHighlighted = 110;
 /**
 *  This is actually a container-class.
 *  Contains the graphical objects called Nodes,
-*  which are displayed as triangles, boxes, circles, etc, on the canvas.
+*  which are displayed as triangles, boxes, circles, etc, on the GraphicsWidget.
 *  Each node "knows" the others with which she is connected.
 */
 //

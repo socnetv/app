@@ -293,6 +293,9 @@ public slots:
                                const bool &socialLinks,
                                const bool &delayedRequests);
 
+    void slotNetworkManagerRequest(const QUrl &url, const NetworkRequestType &requestType);
+
+
     //EDIT MENU
     void slotEditDragModeSelection(bool);
     void slotEditDragModeScroll(bool);

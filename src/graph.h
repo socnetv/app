@@ -58,6 +58,7 @@
 QT_BEGIN_NAMESPACE
 class QPointF;
 class QNetworkAccessManager;
+class QNetworkReply;
 QT_END_NAMESPACE
 
 
@@ -253,13 +254,20 @@ public slots:
             const bool &socialLinks,
             const bool &delayedRequests);
 
+    void slotHandleCrawlerRequestReply();
     void webSpider();
 
     QString htmlEscaped (QString str) const;
 
 
 signals:
+
+    void signalWebCrawlParse(QNetworkReply *reply);
+
     /** Signals to MainWindow */
+
+    void signalNetworkManagerRequest(const QUrl &currentUrl, const NetworkRequestType &type);
+
     void signalProgressBoxCreate(const int max=0, const QString msg="Please wait");
 
     void signalProgressBoxKill(const int max=0);
@@ -425,18 +433,14 @@ public:
     };
 
     /* INIT AND CLEAR*/
-    Graph(GraphicsWidget *graphicsWidget, QNetworkAccessManager *networkManager);
+    Graph();
+    ~Graph();
 
-    void initSignalSlots();
 
     void clear(const QString &reason="");
 
-    ~Graph();
 
     void setSocNetV_Version (QString ver) { VERSION = ver; }
-
-    GraphicsWidget *canvas() { return m_canvas; }
-
 
     /*FILES (READ AND WRITE)*/
     QString graphName() const;
@@ -1201,13 +1205,10 @@ private:
 
     VList m_graph;                              // List of pointers to the vertices. Each vertex stores all info: links, colors, etc
 
-    GraphicsWidget *m_canvas;                   // Will be set to the parent's graphics widget upon initialization
-
     Parser *file_parser;                        // Our file loader threaded class.
 
-    QNetworkAccessManager *m_networkManager;    // Will be set to the parent's network manager upon initialization
-
     WebCrawler *web_crawler;                     // Our web crawler threaded class. This will parse the downloaded HTML.
+
     QQueue<QUrl> *urlQueue;                     // A queue where the crawler will put urls for the network manager to download
 
     int m_crawler_max_urls;                      // maximum urls we'll visit (max nodes in the resulted network)

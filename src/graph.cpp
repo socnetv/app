@@ -51,6 +51,7 @@
 #include <QPixmap>
 #include <QElapsedTimer>
 #include <QNetworkAccessManager>
+#include <QNetworkReply>
 
 #include <cstdlib>		//allows the use of RAND_MAX macro 
 
@@ -68,13 +69,11 @@
  * @brief Graph::Graph
  * constructor
  */
-Graph::Graph(GraphicsWidget *graphicsWidget, QNetworkAccessManager *networkManager) {
+Graph::Graph() {
 
     qRegisterMetaType<MyEdge>("MyEdge");
 
-    m_canvas = graphicsWidget;  // Do not directly use this...
-
-    m_networkManager = networkManager;
+    qRegisterMetaType<NetworkRequestType>("NetworkRequestType");
 
     m_totalVertices=0;
     m_totalEdges=0;
@@ -263,161 +262,9 @@ Graph::Graph(GraphicsWidget *graphicsWidget, QNetworkAccessManager *networkManag
 
 
 
-    //
-    // Signals between activeGraph and graphicsWidget
-    //
-
-    connect( graphicsWidget, SIGNAL( resized(int, int)),
-             this, SLOT( canvasSizeSet(int,int)) ) ;
-
-    connect( graphicsWidget, SIGNAL(
-                 userDoubleClickNewNode(const QPointF &) ),
-             this, SLOT(
-                 vertexCreateAtPos(const QPointF &) ) ) ;
-
-    connect( graphicsWidget, &GraphicsWidget::userSelectedItems,
-             this,&Graph::graphSelectionChanged);
-
-    connect( this, &Graph::addGuideCircle,
-             graphicsWidget,&GraphicsWidget::addGuideCircle ) ;
-
-    connect( this, SIGNAL( addGuideHLine(const double&) ),
-             graphicsWidget, SLOT(  addGuideHLine(const double&) ) ) ;
-
-    connect( this, SIGNAL( setNodePos(const int &, const qreal &, const qreal &) ),
-             graphicsWidget, SLOT( moveNode(const int &, const qreal &, const qreal &) ) ) ;
-
-    connect( this,&Graph::signalNodesFound,
-             graphicsWidget,  &GraphicsWidget::setNodesMarked  );
-
-    connect( this,
-             SIGNAL( signalDrawNode( const QPointF &,
-                                     const int &,
-                                     const int &,
-                                     const QString &,
-                                     const QString &,
-                                     const QString &,
-                                     const QString &,
-                                     const int &,
-                                     const int &,
-                                     const QString &,
-                                     const QString &,
-                                     const int &,
-                                     const int &
-                                     )
-                     ),
-             graphicsWidget,
-             SLOT( drawNode( const QPointF &,
-                             const int &,
-                             const int &,
-                             const QString &,
-                             const QString &,
-                             const QString &,
-                             const QString &,
-                             const int &,
-                             const int &,
-                             const QString &,
-                             const QString &,
-                             const int &,
-                             const int &
-                             )
-                   )
-             ) ;
-
-    connect( this,&Graph::signalRemoveNode,
-             graphicsWidget,  &GraphicsWidget::removeNode  );
-
-    connect( this, SIGNAL( setVertexVisibility(int, bool)  ),
-             graphicsWidget, SLOT(  setNodeVisibility (int ,  bool) ) );
-
-    connect( this, SIGNAL( setNodeSize(const int &, const int &)  ),
-             graphicsWidget, SLOT(  setNodeSize (const int &, const int &) ) );
-
-    connect( this, SIGNAL( setNodeColor(const int &, const QString &))  ,
-             graphicsWidget, SLOT(  setNodeColor(const int &, const QString &) ) );
-
-    connect( this, SIGNAL( setNodeShape(const int &,const QString&, const QString &))  ,
-             graphicsWidget, SLOT(  setNodeShape(const int &, const QString&,const QString &) ) );
-
-    connect( this, SIGNAL( setNodeNumberColor(const int &, QString)  ),
-              graphicsWidget, SLOT(  setNodeNumberColor (const int &, QString) ) );
-
-    connect( this, SIGNAL( setNodeNumberSize(const int &, const int &)  ),
-             graphicsWidget, SLOT(  setNodeNumberSize (const int &, const int &) ) );
-
-    connect( this, SIGNAL( setNodeNumberDistance(const int &, const int &)  ),
-             graphicsWidget, SLOT( setNodeNumberDistance (const int &, const int &) ) );
-
-    connect( this, &Graph::setNodeLabel ,
-             graphicsWidget, &GraphicsWidget::setNodeLabel );
-
-    connect( this,&Graph::setNodeLabelColor,
-             graphicsWidget,  &GraphicsWidget::setNodeLabelColor  );
-
-    connect( this, SIGNAL( setNodeLabelSize(const int &, const int &)  ),
-             graphicsWidget, SLOT(  setNodeLabelSize (const int &, const int &) ) );
-
-    connect( this, SIGNAL( setNodeLabelDistance(const int &, const int &)  ),
-             graphicsWidget, SLOT( setNodeLabelDistance (const int &, const int &) ) );
-
-
-    connect( this, &Graph::signalRemoveEdge,
-             graphicsWidget,&GraphicsWidget::removeEdge);
-
-
-    connect (this, &Graph::signalDrawEdge, graphicsWidget,&GraphicsWidget::drawEdge);
-
-    connect( this, SIGNAL( setEdgeWeight(const int &,
-                                                const int &,
-                                                const qreal &)),
-             graphicsWidget, SLOT( setEdgeWeight(const int &,
-                                                 const int &,
-                                                 const qreal &) ) );
-
-    connect( this, SIGNAL( signalEdgeType(const int &,
-                                                 const int &,
-                                                 const int &)),
-             graphicsWidget, SLOT( setEdgeDirectionType(const int &,
-                                                        const int &,
-                                                        const int &) ) );
-
-    connect( this, SIGNAL( setEdgeColor(const int &,
-                                               const int &,
-                                               const QString &)),
-             graphicsWidget, SLOT( setEdgeColor(const int &,
-                                                const int &,
-                                                const QString &) ) );
-
-
-    connect( this, SIGNAL( setEdgeLabel(const int &,
-                                               const int &,
-                                               const QString &)),
-             graphicsWidget, SLOT( setEdgeLabel(const int &,
-                                                const int &,
-                                                const QString &) ) );
-
-
-    connect( this, SIGNAL( setEdgeVisibility (int, int, int, bool) ),
-             graphicsWidget, SLOT(  setEdgeVisibility (int, int, int, bool) ) );
-
-
-    connect( graphicsWidget, &GraphicsWidget::userClickedNode,
-             this, &Graph::vertexClickedSet );
-
-    connect( graphicsWidget, &GraphicsWidget::userClickedEdge,
-             this, &Graph::edgeClickedSet );
-
-    connect( this, SIGNAL(signalRelationChangedToGW(int)),
-             graphicsWidget, SLOT( relationSet(int))  ) ;
-
-
 
 }
 
-
-void Graph::initSignalSlots() {
-
-}
 
 
 /**
@@ -609,7 +456,7 @@ void Graph::canvasSizeSet(const int w, const int h){
     }
     canvasWidth = w;
     canvasHeight= h;
-    statusMessage(tr("Canvas size: (%1, %2)px")
+    emit statusMessage(tr("Canvas size: (%1, %2)px")
                   .arg(QString::number(canvasWidth))
                   .arg(QString::number(canvasHeight))
                   );
@@ -2183,14 +2030,6 @@ void Graph::edgeCreate(const int &v1,
                       ( (weight==0) ? "blue" :  color  )
                       );
 
-//            m_canvas->drawEdge( v1, v2,
-//                                weight,
-//                                label,
-//                                ( (weight==0) ? "blue" :  color  ),
-//                                type,
-//                                drawArrows,
-//                                bezier,
-//                                initEdgeWeightNumbers);
 
             emit signalDrawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), type,
                           drawArrows, bezier, initEdgeWeightNumbers);
@@ -2207,15 +2046,6 @@ void Graph::edgeCreate(const int &v1,
                       label,
                       color);
 
-//            m_canvas->drawEdge( v1,
-//                                v2,
-//                                weight,
-//                                label,
-//                                color,
-//                                EdgeType::Reciprocated,
-//                                drawArrows,
-//                                bezier,
-//                                initEdgeWeightNumbers);
 
             emit signalDrawEdge(v1, v2, weight, label, color, EdgeType::Reciprocated,
                           drawArrows, bezier, initEdgeWeightNumbers);
@@ -2233,17 +2063,6 @@ void Graph::edgeCreate(const int &v1,
                       label,
                       ( (weight==0) ? "blue" :  color  )
                       );
-
-//            m_canvas->drawEdge( v1,
-//                                v2,
-//                                weight,
-//                                label,
-//                                ( (weight==0) ? "blue" :  color  ),
-//                                EdgeType::Directed,
-//                                drawArrows,
-//                                bezier,
-//                                initEdgeWeightNumbers
-//                                );
 
             emit signalDrawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), EdgeType::Directed,
                           drawArrows, bezier, initEdgeWeightNumbers);
@@ -3547,12 +3366,22 @@ void Graph::webCrawlTerminateThreads (QString reason){
 
 
 /**
- * @brief Called by MW to start a web crawler thread...
- * @param seed
+ * @brief Called by MW to start the web crawler with user options.
+ * The crawler is created and moved to a new thread.
+ * @param startUrl
+ * @param urlPatternsIncluded
+ * @param urlPatternsExcluded
+ * @param linkClasses
  * @param maxNodes
- * @param maxRecursion
- * @param extLinks
+ * @param maxLinksPerPage
  * @param intLinks
+ * @param childLinks
+ * @param parentLinks
+ * @param selfLinks
+ * @param extLinksIncluded
+ * @param extLinksCrawl
+ * @param socialLinks
+ * @param delayedRequests
  */
 void Graph::startWebCrawler(
         const QUrl &startUrl,
@@ -3574,7 +3403,7 @@ void Graph::startWebCrawler(
     relationCurrentRename(tr("web"), true);
 
     qDebug() << "Graph::startWebCrawler() - "
-             << "Current Graph thread:" << thread()
+             << "activeGraph thread:" << thread()
              << "startUrl:" << startUrl.toString()
              << "Creating url queue and passing it to a new WebCrawler object";
 
@@ -3590,7 +3419,7 @@ void Graph::startWebCrawler(
     // Enqueue the start QUrl
     urlQueue->enqueue(startUrl);
 
-    // Create the web_crawler that will parse the download HTML and pass the urlQueue to it
+    // Create the web_crawler that will parse the downloaded HTML code and pass the urlQueue to it
     web_crawler = new WebCrawler(
                 urlQueue,
                 startUrl,
@@ -3617,6 +3446,9 @@ void Graph::startWebCrawler(
              << web_crawler->thread() ;
 
     // Connect signals and slots
+    connect(this, &Graph::signalWebCrawlParse,
+            web_crawler, &WebCrawler::parse);
+
     connect(web_crawler, &WebCrawler::signalStartSpider,
             this, &Graph::webSpider);
 
@@ -3642,6 +3474,7 @@ void Graph::startWebCrawler(
     vertexCreateAtPosRandomWithLabel(1, startUrl.toString(), false);
 
     // Call the spider to download the html code of the starting url .
+    qDebug() << "Graph::startWebCrawler() - Calling webSpider()...";
     this->webSpider();
 
     qDebug("Graph::startWebCrawler() - reach the end - See the threads running? ");
@@ -3649,8 +3482,7 @@ void Graph::startWebCrawler(
 
 
 /**
- * @brief Graph::webSpider
- * Simple wrapper over the network manager. Takes urls from urlQueue, makes the network request and sends the network reply to the web crawler
+ * @brief A loop, that constantly takes the url awaiting in fron of the urlQueue, and signals to the MW to make the network request
  */
 void Graph::webSpider(){
 
@@ -3678,15 +3510,8 @@ void Graph::webSpider(){
         qDebug() << "Graph::webSpider() - url to download: "
                  <<  currentUrl
                  << "Increasing visitedNodes to" << m_crawler_visited_urls + 1
-                 << "and downloading html...";
+                 << "and emitting signal to download html code...";
 
-        // Create a new network request object
-        qDebug() << "Graph::webSpider() - Creating a new QNetworkRequest for:" <<  currentUrl;
-        QNetworkRequest request;
-        request.setUrl(currentUrl);
-        request.setRawHeader(
-                    "User-Agent",
-                    "SocNetV harmless spider - see https://socnetv.org");
 
         // Check if we need to add some delay in the request
         if (m_crawler_delayed_requests) {
@@ -3695,24 +3520,31 @@ void Graph::webSpider(){
             QThread::msleep(m_wait_msecs);
         }
 
-        // Create a new network reply object to save the response from the network manager request
-        qDebug() << "Graph::webSpider() - Creating a new QNetworkReply to save the network manager response for request:" << request.url().toString();
-        QNetworkReply *reply =  m_networkManager->get(request) ;
 
-        // Connect signals and slots
-        qDebug() << "Graph::webSpider() - Connecting QNetworkReply finished to web_crawler parse()";
-        connect(reply, &QNetworkReply::finished, web_crawler, &WebCrawler::parse );
-
-//        connect(reply, &QNetworkReply::errorOccurred,
-//                 parent, &MainWindow::slotNetworkError);
-//         connect(reply, &QNetworkReply::sslErrors,
-//                 parent, &MainWindow::slotNetworkSslErrors);
+        // Signal MW to make the network request
+        qDebug() << "Graph::webSpider() - Emitting signal to the MW to make the network request ";
+        emit signalNetworkManagerRequest(currentUrl, NetworkRequestType::Crawler);
 
         // increase counter
         m_crawler_visited_urls++;
 
 
     } while ( 1 );
+
+}
+
+/**
+ * @brief Gets the reply of a MW network request made by Web Crawler, and emits that reply as is to the Web Crawler.
+ */
+void Graph::slotHandleCrawlerRequestReply(){
+
+    qDebug() << "Graph::slotHandleCrawlerRequestReply() - Got reply from MW network manager request...";
+
+    // Get network reply from the sender
+    QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
+
+    qDebug() << "Graph::slotHandleCrawlerRequestReply() - Emitting signal to Web Crawler to parse the reply...";
+    emit signalWebCrawlParse(reply);
 
 }
 

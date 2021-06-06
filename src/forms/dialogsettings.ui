@@ -36,7 +36,7 @@
      </property>
      <property name="font">
       <font>
-       <family>Ubuntu</family>
+       <family>Liberation Sans</family>
       </font>
      </property>
      <property name="currentIndex">
@@ -57,8 +57,7 @@
          </property>
          <property name="font">
           <font>
-           <family>Ubuntu</family>
-           <pointsize>12</pointsize>
+           <family>Liberation Sans</family>
           </font>
          </property>
          <property name="title">
@@ -71,8 +70,8 @@
              <widget class="QLabel" name="label">
               <property name="font">
                <font>
-                <family>Ubuntu</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -87,8 +86,8 @@
              <spacer name="horizontalSpacer">
               <property name="font">
                <font>
-                <family>Ubuntu</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -112,8 +111,8 @@
               </property>
               <property name="font">
                <font>
-                <family>Ubuntu</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -134,8 +133,8 @@
               </property>
               <property name="font">
                <font>
-                <family>Ubuntu</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -161,8 +160,8 @@
         <spacer name="verticalSpacer_7">
          <property name="font">
           <font>
-           <family>Ubuntu</family>
-           <pointsize>12</pointsize>
+           <family>Liberation Sans</family>
+           <pointsize>11</pointsize>
           </font>
          </property>
          <property name="orientation">
@@ -186,8 +185,8 @@
          </property>
          <property name="font">
           <font>
-           <family>Ubuntu</family>
-           <pointsize>12</pointsize>
+           <family>Liberation Sans</family>
+           <pointsize>11</pointsize>
           </font>
          </property>
          <property name="title">
@@ -212,8 +211,8 @@
               </property>
               <property name="font">
                <font>
-                <family>Ubuntu</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -228,8 +227,8 @@
              <spacer name="horizontalSpacer_25">
               <property name="font">
                <font>
-                <family>Ubuntu</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -259,8 +258,8 @@
               </property>
               <property name="font">
                <font>
-                <family>Ubuntu</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -294,8 +293,8 @@
               </property>
               <property name="font">
                <font>
-                <family>Ubuntu</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -310,8 +309,8 @@
              <spacer name="horizontalSpacer_26">
               <property name="font">
                <font>
-                <family>Ubuntu</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -341,8 +340,8 @@
               </property>
               <property name="font">
                <font>
-                <family>Ubuntu</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -364,8 +363,8 @@
              <widget class="QLabel" name="label_25">
               <property name="font">
                <font>
-                <family>Ubuntu</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -380,8 +379,8 @@
              <spacer name="horizontalSpacer_27">
               <property name="font">
                <font>
-                <family>Ubuntu</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="orientation">
@@ -411,8 +410,8 @@
               </property>
               <property name="font">
                <font>
-                <family>Ubuntu</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -440,8 +439,8 @@ p, li { white-space: pre-wrap; }
         <spacer name="verticalSpacer_3">
          <property name="font">
           <font>
-           <family>Ubuntu</family>
-           <pointsize>12</pointsize>
+           <family>Liberation Sans</family>
+           <pointsize>11</pointsize>
           </font>
          </property>
          <property name="orientation">
@@ -465,8 +464,8 @@ p, li { white-space: pre-wrap; }
          </property>
          <property name="font">
           <font>
-           <family>Ubuntu</family>
-           <pointsize>12</pointsize>
+           <family>Liberation Sans</family>
+           <pointsize>11</pointsize>
           </font>
          </property>
          <property name="title">
@@ -477,8 +476,8 @@ p, li { white-space: pre-wrap; }
            <widget class="QCheckBox" name="printLogoChkBox">
             <property name="font">
              <font>
-              <family>Ubuntu</family>
-              <pointsize>12</pointsize>
+              <family>Liberation Sans</family>
+              <pointsize>11</pointsize>
              </font>
             </property>
             <property name="toolTip">
@@ -505,8 +504,8 @@ p, li { white-space: pre-wrap; }
         <spacer name="verticalSpacer_5">
          <property name="font">
           <font>
-           <family>Ubuntu</family>
-           <pointsize>12</pointsize>
+           <family>Liberation Sans</family>
+           <pointsize>11</pointsize>
           </font>
          </property>
          <property name="orientation">
@@ -530,8 +529,8 @@ p, li { white-space: pre-wrap; }
          </property>
          <property name="font">
           <font>
-           <family>Ubuntu</family>
-           <pointsize>12</pointsize>
+           <family>Liberation Sans</family>
+           <pointsize>11</pointsize>
           </font>
          </property>
          <property name="title">
@@ -542,8 +541,8 @@ p, li { white-space: pre-wrap; }
            <widget class="QCheckBox" name="printDebugChkBox">
             <property name="font">
              <font>
-              <family>Ubuntu</family>
-              <pointsize>12</pointsize>
+              <family>Liberation Sans</family>
+              <pointsize>11</pointsize>
              </font>
             </property>
             <property name="toolTip">
@@ -564,8 +563,8 @@ p, li { white-space: pre-wrap; }
            <widget class="QCheckBox" name="progressDialogChkBox">
             <property name="font">
              <font>
-              <family>Ubuntu</family>
-              <pointsize>12</pointsize>
+              <family>Liberation Sans</family>
+              <pointsize>11</pointsize>
              </font>
             </property>
             <property name="toolTip">
@@ -592,8 +591,8 @@ p, li { white-space: pre-wrap; }
         <spacer name="verticalSpacer_4">
          <property name="font">
           <font>
-           <family>Ubuntu</family>
-           <pointsize>12</pointsize>
+           <family>Liberation Sans</family>
+           <pointsize>11</pointsize>
           </font>
          </property>
          <property name="orientation">
@@ -623,8 +622,8 @@ p, li { white-space: pre-wrap; }
          </property>
          <property name="font">
           <font>
-           <family>Ubuntu</family>
-           <pointsize>12</pointsize>
+           <family>Liberation Sans</family>
+           <pointsize>11</pointsize>
           </font>
          </property>
          <property name="title">
@@ -635,8 +634,8 @@ p, li { white-space: pre-wrap; }
            <widget class="QCheckBox" name="stylesheetDefaultChkBox">
             <property name="font">
              <font>
-              <family>Ubuntu</family>
-              <pointsize>12</pointsize>
+              <family>Liberation Sans</family>
+              <pointsize>11</pointsize>
              </font>
             </property>
             <property name="toolTip">
@@ -660,8 +659,8 @@ p, li { white-space: pre-wrap; }
         <spacer name="verticalSpacer_6">
          <property name="font">
           <font>
-           <family>Ubuntu</family>
-           <pointsize>12</pointsize>
+           <family>Liberation Sans</family>
+           <pointsize>11</pointsize>
           </font>
          </property>
          <property name="orientation">
@@ -685,8 +684,8 @@ p, li { white-space: pre-wrap; }
          </property>
          <property name="font">
           <font>
-           <family>Ubuntu</family>
-           <pointsize>12</pointsize>
+           <family>Liberation Sans</family>
+           <pointsize>11</pointsize>
           </font>
          </property>
          <property name="title">
@@ -703,8 +702,8 @@ p, li { white-space: pre-wrap; }
           </property>
           <property name="font">
            <font>
-            <family>Ubuntu</family>
-            <pointsize>12</pointsize>
+            <family>Liberation Sans</family>
+            <pointsize>11</pointsize>
            </font>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
@@ -712,8 +711,8 @@ p, li { white-space: pre-wrap; }
             <widget class="QCheckBox" name="leftPanelChkBox">
              <property name="font">
               <font>
-               <family>Ubuntu</family>
-               <pointsize>12</pointsize>
+               <family>Liberation Sans</family>
+               <pointsize>11</pointsize>
               </font>
              </property>
              <property name="toolTip">
@@ -737,8 +736,8 @@ p, li { white-space: pre-wrap; }
             <widget class="QCheckBox" name="showToolBarChkBox">
              <property name="font">
               <font>
-               <family>Ubuntu</family>
-               <pointsize>12</pointsize>
+               <family>Liberation Sans</family>
+               <pointsize>11</pointsize>
               </font>
              </property>
              <property name="toolTip">
@@ -762,8 +761,8 @@ p, li { white-space: pre-wrap; }
             <widget class="QCheckBox" name="rightPanelChkBox">
              <property name="font">
               <font>
-               <family>Ubuntu</family>
-               <pointsize>12</pointsize>
+               <family>Liberation Sans</family>
+               <pointsize>11</pointsize>
               </font>
              </property>
              <property name="toolTip">
@@ -787,8 +786,8 @@ p, li { white-space: pre-wrap; }
             <widget class="QCheckBox" name="showStatusBarChkBox">
              <property name="font">
               <font>
-               <family>Ubuntu</family>
-               <pointsize>12</pointsize>
+               <family>Liberation Sans</family>
+               <pointsize>11</pointsize>
               </font>
              </property>
              <property name="toolTip">
@@ -823,8 +822,7 @@ p, li { white-space: pre-wrap; }
         <widget class="QGroupBox" name="nodesGroup">
          <property name="font">
           <font>
-           <family>MS Shell Dlg 2</family>
-           <pointsize>12</pointsize>
+           <family>Liberation Sans</family>
           </font>
          </property>
          <property name="toolTip">
@@ -840,7 +838,7 @@ p, li { white-space: pre-wrap; }
              <widget class="QLabel" name="label_6">
               <property name="font">
                <font>
-                <family>Ubuntu</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -856,7 +854,7 @@ p, li { white-space: pre-wrap; }
              <spacer name="horizontalSpacer_5">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -881,8 +879,8 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -913,7 +911,7 @@ p, li { white-space: pre-wrap; }
              <widget class="QLabel" name="label_5">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -929,7 +927,7 @@ p, li { white-space: pre-wrap; }
              <spacer name="horizontalSpacer_4">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -954,8 +952,8 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -971,7 +969,7 @@ p, li { white-space: pre-wrap; }
              <widget class="QLabel" name="label_24">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -987,7 +985,7 @@ p, li { white-space: pre-wrap; }
              <spacer name="horizontalSpacer_24">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -1012,8 +1010,8 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -1040,8 +1038,8 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -1063,7 +1061,7 @@ p, li { white-space: pre-wrap; }
              <widget class="QLabel" name="label_3">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -1079,7 +1077,7 @@ p, li { white-space: pre-wrap; }
              <spacer name="horizontalSpacer_6">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -1104,8 +1102,8 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -1129,12 +1127,6 @@ p, li { white-space: pre-wrap; }
        </item>
        <item row="1" column="0">
         <widget class="QGroupBox" name="numbersGroup">
-         <property name="font">
-          <font>
-           <family>MS Shell Dlg 2</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
          <property name="title">
           <string>Node Number settings</string>
          </property>
@@ -1145,8 +1137,8 @@ p, li { white-space: pre-wrap; }
              <widget class="QLabel" name="label_11">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -1161,7 +1153,7 @@ p, li { white-space: pre-wrap; }
              <spacer name="horizontalSpacer_11">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -1186,7 +1178,7 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -1215,8 +1207,8 @@ p, li { white-space: pre-wrap; }
              <widget class="QLabel" name="label_12">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -1231,7 +1223,7 @@ p, li { white-space: pre-wrap; }
              <spacer name="horizontalSpacer_12">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -1256,8 +1248,8 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -1280,8 +1272,8 @@ p, li { white-space: pre-wrap; }
            <widget class="QCheckBox" name="nodeNumbersChkBox">
             <property name="font">
              <font>
-              <family>MS Shell Dlg 2</family>
-              <pointsize>12</pointsize>
+              <family>Liberation Sans</family>
+              <pointsize>11</pointsize>
              </font>
             </property>
             <property name="toolTip">
@@ -1304,8 +1296,8 @@ p, li { white-space: pre-wrap; }
              <widget class="QLabel" name="label_10">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -1320,7 +1312,7 @@ p, li { white-space: pre-wrap; }
              <spacer name="horizontalSpacer_10">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -1345,8 +1337,8 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -1369,8 +1361,8 @@ p, li { white-space: pre-wrap; }
            <widget class="QCheckBox" name="nodeNumbersInsideChkBox">
             <property name="font">
              <font>
-              <family>MS Shell Dlg 2</family>
-              <pointsize>12</pointsize>
+              <family>Liberation Sans</family>
+              <pointsize>11</pointsize>
              </font>
             </property>
             <property name="toolTip">
@@ -1394,8 +1386,7 @@ p, li { white-space: pre-wrap; }
         <widget class="QGroupBox" name="labelGroup">
          <property name="font">
           <font>
-           <family>MS Shell Dlg 2</family>
-           <pointsize>12</pointsize>
+           <family>Liberation Sans</family>
           </font>
          </property>
          <property name="title">
@@ -1406,8 +1397,7 @@ p, li { white-space: pre-wrap; }
            <widget class="QCheckBox" name="nodeLabelsChkBox">
             <property name="font">
              <font>
-              <family>MS Shell Dlg 2</family>
-              <pointsize>12</pointsize>
+              <family>Liberation Sans</family>
              </font>
             </property>
             <property name="toolTip">
@@ -1430,8 +1420,8 @@ p, li { white-space: pre-wrap; }
              <widget class="QLabel" name="label_8">
               <property name="font">
                <font>
-                <family>Ubuntu</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="text">
@@ -1443,7 +1433,7 @@ p, li { white-space: pre-wrap; }
              <spacer name="horizontalSpacer_8">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -1468,8 +1458,8 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -1497,8 +1487,8 @@ p, li { white-space: pre-wrap; }
              <widget class="QLabel" name="label_7">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="text">
@@ -1510,7 +1500,7 @@ p, li { white-space: pre-wrap; }
              <spacer name="horizontalSpacer_7">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -1535,8 +1525,8 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -1561,8 +1551,8 @@ p, li { white-space: pre-wrap; }
              <widget class="QLabel" name="label_9">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="text">
@@ -1574,7 +1564,7 @@ p, li { white-space: pre-wrap; }
              <spacer name="horizontalSpacer_9">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -1599,8 +1589,8 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -1633,8 +1623,7 @@ p, li { white-space: pre-wrap; }
         <widget class="QGroupBox" name="groupBox_8">
          <property name="font">
           <font>
-           <family>MS Shell Dlg 2</family>
-           <pointsize>12</pointsize>
+           <family>Liberation Sans</family>
           </font>
          </property>
          <property name="title">
@@ -1653,8 +1642,8 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -1672,8 +1661,8 @@ p, li { white-space: pre-wrap; }
              <widget class="QCheckBox" name="edgeArrowsChkBox">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -1695,8 +1684,7 @@ p, li { white-space: pre-wrap; }
              <widget class="QLabel" name="label_14">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
                </font>
               </property>
               <property name="toolTip">
@@ -1714,7 +1702,7 @@ p, li { white-space: pre-wrap; }
              <spacer name="horizontalSpacer_14">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -1733,7 +1721,7 @@ p, li { white-space: pre-wrap; }
              <widget class="QRadioButton" name="edgeShapeRadioStraightLine">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -1755,7 +1743,7 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -1778,8 +1766,8 @@ p, li { white-space: pre-wrap; }
              <widget class="QLabel" name="label_13">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -1797,7 +1785,7 @@ p, li { white-space: pre-wrap; }
              <spacer name="horizontalSpacer_13">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -1822,8 +1810,8 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -1854,8 +1842,8 @@ p, li { white-space: pre-wrap; }
              <widget class="QLabel" name="label_17">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -1873,7 +1861,7 @@ p, li { white-space: pre-wrap; }
              <spacer name="horizontalSpacer_17">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -1898,8 +1886,8 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -1930,8 +1918,8 @@ p, li { white-space: pre-wrap; }
              <widget class="QLabel" name="label_20">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -1949,7 +1937,7 @@ p, li { white-space: pre-wrap; }
              <spacer name="horizontalSpacer_20">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -1974,8 +1962,8 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -2006,8 +1994,8 @@ p, li { white-space: pre-wrap; }
              <widget class="QLabel" name="label_23">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="text">
@@ -2019,7 +2007,7 @@ p, li { white-space: pre-wrap; }
              <spacer name="horizontalSpacer_23">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -2044,8 +2032,8 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -2077,8 +2065,7 @@ p, li { white-space: pre-wrap; }
         <widget class="QGroupBox" name="groupBox_10">
          <property name="font">
           <font>
-           <family>MS Shell Dlg 2</family>
-           <pointsize>12</pointsize>
+           <family>Liberation Sans</family>
           </font>
          </property>
          <property name="title">
@@ -2089,8 +2076,8 @@ p, li { white-space: pre-wrap; }
            <widget class="QCheckBox" name="edgeWeightNumbersChkBox">
             <property name="font">
              <font>
-              <family>MS Shell Dlg 2</family>
-              <pointsize>12</pointsize>
+              <family>Liberation Sans</family>
+              <pointsize>11</pointsize>
              </font>
             </property>
             <property name="toolTip">
@@ -2110,8 +2097,8 @@ p, li { white-space: pre-wrap; }
              <widget class="QLabel" name="label_19">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="text">
@@ -2123,7 +2110,7 @@ p, li { white-space: pre-wrap; }
              <spacer name="horizontalSpacer_19">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -2148,8 +2135,8 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -2180,8 +2167,8 @@ p, li { white-space: pre-wrap; }
              <widget class="QLabel" name="label_18">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="text">
@@ -2193,7 +2180,7 @@ p, li { white-space: pre-wrap; }
              <spacer name="horizontalSpacer_18">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -2218,8 +2205,8 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -2248,8 +2235,7 @@ p, li { white-space: pre-wrap; }
         <widget class="QGroupBox" name="groupBox_9">
          <property name="font">
           <font>
-           <family>MS Shell Dlg 2</family>
-           <pointsize>12</pointsize>
+           <family>Liberation Sans</family>
           </font>
          </property>
          <property name="title">
@@ -2260,8 +2246,8 @@ p, li { white-space: pre-wrap; }
            <widget class="QCheckBox" name="edgeLabelsChkBox">
             <property name="font">
              <font>
-              <family>MS Shell Dlg 2</family>
-              <pointsize>12</pointsize>
+              <family>Liberation Sans</family>
+              <pointsize>11</pointsize>
              </font>
             </property>
             <property name="toolTip">
@@ -2281,8 +2267,8 @@ p, li { white-space: pre-wrap; }
              <widget class="QLabel" name="label_15">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="text">
@@ -2294,7 +2280,7 @@ p, li { white-space: pre-wrap; }
              <spacer name="horizontalSpacer_15">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -2322,8 +2308,8 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -2351,8 +2337,8 @@ p, li { white-space: pre-wrap; }
              <widget class="QLabel" name="label_16">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="text">
@@ -2364,7 +2350,7 @@ p, li { white-space: pre-wrap; }
              <spacer name="horizontalSpacer_16">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
+                <family>Liberation Sans</family>
                 <pointsize>12</pointsize>
                </font>
               </property>
@@ -2392,8 +2378,8 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -2423,8 +2409,8 @@ p, li { white-space: pre-wrap; }
         <widget class="QGroupBox" name="groupBox_2">
          <property name="font">
           <font>
-           <family>MS Shell Dlg 2</family>
-           <pointsize>12</pointsize>
+           <family>Liberation Sans</family>
+           <pointsize>11</pointsize>
           </font>
          </property>
          <property name="toolTip">
@@ -2440,8 +2426,8 @@ p, li { white-space: pre-wrap; }
              <widget class="QLabel" name="label_4">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -2487,8 +2473,8 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>DejaVu Sans</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="cursor">
@@ -2519,8 +2505,8 @@ p, li { white-space: pre-wrap; }
              <widget class="QLabel" name="label_2">
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -2560,8 +2546,8 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -2588,8 +2574,8 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -2629,12 +2615,6 @@ p, li { white-space: pre-wrap; }
        </item>
        <item row="1" column="0">
         <widget class="QGroupBox" name="groupBox_11">
-         <property name="font">
-          <font>
-           <family>MS Shell Dlg 2</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Performance Settings&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The following options influence the performance of the SocNetV canvas, inside which nodes and edges are being drawn. They affect the look of nodes and edges as well the precision and speed of the graphics engine.&lt;/p&gt;&lt;p&gt;Most of these settings have noticeable effects only in large networks. For instance, if you have a network with over 3000 actors and 10000 edges you might want to disable Antialiasing, Antialiasing Auto-adjustment and Smooth Pixmap Transformation while enabling Cache Background. &lt;/p&gt;&lt;p&gt;Also, if you need to visually interact with edges in a large network, you can experiment with the Update Mode setting to find which is suitable for your workload. The default setting &amp;quot;Full&amp;quot; means that the canvas is fully redrawn every time you make a small change.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -2646,8 +2626,7 @@ p, li { white-space: pre-wrap; }
            <widget class="QCheckBox" name="canvasAntialiasingChkBox">
             <property name="font">
              <font>
-              <family>MS Shell Dlg 2</family>
-              <pointsize>12</pointsize>
+              <family>Liberation Sans</family>
              </font>
             </property>
             <property name="toolTip">
@@ -2668,8 +2647,7 @@ p, li { white-space: pre-wrap; }
            <widget class="QCheckBox" name="canvasAntialiasingAutoAdjustChkBox">
             <property name="font">
              <font>
-              <family>MS Shell Dlg 2</family>
-              <pointsize>12</pointsize>
+              <family>Liberation Sans</family>
              </font>
             </property>
             <property name="toolTip">
@@ -2690,8 +2668,7 @@ p, li { white-space: pre-wrap; }
            <widget class="QCheckBox" name="canvasSmoothPixmapTransformChkBox">
             <property name="font">
              <font>
-              <family>MS Shell Dlg 2</family>
-              <pointsize>12</pointsize>
+              <family>Liberation Sans</family>
              </font>
             </property>
             <property name="toolTip">
@@ -2712,8 +2689,7 @@ p, li { white-space: pre-wrap; }
            <widget class="QCheckBox" name="canvasSavePainterStateChkBox">
             <property name="font">
              <font>
-              <family>MS Shell Dlg 2</family>
-              <pointsize>12</pointsize>
+              <family>Liberation Sans</family>
              </font>
             </property>
             <property name="toolTip">
@@ -2734,8 +2710,7 @@ p, li { white-space: pre-wrap; }
            <widget class="QCheckBox" name="canvasCacheBackgroundChkBox">
             <property name="font">
              <font>
-              <family>MS Shell Dlg 2</family>
-              <pointsize>12</pointsize>
+              <family>Liberation Sans</family>
              </font>
             </property>
             <property name="toolTip">
@@ -2756,8 +2731,7 @@ p, li { white-space: pre-wrap; }
            <widget class="QCheckBox" name="canvasEdgeHighlightingChkBox">
             <property name="font">
              <font>
-              <family>MS Shell Dlg 2</family>
-              <pointsize>12</pointsize>
+              <family>Liberation Sans</family>
              </font>
             </property>
             <property name="toolTip">
@@ -2805,8 +2779,7 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
                </font>
               </property>
               <property name="toolTip">
@@ -2852,8 +2825,7 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>DejaVu Sans</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
                </font>
               </property>
               <property name="toolTip">
@@ -2900,8 +2872,7 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
                </font>
               </property>
               <property name="toolTip">
@@ -2947,8 +2918,7 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>DejaVu Sans</family>
-                <pointsize>12</pointsize>
+                <family>Liberation Sans</family>
                </font>
               </property>
               <property name="toolTip">
@@ -2979,8 +2949,8 @@ p, li { white-space: pre-wrap; }
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="font">
       <font>
-       <family>Ubuntu</family>
-       <pointsize>12</pointsize>
+       <family>Liberation Sans</family>
+       <pointsize>11</pointsize>
       </font>
      </property>
      <property name="orientation">

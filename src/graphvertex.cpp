@@ -88,27 +88,6 @@ GraphVertex::GraphVertex(Graph* parentGraph,
              m_graph, SLOT (edgeVisibilitySet (int, int, int, bool)) );
 
 
-//    GraphicsNode *jim= new GraphicsNode ( m_graph->canvas(),
-//                                          m_name,
-//                                          m_size,
-//                                          m_color,
-//                                          m_shape,
-//                                          m_iconPath,
-//                                          true,
-//                                          true,
-//                                          m_numberColor,
-//                                          m_numberSize,
-//                                          8,
-//                                          false,
-//                                          m_label,
-//                                          m_labelColor,
-//                                          m_labelSize,
-//                                          8,
-//                                          true,
-//                                          p
-//                                          );
-
-
 }
 
 

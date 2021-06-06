@@ -42,7 +42,7 @@
         </font>
        </property>
        <property name="text">
-        <string>URL patterns to onclude</string>
+        <string>URL patterns to include</string>
        </property>
       </widget>
      </item>
@@ -358,7 +358,7 @@
         </font>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the initial url/domain to start crawling from, i.e. http://www.iefimerida.gr  &lt;/p&gt;&lt;p&gt;You may omit http:// if you want. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the initial url/domain to start crawling from, i.e. https://socnetv.org&lt;/p&gt;&lt;p&gt;You may omit https:// if you want. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
