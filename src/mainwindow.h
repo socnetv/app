@@ -548,7 +548,7 @@ public slots:
 
 
     void slotNetworkSslErrors();
-    void slotNetworkError();
+    void slotNetworkError(const QNetworkReply::NetworkError &code);
 
     //Called by Graph to display some message to the user
     void statusMessage(const QString);
@@ -582,7 +582,7 @@ signals:
 
 private:
 
-    QNetworkAccessManager *networkManager;
+    QNetworkAccessManager networkManager;
 
     QGraphicsScene *scene;
     GraphicsWidget *graphicsWidget;

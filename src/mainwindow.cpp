@@ -168,9 +168,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
 
     // Initialize widgets
-    qDebug() << "MW::MainWindow() - initialization of networkmanager, printer, view, graph, actions, menus, panels, signal/slots etc...";
-
-    networkManager = new QNetworkAccessManager(this);   // Create network manager
+    qDebug() << "MW::MainWindow() - initialization of printer, view, graph, actions, menus, panels, signal/slots etc...";
 
     // Create printer devices
     printer = new QPrinter;
@@ -5573,6 +5571,11 @@ void MainWindow::initSignalSlots() {
     // Signals and slots inside MainWindow
     //
 
+#ifndef QT_NO_SSL
+    connect(&networkManager, &QNetworkAccessManager::sslErrors,
+            this, &MainWindow::slotNetworkSslErrors);
+#endif
+
     connect( editDragModeSelectAct, &QAction::triggered,
              this, &MainWindow::slotEditDragModeSelection );
 
@@ -8797,7 +8800,7 @@ void MainWindow::slotNetworkManagerRequest(const QUrl &url, const NetworkRequest
 
     // Create a network reply object through which we will make the call and handle the reply content
     qDebug() << "MW::slotHelpCheckUpdateDialog() - Creating a network reply object  and making the call...";
-    QNetworkReply *reply =  networkManager->get(request) ;
+    QNetworkReply *reply =  networkManager.get(request) ;
 
     // Connect signals and slots
 
@@ -8816,8 +8819,10 @@ void MainWindow::slotNetworkManagerRequest(const QUrl &url, const NetworkRequest
              this, &MainWindow::slotNetworkError);
     #endif
 
+
      connect(reply, &QNetworkReply::sslErrors,
              this, &MainWindow::slotNetworkSslErrors);
+
 
 }
 
@@ -14340,7 +14345,7 @@ void MainWindow::slotHelpCheckUpdateDialog() {
 
     // Create a network reply object through which we will make the call and handle the reply content
     qDebug() << "MW::slotHelpCheckUpdateDialog() - Creating a network reply object  and making the call...";
-    QNetworkReply *reply =  networkManager->get(request) ;
+    QNetworkReply *reply =  networkManager.get(request) ;
 
     // Connect signals and slots
     connect(reply, &QNetworkReply::finished, this, &MainWindow::slotHelpCheckUpdateParse);
@@ -14353,16 +14358,17 @@ void MainWindow::slotHelpCheckUpdateDialog() {
      connect(reply, &QNetworkReply::sslErrors,
              this, &MainWindow::slotNetworkSslErrors);
 
+
 }
 
 
 /**
 *  Called on NetworkReply errors
 */
-void MainWindow::slotNetworkError() {
+void MainWindow::slotNetworkError(const QNetworkReply::NetworkError &code) {
 
     slotHelpMessageToUserError("Network Error!  "
-                               "Please, check your internet connection and try again.");
+                               "Please, check your internet connection and try again. Error" );
 
 
 }
@@ -14370,7 +14376,7 @@ void MainWindow::slotNetworkError() {
 /**
 *  Called on NetworkReply SSL errors
 */
-void MainWindow::slotNetworkSslErrors() {
+void MainWindow::slotNetworkSslErrors( ) {
 
     slotHelpMessageToUserError("SSL Error! "
                                "Could not connect due to SSL error. Please, try again later. ");
