@@ -6,13 +6,13 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
+    <width>528</width>
     <height>770</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>600</width>
+    <width>500</width>
     <height>770</height>
    </size>
   </property>
@@ -30,8 +30,8 @@
     <widget class="QTabWidget" name="tabWidget">
      <property name="minimumSize">
       <size>
-       <width>495</width>
-       <height>700</height>
+       <width>0</width>
+       <height>0</height>
       </size>
      </property>
      <property name="currentIndex">
@@ -1786,6 +1786,18 @@ p, li { white-space: pre-wrap; }
       <layout class="QGridLayout" name="gridLayout_7">
        <item row="0" column="0">
         <widget class="QGroupBox" name="groupBox_2">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>150</height>
+          </size>
+         </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Canvas Background&lt;/span&gt;&lt;/p&gt;&lt;p&gt;In this section, there are general settings for the canvas, such as the background color or image.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -1922,23 +1934,44 @@ p, li { white-space: pre-wrap; }
             </item>
            </layout>
           </item>
-          <item>
-           <spacer name="verticalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>67</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
          </layout>
         </widget>
        </item>
        <item row="1" column="0">
+        <widget class="QGroupBox" name="groupBox_12">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Performance Settings&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The following options influence the performance of the SocNetV canvas, inside which nodes and edges are being drawn. They affect the look of nodes and edges as well the precision and speed of the graphics engine.&lt;/p&gt;&lt;p&gt;Most of these settings have noticeable effects only in large networks. For instance, if you have a network with over 3000 actors and 10000 edges you might want to disable Antialiasing, Antialiasing Auto-adjustment and Smooth Pixmap Transformation while enabling Cache Background. &lt;/p&gt;&lt;p&gt;Also, if you need to visually interact with edges in a large network, you can experiment with the Update Mode setting to find which is suitable for your workload. The default setting &amp;quot;Full&amp;quot; means that the canvas is fully redrawn every time you make a small change.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="title">
+          <string>Hardware Acceleration</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_11">
+          <item>
+           <widget class="QCheckBox" name="canvasUseOpenGLChkBox">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Edge highlighting&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable highlighting of selected edges.&lt;/p&gt;&lt;p&gt;By default, SocNetV hughlights the edges you select with the mouse, as well as all edges connected to the selected node. Although a useful feature, this can slow down the application responsiveness when the network consists of thousand nodes and edges. &lt;/p&gt;&lt;p&gt;If disabled, selected edges will not be highlighted.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="whatsThis">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Cache Background&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable caching of the canvas background. &lt;/p&gt;&lt;p&gt;The graphics engine can cache pre-rendered content in a pixmap, which is then drawn onto the viewport. The purpose of such caching is to speed up the total rendering time for areas that are slow to render (i.e. texture, gradient and alpha blended backgrounds). &lt;/p&gt;&lt;p&gt;If enabled, the canvas background is cached by allocating one pixmap with the full size of the viewport. The cache is invalidated every time the view is transformed. However, when scrolling, only partial invalidation is required. &lt;/p&gt;&lt;p&gt;If not enabled, nothing is cached and all painting is done directly onto the viewport.&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="layoutDirection">
+             <enum>Qt::LeftToRight</enum>
+            </property>
+            <property name="text">
+             <string>Use OpenGL</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="0">
         <widget class="QGroupBox" name="groupBox_11">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Performance Settings&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The following options influence the performance of the SocNetV canvas, inside which nodes and edges are being drawn. They affect the look of nodes and edges as well the precision and speed of the graphics engine.&lt;/p&gt;&lt;p&gt;Most of these settings have noticeable effects only in large networks. For instance, if you have a network with over 3000 actors and 10000 edges you might want to disable Antialiasing, Antialiasing Auto-adjustment and Smooth Pixmap Transformation while enabling Cache Background. &lt;/p&gt;&lt;p&gt;Also, if you need to visually interact with edges in a large network, you can experiment with the Update Mode setting to find which is suitable for your workload. The default setting &amp;quot;Full&amp;quot; means that the canvas is fully redrawn every time you make a small change.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -1949,6 +1982,12 @@ p, li { white-space: pre-wrap; }
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
            <widget class="QCheckBox" name="canvasAntialiasingChkBox">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>40</height>
+             </size>
+            </property>
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Anti-Aliasing&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable Anti-Aliasing. If enabled, the graphics engine will antialias edges of primitives if possible.  &lt;/p&gt;&lt;p&gt;Anti-aliasing is a technique which makes nodes, lines and text, smoother and fancier. But it comes at the cost of speed... &lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
@@ -1965,6 +2004,12 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <widget class="QCheckBox" name="canvasAntialiasingAutoAdjustChkBox">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>40</height>
+             </size>
+            </property>
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Antialiasing Auto-Adjustment&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable antialiasing auto-adjustment of exposed areas. Items that render antialiased lines on the boundaries of their bounding rectangle can end up rendering parts of the line outside. To prevent rendering artifacts, the graphics engine expands all exposed regions by 2 pixels in all directions. &lt;/p&gt;&lt;p&gt;If you disable this, SocNetV will no longer perform these adjustments, minimizing the areas that require redrawing, which improves performance. A common side effect is that items that do draw with antialiasing can leave painting traces behind on the scene as they are moved.&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
@@ -1981,6 +2026,12 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <widget class="QCheckBox" name="canvasSmoothPixmapTransformChkBox">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>40</height>
+             </size>
+            </property>
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Smooth pixmap transformations&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable smooth pixmap transformations. &lt;/p&gt;&lt;p&gt;If enabled, the engine will use a smooth pixmap transformation algorithm (such as bilinear) rather than nearest neighbor.&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
@@ -1997,6 +2048,12 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <widget class="QCheckBox" name="canvasSavePainterStateChkBox">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>40</height>
+             </size>
+            </property>
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Save Painter State&lt;/span&gt;&lt;/p&gt;&lt;p&gt;When rendering, the graphics engine can protect (&amp;quot;save&amp;quot;) the painter state when rendering the background or foreground, and when rendering each item. This allows us to leave the painter in an altered state. &lt;/p&gt;&lt;p&gt;However, if the items consistently do restore the state, you should disable this option to prevent the application from doing the same.&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
@@ -2012,23 +2069,13 @@ p, li { white-space: pre-wrap; }
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="canvasCacheBackgroundChkBox">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Cache Background&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable caching of the canvas background. &lt;/p&gt;&lt;p&gt;The graphics engine can cache pre-rendered content in a pixmap, which is then drawn onto the viewport. The purpose of such caching is to speed up the total rendering time for areas that are slow to render (i.e. texture, gradient and alpha blended backgrounds). &lt;/p&gt;&lt;p&gt;If enabled, the canvas background is cached by allocating one pixmap with the full size of the viewport. The cache is invalidated every time the view is transformed. However, when scrolling, only partial invalidation is required. &lt;/p&gt;&lt;p&gt;If not enabled, nothing is cached and all painting is done directly onto the viewport.&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="whatsThis">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Cache Background&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable caching of the canvas background. &lt;/p&gt;&lt;p&gt;The graphics engine can cache pre-rendered content in a pixmap, which is then drawn onto the viewport. The purpose of such caching is to speed up the total rendering time for areas that are slow to render (i.e. texture, gradient and alpha blended backgrounds). &lt;/p&gt;&lt;p&gt;If enabled, the canvas background is cached by allocating one pixmap with the full size of the viewport. The cache is invalidated every time the view is transformed. However, when scrolling, only partial invalidation is required. &lt;/p&gt;&lt;p&gt;If not enabled, nothing is cached and all painting is done directly onto the viewport.&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="layoutDirection">
-             <enum>Qt::LeftToRight</enum>
-            </property>
-            <property name="text">
-             <string>Cache Background</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QCheckBox" name="canvasEdgeHighlightingChkBox">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>40</height>
+             </size>
+            </property>
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Edge highlighting&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable highlighting of selected edges.&lt;/p&gt;&lt;p&gt;By default, SocNetV hughlights the edges you select with the mouse, as well as all edges connected to the selected node. Although a useful feature, this can slow down the application responsiveness when the network consists of thousand nodes and edges. &lt;/p&gt;&lt;p&gt;If disabled, selected edges will not be highlighted.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
@@ -2044,17 +2091,26 @@ p, li { white-space: pre-wrap; }
            </widget>
           </item>
           <item>
-           <spacer name="verticalSpacer">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
+           <widget class="QCheckBox" name="canvasCacheBackgroundChkBox">
+            <property name="minimumSize">
              <size>
-              <width>20</width>
+              <width>0</width>
               <height>40</height>
              </size>
             </property>
-           </spacer>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Cache Background&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable caching of the canvas background. &lt;/p&gt;&lt;p&gt;The graphics engine can cache pre-rendered content in a pixmap, which is then drawn onto the viewport. The purpose of such caching is to speed up the total rendering time for areas that are slow to render (i.e. texture, gradient and alpha blended backgrounds). &lt;/p&gt;&lt;p&gt;If enabled, the canvas background is cached by allocating one pixmap with the full size of the viewport. The cache is invalidated every time the view is transformed. However, when scrolling, only partial invalidation is required. &lt;/p&gt;&lt;p&gt;If not enabled, nothing is cached and all painting is done directly onto the viewport.&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="whatsThis">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Cache Background&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable caching of the canvas background. &lt;/p&gt;&lt;p&gt;The graphics engine can cache pre-rendered content in a pixmap, which is then drawn onto the viewport. The purpose of such caching is to speed up the total rendering time for areas that are slow to render (i.e. texture, gradient and alpha blended backgrounds). &lt;/p&gt;&lt;p&gt;If enabled, the canvas background is cached by allocating one pixmap with the full size of the viewport. The cache is invalidated every time the view is transformed. However, when scrolling, only partial invalidation is required. &lt;/p&gt;&lt;p&gt;If not enabled, nothing is cached and all painting is done directly onto the viewport.&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="layoutDirection">
+             <enum>Qt::LeftToRight</enum>
+            </property>
+            <property name="text">
+             <string>Cache Background</string>
+            </property>
+           </widget>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_22">
@@ -2081,8 +2137,8 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="sizeHint" stdset="0">
                <size>
-                <width>98</width>
-                <height>20</height>
+                <width>38</width>
+                <height>17</height>
                </size>
               </property>
              </spacer>
@@ -2209,6 +2265,9 @@ p, li { white-space: pre-wrap; }
      </property>
      <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+     <property name="centerButtons">
+      <bool>false</bool>
      </property>
     </widget>
    </item>

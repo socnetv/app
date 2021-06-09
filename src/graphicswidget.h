@@ -62,7 +62,7 @@ public:
 
     void clear();
 
-    void toggleOpenGL(bool enabled=false);
+    void toggleOpenGL(const bool &enabled=false);
     QString createEdgeName(const int &v1,
                            const int &v2,
                            const int &relation=-1);

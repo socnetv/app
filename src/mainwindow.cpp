@@ -479,6 +479,7 @@ QMap<QString,QString> MainWindow::initSettings() {
     appSettings["showProgressBar"] = "true";
     appSettings["showToolBar"] = "true";
     appSettings["showStatusBar"] = "true";
+    appSettings["opengl"] = "true";
     appSettings["antialiasing"] = "true";
     appSettings["canvasAntialiasingAutoAdjustment"] = "true";
     appSettings["canvasSmoothPixmapTransform"] = "true";
@@ -658,6 +659,9 @@ void MainWindow::slotOpenSettingsDialog() {
     connect( m_settingsDialog, &DialogSettings::setCanvasBgImage,
              this, &MainWindow::slotOptionsBackgroundImage);
 
+    connect( m_settingsDialog, &DialogSettings::setCanvasOpenGL,
+             this, &MainWindow::slotOptionsCanvasOpenGL);
+
     connect( m_settingsDialog, &DialogSettings::setCanvasAntialiasing,
              this, &MainWindow::slotOptionsCanvasAntialiasing);
 
@@ -818,6 +822,10 @@ void MainWindow::initView() {
     graphicsWidget->setObjectName("graphicsWidget");
 
     bool toggle = false;
+
+    toggle = (appSettings["opengl"] == "true" ) ? true:false;
+    graphicsWidget->toggleOpenGL(toggle);
+
 
     toggle = (appSettings["antialiasing"] == "true" ) ? true:false;
     graphicsWidget->setRenderHint(QPainter::Antialiasing, toggle );
@@ -9931,7 +9939,7 @@ void MainWindow::slotEditNodeOpenContextMenu() {
 
 
 /**
- * @brief MainWindow::slotEditSelectionChanged
+ * @brief Called from Graph when the user-selected nodes/edges has changed
  * @param nodes
  * @param edges
  */
@@ -13711,6 +13719,32 @@ void MainWindow::slotOptionsEdgeLabelsVisibility(bool toggle) {
 
 }
 
+
+
+
+
+/**
+ * @brief Turns opengl on or off
+ * @param toggle
+ */
+void MainWindow::slotOptionsCanvasOpenGL(const bool &toggle) {
+    statusMessage( tr("Toggle openGL. Please wait...") );
+
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+
+    //Inform graphicsWidget about the change
+    graphicsWidget->toggleOpenGL(toggle);
+
+    if (!toggle) {
+        appSettings["opengl"] = "false";
+        statusMessage( tr("Using openGL off.") );
+    }
+    else {
+        appSettings["opengl"] = "true";
+        statusMessage( tr("Using OpenGL on.") );
+    }
+    QApplication::restoreOverrideCursor();
+}
 
 /**
  * @brief Turns antialiasing on or off

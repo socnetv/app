@@ -514,6 +514,7 @@ public slots:
     void slotOptionsBackgroundImageSelect(bool toggle);
     void slotOptionsBackgroundImage();
 
+    void slotOptionsCanvasOpenGL(const bool &toggle=false);
     void slotOptionsCanvasAntialiasing(bool toggle);
     void slotOptionsCanvasAntialiasingAutoAdjust(const bool &toggle=false);
     void slotOptionsCanvasSmoothPixmapTransform(const bool &toggle=false);

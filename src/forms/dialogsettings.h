@@ -104,6 +104,7 @@ signals:
 
     void setCanvasBgColor(const QColor);
     void setCanvasBgImage();
+    void setCanvasOpenGL(const bool &);
     void setCanvasAntialiasing(bool);
     void setCanvasAntialiasingAutoAdjust(bool );
     void setCanvasSmoothPixmapTransform(bool);

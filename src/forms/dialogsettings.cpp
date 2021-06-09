@@ -139,7 +139,8 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
 
     ui->bgImageSelectEdit->setText((m_appSettings)["initBackgroundImage"]);
 
-
+    ui->canvasUseOpenGLChkBox->setChecked(
+                (appSettings["opengl"] == "true" ) ? true : false );
     ui->canvasAntialiasingChkBox->setChecked(
                 (appSettings["antialiasing"] == "true") ? true:false
                 );
@@ -405,6 +406,8 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
     connect (ui->bgImageSelectButton, &QToolButton::clicked,
              this, &DialogSettings::getCanvasBgImage);
 
+    connect (ui->canvasUseOpenGLChkBox , &QCheckBox::stateChanged,
+             this, &DialogSettings::setCanvasOpenGL);
 
     connect (ui->canvasAntialiasingChkBox, &QCheckBox::stateChanged,
              this, &DialogSettings::setCanvasAntialiasing);

@@ -88,7 +88,7 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         scene() -> setItemIndexMethod(QGraphicsScene::BspTreeIndex); //NoIndex (for anime)
 
 
-        //setInteractive(false);
+        // Connect scene change signal to the slot that handles selected items
         connect ( scene() , &QGraphicsScene::selectionChanged,
                      this, &GraphicsWidget::getSelectedItems);
 
@@ -98,7 +98,7 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
 
 
 
-void GraphicsWidget::toggleOpenGL(bool enabled)
+void GraphicsWidget::toggleOpenGL(const bool &enabled)
 {
 #ifndef QT_NO_OPENGL
     setViewport(enabled ? new QGLWidget(QGLFormat(QGL::SampleBuffers)) : new QWidget);
