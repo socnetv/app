@@ -55,7 +55,7 @@
 
 %if %{is_suse}
 %define distr SUSE	# %(head -1 /etc/SuSE-release)
-%define breqr libqt5-qtbase, libqt5-qtbase-devel, libqt5-qtsvg-devel, libQt5Charts5-devel, libqt5-qttools, unzip, update-desktop-files
+%define breqr libqt5-qtbase, libqt5-qtbase-devel, libqt5-qtsvg-devel, libQt5Charts5-devel, libQt5OpenGL5,libqt5-qttools, unzip, update-desktop-files
 %define qmake /usr/bin/qmake-qt5
 %define lrelease /usr/bin/lrelease
 %endif
