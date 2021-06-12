@@ -179,6 +179,7 @@ public slots:
     void graphSelectionChanged(const QList<int> selectedVertices,
                                const QList<SelectedEdge> selectedEdges);
 
+    void graphClickedEmptySpace( const QPointF &p);
 
     /** Slots to signals from GraphicsWidget and Parser*/
     void edgeCreate  (const int &v1, const int &v2, const qreal &weight,
@@ -227,7 +228,7 @@ public slots:
 
     void vertexIsolatedAllToggle ( const bool &toggle);
 
-    void vertexClickedSet(const int &v);
+    void vertexClickedSet(const int &v, const QPointF &p);
 
     void edgeClickedSet(const int &v1, const int &v2, const bool &openMenu=false) ;
 
@@ -298,8 +299,7 @@ signals:
                                     const QPointF &p=QPointF(),
                                     const QString &label=QString(),
                                     const int &inDegree=0,
-                                    const int &outDegree=0,
-                                    const qreal &clc=0);
+                                    const int &outDegree=0);
 
 //    void signalEdgeClicked (const int &v1=0,
 //                            const int &v2=0,

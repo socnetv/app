@@ -4997,33 +4997,6 @@ void MainWindow::initPanels(){
     rightPanelClickedNodeOutDegreeLCD->setToolTip (tr("This is the sum of all outbound edge weights of the last clicked node. \n"
                                                         "Becomes zero when you click on something other than a node."));
 
-    QLabel *rightPanelClickedNodeClucofLabel  = new QLabel;
-    rightPanelClickedNodeClucofLabel->setText (tr("Clu.Coef."));
-    helpMessage = tr("<p></p>Clustering Coefficient of the active node. </b></p>"
-                     "<p>The Clustering Coefficient quantifies how close the clicked "
-                     "vertex and its neighbors are to being a clique. "
-                     "The value is the proportion of Edges between the vertices "
-                     "within the neighbourhood of the clicked vertex, "
-                     "divided by the number of Edges that could possibly exist "
-                     "between them. "
-                     "<p>This value is automatically calculated only if vertices < 500."
-                     "<p>If your network is larger than 500 vertices, compute CluCof "
-                     "from the menu Analysis > Clustering Coefficient.</p>");
-    rightPanelClickedNodeClucofLabel->setWhatsThis( helpMessage );
-    rightPanelClickedNodeClucofLabel->setToolTip ( helpMessage );
-    rightPanelClickedNodeClucofLabel->setStatusTip(
-                tr("The Clustering Coefficient of the last clicked node. "
-                   "Zero when you click on something else."));
-    rightPanelClickedNodeClucofLCD = new QLabel;
-    rightPanelClickedNodeClucofLCD->setAlignment(Qt::AlignRight);
-    rightPanelClickedNodeClucofLCD->setStatusTip(
-                tr("The Clustering Coefficient of the last clicked node. "
-                   "Zero when you click on something else."));
-
-    rightPanelClickedNodeClucofLCD->setWhatsThis( helpMessage );
-    rightPanelClickedNodeClucofLCD ->setToolTip ( helpMessage );
-
-
     QLabel *verticalSpaceLabel3 = new QLabel;
     verticalSpaceLabel3-> setText ("");
 
@@ -5099,8 +5072,6 @@ void MainWindow::initPanels(){
     propertiesGrid->addWidget(rightPanelClickedNodeInDegreeLCD,12,1);
     propertiesGrid->addWidget(rightPanelClickedNodeOutDegreeLabel, 13,0);
     propertiesGrid->addWidget(rightPanelClickedNodeOutDegreeLCD,13,1);
-    propertiesGrid->addWidget(rightPanelClickedNodeClucofLabel, 14,0);
-    propertiesGrid->addWidget(rightPanelClickedNodeClucofLCD,14,1);
 
     propertiesGrid->addWidget(verticalSpaceLabel3, 15,0);
     propertiesGrid->addWidget(rightPanelClickedEdgeHeaderLabel, 16,0,1,2);
@@ -5320,9 +5291,6 @@ void MainWindow::initSignalSlots() {
     connect( graphicsWidget, &GraphicsWidget::setCursor,
              this,&MainWindow::setCursor);
 
-    connect( graphicsWidget,  &GraphicsWidget::userClickOnEmptySpace,
-             this, &MainWindow::slotEditClickOnEmptySpace ) ;
-
     connect( graphicsWidget, SIGNAL( userMiddleClicked(const int &, const int &) ),
              this, SLOT( slotEditEdgeCreate(const int &, const int &) ) 	);
 
@@ -5430,6 +5398,9 @@ void MainWindow::initSignalSlots() {
     //
     // Signals between activeGraph and graphicsWidget
     //
+
+    connect( graphicsWidget,  &GraphicsWidget::userClickOnEmptySpace,
+             activeGraph, &Graph::graphClickedEmptySpace ) ;
 
     connect( graphicsWidget, SIGNAL( resized(int, int)),
              activeGraph, SLOT( canvasSizeSet(int,int)) ) ;
@@ -5749,7 +5720,7 @@ void MainWindow::initApp(){
 
     rightPanelClickedNodeInDegreeLCD->setText("-");
     rightPanelClickedNodeOutDegreeLCD->setText("-");
-    rightPanelClickedNodeClucofLCD->setText("-");
+//    rightPanelClickedNodeClucofLCD->setText("-");
     rightPanelClickedNodeLCD->setText("-");
     rightPanelClickedEdgeNameLCD->setText("-");
     rightPanelClickedEdgeWeightLCD->setText("-");
@@ -8998,23 +8969,6 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
 
 
 
-/**
- * @brief MainWindow::slotEditClickOnEmptySpace
- * Called from GW when the user clicks on empty space.
- */
-void MainWindow::slotEditClickOnEmptySpace(const QPointF &p) {
-    qDebug() << "MW::slotEditClickOnEmptySpace()";
-    rightPanelClickedNodeLCD->setText ("0");
-    rightPanelClickedNodeInDegreeLCD->setText ("0");
-    rightPanelClickedNodeOutDegreeLCD->setText("0");
-    rightPanelClickedNodeClucofLCD->setText("0");
-    activeGraph->vertexClickedSet(0);
-    activeGraph->edgeClickedSet(0,0);
-    statusMessage( tr("Position (%1,%2): Double-click to create a new node." )
-                   .arg(p.x())
-                   .arg(p.y())  );
-}
-
 
 
 /**
@@ -10002,13 +9956,12 @@ void MainWindow::slotEditNodeInfoStatusBar (const int &number,
                                             const QPointF &p,
                                             const QString &label,
                                             const int &inDegree,
-                                            const int &outDegree,
-                                            const qreal &clc) {
+                                            const int &outDegree) {
+
     qDebug()<<"MW::slotEditNodeInfoStatusBar()";
     rightPanelClickedNodeLCD->setText (QString::number(number));
     rightPanelClickedNodeInDegreeLCD->setText ( QString::number (inDegree) ) ;
     rightPanelClickedNodeOutDegreeLCD->setText ( QString::number (outDegree) ) ;
-    rightPanelClickedNodeClucofLCD->setText ( QString::number (clc) ) ;
 
     if (number!=0)  {
 
@@ -10019,7 +9972,11 @@ void MainWindow::slotEditNodeInfoStatusBar (const int &number,
                         .arg( ( label == "") ? "unset" : label )
                         .arg(inDegree).arg(outDegree) );
     }
-
+    else {
+        statusMessage( tr("Position (%1,%2): Double-click to create a new node." )
+                       .arg(p.x())
+                       .arg(p.y())  );
+    }
 }
 
 

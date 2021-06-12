@@ -309,16 +309,13 @@ public slots:
     void slotEditOpenContextMenu(const QPointF & mPos);
     void slotEditSelectionChanged (const int &selNodes, const int &selEdges);
 
-    void slotEditClickOnEmptySpace (const QPointF &p);
-
     void slotEditNodeSelectAll();
     void slotEditNodeSelectNone();
     void slotEditNodeInfoStatusBar(const int &number,
                                    const QPointF &p,
                                    const QString &label,
                                    const int &inDegree,
-                                   const int &outDegree,
-                                   const qreal &clc=0);
+                                   const int &outDegree);
     void slotEditNodePosition(const int &nodeNumber, const int &x, const int &y);
     void slotEditNodeAdd();
 
@@ -792,7 +789,7 @@ private:
     QLabel *rightPanelClickedNodeLCD;
     QLabel *rightPanelClickedNodeInDegreeLCD;
     QLabel *rightPanelClickedNodeOutDegreeLCD;
-    QLabel *rightPanelClickedNodeClucofLCD;
+//    QLabel *rightPanelClickedNodeClucofLCD;
 
     QLabel *rightPanelSelectedNodesLCD;
     QLabel *rightPanelSelectedEdgesLCD;

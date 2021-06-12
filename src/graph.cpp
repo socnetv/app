@@ -1357,7 +1357,7 @@ void Graph::vertexRemove(const int &v1){
     order=false;
 
     if (vertexClicked()==v1)
-        vertexClickedSet(0);
+        vertexClickedSet(0, QPointF(0,0));
 
     graphSetModified(GraphChange::ChangedVertices);
 
@@ -1448,21 +1448,20 @@ QPointF Graph::vertexPos(const int &v1) const{
  * status bar.
  * @param v1
   */
-void Graph::vertexClickedSet(const int &v1) {
+void Graph::vertexClickedSet(const int &v1, const QPointF &p) {
     qDebug()<<"Graph::vertexClickedSet() - " << v1;
     m_vertexClicked = v1;
     if (v1 == 0) {
-        emit signalNodeClickedInfo(0);
+        emit signalNodeClickedInfo(0, p);
     }
     else {
         edgeClickedSet(0,0);
         emit signalNodeClickedInfo( v1,
-                           vertexPos(v1),
-                           vertexLabel(v1),
-                           vertexDegreeIn(v1),
-                           vertexDegreeOut(v1),
-                           ( vertices() < 500 ) ? clusteringCoefficientLocal(v1): 0
-                                                  );
+                                    vertexPos(v1),
+                                    vertexLabel(v1),
+                                    vertexDegreeIn(v1),
+                                    vertexDegreeOut(v1)
+                                    );
     }
 }
 
@@ -2300,7 +2299,7 @@ void Graph::edgeFilterUnilateral(const bool &toggle) {
  * @brief Called from GW::edgeClicked()
  * which is emitted when the user clicks on an edge.
  * Parameters are the source and target node of the edge.
- * It emits signalEdgeClicked() to MW, which displays a relevant
+ * It emits signal to MW, which displays a relevant
  * message on the status bar.
  * @param v1
  * @param v2
@@ -2334,7 +2333,6 @@ void Graph::edgeClickedSet(const int &v1, const int &v2, const bool &openMenu) {
         }
         m_clickedEdge.type = type;
         m_clickedEdge.weight = weight;
-        //emit signalEdgeClicked( m_clickedEdge.source ,m_clickedEdge.target, weight, type, openMenu);
 
         emit signalEdgeClicked( m_clickedEdge, openMenu);
     }
@@ -3098,16 +3096,18 @@ void Graph::graphSetModified(const int &graphNewStatus, const bool &signalMW){
 
 
 /**
- * @brief Returns true of graph is modified (edges/vertices added/removed).
+ * @brief Returns true of graph is modified (edges/vertices added/removed)
  * else false
  * @return
  */
 bool Graph::graphIsModified() const {
-    qDebug() << "Graph::graphIsModified() - m_graphHasChanged:" << m_graphHasChanged ;
+
     if ( m_graphHasChanged > GraphChange::ChangedMajor
          && m_graphHasChanged != GraphChange::ChangedNew ) {
+        qDebug() << "Graph::graphIsModified() - m_graphHasChanged:" << m_graphHasChanged << " Returning true" ;
         return true;
     }
+    qDebug() << "Graph::graphIsModified() - m_graphHasChanged:" << m_graphHasChanged << " Returning false" ;
     return false;
 }
 
@@ -3133,7 +3133,14 @@ bool Graph::graphLoaded() const {
 
 
 
+void Graph::graphClickedEmptySpace( const QPointF &p) {
+    qDebug() << "Graph::graphClickedEmptySpace() - p " << p;
+    // Reset clicked vertices
+    this->vertexClickedSet(0, p);
+    // Reset clicked edges
+    this->edgeClickedSet(0,0);
 
+}
 
 
 /**
@@ -14945,11 +14952,7 @@ qreal Graph::numberOfTriples(int v1){
 
 
 /**
- * @brief Graph::clusteringCoefficientLocal
- *  Returns the local clustering coefficient (CLUCOF) of a vertex v1
- *  CLUCOF in a graph quantifies how close the vertex and its neighbors are
- *  to being a clique, a connected subgraph.
- *  This is used to determine whether a graph is a small-world network.
+ * @brief  Returns the local clustering coefficient (CLUCOF) of a vertex v1
  * @param v1
  * @return
  */

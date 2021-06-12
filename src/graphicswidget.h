@@ -207,7 +207,7 @@ signals:
     //void userSelectedItems(const int nodes, const int edges);
     void userSelectedItems(const QList<int> selectedNodes,
                            const QList<SelectedEdge> selectedEdges);
-    void userClickedNode(const int &nodeNumber);
+    void userClickedNode(const int &nodeNumber, const QPointF &p);
     void userClickedEdge(const int &source, const int &target, const bool &openMenu=false);
     void zoomChanged(const int);
     void rotationChanged(const int);

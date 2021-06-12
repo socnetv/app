@@ -335,7 +335,10 @@ void GraphicsWidget::setNodeClicked(GraphicsNode *node){
         if (clickedEdge) {
             setEdgeClicked(0);
         }
-        emit userClickedNode(node->nodeNumber());
+        emit userClickedNode(
+                    node->nodeNumber(),
+                    QPointF(node->x(), node->y())
+                   );
     }
     else {
 
@@ -353,15 +356,15 @@ void GraphicsWidget::setNodeClicked(GraphicsNode *node){
  */
 void GraphicsWidget::setEdgeClicked(GraphicsEdge *edge, const bool &openMenu){
     if (edge) {
-        qDebug() <<"### GW::edgeClicked() - setting new clicked edge";
+        qDebug() <<"GW::setEdgeClicked() - setting new clicked edge";
         clickedEdge=edge;
-        qDebug() <<"### GW::edgeClicked() - emitting userClickedEdge() to MW";
+        qDebug() <<"GW::setEdgeClicked() - emitting userClickedEdge() to MW";
         emit userClickedEdge(edge->sourceNode()->nodeNumber(),
                              edge->targetNode()->nodeNumber(),
                              openMenu);
     }
     else {
-        qDebug() <<"### GW::edgeClicked() - with zero parameters. Unsetting clickedEdge";
+        qDebug() <<"GW::setEdgeClicked() - with zero parameters. Unsetting clickedEdge and emitting userClickedEdge(0)...";
         clickedEdge=0;
         emit userClickedEdge(0,0,openMenu);
     }
@@ -1275,7 +1278,7 @@ void GraphicsWidget::selectAll(){
     QPainterPath path;
     path.addRect(0,0, this->scene()->width() , this->scene()->height());
     scene()->setSelectionArea(path);
-    emit userClickedNode(0);
+    emit userClickedNode(0, QPointF(0,0));
     qDebug() << "GraphicsWidget::selectAll() - selected items now: "
              << selectedItems().count();
 }
@@ -1290,7 +1293,7 @@ void GraphicsWidget::selectAll(){
  */
 void GraphicsWidget::selectNone(){
     qDebug() << "GraphicsWidget::selectNone()";
-    emit userClickedNode(0);
+    emit userClickedNode(0,QPointF(0,0));
     scene()->clearSelection();
 
 }
@@ -1306,9 +1309,7 @@ void GraphicsWidget::selectNone(){
  */
 void GraphicsWidget::getSelectedItems() {
 
-    qDebug() <<"GW::getSelectedItems() -"
-            << "selectedNodes"<< selectedNodes()
-            << "selectedEdges"<< selectedEdges();
+    qDebug() <<"GW::getSelectedItems() - emitting userSelectedItems()...";
 
     emit userSelectedItems(selectedNodes(), selectedEdges());
 
@@ -1417,13 +1418,10 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
 
     if (this->dragMode() == QGraphicsView::RubberBandDrag ) {
 
-
         QPointF p = mapToScene(e->pos());
 
-        qDebug() << "GW::mousePressEvent() - Single click on a node at:"
-             << e->pos() << "~"<< p;
-
-        // bool ctrlKey = (e->modifiers() == Qt::ControlModifier);
+//        qDebug() << "GW::mousePressEvent() - Single click on a node at:"
+//             << e->pos() << "~"<< p;
 
         if ( QGraphicsItem *item = itemAt(e->pos() )   ) {
 
@@ -1501,8 +1499,8 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
                 qDebug() << "GW::mousePressEvent() - Left click on empty space at:"
                      << e->pos() << "~"<< p
                      << "SelectedItems:" << scene()->selectedItems().count()
-                     << "Emitting userClickOnEmptySpace(p)";
-                setEdgeClicked(0);
+                     << "calling clickedEdge=0 and emitting userClickOnEmptySpace(p)";
+                clickedEdge=0;
                 emit userClickOnEmptySpace(p);
             }
         }
