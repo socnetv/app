@@ -6,16 +6,6 @@ branches:
 
 language: cpp
 
-# os:
-#   - linux
-#   - osx
-
-# sudo: require # deprecated
-# dist: xenial  # used further below in os:linux
-
-# compiler:
-#   - clang 
-#   - gcc
 
 env: 
   global:

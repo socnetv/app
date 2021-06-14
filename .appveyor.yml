@@ -1,3 +1,9 @@
+# Build SocNetV on x86 and x86_64 architectures unsing Qt/MinGW/VS2019 platforms
+# https://socnetv.org
+# Last Update: June 14, 2021
+# Copyright (c) 2021 by Dimitris Kalamaras
+#
+
 version:  'continuous.{build}'
 
 branches:
@@ -19,10 +25,18 @@ branches:
 # # Start builds on tags only (GitHub and BitBucket)
 # skip_non_tags: true
 
+
+# Skipping commits affecting specific files (GitHub only).
+skip_commits:
+  files:
+   - .travis.yml
+
+
 # Including commits with particular message or from specific user
 only_commits:
   #message: /build/                # Start a new build if message contains 'build'
   author: dimitris.kalamaras@gmail.com      # Start a new build for commit of user with email jack@company.com
+
 
 
 #---------------------------------#
@@ -35,11 +49,15 @@ image: Visual Studio 2019
 # clone directory
 clone_folder: c:\projects\socnetv
 
+matrix:
+  fast_finish: true # set this flag to immediately finish build once one of the jobs fails.
+
 # scripts that run after cloning repository
 install:
   - cmd: echo %APPVEYOR_REPO_BRANCH%
   - cmd: echo %APPVEYOR_REPO_COMMIT%
   - cmd: echo %APPVEYOR_REPO_TAG%
+  - cmd: echo %APPVEYOR_REPO_TAG_NAME%
   - cmd: echo "Setting last commit short id"
   - cmd: git rev-parse --short HEAD > MYVER.txt
   - cmd: set /p LAST_COMMIT_SHORT= < MYVER.txt
