@@ -1,12 +1,15 @@
 version:  'continuous.{build}'
 
 branches:
+  # whitelist
   only:
     - master
     - develop
+
+  # blacklist
+  # Do not build tags that we create when we or travis upload to GitHub Releases
+  # does not work see https://github.com/appveyor/ci/issues/1493
   except:
-    - # Do not build tags that we create when we or travis upload to GitHub Releases
-    - # does not work see https://github.com/appveyor/ci/issues/1493
     - /^(?i:continuous)$/
     - /continuous/
 
@@ -32,10 +35,11 @@ image: Visual Studio 2019
 # clone directory
 clone_folder: c:\projects\socnetv
 
+# scripts that run after cloning repository
 install:
+  - cmd: echo %APPVEYOR_REPO_BRANCH%
   - cmd: echo %APPVEYOR_REPO_COMMIT%
   - cmd: echo %APPVEYOR_REPO_TAG%
-
   - cmd: echo "Setting last commit short id"
   - cmd: git rev-parse --short HEAD > MYVER.txt
   - cmd: set /p LAST_COMMIT_SHORT= < MYVER.txt
@@ -137,5 +141,4 @@ notifications:
     to:
       - dimitris.kalamaras@gmail.com
     subject: '[socnetv/app] build {{status}}'                  # optional
-  #  message: "{{message}}, {{commitId}}, ..."    # optional
     on_build_status_changed: true

@@ -51,7 +51,6 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     echo "Make executable the linuxdeployqt tool: "
     chmod a+x linuxdeployqt*.AppImage
     unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
-    # - ./linuxdeployqt*.AppImage /usr/share/applications/*.desktop -bundle-non-qt-libs
     # export VERSION=... # linuxdeployqt uses this for naming the file
     echo "Run the linuxdeployqt tool: "
     ./linuxdeployqt*.AppImage appdir/usr/share/applications/*.desktop -appimage -extra-plugins=iconengines,imageformats
