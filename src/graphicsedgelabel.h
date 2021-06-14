@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.9-dev
+ version: 2.9
  Written in Qt
                          graphicsedgelabel.h  -  description
                              -------------------

@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 2.9-dev
+ version: 2.9
  Written in Qt
  
                          mainwindow.h  -  description
@@ -51,7 +51,7 @@
 #include "forms/dialogfilteredgesbyweight.h"
 #include "forms/dialogdatasetselect.h"
 
-static const QString VERSION="2.9-dev";
+static const QString VERSION="2.9";
 
 static const int USER_MSG_INFO=0;
 static const int USER_MSG_CRITICAL=1;
