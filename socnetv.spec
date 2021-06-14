@@ -51,7 +51,7 @@ set -x
 %define is_suse %(test -e /etc/SuSE-release && echo 1 || echo 0)
 %define is_fedora %(test -e /etc/fedora-release && echo 1 || echo 0)
 %define qmake qmake
-%define lrelease lrelease
+#%define lrelease lrelease
 
 
 #BEGIN BUILDSERVICE COMMANDS
@@ -66,6 +66,15 @@ set -x
 %define is_fedora 0
 %endif
 
+%if 0%{?fedora}
+%define fedora_version %{fedora}
+%endif
+
+%if 0%{?mageia}
+%define mageia_version %{mageia}
+%endif
+
+
 #END BUILDSERVICE COMMANDS
 
 
@@ -73,7 +82,7 @@ set -x
 %define distr Fedora
 %define breqr qt5-qtbase,qt5-qtbase-devel, qt5-qtcharts-devel, qt5-qtsvg-devel, qt5-qttools, fedora-release, desktop-file-utils, mesa-libGL-devel
 %define qmake /usr/bin/qmake-qt5
-%define lrelease /usr/bin/lrelease
+# %define lrelease /usr/bin/lrelease
 %endif
 
 
@@ -82,7 +91,7 @@ set -x
 %define distr SUSE	# %(head -1 /etc/SuSE-release)
 %define breqr libqt5-qtbase, libqt5-qtbase-devel, libqt5-qtsvg-devel, libQt5Charts5-devel, libQt5OpenGL-devel, libQt5OpenGL5,libqt5-qttools, unzip, update-desktop-files
 %define qmake /usr/bin/qmake-qt5
-%define lrelease /usr/bin/lrelease
+# %define lrelease /usr/bin/lrelease
 %endif
 
 
