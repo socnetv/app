@@ -30,6 +30,11 @@ skip_non_tags: true
 skip_commits:
   files:
    - .travis.yml
+   - .travis_before_install.sh
+   - .travis_build_linux.sh
+   - .travis_build_macos.sh
+   - .travis_install.sh
+   - socnetv.spec
 
 
 # Including commits with particular message or from specific user

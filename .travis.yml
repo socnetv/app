@@ -10,6 +10,8 @@ language: cpp
 env: 
   global:
     - SOCNETV_VERSION=3.0-dev # We use it to name packages on non-tagged commits
+    # Change me to false, on release
+    - UPLOADTOOL_ISPRERELEASE=true
 
 # explicitly define our build
 # maybe add a linux/clang pair ?
@@ -60,7 +62,6 @@ after_success:
   - echo " Finished building. Download upload.sh script  ";
   - echo "***********************************************";
   - ls -lsh  
-  #- curl --upload-file ./Social*.AppImage https://transfer.sh/SocNetV-git.$(git rev-parse --short HEAD)-x86_64.AppImage
   - wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
   - echo "Listing directory"
   - ls -lsh

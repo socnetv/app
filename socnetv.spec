@@ -1,6 +1,6 @@
 # spec file for package socnetv
 #
-# Copyright (c) 2019 Dimitris Kalamaras dimitris.kalamaras@gmail.com
+# Copyright (c) 2021 Dimitris Kalamaras dimitris.kalamaras@gmail.com
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -11,14 +11,40 @@
 # license that conforms to the Open Source Definition (Version 1.9)
 # published by the Open Source Initiative.
 
-# Please submit bugfixes or comments via http://bugs.opensuse.org/
 
+set +x
+echo "#############################"
+echo "##### SET PLATFORM VARS ####"
+echo "#############################"
+set -x
 
+%if %(if [[ "%{vendor}" == obs://* ]]; then echo 1; else echo 0; fi)
+%define buildservice 1
+%define usingbuildservice true
+%define packingplatform %(echo openSUSE Build Service)
+%else
+%define usingbuildservice false
+%define packingplatform %(. /etc/os-release 2>/dev/null; [ -n "$PRETTY_NAME" ] && echo "$PRETTY_NAME" || echo $HOSTNAME [`uname`])
+%endif
+
+%define serviceprovider %(echo Dimitris Kalamaras dimitris.kalamaras@gmail.com)
+%if 0%{?buildservice}
+%define distpacker %(echo openSUSE Build Service [`whoami`])
+%define targetplatform %{_target}
+%else
+%define distpacker %(echo `whoami`)
+%define targetplatform %{packingplatform}
+%endif
+
+set +x
+echo "#############################"
+echo "###### SET BUILD VARS #######"
+echo "#############################"
+set -x
 
 %define name    socnetv
 %define version 3.0-dev
 %define release 1
-%define prefix  /usr/local
 %define lastrev %(LANG=en_US.UTF-8 && date +"%a %b %e %Y")
 
 
@@ -40,7 +66,6 @@
 %define is_fedora 0
 %endif
 
-
 #END BUILDSERVICE COMMANDS
 
 
@@ -55,14 +80,14 @@
 
 %if %{is_suse}
 %define distr SUSE	# %(head -1 /etc/SuSE-release)
-%define breqr libqt5-qtbase, libqt5-qtbase-devel, libqt5-qtsvg-devel, libQt5Charts5-devel, libQt5OpenGL5,libqt5-qttools, unzip, update-desktop-files
+%define breqr libqt5-qtbase, libqt5-qtbase-devel, libqt5-qtsvg-devel, libQt5Charts5-devel, libQt5OpenGL-devel, libQt5OpenGL5,libqt5-qttools, unzip, update-desktop-files
 %define qmake /usr/bin/qmake-qt5
 %define lrelease /usr/bin/lrelease
 %endif
 
 
 
-
+# preamble
 Name:		%{name}
 Version:	%{version}
 Release:	%{release}
@@ -73,7 +98,6 @@ URL:		https://socnetv.org/
 Vendor: 	Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 Source0:	https://github.com/%{name}/app/archive/master.zip
 Distribution:   %{distr}
-Prefix:		%{prefix}
 BuildRequires:	gcc-c++, %{breqr}
 BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Gui)
@@ -127,10 +151,11 @@ them.
 Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 
 
-#
-#PREPARATION SECTION
-#
-echo "### PREP SECTION ###"
+set +x
+echo "#############################"
+echo "####### PREP SECTION ########"
+echo "#############################"
+set -x
 
 %prep
 
@@ -146,25 +171,24 @@ find . -type f -name '*~' -delete
 find . -type f -name '*.bak' -delete
 rm -f config.log config.status Makefile socnetv.spec socnetv.mak
 
-# We do not need this replace hack anymore
-# because by default our .pro uses /usr as PREFIX and 
-# qmake adds a useful INSTALL_ROOT variable in front of PREFIX
-# so we can use this scheme directly in our make install below
-# sed -i -e 's/PREFIX = \/usr/PREFIX = ./g' socnetv.pro
 
-#
-#MAKE SECTION
-#
-echo "### MAKE SECTION ###"
+
+set +x
+echo "#############################"
+echo "####### MAKE SECTION ########"
+echo "#############################"
+set -x
 
 %build
 %{qmake}
 %__make
 
-#
-#INSTALL SECTION
-#
+
+set +x
+echo "#############################"
 echo "###### INSTALL SECTION ######"
+echo "#############################"
+set -x
 
 %install
 %if %{is_fedora}
@@ -172,7 +196,7 @@ desktop-file-validate %{name}.desktop
 #desktop-file-install --add-category="Math" --delete-original  --dir=%{buildroot}%{_datadir}/applications  %{buildroot}/%{_datadir}/applnk/Edutainment/%{name}.desktop
 %endif
 
-echo "### CALLING MAKE INSTALL ###"
+echo "### CALLING MAKE INSTALL buildroot: %buildroot ###"
 
 make install INSTALL_ROOT="%buildroot"
 
@@ -180,31 +204,24 @@ make install INSTALL_ROOT="%buildroot"
 # NOTE %make_install is a macro available starting rpm-4.10. It is equivalent to `make install DESTDIR="%{?buildroot}"`. 
 # I left it out to use INSTALL_ROOT directly...
 
-# We do not need this anymore.
-# qmake's Makefile defines copying for us and make does the job...
-#echo "### CREATING DIRECTORIES ###"
-#mkdir -p %{buildroot}%{_bindir}
-#mkdir -p %{buildroot}%{_datadir}/pixmaps/
-#mkdir -p %{buildroot}%{_datadir}/applications/
-#mkdir -p %{buildroot}%{_mandir}/man1/
-#cp -r socnetv %{buildroot}%{_bindir}/%{name}
-#cp -r src/images/socnetv.png %{buildroot}%{_datadir}/pixmaps/%{name}.png
-#cp -r socnetv.desktop %{buildroot}%{_datadir}/applications/
-#cp -r man/socnetv.1.gz %{buildroot}%{_mandir}/man1
 
 rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 
-echo "### CLEAN SECTION ###"
+set +x
+echo "#############################"
+echo "####### CLEAN SECTION #######"
+echo "#############################"
+set -x
 
 %clean
 [ -d %{buildroot} -a "%{buildroot}" != "" ] && %__rm -rf  %{buildroot}
 
 
-
-#
-#FILES SECTION
-#
-echo " ### FILES SECTION ###"
+set +x
+echo "#############################"
+echo "###### FILES SECTION ########"
+echo "#############################"
+set -x
 
 %files
 %defattr(-,root,root)
