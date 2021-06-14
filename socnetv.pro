@@ -4,24 +4,25 @@ lessThan(QT_VERSION, 5.0) {
 
 TARGET = socnetv
 
-MY_TARGET_BUILD = release
+#MY_TARGET_BUILD = release
+MY_TARGET_BUILD = debug
+
+#ALLOW_WARNINGS = warn_on
+ALLOW_WARNINGS = warn_off
 
 TEMPLATE = app
-CONFIG  += qt thread warn_off $${MY_TARGET_BUILD}
-#CONFIG  += qt thread warn_on debug
-#CONFIG  += qt thread warn_off debug
+CONFIG  += qt thread $${ALLOW_WARNINGS} $${MY_TARGET_BUILD}
 
 LANGUAGE = C++
 
-# support
+# add Qt module support
 QT += xml 
 QT += network
 QT += widgets
 QT += printsupport 
 QT += charts
 QT += svg
-QT += testlib
-# testlib only needed to use QTest::qWait in Chart::getPixmap()...
+QT += testlib   # testlib only needed to use QTest::qWait in Chart::getPixmap()...
 qtHaveModule(opengl): QT += opengl
 
 INCLUDEPATH  += ./src
@@ -133,18 +134,9 @@ win32 {
   target.path = release/
 }
 
+
 # This is Linux/Unix only
 unix:!macx{
-
-#  isEmpty(PREFIX) {
-#    PREFIX = /usr/local
-#  }
-#  # workaround for Debian/Ubuntu deb-helper
-#  equals(PREFIX,"/usr/local") {
-#    PREFIX = /usr/local
-#  } else {
-#  PREFIX = /usr
-#}
 
 # No matter what PREFIX the user enters when
 # executing qmake to create the Makefile,
@@ -160,9 +152,6 @@ unix:!macx{
 
   pixmap.path = $${PREFIX}/share/pixmaps
   pixmap.files = src/images/socnetv.png
-
-#  documentation.path = $${PREFIX}/share/doc/socnetv
-#  documentation.files = manual
 
   desktop.path = $${PREFIX}/share/applications
   desktop.files = socnetv.desktop
@@ -183,7 +172,7 @@ unix:!macx{
 
 }
 
-# This is MacOS only
+# This is macOS only
 macx {
   ICON = src/images/socnetv.icns
   TARGET = SocNetV
@@ -197,7 +186,5 @@ INSTALLS += target
 
 TRANSLATIONS    = translations/socnetv_es.ts \ 
                   translations/socnetv_de.ts
-
-
 
 
