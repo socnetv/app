@@ -40,7 +40,7 @@
 #include <QColor>
 #include <QTextCodec>
 #include <QFileInfo>
-
+#include <QDateTime> 	// used in exporting centrality files
 #include <QAbstractSeries>
 #include <QSplineSeries>
 #include <QAreaSeries>
@@ -5782,17 +5782,19 @@ void Graph::dijkstra(const int &s, const int &si,
 
     Q_UNUSED(dropIsolates);
 
-    int u=0,ui=0, w=0, wi=0, v=0, temp=0;
+    int u=0,ui=0, w=0, wi=0, v=0, sp_w=0;
     int relation=0;
-    qreal  weight=0, dist_u=0,  dist_w=0, old_dist_w=0;
+    qreal  weight=0, dist_u=0,  dist_w=0, cur_dist_w=0;
     bool edgeStatus=false;
     H_edges::const_iterator it1;
     VList::const_iterator it;
 
-    qDebug() << "### dijkstra: Construct a priority queue prQ of all vertices-distances";
-
+    // Construct a priority queue where we will store discovered vertices along with their distances from source
+    qDebug() << "### dijkstra: Construct a priority queue prQ to store discovered vertices-distances from source";
     // TODO: Check prQ functionality in weighted graphs, where edge weight denotes value (not cost)
     priority_queue<GraphDistance, vector<GraphDistance>, GraphDistancesCompare> prQ;
+
+    QSet<int> visited_vertices;
 
     //set d( s, s ) = 0
     m_graph[si]->setDistance(s,0);
@@ -5813,25 +5815,38 @@ void Graph::dijkstra(const int &s, const int &si,
         }
     }
     qDebug() << "### dijkstra: push s" << s << "to prQ with 0 distance from s";
-
-    //crucial: without it the priority prQ would pop arbitrary node at first loop
+    //Note: without it the priority prQ would pop arbitrary node at first loop
     prQ.push(GraphDistance(s,0));
-
-    qDebug()<<"### dijkstra: prQ size "<< prQ.size();
-
 
     qDebug() << "### dijkstra: LOOP: While prQ not empty ";
     while ( !prQ.empty() ) {
+
+        qDebug()<< "    *** dijkstra: prQ size: "<< prQ.size();
+
+        // Get the first vertex in the priority queue
         u=prQ.top().target;
+        // Get the vertex index
         ui=vpos[u];
 
-        qDebug()<< "    *** dijkstra: take u"<< u << "vpos" << ui
-                << " from prQ. It has minimum distance from s =" << s;
+        // Pop it
+        qDebug()<< "    *** dijkstra: first vertex in prQ is u"<< u << "vpos" << ui
+                << ". It has minimum distance from s " << s << "=" << prQ.top().distance <<" Popping it from the queue.";
         prQ.pop();
 
-        if ( ! m_graph [ ui ]->isEnabled() )
+        if ( visited_vertices.contains(u) ) {
+            qDebug()<< "    *** dijkstra: vertex already visited. Skipping!";
             continue ;
+        }
+        // Add it to visited
+        visited_vertices.insert(u);
 
+        // Skip if that vertex is disabled
+        if ( ! m_graph [ ui ]->isEnabled() ) {
+            qDebug()<< "    *** dijkstra: vertex disabled. Skipping!";
+            continue ;
+        }
+
+        // Check if we need to compute centralities
         if (computeCentralities){
 
             qDebug()<< "    *** dijkstra: Compute centralities: pushing u ="
@@ -5841,69 +5856,79 @@ void Graph::dijkstra(const int &s, const int &si,
             Stack.push(u);
         }
 
-        qDebug() << "    --- dijkstra: LOOP over every edge ("<< u <<", w ) e E... ";
-
+        // LOOP over every edge of u
+        qDebug() << "    --- dijkstra: LOOP over every edge of u ("<< u <<", w ) e E... ";
         it1=m_graph [ ui ] ->m_outEdges.cbegin();
-
         while ( it1!=m_graph [ ui ] -> m_outEdges.cend() ) {
 
+            // Skip if the edge is not of the current relation
             relation = it1.value().first;
             if ( relation != relationCurrent() )  {
                 ++it1;
                 continue;
             }
+            // Skip if the edge is disabled
             edgeStatus=it1.value().second.second;
             if ( edgeStatus != true)   {
                 ++it1;
                 continue;
             }
 
+            // Get the target vertex of this edge and its index
             w = it1.key();
             wi=vpos[ w ];
 
+            // Get the edge weight
             weight = it1.value().second.first;
 
             qDebug()<<"    --- dijkstra: edge (u, w) = ("<< u << ","<< w << ") =" << weight;
 
-            if (inverseWeights) { //only invert if user asked to do so
+            // Invert edge weight if the user told us to do so
+            if (inverseWeights) {
                 weight = 1.0 / weight;
                 qDebug () << "    --- dijkstra: inverting weight to " << weight;
             }
 
+            // Start path discovery
             qDebug() <<"    --- dijkstra: Start path discovery";
 
+            // Get the distance of u from source
             dist_u=m_graph [ si ]->distance( u );
 
+            // If dist_u not finite, this means that dist_w also not finite
             if (dist_u == RAND_MAX || dist_u < 0) {
                 dist_w = RAND_MAX;
                 qDebug() << "    --- dijkstra: dist_w = RAND_MAX " << RAND_MAX;
 
             }
             else {
+                // dist_u finite, therefore dist_w is (dist_u + edge weight)
                 dist_w = dist_u + weight;
                 qDebug() << "    --- dijkstra: dist_w = dist_u + weight = "
                          << dist_u << "+" << weight <<  "=" <<dist_w ;
             }
 
-            old_dist_w = m_graph [ si ]->distance( w );
+            // Get the currently computed distance of w from source
+            cur_dist_w = m_graph [ si ]->distance( w );
 
             qDebug() << "    --- dijkstra: RELAXATION: check if dist_w =" << dist_w
                      <<  "  shorter than current d(s=" << s <<",w="<<w <<")="
-                      << old_dist_w;
+                      << cur_dist_w;
 
-            if ( ( dist_w == old_dist_w ) &&  dist_w < RAND_MAX ) {
+            if ( ( dist_w == cur_dist_w ) &&  dist_w < RAND_MAX ) {
 
                 qDebug() <<"    --- dijkstra: dist_w : " << dist_w
-                        <<  " ==  current d(s,w) : " << old_dist_w ;
+                        <<  " ==  current d(s,w) : " << cur_dist_w ;
 
-                temp = m_graph[si]->shortestPaths(w) + m_graph[si]->shortestPaths(u);
+                sp_w = m_graph[si]->shortestPaths(w) + m_graph[si]->shortestPaths(u);
+
                 // WRONG! We do not know for sure that we are in a shortest path!!!
-                qDebug() <<"    --- dijkstra: Found ANOTHER SP from s =" << s
+                qDebug() <<"    --- dijkstra: (???POSSIBLE BUG???) Found ANOTHER SP from s =" << s
                         << " to w=" << w << " via u="<< u
-                        << " - Setting Sigma(s, w) = "<< temp;
+                        << " - Setting Sigma(s, w) = "<< sp_w;
 
                 if (s!=w) {
-                    m_graph[si]->setShortestPaths(w, temp);
+                    m_graph[si]->setShortestPaths(w, sp_w);
                 }
 
                 if (computeCentralities){
@@ -5931,16 +5956,17 @@ void Graph::dijkstra(const int &s, const int &si,
                 }
             }
 
-            else if (dist_w > 0 && dist_w < old_dist_w  ) {
+            else if (dist_w > 0 && dist_w < cur_dist_w  ) {
 
                 qDebug() <<"    --- dijkstra: dist_w " << dist_w
-                        <<  " <  current d(s,w) =" << old_dist_w
+                        <<  " <  current d(s,w) =" << cur_dist_w
                          << " Pushing w" << w<< "to prQ with distance"<< dist_w << "from s"<<s;
 
-                prQ.push(GraphDistance(w,dist_w));
                 // FIXME: w might have been already visited?
                 // If so, we might use QMap<int> which is sorted (minimum)
                 // and also provides contain()
+                prQ.push(GraphDistance(w,dist_w));
+
                 m_graph[si]->setDistance(w,dist_w);
 
                 m_graphGeodesicsCount++;
@@ -10694,10 +10720,10 @@ void Graph::prestigePageRank(const bool &dropIsolates){
     int referrer;
     qreal delta = 0.00001; // The delta where we will stop the iterative calculation
     qreal maxDelta = RAND_MAX;
-    qreal sumInLinksPR = 0;  // temp var for inlinks sum PR
+    qreal sumInLinksPR = 0;  // temporary var for inlinks sum PR
     qreal transferedPRP = 0;
-    qreal inLinks = 0;       // temp var
-    qreal outLinks = 0;       // temp var
+    qreal inLinks = 0;       // temporary var
+    qreal outLinks = 0;       // temporary var
     qreal t_variance=0;
     int N =  vertices(dropIsolates) ;
 
@@ -13866,7 +13892,7 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
     int imin, jmin, imax, jmax, mergedClusterIndex, deletedClusterIndex ;
     qreal distanceNewCluster;
 
-    // temp vector stores cluster members at each clustering level
+    // temporary vector stores cluster members at each clustering level
     QVector<int> clusteredItems;
 
     // maps original and clustered items per their DSM matrix index

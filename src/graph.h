@@ -30,11 +30,11 @@
 
 
 #include <QObject>
-#include <QDateTime> 	// used in exporting centrality files
 #include <QList>
 #include <QQueue>
 #include <QUrl>
 #include <QHash>
+#include <QSet>
 #include <QMultiHash>
 #include <QMultiMap>
 #include <QTextStream>
@@ -56,6 +56,7 @@
 #include "graphicswidget.h"
 
 QT_BEGIN_NAMESPACE
+class QDateTime;
 class QPointF;
 class QNetworkAccessManager;
 class QNetworkReply;
