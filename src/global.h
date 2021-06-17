@@ -159,6 +159,10 @@ public:
     ~MyEdge(){}
 };
 
+
+/**
+ * @brief Holds the distance to target. Used in Graph::dijkstra() priority_queue
+ */
 class GraphDistance
 {
 public:
@@ -173,7 +177,12 @@ public:
 };
 
 
-// implement a min-priority queue
+
+/**
+ * @brief Metric to implement a min-priority queue.
+ * The operator returns true if if t1 is closer than t2
+ * Used in Graph::dijkstra() priority_queue
+ */
 class GraphDistancesCompare {
 public:
     bool operator()(GraphDistance& t1, GraphDistance& t2)
@@ -181,8 +190,6 @@ public:
         if (t1.distance == t2.distance)
             return t1.target > t2.target;
         return t1.distance > t2.distance;  //minimum priority
-        // Returns true if t1 is closer than t2
-        // else
     }
 };
 

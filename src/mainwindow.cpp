@@ -4091,8 +4091,8 @@ void MainWindow::initToolBar(){
                 tr("<p><b>Current relation<b></p>"
                    "<p>To rename the current relation, write new name and press Enter.</p>"));
     editRelationChangeCombo->setStatusTip(
-                tr("<p><b>Name of the current relation.</b></p> "
-                   "<p>To rename it, write a new name and press Enter. To select another relation use Down arrow.</p>"));
+                tr("Name of the current relation. "
+                   "To rename it, write a new name and press Enter. To select another relation use Down arrow."));
     editRelationChangeCombo->setWhatsThis(
                 tr("<p><b>Relations combo</b></p>"
                    "<p>This combo box displays the current relation. </p>"

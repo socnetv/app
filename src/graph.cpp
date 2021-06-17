@@ -3268,12 +3268,10 @@ qreal Graph::graphDensity() {
 bool Graph::graphIsWeighted(){
 
     if ( calculatedGraphWeighted ) {
-        qDebug()<< "Graph::graphIsWeighted() - graph not modified. Return: "
+        qDebug()<< "Graph::graphIsWeighted() - graph not modified. Returning: "
                 << m_graphIsWeighted;
         return m_graphIsWeighted;
     }
-
-    qDebug()<< "Graph::graphIsWeighted()";
 
     qreal m_weight=0;
     VList::const_iterator it, it1;
@@ -3291,7 +3289,7 @@ bool Graph::graphIsWeighted(){
         for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
             m_weight = edgeExists ( (*it1)->name(), (*it)->name() ) ;
             if ( m_weight  != 1  && m_weight  != 0 )   {
-                qDebug()<< "Graph: graphIsWeighted() - true. Graph is edge-weighted.";
+                qDebug()<< "Graph: graphIsWeighted() - found valued edge > 1. Setting graph edge-weighted...";
                 graphSetWeighted(true);
                 break;
             }
@@ -3302,7 +3300,7 @@ bool Graph::graphIsWeighted(){
 
     }
     calculatedGraphWeighted = true;
-    qDebug()<< "Graph::graphIsWeighted() - result" << m_graphIsWeighted;
+    qDebug()<< "Graph::graphIsWeighted() - returning: " << m_graphIsWeighted;
 
     emit signalProgressBoxKill();
 
@@ -3311,11 +3309,10 @@ bool Graph::graphIsWeighted(){
 
 
 /**
- * @brief Sets the graph to be weighted / valued edges.
+ * @brief Sets the graph to be weighted ( valued edges ).
  * @param toggle
  */
 void Graph::graphSetWeighted(const bool &toggle){
-    qDebug() << "Graph::graphSetWeighted() - set m_graphIsWeighted =" << toggle;
     m_graphIsWeighted = toggle;
 }
 
