@@ -19976,7 +19976,12 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
     }
     else if (fileName=="Stephenson&Zelen_40_AIDS_patients_sex_contact.paj"){
         qDebug()<<"Stephenson&Zelen_40_AIDS_patiens";
-        datasetDescription=tr("Stephenson & Zelen's AIDS patients network (sex contact)\n\n" );
+        datasetDescription=tr("Stephenson & Zelen's AIDS patients network (sex contact)\n\n"
+                              "The data described by Auerbach et al. (1984) and Klovdahl (1985) consists of information on 40 homosexual men diagnosed with AIDS. "
+                               "Initially, 19 men residing in the Los Angeles and Orange County area were interviewed about their previous sexual contacts. "
+                               "This information led to the subsequent identification of an additional 21 sexual partners in San Francisco, New York and other parts of the United States. "
+                               "All 40 homosexual men were linked to each other through sexual contact."
+                            );
 
         outText << "*Network Stephenson&Zelen_40_AIDS_patients"<<endl<<
                    "*Vertices 40"<<endl<<
@@ -20086,6 +20091,55 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                  "1 0 10 0 0 "<<endl<<
                  "5 5 0 0 0 ";
 
+    }
+
+    else if (fileName == "Stephenson&Zelen_Dunbar&Dunbar_Gelada_baboon_colony_H22a_IC.paj"){
+        datasetDescription=tr("Galada baboon colony network (H22a) \n\n"
+                        "A network of the Galada baboon colony, as described by Dunbar and Dunbar (1975). This is the first set of observations (H22a) and was made on 12 baboons.\n\n"
+                        "The lines connecting two points (baboons) represent nonagonistic interactions (generally grooming behavior) and the frequency of such interactions is recorded by the edge weight. "
+                        "Data derived from Stephenson & Zelen seminal 1989 paper where they introduced Information Centrality."
+                    );
+
+        outText << "*Network Dunbar&Dunbar_Gelada_baboon_colony_H22a"<<endl<<
+                   "*Vertices 12"<<endl<<
+                   "1 \"Adult Female\" ic RGB729FCF		0.223061 	0.329258	circle"<<endl<<
+                   "2 \"2 years Male\" ic RGB729FCF		0.212487 	0.530562	circle"<<endl<<
+                   "3 \"Adult Female\" ic RGB729FCF		0.426989 	0.427873	circle"<<endl<<
+                   "4 \"Adult Female\" ic RGB729FCF		0.341893 	0.414018	circle"<<endl<<
+                   "5 \"Adult Male\" ic RGB729FCF		0.348943 	0.243684	circle"<<endl<<
+                   "6 \"3 years Female\" ic RGB729FCF		0.475327 	0.271394	circle"<<endl<<
+                   "7 \"3 years Male\" ic RGB729FCF		0.632931 	0.323553	circle"<<endl<<
+                   "8 \"Adult Female\" ic RGB729FCF		0.63142 	0.444988	circle"<<endl<<
+                   "9 \"1 year Male\" ic RGB729FCF		0.571501 	0.554197	circle"<<endl<<
+                   "10 \"3 years Female\" ic RGB729FCF		0.486908 	0.604727	circle"<<endl<<
+                   "11 \"2 years Female\" ic RGB729FCF		0.405337 	0.581092	circle"<<endl<<
+                   "12 \"1 year Male\" ic RGB729FCF		0.331319 	0.550937	circle"<<endl<<
+                   "*Arcs "<<endl<<
+                   "*Edges "<<endl<<
+                   "1 2 11 c #666666"<<endl<<
+                   "1 4 5 c #666666"<<endl<<
+                   "1 5 9 c #666666"<<endl<<
+                   "1 11 2 c #666666"<<endl<<
+                   "1 12 1 c #666666"<<endl<<
+                   "3 4 30 c #666666"<<endl<<
+                   "3 5 4 c #666666"<<endl<<
+                   "3 6 3 c #666666"<<endl<<
+                   "3 7 1 c #666666"<<endl<<
+                   "3 10 8 c #666666"<<endl<<
+                   "3 11 6 c #666666"<<endl<<
+                   "3 12 3 c #666666"<<endl<<
+                   "4 5 10 c #666666"<<endl<<
+                   "4 6 2 c #666666"<<endl<<
+                   "4 7 3 c #666666"<<endl<<
+                   "4 10 1 c #666666"<<endl<<
+                   "4 12 3 c #666666"<<endl<<
+                   "5 6 20 c #666666"<<endl<<
+                   "5 8 3 c #666666"<<endl<<
+                   "6 10 5 c #666666"<<endl<<
+                   "6 12 1 c #666666"<<endl<<
+                   "7 8 17 c #666666"<<endl<<
+                   "8 9 2 c #666666"<<endl<<
+                   "8 10 7 c #666666";
     }
     else if (fileName=="Wasserman_Faust_7actors_star_circle_line_graphs.paj") {
         qDebug () << "Wasserman_Faust_7actors_star_circle_line_graphs.paj";
