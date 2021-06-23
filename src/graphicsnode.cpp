@@ -65,15 +65,12 @@ GraphicsNode::GraphicsNode ( GraphicsWidget* gw,
 
 //    qDebug()<<"GraphicsNode::GraphicsNode() - New node:"<< num << "initializing...";
 
-    graphicsWidget->scene()->addItem(this); //Without this nodes don't appear on the screen...
+    graphicsWidget->scene()->addItem(this); // Without this nodes don't appear on the screen...
 
     setFlags(ItemSendsGeometryChanges | ItemIsSelectable | ItemIsMovable );
 
-    //QT < 4.6 if a cache mode is set, nodes do not respond to hover events
-    //setCacheMode(QGraphicsItem::ItemCoordinateCache);
-
-    //QT < 4.6 if a cache mode is set, nodes do not respond to hover events
-    setCacheMode(QGraphicsItem::NoCache);
+    // Leave the default cache option (NoCache)
+    // setCacheMode(QGraphicsItem::NoCache);
 
     setAcceptHoverEvents(true);
 
@@ -84,7 +81,7 @@ GraphicsNode::GraphicsNode ( GraphicsWidget* gw,
     m_iconPath = iconPath;
 
     m_col_str=color;
-    m_col=QColor(color);
+    m_col_orig=m_col=QColor(color);
 
     m_hasNumber=showNumbers;
     m_hasNumberInside = numbersInside;
@@ -337,12 +334,12 @@ void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
     //qDebug()<< "GraphicsNode::paint() " << m_col;
 
     if (option->state & QStyle::State_MouseOver) {
-      //  qDebug()<< "GraphicsNode::paint() mouse over " << m_col;
+        qDebug()<< "GraphicsNode::paint() mouse over " << m_col;
         painter->setBrush(m_col.darker(120));
         setZValue(ZValueNodeHighlighted);
     }
     else {
-        //qDebug()<< "GraphicsNode::paint() - no mouse over " << m_col;
+        qDebug()<< "GraphicsNode::paint() - no mouse over " << m_col;
         painter->setBrush(m_col);
         setZValue(ZValueNode);
     }
@@ -436,7 +433,7 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
             setZValue(ZValueNodeHighlighted);
             m_size_orig = m_size;
             setSize(m_size * 2 - 1);
-
+            m_col_orig = m_col;
             setColor(m_col.darker(120));
 
             if (m_edgeHighLighting) {
@@ -450,7 +447,7 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
         else{
             setZValue(ZValueNode);
             setSize(m_size_orig);
-            setColor(m_col);
+            setColor(m_col_orig);
 
             if (m_edgeHighLighting) {
                     foreach (GraphicsEdge *edge, inEdgeList)

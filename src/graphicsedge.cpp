@@ -120,10 +120,9 @@ GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
     setZValue(ZValueEdge);
 
     setBoundingRegionGranularity(0);
-    // When using QGraphicsItem::ItemCoordinateCache
-    // we should unset it before exporting graphicsWidget content to PDF.
-    //setCacheMode (QGraphicsItem::ItemCoordinateCache);
-    //setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+
+    // Leave the default cache option (NoCache)
+    // setCacheMode(QGraphicsItem::NoCache);
 
     adjust();
 }
