@@ -2222,13 +2222,13 @@ void Graph::edgeRemoveSelectedAll() {
  * @param target
  * @param visible
  */
-void Graph::edgeVisibilitySet ( int relation,  int source, int target, bool visible) {
+void Graph::edgeVisibilitySet (const int &relation, const int &source, const int &target, const bool &toggle) {
     qDebug() << "Graph::edgeVisibilitySet()  - source" << source
              << "target" << target
              << "relation"<< relation
-             << "visible"<< visible
+             << "visible"<< toggle
              << "emitting signal to GW";
-    emit setEdgeVisibility ( relation, source, target, visible);
+    emit setEdgeVisibility ( relation, source, target, toggle);
 }
 
 

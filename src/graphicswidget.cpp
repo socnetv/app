@@ -123,20 +123,6 @@ QString GraphicsWidget::createEdgeName(const int &v1, const int &v2, const int &
 
 
 
-///**
-//    http://thesmithfam.org/blog/2007/02/03/qt-improving-qgraphicsview-performance/#comment-7215
-//*/
-//void GraphicsWidget::paintEvent ( QPaintEvent * event ){
-////    qDebug()<<"GraphicsWidget::paintEvent ";
-////    QPaintEvent *newEvent=new QPaintEvent(event->region().boundingRect());
-////    QGraphicsView::paintEvent(newEvent);
-////    delete newEvent;
-//     QGraphicsView::paintEvent(event);
-//}
-
-
-
-
 /**
  * @brief Clears the scene and all hashes, lists, var etc
  */
@@ -1176,32 +1162,32 @@ void   GraphicsWidget::setEdgeHighlighting(const bool &toggle){
 
 
 /**
- * @brief Changes the visibility of an GraphicsView edge (number, label, edge, etc)
+ * @brief Changes the visibility of an edge
  * @param relation
  * @param source
  * @param target
  * @param toggle
  */
-void GraphicsWidget::setEdgeVisibility(int relation, int source, int target, bool toggle){
+void GraphicsWidget::setEdgeVisibility(const int &relation, const int &source, const int &target, const bool &visible){
 
     edgeName = createEdgeName( source, target, relation );
 
-    qDebug()<<"GW::setEdgeVisibility() - trying to set edge"<<edgeName<<"to"<<toggle;
+    qDebug()<<"GW::setEdgeVisibility() - trying to set edge"<<edgeName<<"to"<<visible;
 
     if  ( edgesHash.contains (edgeName) ) {
         qDebug()<<"GW::setEdgeVisibility() - edge" << edgeName
-               << "set to" << toggle;
-        edgesHash.value(edgeName) -> setVisible(toggle);
-        edgesHash.value(edgeName) -> setEnabled(toggle);
+               << "set to" << visible;
+        edgesHash.value(edgeName) -> setVisible(visible);
+        edgesHash.value(edgeName) -> setEnabled(visible);
         return;
     }
     edgeName = createEdgeName( target, source, relation );
-    qDebug()<<"GW: setEdgeVisibility() - trying to set edge"<<edgeName<<"to"<<toggle;
+    qDebug()<<"GW: setEdgeVisibility() - trying to set edge"<<edgeName<<"to"<<visible;
     if  ( edgesHash.contains (edgeName) ) {
         qDebug()<<"GW::setEdgeVisibility() - reciprocated edge" << edgeName
-               << "set to" << toggle;
-        edgesHash.value(edgeName) -> setVisible(toggle);
-        edgesHash.value(edgeName) -> setEnabled(toggle);
+               << "set to" << visible;
+        edgesHash.value(edgeName) -> setVisible(visible);
+        edgesHash.value(edgeName) -> setEnabled(visible);
         return;
     }
     qDebug()<<"GW::setEdgeVisibility() - Cannot find edge" << edgeName << "or the opposite in the edgesHash";

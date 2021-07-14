@@ -101,7 +101,6 @@ protected:
     void mousePressEvent ( QMouseEvent * e );
     void mouseReleaseEvent(QMouseEvent * e );
     void resizeEvent( QResizeEvent *e );
-//    void paintEvent ( QPaintEvent * event );
 
 public slots:
 
@@ -160,7 +159,7 @@ public slots:
                     const int &target,
                     const bool &removeOpposite=false);
 
-    void setEdgeVisibility (int relation, int, int, bool);
+    void setEdgeVisibility (const int &relation, const int &source, const int &target, const bool &visible);
 
     bool setEdgeDirectionType(const int &,
                               const int &,

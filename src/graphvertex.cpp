@@ -84,9 +84,11 @@ GraphVertex::GraphVertex(Graph* parentGraph,
     m_curRelation=relation;
     m_enabled = true;
 
-    connect (this, SIGNAL (setEdgeVisibility ( int, int, int, bool) ),
-             m_graph, SLOT (edgeVisibilitySet (int, int, int, bool)) );
+//    connect (this, SIGNAL (setEdgeVisibility ( int, int, int, bool) ),
+//             m_graph, SLOT (edgeVisibilitySet (int, int, int, bool)) );
 
+    connect( this, &GraphVertex::setEdgeVisibility,
+             m_graph, &Graph::setEdgeVisibility);
 
 }
 

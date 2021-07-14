@@ -192,7 +192,7 @@ public slots:
 
     void edgeCreateWebCrawler (const int &source, const int &target);
 
-    void edgeVisibilitySet(int relation, int, int, bool);
+    void edgeVisibilitySet(const int &relation, const int &source, const int &target, const bool &status);
 
     //auxiliary vertexCreate functions
     void vertexCreateAtPos(const QPointF &p);
@@ -365,7 +365,7 @@ signals:
     //signal to GW
     void signalRemoveEdge(const int &v1, const int &v2, const bool &removeOpposite);
 
-    void setEdgeVisibility (int, int, int, bool);
+    void setEdgeVisibility (const int &relation, const int &source, const int &target, const bool &toggle);
 
     void setVertexVisibility(int, bool);
 

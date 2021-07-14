@@ -5552,9 +5552,8 @@ void MainWindow::initSignalSlots() {
                                                 const int &,
                                                 const QString &) ) );
 
-
-    connect( activeGraph, SIGNAL( setEdgeVisibility (int, int, int, bool) ),
-             graphicsWidget, SLOT(  setEdgeVisibility (int, int, int, bool) ) );
+    connect( activeGraph, &Graph::setEdgeVisibility,
+             graphicsWidget, &GraphicsWidget::setEdgeVisibility);
 
 
     connect( graphicsWidget, &GraphicsWidget::userClickedNode,

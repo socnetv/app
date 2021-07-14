@@ -316,7 +316,7 @@ public:
     H_shortestPaths m_shortestPaths;
 
 signals:
-    void setEdgeVisibility (int, int, int, bool);
+    void setEdgeVisibility (const int &relation, const int &name, const int &target, const bool &visible);
 
 protected:
 
