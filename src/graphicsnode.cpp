@@ -339,7 +339,7 @@ void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
         setZValue(ZValueNodeHighlighted);
     }
     else {
-        qDebug()<< "GraphicsNode::paint() - no mouse over " << m_col;
+//        qDebug()<< "GraphicsNode::paint() - no mouse over " << m_col;
         painter->setBrush(m_col);
         setZValue(ZValueNode);
     }
