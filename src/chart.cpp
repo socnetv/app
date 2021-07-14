@@ -46,7 +46,6 @@
 #include <QtCharts/QBarCategoryAxis>
 
 #include <QtCore/QTime>
-#include <QTest>
 #include <QVBoxLayout>
 
 Chart::Chart(QWidget *parent) :
@@ -485,31 +484,4 @@ void Chart::resetToTrivial() {
 
 }
 
-
-QPixmap Chart::getPixmap()
-{
-    //create a temporary widget, which will display the chart
-    QWidget* w = new QWidget;
-
-    w->resize(1024, 768);
-    QVBoxLayout *vl;
-    vl = new QVBoxLayout(w);
-    vl->addWidget(this);
-
-    //show the widget, resized so we can grab it with correct dimensions
-    w->show();
-
-    // wait for the graph to be drawn otherwise we have size problems
-    QTest::qWait(500);
-
-    //save windows to a pixmap
-    QPixmap pixmap = w->grab();
-
-    //hide the widget
-    w->hide();
-
-    qDebug()<< "Chart::getPixmap() ends!";
-    w->deleteLater();
-    return pixmap;
-}
 

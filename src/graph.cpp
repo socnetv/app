@@ -7596,7 +7596,6 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
         chart->resize(2560,1440);
         chartView->resize(2561,1441);
 
-        //QPixmap p = m_chart->getPixmap();
         QPixmap p = chartView->grab();
 
         p.save( distImageFileName, "PNG");
@@ -7753,7 +7752,6 @@ void Graph::prominenceDistributionArea(const H_StrToInt &discreteClasses,
         chart->resize(2560,1440);
         chartView->resize(2561,1441);
 
-        //QPixmap p = m_chart->getPixmap();
         QPixmap p = chartView->grab();
 
         p.save( distImageFileName, "PNG");
@@ -7922,7 +7920,6 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
         chart->resize(2560,1440);
         chartView->resize(2561,1441);
 
-        //QPixmap p = m_chart->getPixmap();
         QPixmap p = chartView->grab();
 
         p.save( distImageFileName, "PNG");
