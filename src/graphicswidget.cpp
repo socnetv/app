@@ -60,6 +60,7 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
 
         qRegisterMetaType<SelectedEdge>("SelectedEdge");
         qRegisterMetaType<QList<SelectedEdge> >();
+        qRegisterMetaType<QList<int> >();
 
         secondDoubleClick=false;
         transformationActive = false;
