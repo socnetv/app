@@ -1,5 +1,5 @@
 [![version](https://img.shields.io/github/release/socnetv/app.svg?logo=c%2B%2B)](https://github.com/socnetv/app/releases)
-[![travis](https://img.shields.io/travis/socnetv/app.svg?branch=master&logo=travis)](https://travis-ci.org/socnetv/app)
+[![Travis (.com) branch](https://img.shields.io/travis/com/socnetv/app/master)](https://travis-ci.com/github/socnetv/app)
 [![appveyor](https://img.shields.io/appveyor/ci/oxy86/app.svg?logo=appveyor)](https://ci.appveyor.com/project/oxy86/app)
 [![langs](https://img.shields.io/github/languages/top/socnetv/app.svg)](https://github.com/socnetv/app.git)
 [![downloads](https://img.shields.io/github/downloads/socnetv/app/total.svg?logo=github)](https://socnetv.org/downloads)
