@@ -4,7 +4,6 @@ echo "******************"
 echo "Installing Qt5..."
 echo "******************"
 
-
 # Check current directory
 project_dir=$(pwd)
 echo "Project dir is: ${project_dir}"

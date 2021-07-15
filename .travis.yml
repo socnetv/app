@@ -6,7 +6,6 @@ branches:
 
 language: cpp
 
-
 env: 
   global:
     - SOCNETV_VERSION=3.0-dev # We use it to name packages on non-tagged commits
