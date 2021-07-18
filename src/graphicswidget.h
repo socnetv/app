@@ -196,6 +196,9 @@ public slots:
     void changeMatrixRotation(int angle);
     void reset();
 
+    void setOptionsAntialiasing(const bool &toggle);
+    void setOptionsNoAntialiasingAutoAdjust(const bool &toggle);
+
 signals:
     void userDoubleClickNewNode(const QPointF &);
     void userMiddleClicked(const int &, const int &);

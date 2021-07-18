@@ -35,7 +35,9 @@
 #include <QWheelEvent>
 
 #ifndef QT_NO_OPENGL
-#include <QtOpenGL>
+#include <QOpenGLWidget>
+#include <QSurfaceFormat>
+
 #else
 #include <QtWidgets>
 #endif
@@ -102,9 +104,52 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
 void GraphicsWidget::toggleOpenGL(const bool &enabled)
 {
 #ifndef QT_NO_OPENGL
-    setViewport(enabled ? new QGLWidget(QGLFormat(QGL::SampleBuffers)) : new QWidget);
+    //setViewport(enabled ? new QGLWidget(QGLFormat(QGL::SampleBuffers)) : new QWidget);
+    if (enabled) {
+        qDebug() << "Enabled openGL";
+        QOpenGLWidget *gl = new QOpenGLWidget();
+        QSurfaceFormat format;
+        format.setSamples(4);
+        gl->setFormat(format);
+        setViewport(gl);
+    }
+    else {
+        setViewport(new QWidget);
+    }
+
 #endif
 }
+
+
+/**
+ * @brief
+ * Toggles QPainter renderhints for primitive edges and text antialiasing
+ * @param toggle
+ */
+void GraphicsWidget::setOptionsAntialiasing(const bool &toggle)
+{
+    setRenderHint(QPainter::Antialiasing, toggle );
+    setRenderHint(QPainter::TextAntialiasing, toggle );
+}
+
+
+/**
+ * @brief
+ * Toggles QGraphicsView's antialiasing auto-adjustment of exposed areas. Default: false
+ * Items that render antialiased lines on the boundaries of their QGraphicsItem::boundingRect()
+ * can end up rendering parts of the line outside.
+ * To prevent rendering artifacts, QGraphicsView expands all exposed regions by 2 pixels in all directions.
+ * If you enable this flag, QGraphicsView will no longer perform these adjustments, minimizing the areas that require redrawing, which improves performance. A common side effect is that items that do draw with antialiasing can leave painting traces behind on the scene as they are moved.
+ * @param toggle
+ */
+void GraphicsWidget::setOptionsNoAntialiasingAutoAdjust(const bool &toggle)
+{
+    setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, toggle);
+
+}
+
+
+
 
 
 
