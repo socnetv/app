@@ -104,6 +104,16 @@ enum NetworkRequestType {
 
 };
 
+static const QString VERSION="3.0-dev";
+
+static const int USER_MSG_INFO=0;
+static const int USER_MSG_CRITICAL=1;
+static const int USER_MSG_CRITICAL_NO_NETWORK=2;
+static const int USER_MSG_CRITICAL_NO_EDGES=3;
+static const int USER_MSG_QUESTION=4;
+static const int USER_MSG_QUESTION_CUSTOM=5;
+
+
 static const int SUBGRAPH_CLIQUE = 1;
 static const int SUBGRAPH_STAR   = 2;
 static const int SUBGRAPH_CYCLE  = 3;
