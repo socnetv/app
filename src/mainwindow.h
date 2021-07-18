@@ -41,8 +41,6 @@
 #include <QMessageBox>
 #include <QStack>
 #include <QThread>
-//#include <QMetaType>
-
 
 #include "global.h"
 
@@ -50,16 +48,6 @@
 
 #include "forms/dialogfilteredgesbyweight.h"
 #include "forms/dialogdatasetselect.h"
-
-static const QString VERSION="3.0-dev";
-
-static const int USER_MSG_INFO=0;
-static const int USER_MSG_CRITICAL=1;
-static const int USER_MSG_CRITICAL_NO_NETWORK=2;
-static const int USER_MSG_CRITICAL_NO_EDGES=3;
-static const int USER_MSG_QUESTION=4;
-static const int USER_MSG_QUESTION_CUSTOM=5;
-
 
 typedef QHash <QString, int> H_StrToInt;
 
@@ -140,7 +128,7 @@ class MainWindow : public QMainWindow
 
 public:
 
-    MainWindow(const QString &f);
+    MainWindow(const QString &m_fileName=QString(), const bool &maximized=false, const bool &fullscreen=false);
     ~MainWindow();
 
     void slotStyleSheetDefault(const bool checked);
@@ -580,6 +568,7 @@ signals:
 
 private:
 
+    bool printDebug;
     QNetworkAccessManager networkManager;
 
     QGraphicsScene *scene;
@@ -771,8 +760,6 @@ private:
     int fileType, maxNodes;
     int fortuneCookiesCounter;
     int windowMinWidth, windowMinHeight;
-
-    //QString VERSION;
 
     bool inverseWeights, askedAboutWeights;
     qreal randomErdosEdgeProb;

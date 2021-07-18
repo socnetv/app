@@ -41,7 +41,7 @@
 #include <QDateTime>
 
 #include <QtSvg>  // for SVG icons
-
+#include <QLoggingCategory>
 #include <QtCharts/QChart>
 #include <QtCharts/QChartView>
 #include <QSplineSeries>
@@ -90,56 +90,39 @@
 
 #include "forms/dialogsysteminfo.h"
 
-//Assume no debugging messages
-bool printDebug = false;
 
 
-void myMessageOutput (
-        QtMsgType type, const QMessageLogContext &context, const QString &msg)
-{
-    QByteArray localMsg = msg.toLocal8Bit();
-    const char *file = context.file ? context.file : "";
-    const char *function = context.function ? context.function : "";
-    if ( printDebug )
-        switch ( type ) {
+//bool printDebug = true;
 
-        case QtDebugMsg:
-            fprintf(stderr, "Debug: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
-            break;
-        case QtInfoMsg:
-            fprintf(stderr, "Info: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
-            break;
-        case QtWarningMsg:
-            fprintf(stderr, "Warning: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
-            break;
-        case QtCriticalMsg:
-            fprintf(stderr, "Critical: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
-            break;
-        case QtFatalMsg:
-            fprintf(stderr, "Fatal: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
-            break;
-
-/*        case QtDebugMsg:
-            fprintf( stderr, "Debug: %s\n", localMsg.constData() );
-            break;
-        case QtInfoMsg:
-            fprintf( stderr, "Info: %s\n", localMsg.constData() );
-            break;
-        case QtWarningMsg:
-            fprintf( stderr, "Warning: %s\n", localMsg.constData() );
-            break;
-        case QtFatalMsg:
-            fprintf( stderr, "Fatal: %s\n", localMsg.constData() );
-            abort();                    // deliberately core dump
-        case QtCriticalMsg:
-            fprintf( stderr, "Critical: %s\n", localMsg.constData() );
-            abort();  */                  // deliberately core dump
-
-        }
+//void myMessageOutput ( QtMsgType type, const QMessageLogContext &context, const QString &msg)
+//{
+//    QByteArray localMsg = msg.toLocal8Bit();
+//    const char *file = context.file ? context.file : "";
+//    const char *function = context.function ? context.function : "";
+//    if ( printDebug )
+//        switch ( type ) {
+//        case QtDebugMsg:
+//            fprintf(stderr, "Debug: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
+//            break;
+//        case QtInfoMsg:
+//            fprintf(stderr, "Info: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
+//            break;
+//        case QtWarningMsg:
+//            fprintf(stderr, "Warning: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
+//            break;
+//        case QtCriticalMsg:
+//            fprintf(stderr, "Critical: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
+//            break;
+//        case QtFatalMsg:
+//            fprintf(stderr, "Fatal: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
+//            break;
+//        }
 
 
 
-}
+//}
+
+
 
 
 
@@ -148,9 +131,15 @@ void myMessageOutput (
  * @param m_fileName the file to load, if any.
  * MainWindow contruction method
  */
-MainWindow::MainWindow(const QString & m_fileName) {
+MainWindow::MainWindow(const QString & m_fileName, const bool &maximized, const bool &fullscreen) {
 
-    qInstallMessageHandler( myMessageOutput);
+    //Assume no debugging messages
+//    qInstallMessageHandler( myMessageOutput);
+
+    printDebug = false; // comment it to stop debug override
+
+    qSetMessagePattern("[%{type} %{category}] %{time yyyyMMdd h:mm:ss.zzz t} %{threadid} (%{file}:%{line}) %{function} - %{message}");
+    qSetMessagePattern("[%{type} %{category}] %{time} t:%{threadid} (%{file}:%{line}) %{function} - %{message}");
 
     setWindowIcon (QIcon(":/images/socnetv_logo_white_bg_128px.svg"));
 
@@ -218,10 +207,12 @@ MainWindow::MainWindow(const QString & m_fileName) {
     // Check if user-provided network file on startup
     qDebug() << "MW::MainWindow() Checking if user provided file on startup...";
     if (!m_fileName.isEmpty()) {
+        qDebug() << "MW::MainWindow() Loading user provided file" << m_fileName;
         slotNetworkFileChoose( m_fileName );
     }
 
-    statusMessage( tr("Welcome to Social Network Visualizer, Version ")+VERSION);
+    QString welcomeMsg = "Welcome to " + qApp->applicationName() + ", Version ";
+    statusMessage( tr(welcomeMsg.toLocal8Bit())+VERSION);
 
     qDebug() << "MW::MainWindow() - Constructor finished initialization on thread:" << thread();
 
@@ -398,8 +389,6 @@ void MainWindow::resizeEvent( QResizeEvent * ) {
 QMap<QString,QString> MainWindow::initSettings() {
 
     qDebug()<< "MW::initSettings";
-
-    //printDebug = false; // comment it to stop debug override
 
     // Create fortune cookies and tips
     createFortuneCookies();
@@ -5783,9 +5772,6 @@ void MainWindow::initApp(){
         delete ed;
     }
     m_textEditors.clear();
-
-    /** set window title **/
-    setWindowTitle(tr("Social Network Visualizer ")+VERSION);
 
     QApplication::restoreOverrideCursor();
     QApplication::restoreOverrideCursor();
@@ -14027,11 +14013,15 @@ void MainWindow::slotOptionsDebugMessages(bool toggle){
     if (!toggle)   {
         appSettings["printDebug"] = "false";
         printDebug=false;
+        QLoggingCategory::setFilterRules("default.debug=false\n"
+                                             "driver.usb.debug=true");
         statusMessage( tr("Debug messages off.") );
     }
     else  {
         appSettings["printDebug"] = "true";
         printDebug=true;
+        QLoggingCategory::setFilterRules("default.debug=true\n"
+                                             "driver.usb.debug=true");
         statusMessage( tr("Debug messages on.") );
     }
 }
