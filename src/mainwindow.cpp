@@ -136,8 +136,6 @@ MainWindow::MainWindow(const QString & m_fileName, const bool &maximized, const 
     //Assume no debugging messages
 //    qInstallMessageHandler( myMessageOutput);
 
-    printDebug = false; // comment it to stop debug override
-
     qSetMessagePattern("[%{type} %{category}] %{time yyyyMMdd h:mm:ss.zzz t} %{threadid} (%{file}:%{line}) %{function} - %{message}");
     qSetMessagePattern("[%{type} %{category}] %{time} t:%{threadid} (%{file}:%{line}) %{function} - %{message}");
 
@@ -561,6 +559,7 @@ QMap<QString,QString> MainWindow::initSettings() {
     // restore user setting for debug messages
     printDebug = (appSettings["printDebug"] == "true") ? true:false;
 
+    slotOptionsDebugMessages(printDebug);
     return appSettings;
 }
 
