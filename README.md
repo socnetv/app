@@ -7,7 +7,7 @@
 [![website](https://img.shields.io/website-up-down-green-red/https/socnetv.org.svg)](https://socnetv.org)
 ====================================
 
-[![socnetv](/src/images/socnetv.png)](https://socnetv.org) SocNetV - Social Network Visualizer
+[![socnetv](/src/images/socnetv_logo_trans_64px.svg)](https://socnetv.org) SocNetV - Social Network Visualizer
 ====================================
 
 
