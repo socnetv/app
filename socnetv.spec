@@ -80,7 +80,7 @@ set -x
 
 %if %{is_fedora}
 %define distr Fedora
-%define breqr qt5-qtbase,qt5-qtbase-devel, qt5-qtcharts-devel, qt5-qtsvg-devel, qt5-qttools, fedora-release, desktop-file-utils, mesa-libGL-devel
+%define breqr qt5-qtbase,qt5-qtbase-devel, qt5-qtcharts-devel, qt5-qtsvg-devel, qt5-qttools, fedora-release, desktop-file-utils
 %define qmake /usr/bin/qmake-qt5
 # %define lrelease /usr/bin/lrelease
 %endif
@@ -89,7 +89,7 @@ set -x
 
 %if %{is_suse}
 %define distr SUSE	# %(head -1 /etc/SuSE-release)
-%define breqr libqt5-qtbase, libqt5-qtbase-devel, libqt5-qtsvg-devel, libQt5Charts5-devel, libQt5OpenGL-devel, libQt5OpenGL5,libqt5-qttools, unzip, update-desktop-files
+%define breqr libqt5-qtbase, libqt5-qtbase-devel, libqt5-qtsvg-devel, libQt5Charts5-devel, libqt5-qttools, unzip, update-desktop-files
 %define qmake /usr/bin/qmake-qt5
 # %define lrelease /usr/bin/lrelease
 %endif
