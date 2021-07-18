@@ -4,8 +4,8 @@ lessThan(QT_VERSION, 5.0) {
 
 TARGET = socnetv
 
-MY_TARGET_BUILD = release
-#MY_TARGET_BUILD = debug
+#MY_TARGET_BUILD = release
+MY_TARGET_BUILD = debug
 
 #ALLOW_WARNINGS = warn_on
 ALLOW_WARNINGS = warn_off
@@ -22,7 +22,6 @@ QT += widgets
 QT += printsupport 
 QT += charts
 QT += svg
-qtHaveModule(opengl): QT += opengl
 
 INCLUDEPATH  += ./src
 
