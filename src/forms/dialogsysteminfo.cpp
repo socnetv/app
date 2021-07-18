@@ -31,6 +31,21 @@
 #include <QPushButton>
 #include <QScreen>
 #include <QSysInfo>
+
+#ifndef QT_NO_OPENGL
+#include <QOpenGLFunctions>
+#endif
+
+
+static QString getGlString(QOpenGLFunctions *functions, GLenum name)
+{
+    if (const GLubyte *p = functions->glGetString(name))
+        return QString::fromLatin1(reinterpret_cast<const char *>(p));
+    return QString();
+}
+
+
+
 DialogSystemInfo::DialogSystemInfo (QWidget *parent) :
     QDialog (parent),
     ui(new Ui::DialogSystemInfo)
@@ -79,6 +94,14 @@ DialogSystemInfo::DialogSystemInfo (QWidget *parent) :
     information += "\n\n";
     information += "Logical DPI (i.e. 144 on Windows default 150% mode): \n";
     information += QString::number(QApplication::primaryScreen()->logicalDotsPerInch());
+
+//    const QString glInfo = getGlString(topLevelGlWidget.context()->functions(), GL_VENDOR)
+//        + QLatin1Char('/') + getGlString(topLevelGlWidget.context()->functions(), GL_RENDERER);
+
+//    const bool supportsThreading = !glInfo.contains(QLatin1String("nouveau"), Qt::CaseInsensitive)
+//        && !glInfo.contains(QLatin1String("ANGLE"), Qt::CaseInsensitive)
+//        && !glInfo.contains(QLatin1String("llvmpipe"), Qt::CaseInsensitive);
+
 
 
     ui->infoTextEdit->setText(information);
