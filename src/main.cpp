@@ -29,6 +29,7 @@
 #include <QFile>
 #include <QTranslator>		//for text translations
 #include <QLocale>
+#include <QSurfaceFormat>
 #include <iostream>			//used for cout
 #include "mainwindow.h"		//main application window
 
@@ -37,6 +38,10 @@ using namespace std;
 int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(src);
+
+    QSurfaceFormat fmt;
+    fmt.setSamples(4);
+    QSurfaceFormat::setDefaultFormat(fmt);
 
     QApplication app(argc, argv);
 
