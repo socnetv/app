@@ -105,8 +105,8 @@ signals:
     void setCanvasBgColor(const QColor);
     void setCanvasBgImage();
     void setCanvasOpenGL(const bool &);
-    void setCanvasAntialiasing(bool);
-    void setCanvasAntialiasingAutoAdjust(bool );
+    void setCanvasAntialiasing(const bool &);
+    void setCanvasAntialiasingAutoAdjust(const bool &);
     void setCanvasSmoothPixmapTransform(bool);
     void setCanvasSavePainterState(bool);
     void setCanvasCacheBackground(bool);

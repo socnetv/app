@@ -152,7 +152,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     qInstallMessageHandler( myMessageOutput);
 
-    setWindowIcon (QIcon(":/images/socnetv.png"));
+    setWindowIcon (QIcon(":/images/socnetv_logo_white_bg_128px.svg"));
 
     appSettings = initSettings();
 
@@ -849,13 +849,11 @@ void MainWindow::initView() {
 
 
     toggle = (appSettings["antialiasing"] == "true" ) ? true:false;
-    graphicsWidget->setRenderHint(QPainter::Antialiasing, toggle );
-    graphicsWidget->setRenderHint(QPainter::TextAntialiasing, toggle );
-
+    graphicsWidget->setOptionsAntialiasing(toggle);
 
     //Disables QGraphicsView's antialiasing auto-adjustment of exposed areas.
     toggle = (appSettings["canvasAntialiasingAutoAdjustment"] == "true" ) ? false:true;
-    graphicsWidget->setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, toggle);
+    graphicsWidget->setOptionsNoAntialiasingAutoAdjust(toggle);
 
     toggle = (appSettings["canvasSmoothPixmapTransform"] == "true" ) ? true:false;
     graphicsWidget->setRenderHint(QPainter::SmoothPixmapTransform, toggle );
@@ -1151,7 +1149,7 @@ void MainWindow::initActions(){
                                         "Displays the loaded social network file "));
     connect(networkViewFileAct, SIGNAL(triggered()), this, SLOT(slotNetworkFileView()));
 
-    networkViewSociomatrixAct = new QAction(QIcon(":/images/sm.png"),
+    networkViewSociomatrixAct = new QAction(QIcon(":/images/sociomatrix_48px.svg"),
                                             tr("View &Adjacency Matrix"),  this);
     networkViewSociomatrixAct ->setShortcut(Qt::Key_F6);
     networkViewSociomatrixAct->setStatusTip(tr("Display the adjacency matrix of the network."));
@@ -1307,7 +1305,7 @@ void MainWindow::initActions(){
 
 
 
-    networkWebCrawlerAct = new QAction(QIcon(":/images/webcrawler2.png"), tr("&Web Crawler"),	this);
+    networkWebCrawlerAct = new QAction(QIcon(":/images/webcrawler_48px.svg"), tr("&Web Crawler"),	this);
     networkWebCrawlerAct->setShortcut(Qt::SHIFT+Qt::Key_C);
     networkWebCrawlerAct->setEnabled(true);
     networkWebCrawlerAct->setStatusTip(tr("Create a network from all links found in a given website"
@@ -1437,9 +1435,9 @@ void MainWindow::initActions(){
     editNodeSelectAllAct->setWhatsThis(tr("Select All\n\nSelects all nodes in the network"));
     connect(editNodeSelectAllAct, SIGNAL(triggered()), this, SLOT(slotEditNodeSelectAll()));
 
-    editNodeSelectNoneAct = new QAction(QIcon(":/images/selectnone.png"), tr("Deselect All"), this);
+    editNodeSelectNoneAct = new QAction(QIcon(":/images/select_none_48px.svg"), tr("Select None"), this);
     editNodeSelectNoneAct->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_A));
-    editNodeSelectNoneAct->setStatusTip(tr("Deselect all nodes"));
+    editNodeSelectNoneAct->setStatusTip(tr("Deselect all nodes and edges"));
     editNodeSelectNoneAct->setWhatsThis(tr("Deselect all\n\n Clears the node selection"));
     connect(editNodeSelectNoneAct, SIGNAL(triggered()), this, SLOT(slotEditNodeSelectNone()));
 
@@ -1516,7 +1514,7 @@ void MainWindow::initActions(){
             this, SLOT(slotEditNodeSelectedToClique()));
 
 
-    editNodeSelectedToStarAct = new QAction(QIcon(":/images/subgraphstar.png"),
+    editNodeSelectedToStarAct = new QAction(QIcon(":/images/subgraphstar_128px.svg"),
                                             tr("Create a star from selected nodes "), this);
     editNodeSelectedToStarAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_S));
     editNodeSelectedToStarAct->setStatusTip(tr("Connect selected nodes with edges/arcs to create a star -- "
@@ -1529,14 +1527,15 @@ void MainWindow::initActions(){
             this, SLOT(slotEditNodeSelectedToStar()));
 
 
-    editNodeSelectedToCycleAct = new QAction(QIcon(":/images/subgraphcycle.png"),
+    editNodeSelectedToCycleAct = new QAction(QIcon(":/images/subgraphcycle_48px.svg"),
                                              tr("Create a cycle from selected nodes "), this);
     editNodeSelectedToCycleAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_Y));
     editNodeSelectedToCycleAct->setStatusTip(tr("Connect selected nodes with edges/arcs to create a star -- "
                                                 "There must be some nodes selected!"));
     editNodeSelectedToCycleAct->setWhatsThis(tr("Cycle from Selected Nodes\n\n"
-                                                "Adds edges between selected nodes, "
+                                                "Connect selected nodes "
                                                 "so that they become a cycle subgraph.\n"
+                                                "A cycle graph or circular graph is a graph that consists of a single cycle, or in other words, the vertices are connected in a closed chain. The cycle graph with n vertices is called Cₙ\n"
                                                 "You must have some nodes selected."));
     connect(editNodeSelectedToCycleAct, SIGNAL(triggered()),
             this, SLOT(slotEditNodeSelectedToCycle()));
@@ -1580,7 +1579,7 @@ void MainWindow::initActions(){
     connect(editNodeShapeAll, SIGNAL(triggered()), this, SLOT(slotEditNodeShape()) );
 
 
-    editNodeNumbersSizeAct = new QAction(QIcon(":/images/nodenumbersize.png"),
+    editNodeNumbersSizeAct = new QAction(QIcon(":/images/nodenumbersize_48px.svg"),
                                          tr("Change All Node Numbers Size (this session)"),	this);
     editNodeNumbersSizeAct->setStatusTip(tr("Change the font size of the numbers of all nodes"
                                             "(in this session only)"));
@@ -2855,7 +2854,7 @@ void MainWindow::initActions(){
             this, SLOT(slotAnalyzeReciprocity()));
 
     analyzeGraphSymmetryAct = new QAction(
-                QIcon(":/images/symmetry-edge.png"), tr("Symmetry Test"), this);
+                QIcon(":/images/symmetry_48px.svg"), tr("Symmetry Test"), this);
     analyzeGraphSymmetryAct->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_S)
                 );
@@ -2918,7 +2917,7 @@ void MainWindow::initActions(){
     connect(analyzeMatrixGeodesicsAct, SIGNAL(triggered()),
             this, SLOT( slotAnalyzeMatrixGeodesics()) );
 
-    analyzeGraphDiameterAct = new QAction(QIcon(":/images/diameter.png"), tr("Graph Diameter"),this);
+    analyzeGraphDiameterAct = new QAction(QIcon(":/images/diameter_48px.svg"), tr("Graph Diameter"),this);
     analyzeGraphDiameterAct->setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_D));
     analyzeGraphDiameterAct->setStatusTip(tr("Compute the diameter of the network, "
@@ -3837,7 +3836,7 @@ void MainWindow::initMenuBar() {
     /** menuBar entry: analyze menu */
     analysisMenu = menuBar()->addMenu(tr("&Analyze"));
     matrixMenu = new QMenu(tr("Adjacency Matrix and Matrices..."));
-    matrixMenu->setIcon(QIcon(":/images/sm.png"));
+    matrixMenu->setIcon(QIcon(":/images/sociomatrix_48px.svg"));
     analysisMenu->addMenu (matrixMenu);
     matrixMenu->addAction (networkViewSociomatrixAct);
     matrixMenu->addAction (networkViewSociomatrixPlotAct);
@@ -7827,7 +7826,7 @@ void MainWindow::slotNetworkExportPDF(QString &pdfName,
                                 graphicsWidget->viewport()->rect());
         p.setFont(QFont ("Helvetica", 8, QFont::Normal, false));
         if (appSettings["printLogo"]=="true") {
-            QImage logo(":/images/socnetv-logo.png");
+            QImage logo(":/images/socnetv_logo_trans_64px.svg");
             p.drawImage(5,5, logo);
             p.drawText(7,47,name);
         }
@@ -13728,11 +13727,14 @@ void MainWindow::slotOptionsCanvasOpenGL(const bool &toggle) {
  * @param toggle
  */
 void MainWindow::slotOptionsCanvasAntialiasing(bool toggle) {
+
+    qDebug()<< "MW::slotOptionsCanvasAntialiasingAutoAdjust() " << toggle;
+
     statusMessage( tr("Toggle anti-aliasing. Please wait...") );
-    //Inform graphicsWidget about the change
+
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-    graphicsWidget->setRenderHint(QPainter::Antialiasing, toggle);
-    graphicsWidget->setRenderHint(QPainter::TextAntialiasing, toggle);
+
+    graphicsWidget->setOptionsAntialiasing(toggle);
 
     if (!toggle) {
         appSettings["antialiasing"] = "false";
@@ -13760,14 +13762,13 @@ void MainWindow::slotOptionsCanvasAntialiasingAutoAdjust(const bool &toggle) {
 
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
+    graphicsWidget->setOptionsNoAntialiasingAutoAdjust(toggle);
+
     if (!toggle) {
-        //When enabled, it minimizes the areas that require redrawing, which improves performance.
-        graphicsWidget->setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, true);
         appSettings["canvasAntialiasingAutoAdjustment"] = "false";
         statusMessage( tr("Antialiasing auto-adjustment off.") );
     }
     else {
-        graphicsWidget->setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, false);
         appSettings["canvasAntialiasingAutoAdjustment"] = "true";
         statusMessage( tr("Antialiasing auto-adjustment on.") );
     }
