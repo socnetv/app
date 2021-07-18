@@ -30,6 +30,7 @@
 #include <QTranslator>		//for text translations
 #include <QLocale>
 #include <QSurfaceFormat>
+#include <QCommandLineParser>
 #include <iostream>			//used for cout
 #include "mainwindow.h"		//main application window
 
@@ -39,12 +40,34 @@ int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(src);
 
+    //
+    // Set the global default surface format to enable multisampling
+    // used by default in QOpenGLContext, QWindow, QOpenGLWidget and similar classes.
+    //
     QSurfaceFormat fmt;
     fmt.setSamples(4);
     QSurfaceFormat::setDefaultFormat(fmt);
 
+    //
+    // Create the application instance
+    //
     QApplication app(argc, argv);
 
+    //
+    // Load our default stylesheet
+    //
+    QString sheetName = "default.qss";
+    QFile file(":/qss/" + sheetName );
+    file.open(QFile::ReadOnly);
+    QString styleSheet = QString::fromLatin1(file.readAll());
+    file.close();
+
+    // Apply our default stylesheet to the app
+    qApp->setStyleSheet(styleSheet);
+
+    //
+    // Setup app translations
+    //
     // Todo update/remove translations
     QTranslator tor( 0 );
     QLocale locale;
@@ -56,46 +79,72 @@ int main(int argc, char *argv[])
     tor.load( QString("socnetv.") + locale.name(), "." );
     app.installTranslator( &tor );
 
-    //Check if a filename is passed when this program is called.
-    QString option;
-    if ( argc > 1 )     {
-        option = argv[1];
-        if (option=="--help" || option=="-h" || option=="--h" || option=="-help" ) {
-            cout<<"\nSocial Network Visualizer v." << qPrintable(VERSION)<< "\n"
-               <<"\nUsage: socnetv [flags] [file]\n"
-              <<"-h, --help 	Displays this help message\n"
-             <<"-V, --version	Displays version number\n\n"
-            <<"You can load a network from a file using \n"
-            <<"socnetv file.net \n"
-            <<"where file.net/csv/dot/graphml must be of valid format. See README\n\n"
+    //
+    // Set application basic info
+    //
+    app.setOrganizationName("socnetv");
+    app.setOrganizationDomain("socnetv.org");
+    app.setApplicationDisplayName("SocNetV");   // Used in widgets
 
-            <<"Please send any bug reports to dimitris.kalamaras@gmail.com.\n\n";
-            return -1;
-        }
-        else if (option=="-V" || option=="--version") {
-            cout<<"\nSocial Network Visualizer v." << qPrintable(VERSION)
-               << "\nCopyright Dimitris V. Kalamaras, \nLicense: GPL3\n\n";
-            return -1;
-        }
-        else  {
-            cout<<"\nSocial Network Visualizer v." << qPrintable(VERSION);
-            cout<<"\nLoading file: " << qPrintable(option) << "\n\n";
-        }
+    app.setApplicationName("Social Network Visualizer");    // used by windowing system
+    app.setApplicationVersion(VERSION);
 
+    //
+    // Setup the command line parser
+    //
+    QCommandLineParser parser;
+
+    QString cmdDescr = "\nSocial Network Visualizer, version " + (VERSION) + "\n\n"
+            "Copyright: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>\n" +
+            "License: GPL3";
+    parser.setApplicationDescription(cmdDescr);
+
+    parser.addHelpOption();
+    parser.addVersionOption();
+
+    parser.addPositionalArgument( "file",
+                                  QCoreApplication::translate("main", "Network file to load on startup. You can load a network from a file using `socnetv file.net` where file.net/csv/dot/graphml must be of valid format. See README")
+                                  );
+
+    // A boolean option for progress dialogs
+    QCommandLineOption showProgressOption(QStringList() << "p" << "progress", QCoreApplication::translate("main", "Show progress dialogs during routines"));
+    parser.addOption(showProgressOption);
+
+    // A boolean option for maximized display
+    QCommandLineOption showMaximizedOption(QStringList() << "m" << "maximimzed", QCoreApplication::translate("main", "Show app maximized."));
+    parser.addOption(showMaximizedOption);
+
+    // A boolean option for full screen display
+    QCommandLineOption showFullScreenOption(QStringList() << "f" << "full", QCoreApplication::translate("main", "Show in full screen mode."));
+    parser.addOption(showFullScreenOption);
+
+    // An option with a value
+    QCommandLineOption fileOption(QStringList() << "i" << "input",
+                                             QCoreApplication::translate("main", "Load a network file. You can load a network from a file using `socnetv /path/to/file.net` where file.net/csv/dot/graphml must be of valid format. See README"),
+                                             QCoreApplication::translate("main", "filename"));
+    parser.addOption(fileOption);
+
+    // Process the actual command line arguments given by the user
+    parser.process(app);
+
+    // Read positional arguments
+    const QStringList args = parser.positionalArguments();
+    QString fileName;
+    if ( !args.isEmpty() ) {
+        fileName= args.at(0);
     }
 
-    // Create our MainWindow
-    MainWindow *socnetv=new MainWindow(option);
+    bool showProgress = parser.isSet(showProgressOption);
+    bool showMaximized = parser.isSet(showMaximizedOption);
+    bool showFullScreen= parser.isSet(showFullScreenOption);
+    bool loadFile = parser.isSet(fileOption);
+    //QString filename = parser.value(fileOption);
 
-    // Load our default stylesheet
-    QString sheetName = "default.qss";
-    QFile file(":/qss/" + sheetName );
-    file.open(QFile::ReadOnly);
-    QString styleSheet = QString::fromLatin1(file.readAll());
-    file.close();
 
-    // Apply our default stylesheet
-    qApp->setStyleSheet(styleSheet);
+    //
+    // Create our MainWindow and exec the app to enter the main event loop.
+    //
+    MainWindow *socnetv=new MainWindow(fileName, showMaximized, showFullScreen);
 
     // Show the application
     socnetv->show();
