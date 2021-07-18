@@ -37,7 +37,6 @@
 #ifndef QT_NO_OPENGL
 #include <QOpenGLWidget>
 #include <QSurfaceFormat>
-
 #else
 #include <QtWidgets>
 #endif
