@@ -118,11 +118,11 @@ int main(int argc, char *argv[])
     QCommandLineOption showFullScreenOption(QStringList() << "f" << "full", QCoreApplication::translate("main", "Show in full screen mode."));
     parser.addOption(showFullScreenOption);
 
-    // An option with a value
-    QCommandLineOption fileOption(QStringList() << "i" << "input",
-                                             QCoreApplication::translate("main", "Load a network file. You can load a network from a file using `socnetv /path/to/file.net` where file.net/csv/dot/graphml must be of valid format. See README"),
-                                             QCoreApplication::translate("main", "filename"));
-    parser.addOption(fileOption);
+    // An option to enable debug messges with a verbosity value
+    QCommandLineOption showDebugOption(QStringList() << "d" << "debug",
+                                             QCoreApplication::translate("main", "Print debug messages to stdout/console. Available verbosity <level>s: 'min' or 'full'. Default: min."),
+                                             QCoreApplication::translate("main", "level"));
+    parser.addOption(showDebugOption);
 
     // Process the actual command line arguments given by the user
     parser.process(app);
@@ -137,14 +137,25 @@ int main(int argc, char *argv[])
     bool showProgress = parser.isSet(showProgressOption);
     bool showMaximized = parser.isSet(showMaximizedOption);
     bool showFullScreen= parser.isSet(showFullScreenOption);
-    bool loadFile = parser.isSet(fileOption);
-    //QString filename = parser.value(fileOption);
+    bool showDebug = parser.isSet(showDebugOption);
+    int debugLevel = 0;
+    if (showDebug) {
+        if (parser.value(showDebugOption) == "full") {
+            debugLevel = 2;
+        }
+        else if (parser.value(showDebugOption) == "min") {
+            debugLevel = 1;
+        }
+        else {
+            debugLevel = 1;
+        }
 
+    }
 
     //
     // Create our MainWindow and exec the app to enter the main event loop.
     //
-    MainWindow *socnetv=new MainWindow(fileName, showMaximized, showFullScreen);
+    MainWindow *socnetv=new MainWindow(fileName, showProgress, showMaximized, showFullScreen, debugLevel);
 
     // Show the application
     socnetv->show();
