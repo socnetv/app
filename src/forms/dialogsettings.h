@@ -33,10 +33,8 @@
 
 
 
-
-
 namespace Ui {
-class DialogSettings;
+ class DialogSettings;
 }
 
 class DialogSettings : public QDialog
