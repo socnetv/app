@@ -100,7 +100,7 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
 
 
 
-void GraphicsWidget::toggleOpenGL(const bool &enabled)
+void GraphicsWidget::setOptionsOpenGL(const bool &enabled)
 {
 #ifndef QT_NO_OPENGL
     //setViewport(enabled ? new QGLWidget(QGLFormat(QGL::SampleBuffers)) : new QWidget);

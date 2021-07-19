@@ -30,7 +30,6 @@
 
 
 #include <QGraphicsView>
-//#include <QMetaType>
 
 class MainWindow;
 
@@ -62,7 +61,6 @@ public:
 
     void clear();
 
-    void toggleOpenGL(const bool &enabled=false);
     QString createEdgeName(const int &v1,
                            const int &v2,
                            const int &relation=-1);
@@ -196,6 +194,7 @@ public slots:
     void changeMatrixRotation(int angle);
     void reset();
 
+    void setOptionsOpenGL(const bool &enabled=false);
     void setOptionsAntialiasing(const bool &toggle);
     void setOptionsNoAntialiasingAutoAdjust(const bool &toggle);
 
