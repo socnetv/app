@@ -200,8 +200,6 @@ public slots:
     void slotNetworkViewSociomatrix();
     void slotNetworkViewSociomatrixPlotText();
 
-    bool slotNetworkExportPNG();
-
     void slotNetworkExportImageDialog();
     void slotNetworkExportImage ( const QString &filename,
                                   const QByteArray &format,
@@ -654,7 +652,7 @@ private:
 
     QAction *networkNewAct, *networkOpenAct, *networkSaveAct, *networkSaveAsAct,
     *networkCloseAct, *networkPrintAct,*networkQuitAct;
-    QAction *networkExportImageAct, *networkExportPNGAct, *networkExportPajek,
+    QAction *networkExportImageAct, *networkExportPajek,
     *networkExportPDFAct, *networkExportDLAct, *networkExportGWAct, *networkExportSMAct,
     *networkExportListAct;
     QAction *networkImportPajekAct, *networkImportGMLAct, *networkImportAdjAct, *networkImportListAct,
