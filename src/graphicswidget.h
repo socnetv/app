@@ -120,7 +120,7 @@ public slots:
                   const int &labelSize,
                   const int &labelDistance);
     void removeNode(const int &number);
-    void setNodeVisibility(int, bool );	//Called from Graph via MW
+    void setNodeVisibility(const int &number, const bool &toggle );	//Called from Graph via MW
     void setNodeClicked(GraphicsNode *);
     void moveNode(const int &num, const qreal &x, const qreal &y);
 
@@ -130,7 +130,7 @@ public slots:
     bool setNodeShape(const int &nodeNumber,
                       const QString &shape,
                       const QString &iconPath=QString());
-    bool setNodeColor(const int &, const QString &color);
+    bool setNodeColor(const int &nodeNumber, const QString &color);
 
     void setNodeNumberColor(const int &nodeNumber, const QString &color);
     void setNodeNumberVisibility(const bool &toggle);
@@ -159,13 +159,13 @@ public slots:
 
     void setEdgeVisibility (const int &relation, const int &source, const int &target, const bool &visible);
 
-    bool setEdgeDirectionType(const int &,
-                              const int &,
+    bool setEdgeDirectionType(const int &source,
+                              const int &target,
                               const int &dirType=false);
 
     bool setEdgeWeight(const int &, const int &, const qreal &);
 
-    void setEdgeLabel(const int &, const int&, const QString &);
+    void setEdgeLabel(const int &source, const int &target, const QString &label);
 
     void setEdgeColor(const int &, const int&, const QString &);
 

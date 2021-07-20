@@ -57,7 +57,7 @@
 GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         QGraphicsView ( sc,m_parent) {
 
-        qDebug() << "GW::GraphicsWidget(*sc, *MW)";
+        qDebug() << "Constructing GraphicsWidget";
 
         qRegisterMetaType<SelectedEdge>("SelectedEdge");
         qRegisterMetaType<QList<SelectedEdge> >();
@@ -635,7 +635,7 @@ void GraphicsWidget::removeItem( GraphicsNodeNumber *nodeNumber){
  */
 bool GraphicsWidget::setNodeColor(const int &nodeNumber,
                                   const QString &color){
-    qDebug() << "GW::setNodeColor() : " << color;
+    qDebug() << "Setting node:"<< nodeNumber << "new color:" << color;
     nodeHash.value(nodeNumber) -> setColor(color);
     return true;
 }
@@ -737,7 +737,7 @@ void GraphicsWidget::setInitZoomIndex(int zoomIndex) {
 /**
 *	Changes the visibility of a Node
 */
-void GraphicsWidget::setNodeVisibility(int number, bool toggle){
+void GraphicsWidget::setNodeVisibility(const int &number, const bool &toggle){
     if  ( nodeHash.contains (number) ) {
         qDebug() << "GW::setNodeVisibility() - node"
                  << number << " set to " << toggle;
@@ -830,17 +830,17 @@ void GraphicsWidget::setNodeNumberColor(const int &nodeNumber, const QString &co
  * @param number
  * @param size
  */
-bool GraphicsWidget::setNodeNumberSize(const int &number, const int &size){
-    qDebug () << " GraphicsWidget::setNodeNumberSize() - node: "<< number
+bool GraphicsWidget::setNodeNumberSize(const int &nodeNumber, const int &size){
+    qDebug () << " GraphicsWidget::setNodeNumberSize() - node: "<< nodeNumber
               << " new number size "<< size;
-    if  ( nodeHash.contains (number) ) {
+    if  ( nodeHash.contains (nodeNumber) ) {
         if (size>0){
-            nodeHash.value(number) ->setNumberSize(size) ;
+            nodeHash.value(nodeNumber) ->setNumberSize(size) ;
             return true;
 
         }
     }
-    qDebug() << "GW::setNodeNumberSize() - cannot find node " << number;
+    qDebug() << "GW::setNodeNumberSize() - cannot find node " << nodeNumber;
     return false;
 }
 
@@ -1323,7 +1323,7 @@ void GraphicsWidget::selectAll(){
  * Called from MW.
  */
 void GraphicsWidget::selectNone(){
-    qDebug() << "GraphicsWidget::selectNone()";
+    qDebug() << "Emptying user selection...";
     emit userClickedNode(0,QPointF(0,0));
     scene()->clearSelection();
 

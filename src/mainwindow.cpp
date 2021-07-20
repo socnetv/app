@@ -4171,12 +4171,11 @@ void MainWindow::initPanels(){
 
     qDebug()<< "Initializing panels...";
 
-    /*
-     *  create widgets for the Control Panel
-     */
+    //
+    // create widgets for the Control Panel
+    //
 
     QString helpMessage = "";
-
 
     QLabel *toolBoxNetworkAutoCreateSelectLabel  = new QLabel;
     toolBoxNetworkAutoCreateSelectLabel->setText(tr("Auto Create:"));
@@ -4894,7 +4893,6 @@ void MainWindow::initPanels(){
     rightPanelNetworkTypeLCD ->setMinimumWidth(75);
 
 
-
     QLabel *rightPanelNodesLabel = new QLabel;
     rightPanelNodesLabel->setText(tr("Nodes:"));
     rightPanelNodesLabel->setStatusTip(
@@ -5416,156 +5414,102 @@ void MainWindow::initSignalSlots() {
 
 
 
-
-
     //
     // Signals between activeGraph and graphicsWidget
     //
 
-    connect( graphicsWidget,  &GraphicsWidget::userClickOnEmptySpace,
-             activeGraph, &Graph::graphClickedEmptySpace ) ;
-
-    connect( graphicsWidget, SIGNAL( resized(int, int)),
-             activeGraph, SLOT( canvasSizeSet(int,int)) ) ;
-
-    connect( graphicsWidget, SIGNAL(
-                 userDoubleClickNewNode(const QPointF &) ),
-             activeGraph, SLOT(
-                 vertexCreateAtPos(const QPointF &) ) ) ;
-
-    connect( graphicsWidget, &GraphicsWidget::userSelectedItems,
-             activeGraph,&Graph::graphSelectionChanged);
-
     connect( activeGraph, &Graph::addGuideCircle,
-             graphicsWidget,&GraphicsWidget::addGuideCircle ) ;
+             graphicsWidget, &GraphicsWidget::addGuideCircle ) ;
 
-    connect( activeGraph, SIGNAL( addGuideHLine(const double&) ),
-             graphicsWidget, SLOT(  addGuideHLine(const double&) ) ) ;
+    connect( activeGraph, &Graph::addGuideHLine,
+             graphicsWidget, &GraphicsWidget::addGuideHLine) ;
 
-    connect( activeGraph, SIGNAL( setNodePos(const int &, const qreal &, const qreal &) ),
-             graphicsWidget, SLOT( moveNode(const int &, const qreal &, const qreal &) ) ) ;
+    connect( activeGraph, &Graph::setNodePos,
+             graphicsWidget, &GraphicsWidget::moveNode) ;
 
-    connect( activeGraph,&Graph::signalNodesFound,
+    connect( activeGraph, &Graph::signalNodesFound,
              graphicsWidget,  &GraphicsWidget::setNodesMarked  );
 
-    connect( activeGraph,
-             SIGNAL( signalDrawNode( const QPointF &,
-                                     const int &,
-                                     const int &,
-                                     const QString &,
-                                     const QString &,
-                                     const QString &,
-                                     const QString &,
-                                     const int &,
-                                     const int &,
-                                     const QString &,
-                                     const QString &,
-                                     const int &,
-                                     const int &
-                                     )
-                     ),
-             graphicsWidget,
-             SLOT( drawNode( const QPointF &,
-                             const int &,
-                             const int &,
-                             const QString &,
-                             const QString &,
-                             const QString &,
-                             const QString &,
-                             const int &,
-                             const int &,
-                             const QString &,
-                             const QString &,
-                             const int &,
-                             const int &
-                             )
-                   )
-             ) ;
+    connect( activeGraph, &Graph::signalDrawNode,
+             graphicsWidget, &GraphicsWidget::drawNode) ;
 
-    connect( activeGraph,&Graph::signalRemoveNode,
-             graphicsWidget,  &GraphicsWidget::removeNode  );
+    connect( activeGraph, &Graph::signalRemoveNode,
+             graphicsWidget, &GraphicsWidget::removeNode  );
 
-    connect( activeGraph, SIGNAL( setVertexVisibility(int, bool)  ),
-             graphicsWidget, SLOT(  setNodeVisibility (int ,  bool) ) );
+    connect( activeGraph, &Graph::setVertexVisibility,
+             graphicsWidget, &GraphicsWidget::setNodeVisibility);
 
-    connect( activeGraph, SIGNAL( setNodeSize(const int &, const int &)  ),
-             graphicsWidget, SLOT(  setNodeSize (const int &, const int &) ) );
+    connect( activeGraph, &Graph::setNodeSize,
+             graphicsWidget, &GraphicsWidget::setNodeSize);
 
-    connect( activeGraph, SIGNAL( setNodeColor(const int &, const QString &))  ,
-             graphicsWidget, SLOT(  setNodeColor(const int &, const QString &) ) );
+    connect( activeGraph, &Graph::setNodeColor,
+             graphicsWidget, &GraphicsWidget::setNodeColor );
 
-    connect( activeGraph, SIGNAL( setNodeShape(const int &,const QString&, const QString &))  ,
-             graphicsWidget, SLOT(  setNodeShape(const int &, const QString&,const QString &) ) );
+    connect( activeGraph, &Graph::setNodeShape,
+             graphicsWidget, &GraphicsWidget::setNodeShape);
 
-    connect( activeGraph, SIGNAL( setNodeNumberColor(const int &, QString)  ),
-              graphicsWidget, SLOT(  setNodeNumberColor (const int &, QString) ) );
+    connect( activeGraph, &Graph::setNodeNumberColor,
+              graphicsWidget, &GraphicsWidget::setNodeNumberColor);
 
-    connect( activeGraph, SIGNAL( setNodeNumberSize(const int &, const int &)  ),
-             graphicsWidget, SLOT(  setNodeNumberSize (const int &, const int &) ) );
+    connect( activeGraph, &Graph::setNodeNumberSize,
+             graphicsWidget, &GraphicsWidget::setNodeNumberSize);
 
-    connect( activeGraph, SIGNAL( setNodeNumberDistance(const int &, const int &)  ),
-             graphicsWidget, SLOT( setNodeNumberDistance (const int &, const int &) ) );
+    connect( activeGraph, &Graph::setNodeNumberDistance,
+             graphicsWidget, &GraphicsWidget::setNodeNumberDistance);
 
     connect( activeGraph, &Graph::setNodeLabel ,
              graphicsWidget, &GraphicsWidget::setNodeLabel );
 
     connect( activeGraph,&Graph::setNodeLabelColor,
-             graphicsWidget,  &GraphicsWidget::setNodeLabelColor  );
+             graphicsWidget,  &GraphicsWidget::setNodeLabelColor );
 
-    connect( activeGraph, SIGNAL( setNodeLabelSize(const int &, const int &)  ),
-             graphicsWidget, SLOT(  setNodeLabelSize (const int &, const int &) ) );
+    connect( activeGraph, &Graph::setNodeLabelSize,
+             graphicsWidget, &GraphicsWidget::setNodeLabelSize );
 
-    connect( activeGraph, SIGNAL( setNodeLabelDistance(const int &, const int &)  ),
-             graphicsWidget, SLOT( setNodeLabelDistance (const int &, const int &) ) );
-
+    connect( activeGraph, &Graph::setNodeLabelDistance,
+             graphicsWidget, &GraphicsWidget::setNodeLabelDistance);
 
     connect( activeGraph, &Graph::signalRemoveEdge,
              graphicsWidget,&GraphicsWidget::removeEdge);
 
+    connect (activeGraph, &Graph::signalDrawEdge,
+             graphicsWidget,&GraphicsWidget::drawEdge);
 
-    connect (activeGraph, &Graph::signalDrawEdge, graphicsWidget,&GraphicsWidget::drawEdge);
+    connect( activeGraph, &Graph::setEdgeWeight,
+             graphicsWidget, &GraphicsWidget::setEdgeWeight);
 
-    connect( activeGraph, SIGNAL( setEdgeWeight(const int &,
-                                                const int &,
-                                                const qreal &)),
-             graphicsWidget, SLOT( setEdgeWeight(const int &,
-                                                 const int &,
-                                                 const qreal &) ) );
+    connect( activeGraph, &Graph::signalEdgeType,
+             graphicsWidget, &GraphicsWidget::setEdgeDirectionType );
 
-    connect( activeGraph, SIGNAL( signalEdgeType(const int &,
-                                                 const int &,
-                                                 const int &)),
-             graphicsWidget, SLOT( setEdgeDirectionType(const int &,
-                                                        const int &,
-                                                        const int &) ) );
+    connect( activeGraph, &Graph::setEdgeColor,
+             graphicsWidget, &GraphicsWidget::setEdgeColor);
 
-    connect( activeGraph, SIGNAL( setEdgeColor(const int &,
-                                               const int &,
-                                               const QString &)),
-             graphicsWidget, SLOT( setEdgeColor(const int &,
-                                                const int &,
-                                                const QString &) ) );
-
-
-    connect( activeGraph, SIGNAL( setEdgeLabel(const int &,
-                                               const int &,
-                                               const QString &)),
-             graphicsWidget, SLOT( setEdgeLabel(const int &,
-                                                const int &,
-                                                const QString &) ) );
+    connect( activeGraph, &Graph::setEdgeLabel,
+             graphicsWidget, &GraphicsWidget::setEdgeLabel );
 
     connect( activeGraph, &Graph::setEdgeVisibility,
              graphicsWidget, &GraphicsWidget::setEdgeVisibility);
 
+    connect( activeGraph, &Graph::signalRelationChangedToGW,
+             graphicsWidget, &GraphicsWidget::relationSet) ;
+
+    connect( graphicsWidget,  &GraphicsWidget::userClickOnEmptySpace,
+             activeGraph, &Graph::graphClickedEmptySpace ) ;
+
+    connect( graphicsWidget, &GraphicsWidget::resized,
+             activeGraph, &Graph::canvasSizeSet) ;
+
+    connect( graphicsWidget, &GraphicsWidget::userDoubleClickNewNode,
+             activeGraph, &Graph::vertexCreateAtPos) ;
+
+    connect( graphicsWidget, &GraphicsWidget::userSelectedItems,
+             activeGraph,&Graph::graphSelectionChanged);
 
     connect( graphicsWidget, &GraphicsWidget::userClickedNode,
              activeGraph, &Graph::vertexClickedSet );
 
     connect( graphicsWidget, &GraphicsWidget::userClickedEdge,
              activeGraph, &Graph::edgeClickedSet );
-
-    connect( activeGraph, SIGNAL(signalRelationChangedToGW(int)),
-             graphicsWidget, SLOT( relationSet(int))  ) ;
 
 
     //

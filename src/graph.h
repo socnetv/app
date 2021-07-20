@@ -367,7 +367,7 @@ signals:
 
     void setEdgeVisibility (const int &relation, const int &source, const int &target, const bool &toggle);
 
-    void setVertexVisibility(int, bool);
+    void setVertexVisibility(const int &number, const bool &toggle);
 
     void setNodePos(const int &, const qreal &, const qreal &);
 
@@ -405,7 +405,7 @@ signals:
                        const int &v2,
                        const QString &label);
     void addGuideCircle(const double&, const double&, const double&);
-    void addGuideHLine (const double&y0);
+    void addGuideHLine (const double &y0);
 
 
 
