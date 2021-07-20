@@ -131,17 +131,32 @@
  * @param m_fileName the file to load, if any.
  * MainWindow contruction method
  */
-MainWindow::MainWindow(const QString & m_fileName, const bool &maximized, const bool &fullscreen) {
+MainWindow::MainWindow(const QString & m_fileName, const bool &showProgress, const bool &maximized, const bool &fullscreen, const int &debugLevel) {
 
-    //Assume no debugging messages
 //    qInstallMessageHandler( myMessageOutput);
 
-    qSetMessagePattern("[%{type} %{category}] %{time yyyyMMdd h:mm:ss.zzz t} %{threadid} (%{file}:%{line}) %{function} - %{message}");
-    qSetMessagePattern("[%{type} %{category}] %{time} t:%{threadid} (%{file}:%{line}) %{function} - %{message}");
+    switch (debugLevel) {
+    case 0:
+        // No debug parameter -- set message pattern to bare minimum
+        qSetMessagePattern("%{time} t:%{threadid} (%{file}:%{line}) %{function} - %{message}");
+        // Disable debugging message with filter rule
+        QLoggingCategory::setFilterRules("default.debug=false\n"
+                                             "socnetv.debug=false");
+        break;
+    case 1:
+        qSetMessagePattern("[%{type} %{category}] %{time} t:%{threadid} (%{file}:%{line}) %{function} - %{message}");
+        break;
+    case 2:
+        qSetMessagePattern("[%{type} %{category}] %{time yyyyMMdd h:mm:ss.zzz t} %{threadid} (%{file}:%{line}) %{function} - %{message}");
+        break;
+    default:
+        break;
+    }
+
 
     setWindowIcon (QIcon(":/images/socnetv_logo_white_bg_128px.svg"));
 
-    appSettings = initSettings();
+    appSettings = initSettings(debugLevel);
 
     // Get host screen width and height
     int primaryScreenWidth = QApplication::primaryScreen()->availableSize().width();
@@ -155,13 +170,16 @@ MainWindow::MainWindow(const QString & m_fileName, const bool &maximized, const 
     if (primaryScreenWidth > 2439) {
         windowMinWidth = 1440;
     }
+    else if (primaryScreenWidth> 1280) {
+        windowMinWidth = 1280;
+    }
     if (primaryScreenHeight> 1559) {
         windowMinHeight = 1024;
     }
 
-    qDebug() << "MW::MainWindow() - Constructor starting on thread:"<< thread();
-    qDebug () << "MW::MainWindow() - primaryScreen size: "<<primaryScreenWidth<<"x"<<primaryScreenHeight;
-    qDebug () << "MW::MainWindow() - Minimum MW size will be set to:"<<windowMinWidth<<"x"<<windowMinHeight;
+    qDebug() << "Constructor starting on thread:"<< thread();
+    qDebug() << "primaryScreen size: "<<primaryScreenWidth<<"x"<<primaryScreenHeight;
+    qDebug() << "Minimum MW size will be set to:"<<windowMinWidth<<"x"<<windowMinHeight;
 
     // Set MW minimum size, before creating the graphics widget
     #ifdef Q_OS_LINUX
@@ -174,9 +192,10 @@ MainWindow::MainWindow(const QString & m_fileName, const bool &maximized, const 
         setMinimumSize(windowMinWidth,windowMinHeight);
     #endif
 
-
-    // Initialize widgets
-    qDebug() << "MW::MainWindow() - initialization of printer, view, graph, actions, menus, panels, signal/slots etc...";
+    //
+    // Initialize devices and widgets
+    //
+    qDebug() << "initialization of printer, view, graph, actions, menus, panels, signal/slots etc...";
 
     // Create printer devices
     printer = new QPrinter;
@@ -194,7 +213,7 @@ MainWindow::MainWindow(const QString & m_fileName, const bool &maximized, const 
 
     initPanels();       // Build the toolbox
 
-    initWindowLayout(); // Init the application window, set layout etc
+    initWindowLayout(maximized); // Init the application window, set layout etc
 
     initSignalSlots();  // Connect signals and slots between app components
 
@@ -202,17 +221,19 @@ MainWindow::MainWindow(const QString & m_fileName, const bool &maximized, const 
 
     graphicsWidget->setFocus();
 
-    // Check if user-provided network file on startup
-    qDebug() << "MW::MainWindow() Checking if user provided file on startup...";
+    //
+    // Load user-provided network file, if any
+    //
+    qDebug() << "Checking if user provided file on startup...";
     if (!m_fileName.isEmpty()) {
-        qDebug() << "MW::MainWindow() Loading user provided file" << m_fileName;
+        qDebug() << "Loading user provided file" << m_fileName;
         slotNetworkFileChoose( m_fileName );
     }
 
     QString welcomeMsg = "Welcome to " + qApp->applicationName() + ", Version ";
     statusMessage( tr(welcomeMsg.toLocal8Bit())+VERSION);
 
-    qDebug() << "MW::MainWindow() - Constructor finished initialization on thread:" << thread();
+    qDebug() << "Constructor finished initialization on thread:" << thread();
 
 }
 
@@ -223,7 +244,7 @@ MainWindow::MainWindow(const QString & m_fileName, const bool &maximized, const 
  */
 MainWindow::~MainWindow() {
 
-    qDebug() << "MW::~MainWindow() Destruct function running...";
+    qDebug() << "Destruct function running...";
 
     // Call init to clear all maps etc.
     initApp();
@@ -248,7 +269,7 @@ MainWindow::~MainWindow() {
 
     codecs.clear();
 
-    qDebug() << "MW::~MainWindow() Destruct function finished - bye!";
+    qDebug() << "Destruct function finished - bye!";
 }
 
 
@@ -263,18 +284,18 @@ MainWindow::~MainWindow() {
 void MainWindow::closeEvent( QCloseEvent* ce ) {
 
     // Show a status message
-    qDebug() << "MW::closeEvent() - Received closing event. Show a status message to user...";
+    qDebug() << "Received closing event. Show a status message to user...";
     statusMessage( tr("Closing SocNetV. Bye!") );
 
     // Check if the graph has been save
     bool userCancelled=false;
-    qDebug() << "MW::closeEvent() - Checking if Graph is saved...";
+    qDebug() << "Checking if Graph is saved...";
     if ( activeGraph->graphSaved()  )  {
         ce->accept();
-        qDebug() << "MW::closeEvent() - Graph is already saved. ";
+        qDebug() << "Graph is already saved. ";
     }
     else {
-        qDebug() << "MW::closeEvent() - Graph NOT saved. Asking the user.";
+        qDebug() << "Graph NOT saved. Asking the user.";
         switch( slotHelpMessageToUser(
                     USER_MSG_QUESTION,
                     tr("Save changes"),
@@ -303,24 +324,24 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
     if (userCancelled) {
         return;
     }
-    qDebug() << "MW::closeEvent() - Calling terminateThreads()...";
+    qDebug() << "Calling terminateThreads()...";
     terminateThreads("closeEvent()");
 
-    qDebug() << "MW::closeEvent() - Deleting other objects/pointers...";
+    qDebug() << "Deleting other objects/pointers...";
 
-    qDebug() << "MW::closeEvent() - Deleting printer";
+    qDebug() << "Deleting printer";
     delete printer;
-    qDebug() << "MW::closeEvent() - Deleting printerPDF";
+    qDebug() << "Deleting printerPDF";
     delete printerPDF;
-    qDebug() << "MW::closeEvent() - Deleting graphicsWidget";
+    qDebug() << "Deleting graphicsWidget";
     delete graphicsWidget;
-    qDebug() << "MW::closeEvent() - Deleting activeGraph";
+    qDebug() << "Deleting activeGraph";
     delete activeGraph;
-    qDebug() << "MW::closeEvent() - Deleting Scene";
+    qDebug() << "Deleting Scene";
     delete scene;
 //    delete miniChart;
 
-    qDebug() << "MW::closeEvent() - Clearing and deleting text editors...";
+    qDebug() << "Clearing and deleting text editors...";
     foreach ( TextEditor *ed, m_textEditors) {
         ed->close();
         delete ed;
@@ -330,10 +351,10 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
     delete editNodePropertiesAct;
     delete editNodeRemoveAct;
 
-    qDebug() << "MW::closeEvent() - Clearing codecs...";
+    qDebug() << "Clearing codecs...";
     codecs.clear();
 
-    qDebug() << "MW::closeEvent() - Finished. Bye!";
+    qDebug() << "Finished. Bye!";
 }
 
 
@@ -344,13 +365,13 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
  * @param reason
  */
 void MainWindow::terminateThreads(const QString &reason) {
-    qDebug() << "MW::terminateThreads() - reason " << reason
+    qDebug() << "reason " << reason
              <<" Checking if graphThread is running...";
     if (graphThread.isRunning() ) {
-        qDebug() << "MW::terminateThreads() - graphThread running."
+        qDebug() << "graphThread running."
                  << "Calling graphThread.quit();";
         graphThread.quit();
-        qDebug() << "MW::terminateThreads() - deleting activeGraph and pointer";
+        qDebug() << "deleting activeGraph and pointer";
         delete activeGraph;
         activeGraph = 0;  // see why here: https://goo.gl/tQxpGA
     }
@@ -366,7 +387,7 @@ void MainWindow::terminateThreads(const QString &reason) {
  */
 void MainWindow::resizeEvent( QResizeEvent * ) {
 
-    qDebug() << "MW::resizeEvent():  Window resized to"
+    qDebug() << "Window resized to"
              << width()
              << ","
              << height();
@@ -384,9 +405,9 @@ void MainWindow::resizeEvent( QResizeEvent * ) {
   * @brief Initializes default (or user-defined) app settings
   *
   */
-QMap<QString,QString> MainWindow::initSettings() {
+QMap<QString,QString> MainWindow::initSettings(const int &debugLevel) {
 
-    qDebug()<< "MW::initSettings";
+    qDebug()<< "debugLevel" << debugLevel;
 
     // Create fortune cookies and tips
     createFortuneCookies();
@@ -425,17 +446,17 @@ QMap<QString,QString> MainWindow::initSettings() {
 
 
     // Call slotNetworkAvailableTextCodecs to setup a list of all supported codecs
-    qDebug() << "MW::initSettings - calling slotNetworkAvailableTextCodecs" ;
+    qDebug() << "calling slotNetworkAvailableTextCodecs" ;
     slotNetworkAvailableTextCodecs();
 
-    qDebug() << "MW::initSettings - creating DialogPreviewFile object and setting codecs list" ;
+    qDebug() << "creating DialogPreviewFile object and setting codecs list" ;
     m_dialogPreviewFile = new DialogPreviewFile(this);
     m_dialogPreviewFile->setCodecList(codecs);
 
     connect (m_dialogPreviewFile, &DialogPreviewFile::loadNetworkFileWithCodec,
              this, &MainWindow::slotNetworkFileLoad );
 
-    qDebug() << "MW::initSettings - creating default settings" ;
+    qDebug() << "creating default settings" ;
 
     // Our settings are always saved to this folder.
     settingsDir = QDir::homePath() +QDir::separator() + "socnetv-data" + QDir::separator() ;
@@ -512,18 +533,18 @@ QMap<QString,QString> MainWindow::initSettings() {
     // First check if our settings folder exist
     QDir socnetvDir(settingsDir);
     if ( !socnetvDir.exists() ) {
-        qDebug() << "MW::initSettings -  dir does not exist - create it";
+        qDebug() << " dir does not exist - create it";
         socnetvDir.mkdir(settingsDir);
     }
     // Then check if the conf file exists inside the folder
-    qDebug () << "MW::initSettings - checking for settings file: "
+    qDebug() << "checking for settings file: "
               << settingsFilePath;
 
     if (!socnetvDir.exists(settingsFilePath)) {
         saveSettings();
     }
     else {
-        qDebug()<< "MW::initSettings - settings file exist - Reading it";
+        qDebug()<< "settings file exist - Reading it";
         QFile file(settingsFilePath);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             QMessageBox::critical(this, "File Read Error",
@@ -555,7 +576,7 @@ QMap<QString,QString> MainWindow::initSettings() {
         }
         file.close();
     }
-    qDebug () << "MW::initSettings() - Recent files count " << recentFiles.count() ;
+    qDebug() << "Recent files count " << recentFiles.count() ;
     // restore user setting for debug messages
     printDebug = (appSettings["printDebug"] == "true") ? true:false;
 
@@ -570,7 +591,7 @@ QMap<QString,QString> MainWindow::initSettings() {
  * @brief Saves default (or user-defined) app settings
  */
 void MainWindow::saveSettings() {
-    qDebug () << "MW::saveSettings to "<< settingsFilePath;
+    qDebug() << "settingsFilePath: "<< settingsFilePath;
     QFile file(settingsFilePath);
     if (!file.open(QIODevice::WriteOnly ) ) {
         QMessageBox::critical(this,
@@ -590,7 +611,7 @@ void MainWindow::saveSettings() {
     }
 
     QTextStream out(&file);
-    qDebug()<< "MW::saveSettings - writing settings to settings file first ";
+    qDebug()<< "Writing settings to settings file first ";
     QMap<QString, QString>::const_iterator it = appSettings.constBegin();
     while (it != appSettings.constEnd()) {
         qDebug() << "   setting: " <<  it.key() << " = " << it.value();
@@ -617,7 +638,6 @@ void MainWindow::saveSettings() {
  * @brief Opens the Settings & Preferences dialog
  */
 void MainWindow::slotOpenSettingsDialog() {
-    qDebug() << "MW::slotOpenSettingsDialog()";
 
     // build dialog
 
@@ -756,7 +776,6 @@ void MainWindow::slotOpenSettingsDialog() {
     // show settings dialog
     m_settingsDialog->exec();
 
-    qDebug ()<< appSettings["initBackgroundImage"] ;
 
 }
 
@@ -817,11 +836,12 @@ void MainWindow::polishProgressDialog(QProgressDialog* dialog)
 
 
 /**
- * @brief Initializes the network view widget, namely the graphics scene and the corresponding graphicsWidget,
- * The latter is a QGraphicsView canvas which is the 'main' widget of SocNetV.
+ * @brief Initializes our network view widget, graphicsWidget, with a graphics scene.
+ * The widget is a QGraphicsView canvas which is the 'main' widget of SocNetV.
  */
 void MainWindow::initView() {
-    qDebug ()<< "MW::initView() - creating scene and graphics widget";
+
+    qDebug()<< "Creating graphics widget";
 
     //Create our scene
     scene=new QGraphicsScene();
@@ -833,7 +853,7 @@ void MainWindow::initView() {
     bool toggle = false;
 
     toggle = (appSettings["opengl"] == "true" ) ? true:false;
-    graphicsWidget->toggleOpenGL(toggle);
+    graphicsWidget->setOptionsOpenGL(toggle);
 
 
     toggle = (appSettings["antialiasing"] == "true" ) ? true:false;
@@ -849,7 +869,6 @@ void MainWindow::initView() {
     //if items do restore their state, it's not needed for graphicsWidget to do the same...
     toggle = (appSettings["canvasPainterStateSave"] == "true" ) ? false:true;
     graphicsWidget->setOptimizationFlag(QGraphicsView::DontSavePainterState, toggle);
-
 
     if ( appSettings["canvasUpdateMode"] == "Full" ) {
         graphicsWidget->setViewportUpdateMode( QGraphicsView::FullViewportUpdate );
@@ -903,7 +922,7 @@ void MainWindow::initView() {
                                     " - To change/edit the properties of an edge, right-click on it."
                                     ""));
 
-    qDebug() << "MW::initView() - Finished initializing. graphicsWidget size:"
+    qDebug() << "Finished initializing graphicsWidget. Size:"
              << graphicsWidget->width() << "x" << graphicsWidget->height();
 }
 
@@ -915,21 +934,21 @@ void MainWindow::initView() {
  */
 void MainWindow::initGraph() {
 
-    qDebug() << "MW::initGraph() - creating activeGraph object...";
+    qDebug() << "creating activeGraph object...";
 
     activeGraph = new Graph();
 
-    qDebug() << "MW::initGraph() - activeGraph created on thread:" << activeGraph->thread()
+    qDebug() << "activeGraph created on thread:" << activeGraph->thread()
              << "moving it to new thread ";
 
     activeGraph->moveToThread(&graphThread);
 
-    qDebug() << "MW::initGraph() - activeGraph moved to thread:" << activeGraph->thread();
+    qDebug() << "activeGraph moved to thread:" << activeGraph->thread();
 
-    qDebug() << "MW::initGraph() - starting new activeGraph thread...";
+    qDebug() << "starting new activeGraph thread...";
     graphThread.start();
 
-    qDebug() << "MW::MainWindow() - activeGraph thread now:" << activeGraph->thread();
+    qDebug() << "activeGraph thread now:" << activeGraph->thread();
 
 }
 
@@ -939,7 +958,7 @@ void MainWindow::initGraph() {
  */
 void MainWindow::initActions(){
 
-    qDebug()<< "MW::initActions()- initializing ";
+    qDebug()<< "initializing actions...";
 
     /**
     Network menu actions
@@ -1046,13 +1065,6 @@ void MainWindow::initActions(){
     networkExportImageAct->setWhatsThis(tr("Export to Image\n\n"
                                       "Exports the visible part of the current social network to an image"));
     connect(networkExportImageAct, SIGNAL(triggered()), this, SLOT(slotNetworkExportImageDialog()));
-
-    networkExportPNGAct = new QAction( QIcon(":/images/export_photo_48px.svg"), tr("Export to &PNG..."), this);
-    networkExportPNGAct->setStatusTip(tr("Export visible network to PNG image"));
-    networkExportPNGAct->setWhatsThis(tr("Export to PNG \n\n"
-                                      "Exports the social network to a PNG image"));
-    connect(networkExportPNGAct, SIGNAL(triggered()), this, SLOT(slotNetworkExportPNG()));
-
 
     networkExportPDFAct = new QAction( QIcon(":/images/export_pdf_48px.svg"), tr("E&xport to PDF..."), this);
     networkExportPDFAct->setStatusTip(tr("Export the visible part of the network to a PDF file"));
@@ -1576,7 +1588,7 @@ void MainWindow::initActions(){
                                             "This setting will apply to this session only. \n"
                                             "To permanently change it, use Settings & Preferences"));
     connect(editNodeNumbersSizeAct, SIGNAL(triggered()),
-            this, SLOT( slotEditNodeNumberSize(  )) );
+            this, SLOT( slotEditNodeNumberSize()) );
 
 
     editNodeNumbersColorAct = new QAction(QIcon(":/images/format_color_text_48px.svg"),
@@ -3640,7 +3652,7 @@ void MainWindow::initActions(){
     connect(helpAboutQt, SIGNAL(triggered()), this, SLOT(slotAboutQt() ) );
 
 
-    qDebug()<< "MW::initActions() - Finished";
+    qDebug()<< "Finished actions initialization.";
 }
 
 
@@ -3650,7 +3662,7 @@ void MainWindow::initActions(){
  */
 void MainWindow::initMenuBar() {
 
-    qDebug()<< "MW::initMenuBar()";
+    qDebug()<< "Initializing menu bar...";
     /** menuBar entry networkMenu */
     networkMenu = menuBar()->addMenu(tr("&Network"));
     networkMenu->addAction(networkNewAct);
@@ -4058,7 +4070,7 @@ void MainWindow::initMenuBar() {
     helpMenu-> addAction (helpAboutApp);
     helpMenu-> addAction (helpAboutQt);
 
-    qDebug()<< "MW::initMenuBar() - Finished";
+    qDebug()<< "Finished menu bar init.";
 }
 
 
@@ -4069,7 +4081,7 @@ void MainWindow::initMenuBar() {
  */
 void MainWindow::initToolBar(){
 
-    qDebug()<< "MW::initToolBar()";
+    qDebug()<< "Initializing toolbar...";
 
     toolBar = addToolBar("operations");
 
@@ -4141,7 +4153,7 @@ void MainWindow::initToolBar(){
     toolBar->addAction ( QWhatsThis::createAction (this));
     toolBar->setIconSize(QSize(16,16));
 
-    qDebug()<< "MW::initToolBar() - Finished";
+    qDebug()<< "Finished toolbar init.";
 }
 
 
@@ -4157,7 +4169,7 @@ void MainWindow::initToolBar(){
  */
 void MainWindow::initPanels(){
 
-    qDebug()<< "MW::initPanels()";
+    qDebug()<< "Initializing panels...";
 
     /*
      *  create widgets for the Control Panel
@@ -5123,7 +5135,7 @@ void MainWindow::initPanels(){
     rightPanel->setLayout (propertiesGrid);
 
 
-    qDebug()<< "MW::initPanels() - Finished";
+    qDebug()<< "Finished panels init.";
 
 }
 
@@ -5141,9 +5153,9 @@ void MainWindow::initPanels(){
  * @brief Initializes the application window UI:
  * Creates helper widgets and sets the main layout of the MainWindow
  */
-void MainWindow::initWindowLayout() {
+void MainWindow::initWindowLayout(const bool &maximized) {
 
-    qDebug () << "MW::initWindowLayout()";
+    qDebug() << "Initializing window layout...";
 
     int size = style()->pixelMetric(QStyle::PM_ToolBarIconSize);
     QSize iconSize(size, size);
@@ -5271,10 +5283,13 @@ void MainWindow::initWindowLayout() {
     }
 
 
-    qDebug () << "MW::initWindowLayout - maximizing my window";
-    showMaximized();
+    if (maximized) {
+        qDebug() << "maximizing window as per user request.";
+        showMaximized();
+    }
 
-    qDebug () << "MW::initWindowLayout() - Finished";
+
+    qDebug() << "Finished window layout init.";
 
 }
 
@@ -5292,7 +5307,7 @@ void MainWindow::initWindowLayout() {
  *
  */
 void MainWindow::initSignalSlots() {
-    qDebug ()<< "MW::initSignalSlots() - setting up signals/slots between widgets (graphicsWidget, activeGraph and MW)...";
+    qDebug()<< "setting up signals/slots between widgets (graphicsWidget, activeGraph and MW)...";
 
     // Signals between graphicsWidget and MainWindow
 
@@ -5635,7 +5650,7 @@ void MainWindow::initSignalSlots() {
  */
 void MainWindow::initApp(){
 
-    qDebug()<<"MW::initApp() - START INITIALISATION ON THREAD" << thread();
+    qDebug()<<"START APP INITIALISATION ON THREAD" << thread();
 
     statusMessage( tr("Application initialization. Please wait..."));
 
@@ -5706,7 +5721,7 @@ void MainWindow::initApp(){
                                                                       );
 
     if (appSettings["initBackgroundImage"] != ""
-            && QFileInfo(appSettings["initBackgroundImage"]).exists()) {
+            && QFileInfo::exists(appSettings["initBackgroundImage"])) {
         graphicsWidget->setBackgroundBrush(QImage(appSettings["initBackgroundImage"]));
         graphicsWidget->setCacheMode(QGraphicsView::CacheBackground);
         statusMessage( tr("BackgroundImage on.") );
@@ -5763,7 +5778,7 @@ void MainWindow::initApp(){
     //editRelationChangeCombo->clear();
 
 
-    qDebug()<<"MW::initApp() - Clearing my"
+    qDebug()<<"Clearing my"
            <<m_textEditors.size()
           <<"textEditors";
     foreach ( TextEditor *ed, m_textEditors) {
@@ -5778,7 +5793,7 @@ void MainWindow::initApp(){
 
     statusMessage( tr("Ready"));
 
-    qDebug()<< "MW::initApp() - END INITIALISATION ON THREAD" << thread();
+    qDebug()<< "APP INITIALISATION FINISHED, ON THREAD" << thread();
 
 
 }
@@ -5984,8 +5999,7 @@ int MainWindow::slotHelpMessageToUser(const int type,
  * @param selectedIndex
  */
 void MainWindow::toolBoxNetworkAutoCreateSelectChanged(const int &selectedIndex) {
-    qDebug()<< "MW::toolBoxNetworkAutoCreateSelectChanged "
-               "selected text index: " << selectedIndex;
+    qDebug()<< "selected net auto create, index: " << selectedIndex;
     switch(selectedIndex){
     case 0:
         break;
@@ -6016,7 +6030,7 @@ void MainWindow::toolBoxNetworkAutoCreateSelectChanged(const int &selectedIndex)
 
     };
 
-    qDebug()<< "MW::toolBoxEditNodeSubgraphSelectChanged() - initComboBoxes() ";
+    qDebug()<< "Calling initComboBoxes() ";
     initComboBoxes();
 }
 
@@ -6027,8 +6041,7 @@ void MainWindow::toolBoxNetworkAutoCreateSelectChanged(const int &selectedIndex)
  * @param selectedIndex
  */
 void MainWindow::toolBoxEditNodeSubgraphSelectChanged(const int &selectedIndex) {
-    qDebug()<< "MW::toolBoxEditNodeSubgraphSelectChanged "
-               "selected text index: " << selectedIndex;
+    qDebug()<< "selected subgraph creation, text index: " << selectedIndex;
     switch(selectedIndex){
     case 0:
         break;
@@ -6046,7 +6059,7 @@ void MainWindow::toolBoxEditNodeSubgraphSelectChanged(const int &selectedIndex) 
         break;
     };
 
-    qDebug()<< "MW::toolBoxEditNodeSubgraphSelectChanged() - initComboBoxes() ";
+    qDebug()<< "Calling initComboBoxes() ";
     initComboBoxes();
 }
 
@@ -6060,8 +6073,7 @@ void MainWindow::toolBoxEditNodeSubgraphSelectChanged(const int &selectedIndex) 
  * @param selectedIndex
  */
 void MainWindow::toolBoxEditEdgeTransformSelectChanged(const int &selectedIndex) {
-    qDebug()<< "MW::toolBoxEditEdgeTransformSelectChanged "
-               "selected text index: " << selectedIndex;
+    qDebug()<< "selected edge transform, index: " << selectedIndex;
     switch(selectedIndex){
     case 0:
         break;
@@ -6090,8 +6102,7 @@ void MainWindow::toolBoxEditEdgeTransformSelectChanged(const int &selectedIndex)
  * @param selectedIndex
  */
 void MainWindow::toolBoxAnalysisMatricesSelectChanged(const int &selectedIndex) {
-    qDebug()<< "MW::toolBoxAnalysisMatricesSelectChanged "
-               "selected text index: " << selectedIndex;
+    qDebug()<< "selected matrix analysis, text index: " << selectedIndex;
     switch(selectedIndex){
     case 0:
         break;
@@ -6118,7 +6129,7 @@ void MainWindow::toolBoxAnalysisMatricesSelectChanged(const int &selectedIndex) 
         break;
     };
 
-    qDebug()<< "MW::toolBoxAnalysisMatricesSelectChanged() - initComboBoxes() ";
+    qDebug()<< "Calling initComboBoxes() ";
     initComboBoxes();
 
 }
@@ -6132,8 +6143,7 @@ void MainWindow::toolBoxAnalysisMatricesSelectChanged(const int &selectedIndex) 
  * @param selectedIndex
  */
 void MainWindow::toolBoxAnalysisCohesionSelectChanged(const int &selectedIndex) {
-    qDebug()<< "MW::toolBoxAnalysisCohesionSelectChanged "
-               "selected text index: " << selectedIndex;
+    qDebug()<< "selected cohesion analysis, text index: " << selectedIndex;
     switch(selectedIndex){
     case 0:
         break;
@@ -6178,7 +6188,7 @@ void MainWindow::toolBoxAnalysisCohesionSelectChanged(const int &selectedIndex) 
         break;
     };
 
-    qDebug()<< "MW::toolBoxAnalysisCohesionSelectChanged() - initComboBoxes() ";
+    qDebug()<< "Calling initComboBoxes() ";
     initComboBoxes();
 }
 
@@ -6194,21 +6204,18 @@ void MainWindow::toolBoxAnalysisCohesionSelectChanged(const int &selectedIndex) 
  *
  */
 void MainWindow::toolBoxAnalysisCommunitiesSelectChanged(const int &selectedIndex) {
-    qDebug()<< "MW::toolBoxAnalysisCommunitiesSelectChanged "
-               "selected text index: " << selectedIndex;
+    qDebug()<< "selected community analysis, text index: " << selectedIndex;
     switch(selectedIndex){
     case 0:
         break;
     case 1:
-        qDebug()<< "Cliques";
         slotAnalyzeCommunitiesCliqueCensus();
         break;
     case 2:
-        qDebug() << "Triad Census";
         slotAnalyzeCommunitiesTriadCensus();
         break;
     };
-    qDebug()<< "MW::toolBoxAnalysisCommunitiesSelectChanged() - initComboBoxes() ";
+    qDebug()<< "Calling initComboBoxes() ";
     initComboBoxes();
 
 }
@@ -6224,30 +6231,25 @@ void MainWindow::toolBoxAnalysisCommunitiesSelectChanged(const int &selectedInde
  *
  */
 void MainWindow::toolBoxAnalysisStrEquivalenceSelectChanged(const int &selectedIndex) {
-    qDebug()<< "MW::toolBoxAnalysisStrEquivalenceSelectChanged "
-               "selected text index: " << selectedIndex;
+    qDebug()<< "selected struct. equivalence analysis, text index: " << selectedIndex;
     switch(selectedIndex){
     case 0:
         break;
     case 1:
-        qDebug()<< "Pearson";
         slotAnalyzeStrEquivalencePearsonDialog();
         break;
     case 2:
-        qDebug()<< "Similarities";
         slotAnalyzeStrEquivalenceSimilarityMeasureDialog();
         break;
     case 3:
-        qDebug() << "Dissimilarities";
         slotAnalyzeStrEquivalenceDissimilaritiesDialog();
         break;
     case 4:
-        qDebug() << "Hierarchical Clustering";
         slotAnalyzeStrEquivalenceClusteringHierarchicalDialog();
         break;
     };
 
-    qDebug()<< "MW::toolBoxAnalysisStrEquivalenceSelectChanged() - initComboBoxes() ";
+    qDebug()<< "Calling initComboBoxes() ";
     initComboBoxes();
 }
 
@@ -6262,8 +6264,7 @@ void MainWindow::toolBoxAnalysisStrEquivalenceSelectChanged(const int &selectedI
  *
  */
 void MainWindow::toolBoxAnalysisProminenceSelectChanged(const int &selectedIndex) {
-    qDebug()<< "MW::toolBoxAnalysisProminenceSelectChanged "
-               "selected text index: " << selectedIndex;
+    qDebug()<< "selected prominence analysis, text index: " << selectedIndex;
     switch(selectedIndex){
     case 0:
         break;
@@ -6305,7 +6306,7 @@ void MainWindow::toolBoxAnalysisProminenceSelectChanged(const int &selectedIndex
         break;
     };
 
-    qDebug()<< "MW::toolBoxAnalysisProminenceSelectChanged() - initComboBoxes() ";
+    qDebug()<< "Calling initComboBoxes() ";
     initComboBoxes();
 }
 
@@ -6314,11 +6315,11 @@ void MainWindow::toolBoxAnalysisProminenceSelectChanged(const int &selectedIndex
  *  of the Control Panel .
  */
 void MainWindow::toolBoxLayoutByIndexApplyBtnPressed(){
-    qDebug()<<"MW::toolBoxLayoutByIndexApplyBtnPressed()";
+    qDebug()<<"User request to apply prominence-based layout...";
     int selectedIndex = toolBoxLayoutByIndexSelect->currentIndex();
     QString selectedIndexText = toolBoxLayoutByIndexSelect->currentText();
     int selectedLayoutType = toolBoxLayoutByIndexTypeSelect ->currentIndex();
-    qDebug()<<"MW::toolBoxLayoutByIndexApplyBtnPressed() - selected index is "
+    qDebug()<<"elected index is "
            << selectedIndexText << " : " << selectedIndex
            << " selected layout type is " << selectedLayoutType;
     switch(selectedIndex) {
@@ -6355,7 +6356,7 @@ void MainWindow::toolBoxLayoutByIndexApplyBtnPressed(){
  * selectbox of left panel.
  */
 void MainWindow::toolBoxLayoutForceDirectedApplyBtnPressed(){
-    qDebug()<<"MW::toolBoxLayoutForceDirectedApplyBtnPressed()";
+    qDebug()<<"User selected to apply a FDP layout...";
     int selectedModel = toolBoxLayoutForceDirectedSelect->currentIndex();
     QString selectedModelText = toolBoxLayoutForceDirectedSelect->currentText();
     qDebug() << " selected index is " << selectedModelText << " : "
@@ -6402,7 +6403,7 @@ QString MainWindow::getLastPath() {
     if ( appSettings["lastUsedDirPath"] == "socnetv-initial-none") {
         appSettings["lastUsedDirPath"] = appSettings["dataDir"];
     }
-    qDebug()<< "MW::getLastPath()" << appSettings["lastUsedDirPath"] ;
+    qDebug()<< "Last path used: " << appSettings["lastUsedDirPath"] ;
     return appSettings["lastUsedDirPath"] ;
 }
 
@@ -6413,7 +6414,7 @@ QString MainWindow::getLastPath() {
   * @param filePath
  */
 void MainWindow::setLastPath(const QString &filePath) {
-    qDebug()<< "MW::setLastPath() for " << filePath;
+    qDebug()<< "Setting last path and adding to recent files:" << filePath;
     QString currentPath = QFileInfo(filePath).dir().absolutePath();
     QDir::setCurrent(currentPath);
     appSettings["lastUsedDirPath"] = currentPath;
@@ -6431,7 +6432,6 @@ void MainWindow::setLastPath(const QString &filePath) {
     slotNetworkFileRecentUpdateActions();
     saveSettings();
 
-    qDebug() << appSettings["lastUsedDirPath"];
 }
 
 
@@ -6449,8 +6449,7 @@ void MainWindow::setLastPath(const QString &filePath) {
 void MainWindow::slotNetworkFileChoose(QString m_fileName,
                                        int m_fileFormat,
                                        const bool &checkSelectFileType) {
-    qDebug() << "MW::slotNetworkFileChoose() - "
-             << " m_fileName: " << m_fileName
+    qDebug() << " m_fileName: " << m_fileName
              << " m_fileFormat " << m_fileFormat
              << " checkSelectFileType " << checkSelectFileType;
 
@@ -6533,7 +6532,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
         statusMessage( tr("Choose a network file..."));
         if (fileDialog->exec()) {
             m_fileName = (fileDialog->selectedFiles()).at(0);
-            qDebug() << "MW::slotNetworkFileChoose() - m_fileName " << m_fileName;
+            qDebug() << "m_fileName " << m_fileName;
 
         }
         else {
@@ -6700,7 +6699,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
     }
 
 
-    qDebug()<<"MW::slotNetworkFileChoose() - Calling slotNetworkFilePreview"
+    qDebug()<<"Calling slotNetworkFilePreview"
            << "with m_fileName" << m_fileName
            << "and m_fileFormat " << m_fileFormat;
 
@@ -6713,7 +6712,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
 
 
 void MainWindow::slotNetworkFileDialogRejected() {
-    qDebug() << "MW::slotNetworkFileDialogRejected() - if a file was previously opened, get back to it.";
+    qDebug() << "Dialog rejected. If a file was previously opened, get back to it.";
     statusMessage( tr("Opening aborted"));
 }
 
@@ -6723,47 +6722,47 @@ void MainWindow::slotNetworkFileDialogRejected() {
  * @param filter
  */
 void MainWindow::slotNetworkFileDialogFilterSelected(const QString &filter) {
-    qDebug() << "MW::slotNetworkFileDialogFilterSelected() - filter" << filter;
+    qDebug() << "User selected network file filter" << filter;
     if (filter.startsWith("GraphML",Qt::CaseInsensitive ) ) {
         fileType=FileType::GRAPHML;
-        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FileType::GRAPHML";
+        qDebug() << "fileType FileType::GRAPHML";
     }
     else if (filter.contains("PAJEK",Qt::CaseInsensitive ) ) {
         fileType=FileType::PAJEK;
-        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FileType::PAJEK";
+        qDebug() << "fileType FileType::PAJEK";
     }
     else if (filter.contains("DL",Qt::CaseInsensitive ) ||
              filter.contains("UCINET",Qt::CaseInsensitive ) ) {
         fileType=FileType::UCINET;
-        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FileType::UCINET";
+        qDebug() << "fileType FileType::UCINET";
     }
     else if (filter.contains("Adjacency",Qt::CaseInsensitive ) ) {
         fileType=FileType::ADJACENCY;
-        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FileType::ADJACENCY";
+        qDebug() << "fileType FileType::ADJACENCY";
     }
     else if (filter.contains("GraphViz",Qt::CaseInsensitive ) ) {
         fileType=FileType::GRAPHVIZ;
-        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FileType::GRAPHVIZ";
+        qDebug() << "fileType FileType::GRAPHVIZ";
     }
     else if (filter.contains("GML",Qt::CaseInsensitive ) ) {
         fileType=FileType::GML;
-        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FileType::GML";
+        qDebug() << "fileType FileType::GML";
     }
     else if (filter.contains("Simple Edge List",Qt::CaseInsensitive ) ) {
         fileType=FileType::EDGELIST_SIMPLE;
-        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FileType::EDGELIST_SIMPLE";
+        qDebug() << "fileType FileType::EDGELIST_SIMPLE";
     }
     else if (filter.contains("Weighted Edge List",Qt::CaseInsensitive ) ) {
         fileType=FileType::EDGELIST_WEIGHTED;
-        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FileType::EDGELIST_WEIGHTED";
+        qDebug() << "fileType FileType::EDGELIST_WEIGHTED";
     }
     else if (filter.contains("Two-Mode",Qt::CaseInsensitive )  ) {
         fileType=FileType::TWOMODE;
-        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FileType::TWOMODE";
+        qDebug() << "fileType FileType::TWOMODE";
     }
     else {
         fileType=FileType::UNRECOGNIZED;
-        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FileType::UNRECOGNIZED";
+        qDebug() << "fileType FileType::UNRECOGNIZED";
     }
 
 
@@ -6777,7 +6776,7 @@ void MainWindow::slotNetworkFileDialogFilterSelected(const QString &filter) {
  *
  */
 void MainWindow::slotNetworkFileDialogFileSelected(const QString &fileName) {
-    qDebug() << "MW::slotNetworkFileDialogFileSelected() - filename " << fileName
+    qDebug() << "User selected filename:" << fileName
              << "calling slotNetworkFileChoose() with fileType" << fileType;
     slotNetworkFileChoose( fileName,
                            fileType,
@@ -6871,7 +6870,7 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
  * Always uses the GraphML format and extension.
  */
 void MainWindow::slotNetworkSaveAs() {
-    qDebug() << "MW::slotNetworkSaveAs()";
+    qDebug() << "User wants to save the file as a new name...";
     statusMessage( tr("Enter or select a filename to save the network..."));
 
     QString fn =  QFileDialog::getSaveFileName(
@@ -6955,7 +6954,7 @@ void MainWindow::slotNetworkSavedStatus (const int &status) {
  */
 void MainWindow::slotNetworkClose() {
 
-    qDebug()<<"MW::slotNetworkClose()";
+    qDebug()<<"Closing network file";
 
     statusMessage( tr("Closing network file..."));
 
@@ -7066,6 +7065,9 @@ void MainWindow::slotNetworkImportUcinet(){
  * @brief Imports a network from a simple List or weighted List formatted file
  */
 void MainWindow::slotNetworkImportEdgeList(){
+
+    qDebug() << "Importing an edge list network file..." ;
+
     bool m_checkSelectFileType = false;
 
     switch(
@@ -7094,11 +7096,11 @@ void MainWindow::slotNetworkImportEdgeList(){
            )
     {
     case 1:
-        qDebug() << "***  MW::slotNetworkImportEdgeList - Weighted list selected! " ;
+        qDebug() << "Weighted list selected! " ;
         slotNetworkFileChoose( QString(), FileType::EDGELIST_WEIGHTED, m_checkSelectFileType);
         break;
     case 2:
-        qDebug() << "***  MW: slotNetworkImportEdgeList - Simple list selected! " ;
+        qDebug() << "Simple list selected! " ;
         slotNetworkFileChoose( QString(), FileType::EDGELIST_SIMPLE, m_checkSelectFileType);
         break;
     }
@@ -7110,6 +7112,7 @@ void MainWindow::slotNetworkImportEdgeList(){
  * @brief Imports a network from a two mode sociomatrix formatted file
  */
 void MainWindow::slotNetworkImportTwoModeSM(){
+    qDebug() << "Importing a two mode sociomatrix network file..." ;
     bool m_checkSelectFileType = false;
     slotNetworkFileChoose( QString(), FileType::TWOMODE, m_checkSelectFileType);
 }
@@ -7161,7 +7164,7 @@ void MainWindow::slotNetworkAvailableTextCodecs()
  */
 bool MainWindow::slotNetworkFilePreview(const QString &m_fileName,
                                         const int &m_fileFormat ){
-    qDebug() << "MW::slotNetworkFilePreview() - file: "<< m_fileName;
+    qDebug() << "Previewing file: "<< m_fileName;
 
     if (!m_fileName.isEmpty()) {
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
@@ -7174,7 +7177,7 @@ bool MainWindow::slotNetworkFilePreview(const QString &m_fileName,
                         );
             return false;
         }
-        qDebug() << "MW::slotNetworkFilePreview() - reading file... " ;
+
         QByteArray data = file.readAll();
 
         m_dialogPreviewFile->setEncodedData(data,m_fileName, m_fileFormat);
@@ -7195,8 +7198,10 @@ bool MainWindow::slotNetworkFilePreview(const QString &m_fileName,
  * Calls slotNetworkFileChoose() which checks file type and calls slotNetworkFilePreview
  */
 void MainWindow::slotNetworkFileLoadRecent() {
+
     QAction *action = qobject_cast<QAction *>(sender());
     if (action) {
+        qDebug() << "Loading recent file: " << action->data().toString()  ;
         slotNetworkFileChoose(action->data().toString() );
     }
 }
@@ -7217,9 +7222,10 @@ void MainWindow::slotNetworkFileLoad(const QString m_fileName,
                                      const QString m_codecName,
                                      const int m_fileFormat )
 {
-    qDebug() << "MW::slotNetworkFileLoad() : "<< m_fileName
-             << " m_codecName " << m_codecName
-             << " m_fileFormat " << m_fileFormat;
+    qDebug() << "Attempting to load file"<< m_fileName
+             << " m_codecName" << m_codecName
+             << " m_fileFormat" << m_fileFormat;
+
     initApp();
 
     userSelectedCodecName = m_codecName; //var for future use in a Settings dialog
@@ -7271,11 +7277,10 @@ void MainWindow::slotNetworkFileLoad(const QString m_fileName,
         if (!ok || delimiter.isEmpty() || delimiter.isNull() ) {
             delimiter=" ";
         }
-        qDebug()<<"MW::slotNetworkFileLoad() - delimiter" << delimiter;
+        qDebug()<<"selected delimiter" << delimiter;
     }
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-    qDebug() << "MW::slotNetworkFileLoad() - Calling activeGraph->graphLoad()"
-             << "MW thread is:" << thread();
+    qDebug() << "Calling activeGraph->graphLoad()";
 
     activeGraph->graphLoad (
                 m_fileName,
@@ -7307,7 +7312,7 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
                                         const int &totalEdges,
                                         const QString &message)
 {
-    qDebug()<< "MW::slotNetworkFileLoaded() - type " << type;
+    qDebug()<< "Network file loaded, type " << type;
 
     if (type > 0) {
         // We have loaded a file with success.
@@ -7325,7 +7330,7 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
     }
     else {
 
-        qDebug()<< "MW::slotNetworkFileLoaded() - UNRECOGNIZED FILE. "
+        qDebug()<< "ERROR. UNRECOGNIZED FILE. "
                    "Message from Parser: "
                 << message
                 << "Calling initApp()";
@@ -7404,7 +7409,7 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
  * @brief Called from editDragModeSelectAct to toggle the drag mode (select or scroll).
  */
 void MainWindow::slotEditDragModeSelection(bool checked){
-    qDebug() << "MW::slotEditDragModeSelection() - checked" << checked;
+    qDebug() << "User changed drag mode, checked" << checked;
 
     editDragModeScrollAct -> setChecked(false);
 
@@ -7428,7 +7433,8 @@ void MainWindow::slotEditDragModeSelection(bool checked){
  * @brief Called from editDragModeSelectAct to toggle the drag mode (select or scroll).
  */
 void MainWindow::slotEditDragModeScroll(bool checked){
-    qDebug() << "MW::slotEditDragModeScroll() - checked" << checked;
+
+    qDebug() << "User changed scroll mode, checked" << checked;
 
     editDragModeSelectAct ->setChecked(false);
     graphicsWidget->setInteractive(false);
@@ -7449,7 +7455,7 @@ void MainWindow::slotEditDragModeScroll(bool checked){
  * @brief Called from Graph::relationsClear() to clear the relations combo.
  */
 void MainWindow::slotEditRelationsClear(){
-    qDebug() << "MW::slotEditRelationsClear() - clearing combo";
+    qDebug() << "clearing relations combo...";
     editRelationChangeCombo->clear();
 }
 
@@ -7464,7 +7470,7 @@ void MainWindow::slotEditRelationAdd(QString newRelationName, const bool &change
     int comboItemsBefore = editRelationChangeCombo->count();
     int relationsCounter=activeGraph->relations();
 
-    qDebug() << "MW::slotEditRelationAdd() - adding relation:"
+    qDebug() << "adding relation:"
              << newRelationName
              <<"to relations combo. Before this, combo items:"
             << comboItemsBefore
@@ -7486,7 +7492,7 @@ void MainWindow::slotEditRelationAdd(QString newRelationName, const bool &change
             }
 
         }
-        qDebug() << "MW::slotEditRelationAdd() - added relation:"
+        qDebug() << "added relation:"
                  << newRelationName
                  <<"now combo items:"
                 << editRelationChangeCombo->count()
@@ -7549,13 +7555,13 @@ void MainWindow::slotEditRelationAdd(QString newRelationName, const bool &change
  */
 void MainWindow::slotEditRelationChange(const int relIndex) {
     if ( relIndex == RAND_MAX){
-        qDebug() << "MW::slotEditRelationChange(int) - RANDMAX. Change to last relation";
+        qDebug() << "relation changed to RANDMAX. Change to last relation";
         editRelationChangeCombo->setCurrentIndex(
                     ( editRelationChangeCombo->count()-1 )
                     );
     }
     else {
-        qDebug() << "MW::slotEditRelationChange(int) - to index" << relIndex;
+        qDebug() << "relation changed to index" << relIndex;
         editRelationChangeCombo->setCurrentIndex(relIndex);
     }
 
@@ -7569,10 +7575,10 @@ void MainWindow::slotEditRelationChange(const int relIndex) {
  * @param newName
  */
 void MainWindow::slotEditRelationRename(QString newName) {
-    qDebug()<<"MW::slotEditRelationRename() -" << newName;
+    qDebug()<<"relation renamed to:" << newName;
     bool ok=false;
     if (newName.isNull() || newName.isEmpty()) {
-        qDebug()<<"MW::slotEditRelationRename() - prompt to enter new name";
+        qDebug()<<"Prompting to enter new name";
         newName = QInputDialog::getText(
                     this,
                     tr("Rename current relation"),
@@ -7591,8 +7597,8 @@ void MainWindow::slotEditRelationRename(QString newName) {
         }
     }
     else {
-        qDebug()<<"MW::slotEditRelationRename() - current text " << editRelationChangeCombo->currentText();
-        qDebug()<<"MW::slotEditRelationRename() - updating combo name to" << newName;
+        qDebug()<<"relation name combo current text " << editRelationChangeCombo->currentText();
+        qDebug()<<"updating relation name combo to" << newName;
         editRelationChangeCombo->setCurrentText(newName);
     }
 
@@ -7601,73 +7607,13 @@ void MainWindow::slotEditRelationRename(QString newName) {
 
 
 
-
-
-
-/**
- * @brief Obsolete - Exports the network to a PNG image
- * @return
- *
- */
-bool MainWindow::slotNetworkExportPNG(){
-    qDebug()<< "MW::slotNetworkExportPNG";
-    if ( !activeNodes() )  {
-        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
-        return false;
-    }
-    QString fn = QFileDialog::getSaveFileName(
-                this,tr("Save"),
-                getLastPath(), tr("Image Files (*.png)"));
-    if (fn.isEmpty())  {
-        statusMessage( tr("Saving aborted") );
-        return false;
-    }
-    setLastPath(fn); // store this path
-    tempFileNameNoPath=fn.split ("/");
-    QString name = tempFileNameNoPath.last();
-    name.truncate(name.lastIndexOf("."));
-    qDebug("slotExportPNG: grabbing canvas");
-    QPixmap picture;
-    picture=graphicsWidget->grab(graphicsWidget->rect());
-    qDebug("slotExportPNG: adding logo");
-    QPainter p;
-    p.begin(&picture);
-    p.setFont(QFont ("Helvetica", 10, QFont::Normal, false));
-    if (appSettings["printLogo"]=="true") {
-        QImage logo(":/images/socnetv-logo.png");
-        p.drawImage(5,5, logo);
-        p.drawText(7,47,name);
-    }
-    else
-        p.drawText(5,15,name);
-    p.end();
-    qDebug("slotExportPNG: checking filename");
-    if (fn.contains("png", Qt::CaseInsensitive) ) {
-        picture.toImage().save(fn, "PNG");
-        QMessageBox::information(this,
-                                 "Export to PNG...",
-                                 tr("Image Saved as: ")+tempFileNameNoPath.last(), "OK",0);
-    }
-    else {
-        picture.toImage().save(fn+".png", "PNG");
-        QMessageBox::information(this,
-                                 "Export to PNG...",
-                                 tr("Image Saved as: ")+tempFileNameNoPath.last()+".png" , "OK",0);
-    }
-
-    statusMessage( tr("Exporting completed") );
-
-    return true;
-}
-
-
-
 /**
  * @brief Opens the Export to Image Dialog
  */
 void MainWindow::slotNetworkExportImageDialog()
 {
-    qDebug() << "MW::slotNetworkExportImageDialog()";
+    qDebug() << "Opening Image export dialog...";
+
     if ( !activeNodes() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -7694,24 +7640,28 @@ void MainWindow::slotNetworkExportImage( const QString &filename,
                                          const int &quality,
                                          const int &compression
                                          ) {
-    qDebug() << "slotNetworkExportImage()";
+
+    qDebug() << "Exporting network to image file" << filename;
 
     if (filename.isEmpty())  {
         statusMessage( tr("Saving aborted") );
         return;
     }
-    setLastPath(filename); // store this path
+    // store this path
+    setLastPath(filename);
+
+    // Get network name from the filename
     tempFileNameNoPath=filename.split ("/");
     QString name = tempFileNameNoPath.last();
     name.truncate(name.lastIndexOf("."));
 
     // Grab network from canvas
-    qDebug() << "slotNetworkExportImage(): grabbing canvas";
+    qDebug() << "Grabbing network from the canvas";
     QPixmap picture;
     picture = graphicsWidget->grab(graphicsWidget->viewport()->rect());
 
     QPainter p;
-    qDebug() << "slotNetworkExportImage(): adding name (and logo)";
+    qDebug() << "Adding name (and logo)";
     p.begin(&picture);
     p.setFont(QFont ("Helvetica", 10, QFont::Normal, false));
     if (appSettings["printLogo"]=="true") {
@@ -7839,7 +7789,7 @@ void MainWindow::slotNetworkExportPDF(QString &pdfName,
  */
 void MainWindow::slotNetworkExportPajek()
 {
-    qDebug () << "MW::slotNetworkExportPajek";
+    qDebug() << "MW::slotNetworkExportPajek";
 
     if ( !activeNodes() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -8131,7 +8081,7 @@ void MainWindow::slotNetworkViewSociomatrix(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-"+dateTime+".html";
 
-    qDebug () << "MW::slotNetworkViewSociomatrix() - dataDir"
+    qDebug() << "MW::slotNetworkViewSociomatrix() - dataDir"
               << appSettings["dataDir"]
               << "fn" <<fn;
 
@@ -8143,7 +8093,7 @@ void MainWindow::slotNetworkViewSociomatrix(){
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
 
-        qDebug () << "MW::slotNetworkViewSociomatrix() - "
+        qDebug() << "MW::slotNetworkViewSociomatrix() - "
                      "calling QDesktopServices::openUrl for"
                   << QUrl::fromLocalFile(fn) ;
 
@@ -8694,7 +8644,7 @@ void MainWindow::slotNetworkRandomLattice(const int &newNodes,
  * The dialog passes the user options to slotNetworkWebCrawler()
  */
 void MainWindow::slotNetworkWebCrawlerDialog() {
-    qDebug () << "MW: slotNetworkWebCrawlerDialog() - canvas Width & Height already sent";
+    qDebug() << "MW: slotNetworkWebCrawlerDialog() - canvas Width & Height already sent";
 
     m_WebCrawlerDialog = new DialogWebCrawler(this);
 
@@ -8737,7 +8687,7 @@ void MainWindow::slotNetworkWebCrawler (const QUrl &startUrl,
     // Close the current network
     this->slotNetworkClose();
 
-    qDebug () << "MW::slotNetworkWebCrawler() - calling Graph::startWebCrawler() with user options.";
+    qDebug() << "MW::slotNetworkWebCrawler() - calling Graph::startWebCrawler() with user options.";
     // Start the web crawler
 
     activeGraph->startWebCrawler(
@@ -9551,7 +9501,7 @@ void MainWindow::slotEditNodeColorAll(QColor color){
  */
 void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
     Q_UNUSED(normalized);
-    qDebug () << "MW: slotEditNodeSizeAll() - "
+    qDebug() << "MW: slotEditNodeSizeAll() - "
               << " newSize " << newSize ;
     if ( newSize == 0 && !normalized ) {
         bool ok=true;
@@ -10105,7 +10055,7 @@ void MainWindow::slotEditEdgeOpenContextMenu(const QString &str) {
  * Called when user clicks on the MW button/menu item "Add edge"
  */
 void MainWindow::slotEditEdgeAdd(){
-    qDebug ()<<"MW::slotEditEdgeAdd()";
+    qDebug()<<"MW::slotEditEdgeAdd()";
     if ( !activeNodes() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10135,12 +10085,12 @@ void MainWindow::slotEditEdgeAdd(){
     else
         sourceNode=activeGraph->vertexClicked();
 
-    qDebug ()<<"MW::slotEditEdgeAdd() - sourceNode:" << sourceNode;
+    qDebug()<<"MW::slotEditEdgeAdd() - sourceNode:" << sourceNode;
 
     if ( activeGraph->vertexExists(sourceNode) ==-1 ) {
         statusMessage( tr("Aborting. ")  );
         QMessageBox::critical(this,"Error","No such node.", "OK",0);
-        qDebug ()<<"MW::slotEditEdgeAdd() - cannot find sourceNode:" << sourceNode;
+        qDebug()<<"MW::slotEditEdgeAdd() - cannot find sourceNode:" << sourceNode;
         return;
     }
 
@@ -11508,7 +11458,7 @@ void MainWindow::slotLayoutGuides(const bool &toggle){
 *	Returns the amount of enabled/active edges on the scene.
 */
 int MainWindow::activeEdges(){
-    qDebug () << "MW::activeEdges()";
+    qDebug() << "MW::activeEdges()";
     return activeGraph->edgesEnabled();
 }
 
@@ -12109,7 +12059,7 @@ void MainWindow::slotAnalyzeEccentricity(){
  * @brief Reports the network connectedness
  */
 void MainWindow::slotAnalyzeConnectedness(){
-    qDebug () << "MW::slotAnalyzeConnectedness()" ;
+    qDebug() << "MW::slotAnalyzeConnectedness()" ;
 
     int N = activeGraph->vertices();
 
@@ -12129,7 +12079,7 @@ void MainWindow::slotAnalyzeConnectedness(){
     else {
         bool isConnected=activeGraph->graphIsConnected();
 
-        qDebug () << "MW::slotAnalyzeConnectedness result " << isConnected;
+        qDebug() << "MW::slotAnalyzeConnectedness result " << isConnected;
 
         if(isConnected){
             if (activeGraph->graphIsDirected()){
@@ -13362,7 +13312,7 @@ void MainWindow::slotProgressBoxCreate(const int &max, const QString &msg){
  * @brief Destroys the first in queue Progress dialog
  */
 void MainWindow::slotProgressBoxDestroy(const int &max){
-    qDebug () << "MainWindow::slotProgressBoxDestroy";
+    qDebug() << "MainWindow::slotProgressBoxDestroy";
     QApplication::restoreOverrideCursor();
     if (  appSettings["showProgressBar"] == "true" && max > -1 ) {
         if (! progressDialogs.isEmpty()) {
@@ -13694,7 +13644,7 @@ void MainWindow::slotOptionsCanvasOpenGL(const bool &toggle) {
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
     //Inform graphicsWidget about the change
-    graphicsWidget->toggleOpenGL(toggle);
+    graphicsWidget->setOptionsOpenGL(toggle);
 
     if (!toggle) {
         appSettings["opengl"] = "false";
@@ -14013,14 +13963,14 @@ void MainWindow::slotOptionsDebugMessages(bool toggle){
         appSettings["printDebug"] = "false";
         printDebug=false;
         QLoggingCategory::setFilterRules("default.debug=false\n"
-                                             "driver.usb.debug=true");
+                                             "socnetv.debug=false");
         statusMessage( tr("Debug messages off.") );
     }
     else  {
         appSettings["printDebug"] = "true";
         printDebug=true;
         QLoggingCategory::setFilterRules("default.debug=true\n"
-                                             "driver.usb.debug=true");
+                                             "socnetv.debug=true");
         statusMessage( tr("Debug messages on.") );
     }
 }
@@ -14511,7 +14461,7 @@ void MainWindow::slotHelpCheckUpdateParse() {
  * Shows a dialog with system information for bug reporting purposes
  */
 void MainWindow::slotHelpSystemInfo() {
-    qDebug () << "MW: slotHelpSystemInfo()";
+    qDebug() << "MW: slotHelpSystemInfo()";
 
     m_systemInfoDialog = new DialogSystemInfo(this);
 
