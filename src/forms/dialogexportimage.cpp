@@ -175,16 +175,14 @@ void DialogExportImage::getFilename(){
  */
 void DialogExportImage::getFormat(const QString &format){
     QString m_format = format.toLower();
-    qDebug() << m_format;
+    qDebug() << "format:" << m_format;
     QString m_fileName = ui->fileEdit->text();
-    qDebug() << m_fileName;
-    qDebug() << QFileInfo(m_fileName).suffix();
-    if (  QString::compare(
-                          QFileInfo(m_fileName).suffix() , m_format, Qt::CaseInsensitive
-                          )
-          ) {
+    qDebug() << "filename" << m_fileName;
+    qDebug() << "suffix" << QFileInfo(m_fileName).suffix();
+    if (  QString::compare(QFileInfo(m_fileName).suffix() , m_format, Qt::CaseInsensitive) != 0 ) {
+        // User filename suffix differs from selected format. Correct the filename suffix.
         m_fileName = QFileInfo(m_fileName).absolutePath() + QDir::separator() + QFileInfo(m_fileName).completeBaseName().append("."+m_format);
-        qDebug() << m_fileName;
+        qDebug() << "Corrected filename:" << m_fileName;
     }
 
     ui->fileEdit->setText(m_fileName);
