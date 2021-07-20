@@ -5615,7 +5615,7 @@ void MainWindow::initApp(){
     networkSaveAct->setIcon(QIcon(":/images/file_download_48px.svg"));
     networkSaveAct->setEnabled(true);
 
-    /** Clear previous network data */
+    /** Clear previous network data and reset user-selected settings */
     activeGraph->clear();
     activeGraph->setSocNetV_Version(VERSION);
 
@@ -10110,11 +10110,10 @@ void MainWindow::slotEditEdgeCreate (const int &source, const int &target,
 
 /**
  * @brief Removes a clicked edge. Otherwise asks the user to specify one edge.
- * First deletes arc reference from object nodeVector then deletes arc item from scene
  */
 void MainWindow::slotEditEdgeRemove(){
 
-    qDebug() << "MW::slotEditEdgeRemove()";
+    qDebug() << "Removing selected edges...";
 
     if ( !activeNodes() || activeEdges() ==0 )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
@@ -10125,10 +10124,14 @@ void MainWindow::slotEditEdgeRemove(){
     bool ok=false;
     bool removeOpposite = false;
 
-    min=activeGraph->vertexNumberMin();
-    max=activeGraph->vertexNumberMax();
+    int selectedEdgeCount = activeGraph->graphSelectedEdgesCount();
 
-    if ( ! activeGraph->graphSelectedEdgesCount() ) {
+    qDebug() << "Selected edges:" << selectedEdgeCount;
+
+    if ( ! selectedEdgeCount ) {
+
+        min=activeGraph->vertexNumberMin();
+        max=activeGraph->vertexNumberMax();
 
         qDebug() << "MW::slotEditEdgeRemove() - No edge selected. "
                     "Prompting user to select...";
@@ -10168,7 +10171,7 @@ void MainWindow::slotEditEdgeRemove(){
     }
     else {
 
-        if ( activeGraph->graphSelectedEdgesCount() > 1) {
+        if ( selectedEdgeCount > 1) {
 
             qDebug() << "MW::slotEditEdgeRemove() - Multiple edges selected. "
                         "Calling Graph to remove all of them...";

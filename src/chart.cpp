@@ -78,7 +78,7 @@ void Chart::addSeries(QAbstractSeries *series) {
     qDebug() << "Adding a series to chart" ;
     if (series) {
         m_chart->addSeries(series);
-        qDebug() << "Chart::addSeries() - added series with name"<< series->name() ;
+        qDebug() << "added series with name"<< series->name() ;
     }
     else {
         // default: a trivial series with one point
@@ -88,7 +88,7 @@ void Chart::addSeries(QAbstractSeries *series) {
         *m_series << QPointF(0,0);
         m_series->setName("trivial");
         m_chart->addSeries(m_series);
-        qDebug() << "Chart::addSeries() - trivial series with one point created.";
+        qDebug() << "trivial series with one point created.";
     }
 
 }

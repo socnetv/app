@@ -134,7 +134,7 @@ public slots:
 
     void setNodeNumberColor(const int &nodeNumber, const QString &color);
     void setNodeNumberVisibility(const bool &toggle);
-    bool setNodeNumberSize(const int &, const int &size=0);
+    bool setNodeNumberSize(const int &nodeNumber, const int &size=0);
     bool setNodeNumberDistance(const int &, const int &distance=0);
 
     void setNodeLabelsVisibility(const bool &toggle);
@@ -218,8 +218,8 @@ signals:
 
 private:
 
-    H_NumToNode nodeHash;	//This is used in drawEdge() method
-    H_StrToEdge edgesHash; // helper hash to easily find edges
+    H_NumToNode nodeHash;	//Our basic hash table for node items
+    H_StrToEdge edgesHash; // Our basic hash table for edge items
     QList<int> m_selectedNodes;
     QList<SelectedEdge> m_selectedEdges;
     int m_curRelation, m_nodeSize;

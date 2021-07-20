@@ -171,7 +171,7 @@ QString GraphicsWidget::createEdgeName(const int &v1, const int &v2, const int &
  * @brief Clears the scene and all hashes, lists, var etc
  */
 void GraphicsWidget::clear() {
-    qDebug() << "GW::clear() - clearing hashes";
+    qDebug() << "clearing hashes";
     nodeHash.clear();
     edgesHash.clear();
     m_selectedNodes.clear();
@@ -181,7 +181,7 @@ void GraphicsWidget::clear() {
     clickedEdge=0;
     firstNode=0;
     secondDoubleClick=false;
-    qDebug() << "GW::clear() - finished clearing hashes";
+    qDebug() << "finished clearing hashes";
 }
 
 
@@ -192,7 +192,7 @@ void GraphicsWidget::clear() {
   * @param relation
  */
 void GraphicsWidget::relationSet(int relation) {
-    qDebug() << "GraphicsWidget::relationSet() to " << relation;
+    qDebug() << "Setting relation to" << relation;
     m_curRelation = relation;
 }
 
@@ -230,7 +230,7 @@ void GraphicsWidget::drawNode( const QPointF &p,
                                const int &labelDistance
 
                                ) {
-    qDebug()<< "GW::drawNode() - Draw new node:" << num
+    qDebug()<< "Will draw new node:" << num
             << " at:" << p.x() << ", "<< p.y()
             << "shape"<<nodeShape
             << "nodeIconPath"<<nodeIconPath;
@@ -290,7 +290,7 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
 
     edgeName = createEdgeName(source, target);
 
-    qDebug()<<"GW::drawEdge() - "<< edgeName
+    qDebug()<<"Will draw new edge"<< edgeName
            << "weight:"<<weight
            << "label:" << label
            << "direction type:" << type
@@ -315,11 +315,11 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
         // if type is EdgeType::Reciprocated, we just need to change the direction type
         // of the existing opposite edge.
         edgeName = createEdgeName(target,source);
-        qDebug()<< "GW::drawEdge() - Reciprocating existing directed edge"<<edgeName;
+        qDebug()<< "Reciprocating existing directed edge"<<edgeName;
         edgesHash.value(edgeName)->setDirectionType(type);
 
     }
-    //	qDebug()<< "Scene items now: "<< scene()->items().size() << " - GW items now: "<< items().size();
+
 }
 
 
@@ -336,7 +336,7 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
  */
 void GraphicsWidget::startEdge(GraphicsNode *node){
     if (secondDoubleClick){
-        qDebug()<< "GW::startEdge() - this is the second double click. "
+        qDebug()<< "Got second consecutive double click. "
                    "Emitting userMiddleClicked() to create edge";
         secondNode=node;
         emit userMiddleClicked(firstNode->nodeNumber(), secondNode->nodeNumber() );
@@ -344,7 +344,7 @@ void GraphicsWidget::startEdge(GraphicsNode *node){
         secondDoubleClick=false;
     }
     else{
-        qDebug()<<"GW::startEdge() - this is the first double click.";
+        qDebug()<<"Got first double click to create a new edge...";
         firstNode=node;
         secondDoubleClick=true;
         emit setCursor( Qt::PointingHandCursor );
@@ -362,8 +362,9 @@ void GraphicsWidget::startEdge(GraphicsNode *node){
  */
 void GraphicsWidget::setNodeClicked(GraphicsNode *node){
     if ( node ) {
-        qDebug () << "GW::nodeClicked() - Emitting userClickedNode()";
+        qDebug () << "Emitting userClickedNode()";
         if (clickedEdge) {
+            qDebug () << "Also unsetting previously clicked edge";
             setEdgeClicked(0);
         }
         emit userClickedNode(
@@ -387,15 +388,15 @@ void GraphicsWidget::setNodeClicked(GraphicsNode *node){
  */
 void GraphicsWidget::setEdgeClicked(GraphicsEdge *edge, const bool &openMenu){
     if (edge) {
-        qDebug() <<"GW::setEdgeClicked() - setting new clicked edge";
+        qDebug() <<"setting new clicked edge";
         clickedEdge=edge;
-        qDebug() <<"GW::setEdgeClicked() - emitting userClickedEdge() to MW";
+        qDebug() <<"emitting userClickedEdge() to MW";
         emit userClickedEdge(edge->sourceNode()->nodeNumber(),
                              edge->targetNode()->nodeNumber(),
                              openMenu);
     }
     else {
-        qDebug() <<"GW::setEdgeClicked() - with zero parameters. Unsetting clickedEdge and emitting userClickedEdge(0)...";
+        qDebug() <<"No edge parameter. Unsetting clickedEdge and emitting userClickedEdge(0)...";
         clickedEdge=0;
         emit userClickedEdge(0,0,openMenu);
     }
@@ -417,32 +418,30 @@ void GraphicsWidget::setEdgeClicked(GraphicsEdge *edge, const bool &openMenu){
  * @param y
  */
 void GraphicsWidget::moveNode(const int &num, const qreal &x, const qreal &y){
-    qDebug() << "   GW: moveNode() " << num << ": " << x << y;
+    qDebug() << "Moving node" << num << " to pos:" << x << "," << y;
     nodeHash.value(num)->setPos(x,y);
-    //    qDebug() << "GW: moveNode() node reports x, y as "
-    //             << nodeHash.value(number)->x() << nodeHash.value(number)->x();
 }
 
 
 
 /**
- * @brief Removes a node from the scene.
- * Called from Graph signalEraseNode(int)
+ * @brief Deletes a node from the scene.
+ * Called from Graph
  * @param number
  */
 void GraphicsWidget::removeNode(const int &number){
-        qDebug() << "GW::removeNode() - node " << number
+        qDebug() << "removing node " << number
                  << " scene items: " << scene()->items().size()
                  << " view items: " << items().size()
                  << " nodeHash items: "<< nodeHash.count();
 
     if ( nodeHash.contains(number) ) {
-        qDebug() << "GW::removeNode() - found node"
-                 <<  number<< " Deleting :)" ;
+        qDebug() << "node"
+                 <<  number << " found and is being deleted :)" ;
         delete nodeHash.value(number);
     }
 
-    qDebug() << "GW::removeNode() - node erased! ";
+    qDebug() << "node removed! ";
 //             << " scene items now: " << scene()->items().size()
 //             << " view items: " << items().size()
 //             << " nodeHash items: "<< nodeHash.count()
@@ -465,7 +464,7 @@ void GraphicsWidget::removeEdge(const int &source,
 
     edgeName = createEdgeName(source,target);
 
-    qDebug() << "GW::removeEdge() - " << edgeName
+    qDebug() << "Removing edge" << edgeName
              << "removeOpposite"<<removeOpposite
              << " scene items: " << scene()->items().size()
              << " view items: " << items().size()
@@ -479,7 +478,7 @@ void GraphicsWidget::removeEdge(const int &source,
                 drawEdge(target, source, 1,"");
             }
         }
-            qDebug() << "GW::removeEdge() - Deleted edge" << edgeName
+            qDebug() << "Deleted edge" << edgeName
                  << " scene items: " << scene()->items().size()
                  << " view items: " << items().size()
                  << " edgesHash.count: " << edgesHash.count();
@@ -488,16 +487,16 @@ void GraphicsWidget::removeEdge(const int &source,
     else {
         //check opposite edge. If it exists, then transform it to directed
         edgeName = createEdgeName(target, source);
-        qDebug() << "GW::removeEdge() - Edge did not exist, checking for opposite:"
+        qDebug() << "Edge did not exist, checking for opposite:"
                  << edgeName;
         if ( edgesHash.contains(edgeName) ) {
-            qDebug() << "GW::removeEdge() - Opposite edge exists. Check if it is reciprocated";
+            qDebug() << "Opposite edge exists. Check if it is reciprocated";
             if ( edgesHash.value(edgeName)->directionType() == EdgeType::Reciprocated ) {
                 edgesHash.value(edgeName)->setDirectionType(EdgeType::Directed);
                 return;
             }
         }
-        qDebug() << "GW::removeEdge() - No such edge to delete";
+        qDebug() << "No such edge to remove";
     }
 
 
@@ -515,9 +514,9 @@ void GraphicsWidget::removeEdge(const int &source,
   */
 void GraphicsWidget::removeItem( GraphicsNode *node){
     int i=node->nodeNumber();
-    qDebug() << "GW::removeItem(node) - number: " <<  i;
+    qDebug() << "Removing node with number: " <<  i;
     if (firstNode == node) {
-        qDebug() << "GW::removeItem(node) - number: " <<  i
+        qDebug() << "Node" <<  i
                  << "previously set as source node for a new edge. Unsetting.";
         secondDoubleClick = false;
         emit setCursor(Qt::ArrowCursor);
@@ -525,9 +524,9 @@ void GraphicsWidget::removeItem( GraphicsNode *node){
     nodeHash.remove(i);
     scene()->removeItem(node);
     node->deleteLater ();
-    qDebug() << "GW::removeItem(node) - node erased! "
-             << " scene items now: " << scene()->items().size()
-             << " view items: " << items().size();
+    qDebug() << "Node removed. "
+             << "scene items now: " << scene()->items().size()
+             << "view items: " << items().size();
 }
 
 
@@ -542,16 +541,16 @@ void GraphicsWidget::removeItem( GraphicsNode *node){
  *
  */
 void GraphicsWidget::removeItem( GraphicsEdge * edge){
-    qDebug() << "GW::removeItem(edge) - calling edgeClicked(0)" ;
-    setEdgeClicked(0);
     edgeName = createEdgeName(edge->sourceNodeNumber(), edge->targetNodeNumber() ) ;
-    qDebug() << "GW::removeItem(edge) - removing edge from edges hash" ;
+    qDebug() << "Removing edge"<< edgeName << "Calling edgeClicked(0)" ;
+    setEdgeClicked(0);
+    qDebug() << "removing edge from edges hash" ;
     edgesHash.remove(edgeName);
-    qDebug() << "GW::removeItem(edge) - removing edge scene" ;
+    qDebug() << "removing edge from scene" ;
     scene()->removeItem(edge);
-    qDebug() << "GW::removeItem(edge) - calling edge->deleteLater()" ;
+    qDebug() << "Calling edge->deleteLater()" ;
     edge->deleteLater();
-    qDebug() << "GW::removeItem(edge) - edge erased! "
+    qDebug() << "Edge removed! "
              << " scene items now: " << scene()->items().size()
              << " view items: " << items().size();
 }
@@ -562,11 +561,11 @@ void GraphicsWidget::removeItem( GraphicsEdge * edge){
  * @param edgeWeight
  */
 void GraphicsWidget::removeItem( GraphicsEdgeWeight *edgeWeight){
-    qDebug() << "GW::removeItem(edgeWeight) -  of edge"
+    qDebug() << "removing edge weight"
              << "GW items now:  " << items().size();
     scene()->removeItem(edgeWeight);
     edgeWeight->deleteLater();
-    qDebug() << "GW::removeItem(edgeWeight) - edgeWeight erased! "
+    qDebug() << "edgeWeight erased! "
              << " scene items now: " << scene()->items().size()
              << " view items: " << items().size();
 }
@@ -578,11 +577,11 @@ void GraphicsWidget::removeItem( GraphicsEdgeWeight *edgeWeight){
  * @param edgeLabel
  */
 void GraphicsWidget::removeItem( GraphicsEdgeLabel *edgeLabel){
-    qDebug() << "GW::removeItem(edgeLabel) -  of edge"
+    qDebug() << "removing edgeLabel"
              << "GW items now:  " << items().size();
     scene()->removeItem(edgeLabel);
     edgeLabel->deleteLater();
-    qDebug() << "GW::removeItem(edgeLabel) - edgeLabel erased! "
+    qDebug() << "edgeLabel erased! "
              << " scene items now: " << scene()->items().size()
              << " view items: " << items().size();
 }
@@ -594,11 +593,11 @@ void GraphicsWidget::removeItem( GraphicsEdgeLabel *edgeLabel){
  * @param nodeLabel
  */
 void GraphicsWidget::removeItem( GraphicsNodeLabel *nodeLabel){
-    qDebug() << "GW::removeItem(label) -  of node " <<  nodeLabel->node()->nodeNumber()
+    qDebug() << "removing label of node " <<  nodeLabel->node()->nodeNumber()
              << "GW items now:  " << items().size();
     scene()->removeItem(nodeLabel);
     nodeLabel->deleteLater();
-    qDebug() << "GW::removeItem(label) - label erased! "
+    qDebug() << "label erased! "
              << " scene items now: " << scene()->items().size()
              << " view items: " << items().size();
 
@@ -611,11 +610,11 @@ void GraphicsWidget::removeItem( GraphicsNodeLabel *nodeLabel){
  * @param nodeNumber
  */
 void GraphicsWidget::removeItem( GraphicsNodeNumber *nodeNumber){
-    qDebug() << "GW::removeItem(number) -  of node " <<  nodeNumber->node()->nodeNumber()
+    qDebug() << "removing number of node " <<  nodeNumber->node()->nodeNumber()
              << "GW items now:  " << items().size();
     scene()->removeItem(nodeNumber);
     nodeNumber->deleteLater();
-    qDebug() << "GW::removeItem(number) - number erased! "
+    qDebug() << "node number erased! "
              << " scene items now: " << scene()->items().size()
              << " view items: " << items().size();
 
@@ -635,7 +634,7 @@ void GraphicsWidget::removeItem( GraphicsNodeNumber *nodeNumber){
  */
 bool GraphicsWidget::setNodeColor(const int &nodeNumber,
                                   const QString &color){
-    qDebug() << "Setting node:"<< nodeNumber << "new color:" << color;
+    qDebug() << "Setting node"<< nodeNumber << "new color to:" << color;
     nodeHash.value(nodeNumber) -> setColor(color);
     return true;
 }
@@ -652,7 +651,7 @@ bool GraphicsWidget::setNodeColor(const int &nodeNumber,
 bool GraphicsWidget::setNodeShape(const int &nodeNumber,
                                   const QString &shape,
                                   const QString &iconPath){
-    qDebug() << "GW::setNodeShape() : " << shape;
+    qDebug() << "Setting node"<< nodeNumber << "new shape to:" << shape;
     nodeHash.value(nodeNumber) -> setShape(shape,iconPath);
     return true;
 
@@ -666,7 +665,7 @@ bool GraphicsWidget::setNodeShape(const int &nodeNumber,
  * @param toggle
  */
 void GraphicsWidget::setNodeLabelsVisibility (const bool &toggle){
-    qDebug()<< "GW::setNodeLabelsVisibility()" << toggle;
+    qDebug()<< "Toggling node labels visibility to:" << toggle;
     foreach ( GraphicsNode *m_node, nodeHash) {
         m_node->setLabelVisibility(toggle);
     }
@@ -681,7 +680,7 @@ void GraphicsWidget::setNodeLabelsVisibility (const bool &toggle){
  * @return
  */
 bool GraphicsWidget::setNodeLabel(const int &nodeNumber, const QString &label){
-    qDebug() << "GW::setNodeLabel() : " << label;
+    qDebug() << "Setting node"<< nodeNumber << "new label to:" << label;
     nodeHash.value(nodeNumber) -> setLabelText (label);
     return true;
 
@@ -695,7 +694,7 @@ bool GraphicsWidget::setNodeLabel(const int &nodeNumber, const QString &label){
  * @param numIn
  */
 void   GraphicsWidget::setNumbersInsideNodes(const bool &toggle){
-    qDebug()<< "GW::setNumbersInsideNodes" << toggle;
+    qDebug()<< "Toggling node numbers inside:" << toggle;
     foreach ( GraphicsNode *m_node, nodeHash) {
         m_node->setNumberInside(toggle);
     }
@@ -712,7 +711,7 @@ void   GraphicsWidget::setNumbersInsideNodes(const bool &toggle){
     It is Called from MW on startup and when user changes it.
 */
 void GraphicsWidget::setInitNodeSize(int size){
-    qDebug()<< "GW::setInitNodeSize() " << size;
+    qDebug()<< "Setting default node size to" << size;
     m_nodeSize=size;
 }
 
@@ -739,13 +738,13 @@ void GraphicsWidget::setInitZoomIndex(int zoomIndex) {
 */
 void GraphicsWidget::setNodeVisibility(const int &number, const bool &toggle){
     if  ( nodeHash.contains (number) ) {
-        qDebug() << "GW::setNodeVisibility() - node"
-                 << number << " set to " << toggle;
+        qDebug() << "Setting visibility of node"
+                 << number << "to" << toggle;
         nodeHash.value(number) -> setVisible(toggle);
         nodeHash.value(number) -> setEnabled(toggle);
         return;
     }
-    qDebug() << "GW: setNodeVisibility(): cannot find node " << number;
+    qDebug() << "cannot find node " << number;
 }
 
 
@@ -756,24 +755,23 @@ void GraphicsWidget::setNodeVisibility(const int &number, const bool &toggle){
  * @return
  */
 bool GraphicsWidget::setNodeSize(const int &number, const int &size ){
-    qDebug () << "GW::setNodeSize() node: "<< number
-              << " new size "<< size;
+    qDebug() << "Setting size of node"
+             << number << "to" << size;
     if  ( nodeHash.contains (number) ) {
         if (size>0){
-            qDebug() << "GW::setNodeSize(): for "<< number << " to " << size ;
             nodeHash.value(number) -> setSize(size);
             return true;
 
         }
         else {
-            qDebug() << "GW::setNodeSize(): for "<< number
-                     << " to initial size" << m_nodeSize;
+            qDebug() << "Setting size of node"
+                     << number << "to default" << m_nodeSize;
             nodeHash.value(number) -> setSize(m_nodeSize);
             return true;
 
         }
     }
-    qDebug() << "GW::setNodeSize(): cannot find node " << number;
+    qDebug() << "cannot find node " << number;
     return false;
 }
 
@@ -783,9 +781,8 @@ bool GraphicsWidget::setNodeSize(const int &number, const int &size ){
  * @return
  */
 void GraphicsWidget::setNodeSizeAll(const int &size ){
-    qDebug() << "GW::setAllNodeSize() ";
+    qDebug() << "Changing all nodes size... ";
     foreach ( GraphicsNode *m_node, nodeHash ) {
-            qDebug() << "GW::setAllNodeSize(): "<< m_node->nodeNumber() << " to new size " << size ;
             m_node -> setSize(size);
     }
 }
@@ -798,7 +795,7 @@ void GraphicsWidget::setNodeSizeAll(const int &size ){
  * @param toggle
  */
 void GraphicsWidget::setNodeNumberVisibility(const bool &toggle){
-    qDebug()<< "GW::setNodeNumberVisibility()" << toggle;
+    qDebug()<< "toggling visibility of all node numbers to" << toggle;
     foreach ( GraphicsNode *m_node, nodeHash) {
         m_node->setNumberVisibility(toggle);
     }
@@ -814,14 +811,15 @@ void GraphicsWidget::setNodeNumberVisibility(const bool &toggle){
  * @param color
  */
 void GraphicsWidget::setNodeNumberColor(const int &nodeNumber, const QString &color) {
-    qDebug () << " GraphicsWidget::setNodeNumberColor() - node:"<< nodeNumber
-              << " new number color"<< color;
+    qDebug() << "Setting color of node"
+             << nodeNumber << "to" << color;
     if  ( nodeHash.contains (nodeNumber) ) {
         if (!color.isNull()){
             nodeHash.value(nodeNumber) ->setNumberColor(color) ;
         }
+        return;
     }
-    qDebug() << "GW::setNodeNumberColor(): cannot find node " << nodeNumber;
+    qDebug() << "cannot find node " << nodeNumber;
 }
 
 
@@ -831,8 +829,8 @@ void GraphicsWidget::setNodeNumberColor(const int &nodeNumber, const QString &co
  * @param size
  */
 bool GraphicsWidget::setNodeNumberSize(const int &nodeNumber, const int &size){
-    qDebug () << " GraphicsWidget::setNodeNumberSize() - node: "<< nodeNumber
-              << " new number size "<< size;
+    qDebug() << "Setting number size of node"
+             << nodeNumber << "to" << size;
     if  ( nodeHash.contains (nodeNumber) ) {
         if (size>0){
             nodeHash.value(nodeNumber) ->setNumberSize(size) ;
@@ -840,7 +838,7 @@ bool GraphicsWidget::setNodeNumberSize(const int &nodeNumber, const int &size){
 
         }
     }
-    qDebug() << "GW::setNodeNumberSize() - cannot find node " << nodeNumber;
+    qDebug() << "cannot find node " << nodeNumber;
     return false;
 }
 
@@ -852,8 +850,8 @@ bool GraphicsWidget::setNodeNumberSize(const int &nodeNumber, const int &size){
  * @param distance
  */
 bool GraphicsWidget::setNodeNumberDistance(const int &number, const int &distance ){
-    qDebug () << "GW::setNodeNumberDistance() - node: "<< number
-              << " new number distance "<< distance;
+    qDebug() << "Setting number distance of node"
+             << number << "to" << distance;
     if  ( nodeHash.contains (number) ) {
         if (distance>=0){
             nodeHash.value(number) ->setNumberDistance(distance) ;
@@ -861,7 +859,7 @@ bool GraphicsWidget::setNodeNumberDistance(const int &number, const int &distanc
 
         }
     }
-    qDebug() << "GW::setNodeNumberDistance() - cannot find node " << number;
+    qDebug() << "cannot find node " << number;
     return false;
 }
 
@@ -874,13 +872,13 @@ bool GraphicsWidget::setNodeNumberDistance(const int &number, const int &distanc
  * @param color
  */
 bool GraphicsWidget::setNodeLabelColor(const int &number, const QString &color){
-    qDebug () << "GW::setNodeLabelColor() - node number: "<< number
-              << " new Label color"<< color;
+    qDebug() << "Setting label color of node"
+             << number << "to" << color;
     if  ( nodeHash.contains (number) ) {
             nodeHash.value(number) ->setLabelColor(color);
             return true;
     }
-    qDebug() << "GW:setNodeLabelColor() - cannot find node " << number;
+    qDebug() << "cannot find node " << number;
     return false;
 }
 
@@ -893,16 +891,15 @@ bool GraphicsWidget::setNodeLabelColor(const int &number, const QString &color){
  * @param size
  */
 bool GraphicsWidget::setNodeLabelSize(const int &number, const int &size){
-    qDebug () << "GW::setNodeLabelSize() - node number: "<< number
-              << " new Label size "<< size;
+    qDebug() << "Setting label size of node"
+             << number << "to" << size;
     if  ( nodeHash.contains (number) ) {
         if (size>0){
-            qDebug() << "GW::setNodeLabelSize(): for "<< number << " to " << size ;
             nodeHash.value(number) ->setLabelSize(size);
             return true;
         }
     }
-    qDebug() << "GW:setNodeLabelSize() - cannot find node " << number;
+    qDebug() << "cannot find node " << number;
     return false;
 }
 
@@ -916,17 +913,15 @@ bool GraphicsWidget::setNodeLabelSize(const int &number, const int &size){
  * @param distance
  */
 bool GraphicsWidget::setNodeLabelDistance( const int &number, const int &distance ){
-    qDebug () << "GW::setNodeLabelDistance() - node number: "<< number
-              << " new label distance "<< distance;
+    qDebug() << "Setting label distance of node"
+             << number << "to" << distance;
     if  ( nodeHash.contains (number) ) {
         if (distance>=0){
-            qDebug() << "GW::setNodeLabelDistance(): for "<< number
-                     << " to " << distance ;
             nodeHash.value(number) ->setLabelDistance(distance) ;
             return true;
         }
     }
-    qDebug() << "GW::setNodeLabelDistance() - cannot find node " << number;
+    qDebug() << "cannot find node " << number;
     return false;
 }
 
@@ -944,7 +939,7 @@ GraphicsNode* GraphicsWidget::hasNode( QString text ){
         if ( 	candidate->nodeNumber()==text.toInt(&ok, 10)  ||
                 ( candidate->labelText() == text)
                 ) {
-            qDebug() << "GW: hasNode(): Node " << text << " found!";
+            qDebug() << "Node" << text << " found!";
             return candidate;
             break;
         }
@@ -956,19 +951,19 @@ GraphicsNode* GraphicsWidget::hasNode( QString text ){
 
 
 /**
- * @brief Highlights all nodes in list
+ * @brief Selects all nodes in list
  * Called by Graph::signalNodesFound()
  * @param list
  */
 void GraphicsWidget::setNodesMarked(QList<int> list){
-    qDebug() << "GW::setNodesMarked()" << list;
+    qDebug() << "Marking" << list.count() << "nodes as selected";
     foreach ( int nodeNumber, list) {
         if  ( nodeHash.contains (nodeNumber) ) {
-            qDebug() << "GW::setNodesMarked() - setSelected node:"<< nodeNumber;
+            qDebug() << "Selecting node"<< nodeNumber;
             nodeHash.value(nodeNumber) ->setSelected(true) ;
         }
         else {
-            qDebug() << "GW::setNodesMarked() - cannot find node:"<< nodeNumber;
+            qDebug() << "Cannot find node:"<< nodeNumber;
         }
     }
 }
@@ -976,7 +971,7 @@ void GraphicsWidget::setNodesMarked(QList<int> list){
 
 
 /**
- * @brief GraphicsWidget::setEdgeLabel
+ * @brief
  * Sets the label of an edge.
  * Called from MW when the user changes the label of an edge (right-clicking).
   * @param source
@@ -989,7 +984,7 @@ void GraphicsWidget::setEdgeLabel(const int &source,
 
     edgeName = createEdgeName( source, target );
 
-    qDebug()<<"GW::setEdgeLabel() -" << edgeName <<  " new label "  << label;
+    qDebug()<<"Setting label for edge" << edgeName <<  "new label"  << label;
     if  ( edgesHash.contains (edgeName) ) {
         edgesHash.value(edgeName) -> setLabel(label);
     }
@@ -1011,7 +1006,7 @@ void GraphicsWidget::setEdgeColor(const int &source,
 
     edgeName =  createEdgeName( source, target );
 
-    qDebug()<<"GW::setEdgeColor() -" << edgeName <<  " new color "  << color;
+    qDebug()<<"Setting color of edge" << edgeName <<  "new color:"  << color;
     if  ( edgesHash.contains (edgeName) ) {
         edgesHash.value(edgeName) -> setColor(color);
     }
@@ -1033,19 +1028,16 @@ void GraphicsWidget::setEdgeColor(const int &source,
 bool GraphicsWidget::setEdgeDirectionType(const int &source,
                                           const int &target,
                                           const int &dirType){
-    qDebug() << "GW::setEdgeDirectionType() : "
+    qDebug() << "Changing the direction type of edge: "
              << source
              << "->" << target
-             << "type" << dirType;
+             << "to type:" << dirType;
 
     edgeName = createEdgeName( source, target );
-    qDebug()<<"GW::setEdgeDirectionType() - checking edgesHash for:" << edgeName ;
 
     if  ( edgesHash.contains (edgeName) ) {
-        qDebug()<<"GW::setEdgeDirectionType() - edge exists in edgesHash. "
-                  << " Transforming it to reciprocated";
+        qDebug()<<" Found edge in edgesHash. ";
         edgesHash.value(edgeName) -> setDirectionType(dirType);
-
         return true;
     }
     return false;

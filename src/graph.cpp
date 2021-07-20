@@ -284,8 +284,7 @@ Graph::~Graph() {
     Clears all vertices
 */
 void Graph::clear(const QString &reason) {
-    qDebug()<< "Graph::clear() - Clearing graph... "
-              "m_graph reports size "<<m_graph.size();
+    qDebug()<< "Clearing graph, vertices and data structures... ";
     qDeleteAll(m_graph.begin(), m_graph.end());
     m_graph.clear();
     vpos.clear();
@@ -305,39 +304,39 @@ void Graph::clear(const QString &reason) {
     discreteEVCs.clear();
 
     if ( DM.size() > 0) {
-        qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+        qDebug() << "clearing DM matrix";
         DM.clear();
     }
     if ( SIGMA.size() > 0) {
-        qDebug() << "\n\n\n\n Graph::clear()  clearing SIGMA\n\n\n";
+        qDebug() << "clearing SIGMA matrix";
         SIGMA.clear();
     }
     if ( sumM.size() > 0) {
-        qDebug() << "\n\n\n\n Graph::clear()  clearing sumM\n\n\n";
+        qDebug() << "clearing sumM";
         sumM.clear();
     }
     if ( invAM.size() > 0) {
-        qDebug() << "\n\n\n\n Graph::clear()  clearing invAM\n\n\n";
+        qDebug() << "clearing invAM";
         invAM.clear();
     }
     if ( AM.size() > 0) {
-        qDebug() << "\n\n\n\n Graph::clear()  clearing AM\n\n\n";
+        qDebug() << "clearing AM";
         AM.clear();
     }
     if ( invM.size() > 0) {
-        qDebug() << "\n\n\n\n Graph::clear()  clearing invM\n\n\n";
+        qDebug() << "clearing invM";
         invM.clear();
     }
     if ( XM.size() > 0) {
-        qDebug() << "\n\n\n\n Graph::clear()  clearing XM\n\n\n";
+        qDebug() << "clearing XM";
         XM.clear();
     }
     if ( XSM.size() > 0) {
-        qDebug() << "\n\n\n\n Graph::clear()  clearing XSM\n\n\n";
+        qDebug() << "clearing XSM";
         XSM.clear();
     }
     if ( XRM.size() > 0) {
-        qDebug() << "\n\n\n\n Graph::clear()  clearing XRM\n\n\n";
+        qDebug() << "clearing XRM";
         XRM.clear();
     }
 
@@ -353,6 +352,7 @@ void Graph::clear(const QString &reason) {
 
     //clear relations
     relationsClear();
+    // add a default relation
     relationAdd(tr(("unnamed")));
 
     m_fileFormat=FileType::NOT_SAVED;
@@ -412,9 +412,7 @@ void Graph::clear(const QString &reason) {
 
     m_graphHasVertexCustomIcons = false;
 
-    qDebug()<< "Graph::clear() - Clearing ended. m_graph size"
-            << m_graph.size()
-            << "Asking parser and crawler threads to terminate";
+    qDebug()<< "Clearing graph data ended. Asking parser and crawler threads to terminate";
 
     graphLoadedTerminateParserThreads("clear");
     webCrawlTerminateThreads("clear");
@@ -423,9 +421,8 @@ void Graph::clear(const QString &reason) {
     //        urlQueue->clear();
     //    }
 
-
     if ( reason != "exit") {
-        qDebug()<< "Graph::clear() - Clearing end. Emitting graphSetModified()";
+        qDebug()<< "Finished clearing graph data and structures. Emitting graphSetModified()";
         graphSetModified(m_graphHasChanged,true);
     }
 }
@@ -626,7 +623,7 @@ void Graph::relationNext(){
 
 
 /**
- * @brief Graph::relationAdd
+ * @brief
  * Adds a new relation named relName
  * Called by file parser to add a new relation
  * Also called from MW.
@@ -634,12 +631,12 @@ void Graph::relationNext(){
  * @param relName
  */
 void Graph::relationAdd(const QString &relName, const bool &changeRelation) {
-    qDebug() << "Graph::relationAdd() - relation name" << relName;
+    qDebug() << "Adding relation named" << relName;
     m_relationsList << relName;
-    // add new relation to MW combo box
     emit signalRelationAddToMW(relName, false);
-    if (changeRelation)
+    if (changeRelation) {
         relationSet();
+    }
 }
 
 
@@ -703,19 +700,15 @@ int Graph::relations(){
 
 
 /**
- * @brief Graph::relationsClear
- * @return
+ * @brief
  * Clears relationships in this Graph
  */
 void Graph::relationsClear(){
     int oldRelationsCounter = m_relationsList.count();
     m_relationsList.clear();
     m_curRelation=0;
-    qDebug () << "Graph::relationsClear() - cleared"
-                 << oldRelationsCounter
-                 << "relation(s). New relations count:"
-                 << m_relationsList.count()
-                 <<"Emitting signalRelationsClear()";
+    qDebug () << "Cleared" << oldRelationsCounter << "relation(s)"
+              <<"Emitting signalRelationsClear()";
     emit signalRelationsClear();
 
 }
@@ -1449,7 +1442,7 @@ QPointF Graph::vertexPos(const int &v1) const{
  * @param v1
   */
 void Graph::vertexClickedSet(const int &v1, const QPointF &p) {
-    qDebug()<<"Graph::vertexClickedSet() - " << v1;
+    qDebug()<<"Setting clicked vertex: " << v1;
     m_vertexClicked = v1;
     if (v1 == 0) {
         emit signalNodeClickedInfo(0, p);
@@ -2992,7 +2985,7 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
  * @brief Sets the graph modification status.
  * If there are major changes, then signalGraphModified is emitted
  * In any case, SignalGraphSavedStatus is emitted.
- * @param graphChangedFlag
+ * @param graphNewStatus
  * @param signalMW
  */
 void Graph::graphSetModified(const int &graphNewStatus, const bool &signalMW){
@@ -3002,7 +2995,7 @@ void Graph::graphSetModified(const int &graphNewStatus, const bool &signalMW){
         // this is called from:
         // graphFileLoaded() after successful loading
 
-        qDebug()<<"Graph::graphSetModified() - new, thus saved..."
+        qDebug()<<"new network, thus saved..."
                   "emit signalGraphModified()";
 
         m_graphHasChanged=graphNewStatus;
@@ -3019,7 +3012,7 @@ void Graph::graphSetModified(const int &graphNewStatus, const bool &signalMW){
         // this is called from:
         // graphSaved() after successful saving
 
-        qDebug()<<"Graph::graphSetModified() - no changes, graph is saved...";
+        qDebug()<<"no changes, no need to save graph...";
 
         m_graphHasChanged=graphNewStatus;
 
@@ -3033,7 +3026,7 @@ void Graph::graphSetModified(const int &graphNewStatus, const bool &signalMW){
         // This is called from any method that alters V or E in G:
         // thus all prior computations are invalid
 
-        qDebug()<<"Graph::graphSetModified() - major changes!";
+        qDebug()<<"major changes, invalidating computations, needs saving...";
 
         m_graphHasChanged=graphNewStatus;
 
@@ -3062,7 +3055,7 @@ void Graph::graphSetModified(const int &graphNewStatus, const bool &signalMW){
 
         if (signalMW) {
 
-            qDebug()<<"Graph::graphSetModified() - emit signalGraphModified()";
+            qDebug()<<"emit signalGraphModified()";
             emit signalGraphModified(graphIsDirected(),
                                      m_totalVertices,
                                      edgesEnabled(),
@@ -3080,12 +3073,12 @@ void Graph::graphSetModified(const int &graphNewStatus, const bool &signalMW){
         if ( m_graphHasChanged < GraphChange::ChangedMajor) {
             m_graphHasChanged = graphNewStatus;
         }
-        qDebug()<<"Graph::graphSetModified() - minor changes but needs saving...";
+        qDebug()<<"minor changes but needs saving...";
         emit signalGraphSavedStatus(false);
         return;
     }
     else {
-        qDebug()<<"Graph::graphSetModified() - Strange. I should not reach this code...";
+        qDebug()<<"Strange. I should not reach this code...";
         m_graphHasChanged=graphNewStatus;
     }
 
@@ -3352,12 +3345,11 @@ int Graph:: verticesWithReciprocalEdges(){
  * @param reason
  */
 void Graph::webCrawlTerminateThreads (QString reason){
-    qDebug() << "Graph::webCrawlTerminateThreads() - reason " << reason
+    qDebug() << "Terminating webCrawler threads - reason " << reason
              << "Checking webcrawlerThread...";
 
     while (webcrawlerThread.isRunning() ) {
-
-        qDebug() << "Graph::webCrawlTerminateThreads()  - webcrawlerThread running. "
+        qDebug() << "webcrawlerThread running. "
                     "Calling webcrawlerThread.quit()";
         webcrawlerThread.quit();
         webcrawlerThread.wait();
@@ -15704,14 +15696,14 @@ void Graph::graphLoad (	const QString m_fileName,
  * @param reason
  */
 void Graph::graphLoadedTerminateParserThreads(QString reason) {
-    qDebug() << "Graph::graphLoadedTerminateParserThreads() - reason " << reason
+    qDebug() << "Terminating parser threads - reason " << reason
              <<" Checking if file_parserThread is running...";
     if (file_parserThread.isRunning() ) {
-        qDebug() << "Graph::graphLoadedTerminateParserThreads() - deleting file_parser pointer";
+        qDebug() << "deleting file_parser pointer";
         delete file_parser;
         file_parser = 0;  // see why here: https://goo.gl/tQxpGA
 
-        qDebug() << "Graph::graphLoadedTerminateParserThreads() - file_parserThread running."
+        qDebug() << "file_parserThread running."
                      "Calling file_parserThread.quit();";
         file_parserThread.quit();
     }

@@ -534,11 +534,11 @@ QRectF GraphicsEdge::boundingRect() const {
  * @brief Changes the direction type of edge A -> B
   */
 void GraphicsEdge::setDirectionType(const int &dirType){
-    qDebug()<< "GraphicsEdge::setDirectionType() - "
+    qDebug()<< "Edge"
             << source->nodeNumber()
             << "->"
             << target->nodeNumber()
-            << "direction type"
+            << "new direction type"
             << dirType;
     prepareGeometryChange();
     m_edgeDirType = dirType;
