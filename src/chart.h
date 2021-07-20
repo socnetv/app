@@ -89,11 +89,11 @@ public:
     void setAxisYGridLinePen(const QPen &pen = QPen(QColor("#e0e0e0"), 1,Qt::DotLine) );
 
 
-    void setTheme(QChart::ChartTheme theme=QChart::ChartThemeQt);
+    void setTheme(QChart::ChartTheme theme=QChart::ChartThemeLight);
     void setThemeSmallWidget(const int minWidth, const int minHeight);
 
     void setChartBackgroundBrush(const QBrush & brush = QBrush(Qt::transparent));
-    void setChartBackgroundPen(const QBrush & brush = QBrush(Qt::transparent));
+    void setChartBackgroundPen(const QPen & pen = QPen(Qt::transparent));
     void setMargins(const QMargins &margins = QMargins());
     void toggleLegend(const bool &toggle = false);
 
