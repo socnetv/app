@@ -131,7 +131,7 @@
  * @param m_fileName the file to load, if any.
  * MainWindow contruction method
  */
-MainWindow::MainWindow(const QString & m_fileName, const bool &showProgress, const bool &maximized, const bool &fullscreen, const int &debugLevel) {
+MainWindow::MainWindow(const QString & m_fileName, const bool &forceProgress, const bool &maximized, const bool &fullscreen, const int &debugLevel) {
 
 //    qInstallMessageHandler( myMessageOutput);
 
@@ -144,7 +144,7 @@ MainWindow::MainWindow(const QString & m_fileName, const bool &showProgress, con
                                              "socnetv.debug=false");
         break;
     case 1:
-        qSetMessagePattern("[%{type} %{category}] %{time} t:%{threadid} (%{file}:%{line}) %{function} - %{message}");
+        qSetMessagePattern("[%{type}] (%{file}:%{line}) %{function} - %{message}");
         break;
     case 2:
         qSetMessagePattern("[%{type} %{category}] %{time yyyyMMdd h:mm:ss.zzz t} %{threadid} (%{file}:%{line}) %{function} - %{message}");
@@ -156,7 +156,7 @@ MainWindow::MainWindow(const QString & m_fileName, const bool &showProgress, con
 
     setWindowIcon (QIcon(":/images/socnetv_logo_white_bg_128px.svg"));
 
-    appSettings = initSettings(debugLevel);
+    appSettings = initSettings(debugLevel, forceProgress);
 
     // Get host screen width and height
     int primaryScreenWidth = QApplication::primaryScreen()->availableSize().width();
@@ -213,7 +213,7 @@ MainWindow::MainWindow(const QString & m_fileName, const bool &showProgress, con
 
     initPanels();       // Build the toolbox
 
-    initWindowLayout(maximized); // Init the application window, set layout etc
+    initWindowLayout(maximized, fullscreen); // Init the application window, set layout etc
 
     initSignalSlots();  // Connect signals and slots between app components
 
@@ -405,15 +405,18 @@ void MainWindow::resizeEvent( QResizeEvent * ) {
   * @brief Initializes default (or user-defined) app settings
   *
   */
-QMap<QString,QString> MainWindow::initSettings(const int &debugLevel) {
+QMap<QString,QString> MainWindow::initSettings(const int &debugLevel, const bool &forceProgress) {
 
-    qDebug()<< "debugLevel" << debugLevel;
-
+    qDebug() << "debugLevel"<<debugLevel;
+    //
     // Create fortune cookies and tips
+    //
     createFortuneCookies();
     slotHelpCreateTips();
 
+    //
     // Populate icons and shapes lists
+    //
     // Note: When you add a new shape and icon, you must also:
     // 1. Add a new enum in NodeShape (global.h)
     // 2. Add a new branch in GraphicsNode::setShape() and paint()
@@ -445,7 +448,12 @@ QMap<QString,QString> MainWindow::initSettings(const int &debugLevel) {
                  << ":/images/export_photo_48px.svg";
 
 
+    //Max nodes used by createRandomNetwork dialogues
+    maxNodes=5000;
+
+    //
     // Call slotNetworkAvailableTextCodecs to setup a list of all supported codecs
+    //
     qDebug() << "calling slotNetworkAvailableTextCodecs" ;
     slotNetworkAvailableTextCodecs();
 
@@ -456,7 +464,12 @@ QMap<QString,QString> MainWindow::initSettings(const int &debugLevel) {
     connect (m_dialogPreviewFile, &DialogPreviewFile::loadNetworkFileWithCodec,
              this, &MainWindow::slotNetworkFileLoad );
 
-    qDebug() << "creating default settings" ;
+
+    //
+    // Generate default settings
+    //
+
+    qDebug() << "Generating default settings" ;
 
     // Our settings are always saved to this folder.
     settingsDir = QDir::homePath() +QDir::separator() + "socnetv-data" + QDir::separator() ;
@@ -467,9 +480,7 @@ QMap<QString,QString> MainWindow::initSettings(const int &debugLevel) {
     // changed by the user through Settings...
     QString dataDir= settingsDir ;
 
-    maxNodes=5000;		//Max nodes used by createRandomNetwork dialogues
-
-    // hard-coded initial settings to use only on first app load
+    // hard-coded initial settings to use only on first app load,
     // when there are no user defined values
     appSettings["initNodeSize"]= "10";
     appSettings["initNodeColor"]="red";
@@ -500,7 +511,6 @@ QMap<QString,QString> MainWindow::initSettings(const int &debugLevel) {
     appSettings["initEdgeWeightNumberColor"] = "#00aa00";
     appSettings["initEdgeLabelsVisibility"] = "false";
 
-
     appSettings["initBackgroundColor"]="white"; //"gainsboro";
     appSettings["initBackgroundImage"]="";
     appSettings["printDebug"] = "false";
@@ -529,22 +539,21 @@ QMap<QString,QString> MainWindow::initSettings(const int &debugLevel) {
     appSettings["initReportsLabelsLength"] = "16";
     appSettings["initReportsChartType"] = "0";
 
-    // Try to load settings configuration file
+    // Try to load settings from previously-saved file
     // First check if our settings folder exist
     QDir socnetvDir(settingsDir);
     if ( !socnetvDir.exists() ) {
-        qDebug() << " dir does not exist - create it";
+        qDebug() << "socnetv settings dir does not exist. Creating it...";
         socnetvDir.mkdir(settingsDir);
     }
-    // Then check if the conf file exists inside the folder
-    qDebug() << "checking for settings file: "
-              << settingsFilePath;
-
+    // Then check if the settings file exists inside the folder
     if (!socnetvDir.exists(settingsFilePath)) {
+        qDebug() << "Settings file does not exist. Creating it with defaults at: "
+                  << settingsFilePath;
         saveSettings();
     }
     else {
-        qDebug()<< "settings file exist - Reading it";
+        qDebug()<< "Settings file exist. Reading it...";
         QFile file(settingsFilePath);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             QMessageBox::critical(this, "File Read Error",
@@ -561,26 +570,34 @@ QMap<QString,QString> MainWindow::initSettings(const int &debugLevel) {
                                   QMessageBox::Ok, 0);
             return appSettings;
         }
+        // Read the previously-stored settings from the file and update appSettings
         QTextStream in(&file);
         QStringList setting;
         while (!in.atEnd()) {
             QString line = in.readLine();
             if (!line.isEmpty()) {
                 setting = line.simplified().split('=');
-                qDebug() << "  read setting: " <<  setting[0].simplified() << " = " << setting[1].simplified();
-                if (setting[0].simplified().startsWith("recentFile_"))
+                if (setting[0].simplified().startsWith("recentFile_")) {
                     recentFiles += setting[1].simplified();
-                else
+                }
+                else {
                     appSettings.insert (setting[0].simplified() , setting[1].simplified() );
+                }
             }
         }
         file.close();
     }
     qDebug() << "Recent files count " << recentFiles.count() ;
-    // restore user setting for debug messages
-    printDebug = (appSettings["printDebug"] == "true") ? true:false;
 
-    slotOptionsDebugMessages(printDebug);
+    // Override progress bar setting if the user has requested it (through a command-line parameter)
+    appSettings["showProgressBar"] = forceProgress ? "true" : appSettings["showProgressBar"];
+
+    // Override debug messages setting if the user has requested it (through a command-line parameter)
+    appSettings["printDebug"] = debugLevel ? "true" : appSettings["printDebug"];
+//    // restore user setting for debug messages
+//    printDebug = (appSettings["printDebug"] == "true") ? true:false;
+    slotOptionsDebugMessages(appSettings["printDebug"]=="true");
+
     return appSettings;
 }
 
@@ -5151,7 +5168,7 @@ void MainWindow::initPanels(){
  * @brief Initializes the application window UI:
  * Creates helper widgets and sets the main layout of the MainWindow
  */
-void MainWindow::initWindowLayout(const bool &maximized) {
+void MainWindow::initWindowLayout(const bool &maximized, const bool &fullscreen) {
 
     qDebug() << "Initializing window layout...";
 
@@ -5284,6 +5301,9 @@ void MainWindow::initWindowLayout(const bool &maximized) {
     if (maximized) {
         qDebug() << "maximizing window as per user request.";
         showMaximized();
+    }
+    if (fullscreen) {
+        showFullScreen();
     }
 
 
@@ -13244,9 +13264,6 @@ void MainWindow::slotProgressBoxCreate(const int &max, const QString &msg){
         progressBox->setAutoClose(true);
         progressBox->setAutoReset(true);
 
-
-
-
         progressDialogs.push(progressBox);
     }
 
@@ -13908,14 +13925,14 @@ void MainWindow::slotOptionsProgressDialogVisibility(bool toggle) {
 void MainWindow::slotOptionsDebugMessages(bool toggle){
     if (!toggle)   {
         appSettings["printDebug"] = "false";
-        printDebug=false;
+        // printDebug=false; // deprecated/obsolete
         QLoggingCategory::setFilterRules("default.debug=false\n"
                                              "socnetv.debug=false");
         statusMessage( tr("Debug messages off.") );
     }
     else  {
         appSettings["printDebug"] = "true";
-        printDebug=true;
+        // printDebug=true; // deprecated/obsolete
         QLoggingCategory::setFilterRules("default.debug=true\n"
                                              "socnetv.debug=true");
         statusMessage( tr("Debug messages on.") );

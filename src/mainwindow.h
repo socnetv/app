@@ -128,7 +128,7 @@ class MainWindow : public QMainWindow
 
 public:
 
-    MainWindow(const QString &m_fileName=QString(), const bool &showProgress=false, const bool &maximized=false, const bool &fullscreen=false, const int &debugLevel=0);
+    MainWindow(const QString &m_fileName=QString(), const bool &forceProgress=false, const bool &maximized=false, const bool &fullscreen=false, const int &debugLevel=0);
     ~MainWindow();
 
     void slotStyleSheetDefault(const bool checked);
@@ -143,9 +143,9 @@ public:
     void initMenuBar();
     void initToolBar();
     void initPanels();
-    void initWindowLayout(const bool &maximized=false);
+    void initWindowLayout(const bool &maximized=false, const bool &fullscreen=false);
     void initSignalSlots();
-    QMap<QString, QString> initSettings(const int &debugLevel=0);
+    QMap<QString, QString> initSettings(const int &debugLevel=0, const bool &forceProgress=false);
     void saveSettings();
 
     void initApp();
