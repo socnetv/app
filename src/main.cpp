@@ -103,24 +103,24 @@ int main(int argc, char *argv[])
     parser.addVersionOption();
 
     parser.addPositionalArgument( "file",
-                                  QCoreApplication::translate("main", "Network file to load on startup. You can load a network from a file using `socnetv file.net` where file.net/csv/dot/graphml must be of valid format. See README")
+                                  QCoreApplication::translate("main", "Network file to load on startup. You can load a network from a file using `socnetv file.net` where file.net/csv/dot/graphml must be of valid format. See README.")
                                   );
 
     // A boolean option for progress dialogs
-    QCommandLineOption showProgressOption(QStringList() << "p" << "progress", QCoreApplication::translate("main", "Show progress dialogs during routines"));
+    QCommandLineOption showProgressOption(QStringList() << "p" << "progress", QCoreApplication::translate("main", "Force showing progress dialogs/bars during computations."));
     parser.addOption(showProgressOption);
 
     // A boolean option for maximized display
-    QCommandLineOption showMaximizedOption(QStringList() << "m" << "maximimzed", QCoreApplication::translate("main", "Show app maximized."));
+    QCommandLineOption showMaximizedOption(QStringList() << "m" << "maximized", QCoreApplication::translate("main", "Show app maximized."));
     parser.addOption(showMaximizedOption);
 
     // A boolean option for full screen display
-    QCommandLineOption showFullScreenOption(QStringList() << "f" << "full", QCoreApplication::translate("main", "Show in full screen mode."));
+    QCommandLineOption showFullScreenOption(QStringList() << "f" << "fullscreen", QCoreApplication::translate("main", "Show in full screen mode."));
     parser.addOption(showFullScreenOption);
 
     // An option to enable debug messges with a verbosity value
     QCommandLineOption showDebugOption(QStringList() << "d" << "debug",
-                                             QCoreApplication::translate("main", "Print debug messages to stdout/console. Available verbosity <level>s: 'min' or 'full'. Default: min."),
+                                             QCoreApplication::translate("main", "Print debug messages to stdout/console. Available verbosity <level>s: 'min' or 'full'. Default: 'min'."),
                                              QCoreApplication::translate("main", "level"));
     parser.addOption(showDebugOption);
 
