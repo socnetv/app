@@ -127,9 +127,9 @@
 
 
 /**
- * @brief MainWindow::MainWindow
- * @param m_fileName the file to load, if any.
+ * @brief
  * MainWindow contruction method
+ * @param m_fileName the file to load, if any.
  */
 MainWindow::MainWindow(const QString & m_fileName, const bool &forceProgress, const bool &maximized, const bool &fullscreen, const int &debugLevel) {
 
@@ -137,25 +137,30 @@ MainWindow::MainWindow(const QString & m_fileName, const bool &forceProgress, co
 
     switch (debugLevel) {
     case 0:
-        // No debug parameter -- set message pattern to bare minimum
-        qSetMessagePattern("%{time} t:%{threadid} (%{file}:%{line}) %{function} - %{message}");
-        // Disable debugging message with filter rule
+        // Debugging disabled by command line parameter
+        // Set messages pattern to trivial
+        qSetMessagePattern("");
+        // Disable debugging messages with filter rule
         QLoggingCategory::setFilterRules("default.debug=false\n"
                                              "socnetv.debug=false");
         break;
     case 1:
+        // Debugging set to minimum by command line parameter
         qSetMessagePattern("[%{type}] (%{file}:%{line}) %{function} - %{message}");
         break;
     case 2:
+        // Debugging set to maximum by command line parameter
         qSetMessagePattern("[%{type} %{category}] %{time yyyyMMdd h:mm:ss.zzz t} %{threadid} (%{file}:%{line}) %{function} - %{message}");
         break;
     default:
+        // No debug parameter -- set message pattern to bare minimum
+        qSetMessagePattern("%{time} t:%{threadid} (%{file}:%{line}) %{function} - %{message}");
         break;
     }
 
-
     setWindowIcon (QIcon(":/images/socnetv_logo_white_bg_128px.svg"));
 
+    // Get app settings
     appSettings = initSettings(debugLevel, forceProgress);
 
     // Get host screen width and height
@@ -383,18 +388,20 @@ void MainWindow::terminateThreads(const QString &reason) {
 
 
 /**
- * @brief Resizes the scene when the window is resized.
+ * @brief The resize event is called whenever the app window is resized.
  */
-void MainWindow::resizeEvent( QResizeEvent * ) {
+void MainWindow::resizeEvent( QResizeEvent *e ) {
 
-    qDebug() << "Window resized to"
-             << width()
-             << ","
-             << height();
+    int w0=e->oldSize().width();
+    int h0=e->oldSize().height();
+    int w=width(); // e->size().width();
+    int h=height(); //e->size().height();
+    qDebug () << "Old size w x h:" << w0 << " x " << h0
+              << "New size w x h:" << w << " x " << h;
 
     statusMessage(
                  tr("Window resized to (%1, %2)px.")
-                .arg(width()).arg(height())
+                .arg(w).arg(h)
                 );
 
 }
@@ -402,76 +409,19 @@ void MainWindow::resizeEvent( QResizeEvent * ) {
 
 
 /**
-  * @brief Initializes default (or user-defined) app settings
+  * @brief
+  * Reads user-defined settings (or uses defaults) and initializes some app settings
   *
   */
 QMap<QString,QString> MainWindow::initSettings(const int &debugLevel, const bool &forceProgress) {
 
-    qDebug() << "debugLevel"<<debugLevel;
-    //
-    // Create fortune cookies and tips
-    //
-    createFortuneCookies();
-    slotHelpCreateTips();
+    qDebug() << "Initializing settings - debugLevel"<<debugLevel;
 
     //
-    // Populate icons and shapes lists
-    //
-    // Note: When you add a new shape and icon, you must also:
-    // 1. Add a new enum in NodeShape (global.h)
-    // 2. Add a new branch in GraphicsNode::setShape() and paint()
-    // 3. Add a new branch in DialogNodeEdit: getNodeShape() and getUserChoices()
-    nodeShapeList  << "box"
-                   << "circle"
-                   << "diamond"
-                   << "ellipse"
-                   << "triangle"
-                   << "star"
-                   << "person"
-                   << "person-b"
-                   << "bugs"
-                   << "heart"
-                   << "dice"
-                   << "custom";
-
-    iconPathList << ":/images/box.png"
-                 << ":/images/circle.png"
-                 << ":/images/diamond.png"
-                 << ":/images/ellipse.png"
-                 << ":/images/triangle.png"
-                 << ":/images/star.png"
-                 << ":/images/person.svg"
-                 << ":/images/person-bw.svg"
-                 << ":/images/bugs.png"
-                 << ":/images/heart.svg"
-                 << ":/images/random.png"
-                 << ":/images/export_photo_48px.svg";
-
-
-    //Max nodes used by createRandomNetwork dialogues
-    maxNodes=5000;
-
-    //
-    // Call slotNetworkAvailableTextCodecs to setup a list of all supported codecs
-    //
-    qDebug() << "calling slotNetworkAvailableTextCodecs" ;
-    slotNetworkAvailableTextCodecs();
-
-    qDebug() << "creating DialogPreviewFile object and setting codecs list" ;
-    m_dialogPreviewFile = new DialogPreviewFile(this);
-    m_dialogPreviewFile->setCodecList(codecs);
-
-    connect (m_dialogPreviewFile, &DialogPreviewFile::loadNetworkFileWithCodec,
-             this, &MainWindow::slotNetworkFileLoad );
-
-
-    //
-    // Generate default settings
+    // Read used-defined settings or use defaults
     //
 
-    qDebug() << "Generating default settings" ;
-
-    // Our settings are always saved to this folder.
+    // App settings are always saved to this folder.
     settingsDir = QDir::homePath() +QDir::separator() + "socnetv-data" + QDir::separator() ;
     settingsFilePath = settingsDir + "settings.conf";
 
@@ -480,7 +430,7 @@ QMap<QString,QString> MainWindow::initSettings(const int &debugLevel, const bool
     // changed by the user through Settings...
     QString dataDir= settingsDir ;
 
-    // hard-coded initial settings to use only on first app load,
+    // hard-coded default settings to use only on first app load,
     // when there are no user defined values
     appSettings["initNodeSize"]= "10";
     appSettings["initNodeColor"]="red";
@@ -587,16 +537,93 @@ QMap<QString,QString> MainWindow::initSettings(const int &debugLevel, const bool
         }
         file.close();
     }
-    qDebug() << "Recent files count " << recentFiles.count() ;
 
     // Override progress bar setting if the user has requested it (through a command-line parameter)
     appSettings["showProgressBar"] = forceProgress ? "true" : appSettings["showProgressBar"];
 
     // Override debug messages setting if the user has requested it (through a command-line parameter)
-    appSettings["printDebug"] = debugLevel ? "true" : appSettings["printDebug"];
-//    // restore user setting for debug messages
+    if (debugLevel > 0 ) {
+        appSettings["printDebug"] = "true";
+    }
+    else if (debugLevel==0) {
+        appSettings["printDebug"] = "false";
+        slotOptionsDebugMessages(false);
+    }
+    else {
+       // do not override appSettings["printDebug"]
+    }
+
+    if ( appSettings["printDebug"] == "true") {
+        slotOptionsDebugMessages(true);
+    }
+    else {
+        slotOptionsDebugMessages(false);
+    }
+
+    //    // restore user setting for debug messages
 //    printDebug = (appSettings["printDebug"] == "true") ? true:false;
-    slotOptionsDebugMessages(appSettings["printDebug"]=="true");
+
+
+
+
+    //
+    // Create fortune cookies and tips
+    //
+    createFortuneCookies();
+    slotHelpCreateTips();
+
+    //
+    // Populate icons and shapes lists
+    //
+    // Note: When you add a new shape and icon, you must also:
+    // 1. Add a new enum in NodeShape (global.h)
+    // 2. Add a new branch in GraphicsNode::setShape() and paint()
+    // 3. Add a new branch in DialogNodeEdit: getNodeShape() and getUserChoices()
+    nodeShapeList  << "box"
+                   << "circle"
+                   << "diamond"
+                   << "ellipse"
+                   << "triangle"
+                   << "star"
+                   << "person"
+                   << "person-b"
+                   << "bugs"
+                   << "heart"
+                   << "dice"
+                   << "custom";
+
+    iconPathList << ":/images/box.png"
+                 << ":/images/circle.png"
+                 << ":/images/diamond.png"
+                 << ":/images/ellipse.png"
+                 << ":/images/triangle.png"
+                 << ":/images/star.png"
+                 << ":/images/person.svg"
+                 << ":/images/person-bw.svg"
+                 << ":/images/bugs.png"
+                 << ":/images/heart.svg"
+                 << ":/images/random.png"
+                 << ":/images/export_photo_48px.svg";
+
+
+    //Max nodes used by createRandomNetwork dialogues
+    maxNodes=5000;
+
+    //
+    // Call slotNetworkAvailableTextCodecs to setup a list of all supported codecs
+    //
+    qDebug() << "calling slotNetworkAvailableTextCodecs" ;
+    slotNetworkAvailableTextCodecs();
+
+    qDebug() << "creating DialogPreviewFile object and setting codecs list" ;
+    m_dialogPreviewFile = new DialogPreviewFile(this);
+    m_dialogPreviewFile->setCodecList(codecs);
+
+    connect (m_dialogPreviewFile, &DialogPreviewFile::loadNetworkFileWithCodec,
+             this, &MainWindow::slotNetworkFileLoad );
+
+
+
 
     return appSettings;
 }
@@ -8737,7 +8764,7 @@ void MainWindow::slotNetworkChanged(
                                     const int &vertices,
                                     const int &edges,
                                     const qreal &density){
-    qDebug()<<"MW::slotNetworkChanged()"
+    qDebug()<<"Updating mainwindow, with params: "
            << "directed" << directed
            << "vertices" << vertices
            << "edges" << edges
@@ -8811,7 +8838,7 @@ void MainWindow::slotNetworkChanged(
     rightPanelEdgesLCD->setText(QString::number(edges));
     rightPanelDensityLCD->setText(QString::number(density ));
 
-    qDebug()<<"MW::slotNetworkChanged() - finished updating mainwindow !";
+    qDebug()<<"Finished updating mainwindow.";
 }
 
 
@@ -9865,7 +9892,7 @@ void MainWindow::slotEditSelectionChanged(const int &selNodes, const int &selEdg
 
 
 /**
- * @brief MainWindow::slotEditNodeInfoStatusBar
+ * @brief
  * Called by Graph::userClickedNode() signal, when the user clicks on a node.
  * It displays information about the node on the statusbar.
  * @param jim
@@ -9876,7 +9903,7 @@ void MainWindow::slotEditNodeInfoStatusBar (const int &number,
                                             const int &inDegree,
                                             const int &outDegree) {
 
-    qDebug()<<"MW::slotEditNodeInfoStatusBar()";
+    qDebug()<<"Updating node info in status bar...";
     rightPanelClickedNodeLCD->setText (QString::number(number));
     rightPanelClickedNodeInDegreeLCD->setText ( QString::number (inDegree) ) ;
     rightPanelClickedNodeOutDegreeLCD->setText ( QString::number (outDegree) ) ;
@@ -13918,12 +13945,13 @@ void MainWindow::slotOptionsProgressDialogVisibility(bool toggle) {
 
 
 /**
- * @brief MainWindow::slotOptionsDebugMessages
- * @param toggle
+ * @brief
  * Turns debugging messages on or off
+ * @param toggle
  */
 void MainWindow::slotOptionsDebugMessages(bool toggle){
     if (!toggle)   {
+        qDebug()<<"Disabling debugging messages";
         appSettings["printDebug"] = "false";
         // printDebug=false; // deprecated/obsolete
         QLoggingCategory::setFilterRules("default.debug=false\n"
@@ -13935,6 +13963,7 @@ void MainWindow::slotOptionsDebugMessages(bool toggle){
         // printDebug=true; // deprecated/obsolete
         QLoggingCategory::setFilterRules("default.debug=true\n"
                                              "socnetv.debug=true");
+        qDebug()<<"Enabled debugging messages";
         statusMessage( tr("Debug messages on.") );
     }
 }

@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
 
     // An option to enable debug messges with a verbosity value
     QCommandLineOption showDebugOption(QStringList() << "d" << "debug",
-                                             QCoreApplication::translate("main", "Print debug messages to stdout/console. Available verbosity <level>s: 'min' or 'full'. Default: 'min'."),
+                                             QCoreApplication::translate("main", "Print debug messages to stdout/console. Available verbosity <level>s: 'none', 'min' or 'full'. Default: 'min'."),
                                              QCoreApplication::translate("main", "level"));
     parser.addOption(showDebugOption);
 
@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
     bool showMaximized = parser.isSet(showMaximizedOption);
     bool showFullScreen= parser.isSet(showFullScreenOption);
     bool showDebug = parser.isSet(showDebugOption);
-    int debugLevel = 0;
+    int debugLevel = -1; // By default, we assume no debug option was passed
     if (showDebug) {
         if (parser.value(showDebugOption) == "full") {
             debugLevel = 2;
@@ -147,9 +147,9 @@ int main(int argc, char *argv[])
             debugLevel = 1;
         }
         else {
-            debugLevel = 1;
+            // Any other value/string, disables the debugging
+            debugLevel = 0;
         }
-
     }
 
     //

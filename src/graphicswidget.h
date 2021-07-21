@@ -230,7 +230,7 @@ private:
     qreal fX,fY, factor;
     QString m_nodeLabel, m_numberColor, m_labelColor;
     QString edgeName;
-    bool transformationActive;
+    bool m_isTransformationActive;
     bool secondDoubleClick, clickedEdgeExists;
     bool m_nodeNumbersInside, m_nodeNumberVisibility, m_nodeLabelVisibility;
     bool m_edgeHighlighting;

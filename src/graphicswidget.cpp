@@ -64,7 +64,7 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         qRegisterMetaType<QList<int> >();
 
         secondDoubleClick=false;
-        transformationActive = false;
+        m_isTransformationActive = false;
         m_nodeLabel="";
         m_zoomIndex=250;
         m_currentScaleFactor = 1;
@@ -1661,7 +1661,7 @@ void GraphicsWidget::zoomIn(int level){
  *
  */
 void GraphicsWidget::changeMatrixScale(int value) {
-    transformationActive = true;
+    m_isTransformationActive = true;
     // Since the max value will be 500, the scaleFactor will be max 2 ^ 8 = 32
     qreal scaleFactor = pow(qreal(2), ( value - 250) / qreal(50) );
     m_currentScaleFactor = scaleFactor ;
@@ -1699,7 +1699,7 @@ void GraphicsWidget::rotateRight() {
  * @param angle
  */
 void GraphicsWidget::changeMatrixRotation(int angle){
-    transformationActive = true;
+    m_isTransformationActive = true;
     m_currentRotationAngle = angle;
     qDebug() << "GW: changeMatrixRotation(): angle " <<  angle
               << " m_currentRotationAngle " << m_currentRotationAngle
@@ -1729,16 +1729,27 @@ void GraphicsWidget::reset() {
  * @param e
  */
 void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
-    if (transformationActive)  {
-        transformationActive = false;
-        return;
-    }
+
     int w=e->size().width();
     int h=e->size().height();
     int w0=e->oldSize().width();
     int h0=e->oldSize().height();
-    fX=  (double)(w)/(double)(w0);
-    fY= (double)(h)/(double)(h0);
+
+    qDebug () << "GW resized"
+            << "from:" << w0 << "x" << h0
+            << "to:" << w << "x" << h
+            << "- scene:" << scene()->width() << "x" << scene()->height();
+
+
+    if (m_isTransformationActive)  {
+        m_isTransformationActive = false;
+        return;
+    }
+
+    // Compute resize factors
+    fX = (double)(w)/(double)(w0);
+    fY = (double)(h)/(double)(h0);
+    // reposition  guides
     foreach (QGraphicsItem *item, scene()->items()) {
         if ( (item)->type() == TypeGuide ){
             if (GraphicsGuide *guide = qgraphicsitem_cast<GraphicsGuide *>  (item) ) {
@@ -1748,7 +1759,7 @@ void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
                     delete item;
                 }
                 else {
-                    qDebug()<< "GW::resizeEvent() - Horizontal GraphicsGuide "
+                    qDebug()<< "Horizontal GraphicsGuide "
                             << " original position ("
                             <<  guide->x() << "," << guide->y()
                              << ") - width " << guide->width()
@@ -1766,13 +1777,8 @@ void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
 
     //update the scene width and height with that of the graphicsWidget
     scene()->setSceneRect(0, 0, (qreal) ( w ), (qreal) ( h  ) );
-
-    qDebug () << "GW::resizeEvent() - old size: ("
-              << w0 << "," << h0
-              << ") - new size: (" << w << "," << h << ")"
-              << " fX,fY: (" <<  fX << ","<< fY
-              << ") scene size: ("
-             << scene()->width() << "," << scene()->height() << ")";
+    qDebug () << "scene rect updated to new size:"
+            << scene()->width() << "x" << scene()->height();
 
     emit resized( w ,  h );
 }
@@ -1783,7 +1789,7 @@ void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
     Destructor.
 */
 GraphicsWidget::~GraphicsWidget(){
-    qDebug() << "GW::~GraphicsWidget() - calling clear()";
+    qDebug() << "Terminating. Calling clear()";
     clear();
 }
 

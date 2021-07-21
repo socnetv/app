@@ -555,7 +555,7 @@ public slots:
     void slotProgressBoxDestroy(const int &max=0);
 
 protected:
-    void resizeEvent( QResizeEvent * );
+    void resizeEvent(QResizeEvent * e);
     void closeEvent( QCloseEvent* ce );
 
 
