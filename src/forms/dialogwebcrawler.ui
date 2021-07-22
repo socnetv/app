@@ -209,12 +209,12 @@
    <item row="6" column="1">
     <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
-      <widget class="QCheckBox" name="extLinksIncludedCheckBox">
+      <widget class="QCheckBox" name="extLinksAllowedCheckBox">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Include external links&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If enabled, the crawler will map &lt;span style=&quot; font-weight:600;&quot;&gt;links to external domains&lt;/span&gt;. &lt;/p&gt;&lt;p&gt;For instance, if this option is enabled and you start crawling www.supersyntages.gr/ where there is a link to a page of a different domain, i.e. www.aggelies247.com/news, then a node &amp;quot;www.aggelies247.com/news&amp;quot; will be added to the network. &lt;/p&gt;&lt;p&gt;If you don't want to crawl external links at all, just disable this option. &lt;/p&gt;&lt;p&gt;Please note that you &lt;span style=&quot; font-weight:600;&quot;&gt;MUST &lt;/span&gt;enable either this option or the &amp;quot;Include internal links&amp;quot; option, for the crawler to work.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Show external links&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If enabled, the crawler will map &lt;span style=&quot; font-weight:600;&quot;&gt;links to external domains&lt;/span&gt;. &lt;/p&gt;&lt;p&gt;For instance, if this option is enabled and you start crawling www.supersyntages.gr where there is a link to a page of a different domain, i.e. www.aggelies247.com/news, then a node &amp;quot;www.aggelies247.com/news&amp;quot; will be added to the network. &lt;/p&gt;&lt;p&gt;If you don't want to show external links at all, just disable this option. &lt;/p&gt;&lt;p&gt;Please note that you &lt;span style=&quot; font-weight:600;&quot;&gt;MUST &lt;/span&gt;enable either this option or the &amp;quot;Include internal links&amp;quot; option, for the crawler to work.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
-        <string>Include external links</string>
+        <string>Show external links</string>
        </property>
        <property name="checked">
         <bool>false</bool>
@@ -222,9 +222,9 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="extLinksCheckBox">
+      <widget class="QCheckBox" name="extLinksCrawlCheckBox">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Crawl external links&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If enabled, the crawler will &lt;span style=&quot; font-weight:600;&quot;&gt;map external links AND crawl them for new links as well.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;For instance, if you enable this option and start crawling the page at https://www.supersyntages.gr/ where there is a link to another domain, i.e. www.linuxinsider.gr, then the crawler will visit linuxinsider.gr too to find more links. &lt;/p&gt;&lt;p&gt;If you don't want to crawl external links, disable this option. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Crawl external links&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If enabled, the crawler will &lt;span style=&quot; font-weight:600;&quot;&gt;map external links AND crawl them for new links as well.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;For instance, if you enable this option and start crawling the page at https://www.supersyntages.gr where there is a link to another domain, i.e. www.linuxinsider.gr, then the crawler will visit linuxinsider.gr too to find more links. &lt;/p&gt;&lt;p&gt;If you don't want to crawl external links, disable this option. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Crawl external links</string>

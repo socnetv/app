@@ -274,7 +274,7 @@ public slots:
                                const bool &childLinks,
                                const bool &parentLinks,
                                const bool &selfLinks,
-                               const bool &extLinksIncluded,
+                               const bool &extLinks,
                                const bool &extLinksCrawl,
                                const bool &socialLinks,
                                const bool &delayedRequests);

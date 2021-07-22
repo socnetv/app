@@ -46,11 +46,12 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
     ui.patternsIncludedTextEdit->setText("*");
     ui.patternsExcludedTextEdit->setText("");
 
+    // Set checkbox/options default values
     intLinks=true;
     childLinks=true;
     parentLinks=false;
 
-    extLinksIncluded=false;
+    extLinksAllowed=false;
     socialLinks=false;
     extLinks=false;
 
@@ -58,12 +59,11 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
     ui.childLinksCheckBox->setChecked(childLinks);
     ui.parentLinksCheckBox->setChecked(parentLinks);
 
-    ui.extLinksIncludedCheckBox->setChecked(extLinksIncluded);
-    ui.extLinksCheckBox->setChecked (extLinks);
-    ui.extLinksCheckBox->setEnabled(false);
+    ui.extLinksAllowedCheckBox->setChecked(extLinksAllowed);
+    ui.extLinksCrawlCheckBox->setChecked (extLinks);
+    ui.extLinksCrawlCheckBox->setEnabled(extLinksAllowed == true);
 
     ui.socialLinksCheckBox->setChecked(socialLinks);
-
     ui.selfLinksCheckBox->setChecked(false);
     ui.waitCheckBox ->setChecked(true);
 
@@ -95,10 +95,10 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
              this, &DialogWebCrawler::checkErrors);
 
 
-    connect (ui.extLinksIncludedCheckBox, &QCheckBox::stateChanged,
+    connect (ui.extLinksAllowedCheckBox, &QCheckBox::stateChanged,
              this, &DialogWebCrawler::checkErrors);
 
-    connect (ui.extLinksCheckBox, &QCheckBox::stateChanged,
+    connect (ui.extLinksCrawlCheckBox, &QCheckBox::stateChanged,
              this, &DialogWebCrawler::checkErrors);
 
 
@@ -116,208 +116,164 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
  * @brief Checks crawler form for user input errors
  */
 void DialogWebCrawler::checkErrors(){
-    qDebug()<< "DialogWebCrawler::checkErrors...";
 
-    /* FLAGS  */
-    bool urlError  = false;
-    bool patternsInError = false;
-    bool patternsExError = false;
-    bool checkboxesError = false;
+    //
+    // SETUP FLAGS
+    //
+    bool errorUrl  = false;
+    bool errorPatternsIncl = false;
+    bool errorPatternsExcl = false;
+    bool errorCheckboxes = false;
 
-    // CHECK URL
-    seedUrl = (ui.seedUrlEdit)->text();
+    //
+    // Get seed url, sanitize and validate it
+    //
+    seedUrlInputStr = (ui.seedUrlEdit)->text();
 
-    qDebug()<< "DialogWebCrawler::checkErrors() initial seed url "
-            << seedUrl
-            << " simplifying and lowering it";
+    qDebug()<< "seed url:" << seedUrlInputStr << "Sanitizing...";
 
-    seedUrl = seedUrl.simplified().toLower() ;
+    seedUrlInputStr = seedUrlInputStr.simplified().toLower() ;
 
-    QUrl newUrl(seedUrl);
+    seedUrl = QUrl(seedUrlInputStr);
 
-    qDebug()<< "DialogWebCrawler::checkErrors()  - QUrl " << newUrl.toString()
-            << " scheme " << newUrl.scheme()
-            << " host " << newUrl.host()
-            << " path " << newUrl.path();
+    qDebug()<< "seed url:" << seedUrl.toString()
+            << " scheme " << seedUrl.scheme()
+            << " host " << seedUrl.host()
+            << " path " << seedUrl.path();
 
 
-    if ( newUrl.scheme().isEmpty() ||
-         ( newUrl.scheme() != "http"  && newUrl.scheme() != "https"  )) {
-        qDebug()<< "DialogWebCrawler::checkErrors()  URL scheme missing "
-                << newUrl.scheme()
-                << " setting the default scheme (http) ";
-        newUrl.setUrl("//" + seedUrl);
-        newUrl.setScheme("http");
-        qDebug() << newUrl;
+    if ( seedUrl.scheme().isEmpty() ||
+         ( seedUrl.scheme() != "http"  && seedUrl.scheme() != "https"  )) {
+        qDebug()<< "seed url has no scheme. Setting the default scheme (http) ";
+        seedUrl.setUrl("//" + seedUrlInputStr);
+        seedUrl.setScheme("http");
+        qDebug() << seedUrl;
     }
 
-
-    if (newUrl.path().isEmpty() ) {
-        qDebug()<< "DialogWebCrawler::checkErrors() - seed url is a domain without a path. "
-                   "Adding default path / to seed url";
-
-        newUrl.setPath("/");
+    if (seedUrl.path().isEmpty() ) {
+        qDebug()<< "seed url without path. Adding default path '/'...";
+        seedUrl.setPath("/");
     }
 
-
-    if (! newUrl.isValid() || newUrl.host() == "" || !newUrl.host().contains(".") ) {
-        qDebug()<< "DialogWebCrawler::checkErrors() - seedUrl not valid.";
+    if (! seedUrl.isValid() || seedUrl.host() == "" || !seedUrl.host().contains(".") ) {
+        qDebug()<< "Error. seed url not valid.";
         QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
         effect->setColor(QColor("red"));
         ui.seedUrlEdit->setGraphicsEffect(effect);
         (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setDisabled(true);
-        urlError  = true;
+        errorUrl  = true;
     }
     else {
-        if (!patternsInError && !patternsExError   && !checkboxesError ) {
-            ui.seedUrlEdit->setGraphicsEffect(0);
-            (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(true);
-            urlError  = false;
-            seedUrl = newUrl.toString();
-            qDebug()<< "DialogWebCrawler::checkErrors()  final seed url " << newUrl
-                    << " scheme " << newUrl.scheme()
-                    << " host " << newUrl.host()
-                    << " path " << newUrl.path();
-
-        }
+        ui.seedUrlEdit->setGraphicsEffect(0);
     }
 
-    // CHECK MAX LIMITS  SPIN BOXES
-
+    //
+    // GET SPINBOX VALUES AND CHECKBOX OPTIONS
+    //
     maxLinksPerPage = (ui.maxLinksPerPageSpinBox) -> value();
     maxUrlsToCrawl = (ui.maxUrlsToCrawlSpinBox) -> value();
 
 
-    // CHECK CHECKBOXES (AT LEAST ONE SHOULD BE ENABLED)
-    if ( !ui.extLinksIncludedCheckBox->isChecked()  && !ui.intLinksCheckBox->isChecked() )
-    {
-        // Throw error
-        (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setDisabled(true);
+    //
+    // CHECK INTERNAL/EXTERNAL LINKS CHECKBOXES. AT LEAST ONE SHOULD BE ENABLED
+    //
 
-        checkboxesError = true;
+    intLinks = ui.intLinksCheckBox->isChecked();
+    extLinksAllowed = ui.extLinksAllowedCheckBox->isChecked();
+
+    if ( !intLinks && !extLinksAllowed )
+    {
+        // Both are disabled. Throw error
+        errorCheckboxes = true;
+
         QGraphicsColorizeEffect *effect1 = new QGraphicsColorizeEffect;
         QGraphicsColorizeEffect *effect2 = new QGraphicsColorizeEffect;
         effect1->setColor(QColor("red"));
         effect2->setColor(QColor("red"));
-        ui.extLinksIncludedCheckBox->setGraphicsEffect(effect1);
+        ui.extLinksAllowedCheckBox->setGraphicsEffect(effect1);
         ui.intLinksCheckBox->setGraphicsEffect(effect2);
 
-        ui.selfLinksCheckBox->setEnabled(false);
         ui.parentLinksCheckBox->setEnabled(false);
         ui.childLinksCheckBox->setEnabled(false);
-        ui.selfLinksCheckBox->setChecked(false),
-        ui.parentLinksCheckBox->setChecked(false);
-        ui.childLinksCheckBox->setChecked(false);
 
-        ui.extLinksCheckBox->setEnabled(false);
-        ui.extLinksCheckBox->setChecked(false);
-        ui.socialLinksCheckBox->setChecked(false);
+        ui.extLinksCrawlCheckBox->setEnabled(false);
+
+        ui.selfLinksCheckBox->setEnabled(false);
         ui.socialLinksCheckBox->setEnabled(false);
 
     }
     else {
-        // All good.
-        ui.extLinksIncludedCheckBox->setGraphicsEffect(0);
+        // At least one of internal/external links checkboxes is enabled.
+
+        // Remove any prior error
+        ui.extLinksAllowedCheckBox->setGraphicsEffect(0);
         ui.intLinksCheckBox->setGraphicsEffect(0);
 
-        if (!patternsInError && !patternsExError && !urlError ) {
-            (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(true);
-            checkboxesError = false;
+        errorCheckboxes = false;
 
-            intLinks = ui.intLinksCheckBox->isChecked();
-            extLinksIncluded = ui.extLinksIncludedCheckBox->isChecked();
-            extLinks = ui.extLinksCheckBox->isChecked();
-            socialLinks = ui.socialLinksCheckBox->isChecked();
+        // If internal link crawling is disabled, disable related options
+        ui.selfLinksCheckBox->setEnabled( intLinks == true);
+        ui.parentLinksCheckBox->setEnabled(intLinks == true);
+        ui.childLinksCheckBox->setEnabled(intLinks == true);
 
-            if (!intLinks) {
-                ui.selfLinksCheckBox->setChecked(false),
-                ui.parentLinksCheckBox->setChecked(false);
-                ui.childLinksCheckBox->setChecked(false);
-                ui.selfLinksCheckBox->setEnabled(false);
-                ui.parentLinksCheckBox->setEnabled(false);
-                ui.childLinksCheckBox->setEnabled(false);
-            }
-            else {
-                ui.selfLinksCheckBox->setEnabled(true);
-                ui.parentLinksCheckBox->setEnabled(true);
-                ui.childLinksCheckBox->setEnabled(true);
-                ui.selfLinksCheckBox->setCheckable(true);
-                ui.parentLinksCheckBox->setCheckable(true);
-                ui.childLinksCheckBox->setCheckable(true);
-
-            }
-
-            if (!extLinksIncluded) {
-                ui.extLinksCheckBox->setEnabled(false);
-                ui.extLinksCheckBox->setChecked(false);
-                ui.socialLinksCheckBox->setChecked(false);
-                ui.socialLinksCheckBox->setEnabled(false);
-            }
-            else {
-                ui.extLinksCheckBox->setEnabled(true);
-                ui.socialLinksCheckBox->setEnabled(true);
-                ui.extLinksCheckBox->setCheckable(true);
-                ui.socialLinksCheckBox->setCheckable(true);
-
-            }
-            if (extLinks) {
-                ui.extLinksIncludedCheckBox->setChecked(true);
-            }
-
-        }
+        ui.extLinksCrawlCheckBox->setEnabled(extLinksAllowed==true);
+        ui.socialLinksCheckBox->setEnabled(extLinksAllowed==true);
     }
 
 
+    //
     // CHECK URL PATTERNS TO INCLUDE TEXTEDIT
-    qDebug()<< "DialogWebCrawler::checkErrors()  - checking allowed patterns ";
+    //
+    qDebug()<< "Checking included url patterns...";
     urlPatternsIncluded = parseTextEditInput (ui.patternsIncludedTextEdit->toHtml());
 
-
     if (urlPatternsIncluded.size() == 0 ) {
+        // No pattern found. Throw error.
         QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
         effect->setColor(QColor("red"));
         ui.patternsIncludedTextEdit->setGraphicsEffect(effect);
-        (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setDisabled(true);
-        patternsInError = true;
+        errorPatternsIncl = true;
     }
     else {
         if (urlPatternsIncluded.size() == 1 && urlPatternsIncluded.at(0) =="" ) {
             urlPatternsIncluded.clear();
-            qDebug() << "DialogWebCrawler::checkErrors() - return empty urlPatterns (ALL)";
+            qDebug() << "return empty urlPatterns (ALL)";
         }
+        ui.patternsIncludedTextEdit->setGraphicsEffect(0);
+        errorPatternsIncl = false;
 
-        if ( !patternsExError && !urlError  && !checkboxesError) {
-            ui.patternsIncludedTextEdit->setGraphicsEffect(0);
-            (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(true);
-            patternsInError = false;
-        }
     }
 
 
+    //
     // CHECK URL PATTERNS TO EXCLUDE TEXTEDIT
-    qDebug()<< "DialogWebCrawler::checkErrors()  - checking disallowed patterns ";
+    //
+    qDebug()<< "Checking excluded url patterns...";
     urlPatternsExcluded = parseTextEditInput (ui.patternsExcludedTextEdit->toHtml());
-
 
     if (urlPatternsExcluded.size() == 1 ) {
         if (urlPatternsExcluded.at(0) == "*") {
             QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
             effect->setColor(QColor("red"));
             ui.patternsExcludedTextEdit->setGraphicsEffect(effect);
-            (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setDisabled(true);
-            patternsExError = true;
+            errorPatternsExcl = true;
         }
     }
     else {
-        if ( !patternsInError && !urlError && !checkboxesError) {
-            ui.patternsExcludedTextEdit->setGraphicsEffect(0);
-            (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(true);
-            patternsExError = false;
-        }
+        ui.patternsExcludedTextEdit->setGraphicsEffect(0);
+        errorPatternsExcl = false;
     }
 
 
-
+    //
+    // ENABLE/DISABLE OK BUTTON
+    //
+    if ( errorUrl  || errorPatternsIncl || errorPatternsExcl || errorCheckboxes ) {
+        (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(false);
+    }
+    if ( !errorUrl  && !errorPatternsIncl && !errorPatternsExcl   && !errorCheckboxes ) {
+        (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(true);
+    }
 
 }
 
@@ -340,8 +296,8 @@ QStringList DialogWebCrawler::parseTextEditInput(const QString &html){
             for (int i = 0; i < userInput.size(); ++i){
                if (i==0) continue;
                data = userInput.at(i).toLocal8Bit().constData();
-               //qDebug () << "split " << i << ":: " << data << endl;
-               //qDebug () << "first char > at ::" <<  data.indexOf('>',0) << endl;
+               //qDebug () << "split " << i << ":: " << data << "\n";
+               //qDebug () << "first char > at ::" <<  data.indexOf('>',0) << "\n";
                str = data.mid ( data.indexOf('>',0) +1, data.indexOf("</p>",0) - (data.indexOf('>',0) +1) );
                qDebug () << "str ::" << str ;
                str.remove("<br />");
@@ -372,8 +328,8 @@ QStringList DialogWebCrawler::parseTextEditInput(const QString &html){
     else {
         userInputParsed.clear();
     }
-    qDebug () << "DialogWebCrawler::parseTextEditInput() - stringlist size"
-              << userInputParsed.size()<< endl;
+    qDebug () << "stringlist size"
+              << userInputParsed.size()<< "\n";
     return userInputParsed;
 
 }
@@ -384,29 +340,35 @@ QStringList DialogWebCrawler::parseTextEditInput(const QString &html){
  */
 void DialogWebCrawler::getUserChoices(){
 
-    qDebug()<< "DialogWebCrawler::getUserChoices() - Emitting" << endl
-            << "	seedUrl: " << seedUrl << endl
-            << "	maxLinksPerPage " << maxLinksPerPage << endl
-            << "	totalUrlsToCrawl " << maxUrlsToCrawl << endl
-            << "	urlPatternsIncluded" << urlPatternsIncluded << endl
-            << "	urlPatternsExcluded" << urlPatternsExcluded << endl
-            << "	linkClasses" << linkClasses << endl;
+    qDebug()<< "Emitting user choices:" << "\n"
+            << "seedUrl: " << seedUrl.toString() << "\n"
+            << "urlPatternsIncluded" << urlPatternsIncluded << "\n"
+            << "urlPatternsExcluded" << urlPatternsExcluded << "\n"
+            << "linkClasses" << linkClasses << "\n"
+            << "maxLinksPerPage " << maxLinksPerPage << "\n"
+            << "totalUrlsToCrawl " << maxUrlsToCrawl << "\n"
+            << "intLinks"<< ui.intLinksCheckBox->isChecked() << "\n"
+            << "childLinks" << ui.childLinksCheckBox->isChecked() << "\n"
+            << "parentLinks" << ui.parentLinksCheckBox->isChecked() << "\n"
+            << "selfLinks" << ui.selfLinksCheckBox->isChecked() << "\n"
+            << "extLinksAllowed"<< ui.extLinksAllowedCheckBox->isChecked()<< "\n"
+            << "extLinksCrawl"<< ui.extLinksCrawlCheckBox->isChecked()<< "\n"
+            << "socialLinks" << ui.socialLinksCheckBox->isChecked()<< "\n"
+            << "delayedRequests" << ui.waitCheckBox->isChecked() << "\n";
 
-    QUrl startUrl(seedUrl);
-
-    emit userChoices( startUrl,
+    emit userChoices( seedUrl,
                       urlPatternsIncluded,
                       urlPatternsExcluded,
                       linkClasses,
                       maxUrlsToCrawl,
                       maxLinksPerPage,
-                      intLinks,
+                      ui.intLinksCheckBox->isChecked(),
                       ui.childLinksCheckBox->isChecked(),
                       ui.parentLinksCheckBox->isChecked(),
                       ui.selfLinksCheckBox->isChecked(),
-                      ui.waitCheckBox ->isChecked(),
-                      ui.extLinksIncludedCheckBox->isChecked(),
-                      ui.extLinksCheckBox->isChecked(),
-                      ui.socialLinksCheckBox ->isChecked()
+                      ui.extLinksAllowedCheckBox->isChecked(),
+                      ui.extLinksCrawlCheckBox->isChecked(),
+                      ui.socialLinksCheckBox->isChecked(),
+                      ui.waitCheckBox ->isChecked()
                       );
 }
