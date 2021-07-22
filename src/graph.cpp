@@ -3362,8 +3362,9 @@ void Graph::webCrawlTerminateThreads (QString reason){
 
 
 /**
- * @brief Called by MW to start the web crawler with user options.
- * The crawler is created and moved to a new thread.
+ * @brief
+ * Creates the web_crawler that will parse the downloaded HTML code of each webpage we download.
+ * Called by MW with user options. The crawler is created and moved to a new thread.
  * @param startUrl
  * @param urlPatternsIncluded
  * @param urlPatternsExcluded
@@ -3462,23 +3463,24 @@ void Graph::startWebCrawler(
 
 
     // Start the crawler thread, nothing will happen though
-    qDebug() << "Graph::startWebCrawler() - Starting webcrawlerThread!";
+    qDebug() << "Starting webcrawlerThread!";
     webcrawlerThread.start();
 
     // Create the initial vertex for the starting url
-    qDebug() << "Graph::startWebCrawler()  - Creating initial node 1, initialUrlStr:" << startUrl.toString();
+    qDebug() << "Creating initial node 1, initialUrlStr:" << startUrl.toString();
     vertexCreateAtPosRandomWithLabel(1, startUrl.toString(), false);
 
     // Call the spider to download the html code of the starting url .
-    qDebug() << "Graph::startWebCrawler() - Calling webSpider()...";
+    qDebug() << "Calling webSpider()...";
     this->webSpider();
 
-    qDebug("Graph::startWebCrawler() - reach the end - See the threads running? ");
+    qDebug("web crawler and spider started. See the thread running? ");
 }
 
 
 /**
- * @brief A loop, that constantly takes the url awaiting in fron of the urlQueue, and signals to the MW to make the network request
+ * @brief
+ * A loop, that constantly takes the url awaiting in front of the urlQueue, and signals to the MW to make the network request
  */
 void Graph::webSpider(){
 
@@ -3534,12 +3536,12 @@ void Graph::webSpider(){
  */
 void Graph::slotHandleCrawlerRequestReply(){
 
-    qDebug() << "Graph::slotHandleCrawlerRequestReply() - Got reply from MW network manager request...";
+    qDebug() << "Got reply from MW network manager request. Emitting signal to Web Crawler to parse the reply...";
 
     // Get network reply from the sender
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
 
-    qDebug() << "Graph::slotHandleCrawlerRequestReply() - Emitting signal to Web Crawler to parse the reply...";
+    // Emit signal to web crawler to parse the reply
     emit signalWebCrawlParse(reply);
 
 }

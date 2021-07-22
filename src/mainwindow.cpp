@@ -8678,9 +8678,8 @@ void MainWindow::slotNetworkWebCrawler (const QUrl &startUrl,
     // Close the current network
     this->slotNetworkClose();
 
-    qDebug() << "MW::slotNetworkWebCrawler() - calling Graph::startWebCrawler() with user options.";
     // Start the web crawler
-
+    qDebug() << "Calling Graph::startWebCrawler() with user options to start the crawler process.";
     activeGraph->startWebCrawler(
                 startUrl,
                 urlPatternsIncluded,

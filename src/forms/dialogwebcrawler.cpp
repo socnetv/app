@@ -38,19 +38,21 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
     ui.setupUi(this);
 
     (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
+    (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDisabled(true);
 
-
-    (ui.seedUrlEdit)->setFocus();
+    ui.seedUrlEdit->setFocus();
+    ui.seedUrlEdit->setPlaceholderText("Please enter a url...");
 
     ui.patternsIncludedTextEdit->setText("*");
     ui.patternsExcludedTextEdit->setText("");
 
-    extLinksIncluded=false;
-    socialLinks=false;
-    extLinks=false;
     intLinks=true;
     childLinks=true;
     parentLinks=false;
+
+    extLinksIncluded=false;
+    socialLinks=false;
+    extLinks=false;
 
     ui.intLinksCheckBox->setChecked (intLinks);
     ui.childLinksCheckBox->setChecked(childLinks);
@@ -58,6 +60,7 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
 
     ui.extLinksIncludedCheckBox->setChecked(extLinksIncluded);
     ui.extLinksCheckBox->setChecked (extLinks);
+    ui.extLinksCheckBox->setEnabled(false);
 
     ui.socialLinksCheckBox->setChecked(socialLinks);
 
@@ -116,14 +119,12 @@ void DialogWebCrawler::checkErrors(){
     qDebug()<< "DialogWebCrawler::checkErrors...";
 
     /* FLAGS  */
-
     bool urlError  = false;
     bool patternsInError = false;
     bool patternsExError = false;
     bool checkboxesError = false;
 
     // CHECK URL
-
     seedUrl = (ui.seedUrlEdit)->text();
 
     qDebug()<< "DialogWebCrawler::checkErrors() initial seed url "
@@ -188,9 +189,9 @@ void DialogWebCrawler::checkErrors(){
 
 
     // CHECK CHECKBOXES (AT LEAST ONE SHOULD BE ENABLED)
-
     if ( !ui.extLinksIncludedCheckBox->isChecked()  && !ui.intLinksCheckBox->isChecked() )
     {
+        // Throw error
         (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setDisabled(true);
 
         checkboxesError = true;
@@ -215,6 +216,7 @@ void DialogWebCrawler::checkErrors(){
 
     }
     else {
+        // All good.
         ui.extLinksIncludedCheckBox->setGraphicsEffect(0);
         ui.intLinksCheckBox->setGraphicsEffect(0);
 
@@ -366,7 +368,6 @@ QStringList DialogWebCrawler::parseTextEditInput(const QString &html){
 
             }
 
-
     }
     else {
         userInputParsed.clear();
@@ -382,6 +383,7 @@ QStringList DialogWebCrawler::parseTextEditInput(const QString &html){
  * @brief gathers data from web crawler form
  */
 void DialogWebCrawler::getUserChoices(){
+
     qDebug()<< "DialogWebCrawler::getUserChoices() - Emitting" << endl
             << "	seedUrl: " << seedUrl << endl
             << "	maxLinksPerPage " << maxLinksPerPage << endl
@@ -389,7 +391,6 @@ void DialogWebCrawler::getUserChoices(){
             << "	urlPatternsIncluded" << urlPatternsIncluded << endl
             << "	urlPatternsExcluded" << urlPatternsExcluded << endl
             << "	linkClasses" << linkClasses << endl;
-
 
     QUrl startUrl(seedUrl);
 

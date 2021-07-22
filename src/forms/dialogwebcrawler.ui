@@ -237,7 +237,7 @@
      <item>
       <widget class="QCheckBox" name="waitCheckBox">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Wait for a random number of milliseconds (&lt;span style=&quot; font-weight:600;&quot;&gt;0-1000&lt;/span&gt;) between network requests.  &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Use of this option is recommended, as it lightens the server load by making the requests less frequent.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;By default this option is enabled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Wait for a random number of milliseconds (&lt;span style=&quot; font-weight:600;&quot;&gt;0-1000&lt;/span&gt;) between network requests. &lt;/p&gt;&lt;p&gt;Use of this option is recommended, as it lightens the server load by making the requests less frequent.&lt;/p&gt;&lt;p&gt;By default this option is enabled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Delay between requests</string>

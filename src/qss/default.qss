@@ -328,6 +328,7 @@ QComboBox:hover {
 QComboBox:on {
 
 }
+QCheckBox:disabled,
 QToolButton:disabled,
 QLineEdit:disabled,
 QComboBox:disabled {
