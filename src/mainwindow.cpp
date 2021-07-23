@@ -635,9 +635,9 @@ QMap<QString,QString> MainWindow::initSettings(const int &debugLevel, const bool
  * @brief Saves default (or user-defined) app settings
  */
 void MainWindow::saveSettings() {
-    qDebug() << "settingsFilePath: "<< settingsFilePath;
+    qDebug() << "Saving app settings to file: "<< settingsFilePath;
     QFile file(settingsFilePath);
-    if (!file.open(QIODevice::WriteOnly ) ) {
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text ) ) {
         QMessageBox::critical(this,
                               "File Write Error",
                               tr("Error! \n"
@@ -658,8 +658,8 @@ void MainWindow::saveSettings() {
     qDebug()<< "Writing settings to settings file first ";
     QMap<QString, QString>::const_iterator it = appSettings.constBegin();
     while (it != appSettings.constEnd()) {
-        qDebug() << "   setting: " <<  it.key() << " = " << it.value();
-        out << it.key() << " = " << it.value() << endl;
+        // qDebug() << "   setting: " <<  it.key() << " = " << it.value();
+        out << it.key() << " = " << it.value() << "\n";
         ++it;
     }
 
