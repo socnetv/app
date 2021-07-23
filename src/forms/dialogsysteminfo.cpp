@@ -37,14 +37,14 @@
 #include <QOpenGLFunctions>
 #endif
 
-
+#ifndef QT_NO_OPENGL
 static QString getGlString(QOpenGLFunctions *functions, GLenum name)
 {
     if (const GLubyte *p = functions->glGetString(name))
         return QString::fromLatin1(reinterpret_cast<const char *>(p));
     return QString();
 }
-
+#endif
 
 
 DialogSystemInfo::DialogSystemInfo (QWidget *parent) :
@@ -59,56 +59,70 @@ DialogSystemInfo::DialogSystemInfo (QWidget *parent) :
     (ui->infoTextEdit)->setFocus();
 
     QString information;
-    information += "QT BUILD\n\n";
-    information += QSysInfo::buildAbi();
-    information += "\n\n";
+    information += "<b>QT BUILD</b><br><br>";
+    information += "Architecture: <br>" + QSysInfo::buildAbi() + "<br><br>";
+    information += "SSL version : <br>" +  QSslSocket::sslLibraryBuildVersionString() + "<br>";
+    information += "<br><br>";
 
-    information += "SOCNETV BUILD\n\n";
-    information += "DirPath: " + QApplication::applicationDirPath();
-    information += "\n\n";
+    information += "<b>SOCNETV BUILD</b><br><br>";
+    information += "DirPath: <br>" + QApplication::applicationDirPath();
+    information += "<br><br>";
 
-    information += "YOUR SYSTEM\n\n";
-
-    information += "OS: " + QSysInfo::prettyProductName() + " Kernel: " + QSysInfo::kernelType() + " " + QSysInfo::kernelVersion() + "\n";
-    information += "Architecture: " + QSysInfo::currentCpuArchitecture() + "\n";
+    information += "<b>YOUR SYSTEM</b><br><br>";
+    information += "OS: <br>" + QSysInfo::prettyProductName() + "<br><br>";
+    information += "Kernel: <br>" + QSysInfo::kernelType() + " " + QSysInfo::kernelVersion() + "<br><br>";
+    information += "Architecture: <br>" + QSysInfo::currentCpuArchitecture() + "<br><br>";
     if ( QSslSocket::supportsSsl() ) {
-        information += "SSL support: yes \n";
-        information += "SSL version (build): " +  QSslSocket::sslLibraryBuildVersionString() + "\n";
-        information += "SSL version (run-time): " + QSslSocket::sslLibraryVersionString() + "\n";
+        information += "SSL support: <br>yes <br><br>";
+        information += "SSL version (run-time): <br>" + QSslSocket::sslLibraryVersionString() + "<br>";
 
     }
     else {
-        information += "SSL support: NO\n";
+        information += "SSL support: <br>NO<br><br>";
+        information += "If you want to use the web crawler, please install OpenSSL that matches ssl build from http://slproweb.com/products/Win32OpenSSL.html";
     }
 
-    information += "\nLibrary Paths: \n" ;
+    #ifndef QT_NO_OPENGL
+    QOpenGLFunctions qglFunctions(QOpenGLContext::currentContext());
+    information += "<br>OpenGL: <br>";
+
+    information += "Vendor: " + getGlString(&qglFunctions, GL_VENDOR) + "<br>";
+    information += "Version: " + getGlString(&qglFunctions, GL_VERSION) + "<br>";
+    information += "Renderer/Card: " + getGlString(&qglFunctions, GL_RENDERER) +  "<br>";
+    #else
+    information += "<br>OpenGL: <br>";
+    information += "NONE. Build without OpenGL support!";
+    #endif
+
+
+    information += "<br>Library Paths: <br>" ;
     foreach(QString libPath, QCoreApplication::libraryPaths() ) {
-        information += libPath + "\n";
+        information += libPath + "<br>";
     }
 
-    information += "\n\n";
+    information += "<br><br>";
 
 
-    information += "YOUR SCREEN \n\n";
-    information += "Geometry: \n";
+    information += "<b>YOUR SCREEN</b><br><br>";
+    information += "Geometry: <br>";
     information += QString::number(QApplication::primaryScreen()->geometry().x());
     information += " x ";
     information += QString::number(QApplication::primaryScreen()->geometry().y());
-    information += "\n\n";
-    information += "Size: \n";
+    information += "<br><br>";
+    information += "Size: <br>";
     information += QString::number(QApplication::primaryScreen()->size().width());
     information += " x ";
     information += QString::number(QApplication::primaryScreen()->size().height());
-    information += "\n\n";
-    information += "Available Size: \n";
+    information += "<br><br>";
+    information += "Available Size: <br>";
     information += QString::number(QApplication::primaryScreen()->availableSize().width());
     information += " x ";
     information += QString::number(QApplication::primaryScreen()->availableSize().height());
-    information += "\n\n";
-    information += "Device Pixel Ratio (the scale factor applied by the OS/Windowing system): \n";
+    information += "<br><br>";
+    information += "Device Pixel Ratio (the scale factor applied by the OS/Windowing system): <br>";
     information += QString::number(QApplication::primaryScreen()->devicePixelRatio());
-    information += "\n\n";
-    information += "Logical DPI (i.e. 144 on Windows default 150% mode): \n";
+    information += "<br><br>";
+    information += "Logical DPI (i.e. 144 on Windows default 150% mode): <br>";
     information += QString::number(QApplication::primaryScreen()->logicalDotsPerInch());
 
 //    const QString glInfo = getGlString(topLevelGlWidget.context()->functions(), GL_VENDOR)

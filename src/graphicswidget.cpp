@@ -79,7 +79,6 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         m_nodeNumberVisibility = true;
         m_nodeLabelVisibility = true;
 
-
         /* "QGraphicsScene applies an indexing algorithm to the scene, to speed up
          * item discovery functions like items() and itemAt().
          * Indexing is most efficient for static scenes (i.e., where items don't move around).
@@ -88,7 +87,6 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
          * The user can change this from Settings.
         */
         scene() -> setItemIndexMethod(QGraphicsScene::BspTreeIndex); //NoIndex (for anime)
-
 
         // Connect scene change signal to the slot that handles selected items
         connect ( scene() , &QGraphicsScene::selectionChanged,
@@ -103,9 +101,8 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
 void GraphicsWidget::setOptionsOpenGL(const bool &enabled)
 {
 #ifndef QT_NO_OPENGL
-    //setViewport(enabled ? new QGLWidget(QGLFormat(QGL::SampleBuffers)) : new QWidget);
     if (enabled) {
-        qDebug() << "Enabled openGL";
+        qDebug() << "Enabled openGL in Graphics widget.";
         QOpenGLWidget *gl = new QOpenGLWidget();
         QSurfaceFormat format;
         format.setSamples(4);
@@ -115,7 +112,8 @@ void GraphicsWidget::setOptionsOpenGL(const bool &enabled)
     else {
         setViewport(new QWidget);
     }
-
+#else
+    qWarning() << "No OpenGL support! Cannot enable OpenGL in GraphicsWidget.";
 #endif
 }
 

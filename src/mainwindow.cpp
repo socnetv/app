@@ -887,7 +887,7 @@ void MainWindow::polishProgressDialog(QProgressDialog* dialog)
  */
 void MainWindow::initView() {
 
-    qDebug()<< "Creating graphics widget";
+    qDebug()<< "Creating graphics widget...";
 
     //Create our scene
     scene=new QGraphicsScene();
@@ -900,7 +900,6 @@ void MainWindow::initView() {
 
     toggle = (appSettings["opengl"] == "true" ) ? true:false;
     graphicsWidget->setOptionsOpenGL(toggle);
-
 
     toggle = (appSettings["antialiasing"] == "true" ) ? true:false;
     graphicsWidget->setOptionsAntialiasing(toggle);
