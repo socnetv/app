@@ -43,9 +43,7 @@
 #include <QThread>
 
 #include "global.h"
-
 #include "graph.h"    // needed here for static vars declared in Graph
-
 #include "forms/dialogfilteredgesbyweight.h"
 #include "forms/dialogdatasetselect.h"
 
@@ -66,7 +64,6 @@ class QGroupBox;
 class QTabWidget;
 class QSpinBox;
 class QNetworkReply;
-class QDateTime;
 class QNetworkAccessManager;
 QT_END_NAMESPACE
 
@@ -557,73 +554,74 @@ public slots:
 protected:
     void resizeEvent(QResizeEvent * e);
     void closeEvent( QCloseEvent* ce );
-
-
-    //	void myMessageOutput(QtMsgType type, const char *msg);
 signals:
     void signalRelationAddAndChange(const QString &relName, const bool &changeRelation=true);
     void signalSetReportsDataDir(const QString &dataDir );
 
 private:
 
-    bool printDebug;
-    QNetworkAccessManager networkManager;
+    enum { MaxRecentFiles = 5 };
 
-    QGraphicsScene *scene;
-    GraphicsWidget *graphicsWidget;
+    int progressCounter;
+    int fileType;
+    int maxRandomlyCreatedNodes;
+    int fortuneCookiesCounter;
 
-    Graph *activeGraph;
+    bool inverseWeights, askedAboutWeights;
 
-    QMap<QString,QString> appSettings;
-
-    Chart *miniChart;
-
+    QString fileName, previous_fileName, fileNameNoPath, progressMsg;
+    QString initFileCodec, userSelectedCodecName;
+    QString settingsFilePath, settingsDir ;
+    QStringList fortuneCookie;
+    QStringList tempFileNameNoPath, tips;
     QStringList prominenceIndexList;
     QStringList recentFiles;
     QStringList iconPathList;
     QStringList nodeShapeList;
 
+    QMap<QString,QString> appSettings;
+
+    QList<QTextCodec *> codecs;
+
+    QList<TextEditor *> m_textEditors;
+    QList<QNetworkReply *> m_networkRequests;
+
+    QStack<QProgressDialog *> progressDialogs;
+
+    QPrinter *printer, *printerPDF;
+
+    QNetworkAccessManager *networkManager;
+    QGraphicsScene *scene;
+    GraphicsWidget *graphicsWidget;
+    Graph *activeGraph;
+    Chart *miniChart;
+
     DialogWebCrawler *m_WebCrawlerDialog;
     DialogDataSetSelect *m_datasetSelectDialog;
-
     DialogExportPDF *m_dialogExportPDF;
     DialogExportImage *m_dialogExportImage;
-
     DialogNodeEdit *m_nodeEditDialog;
     DialogNodeFind *m_nodeFindDialog;
-
     DialogEdgeDichotomization *m_edgeDichotomizationDialog;
     DialogFilterEdgesByWeight *m_DialogEdgeFilterByWeight;
-
     DialogRandErdosRenyi *m_randErdosRenyiDialog;
     DialogRandSmallWorld *m_randSmallWorldDialog;
     DialogRandScaleFree *m_randScaleFreeDialog;
     DialogRandRegular *m_randRegularDialog;
     DialogRandLattice *m_randLatticeDialog;
-
     DialogSimilarityPearson *m_dialogSimilarityPearson;
     DialogSimilarityMatches *m_dialogSimilarityMatches;
     DialogDissimilarities *m_dialogdissimilarities;
     DialogClusteringHierarchical *m_dialogClusteringHierarchical;
-
     DialogSettings *m_settingsDialog;
     DialogSystemInfo *m_systemInfoDialog;
-
     DialogPreviewFile *m_dialogPreviewFile;
-    QList<QTextCodec *> codecs;
-    QString userSelectedCodecName;
-
-    QList<TextEditor *> m_textEditors;
-
-    QPrinter *printer, *printerPDF;
 
     QToolBar *toolBar;
 
     QGroupBox *leftPanel, *rightPanel ;
 
     QComboBox *editRelationChangeCombo;
-
-    QStack<QProgressDialog *> progressDialogs;
 
     QMenu *importSubMenu, *exportSubMenu, *editMenu, *analysisMenu, *helpMenu;
     QMenu *optionsMenu, *colorOptionsMenu, *edgeOptionsMenu, *nodeOptionsMenu;
@@ -700,9 +698,6 @@ private:
     QAction *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
     QAction *helpSystemInfoAct, *helpCheckUpdatesApp;
 
-
-
-
     QAction *netDensity, *analyzeGraphReciprocityAct, *analyzeGraphSymmetryAct;
     QAction *analyzeGraphDistanceAct, *averGraphDistanceAct;
     QAction *analyzeMatrixDistancesGeodesicAct, *analyzeMatrixGeodesicsAct;
@@ -746,22 +741,7 @@ private:
 
     QAction *editRelationNextAct, *editRelationPreviousAct, *editRelationAddAct;
     QAction *editRelationRenameAct;
-    enum { MaxRecentFiles = 5 };
     QAction *recentFileActs[MaxRecentFiles];
-
-    QString fileName, previous_fileName, fileNameNoPath, progressMsg;
-    QString settingsFilePath, settingsDir ;
-    QStringList fortuneCookie;
-    QStringList tempFileNameNoPath, tips;
-
-    int statusBarDuration, progressCounter;
-    int fileType, maxNodes;
-    int fortuneCookiesCounter;
-    int windowMinWidth, windowMinHeight;
-
-    bool inverseWeights, askedAboutWeights;
-    qreal randomErdosEdgeProb;
-    QString initFileCodec;
 
     QLabel *rightPanelNetworkTypeLCD ;
     QLabel *rightPanelEdgesLabel;
@@ -774,7 +754,6 @@ private:
     QLabel *rightPanelClickedNodeLCD;
     QLabel *rightPanelClickedNodeInDegreeLCD;
     QLabel *rightPanelClickedNodeOutDegreeLCD;
-//    QLabel *rightPanelClickedNodeClucofLCD;
 
     QLabel *rightPanelSelectedNodesLCD;
     QLabel *rightPanelSelectedEdgesLCD;
@@ -788,8 +767,7 @@ private:
     QLabel *rightPanelClickedEdgeReciprocalWeightLabel;
     QLabel *rightPanelClickedEdgeReciprocalWeightLCD;
 
-    QDateTime actualDateTime, actualDate, actualTime;
-    QTime eTime;     //used  to time algorithms.
+
 
 
 };

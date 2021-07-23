@@ -532,7 +532,7 @@ void GraphicsNode::deleteInLink( GraphicsEdge *link ){
 
 void GraphicsNode::addOutLink( GraphicsEdge *edge ) {
     qDebug("GraphicsNode: addOutLink()");
-    outEdgeList.push_back( edge);
+    outEdgeList.push_back(edge);
     //	qDebug ("GraphicsNode: outEdgeList has now %i edges", outEdgeList.size());
 }
 

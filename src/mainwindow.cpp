@@ -92,48 +92,12 @@
 
 
 
-//bool printDebug = true;
-
-//void myMessageOutput ( QtMsgType type, const QMessageLogContext &context, const QString &msg)
-//{
-//    QByteArray localMsg = msg.toLocal8Bit();
-//    const char *file = context.file ? context.file : "";
-//    const char *function = context.function ? context.function : "";
-//    if ( printDebug )
-//        switch ( type ) {
-//        case QtDebugMsg:
-//            fprintf(stderr, "Debug: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
-//            break;
-//        case QtInfoMsg:
-//            fprintf(stderr, "Info: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
-//            break;
-//        case QtWarningMsg:
-//            fprintf(stderr, "Warning: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
-//            break;
-//        case QtCriticalMsg:
-//            fprintf(stderr, "Critical: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
-//            break;
-//        case QtFatalMsg:
-//            fprintf(stderr, "Fatal: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
-//            break;
-//        }
-
-
-
-//}
-
-
-
-
-
 /**
  * @brief
  * MainWindow contruction method
  * @param m_fileName the file to load, if any.
  */
 MainWindow::MainWindow(const QString & m_fileName, const bool &forceProgress, const bool &maximized, const bool &fullscreen, const int &debugLevel) {
-
-//    qInstallMessageHandler( myMessageOutput);
 
     switch (debugLevel) {
     case 0:
@@ -168,8 +132,8 @@ MainWindow::MainWindow(const QString & m_fileName, const bool &forceProgress, co
     int primaryScreenHeight = QApplication::primaryScreen()->availableSize().height();
 
     // Set a default min width and height
-    windowMinWidth = 1024;
-    windowMinHeight = 750;
+    int windowMinWidth = 1024;
+    int windowMinHeight = 750;
 
     // For large screens, use more generous min height and width.
     if (primaryScreenWidth > 2439) {
@@ -205,6 +169,9 @@ MainWindow::MainWindow(const QString & m_fileName, const bool &forceProgress, co
     // Create printer devices
     printer = new QPrinter;
     printerPDF = new QPrinter;
+
+    // create our network manager object
+    networkManager = new QNetworkAccessManager;
 
     initView();         // Init our network view
 
@@ -263,7 +230,6 @@ MainWindow::~MainWindow() {
 
     delete scene;
     delete graphicsWidget;
-
 
     foreach ( TextEditor *ed, m_textEditors) {
         ed->close();
@@ -344,6 +310,7 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
     delete activeGraph;
     qDebug() << "Deleting Scene";
     delete scene;
+
 //    delete miniChart;
 
     qDebug() << "Clearing and deleting text editors...";
@@ -352,6 +319,21 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
         delete ed;
     }
     m_textEditors.clear();
+
+    qDebug()<<"Clearing my" <<m_networkRequests.size()<<"network requests.";
+    foreach ( QNetworkReply *r, m_networkRequests) {
+        r->close();
+//        delete r;
+    }
+    qDebug()<<"Cleared network requests.";
+    m_networkRequests.clear();
+
+    qDebug() <<" Checking if networkManager thread is running...";
+    if (networkManager->thread()->isRunning()) {
+        qDebug() << "networkManager thread running"
+                 << "Calling deleteLater();";
+        networkManager->deleteLater();
+    }
 
     delete editNodePropertiesAct;
     delete editNodeRemoveAct;
@@ -370,7 +352,7 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
  * @param reason
  */
 void MainWindow::terminateThreads(const QString &reason) {
-    qDebug() << "reason " << reason
+    qDebug() << "Terminating threads started from MW. Reason:" << reason
              <<" Checking if graphThread is running...";
     if (graphThread.isRunning() ) {
         qDebug() << "graphThread running."
@@ -380,7 +362,6 @@ void MainWindow::terminateThreads(const QString &reason) {
         delete activeGraph;
         activeGraph = 0;  // see why here: https://goo.gl/tQxpGA
     }
-
 
 }
 
@@ -608,7 +589,7 @@ QMap<QString,QString> MainWindow::initSettings(const int &debugLevel, const bool
 
 
     //Max nodes used by createRandomNetwork dialogues
-    maxNodes=5000;
+    maxRandomlyCreatedNodes=5000;
 
     //
     // Call slotNetworkAvailableTextCodecs to setup a list of all supported codecs
@@ -5579,7 +5560,7 @@ void MainWindow::initSignalSlots() {
     //
 
 #ifndef QT_NO_SSL
-    connect(&networkManager, &QNetworkAccessManager::sslErrors,
+    connect( networkManager, &QNetworkAccessManager::sslErrors,
             this, &MainWindow::slotNetworkSslErrors);
 #endif
 
@@ -5748,7 +5729,6 @@ void MainWindow::initApp(){
 
     rightPanelClickedNodeInDegreeLCD->setText("-");
     rightPanelClickedNodeOutDegreeLCD->setText("-");
-//    rightPanelClickedNodeClucofLCD->setText("-");
     rightPanelClickedNodeLCD->setText("-");
     rightPanelClickedEdgeNameLCD->setText("-");
     rightPanelClickedEdgeWeightLCD->setText("-");
@@ -5784,14 +5764,19 @@ void MainWindow::initApp(){
     //editRelationChangeCombo->clear();
 
 
-    qDebug()<<"Clearing my"
-           <<m_textEditors.size()
-          <<"textEditors";
+    qDebug()<<"Clearing my" <<m_textEditors.size()<<"textEditors";
     foreach ( TextEditor *ed, m_textEditors) {
         ed->close();
         delete ed;
     }
     m_textEditors.clear();
+
+    qDebug()<<"Clearing my" <<m_networkRequests.size()<<"network requests.";
+    foreach ( QNetworkReply *r, m_networkRequests) {
+        r->close();
+    }
+    m_networkRequests.clear();
+
 
     QApplication::restoreOverrideCursor();
     QApplication::restoreOverrideCursor();
@@ -8542,7 +8527,7 @@ void MainWindow::slotNetworkRandomRingLattice(){
                           "where each node has degree d:\n d/2 edges to the right "
                           "and d/2 to the left.\n"
                           "Please enter the number of nodes you want:"),
-                       100, 4, maxNodes, 1, &ok ) ) ;
+                       100, 4, maxRandomlyCreatedNodes, 1, &ok ) ) ;
     if (!ok) {
         statusMessage( "You did not enter an integer. Aborting.");
         return;
@@ -8740,7 +8725,9 @@ void MainWindow::slotNetworkManagerRequest(const QUrl &url, const NetworkRequest
 
     // Create a network reply object through which we will make the call and handle the reply content
     qDebug() << "Creating a network reply object and making the call...";
-    QNetworkReply *reply = networkManager.get(request) ;
+    QNetworkReply *reply = networkManager->get(request) ;
+    // Store the network reply object
+    m_networkRequests << reply;
 
     // Connect signals and slots
     switch (requestType) {
@@ -14304,7 +14291,10 @@ void MainWindow::slotHelpCheckUpdateDialog() {
 
     // Create a network reply object through which we will make the call and handle the reply content
     qDebug() << "Creating a network reply object  and making the call...";
-    QNetworkReply *reply =  networkManager.get(request) ;
+    QNetworkReply *reply =  networkManager->get(request) ;
+
+    // Store the network reply object
+    m_networkRequests << reply;
 
     // Connect signals and slots
     connect(reply, &QNetworkReply::finished, this, &MainWindow::slotHelpCheckUpdateParse);

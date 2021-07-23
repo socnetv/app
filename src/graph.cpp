@@ -272,8 +272,7 @@ Graph::Graph() {
  */
 Graph::~Graph() {
     qDebug()<<"Graph::~Graph() - Calling clear()";
-    clear("exit");
-
+    this->clear("exit");
     delete file_parser;
 }
 
@@ -284,7 +283,7 @@ Graph::~Graph() {
     Clears all vertices
 */
 void Graph::clear(const QString &reason) {
-    qDebug()<< "Clearing graph, vertices and data structures... ";
+    qDebug()<< "Clearing graph, vertices and data structures... Reason:" << reason;
     qDeleteAll(m_graph.begin(), m_graph.end());
     m_graph.clear();
     vpos.clear();
@@ -3513,7 +3512,7 @@ void Graph::webSpider(){
 
         // Check if we need to add some delay in the request
         if (m_crawler_delayed_requests) {
-            int m_wait_msecs = rand() % 1000;
+            int m_wait_msecs = rand() % 500;
             qDebug() << "Graph::webSpider() - Sleeping for" << m_wait_msecs << "msecs";
             QThread::msleep(m_wait_msecs);
         }

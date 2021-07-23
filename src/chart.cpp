@@ -44,8 +44,6 @@
 #include <QtCharts/QAreaSeries>
 #include <QtCharts/QLegend>
 #include <QtCharts/QBarCategoryAxis>
-
-#include <QtCore/QTime>
 #include <QVBoxLayout>
 
 Chart::Chart(QWidget *parent) :
