@@ -85,7 +85,6 @@ DialogSystemInfo::DialogSystemInfo (QWidget *parent) :
     #ifndef QT_NO_OPENGL
     QOpenGLFunctions qglFunctions(QOpenGLContext::currentContext());
     information += "<br>OpenGL: <br>";
-
     information += "Vendor: " + getGlString(&qglFunctions, GL_VENDOR) + "<br>";
     information += "Version: " + getGlString(&qglFunctions, GL_VERSION) + "<br>";
     information += "Renderer/Card: " + getGlString(&qglFunctions, GL_RENDERER) +  "<br>";
@@ -93,6 +92,7 @@ DialogSystemInfo::DialogSystemInfo (QWidget *parent) :
     information += "<br>OpenGL: <br>";
     information += "NONE. Build without OpenGL support!";
     #endif
+
 
 
     information += "<br>Library Paths: <br>" ;
@@ -124,14 +124,6 @@ DialogSystemInfo::DialogSystemInfo (QWidget *parent) :
     information += "<br><br>";
     information += "Logical DPI (i.e. 144 on Windows default 150% mode): <br>";
     information += QString::number(QApplication::primaryScreen()->logicalDotsPerInch());
-
-//    const QString glInfo = getGlString(topLevelGlWidget.context()->functions(), GL_VENDOR)
-//        + QLatin1Char('/') + getGlString(topLevelGlWidget.context()->functions(), GL_RENDERER);
-
-//    const bool supportsThreading = !glInfo.contains(QLatin1String("nouveau"), Qt::CaseInsensitive)
-//        && !glInfo.contains(QLatin1String("ANGLE"), Qt::CaseInsensitive)
-//        && !glInfo.contains(QLatin1String("llvmpipe"), Qt::CaseInsensitive);
-
 
 
     ui->infoTextEdit->setText(information);

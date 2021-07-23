@@ -58,7 +58,6 @@
 QT_BEGIN_NAMESPACE
 class QDateTime;
 class QPointF;
-class QNetworkAccessManager;
 class QNetworkReply;
 QT_END_NAMESPACE
 
@@ -1213,7 +1212,6 @@ private:
     QQueue<QUrl> *urlQueue;                     // A queue where the crawler will put urls for the network manager to download
 
     int m_crawler_max_urls;                      // maximum urls we'll visit (max nodes in the resulted network)
-    int m_crawler_delayed_requests;              // Controls if we will wait between requests
     int m_crawler_visited_urls;                  // A counter of the urls visited.
 
 

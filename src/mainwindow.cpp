@@ -50,16 +50,16 @@
 #include <QBarCategoryAxis>
 #include <QValueAxis>
 #include <QBarSet>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QSslError>
 
 #include "mainwindow.h"
 #include "texteditor.h"
-
 #include "graphicswidget.h"
 #include "graphicsnode.h"
 #include "graphicsedge.h"
 #include "graphicsnodenumber.h"
-
-
 #include "chart.h"
 
 #include "forms/dialogsettings.h"
@@ -331,14 +331,6 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
         delete ed;
     }
     m_textEditors.clear();
-
-    qDebug()<<"Clearing network requests.";
-    foreach ( QNetworkReply *r, m_networkRequests) {
-        r->close();
-//        delete r;
-    }
-    qDebug()<<"Cleared network requests.";
-    m_networkRequests.clear();
 
     qDebug() <<" Checking if networkManager thread is running...";
     if (networkManager->thread()->isRunning()) {
@@ -5776,15 +5768,8 @@ void MainWindow::initApp(){
     }
     m_textEditors.clear();
 
-    qDebug()<<"Clearing my" <<m_networkRequests.size()<<"network requests.";
-    foreach ( QNetworkReply *r, m_networkRequests) {
-        r->close();
-    }
-    m_networkRequests.clear();
-
-
     QApplication::restoreOverrideCursor();
-    QApplication::restoreOverrideCursor();
+
     setCursor(Qt::ArrowCursor);
 
     statusMessage( tr("Ready"));
@@ -8731,8 +8716,6 @@ void MainWindow::slotNetworkManagerRequest(const QUrl &url, const NetworkRequest
     // Create a network reply object through which we will make the call and handle the reply content
     qDebug() << "Creating a network reply object and making the call...";
     QNetworkReply *reply = networkManager->get(request) ;
-    // Store the network reply object
-    m_networkRequests << reply;
 
     // Connect signals and slots
     switch (requestType) {
@@ -8740,6 +8723,8 @@ void MainWindow::slotNetworkManagerRequest(const QUrl &url, const NetworkRequest
         // Wire the reply to the activeGraph, which in turn will pass it to the web crawler
          connect(reply, &QNetworkReply::finished, activeGraph, &Graph::slotHandleCrawlerRequestReply);
         break;
+    case NetworkRequestType::CheckUpdate:
+         connect(reply, &QNetworkReply::finished, this, &MainWindow::slotHelpCheckUpdateParse);
     default:
         break;
     }
@@ -8749,10 +8734,6 @@ void MainWindow::slotNetworkManagerRequest(const QUrl &url, const NetworkRequest
         connect(reply, &QNetworkReply::errorOccurred,
              this, &MainWindow::slotNetworkError);
     #endif
-
-
-     connect(reply, &QNetworkReply::sslErrors,
-             this, &MainWindow::slotNetworkSslErrors);
 
 
 }
@@ -14279,37 +14260,9 @@ void MainWindow::slotHelpCheckUpdateDialog() {
 
     QString url = "https://socnetv.org/latestversion.txt";
 
-    qDebug() << "Creating request object with url:" << url;
+    qDebug() << "Will make a 'check for updates' request to url:" << url;
 
-    // Create a network request object
-    QNetworkRequest request;
-
-    // Set request url
-    request.setUrl(QUrl(url));
-
-    // Set request headers
-    request.setRawHeader(
-                "User-Agent",
-                "SocNetV harmless spider - see https://socnetv.org");
-
-    // Create a network reply object through which we will make the call and handle the reply content
-    qDebug() << "Creating a network reply object  and making the call...";
-    QNetworkReply *reply =  networkManager->get(request) ;
-
-    // Store the network reply object
-    m_networkRequests << reply;
-
-    // Connect signals and slots
-    connect(reply, &QNetworkReply::finished, this, &MainWindow::slotHelpCheckUpdateParse);
-
-    #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
-        connect(reply, &QNetworkReply::errorOccurred,
-             this, &MainWindow::slotNetworkError);
-    #endif
-
-     connect(reply, &QNetworkReply::sslErrors,
-             this, &MainWindow::slotNetworkSslErrors);
-
+    slotNetworkManagerRequest(QUrl(url), NetworkRequestType::CheckUpdate);
 
 }
 
@@ -14319,6 +14272,13 @@ void MainWindow::slotHelpCheckUpdateDialog() {
 */
 void MainWindow::slotNetworkError(const QNetworkReply::NetworkError &code) {
 
+    // Get network reply from the sender
+    QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
+
+    // Get reply error string
+    QString replyErrorMsg =  reply->errorString();
+
+    // Will store the Qt description of the error
     QString errorMsg;
 
     #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
@@ -14428,9 +14388,11 @@ void MainWindow::slotNetworkError(const QNetworkReply::NetworkError &code) {
     }
     #endif
 
-    slotHelpMessageToUserError("Network Error!  \n" +
-                               errorMsg +
-                               "\nPlease, try again. " );
+    slotHelpMessageToUserError("Network Error!  \n\n"
+                               "Request to: '" + reply->request().url().toString() + "' encountered this error: \n\n" +
+                               replyErrorMsg + "\n\n" +
+                               "Error description: \n\n" + errorMsg +
+                               "\n\nPlease, try again. " );
 
 
 }
@@ -14438,10 +14400,16 @@ void MainWindow::slotNetworkError(const QNetworkReply::NetworkError &code) {
 /**
 *  Called on NetworkReply SSL errors
 */
-void MainWindow::slotNetworkSslErrors( ) {
+void MainWindow::slotNetworkSslErrors(QNetworkReply *reply, const QList<QSslError> &errors) {
 
-    slotHelpMessageToUserError("SSL Error! "
-                               "Could not connect due to SSL error. Please, try again later. ");
+    QString sslErrorString;
+    foreach(QSslError error, errors) {
+        sslErrorString = error.errorString();
+    }
+    slotHelpMessageToUserError("SSL Error! \n\n"
+                               "Request to: '" + reply->request().url().toString() + "' encountered this SSL error: \n\n"
+                               + sslErrorString +
+                               "\n\n Please, try again later. ");
 
 }
 
@@ -14458,15 +14426,14 @@ void MainWindow::slotHelpCheckUpdateParse() {
     // Get network reply from the sender
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
 
-    QByteArray ba = reply->readAll();
+    QByteArray ba = reply->readAll();       // read reply
+
+    reply->deleteLater();                   // schedule reply to be deleted
 
     QString replyContent(ba);
 
     // Simplify the reply
     replyContent = replyContent.simplified();
-
-    // Delete reply later
-    reply->deleteLater();
 
     // Check reply if empty
     if (replyContent.isEmpty()) {

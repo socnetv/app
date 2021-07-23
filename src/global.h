@@ -100,7 +100,8 @@ enum ChartType {
 
 enum NetworkRequestType {
     Generic = 0,
-    Crawler = 1
+    Crawler = 1,
+    CheckUpdate = 2
 
 };
 

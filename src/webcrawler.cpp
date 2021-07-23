@@ -29,22 +29,19 @@
 #include "webcrawler.h"
 
 #include <QCryptographicHash>
-
 #include <QDebug>
-#include <QQueue>
-#include <QNetworkReply>
-
+#include <QUrl>
+#include <QThread>
 
 /**
  * @brief Constructor from parent Graph thread. Inits variables.
  * @param url
- * @param maxN
+ * @param maxNc
  * @param maxLinksPerPage
  * @param extLinks
  * @param intLinks
  */
-WebCrawler::WebCrawler(
-        QQueue<QUrl> *urlQueue,
+WebCrawler::WebCrawler(QQueue<QUrl> *urlQueue,
         const QUrl &startUrl,
         const QStringList &urlPatternsIncluded,
         const QStringList &urlPatternsExcluded,
@@ -57,8 +54,8 @@ WebCrawler::WebCrawler(
         const bool &selfLinks,
         const bool &extLinksIncluded,
         const bool &extLinksCrawl,
-        const bool &socialLinks
-        ) {
+        const bool &socialLinks,
+        const int &delayBetween) {
 
     qDebug () << "WebCrawler constructed on thread:"
               << thread()
@@ -96,6 +93,8 @@ WebCrawler::WebCrawler(
                           << "tumblr.com"
                           << "flickr.com"
                           << "plus.google.com";
+
+    m_delayBetween = delayBetween;
 
 
     knownUrls.clear();                              // a map of all known urls to their node number
@@ -169,6 +168,7 @@ void WebCrawler::parse(QNetworkReply *reply){
     int validUrlsInPage = 0;
 
     QByteArray ba = reply->readAll();       // read all data from the reply into a bytearray
+    reply->deleteLater();                   // schedule reply to be deleted
     QString page(ba);                       // construct a QString from the bytearray
 
     // Create a md5 hash of the page code
@@ -539,6 +539,13 @@ void WebCrawler::newLink(int s, QUrl target,  bool enqueue_to_frontier) {
         qDebug()<< "Enqueued new node:" << m_discoveredNodes <<  "to urlQueue."
                    << "queue size: "<<  m_urlQueue->size()
                    << " - Emitting signalStartSpider...";
+
+        // Check if we need to add some delay between requests
+        if (m_delayBetween) {
+            int m_wait_msecs = rand() % m_delayBetween;
+            qDebug() << "delay requested between signalStartSpider() calls. Sleeping for:" << m_wait_msecs << "msecs";
+            QThread::msleep(m_wait_msecs);
+        }
 
         emit signalStartSpider();
 

@@ -50,7 +50,7 @@
 #include <QValueAxis>
 #include <QPixmap>
 #include <QElapsedTimer>
-#include <QNetworkAccessManager>
+
 #include <QNetworkReply>
 
 #include <cstdlib>		//allows the use of RAND_MAX macro 
@@ -3406,8 +3406,13 @@ void Graph::startWebCrawler(
 
     // Initialize
     m_crawler_max_urls = maxNodes;                      // maximum urls we'll visit (max nodes in the resulted network)
-    m_crawler_delayed_requests = delayedRequests;       // Controls if we will wait between requests
     m_crawler_visited_urls = 0;                         // A counter of the urls visited.
+
+    int delayBetween = 0;
+
+    if ( delayedRequests ) {
+        delayBetween = 500;
+    }
 
     // Create a new url queue
     urlQueue = new QQueue<QUrl>;
@@ -3430,7 +3435,9 @@ void Graph::startWebCrawler(
                 selfLinks,
                 extLinksIncluded,
                 extLinksCrawl,
-                socialLinks);
+                socialLinks,
+                delayBetween
+                );
 
     qDebug() << "Graph::startWebCrawler() - Moving out web_crawler from thread:"
              << web_crawler->thread();
@@ -3510,14 +3517,6 @@ void Graph::webSpider(){
                   << "and emitting signal to download html code...";
 
 
-        // Check if we need to add some delay in the request
-        if (m_crawler_delayed_requests) {
-            int m_wait_msecs = rand() % 500;
-            qDebug() << "Graph::webSpider() - Sleeping for" << m_wait_msecs << "msecs";
-            QThread::msleep(m_wait_msecs);
-        }
-
-
         // Signal MW to make the network request
         qDebug() << "Graph::webSpider() - Emitting signal to the MW to make the network request ";
         emit signalNetworkManagerRequest(currentUrl, NetworkRequestType::Crawler);
@@ -3526,7 +3525,7 @@ void Graph::webSpider(){
         m_crawler_visited_urls++;
 
 
-    } while ( 1 );
+    } while ( urlQueue->size() );
 
 }
 

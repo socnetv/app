@@ -65,6 +65,7 @@ class QTabWidget;
 class QSpinBox;
 class QNetworkReply;
 class QNetworkAccessManager;
+class QSslError;
 QT_END_NAMESPACE
 
 using namespace std;
@@ -528,7 +529,7 @@ public slots:
                                );
 
 
-    void slotNetworkSslErrors();
+    void slotNetworkSslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
     void slotNetworkError(const QNetworkReply::NetworkError &code);
 
     //Called by Graph to display some message to the user
@@ -584,7 +585,6 @@ private:
     QList<QTextCodec *> codecs;
 
     QList<TextEditor *> m_textEditors;
-    QList<QNetworkReply *> m_networkRequests;
 
     QStack<QProgressDialog *> progressDialogs;
 

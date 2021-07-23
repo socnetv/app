@@ -29,16 +29,11 @@
 #define WEBCRAWLER_H
 
 #include <QNetworkReply>
-#include <QUrl>
 #include <QQueue>
 
 QT_BEGIN_NAMESPACE
-class QNetworkAccessManager;
-class QNetworkRequest;
-class QNetworkReply;
+class QUrl;
 QT_END_NAMESPACE
-
-//class WebCrawler_Spider;
 
 using namespace std;
 
@@ -60,13 +55,14 @@ public:
             const QStringList &linkClasses,
             const int &maxNodes,
             const int &maxLinksPerPage,
-            const bool &intLinks,
-            const bool &childLinks,
-            const bool &parentLinks,
-            const bool &selfLinks,
-            const bool &extLinksIncluded,
-            const bool &extLinksCrawl,
-            const bool &socialLinks
+            const bool &intLinks = true,
+            const bool &childLinks = true,
+            const bool &parentLinks = false,
+            const bool &selfLinks = false,
+            const bool &extLinksIncluded = false,
+            const bool &extLinksCrawl = false,
+            const bool &socialLinks = false,
+            const int &delayBetween  = 0
             );
 
     ~WebCrawler();
@@ -99,6 +95,8 @@ private:
     bool m_extLinksCrawl;
     bool m_socialLinks;
     bool m_urlIsSocial;
+
+    int m_delayBetween;
 
     QStringList m_urlPatternsIncluded;
     QString urlPattern;
