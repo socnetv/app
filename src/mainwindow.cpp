@@ -506,6 +506,7 @@ QMap<QString,QString> MainWindow::initSettings(const int &debugLevel, const bool
         qDebug()<< "Settings file exist. Reading it...";
         QFile file(settingsFilePath);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qDebug () << "Could not open (for reading) file:" << settingsFilePath;
             QMessageBox::critical(this, "File Read Error",
                                   tr("Error! \n"
                                      "I cannot read the settings file "
@@ -638,6 +639,7 @@ void MainWindow::saveSettings() {
     qDebug() << "Saving app settings to file: "<< settingsFilePath;
     QFile file(settingsFilePath);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text ) ) {
+        qDebug () << "Could not open (for writing) file:" << settingsFilePath;
         QMessageBox::critical(this,
                               "File Write Error",
                               tr("Error! \n"
@@ -668,7 +670,7 @@ void MainWindow::saveSettings() {
     for (int i = 0 ; i < recentFiles.size() ; ++i) {
         out << "recentFile_"+ QString::number(i+1)
             << " = "
-            << recentFiles.at(i) << endl;
+            << recentFiles.at(i) << "\n";
     }
 
     file.close();
@@ -848,10 +850,23 @@ void MainWindow::slotStyleSheetDefault(const bool checked = true ){
  */
 void MainWindow::slotStyleSheetByName(const QString &sheetFileName) {
 
+    qDebug() << "Opening stylesheet file: "<< sheetFileName;
+
     QString styleSheet = "";
+
     if ( !sheetFileName.isEmpty() ) {
+
         QFile file(sheetFileName);
-        file.open(QFile::ReadOnly);
+
+        if (!file.open(QFile::ReadOnly)) {
+            qDebug () << "Could not open (for reading) file:" << sheetFileName;
+            slotHelpMessageToUserError(
+                        tr("Cannot read stylesheet file %1:\n%2")
+                        .arg(sheetFileName)
+                        .arg(file.errorString())
+                        );
+            return;
+        }
         styleSheet = QString::fromLatin1(file.readAll());
     }
     qApp->setStyleSheet(styleSheet);
@@ -7976,11 +7991,13 @@ bool MainWindow::slotNetworkExportList(){
    Otherwise it will ask the user to first save the network, then view its file.
  */
 void MainWindow::slotNetworkFileView(){
-    qDebug() << "slotNetworkFileView() : " << fileName.toLatin1();
+
+    qDebug() << "I will open a TextEditor to display file:" << fileName.toLatin1();
+
     if ( activeGraph->graphLoaded() && activeGraph->graphSaved()  ) {
         //network unmodified, read loaded file again.
         QFile f( fileName );
-        if ( !f.open( QIODevice::ReadOnly ) ) {
+        if ( !f.open( QIODevice::ReadOnly | QIODevice::Text) ) {
             qDebug ("Error in open!");
             return;
         }

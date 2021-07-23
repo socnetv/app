@@ -3670,7 +3670,7 @@ qreal Graph::graphReciprocity(){
     qDebug() << "Graph: graphReciprocity() - Finished. Arc reciprocity:"
              << m_graphReciprocityTiesReciprocated
              << "/"
-             << m_graphReciprocityTiesTotal << "="  << m_graphReciprocityArc << endl
+             << m_graphReciprocityTiesTotal << "="  << m_graphReciprocityArc << "\n"
              << m_graphReciprocityPairsReciprocated
              << "/"
              << m_graphReciprocityPairsTotal << "=" << m_graphReciprocityDyad;
@@ -3696,7 +3696,7 @@ qreal Graph::graphReciprocity(){
  */
 void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
 {
-    qDebug() << "Graph::writeReciprocity()";
+    qDebug() << "Writing reciprocity report to file:" << fileName;
 
     Q_UNUSED(considerWeights);
 
@@ -3705,12 +3705,12 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
 
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
-    QTextStream outText ( &file );
-    outText.setCodec("UTF-8");
+
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     m_graphReciprocityArc = graphReciprocity();
 
@@ -6114,7 +6114,7 @@ void Graph::resolveClasses(qreal C, H_StrToInt &discreteClasses, int &classes, i
 
 
 /**
- * @brief Graph::writeMatrixDistancesPlainText
+ * @brief
  * Writes the matrix of distances to a file
  * @param fn
  * @param considerWeights
@@ -6125,23 +6125,23 @@ void Graph::writeMatrixDistancesPlainText (const QString &fn,
                                            const bool &considerWeights,
                                            const bool &inverseWeights,
                                            const bool &dropIsolates) {
-    qDebug ("Graph::writeMatrixDistancesPlainText()");
+
+    qDebug() << "I will write distances matrix (plain-text) to file:" << fn << "First compute the distances matrix...";
 
     graphMatrixDistanceGeodesicCreate(considerWeights, inverseWeights, dropIsolates);
 
-    qDebug ("Graph::writeMatrixDistancesPlainText() writing to file");
+    qDebug() << "Writing distances matrix (plain-text) to file:" << fn;
 
     QFile file (fn);
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
-    QTextStream outText(&file);
-    outText.setCodec("UTF-8");
+    QTextStream outText(&file); outText.setCodec("UTF-8");
     outText.setRealNumberPrecision(m_reportsRealPrecision);
-    outText << "-Social Network Visualizer "<<  VERSION <<endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
+    outText << "-Social Network Visualizer "<<  VERSION << "\n";
+    outText << tr("Network name: ")<< graphName()<< "\n\n";
     outText << "Distance matrix: \n";
 
     outText << DM ;
@@ -6163,21 +6163,20 @@ void Graph::writeMatrixShortestPathsPlainText(const QString &fn,
                                               const bool &considerWeights,
                                               const bool &inverseWeights) {
 
-    qDebug()<< "Graph::writeMatrixShortestPathsPlainText()";
+    qDebug() << "I will write shortest paths matrix (plain-text) to file:" << fn << "First compute the shortest paths matrix...";
 
     graphMatrixShortestPathsCreate( considerWeights, inverseWeights, false);
 
+    qDebug() << "Writing shortest paths matrix (plain-text) to file:" << fn;
+
     QFile file (fn);
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
 
-    qDebug () << "Graph::writeMatrixShortestPathsPlainText() - Writing shortest paths matrix to file";
-
-    QTextStream outText(&file);
-    outText.setCodec("UTF-8");
+    QTextStream outText(&file); outText.setCodec("UTF-8");
     outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
     outText << tr("Network name: ")<< graphName() <<" \n\n";
     outText << "Shortest paths matrix: \n";
@@ -6191,7 +6190,7 @@ void Graph::writeMatrixShortestPathsPlainText(const QString &fn,
 
 
 /**
- * @brief Writes the Eccentricity scores to file
+ * @brief Writes the Eccentricity report to file
  * @param fileName
  * @param considerWeights
  * @param inverseWeights
@@ -6201,19 +6200,18 @@ void Graph::writeEccentricity(const QString fileName, const bool considerWeights
                               const bool inverseWeights, const bool dropIsolates)
 {
 
+    qDebug() << "Writing Eccentricity report to file:" << fileName;
+
     QElapsedTimer computationTimer;
     computationTimer.start();
 
-    qDebug() << "Graph::writeEccentricity()";
-
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
-    QTextStream outText ( &file );
-    outText.setCodec("UTF-8");
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if ( !calculatedCentralities  ) {
         graphDistancesGeodesic(true, considerWeights,
@@ -6509,20 +6507,19 @@ void Graph::writeCentralityInformation(const QString fileName,
                                        const bool considerWeights,
                                        const bool inverseWeights){
 
-    qDebug() << "Graph::writeCentralityInformation()";
+    qDebug() << "Writing Information Centrality report to file:" << fileName;
 
     QElapsedTimer computationTimer;
     computationTimer.start();
 
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
 
-    QTextStream outText ( &file );
-    outText.setCodec("UTF-8");
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     centralityInformation(considerWeights, inverseWeights);
 
@@ -6781,17 +6778,18 @@ void Graph::writeCentralityEigenvector(const QString fileName,
                                        const bool &inverseWeights,
                                        const bool &dropIsolates){
 
+    qDebug() << "Writing Eigenvector Centrality report to file:" << fileName;
+
     QElapsedTimer computationTimer;
     computationTimer.start();
 
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
-    QTextStream outText ( &file );
-    outText.setCodec("UTF-8");
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     centralityEigenvector(considerWeights, inverseWeights,dropIsolates);
 
@@ -7644,7 +7642,7 @@ void Graph::prominenceDistributionArea(const H_StrToInt &discreteClasses,
 
     for (i = discreteClasses.constBegin(); i != discreteClasses.constEnd(); ++i) {
 
-        qDebug() << "discreteClasses: " << i.key() << ": " << i.value() << endl;
+        qDebug() << "discreteClasses: " << i.key() << ": " << i.value() << "\n";
 
         seriesPQ.push(PairVF(i.key().toDouble(), i.value()));
 
@@ -7662,7 +7660,7 @@ void Graph::prominenceDistributionArea(const H_StrToInt &discreteClasses,
     while (!seriesPQ.empty()) {
 
         qDebug() << seriesPQ.top().value << " : "
-                 << seriesPQ.top().frequency << endl;
+                 << seriesPQ.top().frequency << "\n";
 
         value =  seriesPQ.top().value;
         frequency = seriesPQ.top().frequency;
@@ -7803,7 +7801,7 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
 
     for (i = discreteClasses.constBegin(); i != discreteClasses.constEnd(); ++i) {
 
-        qDebug() << "discreteClasses: " << i.key() << ": " << i.value() << endl;
+        qDebug() << "discreteClasses: " << i.key() << ": " << i.value() << "\n";
 
         seriesPQ.push(PairVF(i.key().toDouble(), i.value()));
 
@@ -7826,7 +7824,7 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
         frequency = seriesPQ.top().frequency;
 
         qDebug() << "value:"<< value << " : "
-                 << "frequency:"<< frequency << endl;
+                 << "frequency:"<< frequency << "\n";
 
         axisX->append( value );
         barSet->append( frequency );
@@ -7944,21 +7942,20 @@ void Graph::writeCentralityDegree ( const QString fileName,
                                     const bool considerWeights,
                                     const bool dropIsolates) {
 
-    qDebug()<< "Graph:: writeCentralityDegree() - considerWeights "
-            << considerWeights
-            << " dropIsolates " <<dropIsolates;
+     qDebug() << "Writing Degree Centrality report to file:" << fileName
+              << "considerWeights:" << considerWeights
+              << "dropIsolates:" <<dropIsolates;
 
     QElapsedTimer computationTimer;
     computationTimer.start();
 
     QFile file ( fileName );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
-        qDebug()<< "Error opening file!";
+    if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
-    QTextStream outText ( &file );
-    outText.setCodec("UTF-8");
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     centralityDegree(considerWeights, dropIsolates);
 
@@ -8232,7 +8229,7 @@ void Graph::writeCentralityCloseness( const QString fileName,
     QElapsedTimer computationTimer;
     computationTimer.start();
 
-    qDebug() << "Graph::writeCentralityCloseness()"
+    qDebug() << "Writing closeness Centrality report to file:" << fileName
              << "considerWeights"<<considerWeights
              << "inverseWeights"<<inverseWeights
              << "dropIsolates" << dropIsolates
@@ -8240,7 +8237,7 @@ void Graph::writeCentralityCloseness( const QString fileName,
 
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
@@ -8643,12 +8640,14 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
                                                    const bool inverseWeights,
                                                    const bool dropIsolates) {
 
+    qDebug() << "Writing IR Closeness Centrality report to file:" << fileName;
+
     QElapsedTimer computationTimer;
     computationTimer.start();
 
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
@@ -8872,14 +8871,14 @@ void Graph::writeCentralityBetweenness(const QString fileName,
                                        const bool inverseWeights,
                                        const bool dropIsolates) {
 
-    qDebug() << "Graph::writeCentralityBetweenness()";
+    qDebug() << "Writing Betweenness Centrality report to file:" << fileName;
 
     QElapsedTimer computationTimer;
     computationTimer.start();
 
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
@@ -9148,14 +9147,14 @@ void Graph::writeCentralityStress( const QString fileName,
                                    const bool inverseWeights,
                                    const bool dropIsolates) {
 
-    qDebug() << "Graph::writeCentralityStress()";
+    qDebug() << "Writing Stress Centrality report to file:" << fileName;
 
     QElapsedTimer computationTimer;
     computationTimer.start();
 
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
@@ -9383,14 +9382,14 @@ void Graph::writeCentralityEccentricity(const QString fileName,
                                         const bool inverseWeights,
                                         const bool dropIsolates) {
 
-    qDebug() << "Graph::writeCentralityEccentricity()";
+    qDebug() << "Writing Eccentricity Centrality report to file:" << fileName;
 
     QElapsedTimer computationTimer;
     computationTimer.start();
 
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
@@ -9603,21 +9602,20 @@ void Graph::writeCentralityPower(const QString fileName,
                                  const bool inverseWeights,
                                  const bool dropIsolates) {
 
-    qDebug() << "Graph::writeCentralityPower()";
+    qDebug() << "Writing Power Centrality report to file:" << fileName;
 
     QElapsedTimer computationTimer;
     computationTimer.start();
 
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
-
 
     QString distImageFileName ;
 
@@ -10058,12 +10056,15 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
 void Graph::writePrestigeDegree (const QString fileName,
                                  const bool considerWeights,
                                  const bool dropIsolates) {
+
+    qDebug() << "Writing Degree Prestige report to file:" << fileName;
+
     QElapsedTimer computationTimer;
     computationTimer.start();
 
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
@@ -10458,7 +10459,7 @@ void Graph::prestigeProximity( const bool considerWeights,
 
 
 /**
- * @brief Graph::writePrestigeProximity
+ * @brief
  * Writes the proximity prestige indices to a file
  * @param fileName
  * @param considerWeights
@@ -10469,12 +10470,15 @@ void Graph::writePrestigeProximity( const QString fileName,
                                     const bool considerWeights,
                                     const bool inverseWeights,
                                     const bool dropIsolates) {
+
+    qDebug() << "Writing Proximity Prestige report to file:" << fileName;
+
     QElapsedTimer computationTimer;
     computationTimer.start();
 
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
@@ -10932,19 +10936,21 @@ void Graph::prestigePageRank(const bool &dropIsolates){
  */
 void Graph::writePrestigePageRank(const QString fileName,
                                   const bool dropIsolates){
+
+    qDebug() << "Writing PageRank Prestige report to file:" << fileName;
+
     QElapsedTimer computationTimer;
     computationTimer.start();
 
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     prestigePageRank(dropIsolates);
-
 
     QString distImageFileName ;
 
@@ -12188,24 +12194,25 @@ void Graph::graphWalksMatrixCreate(const int &N,
  * @param length
  */
 void Graph::writeWalksTotalMatrixPlainText(const QString &fn){
-    qDebug("Graph::writeWalksTotalMatrixPlainText() ");
+
+    qDebug()<<"I will write (plain-text) total walks to file:" << fn;
 
     QFile file (fn);
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
 
-    QTextStream outText(&file);
-    outText.setCodec("UTF-8");
-    outText << "-Social Network Visualizer "<<  VERSION <<endl;
-    outText << tr("Network name: ")<< graphName()<<endl<<endl;
+    QTextStream outText(&file); outText.setCodec("UTF-8");
+    outText << "-Social Network Visualizer "<<  VERSION << "\n";
+    outText << tr("Network name: ")<< graphName()<< "\n"<< "\n";
     outText << "Total number of walks of any length less than or equal to "<< vertices()-1
             <<" between each pair of nodes \n\n";
     outText << "Warning: Walk counts consider unordered pairs of nodes\n\n";
 
     int N = vertices();
+
     graphWalksMatrixCreate( N, 0, true);
 
     outText << XSM ;
@@ -12221,17 +12228,19 @@ void Graph::writeWalksTotalMatrixPlainText(const QString &fn){
  * @param length
  */
 void Graph::writeWalksOfLengthMatrixPlainText(const QString &fn, const int &length){
-    qDebug()<<"Graph::writeWalksOfLengthMatrixPlainText() ";
+
+    qDebug()<<"I will write (plain-text) walks of length:" << length
+           << "to file:" << fn;
 
     QFile file (fn);
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
     emit statusMessage ( tr("Writing Walks matrix to file:") + fn );
-    QTextStream outText(&file);
-    outText.setCodec("UTF-8");
+
+    QTextStream outText(&file); outText.setCodec("UTF-8");
     outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
     outText << "Network name: "<< graphName()<<" \n";
     outText << "Number of walks of length "<< length <<" between each pair of nodes \n\n";
@@ -12258,16 +12267,17 @@ void Graph::writeMatrixWalks (const QString &fn,
                               const int &length,
                               const bool &simpler) {
 
+    qDebug()<<"I will write walks of length:" << length
+           << "to file:" << fn;
+
     QElapsedTimer computationTimer;
     computationTimer.start();
 
     Q_UNUSED(simpler);
-    qDebug()<<"Graph::writeMatrixWalks() - length:" << length
-           << "to file:" << fn;
 
     QFile file( fn );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
@@ -12486,23 +12496,24 @@ QList<int> Graph::vertexinfluenceDomain(int v1){
     Writes the reachability matrix X^R of the graph to a file
 */
 void Graph::writeReachabilityMatrixPlainText(const QString &fn, const bool &dropIsolates) {
-    qDebug("Graph::writeReachabilityMatrixPlainText() ");
+
+    qDebug() << "Writing Reachability Matrix plain text to file:" << fn;
 
     QFile file (fn);
 
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
 
-    QTextStream outText(&file);
+    QTextStream outText(&file); outText.setCodec("UTF-8");
 
-    outText << "-Social Network Visualizer "<<  VERSION <<endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-    outText << "Reachability Matrix (XR) \n";
-    outText << "Two nodes are reachable if there is a walk between them (their geodesic distance is non-zero). \n";
-    outText << "If nodes i and j are reachable then XR(i,j)=1 otherwise XR(i,j)=0.\n\n";
+    outText << "-Social Network Visualizer "<< VERSION << "\n";
+    outText << tr("Network name: ")<< graphName()<< "\n\n";
+    outText << tr("Reachability Matrix (XR)") << "\n";
+    outText << tr("Two nodes are reachable if there is a walk between them (their geodesic distance is non-zero).") << "\n";
+    outText << tr("If nodes i and j are reachable then XR(i,j)=1 otherwise XR(i,j)=0.") << "\n\n";
 
     graphDistancesGeodesic(false,false,false,dropIsolates);
 
@@ -12532,7 +12543,7 @@ void Graph::writeClusteringCoefficient( const QString fileName,
     Q_UNUSED(considerWeights);
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
@@ -12733,7 +12744,7 @@ void Graph::writeTriadCensus( const QString fileName,
     Q_UNUSED(considerWeights);
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
@@ -12885,7 +12896,7 @@ bool Graph::writeCliqueCensus(const QString &fileName,
 
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return false;
     }
@@ -13352,10 +13363,10 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X) {
 
         qDebug() << "Graph::graphCliques() - v:" << v
                  << "RECURSIVE CALL to graphCliques ( R ⋃ {v}, P ⋂ NB(v), X ⋂ NBS(v) )"
-                    << endl << "NBS(v):" << NBS
-                    << endl << "Rnext = R ⋃ {v}:" << Rnext
-                    << endl << "Pnext = P ⋂ NBS(v):" << Pnext
-                    << endl << "Xnext = X ⋂ NBS(v):" << Xnext;
+                    << "\n" << "NBS(v):" << NBS
+                    << "\n" << "Rnext = R ⋃ {v}:" << Rnext
+                    << "\n" << "Pnext = P ⋂ NBS(v):" << Pnext
+                    << "\n" << "Xnext = X ⋂ NBS(v):" << Xnext;
 
         if (csRecDepth==1) {
             emit signalProgressBoxUpdate(counter);
@@ -13473,7 +13484,7 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
 
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return false;
     }
@@ -13510,8 +13521,7 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
         return false;
     }
 
-    QTextStream outText ( &file );
-    outText.setCodec("UTF-8");
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     QString pMsg = tr("Writing Hierarchical Cluster Analysis to file. \nPlease wait... ");
     emit statusMessage ( pMsg );
@@ -13631,15 +13641,15 @@ void Graph::writeClusteringHierarchicalResultsToStream(QTextStream& outText,
                                                        const bool &dendrogram) {
 
 
-    qDebug()<<"Graph::writeClusteringHierarchicalResultsToStream() - "
-           << "N"<< N
+    qDebug()<<"Writing Hierarchical Clustering results to stream. "
+           << "N" << N
            << "dendrogram" << dendrogram;
 
     QMap<int, V_int>::const_iterator it;
     qreal level;
 
     outText << "<pre>";
-    outText <<"Seq" << "\t"<<"Level" << "\t"<< "Actors" <<endl;
+    outText <<"Seq" << "\t"<<"Level" << "\t"<< "Actors" << "\n";
 
     for ( it= m_clustersPerSequence.constBegin() ; it != m_clustersPerSequence.constEnd(); ++it) {
         level = m_clusteringLevel.at (it.key() -1 );
@@ -13649,15 +13659,14 @@ void Graph::writeClusteringHierarchicalResultsToStream(QTextStream& outText,
         foreach (int item, it.value() ) {
             outText << item << " " ;
         }
-        outText << endl;
+        outText << "\n";
 
     }
     outText << reset << "</pre>";
 
     if (dendrogram) {
 
-        qDebug()<< "Graph::writeClusteringHierarchicalResultsToStream() -"
-                << "Writing SVG dendrogram";
+        qDebug()<< "Writing SVG dendrogram...";
 
         outText << "<p>"
                 << "<span class=\"info\">"
@@ -13699,12 +13708,11 @@ void Graph::writeClusteringHierarchicalResultsToStream(QTextStream& outText,
 
         clusterVector.reserve(N);
 
-        qDebug()<<"Graph::writeClusteringHierarchicalResultsToStream() -" << endl
-               << "m_clustersPerSequence"<<m_clustersPerSequence
-               << endl
+        qDebug() << "m_clustersPerSequence"<<m_clustersPerSequence
+               << "\n"
                << "maxLevelValue"<<maxLevelValue
-               << endl
-               << "m_clusterPairNamesPerSeq" << m_clusterPairNamesPerSeq << endl
+               << "\n"
+               << "m_clusterPairNamesPerSeq" << m_clusterPairNamesPerSeq << "\n"
                << "m_clustersByName" << m_clustersByName;
 
 
@@ -14010,9 +14018,7 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
 
         emit signalProgressBoxUpdate(seq);
 
-        qDebug() << endl
-                 << "Graph::graphClusteringHierarchical() -"
-                 <<"matrix DSM contents now:";
+        qDebug()<<"matrix DSM contents now:";
         //DSM.printMatrixConsole();
 
         //
@@ -14063,11 +14069,11 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
 
             m_clustersByName.insert("c"+QString::number(seq),clusteredItems );
 
-            qDebug() << "Graph::graphClusteringHierarchical() - computing diagram variables..."<<endl
-                     << "cluster1"<< cluster1 << endl
-                     << "cluster2"<< cluster2 << endl
-                     << "clusterPairNames" << clusterPairNames << endl
-                     << "m_clusterPairNamesPerSeq" << m_clusterPairNamesPerSeq << endl
+            qDebug() << "Computing diagram variables..."<< "\n"
+                     << "cluster1"<< cluster1 << "\n"
+                     << "cluster2"<< cluster2 << "\n"
+                     << "clusterPairNames" << clusterPairNames << "\n"
+                     << "m_clusterPairNamesPerSeq" << m_clusterPairNamesPerSeq << "\n"
                      << "m_clustersByName" <<m_clustersByName;
 
 
@@ -14077,20 +14083,18 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
         // map new cluster to a matrix index
         m_clustersIndex[mergedClusterIndex] = clusteredItems ;
 
-        qDebug() << "Graph::graphClusteringHierarchical() -" << endl
-                 << "  Clustering seq:"
-                 << seq << endl
-                 << "  Level:" << min << endl
+        qDebug() << "  Clustering seq:"
+                 << seq << "\n"
+                 << "  Level:" << min << "\n"
                  << "  Neareast neighbors: ("<< imin+1 <<","<<jmin+1<<")"
-                 << "Minimum/distance:" << min << endl
+                 << "Minimum/distance:" << min << "\n"
                  << "  Farthest neighbors: ("<< imax+1 <<","<<jmax+1<<")"
-                 << "Maximum/distance:" << max << endl
+                 << "Maximum/distance:" << max << "\n"
                  << "  Merge nearest neighbors into a single new cluster:"
-                 << mergedClusterIndex +1 << endl
+                 << mergedClusterIndex +1 << "\n"
                  << "  m_clustersPerSequence" << m_clustersPerSequence;
 
-        qDebug() << "Graph::graphClusteringHierarchical() -" << endl
-                 << "  Remove key"<< deletedClusterIndex
+        qDebug() << "  Remove key"<< deletedClusterIndex
                  << "and shift next values to left... " ;
 
         it = m_clustersIndex.find(deletedClusterIndex);
@@ -14105,8 +14109,8 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
         }
         m_clustersIndex.erase(--it); //erase the last element in map
 
-        qDebug() << "Graph::graphClusteringHierarchical() - Finished. " << endl
-                 << "  m_clustersIndex now" <<m_clustersIndex << endl
+        qDebug() << "Finished. " << "\n"
+                 << "  m_clustersIndex now" <<m_clustersIndex << "\n"
                  << "  Compute distances "
                     "between the new cluster and the old ones";
 
@@ -14234,7 +14238,7 @@ void Graph::writeMatrixSimilarityMatchingPlain(const QString fileName,
 
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
@@ -14260,42 +14264,42 @@ void Graph::writeMatrixSimilarityMatchingPlain(const QString fileName,
 
     outText.setRealNumberPrecision(m_reportsRealPrecision);
 
-    outText << tr("SIMILARITY MATRIX: MATCHING COEFFICIENTS (SMMC)") << endl<< endl;
+    outText << tr("SIMILARITY MATRIX: MATCHING COEFFICIENTS (SMMC)") << "\n\n";
 
     outText << qSetPadChar('.') <<qSetFieldWidth(20)<< left
-            << tr("Network name: ")<< reset<< graphName()<< endl
+            << tr("Network name: ")<< reset<< graphName()<< "\n"
             << qSetPadChar('.') <<qSetFieldWidth(20)<< left
-            << tr("Input matrix: ")<< reset<< matrix << endl
+            << tr("Input matrix: ")<< reset<< matrix << "\n"
             << qSetPadChar('.') <<qSetFieldWidth(20)<< left
-            << tr("Variables in: ")<< reset<< ((varLocation != "Rows" && varLocation != "Columns") ? "Concatenated rows + columns " : varLocation)  << endl
+            << tr("Variables in: ")<< reset<< ((varLocation != "Rows" && varLocation != "Columns") ? "Concatenated rows + columns " : varLocation)  << "\n"
             << qSetPadChar('.') <<qSetFieldWidth(20)<< left
             << tr("Matching measure: ") << reset ;
 
 
     outText << graphMetricTypeToString(measure);
 
-    outText << endl
+    outText << "\n"
             << qSetPadChar('.') <<qSetFieldWidth(20)<< left
-            << tr("Diagonal: \t") << reset << ((diagonal) ? "Included" : "Not included") << endl << endl;
+            << tr("Diagonal: \t") << reset << ((diagonal) ? "Included" : "Not included") << "\n\n";
 
-    outText << tr("Analysis results") <<endl<<endl;
+    outText << tr("Analysis results") << "\n\n";
     if (measure==METRIC_HAMMING_DISTANCE)
-        outText << tr("SMMC range: 0 < C") << endl<<endl;
+        outText << tr("SMMC range: 0 < C") << "\n\n";
     else
-        outText << tr("SMMC range: 0 < C < 1") << endl<<endl;
+        outText << tr("SMMC range: 0 < C < 1") << "\n\n";
 
     outText << SCM;
 
-    outText << endl;
+    outText << "\n";
 
     if (measure==METRIC_HAMMING_DISTANCE) {
-        outText << tr("SMMC = 0, when two actors are absolutely similar (no tie/distance differences).")<<endl;
+        outText << tr("SMMC = 0, when two actors are absolutely similar (no tie/distance differences).")<<"\n";
         outText << tr(
                        "SMMC > 0, when two actors have some differences in their ties/distances, \n"
           "i.e. SMMC = 3 means the two actors have 3 differences in their tie/distance profiles to other actors.");
     }
     else {
-        outText << tr("SMMC = 0, when there is no tie profile similarity at all.")<<endl;
+        outText << tr("SMMC = 0, when there is no tie profile similarity at all.")<<"\n";
         outText << tr(
                        "SMMC > 0, when two actors have some matches in their ties/distances, \n"
           "i.e. SMMC = 1 means the two actors have their ties to other actors exactly the same all the time.");
@@ -14303,7 +14307,7 @@ void Graph::writeMatrixSimilarityMatchingPlain(const QString fileName,
 
 
 
-    outText << endl<< endl;
+    outText << "\n\n";
 
     outText << tr("Similarity Matrix by Matching Measure Report,\n");
     outText << tr("Created by SocNetV ") << VERSION << ": "
@@ -14344,7 +14348,7 @@ void Graph::writeMatrixDissimilarities(const QString fileName,
 
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open file for writing. Abort.";
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
@@ -14502,6 +14506,8 @@ void Graph::writeMatrixSimilarityMatching(const QString fileName,
                                           const bool &diagonal,
                                           const bool &considerWeights) {
 
+    qDebug () << "Writing similarity matrix to file:" << fileName;
+
     QElapsedTimer computationTimer;
     computationTimer.start();
 
@@ -14511,7 +14517,7 @@ void Graph::writeMatrixSimilarityMatching(const QString fileName,
 
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open (for writing) file:" << fileName;
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
@@ -14697,13 +14703,15 @@ void Graph::writeMatrixSimilarityPearson(const QString fileName,
                                          const QString &varLocation,
                                          const bool &diagonal) {
 
+    qDebug () << "Writing Pearson Correlation coefficients to file:" << fileName;
+
     QElapsedTimer computationTimer;
     computationTimer.start();
 
     Q_UNUSED(considerWeights);
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open (for writing) file:" << fileName;
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
@@ -14844,10 +14852,12 @@ void Graph::writeMatrixSimilarityPearsonPlainText(const QString fileName,
                                                   const QString &varLocation,
                                                   const bool &diagonal)
 {
+    qDebug () << "Writing Pearson Correlation coefficients (plain text) to file:" << fileName;
+
     Q_UNUSED(considerWeights);
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open (for writing) file:" << fileName;
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
@@ -14874,19 +14884,19 @@ void Graph::writeMatrixSimilarityPearsonPlainText(const QString fileName,
 
     outText.setRealNumberPrecision(m_reportsRealPrecision);
 
-    outText << tr("PEARSON CORRELATION COEFFICIENTS (PCC) MATRIX") << endl<<endl;
+    outText << tr("PEARSON CORRELATION COEFFICIENTS (PCC) MATRIX") << "\n\n";
 
-    outText << tr("Network name: ")<< graphName()<< endl
-            << tr("Input matrix: ")<< matrix << endl
+    outText << tr("Network name: ")<< graphName()<< "\n"
+            << tr("Input matrix: ")<< matrix << "\n"
             << tr("Variables in: ")<< ((varLocation != "Rows" && varLocation != "Columns") ? "Concatenated rows + columns " : varLocation)
-            << endl<<endl;
-    outText << tr("Analysis results") <<endl<<endl;
+            << "\n\n";
+    outText << tr("Analysis results") << "\n\n";
 
-    outText << tr("PCC range: -1 < C < 1") << endl;
+    outText << tr("PCC range: -1 < C < 1") << "\n";
 
     outText << PCC;
 
-    outText << endl;
+    outText << "\n";
     outText << tr("PCC = 0, when there is no correlation at all.\n");
     outText << tr(
                    "PCC > 0, when there is positive correlation, i.e. +1 means actors with same patterns of ties/distances.\n");
@@ -15874,6 +15884,9 @@ bool Graph::graphSaveToPajekFormat (const QString &fileName, \
                                     int maxWidth, int maxHeight
                                     )
 {
+
+    qDebug () << "Saving graph to Pajek-formatted file:" << fileName;
+
     qreal weight=0;
     QFileInfo fileInfo (fileName);
     QString fileNameNoPath = fileInfo.fileName();
@@ -15881,8 +15894,7 @@ bool Graph::graphSaveToPajekFormat (const QString &fileName, \
     networkName  = (networkName == "") ? graphName().toHtmlEscaped(): networkName;
     networkName  = (networkName == "unnamed") ? fileNameNoPath.toHtmlEscaped().left(fileNameNoPath.lastIndexOf('.')): networkName;
 
-    qDebug () << " Graph::graphSaveToPajekFormat() - file: " << fileName.toUtf8()
-              << "networkName" << networkName;
+    qDebug () << "networkName:" << networkName;
 
     maxWidth = (maxWidth == 0) ? canvasWidth:maxWidth ;
     maxHeight= (maxHeight== 0) ? canvasHeight:maxHeight;
@@ -15890,14 +15902,15 @@ bool Graph::graphSaveToPajekFormat (const QString &fileName, \
 
     QFile f( fileName );
     if ( !f.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug () << "Could not open (for writing) file:" << fileName;
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return false;
     }
-    QTextStream t( &f );
-    t.setCodec("UTF-8");
+    QTextStream t( &f ); t.setCodec("UTF-8");
+
     t<<"*Network "<<networkName<<"\n";
 
-    t<<"*Vertices "<< vertices() <<"\n";
+    t<<"*Vertices "<< vertices()<<"\n";
     VList::const_iterator it;
     VList::const_iterator jt;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -15962,14 +15975,16 @@ bool Graph::graphSaveToPajekFormat (const QString &fileName, \
  */
 bool Graph::graphSaveToAdjacencyFormat (const QString &fileName,
                                         const bool &saveEdgeWeights){
+
+    qDebug () << "Saving graph to adjacency-formatted file:" << fileName;
+
     QFile file( fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug () << "Could not open (for writing) file:" << fileName;
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return false;
     }
-    QTextStream outText( &file );
-    outText.setCodec("UTF-8");
-    qDebug("Graph: graphSaveToAdjacencyFormat() for %i vertices", vertices());
+    QTextStream outText( &file ); outText.setCodec("UTF-8");
 
     writeMatrixAdjacencyTo(outText, saveEdgeWeights);
 
@@ -16002,6 +16017,7 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
                                       int maxWidth,
                                       int maxHeight) {
 
+    qDebug () << "Saving graph to GraphML-formatted file:" << fileName;
 
     qreal weight=0;
     int source=0, target=0, edgeCount=0, m_size=1, m_labelSize;
@@ -16012,9 +16028,6 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
     QString fileNameNoPath = fileInfo.fileName();
 
     QString saveDirPath= fileInfo.canonicalPath();
-
-    qDebug () << "Graph::graphSaveToGraphMLFormat() - Save to directory:"
-              << saveDirPath;
 
     QString iconsSubDir = fileInfo.baseName() + "_" + fileInfo.suffix() +"_images";
     QString iconsDirPath = saveDirPath + "/" + iconsSubDir;
@@ -16056,11 +16069,12 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
 
     QFile f( fileName );
     if ( !f.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug () << "Could not open (for writing) file:" << fileName;
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return false;
     }
-    QTextStream outText( &f );
-    outText.setCodec("UTF-8");
+    QTextStream outText( &f ); outText.setCodec("UTF-8");
+
     qDebug () << "Graph::graphSaveToGraphMLFormat() - codec used for saving stream: "
               << outText.codec()->name();
 
@@ -16404,14 +16418,17 @@ void Graph::setReportsChartType(const int &type){
  * @param fileName
  */
 void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
-    qDebug() << "Graph::writeDataSetToFile() to " << dir+fileName;
+
+    qDebug() << "Writing famous dataset to file:" << dir+fileName;
+
     QFile file( dir+fileName );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug () << "Could not open (for writing) file:" << fileName;
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
-    QTextStream outText( &file );
-    outText.setCodec("UTF-8");
+    QTextStream outText( &file ); outText.setCodec("UTF-8");
+
     QString datasetDescription=QString();
     qDebug()<< "		... writing dataset ";
     if ( fileName == "Campnet.paj") {
@@ -16434,71 +16451,71 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                                 "a great deal of time together. \n"
                                 "The participants were all faculty in Anthropology "
                                 "except Holly, who was a PhD student. ");
-        outText << "*Network Campnet" << endl <<
-                   "*Vertices 18" << endl <<
-                   "1 \"HOLLY\" ic RGBF1F5D5		0.63046 	0.575472	circle" << endl <<
-                   "2 \"BRAZEY\" ic RGBF1F5D5		0.0991736 	0.511006	circle" << endl <<
-                   "3 \"CAROL\" ic RGBF1F5D5		0.576151 	0.43239		circle" << endl <<
-                   "4 \"PAM\" ic RGBF1F5D5		0.726092 	0.371069	circle" << endl <<
-                   "5 \"PAT\" ic RGBF1F5D5		0.709563 	0.5		circle" << endl <<
-                   "6 \"JENNIE\" ic RGBF1F5D5		0.876033 	0.482704	circle" << endl <<
-                   "7 \"PAULINE\" ic RGBF1F5D5	0.619835 	0.286164	circle" << endl <<
-                   "8 \"ANN\" ic RGBF1F5D5		0.864227 	0.309748	circle" << endl <<
-                   "9 \"MICHAEL\" ic RGBF1F5D5	0.489965 	0.638365	box" << endl <<
-                   "10 \"BILL\" ic RGBF1F5D5		0.475797 	0.805031	box" << endl <<
-                   "11 \"LEE\" ic RGBF1F5D5		0.0885478 	0.267296	box" << endl <<
-                   "12 \"DON\" ic RGBF1F5D5		0.645809 	0.778302	box" << endl <<
-                   "13 \"JOHN\" ic RGBF1F5D5		0.453365 	0.290881	box" << endl <<
-                   "14 \"HARRY\" ic RGBF1F5D5		0.593861 	0.669811	box" << endl <<
-                   "15 \"GERY\" ic RGBF1F5D5		0.362456 	0.539308	box" << endl <<
-                   "16 \"STEVE\" ic RGBF1F5D5		0.230224 	0.5		box" << endl <<
-                   "17 \"BERT\" ic RGBF1F5D5		0.218418 	0.245283	box" << endl <<
-                   "18 \"RUSS\" ic RGBF1F5D5		0.323495 	0.29717		box" << endl <<
-                   "*Arcs " << endl <<
-                   "1 4 1 c black" << endl <<
-                   "2 16 1 c black" << endl <<
-                   "2 17 1 c black" << endl <<
-                   "3 4 1 c black" << endl <<
-                   "7 5 1 c black" << endl <<
-                   "8 7 1 c black" << endl <<
-                   "9 1 1 c black" << endl <<
-                   "10 9 1 c black" << endl <<
-                   "10 12 1 c black" << endl <<
-                   "10 14 1 c black" << endl <<
-                   "13 7 1 c black" << endl <<
-                   "13 15 1 c black" << endl <<
-                   "13 18 1 c black" << endl <<
-                   "14 1 1 c black" << endl <<
-                   "15 9 1 c black" << endl <<
-                   "15 16 1 c black" << endl <<
-                   "*Edges " << endl <<
-                   "1 4 1 c black" << endl <<
-                   "1 5 1 c black" << endl <<
-                   "1 12 1 c black" << endl <<
-                   "2 11 1 c black" << endl <<
-                   "2 16 1 c black" << endl <<
-                   "2 17 1 c black" << endl <<
-                   "3 4 1 c black" << endl <<
-                   "3 5 1 c black" << endl <<
-                   "3 7 1 c black" << endl <<
-                   "4 6 1 c black" << endl <<
-                   "4 7 1 c black" << endl <<
-                   "4 8 1 c black" << endl <<
-                   "5 6 1 c black" << endl <<
-                   "6 8 1 c black" << endl <<
-                   "9 12 1 c black" << endl <<
-                   "9 14 1 c black" << endl <<
-                   "10 12 1 c black" << endl <<
-                   "10 14 1 c black" << endl <<
-                   "11 16 1 c black" << endl <<
-                   "11 17 1 c black" << endl <<
-                   "12 14 1 c black" << endl <<
-                   "13 15 1 c black" << endl <<
-                   "13 18 1 c black" << endl <<
-                   "15 16 1 c black" << endl <<
-                   "15 18 1 c black" << endl <<
-                   "16 17 1 c black" << endl <<
-                   "16 18 1 c black" << endl <<
+        outText << "*Network Campnet" << "\n" <<
+                   "*Vertices 18" << "\n" <<
+                   "1 \"HOLLY\" ic RGBF1F5D5		0.63046 	0.575472	circle" << "\n" <<
+                   "2 \"BRAZEY\" ic RGBF1F5D5		0.0991736 	0.511006	circle" << "\n" <<
+                   "3 \"CAROL\" ic RGBF1F5D5		0.576151 	0.43239		circle" << "\n" <<
+                   "4 \"PAM\" ic RGBF1F5D5		0.726092 	0.371069	circle" << "\n" <<
+                   "5 \"PAT\" ic RGBF1F5D5		0.709563 	0.5		circle" << "\n" <<
+                   "6 \"JENNIE\" ic RGBF1F5D5		0.876033 	0.482704	circle" << "\n" <<
+                   "7 \"PAULINE\" ic RGBF1F5D5	0.619835 	0.286164	circle" << "\n" <<
+                   "8 \"ANN\" ic RGBF1F5D5		0.864227 	0.309748	circle" << "\n" <<
+                   "9 \"MICHAEL\" ic RGBF1F5D5	0.489965 	0.638365	box" << "\n" <<
+                   "10 \"BILL\" ic RGBF1F5D5		0.475797 	0.805031	box" << "\n" <<
+                   "11 \"LEE\" ic RGBF1F5D5		0.0885478 	0.267296	box" << "\n" <<
+                   "12 \"DON\" ic RGBF1F5D5		0.645809 	0.778302	box" << "\n" <<
+                   "13 \"JOHN\" ic RGBF1F5D5		0.453365 	0.290881	box" << "\n" <<
+                   "14 \"HARRY\" ic RGBF1F5D5		0.593861 	0.669811	box" << "\n" <<
+                   "15 \"GERY\" ic RGBF1F5D5		0.362456 	0.539308	box" << "\n" <<
+                   "16 \"STEVE\" ic RGBF1F5D5		0.230224 	0.5		box" << "\n" <<
+                   "17 \"BERT\" ic RGBF1F5D5		0.218418 	0.245283	box" << "\n" <<
+                   "18 \"RUSS\" ic RGBF1F5D5		0.323495 	0.29717		box" << "\n" <<
+                   "*Arcs " << "\n" <<
+                   "1 4 1 c black" << "\n" <<
+                   "2 16 1 c black" << "\n" <<
+                   "2 17 1 c black" << "\n" <<
+                   "3 4 1 c black" << "\n" <<
+                   "7 5 1 c black" << "\n" <<
+                   "8 7 1 c black" << "\n" <<
+                   "9 1 1 c black" << "\n" <<
+                   "10 9 1 c black" << "\n" <<
+                   "10 12 1 c black" << "\n" <<
+                   "10 14 1 c black" << "\n" <<
+                   "13 7 1 c black" << "\n" <<
+                   "13 15 1 c black" << "\n" <<
+                   "13 18 1 c black" << "\n" <<
+                   "14 1 1 c black" << "\n" <<
+                   "15 9 1 c black" << "\n" <<
+                   "15 16 1 c black" << "\n" <<
+                   "*Edges " << "\n" <<
+                   "1 4 1 c black" << "\n" <<
+                   "1 5 1 c black" << "\n" <<
+                   "1 12 1 c black" << "\n" <<
+                   "2 11 1 c black" << "\n" <<
+                   "2 16 1 c black" << "\n" <<
+                   "2 17 1 c black" << "\n" <<
+                   "3 4 1 c black" << "\n" <<
+                   "3 5 1 c black" << "\n" <<
+                   "3 7 1 c black" << "\n" <<
+                   "4 6 1 c black" << "\n" <<
+                   "4 7 1 c black" << "\n" <<
+                   "4 8 1 c black" << "\n" <<
+                   "5 6 1 c black" << "\n" <<
+                   "6 8 1 c black" << "\n" <<
+                   "9 12 1 c black" << "\n" <<
+                   "9 14 1 c black" << "\n" <<
+                   "10 12 1 c black" << "\n" <<
+                   "10 14 1 c black" << "\n" <<
+                   "11 16 1 c black" << "\n" <<
+                   "11 17 1 c black" << "\n" <<
+                   "12 14 1 c black" << "\n" <<
+                   "13 15 1 c black" << "\n" <<
+                   "13 18 1 c black" << "\n" <<
+                   "15 16 1 c black" << "\n" <<
+                   "15 18 1 c black" << "\n" <<
+                   "16 17 1 c black" << "\n" <<
+                   "16 18 1 c black" << "\n" <<
                    "17 18 1 c black";
     }
     if ( fileName == "Herschel_Graph.paj") {
@@ -16508,38 +16525,38 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                                 "polyhedral graph. \n"
                                 "It is the unique such graph on 11 nodes, "
                                 "and has 18 edges.");
-        outText << "*Network Herschel_Graph" << endl <<
-                   "*Vertices 11" << endl <<
-                   "1 \"1\" ic red	0.48225  0.411308 circle" << endl <<
-                   "2 \"2\" ic red	0.652297 0.591389 circle" << endl <<
-                   "3 \"3\" ic red	0.479571 0.762504 circle"<< endl <<
-                   "4 \"4\" ic red	0.849224 0.41395 circle"<< endl <<
-                   "5 \"5\" ic red  0.48196  0.06	circle"<< endl <<
-                   "6 \"6\" ic red	0.148625 0.413208 circle"<< endl <<
-                   "7 \"7\" ic red	0.654193 0.198133 circle"<< endl <<
-                   "8 \"8\" ic red	0.268771 0.593206 circle"<< endl <<
-                   "9 \"9\" ic red	0.272785 0.19606	circle"<< endl <<
-                   "10 \"10\" ic red 0.834746 0.0533333 circle"<< endl <<
-                   "11 \"11\" ic red 0.134137 0.761837 circle"<< endl <<
-                   "*Arcs "<< endl <<
-                   "*Edges "<< endl <<
-                   "1 3 1 c #616161"<< endl <<
-                   "1 4 1 c #616161"<< endl <<
-                   "1 5 1 c #616161"<< endl <<
-                   "1 6 1 c #616161"<< endl <<
-                   "2 3 1 c #616161"<< endl <<
-                   "2 4 1 c #616161"<< endl <<
-                   "2 7 1 c #616161"<< endl <<
-                   "2 8 1 c #616161"<< endl <<
-                   "3 11 1 c #616161"<< endl <<
-                   "4 10 1 c #616161"<< endl <<
-                   "5 9 1 c #616161"<< endl <<
-                   "5 10 1 c #616161"<< endl <<
-                   "6 9 1 c #616161"<< endl <<
-                   "6 11 1 c #616161"<< endl <<
-                   "7 9 1 c #616161"<< endl <<
-                   "7 10 1 c #616161"<< endl <<
-                   "8 9 1 c #616161"<< endl <<
+        outText << "*Network Herschel_Graph" << "\n" <<
+                   "*Vertices 11" << "\n" <<
+                   "1 \"1\" ic red	0.48225  0.411308 circle" << "\n" <<
+                   "2 \"2\" ic red	0.652297 0.591389 circle" << "\n" <<
+                   "3 \"3\" ic red	0.479571 0.762504 circle"<< "\n" <<
+                   "4 \"4\" ic red	0.849224 0.41395 circle"<< "\n" <<
+                   "5 \"5\" ic red  0.48196  0.06	circle"<< "\n" <<
+                   "6 \"6\" ic red	0.148625 0.413208 circle"<< "\n" <<
+                   "7 \"7\" ic red	0.654193 0.198133 circle"<< "\n" <<
+                   "8 \"8\" ic red	0.268771 0.593206 circle"<< "\n" <<
+                   "9 \"9\" ic red	0.272785 0.19606	circle"<< "\n" <<
+                   "10 \"10\" ic red 0.834746 0.0533333 circle"<< "\n" <<
+                   "11 \"11\" ic red 0.134137 0.761837 circle"<< "\n" <<
+                   "*Arcs "<< "\n" <<
+                   "*Edges "<< "\n" <<
+                   "1 3 1 c #616161"<< "\n" <<
+                   "1 4 1 c #616161"<< "\n" <<
+                   "1 5 1 c #616161"<< "\n" <<
+                   "1 6 1 c #616161"<< "\n" <<
+                   "2 3 1 c #616161"<< "\n" <<
+                   "2 4 1 c #616161"<< "\n" <<
+                   "2 7 1 c #616161"<< "\n" <<
+                   "2 8 1 c #616161"<< "\n" <<
+                   "3 11 1 c #616161"<< "\n" <<
+                   "4 10 1 c #616161"<< "\n" <<
+                   "5 9 1 c #616161"<< "\n" <<
+                   "5 10 1 c #616161"<< "\n" <<
+                   "6 9 1 c #616161"<< "\n" <<
+                   "6 11 1 c #616161"<< "\n" <<
+                   "7 9 1 c #616161"<< "\n" <<
+                   "7 10 1 c #616161"<< "\n" <<
+                   "8 9 1 c #616161"<< "\n" <<
                    "8 11 1 c #616161";
     }
     else if ( fileName == "Krackhardt_High-tech_managers.paj" ) {
@@ -16559,94 +16576,94 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                              "Data for the \"whom do you report\" relation was taken from company documents. \n\n"
                              "This data is used by Wasserman and Faust in their seminal network analysis book.\n\n"
                              "Krackhardt D. (1987). Cognitive social structures. Social Networks, 9, 104-134.");
-        outText << "*Network  Krackhardt's High-tech managers"<< endl <<
-                   "*Vertices      21"<< endl <<
-                   "1 \"v1\"       0.6226    0.7207" << endl <<
-                   "2 \"v2\"       0.6000    0.5533" << endl <<
-                   "3 \"v3\"       0.6722    0.3928" << endl <<
-                   "4 \"v4\"       0.7646    0.6000" << endl <<
-                   "5 \"v5\"       0.3518    0.4775" << endl <<
-                   "6 \"v6\"       0.7583    0.0784" << endl <<
-                   "7 \"v7\"       0.6692    0.2475" << endl <<
-                   "8 \"v8\"       0.7349    0.5030" << endl <<
-                   "9 \"v9\"       0.5325    0.3892" << endl <<
-                   "10 \"v10\"      0.5846    0.6311" << endl <<
-                   "11 \"v11\"      0.4600    0.4733" << endl <<
-                   "12 \"v12\"      0.8855    0.2566" << endl <<
-                   "13 \"v13\"      0.1145    0.4786" << endl <<
-                   "14 \"v14\"      0.3838    0.3270" << endl <<
-                   "15 \"v15\"      0.5349    0.4455" << endl <<
-                   "16 \"v16\"      0.6117    0.9216" << endl <<
-                   "17 \"v17\"      0.7041    0.4144" << endl <<
-                   "18 \"v18\"      0.4864    0.5808" << endl <<
-                   "19 \"v19\"      0.5728    0.4802" << endl <<
-                   "20 \"v20\"      0.6640    0.5041" << endl <<
-                   "21 \"v21\"      0.7846    0.3329" << endl <<
-                   "*Matrix :1 gives_advice_to"<< endl <<
-                   "0 1 0 1 0 0 0 1 0 0 0 0 0 0 0 1 0 1 0 0 1" << endl <<
-                   "0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << endl <<
-                   "1 1 0 1 0 1 1 1 1 1 1 1 0 1 0 0 1 1 0 1 1" << endl <<
-                   "1 1 0 0 0 1 0 1 0 1 1 1 0 0 0 1 1 1 0 1 1" << endl <<
-                   "1 1 0 0 0 1 1 1 0 1 1 0 1 1 0 1 1 1 1 1 1" << endl <<
-                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << endl <<
-                   "0 1 0 0 0 1 0 0 0 0 1 1 0 1 0 0 1 1 0 0 1" << endl <<
-                   "0 1 0 1 0 1 1 0 0 1 1 0 0 0 0 0 0 1 0 0 1" << endl <<
-                   "1 1 0 0 0 1 1 1 0 1 1 1 0 1 0 1 1 1 0 0 1" << endl <<
-                   "1 1 1 1 1 0 0 1 0 0 1 0 1 0 1 1 1 1 1 1 0" << endl <<
-                   "1 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                   "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << endl <<
-                   "1 1 0 0 1 0 0 0 1 0 0 0 0 1 0 0 0 1 0 0 0" << endl <<
-                   "0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 1" << endl <<
-                   "1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1" << endl <<
-                   "1 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0" << endl <<
-                   "1 1 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << endl <<
-                   "1 1 1 1 1 0 1 1 1 1 1 0 1 1 1 1 0 0 1 1 1" << endl <<
-                   "1 1 1 0 1 0 1 0 0 1 1 0 0 1 1 0 0 1 0 1 0" << endl <<
-                   "1 1 0 0 0 1 0 1 0 0 1 1 0 1 1 1 1 1 0 0 1" << endl <<
-                   "0 1 1 1 0 1 1 1 0 0 0 1 0 1 0 0 1 1 0 1 0"<< endl <<
-                   "*Matrix :2 is_friend_of" <<endl <<
-                   "0 1 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 0 0" << endl <<
-                   "1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1" << endl <<
-                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0" << endl <<
-                   "1 1 0 0 0 0 0 1 0 0 0 1 0 0 0 1 1 0 0 0 0" << endl <<
-                   "0 1 0 0 0 0 0 0 1 0 1 0 0 1 0 0 1 0 1 0 1" << endl <<
-                   "0 1 0 0 0 0 1 0 1 0 0 1 0 0 0 0 1 0 0 0 1" << endl <<
-                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                   "0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                   "0 0 1 0 1 0 0 1 1 0 0 1 0 0 0 1 0 0 0 1 0" << endl <<
-                   "1 1 1 1 1 0 0 1 1 0 0 1 1 0 1 0 1 1 1 0 0" << endl <<
-                   "1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1" << endl <<
-                   "0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0" << endl <<
-                   "0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0" << endl <<
-                   "1 0 1 0 1 1 0 0 1 0 1 0 0 1 0 0 0 0 1 0 0" << endl <<
-                   "1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                   "1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 0 0 1 1 1" << endl <<
-                   "0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                   "1 1 1 0 1 0 0 0 0 0 1 1 0 1 1 0 0 0 0 1 0" << endl <<
-                   "0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0" << endl <<
-                   "0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0" << endl <<
-                   "*Matrix :3 reports_to" <<endl <<
-                   "0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                   "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << endl <<
-                   "0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << endl <<
-                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << endl <<
-                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << endl <<
-                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << endl <<
-                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0" << endl <<
-                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0" << endl <<
-                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << endl <<
-                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << endl <<
-                   "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << endl <<
-                   "0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << endl <<
-                   "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << endl <<
-                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << endl <<
+        outText << "*Network  Krackhardt's High-tech managers"<< "\n" <<
+                   "*Vertices      21"<< "\n" <<
+                   "1 \"v1\"       0.6226    0.7207" << "\n" <<
+                   "2 \"v2\"       0.6000    0.5533" << "\n" <<
+                   "3 \"v3\"       0.6722    0.3928" << "\n" <<
+                   "4 \"v4\"       0.7646    0.6000" << "\n" <<
+                   "5 \"v5\"       0.3518    0.4775" << "\n" <<
+                   "6 \"v6\"       0.7583    0.0784" << "\n" <<
+                   "7 \"v7\"       0.6692    0.2475" << "\n" <<
+                   "8 \"v8\"       0.7349    0.5030" << "\n" <<
+                   "9 \"v9\"       0.5325    0.3892" << "\n" <<
+                   "10 \"v10\"      0.5846    0.6311" << "\n" <<
+                   "11 \"v11\"      0.4600    0.4733" << "\n" <<
+                   "12 \"v12\"      0.8855    0.2566" << "\n" <<
+                   "13 \"v13\"      0.1145    0.4786" << "\n" <<
+                   "14 \"v14\"      0.3838    0.3270" << "\n" <<
+                   "15 \"v15\"      0.5349    0.4455" << "\n" <<
+                   "16 \"v16\"      0.6117    0.9216" << "\n" <<
+                   "17 \"v17\"      0.7041    0.4144" << "\n" <<
+                   "18 \"v18\"      0.4864    0.5808" << "\n" <<
+                   "19 \"v19\"      0.5728    0.4802" << "\n" <<
+                   "20 \"v20\"      0.6640    0.5041" << "\n" <<
+                   "21 \"v21\"      0.7846    0.3329" << "\n" <<
+                   "*Matrix :1 gives_advice_to"<< "\n" <<
+                   "0 1 0 1 0 0 0 1 0 0 0 0 0 0 0 1 0 1 0 0 1" << "\n" <<
+                   "0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << "\n" <<
+                   "1 1 0 1 0 1 1 1 1 1 1 1 0 1 0 0 1 1 0 1 1" << "\n" <<
+                   "1 1 0 0 0 1 0 1 0 1 1 1 0 0 0 1 1 1 0 1 1" << "\n" <<
+                   "1 1 0 0 0 1 1 1 0 1 1 0 1 1 0 1 1 1 1 1 1" << "\n" <<
+                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << "\n" <<
+                   "0 1 0 0 0 1 0 0 0 0 1 1 0 1 0 0 1 1 0 0 1" << "\n" <<
+                   "0 1 0 1 0 1 1 0 0 1 1 0 0 0 0 0 0 1 0 0 1" << "\n" <<
+                   "1 1 0 0 0 1 1 1 0 1 1 1 0 1 0 1 1 1 0 0 1" << "\n" <<
+                   "1 1 1 1 1 0 0 1 0 0 1 0 1 0 1 1 1 1 1 1 0" << "\n" <<
+                   "1 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                   "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << "\n" <<
+                   "1 1 0 0 1 0 0 0 1 0 0 0 0 1 0 0 0 1 0 0 0" << "\n" <<
+                   "0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 1" << "\n" <<
+                   "1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1" << "\n" <<
+                   "1 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0" << "\n" <<
+                   "1 1 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << "\n" <<
+                   "1 1 1 1 1 0 1 1 1 1 1 0 1 1 1 1 0 0 1 1 1" << "\n" <<
+                   "1 1 1 0 1 0 1 0 0 1 1 0 0 1 1 0 0 1 0 1 0" << "\n" <<
+                   "1 1 0 0 0 1 0 1 0 0 1 1 0 1 1 1 1 1 0 0 1" << "\n" <<
+                   "0 1 1 1 0 1 1 1 0 0 0 1 0 1 0 0 1 1 0 1 0"<< "\n" <<
+                   "*Matrix :2 is_friend_of" <<"\n" <<
+                   "0 1 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 0 0" << "\n" <<
+                   "1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1" << "\n" <<
+                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0" << "\n" <<
+                   "1 1 0 0 0 0 0 1 0 0 0 1 0 0 0 1 1 0 0 0 0" << "\n" <<
+                   "0 1 0 0 0 0 0 0 1 0 1 0 0 1 0 0 1 0 1 0 1" << "\n" <<
+                   "0 1 0 0 0 0 1 0 1 0 0 1 0 0 0 0 1 0 0 0 1" << "\n" <<
+                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                   "0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                   "0 0 1 0 1 0 0 1 1 0 0 1 0 0 0 1 0 0 0 1 0" << "\n" <<
+                   "1 1 1 1 1 0 0 1 1 0 0 1 1 0 1 0 1 1 1 0 0" << "\n" <<
+                   "1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1" << "\n" <<
+                   "0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                   "0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0" << "\n" <<
+                   "1 0 1 0 1 1 0 0 1 0 1 0 0 1 0 0 0 0 1 0 0" << "\n" <<
+                   "1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                   "1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 0 0 1 1 1" << "\n" <<
+                   "0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                   "1 1 1 0 1 0 0 0 0 0 1 1 0 1 1 0 0 0 0 1 0" << "\n" <<
+                   "0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0" << "\n" <<
+                   "0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0" << "\n" <<
+                   "*Matrix :3 reports_to" <<"\n" <<
+                   "0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                   "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << "\n" <<
+                   "0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << "\n" <<
+                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << "\n" <<
+                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << "\n" <<
+                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << "\n" <<
+                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0" << "\n" <<
+                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0" << "\n" <<
+                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << "\n" <<
+                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << "\n" <<
+                   "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << "\n" <<
+                   "0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << "\n" <<
+                   "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << "\n" <<
+                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << "\n" <<
                    "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0";
     }
 
@@ -16670,131 +16687,59 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                                 "Breiger R. and Pattison P. (1986). Cumulated social roles: The \n"
                                 "duality of persons and their algebras. Social Networks, 8, 215-256. "
                              "");
-        outText<< "*Network Padgett's Florentine Families" << endl <<
-                  "*Vertices      16" << endl <<
-                  "1 \"Acciaiuoli\"         0.2024    0.1006" << endl <<
-                  "2 \"Albizzi\"            0.3882    0.4754" << endl <<
-                  "3 \"Barbadori\"          0.1633    0.7413" << endl <<
-                  "4 \"Bischeri\"           0.6521    0.5605" << endl <<
-                  "5 \"Castellani\"         0.6178    0.9114" << endl <<
-                  "6 \"Ginori\"             0.3018    0.5976" << endl <<
-                  "7 \"Guadagni\"           0.5219    0.5006" << endl <<
-                  "8 \"Lamberteschi\"       0.4533    0.6299" << endl <<
-                  "9 \"Medici\"             0.2876    0.3521" << endl <<
-                  "10 \"Pazzi\"              0.0793    0.2587" << endl <<
-                  "11 \"Peruzzi\"            0.6509    0.7365" << endl <<
-                  "12 \"Pucci\"              0.4083    0.1186" << endl <<
-                  "13 \"Ridolfi\"            0.6308    0.2060" << endl <<
-                  "14 \"Salviati\"           0.0734    0.4455" << endl <<
-                  "15 \"Strozzi\"            0.8639    0.5832" << endl <<
-                  "16 \"Tornabuoni\"         0.5633    0.3713" << endl <<
-                  "*Matrix 1: \"Marital\""<< endl <<
-                  "0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0"<< endl <<
-                  "0 0 0 0 0 1 1 0 1 0 0 0 0 0 0 0"<< endl <<
-                  "0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0"<< endl <<
-                  "0 0 0 0 0 0 1 0 0 0 1 0 0 0 1 0"<< endl <<
-                  "0 0 1 0 0 0 0 0 0 0 1 0 0 0 1 0"<< endl <<
-                  "0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< endl <<
-                  "0 1 0 1 0 0 0 1 0 0 0 0 0 0 0 1"<< endl <<
-                  "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0"<< endl <<
-                  "1 1 1 0 0 0 0 0 0 0 0 0 1 1 0 1"<< endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0"<< endl <<
-                  "0 0 0 1 1 0 0 0 0 0 0 0 0 0 1 0"<< endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< endl <<
-                  "0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 1"<< endl <<
-                  "0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0"<< endl <<
-                  "0 0 0 1 1 0 0 0 0 0 1 0 1 0 0 0"<< endl <<
-                  "0 0 0 0 0 0 1 0 1 0 0 0 1 0 0 0"<< endl <<
-                  "*Matrix 2: \"Business\""<< endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< endl <<
-                  "0 0 0 0 1 1 0 0 1 0 1 0 0 0 0 0"<< endl <<
-                  "0 0 0 0 0 0 1 1 0 0 1 0 0 0 0 0"<< endl <<
-                  "0 0 1 0 0 0 0 1 0 0 1 0 0 0 0 0"<< endl <<
-                  "0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0"<< endl <<
-                  "0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0"<< endl <<
-                  "0 0 0 1 1 0 1 0 0 0 1 0 0 0 0 0"<< endl <<
-                  "0 0 1 0 0 1 0 0 0 1 0 0 0 1 0 1"<< endl <<
-                  "0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0"<< endl <<
-                  "0 0 1 1 1 0 0 1 0 0 0 0 0 0 0 0"<< endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< endl <<
-                  "0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0"<< endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< endl <<
+        outText<< "*Network Padgett's Florentine Families" << "\n" <<
+                  "*Vertices      16" << "\n" <<
+                  "1 \"Acciaiuoli\"         0.2024    0.1006" << "\n" <<
+                  "2 \"Albizzi\"            0.3882    0.4754" << "\n" <<
+                  "3 \"Barbadori\"          0.1633    0.7413" << "\n" <<
+                  "4 \"Bischeri\"           0.6521    0.5605" << "\n" <<
+                  "5 \"Castellani\"         0.6178    0.9114" << "\n" <<
+                  "6 \"Ginori\"             0.3018    0.5976" << "\n" <<
+                  "7 \"Guadagni\"           0.5219    0.5006" << "\n" <<
+                  "8 \"Lamberteschi\"       0.4533    0.6299" << "\n" <<
+                  "9 \"Medici\"             0.2876    0.3521" << "\n" <<
+                  "10 \"Pazzi\"              0.0793    0.2587" << "\n" <<
+                  "11 \"Peruzzi\"            0.6509    0.7365" << "\n" <<
+                  "12 \"Pucci\"              0.4083    0.1186" << "\n" <<
+                  "13 \"Ridolfi\"            0.6308    0.2060" << "\n" <<
+                  "14 \"Salviati\"           0.0734    0.4455" << "\n" <<
+                  "15 \"Strozzi\"            0.8639    0.5832" << "\n" <<
+                  "16 \"Tornabuoni\"         0.5633    0.3713" << "\n" <<
+                  "*Matrix 1: \"Marital\""<< "\n" <<
+                  "0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0"<< "\n" <<
+                  "0 0 0 0 0 1 1 0 1 0 0 0 0 0 0 0"<< "\n" <<
+                  "0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0"<< "\n" <<
+                  "0 0 0 0 0 0 1 0 0 0 1 0 0 0 1 0"<< "\n" <<
+                  "0 0 1 0 0 0 0 0 0 0 1 0 0 0 1 0"<< "\n" <<
+                  "0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< "\n" <<
+                  "0 1 0 1 0 0 0 1 0 0 0 0 0 0 0 1"<< "\n" <<
+                  "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0"<< "\n" <<
+                  "1 1 1 0 0 0 0 0 0 0 0 0 1 1 0 1"<< "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0"<< "\n" <<
+                  "0 0 0 1 1 0 0 0 0 0 0 0 0 0 1 0"<< "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< "\n" <<
+                  "0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 1"<< "\n" <<
+                  "0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0"<< "\n" <<
+                  "0 0 0 1 1 0 0 0 0 0 1 0 1 0 0 0"<< "\n" <<
+                  "0 0 0 0 0 0 1 0 1 0 0 0 1 0 0 0"<< "\n" <<
+                  "*Matrix 2: \"Business\""<< "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< "\n" <<
+                  "0 0 0 0 1 1 0 0 1 0 1 0 0 0 0 0"<< "\n" <<
+                  "0 0 0 0 0 0 1 1 0 0 1 0 0 0 0 0"<< "\n" <<
+                  "0 0 1 0 0 0 0 1 0 0 1 0 0 0 0 0"<< "\n" <<
+                  "0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0"<< "\n" <<
+                  "0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0"<< "\n" <<
+                  "0 0 0 1 1 0 1 0 0 0 1 0 0 0 0 0"<< "\n" <<
+                  "0 0 1 0 0 1 0 0 0 1 0 0 0 1 0 1"<< "\n" <<
+                  "0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0"<< "\n" <<
+                  "0 0 1 1 1 0 0 1 0 0 0 0 0 0 0 0"<< "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< "\n" <<
+                  "0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0"<< "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< "\n" <<
                   "0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0";
 
-        //                  "*Arcs 1: \"Marital\""<< endl <<
-        //                    "1  9 1" << endl <<
-        //                    "2  6 1" << endl <<
-        //                    "2  7 1" << endl <<
-        //                    "2  9 1" << endl <<
-        //                    "3  5 1" << endl <<
-        //                    "3  9 1" << endl <<
-        //                    "4  7 1" << endl <<
-        //                    "4 11 1" << endl <<
-        //                    "4 15 1" << endl <<
-        //                    "5  3 1" << endl <<
-        //                    "5 11 1" << endl <<
-        //                    "5 15 1" << endl <<
-        //                    "6  2 1" << endl <<
-        //                    "7  2 1" << endl <<
-        //                    "7  4 1" << endl <<
-        //                    "7  8 1" << endl <<
-        //                    "7 16 1" << endl <<
-        //                    "8  7 1" << endl <<
-        //                    "9  1 1" << endl <<
-        //                    "9  2 1" << endl <<
-        //                    "9  3 1" << endl <<
-        //                    "9 13 1" << endl <<
-        //                    "9 14 1" << endl <<
-        //                    "9 16 1" << endl <<
-        //                   "10 14 1" << endl <<
-        //                   "11  4 1" << endl <<
-        //                   "11  5 1" << endl <<
-        //                   "11 15 1" << endl <<
-        //                   "13  9 1" << endl <<
-        //                   "13 15 1" << endl <<
-        //                   "13 16 1" << endl <<
-        //                   "14  9 1" << endl <<
-        //                   "14 10 1" << endl <<
-        //                   "15  4 1" << endl <<
-        //                   "15  5 1" << endl <<
-        //                   "15 11 1" << endl <<
-        //                   "15 13 1" << endl <<
-        //                   "16  7 1" << endl <<
-        //                   "16  9 1" << endl <<
-        //                  "16 13 1"  << endl <<
-        //                  "*Arcs 2: \"Business\""<< endl <<
-        //                    "3  5 1" << endl <<
-        //                    "3  6 1" << endl <<
-        //                    "3  9 1" << endl <<
-        //                    "3 11 1" << endl <<
-        //                    "4  7 1" << endl <<
-        //                    "4  8 1" << endl <<
-        //                    "4 11 1" << endl <<
-        //                    "5  3 1" << endl <<
-        //                    "5  8 1" << endl <<
-        //                    "5 11 1" << endl <<
-        //                    "6  3 1" << endl <<
-        //                    "6  9 1" << endl <<
-        //                    "7  4 1" << endl <<
-        //                    "7  8 1" << endl <<
-        //                    "8  4 1" << endl <<
-        //                    "8  5 1" << endl <<
-        //                    "8  7 1" << endl <<
-        //                    "8 11 1" << endl <<
-        //                    "9  3 1" << endl <<
-        //                    "9  6 1" << endl <<
-        //                    "9 10 1" << endl <<
-        //                    "9 14 1" << endl <<
-        //                    "9 16 1" << endl <<
-        //                   "10  9 1" << endl <<
-        //                   "11  3 1" << endl <<
-        //                   "11  4 1" << endl <<
-        //                   "11  5 1" << endl <<
-        //                   "11  8 1" << endl <<
-        //                   "14  9 1" << endl <<
-        //                   "16  9 1";
     }
     else if (fileName == "Zachary_Karate_Club.dl"){
         datasetDescription = tr("Zachary Karate Club \n\n"
@@ -16809,80 +16754,80 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                              "(number of situations in and outside the club in which interactions occurred).\n\n"
                              "Zachary W. (1977). An information flow model for conflict and fission in small groups. "
                              "Journal of Anthropological Research, 33, 452-473. ");
-        outText<< "DL"<< endl <<
-                  "N=34 NM=2"<< endl <<
-                  "FORMAT = FULLMATRIX DIAGONAL PRESENT"<< endl <<
-                  "LEVEL LABELS:"<< endl <<
-                  "ZACHE"<< endl <<
-                  "ZACHC"<< endl <<
-                  "DATA:"<< endl <<
-                  "0 1 1 1 1 1 1 1 1 0 1 1 1 1 0 0 0 1 0 1 0 1 0 0 0 0 0 0 0 0 0 1 0 0" << endl <<
-                  "1 0 1 1 0 0 0 1 0 0 0 0 0 1 0 0 0 1 0 1 0 1 0 0 0 0 0 0 0 0 1 0 0 0" << endl <<
-                  "1 1 0 1 0 0 0 1 1 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 1 0" << endl <<
-                  "1 1 1 0 0 0 0 1 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "1 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "1 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "1 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 1" << endl <<
-                  "0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << endl <<
-                  "1 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1" << endl <<
-                  "0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1" << endl <<
-                  "1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1" << endl <<
-                  "1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 0 1 0 0 1 1" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 0 0 0 1 0 0" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 1 0 0" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1" << endl <<
-                  "0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 1" << endl <<
-                  "0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 0 1 1" << endl <<
-                  "0 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1" << endl <<
-                  "1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 1 0 0 0 1 1" << endl <<
-                  "0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 1 0 0 1 0 1 0 1 1 0 0 0 0 0 1 1 1 0 1" << endl <<
-                  "0 0 0 0 0 0 0 0 1 1 0 0 0 1 1 1 0 0 1 1 1 0 1 1 0 0 1 1 1 1 1 1 1 0" << endl <<
-                  "0 4 5 3 3 3 3 2 2 0 2 3 1 3 0 0 0 2 0 2 0 2 0 0 0 0 0 0 0 0 0 2 0 0" << endl <<
-                  "4 0 6 3 0 0 0 4 0 0 0 0 0 5 0 0 0 1 0 2 0 2 0 0 0 0 0 0 0 0 2 0 0 0" << endl <<
-                  "5 6 0 3 0 0 0 4 5 1 0 0 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 2 2 0 0 0 2 0" << endl <<
-                  "3 3 3 0 0 0 0 3 0 0 0 0 3 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "3 0 0 0 0 0 2 0 0 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "3 0 0 0 0 0 5 0 0 0 3 0 0 0 0 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "3 0 0 0 2 5 0 0 0 0 0 0 0 0 0 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "2 4 4 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "2 0 5 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 0 3 4" << endl <<
-                  "0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2" << endl <<
-                  "2 0 0 0 3 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "1 0 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "3 5 3 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 2" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 4" << endl <<
-                  "0 0 0 0 0 3 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "2 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 2" << endl <<
-                  "2 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 1" << endl <<
-                  "2 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 3" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 5 0 4 0 3 0 0 5 4" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 3 0 0 0 2 0 0" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 5 2 0 0 0 0 0 0 7 0 0" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 4 0 0 0 2" << endl <<
-                  "0 0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 4 3 0 0 0 0 0 0 0 0 4" << endl <<
-                  "0 0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 2" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 0 0 4 0 0 0 0 0 4 2" << endl <<
-                  "0 2 0 0 0 0 0 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 3" << endl <<
-                  "2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 7 0 0 2 0 0 0 4 4" << endl <<
-                  "0 0 2 0 0 0 0 0 3 0 0 0 0 0 3 3 0 0 1 0 3 0 2 5 0 0 0 0 0 4 3 4 0 5" << endl <<
+        outText<< "DL"<< "\n" <<
+                  "N=34 NM=2"<< "\n" <<
+                  "FORMAT = FULLMATRIX DIAGONAL PRESENT"<< "\n" <<
+                  "LEVEL LABELS:"<< "\n" <<
+                  "ZACHE"<< "\n" <<
+                  "ZACHC"<< "\n" <<
+                  "DATA:"<< "\n" <<
+                  "0 1 1 1 1 1 1 1 1 0 1 1 1 1 0 0 0 1 0 1 0 1 0 0 0 0 0 0 0 0 0 1 0 0" << "\n" <<
+                  "1 0 1 1 0 0 0 1 0 0 0 0 0 1 0 0 0 1 0 1 0 1 0 0 0 0 0 0 0 0 1 0 0 0" << "\n" <<
+                  "1 1 0 1 0 0 0 1 1 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 1 0" << "\n" <<
+                  "1 1 1 0 0 0 0 1 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                  "1 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                  "1 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                  "1 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                  "1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                  "1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 1" << "\n" <<
+                  "0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << "\n" <<
+                  "1 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                  "1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                  "1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                  "1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1" << "\n" <<
+                  "0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                  "1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1" << "\n" <<
+                  "1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1" << "\n" <<
+                  "1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 0 1 0 0 1 1" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 0 0 0 1 0 0" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 1 0 0" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1" << "\n" <<
+                  "0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 1" << "\n" <<
+                  "0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 0 1 1" << "\n" <<
+                  "0 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1" << "\n" <<
+                  "1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 1 0 0 0 1 1" << "\n" <<
+                  "0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 1 0 0 1 0 1 0 1 1 0 0 0 0 0 1 1 1 0 1" << "\n" <<
+                  "0 0 0 0 0 0 0 0 1 1 0 0 0 1 1 1 0 0 1 1 1 0 1 1 0 0 1 1 1 1 1 1 1 0" << "\n" <<
+                  "0 4 5 3 3 3 3 2 2 0 2 3 1 3 0 0 0 2 0 2 0 2 0 0 0 0 0 0 0 0 0 2 0 0" << "\n" <<
+                  "4 0 6 3 0 0 0 4 0 0 0 0 0 5 0 0 0 1 0 2 0 2 0 0 0 0 0 0 0 0 2 0 0 0" << "\n" <<
+                  "5 6 0 3 0 0 0 4 5 1 0 0 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 2 2 0 0 0 2 0" << "\n" <<
+                  "3 3 3 0 0 0 0 3 0 0 0 0 3 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                  "3 0 0 0 0 0 2 0 0 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                  "3 0 0 0 0 0 5 0 0 0 3 0 0 0 0 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                  "3 0 0 0 2 5 0 0 0 0 0 0 0 0 0 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                  "2 4 4 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                  "2 0 5 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 0 3 4" << "\n" <<
+                  "0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2" << "\n" <<
+                  "2 0 0 0 3 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                  "3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                  "1 0 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                  "3 5 3 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 2" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 4" << "\n" <<
+                  "0 0 0 0 0 3 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                  "2 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 2" << "\n" <<
+                  "2 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 1" << "\n" <<
+                  "2 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 3" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 5 0 4 0 3 0 0 5 4" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 3 0 0 0 2 0 0" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 5 2 0 0 0 0 0 0 7 0 0" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 4 0 0 0 2" << "\n" <<
+                  "0 0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 4 3 0 0 0 0 0 0 0 0 4" << "\n" <<
+                  "0 0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 2" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 0 0 4 0 0 0 0 0 4 2" << "\n" <<
+                  "0 2 0 0 0 0 0 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 3" << "\n" <<
+                  "2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 7 0 0 2 0 0 0 4 4" << "\n" <<
+                  "0 0 2 0 0 0 0 0 3 0 0 0 0 0 3 3 0 0 1 0 3 0 2 5 0 0 0 0 0 4 3 4 0 5" << "\n" <<
                   "0 0 0 0 0 0 0 0 4 2 0 0 0 3 2 4 0 0 2 1 1 0 3 4 0 0 2 4 2 2 3 4 5 0";
     }
     else if (fileName == "Galaskiewicz_CEOs_and_clubs_affiliation_network_data.2sm"){
@@ -16896,31 +16841,31 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                                 "This data  was originally collected by Galaskiewicz (1985) "
                                 "and is used by Wasserman and Faust in Social Network Analysis: Methods and Applications (1994).\n\n"
                                 "Galaskiewicz, J. (1985). Social Organization of an Urban Grants Economy. New York: Academic Press. ");
-        outText<< "0 0 1 1 0 0 0 0 1 0 0 0 0 0 0" << endl <<
-                  "0 0 1 0 1 0 1 0 0 0 0 0 0 0 0" << endl <<
-                  "0 0 1 0 0 0 0 0 0 0 0 1 0 0 0" << endl <<
-                  "0 1 1 0 0 0 0 0 0 0 0 0 0 0 1" << endl <<
-                  "0 0 1 0 0 0 0 0 0 0 0 0 1 1 0" << endl <<
-                  "0 1 1 0 0 0 0 0 0 0 0 0 0 1 0" << endl <<
-                  "0 0 1 1 0 0 0 0 0 1 1 0 0 0 0" << endl <<
-                  "0 0 0 1 0 0 1 0 0 1 0 0 0 0 0" << endl <<
-                  "1 0 0 1 0 0 0 1 0 1 0 0 0 0 0" << endl <<
-                  "0 0 1 0 0 0 0 0 1 0 0 0 0 0 0" << endl <<
-                  "0 1 1 0 0 0 0 0 1 0 0 0 0 0 0" << endl <<
-                  "0 0 0 1 0 0 1 0 0 0 0 0 0 0 0" << endl <<
-                  "0 0 1 1 1 0 0 0 1 0 0 0 0 0 0" << endl <<
-                  "0 1 1 1 0 0 0 0 0 0 1 1 1 0 1" << endl <<
-                  "0 1 1 0 0 1 0 0 0 0 0 0 1 0 1" << endl <<
-                  "0 1 1 0 0 1 0 1 0 0 0 0 0 1 0" << endl <<
-                  "0 1 1 0 1 0 0 0 0 0 1 1 0 0 1" << endl <<
-                  "0 0 0 1 0 0 0 0 1 0 0 1 1 0 1" << endl <<
-                  "1 0 1 1 0 0 1 0 1 0 0 0 0 0 0" << endl <<
-                  "0 1 1 1 0 0 0 0 0 0 1 0 0 0 1" << endl <<
-                  "0 0 1 1 0 0 0 1 0 0 0 0 0 0 0" << endl <<
-                  "0 0 1 0 0 0 0 1 0 0 0 0 0 0 1" << endl <<
-                  "0 1 1 0 0 1 0 0 0 0 0 0 0 0 1" << endl <<
-                  "1 0 1 1 0 1 0 0 0 0 0 0 0 0 1" << endl <<
-                  "0 1 1 0 0 0 0 0 0 0 0 0 1 0 0" << endl <<
+        outText<< "0 0 1 1 0 0 0 0 1 0 0 0 0 0 0" << "\n" <<
+                  "0 0 1 0 1 0 1 0 0 0 0 0 0 0 0" << "\n" <<
+                  "0 0 1 0 0 0 0 0 0 0 0 1 0 0 0" << "\n" <<
+                  "0 1 1 0 0 0 0 0 0 0 0 0 0 0 1" << "\n" <<
+                  "0 0 1 0 0 0 0 0 0 0 0 0 1 1 0" << "\n" <<
+                  "0 1 1 0 0 0 0 0 0 0 0 0 0 1 0" << "\n" <<
+                  "0 0 1 1 0 0 0 0 0 1 1 0 0 0 0" << "\n" <<
+                  "0 0 0 1 0 0 1 0 0 1 0 0 0 0 0" << "\n" <<
+                  "1 0 0 1 0 0 0 1 0 1 0 0 0 0 0" << "\n" <<
+                  "0 0 1 0 0 0 0 0 1 0 0 0 0 0 0" << "\n" <<
+                  "0 1 1 0 0 0 0 0 1 0 0 0 0 0 0" << "\n" <<
+                  "0 0 0 1 0 0 1 0 0 0 0 0 0 0 0" << "\n" <<
+                  "0 0 1 1 1 0 0 0 1 0 0 0 0 0 0" << "\n" <<
+                  "0 1 1 1 0 0 0 0 0 0 1 1 1 0 1" << "\n" <<
+                  "0 1 1 0 0 1 0 0 0 0 0 0 1 0 1" << "\n" <<
+                  "0 1 1 0 0 1 0 1 0 0 0 0 0 1 0" << "\n" <<
+                  "0 1 1 0 1 0 0 0 0 0 1 1 0 0 1" << "\n" <<
+                  "0 0 0 1 0 0 0 0 1 0 0 1 1 0 1" << "\n" <<
+                  "1 0 1 1 0 0 1 0 1 0 0 0 0 0 0" << "\n" <<
+                  "0 1 1 1 0 0 0 0 0 0 1 0 0 0 1" << "\n" <<
+                  "0 0 1 1 0 0 0 1 0 0 0 0 0 0 0" << "\n" <<
+                  "0 0 1 0 0 0 0 1 0 0 0 0 0 0 1" << "\n" <<
+                  "0 1 1 0 0 1 0 0 0 0 0 0 0 0 1" << "\n" <<
+                  "1 0 1 1 0 1 0 0 0 0 0 0 0 0 1" << "\n" <<
+                  "0 1 1 0 0 0 0 0 0 0 0 0 1 0 0" << "\n" <<
                   "0 1 1 0 0 0 0 0 0 0 0 1 0 0 0";
     }
     else if (fileName== "Thurman_Office_Networks_Coalitions.dl" ) {
@@ -16941,74 +16886,74 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                               "THURM is a 15x15 symmetric binary matrix which "
                               "shows the actors linked by multiplex ties. \n\n"
                               "Thurman B. (1979). In the office: Networks and coalitions. Social Networks, 2, 47-63");
-        outText << "DL"<<endl<<
-                   "N=15 NM=2"<<endl<<
-                   "FORMAT = FULLMATRIX DIAGONAL PRESENT"<<endl<<
-                   "ROW LABELS:"<<endl<<
-                   "ANN"<<endl<<
-                   "AMY"<<endl<<
-                   "KATY"<<endl<<
-                   "BILL"<<endl<<
-                   "PETE"<<endl<<
-                   "TINA"<<endl<<
-                   "ANDY"<<endl<<
-                   "LISA"<<endl<<
-                   "PRESIDENT"<<endl<<
-                   "MINNA"<<endl<<
-                   "MARY"<<endl<<
-                   "EMMA"<<endl<<
-                   "ROSE"<<endl<<
-                   "MIKE"<<endl<<
-                   "PEG"<<endl<<
-                   "COLUMN LABELS:"<<endl<<
-                   "ANN"<<endl<<
-                   "AMY"<<endl<<
-                   "KATY"<<endl<<
-                   "BILL"<<endl<<
-                   "PETE"<<endl<<
-                   "TINA"<<endl<<
-                   "ANDY"<<endl<<
-                   "LISA"<<endl<<
-                   "PRESIDENT"<<endl<<
-                   "MINNA"<<endl<<
-                   "MARY"<<endl<<
-                   "EMMA"<<endl<<
-                   "ROSE"<<endl<<
-                   "MIKE"<<endl<<
-                   "PEG"<<endl<<
-                   "LEVEL LABELS:"<<endl<<
-                   "THURA"<<endl<<
-                   "THURM"<<endl<<
-                   "DATA:"<<endl<<
-                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<endl<<
-                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<endl<<
-                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<endl<<
-                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<endl<<
-                   " 1 1 1 1 0 1 1 1 0 1 1 1 1 1 1"<<endl<<
-                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<endl<<
-                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<endl<<
-                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<endl<<
-                   " 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1"<<endl<<
-                   " 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0"<<endl<<
-                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<endl<<
-                   " 0 0 0 0 0 1 0 0 0 0 1 0 1 1 1"<<endl<<
-                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<endl<<
-                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<endl<<
-                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<endl<<
-                   " 0 1 1 0 1 1 0 1 1 0 1 0 1 0 0"<<endl<<
-                   " 1 0 1 1 1 1 0 1 0 0 0 0 0 0 0"<<endl<<
-                   " 1 1 0 0 1 1 0 1 0 0 0 0 0 0 0"<<endl<<
-                   " 0 1 0 0 0 0 1 0 0 1 0 0 0 0 0"<<endl<<
-                   " 1 1 1 0 0 1 1 1 1 0 0 1 0 0 0"<<endl<<
-                   " 1 1 1 0 1 0 0 1 0 0 0 0 0 0 0"<<endl<<
-                   " 0 0 0 1 1 0 0 0 0 1 0 0 0 0 0"<<endl<<
-                   " 1 1 1 0 1 1 0 0 1 0 0 1 0 0 0"<<endl<<
-                   " 1 0 0 0 1 0 0 1 0 0 0 1 0 0 0"<<endl<<
-                   " 0 0 0 1 0 0 1 0 0 0 0 1 0 0 0"<<endl<<
-                   " 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0"<<endl<<
-                   " 0 0 0 0 1 0 0 1 1 1 1 0 1 1 1"<<endl<<
-                   " 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0"<<endl<<
-                   " 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0"<<endl<<
+        outText << "DL"<<"\n"<<
+                   "N=15 NM=2"<<"\n"<<
+                   "FORMAT = FULLMATRIX DIAGONAL PRESENT"<<"\n"<<
+                   "ROW LABELS:"<<"\n"<<
+                   "ANN"<<"\n"<<
+                   "AMY"<<"\n"<<
+                   "KATY"<<"\n"<<
+                   "BILL"<<"\n"<<
+                   "PETE"<<"\n"<<
+                   "TINA"<<"\n"<<
+                   "ANDY"<<"\n"<<
+                   "LISA"<<"\n"<<
+                   "PRESIDENT"<<"\n"<<
+                   "MINNA"<<"\n"<<
+                   "MARY"<<"\n"<<
+                   "EMMA"<<"\n"<<
+                   "ROSE"<<"\n"<<
+                   "MIKE"<<"\n"<<
+                   "PEG"<<"\n"<<
+                   "COLUMN LABELS:"<<"\n"<<
+                   "ANN"<<"\n"<<
+                   "AMY"<<"\n"<<
+                   "KATY"<<"\n"<<
+                   "BILL"<<"\n"<<
+                   "PETE"<<"\n"<<
+                   "TINA"<<"\n"<<
+                   "ANDY"<<"\n"<<
+                   "LISA"<<"\n"<<
+                   "PRESIDENT"<<"\n"<<
+                   "MINNA"<<"\n"<<
+                   "MARY"<<"\n"<<
+                   "EMMA"<<"\n"<<
+                   "ROSE"<<"\n"<<
+                   "MIKE"<<"\n"<<
+                   "PEG"<<"\n"<<
+                   "LEVEL LABELS:"<<"\n"<<
+                   "THURA"<<"\n"<<
+                   "THURM"<<"\n"<<
+                   "DATA:"<<"\n"<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<"\n"<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<"\n"<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<"\n"<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<"\n"<<
+                   " 1 1 1 1 0 1 1 1 0 1 1 1 1 1 1"<<"\n"<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<"\n"<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<"\n"<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<"\n"<<
+                   " 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1"<<"\n"<<
+                   " 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0"<<"\n"<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<"\n"<<
+                   " 0 0 0 0 0 1 0 0 0 0 1 0 1 1 1"<<"\n"<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<"\n"<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<"\n"<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<"\n"<<
+                   " 0 1 1 0 1 1 0 1 1 0 1 0 1 0 0"<<"\n"<<
+                   " 1 0 1 1 1 1 0 1 0 0 0 0 0 0 0"<<"\n"<<
+                   " 1 1 0 0 1 1 0 1 0 0 0 0 0 0 0"<<"\n"<<
+                   " 0 1 0 0 0 0 1 0 0 1 0 0 0 0 0"<<"\n"<<
+                   " 1 1 1 0 0 1 1 1 1 0 0 1 0 0 0"<<"\n"<<
+                   " 1 1 1 0 1 0 0 1 0 0 0 0 0 0 0"<<"\n"<<
+                   " 0 0 0 1 1 0 0 0 0 1 0 0 0 0 0"<<"\n"<<
+                   " 1 1 1 0 1 1 0 0 1 0 0 1 0 0 0"<<"\n"<<
+                   " 1 0 0 0 1 0 0 1 0 0 0 1 0 0 0"<<"\n"<<
+                   " 0 0 0 1 0 0 1 0 0 0 0 1 0 0 0"<<"\n"<<
+                   " 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0"<<"\n"<<
+                   " 0 0 0 0 1 0 0 1 1 1 1 0 1 1 1"<<"\n"<<
+                   " 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0"<<"\n"<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0"<<"\n"<<
                    " 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0";
     }
     else if (fileName == "Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl" ) {
@@ -17024,59 +16969,59 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                                 "Types of interlocks and network structure. "
                                 "In F. Stokman, R. Ziegler & J. Scott (eds), "
                                 "Networks of corporate power. Cambridge: Polity Press, 1985");
-        outText << "DL"<<endl<<
-                   "N=16"<<endl<<
-                   "FORMAT = FULLMATRIX DIAGONAL PRESENT"<<endl<<
-                   "ROW LABELS:"<<endl<<
-                   "ABN"<<endl<<
-                   "AMRO"<<endl<<
-                   "ENNIA"<<endl<<
-                   "NS"<<endl<<
-                   "BUHRT"<<endl<<
-                   "AGO"<<endl<<
-                   "AKZO"<<endl<<
-                   "NB"<<endl<<
-                   "SHV"<<endl<<
-                   "FGH"<<endl<<
-                   "HEINK"<<endl<<
-                   "PHLPS"<<endl<<
-                   "NATND"<<endl<<
-                   "OGEM"<<endl<<
-                   "RSV"<<endl<<
-                   "NSU"<<endl<<
-                   "COLUMN LABELS:"<<endl<<
-                   "ABN"<<endl<<
-                   "AMRO"<<endl<<
-                   "ENNIA"<<endl<<
-                   "NS"<<endl<<
-                   "BUHRT"<<endl<<
-                   "AGO"<<endl<<
-                   "AKZO"<<endl<<
-                   "NB"<<endl<<
-                   "SHV"<<endl<<
-                   "FGH"<<endl<<
-                   "HEINK"<<endl<<
-                   "PHLPS"<<endl<<
-                   "NATND"<<endl<<
-                   "OGEM"<<endl<<
-                   "RSV"<<endl<<
-                   "NSU"<<endl<<
-                   "DATA:"<<endl<<
-                   " 0 0 0 1 2 1 2 1 1 1 2 1 4 0 0 0"<<endl<<
-                   " 0 0 3 2 1 2 1 2 2 0 3 1 2 1 2 0"<<endl<<
-                   " 0 3 0 3 1 0 1 0 1 0 0 0 0 1 1 0"<<endl<<
-                   " 1 2 3 0 0 0 1 1 2 0 0 0 1 0 2 0"<<endl<<
-                   " 2 1 1 0 0 0 1 0 0 1 0 0 0 1 0 0"<<endl<<
-                   " 1 2 0 0 0 0 0 2 1 0 1 1 0 0 0 0"<<endl<<
-                   " 2 1 1 1 1 0 0 1 2 1 0 1 1 0 2 0"<<endl<<
-                   " 1 2 0 1 0 2 1 0 1 0 1 1 1 0 0 0"<<endl<<
-                   " 1 2 1 2 0 1 2 1 0 0 0 0 1 0 1 0"<<endl<<
-                   " 1 0 0 0 1 0 1 0 0 0 0 1 0 1 0 0"<<endl<<
-                   " 2 3 0 0 0 1 0 1 0 0 0 1 0 1 1 0"<<endl<<
-                   " 1 1 0 0 0 1 1 1 0 1 1 0 1 0 1 0"<<endl<<
-                   " 4 2 0 1 0 0 1 1 1 0 0 1 0 0 0 0"<<endl<<
-                   " 0 1 1 0 1 0 0 0 0 1 1 0 0 0 1 0"<<endl<<
-                   " 0 2 1 2 0 0 2 0 1 0 1 1 0 1 0 0"<<endl<<
+        outText << "DL"<<"\n"<<
+                   "N=16"<<"\n"<<
+                   "FORMAT = FULLMATRIX DIAGONAL PRESENT"<<"\n"<<
+                   "ROW LABELS:"<<"\n"<<
+                   "ABN"<<"\n"<<
+                   "AMRO"<<"\n"<<
+                   "ENNIA"<<"\n"<<
+                   "NS"<<"\n"<<
+                   "BUHRT"<<"\n"<<
+                   "AGO"<<"\n"<<
+                   "AKZO"<<"\n"<<
+                   "NB"<<"\n"<<
+                   "SHV"<<"\n"<<
+                   "FGH"<<"\n"<<
+                   "HEINK"<<"\n"<<
+                   "PHLPS"<<"\n"<<
+                   "NATND"<<"\n"<<
+                   "OGEM"<<"\n"<<
+                   "RSV"<<"\n"<<
+                   "NSU"<<"\n"<<
+                   "COLUMN LABELS:"<<"\n"<<
+                   "ABN"<<"\n"<<
+                   "AMRO"<<"\n"<<
+                   "ENNIA"<<"\n"<<
+                   "NS"<<"\n"<<
+                   "BUHRT"<<"\n"<<
+                   "AGO"<<"\n"<<
+                   "AKZO"<<"\n"<<
+                   "NB"<<"\n"<<
+                   "SHV"<<"\n"<<
+                   "FGH"<<"\n"<<
+                   "HEINK"<<"\n"<<
+                   "PHLPS"<<"\n"<<
+                   "NATND"<<"\n"<<
+                   "OGEM"<<"\n"<<
+                   "RSV"<<"\n"<<
+                   "NSU"<<"\n"<<
+                   "DATA:"<<"\n"<<
+                   " 0 0 0 1 2 1 2 1 1 1 2 1 4 0 0 0"<<"\n"<<
+                   " 0 0 3 2 1 2 1 2 2 0 3 1 2 1 2 0"<<"\n"<<
+                   " 0 3 0 3 1 0 1 0 1 0 0 0 0 1 1 0"<<"\n"<<
+                   " 1 2 3 0 0 0 1 1 2 0 0 0 1 0 2 0"<<"\n"<<
+                   " 2 1 1 0 0 0 1 0 0 1 0 0 0 1 0 0"<<"\n"<<
+                   " 1 2 0 0 0 0 0 2 1 0 1 1 0 0 0 0"<<"\n"<<
+                   " 2 1 1 1 1 0 0 1 2 1 0 1 1 0 2 0"<<"\n"<<
+                   " 1 2 0 1 0 2 1 0 1 0 1 1 1 0 0 0"<<"\n"<<
+                   " 1 2 1 2 0 1 2 1 0 0 0 0 1 0 1 0"<<"\n"<<
+                   " 1 0 0 0 1 0 1 0 0 0 0 1 0 1 0 0"<<"\n"<<
+                   " 2 3 0 0 0 1 0 1 0 0 0 1 0 1 1 0"<<"\n"<<
+                   " 1 1 0 0 0 1 1 1 0 1 1 0 1 0 1 0"<<"\n"<<
+                   " 4 2 0 1 0 0 1 1 1 0 0 1 0 0 0 0"<<"\n"<<
+                   " 0 1 1 0 1 0 0 0 0 1 1 0 0 0 1 0"<<"\n"<<
+                   " 0 2 1 2 0 0 2 0 1 0 1 1 0 1 0 0"<<"\n"<<
                    " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0";
 
     }
@@ -17094,56 +17039,56 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                                 "network. "
                                 "In F. Stokman, R. Ziegler & J. Scott (eds), "
                                 "Networks of corporate  power. Cambridge: Polity Press, 1985. ");
-        outText <<"DL"<<endl<<
-                  "N=15"<<endl<<
-                  "FORMAT = FULLMATRIX DIAGONAL PRESENT"<<endl<<
-                  "ROW LABELS:"<<endl<<
-                  "VAG"<<endl<<
-                  "DEUBK"<<endl<<
-                  "ALINZ"<<endl<<
-                  "SIEMN"<<endl<<
-                  "RUHRK"<<endl<<
-                  "DIMLR"<<endl<<
-                  "HAPAG"<<endl<<
-                  "KRUPP"<<endl<<
-                  "RWE"<<endl<<
-                  "KREDT"<<endl<<
-                  "THYSN"<<endl<<
-                  "MANES"<<endl<<
-                  "DRESB"<<endl<<
-                  "KARST"<<endl<<
-                  "VEBA"<<endl<<
-                  "COLUMN LABELS:"<<endl<<
-                  "VAG"<<endl<<
-                  "DEUBK"<<endl<<
-                  "ALINZ"<<endl<<
-                  "SIEMN"<<endl<<
-                  "RUHRK"<<endl<<
-                  "DIMLR"<<endl<<
-                  "HAPAG"<<endl<<
-                  "KRUPP"<<endl<<
-                  "RWE"<<endl<<
-                  "KREDT"<<endl<<
-                  "THYSN"<<endl<<
-                  "MANES"<<endl<<
-                  "DRESB"<<endl<<
-                  "KARST"<<endl<<
-                  "VEBA"<<endl<<
-                  "DATA:"<<endl<<
-                  " 0 2 1 0 2 0 0 2 2 2 2 1 1 1 0"<<endl<<
-                  " 2 0 3 3 1 4 2 0 2 1 1 2 0 2 0"<<endl<<
-                  " 1 3 0 6 1 2 2 1 2 0 2 2 1 1 0"<<endl<<
-                  " 0 3 6 0 2 2 1 0 0 0 4 3 1 0 0"<<endl<<
-                  " 2 1 1 2 0 1 1 2 1 1 2 1 1 0 0"<<endl<<
-                  " 0 4 2 2 1 0 1 2 2 0 2 0 1 0 0"<<endl<<
-                  " 0 2 2 1 1 1 0 1 1 0 1 0 2 1 0"<<endl<<
-                  " 2 0 1 0 2 2 1 0 2 1 2 0 2 0 0"<<endl<<
-                  " 2 2 2 0 1 2 1 2 0 3 3 0 1 1 0"<<endl<<
-                  " 2 1 0 0 1 0 0 1 3 0 3 1 0 1 0"<<endl<<
-                  " 2 1 2 4 2 2 1 2 3 3 0 0 1 0 0"<<endl<<
-                  " 1 2 2 3 1 0 0 0 0 1 0 0 0 0 0"<<endl<<
-                  " 1 0 1 1 1 1 2 2 1 0 1 0 0 1 0"<<endl<<
-                  " 1 2 1 0 0 0 1 0 1 1 0 0 1 0 0"<<endl<<
+        outText <<"DL"<<"\n"<<
+                  "N=15"<<"\n"<<
+                  "FORMAT = FULLMATRIX DIAGONAL PRESENT"<<"\n"<<
+                  "ROW LABELS:"<<"\n"<<
+                  "VAG"<<"\n"<<
+                  "DEUBK"<<"\n"<<
+                  "ALINZ"<<"\n"<<
+                  "SIEMN"<<"\n"<<
+                  "RUHRK"<<"\n"<<
+                  "DIMLR"<<"\n"<<
+                  "HAPAG"<<"\n"<<
+                  "KRUPP"<<"\n"<<
+                  "RWE"<<"\n"<<
+                  "KREDT"<<"\n"<<
+                  "THYSN"<<"\n"<<
+                  "MANES"<<"\n"<<
+                  "DRESB"<<"\n"<<
+                  "KARST"<<"\n"<<
+                  "VEBA"<<"\n"<<
+                  "COLUMN LABELS:"<<"\n"<<
+                  "VAG"<<"\n"<<
+                  "DEUBK"<<"\n"<<
+                  "ALINZ"<<"\n"<<
+                  "SIEMN"<<"\n"<<
+                  "RUHRK"<<"\n"<<
+                  "DIMLR"<<"\n"<<
+                  "HAPAG"<<"\n"<<
+                  "KRUPP"<<"\n"<<
+                  "RWE"<<"\n"<<
+                  "KREDT"<<"\n"<<
+                  "THYSN"<<"\n"<<
+                  "MANES"<<"\n"<<
+                  "DRESB"<<"\n"<<
+                  "KARST"<<"\n"<<
+                  "VEBA"<<"\n"<<
+                  "DATA:"<<"\n"<<
+                  " 0 2 1 0 2 0 0 2 2 2 2 1 1 1 0"<<"\n"<<
+                  " 2 0 3 3 1 4 2 0 2 1 1 2 0 2 0"<<"\n"<<
+                  " 1 3 0 6 1 2 2 1 2 0 2 2 1 1 0"<<"\n"<<
+                  " 0 3 6 0 2 2 1 0 0 0 4 3 1 0 0"<<"\n"<<
+                  " 2 1 1 2 0 1 1 2 1 1 2 1 1 0 0"<<"\n"<<
+                  " 0 4 2 2 1 0 1 2 2 0 2 0 1 0 0"<<"\n"<<
+                  " 0 2 2 1 1 1 0 1 1 0 1 0 2 1 0"<<"\n"<<
+                  " 2 0 1 0 2 2 1 0 2 1 2 0 2 0 0"<<"\n"<<
+                  " 2 2 2 0 1 2 1 2 0 3 3 0 1 1 0"<<"\n"<<
+                  " 2 1 0 0 1 0 0 1 3 0 3 1 0 1 0"<<"\n"<<
+                  " 2 1 2 4 2 2 1 2 3 3 0 0 1 0 0"<<"\n"<<
+                  " 1 2 2 3 1 0 0 0 0 1 0 0 0 0 0"<<"\n"<<
+                  " 1 0 1 1 1 1 2 2 1 0 1 0 0 1 0"<<"\n"<<
+                  " 1 2 1 0 0 0 1 0 1 1 0 0 1 0 0"<<"\n"<<
                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0";
 
     }
@@ -17162,302 +17107,302 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                    "Knoke D. and Wood J. (1981). Organized for action: Commitment in voluntary associations. "
                    "New Brunswick, NJ: Rutgers University Press. Knoke D. and Kuklinski J. (1982). "
                    "Network analysis, Beverly Hills, CA: Sage");
-        outText << "DL"<<endl<<
-                   "N=58 NM=2"<<endl<<
-                   "FORMAT = FULLMATRIX DIAGONAL PRESENT"<<endl<<
-                   "LEVEL LABELS:"<<endl<<
-                   "BKFRAB"<<endl<<
-                   "BKFRAC"<<endl<<
-                   "DATA:"<<endl<<
-                   "0  0  2  1  0  0  2  0  0  0  1  1  2  0  0  0  1  0  1  0  0  1  0  0  0  0"<<endl<<
-                   "0  0  2  1  1  1  0  2  1  2  0  0  0  0  1  0  0  0  0  0  0  0  1  0  0  0"<<endl<<
-                   "0  1  1  4  1  1"<<endl<<
-                   "0  0 10  0  0  2  1  0  2  0  0  0  6  2  0  1  0  0  0  1  0 10  2  0  4  0"<<endl<<
-                   "3  0  1  1  0  0  0  0  5  1  0  4  0  0  0  0  0  1  1  0  0  5  3  0  0  0"<<endl<<
-                   "0  1  0  1  4  0"<<endl<<
-                   "2 10  0  6 11 14 15  4 12  0  5  4  3  8 10  8 11  0  2 19  2 15  1  2  6  1"<<endl<<
-                   "5  0 12  5  4  0  1  4 15  3  1  3  6  0  2  3  0  9  8  2  1  3  6  2  0  2"<<endl<<
-                   "2 16  4  5 19  1"<<endl<<
-                   "1  0  6  0  2  3  9  1  8  0  0  5  0  0  2  4  3  2  2  6  0  1  1  3  1  0"<<endl<<
-                   "5  1  1  3  0  1  1  4  1  0  1  3  2  0  1  0  0  1  1  1  1  2  1  3  0  0"<<endl<<
-                   "2  1  2  2  3  5"<<endl<<
-                   "0  0 11  2  0  2  8  1  1  1  0  0  2  0  1  1  0  0  0  3  0  0  0  0  0  0"<<endl<<
-                   "8  0  1  5  0  0  1  0  0  0  0  0  9  2  1  0  1  8 25  0  0  0  0  0  0  0"<<endl<<
-                   "1  2  0  0  4  0"<<endl<<
-                   "0  2 14  3  2  0 30  2  8  0  4  4  1  6  2 14  9  0  1 51  0  3  2  1  0  1"<<endl<<
-                   "6  0  3 11  2  0 15  5  3  1  0  2  2  1  3  1  0  3  2  2  6  1  3  4  0  2"<<endl<<
-                   "8  9  3  2 18  2"<<endl<<
-                   "2  1 15  9  8 30  0 10  4  2  7  3  0 12  9 10  9  2  3 40  2  2  5  2  0  1"<<endl<<
-                   "19  1 10 14  5  3 14  7  7  5  3  4  5  7  8  5  0  2  4  7  3  7  7  2  0  0"<<endl<<
-                   "6  5 14 16 20  4"<<endl<<
-                   "0  0  4  1  1  2 10  0  3  0  2  0  1  3  3  3  5  0  0  6  1  0  2  3  0  1"<<endl<<
-                   "6  0  2  0  9  1  0  1  2  4  2  5  1  0  3  5  0  0  5  0  1  3  1  1  0  1"<<endl<<
-                   "2  5  0  2  4  2"<<endl<<
-                   "0  2 12  8  1  8  4  3  0  0  5  5  2  2  4  5  6  1  0  5  0  5  0  3  3  3"<<endl<<
-                   "3  1  2  3  1  0  2  4  4  3  5  1  2  0  1  1  1  2  0  0  4  0  1  4  0  6"<<endl<<
-                   "1  4  3  2  7  1"<<endl<<
-                   "0  0  0  0  1  0  2  0  0  0  0  0  0  0  1  2  0  0  0  0  0  0  0  0  0  0"<<endl<<
-                   "6  0  1  0  1  0  0  0  0  0  0  1  2  2  0  0  0  0  0  1  0  0  0  0  0  0"<<endl<<
-                   "0  1  0  0  0  0"<<endl<<
-                   "1  0  5  0  0  4  7  2  5  0  0  0  0  1  3  3  5  3  0  7  4  1  0  3  0  0"<<endl<<
-                   "4  0  5  1  3  0  0  2  2  3  5  3  2  0  0  1  0  2  1  4  5  2  1  0  0  0"<<endl<<
-                   "0  4  6  6 12  0"<<endl<<
-                   "1  0  4  5  0  4  3  0  5  0  0  0  0  0  0  0  0  0  0  3  0  1  0  1  1  0"<<endl<<
-                   "0  0  2  0  2  0  1  2  3  2  2  1  0  0  0  1  0  1  1  1  0  0  1  2  0  0"<<endl<<
-                   "1  2  0  7  3  3"<<endl<<
-                   "2  6  3  0  2  1  0  1  2  0  0  0  0  2  1  3  3  0  1  0  0  6  2  0  0  0"<<endl<<
-                   "3  0  1  0  0  0  1  1  1  0  0  1  1  1  1  1  1  0  2  1  0  0  2  0  0  0"<<endl<<
-                   "2  4  1  0  0  0"<<endl<<
-                   "0  2  8  0  0  6 12  3  2  0  1  0  2  0  3  8 11  1  4  8  0  1  0  0  1  1"<<endl<<
-                   "4  0  8  4  6  0  3  1  5  1  1  0  0  0  1  3  0  2  2  1  1  1  0  0  0  0"<<endl<<
-                   "1  0  2  1  5  1"<<endl<<
-                   "0  0 10  2  1  2  9  3  4  1  3  0  1  3  0  9 14  0  6  9  0  2  1  2  1  0"<<endl<<
-                   "4  0  3  0  2  1  1  4  2  3  0  6  1  0  7  1  0  7  1  1  0  0  1  1  0  0"<<endl<<
-                   "7  6  4  9  4  0"<<endl<<
-                   "0  1  8  4  1 14 10  3  5  2  3  0  3  8  9  0 26  3  1 12  0  2  0  0  1  0"<<endl<<
-                   "7  0  5  6  5  4  2  2  2  2  0  4  4  0  2  5  1  3  2  1  1  4  0  2  0  0"<<endl<<
-                   "8  4  2  0 11  3"<<endl<<
-                   "1  0 11  3  0  9  9  5  6  0  5  0  3 11 14 26  0  3  0  9  0  1  0  0  1  0"<<endl<<
-                   "5  0  5  2  2  4  2  1  4  2  0  1  1  1  2  3  0  3  1  0  0  3  1  2  0  0"<<endl<<
-                   "7  7  4  0 11  0"<<endl<<
-                   "0  0  0  2  0  0  2  0  1  0  3  0  0  1  0  3  3  0  0  0  3  0  0  0  0  0"<<endl<<
-                   "0  0  1  0  0  3  0  1  1  1  1  0  1  0  0  0  0  1  0  2  0  2  0  0  0  0"<<endl<<
-                   "0  0  2  1  0  1"<<endl<<
-                   "1  0  2  2  0  1  3  0  0  0  0  0  1  4  6  1  0  0  0  5  0  0  2  1  3  0"<<endl<<
-                   "0  0  0  1  1  0  0  1  1  1  1  2  0  1 14  1  0  1  0  0  1  0  3  0  0  0"<<endl<<
-                   "1  0  0  3  1  2"<<endl<<
-                   "0  1 19  6  3 51 40  6  5  0  7  3  0  8  9 12  9  0  5  0  3  2  3  2  1  1"<<endl<<
-                   "7  1 10  6  6  1 13 12  9  2  1  6  2  1 10  4  0  2  2  1  2  1  6  1  0  0"<<endl<<
-                   "12 17 11  9 23  5"<<endl<<
-                   "0  0  2  0  0  0  2  1  0  0  4  0  0  0  0  0  0  3  0  3  0  0  1  0  0  0"<<endl<<
-                   "0  0  2  0  2  0  0  1  1  1  0  1  0  0  1  1  0  0  0  5  0  1  1  0  0  0"<<endl<<
-                   "0  1  2  4  2  1"<<endl<<
-                   "1 10 15  1  0  3  2  0  5  0  1  1  6  1  2  2  1  0  0  2  0  0  1  1  7  2"<<endl<<
-                   "1  0  3  1  0  0  0  0  1  1  1  0  2  0  0  0  0  1  0  3  0  0  2  1  0  0"<<endl<<
-                   "0  2  1  1  3  0"<<endl<<
-                   "0  2  1  1  0  2  5  2  0  0  0  0  2  0  1  0  0  0  2  3  1  1  0  0  1  0"<<endl<<
-                   "1  0  2  0  2  0  3  1  2  1  2  2  2  1  7  1  0  1  2  0  2  0 11  1  1  0"<<endl<<
-                   "1  4  1  2  3  1"<<endl<<
-                   "0  0  2  3  0  1  2  3  3  0  3  1  0  0  2  0  0  0  1  2  0  1  0  0  0  1"<<endl<<
-                   "0  0  1  1  1  0  0  2  1  1  0  2  0  0  0  0  0  1  0  1  0  1  0  0  0  0"<<endl<<
-                   "0  0  0  2  1  1"<<endl<<
-                   "0  4  6  1  0  0  0  0  3  0  0  1  0  1  1  1  1  0  3  1  0  7  1  0  0  0"<<endl<<
-                   "0  0  3  1  0  0  0  0  3  0  1  1  0  0  4  0  0  1  0  0  0  0  0  0  0  0"<<endl<<
-                   "2  1  1  1  5  0"<<endl<<
-                   "0  0  1  0  0  1  1  1  3  0  0  0  0  1  0  0  0  0  0  1  0  2  0  1  0  0"<<endl<<
-                   "1  0  0  1  0  0  0  0  1  0  0  1  3  0  0  0  0  0  1  0  0  1  2  0  0  2"<<endl<<
-                   "0  1  1  1  2  0"<<endl<<
-                   "0  3  5  5  8  6 19  6  3  6  4  0  3  4  4  7  5  0  0  7  0  1  1  0  0  1"<<endl<<
-                   "0  0  6  6  2  1  1  4  0  1  0  2  4  0  3  2  1  1  4  1  0  5  2  0  0  0"<<endl<<
-                   "1  2  2  4  6  2"<<endl<<
-                   "0  0  0  1  0  0  1  0  1  0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0"<<endl<<
-                   "0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0"<<endl<<
-                   "1  0  0  0  0  0"<<endl<<
-                   "2  1 12  1  1  3 10  2  2  1  5  2  1  8  3  5  5  1  0 10  2  3  2  1  3  0"<<endl<<
-                   "6  0  0  3  1  0  0  0 20  2  2  3  3  2  1  2  0  3  3  0  1  1  1  1  0  0"<<endl<<
-                   "0  7  1  2 10  1"<<endl<<
-                   "1  1  5  3  5 11 14  0  3  0  1  0  0  4  0  6  2  0  1  6  0  1  0  1  1  1"<<endl<<
-                   "6  0  3  0  3  0  1  0  6  1  1  1  3  1  4  1  2  0  1  0  5  1  3  1  0  0"<<endl<<
-                   "3  2  1  6 10  2"<<endl<<
-                   "1  0  4  0  0  2  5  9  1  1  3  2  0  6  2  5  2  0  1  6  2  0  2  1  0  0"<<endl<<
-                   "2  0  1  3  0  4  0  3  1  3  0  1  0  1  3  3  0  0  1  3  0  2  1  0  0  0"<<endl<<
-                   "1  4  1  1  3  2"<<endl<<
-                   "1  0  0  1  0  0  3  1  0  0  0  0  0  0  1  4  4  3  0  1  0  0  0  0  0  0"<<endl<<
-                   "1  0  0  0  4  0  0  2  0  0  0  0  0  0  1  0  0  0  0  3  0  6  0  0  0  0"<<endl<<
-                   "0  0  0  0  0  1"<<endl<<
-                   "0  0  1  1  1 15 14  0  2  0  0  1  1  3  1  2  2  0  0 13  0  0  3  0  0  0"<<endl<<
-                   "1  0  0  1  0  0  0  1  1  1  0  0  0  3  1  0  0  0  0  0  0  0  1  0  0  2"<<endl<<
-                   "8  1  0  1  3  0"<<endl<<
-                   "2  0  4  4  0  5  7  1  4  0  2  2  1  1  4  2  1  1  1 12  1  0  1  2  0  0"<<endl<<
-                   "4  1  0  0  3  2  1  0  3  1  0  0  1  1  2  1  0  0  0  3  2  2  1  3  0  0"<<endl<<
-                   "2  4  3  4  3  6"<<endl<<
-                   "1  5 15  1  0  3  7  2  4  0  2  3  1  5  2  2  4  1  1  9  1  1  2  1  3  1"<<endl<<
-                   "0  0 20  6  1  0  1  3  0  2  1  3  2  2  3  4  2  2  0  0  1  0  6  1  0  0"<<endl<<
-                   "1 12  2  3  6  2"<<endl<<
-                   "2  1  3  0  0  1  5  4  3  0  3  2  0  1  3  2  2  1  1  2  1  1  1  1  0  0"<<endl<<
-                   "1  0  2  1  3  0  1  1  2  0  0  0  1  0  1  2  0  1  0  3  0  0  3  0  0  0"<<endl<<
-                   "1  0  2 10  1  1"<<endl<<
-                   "0  0  1  1  0  0  3  2  5  0  5  2  0  1  0  0  0  1  1  1  0  1  2  0  1  0"<<endl<<
-                   "0  0  2  1  0  0  0  0  1  0  0  0  3  0  1  0  0  0  1  0  4  0  2  0  1  0"<<endl<<
-                   "2  1  0  1  3  0"<<endl<<
-                   "0  4  3  3  0  2  4  5  1  1  3  1  1  0  6  4  1  0  2  6  1  0  2  2  1  1"<<endl<<
-                   "2  0  3  1  1  0  0  0  3  0  0  0  0  1  2  1  0  0  1  0  2  0  0  1  0  0"<<endl<<
-                   "1  6  1  1  4  2"<<endl<<
-                   "0  0  6  2  9  2  5  1  2  2  2  0  1  0  1  4  1  1  0  2  0  2  2  0  0  3"<<endl<<
-                   "4  0  3  3  0  0  0  1  2  1  3  0  0  1  0  0  0  4  9  2  1  2  5  4  3  0"<<endl<<
-                   "0  2  2  1  2  0"<<endl<<
-                   "0  0  0  0  2  1  7  0  0  2  0  0  1  0  0  0  1  0  1  1  0  0  1  0  0  0"<<endl<<
-                   "0  0  2  1  1  0  3  1  2  0  0  1  1  0  0  0  0  0  0  0  1  0  0  0  0  0"<<endl<<
-                   "1  2  0  0  2  0"<<endl<<
-                   "1  0  2  1  1  3  8  3  1  0  0  0  1  1  7  2  2  0 14 10  1  0  7  0  4  0"<<endl<<
-                   "3  0  1  4  3  1  1  2  3  1  1  2  0  0  0  1  1  1  1  0  0  0  9  0  0  0"<<endl<<
-                   "4  1  1  5  1  2"<<endl<<
-                   "0  0  3  0  0  1  5  5  1  0  1  1  1  3  1  5  3  0  1  4  1  0  1  0  0  0"<<endl<<
-                   "2  0  2  1  3  0  0  1  4  2  0  1  0  0  1  0  1  1  1  1  1  1  1  0  0  0"<<endl<<
-                   "2  1  1  0  3  1"<<endl<<
-                   "0  0  0  0  1  0  0  0  1  0  0  0  1  0  0  1  0  0  0  0  0  0  0  0  0  0"<<endl<<
-                   "1  0  0  2  0  0  0  0  2  0  0  0  0  0  1  1  0  0  0  0  0  0  0  0  0  0"<<endl<<
-                   "0  0  1  0  0  0"<<endl<<
-                   "0  1  9  1  8  3  2  0  2  0  2  1  0  2  7  3  3  1  1  2  0  1  1  1  1  0"<<endl<<
-                   "1  0  3  0  0  0  0  0  2  1  0  0  4  0  1  1  0  0  2  0  1  0  2  1  0  0"<<endl<<
-                   "0  2  1  2  3  0"<<endl<<
-                   "0  1  8  1 25  2  4  5  0  0  1  1  2  2  1  2  1  0  0  2  0  0  2  0  0  1"<<endl<<
-                   "4  0  3  1  1  0  0  0  0  0  1  1  9  0  1  1  0  2  0  0  1  2  4  1  1  0"<<endl<<
-                   "0  4  0  0  1  0"<<endl<<
-                   "0  0  2  1  0  2  7  0  0  1  4  1  1  1  1  1  0  2  0  1  5  3  0  1  0  0"<<endl<<
-                   "1  0  0  0  3  3  0  3  0  3  0  0  2  0  0  1  0  0  0  0  0  5  1  0  0  0"<<endl<<
-                   "0  0  1  2  4  1"<<endl<<
-                   "0  0  1  1  0  6  3  1  4  0  5  0  0  1  0  1  0  0  1  2  0  0  2  0  0  0"<<endl<<
-                   "0  0  1  5  0  0  0  2  1  0  4  2  1  1  0  1  0  1  1  0  0  1  2  0  2  0"<<endl<<
-                   "3  0  0  2  6  1"<<endl<<
-                   "0  5  3  2  0  1  7  3  0  0  2  0  0  1  0  4  3  2  0  1  1  0  0  1  0  1"<<endl<<
-                   "5  0  1  1  2  6  0  2  0  0  0  0  2  0  0  1  0  0  2  5  1  0  3  2  0  0"<<endl<<
-                   "0  2  1  0  2  0"<<endl<<
-                   "1  3  6  1  0  3  7  1  1  0  1  1  2  0  1  0  1  0  3  6  1  2 11  0  0  2"<<endl<<
-                   "2  0  1  3  1  0  1  1  6  3  2  0  5  0  9  1  0  2  4  1  2  3  0  4  0  1"<<endl<<
-                   "4  4  2  2  3  1"<<endl<<
-                   "0  0  2  3  0  4  2  1  4  0  0  2  0  0  1  2  2  0  0  1  0  1  1  0  0  0"<<endl<<
-                   "0  0  1  1  0  0  0  3  1  0  0  1  4  0  0  0  0  1  1  0  0  2  4  0  1  0"<<endl<<
-                   "0  1  1  1  0  3"<<endl<<
-                   "0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0"<<endl<<
-                   "0  0  0  0  0  0  0  0  0  0  1  0  3  0  0  0  0  0  1  0  2  0  0  1  0  0"<<endl<<
-                   "0  0  0  0  0  0"<<endl<<
-                   "0  0  2  0  0  2  0  1  6  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  2"<<endl<<
-                   "0  0  0  0  0  0  2  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0"<<endl<<
-                   "0  0  0  0  0  0"<<endl<<
-                   "0  0  2  2  1  8  6  2  1  0  0  1  2  1  7  8  7  0  1 12  0  0  1  0  2  0"<<endl<<
-                   "1  1  0  3  1  0  8  2  1  1  2  1  0  1  4  2  0  0  0  0  3  0  4  0  0  0"<<endl<<
-                   "0  5  1  2  4  3"<<endl<<
-                   "1  1 16  1  2  9  5  5  4  1  4  2  4  0  6  4  7  0  0 17  1  2  4  0  1  1"<<endl<<
-                   "2  0  7  2  4  0  1  4 12  0  1  6  2  2  1  1  0  2  4  0  0  2  4  1  0  0"<<endl<<
-                   "5  0  5  3 10  0"<<endl<<
-                   "1  0  4  2  0  3 14  0  3  0  6  0  1  2  4  2  4  2  0 11  2  1  1  0  1  1"<<endl<<
-                   "2  0  1  1  1  0  0  3  2  2  0  1  2  0  1  1  1  1  0  1  0  1  2  1  0  0"<<endl<<
-                   "1  5  0 12  7  1"<<endl<<
-                   "4  1  5  2  0  2 16  2  2  0  6  7  0  1  9  0  0  1  3  9  4  1  2  2  1  1"<<endl<<
-                   "4  0  2  6  1  0  1  4  3 10  1  1  1  0  5  0  0  2  0  2  2  0  2  1  0  0"<<endl<<
-                   "2  3 12  0 12  0"<<endl<<
-                   "1  4 19  3  4 18 20  4  7  0 12  3  0  5  4 11 11  0  1 23  2  3  3  1  5  2"<<endl<<
-                   "6  0 10 10  3  0  3  3  6  1  3  4  2  2  1  3  0  3  1  4  6  2  3  0  0  0"<<endl<<
-                   "4 10  7 12  0  1"<<endl<<
-                   "1  0  1  5  0  2  4  2  1  0  0  3  0  1  0  3  0  1  2  5  1  0  1  1  0  0"<<endl<<
-                   "2  0  1  2  2  1  0  6  2  1  0  2  0  0  2  1  0  0  0  1  1  0  1  3  0  0"<<endl<<
-                   "3  0  1  0  1  0"<<endl<<
-                   "0 4 4 5 4 4 5 5 4 5 5 4 4 5 5 4 4 5 5 5 5 4 5 4 4 5 5 4 4 5 5 5 4 4 4 5 4 5 4 4"<<endl<<
-                   "5 4 5 5 4 5 5 5 4 5 4 5 4 4 5 5 5 5"<<endl<<
-                   "3 0 2 3 4 2 2 2 3 2 3 3 5 4 3 3 3 2 3 3 2 5 4 2 5 3 2 2 3 4 4 2 4 2 5 3 3 5 3 2"<<endl<<
-                   "3 3 3 2 4 2 4 3 3 3 2 3 4 4 2 3 2 2"<<endl<<
-                   "2 2 0 4 5 4 4 1 4 3 3 3 3 3 4 4 4 2 2 5 2 5 3 1 4 3 3 2 4 5 4 2 3 3 5 1 2 3 3 1"<<endl<<
-                   "2 4 4 3 4 2 2 2 2 2 1 3 2 5 3 2 5 2"<<endl<<
-                   "4 4 5 0 5 5 4 3 5 4 4 5 3 4 4 4 4 3 5 5 3 4 5 5 4 4 5 4 4 4 5 4 5 5 4 3 3 4 4 3"<<endl<<
-                   "5 4 4 4 4 3 4 4 5 4 2 4 5 5 4 4 5 5"<<endl<<
-                   "2 3 5 5 0 3 2 3 3 4 4 1 4 2 4 2 2 1 2 2 1 3 4 1 2 5 4 1 3 1 3 1 1 1 1 1 2 2 5 4"<<endl<<
-                   "2 2 2 5 5 1 3 2 5 2 3 2 1 2 2 2 4 1"<<endl<<
-                   "3 2 5 5 2 0 5 3 4 3 4 3 3 5 4 5 5 2 2 5 3 2 3 1 1 1 3 1 4 4 4 1 4 3 3 2 1 2 2 2"<<endl<<
-                   "2 3 1 2 2 3 5 3 3 3 1 2 4 4 3 3 5 4"<<endl<<
-                   "2 1 3 4 2 5 0 2 2 2 2 2 1 5 5 5 4 3 3 5 3 2 2 2 2 2 3 1 4 3 3 2 5 4 3 4 2 2 2 2"<<endl<<
-                   "3 2 2 3 2 2 2 2 3 3 1 2 3 3 3 4 5 3"<<endl<<
-                   "5 3 3 3 2 2 3 0 3 3 4 3 3 3 3 3 2 3 3 3 2 2 3 5 2 2 3 2 2 3 5 4 3 5 3 4 3 3 3 2"<<endl<<
-                   "3 2 2 3 2 3 2 3 4 3 2 2 3 2 2 3 3 4"<<endl<<
-                   "2 2 5 4 2 3 3 2 0 1 3 5 2 3 3 3 3 1 3 4 2 4 3 3 4 5 2 1 3 3 2 2 3 3 4 3 3 2 2 2"<<endl<<
-                   "2 2 2 2 2 2 4 2 3 2 1 5 2 4 2 3 4 4"<<endl<<
-                   "3 3 5 4 4 4 3 3 2 0 3 4 2 4 5 4 4 1 2 4 2 4 2 2 3 2 5 1 5 2 3 1 2 3 4 1 1 2 4 5"<<endl<<
-                   "3 3 2 1 3 4 1 3 2 4 1 2 2 5 4 1 3 3"<<endl<<
-                   "3 3 3 3 3 3 3 3 3 3 0 3 3 3 3 3 3 3 3 3 5 3 3 3 3 3 3 3 3 3 5 5 3 3 3 3 3 3 3 3"<<endl<<
-                   "3 3 3 3 3 5 3 5 3 3 2 3 3 3 3 3 3 3"<<endl<<
-                   "2 3 4 4 2 3 2 2 5 3 3 0 2 3 2 3 3 2 3 4 2 4 2 2 3 3 3 1 2 2 3 1 2 4 3 4 2 2 4 2"<<endl<<
-                   "2 2 3 2 1 3 1 2 3 2 2 2 2 4 2 4 3 4"<<endl<<
-                   "2 5 4 2 4 3 2 2 2 2 2 2 0 3 2 3 2 2 2 3 1 5 3 2 5 2 3 2 4 3 3 2 3 3 3 3 2 4 4 5"<<endl<<
-                   "2 4 3 4 4 2 3 2 3 3 3 2 3 4 3 3 3 2"<<endl<<
-                   "3 2 5 4 3 5 5 2 4 3 3 3 3 0 4 5 4 3 4 4 3 3 2 2 3 3 4 2 5 3 4 3 4 3 4 3 2 3 4 3"<<endl<<
-                   "4 4 3 4 4 3 3 3 3 3 2 2 4 4 4 4 5 3"<<endl<<
-                   "2 1 3 3 4 4 5 2 3 2 2 1 1 3 0 4 5 1 5 2 2 2 3 2 1 1 4 1 3 2 3 3 3 4 4 3 1 4 2 1"<<endl<<
-                   "5 3 1 5 3 2 2 1 4 1 1 1 3 3 3 5 5 5"<<endl<<
-                   "3 3 4 4 3 5 5 2 3 2 3 3 4 4 5 0 5 3 5 5 2 3 2 2 2 1 2 2 4 4 3 2 3 3 3 3 2 3 4 3"<<endl<<
-                   "4 5 3 3 4 4 3 4 3 3 2 1 5 4 2 4 3 3"<<endl<<
-                   "2 2 5 3 3 4 4 2 3 3 3 3 2 4 5 5 0 2 4 5 2 3 2 2 3 1 2 3 4 3 2 2 4 2 5 2 1 4 3 2"<<endl<<
-                   "3 5 3 5 3 2 2 3 3 3 1 1 4 5 3 4 5 3"<<endl<<
-                   "5 3 2 5 3 3 5 5 3 2 5 5 4 4 3 5 4 0 2 1 5 3 3 3 3 2 2 1 2 5 5 5 3 5 4 4 2 2 3 3"<<endl<<
-                   "3 3 3 5 5 5 2 5 3 5 2 1 2 3 4 5 5 5"<<endl<<
-                   "3 3 4 4 2 2 3 2 4 3 3 3 3 4 5 5 5 2 0 4 2 4 5 4 5 2 3 3 4 4 3 3 4 4 2 4 4 3 1 2"<<endl<<
-                   "5 4 3 3 3 2 4 2 5 3 3 2 3 3 3 4 4 3"<<endl<<
-                   "3 2 4 4 2 5 5 2 3 3 3 3 2 4 3 4 3 2 3 0 2 3 3 1 1 1 2 2 3 3 3 2 5 3 3 3 2 2 2 2"<<endl<<
-                   "3 2 2 3 2 2 1 2 3 3 1 1 5 5 3 2 5 3"<<endl<<
-                   "3 1 2 2 1 2 3 1 2 2 5 2 1 2 2 1 1 4 1 3 0 1 2 2 2 1 1 1 1 2 5 4 1 2 2 2 1 1 1 1"<<endl<<
-                   "2 1 1 3 1 5 2 5 3 4 1 1 1 2 2 2 3 2"<<endl<<
-                   "2 5 5 3 3 3 2 2 4 2 2 3 4 3 3 2 3 2 3 4 3 0 3 3 5 3 3 1 4 3 3 3 3 3 4 3 2 3 3 3"<<endl<<
-                   "4 3 3 3 3 4 3 3 4 3 1 3 2 4 3 3 4 3"<<endl<<
-                   "2 3 4 4 5 3 4 3 4 2 2 3 2 4 4 2 2 2 5 3 1 2 0 2 4 3 2 1 3 1 2 1 4 5 2 1 4 4 5 2"<<endl<<
-                   "5 2 1 5 5 1 5 1 5 1 4 2 5 2 3 2 4 5"<<endl<<
-                   "4 1 2 5 2 2 3 5 4 3 4 3 2 2 3 4 2 2 4 2 1 3 2 0 2 4 4 1 1 2 5 2 2 5 2 4 1 1 1 1"<<endl<<
-                   "4 1 2 3 1 4 4 2 2 5 1 3 1 1 3 4 2 5"<<endl<<
-                   "2 4 5 3 3 2 2 2 3 1 3 4 4 2 2 1 3 1 4 2 2 5 4 2 0 3 2 1 3 4 2 1 2 3 3 2 2 2 3 3"<<endl<<
-                   "2 3 4 2 2 1 1 2 3 2 1 2 2 2 1 3 4 2"<<endl<<
-                   "3 3 4 4 4 2 2 2 5 2 3 3 2 2 2 2 2 2 3 1 2 4 3 3 4 0 2 2 2 2 2 2 2 3 4 2 4 2 2 2"<<endl<<
-                   "2 4 4 3 4 2 3 4 3 3 3 5 2 3 2 2 3 2"<<endl<<
-                   "4 2 5 5 5 3 5 3 1 5 5 3 1 4 4 2 1 2 1 5 2 4 3 4 1 1 0 1 5 4 5 3 4 5 4 3 1 2 1 2"<<endl<<
-                   "1 4 1 2 3 1 1 4 2 4 1 1 4 1 2 5 5 3"<<endl<<
-                   "3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 0 3 3 3 3 3 3 3 3 3 3 3 3"<<endl<<
-                   "3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3"<<endl<<
-                   "2 3 5 3 3 3 4 2 3 4 3 2 3 5 4 4 4 1 3 3 1 4 3 1 4 1 5 2 0 2 3 2 3 2 5 3 2 4 4 3"<<endl<<
-                   "2 4 4 3 2 1 2 1 2 1 1 2 3 5 3 3 5 2"<<endl<<
-                   "5 2 5 5 1 3 2 3 3 1 5 1 2 2 3 3 1 1 2 5 2 2 1 3 3 1 3 1 3 0 2 2 2 3 4 2 4 3 1 1"<<endl<<
-                   "3 4 3 3 1 1 5 2 1 2 1 2 3 3 3 3 5 3"<<endl<<
-                   "4 2 4 4 2 4 5 5 3 3 5 3 2 3 4 3 3 3 3 4 4 3 4 5 3 2 4 2 4 2 0 5 3 4 4 4 3 3 2 2"<<endl<<
-                   "4 4 2 3 2 4 3 4 3 4 2 4 3 4 3 4 4 3"<<endl<<
-                   "5 3 4 4 3 4 4 4 3 3 5 3 2 4 5 4 4 5 4 5 5 4 3 4 3 2 4 2 2 5 5 0 5 5 4 3 3 3 2 2"<<endl<<
-                   "3 3 2 4 2 5 3 5 5 5 2 2 4 4 3 4 5 5"<<endl<<
-                   "3 3 3 5 2 5 5 2 3 2 3 4 3 4 4 4 3 3 4 5 2 2 4 2 3 3 3 4 3 3 2 3 0 4 4 3 2 3 2 3"<<endl<<
-                   "3 3 4 2 2 2 3 2 4 3 2 3 5 4 4 4 4 4"<<endl<<
-                   "4 3 4 5 3 4 4 4 4 3 3 3 2 2 3 3 3 4 5 5 3 2 5 5 3 4 4 2 3 4 4 4 5 0 3 4 4 3 4 3"<<endl<<
-                   "5 3 3 3 2 4 3 3 5 5 2 4 5 3 4 5 4 5"<<endl<<
-                   "2 4 5 3 3 4 4 2 3 4 3 4 3 3 4 2 5 2 4 4 2 4 3 2 5 3 3 2 5 4 3 2 4 2 0 2 2 4 4 3"<<endl<<
-                   "4 4 5 3 2 1 4 1 3 3 2 2 2 5 2 3 4 2"<<endl<<
-                   "5 1 2 5 1 4 5 1 3 3 5 5 2 5 3 4 2 3 5 5 5 2 1 1 1 1 3 3 3 2 2 2 5 4 4 0 1 1 1 1"<<endl<<
-                   "5 3 4 4 4 5 4 5 1 2 1 2 1 3 1 5 5 4"<<endl<<
-                   "2 3 3 4 2 4 3 3 4 3 3 4 3 3 3 3 2 2 5 3 2 3 5 2 4 4 3 2 2 3 3 2 3 4 4 2 0 4 5 2"<<endl<<
-                   "4 3 3 4 2 2 5 2 5 3 5 3 3 3 3 2 3 3"<<endl<<
-                   "2 5 3 3 2 3 2 2 3 3 3 3 3 3 4 4 4 2 4 4 2 2 3 2 3 2 2 3 4 3 3 3 4 2 5 3 3 0 3 2"<<endl<<
-                   "3 4 4 3 2 3 4 3 3 3 2 2 4 4 2 3 4 3"<<endl<<
-                   "2 2 3 4 5 3 3 2 3 4 4 5 4 4 3 5 3 2 2 4 2 5 5 2 5 4 4 2 5 2 2 2 2 3 5 2 5 2 0 3"<<endl<<
-                   "2 5 5 3 5 2 5 2 5 3 5 2 3 4 3 3 4 3"<<endl<<
-                   "2 3 3 1 4 3 4 2 1 2 1 2 5 3 3 3 2 2 4 4 1 2 1 2 3 2 2 1 4 1 1 1 2 3 3 3 2 2 3 0"<<endl<<
-                   "2 3 2 3 3 1 1 1 1 2 1 5 2 4 2 2 4 2"<<endl<<
-                   "3 2 2 5 3 4 4 2 2 4 2 2 2 4 4 3 3 2 5 5 2 4 5 2 3 2 2 2 3 4 3 2 4 3 4 4 3 3 3 2"<<endl<<
-                   "0 2 4 3 4 2 3 2 5 3 4 3 5 2 2 4 4 5"<<endl<<
-                   "2 1 4 1 2 3 3 2 1 1 3 1 4 4 3 5 5 1 3 3 1 2 1 1 2 2 2 1 4 3 3 1 2 2 5 1 1 4 2 1"<<endl<<
-                   "2 0 5 2 1 1 2 1 2 1 1 1 4 4 2 3 3 1"<<endl<<
-                   "2 3 4 3 2 2 2 1 3 2 2 2 2 3 2 3 2 1 4 2 1 2 2 2 5 4 2 2 3 3 2 1 2 1 5 3 2 3 3 2"<<endl<<
-                   "3 4 0 1 2 1 3 1 2 1 1 2 3 4 3 3 2 1"<<endl<<
-                   "3 2 4 4 4 3 3 2 2 1 4 2 3 4 5 3 5 5 3 3 5 4 4 2 2 2 2 4 3 2 3 2 3 2 2 3 4 3 3 2"<<endl<<
-                   "1 3 3 0 3 3 5 3 4 2 1 1 3 2 2 3 4 2"<<endl<<
-                   "2 3 4 4 5 2 1 1 1 3 4 3 2 4 4 4 2 1 1 1 1 2 4 1 2 3 3 1 1 1 3 1 1 1 1 1 1 1 5 3"<<endl<<
-                   "2 1 1 3 0 1 1 1 4 1 1 1 1 1 1 1 4 1"<<endl<<
-                   "4 2 3 1 1 2 3 3 3 4 4 3 2 3 3 3 2 4 3 4 4 3 3 2 1 1 3 1 4 3 4 5 1 2 3 4 1 2 3 2"<<endl<<
-                   "1 1 1 4 1 0 1 5 3 3 1 2 1 3 3 4 4 1"<<endl<<
-                   "3 3 3 3 4 4 2 2 5 1 5 3 2 2 3 3 3 1 5 3 1 3 5 2 3 3 1 2 3 5 3 2 2 2 4 3 4 3 5 2"<<endl<<
-                   "3 2 3 5 2 1 0 1 4 2 5 2 3 1 4 3 5 1"<<endl<<
-                   "4 4 3 3 3 3 3 3 3 4 5 3 3 2 3 4 3 4 1 4 5 3 3 1 3 4 4 2 3 3 4 5 2 2 2 3 2 2 3 2"<<endl<<
-                   "2 3 2 3 2 5 2 0 3 4 1 2 2 3 3 3 3 2"<<endl<<
-                   "4 4 2 5 4 4 3 2 4 3 3 4 1 4 4 4 4 1 5 4 1 3 5 3 3 3 3 2 3 2 4 3 4 5 4 3 4 3 4 3"<<endl<<
-                   "5 2 2 5 5 2 4 2 0 5 2 3 4 2 2 3 4 5"<<endl<<
-                   "5 4 2 5 3 4 4 4 4 5 5 3 3 3 4 3 2 2 2 5 4 3 3 4 3 3 4 3 2 3 3 2 3 5 3 2 3 3 3 3"<<endl<<
-                   "2 3 3 4 3 5 3 5 4 0 1 3 3 1 3 5 5 5"<<endl<<
-                   "2 2 2 3 4 2 2 2 2 5 2 2 3 3 2 2 2 2 3 1 1 1 5 1 1 4 2 1 2 2 2 2 2 1 3 1 5 2 5 2"<<endl<<
-                   "3 1 2 2 2 1 5 1 3 2 0 1 2 2 2 1 2 1"<<endl<<
-                   "2 2 3 3 2 2 4 2 4 2 3 4 2 3 3 2 2 3 3 2 4 4 3 3 3 4 3 2 2 2 2 2 3 3 3 2 3 2 2 4"<<endl<<
-                   "2 2 3 3 3 3 3 3 3 3 2 0 3 3 2 3 4 3"<<endl<<
-                   "2 2 3 5 2 5 5 1 2 1 3 2 2 4 3 4 4 1 4 5 1 1 4 1 3 1 1 5 3 5 2 2 5 4 3 1 1 3 2 1"<<endl<<
-                   "4 4 3 1 1 1 1 1 4 2 1 1 0 3 1 2 3 4"<<endl<<
-                   "2 3 5 3 3 5 3 2 4 3 2 4 4 2 2 3 3 1 2 5 2 5 2 1 5 2 4 3 5 3 2 1 4 2 5 3 2 4 3 4"<<endl<<
-                   "2 4 4 3 3 2 2 2 3 4 2 2 4 0 3 4 5 3"<<endl<<
-                   "2 2 3 2 2 3 4 2 2 3 4 2 3 3 3 2 2 4 1 5 4 3 2 2 5 1 3 1 4 2 4 1 3 3 3 2 1 2 1 1"<<endl<<
-                   "1 2 2 2 2 3 4 2 2 4 1 1 2 5 0 2 2 2"<<endl<<
-                   "3 1 3 4 2 5 5 3 5 3 4 5 2 4 5 5 5 1 5 3 3 3 3 3 4 2 4 1 4 4 3 3 4 4 5 5 3 1 2 4"<<endl<<
-                   "4 3 4 4 2 5 3 5 3 5 1 4 3 5 4 0 5 5"<<endl<<
-                   "2 1 5 5 5 3 4 1 4 1 5 2 2 3 3 4 3 1 2 5 3 2 2 1 1 1 4 1 5 5 1 1 3 2 5 5 1 2 3 2"<<endl<<
-                   "1 3 2 3 4 2 5 1 3 2 1 2 3 3 1 5 0 5"<<endl<<
-                   "3 2 2 5 2 4 2 3 3 3 3 4 1 3 3 3 2 3 3 2 2 2 4 4 2 2 3 1 2 3 3 2 2 5 3 2 2 2 2 2"<<endl<<
+        outText << "DL"<<"\n"<<
+                   "N=58 NM=2"<<"\n"<<
+                   "FORMAT = FULLMATRIX DIAGONAL PRESENT"<<"\n"<<
+                   "LEVEL LABELS:"<<"\n"<<
+                   "BKFRAB"<<"\n"<<
+                   "BKFRAC"<<"\n"<<
+                   "DATA:"<<"\n"<<
+                   "0  0  2  1  0  0  2  0  0  0  1  1  2  0  0  0  1  0  1  0  0  1  0  0  0  0"<<"\n"<<
+                   "0  0  2  1  1  1  0  2  1  2  0  0  0  0  1  0  0  0  0  0  0  0  1  0  0  0"<<"\n"<<
+                   "0  1  1  4  1  1"<<"\n"<<
+                   "0  0 10  0  0  2  1  0  2  0  0  0  6  2  0  1  0  0  0  1  0 10  2  0  4  0"<<"\n"<<
+                   "3  0  1  1  0  0  0  0  5  1  0  4  0  0  0  0  0  1  1  0  0  5  3  0  0  0"<<"\n"<<
+                   "0  1  0  1  4  0"<<"\n"<<
+                   "2 10  0  6 11 14 15  4 12  0  5  4  3  8 10  8 11  0  2 19  2 15  1  2  6  1"<<"\n"<<
+                   "5  0 12  5  4  0  1  4 15  3  1  3  6  0  2  3  0  9  8  2  1  3  6  2  0  2"<<"\n"<<
+                   "2 16  4  5 19  1"<<"\n"<<
+                   "1  0  6  0  2  3  9  1  8  0  0  5  0  0  2  4  3  2  2  6  0  1  1  3  1  0"<<"\n"<<
+                   "5  1  1  3  0  1  1  4  1  0  1  3  2  0  1  0  0  1  1  1  1  2  1  3  0  0"<<"\n"<<
+                   "2  1  2  2  3  5"<<"\n"<<
+                   "0  0 11  2  0  2  8  1  1  1  0  0  2  0  1  1  0  0  0  3  0  0  0  0  0  0"<<"\n"<<
+                   "8  0  1  5  0  0  1  0  0  0  0  0  9  2  1  0  1  8 25  0  0  0  0  0  0  0"<<"\n"<<
+                   "1  2  0  0  4  0"<<"\n"<<
+                   "0  2 14  3  2  0 30  2  8  0  4  4  1  6  2 14  9  0  1 51  0  3  2  1  0  1"<<"\n"<<
+                   "6  0  3 11  2  0 15  5  3  1  0  2  2  1  3  1  0  3  2  2  6  1  3  4  0  2"<<"\n"<<
+                   "8  9  3  2 18  2"<<"\n"<<
+                   "2  1 15  9  8 30  0 10  4  2  7  3  0 12  9 10  9  2  3 40  2  2  5  2  0  1"<<"\n"<<
+                   "19  1 10 14  5  3 14  7  7  5  3  4  5  7  8  5  0  2  4  7  3  7  7  2  0  0"<<"\n"<<
+                   "6  5 14 16 20  4"<<"\n"<<
+                   "0  0  4  1  1  2 10  0  3  0  2  0  1  3  3  3  5  0  0  6  1  0  2  3  0  1"<<"\n"<<
+                   "6  0  2  0  9  1  0  1  2  4  2  5  1  0  3  5  0  0  5  0  1  3  1  1  0  1"<<"\n"<<
+                   "2  5  0  2  4  2"<<"\n"<<
+                   "0  2 12  8  1  8  4  3  0  0  5  5  2  2  4  5  6  1  0  5  0  5  0  3  3  3"<<"\n"<<
+                   "3  1  2  3  1  0  2  4  4  3  5  1  2  0  1  1  1  2  0  0  4  0  1  4  0  6"<<"\n"<<
+                   "1  4  3  2  7  1"<<"\n"<<
+                   "0  0  0  0  1  0  2  0  0  0  0  0  0  0  1  2  0  0  0  0  0  0  0  0  0  0"<<"\n"<<
+                   "6  0  1  0  1  0  0  0  0  0  0  1  2  2  0  0  0  0  0  1  0  0  0  0  0  0"<<"\n"<<
+                   "0  1  0  0  0  0"<<"\n"<<
+                   "1  0  5  0  0  4  7  2  5  0  0  0  0  1  3  3  5  3  0  7  4  1  0  3  0  0"<<"\n"<<
+                   "4  0  5  1  3  0  0  2  2  3  5  3  2  0  0  1  0  2  1  4  5  2  1  0  0  0"<<"\n"<<
+                   "0  4  6  6 12  0"<<"\n"<<
+                   "1  0  4  5  0  4  3  0  5  0  0  0  0  0  0  0  0  0  0  3  0  1  0  1  1  0"<<"\n"<<
+                   "0  0  2  0  2  0  1  2  3  2  2  1  0  0  0  1  0  1  1  1  0  0  1  2  0  0"<<"\n"<<
+                   "1  2  0  7  3  3"<<"\n"<<
+                   "2  6  3  0  2  1  0  1  2  0  0  0  0  2  1  3  3  0  1  0  0  6  2  0  0  0"<<"\n"<<
+                   "3  0  1  0  0  0  1  1  1  0  0  1  1  1  1  1  1  0  2  1  0  0  2  0  0  0"<<"\n"<<
+                   "2  4  1  0  0  0"<<"\n"<<
+                   "0  2  8  0  0  6 12  3  2  0  1  0  2  0  3  8 11  1  4  8  0  1  0  0  1  1"<<"\n"<<
+                   "4  0  8  4  6  0  3  1  5  1  1  0  0  0  1  3  0  2  2  1  1  1  0  0  0  0"<<"\n"<<
+                   "1  0  2  1  5  1"<<"\n"<<
+                   "0  0 10  2  1  2  9  3  4  1  3  0  1  3  0  9 14  0  6  9  0  2  1  2  1  0"<<"\n"<<
+                   "4  0  3  0  2  1  1  4  2  3  0  6  1  0  7  1  0  7  1  1  0  0  1  1  0  0"<<"\n"<<
+                   "7  6  4  9  4  0"<<"\n"<<
+                   "0  1  8  4  1 14 10  3  5  2  3  0  3  8  9  0 26  3  1 12  0  2  0  0  1  0"<<"\n"<<
+                   "7  0  5  6  5  4  2  2  2  2  0  4  4  0  2  5  1  3  2  1  1  4  0  2  0  0"<<"\n"<<
+                   "8  4  2  0 11  3"<<"\n"<<
+                   "1  0 11  3  0  9  9  5  6  0  5  0  3 11 14 26  0  3  0  9  0  1  0  0  1  0"<<"\n"<<
+                   "5  0  5  2  2  4  2  1  4  2  0  1  1  1  2  3  0  3  1  0  0  3  1  2  0  0"<<"\n"<<
+                   "7  7  4  0 11  0"<<"\n"<<
+                   "0  0  0  2  0  0  2  0  1  0  3  0  0  1  0  3  3  0  0  0  3  0  0  0  0  0"<<"\n"<<
+                   "0  0  1  0  0  3  0  1  1  1  1  0  1  0  0  0  0  1  0  2  0  2  0  0  0  0"<<"\n"<<
+                   "0  0  2  1  0  1"<<"\n"<<
+                   "1  0  2  2  0  1  3  0  0  0  0  0  1  4  6  1  0  0  0  5  0  0  2  1  3  0"<<"\n"<<
+                   "0  0  0  1  1  0  0  1  1  1  1  2  0  1 14  1  0  1  0  0  1  0  3  0  0  0"<<"\n"<<
+                   "1  0  0  3  1  2"<<"\n"<<
+                   "0  1 19  6  3 51 40  6  5  0  7  3  0  8  9 12  9  0  5  0  3  2  3  2  1  1"<<"\n"<<
+                   "7  1 10  6  6  1 13 12  9  2  1  6  2  1 10  4  0  2  2  1  2  1  6  1  0  0"<<"\n"<<
+                   "12 17 11  9 23  5"<<"\n"<<
+                   "0  0  2  0  0  0  2  1  0  0  4  0  0  0  0  0  0  3  0  3  0  0  1  0  0  0"<<"\n"<<
+                   "0  0  2  0  2  0  0  1  1  1  0  1  0  0  1  1  0  0  0  5  0  1  1  0  0  0"<<"\n"<<
+                   "0  1  2  4  2  1"<<"\n"<<
+                   "1 10 15  1  0  3  2  0  5  0  1  1  6  1  2  2  1  0  0  2  0  0  1  1  7  2"<<"\n"<<
+                   "1  0  3  1  0  0  0  0  1  1  1  0  2  0  0  0  0  1  0  3  0  0  2  1  0  0"<<"\n"<<
+                   "0  2  1  1  3  0"<<"\n"<<
+                   "0  2  1  1  0  2  5  2  0  0  0  0  2  0  1  0  0  0  2  3  1  1  0  0  1  0"<<"\n"<<
+                   "1  0  2  0  2  0  3  1  2  1  2  2  2  1  7  1  0  1  2  0  2  0 11  1  1  0"<<"\n"<<
+                   "1  4  1  2  3  1"<<"\n"<<
+                   "0  0  2  3  0  1  2  3  3  0  3  1  0  0  2  0  0  0  1  2  0  1  0  0  0  1"<<"\n"<<
+                   "0  0  1  1  1  0  0  2  1  1  0  2  0  0  0  0  0  1  0  1  0  1  0  0  0  0"<<"\n"<<
+                   "0  0  0  2  1  1"<<"\n"<<
+                   "0  4  6  1  0  0  0  0  3  0  0  1  0  1  1  1  1  0  3  1  0  7  1  0  0  0"<<"\n"<<
+                   "0  0  3  1  0  0  0  0  3  0  1  1  0  0  4  0  0  1  0  0  0  0  0  0  0  0"<<"\n"<<
+                   "2  1  1  1  5  0"<<"\n"<<
+                   "0  0  1  0  0  1  1  1  3  0  0  0  0  1  0  0  0  0  0  1  0  2  0  1  0  0"<<"\n"<<
+                   "1  0  0  1  0  0  0  0  1  0  0  1  3  0  0  0  0  0  1  0  0  1  2  0  0  2"<<"\n"<<
+                   "0  1  1  1  2  0"<<"\n"<<
+                   "0  3  5  5  8  6 19  6  3  6  4  0  3  4  4  7  5  0  0  7  0  1  1  0  0  1"<<"\n"<<
+                   "0  0  6  6  2  1  1  4  0  1  0  2  4  0  3  2  1  1  4  1  0  5  2  0  0  0"<<"\n"<<
+                   "1  2  2  4  6  2"<<"\n"<<
+                   "0  0  0  1  0  0  1  0  1  0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0"<<"\n"<<
+                   "0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0"<<"\n"<<
+                   "1  0  0  0  0  0"<<"\n"<<
+                   "2  1 12  1  1  3 10  2  2  1  5  2  1  8  3  5  5  1  0 10  2  3  2  1  3  0"<<"\n"<<
+                   "6  0  0  3  1  0  0  0 20  2  2  3  3  2  1  2  0  3  3  0  1  1  1  1  0  0"<<"\n"<<
+                   "0  7  1  2 10  1"<<"\n"<<
+                   "1  1  5  3  5 11 14  0  3  0  1  0  0  4  0  6  2  0  1  6  0  1  0  1  1  1"<<"\n"<<
+                   "6  0  3  0  3  0  1  0  6  1  1  1  3  1  4  1  2  0  1  0  5  1  3  1  0  0"<<"\n"<<
+                   "3  2  1  6 10  2"<<"\n"<<
+                   "1  0  4  0  0  2  5  9  1  1  3  2  0  6  2  5  2  0  1  6  2  0  2  1  0  0"<<"\n"<<
+                   "2  0  1  3  0  4  0  3  1  3  0  1  0  1  3  3  0  0  1  3  0  2  1  0  0  0"<<"\n"<<
+                   "1  4  1  1  3  2"<<"\n"<<
+                   "1  0  0  1  0  0  3  1  0  0  0  0  0  0  1  4  4  3  0  1  0  0  0  0  0  0"<<"\n"<<
+                   "1  0  0  0  4  0  0  2  0  0  0  0  0  0  1  0  0  0  0  3  0  6  0  0  0  0"<<"\n"<<
+                   "0  0  0  0  0  1"<<"\n"<<
+                   "0  0  1  1  1 15 14  0  2  0  0  1  1  3  1  2  2  0  0 13  0  0  3  0  0  0"<<"\n"<<
+                   "1  0  0  1  0  0  0  1  1  1  0  0  0  3  1  0  0  0  0  0  0  0  1  0  0  2"<<"\n"<<
+                   "8  1  0  1  3  0"<<"\n"<<
+                   "2  0  4  4  0  5  7  1  4  0  2  2  1  1  4  2  1  1  1 12  1  0  1  2  0  0"<<"\n"<<
+                   "4  1  0  0  3  2  1  0  3  1  0  0  1  1  2  1  0  0  0  3  2  2  1  3  0  0"<<"\n"<<
+                   "2  4  3  4  3  6"<<"\n"<<
+                   "1  5 15  1  0  3  7  2  4  0  2  3  1  5  2  2  4  1  1  9  1  1  2  1  3  1"<<"\n"<<
+                   "0  0 20  6  1  0  1  3  0  2  1  3  2  2  3  4  2  2  0  0  1  0  6  1  0  0"<<"\n"<<
+                   "1 12  2  3  6  2"<<"\n"<<
+                   "2  1  3  0  0  1  5  4  3  0  3  2  0  1  3  2  2  1  1  2  1  1  1  1  0  0"<<"\n"<<
+                   "1  0  2  1  3  0  1  1  2  0  0  0  1  0  1  2  0  1  0  3  0  0  3  0  0  0"<<"\n"<<
+                   "1  0  2 10  1  1"<<"\n"<<
+                   "0  0  1  1  0  0  3  2  5  0  5  2  0  1  0  0  0  1  1  1  0  1  2  0  1  0"<<"\n"<<
+                   "0  0  2  1  0  0  0  0  1  0  0  0  3  0  1  0  0  0  1  0  4  0  2  0  1  0"<<"\n"<<
+                   "2  1  0  1  3  0"<<"\n"<<
+                   "0  4  3  3  0  2  4  5  1  1  3  1  1  0  6  4  1  0  2  6  1  0  2  2  1  1"<<"\n"<<
+                   "2  0  3  1  1  0  0  0  3  0  0  0  0  1  2  1  0  0  1  0  2  0  0  1  0  0"<<"\n"<<
+                   "1  6  1  1  4  2"<<"\n"<<
+                   "0  0  6  2  9  2  5  1  2  2  2  0  1  0  1  4  1  1  0  2  0  2  2  0  0  3"<<"\n"<<
+                   "4  0  3  3  0  0  0  1  2  1  3  0  0  1  0  0  0  4  9  2  1  2  5  4  3  0"<<"\n"<<
+                   "0  2  2  1  2  0"<<"\n"<<
+                   "0  0  0  0  2  1  7  0  0  2  0  0  1  0  0  0  1  0  1  1  0  0  1  0  0  0"<<"\n"<<
+                   "0  0  2  1  1  0  3  1  2  0  0  1  1  0  0  0  0  0  0  0  1  0  0  0  0  0"<<"\n"<<
+                   "1  2  0  0  2  0"<<"\n"<<
+                   "1  0  2  1  1  3  8  3  1  0  0  0  1  1  7  2  2  0 14 10  1  0  7  0  4  0"<<"\n"<<
+                   "3  0  1  4  3  1  1  2  3  1  1  2  0  0  0  1  1  1  1  0  0  0  9  0  0  0"<<"\n"<<
+                   "4  1  1  5  1  2"<<"\n"<<
+                   "0  0  3  0  0  1  5  5  1  0  1  1  1  3  1  5  3  0  1  4  1  0  1  0  0  0"<<"\n"<<
+                   "2  0  2  1  3  0  0  1  4  2  0  1  0  0  1  0  1  1  1  1  1  1  1  0  0  0"<<"\n"<<
+                   "2  1  1  0  3  1"<<"\n"<<
+                   "0  0  0  0  1  0  0  0  1  0  0  0  1  0  0  1  0  0  0  0  0  0  0  0  0  0"<<"\n"<<
+                   "1  0  0  2  0  0  0  0  2  0  0  0  0  0  1  1  0  0  0  0  0  0  0  0  0  0"<<"\n"<<
+                   "0  0  1  0  0  0"<<"\n"<<
+                   "0  1  9  1  8  3  2  0  2  0  2  1  0  2  7  3  3  1  1  2  0  1  1  1  1  0"<<"\n"<<
+                   "1  0  3  0  0  0  0  0  2  1  0  0  4  0  1  1  0  0  2  0  1  0  2  1  0  0"<<"\n"<<
+                   "0  2  1  2  3  0"<<"\n"<<
+                   "0  1  8  1 25  2  4  5  0  0  1  1  2  2  1  2  1  0  0  2  0  0  2  0  0  1"<<"\n"<<
+                   "4  0  3  1  1  0  0  0  0  0  1  1  9  0  1  1  0  2  0  0  1  2  4  1  1  0"<<"\n"<<
+                   "0  4  0  0  1  0"<<"\n"<<
+                   "0  0  2  1  0  2  7  0  0  1  4  1  1  1  1  1  0  2  0  1  5  3  0  1  0  0"<<"\n"<<
+                   "1  0  0  0  3  3  0  3  0  3  0  0  2  0  0  1  0  0  0  0  0  5  1  0  0  0"<<"\n"<<
+                   "0  0  1  2  4  1"<<"\n"<<
+                   "0  0  1  1  0  6  3  1  4  0  5  0  0  1  0  1  0  0  1  2  0  0  2  0  0  0"<<"\n"<<
+                   "0  0  1  5  0  0  0  2  1  0  4  2  1  1  0  1  0  1  1  0  0  1  2  0  2  0"<<"\n"<<
+                   "3  0  0  2  6  1"<<"\n"<<
+                   "0  5  3  2  0  1  7  3  0  0  2  0  0  1  0  4  3  2  0  1  1  0  0  1  0  1"<<"\n"<<
+                   "5  0  1  1  2  6  0  2  0  0  0  0  2  0  0  1  0  0  2  5  1  0  3  2  0  0"<<"\n"<<
+                   "0  2  1  0  2  0"<<"\n"<<
+                   "1  3  6  1  0  3  7  1  1  0  1  1  2  0  1  0  1  0  3  6  1  2 11  0  0  2"<<"\n"<<
+                   "2  0  1  3  1  0  1  1  6  3  2  0  5  0  9  1  0  2  4  1  2  3  0  4  0  1"<<"\n"<<
+                   "4  4  2  2  3  1"<<"\n"<<
+                   "0  0  2  3  0  4  2  1  4  0  0  2  0  0  1  2  2  0  0  1  0  1  1  0  0  0"<<"\n"<<
+                   "0  0  1  1  0  0  0  3  1  0  0  1  4  0  0  0  0  1  1  0  0  2  4  0  1  0"<<"\n"<<
+                   "0  1  1  1  0  3"<<"\n"<<
+                   "0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0"<<"\n"<<
+                   "0  0  0  0  0  0  0  0  0  0  1  0  3  0  0  0  0  0  1  0  2  0  0  1  0  0"<<"\n"<<
+                   "0  0  0  0  0  0"<<"\n"<<
+                   "0  0  2  0  0  2  0  1  6  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  2"<<"\n"<<
+                   "0  0  0  0  0  0  2  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0"<<"\n"<<
+                   "0  0  0  0  0  0"<<"\n"<<
+                   "0  0  2  2  1  8  6  2  1  0  0  1  2  1  7  8  7  0  1 12  0  0  1  0  2  0"<<"\n"<<
+                   "1  1  0  3  1  0  8  2  1  1  2  1  0  1  4  2  0  0  0  0  3  0  4  0  0  0"<<"\n"<<
+                   "0  5  1  2  4  3"<<"\n"<<
+                   "1  1 16  1  2  9  5  5  4  1  4  2  4  0  6  4  7  0  0 17  1  2  4  0  1  1"<<"\n"<<
+                   "2  0  7  2  4  0  1  4 12  0  1  6  2  2  1  1  0  2  4  0  0  2  4  1  0  0"<<"\n"<<
+                   "5  0  5  3 10  0"<<"\n"<<
+                   "1  0  4  2  0  3 14  0  3  0  6  0  1  2  4  2  4  2  0 11  2  1  1  0  1  1"<<"\n"<<
+                   "2  0  1  1  1  0  0  3  2  2  0  1  2  0  1  1  1  1  0  1  0  1  2  1  0  0"<<"\n"<<
+                   "1  5  0 12  7  1"<<"\n"<<
+                   "4  1  5  2  0  2 16  2  2  0  6  7  0  1  9  0  0  1  3  9  4  1  2  2  1  1"<<"\n"<<
+                   "4  0  2  6  1  0  1  4  3 10  1  1  1  0  5  0  0  2  0  2  2  0  2  1  0  0"<<"\n"<<
+                   "2  3 12  0 12  0"<<"\n"<<
+                   "1  4 19  3  4 18 20  4  7  0 12  3  0  5  4 11 11  0  1 23  2  3  3  1  5  2"<<"\n"<<
+                   "6  0 10 10  3  0  3  3  6  1  3  4  2  2  1  3  0  3  1  4  6  2  3  0  0  0"<<"\n"<<
+                   "4 10  7 12  0  1"<<"\n"<<
+                   "1  0  1  5  0  2  4  2  1  0  0  3  0  1  0  3  0  1  2  5  1  0  1  1  0  0"<<"\n"<<
+                   "2  0  1  2  2  1  0  6  2  1  0  2  0  0  2  1  0  0  0  1  1  0  1  3  0  0"<<"\n"<<
+                   "3  0  1  0  1  0"<<"\n"<<
+                   "0 4 4 5 4 4 5 5 4 5 5 4 4 5 5 4 4 5 5 5 5 4 5 4 4 5 5 4 4 5 5 5 4 4 4 5 4 5 4 4"<<"\n"<<
+                   "5 4 5 5 4 5 5 5 4 5 4 5 4 4 5 5 5 5"<<"\n"<<
+                   "3 0 2 3 4 2 2 2 3 2 3 3 5 4 3 3 3 2 3 3 2 5 4 2 5 3 2 2 3 4 4 2 4 2 5 3 3 5 3 2"<<"\n"<<
+                   "3 3 3 2 4 2 4 3 3 3 2 3 4 4 2 3 2 2"<<"\n"<<
+                   "2 2 0 4 5 4 4 1 4 3 3 3 3 3 4 4 4 2 2 5 2 5 3 1 4 3 3 2 4 5 4 2 3 3 5 1 2 3 3 1"<<"\n"<<
+                   "2 4 4 3 4 2 2 2 2 2 1 3 2 5 3 2 5 2"<<"\n"<<
+                   "4 4 5 0 5 5 4 3 5 4 4 5 3 4 4 4 4 3 5 5 3 4 5 5 4 4 5 4 4 4 5 4 5 5 4 3 3 4 4 3"<<"\n"<<
+                   "5 4 4 4 4 3 4 4 5 4 2 4 5 5 4 4 5 5"<<"\n"<<
+                   "2 3 5 5 0 3 2 3 3 4 4 1 4 2 4 2 2 1 2 2 1 3 4 1 2 5 4 1 3 1 3 1 1 1 1 1 2 2 5 4"<<"\n"<<
+                   "2 2 2 5 5 1 3 2 5 2 3 2 1 2 2 2 4 1"<<"\n"<<
+                   "3 2 5 5 2 0 5 3 4 3 4 3 3 5 4 5 5 2 2 5 3 2 3 1 1 1 3 1 4 4 4 1 4 3 3 2 1 2 2 2"<<"\n"<<
+                   "2 3 1 2 2 3 5 3 3 3 1 2 4 4 3 3 5 4"<<"\n"<<
+                   "2 1 3 4 2 5 0 2 2 2 2 2 1 5 5 5 4 3 3 5 3 2 2 2 2 2 3 1 4 3 3 2 5 4 3 4 2 2 2 2"<<"\n"<<
+                   "3 2 2 3 2 2 2 2 3 3 1 2 3 3 3 4 5 3"<<"\n"<<
+                   "5 3 3 3 2 2 3 0 3 3 4 3 3 3 3 3 2 3 3 3 2 2 3 5 2 2 3 2 2 3 5 4 3 5 3 4 3 3 3 2"<<"\n"<<
+                   "3 2 2 3 2 3 2 3 4 3 2 2 3 2 2 3 3 4"<<"\n"<<
+                   "2 2 5 4 2 3 3 2 0 1 3 5 2 3 3 3 3 1 3 4 2 4 3 3 4 5 2 1 3 3 2 2 3 3 4 3 3 2 2 2"<<"\n"<<
+                   "2 2 2 2 2 2 4 2 3 2 1 5 2 4 2 3 4 4"<<"\n"<<
+                   "3 3 5 4 4 4 3 3 2 0 3 4 2 4 5 4 4 1 2 4 2 4 2 2 3 2 5 1 5 2 3 1 2 3 4 1 1 2 4 5"<<"\n"<<
+                   "3 3 2 1 3 4 1 3 2 4 1 2 2 5 4 1 3 3"<<"\n"<<
+                   "3 3 3 3 3 3 3 3 3 3 0 3 3 3 3 3 3 3 3 3 5 3 3 3 3 3 3 3 3 3 5 5 3 3 3 3 3 3 3 3"<<"\n"<<
+                   "3 3 3 3 3 5 3 5 3 3 2 3 3 3 3 3 3 3"<<"\n"<<
+                   "2 3 4 4 2 3 2 2 5 3 3 0 2 3 2 3 3 2 3 4 2 4 2 2 3 3 3 1 2 2 3 1 2 4 3 4 2 2 4 2"<<"\n"<<
+                   "2 2 3 2 1 3 1 2 3 2 2 2 2 4 2 4 3 4"<<"\n"<<
+                   "2 5 4 2 4 3 2 2 2 2 2 2 0 3 2 3 2 2 2 3 1 5 3 2 5 2 3 2 4 3 3 2 3 3 3 3 2 4 4 5"<<"\n"<<
+                   "2 4 3 4 4 2 3 2 3 3 3 2 3 4 3 3 3 2"<<"\n"<<
+                   "3 2 5 4 3 5 5 2 4 3 3 3 3 0 4 5 4 3 4 4 3 3 2 2 3 3 4 2 5 3 4 3 4 3 4 3 2 3 4 3"<<"\n"<<
+                   "4 4 3 4 4 3 3 3 3 3 2 2 4 4 4 4 5 3"<<"\n"<<
+                   "2 1 3 3 4 4 5 2 3 2 2 1 1 3 0 4 5 1 5 2 2 2 3 2 1 1 4 1 3 2 3 3 3 4 4 3 1 4 2 1"<<"\n"<<
+                   "5 3 1 5 3 2 2 1 4 1 1 1 3 3 3 5 5 5"<<"\n"<<
+                   "3 3 4 4 3 5 5 2 3 2 3 3 4 4 5 0 5 3 5 5 2 3 2 2 2 1 2 2 4 4 3 2 3 3 3 3 2 3 4 3"<<"\n"<<
+                   "4 5 3 3 4 4 3 4 3 3 2 1 5 4 2 4 3 3"<<"\n"<<
+                   "2 2 5 3 3 4 4 2 3 3 3 3 2 4 5 5 0 2 4 5 2 3 2 2 3 1 2 3 4 3 2 2 4 2 5 2 1 4 3 2"<<"\n"<<
+                   "3 5 3 5 3 2 2 3 3 3 1 1 4 5 3 4 5 3"<<"\n"<<
+                   "5 3 2 5 3 3 5 5 3 2 5 5 4 4 3 5 4 0 2 1 5 3 3 3 3 2 2 1 2 5 5 5 3 5 4 4 2 2 3 3"<<"\n"<<
+                   "3 3 3 5 5 5 2 5 3 5 2 1 2 3 4 5 5 5"<<"\n"<<
+                   "3 3 4 4 2 2 3 2 4 3 3 3 3 4 5 5 5 2 0 4 2 4 5 4 5 2 3 3 4 4 3 3 4 4 2 4 4 3 1 2"<<"\n"<<
+                   "5 4 3 3 3 2 4 2 5 3 3 2 3 3 3 4 4 3"<<"\n"<<
+                   "3 2 4 4 2 5 5 2 3 3 3 3 2 4 3 4 3 2 3 0 2 3 3 1 1 1 2 2 3 3 3 2 5 3 3 3 2 2 2 2"<<"\n"<<
+                   "3 2 2 3 2 2 1 2 3 3 1 1 5 5 3 2 5 3"<<"\n"<<
+                   "3 1 2 2 1 2 3 1 2 2 5 2 1 2 2 1 1 4 1 3 0 1 2 2 2 1 1 1 1 2 5 4 1 2 2 2 1 1 1 1"<<"\n"<<
+                   "2 1 1 3 1 5 2 5 3 4 1 1 1 2 2 2 3 2"<<"\n"<<
+                   "2 5 5 3 3 3 2 2 4 2 2 3 4 3 3 2 3 2 3 4 3 0 3 3 5 3 3 1 4 3 3 3 3 3 4 3 2 3 3 3"<<"\n"<<
+                   "4 3 3 3 3 4 3 3 4 3 1 3 2 4 3 3 4 3"<<"\n"<<
+                   "2 3 4 4 5 3 4 3 4 2 2 3 2 4 4 2 2 2 5 3 1 2 0 2 4 3 2 1 3 1 2 1 4 5 2 1 4 4 5 2"<<"\n"<<
+                   "5 2 1 5 5 1 5 1 5 1 4 2 5 2 3 2 4 5"<<"\n"<<
+                   "4 1 2 5 2 2 3 5 4 3 4 3 2 2 3 4 2 2 4 2 1 3 2 0 2 4 4 1 1 2 5 2 2 5 2 4 1 1 1 1"<<"\n"<<
+                   "4 1 2 3 1 4 4 2 2 5 1 3 1 1 3 4 2 5"<<"\n"<<
+                   "2 4 5 3 3 2 2 2 3 1 3 4 4 2 2 1 3 1 4 2 2 5 4 2 0 3 2 1 3 4 2 1 2 3 3 2 2 2 3 3"<<"\n"<<
+                   "2 3 4 2 2 1 1 2 3 2 1 2 2 2 1 3 4 2"<<"\n"<<
+                   "3 3 4 4 4 2 2 2 5 2 3 3 2 2 2 2 2 2 3 1 2 4 3 3 4 0 2 2 2 2 2 2 2 3 4 2 4 2 2 2"<<"\n"<<
+                   "2 4 4 3 4 2 3 4 3 3 3 5 2 3 2 2 3 2"<<"\n"<<
+                   "4 2 5 5 5 3 5 3 1 5 5 3 1 4 4 2 1 2 1 5 2 4 3 4 1 1 0 1 5 4 5 3 4 5 4 3 1 2 1 2"<<"\n"<<
+                   "1 4 1 2 3 1 1 4 2 4 1 1 4 1 2 5 5 3"<<"\n"<<
+                   "3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 0 3 3 3 3 3 3 3 3 3 3 3 3"<<"\n"<<
+                   "3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3"<<"\n"<<
+                   "2 3 5 3 3 3 4 2 3 4 3 2 3 5 4 4 4 1 3 3 1 4 3 1 4 1 5 2 0 2 3 2 3 2 5 3 2 4 4 3"<<"\n"<<
+                   "2 4 4 3 2 1 2 1 2 1 1 2 3 5 3 3 5 2"<<"\n"<<
+                   "5 2 5 5 1 3 2 3 3 1 5 1 2 2 3 3 1 1 2 5 2 2 1 3 3 1 3 1 3 0 2 2 2 3 4 2 4 3 1 1"<<"\n"<<
+                   "3 4 3 3 1 1 5 2 1 2 1 2 3 3 3 3 5 3"<<"\n"<<
+                   "4 2 4 4 2 4 5 5 3 3 5 3 2 3 4 3 3 3 3 4 4 3 4 5 3 2 4 2 4 2 0 5 3 4 4 4 3 3 2 2"<<"\n"<<
+                   "4 4 2 3 2 4 3 4 3 4 2 4 3 4 3 4 4 3"<<"\n"<<
+                   "5 3 4 4 3 4 4 4 3 3 5 3 2 4 5 4 4 5 4 5 5 4 3 4 3 2 4 2 2 5 5 0 5 5 4 3 3 3 2 2"<<"\n"<<
+                   "3 3 2 4 2 5 3 5 5 5 2 2 4 4 3 4 5 5"<<"\n"<<
+                   "3 3 3 5 2 5 5 2 3 2 3 4 3 4 4 4 3 3 4 5 2 2 4 2 3 3 3 4 3 3 2 3 0 4 4 3 2 3 2 3"<<"\n"<<
+                   "3 3 4 2 2 2 3 2 4 3 2 3 5 4 4 4 4 4"<<"\n"<<
+                   "4 3 4 5 3 4 4 4 4 3 3 3 2 2 3 3 3 4 5 5 3 2 5 5 3 4 4 2 3 4 4 4 5 0 3 4 4 3 4 3"<<"\n"<<
+                   "5 3 3 3 2 4 3 3 5 5 2 4 5 3 4 5 4 5"<<"\n"<<
+                   "2 4 5 3 3 4 4 2 3 4 3 4 3 3 4 2 5 2 4 4 2 4 3 2 5 3 3 2 5 4 3 2 4 2 0 2 2 4 4 3"<<"\n"<<
+                   "4 4 5 3 2 1 4 1 3 3 2 2 2 5 2 3 4 2"<<"\n"<<
+                   "5 1 2 5 1 4 5 1 3 3 5 5 2 5 3 4 2 3 5 5 5 2 1 1 1 1 3 3 3 2 2 2 5 4 4 0 1 1 1 1"<<"\n"<<
+                   "5 3 4 4 4 5 4 5 1 2 1 2 1 3 1 5 5 4"<<"\n"<<
+                   "2 3 3 4 2 4 3 3 4 3 3 4 3 3 3 3 2 2 5 3 2 3 5 2 4 4 3 2 2 3 3 2 3 4 4 2 0 4 5 2"<<"\n"<<
+                   "4 3 3 4 2 2 5 2 5 3 5 3 3 3 3 2 3 3"<<"\n"<<
+                   "2 5 3 3 2 3 2 2 3 3 3 3 3 3 4 4 4 2 4 4 2 2 3 2 3 2 2 3 4 3 3 3 4 2 5 3 3 0 3 2"<<"\n"<<
+                   "3 4 4 3 2 3 4 3 3 3 2 2 4 4 2 3 4 3"<<"\n"<<
+                   "2 2 3 4 5 3 3 2 3 4 4 5 4 4 3 5 3 2 2 4 2 5 5 2 5 4 4 2 5 2 2 2 2 3 5 2 5 2 0 3"<<"\n"<<
+                   "2 5 5 3 5 2 5 2 5 3 5 2 3 4 3 3 4 3"<<"\n"<<
+                   "2 3 3 1 4 3 4 2 1 2 1 2 5 3 3 3 2 2 4 4 1 2 1 2 3 2 2 1 4 1 1 1 2 3 3 3 2 2 3 0"<<"\n"<<
+                   "2 3 2 3 3 1 1 1 1 2 1 5 2 4 2 2 4 2"<<"\n"<<
+                   "3 2 2 5 3 4 4 2 2 4 2 2 2 4 4 3 3 2 5 5 2 4 5 2 3 2 2 2 3 4 3 2 4 3 4 4 3 3 3 2"<<"\n"<<
+                   "0 2 4 3 4 2 3 2 5 3 4 3 5 2 2 4 4 5"<<"\n"<<
+                   "2 1 4 1 2 3 3 2 1 1 3 1 4 4 3 5 5 1 3 3 1 2 1 1 2 2 2 1 4 3 3 1 2 2 5 1 1 4 2 1"<<"\n"<<
+                   "2 0 5 2 1 1 2 1 2 1 1 1 4 4 2 3 3 1"<<"\n"<<
+                   "2 3 4 3 2 2 2 1 3 2 2 2 2 3 2 3 2 1 4 2 1 2 2 2 5 4 2 2 3 3 2 1 2 1 5 3 2 3 3 2"<<"\n"<<
+                   "3 4 0 1 2 1 3 1 2 1 1 2 3 4 3 3 2 1"<<"\n"<<
+                   "3 2 4 4 4 3 3 2 2 1 4 2 3 4 5 3 5 5 3 3 5 4 4 2 2 2 2 4 3 2 3 2 3 2 2 3 4 3 3 2"<<"\n"<<
+                   "1 3 3 0 3 3 5 3 4 2 1 1 3 2 2 3 4 2"<<"\n"<<
+                   "2 3 4 4 5 2 1 1 1 3 4 3 2 4 4 4 2 1 1 1 1 2 4 1 2 3 3 1 1 1 3 1 1 1 1 1 1 1 5 3"<<"\n"<<
+                   "2 1 1 3 0 1 1 1 4 1 1 1 1 1 1 1 4 1"<<"\n"<<
+                   "4 2 3 1 1 2 3 3 3 4 4 3 2 3 3 3 2 4 3 4 4 3 3 2 1 1 3 1 4 3 4 5 1 2 3 4 1 2 3 2"<<"\n"<<
+                   "1 1 1 4 1 0 1 5 3 3 1 2 1 3 3 4 4 1"<<"\n"<<
+                   "3 3 3 3 4 4 2 2 5 1 5 3 2 2 3 3 3 1 5 3 1 3 5 2 3 3 1 2 3 5 3 2 2 2 4 3 4 3 5 2"<<"\n"<<
+                   "3 2 3 5 2 1 0 1 4 2 5 2 3 1 4 3 5 1"<<"\n"<<
+                   "4 4 3 3 3 3 3 3 3 4 5 3 3 2 3 4 3 4 1 4 5 3 3 1 3 4 4 2 3 3 4 5 2 2 2 3 2 2 3 2"<<"\n"<<
+                   "2 3 2 3 2 5 2 0 3 4 1 2 2 3 3 3 3 2"<<"\n"<<
+                   "4 4 2 5 4 4 3 2 4 3 3 4 1 4 4 4 4 1 5 4 1 3 5 3 3 3 3 2 3 2 4 3 4 5 4 3 4 3 4 3"<<"\n"<<
+                   "5 2 2 5 5 2 4 2 0 5 2 3 4 2 2 3 4 5"<<"\n"<<
+                   "5 4 2 5 3 4 4 4 4 5 5 3 3 3 4 3 2 2 2 5 4 3 3 4 3 3 4 3 2 3 3 2 3 5 3 2 3 3 3 3"<<"\n"<<
+                   "2 3 3 4 3 5 3 5 4 0 1 3 3 1 3 5 5 5"<<"\n"<<
+                   "2 2 2 3 4 2 2 2 2 5 2 2 3 3 2 2 2 2 3 1 1 1 5 1 1 4 2 1 2 2 2 2 2 1 3 1 5 2 5 2"<<"\n"<<
+                   "3 1 2 2 2 1 5 1 3 2 0 1 2 2 2 1 2 1"<<"\n"<<
+                   "2 2 3 3 2 2 4 2 4 2 3 4 2 3 3 2 2 3 3 2 4 4 3 3 3 4 3 2 2 2 2 2 3 3 3 2 3 2 2 4"<<"\n"<<
+                   "2 2 3 3 3 3 3 3 3 3 2 0 3 3 2 3 4 3"<<"\n"<<
+                   "2 2 3 5 2 5 5 1 2 1 3 2 2 4 3 4 4 1 4 5 1 1 4 1 3 1 1 5 3 5 2 2 5 4 3 1 1 3 2 1"<<"\n"<<
+                   "4 4 3 1 1 1 1 1 4 2 1 1 0 3 1 2 3 4"<<"\n"<<
+                   "2 3 5 3 3 5 3 2 4 3 2 4 4 2 2 3 3 1 2 5 2 5 2 1 5 2 4 3 5 3 2 1 4 2 5 3 2 4 3 4"<<"\n"<<
+                   "2 4 4 3 3 2 2 2 3 4 2 2 4 0 3 4 5 3"<<"\n"<<
+                   "2 2 3 2 2 3 4 2 2 3 4 2 3 3 3 2 2 4 1 5 4 3 2 2 5 1 3 1 4 2 4 1 3 3 3 2 1 2 1 1"<<"\n"<<
+                   "1 2 2 2 2 3 4 2 2 4 1 1 2 5 0 2 2 2"<<"\n"<<
+                   "3 1 3 4 2 5 5 3 5 3 4 5 2 4 5 5 5 1 5 3 3 3 3 3 4 2 4 1 4 4 3 3 4 4 5 5 3 1 2 4"<<"\n"<<
+                   "4 3 4 4 2 5 3 5 3 5 1 4 3 5 4 0 5 5"<<"\n"<<
+                   "2 1 5 5 5 3 4 1 4 1 5 2 2 3 3 4 3 1 2 5 3 2 2 1 1 1 4 1 5 5 1 1 3 2 5 5 1 2 3 2"<<"\n"<<
+                   "1 3 2 3 4 2 5 1 3 2 1 2 3 3 1 5 0 5"<<"\n"<<
+                   "3 2 2 5 2 4 2 3 3 3 3 4 1 3 3 3 2 3 3 2 2 2 4 4 2 2 3 1 2 3 3 2 2 5 3 2 2 2 2 2"<<"\n"<<
                    "4 2 2 2 2 2 2 2 5 4 1 3 3 3 3 3 3 0";
 
     }
@@ -17486,175 +17431,175 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                     "0 = person unknown to me (or no reply). \n\n"
                     "NUMBER_OF MESSAGES is the total number of messages person i \n"
                     "sent to j over the entire period of the study. ");
-        outText <<"DL"<<endl<<
-                  "N=32 NM=3"<<endl<<
-                  "FORMAT = FULLMATRIX DIAGONAL PRESENT"<<endl<<
-                  "ROW LABELS:"<<endl<<
-                  "\"1\""<<endl<<
-                  "\"2\""<<endl<<
-                  "\"3\""<<endl<<
-                  "\"6\""<<endl<<
-                  "\"8\""<<endl<<
-                  "\"10\""<<endl<<
-                  "\"11\""<<endl<<
-                  "\"13\""<<endl<<
-                  "\"14\""<<endl<<
-                  "\"18\""<<endl<<
-                  "\"19\""<<endl<<
-                  "\"20\""<<endl<<
-                  "\"21\""<<endl<<
-                  "\"22\""<<endl<<
-                  "\"23\""<<endl<<
-                  "\"24\""<<endl<<
-                  "\"25\""<<endl<<
-                  "\"26\""<<endl<<
-                  "\"27\""<<endl<<
-                  "\"32\""<<endl<<
-                  "\"33\""<<endl<<
-                  "\"35\""<<endl<<
-                  "\"36\""<<endl<<
-                  "\"37\""<<endl<<
-                  "\"38\""<<endl<<
-                  "\"39\""<<endl<<
-                  "\"40\""<<endl<<
-                  "\"41\""<<endl<<
-                  "\"42\""<<endl<<
-                  "\"43\""<<endl<<
-                  "\"44\""<<endl<<
-                  "\"45\""<<endl<<
-                  "COLUMN LABELS:"<<endl<<
-                  "\"1\""<<endl<<
-                  "\"2\""<<endl<<
-                  "\"3\""<<endl<<
-                  "\"6\""<<endl<<
-                  "\"8\""<<endl<<
-                  "\"10\""<<endl<<
-                  "\"11\""<<endl<<
-                  "\"13\""<<endl<<
-                  "\"14\""<<endl<<
-                  "\"18\""<<endl<<
-                  "\"19\""<<endl<<
-                  "\"20\""<<endl<<
-                  "\"21\""<<endl<<
-                  "\"22\""<<endl<<
-                  "\"23\""<<endl<<
-                  "\"24\""<<endl<<
-                  "\"25\""<<endl<<
-                  "\"26\""<<endl<<
-                  "\"27\""<<endl<<
-                  "\"32\""<<endl<<
-                  "\"33\""<<endl<<
-                  "\"35\""<<endl<<
-                  "\"36\""<<endl<<
-                  "\"37\""<<endl<<
-                  "\"38\""<<endl<<
-                  "\"39\""<<endl<<
-                  "\"40\""<<endl<<
-                  "\"41\""<<endl<<
-                  "\"42\""<<endl<<
-                  "\"43\""<<endl<<
-                  "\"44\""<<endl<<
-                  "\"45\""<<endl<<
-                  "LEVEL LABELS:"<<endl<<
-                  "\"TIME_1\""<<endl<<
-                  "\"TIME_2\""<<endl<<
-                  "\"NUMBER_OF_MESSAGES\""<<endl<<
-                  "DATA:"<<endl<<
-                  "0 4 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 3 2 2 2 2 2 2 2 3 2 2 2 2 4 2"<<endl<<
-                  "4 0 2 0 1 0 3 3 4 1 3 0 2 2 2 3 2 0 1 2 3 2 0 2 0 0 2 1 2 3 4 4"<<endl<<
-                  "3 1 0 4 1 0 0 2 0 2 4 4 0 4 1 2 2 2 1 2 2 2 4 2 0 2 0 1 1 1 0 0"<<endl<<
-                  "2 0 2 0 2 0 0 2 2 2 2 2 2 2 2 1 0 0 4 2 2 2 2 2 2 0 2 2 2 0 2 0"<<endl<<
-                  "3 0 0 2 0 0 0 2 3 2 2 1 0 2 1 2 2 0 1 2 2 2 0 2 1 0 1 2 2 0 2 2"<<endl<<
-                  "3 0 0 0 0 0 0 2 0 0 0 0 0 2 0 1 0 0 2 0 1 0 0 0 0 0 2 0 2 0 2 0"<<endl<<
-                  "3 2 1 0 0 0 0 2 2 0 1 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 0"<<endl<<
-                  "2 2 2 2 2 0 0 0 1 0 2 0 2 2 2 2 2 0 1 2 2 1 1 2 2 0 2 0 2 2 0 0"<<endl<<
-                  "3 4 0 0 2 0 0 2 0 0 1 0 2 1 0 0 0 0 0 0 1 3 0 0 0 0 3 0 0 0 0 4"<<endl<<
-                  "2 1 3 3 2 0 1 2 2 0 2 3 0 1 2 2 2 0 2 3 2 2 4 2 2 0 0 2 2 2 0 0"<<endl<<
-                  "1 3 2 1 1 0 0 3 1 1 0 0 0 2 1 2 2 0 1 2 2 2 1 2 2 0 2 1 1 0 1 0"<<endl<<
-                  "1 0 1 2 0 0 0 1 0 3 0 0 0 2 0 1 0 0 2 2 2 2 0 0 2 0 0 0 2 2 0 0"<<endl<<
-                  "3 3 1 2 1 0 3 3 2 1 1 0 0 1 1 1 0 0 2 1 1 1 1 0 0 2 4 2 2 2 3 3"<<endl<<
-                  "3 2 4 2 3 0 0 3 2 1 2 3 1 0 3 4 3 2 3 3 3 4 3 3 3 2 1 2 4 3 2 0"<<endl<<
-                  "3 2 2 3 1 0 1 2 2 2 2 1 0 3 0 2 2 0 2 1 2 1 2 2 2 0 0 0 3 0 2 0"<<endl<<
-                  "2 2 2 1 3 0 0 3 1 0 2 0 0 3 2 0 3 0 1 2 4 3 0 3 2 0 0 0 2 0 0 0"<<endl<<
-                  "3 2 3 0 2 0 0 3 2 1 2 0 0 3 2 2 0 0 1 3 3 3 0 2 0 0 0 1 1 0 2 0"<<endl<<
-                  "4 1 2 0 0 0 0 0 0 0 2 0 0 2 1 0 0 0 1 0 0 0 0 1 0 2 2 1 2 2 4 0"<<endl<<
-                  "2 0 2 4 1 0 0 2 0 2 0 2 0 2 2 1 0 0 0 1 2 3 2 2 2 2 0 2 2 1 2 0"<<endl<<
-                  "2 2 2 2 2 0 0 2 0 3 2 2 0 3 1 2 2 0 2 0 3 4 2 3 3 0 0 2 3 1 0 0"<<endl<<
-                  "3 3 2 2 2 0 0 3 1 2 3 2 0 2 3 4 3 0 2 2 0 3 2 2 3 0 1 2 2 1 0 1"<<endl<<
-                  "2 2 2 3 0 0 0 2 3 2 2 0 0 3 0 3 2 0 3 3 3 0 0 4 2 0 0 2 4 0 0 0"<<endl<<
-                  "2 0 4 3 0 0 0 0 0 4 0 1 0 2 1 1 0 0 2 2 2 1 0 1 2 0 0 1 2 0 0 0"<<endl<<
-                  "2 2 2 2 2 0 0 3 2 2 2 2 0 3 2 3 2 0 3 3 3 4 2 0 3 0 2 2 4 0 0 0"<<endl<<
-                  "2 2 2 2 1 0 0 2 0 3 2 2 0 3 2 3 0 0 2 4 3 3 3 4 0 0 0 1 0 0 0 0"<<endl<<
-                  "4 1 2 1 1 0 1 1 0 1 1 1 2 2 1 1 0 3 2 1 1 2 1 2 1 0 0 2 2 0 3 0"<<endl<<
-                  "2 2 1 2 1 0 0 2 2 1 1 0 4 1 1 1 1 0 1 1 1 0 0 0 0 0 0 0 0 2 0 0"<<endl<<
-                  "3 2 0 3 0 0 0 0 0 1 1 0 1 2 2 2 0 0 3 2 2 3 0 2 1 2 1 0 2 0 2 0"<<endl<<
-                  "2 2 2 2 2 0 0 2 0 2 0 2 0 3 2 2 0 2 2 2 2 4 2 3 0 2 2 2 0 2 2 0"<<endl<<
-                  "3 4 1 0 0 0 0 4 0 2 0 0 2 2 0 2 2 2 2 2 2 2 0 0 0 0 2 1 2 0 0 2"<<endl<<
-                  "4 4 2 2 2 2 1 2 2 0 2 0 2 2 2 1 2 3 2 0 1 2 2 2 0 2 2 2 2 2 0 0"<<endl<<
-                  "3 3 0 1 2 0 0 3 4 0 1 0 2 1 0 1 0 0 1 1 1 0 0 0 0 0 2 0 0 3 3 0"<<endl<<
-                  "0 4 2 2 2 2 2 3 3 2 3 2 3 2 2 2 2 3 2 2 2 2 2 2 2 3 2 2 3 2 4 3"<<endl<<
-                  "4 0 2 2 1 2 2 3 4 2 3 0 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 3 4 4"<<endl<<
-                  "3 1 0 4 1 0 0 2 0 2 4 4 0 4 1 2 2 2 1 2 2 2 4 2 0 2 0 1 1 1 0 0"<<endl<<
-                  "2 2 2 0 2 2 0 2 2 3 2 2 1 2 2 2 0 2 4 2 2 2 2 2 2 2 2 2 2 2 2 0"<<endl<<
-                  "3 0 0 2 0 0 0 2 3 2 2 1 0 2 1 2 2 0 1 2 2 2 0 2 1 0 1 2 2 0 2 2"<<endl<<
-                  "4 2 0 0 0 0 0 3 0 2 2 0 0 2 2 2 0 0 2 0 2 0 0 3 0 2 2 2 3 0 4 2"<<endl<<
-                  "3 2 1 0 0 0 0 2 2 0 1 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 0"<<endl<<
-                  "3 2 2 2 2 2 1 0 1 2 4 1 2 2 2 2 2 2 2 2 2 2 2 2 2 0 2 1 2 2 2 4"<<endl<<
-                  "3 4 0 0 2 0 0 2 0 0 2 0 2 1 0 1 2 0 0 0 2 2 0 0 0 0 3 0 1 0 2 4"<<endl<<
-                  "3 0 2 3 2 0 1 2 1 0 2 3 2 1 2 2 2 2 2 4 2 2 4 2 2 0 2 2 3 2 2 1"<<endl<<
-                  "3 2 2 2 2 2 0 4 2 2 0 0 2 2 2 2 2 2 2 2 2 2 1 2 2 0 2 2 2 0 3 3"<<endl<<
-                  "2 0 1 2 0 0 1 1 0 3 0 0 0 2 1 1 0 0 2 3 2 1 1 1 2 0 0 1 0 1 2 2"<<endl<<
-                  "3 3 1 2 1 0 3 3 2 1 2 0 0 1 1 2 0 2 2 1 2 2 1 0 0 2 4 2 2 2 3 3"<<endl<<
-                  "3 2 4 3 3 0 0 3 0 2 2 3 2 0 3 4 4 2 3 3 3 4 3 3 3 2 2 3 4 3 3 2"<<endl<<
-                  "3 2 2 3 1 0 0 2 2 2 2 2 0 3 0 2 2 0 2 1 2 2 2 2 2 0 1 0 3 0 3 1"<<endl<<
-                  "2 2 2 2 3 2 0 3 1 2 2 0 0 3 2 0 2 0 2 2 4 3 0 2 2 2 1 1 2 0 2 2"<<endl<<
-                  "3 2 3 1 2 0 0 3 2 1 3 1 1 3 2 3 0 1 1 3 3 3 0 2 0 1 2 1 2 2 2 2"<<endl<<
-                  "4 2 2 0 0 0 1 2 0 0 2 0 1 2 0 0 0 0 0 0 0 0 0 0 0 2 2 0 2 2 4 1"<<endl<<
-                  "2 0 2 4 1 0 0 2 0 2 0 2 0 2 2 1 0 0 0 2 2 3 2 2 2 2 0 2 2 1 2 0"<<endl<<
-                  "2 2 2 2 2 0 0 2 0 3 2 2 0 3 1 2 2 0 2 0 3 4 2 3 3 0 0 2 3 1 0 0"<<endl<<
-                  "3 3 2 2 2 0 0 3 1 2 3 2 0 2 3 4 3 0 2 2 0 3 2 2 3 0 1 2 2 1 0 1"<<endl<<
-                  "2 2 2 3 0 0 0 2 3 2 2 0 0 3 2 3 2 0 3 3 3 0 0 4 2 0 0 2 4 0 0 2"<<endl<<
-                  "3 2 4 3 0 0 0 2 0 4 0 1 0 3 1 1 0 0 3 2 1 1 0 2 2 0 0 2 3 2 2 0"<<endl<<
-                  "3 2 2 2 3 2 0 3 2 2 3 2 2 3 2 3 2 2 2 3 3 4 2 0 3 0 2 3 3 2 2 2"<<endl<<
-                  "2 2 2 3 1 0 0 3 0 3 2 2 0 3 2 3 0 0 2 3 3 3 3 3 0 0 0 1 2 0 0 0"<<endl<<
-                  "4 1 2 1 1 0 1 1 0 1 1 1 2 2 1 1 0 3 2 1 1 2 1 2 1 0 0 2 2 0 3 0"<<endl<<
-                  "3 2 2 2 2 2 0 3 3 2 2 0 4 1 2 2 2 2 2 1 2 2 1 2 0 0 0 0 2 2 2 2"<<endl<<
-                  "3 2 0 3 0 0 0 2 0 1 1 0 2 2 2 2 0 0 3 2 2 3 0 2 1 2 1 0 2 0 2 2"<<endl<<
-                  "3 2 2 3 2 2 0 3 0 3 2 3 2 4 3 2 2 2 2 3 2 4 2 4 0 2 2 2 0 2 3 2"<<endl<<
-                  "3 3 1 2 0 2 0 3 0 2 2 0 2 2 0 2 2 2 2 2 2 2 0 2 2 0 3 2 3 0 3 3"<<endl<<
-                  "4 4 2 2 2 3 2 2 2 2 3 2 3 2 3 2 2 3 2 2 2 2 2 2 2 2 2 2 3 2 0 4"<<endl<<
-                  "4 4 0 2 2 2 0 4 4 2 3 0 2 1 0 3 2 0 0 1 2 3 1 1 0 2 2 1 3 2 4 0"<<endl<<
-                  "24 488  28  65  20  65  45 346  82  52 177  28  24  49  81  77  77  73  33  31  22  46  31 128  38  89  95  25 388  71 212 185"<<endl<<
-                  "364   6  17  17  15   0  30  20  35  20  22  15  15  15  15  50  25   8   0  15  15  15  15   0  15  15  10  24  89  23 163  39"<<endl<<
-                  "4   5   0   0   0   0   0   5   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0"<<endl<<
-                  "52  30   0   4   0   2   0  32  21  34   9   0   0   0   0   5   4   2  35   0   0   0   0  12   0   0  12   5  20   4  19  33"<<endl<<
-                  "26   4   4   4   0   4   8   4   4   4   4   4   4   4   4   4   4   4   4   0   4   8   4  14   4   0   4   0   4   7   4   4"<<endl<<
-                  "72  23   0   2   0  34   0  16   0   7  15   0   0   0   8   7   6   0   0   0   0   0   0  14   0   0   7   3  34   3  22   0"<<endl<<
-                  "14   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   6   0"<<endl<<
-                  "239  82   5  37   3  34   5  10  12  18 164  18   0   0   0  30  53  27  20   4   0   5   4  55   0   9  34   0 146 216  88 288"<<endl<<
-                  "24  25   0   2   0   0   0   8  16   0  15   0  10   0   0   0   5   0   0   0   0   0   0   0   0   0  15   0  10   0  30  44"<<endl<<
-                  "43  15   0  32   0  12   0  14   0   5  25   2   0   0   0  10  10   0  20  15   0   5  20  29   0   4  10   0  47   6  22  19"<<endl<<
-                  "178  36   0  11   0  19  10 172  39  28  29   0   4   0   0  23  15  24   0   0   8   0   0  29  10  11  22   0  46   0 119  34"<<endl<<
-                  "0   5   0   0   0   0   0   5   0   0   0   3   0   0   0   0   0   0   5   0   0   0   0   0   0   0   0   0  53   0   5   9"<<endl<<
-                  "5   0   0   0   0   0   0   0   0   0   5   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   5   0"<<endl<<
-                  "12   0   9   0   0   0   0   0   0   0   0   0   0   2   0  12   0   0   5   0   0   0   0   0   0   0   0   0  35   0   8   0"<<endl<<
-                  "120   0   0   0   0   4   0   0   0   0   0   5   0   0  78   0   0   0   0   0   0   0   0   0   0   0   8   0  58   0  32   0"<<endl<<
-                  "58  25   0  10   0   0   0  20   0   5  10   0   0   5   0  15  10   0   0   0   5   0   0   5   0   0   0   0  35   0  10   0"<<endl<<
-                  "63  18   9   7   0   6   0  36   0   5   9   5   0   5   0   5   0   0   0   5   2   0   0   0   0   0  15   0  10   9  15   9"<<endl<<
-                  "58   8   5   4   0   0   0   4   0   5  18   0   0   0   0   0   0   4   0   0   0   0   0   0   0   0  20   0   8  10  48   0"<<endl<<
-                  "5   5   0  25   0   0   0  10   0   0   0   0   0   5   0   0   0   0   5   0   0   0   5   0   0   0   0   0   0   0  10   0"<<endl<<
-                  "0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   4   0   0   0   0   0   0   0   4   0   0   0"<<endl<<
-                  "9   0   0   0   0   0   0   0   0   0   3   0   0   0   0   5   0   0   0   0   0   0   0   0   0   0   0   0   5   0   0   0"<<endl<<
-                  "10   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0  40   0   0   0   0  15   0   0   5"<<endl<<
-                  "5   5   5   0   0   0   0   0   0  19   0   0   0   0   0   0   0   0   5   0   0   0   0   0   0   0   0   0  14   0   5   0"<<endl<<
-                  "89  17   4  14  14  18   8  41   4  19  31   4   4   9   4  14   4   9   4   4   4  58   4   5  18  14   9   4 156   4  56  10"<<endl<<
-                  "32   5   0   0   0   0   0   0   0   0   0   0   0  15   0   0   0   0   0   0   0  10   0  23  10   0   0   0   0   9  15   0"<<endl<<
-                  "35   5   0   0   0   0   0   0   0   5   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0  10   0  13   0"<<endl<<
-                  "50  28   0  13   0   0   0  19  29   5   8   0  33   0   4   0  10  15   0   0   0   0   0  10   0   0   0   3  32   0  13  33"<<endl<<
-                  "9   6   0   0   0   3   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   3   0   0   0   6"<<endl<<
-                  "559 132   5  24  21  29   0 155  15  98  69  89  37  76  80  63  15   4   9  18  43 108  29 218   0  15  66   0   6  14  91 126"<<endl<<
-                  "39  21   0   6   3   3   0 140   0   7   0   2   0   0   0   0   9   5   0   0   0   0   0   0   0   0   2   0  18   2  20   8"<<endl<<
-                  "82 125  10  22  10  15  18  70  35  23 114  20  16  15  24  30  28  49  30   5   5  15   8  53  25   8  21   8  65  28   0  67"<<endl<<
+        outText <<"DL"<<"\n"<<
+                  "N=32 NM=3"<<"\n"<<
+                  "FORMAT = FULLMATRIX DIAGONAL PRESENT"<<"\n"<<
+                  "ROW LABELS:"<<"\n"<<
+                  "\"1\""<<"\n"<<
+                  "\"2\""<<"\n"<<
+                  "\"3\""<<"\n"<<
+                  "\"6\""<<"\n"<<
+                  "\"8\""<<"\n"<<
+                  "\"10\""<<"\n"<<
+                  "\"11\""<<"\n"<<
+                  "\"13\""<<"\n"<<
+                  "\"14\""<<"\n"<<
+                  "\"18\""<<"\n"<<
+                  "\"19\""<<"\n"<<
+                  "\"20\""<<"\n"<<
+                  "\"21\""<<"\n"<<
+                  "\"22\""<<"\n"<<
+                  "\"23\""<<"\n"<<
+                  "\"24\""<<"\n"<<
+                  "\"25\""<<"\n"<<
+                  "\"26\""<<"\n"<<
+                  "\"27\""<<"\n"<<
+                  "\"32\""<<"\n"<<
+                  "\"33\""<<"\n"<<
+                  "\"35\""<<"\n"<<
+                  "\"36\""<<"\n"<<
+                  "\"37\""<<"\n"<<
+                  "\"38\""<<"\n"<<
+                  "\"39\""<<"\n"<<
+                  "\"40\""<<"\n"<<
+                  "\"41\""<<"\n"<<
+                  "\"42\""<<"\n"<<
+                  "\"43\""<<"\n"<<
+                  "\"44\""<<"\n"<<
+                  "\"45\""<<"\n"<<
+                  "COLUMN LABELS:"<<"\n"<<
+                  "\"1\""<<"\n"<<
+                  "\"2\""<<"\n"<<
+                  "\"3\""<<"\n"<<
+                  "\"6\""<<"\n"<<
+                  "\"8\""<<"\n"<<
+                  "\"10\""<<"\n"<<
+                  "\"11\""<<"\n"<<
+                  "\"13\""<<"\n"<<
+                  "\"14\""<<"\n"<<
+                  "\"18\""<<"\n"<<
+                  "\"19\""<<"\n"<<
+                  "\"20\""<<"\n"<<
+                  "\"21\""<<"\n"<<
+                  "\"22\""<<"\n"<<
+                  "\"23\""<<"\n"<<
+                  "\"24\""<<"\n"<<
+                  "\"25\""<<"\n"<<
+                  "\"26\""<<"\n"<<
+                  "\"27\""<<"\n"<<
+                  "\"32\""<<"\n"<<
+                  "\"33\""<<"\n"<<
+                  "\"35\""<<"\n"<<
+                  "\"36\""<<"\n"<<
+                  "\"37\""<<"\n"<<
+                  "\"38\""<<"\n"<<
+                  "\"39\""<<"\n"<<
+                  "\"40\""<<"\n"<<
+                  "\"41\""<<"\n"<<
+                  "\"42\""<<"\n"<<
+                  "\"43\""<<"\n"<<
+                  "\"44\""<<"\n"<<
+                  "\"45\""<<"\n"<<
+                  "LEVEL LABELS:"<<"\n"<<
+                  "\"TIME_1\""<<"\n"<<
+                  "\"TIME_2\""<<"\n"<<
+                  "\"NUMBER_OF_MESSAGES\""<<"\n"<<
+                  "DATA:"<<"\n"<<
+                  "0 4 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 3 2 2 2 2 2 2 2 3 2 2 2 2 4 2"<<"\n"<<
+                  "4 0 2 0 1 0 3 3 4 1 3 0 2 2 2 3 2 0 1 2 3 2 0 2 0 0 2 1 2 3 4 4"<<"\n"<<
+                  "3 1 0 4 1 0 0 2 0 2 4 4 0 4 1 2 2 2 1 2 2 2 4 2 0 2 0 1 1 1 0 0"<<"\n"<<
+                  "2 0 2 0 2 0 0 2 2 2 2 2 2 2 2 1 0 0 4 2 2 2 2 2 2 0 2 2 2 0 2 0"<<"\n"<<
+                  "3 0 0 2 0 0 0 2 3 2 2 1 0 2 1 2 2 0 1 2 2 2 0 2 1 0 1 2 2 0 2 2"<<"\n"<<
+                  "3 0 0 0 0 0 0 2 0 0 0 0 0 2 0 1 0 0 2 0 1 0 0 0 0 0 2 0 2 0 2 0"<<"\n"<<
+                  "3 2 1 0 0 0 0 2 2 0 1 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 0"<<"\n"<<
+                  "2 2 2 2 2 0 0 0 1 0 2 0 2 2 2 2 2 0 1 2 2 1 1 2 2 0 2 0 2 2 0 0"<<"\n"<<
+                  "3 4 0 0 2 0 0 2 0 0 1 0 2 1 0 0 0 0 0 0 1 3 0 0 0 0 3 0 0 0 0 4"<<"\n"<<
+                  "2 1 3 3 2 0 1 2 2 0 2 3 0 1 2 2 2 0 2 3 2 2 4 2 2 0 0 2 2 2 0 0"<<"\n"<<
+                  "1 3 2 1 1 0 0 3 1 1 0 0 0 2 1 2 2 0 1 2 2 2 1 2 2 0 2 1 1 0 1 0"<<"\n"<<
+                  "1 0 1 2 0 0 0 1 0 3 0 0 0 2 0 1 0 0 2 2 2 2 0 0 2 0 0 0 2 2 0 0"<<"\n"<<
+                  "3 3 1 2 1 0 3 3 2 1 1 0 0 1 1 1 0 0 2 1 1 1 1 0 0 2 4 2 2 2 3 3"<<"\n"<<
+                  "3 2 4 2 3 0 0 3 2 1 2 3 1 0 3 4 3 2 3 3 3 4 3 3 3 2 1 2 4 3 2 0"<<"\n"<<
+                  "3 2 2 3 1 0 1 2 2 2 2 1 0 3 0 2 2 0 2 1 2 1 2 2 2 0 0 0 3 0 2 0"<<"\n"<<
+                  "2 2 2 1 3 0 0 3 1 0 2 0 0 3 2 0 3 0 1 2 4 3 0 3 2 0 0 0 2 0 0 0"<<"\n"<<
+                  "3 2 3 0 2 0 0 3 2 1 2 0 0 3 2 2 0 0 1 3 3 3 0 2 0 0 0 1 1 0 2 0"<<"\n"<<
+                  "4 1 2 0 0 0 0 0 0 0 2 0 0 2 1 0 0 0 1 0 0 0 0 1 0 2 2 1 2 2 4 0"<<"\n"<<
+                  "2 0 2 4 1 0 0 2 0 2 0 2 0 2 2 1 0 0 0 1 2 3 2 2 2 2 0 2 2 1 2 0"<<"\n"<<
+                  "2 2 2 2 2 0 0 2 0 3 2 2 0 3 1 2 2 0 2 0 3 4 2 3 3 0 0 2 3 1 0 0"<<"\n"<<
+                  "3 3 2 2 2 0 0 3 1 2 3 2 0 2 3 4 3 0 2 2 0 3 2 2 3 0 1 2 2 1 0 1"<<"\n"<<
+                  "2 2 2 3 0 0 0 2 3 2 2 0 0 3 0 3 2 0 3 3 3 0 0 4 2 0 0 2 4 0 0 0"<<"\n"<<
+                  "2 0 4 3 0 0 0 0 0 4 0 1 0 2 1 1 0 0 2 2 2 1 0 1 2 0 0 1 2 0 0 0"<<"\n"<<
+                  "2 2 2 2 2 0 0 3 2 2 2 2 0 3 2 3 2 0 3 3 3 4 2 0 3 0 2 2 4 0 0 0"<<"\n"<<
+                  "2 2 2 2 1 0 0 2 0 3 2 2 0 3 2 3 0 0 2 4 3 3 3 4 0 0 0 1 0 0 0 0"<<"\n"<<
+                  "4 1 2 1 1 0 1 1 0 1 1 1 2 2 1 1 0 3 2 1 1 2 1 2 1 0 0 2 2 0 3 0"<<"\n"<<
+                  "2 2 1 2 1 0 0 2 2 1 1 0 4 1 1 1 1 0 1 1 1 0 0 0 0 0 0 0 0 2 0 0"<<"\n"<<
+                  "3 2 0 3 0 0 0 0 0 1 1 0 1 2 2 2 0 0 3 2 2 3 0 2 1 2 1 0 2 0 2 0"<<"\n"<<
+                  "2 2 2 2 2 0 0 2 0 2 0 2 0 3 2 2 0 2 2 2 2 4 2 3 0 2 2 2 0 2 2 0"<<"\n"<<
+                  "3 4 1 0 0 0 0 4 0 2 0 0 2 2 0 2 2 2 2 2 2 2 0 0 0 0 2 1 2 0 0 2"<<"\n"<<
+                  "4 4 2 2 2 2 1 2 2 0 2 0 2 2 2 1 2 3 2 0 1 2 2 2 0 2 2 2 2 2 0 0"<<"\n"<<
+                  "3 3 0 1 2 0 0 3 4 0 1 0 2 1 0 1 0 0 1 1 1 0 0 0 0 0 2 0 0 3 3 0"<<"\n"<<
+                  "0 4 2 2 2 2 2 3 3 2 3 2 3 2 2 2 2 3 2 2 2 2 2 2 2 3 2 2 3 2 4 3"<<"\n"<<
+                  "4 0 2 2 1 2 2 3 4 2 3 0 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 3 4 4"<<"\n"<<
+                  "3 1 0 4 1 0 0 2 0 2 4 4 0 4 1 2 2 2 1 2 2 2 4 2 0 2 0 1 1 1 0 0"<<"\n"<<
+                  "2 2 2 0 2 2 0 2 2 3 2 2 1 2 2 2 0 2 4 2 2 2 2 2 2 2 2 2 2 2 2 0"<<"\n"<<
+                  "3 0 0 2 0 0 0 2 3 2 2 1 0 2 1 2 2 0 1 2 2 2 0 2 1 0 1 2 2 0 2 2"<<"\n"<<
+                  "4 2 0 0 0 0 0 3 0 2 2 0 0 2 2 2 0 0 2 0 2 0 0 3 0 2 2 2 3 0 4 2"<<"\n"<<
+                  "3 2 1 0 0 0 0 2 2 0 1 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 0"<<"\n"<<
+                  "3 2 2 2 2 2 1 0 1 2 4 1 2 2 2 2 2 2 2 2 2 2 2 2 2 0 2 1 2 2 2 4"<<"\n"<<
+                  "3 4 0 0 2 0 0 2 0 0 2 0 2 1 0 1 2 0 0 0 2 2 0 0 0 0 3 0 1 0 2 4"<<"\n"<<
+                  "3 0 2 3 2 0 1 2 1 0 2 3 2 1 2 2 2 2 2 4 2 2 4 2 2 0 2 2 3 2 2 1"<<"\n"<<
+                  "3 2 2 2 2 2 0 4 2 2 0 0 2 2 2 2 2 2 2 2 2 2 1 2 2 0 2 2 2 0 3 3"<<"\n"<<
+                  "2 0 1 2 0 0 1 1 0 3 0 0 0 2 1 1 0 0 2 3 2 1 1 1 2 0 0 1 0 1 2 2"<<"\n"<<
+                  "3 3 1 2 1 0 3 3 2 1 2 0 0 1 1 2 0 2 2 1 2 2 1 0 0 2 4 2 2 2 3 3"<<"\n"<<
+                  "3 2 4 3 3 0 0 3 0 2 2 3 2 0 3 4 4 2 3 3 3 4 3 3 3 2 2 3 4 3 3 2"<<"\n"<<
+                  "3 2 2 3 1 0 0 2 2 2 2 2 0 3 0 2 2 0 2 1 2 2 2 2 2 0 1 0 3 0 3 1"<<"\n"<<
+                  "2 2 2 2 3 2 0 3 1 2 2 0 0 3 2 0 2 0 2 2 4 3 0 2 2 2 1 1 2 0 2 2"<<"\n"<<
+                  "3 2 3 1 2 0 0 3 2 1 3 1 1 3 2 3 0 1 1 3 3 3 0 2 0 1 2 1 2 2 2 2"<<"\n"<<
+                  "4 2 2 0 0 0 1 2 0 0 2 0 1 2 0 0 0 0 0 0 0 0 0 0 0 2 2 0 2 2 4 1"<<"\n"<<
+                  "2 0 2 4 1 0 0 2 0 2 0 2 0 2 2 1 0 0 0 2 2 3 2 2 2 2 0 2 2 1 2 0"<<"\n"<<
+                  "2 2 2 2 2 0 0 2 0 3 2 2 0 3 1 2 2 0 2 0 3 4 2 3 3 0 0 2 3 1 0 0"<<"\n"<<
+                  "3 3 2 2 2 0 0 3 1 2 3 2 0 2 3 4 3 0 2 2 0 3 2 2 3 0 1 2 2 1 0 1"<<"\n"<<
+                  "2 2 2 3 0 0 0 2 3 2 2 0 0 3 2 3 2 0 3 3 3 0 0 4 2 0 0 2 4 0 0 2"<<"\n"<<
+                  "3 2 4 3 0 0 0 2 0 4 0 1 0 3 1 1 0 0 3 2 1 1 0 2 2 0 0 2 3 2 2 0"<<"\n"<<
+                  "3 2 2 2 3 2 0 3 2 2 3 2 2 3 2 3 2 2 2 3 3 4 2 0 3 0 2 3 3 2 2 2"<<"\n"<<
+                  "2 2 2 3 1 0 0 3 0 3 2 2 0 3 2 3 0 0 2 3 3 3 3 3 0 0 0 1 2 0 0 0"<<"\n"<<
+                  "4 1 2 1 1 0 1 1 0 1 1 1 2 2 1 1 0 3 2 1 1 2 1 2 1 0 0 2 2 0 3 0"<<"\n"<<
+                  "3 2 2 2 2 2 0 3 3 2 2 0 4 1 2 2 2 2 2 1 2 2 1 2 0 0 0 0 2 2 2 2"<<"\n"<<
+                  "3 2 0 3 0 0 0 2 0 1 1 0 2 2 2 2 0 0 3 2 2 3 0 2 1 2 1 0 2 0 2 2"<<"\n"<<
+                  "3 2 2 3 2 2 0 3 0 3 2 3 2 4 3 2 2 2 2 3 2 4 2 4 0 2 2 2 0 2 3 2"<<"\n"<<
+                  "3 3 1 2 0 2 0 3 0 2 2 0 2 2 0 2 2 2 2 2 2 2 0 2 2 0 3 2 3 0 3 3"<<"\n"<<
+                  "4 4 2 2 2 3 2 2 2 2 3 2 3 2 3 2 2 3 2 2 2 2 2 2 2 2 2 2 3 2 0 4"<<"\n"<<
+                  "4 4 0 2 2 2 0 4 4 2 3 0 2 1 0 3 2 0 0 1 2 3 1 1 0 2 2 1 3 2 4 0"<<"\n"<<
+                  "24 488  28  65  20  65  45 346  82  52 177  28  24  49  81  77  77  73  33  31  22  46  31 128  38  89  95  25 388  71 212 185"<<"\n"<<
+                  "364   6  17  17  15   0  30  20  35  20  22  15  15  15  15  50  25   8   0  15  15  15  15   0  15  15  10  24  89  23 163  39"<<"\n"<<
+                  "4   5   0   0   0   0   0   5   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0"<<"\n"<<
+                  "52  30   0   4   0   2   0  32  21  34   9   0   0   0   0   5   4   2  35   0   0   0   0  12   0   0  12   5  20   4  19  33"<<"\n"<<
+                  "26   4   4   4   0   4   8   4   4   4   4   4   4   4   4   4   4   4   4   0   4   8   4  14   4   0   4   0   4   7   4   4"<<"\n"<<
+                  "72  23   0   2   0  34   0  16   0   7  15   0   0   0   8   7   6   0   0   0   0   0   0  14   0   0   7   3  34   3  22   0"<<"\n"<<
+                  "14   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   6   0"<<"\n"<<
+                  "239  82   5  37   3  34   5  10  12  18 164  18   0   0   0  30  53  27  20   4   0   5   4  55   0   9  34   0 146 216  88 288"<<"\n"<<
+                  "24  25   0   2   0   0   0   8  16   0  15   0  10   0   0   0   5   0   0   0   0   0   0   0   0   0  15   0  10   0  30  44"<<"\n"<<
+                  "43  15   0  32   0  12   0  14   0   5  25   2   0   0   0  10  10   0  20  15   0   5  20  29   0   4  10   0  47   6  22  19"<<"\n"<<
+                  "178  36   0  11   0  19  10 172  39  28  29   0   4   0   0  23  15  24   0   0   8   0   0  29  10  11  22   0  46   0 119  34"<<"\n"<<
+                  "0   5   0   0   0   0   0   5   0   0   0   3   0   0   0   0   0   0   5   0   0   0   0   0   0   0   0   0  53   0   5   9"<<"\n"<<
+                  "5   0   0   0   0   0   0   0   0   0   5   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   5   0"<<"\n"<<
+                  "12   0   9   0   0   0   0   0   0   0   0   0   0   2   0  12   0   0   5   0   0   0   0   0   0   0   0   0  35   0   8   0"<<"\n"<<
+                  "120   0   0   0   0   4   0   0   0   0   0   5   0   0  78   0   0   0   0   0   0   0   0   0   0   0   8   0  58   0  32   0"<<"\n"<<
+                  "58  25   0  10   0   0   0  20   0   5  10   0   0   5   0  15  10   0   0   0   5   0   0   5   0   0   0   0  35   0  10   0"<<"\n"<<
+                  "63  18   9   7   0   6   0  36   0   5   9   5   0   5   0   5   0   0   0   5   2   0   0   0   0   0  15   0  10   9  15   9"<<"\n"<<
+                  "58   8   5   4   0   0   0   4   0   5  18   0   0   0   0   0   0   4   0   0   0   0   0   0   0   0  20   0   8  10  48   0"<<"\n"<<
+                  "5   5   0  25   0   0   0  10   0   0   0   0   0   5   0   0   0   0   5   0   0   0   5   0   0   0   0   0   0   0  10   0"<<"\n"<<
+                  "0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   4   0   0   0   0   0   0   0   4   0   0   0"<<"\n"<<
+                  "9   0   0   0   0   0   0   0   0   0   3   0   0   0   0   5   0   0   0   0   0   0   0   0   0   0   0   0   5   0   0   0"<<"\n"<<
+                  "10   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0  40   0   0   0   0  15   0   0   5"<<"\n"<<
+                  "5   5   5   0   0   0   0   0   0  19   0   0   0   0   0   0   0   0   5   0   0   0   0   0   0   0   0   0  14   0   5   0"<<"\n"<<
+                  "89  17   4  14  14  18   8  41   4  19  31   4   4   9   4  14   4   9   4   4   4  58   4   5  18  14   9   4 156   4  56  10"<<"\n"<<
+                  "32   5   0   0   0   0   0   0   0   0   0   0   0  15   0   0   0   0   0   0   0  10   0  23  10   0   0   0   0   9  15   0"<<"\n"<<
+                  "35   5   0   0   0   0   0   0   0   5   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0  10   0  13   0"<<"\n"<<
+                  "50  28   0  13   0   0   0  19  29   5   8   0  33   0   4   0  10  15   0   0   0   0   0  10   0   0   0   3  32   0  13  33"<<"\n"<<
+                  "9   6   0   0   0   3   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   3   0   0   0   6"<<"\n"<<
+                  "559 132   5  24  21  29   0 155  15  98  69  89  37  76  80  63  15   4   9  18  43 108  29 218   0  15  66   0   6  14  91 126"<<"\n"<<
+                  "39  21   0   6   3   3   0 140   0   7   0   2   0   0   0   0   9   5   0   0   0   0   0   0   0   0   2   0  18   2  20   8"<<"\n"<<
+                  "82 125  10  22  10  15  18  70  35  23 114  20  16  15  24  30  28  49  30   5   5  15   8  53  25   8  21   8  65  28   0  67"<<"\n"<<
                   "239  99   0  27   3   0   0 268 101  18  35   4   0   0   0   0   7   0   0   0   0  14   0   5   0   0  50   6  71   7 107 219";
 
     }
@@ -17662,704 +17607,704 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
         qDebug()<< "		... to  " << fileName;
         datasetDescription = tr("Freeman's EIES network (Acquaintanceship)");
         outText <<
-                   "dl"<<endl<<
-                   "N=48"<<endl<<
-                   "format=edgelist1"<<endl<<
-                   "data:"<<endl<<
-                   "1 2 4"<<endl<<
-                   "1 3 2"<<endl<<
-                   "1 6 2"<<endl<<
-                   "1 8 2"<<endl<<
-                   "1 10 2"<<endl<<
-                   "1 11 2"<<endl<<
-                   "1 13 2"<<endl<<
-                   "1 14 2"<<endl<<
-                   "1 18 2"<<endl<<
-                   "1 19 2"<<endl<<
-                   "1 20 2"<<endl<<
-                   "1 21 2"<<endl<<
-                   "1 22 2"<<endl<<
-                   "1 23 2"<<endl<<
-                   "1 24 2"<<endl<<
-                   "1 25 2"<<endl<<
-                   "1 26 3"<<endl<<
-                   "1 27 2"<<endl<<
-                   "1 31 2"<<endl<<
-                   "1 32 2"<<endl<<
-                   "1 33 2"<<endl<<
-                   "1 35 2"<<endl<<
-                   "1 36 2"<<endl<<
-                   "1 37 2"<<endl<<
-                   "1 38 2"<<endl<<
-                   "1 39 3"<<endl<<
-                   "1 40 2"<<endl<<
-                   "1 41 2"<<endl<<
-                   "1 42 2"<<endl<<
-                   "1 43 2"<<endl<<
-                   "1 44 4"<<endl<<
-                   "1 45 2"<<endl<<
-                   "1 46 2"<<endl<<
-                   "2 1 4"<<endl<<
-                   "2 3 2"<<endl<<
-                   "2 8 1"<<endl<<
-                   "2 11 3"<<endl<<
-                   "2 13 3"<<endl<<
-                   "2 14 4"<<endl<<
-                   "2 18 1"<<endl<<
-                   "2 19 3"<<endl<<
-                   "2 21 2"<<endl<<
-                   "2 22 2"<<endl<<
-                   "2 23 2"<<endl<<
-                   "2 24 3"<<endl<<
-                   "2 25 2"<<endl<<
-                   "2 27 1"<<endl<<
-                   "2 32 2"<<endl<<
-                   "2 33 3"<<endl<<
-                   "2 35 2"<<endl<<
-                   "2 37 2"<<endl<<
-                   "2 40 2"<<endl<<
-                   "2 41 1"<<endl<<
-                   "2 42 2"<<endl<<
-                   "2 43 3"<<endl<<
-                   "2 44 4"<<endl<<
-                   "2 45 4"<<endl<<
-                   "2 46 2"<<endl<<
-                   "3 1 3"<<endl<<
-                   "3 2 1"<<endl<<
-                   "3 6 4"<<endl<<
-                   "3 8 1"<<endl<<
-                   "3 13 2"<<endl<<
-                   "3 18 2"<<endl<<
-                   "3 19 4"<<endl<<
-                   "3 20 4"<<endl<<
-                   "3 22 4"<<endl<<
-                   "3 23 1"<<endl<<
-                   "3 24 2"<<endl<<
-                   "3 25 2"<<endl<<
-                   "3 26 2"<<endl<<
-                   "3 27 1"<<endl<<
-                   "3 31 1"<<endl<<
-                   "3 32 2"<<endl<<
-                   "3 33 2"<<endl<<
-                   "3 35 2"<<endl<<
-                   "3 36 4"<<endl<<
-                   "3 37 2"<<endl<<
-                   "3 39 2"<<endl<<
-                   "3 41 1"<<endl<<
-                   "3 42 1"<<endl<<
-                   "3 43 1"<<endl<<
-                   "6 1 2"<<endl<<
-                   "6 3 2"<<endl<<
-                   "6 8 2"<<endl<<
-                   "6 13 2"<<endl<<
-                   "6 14 2"<<endl<<
-                   "6 18 2"<<endl<<
-                   "6 19 2"<<endl<<
-                   "6 20 2"<<endl<<
-                   "6 21 2"<<endl<<
-                   "6 22 2"<<endl<<
-                   "6 23 2"<<endl<<
-                   "6 24 1"<<endl<<
-                   "6 27 4"<<endl<<
-                   "6 31 1"<<endl<<
-                   "6 32 2"<<endl<<
-                   "6 33 2"<<endl<<
-                   "6 35 2"<<endl<<
-                   "6 36 2"<<endl<<
-                   "6 37 2"<<endl<<
-                   "6 38 2"<<endl<<
-                   "6 40 2"<<endl<<
-                   "6 41 2"<<endl<<
-                   "6 42 2"<<endl<<
-                   "6 44 2"<<endl<<
-                   "8 1 3"<<endl<<
-                   "8 6 2"<<endl<<
-                   "8 13 2"<<endl<<
-                   "8 14 3"<<endl<<
-                   "8 18 2"<<endl<<
-                   "8 19 2"<<endl<<
-                   "8 20 1"<<endl<<
-                   "8 22 2"<<endl<<
-                   "8 23 1"<<endl<<
-                   "8 24 2"<<endl<<
-                   "8 25 2"<<endl<<
-                   "8 27 1"<<endl<<
-                   "8 32 2"<<endl<<
-                   "8 33 2"<<endl<<
-                   "8 35 2"<<endl<<
-                   "8 37 2"<<endl<<
-                   "8 38 1"<<endl<<
-                   "8 40 1"<<endl<<
-                   "8 41 2"<<endl<<
-                   "8 42 2"<<endl<<
-                   "8 44 2"<<endl<<
-                   "8 45 2"<<endl<<
-                   "10 1 3"<<endl<<
-                   "10 13 2"<<endl<<
-                   "10 22 2"<<endl<<
-                   "10 24 1"<<endl<<
-                   "10 27 2"<<endl<<
-                   "10 33 1"<<endl<<
-                   "10 40 2"<<endl<<
-                   "10 42 2"<<endl<<
-                   "10 44 2"<<endl<<
-                   "11 1 3"<<endl<<
-                   "11 2 2"<<endl<<
-                   "11 3 1"<<endl<<
-                   "11 13 2"<<endl<<
-                   "11 14 2"<<endl<<
-                   "11 19 1"<<endl<<
-                   "11 21 3"<<endl<<
-                   "11 41 2"<<endl<<
-                   "13 1 2"<<endl<<
-                   "13 2 2"<<endl<<
-                   "13 3 2"<<endl<<
-                   "13 6 2"<<endl<<
-                   "13 8 2"<<endl<<
-                   "13 14 1"<<endl<<
-                   "13 19 2"<<endl<<
-                   "13 21 2"<<endl<<
-                   "13 22 2"<<endl<<
-                   "13 23 2"<<endl<<
-                   "13 24 2"<<endl<<
-                   "13 25 2"<<endl<<
-                   "13 27 1"<<endl<<
-                   "13 32 2"<<endl<<
-                   "13 33 2"<<endl<<
-                   "13 35 1"<<endl<<
-                   "13 36 1"<<endl<<
-                   "13 37 2"<<endl<<
-                   "13 38 2"<<endl<<
-                   "13 40 2"<<endl<<
-                   "13 42 2"<<endl<<
-                   "13 43 2"<<endl<<
-                   "14 1 3"<<endl<<
-                   "14 2 4"<<endl<<
-                   "14 8 2"<<endl<<
-                   "14 13 2"<<endl<<
-                   "14 19 1"<<endl<<
-                   "14 21 2"<<endl<<
-                   "14 22 1"<<endl<<
-                   "14 33 1"<<endl<<
-                   "14 35 3"<<endl<<
-                   "14 40 3"<<endl<<
-                   "14 45 4"<<endl<<
-                   "18 1 2"<<endl<<
-                   "18 2 1"<<endl<<
-                   "18 3 3"<<endl<<
-                   "18 6 3"<<endl<<
-                   "18 8 2"<<endl<<
-                   "18 11 1"<<endl<<
-                   "18 13 2"<<endl<<
-                   "18 14 2"<<endl<<
-                   "18 19 2"<<endl<<
-                   "18 20 3"<<endl<<
-                   "18 22 1"<<endl<<
-                   "18 23 2"<<endl<<
-                   "18 24 2"<<endl<<
-                   "18 25 2"<<endl<<
-                   "18 27 2"<<endl<<
-                   "18 31 2"<<endl<<
-                   "18 32 3"<<endl<<
-                   "18 33 2"<<endl<<
-                   "18 35 2"<<endl<<
-                   "18 36 4"<<endl<<
-                   "18 37 2"<<endl<<
-                   "18 38 2"<<endl<<
-                   "18 41 2"<<endl<<
-                   "18 42 2"<<endl<<
-                   "18 43 2"<<endl<<
-                   "19 1 1"<<endl<<
-                   "19 2 3"<<endl<<
-                   "19 3 2"<<endl<<
-                   "19 6 1"<<endl<<
-                   "19 8 1"<<endl<<
-                   "19 13 3"<<endl<<
-                   "19 14 1"<<endl<<
-                   "19 18 1"<<endl<<
-                   "19 22 2"<<endl<<
-                   "19 23 1"<<endl<<
-                   "19 24 2"<<endl<<
-                   "19 25 2"<<endl<<
-                   "19 27 1"<<endl<<
-                   "19 31 2"<<endl<<
-                   "19 32 2"<<endl<<
-                   "19 33 2"<<endl<<
-                   "19 35 2"<<endl<<
-                   "19 36 1"<<endl<<
-                   "19 37 2"<<endl<<
-                   "19 38 2"<<endl<<
-                   "19 40 2"<<endl<<
-                   "19 41 1"<<endl<<
-                   "19 42 1"<<endl<<
-                   "19 44 1"<<endl<<
-                   "20 1 1"<<endl<<
-                   "20 3 1"<<endl<<
-                   "20 6 2"<<endl<<
-                   "20 13 1"<<endl<<
-                   "20 18 3"<<endl<<
-                   "20 22 2"<<endl<<
-                   "20 24 1"<<endl<<
-                   "20 27 2"<<endl<<
-                   "20 32 2"<<endl<<
-                   "20 33 2"<<endl<<
-                   "20 35 2"<<endl<<
-                   "20 38 2"<<endl<<
-                   "20 42 2"<<endl<<
-                   "20 43 2"<<endl<<
-                   "21 1 3"<<endl<<
-                   "21 2 3"<<endl<<
-                   "21 3 1"<<endl<<
-                   "21 6 2"<<endl<<
-                   "21 8 1"<<endl<<
-                   "21 11 3"<<endl<<
-                   "21 13 3"<<endl<<
-                   "21 14 2"<<endl<<
-                   "21 18 1"<<endl<<
-                   "21 19 1"<<endl<<
-                   "21 22 1"<<endl<<
-                   "21 23 1"<<endl<<
-                   "21 24 1"<<endl<<
-                   "21 27 2"<<endl<<
-                   "21 31 1"<<endl<<
-                   "21 32 1"<<endl<<
-                   "21 33 1"<<endl<<
-                   "21 35 1"<<endl<<
-                   "21 36 1"<<endl<<
-                   "21 39 2"<<endl<<
-                   "21 40 4"<<endl<<
-                   "21 41 2"<<endl<<
-                   "21 42 2"<<endl<<
-                   "21 43 2"<<endl<<
-                   "21 44 3"<<endl<<
-                   "21 45 3"<<endl<<
-                   "22 1 3"<<endl<<
-                   "22 2 2"<<endl<<
-                   "22 3 4"<<endl<<
-                   "22 6 2"<<endl<<
-                   "22 8 3"<<endl<<
-                   "22 13 3"<<endl<<
-                   "22 14 2"<<endl<<
-                   "22 18 1"<<endl<<
-                   "22 19 2"<<endl<<
-                   "22 20 3"<<endl<<
-                   "22 21 1"<<endl<<
-                   "22 23 3"<<endl<<
-                   "22 24 4"<<endl<<
-                   "22 25 3"<<endl<<
-                   "22 26 2"<<endl<<
-                   "22 27 3"<<endl<<
-                   "22 31 2"<<endl<<
-                   "22 32 3"<<endl<<
-                   "22 33 3"<<endl<<
-                   "22 35 4"<<endl<<
-                   "22 36 3"<<endl<<
-                   "22 37 3"<<endl<<
-                   "22 38 3"<<endl<<
-                   "22 39 2"<<endl<<
-                   "22 40 1"<<endl<<
-                   "22 41 2"<<endl<<
-                   "22 42 4"<<endl<<
-                   "22 43 3"<<endl<<
-                   "22 44 2"<<endl<<
-                   "22 46 1"<<endl<<
-                   "23 1 3"<<endl<<
-                   "23 2 2"<<endl<<
-                   "23 3 2"<<endl<<
-                   "23 6 3"<<endl<<
-                   "23 8 1"<<endl<<
-                   "23 11 1"<<endl<<
-                   "23 13 2"<<endl<<
-                   "23 14 2"<<endl<<
-                   "23 18 2"<<endl<<
-                   "23 19 2"<<endl<<
-                   "23 20 1"<<endl<<
-                   "23 22 3"<<endl<<
-                   "23 24 2"<<endl<<
-                   "23 25 2"<<endl<<
-                   "23 27 2"<<endl<<
-                   "23 31 4"<<endl<<
-                   "23 32 1"<<endl<<
-                   "23 33 2"<<endl<<
-                   "23 35 1"<<endl<<
-                   "23 36 2"<<endl<<
-                   "23 37 2"<<endl<<
-                   "23 38 2"<<endl<<
-                   "23 42 3"<<endl<<
-                   "23 44 2"<<endl<<
-                   "23 46 1"<<endl<<
-                   "24 1 2"<<endl<<
-                   "24 2 2"<<endl<<
-                   "24 3 2"<<endl<<
-                   "24 6 1"<<endl<<
-                   "24 8 3"<<endl<<
-                   "24 13 3"<<endl<<
-                   "24 14 1"<<endl<<
-                   "24 19 2"<<endl<<
-                   "24 22 3"<<endl<<
-                   "24 23 2"<<endl<<
-                   "24 25 3"<<endl<<
-                   "24 27 1"<<endl<<
-                   "24 31 2"<<endl<<
-                   "24 32 2"<<endl<<
-                   "24 33 4"<<endl<<
-                   "24 35 3"<<endl<<
-                   "24 37 3"<<endl<<
-                   "24 38 2"<<endl<<
-                   "24 42 2"<<endl<<
-                   "25 1 3"<<endl<<
-                   "25 2 2"<<endl<<
-                   "25 3 3"<<endl<<
-                   "25 8 2"<<endl<<
-                   "25 13 3"<<endl<<
-                   "25 14 2"<<endl<<
-                   "25 18 1"<<endl<<
-                   "25 19 2"<<endl<<
-                   "25 22 3"<<endl<<
-                   "25 23 2"<<endl<<
-                   "25 24 2"<<endl<<
-                   "25 27 1"<<endl<<
-                   "25 32 3"<<endl<<
-                   "25 33 3"<<endl<<
-                   "25 35 3"<<endl<<
-                   "25 37 2"<<endl<<
-                   "25 41 1"<<endl<<
-                   "25 42 1"<<endl<<
-                   "25 44 2"<<endl<<
-                   "25 46 1"<<endl<<
-                   "26 1 4"<<endl<<
-                   "26 2 1"<<endl<<
-                   "26 3 2"<<endl<<
-                   "26 19 2"<<endl<<
-                   "26 22 2"<<endl<<
-                   "26 23 1"<<endl<<
-                   "26 27 1"<<endl<<
-                   "26 37 1"<<endl<<
-                   "26 39 2"<<endl<<
-                   "26 40 2"<<endl<<
-                   "26 41 1"<<endl<<
-                   "26 42 2"<<endl<<
-                   "26 43 2"<<endl<<
-                   "26 44 4"<<endl<<
-                   "26 46 2"<<endl<<
-                   "27 1 2"<<endl<<
-                   "27 3 2"<<endl<<
-                   "27 6 4"<<endl<<
-                   "27 8 1"<<endl<<
-                   "27 13 2"<<endl<<
-                   "27 18 2"<<endl<<
-                   "27 20 2"<<endl<<
-                   "27 22 2"<<endl<<
-                   "27 23 2"<<endl<<
-                   "27 24 1"<<endl<<
-                   "27 32 1"<<endl<<
-                   "27 33 2"<<endl<<
-                   "27 35 3"<<endl<<
-                   "27 36 2"<<endl<<
-                   "27 37 2"<<endl<<
-                   "27 38 2"<<endl<<
-                   "27 39 2"<<endl<<
-                   "27 41 2"<<endl<<
-                   "27 42 2"<<endl<<
-                   "27 43 1"<<endl<<
-                   "27 44 2"<<endl<<
-                   "27 46 2"<<endl<<
-                   "31 1 1"<<endl<<
-                   "31 3 2"<<endl<<
-                   "31 6 1"<<endl<<
-                   "31 8 1"<<endl<<
-                   "31 18 2"<<endl<<
-                   "31 19 2"<<endl<<
-                   "31 20 2"<<endl<<
-                   "31 22 2"<<endl<<
-                   "31 23 2"<<endl<<
-                   "31 24 2"<<endl<<
-                   "31 32 1"<<endl<<
-                   "31 35 3"<<endl<<
-                   "31 36 1"<<endl<<
-                   "31 37 3"<<endl<<
-                   "31 38 2"<<endl<<
-                   "31 42 1"<<endl<<
-                   "32 1 2"<<endl<<
-                   "32 2 2"<<endl<<
-                   "32 3 2"<<endl<<
-                   "32 6 2"<<endl<<
-                   "32 8 2"<<endl<<
-                   "32 13 2"<<endl<<
-                   "32 18 3"<<endl<<
-                   "32 19 2"<<endl<<
-                   "32 20 2"<<endl<<
-                   "32 22 3"<<endl<<
-                   "32 23 1"<<endl<<
-                   "32 24 2"<<endl<<
-                   "32 25 2"<<endl<<
-                   "32 27 2"<<endl<<
-                   "32 31 1"<<endl<<
-                   "32 33 3"<<endl<<
-                   "32 35 4"<<endl<<
-                   "32 36 2"<<endl<<
-                   "32 37 3"<<endl<<
-                   "32 38 3"<<endl<<
-                   "32 41 2"<<endl<<
-                   "32 42 3"<<endl<<
-                   "32 43 1"<<endl<<
-                   "33 1 3"<<endl<<
-                   "33 2 3"<<endl<<
-                   "33 3 2"<<endl<<
-                   "33 6 2"<<endl<<
-                   "33 8 2"<<endl<<
-                   "33 13 3"<<endl<<
-                   "33 14 1"<<endl<<
-                   "33 18 2"<<endl<<
-                   "33 19 3"<<endl<<
-                   "33 20 2"<<endl<<
-                   "33 22 2"<<endl<<
-                   "33 23 3"<<endl<<
-                   "33 24 4"<<endl<<
-                   "33 25 3"<<endl<<
-                   "33 27 2"<<endl<<
-                   "33 31 2"<<endl<<
-                   "33 32 2"<<endl<<
-                   "33 35 3"<<endl<<
-                   "33 36 2"<<endl<<
-                   "33 37 2"<<endl<<
-                   "33 38 3"<<endl<<
-                   "33 40 1"<<endl<<
-                   "33 41 2"<<endl<<
-                   "33 42 2"<<endl<<
-                   "33 43 1"<<endl<<
-                   "33 45 1"<<endl<<
-                   "35 1 2"<<endl<<
-                   "35 2 2"<<endl<<
-                   "35 3 2"<<endl<<
-                   "35 6 3"<<endl<<
-                   "35 13 2"<<endl<<
-                   "35 14 3"<<endl<<
-                   "35 18 2"<<endl<<
-                   "35 19 2"<<endl<<
-                   "35 22 3"<<endl<<
-                   "35 24 3"<<endl<<
-                   "35 25 2"<<endl<<
-                   "35 27 3"<<endl<<
-                   "35 32 3"<<endl<<
-                   "35 33 3"<<endl<<
-                   "35 37 4"<<endl<<
-                   "35 38 2"<<endl<<
-                   "35 41 2"<<endl<<
-                   "35 42 4"<<endl<<
-                   "36 1 2"<<endl<<
-                   "36 3 4"<<endl<<
-                   "36 6 3"<<endl<<
-                   "36 18 4"<<endl<<
-                   "36 20 1"<<endl<<
-                   "36 22 2"<<endl<<
-                   "36 23 1"<<endl<<
-                   "36 24 1"<<endl<<
-                   "36 27 2"<<endl<<
-                   "36 31 1"<<endl<<
-                   "36 32 2"<<endl<<
-                   "36 33 2"<<endl<<
-                   "36 35 1"<<endl<<
-                   "36 37 1"<<endl<<
-                   "36 38 2"<<endl<<
-                   "36 41 1"<<endl<<
-                   "36 42 2"<<endl<<
-                   "37 1 2"<<endl<<
-                   "37 2 2"<<endl<<
-                   "37 3 2"<<endl<<
-                   "37 6 2"<<endl<<
-                   "37 8 2"<<endl<<
-                   "37 13 3"<<endl<<
-                   "37 14 2"<<endl<<
-                   "37 18 2"<<endl<<
-                   "37 19 2"<<endl<<
-                   "37 20 2"<<endl<<
-                   "37 22 3"<<endl<<
-                   "37 23 2"<<endl<<
-                   "37 24 3"<<endl<<
-                   "37 25 2"<<endl<<
-                   "37 27 3"<<endl<<
-                   "37 31 4"<<endl<<
-                   "37 32 3"<<endl<<
-                   "37 33 3"<<endl<<
-                   "37 35 4"<<endl<<
-                   "37 36 2"<<endl<<
-                   "37 38 3"<<endl<<
-                   "37 40 2"<<endl<<
-                   "37 41 2"<<endl<<
-                   "37 42 4"<<endl<<
-                   "38 1 2"<<endl<<
-                   "38 2 2"<<endl<<
-                   "38 3 2"<<endl<<
-                   "38 6 2"<<endl<<
-                   "38 8 1"<<endl<<
-                   "38 13 2"<<endl<<
-                   "38 18 3"<<endl<<
-                   "38 19 2"<<endl<<
-                   "38 20 2"<<endl<<
-                   "38 22 3"<<endl<<
-                   "38 23 2"<<endl<<
-                   "38 24 3"<<endl<<
-                   "38 27 2"<<endl<<
-                   "38 31 2"<<endl<<
-                   "38 32 4"<<endl<<
-                   "38 33 3"<<endl<<
-                   "38 35 3"<<endl<<
-                   "38 36 3"<<endl<<
-                   "38 37 4"<<endl<<
-                   "38 41 1"<<endl<<
-                   "39 1 4"<<endl<<
-                   "39 2 1"<<endl<<
-                   "39 3 2"<<endl<<
-                   "39 6 1"<<endl<<
-                   "39 8 1"<<endl<<
-                   "39 11 1"<<endl<<
-                   "39 13 1"<<endl<<
-                   "39 18 1"<<endl<<
-                   "39 19 1"<<endl<<
-                   "39 20 1"<<endl<<
-                   "39 21 2"<<endl<<
-                   "39 22 2"<<endl<<
-                   "39 23 1"<<endl<<
-                   "39 24 1"<<endl<<
-                   "39 26 3"<<endl<<
-                   "39 27 2"<<endl<<
-                   "39 32 1"<<endl<<
-                   "39 33 1"<<endl<<
-                   "39 35 2"<<endl<<
-                   "39 36 1"<<endl<<
-                   "39 37 2"<<endl<<
-                   "39 38 1"<<endl<<
-                   "39 41 2"<<endl<<
-                   "39 42 2"<<endl<<
-                   "39 44 3"<<endl<<
-                   "39 46 1"<<endl<<
-                   "40 1 2"<<endl<<
-                   "40 2 2"<<endl<<
-                   "40 3 1"<<endl<<
-                   "40 6 2"<<endl<<
-                   "40 8 1"<<endl<<
-                   "40 13 2"<<endl<<
-                   "40 14 2"<<endl<<
-                   "40 18 1"<<endl<<
-                   "40 19 1"<<endl<<
-                   "40 21 4"<<endl<<
-                   "40 22 1"<<endl<<
-                   "40 23 1"<<endl<<
-                   "40 24 1"<<endl<<
-                   "40 25 1"<<endl<<
-                   "40 27 1"<<endl<<
-                   "40 32 1"<<endl<<
-                   "40 33 1"<<endl<<
-                   "40 43 2"<<endl<<
-                   "41 1 3"<<endl<<
-                   "41 2 2"<<endl<<
-                   "41 6 3"<<endl<<
-                   "41 18 1"<<endl<<
-                   "41 19 1"<<endl<<
-                   "41 21 1"<<endl<<
-                   "41 22 2"<<endl<<
-                   "41 23 2"<<endl<<
-                   "41 24 2"<<endl<<
-                   "41 27 3"<<endl<<
-                   "41 32 2"<<endl<<
-                   "41 33 2"<<endl<<
-                   "41 35 3"<<endl<<
-                   "41 37 2"<<endl<<
-                   "41 38 1"<<endl<<
-                   "41 39 2"<<endl<<
-                   "41 40 1"<<endl<<
-                   "41 42 2"<<endl<<
-                   "41 44 2"<<endl<<
-                   "42 1 2"<<endl<<
-                   "42 2 2"<<endl<<
-                   "42 3 2"<<endl<<
-                   "42 6 2"<<endl<<
-                   "42 8 2"<<endl<<
-                   "42 13 2"<<endl<<
-                   "42 18 2"<<endl<<
-                   "42 20 2"<<endl<<
-                   "42 22 3"<<endl<<
-                   "42 23 2"<<endl<<
-                   "42 24 2"<<endl<<
-                   "42 26 2"<<endl<<
-                   "42 27 2"<<endl<<
-                   "42 32 2"<<endl<<
-                   "42 33 2"<<endl<<
-                   "42 35 4"<<endl<<
-                   "42 36 2"<<endl<<
-                   "42 37 3"<<endl<<
-                   "42 39 2"<<endl<<
-                   "42 40 2"<<endl<<
-                   "42 41 2"<<endl<<
-                   "42 43 2"<<endl<<
-                   "42 44 2"<<endl<<
-                   "42 46 3"<<endl<<
-                   "43 1 3"<<endl<<
-                   "43 2 4"<<endl<<
-                   "43 3 1"<<endl<<
-                   "43 13 4"<<endl<<
-                   "43 18 2"<<endl<<
-                   "43 21 2"<<endl<<
-                   "43 22 2"<<endl<<
-                   "43 24 2"<<endl<<
-                   "43 25 2"<<endl<<
-                   "43 26 2"<<endl<<
-                   "43 27 2"<<endl<<
-                   "43 32 2"<<endl<<
-                   "43 33 2"<<endl<<
-                   "43 35 2"<<endl<<
-                   "43 40 2"<<endl<<
-                   "43 41 1"<<endl<<
-                   "43 42 2"<<endl<<
-                   "43 45 2"<<endl<<
-                   "43 46 1"<<endl<<
-                   "44 1 4"<<endl<<
-                   "44 2 4"<<endl<<
-                   "44 3 2"<<endl<<
-                   "44 6 2"<<endl<<
-                   "44 8 2"<<endl<<
-                   "44 10 2"<<endl<<
-                   "44 11 1"<<endl<<
-                   "44 13 2"<<endl<<
-                   "44 14 2"<<endl<<
-                   "44 19 2"<<endl<<
-                   "44 21 2"<<endl<<
-                   "44 22 2"<<endl<<
-                   "44 23 2"<<endl<<
-                   "44 24 1"<<endl<<
-                   "44 25 2"<<endl<<
-                   "44 26 3"<<endl<<
-                   "44 27 2"<<endl<<
-                   "44 33 1"<<endl<<
-                   "44 35 2"<<endl<<
-                   "44 36 2"<<endl<<
-                   "44 37 2"<<endl<<
-                   "44 39 2"<<endl<<
-                   "44 40 2"<<endl<<
-                   "44 41 2"<<endl<<
-                   "44 42 2"<<endl<<
-                   "44 43 2"<<endl<<
-                   "44 46 1"<<endl<<
-                   "45 1 3"<<endl<<
-                   "45 2 3"<<endl<<
-                   "45 6 1"<<endl<<
-                   "45 8 2"<<endl<<
-                   "45 13 3"<<endl<<
-                   "45 14 4"<<endl<<
-                   "45 19 1"<<endl<<
-                   "45 21 2"<<endl<<
-                   "45 22 1"<<endl<<
-                   "45 24 1"<<endl<<
-                   "45 27 1"<<endl<<
-                   "45 32 1"<<endl<<
-                   "45 33 1"<<endl<<
-                   "45 40 2"<<endl<<
-                   "45 43 3"<<endl<<
-                   "45 44 3"<<endl<<
-                   "45 46 1"<<endl<<
-                   "46 1 2"<<endl<<
-                   "46 2 2"<<endl<<
+                   "dl"<<"\n"<<
+                   "N=48"<<"\n"<<
+                   "format=edgelist1"<<"\n"<<
+                   "data:"<<"\n"<<
+                   "1 2 4"<<"\n"<<
+                   "1 3 2"<<"\n"<<
+                   "1 6 2"<<"\n"<<
+                   "1 8 2"<<"\n"<<
+                   "1 10 2"<<"\n"<<
+                   "1 11 2"<<"\n"<<
+                   "1 13 2"<<"\n"<<
+                   "1 14 2"<<"\n"<<
+                   "1 18 2"<<"\n"<<
+                   "1 19 2"<<"\n"<<
+                   "1 20 2"<<"\n"<<
+                   "1 21 2"<<"\n"<<
+                   "1 22 2"<<"\n"<<
+                   "1 23 2"<<"\n"<<
+                   "1 24 2"<<"\n"<<
+                   "1 25 2"<<"\n"<<
+                   "1 26 3"<<"\n"<<
+                   "1 27 2"<<"\n"<<
+                   "1 31 2"<<"\n"<<
+                   "1 32 2"<<"\n"<<
+                   "1 33 2"<<"\n"<<
+                   "1 35 2"<<"\n"<<
+                   "1 36 2"<<"\n"<<
+                   "1 37 2"<<"\n"<<
+                   "1 38 2"<<"\n"<<
+                   "1 39 3"<<"\n"<<
+                   "1 40 2"<<"\n"<<
+                   "1 41 2"<<"\n"<<
+                   "1 42 2"<<"\n"<<
+                   "1 43 2"<<"\n"<<
+                   "1 44 4"<<"\n"<<
+                   "1 45 2"<<"\n"<<
+                   "1 46 2"<<"\n"<<
+                   "2 1 4"<<"\n"<<
+                   "2 3 2"<<"\n"<<
+                   "2 8 1"<<"\n"<<
+                   "2 11 3"<<"\n"<<
+                   "2 13 3"<<"\n"<<
+                   "2 14 4"<<"\n"<<
+                   "2 18 1"<<"\n"<<
+                   "2 19 3"<<"\n"<<
+                   "2 21 2"<<"\n"<<
+                   "2 22 2"<<"\n"<<
+                   "2 23 2"<<"\n"<<
+                   "2 24 3"<<"\n"<<
+                   "2 25 2"<<"\n"<<
+                   "2 27 1"<<"\n"<<
+                   "2 32 2"<<"\n"<<
+                   "2 33 3"<<"\n"<<
+                   "2 35 2"<<"\n"<<
+                   "2 37 2"<<"\n"<<
+                   "2 40 2"<<"\n"<<
+                   "2 41 1"<<"\n"<<
+                   "2 42 2"<<"\n"<<
+                   "2 43 3"<<"\n"<<
+                   "2 44 4"<<"\n"<<
+                   "2 45 4"<<"\n"<<
+                   "2 46 2"<<"\n"<<
+                   "3 1 3"<<"\n"<<
+                   "3 2 1"<<"\n"<<
+                   "3 6 4"<<"\n"<<
+                   "3 8 1"<<"\n"<<
+                   "3 13 2"<<"\n"<<
+                   "3 18 2"<<"\n"<<
+                   "3 19 4"<<"\n"<<
+                   "3 20 4"<<"\n"<<
+                   "3 22 4"<<"\n"<<
+                   "3 23 1"<<"\n"<<
+                   "3 24 2"<<"\n"<<
+                   "3 25 2"<<"\n"<<
+                   "3 26 2"<<"\n"<<
+                   "3 27 1"<<"\n"<<
+                   "3 31 1"<<"\n"<<
+                   "3 32 2"<<"\n"<<
+                   "3 33 2"<<"\n"<<
+                   "3 35 2"<<"\n"<<
+                   "3 36 4"<<"\n"<<
+                   "3 37 2"<<"\n"<<
+                   "3 39 2"<<"\n"<<
+                   "3 41 1"<<"\n"<<
+                   "3 42 1"<<"\n"<<
+                   "3 43 1"<<"\n"<<
+                   "6 1 2"<<"\n"<<
+                   "6 3 2"<<"\n"<<
+                   "6 8 2"<<"\n"<<
+                   "6 13 2"<<"\n"<<
+                   "6 14 2"<<"\n"<<
+                   "6 18 2"<<"\n"<<
+                   "6 19 2"<<"\n"<<
+                   "6 20 2"<<"\n"<<
+                   "6 21 2"<<"\n"<<
+                   "6 22 2"<<"\n"<<
+                   "6 23 2"<<"\n"<<
+                   "6 24 1"<<"\n"<<
+                   "6 27 4"<<"\n"<<
+                   "6 31 1"<<"\n"<<
+                   "6 32 2"<<"\n"<<
+                   "6 33 2"<<"\n"<<
+                   "6 35 2"<<"\n"<<
+                   "6 36 2"<<"\n"<<
+                   "6 37 2"<<"\n"<<
+                   "6 38 2"<<"\n"<<
+                   "6 40 2"<<"\n"<<
+                   "6 41 2"<<"\n"<<
+                   "6 42 2"<<"\n"<<
+                   "6 44 2"<<"\n"<<
+                   "8 1 3"<<"\n"<<
+                   "8 6 2"<<"\n"<<
+                   "8 13 2"<<"\n"<<
+                   "8 14 3"<<"\n"<<
+                   "8 18 2"<<"\n"<<
+                   "8 19 2"<<"\n"<<
+                   "8 20 1"<<"\n"<<
+                   "8 22 2"<<"\n"<<
+                   "8 23 1"<<"\n"<<
+                   "8 24 2"<<"\n"<<
+                   "8 25 2"<<"\n"<<
+                   "8 27 1"<<"\n"<<
+                   "8 32 2"<<"\n"<<
+                   "8 33 2"<<"\n"<<
+                   "8 35 2"<<"\n"<<
+                   "8 37 2"<<"\n"<<
+                   "8 38 1"<<"\n"<<
+                   "8 40 1"<<"\n"<<
+                   "8 41 2"<<"\n"<<
+                   "8 42 2"<<"\n"<<
+                   "8 44 2"<<"\n"<<
+                   "8 45 2"<<"\n"<<
+                   "10 1 3"<<"\n"<<
+                   "10 13 2"<<"\n"<<
+                   "10 22 2"<<"\n"<<
+                   "10 24 1"<<"\n"<<
+                   "10 27 2"<<"\n"<<
+                   "10 33 1"<<"\n"<<
+                   "10 40 2"<<"\n"<<
+                   "10 42 2"<<"\n"<<
+                   "10 44 2"<<"\n"<<
+                   "11 1 3"<<"\n"<<
+                   "11 2 2"<<"\n"<<
+                   "11 3 1"<<"\n"<<
+                   "11 13 2"<<"\n"<<
+                   "11 14 2"<<"\n"<<
+                   "11 19 1"<<"\n"<<
+                   "11 21 3"<<"\n"<<
+                   "11 41 2"<<"\n"<<
+                   "13 1 2"<<"\n"<<
+                   "13 2 2"<<"\n"<<
+                   "13 3 2"<<"\n"<<
+                   "13 6 2"<<"\n"<<
+                   "13 8 2"<<"\n"<<
+                   "13 14 1"<<"\n"<<
+                   "13 19 2"<<"\n"<<
+                   "13 21 2"<<"\n"<<
+                   "13 22 2"<<"\n"<<
+                   "13 23 2"<<"\n"<<
+                   "13 24 2"<<"\n"<<
+                   "13 25 2"<<"\n"<<
+                   "13 27 1"<<"\n"<<
+                   "13 32 2"<<"\n"<<
+                   "13 33 2"<<"\n"<<
+                   "13 35 1"<<"\n"<<
+                   "13 36 1"<<"\n"<<
+                   "13 37 2"<<"\n"<<
+                   "13 38 2"<<"\n"<<
+                   "13 40 2"<<"\n"<<
+                   "13 42 2"<<"\n"<<
+                   "13 43 2"<<"\n"<<
+                   "14 1 3"<<"\n"<<
+                   "14 2 4"<<"\n"<<
+                   "14 8 2"<<"\n"<<
+                   "14 13 2"<<"\n"<<
+                   "14 19 1"<<"\n"<<
+                   "14 21 2"<<"\n"<<
+                   "14 22 1"<<"\n"<<
+                   "14 33 1"<<"\n"<<
+                   "14 35 3"<<"\n"<<
+                   "14 40 3"<<"\n"<<
+                   "14 45 4"<<"\n"<<
+                   "18 1 2"<<"\n"<<
+                   "18 2 1"<<"\n"<<
+                   "18 3 3"<<"\n"<<
+                   "18 6 3"<<"\n"<<
+                   "18 8 2"<<"\n"<<
+                   "18 11 1"<<"\n"<<
+                   "18 13 2"<<"\n"<<
+                   "18 14 2"<<"\n"<<
+                   "18 19 2"<<"\n"<<
+                   "18 20 3"<<"\n"<<
+                   "18 22 1"<<"\n"<<
+                   "18 23 2"<<"\n"<<
+                   "18 24 2"<<"\n"<<
+                   "18 25 2"<<"\n"<<
+                   "18 27 2"<<"\n"<<
+                   "18 31 2"<<"\n"<<
+                   "18 32 3"<<"\n"<<
+                   "18 33 2"<<"\n"<<
+                   "18 35 2"<<"\n"<<
+                   "18 36 4"<<"\n"<<
+                   "18 37 2"<<"\n"<<
+                   "18 38 2"<<"\n"<<
+                   "18 41 2"<<"\n"<<
+                   "18 42 2"<<"\n"<<
+                   "18 43 2"<<"\n"<<
+                   "19 1 1"<<"\n"<<
+                   "19 2 3"<<"\n"<<
+                   "19 3 2"<<"\n"<<
+                   "19 6 1"<<"\n"<<
+                   "19 8 1"<<"\n"<<
+                   "19 13 3"<<"\n"<<
+                   "19 14 1"<<"\n"<<
+                   "19 18 1"<<"\n"<<
+                   "19 22 2"<<"\n"<<
+                   "19 23 1"<<"\n"<<
+                   "19 24 2"<<"\n"<<
+                   "19 25 2"<<"\n"<<
+                   "19 27 1"<<"\n"<<
+                   "19 31 2"<<"\n"<<
+                   "19 32 2"<<"\n"<<
+                   "19 33 2"<<"\n"<<
+                   "19 35 2"<<"\n"<<
+                   "19 36 1"<<"\n"<<
+                   "19 37 2"<<"\n"<<
+                   "19 38 2"<<"\n"<<
+                   "19 40 2"<<"\n"<<
+                   "19 41 1"<<"\n"<<
+                   "19 42 1"<<"\n"<<
+                   "19 44 1"<<"\n"<<
+                   "20 1 1"<<"\n"<<
+                   "20 3 1"<<"\n"<<
+                   "20 6 2"<<"\n"<<
+                   "20 13 1"<<"\n"<<
+                   "20 18 3"<<"\n"<<
+                   "20 22 2"<<"\n"<<
+                   "20 24 1"<<"\n"<<
+                   "20 27 2"<<"\n"<<
+                   "20 32 2"<<"\n"<<
+                   "20 33 2"<<"\n"<<
+                   "20 35 2"<<"\n"<<
+                   "20 38 2"<<"\n"<<
+                   "20 42 2"<<"\n"<<
+                   "20 43 2"<<"\n"<<
+                   "21 1 3"<<"\n"<<
+                   "21 2 3"<<"\n"<<
+                   "21 3 1"<<"\n"<<
+                   "21 6 2"<<"\n"<<
+                   "21 8 1"<<"\n"<<
+                   "21 11 3"<<"\n"<<
+                   "21 13 3"<<"\n"<<
+                   "21 14 2"<<"\n"<<
+                   "21 18 1"<<"\n"<<
+                   "21 19 1"<<"\n"<<
+                   "21 22 1"<<"\n"<<
+                   "21 23 1"<<"\n"<<
+                   "21 24 1"<<"\n"<<
+                   "21 27 2"<<"\n"<<
+                   "21 31 1"<<"\n"<<
+                   "21 32 1"<<"\n"<<
+                   "21 33 1"<<"\n"<<
+                   "21 35 1"<<"\n"<<
+                   "21 36 1"<<"\n"<<
+                   "21 39 2"<<"\n"<<
+                   "21 40 4"<<"\n"<<
+                   "21 41 2"<<"\n"<<
+                   "21 42 2"<<"\n"<<
+                   "21 43 2"<<"\n"<<
+                   "21 44 3"<<"\n"<<
+                   "21 45 3"<<"\n"<<
+                   "22 1 3"<<"\n"<<
+                   "22 2 2"<<"\n"<<
+                   "22 3 4"<<"\n"<<
+                   "22 6 2"<<"\n"<<
+                   "22 8 3"<<"\n"<<
+                   "22 13 3"<<"\n"<<
+                   "22 14 2"<<"\n"<<
+                   "22 18 1"<<"\n"<<
+                   "22 19 2"<<"\n"<<
+                   "22 20 3"<<"\n"<<
+                   "22 21 1"<<"\n"<<
+                   "22 23 3"<<"\n"<<
+                   "22 24 4"<<"\n"<<
+                   "22 25 3"<<"\n"<<
+                   "22 26 2"<<"\n"<<
+                   "22 27 3"<<"\n"<<
+                   "22 31 2"<<"\n"<<
+                   "22 32 3"<<"\n"<<
+                   "22 33 3"<<"\n"<<
+                   "22 35 4"<<"\n"<<
+                   "22 36 3"<<"\n"<<
+                   "22 37 3"<<"\n"<<
+                   "22 38 3"<<"\n"<<
+                   "22 39 2"<<"\n"<<
+                   "22 40 1"<<"\n"<<
+                   "22 41 2"<<"\n"<<
+                   "22 42 4"<<"\n"<<
+                   "22 43 3"<<"\n"<<
+                   "22 44 2"<<"\n"<<
+                   "22 46 1"<<"\n"<<
+                   "23 1 3"<<"\n"<<
+                   "23 2 2"<<"\n"<<
+                   "23 3 2"<<"\n"<<
+                   "23 6 3"<<"\n"<<
+                   "23 8 1"<<"\n"<<
+                   "23 11 1"<<"\n"<<
+                   "23 13 2"<<"\n"<<
+                   "23 14 2"<<"\n"<<
+                   "23 18 2"<<"\n"<<
+                   "23 19 2"<<"\n"<<
+                   "23 20 1"<<"\n"<<
+                   "23 22 3"<<"\n"<<
+                   "23 24 2"<<"\n"<<
+                   "23 25 2"<<"\n"<<
+                   "23 27 2"<<"\n"<<
+                   "23 31 4"<<"\n"<<
+                   "23 32 1"<<"\n"<<
+                   "23 33 2"<<"\n"<<
+                   "23 35 1"<<"\n"<<
+                   "23 36 2"<<"\n"<<
+                   "23 37 2"<<"\n"<<
+                   "23 38 2"<<"\n"<<
+                   "23 42 3"<<"\n"<<
+                   "23 44 2"<<"\n"<<
+                   "23 46 1"<<"\n"<<
+                   "24 1 2"<<"\n"<<
+                   "24 2 2"<<"\n"<<
+                   "24 3 2"<<"\n"<<
+                   "24 6 1"<<"\n"<<
+                   "24 8 3"<<"\n"<<
+                   "24 13 3"<<"\n"<<
+                   "24 14 1"<<"\n"<<
+                   "24 19 2"<<"\n"<<
+                   "24 22 3"<<"\n"<<
+                   "24 23 2"<<"\n"<<
+                   "24 25 3"<<"\n"<<
+                   "24 27 1"<<"\n"<<
+                   "24 31 2"<<"\n"<<
+                   "24 32 2"<<"\n"<<
+                   "24 33 4"<<"\n"<<
+                   "24 35 3"<<"\n"<<
+                   "24 37 3"<<"\n"<<
+                   "24 38 2"<<"\n"<<
+                   "24 42 2"<<"\n"<<
+                   "25 1 3"<<"\n"<<
+                   "25 2 2"<<"\n"<<
+                   "25 3 3"<<"\n"<<
+                   "25 8 2"<<"\n"<<
+                   "25 13 3"<<"\n"<<
+                   "25 14 2"<<"\n"<<
+                   "25 18 1"<<"\n"<<
+                   "25 19 2"<<"\n"<<
+                   "25 22 3"<<"\n"<<
+                   "25 23 2"<<"\n"<<
+                   "25 24 2"<<"\n"<<
+                   "25 27 1"<<"\n"<<
+                   "25 32 3"<<"\n"<<
+                   "25 33 3"<<"\n"<<
+                   "25 35 3"<<"\n"<<
+                   "25 37 2"<<"\n"<<
+                   "25 41 1"<<"\n"<<
+                   "25 42 1"<<"\n"<<
+                   "25 44 2"<<"\n"<<
+                   "25 46 1"<<"\n"<<
+                   "26 1 4"<<"\n"<<
+                   "26 2 1"<<"\n"<<
+                   "26 3 2"<<"\n"<<
+                   "26 19 2"<<"\n"<<
+                   "26 22 2"<<"\n"<<
+                   "26 23 1"<<"\n"<<
+                   "26 27 1"<<"\n"<<
+                   "26 37 1"<<"\n"<<
+                   "26 39 2"<<"\n"<<
+                   "26 40 2"<<"\n"<<
+                   "26 41 1"<<"\n"<<
+                   "26 42 2"<<"\n"<<
+                   "26 43 2"<<"\n"<<
+                   "26 44 4"<<"\n"<<
+                   "26 46 2"<<"\n"<<
+                   "27 1 2"<<"\n"<<
+                   "27 3 2"<<"\n"<<
+                   "27 6 4"<<"\n"<<
+                   "27 8 1"<<"\n"<<
+                   "27 13 2"<<"\n"<<
+                   "27 18 2"<<"\n"<<
+                   "27 20 2"<<"\n"<<
+                   "27 22 2"<<"\n"<<
+                   "27 23 2"<<"\n"<<
+                   "27 24 1"<<"\n"<<
+                   "27 32 1"<<"\n"<<
+                   "27 33 2"<<"\n"<<
+                   "27 35 3"<<"\n"<<
+                   "27 36 2"<<"\n"<<
+                   "27 37 2"<<"\n"<<
+                   "27 38 2"<<"\n"<<
+                   "27 39 2"<<"\n"<<
+                   "27 41 2"<<"\n"<<
+                   "27 42 2"<<"\n"<<
+                   "27 43 1"<<"\n"<<
+                   "27 44 2"<<"\n"<<
+                   "27 46 2"<<"\n"<<
+                   "31 1 1"<<"\n"<<
+                   "31 3 2"<<"\n"<<
+                   "31 6 1"<<"\n"<<
+                   "31 8 1"<<"\n"<<
+                   "31 18 2"<<"\n"<<
+                   "31 19 2"<<"\n"<<
+                   "31 20 2"<<"\n"<<
+                   "31 22 2"<<"\n"<<
+                   "31 23 2"<<"\n"<<
+                   "31 24 2"<<"\n"<<
+                   "31 32 1"<<"\n"<<
+                   "31 35 3"<<"\n"<<
+                   "31 36 1"<<"\n"<<
+                   "31 37 3"<<"\n"<<
+                   "31 38 2"<<"\n"<<
+                   "31 42 1"<<"\n"<<
+                   "32 1 2"<<"\n"<<
+                   "32 2 2"<<"\n"<<
+                   "32 3 2"<<"\n"<<
+                   "32 6 2"<<"\n"<<
+                   "32 8 2"<<"\n"<<
+                   "32 13 2"<<"\n"<<
+                   "32 18 3"<<"\n"<<
+                   "32 19 2"<<"\n"<<
+                   "32 20 2"<<"\n"<<
+                   "32 22 3"<<"\n"<<
+                   "32 23 1"<<"\n"<<
+                   "32 24 2"<<"\n"<<
+                   "32 25 2"<<"\n"<<
+                   "32 27 2"<<"\n"<<
+                   "32 31 1"<<"\n"<<
+                   "32 33 3"<<"\n"<<
+                   "32 35 4"<<"\n"<<
+                   "32 36 2"<<"\n"<<
+                   "32 37 3"<<"\n"<<
+                   "32 38 3"<<"\n"<<
+                   "32 41 2"<<"\n"<<
+                   "32 42 3"<<"\n"<<
+                   "32 43 1"<<"\n"<<
+                   "33 1 3"<<"\n"<<
+                   "33 2 3"<<"\n"<<
+                   "33 3 2"<<"\n"<<
+                   "33 6 2"<<"\n"<<
+                   "33 8 2"<<"\n"<<
+                   "33 13 3"<<"\n"<<
+                   "33 14 1"<<"\n"<<
+                   "33 18 2"<<"\n"<<
+                   "33 19 3"<<"\n"<<
+                   "33 20 2"<<"\n"<<
+                   "33 22 2"<<"\n"<<
+                   "33 23 3"<<"\n"<<
+                   "33 24 4"<<"\n"<<
+                   "33 25 3"<<"\n"<<
+                   "33 27 2"<<"\n"<<
+                   "33 31 2"<<"\n"<<
+                   "33 32 2"<<"\n"<<
+                   "33 35 3"<<"\n"<<
+                   "33 36 2"<<"\n"<<
+                   "33 37 2"<<"\n"<<
+                   "33 38 3"<<"\n"<<
+                   "33 40 1"<<"\n"<<
+                   "33 41 2"<<"\n"<<
+                   "33 42 2"<<"\n"<<
+                   "33 43 1"<<"\n"<<
+                   "33 45 1"<<"\n"<<
+                   "35 1 2"<<"\n"<<
+                   "35 2 2"<<"\n"<<
+                   "35 3 2"<<"\n"<<
+                   "35 6 3"<<"\n"<<
+                   "35 13 2"<<"\n"<<
+                   "35 14 3"<<"\n"<<
+                   "35 18 2"<<"\n"<<
+                   "35 19 2"<<"\n"<<
+                   "35 22 3"<<"\n"<<
+                   "35 24 3"<<"\n"<<
+                   "35 25 2"<<"\n"<<
+                   "35 27 3"<<"\n"<<
+                   "35 32 3"<<"\n"<<
+                   "35 33 3"<<"\n"<<
+                   "35 37 4"<<"\n"<<
+                   "35 38 2"<<"\n"<<
+                   "35 41 2"<<"\n"<<
+                   "35 42 4"<<"\n"<<
+                   "36 1 2"<<"\n"<<
+                   "36 3 4"<<"\n"<<
+                   "36 6 3"<<"\n"<<
+                   "36 18 4"<<"\n"<<
+                   "36 20 1"<<"\n"<<
+                   "36 22 2"<<"\n"<<
+                   "36 23 1"<<"\n"<<
+                   "36 24 1"<<"\n"<<
+                   "36 27 2"<<"\n"<<
+                   "36 31 1"<<"\n"<<
+                   "36 32 2"<<"\n"<<
+                   "36 33 2"<<"\n"<<
+                   "36 35 1"<<"\n"<<
+                   "36 37 1"<<"\n"<<
+                   "36 38 2"<<"\n"<<
+                   "36 41 1"<<"\n"<<
+                   "36 42 2"<<"\n"<<
+                   "37 1 2"<<"\n"<<
+                   "37 2 2"<<"\n"<<
+                   "37 3 2"<<"\n"<<
+                   "37 6 2"<<"\n"<<
+                   "37 8 2"<<"\n"<<
+                   "37 13 3"<<"\n"<<
+                   "37 14 2"<<"\n"<<
+                   "37 18 2"<<"\n"<<
+                   "37 19 2"<<"\n"<<
+                   "37 20 2"<<"\n"<<
+                   "37 22 3"<<"\n"<<
+                   "37 23 2"<<"\n"<<
+                   "37 24 3"<<"\n"<<
+                   "37 25 2"<<"\n"<<
+                   "37 27 3"<<"\n"<<
+                   "37 31 4"<<"\n"<<
+                   "37 32 3"<<"\n"<<
+                   "37 33 3"<<"\n"<<
+                   "37 35 4"<<"\n"<<
+                   "37 36 2"<<"\n"<<
+                   "37 38 3"<<"\n"<<
+                   "37 40 2"<<"\n"<<
+                   "37 41 2"<<"\n"<<
+                   "37 42 4"<<"\n"<<
+                   "38 1 2"<<"\n"<<
+                   "38 2 2"<<"\n"<<
+                   "38 3 2"<<"\n"<<
+                   "38 6 2"<<"\n"<<
+                   "38 8 1"<<"\n"<<
+                   "38 13 2"<<"\n"<<
+                   "38 18 3"<<"\n"<<
+                   "38 19 2"<<"\n"<<
+                   "38 20 2"<<"\n"<<
+                   "38 22 3"<<"\n"<<
+                   "38 23 2"<<"\n"<<
+                   "38 24 3"<<"\n"<<
+                   "38 27 2"<<"\n"<<
+                   "38 31 2"<<"\n"<<
+                   "38 32 4"<<"\n"<<
+                   "38 33 3"<<"\n"<<
+                   "38 35 3"<<"\n"<<
+                   "38 36 3"<<"\n"<<
+                   "38 37 4"<<"\n"<<
+                   "38 41 1"<<"\n"<<
+                   "39 1 4"<<"\n"<<
+                   "39 2 1"<<"\n"<<
+                   "39 3 2"<<"\n"<<
+                   "39 6 1"<<"\n"<<
+                   "39 8 1"<<"\n"<<
+                   "39 11 1"<<"\n"<<
+                   "39 13 1"<<"\n"<<
+                   "39 18 1"<<"\n"<<
+                   "39 19 1"<<"\n"<<
+                   "39 20 1"<<"\n"<<
+                   "39 21 2"<<"\n"<<
+                   "39 22 2"<<"\n"<<
+                   "39 23 1"<<"\n"<<
+                   "39 24 1"<<"\n"<<
+                   "39 26 3"<<"\n"<<
+                   "39 27 2"<<"\n"<<
+                   "39 32 1"<<"\n"<<
+                   "39 33 1"<<"\n"<<
+                   "39 35 2"<<"\n"<<
+                   "39 36 1"<<"\n"<<
+                   "39 37 2"<<"\n"<<
+                   "39 38 1"<<"\n"<<
+                   "39 41 2"<<"\n"<<
+                   "39 42 2"<<"\n"<<
+                   "39 44 3"<<"\n"<<
+                   "39 46 1"<<"\n"<<
+                   "40 1 2"<<"\n"<<
+                   "40 2 2"<<"\n"<<
+                   "40 3 1"<<"\n"<<
+                   "40 6 2"<<"\n"<<
+                   "40 8 1"<<"\n"<<
+                   "40 13 2"<<"\n"<<
+                   "40 14 2"<<"\n"<<
+                   "40 18 1"<<"\n"<<
+                   "40 19 1"<<"\n"<<
+                   "40 21 4"<<"\n"<<
+                   "40 22 1"<<"\n"<<
+                   "40 23 1"<<"\n"<<
+                   "40 24 1"<<"\n"<<
+                   "40 25 1"<<"\n"<<
+                   "40 27 1"<<"\n"<<
+                   "40 32 1"<<"\n"<<
+                   "40 33 1"<<"\n"<<
+                   "40 43 2"<<"\n"<<
+                   "41 1 3"<<"\n"<<
+                   "41 2 2"<<"\n"<<
+                   "41 6 3"<<"\n"<<
+                   "41 18 1"<<"\n"<<
+                   "41 19 1"<<"\n"<<
+                   "41 21 1"<<"\n"<<
+                   "41 22 2"<<"\n"<<
+                   "41 23 2"<<"\n"<<
+                   "41 24 2"<<"\n"<<
+                   "41 27 3"<<"\n"<<
+                   "41 32 2"<<"\n"<<
+                   "41 33 2"<<"\n"<<
+                   "41 35 3"<<"\n"<<
+                   "41 37 2"<<"\n"<<
+                   "41 38 1"<<"\n"<<
+                   "41 39 2"<<"\n"<<
+                   "41 40 1"<<"\n"<<
+                   "41 42 2"<<"\n"<<
+                   "41 44 2"<<"\n"<<
+                   "42 1 2"<<"\n"<<
+                   "42 2 2"<<"\n"<<
+                   "42 3 2"<<"\n"<<
+                   "42 6 2"<<"\n"<<
+                   "42 8 2"<<"\n"<<
+                   "42 13 2"<<"\n"<<
+                   "42 18 2"<<"\n"<<
+                   "42 20 2"<<"\n"<<
+                   "42 22 3"<<"\n"<<
+                   "42 23 2"<<"\n"<<
+                   "42 24 2"<<"\n"<<
+                   "42 26 2"<<"\n"<<
+                   "42 27 2"<<"\n"<<
+                   "42 32 2"<<"\n"<<
+                   "42 33 2"<<"\n"<<
+                   "42 35 4"<<"\n"<<
+                   "42 36 2"<<"\n"<<
+                   "42 37 3"<<"\n"<<
+                   "42 39 2"<<"\n"<<
+                   "42 40 2"<<"\n"<<
+                   "42 41 2"<<"\n"<<
+                   "42 43 2"<<"\n"<<
+                   "42 44 2"<<"\n"<<
+                   "42 46 3"<<"\n"<<
+                   "43 1 3"<<"\n"<<
+                   "43 2 4"<<"\n"<<
+                   "43 3 1"<<"\n"<<
+                   "43 13 4"<<"\n"<<
+                   "43 18 2"<<"\n"<<
+                   "43 21 2"<<"\n"<<
+                   "43 22 2"<<"\n"<<
+                   "43 24 2"<<"\n"<<
+                   "43 25 2"<<"\n"<<
+                   "43 26 2"<<"\n"<<
+                   "43 27 2"<<"\n"<<
+                   "43 32 2"<<"\n"<<
+                   "43 33 2"<<"\n"<<
+                   "43 35 2"<<"\n"<<
+                   "43 40 2"<<"\n"<<
+                   "43 41 1"<<"\n"<<
+                   "43 42 2"<<"\n"<<
+                   "43 45 2"<<"\n"<<
+                   "43 46 1"<<"\n"<<
+                   "44 1 4"<<"\n"<<
+                   "44 2 4"<<"\n"<<
+                   "44 3 2"<<"\n"<<
+                   "44 6 2"<<"\n"<<
+                   "44 8 2"<<"\n"<<
+                   "44 10 2"<<"\n"<<
+                   "44 11 1"<<"\n"<<
+                   "44 13 2"<<"\n"<<
+                   "44 14 2"<<"\n"<<
+                   "44 19 2"<<"\n"<<
+                   "44 21 2"<<"\n"<<
+                   "44 22 2"<<"\n"<<
+                   "44 23 2"<<"\n"<<
+                   "44 24 1"<<"\n"<<
+                   "44 25 2"<<"\n"<<
+                   "44 26 3"<<"\n"<<
+                   "44 27 2"<<"\n"<<
+                   "44 33 1"<<"\n"<<
+                   "44 35 2"<<"\n"<<
+                   "44 36 2"<<"\n"<<
+                   "44 37 2"<<"\n"<<
+                   "44 39 2"<<"\n"<<
+                   "44 40 2"<<"\n"<<
+                   "44 41 2"<<"\n"<<
+                   "44 42 2"<<"\n"<<
+                   "44 43 2"<<"\n"<<
+                   "44 46 1"<<"\n"<<
+                   "45 1 3"<<"\n"<<
+                   "45 2 3"<<"\n"<<
+                   "45 6 1"<<"\n"<<
+                   "45 8 2"<<"\n"<<
+                   "45 13 3"<<"\n"<<
+                   "45 14 4"<<"\n"<<
+                   "45 19 1"<<"\n"<<
+                   "45 21 2"<<"\n"<<
+                   "45 22 1"<<"\n"<<
+                   "45 24 1"<<"\n"<<
+                   "45 27 1"<<"\n"<<
+                   "45 32 1"<<"\n"<<
+                   "45 33 1"<<"\n"<<
+                   "45 40 2"<<"\n"<<
+                   "45 43 3"<<"\n"<<
+                   "45 44 3"<<"\n"<<
+                   "45 46 1"<<"\n"<<
+                   "46 1 2"<<"\n"<<
+                   "46 2 2"<<"\n"<<
                    "46 42 3";
 
     }
@@ -18367,839 +18312,839 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
         qDebug()<< "		... to  " << fileName;
         datasetDescription = tr("Freeman's EIES network (Acquaintanceship) at time 2");
         outText <<
-                   "dl"<<endl<<
-                   "N=48"<<endl<<
-                   "format=edgelist1"<<endl<<
-                   "data:"<<endl<<
-                   "1 2 4"<<endl<<
-                   "1 3 2"<<endl<<
-                   "1 6 2"<<endl<<
-                   "1 8 2"<<endl<<
-                   "1 10 2"<<endl<<
-                   "1 11 2"<<endl<<
-                   "1 13 3"<<endl<<
-                   "1 14 3"<<endl<<
-                   "1 18 2"<<endl<<
-                   "1 19 3"<<endl<<
-                   "1 20 2"<<endl<<
-                   "1 21 3"<<endl<<
-                   "1 22 2"<<endl<<
-                   "1 23 2"<<endl<<
-                   "1 24 2"<<endl<<
-                   "1 25 2"<<endl<<
-                   "1 26 3"<<endl<<
-                   "1 27 2"<<endl<<
-                   "1 31 2"<<endl<<
-                   "1 32 2"<<endl<<
-                   "1 33 2"<<endl<<
-                   "1 35 2"<<endl<<
-                   "1 36 2"<<endl<<
-                   "1 37 2"<<endl<<
-                   "1 38 2"<<endl<<
-                   "1 39 3"<<endl<<
-                   "1 40 2"<<endl<<
-                   "1 41 2"<<endl<<
-                   "1 42 3"<<endl<<
-                   "1 43 2"<<endl<<
-                   "1 44 4"<<endl<<
-                   "1 45 3"<<endl<<
-                   "1 46 3"<<endl<<
-                   "2 1 4"<<endl<<
-                   "2 3 2"<<endl<<
-                   "2 6 2"<<endl<<
-                   "2 8 1"<<endl<<
-                   "2 10 2"<<endl<<
-                   "2 11 2"<<endl<<
-                   "2 13 3"<<endl<<
-                   "2 14 4"<<endl<<
-                   "2 18 2"<<endl<<
-                   "2 19 3"<<endl<<
-                   "2 21 2"<<endl<<
-                   "2 22 2"<<endl<<
-                   "2 23 2"<<endl<<
-                   "2 24 2"<<endl<<
-                   "2 25 2"<<endl<<
-                   "2 26 2"<<endl<<
-                   "2 27 2"<<endl<<
-                   "2 32 2"<<endl<<
-                   "2 33 2"<<endl<<
-                   "2 35 2"<<endl<<
-                   "2 36 2"<<endl<<
-                   "2 37 2"<<endl<<
-                   "2 38 2"<<endl<<
-                   "2 39 2"<<endl<<
-                   "2 40 2"<<endl<<
-                   "2 41 2"<<endl<<
-                   "2 42 2"<<endl<<
-                   "2 43 3"<<endl<<
-                   "2 44 4"<<endl<<
-                   "2 45 4"<<endl<<
-                   "2 46 2"<<endl<<
-                   "3 1 3"<<endl<<
-                   "3 2 1"<<endl<<
-                   "3 6 4"<<endl<<
-                   "3 8 1"<<endl<<
-                   "3 13 2"<<endl<<
-                   "3 18 2"<<endl<<
-                   "3 19 4"<<endl<<
-                   "3 20 4"<<endl<<
-                   "3 22 4"<<endl<<
-                   "3 23 1"<<endl<<
-                   "3 24 2"<<endl<<
-                   "3 25 2"<<endl<<
-                   "3 26 2"<<endl<<
-                   "3 27 1"<<endl<<
-                   "3 31 1"<<endl<<
-                   "3 32 2"<<endl<<
-                   "3 33 2"<<endl<<
-                   "3 35 2"<<endl<<
-                   "3 36 4"<<endl<<
-                   "3 37 2"<<endl<<
-                   "3 39 2"<<endl<<
-                   "3 41 1"<<endl<<
-                   "3 42 1"<<endl<<
-                   "3 43 1"<<endl<<
-                   "6 1 2"<<endl<<
-                   "6 2 2"<<endl<<
-                   "6 3 2"<<endl<<
-                   "6 8 2"<<endl<<
-                   "6 10 2"<<endl<<
-                   "6 13 2"<<endl<<
-                   "6 14 2"<<endl<<
-                   "6 18 3"<<endl<<
-                   "6 19 2"<<endl<<
-                   "6 20 2"<<endl<<
-                   "6 21 1"<<endl<<
-                   "6 22 2"<<endl<<
-                   "6 23 2"<<endl<<
-                   "6 24 2"<<endl<<
-                   "6 26 2"<<endl<<
-                   "6 27 4"<<endl<<
-                   "6 31 1"<<endl<<
-                   "6 32 2"<<endl<<
-                   "6 33 2"<<endl<<
-                   "6 35 2"<<endl<<
-                   "6 36 2"<<endl<<
-                   "6 37 2"<<endl<<
-                   "6 38 2"<<endl<<
-                   "6 39 2"<<endl<<
-                   "6 40 2"<<endl<<
-                   "6 41 2"<<endl<<
-                   "6 42 2"<<endl<<
-                   "6 43 2"<<endl<<
-                   "6 44 2"<<endl<<
-                   "6 46 2"<<endl<<
-                   "8 1 3"<<endl<<
-                   "8 6 2"<<endl<<
-                   "8 13 2"<<endl<<
-                   "8 14 3"<<endl<<
-                   "8 18 2"<<endl<<
-                   "8 19 2"<<endl<<
-                   "8 20 1"<<endl<<
-                   "8 22 2"<<endl<<
-                   "8 23 1"<<endl<<
-                   "8 24 2"<<endl<<
-                   "8 25 2"<<endl<<
-                   "8 27 1"<<endl<<
-                   "8 32 2"<<endl<<
-                   "8 33 2"<<endl<<
-                   "8 35 2"<<endl<<
-                   "8 37 2"<<endl<<
-                   "8 38 1"<<endl<<
-                   "8 40 1"<<endl<<
-                   "8 41 2"<<endl<<
-                   "8 42 2"<<endl<<
-                   "8 44 2"<<endl<<
-                   "8 45 2"<<endl<<
-                   "10 1 4"<<endl<<
-                   "10 2 2"<<endl<<
-                   "10 13 3"<<endl<<
-                   "10 18 2"<<endl<<
-                   "10 19 2"<<endl<<
-                   "10 22 2"<<endl<<
-                   "10 23 2"<<endl<<
-                   "10 24 2"<<endl<<
-                   "10 27 2"<<endl<<
-                   "10 31 2"<<endl<<
-                   "10 33 2"<<endl<<
-                   "10 37 3"<<endl<<
-                   "10 39 2"<<endl<<
-                   "10 40 2"<<endl<<
-                   "10 41 2"<<endl<<
-                   "10 42 3"<<endl<<
-                   "10 44 4"<<endl<<
-                   "10 45 2"<<endl<<
-                   "10 46 3"<<endl<<
-                   "11 1 3"<<endl<<
-                   "11 2 2"<<endl<<
-                   "11 3 1"<<endl<<
-                   "11 13 2"<<endl<<
-                   "11 14 2"<<endl<<
-                   "11 19 1"<<endl<<
-                   "11 21 3"<<endl<<
-                   "11 41 2"<<endl<<
-                   "13 1 3"<<endl<<
-                   "13 2 2"<<endl<<
-                   "13 3 2"<<endl<<
-                   "13 6 2"<<endl<<
-                   "13 8 2"<<endl<<
-                   "13 10 2"<<endl<<
-                   "13 11 1"<<endl<<
-                   "13 14 1"<<endl<<
-                   "13 18 2"<<endl<<
-                   "13 19 4"<<endl<<
-                   "13 20 1"<<endl<<
-                   "13 21 2"<<endl<<
-                   "13 22 2"<<endl<<
-                   "13 23 2"<<endl<<
-                   "13 24 2"<<endl<<
-                   "13 25 2"<<endl<<
-                   "13 26 2"<<endl<<
-                   "13 27 2"<<endl<<
-                   "13 32 2"<<endl<<
-                   "13 33 2"<<endl<<
-                   "13 35 2"<<endl<<
-                   "13 36 2"<<endl<<
-                   "13 37 2"<<endl<<
-                   "13 38 2"<<endl<<
-                   "13 40 2"<<endl<<
-                   "13 41 1"<<endl<<
-                   "13 42 2"<<endl<<
-                   "13 43 2"<<endl<<
-                   "13 44 2"<<endl<<
-                   "13 45 4"<<endl<<
-                   "13 46 2"<<endl<<
-                   "14 1 3"<<endl<<
-                   "14 2 4"<<endl<<
-                   "14 8 2"<<endl<<
-                   "14 13 2"<<endl<<
-                   "14 19 2"<<endl<<
-                   "14 21 2"<<endl<<
-                   "14 22 1"<<endl<<
-                   "14 24 1"<<endl<<
-                   "14 25 2"<<endl<<
-                   "14 33 2"<<endl<<
-                   "14 35 2"<<endl<<
-                   "14 40 3"<<endl<<
-                   "14 42 1"<<endl<<
-                   "14 44 2"<<endl<<
-                   "14 45 4"<<endl<<
-                   "14 46 2"<<endl<<
-                   "18 1 3"<<endl<<
-                   "18 3 2"<<endl<<
-                   "18 6 3"<<endl<<
-                   "18 8 2"<<endl<<
-                   "18 11 1"<<endl<<
-                   "18 13 2"<<endl<<
-                   "18 14 1"<<endl<<
-                   "18 19 2"<<endl<<
-                   "18 20 3"<<endl<<
-                   "18 21 2"<<endl<<
-                   "18 22 1"<<endl<<
-                   "18 23 2"<<endl<<
-                   "18 24 2"<<endl<<
-                   "18 25 2"<<endl<<
-                   "18 26 2"<<endl<<
-                   "18 27 2"<<endl<<
-                   "18 31 2"<<endl<<
-                   "18 32 4"<<endl<<
-                   "18 33 2"<<endl<<
-                   "18 35 2"<<endl<<
-                   "18 36 4"<<endl<<
-                   "18 37 2"<<endl<<
-                   "18 38 2"<<endl<<
-                   "18 40 2"<<endl<<
-                   "18 41 2"<<endl<<
-                   "18 42 3"<<endl<<
-                   "18 43 2"<<endl<<
-                   "18 44 2"<<endl<<
-                   "18 45 1"<<endl<<
-                   "19 1 3"<<endl<<
-                   "19 2 2"<<endl<<
-                   "19 3 2"<<endl<<
-                   "19 6 2"<<endl<<
-                   "19 8 2"<<endl<<
-                   "19 10 2"<<endl<<
-                   "19 13 4"<<endl<<
-                   "19 14 2"<<endl<<
-                   "19 18 2"<<endl<<
-                   "19 21 2"<<endl<<
-                   "19 22 2"<<endl<<
-                   "19 23 2"<<endl<<
-                   "19 24 2"<<endl<<
-                   "19 25 2"<<endl<<
-                   "19 26 2"<<endl<<
-                   "19 27 2"<<endl<<
-                   "19 31 2"<<endl<<
-                   "19 32 2"<<endl<<
-                   "19 33 2"<<endl<<
-                   "19 35 2"<<endl<<
-                   "19 36 1"<<endl<<
-                   "19 37 2"<<endl<<
-                   "19 38 2"<<endl<<
-                   "19 40 2"<<endl<<
-                   "19 41 2"<<endl<<
-                   "19 42 2"<<endl<<
-                   "19 44 3"<<endl<<
-                   "19 45 3"<<endl<<
-                   "19 46 2"<<endl<<
-                   "20 1 2"<<endl<<
-                   "20 3 1"<<endl<<
-                   "20 6 2"<<endl<<
-                   "20 11 1"<<endl<<
-                   "20 13 1"<<endl<<
-                   "20 18 3"<<endl<<
-                   "20 22 2"<<endl<<
-                   "20 23 1"<<endl<<
-                   "20 24 1"<<endl<<
-                   "20 27 2"<<endl<<
-                   "20 31 2"<<endl<<
-                   "20 32 3"<<endl<<
-                   "20 33 2"<<endl<<
-                   "20 35 1"<<endl<<
-                   "20 36 1"<<endl<<
-                   "20 37 1"<<endl<<
-                   "20 38 2"<<endl<<
-                   "20 41 1"<<endl<<
-                   "20 43 1"<<endl<<
-                   "20 44 2"<<endl<<
-                   "20 45 2"<<endl<<
-                   "20 46 2"<<endl<<
-                   "21 1 3"<<endl<<
-                   "21 2 3"<<endl<<
-                   "21 3 1"<<endl<<
-                   "21 6 2"<<endl<<
-                   "21 8 1"<<endl<<
-                   "21 11 3"<<endl<<
-                   "21 13 3"<<endl<<
-                   "21 14 2"<<endl<<
-                   "21 18 1"<<endl<<
-                   "21 19 2"<<endl<<
-                   "21 22 1"<<endl<<
-                   "21 23 1"<<endl<<
-                   "21 24 2"<<endl<<
-                   "21 26 2"<<endl<<
-                   "21 27 2"<<endl<<
-                   "21 31 1"<<endl<<
-                   "21 32 1"<<endl<<
-                   "21 33 2"<<endl<<
-                   "21 35 2"<<endl<<
-                   "21 36 1"<<endl<<
-                   "21 39 2"<<endl<<
-                   "21 40 4"<<endl<<
-                   "21 41 2"<<endl<<
-                   "21 42 2"<<endl<<
-                   "21 43 2"<<endl<<
-                   "21 44 3"<<endl<<
-                   "21 45 3"<<endl<<
-                   "22 1 3"<<endl<<
-                   "22 2 2"<<endl<<
-                   "22 3 4"<<endl<<
-                   "22 6 3"<<endl<<
-                   "22 8 3"<<endl<<
-                   "22 13 3"<<endl<<
-                   "22 18 2"<<endl<<
-                   "22 19 2"<<endl<<
-                   "22 20 3"<<endl<<
-                   "22 21 2"<<endl<<
-                   "22 23 3"<<endl<<
-                   "22 24 4"<<endl<<
-                   "22 25 4"<<endl<<
-                   "22 26 2"<<endl<<
-                   "22 27 3"<<endl<<
-                   "22 31 3"<<endl<<
-                   "22 32 3"<<endl<<
-                   "22 33 3"<<endl<<
-                   "22 35 4"<<endl<<
-                   "22 36 3"<<endl<<
-                   "22 37 3"<<endl<<
-                   "22 38 3"<<endl<<
-                   "22 39 2"<<endl<<
-                   "22 40 2"<<endl<<
-                   "22 41 3"<<endl<<
-                   "22 42 4"<<endl<<
-                   "22 43 3"<<endl<<
-                   "22 44 3"<<endl<<
-                   "22 45 2"<<endl<<
-                   "22 46 2"<<endl<<
-                   "23 1 3"<<endl<<
-                   "23 2 2"<<endl<<
-                   "23 3 2"<<endl<<
-                   "23 6 3"<<endl<<
-                   "23 8 1"<<endl<<
-                   "23 13 2"<<endl<<
-                   "23 14 2"<<endl<<
-                   "23 18 2"<<endl<<
-                   "23 19 2"<<endl<<
-                   "23 20 2"<<endl<<
-                   "23 22 3"<<endl<<
-                   "23 24 2"<<endl<<
-                   "23 25 2"<<endl<<
-                   "23 27 2"<<endl<<
-                   "23 31 4"<<endl<<
-                   "23 32 1"<<endl<<
-                   "23 33 2"<<endl<<
-                   "23 35 2"<<endl<<
-                   "23 36 2"<<endl<<
-                   "23 37 2"<<endl<<
-                   "23 38 2"<<endl<<
-                   "23 40 1"<<endl<<
-                   "23 42 3"<<endl<<
-                   "23 44 3"<<endl<<
-                   "23 45 1"<<endl<<
-                   "24 1 2"<<endl<<
-                   "24 2 2"<<endl<<
-                   "24 3 2"<<endl<<
-                   "24 6 2"<<endl<<
-                   "24 8 3"<<endl<<
-                   "24 10 2"<<endl<<
-                   "24 13 3"<<endl<<
-                   "24 14 1"<<endl<<
-                   "24 18 2"<<endl<<
-                   "24 19 2"<<endl<<
-                   "24 22 3"<<endl<<
-                   "24 23 2"<<endl<<
-                   "24 25 2"<<endl<<
-                   "24 27 2"<<endl<<
-                   "24 31 2"<<endl<<
-                   "24 32 2"<<endl<<
-                   "24 33 4"<<endl<<
-                   "24 35 3"<<endl<<
-                   "24 37 2"<<endl<<
-                   "24 38 2"<<endl<<
-                   "24 39 2"<<endl<<
-                   "24 40 1"<<endl<<
-                   "24 41 1"<<endl<<
-                   "24 42 2"<<endl<<
-                   "24 44 2"<<endl<<
-                   "24 45 2"<<endl<<
-                   "24 46 2"<<endl<<
-                   "25 1 3"<<endl<<
-                   "25 2 2"<<endl<<
-                   "25 3 3"<<endl<<
-                   "25 6 1"<<endl<<
-                   "25 8 2"<<endl<<
-                   "25 13 3"<<endl<<
-                   "25 14 2"<<endl<<
-                   "25 18 1"<<endl<<
-                   "25 19 3"<<endl<<
-                   "25 20 1"<<endl<<
-                   "25 21 1"<<endl<<
-                   "25 22 3"<<endl<<
-                   "25 23 2"<<endl<<
-                   "25 24 3"<<endl<<
-                   "25 26 1"<<endl<<
-                   "25 27 1"<<endl<<
-                   "25 32 3"<<endl<<
-                   "25 33 3"<<endl<<
-                   "25 35 3"<<endl<<
-                   "25 37 2"<<endl<<
-                   "25 39 1"<<endl<<
-                   "25 40 2"<<endl<<
-                   "25 41 1"<<endl<<
-                   "25 42 2"<<endl<<
-                   "25 43 2"<<endl<<
-                   "25 44 2"<<endl<<
-                   "25 45 2"<<endl<<
-                   "25 46 1"<<endl<<
-                   "26 1 4"<<endl<<
-                   "26 2 2"<<endl<<
-                   "26 3 2"<<endl<<
-                   "26 11 1"<<endl<<
-                   "26 13 2"<<endl<<
-                   "26 19 2"<<endl<<
-                   "26 21 1"<<endl<<
-                   "26 22 2"<<endl<<
-                   "26 39 2"<<endl<<
-                   "26 40 2"<<endl<<
-                   "26 42 2"<<endl<<
-                   "26 43 2"<<endl<<
-                   "26 44 4"<<endl<<
-                   "26 45 1"<<endl<<
-                   "26 46 2"<<endl<<
-                   "27 1 2"<<endl<<
-                   "27 3 2"<<endl<<
-                   "27 6 4"<<endl<<
-                   "27 8 1"<<endl<<
-                   "27 13 2"<<endl<<
-                   "27 18 2"<<endl<<
-                   "27 20 2"<<endl<<
-                   "27 22 2"<<endl<<
-                   "27 23 2"<<endl<<
-                   "27 24 1"<<endl<<
-                   "27 32 2"<<endl<<
-                   "27 33 2"<<endl<<
-                   "27 35 3"<<endl<<
-                   "27 36 2"<<endl<<
-                   "27 37 2"<<endl<<
-                   "27 38 2"<<endl<<
-                   "27 39 2"<<endl<<
-                   "27 41 2"<<endl<<
-                   "27 42 2"<<endl<<
-                   "27 43 1"<<endl<<
-                   "27 44 2"<<endl<<
-                   "27 46 2"<<endl<<
-                   "31 1 1"<<endl<<
-                   "31 3 2"<<endl<<
-                   "31 6 1"<<endl<<
-                   "31 8 1"<<endl<<
-                   "31 18 2"<<endl<<
-                   "31 19 2"<<endl<<
-                   "31 20 2"<<endl<<
-                   "31 22 2"<<endl<<
-                   "31 23 2"<<endl<<
-                   "31 24 2"<<endl<<
-                   "31 32 1"<<endl<<
-                   "31 35 3"<<endl<<
-                   "31 36 1"<<endl<<
-                   "31 37 3"<<endl<<
-                   "31 38 2"<<endl<<
-                   "31 42 1"<<endl<<
-                   "32 1 2"<<endl<<
-                   "32 2 2"<<endl<<
-                   "32 3 2"<<endl<<
-                   "32 6 2"<<endl<<
-                   "32 8 2"<<endl<<
-                   "32 13 2"<<endl<<
-                   "32 18 3"<<endl<<
-                   "32 19 2"<<endl<<
-                   "32 20 2"<<endl<<
-                   "32 22 3"<<endl<<
-                   "32 23 1"<<endl<<
-                   "32 24 2"<<endl<<
-                   "32 25 2"<<endl<<
-                   "32 27 2"<<endl<<
-                   "32 31 1"<<endl<<
-                   "32 33 3"<<endl<<
-                   "32 35 4"<<endl<<
-                   "32 36 2"<<endl<<
-                   "32 37 3"<<endl<<
-                   "32 38 3"<<endl<<
-                   "32 41 2"<<endl<<
-                   "32 42 3"<<endl<<
-                   "32 43 1"<<endl<<
-                   "33 1 3"<<endl<<
-                   "33 2 3"<<endl<<
-                   "33 3 2"<<endl<<
-                   "33 6 2"<<endl<<
-                   "33 8 2"<<endl<<
-                   "33 13 3"<<endl<<
-                   "33 14 1"<<endl<<
-                   "33 18 2"<<endl<<
-                   "33 19 3"<<endl<<
-                   "33 20 2"<<endl<<
-                   "33 22 2"<<endl<<
-                   "33 23 3"<<endl<<
-                   "33 24 4"<<endl<<
-                   "33 25 3"<<endl<<
-                   "33 27 2"<<endl<<
-                   "33 31 2"<<endl<<
-                   "33 32 2"<<endl<<
-                   "33 35 3"<<endl<<
-                   "33 36 2"<<endl<<
-                   "33 37 2"<<endl<<
-                   "33 38 3"<<endl<<
-                   "33 40 1"<<endl<<
-                   "33 41 2"<<endl<<
-                   "33 42 2"<<endl<<
-                   "33 43 1"<<endl<<
-                   "33 45 1"<<endl<<
-                   "35 1 2"<<endl<<
-                   "35 2 2"<<endl<<
-                   "35 3 2"<<endl<<
-                   "35 6 3"<<endl<<
-                   "35 13 2"<<endl<<
-                   "35 14 3"<<endl<<
-                   "35 18 2"<<endl<<
-                   "35 19 2"<<endl<<
-                   "35 22 3"<<endl<<
-                   "35 23 2"<<endl<<
-                   "35 24 3"<<endl<<
-                   "35 25 2"<<endl<<
-                   "35 27 3"<<endl<<
-                   "35 32 3"<<endl<<
-                   "35 33 3"<<endl<<
-                   "35 37 4"<<endl<<
-                   "35 38 2"<<endl<<
-                   "35 41 2"<<endl<<
-                   "35 42 4"<<endl<<
-                   "35 45 2"<<endl<<
-                   "36 1 3"<<endl<<
-                   "36 2 2"<<endl<<
-                   "36 3 4"<<endl<<
-                   "36 6 3"<<endl<<
-                   "36 13 2"<<endl<<
-                   "36 18 4"<<endl<<
-                   "36 20 1"<<endl<<
-                   "36 22 3"<<endl<<
-                   "36 23 1"<<endl<<
-                   "36 24 1"<<endl<<
-                   "36 27 3"<<endl<<
-                   "36 31 1"<<endl<<
-                   "36 32 2"<<endl<<
-                   "36 33 1"<<endl<<
-                   "36 35 1"<<endl<<
-                   "36 37 2"<<endl<<
-                   "36 38 2"<<endl<<
-                   "36 41 2"<<endl<<
-                   "36 42 3"<<endl<<
-                   "36 43 2"<<endl<<
-                   "36 44 2"<<endl<<
-                   "36 46 2"<<endl<<
-                   "37 1 3"<<endl<<
-                   "37 2 2"<<endl<<
-                   "37 3 2"<<endl<<
-                   "37 6 2"<<endl<<
-                   "37 8 3"<<endl<<
-                   "37 10 2"<<endl<<
-                   "37 13 3"<<endl<<
-                   "37 14 2"<<endl<<
-                   "37 18 2"<<endl<<
-                   "37 19 3"<<endl<<
-                   "37 20 2"<<endl<<
-                   "37 21 2"<<endl<<
-                   "37 22 3"<<endl<<
-                   "37 23 2"<<endl<<
-                   "37 24 3"<<endl<<
-                   "37 25 2"<<endl<<
-                   "37 26 2"<<endl<<
-                   "37 27 2"<<endl<<
-                   "37 31 4"<<endl<<
-                   "37 32 3"<<endl<<
-                   "37 33 3"<<endl<<
-                   "37 35 4"<<endl<<
-                   "37 36 2"<<endl<<
-                   "37 38 3"<<endl<<
-                   "37 40 2"<<endl<<
-                   "37 41 3"<<endl<<
-                   "37 42 3"<<endl<<
-                   "37 43 2"<<endl<<
-                   "37 44 2"<<endl<<
-                   "37 45 2"<<endl<<
-                   "37 46 2"<<endl<<
-                   "38 1 2"<<endl<<
-                   "38 2 2"<<endl<<
-                   "38 3 2"<<endl<<
-                   "38 6 3"<<endl<<
-                   "38 8 1"<<endl<<
-                   "38 13 3"<<endl<<
-                   "38 18 3"<<endl<<
-                   "38 19 2"<<endl<<
-                   "38 20 2"<<endl<<
-                   "38 22 3"<<endl<<
-                   "38 23 2"<<endl<<
-                   "38 24 3"<<endl<<
-                   "38 27 2"<<endl<<
-                   "38 31 3"<<endl<<
-                   "38 32 3"<<endl<<
-                   "38 33 3"<<endl<<
-                   "38 35 3"<<endl<<
-                   "38 36 3"<<endl<<
-                   "38 37 3"<<endl<<
-                   "38 41 1"<<endl<<
-                   "38 42 2"<<endl<<
-                   "39 1 4"<<endl<<
-                   "39 2 1"<<endl<<
-                   "39 3 2"<<endl<<
-                   "39 6 1"<<endl<<
-                   "39 8 1"<<endl<<
-                   "39 11 1"<<endl<<
-                   "39 13 1"<<endl<<
-                   "39 18 1"<<endl<<
-                   "39 19 1"<<endl<<
-                   "39 20 1"<<endl<<
-                   "39 21 2"<<endl<<
-                   "39 22 2"<<endl<<
-                   "39 23 1"<<endl<<
-                   "39 24 1"<<endl<<
-                   "39 26 3"<<endl<<
-                   "39 27 2"<<endl<<
-                   "39 32 1"<<endl<<
-                   "39 33 1"<<endl<<
-                   "39 35 2"<<endl<<
-                   "39 36 1"<<endl<<
-                   "39 37 2"<<endl<<
-                   "39 38 1"<<endl<<
-                   "39 41 2"<<endl<<
-                   "39 42 2"<<endl<<
-                   "39 44 3"<<endl<<
-                   "39 46 1"<<endl<<
-                   "40 1 3"<<endl<<
-                   "40 2 2"<<endl<<
-                   "40 3 2"<<endl<<
-                   "40 6 2"<<endl<<
-                   "40 8 2"<<endl<<
-                   "40 10 2"<<endl<<
-                   "40 13 3"<<endl<<
-                   "40 14 3"<<endl<<
-                   "40 18 2"<<endl<<
-                   "40 19 2"<<endl<<
-                   "40 21 4"<<endl<<
-                   "40 22 1"<<endl<<
-                   "40 23 2"<<endl<<
-                   "40 24 2"<<endl<<
-                   "40 25 2"<<endl<<
-                   "40 26 2"<<endl<<
-                   "40 27 2"<<endl<<
-                   "40 32 1"<<endl<<
-                   "40 33 2"<<endl<<
-                   "40 35 2"<<endl<<
-                   "40 36 1"<<endl<<
-                   "40 37 2"<<endl<<
-                   "40 42 2"<<endl<<
-                   "40 43 2"<<endl<<
-                   "40 44 2"<<endl<<
-                   "40 45 2"<<endl<<
-                   "40 46 2"<<endl<<
-                   "41 1 3"<<endl<<
-                   "41 2 2"<<endl<<
-                   "41 6 3"<<endl<<
-                   "41 13 2"<<endl<<
-                   "41 18 1"<<endl<<
-                   "41 19 1"<<endl<<
-                   "41 21 2"<<endl<<
-                   "41 22 2"<<endl<<
-                   "41 23 2"<<endl<<
-                   "41 24 2"<<endl<<
-                   "41 27 3"<<endl<<
-                   "41 32 2"<<endl<<
-                   "41 33 2"<<endl<<
-                   "41 35 3"<<endl<<
-                   "41 37 2"<<endl<<
-                   "41 38 1"<<endl<<
-                   "41 39 2"<<endl<<
-                   "41 40 1"<<endl<<
-                   "41 42 2"<<endl<<
-                   "41 44 2"<<endl<<
-                   "41 45 2"<<endl<<
-                   "41 46 2"<<endl<<
-                   "42 1 3"<<endl<<
-                   "42 2 2"<<endl<<
-                   "42 3 2"<<endl<<
-                   "42 6 3"<<endl<<
-                   "42 8 2"<<endl<<
-                   "42 10 2"<<endl<<
-                   "42 13 3"<<endl<<
-                   "42 18 3"<<endl<<
-                   "42 19 2"<<endl<<
-                   "42 20 3"<<endl<<
-                   "42 21 2"<<endl<<
-                   "42 22 4"<<endl<<
-                   "42 23 3"<<endl<<
-                   "42 24 2"<<endl<<
-                   "42 25 2"<<endl<<
-                   "42 26 2"<<endl<<
-                   "42 27 2"<<endl<<
-                   "42 32 3"<<endl<<
-                   "42 33 2"<<endl<<
-                   "42 35 4"<<endl<<
-                   "42 36 2"<<endl<<
-                   "42 37 4"<<endl<<
-                   "42 39 2"<<endl<<
-                   "42 40 2"<<endl<<
-                   "42 41 2"<<endl<<
-                   "42 43 2"<<endl<<
-                   "42 44 3"<<endl<<
-                   "42 45 2"<<endl<<
-                   "42 46 4"<<endl<<
-                   "43 1 3"<<endl<<
-                   "43 2 3"<<endl<<
-                   "43 3 1"<<endl<<
-                   "43 6 2"<<endl<<
-                   "43 10 2"<<endl<<
-                   "43 13 3"<<endl<<
-                   "43 18 2"<<endl<<
-                   "43 19 2"<<endl<<
-                   "43 21 2"<<endl<<
-                   "43 22 2"<<endl<<
-                   "43 24 2"<<endl<<
-                   "43 25 2"<<endl<<
-                   "43 26 2"<<endl<<
-                   "43 27 2"<<endl<<
-                   "43 32 2"<<endl<<
-                   "43 33 2"<<endl<<
-                   "43 35 2"<<endl<<
-                   "43 37 2"<<endl<<
-                   "43 38 2"<<endl<<
-                   "43 40 3"<<endl<<
-                   "43 41 2"<<endl<<
-                   "43 42 3"<<endl<<
-                   "43 44 3"<<endl<<
-                   "43 45 3"<<endl<<
-                   "43 46 2"<<endl<<
-                   "44 1 4"<<endl<<
-                   "44 2 4"<<endl<<
-                   "44 3 2"<<endl<<
-                   "44 6 2"<<endl<<
-                   "44 8 2"<<endl<<
-                   "44 10 3"<<endl<<
-                   "44 11 2"<<endl<<
-                   "44 13 2"<<endl<<
-                   "44 14 2"<<endl<<
-                   "44 18 2"<<endl<<
-                   "44 19 3"<<endl<<
-                   "44 20 2"<<endl<<
-                   "44 21 3"<<endl<<
-                   "44 22 2"<<endl<<
-                   "44 23 3"<<endl<<
-                   "44 24 2"<<endl<<
-                   "44 25 2"<<endl<<
-                   "44 26 3"<<endl<<
-                   "44 27 2"<<endl<<
-                   "44 31 2"<<endl<<
-                   "44 32 2"<<endl<<
-                   "44 33 2"<<endl<<
-                   "44 35 2"<<endl<<
-                   "44 36 2"<<endl<<
-                   "44 37 2"<<endl<<
-                   "44 38 2"<<endl<<
-                   "44 39 2"<<endl<<
-                   "44 40 2"<<endl<<
-                   "44 41 2"<<endl<<
-                   "44 42 3"<<endl<<
-                   "44 43 2"<<endl<<
-                   "44 45 4"<<endl<<
-                   "44 46 3"<<endl<<
-                   "45 1 4"<<endl<<
-                   "45 2 4"<<endl<<
-                   "45 6 2"<<endl<<
-                   "45 8 2"<<endl<<
-                   "45 10 2"<<endl<<
-                   "45 13 4"<<endl<<
-                   "45 14 4"<<endl<<
-                   "45 18 2"<<endl<<
-                   "45 19 3"<<endl<<
-                   "45 21 2"<<endl<<
-                   "45 22 1"<<endl<<
-                   "45 24 3"<<endl<<
-                   "45 25 2"<<endl<<
-                   "45 32 1"<<endl<<
-                   "45 33 2"<<endl<<
-                   "45 35 3"<<endl<<
-                   "45 36 1"<<endl<<
-                   "45 37 1"<<endl<<
-                   "45 39 2"<<endl<<
-                   "45 40 2"<<endl<<
-                   "45 41 1"<<endl<<
-                   "45 42 3"<<endl<<
-                   "45 43 2"<<endl<<
-                   "45 44 4"<<endl<<
-                   "45 46 3"<<endl<<
-                   "46 1 3"<<endl<<
-                   "46 2 2"<<endl<<
-                   "46 6 1"<<endl<<
-                   "46 8 1"<<endl<<
-                   "46 10 2"<<endl<<
-                   "46 13 3"<<endl<<
-                   "46 14 2"<<endl<<
-                   "46 18 2"<<endl<<
-                   "46 19 2"<<endl<<
-                   "46 24 2"<<endl<<
-                   "46 25 2"<<endl<<
-                   "46 27 1"<<endl<<
-                   "46 37 2"<<endl<<
-                   "46 42 4"<<endl<<
-                   "46 44 3"<<endl<<
+                   "dl"<<"\n"<<
+                   "N=48"<<"\n"<<
+                   "format=edgelist1"<<"\n"<<
+                   "data:"<<"\n"<<
+                   "1 2 4"<<"\n"<<
+                   "1 3 2"<<"\n"<<
+                   "1 6 2"<<"\n"<<
+                   "1 8 2"<<"\n"<<
+                   "1 10 2"<<"\n"<<
+                   "1 11 2"<<"\n"<<
+                   "1 13 3"<<"\n"<<
+                   "1 14 3"<<"\n"<<
+                   "1 18 2"<<"\n"<<
+                   "1 19 3"<<"\n"<<
+                   "1 20 2"<<"\n"<<
+                   "1 21 3"<<"\n"<<
+                   "1 22 2"<<"\n"<<
+                   "1 23 2"<<"\n"<<
+                   "1 24 2"<<"\n"<<
+                   "1 25 2"<<"\n"<<
+                   "1 26 3"<<"\n"<<
+                   "1 27 2"<<"\n"<<
+                   "1 31 2"<<"\n"<<
+                   "1 32 2"<<"\n"<<
+                   "1 33 2"<<"\n"<<
+                   "1 35 2"<<"\n"<<
+                   "1 36 2"<<"\n"<<
+                   "1 37 2"<<"\n"<<
+                   "1 38 2"<<"\n"<<
+                   "1 39 3"<<"\n"<<
+                   "1 40 2"<<"\n"<<
+                   "1 41 2"<<"\n"<<
+                   "1 42 3"<<"\n"<<
+                   "1 43 2"<<"\n"<<
+                   "1 44 4"<<"\n"<<
+                   "1 45 3"<<"\n"<<
+                   "1 46 3"<<"\n"<<
+                   "2 1 4"<<"\n"<<
+                   "2 3 2"<<"\n"<<
+                   "2 6 2"<<"\n"<<
+                   "2 8 1"<<"\n"<<
+                   "2 10 2"<<"\n"<<
+                   "2 11 2"<<"\n"<<
+                   "2 13 3"<<"\n"<<
+                   "2 14 4"<<"\n"<<
+                   "2 18 2"<<"\n"<<
+                   "2 19 3"<<"\n"<<
+                   "2 21 2"<<"\n"<<
+                   "2 22 2"<<"\n"<<
+                   "2 23 2"<<"\n"<<
+                   "2 24 2"<<"\n"<<
+                   "2 25 2"<<"\n"<<
+                   "2 26 2"<<"\n"<<
+                   "2 27 2"<<"\n"<<
+                   "2 32 2"<<"\n"<<
+                   "2 33 2"<<"\n"<<
+                   "2 35 2"<<"\n"<<
+                   "2 36 2"<<"\n"<<
+                   "2 37 2"<<"\n"<<
+                   "2 38 2"<<"\n"<<
+                   "2 39 2"<<"\n"<<
+                   "2 40 2"<<"\n"<<
+                   "2 41 2"<<"\n"<<
+                   "2 42 2"<<"\n"<<
+                   "2 43 3"<<"\n"<<
+                   "2 44 4"<<"\n"<<
+                   "2 45 4"<<"\n"<<
+                   "2 46 2"<<"\n"<<
+                   "3 1 3"<<"\n"<<
+                   "3 2 1"<<"\n"<<
+                   "3 6 4"<<"\n"<<
+                   "3 8 1"<<"\n"<<
+                   "3 13 2"<<"\n"<<
+                   "3 18 2"<<"\n"<<
+                   "3 19 4"<<"\n"<<
+                   "3 20 4"<<"\n"<<
+                   "3 22 4"<<"\n"<<
+                   "3 23 1"<<"\n"<<
+                   "3 24 2"<<"\n"<<
+                   "3 25 2"<<"\n"<<
+                   "3 26 2"<<"\n"<<
+                   "3 27 1"<<"\n"<<
+                   "3 31 1"<<"\n"<<
+                   "3 32 2"<<"\n"<<
+                   "3 33 2"<<"\n"<<
+                   "3 35 2"<<"\n"<<
+                   "3 36 4"<<"\n"<<
+                   "3 37 2"<<"\n"<<
+                   "3 39 2"<<"\n"<<
+                   "3 41 1"<<"\n"<<
+                   "3 42 1"<<"\n"<<
+                   "3 43 1"<<"\n"<<
+                   "6 1 2"<<"\n"<<
+                   "6 2 2"<<"\n"<<
+                   "6 3 2"<<"\n"<<
+                   "6 8 2"<<"\n"<<
+                   "6 10 2"<<"\n"<<
+                   "6 13 2"<<"\n"<<
+                   "6 14 2"<<"\n"<<
+                   "6 18 3"<<"\n"<<
+                   "6 19 2"<<"\n"<<
+                   "6 20 2"<<"\n"<<
+                   "6 21 1"<<"\n"<<
+                   "6 22 2"<<"\n"<<
+                   "6 23 2"<<"\n"<<
+                   "6 24 2"<<"\n"<<
+                   "6 26 2"<<"\n"<<
+                   "6 27 4"<<"\n"<<
+                   "6 31 1"<<"\n"<<
+                   "6 32 2"<<"\n"<<
+                   "6 33 2"<<"\n"<<
+                   "6 35 2"<<"\n"<<
+                   "6 36 2"<<"\n"<<
+                   "6 37 2"<<"\n"<<
+                   "6 38 2"<<"\n"<<
+                   "6 39 2"<<"\n"<<
+                   "6 40 2"<<"\n"<<
+                   "6 41 2"<<"\n"<<
+                   "6 42 2"<<"\n"<<
+                   "6 43 2"<<"\n"<<
+                   "6 44 2"<<"\n"<<
+                   "6 46 2"<<"\n"<<
+                   "8 1 3"<<"\n"<<
+                   "8 6 2"<<"\n"<<
+                   "8 13 2"<<"\n"<<
+                   "8 14 3"<<"\n"<<
+                   "8 18 2"<<"\n"<<
+                   "8 19 2"<<"\n"<<
+                   "8 20 1"<<"\n"<<
+                   "8 22 2"<<"\n"<<
+                   "8 23 1"<<"\n"<<
+                   "8 24 2"<<"\n"<<
+                   "8 25 2"<<"\n"<<
+                   "8 27 1"<<"\n"<<
+                   "8 32 2"<<"\n"<<
+                   "8 33 2"<<"\n"<<
+                   "8 35 2"<<"\n"<<
+                   "8 37 2"<<"\n"<<
+                   "8 38 1"<<"\n"<<
+                   "8 40 1"<<"\n"<<
+                   "8 41 2"<<"\n"<<
+                   "8 42 2"<<"\n"<<
+                   "8 44 2"<<"\n"<<
+                   "8 45 2"<<"\n"<<
+                   "10 1 4"<<"\n"<<
+                   "10 2 2"<<"\n"<<
+                   "10 13 3"<<"\n"<<
+                   "10 18 2"<<"\n"<<
+                   "10 19 2"<<"\n"<<
+                   "10 22 2"<<"\n"<<
+                   "10 23 2"<<"\n"<<
+                   "10 24 2"<<"\n"<<
+                   "10 27 2"<<"\n"<<
+                   "10 31 2"<<"\n"<<
+                   "10 33 2"<<"\n"<<
+                   "10 37 3"<<"\n"<<
+                   "10 39 2"<<"\n"<<
+                   "10 40 2"<<"\n"<<
+                   "10 41 2"<<"\n"<<
+                   "10 42 3"<<"\n"<<
+                   "10 44 4"<<"\n"<<
+                   "10 45 2"<<"\n"<<
+                   "10 46 3"<<"\n"<<
+                   "11 1 3"<<"\n"<<
+                   "11 2 2"<<"\n"<<
+                   "11 3 1"<<"\n"<<
+                   "11 13 2"<<"\n"<<
+                   "11 14 2"<<"\n"<<
+                   "11 19 1"<<"\n"<<
+                   "11 21 3"<<"\n"<<
+                   "11 41 2"<<"\n"<<
+                   "13 1 3"<<"\n"<<
+                   "13 2 2"<<"\n"<<
+                   "13 3 2"<<"\n"<<
+                   "13 6 2"<<"\n"<<
+                   "13 8 2"<<"\n"<<
+                   "13 10 2"<<"\n"<<
+                   "13 11 1"<<"\n"<<
+                   "13 14 1"<<"\n"<<
+                   "13 18 2"<<"\n"<<
+                   "13 19 4"<<"\n"<<
+                   "13 20 1"<<"\n"<<
+                   "13 21 2"<<"\n"<<
+                   "13 22 2"<<"\n"<<
+                   "13 23 2"<<"\n"<<
+                   "13 24 2"<<"\n"<<
+                   "13 25 2"<<"\n"<<
+                   "13 26 2"<<"\n"<<
+                   "13 27 2"<<"\n"<<
+                   "13 32 2"<<"\n"<<
+                   "13 33 2"<<"\n"<<
+                   "13 35 2"<<"\n"<<
+                   "13 36 2"<<"\n"<<
+                   "13 37 2"<<"\n"<<
+                   "13 38 2"<<"\n"<<
+                   "13 40 2"<<"\n"<<
+                   "13 41 1"<<"\n"<<
+                   "13 42 2"<<"\n"<<
+                   "13 43 2"<<"\n"<<
+                   "13 44 2"<<"\n"<<
+                   "13 45 4"<<"\n"<<
+                   "13 46 2"<<"\n"<<
+                   "14 1 3"<<"\n"<<
+                   "14 2 4"<<"\n"<<
+                   "14 8 2"<<"\n"<<
+                   "14 13 2"<<"\n"<<
+                   "14 19 2"<<"\n"<<
+                   "14 21 2"<<"\n"<<
+                   "14 22 1"<<"\n"<<
+                   "14 24 1"<<"\n"<<
+                   "14 25 2"<<"\n"<<
+                   "14 33 2"<<"\n"<<
+                   "14 35 2"<<"\n"<<
+                   "14 40 3"<<"\n"<<
+                   "14 42 1"<<"\n"<<
+                   "14 44 2"<<"\n"<<
+                   "14 45 4"<<"\n"<<
+                   "14 46 2"<<"\n"<<
+                   "18 1 3"<<"\n"<<
+                   "18 3 2"<<"\n"<<
+                   "18 6 3"<<"\n"<<
+                   "18 8 2"<<"\n"<<
+                   "18 11 1"<<"\n"<<
+                   "18 13 2"<<"\n"<<
+                   "18 14 1"<<"\n"<<
+                   "18 19 2"<<"\n"<<
+                   "18 20 3"<<"\n"<<
+                   "18 21 2"<<"\n"<<
+                   "18 22 1"<<"\n"<<
+                   "18 23 2"<<"\n"<<
+                   "18 24 2"<<"\n"<<
+                   "18 25 2"<<"\n"<<
+                   "18 26 2"<<"\n"<<
+                   "18 27 2"<<"\n"<<
+                   "18 31 2"<<"\n"<<
+                   "18 32 4"<<"\n"<<
+                   "18 33 2"<<"\n"<<
+                   "18 35 2"<<"\n"<<
+                   "18 36 4"<<"\n"<<
+                   "18 37 2"<<"\n"<<
+                   "18 38 2"<<"\n"<<
+                   "18 40 2"<<"\n"<<
+                   "18 41 2"<<"\n"<<
+                   "18 42 3"<<"\n"<<
+                   "18 43 2"<<"\n"<<
+                   "18 44 2"<<"\n"<<
+                   "18 45 1"<<"\n"<<
+                   "19 1 3"<<"\n"<<
+                   "19 2 2"<<"\n"<<
+                   "19 3 2"<<"\n"<<
+                   "19 6 2"<<"\n"<<
+                   "19 8 2"<<"\n"<<
+                   "19 10 2"<<"\n"<<
+                   "19 13 4"<<"\n"<<
+                   "19 14 2"<<"\n"<<
+                   "19 18 2"<<"\n"<<
+                   "19 21 2"<<"\n"<<
+                   "19 22 2"<<"\n"<<
+                   "19 23 2"<<"\n"<<
+                   "19 24 2"<<"\n"<<
+                   "19 25 2"<<"\n"<<
+                   "19 26 2"<<"\n"<<
+                   "19 27 2"<<"\n"<<
+                   "19 31 2"<<"\n"<<
+                   "19 32 2"<<"\n"<<
+                   "19 33 2"<<"\n"<<
+                   "19 35 2"<<"\n"<<
+                   "19 36 1"<<"\n"<<
+                   "19 37 2"<<"\n"<<
+                   "19 38 2"<<"\n"<<
+                   "19 40 2"<<"\n"<<
+                   "19 41 2"<<"\n"<<
+                   "19 42 2"<<"\n"<<
+                   "19 44 3"<<"\n"<<
+                   "19 45 3"<<"\n"<<
+                   "19 46 2"<<"\n"<<
+                   "20 1 2"<<"\n"<<
+                   "20 3 1"<<"\n"<<
+                   "20 6 2"<<"\n"<<
+                   "20 11 1"<<"\n"<<
+                   "20 13 1"<<"\n"<<
+                   "20 18 3"<<"\n"<<
+                   "20 22 2"<<"\n"<<
+                   "20 23 1"<<"\n"<<
+                   "20 24 1"<<"\n"<<
+                   "20 27 2"<<"\n"<<
+                   "20 31 2"<<"\n"<<
+                   "20 32 3"<<"\n"<<
+                   "20 33 2"<<"\n"<<
+                   "20 35 1"<<"\n"<<
+                   "20 36 1"<<"\n"<<
+                   "20 37 1"<<"\n"<<
+                   "20 38 2"<<"\n"<<
+                   "20 41 1"<<"\n"<<
+                   "20 43 1"<<"\n"<<
+                   "20 44 2"<<"\n"<<
+                   "20 45 2"<<"\n"<<
+                   "20 46 2"<<"\n"<<
+                   "21 1 3"<<"\n"<<
+                   "21 2 3"<<"\n"<<
+                   "21 3 1"<<"\n"<<
+                   "21 6 2"<<"\n"<<
+                   "21 8 1"<<"\n"<<
+                   "21 11 3"<<"\n"<<
+                   "21 13 3"<<"\n"<<
+                   "21 14 2"<<"\n"<<
+                   "21 18 1"<<"\n"<<
+                   "21 19 2"<<"\n"<<
+                   "21 22 1"<<"\n"<<
+                   "21 23 1"<<"\n"<<
+                   "21 24 2"<<"\n"<<
+                   "21 26 2"<<"\n"<<
+                   "21 27 2"<<"\n"<<
+                   "21 31 1"<<"\n"<<
+                   "21 32 1"<<"\n"<<
+                   "21 33 2"<<"\n"<<
+                   "21 35 2"<<"\n"<<
+                   "21 36 1"<<"\n"<<
+                   "21 39 2"<<"\n"<<
+                   "21 40 4"<<"\n"<<
+                   "21 41 2"<<"\n"<<
+                   "21 42 2"<<"\n"<<
+                   "21 43 2"<<"\n"<<
+                   "21 44 3"<<"\n"<<
+                   "21 45 3"<<"\n"<<
+                   "22 1 3"<<"\n"<<
+                   "22 2 2"<<"\n"<<
+                   "22 3 4"<<"\n"<<
+                   "22 6 3"<<"\n"<<
+                   "22 8 3"<<"\n"<<
+                   "22 13 3"<<"\n"<<
+                   "22 18 2"<<"\n"<<
+                   "22 19 2"<<"\n"<<
+                   "22 20 3"<<"\n"<<
+                   "22 21 2"<<"\n"<<
+                   "22 23 3"<<"\n"<<
+                   "22 24 4"<<"\n"<<
+                   "22 25 4"<<"\n"<<
+                   "22 26 2"<<"\n"<<
+                   "22 27 3"<<"\n"<<
+                   "22 31 3"<<"\n"<<
+                   "22 32 3"<<"\n"<<
+                   "22 33 3"<<"\n"<<
+                   "22 35 4"<<"\n"<<
+                   "22 36 3"<<"\n"<<
+                   "22 37 3"<<"\n"<<
+                   "22 38 3"<<"\n"<<
+                   "22 39 2"<<"\n"<<
+                   "22 40 2"<<"\n"<<
+                   "22 41 3"<<"\n"<<
+                   "22 42 4"<<"\n"<<
+                   "22 43 3"<<"\n"<<
+                   "22 44 3"<<"\n"<<
+                   "22 45 2"<<"\n"<<
+                   "22 46 2"<<"\n"<<
+                   "23 1 3"<<"\n"<<
+                   "23 2 2"<<"\n"<<
+                   "23 3 2"<<"\n"<<
+                   "23 6 3"<<"\n"<<
+                   "23 8 1"<<"\n"<<
+                   "23 13 2"<<"\n"<<
+                   "23 14 2"<<"\n"<<
+                   "23 18 2"<<"\n"<<
+                   "23 19 2"<<"\n"<<
+                   "23 20 2"<<"\n"<<
+                   "23 22 3"<<"\n"<<
+                   "23 24 2"<<"\n"<<
+                   "23 25 2"<<"\n"<<
+                   "23 27 2"<<"\n"<<
+                   "23 31 4"<<"\n"<<
+                   "23 32 1"<<"\n"<<
+                   "23 33 2"<<"\n"<<
+                   "23 35 2"<<"\n"<<
+                   "23 36 2"<<"\n"<<
+                   "23 37 2"<<"\n"<<
+                   "23 38 2"<<"\n"<<
+                   "23 40 1"<<"\n"<<
+                   "23 42 3"<<"\n"<<
+                   "23 44 3"<<"\n"<<
+                   "23 45 1"<<"\n"<<
+                   "24 1 2"<<"\n"<<
+                   "24 2 2"<<"\n"<<
+                   "24 3 2"<<"\n"<<
+                   "24 6 2"<<"\n"<<
+                   "24 8 3"<<"\n"<<
+                   "24 10 2"<<"\n"<<
+                   "24 13 3"<<"\n"<<
+                   "24 14 1"<<"\n"<<
+                   "24 18 2"<<"\n"<<
+                   "24 19 2"<<"\n"<<
+                   "24 22 3"<<"\n"<<
+                   "24 23 2"<<"\n"<<
+                   "24 25 2"<<"\n"<<
+                   "24 27 2"<<"\n"<<
+                   "24 31 2"<<"\n"<<
+                   "24 32 2"<<"\n"<<
+                   "24 33 4"<<"\n"<<
+                   "24 35 3"<<"\n"<<
+                   "24 37 2"<<"\n"<<
+                   "24 38 2"<<"\n"<<
+                   "24 39 2"<<"\n"<<
+                   "24 40 1"<<"\n"<<
+                   "24 41 1"<<"\n"<<
+                   "24 42 2"<<"\n"<<
+                   "24 44 2"<<"\n"<<
+                   "24 45 2"<<"\n"<<
+                   "24 46 2"<<"\n"<<
+                   "25 1 3"<<"\n"<<
+                   "25 2 2"<<"\n"<<
+                   "25 3 3"<<"\n"<<
+                   "25 6 1"<<"\n"<<
+                   "25 8 2"<<"\n"<<
+                   "25 13 3"<<"\n"<<
+                   "25 14 2"<<"\n"<<
+                   "25 18 1"<<"\n"<<
+                   "25 19 3"<<"\n"<<
+                   "25 20 1"<<"\n"<<
+                   "25 21 1"<<"\n"<<
+                   "25 22 3"<<"\n"<<
+                   "25 23 2"<<"\n"<<
+                   "25 24 3"<<"\n"<<
+                   "25 26 1"<<"\n"<<
+                   "25 27 1"<<"\n"<<
+                   "25 32 3"<<"\n"<<
+                   "25 33 3"<<"\n"<<
+                   "25 35 3"<<"\n"<<
+                   "25 37 2"<<"\n"<<
+                   "25 39 1"<<"\n"<<
+                   "25 40 2"<<"\n"<<
+                   "25 41 1"<<"\n"<<
+                   "25 42 2"<<"\n"<<
+                   "25 43 2"<<"\n"<<
+                   "25 44 2"<<"\n"<<
+                   "25 45 2"<<"\n"<<
+                   "25 46 1"<<"\n"<<
+                   "26 1 4"<<"\n"<<
+                   "26 2 2"<<"\n"<<
+                   "26 3 2"<<"\n"<<
+                   "26 11 1"<<"\n"<<
+                   "26 13 2"<<"\n"<<
+                   "26 19 2"<<"\n"<<
+                   "26 21 1"<<"\n"<<
+                   "26 22 2"<<"\n"<<
+                   "26 39 2"<<"\n"<<
+                   "26 40 2"<<"\n"<<
+                   "26 42 2"<<"\n"<<
+                   "26 43 2"<<"\n"<<
+                   "26 44 4"<<"\n"<<
+                   "26 45 1"<<"\n"<<
+                   "26 46 2"<<"\n"<<
+                   "27 1 2"<<"\n"<<
+                   "27 3 2"<<"\n"<<
+                   "27 6 4"<<"\n"<<
+                   "27 8 1"<<"\n"<<
+                   "27 13 2"<<"\n"<<
+                   "27 18 2"<<"\n"<<
+                   "27 20 2"<<"\n"<<
+                   "27 22 2"<<"\n"<<
+                   "27 23 2"<<"\n"<<
+                   "27 24 1"<<"\n"<<
+                   "27 32 2"<<"\n"<<
+                   "27 33 2"<<"\n"<<
+                   "27 35 3"<<"\n"<<
+                   "27 36 2"<<"\n"<<
+                   "27 37 2"<<"\n"<<
+                   "27 38 2"<<"\n"<<
+                   "27 39 2"<<"\n"<<
+                   "27 41 2"<<"\n"<<
+                   "27 42 2"<<"\n"<<
+                   "27 43 1"<<"\n"<<
+                   "27 44 2"<<"\n"<<
+                   "27 46 2"<<"\n"<<
+                   "31 1 1"<<"\n"<<
+                   "31 3 2"<<"\n"<<
+                   "31 6 1"<<"\n"<<
+                   "31 8 1"<<"\n"<<
+                   "31 18 2"<<"\n"<<
+                   "31 19 2"<<"\n"<<
+                   "31 20 2"<<"\n"<<
+                   "31 22 2"<<"\n"<<
+                   "31 23 2"<<"\n"<<
+                   "31 24 2"<<"\n"<<
+                   "31 32 1"<<"\n"<<
+                   "31 35 3"<<"\n"<<
+                   "31 36 1"<<"\n"<<
+                   "31 37 3"<<"\n"<<
+                   "31 38 2"<<"\n"<<
+                   "31 42 1"<<"\n"<<
+                   "32 1 2"<<"\n"<<
+                   "32 2 2"<<"\n"<<
+                   "32 3 2"<<"\n"<<
+                   "32 6 2"<<"\n"<<
+                   "32 8 2"<<"\n"<<
+                   "32 13 2"<<"\n"<<
+                   "32 18 3"<<"\n"<<
+                   "32 19 2"<<"\n"<<
+                   "32 20 2"<<"\n"<<
+                   "32 22 3"<<"\n"<<
+                   "32 23 1"<<"\n"<<
+                   "32 24 2"<<"\n"<<
+                   "32 25 2"<<"\n"<<
+                   "32 27 2"<<"\n"<<
+                   "32 31 1"<<"\n"<<
+                   "32 33 3"<<"\n"<<
+                   "32 35 4"<<"\n"<<
+                   "32 36 2"<<"\n"<<
+                   "32 37 3"<<"\n"<<
+                   "32 38 3"<<"\n"<<
+                   "32 41 2"<<"\n"<<
+                   "32 42 3"<<"\n"<<
+                   "32 43 1"<<"\n"<<
+                   "33 1 3"<<"\n"<<
+                   "33 2 3"<<"\n"<<
+                   "33 3 2"<<"\n"<<
+                   "33 6 2"<<"\n"<<
+                   "33 8 2"<<"\n"<<
+                   "33 13 3"<<"\n"<<
+                   "33 14 1"<<"\n"<<
+                   "33 18 2"<<"\n"<<
+                   "33 19 3"<<"\n"<<
+                   "33 20 2"<<"\n"<<
+                   "33 22 2"<<"\n"<<
+                   "33 23 3"<<"\n"<<
+                   "33 24 4"<<"\n"<<
+                   "33 25 3"<<"\n"<<
+                   "33 27 2"<<"\n"<<
+                   "33 31 2"<<"\n"<<
+                   "33 32 2"<<"\n"<<
+                   "33 35 3"<<"\n"<<
+                   "33 36 2"<<"\n"<<
+                   "33 37 2"<<"\n"<<
+                   "33 38 3"<<"\n"<<
+                   "33 40 1"<<"\n"<<
+                   "33 41 2"<<"\n"<<
+                   "33 42 2"<<"\n"<<
+                   "33 43 1"<<"\n"<<
+                   "33 45 1"<<"\n"<<
+                   "35 1 2"<<"\n"<<
+                   "35 2 2"<<"\n"<<
+                   "35 3 2"<<"\n"<<
+                   "35 6 3"<<"\n"<<
+                   "35 13 2"<<"\n"<<
+                   "35 14 3"<<"\n"<<
+                   "35 18 2"<<"\n"<<
+                   "35 19 2"<<"\n"<<
+                   "35 22 3"<<"\n"<<
+                   "35 23 2"<<"\n"<<
+                   "35 24 3"<<"\n"<<
+                   "35 25 2"<<"\n"<<
+                   "35 27 3"<<"\n"<<
+                   "35 32 3"<<"\n"<<
+                   "35 33 3"<<"\n"<<
+                   "35 37 4"<<"\n"<<
+                   "35 38 2"<<"\n"<<
+                   "35 41 2"<<"\n"<<
+                   "35 42 4"<<"\n"<<
+                   "35 45 2"<<"\n"<<
+                   "36 1 3"<<"\n"<<
+                   "36 2 2"<<"\n"<<
+                   "36 3 4"<<"\n"<<
+                   "36 6 3"<<"\n"<<
+                   "36 13 2"<<"\n"<<
+                   "36 18 4"<<"\n"<<
+                   "36 20 1"<<"\n"<<
+                   "36 22 3"<<"\n"<<
+                   "36 23 1"<<"\n"<<
+                   "36 24 1"<<"\n"<<
+                   "36 27 3"<<"\n"<<
+                   "36 31 1"<<"\n"<<
+                   "36 32 2"<<"\n"<<
+                   "36 33 1"<<"\n"<<
+                   "36 35 1"<<"\n"<<
+                   "36 37 2"<<"\n"<<
+                   "36 38 2"<<"\n"<<
+                   "36 41 2"<<"\n"<<
+                   "36 42 3"<<"\n"<<
+                   "36 43 2"<<"\n"<<
+                   "36 44 2"<<"\n"<<
+                   "36 46 2"<<"\n"<<
+                   "37 1 3"<<"\n"<<
+                   "37 2 2"<<"\n"<<
+                   "37 3 2"<<"\n"<<
+                   "37 6 2"<<"\n"<<
+                   "37 8 3"<<"\n"<<
+                   "37 10 2"<<"\n"<<
+                   "37 13 3"<<"\n"<<
+                   "37 14 2"<<"\n"<<
+                   "37 18 2"<<"\n"<<
+                   "37 19 3"<<"\n"<<
+                   "37 20 2"<<"\n"<<
+                   "37 21 2"<<"\n"<<
+                   "37 22 3"<<"\n"<<
+                   "37 23 2"<<"\n"<<
+                   "37 24 3"<<"\n"<<
+                   "37 25 2"<<"\n"<<
+                   "37 26 2"<<"\n"<<
+                   "37 27 2"<<"\n"<<
+                   "37 31 4"<<"\n"<<
+                   "37 32 3"<<"\n"<<
+                   "37 33 3"<<"\n"<<
+                   "37 35 4"<<"\n"<<
+                   "37 36 2"<<"\n"<<
+                   "37 38 3"<<"\n"<<
+                   "37 40 2"<<"\n"<<
+                   "37 41 3"<<"\n"<<
+                   "37 42 3"<<"\n"<<
+                   "37 43 2"<<"\n"<<
+                   "37 44 2"<<"\n"<<
+                   "37 45 2"<<"\n"<<
+                   "37 46 2"<<"\n"<<
+                   "38 1 2"<<"\n"<<
+                   "38 2 2"<<"\n"<<
+                   "38 3 2"<<"\n"<<
+                   "38 6 3"<<"\n"<<
+                   "38 8 1"<<"\n"<<
+                   "38 13 3"<<"\n"<<
+                   "38 18 3"<<"\n"<<
+                   "38 19 2"<<"\n"<<
+                   "38 20 2"<<"\n"<<
+                   "38 22 3"<<"\n"<<
+                   "38 23 2"<<"\n"<<
+                   "38 24 3"<<"\n"<<
+                   "38 27 2"<<"\n"<<
+                   "38 31 3"<<"\n"<<
+                   "38 32 3"<<"\n"<<
+                   "38 33 3"<<"\n"<<
+                   "38 35 3"<<"\n"<<
+                   "38 36 3"<<"\n"<<
+                   "38 37 3"<<"\n"<<
+                   "38 41 1"<<"\n"<<
+                   "38 42 2"<<"\n"<<
+                   "39 1 4"<<"\n"<<
+                   "39 2 1"<<"\n"<<
+                   "39 3 2"<<"\n"<<
+                   "39 6 1"<<"\n"<<
+                   "39 8 1"<<"\n"<<
+                   "39 11 1"<<"\n"<<
+                   "39 13 1"<<"\n"<<
+                   "39 18 1"<<"\n"<<
+                   "39 19 1"<<"\n"<<
+                   "39 20 1"<<"\n"<<
+                   "39 21 2"<<"\n"<<
+                   "39 22 2"<<"\n"<<
+                   "39 23 1"<<"\n"<<
+                   "39 24 1"<<"\n"<<
+                   "39 26 3"<<"\n"<<
+                   "39 27 2"<<"\n"<<
+                   "39 32 1"<<"\n"<<
+                   "39 33 1"<<"\n"<<
+                   "39 35 2"<<"\n"<<
+                   "39 36 1"<<"\n"<<
+                   "39 37 2"<<"\n"<<
+                   "39 38 1"<<"\n"<<
+                   "39 41 2"<<"\n"<<
+                   "39 42 2"<<"\n"<<
+                   "39 44 3"<<"\n"<<
+                   "39 46 1"<<"\n"<<
+                   "40 1 3"<<"\n"<<
+                   "40 2 2"<<"\n"<<
+                   "40 3 2"<<"\n"<<
+                   "40 6 2"<<"\n"<<
+                   "40 8 2"<<"\n"<<
+                   "40 10 2"<<"\n"<<
+                   "40 13 3"<<"\n"<<
+                   "40 14 3"<<"\n"<<
+                   "40 18 2"<<"\n"<<
+                   "40 19 2"<<"\n"<<
+                   "40 21 4"<<"\n"<<
+                   "40 22 1"<<"\n"<<
+                   "40 23 2"<<"\n"<<
+                   "40 24 2"<<"\n"<<
+                   "40 25 2"<<"\n"<<
+                   "40 26 2"<<"\n"<<
+                   "40 27 2"<<"\n"<<
+                   "40 32 1"<<"\n"<<
+                   "40 33 2"<<"\n"<<
+                   "40 35 2"<<"\n"<<
+                   "40 36 1"<<"\n"<<
+                   "40 37 2"<<"\n"<<
+                   "40 42 2"<<"\n"<<
+                   "40 43 2"<<"\n"<<
+                   "40 44 2"<<"\n"<<
+                   "40 45 2"<<"\n"<<
+                   "40 46 2"<<"\n"<<
+                   "41 1 3"<<"\n"<<
+                   "41 2 2"<<"\n"<<
+                   "41 6 3"<<"\n"<<
+                   "41 13 2"<<"\n"<<
+                   "41 18 1"<<"\n"<<
+                   "41 19 1"<<"\n"<<
+                   "41 21 2"<<"\n"<<
+                   "41 22 2"<<"\n"<<
+                   "41 23 2"<<"\n"<<
+                   "41 24 2"<<"\n"<<
+                   "41 27 3"<<"\n"<<
+                   "41 32 2"<<"\n"<<
+                   "41 33 2"<<"\n"<<
+                   "41 35 3"<<"\n"<<
+                   "41 37 2"<<"\n"<<
+                   "41 38 1"<<"\n"<<
+                   "41 39 2"<<"\n"<<
+                   "41 40 1"<<"\n"<<
+                   "41 42 2"<<"\n"<<
+                   "41 44 2"<<"\n"<<
+                   "41 45 2"<<"\n"<<
+                   "41 46 2"<<"\n"<<
+                   "42 1 3"<<"\n"<<
+                   "42 2 2"<<"\n"<<
+                   "42 3 2"<<"\n"<<
+                   "42 6 3"<<"\n"<<
+                   "42 8 2"<<"\n"<<
+                   "42 10 2"<<"\n"<<
+                   "42 13 3"<<"\n"<<
+                   "42 18 3"<<"\n"<<
+                   "42 19 2"<<"\n"<<
+                   "42 20 3"<<"\n"<<
+                   "42 21 2"<<"\n"<<
+                   "42 22 4"<<"\n"<<
+                   "42 23 3"<<"\n"<<
+                   "42 24 2"<<"\n"<<
+                   "42 25 2"<<"\n"<<
+                   "42 26 2"<<"\n"<<
+                   "42 27 2"<<"\n"<<
+                   "42 32 3"<<"\n"<<
+                   "42 33 2"<<"\n"<<
+                   "42 35 4"<<"\n"<<
+                   "42 36 2"<<"\n"<<
+                   "42 37 4"<<"\n"<<
+                   "42 39 2"<<"\n"<<
+                   "42 40 2"<<"\n"<<
+                   "42 41 2"<<"\n"<<
+                   "42 43 2"<<"\n"<<
+                   "42 44 3"<<"\n"<<
+                   "42 45 2"<<"\n"<<
+                   "42 46 4"<<"\n"<<
+                   "43 1 3"<<"\n"<<
+                   "43 2 3"<<"\n"<<
+                   "43 3 1"<<"\n"<<
+                   "43 6 2"<<"\n"<<
+                   "43 10 2"<<"\n"<<
+                   "43 13 3"<<"\n"<<
+                   "43 18 2"<<"\n"<<
+                   "43 19 2"<<"\n"<<
+                   "43 21 2"<<"\n"<<
+                   "43 22 2"<<"\n"<<
+                   "43 24 2"<<"\n"<<
+                   "43 25 2"<<"\n"<<
+                   "43 26 2"<<"\n"<<
+                   "43 27 2"<<"\n"<<
+                   "43 32 2"<<"\n"<<
+                   "43 33 2"<<"\n"<<
+                   "43 35 2"<<"\n"<<
+                   "43 37 2"<<"\n"<<
+                   "43 38 2"<<"\n"<<
+                   "43 40 3"<<"\n"<<
+                   "43 41 2"<<"\n"<<
+                   "43 42 3"<<"\n"<<
+                   "43 44 3"<<"\n"<<
+                   "43 45 3"<<"\n"<<
+                   "43 46 2"<<"\n"<<
+                   "44 1 4"<<"\n"<<
+                   "44 2 4"<<"\n"<<
+                   "44 3 2"<<"\n"<<
+                   "44 6 2"<<"\n"<<
+                   "44 8 2"<<"\n"<<
+                   "44 10 3"<<"\n"<<
+                   "44 11 2"<<"\n"<<
+                   "44 13 2"<<"\n"<<
+                   "44 14 2"<<"\n"<<
+                   "44 18 2"<<"\n"<<
+                   "44 19 3"<<"\n"<<
+                   "44 20 2"<<"\n"<<
+                   "44 21 3"<<"\n"<<
+                   "44 22 2"<<"\n"<<
+                   "44 23 3"<<"\n"<<
+                   "44 24 2"<<"\n"<<
+                   "44 25 2"<<"\n"<<
+                   "44 26 3"<<"\n"<<
+                   "44 27 2"<<"\n"<<
+                   "44 31 2"<<"\n"<<
+                   "44 32 2"<<"\n"<<
+                   "44 33 2"<<"\n"<<
+                   "44 35 2"<<"\n"<<
+                   "44 36 2"<<"\n"<<
+                   "44 37 2"<<"\n"<<
+                   "44 38 2"<<"\n"<<
+                   "44 39 2"<<"\n"<<
+                   "44 40 2"<<"\n"<<
+                   "44 41 2"<<"\n"<<
+                   "44 42 3"<<"\n"<<
+                   "44 43 2"<<"\n"<<
+                   "44 45 4"<<"\n"<<
+                   "44 46 3"<<"\n"<<
+                   "45 1 4"<<"\n"<<
+                   "45 2 4"<<"\n"<<
+                   "45 6 2"<<"\n"<<
+                   "45 8 2"<<"\n"<<
+                   "45 10 2"<<"\n"<<
+                   "45 13 4"<<"\n"<<
+                   "45 14 4"<<"\n"<<
+                   "45 18 2"<<"\n"<<
+                   "45 19 3"<<"\n"<<
+                   "45 21 2"<<"\n"<<
+                   "45 22 1"<<"\n"<<
+                   "45 24 3"<<"\n"<<
+                   "45 25 2"<<"\n"<<
+                   "45 32 1"<<"\n"<<
+                   "45 33 2"<<"\n"<<
+                   "45 35 3"<<"\n"<<
+                   "45 36 1"<<"\n"<<
+                   "45 37 1"<<"\n"<<
+                   "45 39 2"<<"\n"<<
+                   "45 40 2"<<"\n"<<
+                   "45 41 1"<<"\n"<<
+                   "45 42 3"<<"\n"<<
+                   "45 43 2"<<"\n"<<
+                   "45 44 4"<<"\n"<<
+                   "45 46 3"<<"\n"<<
+                   "46 1 3"<<"\n"<<
+                   "46 2 2"<<"\n"<<
+                   "46 6 1"<<"\n"<<
+                   "46 8 1"<<"\n"<<
+                   "46 10 2"<<"\n"<<
+                   "46 13 3"<<"\n"<<
+                   "46 14 2"<<"\n"<<
+                   "46 18 2"<<"\n"<<
+                   "46 19 2"<<"\n"<<
+                   "46 24 2"<<"\n"<<
+                   "46 25 2"<<"\n"<<
+                   "46 27 1"<<"\n"<<
+                   "46 37 2"<<"\n"<<
+                   "46 42 4"<<"\n"<<
+                   "46 44 3"<<"\n"<<
                    "46 45 3";
 
     }
@@ -19207,469 +19152,469 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
         datasetDescription = tr("Freeman's EIES network (Messages)");
         qDebug()<< "		... to  " << fileName;
         outText <<
-                   "dl"<<endl<<
-                   "N=32"<<endl<<
-                   "format=edgelist1"<<endl<<
-                   "data:"<<endl<<
-                   "1 1 24"<<endl<<
-                   "1 2 488"<<endl<<
-                   "1 3 28"<<endl<<
-                   "1 4 65"<<endl<<
-                   "1 5 20"<<endl<<
-                   "1 6 65"<<endl<<
-                   "1 7 45"<<endl<<
-                   "1 8 346"<<endl<<
-                   "1 9 82"<<endl<<
-                   "1 10 52"<<endl<<
-                   "1 11 177"<<endl<<
-                   "1 12 28"<<endl<<
-                   "1 13 24"<<endl<<
-                   "1 14 49"<<endl<<
-                   "1 15 81"<<endl<<
-                   "1 16 77"<<endl<<
-                   "1 17 77"<<endl<<
-                   "1 18 73"<<endl<<
-                   "1 19 33"<<endl<<
-                   "1 20 31"<<endl<<
-                   "1 21 22"<<endl<<
-                   "1 22 46"<<endl<<
-                   "1 23 31"<<endl<<
-                   "1 24 128"<<endl<<
-                   "1 25 38"<<endl<<
-                   "1 26 89"<<endl<<
-                   "1 27 95"<<endl<<
-                   "1 28 25"<<endl<<
-                   "1 29 388"<<endl<<
-                   "1 30 71"<<endl<<
-                   "1 31 212"<<endl<<
-                   "1 32 185"<<endl<<
-                   "2 1 364"<<endl<<
-                   "2 2 6"<<endl<<
-                   "2 3 17"<<endl<<
-                   "2 4 17"<<endl<<
-                   "2 5 15"<<endl<<
-                   "2 7 30"<<endl<<
-                   "2 8 20"<<endl<<
-                   "2 9 35"<<endl<<
-                   "2 10 20"<<endl<<
-                   "2 11 22"<<endl<<
-                   "2 12 15"<<endl<<
-                   "2 13 15"<<endl<<
-                   "2 14 15"<<endl<<
-                   "2 15 15"<<endl<<
-                   "2 16 50"<<endl<<
-                   "2 17 25"<<endl<<
-                   "2 18 8"<<endl<<
-                   "2 20 15"<<endl<<
-                   "2 21 15"<<endl<<
-                   "2 22 15"<<endl<<
-                   "2 23 15"<<endl<<
-                   "2 25 15"<<endl<<
-                   "2 26 15"<<endl<<
-                   "2 27 10"<<endl<<
-                   "2 28 24"<<endl<<
-                   "2 29 89"<<endl<<
-                   "2 30 23"<<endl<<
-                   "2 31 163"<<endl<<
-                   "2 32 39"<<endl<<
-                   "3 1 4"<<endl<<
-                   "3 2 5"<<endl<<
-                   "3 8 5"<<endl<<
-                   "4 1 52"<<endl<<
-                   "4 2 30"<<endl<<
-                   "4 4 4"<<endl<<
-                   "4 6 2"<<endl<<
-                   "4 8 32"<<endl<<
-                   "4 9 21"<<endl<<
-                   "4 10 34"<<endl<<
-                   "4 11 9"<<endl<<
-                   "4 16 5"<<endl<<
-                   "4 17 4"<<endl<<
-                   "4 18 2"<<endl<<
-                   "4 19 35"<<endl<<
-                   "4 24 12"<<endl<<
-                   "4 27 12"<<endl<<
-                   "4 28 5"<<endl<<
-                   "4 29 20"<<endl<<
-                   "4 30 4"<<endl<<
-                   "4 31 19"<<endl<<
-                   "4 32 33"<<endl<<
-                   "5 1 26"<<endl<<
-                   "5 2 4"<<endl<<
-                   "5 3 4"<<endl<<
-                   "5 4 4"<<endl<<
-                   "5 6 4"<<endl<<
-                   "5 7 8"<<endl<<
-                   "5 8 4"<<endl<<
-                   "5 9 4"<<endl<<
-                   "5 10 4"<<endl<<
-                   "5 11 4"<<endl<<
-                   "5 12 4"<<endl<<
-                   "5 13 4"<<endl<<
-                   "5 14 4"<<endl<<
-                   "5 15 4"<<endl<<
-                   "5 16 4"<<endl<<
-                   "5 17 4"<<endl<<
-                   "5 18 4"<<endl<<
-                   "5 19 4"<<endl<<
-                   "5 21 4"<<endl<<
-                   "5 22 8"<<endl<<
-                   "5 23 4"<<endl<<
-                   "5 24 14"<<endl<<
-                   "5 25 4"<<endl<<
-                   "5 27 4"<<endl<<
-                   "5 29 4"<<endl<<
-                   "5 30 7"<<endl<<
-                   "5 31 4"<<endl<<
-                   "5 32 4"<<endl<<
-                   "6 1 72"<<endl<<
-                   "6 2 23"<<endl<<
-                   "6 4 2"<<endl<<
-                   "6 6 34"<<endl<<
-                   "6 8 16"<<endl<<
-                   "6 10 7"<<endl<<
-                   "6 11 15"<<endl<<
-                   "6 15 8"<<endl<<
-                   "6 16 7"<<endl<<
-                   "6 17 6"<<endl<<
-                   "6 24 14"<<endl<<
-                   "6 27 7"<<endl<<
-                   "6 28 3"<<endl<<
-                   "6 29 34"<<endl<<
-                   "6 30 3"<<endl<<
-                   "6 31 22"<<endl<<
-                   "7 1 14"<<endl<<
-                   "7 31 6"<<endl<<
-                   "8 1 239"<<endl<<
-                   "8 2 82"<<endl<<
-                   "8 3 5"<<endl<<
-                   "8 4 37"<<endl<<
-                   "8 5 3"<<endl<<
-                   "8 6 34"<<endl<<
-                   "8 7 5"<<endl<<
-                   "8 8 10"<<endl<<
-                   "8 9 12"<<endl<<
-                   "8 10 18"<<endl<<
-                   "8 11 164"<<endl<<
-                   "8 12 18"<<endl<<
-                   "8 16 30"<<endl<<
-                   "8 17 53"<<endl<<
-                   "8 18 27"<<endl<<
-                   "8 19 20"<<endl<<
-                   "8 20 4"<<endl<<
-                   "8 22 5"<<endl<<
-                   "8 23 4"<<endl<<
-                   "8 24 55"<<endl<<
-                   "8 26 9"<<endl<<
-                   "8 27 34"<<endl<<
-                   "8 29 146"<<endl<<
-                   "8 30 216"<<endl<<
-                   "8 31 88"<<endl<<
-                   "8 32 288"<<endl<<
-                   "9 1 24"<<endl<<
-                   "9 2 25"<<endl<<
-                   "9 4 2"<<endl<<
-                   "9 8 8"<<endl<<
-                   "9 9 16"<<endl<<
-                   "9 11 15"<<endl<<
-                   "9 13 10"<<endl<<
-                   "9 17 5"<<endl<<
-                   "9 27 15"<<endl<<
-                   "9 29 10"<<endl<<
-                   "9 31 30"<<endl<<
-                   "9 32 44"<<endl<<
-                   "10 1 43"<<endl<<
-                   "10 2 15"<<endl<<
-                   "10 4 32"<<endl<<
-                   "10 6 12"<<endl<<
-                   "10 8 14"<<endl<<
-                   "10 10 5"<<endl<<
-                   "10 11 25"<<endl<<
-                   "10 12 2"<<endl<<
-                   "10 16 10"<<endl<<
-                   "10 17 10"<<endl<<
-                   "10 19 20"<<endl<<
-                   "10 20 15"<<endl<<
-                   "10 22 5"<<endl<<
-                   "10 23 20"<<endl<<
-                   "10 24 29"<<endl<<
-                   "10 26 4"<<endl<<
-                   "10 27 10"<<endl<<
-                   "10 29 47"<<endl<<
-                   "10 30 6"<<endl<<
-                   "10 31 22"<<endl<<
-                   "10 32 19"<<endl<<
-                   "11 1 178"<<endl<<
-                   "11 2 36"<<endl<<
-                   "11 4 11"<<endl<<
-                   "11 6 19"<<endl<<
-                   "11 7 10"<<endl<<
-                   "11 8 172"<<endl<<
-                   "11 9 39"<<endl<<
-                   "11 10 28"<<endl<<
-                   "11 11 29"<<endl<<
-                   "11 13 4"<<endl<<
-                   "11 16 23"<<endl<<
-                   "11 17 15"<<endl<<
-                   "11 18 24"<<endl<<
-                   "11 21 8"<<endl<<
-                   "11 24 29"<<endl<<
-                   "11 25 10"<<endl<<
-                   "11 26 11"<<endl<<
-                   "11 27 22"<<endl<<
-                   "11 29 46"<<endl<<
-                   "11 31 119"<<endl<<
-                   "11 32 34"<<endl<<
-                   "12 2 5"<<endl<<
-                   "12 8 5"<<endl<<
-                   "12 12 3"<<endl<<
-                   "12 19 5"<<endl<<
-                   "12 29 53"<<endl<<
-                   "12 31 5"<<endl<<
-                   "12 32 9"<<endl<<
-                   "13 1 5"<<endl<<
-                   "13 11 5"<<endl<<
-                   "13 31 5"<<endl<<
-                   "14 1 12"<<endl<<
-                   "14 3 9"<<endl<<
-                   "14 14 2"<<endl<<
-                   "14 16 12"<<endl<<
-                   "14 19 5"<<endl<<
-                   "14 29 35"<<endl<<
-                   "14 31 8"<<endl<<
-                   "15 1 120"<<endl<<
-                   "15 6 4"<<endl<<
-                   "15 12 5"<<endl<<
-                   "15 15 78"<<endl<<
-                   "15 27 8"<<endl<<
-                   "15 29 58"<<endl<<
-                   "15 31 32"<<endl<<
-                   "16 1 58"<<endl<<
-                   "16 2 25"<<endl<<
-                   "16 4 10"<<endl<<
-                   "16 8 20"<<endl<<
-                   "16 10 5"<<endl<<
-                   "16 11 10"<<endl<<
-                   "16 14 5"<<endl<<
-                   "16 16 15"<<endl<<
-                   "16 17 10"<<endl<<
-                   "16 21 5"<<endl<<
-                   "16 24 5"<<endl<<
-                   "16 29 35"<<endl<<
-                   "16 31 10"<<endl<<
-                   "17 1 63"<<endl<<
-                   "17 2 18"<<endl<<
-                   "17 3 9"<<endl<<
-                   "17 4 7"<<endl<<
-                   "17 6 6"<<endl<<
-                   "17 8 36"<<endl<<
-                   "17 10 5"<<endl<<
-                   "17 11 9"<<endl<<
-                   "17 12 5"<<endl<<
-                   "17 14 5"<<endl<<
-                   "17 16 5"<<endl<<
-                   "17 20 5"<<endl<<
-                   "17 21 2"<<endl<<
-                   "17 27 15"<<endl<<
-                   "17 29 10"<<endl<<
-                   "17 30 9"<<endl<<
-                   "17 31 15"<<endl<<
-                   "17 32 9"<<endl<<
-                   "18 1 58"<<endl<<
-                   "18 2 8"<<endl<<
-                   "18 3 5"<<endl<<
-                   "18 4 4"<<endl<<
-                   "18 8 4"<<endl<<
-                   "18 10 5"<<endl<<
-                   "18 11 18"<<endl<<
-                   "18 18 4"<<endl<<
-                   "18 27 20"<<endl<<
-                   "18 29 8"<<endl<<
-                   "18 30 10"<<endl<<
-                   "18 31 48"<<endl<<
-                   "19 1 5"<<endl<<
-                   "19 2 5"<<endl<<
-                   "19 4 25"<<endl<<
-                   "19 8 10"<<endl<<
-                   "19 14 5"<<endl<<
-                   "19 19 5"<<endl<<
-                   "19 23 5"<<endl<<
-                   "19 31 10"<<endl<<
-                   "20 21 4"<<endl<<
-                   "20 29 4"<<endl<<
-                   "21 1 9"<<endl<<
-                   "21 11 3"<<endl<<
-                   "21 16 5"<<endl<<
-                   "21 29 5"<<endl<<
-                   "22 1 10"<<endl<<
-                   "22 24 40"<<endl<<
-                   "22 29 15"<<endl<<
-                   "22 32 5"<<endl<<
-                   "23 1 5"<<endl<<
-                   "23 2 5"<<endl<<
-                   "23 3 5"<<endl<<
-                   "23 10 19"<<endl<<
-                   "23 19 5"<<endl<<
-                   "23 29 14"<<endl<<
-                   "23 31 5"<<endl<<
-                   "24 1 89"<<endl<<
-                   "24 2 17"<<endl<<
-                   "24 3 4"<<endl<<
-                   "24 4 14"<<endl<<
-                   "24 5 14"<<endl<<
-                   "24 6 18"<<endl<<
-                   "24 7 8"<<endl<<
-                   "24 8 41"<<endl<<
-                   "24 9 4"<<endl<<
-                   "24 10 19"<<endl<<
-                   "24 11 31"<<endl<<
-                   "24 12 4"<<endl<<
-                   "24 13 4"<<endl<<
-                   "24 14 9"<<endl<<
-                   "24 15 4"<<endl<<
-                   "24 16 14"<<endl<<
-                   "24 17 4"<<endl<<
-                   "24 18 9"<<endl<<
-                   "24 19 4"<<endl<<
-                   "24 20 4"<<endl<<
-                   "24 21 4"<<endl<<
-                   "24 22 58"<<endl<<
-                   "24 23 4"<<endl<<
-                   "24 24 5"<<endl<<
-                   "24 25 18"<<endl<<
-                   "24 26 14"<<endl<<
-                   "24 27 9"<<endl<<
-                   "24 28 4"<<endl<<
-                   "24 29 156"<<endl<<
-                   "24 30 4"<<endl<<
-                   "24 31 56"<<endl<<
-                   "24 32 10"<<endl<<
-                   "25 1 32"<<endl<<
-                   "25 2 5"<<endl<<
-                   "25 14 15"<<endl<<
-                   "25 22 10"<<endl<<
-                   "25 24 23"<<endl<<
-                   "25 25 10"<<endl<<
-                   "25 30 9"<<endl<<
-                   "25 31 15"<<endl<<
-                   "26 1 35"<<endl<<
-                   "26 2 5"<<endl<<
-                   "26 10 5"<<endl<<
-                   "26 29 10"<<endl<<
-                   "26 31 13"<<endl<<
-                   "27 1 50"<<endl<<
-                   "27 2 28"<<endl<<
-                   "27 4 13"<<endl<<
-                   "27 8 19"<<endl<<
-                   "27 9 29"<<endl<<
-                   "27 10 5"<<endl<<
-                   "27 11 8"<<endl<<
-                   "27 13 33"<<endl<<
-                   "27 15 4"<<endl<<
-                   "27 17 10"<<endl<<
-                   "27 18 15"<<endl<<
-                   "27 24 10"<<endl<<
-                   "27 28 3"<<endl<<
-                   "27 29 32"<<endl<<
-                   "27 31 13"<<endl<<
-                   "27 32 33"<<endl<<
-                   "28 1 9"<<endl<<
-                   "28 2 6"<<endl<<
-                   "28 6 3"<<endl<<
-                   "28 28 3"<<endl<<
-                   "28 32 6"<<endl<<
-                   "29 1 559"<<endl<<
-                   "29 2 132"<<endl<<
-                   "29 3 5"<<endl<<
-                   "29 4 24"<<endl<<
-                   "29 5 21"<<endl<<
-                   "29 6 29"<<endl<<
-                   "29 8 155"<<endl<<
-                   "29 9 15"<<endl<<
-                   "29 10 98"<<endl<<
-                   "29 11 69"<<endl<<
-                   "29 12 89"<<endl<<
-                   "29 13 37"<<endl<<
-                   "29 14 76"<<endl<<
-                   "29 15 80"<<endl<<
-                   "29 16 63"<<endl<<
-                   "29 17 15"<<endl<<
-                   "29 18 4"<<endl<<
-                   "29 19 9"<<endl<<
-                   "29 20 18"<<endl<<
-                   "29 21 43"<<endl<<
-                   "29 22 108"<<endl<<
-                   "29 23 29"<<endl<<
-                   "29 24 218"<<endl<<
-                   "29 26 15"<<endl<<
-                   "29 27 66"<<endl<<
-                   "29 29 6"<<endl<<
-                   "29 30 14"<<endl<<
-                   "29 31 91"<<endl<<
-                   "29 32 126"<<endl<<
-                   "30 1 39"<<endl<<
-                   "30 2 21"<<endl<<
-                   "30 4 6"<<endl<<
-                   "30 5 3"<<endl<<
-                   "30 6 3"<<endl<<
-                   "30 8 140"<<endl<<
-                   "30 10 7"<<endl<<
-                   "30 12 2"<<endl<<
-                   "30 17 9"<<endl<<
-                   "30 18 5"<<endl<<
-                   "30 27 2"<<endl<<
-                   "30 29 18"<<endl<<
-                   "30 30 2"<<endl<<
-                   "30 31 20"<<endl<<
-                   "30 32 8"<<endl<<
-                   "31 1 82"<<endl<<
-                   "31 2 125"<<endl<<
-                   "31 3 10"<<endl<<
-                   "31 4 22"<<endl<<
-                   "31 5 10"<<endl<<
-                   "31 6 15"<<endl<<
-                   "31 7 18"<<endl<<
-                   "31 8 70"<<endl<<
-                   "31 9 35"<<endl<<
-                   "31 10 23"<<endl<<
-                   "31 11 114"<<endl<<
-                   "31 12 20"<<endl<<
-                   "31 13 16"<<endl<<
-                   "31 14 15"<<endl<<
-                   "31 15 24"<<endl<<
-                   "31 16 30"<<endl<<
-                   "31 17 28"<<endl<<
-                   "31 18 49"<<endl<<
-                   "31 19 30"<<endl<<
-                   "31 20 5"<<endl<<
-                   "31 21 5"<<endl<<
-                   "31 22 15"<<endl<<
-                   "31 23 8"<<endl<<
-                   "31 24 53"<<endl<<
-                   "31 25 25"<<endl<<
-                   "31 26 8"<<endl<<
-                   "31 27 21"<<endl<<
-                   "31 28 8"<<endl<<
-                   "31 29 65"<<endl<<
-                   "31 30 28"<<endl<<
-                   "31 32 67"<<endl<<
-                   "32 1 239"<<endl<<
-                   "32 2 99"<<endl<<
-                   "32 4 27"<<endl<<
-                   "32 5 3"<<endl<<
-                   "32 8 268"<<endl<<
-                   "32 9 101"<<endl<<
-                   "32 10 18"<<endl<<
-                   "32 11 35"<<endl<<
-                   "32 12 4"<<endl<<
-                   "32 17 7"<<endl<<
-                   "32 22 14"<<endl<<
-                   "32 24 5"<<endl<<
-                   "32 27 50"<<endl<<
-                   "32 28 6"<<endl<<
-                   "32 29 71"<<endl<<
-                   "32 30 7"<<endl<<
-                   "32 31 107"<<endl<<
+                   "dl"<<"\n"<<
+                   "N=32"<<"\n"<<
+                   "format=edgelist1"<<"\n"<<
+                   "data:"<<"\n"<<
+                   "1 1 24"<<"\n"<<
+                   "1 2 488"<<"\n"<<
+                   "1 3 28"<<"\n"<<
+                   "1 4 65"<<"\n"<<
+                   "1 5 20"<<"\n"<<
+                   "1 6 65"<<"\n"<<
+                   "1 7 45"<<"\n"<<
+                   "1 8 346"<<"\n"<<
+                   "1 9 82"<<"\n"<<
+                   "1 10 52"<<"\n"<<
+                   "1 11 177"<<"\n"<<
+                   "1 12 28"<<"\n"<<
+                   "1 13 24"<<"\n"<<
+                   "1 14 49"<<"\n"<<
+                   "1 15 81"<<"\n"<<
+                   "1 16 77"<<"\n"<<
+                   "1 17 77"<<"\n"<<
+                   "1 18 73"<<"\n"<<
+                   "1 19 33"<<"\n"<<
+                   "1 20 31"<<"\n"<<
+                   "1 21 22"<<"\n"<<
+                   "1 22 46"<<"\n"<<
+                   "1 23 31"<<"\n"<<
+                   "1 24 128"<<"\n"<<
+                   "1 25 38"<<"\n"<<
+                   "1 26 89"<<"\n"<<
+                   "1 27 95"<<"\n"<<
+                   "1 28 25"<<"\n"<<
+                   "1 29 388"<<"\n"<<
+                   "1 30 71"<<"\n"<<
+                   "1 31 212"<<"\n"<<
+                   "1 32 185"<<"\n"<<
+                   "2 1 364"<<"\n"<<
+                   "2 2 6"<<"\n"<<
+                   "2 3 17"<<"\n"<<
+                   "2 4 17"<<"\n"<<
+                   "2 5 15"<<"\n"<<
+                   "2 7 30"<<"\n"<<
+                   "2 8 20"<<"\n"<<
+                   "2 9 35"<<"\n"<<
+                   "2 10 20"<<"\n"<<
+                   "2 11 22"<<"\n"<<
+                   "2 12 15"<<"\n"<<
+                   "2 13 15"<<"\n"<<
+                   "2 14 15"<<"\n"<<
+                   "2 15 15"<<"\n"<<
+                   "2 16 50"<<"\n"<<
+                   "2 17 25"<<"\n"<<
+                   "2 18 8"<<"\n"<<
+                   "2 20 15"<<"\n"<<
+                   "2 21 15"<<"\n"<<
+                   "2 22 15"<<"\n"<<
+                   "2 23 15"<<"\n"<<
+                   "2 25 15"<<"\n"<<
+                   "2 26 15"<<"\n"<<
+                   "2 27 10"<<"\n"<<
+                   "2 28 24"<<"\n"<<
+                   "2 29 89"<<"\n"<<
+                   "2 30 23"<<"\n"<<
+                   "2 31 163"<<"\n"<<
+                   "2 32 39"<<"\n"<<
+                   "3 1 4"<<"\n"<<
+                   "3 2 5"<<"\n"<<
+                   "3 8 5"<<"\n"<<
+                   "4 1 52"<<"\n"<<
+                   "4 2 30"<<"\n"<<
+                   "4 4 4"<<"\n"<<
+                   "4 6 2"<<"\n"<<
+                   "4 8 32"<<"\n"<<
+                   "4 9 21"<<"\n"<<
+                   "4 10 34"<<"\n"<<
+                   "4 11 9"<<"\n"<<
+                   "4 16 5"<<"\n"<<
+                   "4 17 4"<<"\n"<<
+                   "4 18 2"<<"\n"<<
+                   "4 19 35"<<"\n"<<
+                   "4 24 12"<<"\n"<<
+                   "4 27 12"<<"\n"<<
+                   "4 28 5"<<"\n"<<
+                   "4 29 20"<<"\n"<<
+                   "4 30 4"<<"\n"<<
+                   "4 31 19"<<"\n"<<
+                   "4 32 33"<<"\n"<<
+                   "5 1 26"<<"\n"<<
+                   "5 2 4"<<"\n"<<
+                   "5 3 4"<<"\n"<<
+                   "5 4 4"<<"\n"<<
+                   "5 6 4"<<"\n"<<
+                   "5 7 8"<<"\n"<<
+                   "5 8 4"<<"\n"<<
+                   "5 9 4"<<"\n"<<
+                   "5 10 4"<<"\n"<<
+                   "5 11 4"<<"\n"<<
+                   "5 12 4"<<"\n"<<
+                   "5 13 4"<<"\n"<<
+                   "5 14 4"<<"\n"<<
+                   "5 15 4"<<"\n"<<
+                   "5 16 4"<<"\n"<<
+                   "5 17 4"<<"\n"<<
+                   "5 18 4"<<"\n"<<
+                   "5 19 4"<<"\n"<<
+                   "5 21 4"<<"\n"<<
+                   "5 22 8"<<"\n"<<
+                   "5 23 4"<<"\n"<<
+                   "5 24 14"<<"\n"<<
+                   "5 25 4"<<"\n"<<
+                   "5 27 4"<<"\n"<<
+                   "5 29 4"<<"\n"<<
+                   "5 30 7"<<"\n"<<
+                   "5 31 4"<<"\n"<<
+                   "5 32 4"<<"\n"<<
+                   "6 1 72"<<"\n"<<
+                   "6 2 23"<<"\n"<<
+                   "6 4 2"<<"\n"<<
+                   "6 6 34"<<"\n"<<
+                   "6 8 16"<<"\n"<<
+                   "6 10 7"<<"\n"<<
+                   "6 11 15"<<"\n"<<
+                   "6 15 8"<<"\n"<<
+                   "6 16 7"<<"\n"<<
+                   "6 17 6"<<"\n"<<
+                   "6 24 14"<<"\n"<<
+                   "6 27 7"<<"\n"<<
+                   "6 28 3"<<"\n"<<
+                   "6 29 34"<<"\n"<<
+                   "6 30 3"<<"\n"<<
+                   "6 31 22"<<"\n"<<
+                   "7 1 14"<<"\n"<<
+                   "7 31 6"<<"\n"<<
+                   "8 1 239"<<"\n"<<
+                   "8 2 82"<<"\n"<<
+                   "8 3 5"<<"\n"<<
+                   "8 4 37"<<"\n"<<
+                   "8 5 3"<<"\n"<<
+                   "8 6 34"<<"\n"<<
+                   "8 7 5"<<"\n"<<
+                   "8 8 10"<<"\n"<<
+                   "8 9 12"<<"\n"<<
+                   "8 10 18"<<"\n"<<
+                   "8 11 164"<<"\n"<<
+                   "8 12 18"<<"\n"<<
+                   "8 16 30"<<"\n"<<
+                   "8 17 53"<<"\n"<<
+                   "8 18 27"<<"\n"<<
+                   "8 19 20"<<"\n"<<
+                   "8 20 4"<<"\n"<<
+                   "8 22 5"<<"\n"<<
+                   "8 23 4"<<"\n"<<
+                   "8 24 55"<<"\n"<<
+                   "8 26 9"<<"\n"<<
+                   "8 27 34"<<"\n"<<
+                   "8 29 146"<<"\n"<<
+                   "8 30 216"<<"\n"<<
+                   "8 31 88"<<"\n"<<
+                   "8 32 288"<<"\n"<<
+                   "9 1 24"<<"\n"<<
+                   "9 2 25"<<"\n"<<
+                   "9 4 2"<<"\n"<<
+                   "9 8 8"<<"\n"<<
+                   "9 9 16"<<"\n"<<
+                   "9 11 15"<<"\n"<<
+                   "9 13 10"<<"\n"<<
+                   "9 17 5"<<"\n"<<
+                   "9 27 15"<<"\n"<<
+                   "9 29 10"<<"\n"<<
+                   "9 31 30"<<"\n"<<
+                   "9 32 44"<<"\n"<<
+                   "10 1 43"<<"\n"<<
+                   "10 2 15"<<"\n"<<
+                   "10 4 32"<<"\n"<<
+                   "10 6 12"<<"\n"<<
+                   "10 8 14"<<"\n"<<
+                   "10 10 5"<<"\n"<<
+                   "10 11 25"<<"\n"<<
+                   "10 12 2"<<"\n"<<
+                   "10 16 10"<<"\n"<<
+                   "10 17 10"<<"\n"<<
+                   "10 19 20"<<"\n"<<
+                   "10 20 15"<<"\n"<<
+                   "10 22 5"<<"\n"<<
+                   "10 23 20"<<"\n"<<
+                   "10 24 29"<<"\n"<<
+                   "10 26 4"<<"\n"<<
+                   "10 27 10"<<"\n"<<
+                   "10 29 47"<<"\n"<<
+                   "10 30 6"<<"\n"<<
+                   "10 31 22"<<"\n"<<
+                   "10 32 19"<<"\n"<<
+                   "11 1 178"<<"\n"<<
+                   "11 2 36"<<"\n"<<
+                   "11 4 11"<<"\n"<<
+                   "11 6 19"<<"\n"<<
+                   "11 7 10"<<"\n"<<
+                   "11 8 172"<<"\n"<<
+                   "11 9 39"<<"\n"<<
+                   "11 10 28"<<"\n"<<
+                   "11 11 29"<<"\n"<<
+                   "11 13 4"<<"\n"<<
+                   "11 16 23"<<"\n"<<
+                   "11 17 15"<<"\n"<<
+                   "11 18 24"<<"\n"<<
+                   "11 21 8"<<"\n"<<
+                   "11 24 29"<<"\n"<<
+                   "11 25 10"<<"\n"<<
+                   "11 26 11"<<"\n"<<
+                   "11 27 22"<<"\n"<<
+                   "11 29 46"<<"\n"<<
+                   "11 31 119"<<"\n"<<
+                   "11 32 34"<<"\n"<<
+                   "12 2 5"<<"\n"<<
+                   "12 8 5"<<"\n"<<
+                   "12 12 3"<<"\n"<<
+                   "12 19 5"<<"\n"<<
+                   "12 29 53"<<"\n"<<
+                   "12 31 5"<<"\n"<<
+                   "12 32 9"<<"\n"<<
+                   "13 1 5"<<"\n"<<
+                   "13 11 5"<<"\n"<<
+                   "13 31 5"<<"\n"<<
+                   "14 1 12"<<"\n"<<
+                   "14 3 9"<<"\n"<<
+                   "14 14 2"<<"\n"<<
+                   "14 16 12"<<"\n"<<
+                   "14 19 5"<<"\n"<<
+                   "14 29 35"<<"\n"<<
+                   "14 31 8"<<"\n"<<
+                   "15 1 120"<<"\n"<<
+                   "15 6 4"<<"\n"<<
+                   "15 12 5"<<"\n"<<
+                   "15 15 78"<<"\n"<<
+                   "15 27 8"<<"\n"<<
+                   "15 29 58"<<"\n"<<
+                   "15 31 32"<<"\n"<<
+                   "16 1 58"<<"\n"<<
+                   "16 2 25"<<"\n"<<
+                   "16 4 10"<<"\n"<<
+                   "16 8 20"<<"\n"<<
+                   "16 10 5"<<"\n"<<
+                   "16 11 10"<<"\n"<<
+                   "16 14 5"<<"\n"<<
+                   "16 16 15"<<"\n"<<
+                   "16 17 10"<<"\n"<<
+                   "16 21 5"<<"\n"<<
+                   "16 24 5"<<"\n"<<
+                   "16 29 35"<<"\n"<<
+                   "16 31 10"<<"\n"<<
+                   "17 1 63"<<"\n"<<
+                   "17 2 18"<<"\n"<<
+                   "17 3 9"<<"\n"<<
+                   "17 4 7"<<"\n"<<
+                   "17 6 6"<<"\n"<<
+                   "17 8 36"<<"\n"<<
+                   "17 10 5"<<"\n"<<
+                   "17 11 9"<<"\n"<<
+                   "17 12 5"<<"\n"<<
+                   "17 14 5"<<"\n"<<
+                   "17 16 5"<<"\n"<<
+                   "17 20 5"<<"\n"<<
+                   "17 21 2"<<"\n"<<
+                   "17 27 15"<<"\n"<<
+                   "17 29 10"<<"\n"<<
+                   "17 30 9"<<"\n"<<
+                   "17 31 15"<<"\n"<<
+                   "17 32 9"<<"\n"<<
+                   "18 1 58"<<"\n"<<
+                   "18 2 8"<<"\n"<<
+                   "18 3 5"<<"\n"<<
+                   "18 4 4"<<"\n"<<
+                   "18 8 4"<<"\n"<<
+                   "18 10 5"<<"\n"<<
+                   "18 11 18"<<"\n"<<
+                   "18 18 4"<<"\n"<<
+                   "18 27 20"<<"\n"<<
+                   "18 29 8"<<"\n"<<
+                   "18 30 10"<<"\n"<<
+                   "18 31 48"<<"\n"<<
+                   "19 1 5"<<"\n"<<
+                   "19 2 5"<<"\n"<<
+                   "19 4 25"<<"\n"<<
+                   "19 8 10"<<"\n"<<
+                   "19 14 5"<<"\n"<<
+                   "19 19 5"<<"\n"<<
+                   "19 23 5"<<"\n"<<
+                   "19 31 10"<<"\n"<<
+                   "20 21 4"<<"\n"<<
+                   "20 29 4"<<"\n"<<
+                   "21 1 9"<<"\n"<<
+                   "21 11 3"<<"\n"<<
+                   "21 16 5"<<"\n"<<
+                   "21 29 5"<<"\n"<<
+                   "22 1 10"<<"\n"<<
+                   "22 24 40"<<"\n"<<
+                   "22 29 15"<<"\n"<<
+                   "22 32 5"<<"\n"<<
+                   "23 1 5"<<"\n"<<
+                   "23 2 5"<<"\n"<<
+                   "23 3 5"<<"\n"<<
+                   "23 10 19"<<"\n"<<
+                   "23 19 5"<<"\n"<<
+                   "23 29 14"<<"\n"<<
+                   "23 31 5"<<"\n"<<
+                   "24 1 89"<<"\n"<<
+                   "24 2 17"<<"\n"<<
+                   "24 3 4"<<"\n"<<
+                   "24 4 14"<<"\n"<<
+                   "24 5 14"<<"\n"<<
+                   "24 6 18"<<"\n"<<
+                   "24 7 8"<<"\n"<<
+                   "24 8 41"<<"\n"<<
+                   "24 9 4"<<"\n"<<
+                   "24 10 19"<<"\n"<<
+                   "24 11 31"<<"\n"<<
+                   "24 12 4"<<"\n"<<
+                   "24 13 4"<<"\n"<<
+                   "24 14 9"<<"\n"<<
+                   "24 15 4"<<"\n"<<
+                   "24 16 14"<<"\n"<<
+                   "24 17 4"<<"\n"<<
+                   "24 18 9"<<"\n"<<
+                   "24 19 4"<<"\n"<<
+                   "24 20 4"<<"\n"<<
+                   "24 21 4"<<"\n"<<
+                   "24 22 58"<<"\n"<<
+                   "24 23 4"<<"\n"<<
+                   "24 24 5"<<"\n"<<
+                   "24 25 18"<<"\n"<<
+                   "24 26 14"<<"\n"<<
+                   "24 27 9"<<"\n"<<
+                   "24 28 4"<<"\n"<<
+                   "24 29 156"<<"\n"<<
+                   "24 30 4"<<"\n"<<
+                   "24 31 56"<<"\n"<<
+                   "24 32 10"<<"\n"<<
+                   "25 1 32"<<"\n"<<
+                   "25 2 5"<<"\n"<<
+                   "25 14 15"<<"\n"<<
+                   "25 22 10"<<"\n"<<
+                   "25 24 23"<<"\n"<<
+                   "25 25 10"<<"\n"<<
+                   "25 30 9"<<"\n"<<
+                   "25 31 15"<<"\n"<<
+                   "26 1 35"<<"\n"<<
+                   "26 2 5"<<"\n"<<
+                   "26 10 5"<<"\n"<<
+                   "26 29 10"<<"\n"<<
+                   "26 31 13"<<"\n"<<
+                   "27 1 50"<<"\n"<<
+                   "27 2 28"<<"\n"<<
+                   "27 4 13"<<"\n"<<
+                   "27 8 19"<<"\n"<<
+                   "27 9 29"<<"\n"<<
+                   "27 10 5"<<"\n"<<
+                   "27 11 8"<<"\n"<<
+                   "27 13 33"<<"\n"<<
+                   "27 15 4"<<"\n"<<
+                   "27 17 10"<<"\n"<<
+                   "27 18 15"<<"\n"<<
+                   "27 24 10"<<"\n"<<
+                   "27 28 3"<<"\n"<<
+                   "27 29 32"<<"\n"<<
+                   "27 31 13"<<"\n"<<
+                   "27 32 33"<<"\n"<<
+                   "28 1 9"<<"\n"<<
+                   "28 2 6"<<"\n"<<
+                   "28 6 3"<<"\n"<<
+                   "28 28 3"<<"\n"<<
+                   "28 32 6"<<"\n"<<
+                   "29 1 559"<<"\n"<<
+                   "29 2 132"<<"\n"<<
+                   "29 3 5"<<"\n"<<
+                   "29 4 24"<<"\n"<<
+                   "29 5 21"<<"\n"<<
+                   "29 6 29"<<"\n"<<
+                   "29 8 155"<<"\n"<<
+                   "29 9 15"<<"\n"<<
+                   "29 10 98"<<"\n"<<
+                   "29 11 69"<<"\n"<<
+                   "29 12 89"<<"\n"<<
+                   "29 13 37"<<"\n"<<
+                   "29 14 76"<<"\n"<<
+                   "29 15 80"<<"\n"<<
+                   "29 16 63"<<"\n"<<
+                   "29 17 15"<<"\n"<<
+                   "29 18 4"<<"\n"<<
+                   "29 19 9"<<"\n"<<
+                   "29 20 18"<<"\n"<<
+                   "29 21 43"<<"\n"<<
+                   "29 22 108"<<"\n"<<
+                   "29 23 29"<<"\n"<<
+                   "29 24 218"<<"\n"<<
+                   "29 26 15"<<"\n"<<
+                   "29 27 66"<<"\n"<<
+                   "29 29 6"<<"\n"<<
+                   "29 30 14"<<"\n"<<
+                   "29 31 91"<<"\n"<<
+                   "29 32 126"<<"\n"<<
+                   "30 1 39"<<"\n"<<
+                   "30 2 21"<<"\n"<<
+                   "30 4 6"<<"\n"<<
+                   "30 5 3"<<"\n"<<
+                   "30 6 3"<<"\n"<<
+                   "30 8 140"<<"\n"<<
+                   "30 10 7"<<"\n"<<
+                   "30 12 2"<<"\n"<<
+                   "30 17 9"<<"\n"<<
+                   "30 18 5"<<"\n"<<
+                   "30 27 2"<<"\n"<<
+                   "30 29 18"<<"\n"<<
+                   "30 30 2"<<"\n"<<
+                   "30 31 20"<<"\n"<<
+                   "30 32 8"<<"\n"<<
+                   "31 1 82"<<"\n"<<
+                   "31 2 125"<<"\n"<<
+                   "31 3 10"<<"\n"<<
+                   "31 4 22"<<"\n"<<
+                   "31 5 10"<<"\n"<<
+                   "31 6 15"<<"\n"<<
+                   "31 7 18"<<"\n"<<
+                   "31 8 70"<<"\n"<<
+                   "31 9 35"<<"\n"<<
+                   "31 10 23"<<"\n"<<
+                   "31 11 114"<<"\n"<<
+                   "31 12 20"<<"\n"<<
+                   "31 13 16"<<"\n"<<
+                   "31 14 15"<<"\n"<<
+                   "31 15 24"<<"\n"<<
+                   "31 16 30"<<"\n"<<
+                   "31 17 28"<<"\n"<<
+                   "31 18 49"<<"\n"<<
+                   "31 19 30"<<"\n"<<
+                   "31 20 5"<<"\n"<<
+                   "31 21 5"<<"\n"<<
+                   "31 22 15"<<"\n"<<
+                   "31 23 8"<<"\n"<<
+                   "31 24 53"<<"\n"<<
+                   "31 25 25"<<"\n"<<
+                   "31 26 8"<<"\n"<<
+                   "31 27 21"<<"\n"<<
+                   "31 28 8"<<"\n"<<
+                   "31 29 65"<<"\n"<<
+                   "31 30 28"<<"\n"<<
+                   "31 32 67"<<"\n"<<
+                   "32 1 239"<<"\n"<<
+                   "32 2 99"<<"\n"<<
+                   "32 4 27"<<"\n"<<
+                   "32 5 3"<<"\n"<<
+                   "32 8 268"<<"\n"<<
+                   "32 9 101"<<"\n"<<
+                   "32 10 18"<<"\n"<<
+                   "32 11 35"<<"\n"<<
+                   "32 12 4"<<"\n"<<
+                   "32 17 7"<<"\n"<<
+                   "32 22 14"<<"\n"<<
+                   "32 24 5"<<"\n"<<
+                   "32 27 50"<<"\n"<<
+                   "32 28 6"<<"\n"<<
+                   "32 29 71"<<"\n"<<
+                   "32 30 7"<<"\n"<<
+                   "32 31 107"<<"\n"<<
                    "32 32 219";
 
     }
@@ -19681,240 +19626,240 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                 "Freeman used them to calculate and compare the three measures "
                  "of Centrality: Degree, Betweenness and Closeness. \n"
                "Use Relation buttons on the toolbar to move between the graphs.");
-        outText<< "*Network \"34 possible graphs of N=5\"" << endl <<
-                  "*Vertices 5" << endl <<
-                  "1 \"1\" ic red		0.221583 	0.644042	circle" << endl <<
-                  "2 \"2\" ic red		0.233094 	0.351433	circle" << endl <<
-                  "3 \"3\" ic red		0.696403 	0.328808	circle" << endl <<
-                  "4 \"4\" ic red		0.471942 	0.197587	circle" << endl <<
-                  "5 \"5\" ic red		0.726619 	0.644042	circle" << endl <<
-                  "*Matrix :1" << endl <<
-                  "0 0 0 0 0 " << endl <<
-                  "0 0 0 0 0 " << endl <<
-                  "0 0 0 0 0 " << endl <<
-                  "0 0 0 0 0 " << endl <<
-                  "0 0 0 0 0 " << endl <<
-                  "*Matrix :2" << endl <<
-                  "0 0 0 0 0 " << endl <<
-                  "0 0 0 1 0 " << endl <<
-                  "0 0 0 0 0 " << endl <<
-                  "0 1 0 0 0 " << endl <<
-                  "0 0 0 0 0 " << endl <<
-                  "*Matrix :3" << endl <<
-                  "0 1 0 0 0 " << endl <<
-                  "1 0 0 1 0 " << endl <<
-                  "0 0 0 0 0 " << endl <<
-                  "0 1 0 0 0 " << endl <<
-                  "0 0 0 0 0 " << endl <<
-                  "*Matrix :4" << endl <<
-                  "0 0 0 0 1 " << endl <<
-                  "0 0 0 1 0 " << endl <<
-                  "0 0 0 0 0 " << endl <<
-                  "0 1 0 0 0 " << endl <<
-                  "1 0 0 0 0 " << endl <<
-                  "*Matrix :5" << endl <<
-                  "0 1 0 0 0 " << endl <<
-                  "1 0 0 1 1 " << endl <<
-                  "0 0 0 0 0 " << endl <<
-                  "0 1 0 0 0 " << endl <<
-                  "0 1 0 0 0" << endl <<
-                  "*Matrix :6" << endl <<
-                  "0 1 0 0 0 " << endl <<
-                  "1 0 0 1 0 " << endl <<
-                  "0 0 0 0 1 " << endl <<
-                  "0 1 0 0 0 " << endl <<
-                  "0 0 1 0 0 " << endl <<
-                  "*Matrix :7" << endl <<
-                  "0 1 0 1 0 " << endl <<
-                  "1 0 0 1 0 " << endl <<
-                  "0 0 0 0 0 " << endl <<
-                  "1 1 0 0 0 " << endl <<
-                  "0 0 0 0 0 " << endl <<
-                  "*Matrix :8" << endl <<
-                  "0 1 0 0 0 " << endl <<
-                  "1 0 0 1 0 " << endl <<
-                  "0 0 0 1 0 " << endl <<
-                  "0 1 1 0 0 " << endl <<
-                  "0 0 0 0 0 " << endl <<
-                  "*Matrix :9 \"star\"" << endl <<
-                  "0 1 0 0 0 " << endl <<
-                  "1 0 1 1 1 " << endl <<
-                  "0 1 0 0 0 " << endl <<
-                  "0 1 0 0 0 " << endl <<
-                  "0 1 0 0 0 " << endl <<
-                  "*Matrix :10 \"fork\"" << endl <<
-                  "0 1 0 0 0 " << endl <<
-                  "1 0 0 1 1 " << endl <<
-                  "0 0 0 1 0 " << endl <<
-                  "0 1 1 0 0 " << endl <<
-                  "0 1 0 0 0 " << endl <<
-                  "*Matrix :11 \"chain\"" << endl <<
-                  "0 1 0 0 1 " << endl <<
-                  "1 0 0 1 0 " << endl <<
-                  "0 0 0 1 0 " << endl <<
-                  "0 1 1 0 0 " << endl <<
-                  "1 0 0 0 0 " << endl <<
-                  "*Matrix :12" << endl <<
-                  "0 1 0 1 0 " << endl <<
-                  "1 0 0 1 0 " << endl <<
-                  "0 0 0 1 0 " << endl <<
-                  "1 1 1 0 0 " << endl <<
-                  "0 0 0 0 0 " << endl <<
-                  "*Matrix :13" << endl <<
-                  "0 1 0 1 0 " << endl <<
-                  "1 0 0 1 0 " << endl <<
-                  "0 0 0 0 1 " << endl <<
-                  "1 1 0 0 0 " << endl <<
-                  "0 0 1 0 0 " << endl <<
-                  "*Matrix :14" << endl <<
-                  "0 1 1 0 0 " << endl <<
-                  "1 0 0 1 0 " << endl <<
-                  "1 0 0 1 0 " << endl <<
-                  "0 1 1 0 0 " << endl <<
-                  "0 0 0 0 0 " << endl <<
-                  "*Matrix :15" << endl <<
-                  "0 1 0 1 0 " << endl <<
-                  "1 0 0 1 0 " << endl <<
-                  "0 0 0 1 0 " << endl <<
-                  "1 1 1 0 1 " << endl <<
-                  "0 0 0 1 0 " << endl <<
-                  "*Matrix :16" << endl <<
-                  "0 1 0 0 0 " << endl <<
-                  "1 0 1 1 0 " << endl <<
-                  "0 1 0 1 1 " << endl <<
-                  "0 1 1 0 0 " << endl <<
-                  "0 0 1 0 0 " << endl <<
-                  "*Matrix :17" << endl <<
-                  "0 1 0 0 1 " << endl <<
-                  "1 0 1 1 0 " << endl <<
-                  "0 1 0 1 0 " << endl <<
-                  "0 1 1 0 0 " << endl <<
-                  "1 0 0 0 0 " << endl <<
-                  "*Matrix :18" << endl <<
-                  "0 1 1 0 0 " << endl <<
-                  "1 0 0 1 0 " << endl <<
-                  "1 0 0 1 1 " << endl <<
-                  "0 1 1 0 0 " << endl <<
-                  "0 0 1 0 0 " << endl <<
-                  "*Matrix :19" << endl <<
-                  "0 1 1 0 0 " << endl <<
-                  "1 0 1 1 0 " << endl <<
-                  "1 1 0 1 0 " << endl <<
-                  "0 1 1 0 0 " << endl <<
-                  "0 0 0 0 0 " << endl <<
-                  "*Matrix :20" << endl <<
-                  "0 1 0 0 1 " << endl <<
-                  "1 0 0 1 0 " << endl <<
-                  "0 0 0 1 1 " << endl <<
-                  "0 1 1 0 0 " << endl <<
-                  "1 0 1 0 0 " << endl <<
-                  "*Matrix :21" << endl <<
-                  "0 1 0 1 0 " << endl <<
-                  "1 0 0 1 0 " << endl <<
-                  "0 0 0 1 1 " << endl <<
-                  "1 1 1 0 1 " << endl <<
-                  "0 0 1 1 0 " << endl <<
-                  "*Matrix :22" << endl <<
-                  "0 1 1 0 0 " << endl <<
-                  "1 0 0 1 1 " << endl <<
-                  "1 0 0 1 1 " << endl <<
-                  "0 1 1 0 0 " << endl <<
-                  "0 1 1 0 0" << endl <<
-                  "*Matrix :23" << endl <<
-                  "0 1 1 0 0 " << endl <<
-                  "1 0 1 1 0 " << endl <<
-                  "1 1 0 1 1 " << endl <<
-                  "0 1 1 0 0 " << endl <<
-                  "0 0 1 0 0 " << endl <<
-                  "*Matrix :24" << endl <<
-                  "0 1 0 0 1 " << endl <<
-                  "1 0 1 1 0 " << endl <<
-                  "0 1 0 1 1 " << endl <<
-                  "0 1 1 0 0 " << endl <<
-                  "1 0 1 0 0" << endl <<
-                  "*Matrix :25" << endl <<
-                  "0 1 1 0 1 " << endl <<
-                  "1 0 1 1 0 " << endl <<
-                  "1 1 0 1 0 " << endl <<
-                  "0 1 1 0 0 " << endl <<
-                  "1 0 0 0 0 " << endl <<
-                  "*Matrix :26 " << endl <<
-                  "0 1 1 1 0 " << endl <<
-                  "1 0 1 1 0 " << endl <<
-                  "1 1 0 1 0 " << endl <<
-                  "1 1 1 0 0 " << endl <<
-                  "0 0 0 0 0 " << endl <<
-                  "*Matrix :27" << endl <<
-                  "0 1 0 1 1 " << endl <<
-                  "1 0 0 1 0 " << endl <<
-                  "0 0 0 1 1 " << endl <<
-                  "1 1 1 0 1 " << endl <<
-                  "1 0 1 1 0 " << endl <<
-                  "*Matrix :28" << endl <<
-                  "0 1 1 0 0 " << endl <<
-                  "1 0 1 1 1 " << endl <<
-                  "1 1 0 1 1 " << endl <<
-                  "0 1 1 0 0 " << endl <<
-                  "0 1 1 0 0 " << endl <<
-                  "*Matrix :29" << endl <<
-                  "0 1 1 0 1 " << endl <<
-                  "1 0 0 1 1 " << endl <<
-                  "1 0 0 1 1 " << endl <<
-                  "0 1 1 0 0 " << endl <<
-                  "1 1 1 0 0 " << endl <<
-                  "*Matrix :30" << endl <<
-                  "0 1 1 1 0 " << endl <<
-                  "1 0 1 1 0 " << endl <<
-                  "1 1 0 1 1 " << endl <<
-                  "1 1 1 0 0 " << endl <<
-                  "0 0 1 0 0 " << endl <<
-                  "*Matrix :31" << endl <<
-                  "0 1 0 1 1 " << endl <<
-                  "1 0 1 1 0 " << endl <<
-                  "0 1 0 1 1 " << endl <<
-                  "1 1 1 0 1 " << endl <<
-                  "1 0 1 1 0 " << endl <<
-                  "*Matrix :32" << endl <<
-                  "0 1 1 0 1 " << endl <<
-                  "1 0 1 1 1 " << endl <<
-                  "1 1 0 1 1 " << endl <<
-                  "0 1 1 0 0 " << endl <<
-                  "1 1 1 0 0 " << endl <<
-                  "*Matrix :33" << endl <<
-                  "0 1 1 1 1 " << endl <<
-                  "1 0 0 1 1 " << endl <<
-                  "1 0 0 1 1 " << endl <<
-                  "1 1 1 0 1 " << endl <<
-                  "1 1 1 1 0 " << endl <<
-                  "*Matrix :34" << endl <<
-                  "0 1 1 1 1 " << endl <<
-                  "1 0 1 1 1 " << endl <<
-                  "1 1 0 1 1 " << endl <<
-                  "1 1 1 0 1 " << endl <<
+        outText<< "*Network \"34 possible graphs of N=5\"" << "\n" <<
+                  "*Vertices 5" << "\n" <<
+                  "1 \"1\" ic red		0.221583 	0.644042	circle" << "\n" <<
+                  "2 \"2\" ic red		0.233094 	0.351433	circle" << "\n" <<
+                  "3 \"3\" ic red		0.696403 	0.328808	circle" << "\n" <<
+                  "4 \"4\" ic red		0.471942 	0.197587	circle" << "\n" <<
+                  "5 \"5\" ic red		0.726619 	0.644042	circle" << "\n" <<
+                  "*Matrix :1" << "\n" <<
+                  "0 0 0 0 0 " << "\n" <<
+                  "0 0 0 0 0 " << "\n" <<
+                  "0 0 0 0 0 " << "\n" <<
+                  "0 0 0 0 0 " << "\n" <<
+                  "0 0 0 0 0 " << "\n" <<
+                  "*Matrix :2" << "\n" <<
+                  "0 0 0 0 0 " << "\n" <<
+                  "0 0 0 1 0 " << "\n" <<
+                  "0 0 0 0 0 " << "\n" <<
+                  "0 1 0 0 0 " << "\n" <<
+                  "0 0 0 0 0 " << "\n" <<
+                  "*Matrix :3" << "\n" <<
+                  "0 1 0 0 0 " << "\n" <<
+                  "1 0 0 1 0 " << "\n" <<
+                  "0 0 0 0 0 " << "\n" <<
+                  "0 1 0 0 0 " << "\n" <<
+                  "0 0 0 0 0 " << "\n" <<
+                  "*Matrix :4" << "\n" <<
+                  "0 0 0 0 1 " << "\n" <<
+                  "0 0 0 1 0 " << "\n" <<
+                  "0 0 0 0 0 " << "\n" <<
+                  "0 1 0 0 0 " << "\n" <<
+                  "1 0 0 0 0 " << "\n" <<
+                  "*Matrix :5" << "\n" <<
+                  "0 1 0 0 0 " << "\n" <<
+                  "1 0 0 1 1 " << "\n" <<
+                  "0 0 0 0 0 " << "\n" <<
+                  "0 1 0 0 0 " << "\n" <<
+                  "0 1 0 0 0" << "\n" <<
+                  "*Matrix :6" << "\n" <<
+                  "0 1 0 0 0 " << "\n" <<
+                  "1 0 0 1 0 " << "\n" <<
+                  "0 0 0 0 1 " << "\n" <<
+                  "0 1 0 0 0 " << "\n" <<
+                  "0 0 1 0 0 " << "\n" <<
+                  "*Matrix :7" << "\n" <<
+                  "0 1 0 1 0 " << "\n" <<
+                  "1 0 0 1 0 " << "\n" <<
+                  "0 0 0 0 0 " << "\n" <<
+                  "1 1 0 0 0 " << "\n" <<
+                  "0 0 0 0 0 " << "\n" <<
+                  "*Matrix :8" << "\n" <<
+                  "0 1 0 0 0 " << "\n" <<
+                  "1 0 0 1 0 " << "\n" <<
+                  "0 0 0 1 0 " << "\n" <<
+                  "0 1 1 0 0 " << "\n" <<
+                  "0 0 0 0 0 " << "\n" <<
+                  "*Matrix :9 \"star\"" << "\n" <<
+                  "0 1 0 0 0 " << "\n" <<
+                  "1 0 1 1 1 " << "\n" <<
+                  "0 1 0 0 0 " << "\n" <<
+                  "0 1 0 0 0 " << "\n" <<
+                  "0 1 0 0 0 " << "\n" <<
+                  "*Matrix :10 \"fork\"" << "\n" <<
+                  "0 1 0 0 0 " << "\n" <<
+                  "1 0 0 1 1 " << "\n" <<
+                  "0 0 0 1 0 " << "\n" <<
+                  "0 1 1 0 0 " << "\n" <<
+                  "0 1 0 0 0 " << "\n" <<
+                  "*Matrix :11 \"chain\"" << "\n" <<
+                  "0 1 0 0 1 " << "\n" <<
+                  "1 0 0 1 0 " << "\n" <<
+                  "0 0 0 1 0 " << "\n" <<
+                  "0 1 1 0 0 " << "\n" <<
+                  "1 0 0 0 0 " << "\n" <<
+                  "*Matrix :12" << "\n" <<
+                  "0 1 0 1 0 " << "\n" <<
+                  "1 0 0 1 0 " << "\n" <<
+                  "0 0 0 1 0 " << "\n" <<
+                  "1 1 1 0 0 " << "\n" <<
+                  "0 0 0 0 0 " << "\n" <<
+                  "*Matrix :13" << "\n" <<
+                  "0 1 0 1 0 " << "\n" <<
+                  "1 0 0 1 0 " << "\n" <<
+                  "0 0 0 0 1 " << "\n" <<
+                  "1 1 0 0 0 " << "\n" <<
+                  "0 0 1 0 0 " << "\n" <<
+                  "*Matrix :14" << "\n" <<
+                  "0 1 1 0 0 " << "\n" <<
+                  "1 0 0 1 0 " << "\n" <<
+                  "1 0 0 1 0 " << "\n" <<
+                  "0 1 1 0 0 " << "\n" <<
+                  "0 0 0 0 0 " << "\n" <<
+                  "*Matrix :15" << "\n" <<
+                  "0 1 0 1 0 " << "\n" <<
+                  "1 0 0 1 0 " << "\n" <<
+                  "0 0 0 1 0 " << "\n" <<
+                  "1 1 1 0 1 " << "\n" <<
+                  "0 0 0 1 0 " << "\n" <<
+                  "*Matrix :16" << "\n" <<
+                  "0 1 0 0 0 " << "\n" <<
+                  "1 0 1 1 0 " << "\n" <<
+                  "0 1 0 1 1 " << "\n" <<
+                  "0 1 1 0 0 " << "\n" <<
+                  "0 0 1 0 0 " << "\n" <<
+                  "*Matrix :17" << "\n" <<
+                  "0 1 0 0 1 " << "\n" <<
+                  "1 0 1 1 0 " << "\n" <<
+                  "0 1 0 1 0 " << "\n" <<
+                  "0 1 1 0 0 " << "\n" <<
+                  "1 0 0 0 0 " << "\n" <<
+                  "*Matrix :18" << "\n" <<
+                  "0 1 1 0 0 " << "\n" <<
+                  "1 0 0 1 0 " << "\n" <<
+                  "1 0 0 1 1 " << "\n" <<
+                  "0 1 1 0 0 " << "\n" <<
+                  "0 0 1 0 0 " << "\n" <<
+                  "*Matrix :19" << "\n" <<
+                  "0 1 1 0 0 " << "\n" <<
+                  "1 0 1 1 0 " << "\n" <<
+                  "1 1 0 1 0 " << "\n" <<
+                  "0 1 1 0 0 " << "\n" <<
+                  "0 0 0 0 0 " << "\n" <<
+                  "*Matrix :20" << "\n" <<
+                  "0 1 0 0 1 " << "\n" <<
+                  "1 0 0 1 0 " << "\n" <<
+                  "0 0 0 1 1 " << "\n" <<
+                  "0 1 1 0 0 " << "\n" <<
+                  "1 0 1 0 0 " << "\n" <<
+                  "*Matrix :21" << "\n" <<
+                  "0 1 0 1 0 " << "\n" <<
+                  "1 0 0 1 0 " << "\n" <<
+                  "0 0 0 1 1 " << "\n" <<
+                  "1 1 1 0 1 " << "\n" <<
+                  "0 0 1 1 0 " << "\n" <<
+                  "*Matrix :22" << "\n" <<
+                  "0 1 1 0 0 " << "\n" <<
+                  "1 0 0 1 1 " << "\n" <<
+                  "1 0 0 1 1 " << "\n" <<
+                  "0 1 1 0 0 " << "\n" <<
+                  "0 1 1 0 0" << "\n" <<
+                  "*Matrix :23" << "\n" <<
+                  "0 1 1 0 0 " << "\n" <<
+                  "1 0 1 1 0 " << "\n" <<
+                  "1 1 0 1 1 " << "\n" <<
+                  "0 1 1 0 0 " << "\n" <<
+                  "0 0 1 0 0 " << "\n" <<
+                  "*Matrix :24" << "\n" <<
+                  "0 1 0 0 1 " << "\n" <<
+                  "1 0 1 1 0 " << "\n" <<
+                  "0 1 0 1 1 " << "\n" <<
+                  "0 1 1 0 0 " << "\n" <<
+                  "1 0 1 0 0" << "\n" <<
+                  "*Matrix :25" << "\n" <<
+                  "0 1 1 0 1 " << "\n" <<
+                  "1 0 1 1 0 " << "\n" <<
+                  "1 1 0 1 0 " << "\n" <<
+                  "0 1 1 0 0 " << "\n" <<
+                  "1 0 0 0 0 " << "\n" <<
+                  "*Matrix :26 " << "\n" <<
+                  "0 1 1 1 0 " << "\n" <<
+                  "1 0 1 1 0 " << "\n" <<
+                  "1 1 0 1 0 " << "\n" <<
+                  "1 1 1 0 0 " << "\n" <<
+                  "0 0 0 0 0 " << "\n" <<
+                  "*Matrix :27" << "\n" <<
+                  "0 1 0 1 1 " << "\n" <<
+                  "1 0 0 1 0 " << "\n" <<
+                  "0 0 0 1 1 " << "\n" <<
+                  "1 1 1 0 1 " << "\n" <<
+                  "1 0 1 1 0 " << "\n" <<
+                  "*Matrix :28" << "\n" <<
+                  "0 1 1 0 0 " << "\n" <<
+                  "1 0 1 1 1 " << "\n" <<
+                  "1 1 0 1 1 " << "\n" <<
+                  "0 1 1 0 0 " << "\n" <<
+                  "0 1 1 0 0 " << "\n" <<
+                  "*Matrix :29" << "\n" <<
+                  "0 1 1 0 1 " << "\n" <<
+                  "1 0 0 1 1 " << "\n" <<
+                  "1 0 0 1 1 " << "\n" <<
+                  "0 1 1 0 0 " << "\n" <<
+                  "1 1 1 0 0 " << "\n" <<
+                  "*Matrix :30" << "\n" <<
+                  "0 1 1 1 0 " << "\n" <<
+                  "1 0 1 1 0 " << "\n" <<
+                  "1 1 0 1 1 " << "\n" <<
+                  "1 1 1 0 0 " << "\n" <<
+                  "0 0 1 0 0 " << "\n" <<
+                  "*Matrix :31" << "\n" <<
+                  "0 1 0 1 1 " << "\n" <<
+                  "1 0 1 1 0 " << "\n" <<
+                  "0 1 0 1 1 " << "\n" <<
+                  "1 1 1 0 1 " << "\n" <<
+                  "1 0 1 1 0 " << "\n" <<
+                  "*Matrix :32" << "\n" <<
+                  "0 1 1 0 1 " << "\n" <<
+                  "1 0 1 1 1 " << "\n" <<
+                  "1 1 0 1 1 " << "\n" <<
+                  "0 1 1 0 0 " << "\n" <<
+                  "1 1 1 0 0 " << "\n" <<
+                  "*Matrix :33" << "\n" <<
+                  "0 1 1 1 1 " << "\n" <<
+                  "1 0 0 1 1 " << "\n" <<
+                  "1 0 0 1 1 " << "\n" <<
+                  "1 1 1 0 1 " << "\n" <<
+                  "1 1 1 1 0 " << "\n" <<
+                  "*Matrix :34" << "\n" <<
+                  "0 1 1 1 1 " << "\n" <<
+                  "1 0 1 1 1 " << "\n" <<
+                  "1 1 0 1 1 " << "\n" <<
+                  "1 1 1 0 1 " << "\n" <<
                   "1 1 1 1 0 ";
 
     }
     else if (fileName == "Mexican_Power_Network_1940s.lst"){
         datasetDescription = tr("Mexican Power Network in the 1940s\n\n"
                                 "");
-        outText<< "18 8 10 23 21" << endl <<
-                  "19 11 21" << endl <<
-                  "29 5 9 10" << endl <<
-                  "23 8 9 18 11" << endl <<
-                  "4 7 6 8 20 5 21" << endl <<
-                  "5 4 29 20 7 6 8 9 26 21" << endl <<
-                  "6 5 7 4 20 21 8" << endl <<
-                  "7 4 6 5 8 20 21" << endl <<
-                  "9 5 8 23 29 20 21 11 10" << endl <<
-                  "8 18 23 4 5 6 7 21 24 26 25 9 10 37 20" << endl <<
-                  "10 18 29 8 11 9 20 25 26" << endl <<
-                  "11 19 23 9 10 25 21 36" << endl <<
-                  "20 4 5 6 7 8 9 10" << endl <<
-                  "24 8 26" << endl <<
-                  "26 5 8 24 10" << endl <<
-                  "21 19 4 5 6 7 8 9 11 18" << endl <<
-                  "36 37 11" << endl <<
-                  "37 8 36" << endl <<
+        outText<< "18 8 10 23 21" << "\n" <<
+                  "19 11 21" << "\n" <<
+                  "29 5 9 10" << "\n" <<
+                  "23 8 9 18 11" << "\n" <<
+                  "4 7 6 8 20 5 21" << "\n" <<
+                  "5 4 29 20 7 6 8 9 26 21" << "\n" <<
+                  "6 5 7 4 20 21 8" << "\n" <<
+                  "7 4 6 5 8 20 21" << "\n" <<
+                  "9 5 8 23 29 20 21 11 10" << "\n" <<
+                  "8 18 23 4 5 6 7 21 24 26 25 9 10 37 20" << "\n" <<
+                  "10 18 29 8 11 9 20 25 26" << "\n" <<
+                  "11 19 23 9 10 25 21 36" << "\n" <<
+                  "20 4 5 6 7 8 9 10" << "\n" <<
+                  "24 8 26" << "\n" <<
+                  "26 5 8 24 10" << "\n" <<
+                  "21 19 4 5 6 7 8 9 11 18" << "\n" <<
+                  "36 37 11" << "\n" <<
+                  "37 8 36" << "\n" <<
                   "25 10 11 8";
     }
     else if (fileName == "Knoke_Bureaucracies_Network.pajek"){
@@ -19928,39 +19873,39 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                               "Information exchange is recorded in KNOKI relation while money exchange in KNOKM .");
 
         qDebug()<< "		Knocke_Bureacracies_Information_Exchange_Network.pajek written... ";
-        outText<< "*Network knokbur " << endl <<
-                  "*Vertices 10" << endl <<
-                  "1 \"COUN\" 0.1000    0.5000    0.5000" << endl <<
-                  "2 \"COMM\" 0.1764    0.2649    0.5000" << endl <<
-                  "3 \"EDUC\" 0.3764    0.1196    0.5000" << endl <<
-                  "4 \"INDU\" 0.6236    0.1196    0.5000" << endl <<
-                  "5 \"MAYR\" 0.8236    0.2649    0.5000" << endl <<
-                  "6 \"WRO \" 0.9000    0.5000    0.5000" << endl <<
-                  "7 \"NEWS\" 0.8236    0.7351    0.5000" << endl <<
-                  "8 \"UWAY\" 0.6236    0.8804    0.5000" << endl <<
-                  "9 \"WELF\" 0.3764    0.8804    0.5000" << endl <<
-                  "10 \"WEST\" 0.1764    0.7351    0.5000" << endl <<
-                  "*Matrix :1 \"Information exchange\"" << endl <<
-                  "0 1 0 0 1 0 1 0 1 0 " << endl <<
-                  "1 0 1 1 1 0 1 1 1 0 " << endl <<
-                  "0 1 0 1 1 1 1 0 0 1 " << endl <<
-                  "1 1 0 0 1 0 1 0 0 0 " << endl <<
-                  "1 1 1 1 0 0 1 1 1 1 " << endl <<
-                  "0 0 1 0 0 0 1 0 1 0 " << endl <<
-                  "0 1 0 1 1 0 0 0 0 0 " << endl <<
-                  "1 1 0 1 1 0 1 0 1 0 " << endl <<
-                  "0 1 0 0 1 0 1 0 0 0 " << endl <<
-                  "1 1 1 0 1 0 1 0 0 0 " << endl <<
-                  "*Matrix :2 \"Money exchange\"" << endl <<
-                  "0 0 1 0 1 0 0 1 1 1 " << endl <<
-                  "0 0 1 0 0 0 0 0 0 0 " << endl <<
-                  "0 0 0 0 0 0 0 1 0 0 " << endl <<
-                  "0 1 1 0 0 0 1 1 1 0 " << endl <<
-                  "0 1 1 0 0 0 0 1 1 0 " << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 " << endl <<
-                  "0 1 0 0 0 0 0 1 0 0 " << endl <<
-                  "0 0 0 0 0 0 0 0 1 1 " << endl <<
-                  "0 0 1 0 0 0 0 1 0 0 " << endl <<
+        outText<< "*Network knokbur " << "\n" <<
+                  "*Vertices 10" << "\n" <<
+                  "1 \"COUN\" 0.1000    0.5000    0.5000" << "\n" <<
+                  "2 \"COMM\" 0.1764    0.2649    0.5000" << "\n" <<
+                  "3 \"EDUC\" 0.3764    0.1196    0.5000" << "\n" <<
+                  "4 \"INDU\" 0.6236    0.1196    0.5000" << "\n" <<
+                  "5 \"MAYR\" 0.8236    0.2649    0.5000" << "\n" <<
+                  "6 \"WRO \" 0.9000    0.5000    0.5000" << "\n" <<
+                  "7 \"NEWS\" 0.8236    0.7351    0.5000" << "\n" <<
+                  "8 \"UWAY\" 0.6236    0.8804    0.5000" << "\n" <<
+                  "9 \"WELF\" 0.3764    0.8804    0.5000" << "\n" <<
+                  "10 \"WEST\" 0.1764    0.7351    0.5000" << "\n" <<
+                  "*Matrix :1 \"Information exchange\"" << "\n" <<
+                  "0 1 0 0 1 0 1 0 1 0 " << "\n" <<
+                  "1 0 1 1 1 0 1 1 1 0 " << "\n" <<
+                  "0 1 0 1 1 1 1 0 0 1 " << "\n" <<
+                  "1 1 0 0 1 0 1 0 0 0 " << "\n" <<
+                  "1 1 1 1 0 0 1 1 1 1 " << "\n" <<
+                  "0 0 1 0 0 0 1 0 1 0 " << "\n" <<
+                  "0 1 0 1 1 0 0 0 0 0 " << "\n" <<
+                  "1 1 0 1 1 0 1 0 1 0 " << "\n" <<
+                  "0 1 0 0 1 0 1 0 0 0 " << "\n" <<
+                  "1 1 1 0 1 0 1 0 0 0 " << "\n" <<
+                  "*Matrix :2 \"Money exchange\"" << "\n" <<
+                  "0 0 1 0 1 0 0 1 1 1 " << "\n" <<
+                  "0 0 1 0 0 0 0 0 0 0 " << "\n" <<
+                  "0 0 0 0 0 0 0 1 0 0 " << "\n" <<
+                  "0 1 1 0 0 0 1 1 1 0 " << "\n" <<
+                  "0 1 1 0 0 0 0 1 1 0 " << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 " << "\n" <<
+                  "0 1 0 0 0 0 0 1 0 0 " << "\n" <<
+                  "0 0 0 0 0 0 0 0 1 1 " << "\n" <<
+                  "0 0 1 0 0 0 0 1 0 0 " << "\n" <<
                   "0 0 0 0 0 0 0 0 0 0 ";
 
         qDebug()<< "		Knocke_Bureacracies_Information_Exchange_Network.pajek written... ";
@@ -19974,112 +19919,112 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                                "All 40 homosexual men were linked to each other through sexual contact."
                             );
 
-        outText << "*Network Stephenson&Zelen_40_AIDS_patients"<<endl<<
-                   "*Vertices 40"<<endl<<
-                   "1 \"1\" ic red		0.15899 	0.150442	circle"<<endl<<
-                   "2 \"2\" ic red		0.178306 	0.210914	circle"<<endl<<
-                   "3 \"3\" ic red		0.242199 	0.181416	circle"<<endl<<
-                   "4 \"4\" ic red		0.31055 	0.182891	circle"<<endl<<
-                   "5 \"5\" ic red		0.20951 	0.253687	circle"<<endl<<
-                   "6 \"6\" ic red		0.132244 	0.29351	circle"<<endl<<
-                   "7 \"7\" ic red		0.0846954 	0.327434	circle"<<endl<<
-                   "8 \"8\" ic red		0.200594 	0.351032	circle"<<endl<<
-                   "9 \"9\" ic red		0.170877 	0.412979	circle"<<endl<<
-                   "10 \"10\" ic red		0.120357 	0.458702	circle"<<endl<<
-                   "11 \"11\" ic red		0.283804 	0.292035	circle"<<endl<<
-                   "12 \"12\" ic red		0.329866 	0.244838	circle"<<endl<<
-                   "13 \"13\" ic red		0.389302 	0.210914	circle"<<endl<<
-                   "14 \"14\" ic red		0.459138 	0.238938	circle"<<endl<<
-                   "15 \"15\" ic red		0.497771 	0.294985	circle"<<endl<<
-                   "16 \"16\" ic red		0.401189 	0.351032	circle"<<endl<<
-                   "17 \"17\" ic red		0.280832 	0.349558	circle"<<endl<<
-                   "18 \"18\" ic red		0.251114 	0.482301	circle"<<endl<<
-                   "19 \"19\" ic red		0.344725 	0.547198	circle"<<endl<<
-                   "20 \"20\" ic red		0.317979 	0.463127	circle"<<endl<<
-                   "21 \"21\" ic red		0.401189 	0.449852	circle"<<endl<<
-                   "22 \"22\" ic red		0.536404 	0.418879	circle"<<endl<<
-                   "23 \"23\" ic red		0.63893 	0.355457	circle"<<endl<<
-                   "24 \"24\" ic red		0.658247 	0.268437	circle"<<endl<<
-                   "25 \"25\" ic red		0.676077 	0.443953	circle"<<endl<<
-                   "26 \"26\" ic red		0.576523 	0.516224	circle"<<endl<<
-                   "27 \"27\" ic red		0.468053 	0.511799	circle"<<endl<<
-                   "28 \"28\" ic red		0.482912 	0.600295	circle"<<endl<<
-                   "29 \"29\" ic red		0.482912 	0.675516	circle"<<endl<<
-                   "30 \"30\" ic red		0.423477 	0.728614	circle"<<endl<<
-                   "31 \"31\" ic red		0.592868 	0.646018	circle"<<endl<<
-                   "32 \"32\" ic red		0.59584 	0.728614	circle"<<endl<<
-                   "33 \"33\" ic red		0.594354 	0.792035	circle"<<endl<<
-                   "34 \"34\" ic red		0.69688 	0.839233	circle"<<endl<<
-                   "35 \"35\" ic red		0.805349 	0.889381	circle"<<endl<<
-                   "36 \"36\" ic red		0.710253 	0.669617	circle"<<endl<<
-                   "37 \"37\" ic red		0.787519 	0.70944	circle"<<endl<<
-                   "38 \"38\" ic red		0.698366 	0.539823	circle"<<endl<<
-                   "39 \"39\" ic red		0.808321 	0.466077	circle"<<endl<<
-                   "40 \"40\" ic red		0.817236 	0.564897	circle"<<endl<<
-                   "*Edges "<<endl<<
-                   "1 2 1 c black"<<endl<<
-                   "2 5 1 c black"<<endl<<
-                   "3 5 1 c black"<<endl<<
-                   "4 5 1 c black"<<endl<<
-                   "5 6 1 c black"<<endl<<
-                   "5 11 1 c black"<<endl<<
-                   "7 8 1 c black"<<endl<<
-                   "8 9 1 c black"<<endl<<
-                   "8 11 1 c black"<<endl<<
-                   "9 10 1 c black"<<endl<<
-                   "11 16 1 c black"<<endl<<
-                   "12 16 1 c black"<<endl<<
-                   "13 14 1 c black"<<endl<<
-                   "14 16 1 c black"<<endl<<
-                   "15 16 1 c black"<<endl<<
-                   "16 17 1 c black"<<endl<<
-                   "16 20 1 c black"<<endl<<
-                   "16 21 1 c black"<<endl<<
-                   "16 22 1 c black"<<endl<<
-                   "18 20 1 c black"<<endl<<
-                   "19 20 1 c black"<<endl<<
-                   "19 28 1 c black"<<endl<<
-                   "22 23 1 c black"<<endl<<
-                   "22 25 1 c black"<<endl<<
-                   "22 26 1 c black"<<endl<<
-                   "23 24 1 c black"<<endl<<
-                   "26 27 1 c black"<<endl<<
-                   "26 28 1 c black"<<endl<<
-                   "26 31 1 c black"<<endl<<
-                   "26 38 1 c black"<<endl<<
-                   "28 29 1 c black"<<endl<<
-                   "29 30 1 c black"<<endl<<
-                   "31 32 1 c black"<<endl<<
-                   "31 36 1 c black"<<endl<<
-                   "32 33 1 c black"<<endl<<
-                   "32 34 1 c black"<<endl<<
-                   "33 34 1 c black"<<endl<<
-                   "34 35 1 c black"<<endl<<
-                   "36 37 1 c black"<<endl<<
-                   "38 39 1 c black"<<endl<<
+        outText << "*Network Stephenson&Zelen_40_AIDS_patients"<<"\n"<<
+                   "*Vertices 40"<<"\n"<<
+                   "1 \"1\" ic red		0.15899 	0.150442	circle"<<"\n"<<
+                   "2 \"2\" ic red		0.178306 	0.210914	circle"<<"\n"<<
+                   "3 \"3\" ic red		0.242199 	0.181416	circle"<<"\n"<<
+                   "4 \"4\" ic red		0.31055 	0.182891	circle"<<"\n"<<
+                   "5 \"5\" ic red		0.20951 	0.253687	circle"<<"\n"<<
+                   "6 \"6\" ic red		0.132244 	0.29351	circle"<<"\n"<<
+                   "7 \"7\" ic red		0.0846954 	0.327434	circle"<<"\n"<<
+                   "8 \"8\" ic red		0.200594 	0.351032	circle"<<"\n"<<
+                   "9 \"9\" ic red		0.170877 	0.412979	circle"<<"\n"<<
+                   "10 \"10\" ic red		0.120357 	0.458702	circle"<<"\n"<<
+                   "11 \"11\" ic red		0.283804 	0.292035	circle"<<"\n"<<
+                   "12 \"12\" ic red		0.329866 	0.244838	circle"<<"\n"<<
+                   "13 \"13\" ic red		0.389302 	0.210914	circle"<<"\n"<<
+                   "14 \"14\" ic red		0.459138 	0.238938	circle"<<"\n"<<
+                   "15 \"15\" ic red		0.497771 	0.294985	circle"<<"\n"<<
+                   "16 \"16\" ic red		0.401189 	0.351032	circle"<<"\n"<<
+                   "17 \"17\" ic red		0.280832 	0.349558	circle"<<"\n"<<
+                   "18 \"18\" ic red		0.251114 	0.482301	circle"<<"\n"<<
+                   "19 \"19\" ic red		0.344725 	0.547198	circle"<<"\n"<<
+                   "20 \"20\" ic red		0.317979 	0.463127	circle"<<"\n"<<
+                   "21 \"21\" ic red		0.401189 	0.449852	circle"<<"\n"<<
+                   "22 \"22\" ic red		0.536404 	0.418879	circle"<<"\n"<<
+                   "23 \"23\" ic red		0.63893 	0.355457	circle"<<"\n"<<
+                   "24 \"24\" ic red		0.658247 	0.268437	circle"<<"\n"<<
+                   "25 \"25\" ic red		0.676077 	0.443953	circle"<<"\n"<<
+                   "26 \"26\" ic red		0.576523 	0.516224	circle"<<"\n"<<
+                   "27 \"27\" ic red		0.468053 	0.511799	circle"<<"\n"<<
+                   "28 \"28\" ic red		0.482912 	0.600295	circle"<<"\n"<<
+                   "29 \"29\" ic red		0.482912 	0.675516	circle"<<"\n"<<
+                   "30 \"30\" ic red		0.423477 	0.728614	circle"<<"\n"<<
+                   "31 \"31\" ic red		0.592868 	0.646018	circle"<<"\n"<<
+                   "32 \"32\" ic red		0.59584 	0.728614	circle"<<"\n"<<
+                   "33 \"33\" ic red		0.594354 	0.792035	circle"<<"\n"<<
+                   "34 \"34\" ic red		0.69688 	0.839233	circle"<<"\n"<<
+                   "35 \"35\" ic red		0.805349 	0.889381	circle"<<"\n"<<
+                   "36 \"36\" ic red		0.710253 	0.669617	circle"<<"\n"<<
+                   "37 \"37\" ic red		0.787519 	0.70944	circle"<<"\n"<<
+                   "38 \"38\" ic red		0.698366 	0.539823	circle"<<"\n"<<
+                   "39 \"39\" ic red		0.808321 	0.466077	circle"<<"\n"<<
+                   "40 \"40\" ic red		0.817236 	0.564897	circle"<<"\n"<<
+                   "*Edges "<<"\n"<<
+                   "1 2 1 c black"<<"\n"<<
+                   "2 5 1 c black"<<"\n"<<
+                   "3 5 1 c black"<<"\n"<<
+                   "4 5 1 c black"<<"\n"<<
+                   "5 6 1 c black"<<"\n"<<
+                   "5 11 1 c black"<<"\n"<<
+                   "7 8 1 c black"<<"\n"<<
+                   "8 9 1 c black"<<"\n"<<
+                   "8 11 1 c black"<<"\n"<<
+                   "9 10 1 c black"<<"\n"<<
+                   "11 16 1 c black"<<"\n"<<
+                   "12 16 1 c black"<<"\n"<<
+                   "13 14 1 c black"<<"\n"<<
+                   "14 16 1 c black"<<"\n"<<
+                   "15 16 1 c black"<<"\n"<<
+                   "16 17 1 c black"<<"\n"<<
+                   "16 20 1 c black"<<"\n"<<
+                   "16 21 1 c black"<<"\n"<<
+                   "16 22 1 c black"<<"\n"<<
+                   "18 20 1 c black"<<"\n"<<
+                   "19 20 1 c black"<<"\n"<<
+                   "19 28 1 c black"<<"\n"<<
+                   "22 23 1 c black"<<"\n"<<
+                   "22 25 1 c black"<<"\n"<<
+                   "22 26 1 c black"<<"\n"<<
+                   "23 24 1 c black"<<"\n"<<
+                   "26 27 1 c black"<<"\n"<<
+                   "26 28 1 c black"<<"\n"<<
+                   "26 31 1 c black"<<"\n"<<
+                   "26 38 1 c black"<<"\n"<<
+                   "28 29 1 c black"<<"\n"<<
+                   "29 30 1 c black"<<"\n"<<
+                   "31 32 1 c black"<<"\n"<<
+                   "31 36 1 c black"<<"\n"<<
+                   "32 33 1 c black"<<"\n"<<
+                   "32 34 1 c black"<<"\n"<<
+                   "33 34 1 c black"<<"\n"<<
+                   "34 35 1 c black"<<"\n"<<
+                   "36 37 1 c black"<<"\n"<<
+                   "38 39 1 c black"<<"\n"<<
                    "38 40 1 c black";
 
     }
     else if (fileName == "Stephenson&Zelen_5actors_6edges_IC_test_dataset.paj"){
         qDebug() << "Stephenson&Zelen_5actors_6edges_IC_test_dataset.paj";
-        outText<<"*Network Stephenson&Zelen_5_actors_6edges"<<endl<<
-                 "*Vertices 5"<<endl<<
-                 "1 \"1\" ic red		0.226804 	0.365782	circle"<<endl<<
-                 "2 \"2\" ic red		0.745214 	0.365782	circle"<<endl<<
-                 "3 \"3\" ic red		0.758468 	0.724189	circle"<<endl<<
-                 "4 \"4\" ic red		0.226804 	0.724189	circle"<<endl<<
-                 "5 \"5\" ic red		0.480118 	0.10472	circle"<<endl<<
-                 "*Matrix :1 non-weighted"<<endl<<
-                 "0 1 0 1 1 "<<endl<<
-                 "1 0 1 0 1 "<<endl<<
-                 "0 1 0 1 0 "<<endl<<
-                 "1 0 1 0 0 "<<endl<<
-                 "1 1 0 0 0"<<endl<<
-                 "*Matrix :2 weighted"<<endl<<
-                 "0 2 0 1 5 "<<endl<<
-                 "2 0 1 0 5 "<<endl<<
-                 "0 1 0 10 0 "<<endl<<
-                 "1 0 10 0 0 "<<endl<<
+        outText<<"*Network Stephenson&Zelen_5_actors_6edges"<<"\n"<<
+                 "*Vertices 5"<<"\n"<<
+                 "1 \"1\" ic red		0.226804 	0.365782	circle"<<"\n"<<
+                 "2 \"2\" ic red		0.745214 	0.365782	circle"<<"\n"<<
+                 "3 \"3\" ic red		0.758468 	0.724189	circle"<<"\n"<<
+                 "4 \"4\" ic red		0.226804 	0.724189	circle"<<"\n"<<
+                 "5 \"5\" ic red		0.480118 	0.10472	circle"<<"\n"<<
+                 "*Matrix :1 non-weighted"<<"\n"<<
+                 "0 1 0 1 1 "<<"\n"<<
+                 "1 0 1 0 1 "<<"\n"<<
+                 "0 1 0 1 0 "<<"\n"<<
+                 "1 0 1 0 0 "<<"\n"<<
+                 "1 1 0 0 0"<<"\n"<<
+                 "*Matrix :2 weighted"<<"\n"<<
+                 "0 2 0 1 5 "<<"\n"<<
+                 "2 0 1 0 5 "<<"\n"<<
+                 "0 1 0 10 0 "<<"\n"<<
+                 "1 0 10 0 0 "<<"\n"<<
                  "5 5 0 0 0 ";
 
     }
@@ -20091,137 +20036,137 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                         "Data derived from Stephenson & Zelen seminal 1989 paper where they introduced Information Centrality."
                     );
 
-        outText << "*Network Dunbar&Dunbar_Gelada_baboon_colony_H22a"<<endl<<
-                   "*Vertices 12"<<endl<<
-                   "1 \"Adult Female\" ic RGB729FCF		0.223061 	0.329258	circle"<<endl<<
-                   "2 \"2 years Male\" ic RGB729FCF		0.212487 	0.530562	circle"<<endl<<
-                   "3 \"Adult Female\" ic RGB729FCF		0.426989 	0.427873	circle"<<endl<<
-                   "4 \"Adult Female\" ic RGB729FCF		0.341893 	0.414018	circle"<<endl<<
-                   "5 \"Adult Male\" ic RGB729FCF		0.348943 	0.243684	circle"<<endl<<
-                   "6 \"3 years Female\" ic RGB729FCF		0.475327 	0.271394	circle"<<endl<<
-                   "7 \"3 years Male\" ic RGB729FCF		0.632931 	0.323553	circle"<<endl<<
-                   "8 \"Adult Female\" ic RGB729FCF		0.63142 	0.444988	circle"<<endl<<
-                   "9 \"1 year Male\" ic RGB729FCF		0.571501 	0.554197	circle"<<endl<<
-                   "10 \"3 years Female\" ic RGB729FCF		0.486908 	0.604727	circle"<<endl<<
-                   "11 \"2 years Female\" ic RGB729FCF		0.405337 	0.581092	circle"<<endl<<
-                   "12 \"1 year Male\" ic RGB729FCF		0.331319 	0.550937	circle"<<endl<<
-                   "*Arcs "<<endl<<
-                   "*Edges "<<endl<<
-                   "1 2 11 c #666666"<<endl<<
-                   "1 4 5 c #666666"<<endl<<
-                   "1 5 9 c #666666"<<endl<<
-                   "1 11 2 c #666666"<<endl<<
-                   "1 12 1 c #666666"<<endl<<
-                   "3 4 30 c #666666"<<endl<<
-                   "3 5 4 c #666666"<<endl<<
-                   "3 6 3 c #666666"<<endl<<
-                   "3 7 1 c #666666"<<endl<<
-                   "3 10 8 c #666666"<<endl<<
-                   "3 11 6 c #666666"<<endl<<
-                   "3 12 3 c #666666"<<endl<<
-                   "4 5 10 c #666666"<<endl<<
-                   "4 6 2 c #666666"<<endl<<
-                   "4 7 3 c #666666"<<endl<<
-                   "4 10 1 c #666666"<<endl<<
-                   "4 12 3 c #666666"<<endl<<
-                   "5 6 20 c #666666"<<endl<<
-                   "5 8 3 c #666666"<<endl<<
-                   "6 10 5 c #666666"<<endl<<
-                   "6 12 1 c #666666"<<endl<<
-                   "7 8 17 c #666666"<<endl<<
-                   "8 9 2 c #666666"<<endl<<
+        outText << "*Network Dunbar&Dunbar_Gelada_baboon_colony_H22a"<<"\n"<<
+                   "*Vertices 12"<<"\n"<<
+                   "1 \"Adult Female\" ic RGB729FCF		0.223061 	0.329258	circle"<<"\n"<<
+                   "2 \"2 years Male\" ic RGB729FCF		0.212487 	0.530562	circle"<<"\n"<<
+                   "3 \"Adult Female\" ic RGB729FCF		0.426989 	0.427873	circle"<<"\n"<<
+                   "4 \"Adult Female\" ic RGB729FCF		0.341893 	0.414018	circle"<<"\n"<<
+                   "5 \"Adult Male\" ic RGB729FCF		0.348943 	0.243684	circle"<<"\n"<<
+                   "6 \"3 years Female\" ic RGB729FCF		0.475327 	0.271394	circle"<<"\n"<<
+                   "7 \"3 years Male\" ic RGB729FCF		0.632931 	0.323553	circle"<<"\n"<<
+                   "8 \"Adult Female\" ic RGB729FCF		0.63142 	0.444988	circle"<<"\n"<<
+                   "9 \"1 year Male\" ic RGB729FCF		0.571501 	0.554197	circle"<<"\n"<<
+                   "10 \"3 years Female\" ic RGB729FCF		0.486908 	0.604727	circle"<<"\n"<<
+                   "11 \"2 years Female\" ic RGB729FCF		0.405337 	0.581092	circle"<<"\n"<<
+                   "12 \"1 year Male\" ic RGB729FCF		0.331319 	0.550937	circle"<<"\n"<<
+                   "*Arcs "<<"\n"<<
+                   "*Edges "<<"\n"<<
+                   "1 2 11 c #666666"<<"\n"<<
+                   "1 4 5 c #666666"<<"\n"<<
+                   "1 5 9 c #666666"<<"\n"<<
+                   "1 11 2 c #666666"<<"\n"<<
+                   "1 12 1 c #666666"<<"\n"<<
+                   "3 4 30 c #666666"<<"\n"<<
+                   "3 5 4 c #666666"<<"\n"<<
+                   "3 6 3 c #666666"<<"\n"<<
+                   "3 7 1 c #666666"<<"\n"<<
+                   "3 10 8 c #666666"<<"\n"<<
+                   "3 11 6 c #666666"<<"\n"<<
+                   "3 12 3 c #666666"<<"\n"<<
+                   "4 5 10 c #666666"<<"\n"<<
+                   "4 6 2 c #666666"<<"\n"<<
+                   "4 7 3 c #666666"<<"\n"<<
+                   "4 10 1 c #666666"<<"\n"<<
+                   "4 12 3 c #666666"<<"\n"<<
+                   "5 6 20 c #666666"<<"\n"<<
+                   "5 8 3 c #666666"<<"\n"<<
+                   "6 10 5 c #666666"<<"\n"<<
+                   "6 12 1 c #666666"<<"\n"<<
+                   "7 8 17 c #666666"<<"\n"<<
+                   "8 9 2 c #666666"<<"\n"<<
                    "8 10 7 c #666666";
     }
     else if (fileName=="Wasserman_Faust_7actors_star_circle_line_graphs.paj") {
         qDebug () << "Wasserman_Faust_7actors_star_circle_line_graphs.paj";
         datasetDescription=tr("Wasserman & Faust's 7 actors graphs\n\n" );
-        outText<< "*Network 7actors-wasserman-test-net-all"<<endl<<
-                  "*Vertices 7"<<endl<<
-                  "1 \"1\" ic red         0.441826        0.426254        circle"<<endl<<
-                  "2 \"2\" ic red         0.584683        0.19469 circle"<<endl<<
-                  "3 \"3\" ic red         0.71134         0.417404        circle"<<endl<<
-                  "4 \"4\" ic red         0.664212        0.687316        circle"<<endl<<
-                  "5 \"5\" ic red         0.310751        0.70944 circle"<<endl<<
-                  "6 \"6\" ic red         0.157585        0.427729        circle"<<endl<<
-                  "7 \"7\" ic red         0.248895        0.193215        circle"<<endl<<
-                  "*Matrix :1 star"<<endl<<
-                  "0 1 1 1 1 1 1 "<<endl<<
-                  "1 0 0 0 0 0 0 "<<endl<<
-                  "1 0 0 0 0 0 0 "<<endl<<
-                  "1 0 0 0 0 0 0 "<<endl<<
-                  "1 0 0 0 0 0 0 "<<endl<<
-                  "1 0 0 0 0 0 0 "<<endl<<
-                  "1 0 0 0 0 0 0"<<endl<<
-                  "*Matrix :2 circle"<<endl<<
-                  "0 1 0 0 0 0 1 "<<endl<<
-                  "1 0 1 0 0 0 0 "<<endl<<
-                  "0 1 0 1 0 0 0 "<<endl<<
-                  "0 0 1 0 1 0 0 "<<endl<<
-                  "0 0 0 1 0 1 0 "<<endl<<
-                  "0 0 0 0 1 0 1 "<<endl<<
-                  "1 0 0 0 0 1 0 "<<endl<<
-                  "*Matrix :3 line"<<endl<<
-                  "0 1 1 0 0 0 0 "<<endl<<
-                  "1 0 0 1 0 0 0 "<<endl<<
-                  "1 0 0 0 1 0 0 "<<endl<<
-                  "0 1 0 0 0 1 0 "<<endl<<
-                  "0 0 1 0 0 0 1 "<<endl<<
-                  "0 0 0 1 0 0 0 "<<endl<<
+        outText<< "*Network 7actors-wasserman-test-net-all"<<"\n"<<
+                  "*Vertices 7"<<"\n"<<
+                  "1 \"1\" ic red         0.441826        0.426254        circle"<<"\n"<<
+                  "2 \"2\" ic red         0.584683        0.19469 circle"<<"\n"<<
+                  "3 \"3\" ic red         0.71134         0.417404        circle"<<"\n"<<
+                  "4 \"4\" ic red         0.664212        0.687316        circle"<<"\n"<<
+                  "5 \"5\" ic red         0.310751        0.70944 circle"<<"\n"<<
+                  "6 \"6\" ic red         0.157585        0.427729        circle"<<"\n"<<
+                  "7 \"7\" ic red         0.248895        0.193215        circle"<<"\n"<<
+                  "*Matrix :1 star"<<"\n"<<
+                  "0 1 1 1 1 1 1 "<<"\n"<<
+                  "1 0 0 0 0 0 0 "<<"\n"<<
+                  "1 0 0 0 0 0 0 "<<"\n"<<
+                  "1 0 0 0 0 0 0 "<<"\n"<<
+                  "1 0 0 0 0 0 0 "<<"\n"<<
+                  "1 0 0 0 0 0 0 "<<"\n"<<
+                  "1 0 0 0 0 0 0"<<"\n"<<
+                  "*Matrix :2 circle"<<"\n"<<
+                  "0 1 0 0 0 0 1 "<<"\n"<<
+                  "1 0 1 0 0 0 0 "<<"\n"<<
+                  "0 1 0 1 0 0 0 "<<"\n"<<
+                  "0 0 1 0 1 0 0 "<<"\n"<<
+                  "0 0 0 1 0 1 0 "<<"\n"<<
+                  "0 0 0 0 1 0 1 "<<"\n"<<
+                  "1 0 0 0 0 1 0 "<<"\n"<<
+                  "*Matrix :3 line"<<"\n"<<
+                  "0 1 1 0 0 0 0 "<<"\n"<<
+                  "1 0 0 1 0 0 0 "<<"\n"<<
+                  "1 0 0 0 1 0 0 "<<"\n"<<
+                  "0 1 0 0 0 1 0 "<<"\n"<<
+                  "0 0 1 0 0 0 1 "<<"\n"<<
+                  "0 0 0 1 0 0 0 "<<"\n"<<
                   "0 0 0 0 1 0 0";
     }
     else if (fileName == "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek"){
         datasetDescription=tr("Wasserman & Faust's Countries Trade Data (manufactured goods)\n\n" );
         qDebug()<< "		Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek written... ";
-        outText<< "*Network Countries_Trade_Basic_Manufactured_Goods" << endl <<
-                  "*Vertices      24" << endl <<
-                  "1 \"ALG\"     0.5408 0.0347" << endl <<
-                  "2 \"ARG\"     0.9195 0.1080" << endl <<
-                  "3 \"BRA\"     0.7626 0.4348" << endl <<
-                  "4 \"CHI\"     0.5190 0.2900" << endl <<
-                  "5 \"CZE\"     0.4734 0.5176" << endl <<
-                  "6 \"ECU\"     0.9669 0.3401" << endl <<
-                  "7 \"EGY\"     0.1749 0.9478" << endl <<
-                  "8 \"ETH\"     0.4757 0.9701" << endl <<
-                  "9 \"FIN\"     0.6789 0.5941" << endl <<
-                  "10 \"HON\"     0.9499 0.6624" << endl <<
-                  "11 \"IND\"     0.0638 0.2404" << endl <<
-                  "12 \"ISR\"     0.6606 0.1142" << endl <<
-                  "13 \"JAP\"     0.4718 0.4038" << endl <<
-                  "14 \"LIB\"     0.9210 0.9313" << endl <<
-                  "15 \"MAD\"     0.7077 0.9150" << endl <<
-                  "16 \"NZ\"      0.0501 0.6893" << endl <<
-                  "17 \"PAK\"     0.3653 0.3211" << endl <<
-                  "18 \"SPA\"     0.6454 0.3687" << endl <<
-                  "19 \"SWI\"     0.5480 0.7162" << endl <<
-                  "20 \"SYR\"     0.2465 0.0501" << endl <<
-                  "21 \"TAI\"     0.3805 0.6520" << endl <<
-                  "22 \"UK\"      0.5921 0.4555" << endl <<
-                  "23 \"US\"      0.5464 0.5983" << endl <<
-                  "24 \"YUG\"     0.3576 0.4845" << endl <<
-                  "*Matrix :3 \"ws6 - Basic manufactured goods\"" << endl <<
-                  "0 0 0 1 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1" << endl <<
-                  "1 0 1 1 0 1 0 0 1 0 1 1 1 0 0 0 1 1 1 0 1 0 1 0" << endl <<
-                  "1 1 0 1 1 1 1 0 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1" << endl <<
-                  "1 1 1 0 1 0 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1" << endl <<
-                  "1 1 1 1 0 1 1 1 1 1 1 0 1 1 0 1 1 1 1 1 1 1 1 1" << endl <<
-                  "0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0" << endl <<
-                  "0 0 0 0 1 0 0 1 1 0 0 0 1 0 0 0 0 1 1 0 0 1 1 1" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0" << endl <<
-                  "1 1 1 1 1 1 1 1 0 1 1 1 1 0 0 1 1 1 1 1 1 1 1 1" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0" << endl <<
-                  "1 0 0 1 1 0 1 0 1 0 0 0 1 0 0 1 1 1 1 0 1 1 1 1" << endl <<
-                  "0 1 0 0 0 0 0 1 1 0 0 0 1 0 0 1 0 1 1 0 1 1 1 1" << endl <<
-                  "1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0" << endl <<
-                  "1 0 0 1 0 0 1 0 0 0 1 0 1 0 0 0 1 1 0 0 1 1 1 1" << endl <<
-                  "0 0 0 1 1 0 0 0 1 0 1 0 1 1 0 1 0 1 1 1 1 1 1 0" << endl <<
-                  "1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1" << endl <<
-                  "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "0 0 1 1 0 0 0 0 1 0 1 1 1 0 0 1 1 1 1 1 0 1 1 1" << endl <<
-                  "1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1" << endl <<
-                  "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1" << endl <<
+        outText<< "*Network Countries_Trade_Basic_Manufactured_Goods" << "\n" <<
+                  "*Vertices      24" << "\n" <<
+                  "1 \"ALG\"     0.5408 0.0347" << "\n" <<
+                  "2 \"ARG\"     0.9195 0.1080" << "\n" <<
+                  "3 \"BRA\"     0.7626 0.4348" << "\n" <<
+                  "4 \"CHI\"     0.5190 0.2900" << "\n" <<
+                  "5 \"CZE\"     0.4734 0.5176" << "\n" <<
+                  "6 \"ECU\"     0.9669 0.3401" << "\n" <<
+                  "7 \"EGY\"     0.1749 0.9478" << "\n" <<
+                  "8 \"ETH\"     0.4757 0.9701" << "\n" <<
+                  "9 \"FIN\"     0.6789 0.5941" << "\n" <<
+                  "10 \"HON\"     0.9499 0.6624" << "\n" <<
+                  "11 \"IND\"     0.0638 0.2404" << "\n" <<
+                  "12 \"ISR\"     0.6606 0.1142" << "\n" <<
+                  "13 \"JAP\"     0.4718 0.4038" << "\n" <<
+                  "14 \"LIB\"     0.9210 0.9313" << "\n" <<
+                  "15 \"MAD\"     0.7077 0.9150" << "\n" <<
+                  "16 \"NZ\"      0.0501 0.6893" << "\n" <<
+                  "17 \"PAK\"     0.3653 0.3211" << "\n" <<
+                  "18 \"SPA\"     0.6454 0.3687" << "\n" <<
+                  "19 \"SWI\"     0.5480 0.7162" << "\n" <<
+                  "20 \"SYR\"     0.2465 0.0501" << "\n" <<
+                  "21 \"TAI\"     0.3805 0.6520" << "\n" <<
+                  "22 \"UK\"      0.5921 0.4555" << "\n" <<
+                  "23 \"US\"      0.5464 0.5983" << "\n" <<
+                  "24 \"YUG\"     0.3576 0.4845" << "\n" <<
+                  "*Matrix :3 \"ws6 - Basic manufactured goods\"" << "\n" <<
+                  "0 0 0 1 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1" << "\n" <<
+                  "1 0 1 1 0 1 0 0 1 0 1 1 1 0 0 0 1 1 1 0 1 0 1 0" << "\n" <<
+                  "1 1 0 1 1 1 1 0 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1" << "\n" <<
+                  "1 1 1 0 1 0 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1" << "\n" <<
+                  "1 1 1 1 0 1 1 1 1 1 1 0 1 1 0 1 1 1 1 1 1 1 1 1" << "\n" <<
+                  "0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0" << "\n" <<
+                  "0 0 0 0 1 0 0 1 1 0 0 0 1 0 0 0 0 1 1 0 0 1 1 1" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0" << "\n" <<
+                  "1 1 1 1 1 1 1 1 0 1 1 1 1 0 0 1 1 1 1 1 1 1 1 1" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0" << "\n" <<
+                  "1 0 0 1 1 0 1 0 1 0 0 0 1 0 0 1 1 1 1 0 1 1 1 1" << "\n" <<
+                  "0 1 0 0 0 0 0 1 1 0 0 0 1 0 0 1 0 1 1 0 1 1 1 1" << "\n" <<
+                  "1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0" << "\n" <<
+                  "1 0 0 1 0 0 1 0 0 0 1 0 1 0 0 0 1 1 0 0 1 1 1 1" << "\n" <<
+                  "0 0 0 1 1 0 0 0 1 0 1 0 1 1 0 1 0 1 1 1 1 1 1 0" << "\n" <<
+                  "1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1" << "\n" <<
+                  "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1" << "\n" <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << "\n" <<
+                  "0 0 1 1 0 0 0 0 1 0 1 1 1 0 0 1 1 1 1 1 0 1 1 1" << "\n" <<
+                  "1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1" << "\n" <<
+                  "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1" << "\n" <<
                   "1 1 0 1 1 0 1 1 1 0 1 1 1 0 0 1 1 1 1 1 1 1 1 0";
         qDebug()<< "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek written... ";
     }
@@ -20234,34 +20179,34 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                 "This small graph serves as a useful example and counterexample \n"
                               "for many problems in graph theory. ");
 
-        outText<< "*Network petersen"<<endl<<
-                  "*Vertices 10"<<endl<<
-                  "1 \"blue\" ic RGB5555FF      0.301331  0.398259  circle"<<endl<<
-                  "2 \"red\" ic red             0.474335  0.238302  circle"<<endl<<
-                  "3 \"blue\" ic RGB5555FF      0.652082  0.407722  circle"<<endl<<
-                  "4 \"green\" ic RGB00FF00     0.601418  0.681758  circle"<<endl<<
-                  "5 \"red\" ic red             0.348936  0.677763  circle"<<endl<<
-                  "6 \"green\" ic RGB00FF00     0.410646  0.581066  circle"<<endl<<
-                  "7 \"red\" ic red             0.534221  0.583243  circle"<<endl<<
-                  "8 \"red\" ic red             0.561787  0.437432  circle"<<endl<<
-                  "9 \"blue\" ic RGB5555FF      0.475285  0.351469  circle"<<endl<<
-                  "10 \"green\" ic RGB00FF00    0.38308   0.436344  circle"<<endl<<
-                  "*Arcs "<<endl<<
-                  "*Edges "<<endl<<
-                  "1 2 1 c black"<<endl<<
-                  "1 5 1 c black"<<endl<<
-                  "1 10 1 c black"<<endl<<
-                  "2 3 1 c black"<<endl<<
-                  "2 9 1 c black"<<endl<<
-                  "3 4 1 c black"<<endl<<
-                  "3 8 1 c black"<<endl<<
-                  "4 5 1 c black"<<endl<<
-                  "4 7 1 c black"<<endl<<
-                  "5 6 1 c black"<<endl<<
-                  "6 8 1 c black"<<endl<<
-                  "6 9 1 c black"<<endl<<
-                  "7 9 1 c black"<<endl<<
-                  "7 10 1 c black"<<endl<<
+        outText<< "*Network petersen"<<"\n"<<
+                  "*Vertices 10"<<"\n"<<
+                  "1 \"blue\" ic RGB5555FF      0.301331  0.398259  circle"<<"\n"<<
+                  "2 \"red\" ic red             0.474335  0.238302  circle"<<"\n"<<
+                  "3 \"blue\" ic RGB5555FF      0.652082  0.407722  circle"<<"\n"<<
+                  "4 \"green\" ic RGB00FF00     0.601418  0.681758  circle"<<"\n"<<
+                  "5 \"red\" ic red             0.348936  0.677763  circle"<<"\n"<<
+                  "6 \"green\" ic RGB00FF00     0.410646  0.581066  circle"<<"\n"<<
+                  "7 \"red\" ic red             0.534221  0.583243  circle"<<"\n"<<
+                  "8 \"red\" ic red             0.561787  0.437432  circle"<<"\n"<<
+                  "9 \"blue\" ic RGB5555FF      0.475285  0.351469  circle"<<"\n"<<
+                  "10 \"green\" ic RGB00FF00    0.38308   0.436344  circle"<<"\n"<<
+                  "*Arcs "<<"\n"<<
+                  "*Edges "<<"\n"<<
+                  "1 2 1 c black"<<"\n"<<
+                  "1 5 1 c black"<<"\n"<<
+                  "1 10 1 c black"<<"\n"<<
+                  "2 3 1 c black"<<"\n"<<
+                  "2 9 1 c black"<<"\n"<<
+                  "3 4 1 c black"<<"\n"<<
+                  "3 8 1 c black"<<"\n"<<
+                  "4 5 1 c black"<<"\n"<<
+                  "4 7 1 c black"<<"\n"<<
+                  "5 6 1 c black"<<"\n"<<
+                  "6 8 1 c black"<<"\n"<<
+                  "6 9 1 c black"<<"\n"<<
+                  "7 9 1 c black"<<"\n"<<
+                  "7 10 1 c black"<<"\n"<<
                   "8 10 1 c black";
     }
     file.close();
@@ -20288,17 +20233,16 @@ void Graph::writeMatrix (const QString &fn,
                          const QString &varLocation,
                          const bool &simpler) {
 
+    qDebug() << "Writing specified matrix:" << matrix << "to file:" << fn << " -- dropIsolates:"<< dropIsolates;
+
     QElapsedTimer computationTimer;
     computationTimer.start();
 
     Q_UNUSED(simpler);
-    qDebug()<<"Graph::writeMatrix() - matrix" << matrix
-           << "to" << fn
-           << "dropIsolates"<<dropIsolates;
 
     QFile file( fn );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open (for writing) file:" << fn;
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
@@ -20745,7 +20689,7 @@ void Graph::writeMatrixHTMLTable(QTextStream& outText,
 
 
 
-    outText << qSetFieldWidth(0) << endl ;
+    outText << qSetFieldWidth(0) << "\n" ;
 
 
     outText << "<p>"
@@ -20798,7 +20742,7 @@ void Graph::writeMatrixAdjacencyTo(QTextStream& os,
             else
                 os << "0 ";
         }
-        os << endl;
+        os << "\n";
     }
 
 }
@@ -20814,13 +20758,14 @@ void Graph::writeMatrixAdjacencyTo(QTextStream& os,
 void Graph::writeMatrixAdjacency (const QString fn,
                                   const bool &markDiag) {
 
+    qDebug() << "Writing adjacency matrix to file:" << fn;
+
     QElapsedTimer computationTimer;
     computationTimer.start();
 
-    qDebug()<<"Graph::writeMatrixAdjacency() to : " << fn;
     QFile file( fn );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
-        qDebug()<< "Error opening file!";
+        qDebug () << "Could not open (for writing) file:" << fn;
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
@@ -20952,17 +20897,20 @@ void Graph::writeMatrixAdjacency (const QString fn,
 */
 void Graph::writeMatrixAdjacencyPlot (const QString fn,
                                       const bool &simpler) {
+
+    qDebug() << "Writing adjacency matrix plot to file:" << fn;
+
     QElapsedTimer computationTimer;
     computationTimer.start();
 
-    qDebug()<<"Graph::writeMatrixAdjacencyPlot() to : " << fn;
     QFile file( fn );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug () << "Could not open (for writing) file:" << fn;
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
-    QTextStream outText( &file );
-    outText.setCodec("UTF-8");
+    QTextStream outText( &file ); outText.setCodec("UTF-8");
+
     VList::const_iterator it, it1;
     int sum=0;
     int rowCount=0;
@@ -21070,7 +21018,7 @@ void Graph::writeMatrixAdjacencyPlot (const QString fn,
                 }
 
             }
-            outText << "<br>"<<endl;
+            outText << "<br>"<<"\n";
         }
         outText << "</p>";
     }
@@ -21257,29 +21205,31 @@ bool Graph::graphMatrixAdjacencyInvert(const QString &method){
 void Graph::writeMatrixAdjacencyInvert(const QString &fn,
                                        const QString &method)
 {
-    qDebug("Graph::writeMatrixAdjacencyInvert() ");
+    qDebug() << "Writing inverse of the adjacency matrix to file:" << fn;
+
     int i=0, j=0;
     VList::const_iterator it, it1;
     QFile file( fn );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug () << "Could not open (for writing) file:" << fn;
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
-    QTextStream outText( &file );
-    outText.setCodec("UTF-8");
-    outText << "-Social Network Visualizer "<<  VERSION <<endl;
-    outText << tr("Network name: ")<< graphName()<< endl<<endl;
-    outText << "Inverse Matrix: \n";
+    QTextStream outText( &file ); outText.setCodec("UTF-8");
+
+    outText << "-Social Network Visualizer "<<  VERSION << "\n";
+    outText << tr("Network name: ")<< graphName()<< "\n\n";
+    outText << tr("Inverse Matrix:") << "\n";
     if (!graphMatrixAdjacencyInvert(method)) {
-        outText << endl<< " The adjacency matrix is singular.";
+        outText << "\n"<< " The adjacency matrix is singular.";
         file.close();
         return;
     }
     int isolatedVertices = verticesListIsolated().count();
     if (  isolatedVertices  > 0  )
-        outText << endl<< "Dropped "<< isolatedVertices
+        outText << "\n"<< "Dropped "<< isolatedVertices
                 << " isolated vertices"
-                    << endl<< endl;
+                    << "\n\n";
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() || (*it)->isIsolated() )
             continue;
@@ -21292,8 +21242,8 @@ void Graph::writeMatrixAdjacencyInvert(const QString &fn,
             j++;
         }
         i++;
-        outText << endl;
-        qDebug() << endl;
+        outText << "\n";
+        qDebug() << "\n";
     }
 
     file.close();
@@ -21307,19 +21257,18 @@ void Graph::writeMatrixAdjacencyInvert(const QString &fn,
  * @param fn
  */
 void Graph::writeMatrixDegreeText(const QString &fn) {
-    qDebug("Graph::writeMatrixDegreeText() ");
-    //    int i=0, j=0;
-    //    VList::const_iterator it, it1;
+
+    qDebug() << "Writing degree matrix to file:" << fn;
 
     graphMatrixAdjacencyCreate();
 
     QFile file( fn );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug () << "Could not open (for writing) file:" << fn;
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
-    QTextStream outText( &file );
-    outText.setCodec("UTF-8");
+    QTextStream outText( &file ); outText.setCodec("UTF-8");
 
     outText << AM.degreeMatrix();
 
@@ -21335,19 +21284,18 @@ void Graph::writeMatrixDegreeText(const QString &fn) {
  * @param fn
  */
 void Graph::writeMatrixLaplacianPlainText(const QString &fn) {
-    qDebug("Graph::writeMatrixLaplacianPlainText() ");
-    //    int i=0, j=0;
-    //    VList::const_iterator it, it1;
+
+    qDebug() << "Writing Laplacian matrix to file:" << fn;
 
     graphMatrixAdjacencyCreate();
 
     QFile file( fn );
     if ( !file.open( QIODevice::WriteOnly | QIODevice::Text ) )  {
+        qDebug () << "Could not open (for writing) file:" << fn;
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
-    QTextStream outText( &file );
-    outText.setCodec("UTF-8");
+    QTextStream outText( &file ); outText.setCodec("UTF-8");
 
     outText << AM.laplacianMatrix();
 

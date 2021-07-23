@@ -3686,7 +3686,7 @@ template<typename T> void print_queue(T& q) {
         qDebug() << q.top().key << " value: " << q.top().value << " ";
         q.pop();
     }
-    qDebug() << endl;
+    qDebug() << "\n";
 }
 
 
@@ -4067,7 +4067,7 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
         str= ts.readLine().simplified().trimmed();
 
         qDebug()<< "Parser::loadEdgeListSimple() - line "  << fileLine
-                << endl << str;
+                << "\n" << str;
 
         if ( isComment(str) ) {
             continue;
@@ -4126,7 +4126,7 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
         str=str.simplified();
 
         qDebug()<< "Parser::loadEdgeListSimple() - line" << fileLine
-                << endl << str;
+                << "\n" << str;
 
         if ( isComment(str) )
             continue;

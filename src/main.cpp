@@ -31,7 +31,6 @@
 #include <QLocale>
 #include <QSurfaceFormat>
 #include <QCommandLineParser>
-#include <iostream>			//used for cout
 #include "mainwindow.h"		//main application window
 
 using namespace std;
@@ -58,12 +57,19 @@ int main(int argc, char *argv[])
     //
     QString sheetName = "default.qss";
     QFile file(":/qss/" + sheetName );
-    file.open(QFile::ReadOnly);
-    QString styleSheet = QString::fromLatin1(file.readAll());
+
+    if (!file.open(QFile::ReadOnly)) {
+        qDebug () << "Could not open stylesheet file:" << file.fileName();
+    }
+    else {
+        // Read stylesheet
+        QString styleSheet = QString::fromLatin1(file.readAll());
+        // Apply our default stylesheet to the app
+        qApp->setStyleSheet(styleSheet);
+
+    }
     file.close();
 
-    // Apply our default stylesheet to the app
-    qApp->setStyleSheet(styleSheet);
 
     //
     // Setup app translations

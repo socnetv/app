@@ -191,7 +191,7 @@ void WebCrawler::parse(QNetworkReply *reply){
 
     }
 
-    //    qDebug() <<  " \npage contents: " << page << endl << endl;
+    //    qDebug() <<  " \npage contents: " << page << "\n\n";
 
     // We only search inside <body>...</body> tags
     qDebug() << "Finding <body></body> tags";

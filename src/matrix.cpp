@@ -898,8 +898,8 @@ void Matrix::powerIteration (
 
 
         qDebug() << "Matrix::powerIteration() - end of iteration"
-                 << iter << endl
-                 << "x" << x  << endl
+                 << iter << "\n"
+                 << "x" << x  << "\n"
                  << "distance from previous x " << distance
                  << "sum" << xsum
                  << "xmax" << xmax
@@ -1186,7 +1186,7 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d) {
         }
 
 
-//           stream << endl << "at j " << j+1 << " matrix a = LU = " << a ;
+//           stream << "\n" << "at j " << j+1 << " matrix a = LU = " << a ;
     }  // Go back for the next column in the reduction.
 
 
@@ -2382,7 +2382,9 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
  * @return
  */
 QTextStream& operator <<  (QTextStream& os, Matrix& m){
-    qDebug() << "Matrix: << Matrix";
+
+    qDebug() << "Printing matrix m to provided output stream...";
+
     int actorNumber=1, fieldWidth = 13;
     qreal maxVal, minVal, maxAbsVal, element;
     bool hasRealNumbers=false;
