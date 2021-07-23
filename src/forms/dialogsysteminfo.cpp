@@ -31,6 +31,7 @@
 #include <QPushButton>
 #include <QScreen>
 #include <QSysInfo>
+#include <QSslSocket>
 
 #ifndef QT_NO_OPENGL
 #include <QOpenGLFunctions>
@@ -69,7 +70,22 @@ DialogSystemInfo::DialogSystemInfo (QWidget *parent) :
     information += "YOUR SYSTEM\n\n";
 
     information += "OS: " + QSysInfo::prettyProductName() + " Kernel: " + QSysInfo::kernelType() + " " + QSysInfo::kernelVersion() + "\n";
-    information += "Architecture: " + QSysInfo::currentCpuArchitecture();
+    information += "Architecture: " + QSysInfo::currentCpuArchitecture() + "\n";
+    if ( QSslSocket::supportsSsl() ) {
+        information += "SSL support: yes \n";
+        information += "SSL version (build): " +  QSslSocket::sslLibraryBuildVersionString() + "\n";
+        information += "SSL version (run-time): " + QSslSocket::sslLibraryVersionString() + "\n";
+
+    }
+    else {
+        information += "SSL support: NO\n";
+    }
+
+    information += "\nLibrary Paths: \n" ;
+    foreach(QString libPath, QCoreApplication::libraryPaths() ) {
+        information += libPath + "\n";
+    }
+
     information += "\n\n";
 
 

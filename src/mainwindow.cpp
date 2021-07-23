@@ -170,7 +170,7 @@ MainWindow::MainWindow(const QString & m_fileName, const bool &forceProgress, co
     printer = new QPrinter;
     printerPDF = new QPrinter;
 
-    // create our network manager object
+    // Create our network manager object
     networkManager = new QNetworkAccessManager;
 
     initView();         // Init our network view
@@ -216,7 +216,7 @@ MainWindow::MainWindow(const QString & m_fileName, const bool &forceProgress, co
  */
 MainWindow::~MainWindow() {
 
-    qDebug() << "Destruct function running...";
+    qDebug() << "Destructor for MW running...";
 
     // Call init to clear all maps etc.
     initApp();
@@ -254,19 +254,23 @@ MainWindow::~MainWindow() {
  */
 void MainWindow::closeEvent( QCloseEvent* ce ) {
 
+    //
     // Show a status message
-    qDebug() << "Received closing event. Show a status message to user...";
+    //
+    qDebug() << "Received close event. Show a status message to user...";
     statusMessage( tr("Closing SocNetV. Bye!") );
 
-    // Check if the graph has been save
+    //
+    // Check if the graph has been saved
+    //
     bool userCancelled=false;
-    qDebug() << "Checking if Graph is saved...";
+    qDebug() << "Checking if current graph is saved...";
     if ( activeGraph->graphSaved()  )  {
         ce->accept();
-        qDebug() << "Graph is already saved. ";
+        qDebug() << "Graph is already saved. Nothing to do.";
     }
     else {
-        qDebug() << "Graph NOT saved. Asking the user.";
+        qDebug() << "Graph NOT saved. Asking the user what to do.";
         switch( slotHelpMessageToUser(
                     USER_MSG_QUESTION,
                     tr("Save changes"),
@@ -293,12 +297,20 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
         }
     }
     if (userCancelled) {
+        qDebug() << "User canceled (while saving graph). Returning without closing the app.";
         return;
     }
-    qDebug() << "Calling terminateThreads()...";
+
+    //
+    // Terminate running threads
+    //
+    qDebug() << "I will terminate any running threads...";
     terminateThreads("closeEvent()");
 
-    qDebug() << "Deleting other objects/pointers...";
+    //
+    // Delete other objects and pointers
+    //
+    qDebug() << "Deleting other objects and pointers...";
 
     qDebug() << "Deleting printer";
     delete printer;
@@ -320,7 +332,7 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
     }
     m_textEditors.clear();
 
-    qDebug()<<"Clearing my" <<m_networkRequests.size()<<"network requests.";
+    qDebug()<<"Clearing network requests.";
     foreach ( QNetworkReply *r, m_networkRequests) {
         r->close();
 //        delete r;
@@ -352,7 +364,7 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
  * @param reason
  */
 void MainWindow::terminateThreads(const QString &reason) {
-    qDebug() << "Terminating threads started from MW. Reason:" << reason
+    qDebug() << "Terminating threads (those started from MW). Reason:" << reason
              <<" Checking if graphThread is running...";
     if (graphThread.isRunning() ) {
         qDebug() << "graphThread running."
@@ -375,8 +387,8 @@ void MainWindow::resizeEvent( QResizeEvent *e ) {
 
     int w0=e->oldSize().width();
     int h0=e->oldSize().height();
-    int w=width(); // e->size().width();
-    int h=height(); //e->size().height();
+    int w=width();
+    int h=height();
     qDebug () << "Old size w x h:" << w0 << " x " << h0
               << "New size w x h:" << w << " x " << h;
 
@@ -392,7 +404,6 @@ void MainWindow::resizeEvent( QResizeEvent *e ) {
 /**
   * @brief
   * Reads user-defined settings (or uses defaults) and initializes some app settings
-  *
   */
 QMap<QString,QString> MainWindow::initSettings(const int &debugLevel, const bool &forceProgress) {
 
@@ -541,11 +552,6 @@ QMap<QString,QString> MainWindow::initSettings(const int &debugLevel, const bool
     else {
         slotOptionsDebugMessages(false);
     }
-
-    //    // restore user setting for debug messages
-//    printDebug = (appSettings["printDebug"] == "true") ? true:false;
-
-
 
 
     //
@@ -13955,14 +13961,12 @@ void MainWindow::slotOptionsDebugMessages(bool toggle){
     if (!toggle)   {
         qDebug()<<"Disabling debugging messages";
         appSettings["printDebug"] = "false";
-        // printDebug=false; // deprecated/obsolete
         QLoggingCategory::setFilterRules("default.debug=false\n"
                                              "socnetv.debug=false");
         statusMessage( tr("Debug messages off.") );
     }
     else  {
         appSettings["printDebug"] = "true";
-        // printDebug=true; // deprecated/obsolete
         QLoggingCategory::setFilterRules("default.debug=true\n"
                                              "socnetv.debug=true");
         qDebug()<<"Enabled debugging messages";
@@ -13974,7 +13978,7 @@ void MainWindow::slotOptionsDebugMessages(bool toggle){
 
 
 /**
- * @brief MainWindow::slotOptionsBackgroundColor
+ * @brief
  * Called from Options menu and Settings dialog
  * @param color QColor
  */
@@ -14003,7 +14007,7 @@ void MainWindow::slotOptionsBackgroundColor (QColor color){
 
 
 /**
- * @brief MainWindow::slotOptionsBackgroundImageSelect
+ * @brief
  * Toggles displaying a custom image in the background
  * If toggle = true, presents a dialog to select an image file
  * Called from app menu option
@@ -14033,7 +14037,7 @@ void MainWindow::slotOptionsBackgroundImageSelect(bool toggle) {
 
 
 /**
- * @brief MainWindow::slotOptionsBackgroundImage
+ * @brief
  * Enables/disables displaying a user-defined custom image in the background
  * Called from Settings Dialog and
  */
@@ -14115,7 +14119,7 @@ void MainWindow::slotOptionsWindowStatusbarVisibility(bool toggle) {
 
 
 /**
- * @brief MainWindow::slotOptionsWindowLeftPanelVisibility
+ * @brief Toggles left panel
  * @param toggle
  */
 void MainWindow::slotOptionsWindowLeftPanelVisibility(bool toggle) {
@@ -14136,7 +14140,7 @@ void MainWindow::slotOptionsWindowLeftPanelVisibility(bool toggle) {
 
 
 /**
- * @brief MainWindow::slotOptionsWindowRightPanelVisibility
+ * @brief Toggles right panel
  * @param toggle
  */
 void MainWindow::slotOptionsWindowRightPanelVisibility(bool toggle) {
@@ -14257,7 +14261,7 @@ void MainWindow::slotHelpCreateTips(){
 
 
 /**
- * @brief MainWindow::slotHelp
+ * @brief
  * Opens the system web browser to load the online Manual
  */
 void MainWindow::slotHelp(){
