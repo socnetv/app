@@ -16,6 +16,7 @@ CONFIG  += qt thread $${ALLOW_WARNINGS} $${MY_TARGET_BUILD}
 LANGUAGE = C++
 
 # add Qt module support
+QT += core
 QT += xml 
 QT += network
 QT += widgets

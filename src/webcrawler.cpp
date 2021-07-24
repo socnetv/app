@@ -32,6 +32,7 @@
 #include <QDebug>
 #include <QUrl>
 #include <QThread>
+#include <QDeadlineTimer>
 
 /**
  * @brief Constructor from parent Graph thread. Inits variables.
@@ -143,24 +144,15 @@ void WebCrawler::parse(QNetworkReply *reply){
              << "path:" << path;
 
 
-    //    qDebug () << "WebCrawler::parse() -  original locationHeader"
-    //              << reply->header(QNetworkRequest::LocationHeader) ;
-    //    qDebug () << "WebCrawler::parse() -  decoded locationHeader" << locationHeader ;
-
-    //    qDebug () << "WebCrawler::parse() -  encoded currentUrl  " << currentUrl;
-    //    qDebug () << "WebCrawler::parse() -  decoded currentUrl " << currentUrlStr;
-
-
     // Check for redirects
     if ( locationHeader != "" && locationHeader != currentUrlStr ) {
         qDebug () << "REDIRECT - Location response header:"
                   << locationHeader
                   << "differs from currentUrl:" << currentUrlStr
-                  << "Creating node redirect - Creating edge - RETURN ";
+                  << "Calling newLink() to create node redirect, and RETURNing...";
         newLink( sourceNode, locationHeader , true );
         return;
     }
-
 
     QUrl newUrl;
     QString newUrlStr;
@@ -544,10 +536,19 @@ void WebCrawler::newLink(int s, QUrl target,  bool enqueue_to_frontier) {
         if (m_delayBetween) {
             int m_wait_msecs = rand() % m_delayBetween;
             qDebug() << "delay requested between signalStartSpider() calls. Sleeping for:" << m_wait_msecs << "msecs";
-            QThread::msleep(m_wait_msecs);
+//            QThread::msleep(m_wait_msecs);
+            QDeadlineTimer deadline(m_wait_msecs);
+//            this->thread()->wait(deadline);
+            do {
+//                qDebug() << "deadline.remainingTime():" << deadline.remainingTime() << "msecs";
+            } while (deadline.remainingTime() > 0 && this->thread()->isRunning());
+            emit signalStartSpider();
+        }
+        else {
+            emit signalStartSpider();
         }
 
-        emit signalStartSpider();
+
 
     }
     else {

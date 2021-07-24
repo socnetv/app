@@ -284,6 +284,12 @@ Graph::~Graph() {
 */
 void Graph::clear(const QString &reason) {
     qDebug()<< "Clearing graph, vertices and data structures... Reason:" << reason;
+
+    qDebug()<< "Clearing graph data ended. Asking parser and crawler threads to terminate";
+
+    graphLoadedTerminateParserThreads("clear");
+    webCrawlTerminateThreads("clear");
+
     qDeleteAll(m_graph.begin(), m_graph.end());
     m_graph.clear();
     vpos.clear();
@@ -411,11 +417,6 @@ void Graph::clear(const QString &reason) {
 
     m_graphHasVertexCustomIcons = false;
 
-    qDebug()<< "Clearing graph data ended. Asking parser and crawler threads to terminate";
-
-    graphLoadedTerminateParserThreads("clear");
-    webCrawlTerminateThreads("clear");
-
     //    if ( urlQueue->size() > 0 ) {
     //        urlQueue->clear();
     //    }
@@ -423,6 +424,9 @@ void Graph::clear(const QString &reason) {
     if ( reason != "exit") {
         qDebug()<< "Finished clearing graph data and structures. Emitting graphSetModified()";
         graphSetModified(m_graphHasChanged,true);
+    }
+    else {
+        qDebug()<< "Finished clearing graph data and structures...";
     }
 }
 
@@ -3339,7 +3343,7 @@ int Graph:: verticesWithReciprocalEdges(){
 
 
 /**
- * @brief called from Graph, when closing network, to terminate all processes
+ * @brief called from Graph, when closing network, to terminate all crawler processes
 * Also called indirectly when wc_spider finishes
  * @param reason
  */
@@ -3362,8 +3366,11 @@ void Graph::webCrawlTerminateThreads (QString reason){
 
 /**
  * @brief
- * Creates the web_crawler that will parse the downloaded HTML code of each webpage we download.
- * Called by MW with user options. The crawler is created and moved to a new thread.
+ * Creates a new WebCrawler, that will parse the downloaded HTML code of each webpage
+ * we download. Moves the WebCrawler to a new thread and starts the thread.
+ * Then creates the fist node (initial url),
+ * and starts the web spider to download the first HTML page.
+ * Called by MW with user options.
  * @param startUrl
  * @param urlPatternsIncluded
  * @param urlPatternsExcluded
@@ -3395,32 +3402,31 @@ void Graph::startWebCrawler(
         const bool &socialLinks,
         const bool &delayedRequests){
 
+    qDebug() << "Setting up a new WebCrawler for url:" << startUrl.toString()
+             << "graph thread:" << thread();
+
     // Rename current relation
     relationCurrentRename(tr("web"), true);
 
-    qDebug() << "Graph::startWebCrawler() - "
-             << "activeGraph thread:" << thread()
-             << "startUrl:" << startUrl.toString()
-             << "Creating url queue and passing it to a new WebCrawler object";
+    // Initialize variables
+    m_crawler_max_urls = maxNodes;                      // Store maximum urls we'll visit (max nodes in the resulted network)
+    m_crawler_visited_urls = 0;                         // Init counter of visited urls
 
-
-    // Initialize
-    m_crawler_max_urls = maxNodes;                      // maximum urls we'll visit (max nodes in the resulted network)
-    m_crawler_visited_urls = 0;                         // A counter of the urls visited.
-
+    // Check if we need to add delay between requests
     int delayBetween = 0;
-
     if ( delayedRequests ) {
-        delayBetween = 500;
+        delayBetween = 500;         // half second
     }
 
-    // Create a new url queue
+    // Create our url queue
     urlQueue = new QQueue<QUrl>;
 
     // Enqueue the start QUrl
     urlQueue->enqueue(startUrl);
 
-    // Create the web_crawler that will parse the downloaded HTML code and pass the urlQueue to it
+    qDebug() << "Creating new WebCrawler...";
+
+    // Create the WebCrawler
     web_crawler = new WebCrawler(
                 urlQueue,
                 startUrl,
@@ -3439,16 +3445,14 @@ void Graph::startWebCrawler(
                 delayBetween
                 );
 
-    qDebug() << "Graph::startWebCrawler() - Moving out web_crawler from thread:"
-             << web_crawler->thread();
-
     // Move the crawler to another thread
     web_crawler->moveToThread(&webcrawlerThread);
 
-    qDebug() << "Graph::startWebCrawler() - Moved web_crawler to thread:"
-             << web_crawler->thread() ;
+    qDebug() << "WebCrawler created and moved to its own thread:"
+             << web_crawler->thread();
 
     // Connect signals and slots
+    qDebug() << "Connect signals/slots with WebCrawler...";
     connect(this, &Graph::signalWebCrawlParse,
             web_crawler, &WebCrawler::parse);
 
@@ -3468,8 +3472,8 @@ void Graph::startWebCrawler(
             web_crawler, &QObject::deleteLater);
 
 
-    // Start the crawler thread, nothing will happen though
-    qDebug() << "Starting webcrawlerThread!";
+    // Start the crawler thread...
+    qDebug() << "Starting WebCrawler thread...";
     webcrawlerThread.start();
 
     // Create the initial vertex for the starting url
@@ -3486,42 +3490,40 @@ void Graph::startWebCrawler(
 
 /**
  * @brief
- * A loop, that constantly takes the url awaiting in front of the urlQueue, and signals to the MW to make the network request
+ * A loop, that takes urls awaiting in front of the urlQueue,
+ * and signals to the MW to make the network request
  */
 void Graph::webSpider(){
 
-    //repeat forever....
+    //repeat while urlQueue has items
     do {
 
         //  Until we crawl all urls in urlQueue.
         if ( urlQueue->size() == 0 ) {
-            qDebug () <<"Graph::webSpider() - urlQueue is empty. No more urls to crawl for now... "  ;
+            qDebug () <<"webSpider - urlQueue is empty. Break for now... "  ;
             break;
         }
 
         // or until we have reached m_maxNodes
         if (m_crawler_max_urls > 0 && m_crawler_visited_urls == m_crawler_max_urls) {
-            qDebug () << "Graph::webSpider() - Reached m_maxNodes. STOPPING." ;
-            //                emit finished("message from spider: visitedNodes > maxnodes. ");
+            qDebug () << "webSpider - reached m_crawler_max_urls. Break." ;
             break;
         }
 
         // Take the first url awaiting in the queue
-        qDebug() << "Graph::webSpider() - urlQueue size " << urlQueue->size()
+        qDebug() << "webSpider - urlQueue size: " << urlQueue->size()
                  << " - Taking the first url from the urlQueue  ";
         QUrl currentUrl = urlQueue->dequeue();
 
-        qDebug() << "Graph::webSpider() - url to download: "
+        qDebug() << "webSpider - url to download: "
                  <<  currentUrl
-                  << "Increasing visitedNodes to" << m_crawler_visited_urls + 1
-                  << "and emitting signal to download html code...";
-
+                  << "Increasing m_crawler_visited_urls to:" << m_crawler_visited_urls + 1
+                  << "and emitting signal signalNetworkManagerRequest to MW...";
 
         // Signal MW to make the network request
-        qDebug() << "Graph::webSpider() - Emitting signal to the MW to make the network request ";
         emit signalNetworkManagerRequest(currentUrl, NetworkRequestType::Crawler);
 
-        // increase counter
+        // increase visited urls counter
         m_crawler_visited_urls++;
 
 
@@ -3530,7 +3532,9 @@ void Graph::webSpider(){
 }
 
 /**
- * @brief Gets the reply of a MW network request made by Web Crawler, and emits that reply as is to the Web Crawler.
+ * @brief
+ * Gets the reply of a MW network request made by Web Crawler,
+ * and emits that reply as is to the Web Crawler.
  */
 void Graph::slotHandleCrawlerRequestReply(){
 
@@ -3547,7 +3551,8 @@ void Graph::slotHandleCrawlerRequestReply(){
 
 
 /**
- * @brief Computes and returns the arc reciprocity of the graph.
+ * @brief
+ * Computes and returns the arc reciprocity of the graph.
  * Also computes the dyad reciprocity and fills parameters with values.
 
  * @return

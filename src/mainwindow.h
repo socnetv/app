@@ -529,8 +529,8 @@ public slots:
                                );
 
 
-    void slotNetworkSslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
-    void slotNetworkError(const QNetworkReply::NetworkError &code);
+    void slotNetworkManagerSslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
+    void slotNetworkManagerReplyError(const QNetworkReply::NetworkError &code);
 
     //Called by Graph to display some message to the user
     void statusMessage(const QString);
