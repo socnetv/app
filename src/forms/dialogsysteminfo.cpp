@@ -32,6 +32,7 @@
 #include <QScreen>
 #include <QSysInfo>
 #include <QSslSocket>
+#include <QProcess>
 
 #ifndef QT_NO_OPENGL
 #include <QOpenGLFunctions>
@@ -79,8 +80,17 @@ DialogSystemInfo::DialogSystemInfo (QWidget *parent) :
     }
     else {
         information += "SSL support: <br>NO<br><br>";
-        information += "If you want to use the web crawler, please install OpenSSL that matches ssl build from http://slproweb.com/products/Win32OpenSSL.html";
+        information += "If you want to use the web crawler, please install OpenSSL that matches ssl build from http://slproweb.com/products/Win32OpenSSL.html <br>";
     }
+
+    #if defined(Q_OS_LINUX)
+    //only for testing - show openssl version provided by OS
+    QProcess process; process.start("openssl version");
+    process.waitForFinished(-1);
+    QString opensslVersion= process.readAllStandardOutput();
+    information += "<br>OS openssl version: <br>";
+    information += opensslVersion +  + "<br><br>";
+    #endif
 
     #ifndef QT_NO_OPENGL
     QOpenGLFunctions qglFunctions(QOpenGLContext::currentContext());

@@ -40,10 +40,13 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     make INSTALL_ROOT=appdir install;
     echo "Files in appdir: "
     find appdir/
-    echo "Coppying .desktop file to ./appdir: "
+    echo "Copying .desktop file to ./appdir: "
     cp appdir/usr/share/applications/socnetv.desktop ./appdir
-    echo "Coppying socnetv.png in current dir: "
+    echo "Copying socnetv.png in current dir: "
     cp appdir/usr/share/pixmaps/socnetv.png .  
+    echo "copying custom openssl libs to ./appdir/usr/bin..."
+    cp /opt/openssl-1.1.1/lib/libssl.so.1.1 ./appdir/usr/bin/
+    cp /opt/openssl-1.1.1/lib/libcrypto.so.1.1 ./appdir/usr/bin/
     echo "Checking contents of /opt/qtXX/plugins: "
     find /opt/qt512/plugins
     echo "Downloading linuxdeployqt tool: "
