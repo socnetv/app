@@ -24,7 +24,6 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     tar zxfv OpenSSL_1_1_1k.tar.gz
     echo "Entering openSSL sources dir..."
     cd openssl-OpenSSL_1_1_1k/
-    cd
     echo "Entering openSSL sources dir..."
     echo "we are going to build openssl 1.1.1k from source using following setup:"
     echo "# ./config shared --prefix=/opt/openssl-1.1.1/ && make --jobs=\`nproc --all\` && sudo make install"
