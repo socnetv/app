@@ -21,9 +21,10 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     echo "Downloading openSSL 1.1.1k sources..."
     wget -c "https://github.com/openssl/openssl/archive/refs/tags/OpenSSL_1_1_1k.tar.gz"
     echo "Unzipping openSSL sources..."
-    tar zxfv openssl-OpenSSL_1_1_1k.tar.gz
+    tar zxfv OpenSSL_1_1_1k.tar.gz
     echo "Entering openSSL sources dir..."
     cd openssl-OpenSSL_1_1_1k/
+    cd
     echo "Entering openSSL sources dir..."
     echo "we are going to build openssl 1.1.1k from source using following setup:"
     echo "# ./config shared --prefix=/opt/openssl-1.1.1/ && make --jobs=\`nproc --all\` && sudo make install"
