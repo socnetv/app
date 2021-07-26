@@ -4,6 +4,12 @@ echo ""
 echo "I will build a SocNetV AppImage for linux distributions..."
 echo ""
 
+lsb_release -a
+
+echo "openssl version: "
+echo `openssl version`
+
+
 # Check current directory
 project_dir=$(pwd)
 echo "Project dir is: ${project_dir}"
@@ -27,8 +33,6 @@ else
     export VERSION=${SOCNETV_VERSION}-${LAST_COMMIT_SHORT}
 fi
 
-echo "openssl version: "
-echo `openssl version`
 
 if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     source /opt/qt512/bin/qt512-env.sh
