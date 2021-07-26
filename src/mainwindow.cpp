@@ -8663,8 +8663,9 @@ void MainWindow::slotNetworkWebCrawlerDialog() {
 
 
 /**
- * @brief Called from m_WebCrawlerDialog. Clears the loaded network then
- * calls Graph::startWebCrawler() with the user options.
+ * @brief
+ * Clears the loaded network then calls Graph::startWebCrawler() with the user options.
+ * Called from m_WebCrawlerDialog.
  * @param seed
  * @param maxNodes
  * @param maxRecursion
@@ -8688,7 +8689,7 @@ void MainWindow::slotNetworkWebCrawler (const QUrl &startUrl,
                                         ) {
 
     // Check ssl
-    if ( QSslSocket::supportsSsl() ) {
+    if ( !QSslSocket::supportsSsl() ) {
         slotHelpMessageToUser(USER_MSG_CRITICAL,tr("No SSL support."),
                               tr("I cannot verify that your computer Operating System has OpenSSL support. \n\n"
                                 "OpenSSL is an  Open Source software library for the Transport Layer Security (TLS) protocol (aka SSL), for applications that secure communications over computer networks. It is widely used by Internet servers, including the majority of HTTPS websites. \n\n"

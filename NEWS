@@ -8,7 +8,8 @@ Jun 2021
 ========
 
 - Version 2.9 released, bugfixes
-- Version 3.0 development
+- Version 3.0 development. To run 3.0-dev in Fedora, use:
+   env GDK_BACKEND=x11  ./SocNetV-3.0-dev-x86_64.AppImage
 
 Jan 2021
 ========

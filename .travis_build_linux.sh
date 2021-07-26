@@ -1,8 +1,8 @@
 #!/bin/bash
 
-echo "*****************************"
-echo "Building SocNetV for linux..."
-echo "*****************************"
+echo ""
+echo "I will build a SocNetV AppImage for linux distributions..."
+echo ""
 
 # Check current directory
 project_dir=$(pwd)
@@ -27,6 +27,8 @@ else
     export VERSION=${SOCNETV_VERSION}-${LAST_COMMIT_SHORT}
 fi
 
+echo "openssl version: "
+echo `openssl version`
 
 if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     source /opt/qt512/bin/qt512-env.sh
