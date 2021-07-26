@@ -124,7 +124,8 @@ after_build:
   - cmd: echo "check folder contents again..."
   - cmd: dir C:\projects\socnetv\%BUILD_TYPE%
 
-  - cmd: cp COPYING %BUILD_TYPE%/LICENSE.txt"
+  - cmd: echo "copy COPYING to LICENCE.txt..."
+  - cmd: cp COPYING %BUILD_TYPE%/LICENSE.txt
 
   - cmd: echo "Running Innosetup..."
   - cmd: echo "Available Innosetup languages:"
