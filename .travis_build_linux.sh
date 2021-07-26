@@ -91,7 +91,7 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     # export VERSION=... # linuxdeployqt uses this for naming the file
     echo ""
     echo "Run the linuxdeployqt tool: "
-    ./linuxdeployqt*.AppImage appdir/usr/share/applications/*.desktop -verbose=3 -appimage -extra-plugins=iconengines,imageformats,platformthemes/libqgtk3.so
+    ./linuxdeployqt*.AppImage appdir/usr/share/applications/*.desktop -appimage -extra-plugins=iconengines,imageformats,platformthemes/libqgtk3.so
 
     echo ""
     echo "Removing linuxdeployqt-continuous-x86_64.AppImage..."

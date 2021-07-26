@@ -23,6 +23,7 @@ branches:
 # skip_tags: true
 
 # Start builds on tags only (GitHub and BitBucket)
+# this is a work around to make appveyor ci run only when it sees continuous tag (but not earlier).
 skip_non_tags: true
 
 
