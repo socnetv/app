@@ -8687,6 +8687,17 @@ void MainWindow::slotNetworkWebCrawler (const QUrl &startUrl,
                                         const bool &delayedRequests
                                         ) {
 
+    // Check ssl
+    if ( QSslSocket::supportsSsl() ) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL,tr("No SSL support."),
+                              tr("I cannot verify that your computer Operating System has OpenSSL support. \n\n"
+                                "OpenSSL is an  Open Source software library for the Transport Layer Security (TLS) protocol (aka SSL), for applications that secure communications over computer networks. It is widely used by Internet servers, including the majority of HTTPS websites. \n\n"
+                                "Without OpenSSL libraries installed in your computer, I cannot crawl webpages/URLs using https:// \n\n"
+                                 "So, please download and install OpenSSL in your OS and try again."),
+                              tr("Hint: Go to Help > System Information to see which OpenSSL version you need to install.")
+                              );
+        return;
+    }
     // Close the current network
     this->slotNetworkClose();
 

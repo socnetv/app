@@ -59,38 +59,41 @@ DialogSystemInfo::DialogSystemInfo (QWidget *parent) :
 
     (ui->infoTextEdit)->setFocus();
 
+//    this->setMinimumHeight(QApplication::primaryScreen()->availableSize().height()/2);
+
     QString information;
     information += "<b>QT BUILD</b><br><br>";
-    information += "Architecture: <br>" + QSysInfo::buildAbi() + "<br><br>";
-    information += "SSL version : <br>" +  QSslSocket::sslLibraryBuildVersionString() + "<br>";
+    information += "Architecture: <br>" + QSysInfo::buildAbi() + "<br>";
     information += "<br><br>";
 
     information += "<b>SOCNETV BUILD</b><br><br>";
-    information += "DirPath: <br>" + QApplication::applicationDirPath();
+    information += "DirPath: <br>" + QApplication::applicationDirPath() + "<br><br>";
+    information += "SSL version (at built-time): <br>" +  QSslSocket::sslLibraryBuildVersionString() + "<br>";
     information += "<br><br>";
 
     information += "<b>YOUR SYSTEM</b><br><br>";
     information += "OS: <br>" + QSysInfo::prettyProductName() + "<br><br>";
     information += "Kernel: <br>" + QSysInfo::kernelType() + " " + QSysInfo::kernelVersion() + "<br><br>";
     information += "Architecture: <br>" + QSysInfo::currentCpuArchitecture() + "<br><br>";
+
     if ( QSslSocket::supportsSsl() ) {
         information += "SSL support: <br>yes <br><br>";
-        information += "SSL version (run-time): <br>" + QSslSocket::sslLibraryVersionString() + "<br>";
+        information += "SSL version (run-time): <br>" + QSslSocket::sslLibraryVersionString() + "<br><br>";
 
+        information += "About web crawler: You are good to go. But please note, you may experience warnings/problems if you have a version of OpenSSL that does not match the one used while building SocNetV ";
+        information += "(" +  QSslSocket::sslLibraryBuildVersionString() + ")<br>";
     }
     else {
         information += "SSL support: <br>NO<br><br>";
-        information += "If you want to use the web crawler, please install OpenSSL that matches ssl build from http://slproweb.com/products/Win32OpenSSL.html <br>";
+        #if defined(Q_OS_WIN)
+        information += "About web crawler: If you want to use the web crawler with https:// urls, please install the same (or the closest) version of OpenSSL that was used while building your SocNetV application ";
+        information += "(" +  QSslSocket::sslLibraryBuildVersionString() + ")";
+        information += " You may download Win32/Win64 OpenSSL installers from: https://slproweb.com/products/Win32OpenSSL.html <br>";
+        #else
+        information += "About web crawler: If you want to use the web crawler with https:// urls, please install the same (or the closest) version of OpenSSL that was used while building your SocNetV application ";
+        information += "(" +  QSslSocket::sslLibraryBuildVersionString() + "). <br>";
+        #endif
     }
-
-    #if defined(Q_OS_LINUX)
-    //only for testing - show openssl version provided by OS
-    QProcess process; process.start("openssl version");
-    process.waitForFinished(-1);
-    QString opensslVersion= process.readAllStandardOutput();
-    information += "<br>OS openssl version: <br>";
-    information += opensslVersion +  + "<br><br>";
-    #endif
 
     #ifndef QT_NO_OPENGL
     QOpenGLFunctions qglFunctions(QOpenGLContext::currentContext());
