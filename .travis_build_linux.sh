@@ -34,11 +34,14 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     make -j4
 
     echo "Building finished! "
-    echo "Files in directory: "
+    echo ""
+    echo "Files in current directory: "
     find .
+    echo ""
     echo "Attempting make install in appdir: "
     make INSTALL_ROOT=appdir install;
-    echo "Files in appdir: "
+    echo ""
+    echo "SocNetV files installed in appdir: "
     find appdir/
     echo "Copying .desktop file to ./appdir: "
     cp appdir/usr/share/applications/socnetv.desktop ./appdir
@@ -47,13 +50,24 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     echo "copying custom openssl libs to ./appdir/usr/bin..."
     cp /opt/openssl-1.1.1/lib/libssl.so.1.1 ./appdir/usr/bin/
     cp /opt/openssl-1.1.1/lib/libcrypto.so.1.1 ./appdir/usr/bin/
+    echo ""
+    echo "SocNetV files installed in appdir -- final: "
+    find appdir/
+    echo ""
+    echo "Check SocNetV executable libraries:"
+    ldd appdir/usr/bin/socnetv
+    echo ""
     echo "Checking contents of /opt/qtXX/plugins: "
     find /opt/qt512/plugins
     echo "Downloading linuxdeployqt tool: "
-    wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" 
+    wget --no-verbose  "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
     echo "Make executable the linuxdeployqt tool: "
     chmod a+x linuxdeployqt*.AppImage
     unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
+    echo ""
+    echo "Check SocNetV executable libraries (AGAIN):"
+    ldd appdir/usr/bin/socnetv
+
     # export VERSION=... # linuxdeployqt uses this for naming the file
     echo "Run the linuxdeployqt tool: "
     ./linuxdeployqt*.AppImage appdir/usr/share/applications/*.desktop -appimage -extra-plugins=iconengines,imageformats
