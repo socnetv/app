@@ -6,8 +6,8 @@
 
 version:  'continuous.{build}'
 
+# whitelist branches
 branches:
-  # whitelist
   only:
     - master
     - develop
@@ -35,12 +35,14 @@ skip_commits:
    - .travis_build_macos.sh
    - .travis_install.sh
    - socnetv.spec
+   - README.md
+   - TODO
 
 
 # Including commits with particular message or from specific user
 only_commits:
-  #message: /build/                # Start a new build if message contains 'build'
-  author: dimitris.kalamaras@gmail.com      # Start a new build for commit of user with email jack@company.com
+  #message: /build/                         # Start a new build if message contains 'build'
+  author: dimitris.kalamaras@gmail.com      # Start a new build for commit of user with my email
 
 
 
@@ -89,7 +91,6 @@ install:
   - cmd: dir C:\Qt\5.15
   - cmd: dir C:\Qt\Tools
   - set QTDIR=C:\Qt\5.15\mingw81_64
-  #- set QTDIR=C:\Qt\5.12\mingw73_64
 
   - cmd: echo "Check project folder..."        
   - cmd: dir C:\projects\socnetv  
@@ -148,7 +149,7 @@ deploy:
     description: 'SocNetV windows installer $(APPVEYOR_REPO_TAG_NAME) prereleases - commit: ${APPVEYOR_REPO_COMMIT}: $(APPVEYOR_REPO_COMMIT_MESSAGE)'
     artifact: /SocNetV.*installer\.exe/
     auth_token:
-      secure: owdxko+lS3nNcxIsxL4OTdfZ5UPwudTp2vtk8TlErxd0/tqAfsPGmZ8BjN5sYTTk # your encrypted token from GitHub    
+      secure: rWpgp9XYDS/Tqr6dsQ2CK1x/vgE4nMyQ3W7oyQlG2L3oF4tecU8CEDW1EY5Us0mZ # your encrypted token from GitHub
     draft: false
     prerelease: true
     force_update: true
@@ -161,7 +162,7 @@ deploy:
     description: 'SocNetV windows installer for $(APPVEYOR_REPO_TAG_NAME)'
     artifact: /SocNetV.*installer\.exe/
     auth_token:
-      secure: owdxko+lS3nNcxIsxL4OTdfZ5UPwudTp2vtk8TlErxd0/tqAfsPGmZ8BjN5sYTTk # your encrypted token from GitHub
+      secure: rWpgp9XYDS/Tqr6dsQ2CK1x/vgE4nMyQ3W7oyQlG2L3oF4tecU8CEDW1EY5Us0mZ # your encrypted token from GitHub
     draft: false
     prerelease: false
     force_update: true
