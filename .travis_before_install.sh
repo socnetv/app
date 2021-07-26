@@ -16,7 +16,7 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     #
     echo "installing base Qt5 repos for Ubuntu from ppa:beineri"
     sudo apt-get -qq update
-    sudo add-apt-repository ppa:beineri/opt-qt-5.12.10-xenial -y
+    sudo add-apt-repository ppa:beineri/opt-qt-5.12.10-bionic -y
     sudo apt-get update -qq
 
     #echo "Downloading openSSL 1.1.1k sources..."
