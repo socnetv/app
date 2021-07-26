@@ -33,46 +33,72 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     qmake # default: all go to /usr
     make -j4
 
+    echo ""
     echo "Building finished! "
+
     echo ""
     echo "Files in current directory: "
     find .
+
     echo ""
     echo "Attempting make install in appdir: "
     make INSTALL_ROOT=appdir install;
+
     echo ""
     echo "SocNetV files installed in appdir: "
     find appdir/
-    echo "Copying .desktop file to ./appdir: "
-    cp appdir/usr/share/applications/socnetv.desktop ./appdir
-    echo "Copying socnetv.png in current dir: "
-    cp appdir/usr/share/pixmaps/socnetv.png .  
-    echo "copying custom openssl libs to ./appdir/usr/bin..."
-    cp /opt/openssl-1.1.1/lib/libssl.so.1.1 ./appdir/usr/bin/
-    cp /opt/openssl-1.1.1/lib/libcrypto.so.1.1 ./appdir/usr/bin/
-    echo ""
-    echo "SocNetV files installed in appdir -- final: "
-    find appdir/
+
     echo ""
     echo "Check SocNetV executable libraries:"
     ldd appdir/usr/bin/socnetv
+
+    echo ""
+    echo "Copying .desktop file to ./appdir: "
+    cp appdir/usr/share/applications/socnetv.desktop ./appdir
+
+    echo ""
+    echo "Copying socnetv.png in current dir: "
+    cp appdir/usr/share/pixmaps/socnetv.png .  
+
+    #echo ""
+    #echo "copying custom openssl libs to ./appdir/usr/bin..."
+    #cp /opt/openssl-1.1.1/lib/libssl.so.1.1 ./appdir/usr/bin/
+    #cp /opt/openssl-1.1.1/lib/libcrypto.so.1.1 ./appdir/usr/bin/
+
+    echo ""
+    echo "SocNetV files installed in appdir -- final: "
+    find appdir/
+
+
+
     echo ""
     echo "Checking contents of /opt/qtXX/plugins: "
     find /opt/qt512/plugins
+
+    echo ""
     echo "Downloading linuxdeployqt tool: "
     wget --no-verbose  "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
+
+    echo ""
     echo "Make executable the linuxdeployqt tool: "
     chmod a+x linuxdeployqt*.AppImage
     unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
+
     echo ""
     echo "Check SocNetV executable libraries (AGAIN):"
     ldd appdir/usr/bin/socnetv
 
     # export VERSION=... # linuxdeployqt uses this for naming the file
+    echo ""
     echo "Run the linuxdeployqt tool: "
-    ./linuxdeployqt*.AppImage appdir/usr/share/applications/*.desktop -appimage -extra-plugins=iconengines,imageformats
+    ./linuxdeployqt*.AppImage appdir/usr/share/applications/*.desktop -verbose=3 -appimage -extra-plugins=iconengines,imageformats,platformthemes/libqgtk3.so
 
-    echo "Check what we have created..."
+    echo ""
+    echo "Removing linuxdeployqt-continuous-x86_64.AppImage..."
+    rm linuxdeployqt-continuous-x86_64.AppImage
+
+    echo ""
+    echo "Check whether the SocNetV AppImage has been created..."
     find . -type f -name "*AppImage"
 
 

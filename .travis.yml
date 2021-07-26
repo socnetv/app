@@ -32,38 +32,38 @@ jobs:
 
 
 before_install:
-  - echo "***********************************************";
+  - echo " ";
   - echo " Run script before install (to add repos etc)  ";
-  - echo "***********************************************";
+  - echo " ";
   - chmod +x .travis_before_install.sh
   - ./.travis_before_install.sh
 
 
 install:
-  - echo "***********************************************"; 
+  - echo " ";
   - echo " Run script to install any dependencies...     ";
-  - echo "***********************************************";
+  - echo " ";
   - chmod +x .travis_install.sh
   - ./.travis_install.sh
 
 
 script:
-  - echo "***********************************************";
+  - echo " ";
   - echo " Run script to build the app...                ";
-  - echo "***********************************************";
+  - echo " ";
   -  if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then chmod +x .travis_build_linux.sh ; fi
   - '[ "$TRAVIS_OS_NAME" != linux ] || ./.travis_build_linux.sh'
   -  if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then chmod +x .travis_build_macos.sh ; fi  
   - '[ "$TRAVIS_OS_NAME" != osx ] || ./.travis_build_macos.sh'
 
 after_success:
-  - echo "***********************************************";
-  - echo " Finished building. Download upload.sh script  ";
-  - echo "***********************************************";
-  - ls -lsh  
-  - wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
-  - echo "Listing directory"
-  - ls -lsh
+  - echo " ";
+  - echo " Finished building. Listing any *SocNetV*.AppImage* files...";
+  - ls -lsh  *SocNetV*.AppImage*
+  - echo " ";
+  - echo " Downloading upload.sh tool...";
+  - wget --no-verbose https://github.com/probonopd/uploadtool/raw/master/upload.sh
+  - echo "Using upload.sh tool to upload binaries to GitHub..."
   - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then bash upload.sh *SocNetV*.AppImage*; fi
   - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then bash upload.sh *SocNetV*.zip*; bash upload.sh SocNetV*.pkg*; fi
 

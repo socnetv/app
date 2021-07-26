@@ -75,7 +75,7 @@ install:
   - cmd: set SOCNETV_VERSION=3.0-dev
   - cmd: echo %SOCNETV_VERSION%
   - cmd: echo "Setting build type"
-  - cmd: set BUILD_TYPE=release
+  - cmd: set BUILD_TYPE=debug
   - cmd: echo %BUILD_TYPE%
 
   - cmd: set socnetv_continuous_build=false
