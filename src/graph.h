@@ -308,11 +308,9 @@ signals:
 //                            const int &type=0,
 //                            const bool &openMenu=false);
 
-    void signalEdgeClicked (const MyEdge &edge=MyEdge(),
-                            const bool &openMenu=false);
+    void signalEdgeClicked (const MyEdge &edge=MyEdge(), const bool &openMenu=false);
 
-    void signalRelationAddToMW(const QString &newRelation,
-                               const bool &changeRelation=true);
+    void signalRelationAddToMW(const QString &newRelation, const bool &changeRelation=true);
 
     void signalRelationsClear();
 
