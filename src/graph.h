@@ -316,7 +316,7 @@ signals:
 
     void signalRelationsClear();
 
-    void signalRelationRenamedToMW(const QString newRelName);
+    void signalRelationRenamedToMW(const QString &newRelName);
 
     void signalRelationChangedToGW(int);
 
