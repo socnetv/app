@@ -60,10 +60,10 @@ relations or create a network on your own and add multiple relations to it.
 
 - Built-in web crawler allowing you to automatically create networks from links found in a given initial URL.
 
-- Comprehensive documentation, both online and while running the 
-application, which explains each feature and algorithm of SocNetV in detail.
+- Comprehensive documentation both online and while running the 
+application explaining each feature and algorithm of SocNetV in detail.
 
-- Binary packages and installers for Windows, Linux and MacOS.
+- Binary packages and installers for Windows, Linux and macOS.
 
 
 
@@ -116,6 +116,9 @@ Follow the instructions below to install it in your system.
 
 To install SocNetV in Windows, download the latest SocNetV Windows installer from
 the Downloads page, and double-click on the executable to start the installation.
+
+Note: You might see a Windows pop up about unknown software origin/publisher. Please ignore it and proceed, as we do not sign our released packages with any code signing certificates (which are not free by the way). 
+
 Click Next and Accept the License (GPL) to install the program.
 
 The program will be installed in the usual Windows Program Files directory and a new
@@ -123,19 +126,22 @@ Start Menu shortcut will be created.
 
 Afterwards you can run the application from your Start menu.
 
-### Install in MacOS
+### Install in macOS
 
-To install SocNetV in Mac, download the latest SocNetV MacOS package from
-the Downloads page, and double-click on it. 
+To install SocNetV in macOS, download the latest SocNetV macOS package from
+the Downloads page. Then right-click on it and select Open.
 
 If the package is an installer, the installation will start immediately and the application 
 will be installed automatically in your Applications.
 
-Otherwise, if the package is just an macOS image disk, then double-click on it to open and drag 
-the SocNetV icon/executable to your Applications.
+Otherwise, if the package is just an macOS image disk (a file with a .dmg extension), then double-click on it to open it. 
+You will see a new window with the SocNetV executable icon inside. Right-click on it and select Open to run the application. 
 
-Please note that the first time you run SocNetV, you may need to double click on
-the SocNetV application icon holding down the META key.
+Note: The first time you will run SocNetV, macOS may tell you that it cannot verify the software developer/publisher. That's because we do not sign our released packages with any code signing certificates (which are not free by the way). 
+Please press Cancel, not Move to Bin! Then, right-click again on SocNetV app and select Open to run the application normally.  
+
+After that, in order to permanently install SocNetV in your macOS, you can simply drag the SocNetV executable icon into your Applications.
+
 
 ### Install in Linux
 
@@ -172,30 +178,30 @@ sudo zypper in socnetv
 
 ## b) Compile from Source Code
 
-To compile and install SocNetV from source you need the Qt5 toolkit
-development libraries. Qt is an open source C++ toolkit, for Windows, Linux and MacOS.
+To compile and install SocNetV from source you need the Qt5 toolkit development libraries. 
+Qt is an open source C++ toolkit, for Windows, Linux and macOS.
 
-Windows and MacOS users should download and install Qt from https://www.qt.io/developers
+Windows and MacOS users should download and install Qt from https://www.qt.io/download-qt-installer
 
 Linux users need to install the following packages:
 
-openSUSE: libqt5-qtbase, libqt5-qtbase-devel, libQt5Charts5-devel, libqt5-qttools
+- openSUSE: libqt5-qtbase, libqt5-qtbase-devel, libQt5Charts5-devel, libqt5-qttools
 
-Fedora: qt5-qtbase,qt5-qtbase-devel, qt5-qtcharts-devel, qt5-qttools
+- Fedora: qt5-qtbase,qt5-qtbase-devel, qt5-qtcharts-devel, qt5-qttools
 
-Debian: qt5-default, libqt5charts5-dev
+- Debian: qt5-default, libqt5charts5-dev
 
 Once you have Qt5 installed, you are ready to compile SocNetV from source.
 
 Download the archive with the source code of the latest version from 
-https://github.com/socnetv/app/releases/latest, i.e. SocNetV-2.x.tar.gz
+https://github.com/socnetv/app/releases/latest, i.e. app-2.9.tar.gz
 
 Then type in the following commands in order to decompress the
 SocNetV tarball and build it. Replace 2.X with the version you downloaded.
 
 ```
-untar zxfv SocNetV-2.X.tar.gz
-cd socnetv-2.X
+untar zxfv app-2.X.tar.gz
+cd app-2.X
 qmake
 make
 sudo make install # or su -c 'make install'
