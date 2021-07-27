@@ -654,7 +654,7 @@ void Graph::relationNext(){
 /**
  * @brief
  * Adds a new relation named relName, emitting signal to MW, and
- * optionally changing current relation to the new one.
+ * optionally changing current graph relation to the new one.
  * Called by file parser to add a new relation
  * Also called from MW.
  * @param relName
@@ -708,11 +708,18 @@ QString Graph::relationCurrentName() const{
 void Graph::relationCurrentRename(const QString &newName, const bool &signalMW) {
 
     //
+    // Check if new name is the same
+    //
+    if ( !m_relationsList.isEmpty() && newName == m_relationsList[m_curRelation] ) {
+        qDebug()<< "Graph::relationCurrentRename() - newName same as current. Nothing to do. Returning.";
+        return;
+    }
+
+    //
     // Check if new name is empty
     //
     if (newName.isEmpty()) {
         qDebug()<< "Graph::relationCurrentRename() - newName is empty. Nothing to do. Returning.";
-
         return;
     }
 
@@ -5852,6 +5859,7 @@ void Graph::dijkstra(const int &s, const int &si,
 
     // Construct a priority queue where we will store discovered vertices along with their distances from source
     qDebug() << "### dijkstra: Construct a priority queue prQ to store discovered vertices-distances from source";
+
     // TODO: Check prQ functionality in weighted graphs, where edge weight denotes value (not cost)
     priority_queue<GraphDistance, vector<GraphDistance>, GraphDistancesCompare> prQ;
 
@@ -5984,7 +5992,8 @@ void Graph::dijkstra(const int &s, const int &si,
                 sp_w = m_graph[si]->shortestPaths(w) + m_graph[si]->shortestPaths(u);
 
                 // WRONG! We do not know for sure that we are in a shortest path!!!
-                qDebug() <<"    --- dijkstra: (???POSSIBLE BUG???) Found ANOTHER SP from s =" << s
+                qDebug() <<"    --- dijkstra: (POSSIBLE BUG?) Found ANOTHER SP from s ="
+                        << s
                         << " to w=" << w << " via u="<< u
                         << " - Setting Sigma(s, w) = "<< sp_w;
 
