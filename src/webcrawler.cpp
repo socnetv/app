@@ -208,6 +208,11 @@ void WebCrawler::parse(QNetworkReply *reply){
     qDebug() << "Searching for href links inside the page code...";
     while (page.contains(" href")) {
 
+        if ( QThread::currentThread()->isInterruptionRequested() ) {
+            qDebug () <<"STOP because currentThread()->isInterruptionRequested() == true.";
+            emit finished("message from parse() -  interruptionRequested");
+            return;
+        }
         if (m_maxUrls>0) {
             if (m_discoveredNodes >= m_maxUrls ) {
                 qDebug () <<"STOP because I have reached m_maxUrls.";
@@ -504,6 +509,13 @@ void WebCrawler::newLink(int s, QUrl target,  bool enqueue_to_frontier) {
     if (  index!= knownUrls.constEnd() ) {
         qDebug()<< "Target already discovered (in knownUrls) as node:" << index.value();
         if  (s !=index.value()) {
+
+            if ( QThread::currentThread()->isInterruptionRequested() ) {
+                qDebug () <<"STOP because currentThread()->isInterruptionRequested() == true.";
+                emit finished("message from parse() -  interruptionRequested");
+                return;
+            }
+
             qDebug()<< "Emitting signalCreateEdge"
                     << s << "->"
                     << index.value()
@@ -518,6 +530,12 @@ void WebCrawler::newLink(int s, QUrl target,  bool enqueue_to_frontier) {
 
     m_discoveredNodes++;
     knownUrls[target]=m_discoveredNodes;
+
+    if ( QThread::currentThread()->isInterruptionRequested() ) {
+        qDebug () <<"STOP because currentThread()->isInterruptionRequested() == true.";
+        emit finished("message from parse() -  interruptionRequested");
+        return;
+    }
 
     qDebug()<< "Target just discovered. Emitting signalCreateNode:" << m_discoveredNodes
             << "for url:"<< target.toString();
@@ -535,16 +553,26 @@ void WebCrawler::newLink(int s, QUrl target,  bool enqueue_to_frontier) {
         // Check if we need to add some delay between requests
         if (m_delayBetween) {
             int m_wait_msecs = rand() % m_delayBetween;
-            qDebug() << "delay requested between signalStartSpider() calls. Sleeping for:" << m_wait_msecs << "msecs";
-//            QThread::msleep(m_wait_msecs);
+            qDebug() << "delay requested between signalStartSpider() calls. Setting a deadline for:" << m_wait_msecs << "msecs";
             QDeadlineTimer deadline(m_wait_msecs);
-//            this->thread()->wait(deadline);
             do {
 //                qDebug() << "deadline.remainingTime():" << deadline.remainingTime() << "msecs";
             } while (deadline.remainingTime() > 0 && this->thread()->isRunning());
+
+            if ( QThread::currentThread()->isInterruptionRequested() ) {
+                qDebug () <<"STOP because currentThread()->isInterruptionRequested() == true.";
+                emit finished("message from parse() -  interruptionRequested");
+                return;
+            }
+
             emit signalStartSpider();
         }
         else {
+            if ( QThread::currentThread()->isInterruptionRequested() ) {
+                qDebug () <<"STOP because currentThread()->isInterruptionRequested() == true.";
+                emit finished("message from parse() -  interruptionRequested");
+                return;
+            }
             emit signalStartSpider();
         }
 
@@ -553,6 +581,12 @@ void WebCrawler::newLink(int s, QUrl target,  bool enqueue_to_frontier) {
     }
     else {
         qDebug()<< "NOT adding new node to queue";
+    }
+
+    if ( QThread::currentThread()->isInterruptionRequested() ) {
+        qDebug () <<"STOP because currentThread()->isInterruptionRequested() == true.";
+        emit finished("message from parse() -  interruptionRequested");
+        return;
     }
 
     qDebug()<< "Emitting signalCreateEdge"

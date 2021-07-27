@@ -6948,7 +6948,7 @@ void MainWindow::slotNetworkSavedStatus (const int &status) {
 
 
 /**
- * @brief Closes the network. Saves it if necessary. Used by createNew.
+ * @brief Closes the network. Saves it if necessary.
  */
 void MainWindow::slotNetworkClose() {
 
@@ -8699,6 +8699,7 @@ void MainWindow::slotNetworkWebCrawler (const QUrl &startUrl,
                               );
         return;
     }
+
     // Close the current network
     this->slotNetworkClose();
 

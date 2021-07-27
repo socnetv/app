@@ -3354,6 +3354,7 @@ void Graph::webCrawlTerminateThreads (QString reason){
     while (webcrawlerThread.isRunning() ) {
         qDebug() << "webcrawlerThread running. "
                     "Calling webcrawlerThread.quit()";
+        webcrawlerThread.requestInterruption();
         webcrawlerThread.quit();
         webcrawlerThread.wait();
     }
@@ -3444,6 +3445,12 @@ void Graph::startWebCrawler(
                 socialLinks,
                 delayBetween
                 );
+
+    // Just in case, we reach this place and the thread is still running
+    if (webcrawlerThread.isRunning()) {
+        qDebug() << "webcrawlerThread is already running - calling requestInterruption()...";
+        webCrawlTerminateThreads("startWebCrawler() to start a new WebCrawler but webcrawlerThread is running...");
+    }
 
     // Move the crawler to another thread
     web_crawler->moveToThread(&webcrawlerThread);
