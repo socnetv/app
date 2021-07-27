@@ -536,55 +536,83 @@ double Graph::canvasRandomY() const {
 
 
 /**
- * @brief Changes m_curRelation to relNum.
- * If relNum==RAND_MAX, changes to last added relation.
- * Then calls GraphVertex::relationSet() for all enabled vertices, to disable edges
- * of the old relation and enable edges of the new relation
- * Then, if notifyMW==TRUE, it signals signalRelationChangedToGW(int),
- * which disables/enables the on screen edges, and
- * Called from MW when the user selects a relation in the combo box.
- * Also called from Parser
+ * @brief
+ * Changes m_curRelation to relNum, and optionally emits signals to MW/GW (by default: true)
+ *
+ * Forces all enabled vertices to disable edges
+ * in the old relation and enable edges of the new relation
+ *
+ * Then, if updateUI==true (default), it emits signals to MW and GW
+ * to update the MW UI and toggle the edges on the GW, respectivelly.
+ *
+ * Called from Parser and when the user selects a relation in the MW combo box.
+ *
  * @param relNum int
- * @param notifyMW bool
+ * @param updateUI bool
  */
-void Graph::relationSet(int relNum, const bool notifyMW){
-    qDebug() << "++ Graph::relationSet(int) to relation " << relNum
-             << " current relation is " << m_curRelation ;
+void Graph::relationSet(int relNum, const bool updateUI){
+
+    qDebug() << "++ Graph::relationSet() to relation:" << relNum
+             << " - current relation:" << m_curRelation
+              << "updateUI:" << updateUI;
+
+    //
+    // Perform checks for requested new relation number
+    //
     if (m_curRelation == relNum ) {
-        qDebug() << "++ Graph::relationSet(int) - same relation - END";
-        return;
-    }
-    if ( relNum < 0) {
-        qDebug() << "++ Graph::relationSet(int) - negative relation - END ";
-        return;
-    }
-    else if (relNum==RAND_MAX) {
-        relNum=relations() -1;
-    }
-    else if (relNum> relations() -1) {
-        qDebug() << "++ Graph::relationSet(int) - not existing relation - END ";
+        // Same as current, don't do nothing
+        qDebug() << "++ Graph::relationSet() - same relation - END";
         return;
     }
 
+    if ( relNum < 0) {
+        // negative, don't do nothing
+        qDebug() << "++ Graph::relationSet() - negative relation - END ";
+        return;
+    }
+    else if (relNum==RAND_MAX) {
+        // Set relation to the last existing relation
+        relNum=relations() -1;
+    }
+    else if (relNum > relations() -1 ) {
+        // Invalid relation, abort
+        qDebug() << "++ Graph::relationSet() - not existing relation - END ";
+        return;
+    }
+
+    //
+    // Force enabled vertices to disable all edges
+    // in the old relation and enable edges in the new relation
+    //
     VList::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        qDebug() << "++ Graph::relationSet(int) - changing relation of vertex"
+        qDebug() << "++ Graph::relationSet() - changing relation of vertex"
                  << (*it)->name()
                  << "to" << relNum;
         if ( ! (*it)->isEnabled() )
             continue;
         (*it)->relationSet(relNum);
     }
+
+    //
+    // now change the relation
+    //
     m_curRelation = relNum;
 
+    //
     // Check if isWeighted so that multiple-relation networks are properly loaded.
+    //
     graphIsWeighted();
 
-    if (notifyMW) {
-        //notify MW to change combo box relation name
+    //
+    // Check if we need to update the UI
+    //
+    if (updateUI) {
+        // Notify MW to change combo box relation name
         emit signalRelationChangedToMW(m_curRelation);
         //notify GW to disable/enable the on screen edges.
         emit signalRelationChangedToGW(m_curRelation);
+
         qDebug()<<"Graph::relationSet() - Calling graphSetModified()";
         graphSetModified(GraphChange::ChangedEdges);
     }
@@ -593,9 +621,8 @@ void Graph::relationSet(int relNum, const bool notifyMW){
 
 
 /**
- * @brief Graph::slotEditRelationPrev
- * Decreases the rel number of editRelationChangeCombo
- * which signals to Graph::relationSet()
+ * @brief
+ * Changes graph to previous relation
  */
 void Graph::relationPrev(){
     qDebug() << "Graph::relationPrev()";
@@ -609,9 +636,8 @@ void Graph::relationPrev(){
 
 
 /**
- * @brief Graph::slotEditRelationNext
- * Increases the rel number of editRelationChangeCombo
- * which signals to Graph::relationSet()
+ * @brief
+ * Changes graph to next relation
  */
 void Graph::relationNext(){
     qDebug() << "Graph::relationNext()";
@@ -627,16 +653,20 @@ void Graph::relationNext(){
 
 /**
  * @brief
- * Adds a new relation named relName
+ * Adds a new relation named relName, emitting signal to MW, and
+ * optionally changing current relation to the new one.
  * Called by file parser to add a new relation
  * Also called from MW.
- * emits signalRelationAddToMW
  * @param relName
  */
 void Graph::relationAdd(const QString &relName, const bool &changeRelation) {
-    qDebug() << "Adding relation named" << relName;
+
+    qDebug() << "Adding new relation named:" << relName;
+
     m_relationsList << relName;
+
     emit signalRelationAddToMW(relName, false);
+
     if (changeRelation) {
         relationSet();
     }
@@ -645,8 +675,11 @@ void Graph::relationAdd(const QString &relName, const bool &changeRelation) {
 
 
 
+
 /**
- * @brief Returns current relation number
+ * @brief
+ * Returns current relation number
+ *
  * @return int
  */
 int Graph::relationCurrent(){
@@ -655,45 +688,68 @@ int Graph::relationCurrent(){
 
 
 /**
- * @brief Returns current relation
- * @return string current relation name
+ * @brief
+ * Returns current relation name
+ *
+ * @return string
  */
 QString Graph::relationCurrentName() const{
-    qDebug() << "Graph::relationCurrentName() -";
+    qDebug() << "Graph::relationCurrentName()";
     return m_relationsList.value(m_curRelation);
 }
 
 
 
 /**
- * @brief Graph::relationCurrentRename
+ * @brief
+ * Renames current relation to newName, optionally emitting a signal to MW
  * @param newName
  */
-void Graph::relationCurrentRename(const QString &newName, const bool &notifyMW) {
+void Graph::relationCurrentRename(const QString &newName, const bool &signalMW) {
 
+    //
+    // Check if new name is empty
+    //
     if (newName.isEmpty()) {
-        qDebug()<< "Graph::relationCurrentRename() - m_curRelation"
-                   <<m_curRelation<<
-                     "newName"<<newName
-                  << "is empty - Returning";
+        qDebug()<< "Graph::relationCurrentRename() - newName is empty. Nothing to do. Returning.";
 
         return;
     }
-    qDebug()<< "Graph::relationCurrentRename() - m_relationsList["
-               <<m_curRelation<<
-                 "]="<<newName
-              << " - notifyMW" <<notifyMW;
+
+    //
+    // Rename current relation to newName
+    //
+    qDebug()<< "Graph::relationCurrentRename() - Renaming current relation:"
+               <<m_curRelation<< "to:"<<newName
+              << " - signalMW:" <<signalMW;
 
     m_relationsList[m_curRelation] = newName;
-    if (notifyMW)
+
+    //
+    // Check if we need to emit a signal
+    //
+    if (signalMW){
         emit signalRelationRenamedToMW(newName);
+    }
+
+}
+
+/**
+ * @brief
+ * Overload. Renames current relation to newName, without emitting any signal to MW
+ * @param newName
+ */
+void Graph::relationCurrentRename(const QString &newName) {
+    relationCurrentRename(newName, false);
 }
 
 
+
 /**
- * @brief Graph::relations
- * @return
- * Returns the number of relationships in this Graph
+ * @brief
+ * Returns the count of relationships in this Graph
+ *
+ * @return int
  */
 int Graph::relations(){
     //qDebug () << " relations count " << m_relationsList.count();
@@ -720,7 +776,8 @@ void Graph::relationsClear(){
 
 */
 /**
- * @brief Creates a new vertex
+ * @brief
+ * Creates a new vertex
  * Main vertex creation slot, associated with homonymous signal from Parser.
  * Adds a vertex to the Graph and signals drawNode to GW
  * The new vertex has number num and specific color, label, label color, shape and position p.
@@ -15631,14 +15688,9 @@ void Graph::graphLoad (	const QString m_fileName,
     connect(file_parser, &Parser::addRelation,
             this, &Graph::relationAdd);
 
-    connect (
-                file_parser, SIGNAL( relationSet (int) ),
-                this, SLOT( relationSet (int) )
-                ) ;
-
+    connect (file_parser, SIGNAL( relationSet (int) ), this, SLOT( relationSet (int) ) ) ;
 
     connect ( file_parser, &Parser::createNode, this, &Graph::vertexCreate );
-
 
     connect (
                 file_parser, SIGNAL (createNodeAtPosRandom(const bool &)),
