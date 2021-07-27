@@ -285,6 +285,9 @@ public slots:
     void slotEditDragModeScroll(bool);
 
     void slotEditRelationsClear();
+
+    void slotEditRelationAddPrompt();
+
     void slotEditRelationAdd(QString newRelationName=QString(),
                              const bool &changeRelation=true);
     void slotEditRelationChange(const int relIndex=RAND_MAX);

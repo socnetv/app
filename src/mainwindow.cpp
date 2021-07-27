@@ -5592,7 +5592,7 @@ void MainWindow::initSignalSlots() {
 
 
     connect( editRelationAddAct, SIGNAL(triggered()),
-             this, SLOT(slotEditRelationAdd()) );
+             this, SLOT(slotEditRelationAddPrompt()) );
 
     connect( editRelationRenameAct,SIGNAL(triggered()),
              this, SLOT(slotEditRelationRename()) ) ;
@@ -7470,53 +7470,14 @@ void MainWindow::slotEditRelationsClear(){
 
 /**
  * @brief
- * Called from MW when user clicks New Relation btn
- * or when the user creates the first edge visually.
- * Called from activeGraph::relationAdd(QString)
- * via signal Graph::signalRelationChangedToMW() when the parser or a
- * Graph method demands a new relation to be added in the Combobox.
- * @param newRelationName
- * @param changeRelation
+ * Prompts the user to enter the name of a new relation
+ * which will be added to the network
  */
-void MainWindow::slotEditRelationAdd(QString newRelationName, const bool &changeRelation){
-
-    int comboItemsBefore = editRelationChangeCombo->count();
-    int relationsCounter=activeGraph->relations();
-
-    qDebug() << "Adding new relation to relations combo:"
-             << newRelationName
-             <<"to relations combo. Before this, combo items:"
-            << comboItemsBefore
-            << "and currentIndex:"
-            <<editRelationChangeCombo->currentIndex()
-           << "relationsCounter:"
-           <<relationsCounter;
-
-    if (!newRelationName.isNull()) {
-
-        editRelationChangeCombo->addItem(newRelationName);
-
-        if (changeRelation) {
-            if ( comboItemsBefore == 0 ) { // only at startup
-                slotEditRelationChange(0);
-            }
-            else {
-                slotEditRelationChange();
-            }
-
-        }
-        qDebug() << "added relation:"
-                 << newRelationName
-                 <<"now combo items:"
-                << editRelationChangeCombo->count()
-                << "now currentIndex:"
-                <<editRelationChangeCombo->currentIndex()
-               << "relationsCounter"
-               <<relationsCounter;
-        return;
-    }
+void MainWindow::slotEditRelationAddPrompt() {
 
     bool ok;
+    QString newRelationName;
+    int relationsCounter=activeGraph->relations();
 
     if (relationsCounter==1 && activeNodes()==0 ) {
         newRelationName = QInputDialog::getText(
@@ -7536,22 +7497,80 @@ void MainWindow::slotEditRelationAdd(QString newRelationName, const bool &change
                     tr("Enter a name for the new relation (or press Cancel):"),
                     QLineEdit::Normal,QString(), &ok );
     }
-    if (ok && !newRelationName.isEmpty()){
-        // user pressed OK, name entered
-        emit signalRelationAddAndChange(newRelationName);
-    }
-    else if ( newRelationName.isEmpty() && ok ){
-        // user pressed OK, no name entered
-        QMessageBox::critical(this, tr("Error"),
-                              tr("You did not type a name for this new relation"),
-                              QMessageBox::Ok, 0);
-        slotEditRelationAdd();
+
+    if ( ok ) {
+        // user pressed OK, check if entered new relation name
+        if (!newRelationName.isEmpty()){
+            // new relation name entered
+            // Check if it is already used by another relation.
+            if ( editRelationChangeCombo->findText(newRelationName) > -1 )  {
+                QMessageBox::critical(this, tr("Error"),
+                                      tr("Relation name exists."),
+                                      QMessageBox::Ok, 0);
+
+                return;
+
+            }
+            emit signalRelationAddAndChange(newRelationName);
+        }
+        else {
+            // no name entered
+            QMessageBox::critical(this, tr("Error"),
+                                  tr("You did not type a name for this new relation"),
+                                  QMessageBox::Ok, 0);
+            slotEditRelationAdd();
+        }
     }
     else {
-        //user pressed Cancel
+        // user pressed Cancel
         statusMessage( QString(tr("New relation cancelled.")) );
         return;
     }
+
+    statusMessage( QString(tr("New relation named %1, added."))
+                   .arg( newRelationName ) );
+}
+
+/**
+ * @brief
+ * Called from MW when user clicks New Relation btn
+ * or when the user creates the first edge visually.
+ * Called from activeGraph::relationAdd(QString)
+ * via signal Graph::signalRelationChangedToMW() when the parser or a
+ * Graph method demands a new relation to be added in the Combobox.
+ * @param newRelationName
+ * @param changeRelation
+ */
+void MainWindow::slotEditRelationAdd(QString newRelationName, const bool &changeRelation){
+
+    int comboItemsBefore = editRelationChangeCombo->count();
+    int relationsCounter=activeGraph->relations();
+
+    qDebug() << "Adding new relation to relations combo:"
+             << newRelationName
+             <<" Current combo items:"
+            << comboItemsBefore
+            << "and currentIndex:"
+            <<editRelationChangeCombo->currentIndex()
+           << "relationsCounter:"
+           <<relationsCounter;
+
+    if (!newRelationName.isNull()) {
+
+        editRelationChangeCombo->addItem(newRelationName);
+
+        if (changeRelation) {
+            if ( comboItemsBefore == 0 ) { // only at startup
+                slotEditRelationChange(0);
+            }
+            else {
+                slotEditRelationChange();
+            }
+
+        }
+        return;
+    }
+
     statusMessage( QString(tr("New relation named %1, added."))
                    .arg( newRelationName ) );
 }
