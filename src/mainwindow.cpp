@@ -5434,8 +5434,11 @@ void MainWindow::initSignalSlots() {
     connect( editRelationChangeCombo , SIGNAL( activated(int) ) ,
              activeGraph, SLOT( relationSet(int) ) );
 
-    connect( editRelationChangeCombo , SIGNAL( currentTextChanged(QString) ),
-             activeGraph, SLOT( relationCurrentRename(QString) )  );
+    connect( editRelationChangeCombo , SIGNAL( currentTextChanged(const QString&) ),
+             activeGraph, SLOT( relationCurrentRename(const QString &) )  );
+
+//    connect( editRelationChangeCombo, &QComboBox::currentTextChanged,
+//             activeGraph, QOverload<const QString &>::of(&Graph::relationCurrentRename));
 
     connect( this , &MainWindow::signalRelationAddAndChange,
              activeGraph, &Graph::relationAdd );
@@ -7451,22 +7454,30 @@ void MainWindow::slotEditDragModeScroll(bool checked){
 }
 
 
+
 /**
- * @brief Called from Graph::relationsClear() to clear the relations combo.
+ * @brief
+ * Clears the relations combo.
+ * Called from Graph::relationsClear()
  */
 void MainWindow::slotEditRelationsClear(){
     qDebug() << "clearing relations combo...";
     editRelationChangeCombo->clear();
 }
 
+
 /**
- * @brief Called from MW when user clicks New Relation btn
+ * @brief
+ * Called from MW when user clicks New Relation btn
  * or when the user creates the first edge visually.
  * Called from activeGraph::relationAdd(QString)
  * via signal Graph::signalRelationChangedToMW() when the parser or a
  * Graph method demands a new relation to be added in the Combobox.
+ * @param newRelationName
+ * @param changeRelation
  */
 void MainWindow::slotEditRelationAdd(QString newRelationName, const bool &changeRelation){
+
     int comboItemsBefore = editRelationChangeCombo->count();
     int relationsCounter=activeGraph->relations();
 
@@ -7547,21 +7558,21 @@ void MainWindow::slotEditRelationAdd(QString newRelationName, const bool &change
 
 
 /**
- * @brief if relIndex==RAND_MAX changes combo box index to last relation index
- * else it changes the combo box index to relIndex
- * Called from Graph::relationAddAndChangeTo
- * via signal Graph::signalRelationChangedToMW()
+ * @brief
+ * Changes the editRelations combo box index to relIndex
+ * If relIndex==RAND_MAX the index is set to the last relation index
+ *
  * @param relIndex
  */
 void MainWindow::slotEditRelationChange(const int relIndex) {
     if ( relIndex == RAND_MAX){
-        qDebug() << "relation changed to RANDMAX. Change to last relation";
+        qDebug() << "relIndex==RANDMAX. Changing relation combo to last relation...";
         editRelationChangeCombo->setCurrentIndex(
                     ( editRelationChangeCombo->count()-1 )
                     );
     }
     else {
-        qDebug() << "relation changed to index" << relIndex;
+        qDebug() << "Changing relation combo to index" << relIndex;
         editRelationChangeCombo->setCurrentIndex(relIndex);
     }
 
