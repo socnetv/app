@@ -7526,7 +7526,8 @@ void MainWindow::slotEditRelationAddPrompt() {
             }
 
             // Emit signal to Graph to add the relation and change to it
-            emit signalRelationAddAndChange(newRelationName);
+            bool changeRelation = true;
+            emit signalRelationAddAndChange(newRelationName, changeRelation);
         }
         else {
             // no name entered
@@ -10389,9 +10390,6 @@ void MainWindow::slotEditEdgeCreate (const int &source, const int &target,
                                                         ( (appSettings["initEdgeArrows"] == "true") ? true: false)
             , bezier);
 
-    if ( activeEdges() == 1 && editRelationChangeCombo->count() == 0 ) {
-        slotEditRelationAdd();
-    }
 }
 
 
