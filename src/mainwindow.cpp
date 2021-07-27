@@ -7471,7 +7471,7 @@ void MainWindow::slotEditRelationsClear(){
 /**
  * @brief
  * Prompts the user to enter the name of a new relation
- * which will be added to the network
+ * On success, emits signal to Graph to change to the new relation.
  */
 void MainWindow::slotEditRelationAddPrompt() {
 
@@ -7479,6 +7479,11 @@ void MainWindow::slotEditRelationAddPrompt() {
     QString newRelationName;
     int relationsCounter=activeGraph->relations();
 
+    //
+    // Prompt the user for the new relation name
+    //
+
+    // Check if this is the first time, in order to show a more comprehensive message
     if (relationsCounter==1 && activeNodes()==0 ) {
         newRelationName = QInputDialog::getText(
                     this,
@@ -7498,10 +7503,18 @@ void MainWindow::slotEditRelationAddPrompt() {
                     QLineEdit::Normal,QString(), &ok );
     }
 
+    //
+    // Check which button was pressed
+    //
     if ( ok ) {
-        // user pressed OK, check if entered new relation name
+
+        // user pressed OK
+
+        // Check if new relation name
         if (!newRelationName.isEmpty()){
-            // new relation name entered
+
+            // a relation name entered
+
             // Check if it is already used by another relation.
             if ( editRelationChangeCombo->findText(newRelationName) > -1 )  {
                 QMessageBox::critical(this, tr("Error"),
@@ -7511,6 +7524,8 @@ void MainWindow::slotEditRelationAddPrompt() {
                 return;
 
             }
+
+            // Emit signal to Graph to add the relation and change to it
             emit signalRelationAddAndChange(newRelationName);
         }
         else {
@@ -7518,7 +7533,7 @@ void MainWindow::slotEditRelationAddPrompt() {
             QMessageBox::critical(this, tr("Error"),
                                   tr("You did not type a name for this new relation"),
                                   QMessageBox::Ok, 0);
-            slotEditRelationAdd();
+            return;
         }
     }
     else {
@@ -7531,13 +7546,13 @@ void MainWindow::slotEditRelationAddPrompt() {
                    .arg( newRelationName ) );
 }
 
+
+
 /**
  * @brief
- * Called from MW when user clicks New Relation btn
- * or when the user creates the first edge visually.
- * Called from activeGraph::relationAdd(QString)
- * via signal Graph::signalRelationChangedToMW() when the parser or a
- * Graph method demands a new relation to be added in the Combobox.
+ * Adds a new relation to the relations combobox
+ * Called from Graph when the network file parser or another Graph method
+ * demands a new relation to be added in the Combobox.
  * @param newRelationName
  * @param changeRelation
  */
