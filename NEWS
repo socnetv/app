@@ -4,6 +4,14 @@ Social Network Visualizer (SocNetV)
 SocNetV News
 -==========-
 
+Jul 2021
+========
+
+- Version 3.0 released for Windows, macOS and Linux.
+- Note: To run SocNetV 3.0 AppImage in Fedora 34 which uses Wayland by default, use:
+   env GDK_BACKEND=x11  ./SocNetV-3.0-dev-x86_64.AppImage
+
+
 Jun 2021
 ========
 
