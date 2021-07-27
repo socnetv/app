@@ -288,7 +288,7 @@ public slots:
     void slotEditRelationAdd(QString newRelationName=QString(),
                              const bool &changeRelation=true);
     void slotEditRelationChange(const int relIndex=RAND_MAX);
-    void slotEditRelationRename(QString newName=QString());
+    void slotEditRelationRename();
 
     void slotEditOpenContextMenu(const QPointF & mPos);
     void slotEditSelectionChanged (const int &selNodes, const int &selEdges);
