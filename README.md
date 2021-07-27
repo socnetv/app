@@ -215,12 +215,30 @@ or go to Start Menu > Mathematics  > SocNetV.
 
 # 5. Command Line Options
 	
-SocNetV is primarily a GUI program. Nevertheless, some command line options 
-are available. Type:
+SocNetV is primarily a GUI program. Nevertheless, some command line options are available:
 
-./socnetv filename.net
+Options:
+  -h, --help           Displays this help.
+  -v, --version        Displays version information.
+  -p, --progress       Force showing progress dialogs/bars during computations.
+  -m, --maximized      Show app maximized.
+  -f, --fullscreen     Show in full screen mode.
+  -d, --debug <level>  Print debug messages to stdout/console. Available
+                       verbosity <level>s: 'none', 'min' or 'full'. Default:
+                       'min'.
 
-to start socnetv with network named filename.net loaded.
+Arguments:
+  file                 Network file to load on startup. You can load a network
+                       from a file using `socnetv file.net` where
+                       file.net/csv/dot/graphml must be of valid format. See
+                       README.
+
+
+For example, type:
+
+./socnetv net.graphml
+
+to start SocNetV and immediately load network file named 'net.graphml' (in current folder).
 
 
 
