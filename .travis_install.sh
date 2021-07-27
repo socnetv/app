@@ -22,6 +22,7 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     echo "Installing Qt5 packages..."
     # You need to change this if you need to update to a more recent Qt version
     sudo apt-get -y install qt512base qt512charts-no-lgpl  qt512svg
+    echo ""
     echo "Running Qt5 env script to set it up in the host system..."
     source /opt/qt512/bin/qt512-env.sh
     echo "Finished installing and configuring Qt5 packages..."
