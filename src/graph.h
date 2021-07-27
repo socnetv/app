@@ -147,7 +147,8 @@ public slots:
 
     QString relationCurrentName() const;
 
-    void relationCurrentRename(const QString &newName, const bool &notifyMW=false);
+    void relationCurrentRename(const QString &newName);
+    void relationCurrentRename(const QString &newName, const bool &signalMW);
 
     /** Slots to signals from Parser */
     void vertexCreate (const int &number,
@@ -205,7 +206,7 @@ public slots:
 
     /** Slots to signals from MainWindow */
 
-    void relationSet(int relNum=RAND_MAX, const bool notifyMW=true);
+    void relationSet(int relNum=RAND_MAX, const bool updateUI=true);
 
     void relationNext();
 
