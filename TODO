@@ -1,10 +1,9 @@
 KNOWN ISSUES
 ============
 
-1: Negative weights break centralities
-2: UCINET (DL) files in nodelist1 format (one-mode) are not supported.  
-3: GraphML files containing special HTML chars (i.e. & ) in labels are not readable.
-4: (Wontfix) Pajek files missing opening/closing quotes ("") around node labels cannot be imported correctly (#73)
+- Negative weights break centralities
+- UCINET (DL) files in nodelist1 format (one-mode) are not supported.
+- (Wontfix) Pajek files missing opening/closing quotes ("") around node labels cannot be imported correctly (#73)
 
 TODO
 ====
