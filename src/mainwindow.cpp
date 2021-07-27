@@ -5431,6 +5431,13 @@ void MainWindow::initSignalSlots() {
     connect( activeGraph, SIGNAL( signalDatasetDescription (QString) ),
              this, SLOT( slotHelpMessageToUserInfo (QString) ) ) ;
 
+
+    connect( editRelationNextAct, &QAction::triggered,
+             activeGraph, &Graph::relationNext );
+
+    connect( editRelationPreviousAct, &QAction::triggered,
+             activeGraph, &Graph::relationPrev );
+
     connect( editRelationChangeCombo , SIGNAL( activated(int) ) ,
              activeGraph, SLOT( relationSet(int) ) );
 
@@ -5443,12 +5450,6 @@ void MainWindow::initSignalSlots() {
     connect( this , &MainWindow::signalRelationAddAndChange,
              activeGraph, &Graph::relationAdd );
 
-    connect( editRelationNextAct, &QAction::triggered,
-             activeGraph, &Graph::relationNext );
-
-    connect( editRelationPreviousAct, &QAction::triggered,
-             activeGraph, &Graph::relationPrev );
-
     connect ( activeGraph, &Graph::signalRelationChangedToMW,
               this, &MainWindow::slotEditRelationChange );
 
@@ -5459,13 +5460,14 @@ void MainWindow::initSignalSlots() {
               this, &MainWindow::slotEditRelationAdd  );
 
     connect ( activeGraph, &Graph::signalRelationRenamedToMW,
-              this, &MainWindow::slotEditRelationRename );
+              editRelationChangeCombo, &QComboBox::setCurrentText );
 
     connect ( activeGraph, &Graph::signalProgressBoxCreate,
               this, &MainWindow::slotProgressBoxCreate);
 
     connect ( activeGraph, &Graph::signalProgressBoxKill,
               this, &MainWindow::slotProgressBoxDestroy);
+
 
     connect ( activeGraph, &Graph::signalPromininenceDistributionChartUpdate,
               this, &MainWindow::slotAnalyzeProminenceDistributionChartUpdate);
@@ -5588,12 +5590,12 @@ void MainWindow::initSignalSlots() {
     connect( editDragModeScrollAct, &QAction::triggered,
              this, &MainWindow::slotEditDragModeScroll );
 
+
     connect( editRelationAddAct, SIGNAL(triggered()),
              this, SLOT(slotEditRelationAdd()) );
 
     connect( editRelationRenameAct,SIGNAL(triggered()),
              this, SLOT(slotEditRelationRename()) ) ;
-
 
     connect(zoomInAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomIn()) );
     connect(zoomOutAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomOut()) );
@@ -7461,7 +7463,7 @@ void MainWindow::slotEditDragModeScroll(bool checked){
  * Called from Graph::relationsClear()
  */
 void MainWindow::slotEditRelationsClear(){
-    qDebug() << "clearing relations combo...";
+    qDebug() << "Clearing relations combo...";
     editRelationChangeCombo->clear();
 }
 
@@ -7481,7 +7483,7 @@ void MainWindow::slotEditRelationAdd(QString newRelationName, const bool &change
     int comboItemsBefore = editRelationChangeCombo->count();
     int relationsCounter=activeGraph->relations();
 
-    qDebug() << "adding relation:"
+    qDebug() << "Adding new relation to relations combo:"
              << newRelationName
              <<"to relations combo. Before this, combo items:"
             << comboItemsBefore
@@ -7582,36 +7584,43 @@ void MainWindow::slotEditRelationChange(const int relIndex) {
 
 
 /**
- * @brief Renames a relation
+ * @brief
+ * Prompts the user to enter a new name for the current relation
  * @param newName
  */
-void MainWindow::slotEditRelationRename(QString newName) {
-    qDebug()<<"Request to rename current relation to:" << newName
-             <<"relation combo current text: " << editRelationChangeCombo->currentText();
+void MainWindow::slotEditRelationRename() {
+
     bool ok=false;
-    if (newName.isNull() || newName.isEmpty()) {
-        qDebug()<<"Prompting to enter new name...";
-        newName = QInputDialog::getText(
-                    this,
-                    tr("Rename current relation"),
-                    tr("Enter a new name for this relation."),
-                    QLineEdit::Normal, QString(), &ok );
-        if ( newName.isEmpty() || !ok ){
-            slotHelpMessageToUser(USER_MSG_CRITICAL,
-                                  tr("Not a valid name."),
-                                  tr("Error"),
-                                  tr("You did not enter a valid name for this relation.")
-                                  );
-            return;
-        }
-        else {
-            activeGraph->relationCurrentRename(newName, true);
-        }
+
+    qDebug()<<"Request to rename current relation:"
+            << editRelationChangeCombo->currentText()
+            << "Prompting for new name...";
+
+    //
+    // Get new name from user
+    //
+    QString newName = QInputDialog::getText(
+                this,
+                tr("Rename current relation"),
+                tr("Enter a new name for this relation."),
+                QLineEdit::Normal, QString(), &ok );
+
+    //
+    // Check entered name
+    //
+    if ( newName.isEmpty() || !ok ){
+        slotHelpMessageToUser(USER_MSG_CRITICAL,
+                              tr("Not a valid name."),
+                              tr("Error"),
+                              tr("You did not enter a valid name for this relation.")
+                              );
+        return;
     }
-    else {
-        qDebug()<<"updating relation name combo to" << newName;
-        editRelationChangeCombo->setCurrentText(newName);
-    }
+
+    //
+    // Change name in combo - this will trigger the signal to activeGraph
+    //
+    editRelationChangeCombo->setCurrentText(newName);
 
 }
 
