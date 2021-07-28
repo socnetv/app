@@ -32,7 +32,6 @@
 
 class GraphicsNode;
 
-
 static const int TypeNumber=QGraphicsItem::UserType+3;
 static const int ZValueNodeNumber = 90;
 

@@ -24,8 +24,6 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-
-
 #ifndef GRAPHICSEDGEWEIGHT_H
 #define GRAPHICSEDGEWEIGHT_H
 

@@ -30,7 +30,6 @@
 #include <config.h>
 #endif
 
-
 #include <QtWidgets>
 #include <QtGlobal>
 #include <QtDebug>
@@ -53,8 +52,10 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QSslError>
+#include <QAbstractSeries>
 
 #include "mainwindow.h"
+#include "graph.h"
 #include "texteditor.h"
 #include "graphicswidget.h"
 #include "graphicsnode.h"
@@ -62,32 +63,25 @@
 #include "graphicsnodenumber.h"
 #include "chart.h"
 
-#include "forms/dialogsettings.h"
-
-#include "forms/dialogwebcrawler.h"
-
 #include "forms/dialogpreviewfile.h"
-
-#include "forms/dialogexportpdf.h"
-#include "forms/dialogexportimage.h"
-
+#include "forms/dialogwebcrawler.h"
+#include "forms/dialogdatasetselect.h"
 #include "forms/dialogranderdosrenyi.h"
 #include "forms/dialograndsmallworld.h"
 #include "forms/dialograndscalefree.h"
 #include "forms/dialograndregular.h"
 #include "forms/dialograndlattice.h"
-
+#include "forms/dialogexportpdf.h"
+#include "forms/dialogexportimage.h"
 #include "forms/dialognodefind.h"
 #include "forms/dialognodeedit.h"
-
 #include "forms/dialogfilteredgesbyweight.h"
 #include "forms/dialogedgedichotomization.h"
-
 #include "forms/dialogsimilaritypearson.h"
 #include "forms/dialogsimilaritymatches.h"
 #include "forms/dialogclusteringhierarchical.h"
 #include "forms/dialogdissimilarities.h"
-
+#include "forms/dialogsettings.h"
 #include "forms/dialogsysteminfo.h"
 
 

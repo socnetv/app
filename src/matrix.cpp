@@ -27,8 +27,6 @@
 
 #include "matrix.h"
 
-
-
 #define TINY 1.0e-20
 
 #include <cstdlib>		//allows the use of RAND_MAX macro

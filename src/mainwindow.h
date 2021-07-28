@@ -29,7 +29,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-
 /** \file mainwindow.h
 
  \brief Documentation for the mainwindow file.
@@ -41,13 +40,12 @@
 #include <QMessageBox>
 #include <QStack>
 #include <QThread>
+#include <QNetworkReply>
+
+// Allows to use QT_CHARTS namespace directives (see below)
+#include <QtCharts/QChartGlobal>
 
 #include "global.h"
-#include "graph.h"    // needed here for static vars declared in Graph
-#include "forms/dialogfilteredgesbyweight.h"
-#include "forms/dialogdatasetselect.h"
-
-typedef QHash <QString, int> H_StrToInt;
 
 QT_BEGIN_NAMESPACE
 class QGraphicsScene;
@@ -63,51 +61,50 @@ class QComboBox;
 class QGroupBox;
 class QTabWidget;
 class QSpinBox;
-class QNetworkReply;
 class QNetworkAccessManager;
 class QSslError;
+class QString;
 QT_END_NAMESPACE
+
+QT_CHARTS_BEGIN_NAMESPACE
+class QAbstractSeries;
+class QAbstractAxis;
+QT_CHARTS_END_NAMESPACE
+
+
+QT_CHARTS_USE_NAMESPACE
 
 using namespace std;
 
 SOCNETV_USE_NAMESPACE
-
+class Graph;
 class GraphicsWidget;
-
 class GraphicsEdge;
 class GraphicsNode;
-
 class Chart;
-
-class DialogNodeFind;
-class DialogNodeEdit;
-
-class DialogEdgeDichotomization;
-
 class DialogPreviewFile;
-
+class DialogWebCrawler;
+class DialogDataSetSelect;
 class DialogRandErdosRenyi;
 class DialogRandSmallWorld;
 class DialogRandScaleFree;
 class DialogRandRegular;
 class DialogRandLattice;
-
 class DialogSimilarityPearson;
 class DialogSimilarityMatches;
 class DialogDissimilarities;
 class DialogClusteringHierarchical;
-
-class DialogWebCrawler;
-
 class DialogExportPDF;
 class DialogExportImage;
-
+class DialogNodeFind;
+class DialogNodeEdit;
+class DialogFilterEdgesByWeight;
+class DialogEdgeDichotomization;
 class DialogSettings;
-
 class DialogSystemInfo;
-
 class TextEditor;
 
+typedef QHash <QString, int> H_StrToInt;
 
 
 /**

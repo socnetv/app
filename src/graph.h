@@ -40,9 +40,9 @@
 #include <QTextStream>
 #include <QThread>
 
-
+// Allows to use QT_CHARTS namespace directives (see below)
 #include <QtCharts/QChartGlobal>
-#include <QAbstractSeries>
+
 
 //FYI: stack is a wrapper around <deque> in C++, see: www.cplusplus.com/reference/stl/stack
 #include <stack>
@@ -72,18 +72,14 @@ class QBarSet;
 class QBarCategoryAxis;
 QT_CHARTS_END_NAMESPACE
 
-
-
 QT_CHARTS_USE_NAMESPACE
 
-SOCNETV_USE_NAMESPACE
-
-
-class Chart;
 
 using namespace std;
 
 
+SOCNETV_USE_NAMESPACE
+class Chart;
 
 typedef QList<GraphVertex*> VList;
 typedef QHash <QString, int> H_StrToInt;
@@ -98,32 +94,18 @@ typedef QVector<int> V_int;
 typedef QVector<QString> V_str;
 
 
-
-
-
 /**
-  TODO & KNOWN BUGS:
+  KNOWN BUGS:
   \todo Group edge editing: i.e. change weight or color.
-  \todo - CHECK weighted networks results (IRCC and distance matrix with other combinations)
   \todo - CHECK graphIsWeighted corner case results, when !graphIsModified.
 
   \bug Create d-regular, undirected, ask for closeness, it says we are on a disconnected graph
-  \bug Crash on Graphml files with textlabels instead of nodenumbers (i.e. nets/killer.graphml)
-  \bug wontfix Crash on Graphml files with html special chars in node/edge labels
+  \bug Cannot read Graphml files where nodes are not declared before edges (i.e. nets/killer.graphml)
   \bug wontfix Pajek files with no ic / labels without quotes are displayed without colors
   \bug wrong default edge colors (not the ones used by Settings) after loading GraphML files.
-  \bug Resizing the MW view does not resize/reposition the layout guides
 
-
-
-  TODO
-  Change Menus to:
-  Matrices
-  Cohesion/Connectedness: Density, Reachability, and All distance and Walks, Connectivity, Reciprocity, Transitivity ?, Clu Cof
-  Prominence: Centrality and Prestige
-  Subgroups / Communities: Cliques (later clans etc), (later path distance MDS) Components, Blocks and Cutpoints,
-  Structural Equivalence: HCA, Similarity (later MDS), Block modelling, CONCOR
-
+  \todo Subgroups / Communities: clans, path distance MDS, Components, Blocks and Cutpoints,
+  \todo Structural Equivalence: MDS, Block modelling, CONCOR
   */
 
 

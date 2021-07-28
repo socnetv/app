@@ -25,6 +25,7 @@
 ********************************************************************************/
 
 #include "graphicsnodenumber.h"
+
 #include "graphicsnode.h"
 #include <QFont>
 #include <QDebug>

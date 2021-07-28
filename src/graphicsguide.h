@@ -29,7 +29,6 @@
 #define GRAPHICSGUIDE_H
 
 
-
 #include <QGraphicsItem>
 #include <QObject>
 

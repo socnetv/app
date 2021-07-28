@@ -26,6 +26,7 @@
 ********************************************************************************/
 
 #include "graphicsguide.h"
+
 #include "graphicswidget.h"
 
 GraphicsGuide::GraphicsGuide ( GraphicsWidget *gw,

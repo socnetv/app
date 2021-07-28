@@ -3,7 +3,6 @@
 
 #include <QMetaType>
 
-
 #define SOCNETV_NAMESPACE SocNetV
 
 #ifdef SOCNETV_NAMESPACE
@@ -17,10 +16,7 @@
 #endif
 
 
-
 SOCNETV_BEGIN_NAMESPACE
-
-
 
 #ifndef M_PI_3
 #define M_PI_3 (1.04719755119659774615)
@@ -231,13 +227,11 @@ public:
 
 
 
-
-
 SOCNETV_END_NAMESPACE
 
 
 Q_DECLARE_METATYPE(SOCNETV_NAMESPACE::MyEdge)
-
 Q_DECLARE_METATYPE(SOCNETV_NAMESPACE::NetworkRequestType)
+
 
 #endif // GLOBAL_H

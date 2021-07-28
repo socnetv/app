@@ -26,6 +26,7 @@
 ********************************************************************************/
 
 #include "graphicsnodelabel.h"
+
 #include "graphicsnode.h"
 #include <QFont>
 #include <QDebug>

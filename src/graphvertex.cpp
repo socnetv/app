@@ -25,11 +25,10 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#include <QtDebug>		//used for qDebug messages
-
-#include "graph.h"
 #include "graphvertex.h"
 
+#include <QtDebug>		//used for qDebug messages
+#include "graph.h"
 #include "graphicsnode.h"
 
 

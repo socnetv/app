@@ -26,6 +26,7 @@
 ********************************************************************************/
 
 #include "graphicsedgeweight.h"
+
 #include "graphicsedge.h"
 #include <QDebug>
 #include <QFont>

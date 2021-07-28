@@ -25,6 +25,8 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
+#include "graphicsedge.h"
+
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
 #include <QStyleOptionGraphicsItem>
@@ -34,7 +36,6 @@
 
 #include "global.h"
 #include "graphicswidget.h"
-#include "graphicsedge.h"
 #include "graphicsnode.h"
 #include "graphicsedgeweight.h"
 #include "graphicsedgelabel.h"
