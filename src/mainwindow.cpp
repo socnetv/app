@@ -1420,6 +1420,7 @@ void MainWindow::initActions(){
     editRelationNextAct->setToolTip(tr("Goto next graph relation (ALT+Right)"));
     editRelationNextAct->setStatusTip(tr("Load the next relation of the network (if any)."));
     editRelationNextAct->setWhatsThis(tr("Next Relation\n\nLoads the next relation of the network (if any)"));
+    editRelationNextAct->setEnabled(false);
 
     editRelationPreviousAct = new QAction(QIcon(":/images/chevron_left_48px.svg"),
                                           tr("Previous Relation"),  this);
@@ -1431,6 +1432,7 @@ void MainWindow::initActions(){
     editRelationPreviousAct->setWhatsThis(
                 tr("Previous Relation\n\n"
                    "Loads the previous relation of the network (if any)"));
+    editRelationPreviousAct->setEnabled(false);
 
     editRelationAddAct = new QAction(QIcon(":/images/add_48px.svg"),
                                      tr("Add New Relation"),  this);
@@ -7568,6 +7570,12 @@ void MainWindow::slotEditRelationAdd(const QString &newRelationName){
     if (!newRelationName.isNull()) {
 
         editRelationChangeCombo->addItem(newRelationName);
+
+        // Enable prev/next widgets, if they are disabled.
+        if (!editRelationPreviousAct->isEnabled() && editRelationChangeCombo->count() > 1) {
+            editRelationPreviousAct->setEnabled(true);
+            editRelationNextAct->setEnabled(true);
+        }
 
         statusMessage( QString(tr("Added a new relation named: %1."))
                        .arg( newRelationName ) );
