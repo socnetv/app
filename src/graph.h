@@ -310,7 +310,7 @@ signals:
 
     void signalEdgeClicked (const MyEdge &edge=MyEdge(), const bool &openMenu=false);
 
-    void signalRelationAddToMW(const QString &newRelation, const bool &changeRelation=true);
+    void signalRelationAddToMW(const QString &newRelation);
 
     void signalRelationsClear();
 
