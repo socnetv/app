@@ -43,7 +43,7 @@ echo "#############################"
 set -x
 
 %define name    socnetv
-%define version 3.0-dev
+%define version 3.0-rc1
 %define release 1
 %define lastrev %(LANG=en_US.UTF-8 && date +"%a %b %e %Y")
 
@@ -250,8 +250,8 @@ set -x
 #CHANGELOG SECTION
 #
 %changelog
-* Mon Jun 28 2021 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 3.0-1
-- continuous development v3.0-dev
+* Wed Jul 28 2021 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 3.0-rc1
+- v3.0-rc1
 * Mon Jun 14 2021 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.9-1
 - Upstream v2.9
 * Sun Jan 03 2021 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.8-1

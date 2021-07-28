@@ -3,7 +3,7 @@
 #define RELEASEFOLDER "release\"
 #define EXECUTABLE APPSHORT + ".exe"
 #define NUMERICVERSION GetVersionNumbersString(RELEASEFOLDER+EXECUTABLE)
-#define VERSION "3.0-dev" 
+#define VERSION "3.0-rc1" 
 #define URL "https://socnetv.org"
 #define COPYRIGHT "2005-2021 " + URL
 

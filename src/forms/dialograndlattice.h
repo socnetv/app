@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 3.0-dev
+ version: 3.0-rc1
  Written in Qt
 
                          dialograndlattice.h  -  description

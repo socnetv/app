@@ -105,7 +105,7 @@ enum NetworkRequestType {
 
 };
 
-static const QString VERSION="3.0-dev";
+static const QString VERSION="3.0-rc1";
 
 static const int USER_MSG_INFO=0;
 static const int USER_MSG_CRITICAL=1;
