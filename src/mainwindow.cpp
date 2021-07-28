@@ -7479,6 +7479,8 @@ void MainWindow::slotEditRelationAddPrompt() {
     QString newRelationName;
     int relationsCounter=activeGraph->relations();
 
+    qDebug() << "Prompting the user for the new relation name to be added to the relations combo...";
+
     //
     // Prompt the user for the new relation name
     //
@@ -7551,44 +7553,27 @@ void MainWindow::slotEditRelationAddPrompt() {
 
 /**
  * @brief
- * Adds a new relation to the relations combobox
+ * Adds a new relation to our UI relations combo
+ *
  * Called from Graph when the network file parser or another Graph method
- * demands a new relation to be added in the Combobox.
+ * demands a new relation to be added to the UI combo.
+ *
  * @param newRelationName
- * @param changeRelation
  */
-void MainWindow::slotEditRelationAdd(QString newRelationName, const bool &changeRelation){
-
-    int comboItemsBefore = editRelationChangeCombo->count();
-    int relationsCounter=activeGraph->relations();
+void MainWindow::slotEditRelationAdd(const QString &newRelationName){
 
     qDebug() << "Adding new relation to relations combo:"
-             << newRelationName
-             <<" Current combo items:"
-            << comboItemsBefore
-            << "and currentIndex:"
-            <<editRelationChangeCombo->currentIndex()
-           << "relationsCounter:"
-           <<relationsCounter;
+             << newRelationName;
 
     if (!newRelationName.isNull()) {
 
         editRelationChangeCombo->addItem(newRelationName);
 
-        if (changeRelation) {
-            if ( comboItemsBefore == 0 ) { // only at startup
-                slotEditRelationChange(0);
-            }
-            else {
-                slotEditRelationChange();
-            }
+        statusMessage( QString(tr("Added a new relation named: %1."))
+                       .arg( newRelationName ) );
 
-        }
-        return;
     }
 
-    statusMessage( QString(tr("New relation named %1, added."))
-                   .arg( newRelationName ) );
 }
 
 
