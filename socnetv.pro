@@ -128,7 +128,20 @@ RESOURCES = src/src.qrc
 
 # This is Windows only
 win32 {
-  RC_FILE = src/icon.rc
+  #RC_FILE = src/icon.rc
+  RC_ICONS = src/images/socnetv.ico
+  # Company name
+  QMAKE_TARGET_COMPANY = "socnetv.org"
+
+  # Product name
+  QMAKE_TARGET_PRODUCT = "Social Network Visualizer"
+
+  # Document description
+  QMAKE_TARGET_DESCRIPTION = "Social Network Visualizer is an open-source cross-platform social network analysis and visualization application based on Qt."
+
+  # Copyright Information
+  QMAKE_TARGET_COPYRIGHT = "Copyright (C) 2005-2021 Dimitris V. Kalamaras. GNU General Public License v3.0 or later."
+
   TARGET = SocNetV
   target.path = release/
 }
