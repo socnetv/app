@@ -5,7 +5,10 @@
 #
 
 #
-# This script builds SocNetV Windows installers ONLY on tags ('continuous' or another tag set by the developer, i.e. 3.0 or 3.0-beta*).
+# This script builds SocNetV Windows installers ONLY on tags i.e. 3.0 or 3.0-beta* created by the developer
+# as well when the 'continuous' tag is recreated.
+# The latter happens each time the uploadtool in travis uploads continuous builds (on a commit containing [ci] or [travis]).
+#
 #
 # NOTE:
 # To avoid possible cycles with creating new tags on regular commits or overwriting tags, we
@@ -29,7 +32,7 @@ branches:
     - master
     - develop
     - /v\d+\.\d+\.\d+/
-    - /v\d+\.\d+\.\w+/
+    - /v\d+\.\d+\-\w+/
 
 
 # Do not build on tags (GitHub and BitBucket)
@@ -107,6 +110,8 @@ install:
   - cmd: set SOCNETV_PRERELEASE=false
   - cmd: if "%APPVEYOR_REPO_TAG%"=="true" if "%APPVEYOR_REPO_TAG_NAME%"=="continuous" set SOCNETV_PRERELEASE=true
   - ps: if ($env:APPVEYOR_REPO_COMMIT_MESSAGE.Contains("[appveyor]")) {$env:SOCNETV_PRERELEASE = "true"}
+  - ps: if ($env:APPVEYOR_REPO_COMMIT_MESSAGE.Contains("[travis]")) {$env:SOCNETV_PRERELEASE = "true"}
+  - ps: if ($env:APPVEYOR_REPO_COMMIT_MESSAGE.Contains("[ci]")) {$env:SOCNETV_PRERELEASE = "true"}
   - ps: if ($env:APPVEYOR_REPO_TAG_NAME.Contains("-beta")) {$env:SOCNETV_PRERELEASE = "true"}
   - ps: if ($env:APPVEYOR_REPO_TAG_NAME.Contains("-rc")) {$env:SOCNETV_PRERELEASE = "true"}
   - ps: Write-Host $env:SOCNETV_PRERELEASE
@@ -198,8 +203,8 @@ deploy:
     force_update: true
     on:
       branch: $(APPVEYOR_REPO_BRANCH)        # deploy on same branch
-      APPVEYOR_REPO_TAG: true                # deploy on tag push only
-      SOCNETV_PRERELEASE: true         # deploy only if continuous
+      APPVEYOR_REPO_TAG: true                # deploy on tag push only -- omitted for annotated tags, see https://www.appveyor.com/docs/branches/#build-on-tags-github-bitbucket-gitlab-gitea
+      SOCNETV_PRERELEASE: true               # deploy only if continuous
   - provider: GitHub
     tag: $(APPVEYOR_REPO_TAG_NAME)
     description: 'SocNetV windows installer for $(APPVEYOR_REPO_TAG_NAME)'
@@ -211,8 +216,8 @@ deploy:
     force_update: true
     on:
      branch: $(APPVEYOR_REPO_BRANCH)      # deploy on same branch
-     APPVEYOR_REPO_TAG: true              # deploy on tag push only
-     SOCNETV_PRERELEASE: false
+     APPVEYOR_REPO_TAG: true              # deploy on tag push only -- omitted for annotated tags, see https://www.appveyor.com/docs/branches/#build-on-tags-github-bitbucket-gitlab-gitea
+     SOCNETV_PRERELEASE: false            # deploy only if not continuous
 
 # Notify developer on any change
 notifications:
