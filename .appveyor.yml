@@ -1,10 +1,26 @@
-# Build SocNetV on x86 and x86_64 architectures unsing Qt/MinGW/VS2019 platforms
+# Build SocNetV on x86 and x86_64 architectures using Qt/MinGW/VS2019 platforms
 # https://socnetv.org
 # Last Update: July 28, 2021
 # Copyright (c) 2021 by Dimitris Kalamaras
 #
 
+#
+# This script builds SocNetV Windows installers ONLY on tags ('continuous' or another tag set by the developer, i.e. 3.0 or 3.0-beta*).
+#
+# NOTE:
+# To avoid possible cycles with creating new tags on regular commits or overwriting tags, we
+# specify tag: $(APPVEYOR_REPO_TAG_NAME) in deployment settings (without having to set skip_tags = true)
+# and use the on: key to conditionally build and deploy only on tags we create manually.
+# This way, the manually created tag will be updated instead of a new one being created.
+# See: https://www.appveyor.com/docs/deployment/github/#promoting-selected-tag-to-github-release
+
+
 version:  'continuous.{build}'
+
+
+#---------------------------------#
+#   conditional building config   #
+#---------------------------------#
 
 # whitelist branches
 branches:
@@ -17,8 +33,7 @@ branches:
 # skip_tags: true
 
 # Start builds on tags only (GitHub and BitBucket)
-# This is a work around to make appveyor ci run only when it sees continuous tag (but not earlier).
-# skip_non_tags: true
+skip_non_tags: true
 
 
 # Skipping commits affecting specific files (GitHub only).
@@ -30,6 +45,9 @@ skip_commits:
    - .travis_build_macos.sh
    - .travis_install.sh
    - socnetv.spec
+   - debian/**/*
+   - socnetv.appdata.xml
+   - changelog.gz
    - README.md
    - TODO
    - AUTHORS
@@ -38,8 +56,9 @@ skip_commits:
 
 
 # Including commits with particular message or from specific user
+# At the moment, only commits from developer are allowed for building.
 only_commits:
-  message: /\[appveyor\]|\[ci\]|\[release\]/            # Start a new build if message contains '[appveyor]' or '[ci]'
+  # message: /\[appveyor\]|\[ci\]|\[release\]/   # DISABLED -- Start a new build if message contains '[appveyor]' or '[ci]'
   author: dimitris.kalamaras@gmail.com      # Start a new build for commit of user with my email
 
 
@@ -57,29 +76,38 @@ clone_folder: c:\projects\socnetv
 matrix:
   fast_finish: true # set this flag to immediately finish build once one of the jobs fails.
 
-# scripts that run after cloning repository
+# Scripts that run after cloning repository
 install:
   - ps: Write-Host $env:APPVEYOR_REPO_BRANCH
-  - cmd: echo %APPVEYOR_REPO_BRANCH%
-  - cmd: echo %APPVEYOR_REPO_COMMIT%
-  - cmd: echo %APPVEYOR_REPO_TAG%
-  - cmd: echo %APPVEYOR_REPO_TAG_NAME%
+  - ps: Write-Host $env:APPVEYOR_REPO_COMMIT
+  - ps: Write-Host $env:APPVEYOR_REPO_TAG
+  - ps: Write-Host $env:APPVEYOR_REPO_TAG_NAME
+
   - cmd: echo "Setting last commit short id"
   - cmd: git rev-parse --short HEAD > MYVER.txt
   - cmd: set /p LAST_COMMIT_SHORT= < MYVER.txt
   - cmd: echo %LAST_COMMIT_SHORT%
   - cmd: del MYVER.txt
-  - echo %APPVEYOR_REPO_COMMIT:~0,7%
-  - cmd: echo "Setting SocNetV current version"
+
+  - cmd: echo %APPVEYOR_REPO_COMMIT:~0,7%
+
+  - cmd: echo "Setting SocNetV current version..."
+  # NOTE: This is changed by our update version bash script
   - cmd: set SOCNETV_VERSION=3.0-dev
   - cmd: echo %SOCNETV_VERSION%
+
   - cmd: echo "Setting build type"
   - cmd: set BUILD_TYPE=release
   - cmd: echo %BUILD_TYPE%
 
-  - cmd: set SOCNETV_CONTINUOUS_BUILD=false
-  - if "%APPVEYOR_REPO_TAG%"=="true" if "%APPVEYOR_REPO_TAG_NAME%"=="continuous" set SOCNETV_CONTINUOUS_BUILD=true
-  - ps: if ($env:APPVEYOR_REPO_COMMIT_MESSAGE.Contains("[appveyor]")) {$env:SOCNETV_CONTINUOUS_BUILD = "true"}
+  - cmd: echo "Checking if this is a prerelease deployment..."
+  - cmd: set SOCNETV_PRERELEASE=false
+  - cmd: if "%APPVEYOR_REPO_TAG%"=="true" if "%APPVEYOR_REPO_TAG_NAME%"=="continuous" set SOCNETV_PRERELEASE=true
+  - ps: if ($env:APPVEYOR_REPO_COMMIT_MESSAGE.Contains("[appveyor]")) {$env:SOCNETV_PRERELEASE = "true"}
+  - ps: if ($env:APPVEYOR_REPO_TAG_NAME.Contains("-beta")) {$env:SOCNETV_PRERELEASE = "true"}
+  - ps: if ($env:APPVEYOR_REPO_TAG_NAME.Contains("-alpha")) {$env:SOCNETV_PRERELEASE = "true"}
+  - ps: Write-Host $env:SOCNETV_PRERELEASE
+  - cmd: if "%SOCNETV_PRERELEASE%"=="true" echo "This is a prerelease"
 
   - cmd: echo "Setting BUILDNAME" 
   - set BUILDNAME=%SOCNETV_VERSION%-%LAST_COMMIT_SHORT%
@@ -99,9 +127,15 @@ install:
   - cmd: echo "Setting paths..."    
   - set PATH=%QTDIR%\bin;C:\Qt\Tools\mingw810_64\bin;%PATH%;"C:\Program Files (x86)\Inno Setup 6"
 
+
+
+#---------------------------------#
+#    app building starts here     #
+#---------------------------------#
+
+
 build_script:
-  - cmd: echo "Running qmake..."  
-#  - qmake "CONFIG+=%BUILD_TYPE%" socnetv.pro
+  - cmd: echo "Running qmake..."
   - qmake "CONFIG+=%BUILD_TYPE%" socnetv.pro
   - cmd: echo "BUILDING %BUILD_TYPE% starts here with mingw32..."
   - mingw32-make
@@ -144,34 +178,38 @@ artifacts:
   - path: SocNetV-*-installer.exe
 
 
-# Deploy to GitHub Releases
+
+#---------------------------------#
+#    Deploy to GitHub Releases    #
+#---------------------------------#
+
 deploy: 
   - provider: GitHub
-    tag: continuous
-    description: 'SocNetV windows installer continuous prerelease - commit ${APPVEYOR_REPO_COMMIT}'
+    tag: $(APPVEYOR_REPO_TAG_NAME)
+    description: 'SocNetV Windows installer prereleases - commit ${APPVEYOR_REPO_COMMIT}'
     artifact: /SocNetV.*installer\.exe/
     auth_token:
-      secure: rWpgp9XYDS/Tqr6dsQ2CK1x/vgE4nMyQ3W7oyQlG2L3oF4tecU8CEDW1EY5Us0mZ # your encrypted token from GitHub
+      secure: rWpgp9XYDS/Tqr6dsQ2CK1x/vgE4nMyQ3W7oyQlG2L3oF4tecU8CEDW1EY5Us0mZ # encrypted token from GitHub
     draft: false
     prerelease: true
     force_update: true
     on:
       branch: $(APPVEYOR_REPO_BRANCH)        # deploy on same branch
       APPVEYOR_REPO_TAG: true                # deploy on tag push only
-      SOCNETV_CONTINUOUS_BUILD: true         # deploy only if continuous
+      SOCNETV_PRERELEASE: true         # deploy only if continuous
   - provider: GitHub
     tag: $(APPVEYOR_REPO_TAG_NAME)
     description: 'SocNetV windows installer for $(APPVEYOR_REPO_TAG_NAME)'
     artifact: /SocNetV.*installer\.exe/
     auth_token:
-      secure: rWpgp9XYDS/Tqr6dsQ2CK1x/vgE4nMyQ3W7oyQlG2L3oF4tecU8CEDW1EY5Us0mZ # your encrypted token from GitHub
+      secure: rWpgp9XYDS/Tqr6dsQ2CK1x/vgE4nMyQ3W7oyQlG2L3oF4tecU8CEDW1EY5Us0mZ # encrypted token from GitHub
     draft: false
     prerelease: false
     force_update: true
     on:
      branch: $(APPVEYOR_REPO_BRANCH)      # deploy on same branch
      APPVEYOR_REPO_TAG: true              # deploy on tag push only
-     SOCNETV_CONTINUOUS_BUILD: false
+     SOCNETV_PRERELEASE: false
 
 # Notify developer on any change
 notifications:
