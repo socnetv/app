@@ -4,22 +4,27 @@
 # Copyright (c) 2021 by Dimitris Kalamaras
 #
 
+
 #
 # This script builds SocNetV binaries ONLY on tags ('continuous' or another tag set by the developer, i.e. 3.0 or 3.0-beta*).
 #
+
 
 branches:
   except:
     - # Do not build tags that we create when we upload to GitHub Releases
     - /^(?i:continuous)$/
 
+
 language: cpp
 
-env: 
+
+env:
   global:
     - SOCNETV_VERSION=3.0-rc1 # We use it to name packages on non-tagged commits
     # Set this variable to be read by uploadtool, which will only use it to mark continuous releases are prerelease.
     - UPLOADTOOL_ISPRERELEASE=true
+
 
 # Build matrix definitions explicitly define our build
 # maybe add a linux/clang pair ?
@@ -29,18 +34,20 @@ jobs:
       compiler: gcc
       dist: bionic
       env: FAILURES=true
-      if: tag IS present OR commit_message ~ /\[travis\]|\[ci\]|\[release\]/
+      if: tag IS present OR commit_message =~ /\[travis\]|\[ci\]|\[release\]/
     - os: osx
       compiler: clang
       env: FAILURES=true
       osx_image: xcode12
-      if: tag IS present OR commit_message ~ /\[travis\]|\[ci\]|\[release\]/
+      if: tag IS present OR commit_message =~ /\[travis\]|\[ci\]|\[release\]/
   exclude:
     - os: osx
-      compiler: gcc      
+      compiler: gcc
   allow_failures:
     #  define rows that are allowed to fail in the build matrix.
     - env: FAILURES=TRUE
+
+
 
 
 before_install:
@@ -49,18 +56,23 @@ before_install:
   - ./.travis_before_install.sh
 
 
+
+
 install:
   # Run script to install any dependencies...
   - chmod +x .travis_install.sh
   - ./.travis_install.sh
 
 
+
+
 script:
   # Run script to build the app...
   -  if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then chmod +x .travis_build_linux.sh ; fi
   - '[ "$TRAVIS_OS_NAME" != linux ] || ./.travis_build_linux.sh'
-  -  if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then chmod +x .travis_build_macos.sh ; fi  
+  -  if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then chmod +x .travis_build_macos.sh ; fi
   - '[ "$TRAVIS_OS_NAME" != osx ] || ./.travis_build_macos.sh'
+
 
 after_success:
   - echo " Finished building. Listing any *SocNetV*.AppImage* files...";
@@ -68,9 +80,10 @@ after_success:
   - echo " Downloading upload.sh tool...";
   - wget --no-verbose https://github.com/probonopd/uploadtool/raw/master/upload.sh
   - echo "Using upload.sh tool to upload binaries to GitHub..."
-  - echo "TRAVIS_TAG: " ${TRAVIS_TAG}
-  - if [ ! -z "$TRAVIS_TAG" ] ; then echo "The upload tool will upload files to tag: ${TRAVIS_TAG}"; fi
+  - if [ ! -z "${TRAVIS_TAG}" ] ; then echo "The upload tool will upload files to tag TRAVIS_TAG";  fi
   - if [ -z "$TRAVIS_TAG" ] ; then echo "The upload tool will upload files to 'continuous' CI/CD pipeline"; fi
   - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then bash upload.sh *SocNetV*.AppImage*; fi
   - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then bash upload.sh *SocNetV*.zip*; bash upload.sh SocNetV*.pkg*; fi
+
+
 
