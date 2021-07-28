@@ -1,6 +1,6 @@
 # Build SocNetV on x86 and x86_64 architectures unsing Qt/MinGW/VS2019 platforms
 # https://socnetv.org
-# Last Update: June 14, 2021
+# Last Update: July 28, 2021
 # Copyright (c) 2021 by Dimitris Kalamaras
 #
 
@@ -12,12 +12,6 @@ branches:
     - master
     - develop
 
-  # blacklist
-  # Do not build tags that we create when we or travis upload to GitHub Releases
-  # does not work see https://github.com/appveyor/ci/issues/1493
-  except:
-    - /^(?i:continuous)$/
-    - /continuous/
 
 # Do not build on tags (GitHub and BitBucket)
 # skip_tags: true
@@ -65,6 +59,7 @@ matrix:
 
 # scripts that run after cloning repository
 install:
+  - ps: Write-Host $env:APPVEYOR_REPO_BRANCH
   - cmd: echo %APPVEYOR_REPO_BRANCH%
   - cmd: echo %APPVEYOR_REPO_COMMIT%
   - cmd: echo %APPVEYOR_REPO_TAG%
@@ -82,8 +77,9 @@ install:
   - cmd: set BUILD_TYPE=release
   - cmd: echo %BUILD_TYPE%
 
-  - cmd: set socnetv_continuous_build=false
-  - if "%APPVEYOR_REPO_TAG%"=="true" if "%APPVEYOR_REPO_TAG_NAME%"=="continuous" set socnetv_continuous_build=true
+  - cmd: set SOCNETV_CONTINUOUS_BUILD=false
+  - if "%APPVEYOR_REPO_TAG%"=="true" if "%APPVEYOR_REPO_TAG_NAME%"=="continuous" set SOCNETV_CONTINUOUS_BUILD=true
+  - ps: if ($env:APPVEYOR_REPO_COMMIT_MESSAGE.Contains("[appveyor]")) {$env:SOCNETV_CONTINUOUS_BUILD = "true"}
 
   - cmd: echo "Setting BUILDNAME" 
   - set BUILDNAME=%SOCNETV_VERSION%-%LAST_COMMIT_SHORT%
@@ -151,8 +147,8 @@ artifacts:
 # Deploy to GitHub Releases
 deploy: 
   - provider: GitHub
-    tag: $(APPVEYOR_REPO_TAG_NAME)
-    description: 'SocNetV windows installer $(APPVEYOR_REPO_TAG_NAME) prereleases - commit: ${APPVEYOR_REPO_COMMIT}: $(APPVEYOR_REPO_COMMIT_MESSAGE)'
+    tag: continuous
+    description: 'SocNetV windows installer continuous prerelease - commit ${APPVEYOR_REPO_COMMIT}'
     artifact: /SocNetV.*installer\.exe/
     auth_token:
       secure: rWpgp9XYDS/Tqr6dsQ2CK1x/vgE4nMyQ3W7oyQlG2L3oF4tecU8CEDW1EY5Us0mZ # your encrypted token from GitHub
@@ -160,9 +156,9 @@ deploy:
     prerelease: true
     force_update: true
     on:
-      branch: $(APPVEYOR_REPO_BRANCH)        # release on same branch
+      branch: $(APPVEYOR_REPO_BRANCH)        # deploy on same branch
       APPVEYOR_REPO_TAG: true                # deploy on tag push only
-      socnetv_continuous_build: true         # deploy only if continuous
+      SOCNETV_CONTINUOUS_BUILD: true         # deploy only if continuous
   - provider: GitHub
     tag: $(APPVEYOR_REPO_TAG_NAME)
     description: 'SocNetV windows installer for $(APPVEYOR_REPO_TAG_NAME)'
@@ -173,9 +169,9 @@ deploy:
     prerelease: false
     force_update: true
     on:
-     branch: $(APPVEYOR_REPO_BRANCH)      # release from master branch only
+     branch: $(APPVEYOR_REPO_BRANCH)      # deploy on same branch
      APPVEYOR_REPO_TAG: true              # deploy on tag push only
-     socnetv_continuous_build: false
+     SOCNETV_CONTINUOUS_BUILD: false
 
 # Notify developer on any change
 notifications:
