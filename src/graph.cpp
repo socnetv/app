@@ -545,7 +545,7 @@ double Graph::canvasRandomY() const {
  * Then, if updateUI==true (default), it emits signals to MW and GW
  * to update the MW UI and toggle the edges on the GW, respectivelly.
  *
- * Called from Parser and when the user selects a relation in the MW combo box.
+ * Called from Parser, Graph methods and when the user selects a relation in the MW combo box.
  *
  * @param relNum int
  * @param updateUI bool
@@ -665,13 +665,16 @@ void Graph::relationAdd(const QString &relName, const bool &changeRelation) {
     // Add the new relation to our relations list
     m_relationsList << relName;
 
+    // Emit signal for the new relation to be added to the MW UI combo...
+    emit signalRelationAddToMW(relName);
+
     // Check if we need to change to the new relation...
     if (changeRelation) {
         relationSet();
     }
 
-    // Emit signal for the new relation to be added to the MW UI combo...
-    emit signalRelationAddToMW(relName);
+    emit statusMessage((tr("Added a new relation named: %1."))
+                       .arg( relName ) );
 }
 
 
