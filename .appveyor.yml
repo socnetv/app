@@ -76,7 +76,7 @@ install:
   - cmd: set SOCNETV_VERSION=3.0-dev
   - cmd: echo %SOCNETV_VERSION%
   - cmd: echo "Setting build type"
-  - cmd: set BUILD_TYPE=debug
+  - cmd: set BUILD_TYPE=release
   - cmd: echo %BUILD_TYPE%
 
   - cmd: set socnetv_continuous_build=false
@@ -102,6 +102,7 @@ install:
 
 build_script:
   - cmd: echo "Running qmake..."  
+#  - qmake "CONFIG+=%BUILD_TYPE%" socnetv.pro
   - qmake "CONFIG+=%BUILD_TYPE%" socnetv.pro
   - cmd: echo "BUILDING %BUILD_TYPE% starts here with mingw32..."
   - mingw32-make
