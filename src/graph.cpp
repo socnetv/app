@@ -653,23 +653,25 @@ void Graph::relationNext(){
 
 /**
  * @brief
- * Adds a new relation named relName, emitting signal to MW, and
+ * Adds a new relation named relName, emitting signal to MW UI, and
  * optionally changing current graph relation to the new one.
- * Called by file parser to add a new relation
- * Also called from MW.
+ * Called by file parser and various Graph methods, i.e clear() etc.
  * @param relName
  */
 void Graph::relationAdd(const QString &relName, const bool &changeRelation) {
 
     qDebug() << "Adding new relation named:" << relName;
 
+    // Add the new relation to our relations list
     m_relationsList << relName;
 
-    emit signalRelationAddToMW(relName, false);
-
+    // Check if we need to change to the new relation...
     if (changeRelation) {
         relationSet();
     }
+
+    // Emit signal for the new relation to be added to the MW UI combo...
+    emit signalRelationAddToMW(relName);
 }
 
 
