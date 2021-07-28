@@ -22,8 +22,12 @@ echo "SOCNETV_VERSION is: $SOCNETV_VERSION"
 LAST_COMMIT_SHORT=$(git rev-parse --short HEAD)
 echo "LAST_COMMIT_SHORT is: $LAST_COMMIT_SHORT"
 
+#
+# NOTE:
+#
 # linuxdeployqt always uses the output of 'git rev-parse --short HEAD' as the version.
-# We can change this by exporting $VERSION environment variable 
+# We change this by exporting $VERSION environment variable
+#
 
 if [ ! -z "$TRAVIS_TAG" ] ; then
     # If this is a tag, then version will be the tag, i.e. 2.6 or 2.6-beta

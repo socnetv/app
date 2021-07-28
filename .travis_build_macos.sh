@@ -1,11 +1,10 @@
 #!/bin/bash
 
 echo "*****************************"
-echo "Build SocNetV for macOS      "
+echo "  Build SocNetV for macOS    "
 echo "*****************************"
 
 APP_NAME="SocNetV"
-
 
 # Check current directory
 project_dir=$(pwd)
@@ -20,8 +19,12 @@ echo "TAG_NAME = ${TAG_NAME}"
 LAST_COMMIT_SHORT=$(git rev-parse --short HEAD)
 echo "LAST_COMMIT_SHORT = $LAST_COMMIT_SHORT"
 
+#
+# NOTE:
+#
 # linuxdeployqt always uses the output of 'git rev-parse --short HEAD' as the version.
-# We can change this by exporting $VERSION environment variable 
+# We change this by exporting $VERSION environment variable
+#
 
 echo "Checking TRAVIS_TAG to fix the VERSION..."
 if [ ! -z "$TRAVIS_TAG" ] ; then
