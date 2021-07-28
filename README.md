@@ -223,6 +223,7 @@ or go to Start Menu > Mathematics  > SocNetV.
 	
 SocNetV is primarily a GUI program. Nevertheless, some command line options are available:
 
+```
 Options:
   -h, --help           Displays this help.
   -v, --version        Displays version information.
@@ -238,11 +239,13 @@ Arguments:
                        from a file using `socnetv file.net` where
                        file.net/csv/dot/graphml must be of valid format. See
                        README.
-
+```
 
 For example, type:
 
+```
 ./socnetv net.graphml
+```
 
 to start SocNetV and immediately load network file named 'net.graphml' (in current folder).
 
