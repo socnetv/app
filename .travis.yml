@@ -12,7 +12,7 @@ env:
     # Change me to false, on release
     - UPLOADTOOL_ISPRERELEASE=true
 
-# explicitly define our build
+# Build matrix definitions explicitly define our build
 # maybe add a linux/clang pair ?
 jobs:
   include:
@@ -20,14 +20,17 @@ jobs:
       compiler: gcc
       dist: bionic
       env: FAILURES=true
+      if: commit_message ~ /\[travis\]|\[ci\]|\[release\]/
     - os: osx
       compiler: clang
       env: FAILURES=true
       osx_image: xcode12
+      if: commit_message ~ /\[travis\]|\[ci\]|\[release\]/
   exclude:
     - os: osx
       compiler: gcc      
   allow_failures:
+    #  define rows that are allowed to fail in the build matrix.
     - env: FAILURES=TRUE
 
 
