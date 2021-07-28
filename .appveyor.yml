@@ -23,8 +23,8 @@ branches:
 # skip_tags: true
 
 # Start builds on tags only (GitHub and BitBucket)
-# this is a work around to make appveyor ci run only when it sees continuous tag (but not earlier).
-skip_non_tags: true
+# This is a work around to make appveyor ci run only when it sees continuous tag (but not earlier).
+# skip_non_tags: true
 
 
 # Skipping commits affecting specific files (GitHub only).
@@ -38,11 +38,14 @@ skip_commits:
    - socnetv.spec
    - README.md
    - TODO
+   - AUTHORS
+   - COPYING
+   - NEWS
 
 
 # Including commits with particular message or from specific user
 only_commits:
-  #message: /build/                         # Start a new build if message contains 'build'
+  message: /\[appveyor\]|\[ci\]|\[release\]/            # Start a new build if message contains '[appveyor]' or '[ci]'
   author: dimitris.kalamaras@gmail.com      # Start a new build for commit of user with my email
 
 
