@@ -21,7 +21,7 @@ language: cpp
 
 env:
   global:
-    - SOCNETV_VERSION=3.0-rc1 # We use it to name packages on non-tagged commits
+    - SOCNETV_VERSION=3.0-rc2 # We use it to name packages on non-tagged commits
     # Set this variable to be read by uploadtool, which will only use it to mark continuous releases are prerelease.
     - UPLOADTOOL_ISPRERELEASE=true
 

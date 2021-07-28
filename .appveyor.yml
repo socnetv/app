@@ -23,10 +23,13 @@ version:  'continuous.{build}'
 #---------------------------------#
 
 # whitelist branches
+# also whitelist tags, as per https://www.appveyor.com/docs/branches/#white--and-blacklisting
 branches:
   only:
     - master
     - develop
+    - /v\d+\.\d+\.\d+/
+    - /v\d+\.\d+\.\w+/
 
 
 # Do not build on tags (GitHub and BitBucket)
@@ -93,7 +96,7 @@ install:
 
   - cmd: echo "Setting SocNetV current version..."
   # NOTE: This is changed by our update version bash script
-  - cmd: set SOCNETV_VERSION=3.0-rc1
+  - cmd: set SOCNETV_VERSION=3.0-rc2
   - cmd: echo %SOCNETV_VERSION%
 
   - cmd: echo "Setting build type"
