@@ -288,8 +288,7 @@ public slots:
 
     void slotEditRelationAddPrompt();
 
-    void slotEditRelationAdd(QString newRelationName=QString(),
-                             const bool &changeRelation=true);
+    void slotEditRelationAdd(const QString &newRelationName);
     void slotEditRelationChange(const int relIndex=RAND_MAX);
     void slotEditRelationRename();
 
