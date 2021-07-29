@@ -194,7 +194,7 @@ artifacts:
 deploy: 
   - provider: GitHub
     tag: $(APPVEYOR_REPO_TAG_NAME)
-    description: 'SocNetV Windows installer prereleases - commit ${APPVEYOR_REPO_COMMIT}'
+    description: 'SocNetV continuous integration prerelease from commit ${APPVEYOR_REPO_COMMIT}'
     artifact: /SocNetV.*installer\.exe/
     auth_token:
       secure: rWpgp9XYDS/Tqr6dsQ2CK1x/vgE4nMyQ3W7oyQlG2L3oF4tecU8CEDW1EY5Us0mZ # encrypted token from GitHub
@@ -207,7 +207,7 @@ deploy:
       SOCNETV_PRERELEASE: true               # deploy only if continuous
   - provider: GitHub
     tag: $(APPVEYOR_REPO_TAG_NAME)
-    description: 'SocNetV windows installer for $(APPVEYOR_REPO_TAG_NAME)'
+    description: 'SocNetV release for $(APPVEYOR_REPO_TAG_NAME)'
     artifact: /SocNetV.*installer\.exe/
     auth_token:
       secure: rWpgp9XYDS/Tqr6dsQ2CK1x/vgE4nMyQ3W7oyQlG2L3oF4tecU8CEDW1EY5Us0mZ # encrypted token from GitHub
