@@ -127,6 +127,9 @@ RESOURCES = src/src.qrc
 
 # This is Windows only
 win32 {
+  VERSION = 3.0.0.1           # major.minor.patch.build
+  VERSION_PE_HEADER = 3.0
+
   #RC_FILE = src/icon.rc
   RC_ICONS = src/images/socnetv.ico
   # Company name
@@ -139,7 +142,7 @@ win32 {
   QMAKE_TARGET_DESCRIPTION = "Open-source social network analysis application based on Qt."
 
   # Copyright Information
-  QMAKE_TARGET_COPYRIGHT = "Copyright (C) 2021 Dimitris V. Kalamaras. GNU General Public License v3.0 or later."
+  QMAKE_TARGET_COPYRIGHT = "Copyright (C) 2021 Dimitris V. Kalamaras. GPLv3."
 
   TARGET = SocNetV
   target.path = release/

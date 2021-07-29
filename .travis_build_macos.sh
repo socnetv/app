@@ -121,7 +121,7 @@ cp LICENSE release/
 
 
 create-dmg \
-    --volname ${APP_NAME}-${VERSION}
+    --volname ${APP_NAME}-${VERSION} \
     --volicon $project_dir/src/images/socnetv.icns \
     --background $project_dir/packaging/macosx/DMG-Background.png \
     --window-pos 200 120 \
