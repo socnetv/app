@@ -7686,7 +7686,7 @@ void MainWindow::slotNetworkExportImage( const QString &filename,
     qDebug() << "Exporting network to image file" << filename;
 
     if (filename.isEmpty())  {
-        statusMessage( tr("Saving aborted") );
+        statusMessage( tr("No filename. Exporting to Image aborted.") );
         return;
     }
     // store this path
@@ -7697,44 +7697,74 @@ void MainWindow::slotNetworkExportImage( const QString &filename,
     QString name = tempFileNameNoPath.last();
     name.truncate(name.lastIndexOf("."));
 
-    // Grab network from canvas
+    //
+    //  Grab network from canvas
+    //
     qDebug() << "Grabbing network from the canvas";
-    QPixmap picture;
-    picture = graphicsWidget->grab(graphicsWidget->viewport()->rect());
 
+    qreal ratio = 1;
+    qreal w = graphicsWidget->width() * ratio;
+    qreal h = graphicsWidget->height() * ratio;
+
+    QImage picture = QImage(w, h, QImage::Format_ARGB32_Premultiplied);
+
+    qDebug() << "Creating painter...";
     QPainter p;
-    qDebug() << "Adding name (and logo)";
+
+    qDebug() << "Begin painter on picture...";
     p.begin(&picture);
+
+    qDebug() << "render scene on painter...";
+    graphicsWidget->render(&p);
+
+    //
+    // Add name and optionally log
+    //
+    qDebug() << "Adding name (and logo)..";
     p.setFont(QFont ("Helvetica", 10, QFont::Normal, false));
     if (appSettings["printLogo"]=="true") {
         QImage logo(":/images/socnetv-logo.png");
         p.drawImage(5,5, logo);
         p.drawText(7,47,name);
     }
-    else
+    else {
         p.drawText(5,15,name);
+    }
+
+    qDebug() << "End painter on picture...";
     p.end();
 
-    qDebug() << "slotNetworkExportImage(): saving to file";
+    QString author = "SocNetV v" + VERSION;
 
+    qDebug() << "slotNetworkExportImage() - saving image to file:"
+             << filename
+             << "format" << format
+             << "quality:" << quality
+             << "compression:" << compression
+             << "Author:" << author;
+
+    //
+    // Write image to a file
+    //
     QImageWriter imgWriter;
     imgWriter.setFormat(format);
     imgWriter.setQuality(quality);
     imgWriter.setCompression(compression);
     imgWriter.setFileName(filename);
-    if ( imgWriter.write(picture.toImage()) ) {
+    imgWriter.setText("Author", author);
+    imgWriter.setText("", "Created by " + author);
+    imgWriter.setOptimizedWrite(true);
+    imgWriter.setProgressiveScanWrite(true);
+    if ( imgWriter.write(picture) ) {
         QMessageBox::information(this, tr("Export to image..."),
                                  tr("Image Saved as: ")+tempFileNameNoPath.last(), "OK",0);
 
         statusMessage( tr("Image exporting completed.") );
     }
     else {
-        slotHelpMessageToUser(USER_MSG_CRITICAL, "Error", "error exporing image", imgWriter.errorString());
+        slotHelpMessageToUser(USER_MSG_CRITICAL, "Error", "Error while exporting image: ", imgWriter.errorString());
 
     }
-
-
-
 
 }
 
@@ -7777,10 +7807,10 @@ void MainWindow::slotNetworkExportPDF(QString &pdfName,
                                       ){
     qDebug()<< "MW::slotNetworkExportPDF()";
 
-    Q_UNUSED(dpi);
+//    Q_UNUSED(dpi);
 
     if (pdfName.isEmpty())  {
-        statusMessage( tr("Saving aborted"));
+        statusMessage( tr("No filename. Exporting to PDF aborted."));
         return;
     }
     else {
@@ -7796,19 +7826,23 @@ void MainWindow::slotNetworkExportPDF(QString &pdfName,
         printerPDF->setOutputFileName(pdfName);
         printerPDF->setPageOrientation(orientation);
         printerPDF->setPageSize(pageSize);
-        // printerPDF->setResolution(dpi);
+        printerPDF->setFontEmbeddingEnabled(true);
+         printerPDF->setResolution(dpi);
         QPainter p;
         p.begin(printerPDF);
         graphicsWidget->render(&p, QRect(0, 0, printerPDF->width(), printerPDF->height()),
                                 graphicsWidget->viewport()->rect());
         p.setFont(QFont ("Helvetica", 8, QFont::Normal, false));
         if (appSettings["printLogo"]=="true") {
-            QImage logo(":/images/socnetv_logo_trans_64px.svg");
+            QImage logo(":/images/socnetv-logo.png");
             p.drawImage(5,5, logo);
             p.drawText(7,47,name);
         }
-        else
+        else {
             p.drawText(5,15,name);
+        }
+
+        qDebug() << "End painter on QPrinter...";
         p.end();
         delete printerPDF;
     }
