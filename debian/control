@@ -3,7 +3,11 @@ Section: math
 Priority: optional
 Maintainer: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 XSBC-Original-Maintainer: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
-Build-Depends: debhelper, qtbase5-dev-tools, qtbase5-dev, libqt5charts5-dev, libqt5svg5-dev
+Build-Depends: debhelper,
+               libqt5charts5-dev,
+               libqt5svg5-dev,
+               qtbase5-dev,
+               qtbase5-dev-tools
 Standards-Version: 4.5.1
 Homepage: https://socnetv.org
 Vcs-Git: https://github.com/socnetv/app.git 
@@ -11,7 +15,7 @@ Vcs-Browser: https://github.com/socnetv/app/tree/master/
 
 Package: socnetv
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends}
 Description: Social Networks Analysis and Visualization software
  SocNetV (Social Network Visualiser) is a flexible and
  user-friendly tool for Social Networks Analysis and Visualisation.
