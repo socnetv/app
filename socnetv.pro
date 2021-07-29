@@ -168,7 +168,7 @@ unix:!macx{
   desktop.files = socnetv.desktop
   
   manpage.path = $${PREFIX}/share/man/man1
-  manpage.files = man/socnetv.1.gz
+  manpage.files = man/socnetv.1
 
   appstream.path = $${PREFIX}/share/metainfo
   appstream.files = socnetv.appdata.xml

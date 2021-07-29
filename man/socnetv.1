@@ -1,0 +1,138 @@
+.TH socnetv 1 "Mar 2019" "SocNetV-3.0-rc2" "Social Network Visualiser"
+.SH NAME
+ socnetv - Visualize and analyze social networks
+.SH SYNOPSIS
+.B socnetv  
+< 
+.I file.net
+>  
+
+.B socnetv   
+.B \-V | \-\-version 
+
+.B socnetv   
+.B \-h | \-\-help
+.SH DESCRIPTION
+Social Network Visualiser (SocNetV) is a cross-platform, user-friendly application for the analysis and visualization of Social Networks. 
+
+With SocNetV you can:
+
+.IP \[bu] 2
+Draw social networks with a few clicks on a virtual canvas, load field data from a file in a supported format (GraphML, GraphViz, EdgeList, GML, Adjacency, Edgelist, Pajek, UCINET, etc.) or crawl the internet to create a social network of connected webpages.
+.IP \[bu]
+Edit actors and ties through point-and-click, analyse graph and social network properties, produce beautiful HTML reports and embed visualization layouts to the network.
+
+.SH FEATURES
+These are the main features and routines of SocNetV:
+.IP \[bu] 2
+Standard graph-theoretic and network cohesion metrics, such as density, diameter, geodesics and distances, connectedness, eccentricity, clustering coefficient, walks, etc.
+.IP \[bu]
+Matrix routines: Adjacency plot, Laplacian matrix, Degree matrix, Cocitation, etc.
+.IP \[bu]
+Advanced structural measures for social network analysis such as centrality and prestige indices (i.e. eigenvector and closeness centrality, betweenness centrality, information centrality, power centrality, proximity and pagerank prestige),
+.IP \[bu]
+Community detection algorithms such as triad census, clique census, etc.
+.IP \[bu]
+Structural equivalence analysis, using hierarchical clustering, actor similarities and tie profile dissimilarities, pearson coefficients, etc.
+.IP \[bu]
+Random network creation, i.e. Erdos-Renyi, Watts-Strogatz, scale-free, ring lattice, etc.
+.IP \[bu]
+One-click recreation of well-known social network datasets such as Padgett's Florentine families.
+.IP \[bu]
+Layout algorithms based on either prominence indices (i.e. circular, level and nodal sizes by centrality score) or force-directed models (i.e. Eades, Fruchterman-Reingold, etc) for meaningful visualizations of your social network data.
+.IP \[bu]
+Multirelational loading and editing. You can load a network consisting of multiple relations or create a network on your own and add multiple relations to it.
+.IP \[bu]
+Built-in web crawler, allowing you to automatically create networks from links found in a given initial URL.
+.IP \[bu]
+Comprehensive documentation, both online and while running the application, which explains each feature and algorithm of SocNetV in detail.
+.IP \[bu]
+Binary packages for Windows, Linux and MacOS.
+
+
+.SH DOCUMENTATION 
+The documentation, licensed under the Free Documentation License (FDL), is available at <http://socnetv.org/docs/index.html>
+
+
+.SH OPTIONS
+.TP
+.B \-\-version | \-V
+Displays the version of the program.
+
+.TP
+.B \-\-help | \-H
+Displays a short help message.
+
+.TP
+.I file.net
+The name of the file you want to open.
+
+.SH USAGE
+SocNetV has a simple Graphical User Interface (GUI). The biggest (right) part of the window is occupied by a virtual "canvas" where network nodes and edges appear. To the left of it, there is a dock with 4 buttons (add/remove node, add/remove link) and some LCDs which display statistics. On the top of the window, you will find the menu with all commands and options, and at the bottom there is a status bar, where messages appear.
+
+To create a new node, you can double-click on the canvas or click on the "add node" button. 
+
+To create a new link, you can middle-click on the source node and then on the target node. 
+Alternatively, you can click on the "add link" button from the dock.
+
+You move a node by left-clicking and dragging it. When you right-click on a node, a context menu appears. From there you can remove the node, change its color, label, size as well as its shape. SocNetV supports many kinds of node shapes, i.e rectangles, diamond, ellipse, circle, etc. A similar menu  appears when you right click on a link.
+
+.SH Supported Formats 
+
+The default file format for reading and saving social network is GraphML. Nevertheless, SocNetV can import various other formats (see below).
+
+You can load GraphML files by clicking on menu File > Load. To load other network formats, use the menu File -> Import. 
+
+SocNetV supports the following network data formats:
+.IP \[bu] 2
+GraphML (.graphml or .xml)
+.IP \[bu]
+GML (.gml or .xml)
+.IP \[bu]
+GraphViz (.dot)
+.IP \[bu]
+Adjacency matrix (.sm, .adj or .csv )
+.IP \[bu]
+Pajek (.net, .paj or .pajek),
+.IP \[bu]
+UCINET's Data Language (.dl)
+.IP \[bu]
+edge list (.lst or .list)
+.IP \[bu]
+Weighted Lists (.wlst or .wlist)
+
+
+.SH Layout algorithms
+
+SocNetV also supports a variety of layout algorithms, such as spring-embedder (i.e. energy based) and centralities-based. The latter reposition all nodes in circles of different radiuses (i.e. more central nodes appear near the centre of the canvas) or in levels of different height (more central nodes appear near to the top). 
+
+You can apply layout algorithms from the menu Layout or by clicking on the checkboxes on the dock. Not all layouts appear on the dock, though.
+
+.SH KNOWN BUGS 
+The network file parser is not 100% trustworthy. For instance, complicated Pajek or GraphML files can crash the application.
+
+Antialiasing is on by default. This slows down the application when the network has many nodes and edges. You can disable antialiasing by pressing F8 .
+
+.SH AUTHOR
+Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
+
+.SH BUG REPORTS
+Report bugs to https://github.com/socnetv/app/issues 
+
+In order to send a meaningful bug report, run 
+.BR socnetv 
+from a terminal, press F9 and repeat the steps which lead to bug manifestation. SocNetV will be printing debug messages on the standard output (the terminal in Linux).
+
+.SH AVAILABILITY
+The latest version of this program can be found at <http://socnetv.org>. 
+It is distributed in source code and binary packages for Linux distributions, image disks for Mac OS X and zipped executables for Windows.
+
+To get the latest development version use: 
+git clone -b develop --single-branch https://github.com/socnetv/app.git socnetv
+
+.SH COPYRIGHT
+This program is distributed under the terms of the GNU General Public License 3 as published by the Free Software Foundation <http://www.gnu.org/licenses/gpl.html>. See the built-in help for details on the License and the lack of warranty. 
+
+.SH SEE ALSO
+.BR graphviz (1)
+
