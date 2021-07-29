@@ -5867,6 +5867,7 @@ void Graph::dijkstra(const int &s, const int &si,
     // TODO: Check prQ functionality in weighted graphs, where edge weight denotes value (not cost)
     priority_queue<GraphDistance, vector<GraphDistance>, GraphDistancesCompare> prQ;
 
+    // This is used to not allow duplicates in the priority queue (@see issue #123)
     QSet<int> visited_vertices;
 
     //set d( s, s ) = 0
