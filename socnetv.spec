@@ -89,7 +89,7 @@ set -x
 
 %if %{is_suse}
 %define distr SUSE	# %(head -1 /etc/SuSE-release)
-%define breqr libqt5-qtbase, libqt5-qtbase-devel, libqt5-qtsvg-devel, libQt5Charts5-devel, libqt5-qttools, unzip, update-desktop-files
+%define breqr libqt5-qtbase, libqt5-qtbase-devel, libqt5-qtsvg-devel, libQt5Charts5-devel, libqt5-qttools, unzip
 %define qmake /usr/bin/qmake-qt5
 # %define lrelease /usr/bin/lrelease
 %endif
@@ -101,14 +101,18 @@ Name:		%{name}
 Version:	%{version}
 Release:	%{release}
 Summary:	A Social Networks Analyser and Visualiser
-License:	GPL-3.0	
+License:	GPLv3
 Group:		Productivity/Scientific/Math 
 URL:		https://socnetv.org/
-Vendor: 	Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 Source0:	https://github.com/socnetv/app/archive/v%{version}.tar.gz
 Distribution:   %{distr}
 BuildRequires:  make
 BuildRequires:	gcc-c++, %{breqr}
+%if 0%{?suse_version}
+BuildRequires:  libqt5-linguist
+%endif
+
+BuildRequires:	qt5-linguist
 BuildRequires:	desktop-file-utils
 BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Gui)
@@ -205,15 +209,10 @@ echo "#############################"
 set -x
 
 %install
-%if %{is_fedora}
-desktop-file-validate %{name}.desktop
-#desktop-file-install --add-category="Math" --delete-original  --dir=%{buildroot}%{_datadir}/applications  %{buildroot}/%{_datadir}/applnk/Edutainment/%{name}.desktop
-%endif
-
-echo "### CALLING MAKE INSTALL buildroot: %buildroot ###"
-
 %{make_install} INSTALL_ROOT=%{buildroot}
 
+%check
+desktop-file-validate %{buildroot}%{_datadir}/applications/%{name}.desktop
 
 set +x
 echo "#############################"
