@@ -136,10 +136,10 @@ win32 {
   QMAKE_TARGET_PRODUCT = "Social Network Visualizer"
 
   # Document description
-  QMAKE_TARGET_DESCRIPTION = "Social Network Visualizer is an open-source cross-platform social network analysis and visualization application based on Qt."
+  QMAKE_TARGET_DESCRIPTION = "Open-source social network analysis application based on Qt."
 
   # Copyright Information
-  QMAKE_TARGET_COPYRIGHT = "Copyright (C) 2005-2021 Dimitris V. Kalamaras. GNU General Public License v3.0 or later."
+  QMAKE_TARGET_COPYRIGHT = "Copyright (C) 2021 Dimitris V. Kalamaras. GNU General Public License v3.0 or later."
 
   TARGET = SocNetV
   target.path = release/
