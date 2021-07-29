@@ -3,7 +3,7 @@ Section: math
 Priority: optional
 Maintainer: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 XSBC-Original-Maintainer: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
-Build-Depends: debhelper,
+Build-Depends: debhelper-compat (= 13),
                libqt5charts5-dev,
                libqt5svg5-dev,
                qtbase5-dev,
