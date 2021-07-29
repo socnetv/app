@@ -2,8 +2,6 @@ lessThan(QT_VERSION, 5.0) {
     error("SocNetV requires at least Qt 5.0!")
 }
 
-TARGET = socnetv
-
 MY_TARGET_BUILD = release
 #MY_TARGET_BUILD = debug
 
@@ -12,7 +10,8 @@ ALLOW_WARNINGS = warn_off
 
 TEMPLATE = app
 CONFIG  += qt thread $${ALLOW_WARNINGS} $${MY_TARGET_BUILD}
-
+TARGET = socnetv
+VERSION=3.0-rc2
 LANGUAGE = C++
 
 # add Qt module support
