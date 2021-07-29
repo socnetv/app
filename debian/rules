@@ -3,5 +3,8 @@
 %:
 	QT_SELECT=5 dh $@
 
+override_dh_auto_configure:
+       dh_auto_configure -- INSTALLS+=doc
+
 override_dh_auto_install:
 	$(MAKE) INSTALL_ROOT=$$(pwd)/debian/socnetv install
