@@ -105,7 +105,7 @@ License:	GPL-3.0
 Group:		Productivity/Scientific/Math 
 URL:		https://socnetv.org/
 Vendor: 	Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
-Source0:	https://github.com/%{name}/app/archive/master.zip
+Source0:	https://github.com/socnetv/app/archive/v%{version}.tar.gz
 Distribution:   %{distr}
 BuildRequires:	gcc-c++, %{breqr}
 BuildRequires:  pkgconfig(Qt5Core)
@@ -213,17 +213,6 @@ make install INSTALL_ROOT="%buildroot"
 # NOTE %make_install is a macro available starting rpm-4.10. It is equivalent to `make install DESTDIR="%{?buildroot}"`. 
 # I left it out to use INSTALL_ROOT directly...
 
-
-rm -rf %{buildroot}/%{_datadir}/doc/%{name}
-
-set +x
-echo "#############################"
-echo "####### CLEAN SECTION #######"
-echo "#############################"
-set -x
-
-%clean
-[ -d %{buildroot} -a "%{buildroot}" != "" ] && %__rm -rf  %{buildroot}
 
 
 set +x
