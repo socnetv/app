@@ -234,6 +234,7 @@ set -x
 
 %files
 %defattr(-,root,root)
+%license COPYING
 %{_bindir}/%{name}
 %{_datadir}/applications/%{name}.desktop
 %dir %{_datadir}/%{name}/
@@ -242,7 +243,7 @@ set -x
 %{_datadir}/pixmaps/%{name}.png
 %{_datadir}/metainfo/%{name}.appdata.xml
 %{_mandir}/man1/*
-%doc changelog.gz NEWS README.md TODO COPYING AUTHORS INSTALL 
+%doc changelog.gz NEWS README.md TODO AUTHORS INSTALL
 
 
 
