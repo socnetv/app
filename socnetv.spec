@@ -223,7 +223,7 @@ set -x
 %files
 %defattr(-,root,root)
 %license COPYING
-%doc AUTHORS changelog NEWS README.md
+%doc AUTHORS NEWS README.md changelog
 %{_bindir}/%{name}
 %{_datadir}/%{name}/%{name}_*.qm
 %{_datadir}/applications/%{name}.desktop
