@@ -1,16 +1,17 @@
+#
 # spec file for package socnetv
 #
-# Copyright (c) 2021 Dimitris Kalamaras dimitris.kalamaras@gmail.com
+# Dimitris Kalamaras dimitris.kalamaras@gmail.com
 #
-# All modifications and additions to the file contributed by third parties
-# remain the property of their copyright owners, unless otherwise agreed
-# upon. The license for this file, and modifications and additions to the
-# file, is the same license as for the pristine package itself (unless the
-# license for the pristine package is not an Open Source License, in which
-# case the license is the MIT License). An "Open Source License" is a
-# license that conforms to the Open Source Definition (Version 1.9)
-# published by the Open Source Initiative.
-
+# Refer to the following for more info on .spec file syntax:
+#
+#   http://www.rpm.org/max-rpm/
+#   http://www.rpm.org/max-rpm-snapshot/	(Updated version)
+#   https://docs.fedoraproject.org/en-US/Fedora_Draft_Documentation/0.1/html/RPM_Guide/
+#   https://rpm-packaging-guide.github.io/
+#
+# See also http://www.rpm.org
+#
 
 set +x
 echo "#############################"
@@ -27,14 +28,6 @@ set -x
 %define packingplatform %(. /etc/os-release 2>/dev/null; [ -n "$PRETTY_NAME" ] && echo "$PRETTY_NAME" || echo $HOSTNAME [`uname`])
 %endif
 
-%define serviceprovider %(echo Dimitris Kalamaras dimitris.kalamaras@gmail.com)
-%if 0%{?buildservice}
-%define distpacker %(echo openSUSE Build Service [`whoami`])
-%define targetplatform %{_target}
-%else
-%define distpacker %(echo `whoami`)
-%define targetplatform %{packingplatform}
-%endif
 
 set +x
 echo "#############################"
@@ -45,74 +38,55 @@ set -x
 %define name    socnetv
 %define version 3.0-rc2
 %define release 1
-%define lastrev %(LANG=en_US.UTF-8 && date +"%a %b %e %Y")
 
-
-%define is_suse %(test -e /etc/SuSE-release && echo 1 || echo 0)
-%define is_fedora %(test -e /etc/fedora-release && echo 1 || echo 0)
+# Default qmake & lrelease (from linguist)
 %define qmake qmake
-#%define lrelease lrelease
+%define lrelease lrelease
 
-
-#BEGIN BUILDSERVICE COMMANDS
-%if 0%{?fedora_version}
-%define is_suse 0
-%define is_fedora 1
+# Detect host Linux distribution
+%if 0%{?fedora}
+%define breqr qt5-qtbase,qt5-qtbase-devel, qt5-qttools
+%define qmake /usr/bin/qmake-qt5
+%define lrelease /usr/bin/lrelease-qt5
 %endif
-
 
 %if 0%{?suse_version}
-%define is_suse 1
-%define is_fedora 0
-%endif
-
-%if 0%{?fedora}
-%define fedora_version %{fedora}
+%define breqr libqt5-qtbase, libqt5-qtbase-devel, libqt5-qtsvg-devel, libQt5Charts5-devel, libqt5-qttools
+%define qmake /usr/bin/qmake-qt5
+%define lrelease /usr/bin/lrelease-qt5
 %endif
 
 %if 0%{?mageia}
-%define mageia_version %{mageia}
+%define lrelease /usr/bin/lrelease-qt5
 %endif
 
 
-#END BUILDSERVICE COMMANDS
+#
+# Preamble section
+#
 
-
-%if %{is_fedora}
-%define distr Fedora
-%define breqr qt5-qtbase,qt5-qtbase-devel, qt5-qttools, fedora-release
-%define qmake /usr/bin/qmake-qt5
-# %define lrelease /usr/bin/lrelease
-%endif
-
-
-
-%if %{is_suse}
-%define distr SUSE	# %(head -1 /etc/SuSE-release)
-%define breqr libqt5-qtbase, libqt5-qtbase-devel, libqt5-qtsvg-devel, libQt5Charts5-devel, libqt5-qttools, unzip
-%define qmake /usr/bin/qmake-qt5
-# %define lrelease /usr/bin/lrelease
-%endif
-
-
-
-# preamble
 Name:		%{name}
 Version:	%{version}
-Release:	%{release}
+Release:	%{release}{?dist}
 Summary:	A Social Networks Analyser and Visualiser
 License:	GPLv3
 Group:		Productivity/Scientific/Math 
 URL:		https://socnetv.org/
 Source0:	https://github.com/socnetv/app/archive/v%{version}.tar.gz
-Distribution:   %{distr}
 BuildRequires:  make
-BuildRequires:	gcc-c++, %{breqr}
+BuildRequires:	gcc-c++
+BuildRequires:	gzip
+
+# BuildRequires:	%{breqr}
+
 %if 0%{?suse_version}
 BuildRequires:  libqt5-linguist
 %endif
 
+%if 0%{?fedora}
 BuildRequires:	qt5-linguist
+%endif
+
 BuildRequires:	desktop-file-utils
 BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Gui)
@@ -124,17 +98,10 @@ BuildRequires:  pkgconfig(Qt5Svg)
 # qt5-qtcharts-devel
 BuildRequires:  pkgconfig(Qt5Charts)
 
-Provides:       %{name} = %{version}
-Obsoletes:      %{name} < %{version}
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
-
-
-
 
 #
-#DESCRIPTION SECTION
+# DESCRIPTION SECTION
 #
-
 
 %description
 SocNetV (Social Network Visualizer) is a flexible, user-friendly 
@@ -176,30 +143,35 @@ echo "#############################"
 set -x
 
 %prep
+echo "### running autosetup... ###"
+# The autosetup macro is new, see: https://rpm.org/user_doc/autosetup.html
+%autosetup -p 0 -n app-%{version}
 
-echo "### SETUP folder app-master ###" 
-%setup -q -n app-master  ## because master.zip unpacks to app-master/ 
+echo "### unzip changelog ###"
+gunzip changelog.gz
+chmod -x changelog
 
-echo "### SHOWING FILES ###"
+echo "### Showing files ###"
 find .
-
-echo "### CHANGING OWNERSHIP AND REMOVING FILES ###"
-chmod -R a-x+X COPYING changelog.gz INSTALL NEWS README.md TODO man src
-find . -type f -name '*~' -delete
-find . -type f -name '*.bak' -delete
-rm -f config.log config.status Makefile socnetv.spec socnetv.mak
 
 
 
 set +x
 echo "#############################"
-echo "####### MAKE SECTION ########"
+echo "####### BUILD SECTION #######"
 echo "#############################"
 set -x
 
 %build
+# Run lrelease to generate Qt message files from Qt Linguist translation files
+lrelease socnetv.pro
+
+# Run qmake
 %{qmake}
-%__make
+
+# Run make to build the application
+%__make %{?_smp_mflags}
+# NOTE: Also available as the %make_build macro, but that is not available for openSUSE 13.2, Leap 42.2 and SLE 12 SP2 (rpm < 4.12).
 
 
 set +x
@@ -211,8 +183,33 @@ set -x
 %install
 %{make_install} INSTALL_ROOT=%{buildroot}
 
+
+set +x
+echo "#############################"
+echo "###### CHECK SECTION ######"
+echo "#############################"
+set -x
+
 %check
 desktop-file-validate %{buildroot}%{_datadir}/applications/%{name}.desktop
+
+set +x
+echo "#############################"
+echo "###### POST/POSTUN SECTION ##"
+echo "#############################"
+set -x
+
+# Read more: https://docs.fedoraproject.org/en-US/packaging-guidelines/Scriptlets/
+
+%post
+# Scriptlet executed before the package is installed on the target system.
+/usr/bin/update-desktop-database &> /dev/null || :
+
+
+%postun
+# Scriptlet executed just after the package is uninstalled from the target system.
+/usr/bin/update-desktop-database &> /dev/null || :
+
 
 set +x
 echo "#############################"
@@ -223,15 +220,13 @@ set -x
 %files
 %defattr(-,root,root)
 %license COPYING
+%doc AUTHORS changelog NEWS README.md
 %{_bindir}/%{name}
+%{_datadir}/%{name}/%{name}_*.qm
 %{_datadir}/applications/%{name}.desktop
-%dir %{_datadir}/%{name}/
-%dir %{_datadir}/%{name}/translations/
-%{_datadir}/%{name}/translations/*
 %{_datadir}/pixmaps/%{name}.png
 %{_datadir}/metainfo/%{name}.appdata.xml
-%{_mandir}/man1/*
-%doc changelog.gz NEWS README.md TODO AUTHORS INSTALL
+%{_mandir}/man1/%{name}.1.gz
 
 
 
