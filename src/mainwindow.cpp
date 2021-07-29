@@ -14594,6 +14594,10 @@ void MainWindow::slotHelpCheckUpdateParse() {
         localVersionStr.remove("beta");
         localVersionStr.remove("-");
     }
+    else if (localVersionStr.contains("rc")) {
+        localVersionStr.remove("rc");
+        localVersionStr.remove("-");
+    }
     else if (localVersionStr.contains("dev")) {
         localVersionStr.remove("dev");
         localVersionStr.remove("-");
