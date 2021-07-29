@@ -179,7 +179,7 @@ unix:!macx{
   doc.path = $${PREFIX}/share/doc/socnetv
   doc.files = changelog.gz NEWS README.md TODO COPYING AUTHORS INSTALL
 
-  INSTALLS += pixmap desktop manpage translations doc appstream
+  INSTALLS += pixmap desktop manpage translations appstream
 
 }
 
