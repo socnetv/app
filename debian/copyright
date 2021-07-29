@@ -10,6 +10,10 @@ Files: debian/*
 Copyright: 2014-2021 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
 License: GPL-3
 
+Files: socnetv.appdata.xml
+Copyright: 2014-2021 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
+License: CC0-1.0
+
 License: GPL-3
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
