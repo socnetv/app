@@ -61,9 +61,12 @@ set -x
 %endif
 
 
-#
-# Preamble section
-#
+set +x
+echo "#############################"
+echo "###### PREAMBLE SECTION #####"
+echo "#############################"
+set -x
+
 
 Name:		%{name}
 Version:	%{version}
