@@ -5,4 +5,3 @@
 
 override_dh_auto_install:
 	$(MAKE) INSTALL_ROOT=$$(pwd)/debian/socnetv install
-#	$(MAKE) DESTDIR=$$(pwd)/debian/socnetv prefix=/usr install
