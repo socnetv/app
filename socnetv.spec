@@ -80,7 +80,7 @@ set -x
 
 %if %{is_fedora}
 %define distr Fedora
-%define breqr qt5-qtbase,qt5-qtbase-devel, qt5-qtcharts-devel, qt5-qtsvg-devel, qt5-qttools, fedora-release, desktop-file-utils
+%define breqr qt5-qtbase,qt5-qtbase-devel, qt5-qttools, fedora-release
 %define qmake /usr/bin/qmake-qt5
 # %define lrelease /usr/bin/lrelease
 %endif
@@ -107,14 +107,19 @@ URL:		https://socnetv.org/
 Vendor: 	Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 Source0:	https://github.com/socnetv/app/archive/v%{version}.tar.gz
 Distribution:   %{distr}
+BuildRequires:  make
 BuildRequires:	gcc-c++, %{breqr}
+BuildRequires:	desktop-file-utils
 BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Gui)
 BuildRequires:  pkgconfig(Qt5PrintSupport)
 BuildRequires:  pkgconfig(Qt5Widgets)
 BuildRequires:  pkgconfig(Qt5Network)
-BuildRequires:  pkgconfig(Qt5Charts)
+# qt5-qtsvg-devel
 BuildRequires:  pkgconfig(Qt5Svg)
+# qt5-qtcharts-devel
+BuildRequires:  pkgconfig(Qt5Charts)
+
 Provides:       %{name} = %{version}
 Obsoletes:      %{name} < %{version}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
@@ -207,12 +212,7 @@ desktop-file-validate %{name}.desktop
 
 echo "### CALLING MAKE INSTALL buildroot: %buildroot ###"
 
-make install INSTALL_ROOT="%buildroot"
-
-# %make_install
-# NOTE %make_install is a macro available starting rpm-4.10. It is equivalent to `make install DESTDIR="%{?buildroot}"`. 
-# I left it out to use INSTALL_ROOT directly...
-
+%{make_install} INSTALL_ROOT=%{buildroot}
 
 
 set +x
