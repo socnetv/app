@@ -34,6 +34,10 @@ elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
     echo "Installing Qt5 for macOS via brew..."
     # Note we use qt@5 to install Qt 5.15.2 because `brew install qt` would install Qt 6 by default...
     brew install qt@5 p7zip
+    echo "installing create-dmg"
+    brew install create-dmg
+    # Install npm appdmg if you want to create custom dmg files with it
+    # npm install -g appdmg
     echo "Running brew link to symlink various Qt5 binaries into /usr/local/bin etc so..."
     brew link --force qt@5
     echo "Adding qt binaries installation path to system PATH..."

@@ -86,7 +86,7 @@ after_success:
   - if [ ! -z "${TRAVIS_TAG}" ] ; then echo "The upload tool will upload files to tag TRAVIS_TAG";  fi
   - if [ -z "$TRAVIS_TAG" ] ; then echo "The upload tool will upload files to 'continuous' CI/CD pipeline"; fi
   - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then bash upload.sh *SocNetV*.AppImage*; fi
-  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then bash upload.sh *SocNetV*.zip*; bash upload.sh SocNetV*.pkg*; fi
+  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then bash upload.sh *SocNetV*.zip*; bash upload.sh SocNetV*.dmg*; fi
 
 
 

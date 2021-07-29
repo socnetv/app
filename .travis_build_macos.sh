@@ -36,16 +36,13 @@ else
 fi
 echo "VERSION = ${VERSION}";
 
-# Output macOS version
+# Print macOS version
 echo "macOS version = "
 sw_vers
 
-# build env
+# Print build env
 echo "Xcode build version = "
 xcrun -sdk macosx --show-sdk-path
-
-# Install npm appdmg if you want to create custom dmg files with it
-# npm install -g appdmg
 
 
 # Build your app
@@ -76,8 +73,6 @@ echo "*****************************"
 echo "Entering project dir ${project_dir} ..."
 cd ${project_dir}/
 
-# Verify dir
-pwd
 
 # Remove build directories that you don't want to deploy
 echo "Removing items we do not deploy from project dir ${project_dir}..."
@@ -103,15 +98,6 @@ mv ${APP_NAME}.dmg "${APP_NAME}-${VERSION}.dmg"
 echo "Check if there is a .dmg file created..."
 find . -type f -name *.dmg
 
-echo "Calling productbuild to create product archive .pkg from ${APP_NAME}.app:"
-productbuild --component ${APP_NAME}.app /Applications "${APP_NAME}-${VERSION}.pkg"
-
-# You can use the appdmg command line app to create your dmg file if
-# you want to use a custom background and icon arrangement. I'm still
-# working on this for my apps, myself. If you want to do this, you'll
-# remove the -dmg option above.
-# appdmg json-path ${APP_NAME}_${TRAVIS_TAG}.dmg
-
 # Copy other project files
 echo "Copying other project files..."
 cp "${project_dir}/README.md" "README.md"
@@ -119,6 +105,42 @@ cp "${project_dir}/COPYING" "LICENSE"
 
 echo "Creating zip archive..."
 7z a ${APP_NAME}-${VERSION}-macos.zip "${APP_NAME}-${VERSION}.dmg" "README.md" "LICENSE"
+
+# Remove the first DMG file
+[[ -f ${APP_NAME}-${VERSION}.dmg ]] && rm ${APP_NAME}-${VERSION}.dmg
+
+echo "Creating another dmg file with create-dmg..."
+echo "Creating release subdirectory..."
+mkdir -p release
+
+
+echo "Moving app and extra files inside the release subdirectory..."
+mv ${APP_NAME}.app release/
+cp README.md release/
+cp LICENSE release/
+
+
+create-dmg \
+    --volname ${APP_NAME}-${VERSION}
+    --volicon $project_dir/src/images/socnetv.icns \
+    --background $project_dir/packaging/macosx/DMG-Background.png \
+    --window-pos 200 120 \
+    --window-size 800 400 \
+    --icon-size 100  \
+    --icon "${APP_NAME}" 200 205 \
+    --hide-extension "${APP_NAME}.app" \
+    --app-drop-link 600 205 \
+    ./${APP_NAME}-${VERSION}.dmg \
+    ./release
+
+#echo "Calling productbuild to create product archive .pkg from ${APP_NAME}.app:"
+#productbuild --component ${APP_NAME}.app /Applications "${APP_NAME}-${VERSION}.pkg"
+
+# You can use the appdmg command line app to create your dmg file if
+# you want to use a custom background and icon arrangement. I'm still
+# working on this for my apps, myself. If you want to do this, you'll
+# remove the -dmg option above.
+# appdmg json-path ${APP_NAME}_${TRAVIS_TAG}.dmg
 
 echo "Check what we have created..."
 find . -type f -name "${APP_NAME}*"
