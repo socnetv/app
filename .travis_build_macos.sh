@@ -123,7 +123,7 @@ cp LICENSE release/
 create-dmg \
     --volname ${APP_NAME}-${VERSION} \
     --volicon $project_dir/src/images/socnetv.icns \
-    --background $project_dir/packaging/macosx/DMG-Background.png \
+#    --background $project_dir/packaging/macosx/DMG-Background.png \
     --window-pos 200 120 \
     --window-size 800 400 \
     --icon-size 100  \

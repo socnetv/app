@@ -154,9 +154,12 @@ echo "### unzip changelog ###"
 gunzip changelog.gz
 chmod -x changelog
 
+echo "### zip manpage ###"
+chmod -x man/socnetv.1
+gzip man/socnetv.1
+
 echo "### Showing files ###"
 find .
-
 
 
 set +x
