@@ -127,7 +127,7 @@ RESOURCES = src/src.qrc
 
 # This is Windows only
 win32 {
-  VERSION = 3.0.0.1           # major.minor.patch.build
+  VERSION = 3.0.2.1           # major.minor.patch.build
   VERSION_PE_HEADER = 3.0
 
   #RC_FILE = src/icon.rc
