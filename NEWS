@@ -7,13 +7,15 @@ SocNetV News
 Jul 2021
 ========
 
-- Version 3.0 released for Windows, macOS and Linux, with new command line parameters.
+- Version 3.0 released for Windows, macOS and Linux, with improved Graph calculations speed and new command line parameters.
   This is the first version to support hardware accelerated (OpenGL) rendering of the networks.
   The Web Crawler has been improved to test for OpenSSL support in the OS and give the user hints what to
   do if no OpenSSL is present. Also, the delay between requests has been fixed and it works. 
   Among various bug fixes: fixed a serious bug in weighted network centrality computations (see #123). 
   Note: To run SocNetV 3.0 AppImage in Fedora 34 which uses Wayland by default, use:
    env GDK_BACKEND=x11  ./SocNetV-3.0-dev-x86_64.AppImage
+  The OBS repositories are working again, and you can download Fedora/openSUSE packages from there:
+  https://download.opensuse.org/repositories/home:/oxy86/
 
 
 Jun 2021

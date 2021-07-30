@@ -11,7 +11,7 @@ ALLOW_WARNINGS = warn_off
 TEMPLATE = app
 CONFIG  += qt thread $${ALLOW_WARNINGS} $${MY_TARGET_BUILD}
 TARGET = socnetv
-VERSION=3.0.2
+VERSION=3.0.3
 LANGUAGE = C++
 
 # add Qt module support

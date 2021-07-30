@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 3.0.2
+ version: 3.0.3
  Written in Qt
 
                          dialognodefind.h  -  description
