@@ -100,7 +100,7 @@ qmake-qt5 CONFIG+=release
 
 ### Run make to build the application
 %__make %{?_smp_mflags}
-# NOTE: Also available as the %make_build macro, but that is not available for openSUSE 13.2, Leap 42.2 and SLE 12 SP2 (rpm < 4.12).
+# NOTE: Also available as the make_build macro, but that is not available for openSUSE 13.2, Leap 42.2 and SLE 12 SP2 (rpm < 4.12).
 
 %install
 %{make_install} INSTALL_ROOT=%{buildroot}
