@@ -5676,7 +5676,6 @@ void MainWindow::initApp(){
 
     /** Clear previous network data and reset user-selected settings */
     activeGraph->clear();
-    activeGraph->setSocNetV_Version(VERSION);
 
     activeGraph->vertexShapeSetDefault(appSettings["initNodeShape"], appSettings["initNodeIconPath"]);
     activeGraph->vertexSizeInit(appSettings["initNodeSize"].toInt(0, 10));

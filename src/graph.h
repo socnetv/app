@@ -420,9 +420,6 @@ public:
 
     void clear(const QString &reason="");
 
-
-    void setSocNetV_Version (QString ver) { VERSION = ver; }
-
     /*FILES (READ AND WRITE)*/
     QString graphName() const;
 
@@ -1325,7 +1322,7 @@ private:
 
     int csRecDepth;
 
-    QString VERSION, fileName, m_graphName, initEdgeColor, initVertexColor,
+    QString fileName, m_graphName, initEdgeColor, initVertexColor,
         initVertexNumberColor, initVertexLabelColor;
     QString initVertexShape, initVertexIconPath;
     QString htmlHead, htmlHeadLight, htmlEnd;
