@@ -154,7 +154,7 @@ Please note that SocNetV is also available in the [repositories of most Linux di
 However that is not always the most recent version. We urge you to use the AppImage of the latest version 
 available from our website instead.
 
-Users of openSUSE, Fedora and Ubuntu/Debian may also add our own repositories to their systems.
+Also, users of openSUSE, Fedora and Ubuntu/Debian can install SocNetV from our own repositories. 
 
 In Debian and Ubuntu, add our repository and install SocNetV with these commands:
 
@@ -165,7 +165,7 @@ sudo apt-get install socnetv
 ```
 
 In Fedora and openSUSE, choose and add the correct repository for your distro version 
-from here: https://download.opensuse.org/repositories/home:/oxy86/ 
+from here: https://software.opensuse.org/download.html?project=home%3Aoxy86&package=socnetv 
 
 Once you add the repo, install SocNetV using the command (Fedora):
 
