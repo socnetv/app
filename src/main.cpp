@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
     //
     app.setOrganizationName("socnetv");
     app.setOrganizationDomain("socnetv.org");
-    app.setApplicationDisplayName("SocNetV");   // Used in widgets
+    app.setApplicationDisplayName("Social Network Visualizer v" + VERSION);   // Used in widgets
 
     app.setApplicationName("Social Network Visualizer");    // used by windowing system
     app.setApplicationVersion(VERSION);
