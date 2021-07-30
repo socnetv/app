@@ -34,7 +34,7 @@ echo "###### SET BUILD VARS #######"
 echo "#############################"
 
 %define name    socnetv
-%define version 3.0.1
+%define version 3.0.2
 %define release 1
 
 # Default qmake & lrelease (from linguist)
@@ -234,6 +234,8 @@ echo "#############################"
 #CHANGELOG SECTION
 #
 %changelog
+* Fri Jul 30 2021 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 3.0.2-1
+- Upstream v3.0.2
 * Fri Jul 30 2021 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 3.0.1-1
 - Upstream v3.0.1
 * Fri Jul 30 2021 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 3.0-1
