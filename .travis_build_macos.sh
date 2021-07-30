@@ -119,11 +119,10 @@ mv ${APP_NAME}.app release/
 cp README.md release/
 cp LICENSE release/
 
-
+#    --background $project_dir/packaging/macosx/DMG-Background.png \
 create-dmg \
     --volname ${APP_NAME}-${VERSION} \
     --volicon $project_dir/src/images/socnetv.icns \
-#    --background $project_dir/packaging/macosx/DMG-Background.png \
     --window-pos 200 120 \
     --window-size 800 400 \
     --icon-size 100  \
