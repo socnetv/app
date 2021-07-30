@@ -11,7 +11,7 @@ ALLOW_WARNINGS = warn_off
 TEMPLATE = app
 CONFIG  += qt thread $${ALLOW_WARNINGS} $${MY_TARGET_BUILD}
 TARGET = socnetv
-VERSION=3.0.3
+VERSION=3.0.4
 LANGUAGE = C++
 
 # add Qt module support
@@ -127,7 +127,7 @@ RESOURCES = src/src.qrc
 
 # This is Windows only
 win32 {
-  VERSION = 3.0.2.1           # major.minor.patch.build
+  VERSION = 3.0.4.1           # major.minor.patch.build
   VERSION_PE_HEADER = 3.0
 
   #RC_FILE = src/icon.rc
