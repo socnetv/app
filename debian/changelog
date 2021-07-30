@@ -1,6 +1,6 @@
-socnetv (3.0-1) bionic; urgency=medium
+socnetv (3.0.1-1) bionic; urgency=medium
 
-  *  New upstream v3.0
+  *  New upstream v3.0.1
 
  -- Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>  Fri, 30 Jul 2021 00:13:00 +0200
 

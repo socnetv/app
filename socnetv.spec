@@ -36,7 +36,7 @@ echo "#############################"
 set -x
 
 %define name    socnetv
-%define version 3.0
+%define version 3.0.1
 %define release 1
 
 # Default qmake & lrelease (from linguist)
@@ -240,6 +240,8 @@ set -x
 #CHANGELOG SECTION
 #
 %changelog
+* Fri Jul 30 2021 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 3.0.1-1
+- Upstream v3.0.1
 * Fri Jul 30 2021 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 3.0-1
 - Upstream v3.0
 * Mon Jun 14 2021 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.9-1
