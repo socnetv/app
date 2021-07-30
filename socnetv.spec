@@ -37,7 +37,7 @@ Name:		socnetv
 Version:	3.0.2
 Release:	1{?dist}
 Summary:	A Social Networks Analyser and Visualiser
-License:	GPLv3
+License:	GPL-3.0-or-later
 Group:		Productivity/Scientific/Math 
 URL:		https://socnetv.org/
 Source0:	app-%{version}.tar.gz
