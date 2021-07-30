@@ -184,7 +184,7 @@ sudo zypper in socnetv
 To compile and install SocNetV from source you need the Qt5 toolkit development libraries. 
 Qt is an open source C++ toolkit, for Windows, Linux and macOS.
 
-Windows and MacOS users should download and install Qt from https://www.qt.io/download-qt-installer
+Windows and macOS users should download and install Qt from https://www.qt.io/download-qt-installer
 
 Linux users need to install the following packages:
 
