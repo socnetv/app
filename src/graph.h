@@ -104,7 +104,7 @@ typedef QVector<QString> V_str;
   \bug wontfix Pajek files with no ic / labels without quotes are displayed without colors
   \bug wrong default edge colors (not the ones used by Settings) after loading GraphML files.
 
-  \todo Subgroups / Communities: clans, path distance MDS, Components, Blocks and Cutpoints,
+  \todo Subgroups / Communities: clans, path distance MDS, Components, Blocks and Cutpoints.
   \todo Structural Equivalence: MDS, Block modelling, CONCOR
   */
 
