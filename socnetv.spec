@@ -13,9 +13,12 @@
 # See also http://www.rpm.org
 #
 
+### Define our defaults, they will be overriden in the distro detection below.
+%define qmake /usr/bin/qmake-qt5
+%define lrelease /usr/bin/lrelease-qt5
 
-# Detect host Linux distribution
-%if 0%{?fedora}
+### Detect host Linux distribution and update defines.
+%if 0%{?fedora} || 0%{?rhel_version} || 0%{?centos_version}
 %define qmake /usr/bin/qmake-qt5
 %define lrelease /usr/bin/lrelease-qt5
 %endif
@@ -29,9 +32,6 @@
 %define qmake /usr/bin/qmake-qt5
 %define lrelease /usr/bin/lrelease-qt5
 %endif
-
-%define qmake /usr/bin/qmake-qt5
-%define lrelease /usr/bin/lrelease-qt5
 
 Name:		socnetv
 Version:	3.0.2
@@ -49,10 +49,11 @@ BuildRequires:	gzip
 BuildRequires:  libqt5-linguist
 %endif
 
-%if 0%{?fedora}
+%if 0%{?fedora} || 0%{?rhel_version} || 0%{?centos_version}
 BuildRequires:	qt5-linguist
 BuildRequires:  glibc-all-langpacks
 %endif
+
 
 BuildRequires:	desktop-file-utils
 BuildRequires:  pkgconfig(Qt5Core)
@@ -72,21 +73,20 @@ SocNetV (Social Network Visualizer) is a flexible, user-friendly
 free software application for social network analysis and 
 visualisation.
 
-# Added to avoid "empty files file debugsourcefiles.list " error
-# see https://en.opensuse.org/Fedora_packaging
-# another solution add CONFIG += force_debug_info in qmake
+### Added to avoid "empty files file debugsourcefiles.list " error
+### see https://en.opensuse.org/Fedora_packaging
+### Another solution would be to add CONFIG += force_debug_info in qmake
 %global debug_package %{nil}
 
 %prep
-### running autosetup... ###
-# The autosetup macro is new, see: https://rpm.org/user_doc/autosetup.html
+### Runn autosetup. The autosetup macro is new, see: https://rpm.org/user_doc/autosetup.html
 %autosetup -p 0 -n app-%{version}
 
-### unzip changelog ###
+### Unzip changelog
 gunzip changelog.gz
 chmod -x changelog
 
-### Show files ###
+### Debugging: Show files
 pwd
 find .
 
@@ -95,41 +95,44 @@ find .
 # Run lrelease to generate Qt message files from Qt Linguist translation files
 lrelease-qt5 socnetv.pro
 
-# Run qmake
+### Run qmake
 qmake-qt5 CONFIG+=release
 
-# Run make to build the application
+### Run make to build the application
 %__make %{?_smp_mflags}
 # NOTE: Also available as the %make_build macro, but that is not available for openSUSE 13.2, Leap 42.2 and SLE 12 SP2 (rpm < 4.12).
 
 %install
 %{make_install} INSTALL_ROOT=%{buildroot}
 
+### Debugging: Show where we are and show files in build root.
 pwd
 find %{buildroot}
 
 %check
 desktop-file-validate %{buildroot}%{_datadir}/applications/%{name}.desktop
 
-
+### Debugging: show where we are again
 pwd
 pwd
 
-# Read more: https://docs.fedoraproject.org/en-US/packaging-guidelines/Scriptlets/
+### Run post install and post uninstall Scriptlets
+### Read more: https://docs.fedoraproject.org/en-US/packaging-guidelines/Scriptlets/
 
 %post
-# Scriptlet executed before the package is installed on the target system.
+### Scriptlet executed before the package is installed on the target system.
 /usr/bin/update-desktop-database &> /dev/null || :
 
 
 %postun
-# Scriptlet executed just after the package is uninstalled from the target system.
+### Scriptlet executed just after the package is uninstalled from the target system.
 /usr/bin/update-desktop-database &> /dev/null || :
 
+### Debugging: show where we are for a last time
 pwd
 pwd
 pwd
-pwd
+
 
 %files
 %defattr(-,root,root)
@@ -145,9 +148,9 @@ pwd
 
 
 
-#
-#CHANGELOG SECTION
-#
+###
+### CHANGELOG SECTION
+###
 %changelog
 * Fri Jul 30 2021 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 3.0.2-1
 - Upstream v3.0.2
