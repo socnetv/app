@@ -99,13 +99,13 @@ SocNetV is multi-platform, which means that it can be installed and run in every
 Operating System supported by the Qt toolkit.
 
 The project offers binaries and installers for the three major Operating Systems:
-Windows, MacOS and Linux.
+Windows, macOS and Linux.
 
 If there is no binary package for your OS, please download and compile the source code,
 as explained further below.
 
 
-## a) Install a binary package or installer (Linux/MacOS/Windows)
+## a) Install a binary package or installer (Linux/macOS/Windows)
 
 You can download an installer or a binary package for your Operating System from the
 project's Downloads page: https://socnetv.org/downloads
@@ -115,7 +115,7 @@ Follow the instructions below to install it in your system.
 ### Install in Windows
 
 To install SocNetV in Windows, download the latest SocNetV Windows installer from
-the Downloads page, and double-click on the executable to start the installation.
+the [Downloads](https://socnetv.org/downloads) page, and double-click on the executable to start the installation.
 
 Note: You might see a Windows pop up about unknown software origin/publisher. Please ignore it and proceed, as we do not sign our released packages with any code signing certificates (which are not free by the way). 
 
@@ -129,7 +129,7 @@ Afterwards you can run the application from your Start menu.
 ### Install in macOS
 
 To install SocNetV in macOS, download the latest SocNetV macOS package from
-the Downloads page. Then right-click on it and select Open.
+the [Downloads](https://socnetv.org/downloads) page. Then right-click on it and select Open.
 
 If the package is an installer, the installation will start immediately and the application 
 will be installed automatically in your Applications.
@@ -146,12 +146,12 @@ After that, in order to permanently install SocNetV in your macOS, you can simpl
 ### Install in Linux
 
 To run the latest and greatest version of SocNetV in Linux, download the latest Linux AppImage from
-the project's Downloads page.
+the project's [Downloads](https://socnetv.org/downloads) page.
 
 Then, make the .appimage file executable and double-click on it to run SocNetV. That's it. :)
 
-Please note that a version of SocNetV is also available in the repositories of most Linux distributions.
-However that is not always the most recent version. We urge you to use the latest version 
+Please note that SocNetV is also available in the [repositories of most Linux distributions](https://repology.org/project/socnetv/versions).
+However that is not always the most recent version. We urge you to use the AppImage of the latest version 
 available from our website instead.
 
 Users of openSUSE, Fedora and Ubuntu/Debian may also add our own repositories to their systems.
@@ -168,7 +168,10 @@ In Fedora and openSUSE, choose and add the correct repository for your distro ve
 from here: https://download.opensuse.org/repositories/home:/oxy86/ 
 
 Once you add the repo, install SocNetV using the command (Fedora):
+
+```
 sudo yum install socnetv
+```
 
 or (openSUSE): 
 ```
@@ -194,14 +197,14 @@ Linux users need to install the following packages:
 Once you have Qt5 installed, you are ready to compile SocNetV from source.
 
 Download the archive with the source code of the latest version from 
-https://github.com/socnetv/app/releases/latest, i.e. app-2.9.tar.gz
+https://github.com/socnetv/app/releases/latest. You will get a compressed file like app-3.0.tar.gz
 
 Then type in the following commands in order to decompress the
-SocNetV tarball and build it. Replace 2.X with the version you downloaded.
+SocNetV tarball and build it. Replace 3.X with the version you downloaded.
 
 ```
-untar zxfv app-2.X.tar.gz
-cd app-2.X
+untar zxfv app-3.X.tar.gz
+cd app-3.X
 qmake
 make
 sudo make install # or su -c 'make install'
@@ -256,15 +259,13 @@ to start SocNetV and immediately load network file named 'net.graphml' (in curre
 To help you work with the application, there are tooltips and What's This help messages
 inside the application, when running SocNetV.
 
-To see the full documentation, press F1 to display the SocNetV Manual.
-
-The manual is also available online at the project's website.
+To see the full documentation, press F1. It will open a browser window with the SocNetV Manual, 
+which is available online at the project's website: https://socnetv.org/documentation/
 
 
 # 7. Bug reporting & contact
 
-If you have a bug report or a feature request, please file it
-in our github issue tracker:
+If you have a bug report or a feature request, please file it in our GitHub issue tracker:
 https://github.com/socnetv/app/issues
 
 To contact us directly, send an email to: info@socnetv.org
