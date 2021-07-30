@@ -14,69 +14,36 @@
 #
 
 
-#############################
-##### SET PLATFORM VARS ####
-#############################
-
-
-%if %(if [[ "%{vendor}" == obs://* ]]; then echo 1; else echo 0; fi)
-%define buildservice 1
-%define usingbuildservice true
-%define packingplatform %(echo openSUSE Build Service)
-%else
-%define usingbuildservice false
-%define packingplatform %(. /etc/os-release 2>/dev/null; [ -n "$PRETTY_NAME" ] && echo "$PRETTY_NAME" || echo $HOSTNAME [`uname`])
-%endif
-
-
-#############################
-###### SET BUILD VARS #######
-#############################
-
-%define name    socnetv
-%define version 3.0.2
-%define release 1
-
-# Default qmake & lrelease (from linguist)
-%define qmake qmake
-%define lrelease lrelease
-
 # Detect host Linux distribution
 %if 0%{?fedora}
-%define breqr qt5-qtbase,qt5-qtbase-devel, qt5-qttools
 %define qmake /usr/bin/qmake-qt5
 %define lrelease /usr/bin/lrelease-qt5
 %endif
 
 %if 0%{?suse_version}
-%define breqr libqt5-qtbase, libqt5-qtbase-devel, libqt5-qtsvg-devel, libQt5Charts5-devel, libqt5-qttools
 %define qmake /usr/bin/qmake-qt5
 %define lrelease /usr/bin/lrelease-qt5
 %endif
 
 %if 0%{?mageia}
+%define qmake /usr/bin/qmake-qt5
 %define lrelease /usr/bin/lrelease-qt5
 %endif
 
+%define qmake /usr/bin/qmake-qt5
+%define lrelease /usr/bin/lrelease-qt5
 
-#############################
-###### PREAMBLE SECTION #####
-#############################
-
-
-Name:		%{name}
-Version:	%{version}
-Release:	%{release}{?dist}
+Name:		socnetv
+Version:	3.0.2
+Release:	1{?dist}
 Summary:	A Social Networks Analyser and Visualiser
 License:	GPLv3
 Group:		Productivity/Scientific/Math 
 URL:		https://socnetv.org/
-Source0:	https://github.com/socnetv/app/archive/v%{version}.tar.gz
+Source0:	app-%{version}.tar.gz
 BuildRequires:  make
 BuildRequires:	gcc-c++
 BuildRequires:	gzip
-
-# BuildRequires:	%{breqr}
 
 %if 0%{?suse_version}
 BuildRequires:  libqt5-linguist
@@ -84,6 +51,7 @@ BuildRequires:  libqt5-linguist
 
 %if 0%{?fedora}
 BuildRequires:	qt5-linguist
+BuildRequires:  glibc-all-langpacks
 %endif
 
 BuildRequires:	desktop-file-utils
@@ -92,52 +60,22 @@ BuildRequires:  pkgconfig(Qt5Gui)
 BuildRequires:  pkgconfig(Qt5PrintSupport)
 BuildRequires:  pkgconfig(Qt5Widgets)
 BuildRequires:  pkgconfig(Qt5Network)
+BuildRequires:  pkgconfig(Qt5Xml)
 # qt5-qtsvg-devel
 BuildRequires:  pkgconfig(Qt5Svg)
 # qt5-qtcharts-devel
 BuildRequires:  pkgconfig(Qt5Charts)
 
 
-#
-# DESCRIPTION SECTION
-#
-
 %description
 SocNetV (Social Network Visualizer) is a flexible, user-friendly 
 free software application for social network analysis and 
-visualisation. 
+visualisation.
 
-It lets you create new networks (graphs) with a few clicks on a 
-virtual canvas or load networks of various formats (GraphViz, 
-GraphML, Adjacency, Pajek, etc) and modify them to suit your needs.
-
-The application computes graph theory metrics, such as density, 
-diameter and distances (shortest paths) in directed and undirected,
-weighted or non weighted graphs. It also computes node and 
-network centrality and prestige indices, such as closeness, 
-betweeness, eigenvector, information, power centralities 
-and pagerank prestige. Community detection and structural 
-equivalence algorithms are included, such as triad census, 
-clique census, hierarchical cluster analysis, actor similarity 
-and tie profile dissimilarities. 
-
-Various layout algorithms (i.e. Spring-embedder, circular and in 
-levels according to centrality or prestige) are supported for 
-meaningful visualisations of your networks. 
-
-Furthermore, SocNetV generates random networks using various models
-such as Erdos-Renyi, Scale-Free, Small-World, d-regular etc.
-
-The application also includes a simple web crawler to create 
-a social network of web pages, where edges are the links between 
-them. 
-
-Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
-
-
-#############################
-####### PREP SECTION ########
-#############################
+# Added to avoid "empty files file debugsourcefiles.list " error
+# see https://en.opensuse.org/Fedora_packaging
+# another solution add CONFIG += force_debug_info in qmake
+%global debug_package %{nil}
 
 %prep
 ### running autosetup... ###
@@ -148,56 +86,34 @@ Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 gunzip changelog.gz
 chmod -x changelog
 
-### zip manpage ###
-chmod -x man/socnetv.1
-gzip man/socnetv.1
-
-### Showing files ###
+### Show files ###
+pwd
 find .
-
-
-
-#############################
-####### BUILD SECTION #######
-#############################
 
 
 %build
 # Run lrelease to generate Qt message files from Qt Linguist translation files
-lrelease socnetv.pro
+lrelease-qt5 socnetv.pro
 
 # Run qmake
-%{qmake}
+qmake-qt5 CONFIG+=release
 
 # Run make to build the application
 %__make %{?_smp_mflags}
 # NOTE: Also available as the %make_build macro, but that is not available for openSUSE 13.2, Leap 42.2 and SLE 12 SP2 (rpm < 4.12).
 
-
-
-#############################
-###### INSTALL SECTION ######
-#############################
-
-
 %install
 %{make_install} INSTALL_ROOT=%{buildroot}
 
-
-
-#############################
-###### CHECK SECTION ######
-#############################
-
+pwd
+find %{buildroot}
 
 %check
 desktop-file-validate %{buildroot}%{_datadir}/applications/%{name}.desktop
 
 
-#############################
-###### POST/POSTUN SECTION ##
-#############################
-
+pwd
+pwd
 
 # Read more: https://docs.fedoraproject.org/en-US/packaging-guidelines/Scriptlets/
 
@@ -210,15 +126,14 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/%{name}.desktop
 # Scriptlet executed just after the package is uninstalled from the target system.
 /usr/bin/update-desktop-database &> /dev/null || :
 
-
-
-#############################
-###### FILES SECTION ########
-#############################
-
+pwd
+pwd
+pwd
+pwd
 
 %files
 %defattr(-,root,root)
+%dir /usr/share/socnetv
 %license COPYING
 %doc AUTHORS NEWS README.md changelog
 %{_bindir}/%{name}
