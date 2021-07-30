@@ -14,9 +14,9 @@
 #
 
 
-echo "#############################"
-echo "##### SET PLATFORM VARS ####"
-echo "#############################"
+#############################
+##### SET PLATFORM VARS ####
+#############################
 
 
 %if %(if [[ "%{vendor}" == obs://* ]]; then echo 1; else echo 0; fi)
@@ -29,9 +29,9 @@ echo "#############################"
 %endif
 
 
-echo "#############################"
-echo "###### SET BUILD VARS #######"
-echo "#############################"
+#############################
+###### SET BUILD VARS #######
+#############################
 
 %define name    socnetv
 %define version 3.0.2
@@ -59,9 +59,9 @@ echo "#############################"
 %endif
 
 
-echo "#############################"
-echo "###### PREAMBLE SECTION #####"
-echo "#############################"
+echo "#############################
+###### PREAMBLE SECTION #####
+#############################
 
 
 Name:		%{name}
@@ -135,31 +135,31 @@ them.
 Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 
 
-echo "#############################"
-echo "####### PREP SECTION ########"
-echo "#############################"
+#############################
+####### PREP SECTION ########
+#############################
 
 %prep
-echo "### running autosetup... ###"
+### running autosetup... ###
 # The autosetup macro is new, see: https://rpm.org/user_doc/autosetup.html
 %autosetup -p 0 -n app-%{version}
 
-echo "### unzip changelog ###"
+### unzip changelog ###
 gunzip changelog.gz
 chmod -x changelog
 
-echo "### zip manpage ###"
+### zip manpage ###
 chmod -x man/socnetv.1
 gzip man/socnetv.1
 
-echo "### Showing files ###"
+### Showing files ###
 find .
 
 
 
-echo "#############################"
-echo "####### BUILD SECTION #######"
-echo "#############################"
+#############################
+####### BUILD SECTION #######
+#############################
 
 
 %build
@@ -175,9 +175,9 @@ lrelease socnetv.pro
 
 
 
-echo "#############################"
-echo "###### INSTALL SECTION ######"
-echo "#############################"
+#############################
+###### INSTALL SECTION ######
+#############################
 
 
 %install
@@ -185,18 +185,18 @@ echo "#############################"
 
 
 
-echo "#############################"
-echo "###### CHECK SECTION ######"
-echo "#############################"
+#############################
+###### CHECK SECTION ######
+#############################
 
 
 %check
 desktop-file-validate %{buildroot}%{_datadir}/applications/%{name}.desktop
 
 
-echo "#############################"
-echo "###### POST/POSTUN SECTION ##"
-echo "#############################"
+#############################
+###### POST/POSTUN SECTION ##
+#############################
 
 
 # Read more: https://docs.fedoraproject.org/en-US/packaging-guidelines/Scriptlets/
@@ -212,9 +212,9 @@ echo "#############################"
 
 
 
-echo "#############################"
-echo "###### FILES SECTION ########"
-echo "#############################"
+#############################
+###### FILES SECTION ########
+#############################
 
 
 %files
