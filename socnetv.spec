@@ -13,11 +13,11 @@
 # See also http://www.rpm.org
 #
 
-set +x
+
 echo "#############################"
 echo "##### SET PLATFORM VARS ####"
 echo "#############################"
-set -x
+
 
 %if %(if [[ "%{vendor}" == obs://* ]]; then echo 1; else echo 0; fi)
 %define buildservice 1
@@ -29,11 +29,9 @@ set -x
 %endif
 
 
-set +x
 echo "#############################"
 echo "###### SET BUILD VARS #######"
 echo "#############################"
-set -x
 
 %define name    socnetv
 %define version 3.0.1
@@ -61,11 +59,9 @@ set -x
 %endif
 
 
-set +x
 echo "#############################"
 echo "###### PREAMBLE SECTION #####"
 echo "#############################"
-set -x
 
 
 Name:		%{name}
@@ -139,11 +135,9 @@ them.
 Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 
 
-set +x
 echo "#############################"
 echo "####### PREP SECTION ########"
 echo "#############################"
-set -x
 
 %prep
 echo "### running autosetup... ###"
@@ -162,11 +156,11 @@ echo "### Showing files ###"
 find .
 
 
-set +x
+
 echo "#############################"
 echo "####### BUILD SECTION #######"
 echo "#############################"
-set -x
+
 
 %build
 # Run lrelease to generate Qt message files from Qt Linguist translation files
@@ -180,30 +174,30 @@ lrelease socnetv.pro
 # NOTE: Also available as the %make_build macro, but that is not available for openSUSE 13.2, Leap 42.2 and SLE 12 SP2 (rpm < 4.12).
 
 
-set +x
+
 echo "#############################"
 echo "###### INSTALL SECTION ######"
 echo "#############################"
-set -x
+
 
 %install
 %{make_install} INSTALL_ROOT=%{buildroot}
 
 
-set +x
+
 echo "#############################"
 echo "###### CHECK SECTION ######"
 echo "#############################"
-set -x
+
 
 %check
 desktop-file-validate %{buildroot}%{_datadir}/applications/%{name}.desktop
 
-set +x
+
 echo "#############################"
 echo "###### POST/POSTUN SECTION ##"
 echo "#############################"
-set -x
+
 
 # Read more: https://docs.fedoraproject.org/en-US/packaging-guidelines/Scriptlets/
 
@@ -217,11 +211,11 @@ set -x
 /usr/bin/update-desktop-database &> /dev/null || :
 
 
-set +x
+
 echo "#############################"
 echo "###### FILES SECTION ########"
 echo "#############################"
-set -x
+
 
 %files
 %defattr(-,root,root)
