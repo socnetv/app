@@ -53,7 +53,7 @@ sudo apt-get update
 sudo apt-get install socnetv
 
 In Fedora and openSUSE, choose and add the correct repository from here:
-http://download.opensuse.org/repositories/home:/oxy86/ 
+https://software.opensuse.org/download.html?project=home%3Aoxy86&package=socnetv
 
 Once you add the repo, install SocNetV using the command (Fedora):
 sudo yum install socnetv
