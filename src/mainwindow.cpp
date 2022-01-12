@@ -10846,18 +10846,20 @@ void MainWindow::slotEditEdgeWeight(){
 
     bool undirected = activeGraph->graphIsUndirected();
 
-    // Get the current edge weight
+    // Get the new edge weight -- only if the edge exists.
     if ( ( oldWeight= activeGraph->edgeWeight(sourceNode, targetNode)) != 0 ) {
 
+        // Fix the dialog title.
         if (changeBothEdges || undirected ){
             dialogTitle="Edge " + QString::number(sourceNode) + "<->" + QString::number(targetNode);
         }
+
         // Prompt the user for the new edge weight
-        newWeight=(qreal) QInputDialog::getDouble(
+        newWeight = (qreal) QInputDialog::getDouble(
                     this,
                     dialogTitle,
                     tr("New edge weight: "),
-                    oldWeight, -RAND_MAX, RAND_MAX , 2, &ok ) ;
+                    oldWeight, -RAND_MAX, RAND_MAX, 2, &ok ) ;
 
         if (ok) {
             activeGraph->edgeWeightSet(sourceNode, targetNode, newWeight,
