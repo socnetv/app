@@ -11,7 +11,7 @@ ALLOW_WARNINGS = warn_off
 TEMPLATE = app
 CONFIG  += qt thread $${ALLOW_WARNINGS} $${MY_TARGET_BUILD}
 TARGET = socnetv
-VERSION=3.0.4
+VERSION=3.1.0-dev
 LANGUAGE = C++
 
 # add Qt module support
@@ -139,10 +139,10 @@ win32 {
   QMAKE_TARGET_PRODUCT = "Social Network Visualizer"
 
   # Document description
-  QMAKE_TARGET_DESCRIPTION = "Open-source social network analysis application based on Qt."
+  QMAKE_TARGET_DESCRIPTION = "SocNetV: Open-source social network analysis application based on Qt."
 
   # Copyright Information
-  QMAKE_TARGET_COPYRIGHT = "Copyright (C) 2021 Dimitris V. Kalamaras. GPLv3."
+  QMAKE_TARGET_COPYRIGHT = "Copyright (C) 2022 Dimitris V. Kalamaras. GPLv3."
 
   TARGET = SocNetV
   target.path = release/

@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 3.0.4
+ version: 3.1.0-dev
  Written in Qt
 
 -                           mainwindow.cpp  -  description
                              -------------------
-    copyright         : (C) 2005-2021 by Dimitris B. Kalamaras
+    copyright         : (C) 2005-2022 by Dimitris B. Kalamaras
     blog              : http://dimitris.apeiro.gr
     project site      : https://socnetv.org
 
@@ -10765,8 +10765,9 @@ void MainWindow::slotEditEdgeWeight(){
     bool changeBothEdges=false;
     bool ok=false;
 
-
+    // Check if an edge has been clicked/selected.
     if ( activeGraph->edgeClicked().source==0 || activeGraph->edgeClicked().target==0 ) {
+        // No edge clicked/selected. Show dialog to select the edge by source/target nodes.
         sourceNode=QInputDialog::getInt(
                     this,
                     "Edge weight",
@@ -10794,9 +10795,14 @@ void MainWindow::slotEditEdgeWeight(){
         qDebug("source %i target %i",sourceNode, targetNode);
     }
     else {
+        // An edge is clicked/selected.
+
         qDebug() << "MW: slotEditEdgeWeight() - an Edge has already been clicked";
 
+        // Check if clicked edge is reciprocated
         if (activeGraph->edgeClicked().type == EdgeType::Reciprocated) {
+            // Clicked edge is reciprocated.
+            // We need the user to let us know if she wants to change a single edge or both
             QStringList items;
             QString arcA = QString::number(activeGraph->edgeClicked().source)+ " --> "+QString::number(activeGraph->edgeClicked().target);
             QString arcB = QString::number(activeGraph->edgeClicked().target)+ " --> "+QString::number(activeGraph->edgeClicked().source);
@@ -10823,6 +10829,7 @@ void MainWindow::slotEditEdgeWeight(){
 
         }
         else {
+            // Clicked edge is not reciprocated. We are good to go.
             sourceNode = activeGraph->edgeClicked().source;
             targetNode = activeGraph->edgeClicked().target;
         }
@@ -10839,16 +10846,18 @@ void MainWindow::slotEditEdgeWeight(){
 
     bool undirected = activeGraph->graphIsUndirected();
 
+    // Get the current edge weight
     if ( ( oldWeight= activeGraph->edgeWeight(sourceNode, targetNode)) != 0 ) {
 
         if (changeBothEdges || undirected ){
             dialogTitle="Edge " + QString::number(sourceNode) + "<->" + QString::number(targetNode);
         }
+        // Prompt the user for the new edge weight
         newWeight=(qreal) QInputDialog::getDouble(
                     this,
                     dialogTitle,
                     tr("New edge weight: "),
-                    oldWeight, -RAND_MAX, RAND_MAX ,1, &ok ) ;
+                    oldWeight, -RAND_MAX, RAND_MAX , 1, &ok ) ;
 
         if (ok) {
             activeGraph->edgeWeightSet(sourceNode, targetNode, newWeight,
@@ -14683,7 +14692,7 @@ void MainWindow::slotHelpSystemInfo() {
 */
 void MainWindow::slotHelpAbout(){
     int randomCookie=rand()%fortuneCookie.count();
-QString BUILD="Fri 30 Jul 2021 07:48:03 PM EEST";
+QString BUILD="Wed 12 Jan 2022 01:22:04 PM EET";
     QMessageBox::about(
                 this, tr("About SocNetV"),
                 tr("<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)") +
@@ -14692,7 +14701,7 @@ QString BUILD="Fri 30 Jul 2021 07:48:03 PM EEST";
 
                 tr("<p>Website: <a href=\"https://socnetv.org\">https://socnetv.org</a></p>")+
 
-                tr("<p>(C) 2005-2021 by Dimitris V. Kalamaras</p>")+
+                tr("<p>(C) 2005-2022 by Dimitris V. Kalamaras</p>")+
                 tr("<p><a href=\"https://socnetv.org/contact\">Have questions? Contact us!</a></p>")+
 
                 tr("<p><b>Fortune cookie: </b><br> \"")  + fortuneCookie[randomCookie]  + "\"" +

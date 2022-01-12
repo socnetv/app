@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 3.0.4
+ version: 3.1.0-dev
  Written in Qt
  
                          dialogdatasetselect.cpp  -  description
                              -------------------
-    copyright         : (C) 2005-2021 by Dimitris B. Kalamaras
+    copyright         : (C) 2005-2022 by Dimitris B. Kalamaras
     project site      : https://socnetv.org
 
  ***************************************************************************/
