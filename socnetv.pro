@@ -127,8 +127,8 @@ RESOURCES = src/src.qrc
 
 # This is Windows only
 win32 {
-  VERSION = 3.0.4.1           # major.minor.patch.build
-  VERSION_PE_HEADER = 3.0
+  VERSION = 3.1.0.1           # major.minor.patch.build
+  VERSION_PE_HEADER = 3.1
 
   #RC_FILE = src/icon.rc
   RC_ICONS = src/images/socnetv.ico
