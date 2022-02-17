@@ -4,10 +4,6 @@ Developer:
 
   See my blog at: https://dimitris.apeiro.gr
 
-Translators:
-  - Greek:      None
-  - German:     Daniel Pinto dos Santos
-
 Debian packagers:
   - Adrià García-Alzórriz
   - Caitlin Matos
@@ -22,3 +18,11 @@ Gentoo packager:
 
 Arch packager:
   - Tom Tryfonidis  
+
+Translators:
+  - Greek:      None
+  - German:     Daniel Pinto dos Santos
+
+Donators:
+  - Robert Butscher
+
