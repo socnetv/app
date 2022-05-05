@@ -11130,10 +11130,13 @@ void MainWindow::slotEditFilterNodesIsolates(bool checked){
  * All edges weighted more (or less) than the specified weight  will be disabled.
  */
 void MainWindow::slotEditFilterEdgesByWeightDialog() {
-    if ( !activeEdges()  )   {
-        statusMessage(  QString(tr("Load a network file first. \nThen you may ask me to compute something!"))  );
-        return;
-    }
+
+    // Note: We do not check if there are active edges, because the user might have disabled all edges previously.
+
+//    if ( !activeEdges()  )   {
+//        statusMessage(  QString(tr("Load a network file first. \nThen you may ask me to compute something!"))  );
+//        return;
+//    }
 
     m_DialogEdgeFilterByWeight = new DialogFilterEdgesByWeight(this);
     connect( m_DialogEdgeFilterByWeight, SIGNAL( userChoices( qreal, bool) ),

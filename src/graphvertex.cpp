@@ -317,6 +317,7 @@ void GraphVertex::edgeFilterByWeight(qreal m_threshold, bool overThreshold){
             target=it.key();
             weight = it.value().second.first;
             if (overThreshold) {
+                // We will filter out all edges with weights ABOVE the m_threshold
                 if ( weight >= m_threshold ) {
                     qDebug() << "GraphVertex::edgeFilterByWeight() - edge  to " << target
                     << " has weight " << weight
@@ -332,6 +333,7 @@ void GraphVertex::edgeFilterByWeight(qreal m_threshold, bool overThreshold){
                 }
             }
             else {
+                // We will filter out all edges BELOW the m_threshold
                  if ( weight <= m_threshold ) {
                     qDebug() << "GraphVertex::edgeFilterByWeight() - edge  to " << target
                     << " has weight " << weight << ". It will be disabled. Emitting signal to Graph....";

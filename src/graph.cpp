@@ -2309,9 +2309,9 @@ void Graph::edgeVisibilitySet (const int &relation, const int &source, const int
  */
 void Graph::edgeFilterByWeight(qreal m_threshold, bool overThreshold){
     if (overThreshold)
-        qDebug() << "Graph: edgeFilterByWeight() over " << m_threshold ;
+        qDebug() << "Graph::edgeFilterByWeight() over or equal" << m_threshold ;
     else
-        qDebug() << "Graph: edgeFilterByWeight()  below "<< m_threshold ;
+        qDebug() << "Graph::edgeFilterByWeight()  below or equal" << m_threshold ;
 
     VList::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){

@@ -7,13 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>600</width>
-    <height>220</height>
+    <height>320</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>600</width>
-    <height>220</height>
+    <height>315</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -23,7 +23,7 @@
    <item row="0" column="0">
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>With this temporary action, you will make invisible some links according to their weight. Select a threshold then click on the desired radiobox below:</string>
+      <string>With this temporary action, you may disable (and make invisible) some network links according to their weight. By default, it disables edges with weight equal or over a numeric threshold that you enter in the spinbox below. Select your desired weight threshold then click on one of the radio buttons further below to control what to do.</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
@@ -50,7 +50,7 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Weight Threshold</string>
+        <string>Select Weight Threshold:</string>
        </property>
       </widget>
      </item>
@@ -67,7 +67,7 @@
        <property name="sizeHint" stdset="0">
         <size>
          <width>40</width>
-         <height>20</height>
+         <height>25</height>
         </size>
        </property>
       </spacer>
@@ -80,6 +80,12 @@
          <height>0</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the weight threshold to use while filtering.&lt;/p&gt;&lt;p&gt;By default, it filters edges with weights equal or above the selected threshold. &lt;/p&gt;&lt;p&gt;You can control the behaviour with the radio boxes below. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="statusTip">
+        <string>Enter the weight threshold to use while filtering. By default, it filters all edges with weights equal or above your selected threshold here. You can control the behaviour with the radio boxes below. </string>
+       </property>
        <property name="decimals">
         <number>1</number>
        </property>
@@ -91,16 +97,42 @@
     </layout>
    </item>
    <item row="2" column="0">
-    <widget class="QRadioButton" name="overThresholdBt">
-     <property name="text">
-      <string>Filter edges with weight over threshold</string>
-     </property>
-    </widget>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Select behaviour:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="overThresholdBt">
+       <property name="text">
+        <string>Filter edges with weight equal or OVER the above threshold</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="belowThresholdBt">
+       <property name="text">
+        <string>Filter edges with weight equal or BELOW the above threshold</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item row="3" column="0">
-    <widget class="QRadioButton" name="belowThresholdBt">
+    <widget class="QLabel" name="label_3">
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <property name="text">
-      <string>Filter edges with weight below threshold</string>
+      <string>Note: You can undo the filtering by running this action again later, only that time select either a threshold higher than the biggest edge weight (i.e. 99), if filtering edges over threshold is selected (first radio), or a threshold lower than the lowest edge weight (i.e. 0) if filtering edges below threshold is selected (second radio). </string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
