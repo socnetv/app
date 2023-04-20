@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
     //
     // Create our MainWindow and exec the app to enter the main event loop.
     //
-    MainWindow *socnetv=new MainWindow(fileName, showProgress, showMaximized, showFullScreen, debugLevel);
+    MainWindow *socnetv = new MainWindow(fileName, showProgress, showMaximized, showFullScreen, debugLevel);
 
     // Show the application
     socnetv->show();

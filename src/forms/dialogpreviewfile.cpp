@@ -28,6 +28,7 @@
 ********************************************************************************/
 
 #include <QtWidgets>
+#include <QTextCodec>
 #include "dialogpreviewfile.h"
 
 DialogPreviewFile::DialogPreviewFile(QWidget *parent) :
@@ -92,7 +93,7 @@ void DialogPreviewFile::updateTextEdit()
     qDebug () << " DialogPreviewFile::updateTextEdit() " << codec->name();
     QTextStream in(&encodedData);
     in.setAutoDetectUnicode(false);
-    in.setCodec(codec);
+//    in.setCodec(codec);
     decodedStr = in.readAll();
 
     textEdit->setPlainText(decodedStr);

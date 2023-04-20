@@ -64,15 +64,10 @@ class QSpinBox;
 class QNetworkAccessManager;
 class QSslError;
 class QString;
-QT_END_NAMESPACE
-
-QT_CHARTS_BEGIN_NAMESPACE
 class QAbstractSeries;
 class QAbstractAxis;
-QT_CHARTS_END_NAMESPACE
-
-
-QT_CHARTS_USE_NAMESPACE
+class QTextCodec;
+QT_END_NAMESPACE
 
 using namespace std;
 

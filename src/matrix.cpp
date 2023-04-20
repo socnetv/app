@@ -2392,10 +2392,10 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
     maxAbsVal = ( fabs(minVal) > fabs(maxVal) ) ? fabs(minVal) : fabs(maxVal) ;
 
 
-    os << qSetFieldWidth(0) << endl ;
+    os << qSetFieldWidth(0) << Qt::endl ;
 
     os << "- Values:        "
-       << ( (hasRealNumbers) ? ("real numbers (printed decimals 3)") : ("integers only" ) ) << endl;
+       << ( (hasRealNumbers) ? ("real numbers (printed decimals 3)") : ("integers only" ) ) << Qt::endl;
 
     os << "- Max value:  ";
 
@@ -2404,7 +2404,7 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
     else
         os <<   maxVal;
 
-    os << qSetFieldWidth(0) << endl ;
+    os << qSetFieldWidth(0) << Qt::endl ;
 
     os << "- Min value:   ";
 
@@ -2414,9 +2414,9 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
         os << minVal;
 
 
-    os << qSetFieldWidth(0) << endl << endl;
+    os << qSetFieldWidth(0) << Qt::endl << Qt::endl;
 
-    os << qSetFieldWidth(7) << fixed << right << "v"<< qSetFieldWidth(3) << "" ;
+    os << qSetFieldWidth(7) << Qt::fixed << Qt::right << "v"<< qSetFieldWidth(3) << "" ;
 
     os <<  ( (hasRealNumbers) ? qSetRealNumberPrecision(3) : qSetRealNumberPrecision(0) ) ;
 
@@ -2444,12 +2444,12 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
         else
             os << qSetFieldWidth(fieldWidth) ;
 
-        os <<  fixed << actorNumber;
+        os << Qt::fixed << actorNumber;
     }
 
-    os << qSetFieldWidth(0) << endl;
+    os << qSetFieldWidth(0) << Qt::endl;
 
-    os << qSetFieldWidth(7)<< endl;
+    os << qSetFieldWidth(7)<< Qt::endl;
 
     // print rows
     for (int r = 0; r < m.rows(); ++r) {
@@ -2465,14 +2465,14 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
             os << qSetFieldWidth(7) ;
 
 
-        os <<  fixed << actorNumber
+        os << Qt::fixed << actorNumber
             << qSetFieldWidth(3) <<"" ;
 
         for (int c = 0; c < m.cols(); ++c) {
             element = m(r,c) ;
-            os << qSetFieldWidth(fieldWidth) << fixed << right;
+            os << qSetFieldWidth(fieldWidth) << Qt::fixed << Qt::right;
             if ( element == RAND_MAX)  // we print inf symbol instead of RAND_MAX (distances matrix).
-                os << fixed << right << qSetFieldWidth(fieldWidth) << infinity ;
+                os << Qt::fixed << Qt::right << qSetFieldWidth(fieldWidth) << infinity ;
             else {
                 if ( element > 999)
                     os << qSetFieldWidth(fieldWidth-3) ;
@@ -2485,7 +2485,7 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
                 os <<  element;
             }
         }
-        os << qSetFieldWidth(0) << endl;
+        os << qSetFieldWidth(0) << Qt::endl;
     }
     return os;
 }
@@ -2521,25 +2521,25 @@ bool Matrix::printHTMLTable(QTextStream& os,
         os << "<pre>";
 
         // print first/header row
-        os << "<span class=\"header\">" << qSetFieldWidth(5) << right << "A/A";
-        os <<  fixed << qSetFieldWidth(10) << right ;
+        os << "<span class=\"header\">" << qSetFieldWidth(5) << Qt::right << "A/A";
+        os << Qt::fixed << qSetFieldWidth(10) << Qt::right ;
         for (int r = 0; r < cols(); ++r) {
             elementLabel = r+1;
             os << elementLabel;
         }
-        os << qSetFieldWidth(0) << "</span>"<< endl;
+        os << qSetFieldWidth(0) << "</span>"<< Qt::endl;
 
         for (int r = 0; r < rows(); ++r) {
             elementLabel = r+1;
             rowCount++;
 
-            os << "<span class=\"header\">" << qSetFieldWidth(5) << right;
+            os << "<span class=\"header\">" << qSetFieldWidth(5) << Qt::right;
             os << elementLabel;
             os << qSetFieldWidth(0) << "</span>";
 
             for (int c = 0; c < cols(); ++c) {
                 element = item(r,c) ;
-                os << fixed << qSetFieldWidth(10) << right;
+                os << Qt::fixed << qSetFieldWidth(10) << Qt::right;
                 if (  element == RAND_MAX)  // print inf symbol instead of RAND_MAX (distances matrix).
                     os << infinity;
                 else {
@@ -2549,7 +2549,7 @@ bool Matrix::printHTMLTable(QTextStream& os,
                // os << "";
             }
 
-            os << qSetFieldWidth(0) << endl;
+            os << qSetFieldWidth(0) << Qt::endl;
         }
 
         os << "</pre>";
@@ -2589,7 +2589,7 @@ bool Matrix::printHTMLTable(QTextStream& os,
 
         for (int c = 0; c < cols(); ++c) {
             element = item(r,c) ;
-            os << fixed << right;
+            os << Qt::fixed << Qt::right;
             os <<"<td" << ((markDiag && r==c)? " class=\"diag\">" : ">");
             if ( ( element == RAND_MAX ) && printInfinity) {
                 // print inf symbol instead of RAND_MAX (distances matrix).
@@ -2606,7 +2606,7 @@ bool Matrix::printHTMLTable(QTextStream& os,
     os << "</tbody></table>";
 
 
-    os << qSetFieldWidth(0) << endl ;
+    os << qSetFieldWidth(0) << Qt::endl ;
 
 
     os << "<p>"
@@ -2649,19 +2649,19 @@ bool Matrix::printMatrixConsole(bool debug){
         for (int c = 0; c < cols(); ++c) {
             if ( item(r,c) < RAND_MAX  ) {
                 out <<  qSetFieldWidth(12) << qSetRealNumberPrecision(3)
-                     <<  forcepoint << fixed<<right
+                    << Qt::forcepoint << Qt::fixed << Qt::right
                         << item(r,c);
             }
             else {
                 out <<  qSetFieldWidth(12) << qSetRealNumberPrecision(3)
-                     <<  forcepoint << fixed<<right
+                    << Qt::forcepoint << Qt::fixed << Qt::right
                         << "x";
             }
 
 //            QTextStream( (debug ? stderr : stdout) )
 //                    << ( (item(r,c) < RAND_MAX ) ? item(r,c) : INFINITY  )<<' ';
         }
-        out <<qSetFieldWidth(0)<< endl;
+        out <<qSetFieldWidth(0)<< Qt::endl;
     }
     return true;
 }

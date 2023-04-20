@@ -53,6 +53,7 @@
 #include <QNetworkReply>
 #include <QSslError>
 #include <QAbstractSeries>
+#include <QTextCodec>
 
 #include "mainwindow.h"
 #include "graph.h"
@@ -875,7 +876,7 @@ void MainWindow::polishProgressDialog(QProgressDialog* dialog)
 {
 #ifdef Q_OS_MAC
     // Workaround for macOS-only Qt bug; see: QTBUG-65750, QTBUG-70357.
-    const int margin = dialog->fontMetrics().width("X");
+    const int margin = dialog->fontMetrics().maxWidth();
     dialog->resize(dialog->width() + 2 * margin, dialog->height());
     dialog->show();
 #else
@@ -1013,7 +1014,7 @@ void MainWindow::initActions(){
     Network menu actions
     */
     networkNewAct = new QAction(QIcon(":/images/new_folder_48px.svg"), tr("&New"),  this);
-    networkNewAct->setShortcut(Qt::CTRL+Qt::Key_N);
+    networkNewAct->setShortcut(QKeySequence(Qt::CTRL+Qt::Key_N);
     networkNewAct->setStatusTip(tr("Create a new network"));
     networkNewAct->setToolTip(tr("New network"));
     networkNewAct->setWhatsThis(tr("New\n\n"
@@ -1103,7 +1104,7 @@ void MainWindow::initActions(){
     connect(networkSaveAct, SIGNAL(triggered()), this, SLOT(slotNetworkSave()));
 
     networkSaveAsAct = new QAction(QIcon(":/images/file_download_48px.svg"), tr("Save As..."),  this);
-    networkSaveAsAct->setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_S);
+    networkSaveAsAct->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_S);
     networkSaveAsAct->setStatusTip(tr("Save network under a new filename"));
     networkSaveAsAct->setWhatsThis(tr("Save As\n\n"
                                    "Saves the social network under a new filename"));
@@ -1253,7 +1254,7 @@ void MainWindow::initActions(){
                 QIcon(":/images/scalefree.png"), tr("Scale-free"),	this);
 
     networkRandomScaleFreeAct->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_S)
+                QKeySequence(Qt::CTRL | Qt::Key_R, Qt::CTRL | Qt::Key_S)
                 );
     networkRandomScaleFreeAct->setStatusTip(
                 tr("Create a random network with power-law degree distribution."));
@@ -1270,7 +1271,7 @@ void MainWindow::initActions(){
 
     networkRandomSmallWorldAct = new QAction(QIcon(":/images/sw.png"), tr("Small World"),	this);
     networkRandomSmallWorldAct-> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_W)
+                QKeySequence(Qt::CTRL | Qt::Key_R, Qt::CTRL | Qt::Key_W)
                 );
     networkRandomSmallWorldAct->setStatusTip(tr("Create a small-world random network."));
     networkRandomSmallWorldAct ->setWhatsThis(
@@ -1285,7 +1286,7 @@ void MainWindow::initActions(){
     networkRandomErdosRenyiAct = new QAction(QIcon(":/images/erdos.png"),
                                              tr("Erdős–Rényi"),  this);
     networkRandomErdosRenyiAct->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_E)
+                QKeySequence(Qt::CTRL | Qt::Key_R, Qt::CTRL | Qt::Key_E)
                 );
     networkRandomErdosRenyiAct->setStatusTip(
                 tr("Create a random network according to the Erdős–Rényi model"));
@@ -1303,7 +1304,7 @@ void MainWindow::initActions(){
 
     networkRandomLatticeAct = new QAction(QIcon(":/images/lattice.png"), tr("Lattice"), this);
     networkRandomLatticeAct-> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_T)
+                QKeySequence(Qt::CTRL | Qt::Key_R, Qt::CTRL | Qt::Key_T)
                 );
     networkRandomLatticeAct->setStatusTip(tr("Create a lattice network."));
     networkRandomLatticeAct ->setWhatsThis(
@@ -1314,7 +1315,7 @@ void MainWindow::initActions(){
 
     networkRandomRegularSameDegreeAct = new QAction(QIcon(":/images/net.png"), tr("d-Regular"), this);
     networkRandomRegularSameDegreeAct->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_R)
+                QKeySequence(Qt::CTRL | Qt::Key_R, Qt::CTRL | Qt::Key_R)
                 );
     networkRandomRegularSameDegreeAct->setStatusTip(
                 tr("Create a d-regular random network, "
@@ -1331,7 +1332,7 @@ void MainWindow::initActions(){
     networkRandomLatticeRingAct = new QAction( QIcon(":/images/net1.png"),
                                                tr("Ring Lattice"), this);
     networkRandomLatticeRingAct->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_L)
+                QKeySequence(Qt::CTRL | Qt::Key_R, Qt::CTRL | Qt::Key_L)
                 );
     networkRandomLatticeRingAct->setStatusTip(tr("Create a ring lattice random network."));
     networkRandomLatticeRingAct->setWhatsThis(
@@ -1345,7 +1346,7 @@ void MainWindow::initActions(){
 
     networkRandomGaussianAct = new QAction(tr("Gaussian"),	this);
     networkRandomGaussianAct->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_G)
+                QKeySequence(Qt::CTRL | Qt::Key_R, Qt::CTRL | Qt::Key_G)
                 );
     networkRandomGaussianAct->setStatusTip(tr("Create a Gaussian distributed random network."));
     networkRandomGaussianAct->setWhatsThis(tr("Gaussian \n\nCreates a random network of Gaussian distribution"));
@@ -1430,7 +1431,7 @@ void MainWindow::initActions(){
 
     editRelationAddAct = new QAction(QIcon(":/images/add_48px.svg"),
                                      tr("Add New Relation"),  this);
-    editRelationAddAct->setShortcut(Qt::ALT + Qt::CTRL + Qt::Key_N);
+    editRelationAddAct->setShortcut(Qt::ALT | Qt::CTRL | Qt::Key_N);
     editRelationAddAct->setToolTip(
                 tr("Add a new relation to the active graph (Ctrl+Shift+N)"));
     editRelationAddAct->setStatusTip(
@@ -1481,19 +1482,19 @@ void MainWindow::initActions(){
 
 
     editNodeSelectAllAct = new QAction(QIcon(":/images/select_all_48px.svg"), tr("Select All"), this);
-    editNodeSelectAllAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_A));
+    editNodeSelectAllAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_A));
     editNodeSelectAllAct->setStatusTip(tr("Select all nodes"));
     editNodeSelectAllAct->setWhatsThis(tr("Select All\n\nSelects all nodes in the network"));
     connect(editNodeSelectAllAct, SIGNAL(triggered()), this, SLOT(slotEditNodeSelectAll()));
 
     editNodeSelectNoneAct = new QAction(QIcon(":/images/select_none_48px.svg"), tr("Select None"), this);
-    editNodeSelectNoneAct->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_A));
+    editNodeSelectNoneAct->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT + Qt::Key_A));
     editNodeSelectNoneAct->setStatusTip(tr("Deselect all nodes and edges"));
     editNodeSelectNoneAct->setWhatsThis(tr("Deselect all\n\n Clears the node selection"));
     connect(editNodeSelectNoneAct, SIGNAL(triggered()), this, SLOT(slotEditNodeSelectNone()));
 
     editNodeFindAct = new QAction(QIcon(":/images/search_48px.svg"), tr("Find Nodes "), this);
-    editNodeFindAct->setShortcut(Qt::CTRL + Qt::Key_F);
+    editNodeFindAct->setShortcut(Qt::CTRL | Qt::Key_F);
     editNodeFindAct->setToolTip(tr("Find and select one or more actors by their number or label."));
     editNodeFindAct->setStatusTip(tr("Find and select one or more actors by number or label. "));
     editNodeFindAct->setWhatsThis(tr("Find Node\n\n"
@@ -1502,7 +1503,7 @@ void MainWindow::initActions(){
     connect(editNodeFindAct, SIGNAL(triggered()), this, SLOT(slotEditNodeFindDialog()) );
 
     editNodeAddAct = new QAction(QIcon(":/images/node_add_48px.svg"), tr("Add Node"), this);
-    editNodeAddAct->setShortcut(Qt::CTRL + Qt::Key_Period);
+    editNodeAddAct->setShortcut(Qt::CTRL | Qt::Key_Period);
     editNodeAddAct->setStatusTip(tr("Add a new node to the network. "
                                     "Alternately, press Ctrl+. or double-click on the canvas. "));
     editNodeAddAct->setToolTip(
@@ -1521,7 +1522,7 @@ void MainWindow::initActions(){
     connect(editNodeAddAct, SIGNAL(triggered()), this, SLOT(slotEditNodeAdd()));
 
     editNodeRemoveAct = new QAction(QIcon(":/images/node_remove_48px.svg"),tr("Remove Node"), this);
-    editNodeRemoveAct ->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_Period);
+    editNodeRemoveAct ->setShortcut(Qt::CTRL | Qt::ALT + Qt::Key_Period);
     //Single key shortcuts with backspace or del do no work in Mac http://goo.gl/7hz7Dx
     editNodeRemoveAct->setToolTip(tr("Remove selected node(s). \n\n"
                                      "If no nodes are selected, you will be prompted "
@@ -1539,7 +1540,7 @@ void MainWindow::initActions(){
     connect(editNodeRemoveAct, SIGNAL(triggered()), this, SLOT(slotEditNodeRemove()));
 
     editNodePropertiesAct = new QAction(QIcon(":/images/node_properties_24px.svg"),tr("Selected Node Properties"), this);
-    editNodePropertiesAct ->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_Period );
+    editNodePropertiesAct ->setShortcut(Qt::CTRL | Qt::SHIFT + Qt::Key_Period );
     editNodePropertiesAct->setToolTip(tr("Change the basic properties of the selected node(s) \n\n"
                                          "There must be some nodes on the canvas!"));
     editNodePropertiesAct->setStatusTip(tr("Change the basic properties of the selected node(s) -- "
@@ -1554,7 +1555,7 @@ void MainWindow::initActions(){
 
     editNodeSelectedToCliqueAct = new QAction(QIcon(":/images/cliquenew.png"),
                                               tr("Create a clique from selected nodes "), this);
-    editNodeSelectedToCliqueAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_C));
+    editNodeSelectedToCliqueAct ->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_C));
     editNodeSelectedToCliqueAct->setStatusTip(tr("Connect all selected nodes with edges to create a clique -- "
                                                  "There must be some nodes selected!"));
     editNodeSelectedToCliqueAct->setWhatsThis(tr("Clique from Selected Nodes\n\n"
@@ -1567,7 +1568,7 @@ void MainWindow::initActions(){
 
     editNodeSelectedToStarAct = new QAction(QIcon(":/images/subgraphstar_128px.svg"),
                                             tr("Create a star from selected nodes "), this);
-    editNodeSelectedToStarAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_S));
+    editNodeSelectedToStarAct ->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_S));
     editNodeSelectedToStarAct->setStatusTip(tr("Connect selected nodes with edges/arcs to create a star -- "
                                                "There must be some nodes selected!"));
     editNodeSelectedToStarAct->setWhatsThis(tr("Star from Selected Nodes\n\n"
@@ -1580,7 +1581,7 @@ void MainWindow::initActions(){
 
     editNodeSelectedToCycleAct = new QAction(QIcon(":/images/subgraphcycle_48px.svg"),
                                              tr("Create a cycle from selected nodes "), this);
-    editNodeSelectedToCycleAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_Y));
+    editNodeSelectedToCycleAct ->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_Y));
     editNodeSelectedToCycleAct->setStatusTip(tr("Connect selected nodes with edges/arcs to create a star -- "
                                                 "There must be some nodes selected!"));
     editNodeSelectedToCycleAct->setWhatsThis(tr("Cycle from Selected Nodes\n\n"
@@ -1594,7 +1595,7 @@ void MainWindow::initActions(){
 
     editNodeSelectedToLineAct = new QAction(QIcon(":/images/subgraphline.png"),
                                             tr("Create a line from selected nodes "), this);
-    editNodeSelectedToLineAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_Y));
+    editNodeSelectedToLineAct ->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_Y));
     editNodeSelectedToLineAct->setStatusTip(tr("Connect selected nodes with edges/arcs to create a line-- "
                                                "There must be some nodes selected!"));
     editNodeSelectedToLineAct->setWhatsThis(tr("Line from Selected Nodes\n\n"
@@ -1672,7 +1673,7 @@ void MainWindow::initActions(){
     connect(editNodeLabelsColorAct, SIGNAL(triggered()), this, SLOT(slotEditNodeLabelsColor()));
 
     editEdgeAddAct = new QAction(QIcon(":/images/edge_add_48px.svg"), tr("Add Edge (arc)"),this);
-    editEdgeAddAct->setShortcut(Qt::CTRL + Qt::Key_Slash);
+    editEdgeAddAct->setShortcut(Qt::CTRL | Qt::Key_Slash);
     editEdgeAddAct->setStatusTip(tr("Add a directed edge (arc) from a node to another"));
     editEdgeAddAct->setToolTip(
                 tr("Add a new edge from a node to another (Ctrl+/).\n\n"
@@ -1687,7 +1688,7 @@ void MainWindow::initActions(){
     connect(editEdgeAddAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeAdd()));
 
     editEdgeRemoveAct = new QAction(QIcon(":/images/edge_remove_48px.svg"), tr("Remove Edge"), this);
-    editEdgeRemoveAct ->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_Slash);
+    editEdgeRemoveAct ->setShortcut(Qt::CTRL | Qt::ALT + Qt::Key_Slash);
     editEdgeRemoveAct ->setToolTip(tr("Remove selected edges from the network (Ctrl+Alt+/). \n\n"
                                       "If no edge has been clicked or selected, you will be prompted \n"
                                       "to enter edge source and target nodes for the edge to remove."));
@@ -1727,7 +1728,7 @@ void MainWindow::initActions(){
 
 
     editEdgeSymmetrizeAllAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Symmetrize All Directed Edges"), this);
-    editEdgeSymmetrizeAllAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_S));
+    editEdgeSymmetrizeAllAct ->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_E, Qt::CTRL | Qt::Key_S));
     editEdgeSymmetrizeAllAct->setStatusTip(tr("Make all directed ties to be reciprocated (thus, a symmetric graph)."));
     editEdgeSymmetrizeAllAct->setWhatsThis(
                 tr("<p><b>Symmetrize Directed Edges</b></p>"
@@ -1740,7 +1741,7 @@ void MainWindow::initActions(){
 
 
     editEdgeSymmetrizeStrongTiesAct= new QAction(QIcon(":/images/symmetrize_48px.svg"), tr("Symmetrize by Strong Ties"), this);
-    editEdgeSymmetrizeStrongTiesAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_T));
+    editEdgeSymmetrizeStrongTiesAct ->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_E, Qt::CTRL | Qt::Key_T));
     editEdgeSymmetrizeStrongTiesAct->setStatusTip(tr("Create a new symmetric relation by counting reciprocated ties only (strong ties)."));
     editEdgeSymmetrizeStrongTiesAct->setWhatsThis(
                 tr("Symmetrize Edges by examing Strong Ties\n\n"
@@ -1756,7 +1757,7 @@ void MainWindow::initActions(){
 
     //TODO Separate action for Directed/Undirected graph drawing (without changing all existing edges).
     editEdgeUndirectedAllAct= new QAction( tr("Undirected Edges"), this);
-    editEdgeUndirectedAllAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_U));
+    editEdgeUndirectedAllAct ->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_E, Qt::CTRL | Qt::Key_U));
     editEdgeUndirectedAllAct->setStatusTip(tr("Enable to transform all arcs to undirected edges and hereafter work with undirected edges ."));
     editEdgeUndirectedAllAct->setWhatsThis(
                 tr("Undirected Edges\n\n"
@@ -1772,7 +1773,7 @@ void MainWindow::initActions(){
 
 
     editEdgesCocitationAct= new QAction(QIcon(":/images/cocitation_48px.svg"), tr("Cocitation Network"), this);
-    editEdgesCocitationAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_C));
+    editEdgesCocitationAct ->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_E, Qt::CTRL | Qt::Key_C));
     editEdgesCocitationAct->setStatusTip(tr("Create a new symmetric relation by "
                                             "connecting actors that are cocitated by others."));
     editEdgesCocitationAct->setWhatsThis(
@@ -1790,7 +1791,7 @@ void MainWindow::initActions(){
 
 
     editEdgeDichotomizeAct= new QAction(QIcon(":/images/filter_list_48px.svg"), tr("Dichotomize Valued Edges"), this);
-    editEdgeDichotomizeAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_D));
+    editEdgeDichotomizeAct ->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_E, Qt::CTRL | Qt::Key_D));
     editEdgeDichotomizeAct->setStatusTip(tr("Create a new binary relation/graph in a valued network "
                                             "using edge dichotomization."));
     editEdgeDichotomizeAct->setWhatsThis(
@@ -1822,7 +1823,7 @@ void MainWindow::initActions(){
 
     filterNodesAct = new QAction(tr("Filter Nodes"), this);
     filterNodesAct->setEnabled(false);
-    //filterNodesAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_F));
+    //filterNodesAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_F));
     filterNodesAct->setStatusTip(tr("Filters Nodes of some value out of the network"));
     filterNodesAct->setWhatsThis(tr("Filter Nodes\n\n"
                                     "Filters Nodes of some value out of the network."));
@@ -1832,7 +1833,7 @@ void MainWindow::initActions(){
     editFilterNodesIsolatesAct->setEnabled(true);
     editFilterNodesIsolatesAct->setCheckable(true);
     editFilterNodesIsolatesAct->setChecked(false);
-    editFilterNodesIsolatesAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_F));
+    editFilterNodesIsolatesAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_F));
     editFilterNodesIsolatesAct->setStatusTip(tr("Temporarily filter out nodes with no edges"));
     editFilterNodesIsolatesAct->setWhatsThis(tr("Filter Isolate Nodes\n\n"
                                                   "Enables or disables displaying of isolate nodes. "
@@ -1842,7 +1843,7 @@ void MainWindow::initActions(){
 
     editFilterEdgesByWeightAct = new QAction(QIcon(":/images/filter_list_48px.svg"), tr("Filter Edges by Weight"), this);
     editFilterEdgesByWeightAct->setEnabled(true);
-    editFilterEdgesByWeightAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_F));
+    editFilterEdgesByWeightAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_E, Qt::CTRL | Qt::Key_F));
     editFilterEdgesByWeightAct->setStatusTip(tr("Temporarily filter edges of some weight out of the network"));
     editFilterEdgesByWeightAct->setWhatsThis(tr("Filter Edges\n\n"
                                                   "Filters Edge of some specific weight out of the network."));
@@ -1853,7 +1854,7 @@ void MainWindow::initActions(){
     editFilterEdgesUnilateralAct->setEnabled(true);
     editFilterEdgesUnilateralAct->setCheckable(true);
     editFilterEdgesUnilateralAct->setChecked(false);
-    editFilterEdgesUnilateralAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_R));
+    editFilterEdgesUnilateralAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_E, Qt::CTRL | Qt::Key_R));
     editFilterEdgesUnilateralAct->setStatusTip(tr("Temporarily disable all unilateral (non-reciprocal) edges in this relation. Keeps only \"strong\" ties."));
     editFilterEdgesUnilateralAct->setWhatsThis(tr("Unilateral edges\n\n"
                                                     "In directed networks, a tie between two actors "
@@ -1901,7 +1902,7 @@ void MainWindow::initActions(){
 
 
     layoutRandomRadialAct = new QAction(tr("Random Circles"),	this);
-    layoutRandomRadialAct->setShortcut(Qt::CTRL+Qt::ALT+Qt::Key_0);
+    layoutRandomRadialAct->setShortcut(QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_0));
     layoutRandomRadialAct ->setStatusTip(tr("Layout the network in random concentric circles"));
     layoutRandomRadialAct->
             setWhatsThis(
@@ -1912,7 +1913,7 @@ void MainWindow::initActions(){
 
 
     layoutRadialProminence_DC_Act = new QAction( tr("Degree Centrality"),	this);
-    layoutRadialProminence_DC_Act->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_1);
+    layoutRadialProminence_DC_Act->setShortcut(Qt::CTRL | Qt::ALT+ Qt::Key_1);
     layoutRadialProminence_DC_Act
             ->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
@@ -1928,7 +1929,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutRadialByProminenceIndex()) );
 
     layoutRadialProminence_CC_Act = new QAction( tr("Closeness Centrality"), this);
-    layoutRadialProminence_CC_Act->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_2);
+    layoutRadialProminence_CC_Act->setShortcut(Qt::CTRL | Qt::ALT+ Qt::Key_2);
     layoutRadialProminence_CC_Act
            ->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
@@ -1946,7 +1947,7 @@ void MainWindow::initActions(){
 
     layoutRadialProminence_IRCC_Act = new QAction(
                 tr("Influence Range Closeness Centrality"),	this);
-    layoutRadialProminence_IRCC_Act->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_3);
+    layoutRadialProminence_IRCC_Act->setShortcut(Qt::CTRL | Qt::ALT+ Qt::Key_3);
     layoutRadialProminence_IRCC_Act
             ->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
@@ -1962,7 +1963,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutRadialByProminenceIndex()));
 
     layoutRadialProminence_BC_Act = new QAction( tr("Betweenness Centrality"), this);
-    layoutRadialProminence_BC_Act->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_4);
+    layoutRadialProminence_BC_Act->setShortcut(Qt::CTRL | Qt::ALT+ Qt::Key_4);
     layoutRadialProminence_BC_Act ->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
                    "proportional to their Betweenness Centrality."));
@@ -1977,7 +1978,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutRadialByProminenceIndex()));
 
     layoutRadialProminence_SC_Act = new QAction( tr("Stress Centrality"),	this);
-    layoutRadialProminence_SC_Act->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_5);
+    layoutRadialProminence_SC_Act->setShortcut(Qt::CTRL | Qt::ALT+ Qt::Key_5);
     layoutRadialProminence_SC_Act ->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
                    "proportional to their Stress Centrality."));
@@ -1992,7 +1993,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutRadialByProminenceIndex()));
 
     layoutRadialProminence_EC_Act = new QAction( tr("Eccentricity Centrality"),	this);
-    layoutRadialProminence_EC_Act->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_6);
+    layoutRadialProminence_EC_Act->setShortcut(Qt::CTRL | Qt::ALT+ Qt::Key_6);
     layoutRadialProminence_EC_Act ->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
                    "proportional to their Eccentricity Centrality (aka Harary Graph Centrality)."));
@@ -2009,7 +2010,7 @@ void MainWindow::initActions(){
 
 
     layoutRadialProminence_PC_Act = new QAction( tr("Power Centrality"),	this);
-    layoutRadialProminence_PC_Act->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_7);
+    layoutRadialProminence_PC_Act->setShortcut(Qt::CTRL | Qt::ALT+ Qt::Key_7);
     layoutRadialProminence_PC_Act ->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
                    "proportional to their Power Centrality."));
@@ -2026,7 +2027,7 @@ void MainWindow::initActions(){
 
     layoutRadialProminence_IC_Act = new QAction( tr("Information Centrality"),	this);
     layoutRadialProminence_IC_Act->setEnabled(true);
-    layoutRadialProminence_IC_Act->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_8);
+    layoutRadialProminence_IC_Act->setShortcut(Qt::CTRL | Qt::ALT+ Qt::Key_8);
     layoutRadialProminence_IC_Act->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
                    "proportional to their Information Centrality."));
@@ -2043,7 +2044,7 @@ void MainWindow::initActions(){
 
     layoutRadialProminence_EVC_Act = new QAction( tr("Eigenvector Centrality"),	this);
     layoutRadialProminence_EVC_Act->setEnabled(true);
-    layoutRadialProminence_EVC_Act->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_9);
+    layoutRadialProminence_EVC_Act->setShortcut(Qt::CTRL | Qt::ALT+ Qt::Key_9);
     layoutRadialProminence_EVC_Act->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
                    "proportional to their Eigenvector Centrality."));
@@ -2059,7 +2060,7 @@ void MainWindow::initActions(){
 
 
     layoutRadialProminence_DP_Act = new QAction( tr("Degree Prestige"),	this);
-    layoutRadialProminence_DP_Act->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_I);
+    layoutRadialProminence_DP_Act->setShortcut(tr( "Ctrl+Alt+I"));
     layoutRadialProminence_DP_Act ->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
                    "proportional to their Degree Prestige (inDegree)."));
@@ -2075,7 +2076,7 @@ void MainWindow::initActions(){
 
     layoutRadialProminence_PRP_Act = new QAction( tr("PageRank Prestige"),	this);
     layoutRadialProminence_PRP_Act ->setEnabled(true);
-    layoutRadialProminence_PRP_Act->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_K);
+    layoutRadialProminence_PRP_Act->setShortcut(Qt::CTRL | Qt::ALT+ Qt::Key_K);
     layoutRadialProminence_PRP_Act ->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
                    "proportional to their PRP index."));
@@ -2091,7 +2092,7 @@ void MainWindow::initActions(){
 
 
     layoutRadialProminence_PP_Act = new QAction( tr("Proximity Prestige"),	this);
-    layoutRadialProminence_PP_Act ->setShortcut(Qt::CTRL + Qt::ALT+ Qt::Key_Y);
+    layoutRadialProminence_PP_Act ->setShortcut(Qt::CTRL | Qt::ALT | Qt::Key_Y);
     layoutRadialProminence_PP_Act ->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
                    "proportional to their Proximity Prestige."));
@@ -2109,7 +2110,7 @@ void MainWindow::initActions(){
 
 
     layoutLevelProminence_DC_Act = new QAction( tr("Degree Centrality"), this);
-    layoutLevelProminence_DC_Act->setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_1);
+    layoutLevelProminence_DC_Act->setShortcut(Qt::CTRL | Qt::SHIFT+ Qt::Key_1);
     layoutLevelProminence_DC_Act
             ->setStatusTip(
                 tr("Place all nodes on horizontal levels of height "
@@ -2126,7 +2127,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutLevelByProminenceIndex()) );
 
     layoutLevelProminence_CC_Act = new QAction( tr("Closeness Centrality"), this);
-    layoutLevelProminence_CC_Act->setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_2);
+    layoutLevelProminence_CC_Act->setShortcut(Qt::CTRL | Qt::SHIFT+ Qt::Key_2);
     layoutLevelProminence_CC_Act
            ->setStatusTip(
                 tr("Place all nodes on horizontal levels of height "
@@ -2145,7 +2146,7 @@ void MainWindow::initActions(){
 
     layoutLevelProminence_IRCC_Act = new QAction(
                 tr("Influence Range Closeness Centrality"),	this);
-    layoutLevelProminence_IRCC_Act->setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_3);
+    layoutLevelProminence_IRCC_Act->setShortcut(Qt::CTRL | Qt::SHIFT+ Qt::Key_3);
     layoutLevelProminence_IRCC_Act
             ->setStatusTip(
                 tr("Place all nodes on horizontal levels of height "
@@ -2162,7 +2163,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutLevelByProminenceIndex()));
 
     layoutLevelProminence_BC_Act = new QAction( tr("Betweenness Centrality"), this);
-    layoutLevelProminence_BC_Act->setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_4);
+    layoutLevelProminence_BC_Act->setShortcut(Qt::CTRL | Qt::SHIFT+ Qt::Key_4);
     layoutLevelProminence_BC_Act ->setStatusTip(
                 tr("Place all nodes on horizontal levels of height "
                    "proportional to their Betweenness Centrality."));
@@ -2177,7 +2178,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutLevelByProminenceIndex()));
 
     layoutLevelProminence_SC_Act = new QAction( tr("Stress Centrality"),	this);
-    layoutLevelProminence_SC_Act->setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_5);
+    layoutLevelProminence_SC_Act->setShortcut(Qt::CTRL | Qt::SHIFT+ Qt::Key_5);
     layoutLevelProminence_SC_Act ->setStatusTip(
                 tr("Place nodes on horizontal levels of height "
                    "proportional to their Stress Centrality."));
@@ -2192,7 +2193,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutLevelByProminenceIndex()));
 
     layoutLevelProminence_EC_Act = new QAction( tr("Eccentricity Centrality"),	this);
-    layoutLevelProminence_EC_Act->setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_6);
+    layoutLevelProminence_EC_Act->setShortcut(Qt::CTRL | Qt::SHIFT+ Qt::Key_6);
     layoutLevelProminence_EC_Act ->setStatusTip(
                 tr("Place nodes on horizontal levels of height "
                    "proportional to their Eccentricity Centrality (aka Harary Graph Centrality)."));
@@ -2209,7 +2210,7 @@ void MainWindow::initActions(){
 
 
     layoutLevelProminence_PC_Act = new QAction( tr("Power Centrality"),	this);
-    layoutLevelProminence_PC_Act->setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_7);
+    layoutLevelProminence_PC_Act->setShortcut(Qt::CTRL | Qt::SHIFT+ Qt::Key_7);
     layoutLevelProminence_PC_Act ->setStatusTip(
                 tr("Place nodes on horizontal levels of height "
                    "proportional to their Power Centrality."));
@@ -2226,7 +2227,7 @@ void MainWindow::initActions(){
 
     layoutLevelProminence_IC_Act = new QAction( tr("Information Centrality"),	this);
     layoutLevelProminence_IC_Act ->setEnabled(true);
-    layoutLevelProminence_IC_Act->setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_8);
+    layoutLevelProminence_IC_Act->setShortcut(Qt::CTRL | Qt::SHIFT+ Qt::Key_8);
     layoutLevelProminence_IC_Act ->setStatusTip(
                 tr("Place nodes on horizontal levels of height "
                    "proportional to their Information Centrality."));
@@ -2242,7 +2243,7 @@ void MainWindow::initActions(){
 
     layoutLevelProminence_EVC_Act = new QAction( tr("Eigenvector Centrality"),	this);
     layoutLevelProminence_EVC_Act ->setEnabled(true);
-    layoutLevelProminence_EVC_Act->setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_9);
+    layoutLevelProminence_EVC_Act->setShortcut(Qt::CTRL | Qt::SHIFT+ Qt::Key_9);
     layoutLevelProminence_EVC_Act ->setStatusTip(
                 tr(
                     "Place nodes on horizontal levels of height "
@@ -2260,7 +2261,7 @@ void MainWindow::initActions(){
 
 
     layoutLevelProminence_DP_Act = new QAction( tr("Degree Prestige"),	this);
-    layoutLevelProminence_DP_Act->setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_I);
+    layoutLevelProminence_DP_Act->setShortcut(Qt::CTRL | Qt::SHIFT+ Qt::Key_I);
     layoutLevelProminence_DP_Act ->setStatusTip(
                 tr("Place nodes on horizontal levels of height "
                    "proportional to their Degree Prestige."));
@@ -2276,7 +2277,7 @@ void MainWindow::initActions(){
 
     layoutLevelProminence_PRP_Act = new QAction( tr("PageRank Prestige"),	this);
     layoutLevelProminence_PRP_Act->setEnabled(true);
-    layoutLevelProminence_PRP_Act->setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_K);
+    layoutLevelProminence_PRP_Act->setShortcut(Qt::CTRL | Qt::SHIFT+ Qt::Key_K);
     layoutLevelProminence_PRP_Act->setStatusTip(
                 tr("Place nodes on horizontal levels of height "
                    "proportional to their PageRank Prestige."));
@@ -2293,7 +2294,7 @@ void MainWindow::initActions(){
 
     layoutLevelProminence_PP_Act = new QAction( tr("Proximity Prestige"),	this);
     layoutLevelProminence_PP_Act->setEnabled(true);
-    layoutLevelProminence_PP_Act->setShortcut(Qt::CTRL + Qt::SHIFT+ Qt::Key_Y);
+    layoutLevelProminence_PP_Act->setShortcut(Qt::CTRL | Qt::SHIFT+ Qt::Key_Y);
     layoutLevelProminence_PP_Act->setStatusTip(
                 tr("Place nodes on horizontal levels of height "
                    "proportional to their Proximity Prestige."));
@@ -2495,7 +2496,7 @@ void MainWindow::initActions(){
     layoutNodeSizeProminence_PP_Act = new QAction( tr("Proximity Prestige"),	this);
     layoutNodeSizeProminence_PP_Act->setEnabled(true);
     layoutNodeSizeProminence_PP_Act->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_S, Qt::CTRL + Qt::Key_R)
+                QKeySequence(Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_S, Qt::CTRL | Qt::Key_R)
                 //Qt::ALT + Qt::Key_Y
                 );
     layoutNodeSizeProminence_PP_Act->setStatusTip(
@@ -2517,7 +2518,7 @@ void MainWindow::initActions(){
 
     layoutNodeColorProminence_DC_Act = new QAction( tr("Degree Centrality"), this);
     layoutNodeColorProminence_DC_Act->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_C, Qt::CTRL + Qt::Key_1)
+                QKeySequence(Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_C, Qt::CTRL | Qt::Key_1)
                 );
     layoutNodeColorProminence_DC_Act
             ->setStatusTip(
@@ -2536,7 +2537,7 @@ void MainWindow::initActions(){
 
     layoutNodeColorProminence_CC_Act = new QAction( tr("Closeness Centrality"), this);
     layoutNodeColorProminence_CC_Act->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_C, Qt::CTRL + Qt::Key_2)
+                QKeySequence(Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_C, Qt::CTRL | Qt::Key_2)
                 );
     layoutNodeColorProminence_CC_Act
            ->setStatusTip(
@@ -2557,7 +2558,7 @@ void MainWindow::initActions(){
     layoutNodeColorProminence_IRCC_Act = new QAction(
                 tr("Influence Range Closeness Centrality"),	this);
     layoutNodeColorProminence_IRCC_Act->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_C, Qt::CTRL + Qt::Key_3)
+                QKeySequence(Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_C, Qt::CTRL | Qt::Key_3)
                 );
     layoutNodeColorProminence_IRCC_Act
             ->setStatusTip(
@@ -2576,7 +2577,7 @@ void MainWindow::initActions(){
 
     layoutNodeColorProminence_BC_Act = new QAction( tr("Betweenness Centrality"), this);
     layoutNodeColorProminence_BC_Act->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_C, Qt::CTRL + Qt::Key_4)
+                QKeySequence(Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_C, Qt::CTRL | Qt::Key_4)
                 );
     layoutNodeColorProminence_BC_Act ->setStatusTip(
                 tr("Change the color of all nodes to "
@@ -2593,7 +2594,7 @@ void MainWindow::initActions(){
 
     layoutNodeColorProminence_SC_Act = new QAction( tr("Stress Centrality"),	this);
     layoutNodeColorProminence_SC_Act->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_C, Qt::CTRL + Qt::Key_5)
+                QKeySequence(Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_C, Qt::CTRL | Qt::Key_5)
                 );
     layoutNodeColorProminence_SC_Act ->setStatusTip(
                 tr( "Change the color of all nodes to  "
@@ -2610,7 +2611,7 @@ void MainWindow::initActions(){
 
     layoutNodeColorProminence_EC_Act = new QAction( tr("Eccentricity Centrality"),	this);
     layoutNodeColorProminence_EC_Act->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_C, Qt::CTRL + Qt::Key_6)
+                QKeySequence(Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_C, Qt::CTRL | Qt::Key_6)
                 );
     layoutNodeColorProminence_EC_Act ->setStatusTip(
                 tr("Change the color of all nodes to "
@@ -2628,7 +2629,7 @@ void MainWindow::initActions(){
 
     layoutNodeColorProminence_PC_Act = new QAction( tr("Power Centrality"),	this);
     layoutNodeColorProminence_PC_Act->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_C, Qt::CTRL + Qt::Key_7)
+                QKeySequence(Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_C, Qt::CTRL | Qt::Key_7)
                 );
     layoutNodeColorProminence_PC_Act ->setStatusTip(
                 tr("Change the color of all nodes to "
@@ -2647,7 +2648,7 @@ void MainWindow::initActions(){
     layoutNodeColorProminence_IC_Act = new QAction( tr("Information Centrality"),	this);
     layoutNodeColorProminence_IC_Act ->setEnabled(true);
     layoutNodeColorProminence_IC_Act->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_C, Qt::CTRL + Qt::Key_8)
+                QKeySequence(Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_C, Qt::CTRL | Qt::Key_8)
                 );
     layoutNodeColorProminence_IC_Act ->setStatusTip(
                 tr("Change the color of all nodes to "
@@ -2665,7 +2666,7 @@ void MainWindow::initActions(){
     layoutNodeColorProminence_EVC_Act = new QAction( tr("Eigenvector Centrality"),	this);
     layoutNodeColorProminence_EVC_Act ->setEnabled(true);
     layoutNodeColorProminence_EVC_Act->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_C, Qt::CTRL + Qt::Key_9)
+                QKeySequence(Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_C, Qt::CTRL | Qt::Key_9)
                 );
     layoutNodeColorProminence_EVC_Act ->setStatusTip(
                 tr("Change the color of all nodes to "
@@ -2684,7 +2685,7 @@ void MainWindow::initActions(){
 
     layoutNodeColorProminence_DP_Act = new QAction( tr("Degree Prestige"),	this);
     layoutNodeColorProminence_DP_Act->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_C, Qt::CTRL + Qt::Key_D)
+                QKeySequence(Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_C, Qt::CTRL | Qt::Key_D)
                 );
     layoutNodeColorProminence_DP_Act ->setStatusTip(
                 tr("Change the color of all nodes to "
@@ -2702,7 +2703,7 @@ void MainWindow::initActions(){
     layoutNodeColorProminence_PRP_Act = new QAction( tr("PageRank Prestige"),	this);
     layoutNodeColorProminence_PRP_Act->setEnabled(true);
     layoutNodeColorProminence_PRP_Act->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_C, Qt::CTRL + Qt::Key_R)
+                QKeySequence(Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_C, Qt::CTRL | Qt::Key_R)
                 );
     layoutNodeColorProminence_PRP_Act->setStatusTip(
                 tr("Change the color of all nodes to "
@@ -2721,7 +2722,7 @@ void MainWindow::initActions(){
     layoutNodeColorProminence_PP_Act = new QAction( tr("Proximity Prestige"),	this);
     layoutNodeColorProminence_PP_Act->setEnabled(true);
     layoutNodeColorProminence_PP_Act->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_C, Qt::CTRL + Qt::Key_P)
+                QKeySequence(Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_C, Qt::CTRL | Qt::Key_P)
                 );
     layoutNodeColorProminence_PP_Act->setStatusTip(
                 tr("Change the color of all nodes to "
@@ -2742,7 +2743,7 @@ void MainWindow::initActions(){
 
     layoutFDP_Eades_Act= new QAction(tr("Spring Embedder (Eades)"), this);
     layoutFDP_Eades_Act-> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_E));
+                QKeySequence(Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_E));
     layoutFDP_Eades_Act->setStatusTip(
                 tr("Layout Eades Spring-Gravitational model."));
     layoutFDP_Eades_Act->setWhatsThis(
@@ -2763,7 +2764,7 @@ void MainWindow::initActions(){
 
     layoutFDP_FR_Act= new QAction( tr("Fruchterman-Reingold"),	this);
     layoutFDP_FR_Act-> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_F));
+                QKeySequence(Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_F));
     layoutFDP_FR_Act->setStatusTip(
                 tr("Repelling forces between all nodes, and attracting forces between adjacent nodes."));
     layoutFDP_FR_Act->setWhatsThis(
@@ -2777,7 +2778,7 @@ void MainWindow::initActions(){
 
     layoutFDP_KamadaKawai_Act= new QAction( tr("Kamada-Kawai"),	this);
     layoutFDP_KamadaKawai_Act-> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_K));
+                QKeySequence(Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_K));
     layoutFDP_KamadaKawai_Act->setStatusTip(
                 tr("Embeds the Kamada-Kawai FDP layout model, the best variant of the Spring Embedder family of models."));
     layoutFDP_KamadaKawai_Act->setWhatsThis(
@@ -2818,7 +2819,7 @@ void MainWindow::initActions(){
     analyzeMatrixAdjInvertAct = new QAction(
                 QIcon(":/images/invertmatrix.png"), tr("Invert Adjacency Matrix"), this);
     analyzeMatrixAdjInvertAct->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_I)
+                QKeySequence(Qt::CTRL | Qt::Key_M, Qt::CTRL | Qt::Key_I)
                 );
     analyzeMatrixAdjInvertAct->setStatusTip(tr("Invert the adjacency matrix, if possible"));
     analyzeMatrixAdjInvertAct->setWhatsThis(tr("Invert  Adjacency Matrix \n\n"
@@ -2830,7 +2831,7 @@ void MainWindow::initActions(){
     analyzeMatrixAdjTransposeAct = new QAction(
                 QIcon(":/images/transposematrix.png"), tr("Transpose Adjacency Matrix"), this);
     analyzeMatrixAdjTransposeAct->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_T)
+                QKeySequence(Qt::CTRL | Qt::Key_M, Qt::CTRL | Qt::Key_T)
                 );
     analyzeMatrixAdjTransposeAct->setStatusTip(tr("View the transpose of adjacency matrix"));
     analyzeMatrixAdjTransposeAct->setWhatsThis(tr("Transpose Adjacency Matrix \n\n"
@@ -2842,7 +2843,7 @@ void MainWindow::initActions(){
     analyzeMatrixAdjCocitationAct = new QAction(
                 QIcon(":/images/cocitation.png"), tr("Cocitation Matrix"), this);
     analyzeMatrixAdjCocitationAct->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_C)
+                QKeySequence(Qt::CTRL | Qt::Key_M, Qt::CTRL | Qt::Key_C)
                 );
     analyzeMatrixAdjCocitationAct->setStatusTip(tr("Compute the Cocitation matrix of this network."));
     analyzeMatrixAdjCocitationAct->setWhatsThis(tr("Cocitation Matrix \n\n "
@@ -2857,7 +2858,7 @@ void MainWindow::initActions(){
     analyzeMatrixDegreeAct = new QAction(
                 QIcon(":/images/degreematrix.png"), tr("Degree Matrix"), this);
     analyzeMatrixDegreeAct->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_D)
+                QKeySequence(Qt::CTRL | Qt::Key_M, Qt::CTRL | Qt::Key_D)
                 );
     analyzeMatrixDegreeAct->setStatusTip(tr("Compute the Degree matrix of the network"));
     analyzeMatrixDegreeAct->setWhatsThis(tr("Degree Matrix "
@@ -2868,7 +2869,7 @@ void MainWindow::initActions(){
     analyzeMatrixLaplacianAct = new QAction(
                 QIcon(":/images/laplacian.png"), tr("Laplacian Matrix"), this);
     analyzeMatrixLaplacianAct->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_L)
+                QKeySequence(Qt::CTRL | Qt::Key_M, Qt::CTRL | Qt::Key_L)
                 );
     analyzeMatrixLaplacianAct->setStatusTip(tr("Compute the Laplacian matrix of the network"));
     analyzeMatrixLaplacianAct->setWhatsThis(tr("Laplacian Matrix \n\n"
@@ -2880,7 +2881,7 @@ void MainWindow::initActions(){
     analyzeGraphReciprocityAct = new QAction(
                 QIcon(":/images/symmetry-edge.png"), tr("Reciprocity"), this);
     analyzeGraphReciprocityAct->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_R)
+                QKeySequence(Qt::CTRL | Qt::Key_G, Qt::CTRL | Qt::Key_R)
                 );
     analyzeGraphReciprocityAct->setStatusTip(tr("Compute the arc and dyad reciprocity of the network."));
     analyzeGraphReciprocityAct->setWhatsThis(
@@ -2907,7 +2908,7 @@ void MainWindow::initActions(){
     analyzeGraphSymmetryAct = new QAction(
                 QIcon(":/images/symmetry_48px.svg"), tr("Symmetry Test"), this);
     analyzeGraphSymmetryAct->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_S)
+                QKeySequence(Qt::CTRL | Qt::Key_G, Qt::CTRL | Qt::Key_S)
                 );
     analyzeGraphSymmetryAct->setStatusTip(tr("Check whether the network is symmetric or not"));
     analyzeGraphSymmetryAct->setWhatsThis(
@@ -2924,7 +2925,7 @@ void MainWindow::initActions(){
                 QIcon(":/images/distance.png"), tr("Geodesic Distance between 2 nodes"), this
                 );
     analyzeGraphDistanceAct->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_G) );
+                QKeySequence(Qt::CTRL | Qt::Key_G, Qt::CTRL | Qt::Key_G) );
     analyzeGraphDistanceAct->setStatusTip(
                 tr("Compute the length of the shortest path (geodesic distance) between 2 nodes."));
     analyzeGraphDistanceAct->setWhatsThis(
@@ -2938,7 +2939,7 @@ void MainWindow::initActions(){
 
     analyzeMatrixDistancesGeodesicAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesic Distances Matrix"),this);
     analyzeMatrixDistancesGeodesicAct->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_M) );
+                QKeySequence(Qt::CTRL | Qt::Key_G, Qt::CTRL | Qt::Key_M) );
     analyzeMatrixDistancesGeodesicAct->
             setStatusTip(
                 tr("Compute the matrix of geodesic distances between all pair of nodes.")
@@ -2956,7 +2957,7 @@ void MainWindow::initActions(){
 
     analyzeMatrixGeodesicsAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesics Matrix"),this);
     analyzeMatrixGeodesicsAct->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_P));
+                QKeySequence(Qt::CTRL | Qt::Key_G, Qt::CTRL | Qt::Key_P));
     analyzeMatrixGeodesicsAct->setStatusTip(tr("Compute the number of shortest paths (geodesics) between each pair of nodes "));
     analyzeMatrixGeodesicsAct->setWhatsThis(
                 tr(
@@ -2970,7 +2971,7 @@ void MainWindow::initActions(){
 
     analyzeGraphDiameterAct = new QAction(QIcon(":/images/diameter_48px.svg"), tr("Graph Diameter"),this);
     analyzeGraphDiameterAct->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_D));
+                QKeySequence(Qt::CTRL | Qt::Key_G, Qt::CTRL | Qt::Key_D));
     analyzeGraphDiameterAct->setStatusTip(tr("Compute the diameter of the network, "
                                              "the maximum geodesic distance between any actors."));
     analyzeGraphDiameterAct->setWhatsThis(tr("Diameter\n\n "
@@ -2980,7 +2981,7 @@ void MainWindow::initActions(){
 
     averGraphDistanceAct = new QAction(QIcon(":/images/avdistance.png"), tr("Average Distance"),this);
     averGraphDistanceAct->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_A));
+                QKeySequence(Qt::CTRL | Qt::Key_G, Qt::CTRL | Qt::Key_A));
     averGraphDistanceAct->setStatusTip(tr("Compute the average length of shortest paths for all possible pairs of nodes."));
     averGraphDistanceAct->setWhatsThis(
                 tr("Average Distance\n\n "
@@ -2992,7 +2993,7 @@ void MainWindow::initActions(){
 
     analyzeGraphEccentricityAct = new QAction(QIcon(":/images/eccentricity.png"), tr("Eccentricity"),this);
     analyzeGraphEccentricityAct-> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_E ) );
+                QKeySequence(Qt::CTRL | Qt::Key_G, Qt::CTRL | Qt::Key_E ) );
     analyzeGraphEccentricityAct->setStatusTip(tr("Compute the Eccentricity of each actor and group Eccentricity"));
     analyzeGraphEccentricityAct->setWhatsThis(tr("Eccentricity\n\n"
                                                  "The eccentricity of each node i in a network "
@@ -3014,7 +3015,7 @@ void MainWindow::initActions(){
 
     analyzeGraphConnectednessAct = new QAction(QIcon(":/images/distance.png"),  tr("Connectedness"), this);
     analyzeGraphConnectednessAct->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_C) );
+                QKeySequence(Qt::CTRL | Qt::Key_G, Qt::CTRL | Qt::Key_C) );
     analyzeGraphConnectednessAct->setStatusTip(tr("Check whether the network is a connected "
                                                   "graph, a connected digraph or "
                                                   "a disconnected graph/digraph..."));
@@ -3034,7 +3035,7 @@ void MainWindow::initActions(){
 
     analyzeGraphWalksAct = new QAction(QIcon(":/images/walk.png"), tr("Walks of a given length"),this);
     analyzeGraphWalksAct-> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_W) );
+                QKeySequence(Qt::CTRL | Qt::Key_G, Qt::CTRL | Qt::Key_W) );
     analyzeGraphWalksAct->setStatusTip(tr("Compute the number of walks of a given length between any nodes."));
     analyzeGraphWalksAct->setWhatsThis(tr("Walks of a given length\n\n"
                                           "A walk is a sequence of alternating vertices and edges "
@@ -3048,7 +3049,7 @@ void MainWindow::initActions(){
 
     analyzeGraphWalksTotalAct = new QAction(QIcon(":/images/walk.png"), tr("Total Walks"),this);
     analyzeGraphWalksTotalAct-> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_T) );
+                QKeySequence(Qt::CTRL | Qt::Key_G, Qt::CTRL | Qt::Key_T) );
     analyzeGraphWalksTotalAct->setStatusTip(tr("Calculate the total number of walks of every possible length between all nodes"));
     analyzeGraphWalksTotalAct->setWhatsThis(tr("Total Walks\n\n"
                                                "A walk is a sequence of alternating vertices "
@@ -3063,7 +3064,7 @@ void MainWindow::initActions(){
 
     analyzeMatrixReachabilityAct = new QAction(QIcon(":/images/walk.png"), tr("Reachability Matrix"),this);
     analyzeMatrixReachabilityAct-> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_M, Qt::CTRL + Qt::Key_R));
+                QKeySequence(Qt::CTRL | Qt::Key_M, Qt::CTRL | Qt::Key_R));
     analyzeMatrixReachabilityAct->setStatusTip(tr("Compute the Reachability Matrix of the network."));
     analyzeMatrixReachabilityAct->setWhatsThis(tr("Reachability Matrix\n\n"
                                                   "Calculates the reachability matrix X<sup>R</sup> of "
@@ -3077,7 +3078,7 @@ void MainWindow::initActions(){
 
     clusteringCoefAct = new QAction(QIcon(":/images/clucof.png"), tr("Local and Network Clustering Coefficient"),this);
     clusteringCoefAct->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_G, Qt::CTRL + Qt::Key_L) );
+                QKeySequence(Qt::CTRL | Qt::Key_G, Qt::CTRL | Qt::Key_L) );
     clusteringCoefAct->setStatusTip(tr("Compute the Watts & Strogatz Clustering Coefficient for every actor and the network average."));
     clusteringCoefAct->setWhatsThis(tr("Local and Network Clustering Coefficient\n\n"
                                        "The local Clustering Coefficient  (Watts & Strogatz, 1998) "
@@ -3092,7 +3093,7 @@ void MainWindow::initActions(){
 
     analyzeCommunitiesCliquesAct = new QAction(QIcon(":/images/clique.png"), tr("Clique Census"),this);
     analyzeCommunitiesCliquesAct-> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_U, Qt::CTRL + Qt::Key_C));
+                QKeySequence(Qt::CTRL | Qt::Key_U, Qt::CTRL | Qt::Key_C));
     analyzeCommunitiesCliquesAct->setStatusTip(tr("Compute the clique census: find all maximal connected subgraphs."));
     analyzeCommunitiesCliquesAct->setWhatsThis(tr("Clique Census\n\n"
                                                   "Produces the census of network cliques (maximal connected subgraphs), "
@@ -3103,7 +3104,7 @@ void MainWindow::initActions(){
 
     analyzeCommunitiesTriadCensusAct = new QAction(QIcon(":/images/triad.png"), tr("Triad Census (M-A-N labeling)"),this);
     analyzeCommunitiesTriadCensusAct-> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_U, Qt::CTRL + Qt::Key_T) );
+                QKeySequence(Qt::CTRL | Qt::Key_U, Qt::CTRL | Qt::Key_T) );
     analyzeCommunitiesTriadCensusAct->setStatusTip(tr("Calculate the triad census for all actors."));
     analyzeCommunitiesTriadCensusAct->setWhatsThis(tr("Triad Census\n\n"
                                                       "A triad census counts all the different kinds of observed triads "
@@ -3116,7 +3117,7 @@ void MainWindow::initActions(){
     analyzeStrEquivalencePearsonAct = new QAction(QIcon(":/images/similarity.png"),
                                                   tr("Pearson correlation coefficients"),this);
     analyzeStrEquivalencePearsonAct-> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_T, Qt::CTRL + Qt::Key_P)
+                QKeySequence(Qt::CTRL | Qt::Key_T, Qt::CTRL | Qt::Key_P)
                 );
     analyzeStrEquivalencePearsonAct->setStatusTip(
                 tr("Compute Pearson Correlation Coefficients between pairs of actors. "
@@ -3142,7 +3143,7 @@ void MainWindow::initActions(){
     analyzeStrEquivalenceMatchesAct = new QAction(QIcon(":/images/similarity.png"),
                                                   tr("Similarity by measure (Exact, Jaccard, Hamming, Cosine, Euclidean)"),this);
     analyzeStrEquivalenceMatchesAct-> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_T, Qt::CTRL + Qt::Key_E)
+                QKeySequence(Qt::CTRL | Qt::Key_T, Qt::CTRL | Qt::Key_E)
                 );
     analyzeStrEquivalenceMatchesAct->setStatusTip(tr("Compute a pair-wise actor similarity "
                                                      "matrix based on a measure of their ties (or distances) \"matches\" ."));
@@ -3173,7 +3174,7 @@ void MainWindow::initActions(){
     analyzeStrEquivalenceTieProfileDissimilaritiesAct = new QAction(QIcon(":/images/dm.png"),
                                                                     tr("Tie Profile Dissimilarities/Distances"),this);
     analyzeStrEquivalenceTieProfileDissimilaritiesAct->setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_T, Qt::CTRL + Qt::Key_T) );
+                QKeySequence(Qt::CTRL | Qt::Key_T, Qt::CTRL | Qt::Key_T) );
     analyzeStrEquivalenceTieProfileDissimilaritiesAct->
             setStatusTip(
                 tr("Compute tie profile dissimilarities/distances "
@@ -3198,7 +3199,7 @@ void MainWindow::initActions(){
     analyzeStrEquivalenceClusteringHierarchicalAct = new QAction(QIcon(":/images/hierarchical.png"),
                                                                  tr("Hierarchical clustering"),this);
     analyzeStrEquivalenceClusteringHierarchicalAct-> setShortcut(
-                QKeySequence(Qt::CTRL + Qt::Key_T, Qt::CTRL + Qt::Key_H));
+                QKeySequence(Qt::CTRL | Qt::Key_T, Qt::CTRL | Qt::Key_H));
 
     analyzeStrEquivalenceClusteringHierarchicalAct->setStatusTip(
                 tr("Perform agglomerative cluster analysis of the actors in the social network"));
@@ -3232,7 +3233,7 @@ void MainWindow::initActions(){
 
 
     cDegreeAct = new QAction(tr("Degree Centrality (DC)"),this);
-    cDegreeAct-> setShortcut(Qt::CTRL + Qt::Key_1);
+    cDegreeAct-> setShortcut(Qt::CTRL | Qt::Key_1);
     cDegreeAct
             ->setStatusTip(tr("Compute Degree Centrality indices for every actor and group Degree Centralization."));
     cDegreeAct
@@ -3251,7 +3252,7 @@ void MainWindow::initActions(){
 
 
     cClosenessAct = new QAction(tr("Closeness Centrality (CC)"), this);
-    cClosenessAct-> setShortcut(Qt::CTRL + Qt::Key_2);
+    cClosenessAct-> setShortcut(Qt::CTRL | Qt::Key_2);
     cClosenessAct
             ->setStatusTip(
                 tr(
@@ -3270,7 +3271,7 @@ void MainWindow::initActions(){
     connect(cClosenessAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityCloseness()));
 
     cInfluenceRangeClosenessAct = new QAction(tr("Influence Range Closeness Centrality (IRCC)"), this);
-    cInfluenceRangeClosenessAct-> setShortcut(Qt::CTRL + Qt::Key_3);
+    cInfluenceRangeClosenessAct-> setShortcut(Qt::CTRL | Qt::Key_3);
     cInfluenceRangeClosenessAct
             ->setStatusTip(
                 tr("Compute Influence Range Closeness Centrality indices for every actor "
@@ -3291,7 +3292,7 @@ void MainWindow::initActions(){
     connect(cInfluenceRangeClosenessAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityClosenessIR()));
 
     cBetweennessAct = new QAction(tr("Betweenness Centrality (BC)"), this);
-    cBetweennessAct-> setShortcut(Qt::CTRL + Qt::Key_4);
+    cBetweennessAct-> setShortcut(Qt::CTRL | Qt::Key_4);
     cBetweennessAct->setWhatsThis(tr("Betweenness Centrality (BC)\n\n"
                                      "For each node v, BC is the ratio of all geodesics between pairs of nodes which run through v. "
                                      "It reflects how often an node lies on the geodesics between the other nodes of the network. "
@@ -3309,7 +3310,7 @@ void MainWindow::initActions(){
     connect(cBetweennessAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityBetweenness()));
 
     cStressAct = new QAction(tr("Stress Centrality (SC)"), this);
-    cStressAct-> setShortcut(Qt::CTRL + Qt::Key_5);
+    cStressAct-> setShortcut(Qt::CTRL | Qt::Key_5);
     cStressAct->setStatusTip(tr("Compute Stress Centrality indices for every actor and group Stress Centralization."));
     cStressAct->setWhatsThis(tr("Stress Centrality (SC)\n\n"
                                 "For each node v, SC is the total number of geodesics between all other nodes which run through v. "
@@ -3322,7 +3323,7 @@ void MainWindow::initActions(){
 
 
     cEccentAct = new QAction(tr("Eccentricity Centrality (EC)"), this);
-    cEccentAct-> setShortcut(Qt::CTRL + Qt::Key_6);
+    cEccentAct-> setShortcut(Qt::CTRL | Qt::Key_6);
     cEccentAct->setStatusTip(tr("Compute Eccentricity Centrality (aka Harary Graph Centrality) scores for each node."));
     cEccentAct->setWhatsThis(
                 tr("Eccentricity Centrality (EC)\n\n "
@@ -3338,7 +3339,7 @@ void MainWindow::initActions(){
 
 
     cPowerAct = new QAction(tr("Gil and Schmidt Power Centrality (PC)"), this);
-    cPowerAct-> setShortcut(Qt::CTRL + Qt::Key_7);
+    cPowerAct-> setShortcut(Qt::CTRL | Qt::Key_7);
     cPowerAct->setStatusTip(tr("Compute Power Centrality indices (aka Gil-Schmidt Power Centrality) for every actor and group Power Centralization"));
     cPowerAct->setWhatsThis(tr("Power Centrality (PC)\n\n "
                                "For each node v, this index sums its degree (with weight 1), with the size of the 2nd-order neighbourhood (with weight 2), and in general, with the size of the kth order neighbourhood (with weight k). Thus, for each node in the network the most important other nodes are its immediate neighbours and then in decreasing importance the nodes of the 2nd-order neighbourhood, 3rd-order neighbourhood etc. For each node, the sum obtained is normalised by the total numbers of nodes in the same component minus 1. Power centrality has been devised by Gil-Schmidt. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1 (therefore not considered)."));
@@ -3346,7 +3347,7 @@ void MainWindow::initActions(){
 
 
     cInformationAct = new QAction(tr("Information Centrality (IC)"),	this);
-    cInformationAct-> setShortcut(Qt::CTRL + Qt::Key_8);
+    cInformationAct-> setShortcut(Qt::CTRL | Qt::Key_8);
     cInformationAct->setEnabled(true);
     cInformationAct->setStatusTip(tr("Compute Information Centrality indices and group Information Centralization"));
     cInformationAct->setWhatsThis(
@@ -3361,7 +3362,7 @@ void MainWindow::initActions(){
 
 
     cEigenvectorAct = new QAction(tr("Eigenvector Centrality (EVC)"),	this);
-    cEigenvectorAct-> setShortcut(Qt::CTRL + Qt::Key_9);
+    cEigenvectorAct-> setShortcut(Qt::CTRL | Qt::Key_9);
     cEigenvectorAct->setEnabled(true);
     cEigenvectorAct->setStatusTip(tr("Compute Eigenvector Centrality indices and group Eigenvector Centralization"));
     cEigenvectorAct->setWhatsThis(
@@ -3381,7 +3382,7 @@ void MainWindow::initActions(){
 
     cInDegreeAct = new QAction(tr("Degree Prestige (DP)"),	 this);
     cInDegreeAct->setStatusTip(tr("Compute Degree Prestige (InDegree) indices "));
-    cInDegreeAct-> setShortcut(Qt::CTRL + Qt::Key_I);
+    cInDegreeAct-> setShortcut(Qt::CTRL | Qt::Key_I);
     cInDegreeAct->setWhatsThis(tr("InDegree (Degree Prestige)\n\n"
                                   "For each node k, this the number of arcs ending at k. "
                                   "Nodes with higher in-degree are considered more prominent among others. "
@@ -3394,7 +3395,7 @@ void MainWindow::initActions(){
     connect(cInDegreeAct, SIGNAL(triggered()), this, SLOT(slotAnalyzePrestigeDegree()));
 
     cPageRankAct = new QAction(tr("PageRank Prestige (PRP)"),	this);
-    cPageRankAct-> setShortcut(Qt::CTRL + Qt::Key_K);
+    cPageRankAct-> setShortcut(Qt::CTRL | Qt::Key_K);
     cPageRankAct->setEnabled(true);
     cPageRankAct->setStatusTip(tr("Compute PageRank Prestige indices for every actor"));
     cPageRankAct->setWhatsThis(tr("PageRank Prestige\n\n"
@@ -3416,7 +3417,7 @@ void MainWindow::initActions(){
     connect(cPageRankAct, SIGNAL(triggered()), this, SLOT(slotAnalyzePrestigePageRank()));
 
     cProximityPrestigeAct = new QAction(tr("Proximity Prestige (PP)"),	this);
-    cProximityPrestigeAct-> setShortcut(Qt::CTRL + Qt::Key_Y);
+    cProximityPrestigeAct-> setShortcut(Qt::CTRL | Qt::Key_Y);
     cProximityPrestigeAct->setEnabled(true);
     cProximityPrestigeAct->setStatusTip(tr("Calculate and display Proximity Prestige (digraphs only)"));
     cProximityPrestigeAct
@@ -3635,7 +3636,7 @@ void MainWindow::initActions(){
 
 
     openSettingsAct = new QAction(QIcon(":/images/settings_48px.svg"), tr("Settings"),	this);
-    openSettingsAct->setShortcut(Qt::CTRL + Qt::Key_Comma);
+    openSettingsAct->setShortcut(Qt::CTRL | Qt::Key_Comma);
     openSettingsAct->setEnabled(true);
     openSettingsAct->setToolTip(
                 tr("Open the Settings dialog where you can save your preferences "
@@ -5215,7 +5216,7 @@ void MainWindow::initWindowLayout(const bool &maximized, const bool &fullscreen)
     // Zoom slider
     //
     zoomInBtn = new QToolButton;
-    zoomInBtn->setShortcut(Qt::CTRL + Qt::Key_Plus);
+    zoomInBtn->setShortcut(Qt::CTRL | Qt::Key_Plus);
     zoomInBtn->setToolTip(tr("Zoom in (Ctrl++)"));
     zoomInBtn->setStatusTip(tr("Zoom inside the actual network. Or press Cltr and use mouse wheel."));
     zoomInBtn->setWhatsThis(tr("Zoom In.\n\n"
@@ -5229,7 +5230,7 @@ void MainWindow::initWindowLayout(const bool &maximized, const bool &fullscreen)
 
     zoomOutBtn = new QToolButton;
     zoomOutBtn->setAutoRepeat(true);
-    zoomOutBtn->setShortcut(Qt::CTRL + Qt::Key_Minus);
+    zoomOutBtn->setShortcut(Qt::CTRL | Qt::Key_Minus);
     zoomOutBtn->setToolTip(tr("Zoom out (Ctrl+-)"));
     zoomOutBtn->setStatusTip(tr("Zoom out of the actual network. Or press Cltr and use mouse wheel."));
     zoomOutBtn->setWhatsThis(tr("Zoom out.\n\n"
@@ -5261,7 +5262,7 @@ void MainWindow::initWindowLayout(const bool &maximized, const bool &fullscreen)
     //
     rotateLeftBtn = new QToolButton;
     rotateLeftBtn->setAutoRepeat(true);
-    rotateLeftBtn->setShortcut(Qt::CTRL + Qt::Key_Left);
+    rotateLeftBtn->setShortcut(Qt::CTRL | Qt::Key_Left);
     rotateLeftBtn->setIcon(QPixmap(":/images/rotate_left_48px.svg"));
     rotateLeftBtn->setToolTip(tr("Rotate counterclockwise (Ctrl+Left Arrow)"));
     rotateLeftBtn->setStatusTip(tr("Rotate counterclockwise (Ctrl+Left Arrow)"));
@@ -5270,7 +5271,7 @@ void MainWindow::initWindowLayout(const bool &maximized, const bool &fullscreen)
 
     rotateRightBtn = new QToolButton;
     rotateRightBtn->setAutoRepeat(true);
-    rotateRightBtn->setShortcut(Qt::CTRL + Qt::Key_Right);
+    rotateRightBtn->setShortcut(Qt::CTRL | Qt::Key_Right);
     rotateRightBtn ->setIcon(QPixmap(":/images/rotate_right_48px.svg"));
     rotateRightBtn->setToolTip(tr("Rotate clockwise (Ctrl+Right Arrow)"));
     rotateRightBtn->setStatusTip(tr("Rotate clockwise (Ctrl+Right Arrow)"));
@@ -5297,7 +5298,7 @@ void MainWindow::initWindowLayout(const bool &maximized, const bool &fullscreen)
 
     resetSlidersBtn = new QToolButton;
     resetSlidersBtn->setText(tr("Reset"));
-    resetSlidersBtn->setShortcut(Qt::CTRL + Qt::Key_0);
+    resetSlidersBtn->setShortcut(Qt::CTRL | Qt::Key_0);
     resetSlidersBtn->setStatusTip(tr("Reset zoom and rotation to zero (or press Ctrl+0)"));
     resetSlidersBtn->setToolTip(tr("Reset zoom and rotation to zero (Ctrl+0)"));
     resetSlidersBtn->setWhatsThis(tr("Reset zoom and rotation to zero (Ctrl+0)"));

@@ -32,20 +32,10 @@
 #include <QtCharts/QChartGlobal>
 #include <QtCharts/QChartView>
 
-QT_BEGIN_NAMESPACE
 
-QT_END_NAMESPACE
-
-
-QT_CHARTS_BEGIN_NAMESPACE
 class QSplineSeries;
 class QChart;
 class QAbstractAxis;
-QT_CHARTS_END_NAMESPACE
-
-
-
-QT_CHARTS_USE_NAMESPACE
 
 class Chart : public QChartView
 {

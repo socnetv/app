@@ -1468,7 +1468,7 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
                             "Emitting openNodeMenu() ";
                     emit openNodeMenu();
                 }
-                if ( e->button()==Qt::MidButton) {
+                if ( e->button()==Qt::MiddleButton) {
                     qDebug() << "GW::mousePressEvent() - Middle-click on node. "
                             "Calling startEdge() ";
                     startEdge(node);

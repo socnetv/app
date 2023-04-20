@@ -22,6 +22,7 @@ QT += widgets
 QT += printsupport 
 QT += charts
 QT += svg
+ QT += core5compat
 
 INCLUDEPATH  += ./src
 

@@ -159,7 +159,7 @@ void DialogNodeFind::checkErrors()
         }
 
         // check if user entered multiple lines
-        tempListA = textEntered.split("\n", QString::SkipEmptyParts);
+        tempListA = textEntered.split("\n", Qt::SkipEmptyParts);
 
         for (int i = 0; i < tempListA.size(); ++i) {
 
@@ -169,7 +169,7 @@ void DialogNodeFind::checkErrors()
             qDebug()<< "DialogNodeFind::checkErrors() - line:" << i << "str:" << str;
 
             // check if user has entered comma
-            tempListB = str.split(",", QString::SkipEmptyParts);
+            tempListB = str.split(",", Qt::SkipEmptyParts);
 
             for (int j = 0; j < tempListB.size(); ++j) {
 
@@ -187,7 +187,7 @@ void DialogNodeFind::checkErrors()
                     }
                     else {
 
-                        if (str.contains(QRegExp("\\D+"))) {
+                        if (str.contains(QRegularExpression("\\D+"))) {
                             qDebug()<< "DialogNodeFind::checkErrors() - error! not number" << str;
                             setError(true);
                         }
@@ -214,7 +214,7 @@ void DialogNodeFind::checkErrors()
         // and select the desired index.
         selectedIndex = ui->indexCombo->currentText();
         // check if user entered multiple lines
-        tempListA = textEntered.split("\n", QString::SkipEmptyParts);
+        tempListA = textEntered.split("\n", Qt::SkipEmptyParts);
 
         for (int i = 0; i < tempListA.size(); ++i) {
 

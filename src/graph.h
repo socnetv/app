@@ -55,14 +55,10 @@
 #include "webcrawler.h"
 #include "graphicswidget.h"
 
-QT_BEGIN_NAMESPACE
 class QDateTime;
 class QPointF;
 class QNetworkReply;
-QT_END_NAMESPACE
 
-
-QT_CHARTS_BEGIN_NAMESPACE
 class QAbstractSeries;
 class QAbstractAxis;
 class QSplineSeries;
@@ -70,9 +66,6 @@ class QBarSeries;
 class QAreaSeries;
 class QBarSet;
 class QBarCategoryAxis;
-QT_CHARTS_END_NAMESPACE
-
-QT_CHARTS_USE_NAMESPACE
 
 
 using namespace std;
