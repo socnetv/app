@@ -291,7 +291,8 @@ bool Parser::loadDL(){
     QString dlFormat=QString();
     QString edgeStr;
 
-    int lineCounter = 0;
+    unsigned long int fileLineNumber=0;
+    unsigned long int actualLineNumber=0;
     int source=1;
     int target=1;
     int NM=0;
@@ -327,32 +328,33 @@ bool Parser::loadDL(){
 
     while ( !ts.atEnd() )   {
 
+        fileLineNumber++;
+
         str= ts.readLine();
         str=str.simplified();
 
         if ( isComment(str) )
             continue;
 
-        lineCounter++;
+        actualLineNumber++;
 
-        qDebug() << "Parser::loadDL() - lineCount " << lineCounter
+        qDebug() << "Parser::loadDL() - actualLineNumber " << actualLineNumber
                  << "str.simplified: \n" << str;
 
-        if ( lineCounter == 1) {
+        if ( actualLineNumber == 1) {
             if (!str.startsWith("DL",Qt::CaseInsensitive)  )  {
                 qDebug() << "Parser::loadDL() - Not a DL file. Aborting!";
                 errorMessage = tr("File does not start with DL in line 1");
                 file.close();
                 return false;
             }
-        } // end if lineCounter == 1
+        } // end if actualLineNumber == 1
 
         //
         // This is a DL file.
         // Check if the line contains DL and comma
         // or we are still in search for N,NM, and FORMAT keywords
         //
-
 
         if (  str.startsWith("DL",Qt::CaseInsensitive) ) {
 
@@ -1018,7 +1020,8 @@ bool Parser::loadPajek(){
     bool zero_flag=false;
     int   i=0, j=0, miss=0, source= -1, target=-1, nodeNum, colorIndex=-1;
     int coordIndex=-1, labelIndex=-1;
-    unsigned long int lineCounter=0;
+    unsigned long int fileLineNumber=0;
+    unsigned long int actualLineNumber=0;
     int pos=-1, relationCounter=0;
     qreal weight=1;
     QString relation;
@@ -1030,18 +1033,22 @@ bool Parser::loadPajek(){
     //if j + miss < nodeNum, it creates (nodeNum-miss) dummy nodes which are deleted in the end.
     relationsList.clear();
 
-
     while ( !ts.atEnd() )   {
+
+        fileLineNumber++;
+
         str= ts.readLine();
         str = str.simplified();
 
         if ( isComment(str)  )
             continue;
 
-        lineCounter++;
+        actualLineNumber++;
+
         qDebug()<< "*** Parser:loadPajek(): "
                 << str;
-        if (lineCounter==1) {
+
+        if (actualLineNumber==1) {
             if ( str.startsWith("graph",Qt::CaseInsensitive)
                  || str.startsWith("digraph",Qt::CaseInsensitive)
                  || str.startsWith("DL",Qt::CaseInsensitive)
@@ -1055,15 +1062,15 @@ bool Parser::loadPajek(){
                 qDebug()<< "*** Parser:loadPajek(): Not a Pajek-formatted file. Aborting!!";
                 file.close();
                 errorMessage = tr("Not a Pajek-formatted file. "
-                                  "First not-comment line does not start with "
-                                  "Network or Vertices");
+                                  "First not-comment line %1 (at file line %2) does not start with "
+                                  "Network or Vertices").arg(actualLineNumber).arg(fileLineNumber);
                 return false;
             }
         }
 
         if (!edges_flag && !arcs_flag && !nodes_flag && !arcslist_flag && !matrix_flag) {
             //qDebug("Parser::loadPajek(): reading headlines");
-            if ( (lineCounter == 1) &&
+            if ( (actualLineNumber == 1) &&
                  (!str.contains("network",Qt::CaseInsensitive)
                   && !str.contains("vertices",Qt::CaseInsensitive)
                   )
@@ -1564,7 +1571,7 @@ bool Parser::loadAdjacency(){
     QString str;
     QString edgeStr;
     QStringList currentRow;
-    int fileLine=0, actualDataLine=0;
+    int fileLine=0, actualLineNumber=0;
     int i=0, j=0, colCount=0, lastCount=0;
     bool conversionOK=false;
 
@@ -1573,10 +1580,8 @@ bool Parser::loadAdjacency(){
     edgeWeight=1.0;
     totalLinks=0;
 
-    i=1;
-
     // Initially, do a small 11-row read to understand what kind of file this is
-    while ( i < 11 &&  !ts.atEnd() ) {
+    while ( actualLineNumber < 11 &&  !ts.atEnd() ) {
 
         fileLine ++ ;
 
@@ -1585,7 +1590,7 @@ bool Parser::loadAdjacency(){
         if ( isComment(str) )
             continue;
 
-        actualDataLine ++;
+        actualLineNumber ++;
 
         if (
              str.contains("vertices",Qt::CaseInsensitive)
@@ -1618,36 +1623,44 @@ bool Parser::loadAdjacency(){
             colCount = (str.split(" ")).count();
         }
 
-        qDebug() << "row" << i << ":"<< str;
+        qDebug() << "non-comment row:" << actualLineNumber << ":"<< str;
         qDebug() << "colCount:"<<colCount ;
 
-        if  ( (colCount != lastCount && i>1 ) || (colCount < i) ) {
+        if  ( (colCount != lastCount && actualLineNumber > 1 ) || (colCount < actualLineNumber) ) {
             // row columns differ from lastCaount, therefore this can't be an adjacency matrix
             qDebug()<< "*** Parser:loadAdjacency(): Not an Adjacency-formatted file. Aborting!!";
             file.close();
             errorMessage = tr("Error reading Adjacency-formatted file. "
-                              "Matrix row %1 has different number of elements from previous row.").arg(i);
+                              "Matrix row %1 at line %2 has different number of elements from previous row.").arg(actualLineNumber).arg(fileLine);
             return false;
         }
 
         lastCount=colCount;
-
-        i++;
 
     }  // end while
 
     // RESET file and row counter
     ts.reset();
     ts.seek(0);
-    i=0;
+
+    actualLineNumber = 0;
+    fileLine = 0;
 
     // Now do the full read
     while ( !ts.atEnd() )   {
 
+        fileLine ++ ;
+
         str= ts.readLine().simplified();
 
-        if ( isComment(str) )
+        if ( isComment(str) ) {
+            if ( fileLine == 0 ) {
+                //
+            }
             continue;
+        }
+
+        i = ++actualLineNumber;
 
         if ( str.contains (",")) {
             currentRow=str.split(",");
@@ -1656,7 +1669,7 @@ bool Parser::loadAdjacency(){
             currentRow=str.split(" ");
         }
 
-        if (i == 0 ) {
+        if ( actualLineNumber == 1 ) {
 
             // Since a sociomatrix is NxN matrix,
             // the number of items in the first row
@@ -1698,23 +1711,28 @@ bool Parser::loadAdjacency(){
         // if it is different that totalNodes, then return with an error
         if ( totalNodes != (int) currentRow.count() )  {
             errorMessage = tr("Error reading Adjacency-formatted file. "
-                                    "Matrix row %1 has different number of items than previous row.").arg(i);
+                                    "Matrix row %1 has different number of items than previous row.").arg(actualLineNumber);
             return false;
         }
 
         // Edge creation loop
         // Create the edges declared in current row.
+
+        // Init the column counter
         j=0;
 
-        qDebug()<< "Parser-loadAdjacency(): Starting edge creation loop for row:" << i+1;
+        qDebug()<< "Parser-loadAdjacency(): Starting edge creation loop for matrix row:" << actualLineNumber;
 
         for (QStringList::Iterator it1 = currentRow.begin(); it1!=currentRow.end(); ++it1)  {
+
+            j++;
+
             edgeStr = (*it1);
             edgeWeight =edgeStr.toDouble(&conversionOK);
 
             if ( !conversionOK )  {
                 errorMessage = tr("Error reading Adjacency-formatted file. "
-                                        "Element (%1,%2) can be converted.").arg(i+1).arg(j+1);
+                                        "Element (%1,%2) can be converted.").arg(i).arg(j);
                 return false;
             }
 
@@ -1723,20 +1741,19 @@ bool Parser::loadAdjacency(){
                 arrows=true;
                 bezier=false;
 
-                qDebug() << "Parser-loadAdjacency(): New edge: " << i+1 << "->" <<  j+1
+                qDebug() << "Parser-loadAdjacency(): New edge: " << i << "->" <<  j
                          << "has weight" << edgeWeight << "TotalLinks: " << totalLinks+1;
 
-                emit edgeCreate(i+1, j+1, edgeWeight, initEdgeColor, EdgeType::Directed, arrows, bezier);
+                emit edgeCreate(i, j, edgeWeight, initEdgeColor, EdgeType::Directed, arrows, bezier);
 
                 totalLinks++;
 
             }
 
-            j++;
-
         } // end edge creation loop
 
-        i++;
+
+        qDebug()<<"fileLine: " << fileLine << "i: " <<i;
 
     }  // end full while
 
@@ -1771,7 +1788,7 @@ bool Parser::loadTwoModeSociomatrix(){
     ts.setCodec(userSelectedCodecName.toUtf8());
     QString str;
     QStringList lineElement;
-    int fileLine=0, actualDataLine=0;
+    int fileLine=0, actualLineNumber=0;
     int i=0, j=0,  newCount=0, lastCount=0;
     totalNodes=0;
     edgeWeight=1.0;
@@ -1783,7 +1800,7 @@ bool Parser::loadTwoModeSociomatrix(){
         str= ts.readLine().simplified();
         if ( isComment(str) )
             continue;
-        actualDataLine ++;
+        actualLineNumber ++;
         if ( str.contains("vertices",Qt::CaseInsensitive)
              || str.contains("network",Qt::CaseInsensitive)
              || str.contains("graph",Qt::CaseInsensitive)
@@ -2877,7 +2894,7 @@ bool Parser::loadGML(){
     QRegularExpression onlyDigitsExp("^\\d+$");
     QStringList tempList;
     QString str;
-    int fileLine=0, actualDataLine=0;
+    int fileLine=0, actualLineNumber=0;
     bool floatOK= false;
     bool isPlanar = false, graphKey=false, graphicsKey=false,
             edgeKey=false, nodeKey=false, graphicsCenterKey=false;
@@ -2908,9 +2925,9 @@ bool Parser::loadGML(){
         if ( isComment(str) )
             continue;
 
-        actualDataLine ++;
+        actualLineNumber ++;
 
-        if ( actualDataLine == 1 &&
+        if ( actualLineNumber == 1 &&
              ( str.contains("vertices",Qt::CaseInsensitive)
              || str.contains("network",Qt::CaseInsensitive)
              || str.contains("digraph",Qt::CaseInsensitive)
@@ -3186,7 +3203,7 @@ bool Parser::loadGML(){
 bool Parser::loadDot(){
 
     qDebug("\n\nParser: loadDotNetwork");
-    int fileLine=0, actualDataLine=0, aNum=-1;
+    int fileLine=0, actualLineNumber=0, aNum=-1;
     int start=0, end=0, next=0;
     QString label, node, nodeLabel, fontName, fontColor, edgeShape, edgeColor, edgeLabel, networkLabel;
     QString str, temp, prop, value ;
@@ -3228,9 +3245,9 @@ bool Parser::loadDot(){
         if ( isComment (str) )
             continue;
 
-        actualDataLine ++;
+        actualLineNumber ++;
 
-        if ( actualDataLine == 1 ) {
+        if ( actualLineNumber == 1 ) {
             if ( str.contains("vertices",Qt::CaseInsensitive) 	//Pajek
                  || str.contains("network",Qt::CaseInsensitive)	//Pajek?
                  || str.contains("[",Qt::CaseInsensitive)    	// GML
@@ -3737,7 +3754,7 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
 
     bool nodesWithLabels = false;
     bool conversionOK = false;
-    int fileLine = 0, actualDataLine=0;
+    int fileLine = 0, actualLineNumber=0;
     totalNodes=0;
     edgeWeight=1.0;
     edgeDirType=EdgeType::Directed;
@@ -3759,10 +3776,10 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
         if ( isComment(str) )
             continue;
 
-        actualDataLine ++ ;
+        actualLineNumber ++ ;
 
         if (
-              actualDataLine == 1 &&
+              actualLineNumber == 1 &&
 
              ( str.contains("vertices",Qt::CaseInsensitive)
              || str.contains("network",Qt::CaseInsensitive)
@@ -4035,7 +4052,7 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
     QString str, edgeKey,edgeKeyDelimiter="====>" ;
     QStringList lineElement,edgeElement;
     int columnCount=0;
-    int fileLine = 0, actualDataLine=0;
+    int fileLine = 0, actualLineNumber=0;
     bool nodesWithLabels= false;
     //@TODO Always use nodesWithLabels= true
 
@@ -4073,9 +4090,9 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
             continue;
         }
 
-        actualDataLine ++;
+        actualLineNumber ++;
 
-        if ( actualDataLine == 1 &&
+        if ( actualLineNumber == 1 &&
              ( str.contains("vertices",Qt::CaseInsensitive)
              || str.contains("network",Qt::CaseInsensitive)
              || str.contains("graph",Qt::CaseInsensitive)
