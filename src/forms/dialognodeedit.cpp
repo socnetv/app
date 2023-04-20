@@ -97,8 +97,8 @@ DialogNodeEdit::DialogNodeEdit(QWidget *parent,
                 effect->setColor(QColor("red"));
                 ui->nodeIconSelectButton->setGraphicsEffect(effect);
                 ui->nodeIconSelectEdit->setGraphicsEffect(effect);
-                (ui->buttonBox) -> button (QDialogButtonBox::Cancel) -> setDefault(true);
-                (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+                (ui->buttonBox)->button (QDialogButtonBox::Cancel)->setDefault(true);
+                (ui->buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(false);
             }
         }
     }
@@ -113,7 +113,7 @@ DialogNodeEdit::DialogNodeEdit(QWidget *parent,
 
     connect ( ui->buttonBox,SIGNAL(accepted()), this, SLOT(getUserChoices()) );
 
-    (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
+    (ui->buttonBox)->button (QDialogButtonBox::Ok)->setDefault(true);
 
     (ui->labelEdit)->setFocus();
 
@@ -199,8 +199,8 @@ void DialogNodeEdit::getNodeShape(const int &nodeShapeIndex){
             effect->setColor(QColor("red"));
             ui->nodeIconSelectButton->setGraphicsEffect(effect);
             ui->nodeIconSelectEdit->setGraphicsEffect(effect);
-            (ui->buttonBox) -> button (QDialogButtonBox::Cancel) -> setDefault(true);
-            (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+            (ui->buttonBox)->button (QDialogButtonBox::Cancel)->setDefault(true);
+            (ui->buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(false);
         }
     }
     else {
@@ -210,8 +210,8 @@ void DialogNodeEdit::getNodeShape(const int &nodeShapeIndex){
         iconPath = QString();
         ui->nodeIconSelectButton->setGraphicsEffect(0);
         ui->nodeIconSelectEdit->setGraphicsEffect(0);
-        (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
-        (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
+        (ui->buttonBox)->button (QDialogButtonBox::Ok)->setDefault(true);
+        (ui->buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(true);
     }
 }
 
@@ -231,14 +231,14 @@ void DialogNodeEdit::getNodeIconFile(){
        ui->nodeIconSelectButton->setGraphicsEffect(0);
        ui->nodeIconSelectEdit->setGraphicsEffect(0);
        ui->nodeShapeComboBox->setItemIcon(NodeShape::Custom, QIcon(m_nodeIconFile));
-       (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
+       (ui->buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(true);
     }
     else {
         // user pressed Cancel ?
         // stop
         if ( ui->nodeIconSelectEdit->text().isEmpty() ) {
-            (ui->buttonBox) -> button (QDialogButtonBox::Cancel) -> setDefault(true);
-            (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+            (ui->buttonBox)->button (QDialogButtonBox::Cancel)->setDefault(true);
+            (ui->buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(false);
         }
     }
 
@@ -323,11 +323,11 @@ void DialogNodeEdit::checkErrors() {
         QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
         effect->setColor(QColor("red"));
         ui->labelEdit->setGraphicsEffect(effect);
-        //(ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+        //(ui->buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(false);
     }
     else {
         ui->labelEdit->setGraphicsEffect(0);
-        (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
+        (ui->buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(true);
     }
     //getUserChoices();
 }

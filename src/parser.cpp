@@ -836,7 +836,7 @@ bool Parser::loadDL(){
                 }
 
                 qDebug() << "Parser::loadDL() - Creating link "
-                         << source << " -> "<< target << " weight= "<< edgeWeight
+                         << source << "->"<< target << " weight= "<< edgeWeight
                          <<  " TotalLinks=  " << totalLinks+1;
                 emit edgeCreate(source, target, edgeWeight, initEdgeColor, EdgeType::Directed,
                                 arrows, bezier);
@@ -2466,7 +2466,7 @@ void Parser::endGraphMLElementEdge(QXmlStreamReader &xml){
         return;
     }
     qDebug()<<"Parser::endGraphMLElementEdge() - signal edgeCreate "
-           << source << " -> " << target << " edgeDirType value " << edgeDirType;
+           << source << "->" << target << " edgeDirType value " << edgeDirType;
     emit edgeCreate(source, target, edgeWeight, edgeColor, edgeDirType,
                     arrows, bezier, edgeLabel);
     totalLinks++;
@@ -2862,7 +2862,7 @@ void Parser::createMissingNodeEdges(){
 
                 }
                 qDebug()<<"Parser::createMissingNodeEdges() - signal edgeCreate "
-                       << source << " -> " << target << " edgeDirType value " << edgeDirType;
+                       << source << "->" << target << " edgeDirType value " << edgeDirType;
 
                 emit edgeCreate(source, target, edgeWeight, edgeColor, edgeDirType, arrows, bezier, edgeLabel);
 

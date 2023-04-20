@@ -86,7 +86,7 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
          * can outweight the fast lookup speeds."
          * The user can change this from Settings.
         */
-        scene() -> setItemIndexMethod(QGraphicsScene::BspTreeIndex); //NoIndex (for anime)
+        scene()->setItemIndexMethod(QGraphicsScene::BspTreeIndex); //NoIndex (for anime)
 
         // Connect scene change signal to the slot that handles selected items
         connect ( scene() , &QGraphicsScene::selectionChanged,
@@ -633,7 +633,7 @@ void GraphicsWidget::removeItem( GraphicsNodeNumber *nodeNumber){
 bool GraphicsWidget::setNodeColor(const int &nodeNumber,
                                   const QString &color){
     qDebug() << "Setting node"<< nodeNumber << "new color to:" << color;
-    nodeHash.value(nodeNumber) -> setColor(color);
+    nodeHash.value(nodeNumber)->setColor(color);
     return true;
 }
 
@@ -650,7 +650,7 @@ bool GraphicsWidget::setNodeShape(const int &nodeNumber,
                                   const QString &shape,
                                   const QString &iconPath){
     qDebug() << "Setting node"<< nodeNumber << "new shape to:" << shape;
-    nodeHash.value(nodeNumber) -> setShape(shape,iconPath);
+    nodeHash.value(nodeNumber)->setShape(shape,iconPath);
     return true;
 
 }
@@ -679,7 +679,7 @@ void GraphicsWidget::setNodeLabelsVisibility (const bool &toggle){
  */
 bool GraphicsWidget::setNodeLabel(const int &nodeNumber, const QString &label){
     qDebug() << "Setting node"<< nodeNumber << "new label to:" << label;
-    nodeHash.value(nodeNumber) -> setLabelText (label);
+    nodeHash.value(nodeNumber)->setLabelText (label);
     return true;
 
 }
@@ -738,8 +738,8 @@ void GraphicsWidget::setNodeVisibility(const int &number, const bool &toggle){
     if  ( nodeHash.contains (number) ) {
         qDebug() << "Setting visibility of node"
                  << number << "to" << toggle;
-        nodeHash.value(number) -> setVisible(toggle);
-        nodeHash.value(number) -> setEnabled(toggle);
+        nodeHash.value(number)->setVisible(toggle);
+        nodeHash.value(number)->setEnabled(toggle);
         return;
     }
     qDebug() << "cannot find node " << number;
@@ -757,14 +757,14 @@ bool GraphicsWidget::setNodeSize(const int &number, const int &size ){
              << number << "to" << size;
     if  ( nodeHash.contains (number) ) {
         if (size>0){
-            nodeHash.value(number) -> setSize(size);
+            nodeHash.value(number)->setSize(size);
             return true;
 
         }
         else {
             qDebug() << "Setting size of node"
                      << number << "to default" << m_nodeSize;
-            nodeHash.value(number) -> setSize(m_nodeSize);
+            nodeHash.value(number)->setSize(m_nodeSize);
             return true;
 
         }
@@ -781,7 +781,7 @@ bool GraphicsWidget::setNodeSize(const int &number, const int &size ){
 void GraphicsWidget::setNodeSizeAll(const int &size ){
     qDebug() << "Changing all nodes size... ";
     foreach ( GraphicsNode *m_node, nodeHash ) {
-            m_node -> setSize(size);
+            m_node->setSize(size);
     }
 }
 
@@ -813,7 +813,7 @@ void GraphicsWidget::setNodeNumberColor(const int &nodeNumber, const QString &co
              << nodeNumber << "to" << color;
     if  ( nodeHash.contains (nodeNumber) ) {
         if (!color.isNull()){
-            nodeHash.value(nodeNumber) ->setNumberColor(color) ;
+            nodeHash.value(nodeNumber)->setNumberColor(color) ;
         }
         return;
     }
@@ -831,7 +831,7 @@ bool GraphicsWidget::setNodeNumberSize(const int &nodeNumber, const int &size){
              << nodeNumber << "to" << size;
     if  ( nodeHash.contains (nodeNumber) ) {
         if (size>0){
-            nodeHash.value(nodeNumber) ->setNumberSize(size) ;
+            nodeHash.value(nodeNumber)->setNumberSize(size) ;
             return true;
 
         }
@@ -852,7 +852,7 @@ bool GraphicsWidget::setNodeNumberDistance(const int &number, const int &distanc
              << number << "to" << distance;
     if  ( nodeHash.contains (number) ) {
         if (distance>=0){
-            nodeHash.value(number) ->setNumberDistance(distance) ;
+            nodeHash.value(number)->setNumberDistance(distance) ;
             return true;
 
         }
@@ -873,7 +873,7 @@ bool GraphicsWidget::setNodeLabelColor(const int &number, const QString &color){
     qDebug() << "Setting label color of node"
              << number << "to" << color;
     if  ( nodeHash.contains (number) ) {
-            nodeHash.value(number) ->setLabelColor(color);
+            nodeHash.value(number)->setLabelColor(color);
             return true;
     }
     qDebug() << "cannot find node " << number;
@@ -893,7 +893,7 @@ bool GraphicsWidget::setNodeLabelSize(const int &number, const int &size){
              << number << "to" << size;
     if  ( nodeHash.contains (number) ) {
         if (size>0){
-            nodeHash.value(number) ->setLabelSize(size);
+            nodeHash.value(number)->setLabelSize(size);
             return true;
         }
     }
@@ -915,7 +915,7 @@ bool GraphicsWidget::setNodeLabelDistance( const int &number, const int &distanc
              << number << "to" << distance;
     if  ( nodeHash.contains (number) ) {
         if (distance>=0){
-            nodeHash.value(number) ->setLabelDistance(distance) ;
+            nodeHash.value(number)->setLabelDistance(distance) ;
             return true;
         }
     }
@@ -958,7 +958,7 @@ void GraphicsWidget::setNodesMarked(QList<int> list){
     foreach ( int nodeNumber, list) {
         if  ( nodeHash.contains (nodeNumber) ) {
             qDebug() << "Selecting node"<< nodeNumber;
-            nodeHash.value(nodeNumber) ->setSelected(true) ;
+            nodeHash.value(nodeNumber)->setSelected(true) ;
         }
         else {
             qDebug() << "Cannot find node:"<< nodeNumber;
@@ -984,7 +984,7 @@ void GraphicsWidget::setEdgeLabel(const int &source,
 
     qDebug()<<"Setting label for edge" << edgeName <<  "new label"  << label;
     if  ( edgesHash.contains (edgeName) ) {
-        edgesHash.value(edgeName) -> setLabel(label);
+        edgesHash.value(edgeName)->setLabel(label);
     }
 
 
@@ -1006,7 +1006,7 @@ void GraphicsWidget::setEdgeColor(const int &source,
 
     qDebug()<<"Setting color of edge" << edgeName <<  "new color:"  << color;
     if  ( edgesHash.contains (edgeName) ) {
-        edgesHash.value(edgeName) -> setColor(color);
+        edgesHash.value(edgeName)->setColor(color);
     }
 
 }
@@ -1035,7 +1035,7 @@ bool GraphicsWidget::setEdgeDirectionType(const int &source,
 
     if  ( edgesHash.contains (edgeName) ) {
         qDebug()<<" Found edge in edgesHash. ";
-        edgesHash.value(edgeName) -> setDirectionType(dirType);
+        edgesHash.value(edgeName)->setDirectionType(dirType);
         return true;
     }
     return false;
@@ -1060,7 +1060,7 @@ bool GraphicsWidget::setEdgeWeight(const int &source,
 
     qDebug()<<"GW::setEdgeWeight() -" << edgeName <<  " new weight "  << weight;
     if  ( edgesHash.contains (edgeName) ) {
-        edgesHash.value(edgeName) -> setWeight(weight);
+        edgesHash.value(edgeName)->setWeight(weight);
         return true;
     }
 
@@ -1071,7 +1071,7 @@ bool GraphicsWidget::setEdgeWeight(const int &source,
                  << edgeName;
         if ( edgesHash.contains(edgeName) ) {
             qDebug() << "GW::setEdgeWeight() - Opposite edge exists. Check if it is reciprocated";
-            edgesHash.value(edgeName) -> setWeight(weight);
+            edgesHash.value(edgeName)->setWeight(weight);
             return true;
         }
         qDebug() << "GW::setEdgeWeight() - No such edge to delete";
@@ -1123,7 +1123,7 @@ void GraphicsWidget::setEdgeOffsetFromNode(const int &source,
 
         qDebug()<<"GW::setEdgeWeight() -" << edgeName <<  " new offset "  << offset;
         if  ( edgesHash.contains (edgeName) ) {
-            edgesHash.value(edgeName) -> setMinimumOffsetFromNode(offset);
+            edgesHash.value(edgeName)->setMinimumOffsetFromNode(offset);
             return;
         }
 
@@ -1211,8 +1211,8 @@ void GraphicsWidget::setEdgeVisibility(const int &relation, const int &source, c
     if  ( edgesHash.contains (edgeName) ) {
         qDebug()<<"GW::setEdgeVisibility() - edge" << edgeName
                << "set to" << visible;
-        edgesHash.value(edgeName) -> setVisible(visible);
-        edgesHash.value(edgeName) -> setEnabled(visible);
+        edgesHash.value(edgeName)->setVisible(visible);
+        edgesHash.value(edgeName)->setEnabled(visible);
         return;
     }
     edgeName = createEdgeName( target, source, relation );
@@ -1220,8 +1220,8 @@ void GraphicsWidget::setEdgeVisibility(const int &relation, const int &source, c
     if  ( edgesHash.contains (edgeName) ) {
         qDebug()<<"GW::setEdgeVisibility() - reciprocated edge" << edgeName
                << "set to" << visible;
-        edgesHash.value(edgeName) -> setVisible(visible);
-        edgesHash.value(edgeName) -> setEnabled(visible);
+        edgesHash.value(edgeName)->setVisible(visible);
+        edgesHash.value(edgeName)->setEnabled(visible);
         return;
     }
     qDebug()<<"GW::setEdgeVisibility() - Cannot find edge" << edgeName << "or the opposite in the edgesHash";

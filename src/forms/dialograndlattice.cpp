@@ -43,7 +43,7 @@ DialogRandLattice::DialogRandLattice(QWidget *parent) : QDialog(parent)
 {
     ui.setupUi(this);
 
-    ui.circularCheckBox -> setText("false");
+    ui.circularCheckBox->setText("false");
     ui.nodesSpinBox->setEnabled(false);
 
     connect ( ui.circularCheckBox, &QCheckBox::toggled ,
@@ -57,16 +57,16 @@ DialogRandLattice::DialogRandLattice(QWidget *parent) : QDialog(parent)
             this, SLOT(lengthChanged(int)));
 
 
-    ui.buttonBox -> button (QDialogButtonBox::Ok) -> setDefault(true);
+    ui.buttonBox->button (QDialogButtonBox::Ok)->setDefault(true);
 
 }
 
 void DialogRandLattice::circularChanged(const bool &toggle) {
     if (toggle) {
-        ui.circularCheckBox -> setText("true");
+        ui.circularCheckBox->setText("true");
     }
     else {
-        ui.circularCheckBox -> setText("false");
+        ui.circularCheckBox->setText("false");
     }
 
 }
@@ -84,7 +84,7 @@ void DialogRandLattice::getUserChoices() {
     dimension = ui.dimSpinBox->value();
     neighLength = ui.neiSpinBox->value();
     mode = (ui.directedRadioButton->isChecked() ? "digraph" : "graph" );
-    circular = (ui.circularCheckBox -> isChecked() ? true : false);
+    circular = (ui.circularCheckBox->isChecked() ? true : false);
     qDebug() << "nodes " << nodes ;
     qDebug() << "length " << length;
     qDebug() << "dimension " << dimension;

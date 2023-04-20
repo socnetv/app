@@ -65,7 +65,7 @@ DialogNodeFind::DialogNodeFind(QWidget *parent, QStringList indexList) :
 
     ui->plainTextEdit->setFocus();
 
-    (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
+    (ui->buttonBox)->button (QDialogButtonBox::Ok)->setDefault(true);
 
 }
 
@@ -84,11 +84,11 @@ void DialogNodeFind::setError(const bool &toggle) {
          QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
          effect->setColor(QColor("red"));
          ui->plainTextEdit->setGraphicsEffect(effect);
-         ui->buttonBox -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+         ui->buttonBox->button (QDialogButtonBox::Ok)->setEnabled(false);
      }
      else {
         ui->plainTextEdit->setGraphicsEffect(0);
-        ui->buttonBox -> button (QDialogButtonBox::Ok) -> setEnabled(true);
+        ui->buttonBox->button (QDialogButtonBox::Ok)->setEnabled(true);
      }
 }
 

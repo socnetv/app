@@ -52,7 +52,7 @@ DialogRandErdosRenyi::DialogRandErdosRenyi(QWidget *parent, const qreal eprob) :
     connect ( ui.buttonBox, &QDialogButtonBox::accepted,
               this, &DialogRandErdosRenyi::getUserChoices );
 
-    ui.buttonBox -> button (QDialogButtonBox::Ok) -> setDefault(true);
+    ui.buttonBox->button (QDialogButtonBox::Ok)->setDefault(true);
 
     (ui.nodesSpinBox )->setFocus();
 
@@ -66,7 +66,7 @@ DialogRandErdosRenyi::DialogRandErdosRenyi(QWidget *parent, const qreal eprob) :
     ui.probDoubleSpinBox->setEnabled(true);
     ui.edgesSpinBox-> setDisabled(true);
     ui.undirectedRadioButton->setChecked(true);
-    ui.diagCheckBox ->setChecked(false);
+    ui.diagCheckBox->setChecked(false);
 
 
     connect (ui.gnpRadioButton, &QRadioButton::clicked,
@@ -85,15 +85,15 @@ DialogRandErdosRenyi::DialogRandErdosRenyi(QWidget *parent, const qreal eprob) :
 }
 
 void DialogRandErdosRenyi::gnpModel (){
-    ui.gnmRadioButton -> setChecked(false);
-    ui.probDoubleSpinBox -> setEnabled(true);
+    ui.gnmRadioButton->setChecked(false);
+    ui.probDoubleSpinBox->setEnabled(true);
     ui.edgesSpinBox-> setDisabled(true);
 
 }
 
 void DialogRandErdosRenyi::gnmModel (){
-    ui.gnpRadioButton -> setChecked(false);
-    ui.probDoubleSpinBox -> setDisabled(true);
+    ui.gnpRadioButton->setChecked(false);
+    ui.probDoubleSpinBox->setDisabled(true);
     ui.edgesSpinBox-> setEnabled(true);
 }
 
@@ -109,7 +109,7 @@ void DialogRandErdosRenyi::setModeUndirected (){
 }
 
 void DialogRandErdosRenyi::setDiag (){
-    if (ui.diagCheckBox -> isChecked())
+    if (ui.diagCheckBox->isChecked())
         ui.diagCheckBox->setText("Yes, allow");
     else
         ui.diagCheckBox->setText("No, set zero");
@@ -126,13 +126,13 @@ void DialogRandErdosRenyi::checkErrors() {
         effect2->setColor(QColor("red"));
         ui.gnpRadioButton->setGraphicsEffect(effect);
         ui.gnmRadioButton->setGraphicsEffect(effect2);
-        (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+        (ui.buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(false);
         return;
     }
     else {
         ui.gnpRadioButton->setGraphicsEffect(0);
         ui.gnmRadioButton->setGraphicsEffect(0);
-        (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
+        (ui.buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(true);
     }
 }
 
@@ -147,7 +147,7 @@ void DialogRandErdosRenyi::getUserChoices() {
         edges = ui.edgesSpinBox->value();
     }
     mode = (ui.directedRadioButton->isChecked() ? "digraph" : "graph" );
-    diag = (ui.diagCheckBox -> isChecked() ? true : false);
+    diag = (ui.diagCheckBox->isChecked() ? true : false);
     qDebug() << "nodes " << nodes ;
     qDebug() << "model " << model;
     qDebug() << "eprob " << ui.probDoubleSpinBox->value();

@@ -37,7 +37,7 @@ DialogSimilarityPearson::DialogSimilarityPearson (QWidget *parent) : QDialog (pa
 {
     ui.setupUi(this);
 
-    (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
+    (ui.buttonBox)->button (QDialogButtonBox::Ok)->setDefault(true);
 
     matrixList
             << "Adjacency"
@@ -48,8 +48,8 @@ DialogSimilarityPearson::DialogSimilarityPearson (QWidget *parent) : QDialog (pa
             << "Columns"
             << "Both";
 
-    (ui.matrixSelect) -> insertItems( 1, matrixList );
-    (ui.variablesLocationSelect) -> insertItems( 1, variablesLocationList );
+    (ui.matrixSelect)->insertItems( 1, matrixList );
+    (ui.variablesLocationSelect)->insertItems( 1, variablesLocationList );
     (ui.diagonalCheckBox)->setChecked(false);
 
 }
@@ -58,8 +58,8 @@ DialogSimilarityPearson::DialogSimilarityPearson (QWidget *parent) : QDialog (pa
 
 void DialogSimilarityPearson::getUserChoices(){
     qDebug()<< "DialogSimilarityPearson: gathering Data!...";
-    QString matrix = (ui.matrixSelect) ->currentText();
-    QString varLocation = (ui.variablesLocationSelect) ->currentText();
+    QString matrix = (ui.matrixSelect)->currentText();
+    QString varLocation = (ui.variablesLocationSelect)->currentText();
     bool diagonal = (ui.diagonalCheckBox)->isChecked();
     qDebug()<< "DialogSimilarityPearson: user selected: "
             << matrix

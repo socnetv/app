@@ -55,7 +55,7 @@ DialogSystemInfo::DialogSystemInfo (QWidget *parent) :
 
     ui->setupUi(this);
 
-    (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
+    (ui->buttonBox)->button (QDialogButtonBox::Ok)->setDefault(true);
 
     (ui->infoTextEdit)->setFocus();
 

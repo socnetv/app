@@ -50,12 +50,12 @@ DialogRandRegular::DialogRandRegular(QWidget *parent) :
     connect ( ui.buttonBox, &QDialogButtonBox::accepted,
               this, &DialogRandRegular::getUserChoices );
 
-    ui.buttonBox -> button (QDialogButtonBox::Ok) -> setDefault(true);
+    ui.buttonBox->button (QDialogButtonBox::Ok)->setDefault(true);
 
     ui.degreeSpinBox-> setEnabled(true);
     ui.undirectedRadioButton->setChecked(true);
-    ui.diagCheckBox ->setChecked(false);
-    ui.diagCheckBox -> setEnabled(false);
+    ui.diagCheckBox->setChecked(false);
+    ui.diagCheckBox->setEnabled(false);
 
     connect ( ui.undirectedRadioButton,&QRadioButton::clicked,
               this, &DialogRandRegular::setModeUndirected );
@@ -98,7 +98,7 @@ void DialogRandRegular::setModeUndirected (){
 }
 
 void DialogRandRegular::setDiag (){
-    if (ui.diagCheckBox -> isChecked())
+    if (ui.diagCheckBox->isChecked())
         ui.diagCheckBox->setText("Yes, allow");
     else
         ui.diagCheckBox->setText("No, set zero");
@@ -115,12 +115,12 @@ void DialogRandRegular::checkErrors(const int &i) {
              effect->setColor(QColor("red"));
              ui.degreeSpinBox->setGraphicsEffect(effect);
              ui.nodesSpinBox->setGraphicsEffect(effect);
-             (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+             (ui.buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(false);
          }
          else {
              ui.degreeSpinBox->setGraphicsEffect(0);
              ui.nodesSpinBox->setGraphicsEffect(0);
-             (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
+             (ui.buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(true);
          }
 }
 
@@ -129,7 +129,7 @@ void DialogRandRegular::getUserChoices() {
     nodes = ui.nodesSpinBox->value();
     degree= ui.degreeSpinBox->value();
     mode = (ui.directedRadioButton->isChecked() ? "digraph" : "graph" );
-    diag = (ui.diagCheckBox -> isChecked() ? true : false);
+    diag = (ui.diagCheckBox->isChecked() ? true : false);
     qDebug() << "nodes " << nodes ;
     qDebug() << "degree" << degree;
     qDebug() << "mode " << mode;

@@ -414,8 +414,8 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
         if ( m_hasNumber )
         {
             if (!m_hasNumberInside) 	{ //move it outside
-                m_number -> setZValue(ZValueNodeNumber);
-                m_number -> setPos( m_size+m_numberDistance, 0);
+                m_number->setZValue(ZValueNodeNumber);
+                m_number->setPos( m_size+m_numberDistance, 0);
             }
         }
         if (m_hasLabel) {
@@ -550,8 +550,8 @@ void GraphicsNode::deleteOutLink(GraphicsEdge *link){
 void GraphicsNode::addLabel ()  {
     qDebug()<< "GraphicsNode::addLabel()" ;
     m_label = new  GraphicsNodeLabel (this, m_labelText, m_labelSize);
-    m_label -> setDefaultTextColor (m_labelColor);
-    m_label -> setPos( m_size, m_labelDistance+m_size);
+    m_label->setDefaultTextColor (m_labelColor);
+    m_label->setPos( m_size, m_labelDistance+m_size);
     m_hasLabel = true;
 }
 
@@ -660,8 +660,8 @@ void GraphicsNode::addNumber () {
     m_hasNumber=true;
     m_hasNumberInside = false;
     m_number= new  GraphicsNodeNumber ( this, QString::number(m_num), m_numSize);
-    m_number -> setDefaultTextColor (m_numColor);
-    m_number -> setPos(m_size+m_numberDistance, 0);
+    m_number->setDefaultTextColor (m_numColor);
+    m_number->setPos(m_size+m_numberDistance, 0);
 
 }
 
@@ -744,7 +744,7 @@ void GraphicsNode::setNumberColor(const QString &color) {
             setShape(m_shape);
         }
         else {
-            m_number -> setDefaultTextColor (m_numColor);
+            m_number->setDefaultTextColor (m_numColor);
         }
     }
 
@@ -757,7 +757,7 @@ void GraphicsNode::setNumberColor(const QString &color) {
 void GraphicsNode::setNumberDistance(const int &distance) {
     m_numberDistance = distance;
     if (m_hasNumber && !m_hasNumberInside) {
-        m_number -> setPos( m_size+m_numberDistance, 0);
+        m_number->setPos( m_size+m_numberDistance, 0);
     }
     else if (m_hasNumber && m_hasNumberInside) {
         // do nothing

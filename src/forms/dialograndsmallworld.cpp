@@ -52,14 +52,14 @@ DialogRandSmallWorld::DialogRandSmallWorld(QWidget *parent) :
     connect ( ui->buttonBox, &QDialogButtonBox::accepted,
               this, &DialogRandSmallWorld::getUserChoices );
 
-    ui->buttonBox -> button (QDialogButtonBox::Ok) -> setDefault(true);
+    ui->buttonBox->button (QDialogButtonBox::Ok)->setDefault(true);
 
     ui->probDoubleSpinBox->setEnabled(true);
     ui->degreeSpinBox-> setEnabled(true);
     ui->undirectedRadioButton->setChecked(true);
     ui->directedRadioButton->setEnabled(false);
-    ui->diagCheckBox ->setChecked(false);
-    ui->diagCheckBox -> setEnabled(false);
+    ui->diagCheckBox->setChecked(false);
+    ui->diagCheckBox->setEnabled(false);
 
     connect ( ui->undirectedRadioButton,&QRadioButton::clicked,
               this, &DialogRandSmallWorld::setModeUndirected );
@@ -96,7 +96,7 @@ void DialogRandSmallWorld::setModeUndirected (){
 }
 
 void DialogRandSmallWorld::setDiag (){
-    if (ui->diagCheckBox -> isChecked())
+    if (ui->diagCheckBox->isChecked())
         ui->diagCheckBox->setText("Yes, allow");
     else
         ui->diagCheckBox->setText("No, set zero");
@@ -110,12 +110,12 @@ void DialogRandSmallWorld::checkErrors() {
     //         QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
     //         effect->setColor(QColor("red"));
     //         ui->gnpRadioButton->setGraphicsEffect(effect);
-    //         (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+    //         (ui->buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(false);
     //     }
     //     else {
     //         ui->gnpRadioButton->setGraphicsEffect(0);
     //         ui->gnmRadioButton->setGraphicsEffect(0);
-    //         (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
+    //         (ui->buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(true);
     //     }
     //getUserChoices();
 }
@@ -126,7 +126,7 @@ void DialogRandSmallWorld::getUserChoices() {
     bprob = ui->probDoubleSpinBox->value();
     degree= ui->degreeSpinBox->value();
     mode = (ui->directedRadioButton->isChecked() ? "digraph" : "graph" );
-    diag = (ui->diagCheckBox -> isChecked() ? true : false);
+    diag = (ui->diagCheckBox->isChecked() ? true : false);
     qDebug() << "nodes " << nodes ;
     qDebug() << "bprob " << bprob;
     qDebug() << "degree" << degree;

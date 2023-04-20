@@ -79,8 +79,8 @@ DialogExportImage::DialogExportImage(QWidget *parent) :
 
     // Set default button
     // OK button is disabled until user has selected a filename.
-    (ui->buttonBox) -> button (QDialogButtonBox::Cancel) -> setDefault(true);
-    (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+    (ui->buttonBox)->button (QDialogButtonBox::Cancel)->setDefault(true);
+    (ui->buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(false);
 
     // Set which widget will have focus
     ui->fileDirSelectButton->setFocus(Qt::OtherFocusReason);
@@ -151,8 +151,8 @@ void DialogExportImage::getFilename(){
         }
         ui->fileEdit->setText(m_fileName);
         ui->fileEdit->setGraphicsEffect(0);
-        (ui->buttonBox)->button (QDialogButtonBox::Ok) -> setEnabled(true);
-        (ui->buttonBox)->button (QDialogButtonBox::Ok) -> setDefault(true);
+        (ui->buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(true);
+        (ui->buttonBox)->button (QDialogButtonBox::Ok)->setDefault(true);
     }
     else {
         qDebug() << " empty or dir does not exist";
@@ -161,8 +161,8 @@ void DialogExportImage::getFilename(){
         effect->setColor(QColor("red"));
         ui->fileEdit->setGraphicsEffect(effect);
         ui->fileDirSelectButton->setGraphicsEffect(effect);
-        (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
-        (ui->buttonBox) -> button (QDialogButtonBox::Cancel) -> setDefault(true);
+        (ui->buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(false);
+        (ui->buttonBox)->button (QDialogButtonBox::Cancel)->setDefault(true);
 
     }
 

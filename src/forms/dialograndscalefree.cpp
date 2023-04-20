@@ -48,7 +48,7 @@ DialogRandScaleFree::DialogRandScaleFree(QWidget *parent) :
     connect ( ui.buttonBox, &QDialogButtonBox::accepted,
               this, &DialogRandScaleFree::getUserChoices );
 
-    ui.buttonBox -> button (QDialogButtonBox::Ok) -> setDefault(true);
+    ui.buttonBox->button (QDialogButtonBox::Ok)->setDefault(true);
 
     (ui.nodesSpinBox )->setFocus();
 
@@ -57,8 +57,8 @@ DialogRandScaleFree::DialogRandScaleFree(QWidget *parent) :
     ui.directedRadioButton->setEnabled(true);
     ui.directedRadioButton->setChecked(true);
     ui.diagCheckBox->setText("No, set zero");
-    ui.diagCheckBox ->setChecked(false);
-    ui.diagCheckBox -> setEnabled(false);
+    ui.diagCheckBox->setChecked(false);
+    ui.diagCheckBox->setEnabled(false);
 
     connect ( ui.undirectedRadioButton,&QRadioButton::clicked,
               this, &DialogRandScaleFree::setModeUndirected );
@@ -83,7 +83,7 @@ void DialogRandScaleFree::setModeUndirected (){
 }
 
 void DialogRandScaleFree::setDiag (){
-    if (ui.diagCheckBox -> isChecked())
+    if (ui.diagCheckBox->isChecked())
         ui.diagCheckBox->setText("Yes, allow");
     else
         ui.diagCheckBox->setText("No, set zero");
@@ -97,12 +97,12 @@ void DialogRandScaleFree::checkErrors() {
     //         QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
     //         effect->setColor(QColor("red"));
     //         ui.gnpRadioButton->setGraphicsEffect(effect);
-    //         (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+    //         (ui.buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(false);
     //     }
     //     else {
     //         ui.gnpRadioButton->setGraphicsEffect(0);
     //         ui.gnmRadioButton->setGraphicsEffect(0);
-    //         (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
+    //         (ui.buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(true);
     //     }
     //getUserChoices();
 }
@@ -112,10 +112,10 @@ void DialogRandScaleFree::getUserChoices() {
     nodes = ui.nodesSpinBox->value();
     power = ui.powerSpinBox->value();
     initialNodes = ui.initialNodesSpinBox->value();
-    edgesPerStep = ui.edgesPerStepSpinBox ->value();
+    edgesPerStep = ui.edgesPerStepSpinBox->value();
     zeroAppeal = ui.zeroAppealSpinBox->value();
     mode = (ui.directedRadioButton->isChecked() ? "digraph" : "graph" );
- //   diag = (ui.diagCheckBox -> isChecked() ? true : false);
+ //   diag = (ui.diagCheckBox->isChecked() ? true : false);
 
     qDebug() << "nodes " << nodes ;
     qDebug() << "initialNodes " << initialNodes;

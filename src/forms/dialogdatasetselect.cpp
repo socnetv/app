@@ -39,7 +39,7 @@ DialogDataSetSelect::DialogDataSetSelect (QWidget *parent) :
 {
     ui->setupUi(this);
 
-    (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
+    (ui->buttonBox)->button (QDialogButtonBox::Ok)->setDefault(true);
 
     datasets_list
             << "Krackhardt: High-tech managers (multirelational), 24 actors"
@@ -91,14 +91,14 @@ DialogDataSetSelect::DialogDataSetSelect (QWidget *parent) :
             << "Petersen_Graph.paj"
             << "Herschel_Graph.paj";
 
-    (ui->selectBox) -> insertItems( 1, datasets_list );
+    (ui->selectBox)->insertItems( 1, datasets_list );
 }
 
 
 
 void DialogDataSetSelect::getUserChoices(){
     qDebug()<< "DialogDataSetSelect: gathering Data!...";
-    int index = (ui->selectBox) -> currentIndex();
+    int index = (ui->selectBox)->currentIndex();
     QString dataset_name = datasets_filenames[index];
     qDebug()<< "DialogDataSetSelect: user selected: " << dataset_name;
 	emit userChoices( dataset_name );

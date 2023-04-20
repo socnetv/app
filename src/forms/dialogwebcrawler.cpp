@@ -37,8 +37,8 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
 {
     ui.setupUi(this);
 
-    (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
-    (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDisabled(true);
+    (ui.buttonBox)->button (QDialogButtonBox::Ok)->setDefault(true);
+    (ui.buttonBox)->button (QDialogButtonBox::Ok)->setDisabled(true);
 
     ui.seedUrlEdit->setFocus();
     ui.seedUrlEdit->setPlaceholderText("Please enter a url...");
@@ -65,7 +65,7 @@ DialogWebCrawler::DialogWebCrawler(QWidget *parent) : QDialog (parent)
 
     ui.socialLinksCheckBox->setChecked(socialLinks);
     ui.selfLinksCheckBox->setChecked(false);
-    ui.waitCheckBox ->setChecked(true);
+    ui.waitCheckBox->setChecked(true);
 
     connect (ui.seedUrlEdit, &QLineEdit::textChanged,
                      this, &DialogWebCrawler::checkErrors);
@@ -160,7 +160,7 @@ void DialogWebCrawler::checkErrors(){
         QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
         effect->setColor(QColor("red"));
         ui.seedUrlEdit->setGraphicsEffect(effect);
-        (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setDisabled(true);
+        (ui.buttonBox)->button (QDialogButtonBox::Ok)->setDisabled(true);
         errorUrl  = true;
     }
     else {
@@ -170,8 +170,8 @@ void DialogWebCrawler::checkErrors(){
     //
     // GET SPINBOX VALUES AND CHECKBOX OPTIONS
     //
-    maxLinksPerPage = (ui.maxLinksPerPageSpinBox) -> value();
-    maxUrlsToCrawl = (ui.maxUrlsToCrawlSpinBox) -> value();
+    maxLinksPerPage = (ui.maxLinksPerPageSpinBox)->value();
+    maxUrlsToCrawl = (ui.maxUrlsToCrawlSpinBox)->value();
 
 
     //
@@ -269,10 +269,10 @@ void DialogWebCrawler::checkErrors(){
     // ENABLE/DISABLE OK BUTTON
     //
     if ( errorUrl  || errorPatternsIncl || errorPatternsExcl || errorCheckboxes ) {
-        (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(false);
+        (ui.buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(false);
     }
     if ( !errorUrl  && !errorPatternsIncl && !errorPatternsExcl   && !errorCheckboxes ) {
-        (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(true);
+        (ui.buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(true);
     }
 
 }
@@ -369,6 +369,6 @@ void DialogWebCrawler::getUserChoices(){
                       ui.extLinksAllowedCheckBox->isChecked(),
                       ui.extLinksCrawlCheckBox->isChecked(),
                       ui.socialLinksCheckBox->isChecked(),
-                      ui.waitCheckBox ->isChecked()
+                      ui.waitCheckBox->isChecked()
                       );
 }

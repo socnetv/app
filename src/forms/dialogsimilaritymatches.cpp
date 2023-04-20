@@ -37,7 +37,7 @@ DialogSimilarityMatches::DialogSimilarityMatches (QWidget *parent) : QDialog (pa
 {
     ui.setupUi(this);
 
-    (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
+    (ui.buttonBox)->button (QDialogButtonBox::Ok)->setDefault(true);
 
     matrixList
             << "Adjacency"
@@ -55,9 +55,9 @@ DialogSimilarityMatches::DialogSimilarityMatches (QWidget *parent) : QDialog (pa
                 <<"Euclidean distance";
 
 
-    ui.matrixSelect -> insertItems( 1, matrixList );
-    (ui.variablesLocationSelect) -> insertItems( 1, variablesLocationList );
-    (ui.measureSelect) -> insertItems( 1, measureList );
+    ui.matrixSelect->insertItems( 1, matrixList );
+    (ui.variablesLocationSelect)->insertItems( 1, variablesLocationList );
+    (ui.measureSelect)->insertItems( 1, measureList );
 
     (ui.diagonalCheckBox)->setChecked(false);
 
@@ -67,8 +67,8 @@ DialogSimilarityMatches::DialogSimilarityMatches (QWidget *parent) : QDialog (pa
 
 void DialogSimilarityMatches::getUserChoices(){
     qDebug()<< "DialogSimilarityMatches: gathering Data!...";
-    QString matrix = (ui.matrixSelect) ->currentText();
-    QString varLocation = (ui.variablesLocationSelect) ->currentText();
+    QString matrix = (ui.matrixSelect)->currentText();
+    QString varLocation = (ui.variablesLocationSelect)->currentText();
     QString measure = (ui.measureSelect)->currentText();
     bool diagonal = (ui.diagonalCheckBox)->isChecked();
 

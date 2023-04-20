@@ -217,9 +217,9 @@ void GraphicsEdge::addWeightNumber (){
 void GraphicsEdge::setWeightNumberVisibility (const bool &toggle) {
     if (m_drawWeightNumber) {
         if (toggle)
-            weightNumber ->show();
+            weightNumber->show();
         else
-            weightNumber ->hide();
+            weightNumber->hide();
     }
     else{
         if (toggle)
@@ -262,9 +262,9 @@ void GraphicsEdge::addLabel (){
 void GraphicsEdge::setLabelVisibility (const bool &toggle) {
     if (m_drawLabel) {
         if (toggle)
-            edgeLabel ->show();
+            edgeLabel->show();
         else
-            edgeLabel ->hide();
+            edgeLabel->hide();
     }
     else{
         if (toggle)
@@ -532,7 +532,7 @@ QRectF GraphicsEdge::boundingRect() const {
 
 
 /**
- * @brief Changes the direction type of edge A -> B
+ * @brief Changes the direction type of edge A->B
   */
 void GraphicsEdge::setDirectionType(const int &dirType){
     qDebug()<< "Edge"

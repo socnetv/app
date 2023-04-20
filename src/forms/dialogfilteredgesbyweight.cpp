@@ -35,7 +35,7 @@ DialogFilterEdgesByWeight::DialogFilterEdgesByWeight (QWidget *parent) : QDialog
 	ui.setupUi(this);	
 	connect ( ui.buttonBox,SIGNAL(accepted()), this, SLOT(getUserChoices()) );
 	
-	(ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
+	(ui.buttonBox)->button (QDialogButtonBox::Ok)->setDefault(true);
 	
 	(ui.overThresholdBt)-> setChecked(true);
 		
@@ -48,7 +48,7 @@ void DialogFilterEdgesByWeight::getUserChoices(){
 	qDebug()<< "Dialog: gathering Data!...";
 	bool overThreshold=false;
 	float my_threshold = static_cast <float> ( (ui.weightThreshold)->value() );
-	if ( ui.overThresholdBt -> isChecked() ) {
+	if ( ui.overThresholdBt->isChecked() ) {
 		qDebug()<< "Dialog: We will filter edges weighted more than threshold: " << my_threshold;
 		overThreshold = true;
 	}

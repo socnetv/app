@@ -1020,9 +1020,9 @@ int Graph::vertexNumberMin() {
 int Graph::vertexExists(const int &v1){
     qDebug () << "Graph::vertexExists() - check for number v:" << v1
               <<  " with vpos " << vpos[v1]
-                  << " named " << m_graph[ vpos[v1] ] ->name();
+                  << " named " << m_graph[ vpos[v1] ]->name();
     if ( vpos.contains(v1) ) {
-        if (  m_graph[ vpos[v1] ] -> name() == v1 ) {
+        if (  m_graph[ vpos[v1] ]->name() == v1 ) {
             return vpos[v1];
         }
         else{
@@ -1047,7 +1047,7 @@ int Graph::vertexExists(const QString &label){
     VList::const_iterator it;
     int i=0;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( (*it) ->label().contains( label, Qt::CaseInsensitive ) )  {
+        if ( (*it)->label().contains( label, Qt::CaseInsensitive ) )  {
             //            qDebug()<< "Graph: vertexExists() at pos %i" << i;
             return i;
         }
@@ -1467,7 +1467,7 @@ void Graph::vertexIsolatedAllToggle(const bool &toggle){
  * @return
  */
 bool Graph::vertexIsolated(const int &v1) const{
-    if (  m_graph[ vpos[v1] ] -> isIsolated() ) {
+    if (  m_graph[ vpos[v1] ]->isIsolated() ) {
         qDebug()<<"Graph::vertexIsolated() - vertex:"<< v1 << "isolated";
         return true;
     }
@@ -1708,7 +1708,7 @@ void Graph::vertexColorSet(const int &v1, const QString &color){
  * @return
  */
 QColor Graph::vertexColor(const int &v1) const {
-    return  QColor ( m_graph[ vpos[v1] ] -> color() ) ;
+    return  QColor ( m_graph[ vpos[v1] ]->color() ) ;
 }
 
 
@@ -1917,7 +1917,7 @@ void Graph::vertexLabelSizeSet(const int &v1, const int &labelSize) {
     if (v1) {
         qDebug()<< "Graph::vertexLabelSizeSet() - vertex"<< v1
                 << "new label size "<< labelSize;
-        m_graph[ vpos[v1] ] -> setLabelSize ( labelSize );
+        m_graph[ vpos[v1] ]->setLabelSize ( labelSize );
         emit setNodeLabelSize ( v1, labelSize);
     }
     else {
@@ -2073,7 +2073,7 @@ void Graph::edgeCreate(const int &v1,
                        const QString &label,
                        const bool &signalMW){
 
-    qDebug() <<"-- Graph::edgeCreate() - " << v1 << " -> " << v2
+    qDebug() <<"-- Graph::edgeCreate() - " << v1 << "->" << v2
             << " weight " << weight
             << " type " << type
             << " label " << label;
@@ -2137,7 +2137,7 @@ void Graph::edgeCreate(const int &v1,
 
     else {
         qDebug() << "-- Graph::edgeCreate() - "
-                    << "Edge " << v1 << " -> " << v2
+                    << "Edge " << v1 << "->" << v2
                     << " declared previously (exists) - nothing to do \n\n";
     }
 
@@ -2173,7 +2173,7 @@ void Graph::edgeCreateWebCrawler (const int &source, const int &target){
 
 /**
  * @brief Adds a directed edge from v1 to v2
- * If type == EdgeType::Undirected then it also adds the directed edge v2 -> v1
+ * If type == EdgeType::Undirected then it also adds the directed edge v2->v1
  * @param v1
  * @param v2
  * @param weight
@@ -2218,7 +2218,7 @@ void Graph::edgeAdd (const int &v1, const int &v2,
 
 
 /**
- * @brief Removes the directed arc v1 -> v2
+ * @brief Removes the directed arc v1->v2
  * or, if the graph is undirected, the edge v1 <-> v2
  * Emits signalRemoveEdge to GW to delete the graphics item.
  * @param v1
@@ -2523,7 +2523,7 @@ int Graph::vertexEdgesInbound (int v1) {
 void Graph::edgeWeightSet (const int &v1, const int &v2,
                            const qreal &weight, const bool &undirected) {
     qDebug() << "Graph::edgeWeightSet() - " << v1 << "[" << vpos[v1]
-                << "] ->" << v2 << "[" << vpos[v2] << "]" << " = " << weight;
+                << "]->" << v2 << "[" << vpos[v2] << "]" << " = " << weight;
     m_graph [ vpos[v1] ]->changeOutEdgeWeight(v2, weight);
     if (undirected) {
         qDebug() << "Graph::edgeWeightSet() - changing opposite edge weight too";
@@ -2541,7 +2541,7 @@ void Graph::edgeWeightSet (const int &v1, const int &v2,
 
 
 /**
- * @brief Returns the weight of the edge v1 -> v2
+ * @brief Returns the weight of the edge v1->v2
  * @param v1
  * @param v2
  * @return qreal
@@ -2637,14 +2637,14 @@ bool Graph::edgeColorAllSet(const QString &color, const int &threshold){
 
 
 /**
- * @brief Changes the color of edge v1 -> v2
+ * @brief Changes the color of edge v1->v2
  * @param v1
  * @param v2
  * @param color
  */
 void Graph::edgeColorSet(const int &v1, const int &v2, const QString &color){
-    qDebug()<< "Graph::edgeColorSet() - "<< v1 << " -> "<< v2
-            <<" vpos ("<< vpos[v1]<< " -> "<<vpos[v2]<<")"
+    qDebug()<< "Graph::edgeColorSet() - "<< v1 << "->"<< v2
+            <<" vpos ("<< vpos[v1]<< "->"<<vpos[v2]<<")"
            <<" new color "<< color;
     m_graph[ vpos[v1] ]->setOutLinkColor(v2, color);
     emit setEdgeColor(v1, v2, color);
@@ -2660,7 +2660,7 @@ void Graph::edgeColorSet(const int &v1, const int &v2, const QString &color){
 
 
 /**
- * @brief Returns the color of the directed edge v1 -> v2
+ * @brief Returns the color of the directed edge v1->v2
  * @param v1
  * @param v2
  * @return
@@ -2673,14 +2673,14 @@ QString Graph::edgeColor (const int &v1, const int &v2){
 
 
 /**
- * @brief Changes the label of edge v1 -> v2
+ * @brief Changes the label of edge v1->v2
  * @param v1
  * @param v2
  * @param weight
  */
 void Graph::edgeLabelSet (const int &v1, const int &v2, const QString &label) {
     qDebug() << "Graph::edgeLabelSet()  " << v1 << "[" << vpos[v1]
-                << "] -> " << v2 << "[" << vpos[v2] << "]" << " label " << label;
+                << "]->" << v2 << "[" << vpos[v2] << "]" << " label " << label;
     m_graph[ vpos[v1] ]->setOutEdgeLabel(v2, label);
 
     emit setEdgeLabel(v1,v2, label);
@@ -3680,7 +3680,7 @@ qreal Graph::graphReciprocity(){
     //  relative to the total number of actual ties (not possible ties)
     for ( it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-        v1 = (*it) -> name();
+        v1 = (*it)->name();
 
         if ( ! (*it)->isEnabled() )
             continue;
@@ -4049,7 +4049,7 @@ bool Graph::graphIsSymmetric(){
 
     for ( lit = m_graph.cbegin(); lit != m_graph.cend(); ++lit)
     {
-        v1 = (*lit) -> name();
+        v1 = (*lit)->name();
 
         if ( ! (*lit)->isEnabled() )
             continue;
@@ -4068,8 +4068,8 @@ bool Graph::graphIsSymmetric(){
                 m_graphIsSymmetric=false;
                 //                qDebug() <<"Graph::graphIsSymmetric() - "
                 //                         << " graph not symmetric because "
-                //                         << v1 << " -> " << v2 << " weight " << weight
-                //                         << " differs from " << v2 << " -> " << v1 ;
+                //                         << v1 << "->" << v2 << " weight " << weight
+                //                         << " differs from " << v2 << "->" << v1 ;
 
                 break;
             }
@@ -4426,7 +4426,7 @@ void Graph::graphSetUndirected(const bool &toggle, const bool &signalMW){
 
             qDebug() << "Graph::graphSetDirected() - "
                      << " v1 " << v1
-                     << " -> " << v2 << " = "
+                     << "->" << v2 << " = "
                      << " weight " << weight;
             edgeTypeSet(v1,v2, weight, EdgeType::Undirected);
             ++it1;
@@ -4480,7 +4480,7 @@ void Graph::edgeTypeSet(const int &v1,
                         const int &dirType) {
 
     qDebug() << "Graph::edgeTypeSet(): " << v1
-             << " -> " <<  v2  << "edgeType" << dirType;
+             << "->" <<  v2  << "edgeType" << dirType;
 
     if (dirType!=EdgeType::Directed) {
 
@@ -4528,7 +4528,7 @@ void Graph::edgeTypeSet(const int &v1,
 bool Graph::graphReachable(const int &v1, const int &v2) {
     qDebug()<< "Graph::reachable()";
     graphDistancesGeodesic(false);
-    return ( m_graph[ vpos[v1] ] ->distance( v2) != RAND_MAX ) ? true: false;
+    return ( m_graph[ vpos[v1] ]->distance( v2) != RAND_MAX ) ? true: false;
 }
 
 
@@ -5716,8 +5716,8 @@ void Graph::BFS(const int &s, const int &si,  const bool &computeCentralities,
             Stack.push(u);
         }
         qDebug() << "BFS: LOOP over every edge (u,w) e E, that is all neighbors w of vertex u";
-        it1=m_graph [ ui ] ->m_outEdges.cbegin();
-        while ( it1!=m_graph [ ui ] -> m_outEdges.cend() ){
+        it1=m_graph [ ui ]->m_outEdges.cbegin();
+        while ( it1!=m_graph [ ui ]->m_outEdges.cend() ){
             relation = it1.value().first;
             if ( relation != relationCurrent() )  {
                 ++it1;
@@ -5933,8 +5933,8 @@ void Graph::dijkstra(const int &s, const int &si,
 
         // LOOP over every edge of u
         qDebug() << "    --- dijkstra: LOOP over every edge of u ("<< u <<", w ) e E... ";
-        it1=m_graph [ ui ] ->m_outEdges.cbegin();
-        while ( it1!=m_graph [ ui ] -> m_outEdges.cend() ) {
+        it1=m_graph [ ui ]->m_outEdges.cbegin();
+        while ( it1!=m_graph [ ui ]->m_outEdges.cend() ) {
 
             // Skip if the edge is not of the current relation
             relation = it1.value().first;
@@ -6380,7 +6380,7 @@ void Graph::writeEccentricity(const QString fileName, const bool considerWeights
                  << "eccentricity"
                  << eccentr;
 
-        if ( ! (*it) ->isEnabled() ) {
+        if ( ! (*it)->isEnabled() ) {
             qDebug() << "Graph::writeEccentricity() - actor disabled. SKIP.";
             continue; // do not print disabled nodes
         }
@@ -6541,12 +6541,12 @@ void Graph::centralityInformation(const bool considerWeights,
     i=0;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( (*it)->isIsolated() ) {
-            (*it) -> setIC ( 0 );
+            (*it)->setIC ( 0 );
             continue;
         }
         IC= 1.0 / ( invM.item(i,i) + (diagonalEntriesSum - 2.0 * rowSum) / n );
 
-        (*it) -> setIC ( IC );
+        (*it)->setIC ( IC );
         t_sumIC += IC;
         i++;
     }
@@ -7199,7 +7199,7 @@ void Graph::centralityEigenvector(const bool &considerWeights,
             continue;
         }
 
-        (*it) -> setEVC( EVC[i]);
+        (*it)->setEVC( EVC[i]);
         if ( maxEVC != 0 ) {
             SEVC = EVC[i] / maxEVC ;
         }
@@ -7207,7 +7207,7 @@ void Graph::centralityEigenvector(const bool &considerWeights,
             SEVC = 0 ;
         }
 
-        (*it) -> setSEVC( SEVC );
+        (*it)->setSEVC( SEVC );
 
         resolveClasses(SEVC, discreteEVCs, classesEVC);
 
@@ -7289,7 +7289,7 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
             }
         }
 
-        (*it) -> setDC ( DC ) ;	//Set OutDegree
+        (*it)->setDC ( DC ) ;	//Set OutDegree
         sumDC += DC;          // store sumDC (for std calc below)
         qDebug() << "Graph:centralityDegree() - vertex "
                  <<  (*it)->name() << " has DC = " << DC ;
@@ -7305,7 +7305,7 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
         else {
             SDC= ( DC / (sumDC) );
         }
-        (*it) -> setSDC( SDC );		//Set Standard DC
+        (*it)->setSDC( SDC );		//Set Standard DC
 
         //        qDebug() << "Graph::centralityDegree() - vertex "
         //                 <<  (*it)->name() << " SDC " << (*it)->SDC ();
@@ -8685,8 +8685,8 @@ void Graph::centralityClosenessIR(const bool considerWeights,
         }
 
         sumIRCC += IRCC;
-        (*it) -> setIRCC ( IRCC ) ;
-        (*it) -> setSIRCC ( IRCC ) ;  // IRCC is a ratio, already std
+        (*it)->setIRCC ( IRCC ) ;
+        (*it)->setSIRCC ( IRCC ) ;  // IRCC is a ratio, already std
         resolveClasses(IRCC, discreteIRCCs, classesIRCC);
         minmax( IRCC, (*it), maxIRCC, minIRCC, maxNodeIRCC, minNodeIRCC) ;
 
@@ -8699,7 +8699,7 @@ void Graph::centralityClosenessIR(const bool considerWeights,
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! dropIsolates || ! (*it)->isIsolated()  ) {
-            SIRCC= (*it) -> SIRCC();
+            SIRCC= (*it)->SIRCC();
             varianceIRCC += (SIRCC-meanIRCC) * (SIRCC-meanIRCC) ;
         }
     }
@@ -10014,7 +10014,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
 
         emit signalProgressBoxUpdate(++progressCounter);
 
-        v1 = (*it) -> name();
+        v1 = (*it)->name();
         qDebug()<< "Graph::prestigeDegree() - computing DP for vertex" << v1 ;
 
         DP=0;
@@ -10060,7 +10060,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
             ++hit;
         }
 
-        (*it) -> setDP ( DP ) ;		//Set DP
+        (*it)->setDP ( DP ) ;		//Set DP
         sumDP += DP;
 
         qDebug() << "Graph: prestigeDegree() vertex " <<  (*it)->name()
@@ -10080,7 +10080,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
         else {
             SDP =( DP / (sumDP) );
         }
-        (*it) -> setSDP( SDP );
+        (*it)->setSDP( SDP );
         sumSDP += SDP;
 
         qDebug() << "Graph::prestigeDegree - vertex " <<  (*it)->name() << " DP  "
@@ -10508,8 +10508,8 @@ void Graph::prestigeProximity( const bool considerWeights,
         }
         sumPP += PP;
 
-        (*it) -> setPP ( PP ) ;
-        (*it) -> setSPP ( PP ) ; // PP is already stdized
+        (*it)->setPP ( PP ) ;
+        (*it)->setSPP ( PP ) ; // PP is already stdized
 
         resolveClasses(PP, discretePPs, classesPP);
 
@@ -10534,7 +10534,7 @@ void Graph::prestigeProximity( const bool considerWeights,
         if (dropIsolates && (*it)->isIsolated() ) {
             continue;
         }
-        PP= (*it) -> PP();
+        PP= (*it)->PP();
         variancePP += (PP-meanPP) * (PP-meanPP) ;
     }
 
@@ -10884,7 +10884,7 @@ void Graph::prestigePageRank(const bool &dropIsolates){
             qDebug() << "Graph::prestigePageRank() - Iterate over inEdges of "
                      << (*it)->name() ;
 
-            while ( jt != (*it) -> m_inEdges.cend() )
+            while ( jt != (*it)->m_inEdges.cend() )
             {
                 relation = jt.value().first;
                 if ( relation != relationCurrent() ){
@@ -10905,7 +10905,7 @@ void Graph::prestigePageRank(const bool &dropIsolates){
 
                 if ( edgeExists( referrer , (*it)->name() ) )
                 {
-                    inLinks = m_graph[ vpos[referrer] ] ->inEdgesConst();
+                    inLinks = m_graph[ vpos[referrer] ]->inEdgesConst();
                     outLinks = m_graph[ vpos[referrer] ]-> outEdgesConst();
 
                     PRP =  m_graph[ vpos[referrer] ]->PRP();
@@ -10925,7 +10925,7 @@ void Graph::prestigePageRank(const bool &dropIsolates){
 
             PRP = (1-d_factor) / (qreal) N + d_factor * sumInLinksPR;
 
-            (*it) -> setPRP ( PRP );
+            (*it)->setPRP ( PRP );
 
             sumPRP+=PRP;
 
@@ -11342,7 +11342,7 @@ void Graph::randomNetErdosCreate(const int &N,
         for (int i=0;i<N; i++) {
             for (int j=0; j<N; j++) {
                 //                qDebug() << "Graph::randomNetErdosCreate() - Bernoulli trial "
-                //                       << "for edge " <<  i+1 << " -> " << j+1;
+                //                       << "for edge " <<  i+1 << "->" << j+1;
                 if (!diag && i==j) {
                     qDebug()<< " Graph::randomNetErdosCreate() - skip because "
                             << i+1 << " = " << j+1
@@ -12851,7 +12851,8 @@ void Graph::writeTriadCensus( const QString fileName,
         return;
     }
 
-    QTextStream outText ( &file ); outText.setCodec("UTF-8");
+    QTextStream outText ( &file );
+    // outText.setCodec("UTF-8");
 
     emit statusMessage ( (tr("Computing triad census. Please wait....")) );
 
@@ -13393,7 +13394,7 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X) {
         int vertex=0;
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)     {
             vertex = (*it)->name();
-            neighboursHash[ vertex ] = (*it) -> neighborhoodList().toSet(); // vertexNeighborhoodSet(vertex);
+            neighboursHash[ vertex ] = (*it)->neighborhoodList().toSet(); // vertexNeighborhoodSet(vertex);
             qDebug() << "Graph::graphCliques() - initialization step. NeighborhoodList of v"
                      << vertex
                      << ": "
@@ -15086,8 +15087,8 @@ qreal Graph::numberOfTriples(int v1){
  * @return
  */
 qreal Graph::clusteringCoefficientLocal(const int &v1){
-    if ( !graphIsModified() && (m_graph[ vpos [v1] ] -> hasCLC() ) )  {
-        qreal clucof=m_graph[ vpos [v1] ] ->CLC();
+    if ( !graphIsModified() && (m_graph[ vpos [v1] ]->hasCLC() ) )  {
+        qreal clucof=m_graph[ vpos [v1] ]->CLC();
         qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") - "
                  << " Not modified. Returning previous clucof = " << clucof;
         return clucof;
@@ -15116,7 +15117,7 @@ qreal Graph::clusteringCoefficientLocal(const int &v1){
              << " Checking adjacent edges " ;
 
     QHash<int,qreal> reciprocalEdges ;
-    reciprocalEdges = m_graph [ vpos[v1] ] -> reciprocalEdgesHash();
+    reciprocalEdges = m_graph [ vpos[v1] ]->reciprocalEdgesHash();
 
     QHash<int,qreal>::const_iterator it1;
     QHash<int,qreal>::const_iterator it2;
@@ -15169,7 +15170,7 @@ qreal Graph::clusteringCoefficientLocal(const int &v1){
             {
                 qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
                          << "Connected neighbors: "
-                         << u1 << " -> " << u2;
+                         << u1 << "->" << u2;
 
                 QString edge = QString::number(u1) + "->" + QString::number(u2);
                 QString revedge = QString::number(u2) + "->" + QString::number(u1);
@@ -15241,7 +15242,7 @@ qreal Graph::clusteringCoefficientLocal(const int &v1){
     qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
              << "CLUCOF = "<< clucof;
 
-    m_graph[ vpos [v1] ] -> setCLC(clucof);
+    m_graph[ vpos [v1] ]->setCLC(clucof);
 
     reciprocalEdges.clear();
     neighborhoodEdges.clear();
@@ -21015,7 +21016,8 @@ void Graph::writeMatrixAdjacencyPlot (const QString fn,
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
-    QTextStream outText( &file ); outText.setCodec("UTF-8");
+    QTextStream outText( &file );
+    //outText.setCodec("UTF-8");
 
     VList::const_iterator it, it1;
     int sum=0;
@@ -22041,16 +22043,16 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations){
         //setup init disp
         for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1)
         {
-            (*v1) -> disp().rx() = 0;
-            (*v1) -> disp().ry() = 0;
+            (*v1)->disp().rx() = 0;
+            (*v1)->disp().ry() = 0;
             qDebug() << " 0000 s " << (*v1)->name() << " zeroing rx/ry";
         }
 
         for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1)
         {
             qDebug() << "*********  Calculate forces for source s  "
-                     << (*v1) -> name()
-                     <<" pos "<< (*v1) -> x()<< ", "<< (*v1) -> y();
+                     << (*v1)->name()
+                     <<" pos "<< (*v1)->x()<< ", "<< (*v1)->y();
 
             if ( ! (*v1)->isEnabled() ) {
                 qDebug() << "  vertex s disabled. Continue";
@@ -22069,8 +22071,8 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations){
                     continue;
                 }
 
-                DV.setX( (*v2) -> x() - (*v1)->x());
-                DV.setY( (*v2) -> y() - (*v1)->y());
+                DV.setX( (*v2)->x() - (*v1)->x());
+                DV.setY( (*v2)->y() - (*v1)->y());
 
                 dist = graphDistanceEuclidean(DV);
 
@@ -22082,7 +22084,7 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations){
                 (*v1)->disp().rx() += sign( DV.x() ) * f_rep ;
                 (*v1)->disp().ry() += sign( DV.y() ) * f_rep  ;
                 qDebug() <<"  s = "<< (*v1)->name()
-                        <<" pushed away from t = " << (*v2) -> name()
+                        <<" pushed away from t = " << (*v2)->name()
                        << " dist " <<dist
                        << " f_rep=" << f_rep
                        << " sign * f_repx " << sign( DV.x() ) * f_rep
@@ -22093,7 +22095,7 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations){
                 * that pull them together (if d > naturalLength)
                 * or push them apart (if d < naturalLength)
                 */
-                if ( this->edgeExists( (*v1) ->name(), (*v2) -> name()) ) {
+                if ( this->edgeExists( (*v1)->name(), (*v2)->name()) ) {
 
                     f_att = layoutForceDirected_F_att ("Eades", dist, naturalLength) ;
 
@@ -22718,7 +22720,7 @@ qreal Graph::layoutForceDirected_F_att( const QString model, const qreal &dist,
         qreal c_spring=2;
         f_att = c_spring * log10 ( dist / optimalDistance );
     }
-    else {   // model -> FR
+    else {   // model->FR
         f_att= ( dist * dist ) / optimalDistance;
     }
 
@@ -22743,7 +22745,7 @@ qreal Graph::layoutForceDirected_F_rep( const QString model, const qreal &dist,
         }
 
     }
-    else {  // model -> FR
+    else {  // model->FR
         // To speed up our algorithm we use the grid-variant algorithm.
         if ( (2.0 * optimalDistance) < dist ) {
             //neglect vertices outside circular area of radius 2*optimalDistance

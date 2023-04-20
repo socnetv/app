@@ -72,8 +72,8 @@ DialogExportPDF::DialogExportPDF (QWidget *parent ) :
 
     // Set Cancel as default button
     // The OK button disabled until user selects a file.
-    (ui->buttonBox) -> button (QDialogButtonBox::Cancel) -> setDefault(true);
-    (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+    (ui->buttonBox)->button (QDialogButtonBox::Cancel)->setDefault(true);
+    (ui->buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(false);
 
     // Set which widget will have focus
     ui->fileDirSelectButton->setFocus(Qt::OtherFocusReason);
@@ -105,8 +105,8 @@ void DialogExportPDF::checkFilename(const QString &fileName){
         }
         ui->fileEdit->setText(m_fileName);
         ui->fileEdit->setGraphicsEffect(0);
-        (ui->buttonBox)->button (QDialogButtonBox::Ok) -> setEnabled(true);
-        (ui->buttonBox)->button (QDialogButtonBox::Ok) -> setDefault(true);
+        (ui->buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(true);
+        (ui->buttonBox)->button (QDialogButtonBox::Ok)->setDefault(true);
     }
     else {
         qDebug() << " empty or dir does not exist";
@@ -115,8 +115,8 @@ void DialogExportPDF::checkFilename(const QString &fileName){
         effect->setColor(QColor("red"));
         ui->fileEdit->setGraphicsEffect(effect);
         ui->fileDirSelectButton->setGraphicsEffect(effect);
-        (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
-        (ui->buttonBox) -> button (QDialogButtonBox::Cancel) -> setDefault(true);
+        (ui->buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(false);
+        (ui->buttonBox)->button (QDialogButtonBox::Cancel)->setDefault(true);
 
     }
 

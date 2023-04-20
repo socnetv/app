@@ -37,7 +37,7 @@ DialogDissimilarities::DialogDissimilarities (QWidget *parent) : QDialog (parent
 {
     ui.setupUi(this);
 
-    (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
+    (ui.buttonBox)->button (QDialogButtonBox::Ok)->setDefault(true);
 
     variablesLocationList
             << "Rows"
@@ -52,8 +52,8 @@ DialogDissimilarities::DialogDissimilarities (QWidget *parent) : QDialog (parent
 
 
 
-    (ui.variablesLocationSelect) -> insertItems( 1, variablesLocationList );
-    (ui.metricSelect) -> insertItems( 1, metricList );
+    (ui.variablesLocationSelect)->insertItems( 1, variablesLocationList );
+    (ui.metricSelect)->insertItems( 1, metricList );
 
     (ui.diagonalCheckBox)->setChecked(false);
 
@@ -63,7 +63,7 @@ DialogDissimilarities::DialogDissimilarities (QWidget *parent) : QDialog (parent
 
 void DialogDissimilarities::getUserChoices(){
     qDebug()<< "DialogDissimilarities: gathering Data!...";
-    QString varLocation = (ui.variablesLocationSelect) ->currentText();
+    QString varLocation = (ui.variablesLocationSelect)->currentText();
     QString metric = (ui.metricSelect)->currentText();
     bool diagonal = (ui.diagonalCheckBox)->isChecked();
 

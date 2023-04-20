@@ -35,7 +35,7 @@ DialogEdgeDichotomization::DialogEdgeDichotomization (QWidget *parent) : QDialog
 
     connect ( ui.buttonBox,SIGNAL(accepted()), this, SLOT(getUserChoices()) );
 
-    (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
+    (ui.buttonBox)->button (QDialogButtonBox::Ok)->setDefault(true);
 
 
 } 

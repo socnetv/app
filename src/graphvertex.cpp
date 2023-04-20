@@ -151,7 +151,7 @@ QString GraphVertex::colorToPajek(){
  */
 void GraphVertex::edgeAddTo (const int &v2, const qreal &weight, const QString &color, const QString &label) {
     qDebug() <<"GraphVertex::edgeAddTo() - new outbound edge"
-            << name() << " -> "<< v2 << " weight "<< weight
+            << name() << "->"<< v2 << " weight "<< weight
                << " relation " << m_curRelation;
     // do not use [] operator - silently creates an item if key do not exist
     m_outEdges.insert(
@@ -412,7 +412,7 @@ void GraphVertex::edgeFilterByRelation(int relation, bool status ){
             target=it1.key();
             weight = it1.value().second.first;
             qDebug() << "GraphVertex::edgeFilterByRelation() - outLink"
-                     << m_name << " -> " << target
+                     << m_name << "->" << target
                      << " of relation" << relation
                      << "Emitting to GW to be" << status ;
             it1.setValue(pair_i_fb(relation, pair_f_b(weight, status) ));

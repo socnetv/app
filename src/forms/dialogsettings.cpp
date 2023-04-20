@@ -249,8 +249,8 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
                 effect->setColor(QColor("red"));
                 ui->nodeIconSelectButton->setGraphicsEffect(effect);
                 ui->nodeIconSelectEdit->setGraphicsEffect(effect);
-                (ui->buttonBox) -> button (QDialogButtonBox::Cancel) -> setDefault(true);
-                (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+                (ui->buttonBox)->button (QDialogButtonBox::Cancel)->setDefault(true);
+                (ui->buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(false);
             }
         }
     }
@@ -318,13 +318,13 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
     m_edgeColorNegative = QColor (m_appSettings["initEdgeColorNegative"]);
     m_pixmap = QPixmap(60,20) ;
     m_pixmap.fill( m_edgeColorNegative );
-    ui->edgeColorNegativeBtn ->setIcon(QIcon(m_pixmap));
+    ui->edgeColorNegativeBtn->setIcon(QIcon(m_pixmap));
 
 
     m_edgeColorZero = QColor (m_appSettings["initEdgeColorZero"]);
     m_pixmap = QPixmap(60,20) ;
     m_pixmap.fill( m_edgeColorZero);
-    ui->edgeColorZeroBtn ->setIcon(QIcon(m_pixmap));
+    ui->edgeColorZeroBtn->setIcon(QIcon(m_pixmap));
 
 
 
@@ -688,8 +688,8 @@ void DialogSettings::getNodeShapeIndex(const int &shape){
              effect->setColor(QColor("red"));
              ui->nodeIconSelectButton->setGraphicsEffect(effect);
              ui->nodeIconSelectEdit->setGraphicsEffect(effect);
-             (ui->buttonBox) -> button (QDialogButtonBox::Cancel) -> setDefault(true);
-             (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+             (ui->buttonBox)->button (QDialogButtonBox::Cancel)->setDefault(true);
+             (ui->buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(false);
          }
 
      }
@@ -699,8 +699,8 @@ void DialogSettings::getNodeShapeIndex(const int &shape){
          ui->nodeIconSelectEdit->setText ("");
          ui->nodeIconSelectButton->setGraphicsEffect(0);
          ui->nodeIconSelectEdit->setGraphicsEffect(0);
-         (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
-         (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
+         (ui->buttonBox)->button (QDialogButtonBox::Ok)->setDefault(true);
+         (ui->buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(true);
 
          // emit signal
          // instead of empty iconPath string, we always emit iconPathList[shape]
@@ -723,15 +723,15 @@ void DialogSettings::getNodeIconFile(){
        ui->nodeIconSelectEdit->setText(m_nodeIconFile);
        m_appSettings["initNodeIconPath"]= m_nodeIconFile;
        ui->nodeShapeComboBox->setItemIcon(NodeShape::Custom, QIcon(m_nodeIconFile));
-       (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
+       (ui->buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(true);
        emit setNodeShape(0, m_appSettings["initNodeShape"],  m_appSettings["initNodeIconPath"]);
     }
     else {
         // user pressed Cancel ?
         // stop
         if ( ui->nodeIconSelectEdit->text().isEmpty() ) {
-            (ui->buttonBox) -> button (QDialogButtonBox::Cancel) -> setDefault(true);
-            (ui->buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+            (ui->buttonBox)->button (QDialogButtonBox::Cancel)->setDefault(true);
+            (ui->buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(false);
         }
     }
 

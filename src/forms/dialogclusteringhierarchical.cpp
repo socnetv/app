@@ -40,7 +40,7 @@ DialogClusteringHierarchical::DialogClusteringHierarchical (QWidget *parent,
 {
     ui.setupUi(this);
 
-    (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
+    (ui.buttonBox)->button (QDialogButtonBox::Ok)->setDefault(true);
 
     matrixList << "Adjacency"
                << "Distances";
@@ -61,24 +61,24 @@ DialogClusteringHierarchical::DialogClusteringHierarchical (QWidget *parent,
             << "Columns"
             << "Both";
 
-    ui.variablesLocationSelect -> insertItems( 1, variablesLocationList );
-    ui.variablesLocationSelect -> setCurrentIndex(2);
+    ui.variablesLocationSelect->insertItems( 1, variablesLocationList );
+    ui.variablesLocationSelect->setCurrentIndex(2);
 
-    ui.matrixSelect -> insertItems( 1, matrixList );
+    ui.matrixSelect->insertItems( 1, matrixList );
     if (preselectMatrix == "Distances") {
-        ui.matrixSelect  -> setCurrentIndex(1);
+        ui.matrixSelect->setCurrentIndex(1);
     }
 
-    ui.metricSelect ->insertItems(1, measureList);
-    ui.metricSelect  -> setCurrentIndex(3);
+    ui.metricSelect->insertItems(1, measureList);
+    ui.metricSelect->setCurrentIndex(3);
 
-    ui.linkageSelect -> insertItems( 1, linkageList );
+    ui.linkageSelect->insertItems( 1, linkageList );
 
-    ui.linkageSelect -> setCurrentIndex(2);
+    ui.linkageSelect->setCurrentIndex(2);
 
-    ui.diagonalCheckBox -> setChecked(false);
+    ui.diagonalCheckBox->setChecked(false);
 
-    ui.diagramCheckBox ->setChecked(true);
+    ui.diagramCheckBox->setChecked(true);
 
     connect ( ui.matrixSelect, SIGNAL(highlighted(QString)),
               this, SLOT(matrixChanged(QString)) );
@@ -98,19 +98,19 @@ void DialogClusteringHierarchical::matrixChanged(const QString &matrix) {
 void DialogClusteringHierarchical::getUserChoices(){
     qDebug()<< "DialogClusteringHierarchical::getUserChoices!...";
 
-    QString matrix = ui.matrixSelect ->currentText();
+    QString matrix = ui.matrixSelect->currentText();
 
-    QString varLocation = ui.variablesLocationSelect ->currentText();
+    QString varLocation = ui.variablesLocationSelect->currentText();
 
-    QString metric= (( ui.metricSelect ->isEnabled() ) ?
-                                    ui.metricSelect ->currentText()  :
+    QString metric= (( ui.metricSelect->isEnabled() ) ?
+                                    ui.metricSelect->currentText()  :
                                     "-" );
 
-    QString linkage = ui.linkageSelect -> currentText();
+    QString linkage = ui.linkageSelect->currentText();
 
-    bool diagonal = ui.diagonalCheckBox -> isChecked();
+    bool diagonal = ui.diagonalCheckBox->isChecked();
 
-    bool diagram = ui.diagramCheckBox -> isChecked();
+    bool diagram = ui.diagramCheckBox->isChecked();
 
     qDebug()<< "DialogClusteringHierarchical: user selected: "
             << matrix
