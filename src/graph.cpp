@@ -21374,7 +21374,8 @@ void Graph::writeMatrixDegreeText(const QString &fn) {
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
-    QTextStream outText( &file ); outText.setCodec("UTF-8");
+    QTextStream outText( &file );
+    //outText.setCodec("UTF-8");
 
     outText << AM.degreeMatrix();
 

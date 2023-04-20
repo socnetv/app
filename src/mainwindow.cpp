@@ -1522,7 +1522,7 @@ void MainWindow::initActions(){
     connect(editNodeAddAct, SIGNAL(triggered()), this, SLOT(slotEditNodeAdd()));
 
     editNodeRemoveAct = new QAction(QIcon(":/images/node_remove_48px.svg"),tr("Remove Node"), this);
-    editNodeRemoveAct ->setShortcut(Qt::CTRL | Qt::ALT + Qt::Key_Period);
+    editNodeRemoveAct ->setShortcut(QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_Period));
     //Single key shortcuts with backspace or del do no work in Mac http://goo.gl/7hz7Dx
     editNodeRemoveAct->setToolTip(tr("Remove selected node(s). \n\n"
                                      "If no nodes are selected, you will be prompted "
@@ -1540,7 +1540,7 @@ void MainWindow::initActions(){
     connect(editNodeRemoveAct, SIGNAL(triggered()), this, SLOT(slotEditNodeRemove()));
 
     editNodePropertiesAct = new QAction(QIcon(":/images/node_properties_24px.svg"),tr("Selected Node Properties"), this);
-    editNodePropertiesAct ->setShortcut(Qt::CTRL | Qt::SHIFT + Qt::Key_Period );
+    editNodePropertiesAct ->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Period) );
     editNodePropertiesAct->setToolTip(tr("Change the basic properties of the selected node(s) \n\n"
                                          "There must be some nodes on the canvas!"));
     editNodePropertiesAct->setStatusTip(tr("Change the basic properties of the selected node(s) -- "
@@ -1673,7 +1673,7 @@ void MainWindow::initActions(){
     connect(editNodeLabelsColorAct, SIGNAL(triggered()), this, SLOT(slotEditNodeLabelsColor()));
 
     editEdgeAddAct = new QAction(QIcon(":/images/edge_add_48px.svg"), tr("Add Edge (arc)"),this);
-    editEdgeAddAct->setShortcut(Qt::CTRL | Qt::Key_Slash);
+    editEdgeAddAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Slash));
     editEdgeAddAct->setStatusTip(tr("Add a directed edge (arc) from a node to another"));
     editEdgeAddAct->setToolTip(
                 tr("Add a new edge from a node to another (Ctrl+/).\n\n"
@@ -1913,7 +1913,7 @@ void MainWindow::initActions(){
 
 
     layoutRadialProminence_DC_Act = new QAction( tr("Degree Centrality"),	this);
-    layoutRadialProminence_DC_Act->setShortcut(Qt::CTRL | Qt::ALT+ Qt::Key_1);
+    layoutRadialProminence_DC_Act->setShortcut(QKeySequence(Qt::CTRL | Qt::ALT+ Qt::Key_1));
     layoutRadialProminence_DC_Act
             ->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
@@ -1929,7 +1929,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutRadialByProminenceIndex()) );
 
     layoutRadialProminence_CC_Act = new QAction( tr("Closeness Centrality"), this);
-    layoutRadialProminence_CC_Act->setShortcut(Qt::CTRL | Qt::ALT+ Qt::Key_2);
+    layoutRadialProminence_CC_Act->setShortcut(QKeySequence(Qt::CTRL | Qt::ALT+ Qt::Key_2));
     layoutRadialProminence_CC_Act
            ->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
@@ -1978,7 +1978,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutRadialByProminenceIndex()));
 
     layoutRadialProminence_SC_Act = new QAction( tr("Stress Centrality"),	this);
-    layoutRadialProminence_SC_Act->setShortcut(Qt::CTRL | Qt::ALT+ Qt::Key_5);
+    layoutRadialProminence_SC_Act->setShortcut(QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_5));
     layoutRadialProminence_SC_Act ->setStatusTip(
                 tr("Place all nodes on concentric circles of radius inversely "
                    "proportional to their Stress Centrality."));
