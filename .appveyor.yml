@@ -113,8 +113,8 @@ install:
   - ps: if ($env:APPVEYOR_REPO_COMMIT_MESSAGE.Contains("[appveyor]")) {$env:SOCNETV_PRERELEASE = "true"}
   - ps: if ($env:APPVEYOR_REPO_COMMIT_MESSAGE.Contains("[travis]")) {$env:SOCNETV_PRERELEASE = "true"}
   - ps: if ($env:APPVEYOR_REPO_COMMIT_MESSAGE.Contains("[ci]")) {$env:SOCNETV_PRERELEASE = "true"}
-  - ps: if "%APPVEYOR_REPO_TAG%"=="true" if ($env:APPVEYOR_REPO_TAG_NAME.Contains("-beta")) {$env:SOCNETV_PRERELEASE = "true"}
-  - ps: if "%APPVEYOR_REPO_TAG%"=="true" if ($env:APPVEYOR_REPO_TAG_NAME.Contains("-rc")) {$env:SOCNETV_PRERELEASE = "true"}
+  - ps: if ( ("%APPVEYOR_REPO_TAG%"=="true") -and ($env:APPVEYOR_REPO_TAG_NAME.Contains("-beta")) ) {$env:SOCNETV_PRERELEASE = "true"}
+  - ps: if ( ("%APPVEYOR_REPO_TAG%"=="true") -and ($env:APPVEYOR_REPO_TAG_NAME.Contains("-rc")) ) {$env:SOCNETV_PRERELEASE = "true"}
   - ps: Write-Host $env:SOCNETV_PRERELEASE
   - cmd: if "%SOCNETV_PRERELEASE%"=="true" echo "This is a prerelease"
 
