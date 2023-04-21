@@ -2661,7 +2661,7 @@ bool Matrix::printMatrixConsole(bool debug){
 //            QTextStream( (debug ? stderr : stdout) )
 //                    << ( (item(r,c) < RAND_MAX ) ? item(r,c) : INFINITY  )<<' ';
         }
-        out <<qSetFieldWidth(0)<< Qt::endl;
+        out << qSetFieldWidth(0)<< Qt::endl;
     }
     return true;
 }

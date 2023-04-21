@@ -2129,7 +2129,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutLevelByProminenceIndex()) );
 
     layoutLevelProminence_CC_Act = new QAction( tr("Closeness Centrality"), this);
-    layoutLevelProminence_CC_Act->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_2)));
+    layoutLevelProminence_CC_Act->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_2));
     layoutLevelProminence_CC_Act
          ->setStatusTip(
                 tr("Place all nodes on horizontal levels of height "
@@ -9316,7 +9316,7 @@ void MainWindow::slotEditNodeRemove() {
             ++removeCounter ;
         }
         editNodeRemoveAct->setText(tr("Remove Node"));
-        statusMessage( tr("Removed ") + nodesSelected + tr(" nodes. Ready. ") );
+        statusMessage( tr("Removed %1 nodes. Ready.").arg(nodesSelected) );
         QApplication::restoreOverrideCursor();
     }
 

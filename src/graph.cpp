@@ -2750,12 +2750,11 @@ QList<int> Graph::vertexNeighborhoodList(const int &v1) {
  * @param v1
  * @return  QList<int>
  */
-// // Only in Qt 5.15
-//QSet<int> Graph::vertexNeighborhoodSet(const int &v1) {
-//    //qDebug()<< "Graph::vertexNeighborhoodList()";
-//    QList<int> myNeightbors = m_graph[ vpos[v1] ]->neighborhoodList();
-//    return QSet<int>(myNeightbors.constBegin(),myNeightbors.constEnd());
-//}
+QSet<int> Graph::vertexNeighborhoodSet(const int &v1) {
+    //qDebug()<< "Graph::vertexNeighborhoodList()";
+    QList<int> myNeightbors = m_graph[ vpos[v1] ]->neighborhoodList();
+    return QSet<int>(myNeightbors.constBegin(),myNeightbors.constEnd());
+}
 
 
 
@@ -3662,7 +3661,7 @@ qreal Graph::graphReciprocity(){
     QHash<int,qreal> enabledOutEdges;
 
     QHash<int,qreal>::const_iterator hit;
-    VList::const_iterator it, it1;
+    VList::const_iterator it;
 
     H_StrToBool totalDyads;
     H_StrToBool reciprocatedDyads;
@@ -9071,7 +9070,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
         emit signalProgressBoxUpdate(++progressCounter);
         rowCount++;
 
-        outText <<fixed;
+        outText << Qt::fixed;
 
         if (dropIsolates && (*it)->isIsolated()) {
             outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
@@ -12742,7 +12741,7 @@ void Graph::writeClusteringCoefficient( const QString fileName,
 
         rowCount++;
 
-        outText <<fixed;
+        outText << Qt::fixed;
 
         outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
                 <<"<td>"
@@ -13032,7 +13031,8 @@ bool Graph::writeCliqueCensus(const QString &fileName,
     emit statusMessage ( pMsg );
 
 
-    QTextStream outText ( &file ); outText.setCodec("UTF-8");
+    QTextStream outText ( &file );
+//    outText.setCodec("UTF-8");
 
     outText << htmlHead;
     outText.setRealNumberPrecision(m_reportsRealPrecision);
@@ -13375,6 +13375,8 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X) {
               << csRecDepth
               << " - Check if we are at initialization step";
 
+    QList<int> myNeightbors;
+
     if (R.isEmpty() && P.isEmpty() && X.isEmpty()){
 
         int V = vertices() ;
@@ -13394,7 +13396,10 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X) {
         int vertex=0;
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)     {
             vertex = (*it)->name();
-            neighboursHash[ vertex ] = (*it)->neighborhoodList().toSet(); // vertexNeighborhoodSet(vertex);
+
+            myNeightbors = (*it)->neighborhoodList();
+            neighboursHash[ vertex ] = QSet<int>(myNeightbors.constBegin(),myNeightbors.constEnd());
+
             qDebug() << "Graph::graphCliques() - initialization step. NeighborhoodList of v"
                      << vertex
                      << ": "
@@ -13624,7 +13629,8 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
         return false;
     }
 
-    QTextStream outText ( &file ); outText.setCodec("UTF-8");
+    QTextStream outText ( &file );
+//    outText.setCodec("UTF-8");
 
     QString pMsg = tr("Writing Hierarchical Cluster Analysis to file. \nPlease wait... ");
     emit statusMessage ( pMsg );
@@ -14345,7 +14351,8 @@ void Graph::writeMatrixSimilarityMatchingPlain(const QString fileName,
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
-    QTextStream outText ( &file ); outText.setCodec("UTF-8");
+    QTextStream outText ( &file );
+//    outText.setCodec("UTF-8");
 
     emit statusMessage ( (tr("Examining pair-wise similarity of actors...")) );
 
@@ -14369,20 +14376,20 @@ void Graph::writeMatrixSimilarityMatchingPlain(const QString fileName,
 
     outText << tr("SIMILARITY MATRIX: MATCHING COEFFICIENTS (SMMC)") << "\n\n";
 
-    outText << qSetPadChar('.') <<qSetFieldWidth(20)<< left
-            << tr("Network name: ")<< Qt::reset<< graphName()<< "\n"
-            << qSetPadChar('.') <<qSetFieldWidth(20)<< left
-            << tr("Input matrix: ")<< Qt::reset<< matrix << "\n"
-            << qSetPadChar('.') <<qSetFieldWidth(20)<< left
-            << tr("Variables in: ")<< Qt::reset<< ((varLocation != "Rows" && varLocation != "Columns") ? "Concatenated rows + columns " : varLocation)  << "\n"
-            << qSetPadChar('.') <<qSetFieldWidth(20)<< left
+    outText << qSetPadChar('.') << qSetFieldWidth(20) << Qt::left
+            << tr("Network name: ")<< Qt::reset << graphName()<< "\n"
+            << qSetPadChar('.') << qSetFieldWidth(20) << Qt::left
+            << tr("Input matrix: ")<< Qt::reset << matrix << "\n"
+            << qSetPadChar('.') << qSetFieldWidth(20) << Qt::left
+            << tr("Variables in: ") << Qt::reset << ((varLocation != "Rows" && varLocation != "Columns") ? "Concatenated rows + columns " : varLocation)  << "\n"
+            << qSetPadChar('.') << qSetFieldWidth(20) << Qt::left
             << tr("Matching measure: ") << Qt::reset ;
 
 
     outText << graphMetricTypeToString(measure);
 
     outText << "\n"
-            << qSetPadChar('.') <<qSetFieldWidth(20)<< left
+            << qSetPadChar('.') << qSetFieldWidth(20) << Qt::left
             << tr("Diagonal: \t") << Qt::reset << ((diagonal) ? "Included" : "Not included") << "\n\n";
 
     outText << tr("Analysis results") << "\n\n";
@@ -14820,7 +14827,8 @@ void Graph::writeMatrixSimilarityPearson(const QString fileName,
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
-    QTextStream outText ( &file ); outText.setCodec("UTF-8");
+    QTextStream outText ( &file );
+//    outText.setCodec("UTF-8");
 
     emit statusMessage ( (tr("Calculating Pearson Correlations...")) );
 
@@ -16180,10 +16188,10 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
     //outText.setCodec("UTF-8");
 
     qDebug () << "Graph::graphSaveToGraphMLFormat() - codec used for saving stream: "
-             << outText.encoding()->name();
+             << outText.encoding();
 
     qDebug()<< "Graph::graphSaveToGraphMLFormat() -  writing xml version";
-    outText << "<?xml version=\"1.0\" encoding=\"" << outText.encoding()->name() << "\"?> \n";
+    outText << "<?xml version=\"1.0\" encoding=\"" << outText.encoding() << "\"?> \n";
     outText << " <!-- Created by SocNetV "<<  VERSION << " -->\n" ;
     outText << "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" "
                "      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance \" "
@@ -21323,7 +21331,8 @@ void Graph::writeMatrixAdjacencyInvert(const QString &fn,
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
-    QTextStream outText( &file ); outText.setCodec("UTF-8");
+    QTextStream outText( &file );
+//    outText.setCodec("UTF-8");
 
     outText << "-Social Network Visualizer "<<  VERSION << "\n";
     outText << tr("Network name: ")<< graphName()<< "\n\n";
@@ -21404,7 +21413,8 @@ void Graph::writeMatrixLaplacianPlainText(const QString &fn) {
         emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
-    QTextStream outText( &file ); outText.setCodec("UTF-8");
+    QTextStream outText( &file );
+//    outText.setCodec("UTF-8");
 
     outText << AM.laplacianMatrix();
 

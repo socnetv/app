@@ -35,11 +35,12 @@
 #include <QMultiHash>
 #include <QList>
 #include <QPointF>
+#include <QPair>
+
 #include <map>
 
 using namespace std;
 
-class QPointF;
 class Graph;
 
 
@@ -47,7 +48,6 @@ typedef QList<int> L_int;
 
 typedef QHash<int,QString> H_IntToStr;
 typedef QHash <QString, int> H_StrToInt;
-
 
 typedef QPair <qreal, bool> pair_f_b;
 typedef QPair <int, pair_f_b > pair_i_fb;
@@ -338,7 +338,7 @@ private:
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape, m_iconPath;
     QPointF m_disp;
 
-    QMultiHash<int,qreal> m_reciprocalEdges;
+    QHash<int,qreal> m_reciprocalEdges;
     L_int myPs;
     QMultiHash <int, L_int> m_cliques;
     L_int m_neighborhoodList;

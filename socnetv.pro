@@ -22,7 +22,7 @@ QT += widgets
 QT += printsupport 
 QT += charts
 QT += svg
- QT += core5compat
+QT += core5compat
 
 INCLUDEPATH  += ./src
 
@@ -143,7 +143,7 @@ win32 {
   QMAKE_TARGET_DESCRIPTION = "SocNetV: Open-source social network analysis application based on Qt."
 
   # Copyright Information
-  QMAKE_TARGET_COPYRIGHT = "Copyright (C) 2022 Dimitris V. Kalamaras. GPLv3."
+  QMAKE_TARGET_COPYRIGHT = "Copyright (C) 2023 Dimitris V. Kalamaras. GPLv3."
 
   TARGET = SocNetV
   target.path = release/

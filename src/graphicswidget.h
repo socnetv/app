@@ -30,9 +30,9 @@
 
 
 #include <QGraphicsView>
+#include <QHash>
 
 class MainWindow;
-
 class GraphicsNode;
 class GraphicsEdge;
 class GraphicsNodeNumber;

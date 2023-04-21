@@ -28,6 +28,7 @@
 #include "graphvertex.h"
 
 #include <QtDebug>		//used for qDebug messages
+
 #include "graph.h"
 #include "graphicsnode.h"
 
@@ -170,12 +171,12 @@ void GraphVertex::setOutEdgeEnabled (const int target, bool status){
     qDebug () << "GraphVertex::setOutEdgeEnabled - set outEdge to " << target
               << " as " << status
                  << ". Finding outLink...";
-    QMutableHashIterator < int, pair_i_fb > it1 (m_outEdges);
+
     int linkTarget=0;
     qreal weight =0;
     int relation = 0;
-    while ( it1.hasNext()) {
-        it1.next();
+    QMultiHash<int, pair_i_fb >::iterator it1;
+    for ( it1 = m_outEdges.begin(); it1 != m_outEdges.end(); ++ it1) {
         relation = it1.value().first;
         if ( relation == m_curRelation ) {
             linkTarget=it1.key();
@@ -185,7 +186,7 @@ void GraphVertex::setOutEdgeEnabled (const int target, bool status){
                          << linkTarget << " relation " << relation
                          << " weight " << weight
                          << " status " << it1.value().second.second;
-                it1.setValue(pair_i_fb(m_curRelation, pair_f_b(weight, status) ));
+                it1.value() = pair_i_fb(m_curRelation, pair_f_b(weight, status) );
                 emit setEdgeVisibility (m_curRelation, m_name, target, status );
             }
         }
@@ -310,9 +311,8 @@ void GraphVertex::edgeFilterByWeight(qreal m_threshold, bool overThreshold){
 	qDebug() << "GraphVertex::edgeFilterByWeight of vertex " << this->m_name;
 	int target=0;
     qreal weight=0;
-    QMutableHashIterator < int, pair_i_fb > it (m_outEdges);
-    while ( it.hasNext()) {
-        it.next();
+    QMultiHash<int, pair_i_fb >::iterator it;
+    for ( it = m_outEdges.begin(); it != m_outEdges.end(); ++ it) {
         if ( it.value().first == m_curRelation ) {
             target=it.key();
             weight = it.value().second.first;
@@ -322,13 +322,13 @@ void GraphVertex::edgeFilterByWeight(qreal m_threshold, bool overThreshold){
                     qDebug() << "GraphVertex::edgeFilterByWeight() - edge  to " << target
                     << " has weight " << weight
                     << ". It will be disabled. Emitting signal to Graph....";
-                    it.setValue(pair_i_fb(m_curRelation, pair_f_b(weight, false) ));
+                    it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
                     emit setEdgeVisibility (m_curRelation, m_name, target, false );
                 }
                 else {
                     qDebug() << "GraphVertex::edgeFilterByWeight() - edge  to " << target
                     << " has weight " << weight << ". It will be enabled. Emitting signal to Graph....";
-                    it.setValue(pair_i_fb(m_curRelation, pair_f_b(weight, true) ));
+                    it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true) );
                     emit setEdgeVisibility (m_curRelation, m_name, target, true );
                 }
             }
@@ -337,13 +337,13 @@ void GraphVertex::edgeFilterByWeight(qreal m_threshold, bool overThreshold){
                  if ( weight <= m_threshold ) {
                     qDebug() << "GraphVertex::edgeFilterByWeight() - edge  to " << target
                     << " has weight " << weight << ". It will be disabled. Emitting signal to Graph....";
-                    it.setValue(pair_i_fb(m_curRelation, pair_f_b(weight, false) ));
+                    it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
                     emit setEdgeVisibility (m_curRelation, m_name, target, false );
                 }
                 else {
                     qDebug() << "GraphVertex::edgeFilterByWeight() - edge  to " << target
                     << " has weight " << weight << ". It will be enabled. Emitting signal to Graph....";
-                    it.setValue(pair_i_fb(m_curRelation, pair_f_b(weight, true) ));
+                    it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true) );
                     emit setEdgeVisibility (m_curRelation, m_name, target, true );
                 }
             }
@@ -367,9 +367,8 @@ void GraphVertex::edgeFilterUnilateral(const bool &toggle){
     qDebug() << "GraphVertex::edgeFilterUnilateral() of vertex " << this->m_name;
     int target=0;
     qreal weight=0;
-    QMutableHashIterator < int, pair_i_fb > it (m_outEdges);
-    while ( it.hasNext()) {
-        it.next();
+    QMultiHash<int, pair_i_fb >::iterator it;
+    for ( it = m_outEdges.begin(); it != m_outEdges.end(); ++it) {
         if ( it.value().first == m_curRelation ) {
             target=it.key();
             weight = it.value().second.first;
@@ -378,13 +377,13 @@ void GraphVertex::edgeFilterUnilateral(const bool &toggle){
                         qDebug() << "GraphVertex::edgeFilterUnilateral() - unilateral edge to " << target
                         << " has weight " << weight
                         << ". It will be disabled. Emitting signal to Graph....";
-                        it.setValue(pair_i_fb(m_curRelation, pair_f_b(weight, false) ));
+                        it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
                         emit setEdgeVisibility (m_curRelation, m_name, target, false );
                     }
                     else {
                         qDebug() << "GraphVertex::edgeFilterUnilateral() - unilateral edge to " << target
                         << " has weight " << weight << ". It will be enabled. Emitting signal to Graph....";
-                        it.setValue(pair_i_fb(m_curRelation, pair_f_b(weight, true) ));
+                        it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true) );
                         emit setEdgeVisibility (m_curRelation, m_name, target, true );
                     }
             }
@@ -404,9 +403,8 @@ void GraphVertex::edgeFilterByRelation(int relation, bool status ){
     int target=0;
     qreal weight =0;
     int edgeRelation=0;
-    QMutableHashIterator < int, pair_i_fb > it1 (m_outEdges);
-    while ( it1.hasNext()) {
-        it1.next();
+    QMultiHash<int, pair_i_fb >::iterator it1;
+    for ( it1 = m_outEdges.begin(); it1 != m_outEdges.end(); ++ it1) {
         edgeRelation = it1.value().first;
         if ( edgeRelation == relation ) {
             target=it1.key();
@@ -415,7 +413,7 @@ void GraphVertex::edgeFilterByRelation(int relation, bool status ){
                      << m_name << "->" << target
                      << " of relation" << relation
                      << "Emitting to GW to be" << status ;
-            it1.setValue(pair_i_fb(relation, pair_f_b(weight, status) ));
+            it1.value() = pair_i_fb(relation, pair_f_b(weight, status) );
             emit setEdgeVisibility ( relation, m_name, target, status );
         }
         else {
