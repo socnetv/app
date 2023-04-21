@@ -5,7 +5,7 @@
 
                          dialogpreviewfile.cpp  -  description
                              -------------------
-    copyright         : (C) 2005-2022 by Dimitris B. Kalamaras
+    copyright         : (C) 2005-2023 by Dimitris B. Kalamaras
     project site      : https://socnetv.org
 
     comment              : code borrowed from Qt5 codecs example

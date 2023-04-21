@@ -5,7 +5,7 @@
 
                          dialograndlattice.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2022 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2023 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
     website:             : http://dimitris.apeiro.gr
     project site         : https://socnetv.org

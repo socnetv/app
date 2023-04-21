@@ -5,7 +5,7 @@
  
                          dialogsysteminfo.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2022 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2023 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
