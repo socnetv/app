@@ -8038,7 +8038,6 @@ void Graph::writeCentralityDegree ( const QString fileName,
         return;
     }
     QTextStream outText ( &file );
-    // outText.setCodec("UTF-8");
 
     centralityDegree(considerWeights, dropIsolates);
 
@@ -8325,7 +8324,6 @@ void Graph::writeCentralityCloseness( const QString fileName,
         return;
     }
     QTextStream outText ( &file );
-    // outText.setCodec("UTF-8");
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
 

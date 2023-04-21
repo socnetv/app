@@ -15,8 +15,8 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     #
     echo "Installing third-party Qt6 repo (to allow using focal as linuxdeployqt wants https://github.com/probonopd/linuxdeployqt/issues/377)..."
     sudo apt-get -qq update
-    sudo add-apt-repository ppa:okirby/qt6-backports
-    #sudo apt-get update -qq
+    sudo add-apt-repository -y ppa:okirby/qt6-backports
+    sudo apt-get update -qq
 
     #echo "Downloading openSSL 1.1.1k sources..."
     #wget  --no-verbose "https://github.com/openssl/openssl/archive/refs/tags/OpenSSL_1_1_1k.tar.gz"
