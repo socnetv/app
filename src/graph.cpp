@@ -6258,7 +6258,7 @@ void Graph::writeMatrixShortestPathsPlainText(const QString &fn,
     }
 
     QTextStream outText(&file);
-    //outText.setCodec("UTF-8");
+
     outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
     outText << tr("Network name: ")<< graphName() <<" \n\n";
     outText << "Shortest paths matrix: \n";
@@ -6602,7 +6602,6 @@ void Graph::writeCentralityInformation(const QString fileName,
     }
 
     QTextStream outText ( &file );
-    //outText.setCodec("UTF-8");
 
     centralityInformation(considerWeights, inverseWeights);
 
@@ -6873,7 +6872,6 @@ void Graph::writeCentralityEigenvector(const QString fileName,
         return;
     }
     QTextStream outText ( &file );
-//    outText.setCodec("UTF-8");
 
     centralityEigenvector(considerWeights, inverseWeights,dropIsolates);
 

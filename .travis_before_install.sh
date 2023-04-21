@@ -13,9 +13,9 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     #
     # OPTIONAL: Install repos for linux (Qt6, openSSL etc)
     #
-    echo "NOT installing third-party Qt6 repo..."
+    echo "Installing third-party Qt6 repo (to allow using focal as linuxdeployqt wants https://github.com/probonopd/linuxdeployqt/issues/377)..."
     sudo apt-get -qq update
-    #sudo add-apt-repository ppa:beineri/opt-qt-5.12.10-bionic -y
+    sudo add-apt-repository ppa:okirby/qt6-backports
     #sudo apt-get update -qq
 
     #echo "Downloading openSSL 1.1.1k sources..."

@@ -92,14 +92,20 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     echo ""
     echo "Checking contents of /opt/qtXX/plugins: "
     find /opt/qt512/plugins
+    echo "Checking contents of /opt/: "
+    find /opt
 
     echo ""
     echo "Downloading linuxdeployqt tool: "
     wget --no-verbose  "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
+#    echo "Downloading appimagetool tool (in GO): "
+#    wget -c https://github.com/$(wget -q https://github.com/probonopd/go-appimage/releases/expanded_assets/continuous -O - | grep "appimagetool-.*-x86_64.AppImage" | head -n 1 | cut -d '"' -f 2)
+
 
     echo ""
     echo "Make executable the linuxdeployqt tool: "
     chmod a+x linuxdeployqt*.AppImage
+#    chmod +x appimagetool-*.AppImage
     unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
 
     echo ""
@@ -108,8 +114,16 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
 
     # export VERSION=... # linuxdeployqt uses this for naming the file
     echo ""
-    echo "Run the linuxdeployqt tool: "
+    # echo "Run the linuxdeployqt tool: "
     ./linuxdeployqt*.AppImage appdir/usr/share/applications/*.desktop -appimage -extra-plugins=iconengines,imageformats
+
+#    echo "Run the appimagetool: "
+#    ./appimagetool-*.AppImage -s deploy appdir/usr/share/applications/*.desktop -appimage -extra-plugins=iconengines,imageformats # Bundle EVERYTHING
+    # or
+    # ./appimagetool-*.AppImage deploy appdir/usr/share/applications/*.desktop # Bundle everything expect what comes with the base system
+    # and
+    # VERSION=1.0 ./appimagetool-*.AppImage ./Some.AppDir # turn AppDir into AppImage
+
 
     echo ""
     echo "Removing linuxdeployqt-continuous-x86_64.AppImage..."
