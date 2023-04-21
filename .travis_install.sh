@@ -17,29 +17,42 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     sudo apt-get install mesa-common-dev
     sudo apt-get install build-essential libgl1-mesa-dev
     #
-    # Install Qt5 packages and configure host environment
+    # Install Qt6 packages and configure host environment
     #
-    echo "Installing Qt5 packages..."
+    echo "Installing Qt6 packages..."
     # You need to change this if you need to update to a more recent Qt version
-    sudo apt-get -y install qt512base qt512charts-no-lgpl  qt512svg
+    sudo apt-get -y install qt6-base-dev qt6-base-dev-tools qt6-tools-dev libqt6charts6-dev libqt6charts6 libqt6svg6 libqt6svg6-dev
     echo ""
-    echo "Running Qt5 env script to set it up in the host system..."
-    source /opt/qt512/bin/qt512-env.sh
-    echo "Finished installing and configuring Qt5 packages..."
+    echo "Is there a script to set it up in the host system??..."
+    ls /opt/
+    #source /opt/qt512/bin/qt512-env.sh
+    echo "Check qtchooser -l"
+    qtchooser -l
+    echo "In Ubuntu 22.04 there is a qtchooser bug (see 'QtChooser doesnt support qt6') "
+    echo "so qtchooser -l does not list any qt6 option."
+    echo "So, we must manually select Qt6 for current user only."
+    echo "First, we generate qt6.conf based on the path to qmake6..."
+    qtchooser -install qt6 $(which qmake6)
+    echo "Selecting Qt6 as default with export QT_SELECT=qt6 (also placing it in ~/.bashrc for persistence):"
+    export QT_SELECT=qt6
+    echo 'export QT_SELECT=qt6' >> ~/.bashrc
+    echo "cat ~/.bashrc to check..."
+    cat ~/.bashrc
+    echo "Finished installing and configuring Qt6 packages..."
 
 elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
     #
     # Install Qt5 for macOS via brew and configure host environment
     #
-    echo "Installing Qt5 for macOS via brew..."
-    # Note we use qt@5 to install Qt 5.15.2 because `brew install qt` would install Qt 6 by default...
-    brew install qt@5 p7zip
+    echo "Installing Qt6 (v6.4.3) for macOS via brew..."
+    # Note we use qt@6 to install. Also, `brew install qt` installs Qt 6 by default.
+    brew install qt@6 p7zip
     echo "installing create-dmg"
     brew install create-dmg
     # Install npm appdmg if you want to create custom dmg files with it
     # npm install -g appdmg
-    echo "Running brew link to symlink various Qt5 binaries into /usr/local/bin etc so..."
-    brew link --force qt@5
+    echo "Running brew link to symlink various Qt binaries into /usr/local/bin etc so..."
+    brew link --force qt@6
     echo "Adding qt binaries installation path to system PATH..."
     # Add Qt binaries to path
     PATH=/usr/local/opt/qt/bin/:${PATH}

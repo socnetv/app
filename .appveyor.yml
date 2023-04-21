@@ -125,9 +125,9 @@ install:
   - cmd: echo "Setting Qt environment..."
   - cmd: echo "Check Qt folders (debug)..."
   - cmd: dir C:\Qt
-  - cmd: dir C:\Qt\5.15
+  - cmd: dir C:\Qt\6.2.4
   - cmd: dir C:\Qt\Tools
-  - set QTDIR=C:\Qt\5.15\mingw81_64
+  - set QTDIR=C:\Qt\6.2.4\mingw_64
 
   - cmd: echo "Check project folder..."        
   - cmd: dir C:\projects\socnetv  

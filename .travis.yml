@@ -1,7 +1,7 @@
 # Build SocNetV on Linux and macOS
 # https://socnetv.org
-# Last Update: July 28, 2021
-# Copyright (c) 2021 by Dimitris Kalamaras
+# Last Update: April 21, 2023
+# Copyright (c) 2023 by Dimitris Kalamaras
 #
 
 
@@ -35,7 +35,7 @@ jobs:
   include:
     - os: linux
       compiler: gcc
-      dist: bionic
+      dist: jammy
       env: FAILURES=true
       if: tag IS present OR commit_message =~ /\[travis\]|\[ci\]/ AND commit_message !~ /\[skip linux\]/
     - os: osx

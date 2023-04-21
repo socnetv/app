@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "******************************************"
-echo "Adding Qt5 repos and updating platform..."
+echo "Adding extra repos and updating platform..."
 echo "******************************************"
 
 # Check current directory
@@ -11,13 +11,12 @@ echo "Project dir is: ${project_dir}"
 
 if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     #
-    # Install base Qt5 repos for linux
-    # NOTE: Changed the add-apt-repository line to update to a newer Qt version
+    # OPTIONAL: Install repos for linux (Qt6, openSSL etc)
     #
-    echo "installing base Qt5 repos for Ubuntu from ppa:beineri"
+    echo "NOT installing third-party Qt6 repo..."
     sudo apt-get -qq update
-    sudo add-apt-repository ppa:beineri/opt-qt-5.12.10-bionic -y
-    sudo apt-get update -qq
+    #sudo add-apt-repository ppa:beineri/opt-qt-5.12.10-bionic -y
+    #sudo apt-get update -qq
 
     #echo "Downloading openSSL 1.1.1k sources..."
     #wget  --no-verbose "https://github.com/openssl/openssl/archive/refs/tags/OpenSSL_1_1_1k.tar.gz"

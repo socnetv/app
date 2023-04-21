@@ -39,7 +39,7 @@ fi
 
 
 if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
-    source /opt/qt512/bin/qt512-env.sh
+    # source /opt/qt512/bin/qt512-env.sh
     qmake # default: all go to /usr
     make -j4
 
