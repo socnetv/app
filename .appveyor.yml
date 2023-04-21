@@ -40,17 +40,12 @@ branches:
 # skip_tags: true
 
 # Start builds on tags only (GitHub and BitBucket)
-skip_non_tags: true
+# skip_non_tags: true
 
 
 # Skipping commits affecting specific files (GitHub only).
 skip_commits:
   files:
-   - .travis.yml
-   - .travis_before_install.sh
-   - .travis_build_linux.sh
-   - .travis_build_macos.sh
-   - .travis_install.sh
    - socnetv.spec
    - debian/**/*
    - socnetv.appdata.xml
@@ -60,12 +55,17 @@ skip_commits:
    - AUTHORS
    - COPYING
    - NEWS
+#   - .travis.yml
+#   - .travis_before_install.sh
+#   - .travis_build_linux.sh
+#   - .travis_build_macos.sh
+#   - .travis_install.sh
 
 
 # Including commits with particular message or from specific user
 # At the moment, only commits from developer are allowed for building.
 only_commits:
-  # message: /\[appveyor\]|\[ci\]|\[release\]/   # DISABLED -- Start a new build if message contains '[appveyor]' or '[ci]'
+  message: /\[appveyor\]|\[ci\]|\[release\]/   # Start a new build if message contains '[appveyor]' or '[ci]'
   author: dimitris.kalamaras@gmail.com      # Start a new build for commit of user with my email
 
 

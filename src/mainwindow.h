@@ -214,11 +214,11 @@ public slots:
 
     void slotNetworkRandomErdosRenyiDialog();
     void slotNetworkRandomErdosRenyi( const int N,
-                               const QString model,
-                               const int edges,
-                               const qreal eprob,
-                               const QString mode,
-                               const bool diag) ;
+                                      const QString model,
+                                      const int edges,
+                                      const qreal eprob,
+                                      const QString mode,
+                                      const bool diag) ;
     void slotNetworkRandomRegularDialog();
     void slotNetworkRandomRegular(const int &newNodes, const int &degree,
                                   const QString &mode, const bool &diag);
@@ -328,7 +328,7 @@ public slots:
     void slotEditNodeLabelDistance(int v1=0, int newSize=0);
 
     void slotEditEdgeClicked (const MyEdge &edge=MyEdge(),
-                                    const bool &openMenu=false);
+                              const bool &openMenu=false);
 
     void slotEditEdgeOpenContextMenu(const QString &str="") ;
     void slotEditEdgeAdd();
@@ -427,7 +427,7 @@ public slots:
                                                       QAbstractAxis *axisY=Q_NULLPTR,
                                                       const qreal &minF=0,
                                                       const qreal &maxF=0
-                                                       );
+            );
 
     void slotAnalyzeCommunitiesCliqueCensus();
     void slotAnalyzeCommunitiesTriadCensus();
@@ -442,19 +442,19 @@ public slots:
 
     void slotAnalyzeStrEquivalenceDissimilaritiesDialog();
     void slotAnalyzeStrEquivalenceDissimilaritiesTieProfile(const QString &metric,
-                                               const QString &varLocation,
-                                               const bool &diagonal);
+                                                            const QString &varLocation,
+                                                            const bool &diagonal);
 
     void slotAnalyzeStrEquivalenceSimilarityMeasureDialog();
     void slotAnalyzeStrEquivalenceSimilarityByMeasure(const QString &matrix,
-                               const QString &varLocation,
-                               const QString &measure,
-                               const bool &diagonal);
+                                                      const QString &varLocation,
+                                                      const QString &measure,
+                                                      const bool &diagonal);
 
     void slotAnalyzeStrEquivalencePearsonDialog();
     void slotAnalyzeStrEquivalencePearson(const QString &matrix,
-                               const QString &varLocation,
-                               const bool &diagonal=false);
+                                          const QString &varLocation,
+                                          const bool &diagonal=false);
 
 
 
@@ -520,7 +520,7 @@ public slots:
                               QMessageBox::StandardButton defBtn=QMessageBox::Ok,
                               const QString btn1=QString(),
                               const QString btn2=QString()
-                               );
+            );
 
 
     void slotNetworkManagerSslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
@@ -628,7 +628,7 @@ private:
     QMenu *colorationMenu;
 
     QComboBox *toolBoxNetworkAutoCreateSelect, *toolBoxEditNodeSubgraphSelect,
-              *toolBoxEditEdgeModeSelect, *toolBoxEditEdgeTransformSelect;
+    *toolBoxEditEdgeModeSelect, *toolBoxEditEdgeTransformSelect;
     QComboBox *toolBoxAnalysisCohesionSelect, *toolBoxAnalysisStrEquivalenceSelect,
     *toolBoxAnalysisProminenceSelect, *toolBoxAnalysisCommunitiesSelect,
     *toolBoxAnalysisMatricesSelect;
@@ -677,8 +677,8 @@ private:
     QAction *editEdgeSymmetrizeStrongTiesAct, *editEdgeUndirectedAllAct;
     QAction *editEdgeDichotomizeAct;
     QAction *editNodeColorAll, *editEdgeColorAllAct,
-            *editNodeNumbersColorAct,*editNodeLabelsColorAct,
-            *editEdgesCocitationAct;
+    *editNodeNumbersColorAct,*editNodeLabelsColorAct,
+    *editEdgesCocitationAct;
 
     QAction *optionsNodeNumbersVisibilityAct, *optionsNodeLabelsVisibilityAct, *optionsNodeNumbersInsideAct;
     QAction *optionsEdgeThicknessPerWeightAct, *optionsEdgeWeightNumbersAct;
@@ -705,8 +705,8 @@ private:
     QAction *analyzeStrEquivalenceClusteringHierarchicalAct, *analyzeStrEquivalencePearsonAct;
     QAction *analyzeStrEquivalenceMatchesAct;
     QAction *cDegreeAct, *cInDegreeAct, *cClosenessAct, *cInfluenceRangeClosenessAct,
-            *cBetweennessAct, *cInformationAct, *cEigenvectorAct, *cPageRankAct,
-            *cStressAct, *cPowerAct, *cEccentAct, *cProximityPrestigeAct;
+    *cBetweennessAct, *cInformationAct, *cEigenvectorAct, *cPageRankAct,
+    *cStressAct, *cPowerAct, *cEccentAct, *cProximityPrestigeAct;
     QAction *layoutRandomAct, *layoutRandomRadialAct, *layoutGuidesAct;
     QAction *layoutRadialProminence_DC_Act, *layoutRadialProminence_DP_Act,
     *layoutRadialProminence_CC_Act, *layoutRadialProminence_SC_Act, *layoutRadialProminence_EC_Act,

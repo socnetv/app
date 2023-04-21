@@ -6,22 +6,23 @@ echo ""
 
 lsb_release -a
 
+echo ""
 echo "openssl version: "
 echo `openssl version`
-
+echo ""
 
 # Check current directory
 project_dir=$(pwd)
 echo "Project dir is: ${project_dir}"
-
+echo ""
 echo "TRAVIS_TAG is: $TRAVIS_TAG"
 echo "TRAVIS_COMMIT is: $TRAVIS_COMMIT"
-
+echo ""
 echo "SOCNETV_VERSION is: $SOCNETV_VERSION"
-
+echo ""
 LAST_COMMIT_SHORT=$(git rev-parse --short HEAD)
 echo "LAST_COMMIT_SHORT is: $LAST_COMMIT_SHORT"
-
+echo ""
 #
 # NOTE:
 #
@@ -40,7 +41,14 @@ fi
 
 if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     # source /opt/qt512/bin/qt512-env.sh
-    qmake # default: all go to /usr
+
+    echo "Check output of 'which qmake6':"
+    which qmake6
+
+    echo "Running qmake6 now: "
+    qmake6 # default: all go to /usr
+
+    echo "Start building with 'make -j4'. Please wait..."
     make -j4
 
     echo ""

@@ -126,8 +126,8 @@ int main(int argc, char *argv[])
 
     // An option to enable debug messges with a verbosity value
     QCommandLineOption showDebugOption(QStringList() << "d" << "debug",
-                                             QCoreApplication::translate("main", "Print debug messages to stdout/console. Available verbosity <level>s: 'none', 'min' or 'full'. Default: 'min'."),
-                                             QCoreApplication::translate("main", "level"));
+                                       QCoreApplication::translate("main", "Print debug messages to stdout/console. Available verbosity <level>s: 'none', 'min' or 'full'. Default: 'min'."),
+                                       QCoreApplication::translate("main", "level"));
     parser.addOption(showDebugOption);
 
     // Process the actual command line arguments given by the user
