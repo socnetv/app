@@ -21,7 +21,7 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     #
     echo "Installing Qt6 packages..."
     # You need to change this if you need to update to a more recent Qt version
-    sudo apt-get -y install qt6-base-dev qt6-base-dev-tools qt6-tools-dev libqt6charts6-dev libqt6charts6 libqt6svg6 libqt6svg6-dev
+    sudo apt-get -y install qt6-base-dev qt6-base-dev-tools qt6-tools-dev libqt6charts6-dev libqt6charts6 libqt6svg6 libqt6svg6-dev libqt6core5compat6-dev libqt6core5compat6 libqt6opengl6-dev libqt6opengl6
     echo ""
     echo "Is there a script to set it up in the host system??..."
     ls /opt/

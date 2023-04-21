@@ -277,7 +277,7 @@ bool TextEditor::saveFile(const QString &fileName)
     }
 
     QTextStream outText(&file);
-//    outText.setCodec("UTF-8");
+
     QApplication::setOverrideCursor(Qt::WaitCursor);
     if (formatHTML)
      outText << textEdit->toHtml();

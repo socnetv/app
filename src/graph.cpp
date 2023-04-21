@@ -3788,7 +3788,6 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
     }
 
     QTextStream outText ( &file );
-//    outText.setCodec("UTF-8");
 
     m_graphReciprocityArc = graphReciprocity();
 
@@ -6220,7 +6219,7 @@ void Graph::writeMatrixDistancesPlainText (const QString &fn,
         return;
     }
     QTextStream outText(&file);
-    // outText.setCodec("UTF-8");
+
     outText.setRealNumberPrecision(m_reportsRealPrecision);
     outText << "-Social Network Visualizer "<<  VERSION << "\n";
     outText << tr("Network name: ")<< graphName()<< "\n\n";
@@ -6295,7 +6294,6 @@ void Graph::writeEccentricity(const QString fileName, const bool considerWeights
         return;
     }
     QTextStream outText ( &file );
-    // outText.setCodec("UTF-8");
 
     if ( !calculatedCentralities  ) {
         graphDistancesGeodesic(true, considerWeights,
