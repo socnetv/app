@@ -301,11 +301,11 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
      * edge options
      */
 
-    ui->edgesChkBox-> setChecked(
+    ui->edgesChkBox->setChecked(
                 (m_appSettings["initEdgesVisibility"] == "true") ? true: false
                                                                   );
 
-    ui->edgeArrowsChkBox-> setChecked(
+    ui->edgeArrowsChkBox->setChecked(
                 (m_appSettings["initEdgeArrows"] == "true") ? true: false
                                                                    );
 
@@ -341,7 +341,7 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
 
     ui->edgeOffsetFromNodeSpin->setValue( m_appSettings["initEdgeOffsetFromNode"].toInt(0, 10) );
 
-    ui->edgeWeightNumbersChkBox-> setChecked(
+    ui->edgeWeightNumbersChkBox->setChecked(
                 (m_appSettings["initEdgeWeightNumbersVisibility"] == "true") ? true: false
                                                                   );
     m_edgeWeightNumberColor = QColor (m_appSettings["initEdgeWeightNumberColor"]);
@@ -352,7 +352,7 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
     ui->edgeWeightNumberSizeSpin->setValue( m_appSettings["initEdgeWeightNumberSize"].toInt(0, 10) );
 
 
-    ui->edgeLabelsChkBox-> setChecked(
+    ui->edgeLabelsChkBox->setChecked(
                 (m_appSettings["initEdgeLabelsVisibility"] == "true") ? true: false
                                                                         );
     /**

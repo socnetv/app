@@ -64,7 +64,7 @@ DialogRandErdosRenyi::DialogRandErdosRenyi(QWidget *parent, const qreal eprob) :
 
     ui.gnpRadioButton->setChecked(true);
     ui.probDoubleSpinBox->setEnabled(true);
-    ui.edgesSpinBox-> setDisabled(true);
+    ui.edgesSpinBox->setDisabled(true);
     ui.undirectedRadioButton->setChecked(true);
     ui.diagCheckBox->setChecked(false);
 
@@ -87,14 +87,14 @@ DialogRandErdosRenyi::DialogRandErdosRenyi(QWidget *parent, const qreal eprob) :
 void DialogRandErdosRenyi::gnpModel (){
     ui.gnmRadioButton->setChecked(false);
     ui.probDoubleSpinBox->setEnabled(true);
-    ui.edgesSpinBox-> setDisabled(true);
+    ui.edgesSpinBox->setDisabled(true);
 
 }
 
 void DialogRandErdosRenyi::gnmModel (){
     ui.gnpRadioButton->setChecked(false);
     ui.probDoubleSpinBox->setDisabled(true);
-    ui.edgesSpinBox-> setEnabled(true);
+    ui.edgesSpinBox->setEnabled(true);
 }
 
 void DialogRandErdosRenyi::setModeDirected (){

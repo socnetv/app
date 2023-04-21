@@ -37,7 +37,7 @@ DialogFilterEdgesByWeight::DialogFilterEdgesByWeight (QWidget *parent) : QDialog
 	
 	(ui.buttonBox)->button (QDialogButtonBox::Ok)->setDefault(true);
 	
-	(ui.overThresholdBt)-> setChecked(true);
+	(ui.overThresholdBt)->setChecked(true);
 		
 } 
 

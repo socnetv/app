@@ -1454,7 +1454,7 @@ void Graph::vertexIsolatedAllToggle(const bool &toggle){
 
             graphSetModified(GraphChange::ChangedVertices);
 
-            emit setVertexVisibility( (*it)-> name(), toggle );
+            emit setVertexVisibility( (*it)->name(), toggle );
         }
     }
 }
@@ -1586,7 +1586,7 @@ void Graph::vertexSizeSet(const int &v, const int &size) {
  * @return int
  */
 int Graph::vertexSize( const int &v ) const {
-    return m_graph[ vpos[v] ]-> size();
+    return m_graph[ vpos[v] ]->size();
 }
 
 
@@ -1680,7 +1680,7 @@ void Graph::vertexColorSet(const int &v1, const QString &color){
     if (v1) {
         qDebug()<< "Graph::vertexColorSet() - vertex"<< v1 << "new color"<< color;
         m_graph[ vpos[v1] ]->setColor ( color );
-        emit setNodeColor ( m_graph[ vpos[v1] ]-> name(), color );
+        emit setNodeColor ( m_graph[ vpos[v1] ]->name(), color );
     }
     else {
         qDebug()<< "Graph::vertexColorSet() - for all vertices, new color"<< color;
@@ -1694,7 +1694,7 @@ void Graph::vertexColorSet(const int &v1, const QString &color){
                 qDebug() << "Graph::vertexColorSet() - for all, setting vertex" << (*it)->name()
                          << " new color" << color;
                 (*it)->setColor(color) ;
-                emit setNodeColor ( (*it)-> name(), color );
+                emit setNodeColor ( (*it)->name(), color );
             }
         }
     }
@@ -1746,7 +1746,7 @@ void Graph::vertexNumberColorSet(const int &v1, const QString &color){
     qDebug()<< "Graph::vertexNumberColorSet() - v1: "<< v1 << " color:"<< color;
     if ( v1  ) {
         m_graph[ vpos[v1] ]->setNumberColor ( color );
-        emit setNodeNumberColor ( m_graph[ vpos[v1] ]-> name(), color );
+        emit setNodeNumberColor ( m_graph[ vpos[v1] ]->name(), color );
     }
     else {
         qDebug()<< "Graph::vertexNumberColorSet() - changing color in all node numbers";
@@ -1760,7 +1760,7 @@ void Graph::vertexNumberColorSet(const int &v1, const QString &color){
                 qDebug() << "Graph::vertexNumberColorSet() - vertex " << (*it)->name()
                          << " new color " << color;
                 (*it)->setNumberColor(color) ;
-                emit setNodeNumberColor ( (*it)-> name(), color );
+                emit setNodeNumberColor ( (*it)->name(), color );
             }
         }
     }
@@ -1803,7 +1803,7 @@ void Graph::vertexNumberSizeSet(const int &v, const int &size) {
                 qDebug() << "Graph::vertexNumberSizeSet() - for all, setting vertex"<< (*it)->name()
                          << " new number size " << size;
                 (*it)->setNumberSize(size) ;
-                emit setNodeNumberSize ( (*it)-> name(), size);
+                emit setNodeNumberSize ( (*it)->name(), size);
             }
         }
     }
@@ -1851,7 +1851,7 @@ void Graph::vertexNumberDistanceSet(const int &v, const int &newDistance) {
                          << (*it)->name()
                          << "new number distance" << newDistance;
                 (*it)->setNumberDistance(newDistance) ;
-                emit setNodeNumberDistance ( (*it)-> name(), newDistance);
+                emit setNodeNumberDistance ( (*it)->name(), newDistance);
             }
         }
 
@@ -1878,7 +1878,7 @@ void Graph::vertexLabelSet(const int &v1, const QString &label){
             << "vpos " << vpos[v1]
                << "new label"<< label;
     m_graph[ vpos[v1] ]->setLabel ( label);
-    emit setNodeLabel ( m_graph[ vpos[v1] ]-> name(), label);
+    emit setNodeLabel ( m_graph[ vpos[v1] ]->name(), label);
 
     graphSetModified(GraphChange::ChangedVerticesMetadata);
 }
@@ -1935,7 +1935,7 @@ void Graph::vertexLabelSizeSet(const int &v1, const int &labelSize) {
                             << "new label size"
                             << labelSize;
                 (*it)->setLabelSize(labelSize) ;
-                emit setNodeLabelSize ( (*it)-> name(), labelSize);
+                emit setNodeLabelSize ( (*it)->name(), labelSize);
             }
         }
     }
@@ -1975,7 +1975,7 @@ void Graph::vertexLabelColorSet(const int &v1, const QString &color){
                          << "new label color"
                          << color;
                 (*it)->setLabelColor(color);
-                emit setNodeLabelColor( (*it)-> name(), color);
+                emit setNodeLabelColor( (*it)->name(), color);
             }
         }
     }
@@ -2027,7 +2027,7 @@ void Graph::vertexLabelDistanceAllSet(const int &newDistance) {
             qDebug() << "Graph::vertexLabelDistanceAllSet() vertex " << (*it)->name()
                      << " new size " << newDistance;
             (*it)->setLabelDistance(newDistance) ;
-            emit setNodeLabelDistance ( (*it)-> name(), newDistance);
+            emit setNodeLabelDistance ( (*it)->name(), newDistance);
         }
     }
 
@@ -2219,7 +2219,7 @@ void Graph::edgeAdd (const int &v1, const int &v2,
 
 /**
  * @brief Removes the directed arc v1->v2
- * or, if the graph is undirected, the edge v1 <-> v2
+ * or, if the graph is undirected, the edge v1 <->v2
  * Emits signalRemoveEdge to GW to delete the graphics item.
  * @param v1
  * @param v2
@@ -2229,7 +2229,7 @@ void Graph::edgeRemove (const int &v1,
                         const int &v2,
                         const bool &removeOpposite) {
     qDebug ()<< "Graph::edgeRemove() - edge" << v1 << "[" << vpos[v1]
-                << "] --> " << v2 << " to be removed. RemoveOpposite:" <<removeOpposite;
+                << "] -->" << v2 << " to be removed. RemoveOpposite:" <<removeOpposite;
     m_graph [ vpos[v1] ]->edgeRemoveTo(v2);
     m_graph [ vpos[v2] ]->edgeRemoveFrom(v1);
 
@@ -2729,7 +2729,7 @@ int Graph::vertexDegreeOut (int v1) {
  */
 int Graph::vertexDegreeIn (int v1) {
     qDebug()<< "Graph: vertexDegreeIn()";
-    return m_graph[ vpos[v1] ]-> degreeIn();
+    return m_graph[ vpos[v1] ]->degreeIn();
 }
 
 /**
@@ -2740,7 +2740,7 @@ int Graph::vertexDegreeIn (int v1) {
  */
 QList<int> Graph::vertexNeighborhoodList(const int &v1) {
     //qDebug()<< "Graph::vertexNeighborhoodList()";
-    return m_graph[ vpos[v1] ]-> neighborhoodList();
+    return m_graph[ vpos[v1] ]->neighborhoodList();
 }
 
 
@@ -2753,7 +2753,7 @@ QList<int> Graph::vertexNeighborhoodList(const int &v1) {
 // // Only in Qt 5.15
 //QSet<int> Graph::vertexNeighborhoodSet(const int &v1) {
 //    //qDebug()<< "Graph::vertexNeighborhoodList()";
-//    QList<int> myNeightbors = m_graph[ vpos[v1] ]-> neighborhoodList();
+//    QList<int> myNeightbors = m_graph[ vpos[v1] ]->neighborhoodList();
 //    return QSet<int>(myNeightbors.constBegin(),myNeightbors.constEnd());
 //}
 
@@ -5370,7 +5370,7 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
                     continue;
                 }
                 
-                pairDistance = (*it)-> distance ( (*it1)->name() );
+                pairDistance = (*it)->distance ( (*it1)->name() );
                 
                 if ( pairDistance == RAND_MAX) {
                     m_vertexPairsNotConnected.insert((*it)->name(), (*it1)->name());
@@ -8656,7 +8656,7 @@ void Graph::centralityClosenessIR(const bool considerWeights,
             if ( (*it)->name() == (*jt)->name() ) {
                 continue;
             }
-            if ( ! (*jt)-> isEnabled() ) {
+            if ( ! (*jt)->isEnabled() ) {
                 continue;
             }
 
@@ -10478,7 +10478,7 @@ void Graph::prestigeProximity( const bool considerWeights,
             if ( (*it)->name() == (*jt)->name() ) {
                 continue;
             }
-            if ( ! (*jt)-> isEnabled() ) {
+            if ( ! (*jt)->isEnabled() ) {
                 continue;
             }
 
@@ -10906,7 +10906,7 @@ void Graph::prestigePageRank(const bool &dropIsolates){
                 if ( edgeExists( referrer , (*it)->name() ) )
                 {
                     inLinks = m_graph[ vpos[referrer] ]->inEdgesConst();
-                    outLinks = m_graph[ vpos[referrer] ]-> outEdgesConst();
+                    outLinks = m_graph[ vpos[referrer] ]->outEdgesConst();
 
                     PRP =  m_graph[ vpos[referrer] ]->PRP();
 
@@ -11501,7 +11501,7 @@ void Graph::randomNetScaleFreeCreate (const int &N,
                    << " Creating all edges for initial node i " << i+1;
         for (int j=i+1; j< m0  ; ++j) {
             qDebug() << "Graph::randomNetScaleFreeCreate() ---- "
-                        "Creating initial edge " << i+1 << " <-> " << j+1;
+                        "Creating initial edge " << i+1 << " <->" << j+1;
             edgeCreate (i+1, j+1, 1, initEdgeColor,
                         EdgeType::Undirected, false, false,
                         QString(), false);
@@ -11570,9 +11570,9 @@ void Graph::randomNetScaleFreeCreate (const int &N,
 
                 if ( prob  <=  prob_j )  {
                     if ( mode == "graph") {
-                        qDebug() << "Graph::randomNetScaleFreeCreate()  <-----> "
+                        qDebug() << "Graph::randomNetScaleFreeCreate()  <----->"
                                     "Creating pref.att. undirected edge "
-                                 <<  i+1 << " <-> " << j+1;
+                                 <<  i+1 << " <->" << j+1;
                         edgeCreate (i+1, j+1, 1, initEdgeColor,
                                     EdgeType::Undirected, false, false,
                                     QString(), false);
@@ -11580,9 +11580,9 @@ void Graph::randomNetScaleFreeCreate (const int &N,
 
                     }
                     else {
-                        qDebug() << "Graph::randomNetScaleFreeCreate()  -----> "
+                        qDebug() << "Graph::randomNetScaleFreeCreate()  ----->"
                                     "Creating pref.att. directed edge "
-                                 <<  i+1 << " <-> " << j+1;
+                                 <<  i+1 << " <->" << j+1;
                         edgeCreate (i+1, j+1, 1, initEdgeColor,
                                     EdgeType::Directed, true, false,
                                     QString(), false);
@@ -11662,7 +11662,7 @@ void Graph::randomNetSmallWorldCreate (const int &N, const int &degree,
                         qDebug()<<">>>>> REWIRING: Candidate: "<< candidate;
                         //Only if differs from i and hasnot edge with it
                         if (  edgeExists(i, candidate) == 0)
-                            qDebug("<----> Random New Edge Experiment between %i and %i:", i, candidate);
+                            qDebug("<---->Random New Edge Experiment between %i and %i:", i, candidate);
                         if (rand() % 100 > 0.5) {
                             qDebug("Creating new link!");
                             edgeCreate(i, candidate, 1, initEdgeColor,
@@ -16184,7 +16184,7 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
 
     qDebug()<< "Graph::graphSaveToGraphMLFormat() -  writing xml version";
     outText << "<?xml version=\"1.0\" encoding=\"" << outText.encoding()->name() << "\"?> \n";
-    outText << " <!-- Created by SocNetV "<<  VERSION << " --> \n" ;
+    outText << " <!-- Created by SocNetV "<<  VERSION << " -->\n" ;
     outText << "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" "
                "      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance \" "
                "      xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns "

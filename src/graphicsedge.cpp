@@ -204,8 +204,8 @@ void GraphicsEdge::addWeightNumber (){
     double x = -20 + ( source->x() + target->x() ) / 2.0;
     double y = -20 + ( source->y() + target->y() ) / 2.0;
     weightNumber = new  GraphicsEdgeWeight (this, 7, QString::number(m_weight) );
-    weightNumber-> setPos(x,y);
-    weightNumber-> setDefaultTextColor (m_color);
+    weightNumber->setPos(x,y);
+    weightNumber->setDefaultTextColor (m_color);
     m_drawWeightNumber = true;
 }
 
@@ -254,8 +254,8 @@ void GraphicsEdge::addLabel (){
     double x =  5+ ( source->x() + target->x() ) / 2.0;
     double y =  5+ ( source->y() + target->y() ) / 2.0;
     edgeLabel = new  GraphicsEdgeLabel (this, 7, m_label );
-    edgeLabel-> setPos(x,y);
-    edgeLabel-> setDefaultTextColor (m_color);
+    edgeLabel->setPos(x,y);
+    edgeLabel->setDefaultTextColor (m_color);
     m_drawLabel = true;
 }
 

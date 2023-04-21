@@ -52,7 +52,7 @@ DialogRandScaleFree::DialogRandScaleFree(QWidget *parent) :
 
     (ui.nodesSpinBox )->setFocus();
 
-    ui.initialNodesSpinBox-> setEnabled(true);
+    ui.initialNodesSpinBox->setEnabled(true);
     ui.undirectedRadioButton->setChecked(false);
     ui.directedRadioButton->setEnabled(true);
     ui.directedRadioButton->setChecked(true);

@@ -55,7 +55,7 @@ DialogRandSmallWorld::DialogRandSmallWorld(QWidget *parent) :
     ui->buttonBox->button (QDialogButtonBox::Ok)->setDefault(true);
 
     ui->probDoubleSpinBox->setEnabled(true);
-    ui->degreeSpinBox-> setEnabled(true);
+    ui->degreeSpinBox->setEnabled(true);
     ui->undirectedRadioButton->setChecked(true);
     ui->directedRadioButton->setEnabled(false);
     ui->diagCheckBox->setChecked(false);

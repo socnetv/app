@@ -870,7 +870,7 @@ qreal GraphVertex::hasEdgeFrom(const int &v2, const bool &allRelations){
  */
 void GraphVertex::setDistance (const int &v1, const qreal &d) {
 //    qDebug() <<"GraphVertex::setDistance() - dist"
-//            << name() << " --> "<< v1 << " = "<< d
+//            << name() << " -->"<< v1 << " = "<< d
 //               << " relation " << m_curRelation;
     m_distance.insert( v1, pair_i_f(m_curRelation, d ) );
 }
@@ -903,7 +903,7 @@ qreal GraphVertex::distance (const int &v1) {
         ++it1;
     }
 //    qDebug() <<"GraphVertex::distance() - d("
-//               << name() << " --> "<< v1 << ") = "<< d;
+//               << name() << " -->"<< v1 << ") = "<< d;
 
     return d;
 }
@@ -927,7 +927,7 @@ void GraphVertex::clearDistance() {
  */
 void GraphVertex::setShortestPaths (const int &v1, const int &sp) {
 //    qDebug() <<"GraphVertex::setShortestPaths() - sp"
-//            << name() << " --> "<< v1 << " = "<< sp
+//            << name() << " -->"<< v1 << " = "<< sp
 //               << " relation " << m_curRelation;
     m_shortestPaths.insert( v1, pair_i_i( m_curRelation, sp ) );
 }

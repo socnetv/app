@@ -52,7 +52,7 @@ DialogRandRegular::DialogRandRegular(QWidget *parent) :
 
     ui.buttonBox->button (QDialogButtonBox::Ok)->setDefault(true);
 
-    ui.degreeSpinBox-> setEnabled(true);
+    ui.degreeSpinBox->setEnabled(true);
     ui.undirectedRadioButton->setChecked(true);
     ui.diagCheckBox->setChecked(false);
     ui.diagCheckBox->setEnabled(false);

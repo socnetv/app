@@ -1346,7 +1346,7 @@ bool Parser::loadPajek(){
                     errorMessage = tr("Pajek-formatted file declares edge "
                                             "with a zero source or target nodeNumber. "
                                             "Each node should have a nodeNumber > 0.");
-                    return false;  //  i --> (i-1)   internally
+                    return false;  //  i -->(i-1)   internally
                 }
                 else if (source < 0 && target >0  ) {  //weights come first...
 
@@ -1417,7 +1417,7 @@ bool Parser::loadPajek(){
                     errorMessage = tr("Pajek-formatted file declares arc "
                                             "with a zero source or target nodeNumber. "
                                             "Each node should have a nodeNumber > 0.");
-                    return false;   //  i --> (i-1)   internally
+                    return false;   //  i -->(i-1)   internally
                 }
                 else if (source < 0 && target >0 ) {  //weights come first...
 
