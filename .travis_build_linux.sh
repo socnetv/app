@@ -45,6 +45,11 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     echo "Check output of 'which qmake6':"
     which qmake6
 
+    echo ""
+    echo "Check qmake6 -v:"
+    qmake6 -v
+
+    echo ""
     echo "Running qmake6 now: "
     qmake6 # default: all go to /usr
 
@@ -93,7 +98,7 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     echo "Checking contents of /opt/qtXX/plugins: "
     find /opt/qt512/plugins
     echo "Checking contents of /opt/: "
-    find /opt
+    find /opt | grep qt
 
     echo ""
     echo "Downloading linuxdeployqt tool: "
@@ -115,7 +120,7 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     # export VERSION=... # linuxdeployqt uses this for naming the file
     echo ""
     # echo "Run the linuxdeployqt tool: "
-    ./linuxdeployqt*.AppImage appdir/usr/share/applications/*.desktop -appimage -extra-plugins=iconengines,imageformats
+    ./linuxdeployqt*.AppImage appdir/usr/share/applications/*.desktop -appimage -extra-plugins=iconengines,imageformats -qmake=/usr/bin/qmake6
 
 #    echo "Run the appimagetool: "
 #    ./appimagetool-*.AppImage -s deploy appdir/usr/share/applications/*.desktop -appimage -extra-plugins=iconengines,imageformats # Bundle EVERYTHING

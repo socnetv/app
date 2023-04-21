@@ -8734,7 +8734,6 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
         return;
     }
     QTextStream outText ( &file );
-    //outText.setCodec("UTF-8");
 
     centralityClosenessIR(considerWeights,inverseWeights, dropIsolates);
 
