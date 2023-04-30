@@ -39,7 +39,7 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     #export LD_LIBRARY_PATH="/opt/openssl-1.1.1/lib/:$LD_LIBRARY_PATH"
 elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
     #
-    # Update brew, we will use it ltr to install Qt5
+    # Update brew, we will use it later to install Qt6
     #
     echo "Updating brew..."
     brew update
