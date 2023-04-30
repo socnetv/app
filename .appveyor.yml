@@ -134,7 +134,7 @@ install:
   - cmd: echo "Installing Innosetup..."  
   - choco install -y InnoSetup
   - cmd: echo "Setting paths..."    
-  - set PATH=%QTDIR%\bin;C:\Qt\Tools\mingw810_64\bin;%PATH%;"C:\Program Files (x86)\Inno Setup 6"
+  - set PATH=%QTDIR%\bin;C:\Qt\Tools\mingw1120_64\bin;%PATH%;"C:\Program Files (x86)\Inno Setup 6"
 
 
 
@@ -146,7 +146,7 @@ install:
 build_script:
   - cmd: echo "Running qmake..."
   - qmake "CONFIG+=%BUILD_TYPE%" socnetv.pro
-  - cmd: echo "BUILDING %BUILD_TYPE% starts here with mingw32..."
+  - cmd: echo "BUILDING %BUILD_TYPE% starts here with mingw_64..."
   - mingw32-make
 
 after_build:
