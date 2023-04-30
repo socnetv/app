@@ -96,11 +96,25 @@ DialogSystemInfo::DialogSystemInfo (QWidget *parent) :
     }
 
     #ifndef QT_NO_OPENGL
-    QOpenGLFunctions qglFunctions(QOpenGLContext::currentContext());
-    information += "<br>OpenGL: <br>";
-    information += "Vendor: " + getGlString(&qglFunctions, GL_VENDOR) + "<br>";
-    information += "Version: " + getGlString(&qglFunctions, GL_VERSION) + "<br>";
-    information += "Renderer/Card: " + getGlString(&qglFunctions, GL_RENDERER) +  "<br>";
+    // Our QT build has OpenGL support.
+    // Check if there is a current OpenGL context
+    // because the user might have disabled the OpenGL setting
+    if ( QOpenGLContext::currentContext() ) {
+        QOpenGLFunctions *qglFunctions = QOpenGLContext::currentContext()->functions();
+        information += "<br>OpenGL: <br>";
+        information += "Vendor: " + getGlString(qglFunctions, GL_VENDOR) + "<br>";
+        information += "Version: " + getGlString(qglFunctions, GL_VERSION) + "<br>";
+        information += "Renderer/Card: " + getGlString(qglFunctions, GL_RENDERER) +  "<br>";
+    }
+    else {
+        information += "<br>OpenGL: <br>";
+        information += tr("SocNetV has OpenGL support, "
+                       "but you have disabled it. "
+                       "<br>"
+                       "Please enable OpenGL from Settings -> Canvas "
+                        "to enjoy faster drawing on the canvas."
+                        "<br>");
+    }
     #else
     information += "<br>OpenGL: <br>";
     information += "NONE. Build without OpenGL support!";
