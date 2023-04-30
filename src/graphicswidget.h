@@ -44,7 +44,6 @@ class GraphicsEdgeLabel;
 typedef QHash<QString, GraphicsEdge*> H_StrToEdge;
 typedef QHash <int, GraphicsNode*> H_NumToNode;
 
-using namespace std;
 
 typedef QPair<int, int> SelectedEdge;
 
