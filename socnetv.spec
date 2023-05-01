@@ -14,23 +14,23 @@
 #
 
 ### Define our defaults, they will be overriden in the distro detection below.
-%define qmake /usr/bin/qmake-qt5
-%define lrelease /usr/bin/lrelease-qt5
+%define qmake /usr/bin/qmake-qt6
+%define lrelease /usr/bin/lrelease-qt6
 
 ### Detect host Linux distribution and update defines.
 %if 0%{?fedora} || 0%{?rhel_version} || 0%{?centos_version}
-%define qmake /usr/bin/qmake-qt5
-%define lrelease /usr/bin/lrelease-qt5
+%define qmake /usr/bin/qmake6
+%define lrelease /usr/bin/lrelease-qt6
 %endif
 
 %if 0%{?suse_version}
-%define qmake /usr/bin/qmake-qt5
-%define lrelease /usr/bin/lrelease-qt5
+%define qmake /usr/bin/qmake6
+%define lrelease /usr/bin/lrelease6
 %endif
 
 %if 0%{?mageia}
-%define qmake /usr/bin/qmake-qt5
-%define lrelease /usr/bin/lrelease-qt5
+%define qmake /usr/bin/qmake-qt6
+%define lrelease /usr/bin/lrelease-qt6
 %endif
 
 Name:		socnetv
@@ -46,26 +46,30 @@ BuildRequires:	gcc-c++
 BuildRequires:	gzip
 
 %if 0%{?suse_version}
-BuildRequires:  libqt5-linguist
+BuildRequires:  qt6-tools-linguist
+BuildRequires:  libQt6Core5Compat6
 %endif
 
 %if 0%{?fedora} || 0%{?rhel_version} || 0%{?centos_version}
-BuildRequires:	qt5-linguist
+BuildRequires:	qt6-linguist
+BuildRequires:  qt6-qt5compat
 BuildRequires:  glibc-all-langpacks
 %endif
 
 
 BuildRequires:	desktop-file-utils
-BuildRequires:  pkgconfig(Qt5Core)
-BuildRequires:  pkgconfig(Qt5Gui)
-BuildRequires:  pkgconfig(Qt5PrintSupport)
-BuildRequires:  pkgconfig(Qt5Widgets)
-BuildRequires:  pkgconfig(Qt5Network)
-BuildRequires:  pkgconfig(Qt5Xml)
-# qt5-qtsvg-devel
-BuildRequires:  pkgconfig(Qt5Svg)
-# qt5-qtcharts-devel
-BuildRequires:  pkgconfig(Qt5Charts)
+BuildRequires:  pkgconfig(Qt6Core)
+BuildRequires:  pkgconfig(Qt6Gui)
+BuildRequires:  pkgconfig(Qt6PrintSupport)
+BuildRequires:  pkgconfig(Qt6Widgets)
+BuildRequires:  pkgconfig(Qt56etwork)
+BuildRequires:  pkgconfig(Qt6Xml)
+BuildRequires:  pkgconfig(Qt6OpenGL)
+
+# qt6-qtsvg-devel
+BuildRequires:  pkgconfig(Qt6Svg)
+# qt6-qtcharts-devel
+BuildRequires:  pkgconfig(Qt6Charts)
 
 
 %description
@@ -93,10 +97,10 @@ find .
 
 %build
 # Run lrelease to generate Qt message files from Qt Linguist translation files
-lrelease-qt5 socnetv.pro
+lrelease-qt6 socnetv.pro
 
 ### Run qmake
-qmake-qt5 CONFIG+=release
+qmake CONFIG+=release
 
 ### Run make to build the application
 %__make %{?_smp_mflags}
