@@ -1,28 +1,23 @@
 #!/bin/bash
 
-echo ""
-echo "I will build a SocNetV AppImage for linux distributions..."
-echo ""
-
-lsb_release -a
-
-echo ""
-echo "openssl version: "
-echo `openssl version`
-echo ""
+echo "*****************************"
+echo "*     Building SocNetV      *"
+echo "*****************************"
 
 # Check current directory
 project_dir=$(pwd)
 echo "Project dir is: ${project_dir}"
 echo ""
-echo "TRAVIS_TAG is: $TRAVIS_TAG"
-echo "TRAVIS_COMMIT is: $TRAVIS_COMMIT"
-echo ""
-echo "SOCNETV_VERSION is: $SOCNETV_VERSION"
-echo ""
+echo "TRAVIS_OS_NAME = $TRAVIS_OS_NAME"
+echo "TRAVIS_TAG = $TRAVIS_TAG"
+echo "TRAVIS_COMMIT = $TRAVIS_COMMIT"
+echo "SOCNETV_VERSION = $SOCNETV_VERSION"
+echo "TAG_NAME = ${TAG_NAME}"
+
 LAST_COMMIT_SHORT=$(git rev-parse --short HEAD)
-echo "LAST_COMMIT_SHORT is: $LAST_COMMIT_SHORT"
+echo "LAST_COMMIT_SHORT = $LAST_COMMIT_SHORT"
 echo ""
+
 #
 # NOTE:
 #
@@ -30,6 +25,9 @@ echo ""
 # We change this by exporting $VERSION environment variable
 #
 
+echo "Checking TRAVIS_TAG to fix the VERSION..."
+echo "If this is a tag, then version will be the tag, i.e. 3.1 or 3.1-dev"
+echo "If this is not a tag, the version will include the LAST_COMMIT_SHORT, i.e. 3.1-beta-a0be9cd"
 if [ ! -z "$TRAVIS_TAG" ] ; then
     # If this is a tag, then version will be the tag, i.e. 2.6 or 2.6-beta
     export VERSION=${TRAVIS_TAG}
@@ -38,9 +36,25 @@ else
     export VERSION=${SOCNETV_VERSION}-${LAST_COMMIT_SHORT}
 fi
 
+echo "exported VERSION = ${VERSION}";
+
+echo "This VERSION will be used by linuxdeployqt and macdeployqt"
+
+echo ""
 
 if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     # source /opt/qt512/bin/qt512-env.sh
+
+    echo ""
+    echo "I will build a SocNetV AppImage for linux distributions..."
+    echo ""
+
+    lsb_release -a
+
+    echo ""
+    echo "openssl version: "
+    echo `openssl version`
+    echo ""
 
     echo "Check output of 'which qmake6':"
     which qmake6

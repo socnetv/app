@@ -4,13 +4,11 @@ echo "*****************************"
 echo "  Build SocNetV for macOS    "
 echo "*****************************"
 
-APP_NAME="SocNetV"
-
 # Check current directory
 project_dir=$(pwd)
 echo "Project dir is: ${project_dir}"
 
-
+echo "TRAVIS_OS_NAME = $TRAVIS_OS_NAME"
 echo "TRAVIS_TAG = $TRAVIS_TAG"
 echo "TRAVIS_COMMIT = $TRAVIS_COMMIT"
 echo "SOCNETV_VERSION = $SOCNETV_VERSION"
@@ -37,6 +35,7 @@ fi
 echo "VERSION = ${VERSION}";
 
 # Print macOS version
+echo ""
 echo "macOS version = "
 sw_vers
 
@@ -44,6 +43,7 @@ sw_vers
 echo "Xcode build version = "
 xcrun -sdk macosx --show-sdk-path
 
+APP_NAME="SocNetV"
 
 # Build your app
 echo "*****************************"

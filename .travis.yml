@@ -78,15 +78,20 @@ script:
 
 
 after_success:
-  - echo " Finished building. Listing any *SocNetV*.AppImage* files...";
+  - echo "TRAVIS_OS_NAME: ";
+  - echo $TRAVIS_OS_NAME;
+  - echo " Finished building. Listing any *SocNetV*.AppImage* files (for Linux)...";
   - ls -lsh  *SocNetV*.AppImage*
+  - echo " Finished building. Listing any *SocNetV*.* files (for macOS)...";
+  - ls -lsh  *SocNetV*.*
   - echo " Downloading upload.sh tool...";
   - wget --no-verbose https://github.com/probonopd/uploadtool/raw/master/upload.sh
   - echo "Using upload.sh tool to upload binaries to GitHub..."
   - if [ ! -z "${TRAVIS_TAG}" ] ; then echo "The upload tool will upload files to tag TRAVIS_TAG";  fi
   - if [ -z "$TRAVIS_TAG" ] ; then echo "The upload tool will upload files to 'continuous' CI/CD pipeline"; fi
   - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then bash upload.sh *SocNetV*.AppImage*; fi
-  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then bash upload.sh *SocNetV*.zip*; bash upload.sh SocNetV*.dmg*; fi
+  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then bash upload.sh *SocNetV*.zip*; fi
+  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then bash upload.sh SocNetV*.dmg*; fi
 
 
 
