@@ -1,5 +1,5 @@
-lessThan(QT_VERSION, 5.0) {
-    error("SocNetV requires at least Qt 5.0!")
+lessThan(QT_VERSION, 6.0) {
+    error("SocNetV requires at least Qt 6.0!")
 }
 
 MY_TARGET_BUILD = release
