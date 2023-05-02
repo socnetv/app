@@ -8965,7 +8965,6 @@ void Graph::writeCentralityBetweenness(const QString fileName,
         return;
     }
     QTextStream outText ( &file );
-    //outText.setCodec("UTF-8");
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
 
@@ -9242,7 +9241,6 @@ void Graph::writeCentralityStress( const QString fileName,
         return;
     }
     QTextStream outText ( &file );
-//    outText.setCodec("UTF-8");
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights,dropIsolates);
 
@@ -9478,7 +9476,6 @@ void Graph::writeCentralityEccentricity(const QString fileName,
         return;
     }
     QTextStream outText ( &file );
-//    outText.setCodec("UTF-8");
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights,dropIsolates);
 
@@ -9699,7 +9696,6 @@ void Graph::writeCentralityPower(const QString fileName,
         return;
     }
     QTextStream outText ( &file );
-//    outText.setCodec("UTF-8");
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
 
@@ -10155,10 +10151,8 @@ void Graph::writePrestigeDegree (const QString fileName,
         return;
     }
     QTextStream outText ( &file );
-    //outText.setCodec("UTF-8");
 
     prestigeDegree(considerWeights, dropIsolates);
-
 
     QString distImageFileName ;
 
@@ -10570,7 +10564,6 @@ void Graph::writePrestigeProximity( const QString fileName,
         return;
     }
     QTextStream outText ( &file );
-    //outText.setCodec("UTF-8");
 
     prestigeProximity(considerWeights, inverseWeights, dropIsolates);
 
@@ -11037,7 +11030,6 @@ void Graph::writePrestigePageRank(const QString fileName,
         return;
     }
     QTextStream outText ( &file );
-    //outText.setCodec("UTF-8");
 
     prestigePageRank(dropIsolates);
 
@@ -12294,7 +12286,7 @@ void Graph::writeWalksTotalMatrixPlainText(const QString &fn){
     }
 
     QTextStream outText(&file);
-    //outText.setCodec("UTF-8");
+
     outText << "-Social Network Visualizer "<<  VERSION << "\n";
     outText << tr("Network name: ")<< graphName()<< "\n"<< "\n";
     outText << "Total number of walks of any length less than or equal to "<< vertices()-1
@@ -12331,7 +12323,7 @@ void Graph::writeWalksOfLengthMatrixPlainText(const QString &fn, const int &leng
     emit statusMessage ( tr("Writing Walks matrix to file:") + fn );
 
     QTextStream outText(&file);
-    //outText.setCodec("UTF-8");
+
     outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
     outText << "Network name: "<< graphName()<<" \n";
     outText << "Number of walks of length "<< length <<" between each pair of nodes \n\n";
@@ -12379,7 +12371,6 @@ void Graph::writeMatrixWalks (const QString &fn,
     graphWalksMatrixCreate(N, length, true);
 
     QTextStream outText( &file );
-    //outText.setCodec("UTF-8");
 
     outText << htmlHead;
 
@@ -12600,7 +12591,6 @@ void Graph::writeReachabilityMatrixPlainText(const QString &fn, const bool &drop
     }
 
     QTextStream outText(&file);
-    // outText.setCodec("UTF-8");
 
     outText << "-Social Network Visualizer "<< VERSION << "\n";
     outText << tr("Network name: ")<< graphName()<< "\n\n";
@@ -12641,7 +12631,6 @@ void Graph::writeClusteringCoefficient( const QString fileName,
         return;
     }
     QTextStream outText ( &file );
-    // outText.setCodec("UTF-8");
 
     int rowCount = 0;
     int N = vertices();
@@ -12844,7 +12833,6 @@ void Graph::writeTriadCensus( const QString fileName,
     }
 
     QTextStream outText ( &file );
-    // outText.setCodec("UTF-8");
 
     emit statusMessage ( (tr("Computing triad census. Please wait....")) );
 
@@ -13025,7 +13013,6 @@ bool Graph::writeCliqueCensus(const QString &fileName,
 
 
     QTextStream outText ( &file );
-//    outText.setCodec("UTF-8");
 
     outText << htmlHead;
     outText.setRealNumberPrecision(m_reportsRealPrecision);
@@ -13623,17 +13610,13 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
     }
 
     QTextStream outText ( &file );
-//    outText.setCodec("UTF-8");
 
     QString pMsg = tr("Writing Hierarchical Cluster Analysis to file. \nPlease wait... ");
     emit statusMessage ( pMsg );
     emit signalProgressBoxCreate(N,pMsg);
 
-
-
     outText.setRealNumberPrecision(m_reportsRealPrecision);
     outText.reset();
-
 
     outText << htmlHead;
 
@@ -14345,7 +14328,6 @@ void Graph::writeMatrixSimilarityMatchingPlain(const QString fileName,
         return;
     }
     QTextStream outText ( &file );
-//    outText.setCodec("UTF-8");
 
     emit statusMessage ( (tr("Examining pair-wise similarity of actors...")) );
 
@@ -14456,7 +14438,6 @@ void Graph::writeMatrixDissimilarities(const QString fileName,
         return;
     }
     QTextStream outText ( &file );
-    //outText.setCodec("UTF-8");
 
     Matrix DSM;
     int N = vertices();
@@ -14626,7 +14607,6 @@ void Graph::writeMatrixSimilarityMatching(const QString fileName,
         return;
     }
     QTextStream outText ( &file );
-    //outText.setCodec("UTF-8");
 
     emit statusMessage ( (tr("Examining pair-wise similarity of actors...")) );
 
@@ -14821,7 +14801,6 @@ void Graph::writeMatrixSimilarityPearson(const QString fileName,
         return;
     }
     QTextStream outText ( &file );
-//    outText.setCodec("UTF-8");
 
     emit statusMessage ( (tr("Calculating Pearson Correlations...")) );
 
@@ -14968,7 +14947,6 @@ void Graph::writeMatrixSimilarityPearsonPlainText(const QString fileName,
         return;
     }
     QTextStream outText ( &file );
-    //outText.setCodec("UTF-8");
 
     emit statusMessage ( (tr("Calculating Pearson Correlations...")) );
 
@@ -16009,7 +15987,6 @@ bool Graph::graphSaveToPajekFormat (const QString &fileName, \
         return false;
     }
     QTextStream t( &f );
-    //t.setCodec("UTF-8");
 
     t<<"*Network "<<networkName<<"\n";
 
@@ -16088,7 +16065,6 @@ bool Graph::graphSaveToAdjacencyFormat (const QString &fileName,
         return false;
     }
     QTextStream outText( &file );
-    //outText.setCodec("UTF-8");
 
     writeMatrixAdjacencyTo(outText, saveEdgeWeights);
 
@@ -16178,13 +16154,13 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
         return false;
     }
     QTextStream outText( &f );
-    //outText.setCodec("UTF-8");
+    QString outTextEncoding = QStringEncoder(outText.encoding()).name();
 
-    qDebug () << "Graph::graphSaveToGraphMLFormat() - codec used for saving stream: "
-             << outText.encoding();
+    qDebug () << "Graph::graphSaveToGraphMLFormat() - Using default codec for saving stream: "
+             << outTextEncoding;
 
     qDebug()<< "Graph::graphSaveToGraphMLFormat() -  writing xml version";
-    outText << "<?xml version=\"1.0\" encoding=\"" << outText.encoding() << "\"?> \n";
+    outText << "<?xml version=\"1.0\" encoding=\"" << outTextEncoding << "\"?> \n";
     outText << " <!-- Created by SocNetV "<<  VERSION << " -->\n" ;
     outText << "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" "
                "      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance \" "
@@ -16533,7 +16509,6 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
         return;
     }
     QTextStream outText( &file );
-    //outText.setCodec("UTF-8");
 
     QString datasetDescription=QString();
     qDebug()<< "		... writing dataset ";
@@ -20415,7 +20390,6 @@ void Graph::writeMatrix (const QString &fn,
 
 
     QTextStream outText( &file );
-    //outText.setCodec("UTF-8");
 
     outText << htmlHead;
 
@@ -20878,7 +20852,6 @@ void Graph::writeMatrixAdjacency (const QString fn,
     }
 
     QTextStream outText( &file );
-    //outText.setCodec("UTF-8");
 
     int sum=0;
     qreal weight=0;
@@ -21018,7 +20991,6 @@ void Graph::writeMatrixAdjacencyPlot (const QString fn,
         return;
     }
     QTextStream outText( &file );
-    //outText.setCodec("UTF-8");
 
     VList::const_iterator it, it1;
     int sum=0;
@@ -21325,7 +21297,6 @@ void Graph::writeMatrixAdjacencyInvert(const QString &fn,
         return;
     }
     QTextStream outText( &file );
-//    outText.setCodec("UTF-8");
 
     outText << "-Social Network Visualizer "<<  VERSION << "\n";
     outText << tr("Network name: ")<< graphName()<< "\n\n";
@@ -21379,7 +21350,6 @@ void Graph::writeMatrixDegreeText(const QString &fn) {
         return;
     }
     QTextStream outText( &file );
-    //outText.setCodec("UTF-8");
 
     outText << AM.degreeMatrix();
 
@@ -21407,7 +21377,6 @@ void Graph::writeMatrixLaplacianPlainText(const QString &fn) {
         return;
     }
     QTextStream outText( &file );
-//    outText.setCodec("UTF-8");
 
     outText << AM.laplacianMatrix();
 
