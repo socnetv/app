@@ -209,9 +209,8 @@ void Parser::load(const QString fn,
 
 
     qDebug()<< "**** Parser::load() - on thread " << this->thread()
-               << "Reached end. "
-                  "Emitting finished() calling loadFileError() if any"
-               << " fileFormat now "<< fileFormat ;
+               << "Reached end. Emitting finished() signal. "
+               << "fileFormat now: "<< fileFormat ;
 
     emit finished ("Parser::load() - reach end");
 
@@ -342,7 +341,7 @@ bool Parser::loadDL(){
         if ( actualLineNumber == 1) {
             if (!str.startsWith("DL",Qt::CaseInsensitive)  )  {
                 qDebug() << "Parser::loadDL() - Not a DL file. Aborting!";
-                errorMessage = tr("File does not start with DL in line 1");
+                errorMessage = tr("Invalid UCINET-formatted file. The file does not start with DL in line 1");
                 file.close();
                 return false;
             }
@@ -411,7 +410,7 @@ bool Parser::loadDL(){
                     if (!intOK) {
                         qDebug() << "Parser::loadDL() - N conversion error..." ;
                         //emit something here...
-                        errorMessage = tr("Cannot convert N value to integer");
+                        errorMessage = tr("Problem interpreting UCINET-formatted file. Cannot convert N value to integer. ");
                         return false;
                     }
                 }
@@ -422,7 +421,7 @@ bool Parser::loadDL(){
                     if (!intOK) {
                         qDebug() << "Parser::loadDL() - NM conversion error..." ;
                         //emit something here...
-                        errorMessage = tr("Cannot convert NM value to integer");
+                        errorMessage = tr("Problem interpreting UCINET-formatted file. Cannot convert NM value to integer");
                         return false;
                     }
                 }
@@ -433,7 +432,7 @@ bool Parser::loadDL(){
                     if (!intOK) {
                         qDebug() << "Parser::loadDL() - NR conversion error..." ;
                         //emit something here...
-                        errorMessage = tr("Cannot convert NR value to integer");
+                        errorMessage = tr("Problem interpreting UCINET-formatted file. Cannot convert NR value to integer");
                         return false;
                     }
                 }
@@ -444,7 +443,7 @@ bool Parser::loadDL(){
                     if (!intOK) {
                         qDebug() << "Parser::loadDL() - NC conversion error..." ;
                         //emit something here...
-                        errorMessage = tr("Cannot convert NC value to integer");
+                        errorMessage = tr("Problem interpreting UCINET-formatted file. Cannot convert NC value to integer");
                         return false;
                     }
                 }
@@ -724,8 +723,8 @@ bool Parser::loadDL(){
                         edgeStr = (*it1);
                         edgeWeight=(*it1).toDouble(&conversionOK);
                         if ( !conversionOK )  {
-                            errorMessage = tr("Error reading loadDL-formatted fullmatrix file. "
-                                                    "in edge (%1->%2), the weight (%3) cannot be converted.").arg(source).arg(target).arg(edgeWeight);
+                            errorMessage = tr("Problem interpreting UCINET fullmatrix-formatted file. "
+                                              "In edge (%1->%2), the weight (%3) could not be converted to number.").arg(source).arg(target).arg(edgeWeight);
                             return false;
                         }
 
@@ -762,7 +761,7 @@ bool Parser::loadDL(){
                                     "formatted file. Aborting!!";
                         file.close();
                         //emit something...
-                        errorMessage = tr("UCINET two-mode fullmatrix file declared ") + QString::number(NC) + tr(" columns initially, "
+                        errorMessage = tr("Problem interpreting UCINET two-mode fullmatrix-formatted file. The file declared ") + QString::number(NC) + tr(" columns initially, "
                                           "but I found a different number ") + QString::number(lineElement.count()) + tr(" of matrix columns");
                         return false;
 
@@ -772,8 +771,8 @@ bool Parser::loadDL(){
                         edgeStr = (*it1);
                         edgeWeight=(*it1).toDouble(&conversionOK);
                         if ( !conversionOK )  {
-                            errorMessage = tr("Error reading loadDL-formatted two-mode file. "
-                                                    "in edge (%1->%2), the weight (%3) cannot be converted.").arg(source).arg(target).arg(edgeWeight);
+                            errorMessage = tr("Problem interpreting UCINET two-mode file. "
+                                              "In edge (%1->%2), the weight (%3) cannot be converted to number.").arg(source).arg(target).arg(edgeWeight);
                             return false;
                         }
 
@@ -813,7 +812,8 @@ bool Parser::loadDL(){
                                 "formatted file. Aborting!!";
                     file.close();
                     //emit something...
-                    errorMessage = tr("UCINET file declared as edgelist but I found "
+                    errorMessage = tr("Problem interpreting UCINET-formatted file. "
+                                      "The file was declared as edgelist but I found "
                                       "a line which did not have 3 elements (source, target, weight)");
                     return false;
                 }
@@ -851,7 +851,7 @@ bool Parser::loadDL(){
     if (!twoMode_flag && nodeSum != totalNodes) {
         qDebug()<< "Error: aborting";
         //emit something
-        errorMessage = tr("UCINET declared ") + QString::number(totalNodes) + tr(" actors initially, "
+        errorMessage = tr("Problem interpreting UCINET-formatted file. The file declared ") + QString::number(totalNodes) + tr(" actors initially, "
                           "but I found a different number ") + QString::number(nodeSum) + tr(" of node labels");
         return false;
     }
@@ -922,7 +922,7 @@ bool Parser::readDLKeywords(QStringList &strList,
                     if (!intOK) {
                         qDebug() << "Parser::loadDL() - N conversion error..." ;
                         //emit something here...
-                        errorMessage = tr("Cannot convert N value to integer");
+                        errorMessage = tr("Error while reading UCINET-formatted file. Cannot convert N value to integer. ");
                         return false;
                     }
                 }
@@ -933,7 +933,7 @@ bool Parser::readDLKeywords(QStringList &strList,
                     if (!intOK) {
                         qDebug() << "Parser::readDLKeywords() - NM conversion error..." ;
                         //emit something here...
-                        errorMessage = tr("Cannot convert NM value to integer");
+                        errorMessage = tr("Problem interpreting UCINET file. Cannot convert NM value to integer. ");
                         return false;
                     }
                 }
@@ -944,7 +944,7 @@ bool Parser::readDLKeywords(QStringList &strList,
                     if (!intOK) {
                         qDebug() << "Parser::readDLKeywords() - NR conversion error..." ;
                         //emit something here...
-                        errorMessage = tr("Cannot convert NR value to integer");
+                        errorMessage = tr("Error while reading UCINET-formatted file. Cannot convert NR value to integer.");
                         return false;
                     }
                 }
@@ -955,7 +955,7 @@ bool Parser::readDLKeywords(QStringList &strList,
                     if (!intOK) {
                         qDebug() << "Parser::readDLKeywords() - NC conversion error..." ;
                         //emit something here...
-                        errorMessage = tr("Cannot convert NC value to integer");
+                        errorMessage = tr("Error while reading UCINET-formatted file. Cannot convert NC value to integer. ");
                         return false;
                     }
                 }
@@ -1290,7 +1290,7 @@ bool Parser::loadPajek(){
             }
             else if ( j > nodeNum ) {
                 qDebug ("Error: This Pajek net declares this node with nodeNumber smaller than previous nodes. Aborting");
-                errorMessage = tr("Pajek-formatted file declares a node with "
+                errorMessage = tr("Invalid Pajek-formatted file. It declares a node with "
                                   "nodeNumber smaller than previous nodes.");
                 return false;
             }
@@ -1343,9 +1343,9 @@ bool Parser::loadPajek(){
                 target = lineElement[1].toInt(&ok,10);
 
                 if (source == 0 || target == 0 ) {
-                    errorMessage = tr("Pajek-formatted file declares edge "
+                    errorMessage = tr("Invalid Pajek-formatted file. The file declares an edge "
                                             "with a zero source or target nodeNumber. "
-                                            "Each node should have a nodeNumber > 0.");
+                                            "However, each node should have a nodeNumber > 0.");
                     return false;  //  i -->(i-1)   internally
                 }
                 else if (source < 0 && target >0  ) {  //weights come first...
@@ -1414,9 +1414,9 @@ bool Parser::loadPajek(){
                 target = lineElement[1].toInt(&ok,10);
 
                 if (source == 0 || target == 0 ) {
-                    errorMessage = tr("Pajek-formatted file declares arc "
+                    errorMessage = tr("Invalid Pajek-formatted file. The file declares arc "
                                             "with a zero source or target nodeNumber. "
-                                            "Each node should have a nodeNumber > 0.");
+                                            "However, each node should have a nodeNumber > 0.");
                     return false;   //  i -->(i-1)   internally
                 }
                 else if (source < 0 && target >0 ) {  //weights come first...
@@ -1512,7 +1512,7 @@ bool Parser::loadPajek(){
     } //end WHILE
     file.close();
     if (j==0) {
-        errorMessage = tr("Could not find node declarations in this Pajek-formatted file.");
+        errorMessage = tr("Invalid Pajek-formatted file. Could not find node declarations in this file.");
         return false;
     }
 
@@ -1606,7 +1606,7 @@ bool Parser::loadAdjacency(){
             qDebug()<< "*** Parser:loadAdjacency(): Not an Adjacency-formatted file. Aborting!!";
             file.close();
 
-            errorMessage = tr("Not an Adjacency-formatted file. "
+            errorMessage = tr("Invalid adjacency-formatted file. "
                               "Non-comment line %1 includes keywords reserved by other file formats (i.e vertices, graphml, network, graph, digraph, DL, xml)")
                     .arg(fileLine);
 
@@ -1628,7 +1628,7 @@ bool Parser::loadAdjacency(){
             // row columns differ from lastCaount, therefore this can't be an adjacency matrix
             qDebug()<< "*** Parser:loadAdjacency(): Not an Adjacency-formatted file. Aborting!!";
             file.close();
-            errorMessage = tr("Error reading Adjacency-formatted file. "
+            errorMessage = tr("Invalid Adjacency-formatted file. "
                               "Matrix row %1 at line %2 has different number of elements from previous row.").arg(actualLineNumber).arg(fileLine);
             return false;
         }
@@ -1708,8 +1708,8 @@ bool Parser::loadAdjacency(){
         // Check the number of items in this line,
         // if it is different that totalNodes, then return with an error
         if ( totalNodes != (int) currentRow.count() )  {
-            errorMessage = tr("Error reading Adjacency-formatted file. "
-                                    "Matrix row %1 has different number of items than previous row.").arg(actualLineNumber);
+            errorMessage = tr("Invalid Adjacency-formatted file.  "
+                              "Matrix row %1 has different number of items than previous row.").arg(actualLineNumber);
             return false;
         }
 
@@ -1730,7 +1730,7 @@ bool Parser::loadAdjacency(){
 
             if ( !conversionOK )  {
                 errorMessage = tr("Error reading Adjacency-formatted file. "
-                                        "Element (%1,%2) can be converted.").arg(i).arg(j);
+                                   "Element (%1,%2) cannot be converted to number. ").arg(i).arg(j);
                 return false;
             }
 
@@ -1812,7 +1812,7 @@ bool Parser::loadTwoModeSociomatrix(){
              ) {
             qDebug()<< "*** Parser:loadTwoModeSociomatrix(): Not a two mode sociomatrix-formatted file. Aborting!!";
             file.close();
-            errorMessage = tr("Not a two-mode sociomatrix formatted file. "
+            errorMessage = tr("Invalid two-mode sociomatrix file. "
                              "Non-comment line %1 includes keywords reserved by other file formats (i.e vertices, graphml, network, graph, digraph, DL, xml)")
                              .arg(fileLine);
             return false;
@@ -1830,7 +1830,8 @@ bool Parser::loadTwoModeSociomatrix(){
         if  ( (newCount != lastCount && i>1 )  ) { // line element count differ
             qDebug()<< "*** Parser:loadTwoModeSociomatrix(): Not a Sociomatrix-formatted file. Aborting!!";
             file.close();
-            errorMessage = tr("Row %1 has fewer or more elements than previous line.").arg(i);
+            errorMessage = tr("Invalid two-mode sociomatrix file. "
+                              "Row %1 has fewer or more elements than previous line.").arg(i);
             return false;
         }
         lastCount=newCount;
@@ -1926,7 +1927,7 @@ bool Parser::loadGraphML(){
     QByteArray userSelectedCodec =userSelectedCodecName.toLatin1();
     xml.addData(encodedData);
 
-    qDebug() << " Parser::loadGraphML(): test if XML document encoding == userCodec";
+    qDebug() << " Parser::loadGraphML(): test if XML document encoding == userSelectedCodec " << userSelectedCodec;
 
     xml.readNext();
     if (xml.isStartDocument()) {
@@ -1937,7 +1938,7 @@ bool Parser::loadGraphML(){
                 << userSelectedCodecName.toUtf8();
          if ( xml.documentEncoding().toString() != userSelectedCodecName) {
                 qDebug() << " Parser::loadGraphML(): Conflicting encodings. "
-                         << " Re-reading data with userCodec";
+                     << " Re-reading data with userSelectedCodec " << userSelectedCodec;
                 xml.clear();
                 QTextStream in(&encodedData);
                 in.setAutoDetectUnicode(false);
@@ -1952,7 +1953,6 @@ bool Parser::loadGraphML(){
              xml.addData(encodedData);
          }
     }
-
 
     while (!xml.atEnd()) {
         xml.readNext();
@@ -1980,7 +1980,8 @@ bool Parser::loadGraphML(){
                             QObject::tr(" loadGraphML(): not a GraphML file."));
                 qDebug()<< "### Parser::loadGraphML(): Error in startElement "
                         << " The file is not an GraphML version 1.0 file ";
-                errorMessage = tr("XML at startElement but element name not graphml.");
+                errorMessage = tr("Invalid GraphML file. "
+                                  "XML at startElement but element name not graphml.");
                 break;
             }
         }
@@ -1989,7 +1990,8 @@ bool Parser::loadGraphML(){
                         QObject::tr(" loadGraphML(): invalid GraphML or encoding."));
             qDebug()<< "### Parser::loadGraphML(): Cannot find startElement"
                     << " The file is not valid GraphML or has invalid encoding";
-            errorMessage = tr("XML tokenString at line %1 invalid.").arg(xml.lineNumber());
+            errorMessage = tr("Invalid GraphML file. "
+                              "XML tokenString at line %1 invalid.").arg(xml.lineNumber());
             break;
         }
     } // end while
@@ -2008,7 +2010,8 @@ bool Parser::loadGraphML(){
         qDebug()<< "### Parser::loadGraphML() - xmls has error! "
                    "Returning false with errorString" << xml.errorString();
         errorMessage =
-                    tr("XML has error at line %1, token name %2:\n\n%3")
+                    tr("Invalid GraphML file. "
+                        "XML has error at line %1, token name %2:\n\n%3")
                     .arg(xml.lineNumber())
                     .arg(xml.name().toString())
                     .arg(xml.errorString());
