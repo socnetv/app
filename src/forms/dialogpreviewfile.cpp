@@ -90,12 +90,28 @@ void DialogPreviewFile::updateTextEdit()
     int mib = encodingComboBox->itemData(
                       encodingComboBox->currentIndex()).toInt();
     QTextCodec *codec = QTextCodec::codecForMib(mib);
-    qDebug () << " DialogPreviewFile::updateTextEdit() " << codec->name();
+    qDebug () << " DialogPreviewFile::updateTextEdit() - codec name: " << codec->name();
     QTextStream in(&encodedData);
-    in.setAutoDetectUnicode(false);
-//    in.setCodec(codec);
+
+    // Check whether QStringConverter supports user selected encoding
+    std::optional<QStringConverter::Encoding> test_support = QStringConverter::encodingForName(codec->name());
+    if ( test_support.has_value()) {
+        // Encoding supported
+        in.setEncoding(test_support.value());
+        qDebug () << " DialogPreviewFile::updateTextEdit() - codec: " << codec->name()
+                 << " supported by QStringConverter. QTextStream Encoding set to: "
+                 <<  QStringConverter::nameForEncoding(test_support.value());
+    }
+    else {
+        // Encoding not supported. Retreat to UTF-9
+        qDebug () << " DialogPreviewFile::updateTextEdit() - codec: " << codec->name()
+                 << " NOT supported by QStringConverter. QTextStream set to autoDetectUnicode. ";
+        in.setAutoDetectUnicode(false);
+    }
+    // Read the text stream
     decodedStr = in.readAll();
 
+    // Update text in dialog
     textEdit->setPlainText(decodedStr);
 }
 
