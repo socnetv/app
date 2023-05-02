@@ -79,7 +79,7 @@ script:
 
 after_success:
   # Run script to upload our packages
-  - chmod +x .travis_upload_files.sh
-  - ./.travis_upload_files.sh
+  - chmod +x .travis_upload_packages.sh
+  - ./.travis_upload_packages.sh
 
 
