@@ -7104,6 +7104,13 @@ void MainWindow::slotNetworkAvailableTextCodecs()
     foreach (int mib, QTextCodec::availableMibs()) {
         QTextCodec *codec = QTextCodec::codecForMib(mib);
 
+        // Verify that Codec/Encoding is supported by QStringConverter,
+        // Otherwise skip it.
+        std::optional<QStringConverter::Encoding> test_support = QStringConverter::encodingForName(codec->name());
+        if ( ! test_support.has_value()) {
+            continue;
+        }
+
         QString sortKey = codec->name().toUpper();
         match = iso8859RegExp.match(sortKey);
 
