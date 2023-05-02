@@ -1,8 +1,8 @@
 #!/bin/bash
 
-echo "******************"
-echo "Installing Qt6..."
-echo "******************"
+echo "********************************************************"
+echo "* STAGE 'install':  Installing dependencies (Qt6, etc) *"
+echo "********************************************************"
 
 # Check current directory
 project_dir=$(pwd)
@@ -63,7 +63,7 @@ else
 fi
 
 echo ""
-echo "travis_install.sh: DONE installing Qt packages. Returning now to main script."
+echo "travis_install_deps.sh: DONE installing dependencies. Returning now to main script."
 echo ""
 
 exit 0

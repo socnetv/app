@@ -1,8 +1,8 @@
 #!/bin/bash
 
-echo "*****************************"
-echo "  Build SocNetV for macOS    "
-echo "*****************************"
+echo "************************************************"
+echo "* STAGE 'script':  Building SocNetV for macOS  *"
+echo "************************************************"
 
 # Check current directory
 project_dir=$(pwd)

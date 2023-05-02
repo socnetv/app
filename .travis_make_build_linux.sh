@@ -1,8 +1,8 @@
 #!/bin/bash
 
-echo "*****************************"
-echo "*     Building SocNetV      *"
-echo "*****************************"
+echo "************************************************"
+echo "* STAGE 'script':  Building SocNetV for Linux  *"
+echo "************************************************"
 
 # Check current directory
 project_dir=$(pwd)
@@ -110,7 +110,7 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
 
     echo ""
     echo "Checking contents of /opt/qtXX/plugins: "
-    find /opt/qt512/plugins
+    find /opt/ | grep "/plugins" | grep qt
     echo "Checking contents of /opt/: "
     find /opt | grep qt
 

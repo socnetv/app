@@ -55,11 +55,7 @@ skip_commits:
    - AUTHORS
    - COPYING
    - NEWS
-#   - .travis.yml
-#   - .travis_before_install.sh
-#   - .travis_build_linux.sh
-#   - .travis_build_macos.sh
-#   - .travis_install.sh
+#   - .travis*.yml
 
 
 # Including commits with particular message or from specific user

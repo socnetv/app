@@ -1,8 +1,8 @@
 #!/bin/bash
 
-echo "******************************************"
-echo "Adding extra repos and updating platform..."
-echo "******************************************"
+echo "*********************************************************************"
+echo "* STAGE 'before_install': Adding extra repos and updating platform  *"
+echo "*********************************************************************"
 
 # Check current directory
 project_dir=$(pwd)
@@ -44,12 +44,14 @@ elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
     echo "Updating brew..."
     brew update
     echo "Finished updating brew."
+    echo "Reinstall wget (to avoid errors if wget is not present)"
+    brew reinstall wget
 else
     exit 1
 fi
 
 echo ""
-echo "travis_before_install.sh: DONE. Returning now to main script."
+echo "travis_before.sh: DONE. Returning now to main script."
 echo ""
 
 exit 0
