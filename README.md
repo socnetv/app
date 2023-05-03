@@ -75,7 +75,7 @@ Email: info@socnetv.org
 Author: Dimitris V. Kalamaras 
 Blog:   https://dimitris.apeiro.gr
 
-SocNetV is a cross-platform application developed in C++ and Qt5, an open source 
+SocNetV is a cross-platform application developed in C++ and Qt, an open source 
 software development platform published under the GPL.
 
 This means you can compile and run SocNetV on any Operating System supported by Qt.
@@ -181,20 +181,22 @@ sudo zypper in socnetv
 
 ## b) Compile from Source Code
 
-To compile and install SocNetV from source you need the Qt5 toolkit development libraries. 
-Qt is an open source C++ toolkit, for Windows, Linux and macOS.
+To compile and install SocNetV from source you need the Qt toolkit
+development libraries, version 6.
 
-Windows and macOS users should download and install Qt from https://www.qt.io/download-qt-installer
+Qt is an open source C++ toolkit, for Windows, Linux and MacOS.
+
+Windows and MacOS users should download and install Qt6 from https://www.qt.io/developers
 
 Linux users need to install the following packages:
 
-- openSUSE: libqt5-qtbase, libqt5-qtbase-devel, libQt5Charts5-devel, libqt5-qttools
+openSUSE: libqt6-qtbase, libqt6-qtbase-devel, libQt6Charts6-devel, qt6-tools
 
-- Fedora: qt5-qtbase,qt5-qtbase-devel, qt5-qtcharts-devel, qt5-qttools
+Fedora: qt6-qtbase, qt6-qtbase-devel, qt6-qtcharts-devel, qt6-linguist, qt6-qt5compat
 
-- Debian: qt5-default, libqt5charts5-dev
+Debian: qt6-base-dev, qt6-base-dev-tools, qt6-charts-dev, qt6-svg-dev, qt6-5compat-dev, libqt6opengl6-dev
 
-Once you have Qt5 installed, you are ready to compile SocNetV from source.
+Once you have Qt installed, you are ready to compile SocNetV from source.
 
 Download the archive with the source code of the latest version from 
 https://github.com/socnetv/app/releases/latest. You will get a compressed file like app-3.0.tar.gz
@@ -210,7 +212,7 @@ make
 sudo make install # or su -c 'make install'
 ```
 
-Probably you have already done the first 2 steps, so just type in 'qmake' or 'qmake-qt5'.
+Probably you have already done the first 2 steps, so just type in 'qmake' or 'qmake-qt6'.
 
 When you finish compiling and installing, run the application typing:
 

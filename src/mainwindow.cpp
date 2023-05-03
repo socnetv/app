@@ -8081,6 +8081,7 @@ void MainWindow::slotNetworkFileView(){
         }
         else {
             // loaded network, but modified
+            // TODO: Check #142
             int response = slotHelpMessageToUser(
                         USER_MSG_QUESTION,
                         tr("Current network has been modified. Save to the original file?"),
