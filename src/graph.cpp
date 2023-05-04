@@ -37,7 +37,6 @@
 #include <QDebug>
 #include <QHash>
 #include <QColor>
-#include <QTextCodec>
 #include <QFileInfo>
 #include <QDateTime> 	// used in exporting centrality files
 #include <QAbstractSeries>
