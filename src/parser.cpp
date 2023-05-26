@@ -233,12 +233,11 @@ void Parser::load(const QString fn,
 
 
 /**
- * @brief Parser::createRandomNodes
+ * @brief Creates either a new node numbered fixedNum
+ * or newNodes nodes numbered from 1 to to newNodes
  * @param fixedNum
  * @param label
  * @param newNodes
- * Creates either a new node numbered fixedNum
- * or newNodes nodes numbered from 1 to to newNodes
  */
 void Parser::createRandomNodes(const int &fixedNum,
                                const QString &label,
@@ -989,7 +988,7 @@ bool Parser::readDLKeywords(QStringList &strList,
 */
 bool Parser::loadPajek(){
 
-    qDebug ("\n\nParser: loadPajek");
+    qDebug ("\n\nParser::loadPajek");
     QFile file ( fileName );
     if ( ! file.open(QIODevice::ReadOnly ))  {
         errorMessage = tr("Cannot open Pajek file");
@@ -1546,13 +1545,12 @@ bool Parser::loadPajek(){
 
 
 /**
- * @brief Tries to load the file as adjacency sociomatrix-formatted.
- * If not it returns -1
+ * @brief Load the currently selected file as adjacency sociomatrix-formatted.
  * @return bool
  */
 bool Parser::loadAdjacency(){
 
-    qDebug()<< "\n\nParser: loadAdjacency()";
+    qDebug()<< "\n\nParser::loadAdjacency()";
 
     QFile file ( fileName );
     if ( ! file.open(QIODevice::ReadOnly )) {
@@ -1560,13 +1558,12 @@ bool Parser::loadAdjacency(){
     }
 
     QTextStream ts( &file );
-
     //ts.setCodec(userSelectedCodecName.toUtf8());
-
     QString str;
     QString edgeStr;
     QStringList currentRow;
-    int fileLine=0, actualLineNumber=0;
+    int fileLine=0;
+    int actualLineNumber=0;
     int i=0, j=0, colCount=0, lastCount=0;
     bool conversionOK=false;
 
@@ -1611,7 +1608,7 @@ bool Parser::loadAdjacency(){
             return false;
         }
 
-        // Check what is the delimiter -- we support comma or space(s)
+        // Check the delimiter and split the row -- we support comma or space(s)
         if ( str.contains (",")) {
             colCount = (str.split(",")).count();
         }
@@ -1619,11 +1616,10 @@ bool Parser::loadAdjacency(){
             colCount = (str.split(" ")).count();
         }
 
-        qDebug() << "non-comment row:" << actualLineNumber << ":"<< str;
-        qDebug() << "colCount:"<<colCount ;
+        qDebug() << "non-comment row:" << actualLineNumber << ":"<< str << "colCount:"<<colCount ;
 
         if  ( (colCount != lastCount && actualLineNumber > 1 ) || (colCount < actualLineNumber) ) {
-            // row columns differ from lastCaount, therefore this can't be an adjacency matrix
+            // row column sizes differ, this can't be an adjacency matrix
             qDebug()<< "*** Parser:loadAdjacency(): Not an Adjacency-formatted file. Aborting!!";
             file.close();
             errorMessage = tr("Invalid Adjacency-formatted file. "
@@ -1643,21 +1639,25 @@ bool Parser::loadAdjacency(){
     fileLine = 0;
 
     // Now do the full read
-    while ( !ts.atEnd() )   {
+    while ( !ts.atEnd() ) {
 
         fileLine ++ ;
 
         str= ts.readLine().simplified();
 
         if ( isComment(str) ) {
+            qDebug()<< tr("fileLine: %1 is comment...").arg(fileLine);
             if ( fileLine == 0 ) {
-                //
+                // TOTHINK: Should we read node labels from the first line?
             }
             continue;
         }
 
         i = ++actualLineNumber;
 
+        qDebug()<<"fileLine: " << fileLine << "i: " <<i;
+
+        // Split the current row
         if ( str.contains (",")) {
             currentRow=str.split(",");
         }
@@ -1677,21 +1677,21 @@ bool Parser::loadAdjacency(){
             // We know how many nodes there are in this adjacency sociomatrix
             // thus we create them, one by one.
 
-            for (j=0; j<totalNodes; j++) {
+            for (j=1; j<=totalNodes; j++) {
 
                 // compute random position for this node
                 randX=rand()%gwWidth;
                 randY=rand()%gwHeight;
 
-                qDebug()<<"Parser::loadAdjacency(): Calling createNode() for node "<< j+1
+                qDebug()<<"Parser::loadAdjacency(): Calling createNode() for node "<< j
                        <<" using random position:"<<randX <<", " << randY;
 
-                emit createNode( j+1,
+                emit createNode( j,
                                  initNodeSize,
                                  initNodeColor,
                                  initNodeNumberColor,
                                  initNodeNumberSize,
-                                 QString::number(j+1),
+                                 QString::number(j),
                                  initNodeLabelColor,
                                  initNodeLabelSize,
                                  QPointF(randX, randY),
@@ -1703,11 +1703,28 @@ bool Parser::loadAdjacency(){
             qDebug() << "Parser::loadAdjacency(): Finished creating nodes";
         }
 
-        // Check the number of items in this line,
-        // if it is different that totalNodes, then return with an error
-        if ( totalNodes != (int) currentRow.count() )  {
+
+        // Check if this actual line is over the expected total nodes
+        if ( i > totalNodes ) {
+            emit createNode( i,
+                             initNodeSize,
+                             initNodeColor,
+                             initNodeNumberColor,
+                             initNodeNumberSize,
+                             QString::number(i),
+                             initNodeLabelColor,
+                             initNodeLabelSize,
+                             QPointF(randX, randY),
+                             initNodeShape,
+                             QString(),
+                             false
+                             );
+        }
+
+        // Check the number of items in this line
+        if ( (int) currentRow.count() > totalNodes )  {
             errorMessage = tr("Invalid Adjacency-formatted file.  "
-                              "Matrix row %1 has different number of items than previous row.").arg(actualLineNumber);
+                              "Not a NxN matrix. Row %1 declares %2 edges. Expected: %3").arg(actualLineNumber).arg((int) currentRow.count()).arg(totalNodes);
             return false;
         }
 
@@ -1749,8 +1766,6 @@ bool Parser::loadAdjacency(){
         } // end edge creation loop
 
 
-        qDebug()<<"fileLine: " << fileLine << "i: " <<i;
-
     }  // end full while
 
     file.close();
@@ -1771,7 +1786,7 @@ bool Parser::loadAdjacency(){
     Tries to load the file as two-mode sociomatrix. If not it returns -1
 */
 bool Parser::loadTwoModeSociomatrix(){
-    qDebug("\n\nParser: loadTwoModeSociomatrix()");
+    qDebug("\n\nParser::loadTwoModeSociomatrix()");
     QFile file ( fileName );
     if ( ! file.open(QIODevice::ReadOnly )) {
         errorMessage = tr("Cannot open two-mode sociomatrix file. ") ;
@@ -1887,7 +1902,7 @@ bool Parser::loadTwoModeSociomatrix(){
  */
 bool Parser::loadGraphML(){
 
-    qDebug("\n\nParser: loadGraphML()");
+    qDebug("\n\nParser::loadGraphML()");
 
     totalNodes=0;
     totalLinks=0;
@@ -2864,9 +2879,13 @@ void Parser::createMissingNodeEdges(){
 }
 
 
+
+
 /**
-    Tries to load a file as GML formatted network. If not it returns -1
-*/
+ * Tries to load a file as GML formatted network.
+ *
+ * @return bool
+ */
 bool Parser::loadGML(){
     qDebug()<< "Parser::loadGML()";
 
