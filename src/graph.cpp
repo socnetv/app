@@ -48,6 +48,7 @@
 #include <QValueAxis>
 #include <QPixmap>
 #include <QElapsedTimer>
+#include <QStringEncoder>
 
 #include <QNetworkReply>
 
