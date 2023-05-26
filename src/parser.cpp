@@ -1924,7 +1924,7 @@ bool Parser::loadGraphML(){
     if ( ! file.open(QIODevice::ReadOnly )) {
         return false;
     }
-
+    // Get the canonical path of the file to load (without the filename)
     fileDirPath= QFileInfo(fileName).canonicalPath();
 
     //QXmlStreamReader *xml = new QXmlStreamReader();
@@ -2264,7 +2264,7 @@ void Parser::readGraphMLElementDefaultValue(QXmlStreamReader &xml) {
         initNodeCustomIcon = fileDirPath + "/"  + initNodeCustomIcon;
         qDebug()<< "Parser::readGraphMLElementDefaultValue() - initNodeCustomIcon full path:"
                 << initNodeCustomIcon ;
-        if (QFileInfo(initNodeCustomIcon).exists()){
+        if (QFileInfo::exists(initNodeCustomIcon)){
             qDebug()<< "Parser::readGraphMLElementDefaultValue() - custom icon file exists!";
         }
         else {
