@@ -843,7 +843,7 @@ void Graph::vertexCreate(const int &number,
  * Called from GW, with i and p as parameters.
  * Calls the main creation slot with init node values.
  *
- * @param p  The clicked pos of the new node.
+ * @param QPointF  The clicked pos of the new node.
  */
 void Graph::vertexCreateAtPos(const QPointF &p){
     int i = vertexNumberMax() +1;
@@ -870,12 +870,14 @@ void Graph::vertexCreateAtPos(const QPointF &p){
 
 
 /**
- * @brief Graph::vertexCreateAtPosRandom
- * @param i
- * Creates a new random positioned vertex
+ * @brief Creates a new randomly positioned vertex with default values
+ *
  * Called from MW only
  * Computes a random position p inside the useable canvas area
  * Then calls the main creation slot with init node values.
+ *
+ * @param bool
+ *
  */
 void Graph::vertexCreateAtPosRandom(const bool &signalMW){
 
@@ -893,13 +895,15 @@ void Graph::vertexCreateAtPosRandom(const bool &signalMW){
 
 
 /**
- * @brief Graph::vertexCreateAtPosRandomWithLabel
- * @param i
- * @param label
- * Creates a new random positioned vertex with number i and label
+ * @brief Creates a new randomly positioned vertex with specific number and label.
+ * All other values are from the defaults.
+ *
  * Called from WebCrawler and Parser with parameters label and i.
  * Computes a random position p the useable canvas area
  * Then calls the main creation slot with init node values.
+ *
+ * @param i
+ * @param label
  */
 void Graph::vertexCreateAtPosRandomWithLabel(const int &i,
                                              const QString &label,

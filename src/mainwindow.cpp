@@ -9188,9 +9188,9 @@ void MainWindow::slotEditNodeSelectNone(){
 
 
 /**
- * @brief MainWindow::slotEditNodePosition
- * Called from GraphicsWidget when a node moves to update vertex coordinates
+ * @brief Called from GraphicsWidget when a node moves to update vertex coordinates
  * in Graph
+ *
  * @param nodeNumber
  * @param x
  * @param y
@@ -9207,17 +9207,14 @@ void MainWindow::slotEditNodePosition(const int &nodeNumber,
 
 
 /**
- * @brief MainWindow::slotEditNodeAdd
- * Calls Graph::vertexCreate method to add a new RANDOM node into the activeGraph->* Called when "Add Node" button is clicked on the Main Window.
+ * @brief Called when the "Add Node" btn is clicked, to add a new RANDOM node *
  */
 void MainWindow::slotEditNodeAdd() {
-    qDebug() << "MW::slotEditNodeAdd() - calling Graph::vertexCreateAtPosRandom ";
+    qDebug() << "MW::slotEditNodeAdd()";
     activeGraph->vertexCreateAtPosRandom(true);
     statusMessage( tr("New random positioned node (numbered %1) added.")
                    .arg(activeGraph->vertexNumberMax())  );
 }
-
-
 
 
 

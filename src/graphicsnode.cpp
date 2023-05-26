@@ -184,6 +184,7 @@ int GraphicsNode::size() const{
 /**
  * @brief Sets the shape of the node and prepares the corresponding QPainterPath
  * m_path which will be drawn by our painter in GraphicsNode::paint().
+ *
  * The only exception is when the shape is 'custom'. In that case, the painter
  * will paint a pixmap with the custom node icon (loaded from iconPath).
  * However, even in that case we are still creating a QPainterPath, because this

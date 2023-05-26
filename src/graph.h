@@ -170,7 +170,7 @@ public slots:
 
     void edgeVisibilitySet(const int &relation, const int &source, const int &target, const bool &status);
 
-    //auxiliary vertexCreate functions
+    // helper vertexCreate functions
     void vertexCreateAtPos(const QPointF &p);
 
     void vertexCreateAtPosRandom(const bool &signalMW=false);

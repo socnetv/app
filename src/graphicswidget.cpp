@@ -197,10 +197,11 @@ void GraphicsWidget::relationSet(int relation) {
 
 
 /**
- * @brief Adds a new node onto the scene
- * Called from Graph::vertexCreate method primarily when we load files
- * It is also called in the end when the user presses "Add Node" button or
- * the user double clicks (mouseDoubleClickEvent() calls Graph::vertexCreate)
+ * @brief Adds a new node in the scene
+ *
+ * Called when we load files, or when the user presses "Add Node" button or
+ * the user double clicks on the canvas.
+ *
  * @param num
  * @param nodeSize
  * @param nodeColor
@@ -1390,11 +1391,10 @@ QList<SelectedEdge> GraphicsWidget::selectedEdges() {
 
 
 /**
- * @brief Starts the new node creation process when the user double-clicks somewhere:
-    Emits userDoubleClicked to Graph::vertexCreate(),
-    which in turn calls this->drawNode() to create and displays node info on MW status bar
-    Yes, it's a full circle!
- * @param e
+ * @brief When the user double-clicks on empty space, initiates the new node creation process.
+ * Otherwise, it the user double-clicks on a node, starts the edge creation process.
+ *
+ * @param QMouseEvent
  */
 void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
 
