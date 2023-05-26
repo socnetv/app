@@ -66,8 +66,9 @@ Chart::~Chart(){
 
 
 /**
- * @brief Add QAbstractSeries series to chart
+ * @brief Adds QAbstractSeries series to chart
  * If no series are passed, a new QSplineSeries is created with 1 point at (0,0)
+ *
  * @param series
  */
 void Chart::addSeries(QAbstractSeries *series) {

@@ -428,6 +428,7 @@ void GraphVertex::edgeFilterByRelation(int relation, bool status ){
 /**
  * @brief Returns the number of active outbound arcs, aka the number of
  * outEdges, from this vertex for the current relation
+ *
  * @return int
  */
 int GraphVertex::outEdges() {
