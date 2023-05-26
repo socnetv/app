@@ -7293,26 +7293,12 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
                                         const QString &netName,
                                         const int &totalNodes,
                                         const int &totalEdges,
+                                        const qint64 &elapsedTime,
                                         const QString &message)
 {
     qDebug()<< "Network file loaded, type " << type;
 
-    if (type > 0) {
-        // We have loaded a file with success.
-        // Update our window and save path in settings
-
-        fileName=fName;
-        previous_fileName=fileName;
-        QFileInfo fileInfo (fileName);
-        fileNameNoPath = fileInfo.fileName();
-
-        Q_ASSERT_X( !fileNameNoPath.isEmpty(),  "not empty filename ", "empty filename " );
-
-        setWindowTitle("SocNetV "+ VERSION +" - "+fileNameNoPath);
-        setLastPath(fileName); // store this path and file
-    }
-    else {
-
+    if (type <= 0 || fName.isEmpty() ) {
         qDebug()<< "ERROR. UNRECOGNIZED FILE. "
                    "Message from Parser: "
                 << message
@@ -7339,46 +7325,62 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
         return;
     }
 
+    // We have loaded a file with success.
+    // Update our window and save path in settings
+
+    fileName=fName;
+    previous_fileName=fileName;
+    QFileInfo fileInfo (fileName);
+    fileNameNoPath = fileInfo.fileName();
+
+    Q_ASSERT_X( !fileNameNoPath.isEmpty(),  "not empty filename ", "empty filename " );
+
+    setWindowTitle("SocNetV "+ VERSION +" - "+fileNameNoPath);
+    setLastPath(fileName); // store this path and file
+
+    QString fileFormatHuman;
+
     switch( type ) 	{
-    case 0:
+    case FileType::NOT_SAVED:
         break;
-    case 1:
-        statusMessage( tr("GraphML formatted network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( netName ).arg( totalNodes ).arg(totalEdges ) );
+    case FileType::GRAPHML:
+        fileFormatHuman = "GraphML";
         break;
+    case FileType::PAJEK:
+        fileFormatHuman = "Pajek";
+        break;
+    case FileType::ADJACENCY:
+        fileFormatHuman = "Adjacency";
+        break;
+    case FileType::GRAPHVIZ:
+        fileFormatHuman = "GraphViz";
+        break;
+    case FileType::UCINET:
+        fileFormatHuman = "UCINET";
+        break;
+    case FileType::GML:
+        fileFormatHuman = "GML";
+        break;
+    case FileType::EDGELIST_WEIGHTED:
+        fileFormatHuman = "Weighted list";
+        break;
+    case FileType::EDGELIST_SIMPLE:
+        fileFormatHuman = "Simple list";
+        break;
+    case FileType::TWOMODE:
+        fileFormatHuman = "Two-mode affiliation";
+        break;
+    default: // Every non-expected case
+        slotHelpMessageToUser(USER_MSG_CRITICAL,
+                              tr("Error"),
+                              tr("Error"),
+                              tr("Unrecognized format. Please specify the file-format using the Import Menu.")
+                              );
 
-    case 2:
-        statusMessage( tr("Pajek formatted network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( netName ).arg( totalNodes ).arg(totalEdges ));
-        break;
-
-    case 3:
-        statusMessage( tr("Adjacency formatted network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( netName ).arg( totalNodes ).arg(totalEdges ) );
-        break;
-
-    case 4:
-        statusMessage( tr("GraphViz (Dot) formatted network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( netName ).arg( totalNodes ).arg(totalEdges ) );
-        break;
-
-    case 5:
-        statusMessage( tr("UCINET formatted network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( netName ).arg( totalNodes ).arg(totalEdges ) );
-        break;
-    case 6:
-        statusMessage( tr("GML formatted network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( netName ).arg( totalNodes ).arg(totalEdges ) );
-        break;
-    case 7:
-        statusMessage( tr("Weighted list formatted network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( netName ).arg( totalNodes ).arg(totalEdges ) );
-        break;
-    case 8:
-        statusMessage( tr("Simple list formatted network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( netName ).arg( totalNodes ).arg(totalEdges ) );
-        break;
-    case 9:
-        statusMessage( tr("Two-mode affiliation network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( netName ).arg( totalNodes ).arg(totalEdges ) );
-        break;
-
-    default: // just for sanity
-        QMessageBox::critical(this, "Error","Unrecognized format. \nPlease specify"
-                                            " which is the file-format using Import Menu.","OK",0);
         break;
     }
+
+    statusMessage( tr("%1 formatted network, named '%2', loaded. Nodes: %3, Edges: %4. Elapsed time: %5 ms").arg(fileFormatHuman).arg( netName ).arg( totalNodes ).arg(totalEdges).arg(elapsedTime) );
 
     networkSaveAct->setIcon(QIcon(":/images/file_download_48px.svg"));
     networkSaveAct->setEnabled(false);
@@ -9082,7 +9084,7 @@ void MainWindow::slotNetworkChanged(
         editEdgeUndirectedAllAct->setChecked(false);
     }
     rightPanelEdgesLCD->setText(QString::number(edges));
-    rightPanelDensityLCD->setText(QString::number(density ));
+    rightPanelDensityLCD->setText(QString::number(density, 'f', 8));
 
     qDebug()<<"Finished updating mainwindow.";
 }

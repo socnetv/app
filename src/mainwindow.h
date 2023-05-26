@@ -167,6 +167,7 @@ public slots:
                                const QString &netName=QString(),
                                const int &totalNodes=0,
                                const int &totalEdges=0,
+                               const qint64 &elapsedTime=0,
                                const QString &message=QString());
     void slotNetworkFileLoadRecent();
     void slotNetworkSavedStatus(const int &status);
