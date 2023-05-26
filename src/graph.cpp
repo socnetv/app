@@ -15686,18 +15686,18 @@ void Graph::graphLoad (	const QString m_fileName,
     qDebug() << "Graph::graphLoad() - clearing relations ";
     relationsClear();
     qDebug() << "Graph::graphLoad() - "<< m_fileName
-             << " calling parser.load() from thread " << this->thread();
+             << " creating new Parser from thread: " << this->thread();
 
     file_parser = new Parser();
 
-    qDebug () << "Graph::graphLoad() - file_parser thread  " << file_parser->thread()
-              << " moving it to new thread ";
+    qDebug () << "Graph::graphLoad() - file_parser current thread:" << file_parser->thread()
+              << " moving it to a new thread...";
 
     file_parser->moveToThread(&file_parserThread);
 
-    qDebug () << "Graph::graphLoad() - file_parser thread now " << file_parser->thread();
+    qDebug () << "Graph::graphLoad() - file_parser thread now: " << file_parser->thread();
 
-    qDebug () << "Graph::graphLoad() - connecting file_parser signals ";
+    qDebug () << "Graph::graphLoad() - connecting file_parser signals...";
 
     connect(&file_parserThread, &QThread::finished,
             file_parser, &QObject::deleteLater);
@@ -15732,6 +15732,7 @@ void Graph::graphLoad (	const QString m_fileName,
                                                       int,
                                                       int,
                                                       int,
+                                                      const qint64 &,
                                                       const QString &)
                                     ),
                 this, SLOT(graphFileLoaded( const int &,
@@ -15740,6 +15741,7 @@ void Graph::graphLoad (	const QString m_fileName,
                                             const int &,
                                             const int &,
                                             const int &,
+                                            const qint64 &,
                                             const QString &)
                            )
                 );
@@ -15819,6 +15821,7 @@ void Graph::graphFileLoaded (const int &fileType,
                              const int &totalNodes,
                              const int &totalLinks,
                              const int &edgeDirType,
+                             const qint64 &elapsedTime,
                              const QString &message)
 {
     if ( fileType == FileType::UNRECOGNIZED ) {
@@ -15830,6 +15833,7 @@ void Graph::graphFileLoaded (const int &fileType,
                                 QString(),
                                 0,
                                 0,
+                                elapsedTime,
                                 message);
         return;
 
@@ -15864,16 +15868,15 @@ void Graph::graphFileLoaded (const int &fileType,
 
     graphSetModified(GraphChange::ChangedNew);
 
-    qDebug() << "Graph::graphFileLoaded() -  emit signalGraphLoaded()";
+    qDebug() << "Graph::graphFileLoaded() -  emitting signalGraphLoaded()";
 
     emit signalGraphLoaded (fileType,
                             fileName,
                             graphName(),
                             totalNodes,
                             totalLinks,
+                            elapsedTime,
                             message);
-
-    qDebug ()<< "Graph::graphFileLoaded()  -check parser if running...";
 
 }
 
