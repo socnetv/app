@@ -64,8 +64,7 @@
 
 
 /**
- * @brief Graph::Graph
- * constructor
+ * @brief Constructs a Graph
  */
 Graph::Graph() {
 
@@ -255,18 +254,10 @@ Graph::Graph() {
                        "<body>").arg(VERSION);
 
     htmlEnd = "</body></html>";
-
-
-
-
-
-
 }
 
-
-
 /**
- * @brief Graph::~Graph
+ * @brief Destroys the Graph object
  */
 Graph::~Graph() {
     qDebug()<<"Graph::~Graph() - Calling clear()";
@@ -274,12 +265,10 @@ Graph::~Graph() {
     delete file_parser;
 }
 
-
-
-
 /**
-    Clears all vertices
-*/
+ * @brief Clears all vertices
+ * @param reason
+ */
 void Graph::clear(const QString &reason) {
     qDebug()<< "Clearing graph, vertices and data structures... Reason:" << reason;
 
@@ -431,7 +420,10 @@ void Graph::clear(const QString &reason) {
 
 
 /**
- * @brief Called on MW resizing to update node positions and canvasWidth and canvasHeight
+ * @brief Sets the size of the canvas
+ *
+ * Called on MW resizing to update node positions and canvasWidth and canvasHeight
+ *
  * @param w
  * @param h
  */
@@ -462,68 +454,51 @@ void Graph::canvasSizeSet(const int w, const int h){
 }
 
 /**
- * @brief Graph::canvasMaxRadius
- * @return
+ * @brief Gets the max radius of the canvas
+ * @return double
  */
 double Graph::canvasMaxRadius () const {
     return ( canvasHeight < canvasWidth ) ? canvasHeight / 2.0 -30 : canvasWidth/2.0 - 30;
 }
 
 /**
- * @brief Graph::canvasMinDimension
- * @return
+ * @brief Gets the min dimensions of the canvas
+ * @return qreal
  */
 qreal Graph::canvasMinDimension() const {
     return ( canvasHeight < canvasWidth ) ? canvasHeight-30 : canvasWidth-30;
 }
 
-
 /**
- * @brief Graph::canvasVisibleX
+ * @brief Checks if x is visible inside the canvas usable area and if not returns an adjusted x-coordinate
  * @param x
- * @return
- * Checks if x is visible inside the canvas usable area
- * and if not returns an adjusted x-coordinate
+ * @return double
  */
 double Graph::canvasVisibleX(const double &x)  const {
-    return qMin (
-                canvasWidth - 50.0 , qMax (50.0 , x )
-                );
+    return qMin (canvasWidth - 50.0 , qMax (50.0, x));
 }
 
-
 /**
- * @brief Graph::canvasVisibleY
+ * @brief Checks if y is visible inside the canvas usable area and if not returns an adjusted y-coordinate
  * @param y
- * @return
- * Checks if y is visible inside the canvas usable area
- * and if not returns an adjusted y-coordinate
+ * @return double
  */
 double Graph::canvasVisibleY(const double &y) const {
-    return qMin (
-                canvasHeight - 50.0 , qMax (50.0 , y )
-                );
+    return qMin ( canvasHeight - 50.0 , qMax (50.0 , y ) );
 }
 
-
-
 /**
- * @brief Graph::canvasRandomX
- * @return
- * Returns a random x-coordinate adjusted to be visible
- * inside the canvas usable area
+ * @brief Returns a random x-coordinate adjusted to be visible inside the canvas usable area
+ * @return double
  */
 double Graph::canvasRandomX()  const {
     qreal randX = static_cast <qreal> ( rand() % static_cast <int> (canvasWidth) );
     return qMin ( canvasWidth - 30.0 , qMax ( 30.0 , randX ) );
 }
 
-
 /**
- * @brief Graph::canvasRandomY
- * @return
- * Returns a random y-coordinate adjusted to be visible
- * inside the canvas usable area
+ * @brief Returns a random y-coordinate adjusted to be visible inside the canvas usable area
+ * @return double
  */
 double Graph::canvasRandomY() const {
     qreal randY = static_cast <qreal> ( rand() % static_cast <int> (canvasHeight) );
@@ -531,14 +506,10 @@ double Graph::canvasRandomY() const {
 }
 
 
-
-
 /**
- * @brief
- * Changes m_curRelation to relNum, and optionally emits signals to MW/GW (by default: true)
+ * @brief Changes the current relation, and optionally emits signals to MW/GW (default: true)
  *
- * Forces all enabled vertices to disable edges
- * in the old relation and enable edges of the new relation
+ * Forces all enabled vertices to disable edges in the old relation and enable edges of the new relation
  *
  * Then, if updateUI==true (default), it emits signals to MW and GW
  * to update the MW UI and toggle the edges on the GW, respectivelly.
@@ -617,10 +588,8 @@ void Graph::relationSet(int relNum, const bool updateUI){
 }
 
 
-
 /**
- * @brief
- * Changes graph to previous relation
+ * @brief Changes graph to previous relation
  */
 void Graph::relationPrev(){
     qDebug() << "Graph::relationPrev()";
@@ -632,10 +601,8 @@ void Graph::relationPrev(){
     }
 }
 
-
 /**
- * @brief
- * Changes graph to next relation
+ * @brief Changes graph to next relation
  */
 void Graph::relationNext(){
     qDebug() << "Graph::relationNext()";
@@ -647,13 +614,13 @@ void Graph::relationNext(){
     }
 }
 
-
-
 /**
- * @brief
+ * @brief Adds a new relation to the graph
+ *
  * Adds a new relation named relName, emitting signal to MW UI, and
  * optionally changing current graph relation to the new one.
  * Called by file parser and various Graph methods, i.e clear() etc.
+ *
  * @param relName
  */
 void Graph::relationAdd(const QString &relName, const bool &changeRelation) {
@@ -676,12 +643,8 @@ void Graph::relationAdd(const QString &relName, const bool &changeRelation) {
 }
 
 
-
-
-
 /**
- * @brief
- * Returns current relation number
+ * @brief Gets the current relation number
  *
  * @return int
  */
@@ -689,10 +652,8 @@ int Graph::relationCurrent(){
     return m_curRelation;
 }
 
-
 /**
- * @brief
- * Returns current relation name
+ * @brief Gets the current relation name
  *
  * @return string
  */
@@ -704,8 +665,7 @@ QString Graph::relationCurrentName() const{
 
 
 /**
- * @brief
- * Renames current relation to newName, optionally emitting a signal to MW
+ * @brief Renames current relation to newName, optionally emitting a signal to MW
  * @param newName
  */
 void Graph::relationCurrentRename(const QString &newName, const bool &signalMW) {
@@ -745,8 +705,8 @@ void Graph::relationCurrentRename(const QString &newName, const bool &signalMW) 
 }
 
 /**
- * @brief
- * Overload. Renames current relation to newName, without emitting any signal to MW
+ * @brief Overload. Renames current relation to newName, without emitting any signal to MW
+ *
  * @param newName
  */
 void Graph::relationCurrentRename(const QString &newName) {
@@ -756,8 +716,7 @@ void Graph::relationCurrentRename(const QString &newName) {
 
 
 /**
- * @brief
- * Returns the count of relationships in this Graph
+ * @brief Returns the count of relationships in this Graph
  *
  * @return int
  */
@@ -769,8 +728,7 @@ int Graph::relations(){
 
 
 /**
- * @brief
- * Clears relationships in this Graph
+ * @brief Clears relationships in this Graph
  */
 void Graph::relationsClear(){
     int oldRelationsCounter = m_relationsList.count();
@@ -779,18 +737,15 @@ void Graph::relationsClear(){
     qDebug () << "Cleared" << oldRelationsCounter << "relation(s)"
               <<"Emitting signalRelationsClear()";
     emit signalRelationsClear();
-
 }
 
 /**
-
-*/
-/**
- * @brief
- * Creates a new vertex
+ * @brief Creates a new vertex
+ *
  * Main vertex creation slot, associated with homonymous signal from Parser.
  * Adds a vertex to the Graph and signals drawNode to GW
  * The new vertex has number num and specific color, label, label color, shape and position p.
+ *
  * @param num
  * @param size
  * @param nodeColor
@@ -883,9 +838,11 @@ void Graph::vertexCreate(const int &number,
 
 
 /**
- * @brief Create a new vertex a a giver position
+ * @brief Creates a new vertex in the given position
+ *
  * Called from GW, with i and p as parameters.
  * Calls the main creation slot with init node values.
+ *
  * @param p  The clicked pos of the new node.
  */
 void Graph::vertexCreateAtPos(const QPointF &p){
