@@ -122,7 +122,6 @@ public:
     void createRandomNodes(const int &fixedNum=1,const QString &label=QString(),
                            const int &newNodes=1);
 
-    void loadFileError(const QString &errorMessage);
 
 signals:
 
@@ -157,6 +156,7 @@ signals:
                            int totalNodes,
                            int totalLinks,
                            int edgeDirType,
+                           const qint64 &elapsedTime,
                            const QString &message=QString());
 
 
@@ -191,7 +191,7 @@ private:
     int nodeLabelSize, source, target, nodeSize;
     qreal initEdgeWeight, edgeWeight, arrowSize;
     qreal bez_p1_x,bez_p1_y, bez_p2_x, bez_p2_y;
-    bool missingNode;
+    bool fileLoaded, missingNode;
 	bool arrows, bezier, conv_OK;
     bool bool_key, bool_node, bool_edge, fileContainsNodeColors;
     bool fileContainsNodeCoords, fileContainsLinkColors;
