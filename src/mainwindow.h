@@ -3,8 +3,9 @@
  version: 3.1.0-dev
  Written in Qt
  
-                         mainwindow.h  -  description
-                             -------------------
+ @file mainwindow.h
+ @brief The MainWindow declaration
+
     copyright         : (C) 2005-2023 by Dimitris B. Kalamaras
     blog              : http://dimitris.apeiro.gr
     project site      : https://socnetv.org
