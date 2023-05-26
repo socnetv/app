@@ -217,8 +217,8 @@ MainWindow::MainWindow(const QString & m_fileName, const bool &forceProgress, co
         slotNetworkFileChoose( m_fileName );
     }
 
-    QString welcomeMsg = "Welcome to " + qApp->applicationName() + ", Version ";
-    statusMessage( tr(welcomeMsg.toLocal8Bit())+VERSION);
+    QString welcomeMsg = tr("Welcome to %1, version %2").arg(qApp->applicationName(), VERSION);
+    statusMessage( welcomeMsg );
 
     qDebug() << "MW Constructor finished, on thread:" << thread();
 
@@ -856,8 +856,7 @@ void MainWindow::slotStyleSheetByName(const QString &sheetFileName) {
             qDebug () << "Could not open (for reading) file:" << sheetFileName;
             slotHelpMessageToUserError(
                         tr("Cannot read stylesheet file %1:\n%2")
-                        .arg(sheetFileName)
-                        .arg(file.errorString())
+                        .arg(sheetFileName, file.errorString())
                         );
             return;
         }
