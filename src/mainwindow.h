@@ -385,7 +385,7 @@ public slots:
     void slotLayoutGuides(const bool &toggle);
 
     //ANALYSIS MENU
-    void askAboutWeights(const bool userTriggered=false);
+    void askAboutEdgeWeights(const bool userTriggered=false);
 
     void slotAnalyzeReciprocity();
     void slotAnalyzeSymmetryCheck();

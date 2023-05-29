@@ -387,6 +387,7 @@ signals:
 public:
 
     enum ModStatus {
+        NewNet          = -1,
         Unchanged       = 0,
         MinorOptions    = 1,
         VertexMetadata  = 2,
@@ -396,7 +397,6 @@ public:
         VertexCount     = 11,
         EdgeCount       = 12,
         VertexEdgeCount = 13,
-        NewNet      = 14,
     };
 
 
@@ -640,6 +640,8 @@ public:
 
 
     /* GRAPH methods */
+
+    bool graphIsEmpty() const;
 
     void graphSetModified(const int &graphNewStatus, const bool&signalMW=true);
 

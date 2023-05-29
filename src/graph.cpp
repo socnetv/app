@@ -84,8 +84,8 @@ Graph::Graph() {
     canvasHeight = 600;
 
     order=true;		//returns true if the indexes of the list is ordered.
-    m_graphModStatus=ModStatus::Unchanged;
 
+    m_graphModStatus=ModStatus::NewNet;
     m_graphName="";
     m_curRelation=0;
     m_fileFormat=FileType::NOT_SAVED;
@@ -401,7 +401,7 @@ void Graph::clear(const QString &reason) {
     calculatedPRP=false;
     calculatedTriad=false;
 
-    m_graphModStatus=ModStatus::Unchanged;
+    m_graphModStatus=ModStatus::NewNet;
 
     m_graphHasVertexCustomIcons = false;
 
@@ -410,7 +410,7 @@ void Graph::clear(const QString &reason) {
     //    }
 
     if ( reason != "exit") {
-        qDebug()<< "Finished clearing graph data and structures. Emitting graphSetModified()";
+        qDebug()<< "Finished clearing graph data and structures.";
         graphSetModified(m_graphModStatus,true);
     }
     else {
@@ -443,7 +443,6 @@ void Graph::canvasSizeSet(const int w, const int h){
         (*it)->setX( newX ) ;
         (*it)->setY( newY );
         emit setNodePos((*it)->name(), newX , newY);
-        graphSetModified(ModStatus::VertexPositions,false);
     }
     canvasWidth = w;
     canvasHeight= h;
@@ -451,6 +450,8 @@ void Graph::canvasSizeSet(const int w, const int h){
                        .arg(QString::number(canvasWidth))
                        .arg(QString::number(canvasHeight))
                        );
+
+    graphSetModified(ModStatus::VertexPositions,false);
     qDebug() << "Graph::canvasSizeSet() - finished";
 }
 
@@ -582,8 +583,7 @@ void Graph::relationSet(int relNum, const bool updateUI){
         emit signalRelationChangedToMW(m_curRelation);
         //notify GW to disable/enable the on screen edges.
         emit signalRelationChangedToGW(m_curRelation);
-
-        qDebug()<<"Graph::relationSet() - Calling graphSetModified()";
+        // update graph mod status
         graphSetModified(ModStatus::EdgeCount);
     }
 }
@@ -3009,24 +3009,34 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
 
 
 
-
+/**
+ * @brief Returns true if the current graph has no vertices at all
+ */
+bool Graph::graphIsEmpty() const{
+    return m_graph.isEmpty();
+}
 
 /**
  * @brief Sets the graph modification status.
+ *
  * If there are major changes, then signalGraphModified is emitted
  * In any case, SignalGraphSavedStatus is emitted.
+ *
  * @param graphNewStatus
  * @param signalMW
  */
 void Graph::graphSetModified(const int &graphNewStatus, const bool &signalMW){
 
+    if ( m_graphModStatus == ModStatus::NewNet && graphIsEmpty()) {
+        qDebug()<<"Graph::graphSetModified() - nothing to do...";
+       // No vertex exists, this is a new network. Don't change status.
+        emit signalGraphSavedStatus(true);
+        return;
+    }
+
     if ( graphNewStatus == ModStatus::NewNet ) {
 
-        // this is called from:
-        // graphFileLoaded() after successful loading
-
-        qDebug()<<"new network, thus saved..."
-                  "emit signalGraphModified()";
+        qDebug()<<"Graph::graphSetModified() - setting graph as new...";
 
         m_graphModStatus=graphNewStatus;
 
@@ -3035,13 +3045,15 @@ void Graph::graphSetModified(const int &graphNewStatus, const bool &signalMW){
                                  edgesEnabled(),
                                  graphDensity());
 
+        emit signalGraphSavedStatus(true);
+
         return;
     }
     else if ( graphNewStatus == ModStatus::Unchanged ) {
 
         // this is called after successful saving
 
-        qDebug()<<"no changes, no need to save graph...";
+        qDebug()<<"Graph::graphSetModified() - setting graph as unchanged...";
 
         m_graphModStatus=graphNewStatus;
 
@@ -3055,7 +3067,7 @@ void Graph::graphSetModified(const int &graphNewStatus, const bool &signalMW){
         // This is called from any method that alters V or E in G:
         // thus all prior computations are invalid
 
-        qDebug()<<"major changes, invalidating computations, needs saving...";
+        qDebug()<<"Graph::graphSetModified() - major changes invalidating computations, setting graph as changed...";
 
         m_graphModStatus=graphNewStatus;
 
@@ -3098,8 +3110,8 @@ void Graph::graphSetModified(const int &graphNewStatus, const bool &signalMW){
         // this is called from Graph methods that inflict minor changes,
         // i.e. changing vertex positions, labels, etc
 
-        // We do not change status if current status is > MajorChanges
         if ( m_graphModStatus < ModStatus::MajorChanges) {
+            //  Do not change status if current status is > MajorChanges
             m_graphModStatus = graphNewStatus;
         }
         qDebug()<<"minor changes but needs saving...";
@@ -3119,16 +3131,14 @@ void Graph::graphSetModified(const int &graphNewStatus, const bool &signalMW){
 
 /**
  * @brief Returns true of graph is modified (edges/vertices added/removed)
- * else false
  * @return
  */
 bool Graph::graphIsModified() const {
 
-    if ( m_graphModStatus > ModStatus::MajorChanges
-         && m_graphModStatus != ModStatus::NewNet ) {
-        return true;
-    }
-    return false;
+    bool isModified = m_graphModStatus > ModStatus::MajorChanges ? true:false;
+    qDebug()<<"Graph::graphIsModified() - isModified:" << isModified;
+
+    return isModified;
 }
 
 
@@ -11521,8 +11531,8 @@ void Graph::randomNetScaleFreeCreate (const int &N,
     }
 
     relationCurrentRename(tr("scale-free"),true);
-    qDebug() << "Graph::randomNetScaleFreeCreate() - finished. Calling "
-                "graphSetModified()";
+
+    qDebug() << "Graph::randomNetScaleFreeCreate() - finished.";
 
     graphSetModified(ModStatus::VertexEdgeCount);
 
@@ -15854,10 +15864,9 @@ void Graph::graphFileLoaded (const int &fileType,
                 << " name" << graphName()
                 << " node " << totalNodes
                 << " links" << totalLinks
-                << " edgeDirType" << edgeDirType
-                << " Calling graphSetModified()";
+                << " edgeDirType" << edgeDirType;
 
-    graphSetModified(ModStatus::NewNet);
+    graphSetModified(ModStatus::Unchanged);
 
     qDebug() << "Graph::graphFileLoaded() -  emitting signalGraphLoaded()";
 

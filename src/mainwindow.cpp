@@ -11369,7 +11369,7 @@ void MainWindow::slotLayoutRadialByProminenceIndex(QString prominenceIndexName="
         }
     }
 
-    askAboutWeights();
+    askAboutEdgeWeights();
 
     graphicsWidget->clearGuides();
 
@@ -11466,7 +11466,7 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString prominenceIndexName=""
         }
     }
 
-    askAboutWeights();
+    askAboutEdgeWeights();
 
     graphicsWidget->clearGuides();
 
@@ -11561,7 +11561,7 @@ void MainWindow::slotLayoutNodeSizeByProminenceIndex(QString prominenceIndexName
         }
     }
 
-    askAboutWeights();
+    askAboutEdgeWeights();
 
     graphicsWidget->clearGuides();
 
@@ -11656,7 +11656,7 @@ void MainWindow::slotLayoutNodeColorByProminenceIndex(QString prominenceIndexNam
         }
     }
 
-    askAboutWeights();
+    askAboutEdgeWeights();
 
     graphicsWidget->clearGuides();
 
@@ -11740,7 +11740,7 @@ void MainWindow::slotAnalyzeReciprocity(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-reciprocity-"+dateTime+".html";
 
-    askAboutWeights();
+    askAboutEdgeWeights();
 
     activeGraph->writeReciprocity(fn, optionsEdgeWeightConsiderAct->isChecked());
 
@@ -11949,9 +11949,9 @@ void MainWindow::slotAnalyzeMatrixLaplacian(){
  * @brief If the network has weighted / valued edges, it asks the user
  * if the app should consider weights or not.
  */
-void MainWindow::askAboutWeights(const bool userTriggered){
+void MainWindow::askAboutEdgeWeights(const bool userTriggered){
 
-    qDebug() << "MW::askAboutWeights() - checking if graph weighted.";
+    qDebug() << "MW::askAboutEdgeWeights() - checking if graph weighted.";
 
     if (userTriggered) {
         if (!activeGraph->graphIsWeighted()  ){
@@ -11972,13 +11972,13 @@ void MainWindow::askAboutWeights(const bool userTriggered){
             return;
         }
     }
-    qDebug() << "MW::askAboutWeights() - graph weighted - checking if we have asked user.";
+    qDebug() << "MW::askAboutEdgeWeights() - graph weighted - checking if we have asked user.";
 
     if (askedAboutWeights) {
         return;
     }
 
-    qDebug() << "MW::askAboutWeights() - graph weighted - let's ask the user.";
+    qDebug() << "MW::askAboutEdgeWeights() - graph weighted - let's ask the user.";
 
     switch(
            slotHelpMessageToUser(USER_MSG_QUESTION,
@@ -12078,7 +12078,7 @@ void MainWindow::slotAnalyzeDistance(){
     }
 
 
-    askAboutWeights();
+    askAboutEdgeWeights();
 
 
     int distanceGeodesic = activeGraph->graphDistanceGeodesic(i,j,
@@ -12114,7 +12114,7 @@ void MainWindow::slotAnalyzeMatrixDistances(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-geodesic-distances-"+dateTime+".html";
 
-    askAboutWeights();
+    askAboutEdgeWeights();
 
     statusMessage( tr("Computing geodesic distances. Please wait...") );
 
@@ -12153,7 +12153,7 @@ void MainWindow::slotAnalyzeMatrixGeodesics(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-geodesics-"+dateTime+".html";
 
-    askAboutWeights();
+    askAboutEdgeWeights();
 
     statusMessage(  tr("Computing geodesics (number of shortest paths). Please wait...") );
 
@@ -12183,7 +12183,7 @@ void MainWindow::slotAnalyzeDiameter() {
         return;
     }
 
-    askAboutWeights();
+    askAboutEdgeWeights();
 
     statusMessage(  QString(tr("Computing Graph Diameter. Please wait...")) );
 
@@ -12232,7 +12232,7 @@ void MainWindow::slotAnalyzeDistanceAverage() {
         return;
     }
 
-    askAboutWeights();
+    askAboutEdgeWeights();
 
     statusMessage(  tr("Computing Average Graph Distance. Please wait...") );
 
@@ -12280,7 +12280,7 @@ void MainWindow::slotAnalyzeEccentricity(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-eccentricity-"+dateTime+".html";
 
-    askAboutWeights();
+    askAboutEdgeWeights();
 
     activeGraph->writeEccentricity(
                 fn,
@@ -12743,7 +12743,7 @@ void MainWindow::slotAnalyzeStrEquivalenceDissimilaritiesTieProfile(const QStrin
     QString fn = appSettings["dataDir"] + "socnetv-report-equivalence-dissimilarities-"+metricStr+"-"+dateTime+".html";
 
 
-    askAboutWeights();
+    askAboutEdgeWeights();
 
     activeGraph->writeMatrixDissimilarities(fn, metric, varLocation,diagonal,
                                             optionsEdgeWeightConsiderAct->isChecked());
@@ -12907,7 +12907,7 @@ void MainWindow::slotAnalyzeCentralityDegree(){
         return;
     }
 
-    askAboutWeights(false);
+    askAboutEdgeWeights(false);
 
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-out-degree-"+dateTime+".html";
@@ -12945,7 +12945,7 @@ void MainWindow::slotAnalyzeCentralityCloseness(){
         return;
     }
     bool dropIsolates=false;
-    askAboutWeights();
+    askAboutEdgeWeights();
 
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-closeness-"+dateTime+".html";
@@ -12988,7 +12988,7 @@ void MainWindow::slotAnalyzeCentralityClosenessIR(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-closeness-influence-range-"+dateTime+".html";
 
-    askAboutWeights();
+    askAboutEdgeWeights();
 
     activeGraph->writeCentralityClosenessInfluenceRange(
                 fn,
@@ -13025,7 +13025,7 @@ void MainWindow::slotAnalyzeCentralityBetweenness(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-betweenness-"+dateTime+".html";
 
-    askAboutWeights();
+    askAboutEdgeWeights();
 
     activeGraph->writeCentralityBetweenness(
                 fn, optionsEdgeWeightConsiderAct->isChecked(),
@@ -13069,7 +13069,7 @@ void MainWindow::slotAnalyzePrestigeDegree(){
                        "Degree Centrality..."), "OK",0);
     }
 
-    askAboutWeights(false);
+    askAboutEdgeWeights(false);
 
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-prestige-degree-"+dateTime+".html";
@@ -13106,7 +13106,7 @@ void MainWindow::slotAnalyzePrestigePageRank(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-prestige-pagerank-"+dateTime+".html";
 
-    askAboutWeights();
+    askAboutEdgeWeights();
 
     activeGraph->writePrestigePageRank(fn, editFilterNodesIsolatesAct->isChecked());
 
@@ -13139,7 +13139,7 @@ void MainWindow::slotAnalyzePrestigeProximity(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-prestige-proximity-"+dateTime+".html";
 
-    askAboutWeights();
+    askAboutEdgeWeights();
 
     activeGraph->writePrestigeProximity(fn, true, false ,
                                         editFilterNodesIsolatesAct->isChecked());
@@ -13204,7 +13204,7 @@ void MainWindow::slotAnalyzeCentralityInformation(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-information-"+dateTime+".html";
 
-    askAboutWeights();
+    askAboutEdgeWeights();
 
     activeGraph->writeCentralityInformation(
                 fn,
@@ -13242,7 +13242,7 @@ void MainWindow::slotAnalyzeCentralityEigenvector(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-eigenvector-"+dateTime+".html";
 
-    askAboutWeights();
+    askAboutEdgeWeights();
 
     bool dropIsolates = false;
 
@@ -13282,7 +13282,7 @@ void MainWindow::slotAnalyzeCentralityStress(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-stress-"+dateTime+".html";
 
-    askAboutWeights();
+    askAboutEdgeWeights();
 
 
     activeGraph->writeCentralityStress(
@@ -13322,7 +13322,7 @@ void MainWindow::slotAnalyzeCentralityPower(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-power-Gil-Schmidt-"+dateTime+".html";
 
-    askAboutWeights();
+    askAboutEdgeWeights();
 
     activeGraph->writeCentralityPower(
                 fn,
@@ -13359,7 +13359,7 @@ void MainWindow::slotAnalyzeCentralityEccentricity(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-eccentricity-"+dateTime+".html";
 
-    askAboutWeights();
+    askAboutEdgeWeights();
 
     activeGraph->writeCentralityEccentricity(
                 fn,
@@ -13715,7 +13715,7 @@ void MainWindow::slotOptionsEdgeArrowsVisibility(bool toggle){
  */
 void MainWindow::slotOptionsEdgeWeightsDuringComputation(bool toggle) {
     askedAboutWeights=false;
-    askAboutWeights(toggle);
+    askAboutEdgeWeights(toggle);
     activeGraph->graphSetModified(activeGraph->ModStatus::EdgeCount);
 }
 
