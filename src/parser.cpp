@@ -78,7 +78,7 @@ Parser::~Parser () {
 /**
  * @brief Loads the network calling one of the load* methods
  */
-void Parser::load(const QString fn,
+void Parser::load(const QString fileName,
                   const QString m_codec,
                   const int iNS,
                   const QString iNC,
@@ -110,7 +110,6 @@ void Parser::load(const QString fn,
     edgeDirType=EdgeType::Directed;
     arrows=true;
     bezier=false;
-    fileName=fn;
     userSelectedCodecName = m_codec;
     networkName=(fileName.split ("/")).last();
     gwWidth=width;
@@ -143,61 +142,61 @@ void Parser::load(const QString fn,
     switch (fileFormat){
     case FileType::GRAPHML:
         qDebug()<< "Parser::load() - calling loadGraphML()";
-        if ( loadGraphML()){
+        if ( loadGraphML(fileName)){
             fileLoaded = true;
         }
         break;
     case FileType::PAJEK:
         qDebug()<< "Parser::load() - calling loadPajek()";
-        if ( loadPajek() ) {
+        if ( loadPajek(fileName) ) {
             fileLoaded = true;
         }
         break;
     case FileType::ADJACENCY:
         qDebug()<< "Parser::load() - calling loadAdjacency()";
-        if (loadAdjacency() ) {
+        if (loadAdjacency(fileName) ) {
             fileLoaded = true;
         }
         break;
     case FileType::GRAPHVIZ:
         qDebug()<< "Parser::load() - calling loadDot()";
-        if (loadDot() ) {
+        if (loadDot(fileName) ) {
            fileLoaded = true;
         }
         break;
     case FileType::UCINET:
         qDebug()<< "Parser::load() - calling loadDL()";
-        if (loadDL() ){
+        if (loadDL(fileName) ){
             fileLoaded = true;
         }
         break;
     case FileType::GML:
         qDebug()<< "Parser::load() - calling loadGML()";
-        if (loadGML() ){
+        if (loadGML(fileName) ){
             fileLoaded = true;
         }
         break;
     case FileType::EDGELIST_WEIGHTED:
         qDebug()<< "Parser::load() - calling loadEdgeListWeighted()";
-        if (loadEdgeListWeighed(delimiter) ){
+        if (loadEdgeListWeighed(fileName, delimiter) ){
             fileLoaded = true;
         }
         break;
     case FileType::EDGELIST_SIMPLE:
         qDebug()<< "Parser::load() - calling loadEdgeListSimple()";
-        if (loadEdgeListSimple(delimiter) ){
+        if (loadEdgeListSimple(fileName, delimiter) ){
             fileLoaded = true;
         }
         break;
     case FileType::TWOMODE:
         qDebug()<< "Parser::load() - calling loadTwoModeSociomatrix()";
-        if (loadTwoModeSociomatrix() ){
+        if (loadTwoModeSociomatrix(fileName) ){
             fileLoaded = true;
         }
         break;
     default:	//GraphML
         qDebug()<< "Parser::load() - default case - calling loadGraphML()";
-        if (loadGraphML()){
+        if (loadGraphML(fileName)){
             fileLoaded = true;
         }
         break;
@@ -259,11 +258,12 @@ void Parser::createRandomNodes(const int &fixedNum,
     }
 }
 
+
 /**
-    Tries to load a file as DL-formatted network (UCINET)
-    If not it returns -1
-*/
-bool Parser::loadDL(){
+ * @brief Loads a file as DL-formatted network (UCINET)
+ * @return bool
+ */
+bool Parser::loadDL(const QString fileName){
 
     qDebug() << "Parser::loadDL() - Reading UCINET formatted file ";
     QFile file ( fileName );
@@ -986,7 +986,7 @@ bool Parser::readDLKeywords(QStringList &strList,
 /**
     Tries to load the file as Pajek-formatted network. If not it returns -1
 */
-bool Parser::loadPajek(){
+bool Parser::loadPajek(const QString fileName){
 
     qDebug ("\n\nParser::loadPajek");
     QFile file ( fileName );
@@ -1548,7 +1548,7 @@ bool Parser::loadPajek(){
  * @brief Load the currently selected file as adjacency sociomatrix-formatted.
  * @return bool
  */
-bool Parser::loadAdjacency(){
+bool Parser::loadAdjacency(const QString fileName){
 
     qDebug()<< "\n\nParser::loadAdjacency()";
 
@@ -1785,7 +1785,7 @@ bool Parser::loadAdjacency(){
 /**
     Tries to load the file as two-mode sociomatrix. If not it returns -1
 */
-bool Parser::loadTwoModeSociomatrix(){
+bool Parser::loadTwoModeSociomatrix(const QString fileName){
     qDebug("\n\nParser::loadTwoModeSociomatrix()");
     QFile file ( fileName );
     if ( ! file.open(QIODevice::ReadOnly )) {
@@ -1900,7 +1900,7 @@ bool Parser::loadTwoModeSociomatrix(){
  * If not GraphML, it returns false
  * @return
  */
-bool Parser::loadGraphML(){
+bool Parser::loadGraphML(const QString fileName){
 
     qDebug("\n\nParser::loadGraphML()");
 
@@ -1924,7 +1924,7 @@ bool Parser::loadGraphML(){
     if ( ! file.open(QIODevice::ReadOnly )) {
         return false;
     }
-    // Get the canonical path of the file to load (without the filename)
+    // Get the canonical path of the file to load (only path)
     fileDirPath= QFileInfo(fileName).canonicalPath();
 
     //QXmlStreamReader *xml = new QXmlStreamReader();
@@ -2886,7 +2886,7 @@ void Parser::createMissingNodeEdges(){
  *
  * @return bool
  */
-bool Parser::loadGML(){
+bool Parser::loadGML(const QString fileName){
     qDebug()<< "Parser::loadGML()";
 
     QFile file ( fileName );
@@ -3204,7 +3204,7 @@ bool Parser::loadGML(){
 /**
     Tries to load the file as Dot (Graphviz) formatted network. If not it returns -1
 */
-bool Parser::loadDot(){
+bool Parser::loadDot(const QString fileName){
 
     qDebug() << "Parser::loadDot()";
     int fileLine=0, actualLineNumber=0, aNum=-1;
@@ -3734,7 +3734,7 @@ name othername 1
 othername somename 2
 ....
  */
-bool Parser::loadEdgeListWeighed(const QString &delimiter){
+bool Parser::loadEdgeListWeighed(const QString fileName, const QString &delimiter){
     qDebug() << "Parser::loadEdgeListWeighed() - column delimiter" << delimiter ;
 
     QFile file ( fileName );
@@ -4040,7 +4040,7 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
 
 
 
-bool Parser::loadEdgeListSimple(const QString &delimiter){
+bool Parser::loadEdgeListSimple(const QString fileName, const QString &delimiter){
     qDebug() << "Parser::loadEdgeListSimple() - column delimiter" << delimiter ;
     QFile file ( fileName );
     if ( ! file.open(QIODevice::ReadOnly ))

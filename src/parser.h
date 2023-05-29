@@ -87,18 +87,18 @@ public:
               const QString iEC, const int w, const int h, const int format,
               const int sm_mode,
            const QString delim=QString());
-	bool loadPajek();
-	bool loadAdjacency();
-	bool loadDot();
-	bool loadGraphML();
-	bool loadGML();
-	bool loadGW();
-	bool loadDL();
+    bool loadPajek(const QString fileName);
+    bool loadAdjacency(const QString fileName);
+    bool loadDot(const QString fileName);
+    bool loadGraphML(const QString fileName);
+    bool loadGML(const QString fileName);
+    bool loadGW(const QString fileName);
+    bool loadDL(const QString fileName);
     bool readDLKeywords(QStringList &strList, int &N, int &NM, int &NR, int &NC, bool &fullmatrixFormat, bool &edgelist1Format);
 
-    bool loadEdgeListSimple(const QString &delimiter);
-    bool loadEdgeListWeighed(const QString &delimiter);
-	bool loadTwoModeSociomatrix();
+    bool loadEdgeListSimple(const QString fileName, const QString &delimiter);
+    bool loadEdgeListWeighed(const QString fileName, const QString &delimiter);
+    bool loadTwoModeSociomatrix(const QString fileName);
 
     void readDotProperties(QString str, qreal &, QString &label,
                        QString &shape, QString &color, QString &fontName,
@@ -172,7 +172,6 @@ private:
     QStringList edgeMissingNodesList,edgeMissingNodesListData, relationsList;
 	QMultiMap<int, int> firstModeMultiMap, secondModeMultiMap;
 	QXmlStreamReader *xml;
-    QString fileName;
     QString fileDirPath;
     QString userSelectedCodecName;
     QString networkName;
