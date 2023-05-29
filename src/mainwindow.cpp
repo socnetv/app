@@ -280,7 +280,7 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
     //
     bool userCancelled=false;
     qDebug() << "Checking if current graph is saved...";
-    if ( activeGraph->graphSaved()  )  {
+    if ( activeGraph->graphIsSaved()  )  {
         ce->accept();
         qDebug() << "Graph is already saved. Nothing to do.";
     }
@@ -6413,14 +6413,14 @@ void MainWindow::setLastPath(const QString &filePath) {
  * Called from slotNetworkImport* methods
  * Called from slotNetworkFileLoadRecent
  * @param m_fileName
- * @param m_fileFormat
+ * @param fileFormat
  * @param checkSelectFileType
  */
 void MainWindow::slotNetworkFileChoose(QString m_fileName,
-                                       int m_fileFormat,
+                                       int fileFormat,
                                        const bool &checkSelectFileType) {
     qDebug() << " m_fileName: " << m_fileName
-             << " m_fileFormat " << m_fileFormat
+             << " fileFormat " << fileFormat
              << " checkSelectFileType " << checkSelectFileType;
 
     previous_fileName=fileName;
@@ -6437,7 +6437,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
      */
     if (m_fileName.isNull() || m_fileName.isEmpty() ) {
 
-        fileType=m_fileFormat;
+        fileType=fileFormat;
 
         // prepare supported filetype extensions
         switch (fileType){
@@ -6529,7 +6529,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
      * If checkSelectFileType==FALSE, then it loads the file with given fileType.
      *
      */
-    if (checkSelectFileType || m_fileFormat==FileType::UNRECOGNIZED) {
+    if (checkSelectFileType || fileFormat==FileType::UNRECOGNIZED) {
 
         // This happens only on application startup or on loading a recent file.
         if ( ! m_fileName.endsWith(".graphml",Qt::CaseInsensitive ) &&
@@ -6588,38 +6588,38 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
                         fileTypes, 0, false, &ok);
             if (ok && !userFileType.isEmpty()) {
                 if (userFileType == "GraphML") {
-                    m_fileFormat=FileType::GRAPHML;
+                    fileFormat=FileType::GRAPHML;
                 }
                 else if (userFileType == "GraphML") {
-                    m_fileFormat=FileType::PAJEK;
+                    fileFormat=FileType::PAJEK;
                 }
                 else if (userFileType == "GML") {
-                    m_fileFormat=FileType::GML;
+                    fileFormat=FileType::GML;
                 }
                 else if (userFileType == "UCINET") {
-                    m_fileFormat=FileType::UCINET;
+                    fileFormat=FileType::UCINET;
                 }
                 else if (userFileType == "Adjacency") {
-                    m_fileFormat=FileType::ADJACENCY;
+                    fileFormat=FileType::ADJACENCY;
                 }
                 else if (userFileType == "GraphViz") {
-                    m_fileFormat=FileType::GRAPHVIZ;
+                    fileFormat=FileType::GRAPHVIZ;
                 }
                 else if (userFileType == "Edge List (weighted)") {
-                    m_fileFormat=FileType::EDGELIST_WEIGHTED;
+                    fileFormat=FileType::EDGELIST_WEIGHTED;
                 }
                 else if (userFileType == "Edge List (simple, non-weighted)") {
-                    m_fileFormat=FileType::EDGELIST_SIMPLE;
+                    fileFormat=FileType::EDGELIST_SIMPLE;
                 }
                 else if (userFileType == "Two-mode sociomatrix") {
-                    m_fileFormat=FileType::TWOMODE;
+                    fileFormat=FileType::TWOMODE;
                 }
 
             }
             else {
                 statusMessage( tr("Opening network file aborted."));
                 //if a file was previously opened, get back to it.
-                if (activeGraph->graphLoaded())	{
+                if (activeGraph->graphIsLoaded())	{
                     fileName=previous_fileName;
                 }
                 return;
@@ -6629,51 +6629,51 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
 
         else if (m_fileName.endsWith(".graphml",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".xml",Qt::CaseInsensitive ) ) {
-            m_fileFormat=FileType::GRAPHML;
+            fileFormat=FileType::GRAPHML;
         }
         else if (m_fileName.endsWith(".net",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".paj",Qt::CaseInsensitive )  ||
                  m_fileName.endsWith(".pajek",Qt::CaseInsensitive ) ) {
-            m_fileFormat=FileType::PAJEK;
+            fileFormat=FileType::PAJEK;
         }
         else if (m_fileName.endsWith(".dl",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".dat",Qt::CaseInsensitive ) ) {
-            m_fileFormat=FileType::UCINET;
+            fileFormat=FileType::UCINET;
         }
         else if (m_fileName.endsWith(".sm",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".csv",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".adj",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".txt",Qt::CaseInsensitive )) {
-            m_fileFormat=FileType::ADJACENCY;
+            fileFormat=FileType::ADJACENCY;
         }
         else if (m_fileName.endsWith(".dot",Qt::CaseInsensitive ) ) {
-            m_fileFormat=FileType::GRAPHVIZ;
+            fileFormat=FileType::GRAPHVIZ;
         }
         else if (m_fileName.endsWith(".gml",Qt::CaseInsensitive ) ) {
-            m_fileFormat=FileType::GML;
+            fileFormat=FileType::GML;
         }
         else if (m_fileName.endsWith(".list",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".lst",Qt::CaseInsensitive )  ) {
-            m_fileFormat=FileType::EDGELIST_SIMPLE;
+            fileFormat=FileType::EDGELIST_SIMPLE;
         }
         else if (m_fileName.endsWith(".wlist",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".wlst",Qt::CaseInsensitive )  ) {
-            m_fileFormat=FileType::EDGELIST_WEIGHTED;
+            fileFormat=FileType::EDGELIST_WEIGHTED;
         }
         else if (m_fileName.endsWith(".2sm",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".aff",Qt::CaseInsensitive )  ) {
-            m_fileFormat=FileType::TWOMODE;
+            fileFormat=FileType::TWOMODE;
         }
         else
-            m_fileFormat=FileType::UNRECOGNIZED;
+            fileFormat=FileType::UNRECOGNIZED;
     }
 
 
     qDebug()<<"Calling slotNetworkFilePreview"
            << "with m_fileName" << m_fileName
-           << "and m_fileFormat " << m_fileFormat;
+           << "and fileFormat " << fileFormat;
 
-    slotNetworkFilePreview(m_fileName, m_fileFormat );
+    slotNetworkFilePreview(m_fileName, fileFormat );
 
 
 }
@@ -6769,7 +6769,7 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
     if (activeNodes() == 0) {
         statusMessage(  QString(tr("Nothing to save. There are no vertices.")) );
     }
-    if (activeGraph->graphSaved()) {
+    if (activeGraph->graphIsSaved()) {
         statusMessage(  QString(tr("Graph already saved.")) );
     }
     if ( fileName.isEmpty() ) {
@@ -6788,7 +6788,7 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
     }
     // else if it is GraphML or new file not saved yet, just save it.
     else if (activeGraph->graphFileFormat()==FileType::GRAPHML ||
-             ( activeGraph->graphSaved() && !activeGraph->graphLoaded() )
+             ( activeGraph->graphIsSaved() && !activeGraph->graphIsLoaded() )
              )
     {
         activeGraph->graphSave(fileName, FileType::GRAPHML);
@@ -6928,7 +6928,7 @@ void MainWindow::slotNetworkClose() {
 
     statusMessage( tr("Closing network file..."));
 
-    if (!activeGraph->graphSaved()) {
+    if (!activeGraph->graphIsSaved()) {
         switch (
                 slotHelpMessageToUser (
                     USER_MSG_QUESTION,
@@ -7141,11 +7141,11 @@ void MainWindow::slotNetworkAvailableTextCodecs()
  * Opens a window to preview the selected file where the user
  * can select an appropriate text codec
  * @param m_fileName
- * @param m_fileFormat
+ * @param fileFormat
  * @return
  */
 bool MainWindow::slotNetworkFilePreview(const QString &m_fileName,
-                                        const int &m_fileFormat ){
+                                        const int &fileFormat ){
     qDebug() << "Previewing file: "<< m_fileName;
 
     if (!m_fileName.isEmpty()) {
@@ -7162,7 +7162,7 @@ bool MainWindow::slotNetworkFilePreview(const QString &m_fileName,
 
         QByteArray data = file.readAll();
 
-        m_dialogPreviewFile->setEncodedData(data,m_fileName, m_fileFormat);
+        m_dialogPreviewFile->setEncodedData(data,m_fileName, fileFormat);
         QApplication::restoreOverrideCursor();
         m_dialogPreviewFile->exec();
 
@@ -7198,15 +7198,15 @@ void MainWindow::slotNetworkFileLoadRecent() {
  * Then calls activeGraph::graphLoad to actually load the network...
  * @param m_fileName
  * @param m_codecName
- * @param m_fileFormat
+ * @param fileFormat
  */
 void MainWindow::slotNetworkFileLoad(const QString m_fileName,
                                      const QString m_codecName,
-                                     const int m_fileFormat )
+                                     const int fileFormat )
 {
     qDebug() << "Attempting to load file"<< m_fileName
              << " m_codecName" << m_codecName
-             << " m_fileFormat" << m_fileFormat;
+             << " fileFormat" << fileFormat;
 
     initApp();
 
@@ -7214,7 +7214,7 @@ void MainWindow::slotNetworkFileLoad(const QString m_fileName,
     QString delimiter=QString();
     int two_sm_mode = 0;
 
-    if ( m_fileFormat == FileType::TWOMODE ) {
+    if ( fileFormat == FileType::TWOMODE ) {
         switch(
                slotHelpMessageToUser (
                    USER_MSG_QUESTION_CUSTOM,
@@ -7239,8 +7239,8 @@ void MainWindow::slotNetworkFileLoad(const QString m_fileName,
         }
     }
 
-    if ( m_fileFormat == FileType::EDGELIST_SIMPLE ||
-         m_fileFormat == FileType::EDGELIST_WEIGHTED ) {
+    if ( fileFormat == FileType::EDGELIST_SIMPLE ||
+         fileFormat == FileType::EDGELIST_WEIGHTED ) {
         bool ok;
         QString delimiter =
                 QInputDialog::getText(
@@ -7267,7 +7267,7 @@ void MainWindow::slotNetworkFileLoad(const QString m_fileName,
     activeGraph->graphLoad (
                 m_fileName,
                 m_codecName,
-                m_fileFormat,
+                fileFormat,
                 two_sm_mode,
                 delimiter
                 );
@@ -8040,14 +8040,15 @@ bool MainWindow::slotNetworkExportList(){
 
 /**
  * @brief Displays the file of the loaded network.
-   Network _must_ be unchanged since last save/load.
-   Otherwise it will ask the user to first save the network, then view its file.
+ *
+ * If the network has been modified, it prompts the user
+ * to save the network, then view its file.
  */
 void MainWindow::slotNetworkFileView(){
 
-    qDebug() << "I will open a TextEditor to display file:" << fileName.toLatin1();
+    qDebug() << "slotNetworkFileView() - current file:" << fileName.toLatin1();
 
-    if ( activeGraph->graphLoaded() && activeGraph->graphSaved()  ) {
+    if ( activeGraph->graphIsLoaded() && activeGraph->graphIsSaved()  ) {
         //network unmodified, read loaded file again.
         QFile f( fileName );
         if ( !f.open( QIODevice::ReadOnly | QIODevice::Text) ) {
@@ -8063,9 +8064,9 @@ void MainWindow::slotNetworkFileView(){
         statusMessage(  tr("Displaying network data file %1" ).arg(fileNameNoPath));
     }
 
-    else if (!activeGraph->graphSaved() ) {
+    else if (!activeGraph->graphIsSaved() ) {
 
-        if ( !activeGraph->graphLoaded() ) {
+        if ( !activeGraph->graphIsLoaded() ) {
             // new network, not saved yet
             int response = slotHelpMessageToUser(
                         USER_MSG_QUESTION,
@@ -8249,7 +8250,7 @@ void MainWindow::slotNetworkDataSetSelect(){
  * network analysis studies
  */
 void MainWindow::slotNetworkDataSetRecreate (const QString m_fileName) {
-    int m_fileFormat=0;
+    int fileFormat=0;
     qDebug()<< "MW::slotNetworkDataSetRecreate() fileName: " << m_fileName;
 
     //initApp();
@@ -8260,37 +8261,37 @@ void MainWindow::slotNetworkDataSetRecreate (const QString m_fileName) {
     activeGraph->writeDataSetToFile(appSettings["dataDir"], m_fileName);
 
     if (m_fileName.endsWith(".graphml")) {
-        m_fileFormat=FileType::GRAPHML;
+        fileFormat=FileType::GRAPHML;
     }
     else if (m_fileName.endsWith(".pajek") || m_fileName.endsWith(".paj") ||
              m_fileName.endsWith(".net")) {
-        m_fileFormat=FileType::PAJEK;
+        fileFormat=FileType::PAJEK;
     }
     else if (m_fileName.endsWith(".sm") || m_fileName.endsWith(".adj")) {
-        m_fileFormat=FileType::ADJACENCY;
+        fileFormat=FileType::ADJACENCY;
     }
     else if (m_fileName.endsWith(".dot")) {
-        m_fileFormat=FileType::GRAPHVIZ;
+        fileFormat=FileType::GRAPHVIZ;
     }
     else if (m_fileName.endsWith(".dl")) {
-        m_fileFormat=FileType::UCINET;
+        fileFormat=FileType::UCINET;
     }
     else if (m_fileName.endsWith(".gml")) {
-        m_fileFormat=FileType::GML;
+        fileFormat=FileType::GML;
     }
     else if (m_fileName.endsWith(".wlst")) {
-        m_fileFormat=FileType::EDGELIST_WEIGHTED;
+        fileFormat=FileType::EDGELIST_WEIGHTED;
     }
     else if (m_fileName.endsWith(".lst")) {
-        m_fileFormat=FileType::EDGELIST_SIMPLE;
+        fileFormat=FileType::EDGELIST_SIMPLE;
     }
     else if (m_fileName.endsWith(".2sm")) {
-        m_fileFormat=FileType::TWOMODE;
+        fileFormat=FileType::TWOMODE;
     }
 
-    slotNetworkFileLoad(appSettings["dataDir"]+m_fileName, "UTF-8", m_fileFormat);
+    slotNetworkFileLoad(appSettings["dataDir"]+m_fileName, "UTF-8", fileFormat);
 
-    //    if ( slotNetworkFileLoad(appSettings["dataDir"]+m_fileName, "UTF-8", m_fileFormat) ) {
+    //    if ( slotNetworkFileLoad(appSettings["dataDir"]+m_fileName, "UTF-8", fileFormat) ) {
     //        qDebug() << "slotNetworkDataSetRecreate() loaded file " << m_fileName;
     //        fileName=m_fileName;
     //        previous_fileName=fileName;
@@ -9198,7 +9199,7 @@ void MainWindow::slotEditNodePosition(const int &nodeNumber,
                                       const int &x, const int &y){
     qDebug("MW::slotEditNodePosition() for %i with x %i and y %i", nodeNumber, x, y);
     activeGraph->vertexPosSet(nodeNumber, x, y);
-    if (!activeGraph->graphSaved()) {
+    if (!activeGraph->graphIsSaved()) {
         networkSaveAct->setIcon(QIcon(":/images/file_download_48px.svg"));
         networkSaveAct->setEnabled(true);
     }
@@ -13715,7 +13716,7 @@ void MainWindow::slotOptionsEdgeArrowsVisibility(bool toggle){
 void MainWindow::slotOptionsEdgeWeightsDuringComputation(bool toggle) {
     askedAboutWeights=false;
     askAboutWeights(toggle);
-    activeGraph->graphSetModified(activeGraph->GraphChange::ChangedEdges);
+    activeGraph->graphSetModified(activeGraph->ModStatus::EdgeCount);
 }
 
 

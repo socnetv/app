@@ -154,7 +154,7 @@ public slots:
     //NETWORK MENU
     void slotNetworkNew();
     void slotNetworkFileChoose(QString m_fileName = QString(),
-                               int m_fileFormat = -1,
+                               int fileFormat = -1,
                                const bool &checkSelectFileType = true);
     void slotNetworkFileDialogFileSelected(const QString &fileName);
     void slotNetworkFileDialogFilterSelected(const QString &filter);

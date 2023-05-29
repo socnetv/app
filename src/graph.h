@@ -386,17 +386,17 @@ signals:
 
 public:
 
-    enum GraphChange {
-        ChangedNone                = 0,
-        ChangedMinorOptions        = 1,
-        ChangedVerticesMetadata    = 2,
-        ChangedEdgesMetadata       = 3,
-        ChangedPositions           = 4,
-        ChangedMajor               = 10,
-        ChangedVertices            = 11,
-        ChangedEdges               = 12,
-        ChangedVerticesEdges       = 13,
-        ChangedNew                 = 14,
+    enum ModStatus {
+        Unchanged       = 0,
+        MinorOptions    = 1,
+        VertexMetadata  = 2,
+        EdgeMetadata    = 3,
+        VertexPositions = 4,
+        MajorChanges    = 10,
+        VertexCount     = 11,
+        EdgeCount       = 12,
+        VertexEdgeCount = 13,
+        NewNet      = 14,
     };
 
 
@@ -416,10 +416,21 @@ public:
     void clear(const QString &reason="");
 
     /*FILES (READ AND WRITE)*/
+
+    QString graphFileName() const;
+
     QString graphName() const;
 
-    void graphLoad (const QString m_fileName,
-                    const QString m_codecName,
+    bool graphIsSaved() const;
+
+    bool graphIsLoaded() const;
+
+    int graphFileFormat() const;
+
+    bool graphFileFormatExportSupported(const int &fileFormat) const;
+
+    void graphLoad (const QString fileName,
+                    const QString codecName,
                     const int format,
                     const int two_sm_mode,
                     const QString delimiter=QString());
@@ -440,10 +451,6 @@ public:
                                    int maxWidth=0, int maxHeight=0);
 
     bool graphSaveToDotFormat (QString fileName);
-
-    int graphFileFormat() const;
-
-    bool graphFileFormatExportSupported(const int &fileFormat) const;
 
     QString graphMatrixTypeToString(const int &matrixType) const;
 
@@ -637,10 +644,6 @@ public:
     void graphSetModified(const int &graphNewStatus, const bool&signalMW=true);
 
     bool graphIsModified() const ;
-
-    bool graphSaved() const;
-
-    bool graphLoaded() const;
 
     QList<int> graphSelectedVertices() const;
 
@@ -1279,7 +1282,7 @@ private:
 
     /** General & initialisation variables */
 
-    int m_graphHasChanged;
+    int m_graphModStatus;
     int m_totalVertices, m_totalEdges, m_graphDiameter, initVertexSize;
     int initVertexLabelSize, initVertexNumberSize;
     int initVertexNumberDistance, initVertexLabelDistance;
@@ -1314,7 +1317,7 @@ private:
 
     int csRecDepth;
 
-    QString fileName, m_graphName, initEdgeColor, initVertexColor,
+    QString m_fileName, m_graphName, initEdgeColor, initVertexColor,
         initVertexNumberColor, initVertexLabelColor;
     QString initVertexShape, initVertexIconPath;
     QString htmlHead, htmlHeadLight, htmlEnd;

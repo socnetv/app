@@ -84,7 +84,7 @@ Graph::Graph() {
     canvasHeight = 600;
 
     order=true;		//returns true if the indexes of the list is ordered.
-    m_graphHasChanged=false;
+    m_graphModStatus=ModStatus::Unchanged;
 
     m_graphName="";
     m_curRelation=0;
@@ -96,7 +96,7 @@ Graph::Graph() {
     m_graphIsSymmetric=true;
 
     m_graphDensity = -1;
-    fileName ="";
+    m_fileName ="";
 
     calculatedGraphReciprocity = false;
     calculatedGraphSymmetry = false;
@@ -349,8 +349,8 @@ void Graph::clear(const QString &reason) {
     relationAdd(tr(("unnamed")));
 
     m_fileFormat=FileType::NOT_SAVED;
-
     m_graphName="";
+    m_fileName ="";
 
     m_totalVertices=0;
     m_totalEdges=0;
@@ -401,7 +401,7 @@ void Graph::clear(const QString &reason) {
     calculatedPRP=false;
     calculatedTriad=false;
 
-    m_graphHasChanged=false;
+    m_graphModStatus=ModStatus::Unchanged;
 
     m_graphHasVertexCustomIcons = false;
 
@@ -411,7 +411,7 @@ void Graph::clear(const QString &reason) {
 
     if ( reason != "exit") {
         qDebug()<< "Finished clearing graph data and structures. Emitting graphSetModified()";
-        graphSetModified(m_graphHasChanged,true);
+        graphSetModified(m_graphModStatus,true);
     }
     else {
         qDebug()<< "Finished clearing graph data and structures...";
@@ -443,7 +443,7 @@ void Graph::canvasSizeSet(const int w, const int h){
         (*it)->setX( newX ) ;
         (*it)->setY( newY );
         emit setNodePos((*it)->name(), newX , newY);
-        graphSetModified(GraphChange::ChangedPositions,false);
+        graphSetModified(ModStatus::VertexPositions,false);
     }
     canvasWidth = w;
     canvasHeight= h;
@@ -584,7 +584,7 @@ void Graph::relationSet(int relNum, const bool updateUI){
         emit signalRelationChangedToGW(m_curRelation);
 
         qDebug()<<"Graph::relationSet() - Calling graphSetModified()";
-        graphSetModified(GraphChange::ChangedEdges);
+        graphSetModified(ModStatus::EdgeCount);
     }
 }
 
@@ -821,10 +821,9 @@ void Graph::vertexCreate(const int &number,
                          labelSize,
                          initVertexLabelDistance);
 
-    qDebug() << "Graph::vertexCreate() - Added new vertex:" << number
-             << "Calling graphSetModified().";
+    qDebug() << "Graph::vertexCreate() - Added new vertex:" << number;
 
-    graphSetModified(GraphChange::ChangedVertices, signalMW);
+    graphSetModified(ModStatus::VertexCount, signalMW);
 
     //to draw new vertices by user with the same style of the file loaded:
     //save color, size and shape as init values
@@ -1384,7 +1383,7 @@ void Graph::vertexRemove(const int &v1){
     if (vertexClicked()==v1)
         vertexClickedSet(0, QPointF(0,0));
 
-    graphSetModified(GraphChange::ChangedVertices);
+    graphSetModified(ModStatus::VertexCount);
 
     emit signalRemoveNode(v1);
 }
@@ -1413,7 +1412,7 @@ void Graph::vertexIsolatedAllToggle(const bool &toggle){
                      << "is isolated. Toggling it and emitting setVertexVisibility signal to GW...";
             (*it)->setEnabled (toggle) ;
 
-            graphSetModified(GraphChange::ChangedVertices);
+            graphSetModified(ModStatus::VertexCount);
 
             emit setVertexVisibility( (*it)->name(), toggle );
         }
@@ -1452,7 +1451,7 @@ void Graph::vertexPosSet(const int &v1, const int &x, const int &y){
 
     m_graph[ vpos[v1] ]->setX( x );
     m_graph[ vpos[v1] ]->setY( y );
-    graphSetModified(GraphChange::ChangedPositions,false);
+    graphSetModified(ModStatus::VertexPositions,false);
 }
 
 
@@ -1537,7 +1536,7 @@ void Graph::vertexSizeSet(const int &v, const int &size) {
 
     }
 
-    graphSetModified(GraphChange::ChangedVerticesMetadata);
+    graphSetModified(ModStatus::VertexMetadata);
 
 }
 
@@ -1603,7 +1602,7 @@ void Graph::vertexShapeSet(const int &v1, const QString &shape, const QString &i
         if (shape=="custom") { m_graphHasVertexCustomIcons = true; }
         emit setNodeShape(v1, shape, iconPath);
     }
-    graphSetModified(GraphChange::ChangedVerticesMetadata);
+    graphSetModified(ModStatus::VertexMetadata);
 }
 
 
@@ -1659,7 +1658,7 @@ void Graph::vertexColorSet(const int &v1, const QString &color){
             }
         }
     }
-    graphSetModified(GraphChange::ChangedVerticesMetadata);
+    graphSetModified(ModStatus::VertexMetadata);
 }
 
 
@@ -1725,7 +1724,7 @@ void Graph::vertexNumberColorSet(const int &v1, const QString &color){
             }
         }
     }
-    graphSetModified(GraphChange::ChangedVerticesMetadata);
+    graphSetModified(ModStatus::VertexMetadata);
 }
 
 
@@ -1769,7 +1768,7 @@ void Graph::vertexNumberSizeSet(const int &v, const int &size) {
         }
     }
 
-    graphSetModified(GraphChange::ChangedMinorOptions);
+    graphSetModified(ModStatus::MinorOptions);
 }
 
 
@@ -1817,7 +1816,7 @@ void Graph::vertexNumberDistanceSet(const int &v, const int &newDistance) {
         }
 
     }
-    graphSetModified(GraphChange::ChangedMinorOptions);
+    graphSetModified(ModStatus::MinorOptions);
 
 }
 
@@ -1841,7 +1840,7 @@ void Graph::vertexLabelSet(const int &v1, const QString &label){
     m_graph[ vpos[v1] ]->setLabel ( label);
     emit setNodeLabel ( m_graph[ vpos[v1] ]->name(), label);
 
-    graphSetModified(GraphChange::ChangedVerticesMetadata);
+    graphSetModified(ModStatus::VertexMetadata);
 }
 
 
@@ -1901,7 +1900,7 @@ void Graph::vertexLabelSizeSet(const int &v1, const int &labelSize) {
         }
     }
 
-    graphSetModified(GraphChange::ChangedMinorOptions);
+    graphSetModified(ModStatus::MinorOptions);
 
 }
 
@@ -1940,7 +1939,7 @@ void Graph::vertexLabelColorSet(const int &v1, const QString &color){
             }
         }
     }
-    graphSetModified(GraphChange::ChangedMinorOptions);
+    graphSetModified(ModStatus::MinorOptions);
 
 
 }
@@ -1966,7 +1965,7 @@ void Graph::vertexLabelColorInit(QString color){
 void Graph::vertexLabelDistanceSet(const int &v, const int &newDistance) {
     m_graph[ vpos[v] ]->setLabelDistance (newDistance);
 
-    graphSetModified(GraphChange::ChangedMinorOptions);
+    graphSetModified(ModStatus::MinorOptions);
     emit setNodeLabelDistance(v, newDistance);
 }
 
@@ -1992,7 +1991,7 @@ void Graph::vertexLabelDistanceAllSet(const int &newDistance) {
         }
     }
 
-    graphSetModified(GraphChange::ChangedMinorOptions);
+    graphSetModified(ModStatus::MinorOptions);
 }
 
 
@@ -2106,7 +2105,7 @@ void Graph::edgeCreate(const int &v1,
     // have the same color with those of the file loaded,
     initEdgeColor=color;
 
-    graphSetModified(GraphChange::ChangedEdges, signalMW);
+    graphSetModified(ModStatus::EdgeCount, signalMW);
 
 }
 
@@ -2207,7 +2206,7 @@ void Graph::edgeRemove (const int &v1,
 
     emit signalRemoveEdge(v1,v2, ( graphIsDirected() || removeOpposite ));
 
-    graphSetModified(GraphChange::ChangedEdges);
+    graphSetModified(ModStatus::EdgeCount);
 }
 
 
@@ -2279,7 +2278,7 @@ void Graph::edgeFilterByWeight(qreal m_threshold, bool overThreshold){
         (*it)->edgeFilterByWeight ( m_threshold, overThreshold );
     }
 
-    graphSetModified(GraphChange::ChangedEdges);
+    graphSetModified(ModStatus::EdgeCount);
     emit statusMessage(tr("Edges have been filtered."));
 }
 
@@ -2313,7 +2312,7 @@ void Graph::edgeFilterUnilateral(const bool &toggle) {
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         (*it)->edgeFilterUnilateral ( toggle );
     }
-    graphSetModified(GraphChange::ChangedEdges);
+    graphSetModified(ModStatus::EdgeCount);
     emit statusMessage(tr("Unilateral edges have been temporarily disabled."));
 }
 
@@ -2493,7 +2492,7 @@ void Graph::edgeWeightSet (const int &v1, const int &v2,
 
     emit setEdgeWeight(v1,v2, weight);
 
-    graphSetModified(GraphChange::ChangedEdges);
+    graphSetModified(ModStatus::EdgeCount);
 
 }
 
@@ -2588,7 +2587,7 @@ bool Graph::edgeColorAllSet(const QString &color, const int &threshold){
     }
     //delete enabledOutEdges;
 
-    graphSetModified(GraphChange::ChangedEdgesMetadata);
+    graphSetModified(ModStatus::EdgeMetadata);
 
     return true;
 
@@ -2614,7 +2613,7 @@ void Graph::edgeColorSet(const int &v1, const int &v2, const QString &color){
         emit setEdgeColor(v2, v1, color);
     }
 
-    graphSetModified(GraphChange::ChangedEdgesMetadata);
+    graphSetModified(ModStatus::EdgeMetadata);
 }
 
 
@@ -2646,7 +2645,7 @@ void Graph::edgeLabelSet (const int &v1, const int &v2, const QString &label) {
 
     emit setEdgeLabel(v1,v2, label);
 
-    graphSetModified(GraphChange::ChangedEdgesMetadata);
+    graphSetModified(ModStatus::EdgeMetadata);
 }
 
 
@@ -3021,7 +3020,7 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
  */
 void Graph::graphSetModified(const int &graphNewStatus, const bool &signalMW){
 
-    if ( graphNewStatus == GraphChange::ChangedNew ) {
+    if ( graphNewStatus == ModStatus::NewNet ) {
 
         // this is called from:
         // graphFileLoaded() after successful loading
@@ -3029,7 +3028,7 @@ void Graph::graphSetModified(const int &graphNewStatus, const bool &signalMW){
         qDebug()<<"new network, thus saved..."
                   "emit signalGraphModified()";
 
-        m_graphHasChanged=graphNewStatus;
+        m_graphModStatus=graphNewStatus;
 
         emit signalGraphModified(graphIsDirected(),
                                  m_totalVertices,
@@ -3038,28 +3037,27 @@ void Graph::graphSetModified(const int &graphNewStatus, const bool &signalMW){
 
         return;
     }
-    else if ( graphNewStatus == GraphChange::ChangedNone ) {
+    else if ( graphNewStatus == ModStatus::Unchanged ) {
 
-        // this is called from:
-        // graphSaved() after successful saving
+        // this is called after successful saving
 
         qDebug()<<"no changes, no need to save graph...";
 
-        m_graphHasChanged=graphNewStatus;
+        m_graphModStatus=graphNewStatus;
 
         emit signalGraphSavedStatus(true);
 
         return;
 
     }
-    else if ( graphNewStatus > GraphChange::ChangedMajor ) {
+    else if ( graphNewStatus > ModStatus::MajorChanges ) {
 
         // This is called from any method that alters V or E in G:
         // thus all prior computations are invalid
 
         qDebug()<<"major changes, invalidating computations, needs saving...";
 
-        m_graphHasChanged=graphNewStatus;
+        m_graphModStatus=graphNewStatus;
 
         // Init all calculated* flags to false, as all prior computations
         // are now invalid and we need to recompute any of them
@@ -3095,14 +3093,14 @@ void Graph::graphSetModified(const int &graphNewStatus, const bool &signalMW){
         }
 
     }
-    else if ( graphNewStatus > GraphChange::ChangedMinorOptions) {
+    else if ( graphNewStatus > ModStatus::MinorOptions) {
 
         // this is called from Graph methods that inflict minor changes,
         // i.e. changing vertex positions, labels, etc
 
-        // We do not change status if current status is > ChangedMajor
-        if ( m_graphHasChanged < GraphChange::ChangedMajor) {
-            m_graphHasChanged = graphNewStatus;
+        // We do not change status if current status is > MajorChanges
+        if ( m_graphModStatus < ModStatus::MajorChanges) {
+            m_graphModStatus = graphNewStatus;
         }
         qDebug()<<"minor changes but needs saving...";
         emit signalGraphSavedStatus(false);
@@ -3110,7 +3108,7 @@ void Graph::graphSetModified(const int &graphNewStatus, const bool &signalMW){
     }
     else {
         qDebug()<<"Strange. I should not reach this code...";
-        m_graphHasChanged=graphNewStatus;
+        m_graphModStatus=graphNewStatus;
     }
 
 
@@ -3126,34 +3124,13 @@ void Graph::graphSetModified(const int &graphNewStatus, const bool &signalMW){
  */
 bool Graph::graphIsModified() const {
 
-    if ( m_graphHasChanged > GraphChange::ChangedMajor
-         && m_graphHasChanged != GraphChange::ChangedNew ) {
-        qDebug() << "Graph::graphIsModified() - m_graphHasChanged:" << m_graphHasChanged << " Returning true" ;
+    if ( m_graphModStatus > ModStatus::MajorChanges
+         && m_graphModStatus != ModStatus::NewNet ) {
         return true;
     }
-    qDebug() << "Graph::graphIsModified() - m_graphHasChanged:" << m_graphHasChanged << " Returning false" ;
     return false;
 }
 
-/**
- * @brief Returns true if the graph is saved.
- * @return
- */
-bool Graph::graphSaved() const {
-    qDebug() << "Graph::graphSaved() - m_graphHasChanged:" << m_graphHasChanged ;
-    return (m_graphHasChanged == 0 ) ? true: false;
-}
-
-
-
-/**
- * @brief Returns if a graph has been loaded from a file.
- * @return
- */
-bool Graph::graphLoaded() const {
-    qDebug() << "Graph::graphLoaded() - " << (( graphFileFormat() != FileType::UNRECOGNIZED ) ? true: false );
-    return ( graphFileFormat() != FileType::UNRECOGNIZED ) ? true: false;
-}
 
 
 
@@ -4086,7 +4063,7 @@ void Graph::graphSymmetrize(){
 
     m_graphIsSymmetric=true;
 
-    graphSetModified(GraphChange::ChangedEdges);
+    graphSetModified(ModStatus::EdgeCount);
 }
 
 
@@ -4170,7 +4147,7 @@ void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
     delete strongTies;
     m_graphIsSymmetric=true;
 
-    graphSetModified(GraphChange::ChangedEdges);
+    graphSetModified(ModStatus::EdgeCount);
     qDebug()<< "Graph::graphSymmetrizeStrongTies()"
             << "final relations"<<relations();
 }
@@ -4240,7 +4217,7 @@ void Graph::graphCocitation(){
 
     m_graphIsSymmetric=true;
 
-    graphSetModified(GraphChange::ChangedEdges);
+    graphSetModified(ModStatus::EdgeCount);
     qDebug()<< "Graph::graphCocitation()"
             << "final relations"<<relations();
 }
@@ -4316,7 +4293,7 @@ void Graph::graphDichotomization(const qreal threshold) {
     delete binaryTies;
     m_graphIsSymmetric=true;
 
-    graphSetModified(GraphChange::ChangedEdges);
+    graphSetModified(ModStatus::EdgeCount);
     qDebug()<< "Graph::graphDichotomization()"
             << "final relations"<<relations();
 
@@ -4343,7 +4320,7 @@ void Graph::graphSetDirected(const bool &toggle, const bool &signalMW){
     m_graphIsDirected = true;
 
     if (m_graphIsDirected) {
-        graphSetModified(GraphChange::ChangedEdges, signalMW);
+        graphSetModified(ModStatus::EdgeCount, signalMW);
         return;
     }
 
@@ -4395,7 +4372,7 @@ void Graph::graphSetUndirected(const bool &toggle, const bool &signalMW){
 
     m_graphIsSymmetric=true;
 
-    graphSetModified(GraphChange::ChangedEdges, signalMW);
+    graphSetModified(ModStatus::EdgeCount, signalMW);
 }
 
 
@@ -4470,7 +4447,7 @@ void Graph::edgeTypeSet(const int &v1,
         emit signalEdgeType( v1, v2, dirType );
     }
 
-    //graphSetModified(GraphChange::ChangedEdges);
+    //graphSetModified(ModStatus::EdgeCount);
 
 }
 
@@ -11367,7 +11344,7 @@ void Graph::randomNetErdosCreate(const int &N,
     emit signalProgressBoxUpdate((m != 0 ? m:N));
     emit signalProgressBoxKill();
 
-    graphSetModified(GraphChange::ChangedVerticesEdges);
+    graphSetModified(ModStatus::VertexEdgeCount);
 }
 
 
@@ -11547,7 +11524,7 @@ void Graph::randomNetScaleFreeCreate (const int &N,
     qDebug() << "Graph::randomNetScaleFreeCreate() - finished. Calling "
                 "graphSetModified()";
 
-    graphSetModified(GraphChange::ChangedVerticesEdges);
+    graphSetModified(ModStatus::VertexEdgeCount);
 
     emit signalProgressBoxKill();
 
@@ -11630,7 +11607,7 @@ void Graph::randomNetSmallWorldCreate (const int &N, const int &degree,
 
     layoutVertexSizeByIndegree();
 
-    graphSetModified(GraphChange::ChangedVerticesEdges);
+    graphSetModified(ModStatus::VertexEdgeCount);
 }
 
 
@@ -11807,7 +11784,7 @@ void Graph::randomNetRegularCreate(const int &N,
 
     emit signalProgressBoxKill();
 
-    graphSetModified(GraphChange::ChangedVerticesEdges);
+    graphSetModified(ModStatus::VertexEdgeCount);
 
 }
 
@@ -11878,7 +11855,7 @@ void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
         emit signalProgressBoxKill();
     }
 
-    graphSetModified(GraphChange::ChangedVerticesEdges, updateProgress);
+    graphSetModified(ModStatus::VertexEdgeCount, updateProgress);
 
 }
 
@@ -12098,7 +12075,7 @@ void Graph::randomNetLatticeCreate(const int &N,
 
     emit signalProgressBoxKill();
 
-    graphSetModified(GraphChange::ChangedVerticesEdges);
+    graphSetModified(ModStatus::VertexEdgeCount);
 
 }
 
@@ -15600,7 +15577,7 @@ int Graph:: factorial(int x) {
 
 
 /**
- * @brief Graph::graphName
+ * @brief Returns the name of the current graph
  * If m_graphName is set on file loading, it returns that.
  * If m_graphName is empty, then returns current relation name
  * If m_graphName is empty and there is no current relation name,
@@ -15623,14 +15600,68 @@ QString Graph::graphName() const {
 
 
 /**
- * @brief Graph::graphLoad
- * Our almost universal network loader. :)
- * It creates a new Parser object,
- * moves it to a another thread,
- * connects signals and slots and
- * calls its run() method.
- * @param m_fileName
- * @param m_codecName
+ * @brief Returns the filename of the current graph, if any.
+ * @return
+ */
+QString Graph::graphFileName() const {
+    return m_fileName;
+
+}
+
+
+/**
+ * @brief Returns the format of the last file opened
+ * @return int
+  */
+int Graph::graphFileFormat() const {
+    return m_fileFormat;
+}
+
+
+/**
+ * @brief Returns true if the fileFormat is supported for saving
+ * @param fileFormat
+ * @return
+ */
+bool Graph::graphFileFormatExportSupported(const int &fileFormat) const {
+    if (m_graphFileFormatExportSupported.contains(fileFormat)) {
+        return true;
+    }
+    return false;
+}
+
+
+/**
+ * @brief Returns true if a graph has been loaded from a file.
+ * @return
+ */
+bool Graph::graphIsLoaded() const {
+    bool isLoaded = !graphFileName().isEmpty() && graphFileFormat() != FileType::UNRECOGNIZED;
+    qDebug() << "Graph::graphIsLoaded() - isLoaded " << isLoaded ;
+    return isLoaded;
+}
+
+
+/**
+ * @brief Returns true if the graph is saved.
+ * @return
+ */
+bool Graph::graphIsSaved() const {
+    bool isChanged = (m_graphModStatus == ModStatus::Unchanged ) ? true: false;
+    qDebug() << "Graph::graphIsSaved() - isChanged: " << isChanged;
+    return isChanged;
+}
+
+
+
+/**
+ * @brief Loads a graph from a file.
+ *
+ * It creates a new Parser object, moves it to a another thread,
+ * connects signals and slots and  calls its run() method.
+ *
+ * @param fileName
+ * @param codecName
  * @param m_showLabels
  * @param maxWidth
  * @param maxHeight
@@ -15638,8 +15669,8 @@ QString Graph::graphName() const {
  * @param two_sm_mode
  * @return
  */
-void Graph::graphLoad (	const QString m_fileName,
-                        const QString m_codecName,
+void Graph::graphLoad (	const QString fileName,
+                        const QString codecName,
                         const int fileFormat,
                         const int two_sm_mode,
                         const QString delimiter){
@@ -15647,7 +15678,7 @@ void Graph::graphLoad (	const QString m_fileName,
 
     qDebug() << "Graph::graphLoad() - clearing relations ";
     relationsClear();
-    qDebug() << "Graph::graphLoad() - "<< m_fileName
+    qDebug() << "Graph::graphLoad() - "<< fileName
              << " creating new Parser from thread: " << this->thread();
 
     file_parser = new Parser();
@@ -15725,8 +15756,8 @@ void Graph::graphLoad (	const QString m_fileName,
 
     qDebug() << "Graph::graphLoad() - calling file_parser->load() ";
     file_parser->load(
-                m_fileName,
-                m_codecName,
+                fileName,
+                codecName,
                 initVertexSize,
                 initVertexColor,
                 initVertexShape,
@@ -15778,7 +15809,7 @@ void Graph::graphLoadedTerminateParserThreads(QString reason) {
  * @param undirected
  */
 void Graph::graphFileLoaded (const int &fileType,
-                             const QString &fName,
+                             const QString &fileName,
                              const QString &netName,
                              const int &totalNodes,
                              const int &totalLinks,
@@ -15787,9 +15818,7 @@ void Graph::graphFileLoaded (const int &fileType,
                              const QString &message)
 {
     if ( fileType == FileType::UNRECOGNIZED ) {
-        qDebug() << "Graph::graphFileLoaded() - FileType::UNRECOGNIZED. "
-                    "Emitting signalGraphLoaded with error message "
-                 << message;
+        // Emit with error message.
         emit signalGraphLoaded (fileType,
                                 QString(),
                                 QString(),
@@ -15801,10 +15830,11 @@ void Graph::graphFileLoaded (const int &fileType,
 
     }
 
-    qDebug() << "Graph::graphFileLoaded()";
+    qDebug() << "Graph::graphFileLoaded() - m_fileName: " << m_fileName;
 
-    fileName = fName;
-    if (netName != "")
+    m_fileName= fileName;
+
+    if (!netName.isEmpty())
         m_graphName=netName ;
     else
         m_graphName=(fileName.split("/").last()).split("/").first();
@@ -15824,11 +15854,10 @@ void Graph::graphFileLoaded (const int &fileType,
                 << " name" << graphName()
                 << " node " << totalNodes
                 << " links" << totalLinks
-                << " edgeDirType" << edgeDirType;
+                << " edgeDirType" << edgeDirType
+                << " Calling graphSetModified()";
 
-    qDebug() << "Graph::graphFileLoaded() -  Call graphSetModified";
-
-    graphSetModified(GraphChange::ChangedNew);
+    graphSetModified(ModStatus::NewNet);
 
     qDebug() << "Graph::graphFileLoaded() -  emitting signalGraphLoaded()";
 
@@ -15844,26 +15873,6 @@ void Graph::graphFileLoaded (const int &fileType,
 
 
 
-/**
- * @brief Returns the format of the last file opened
- * @return
-  */
-int Graph::graphFileFormat() const {
-    return m_fileFormat;
-}
-
-
-/**
- * @brief Returns true if the fileFormat is supported for saving
- * @param fileFormat
- * @return
- */
-bool Graph::graphFileFormatExportSupported(const int &fileFormat) const {
-    if (m_graphFileFormatExportSupported.contains(fileFormat)) {
-        return true;
-    }
-    return false;
-}
 
 /**
  * @brief Our almost universal graph saving method. :)
@@ -15908,7 +15917,7 @@ void Graph::graphSave(const QString &fileName,
     }
     };
     if (saved) {
-        graphSetModified(GraphChange::ChangedNone);
+        graphSetModified(ModStatus::Unchanged);
     }
     else {
         emit signalGraphSavedStatus(FileType::UNRECOGNIZED);
@@ -16049,7 +16058,7 @@ bool Graph::graphSaveToDotFormat (QString fileName){
 
 
 /**
- * @brief Saves the current graph to fileName in GraphML format
+ * @brief Saves the current graph in GraphML format
  * @param fileName
  * @param networkName
  * @param maxWidth
@@ -21402,7 +21411,7 @@ void Graph::layoutRandom(){
 
     emit signalProgressBoxKill();
 
-    graphSetModified(GraphChange::ChangedPositions);
+    graphSetModified(ModStatus::VertexPositions);
 }
 
 
@@ -21468,7 +21477,7 @@ void Graph::layoutRadialRandom(const bool &guides){
     }
 
     emit signalProgressBoxKill();
-    graphSetModified(GraphChange::ChangedPositions);
+    graphSetModified(ModStatus::VertexPositions);
 }
 
 
@@ -21521,7 +21530,7 @@ void Graph::layoutCircular (const double &x0, const double &y0,
 
     emit signalProgressBoxKill();
 
-    graphSetModified(GraphChange::ChangedPositions);
+    graphSetModified(ModStatus::VertexPositions);
 
 }
 
@@ -21914,7 +21923,7 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
 
     emit signalProgressBoxKill();
 
-    graphSetModified(GraphChange::ChangedPositions);
+    graphSetModified(ModStatus::VertexPositions);
 
     prominenceDistribution(prominenceIndex, m_reportsChartType);
 
@@ -22585,7 +22594,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
     }
     emit signalProgressBoxKill();
 
-    graphSetModified(GraphChange::ChangedPositions);
+    graphSetModified(ModStatus::VertexPositions);
 
 
 }
