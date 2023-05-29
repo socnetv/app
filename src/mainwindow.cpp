@@ -675,7 +675,7 @@ void MainWindow::saveSettings() {
 
 
 /**
- * @brief Opens the Settings & Preferences dialog
+ * @brief Opens the Settings dialog
  */
 void MainWindow::slotOpenSettingsDialog() {
 
@@ -1612,7 +1612,7 @@ void MainWindow::initActions(){
     editNodeColorAll->setWhatsThis(tr("Nodes Color\n\n"
                                       "Changes all nodes color at once. \n"
                                       "This setting will apply to this session only. \n"
-                                      "To permanently change it, use Settings & Preferences"));
+                                      "To permanently change it, go to Settings."));
     connect(editNodeColorAll, SIGNAL(triggered()), this, SLOT(slotEditNodeColorAll()) );
 
     editNodeSizeAllAct = new QAction(QIcon(":/images/size_select_24px.svg"), tr("Change All Nodes Size (this session)"),	this);
@@ -1620,7 +1620,7 @@ void MainWindow::initActions(){
     editNodeSizeAllAct->setWhatsThis(tr("Change All Nodes Size\n\n"
                                         "Click to select and apply a new size for all nodes at once. \n"
                                         "This setting will apply to this session only. \n"
-                                        "To permanently change it, use Settings & Preferences"));
+                                        "To permanently change it, go to Settings."));
     connect(editNodeSizeAllAct, SIGNAL(triggered()), this, SLOT(slotEditNodeSizeAll()) );
 
     editNodeShapeAll = new QAction(QIcon(":/images/format_shapes_48px.svg"), tr("Change All Nodes Shape (this session)"),	this);
@@ -1628,7 +1628,7 @@ void MainWindow::initActions(){
     editNodeShapeAll->setWhatsThis(tr("Change All Nodes Shape\n\n"
                                       "Click to select and apply a new shape for all nodes at once."
                                       "This setting will apply to this session only. \n"
-                                      "To permanently change it, use Settings & Preferences"));
+                                      "To permanently change it, go to Settings."));
     connect(editNodeShapeAll, SIGNAL(triggered()), this, SLOT(slotEditNodeShape()) );
 
 
@@ -1639,7 +1639,7 @@ void MainWindow::initActions(){
     editNodeNumbersSizeAct->setWhatsThis(tr("Change Node Numbers Size\n\n"
                                             "Click to select and apply a new font size for all node numbers"
                                             "This setting will apply to this session only. \n"
-                                            "To permanently change it, use Settings & Preferences"));
+                                            "To permanently change it, go to Settings."));
     connect(editNodeNumbersSizeAct, SIGNAL(triggered()),
             this, SLOT( slotEditNodeNumberSize()) );
 
@@ -1652,7 +1652,7 @@ void MainWindow::initActions(){
                                              "Click to select and apply a new color "
                                              "to all node numbers."
                                              "This setting will apply to this session only. \n"
-                                             "To permanently change it, use Settings & Preferences"));
+                                             "To permanently change it, go to Settings."));
     connect(editNodeNumbersColorAct, SIGNAL(triggered()), this, SLOT(slotEditNodeNumbersColor()));
 
     editNodeLabelsSizeAct = new QAction(QIcon(":/images/format_textsize_48px.svg"), tr("Change All Node Labels Size (this session)"), this);
@@ -1661,7 +1661,7 @@ void MainWindow::initActions(){
     editNodeLabelsSizeAct->setWhatsThis(tr("Node Labels Size\n\n"
                                            "Click to select and apply a new font-size to all node labels"
                                            "This setting will apply to this session only. \n"
-                                           "To permanently change it, use Settings & Preferences"));
+                                           "To permanently change it, go to Settings."));
     connect(editNodeLabelsSizeAct, SIGNAL(triggered()), this, SLOT(slotEditNodeLabelSize()) );
 
     editNodeLabelsColorAct = new QAction(QIcon(":/images/format_color_text_48px.svg"), tr("Change All Node Labels Color (this session)"),	this);
@@ -1670,7 +1670,7 @@ void MainWindow::initActions(){
     editNodeLabelsColorAct->setWhatsThis(tr("Labels Color\n\n"
                                             "Click to select and apply a new color to all node labels."
                                             "This setting will apply to this session only. \n"
-                                            "To permanently change it, use Settings & Preferences"));
+                                            "To permanently change it, go to Settings."));
     connect(editNodeLabelsColorAct, SIGNAL(triggered()), this, SLOT(slotEditNodeLabelsColor()));
 
     editEdgeAddAct = new QAction(QIcon(":/images/edge_add_48px.svg"), tr("Add Edge (arc)"),this);
@@ -3422,7 +3422,7 @@ void MainWindow::initActions(){
                 tr("Display Node Numbers\n\n"
                    "Enables or disables displaying of node numbers\n"
                    "This setting will apply to this session only. \n"
-                   "To permanently change it, use Settings & Preferences"));
+                   "To permanently change it, go to Settings."));
     optionsNodeNumbersVisibilityAct->setCheckable (true);
     optionsNodeNumbersVisibilityAct->setChecked (
                 ( appSettings["initNodeNumbersVisibility"] == "true" ) ? true: false );
@@ -3437,7 +3437,7 @@ void MainWindow::initActions(){
                 tr("Display Numbers Inside Nodes\n\n"
                    "Enables or disables displaying node numbers inside nodes.\n"
                    "This setting will apply to this session only. \n"
-                   "To permanently change it, use Settings & Preferences"));
+                   "To permanently change it, go to Settings."));
     optionsNodeNumbersInsideAct->setCheckable (true);
     optionsNodeNumbersInsideAct->setChecked(
                 ( appSettings["initNodeNumbersInside"] == "true" ) ? true: false );
@@ -3452,7 +3452,7 @@ void MainWindow::initActions(){
                 tr("Display Node Labels\n\n"
                    "Enables or disables node labels.\n"
                    "This setting will apply to this session only. \n"
-                   "To permanently change it, use Settings & Preferences"));
+                   "To permanently change it, go to Settings."));
     optionsNodeLabelsVisibilityAct->setCheckable (true);
     optionsNodeLabelsVisibilityAct->setChecked(
                 ( appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false );
@@ -3466,7 +3466,7 @@ void MainWindow::initActions(){
                 tr("Display Edges\n\n"
                    "Enables or disables displaying of edges"
                    "This setting will apply to this session only. \n"
-                   "To permanently change it, use Settings & Preferences"));
+                   "To permanently change it, go to Settings."));
     optionsEdgesVisibilityAct->setCheckable(true);
     optionsEdgesVisibilityAct->setChecked(
                 (appSettings["initEdgesVisibility"] == "true") ? true: false
@@ -3482,7 +3482,7 @@ void MainWindow::initActions(){
                 tr("Display Edge Weights\n\n"
                    "Enables or disables displaying edge weight numbers.\n"
                    "This setting will apply to this session only. \n"
-                   "To permanently change it, use Settings & Preferences"));
+                   "To permanently change it, go to Settings."));
     optionsEdgeWeightNumbersAct->setCheckable(true);
     connect(optionsEdgeWeightNumbersAct, SIGNAL(triggered(bool)),
             this, SLOT(slotOptionsEdgeWeightNumbersVisibility(bool)) );
@@ -3498,7 +3498,7 @@ void MainWindow::initActions(){
                    "Enables or disables considering edge weights during "
                    "calculations (i.e. distances, centrality, etc).\n"
                    "This setting will apply to this session only. \n"
-                   "To permanently change it, use Settings & Preferences"));
+                   "To permanently change it, go to Settings."));
     optionsEdgeWeightConsiderAct->setCheckable(true);
     optionsEdgeWeightConsiderAct->setChecked(false);
     connect(optionsEdgeWeightConsiderAct, SIGNAL(triggered(bool)),
@@ -3512,7 +3512,7 @@ void MainWindow::initActions(){
                 tr("Display Edge Labes\n\n"
                    "Enables or disables displaying edge labels.\n"
                    "This setting will apply to this session only. \n"
-                   "To permanently change it, use Settings & Preferences"));
+                   "To permanently change it, go to Settings."));
     optionsEdgeLabelsAct->setCheckable(true);
     optionsEdgeLabelsAct->setChecked(
                 (appSettings["initEdgeLabelsVisibility"] == "true") ? true: false
@@ -3529,7 +3529,7 @@ void MainWindow::initActions(){
                    "Enables or disables displaying of arrows on edges.\n\n"
                    "Useful if all links are reciprocal (undirected graph).\n"
                    "This setting will apply to this session only. \n"
-                   "To permanently change it, use Settings & Preferences"));
+                   "To permanently change it, go to Settings."));
     optionsEdgeArrowsAct->setCheckable(true);
     optionsEdgeArrowsAct->setChecked(
                 (appSettings["initEdgeArrows"]=="true") ? true: false
@@ -3556,7 +3556,7 @@ void MainWindow::initActions(){
                 tr("Edges Bezier\n\n"
                    "Enable or disables drawing Edges as Bezier curves."
                    "This setting will apply to this session only. \n"
-                   "To permanently change it, use Settings & Preferences"));
+                   "To permanently change it, go to Settings."));
     drawEdgesBezier->setCheckable(true);
     drawEdgesBezier->setChecked (
                 (appSettings["initEdgeShape"]=="bezier") ? true: false
@@ -3583,7 +3583,7 @@ void MainWindow::initActions(){
                    "Enable to select an image file from your computer, "
                    "which will be displayed in the background instead of plain color."
                    "This setting will apply to this session only. \n"
-                   "To permanently change it, use Settings & Preferences"));
+                   "To permanently change it, go to Settings."));
     backgroundImageAct->setCheckable(true);
     backgroundImageAct->setChecked(false);
     connect(backgroundImageAct, SIGNAL(triggered(bool)),
@@ -3598,7 +3598,7 @@ void MainWindow::initActions(){
                 tr("Full Screen Mode\n\n"
                    "Enable to show application window in full screen mode. "
                    "This setting will apply to this session only. \n"
-                   "To permanently change it, use Settings & Preferences"));
+                   "To permanently change it, go to Settings."));
     fullScreenModeAct->setCheckable(true);
     fullScreenModeAct->setChecked(false);
     connect(fullScreenModeAct, SIGNAL(triggered(bool)),
