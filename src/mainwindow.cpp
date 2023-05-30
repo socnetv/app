@@ -280,7 +280,7 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
     //
     bool userCancelled=false;
     qDebug() << "Checking if current graph is saved...";
-    if ( activeGraph->graphIsSaved()  )  {
+    if ( activeGraph->isSaved()  )  {
         ce->accept();
         qDebug() << "Graph is already saved. Nothing to do.";
     }
@@ -5534,7 +5534,7 @@ void MainWindow::initSignalSlots() {
              activeGraph, &Graph::vertexCreateAtPos) ;
 
     connect( graphicsWidget, &GraphicsWidget::userSelectedItems,
-             activeGraph,&Graph::graphSelectionChanged);
+             activeGraph,&Graph::setSelectionChanged);
 
     connect( graphicsWidget, &GraphicsWidget::userClickedNode,
              activeGraph, &Graph::vertexClickedSet );
@@ -6619,7 +6619,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
             else {
                 statusMessage( tr("Opening network file aborted."));
                 //if a file was previously opened, get back to it.
-                if (activeGraph->graphIsLoaded())	{
+                if (activeGraph->isLoaded())	{
                     fileName=previous_fileName;
                 }
                 return;
@@ -6756,7 +6756,8 @@ void MainWindow::slotNetworkFileDialogFileSelected(const QString &fileName) {
 
 
 /**
- * @brief Saves the network to a file by calling Graph::graphSave().
+ * @brief Saves the network to a file
+ *
  * First, it checks if a fileName is currently set
  * If not, calls slotNetworkSaveAs (which prompts for a fileName before returning here)
  * If a fileName is set, it checks if fileFormat is supported and saves the network.
@@ -6769,7 +6770,7 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
     if (activeNodes() == 0) {
         statusMessage(  QString(tr("Nothing to save. There are no vertices.")) );
     }
-    if (activeGraph->graphIsSaved()) {
+    if (activeGraph->isSaved()) {
         statusMessage(  QString(tr("Graph already saved.")) );
     }
     if ( fileName.isEmpty() ) {
@@ -6782,23 +6783,23 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
     fileNameNoPath = fileInfo.fileName();
 
     // if the specified format is one of the supported ones, just save it.
-    if ( activeGraph->graphFileFormatExportSupported( fileFormat ) )
+    if ( activeGraph->isFileFormatExportSupported( fileFormat ) )
     {
-        activeGraph->graphSave(fileName, fileFormat ) ;
+        activeGraph->saveToFile(fileName, fileFormat ) ;
     }
     // else if it is GraphML or new file not saved yet, just save it.
-    else if (activeGraph->graphFileFormat()==FileType::GRAPHML ||
-             ( activeGraph->graphIsSaved() && !activeGraph->graphIsLoaded() )
+    else if (activeGraph->getFileFormat()==FileType::GRAPHML ||
+             ( activeGraph->isSaved() && !activeGraph->isLoaded() )
              )
     {
-        activeGraph->graphSave(fileName, FileType::GRAPHML);
+        activeGraph->saveToFile(fileName, FileType::GRAPHML);
     }
     // else check whether Graph thinks this is supported and save it
-    else if ( activeGraph->graphFileFormatExportSupported(
-                  activeGraph->graphFileFormat()
+    else if ( activeGraph->isFileFormatExportSupported(
+                  activeGraph->getFileFormat()
                   ) )
     {
-        activeGraph->graphSave(fileName, activeGraph->graphFileFormat() ) ;
+        activeGraph->saveToFile(fileName, activeGraph->getFileFormat() ) ;
     }
     // In any other case, save in GraphML.
     // First, inform the user that we will save in that format.
@@ -6821,7 +6822,7 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
             fileName.append(".graphml");
             fileNameNoPath = QFileInfo (fileName).fileName();
             setLastPath(fileName); // store this path
-            activeGraph->graphSave(fileName, FileType::GRAPHML);
+            activeGraph->saveToFile(fileName, FileType::GRAPHML);
             break;
         case QMessageBox::Cancel:
         case QMessageBox::No:
@@ -6920,7 +6921,7 @@ void MainWindow::slotNetworkSavedStatus (const int &status) {
 
 
 /**
- * @brief Closes the network. Saves it if necessary.
+ * @brief Closes the current network, saving it if needed.
  */
 void MainWindow::slotNetworkClose() {
 
@@ -6928,7 +6929,7 @@ void MainWindow::slotNetworkClose() {
 
     statusMessage( tr("Closing network file..."));
 
-    if (!activeGraph->graphIsSaved()) {
+    if (!activeGraph->isSaved()) {
         switch (
                 slotHelpMessageToUser (
                     USER_MSG_QUESTION,
@@ -7137,9 +7138,11 @@ void MainWindow::slotNetworkAvailableTextCodecs()
 
 
 /**
- * @brief Called from slotNetworkFileChoose()
- * Opens a window to preview the selected file where the user
- * can select an appropriate text codec
+ * @brief  Opens a preview window with the selected file
+ *
+ * The original aim was to let the user see the file and possibly
+ * select the appropriate text codec
+ *
  * @param m_fileName
  * @param fileFormat
  * @return
@@ -7195,7 +7198,7 @@ void MainWindow::slotNetworkFileLoadRecent() {
  * @brief Main network file loader method
  * Called from m_dialogPreviewFile and slotNetworkDataSetRecreate
  * Calls initApp to init to default values.
- * Then calls activeGraph::graphLoad to actually load the network...
+ * Then calls activeGraph::loadFile to actually load the network...
  * @param m_fileName
  * @param m_codecName
  * @param fileFormat
@@ -7262,9 +7265,9 @@ void MainWindow::slotNetworkFileLoad(const QString m_fileName,
         qDebug()<<"selected delimiter" << delimiter;
     }
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-    qDebug() << "Calling activeGraph->graphLoad()";
+    qDebug() << "Calling activeGraph->loadFile()";
 
-    activeGraph->graphLoad (
+    activeGraph->loadFile (
                 m_fileName,
                 m_codecName,
                 fileFormat,
@@ -7877,7 +7880,7 @@ void MainWindow::slotNetworkExportPajek()
         return;
     }
 
-    activeGraph->graphSave(fileName, FileType::PAJEK);
+    activeGraph->saveToFile(fileName, FileType::PAJEK);
 }
 
 
@@ -7916,7 +7919,7 @@ void MainWindow::slotNetworkExportSM(){
 
 
     bool saveEdgeWeights=false;
-    if (activeGraph->graphIsWeighted() )  {
+    if (activeGraph->isWeighted() )  {
         switch (
                 slotHelpMessageToUser(USER_MSG_QUESTION,
                                       tr("Weighted graph. Social network with valued/weighted edges"),
@@ -7946,7 +7949,7 @@ void MainWindow::slotNetworkExportSM(){
 
     }
 
-    activeGraph->graphSave(fileName, FileType::ADJACENCY,  saveEdgeWeights ) ;
+    activeGraph->saveToFile(fileName, FileType::ADJACENCY,  saveEdgeWeights ) ;
 
 }
 
@@ -8048,7 +8051,7 @@ void MainWindow::slotNetworkFileView(){
 
     qDebug() << "slotNetworkFileView() - current file:" << fileName.toLatin1();
 
-    if ( activeGraph->graphIsLoaded() && activeGraph->graphIsSaved()  ) {
+    if ( activeGraph->isLoaded() && activeGraph->isSaved()  ) {
         //network unmodified, read loaded file again.
         QFile f( fileName );
         if ( !f.open( QIODevice::ReadOnly | QIODevice::Text) ) {
@@ -8064,9 +8067,9 @@ void MainWindow::slotNetworkFileView(){
         statusMessage(  tr("Displaying network data file %1" ).arg(fileNameNoPath));
     }
 
-    else if (!activeGraph->graphIsSaved() ) {
+    else if (!activeGraph->isSaved() ) {
 
-        if ( !activeGraph->graphIsLoaded() ) {
+        if ( !activeGraph->isLoaded() ) {
             // new network, not saved yet
             int response = slotHelpMessageToUser(
                         USER_MSG_QUESTION,
@@ -8228,10 +8231,13 @@ void MainWindow::slotNetworkViewSociomatrixPlotText(){
 
 
 /**
- * @brief Calls the m_datasetSelectionDialog to display the dataset selection dialog
+ * @brief Displays the dataset selection dialog
  */
 void MainWindow::slotNetworkDataSetSelect(){
     qDebug()<< "MW::slotNetworkDataSetSelect()";
+
+    // Close the current network
+    this->slotNetworkClose();
 
     m_datasetSelectDialog = new DialogDataSetSelect(this);
     connect( m_datasetSelectDialog, SIGNAL( userChoices( QString) ),
@@ -8244,16 +8250,14 @@ void MainWindow::slotNetworkDataSetSelect(){
 
 
 /**
- * @brief MainWindow::slotNetworkDataSetRecreate
+ * @brief Recreates famous and widely used data sets in network analysis studies
+ *
  * @param m_fileName
- * Recreates some of the most famous and widely used data sets in
- * network analysis studies
+ *
  */
 void MainWindow::slotNetworkDataSetRecreate (const QString m_fileName) {
-    int fileFormat=0;
-    qDebug()<< "MW::slotNetworkDataSetRecreate() fileName: " << m_fileName;
 
-    //initApp();
+    int fileFormat=0;
 
     qDebug()<< "MW::slotNetworkDataSetRecreate() datadir+fileName: "
             << appSettings["dataDir"]+m_fileName;
@@ -8311,6 +8315,9 @@ void MainWindow::slotNetworkDataSetRecreate (const QString m_fileName) {
  */
 void MainWindow::slotNetworkRandomErdosRenyiDialog(){
 
+    // Close the current network
+    this->slotNetworkClose();
+
     statusMessage( tr("Generate a random Erdos-Renyi network. "));
 
     m_randErdosRenyiDialog = new DialogRandErdosRenyi(
@@ -8345,8 +8352,6 @@ void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
                                               const bool diag)
 {
     qDebug() << "MW::slotNetworkRandomErdosRenyi()";
-
-    initApp();
 
     statusMessage( tr("Creating Erdos-Renyi Random Network. Please wait... ")  );
 
@@ -8406,7 +8411,12 @@ void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
  * @brief MainWindow::slotNetworkRandomScaleFreeDialog
  */
 void MainWindow::slotNetworkRandomScaleFreeDialog() {
+
     qDebug() << "MW::slotNetworkRandomScaleFreeDialog()";
+
+    // Close the current network
+    this->slotNetworkClose();
+
     statusMessage( tr("Generate a random Scale-Free network. "));
     m_randScaleFreeDialog = new DialogRandScaleFree(this);
 
@@ -8435,8 +8445,6 @@ void MainWindow::slotNetworkRandomScaleFree ( const int &newNodes,
                                               const QString &mode)
 {
     qDebug() << "MW::slotNetworkRandomScaleFree()";
-
-    initApp();
 
     activeGraph->randomNetScaleFreeCreate( newNodes,
                                            power,
@@ -8470,6 +8478,10 @@ void MainWindow::slotNetworkRandomScaleFree ( const int &newNodes,
 void MainWindow::slotNetworkRandomSmallWorldDialog()
 {
     qDebug() << "MW::slotNetworkRandomSmallWorldDialog()";
+
+    // Close the current network
+    this->slotNetworkClose();
+
     statusMessage( tr("Generate a random Small-World network. "));
     m_randSmallWorldDialog = new DialogRandSmallWorld(this);
 
@@ -8497,9 +8509,8 @@ void MainWindow::slotNetworkRandomSmallWorld(const int &newNodes,
                                              const bool &diag)
 {
     Q_UNUSED(diag);
-    qDebug() << "MW::slotNetworkRandomSmallWorld()";
 
-    initApp();
+    qDebug() << "MW::slotNetworkRandomSmallWorld()";
 
     activeGraph->randomNetSmallWorldCreate(newNodes, degree, beta, mode);
 
@@ -8529,6 +8540,10 @@ void MainWindow::slotNetworkRandomSmallWorld(const int &newNodes,
 void MainWindow::slotNetworkRandomRegularDialog()
 {
     qDebug() << "MW::slotRandomRegularDialog()";
+
+    // Close the current network
+    this->slotNetworkClose();
+
     statusMessage( tr("Generate a d-regular random network. "));
     m_randRegularDialog = new DialogRandRegular(this);
 
@@ -8588,6 +8603,10 @@ void MainWindow::slotNetworkRandomGaussian(){
     has the same degree and is connected with its neighborhood.
  */
 void MainWindow::slotNetworkRandomRingLattice(){
+
+    // Close the current network
+    this->slotNetworkClose();
+
     bool ok;
     statusMessage( "You have selected to create a ring lattice network. ");
     int newNodes=( QInputDialog::getInt(
@@ -8616,7 +8635,6 @@ void MainWindow::slotNetworkRandomRingLattice(){
         return;
     }
 
-    initApp();
 
     activeGraph->randomNetRingLatticeCreate(newNodes, degree, true );
 
@@ -9003,9 +9021,10 @@ void MainWindow::slotNetworkManagerSslErrors(QNetworkReply *reply, const QList<Q
 
 
 /**
- * @brief Called by Graph when the network has changed a lot.
- * Makes the networkSave icon active and refreshes any LCD values.
- * Also called from activeGraph and graphicsWidget.
+ * @brief Called when the network has been modified.
+ *
+ * Activates the networkSave icon and refreshes any LCD values.
+ *
  */
 void MainWindow::slotNetworkChanged(
                                     const bool &directed,
@@ -9103,7 +9122,7 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
     QMenu *contextMenu = new QMenu(" Menu",this);
     Q_CHECK_PTR( contextMenu );  //displays "out of memory" if needed
 
-    int nodesSelected = activeGraph->graphSelectedVerticesCount();
+    int nodesSelected = activeGraph->getSelectedVerticesCount();
 
     contextMenu->addAction( "## Selected nodes: "
                               + QString::number(  nodesSelected ) + " ##  ");
@@ -9171,7 +9190,7 @@ void MainWindow::slotEditNodeSelectAll(){
     qDebug() << "MW::slotEditNodeSelectAll()";
     graphicsWidget->selectAll();
     statusMessage( tr("Selected nodes: %1")
-                   .arg( activeGraph->graphSelectedVerticesCount()  ) );
+                   .arg( activeGraph->getSelectedVerticesCount()  ) );
 
 }
 
@@ -9199,7 +9218,7 @@ void MainWindow::slotEditNodePosition(const int &nodeNumber,
                                       const int &x, const int &y){
     qDebug("MW::slotEditNodePosition() for %i with x %i and y %i", nodeNumber, x, y);
     activeGraph->vertexPosSet(nodeNumber, x, y);
-    if (!activeGraph->graphIsSaved()) {
+    if (!activeGraph->isSaved()) {
         networkSaveAct->setIcon(QIcon(":/images/file_download_48px.svg"));
         networkSaveAct->setEnabled(true);
     }
@@ -9313,12 +9332,12 @@ void MainWindow::slotEditNodeRemove() {
     }
 
     // if there are already multiple nodes selected, erase them
-    int nodesSelected = activeGraph->graphSelectedVerticesCount();
+    int nodesSelected = activeGraph->getSelectedVerticesCount();
     if ( nodesSelected > 0) {
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
         int removeCounter = 0;
         qDebug() << "MW::slotEditNodeRemove() multiple selected to remove";
-        foreach (int nodeNumber, activeGraph->graphSelectedVertices() ) {
+        foreach (int nodeNumber, activeGraph->getSelectedVertices() ) {
             activeGraph->vertexRemove(nodeNumber);
             ++removeCounter ;
         }
@@ -9373,7 +9392,7 @@ void MainWindow::slotEditNodePropertiesDialog() {
 
     int min=-1, max=-1, size = appSettings["initNodeSize"].toInt(0, 10);
     int nodeNumber = 0;
-    int selectedNodesCount = activeGraph->graphSelectedVerticesCount();
+    int selectedNodesCount = activeGraph->getSelectedVerticesCount();
     QColor color = QColor(appSettings["initNodeColor"]);
     QString shape= appSettings["initNodeShape"];
     QString iconPath = QString();
@@ -9417,7 +9436,7 @@ void MainWindow::slotEditNodePropertiesDialog() {
         qDebug() << "MW::slotEditNodePropertiesDialog() - "
                     "selectedNodesCount" << selectedNodesCount;
 
-        foreach (nodeNumber, activeGraph->graphSelectedVertices() ) {
+        foreach (nodeNumber, activeGraph->getSelectedVertices() ) {
             qDebug() << "MW::slotEditNodePropertiesDialog() "
                         "reading properties of selected node"
                      << nodeNumber;
@@ -9480,7 +9499,7 @@ void MainWindow::slotEditNodeProperties(const QString &label,
                                         const QString &shape,
                                         const QString &iconPath) {
 
-    int selectedNodesCount = activeGraph->graphSelectedVerticesCount();
+    int selectedNodesCount = activeGraph->getSelectedVerticesCount();
 
     qDebug()<< "MW::slotEditNodeProperties() - new properties: "
             << " label " << label
@@ -9507,7 +9526,7 @@ void MainWindow::slotEditNodeProperties(const QString &label,
     else {
         //some nodes are selected
         int nodeNumber = 0;
-        foreach (nodeNumber, activeGraph->graphSelectedVertices() ) {
+        foreach (nodeNumber, activeGraph->getSelectedVertices() ) {
             qDebug()<< "MW::slotEditNodeProperties() - node " << nodeNumber;
             if ( !label.isEmpty() ) {
                 qDebug()<< "MW::slotEditNodeProperties() - updating label ";
@@ -9552,7 +9571,7 @@ void MainWindow::slotEditNodeSelectedToClique () {
         return;
     }
 
-    int selectedNodesCount = activeGraph->graphSelectedVerticesCount();
+    int selectedNodesCount = activeGraph->getSelectedVerticesCount();
 
     if ( selectedNodesCount < 3 ) {
         slotHelpMessageToUser(USER_MSG_INFO,tr("Not enough nodes selected."),
@@ -9586,7 +9605,7 @@ void MainWindow::slotEditNodeSelectedToStar() {
         return;
     }
 
-    int selectedNodesCount = activeGraph->graphSelectedVerticesCount();
+    int selectedNodesCount = activeGraph->getSelectedVerticesCount();
 
     if ( selectedNodesCount < 3 ) {
         slotHelpMessageToUser(USER_MSG_INFO,tr("Not enough nodes selected."),
@@ -9600,8 +9619,8 @@ void MainWindow::slotEditNodeSelectedToStar() {
     int center;
     bool ok=false;
 
-    int min = activeGraph->graphSelectedVerticesMin();
-    int max = activeGraph->graphSelectedVerticesMax();
+    int min = activeGraph->getSelectedVerticesMin();
+    int max = activeGraph->getSelectedVerticesMax();
     center=QInputDialog::getInt(
                 this,
                 "Create star subgraph",
@@ -9637,7 +9656,7 @@ void MainWindow::slotEditNodeSelectedToCycle() {
         return;
     }
 
-    int selectedNodesCount = activeGraph->graphSelectedVerticesCount();
+    int selectedNodesCount = activeGraph->getSelectedVerticesCount();
 
     if ( selectedNodesCount < 3 ) {
         slotHelpMessageToUser(USER_MSG_INFO,tr("Not enough nodes selected."),
@@ -9671,7 +9690,7 @@ void MainWindow::slotEditNodeSelectedToLine() {
         return;
     }
 
-    int selectedNodesCount = activeGraph->graphSelectedVerticesCount();
+    int selectedNodesCount = activeGraph->getSelectedVerticesCount();
 
     if ( selectedNodesCount < 3 ) {
         slotHelpMessageToUser(USER_MSG_INFO,tr("Not enough nodes selected."),
@@ -10045,7 +10064,7 @@ void MainWindow::slotEditNodeOpenContextMenu() {
 
     QMenu *nodeContextMenu = new QMenu(QString::number( activeGraph->vertexClicked() ), this);
     Q_CHECK_PTR( nodeContextMenu );  //displays "out of memory" if needed
-    int nodesSelected = activeGraph->graphSelectedVerticesCount();
+    int nodesSelected = activeGraph->getSelectedVerticesCount();
     if ( nodesSelected == 1) {
         nodeContextMenu->addAction(
                     tr("## NODE ") + QString::number(activeGraph->vertexClicked()) + " ##  "
@@ -10413,7 +10432,7 @@ void MainWindow::slotEditEdgeRemove(){
     bool ok=false;
     bool removeOpposite = false;
 
-    int selectedEdgeCount = activeGraph->graphSelectedEdgesCount();
+    int selectedEdgeCount = activeGraph->getSelectedEdgesCount();
 
     qDebug() << "Selected edges:" << selectedEdgeCount;
 
@@ -10445,7 +10464,7 @@ void MainWindow::slotEditEdgeRemove(){
         }
         if ( activeGraph->edgeExists(sourceNode, targetNode, false)!=0 ) {
             removeOpposite=false;
-            if ( activeGraph->graphIsUndirected() ) {
+            if ( activeGraph->isUndirected() ) {
                 removeOpposite=true;
             }
         }
@@ -10827,7 +10846,7 @@ void MainWindow::slotEditEdgeWeight(){
 
     QString dialogTitle="Edge " + QString::number(sourceNode) + "->" + QString::number(targetNode);
 
-    bool undirected = activeGraph->graphIsUndirected();
+    bool undirected = activeGraph->isUndirected();
 
     // Get the new edge weight -- only if the edge exists.
     if ( ( oldWeight= activeGraph->edgeWeight(sourceNode, targetNode)) != 0 ) {
@@ -10871,8 +10890,8 @@ void MainWindow::slotEditEdgeSymmetrizeAll(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
-    qDebug("MW: slotEditEdgeSymmetrizeAll() calling graphSymmetrize()");
-    activeGraph->graphSymmetrize();
+    qDebug("MW: slotEditEdgeSymmetrizeAll() calling setSymmetric()");
+    activeGraph->setSymmetric();
     QMessageBox::information(this,
                              "Symmetrize",
                              tr("All arcs are reciprocal. \n"
@@ -10890,8 +10909,8 @@ void MainWindow::slotEditEdgeSymmetrizeCocitation(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
-    qDebug("MW: slotEditEdgeSymmetrizeCocitation() calling graphCocitation()");
-    activeGraph->graphCocitation();
+    qDebug("MW: slotEditEdgeSymmetrizeCocitation() calling relationAddCocitation()");
+    activeGraph->relationAddCocitation();
     slotHelpMessageToUser(USER_MSG_INFO,tr("New symmetric cocitation relation created."),
                           tr("New cocitation relation created from strong ties"),
                           tr("A new relation \"%1\" has been added to the network. "
@@ -10961,7 +10980,7 @@ void MainWindow::slotEditEdgeSymmetrizeStrongTies(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
-    qDebug()<< "MW::slotEditEdgeSymmetrizeStrongTies() - calling graphSymmetrizeStrongTies()";
+    qDebug()<< "MW::slotEditEdgeSymmetrizeStrongTies() - calling addRelationSymmetricStrongTies()";
     int oldRelationsCounter=activeGraph->relations();
     int answer=0;
     if (oldRelationsCounter>0) {
@@ -10975,17 +10994,17 @@ void MainWindow::slotEditEdgeSymmetrizeStrongTies(){
                                              )
                 ){
         case 1:
-            activeGraph->graphSymmetrizeStrongTies(true);
+            activeGraph->addRelationSymmetricStrongTies(true);
             break;
         case 2:
-            activeGraph->graphSymmetrizeStrongTies(false);
+            activeGraph->addRelationSymmetricStrongTies(false);
             break;
         }
 
 
     }
     else {
-        activeGraph->graphSymmetrizeStrongTies(false);
+        activeGraph->addRelationSymmetricStrongTies(false);
     }
     slotHelpMessageToUser(USER_MSG_INFO,tr("New symmetric relation created from strong ties"),
                           tr("New relation created from strong ties"),
@@ -11002,7 +11021,7 @@ void MainWindow::slotEditEdgeSymmetrizeStrongTies(){
 void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
     qDebug()<<"MW: slotEditEdgeUndirectedAll() - calling Graph::graphUndirectedSet()";
     if (toggle) {
-        activeGraph->graphSetUndirected(true);
+        activeGraph->setUndirected(true);
         optionsEdgeArrowsAct->setChecked(false);
         if (activeEdges() !=0 ) {
             statusMessage(tr("Undirected data mode. "
@@ -11016,7 +11035,7 @@ void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
         }
     }
     else {
-        activeGraph->graphSetDirected(true);
+        activeGraph->setDirected(true);
         optionsEdgeArrowsAct->trigger();
         optionsEdgeArrowsAct->setChecked(true);
         if (activeEdges() !=0 ) {
@@ -11040,8 +11059,8 @@ void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
   */
 void MainWindow::slotEditEdgeMode(const int &mode){
     if (mode==1) {
-        qDebug()<<"MW: slotEditEdgeMode() - Calling Graph::graphSetUndirected()";
-        activeGraph->graphSetUndirected(true);
+        qDebug()<<"MW: slotEditEdgeMode() - Calling Graph::setUndirected()";
+        activeGraph->setUndirected(true);
         qDebug()<<"MW: slotEditEdgeMode() - Disabling optionsEdgeArrowsAct checkbox";
         optionsEdgeArrowsAct->setChecked(false);
         if (activeEdges() !=0 ) {
@@ -11056,8 +11075,8 @@ void MainWindow::slotEditEdgeMode(const int &mode){
         }
     }
     else {
-        qDebug()<<"MW: slotEditEdgeMode() - calling Graph::graphSetDirected()";
-        activeGraph->graphSetDirected(true);
+        qDebug()<<"MW: slotEditEdgeMode() - calling Graph::setDirected()";
+        activeGraph->setDirected(true);
         qDebug()<<"MW: slotEditEdgeMode() - Triggering optionsEdgeArrowsAct checkbox";
         optionsEdgeArrowsAct->trigger();
         qDebug()<<"MW: slotEditEdgeMode() - disabling optionsEdgeArrowsAct checkbox";
@@ -11768,7 +11787,7 @@ void MainWindow::slotAnalyzeSymmetryCheck(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    if (activeGraph->graphIsSymmetric())
+    if (activeGraph->isSymmetric())
         QMessageBox::information(this,
                                  "Symmetry",
                                  tr("The adjacency matrix is symmetric."
@@ -11954,7 +11973,7 @@ void MainWindow::askAboutEdgeWeights(const bool userTriggered){
     qDebug() << "MW::askAboutEdgeWeights() - checking if graph weighted.";
 
     if (userTriggered) {
-        if (!activeGraph->graphIsWeighted()  ){
+        if (!activeGraph->isWeighted()  ){
             slotHelpMessageToUser(USER_MSG_INFO,
                                   tr("Non-Weighted Network"),
                                   tr("You do not work on a weighted network at the moment. \n"
@@ -11967,7 +11986,7 @@ void MainWindow::askAboutEdgeWeights(const bool userTriggered){
         }
     }
     else {
-        if (!activeGraph->graphIsWeighted()  ){
+        if (!activeGraph->isWeighted()  ){
             optionsEdgeWeightConsiderAct->setChecked(false);
             return;
         }
@@ -12073,7 +12092,7 @@ void MainWindow::slotAnalyzeDistance(){
 
     qDebug() << "source " << i  << " target" <<  j;
 
-    if (activeGraph->graphIsSymmetric() && i>j) {
+    if (activeGraph->isSymmetric() && i>j) {
         qSwap(i,j);
     }
 
@@ -12191,7 +12210,7 @@ void MainWindow::slotAnalyzeDiameter() {
                 optionsEdgeWeightConsiderAct->isChecked(),
                 inverseWeights);
 
-    if ( activeGraph->graphIsWeighted() ) {
+    if ( activeGraph->isWeighted() ) {
         if (optionsEdgeWeightConsiderAct->isChecked()) {
             QMessageBox::information(this, "Diameter",
                                      tr("Diameter =  ")
@@ -12241,7 +12260,7 @@ void MainWindow::slotAnalyzeDistanceAverage() {
                 inverseWeights,
                 editFilterNodesIsolatesAct->isChecked() );
 
-    bool isConnected = activeGraph->graphIsConnected();
+    bool isConnected = activeGraph->isConnected();
 
     if ( isConnected ) {
 
@@ -12327,12 +12346,12 @@ void MainWindow::slotAnalyzeConnectedness(){
 
     }
     else {
-        bool isConnected=activeGraph->graphIsConnected();
+        bool isConnected=activeGraph->isConnected();
 
         qDebug() << "MW::slotAnalyzeConnectedness result " << isConnected;
 
         if(isConnected){
-            if (activeGraph->graphIsDirected()){
+            if (activeGraph->isDirected()){
                 QMessageBox::information(this, "Connectedness", tr("This directed graph "
                                                                    "is strongly connected."), "OK",0);
             }
@@ -12342,7 +12361,7 @@ void MainWindow::slotAnalyzeConnectedness(){
             }
         }
         else {
-            if (activeGraph->graphIsDirected()){
+            if (activeGraph->isDirected()){
                 QMessageBox::information(this, "Connectedness", "This directed graph "
                                                                 "is disconnected. \nThere are pairs of nodes that "
                                                                 "are disconnected.", "OK",0);
@@ -12828,7 +12847,7 @@ void MainWindow::slotAnalyzeStrEquivalenceClusteringHierarchicalDialog() {
 
     QString preselectMatrix = "Adjacency";
 
-    if (!activeGraph->graphIsWeighted()) {
+    if (!activeGraph->isWeighted()) {
         preselectMatrix = "Distances";
     }
     m_dialogClusteringHierarchical = new DialogClusteringHierarchical(this, preselectMatrix);
@@ -13058,7 +13077,7 @@ void MainWindow::slotAnalyzePrestigeDegree(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    if (activeGraph->graphIsSymmetric()) {
+    if (activeGraph->isSymmetric()) {
         QMessageBox::warning(
                     this,
                     "Warning",
@@ -13716,7 +13735,7 @@ void MainWindow::slotOptionsEdgeArrowsVisibility(bool toggle){
 void MainWindow::slotOptionsEdgeWeightsDuringComputation(bool toggle) {
     askedAboutWeights=false;
     askAboutEdgeWeights(toggle);
-    activeGraph->graphSetModified(activeGraph->ModStatus::EdgeCount);
+    activeGraph->setModStatus(activeGraph->ModStatus::EdgeCount);
 }
 
 

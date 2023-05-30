@@ -90,7 +90,7 @@ typedef QVector<QString> V_str;
 /**
   KNOWN BUGS:
   \todo Group edge editing: i.e. change weight or color.
-  \todo - CHECK graphIsWeighted corner case results, when !graphIsModified.
+  \todo - CHECK isWeighted corner case results, when !graphIsModified.
 
   \bug Create d-regular, undirected, ask for closeness, it says we are on a disconnected graph
   \bug Cannot read Graphml files where nodes are not declared before edges (i.e. nets/killer.graphml)
@@ -153,7 +153,7 @@ public slots:
 
     void graphLoadedTerminateParserThreads (QString reason);
 
-    void graphSelectionChanged(const QList<int> selectedVertices,
+    void setSelectionChanged(const QList<int> selectedVertices,
                                const QList<SelectedEdge> selectedEdges);
 
     void graphClickedEmptySpace( const QPointF &p);
@@ -417,40 +417,48 @@ public:
 
     /*FILES (READ AND WRITE)*/
 
-    QString graphFileName() const;
+    QString getFileName() const;
 
-    QString graphName() const;
+    void setFileName(QString &fileName);
 
-    bool graphIsSaved() const;
+    QString getName() const;
 
-    bool graphIsLoaded() const;
+    void setName(QString &graphName);
 
-    int graphFileFormat() const;
+    bool IsSaved() const;
 
-    bool graphFileFormatExportSupported(const int &fileFormat) const;
+    bool IsLoaded() const;
 
-    void graphLoad (const QString fileName,
+    int getFileFormat() const;
+
+    bool isFileFormatExportSupported(const int &fileFormat) const;
+
+    void setModStatus(const int &graphNewStatus, const bool&signalMW=true);
+
+    bool isModified() const ;
+
+    void loadFile (const QString fileName,
                     const QString codecName,
                     const int format,
                     const int two_sm_mode,
                     const QString delimiter=QString());
 
-    void graphSave(const QString &fileName,
+    void saveToFile(const QString &fileName,
                    const int &fileType,
                    const bool &saveEdgeWeights=true);
 
-    bool graphSaveToPajekFormat (const QString &fileName,
+    bool saveToPajekFormat (const QString &fileName,
                                  QString networkName="",
                                  int maxWidth=0, int maxHeight=0);
 
-    bool graphSaveToAdjacencyFormat (const QString &fileName,
+    bool saveToAdjacencyFormat (const QString &fileName,
                                      const bool &saveEdgeWeights=true);
 
-    bool graphSaveToGraphMLFormat (const QString &fileName,
+    bool saveToGraphMLFormat (const QString &fileName,
                                    QString networkName="",
                                    int maxWidth=0, int maxHeight=0);
 
-    bool graphSaveToDotFormat (QString fileName);
+    bool saveToDotFormat (QString fileName);
 
     QString graphMatrixTypeToString(const int &matrixType) const;
 
@@ -641,75 +649,71 @@ public:
 
     /* GRAPH methods */
 
-    bool graphIsEmpty() const;
+    bool isEmpty() const;
 
-    void graphSetModified(const int &graphNewStatus, const bool&signalMW=true);
+    QList<int> getSelectedVertices() const;
 
-    bool graphIsModified() const ;
+    int getSelectedVerticesCount() const;
 
-    QList<int> graphSelectedVertices() const;
+    int getSelectedVerticesMin() const;
 
-    int graphSelectedVerticesCount() const;
+    int getSelectedVerticesMax() const;
 
-    int graphSelectedVerticesMin() const;
+    QList<SelectedEdge> getSelectedEdges() const;
 
-    int graphSelectedVerticesMax() const;
+    int getSelectedEdgesCount() const;
 
-    QList<SelectedEdge> graphSelectedEdges() const;
-
-    int graphSelectedEdgesCount() const;
-
-    int graphGeodesics();
+    int getGeodesics();
 
     qreal graphDensity();
 
-    bool graphIsWeighted();
+    bool isWeighted();
 
-    void graphSetWeighted(const bool &toggle=true);
+    void setWeighted(const bool &toggle=true);
 
     qreal graphReciprocity();
 
-    bool graphIsSymmetric();
+    bool isSymmetric();
 
-    void graphSymmetrize();
+    void setSymmetric();
 
-    void graphSymmetrizeStrongTies(const bool &allRelations=false);
+    void addRelationSymmetricStrongTies(const bool &allRelations=false);
 
-    void graphCocitation();
+    void relationAddCocitation();
 
     void graphDichotomization(const qreal threshold);
 
-    void graphSetDirected(const bool &toggle=true, const bool &signalMW=true);
+    void setDirected(const bool &toggle=true, const bool &signalMW=true);
 
-    void graphSetUndirected(const bool &toggle=true, const bool &signalMW=true);
+    void setUndirected(const bool &toggle=true, const bool &signalMW=true);
 
-    bool graphIsDirected();
+    bool isDirected();
 
-    bool graphIsUndirected();
+    bool isUndirected();
 
-    bool graphIsConnected();
+    bool isConnected();
 
-    void graphMatrixAdjacencyCreate(const bool dropIsolates=false,
+    void createMatrixAdjacency(const bool dropIsolates=false,
                                     const bool considerWeights=true,
                                     const bool inverseWeights=false,
                                     const bool symmetrize=false );
 
-    bool graphMatrixAdjacencyInvert(const QString &method="lu");
+    bool createMatrixAdjacencyInverse(const QString &method="lu");
 
 
-    void graphMatrixSimilarityMatchingCreate(Matrix &AM,
+    void createMatrixSimilarityMatching(Matrix &AM,
                                              Matrix &SEM,
                                              const int &measure=METRIC_SIMPLE_MATCHING,
                                              const QString &varLocation="Rows",
                                              const bool &diagonal=false,
                                              const bool &considerWeights=true);
 
-    void graphMatrixSimilarityPearsonCreate (Matrix &AM,
+    void createMatrixSimilarityPearson (Matrix &AM,
                                              Matrix &PCC,
                                              const QString &varLocation="Rows",
                                              const bool &diagonal=false);
 
-    void graphMatrixDissimilaritiesCreate(Matrix &INPUT_MATRIX,
+    void createMatrixDissimilarities(Matrix &INPUT_MATRIX,
                                           Matrix &DSM,
                                           const int &metric,
                                           const QString &varLocation,

@@ -158,7 +158,7 @@ QColor GraphicsEdge::color() const{
 
 
 /**
- * @brief Called from Graph::graphSaveToPajekFormat()
+ * @brief Called from Graph::SaveToPajekFormat()
  * @return
  */
 QString GraphicsEdge::colorToPajek() {

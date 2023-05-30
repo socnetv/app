@@ -1326,7 +1326,7 @@ void GraphicsWidget::selectNone(){
  * Called by QGraphicsScene::selectionChanged signal whenever the user
  * makes a selection.
  * Emits selectedNodes and selectedEdges lists to
- * Graph::graphSelectionChanged() which then signals to
+ * Graph::setSelectionChanged() which then signals to
  * MW::slotEditSelectionChanged to display counts on app window.
  */
 void GraphicsWidget::getSelectedItems() {

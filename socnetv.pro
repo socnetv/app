@@ -2,8 +2,8 @@ lessThan(QT_VERSION, 6.0) {
     error("SocNetV requires at least Qt 6.0!")
 }
 
-MY_TARGET_BUILD = release
-#MY_TARGET_BUILD = debug
+#MY_TARGET_BUILD = release
+MY_TARGET_BUILD = debug
 
 #ALLOW_WARNINGS = warn_on
 ALLOW_WARNINGS = warn_off
