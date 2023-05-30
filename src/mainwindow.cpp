@@ -1012,7 +1012,9 @@ void MainWindow::initGraph() {
 
 /**
  * @brief Initializes all QActions of the application
+ *
  * Take a breath, the listing below is HUGE.
+ *
  */
 void MainWindow::initActions(){
 
@@ -3688,20 +3690,22 @@ void MainWindow::initActions(){
 
 
 /**
- * @brief Creates and populates the menu bar
+ * @brief Populates the menu bar with our menu items.
  */
 void MainWindow::initMenuBar() {
 
     qDebug()<< "Initializing menu bar...";
-    /** menuBar entry networkMenu */
+
+    /** NETWORK MENU */
     networkMenu = menuBar()->addMenu(tr("&Network"));
     networkMenu->addAction(networkNewAct);
     networkMenu->addAction(networkOpenAct);
     networkMenu->addSeparator();
     recentFilesSubMenu = new QMenu(tr("Recent &files..."));
     recentFilesSubMenu->setIcon(QIcon(":/images/recent_48px.svg"));
-    for (int i = 0; i < MaxRecentFiles; ++i)
+    for (int i = 0; i < MaxRecentFiles; ++i) {
         recentFilesSubMenu->addAction(recentFileActs[i]);
+    }
 
     slotNetworkFileRecentUpdateActions();
 
@@ -3768,10 +3772,7 @@ void MainWindow::initMenuBar() {
     networkMenu->addAction(networkQuitAct);
 
 
-
-
-    /** menuBar entry editMenu */
-
+    // EDIT MENU
     editMenu = menuBar()->addMenu(tr("&Edit"));
 
     editMenu->addAction (editRelationPreviousAct);
@@ -3862,8 +3863,7 @@ void MainWindow::initMenuBar() {
     filterMenu->addAction(editFilterEdgesByWeightAct );
     filterMenu->addAction(editFilterEdgesUnilateralAct);
 
-
-    /** menuBar entry: analyze menu */
+    // ANALYZE MENU
     analysisMenu = menuBar()->addMenu(tr("&Analyze"));
     matrixMenu = new QMenu(tr("Adjacency Matrix and Matrices..."));
     matrixMenu->setIcon(QIcon(":/images/sociomatrix_48px.svg"));
@@ -3951,8 +3951,7 @@ void MainWindow::initMenuBar() {
     strEquivalenceMenu->addAction (analyzeStrEquivalenceClusteringHierarchicalAct);
 
 
-    /** menuBar entry layoutMenu  */
-
+    // LAYOUT MENU
     layoutMenu = menuBar()->addMenu(tr("&Layout"));
     //   colorationMenu = new QPopupMenu();
     //   layoutMenu->insertItem (tr("Colorization"), colorationMenu);
@@ -4050,7 +4049,7 @@ void MainWindow::initMenuBar() {
     layoutMenu->addAction (layoutGuidesAct);
 
 
-    /** menuBar entry optionsMenu  */
+    // OPTIONS MENU
     optionsMenu = menuBar()->addMenu(tr("&Options"));
     nodeOptionsMenu=new QMenu(tr("Nodes..."));
     nodeOptionsMenu->setIcon(QIcon(":/images/node_48px.svg"));
@@ -4089,7 +4088,7 @@ void MainWindow::initMenuBar() {
     optionsMenu->addAction (openSettingsAct);
 
 
-    /**  menuBar entry helpMenu */
+    // HELP MENU
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction (helpApp);
     helpMenu->addAction (tipsApp);
@@ -5170,15 +5169,9 @@ void MainWindow::initPanels(){
 
 
 
-
-
-
-
-
-
-
 /**
- * @brief Initializes the application window UI:
+ * @brief Initializes the application window layout
+ *
  * Creates helper widgets and sets the main layout of the MainWindow
  */
 void MainWindow::initWindowLayout(const bool &maximized, const bool &fullscreen) {
@@ -5328,10 +5321,10 @@ void MainWindow::initWindowLayout(const bool &maximized, const bool &fullscreen)
 
 
 
-
-
 /**
- * @brief Connects signals & slots between various parts of the app:
+ * @brief Connects signals & slots between various parts of the app
+ *
+ * Signal/slots between:
  * - the GraphicsWidget and the Graph
  * - the GraphicsWidget and the MainWindow
  * This must be called after all widgets have been created.
@@ -5617,7 +5610,6 @@ void MainWindow::initSignalSlots() {
     connect(toolBoxLayoutForceDirectedApplyButton, SIGNAL (clicked() ),
             this, SLOT(toolBoxLayoutForceDirectedApplyBtnPressed() ) );
 
-
 }
 
 
@@ -5625,10 +5617,10 @@ void MainWindow::initSignalSlots() {
 
 
 
-
 /**
- * @brief Initializes the default network parameters.
- * Used on app start and especially when erasing a network to start a new one
+ * @brief Initializes the default app parameters.
+ *
+ * Used on app start and when erasing a network to start a new one
  */
 void MainWindow::initApp(){
 
@@ -5775,7 +5767,9 @@ void MainWindow::initApp(){
 
 }
 
-
+/**
+ * @brief Initializes combo boxes in the MW
+ */
 void MainWindow::initComboBoxes() {
     toolBoxAnalysisCommunitiesSelect->setCurrentIndex(0);
     toolBoxAnalysisStrEquivalenceSelect->setCurrentIndex(0);
@@ -5810,8 +5804,10 @@ void MainWindow::slotNetworkFileRecentUpdateActions() {
 
 
 /**
- * @brief  Convenience method to show a message in the status bar, with the given duration
- * Slot called by Graph::statusMessage to display some message to the user
+ * @brief  Shows a message in the status bar, with the given duration
+ *
+ * Called by Graph::statusMessage to display some message to the user
+ *
  * @param message
  */
 void MainWindow::statusMessage(const QString message){
@@ -5821,7 +5817,7 @@ void MainWindow::statusMessage(const QString message){
 
 
 /**
- * @brief Helper function to display a useful info message
+ * @brief Helper function to display a popup with useful info
  * @param text
  */
 void MainWindow::slotHelpMessageToUserInfo(const QString text) {
@@ -5830,7 +5826,7 @@ void MainWindow::slotHelpMessageToUserInfo(const QString text) {
 
 
 /**
- * @brief Helper function to display a useful error message
+ * @brief Helper function to display a popup with an error message
  * @param text
  */
 void MainWindow::slotHelpMessageToUserError(const QString text) {
@@ -5839,8 +5835,17 @@ void MainWindow::slotHelpMessageToUserError(const QString text) {
 
 
 /**
- * @brief Convenience method
- * @param message
+ * @brief Displays a popup with the given text/info and a status message
+ *
+ * @param type
+ * @param statusMsg
+ * @param text
+ * @param info
+ * @param buttons
+ * @param defBtn
+ * @param btn1
+ * @param btn2
+ * @return
  */
 int MainWindow::slotHelpMessageToUser(const int type,
                                       const QString statusMsg,
@@ -5971,7 +5976,7 @@ int MainWindow::slotHelpMessageToUser(const int type,
 
 
 /**
- * @brief Called from MW, when user selects something in the Network Auto Create
+ * @brief Called when user selects something in the Network Auto Create
  * selectbox of the toolbox
  * @param selectedIndex
  */
@@ -6013,7 +6018,7 @@ void MainWindow::toolBoxNetworkAutoCreateSelectChanged(const int &selectedIndex)
 
 
 /**
- * @brief Called from MW, when user selects something in the Subgraph from Selected
+ * @brief Called when user selects something in the Subgraph from Selected
  * Nodes selectbox of the toolbox
  * @param selectedIndex
  */
@@ -6045,7 +6050,7 @@ void MainWindow::toolBoxEditNodeSubgraphSelectChanged(const int &selectedIndex) 
 
 
 /**
- * @brief Called from MW, when user selects something in the Edge Transform
+ * @brief Called when user selects something in the Edge Transform
  * selectbox of the toolbox
  * @param selectedIndex
  */
@@ -6074,7 +6079,7 @@ void MainWindow::toolBoxEditEdgeTransformSelectChanged(const int &selectedIndex)
 
 
 /**
- * @brief Called from MW, when user selects something in the Matrices
+ * @brief Called when user selects something in the Matrices
  * selectbox of the toolbox
  * @param selectedIndex
  */
@@ -6115,7 +6120,7 @@ void MainWindow::toolBoxAnalysisMatricesSelectChanged(const int &selectedIndex) 
 
 
 /**
- * @brief Called from MW, when user selects something in the Cohesion
+ * @brief Called when user selects something in the Cohesion
  * selectbox of the toolbox to compute basic graph theoretic / network properties
  * @param selectedIndex
  */
@@ -6175,7 +6180,7 @@ void MainWindow::toolBoxAnalysisCohesionSelectChanged(const int &selectedIndex) 
 
 
 /**
- * @brief Called from MW, when user selects something in the Communities selectbox
+ * @brief Called when the user selects something in the Communities selectbox
  * of the toolbox
  * @param selectedIndex
  *
@@ -6202,7 +6207,7 @@ void MainWindow::toolBoxAnalysisCommunitiesSelectChanged(const int &selectedInde
 
 
 /**
- * @brief Called from MW, when user selects something in the Structural Equivalence
+ * @brief Called when the user selects something in the Structural Equivalence
  * selectbox of the toolbox
  * @param selectedIndex
  *
@@ -6235,7 +6240,7 @@ void MainWindow::toolBoxAnalysisStrEquivalenceSelectChanged(const int &selectedI
 
 
 /**
- * @brief Called from MW, when user selects something in the Prominence selectbox
+ * @brief Called when user selects something in the Prominence selectbox
  *  of the toolbox
  * @param selectedIndex
  *
@@ -6288,8 +6293,8 @@ void MainWindow::toolBoxAnalysisProminenceSelectChanged(const int &selectedIndex
 }
 
 /**
- * @brief Called from MW, when user selects a Prominence index in the Layout selectbox
- *  of the Control Panel .
+ * @brief Called when the user selects a Prominence index in the Layout selectbox
+ *  of the Control Panel.
  */
 void MainWindow::toolBoxLayoutByIndexApplyBtnPressed(){
     qDebug()<<"User request to apply prominence-based layout...";
@@ -6329,7 +6334,7 @@ void MainWindow::toolBoxLayoutByIndexApplyBtnPressed(){
 
 
 /**
- * @brief Called from MW, when user selects a model in the Layout by Force Directed
+ * @brief Called when the user selects a model in the Layout by Force Directed
  * selectbox of left panel.
  */
 void MainWindow::toolBoxLayoutForceDirectedApplyBtnPressed(){
@@ -6365,7 +6370,7 @@ void MainWindow::toolBoxLayoutForceDirectedApplyBtnPressed(){
 
 
 /**
- * @brief Creates a new network
+ * @brief Starts a new network (closing the current one).
  */
 void MainWindow::slotNetworkNew() {
     slotNetworkClose();
@@ -6414,11 +6419,14 @@ void MainWindow::setLastPath(const QString &filePath) {
 
 
 /**
- * @brief If m_fileName is empty, opens a file selection dialog
+ * @brief Chooses a network file to load
+ *
+ * If m_fileName is empty, opens a file selection dialog
  * Then calls slotNetworkFilePreview()
  * Called on application loading from command line with filename parameter
  * Called from slotNetworkImport* methods
  * Called from slotNetworkFileLoadRecent
+ *
  * @param m_fileName
  * @param fileFormat
  * @param checkSelectFileType
@@ -6687,7 +6695,9 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
 
 
 
-
+/**
+ * @brief Displays a status message when the user aborts the file dialog
+ */
 void MainWindow::slotNetworkFileDialogRejected() {
     qDebug() << "Dialog rejected. If a file was previously opened, get back to it.";
     statusMessage( tr("Opening aborted"));
@@ -6695,7 +6705,7 @@ void MainWindow::slotNetworkFileDialogRejected() {
 
 
 /**
- * @brief Called when user selects a file filter (i.e. GraphML) in the fileDialog
+ * @brief Called when user the selects a file filter (i.e. GraphML) in the fileDialog
  * @param filter
  */
 void MainWindow::slotNetworkFileDialogFilterSelected(const QString &filter) {
@@ -6762,6 +6772,7 @@ void MainWindow::slotNetworkFileDialogFileSelected(const QString &fileName) {
 }
 
 
+
 /**
  * @brief Saves the network to a file
  *
@@ -6770,6 +6781,8 @@ void MainWindow::slotNetworkFileDialogFileSelected(const QString &fileName) {
  * If a fileName is set, it checks if fileFormat is supported and saves the network.
  * If not supported, or the file is new, just tries to save in GraphML
  * For other exporting options the user is informed to use the export menu.
+ *
+ * @param fileFormat
  */
 void MainWindow::slotNetworkSave(const int &fileFormat) {
     statusMessage( tr("Saving file..."));
@@ -6844,7 +6857,7 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
 
 
 /**
- * @brief Saves the network in a new GraphML file.
+ * @brief Prompts the user to save the network in a new file.
  * Always uses the GraphML format and extension.
  */
 void MainWindow::slotNetworkSaveAs() {
@@ -6896,7 +6909,8 @@ void MainWindow::slotNetworkSaveAs() {
 
 
 /**
- * @brief Called from Graph to update the 'save' status of the network
+ * @brief Updates the 'save' status of the network
+ *
  * Updates Save icon and window title (if saved)
  *  status > 0 means network has been saved
  *  status = 0 means network has changed and needs saving
@@ -7029,8 +7043,6 @@ void MainWindow::slotNetworkImportGraphviz(){
 
 
 
-
-
 /**
  * @brief Imports a network from a UCINET formatted file
  */
@@ -7148,7 +7160,9 @@ void MainWindow::slotNetworkAvailableTextCodecs()
  * @brief  Opens a preview window with the selected file
  *
  * The original aim was to let the user see the file and possibly
- * select the appropriate text codec
+ * select the appropriate text codec.
+ *
+ * However, text Codec support is limited in Qt6
  *
  * @param m_fileName
  * @param fileFormat
