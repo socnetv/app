@@ -7200,8 +7200,7 @@ bool MainWindow::slotNetworkFilePreview(const QString &m_fileName,
 
 
 /**
- * @brief Called on click on any file entry in "Recent Files" menu
- * Calls slotNetworkFileChoose() which checks file type and calls slotNetworkFilePreview
+ * @brief Loads a selected file entry from the "Recent Files" menu
  */
 void MainWindow::slotNetworkFileLoadRecent() {
 
@@ -7216,10 +7215,10 @@ void MainWindow::slotNetworkFileLoadRecent() {
 
 
 /**
- * @brief Main network file loader method
- * Called from m_dialogPreviewFile and slotNetworkDataSetRecreate
- * Calls initApp to init to default values.
- * Then calls activeGraph::loadFile to actually load the network...
+ * @brief Loads the given network file
+ *
+ * Inits the app, then calls the loadFile method of Graph.
+ *
  * @param m_fileName
  * @param m_codecName
  * @param fileFormat
@@ -7296,20 +7295,24 @@ void MainWindow::slotNetworkFileLoad(const QString m_fileName,
                 delimiter
                 );
 
-
-
 }
 
 
 
 
 /**
- * @brief Called from Parser/Graph when a network file is loaded.
- * It informs the MW about the type of the network so that it can display the appropiate message.
+ * @brief Informs the user (and the MW) about the type of the network loaded
+ *
+ * Called from Parser/Graph when a network file is loaded to
+ * display the appropiate message.
+ *
  * @param type
+ * @param fName
  * @param netName
- * @param aNodes
+ * @param totalNodes
  * @param totalEdges
+ * @param elapsedTime
+ * @param message
  */
 void MainWindow::slotNetworkFileLoaded (const int &type,
                                         const QString &fName,
@@ -7414,7 +7417,7 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
 
 
 /**
- * @brief Called from editDragModeSelectAct to toggle the drag mode (select or scroll).
+ * @brief Toggles the drag mode (select or scroll).
  */
 void MainWindow::slotEditDragModeSelection(bool checked){
     qDebug() << "User changed drag mode, checked" << checked;
@@ -7438,7 +7441,7 @@ void MainWindow::slotEditDragModeSelection(bool checked){
 
 
 /**
- * @brief Called from editDragModeSelectAct to toggle the drag mode (select or scroll).
+ * @brief Toggles the drag mode (select or scroll).
  */
 void MainWindow::slotEditDragModeScroll(bool checked){
 
@@ -7461,9 +7464,7 @@ void MainWindow::slotEditDragModeScroll(bool checked){
 
 
 /**
- * @brief
- * Clears the relations combo.
- * Called from Graph::relationsClear()
+ * @brief Clears the relations combo.
  */
 void MainWindow::slotEditRelationsClear(){
     qDebug() << "Clearing relations combo...";
@@ -7472,8 +7473,8 @@ void MainWindow::slotEditRelationsClear(){
 
 
 /**
- * @brief
- * Prompts the user to enter the name of a new relation
+ * @brief Prompts the user to enter the name of a new relation
+ *
  * On success, emits signal to Graph to change to the new relation.
  */
 void MainWindow::slotEditRelationAddPrompt() {
@@ -7555,8 +7556,7 @@ void MainWindow::slotEditRelationAddPrompt() {
 
 
 /**
- * @brief
- * Adds a new relation to our UI relations combo
+ * @brief Adds a new relation to the relations combo
  *
  * Called from Graph when the network file parser or another Graph method
  * demands a new relation to be added to the UI combo.
@@ -7589,8 +7589,8 @@ void MainWindow::slotEditRelationAdd(const QString &newRelationName){
 
 
 /**
- * @brief
- * Changes the editRelations combo box index to relIndex
+ * @brief Changes the editRelations combo box index to relIndex
+ *
  * If relIndex==RAND_MAX the index is set to the last relation index
  *
  * @param relIndex
@@ -7613,9 +7613,7 @@ void MainWindow::slotEditRelationChange(const int relIndex) {
 
 
 /**
- * @brief
- * Prompts the user to enter a new name for the current relation
- * @param newName
+ * @brief Prompts the user to enter a new name for the current relation
  */
 void MainWindow::slotEditRelationRename() {
 
@@ -7681,8 +7679,12 @@ void MainWindow::slotNetworkExportImageDialog()
 
 
 /**
- * @brief Exports the network to a an image
- * @return
+ * @brief Exports the network to an image file
+ *
+ * @param filename
+ * @param format
+ * @param quality
+ * @param compression
  */
 void MainWindow::slotNetworkExportImage( const QString &filename,
                                          const QByteArray &format,
@@ -7803,8 +7805,12 @@ void MainWindow::slotNetworkExportPDFDialog()
 
 /**
  * @brief Exports the visible part of the network to a PDF Document
- * @return
  *
+ * @param pdfName
+ * @param orientation
+ * @param dpi
+ * @param printerMode
+ * @param pageSize
  */
 void MainWindow::slotNetworkExportPDF(QString &pdfName,
                                       const QPageLayout::Orientation &orientation,
@@ -8107,7 +8113,6 @@ void MainWindow::slotNetworkFileView(){
         }
         else {
             // loaded network, but modified
-            // TODO: Check UX bug #142
             int response = slotHelpMessageToUser(
                         USER_MSG_QUESTION,
                         tr("Current network has been modified. Save to the original file?"),
@@ -8154,6 +8159,7 @@ void MainWindow::slotNetworkTextEditor(){
 
 /**
  * @brief Displays the adjacency matrix of the network.
+ *
  *  It uses a different method for writing the matrix to a file.
  *  While slotNetworkExportSM uses << operator of Matrix class
  *  (via adjacencyMatrix of Graph class), this is using directly the
@@ -8261,7 +8267,7 @@ void MainWindow::slotNetworkDataSetSelect(){
     this->slotNetworkClose();
 
     m_datasetSelectDialog = new DialogDataSetSelect(this);
-    connect( m_datasetSelectDialog, SIGNAL( userChoices( QString) ),
+    connect( m_datasetSelectDialog, SIGNAL( userChoices(QString) ),
              this, SLOT( slotNetworkDataSetRecreate(QString) ) );
 
 
@@ -8315,24 +8321,11 @@ void MainWindow::slotNetworkDataSetRecreate (const QString m_fileName) {
     }
 
     slotNetworkFileLoad(appSettings["dataDir"]+m_fileName, "UTF-8", fileFormat);
-
-    //    if ( slotNetworkFileLoad(appSettings["dataDir"]+m_fileName, "UTF-8", fileFormat) ) {
-    //        qDebug() << "slotNetworkDataSetRecreate() loaded file " << m_fileName;
-    //        fileName=m_fileName;
-    //        previous_fileName=fileName;
-    //        setWindowTitle("SocNetV "+ VERSION +" - "+fileName);
-    //        QString message=tr("Dataset loaded. Dataset file saved as ") + fileName;
-    //        statusMessage( message );
-    //    }
-    //    else {
-    //        statusMessage( "Could not read new network data file. Aborting.");
-    //    }
 }
 
 
 /**
- * @brief MainWindow::slotNetworkRandomErdosRenyiDialog
- * Shows the Erdos-Renyi network creation dialog
+ * @brief Shows a dialog to create an Erdos-Renyi random network
  */
 void MainWindow::slotNetworkRandomErdosRenyiDialog(){
 
@@ -8355,15 +8348,14 @@ void MainWindow::slotNetworkRandomErdosRenyiDialog(){
 
 
 /**
- * @brief MainWindow::slotNetworkRandomErdosRenyi
+ * @brief Creates an Erdos-Renyi random symmetric network
+ *
  * @param newNodes
  * @param model
  * @param edges
  * @param eprob
  * @param mode
  * @param diag
- * Calls activeGraph->slotNetworkRandomErdosRenyi () to create a symmetric network
- * Edge existance is controlled by a user specified possibility.
  */
 void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
                                               const QString model,
@@ -8378,14 +8370,12 @@ void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
 
     appSettings["randomErdosEdgeProbability"] = QString::number(eprob);
 
-
     activeGraph->randomNetErdosCreate ( newNodes,
                                         model,
                                         edges,
                                         eprob,
                                         mode,
                                         diag);
-
 
     setWindowTitle("Untitled Erdos-Renyi random network");
 
@@ -8424,12 +8414,8 @@ void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
 
 
 
-
-
-
-
 /**
- * @brief MainWindow::slotNetworkRandomScaleFreeDialog
+ * @brief Shows a dialog to create a scale-free random network
  */
 void MainWindow::slotNetworkRandomScaleFreeDialog() {
 
@@ -8450,7 +8436,7 @@ void MainWindow::slotNetworkRandomScaleFreeDialog() {
 
 
 /**
- * @brief MainWindow::slotNetworkRandomScaleFree
+ * @brief Creates a scale-free random network
  * @param nodes
  * @param power
  * @param initialNodes
@@ -8494,7 +8480,7 @@ void MainWindow::slotNetworkRandomScaleFree ( const int &newNodes,
 
 
 /**
- * @brief MainWindow::slotNetworkRandomSmallWorldDialog
+ * @brief Shows a dialog to create a small-world random network
  */
 void MainWindow::slotNetworkRandomSmallWorldDialog()
 {
@@ -8509,15 +8495,15 @@ void MainWindow::slotNetworkRandomSmallWorldDialog()
     connect( m_randSmallWorldDialog, &DialogRandSmallWorld::userChoices,
              this, &MainWindow::slotNetworkRandomSmallWorld);
 
-
     m_randSmallWorldDialog->exec();
 
 }
 
 
 /**
- * @brief MainWindow::slotNetworkRandomSmallWorld
- * @param nodes
+ * @brief Creates a small-world random network
+ *
+ * @param newNodes
  * @param degree
  * @param beta
  * @param mode
@@ -8556,7 +8542,7 @@ void MainWindow::slotNetworkRandomSmallWorld(const int &newNodes,
 
 
 /**
- * @brief MainWindow::slotNetworkRandomRegularDialog
+ * @brief Shows a dialog to create a d-regular random network
  */
 void MainWindow::slotNetworkRandomRegularDialog()
 {
@@ -8578,7 +8564,8 @@ void MainWindow::slotNetworkRandomRegularDialog()
 
 
 /**
- * @brief Creates a pseudo-random k-regular network where every node has the same degree
+ * @brief Creates a pseudo-random d-regular network where every node has the same degree
+ *
  * @param newNodes
  * @param degree
  * @param mode
@@ -8619,9 +8606,11 @@ void MainWindow::slotNetworkRandomGaussian(){
 
 
 /**
- * @brief MainWindow::slotNetworkRandomRingLattice
- * Creates a lattice network, i.e. a connected network where every node
-    has the same degree and is connected with its neighborhood.
+ * @brief Creates a ring lattice network
+ *
+ * A ring lattice is a network where each node has degree d:
+ * - d/2 edges to the "right"
+ * - d/2 edges to the "left"
  */
 void MainWindow::slotNetworkRandomRingLattice(){
 
@@ -8675,13 +8664,8 @@ void MainWindow::slotNetworkRandomRingLattice(){
 
 
 
-
-
-
-
-
 /**
- * @brief Called from DialogRandLattice
+ * @brief Shows a dialog to create a "random" lattice network.
  */
 void MainWindow::slotNetworkRandomLatticeDialog()
 {
@@ -8699,13 +8683,18 @@ void MainWindow::slotNetworkRandomLatticeDialog()
 
 
 /**
- * @brief Creates a lattice network, i.e. a connected network whose drawing
- * forms a regular tiling
-   Lattices are also known as meshes or grids.
+ * @brief Creates a lattice network, i.e. a connected network where every node
+ * has the same degree and is connected with its neighborhood
+ *
+ * A lattice is a network whose drawing forms a regular tiling
+ * Lattices are also known as meshes or grids.
+ *
  * @param newNodes
- * @param degree
+ * @param length
+ * @param dimension
+ * @param nei
  * @param mode
- * @param diag
+ * @param circular
  */
 void MainWindow::slotNetworkRandomLattice(const int &newNodes,
                                           const int &length,
@@ -8741,9 +8730,7 @@ void MainWindow::slotNetworkRandomLattice(const int &newNodes,
 
 
 /**
- * @brief
- * Shows a dialog for the user to configure the webcrawler.
- * The dialog passes the user options to slotNetworkWebCrawler()
+ * @brief Shows the web crawler dialog
  */
 void MainWindow::slotNetworkWebCrawlerDialog() {
 
@@ -8759,18 +8746,23 @@ void MainWindow::slotNetworkWebCrawlerDialog() {
 
 
 
-
-
-
 /**
- * @brief
- * Clears the loaded network then calls Graph::startWebCrawler() with the user options.
- * Called from m_WebCrawlerDialog.
- * @param seed
+ * @brief Starts the web crawler with the user options
+ *
+ * @param startUrl
+ * @param urlPatternsIncluded
+ * @param urlPatternsExcluded
+ * @param linkClasses
  * @param maxNodes
- * @param maxRecursion
- * @param extLinks
+ * @param maxLinksPerPage
  * @param intLinks
+ * @param childLinks
+ * @param parentLinks
+ * @param selfLinks
+ * @param extLinks
+ * @param extLinksCrawl
+ * @param socialLinks
+ * @param delayedRequests
  */
 void MainWindow::slotNetworkWebCrawler (const QUrl &startUrl,
                                         const QStringList &urlPatternsIncluded,
@@ -8826,15 +8818,11 @@ void MainWindow::slotNetworkWebCrawler (const QUrl &startUrl,
 
 
 
-
 /**
- * @brief
+ * @brief Makes a network request to the given url
  *
- */
-/**
- * @brief
- * On user demand, makes a network request to url
- * and creates the QNetworkReply object to handle the reply.
+ * Creates the QNetworkReply object to handle the reply.
+ *
  * @param url
  * @param requestType
  */
@@ -8881,9 +8869,10 @@ void MainWindow::slotNetworkManagerRequest(const QUrl &url, const NetworkRequest
 
 
 /**
- * @brief
- * Shows a message box to the user when a NetworkReply encounters errors.
- * The message box containt info about the error code.
+ * @brief Shows a message box to the user when a NetworkReply encounters errors.
+ *
+ * The message box contains info about the error code.
+ *
  * @param code
  */
 void MainWindow::slotNetworkManagerReplyError(const QNetworkReply::NetworkError &code) {
@@ -9015,8 +9004,8 @@ void MainWindow::slotNetworkManagerReplyError(const QNetworkReply::NetworkError 
 
 
 /**
- * @brief
- * Shows a message box to the user when the Network Manager encounters any SSL error.
+ * @brief Shows a message box to the user when the Network Manager encounters any SSL error.
+ *
  * @param reply
  * @param errors
  */
@@ -9040,12 +9029,15 @@ void MainWindow::slotNetworkManagerSslErrors(QNetworkReply *reply, const QList<Q
 
 
 
-
 /**
- * @brief Called when the network has been modified.
+ * @brief Activates the networkSave icon and refreshes any LCD values.
  *
- * Activates the networkSave icon and refreshes any LCD values.
+ * Called when the network has been modified.
  *
+ * @param directed
+ * @param vertices
+ * @param edges
+ * @param density
  */
 void MainWindow::slotNetworkChanged(
                                     const bool &directed,
@@ -9134,8 +9126,8 @@ void MainWindow::slotNetworkChanged(
 
 
 /**
- * @brief MainWindow::slotEditOpenContextMenu
- * Popups a context menu with some options when the user right-clicks on the scene
+ * @brief Popups a context menu with options when the user right-clicks on the canvas
+ *
  * @param mPos
  */
 void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
@@ -9205,7 +9197,7 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
 
 
 /**
- * @brief MainWindow::slotEditNodeSelectAll
+ * @brief Selects all nodes
  */
 void MainWindow::slotEditNodeSelectAll(){
     qDebug() << "MW::slotEditNodeSelectAll()";
@@ -9217,7 +9209,7 @@ void MainWindow::slotEditNodeSelectAll(){
 
 
 /**
- * @brief MainWindow::slotEditNodeSelectNone
+ * @brief Selects no nodes.
  */
 void MainWindow::slotEditNodeSelectNone(){
     qDebug() << "MainWindow::slotEditNodeSelectNone()";
@@ -9228,8 +9220,9 @@ void MainWindow::slotEditNodeSelectNone(){
 
 
 /**
- * @brief Called from GraphicsWidget when a node moves to update vertex coordinates
- * in Graph
+ * @brief Updates vertex coordinates in Graph when a node moves
+ *
+ * Called from GraphicsWidget
  *
  * @param nodeNumber
  * @param x
@@ -9247,7 +9240,9 @@ void MainWindow::slotEditNodePosition(const int &nodeNumber,
 
 
 /**
- * @brief Called when the "Add Node" btn is clicked, to add a new RANDOM node *
+ * @brief Adds a new random node
+ *
+ * Called when the "Add Node" btn is clicked
  */
 void MainWindow::slotEditNodeAdd() {
     qDebug() << "MW::slotEditNodeAdd()";
@@ -9259,7 +9254,7 @@ void MainWindow::slotEditNodeAdd() {
 
 
 /**
- * @brief Opens the node find dialog
+ * @brief Opens the Find Node dialog
  */
 void MainWindow::slotEditNodeFindDialog(){
     qDebug() << "MW::slotEditNodeFindDialog()";
@@ -9288,8 +9283,11 @@ void MainWindow::slotEditNodeFindDialog(){
 
 
 /**
- * @brief MainWindow::slotEditNodeFind
+ * @brief Finds one or more nodes, according to their number, label or centrality score.
+ *
  * @param list
+ * @param searchType
+ * @param indexStr
  */
 void MainWindow::slotEditNodeFind(const QStringList &list,
                                   const QString &searchType,
