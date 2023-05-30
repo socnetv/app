@@ -90,9 +90,13 @@
 
 
 /**
- * @brief
- * MainWindow contruction method
- * @param m_fileName the file to load, if any.
+ * @brief Constructs a MainWindow instance
+ *
+ * @param m_fileName
+ * @param forceProgress
+ * @param maximized
+ * @param fullscreen
+ * @param debugLevel
  */
 MainWindow::MainWindow(const QString & m_fileName, const bool &forceProgress, const bool &maximized, const bool &fullscreen, const int &debugLevel) {
 
@@ -367,7 +371,8 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
 
 
 /**
- * @brief MainWindow::terminateThreads
+ * @brief Terminates any remaining threads.
+ *
  * @param reason
  */
 void MainWindow::terminateThreads(const QString &reason) {
@@ -388,7 +393,7 @@ void MainWindow::terminateThreads(const QString &reason) {
 
 
 /**
- * @brief The resize event is called whenever the app window is resized.
+ * @brief Called whenever the app window is resized.
  */
 void MainWindow::resizeEvent( QResizeEvent *e ) {
 
@@ -409,8 +414,7 @@ void MainWindow::resizeEvent( QResizeEvent *e ) {
 
 
 /**
-  * @brief
-  * Reads user-defined settings (or uses defaults) and initializes some app settings
+  * @brief Reads user-defined settings (or uses defaults) and initializes some app settings
   */
 QMap<QString,QString> MainWindow::initSettings(const int &debugLevel, const bool &forceProgress) {
 
@@ -823,8 +827,10 @@ void MainWindow::slotOpenSettingsDialog() {
 
 /**
  * @brief Toggles the use of SocNetV default Qt StyleSheet
- * (.qss file defined in project resources)
- * @param sheetName
+ *
+ * The .qss file is defined in project resources
+ *
+ * @param checked
  */
 void MainWindow::slotStyleSheetDefault(const bool checked = true ){
     if ( checked ) {
@@ -839,8 +845,10 @@ void MainWindow::slotStyleSheetDefault(const bool checked = true ){
 
 /**
  * @brief Loads a custom Qt StyleSheet (.qss file)
+ *
  * If sheetFileName is empty, the app uses platform-specific Qt style
- * @param sheetName
+ *
+ * @param sheetFileName
  */
 void MainWindow::slotStyleSheetByName(const QString &sheetFileName) {
 
@@ -889,6 +897,7 @@ void MainWindow::polishProgressDialog(QProgressDialog* dialog)
 
 /**
  * @brief Initializes our network view widget, graphicsWidget, with a graphics scene.
+ *
  * The widget is a QGraphicsView canvas which is the 'main' widget of SocNetV.
  */
 void MainWindow::initView() {
@@ -940,7 +949,6 @@ void MainWindow::initView() {
         graphicsWidget->setViewportUpdateMode( QGraphicsView::MinimalViewportUpdate );
     }
 
-
     //QGraphicsView can cache pre-rendered content in a QPixmap, which is then drawn onto the viewport.
     if ( appSettings["canvasCacheBackground"] == "true" ) {
         graphicsWidget->setCacheMode(QGraphicsView::CacheBackground);
@@ -948,7 +956,6 @@ void MainWindow::initView() {
     else {
         graphicsWidget->setCacheMode(QGraphicsView::CacheNone);
     }
-
 
     graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
     //graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
