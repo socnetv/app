@@ -2719,10 +2719,12 @@ QSet<int> Graph::vertexNeighborhoodSet(const int &v1) {
 
 
 /**
- * @brief Returns the number |V| of graph
+ * @brief Gets the number of vertices in the graph
+ *
  * If countAll = true, returns |V| where V the set of all (enabled or not) vertices
  * If countAll = false, it skips disabled vertices
  * If countAll = false and dropIsolates = true, it skips both disabled and isolated vertices
+ *
   * @param dropIsolates
  * @param countAll
  * @return
@@ -3116,9 +3118,12 @@ int Graph::getSelectedEdgesCount() const {
 
 
 /**
- * @brief Returns the ratio of present edges to total possible edges
+ * @brief Gets the graph density.
+ *
+ * The graph density is the ratio of present edges to total possible edges
  * in the current relation.
- * @return
+ *
+ * @return qreal
  */
 qreal Graph::graphDensity() {
 
@@ -4358,8 +4363,8 @@ bool Graph::graphReachable(const int &v1, const int &v2) {
 /**
  * @brief Creates the reachability matrix XRM
  */
-void Graph::graphMatrixReachabilityCreate() {
-    qDebug() << "Graph::graphMatrixReachabilityCreate()";
+void Graph::createMatrixReachability() {
+    qDebug() << "Graph::createMatrixReachability()";
 
 
     graphDistancesGeodesic(false);
@@ -4380,7 +4385,7 @@ void Graph::graphMatrixReachabilityCreate() {
     emit signalProgressBoxCreate(N,pMsg);
 
 
-    qDebug() << "Graph: graphMatrixReachabilityCreate() - writing matrix...";
+    qDebug() << "Graph: createMatrixReachability() - writing matrix...";
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
 
@@ -4389,13 +4394,13 @@ void Graph::graphMatrixReachabilityCreate() {
         source = (*it)->name();
 
         if  ( ! (*it)->isEnabled()  ) {
-            qDebug() << "Graph: graphMatrixReachabilityCreate() - "
+            qDebug() << "Graph: createMatrixReachability() - "
                      << source << "disabled. SKIP";
             continue;
         }
 
 
-        qDebug() << "Graph: graphMatrixReachabilityCreate() - "
+        qDebug() << "Graph: createMatrixReachability() - "
                   << "source" << source
                   << "i" << i;
 
@@ -4404,17 +4409,17 @@ void Graph::graphMatrixReachabilityCreate() {
             target = (*jt)->name();
 
             if  ( ! (*jt)->isEnabled()  ) {
-                qDebug() << "Graph: graphMatrixReachabilityCreate() - "
+                qDebug() << "Graph: createMatrixReachability() - "
                          << target << "disabled. SKIP";
                 continue;
             }
 
-            qDebug() << "Graph: graphMatrixReachabilityCreate() - "
+            qDebug() << "Graph: createMatrixReachability() - "
                      << "target" << target << "j" << j;
 
 
             reachVal = ((*it)->distance( target ) != RAND_MAX ) ? 1 : 0;
-            qDebug() << "Graph: graphMatrixReachabilityCreate() -  setting XRM ("<< i <<","<< j << ") =" <<  reachVal;
+            qDebug() << "Graph: createMatrixReachability() -  setting XRM ("<< i <<","<< j << ") =" <<  reachVal;
             XRM.setItem( i, j, reachVal );
 
             j++;
@@ -4497,14 +4502,15 @@ qreal Graph::graphDistanceGeodesicAverage(const bool considerWeights,
 
 /**
  * @brief Returns the number of geodesics (shortest-paths) in the graph.
-  * @return
+ *
+ * @return int
  */
-int Graph::getGeodesics()  {
-    qDebug()<< "Graph::getGeodesics()";
+int Graph::getGeodesicsCount()  {
+    qDebug()<< "Graph::getGeodesicsCount()";
 
     graphDistancesGeodesic(false, false,false,false);
 
-    qDebug()<< "Graph::getGeodesics() - geodesics:" << m_graphGeodesicsCount;
+    qDebug()<< "Graph::getGeodesicsCount() - geodesics:" << m_graphGeodesicsCount;
     return m_graphGeodesicsCount;
 
 
@@ -20399,7 +20405,7 @@ void Graph::writeMatrix (const QString &fn,
         emit statusMessage ( tr("Inverse Adjacency Matrix computed. Writing Matrix...") );
         break;
     case MATRIX_REACHABILITY:
-        graphMatrixReachabilityCreate();
+        createMatrixReachability();
         emit statusMessage ( tr("Writing Reachability Matrix...") );
         break;
 

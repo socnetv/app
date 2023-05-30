@@ -663,7 +663,7 @@ public:
 
     int getSelectedEdgesCount() const;
 
-    int getGeodesics();
+    int getGeodesicsCount();
 
     qreal graphDensity();
 
@@ -892,7 +892,7 @@ public:
 
     bool graphReachable(const int &v1, const int &v2) ;
 
-    void graphMatrixReachabilityCreate() ;
+    void createMatrixReachability() ;
 
     int graphDiameter(const bool considerWeights, const bool inverseWeights);
 
