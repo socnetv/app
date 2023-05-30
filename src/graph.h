@@ -425,9 +425,9 @@ public:
 
     void setName(QString &graphName);
 
-    bool IsSaved() const;
+    bool isSaved() const;
 
-    bool IsLoaded() const;
+    bool isLoaded() const;
 
     int getFileFormat() const;
 

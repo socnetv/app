@@ -15691,16 +15691,16 @@ bool Graph::isLoaded() const {
  * @brief Returns true if the graph is saved.
  * @return
  */
-bool Graph::IsSaved() const {
+bool Graph::isSaved() const {
     if ( m_graphModStatus == ModStatus::NewNet ) {
-        qDebug() << "Graph::IsSaved() - isSaved: true (new net)";
+        qDebug() << "Graph::isSaved() - isSaved: true (new net)";
         return true;
     }
     else if ( m_graphModStatus == ModStatus::Unchanged  ) {
-        qDebug() << "Graph::IsSaved() - isSaved: true";
+        qDebug() << "Graph::isSaved() - isSaved: true";
         return true;
     }
-    qDebug() << "Graph::IsSaved() - isSaved: false";
+    qDebug() << "Graph::isSaved() - isSaved: false";
     return false;
 }
 
