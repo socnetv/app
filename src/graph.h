@@ -279,11 +279,6 @@ signals:
                                     const int &inDegree=0,
                                     const int &outDegree=0);
 
-//    void signalEdgeClicked (const int &v1=0,
-//                            const int &v2=0,
-//                            const qreal &weight=0,
-//                            const int &type=0,
-//                            const bool &openMenu=false);
 
     void signalEdgeClicked (const MyEdge &edge=MyEdge(), const bool &openMenu=false);
 

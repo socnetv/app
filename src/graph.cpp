@@ -2332,37 +2332,34 @@ void Graph::edgeFilterUnilateral(const bool &toggle) {
  * @param v2
  */
 void Graph::edgeClickedSet(const int &v1, const int &v2, const bool &openMenu) {
-    qDebug() << "Graph::edgeClickedSet() "
-             << v1
-             << "->"
-             << v2;
 
     m_clickedEdge.source=v1;
     m_clickedEdge.target=v2;
 
-    // Clear status bar message
     if (m_clickedEdge.source == 0 && m_clickedEdge.target==0) {
         emit signalEdgeClicked();
+        return;
     }
-    else {
+    qreal weight = m_graph[ vpos[ m_clickedEdge.source] ]->hasEdgeTo(m_clickedEdge.target);
+    qDebug() << "Setting clicked edge: "<< v1 << "->" << v2 << "weight:" << weight;
 
-        qreal weight = m_graph[ vpos[ m_clickedEdge.source] ]->hasEdgeTo(m_clickedEdge.target);
-        qDebug() << "Graph::edgeClickedSet() - clicked edge weight:"<< weight;
-        int type=EdgeType::Directed;
-        // Check if the opposite tie exists. If yes, this is a reciprocated tie
-        if ( edgeExists(m_clickedEdge.target,m_clickedEdge.source, false)  ) {
-            if ( !isDirected() ) {
-                type=EdgeType::Undirected;
-            }
-            else {
-                type=EdgeType::Reciprocated;
-            }
+    int type=EdgeType::Directed;
+    // Check if the opposite tie exists. If yes, this is a reciprocated tie
+    qreal oppositeWeight = edgeExists(m_clickedEdge.target, m_clickedEdge.source, false);
+    if ( oppositeWeight ) {
+        qDebug() << "Opposite tie"<< v2 << "->" << v2 << "exists. Weight:" << oppositeWeight;
+        if ( !isDirected() ) {
+            type=EdgeType::Undirected;
         }
-        m_clickedEdge.type = type;
-        m_clickedEdge.weight = weight;
-
-        emit signalEdgeClicked( m_clickedEdge, openMenu);
+        else {
+            type=EdgeType::Reciprocated;
+        }
     }
+    m_clickedEdge.type = type;
+    m_clickedEdge.weight = weight;
+    m_clickedEdge.rWeight = oppositeWeight;
+
+    emit signalEdgeClicked( m_clickedEdge, openMenu);
 
 }
 

@@ -153,14 +153,16 @@ public:
     int target;
     double weight;
     int type;
-    MyEdge() { source=0; target=0;weight=0;type=0;}
-    MyEdge (const int &from, const int &to, const double &w =0, const int &type=0)
-        : source(from), target(to), weight(w), type(type)  {  }
+    double rWeight;
+    MyEdge() { source=0; target=0;weight=0;type=0; rWeight=0; }
+    MyEdge (const int &from, const int &to, const double &w =0, const int &type=0, const double &rw = 0)
+        : source(from), target(to), weight(w), type(type), rWeight(rw)  {  }
     // Copy constructor
     MyEdge (const MyEdge &edge) {
         source = edge.source;
         target = edge.target;
         weight = edge.weight;
+        rWeight = edge.rWeight ;
         type = edge.type;
     }
     ~MyEdge(){}

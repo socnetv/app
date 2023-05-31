@@ -10204,9 +10204,12 @@ void MainWindow::slotEditNodeInfoStatusBar (const int &number,
 
 
 /**
- * @brief Called by Graph::signalEdgeClicked when the user clicks on an edge
- * Displays information about the clicked edge on the statusbar
+ * @brief Displays information about the clicked edge on the statusbar
+ *
+ * Called by Graph::signalEdgeClicked when the user clicks on an edge
+ *
  * @param edge
+ * @param openMenu
  */
 void MainWindow::slotEditEdgeClicked (const MyEdge &edge,
                                       const bool &openMenu) {
@@ -10214,9 +10217,10 @@ void MainWindow::slotEditEdgeClicked (const MyEdge &edge,
     int v1 = edge.source;
     int v2 = edge.target;
     qreal weight = edge.weight;
+    qreal reverseWeight = edge.rWeight;
     int type = edge.type;
 
-    qDebug()<<"MW::slotEditEdgeClicked()"
+    qDebug()<<"clicked edge"
            << v1
            << "->"
            << v2
@@ -10237,7 +10241,7 @@ void MainWindow::slotEditEdgeClicked (const MyEdge &edge,
 
     if ( type == EdgeType::Undirected ) {
         statusMessage(  QString
-                        (tr("Undirected edge %1 <-->%2 of weight %3 has been selected. "
+                        (tr("Undirected edge %1 <--> %2 of weight %3 has been selected. "
                             "Click anywhere else to unselect it."))
                         .arg( v1 ).arg( v2 )
                         .arg( weight )
@@ -10253,7 +10257,7 @@ void MainWindow::slotEditEdgeClicked (const MyEdge &edge,
     }
     else if (type == EdgeType::Reciprocated){
         statusMessage(  QString
-                        (tr("Reciprocated edge %1 <-->%2 of weight %3 has been selected. "
+                        (tr("Reciprocated edge %1 <--> %2 of weight %3 has been selected. "
                             "Opposite exists. "
                             "Click anywhere else to unselect it."))
                         .arg( v1 ).arg( v2 )
@@ -10263,14 +10267,14 @@ void MainWindow::slotEditEdgeClicked (const MyEdge &edge,
         rightPanelClickedEdgeWeightLabel->setText(tr("Weight:"));
         rightPanelClickedEdgeWeightLCD->setText(QString::number(weight));
         rightPanelClickedEdgeReciprocalWeightLabel->setText("Recipr.:");
-        rightPanelClickedEdgeReciprocalWeightLCD->setText("-");
+        rightPanelClickedEdgeReciprocalWeightLCD->setText(QString::number(reverseWeight));
         if (openMenu) {
             edgeName=QString("RECIPROCATED EDGE: ") + QString::number(v1)+QString(" <-->")+QString::number(v2);
         }
 
     }
     else{
-        statusMessage(  QString(tr("Directed edge %1 -->%2 of weight %3 has been selected. "
+        statusMessage(  QString(tr("Directed edge %1 --> %2 of weight %3 has been selected. "
                                    "Click again to unselect it."))
                         .arg( v1 ).arg( v2 )
                         .arg( weight )
