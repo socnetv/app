@@ -84,11 +84,8 @@ GraphVertex::GraphVertex(Graph* parentGraph,
     m_curRelation=relation;
     m_enabled = true;
 
-//    connect (this, SIGNAL (setEdgeVisibility ( int, int, int, bool) ),
-//             m_graph, SLOT (edgeVisibilitySet (int, int, int, bool)) );
-
     connect( this, &GraphVertex::setEdgeVisibility,
-             m_graph, &Graph::setEdgeVisibility);
+             m_graph, &Graph::signalSetEdgeVisibility);
 
 }
 
@@ -149,7 +146,7 @@ QString GraphVertex::colorToPajek(){
  * @param target
  * @param weight
  */
-void GraphVertex::edgeAddTo (const int &v2, const qreal &weight, const QString &color, const QString &label) {
+void GraphVertex::addOutEdge (const int &v2, const qreal &weight, const QString &color, const QString &label) {
     qDebug() << "vertex" << name() << "adding new outbound edge"<< "->"<< v2
              << "weight"<< weight<< "relation" << m_curRelation;
     // do not use [] operator - silently creates an item if key do not exist
@@ -197,7 +194,7 @@ void GraphVertex::setOutEdgeEnabled (const int target, bool status){
  * @param source
  * @param weight
  */
-void GraphVertex::edgeAddFrom (const int &v1, const qreal &weight) {
+void GraphVertex::addInEdge (const int &v1, const qreal &weight) {
     qDebug() << "vertex" << name() << "adding new inbound edge"<< "<-"<< v1
              << "weight"<< weight<< "relation" << m_curRelation;
     m_inEdges.insert(
@@ -206,12 +203,12 @@ void GraphVertex::edgeAddFrom (const int &v1, const qreal &weight) {
 
 
 /**
- * @brief Changes the weight of the outbound edge to the given vertex
+ * @brief Sets the weight of the outbound edge to the given vertex
  *
  * @param target
  * @param weight
  */
-void GraphVertex::changeOutEdgeWeight(const int &target, const qreal &weight){
+void GraphVertex::setOutEdgeWeight(const int &target, const qreal &weight){
     qDebug() << "vertex" << name() << "changing weight of outEdge to" << target << "new weight" << weight;
     H_edges::const_iterator it1=m_outEdges.constFind(target);
     // Find the current edge, remove it and add an updated one.
@@ -234,7 +231,7 @@ void GraphVertex::changeOutEdgeWeight(const int &target, const qreal &weight){
  *
  * @param v2
  */
-void GraphVertex::edgeRemoveTo (const int v2) {
+void GraphVertex::removeOutEdge (const int v2) {
 
     qDebug() << "vertex" << name() << "removing outEdge to" << v2;
 

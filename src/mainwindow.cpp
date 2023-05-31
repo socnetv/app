@@ -10114,12 +10114,13 @@ void MainWindow::slotEditNodeOpenContextMenu() {
 
 
 /**
- * @brief Called from Graph when the user-selected nodes/edges has changed
+ * @brief Updates the UI (LCDs and Actions) after a change in the user-selected nodes/edges
+ *
  * @param nodes
  * @param edges
  */
 void MainWindow::slotEditSelectionChanged(const int &selNodes, const int &selEdges) {
-    qDebug()<< "MW::slotEditSelectionChanged()";
+    qDebug()<< "Updating UI for new selection";
     rightPanelSelectedNodesLCD->setText(QString::number(selNodes));
     rightPanelSelectedEdgesLCD->setText(QString::number(selEdges));
 
@@ -10157,12 +10158,11 @@ void MainWindow::slotEditSelectionChanged(const int &selNodes, const int &selEdg
 
     }
 
+    //
+    // NOTE:
+    // DO NOT display a message on the status bar on high frequently called functions like this
+    //
 
-    // DO NOT post a message on the status bar on high frequently called functions like this
-    //    statusMessage(  tr("Selected %1 nodes and %2 edges")
-    //                     .arg( selNodes )
-    //                     .arg( selEdges )
-    //                     );
 }
 
 

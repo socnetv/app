@@ -1334,7 +1334,7 @@ void Graph::vertexRemove(const int &v1){
         if  ( qAbs((*it)->hasEdgeTo(v1) ) > 0) {
             qDebug()<< "Graph::vertexRemove() - vertex " << (*it)->name()
                     << " has outbound Edge to "<< v1 << ". Removing it.";
-            (*it)->edgeRemoveTo(v1);
+            (*it)->removeOutEdge(v1);
         }
         if (  qAbs((*it)->hasEdgeFrom(v1)) > 0 ) {
             qDebug()<< "Graph::vertexRemove() - vertex " << (*it)->name()
@@ -2154,8 +2154,8 @@ void Graph::edgeAdd (const int &v1, const int &v2,
             << "] to vertex "<< v2 << "["<< target << "] of weight "<<weight
             << " and label " << label;
 
-    m_graph [ source ]->edgeAddTo(v2, weight, color, label );
-    m_graph [ target ]->edgeAddFrom(v1, weight);
+    m_graph [ source ]->addOutEdge(v2, weight, color, label );
+    m_graph [ target ]->addInEdge(v1, weight);
 
     if ( weight != 1 && weight!=0) {
         setWeighted(true);
@@ -2166,8 +2166,8 @@ void Graph::edgeAdd (const int &v1, const int &v2,
     }
     else if (type == EdgeType::Undirected){
         // edge undirected, add reverse edge too.
-        m_graph [ target ]->edgeAddTo(v1, weight );
-        m_graph [ source ]->edgeAddFrom(v2, weight);
+        m_graph [ target ]->addOutEdge(v1, weight );
+        m_graph [ source ]->addInEdge(v2, weight);
     }
 
 }
@@ -2191,11 +2191,11 @@ void Graph::edgeRemove (const int &v1,
                         const bool &removeReverse) {
     qDebug ()<< "Graph::edgeRemove() - edge" << v1 << "[" << vpos[v1]
                 << "] -->" << v2 << " to be removed. removeReverse:" <<removeReverse;
-    m_graph [ vpos[v1] ]->edgeRemoveTo(v2);
+    m_graph [ vpos[v1] ]->removeOutEdge(v2);
     m_graph [ vpos[v2] ]->edgeRemoveFrom(v1);
 
     if ( isUndirected() || removeReverse ) { // remove reverse edge too
-        m_graph [ vpos[v2] ]->edgeRemoveTo(v1);
+        m_graph [ vpos[v2] ]->removeOutEdge(v1);
         m_graph [ vpos[v1] ]->edgeRemoveFrom(v2);
         m_graphIsSymmetric=true;
     }
@@ -2268,11 +2268,11 @@ void Graph::edgeVisibilitySet (const int &relation, const int &source, const int
 void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold){
     QString words;
     if (overThreshold) {
-        qDebug() << "filtering edges over or equal" << m_threshold ;
+        qDebug() << "filtering edges with weight over or equal" << m_threshold ;
         words = "equal or over";
     }
     else{
-        qDebug() << "Graph::edgeFilterByWeight()  below or equal" << m_threshold ;
+        qDebug() << "Filtering edges with weight below or equal" << m_threshold ;
         words = "equal or under";
     }
 
@@ -2312,8 +2312,10 @@ void Graph::edgeFilterByRelation(int relation, bool status){
 
 /**
  * @brief Enables or disables unilateral edges in current relationship.
+ *
  * If toggle=true, all non-reciprocal edges are disabled, effectively making
  * the network symmetric.
+ *
  * @param toggle
  */
 void Graph::edgeFilterUnilateral(const bool &toggle) {
@@ -2370,6 +2372,7 @@ void Graph::edgeClickedSet(const int &v1, const int &v2, const bool &openMenu) {
 
 }
 
+
 /**
  * @brief Returns clicked edge
  * @return
@@ -2392,14 +2395,14 @@ qreal Graph::edgeExists (const int &v1, const int &v2, const bool &checkReciproc
 
     edgeWeightTemp = 0;
     edgeWeightTemp = m_graph[ vpos[v1] ]->hasEdgeTo(v2);
-    qDebug() << "Graph::edgeExists() - " << v1 << "->" << v2 << "=" << edgeWeightTemp  ;
+    qDebug() << "Checking if edge exists:" << v1 << "->" << v2 << "=" << edgeWeightTemp  ;
     if (!checkReciprocal) {
         return edgeWeightTemp;
     }
     else { //check if edge is reciprocal
         if  ( edgeWeightTemp!=0 ) {
             edgeReverseWeightTemp = m_graph[ vpos[v2] ]->hasEdgeTo(v1);
-            qDebug() << "Graph::edgeExists() - and " << v2 << "->" << v1 << "=" << edgeWeightTemp  ;
+            qDebug() << "Checking if reverse edge exists: " << v2 << "->" << v1 << "=" << edgeWeightTemp  ;
             if  ( edgeWeightTemp == edgeReverseWeightTemp  ){
                 return edgeWeightTemp;
             }
@@ -2418,11 +2421,12 @@ qreal Graph::edgeExists (const int &v1, const int &v2, const bool &checkReciproc
  * @return
  */
 bool Graph::edgeSymmetric(const int &v1, const int &v2){
-    qDebug() << "***Graph: edgeSymmetric()";
     if ( ( edgeExists( v1, v2 , true) ) !=0 ) {
+        qDebug() << "Edge" << v1 << "->" << v2 << "is symmetric";
         return true;
     }
     else {
+        qDebug() << "Edge" << v1 << "->" << v2 << "is not symmetric";
         return false;
     }
 
@@ -2431,26 +2435,26 @@ bool Graph::edgeSymmetric(const int &v1, const int &v2){
 
 /**
  * @brief Returns the number |E| of graph - only the enabled edges
+ *
  * @return
  */
 int Graph::edgesEnabled() {
-    qDebug()<< "Graph::edgesEnabled() - checking if graph modified... ";
-    int enabledEdges = (( isUndirected() ) ? m_totalEdges / 2 : m_totalEdges);
+
+    int enabledEdges = 0;
     if ( calculatedEdges ) {
-        qDebug()<< "Graph::edgesEnabled() - Graph unchanged, edges: "
-                   <<  enabledEdges;
+        enabledEdges = (( isUndirected() ) ? m_totalEdges / 2 : m_totalEdges);
+        qDebug()<< "Graph unchanged. Returning enabled edges count:" <<  enabledEdges;
         return enabledEdges;
     }
-
+    // Compute the edge count from scratch
     m_totalEdges = 0;
-
     VList::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         m_totalEdges+=(*it)->outEdgesCount();
     }
-    qDebug() << "Graph::edgesEnabled() - edges recounted: " <<  m_totalEdges;
     calculatedEdges = true;
     enabledEdges = (( isUndirected() ) ? m_totalEdges / 2 : m_totalEdges);
+    qDebug()<< "Computed enabled edges new count:" <<  enabledEdges;
     return enabledEdges;
 }
 
@@ -2493,10 +2497,10 @@ void Graph::edgeWeightSet (const int &v1, const int &v2,
                            const qreal &weight, const bool &undirected) {
     qDebug() << "Changing the weight of edge" << v1 << "[" << vpos[v1]
                 << "]->" << v2 << "[" << vpos[v2] << "]" << " to new weight " << weight;
-    m_graph [ vpos[v1] ]->changeOutEdgeWeight(v2, weight);
+    m_graph [ vpos[v1] ]->setOutEdgeWeight(v2, weight);
     if (undirected) {
         qDebug() << "Changing the weight of the reverse edge too";
-        m_graph [ vpos[v2] ]->changeOutEdgeWeight(v1, weight);
+        m_graph [ vpos[v2] ]->setOutEdgeWeight(v1, weight);
     }
     emit setEdgeWeight(v1,v2, weight);
     setModStatus(ModStatus::EdgeCount);
@@ -2682,7 +2686,7 @@ void Graph::edgeLabelsVisibilitySet (const bool &toggle) {
  * @return
  */
 int Graph::vertexDegreeOut (int v1) {
-    qDebug()<< "Graph: vertexDegreeOut()";
+    qDebug() << "Returning outDegree of " << v1;
     return m_graph[ vpos[v1] ]->degreeOut();
 }
 
@@ -2694,7 +2698,7 @@ int Graph::vertexDegreeOut (int v1) {
  * @return
  */
 int Graph::vertexDegreeIn (int v1) {
-    qDebug()<< "Graph: vertexDegreeIn()";
+    qDebug() << "Returning inDegree of " << v1;
     return m_graph[ vpos[v1] ]->degreeIn();
 }
 
@@ -2705,7 +2709,7 @@ int Graph::vertexDegreeIn (int v1) {
  * @return  QList<int>
  */
 QList<int> Graph::vertexNeighborhoodList(const int &v1) {
-    //qDebug()<< "Graph::vertexNeighborhoodList()";
+    //qDebug() << "Returning the neighborhood list of " << v1;
     return m_graph[ vpos[v1] ]->neighborhoodList();
 }
 
@@ -2738,7 +2742,7 @@ QSet<int> Graph::vertexNeighborhoodSet(const int &v1) {
 int Graph::vertices(const bool &dropIsolates, const bool &countAll, const bool &recount) {
 
     if ( m_totalVertices!=0 && calculatedVertices && !recount) {
-        qDebug()<< "Graph::vertices() - Graph not modified, vertices: "
+        qDebug() << "Graph not modified, returning static number: "
                    << m_totalVertices;
         return m_totalVertices;
     }
@@ -2750,18 +2754,17 @@ int Graph::vertices(const bool &dropIsolates, const bool &countAll, const bool &
         }
         else {
             if (dropIsolates && (*it)->isIsolated()){
-                qDebug()<< "Graph::vertices() - isolated vertex:" <<(*it)->name();
+                qDebug()<< "Skipping isolated vertex:" <<(*it)->name();
                 continue;
             }
             if ( !(*it)->isEnabled()) {
-                qDebug()<< "Graph::vertices() - disabled vertex:" <<(*it)->name();
+                qDebug()<< "Skipping disabled vertex:" <<(*it)->name();
                 continue;
             }
             ++m_totalVertices;
         }
     }
-    qDebug()<< "Graph::vertices() - Graph size:"<< m_graph.size()
-            << "enabled vertices" << m_totalVertices;
+    qDebug()<< "Graph size:"<< m_graph.size() << "vertices" << m_totalVertices;
     calculatedVertices=true;
     return m_totalVertices;
 }
@@ -2770,11 +2773,8 @@ int Graph::vertices(const bool &dropIsolates, const bool &countAll, const bool &
 
 /**
  * @brief Returns a list of all isolated vertices inside the graph
- * Used by
- * Graph::createMatrixAdjacency()
- * Graph::writeMatrixAdjacencyInvert()
- * Graph::centralityInformation()
- * @return
+ *
+ * @return QList<int>
  */
 QList<int> Graph::verticesListIsolated(){
     if ( calculatedIsolates ){
@@ -2805,7 +2805,8 @@ QList<int> Graph::verticesListIsolated(){
 
 /**
  * @brief Returns a list of all vertices numbers inside the graph
- * @return
+ *
+ * @return QList<int>
  */
 QList<int> Graph::verticesList(){
     qDebug()<< "Graph::verticesList()";
@@ -3026,9 +3027,15 @@ bool Graph::isEmpty() const{
 
 
 
-
+/**
+ * @brief Resets the clicked edge and node
+ *
+ * Usually, called when the user clicks on an empty space.
+ *
+ * @param p
+ */
 void Graph::graphClickedEmptySpace( const QPointF &p) {
-    qDebug() << "Graph::graphClickedEmptySpace() - p " << p;
+    qDebug() << "Click on empty space at" << p << " - resetting clicked edge and node...";
     // Reset clicked vertices
     this->vertexClickedSet(0, p);
     // Reset clicked edges
@@ -3038,8 +3045,10 @@ void Graph::graphClickedEmptySpace( const QPointF &p) {
 
 
 /**
- * @brief Gets updates on the user-selected vertices and edges from GW and emits
- * their counts to MW
+ * @brief Sets the user-selected vertices and edges
+ *
+ * Usually called from GW, it emits selection counts to MW
+ *
  * @param selectedVertices
  * @param selectedEdges
  */
@@ -3049,9 +3058,7 @@ void Graph::setSelectionChanged(const QList<int> selectedVertices,
     m_verticesSelected = selectedVertices;
     m_selectedEdges = selectedEdges;
 
-    qDebug() << "Graph::setSelectionChanged() - Vertices"
-             << m_verticesSelected
-             << "Edges" <<m_selectedEdges ;
+    qDebug() << "Selection changed. Vertices" << m_verticesSelected << "Edges" << m_selectedEdges << "Emitting to MW...";
 
     emit signalSelectionChanged(m_verticesSelected.size(), m_selectedEdges.size());
 

@@ -93,15 +93,14 @@ public:
 
     void relationSet(int newRel) ;
 
-    void edgeAddTo (const int &v2, const qreal &weight, const QString &color=QString(), const QString &label=QString());
-    void edgeAddFrom(const int &v1, const qreal &weight);
+    void addOutEdge (const int &v2, const qreal &weight, const QString &color=QString(), const QString &label=QString());
+    void addInEdge(const int &v1, const qreal &weight);
 
-    void changeOutEdgeWeight (const int &target, const qreal &weight);
-
+    void setOutEdgeWeight (const int &target, const qreal &weight);
     void setOutEdgeEnabled (const int, bool);
 
-    void edgeRemoveTo (const int target);
-    void edgeRemoveFrom(const int source);
+    void removeOutEdge (const int target);
+    void removeInEdge(const int source);
 
     QHash<int, qreal> outEdgesEnabledHash(const bool &allRelations=false);
     QHash<int,qreal>* outEdgesAllRelationsUniqueHash();

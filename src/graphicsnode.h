@@ -141,10 +141,6 @@ signals:
 
     void nodeClicked(GraphicsNode*);
     void startEdge(GraphicsNode *);
-    void adjustOutEdge();
-    void adjustInEdge();
-    void removeOutEdge();
-    void removeInEdge();
 
 
 private:
