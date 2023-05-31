@@ -50,14 +50,16 @@
 #include "graphicsedgeweight.h"
 #include "graphicsedgelabel.h"
 
-/** 
-    Constructor method. Called when a GraphicsWidget object is created in MW
-*/
 
+/**
+ * @brief Constructs a GraphicsWidget object
+ * @param sc
+ * @param m_parent
+ */
 GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         QGraphicsView ( sc,m_parent) {
 
-        qDebug() << "Constructing GraphicsWidget";
+        qDebug() << "Constructing GraphicsWidget...";
 
         qRegisterMetaType<SelectedEdge>("SelectedEdge");
         qRegisterMetaType<QList<SelectedEdge> >();
@@ -97,20 +99,25 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
 
 
 
-
+/**
+ * @brief Toggles openGL
+ *
+ * @param enabled
+ */
 void GraphicsWidget::setOptionsOpenGL(const bool &enabled)
 {
 #ifndef QT_NO_OPENGL
     if (enabled) {
-        qDebug() << "Enabled openGL in Graphics widget.";
         QOpenGLWidget *gl = new QOpenGLWidget();
         QSurfaceFormat format;
         format.setSamples(4);
         gl->setFormat(format);
         setViewport(gl);
+        qDebug() << "Enabled openGL in GraphicsWidget.";
     }
     else {
         setViewport(new QWidget);
+        qDebug() << "Disabled openGL in GraphicsWidget.";
     }
 #else
     qWarning() << "No OpenGL support! Cannot enable OpenGL in GraphicsWidget.";
@@ -119,8 +126,8 @@ void GraphicsWidget::setOptionsOpenGL(const bool &enabled)
 
 
 /**
- * @brief
- * Toggles QPainter renderhints for primitive edges and text antialiasing
+ * @brief Toggles QPainter render hints for primitive edges and text antialiasing
+ *
  * @param toggle
  */
 void GraphicsWidget::setOptionsAntialiasing(const bool &toggle)
@@ -131,12 +138,14 @@ void GraphicsWidget::setOptionsAntialiasing(const bool &toggle)
 
 
 /**
- * @brief
- * Toggles QGraphicsView's antialiasing auto-adjustment of exposed areas. Default: false
+ * @brief Toggles QGraphicsView's antialiasing auto-adjustment of exposed areas.
+ *
+ * Default: false
  * Items that render antialiased lines on the boundaries of their QGraphicsItem::boundingRect()
  * can end up rendering parts of the line outside.
  * To prevent rendering artifacts, QGraphicsView expands all exposed regions by 2 pixels in all directions.
  * If you enable this flag, QGraphicsView will no longer perform these adjustments, minimizing the areas that require redrawing, which improves performance. A common side effect is that items that do draw with antialiasing can leave painting traces behind on the scene as they are moved.
+ *
  * @param toggle
  */
 void GraphicsWidget::setOptionsNoAntialiasingAutoAdjust(const bool &toggle)
@@ -148,10 +157,11 @@ void GraphicsWidget::setOptionsNoAntialiasingAutoAdjust(const bool &toggle)
 
 
 
-
-
 /**
- * @brief creates a QString of the edge name - used for indexing edgesHash
+ * @brief Creates a QString with theedge name.
+ *
+ * This is used for indexing edgesHash
+ *
  * @param v1
  * @param v2
  * @param relation
@@ -169,7 +179,7 @@ QString GraphicsWidget::createEdgeName(const int &v1, const int &v2, const int &
  * @brief Clears the scene and all hashes, lists, var etc
  */
 void GraphicsWidget::clear() {
-    qDebug() << "clearing hashes";
+    qDebug() << "Clearing GraphicsWidget hashes";
     nodeHash.clear();
     edgesHash.clear();
     m_selectedNodes.clear();
@@ -179,15 +189,15 @@ void GraphicsWidget::clear() {
     clickedEdge=0;
     firstNode=0;
     secondDoubleClick=false;
-    qDebug() << "finished clearing hashes";
+    qDebug() << "Finished clearing GraphicsWidget hashes";
 }
 
 
 
 /**
  * @brief Changes the current relation
- * Called from Graph::signalRelationChangedToGW(int) signal.
-  * @param relation
+ *
+ * @param relation
  */
 void GraphicsWidget::relationSet(int relation) {
     qDebug() << "Setting relation to" << relation;
@@ -197,7 +207,7 @@ void GraphicsWidget::relationSet(int relation) {
 
 
 /**
- * @brief Adds a new node in the scene
+ * @brief Draws a new node in the scene
  *
  * Called when we load files, or when the user presses "Add Node" button or
  * the user double clicks on the canvas.
@@ -263,22 +273,24 @@ void GraphicsWidget::drawNode( const QPointF &p,
 
 
 
-
-
 /**
- * @brief Draws an edge from source to target Node.
- * Used when we do not have references to nodes but only nodeNumbers:
-    a) when we load a network file
-    b) when the user clicks on the AddLink button on the MW.
- * @param source
- * @param target
+ * @brief Draws a new edge in the scene, from node with sourceNum to node with targetNum.
+ *
+ * Used when we do not have references to nodes but only node numbers:
+ * a) when we load a network file
+ * b) when the user clicks on the AddLink button on the MW.
+ *
+ * @param sourceNum
+ * @param targetNum
  * @param weight
- * @param reciprocal
- * @param drawArrows
+ * @param label
  * @param color
+ * @param type
+ * @param drawArrows
  * @param bezier
+ * @param weightNumbers
  */
-void GraphicsWidget::drawEdge(const int &source, const int &target,
+void GraphicsWidget::drawEdge(const int &sourceNum, const int &targetNum,
                               const qreal &weight,
                               const QString &label,
                               const QString &color,
@@ -287,7 +299,7 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
                               const bool &bezier,
                               const bool &weightNumbers){
 
-    edgeName = createEdgeName(source, target);
+    edgeName = createEdgeName(sourceNum, targetNum);
 
     qDebug()<<"Will draw new edge"<< edgeName
            << "weight:"<<weight
@@ -299,12 +311,12 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
 
         GraphicsEdge *edge=new GraphicsEdge (
                     this,
-                    nodeHash.value(source), nodeHash.value(target),
+                    nodeHash.value(sourceNum), nodeHash.value(targetNum),
                     weight, label, color,
                     Qt::SolidLine,
                     type,
                     drawArrows,
-                    (source==target) ? true: bezier,
+                    (sourceNum==targetNum) ? true: bezier,
                     weightNumbers,
                     m_edgeHighlighting);
 
@@ -313,7 +325,7 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
     else {
         // if type is EdgeType::Reciprocated, we just need to change the direction type
         // of the existing opposite edge.
-        edgeName = createEdgeName(target,source);
+        edgeName = createEdgeName(targetNum,sourceNum);
         qDebug()<< "Reciprocating existing directed edge"<<edgeName;
         edgesHash.value(edgeName)->setDirectionType(type);
 
@@ -327,10 +339,12 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
 
 /**
  * @brief Creates a new edge, when the user middle-clicks on two nodes consecutively
+ *
  * On the first middle-click, it saves the first node (source).
  * On the second middle-click, it saves the second node as target and emits the signal
  * userMiddleClicked() to MW which will notify activeGraph,
  * which in turn will signal back to drawEdge().
+ *
  * @param node
  */
 void GraphicsWidget::startEdge(GraphicsNode *node){
@@ -353,10 +367,14 @@ void GraphicsWidget::startEdge(GraphicsNode *node){
 
 
 /**
- * @brief Called when the user clicks or double-clicks on a node.
- * Clears clickedEdge and emits the userClickedNode signal to Graph to
-    - display node info on the status bar
-    - notify context menus for the clicked node.
+ * @brief Clears clickedEdge and emits a signal to Graph.
+ *
+ * The signal is used to
+ * - display node info on the status bar
+ * - notify context menus for the clicked node.
+ *
+ * Called when the user clicks or double-clicks on a node.
+ *
  * @param node
  */
 void GraphicsWidget::setNodeClicked(GraphicsNode *node){
@@ -370,9 +388,6 @@ void GraphicsWidget::setNodeClicked(GraphicsNode *node){
                     node->nodeNumber(),
                     QPointF(node->x(), node->y())
                    );
-    }
-    else {
-
     }
 }
 
@@ -405,8 +420,6 @@ void GraphicsWidget::setEdgeClicked(GraphicsEdge *edge, const bool &openMenu){
         emit userClickedEdge(0,0,openMenu);
     }
 
-
-
 }
 
 
@@ -415,82 +428,72 @@ void GraphicsWidget::setEdgeClicked(GraphicsEdge *edge, const bool &openMenu){
 
 
 /**
- * @brief Called from activeGraph to update the coordinates of a GraphicsNode
- * while creating random networks.
+ * @brief Moves the node with the given number to the new coordinates
+ *
+ * Called while creating random networks.
+ *
  * @param num
  * @param x
  * @param y
  */
 void GraphicsWidget::moveNode(const int &num, const qreal &x, const qreal &y){
-    qDebug() << "Moving node" << num << " to pos:" << x << "," << y;
+    qDebug() << "Moving node" << num << "to pos:" << x << "," << y;
     nodeHash.value(num)->setPos(x,y);
 }
 
 
 
 /**
- * @brief Deletes a node from the scene.
+ * @brief Deletes the node with the given number from the scene, if exists
+ *
  * Called from Graph
+ *
  * @param number
  */
 void GraphicsWidget::removeNode(const int &number){
-        qDebug() << "removing node " << number
-                 << " scene items: " << scene()->items().size()
-                 << " view items: " << items().size()
-                 << " nodeHash items: "<< nodeHash.count();
-
     if ( nodeHash.contains(number) ) {
-        qDebug() << "node"
-                 <<  number << " found and is being deleted :)" ;
         delete nodeHash.value(number);
+        qDebug() << "Removed node with number:" << number;
     }
-
-    qDebug() << "node removed! ";
-//             << " scene items now: " << scene()->items().size()
-//             << " view items: " << items().size()
-//             << " nodeHash items: "<< nodeHash.count()
-//             << " edgesHash items: "<< edgesHash.count() ;
 }
 
 
 
 
+
 /**
- * @brief Remove an edge from the graphics widget.
+ * @brief Removes the edge from node sourceNum to node targetNum from the scene.
+ *
  * Called from MW/Graph when erasing edges using vertex numbers
  * Also called when transforming directed edges to undirected.
- * @param sourceNode
- * @param targetNode
+ *
+ * @param sourceNum
+ * @param targetNum
+ * @param removeReverse
  */
-void GraphicsWidget::removeEdge(const int &source,
-                                const int &target,
-                                const bool &removeOpposite){
+void GraphicsWidget::removeEdge(const int &sourceNum,
+                                const int &targetNum,
+                                const bool &removeReverse){
 
-    edgeName = createEdgeName(source,target);
-
-    qDebug() << "Removing edge" << edgeName
-             << "removeOpposite"<<removeOpposite
-             << " scene items: " << scene()->items().size()
-             << " view items: " << items().size()
-             << " edgesHash.count: " << edgesHash.count();
+    edgeName = createEdgeName(sourceNum, targetNum);
 
     if ( edgesHash.contains(edgeName) ) {
         int directionType = edgesHash.value(edgeName)->directionType();
         delete edgesHash.value(edgeName);
+        qDebug() << "Removed edge" << edgeName;
+        // Check if it was reciprocated
         if (directionType == EdgeType::Reciprocated) {
-            if (!removeOpposite) {
-                drawEdge(target, source, 1,"");
+            // The deleted edge was reciprocated, draw the reverse edge.
+            if (!removeReverse) {
+                qDebug() << "Drawing the reverse edge.";
+                drawEdge(targetNum, sourceNum, 1,"");
+
             }
         }
-            qDebug() << "Deleted edge" << edgeName
-                 << " scene items: " << scene()->items().size()
-                 << " view items: " << items().size()
-                 << " edgesHash.count: " << edgesHash.count();
-
     }
     else {
-        //check opposite edge. If it exists, then transform it to directed
-        edgeName = createEdgeName(target, source);
+        // Check opposite edge. If it exists, then transform it to directed
+        edgeName = createEdgeName(targetNum, sourceNum);
         qDebug() << "Edge did not exist, checking for opposite:"
                  << edgeName;
         if ( edgesHash.contains(edgeName) ) {

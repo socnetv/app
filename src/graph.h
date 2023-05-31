@@ -333,7 +333,7 @@ signals:
                           const bool &weightNumbers=false);
 
     //signal to GW
-    void signalRemoveEdge(const int &v1, const int &v2, const bool &removeOpposite);
+    void signalRemoveEdge(const int &v1, const int &v2, const bool &removeReverse);
 
     void setEdgeVisibility (const int &relation, const int &source, const int &target, const bool &toggle);
 
@@ -604,10 +604,10 @@ public:
 
     void edgeRemove (const int &v1,
                      const int &v2,
-                     const bool &removeOpposite=false);
+                     const bool &removeReverse=false);
 
     void edgeRemoveSelected (SelectedEdge &selectedEdge,
-                             const bool &removeOpposite);
+                             const bool &removeReverse);
 
     void edgeRemoveSelectedAll();
 

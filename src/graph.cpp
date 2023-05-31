@@ -2009,7 +2009,7 @@ void Graph::vertexLabelDistanceInit(const int &distance) {
 
 
 /**
- * @brief Checks a) if edge exists and b) if the opposite edge exists
+ * @brief Checks a) if edge exists and b) if the reverse edge exists
  * Calls edgeAdd to add the new edge to the Graph,
  * then emits drawEdge() which calls GW::drawEdge() to draw the new edge.
  * Called from homonymous signal of Parser class.
@@ -2076,7 +2076,7 @@ void Graph::edgeCreate(const int &v1,
         }
         else {
 
-            qDebug()<< "-- Graph::edgeCreate() - Creating directed edge. Opposite arc does not exist."
+            qDebug()<< "-- Graph::edgeCreate() - Creating directed edge. Reverse arc does not exist."
                     << "Emitting drawEdge to GW...";
 
             edgeAdd ( v1,
@@ -2161,11 +2161,11 @@ void Graph::edgeAdd (const int &v1, const int &v2,
         setWeighted(true);
     }
     if (type == EdgeType::Reciprocated ){
-        // make existing opposite edge reciprocal
+        // make existing reverse edge reciprocal
 
     }
     else if (type == EdgeType::Undirected){
-        //create opposite edge
+        // edge undirected, add reverse edge too.
         m_graph [ target ]->edgeAddTo(v1, weight );
         m_graph [ source ]->edgeAddFrom(v2, weight);
     }
@@ -2178,22 +2178,23 @@ void Graph::edgeAdd (const int &v1, const int &v2,
 
 
 /**
- * @brief Removes the directed arc v1->v2
- * or, if the graph is undirected, the edge v1 <->v2
- * Emits signalRemoveEdge to GW to delete the graphics item.
+ * @brief Removes the directed arc v1->v2 or, if the graph is undirected, the edge v1 <->v2
+ *
+ * Emits signal to GW to delete the graphics item.
+ *
  * @param v1
  * @param v2
- * @param removeOpposite if true also removes the opposite edge
+ * @param removeReverse if true also removes the reverse edge
  */
 void Graph::edgeRemove (const int &v1,
                         const int &v2,
-                        const bool &removeOpposite) {
+                        const bool &removeReverse) {
     qDebug ()<< "Graph::edgeRemove() - edge" << v1 << "[" << vpos[v1]
-                << "] -->" << v2 << " to be removed. RemoveOpposite:" <<removeOpposite;
+                << "] -->" << v2 << " to be removed. removeReverse:" <<removeReverse;
     m_graph [ vpos[v1] ]->edgeRemoveTo(v2);
     m_graph [ vpos[v2] ]->edgeRemoveFrom(v1);
 
-    if ( isUndirected() || removeOpposite ) { // remove opposite edge too
+    if ( isUndirected() || removeReverse ) { // remove reverse edge too
         m_graph [ vpos[v2] ]->edgeRemoveTo(v1);
         m_graph [ vpos[v1] ]->edgeRemoveFrom(v2);
         m_graphIsSymmetric=true;
@@ -2204,7 +2205,7 @@ void Graph::edgeRemove (const int &v1,
         }
     }
 
-    emit signalRemoveEdge(v1,v2, ( isDirected() || removeOpposite ));
+    emit signalRemoveEdge(v1,v2, ( isDirected() || removeReverse ));
 
     setModStatus(ModStatus::EdgeCount);
 }
@@ -2213,12 +2214,12 @@ void Graph::edgeRemove (const int &v1,
 /**
  * @brief Removes a SelectedEdge
  * @param selectedEdge
- * @param removeOpposite
+ * @param removeReverse
  */
 void Graph::edgeRemoveSelected (SelectedEdge &selectedEdge,
-                                const bool &removeOpposite){
+                                const bool &removeReverse){
     qDebug()<< "Graph::edgeRemoveSelected()" << selectedEdge;
-    edgeRemove( selectedEdge.first, selectedEdge.second, removeOpposite);
+    edgeRemove( selectedEdge.first, selectedEdge.second, removeReverse);
 }
 
 
@@ -2350,10 +2351,10 @@ void Graph::edgeClickedSet(const int &v1, const int &v2, const bool &openMenu) {
     qDebug() << "Setting clicked edge: "<< v1 << "->" << v2 << "weight:" << weight;
 
     int type=EdgeType::Directed;
-    // Check if the opposite tie exists. If yes, this is a reciprocated tie
+    // Check if the reverse tie exists. If yes, this is a reciprocated edge
     qreal oppositeWeight = edgeExists(m_clickedEdge.target, m_clickedEdge.source, false);
     if ( oppositeWeight ) {
-        qDebug() << "Opposite tie"<< v2 << "->" << v2 << "exists. Weight:" << oppositeWeight;
+        qDebug() << "Reverse tie"<< v2 << "->" << v2 << "exists. Weight:" << oppositeWeight;
         if ( !isDirected() ) {
             type=EdgeType::Undirected;
         }
@@ -2481,25 +2482,24 @@ int Graph::vertexEdgesInbound (int v1) {
 
 
 /**
- * @brief Changes the weight of an edge (arc) between v1 and v2
+ * @brief Changes the weight of the edge from vertex v1 to v2 (and optionally of the reverse edge)
+ *
  * @param v1
  * @param v2
  * @param weight
+ * @param undirected
  */
 void Graph::edgeWeightSet (const int &v1, const int &v2,
                            const qreal &weight, const bool &undirected) {
-    qDebug() << "Graph::edgeWeightSet() - " << v1 << "[" << vpos[v1]
-                << "]->" << v2 << "[" << vpos[v2] << "]" << " = " << weight;
+    qDebug() << "Changing the weight of edge" << v1 << "[" << vpos[v1]
+                << "]->" << v2 << "[" << vpos[v2] << "]" << " to new weight " << weight;
     m_graph [ vpos[v1] ]->changeOutEdgeWeight(v2, weight);
     if (undirected) {
-        qDebug() << "Graph::edgeWeightSet() - changing opposite edge weight too";
+        qDebug() << "Changing the weight of the reverse edge too";
         m_graph [ vpos[v2] ]->changeOutEdgeWeight(v1, weight);
     }
-
     emit setEdgeWeight(v1,v2, weight);
-
     setModStatus(ModStatus::EdgeCount);
-
 }
 
 
@@ -4199,17 +4199,20 @@ void Graph::graphDichotomization(const qreal threshold) {
 
 /**
  * @brief Toggles the graph directed or undirected
+ *
+ * @param toggle
+ * @param signalMW
  */
 void Graph::setDirected(const bool &toggle, const bool &signalMW){
 
     qDebug() << "Graph::setDirected() : " << toggle ;
 
     if ( !toggle ) {
-        Graph::setUndirected(true);
+        setUndirected(true);
     }
 
     if (toggle == isDirected() ) {
-        qDebug() << "Graph::setDirected() - toggle same as now, nothing to do.";
+        qDebug() << "Same as now, nothing to do.";
         return;
     }
 
@@ -4224,20 +4227,24 @@ void Graph::setDirected(const bool &toggle, const bool &signalMW){
 
 
 
+
 /**
- * @brief Toggles the graph undirected
+ * @brief Makes the graph undirected or directed.
+ *
+ * @param toggle
+ * @param signalMW
  */
 void Graph::setUndirected(const bool &toggle, const bool &signalMW){
 
-    qDebug() << "Graph::setUndirected() : " << toggle ;
+    qDebug() << "Toggling graph undirected to" << toggle ;
 
     if ( !toggle ) {
-        Graph::setDirected(true);
+        setDirected(true);
         return;
     }
 
     if (toggle == isUndirected()) {
-        qDebug() << "Graph::setUndirected() - toggle same as now, nothing to do.";
+        qDebug() << "Same as now, nothing to do.";
         return;
     }
 
@@ -4249,17 +4256,14 @@ void Graph::setUndirected(const bool &toggle, const bool &signalMW){
     QHash<int,qreal>::const_iterator it1;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         v1 = (*it)->name();
-        qDebug() << "Graph::setDirected() - iterate over edges of v1 " << v1;
+        qDebug() << "Iterating over edges of v1 " << v1;
         enabledOutEdges=(*it)->outEdgesEnabledHash();
         it1=enabledOutEdges.cbegin();
         while ( it1!=enabledOutEdges.cend() ){
             v2 = it1.key();
             weight = it1.value();
 
-            qDebug() << "Graph::setDirected() - "
-                     << " v1 " << v1
-                     << "->" << v2 << " = "
-                     << " weight " << weight;
+            qDebug() << "edge" << "v1" << v1 << "->" << v2 << " = " << "weight" << weight;
             edgeTypeSet(v1,v2, weight, EdgeType::Undirected);
             ++it1;
         }
@@ -4275,10 +4279,11 @@ void Graph::setUndirected(const bool &toggle, const bool &signalMW){
 
 /**
  * @brief Returns true if graph is directed
- * @return
+ *
+ * @return bool
  */
 bool Graph::isDirected() {
-    qDebug() << "Graph::isDirected() -" << m_graphIsDirected;
+    qDebug() << "isDirected" << m_graphIsDirected;
     return m_graphIsDirected;
 }
 
@@ -4287,10 +4292,11 @@ bool Graph::isDirected() {
 
 /**
  * @brief Returns true if graph is undirected
- * @return
+ *
+ * @return bool
  */
 bool Graph::isUndirected() {
-    qDebug() << "Graph::isUndirected() -" << !m_graphIsDirected;
+    qDebug() << "isUndirected: " << !m_graphIsDirected;
     return !m_graphIsDirected;
 }
 
@@ -4300,8 +4306,7 @@ bool Graph::isUndirected() {
 
 /**
  * @brief Changes the direction type of an existing edge
- * Mainly called from Graph::verticesCreateSubgraph()
- * Also called from graphUndirectedSet
+ *
  * @param v1
  * @param v2
  * @param weight
@@ -4311,28 +4316,28 @@ void Graph::edgeTypeSet(const int &v1,
                         const qreal &weight,
                         const int &dirType) {
 
-    qDebug() << "Graph::edgeTypeSet(): " << v1
-             << "->" <<  v2  << "edgeType" << dirType;
+    qDebug() << "Changing the direction type of edge: " << v1
+             << "->" <<  v2  << "new edgeType:" << dirType;
 
     if (dirType!=EdgeType::Directed) {
 
-        // check for opposite edge
-        qreal inverseWeight = edgeExists ( v2, v1 ) ;
+        // check if reverse edge exists
+        qreal revEdgeWeight = edgeExists ( v2, v1 ) ;
 
-        if ( inverseWeight == 0 ) {
-            // if the opposite edge does not exist, add it
-            qDebug() << "Graph::edgeTypeSet(): opposite  " << v1
-                     << " <- " <<  v2 << " does not exist - Add it to Graph." ;
+        if ( revEdgeWeight == 0 ) {
+            // Reverse edge does not exist, add it
+            qDebug() << "reverse  edge" << v1 << " <- " <<  v2 << " does not exist - Adding it..." ;
             // Note: Even if dirType=EdgeType::Undirected we add the opposite edge as EdgeType::Reciprocated
             edgeAdd(v2,v1, weight, EdgeType::Reciprocated, "", initEdgeColor);
         }
         else {
-            if ( dirType  == EdgeType::Undirected ) {
-                // if the opposite edge does exist, equal edge weights
+            // Reverse edge does exist
+            if ( dirType == EdgeType::Undirected ) {
+                // Make the edge weights equal
                 // TOFIX: how do we decide which of the two weights to keep?
                 qDebug() << "Graph::edgeTypeSet(): opposite  " << v1
                          << " <- " <<  v2 << " exists - equaling weights." ;
-                if ( weight!= inverseWeight ) {
+                if ( weight!= revEdgeWeight ) {
                     edgeWeightSet(v2,v1,weight);
                 }
             }
@@ -4344,7 +4349,6 @@ void Graph::edgeTypeSet(const int &v1,
     }
 
     //setModStatus(ModStatus::EdgeCount);
-
 }
 
 
@@ -4353,9 +4357,10 @@ void Graph::edgeTypeSet(const int &v1,
 
 /**
  * @brief Returns true if vertices v1 and v2 are reachable.
+ *
  * @param v1
  * @param v2
- * @return
+ * @return bool
  */
 bool Graph::graphReachable(const int &v1, const int &v2) {
     qDebug()<< "Graph::reachable()";
@@ -4370,8 +4375,7 @@ bool Graph::graphReachable(const int &v1, const int &v2) {
  * @brief Creates the reachability matrix XRM
  */
 void Graph::createMatrixReachability() {
-    qDebug() << "Graph::createMatrixReachability()";
-
+    qDebug() << "Creating the Reachability Matrix...";
 
     graphDistancesGeodesic(false);
 
@@ -4391,7 +4395,7 @@ void Graph::createMatrixReachability() {
     emit signalProgressBoxCreate(N,pMsg);
 
 
-    qDebug() << "Graph: createMatrixReachability() - writing matrix...";
+    qDebug() << "Writing Reachability matrix...";
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
 
@@ -4400,32 +4404,25 @@ void Graph::createMatrixReachability() {
         source = (*it)->name();
 
         if  ( ! (*it)->isEnabled()  ) {
-            qDebug() << "Graph: createMatrixReachability() - "
-                     << source << "disabled. SKIP";
+            qDebug() << "source vertex" << source << "disabled. SKIP";
             continue;
         }
 
-
-        qDebug() << "Graph: createMatrixReachability() - "
-                  << "source" << source
-                  << "i" << i;
+        qDebug() << "source vertex" << source<< "i" << i;
 
         for (jt=m_graph.cbegin(); jt!=m_graph.cend(); ++jt) {
 
             target = (*jt)->name();
 
             if  ( ! (*jt)->isEnabled()  ) {
-                qDebug() << "Graph: createMatrixReachability() - "
-                         << target << "disabled. SKIP";
+                qDebug() << "target vertex" << target << "disabled. SKIP";
                 continue;
             }
 
-            qDebug() << "Graph: createMatrixReachability() - "
-                     << "target" << target << "j" << j;
-
+            qDebug() << "target vertex" << target << "j" << j;
 
             reachVal = ((*it)->distance( target ) != RAND_MAX ) ? 1 : 0;
-            qDebug() << "Graph: createMatrixReachability() -  setting XRM ("<< i <<","<< j << ") =" <<  reachVal;
+            qDebug() << "Setting XRM ("<< i <<","<< j << ") =" <<  reachVal;
             XRM.setItem( i, j, reachVal );
 
             j++;
