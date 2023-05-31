@@ -2260,7 +2260,6 @@ void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold
         qDebug() << "Filtering edges with weight below or equal" << m_threshold ;
         words = "equal or under";
     }
-
     // Loop over all vertices
     VList::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){

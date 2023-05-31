@@ -33,7 +33,6 @@
 #include "graphicsnode.h"
 
 
-
 GraphVertex::GraphVertex(Graph* parentGraph,
                          const int &name,
                          const int &val,
@@ -113,6 +112,291 @@ GraphVertex::GraphVertex(const int &name) {
 
 
 /**
+ * @brief Returns the vertex number/name
+ * @return
+ */
+int GraphVertex::name() const {
+    return m_name;
+}
+
+/**
+ * @brief Sets the vertex number/name
+ * @param name
+ */
+void GraphVertex::setName (const int &name) {
+    m_name=name;
+}
+
+/**
+ * @brief Toggles the status of the vertex
+ * @param flag
+ */
+void GraphVertex::setEnabled(const bool &status) {
+    m_enabled=status;
+}
+
+/**
+ * @brief Returns true if the vertex is enabled
+ * @return bool
+ */
+bool GraphVertex::isEnabled() const {
+    return m_enabled;
+}
+
+/**
+ * @brief Sets the size of the vertex
+ * @param size
+ */
+void GraphVertex::setSize(const int &size ) {
+    m_size=size;
+}
+
+/**
+ * @brief Returns the size of the vertex
+ * @return
+ */
+int GraphVertex::size() const {
+    return m_size;
+}
+
+/**
+ * @brief Sets the shape of the vertex
+ * @param shape
+ * @param iconPath
+ */
+void GraphVertex::setShape(const QString &shape, const QString &iconPath) {
+    m_shape=shape;
+    m_iconPath=iconPath;
+}
+
+/**
+ * @brief Returns the shape of the vertex
+ * @return
+ */
+QString GraphVertex::shape() const {
+    return m_shape;
+}
+
+/**
+ * @brief Returns the path of the vertex shape
+ * @return
+ */
+QString GraphVertex::shapeIconPath() {
+    return m_iconPath;
+}
+
+/**
+ * @brief Sets the vertex color
+ * @param color
+ */
+void GraphVertex::setColor(const QString &color) {
+    m_color=color;
+}
+
+/**
+ * @brief Returns the vertex color
+ * @return QString
+ */
+QString GraphVertex::color() const {
+    return m_color;
+}
+
+/**
+ * @brief Returns the vertex color in pajek format
+ */
+QString GraphVertex::colorToPajek(){
+    if (m_color.startsWith("#")) {
+        return  ("RGB"+m_color.right( m_color.size()-1 )).toUpper()  ;
+    }
+    return m_color;
+}
+
+/**
+ * @brief Sets the color of the vertex number
+ * @param color
+ */
+void GraphVertex::setNumberColor (const QString &color) {
+    m_numberColor = color;
+}
+
+/**
+ * @brief Returns the color of the vertex number
+ * @return
+ */
+QString GraphVertex::numberColor() const {
+    return m_numberColor;
+}
+
+/**
+ * @brief Sets the size of the vertex number
+ * @param size
+ */
+void GraphVertex::setNumberSize (const int &size) {
+    m_numberSize=size;
+}
+
+/**
+ * @brief Returns the size of the vertex number
+ * @return
+ */
+int GraphVertex::numberSize() const {
+    return m_numberSize;
+}
+
+/**
+ * @brief Sets the distance (in pixels) of the vertex number from the vertex
+ * @param distance
+ */
+void GraphVertex::setNumberDistance (const int &distance) {
+    m_numberDistance=distance;
+}
+
+/**
+ * @brief Returns the distance (in pixels) of the vertex number from the vertex
+ * @return
+ */
+int GraphVertex::numberDistance() const {
+    return m_numberDistance;
+}
+
+/**
+ * @brief Sets the label of the vertex
+ * @param label
+ */
+void GraphVertex::setLabel (const QString &label) {
+    m_label=label;
+}
+
+/**
+ * @brief Returns the vertex label
+ * @return
+ */
+QString GraphVertex::label() const {
+    return m_label;
+}
+
+/**
+ * @brief Sets the color of the vertex label
+ * @param labelColor
+ */
+void GraphVertex::setLabelColor (const QString &labelColor) {
+    m_labelColor=labelColor;
+}
+
+/**
+ * @brief Returns the color of the vertex label
+ * @return
+ */
+QString GraphVertex::labelColor() const {
+    return m_labelColor;
+}
+
+/**
+ * @brief Sets the size of the vertex label
+ * @param size
+ */
+void GraphVertex::setLabelSize(const int &size) {
+    m_labelSize=size;
+}
+
+/**
+ * @brief Returns the size of the vertex label
+ * @return
+ */
+int GraphVertex::labelSize() const {
+    return m_labelSize;
+}
+
+/**
+ * @brief Sets the distance (in pixels) of the label from the vertex
+ * @param distance
+ */
+void GraphVertex::setLabelDistance (const int &distance) {
+    m_labelDistance=distance;
+}
+
+/**
+ * @brief Returns the distance (in pixels) of the label from the vertex
+ * @return
+ */
+int GraphVertex::labelDistance() const {
+    return m_labelDistance;
+}
+
+/**
+ * @brief Sets the horizontal position (in pixels) of the vertex
+ * @param x
+ */
+void GraphVertex::setX(const qreal &x) {
+    m_x=x;
+}
+
+/**
+ * @brief Returns the horizontal position (in pixels) of the vertex
+ * @return
+ */
+qreal GraphVertex::x() const {
+    return m_x;
+}
+
+/**
+ * @brief Sets the vertical position (in pixels) of the vertex
+ * @param y
+ */
+void GraphVertex::setY(const qreal &y) {
+    m_y=y;
+}
+
+/**
+ * @brief Returns the vertical position (in pixels) of the vertex
+ * @return
+ */
+qreal GraphVertex::y() const {
+    return m_y;
+}
+
+/**
+ * @brief Sets the point where the vertex is positioned
+ * @param p
+ */
+void GraphVertex::setPos (QPointF &p) {
+    m_x=p.x();
+    m_y=p.y();
+}
+
+
+/**
+ * @brief Returns the point where the vertex is positioned
+ * @return
+ */
+QPointF GraphVertex::pos () const {
+    return QPointF ( x(), y() );
+}
+
+
+/**
+ * @brief Sets the x coordinate of the displacement vector
+ * @param x
+ */
+void GraphVertex::set_dispX (qreal x) { m_disp.rx() = x ; }
+
+/**
+ * @brief Sets the y coordinate of the displacement vector
+ * @param y
+ */
+void GraphVertex::set_dispY (qreal y) { m_disp.ry() = y ; }
+
+
+
+/**
+ * @brief Returns displacement vector
+ * @return
+ */
+QPointF& GraphVertex::disp() { return m_disp; }
+
+
+
+/**
 * @brief Changes the current relation of this vertex
 *
 * @param newRel
@@ -125,17 +409,6 @@ void GraphVertex::setRelation(int newRel) {
     edgeFilterByRelation(newRel, true);
     // update current relation
     m_curRelation=newRel;
-}
-
-
-/**
- * @brief Returns the vertex color to pajek format
- */
-QString GraphVertex::colorToPajek(){
-    if (m_color.startsWith("#")) {
-        return  ("RGB"+m_color.right( m_color.size()-1 )).toUpper()  ;
-    }
-    return m_color;
 }
 
 
@@ -157,71 +430,35 @@ void GraphVertex::addOutEdge (const int &v2, const qreal &weight, const QString 
 }
 
 
+
 /**
- * @brief Sets the status of the edge to the given target vertex
+ * @brief Checks if this vertex has an enabled outbound edge to the given vertex and returns the weight of the edge
  *
- * @param target
- * @param status
+ * @param v2
+ * @return qreal
  */
-void GraphVertex::setOutEdgeEnabled (const int target, bool status){
-    qDebug() << "vertex" << name() << "setting outEdge to" << target << "new status" << status;
-    int linkTarget=0;
-    qreal weight =0;
-    int relation = 0;
-    QMultiHash<int, pair_i_fb >::iterator it1;
-    for ( it1 = m_outEdges.begin(); it1 != m_outEdges.end(); ++ it1) {
-        relation = it1.value().first;
-        if ( relation == m_curRelation ) {
-            linkTarget=it1.key();
-            if ( linkTarget == target ) {
-                weight = it1.value().second.first;
-                qDebug() << " *** vertex " << m_name << " connected to "
-                         << linkTarget << " relation " << relation
-                         << " weight " << weight
-                         << " status " << it1.value().second.second;
-                it1.value() = pair_i_fb(m_curRelation, pair_f_b(weight, status) );
-                emit signalSetEdgeVisibility (m_curRelation, m_name, target, status );
-                break;
+qreal GraphVertex::hasEdgeTo(const int &v2, const bool &allRelations){
+    qreal m_weight=0;
+    bool edgeStatus=false;
+    H_edges::const_iterator it1=m_outEdges.constFind(v2);
+    while (it1 != m_outEdges.constEnd() && it1.key() == v2 ) {
+        if (!allRelations) {
+            if ( it1.value().first == m_curRelation  ) {
+                edgeStatus=it1.value().second.second;
+                if ( edgeStatus == true) {
+                    m_weight=it1.value().second.first;
+                }
+                return m_weight;
             }
         }
-    }
-}
-
-
-/**
- * @brief Adds an inbound edge from vertex v1
- *
- * @param source
- * @param weight
- */
-void GraphVertex::addInEdge (const int &v1, const qreal &weight) {
-    qDebug() << "vertex" << name() << "adding new inbound edge"<< "<-"<< v1
-             << "weight"<< weight<< "relation" << m_curRelation;
-    m_inEdges.insert(
-                v1, pair_i_fb (m_curRelation, pair_f_b(weight, true) ) );
-}
-
-
-/**
- * @brief Sets the weight of the outbound edge to the given vertex
- *
- * @param target
- * @param weight
- */
-void GraphVertex::setOutEdgeWeight(const int &target, const qreal &weight){
-    qDebug() << "vertex" << name() << "changing weight of outEdge to" << target << "new weight" << weight;
-    H_edges::const_iterator it1=m_outEdges.constFind(target);
-    // Find the current edge, remove it and add an updated one.
-    while (it1 != m_outEdges.constEnd() ) {
-        if ( it1.key() == target && it1.value().first == m_curRelation ) {
-            m_outEdges.erase(it1);
-            break;
+        else {
+                m_weight=it1.value().second.first;
+                return m_weight;
         }
         ++it1;
     }
-    // Insert the updated edge
-    m_outEdges.insert(
-                target, pair_i_fb(m_curRelation, pair_f_b(weight, true) ) );
+
+    return m_weight;
 }
 
 
@@ -258,6 +495,146 @@ void GraphVertex::removeOutEdge (const int v2) {
 
 
 /**
+ * @brief Sets the status of the edge to the given target vertex
+ *
+ * @param target
+ * @param status
+ */
+void GraphVertex::setOutEdgeEnabled (const int target, bool status){
+    qDebug() << "vertex" << name() << "setting outEdge to" << target << "new status" << status;
+    int linkTarget=0;
+    qreal weight =0;
+    int relation = 0;
+    QMultiHash<int, pair_i_fb >::iterator it1;
+    for ( it1 = m_outEdges.begin(); it1 != m_outEdges.end(); ++ it1) {
+        relation = it1.value().first;
+        if ( relation == m_curRelation ) {
+            linkTarget=it1.key();
+            if ( linkTarget == target ) {
+                weight = it1.value().second.first;
+                qDebug() << " *** vertex " << m_name << " connected to "
+                         << linkTarget << " relation " << relation
+                         << " weight " << weight
+                         << " status " << it1.value().second.second;
+                it1.value() = pair_i_fb(m_curRelation, pair_f_b(weight, status) );
+                emit signalSetEdgeVisibility (m_curRelation, m_name, target, status );
+                break;
+            }
+        }
+    }
+}
+
+
+/**
+ * @brief Sets the weight of the outbound edge to the given vertex
+ *
+ * @param target
+ * @param weight
+ */
+void GraphVertex::setOutEdgeWeight(const int &target, const qreal &weight){
+    qDebug() << "vertex" << name() << "changing weight of outEdge to" << target << "new weight" << weight;
+    H_edges::const_iterator it1=m_outEdges.constFind(target);
+    // Find the current edge, remove it and add an updated one.
+    while (it1 != m_outEdges.constEnd() ) {
+        if ( it1.key() == target && it1.value().first == m_curRelation ) {
+            m_outEdges.erase(it1);
+            break;
+        }
+        ++it1;
+    }
+    // Insert the updated edge
+    m_outEdges.insert(
+                target, pair_i_fb(m_curRelation, pair_f_b(weight, true) ) );
+}
+
+
+/**
+ * @brief Sets the color of the outbound edge to the given vertex
+ * @param v2
+ * @param color
+ */
+void GraphVertex::setOutLinkColor(const int &v2, const QString &color) {
+    m_outLinkColors[v2]=color;
+}
+
+
+/**
+ * @brief Returns the color of the outbound edge to the given vertex
+ * @param v2
+ * @return
+ */
+QString GraphVertex::outLinkColor(const int &v2) {
+    return ( m_outLinkColors.contains(v2) ) ? m_outLinkColors.value(v2) : "black";
+}
+
+/**
+ * @brief Sets the label of the outbound edge to the given vertex
+ * @param v2
+ * @param label
+ */
+void GraphVertex::setOutEdgeLabel(const int &v2, const QString &label) {
+    m_outEdgeLabels[v2]=label;
+}
+
+/**
+ * @brief Returns the label of the outbound edge to the given vertex
+ * @param v2
+ * @return
+ */
+QString GraphVertex::outEdgeLabel(const int &v2) const {
+    return ( m_outEdgeLabels.contains(v2) ) ? m_outEdgeLabels.value(v2) : QString();
+}
+
+
+/**
+ * @brief Adds an inbound edge from vertex v1
+ *
+ * @param source
+ * @param weight
+ */
+void GraphVertex::addInEdge (const int &v1, const qreal &weight) {
+    qDebug() << "vertex" << name() << "adding new inbound edge"<< "<-"<< v1
+             << "weight"<< weight<< "relation" << m_curRelation;
+    m_inEdges.insert(
+                v1, pair_i_fb (m_curRelation, pair_f_b(weight, true) ) );
+}
+
+
+
+/**
+ * @brief Checks if this vertex has an inbound edge from v2 and returns the weight of the link
+ * only if the inLink is enabled.
+ * @param v2
+ * @return
+ */
+qreal GraphVertex::hasEdgeFrom(const int &v2, const bool &allRelations){
+    qreal m_weight=0;
+    bool edgeStatus=false;
+    H_edges::const_iterator it1=m_inEdges.constFind(v2);
+    while (it1 != m_inEdges.constEnd() && it1.key() == v2) {
+        if (!allRelations) {
+            if ( it1.value().first == m_curRelation  ) {
+                edgeStatus=it1.value().second.second;
+                if ( edgeStatus == true) {
+                    m_weight=it1.value().second.first;
+                    return m_weight;
+                }
+                return m_weight;
+            }
+        }
+        else {
+                m_weight=it1.value().second.first;
+                return m_weight;
+        }
+        ++it1;
+    }
+
+    return m_weight;
+}
+
+
+
+/**
  * @brief Removes the inbound edge from vertex v2
  *
  * @param v2
@@ -283,120 +660,6 @@ void GraphVertex::removeInEdge(const int v2){
         ++it;
     }
 
-}
-
-
-
-/**
- * @brief Filters outbound edges over or under a specified threshold weight
- *
- * @param qreal m_threshold
- * @param bool overThreshold
- */
-void GraphVertex::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold){
-    qDebug() << "vertex" << name() << "filtering edges with threshold" << m_threshold;
-	int target=0;
-    qreal weight=0;
-    QMultiHash<int, pair_i_fb >::iterator it;
-    for ( it = m_outEdges.begin(); it != m_outEdges.end(); ++ it) {
-        if ( it.value().first == m_curRelation ) {
-            target=it.key();
-            weight = it.value().second.first;
-            if (overThreshold) {
-                // We will filter out all edges with weights ABOVE the m_threshold
-                if ( weight >= m_threshold ) {
-                    qDebug() << "edge to:" << target << "weight:" << weight << "will be disabled. Emitting signal...";
-                    it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
-                    emit signalSetEdgeVisibility (m_curRelation, m_name, target, false );
-                }
-                else {
-                    qDebug() << "edge to:" << target << "weight:" << weight << "will be enabled. Emitting signal...";
-                    it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true) );
-                    emit signalSetEdgeVisibility (m_curRelation, m_name, target, true );
-                }
-            }
-            else {
-                // We will filter out all edges BELOW the m_threshold
-                 if ( weight <= m_threshold ) {
-                    qDebug() << "edge to:" << target << "weight:" << weight << "will be disabled. Emitting signal...";
-                    it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
-                    emit signalSetEdgeVisibility (m_curRelation, m_name, target, false );
-                }
-                else {
-                    qDebug() << "edge to:" << target << "weight:" << weight << "will be enabled. Emitting signal...";
-                    it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true) );
-                    emit signalSetEdgeVisibility (m_curRelation, m_name, target, true );
-                }
-            }
-        }
-    }
-}
-
-
-
-
-
-
-
-/**
- * @brief Disables all unilateral (non-reciprocal) edges in current relation
- *
- * If allRelations is true, then all relations are checked
- *
- * @param toggle
- */
-void GraphVertex::edgeFilterUnilateral(const bool &toggle){
-    qDebug() << "vertex:" << name();
-    int target=0;
-    qreal weight=0;
-    QMultiHash<int, pair_i_fb >::iterator it;
-    for ( it = m_outEdges.begin(); it != m_outEdges.end(); ++it) {
-        if ( it.value().first == m_curRelation ) {
-            target=it.key();
-            weight = it.value().second.first;
-            if (hasEdgeFrom(target)==0) {   // \todo != weight would be more precise?
-                    if ( !toggle ) {
-                        qDebug() << "unilateral edge to" << target<< "will be disabled. Emitting signal to Graph....";
-                        it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
-                        emit signalSetEdgeVisibility (m_curRelation, m_name, target, false );
-                    }
-                    else {
-                        qDebug() << "unilateral edge to" << target<< "will be enabled. Emitting signal to Graph....";
-                        it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true) );
-                        emit signalSetEdgeVisibility (m_curRelation, m_name, target, true );
-                    }
-            }
-        }
-    }
-}
-
-
-
-/**
- * @brief Toggles all edges of the given relation to the new status
- *
- * @param relation
- * @param status
- */
-void GraphVertex::edgeFilterByRelation(const int relation, const bool status ){
-//    qDebug() << "vertex:" << name() << "setting edges of relation" << relation << "to" << status;
-    int target=0;
-    qreal weight =0;
-    int edgeRelation=0;
-    QMultiHash<int, pair_i_fb >::iterator it1;
-    for ( it1 = m_outEdges.begin(); it1 != m_outEdges.end(); ++ it1) {
-        edgeRelation = it1.value().first;
-        if ( edgeRelation == relation ) {
-            target=it1.key();
-            weight = it1.value().second.first;
-            it1.value() = pair_i_fb(relation, pair_f_b(weight, status) );
-            emit signalSetEdgeVisibility ( relation, m_name, target, status );
-        }
-        else {
-
-        }
-
-    }
 }
 
 
@@ -438,6 +701,80 @@ int GraphVertex::outEdgesCountConst() const {
 }
 
 
+
+/**
+ * @brief Returns the number of active inbound arcs to this vertex for the current relation
+ *
+ * @return int
+ */
+int GraphVertex::inEdgesCount() {
+    m_inEdgesCounter = 0;
+    int relation=0;
+    bool edgeStatus = false;
+    H_edges::const_iterator it1=m_inEdges.constBegin();
+    while (it1 != m_inEdges.constEnd() ) {
+        relation = it1.value().first;
+        if ( relation == m_curRelation ) {
+            edgeStatus=it1.value().second.second;
+            if ( edgeStatus == true) {
+                m_inEdgesCounter++;
+            }
+        }
+        ++it1;
+    }
+    return m_inEdgesCounter;
+}
+
+
+/**
+ * @brief Returns the number of active inbound arcs
+ *
+ * WARNING: Needs to have inEdges called before the call to this method
+ *
+ * @return int
+ */
+int GraphVertex::inEdgesCountConst() const {
+    return m_inEdgesCounter;
+}
+
+
+/**
+ * @brief Returns true if the vertex has at least one outEdge
+ * @return bool
+ */
+bool GraphVertex::isOutLinked() {
+    return (outEdgesCount() > 0) ? true:false;
+}
+
+
+/**
+ * @brief Returns true if there is an outEdge from this vertex
+ * @return
+ */
+bool GraphVertex::isInLinked() {
+    return  (inEdgesCount() > 0) ? true:false;
+}
+
+
+/**
+ * @brief Toggles this vertex as isolated or not.
+ * @param isolated
+ */
+void GraphVertex::setIsolated(bool isolated) {
+    m_isolated = isolated;
+}
+
+
+/**
+ * @brief Returns true if the vertex is isolated (no inbound our outbound edges)
+ * @return bool
+ */
+bool GraphVertex::isIsolated() {
+    return !(isOutLinked() | isInLinked()) ;
+}
+
+
+
 /**
  * @brief Returns a qhash of all enabled outEdges in the active relation
  *
@@ -477,7 +814,8 @@ QHash<int,qreal> GraphVertex::outEdgesEnabledHash(const bool &allRelations){
 
 
 /**
- * @brief  Returns a qhash of all edges to neighbors in all relations
+ * @brief Returns a qhash of all edges to neighbors in all relations
+ *
  * @return
  */
 QHash<int, qreal>* GraphVertex::outEdgesAllRelationsUniqueHash() {
@@ -561,30 +899,6 @@ QList<int> GraphVertex::neighborhoodList(){
 }
 
 
-/**
- * @brief Returns the number of active inbound arcs to this vertex for the current relation
- *
- * @return int
- */
-int GraphVertex::inEdgesCount() {
-    m_inEdgesCounter = 0;
-    int relation=0;
-    bool edgeStatus = false;
-    H_edges::const_iterator it1=m_inEdges.constBegin();
-    while (it1 != m_inEdges.constEnd() ) {
-        relation = it1.value().first;
-        if ( relation == m_curRelation ) {
-            edgeStatus=it1.value().second.second;
-            if ( edgeStatus == true) {
-                m_inEdgesCounter++;
-            }
-        }
-        ++it1;
-    }
-    return m_inEdgesCounter;
-}
-
-
 
 
 /**
@@ -614,17 +928,6 @@ QHash<int,qreal>* GraphVertex::inEdgesEnabledHash() {
 }
 
 
-
-/**
- * @brief Returns the number of active inbound arcs
- *
- * Needs to have inEdges called before the call to this method
- *
- * @return int
- */
-int GraphVertex::inEdgesCountConst() const {
-    return m_inEdgesCounter;
-}
 
 
 
@@ -733,73 +1036,125 @@ int GraphVertex::localDegree(){  int v2=0;
 }
 
 
+
+
 /**
- * @brief Checks if this vertex has an enabled outbound edge to the given vertex and returns the weight of the edge
+ * @brief Filters outbound edges over or under a specified threshold weight
  *
- * @param v2
- * @return qreal
+ * @param qreal m_threshold
+ * @param bool overThreshold
  */
-qreal GraphVertex::hasEdgeTo(const int &v2, const bool &allRelations){
-    qreal m_weight=0;
-    bool edgeStatus=false;
-    H_edges::const_iterator it1=m_outEdges.constFind(v2);
-    while (it1 != m_outEdges.constEnd() && it1.key() == v2 ) {
-        if (!allRelations) {
-            if ( it1.value().first == m_curRelation  ) {
-                edgeStatus=it1.value().second.second;
-                if ( edgeStatus == true) {
-                    m_weight=it1.value().second.first;    
+void GraphVertex::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold){
+    qDebug() << "vertex" << name() << "filtering edges with threshold" << m_threshold;
+    int target=0;
+    qreal weight=0;
+    QMultiHash<int, pair_i_fb >::iterator it;
+    for ( it = m_outEdges.begin(); it != m_outEdges.end(); ++ it) {
+        if ( it.value().first == m_curRelation ) {
+            target=it.key();
+            weight = it.value().second.first;
+            if (overThreshold) {
+                // We will filter out all edges with weights ABOVE the m_threshold
+                if ( weight >= m_threshold ) {
+                    qDebug() << "edge to:" << target << "weight:" << weight << "will be disabled. Emitting signal...";
+                    it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
+                    emit signalSetEdgeVisibility (m_curRelation, m_name, target, false );
                 }
-                return m_weight;
+                else {
+                    qDebug() << "edge to:" << target << "weight:" << weight << "will be enabled. Emitting signal...";
+                    it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true) );
+                    emit signalSetEdgeVisibility (m_curRelation, m_name, target, true );
+                }
+            }
+            else {
+                // We will filter out all edges BELOW the m_threshold
+                 if ( weight <= m_threshold ) {
+                    qDebug() << "edge to:" << target << "weight:" << weight << "will be disabled. Emitting signal...";
+                    it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
+                    emit signalSetEdgeVisibility (m_curRelation, m_name, target, false );
+                }
+                else {
+                    qDebug() << "edge to:" << target << "weight:" << weight << "will be enabled. Emitting signal...";
+                    it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true) );
+                    emit signalSetEdgeVisibility (m_curRelation, m_name, target, true );
+                }
             }
         }
-        else {
-                m_weight=it1.value().second.first;
-                return m_weight;
-        }
-        ++it1;
     }
-
-    return m_weight;
-}
-
-
-/**
- * @brief Checks if this vertex has an inbound edge from v2 and returns the weight of the link
- * only if the inLink is enabled.
- * @param v2
- * @return
- */
-qreal GraphVertex::hasEdgeFrom(const int &v2, const bool &allRelations){
-    qreal m_weight=0;
-    bool edgeStatus=false;
-    H_edges::const_iterator it1=m_inEdges.constFind(v2);
-    while (it1 != m_inEdges.constEnd() && it1.key() == v2) {
-        if (!allRelations) {
-            if ( it1.value().first == m_curRelation  ) {
-                edgeStatus=it1.value().second.second;
-                if ( edgeStatus == true) {
-                    m_weight=it1.value().second.first;
-                    return m_weight;
-                }
-                return m_weight;
-            }
-        }
-        else {
-                m_weight=it1.value().second.first;
-                return m_weight;
-        }
-        ++it1;
-    }
-
-    return m_weight;
 }
 
 
 
 
+
+
+
 /**
- * @brief Sets the geodesic distance to vertex v1
+ * @brief Disables all unilateral (non-reciprocal) edges in current relation
+ *
+ * If allRelations is true, then all relations are checked
+ *
+ * @param toggle
+ */
+void GraphVertex::edgeFilterUnilateral(const bool &toggle){
+    qDebug() << "vertex:" << name();
+    int target=0;
+    qreal weight=0;
+    QMultiHash<int, pair_i_fb >::iterator it;
+    for ( it = m_outEdges.begin(); it != m_outEdges.end(); ++it) {
+        if ( it.value().first == m_curRelation ) {
+            target=it.key();
+            weight = it.value().second.first;
+            if (hasEdgeFrom(target)==0) {   // \todo != weight would be more precise?
+                    if ( !toggle ) {
+                        qDebug() << "unilateral edge to" << target<< "will be disabled. Emitting signal to Graph....";
+                        it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
+                        emit signalSetEdgeVisibility (m_curRelation, m_name, target, false );
+                    }
+                    else {
+                        qDebug() << "unilateral edge to" << target<< "will be enabled. Emitting signal to Graph....";
+                        it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true) );
+                        emit signalSetEdgeVisibility (m_curRelation, m_name, target, true );
+                    }
+            }
+        }
+    }
+}
+
+
+
+/**
+ * @brief Toggles all edges of the given relation to the new status
+ *
+ * @param relation
+ * @param status
+ */
+void GraphVertex::edgeFilterByRelation(const int relation, const bool status ){
+//    qDebug() << "vertex:" << name() << "setting edges of relation" << relation << "to" << status;
+    int target=0;
+    qreal weight =0;
+    int edgeRelation=0;
+    QMultiHash<int, pair_i_fb >::iterator it1;
+    for ( it1 = m_outEdges.begin(); it1 != m_outEdges.end(); ++ it1) {
+        edgeRelation = it1.value().first;
+        if ( edgeRelation == relation ) {
+            target=it1.key();
+            weight = it1.value().second.first;
+            it1.value() = pair_i_fb(relation, pair_f_b(weight, status) );
+            emit signalSetEdgeVisibility ( relation, m_name, target, status );
+        }
+        else {
+
+        }
+
+    }
+}
+
+
+
+
+/**
+ * @brief Stores the geodesic distance to vertex v1
  *
  * @param v1
  * @param dist
@@ -811,7 +1166,7 @@ void GraphVertex::setDistance (const int &v1, const qreal &d) {
 
 /**
  * @brief Reserves N items for the distance hash. See QHash Algorithmic Complexity
- * * Not to be used on large nets, atm.
+ * Not to be used on large nets, atm.
  * @param N
  */
 void GraphVertex::reserveDistance (const int &N) {
@@ -855,7 +1210,7 @@ void GraphVertex::clearDistance() {
 
 
 /**
- * @brief Sets the nymber of shortest paths to vertex v1
+ * @brief Stores the number of shortest paths from this vertex to vertex v1
  *
  * @param v1
  * @param sp
@@ -867,7 +1222,7 @@ void GraphVertex::setShortestPaths (const int &v1, const int &sp) {
 
 
 /**
- * @brief Returns the number of shortest paths to vertex v1
+ * @brief Returns the stored number of shortest paths to vertex v1
  *
  * If it has not been set previously, then returns 0
  *
@@ -902,12 +1257,71 @@ void GraphVertex::reserveShortestPaths (const int &N) {
 }
 
 
-
 /**
  * @brief Removes all items from m_shortestPaths hash dictionary
  */
 void GraphVertex::clearShortestPaths() {
     m_shortestPaths.clear();
+}
+
+
+/**
+ * @brief Stores the eccentricity of the vertex
+ * @param c
+ */
+void GraphVertex::setEccentricity(const qreal &c){
+    m_Eccentricity=c;
+}
+
+/**
+ * @brief Returns the stored eccentricity of the vertex
+ * @return
+ */
+qreal GraphVertex::eccentricity() {
+    return m_Eccentricity;
+}
+
+/**
+ * @brief Stores the pair dependency of the vertex
+ * @param c
+ */
+void GraphVertex::setDelta (const qreal &c){
+    m_delta=c;
+}
+
+/**
+ * @brief Returns the stored pair dependency of the vertex
+ * @return
+ */
+qreal GraphVertex::delta() {
+    return m_delta;
+}
+
+
+
+/**
+ * @brief Clears the list of predecessors of this vertex
+ */
+void GraphVertex::clearPs()	{  
+	myPs.clear();
+}
+	
+/**
+ * @brief Appends a vertex to the list of predecessors of this vertex
+ * @param vertex
+ */
+void GraphVertex::appendToPs(const int &vertex ) {
+    qDebug()<<"vertex"<< name()<< "appending vertex" <<  vertex << "to myPs";
+	myPs.append(vertex); 
+}
+
+
+/**
+ * @brief Returns the list of predecessors of this vertex
+ * @return
+ */
+L_int GraphVertex::Ps(void) {
+	 return myPs;
 }
 
 
@@ -933,34 +1347,6 @@ void GraphVertex::cliqueAdd (const QList<int> &clique) {
     qDebug()<<"vertex"<< name()<< "adding clique with:" << clique;
     m_cliques.insert(clique.size(), clique);
 }
-
-
-
-/**
- * @brief GraphVertex::clearPs
- */
-void GraphVertex::clearPs()	{  
-	myPs.clear();
-}
-	
-/**
- * @brief GraphVertex::appendToPs
- * @param vertex
- */
-void GraphVertex::appendToPs(const int &vertex ) {
-    qDebug()<<"vertex"<< name()<< "appending vertex" <<  vertex << "to myPs";
-	myPs.append(vertex); 
-}
-
-
-/**
- * @brief GraphVertex::Ps
- * @return
- */
-L_int GraphVertex::Ps(void) {
-	 return myPs;
-}
-
 
 
 GraphVertex::~GraphVertex() {

@@ -84,29 +84,73 @@ public:
 
     ~GraphVertex();
 
-    int name() const { return m_name; }
+    int name() const;
+    void setName(const int &name);
 
-    void setName (const int &name) { m_name=name; }
+    void setEnabled(const bool &status);
+    bool isEnabled () const;
 
-    void setEnabled (const bool &flag ) { m_enabled=flag; }
-    bool isEnabled () const { return m_enabled; }
+    void setSize(const int &size );
+    int size() const;
+
+    void setShape(const QString &shape, const QString &iconPath = QString());
+    QString shape() const;
+    QString shapeIconPath();
+
+    void setColor(const QString &color);
+    QString color() const;
+    QString colorToPajek();
+
+    void setNumberColor (const QString &color);
+    QString numberColor() const;
+
+    void setNumberSize (const int &size);
+    int numberSize() const;
+
+    void setNumberDistance (const int &distance);
+    int numberDistance() const;
+
+    void setLabel (const QString &label);
+    QString label() const;
+
+    void setLabelColor (const QString &labelColor);
+    QString labelColor() const;
+
+    void setLabelSize(const int &size);
+    int labelSize() const;
+
+    void setLabelDistance (const int &distance);
+    int labelDistance() const;
+
+    void setX(const qreal &x);
+    qreal x() const;
+
+    void setY(const qreal &y);
+    qreal y() const;
+
+    void setPos (QPointF &p);
+    QPointF pos () const;
+
+    void set_dispX (qreal x);
+    void set_dispY (qreal y);
+    QPointF & disp();
 
     void setRelation(int newRel) ;
 
     void addOutEdge (const int &v2, const qreal &weight, const QString &color=QString(), const QString &label=QString());
-    void addInEdge(const int &v1, const qreal &weight);
-
+    qreal hasEdgeTo(const int &v, const bool &allRelations=false);
+    void removeOutEdge (const int target);
     void setOutEdgeWeight (const int &target, const qreal &weight);
     void setOutEdgeEnabled (const int, bool);
+    void setOutLinkColor(const int &v2, const QString &color);
+    QString outLinkColor(const int &v2);
+    void setOutEdgeLabel(const int &v2, const QString &label);
+    QString outEdgeLabel(const int &v2) const;
 
-    void removeOutEdge (const int target);
+    void addInEdge(const int &v1, const qreal &weight);
+    qreal hasEdgeFrom (const int &v, const bool &allRelations=false);
     void removeInEdge(const int source);
 
-    QHash<int, qreal> outEdgesEnabledHash(const bool &allRelations=false);
-    QHash<int,qreal>* outEdgesAllRelationsUniqueHash();
-    QHash<int,qreal>* inEdgesEnabledHash();
-    QHash<int,qreal> reciprocalEdgesHash();
-    QList<int> neighborhoodList();
 
     int outEdgesCount();
     int outEdgesCountConst() const ;
@@ -114,11 +158,28 @@ public:
     int inEdgesCount();
     int inEdgesCountConst() const ;
 
+    bool isOutLinked();
+    bool isInLinked();
+
+    void setIsolated(bool isolated);
+    bool isIsolated();
+
+    QHash<int, qreal> outEdgesEnabledHash(const bool &allRelations=false);
+    QHash<int,qreal>* outEdgesAllRelationsUniqueHash();
+    QHash<int,qreal>* inEdgesEnabledHash();
+    QHash<int,qreal> reciprocalEdgesHash();
+    QList<int> neighborhoodList();
+
     int degreeOut();
     int outDegreeConst();
     int degreeIn();
     int inDegreeConst();
     int localDegree();
+
+    void edgeFilterByWeight(const qreal m_threshold, const bool overThreshold);
+    //	void filterEdgesByColor(qreal m_threshold, bool overThreshold);
+    void edgeFilterByRelation(const int relation, const bool status);
+    void edgeFilterUnilateral(const bool &toggle=false);
 
     qreal distance(const int &v1) ;
     void setDistance (const int &v1, const qreal &d) ;
@@ -130,91 +191,11 @@ public:
     void reserveShortestPaths(const int &N);
     void clearShortestPaths();
 
+    void setEccentricity(const qreal &c);
+    qreal eccentricity();
 
-    /* sets eccentricity */
-    void setEccentricity (const qreal &c){ m_Eccentricity=c;}
-    qreal eccentricity() { return m_Eccentricity;}
-
-    /* Returns true if there is an outLink from this vertex */
-    bool isOutLinked() { return (outEdgesCount() > 0) ? true:false;}
-    qreal hasEdgeTo(const int &v, const bool &allRelations=false);
-
-    /* Returns true if there is an outLink from this vertex */
-    bool isInLinked() { return  (inEdgesCount() > 0) ? true:false;}
-    qreal hasEdgeFrom (const int &v, const bool &allRelations=false);
-
-    bool isIsolated() { return !(isOutLinked() | isInLinked()) ; }
-    void setIsolated(bool isolated) {m_isolated = isolated; }
-
-    void edgeFilterByWeight(const qreal m_threshold, const bool overThreshold);
-    //	void filterEdgesByColor(qreal m_threshold, bool overThreshold);
-    void edgeFilterByRelation(const int relation, const bool status);
-    void edgeFilterUnilateral(const bool &toggle=false);
-
-    void setSize(const int &size ) { m_size=size; }
-    int size()  const { return m_size; }
-
-    void setShape(const QString &shape, const QString &iconPath = QString()) { m_shape=shape; m_iconPath=iconPath;}
-    QString shape() const { return m_shape; }
-    QString shapeIconPath() {return m_iconPath; }
-
-    void setColor(const QString &color) { m_color=color; }
-    QString color() const { return m_color; }
-    QString colorToPajek();
-
-    void setNumberColor (const QString &color) { m_numberColor = color; }
-    QString numberColor() const { return m_numberColor; }
-
-    void setNumberSize (const int &size) { m_numberSize=size; }
-    int numberSize() const { return m_numberSize; }
-
-    void setNumberDistance (const int &distance) { m_numberDistance=distance; }
-    int numberDistance() const { return m_numberDistance; }
-
-    void setLabel (const QString &label) { m_label=label; }
-    QString label() const { return m_label; }
-
-    void setLabelColor (const QString &labelColor) { m_labelColor=labelColor; }
-    QString labelColor() const { return m_labelColor; }
-
-    void setLabelSize(const int &size) { m_labelSize=size; }
-    int labelSize() const { return m_labelSize; }
-
-    void setLabelDistance (const int &distance) { m_labelDistance=distance; }
-    int labelDistance() const { return m_labelDistance; }
-
-    void setX(const qreal &x) { m_x=x; }
-    qreal x() const { return m_x; }
-
-    void setY(const qreal &y) { m_y=y; }
-    qreal y() const { return m_y; }
-
-    QPointF pos () const { return QPointF ( x(), y() ); }
-    void setPos (QPointF &p) { m_x=p.x(); m_y=p.y(); }
-
-    //returns displacement vector
-    QPointF & disp() { return m_disp; }
-
-    void set_dispX (qreal x) { m_disp.rx() = x ; }
-    void set_dispY (qreal y) { m_disp.ry() = y ; }
-
-
-    void setOutLinkColor(const int &v2,
-                         const QString &color) { m_outLinkColors[v2]=color; }
-    QString outLinkColor(const int &v2) {
-        return ( m_outLinkColors.contains(v2) ) ? m_outLinkColors.value(v2) : "black";
-    }
-
-
-    void setOutEdgeLabel(const int &v2,
-                         const QString &label) { m_outEdgeLabels[v2]=label; }
-    QString outEdgeLabel(const int &v2) const {
-        return ( m_outEdgeLabels.contains(v2) ) ? m_outEdgeLabels.value(v2) : QString();
-    }
-
-
-    void setDelta (const qreal &c){ m_delta=c;} 		/* Sets vertex pair dependancy */
-    qreal delta() { return m_delta;}		/* Returns vertex pair dependancy */
+    void setDelta(const qreal &c);
+    qreal delta();
 
     void clearPs()	;
 
