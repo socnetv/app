@@ -379,23 +379,28 @@ void GraphicsWidget::setNodeClicked(GraphicsNode *node){
 
 
 /**
- * @brief Called when the user clicks on an edge.
-    Emits the userClickedEdge signal to Graph which is used to:
-    - display edge info on the status bar
-    - notify context menus for the clicked edge.
+ * @brief Sets the clicked edge.
+ *
+ * Emits signal to Graph to:
+ * - display edge info on the status bar
+ * - notify context menus for the clicked edge.
+ *
  * @param edge
+ * @param openMenu
  */
 void GraphicsWidget::setEdgeClicked(GraphicsEdge *edge, const bool &openMenu){
     if (edge) {
-        qDebug() <<"setting new clicked edge";
+        qDebug() << "Setting new clicked edge..."
+                 << edge->sourceNode()->nodeNumber()
+                 << "->"
+                 << edge->targetNode()->nodeNumber();
         clickedEdge=edge;
-        qDebug() <<"emitting userClickedEdge() to MW";
         emit userClickedEdge(edge->sourceNode()->nodeNumber(),
                              edge->targetNode()->nodeNumber(),
                              openMenu);
     }
     else {
-        qDebug() <<"No edge parameter. Unsetting clickedEdge and emitting userClickedEdge(0)...";
+        qDebug() <<"Empty edge parameter. Unsetting clickedEdge...";
         clickedEdge=0;
         emit userClickedEdge(0,0,openMenu);
     }
