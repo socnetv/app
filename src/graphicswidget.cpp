@@ -1202,36 +1202,35 @@ void   GraphicsWidget::setEdgeHighlighting(const bool &toggle){
 
 
 /**
- * @brief Changes the visibility of an edge
+ * @brief Changes the visibility of the given edge
+ *
  * @param relation
  * @param source
  * @param target
  * @param toggle
  */
 void GraphicsWidget::setEdgeVisibility(const int &relation, const int &source, const int &target, const bool &visible){
-
     edgeName = createEdgeName( source, target, relation );
-
-    qDebug()<<"GW::setEdgeVisibility() - trying to set edge"<<edgeName<<"to"<<visible;
-
     if  ( edgesHash.contains (edgeName) ) {
-        qDebug()<<"GW::setEdgeVisibility() - edge" << edgeName
-               << "set to" << visible;
         edgesHash.value(edgeName)->setVisible(visible);
         edgesHash.value(edgeName)->setEnabled(visible);
+        qDebug()<<"Toggled visibility of edge"<<edgeName<<"to"<<visible;
         return;
     }
+    else {
+        qDebug()<<"Cannot find edge"<<edgeName<<"in edgesHash";
+    }
+    // The opposite
     edgeName = createEdgeName( target, source, relation );
-    qDebug()<<"GW: setEdgeVisibility() - trying to set edge"<<edgeName<<"to"<<visible;
     if  ( edgesHash.contains (edgeName) ) {
-        qDebug()<<"GW::setEdgeVisibility() - reciprocated edge" << edgeName
-               << "set to" << visible;
+        qDebug()<<"Toggled visibility of opposite edge"<<edgeName<<"to"<<visible;
         edgesHash.value(edgeName)->setVisible(visible);
         edgesHash.value(edgeName)->setEnabled(visible);
         return;
     }
-    qDebug()<<"GW::setEdgeVisibility() - Cannot find edge" << edgeName << "or the opposite in the edgesHash";
-
+    else {
+        qDebug()<<"Cannot find edge"<<edgeName<<"in edgesHash";
+    }
 }
 
 

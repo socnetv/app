@@ -305,17 +305,15 @@ void GraphVertex::edgeFilterByWeight(const qreal m_threshold, const bool overThr
         if ( it.value().first == m_curRelation ) {
             target=it.key();
             weight = it.value().second.first;
-            qDebug() << "edge to:" << target << "weight:" << weight;
             if (overThreshold) {
                 // We will filter out all edges with weights ABOVE the m_threshold
                 if ( weight >= m_threshold ) {
-                    qDebug() << "edge to:" << target
-                    << "will be disabled. Emitting signal to Graph...";
+                    qDebug() << "edge to:" << target << "weight:" << weight << "will be disabled. Emitting signal...";
                     it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
                     emit setEdgeVisibility (m_curRelation, m_name, target, false );
                 }
                 else {
-                    qDebug() << "edge to:" << target << "will be enabled. Emitting signal to Graph...";
+                    qDebug() << "edge to:" << target << "weight:" << weight << "will be enabled. Emitting signal...";
                     it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true) );
                     emit setEdgeVisibility (m_curRelation, m_name, target, true );
                 }
@@ -323,17 +321,16 @@ void GraphVertex::edgeFilterByWeight(const qreal m_threshold, const bool overThr
             else {
                 // We will filter out all edges BELOW the m_threshold
                  if ( weight <= m_threshold ) {
-                     qDebug() << "edge to:" << target << "will be disabled. Emitting signal to Graph...";
+                    qDebug() << "edge to:" << target << "weight:" << weight << "will be disabled. Emitting signal...";
                     it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
                     emit setEdgeVisibility (m_curRelation, m_name, target, false );
                 }
                 else {
-                     qDebug() << "edge to:" << target << "will be enabled. Emitting signal to Graph...";
+                    qDebug() << "edge to:" << target << "weight:" << weight << "will be enabled. Emitting signal...";
                     it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true) );
                     emit setEdgeVisibility (m_curRelation, m_name, target, true );
                 }
             }
-
         }
     }
 }

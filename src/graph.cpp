@@ -2265,19 +2265,25 @@ void Graph::edgeVisibilitySet (const int &relation, const int &source, const int
  * @param overThreshold
  */
 void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold){
-    if (overThreshold)
-        qDebug() << "Graph::edgeFilterByWeight() over or equal" << m_threshold ;
-    else
+    QString words;
+    if (overThreshold) {
+        qDebug() << "filtering edges over or equal" << m_threshold ;
+        words = "equal or over";
+    }
+    else{
         qDebug() << "Graph::edgeFilterByWeight()  below or equal" << m_threshold ;
+        words = "equal or under";
+    }
 
     // Loop over all vertices
     VList::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         (*it)->edgeFilterByWeight ( m_threshold, overThreshold );
     }
-
+    // Update graph mod status
     setModStatus(ModStatus::EdgeCount);
-    emit statusMessage(tr("Edges have been filtered."));
+    // Emit a status message
+    emit statusMessage(tr("Edges with weight %1 %2 have been filtered.").arg(words).arg(m_threshold));
 }
 
 
