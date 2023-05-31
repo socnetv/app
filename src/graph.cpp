@@ -562,7 +562,7 @@ void Graph::relationSet(int relNum, const bool updateUI){
                  << "to" << relNum;
         if ( ! (*it)->isEnabled() )
             continue;
-        (*it)->relationSet(relNum);
+        (*it)->setRelation(relNum);
     }
 
     //
@@ -1380,8 +1380,10 @@ void Graph::vertexRemove(const int &v1){
 
     order=false;
 
-    if (vertexClicked()==v1)
-        vertexClickedSet(0, QPointF(0,0));
+    // Check if this was the clicked vertex and unset it
+    if (vertexClicked()==v1) {
+       vertexClickedSet(0, QPointF(0,0));
+    }
 
     setModStatus(ModStatus::VertexCount);
 
@@ -1467,13 +1469,15 @@ QPointF Graph::vertexPos(const int &v1) const{
 
 
 /**
- * @brief Called from GW::userClickedNode(int) to update clicked vertex number and
- * signal signalNodeClickedInfo(node info) to MW which shows node info on the
- * status bar.
+ * @brief Sets the clicked vertex.
+ *
+ * Signals to MW to show node info on the status bar.
+ *
  * @param v1
-  */
+ * @param p
+ */
 void Graph::vertexClickedSet(const int &v1, const QPointF &p) {
-    qDebug()<<"Setting clicked vertex: " << v1;
+    qDebug()<<"Setting clicked vertex: " << v1 << "click at " << p;
     m_vertexClicked = v1;
     if (v1 == 0) {
         emit signalNodeClickedInfo(0, p);

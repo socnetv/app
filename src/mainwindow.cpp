@@ -10168,10 +10168,15 @@ void MainWindow::slotEditSelectionChanged(const int &selNodes, const int &selEdg
 
 
 /**
- * @brief
- * Called by Graph::userClickedNode() signal, when the user clicks on a node.
- * It displays information about the node on the statusbar.
- * @param jim
+ * @brief Displays information about the given node on the statusbar.
+ *
+ * Usually called by Graph, after the user clicks on a node.
+ *
+ * @param number
+ * @param p
+ * @param label
+ * @param inDegree
+ * @param outDegree
  */
 void MainWindow::slotEditNodeInfoStatusBar (const int &number,
                                             const QPointF &p,

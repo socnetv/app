@@ -91,7 +91,7 @@ public:
     void setEnabled (const bool &flag ) { m_enabled=flag; }
     bool isEnabled () const { return m_enabled; }
 
-    void relationSet(int newRel) ;
+    void setRelation(int newRel) ;
 
     void addOutEdge (const int &v2, const qreal &weight, const QString &color=QString(), const QString &label=QString());
     void addInEdge(const int &v1, const qreal &weight);

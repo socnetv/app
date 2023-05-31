@@ -113,11 +113,11 @@ GraphVertex::GraphVertex(const int &name) {
 
 
 /**
-* @brief Changes the current relation of this vertex to newRel
+* @brief Changes the current relation of this vertex
 *
 * @param newRel
 */
-void GraphVertex::relationSet(int newRel) {
+void GraphVertex::setRelation(int newRel) {
     qDebug() << "vertex" << name() << "current rel:" << m_curRelation << "new rel:" << newRel;
     // first make false all edges of current relation
     edgeFilterByRelation(m_curRelation, false);
