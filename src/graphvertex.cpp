@@ -84,7 +84,7 @@ GraphVertex::GraphVertex(Graph* parentGraph,
     m_curRelation=relation;
     m_enabled = true;
 
-    connect( this, &GraphVertex::setEdgeVisibility,
+    connect( this, &GraphVertex::signalSetEdgeVisibility,
              m_graph, &Graph::signalSetEdgeVisibility);
 
 }
@@ -180,7 +180,7 @@ void GraphVertex::setOutEdgeEnabled (const int target, bool status){
                          << " weight " << weight
                          << " status " << it1.value().second.second;
                 it1.value() = pair_i_fb(m_curRelation, pair_f_b(weight, status) );
-                emit setEdgeVisibility (m_curRelation, m_name, target, status );
+                emit signalSetEdgeVisibility (m_curRelation, m_name, target, status );
                 break;
             }
         }
@@ -307,12 +307,12 @@ void GraphVertex::edgeFilterByWeight(const qreal m_threshold, const bool overThr
                 if ( weight >= m_threshold ) {
                     qDebug() << "edge to:" << target << "weight:" << weight << "will be disabled. Emitting signal...";
                     it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
-                    emit setEdgeVisibility (m_curRelation, m_name, target, false );
+                    emit signalSetEdgeVisibility (m_curRelation, m_name, target, false );
                 }
                 else {
                     qDebug() << "edge to:" << target << "weight:" << weight << "will be enabled. Emitting signal...";
                     it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true) );
-                    emit setEdgeVisibility (m_curRelation, m_name, target, true );
+                    emit signalSetEdgeVisibility (m_curRelation, m_name, target, true );
                 }
             }
             else {
@@ -320,12 +320,12 @@ void GraphVertex::edgeFilterByWeight(const qreal m_threshold, const bool overThr
                  if ( weight <= m_threshold ) {
                     qDebug() << "edge to:" << target << "weight:" << weight << "will be disabled. Emitting signal...";
                     it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
-                    emit setEdgeVisibility (m_curRelation, m_name, target, false );
+                    emit signalSetEdgeVisibility (m_curRelation, m_name, target, false );
                 }
                 else {
                     qDebug() << "edge to:" << target << "weight:" << weight << "will be enabled. Emitting signal...";
                     it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true) );
-                    emit setEdgeVisibility (m_curRelation, m_name, target, true );
+                    emit signalSetEdgeVisibility (m_curRelation, m_name, target, true );
                 }
             }
         }
@@ -358,12 +358,12 @@ void GraphVertex::edgeFilterUnilateral(const bool &toggle){
                     if ( !toggle ) {
                         qDebug() << "unilateral edge to" << target<< "will be disabled. Emitting signal to Graph....";
                         it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
-                        emit setEdgeVisibility (m_curRelation, m_name, target, false );
+                        emit signalSetEdgeVisibility (m_curRelation, m_name, target, false );
                     }
                     else {
                         qDebug() << "unilateral edge to" << target<< "will be enabled. Emitting signal to Graph....";
                         it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true) );
-                        emit setEdgeVisibility (m_curRelation, m_name, target, true );
+                        emit signalSetEdgeVisibility (m_curRelation, m_name, target, true );
                     }
             }
         }
@@ -390,7 +390,7 @@ void GraphVertex::edgeFilterByRelation(const int relation, const bool status ){
             target=it1.key();
             weight = it1.value().second.first;
             it1.value() = pair_i_fb(relation, pair_f_b(weight, status) );
-            emit setEdgeVisibility ( relation, m_name, target, status );
+            emit signalSetEdgeVisibility ( relation, m_name, target, status );
         }
         else {
 

@@ -5518,7 +5518,7 @@ void MainWindow::initSignalSlots() {
     connect( activeGraph, &Graph::setEdgeLabel,
              graphicsWidget, &GraphicsWidget::setEdgeLabel );
 
-    connect( activeGraph, &Graph::setEdgeVisibility,
+    connect( activeGraph, &Graph::signalSetEdgeVisibility,
              graphicsWidget, &GraphicsWidget::setEdgeVisibility);
 
     connect( activeGraph, &Graph::signalRelationChangedToGW,
