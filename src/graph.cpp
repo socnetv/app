@@ -2235,25 +2235,6 @@ void Graph::edgeRemoveSelectedAll() {
     }
 }
 
-/**
- * @brief Changes the visibility of an edge
- *
- * @param relation
- * @param source
- * @param target
- * @param visible
- */
-void Graph::edgeVisibilitySet (const int &relation, const int &source, const int &target, const bool &toggle) {
-    qDebug() << "Graph::edgeVisibilitySet()  - source" << source
-             << "target" << target
-             << "relation"<< relation
-             << "visible"<< toggle
-             << "emitting signal to GW";
-    emit signalSetEdgeVisibility ( relation, source, target, toggle);
-}
-
-
-
 
 
 

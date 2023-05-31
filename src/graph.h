@@ -168,8 +168,6 @@ public slots:
 
     void edgeCreateWebCrawler (const int &source, const int &target);
 
-    void edgeVisibilitySet(const int &relation, const int &source, const int &target, const bool &status);
-
     // helper vertexCreate functions
     void vertexCreateAtPos(const QPointF &p);
 
