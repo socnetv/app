@@ -213,25 +213,22 @@ void GraphVertex::edgeAddFrom (const int &v1, const qreal &weight) {
 
 
 void GraphVertex::changeOutEdgeWeight(const int &target, const qreal &weight){
-    qDebug() << "GraphVertex::changeEdgeWeightTo " << target << " weight " << weight ;
-    qDebug() << " *** m_outEdges.count " <<
-                m_outEdges.count();
-    qDebug() << "first find and remove old relation-weight pair" ;
-    H_edges::iterator it1=m_outEdges.find(target);
-    while (it1 != m_outEdges.end() ) {
+    qDebug() << "GraphVertex::changeEdgeWeightTo - target:" << target << "new weight:" << weight ;
+    H_edges::const_iterator it1=m_outEdges.constFind(target);
+    qDebug() << " *** m_outEdges.count before: " << m_outEdges.count();
+    // Find the current edge, remove it and add a new one.
+    while (it1 != m_outEdges.constEnd() ) {
         if ( it1.key() == target && it1.value().first == m_curRelation ) {
-            it1=m_outEdges.erase(it1);
+            m_outEdges.erase(it1);
+            break;
         }
-        else {
-            ++it1;
-        }
+        ++it1;
     }
-    qDebug() << " *** m_outEdges.count " <<
-                m_outEdges.count();
-    qDebug() << " create new relation-weight pair ";
+    qDebug() << " *** m_outEdges.count now: " << m_outEdges.count();
+    qDebug() << " creating new relation-weight pair ";
     m_outEdges.insert(
                 target, pair_i_fb(m_curRelation, pair_f_b(weight, true) ) );
-    qDebug() << " *** m_outEdges.count " << m_outEdges.count();
+    qDebug() << " *** m_outEdges.count finally: " << m_outEdges.count();
 }
 
 
@@ -242,9 +239,9 @@ void GraphVertex::changeOutEdgeWeight(const int &target, const qreal &weight){
  */
 void GraphVertex::edgeRemoveTo (const int v2) {
     qDebug() << "GraphVertex: edgeRemoveTo() - vertex " << m_name
-             << " has " <<outEdges() << " out-links. Removing link to "<< v2 ;
+             << " has " <<outEdgesCount() << " out-links. Removing link to "<< v2 ;
 
-    if (outEdges()>0) {
+    if (outEdgesCount()>0) {
         qDebug() << "GraphVertex::edgeRemoveTo() - checking all_outEdges";
         H_edges::iterator it1=m_outEdges.find(v2);
         while (it1 != m_outEdges.end() && it1.key() == v2 ) {
@@ -260,7 +257,7 @@ void GraphVertex::edgeRemoveTo (const int v2) {
                 ++it1;
             }
         }
-        qDebug() << "GraphVertex::edgeRemoveTo() - vertex " <<  m_name << " now has " <<  outEdges() << " out-edges";
+        qDebug() << "GraphVertex::edgeRemoveTo() - vertex " <<  m_name << " now has " <<  outEdgesCount() << " out-edges";
 	}
 	else {
         qDebug() << "GraphVertex::edgeRemoveTo() - vertex " <<  m_name << " has no edges" ;
@@ -274,9 +271,9 @@ void GraphVertex::edgeRemoveTo (const int v2) {
  */
 void GraphVertex::edgeRemoveFrom(const int v2){
     qDebug() << "GraphVertex::edgeRemoveFrom() - vertex " << m_name
-             << " has " <<  inEdges() << "  in-edges. RemovingEdgeFrom " << v2 ;
+             << " has " <<  inEdgesCount() << "  in-edges. RemovingEdgeFrom " << v2 ;
 
-    if (inEdges()>0) {
+    if (inEdgesCount()>0) {
         qDebug() << "GraphVertex::edgeRemoveFrom() - checking all_inEdges";
         H_edges::iterator it=m_inEdges.find(v2);
         while (it != m_inEdges.end() ) {
@@ -293,7 +290,7 @@ void GraphVertex::edgeRemoveFrom(const int v2){
             }
         }
         qDebug() << "GraphVertex::edgeRemoveFrom() - vertex " << m_name << " now has "
-                 << inEdges() << " in-links"  ;
+                 << inEdgesCount() << " in-links"  ;
 	}
 	else {
         qDebug() << "GraphVertex::edgeRemoveFrom() - vertex " << m_name << " has no edges";
@@ -303,12 +300,13 @@ void GraphVertex::edgeRemoveFrom(const int v2){
 
 
 /**
- * @brief Filters out edges over or under a specified weight (m_threshold)
- * @param m_threshold
- * @param overThreshold
+ * @brief Filters outbound edges over or under a specified threshold weight
+ *
+ * @param qreal m_threshold
+ * @param bool overThreshold
  */
-void GraphVertex::edgeFilterByWeight(qreal m_threshold, bool overThreshold){
-	qDebug() << "GraphVertex::edgeFilterByWeight of vertex " << this->m_name;
+void GraphVertex::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold){
+    qDebug() << "GraphVertex::edgeFilterByWeight - vertex" << this->m_name << "threshold" << m_threshold;
 	int target=0;
     qreal weight=0;
     QMultiHash<int, pair_i_fb >::iterator it;
@@ -316,18 +314,18 @@ void GraphVertex::edgeFilterByWeight(qreal m_threshold, bool overThreshold){
         if ( it.value().first == m_curRelation ) {
             target=it.key();
             weight = it.value().second.first;
+            qDebug() << "GraphVertex::edgeFilterByWeight() - edge to:" << target << "weight:" << weight;
             if (overThreshold) {
                 // We will filter out all edges with weights ABOVE the m_threshold
                 if ( weight >= m_threshold ) {
-                    qDebug() << "GraphVertex::edgeFilterByWeight() - edge  to " << target
-                    << " has weight " << weight
-                    << ". It will be disabled. Emitting signal to Graph....";
+                    qDebug() << "GraphVertex::edgeFilterByWeight() - edge to:" << target
+                    << "will be disabled. Emitting signal to Graph...";
                     it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
                     emit setEdgeVisibility (m_curRelation, m_name, target, false );
                 }
                 else {
-                    qDebug() << "GraphVertex::edgeFilterByWeight() - edge  to " << target
-                    << " has weight " << weight << ". It will be enabled. Emitting signal to Graph....";
+                    qDebug() << "GraphVertex::edgeFilterByWeight() - edge to:" << target
+                    << "will be enabled. Emitting signal to Graph...";
                     it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true) );
                     emit setEdgeVisibility (m_curRelation, m_name, target, true );
                 }
@@ -335,14 +333,14 @@ void GraphVertex::edgeFilterByWeight(qreal m_threshold, bool overThreshold){
             else {
                 // We will filter out all edges BELOW the m_threshold
                  if ( weight <= m_threshold ) {
-                    qDebug() << "GraphVertex::edgeFilterByWeight() - edge  to " << target
-                    << " has weight " << weight << ". It will be disabled. Emitting signal to Graph....";
+                     qDebug() << "GraphVertex::edgeFilterByWeight() - edge to:" << target
+                     << "will be disabled. Emitting signal to Graph...";
                     it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
                     emit setEdgeVisibility (m_curRelation, m_name, target, false );
                 }
                 else {
-                    qDebug() << "GraphVertex::edgeFilterByWeight() - edge  to " << target
-                    << " has weight " << weight << ". It will be enabled. Emitting signal to Graph....";
+                     qDebug() << "GraphVertex::edgeFilterByWeight() - edge to:" << target
+                     << "will be enabled. Emitting signal to Graph...";
                     it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true) );
                     emit setEdgeVisibility (m_curRelation, m_name, target, true );
                 }
@@ -431,7 +429,7 @@ void GraphVertex::edgeFilterByRelation(int relation, bool status ){
  *
  * @return int
  */
-int GraphVertex::outEdges() {
+int GraphVertex::outEdgesCount() {
     m_outEdgesCounter = 0;
     int relation=0;
     bool edgeStatus = false;
@@ -456,7 +454,7 @@ int GraphVertex::outEdges() {
  * Needs to have outEdges called before the call to this method
  * @return int
  */
-int GraphVertex::outEdgesConst() const {
+int GraphVertex::outEdgesCountConst() const {
     return m_outEdgesCounter;
 }
 
@@ -622,7 +620,7 @@ QList<int> GraphVertex::neighborhoodList(){
  * inEdges, to this vertex for the current relation
  * @return int
  */
-int GraphVertex::inEdges() {
+int GraphVertex::inEdgesCount() {
     m_inEdgesCounter = 0;
     int relation=0;
     bool edgeStatus = false;
@@ -678,7 +676,7 @@ QHash<int,qreal>* GraphVertex::inEdgesEnabledHash() {
  * Needs to have inEdges called before the call to this method
  * @return int
  */
-int GraphVertex::inEdgesConst() const {
+int GraphVertex::inEdgesCountConst() const {
     return m_inEdgesCounter;
 }
 
@@ -772,17 +770,16 @@ int GraphVertex::localDegree(){  int v2=0;
 
 
 /**
- * @brief GraphVertex::hasEdgeTo
- * Checks if this vertex is outlinked to v2 and returns the weight of the edge
- * only if the outbound edge is enabled.
+ * @brief Checks if this vertex has an enabled outbound edge to the given vertex and returns the weight of the edge
+ *
  * @param v2
- * @return
+ * @return qreal
  */
 qreal GraphVertex::hasEdgeTo(const int &v2, const bool &allRelations){
     qreal m_weight=0;
     bool edgeStatus=false;
-    H_edges::const_iterator it1=m_outEdges.find(v2);
-    while (it1 != m_outEdges.end() && it1.key() == v2 ) {
+    H_edges::const_iterator it1=m_outEdges.constFind(v2);
+    while (it1 != m_outEdges.constEnd() && it1.key() == v2 ) {
         if (!allRelations) {
             if ( it1.value().first == m_curRelation  ) {
                 edgeStatus=it1.value().second.second;
@@ -824,8 +821,8 @@ qreal GraphVertex::hasEdgeTo(const int &v2, const bool &allRelations){
 qreal GraphVertex::hasEdgeFrom(const int &v2, const bool &allRelations){
     qreal m_weight=0;
     bool edgeStatus=false;
-    H_edges::iterator it1=m_inEdges.find(v2);
-    while (it1 != m_inEdges.end() && it1.key() == v2) {
+    H_edges::const_iterator it1=m_inEdges.constFind(v2);
+    while (it1 != m_inEdges.constEnd() && it1.key() == v2) {
         if (!allRelations) {
             if ( it1.value().first == m_curRelation  ) {
                 edgeStatus=it1.value().second.second;

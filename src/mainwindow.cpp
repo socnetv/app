@@ -11140,22 +11140,22 @@ void MainWindow::slotEditFilterNodesIsolates(bool checked){
 
 
 /**
- * @brief Shows a dialog from where the user may filter edges according to their weight
- * All edges weighted more (or less) than the specified weight  will be disabled.
+ * @brief Shows a dialog where the user can filter edges according to their weight
+ *
+ * All edges weighted more (or less) than the specified weight will be disabled.
  */
 void MainWindow::slotEditFilterEdgesByWeightDialog() {
 
     // Note: We do not check if there are active edges, because the user might have disabled all edges previously.
 
-//    if ( !activeEdges()  )   {
-//        statusMessage(  QString(tr("Load a network file first. \nThen you may ask me to compute something!"))  );
-//        return;
-//    }
-
+    // Create a new edge filtering dialog
     m_DialogEdgeFilterByWeight = new DialogFilterEdgesByWeight(this);
+
+    // Connect dialog signal directly to the graph
     connect( m_DialogEdgeFilterByWeight, SIGNAL( userChoices( qreal, bool) ),
              activeGraph, SLOT( edgeFilterByWeight (qreal, bool) ) );
 
+    // Show the dialog
     m_DialogEdgeFilterByWeight->exec() ;
 }
 

@@ -210,7 +210,7 @@ public slots:
     void edgeClickedSet(const int &v1, const int &v2, const bool &openMenu=false) ;
 
 
-    void edgeFilterByWeight (qreal, bool);
+    void edgeFilterByWeight (const qreal, const bool);
 
     void edgeFilterByRelation(int relation, bool status);
 

@@ -42,7 +42,7 @@ public:
 public slots:
     void getUserChoices ();
 signals:
-    void userChoices( qreal, bool);
+    void userChoices(const qreal, const bool);
 private:
     Ui::DialogFilterEdgesByWeight ui;
 

@@ -109,11 +109,11 @@ public:
     QHash<int,qreal> reciprocalEdgesHash();
     QList<int> neighborhoodList();
 
-    int outEdges();
-    int outEdgesConst() const ;
+    int outEdgesCount();
+    int outEdgesCountConst() const ;
 
-    int inEdges();
-    int inEdgesConst() const ;
+    int inEdgesCount();
+    int inEdgesCountConst() const ;
 
     int degreeOut();
     int outDegreeConst();
@@ -137,17 +137,17 @@ public:
     qreal eccentricity() { return m_Eccentricity;}
 
     /* Returns true if there is an outLink from this vertex */
-    bool isOutLinked() { return (outEdges() > 0) ? true:false;}
+    bool isOutLinked() { return (outEdgesCount() > 0) ? true:false;}
     qreal hasEdgeTo(const int &v, const bool &allRelations=false);
 
     /* Returns true if there is an outLink from this vertex */
-    bool isInLinked() { return  (inEdges() > 0) ? true:false;}
+    bool isInLinked() { return  (inEdgesCount() > 0) ? true:false;}
     qreal hasEdgeFrom (const int &v, const bool &allRelations=false);
 
     bool isIsolated() { return !(isOutLinked() | isInLinked()) ; }
     void setIsolated(bool isolated) {m_isolated = isolated; }
 
-    void edgeFilterByWeight(qreal m_threshold, bool overThreshold);
+    void edgeFilterByWeight(const qreal m_threshold, const bool overThreshold);
     //	void filterEdgesByColor(qreal m_threshold, bool overThreshold);
     void edgeFilterByRelation(int relation, bool status);
     void edgeFilterUnilateral(const bool &toggle=false);

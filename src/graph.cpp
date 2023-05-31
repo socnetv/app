@@ -2261,18 +2261,20 @@ void Graph::edgeVisibilitySet (const int &relation, const int &source, const int
 
 
 /**
- * @brief Called from MW::DialogEdgeFilter to filter edges over or under
- * a specified weight (m_threshold).
- * For each vertex in the Graph, calls the homonymous method of GraphVertex class.
+ * @brief Filters edges over or under the specified weight (m_threshold).
+ *
+ * For each vertex, it calls its relevant edge filtering method.
+ *
  * @param m_threshold
  * @param overThreshold
  */
-void Graph::edgeFilterByWeight(qreal m_threshold, bool overThreshold){
+void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold){
     if (overThreshold)
         qDebug() << "Graph::edgeFilterByWeight() over or equal" << m_threshold ;
     else
         qDebug() << "Graph::edgeFilterByWeight()  below or equal" << m_threshold ;
 
+    // Loop over all vertices
     VList::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         (*it)->edgeFilterByWeight ( m_threshold, overThreshold );
@@ -2320,11 +2322,11 @@ void Graph::edgeFilterUnilateral(const bool &toggle) {
 
 
 /**
- * @brief Called from GW::edgeClicked()
- * which is emitted when the user clicks on an edge.
+ * @brief Sets the clicked edge
+ *
  * Parameters are the source and target node of the edge.
- * It emits signal to MW, which displays a relevant
- * message on the status bar.
+ * It emits signal to MW, which displays a relevant  message on the status bar.
+ *
  * @param v1
  * @param v2
  */
@@ -2439,7 +2441,7 @@ int Graph::edgesEnabled() {
 
     VList::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        m_totalEdges+=(*it)->outEdges();
+        m_totalEdges+=(*it)->outEdgesCount();
     }
     qDebug() << "Graph::edgesEnabled() - edges recounted: " <<  m_totalEdges;
     calculatedEdges = true;
@@ -2457,7 +2459,7 @@ int Graph::edgesEnabled() {
  */
 int Graph::vertexEdgesOutbound(int v1) {
     qDebug("Graph: vertexEdgesOutbound()");
-    return m_graph[ vpos[v1] ]->outEdges();
+    return m_graph[ vpos[v1] ]->outEdgesCount();
 }
 
 
@@ -2468,7 +2470,7 @@ int Graph::vertexEdgesOutbound(int v1) {
  */
 int Graph::vertexEdgesInbound (int v1) {
     qDebug("Graph: vertexEdgesInbound()");
-    return m_graph[ vpos[v1] ]->inEdges();
+    return m_graph[ vpos[v1] ]->inEdgesCount();
 }
 
 
@@ -3757,7 +3759,7 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
                  << (*it)->outEdgesReciprocated();
 
         // Symmetric: Total number of reciprocated ties involving this actor divided by the number of ties to and from her.
-        tiesSym =(qreal)   (*it)->outEdgesReciprocated() / (qreal)  ( (*it)->outEdges() + (*it)->inEdges());
+        tiesSym =(qreal)   (*it)->outEdgesReciprocated() / (qreal)  ( (*it)->outEdgesCount() + (*it)->inEdgesCount());
         // non Symmetric: One minus symmetric
         tiesNonSym = 1 - tiesSym;
         // nonSym Out/NonSym. Proportion of non-symmetric outgoing ties to the total non-symmetric ties.
@@ -3765,9 +3767,9 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
         // nonSym In/NonSym. Proportion of non-symmetric incoming ties to the total non-symmetric ties.
         tiesInNonSym =  ((*it)->outEdgesNonSym() || (*it)->inEdgesNonSym()) ?  (qreal) (*it)->inEdgesNonSym() / (qreal)  ((*it)->outEdgesNonSym() + (*it)->inEdgesNonSym()) : 0;
         // nonSym Out/Out. Proportion of non-symmetric outgoing ties to the total outgoing ties.
-        tiesOutNonSymTotalOut = ( (*it)->outEdges() != 0) ? (qreal)  (*it)->outEdgesNonSym() /(qreal) (*it)->outEdges() : 0;
+        tiesOutNonSymTotalOut = ( (*it)->outEdgesCount() != 0) ? (qreal)  (*it)->outEdgesNonSym() /(qreal) (*it)->outEdgesCount() : 0;
         // nonSym In/In. Proportion of non-symmetric incoming ties to the total incoming ties.
-        tiesInNonSymTotalIn = ( (*it)->inEdges() != 0) ? (qreal)  (*it)->inEdgesNonSym() / (qreal) (*it)->inEdges() : 0;
+        tiesInNonSymTotalIn = ( (*it)->inEdgesCount() != 0) ? (qreal)  (*it)->inEdgesNonSym() / (qreal) (*it)->inEdgesCount() : 0;
 
         outText << "<tr class=" << ((rowCount%2==0) ? "even" :"odd" )<< ">"
                 <<"<td>"
@@ -10650,9 +10652,9 @@ void Graph::prestigePageRank(const bool &dropIsolates){
         // from 0 to 1, so each one is set to 1/N
         (*it)->setPRP( 1.0 / (qreal) N );
 
-        // compute inEdges() to warm up inEdgesConst for everyone
-        inLinks = (*it)->inEdges();
-        outLinks = (*it)->outEdges();
+        // compute inEdgesCount() to warm up inEdgesConst for everyone
+        inLinks = (*it)->inEdgesCount();
+        outLinks = (*it)->outEdgesCount();
         qDebug() << "Graph::prestigePageRank() - node "
                  << (*it)->name() << " PR = " << (*it)->PRP()
                  << " inLinks (set const): " << inLinks
@@ -10719,8 +10721,8 @@ void Graph::prestigePageRank(const bool &dropIsolates){
 
                 if ( edgeExists( referrer , (*it)->name() ) )
                 {
-                    inLinks = m_graph[ vpos[referrer] ]->inEdgesConst();
-                    outLinks = m_graph[ vpos[referrer] ]->outEdgesConst();
+                    inLinks = m_graph[ vpos[referrer] ]->inEdgesCountConst();
+                    outLinks = m_graph[ vpos[referrer] ]->outEdgesCountConst();
 
                     PRP =  m_graph[ vpos[referrer] ]->PRP();
 
