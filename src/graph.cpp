@@ -1339,7 +1339,7 @@ void Graph::vertexRemove(const int &v1){
         if (  qAbs((*it)->hasEdgeFrom(v1)) > 0 ) {
             qDebug()<< "Graph::vertexRemove() - vertex " << (*it)->name()
                     << " has inbound Edge from "<< v1 << ". Removing it.";
-            (*it)->edgeRemoveFrom(v1);
+            (*it)->removeInEdge(v1);
         }
     }
 
@@ -2192,11 +2192,11 @@ void Graph::edgeRemove (const int &v1,
     qDebug ()<< "Graph::edgeRemove() - edge" << v1 << "[" << vpos[v1]
                 << "] -->" << v2 << " to be removed. removeReverse:" <<removeReverse;
     m_graph [ vpos[v1] ]->removeOutEdge(v2);
-    m_graph [ vpos[v2] ]->edgeRemoveFrom(v1);
+    m_graph [ vpos[v2] ]->removeInEdge(v1);
 
     if ( isUndirected() || removeReverse ) { // remove reverse edge too
         m_graph [ vpos[v2] ]->removeOutEdge(v1);
-        m_graph [ vpos[v1] ]->edgeRemoveFrom(v2);
+        m_graph [ vpos[v1] ]->removeInEdge(v2);
         m_graphIsSymmetric=true;
     }
     else {
@@ -2249,7 +2249,7 @@ void Graph::edgeVisibilitySet (const int &relation, const int &source, const int
              << "relation"<< relation
              << "visible"<< toggle
              << "emitting signal to GW";
-    emit setEdgeVisibility ( relation, source, target, toggle);
+    emit signalSetEdgeVisibility ( relation, source, target, toggle);
 }
 
 

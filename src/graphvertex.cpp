@@ -262,7 +262,7 @@ void GraphVertex::removeOutEdge (const int v2) {
  *
  * @param v2
  */
-void GraphVertex::edgeRemoveFrom(const int v2){
+void GraphVertex::removeInEdge(const int v2){
     qDebug() << "vertex" << name() << "removing inEdge from" << v2;
 
     if (inEdgesCount()==0) {
