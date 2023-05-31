@@ -9116,7 +9116,7 @@ void MainWindow::slotNetworkChanged(
         editEdgeUndirectedAllAct->setChecked(false);
     }
     rightPanelEdgesLCD->setText(QString::number(edges));
-    rightPanelDensityLCD->setText(QString::number(density, 'f', 8));
+    rightPanelDensityLCD->setText(QString::number(density, 'f', 3));
 
     qDebug()<<"Finished updating mainwindow.";
 }
