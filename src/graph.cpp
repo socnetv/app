@@ -16535,6 +16535,9 @@ void Graph::setReportsChartType(const int &type){
 /**
  * @brief Writes a "famous" dataset to the given file
  * Datasets are hardcoded! They are exported in the given fileName...
+ *
+ * TODO: Move all these datasets to a separate class
+ *
  * @param fileName
  */
 void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
