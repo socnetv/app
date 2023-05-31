@@ -9314,7 +9314,6 @@ void MainWindow::slotEditNodeFind(const QStringList &list,
 
     }
 
-
     return;
 }
 
@@ -9323,12 +9322,10 @@ void MainWindow::slotEditNodeFind(const QStringList &list,
 
 
 /**
- * @brief MainWindow::slotEditNodeRemove
- * Deletes a node and the attached objects (edges, etc).
- * If user has clicked on a node (signaled from GW or set by another function)
- * it deletes it
- * Else it asks for a nodeNumber to remove. The nodeNumber is doomedJim.
- * Called from nodeContextMenu
+ * @brief Deletes a node and the attached objects (edges, etc).
+ *
+ * If the user has clicked on a node, it deletes it
+ * Else it asks for a nodeNumber to remove.
  */
 void MainWindow::slotEditNodeRemove() {
     qDebug() << "MW::slotEditNodeRemove()";
@@ -9397,7 +9394,7 @@ void MainWindow::slotEditNodeRemove() {
 
 
 /**
- * @brief Opens Node Properties dialog for the selected nodes.
+ * @brief Opens the Node Properties dialog for the selected nodes.
  * If no nodes are selected, prompts the user for a node number
  */
 void MainWindow::slotEditNodePropertiesDialog() {
@@ -9581,7 +9578,6 @@ void MainWindow::slotEditNodeProperties(const QString &label,
 
 /**
  * @brief Creates a complete subgraph (clique) from selected nodes.
- * Calls Graph::verticesSelectedCreateClique()
  */
 void MainWindow::slotEditNodeSelectedToClique () {
     qDebug() << "MW::slotEditNodeSelectedToClique()";
@@ -9614,8 +9610,7 @@ void MainWindow::slotEditNodeSelectedToClique () {
 
 /**
  * @brief Creates a star subgraph from selected nodes.
- * User must choose a central actor.
- * Calls Graph::slotEditNodeSelectedToStar()
+ * User must choose a central node.
  */
 void MainWindow::slotEditNodeSelectedToStar() {
     qDebug() << "MW::slotEditNodeSelectedToStar()";
@@ -9666,7 +9661,6 @@ void MainWindow::slotEditNodeSelectedToStar() {
 
 /**
  * @brief Creates a cycle subgraph from selected nodes.
- * Calls Graph::verticesSelectedCreateCycle()
  */
 void MainWindow::slotEditNodeSelectedToCycle() {
     qDebug() << "MW::slotEditNodeSelectedToCycle()";
@@ -9700,7 +9694,6 @@ void MainWindow::slotEditNodeSelectedToCycle() {
 
 /**
  * @brief Creates a line subgraph from selected nodes.
- * Calls Graph::verticesSelectedCreateLine()
  */
 void MainWindow::slotEditNodeSelectedToLine() {
     qDebug() << "MW::slotEditNodeSelectedToLine()";
@@ -9734,10 +9727,10 @@ void MainWindow::slotEditNodeSelectedToLine() {
 
 /**
  * @brief Changes the color of all nodes to parameter color
- * Calls  activeGraph->vertexColorSet to do the work
- * If parameter color is invalid, opens a QColorDialog to
+ *
+ * If the color is invalid, opens a QColorDialog to
  * select a new node color for all nodes.
- * Called from Settings Dialog and Edit menu option
+ *
  * @param color
  */
 void MainWindow::slotEditNodeColorAll(QColor color){
@@ -9766,10 +9759,10 @@ void MainWindow::slotEditNodeColorAll(QColor color){
 
 /**
  * @brief Changes the size of nodes to newSize.
- * Calls activeGraph->vertexSizeSet to do the work.
- * Called from Edit menu item, DialogSettings
+ *
  * If newSize = 0 asks the user a new size for all nodes
- * If normalized = true, changes node sizes according to their plethos
+ * If normalized = true, changes node sizes according to their amount
+ *
  * @param newSize
  * @param normalized
  */
