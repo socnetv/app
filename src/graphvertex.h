@@ -149,7 +149,7 @@ public:
 
     void edgeFilterByWeight(const qreal m_threshold, const bool overThreshold);
     //	void filterEdgesByColor(qreal m_threshold, bool overThreshold);
-    void edgeFilterByRelation(int relation, bool status);
+    void edgeFilterByRelation(const int relation, const bool status);
     void edgeFilterUnilateral(const bool &toggle=false);
 
     void setSize(const int &size ) { m_size=size; }

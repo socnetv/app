@@ -2235,12 +2235,8 @@ void Graph::edgeRemoveSelectedAll() {
 }
 
 /**
- * @brief Changes the canvas visibility of an edge
- * Called from
- * GraphVertex::edgeFilterByRelation
- * GraphVertex::edgeFilterByWeight
- * GraphVertex::setOutEdgeEnabled
- * GraphVertex::edgeFilterUnilateral
+ * @brief Changes the visibility of an edge
+ *
  * @param relation
  * @param source
  * @param target
@@ -2287,16 +2283,21 @@ void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold
 
 
 /**
- * @brief Enables or disables all edges of a given relation
+ * @brief Toggles (enables or disables) all edges of the given relation
+ *
  * Calls the homonymous method of GraphVertex class.
+ *
  * @param relation
-  */
+ * @param status
+ */
 void Graph::edgeFilterByRelation(int relation, bool status){
-    qDebug() << "Graph::edgeFilterByRelation() " ;
+    qDebug() << "toggling all edges in relation" << relation << "to status" << status ;
     VList::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( ! (*it)->isEnabled() )
+        if ( ! (*it)->isEnabled() ){
+            // Skip if the node is disabled.
             continue;
+        }
         (*it)->edgeFilterByRelation ( relation, status );
     }
 }
