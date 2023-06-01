@@ -6915,6 +6915,7 @@ void MainWindow::slotNetworkSaveAs() {
  *  status > 0 means network has been saved
  *  status = 0 means network has changed and needs saving
  *  status < 0 means network has changed but there was an error saving it.
+ *
  * @param status
   */
 void MainWindow::slotNetworkSavedStatus (const int &status) {
@@ -9222,7 +9223,8 @@ void MainWindow::slotEditNodeSelectNone(){
 
 
 /**
- * @brief Updates vertex coordinates in Graph when a node moves
+ * @brief Automatically runs, when the user moves a node on the canvas, to
+ * update new vertex coordinates in Graph, and show a status message.
  *
  * Called from GraphicsWidget
  *
@@ -9234,10 +9236,6 @@ void MainWindow::slotEditNodePosition(const int &nodeNumber,
                                       const int &x, const int &y){
     qDebug("Updating position for node %i - x: %i, y: %i", nodeNumber, x, y);
     activeGraph->vertexPosSet(nodeNumber, x, y);
-    if (!activeGraph->isSaved()) {
-        networkSaveAct->setIcon(QIcon(":/images/file_download_48px.svg"));
-        networkSaveAct->setEnabled(true);
-    }
 }
 
 
@@ -10264,11 +10262,12 @@ void MainWindow::slotEditEdgeClicked (const MyEdge &edge,
     }
     else if (type == EdgeType::Reciprocated){
         statusMessage(  QString
-                        (tr("Reciprocated edge %1 <--> %2 of weight %3 has been selected. "
-                            "Opposite exists. "
+                        (tr("Reciprocated edge %1 <--> %2 has been selected. "
+                            "Weight %1 --> %2 = %3, "
+                            "Weight %2 --> %1 = %4. "
                             "Click anywhere else to unselect it."))
                         .arg( v1 ).arg( v2 )
-                        .arg( weight )
+                        .arg( weight ).arg(reverseWeight)
                         );
         rightPanelClickedEdgeNameLCD->setText(QString::number(v1)+QString(" <-->")+QString::number(v2));
         rightPanelClickedEdgeWeightLabel->setText(tr("Weight:"));
