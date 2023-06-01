@@ -118,26 +118,26 @@ public slots:
                   const QString &labelColor,
                   const int &labelSize,
                   const int &labelDistance);
-    void removeNode(const int &number);
-    void setNodeVisibility(const int &number, const bool &toggle );	//Called from Graph via MW
+    void removeNode(const int &nodeNum);
+    void setNodeVisibility(const int &nodeNum, const bool &toggle );	//Called from Graph via MW
     void setNodeClicked(GraphicsNode *);
     void moveNode(const int &num, const qreal &x, const qreal &y);
 
     bool setNodeSize(const int &nodeNumber, const int &size=0);
     void setNodeSizeAll(const int &size=0);
 
-    bool setNodeShape(const int &nodeNumber,
+    bool setNodeShape(const int &nodeNum,
                       const QString &shape,
                       const QString &iconPath=QString());
-    bool setNodeColor(const int &nodeNumber, const QString &color);
+    bool setNodeColor(const int &nodeNum, const QString &color);
 
-    void setNodeNumberColor(const int &nodeNumber, const QString &color);
+    void setNodeNumberColor(const int &nodeNum, const QString &color);
     void setNodeNumberVisibility(const bool &toggle);
-    bool setNodeNumberSize(const int &nodeNumber, const int &size=0);
+    bool setNodeNumberSize(const int &nodeNum, const int &size=0);
     bool setNodeNumberDistance(const int &, const int &distance=0);
 
     void setNodeLabelsVisibility(const bool &toggle);
-    bool setNodeLabelColor(const int &number, const QString &color="green");
+    bool setNodeLabelColor(const int &nodeNum, const QString &color="green");
     bool setNodeLabelSize(const int &, const int &size=0);
     bool setNodeLabel(const int & , const QString &label);
     bool setNodeLabelDistance(const int &, const int &distance=0);

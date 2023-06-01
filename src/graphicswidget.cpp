@@ -158,9 +158,9 @@ void GraphicsWidget::setOptionsNoAntialiasingAutoAdjust(const bool &toggle)
 
 
 /**
- * @brief Creates a QString with theedge name.
+ * @brief Creates a QString with the edge name.
  *
- * This is used for indexing edgesHash
+ * Edge names are used in edgesHash
  *
  * @param v1
  * @param v2
@@ -212,7 +212,7 @@ void GraphicsWidget::relationSet(int relation) {
  * Called when we load files, or when the user presses "Add Node" button or
  * the user double clicks on the canvas.
  *
- * @param num
+ * @param nodeNum
  * @param nodeSize
  * @param nodeColor
  * @param numberColor
@@ -227,7 +227,7 @@ void GraphicsWidget::relationSet(int relation) {
  * @param showNumbers
  */
 void GraphicsWidget::drawNode( const QPointF &p,
-                               const int &num,
+                               const int &nodeNum,
                                const int &nodeSize,
                                const QString &nodeShape,
                                const QString &nodeIconPath,
@@ -239,14 +239,14 @@ void GraphicsWidget::drawNode( const QPointF &p,
                                const int &labelDistance
 
                                ) {
-    qDebug()<< "Will draw new node:" << num
+    qDebug()<< "Will draw new node:" << nodeNum
             << " at:" << p.x() << ", "<< p.y()
             << "shape"<<nodeShape
             << "nodeIconPath"<<nodeIconPath;
 
     // Draw node
     GraphicsNode *jim= new GraphicsNode ( this,
-                                          num,
+                                          nodeNum,
                                           nodeSize,
                                           nodeColor,
                                           nodeShape,
@@ -266,7 +266,7 @@ void GraphicsWidget::drawNode( const QPointF &p,
                                           );
 
     // Add new node to a container to ease finding, edge creation etc
-    nodeHash.insert(num, jim);
+    nodeHash.insert(nodeNum, jim);
 }
 
 
@@ -433,13 +433,13 @@ void GraphicsWidget::setEdgeClicked(GraphicsEdge *edge, const bool &openMenu){
  *
  * Called while creating random networks.
  *
- * @param num
+ * @param nodeNum
  * @param x
  * @param y
  */
-void GraphicsWidget::moveNode(const int &num, const qreal &x, const qreal &y){
-    qDebug() << "Moving node" << num << "to pos:" << x << "," << y;
-    nodeHash.value(num)->setPos(x,y);
+void GraphicsWidget::moveNode(const int &nodeNum, const qreal &x, const qreal &y){
+    qDebug() << "Moving node" << nodeNum << "to pos:" << x << "," << y;
+    nodeHash.value(nodeNum)->setPos(x,y);
 }
 
 
@@ -449,15 +449,14 @@ void GraphicsWidget::moveNode(const int &num, const qreal &x, const qreal &y){
  *
  * Called from Graph
  *
- * @param number
+ * @param nodeNum
  */
-void GraphicsWidget::removeNode(const int &number){
-    if ( nodeHash.contains(number) ) {
-        delete nodeHash.value(number);
-        qDebug() << "Removed node with number:" << number;
+void GraphicsWidget::removeNode(const int &nodeNum){
+    if ( nodeHash.contains(nodeNum) ) {
+        delete nodeHash.value(nodeNum);
+        qDebug() << "Removed node with number:" << nodeNum;
     }
 }
-
 
 
 
@@ -465,7 +464,7 @@ void GraphicsWidget::removeNode(const int &number){
 /**
  * @brief Removes the edge from node sourceNum to node targetNum from the scene.
  *
- * Called from MW/Graph when erasing edges using vertex numbers
+ * Called when erasing edges using vertex numbers.
  * Also called when transforming directed edges to undirected.
  *
  * @param sourceNum
@@ -516,8 +515,9 @@ void GraphicsWidget::removeEdge(const int &sourceNum,
 
 /**
  * @brief Removes a node item from the scene.
- * Called from GraphicsNode::~GraphicsNode() to remove itself from nodeHash, scene and
- * be deleted
+ *
+ * Called from GraphicsNode::~GraphicsNode() to remove itself from nodeHash, scene and be deleted
+ *
  * @param node
   */
 void GraphicsWidget::removeItem( GraphicsNode *node){
@@ -543,8 +543,9 @@ void GraphicsWidget::removeItem( GraphicsNode *node){
 
 /**
  * @brief Removes an edge item from the scene.
- * Called from GraphicsEdge::~GraphicsEdge() to remove itself from edgesHash and scene and
- * be deleted
+ *
+ * Called from GraphicsEdge::~GraphicsEdge() to remove itself from edgesHash, scene and be deleted
+ *
  * @param edge
  *
  */
@@ -558,40 +559,31 @@ void GraphicsWidget::removeItem( GraphicsEdge * edge){
     scene()->removeItem(edge);
     qDebug() << "Calling edge->deleteLater()" ;
     edge->deleteLater();
-    qDebug() << "Edge removed! "
-             << " scene items now: " << scene()->items().size()
-             << " view items: " << items().size();
 }
 
 
 /**
  * @brief Removes an edge weight number item from the scene.
+ *
  * @param edgeWeight
  */
 void GraphicsWidget::removeItem( GraphicsEdgeWeight *edgeWeight){
-    qDebug() << "removing edge weight"
-             << "GW items now:  " << items().size();
+    qDebug() << "Removing edge weight";
     scene()->removeItem(edgeWeight);
     edgeWeight->deleteLater();
-    qDebug() << "edgeWeight erased! "
-             << " scene items now: " << scene()->items().size()
-             << " view items: " << items().size();
 }
 
 
 
 /**
  * @brief Removes an edge label item from the scene.
+ *
  * @param edgeLabel
  */
 void GraphicsWidget::removeItem( GraphicsEdgeLabel *edgeLabel){
-    qDebug() << "removing edgeLabel"
-             << "GW items now:  " << items().size();
+    qDebug() << "Removing edgeLabel";
     scene()->removeItem(edgeLabel);
     edgeLabel->deleteLater();
-    qDebug() << "edgeLabel erased! "
-             << " scene items now: " << scene()->items().size()
-             << " view items: " << items().size();
 }
 
 
@@ -601,15 +593,9 @@ void GraphicsWidget::removeItem( GraphicsEdgeLabel *edgeLabel){
  * @param nodeLabel
  */
 void GraphicsWidget::removeItem( GraphicsNodeLabel *nodeLabel){
-    qDebug() << "removing label of node " <<  nodeLabel->node()->nodeNumber()
-             << "GW items now:  " << items().size();
+    qDebug() << "Removing label of node" << nodeLabel->node()->nodeNumber();
     scene()->removeItem(nodeLabel);
     nodeLabel->deleteLater();
-    qDebug() << "label erased! "
-             << " scene items now: " << scene()->items().size()
-             << " view items: " << items().size();
-
-
 }
 
 
@@ -618,14 +604,9 @@ void GraphicsWidget::removeItem( GraphicsNodeLabel *nodeLabel){
  * @param nodeNumber
  */
 void GraphicsWidget::removeItem( GraphicsNodeNumber *nodeNumber){
-    qDebug() << "removing number of node " <<  nodeNumber->node()->nodeNumber()
-             << "GW items now:  " << items().size();
+    qDebug() << "removing number of node " <<  nodeNumber->node()->nodeNumber();
     scene()->removeItem(nodeNumber);
     nodeNumber->deleteLater();
-    qDebug() << "node number erased! "
-             << " scene items now: " << scene()->items().size()
-             << " view items: " << items().size();
-
 }
 
 
@@ -635,15 +616,16 @@ void GraphicsWidget::removeItem( GraphicsNodeNumber *nodeNumber){
 
 /**
  * @brief Sets the color of an node.
- * Called from MW when the user changes the color of a node (right-clicking).
+ *
+ * Called when the user changes the color of a node (right-clicking).
+ *
  * @param nodeNumber
  * @param color
  * @return
  */
-bool GraphicsWidget::setNodeColor(const int &nodeNumber,
-                                  const QString &color){
-    qDebug() << "Setting node"<< nodeNumber << "new color to:" << color;
-    nodeHash.value(nodeNumber)->setColor(color);
+bool GraphicsWidget::setNodeColor(const int &nodeNum, const QString &color){
+    qDebug() << "Setting node"<< nodeNum << "new color to:" << color;
+    nodeHash.value(nodeNum)->setColor(color);
     return true;
 }
 
@@ -651,18 +633,19 @@ bool GraphicsWidget::setNodeColor(const int &nodeNumber,
 
 /**
  * @brief Sets the shape of an node.
-    Called from MW when the user changes the shape of a node
+ *
  * @param nodeNumber
  * @param shape
+ * @param iconPath
  * @return
  */
-bool GraphicsWidget::setNodeShape(const int &nodeNumber,
+bool GraphicsWidget::setNodeShape(const int &nodeNum,
                                   const QString &shape,
                                   const QString &iconPath){
-    qDebug() << "Setting node"<< nodeNumber << "new shape to:" << shape;
-    nodeHash.value(nodeNumber)->setShape(shape,iconPath);
+    qDebug() << "Setting node"<< nodeNum << "new shape to:" << shape;
+    nodeHash.value(nodeNum)->setShape(shape,iconPath);
     return true;
-
+\
 }
 
 
@@ -682,7 +665,8 @@ void GraphicsWidget::setNodeLabelsVisibility (const bool &toggle){
 
 
 /**
- * @brief Sets the label of an node. Called from MW.
+ * @brief Sets the label of an node.
+ *
  * @param nodeNumber
  * @param label
  * @return
@@ -698,7 +682,7 @@ bool GraphicsWidget::setNodeLabel(const int &nodeNumber, const QString &label){
 
 /**
  * @brief Toggles node numbers displayed inside or out of nodes
- * Called from MW
+ *
  * @param numIn
  */
 void   GraphicsWidget::setNumbersInsideNodes(const bool &toggle){
@@ -737,56 +721,56 @@ void GraphicsWidget::setInitZoomIndex(int zoomIndex) {
 
 
 
-
-
-
-
 /**
-*	Changes the visibility of a Node
-*/
-void GraphicsWidget::setNodeVisibility(const int &number, const bool &toggle){
-    if  ( nodeHash.contains (number) ) {
+ * @brief Changes the visibility of a Node
+ * @param nodeNum
+ * @param toggle
+ */
+void GraphicsWidget::setNodeVisibility(const int &nodeNum, const bool &toggle){
+    if  ( nodeHash.contains (nodeNum) ) {
         qDebug() << "Setting visibility of node"
-                 << number << "to" << toggle;
-        nodeHash.value(number)->setVisible(toggle);
-        nodeHash.value(number)->setEnabled(toggle);
+                 << nodeNum << "to" << toggle;
+        nodeHash.value(nodeNum)->setVisible(toggle);
+        nodeHash.value(nodeNum)->setEnabled(toggle);
         return;
     }
-    qDebug() << "cannot find node " << number;
+    qDebug() << "cannot find node " << nodeNum;
 }
 
 
 /**
  * @brief Changes the size of a node
- * @param number
+ *
+ * @param nodeNum
  * @param size
- * @return
+ * @return bool
  */
-bool GraphicsWidget::setNodeSize(const int &number, const int &size ){
+bool GraphicsWidget::setNodeSize(const int &nodeNum, const int &size ){
     qDebug() << "Setting size of node"
-             << number << "to" << size;
-    if  ( nodeHash.contains (number) ) {
+             << nodeNum << "to" << size;
+    if  ( nodeHash.contains (nodeNum) ) {
         if (size>0){
-            nodeHash.value(number)->setSize(size);
+            nodeHash.value(nodeNum)->setSize(size);
             return true;
 
         }
         else {
             qDebug() << "Setting size of node"
-                     << number << "to default" << m_nodeSize;
-            nodeHash.value(number)->setSize(m_nodeSize);
+                     << nodeNum << "to default" << m_nodeSize;
+            nodeHash.value(nodeNum)->setSize(m_nodeSize);
             return true;
 
         }
     }
-    qDebug() << "cannot find node " << number;
+    qDebug() << "cannot find node " << nodeNum;
     return false;
 }
 
+
 /**
  * @brief Changes the size of all nodes.
+ *
  * @param size
- * @return
  */
 void GraphicsWidget::setNodeSizeAll(const int &size ){
     qDebug() << "Changing all nodes size... ";
@@ -800,6 +784,7 @@ void GraphicsWidget::setNodeSizeAll(const int &size ){
 
 /**
  * @brief Toggles the visibility of node numbers
+ *
  * @param toggle
  */
 void GraphicsWidget::setNodeNumberVisibility(const bool &toggle){
@@ -815,38 +800,39 @@ void GraphicsWidget::setNodeNumberVisibility(const bool &toggle){
 
 /**
  * @brief Changes the color of a node number
+ *
  * @param nodeNumber
  * @param color
  */
-void GraphicsWidget::setNodeNumberColor(const int &nodeNumber, const QString &color) {
+void GraphicsWidget::setNodeNumberColor(const int &nodeNum, const QString &color) {
     qDebug() << "Setting color of node"
-             << nodeNumber << "to" << color;
-    if  ( nodeHash.contains (nodeNumber) ) {
+             << nodeNum << "to" << color;
+    if  ( nodeHash.contains (nodeNum) ) {
         if (!color.isNull()){
-            nodeHash.value(nodeNumber)->setNumberColor(color) ;
+            nodeHash.value(nodeNum)->setNumberColor(color) ;
         }
         return;
     }
-    qDebug() << "cannot find node " << nodeNumber;
+    qDebug() << "cannot find node " << nodeNum;
 }
 
 
 /**
  * @brief Changes the size of the number of a node
- * @param number
+ *
+ * @param nodeNum
  * @param size
  */
-bool GraphicsWidget::setNodeNumberSize(const int &nodeNumber, const int &size){
+bool GraphicsWidget::setNodeNumberSize(const int &nodeNum, const int &size){
     qDebug() << "Setting number size of node"
-             << nodeNumber << "to" << size;
-    if  ( nodeHash.contains (nodeNumber) ) {
+             << nodeNum << "to" << size;
+    if  ( nodeHash.contains (nodeNum) ) {
         if (size>0){
-            nodeHash.value(nodeNumber)->setNumberSize(size) ;
+            nodeHash.value(nodeNum)->setNumberSize(size) ;
             return true;
-
         }
     }
-    qDebug() << "cannot find node " << nodeNumber;
+    qDebug() << "cannot find node " << nodeNum;
     return false;
 }
 
@@ -854,20 +840,19 @@ bool GraphicsWidget::setNodeNumberSize(const int &nodeNumber, const int &size){
 
 /**
  * @brief Changes the distance of the number of a node.
- * @param number
+ * @param nodeNum
  * @param distance
  */
-bool GraphicsWidget::setNodeNumberDistance(const int &number, const int &distance ){
+bool GraphicsWidget::setNodeNumberDistance(const int &nodeNum, const int &distance ){
     qDebug() << "Setting number distance of node"
-             << number << "to" << distance;
-    if  ( nodeHash.contains (number) ) {
+             << nodeNum << "to" << distance;
+    if  ( nodeHash.contains (nodeNum) ) {
         if (distance>=0){
-            nodeHash.value(number)->setNumberDistance(distance) ;
+            nodeHash.value(nodeNum)->setNumberDistance(distance) ;
             return true;
-
         }
     }
-    qDebug() << "cannot find node " << number;
+    qDebug() << "cannot find node " << nodeNum;
     return false;
 }
 
@@ -876,17 +861,17 @@ bool GraphicsWidget::setNodeNumberDistance(const int &number, const int &distanc
 
 /**
  * @brief Changes the label color of a node to 'color'.
- * @param number
+ * @param nodeNum
  * @param color
  */
-bool GraphicsWidget::setNodeLabelColor(const int &number, const QString &color){
+bool GraphicsWidget::setNodeLabelColor(const int &nodeNum, const QString &color){
     qDebug() << "Setting label color of node"
-             << number << "to" << color;
-    if  ( nodeHash.contains (number) ) {
-            nodeHash.value(number)->setLabelColor(color);
+             << nodeNum << "to" << color;
+    if  ( nodeHash.contains (nodeNum) ) {
+            nodeHash.value(nodeNum)->setLabelColor(color);
             return true;
     }
-    qDebug() << "cannot find node " << number;
+    qDebug() << "cannot find node " << nodeNum;
     return false;
 }
 
@@ -895,19 +880,19 @@ bool GraphicsWidget::setNodeLabelColor(const int &number, const QString &color){
 
 /**
  * @brief Changes the label size of a node to 'size'.
- * @param number
+ * @param nodeNum
  * @param size
  */
-bool GraphicsWidget::setNodeLabelSize(const int &number, const int &size){
+bool GraphicsWidget::setNodeLabelSize(const int &nodeNum, const int &size){
     qDebug() << "Setting label size of node"
-             << number << "to" << size;
-    if  ( nodeHash.contains (number) ) {
+             << nodeNum << "to" << size;
+    if  ( nodeHash.contains (nodeNum) ) {
         if (size>0){
-            nodeHash.value(number)->setLabelSize(size);
+            nodeHash.value(nodeNum)->setLabelSize(size);
             return true;
         }
     }
-    qDebug() << "cannot find node " << number;
+    qDebug() << "cannot find node " << nodeNum;
     return false;
 }
 
@@ -916,20 +901,21 @@ bool GraphicsWidget::setNodeLabelSize(const int &number, const int &size){
 
 
 /**
- * @brief Changes the distance of a node label
- * @param number
+ * @brief Changes the distance of the label of the given node
+ *
+ * @param nodeNum
  * @param distance
  */
-bool GraphicsWidget::setNodeLabelDistance( const int &number, const int &distance ){
+bool GraphicsWidget::setNodeLabelDistance( const int &nodeNum, const int &distance ){
     qDebug() << "Setting label distance of node"
-             << number << "to" << distance;
-    if  ( nodeHash.contains (number) ) {
+             << nodeNum << "to" << distance;
+    if  ( nodeHash.contains (nodeNum) ) {
         if (distance>=0){
-            nodeHash.value(number)->setLabelDistance(distance) ;
+            nodeHash.value(nodeNum)->setLabelDistance(distance) ;
             return true;
         }
     }
-    qDebug() << "cannot find node " << number;
+    qDebug() << "cannot find node " << nodeNum;
     return false;
 }
 
@@ -937,7 +923,8 @@ bool GraphicsWidget::setNodeLabelDistance( const int &number, const int &distanc
 
 
 /**
- * @brief Checks if a node with label or number 'text' exists and returns it
+ * @brief Checks if a node with label or nodeNum 'text' exists and returns it
+ *
  * @param text
  * @return
  */
@@ -959,19 +946,19 @@ GraphicsNode* GraphicsWidget::hasNode( QString text ){
 
 
 /**
- * @brief Selects all nodes in list
- * Called by Graph::signalNodesFound()
+ * @brief Selects all nodes in the given list
+ *
  * @param list
  */
 void GraphicsWidget::setNodesMarked(QList<int> list){
     qDebug() << "Marking" << list.count() << "nodes as selected";
-    foreach ( int nodeNumber, list) {
-        if  ( nodeHash.contains (nodeNumber) ) {
-            qDebug() << "Selecting node"<< nodeNumber;
-            nodeHash.value(nodeNumber)->setSelected(true) ;
+    foreach ( int nodeNum, list) {
+        if  ( nodeHash.contains (nodeNum) ) {
+            qDebug() << "Selecting node"<< nodeNum;
+            nodeHash.value(nodeNum)->setSelected(true) ;
         }
         else {
-            qDebug() << "Cannot find node:"<< nodeNumber;
+            qDebug() << "Cannot find node:"<< nodeNum;
         }
     }
 }
@@ -979,10 +966,11 @@ void GraphicsWidget::setNodesMarked(QList<int> list){
 
 
 /**
- * @brief
- * Sets the label of an edge.
- * Called from MW when the user changes the label of an edge (right-clicking).
-  * @param source
+ * @brief Sets the label of an edge.
+ *
+ * Called when the user changes the label of an edge (right-clicking).
+ *
+ * @param source
  * @param target
  * @param label
  */
@@ -1002,8 +990,10 @@ void GraphicsWidget::setEdgeLabel(const int &source,
 
 /**
  * @brief Sets the color of an edge.
- * Called from MW when the user changes the color of an edge (right-clicking).
+ *
+ * Called when the user changes the color of an edge (right-clicking).
  * Also called from Graph when all edge colors need to be changed.
+ *
  * @param source
  * @param target
  * @param color
@@ -1024,13 +1014,12 @@ void GraphicsWidget::setEdgeColor(const int &source,
 
 
 
-
-
 /**
  * @brief Changes the direction type of an existing edge
-  * @param source
+ *
+ * @param source
  * @param target
- * @param directionType
+ * @param dirType
  * @return
  */
 bool GraphicsWidget::setEdgeDirectionType(const int &source,
@@ -1056,7 +1045,9 @@ bool GraphicsWidget::setEdgeDirectionType(const int &source,
 
 /**
  * @brief Sets the weight of an edge.
-    Called from MW when the user changes the weight of an edge (right-clicking).
+ *
+ * Called when the user changes the weight of an edge (right-clicking).
+ *
  * @param source
  * @param target
  * @param weight
@@ -1098,14 +1089,6 @@ bool GraphicsWidget::setEdgeWeight(const int &source,
  */
 void GraphicsWidget::setEdgeArrowsVisibility(const bool &toggle){
     qDebug()<< "GW::setEdgeArrowsVisibility()" << toggle;
-//    QList<QGraphicsItem *> list = scene()->items();
-//    for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
-//        if ( (*item)->type() ==TypeEdge){
-//            GraphicsEdge *edge = (GraphicsEdge*) (*item);
-//            edge->showArrows(toggle);
-//        }
-//    }
-
     foreach ( GraphicsEdge *m_edge, edgesHash) {
         m_edge->showArrows(toggle);
     }
@@ -1116,6 +1099,7 @@ void GraphicsWidget::setEdgeArrowsVisibility(const bool &toggle){
 
 /**
  * @brief Changes the offset of an edge (or all edges) from source and target nodes.
+ *
  * @param source
  * @param target
  * @param offset
@@ -1183,12 +1167,13 @@ void GraphicsWidget::setEdgeLabelsVisibility (const bool &toggle){
 
 
 
-
 /**
- * @brief Toggles edge highlighting when hovering over a single edge or all edges
- * connected to a node when the user hovers over that node.
- * Called from MW
- * @param numIn
+ * @brief Toggles edge highlighting
+ *
+ * If enabled, an edge will be highlighted on mouse hover and edges
+ * connected to a node will be highlighted when the user selects that node.
+ *
+ * @param toggle
  */
 void   GraphicsWidget::setEdgeHighlighting(const bool &toggle){
     qDebug()<< "GW::setEdgeHighlighting" << toggle;
@@ -1206,12 +1191,12 @@ void   GraphicsWidget::setEdgeHighlighting(const bool &toggle){
 
 
 /**
- * @brief Changes the visibility of the edge
+ * @brief Toggles the visibility of the given edge
  *
  * @param relation
  * @param sourceNum
  * @param targetNum
- * @param toggle
+ * @param visible
  */
 void GraphicsWidget::setEdgeVisibility(const int &relation, const int &sourceNum, const int &targetNum, const bool &visible){
     edgeName = createEdgeName( sourceNum, targetNum, relation );
@@ -1240,7 +1225,8 @@ void GraphicsWidget::setEdgeVisibility(const int &relation, const int &sourceNum
 
 
 /**
- * @brief Changes the visibility of all items of certain type (i.e. number, label, edge, etc)
+ * @brief Toggles the visibility of all items of the given type
+ *
  * @param type
  * @param visible
  */
@@ -1257,6 +1243,12 @@ void GraphicsWidget::setAllItemsVisibility(int type, bool visible){
 
 
 
+/**
+ * @brief Adds a circular guideline
+ * @param x0
+ * @param y0
+ * @param radius
+ */
 void GraphicsWidget::addGuideCircle( const double&x0,
                                      const double&y0,
                                      const double&radius){
@@ -1266,15 +1258,21 @@ void GraphicsWidget::addGuideCircle( const double&x0,
 }
 
 
+/**
+ * @brief Adds a horizonal guideline
+ * @param y0
+ */
 void GraphicsWidget::addGuideHLine(const double &y0){
     GraphicsGuide *line=new GraphicsGuide (this, y0, this->width());
     line->show();
 }
 
 
+
 /**
-*	Removes all items of certain type (i.e. number, label, edge, etc)
-*/
+ * @brief Removes all items of the given type
+ * @param type
+ */
 void GraphicsWidget::removeAllItems(int type){
     qDebug()<< "GW: removeAllItems";
     QList<QGraphicsItem *> list = scene()->items();
@@ -1299,10 +1297,7 @@ void GraphicsWidget::clearGuides(){
 
 
 /**
- * @brief Clears any clickedNode info and sets a selection rectangle
- * in the scene, which signals QGraphicsScene::selectionChanged signal to update
- * selectedNodes and selectedEdges.
- * Called from MW.
+ * @brief Forces the scene to select all items. Also signals that no node is clicked.
  */
 void GraphicsWidget::selectAll(){
     QPainterPath path;
@@ -1316,10 +1311,7 @@ void GraphicsWidget::selectAll(){
 
 
 /**
- * @brief Clears any clickedNode info and any previous selection rect
- * in the scene, which again signals selectionChanged() to update selectedNodes
- * and selectedEdges to zero.
- * Called from MW.
+ * @brief Clears any item selection from the scene. Also signals that no node is clicked.
  */
 void GraphicsWidget::selectNone(){
     qDebug() << "Emptying user selection...";
@@ -1338,7 +1330,6 @@ void GraphicsWidget::selectNone(){
 void GraphicsWidget::getSelectedItems() {
 
     qDebug() <<"Scene selection has been changed. Getting selected nodes and edges and passing them to Graph...";
-
     emit userSelectedItems(selectedNodes(), selectedEdges());
 
 }
@@ -1346,8 +1337,9 @@ void GraphicsWidget::getSelectedItems() {
 
 
 /**
- * @brief Returns a QList of all selected QGraphicsItem(s)
- * @return a QList of all selected QGraphicsItem(s)
+ * @brief Returns a list of all selected QGraphicsItem(s)
+ *
+ * @return QList<QGraphicsItem*>
  */
 QList<QGraphicsItem *> GraphicsWidget::selectedItems(){
     qDebug() <<"GW::selectedItems()";
@@ -1356,7 +1348,7 @@ QList<QGraphicsItem *> GraphicsWidget::selectedItems(){
 
 
 /**
- * @brief Returns a QList of selected node numbers
+ * @brief Returns a List of selected node numbers
  *
  * @return QList<int>
  */
@@ -1569,10 +1561,11 @@ void GraphicsWidget::mouseReleaseEvent( QMouseEvent * e ) {
 
 
 
-/** 
-    Calls the scaleView() when the user spins the mouse wheel
-    It passes delta as new m_scale
-*/
+/**
+ * @brief Handles the mouse wheel event. If CTRL is pressed, zooms in or out.
+ *
+ * @param e
+ */
 void GraphicsWidget::wheelEvent(QWheelEvent *e) {
     bool ctrlKey = (e->modifiers() == Qt::ControlModifier);
     QPoint numDegrees =  e->angleDelta() / 8;
@@ -1588,10 +1581,9 @@ void GraphicsWidget::wheelEvent(QWheelEvent *e) {
 
 
 /**
- * @brief Called from MW (magnifier button and menu icon) to decrease the zoom level of the scene.
- * By default it decreases zoom by 1
- * @param level
+ * @brief Decreases the zoom level of the scene.
  *
+ * @param level
  */
 void GraphicsWidget::zoomOut (int level){
 
@@ -1608,10 +1600,9 @@ void GraphicsWidget::zoomOut (int level){
 
 
 /**
- * @brief Called from MW (magnifier button and menu icon) to increase the zoom level of the scene.
- * By default it increases zoom by 1
- * @param level
+ * @brief Increases the zoom level of the scene.
  *
+ * @param level
  */
 void GraphicsWidget::zoomIn(int level){
 
@@ -1628,12 +1619,10 @@ void GraphicsWidget::zoomIn(int level){
 
 
 
-
-
 /**
- * @brief Initiated from MW zoomSlider and rotateSlider widgets
- * @param value
+ * @brief Scales the view transformation by the given value, while preserving the current rotation
  *
+ * @param value
  */
 void GraphicsWidget::changeMatrixScale(int value) {
     m_isTransformationActive = true;
@@ -1652,7 +1641,7 @@ void GraphicsWidget::changeMatrixScale(int value) {
 
 
 /**
- * @brief GraphicsWidget::rotateLeft
+ * @brief Rotates the view to the left, by a fixed angle
  */
 void GraphicsWidget::rotateLeft(){
     m_currentRotationAngle-=5;
@@ -1661,7 +1650,7 @@ void GraphicsWidget::rotateLeft(){
 
 
 /**
- * @brief GraphicsWidget::rotateRight
+ * @brief Rotates the view to the right, by a fixed angle
  */
 void GraphicsWidget::rotateRight() {
     m_currentRotationAngle+=5;
@@ -1670,7 +1659,8 @@ void GraphicsWidget::rotateRight() {
 
 
 /**
- * @brief GraphicsWidget::changeMatrixRotation
+ * @brief Rotates the view transformation by angle degrees clockwise, while preserving the current scale
+ *
  * @param angle
  */
 void GraphicsWidget::changeMatrixRotation(int angle){
@@ -1699,8 +1689,11 @@ void GraphicsWidget::reset() {
 
 
 /**
- * @brief Repositions guides then emits resized() signal to MW and eventually Graph
+ * @brief Handles the canvas resize event
+ *
+ * Repositions guides then emits resized() signal to MW and eventually Graph
  * which does the node repositioning maintaining proportions
+ *
  * @param e
  */
 void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
@@ -1760,9 +1753,10 @@ void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
 
 
 
-/** 
-    Destructor.
-*/
+
+/**
+ * @brief Destructor. Calls the method to clear the data.
+ */
 GraphicsWidget::~GraphicsWidget(){
     qDebug() << "Terminating. Calling clear()";
     clear();
