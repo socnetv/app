@@ -176,10 +176,10 @@ public:
     int inDegreeConst();
     int localDegree();
 
-    void edgeFilterByWeight(const qreal m_threshold, const bool overThreshold);
+    void setDisabledEdgesByWeight(const qreal m_threshold, const bool overThreshold);
     //	void filterEdgesByColor(qreal m_threshold, bool overThreshold);
-    void edgeFilterByRelation(const int relation, const bool status);
-    void edgeFilterUnilateral(const bool &toggle=false);
+    void setEnabledEdgesByRelation(const int relation, const bool status);
+    void setEnabledUnilateralEdges(const bool &status=false);
 
     qreal distance(const int &v1) ;
     void setDistance (const int &v1, const qreal &d) ;

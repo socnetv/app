@@ -8329,6 +8329,8 @@ void MainWindow::slotNetworkDataSetRecreate (const QString m_fileName) {
  */
 void MainWindow::slotNetworkRandomErdosRenyiDialog(){
 
+    qDebug() << "Showing the dialog to create a random Erdos-Renyi network ";
+
     // Close the current network
     this->slotNetworkClose();
 
@@ -8419,7 +8421,7 @@ void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
  */
 void MainWindow::slotNetworkRandomScaleFreeDialog() {
 
-    qDebug() << "MW::slotNetworkRandomScaleFreeDialog()";
+        qDebug() << "Showing the dialog to create a random scale-free network ";
 
     // Close the current network
     this->slotNetworkClose();
@@ -8484,7 +8486,7 @@ void MainWindow::slotNetworkRandomScaleFree ( const int &newNodes,
  */
 void MainWindow::slotNetworkRandomSmallWorldDialog()
 {
-    qDebug() << "MW::slotNetworkRandomSmallWorldDialog()";
+    qDebug() << "Showing the dialog to create a random small-world network ";
 
     // Close the current network
     this->slotNetworkClose();
@@ -8546,7 +8548,7 @@ void MainWindow::slotNetworkRandomSmallWorld(const int &newNodes,
  */
 void MainWindow::slotNetworkRandomRegularDialog()
 {
-    qDebug() << "MW::slotRandomRegularDialog()";
+    qDebug() << "Showing the dialog to create a random d-regular network ";
 
     // Close the current network
     this->slotNetworkClose();
@@ -8669,7 +8671,7 @@ void MainWindow::slotNetworkRandomRingLattice(){
  */
 void MainWindow::slotNetworkRandomLatticeDialog()
 {
-    qDebug() << "MW::slotNetworkRandomLatticeDialog()";
+    qDebug() << "Showing the Random Lattice Dialog...";
     statusMessage( tr("Generate a lattice network. "));
     m_randLatticeDialog = new DialogRandLattice(this);
 
@@ -9200,7 +9202,7 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
  * @brief Selects all nodes
  */
 void MainWindow::slotEditNodeSelectAll(){
-    qDebug() << "MW::slotEditNodeSelectAll()";
+    qDebug() << "Selecting all nodes...";
     graphicsWidget->selectAll();
     statusMessage( tr("Selected nodes: %1")
                    .arg( activeGraph->getSelectedVerticesCount()  ) );
@@ -9212,7 +9214,7 @@ void MainWindow::slotEditNodeSelectAll(){
  * @brief Selects no nodes.
  */
 void MainWindow::slotEditNodeSelectNone(){
-    qDebug() << "MainWindow::slotEditNodeSelectNone()";
+    qDebug() << "Clearing node selection...";
     graphicsWidget->selectNone();
     statusMessage( QString(tr("Selection cleared") ) );
 }
@@ -9230,7 +9232,7 @@ void MainWindow::slotEditNodeSelectNone(){
  */
 void MainWindow::slotEditNodePosition(const int &nodeNumber,
                                       const int &x, const int &y){
-    qDebug("MW::slotEditNodePosition() for %i with x %i and y %i", nodeNumber, x, y);
+    qDebug("Updating position for node %i - x: %i, y: %i", nodeNumber, x, y);
     activeGraph->vertexPosSet(nodeNumber, x, y);
     if (!activeGraph->isSaved()) {
         networkSaveAct->setIcon(QIcon(":/images/file_download_48px.svg"));
@@ -9245,7 +9247,7 @@ void MainWindow::slotEditNodePosition(const int &nodeNumber,
  * Called when the "Add Node" btn is clicked
  */
 void MainWindow::slotEditNodeAdd() {
-    qDebug() << "MW::slotEditNodeAdd()";
+    qDebug() << "Adding new node in a random position...";
     activeGraph->vertexCreateAtPosRandom(true);
     statusMessage( tr("New random positioned node (numbered %1) added.")
                    .arg(activeGraph->vertexNumberMax())  );
@@ -9257,7 +9259,7 @@ void MainWindow::slotEditNodeAdd() {
  * @brief Opens the Find Node dialog
  */
 void MainWindow::slotEditNodeFindDialog(){
-    qDebug() << "MW::slotEditNodeFindDialog()";
+    qDebug() << "Showing find node dialog...";
     if ( !activeNodes() ) {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -11132,24 +11134,32 @@ void MainWindow::slotFilterNodes(){
     }
 }
 
+
 /**
- * @brief Calls Graph::vertexIsolatedAllToggle to toggle visibility of isolated vertices
+ * @brief Toggles the status of all isolated vertices
+ *
+ * @param checked
  */
 void MainWindow::slotEditFilterNodesIsolates(bool checked){
-    Q_UNUSED(checked);
+
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    qDebug()<< "MW: slotEditFilterNodesIsolates";
     activeGraph->vertexIsolatedAllToggle( ! editFilterNodesIsolatesAct->isChecked() );
-    statusMessage(  tr("Isolate nodes visibility toggled!")  );
+    if ( checked ){
+        statusMessage(  tr("Isolated nodes disabled.")  );
+    }
+    else {
+        statusMessage(  tr("Isolated nodes enabled.")  );
+    }
+
 }
 
 
 
 /**
- * @brief Shows a dialog where the user can filter edges according to their weight
+ * @brief Shows a dialog where the user can specify how to filter edges by their weight
  *
  * All edges weighted more (or less) than the specified weight will be disabled.
  */
@@ -11160,9 +11170,9 @@ void MainWindow::slotEditFilterEdgesByWeightDialog() {
     // Create a new edge filtering dialog
     m_DialogEdgeFilterByWeight = new DialogFilterEdgesByWeight(this);
 
-    // Connect dialog signal directly to the graph
-    connect( m_DialogEdgeFilterByWeight, SIGNAL( userChoices( qreal, bool) ),
-             activeGraph, SLOT( edgeFilterByWeight (qreal, bool) ) );
+    // Connect dialog signal to the graph
+    connect( m_DialogEdgeFilterByWeight, &DialogFilterEdgesByWeight::userChoices,
+             activeGraph, &Graph::edgeFilterByWeight);
 
     // Show the dialog
     m_DialogEdgeFilterByWeight->exec() ;
@@ -11171,23 +11181,24 @@ void MainWindow::slotEditFilterEdgesByWeightDialog() {
 
 
 /**
- * @brief Calls Graph::edgeFilterUnilateral(bool). If bool==true, all unilateral
- * edges are filtered out.
- * @param checked
+ * @brief Toggles the status of all unilateral edges
  *
+ * @param checked
  */
 void MainWindow::slotEditFilterEdgesUnilateral(bool checked) {
-    Q_UNUSED(checked);
+
     if ( !activeEdges() && editFilterEdgesUnilateralAct->isChecked() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
-    if (activeGraph->relations()>1) {
-
-    }
-    qDebug()<< "MW::slotEditFilterEdgesUnilateral";
     activeGraph->edgeFilterUnilateral( ! editFilterEdgesUnilateralAct->isChecked() );
-    statusMessage(  tr("Unilateral (weak) edges visibility toggled!")  );
+    if ( checked ){
+        statusMessage(  tr("Unilateral (weak) edges disabled.")  );
+    }
+    else {
+        statusMessage(  tr("Unilateral (weak) edges enabled.")  );
+    }
+
 }
 
 
@@ -11200,11 +11211,6 @@ void MainWindow::slotEditTransformNodes2Edges(){
 
 
 }
-
-
-
-
-
 
 
 

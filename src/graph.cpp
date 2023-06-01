@@ -1397,12 +1397,14 @@ void Graph::vertexRemove(const int &v1){
 
 
 /**
- * @brief Called from MainWindow  to enable/disable isolate vertices (with no links)
+ * @brief Toggles the status of all isolated vertices (thos without links)
+ *
  * For each isolate vertex in the Graph, emits the setVertexVisibility signal
+ *
  * @param toggle
  */
 void Graph::vertexIsolatedAllToggle(const bool &toggle){
-    qDebug() << "Graph::vertexIsolatedAllToggle() - set all isolated to" << toggle;
+    qDebug() << "Setting all isolated vertices to" << toggle;
 
     VList::const_iterator it;
     for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -2263,7 +2265,7 @@ void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold
     // Loop over all vertices
     VList::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        (*it)->edgeFilterByWeight ( m_threshold, overThreshold );
+        (*it)->setDisabledEdgesByWeight ( m_threshold, overThreshold );
     }
     // Update graph mod status
     setModStatus(ModStatus::EdgeCount);
@@ -2289,7 +2291,7 @@ void Graph::edgeFilterByRelation(int relation, bool status){
             // Skip if the node is disabled.
             continue;
         }
-        (*it)->edgeFilterByRelation ( relation, status );
+        (*it)->setEnabledEdgesByRelation( relation, status );
     }
 }
 
@@ -2306,7 +2308,7 @@ void Graph::edgeFilterUnilateral(const bool &toggle) {
     qDebug() << "Graph::edgeFilterUnilateral() " ;
     VList::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        (*it)->edgeFilterUnilateral ( toggle );
+        (*it)->setEnabledUnilateralEdges ( toggle );
     }
     setModStatus(ModStatus::EdgeCount);
     emit statusMessage(tr("Unilateral edges have been temporarily disabled."));

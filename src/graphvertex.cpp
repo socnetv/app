@@ -405,9 +405,9 @@ QPointF& GraphVertex::disp() { return m_disp; }
 void GraphVertex::setRelation(int newRel) {
     qDebug() << "vertex" << name() << "current rel:" << m_curRelation << "new rel:" << newRel;
     // first make false all edges of current relation
-    edgeFilterByRelation(m_curRelation, false);
+    setEnabledEdgesByRelation(m_curRelation, false);
     // then make true all edges of new relation
-    edgeFilterByRelation(newRel, true);
+    setEnabledEdgesByRelation(newRel, true);
     // update current relation
     m_curRelation=newRel;
 }
@@ -1052,7 +1052,7 @@ int GraphVertex::localDegree(){  int v2=0;
  * @param qreal m_threshold
  * @param bool overThreshold
  */
-void GraphVertex::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold){
+void GraphVertex::setDisabledEdgesByWeight(const qreal m_threshold, const bool overThreshold){
     if (overThreshold) {
         qDebug() << "vertex" << name() << "disabling edges with weights >=" << m_threshold;
     }
@@ -1101,12 +1101,12 @@ void GraphVertex::edgeFilterByWeight(const qreal m_threshold, const bool overThr
 
 
 /**
- * @brief Disables all unilateral (non-reciprocal) edges, in current relation
+ * @brief Changes the status of all unilateral (non-reciprocal) outbound edges, in current relation
  *
- * @param toggle
+ * @param status
  */
-void GraphVertex::edgeFilterUnilateral(const bool &toggle){
-    qDebug() << "vertex:" << name();
+void GraphVertex::setEnabledUnilateralEdges(const bool &status){
+//    qDebug() << "vertex:" << name() << "setting unilateral edges of relation" << relation << "to" << status;
     int target=0;
     qreal weight=0;
     QMultiHash<int, pair_i_fb >::iterator it;
@@ -1114,17 +1114,10 @@ void GraphVertex::edgeFilterUnilateral(const bool &toggle){
         if ( it.value().first == m_curRelation ) {
             target=it.key();
             weight = it.value().second.first;
-            if (hasEdgeFrom(target)==0) {   // \todo != weight would be more precise?
-                    if ( !toggle ) {
-                        qDebug() << "unilateral edge to" << target<< "will be disabled. Emitting signal to Graph....";
-                        it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
-                        emit signalSetEdgeVisibility (m_curRelation, m_name, target, false );
-                    }
-                    else {
-                        qDebug() << "unilateral edge to" << target<< "will be enabled. Emitting signal to Graph....";
-                        it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true) );
-                        emit signalSetEdgeVisibility (m_curRelation, m_name, target, true );
-                    }
+            if (hasEdgeFrom(target)==0) {
+                qDebug() << "Changing the status of unilateral outbound edge to" << target << "new status" << status << "and emitting signal to Graph....";
+                it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, status) );
+                emit signalSetEdgeVisibility (m_curRelation, m_name, target, status );
             }
         }
     }
@@ -1138,7 +1131,7 @@ void GraphVertex::edgeFilterUnilateral(const bool &toggle){
  * @param relation
  * @param status
  */
-void GraphVertex::edgeFilterByRelation(const int relation, const bool status ){
+void GraphVertex::setEnabledEdgesByRelation(const int relation, const bool status ){
 //    qDebug() << "vertex:" << name() << "setting edges of relation" << relation << "to" << status;
     int target=0;
     qreal weight =0;
