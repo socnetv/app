@@ -68,6 +68,9 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         secondDoubleClick=false;
         m_isTransformationActive = false;
         m_nodeLabel="";
+
+        m_width = 0;
+        m_height = 0;
         m_zoomIndex=250;
         m_currentScaleFactor = 1;
         m_currentRotationAngle = 0;
@@ -92,7 +95,7 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
 
         // Connect scene change signal to the slot that handles selected items
         connect ( scene() , &QGraphicsScene::selectionChanged,
-                     this, &GraphicsWidget::getSelectedItems);
+                     this, &GraphicsWidget::handleSelectionChanged);
 
 
 }
@@ -1185,7 +1188,7 @@ void   GraphicsWidget::setEdgeHighlighting(const bool &toggle){
  * @param targetNum
  * @param visible
  */
-void GraphicsWidget::setEdgeVisibility(const int &relation, const int &sourceNum, const int &targetNum, const bool &visible){
+void GraphicsWidget::setEdgeVisibility(const int &relation, const int &sourceNum, const int &targetNum, const bool &visible, const bool &checkInverse){
     edgeName = createEdgeName( sourceNum, targetNum, relation );
     if  ( edgesHash.contains (edgeName) ) {
         edgesHash.value(edgeName)->setVisible(visible);
@@ -1194,18 +1197,20 @@ void GraphicsWidget::setEdgeVisibility(const int &relation, const int &sourceNum
         return;
     }
     else {
-        qDebug()<<"Cannot find edge"<<edgeName<<"in edgesHash";
+        qDebug()<<"Cannot find edge"<<edgeName<<"in edgesHash to toggle visibility to" << visible;
     }
-    // The opposite
-    edgeName = createEdgeName( targetNum, sourceNum, relation );
-    if  ( edgesHash.contains (edgeName) ) {
-        qDebug()<<"Toggled visibility of opposite edge"<<edgeName<<"to"<<visible;
-        edgesHash.value(edgeName)->setVisible(visible);
-        edgesHash.value(edgeName)->setEnabled(visible);
-        return;
-    }
-    else {
-        qDebug()<<"Cannot find edge"<<edgeName<<"in edgesHash";
+    if (checkInverse) {
+        // Check the reverse edge
+        edgeName = createEdgeName( targetNum, sourceNum, relation );
+        if  ( edgesHash.contains (edgeName) ) {
+            qDebug()<<"Toggled visibility of reverse edge"<<edgeName<<"to"<<!visible;
+            edgesHash.value(edgeName)->setVisible(!visible);
+            edgesHash.value(edgeName)->setEnabled(!visible);
+            return;
+        }
+        else {
+            qDebug()<<"Cannot find reverse edge"<<edgeName<<"in edgesHash to toggle visibility to" << !visible;
+        }
     }
 }
 
@@ -1309,14 +1314,14 @@ void GraphicsWidget::selectNone(){
 
 
 /**
- * @brief Called whenever the selection changes in the scene.
+ * @brief Handles the event of selection change in the scene.
  *
  * Emits selected nodes and edges to Graph
  *
  */
-void GraphicsWidget::getSelectedItems() {
+void GraphicsWidget::handleSelectionChanged() {
 
-    qDebug() <<"Scene selection has been changed. Getting selected nodes and edges and passing them to Graph...";
+    qDebug() <<"Scene selection has been changed. Getting selected nodes/edges and passing them to Graph...";
     emit userSelectedItems(selectedNodes(), selectedEdges());
 
 }
@@ -1471,17 +1476,22 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
             }
         }
         else {
+
+            //
+            // User clicked on empty space
+            //
+
             if ( e->button() == Qt::RightButton   ) {
                 //
-                // User clicked on empty space, but with right button
-                // so we open the context menu
+                // User clicked on empty space, with right button
+                // so we must open the context menu
                 //
                 qDebug() << "Right click on empty space at:" << e->pos() << "~"<< p << "Signalling to open context menu";
                 emit openContextMenu(p);
             }
             else {
                 //
-                //  user left-clicked on empty space
+                //  user clicked on empty space, with left button.
                 //
                 qDebug() << "Left click on empty space at:"
                      << e->pos() << "~"<< p << "Setting clickedEdge=0 and emitting signal...";
@@ -1503,7 +1513,7 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
  *
  * Called when the user releases a mouse button, after a click.
  * First sees what was in the position where the user clicked
- * If a node was underneath, it calls userNodeMoved() signal for every node
+ * If a node was underneath, it signals for every node
  * in scene selectedItems
  *
  * @param e
@@ -1556,7 +1566,7 @@ void GraphicsWidget::mouseReleaseEvent( QMouseEvent * e ) {
 void GraphicsWidget::wheelEvent(QWheelEvent *e) {
     bool ctrlKey = (e->modifiers() == Qt::ControlModifier);
     QPoint numDegrees =  e->angleDelta() / 8;
-    qDebug() << "GW: Mouse wheel event -  numDegrees = " << numDegrees;
+    qDebug() << "Mouse wheel changeded by numDegrees = " << numDegrees;
     if (ctrlKey) {
         if ( numDegrees.x() > 0 || numDegrees.y() > 0)
             zoomIn(1);
@@ -1568,15 +1578,16 @@ void GraphicsWidget::wheelEvent(QWheelEvent *e) {
 
 
 /**
- * @brief Decreases the zoom level of the scene.
+ * @brief Decreases the numerical zoom index of the scene by the given step
+ *
+ * Signals to MW to update the UI and do the rest.
  *
  * @param level
  */
-void GraphicsWidget::zoomOut (int level){
+void GraphicsWidget::zoomOut (const int step){
 
-    qDebug() << "GW: ZoomOut(): zoom index "<< m_zoomIndex
-             << " - level " << level;
-    m_zoomIndex-=level;
+    qDebug() << "Zooming out from "<< m_zoomIndex << "-" << step ;
+    m_zoomIndex-=step;
     if (m_zoomIndex <= 0) {
         m_zoomIndex = 0;
     }
@@ -1587,14 +1598,15 @@ void GraphicsWidget::zoomOut (int level){
 
 
 /**
- * @brief Increases the zoom level of the scene.
+ * @brief Increases the numerical zoom index of the scene by the given step
+ *
+ * Signals to MW to update the UI and do the rest.
  *
  * @param level
  */
-void GraphicsWidget::zoomIn(int level){
-
-    qDebug() << "GW: ZoomIn(): index "<< m_zoomIndex << " + level " << level;
-    m_zoomIndex+=level;
+void GraphicsWidget::zoomIn(const int step){
+    qDebug() << "Zooming in from "<< m_zoomIndex << "+" << step ;
+    m_zoomIndex+=step;
     if (m_zoomIndex > 500) {
         m_zoomIndex=500;
     }
@@ -1607,28 +1619,53 @@ void GraphicsWidget::zoomIn(int level){
 
 
 /**
- * @brief Scales the view transformation by the given value, while preserving the current rotation
+ * @brief Does the actual zoom in or out while preserving current rotation
+ *
+ * Scales the view transformation by the given value (0..500)
  *
  * @param value
  */
 void GraphicsWidget::changeMatrixScale(int value) {
+
+    int sw0=scene()->width();
+    int sh0=scene()->height();
+
+    qDebug () << "Scaling the view by value" << value
+              << "- current scene dimensions:"
+              << sw0 << "x" << sh0;
+
+    // Raise a flag that a non-trivial transformation is applied on the view
     m_isTransformationActive = true;
-    // Since the max value will be 500, the scaleFactor will be max 2 ^ 8 = 32
-    qreal scaleFactor = pow(qreal(2), ( value - 250) / qreal(50) );
-    m_currentScaleFactor = scaleFactor ;
-    qDebug() << "GW: changeMatrixScale(): value " <<  value
-             << " m_currentScaleFactor " << m_currentScaleFactor
-              << " m_currentRotationAngle " << m_currentRotationAngle;
+
+    // Since the max value will be 500, the scaleFactor will be max 2 ^ 5 = 32
+    m_currentScaleFactor = pow(qreal(2), (value - 250) / qreal(50) );
+
+    qDebug() << "Scaling view transformation by new scale factor:" << m_currentScaleFactor
+              << "rotation unchanged:" << m_currentRotationAngle;
 
     resetTransform();
     scale(m_currentScaleFactor, m_currentScaleFactor);
     rotate(m_currentRotationAngle);
 
+    if ( m_currentScaleFactor > 1 ) {
+        sw0 = sw0 * ( m_currentScaleFactor );
+        sh0 = sh0 * ( m_currentScaleFactor );
+    }
+    else {
+        sw0 = sw0 * ( 1 / m_currentScaleFactor );
+        sh0 = sh0 * ( 1 / m_currentScaleFactor );
+    }
+
+    qDebug () << "Scaling the view. I will set new scene dimensions:" << sw0 << "x" << sh0;
+//    scene()->setSceneRect(0, 0, (qreal) (sw0), (qreal) (sh0) );
+    qDebug () << "new scene dimensions:" << scene()->width() << "x" << scene()->height();
+
+
 }
 
 
 /**
- * @brief Rotates the view to the left, by a fixed angle
+ * @brief Decreases the numerical rotation Rotates the view to the left, by a fixed angle
  */
 void GraphicsWidget::rotateLeft(){
     m_currentRotationAngle-=5;
@@ -1662,8 +1699,10 @@ void GraphicsWidget::changeMatrixRotation(int angle){
 
 }
 
+
+
 /**
- * @brief Resets the transformation matrix to the identity matrix ( default zoom and scale )
+ * @brief Resets to default rotation, zoom and scale
  */
 void GraphicsWidget::reset() {
     m_currentRotationAngle=0;
@@ -1685,15 +1724,14 @@ void GraphicsWidget::reset() {
  */
 void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
 
-    int w=e->size().width();
-    int h=e->size().height();
-    int w0=e->oldSize().width();
-    int h0=e->oldSize().height();
+    m_width=e->size().width();
+    m_height=e->size().height();
+    m_w0=e->oldSize().width();
+    m_h0=e->oldSize().height();
 
     qDebug () << "GW resized"
-            << "from:" << w0 << "x" << h0
-            << "to:" << w << "x" << h
-            << "- scene:" << scene()->width() << "x" << scene()->height();
+            << "from:" << m_w0 << "x" << m_h0
+            << "to:" << m_width << "x" << m_height;
 
 
     if (m_isTransformationActive)  {
@@ -1702,8 +1740,8 @@ void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
     }
 
     // Compute resize factors
-    fX = (double)(w)/(double)(w0);
-    fY = (double)(h)/(double)(h0);
+    fX = (double)(m_width)/(double)(m_w0);
+    fY = (double)(m_height)/(double)(m_h0);
     // reposition  guides
     foreach (QGraphicsItem *item, scene()->items()) {
         if ( (item)->type() == TypeGuide ){
@@ -1730,12 +1768,14 @@ void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
         }
     }
 
-    //update the scene width and height with that of the graphicsWidget
-    scene()->setSceneRect(0, 0, (qreal) ( w ), (qreal) ( h  ) );
-    qDebug () << "scene rect updated to new size:"
-            << scene()->width() << "x" << scene()->height();
+    // Force updating the scene width and height to match the new graphicsWidget dimensions
+    scene()->setSceneRect(0, 0, (qreal) m_width, (qreal) m_height );
 
-    emit resized( w ,  h );
+    qDebug () << "Scene rect resized:" << scene()->width() << "x" << scene()->height();
+
+    emit resized(m_width, m_height);
+
+    QGraphicsView::resizeEvent(e);
 }
 
 

@@ -1061,6 +1061,7 @@ void GraphVertex::setDisabledEdgesByWeight(const qreal m_threshold, const bool o
     }
     int target=0;
     qreal weight=0;
+    bool checkInverse=true;
     QMultiHash<int, pair_i_fb >::iterator it;
     for ( it = m_outEdges.begin(); it != m_outEdges.end(); ++ it) {
         if ( it.value().first == m_curRelation ) {
@@ -1071,12 +1072,12 @@ void GraphVertex::setDisabledEdgesByWeight(const qreal m_threshold, const bool o
                 if ( weight >= m_threshold ) {
                     qDebug() << "edge to:" << target << "weight:" << weight << "will be disabled. Emitting signal...";
                     it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
-                    emit signalSetEdgeVisibility (m_curRelation, m_name, target, false );
+                    emit signalSetEdgeVisibility (m_curRelation, m_name, target, false, checkInverse);
                 }
                 else {
                     qDebug() << "edge to:" << target << "weight:" << weight << "will be enabled. Emitting signal...";
                     it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true) );
-                    emit signalSetEdgeVisibility (m_curRelation, m_name, target, true );
+                    emit signalSetEdgeVisibility (m_curRelation, m_name, target, true,checkInverse);
                 }
             }
             else {
@@ -1084,12 +1085,12 @@ void GraphVertex::setDisabledEdgesByWeight(const qreal m_threshold, const bool o
                  if ( weight <= m_threshold ) {
                     qDebug() << "edge to:" << target << "weight:" << weight << "will be disabled. Emitting signal...";
                     it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
-                    emit signalSetEdgeVisibility (m_curRelation, m_name, target, false );
+                    emit signalSetEdgeVisibility (m_curRelation, m_name, target, false,checkInverse);
                 }
                 else {
                     qDebug() << "edge to:" << target << "weight:" << weight << "will be enabled. Emitting signal...";
                     it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true) );
-                    emit signalSetEdgeVisibility (m_curRelation, m_name, target, true );
+                    emit signalSetEdgeVisibility (m_curRelation, m_name, target, true,checkInverse);
                 }
             }
         }
@@ -1115,7 +1116,7 @@ void GraphVertex::setEnabledUnilateralEdges(const bool &status){
             target=it.key();
             weight = it.value().second.first;
             if (hasEdgeFrom(target)==0) {
-                qDebug() << "Changing the status of unilateral outbound edge to" << target << "new status" << status << "and emitting signal to Graph....";
+                qDebug() << "vertex:" << name() << "Changing the status of unilateral outbound edge to" << target << "new status" << status << "and emitting signal to Graph....";
                 it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, status) );
                 emit signalSetEdgeVisibility (m_curRelation, m_name, target, status );
             }

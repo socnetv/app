@@ -10124,7 +10124,7 @@ void MainWindow::slotEditSelectionChanged(const int &selNodes, const int &selEdg
     rightPanelSelectedNodesLCD->setText(QString::number(selNodes));
     rightPanelSelectedEdgesLCD->setText(QString::number(selEdges));
 
-    if (selNodes > 1 ){
+    if (selNodes > 1){
         editNodeRemoveAct->setText(tr("Remove ")
                                    + QString::number(selNodes)
                                    + tr(" nodes"));

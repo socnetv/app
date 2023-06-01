@@ -333,7 +333,7 @@ signals:
     //signal to GW
     void signalRemoveEdge(const int &v1, const int &v2, const bool &removeReverse);
 
-    void signalSetEdgeVisibility (const int &relation, const int &source, const int &target, const bool &toggle);
+    void signalSetEdgeVisibility (const int &relation, const int &source, const int &target, const bool &toggle, const bool &checkInverse=false);
 
     void setVertexVisibility(const int &number, const bool &toggle);
 

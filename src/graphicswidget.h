@@ -101,7 +101,7 @@ protected:
 
 public slots:
 
-    void getSelectedItems();
+    void handleSelectionChanged();
 
     void relationSet(int relation);
 
@@ -156,7 +156,11 @@ public slots:
                     const int &target,
                     const bool &removeOpposite=false);
 
-    void setEdgeVisibility (const int &relation, const int &sourceNum, const int &targetNum, const bool &visible);
+    void setEdgeVisibility (const int &relation,
+                            const int &sourceNum,
+                            const int &targetNum,
+                            const bool &visible,
+                            const bool &checkInverse=false);
 
     bool setEdgeDirectionType(const int &source,
                               const int &target,
@@ -185,8 +189,8 @@ public slots:
     void addGuideCircle( const double&x0, const double&y0, const double&radius);
     void addGuideHLine(const double &y0);
 
-    void zoomIn(int level = 1);
-    void zoomOut(int level = 1);
+    void zoomIn(const int step = 1);
+    void zoomOut(const int step = 1);
     void rotateLeft();
     void rotateRight();
     void changeMatrixScale(const int value);
@@ -225,6 +229,7 @@ private:
     int m_currentRotationAngle;
     int m_zoomIndex, markedEdgeSourceOrigSize, markedEdgeTargetOrigSize;
     int m_edgeMinOffsetFromNode;
+    int m_width, m_height, m_w0, m_h0;
     double m_currentScaleFactor;
     qreal fX,fY, factor;
     QString m_nodeLabel, m_numberColor, m_labelColor;

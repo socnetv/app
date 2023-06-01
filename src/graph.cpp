@@ -15549,8 +15549,8 @@ bool Graph::isFileFormatExportSupported(const int &fileFormat) const {
 /**
  * @brief Sets the graph modification status.
  *
- * If there are major changes, then signalGraphModified is emitted
- * In any case, SignalGraphSavedStatus is emitted.
+ * If there are major changes, then it signals to MW to update the UI.
+ * In any case, it signals to MW to update the save icon status
  *
  * @param int graphNewStatus
  * @param bool signalMW
