@@ -83,6 +83,7 @@ GraphVertex::GraphVertex(Graph* parentGraph,
     m_curRelation=relation;
     m_enabled = true;
 
+    // Connect signal for edge visibility directly to the parent signal!
     connect( this, &GraphVertex::signalSetEdgeVisibility,
              m_graph, &Graph::signalSetEdgeVisibility);
 
@@ -432,9 +433,12 @@ void GraphVertex::addOutEdge (const int &v2, const qreal &weight, const QString 
 
 
 /**
- * @brief Checks if this vertex has an enabled outbound edge to the given vertex and returns the weight of the edge
+ * @brief Checks if the vertex has an enabled outbound edge to the given vertex. Returns the edge weight or 0.
+ *
+ * If allRelations is true, then all relations are checked
  *
  * @param v2
+ * @param allRelations
  * @return qreal
  */
 qreal GraphVertex::hasEdgeTo(const int &v2, const bool &allRelations){
@@ -495,7 +499,7 @@ void GraphVertex::removeOutEdge (const int v2) {
 
 
 /**
- * @brief Sets the status of the edge to the given target vertex
+ * @brief Sets the status of an outbound edge to the given target vertex
  *
  * @param target
  * @param status
@@ -602,8 +606,10 @@ void GraphVertex::addInEdge (const int &v1, const qreal &weight) {
 
 
 /**
- * @brief Checks if this vertex has an inbound edge from v2 and returns the weight of the link
- * only if the inLink is enabled.
+ * @brief Checks if the vertex has an enabled inbound edge from v2 and returns the edge weight or 0.
+ *
+ * If allRelations is true, then all relations are checked
+ *
  * @param v2
  * @return
  */
@@ -776,9 +782,11 @@ bool GraphVertex::isIsolated() {
 
 
 /**
- * @brief Returns a qhash of all enabled outEdges in the active relation
+ * @brief Returns a qhash of all enabled outEdges, in the active relation or all relations if allRelations is true.
  *
- * @return  QHash<int,qreal>*
+ * @param allRelations
+ *
+ * @return QHash<int,qreal>*
  */
 QHash<int,qreal> GraphVertex::outEdgesEnabledHash(const bool &allRelations){
     //qDebug() << "vertex " << name();
@@ -1039,13 +1047,18 @@ int GraphVertex::localDegree(){  int v2=0;
 
 
 /**
- * @brief Filters outbound edges over or under a specified threshold weight
+ * @brief Disables outbound edges over or under a specified threshold weight
  *
  * @param qreal m_threshold
  * @param bool overThreshold
  */
 void GraphVertex::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold){
-    qDebug() << "vertex" << name() << "filtering edges with threshold" << m_threshold;
+    if (overThreshold) {
+        qDebug() << "vertex" << name() << "disabling edges with weights >=" << m_threshold;
+    }
+    else {
+        qDebug() << "vertex" << name() << "disabling edges with weights <=" << m_threshold;
+    }
     int target=0;
     qreal weight=0;
     QMultiHash<int, pair_i_fb >::iterator it;
@@ -1054,7 +1067,7 @@ void GraphVertex::edgeFilterByWeight(const qreal m_threshold, const bool overThr
             target=it.key();
             weight = it.value().second.first;
             if (overThreshold) {
-                // We will filter out all edges with weights ABOVE the m_threshold
+                // Disable all edges with weights >= threshold
                 if ( weight >= m_threshold ) {
                     qDebug() << "edge to:" << target << "weight:" << weight << "will be disabled. Emitting signal...";
                     it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
@@ -1067,7 +1080,7 @@ void GraphVertex::edgeFilterByWeight(const qreal m_threshold, const bool overThr
                 }
             }
             else {
-                // We will filter out all edges BELOW the m_threshold
+                // Disable all edges <= the threshold
                  if ( weight <= m_threshold ) {
                     qDebug() << "edge to:" << target << "weight:" << weight << "will be disabled. Emitting signal...";
                     it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
@@ -1087,12 +1100,8 @@ void GraphVertex::edgeFilterByWeight(const qreal m_threshold, const bool overThr
 
 
 
-
-
 /**
- * @brief Disables all unilateral (non-reciprocal) edges in current relation
- *
- * If allRelations is true, then all relations are checked
+ * @brief Disables all unilateral (non-reciprocal) edges, in current relation
  *
  * @param toggle
  */
@@ -1124,7 +1133,7 @@ void GraphVertex::edgeFilterUnilateral(const bool &toggle){
 
 
 /**
- * @brief Toggles all edges of the given relation to the new status
+ * @brief Changes the status of all edges in the given relation
  *
  * @param relation
  * @param status
@@ -1143,10 +1152,6 @@ void GraphVertex::edgeFilterByRelation(const int relation, const bool status ){
             it1.value() = pair_i_fb(relation, pair_f_b(weight, status) );
             emit signalSetEdgeVisibility ( relation, m_name, target, status );
         }
-        else {
-
-        }
-
     }
 }
 

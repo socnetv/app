@@ -732,9 +732,7 @@ void GraphicsWidget::setNodeVisibility(const int &nodeNum, const bool &toggle){
                  << nodeNum << "to" << toggle;
         nodeHash.value(nodeNum)->setVisible(toggle);
         nodeHash.value(nodeNum)->setEnabled(toggle);
-        return;
     }
-    qDebug() << "cannot find node " << nodeNum;
 }
 
 
@@ -762,7 +760,6 @@ bool GraphicsWidget::setNodeSize(const int &nodeNum, const int &size ){
 
         }
     }
-    qDebug() << "cannot find node " << nodeNum;
     return false;
 }
 
@@ -811,9 +808,7 @@ void GraphicsWidget::setNodeNumberColor(const int &nodeNum, const QString &color
         if (!color.isNull()){
             nodeHash.value(nodeNum)->setNumberColor(color) ;
         }
-        return;
     }
-    qDebug() << "cannot find node " << nodeNum;
 }
 
 
@@ -832,7 +827,6 @@ bool GraphicsWidget::setNodeNumberSize(const int &nodeNum, const int &size){
             return true;
         }
     }
-    qDebug() << "cannot find node " << nodeNum;
     return false;
 }
 
@@ -852,7 +846,6 @@ bool GraphicsWidget::setNodeNumberDistance(const int &nodeNum, const int &distan
             return true;
         }
     }
-    qDebug() << "cannot find node " << nodeNum;
     return false;
 }
 
@@ -871,7 +864,6 @@ bool GraphicsWidget::setNodeLabelColor(const int &nodeNum, const QString &color)
             nodeHash.value(nodeNum)->setLabelColor(color);
             return true;
     }
-    qDebug() << "cannot find node " << nodeNum;
     return false;
 }
 
@@ -892,7 +884,6 @@ bool GraphicsWidget::setNodeLabelSize(const int &nodeNum, const int &size){
             return true;
         }
     }
-    qDebug() << "cannot find node " << nodeNum;
     return false;
 }
 
@@ -915,7 +906,6 @@ bool GraphicsWidget::setNodeLabelDistance( const int &nodeNum, const int &distan
             return true;
         }
     }
-    qDebug() << "cannot find node " << nodeNum;
     return false;
 }
 
@@ -950,15 +940,12 @@ GraphicsNode* GraphicsWidget::hasNode( QString text ){
  *
  * @param list
  */
-void GraphicsWidget::setNodesMarked(QList<int> list){
+void GraphicsWidget::setSelectedNodes(QList<int> list){
     qDebug() << "Marking" << list.count() << "nodes as selected";
     foreach ( int nodeNum, list) {
         if  ( nodeHash.contains (nodeNum) ) {
             qDebug() << "Selecting node"<< nodeNum;
             nodeHash.value(nodeNum)->setSelected(true) ;
-        }
-        else {
-            qDebug() << "Cannot find node:"<< nodeNum;
         }
     }
 }
