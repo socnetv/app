@@ -40,7 +40,28 @@
 
 
 
-
+/**
+ * @brief Constructs a new node object (which is a graphics item)
+ *
+ * @param gw
+ * @param num
+ * @param size
+ * @param color
+ * @param shape
+ * @param iconPath
+ * @param showNumbers
+ * @param numbersInside
+ * @param numberColor
+ * @param numberSize
+ * @param numDistance
+ * @param showLabels
+ * @param label
+ * @param labelColor
+ * @param labelSize
+ * @param labelDistance
+ * @param edgeHighlighting
+ * @param p
+ */
 GraphicsNode::GraphicsNode ( GraphicsWidget* gw,
                              const int &num,
                              const int &size,
@@ -62,7 +83,7 @@ GraphicsNode::GraphicsNode ( GraphicsWidget* gw,
                              ) : graphicsWidget (gw)
 {
 
-//    qDebug()<<"GraphicsNode::GraphicsNode() - New node:"<< num << "initializing...";
+//    qDebug()<<"Constructing new node:"<< num;
 
     graphicsWidget->scene()->addItem(this); // Without this nodes don't appear on the screen...
 
@@ -110,7 +131,7 @@ GraphicsNode::GraphicsNode ( GraphicsWidget* gw,
 
     setPos(p);
 
-    qDebug()<< "GraphicsNode::GraphicsNode() - Created at pos:"  << x()<<","<<y()
+    qDebug()<< "Constructed new node at pos:"  << x()<<","<<y()
             << "m_numSize" << m_numSize;
 
 } 
@@ -119,10 +140,11 @@ GraphicsNode::GraphicsNode ( GraphicsWidget* gw,
 
 /**
  * @brief Changes the color of the node
- * @param color string
+ *
+ * @param colorStr
  */
 void GraphicsNode::setColor(const QString &colorStr) {
-    qDebug()<< "GraphicsNode::setColor() - newColorStr:"  << colorStr;
+    qDebug()<< "Changing the node color to:" << colorStr;
     prepareGeometryChange();
     m_col=QColor(colorStr);
     update();
@@ -131,11 +153,13 @@ void GraphicsNode::setColor(const QString &colorStr) {
 
 /**
  * @brief Changes the color of the node (overloaded)
+ *
  * Also used when the user searches for a node
+ *
  * @param color
  */
 void GraphicsNode::setColor(QColor color){
-    qDebug()<< "GraphicsNode::setColor() - new QColor:"  << color;
+    qDebug()<< "Changing the node color to:" << color;
     prepareGeometryChange();
     m_col=color;
     m_col_str = m_col.name();
@@ -143,22 +167,32 @@ void GraphicsNode::setColor(QColor color){
 }
 
 
+/**
+ * @brief Returns the node color string
+ *
+ * @return QString
+ */
 QString GraphicsNode::color() {
     return m_col_str;
 }
 
 
-/** Sets the size of the node */
+
+/**
+ * @brief Changes the size of the node
+ *
+ * @param size
+ */
 void GraphicsNode::setSize(const int &size){
-    qDebug()<<"GraphicsNode::setSize()";
+    qDebug()<< "Changing the node size to:" << size;
     prepareGeometryChange();
     m_size=size;
     foreach (GraphicsEdge *edge, inEdgeList) {
-        qDebug("GraphicsNode: updating edges in inEdgeList");
+        qDebug()<< "Informing inbound edges";
         edge->setTargetNodeSize(size);
     }
     foreach (GraphicsEdge *edge, outEdgeList) {
-        qDebug("GraphicsNode: updating edges in outEdgeList");
+        qDebug()<< "Informing oubound edges";
         edge->setSourceNodeSize(size);
     }
     setShape(m_shape);
@@ -169,7 +203,7 @@ void GraphicsNode::setSize(const int &size){
 
 /**
  * @brief Returns the esoteric size of the node.
- * Used by GraphicsEdge::GraphicsEdge()
+ *
  * @return
  */
 int GraphicsNode::size() const{
@@ -179,11 +213,9 @@ int GraphicsNode::size() const{
 
 
 
-
-
 /**
  * @brief Sets the shape of the node and prepares the corresponding QPainterPath
- * m_path which will be drawn by our painter in GraphicsNode::paint().
+ * m_path which will be drawn by our painter (see paint()).
  *
  * The only exception is when the shape is 'custom'. In that case, the painter
  * will paint a pixmap with the custom node icon (loaded from iconPath).
@@ -191,7 +223,9 @@ int GraphicsNode::size() const{
  * is needed by QGraphicsNode::shape() function which is responsible for collision
  * detection and needs to return a path with an accurate outline of the item's shape.
  * Called every time the user needs to change the shape of an node.
+ *
  * @param shape
+ * @param iconPath
  */
 void GraphicsNode::setShape(const QString shape, const QString &iconPath) {
 
@@ -199,7 +233,7 @@ void GraphicsNode::setShape(const QString shape, const QString &iconPath) {
 
     m_shape=shape;
 
-    qDebug()<< "GraphicsNode::setShape() - Node:" << nodeNumber()
+    qDebug()<< "Setting shape for node:" << nodeNumber()
             << "shape:" << m_shape
             << "iconPath" << iconPath
             << "pos:"<<  x() << "," <<  y();
@@ -774,15 +808,15 @@ void GraphicsNode::setNumberDistance(const int &distance) {
 
 
 GraphicsNode::~GraphicsNode(){
-    qDebug() << "GraphicsNode::~GraphicsNode() - self-destructing node "<< nodeNumber()
+    qDebug() << "Destructing node "<< nodeNumber()
                 << "inEdgeList.size = " << inEdgeList.size()
                 << "outEdgeList.size = " << outEdgeList.size();
 
-    qDebug()<< "GraphicsNode::~GraphicsNode() - removing edges in inEdgeList";
+    qDebug()<< "Removing edges in inEdgeList";
     foreach (GraphicsEdge *edge, inEdgeList) {  // same as using qDeleteAll
         delete edge;
     }
-    qDebug()<< "GraphicsNode::~GraphicsNode() - removing edges in outEdgeList";
+    qDebug()<< "Removing edges in outEdgeList";
     foreach (GraphicsEdge *edge, outEdgeList) { // same as using qDeleteAll
         delete edge;
     }

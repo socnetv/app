@@ -1076,10 +1076,11 @@ bool GraphicsWidget::setEdgeWeight(const int &source,
 
 /**
  * @brief Toggles the visibility of all edge arrows
+ *
  * @param toggle
  */
 void GraphicsWidget::setEdgeArrowsVisibility(const bool &toggle){
-    qDebug()<< "GW::setEdgeArrowsVisibility()" << toggle;
+    qDebug()<< "Setting visibility of all edge arrows to:" << toggle;
     foreach ( GraphicsEdge *m_edge, edgesHash) {
         m_edge->showArrows(toggle);
     }
