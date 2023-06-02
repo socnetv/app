@@ -8099,7 +8099,19 @@ bool MainWindow::slotNetworkExportList(){
  */
 void MainWindow::slotNetworkFileView(){
 
-    qDebug() << "slotNetworkFileView() - current file:" << fileName.toLatin1();
+
+    /*
+     * TODO / FIX THIS BUG
+     * REGRESSION FOUND
+     * 1. Create a random net.
+     * 2. Export it to csv.
+     * 3. Press F5 to see the file
+     * 4. App asks to save the file
+     * 5. Save the file
+     * 6. The app says there is no network loaded!
+     */
+
+    qDebug() << "Request to display current network file. Filaname:" << fileName.toLatin1();
 
     if ( activeGraph->isLoaded() && activeGraph->isSaved()  ) {
         //network unmodified, read loaded file again.
