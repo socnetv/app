@@ -513,18 +513,19 @@ QMap<QString,QString> MainWindow::initSettings(const int &debugLevel, const bool
         QFile file(settingsFilePath);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             qDebug () << "Could not open (for reading) file:" << settingsFilePath;
-            QMessageBox::critical(this, "File Read Error",
+            slotHelpMessageToUser(USER_MSG_CRITICAL,
+                                  tr("Error loading settings file"),
+                                  tr("Error loading settings"),
                                   tr("Error! \n"
                                      "I cannot read the settings file "
-                                     "in \n" + settingsFilePath.toLocal8Bit() +
-                                     "\n"
+                                     "in \n %1 \n"
                                      "You can continue using SocNetV with default "
                                      "settings but any changes to them will not "
                                      " be saved for future sessions \n"
                                      "Please, check permissions in your home folder "
                                      " and contact the developer team."
-                                     ),
-                                  QMessageBox::Ok, 0);
+                                     ).arg(settingsFilePath.toLocal8Bit())
+                                  );
             return appSettings;
         }
         // Read the previously-stored settings from the file and update appSettings
@@ -641,19 +642,18 @@ void MainWindow::saveSettings() {
     QFile file(settingsFilePath);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text ) ) {
         qDebug () << "Could not open (for writing) file:" << settingsFilePath;
-        QMessageBox::critical(this,
-                              "File Write Error",
-                              tr("Error! \n"
-                                 "I cannot write the new settings file "
-                                 "in \n" + settingsFilePath.toLocal8Bit() +
-                                 "\n"
+        slotHelpMessageToUser(USER_MSG_CRITICAL,
+                              tr("Error writing settings file"),
+                              tr("Error writing settings"),
+                              tr("I cannot write the settings file "
+                                 "in \n %1 \n"
                                  "You can continue using SocNetV with default "
                                  "settings but any changes to them will not "
                                  " be saved for future sessions \n"
                                  "Please, check permissions in your home folder "
                                  " and contact the developer team."
-                                 ),
-                              QMessageBox::Ok, 0);
+                                 ).arg(settingsFilePath.toLocal8Bit())
+                              );
         return;
     }
 
@@ -6600,7 +6600,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
                            "- Pajek (.paj or .pajek or .net)\n"
                            "- UCINET (.dl .dat) \n"
                            "- GraphViz (.dot)\n"
-                           "- Adjacency Matrix (.sm or .adj or .csv or .txt)\n"
+                           "- Adjacency Matrix (.csv, .txt, .sm or .adj)\n"
                            "- Simple Edge List (.list or .lst)\n"
                            "- Weighted Edge List (.wlist or .wlst)\n"
                            "- Two-Mode / affiliation (.2sm or .aff) \n\n"
@@ -7532,10 +7532,11 @@ void MainWindow::slotEditRelationAddPrompt() {
 
             // Check if it is already used by another relation.
             if ( editRelationChangeCombo->findText(newRelationName) > -1 )  {
-                QMessageBox::critical(this, tr("Error"),
-                                      tr("Relation name exists."),
-                                      QMessageBox::Ok, 0);
-
+                slotHelpMessageToUser(USER_MSG_CRITICAL,
+                                      tr("Error. Relation name is used!"),
+                                      tr("The relation name is already used."),
+                                      tr("Please use another relation name that is not already used.")
+                                      );
                 return;
 
             }
@@ -7546,9 +7547,10 @@ void MainWindow::slotEditRelationAddPrompt() {
         }
         else {
             // no name entered
-            QMessageBox::critical(this, tr("Error"),
-                                  tr("You did not type a name for this new relation"),
-                                  QMessageBox::Ok, 0);
+            slotHelpMessageToUser(USER_MSG_CRITICAL,
+                                  tr("Error. No relation name entered!"),
+                                  tr("You did not type a name for this new relation")
+                                  );
             return;
         }
     }
@@ -7774,13 +7776,19 @@ void MainWindow::slotNetworkExportImage( const QString &filename,
     imgWriter.setOptimizedWrite(true);
     imgWriter.setProgressiveScanWrite(true);
     if ( imgWriter.write(picture) ) {
-        QMessageBox::information(this, tr("Export to image..."),
-                                 tr("Image Saved as: ")+tempFileNameNoPath.last(), "OK",0);
-
-        statusMessage( tr("Image exporting completed.") );
+        slotHelpMessageToUser(USER_MSG_INFO,
+                              tr("Network exported to image file."),
+                              tr("Network exported to image file."),
+                              tr("Image filename: %1").arg(tempFileNameNoPath.last())
+                              );
     }
     else {
-        slotHelpMessageToUser(USER_MSG_CRITICAL, "Error", "Error while exporting image: ", imgWriter.errorString());
+        slotHelpMessageToUser(
+                    USER_MSG_CRITICAL,
+                    tr("Error exporting to image file!"),
+                    tr("Error while exporting network to image file:"),
+                    imgWriter.errorString()
+                    );
 
     }
 
@@ -7901,9 +7909,11 @@ void MainWindow::slotNetworkExportPajek()
                 getLastPath(), tr("Pajek (*.paj *.net *.pajek);;All (*)") );
     if (!fn.isEmpty())  {
         if  ( QFileInfo(fn).suffix().isEmpty() ){
-            QMessageBox::information(this, "Missing Extension ",
-                                     tr("File extension was missing! \n"
-                                        "Appending a standard .paj to the given filename."), "OK",0);
+            slotHelpMessageToUser(USER_MSG_INFO,
+                                  tr("Missing file extension. I will use .paj instead."),
+                                  tr("Missing file extension. I will use the .paj extension."),
+                                  tr("Appending an extension .paj to the given filename...")
+                                  );
             fn.append(".paj");
         }
         fileName=fn;
@@ -7935,13 +7945,16 @@ void MainWindow::slotNetworkExportSM(){
     QString fn =  QFileDialog::getSaveFileName(
                 this,
                 tr("Export Network to File Named..."),
-                getLastPath(), tr("Adjacency (*.adj *.sm *.txt *.csv *.net);;All (*)") );
+                getLastPath(), tr("Adjacency (*.csv *.txt *.adj *.sm *.net);;All (*)") );
     if (!fn.isEmpty())  {
         if  ( QFileInfo(fn).suffix().isEmpty() ){
-            QMessageBox::information(this, "Missing Extension ",
-                                     tr("File extension was missing! \n"
-                                        "Appending a standard .adj to the given filename."), "OK",0);
-            fn.append(".adj");
+            slotHelpMessageToUser(USER_MSG_INFO,
+                                  tr("Missing file extension. I will use .csv instead."),
+                                  tr("Missing file extension. I will use the .csv  extension."),
+                                  tr("Appending an extension .csv  to the given filename...")
+                                  );
+
+            fn.append(".csv");
         }
         fileName=fn;
         setLastPath(fileName);
@@ -8307,7 +8320,7 @@ void MainWindow::slotNetworkDataSetRecreate (const QString m_fileName) {
              m_fileName.endsWith(".net")) {
         fileFormat=FileType::PAJEK;
     }
-    else if (m_fileName.endsWith(".sm") || m_fileName.endsWith(".adj")) {
+    else if (m_fileName.endsWith(".sm") || m_fileName.endsWith(".adj") || m_fileName.endsWith(".csv")) {
         fileFormat=FileType::ADJACENCY;
     }
     else if (m_fileName.endsWith(".dot")) {
@@ -9253,7 +9266,7 @@ void MainWindow::slotEditNodePosition(const int &nodeNumber,
  * Called when the "Add Node" btn is clicked
  */
 void MainWindow::slotEditNodeAdd() {
-    qDebug() << "Adding new node in a random position...";
+    qDebug() << "Request to add a new random node...";
     activeGraph->vertexCreateAtPosRandom(true);
     statusMessage( tr("New random positioned node (numbered %1) added.")
                    .arg(activeGraph->vertexNumberMax())  );
@@ -9342,16 +9355,15 @@ void MainWindow::slotEditNodeRemove() {
         return;
     }
     if (activeGraph->relations() > 1){
-        QMessageBox::critical(
-                    this, "Error",
-                    tr("Cannot remove node! \n"
-                       "This a network with more than 1 relations. If you remove "
-                       "a node from the active relation, and then ask me to go "
-                       "to the previous or the next relation, then I would crash "
-                       "because I would try to display edges from a deleted node."
-                       "You cannot remove nodes in multirelational networks."),
-                    "OK",0);
-        statusMessage( tr("Nothing to remove.")  );
+        slotHelpMessageToUser(USER_MSG_CRITICAL,
+                              tr("Error. Cannot remove node!"),
+                              tr("Error. Cannot remove this node!"),
+                              tr("This a network with more than 1 relations. If you remove "
+                                 "a node from the active relation, and then ask me to go "
+                                 "to the previous or the next relation, then I would crash "
+                                 "because I would try to display edges from a deleted node."
+                                 "You cannot remove nodes in multirelational networks.")
+                              );
         return;
     }
 
@@ -10373,9 +10385,12 @@ void MainWindow::slotEditEdgeAdd(){
     qDebug()<<"MW::slotEditEdgeAdd() - sourceNode:" << sourceNode;
 
     if ( activeGraph->vertexExists(sourceNode) ==-1 ) {
-        statusMessage( tr("Aborting. ")  );
-        QMessageBox::critical(this,"Error","No such node.", "OK",0);
-        qDebug()<<"MW::slotEditEdgeAdd() - cannot find sourceNode:" << sourceNode;
+        qDebug()<< "Cannot find sourceNode"<<sourceNode;
+        slotHelpMessageToUser(USER_MSG_CRITICAL,
+                              tr("Error. That node does not exist!"),
+                              tr("Error. That node does not exist!"),
+                              tr("Are you sure you entered the correct node number?")
+                              );
         return;
     }
 
@@ -10391,9 +10406,12 @@ void MainWindow::slotEditEdgeAdd(){
         return;
     }
     if ( activeGraph->vertexExists(targetNode) ==-1 ) {
-        statusMessage( tr("Aborting. ")  );
-        QMessageBox::critical(this,"Error","No such node.", "OK",0);
-        qDebug ("MW: slotEditEdgeAdd: Cant find targetNode %i",targetNode);
+        qDebug()<< "Cannot find targetNode"<<targetNode;
+        slotHelpMessageToUser(USER_MSG_CRITICAL,
+                              tr("Error. That node does not exist!"),
+                              tr("Error. That node does not exist!"),
+                              tr("Are you sure you entered the correct node number?")
+                              );
         return;
     }
 
@@ -10408,8 +10426,11 @@ void MainWindow::slotEditEdgeAdd(){
     //Check if this edge already exists...
     if (activeGraph->edgeExists(sourceNode, targetNode)!=0 ) {
         qDebug("edge exists. Aborting");
-        statusMessage( tr("Aborting. ")  );
-        QMessageBox::critical(this,"Error","edge already exists.", "OK",0);
+        slotHelpMessageToUser(USER_MSG_CRITICAL,
+                              tr("Error. That edge already exists!"),
+                              tr("Error. That edge already exists!"),
+                              tr("Are you sure you entered the correct node numbers?")
+                              );
         return;
     }
 
@@ -10499,10 +10520,11 @@ void MainWindow::slotEditEdgeRemove(){
             }
         }
         else {
-            QMessageBox::critical(
-                        this,
-                        "Remove edge",tr("There is no such edge."), "OK",0);
-            statusMessage( tr("There are no nodes yet...")  );
+            slotHelpMessageToUser(USER_MSG_CRITICAL,
+                                  tr("Error. Cannot find that edge!"),
+                                  tr("Error. Cannot find that edge!"),
+                                  tr("Are you sure you entered the correct node numbers?")
+                                  );
             return;
         }
 
@@ -10622,9 +10644,12 @@ void MainWindow::slotEditEdgeLabel(){
         }
 
         if ( ! activeGraph->edgeExists (sourceNode, targetNode ) )  {
-            statusMessage( tr("There is no such edge. ") );
-            QMessageBox::critical(this, "Error",
-                                  tr("No edge! \nNo such edge found in current network."), "OK",0);
+
+            slotHelpMessageToUser(USER_MSG_CRITICAL,
+                                  tr("Error. Cannot find that edge!"),
+                                  tr("Error. Cannot find that edge!"),
+                                  tr("Are you sure you entered the correct node numbers?")
+                                  );
 
             return;
         }
@@ -11091,9 +11116,9 @@ void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
   */
 void MainWindow::slotEditEdgeMode(const int &mode){
     if (mode==1) {
-        qDebug()<<"MW: slotEditEdgeMode() - Calling Graph::setUndirected()";
+        qDebug()<<"Changing edge mode to undirected. Informing Graph...";
         activeGraph->setUndirected(true);
-        qDebug()<<"MW: slotEditEdgeMode() - Disabling optionsEdgeArrowsAct checkbox";
+        qDebug()<<"Setting optionsEdgeArrowsAct to false";
         optionsEdgeArrowsAct->setChecked(false);
         if (activeEdges() !=0 ) {
             statusMessage(tr("Undirected data mode. "
@@ -11107,11 +11132,11 @@ void MainWindow::slotEditEdgeMode(const int &mode){
         }
     }
     else {
-        qDebug()<<"MW: slotEditEdgeMode() - calling Graph::setDirected()";
+        qDebug()<<"Changing edge mode to directed. Informing Graph...";
         activeGraph->setDirected(true);
-        qDebug()<<"MW: slotEditEdgeMode() - Triggering optionsEdgeArrowsAct checkbox";
+        qDebug()<<"Triggering optionsEdgeArrowsAct checkbox";
         optionsEdgeArrowsAct->trigger();
-        qDebug()<<"MW: slotEditEdgeMode() - disabling optionsEdgeArrowsAct checkbox";
+        qDebug()<<"Setting optionsEdgeArrowsAct to true";
         optionsEdgeArrowsAct->setChecked(true);
         if (activeEdges() !=0 ) {
             statusMessage ( tr("Directed data mode. "
@@ -14184,12 +14209,15 @@ void MainWindow::slotOptionsCanvasUpdateMode(const QString &mode) {
 
 
 /**
- * @brief Sets canvas index method. Called from Settings dialog.
- * @param toggle
+ * @brief Changes the indexing method of the graphics scene.
+ *
+ * Called from Settings dialog.
+ *
+ * @param method
  */
 void MainWindow::slotOptionsCanvasIndexMethod(const QString &method) {
 
-    qDebug()<< "MW::slotOptionsCanvasIndexMethod() " << method;
+    qDebug()<< "Changing graphics scene index method to:" << method;
 
     statusMessage( tr("Setting canvas index method. Please wait...") );
 
@@ -14209,7 +14237,6 @@ void MainWindow::slotOptionsCanvasIndexMethod(const QString &method) {
     appSettings["canvasIndexMethod"] = method;
 
     statusMessage( tr("Canvas index method: ") + method );
-
 
     QApplication::restoreOverrideCursor();
 }
