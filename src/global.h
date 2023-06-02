@@ -53,7 +53,7 @@ enum FileType {
     NOT_SAVED         = 0,  //  New network not saved yet or modified network
     GRAPHML           = 1,  // .GRAPHML .XML
     PAJEK             = 2,  // .PAJ .NET
-    ADJACENCY         = 3,  // .ADJ .CSV .SM
+    ADJACENCY         = 3,  // .CSV .ADJ .SM
     GRAPHVIZ          = 4,  // .DOT
     UCINET            = 5,  // .DL .DAT
     GML               = 6,  // .GML
