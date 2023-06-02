@@ -1679,7 +1679,7 @@ void GraphicsWidget::rotateRight() {
 void GraphicsWidget::changeMatrixRotation(int angle){
     m_isTransformationActive = true;
     m_currentRotationAngle = angle;
-    qDebug() << "GW: changeMatrixRotation(): angle " <<  angle
+    qDebug() << "Rotating clockwise by angle" <<  angle
               << " m_currentRotationAngle " << m_currentRotationAngle
               << " m_currentScaleFactor " << m_currentScaleFactor;
     resetTransform();
