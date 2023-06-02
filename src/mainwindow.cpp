@@ -7879,10 +7879,11 @@ void MainWindow::slotNetworkExportPDF(QString &pdfName,
     qDebug()<< "Exporting PDF to "<< pdfName;
     tempFileNameNoPath=pdfName.split ("/");
     setLastPath(pdfName);
-    QMessageBox::information(this, tr("Export to PDF..."),
-                             tr("File saved as: ")+tempFileNameNoPath.last() ,
-                             "OK",0);
-    statusMessage(  tr("Exporting completed") );
+    slotHelpMessageToUser(USER_MSG_INFO,
+                          tr("Network exported to PDF file."),
+                          tr("Network exported to PDF file."),
+                          tr("PDF filename: %1").arg(tempFileNameNoPath.last())
+                          );
 
 }
 
