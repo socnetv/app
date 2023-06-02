@@ -65,7 +65,7 @@ DialogExportPDF::DialogExportPDF (QWidget *parent ) :
     connect (ui->fileDirSelectButton, &QToolButton::clicked,
              this, &DialogExportPDF::getFilename);
 
-    connect(ui->qualitySelect, SIGNAL ( currentIndexChanged (const QString &)),
+    connect(ui->qualitySelect, SIGNAL ( currentTextChanged (const QString &)),
           this, SLOT(getPrinterMode(const QString &)) );
 
     connect ( ui->buttonBox,SIGNAL(accepted()), this, SLOT(getUserChoices()) );
