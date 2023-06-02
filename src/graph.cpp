@@ -273,7 +273,7 @@ Graph::~Graph() {
 void Graph::clear(const QString &reason) {
     qDebug()<< "Clearing graph, vertices and data structures... Reason:" << reason;
 
-    qDebug()<< "Clearing graph data ended. Asking parser and crawler threads to terminate";
+    qDebug()<< "Asking parser and crawler threads to terminate...";
 
     graphLoadedTerminateParserThreads("clear");
     webCrawlTerminateThreads("clear");
@@ -410,12 +410,9 @@ void Graph::clear(const QString &reason) {
     //    }
 
     if ( reason != "exit") {
-        qDebug()<< "Finished clearing graph data and structures.";
         setModStatus(m_graphModStatus,true);
     }
-    else {
-        qDebug()<< "Finished clearing graph data and structures...";
-    }
+    qDebug()<< "Finished clearing graph data and structures.";
 }
 
 
