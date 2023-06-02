@@ -420,7 +420,7 @@ void Graph::clear(const QString &reason) {
 /**
  * @brief Sets the size of the canvas
  *
- * Called on MW resizing to update node positions and canvasWidth and canvasHeight
+ * Called when the MW is resized to update node positions and canvasWidth and canvasHeight
  *
  * @param w
  * @param h
@@ -431,8 +431,8 @@ void Graph::canvasSizeSet(const int w, const int h){
     qreal fY =  (static_cast <qreal> (h)) / canvasHeight;
     qreal newX, newY;
 
-    qDebug() << "Graph::canvasSizeSet() - new size (" << w << ", " << h<<")"
-             << "adjusting node positions, if any.";
+    qDebug() << "Canvas was resized: " << w << "x" << h
+             << "Adjusting node positions, if any. Please wait...";
     VList::const_iterator it;
     for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         newX = (*it)->x() * fX ;
@@ -449,7 +449,7 @@ void Graph::canvasSizeSet(const int w, const int h){
                        );
 
     setModStatus(ModStatus::VertexPositions,false);
-    qDebug() << "Graph::canvasSizeSet() - finished";
+    qDebug() << "Finished resizing.";
 }
 
 /**
@@ -771,11 +771,11 @@ void Graph::vertexCreate(const int &number,
 
     int value = 1;
 
-    qDebug() << "Graph::vertexCreate() - vertex:" << number
+    qDebug() << "Creating a new vertex:" << number
              << "shape:" << shape
              << "icon:" << iconPath
              << "signalMW:" << signalMW
-             << "- Adding new vertex and emitting signalDrawNode() to GW";
+             << "- Appending the new vertex and signaling to GW to create the node";
 
     if (order)
         vpos[number]=m_totalVertices;
@@ -818,7 +818,7 @@ void Graph::vertexCreate(const int &number,
                          labelSize,
                          initVertexLabelDistance);
 
-    qDebug() << "Graph::vertexCreate() - Added new vertex:" << number;
+    qDebug() << "Finished creating new vertex:" << number << "Setting graph mod status";
 
     setModStatus(ModStatus::VertexCount, signalMW);
 
@@ -881,7 +881,7 @@ void Graph::vertexCreateAtPosRandom(const bool &signalMW){
     QPointF p;
     p.setX( canvasRandomX());
     p.setY( canvasRandomY() );
-    qDebug() << "Graph::vertexCreateAtPosRandom() - at:" << p;
+    qDebug() << "Creating a new random positioned vertex at:" << p;
     vertexCreate( vertexNumberMax()+1, initVertexSize, initVertexColor,
                   initVertexNumberColor, initVertexNumberSize,
                   QString(), initVertexLabelColor, initVertexLabelSize,
@@ -3114,7 +3114,7 @@ int Graph::getSelectedEdgesCount() const {
 
 
 /**
- * @brief Gets the graph density.
+ * @brief Gets the graph density (if computed) or computes it again.
  *
  * The graph density is the ratio of present edges to total possible edges
  * in the current relation.
@@ -3124,13 +3124,12 @@ int Graph::getSelectedEdgesCount() const {
 qreal Graph::graphDensity() {
 
     if ( calculatedGraphDensity ) {
-        qDebug()<< "Graph::graphDensity() - graph not modified and"
-                   "already calculated density. Returning last value:"
+        qDebug()<< "Graph density already computed and graph not modified. Returning last value:"
                 << m_graphDensity;
         return m_graphDensity;
     }
 
-    qDebug()<< "Graph::graphDensity() - computing...";
+    qDebug()<< "Computing graph density...";
     int V=vertices();
     if (V!=0 && V!=1) {
         m_graphDensity = (isUndirected()) ?
