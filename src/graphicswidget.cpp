@@ -1201,6 +1201,7 @@ void GraphicsWidget::setEdgeVisibility(const int &relation, const int &sourceNum
         qDebug()<<"Cannot find edge"<<edgeName<<"in edgesHash to toggle visibility to" << visible;
     }
     if (checkInverse) {
+        // TODO: #140 - we need to check if the reverse exists and if not it should be created.
         // Check the reverse edge
         edgeName = createEdgeName( targetNum, sourceNum, relation );
         if  ( edgesHash.contains (edgeName) ) {
