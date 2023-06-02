@@ -53,7 +53,7 @@ DialogExportImage::DialogExportImage(QWidget *parent) :
     connect ( ui->fileDirSelectButton, &QToolButton::clicked,
              this, &DialogExportImage::getFilename);
 
-    connect ( ui->formatSelect, SIGNAL(currentIndexChanged (const QString &)),
+    connect ( ui->formatSelect, SIGNAL(currentTextChanged (const QString &)),
           this, SLOT ( getFormat(const QString &)) );
 
     connect ( ui->buttonBox,SIGNAL(accepted()), this, SLOT(getUserChoices()) );

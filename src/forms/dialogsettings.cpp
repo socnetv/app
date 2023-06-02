@@ -438,7 +438,6 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
           this, SLOT(getCanvasIndexMethod(const QString &)) );
 
 
-
     connect (ui->nodeShapeComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
              this, &DialogSettings::getNodeShapeIndex);
 
@@ -620,7 +619,6 @@ void DialogSettings::getCanvasBgImage(){
  * @brief Gets Canvas Update Mode
  */
 void DialogSettings::getCanvasUpdateMode(const QString &mode){
-    qDebug() << "update mode" << mode;
     if (!mode.isEmpty() ) {
         m_appSettings["canvasUpdateMode"] = mode;
         emit setCanvasUpdateMode(mode);
@@ -633,7 +631,6 @@ void DialogSettings::getCanvasUpdateMode(const QString &mode){
  * @brief Gets canvas Index Method
  */
 void DialogSettings::getCanvasIndexMethod(const QString &method){
-    qDebug() << "index mode"<<method;
     if (!method.isEmpty() ) {
         m_appSettings["canvasIndexMethod"] = method;
         emit setCanvasIndexMethod(method);
