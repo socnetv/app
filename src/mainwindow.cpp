@@ -5871,7 +5871,7 @@ int MainWindow::slotHelpMessageToUser(const int type,
     switch (type) {
     case USER_MSG_INFO:
         if (!statusMsg.isNull()) statusMessage(  statusMsg  );
-
+        msgBox.setWindowTitle("Information");
         msgBox.setText(text);
         if (!info.isNull()) msgBox.setInformativeText(info);
         msgBox.setIcon(QMessageBox::Information);
@@ -5890,7 +5890,7 @@ int MainWindow::slotHelpMessageToUser(const int type,
 
     case USER_MSG_CRITICAL:
         if (!statusMsg.isNull()) statusMessage(  statusMsg  );
-
+        msgBox.setWindowTitle("Error");
         msgBox.setText(text);
         if (!info.isNull()) msgBox.setInformativeText(info);
         //msgBox.setTextFormat(Qt::RichText);
@@ -5903,7 +5903,7 @@ int MainWindow::slotHelpMessageToUser(const int type,
 
     case USER_MSG_CRITICAL_NO_NETWORK:
         statusMessage(  tr("Nothing to do! Load or create a social network first")  );
-
+        msgBox.setWindowTitle("Error");
         msgBox.setText(
                     tr("No network! \n"
                        "Load social network data or create a new social network first. \n")
@@ -5917,7 +5917,7 @@ int MainWindow::slotHelpMessageToUser(const int type,
 
     case USER_MSG_CRITICAL_NO_EDGES:
         statusMessage(  tr("Nothing to do! Load social network data or create edges first")  );
-
+        msgBox.setWindowTitle("Error");
         msgBox.setText(
                     tr("No edges! \n"
                        "Load social network data or create some edges first. \n")
@@ -5931,7 +5931,7 @@ int MainWindow::slotHelpMessageToUser(const int type,
 
     case USER_MSG_QUESTION:
         if (!statusMsg.isNull()) statusMessage(  statusMsg  );
-
+        msgBox.setWindowTitle("Question");
         msgBox.setText( text );
         if (!info.isNull()) msgBox.setInformativeText(info);
         if (buttons==QMessageBox::NoButton) {
@@ -5950,7 +5950,7 @@ int MainWindow::slotHelpMessageToUser(const int type,
 
     case USER_MSG_QUESTION_CUSTOM: // a custom question with just two buttons
         if (!statusMsg.isNull()) statusMessage(  statusMsg  );
-
+        msgBox.setWindowTitle("Question");
         msgBox.setText( text );
         if (!info.isNull()) msgBox.setInformativeText(info);
         pbtn1 = msgBox.addButton(btn1, QMessageBox::ActionRole);
@@ -7073,7 +7073,7 @@ void MainWindow::slotNetworkImportEdgeList(){
 
     switch(
            slotHelpMessageToUser(USER_MSG_QUESTION_CUSTOM,
-                                 tr("Select type of edge list format..."),
+                                 tr("Select type..."),
                                  tr("Select type of edge list format"),
                                  tr("SocNetV can parse two kinds of edgelist formats: \n\n"
                                     "A. Edge lists with edge weights, "
@@ -7250,7 +7250,7 @@ void MainWindow::slotNetworkFileLoad(const QString m_fileName,
         switch(
                slotHelpMessageToUser (
                    USER_MSG_QUESTION_CUSTOM,
-                   tr("Two-mode sociomatrix. Select mode..."),
+                   tr("Select mode"),
                    tr("Two-mode sociomatrix"),
                    tr("If this file is in two-mode sociomatrix format, "
                       "please specify which mode to open \n\n"
@@ -7342,7 +7342,7 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
         statusMessage( tr("Error loading requested file. Aborted."));
 
         slotHelpMessageToUser(USER_MSG_CRITICAL,
-                              tr("Error loading network file"),
+                              tr("Error loading file"),
                               tr("Error loading network file"),
                               tr("Sorry, the selected file is not in a supported format or encoding, "
                                  "or contains formatting errors. \n\n"
@@ -10658,13 +10658,15 @@ void MainWindow::slotEditEdgeLabel(){
 
 /**
  * @brief Changes the color of all edges weighted below threshold to parameter color
+ *
  * If color is not valid, it opens a QColorDialog
  * If threshold == RAND_MAX it changes the color of all edges.
- * Called from Edit->Edges menu option and Settings Dialog.
+ *
  * @param color = QColor()
  * @param threshold = RAND_MAX
  */
 void MainWindow::slotEditEdgeColorAll(QColor color, const int threshold){
+    qDebug() << "Changing the color of all matching edges to color: " << color.name() << " threshold " << threshold;
     if (!color.isValid()) {
         QString text;
         if (threshold < RAND_MAX) {
@@ -11323,8 +11325,7 @@ void MainWindow::slotLayoutFruchterman(){
 
 
 /**
- * @brief Calls Graph::layoutForceDirectedKamadaKawai to embed
- * the Kamada-Kawai FDP model to the network.
+ * @brief Layouts the network according to the Kamada-Kawai FDP model
  */
 void MainWindow::slotLayoutKamadaKawai(){
     qDebug()<< "MW::slotLayoutKamadaKawai ()";
@@ -11341,22 +11342,20 @@ void MainWindow::slotLayoutKamadaKawai(){
 
 
 
-
-
 /**
- * @brief Checks sender text() to find out who QMenu item was pressed
- * calls slotLayoutRadialByProminenceIndex(QString)
+ * @brief Runs when the user selects a radial layout menu option
+ *
+ * Checks sender text() to find out what QMenu item was pressed and so the requested index
+ *
  */
 void MainWindow::slotLayoutRadialByProminenceIndex(){
-    qDebug() << "MainWindow::slotLayoutRadialByProminenceIndex()";
+    qDebug() << "Got request to apply a radial layout by prominence index. Checking what index is requested...";
     if ( !activeNodes() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     QAction *menuitem=(QAction *) sender();
     QString menuItemText=menuitem->text();
-    qDebug() << "MainWindow::slotLayoutRadialByProminenceIndex() - " <<
-                "SENDER MENU IS " << menuItemText;
 
     slotLayoutRadialByProminenceIndex(menuItemText);
 
@@ -11364,16 +11363,16 @@ void MainWindow::slotLayoutRadialByProminenceIndex(){
 
 
 
-
 /**
- * @brief
- * Overloaded - called when user clicks Apply in the Layout toolbox
- * or from slotLayoutRadialByProminenceIndex() when the user click on menu
- * Places all nodes on concentric circles according to their index score.
+ * @brief Applies a radial layout on the social network, where each node is placed on concentric circles according to their index score.
+ *
 *  More prominent nodes are closer to the centre of the screen.
+*
+ * @param prominenceIndexName
  */
 void MainWindow::slotLayoutRadialByProminenceIndex(QString prominenceIndexName=""){
-    qDebug() << "MainWindow::slotLayoutRadialByProminenceIndex() ";
+    qDebug() << "Will apply a radial layout by prominence index: " << prominenceIndexName;
+
     if ( !activeNodes() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -11385,9 +11384,7 @@ void MainWindow::slotLayoutRadialByProminenceIndex(QString prominenceIndexName="
 
     indexType = activeGraph->getProminenceIndexByName(prominenceIndexName);
 
-    qDebug() << "MainWindow::slotLayoutRadialByProminenceIndex() "
-             << "prominenceIndexName " << prominenceIndexName
-             << "indexType" << indexType;
+    qDebug() << "indexType" << indexType;
 
     toolBoxLayoutByIndexSelect->setCurrentIndex(indexType+1);
     toolBoxLayoutByIndexTypeSelect->setCurrentIndex(0);
@@ -11441,20 +11438,19 @@ void MainWindow::slotLayoutRadialByProminenceIndex(QString prominenceIndexName="
 
 
 /**
- * @brief
- * Checks sender text() to find out who QMenu item was pressed
- * and what prominence index was chosen
- * calls slotLayoutLevelByProminenceIndex(QString)
-  */
+ * @brief Runs when the user selects a radial layout menu option
+ *
+ * Checks sender text() to find out what QMenu item was pressed and so the requested index
+ *
+ */
 void MainWindow::slotLayoutLevelByProminenceIndex(){
+    qDebug() << "Got request to apply a level layout by prominence index. Checking what index is requested...";
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     QAction *menuitem=(QAction *) sender();
     QString menuItemText = menuitem->text();
-    qDebug() << "MainWindow::slotLayoutLevelByProminenceIndex() - " <<
-                "SENDER MENU IS " << menuItemText;
 
     slotLayoutLevelByProminenceIndex(menuItemText);
 
@@ -11464,14 +11460,15 @@ void MainWindow::slotLayoutLevelByProminenceIndex(){
 
 
 /**
- * @brief
- * Overloaded - called when user clicks on toolbox options and when
- * the user selects a menu option (called by slotLayoutLevelByProminenceIndex())
- * Repositions all nodes  on different top-down levels according to the
-*  chosen prominence index.
-* More prominent nodes are closer to the top of the canvas
- */
+ * @brief Applies a level layout on the social network, where each node is placed on different top-down levels according to their index score.
+ *
+ *  More prominent nodes are closer to the the top of the screen
+ *
+ * @param prominenceIndexName
+*/
 void MainWindow::slotLayoutLevelByProminenceIndex(QString prominenceIndexName=""){
+    qDebug() << "Will apply a level layout by prominence index: " << prominenceIndexName;
+
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -11482,9 +11479,7 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString prominenceIndexName=""
 
     indexType = activeGraph->getProminenceIndexByName(prominenceIndexName);
 
-    qDebug() << "MainWindow::slotLayoutLevelByProminenceIndex() "
-             << "prominenceIndexName " << prominenceIndexName
-             << "indexType" << indexType ;
+    qDebug() << "indexType" << indexType ;
 
     toolBoxLayoutByIndexSelect->setCurrentIndex(indexType +1);
     toolBoxLayoutByIndexTypeSelect->setCurrentIndex(1);
@@ -11539,20 +11534,20 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString prominenceIndexName=""
 
 
 /**
- * @brief
- * Checks sender text() to find out who QMenu item was pressed
- * and what prominence index was chosen
- * calls slotLayoutNodeSizeByProminenceIndex(QString)
-  */
+ * @brief Runs when the user selects a color layout menu option
+ *
+ * Checks sender text() to find out what QMenu item was pressed and so the requested index
+ *
+ */
 void MainWindow::slotLayoutNodeSizeByProminenceIndex(){
+    qDebug() << "Got request to apply a color layout by prominence index. Checking what index is requested...";
+
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     QAction *menuitem=(QAction *) sender();
     QString menuItemText = menuitem->text();
-    qDebug() << "MainWindow::slotLayoutNodeSizeByProminenceIndex() - " <<
-                "SENDER MENU IS " << menuItemText;
 
     slotLayoutNodeSizeByProminenceIndex(menuItemText);
 
@@ -11560,13 +11555,15 @@ void MainWindow::slotLayoutNodeSizeByProminenceIndex(){
 
 
 /**
- * @brief
- * Calls Graph::layoutByProminenceIndex(2) to apply a layout model
- * where the size of each node follows its prominence score
-  * Called when selectbox changes in the toolbox
- */
+ * @brief Applies a node size layout on the social network, where the size of each of node is analogous to their index score.
+ *
+ *  More prominent nodes are bigger.
+ *
+ * @param prominenceIndexName
+*/
 void MainWindow::slotLayoutNodeSizeByProminenceIndex(QString prominenceIndexName=""){
-    qDebug() << "MainWindow::slotLayoutNodeSizeByProminenceIndex() ";
+    qDebug() << "Will apply a node size layout by prominence index: " << prominenceIndexName;
+
     if ( !activeNodes() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -11576,9 +11573,7 @@ void MainWindow::slotLayoutNodeSizeByProminenceIndex(QString prominenceIndexName
 
     indexType = activeGraph->getProminenceIndexByName(prominenceIndexName);
 
-    qDebug() << "MainWindow::slotLayoutNodeSizeByProminenceIndex() "
-             << "prominenceIndexName " << prominenceIndexName
-             << "indexType" << indexType;
+    qDebug() << "indexType" << indexType;
 
     toolBoxLayoutByIndexSelect->setCurrentIndex(indexType+1);
 
@@ -11630,15 +11625,12 @@ void MainWindow::slotLayoutNodeSizeByProminenceIndex(QString prominenceIndexName
 
 
 
-
-
-
-
 /**
- * @brief Checks sender text() to find out who QMenu item was pressed
- * and what prominence index was chosen
- * calls slotLayoutNodeColorByProminenceIndex(QString)
-  */
+ * @brief Runs when the user selects a color layout menu option
+ *
+ * Checks sender text() to find out what QMenu item was pressed and so the requested index
+ *
+ */
 void MainWindow::slotLayoutNodeColorByProminenceIndex(){
 
     if ( !activeNodes() )  {
@@ -11647,8 +11639,6 @@ void MainWindow::slotLayoutNodeColorByProminenceIndex(){
     }
     QAction *menuitem=(QAction *) sender();
     QString menuItemText = menuitem->text();
-    qDebug() << "MainWindow::slotLayoutNodeColorByProminenceIndex() - " <<
-                "SENDER MENU IS " << menuItemText;
 
     slotLayoutNodeColorByProminenceIndex(menuItemText);
 
@@ -11656,14 +11646,17 @@ void MainWindow::slotLayoutNodeColorByProminenceIndex(){
 
 
 /**
- * @brief Calls Graph::layoutByProminenceIndex to apply a layout model
- * where the color of each node follows its prominence score
+ * @brief Applies a color layout on the social network. Changes the colors of all nodes according to their index score.
+ *
+ *  More prominent nodes have more warm colors
+ *
  * RED=rgb(255,0,0) most prominent
  * BLUE=rgb(0,0,255) least prominent
- * Called when selectbox changes in the toolbox
- */
+ *
+ * @param prominenceIndexName
+*/
 void MainWindow::slotLayoutNodeColorByProminenceIndex(QString prominenceIndexName=""){
-    qDebug() << "MainWindow::slotLayoutNodeColorByProminenceIndex() ";
+    qDebug() << "Will apply a node color layout by prominence index: " << prominenceIndexName;
     if ( !activeNodes() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -11672,9 +11665,7 @@ void MainWindow::slotLayoutNodeColorByProminenceIndex(QString prominenceIndexNam
 
     indexType = activeGraph->getProminenceIndexByName(prominenceIndexName);
 
-    qDebug() << "MainWindow::slotLayoutNodeColorByProminenceIndex() "
-             << "prominenceIndexName " << prominenceIndexName
-             << "indexType" << indexType;
+    qDebug() << "indexType" << indexType;
 
     toolBoxLayoutByIndexSelect->setCurrentIndex(indexType+1);
     toolBoxLayoutByIndexTypeSelect->setCurrentIndex(3);
@@ -11730,10 +11721,9 @@ void MainWindow::slotLayoutNodeColorByProminenceIndex(QString prominenceIndexNam
 
 
 /**
- * @brief
- * Enables/disables layout guides
- * Called from
- * @param state
+ * @brief Shows or hides (clears) layout guides
+ *
+ * @param toggle
  */
 void MainWindow::slotLayoutGuides(const bool &toggle){
     qDebug()<< "MW:slotLayoutGuides()";
@@ -11744,14 +11734,12 @@ void MainWindow::slotLayoutGuides(const bool &toggle){
 
     if (toggle){
         layoutGuidesAct->setChecked(true);
-        qDebug()<< "MW:slotLayoutGuides() - will be displayed";
-        statusMessage( tr("Layout Guides will be displayed") );
+        statusMessage( tr("Layout Guides are displayed") );
     }
     else {
         layoutGuidesAct->setChecked(false);
-        qDebug()<< "MW:slotLayoutGuides() - will NOT be displayed";
         graphicsWidget->clearGuides();
-        statusMessage( tr("Layout Guides will not be displayed") );
+        statusMessage( tr("Layout Guides removed") );
     }
 }
 
@@ -11821,16 +11809,21 @@ void MainWindow::slotAnalyzeSymmetryCheck(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    if (activeGraph->isSymmetric())
-        QMessageBox::information(this,
-                                 "Symmetry",
-                                 tr("The adjacency matrix is symmetric."
-                                    ),"OK",0);
-    else
-        QMessageBox::information(this,
-                                 "Symmetry",
-                                 tr("The adjacency matrix is not symmetric."
-                                    ),"OK",0);
+    if (activeGraph->isSymmetric()) {
+        slotHelpMessageToUser (
+                    USER_MSG_INFO,
+                    tr("Symmetric network."),
+                    tr("The adjacency matrix is symmetric.")
+                    );
+    }
+    else{
+        slotHelpMessageToUser (
+                    USER_MSG_INFO,
+                    tr("Non symmetric network."),
+                    tr("The adjacency matrix is not symmetric.")
+                    );
+    }
+
 
     statusMessage (QString(tr("Ready")) );
 
@@ -12138,17 +12131,26 @@ void MainWindow::slotAnalyzeDistance(){
                                                               optionsEdgeWeightConsiderAct->isChecked(),
                                                               inverseWeights);
 
-    if ( distanceGeodesic > 0 && distanceGeodesic < RAND_MAX)
-        QMessageBox::information(this, tr("Geodesic Distance"),
-                                 tr("The length of the shortest path between actors (")
-                                 +QString::number(i)+", "+QString::number(j)
-                                 +") = "+QString::number(distanceGeodesic)
-                                 +tr("\nThe nodes are connected."),"OK",0);
-    else
-        QMessageBox::information(this, tr("Geodesic Distance"), tr("Network distance (")
-                                 +QString::number(i)+", "+QString::number(j)
-                                 +") = "+ QString("\xE2\x88\x9E")
-                                 +tr("\nThe nodes are not connected."),"OK",0);
+    if ( distanceGeodesic > 0 && distanceGeodesic < RAND_MAX) {
+        slotHelpMessageToUser (
+                    USER_MSG_INFO,
+                    tr("Geodesic Distance: %1").arg(distanceGeodesic),
+                    tr("These nodes are connected."),
+                    tr("Nodes %1 and %2 are connected through at least one path. \n"
+                       "Geodesic distance: %3.").arg(i).arg(j).arg(distanceGeodesic)
+                    );
+    }
+    else {
+        slotHelpMessageToUser (
+                    USER_MSG_INFO,
+                    tr("Geodesic Distance: %1").arg(QString("\xE2\x88\x9E")),
+                    tr("These nodes are not connected."),
+                    tr("Nodes %1 and %2 are not connected. \n"
+                       "Geodesic distance: +%3.")
+                    .arg(i).arg(j).arg(QString("\xE2\x88\x9E"))
+                    );
+    }
+
 }
 
 
@@ -12158,7 +12160,7 @@ void MainWindow::slotAnalyzeDistance(){
  * @brief Invokes calculation of the matrix of geodesic distances for the loaded network, then displays it.
  */
 void MainWindow::slotAnalyzeMatrixDistances(){
-    qDebug() << "MW::slotAnalyzeMatrixDistances()";
+    qDebug() << "Request to compute the matrix of geodesic distances. Please wait...";
     if ( !activeNodes()  )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -12170,7 +12172,6 @@ void MainWindow::slotAnalyzeMatrixDistances(){
     askAboutEdgeWeights();
 
     statusMessage( tr("Computing geodesic distances. Please wait...") );
-
 
     activeGraph->writeMatrix(fn,MATRIX_DISTANCES,
                              optionsEdgeWeightConsiderAct->isChecked(),
@@ -12197,7 +12198,8 @@ void MainWindow::slotAnalyzeMatrixDistances(){
  * between each pair of nodes in the loaded network), then displays it.
  */
 void MainWindow::slotAnalyzeMatrixGeodesics(){
-    qDebug("MW: slotViewNumberOfGeodesics()");
+    qDebug() << "Request to compute the matrix of geodesics. Please wait...";
+
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -12208,7 +12210,7 @@ void MainWindow::slotAnalyzeMatrixGeodesics(){
 
     askAboutEdgeWeights();
 
-    statusMessage(  tr("Computing geodesics (number of shortest paths). Please wait...") );
+    statusMessage(  tr("Computing geodesics (number of shortest paths) for each pair. Please wait...") );
 
     activeGraph->writeMatrix(fn,MATRIX_GEODESICS,
                              optionsEdgeWeightConsiderAct->isChecked(),

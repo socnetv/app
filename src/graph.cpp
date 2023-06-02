@@ -21010,13 +21010,14 @@ void Graph::writeMatrixAdjacency (const QString fn,
 }
 
 
-
 /**
-    Writes a visual representation of the adjacency matrix of G
-    to a specified file fn
-    This is called by MainWindow::slotViewAdjacencyMatrixPlotText()
-    The resulting matrix HAS NO spaces between elements.
-*/
+ * @brief Writes a visual representation of the adjacency matrix of the graph to the specified file
+ *
+ * The resulting matrix HAS NO spaces between elements.
+ *
+ * @param fn
+ * @param simpler
+ */
 void Graph::writeMatrixAdjacencyPlot (const QString fn,
                                       const bool &simpler) {
 
