@@ -90,7 +90,7 @@
 
 
 /**
- * @brief Constructs a MainWindow instance
+ * @brief Constructs the MainWindow (MW) object
  *
  * @param m_fileName
  * @param forceProgress
@@ -100,7 +100,8 @@
  */
 MainWindow::MainWindow(const QString & m_fileName, const bool &forceProgress, const bool &maximized, const bool &fullscreen, const int &debugLevel) {
 
-    qDebug() << "MW Constructor starting on thread:"<< thread();
+    qDebug() << "=========== MainWindow (MW) constructor starting on thread:"<< thread();
+
     //
     // Setup debug messages/level
     //
@@ -141,8 +142,9 @@ MainWindow::MainWindow(const QString & m_fileName, const bool &forceProgress, co
 
 
     //
-    // Initialize app window size
+    // Initialize app window (minimum) size
     //
+
     // Get host screen width and height
     int primaryScreenWidth = QApplication::primaryScreen()->availableSize().width();
     int primaryScreenHeight = QApplication::primaryScreen()->availableSize().height();
@@ -224,7 +226,7 @@ MainWindow::MainWindow(const QString & m_fileName, const bool &forceProgress, co
     QString welcomeMsg = tr("Welcome to %1, version %2").arg(qApp->applicationName(), VERSION);
     statusMessage( welcomeMsg );
 
-    qDebug() << "MW Constructor finished, on thread:" << thread();
+    qDebug() << "@@@@ MW Constructor finished, on thread:" << thread();
 
 }
 
@@ -237,7 +239,7 @@ MainWindow::~MainWindow() {
 
     qDebug() << "Destructor for MW running...";
 
-    // Call init to clear all maps etc.
+    // Init app to clear all maps etc.
     initApp();
 
     // Terminate any threads running
@@ -401,8 +403,9 @@ void MainWindow::resizeEvent( QResizeEvent *e ) {
     int h0=e->oldSize().height();
     int w=width();
     int h=height();
-    qDebug () << "Old size w x h:" << w0 << " x " << h0
-              << "New size w x h:" << w << " x " << h;
+
+    qDebug () << "MW resized:" << w0 << "x" << h0
+              << "-->" << w << "x" << h;
 
     statusMessage(
                  tr("Window resized to (%1, %2)px.")
@@ -896,18 +899,18 @@ void MainWindow::polishProgressDialog(QProgressDialog* dialog)
 
 
 /**
- * @brief Initializes our network view widget, graphicsWidget, with a graphics scene.
+ * @brief Initializes our graphics widget, the canvas where we draw networks
  *
- * The widget is a QGraphicsView canvas which is the 'main' widget of SocNetV.
+ * The widget is a QGraphicsView, with a scene, and is the 'main' widget of the application.
  */
 void MainWindow::initView() {
 
     qDebug()<< "Creating graphics widget...";
 
-    //Create our scene
+    // Create our scene
     scene=new QGraphicsScene();
 
-    //create a view widget and pass the scene and the our object as parent
+    // Create a view widget and pass the scene and the our object as parent
     graphicsWidget=new GraphicsWidget(scene,this);
     graphicsWidget->setObjectName("graphicsWidget");
 
@@ -980,7 +983,7 @@ void MainWindow::initView() {
                                     " - To change/edit the properties of an edge, right-click on it."
                                     ""));
 
-    qDebug() << "Finished initializing graphicsWidget. Size:"
+    qDebug() << "Finished initialization of graphics widget. Dimensions:"
              << graphicsWidget->width() << "x" << graphicsWidget->height();
 }
 
@@ -1001,9 +1004,9 @@ void MainWindow::initGraph() {
 
     activeGraph->moveToThread(&graphThread);
 
-    qDebug() << "activeGraph moved to thread:" << activeGraph->thread();
+    qDebug() << "activeGraph moved to thread:" << activeGraph->thread()
+             << "starting new activeGraph thread...";
 
-    qDebug() << "starting new activeGraph thread...";
     graphThread.start();
 
     qDebug() << "activeGraph thread now:" << activeGraph->thread();
@@ -4860,7 +4863,7 @@ void MainWindow::initPanels(){
     controlGrid->setContentsMargins(5, 5, 5, 5);
     //create a box with title
     leftPanel = new QGroupBox(tr("Control Panel"));
-    leftPanel->setMinimumWidth(220);
+    leftPanel->setMinimumWidth(240);
     leftPanel->setObjectName("leftPanel");
     leftPanel->setLayout (controlGrid);
 
@@ -5624,7 +5627,7 @@ void MainWindow::initSignalSlots() {
  */
 void MainWindow::initApp(){
 
-    qDebug()<<"START APP INITIALISATION ON THREAD" << thread();
+    qDebug()<<"### Application initialization starts, on thread" << thread();
 
     statusMessage( tr("Application initialization. Please wait..."));
 
@@ -5646,6 +5649,7 @@ void MainWindow::initApp(){
     networkSaveAct->setEnabled(true);
 
     /** Clear previous network data and reset user-selected settings */
+    qDebug()<<"### Clearing current graph. Please wait...";
     activeGraph->clear();
 
     activeGraph->vertexShapeSetDefault(appSettings["initNodeShape"], appSettings["initNodeIconPath"]);
@@ -5673,6 +5677,7 @@ void MainWindow::initApp(){
     emit signalSetReportsDataDir(appSettings["dataDir"]);
 
     /** Clear graphicsWidget and reset settings and transformations **/
+    qDebug()<<"### Clearing graphicsWidget and resetting transformations. Please wait...";
     graphicsWidget->clear();
     rotateSlider->setValue(0);
     zoomSlider->setValue(250);
@@ -5710,6 +5715,8 @@ void MainWindow::initApp(){
     miniChart->resetToTrivial();
 
     /** Clear LCDs **/
+    qDebug()<<"### Clearing Statistics panel LCDs. Please wait...";
+
     slotNetworkChanged(0, 0, 0, 0);
 
     rightPanelClickedNodeInDegreeLCD->setText("-");
@@ -5721,6 +5728,7 @@ void MainWindow::initApp(){
 
 
     /** Clear toolbox and menu checkboxes **/
+    qDebug()<<"### Resetting toolbox. Please wait...";
     toolBoxEditEdgeTransformSelect->setCurrentIndex(0);
     toolBoxEditEdgeModeSelect->setCurrentIndex(0);
 
@@ -5749,7 +5757,7 @@ void MainWindow::initApp(){
     //editRelationChangeCombo->clear();
 
 
-    qDebug()<<"Clearing my" <<m_textEditors.size()<<"textEditors";
+    qDebug()<<"### Clearing textEditors. Current count: " <<m_textEditors.size() << "textEditors";
     foreach ( TextEditor *ed, m_textEditors) {
         ed->close();
         delete ed;
@@ -5762,7 +5770,7 @@ void MainWindow::initApp(){
 
     statusMessage( tr("Ready"));
 
-    qDebug()<< "APP INITIALISATION FINISHED, ON THREAD" << thread();
+    qDebug()<< "#### APP INITIALISATION FINISHED, ON THREAD" << thread();
 
 
 }
