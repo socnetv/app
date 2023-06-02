@@ -430,11 +430,11 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
              this, &DialogSettings::setCanvasEdgeHighlighting);
 
 
-    connect(ui->canvasUpdateModeSelect, SIGNAL ( currentIndexChanged (const QString &)),
+    connect(ui->canvasUpdateModeSelect, SIGNAL ( currentTextChanged (const QString &)),
           this, SLOT(getCanvasUpdateMode(const QString &)) );
 
 
-    connect(ui->canvasIndexMethodSelect, SIGNAL ( currentIndexChanged (const QString &)),
+    connect(ui->canvasIndexMethodSelect, SIGNAL ( currentTextChanged (const QString &)),
           this, SLOT(getCanvasIndexMethod(const QString &)) );
 
 
@@ -620,6 +620,7 @@ void DialogSettings::getCanvasBgImage(){
  * @brief Gets Canvas Update Mode
  */
 void DialogSettings::getCanvasUpdateMode(const QString &mode){
+    qDebug() << "update mode" << mode;
     if (!mode.isEmpty() ) {
         m_appSettings["canvasUpdateMode"] = mode;
         emit setCanvasUpdateMode(mode);
@@ -632,6 +633,7 @@ void DialogSettings::getCanvasUpdateMode(const QString &mode){
  * @brief Gets canvas Index Method
  */
 void DialogSettings::getCanvasIndexMethod(const QString &method){
+    qDebug() << "index mode"<<method;
     if (!method.isEmpty() ) {
         m_appSettings["canvasIndexMethod"] = method;
         emit setCanvasIndexMethod(method);
