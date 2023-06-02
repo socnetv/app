@@ -182,7 +182,7 @@ QString GraphicsWidget::createEdgeName(const int &v1, const int &v2, const int &
  * @brief Clears the scene and all hashes, lists, var etc
  */
 void GraphicsWidget::clear() {
-    qDebug() << "Clearing GraphicsWidget hashes";
+    qDebug() << "Clearing graphics widget data and resetting scene bounding rect to zero...";
     nodeHash.clear();
     edgesHash.clear();
     m_selectedNodes.clear();
@@ -192,7 +192,8 @@ void GraphicsWidget::clear() {
     clickedEdge=0;
     firstNode=0;
     secondDoubleClick=false;
-    qDebug() << "Finished clearing GraphicsWidget hashes";
+    scene()->setSceneRect(0, 0, 0, 0);
+    qDebug() << "Finished clearing graphics widget";
 }
 
 
@@ -1627,12 +1628,9 @@ void GraphicsWidget::zoomIn(const int step){
  */
 void GraphicsWidget::changeMatrixScale(int value) {
 
-    int sw0=scene()->width();
-    int sh0=scene()->height();
-
-    qDebug () << "Scaling the view by value" << value
-              << "- current scene dimensions:"
-              << sw0 << "x" << sh0;
+    qDebug () << "Scaling the view transformation matrix by value" << value
+               << " - GW dimensions: " << width() << "x" << height()
+              << "  Scene dimensions:" << scene()->width() << "x" << scene()->height();
 
     // Raise a flag that a non-trivial transformation is applied on the view
     m_isTransformationActive = true;
@@ -1647,18 +1645,9 @@ void GraphicsWidget::changeMatrixScale(int value) {
     scale(m_currentScaleFactor, m_currentScaleFactor);
     rotate(m_currentRotationAngle);
 
-    if ( m_currentScaleFactor > 1 ) {
-        sw0 = sw0 * ( m_currentScaleFactor );
-        sh0 = sh0 * ( m_currentScaleFactor );
-    }
-    else {
-        sw0 = sw0 * ( 1 / m_currentScaleFactor );
-        sh0 = sh0 * ( 1 / m_currentScaleFactor );
-    }
-
-    qDebug () << "Scaling the view. I will set new scene dimensions:" << sw0 << "x" << sh0;
-//    scene()->setSceneRect(0, 0, (qreal) (sw0), (qreal) (sh0) );
-    qDebug () << "new scene dimensions:" << scene()->width() << "x" << scene()->height();
+    qDebug () << "Finished scaling the view."
+               << " - GW dimensions: " << width() << "x" << height()
+              << "  Scene dimensions:" << scene()->width() << "x" << scene()->height();
 
 
 }
@@ -1729,10 +1718,8 @@ void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
     m_w0=e->oldSize().width();
     m_h0=e->oldSize().height();
 
-    qDebug () << "GW resized"
-            << "from:" << m_w0 << "x" << m_h0
-            << "to:" << m_width << "x" << m_height;
-
+    qDebug () << "GW resized:" << m_w0 << "x" << m_h0
+            << "-->" << m_width << "x" << m_height;
 
     if (m_isTransformationActive)  {
         m_isTransformationActive = false;
@@ -1769,9 +1756,9 @@ void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
     }
 
     // Force updating the scene width and height to match the new graphicsWidget dimensions
-    scene()->setSceneRect(0, 0, (qreal) m_width, (qreal) m_height );
+//    scene()->setSceneRect(0, 0, (qreal) m_width, (qreal) m_height );
 
-    qDebug () << "Scene rect resized:" << scene()->width() << "x" << scene()->height();
+    qDebug () << "Scene dimensions now:" << scene()->width() << "x" << scene()->height();
 
     emit resized(m_width, m_height);
 
