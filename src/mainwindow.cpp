@@ -1740,15 +1740,15 @@ void MainWindow::initActions(){
 
 
 
-    editEdgeSymmetrizeAllAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Symmetrize All Directed Edges"), this);
+    editEdgeSymmetrizeAllAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Symmetrize All Edges"), this);
     editEdgeSymmetrizeAllAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_E, Qt::CTRL | Qt::Key_S));
     editEdgeSymmetrizeAllAct->setStatusTip(tr("Make all directed ties to be reciprocated (thus, a symmetric graph)."));
     editEdgeSymmetrizeAllAct->setWhatsThis(
-                tr("<p><b>Symmetrize Directed Edges</b></p>"
-                   "<p>Makes all directed arcs in this relation to be reciprocated: "
-                   "<p>If there is an arc from node A to node B \n"
-                   "then a new arc from node B to node A is created \n"
-                   "with the same weight. </p>"
+                tr("<p><b>Symmetrize All Edges</b></p>"
+                   "<p>Forces all edges in this relation to be reciprocated: "
+                   "<p>If there is a directed edge from node A to node B \n"
+                   "then a new directed edge from node B to node A will be \n"
+                   " created, with the same weight. </p>"
                    "<p>The result is a symmetric network.</p>"));
     connect(editEdgeSymmetrizeAllAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeSymmetrizeAll()));
 
@@ -1757,13 +1757,13 @@ void MainWindow::initActions(){
     editEdgeSymmetrizeStrongTiesAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_E, Qt::CTRL | Qt::Key_T));
     editEdgeSymmetrizeStrongTiesAct->setStatusTip(tr("Create a new symmetric relation by counting reciprocated ties only (strong ties)."));
     editEdgeSymmetrizeStrongTiesAct->setWhatsThis(
-                tr("Symmetrize Edges by examing Strong Ties\n\n"
-                   "Creates a new symmetric relation by keeping strong ties only. \n"
-                   "That is, a strong tie exists between actor A and actor B \n"
-                   "only when both arcs A->B and B->A are present. \n"
-                   "If the network is multi-relational, it asks you whether \n"
-                   "ties in the current relation or all relations are to be considered. \n"
-                   "The resulting relation is symmetric."));
+                tr("<p><b>Symmetrize Edges by Strong Ties:</b></p>"
+                     "<p>Creates a new symmetric relation by keeping strong ties only. </p>"
+                     "<p>A tie between actors A and B is considered strong if both A -> B and B -> A exist. "
+                     "Therefore, in the new relation, a reciprocated edge will be created between actors A and B "
+                     "only if both arcs A->B and B->A were present in the current or all relations. </p>"
+                     "<p>If the network is multi-relational, it will ask you whether "
+                      "ties in the current relation or all relations are to be considered.</p>"));
     connect(editEdgeSymmetrizeStrongTiesAct, SIGNAL(triggered()),
             this, SLOT(slotEditEdgeSymmetrizeStrongTies()));
 
@@ -1790,15 +1790,15 @@ void MainWindow::initActions(){
     editEdgesCocitationAct->setStatusTip(tr("Create a new symmetric relation by "
                                             "connecting actors that are cocitated by others."));
     editEdgesCocitationAct->setWhatsThis(
-                tr("Symmetrize Edges by examing Strong Ties\n\n"
-                   "Creates a new symmetric relation by connecting actors "
-                   "that are cocitated by others. \n"
-                   "In the new relation, an edge will exist between actor i and "
-                   "actor j only if C(i,j) > 0, where C the Cocitation Matrix. "
-                   "Thus the actor pairs cited by more common neighbors will appear "
-                   "with a stronger tie between them than pairs those cited by fewer "
-                   "common neighbors. "
-                   "The resulting relation is symmetric."));
+                tr("<p><b>Symmetrize Edges by examining Cocitation:</b></p>"
+                     "<p>Creates a new symmetric relation by connecting actors "
+                     "that are cocitated by others. "
+                     "In the new relation, an edge will be created between actor i and "
+                     "actor j only if C(i,j) > 0, where C the Cocitation Matrix. </p>"
+                    "<p>Thus the actor pairs cited by more common neighbors will appear "
+                     "with a stronger tie between them than pairs those cited by fewer "
+                     "common neighbors. "
+                     "The resulting relation is symmetric.</p>"));
     connect(editEdgesCocitationAct, SIGNAL(triggered()),
             this, SLOT(slotEditEdgeSymmetrizeCocitation()));
 
@@ -4303,23 +4303,32 @@ void MainWindow::initPanels(){
                 tr("Select a method to transform the network, i.e. transform all directed edges to undirected."));
     helpMessage = tr("<p><b>Transform Network Edges </b></p>"
                      "<p>Select a method to transform network edges. Available methods: </p>"
-                     "<p><em>Symmetrize Directed Edges:</em></p>"
-                     "<p>Makes all directed arcs in this relation reciprocal. "
-                     "That is, if there is an arc from node A to node B "
-                     "then a new arc from node B to node A is created "
-                     "with the same weight.</p>"
 
-                     "<p><em>Symmetrize Edges by examining Strong Ties:</em></p>"
-                     "<p>Creates a new symmetric relation by keeping strong ties only. "
-                     "In the new relation, a tie will exist between actor A and "
-                     "actor B only when both arcs A->B and B->A are present "
-                     "in the current or all relations. </p>"
+                       "<p><em>Symmetrize All Edges</em></p>"
+                       "<p>Forces all edges in this relation to be reciprocated: "
+                       "<p>If there is a directed edge from node A to node B "
+                       "then a new directed edge from node B to node A will be "
+                       " created, with the same weight. </p>"
+                       "<p>The result is a symmetric network.</p>"
+
+                     "<p><em>Symmetrize Edges by Strong Ties:</em></p>"
+                     "<p>Creates a new symmetric relation by keeping strong ties only. </p>"
+                     "<p>A tie between actors A and B is considered strong if both A -> B and B -> A exist. "
+                     "Therefore, in the new relation, a reciprocated edge will be created between actors A and B "
+                     "only if both arcs A->B and B->A were present in the current or all relations. </p>"
+                     "<p>If the network is multi-relational, it will ask you whether "
+                      "ties in the current relation or all relations are to be considered.</p>"
 
                      "<p><em>Symmetrize Edges by examining Cocitation:</em></p>"
                      "<p>Creates a new symmetric relation by connecting actors "
                      "that are cocitated by others. "
-                     "In the new relation, an edge will exist between actor i and "
+                     "In the new relation, an edge will be created between actor i and "
                      "actor j only if C(i,j) > 0, where C the Cocitation Matrix. </p>"
+                    "<p>Thus the actor pairs cited by more common neighbors will appear "
+                     "with a stronger tie between them than pairs those cited by fewer "
+                     "common neighbors. "
+                     "The resulting relation is symmetric.</p>"
+
                      "<p><em>Dichotomize Edges</em></p>"
                      "<p>Creates a new binary relation in a valued network using "
                      "edge dichotomization according to a given threshold value. "
@@ -4332,7 +4341,7 @@ void MainWindow::initPanels(){
 
     QStringList edgeTransformCommands;
     edgeTransformCommands << "Select"
-                       << "Symmetrize All Directed Ties"
+                       << "Symmetrize All Ties"
                        << "Symmetrize Strong Ties"
                        << "Cocitation Network"
                        << "Edge Dichotomization";
@@ -6883,10 +6892,10 @@ void MainWindow::slotNetworkSaveAs() {
             fn.append(".graphml");
             slotHelpMessageToUser (
                         USER_MSG_INFO,
-                        tr("Appending .graphml"),
-                        tr("Missing Extension. \n"
-                           "Appended the standard .graphml extension to the given filename.\n"
-                           "Final Filename: ") + QFileInfo(fn).fileName()
+                        tr("Appending .graphml extension."),
+                        tr("Missing file extension. \n"
+                           "Appended the standard .graphml extension to the given filename."),
+                        tr("Final Filename: ") + QFileInfo(fn).fileName()
                         );
         }
         else if ( !QFileInfo(fn).suffix().contains("graphml",  Qt::CaseInsensitive) &&
@@ -6895,10 +6904,10 @@ void MainWindow::slotNetworkSaveAs() {
             fn.append(".graphml");
             slotHelpMessageToUser (
                         USER_MSG_INFO,
-                        tr("Appending .graphml"),
-                        tr("Wrong Extension. \n"
-                           "Appended a standard .graphml to the given filename. \n"
-                           "Final Filename: ") + QFileInfo(fn).fileName()
+                        tr("Using .graphml extension."),
+                        tr("Wrong file extension. \n"
+                           "Appended the standard .graphml extension to the given filename."),
+                        tr("Final Filename: ") + QFileInfo(fn).fileName()
                         );
 
         }
@@ -8401,9 +8410,9 @@ void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
                                               const QString mode,
                                               const bool diag)
 {
-    qDebug() << "MW::slotNetworkRandomErdosRenyi()";
+    qDebug() << "Request to create an Erdos-Renyi random network...";
 
-    statusMessage( tr("Creating Erdos-Renyi Random Network. Please wait... ")  );
+    statusMessage( tr("Creating new Erdos-Renyi random network. Please wait... ")  );
 
     appSettings["randomErdosEdgeProbability"] = QString::number(eprob);
 
@@ -8418,34 +8427,31 @@ void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
 
     double threshold = log(newNodes)/newNodes;
 
-    //qreal clucof=activeGraph->clusteringCoefficient();
-
     if ( (eprob ) > threshold )
-        QMessageBox::information(
-                    this,
-                    "New Erdos-Renyi Random Network",
-                    tr("Random network created. \n")+
-                    //tr("\nAverage path length: ") + QString::number(avGraphDistance)+
-                    //tr("\nClustering coefficient: ")+QString::number(clucof)+
-                    tr("\n\nOn the average, edges should be ") +
-                    QString::number( eprob * newNodes*(newNodes-1)) +
-                    tr("\nThis graph is almost surely connected because: \nprobability > ln(n)/n, that is: \n")
-                    + QString::number(eprob)+
-                    tr(" bigger than ")+ QString::number(threshold) , "OK",0);
+        slotHelpMessageToUser (
+                    USER_MSG_INFO,
+                    tr("Erdős–Rényi random network created. Ready."),
+                    tr("Random network created. \n"
+                       "A new random network has been created according to the Erdős–Rényi model."),
+                    tr("On average, edges should be %1. This graph is almost surely connected because: \n"
+                        "probability > ln(n) that is: %2 < %3")
+                    .arg(QString::number(eprob * newNodes*(newNodes-1)))
+                    .arg(QString::number(eprob))
+                    .arg(QString::number(threshold))
+                    );
 
     else
-        QMessageBox::information(
-                    this,
-                    "New Erdos-Renyi Random Network",
-                    tr("Random network created. \n")+
-                    //tr("\nAverage path length: ") + QString::number(avGraphDistance)+
-                    //tr("\nClustering coefficient: ")+QString::number(clucof)+
-                    tr("\n\nOn the average, edges should be ")
-                    + QString::number(eprob * newNodes*(newNodes-1)) +
-                    tr("\nThis graph is almost surely not connected because: \nprobability < ln(n)/n, that is: \n") +
-                    QString::number(eprob)+ " smaller than "+ QString::number(threshold) , "OK",0);
-
-    statusMessage( tr("Erdos-Renyi Random Network created. ") ) ;
+        slotHelpMessageToUser (
+                    USER_MSG_INFO,
+                    tr("Erdős–Rényi random network created. Ready."),
+                    tr("Random network created. \n"
+                       "A new random network has been created according to the Erdős–Rényi model."),
+                    tr("On average, edges should be %1. This graph is almost surely not connected because: \n"
+                        "probability < ln(n) that is: %2 < %3")
+                    .arg(QString::number(eprob * newNodes*(newNodes-1)))
+                    .arg(QString::number(eprob))
+                    .arg(QString::number(threshold))
+                    );
 
 }
 
@@ -8456,7 +8462,7 @@ void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
  */
 void MainWindow::slotNetworkRandomScaleFreeDialog() {
 
-        qDebug() << "Showing the dialog to create a random scale-free network ";
+     qDebug() << "Showing the dialog to create a random scale-free network ";
 
     // Close the current network
     this->slotNetworkClose();
@@ -8488,7 +8494,7 @@ void MainWindow::slotNetworkRandomScaleFree ( const int &newNodes,
                                               const qreal &zeroAppeal,
                                               const QString &mode)
 {
-    qDebug() << "MW::slotNetworkRandomScaleFree()";
+    qDebug() << "Request to create a new scale-free random network...";
 
     activeGraph->randomNetScaleFreeCreate( newNodes,
                                            power,
@@ -8500,17 +8506,14 @@ void MainWindow::slotNetworkRandomScaleFree ( const int &newNodes,
 
     setWindowTitle("Untitled scale-free network");
 
-    //qreal avGraphDistance=activeGraph->graphDistanceGeodesicAverage();
-    //qreal clucof=activeGraph->clusteringCoefficient();
-    QMessageBox::information(this, "New scale-free network",
-                             tr("Scale-free random network created.\n")
-                             //                             +tr("\nNodes: ")+ QString::number(nodesSelected)+
-                             //                             tr("\nEdges: ") +  QString::number( edgeCount )
-                             //+  tr("\nAverage path length: ") + QString::number(avGraphDistance)
-                             //+ tr("\nClustering coefficient: ")+QString::number(clucof)
-                             , "OK",0);
+    slotHelpMessageToUser (
+                USER_MSG_INFO,
+                tr("Scale-free random network created. Ready."),
+                tr("Random network created. \n"
+                   "A new scale-free random network with %1 nodes has been created according to the Barabási–Albert model.").arg(newNodes),
+                tr("A scale-free network is a network whose degree distribution follows a power law.")
 
-    statusMessage( tr("Scale-Free Random Network created. ") );
+                );
 
 }
 
@@ -8554,26 +8557,21 @@ void MainWindow::slotNetworkRandomSmallWorld(const int &newNodes,
 {
     Q_UNUSED(diag);
 
-    qDebug() << "MW::slotNetworkRandomSmallWorld()";
+    qDebug() << "Request to create a new small-world random network...";
 
     activeGraph->randomNetSmallWorldCreate(newNodes, degree, beta, mode);
 
     setWindowTitle("Untitled small-world network");
 
-    //qreal avGraphDistance=activeGraph->graphDistanceGeodesicAverage();
-    //qreal clucof=activeGraph->clusteringCoefficient();
-    QMessageBox::information(this, "New Small World network",
-                             tr("Small world network created.\n")
-                             //                             +tr("\nNodes: ")+ QString::number(nodeCount)+
-                             //                             tr("\nEdges: ") +  QString::number( edgeCount )
-                             //+  tr("\nAverage path length: ") + QString::number(avGraphDistance)
-                             //+ tr("\nClustering coefficient: ")+QString::number(clucof)
-                             , "OK",0);
+    slotHelpMessageToUser (
+                USER_MSG_INFO,
+                tr("Small-World random network created. Ready."),
+                tr("Random network created. \n"
+                   "A new random network with %1 nodes has been created according to the Watts & Strogatz model.").arg(newNodes),
+                tr("A small-world network has short average path lengths and high clustering coefficient.")
+                );
 
-
-    statusMessage( tr("Small World Random Network created. ") );
 }
-
 
 
 
@@ -8618,20 +8616,17 @@ void MainWindow::slotNetworkRandomRegular(const int &newNodes, const int &degree
 
     setWindowTitle("Untitled d-regular network");
 
-    //qreal avGraphDistance=activeGraph->graphDistanceGeodesicAverage();
-    //qreal clucof=activeGraph->clusteringCoefficient();
-    QMessageBox::information(this, "New d-Regular network",
-                             tr("d-Regular network created.\n")
-                             //                             +tr("\nNodes: ")+ QString::number(nodeCount)+
-                             //                             tr("\nEdges: ") +  QString::number( edgeCount )
-                             //+  tr("\nAverage path length: ") + QString::number(avGraphDistance)
-                             //+ tr("\nClustering coefficient: ")+QString::number(clucof)
-                             , "OK",0);
 
-    statusMessage( tr( "d-regular network created. " ) );
+    slotHelpMessageToUser (
+                USER_MSG_INFO,
+                tr("d-regular network created. Ready."),
+                tr("Random network created. \n"
+                   "A new d-regular random network with %1 nodes has been created.").arg(newNodes),
+                tr("Each node has the same number <em>%1</em> of neighbours, aka the same degree d.")
+                .arg(degree)
+                );
 
 }
-
 
 
 
@@ -8677,8 +8672,16 @@ void MainWindow::slotNetworkRandomRingLattice(){
                 2, 2, newNodes-1, 2, &ok);
 
     if ( (degree % 2) == 1 ) {
-        QMessageBox::critical(this, "Error",tr(" Sorry. I cannot create such a network. "
-                                               "Degree must be even number"), "OK",0);
+
+        slotHelpMessageToUser (
+                    USER_MSG_CRITICAL,
+                    tr("Error. Cannot create such network."),
+                    tr("Error. Cannot create such network!\n"
+                       "The degree %1 is not an even number.").arg(degree),
+                    tr("A ring lattice is a graph with N vertices each connected to d neighbors, d / 2 on each side."
+                    "Please try againm entering an even number as degree.")
+
+                    );
         return;
     }
 
@@ -8686,17 +8689,16 @@ void MainWindow::slotNetworkRandomRingLattice(){
     activeGraph->randomNetRingLatticeCreate(newNodes, degree, true );
 
     setWindowTitle("Untitled ring-lattice network");
-    //qreal avGraphDistance=activeGraph->graphDistanceGeodesicAverage();
-    //qreal clucof=activeGraph->clusteringCoefficient();
-    QMessageBox::information(this, "New Ring Lattice",
-                             tr("Ring lattice network created.\n")
-                             //                             +tr("\nNodes: ")+ QString::number(activeNodes())+
-                             //                             tr("\nEdges: ")+  QString::number( activeEdges() )
-                             // + tr("\nAverage path length: ") + QString::number(avGraphDistance)
-                             //+ tr("\nClustering coefficient: ")+QString::number(clucof)
-                             , "OK",0);
 
-    statusMessage( tr("Ring lattice random network created: " ));
+    slotHelpMessageToUser (
+                USER_MSG_INFO,
+                tr("Ring lattice random network created. Ready."),
+                tr("Random network created. \n"
+                   "A new ring-lattice random network with %1 nodes has been created.").arg(newNodes),
+                tr("A ring lattice is a graph with N vertices each connected to d neighbors, d / 2 on each side.")
+
+                );
+
 }
 
 
@@ -9622,7 +9624,8 @@ void MainWindow::slotEditNodeSelectedToClique () {
     int selectedNodesCount = activeGraph->getSelectedVerticesCount();
 
     if ( selectedNodesCount < 3 ) {
-        slotHelpMessageToUser(USER_MSG_INFO,tr("Not enough nodes selected."),
+        slotHelpMessageToUser(USER_MSG_INFO,
+                              tr("Error. Not enough nodes selected."),
                               tr("Cannot create new clique because you have "
                                  "not selected enough nodes."),
                               tr("Select at least three nodes first.")
@@ -9632,7 +9635,8 @@ void MainWindow::slotEditNodeSelectedToClique () {
 
     activeGraph->verticesCreateSubgraph(QList<int> (), SUBGRAPH_CLIQUE);
 
-    slotHelpMessageToUser(USER_MSG_INFO,tr("Clique created."),
+    slotHelpMessageToUser(USER_MSG_INFO,
+                          tr("Clique created."),
                           tr("A new clique has been created from ") + QString::number(selectedNodesCount)
                           + tr(" nodes")
                           );
@@ -9655,7 +9659,8 @@ void MainWindow::slotEditNodeSelectedToStar() {
     int selectedNodesCount = activeGraph->getSelectedVerticesCount();
 
     if ( selectedNodesCount < 3 ) {
-        slotHelpMessageToUser(USER_MSG_INFO,tr("Not enough nodes selected."),
+        slotHelpMessageToUser(USER_MSG_INFO,
+                              tr("Not enough nodes selected."),
                               tr("Cannot create new star subgraph because you have "
                                  "not selected enough nodes."),
                               tr("Select at least three nodes first.")
@@ -9682,7 +9687,8 @@ void MainWindow::slotEditNodeSelectedToStar() {
 
     activeGraph->verticesCreateSubgraph(QList<int> (), SUBGRAPH_STAR,center);
 
-    slotHelpMessageToUser(USER_MSG_INFO,tr("Star subgraph created."),
+    slotHelpMessageToUser(USER_MSG_INFO,
+                          tr("Star subgraph created."),
                           tr("A new star subgraph has been created with ") +
                           QString::number( selectedNodesCount )
                           + tr(" nodes.")
@@ -9705,7 +9711,8 @@ void MainWindow::slotEditNodeSelectedToCycle() {
     int selectedNodesCount = activeGraph->getSelectedVerticesCount();
 
     if ( selectedNodesCount < 3 ) {
-        slotHelpMessageToUser(USER_MSG_INFO,tr("Not enough nodes selected."),
+        slotHelpMessageToUser(USER_MSG_INFO,
+                              tr("Not enough nodes selected."),
                               tr("Cannot create new cycle subgraph because you have "
                                  "not selected enough nodes."),
                               tr("Select at least three nodes first.")
@@ -9715,7 +9722,8 @@ void MainWindow::slotEditNodeSelectedToCycle() {
 
     activeGraph->verticesCreateSubgraph(QList<int> (),SUBGRAPH_CYCLE);
 
-    slotHelpMessageToUser(USER_MSG_INFO,tr("Cycle subgraph created."),
+    slotHelpMessageToUser(USER_MSG_INFO,
+                          tr("Cycle subgraph created."),
                           tr("A new cycle subgraph has been created with ")
                           + QString::number( selectedNodesCount )
                           + tr(" select nodes.")
@@ -9738,7 +9746,8 @@ void MainWindow::slotEditNodeSelectedToLine() {
     int selectedNodesCount = activeGraph->getSelectedVerticesCount();
 
     if ( selectedNodesCount < 3 ) {
-        slotHelpMessageToUser(USER_MSG_INFO,tr("Not enough nodes selected."),
+        slotHelpMessageToUser(USER_MSG_INFO,
+                              tr("Not enough nodes selected."),
                               tr("Cannot create new line subgraph because you have "
                                  "not selected enough nodes."),
                               tr("Select at least three nodes first.")
@@ -9748,7 +9757,8 @@ void MainWindow::slotEditNodeSelectedToLine() {
 
     activeGraph->verticesCreateSubgraph(QList<int> (),SUBGRAPH_LINE);
 
-    slotHelpMessageToUser(USER_MSG_INFO,tr("Line subgraph created."),
+    slotHelpMessageToUser(USER_MSG_INFO,
+                          tr("Line subgraph created."),
                           tr("A new line subgraph has been created with ")
                           + QString::number( selectedNodesCount )
                           + tr(" selected nodes.")
@@ -10960,32 +10970,34 @@ void MainWindow::slotEditEdgeSymmetrizeAll(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
-    qDebug("MW: slotEditEdgeSymmetrizeAll() calling setSymmetric()");
+    qDebug() << "Request to symmetrize all edges...";
     activeGraph->setSymmetric();
-    QMessageBox::information(this,
-                             "Symmetrize",
-                             tr("All arcs are reciprocal. \n"
-                                "The network is symmetric."), "OK",0);
-    statusMessage(tr("All arcs are now reciprocal. Thus a symmetric network. Ready."));
+    slotHelpMessageToUser(USER_MSG_INFO,
+                          tr("All ties have been symmetrized. Ready."),
+                          tr("All ties between nodes have been symmetrized."),
+                          tr("The network is now symmetric. ")
+                          );
 }
 
 
 /**
- * @brief Adds a new symmetric relation with ties only between pairs of nodes
- * who are cocited by others.
+ * @brief Adds a new cocitation symmetric relation to the network
+ *
+ * In the new relation, there are ties only between pairs of nodes who were cocited by others.
  */
 void MainWindow::slotEditEdgeSymmetrizeCocitation(){
     if ( activeEdges() ==0 )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
-    qDebug("MW: slotEditEdgeSymmetrizeCocitation() calling relationAddCocitation()");
+    qDebug() << "Request to add a new symmetric relation using cocited nodes...";
     activeGraph->relationAddCocitation();
-    slotHelpMessageToUser(USER_MSG_INFO,tr("New symmetric cocitation relation created."),
-                          tr("New cocitation relation created from strong ties"),
-                          tr("A new relation \"%1\" has been added to the network. "
-                             "by counting cocitation ties only. "
-                             "This relation is symmetric. ").arg("Cocitation"));
+
+    slotHelpMessageToUser(USER_MSG_INFO,
+                          tr("New cocitation relation added. Ready"),
+                          tr("New cocitation relation has been added to the network."),
+                          tr("In the new relation, there are ties only between pairs of nodes who were cocited by others.")
+                         );
 
 }
 
