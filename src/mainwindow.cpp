@@ -8676,10 +8676,10 @@ void MainWindow::slotNetworkRandomRingLattice(){
         slotHelpMessageToUser (
                     USER_MSG_CRITICAL,
                     tr("Error. Cannot create such network."),
-                    tr("Error. Cannot create such network!\n"
+                    tr("Error. Cannot create such network!\n\n"
                        "The degree %1 is not an even number.").arg(degree),
-                    tr("A ring lattice is a graph with N vertices each connected to d neighbors, d / 2 on each side."
-                    "Please try againm entering an even number as degree.")
+                    tr("A ring lattice is a graph with N vertices each connected to d neighbors, d / 2 on each side. \n"
+                    "Please try again entering an even number as degree.")
 
                     );
         return;
