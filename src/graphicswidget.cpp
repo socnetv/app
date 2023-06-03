@@ -97,8 +97,9 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         connect ( scene() , &QGraphicsScene::selectionChanged,
                      this, &GraphicsWidget::handleSelectionChanged);
 
-
+        // Set our scene dimensions. This closes #131
         scene()->setSceneRect(0,0, 3000, 3000);
+
         qDebug () << "Scene dimensions now:" << scene()->width() << "x" << scene()->height();
 
 
@@ -1648,8 +1649,7 @@ void GraphicsWidget::zoomIn(const int step){
 void GraphicsWidget::changeMatrixScale(int value) {
 
     qDebug () << "Scaling the view transformation matrix by value" << value
-               << " - GW dimensions: " << width() << "x" << height()
-              << "  Scene dimensions:" << scene()->width() << "x" << scene()->height();
+               << " - GW dimensions: " << width() << "x" << height();
 
     // Raise a flag that a non-trivial transformation is applied on the view
     m_isTransformationActive = true;
