@@ -190,6 +190,13 @@ MainWindow::MainWindow(const QString & m_fileName, const bool &forceProgress, co
     // Create our network manager
     networkManager = new QNetworkAccessManager;
 
+    // Store the max zoom index
+    // The initial zoom will be the half of it
+    // @see zoomSlider
+    // @see GraphicsWidget::setInitZoomIndex()
+    // @see GraphicsWidget::setMaxZoomIndex()
+    maxZoomIndex = 1000;
+
     //
     // Initialize widgets
     //
@@ -1322,7 +1329,10 @@ void MainWindow::initActions(){
     networkRandomLatticeAct->setStatusTip(tr("Create a lattice network."));
     networkRandomLatticeAct->setWhatsThis(
                 tr("<p><b>Lattice </b></p>"
-                   "<p>Creates a random lattice network</p>"));
+                   "<p>Creates a random lattice network</p>"
+                    "<p>A lattice is a network whose drawing forms a regular tiling. "
+                    "Lattices are also known as meshes or grids.</p>"
+                ));
     connect(networkRandomLatticeAct, SIGNAL(triggered()), this, SLOT(slotNetworkRandomLatticeDialog()));
 
 
@@ -2959,18 +2969,18 @@ void MainWindow::initActions(){
     analyzeGraphDiameterAct->setStatusTip(tr("Compute the diameter of the network, "
                                              "the maximum geodesic distance between any actors."));
     analyzeGraphDiameterAct->setWhatsThis(tr("Diameter\n\n "
-                                             "The Diameter of a social network is the maximum geodesic distance "
+                                             "The diameter of a network is the maximum geodesic distance "
                                              "(maximum shortest path length) between any two nodes of the network."));
     connect(analyzeGraphDiameterAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeDiameter()));
 
     averGraphDistanceAct = new QAction(QIcon(":/images/avdistance.png"), tr("Average Distance"),this);
     averGraphDistanceAct->setShortcut(
                 QKeySequence(Qt::CTRL | Qt::Key_G, Qt::CTRL | Qt::Key_A));
-    averGraphDistanceAct->setStatusTip(tr("Compute the average length of shortest paths for all possible pairs of nodes."));
+    averGraphDistanceAct->setStatusTip(tr("Compute the average graph distance for all possible pairs of nodes."));
     averGraphDistanceAct->setWhatsThis(
-                tr("Average Distance\n\n "
-                   "Computes the average length of shortest paths (geodesics) "
-                   "between all pairs of network actors (vertices in the graph). "
+                tr("Average Graph Distance\n\n "
+                   "This is the average length of shortest paths (geodesics) "
+                   "for all possible pairs of nodes. "
                    "It is a measure of the efficiency or compactness of the network."));
     connect(averGraphDistanceAct, SIGNAL(triggered()),
             this, SLOT(slotAnalyzeDistanceAverage()));
@@ -5227,8 +5237,8 @@ void MainWindow::initWindowLayout(const bool &maximized, const bool &fullscreen)
 
     zoomSlider = new QSlider;
     zoomSlider->setMinimum(0);
-    zoomSlider->setMaximum(500);
-    zoomSlider->setValue(250);
+    zoomSlider->setMaximum(maxZoomIndex);
+    zoomSlider->setValue((int)maxZoomIndex/2.0);
     zoomSlider->setToolTip(tr("Zoom slider: Drag up to zoom in. \n"
                               "Drag down to zoom out. "));
     zoomSlider->setWhatsThis(tr("Zoom slider: Drag up to zoom in. \n"
@@ -5689,8 +5699,10 @@ void MainWindow::initApp(){
     qDebug()<<"### Clearing graphicsWidget and resetting transformations. Please wait...";
     graphicsWidget->clear();
     rotateSlider->setValue(0);
-    zoomSlider->setValue(250);
-    graphicsWidget->setInitZoomIndex(250);
+    zoomSlider->setValue((int) maxZoomIndex/2.0);
+//    graphicsWidget->setInitZoomIndex((int) maxZoomIndex/2.0);
+    graphicsWidget->setMaxZoomIndex(maxZoomIndex);
+
     graphicsWidget->setInitNodeSize(appSettings["initNodeSize"].toInt(0, 10));
     graphicsWidget->setNodeNumberVisibility(
                 ( appSettings["initNodeNumbersVisibility"] == "true" ) ? true: false
@@ -8722,7 +8734,7 @@ void MainWindow::slotNetworkRandomLatticeDialog()
 
 
 /**
- * @brief Creates a lattice network, i.e. a connected network where every node
+ * @brief Creates a 'random' lattice network, i.e. a connected network where every node
  * has the same degree and is connected with its neighborhood
  *
  * A lattice is a network whose drawing forms a regular tiling
@@ -8742,7 +8754,7 @@ void MainWindow::slotNetworkRandomLattice(const int &newNodes,
                                           const QString &mode,
                                           const bool &circular){
 
-    qDebug() << "MW::slotNetworkRandomLattice()";
+    qDebug() << "Request to create a new lattice random network...";
 
     initApp();
 
@@ -8750,17 +8762,14 @@ void MainWindow::slotNetworkRandomLattice(const int &newNodes,
 
     setWindowTitle("Untitled lattice network");
 
-    //qreal avGraphDistance=activeGraph->graphDistanceGeodesicAverage();
-    //qreal clucof=activeGraph->clusteringCoefficient();
-    QMessageBox::information(this, "Lattice network",
-                             tr("Lattice network created.\n")
-                             //                             +tr("\nNodes: ")+ QString::number(nodeCount)+
-                             //                             tr("\nEdges: ") +  QString::number( edgeCount )
-                             //+  tr("\nAverage path length: ") + QString::number(avGraphDistance)
-                             //+ tr("\nClustering coefficient: ")+QString::number(clucof)
-                             , "OK",0);
-
-    statusMessage( tr( "Lattice network created. " ) );
+    slotHelpMessageToUser (
+                USER_MSG_INFO,
+                tr("Lattice random network created. Ready."),
+                tr("Random network created. \n"
+                   "A new lattice random network with %1 nodes has been created.").arg(newNodes),
+                tr("A lattice is a network whose drawing forms a regular tiling. "
+                    "Lattices are also known as meshes or grids.")
+                );
 
 }
 
@@ -9239,7 +9248,7 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
  * @brief Selects all nodes
  */
 void MainWindow::slotEditNodeSelectAll(){
-    qDebug() << "Selecting all nodes...";
+    qDebug() << "Request to select all nodes...";
     graphicsWidget->selectAll();
     statusMessage( tr("Selected nodes: %1")
                    .arg( activeGraph->getSelectedVerticesCount()  ) );
@@ -10792,9 +10801,12 @@ void MainWindow::slotEditEdgeColor(){
         }
 
         if ( ! activeGraph->edgeExists(sourceNode, targetNode ) )  {
-            statusMessage( tr("There is no such edge. ") );
-            QMessageBox::critical(this, "Error",
-                                  tr("No edge! \nNo such edge found in current network."), "OK",0);
+
+            slotHelpMessageToUser(USER_MSG_CRITICAL,
+                                  tr("Error. Cannot find that edge!"),
+                                  tr("Error. Cannot find that edge!"),
+                                  tr("Are you sure you entered the correct node numbers?")
+                                  );
 
             return;
         }
@@ -11345,7 +11357,6 @@ void MainWindow::slotLayoutSpringEmbedder(){
     }
 
     activeGraph->layoutForceDirectedSpringEmbedder(500);
-
     statusMessage( tr("Spring-Gravitational (Eades) model embedded.") );
 }
 
@@ -12281,7 +12292,10 @@ void MainWindow::slotAnalyzeMatrixGeodesics(){
 
 
 
-/**  Displays the network diameter (largest geodesic) */
+
+/**
+ * @brief Displays the network diameter (largest geodesic)
+ */
 void MainWindow::slotAnalyzeDiameter() {
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -12290,7 +12304,7 @@ void MainWindow::slotAnalyzeDiameter() {
 
     askAboutEdgeWeights();
 
-    statusMessage(  QString(tr("Computing Graph Diameter. Please wait...")) );
+    statusMessage( tr("Computing graph diameter. Please wait...") );
 
     int netDiameter=activeGraph->graphDiameter(
                 optionsEdgeWeightConsiderAct->isChecked(),
@@ -12298,30 +12312,43 @@ void MainWindow::slotAnalyzeDiameter() {
 
     if ( activeGraph->isWeighted() ) {
         if (optionsEdgeWeightConsiderAct->isChecked()) {
-            QMessageBox::information(this, "Diameter",
-                                     tr("Diameter =  ")
-                                     + QString::number(netDiameter) +
-                                     tr("\n\nSince this is a weighted network \n"
-                                        "the diameter can be more than N"),
-                                     "OK",0);
+            slotHelpMessageToUser (
+                        USER_MSG_INFO,
+                        tr("Network diameter computed. Ready."),
+                        tr("Network diameter computed. \n\n"
+                            "D = %1").arg(netDiameter),
+                        tr("The diameter of a network is the maximum geodesic distance "
+                            "(maximum shortest path length) between any two nodes.\n\n"
+                             "Note, since this is a weighted network, "
+                            "the diameter can be greater than N.")
+                        );
+
         }
         else {
-            QMessageBox::information(this, "Diameter",
-                                     tr("Diameter =  ")
-                                     + QString::number(netDiameter) +
-                                     tr("\n\nThis is the diameter of the \n"
-                                        "corresponding network without weights"),
-                                     "OK",0);
+            slotHelpMessageToUser (
+                        USER_MSG_INFO,
+                        tr("Network diameter computed. Ready."),
+                        tr("Network diameter computed. \n\n"
+                            "D = %1").arg(netDiameter),
+                        tr("The diameter of a network is the maximum geodesic distance "
+                            "(maximum shortest path length) between any two nodes.\n\n"
+                            "Note, edge weights were disregarded during the computation. "
+                            "This is the diameter of the corresponding network without weights.")
+                        );
         }
     }
     else
-        QMessageBox::information(this, "Diameter",
-                                 tr("Diameter =  ")
-                                 + QString::number(netDiameter) +
-                                 tr("\n\nSince this is a non-weighted network, \n"
-                                    "the diameter is always less than N-1."),
-                                 "OK",0);
-    statusMessage( tr("Graph Diameter computed. Ready.") );
+        slotHelpMessageToUser (
+                    USER_MSG_INFO,
+                    tr("Network diameter computed. Ready."),
+                    tr("Network diameter computed. \n\n"
+                        "D = %1").arg(netDiameter),
+                    tr("The diameter of a network is the maximum geodesic distance "
+                        "(maximum shortest path length) between any two nodes.\n\n"
+                        "Note, since this is a non-weighted network, the diameter is always smaller than N-1.")
+                    );
+
+
 }
 
 
@@ -12349,28 +12376,29 @@ void MainWindow::slotAnalyzeDistanceAverage() {
     bool isConnected = activeGraph->isConnected();
 
     if ( isConnected ) {
-
-        QMessageBox::information(this,
-                                 "Average Graph Distance",
-                                 "The average shortest path length in this "
-                                 "connected network is the sum of pair-wise distances "
-                                 "divided by N * (N - 1). \n\n"
-                                 "Average distance: " +
-                                 QString::number(averGraphDistance), "OK",0);
+        slotHelpMessageToUser (
+                    USER_MSG_INFO,
+                    tr("Average graph distance computed. Ready."),
+                    tr("Average graph distance computed. \n\n"
+                        "d = %1").arg(averGraphDistance),
+                    tr("The average graph distance is the average length of shortest paths (geodesics) "
+                        "for all possible pairs of nodes.\n\n"
+                        "The average distance in this connected network "
+                        "is the sum of pair-wise distances divided by N * (N - 1).")
+                    );
     }
     else {
-        QMessageBox::information(this,
-                                 "Average Graph Distance",
-                                 "The average shortest path length in this "
-                                 "disconnected network is the sum of pair-wise distances "
-                                 "divided by the number of existing geodesics. \n\n"
-                                 "Average distance: " +
-                                 QString::number(averGraphDistance), "OK",0);
-
+        slotHelpMessageToUser (
+                    USER_MSG_INFO,
+                    tr("Average distance computed. Ready."),
+                    tr("Average distance computed. \n\n"
+                        "<em>d</em> = %1").arg(averGraphDistance),
+                    tr("The average graph distance is the average length of shortest paths (geodesics) "
+                        "for all possible pairs of nodes.\n\n"
+                        "The average distance in this disconnected network "
+                        "is the sum of pair-wise distances divided by the number of existing geodesics.")
+                    );
     }
-
-    statusMessage( tr("Average geodesic distance computed. Ready.") );
-
 }
 
 

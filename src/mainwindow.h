@@ -563,7 +563,7 @@ private:
     int fileType;
     int maxRandomlyCreatedNodes;
     int fortuneCookiesCounter;
-
+    int initZoomIndex, maxZoomIndex;
     bool inverseWeights, askedAboutWeights;
 
     QString fileName, previous_fileName, fileNameNoPath, progressMsg;
