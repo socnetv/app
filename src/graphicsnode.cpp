@@ -103,6 +103,8 @@ GraphicsNode::GraphicsNode ( GraphicsWidget* gw,
     m_col_str=color;
     m_col_orig=m_col=QColor(color);
 
+    m_col_outline = QColor(0,0,0,50);
+
     m_hasNumber=showNumbers;
     m_hasNumberInside = numbersInside;
     m_numSize = numberSize;
@@ -131,8 +133,8 @@ GraphicsNode::GraphicsNode ( GraphicsWidget* gw,
 
     setPos(p);
 
-    qDebug()<< "Constructed new node at pos:"  << x()<<","<<y()
-            << "m_numSize" << m_numSize;
+    qDebug()<< "Constructed new node" << nodeNumber() << "at pos:" << x()<<"x"<<y()
+            << "size:" << m_numSize;
 
 } 
 
@@ -162,13 +164,14 @@ void GraphicsNode::setColor(QColor color){
     qDebug()<< "Changing the node color to:" << color;
     prepareGeometryChange();
     m_col=color;
+    // Store the name of the color (format "#RRGGBB").
     m_col_str = m_col.name();
     update();
 }
 
 
 /**
- * @brief Returns the node color string
+ * @brief Returns the node color in the format "#RRGGBB".
  *
  * @return QString
  */
@@ -327,11 +330,13 @@ void GraphicsNode::setShape(const QString shape, const QString &iconPath) {
 
 /**
  * @brief Returns the shape of the node as a path in local coordinates.
+ *
  * The shape is used for many things, including collision detection, hit tests,
  * and for the QGraphicsScene::items() functions.
  * We could ommit reimplementing this and have the default QGraphicsItem::shape()
  * return a simple rectangular shape through boundingRect() but we opt to return
  * an accurate outline of the item's shape.
+ *
  * @return
  */
 QPainterPath GraphicsNode::shape() const {
@@ -344,8 +349,10 @@ QPainterPath GraphicsNode::shape() const {
 
 
 /**
- * @brief Returns the bounding rectangle of the node:
- * The rectangle where all painting will take place.
+ * @brief Returns the bounding rectangle of the node.
+ *
+ * The bounding rectangle is the area where all painting will take place.
+ *
  * @return
  */
 QRectF GraphicsNode::boundingRect() const {
@@ -358,7 +365,9 @@ QRectF GraphicsNode::boundingRect() const {
 
 /**
  * @brief Does the actual painting using the QPainterPath created by the setShape()
+ *
  * Called by GraphicsView and GraphicsNode methods in every update()
+ *
  * @param painter
  * @param option
  */
@@ -368,7 +377,7 @@ void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
     //qDebug()<< "GraphicsNode::paint() " << m_col;
 
     if (option->state & QStyle::State_MouseOver) {
-        qDebug()<< "GraphicsNode::paint() mouse over " << m_col;
+        qDebug()<< "Highlighting node because of mouse hover ";
         painter->setBrush(m_col.darker(120));
         setZValue(ZValueNodeHighlighted);
     }
@@ -387,15 +396,14 @@ void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
               m_shape == "bugs"    ||
               m_shape == "heart"   ||
               m_shape == "dice"     ) {
-        // See:
-        // https://techbase.kde.org/Development/Tutorials/Graphics/Performance
+
 //        QImage image(m_iconPath);
 //        painter->drawImage(QRectF(-m_size, -m_size, 2*m_size, 2*m_size) , image);
         QPixmap pix(m_iconPath);
         painter->drawPixmap(-m_size, -m_size, 2*m_size, 2*m_size, pix);
     }
     else {
-        painter->setPen(QPen(QColor("#222"), 0));
+        painter->setPen(QPen(m_col_outline, 0));
         painter->drawPath (m_path);
     }
 
@@ -459,7 +467,7 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
         break;
     }
     case ItemEnabledHasChanged:{
-        qDebug() << "GraphicsNode::itemChange - enabled changed";
+        qDebug() << "Node item has been enabled";
         break;
     }
     case ItemSelectedHasChanged:{
@@ -506,7 +514,7 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
 
 
 
-///** handles the events of a click on a node */
+
 //void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 //    QGraphicsItem::mousePressEvent(event);
 //}

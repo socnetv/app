@@ -149,16 +149,18 @@ private:
     QPainterPath m_path;
     QPointF newPos;
     QPolygonF *m_poly_t;
+    int m_num;
     int m_size, m_size_orig;
     int m_state;
     int m_numSize;
     int m_labelSize;
     int m_numberDistance;
     int m_labelDistance;
-    int m_num;
     QString  m_shape, m_iconPath;
-    QString m_col_str, m_numColor, m_labelText, m_labelColor;
+    QString m_col_str, m_numColor;
     QColor m_col, m_col_orig;
+    QColor m_col_outline;
+    QString m_labelText, m_labelColor;
     bool m_hasNumber, m_hasLabel, m_hasNumberInside, m_edgeHighLighting;
     /**Lists of elements attached to this node */
     list<GraphicsEdge*> inEdgeList, outEdgeList;
