@@ -105,12 +105,12 @@ void DialogExportPDF::checkFilename(const QString &fileName){
         }
         ui->fileEdit->setText(m_fileName);
         ui->fileEdit->setGraphicsEffect(0);
+        ui->fileDirSelectButton->setGraphicsEffect(0);
         (ui->buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(true);
         (ui->buttonBox)->button (QDialogButtonBox::Ok)->setDefault(true);
     }
     else {
-        qDebug() << " empty or dir does not exist";
-        // TODO Error message on form.
+        qDebug() << "Empty filaname or dir does not exist";
         QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
         effect->setColor(QColor("red"));
         ui->fileEdit->setGraphicsEffect(effect);

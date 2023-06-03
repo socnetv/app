@@ -15473,7 +15473,6 @@ QString Graph::getName() const {
             return relationCurrentName();
         }
         else {
-            //TODO: Maybe we should use m_filename in this case?
             return "noname";
         }
 
@@ -16104,7 +16103,7 @@ bool Graph::saveToAdjacencyFormat (const QString &fileName,
 
 
 /**
- * @brief TODO Saves the active graph to an UCINET-formatted file
+ * @brief TODO Saves the active graph to a UCINET-formatted file
  *
  * @param fileName
  *

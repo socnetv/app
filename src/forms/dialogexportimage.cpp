@@ -128,7 +128,7 @@ void DialogExportImage::changeQualityRange(const int &min, const int &max, const
 
 
 /**
- * @brief Gets the filename of the Image
+ * @brief Opens a dialog to get the filename of the new image to export
  */
 void DialogExportImage::getFilename(){
 
@@ -151,12 +151,12 @@ void DialogExportImage::getFilename(){
         }
         ui->fileEdit->setText(m_fileName);
         ui->fileEdit->setGraphicsEffect(0);
+        ui->fileDirSelectButton->setGraphicsEffect(0);
         (ui->buttonBox)->button (QDialogButtonBox::Ok)->setEnabled(true);
         (ui->buttonBox)->button (QDialogButtonBox::Ok)->setDefault(true);
     }
     else {
-        qDebug() << " empty or dir does not exist";
-        // TODO Error message on form.
+        qDebug() << "Empty filaname or dir does not exist";
         QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
         effect->setColor(QColor("red"));
         ui->fileEdit->setGraphicsEffect(effect);

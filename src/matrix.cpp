@@ -307,7 +307,6 @@ void Matrix::deleteRowColumn(int erased){
         row[i].setSize(m_cols);
     }
     qDebug() << "Matrix:deleteRowColumn() - finished, new matrix:";
-    //printMatrixConsole(true); // @TODO comment out to release
 
 }
 
