@@ -66,7 +66,8 @@ public:
 
     void setInitNodeSize(int);
 
-    void setInitZoomIndex (int);
+    void setInitZoomIndex (const int &);
+    void setMaxZoomIndex (const int &);
 
     GraphicsNode* hasNode(QString text);
     void setSelectedNodes(QList<int> list);
@@ -227,9 +228,9 @@ private:
     QList<SelectedEdge> m_selectedEdges;
     int m_curRelation, m_nodeSize;
     int m_currentRotationAngle;
-    int m_zoomIndex, markedEdgeSourceOrigSize, markedEdgeTargetOrigSize;
+    int m_zoomIndex, m_zoomIndexInit, m_zoomIndexMax;
+    int markedEdgeSourceOrigSize, markedEdgeTargetOrigSize;
     int m_edgeMinOffsetFromNode;
-    int m_width, m_height, m_w0, m_h0;
     double m_currentScaleFactor;
     qreal fX,fY, factor;
     QString m_nodeLabel, m_numberColor, m_labelColor;

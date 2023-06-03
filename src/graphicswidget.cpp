@@ -65,18 +65,18 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         qRegisterMetaType<QList<SelectedEdge> >();
         qRegisterMetaType<QList<int> >();
 
+        // Set defaults
         secondDoubleClick=false;
         m_isTransformationActive = false;
         m_nodeLabel="";
 
-        m_width = 0;
-        m_height = 0;
+        // Note: Should be changed by a call to setMaxZoomIndex()
         m_zoomIndex=250;
         m_currentScaleFactor = 1;
         m_currentRotationAngle = 0;
 
         clickedEdge=0;
-        edgesHash.reserve(150000);
+        edgesHash.reserve(500000);
         nodeHash.reserve(10000);
 
         m_edgeHighlighting = true;
@@ -96,6 +96,10 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         // Connect scene change signal to the slot that handles selected items
         connect ( scene() , &QGraphicsScene::selectionChanged,
                      this, &GraphicsWidget::handleSelectionChanged);
+
+
+        scene()->setSceneRect(0,0, 3000, 3000);
+        qDebug () << "Scene dimensions now:" << scene()->width() << "x" << scene()->height();
 
 
 }
@@ -192,7 +196,6 @@ void GraphicsWidget::clear() {
     clickedEdge=0;
     firstNode=0;
     secondDoubleClick=false;
-    scene()->setSceneRect(0, 0, 0, 0);
     qDebug() << "Finished clearing graphics widget";
 }
 
@@ -704,7 +707,7 @@ void   GraphicsWidget::setNumbersInsideNodes(const bool &toggle){
 
 /**
     Sets initial node size from MW.
-    It is Called from MW on startup and when user changes it.
+    It is called from MW on startup and when user changes it.
 */
 void GraphicsWidget::setInitNodeSize(int size){
     qDebug()<< "Setting default node size to" << size;
@@ -715,13 +718,25 @@ void GraphicsWidget::setInitNodeSize(int size){
 
 
 /**
- * @brief Passes initial zoom setting
+ * @brief Sets the initial zoom setting. Use setMaxZoomIndex() instead.
+ * @param zoomIndex
+ */
+void GraphicsWidget::setInitZoomIndex(const int &zoomIndex) {
+    m_zoomIndex = m_zoomIndexInit = zoomIndex;
+}
+
+
+/**
+ * @brief Sets the max zoom allowed (and the initial zoom as half of it).
  * Called from MW on startup
  * @param zoomIndex
  */
-void GraphicsWidget::setInitZoomIndex(int zoomIndex) {
-    m_zoomIndex = zoomIndex;
+void GraphicsWidget::setMaxZoomIndex(const int &maxZoomIndex) {
+    m_zoomIndexMax = maxZoomIndex;
+    m_zoomIndex = m_zoomIndexInit = m_zoomIndexMax / 2.0;
 }
+
+
 
 
 
@@ -1258,7 +1273,7 @@ void GraphicsWidget::addGuideCircle( const double&x0,
  * @param y0
  */
 void GraphicsWidget::addGuideHLine(const double &y0){
-    GraphicsGuide *line=new GraphicsGuide (this, y0, this->width());
+    GraphicsGuide *line=new GraphicsGuide (this, y0, width());
     line->show();
 }
 
@@ -1296,11 +1311,13 @@ void GraphicsWidget::clearGuides(){
  */
 void GraphicsWidget::selectAll(){
     QPainterPath path;
-    path.addRect(0,0, this->scene()->width() , this->scene()->height());
+    qDebug() << "Selecting all scene items... "
+             << "Widget dimensions: " << width()<<"x"<<height()
+             << "Scene dimensions: " << scene()->width()<<"x"<<scene()->height();
+    path.addRect(0, 0, width(),height());
     scene()->setSelectionArea(path);
     emit userClickedNode(0, QPointF(0,0));
-    qDebug() << "GraphicsWidget::selectAll() - selected items now: "
-             << selectedItems().count();
+    qDebug() << "Selected scene items now: " << selectedItems().count();
 }
 
 
@@ -1309,7 +1326,7 @@ void GraphicsWidget::selectAll(){
  * @brief Clears any item selection from the scene. Also signals that no node is clicked.
  */
 void GraphicsWidget::selectNone(){
-    qDebug() << "Emptying user selection...";
+    qDebug() << "Emptying user selection... scene dimensions: " << scene()->width()<<"x"<<scene()->height();
     emit userClickedNode(0,QPointF(0,0));
     scene()->clearSelection();
 
@@ -1610,8 +1627,8 @@ void GraphicsWidget::zoomOut (const int step){
 void GraphicsWidget::zoomIn(const int step){
     qDebug() << "Zooming in from "<< m_zoomIndex << "+" << step ;
     m_zoomIndex+=step;
-    if (m_zoomIndex > 500) {
-        m_zoomIndex=500;
+    if (m_zoomIndex > m_zoomIndexMax) {
+        m_zoomIndex=m_zoomIndexMax;
     }
     if (m_zoomIndex < 0) {
         m_zoomIndex = 0;
@@ -1624,7 +1641,7 @@ void GraphicsWidget::zoomIn(const int step){
 /**
  * @brief Does the actual zoom in or out while preserving current rotation
  *
- * Scales the view transformation by the given value (0..500)
+ * Scales the view transformation by the given value (0..m_zoomIndexMax)
  *
  * @param value
  */
@@ -1637,8 +1654,8 @@ void GraphicsWidget::changeMatrixScale(int value) {
     // Raise a flag that a non-trivial transformation is applied on the view
     m_isTransformationActive = true;
 
-    // Since the max value will be 500, the scaleFactor will be max 2 ^ 5 = 32
-    m_currentScaleFactor = pow(qreal(2), (value - 250) / qreal(50) );
+    // For any m_zoomIndexMax value, the max scaleFactor will always be: 2 ^ 5 = 32
+    m_currentScaleFactor = pow(qreal(2), (value - (m_zoomIndexInit )) / qreal(m_zoomIndexMax/10.0) );
 
     qDebug() << "Scaling view transformation by new scale factor:" << m_currentScaleFactor
               << "rotation unchanged:" << m_currentRotationAngle;
@@ -1698,7 +1715,7 @@ void GraphicsWidget::changeMatrixRotation(int angle){
 void GraphicsWidget::reset() {
     m_currentRotationAngle=0;
     m_currentScaleFactor = 1;
-    m_zoomIndex=250;
+    m_zoomIndex=m_zoomIndexInit;
     this->ensureVisible(QRectF(0, 0, 0, 0));
     emit zoomChanged(m_zoomIndex);
     emit rotationChanged(m_currentRotationAngle);
@@ -1715,13 +1732,9 @@ void GraphicsWidget::reset() {
  */
 void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
 
-    m_width=e->size().width();
-    m_height=e->size().height();
-    m_w0=e->oldSize().width();
-    m_h0=e->oldSize().height();
-
-    qDebug () << "GW resized:" << m_w0 << "x" << m_h0
-            << "-->" << m_width << "x" << m_height;
+    qDebug () << "GW resized:" << e->oldSize().width() << "x" << e->oldSize().height()
+            << "-->" << e->size().width() << "x" << e->size().height()
+             << "widget dimensions:" << width() << "x"<<height();
 
     if (m_isTransformationActive)  {
         m_isTransformationActive = false;
@@ -1729,9 +1742,10 @@ void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
     }
 
     // Compute resize factors
-    fX = (double)(m_width)/(double)(m_w0);
-    fY = (double)(m_height)/(double)(m_h0);
-    // reposition  guides
+    fX = (double)(e->size().width())/(double)(e->oldSize().width());
+    fY = (double)(e->size().height())/(double)(e->oldSize().height());
+
+    // Reposition  guides
     foreach (QGraphicsItem *item, scene()->items()) {
         if ( (item)->type() == TypeGuide ){
             if (GraphicsGuide *guide = qgraphicsitem_cast<GraphicsGuide *>  (item) ) {
@@ -1757,12 +1771,9 @@ void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
         }
     }
 
-    // Force updating the scene width and height to match the new graphicsWidget dimensions
-//    scene()->setSceneRect(0, 0, (qreal) m_width, (qreal) m_height );
-
     qDebug () << "Scene dimensions now:" << scene()->width() << "x" << scene()->height();
 
-    emit resized(m_width, m_height);
+    emit resized(e->size().width(), e->size().height());
 
     QGraphicsView::resizeEvent(e);
 }
