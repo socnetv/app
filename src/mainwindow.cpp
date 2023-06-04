@@ -12441,16 +12441,22 @@ void MainWindow::slotAnalyzeConnectedness(){
 
     if (!N) {
         // null network with empty graph is connected
-        QMessageBox::information(this, "Connectedness",
-                                 tr("Null network with empty graph "
-                                    "is considered connected."), "OK",0);
+        slotHelpMessageToUser (
+                    USER_MSG_INFO,
+                    tr("This empty network is considered connected!"),
+                    tr("Empty network is considered connected!"),
+                    tr("A null network (empty graph) is considered connected.")
+                    );
+
     }
     else if (N==1){
         // 1-actor network with singleton graph is connected
-        QMessageBox::information(this, "Connectedness",
-                                 tr("1-actor network with singleton graph "
-                                    "is considered connected."), "OK",0);
-
+        slotHelpMessageToUser (
+                    USER_MSG_INFO,
+                    tr("This 1-actor network is considered connected!"),
+                    tr("This 1-actor network is considered connected!"),
+                    tr("A 1-actor network (singleton graph) is always considered connected.")
+                    );
     }
     else {
         bool isConnected=activeGraph->isConnected();
@@ -12459,29 +12465,45 @@ void MainWindow::slotAnalyzeConnectedness(){
 
         if(isConnected){
             if (activeGraph->isDirected()){
-                QMessageBox::information(this, "Connectedness", tr("This directed graph "
-                                                                   "is strongly connected."), "OK",0);
+                slotHelpMessageToUser (
+                            USER_MSG_INFO,
+                            tr("This directed network is strongly connected."),
+                            tr("This directed network is strongly connected."),
+                            tr("A 1-actor network (singleton graph) is considered connected.")
+                            );
+
             }
             else {
-                QMessageBox::information(this, "Connectedness", "This undirected graph "
-                                                                "is connected.", "OK",0);
+                slotHelpMessageToUser (
+                            USER_MSG_INFO,
+                            tr("This undirected network is connected."),
+                            tr("This undirected network is connected."),
+                            tr("This network has an undirected graph which is connected.")
+                            );
+
             }
         }
         else {
             if (activeGraph->isDirected()){
-                QMessageBox::information(this, "Connectedness", "This directed graph "
-                                                                "is disconnected. \nThere are pairs of nodes that "
-                                                                "are disconnected.", "OK",0);
+                slotHelpMessageToUser (
+                            USER_MSG_INFO,
+                            tr("This directed network is disconnected."),
+                            tr("This directed network is disconnected."),
+                            tr("There are pairs of nodes that are not connected with any directed path.")
+                            );
+
             }
             else {
-                QMessageBox::information(this, "Connectedness", tr("This undirected graph "
-                                                                   " is not connected."), "OK",0);
+                slotHelpMessageToUser (
+                            USER_MSG_INFO,
+                            tr("This undirected network is not connected."),
+                            tr("This undirected network is not connected."),
+                            tr("There are pairs of nodes that are not connected with any path.")
+                            );
             }
         }
 
     }
-
-    statusMessage( tr("Connectedness calculated. Ready.") );
 
 }
 
