@@ -84,8 +84,8 @@ public:
 
     ~GraphVertex();
 
-    int name() const;
-    void setName(const int &name);
+    int number() const;
+    void setNumber(const int &number);
 
     void setEnabled(const bool &status);
     bool isEnabled () const;
@@ -302,7 +302,7 @@ protected:
 
 private:
     Graph *m_graph;
-    int m_name,  m_outEdgesCounter, m_inEdgesCounter, m_outDegree, m_inDegree, m_localDegree;
+    int m_number,  m_outEdgesCounter, m_inEdgesCounter, m_outDegree, m_inDegree, m_localDegree;
     int m_outEdgesNonSym, m_inEdgesNonSym, m_outEdgesSym;
     int m_value, m_size, m_labelSize, m_numberSize, m_numberDistance, m_labelDistance;
     int m_curRelation;
