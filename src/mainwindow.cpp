@@ -1434,17 +1434,17 @@ void MainWindow::initActions(){
 
     editRelationNextAct = new QAction(QIcon(":/images/chevron_right_48px.svg"),
                                       tr("Next Relation"),  this);
-    editRelationNextAct->setShortcut(Qt::ALT | Qt::Key_Right);
-    editRelationNextAct->setToolTip(tr("Goto next graph relation (ALT+Right)"));
+    editRelationNextAct->setShortcut(Qt::CTRL | Qt::Key_Right);
+    editRelationNextAct->setToolTip(tr("Goto next graph relation (CTRL+Right)"));
     editRelationNextAct->setStatusTip(tr("Load the next relation of the network (if any)."));
     editRelationNextAct->setWhatsThis(tr("Next Relation\n\nLoads the next relation of the network (if any)"));
     editRelationNextAct->setEnabled(false);
 
     editRelationPreviousAct = new QAction(QIcon(":/images/chevron_left_48px.svg"),
                                           tr("Previous Relation"),  this);
-    editRelationPreviousAct->setShortcut(Qt::ALT | Qt::Key_Left);
+    editRelationPreviousAct->setShortcut(Qt::CTRL | Qt::Key_Left);
     editRelationPreviousAct->setToolTip(
-                tr("Goto previous graph relation (ALT+Left)"));
+                tr("Goto previous graph relation (Ctrl+Left)"));
     editRelationPreviousAct->setStatusTip(
                 tr("Load the previous relation of the network (if any)."));
     editRelationPreviousAct->setWhatsThis(
@@ -1456,7 +1456,7 @@ void MainWindow::initActions(){
                                      tr("Add New Relation"),  this);
     editRelationAddAct->setShortcut(Qt::ALT | Qt::CTRL | Qt::Key_N);
     editRelationAddAct->setToolTip(
-                tr("Add a new relation to the active graph (Ctrl+Shift+N)"));
+                tr("Add a new relation to the active graph (Ctrl+Alt+N)"));
     editRelationAddAct->setStatusTip(
                 tr("Add a new relation to the network. "
                    "Nodes will be preserved, edges will be removed. "));
@@ -1474,30 +1474,35 @@ void MainWindow::initActions(){
 
 
     zoomInAct = new QAction(QIcon(":/images/zoom_in_24px.svg"), tr("Zoom In"), this);
+    zoomInAct->setShortcut(Qt::CTRL | Qt::Key_Plus);
     zoomInAct->setStatusTip(tr("Zoom in. Better, use the canvas button or press Ctrl++ or press Cltr and use mouse wheel."));
     zoomInAct->setToolTip(tr("Zoom in. Better, use the canvas button or (Ctrl++)"));
     zoomInAct->setWhatsThis(tr("Zoom In.\n\nZooms in the actual network"));
 
 
     zoomOutAct = new QAction(QIcon(":/images/zoom_in_24px.svg"), tr("Zoom Out"), this);
+    zoomOutAct->setShortcut(Qt::CTRL | Qt::Key_Minus);
     zoomOutAct->setStatusTip(tr("Zoom out. Better, use the canvas button or press Ctrl+- or press Cltr and use mouse wheel."));
     zoomOutAct->setToolTip(tr("Zoom in. Better, use the canvas button or (Ctrl+-)"));
     zoomOutAct->setWhatsThis(tr("Zoom Out.\n\nZooms out of the actual network"));
 
 
     editRotateLeftAct = new QAction(QIcon(":/images/rotate_left_48px.svg"), tr("Rotate counterclockwise"), this);
-    editRotateLeftAct->setToolTip(tr("Rotate counterclockwise. Better, use the canvas button or (Ctrl+Left Arrow)"));
-    editRotateLeftAct->setStatusTip(tr("Rotate counterclockwise. Better, use the canvas button or Ctrl+Left Arrow"));
-    editRotateLeftAct->setWhatsThis(tr("Rotates the network counterclockwise (Ctrl+Left Arrow)"));
+    editRotateLeftAct->setShortcut(Qt::SHIFT | Qt::CTRL | Qt::LeftArrow);
+    editRotateLeftAct->setToolTip(tr("Rotate counterclockwise. Better, use the canvas button or (Shift+Ctrl+Left Arrow)"));
+    editRotateLeftAct->setStatusTip(tr("Rotate counterclockwise. You can also use the canvas button."));
+    editRotateLeftAct->setWhatsThis(tr("Rotates the network counterclockwise (Shift+Ctrl+Left Arrow)"));
 
 
     editRotateRightAct = new QAction(QIcon(":/images/rotate_right_48px.svg"), tr("Rotate clockwise"), this);
-    editRotateRightAct->setStatusTip(tr("Rotate clockwise. Better, use the canvas button or (Ctrl+Right Arrow)"));
-    editRotateRightAct->setToolTip(tr("Rotate clockwise. Better, use the canvas button or (Ctrl+Right Arrow)"));
-    editRotateRightAct->setWhatsThis(tr("Rotates the network clockwise (Ctrl+Right Arrow)"));
+    editRotateRightAct->setShortcut(Qt::SHIFT | Qt::CTRL | Qt::RightArrow);
+    editRotateRightAct->setToolTip(tr("Rotate clockwise. Better, use the canvas button or (Shift+Ctrl+Right Arrow)."));
+    editRotateRightAct->setStatusTip(tr("Rotate clockwise. You can also the canvas button."));
+    editRotateRightAct->setWhatsThis(tr("Rotates the network clockwise (Shift+Ctrl+Right Arrow)"));
 
 
     editResetSlidersAct = new QAction(QIcon(":/images/refresh_48px.svg"), tr("Reset Zoom and Rotation"), this);
+    editResetSlidersAct ->setShortcut(Qt::CTRL | Qt::Key_0);
     editResetSlidersAct->setStatusTip(tr("Reset zoom and rotation to zero (Ctrl+0)"));
     editResetSlidersAct->setToolTip(tr("Reset zoom and rotation to zero (Ctrl+0)"));
     editResetSlidersAct->setWhatsThis(tr("Reset zoom and rotation to zero (Ctrl+0)"));
@@ -5255,20 +5260,20 @@ void MainWindow::initWindowLayout(const bool &maximized, const bool &fullscreen)
     //
     rotateLeftBtn = new QToolButton;
     rotateLeftBtn->setAutoRepeat(true);
-    rotateLeftBtn->setShortcut(Qt::CTRL | Qt::Key_Left);
+    rotateLeftBtn->setShortcut(Qt::SHIFT | Qt::CTRL | Qt::Key_Left);
     rotateLeftBtn->setIcon(QPixmap(":/images/rotate_left_48px.svg"));
-    rotateLeftBtn->setToolTip(tr("Rotate counterclockwise (Ctrl+Left Arrow)"));
-    rotateLeftBtn->setStatusTip(tr("Rotate counterclockwise (Ctrl+Left Arrow)"));
-    rotateLeftBtn->setWhatsThis(tr("Rotates counterclockwise (Ctrl+Left Arrow)"));
+    rotateLeftBtn->setToolTip(tr("Rotate counterclockwise (Shift+Ctrl+Left Arrow)"));
+    rotateLeftBtn->setStatusTip(tr("Rotate counterclockwise (Shift+Ctrl+Left Arrow)"));
+    rotateLeftBtn->setWhatsThis(tr("Rotates counterclockwise (Shift+Ctrl+Left Arrow)"));
     rotateLeftBtn->setIconSize(iconSize);
 
     rotateRightBtn = new QToolButton;
     rotateRightBtn->setAutoRepeat(true);
-    rotateRightBtn->setShortcut(Qt::CTRL | Qt::Key_Right);
+    rotateRightBtn->setShortcut(Qt::SHIFT | Qt::CTRL | Qt::Key_Right);
     rotateRightBtn->setIcon(QPixmap(":/images/rotate_right_48px.svg"));
-    rotateRightBtn->setToolTip(tr("Rotate clockwise (Ctrl+Right Arrow)"));
-    rotateRightBtn->setStatusTip(tr("Rotate clockwise (Ctrl+Right Arrow)"));
-    rotateRightBtn->setWhatsThis(tr("Rotates clockwise (Ctrl+Right Arrow)"));
+    rotateRightBtn->setToolTip(tr("Rotate clockwise (Shift+Ctrl+Right Arrow)"));
+    rotateRightBtn->setStatusTip(tr("Rotate clockwise (Shift+Ctrl+Right Arrow)"));
+    rotateRightBtn->setWhatsThis(tr("Rotates clockwise (Shift+Ctrl+Right Arrow)"));
     rotateRightBtn->setIconSize(iconSize);
 
     rotateSlider = new QSlider;
