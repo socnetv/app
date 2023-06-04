@@ -1255,14 +1255,13 @@ void MainWindow::initActions(){
                                           tr("Create From &Known Data Sets"),  this);
     networkDataSetSelectAct->setShortcut(Qt::Key_F7);
     networkDataSetSelectAct->setStatusTip(
-                tr("Create a social network using one of the \'famous\' "
-                   "social network data sets included in SocNetV."));
+                tr("Load one of the \'famous\' social network data sets included in SocNetV."));
     networkDataSetSelectAct->setWhatsThis(
                 tr("<p><b>Famous Data Sets</b></p>"
                    "<p>SocNetV includes a number of known "
                    "(also called famous) data sets in Social Network Analysis, "
                    "such as Krackhardt's high-tech managers, etc. "
-                   "Click this menu item or press F7 to select a data set.</p> "
+                   "Click this menu item or press F7 to load a data set.</p> "
                    ));
     connect(networkDataSetSelectAct, SIGNAL(triggered()),
             this, SLOT(slotNetworkDataSetSelect()));
@@ -1277,7 +1276,7 @@ void MainWindow::initActions(){
                 QKeySequence(Qt::CTRL | Qt::Key_R, Qt::CTRL | Qt::Key_S)
                 );
     networkRandomScaleFreeAct->setStatusTip(
-                tr("Create a random network with power-law degree distribution."));
+                tr("Create a random network with a power-law degree distribution."));
     networkRandomScaleFreeAct->setWhatsThis(
                 tr("<p><b>Scale-free (power-law)</b></p>"
                    "<p>A scale-free network is a network whose degree distribution "
@@ -1288,12 +1287,11 @@ void MainWindow::initActions(){
             this, SLOT(slotNetworkRandomScaleFreeDialog()));
 
 
-
     networkRandomSmallWorldAct = new QAction(QIcon(":/images/sw.png"), tr("Small World"),	this);
     networkRandomSmallWorldAct->setShortcut(
                 QKeySequence(Qt::CTRL | Qt::Key_R, Qt::CTRL | Qt::Key_W)
                 );
-    networkRandomSmallWorldAct->setStatusTip(tr("Create a small-world random network."));
+    networkRandomSmallWorldAct->setStatusTip(tr("Create a small-world random network, according to the Watts & Strogatz model."));
     networkRandomSmallWorldAct->setWhatsThis(
                 tr("<p><b>Small World </b></p>"
                    "<p>Creates a random small-world network, according to the "
@@ -1381,8 +1379,7 @@ void MainWindow::initActions(){
     networkWebCrawlerAct = new QAction(QIcon(":/images/webcrawler_48px.svg"), tr("&Web Crawler"),	this);
     networkWebCrawlerAct->setShortcut(Qt::SHIFT | Qt::Key_C);
     networkWebCrawlerAct->setEnabled(true);
-    networkWebCrawlerAct->setStatusTip(tr("Create a network from all links found in a given website"
-                                          "Shift+C"));
+    networkWebCrawlerAct->setStatusTip(tr("Use the web crawler to create a network from all links found in a given website"));
     networkWebCrawlerAct->setWhatsThis(
                 tr("<p><b>Web Crawler </b></p>"
                    "<p>Creates a network of linked webpages, starting "
@@ -1414,7 +1411,7 @@ void MainWindow::initActions(){
     editDragModeSelectAct->setCheckable(true);
     editDragModeSelectAct->setChecked(true);
 //    editDragModeSelectAct->setShortcut(Qt::ALT + Qt::Key_Right);
-    editDragModeSelectAct->setToolTip(tr("Toggle the Select/Move drag mode."));
+    editDragModeSelectAct->setToolTip(tr("Toggle the Select/Move mode. Enable this to be able to click and move items and also select them with a rubber band"));
     editDragModeSelectAct->setStatusTip(tr("Enable this to be able to click and move items and also select them with a rubber band"));
     editDragModeSelectAct->setWhatsThis(tr("Drag Mode: Select/Move\n\n "
         "In this mode, you can interact with the canvas: a) left-click or right-click on items (i.e. nodes, edges), b) move them by dragging them with your mouse and c) select multiple items with a rubber band."));
@@ -1425,7 +1422,7 @@ void MainWindow::initActions(){
     editDragModeScrollAct->setCheckable(true);
     editDragModeScrollAct->setChecked(false);
 //    editDragModeScrollAct->setShortcut(Qt::ALT + Qt::Key_Right);
-    editDragModeScrollAct->setToolTip(tr("Toggle the Scrolling drag mode."));
+    editDragModeScrollAct->setToolTip(tr("Toggle the Scrolling mode. Enable this to easily scroll the canvas by dragging the mouse around"));
     editDragModeScrollAct->setStatusTip(tr("Enable this to easily scroll the canvas by dragging the mouse around."));
     editDragModeScrollAct->setWhatsThis(tr("Drag Mode: Scrolling\n\n "
             "The cursor changes into a pointing hand, and dragging the mouse around will scroll the scrolbars. You will not be able to select any items or move them around."));
@@ -1435,8 +1432,8 @@ void MainWindow::initActions(){
     editRelationNextAct = new QAction(QIcon(":/images/chevron_right_48px.svg"),
                                       tr("Next Relation"),  this);
     editRelationNextAct->setShortcut(Qt::CTRL | Qt::Key_Right);
-    editRelationNextAct->setToolTip(tr("Goto next graph relation (CTRL+Right)"));
-    editRelationNextAct->setStatusTip(tr("Load the next relation of the network (if any)."));
+    editRelationNextAct->setToolTip(tr("Goto the next relation of the network (if any)."));
+    editRelationNextAct->setStatusTip(tr("Goto the next relation of the network (if any)."));
     editRelationNextAct->setWhatsThis(tr("Next Relation\n\nLoads the next relation of the network (if any)"));
     editRelationNextAct->setEnabled(false);
 
@@ -1444,9 +1441,9 @@ void MainWindow::initActions(){
                                           tr("Previous Relation"),  this);
     editRelationPreviousAct->setShortcut(Qt::CTRL | Qt::Key_Left);
     editRelationPreviousAct->setToolTip(
-                tr("Goto previous graph relation (Ctrl+Left)"));
+                tr("Goto the previous relation of the network (if any)."));
     editRelationPreviousAct->setStatusTip(
-                tr("Load the previous relation of the network (if any)."));
+                tr("Goto the previous relation of the network (if any)."));
     editRelationPreviousAct->setWhatsThis(
                 tr("Previous Relation\n\n"
                    "Loads the previous relation of the network (if any)"));
@@ -1456,10 +1453,9 @@ void MainWindow::initActions(){
                                      tr("Add New Relation"),  this);
     editRelationAddAct->setShortcut(Qt::ALT | Qt::CTRL | Qt::Key_N);
     editRelationAddAct->setToolTip(
-                tr("Add a new relation to the active graph (Ctrl+Alt+N)"));
+                tr("Add a new relation to the network. Nodes will be preserved, edges will be removed. "));
     editRelationAddAct->setStatusTip(
-                tr("Add a new relation to the network. "
-                   "Nodes will be preserved, edges will be removed. "));
+                tr("Add a new relation to the network. Nodes will be preserved, edges will be removed. "));
     editRelationAddAct->setWhatsThis(
                 tr("Add New Relation\n\n"
                    "Adds a new relation to the active network. "
@@ -1468,51 +1464,46 @@ void MainWindow::initActions(){
     editRelationRenameAct = new QAction(QIcon(":/images/relation_edit_48px.svg"),
                                         tr("Rename Relation"),  this);
     editRelationRenameAct->setToolTip(tr("Rename current relation"));
-    editRelationRenameAct->setStatusTip(tr("Rename the current relation of the network (if any)."));
+    editRelationRenameAct->setStatusTip(tr("Rename the current relation of the network."));
     editRelationRenameAct->setWhatsThis(tr("Rename Relation\n\n"
-                                           "Renames the current relation of the network (if any)."));
+                                           "Renames the current relation of the network."));
 
 
     zoomInAct = new QAction(QIcon(":/images/zoom_in_24px.svg"), tr("Zoom In"), this);
     zoomInAct->setShortcut(Qt::CTRL | Qt::Key_Plus);
-    zoomInAct->setStatusTip(tr("Zoom in. Better, use the canvas button or press Ctrl++ or press Cltr and use mouse wheel."));
-    zoomInAct->setToolTip(tr("Zoom in. Better, use the canvas button or (Ctrl++)"));
-    zoomInAct->setWhatsThis(tr("Zoom In.\n\nZooms in the actual network"));
+    zoomInAct->setStatusTip(tr("Zoom in the network. Alternatives: use the canvas button, or press Ctrl++, or use mouse wheel while pressing Ctrl."));
+    zoomInAct->setWhatsThis(tr("Zoom In.\n\nZooms in the network"));
 
 
     zoomOutAct = new QAction(QIcon(":/images/zoom_in_24px.svg"), tr("Zoom Out"), this);
     zoomOutAct->setShortcut(Qt::CTRL | Qt::Key_Minus);
-    zoomOutAct->setStatusTip(tr("Zoom out. Better, use the canvas button or press Ctrl+- or press Cltr and use mouse wheel."));
-    zoomOutAct->setToolTip(tr("Zoom in. Better, use the canvas button or (Ctrl+-)"));
+    zoomOutAct->setStatusTip(tr("Zoom out the network. Alternatives: use the canvas button, or press Ctrl+-, or use mouse wheel while pressing Ctrl."));
     zoomOutAct->setWhatsThis(tr("Zoom Out.\n\nZooms out of the actual network"));
 
 
     editRotateLeftAct = new QAction(QIcon(":/images/rotate_left_48px.svg"), tr("Rotate counterclockwise"), this);
     editRotateLeftAct->setShortcut(Qt::SHIFT | Qt::CTRL | Qt::LeftArrow);
-    editRotateLeftAct->setToolTip(tr("Rotate counterclockwise. Better, use the canvas button or (Shift+Ctrl+Left Arrow)"));
-    editRotateLeftAct->setStatusTip(tr("Rotate counterclockwise. You can also use the canvas button."));
-    editRotateLeftAct->setWhatsThis(tr("Rotates the network counterclockwise (Shift+Ctrl+Left Arrow)"));
+    editRotateLeftAct->setStatusTip(tr("Rotate counterclockwise. You can also use the button underneath the canvas."));
+    editRotateLeftAct->setWhatsThis(tr("Rotates the network counterclockwise. You can also use the far left button below the canvas."));
 
 
     editRotateRightAct = new QAction(QIcon(":/images/rotate_right_48px.svg"), tr("Rotate clockwise"), this);
     editRotateRightAct->setShortcut(Qt::SHIFT | Qt::CTRL | Qt::RightArrow);
-    editRotateRightAct->setToolTip(tr("Rotate clockwise. Better, use the canvas button or (Shift+Ctrl+Right Arrow)."));
-    editRotateRightAct->setStatusTip(tr("Rotate clockwise. You can also the canvas button."));
-    editRotateRightAct->setWhatsThis(tr("Rotates the network clockwise (Shift+Ctrl+Right Arrow)"));
+    editRotateRightAct->setStatusTip(tr("Rotate clockwise. You can also use the button underneath the canvas."));
+    editRotateRightAct->setWhatsThis(tr("Rotates the network clockwise. You can also use the far right button below the canvas."));
 
 
     editResetSlidersAct = new QAction(QIcon(":/images/refresh_48px.svg"), tr("Reset Zoom and Rotation"), this);
     editResetSlidersAct ->setShortcut(Qt::CTRL | Qt::Key_0);
-    editResetSlidersAct->setStatusTip(tr("Reset zoom and rotation to zero (Ctrl+0)"));
-    editResetSlidersAct->setToolTip(tr("Reset zoom and rotation to zero (Ctrl+0)"));
-    editResetSlidersAct->setWhatsThis(tr("Reset zoom and rotation to zero (Ctrl+0)"));
+    editResetSlidersAct->setStatusTip(tr("Reset zoom and rotation to zero."));
+    editResetSlidersAct->setWhatsThis(tr("Resets any zoom and rotation transformations to zero."));
 
 
 
     editNodeSelectAllAct = new QAction(QIcon(":/images/select_all_48px.svg"), tr("Select All"), this);
     editNodeSelectAllAct->setShortcut(QKeySequence::SelectAll);
     editNodeSelectAllAct->setStatusTip(tr("Select all nodes"));
-    editNodeSelectAllAct->setWhatsThis(tr("Select All\n\nSelects all nodes in the network"));
+    editNodeSelectAllAct->setWhatsThis(tr("Select All\n\nSelects all nodes and edges in the network"));
     connect(editNodeSelectAllAct, SIGNAL(triggered()), this, SLOT(slotEditNodeSelectAll()));
 
     editNodeSelectNoneAct = new QAction(QIcon(":/images/select_none_48px.svg"), tr("Select None"), this);
@@ -1523,8 +1514,8 @@ void MainWindow::initActions(){
 
     editNodeFindAct = new QAction(QIcon(":/images/search_48px.svg"), tr("Find Nodes "), this);
     editNodeFindAct->setShortcut(QKeySequence::Find);
-    editNodeFindAct->setToolTip(tr("Find and select one or more actors by their number or label."));
-    editNodeFindAct->setStatusTip(tr("Find and select one or more actors by number or label. "));
+    editNodeFindAct->setToolTip(tr("Find and select one or more nodes by their number or label."));
+    editNodeFindAct->setStatusTip(tr("Find and select one or more nodes by their number or label."));
     editNodeFindAct->setWhatsThis(tr("Find Node\n\n"
                                      "Finds one or more nodes by their number or label and "
                                      "highlights them by doubling its size. "));
@@ -1532,19 +1523,15 @@ void MainWindow::initActions(){
 
     editNodeAddAct = new QAction(QIcon(":/images/node_add_48px.svg"), tr("Add Node"), this);
     editNodeAddAct->setShortcut(tr("Ctrl+."));
-    editNodeAddAct->setStatusTip(tr("Add a new node to the network. "
-                                    "Alternately, press Ctrl+. or double-click on the canvas. "));
+    editNodeAddAct->setStatusTip(tr("Add a new node to the network in a random position. Alternately, double-click on a specific position the canvas. "));
     editNodeAddAct->setToolTip(
-                tr("Add a new node to the network (Ctrl+.). \n\n"
-                   "You can also create a new node \n"
-                   "in a specific position by double-clicking.")
+                tr("Add a new node to the network in a random position.\n\n"
+                   "Alternately, create a new node by double-clicking on a specific position the canvas. ")
                 );
     editNodeAddAct->setWhatsThis(
                 tr("Add new node\n\n"
-                   "Adds a new node to the network (Ctrl+.). \n\n"
-                   "Alternately, you can create a new node "
-                   "in a specific position by double-clicking "
-                   "on that spot of the canvas.")
+                   "Add a new node to the network in a random position. \n\n"
+                   "Alternately, you can create a new node by double-clicking on a specific position the canvas.")
                 );
 
     connect(editNodeAddAct, SIGNAL(triggered()), this, SLOT(slotEditNodeAdd()));
@@ -1553,14 +1540,12 @@ void MainWindow::initActions(){
     editNodeRemoveAct->setShortcut(Qt::CTRL | Qt::ALT | Qt::Key_Period);
     //Single key shortcuts with backspace or del do no work in Mac http://goo.gl/7hz7Dx
     editNodeRemoveAct->setToolTip(tr("Remove selected node(s). \n\n"
-                                     "If no nodes are selected, you will be prompted "
-                                     "for a node number. "));
+                                     "If no nodes are selected, you will be prompted for a node number. "));
 
-    editNodeRemoveAct->setStatusTip(tr("Remove selected node(s). If no nodes are selected, "
-                                       "you will be prompted for a node number. "));
+    editNodeRemoveAct->setStatusTip(tr("Remove selected node(s). If no nodes are selected, you will be prompted for a node number. "));
     editNodeRemoveAct->setWhatsThis(
                 tr("Remove node\n\n"
-                   "Removes selected node(s) from the network (Ctrl+Alt+.). \n"
+                   "Removes selected node(s) from the network. \n"
                    "Alternately, you can remove a node by right-clicking on it. \n"
                    "If no nodes are selected, you will be prompted for a node number. ")
                 );
@@ -1569,13 +1554,12 @@ void MainWindow::initActions(){
 
     editNodePropertiesAct = new QAction(QIcon(":/images/node_properties_24px.svg"),tr("Selected Node Properties"), this);
     editNodePropertiesAct->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_Period);
-    editNodePropertiesAct->setToolTip(tr("Change the basic properties of the selected node(s) \n\n"
+    editNodePropertiesAct->setToolTip(tr("Change the properties of the selected node(s) \n\n"
                                          "There must be some nodes on the canvas!"));
-    editNodePropertiesAct->setStatusTip(tr("Change the basic properties of the selected node(s) -- "
-                                           "There must be some nodes on the canvas!"));
+    editNodePropertiesAct->setStatusTip(tr("Change the basic properties of the selected node(s). There must be some nodes on the canvas!"));
     editNodePropertiesAct->setWhatsThis(tr("Selected Node Properties\n\n"
-                                           "If there are some nodes on the canvas, "
-                                           " opens a properties dialog to edit "
+                                           "If there are one or more nodes selected, "
+                                           "it opens a properties dialog to edit "
                                            "their label, size, color, shape etc. \n"
                                            "You must have some node selected."));
     connect(editNodePropertiesAct, SIGNAL(triggered()), this, SLOT(slotEditNodePropertiesDialog()));
@@ -1702,27 +1686,27 @@ void MainWindow::initActions(){
 
     editEdgeAddAct = new QAction(QIcon(":/images/edge_add_48px.svg"), tr("Add Edge (arc)"),this);
     editEdgeAddAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Slash));
-    editEdgeAddAct->setStatusTip(tr("Add a directed edge (arc) from a node to another"));
+    editEdgeAddAct->setStatusTip(tr("Add a directed edge (arc) from a node to another. "));
     editEdgeAddAct->setToolTip(
-                tr("Add a new edge from a node to another (Ctrl+/).\n\n"
+                tr("Add a new edge from a node to another.\n\n"
                    "You can also create an edge between two nodes \n"
-                   "by double-clicking or middle-clicking on them consecutively."));
+                   "by double-clicking on them consecutively."));
     editEdgeAddAct->setWhatsThis(
                 tr("Add edge\n\n"
-                   "Adds a new edge from a node to another (Ctrl+/).\n\n"
+                   "Adds a new edge from a node to another.\n\n"
                    "Alternately, you can create a new edge between two nodes "
-                   "by double-clicking or middle-clicking on them consecutively.")
+                   "by double-clicking on them consecutively.")
                 );
     connect(editEdgeAddAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeAdd()));
 
     editEdgeRemoveAct = new QAction(QIcon(":/images/edge_remove_48px.svg"), tr("Remove Edge"), this);
     editEdgeRemoveAct->setShortcut(QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_Slash));
-    editEdgeRemoveAct->setToolTip(tr("Remove selected edges from the network (Ctrl+Alt+/). \n\n"
+    editEdgeRemoveAct->setToolTip(tr("Remove selected edges from the network. \n\n"
                                       "If no edge has been clicked or selected, you will be prompted \n"
                                       "to enter edge source and target nodes for the edge to remove."));
-    editEdgeRemoveAct->setStatusTip(tr("Remove selected Edge(s) (Ctrl+Alt+/)"));
+    editEdgeRemoveAct->setStatusTip(tr("Remove selected Edge(s)"));
     editEdgeRemoveAct->setWhatsThis(tr("Remove Edge\n\n"
-                                       "Removes edges from the network (Ctrl+Alt+/). \n"
+                                       "Removes edges from the network. \n"
                                        "If one or more edges has been clicked or selected, they are removed. "
                                        "Otherwise, you will be prompted to enter edge source and target "
                                        "nodes for the edge to remove."));
