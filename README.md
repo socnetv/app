@@ -233,7 +233,7 @@ Options:
   -h, --help           Displays this help.
   -v, --version        Displays version information.
   -p, --progress       Force showing progress dialogs/bars during computations.
-  -m, --maximized      Show app maximized.
+  --nm, --notmaximized Do not show the app maximized.
   -f, --fullscreen     Show in full screen mode.
   -d, --debug <level>  Print debug messages to stdout/console. Available
                        verbosity <level>s: 'none', 'min' or 'full'. Default:

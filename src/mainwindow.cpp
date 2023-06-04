@@ -154,15 +154,19 @@ MainWindow::MainWindow(const QString & m_fileName, const bool &forceProgress, co
     int windowMinHeight = 750;
 
     // For large screens, use more generous min height and width.
-    if (primaryScreenWidth > 2439) {
+    if (primaryScreenWidth >= 1920) {
         windowMinWidth = 1440;
     }
-    else if (primaryScreenWidth> 1280) {
-        windowMinWidth = 1280;
+    else if (primaryScreenWidth >= 1280) {
+        windowMinWidth = 1024;
     }
-    if (primaryScreenHeight> 1559) {
-        windowMinHeight = 1024;
+    if (primaryScreenHeight >= 1440) {
+        windowMinHeight = 960;
     }
+    else if (primaryScreenHeight >= 1024) {
+        windowMinHeight = 800;
+    }
+
 
     qDebug() << "primaryScreen: "<<primaryScreenWidth<<"x"<<primaryScreenHeight
              << "Set Minimum MW size to:"<<windowMinWidth<<"x"<<windowMinHeight;

@@ -116,9 +116,9 @@ int main(int argc, char *argv[])
     QCommandLineOption showProgressOption(QStringList() << "p" << "progress", QCoreApplication::translate("main", "Force showing progress dialogs/bars during computations."));
     parser.addOption(showProgressOption);
 
-    // A boolean option for maximized display
-    QCommandLineOption showMaximizedOption(QStringList() << "m" << "maximized", QCoreApplication::translate("main", "Show app maximized."));
-    parser.addOption(showMaximizedOption);
+    // A boolean option to override maximized display
+    QCommandLineOption showUnMaximizedOption(QStringList() << "nm" << "notmaximized", QCoreApplication::translate("main", "Do not maximize the app window."));
+    parser.addOption(showUnMaximizedOption);
 
     // A boolean option for full screen display
     QCommandLineOption showFullScreenOption(QStringList() << "f" << "fullscreen", QCoreApplication::translate("main", "Show in full screen mode."));
@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
     }
 
     bool showProgress = parser.isSet(showProgressOption);
-    bool showMaximized = parser.isSet(showMaximizedOption);
+    bool showMaximized = ! parser.isSet(showUnMaximizedOption);
     bool showFullScreen= parser.isSet(showFullScreenOption);
     bool showDebug = parser.isSet(showDebugOption);
     int debugLevel = -1; // By default, we assume no debug option was passed
