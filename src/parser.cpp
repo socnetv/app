@@ -35,7 +35,7 @@
 #include <QString>
 #include <QtDebug>		//used for qDebug messages
 #include <QPointF>
-//#include <QTextCodec>
+#include <QTextCodec>
 #include <QRegularExpression>
 
 #include <list>  // used as list<int> listDummiesPajek
@@ -79,7 +79,7 @@ Parser::~Parser () {
  * @brief Loads the network calling one of the load* methods
  */
 void Parser::load(const QString fileName,
-                  const QString m_codec,
+                  const QString codecName,
                   const int iNS,
                   const QString iNC,
                   const QString iNSh,
@@ -95,7 +95,9 @@ void Parser::load(const QString fileName,
                   const QString delim)  {
 
 
-    qDebug()<< "**** Parser::load() - On a new thread " << this->thread();
+    qDebug()<< "Parser loading file:" << fileName
+            << "codecName" << codecName
+            << "Running On thread " << this->thread();
 
     initNodeSize=iNS;
     initNodeColor=iNC;
@@ -110,7 +112,7 @@ void Parser::load(const QString fileName,
     edgeDirType=EdgeType::Directed;
     arrows=true;
     bezier=false;
-    userSelectedCodecName = m_codec;
+    m_textCodecName = codecName;
     networkName=(fileName.split ("/")).last();
     gwWidth=width;
     gwHeight=height;
@@ -129,9 +131,9 @@ void Parser::load(const QString fileName,
 
     xml=0;
 
-    qDebug()<< "**** Parser::load() - networkName "<< networkName
-            << " requested fileFormat: "<< fileFormat
-              << "delim" << delim << "delimiter" << delimiter;
+    qDebug()<< "Initial networkName:"<< networkName
+            << "requested fileFormat: "<< fileFormat
+              << "delim:" << delim << "delimiter" << delimiter;
 
     errorMessage=QString();
 
@@ -139,68 +141,99 @@ void Parser::load(const QString fileName,
     QElapsedTimer computationTimer;
     computationTimer.start();
 
+    // Try to open the file
+    qDebug()<< "Opening file...";
+    QFile file ( fileName );
+    if ( ! file.open(QIODevice::ReadOnly )) {
+        qint64 elapsedTime = computationTimer.elapsed();
+        qDebug()<< "Cannot open file" << fileName;
+        errorMessage = tr("Cannot open file: %1").arg(fileName);
+        emit networkFileLoaded(FileType::UNRECOGNIZED,
+                               QString(),
+                               QString(),
+                               0,
+                               0,
+                               false,
+                               elapsedTime,
+                               errorMessage
+                               );
+        return;
+    }
+
+
+    // Get the canonical path of the file to load (only the path)
+    fileDirPath= QFileInfo(fileName).canonicalPath();
+
+    // Read the file into a byte array
+    qDebug() << "Reading the whole file to a byte array...";
+    QByteArray rawData = file.readAll();
+
+    // Close the file
+    file.close();
+
     switch (fileFormat){
     case FileType::GRAPHML:
         qDebug()<< "Parser::load() - calling loadGraphML()";
-        if ( loadGraphML(fileName)){
+        if (loadGraphML(rawData)){
             fileLoaded = true;
         }
         break;
     case FileType::PAJEK:
         qDebug()<< "Parser::load() - calling loadPajek()";
-        if ( loadPajek(fileName) ) {
+        if (loadPajek(rawData) ) {
             fileLoaded = true;
         }
         break;
     case FileType::ADJACENCY:
         qDebug()<< "Parser::load() - calling loadAdjacency()";
-        if (loadAdjacency(fileName) ) {
+        if (loadAdjacency(rawData) ) {
             fileLoaded = true;
         }
         break;
     case FileType::GRAPHVIZ:
         qDebug()<< "Parser::load() - calling loadDot()";
-        if (loadDot(fileName) ) {
+        if (loadDot(rawData) ) {
            fileLoaded = true;
         }
         break;
     case FileType::UCINET:
         qDebug()<< "Parser::load() - calling loadDL()";
-        if (loadDL(fileName) ){
+        if (loadDL(rawData) ){
             fileLoaded = true;
         }
         break;
     case FileType::GML:
         qDebug()<< "Parser::load() - calling loadGML()";
-        if (loadGML(fileName) ){
+        if (loadGML(rawData) ){
             fileLoaded = true;
         }
         break;
     case FileType::EDGELIST_WEIGHTED:
         qDebug()<< "Parser::load() - calling loadEdgeListWeighted()";
-        if (loadEdgeListWeighed(fileName, delimiter) ){
+        if (loadEdgeListWeighed(rawData, delimiter) ){
             fileLoaded = true;
         }
         break;
     case FileType::EDGELIST_SIMPLE:
         qDebug()<< "Parser::load() - calling loadEdgeListSimple()";
-        if (loadEdgeListSimple(fileName, delimiter) ){
+        if (loadEdgeListSimple(rawData, delimiter) ){
             fileLoaded = true;
         }
         break;
     case FileType::TWOMODE:
         qDebug()<< "Parser::load() - calling loadTwoModeSociomatrix()";
-        if (loadTwoModeSociomatrix(fileName) ){
+        if (loadTwoModeSociomatrix(rawData) ){
             fileLoaded = true;
         }
         break;
     default:	//GraphML
         qDebug()<< "Parser::load() - default case - calling loadGraphML()";
-        if (loadGraphML(fileName)){
+        if (loadGraphML(rawData)){
             fileLoaded = true;
         }
         break;
     }
+
 
     // Computation time
     qint64 elapsedTime = computationTimer.elapsed();
@@ -263,16 +296,13 @@ void Parser::createRandomNodes(const int &fixedNum,
  * @brief Loads a file as DL-formatted network (UCINET)
  * @return bool
  */
-bool Parser::loadDL(const QString fileName){
+bool Parser::loadDL(const QByteArray &rawData){
 
     qDebug() << "Parser::loadDL() - Reading UCINET formatted file ";
-    QFile file ( fileName );
-    if ( ! file.open(QIODevice::ReadOnly )) {
-        errorMessage = tr("Cannot open UCINET file ");
-        return false;
-    }
-    QTextStream ts( &file );
-//    ts.setCodec(userSelectedCodecName.toUtf8());
+
+    QTextCodec *codec = QTextCodec::codecForName( m_textCodecName.toLatin1() );
+    QString decodedData = codec->toUnicode(rawData);
+    QTextStream ts(&decodedData);
 
     QString str=QString();
     QString relation=QString();
@@ -337,7 +367,6 @@ bool Parser::loadDL(const QString fileName){
             if (!str.startsWith("DL",Qt::CaseInsensitive)  )  {
                 qDebug() << "Parser::loadDL() - Not a DL file. Aborting!";
                 errorMessage = tr("Invalid UCINET-formatted file. The file does not start with DL in line 1");
-                file.close();
                 return false;
             }
         } // end if actualLineNumber == 1
@@ -754,7 +783,6 @@ bool Parser::loadDL(const QString fileName){
                     if (lineElement.count() != NC) {
                         qDebug() << "Parser::loadDL() - Not a two-mode fullmatrix UCINET "
                                     "formatted file. Aborting!!";
-                        file.close();
                         //emit something...
                         errorMessage = tr("Problem interpreting UCINET two-mode fullmatrix-formatted file. The file declared ") + QString::number(NC) + tr(" columns initially, "
                                           "but I found a different number ") + QString::number(lineElement.count()) + tr(" of matrix columns");
@@ -805,7 +833,6 @@ bool Parser::loadDL(const QString fileName){
                 if ( lineElement.count() != 3 ) {
                     qDebug() << "Parser::loadDL() - Not an edgelist1 UCINET "
                                 "formatted file. Aborting!!";
-                    file.close();
                     //emit something...
                     errorMessage = tr("Problem interpreting UCINET-formatted file. "
                                       "The file was declared as edgelist but I found "
@@ -986,16 +1013,15 @@ bool Parser::readDLKeywords(QStringList &strList,
 /**
     Tries to load the file as Pajek-formatted network. If not it returns -1
 */
-bool Parser::loadPajek(const QString fileName){
+bool Parser::loadPajek(const QByteArray &rawData){
 
     qDebug ("\n\nParser::loadPajek");
-    QFile file ( fileName );
-    if ( ! file.open(QIODevice::ReadOnly ))  {
-        errorMessage = tr("Cannot open Pajek file");
-        return false;
-    }
-    QTextStream ts( &file );
-//    ts.setCodec(userSelectedCodecName.toUtf8());
+
+    QTextCodec *codec = QTextCodec::codecForName( m_textCodecName.toLatin1() );
+    QString decodedData = codec->toUnicode(rawData);
+    QTextStream ts(&decodedData);
+
+
     QString str, label, temp;
     nodeColor="";
     edgeColor="";
@@ -1052,7 +1078,6 @@ bool Parser::loadPajek(const QString fileName){
                     && !str.startsWith("*vertices",Qt::CaseInsensitive) )
                  ) {
                 qDebug()<< "*** Parser:loadPajek(): Not a Pajek-formatted file. Aborting!!";
-                file.close();
                 errorMessage = tr("Not a Pajek-formatted file. "
                                   "First not-comment line %1 (at file line %2) does not start with "
                                   "Network or Vertices").arg(actualLineNumber).arg(fileLineNumber);
@@ -1072,7 +1097,6 @@ bool Parser::loadPajek(const QString fileName){
                 errorMessage = tr("Not a Pajek-formatted file. "
                                   "First not-comment line does not start with "
                                   "Network or Vertices");
-                file.close();
                 return false;
             }
             else if (str.startsWith( "*network",Qt::CaseInsensitive) )  { //NETWORK NAME
@@ -1504,7 +1528,7 @@ bool Parser::loadPajek(const QString fileName){
             } //else if matrix
         } //end if BOTH ARCS AND EDGES
     } //end WHILE
-    file.close();
+
     if (j==0) {
         errorMessage = tr("Invalid Pajek-formatted file. Could not find node declarations in this file.");
         return false;
@@ -1548,17 +1572,14 @@ bool Parser::loadPajek(const QString fileName){
  * @brief Load the currently selected file as adjacency sociomatrix-formatted.
  * @return bool
  */
-bool Parser::loadAdjacency(const QString fileName){
+bool Parser::loadAdjacency(const QByteArray &rawData){
 
     qDebug()<< "\n\nParser::loadAdjacency()";
 
-    QFile file ( fileName );
-    if ( ! file.open(QIODevice::ReadOnly )) {
-        return false;
-    }
+    QTextCodec *codec = QTextCodec::codecForName( m_textCodecName.toLatin1() );
+    QString decodedData = codec->toUnicode(rawData);
+    QTextStream ts(&decodedData);
 
-    QTextStream ts( &file );
-    //ts.setCodec(userSelectedCodecName.toUtf8());
     QString str;
     QString edgeStr;
     QStringList currentRow;
@@ -1599,7 +1620,6 @@ bool Parser::loadAdjacency(const QString fileName){
 
              ) {
             qDebug()<< "*** Parser:loadAdjacency(): Not an Adjacency-formatted file. Aborting!!";
-            file.close();
 
             errorMessage = tr("Invalid adjacency-formatted file. "
                               "Non-comment line %1 includes keywords reserved by other file formats (i.e vertices, graphml, network, graph, digraph, DL, xml)")
@@ -1621,7 +1641,7 @@ bool Parser::loadAdjacency(const QString fileName){
         if  ( (colCount != lastCount && actualLineNumber > 1 ) || (colCount < actualLineNumber) ) {
             // row column sizes differ, this can't be an adjacency matrix
             qDebug()<< "*** Parser:loadAdjacency(): Not an Adjacency-formatted file. Aborting!!";
-            file.close();
+
             errorMessage = tr("Invalid Adjacency-formatted file. "
                               "Matrix row %1 at line %2 has different number of elements from previous row.").arg(actualLineNumber).arg(fileLine);
             return false;
@@ -1768,7 +1788,6 @@ bool Parser::loadAdjacency(const QString fileName){
 
     }  // end full while
 
-    file.close();
 
     if (relationsList.count() == 0 ) {
         emit addRelation( "unnamed" );
@@ -1785,15 +1804,13 @@ bool Parser::loadAdjacency(const QString fileName){
 /**
     Tries to load the file as two-mode sociomatrix. If not it returns -1
 */
-bool Parser::loadTwoModeSociomatrix(const QString fileName){
+bool Parser::loadTwoModeSociomatrix(const QByteArray &rawData){
     qDebug("\n\nParser::loadTwoModeSociomatrix()");
-    QFile file ( fileName );
-    if ( ! file.open(QIODevice::ReadOnly )) {
-        errorMessage = tr("Cannot open two-mode sociomatrix file. ") ;
-        return false;
-    }
-    QTextStream ts( &file );
-    //ts.setCodec(userSelectedCodecName.toUtf8());
+
+    QTextCodec *codec = QTextCodec::codecForName( m_textCodecName.toLatin1() );
+    QString decodedData = codec->toUnicode(rawData);
+    QTextStream ts(&decodedData);
+
     QString str;
     QStringList lineElement;
     int fileLine=0, actualLineNumber=0;
@@ -1822,7 +1839,7 @@ bool Parser::loadTwoModeSociomatrix(const QString fileName){
              || str.contains("xml",Qt::CaseInsensitive)
              ) {
             qDebug()<< "*** Parser:loadTwoModeSociomatrix(): Not a two mode sociomatrix-formatted file. Aborting!!";
-            file.close();
+
             errorMessage = tr("Invalid two-mode sociomatrix file. "
                              "Non-comment line %1 includes keywords reserved by other file formats (i.e vertices, graphml, network, graph, digraph, DL, xml)")
                              .arg(fileLine);
@@ -1840,7 +1857,7 @@ bool Parser::loadTwoModeSociomatrix(const QString fileName){
         qDebug() << "newCount "<<newCount << " nodes. We are at i = " << i;
         if  ( (newCount != lastCount && i>1 )  ) { // line element count differ
             qDebug()<< "*** Parser:loadTwoModeSociomatrix(): Not a Sociomatrix-formatted file. Aborting!!";
-            file.close();
+
             errorMessage = tr("Invalid two-mode sociomatrix file. "
                               "Row %1 has fewer or more elements than previous line.").arg(i);
             return false;
@@ -1880,7 +1897,6 @@ bool Parser::loadTwoModeSociomatrix(const QString fileName){
             j++;
         }
     }
-    file.close();
 
 
     if (relationsList.count() == 0) {
@@ -1900,9 +1916,9 @@ bool Parser::loadTwoModeSociomatrix(const QString fileName){
  * If not GraphML, it returns false
  * @return
  */
-bool Parser::loadGraphML(const QString fileName){
+bool Parser::loadGraphML(const QByteArray &rawData){
 
-    qDebug("\n\nParser::loadGraphML()");
+    qDebug()<< "Parsing graphml file...";
 
     totalNodes=0;
     totalLinks=0;
@@ -1920,46 +1936,45 @@ bool Parser::loadGraphML(const QString fileName){
     arrows=true;
     edgeDirType=EdgeType::Directed;
 
-    QFile file ( fileName );
-    if ( ! file.open(QIODevice::ReadOnly )) {
-        return false;
-    }
-    // Get the canonical path of the file to load (only path)
-    fileDirPath= QFileInfo(fileName).canonicalPath();
-
-    //QXmlStreamReader *xml = new QXmlStreamReader();
+    // Create a xml parser
     QXmlStreamReader xml;
 
-    qDebug() << " Parser::loadGraphML(): read file to a byte array";
-    QByteArray encodedData = file.readAll();
-    QByteArray userSelectedCodec =userSelectedCodecName.toLatin1();
-    xml.addData(encodedData);
+    // Prepare the user selected codec, if needed
+    QByteArray userSelectedCodec =m_textCodecName.toLatin1();
 
-    qDebug() << " Parser::loadGraphML(): test if XML document encoding == userSelectedCodec " << userSelectedCodec;
+    // Add raw data into xml parser
+    xml.addData(rawData);
+
+    qDebug() << "Testing if XML document encoding is the same as the userSelectedCodec:" << userSelectedCodec;
 
     xml.readNext();
     if (xml.isStartDocument()) {
-        qDebug()<< " Parser::loadGraphML(): Testing XML document " << " version "
+        qDebug()<< "XML document version"
                 << xml.documentVersion()
-                << " encoding " << xml.documentEncoding()
-                << " userSelectedCodecName.toUtf8() "
-                << userSelectedCodecName.toUtf8();
-         if ( xml.documentEncoding().toString() != userSelectedCodecName) {
-                qDebug() << " Parser::loadGraphML(): Conflicting encodings. "
-                     << " Re-reading data with userSelectedCodec " << userSelectedCodec;
+                << "encoding" << xml.documentEncoding()
+                << "userSelectedCodec"
+                << m_textCodecName;
+         if ( xml.documentEncoding().toString() != m_textCodecName) {
+                qDebug() << "Conflicting encodings. "
+                     << " Re-reading data with userSelectedCodec" << userSelectedCodec;
                 xml.clear();
-                QTextStream in(&encodedData);
-                in.setAutoDetectUnicode(false);
-                // QTextStream no longer supports setCodec
-//                QTextCodec *codec = QTextCodec::codecForName( userSelectedCodec );
-//                in.setCodec(codec);
-                QString decodedData = in.readAll();
+
+                QTextCodec *codec = QTextCodec::codecForName( userSelectedCodec );
+                QString decodedData = codec->toUnicode(rawData);
                 xml.addData(decodedData);
+
+//                QTextStream in(&rawData);
+//                in.setAutoDetectUnicode(false);
+//                QString decodedData = in.readAll();
+//                // QTextStream no longer supports setCodec
+//                in.setEncoding()
+//                QTextStream in(&rawData);
+
          }
          else {
              qDebug() << " Parser::loadGraphML(): Testing XML: OK";
              xml.clear();
-             xml.addData(encodedData);
+             xml.addData(rawData);
          }
     }
 
@@ -2012,7 +2027,6 @@ bool Parser::loadGraphML(const QString fileName){
     keyDefaultValue.clear();
     nodeHash.clear();
     edgeMissingNodesList.clear();
-    file.close();
 
     // if there was an error return false with error string
     if (xml.hasError()) {
@@ -2887,15 +2901,13 @@ void Parser::createMissingNodeEdges(){
  *
  * @return bool
  */
-bool Parser::loadGML(const QString fileName){
+bool Parser::loadGML(const QByteArray &rawData){
     qDebug()<< "Parser::loadGML()";
 
-    QFile file ( fileName );
-    if ( ! file.open(QIODevice::ReadOnly )) {
-        return false;
-    }
-    QTextStream ts( &file );
-//    ts.setCodec(userSelectedCodecName.toUtf8());
+    QTextCodec *codec = QTextCodec::codecForName( m_textCodecName.toLatin1() );
+    QString decodedData = codec->toUnicode(rawData);
+    QTextStream ts(&decodedData);
+
 
     QRegularExpression onlyDigitsExp("^\\d+$");
     QStringList tempList;
@@ -2949,7 +2961,7 @@ bool Parser::loadGML(const QString fileName){
             errorMessage = tr("Not an GML-formatted file. "
                               "Non-comment line %1 includes keywords reserved by other file formats  (i.e vertices, graphml, network, digraph, DL, xml)")
                               .arg(fileLine);
-            file.close();
+
             return false;
         }
 
@@ -3205,7 +3217,7 @@ bool Parser::loadGML(const QString fileName){
 /**
     Tries to load the file as Dot (Graphviz) formatted network. If not it returns -1
 */
-bool Parser::loadDot(const QString fileName){
+bool Parser::loadDot(const QByteArray &rawData){
 
     qDebug() << "Parser::loadDot()";
     int fileLine=0, actualLineNumber=0, aNum=-1;
@@ -3230,10 +3242,9 @@ bool Parser::loadDot(const QString fileName){
     bezier=false;
     source=0, target=0;
 
-    QFile file ( fileName );
-    if ( ! file.open(QIODevice::ReadOnly )) return false;
-    QTextStream ts( &file );
-//    ts.setCodec(userSelectedCodecName.toUtf8());
+    QTextCodec *codec = QTextCodec::codecForName( m_textCodecName.toLatin1() );
+    QString decodedData = codec->toUnicode(rawData);
+    QTextStream ts(&decodedData);
 
     totalNodes=0;
 
@@ -3264,7 +3275,7 @@ bool Parser::loadDot(const QString fileName){
                  || str.startsWith("<?xml",Qt::CaseInsensitive)
                  ) {
                 qDebug() << "*** Parser:loadDot(): Not an GraphViz -formatted file. Aborting";
-                file.close();
+
                 errorMessage = tr("Not a GraphViz-formatted file. "
                                   "First non-comment line includes keywords reserved by other file formats  (i.e vertices, graphml, network, DL, xml).");
                 return false;
@@ -3594,7 +3605,6 @@ bool Parser::loadDot(const QString fileName){
             qDebug() <<  "  Redudant data: "<< str.toLatin1();
         }
     }
-    file.close();
 
     if (relationsList.count() == 0) {
         emit addRelation( (!networkName.isEmpty()) ? networkName :"unnamed");
@@ -3735,14 +3745,13 @@ name othername 1
 othername somename 2
 ....
  */
-bool Parser::loadEdgeListWeighed(const QString fileName, const QString &delimiter){
+bool Parser::loadEdgeListWeighed(const QByteArray &rawData, const QString &delimiter){
     qDebug() << "Parser::loadEdgeListWeighed() - column delimiter" << delimiter ;
 
-    QFile file ( fileName );
-    if ( ! file.open(QIODevice::ReadOnly ))
-        return false;
-    QTextStream ts( &file );
-//    ts.setCodec(userSelectedCodecName.toUtf8());
+    QTextCodec *codec = QTextCodec::codecForName( m_textCodecName.toLatin1() );
+    QString decodedData = codec->toUnicode(rawData);
+    QTextStream ts(&decodedData);
+
 
     QMap<QString, int> nodeMap;
     // use a minimum priority queue to order Actors<QString key, int value> by their value
@@ -3798,7 +3807,7 @@ bool Parser::loadEdgeListWeighed(const QString fileName, const QString &delimite
              ) {
             qDebug()<< "Parser::loadEdgeListWeighed() - "
                        "Not a Weighted list-formatted file. Aborting!!";
-            file.close();
+
             errorMessage = tr("Not an EdgeList-formatted file. "
                               "A non-comment line includes keywords reserved by other file formats (i.e vertices, graphml, network, graph, digraph, DL, xml)");
             return false;
@@ -3809,7 +3818,7 @@ bool Parser::loadEdgeListWeighed(const QString fileName, const QString &delimite
         if ( lineElement.count()  != 3 ) {
             qDebug()<< "*** Parser::loadEdgeListWeighed() - "
                        "Not a Weighted list-formatted file. Aborting!!";
-            file.close();
+
             errorMessage = tr("Not a properly EdgeList-formatted file. "
                               "Row %1 has not 3 elements as expected (i.e. source, target, weight)")
                     .arg(fileLine);
@@ -3947,7 +3956,7 @@ bool Parser::loadEdgeListWeighed(const QString fileName, const QString &delimite
 
 
     } //end ts.stream while here
-    file.close();
+
 
     qDebug() << "Parser::loadEdgeListWeighed() - finished reading file, "
                 "start creating nodes and edges";
@@ -4041,13 +4050,14 @@ bool Parser::loadEdgeListWeighed(const QString fileName, const QString &delimite
 
 
 
-bool Parser::loadEdgeListSimple(const QString fileName, const QString &delimiter){
+bool Parser::loadEdgeListSimple(const QByteArray &rawData, const QString &delimiter){
     qDebug() << "Parser::loadEdgeListSimple() - column delimiter" << delimiter ;
-    QFile file ( fileName );
-    if ( ! file.open(QIODevice::ReadOnly ))
-        return false;
-    QTextStream ts( &file );
-//    ts.setCodec(userSelectedCodecName.toUtf8());  // set the userselectedCodec
+
+    QTextCodec *codec = QTextCodec::codecForName( m_textCodecName.toLatin1() );
+    QString decodedData = codec->toUnicode(rawData);
+    QTextStream ts(&decodedData);
+
+
     QString str, edgeKey,edgeKeyDelimiter="====>" ;
     QStringList lineElement,edgeElement;
     int columnCount=0;
@@ -4108,7 +4118,7 @@ bool Parser::loadEdgeListSimple(const QString fileName, const QString &delimiter
             errorMessage = tr("Not an EdgeList-formatted file. "
                               "Non-comment line %1 includes keywords reserved by other file formats (i.e vertices, graphml, network, graph, digraph, DL, xml)")
                     .arg(fileLine);
-            file.close();
+
             return false;
         }
 
@@ -4247,8 +4257,6 @@ bool Parser::loadEdgeListSimple(const QString fileName, const QString &delimiter
         }  // end for QStringList::Iterator
 
     } //end ts.stream while here
-    file.close();
-
 
     // create nodes one by one
     while (!nodeQ.empty()) {

@@ -81,24 +81,24 @@ public:
 	
     Parser();
     ~Parser();
-    void load(const QString fn, const QString codec, const int iNS,
+    void load(const QString fn, const QString codecName, const int iNS,
               const QString iNC, const QString iNSh, const QString iNNC,
               const int iNNS, const QString iNLC, const int iNLS ,
               const QString iEC, const int w, const int h, const int format,
               const int sm_mode,
            const QString delim=QString());
-    bool loadPajek(const QString fileName);
-    bool loadAdjacency(const QString fileName);
-    bool loadDot(const QString fileName);
-    bool loadGraphML(const QString fileName);
-    bool loadGML(const QString fileName);
-    bool loadGW(const QString fileName);
-    bool loadDL(const QString fileName);
+    bool loadPajek(const QByteArray &rawData);
+    bool loadAdjacency(const QByteArray &rawData);
+    bool loadDot(const QByteArray &rawData);
+    bool loadGraphML(const QByteArray &rawData);
+    bool loadGML(const QByteArray &rawData);
+    bool loadGW(const QByteArray &rawData);
+    bool loadDL(const QByteArray &rawData);
     bool readDLKeywords(QStringList &strList, int &N, int &NM, int &NR, int &NC, bool &fullmatrixFormat, bool &edgelist1Format);
 
-    bool loadEdgeListSimple(const QString fileName, const QString &delimiter);
-    bool loadEdgeListWeighed(const QString fileName, const QString &delimiter);
-    bool loadTwoModeSociomatrix(const QString fileName);
+    bool loadEdgeListSimple(const QByteArray &rawData, const QString &delimiter);
+    bool loadEdgeListWeighed(const QByteArray &rawData, const QString &delimiter);
+    bool loadTwoModeSociomatrix(const QByteArray &rawData);
 
     void readDotProperties(QString str, qreal &, QString &label,
                        QString &shape, QString &color, QString &fontName,
@@ -173,7 +173,7 @@ private:
 	QMultiMap<int, int> firstModeMultiMap, secondModeMultiMap;
 	QXmlStreamReader *xml;
     QString fileDirPath;
-    QString userSelectedCodecName;
+    QString m_textCodecName;
     QString networkName;
     QString initNodeColor, initNodeShape, initNodeCustomIcon;
     QString initNodeNumberColor, initNodeLabelColor;
