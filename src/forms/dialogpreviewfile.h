@@ -44,17 +44,18 @@ class DialogPreviewFile : public QDialog
 public:
     explicit DialogPreviewFile(QWidget *parent = Q_NULLPTR);
     void setCodecList(const QList<QTextCodec *> &list);
-    void setEncodedData(const QByteArray &data, const QString, const int );
+    void setEncodedData(const QByteArray &data, const QString &fileName, const int &fileFormat);
     QString decodedString() const { return decodedStr; }
 signals:
-    void loadNetworkFileWithCodec(const QString, const QString, const int);
+    void loadNetworkFileWithCodec(const QString &fileName, const QString &codecName, const int &fileFormat);
 private slots:
     void updateTextEdit();
     void accept();
 private:
     QByteArray encodedData;
-    QString decodedStr, fileName;
-    int format;
+    QString decodedStr;
+    QString m_fileName;
+    int m_fileFormat;
     QComboBox *encodingComboBox;
     QLabel *encodingLabel;
     QTextEdit *textEdit;

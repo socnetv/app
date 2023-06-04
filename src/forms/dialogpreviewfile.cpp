@@ -40,11 +40,13 @@ DialogPreviewFile::DialogPreviewFile(QWidget *parent) :
     encodingLabel->setBuddy(encodingComboBox);
 
     textEdit = new QTextEdit;
-    textEdit->setToolTip(tr("In this area you can preview your file.\n")
-                           + (" Select the correct encoding from the menu.\n")
-                           + (" Mac and Linux users select UTF-8\n")
-                           + (" Windows users select Windows-1253 or UTF-8\n")
-                           + (" Windows users in Russia select KOI8-R\n"));
+    textEdit->setToolTip(
+                tr("<p>In this area you can preview your text file before actually loading it.</p> "
+                    "<p>SocNetV uses UTF-8 for saving and loading network files, by default. </p>"
+                    "<p>If your file is encoded in another encoding, "
+                    "select the correct encoding from the menu and "
+                    "see if strings appear correctly.</p>")
+                         );
 
     textEdit->setLineWrapMode(QTextEdit::NoWrap);
     textEdit->setReadOnly(true);
@@ -76,11 +78,11 @@ void DialogPreviewFile::setCodecList(const QList<QTextCodec *> &list)
 }
 
 void DialogPreviewFile::setEncodedData(const QByteArray &data,
-                                 const QString m_fileName,
-                                 const int m_format)
+                                 const QString &fileName,
+                                 const int &fileFormat)
 {
-    fileName = m_fileName;
-    format = m_format;
+    m_fileName = fileName;
+    m_fileFormat = fileFormat;
     encodedData = data;
     updateTextEdit();
 }
@@ -90,26 +92,30 @@ void DialogPreviewFile::updateTextEdit()
     int mib = encodingComboBox->itemData(
                       encodingComboBox->currentIndex()).toInt();
     QTextCodec *codec = QTextCodec::codecForMib(mib);
-    qDebug () << " DialogPreviewFile::updateTextEdit() - codec name: " << codec->name();
+    qDebug () << "Selected codec name: " << codec->name();
     QTextStream in(&encodedData);
 
-    // Check whether QStringConverter supports user selected encoding
-    std::optional<QStringConverter::Encoding> test_support = QStringConverter::encodingForName(codec->name());
-    if ( test_support.has_value()) {
-        // Encoding supported
-        in.setEncoding(test_support.value());
-        qDebug () << " DialogPreviewFile::updateTextEdit() - codec: " << codec->name()
-                 << " supported by QStringConverter. QTextStream Encoding set to: "
-                 <<  QStringConverter::nameForEncoding(test_support.value());
-    }
-    else {
-        // Encoding not supported. Retreat to UTF-9
-        qDebug () << " DialogPreviewFile::updateTextEdit() - codec: " << codec->name()
-                 << " NOT supported by QStringConverter. QTextStream set to autoDetectUnicode. ";
-        in.setAutoDetectUnicode(false);
-    }
-    // Read the text stream
-    decodedStr = in.readAll();
+    decodedStr = codec->toUnicode(encodedData);
+
+//    // FOR FUTURE REFERENCE (IF QTextCodec Class GETS REMOVED FROM QT6 QT5 CORE COMPAT MODULE)
+//    // Check whether QStringConverter supports user selected encoding
+//    std::optional<QStringConverter::Encoding> test_support = QStringConverter::encodingForName(codec->name());
+//    if ( test_support.has_value()) {
+//        // Encoding supported
+//        in.setEncoding(test_support.value());
+//        qDebug () << " - codec: " << codec->name()
+//                 << " supported by QStringConverter. QTextStream Encoding set to: "
+//                 <<  QStringConverter::nameForEncoding(test_support.value());
+//    }
+//    else {
+//        // Encoding not supported. Retreat to UTF-9
+//        qDebug () << " - codec: " << codec->name()
+//                 << " NOT supported by QStringConverter. QTextStream set to autoDetectUnicode. ";
+//        in.setAutoDetectUnicode(false);
+//    }
+
+//     Read the text stream
+//    decodedStr = in.readAll();
 
     // Update text in dialog
     textEdit->setPlainText(decodedStr);
@@ -119,8 +125,8 @@ void DialogPreviewFile::accept() {
     int mib = encodingComboBox->itemData(
                       encodingComboBox->currentIndex()).toInt();
     QTextCodec *codec = QTextCodec::codecForMib(mib);
-    qDebug () << " DialogPreviewFile::accept() returning codec name " << codec->name();
-    emit loadNetworkFileWithCodec(fileName, codec->name(), format);
+    qDebug () << "User accepted. Returning codec name:" << codec->name();
+    emit loadNetworkFileWithCodec(m_fileName, codec->name(), m_fileFormat);
     QDialog::accept();
 
 }
