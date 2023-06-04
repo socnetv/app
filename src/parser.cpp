@@ -35,7 +35,7 @@
 #include <QString>
 #include <QtDebug>		//used for qDebug messages
 #include <QPointF>
-#include <QTextCodec>
+//#include <QTextCodec>
 #include <QRegularExpression>
 
 #include <list>  // used as list<int> listDummiesPajek
@@ -1950,8 +1950,9 @@ bool Parser::loadGraphML(const QString fileName){
                 xml.clear();
                 QTextStream in(&encodedData);
                 in.setAutoDetectUnicode(false);
-                QTextCodec *codec = QTextCodec::codecForName( userSelectedCodec );
-                //in.setCodec(codec);
+                // QTextStream no longer supports setCodec
+//                QTextCodec *codec = QTextCodec::codecForName( userSelectedCodec );
+//                in.setCodec(codec);
                 QString decodedData = in.readAll();
                 xml.addData(decodedData);
          }
