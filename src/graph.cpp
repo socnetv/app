@@ -15722,21 +15722,20 @@ void Graph::loadFile (	const QString fileName,
                         const QString delimiter){
 
 
-    qDebug() << "Graph::loadFile() - clearing relations ";
-    relationsClear();
-    qDebug() << "Graph::loadFile() - "<< fileName
-             << " creating new Parser from thread: " << this->thread();
+    qDebug() << "Loading the file:" << fileName;
 
+    qDebug() << "First, clearing current relations...";
+    relationsClear();
+
+    qDebug() << "Next, creating new file_parser -- we are on thread:" << this->thread();
     file_parser = new Parser();
 
-    qDebug () << "Graph::loadFile() - file_parser current thread:" << file_parser->thread()
-              << " moving it to a new thread...";
-
+    qDebug () << " moving parser to her own new thread...";
     file_parser->moveToThread(&file_parserThread);
 
-    qDebug () << "Graph::loadFile() - file_parser thread now: " << file_parser->thread();
+    qDebug () << "file_parser thread now: " << file_parser->thread();
 
-    qDebug () << "Graph::loadFile() - connecting file_parser signals...";
+    qDebug () << "connecting file_parser signals...";
 
     connect(&file_parserThread, &QThread::finished,
             file_parser, &QObject::deleteLater);
@@ -15796,11 +15795,10 @@ void Graph::loadFile (	const QString fileName,
                 this, &Graph::graphLoadedTerminateParserThreads
                 );
 
-    qDebug() << "Graph::loadFile() - Starting file_parserThread ";
-
+    qDebug() << "Starting parser thread...";
     file_parserThread.start();
 
-    qDebug() << "Graph::loadFile() - calling file_parser->load() ";
+    qDebug() << "Calling the file_parser to load the file...";
     file_parser->load(
                 fileName,
                 codecName,
