@@ -624,21 +624,19 @@ QMap<QString,QString> MainWindow::initSettings(const int &debugLevel, const bool
     maxRandomlyCreatedNodes=5000;
 
     //
-    // Call slotNetworkAvailableTextCodecs to setup a list of all supported codecs
+    // Initialize list of supported text codecs and prepare the preview file dialog
     //
-    qDebug() << "calling slotNetworkAvailableTextCodecs" ;
-    slotNetworkAvailableTextCodecs();
+    qDebug() << "initializing text codecs list.." ;
+    initNetworkAvailableTextCodecs();
 
-    qDebug() << "creating DialogPreviewFile object and setting codecs list" ;
+    qDebug() << "creating preview file dialog and passing the codecs list: " << codecs ;
     m_dialogPreviewFile = new DialogPreviewFile(this);
     m_dialogPreviewFile->setCodecList(codecs);
 
     connect (m_dialogPreviewFile, &DialogPreviewFile::loadNetworkFileWithCodec,
              this, &MainWindow::slotNetworkFileLoad );
 
-
-
-
+    // return the setting
     return appSettings;
 }
 
@@ -5655,7 +5653,7 @@ void MainWindow::initApp(){
     previous_fileName=fileName;
     fileName="";
 
-    initFileCodec= "UTF-8";
+    initTextCodecName= "UTF-8";
 
     networkSaveAct->setIcon(QIcon(":/images/file_download_48px.svg"));
     networkSaveAct->setEnabled(true);
@@ -7137,8 +7135,8 @@ void MainWindow::slotNetworkImportTwoModeSM(){
 /**
  * @brief Setup a list of all text codecs supported by OS
  */
-void MainWindow::slotNetworkAvailableTextCodecs()
-{
+void MainWindow::initNetworkAvailableTextCodecs() {
+    qDebug() << "Checking which text codecs are supported and storing them to a list" ;
     QMap<QString, QTextCodec *> codecMap;
     QRegularExpression iso8859RegExp("ISO[- ]8859-([0-9]+).*");
     QRegularExpressionMatch match;
@@ -7146,12 +7144,13 @@ void MainWindow::slotNetworkAvailableTextCodecs()
     foreach (int mib, QTextCodec::availableMibs()) {
         QTextCodec *codec = QTextCodec::codecForMib(mib);
 
+//    // FOR FUTURE REFERENCE (IF QTextCodec Class GETS REMOVED FROM QT6 QT5 CORE COMPAT MODULE)
         // Verify that Codec/Encoding is supported by QStringConverter,
         // Otherwise skip it.
-        std::optional<QStringConverter::Encoding> test_support = QStringConverter::encodingForName(codec->name());
-        if ( ! test_support.has_value()) {
-            continue;
-        }
+//        std::optional<QStringConverter::Encoding> test_support = QStringConverter::encodingForName(codec->name());
+//        if ( ! test_support.has_value()) {
+//            continue;
+//        }
 
         QString sortKey = codec->name().toUpper();
         match = iso8859RegExp.match(sortKey);
@@ -7180,12 +7179,9 @@ void MainWindow::slotNetworkAvailableTextCodecs()
 
 
 /**
- * @brief  Opens a preview window with the selected file
+ * @brief  Opens the preview dialog with the selected file contents
  *
- * The original aim was to let the user see the file and possibly
- * select the appropriate text codec.
- *
- * However, text Codec support is limited in Qt6
+ * The aim is to let the user see the file and possibly select the appropriate text codec.
  *
  * @param m_fileName
  * @param fileFormat
@@ -7209,12 +7205,11 @@ bool MainWindow::slotNetworkFilePreview(const QString &m_fileName,
 
         QByteArray data = file.readAll();
 
-        m_dialogPreviewFile->setEncodedData(data,m_fileName, fileFormat);
+        m_dialogPreviewFile->setEncodedData(data, m_fileName, fileFormat);
         QApplication::restoreOverrideCursor();
         m_dialogPreviewFile->exec();
 
     }
-
 
     return true;
 }
@@ -7243,20 +7238,20 @@ void MainWindow::slotNetworkFileLoadRecent() {
  * Inits the app, then calls the loadFile method of Graph.
  *
  * @param m_fileName
- * @param m_codecName
+ * @param codecName
  * @param fileFormat
  */
-void MainWindow::slotNetworkFileLoad(const QString m_fileName,
-                                     const QString m_codecName,
-                                     const int fileFormat )
+void MainWindow::slotNetworkFileLoad(const QString &fileNameToLoad,
+                                     const QString &codecName,
+                                     const int &fileFormat )
 {
-    qDebug() << "Attempting to load file"<< m_fileName
-             << " m_codecName" << m_codecName
-             << " fileFormat" << fileFormat;
+    qDebug() << "Request to to load the file:"<< fileNameToLoad
+             << "codecName" << codecName
+             << "fileFormat" << fileFormat;
 
     initApp();
 
-    userSelectedCodecName = m_codecName; //var for future use in a Settings dialog
+    userSelectedCodecName = codecName; // var for future use in a Settings dialog
     QString delimiter=QString();
     int two_sm_mode = 0;
 
@@ -7308,11 +7303,12 @@ void MainWindow::slotNetworkFileLoad(const QString m_fileName,
         qDebug()<<"selected delimiter" << delimiter;
     }
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-    qDebug() << "Calling activeGraph->loadFile()";
+
+    qDebug() << "Calling graph to do the file load loading...";
 
     activeGraph->loadFile (
-                m_fileName,
-                m_codecName,
+                fileNameToLoad,
+                codecName,
                 fileFormat,
                 two_sm_mode,
                 delimiter
@@ -13207,14 +13203,15 @@ void MainWindow::slotAnalyzePrestigeDegree(){
         return;
     }
     if (activeGraph->isSymmetric()) {
-        QMessageBox::warning(
-                    this,
-                    "Warning",
-                    tr("Undirected graph!\n"
-                       "Degree Prestige counts inbound edges, therefore is more "
-                       "meaningful on directed graphs.\n"
-                       "For undirected graphs, the DP scores are the same as "
-                       "Degree Centrality..."), "OK",0);
+        slotHelpMessageToUser(USER_MSG_INFO,
+                              tr("Warning! Running Degree Prestige index on an undirected network."),
+                              tr("Warning! Running Degree Prestige index on an undirected network."),
+                              tr("This network is not directed (undirected graph). "
+                                 "The Degree Prestige index counts inbound edges, "
+                                 "therefore it is meaningful on directed networks. "
+                                 "For undirected networks, such as this one, Degree Prestige is the same as Degree Centrality.")
+                              );
+
     }
 
     askAboutEdgeWeights(false);

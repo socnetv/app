@@ -137,6 +137,7 @@ public:
     void initWindowLayout(const bool &maximized=false, const bool &fullscreen=false);
     void initSignalSlots();
     QMap<QString, QString> initSettings(const int &debugLevel=0, const bool &forceProgress=false);
+    void initNetworkAvailableTextCodecs();
     void saveSettings();
 
     void initApp();
@@ -160,9 +161,8 @@ public slots:
     void slotNetworkFileDialogFilterSelected(const QString &filter);
     void slotNetworkFileDialogRejected();
     void slotNetworkFileRecentUpdateActions();
-    void slotNetworkAvailableTextCodecs();
     bool slotNetworkFilePreview(const QString &, const int &);
-    void slotNetworkFileLoad ( const QString, const QString, const int );
+    void slotNetworkFileLoad (const QString &fileNameToLoad, const QString &codeName, const int &fileFormat);
     void slotNetworkFileLoaded(const int &type,
                                const QString &fName=QString(),
                                const QString &netName=QString(),
@@ -567,7 +567,7 @@ private:
     bool inverseWeights, askedAboutWeights;
 
     QString fileName, previous_fileName, fileNameNoPath, progressMsg;
-    QString initFileCodec, userSelectedCodecName;
+    QString initTextCodecName, userSelectedCodecName;
     QString settingsFilePath, settingsDir ;
     QStringList fortuneCookie;
     QStringList tempFileNameNoPath, tips;
