@@ -1130,10 +1130,6 @@ public:
     /* Consider using tr1::hashmap which has O(1) lookup, but this is not ISO C++ yet :(   */
 
 
-protected: 
-    // Called from nodeMovement when a timerEvent occurs
-    //void timerEvent(QTimerEvent *event);
-
 
 private:
 
@@ -1300,7 +1296,7 @@ private:
     bool m_graphHasVertexCustomIcons;
 
     int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
-    //int timerId;
+
     qreal canvasWidth, canvasHeight;
     bool calculatedEdges;
     bool calculatedVertices, calculatedVerticesList, calculatedVerticesSet;

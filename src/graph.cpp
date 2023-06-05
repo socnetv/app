@@ -906,8 +906,8 @@ void Graph::vertexCreateAtPosRandomWithLabel(const int &i,
                                              const QString &label,
                                              const bool &signalMW) {
 
-    qDebug() << "Graph::vertexCreateAtPosRandomWithLabel() - vertex " << i
-             << " label" << label;
+    qDebug() << "Creates a new randomly positioned vertex:" << i
+             << "with label:" << label;
     QPointF p;
     p.setX(canvasRandomX());
     p.setY(canvasRandomY());
@@ -922,27 +922,23 @@ void Graph::vertexCreateAtPosRandomWithLabel(const int &i,
 
 
 /**
- * @brief Deletes any dymmy nodes
+ * @brief Deletes a dummy node
  *
  * This is called from Parser (as pajek) to delete any redundant (dummy) nodes.
- * @param [in] i number of node
+ *
+ * @param int i number of node
  */
 void Graph::vertexRemoveDummyNode(int i){
-    qDebug("**Graph::vertexRemoveDummyNode %i", i);
+    qDebug() << "Removing dummy node from graph: " << i;
     vertexRemove(i);
-
 }
 
 
 
 
-
-
-
-
 /**
- * @brief Graph::vertexNumberMax
- * Returns the name of the last vertex.  Used by slotEditNodeRemove of MW
+ * @brief Returns the number of the last vertex in the graph.
+ *
  * @return  int
  */
 int Graph::vertexNumberMax() {
@@ -954,8 +950,8 @@ int Graph::vertexNumberMax() {
 
 
 /**
- * @brief Graph::vertexNumberMin
- * Returns the name of the first vertex.  Used by slotRemoveNode of MW
+ * @brief Returns the number of the first vertex in the graph.
+ *
  * @return int
  */
 int Graph::vertexNumberMin() {
@@ -967,23 +963,23 @@ int Graph::vertexNumberMin() {
 
 
 /**
- * @brief Graph::vertexExists
- * Checks if there is a specific vertex in the graph.
+ * @brief Checks if the given vertex exists in the graph.
+ *
  * Returns the vpos or -1
+ *
  * Complexity:  O(logN) for vpos retrieval
+ *
  * @param vertex number
  * @return vertex pos or -1
  */
 int Graph::vertexExists(const int &v1){
-    qDebug () << "Graph::vertexExists() - check for number v:" << v1
-              <<  " with vpos " << vpos[v1]
-                  << " named " << m_graph[ vpos[v1] ]->number();
+    qDebug () << "Checking if vertex exists, with number:" << v1;
     if ( vpos.contains(v1) ) {
         if (  m_graph[ vpos[v1] ]->number() == v1 ) {
             return vpos[v1];
         }
         else{
-            qDebug () << "Graph::vertexExists() - error in vpos for number v:" << v1;
+            qDebug () << "Error in vpos for vertex number v:" << v1;
         }
     }
 
@@ -993,19 +989,21 @@ int Graph::vertexExists(const int &v1){
 
 
 /**
- * @brief Checks if there is a vertex with a specific label in the graph
+ * @brief Checks if there is a vertex with a specific label exists in the graph
+ *
  * Returns the vpos or -1
+ *
  * Complexity:  O(N)
+ *
  * @param label
  * @return vpos or -1
  */
 int Graph::vertexExists(const QString &label){
-    qDebug ()<<"Graph::vertexExists() - check for label:"<< label.toUtf8()  ;
+    qDebug () << "Checking if vertex exists, with label:" << label.toUtf8()  ;
     VList::const_iterator it;
     int i=0;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( (*it)->label().contains( label, Qt::CaseInsensitive ) )  {
-            //            qDebug()<< "Graph: vertexExists() at pos %i" << i;
             return i;
         }
         i++;
@@ -1442,8 +1440,10 @@ bool Graph::vertexIsolated(const int &v1) const{
 
 
 /**
- * @brief Graph::vertexPosSet
+ * @brief Changes the position of the given vertex
+ *
  * Called from MW/GW when node moves to update its position
+ *
  * @param v1
  * @param x
  * @param y
@@ -1457,7 +1457,7 @@ void Graph::vertexPosSet(const int &v1, const int &x, const int &y){
 
 
 /**
- * @brief Graph::vertexPos
+ * @brief Returns the position of the given vertex
  * @param v1
  * @return
  */
@@ -1492,8 +1492,9 @@ void Graph::vertexClickedSet(const int &v1, const QPointF &p) {
     }
 }
 
+
 /**
- * @brief Graph::vertexClicked
+ * @brief Returns the number of the clicked vertex
  * @return  int
  */
 int Graph::vertexClicked() const {
@@ -1501,8 +1502,8 @@ int Graph::vertexClicked() const {
 }
 
 /**
- * @brief Graph::vertexSizeInit
- * Initialization function
+ * @brief Sets the initial vertex size
+ *
  * @param size
  */
 void Graph::vertexSizeInit (const int size) {
@@ -1512,8 +1513,10 @@ void Graph::vertexSizeInit (const int size) {
 
 
 /**
- * @brief Changes the size.of a vertex v or all vertices if v=0
+ * @brief Changes the size of a vertex v or all vertices if v=0
+ *
  * Called from MW (i.e. user changing node properties)
+ *
  * @param v
  * @param size
  */
@@ -15862,6 +15865,7 @@ void Graph::graphFileLoaded (const int &fileType,
                              const QString &message)
 {
     if ( fileType == FileType::UNRECOGNIZED ) {
+        qDebug() << "Could not load file. Signaling to MW the error message...";
         // Emit with error message.
         emit signalGraphLoaded (fileType,
                                 QString(),
@@ -15874,7 +15878,12 @@ void Graph::graphFileLoaded (const int &fileType,
 
     }
 
-    qDebug() << "Graph::graphFileLoaded() - m_fileName: " << m_fileName;
+    qDebug() << "Loaded file OK. "
+             << "type:" << fileType
+             << "filename:" << fileName
+             << "nodes:" << totalNodes
+             << "links:" << totalLinks
+             << "edgeDirType:" << edgeDirType;
 
     m_fileName= fileName;
 
@@ -15892,17 +15901,9 @@ void Graph::graphFileLoaded (const int &fileType,
 
     m_fileFormat = fileType;
 
-    qDebug() << "Graph::graphFileLoaded() - "
-                << " type" << fileType
-                << " filename" << fileName
-                << " name" << getName()
-                << " node " << totalNodes
-                << " links" << totalLinks
-                << " edgeDirType" << edgeDirType;
-
     setModStatus(ModStatus::Unchanged);
 
-    qDebug() << "Graph::graphFileLoaded() -  emitting signalGraphLoaded()";
+    qDebug() << "Signaling to MW...";
 
     emit signalGraphLoaded (fileType,
                             fileName,
@@ -21424,23 +21425,6 @@ void Graph::writeMatrixLaplacianPlainText(const QString &fn) {
 }
 
 
-/**	
-    This method is automatically invoked when a QTimerEvent occurs
-    UNUSED
-*/
-//void Graph::timerEvent(QTimerEvent *event) {
-//    qDebug("Graph: timerEvent()");
-//    Q_UNUSED(event);
-//    if (!isModified()) {
-//        qDebug("Timer will be KILLED since no vertex is movin any more...");
-//        killTimer(timerId);
-//        timerId = 0;
-//    }
-//}
-
-
-
-
 
 
 
@@ -21605,9 +21589,6 @@ void Graph::layoutCircular (const double &x0, const double &y0,
 
 
 
-
-
-
 /**
  * @brief Convenience method
  * Changes the size of all nodes to be proportional to their outDegree (Degree Centrality)
@@ -21683,7 +21664,6 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
         break;
     }
     };
-
 
 
     emit statusMessage(tr("Computing centrality/prestige scores. Please wait..."));
