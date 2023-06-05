@@ -923,8 +923,8 @@ void Graph::vertexCreateAtPosRandomWithLabel(const int &i,
 
 /**
  * @brief Deletes any dymmy nodes
- * This is called from parseasPajek method of Parser in order to delete any
- * redundant (dummy) nodes.
+ *
+ * This is called from Parser (as pajek) to delete any redundant (dummy) nodes.
  * @param [in] i number of node
  */
 void Graph::vertexRemoveDummyNode(int i){

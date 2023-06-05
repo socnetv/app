@@ -43,7 +43,7 @@ class QXmlStreamAttributes;
 
 /**
  * @brief The Actor struct
- * Used in loadEdgeListWeighed and loadEdgeListSimple
+ * Used while parsing edge lists
  */
 struct Actor {
     QString key;
@@ -54,7 +54,7 @@ struct Actor {
 /**
  * @brief The CompareActors class
  * Implements a min-priority queue
- * Used in loadEdgeListWeighed
+ * Used while parsing weighted edge lists
  */
 class CompareActors {
     public:
@@ -81,28 +81,28 @@ public:
 	
     Parser();
     ~Parser();
-    void load(const QString fn, const QString codecName, const int iNS,
-              const QString iNC, const QString iNSh, const QString iNNC,
-              const int iNNS, const QString iNLC, const int iNLS ,
-              const QString iEC, const int w, const int h, const int format,
-              const int sm_mode,
-           const QString delim=QString());
-    bool loadPajek(const QByteArray &rawData);
-    bool loadAdjacency(const QByteArray &rawData);
-    bool loadDot(const QByteArray &rawData);
-    bool loadGraphML(const QByteArray &rawData);
-    bool loadGML(const QByteArray &rawData);
-    bool loadGW(const QByteArray &rawData);
-    bool loadDL(const QByteArray &rawData);
-    bool readDLKeywords(QStringList &strList, int &N, int &NM, int &NR, int &NC, bool &fullmatrixFormat, bool &edgelist1Format);
+    void load(const QString fileName, const QString codecName, const int defNodeSize,
+              const QString defNodeColor, const QString defNodeShape, const QString defNodeNumberColor,
+              const int defNodeNumberSize, const QString defNodeLabelColor, const int defNodeLabelSize ,
+              const QString defEdgeColor, const int width, const int height, const int format,
+              const int sm_mode, const QString delim=QString());
 
-    bool loadEdgeListSimple(const QByteArray &rawData, const QString &delimiter);
-    bool loadEdgeListWeighed(const QByteArray &rawData, const QString &delimiter);
-    bool loadTwoModeSociomatrix(const QByteArray &rawData);
+    bool parseAsPajek(const QByteArray &rawData);
+    bool parseAsAdjacency(const QByteArray &rawData);
+    bool parseAsDot(const QByteArray &rawData);
+    bool parseAsGraphML(const QByteArray &rawData);
+    bool parseAsGML(const QByteArray &rawData);
+    bool parseAsDL(const QByteArray &rawData);
+    bool parseAsEdgeListSimple(const QByteArray &rawData, const QString &delimiter);
+    bool parseAsEdgeListWeighted(const QByteArray &rawData, const QString &delimiter);
+    bool parseAsTwoModeSociomatrix(const QByteArray &rawData);
+
+    bool readDLKeywords(QStringList &strList, int &N, int &NM, int &NR, int &NC, bool &fullmatrixFormat, bool &edgelist1Format);
 
     void readDotProperties(QString str, qreal &, QString &label,
                        QString &shape, QString &color, QString &fontName,
                        QString &fontColor );
+
     bool readGraphML(QXmlStreamReader &);
 	void readGraphMLElementGraph(QXmlStreamReader &);
 	void readGraphMLElementNode (QXmlStreamReader &);
@@ -112,7 +112,6 @@ public:
 	void readGraphMLElementData (QXmlStreamReader &);
 	void readGraphMLElementUnknown (QXmlStreamReader &);
 	void readGraphMLElementKey (QXmlStreamAttributes &);
-	bool xmlStreamHasAttribute( QXmlStreamAttributes &, QString ) const ;
 	void readGraphMLElementDefaultValue(QXmlStreamReader &);
 	void readGraphMLElementNodeGraphics (QXmlStreamReader &);
 	void readGraphMLElementEdgeGraphics (QXmlStreamReader &);
