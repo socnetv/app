@@ -845,7 +845,7 @@ void Graph::vertexCreate(const int &number,
 void Graph::vertexCreateAtPos(const QPointF &p){
     int i = vertexNumberMax() +1;
 
-    qDebug() << "Graph::vertexCreateAtPos() - vertex:" << i << " pos:" << p;
+    qDebug() << "Creating a new vertex:" << i << " in given position:" << p;
 
     vertexCreate( i, initVertexSize,  initVertexColor,
                   initVertexNumberColor, initVertexNumberSize,
@@ -869,7 +869,6 @@ void Graph::vertexCreateAtPos(const QPointF &p){
 /**
  * @brief Creates a new randomly positioned vertex with default values
  *
- * Called from MW only
  * Computes a random position p inside the useable canvas area
  * Then calls the main creation slot with init node values.
  *
@@ -901,6 +900,7 @@ void Graph::vertexCreateAtPosRandom(const bool &signalMW){
  *
  * @param i
  * @param label
+ * @param signalMW
  */
 void Graph::vertexCreateAtPosRandomWithLabel(const int &i,
                                              const QString &label,
@@ -2037,18 +2037,18 @@ void Graph::edgeCreate(const int &v1,
                        const QString &label,
                        const bool &signalMW){
 
-    qDebug() <<"-- Graph::edgeCreate() - " << v1 << "->" << v2
-            << " weight " << weight
-            << " type " << type
-            << " label " << label;
+    qDebug() <<"-- Creating new edge:" << v1 << "->" << v2
+            << "weight" << weight
+            << "type" << type
+            << "label" << label
+            << "signalMW" << signalMW;
 
     // check whether there is already such an edge
     // (see #713617 - https://bugs.launchpad.net/socnetv/+bug/713617)
     if (!edgeExists(v1,v2)){
         if ( type == EdgeType::Undirected ) {
 
-            qDebug()<< "-- Graph::edgeCreate() - Creating UNDIRECTED edge."
-                      << "Emitting drawEdge signal to GW";
+            qDebug()<< "-- New edge UNDIRECTED. Signaling to GW";
 
             edgeAdd ( v1, v2,
                       weight,
@@ -2063,8 +2063,7 @@ void Graph::edgeCreate(const int &v1,
         }
         else if ( edgeExists( v2, v1 ) )  {
 
-            qDebug()<<"-- Graph::edgeCreate() - Creating RECIPROCAL edge."
-                   << "Emitting drawEdge to GW";
+            qDebug()<<"-- New edge RECIPROCAL. Signaling to GW";
 
             edgeAdd ( v1,
                       v2,
@@ -2080,8 +2079,7 @@ void Graph::edgeCreate(const int &v1,
         }
         else {
 
-            qDebug()<< "-- Graph::edgeCreate() - Creating directed edge. Reverse arc does not exist."
-                    << "Emitting drawEdge to GW...";
+            qDebug()<< "-- New edge DIRECTED. Reverse arc does not exist. Signaling to GW...";
 
             edgeAdd ( v1,
                       v2,
@@ -2100,9 +2098,8 @@ void Graph::edgeCreate(const int &v1,
     }
 
     else {
-        qDebug() << "-- Graph::edgeCreate() - "
-                    << "Edge " << v1 << "->" << v2
-                    << " declared previously (exists) - nothing to do \n\n";
+        qDebug() << "-- Edge " << v1 << "->" << v2
+                    << " declared previously (already exists) - nothing to do \n\n";
     }
 
     // save the edge color so that new edges created when user clicks on the canvas
@@ -15553,15 +15550,15 @@ bool Graph::isFileFormatExportSupported(const int &fileFormat) const {
 void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW){
 
     if ( m_graphModStatus == ModStatus::NewNet && isEmpty()) {
-        qDebug()<<"Graph::setModStatus() - nothing to do...";
+        qCritical()<<"This is a new empty network. Will not change status.";
        // No vertex exists, this is a new network. Don't change status.
         emit signalGraphSavedStatus(true);
         return;
     }
 
-    if ( graphNewStatus == ModStatus::NewNet ) {
+    else if ( graphNewStatus == ModStatus::NewNet ) {
 
-        qDebug()<<"Graph::setModStatus() - setting graph as new...";
+        qCritical()<<"This is a new network. Setting graph as new...";
 
         m_graphModStatus=graphNewStatus;
 
@@ -15578,7 +15575,7 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW){
 
         // this is called after successful saving
 
-        qDebug()<<"Graph::setModStatus() - setting graph as unchanged...";
+        qCritical()<<"Setting graph as unchanged...";
 
         m_graphModStatus=graphNewStatus;
 
@@ -15592,7 +15589,10 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW){
         // This is called from any method that alters V or E in G:
         // thus all prior computations are invalid
 
-        qDebug()<<"Graph::setModStatus() - major changes invalidating computations, setting graph as changed...";
+        qCritical()<<"Major changes, invalidating computations, setting graph as changed..."
+                    << "m_totalVertices:" << m_totalVertices
+                    <<"edges:" << edgesEnabled()
+                    << "signalMW: " << signalMW;
 
         m_graphModStatus=graphNewStatus;
 
@@ -15621,7 +15621,7 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW){
 
         if (signalMW) {
 
-            qDebug()<<"emit signalGraphModified()";
+            qDebug()<<"signaling to MW that the graph is modified...";
             emit signalGraphModified(isDirected(),
                                      m_totalVertices,
                                      edgesEnabled(),
@@ -15639,12 +15639,12 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW){
             //  Do not change status if current status is > MajorChanges
             m_graphModStatus = graphNewStatus;
         }
-        qDebug()<<"minor changes but needs saving...";
+        qCritical()<<"minor changes but needs saving...";
         emit signalGraphSavedStatus(false);
         return;
     }
     else {
-        qDebug()<<"Strange. I should not reach this code...";
+        qCritical()<<"Strange. I should not reach this code...";
         m_graphModStatus=graphNewStatus;
     }
 
@@ -15751,52 +15751,52 @@ void Graph::loadFile (	const QString fileName,
     connect ( file_parser, &Parser::createNode, this, &Graph::vertexCreate );
 
     connect (
-                file_parser, SIGNAL (createNodeAtPosRandom(const bool &)),
-                this, SLOT(vertexCreateAtPosRandom(const bool &))
-                );
+            file_parser, SIGNAL (createNodeAtPosRandom(const bool &)),
+            this, SLOT(vertexCreateAtPosRandom(const bool &))
+            );
 
     connect (
-                file_parser, SIGNAL (createNodeAtPosRandomWithLabel(
-                                         const int ,const QString &, const bool &)),
-                this, SLOT(vertexCreateAtPosRandomWithLabel(
-                               const int &,const QString &, const bool &) )
-                );
+            file_parser, SIGNAL (createNodeAtPosRandomWithLabel(
+                                     const int ,const QString &, const bool &)),
+            this, SLOT(vertexCreateAtPosRandomWithLabel(
+                           const int &,const QString &, const bool &) )
+            );
 
     connect (file_parser, &Parser::edgeCreate,
              this,&Graph::edgeCreate);
 
 
     connect (
-                file_parser, SIGNAL(networkFileLoaded(int,
-                                                      QString,
-                                                      QString,
-                                                      int,
-                                                      int,
-                                                      int,
-                                                      const qint64 &,
-                                                      const QString &)
-                                    ),
-                this, SLOT(graphFileLoaded( const int &,
-                                            const QString &,
-                                            const QString &,
-                                            const int &,
-                                            const int &,
-                                            const int &,
-                                            const qint64 &,
-                                            const QString &)
-                           )
-                );
+            file_parser, SIGNAL(networkFileLoaded(int,
+                                                  QString,
+                                                  QString,
+                                                  int,
+                                                  int,
+                                                  int,
+                                                  const qint64 &,
+                                                  const QString &)
+                                ),
+            this, SLOT(graphFileLoaded( const int &,
+                                        const QString &,
+                                        const QString &,
+                                        const int &,
+                                        const int &,
+                                        const int &,
+                                        const qint64 &,
+                                        const QString &)
+                       )
+            );
 
 
     connect (
-                file_parser, SIGNAL(removeDummyNode(int)),
-                this, SLOT (vertexRemoveDummyNode(int))
-                );
+            file_parser, SIGNAL(removeDummyNode(int)),
+            this, SLOT (vertexRemoveDummyNode(int))
+            );
 
     connect (
-                file_parser, &Parser::finished,
-                this, &Graph::graphLoadedTerminateParserThreads
-                );
+            file_parser, &Parser::finished,
+            this, &Graph::graphLoadedTerminateParserThreads
+            );
 
     qDebug() << "Starting parser thread...";
     file_parserThread.start();
@@ -15847,13 +15847,18 @@ void Graph::graphLoadedTerminateParserThreads(QString reason) {
 
 
 /**
- * @brief Updates MW  with the loaded file type (0=nofile, 1=Pajek, 2=Adjacency etc)
- * Called from Parser on file parsing end or file error.
- * @param type
+ * @brief Stores loaded file name, graph name, sets edge direction type and signals MW to update the UI
+ *
+ * Called from Parser when file parsing ends.
+ *
+ * @param fileType
+ * @param fileName
  * @param netName
- * @param aNodes
+ * @param totalNodes
  * @param totalLinks
- * @param undirected
+ * @param edgeDirType
+ * @param elapsedTime
+ * @param message
  */
 void Graph::graphFileLoaded (const int &fileType,
                              const QString &fileName,
@@ -15878,12 +15883,13 @@ void Graph::graphFileLoaded (const int &fileType,
 
     }
 
-    qDebug() << "Loaded file OK. "
+    qCritical() << "Loaded file OK. "
              << "type:" << fileType
              << "filename:" << fileName
              << "nodes:" << totalNodes
              << "links:" << totalLinks
-             << "edgeDirType:" << edgeDirType;
+             << "edgeDirType:" << edgeDirType
+             << "setting graph as saved/unchanged...";
 
     m_fileName= fileName;
 
@@ -15903,7 +15909,7 @@ void Graph::graphFileLoaded (const int &fileType,
 
     setModStatus(ModStatus::Unchanged);
 
-    qDebug() << "Signaling to MW...";
+    qCritical() << "Signaling to MW...";
 
     emit signalGraphLoaded (fileType,
                             fileName,

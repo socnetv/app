@@ -4922,15 +4922,13 @@ void MainWindow::initPanels(){
                    "any link you add between nodes will be a directed arc.\n"
                    "If you want to work with undirected edges and/or \n"
                    "transform the loaded network (if any) to undirected \n"
-                   "toggle the option Edit->Edges->Undirected \n"
-                   "or press CTRL+E+U"));
+                   "toggle the option Edit->Edges->Undirected."));
     rightPanelNetworkTypeLCD->setWhatsThis(
                 tr("The loaded network, if any, is directed and \n"
                    "any link you add between nodes will be a directed arc.\n"
                    "If you want to work with undirected edges and/or \n"
                    "transform the loaded network (if any) to undirected \n"
-                   "toggle the option Edit->Edges->Undirected \n"
-                   "or press CTRL+E+U"));
+                   "toggle the option Edit->Edges->Undirected"));
 
     rightPanelNetworkTypeLCD->setMinimumWidth(75);
 
@@ -4938,28 +4936,29 @@ void MainWindow::initPanels(){
     QLabel *rightPanelNodesLabel = new QLabel;
     rightPanelNodesLabel->setText(tr("Nodes:"));
     rightPanelNodesLabel->setStatusTip(
-                tr("The total number of actors (nodes or vertices) "
-                   "in this social network."));
+                tr("Each actor in a social netwok is visualized as a node (aka vertex)."));
     rightPanelNodesLabel->setToolTip(
                 tr("<p><b>Nodes</b></p>"
-                   "<p>Each actor in a social netwok is visualized as a node (or vertex) "
+                   "<p>Each actor in a social netwok is visualized as a node (aka vertex) "
                    "in a graph. This is total number of actors "
-                   "(nodes or vertices) in this social network.</p>"));
+                   "(aka nodes or vertices) in this social network.</p>"));
     rightPanelNodesLabel->setMinimumWidth(80);
 
     rightPanelNodesLCD=new QLabel;
     rightPanelNodesLCD->setAlignment(Qt::AlignRight);
     rightPanelNodesLCD->setStatusTip(
-                tr("The total number of actors (nodes or vertices) in the social network."));
+                tr("The total number of actors (aka nodes or vertices) in the social network."));
     rightPanelNodesLCD->setToolTip(
                 tr("This is the total number of actors \n"
-                   "(nodes or vertices) in the social network."));
+                   "(aka nodes or vertices) in the social network."));
 
     rightPanelEdgesLabel = new QLabel;
     rightPanelEdgesLabel->setText(tr("Arcs:"));
-    rightPanelEdgesLabel->setStatusTip(tr("The total number of edges (links between actors) in the social network."));
-    rightPanelEdgesLabel->setToolTip(tr("This is the total number of (directed) edges \n"
-                                        "(links between actors) in the social network."));
+    rightPanelEdgesLabel->setStatusTip(tr("Each link between a pair of actors in a social network is visualized as an edge or arc."));
+    rightPanelEdgesLabel->setToolTip(
+                tr("<p><b>Edges</b></p>"
+                   "Each link between a pair of actors in a social network is visualized as an undirected edge or a directed edge (aka arc)." )
+                );
 
     rightPanelEdgesLCD=new QLabel;
     rightPanelEdgesLCD->setAlignment(Qt::AlignRight);
@@ -4997,8 +4996,8 @@ void MainWindow::initPanels(){
 
     QLabel *rightPanelSelectedNodesLabel = new QLabel;
     rightPanelSelectedNodesLabel->setText(tr("Nodes:"));
-    rightPanelSelectedNodesLabel->setStatusTip(tr("The number of selected nodes (vertices)."));
-    rightPanelSelectedNodesLabel->setToolTip(tr("The number of selected nodes (vertices)."));
+    rightPanelSelectedNodesLabel->setStatusTip(tr("Selected nodes."));
+    rightPanelSelectedNodesLabel->setToolTip(tr("Selected nodes."));
 
     rightPanelSelectedNodesLCD=new QLabel;
     rightPanelSelectedNodesLCD->setAlignment(Qt::AlignRight);
@@ -5008,8 +5007,8 @@ void MainWindow::initPanels(){
 
     rightPanelSelectedEdgesLabel = new QLabel;
     rightPanelSelectedEdgesLabel->setText(tr("Arcs:"));
-    rightPanelSelectedEdgesLabel->setStatusTip(tr("The number of selected edges."));
-    rightPanelSelectedEdgesLabel->setToolTip(tr("The number of selected edges."));
+    rightPanelSelectedEdgesLabel->setStatusTip(tr("Selected edges."));
+    rightPanelSelectedEdgesLabel->setToolTip(tr("Selected edges."));
 
     rightPanelSelectedEdgesLCD=new QLabel;
     rightPanelSelectedEdgesLCD->setText("0");
@@ -7341,11 +7340,9 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
                                         const qint64 &elapsedTime,
                                         const QString &message)
 {
-    qDebug()<< "Network file loaded, type " << type;
 
     if (type <= 0 || fName.isEmpty() ) {
-        qDebug()<< "ERROR. UNRECOGNIZED FILE. "
-                   "Message from Parser: "
+        qDebug()<< "ERROR LOADING FILE. FILE UNRECOGNIZED. Message from Parser: "
                 << message
                 << "Calling initApp()";
 
@@ -7372,6 +7369,12 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
 
     // We have loaded a file with success.
     // Update our window and save path in settings
+
+    qDebug()<< "A file was loaded. "
+            << " filename" << fName
+            << " type " << type
+            << " totalNodes" << totalNodes
+            << " totalEdges" << totalEdges;
 
     fileName=fName;
     previous_fileName=fileName;
@@ -7424,6 +7427,10 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
 
         break;
     }
+
+    // Update LCDs (TODO/TOFIX, this is a workaround or a final solution ?)
+    rightPanelNodesLCD->setText (QString::number(totalNodes));
+    rightPanelEdgesLCD->setText(QString::number(totalEdges));
 
     statusMessage( tr("%1 formatted network, named '%2', loaded. Nodes: %3, Edges: %4. Elapsed time: %5 ms").arg(fileFormatHuman).arg( netName ).arg( totalNodes ).arg(totalEdges).arg(elapsedTime) );
 
@@ -9081,11 +9088,12 @@ void MainWindow::slotNetworkChanged(
                                     const int &vertices,
                                     const int &edges,
                                     const qreal &density){
-    qDebug()<<"Updating mainwindow, with params: "
+    qCritical()<<"Updating mainwindow, with params: "
            << "directed" << directed
            << "vertices" << vertices
            << "edges" << edges
            << "density"<< density;
+
 
     // networkSaveAct->setIcon(QIcon(":/images/file_download_48px.svg"));
     networkSaveAct->setEnabled(true);
@@ -9106,8 +9114,7 @@ void MainWindow::slotNetworkChanged(
                                                   "any edge you add between nodes will be undirected.\n"
                                                   "If you want to work with directed edges and/or \n"
                                                   "transform the loaded network (if any) to directed \n"
-                                                  "disable the option Edit->Edges->Undirected \n"
-                                                  "or press CTRL+E+U"));
+                                                  "disable the option Edit->Edges->Undirected"));
 
 
         if (toolBoxEditEdgeModeSelect->currentIndex()==0) {
@@ -9116,10 +9123,6 @@ void MainWindow::slotNetworkChanged(
         rightPanelNetworkTypeLCD->setText ("Undirected");
 
         rightPanelEdgesLabel->setText(tr("Edges:"));
-        rightPanelEdgesLabel->setStatusTip(
-                    tr("Shows the total number of undirected edges in the network.")
-                    );
-        rightPanelEdgesLabel->setToolTip(tr("The total number of undirected edges in the network."));
 
         rightPanelSelectedEdgesLabel->setText( tr("Edges:"));
         editEdgeUndirectedAllAct->setChecked(true);
@@ -9132,22 +9135,18 @@ void MainWindow::slotNetworkChanged(
                                                 "any link you add between nodes will be a directed arc.\n"
                                                 "If you want to work with undirected edges and/or \n"
                                                 "transform the loaded network (if any) to undirected \n"
-                                                "enable the option Edit->Edges->Undirected \n"
-                                                "or press CTRL+E+U"));
+                                                "enable the option Edit->Edges->Undirected"));
         rightPanelNetworkTypeLCD->setWhatsThis(tr("The loaded network, if any, is directed and \n"
                                                   "any link you add between nodes will be a directed arc.\n"
                                                   "If you want to work with undirected edges and/or \n"
                                                   "transform the loaded network (if any) to undirected \n"
-                                                  "enable the option Edit->Edges->Undirected \n"
-                                                  "or press CTRL+E+U"));
+                                                  "enable the option Edit->Edges->Undirected"));
 
         rightPanelNetworkTypeLCD->setText ("Directed");
         if (toolBoxEditEdgeModeSelect->currentIndex()==1) {
             toolBoxEditEdgeModeSelect->setCurrentIndex(0);
         }
         rightPanelEdgesLabel->setText(tr("Arcs:"));
-        rightPanelEdgesLabel->setStatusTip(tr("Shows the total number of directed edges (arcs) in the network."));
-        rightPanelEdgesLabel->setToolTip(tr("The total number of directed edges (arcs) in the network."));
 
         rightPanelSelectedEdgesLabel->setText( tr("Arcs:")  );
         editEdgeUndirectedAllAct->setChecked(false);
@@ -9328,7 +9327,7 @@ void MainWindow::slotEditNodeFind(const QStringList &list,
                                   const QString &indexStr)
 {
 
-    qDebug() << "MW::slotEditNodeFind() - nodes:" << list
+    qDebug() << "Request to find nodes:" << list
              << "search type:"<< searchType
              << "indexStr"<<indexStr;
 
@@ -10373,7 +10372,7 @@ void MainWindow::slotEditEdgeOpenContextMenu(const QString &str) {
  * Called when user clicks on the MW button/menu item "Add edge"
  */
 void MainWindow::slotEditEdgeAdd(){
-    qDebug()<<"MW::slotEditEdgeAdd()";
+    qDebug()<<"Request to add a new edge...";
     if ( !activeNodes() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;

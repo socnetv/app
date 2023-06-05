@@ -269,8 +269,7 @@ void Parser::load(const QString &fileName,
     }
 
 
-    qDebug()<< "**** Parser finished. Emitting finished() signal. "
-               << "fileFormat now: "<< fileFormat;
+    qDebug()<< "**** Parser finished. Emitting finished() signal. ";
 
     emit finished ("Parser::load() - reach end");
 
