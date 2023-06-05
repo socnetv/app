@@ -71,9 +71,10 @@ class CompareActors {
 
 
 /**
- * @brief The Parser class
- * Main class for network file parsing and loading
+ * @brief Defines a class for network file loading and parsing
+ *
  * Supports GraphML, Pajek, Adjacency, Graphviz, UCINET, EdgeLists etc
+ *
  */
 class Parser :  public QObject {
 	Q_OBJECT
@@ -81,11 +82,11 @@ public:
 	
     Parser();
     ~Parser();
-    void load(const QString fileName, const QString codecName, const int defNodeSize,
-              const QString defNodeColor, const QString defNodeShape, const QString defNodeNumberColor,
-              const int defNodeNumberSize, const QString defNodeLabelColor, const int defNodeLabelSize ,
-              const QString defEdgeColor, const int width, const int height, const int format,
-              const int sm_mode, const QString delim=QString());
+    void load(const QString &fileName, const QString &codecName, const int &defNodeSize,
+              const QString &defNodeColor, const QString &defNodeShape, const QString &defNodeNumberColor,
+              const int &defNodeNumberSize, const QString &defNodeLabelColor, const int &defNodeLabelSize ,
+              const QString &defEdgeColor, const int &canvasWidth, const int &canvasHeight, const int &format,
+              const int &sm_mode, const QString &delim=QString());
 
     bool parseAsPajek(const QByteArray &rawData);
     bool parseAsAdjacency(const QByteArray &rawData);

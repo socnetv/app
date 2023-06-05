@@ -97,21 +97,21 @@ Parser::~Parser () {
  * @param sm_mode
  * @param delim
  */
-void Parser::load(const QString fileName,
-                  const QString codecName,
-                  const int defNodeSize,
-                  const QString defNodeColor,
-                  const QString defNodeShape,
-                  const QString defNodeNumberColor,
-                  const int defNodeNumberSize,
-                  const QString defNodeLabelColor,
-                  const int defNodeLabelSize ,
-                  const QString defEdgeColor,
-                  const int width,
-                  const int height,
-                  const int format,
-                  const int sm_mode,
-                  const QString delim)  {
+void Parser::load(const QString &fileName,
+                  const QString &codecName,
+                  const int &defNodeSize,
+                  const QString &defNodeColor,
+                  const QString &defNodeShape,
+                  const QString &defNodeNumberColor,
+                  const int &defNodeNumberSize,
+                  const QString &defNodeLabelColor,
+                  const int &defNodeLabelSize ,
+                  const QString &defEdgeColor,
+                  const int &canvasWidth,
+                  const int &canvasHeight,
+                  const int &format,
+                  const int &sm_mode,
+                  const QString &delim)  {
 
 
     qDebug()<< "Parser loading file:" << fileName
@@ -133,13 +133,13 @@ void Parser::load(const QString fileName,
     bezier=false;
     m_textCodecName = codecName;
     networkName=(fileName.split ("/")).last();
-    gwWidth=width;
-    gwHeight=height;
+    gwWidth=canvasWidth;
+    gwHeight=canvasHeight;
     randX=0;
     randY=0;
-    fileFormat= format;
-    two_sm_mode = sm_mode;
-    fileLoaded = false;
+    fileFormat=format;
+    two_sm_mode=sm_mode;
+    fileLoaded=false;
 
     if (!delim.isNull() && !delim.isEmpty()) {
         delimiter = delim;
@@ -247,7 +247,13 @@ void Parser::load(const QString fileName,
     qint64 elapsedTime = computationTimer.elapsed();
 
     if (fileLoaded){
-        emit networkFileLoaded(fileFormat, fileName, networkName, totalNodes, totalLinks, edgeDirType, elapsedTime);
+        emit networkFileLoaded(fileFormat,
+                               fileName,
+                               networkName,
+                               totalNodes,
+                               totalLinks,
+                               edgeDirType,
+                               elapsedTime);
     }
     else if (errorMessage!=QString()) {
         emit networkFileLoaded(FileType::UNRECOGNIZED,
