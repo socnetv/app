@@ -139,7 +139,7 @@ signals:
                      const QString &shape,
                      const QString &iconPath=QString(),
                      const bool &signalMW=false);
-    void createNodeAtPosRandom(const bool &signalMW=false);
+    void signalCreateNodeAtPosRandom(const bool &signalMW=false);
     void createNodeAtPosRandomWithLabel (const int &num,
                                          const QString &label,
                                          const bool &signalMW=false

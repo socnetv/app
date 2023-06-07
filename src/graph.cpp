@@ -15750,10 +15750,7 @@ void Graph::loadFile (	const QString fileName,
 
     connect ( file_parser, &Parser::signalCreateNode, this, &Graph::vertexCreate );
 
-    connect (
-            file_parser, SIGNAL (createNodeAtPosRandom(const bool &)),
-            this, SLOT(vertexCreateAtPosRandom(const bool &))
-            );
+    connect (file_parser, &Parser::signalCreateNodeAtPosRandom, this, &Graph::vertexCreateAtPosRandom);
 
     connect (
             file_parser, SIGNAL (createNodeAtPosRandomWithLabel(

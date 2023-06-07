@@ -288,7 +288,7 @@ void Parser::createRandomNodes(const int &fixedNum,
     if (newNodes != 1 ) {
         for (int i=0; i<newNodes; i++) {
             qDebug() << "Signaling to create multiple nodes. Now signaling for node:" << i+1;
-            emit createNodeAtPosRandom(false);
+            emit signalCreateNodeAtPosRandom(false);
         }
     }
     else {
