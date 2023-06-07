@@ -595,10 +595,10 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                 continue;
             }
             else{
-                qDebug() << "adding relation "<< relation
-                         << " to relationsList and emitting addRelation ";
+                qDebug() << "adding new relation"<< relation
+                         << "to relationsList and signaling to create new relation";
                 relationsList << relation;
-                emit addRelation( relation );
+                emit signalAddNewRelation( relation );
             }
         }
 
@@ -730,23 +730,21 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                         qDebug() << "we are at source 1. "
                                     "Checking relationList";
                         relation = relationsList[ relationCounter ];
-                        qDebug() << ""
-                                    "WE ARE THE FIRST DATASET/MATRIX"
-                                 << " source node counter is " << source
-                                 << " and relation to " << relation<< ": "
-                                 << relationCounter;
-                        emit relationSet (relationCounter);
+                        qDebug() << "WE ARE THE FIRST DATASET/MATRIX"
+                                 << "source node counter is" << source
+                                 << "and relation to:" << relation<< "index:"
+                                 << relationCounter << "signaling to change to that relation...";
+                        emit signalSetRelation (relationCounter);
                     }
                     else if (source>totalNodes) {
                         source=1;
                         relationCounter++;
                         relation = relationsList[ relationCounter ];
-                        qDebug() << ""
-                                    "LOOKS LIKE WE ENTERED A NEW DATASET/MATRIX "
-                                 << " init source node counter to " << source
-                                 << " and relation to " << relation << ": "
-                                 << relationCounter;
-                        emit relationSet (relationCounter);
+                        qDebug() << "LOOKS LIKE WE ENTERED A NEW DATASET/MATRIX "
+                                 << " init source node counter to" << source
+                                 << " and relation to" << relation << ": "
+                                 << relationCounter << "signaling to change to that relation...";
+                        emit signalSetRelation (relationCounter);
                     }
                     else {
                         qDebug() << "source node counter is " << source;
@@ -764,14 +762,14 @@ bool Parser::parseAsDL(const QByteArray &rawData){
 
                         if ( edgeWeight ){
 
-                            qDebug() << "relation "
+                            qDebug() << "relation"
                                      << relationCounter
-                                     << " found edge from "
+                                     << "found edge from "
                                      << source << " to " << target
-                                     << " weight " << edgeWeight
-                                     << " emitting signalEdgeCreate() to parent" ;
+                                     << "weight " << edgeWeight
+                                     << "signaling to create new edge..." ;
 
-                            emit signalEdgeCreate( source, target, edgeWeight, initEdgeColor,
+                            emit signalCreateEdge( source, target, edgeWeight, initEdgeColor,
                                              EdgeType::Directed, arrows, bezier);
                             totalLinks++;
                             qDebug() << "TotalLinks= " << totalLinks;
@@ -813,13 +811,13 @@ bool Parser::parseAsDL(const QByteArray &rawData){
 
                             qDebug() << "relation "
                                      << relationCounter
-                                     << " found edge from "
+                                     << "found edge from "
                                      << source << " to " << target
-                                     << " weight " << edgeWeight
-                                     << " emitting signalEdgeCreate() to parent" ;
+                                     << "weight " << edgeWeight
+                                     << "signaling to create new edge" ;
 
-                            emit signalEdgeCreate( source, target, edgeWeight, initEdgeColor,
-                                             EdgeType::Directed, arrows, bezier);
+                            emit signalCreateEdge( source, target, edgeWeight, initEdgeColor, EdgeType::Directed, arrows, bezier);
+
                             totalLinks++;
                             qDebug() << "TotalLinks= " << totalLinks;
 
@@ -867,10 +865,10 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                     qDebug () << "	list file NOT declaring edge weight. Setting default: " << edgeWeight;
                 }
 
-                qDebug() << "Creating link "
+                qDebug() << "Signaling to create new edge"
                          << source << "->"<< target << " weight= "<< edgeWeight
                          <<  " TotalLinks=  " << totalLinks+1;
-                emit signalEdgeCreate(source, target, edgeWeight, initEdgeColor, EdgeType::Directed,
+                emit signalCreateEdge(source, target, edgeWeight, initEdgeColor, EdgeType::Directed,
                                 arrows, bezier);
                 totalLinks++;
             } // END edgelist1 format reading.
@@ -889,12 +887,12 @@ bool Parser::parseAsDL(const QByteArray &rawData){
     }
 
     if (relationsList.count() == 0) {
-        emit addRelation("unnamed");
+        emit signalAddNewRelation("unnamed");
     }
 
 
-    //The network has been loaded. Tell MW the statistics and network type
-    emit relationSet (0);
+    //The network has been loaded. Change to the first relation
+    emit signalSetRelation (0);
 
     // Clear temp arrays
     lineElement.clear();
@@ -1053,7 +1051,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
     int coordIndex=-1, labelIndex=-1;
     unsigned long int fileLineNumber=0;
     unsigned long int actualLineNumber=0;
-    int pos=-1, relationCounter=0;
+    int pos=-1, lastRelationIndex=0;
     qreal weight=1;
     QString relation;
     list<int> listDummiesPajek;
@@ -1146,18 +1144,19 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
             if ( (pos = str.indexOf(":")) != -1 ) {
                 relation = str.right(str.size() - pos -1) ;
                 relation = relation.simplified();
-                qDebug() << "adding relation "<< relation
-                         << " to relationsList and emitting addRelation ";
+                qDebug() << "adding relation"<< relation
+                         << " to relationsList and signaling to add new relation";
                 relationsList << relation;
-                emit addRelation( relation );
-                if (relationCounter > 0) {
-                    qDebug () << "relationCounter "
-                              << relationCounter
-                              << "emitting relationSet";
-                    emit relationSet(relationCounter);
+                emit signalAddNewRelation( relation );
+                lastRelationIndex = relationsList.count() - 1;
+                if ( lastRelationIndex > 0) {
+                    qDebug () << "last relation index:"
+                              << lastRelationIndex
+                              << "signaling to change to the last relation...";
+                    emit signalSetRelation(lastRelationIndex);
                     i=0; // reset the source node index
                 }
-                relationCounter++;
+
             }
 
             continue;
@@ -1175,18 +1174,17 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
             if ( (pos = str.indexOf(":")) != -1 ) {
                 relation = str.right(str.size() - pos -1) ;
                 relation = relation.simplified();
-                qDebug() << "adding relation "<< relation
-                         << " to relationsList and emitting addRelation ";
+                qDebug() << "adding new relation "<< relation
+                         << " to relationsList and signaling to create new relation";
                 relationsList << relation;
-                emit addRelation( relation );
-                if (relationCounter > 0) {
-                    qDebug () << "relationCounter "
-                              << relationCounter
-                              << "emitting relationSet";
-                    emit relationSet(relationCounter);
+                lastRelationIndex = relationsList.count()-1;
+                if ( lastRelationIndex > 0) {
+                    qDebug () << "last relation index:"
+                              << lastRelationIndex
+                              << "signaling to change to the last relation...";
+                    emit signalSetRelation(lastRelationIndex);
                     i=0; // reset the source node index
                 }
-                relationCounter++;
             }
             continue;
         }
@@ -1430,8 +1428,8 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
 
                 arrows=false;
                 bezier=false;
-                qDebug()<< "EDGES: Create edge between " << source << " - "<< target;
-                emit signalEdgeCreate(source, target, edgeWeight, edgeColor,
+                qDebug()<< "EDGES: signaling to create new edge:" << source << " - "<< target;
+                emit signalCreateEdge(source, target, edgeWeight, edgeColor,
                                 EdgeType::Undirected, arrows, bezier, edgeLabel);
                 totalLinks=totalLinks+2;
 
@@ -1494,8 +1492,8 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
                 arrows=true;
                 bezier=false;
                 has_arcs=true;
-                qDebug()<<"ARCS: Creating arc from node "<< source << " to node "<< target << " with weight "<< weight;
-                emit signalEdgeCreate(source, target, edgeWeight , edgeColor,
+                qDebug()<<"ARCS: signaling to create new arc:"<< source << "->"<< target << "with weight "<< weight;
+                emit signalCreateEdge(source, target, edgeWeight , edgeColor,
                                 EdgeType::Directed, arrows, bezier, edgeLabel);
                 totalLinks++;
             } //else if ARCS
@@ -1510,8 +1508,8 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
                 bezier=false;
                 for (int index = 1; index < lineElement.size(); index++) {
                     target = lineElement.at(index).toInt(&ok,10);
-                    qDebug()<<"ARCS LIST: Creating ARC source "<< source << " target "<< target << " with weight "<< weight;
-                    emit signalEdgeCreate(source, target, edgeWeight, edgeColor,
+                    qDebug()<<"ARCS LIST: signaling to create new arc:"<< source << "->"<< target << "with weight "<< weight;
+                    emit signalCreateEdge(source, target, edgeWeight, edgeColor,
                                     EdgeType::Directed, arrows, bezier);
                     totalLinks++;
                 }
@@ -1528,10 +1526,10 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
                 for (target = 0; target < lineElement.size(); target ++) {
                     if ( lineElement.at(target) != "0" ) {
                         edgeWeight  = lineElement.at(target).toFloat(&ok);
-                        qDebug()<<" MATRIX: Creating arc source "
-                               << source << " target "<< target +1
-                               << " with weight "<< weight;
-                        emit signalEdgeCreate(source, target+1, edgeWeight, edgeColor,
+                        qDebug()<<" MATRIX: signaling to create new arc"
+                               << source << "->"<< target +1
+                               << "with weight"<< weight;
+                        emit signalCreateEdge(source, target+1, edgeWeight, edgeColor,
                                         EdgeType::Directed, arrows, bezier);
                         totalLinks++;
                     }
@@ -1554,14 +1552,15 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
     }
 
     if (relationsList.count() == 0) {
-        emit addRelation(networkName);
+        emit signalAddNewRelation(networkName);
     }
 
-    qDebug("Clearing DumiesList from Pajek");
+    qDebug() << "Clearing temporary dummies and relations list";
     listDummiesPajek.clear();
     relationsList.clear();
 
-    emit relationSet (0);
+    qDebug() << "signaling to change to the first relation...";
+    emit signalSetRelation (0);
 
     if (has_arcs) {
       edgeDirType = EdgeType::Directed;
@@ -1784,10 +1783,10 @@ bool Parser::parseAsAdjacency(const QByteArray &rawData){
                 arrows=true;
                 bezier=false;
 
-                qDebug() << "New edge: " << i << "->" <<  j
-                         << "has weight" << edgeWeight << "TotalLinks: " << totalLinks+1;
+                qDebug() << "signaling to create new edge: " << i << "->" <<  j
+                         << "weight" << edgeWeight << "TotalLinks: " << totalLinks+1;
 
-                emit signalEdgeCreate(i, j, edgeWeight, initEdgeColor, EdgeType::Directed, arrows, bezier);
+                emit signalCreateEdge(i, j, edgeWeight, initEdgeColor, EdgeType::Directed, arrows, bezier);
 
                 totalLinks++;
 
@@ -1800,7 +1799,7 @@ bool Parser::parseAsAdjacency(const QByteArray &rawData){
 
 
     if (relationsList.count() == 0 ) {
-        emit addRelation( "unnamed" );
+        emit signalAddNewRelation( "unnamed" );
     }
 
     qDebug() << "Finished OK. Returning.";
@@ -1899,9 +1898,8 @@ bool Parser::parseAsTwoModeSociomatrix(const QByteArray &rawData){
                         arrows=true;
                         bezier=false;
                         edgeWeight = 1;
-                        qDebug() << " Actor " << i << " on the same event as actor " << k << ". Creating edge ";
-                        emit signalEdgeCreate(i, k, edgeWeight, initEdgeColor,
-                                        EdgeType::Undirected, arrows, bezier);
+                        qDebug() << "Actor" << i << " on the same event as actor " << k << ". signaling to create new edge";
+                        emit signalCreateEdge(i, k, edgeWeight, initEdgeColor, EdgeType::Undirected, arrows, bezier);
                         totalLinks++;
                     }
                 }
@@ -1913,7 +1911,7 @@ bool Parser::parseAsTwoModeSociomatrix(const QByteArray &rawData){
 
 
     if (relationsList.count() == 0) {
-        emit addRelation("unnamed");
+        emit signalAddNewRelation("unnamed");
     }
 
     qDebug() << "Finished OK. Returning.";
@@ -2057,8 +2055,8 @@ bool Parser::parseAsGraphML(const QByteArray &rawData){
 
     xml.clear();
 
-    // if there was no error the rewind to first relation and emit signal
-    emit relationSet (0);
+    qDebug() << "signaling to change to the first relation...";
+    emit signalSetRelation (0);
 
     qDebug() << "Finished OK. Returning.";
     return true;
@@ -2125,14 +2123,12 @@ bool Parser::readGraphML(QXmlStreamReader &xml){
                 bool_edge =  true;
             }
 
-            else if (	 (
-                             xml.name().toString() == "Path"
-                             || xml.name().toString() == "LineStyle"
-                             || xml.name().toString() == "Arrows"
-                             || xml.name().toString() == "EdgeLabel"
-                             )
-                         && 	bool_edge
-                         ) {
+            else if ( ( xml.name().toString() == "Path"
+                         || xml.name().toString() == "LineStyle"
+                         || xml.name().toString() == "Arrows"
+                         || xml.name().toString() == "EdgeLabel"
+                       ) && bool_edge
+                      ) {
                 readGraphMLElementEdgeGraphics(xml);
             }
 
@@ -2172,35 +2168,36 @@ bool Parser::readGraphML(QXmlStreamReader &xml){
  * @param xml
  */
 void Parser::readGraphMLElementGraph(QXmlStreamReader &xml){
-    qDebug()<< "Parser::readGraphMLElementGraph";
     QXmlStreamAttributes xmlStreamAttr = xml.attributes();
     QString defaultDirection = xmlStreamAttr.value("edgedefault").toString();
-    qDebug()<< "Parser::readGraphMLElementGraph() - edgedefault "
+    qDebug()<< "Parsing graph element - edgedefault "
             << defaultDirection;
     if (defaultDirection=="undirected"){
-        qDebug()<< "Parser::readGraphMLElementGraph() - this is an undirected graph ";
+        qDebug()<< "this is an undirected graph ";
         edgeDirType=EdgeType::Undirected;
         arrows=false;
     }
     else {
-        qDebug()<< "Parser::readGraphMLElementGraph() - this is a directed graph ";
+        qDebug()<< "this is a directed graph ";
         edgeDirType=EdgeType::Directed;
         arrows=true;
     }
+    //store graph id
     networkName = xmlStreamAttr.value("id").toString();
+    // add it as relation
     relationsList << networkName;
-    qDebug()<< "Parser::readGraphMLElementGraph() - emit addRelation()" <<networkName;
-    emit addRelation( networkName);
-    int relationCounter = relationsList.count() - 1; //zero indexed
-    if (relationCounter > 0) {
+    qDebug()<< "Signaling to add new relation:" <<networkName;
+    emit signalAddNewRelation( networkName);
+
+    int lastRelationIndex = relationsList.count() - 1;
+    if (lastRelationIndex > 0) {
         totalNodes=0;
-        qDebug () << "Parser::readGraphMLElementGraph() - relations now "
-                  << relationCounter
-                  << "emitting relationSet to change to the new relation"
-                  << "and setting totalNodes to " <<totalNodes;
-        emit relationSet(relationCounter);
+        qDebug () << "last relation index:"
+                  << lastRelationIndex
+                  << "signaling to change to the new relation";
+        emit signalSetRelation(lastRelationIndex);
     }
-    qDebug()<< "Parser::readGraphMLElementGraph() - graph id  "  << networkName; //store graph id to return it afterwards
+    qDebug()<< "graph id:" << networkName;
 }
 
 
@@ -2217,30 +2214,26 @@ void Parser::readGraphMLElementGraph(QXmlStreamReader &xml){
  */
 void Parser::readGraphMLElementKey ( QXmlStreamAttributes &xmlStreamAttr )
 {
-    qDebug()<< "Parser::readGraphMLElementKey()";
     key_id = xmlStreamAttr.value("id").toString();
-    qDebug()<< "Parser::readGraphMLElementKey() - key id "<< key_id;
+    qDebug()<< "Reading key element - key id"<< key_id;
     key_what = xmlStreamAttr.value("for").toString();
     keyFor [key_id] = key_what;
-    qDebug()<< "Parser::readGraphMLElementKey() - key for "<< key_what;
+    qDebug()<< "key for "<< key_what;
 
     if (xmlStreamAttr.hasAttribute("attr.name") ) {  // to be enabled in later versions..
         key_name =xmlStreamAttr.value("attr.name").toString();
         keyName [key_id] = key_name;
-        qDebug()<< "Parser::readGraphMLElementKey() - key attr.name "
-                << key_name;
+        qDebug()<< "key attr.name" << key_name;
     }
     if (xmlStreamAttr.hasAttribute("attr.type") ) {
         key_type=xmlStreamAttr.value("attr.type").toString();
         keyType [key_id] = key_type;
-        qDebug()<< "Parser::readGraphMLElementKey() - key attr.type "
-                << key_type;
+        qDebug()<< "key attr.type" << key_type;
     }
     else if (xmlStreamAttr.hasAttribute("yfiles.type") ) {
         key_type=xmlStreamAttr.value("yfiles.type").toString();
         keyType [key_id] = key_type;
-        qDebug()<< "Parser::readGraphMLElementKey() - key yfiles.type "
-                << key_type;
+        qDebug()<< "key yfiles.type"<< key_type;
     }
 
 }
@@ -2256,70 +2249,59 @@ void Parser::readGraphMLElementKey ( QXmlStreamAttributes &xmlStreamAttr )
  */
 void Parser::readGraphMLElementDefaultValue(QXmlStreamReader &xml) {
 
-    qDebug()<< "Parser::readGraphMLElementDefaultValue()";
-
     key_value=xml.readElementText();
     keyDefaultValue [key_id] = key_value;	//key_id is already stored
 
-    qDebug()<< "Parser::readGraphMLElementDefaultValue() - key default value is "
+    qDebug()<< "Reading default key values - key default value is"
             << key_value;
 
     if (keyName.value(key_id) == "size" && keyFor.value(key_id) == "node" ) {
-        qDebug()<< "Parser::readGraphMLElementDefaultValue() - key default value "
-                << key_value << " is for node size";
+        qDebug()<< "key default value" << key_value << "is for node size";
         conv_OK=false;
         initNodeSize= key_value.toInt(&conv_OK);
         if (!conv_OK) initNodeSize = 8;
     }
     if (keyName.value(key_id) == "shape" && keyFor.value(key_id) == "node" ) {
-        qDebug()<< "Parser::readGraphMLElementDefaultValue() - key default value "
-                << key_value << " is for nodes shape";
+        qDebug()<< "key default value" << key_value << "is for nodes shape";
         initNodeShape= key_value;
     }
     if (keyName.value(key_id) == "custom-icon" && keyFor.value(key_id) == "node" ) {
-        qDebug()<< "Parser::readGraphMLElementDefaultValue() - key default value "
-                << key_value << " is for node custom-icon path";
+        qDebug()<< "key default value" << key_value << "is for node custom-icon path";
         initNodeCustomIcon = key_value;
         initNodeCustomIcon = fileDirPath + "/"  + initNodeCustomIcon;
-        qDebug()<< "Parser::readGraphMLElementDefaultValue() - initNodeCustomIcon full path:"
-                << initNodeCustomIcon ;
+        qDebug()<< "initNodeCustomIcon full path:" << initNodeCustomIcon ;
         if (QFileInfo::exists(initNodeCustomIcon)){
-            qDebug()<< "Parser::readGraphMLElementDefaultValue() - custom icon file exists!";
+            qDebug()<< "custom icon file exists!";
         }
         else {
-            qDebug()<< "Parser::readGraphMLElementDefaultValue() - custom icon file does not exists!";
+            qDebug()<< "custom icon file does not exists!";
             xml.raiseError(
                         QObject::tr(" Default custom icon for nodes does not exist in the filesystem. \nThe declared icon file was: \n%1").arg(initNodeCustomIcon));
         }
     }
     if (keyName.value(key_id) == "color" && keyFor.value(key_id) == "node" ) {
-        qDebug()<< "Parser::readGraphMLElementDefaultValue() - key default value "
-                << key_value << " is for nodes color";
+        qDebug()<< "key default value" << key_value << "is for nodes color";
         initNodeColor= key_value;
     }
     if (keyName.value(key_id) == "label.color" && keyFor.value(key_id) == "node" ) {
-        qDebug()<< "Parser::readGraphMLElementDefaultValue() - key default value "
-                << key_value << " is for node labels color";
+        qDebug()<< "key default value" << key_value << "is for node labels color";
         initNodeLabelColor= key_value;
     }
     if (keyName.value(key_id) == "label.size" && keyFor.value(key_id) == "node" ) {
-        qDebug()<< "Parser::readGraphMLElementDefaultValue() - key default value "
-                << key_value << " is for node labels size";
+        qDebug()<< "key default value" << key_value << "is for node labels size";
         conv_OK=false;
         initNodeLabelSize= key_value.toInt(&conv_OK);
         if (!conv_OK) initNodeLabelSize = 8;
     }
     if (keyName.value(key_id) == "weight" && keyFor.value(key_id) == "edge" ) {
-        qDebug()<< "Parser::readGraphMLElementDefaultValue() - key default value "
-                << key_value << " is for edges weight";
+        qDebug()<< "key default value" << key_value << "is for edges weight";
         conv_OK=false;
         initEdgeWeight= key_value.toDouble(&conv_OK);
         if (!conv_OK)
             initEdgeWeight = 1;
     }
     if (keyName.value(key_id) == "color" && keyFor.value(key_id) == "edge" ) {
-        qDebug()<< "Parser::readGraphMLElementDefaultValue() - key default value "
-                << key_value << " is for edges color";
+        qDebug()<< "key default value" << key_value << "is for edges color";
         initEdgeColor= key_value;
     }
 
@@ -2338,8 +2320,8 @@ void Parser::readGraphMLElementNode(QXmlStreamReader &xml){
     QXmlStreamAttributes xmlStreamAttr = xml.attributes();
     node_id = (xmlStreamAttr.value("id")).toString();
     totalNodes++;
-    qDebug()<< "node id "<<  node_id
-           << "index " << totalNodes
+    qDebug()<< "reading node id"<<  node_id
+           << "index" << totalNodes
            << "added to nodeHash"
            << "gwWidth, gwHeight "<< gwWidth<< "," <<gwHeight;
 
@@ -2363,14 +2345,19 @@ void Parser::readGraphMLElementNode(QXmlStreamReader &xml){
 }
 
 
-// this method emits the node creation signal.
-// called at the end of a node element   
 
+/**
+ * @brief Signals to create a new node
+ *
+ * called at the end of a node element
+ *
+ * @param xml
+ */
 void Parser::endGraphMLElementNode(QXmlStreamReader &xml){
     Q_UNUSED(xml);
     //@todo this check means we cannot have different nodes between relations.
     if (relationsList.count() > 1 ) {
-        qDebug()<<"Parser::endGraphMLElementNode() - multirelational data"
+        qDebug()<<"multirelational data"
                   "skipping node creation. Node should have been created in earlier relation";
         bool_node = false;
         return;
@@ -2427,7 +2414,7 @@ void Parser::readGraphMLElementEdge(QXmlStreamAttributes &xmlStreamAttr){
     edge_source = xmlStreamAttr.value("source").toString();
     edge_target = xmlStreamAttr.value("target").toString();
     edge_directed = xmlStreamAttr.value("directed").toString();
-    qDebug()<< "Parser::readGraphMLElementEdge() - id: "
+    qDebug()<< "Parsing edge id: "
             <<	xmlStreamAttr.value("id").toString()
                 << "edge_source " << edge_source
                 << "edge_target " << edge_target
@@ -2441,17 +2428,17 @@ void Parser::readGraphMLElementEdge(QXmlStreamAttributes &xmlStreamAttr){
 
     if ( edge_directed=="false" || edge_directed.contains("false",Qt::CaseInsensitive) ) {
         edgeDirType=EdgeType::Undirected;
-        qDebug()<< "Parser::readGraphMLElementEdge() - UNDIRECTED";
+        qDebug()<< "Edge is UNDIRECTED";
     }
     else {
         edgeDirType=EdgeType::Directed;
-        qDebug()<< "Parser::readGraphMLElementEdge() - DIRECTED";
+        qDebug()<< "Edge is DIRECTED";
     }
     if (!nodeHash.contains(edge_source)) {
-        qDebug() << "Parser::readGraphMLElementEdge() - source node id "
+        qDebug() << "source node id "
                  << edge_source
                  << "for edge from " << edge_source << " to " << edge_target
-                 << " DOES NOT EXIST!"
+                 << "DOES NOT EXIST!"
                  << "Inserting into edgesMissingNodesHash";
         edgesMissingNodesHash.insert(edge_source+"===>"+edge_target,
                                      QString::number(edgeWeight)+"|"+edgeColor
@@ -2459,10 +2446,10 @@ void Parser::readGraphMLElementEdge(QXmlStreamAttributes &xmlStreamAttr){
         missingNode=true;
     }
     if (!nodeHash.contains(edge_target)) {
-        qDebug() << "Parser::readGraphMLElementEdge() - target node id "
+        qDebug() << "target node id "
                  << edge_target
                  << "for edge from " << edge_source << " to " << edge_target
-                 << " DOES NOT EXIST!"
+                 << "DOES NOT EXIST!"
                  << "Inserting into edgesMissingNodesHash";
         edgesMissingNodesHash.insert(edge_source+"===>"+edge_target,
                                      QString::number(edgeWeight)+"|"+edgeColor
@@ -2476,7 +2463,7 @@ void Parser::readGraphMLElementEdge(QXmlStreamAttributes &xmlStreamAttr){
 
     source = nodeHash [edge_source];
     target = nodeHash [edge_target];
-    qDebug()<< "Parser::readGraphMLElementEdge() - source "<< edge_source
+    qDebug()<< "source "<< edge_source
             << " num "<< source
             <<" - target "<< edge_target << " num "<< target
               << " edgeDirType " << edgeDirType;
@@ -2485,18 +2472,23 @@ void Parser::readGraphMLElementEdge(QXmlStreamAttributes &xmlStreamAttr){
 }
 
 
-// this method emits the edge creation signal.
-// called at the end of edge element   
+/**
+ * @brief Signals for a new edge to be created/added
+ *
+ * Called at the end of edge element
+ *
+ * @param xml
+ */
 void Parser::endGraphMLElementEdge(QXmlStreamReader &xml){
     Q_UNUSED(xml);
     if (missingNode) {
-        qDebug()<<"Parser::endGraphMLElementEdge() - missingNode true "
+        qDebug()<<"missingNode true "
                << " postponing edge creation signal";
         return;
     }
-    qDebug()<<"Parser::endGraphMLElementEdge() - signal signalEdgeCreate "
+    qDebug()<<"signaling to create new edge"
            << source << "->" << target << " edgeDirType value " << edgeDirType;
-    emit signalEdgeCreate(source, target, edgeWeight, edgeColor, edgeDirType,
+    emit signalCreateEdge(source, target, edgeWeight, edgeColor, edgeDirType,
                     arrows, bezier, edgeLabel);
     totalLinks++;
     bool_edge= false;
@@ -2516,12 +2508,12 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
     key_id = xmlStreamAttr.value("key").toString();
     key_value=xml.text().toString();
 
-    qDebug()<< "Parser::readGraphMLElementData() - key_id: "
-            <<  key_id <<  " key_value "<< key_value;
+    qDebug()<< "parding data for key_id: "
+            <<  key_id <<  "key_value "<< key_value;
 
     if (key_value.trimmed() == "")
     {
-        qDebug()<< "Parser::readGraphMLElementData() - empty key_value: "
+        qDebug()<< "empty key_value: "
                 << key_value
                 << "reading more xml.text()...";
 
@@ -2529,15 +2521,15 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
 
         key_value=xml.text().toString();
 
-        qDebug()<< "Parser::readGraphMLElementData() - now key_value: " << key_value;
+        qDebug()<< "now key_value: " << key_value;
 
         if (  key_value.trimmed() != "" ) {
             //if there's simple text after the StartElement,
-            qDebug()<< "Parser::readGraphMLElementData() - key_id " << key_id
+            qDebug()<< "key_id " << key_id
                     << " value is simple text " <<key_value ;
         }
         else {  //no text, probably more tags. Return...
-            qDebug()<< "Parser::readGraphMLElementData() - key_id " << key_id
+            qDebug()<< "key_id " << key_id
                     << " for " <<keyFor.value(key_id)
                     << ". More elements nested here. Returning";
             return;
@@ -2546,17 +2538,17 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
     }
 
     if (keyName.value(key_id) == "color" && keyFor.value(key_id) == "node" ) {
-        qDebug()<< "Parser::readGraphMLElementData() -Data found. Node color: "
+        qDebug()<< "Data found. Node color: "
                 << key_value << " for this node";
         nodeColor= key_value;
     }
     else if (keyName.value(key_id) == "label" && keyFor.value(key_id) == "node" ){
-        qDebug()<< "Parser::readGraphMLElementData() - Data found. Node label: "
+        qDebug()<< "Data found. Node label: "
                    ""<< key_value << " for this node";
         nodeLabel = key_value;
     }
     else if (keyName.value(key_id) == "x_coordinate" && keyFor.value(key_id) == "node" ) {
-        qDebug()<< "Parser::readGraphMLElementData() - Data found. Node x: "
+        qDebug()<< "Data found. Node x: "
                 << key_value << " for this node";
         conv_OK=false;
         randX= key_value.toFloat( &conv_OK ) ;
@@ -2564,10 +2556,10 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
             randX = 0;
         else
             randX=randX * gwWidth;
-        qDebug()<< "Parser::readGraphMLElementData() - Using: "<< randX;
+        qDebug()<< "Using: "<< randX;
     }
     else if (keyName.value(key_id) == "y_coordinate" && keyFor.value(key_id) == "node" ) {
-        qDebug()<< "Parser::readGraphMLElementData() - Data found. Node y: "
+        qDebug()<< "Data found. Node y: "
                 << key_value << " for this node";
         conv_OK=false;
         randY= key_value.toFloat( &conv_OK );
@@ -2575,46 +2567,46 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
             randY = 0;
         else
             randY=randY * gwHeight;
-        qDebug()<< "Parser::readGraphMLElementData() - Using: "<< randY;
+        qDebug()<< "Using: "<< randY;
     }
     else if (keyName.value(key_id) == "size" && keyFor.value(key_id) == "node" ) {
-        qDebug()<< "Parser::readGraphMLElementData() - Data found. Node size: "
+        qDebug()<< "Data found. Node size: "
                 << key_value << " for this node";
         conv_OK=false;
         nodeSize= key_value.toInt ( &conv_OK );
         if (!conv_OK)
             nodeSize = initNodeSize;
-        qDebug()<< "Parser::readGraphMLElementData() - Using: "<< nodeSize;
+        qDebug()<< "Using: "<< nodeSize;
     }
     else if (keyName.value(key_id) == "label.size" && keyFor.value(key_id) == "node" ) {
-        qDebug()<< "Parser::readGraphMLElementData() - Data found. Node label size: "
+        qDebug()<< "Data found. Node label size: "
                 << key_value << " for this node";
         conv_OK=false;
         nodeLabelSize= key_value.toInt ( &conv_OK );
         if (!conv_OK)
             nodeLabelSize = initNodeLabelSize;
-        qDebug()<< "Parser::readGraphMLElementData() - Using: "<< nodeSize;
+        qDebug()<< "Using: "<< nodeSize;
     }
     else if (keyName.value(key_id) == "label.color" && keyFor.value(key_id) == "node" ){
-        qDebug()<< "Parser::readGraphMLElementData() - Data found. Node label Color: "
+        qDebug()<< "Data found. Node label Color: "
                 << key_value << " for this node";
         nodeLabelColor = key_value;
     }
     else if (keyName.value(key_id) == "shape" && keyFor.value(key_id) == "node" ) {
-        qDebug()<< "Parser::readGraphMLElementData() - Data found. Node shape: "
+        qDebug()<< "Data found. Node shape: "
                 << key_value << " for this node";
         nodeShape= key_value;
     }
     else if (keyName.value(key_id) == "custom-icon" && keyFor.value(key_id) == "node" ) {
-        qDebug()<< "Parser::readGraphMLElementData() - Data found. Node custom-icon path: "
+        qDebug()<< "Data found. Node custom-icon path: "
                 << key_value << " for this node";
         nodeIconPath = key_value;
         nodeIconPath = fileDirPath + ("/") + nodeIconPath;
-        qDebug()<< "Parser::readGraphMLElementData() - full node custom-icon path: "
+        qDebug()<< "full node custom-icon path: "
                     << nodeIconPath  ;
     }
     else if (keyName.value(key_id) == "color" && keyFor.value(key_id) == "edge" ) {
-        qDebug()<< "Parser::readGraphMLElementData() - Data found. Edge color: "
+        qDebug()<< "Data found. Edge color: "
                 << key_value << " for this edge";
         edgeColor= key_value;
         if (missingNode){
@@ -2633,7 +2625,7 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
                                          QString::number(edgeWeight)+"|"+edgeColor
                                          +"|"+QString::number(edgeDirType));
         }
-        qDebug()<< "Parser::readGraphMLElementData() - Data found. Edge value: "
+        qDebug()<< "Data found. Edge value: "
                 << key_value << " Using "<< edgeWeight << " for this edge";
     }
     else if ( keyName.value(key_id) == "size of arrow"  && keyFor.value(key_id) == "edge" ) {
@@ -2641,7 +2633,7 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
         qreal temp = key_value.toFloat( &conv_OK );
         if (!conv_OK) arrowSize = 1;
         else  arrowSize = temp;
-        qDebug()<< "Parser::readGraphMLElementData() - Data found. Edge arrow size: "
+        qDebug()<< "Data found. Edge arrow size: "
                 << key_value << " Using  "<< arrowSize << " for this edge";
     }
     else if (keyName.value(key_id) == "label" && keyFor.value(key_id) == "edge" ){
@@ -2651,7 +2643,7 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
                                          QString::number(edgeWeight)+"|"+edgeColor
                                          +"|"+QString::number(edgeDirType));
         }
-        qDebug()<< "Parser::readGraphMLElementData() - Data found. Edge label: "
+        qDebug()<< "Data found. Edge label: "
                 << edgeLabel << " for this edge";
     }
 
@@ -2666,7 +2658,7 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
  * @param xml
  */
 void Parser::readGraphMLElementNodeGraphics(QXmlStreamReader &xml) {
-    qDebug()<< "element name "
+    qDebug()<< "reading node graphics/properties, element name"
             << xml.name().toString();
     qreal tempX =-1, tempY=-1, temp=-1;
     QString color;
@@ -2743,7 +2735,7 @@ void Parser::readGraphMLElementNodeGraphics(QXmlStreamReader &xml) {
  * @param xml
  */
 void Parser::readGraphMLElementEdgeGraphics(QXmlStreamReader &xml) {
-    qDebug()<< "element name "
+    qDebug()<< "reading edge graphics/props, element name"
             << xml.name().toString();
 
     qreal tempX =-1, tempY=-1, temp=-1;
@@ -2887,10 +2879,10 @@ void Parser::createMissingNodeEdges(){
                         edgeDirType=EdgeType::Undirected;
 
                 }
-                qDebug()<<"signal signalEdgeCreate "
+                qDebug()<<"signaling to create new edge:"
                        << source << "->" << target << " edgeDirType value " << edgeDirType;
 
-                emit signalEdgeCreate(source, target, edgeWeight, edgeColor, edgeDirType, arrows, bezier, edgeLabel);
+                emit signalCreateEdge(source, target, edgeWeight, edgeColor, edgeDirType, arrows, bezier, edgeLabel);
 
             }
             ++it;
@@ -3196,14 +3188,14 @@ bool Parser::parseAsGML(const QByteArray &rawData){
 
             }
             else if (edgeKey && !graphicsKey) {
-                qDebug()<< "edge description list ends";
+                qDebug()<< "edge description list ends. signaling to create new edge.";
                 edgeKey = false;
                 edgeWeight = 1;
                 edgeColor = "black";
                 if (edgeLabel==QString()) {
                     edgeLabel = edge_source + "->" + edge_target;
                 }
-                emit signalEdgeCreate(source,target, edgeWeight, edgeColor,
+                emit signalCreateEdge(source,target, edgeWeight, edgeColor,
                                 edgeDirType, arrows, bezier, edgeLabel);
             }
 
@@ -3216,7 +3208,7 @@ bool Parser::parseAsGML(const QByteArray &rawData){
     }
 
     if (relationsList.count() == 0 ) {
-        emit addRelation( "unnamed" );
+        emit signalAddNewRelation( "unnamed" );
     }
 
     qDebug() << "Finished OK. Returning.";
@@ -3553,9 +3545,9 @@ bool Parser::parseAsDot(const QByteArray &rawData){
                            << totalNodes<< " nodesDiscovered  "<< nodesDiscovered.size() ;
                     target=totalNodes;
                     if (it!=nodeSequence.begin()) {
-                        qDebug()<<"-- Drawing Link between node "
-                               << source<< " and node " <<target;
-                        emit signalEdgeCreate(source,target, edgeWeight, edgeColor,
+                        qDebug()<<"-- signaling to create new edge:"
+                               << source<< "->" <<target;
+                        emit signalCreateEdge(source,target, edgeWeight, edgeColor,
                                         edgeDirType, arrows, bezier);
                     }
                 }
@@ -3564,9 +3556,9 @@ bool Parser::parseAsDot(const QByteArray &rawData){
                     target=aNum+1;
                     qDebug("# Node already exists. Vector num: %i ",target);
                     if (it!=nodeSequence.begin()) {
-                        qDebug()<<"-- Drawing Link between node "
-                               <<source<<" and node " << target;
-                        emit signalEdgeCreate(source,target, edgeWeight , edgeColor,
+                        qDebug()<<"-- signaling to create new edge"
+                               <<source<<"->" << target;
+                        emit signalCreateEdge(source,target, edgeWeight , edgeColor,
                                         edgeDirType, arrows, bezier);
                     }
                 }
@@ -3624,7 +3616,7 @@ bool Parser::parseAsDot(const QByteArray &rawData){
     }
 
     if (relationsList.count() == 0) {
-        emit addRelation( (!networkName.isEmpty()) ? networkName :"unnamed");
+        emit signalAddNewRelation( (!networkName.isEmpty()) ? networkName :"unnamed");
     }
 
     qDebug() << "Parser::parseAsDot() - Finished OK. Returning.";
@@ -4051,7 +4043,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
             target = edgeElement[1].toInt() ;
         }
         edgeWeight = edge.value();
-        emit signalEdgeCreate(source,
+        emit signalCreateEdge(source,
                         target,
                         edgeWeight,
                         initEdgeColor,
@@ -4065,7 +4057,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
 
 
     if (relationsList.count() == 0) {
-        emit addRelation("unnamed");
+        emit signalAddNewRelation("unnamed");
     }
 
     qDebug() << " END. Returning.";
@@ -4353,7 +4345,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
              target = edgeElement[1].toInt() ;
          }
          edgeWeight = edge.value();
-         emit signalEdgeCreate(source,
+         emit signalCreateEdge(source,
                          target,
                          edgeWeight,
                          initEdgeColor,
@@ -4366,7 +4358,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
 
 
      if (relationsList.count() == 0) {
-         emit addRelation("unnamed");
+         emit signalAddNewRelation("unnamed");
      }
 
     qDebug() << " Finished OK. Returning.";

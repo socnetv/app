@@ -15743,10 +15743,9 @@ void Graph::loadFile (	const QString fileName,
     connect(&file_parserThread, &QThread::finished,
             file_parser, &QObject::deleteLater);
 
-    connect(file_parser, &Parser::addRelation,
-            this, &Graph::relationAdd);
+    connect(file_parser, &Parser::signalAddNewRelation,this, &Graph::relationAdd);
 
-    connect (file_parser, SIGNAL( relationSet (int) ), this, SLOT( relationSet (int) ) ) ;
+    connect (file_parser, SIGNAL( signalSetRelation (int) ), this, SLOT( relationSet (int) ) ) ;
 
     connect (file_parser, &Parser::signalCreateNode, this, &Graph::vertexCreate );
 
@@ -15754,7 +15753,7 @@ void Graph::loadFile (	const QString fileName,
 
     connect (file_parser, &Parser::signalCreateNodeAtPosRandomWithLabel, this, &Graph::vertexCreateAtPosRandomWithLabel);
 
-    connect (file_parser, &Parser::signalEdgeCreate,this,&Graph::edgeCreate);
+    connect (file_parser, &Parser::signalCreateEdge,this,&Graph::edgeCreate);
 
 
     connect (

@@ -125,8 +125,8 @@ public:
 
 signals:
 
-    void addRelation( const QString & relName, const bool &changeRelation=false);
-    void relationSet( int );
+    void signalAddNewRelation( const QString & relName, const bool &changeRelation=false);
+    void signalSetRelation( int );
     void signalCreateNode( const int &num,
                      const int &size,
                      const QString &color,
@@ -145,7 +145,7 @@ signals:
                                          const bool &signalMW=false
                                          );
 
-    void signalEdgeCreate (const int &source, const int &target, const qreal &weight,
+    void signalCreateEdge (const int &source, const int &target, const qreal &weight,
                      const QString &color, const int &edgeDirType,
                      const bool &arrows, const bool &bezier,
                      const QString &edgeLabel=QString(),
