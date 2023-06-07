@@ -15748,19 +15748,13 @@ void Graph::loadFile (	const QString fileName,
 
     connect (file_parser, SIGNAL( relationSet (int) ), this, SLOT( relationSet (int) ) ) ;
 
-    connect ( file_parser, &Parser::signalCreateNode, this, &Graph::vertexCreate );
+    connect (file_parser, &Parser::signalCreateNode, this, &Graph::vertexCreate );
 
     connect (file_parser, &Parser::signalCreateNodeAtPosRandom, this, &Graph::vertexCreateAtPosRandom);
 
-    connect (
-            file_parser, SIGNAL (createNodeAtPosRandomWithLabel(
-                                     const int ,const QString &, const bool &)),
-            this, SLOT(vertexCreateAtPosRandomWithLabel(
-                           const int &,const QString &, const bool &) )
-            );
+    connect (file_parser, &Parser::signalCreateNodeAtPosRandomWithLabel, this, &Graph::vertexCreateAtPosRandomWithLabel);
 
-    connect (file_parser, &Parser::edgeCreate,
-             this,&Graph::edgeCreate);
+    connect (file_parser, &Parser::edgeCreate,this,&Graph::edgeCreate);
 
 
     connect (

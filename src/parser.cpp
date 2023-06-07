@@ -293,7 +293,7 @@ void Parser::createRandomNodes(const int &fixedNum,
     }
     else {
         qDebug() << "Signaling to create a single node:"<< fixedNum << "with label:" << label;
-        emit createNodeAtPosRandomWithLabel( fixedNum, label, false );
+        emit signalCreateNodeAtPosRandomWithLabel( fixedNum, label, false );
 
     }
 }
