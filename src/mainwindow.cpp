@@ -5776,6 +5776,7 @@ void MainWindow::initApp(){
     m_textEditors.clear();
 
     QApplication::restoreOverrideCursor();
+    QApplication::restoreOverrideCursor();
 
     setCursor(Qt::ArrowCursor);
 
@@ -7189,27 +7190,28 @@ void MainWindow::initNetworkAvailableTextCodecs() {
 bool MainWindow::slotNetworkFilePreview(const QString &m_fileName,
                                         const int &fileFormat ){
     qDebug() << "Previewing file: "<< m_fileName;
-
-    if (!m_fileName.isEmpty()) {
-        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        QFile file(m_fileName);
-        if (!file.open(QFile::ReadOnly)) {
-            slotHelpMessageToUserError(
-                        tr("Cannot read file %1:\n%2")
-                        .arg(m_fileName)
-                        .arg(file.errorString())
-                        );
-            return false;
-        }
-
-        QByteArray data = file.readAll();
-
-        m_dialogPreviewFile->setEncodedData(data, m_fileName, fileFormat);
+    if (m_fileName.isEmpty()) {
+        statusMessage(tr("No file selected."));
+        return false;
+     }
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+    QFile file(m_fileName);
+    if (!file.open(QFile::ReadOnly)) {
         QApplication::restoreOverrideCursor();
-        m_dialogPreviewFile->exec();
-
+        slotHelpMessageToUserError(
+                    tr("Cannot read file %1:\n%2")
+                    .arg(m_fileName)
+                    .arg(file.errorString())
+                    );
+        return false;
     }
-
+    // Read data and pass them to the dialog
+    QByteArray data = file.readAll();
+    m_dialogPreviewFile->setEncodedData(data, m_fileName, fileFormat);
+    // Restore the cursor
+    QApplication::restoreOverrideCursor();
+    // Show the dialog
+    m_dialogPreviewFile->exec();
     return true;
 }
 
@@ -7301,6 +7303,8 @@ void MainWindow::slotNetworkFileLoad(const QString &fileNameToLoad,
         }
         qDebug()<<"selected delimiter" << delimiter;
     }
+
+    // Change the cursor to wait cursor
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
     qDebug() << "Calling graph to do the file load loading...";
@@ -7341,6 +7345,9 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
                                         const QString &message)
 {
 
+    // Restore the cursor override
+    QApplication::restoreOverrideCursor();
+
     if (type <= 0 || fName.isEmpty() ) {
         qDebug()<< "ERROR LOADING FILE. FILE UNRECOGNIZED. Message from Parser: "
                 << message
@@ -7367,10 +7374,10 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
         return;
     }
 
-    // We have loaded a file with success.
-    // Update our window and save path in settings
+    // A file has been loaded successfully.
+    // Update our MW UI and save file path in settings
 
-    qDebug()<< "A file was loaded. "
+    qDebug()<< "Got signal that a file was loaded:"
             << " filename" << fName
             << " type " << type
             << " totalNodes" << totalNodes
@@ -9088,7 +9095,8 @@ void MainWindow::slotNetworkChanged(
                                     const int &vertices,
                                     const int &edges,
                                     const qreal &density){
-    qCritical()<<"Updating mainwindow, with params: "
+
+    qCritical()<<"Got signal that network changed. Updating mainwindow UI (LCDs, save icon, etc). Params: "
            << "directed" << directed
            << "vertices" << vertices
            << "edges" << edges
