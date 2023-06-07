@@ -518,9 +518,9 @@ double Graph::canvasRandomY() const {
  * @param relNum int
  * @param updateUI bool
  */
-void Graph::relationSet(int relNum, const bool updateUI){
+void Graph::relationSet(int relNum, const bool &updateUI){
 
-    qDebug() << "++ Graph::relationSet() to relation:" << relNum
+    qDebug() << "++ Request to change graph to relation:" << relNum
              << " - current relation:" << m_curRelation
               << "updateUI:" << updateUI;
 
@@ -529,13 +529,13 @@ void Graph::relationSet(int relNum, const bool updateUI){
     //
     if (m_curRelation == relNum ) {
         // Same as current, don't do nothing
-        qDebug() << "++ Graph::relationSet() - same relation - END";
+        qDebug() << "++ Requested relation is the current one - END";
         return;
     }
 
     if ( relNum < 0) {
         // negative, don't do nothing
-        qDebug() << "++ Graph::relationSet() - negative relation - END ";
+        qDebug() << "++ Requested relation is negative - END ";
         return;
     }
     else if (relNum==RAND_MAX) {
@@ -544,7 +544,7 @@ void Graph::relationSet(int relNum, const bool updateUI){
     }
     else if (relNum > relations() -1 ) {
         // Invalid relation, abort
-        qDebug() << "++ Graph::relationSet() - not existing relation - END ";
+        qDebug() << "++ Invalid relation - END ";
         return;
     }
 
@@ -554,7 +554,7 @@ void Graph::relationSet(int relNum, const bool updateUI){
     //
     VList::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        qDebug() << "++ Graph::relationSet() - changing relation of vertex"
+        qDebug() << "++ changing relation of vertex"
                  << (*it)->number()
                  << "to" << relNum;
         if ( ! (*it)->isEnabled() )
@@ -563,7 +563,7 @@ void Graph::relationSet(int relNum, const bool updateUI){
     }
 
     //
-    // now change the relation
+    // now store the selected relation
     //
     m_curRelation = relNum;
 
@@ -15745,7 +15745,7 @@ void Graph::loadFile (	const QString fileName,
 
     connect(file_parser, &Parser::signalAddNewRelation,this, &Graph::relationAdd);
 
-    connect (file_parser, SIGNAL( signalSetRelation (int) ), this, SLOT( relationSet (int) ) ) ;
+    connect (file_parser, &Parser::signalSetRelation, this, &Graph::relationSet) ;
 
     connect (file_parser, &Parser::signalCreateNode, this, &Graph::vertexCreate );
 

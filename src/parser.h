@@ -126,7 +126,7 @@ public:
 signals:
 
     void signalAddNewRelation( const QString & relName, const bool &changeRelation=false);
-    void signalSetRelation( int );
+    void signalSetRelation(int, const bool &updateUI=true);
     void signalCreateNode( const int &num,
                      const int &size,
                      const QString &color,

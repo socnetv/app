@@ -180,7 +180,7 @@ public slots:
 
     /** Slots to signals from MainWindow */
 
-    void relationSet(int relNum=RAND_MAX, const bool updateUI=true);
+    void relationSet(int relNum=RAND_MAX, const bool &updateUI=true);
 
     void relationNext();
 
