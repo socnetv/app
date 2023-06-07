@@ -167,7 +167,7 @@ void Parser::load(const QString &fileName,
         qint64 elapsedTime = computationTimer.elapsed();
         qDebug()<< "Cannot open file" << fileName;
         errorMessage = tr("Cannot open file: %1").arg(fileName);
-        emit networkFileLoaded(FileType::UNRECOGNIZED,
+        emit signalFileLoaded(FileType::UNRECOGNIZED,
                                QString(),
                                QString(),
                                0,
@@ -247,7 +247,7 @@ void Parser::load(const QString &fileName,
     qint64 elapsedTime = computationTimer.elapsed();
 
     if (fileLoaded){
-        emit networkFileLoaded(fileFormat,
+        emit signalFileLoaded(fileFormat,
                                fileName,
                                networkName,
                                totalNodes,
@@ -256,7 +256,7 @@ void Parser::load(const QString &fileName,
                                elapsedTime);
     }
     else if (errorMessage!=QString()) {
-        emit networkFileLoaded(FileType::UNRECOGNIZED,
+        emit signalFileLoaded(FileType::UNRECOGNIZED,
                                QString(),
                                QString(),
                                0,
@@ -1289,18 +1289,16 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
                     //qDebug()<<"No coords. Using random "<<randX << randY;
                 }
             }
-            /**START NODE CREATION */
+            // START NODE CREATION
             qDebug ()<<"Creating node numbered "<< nodeNum << " Real nodes count (j)= "<< j+1;
             j++;  //Controls the real number of nodes.
             //If the file misses some nodenumbers then we create dummies and delete them afterwards!
             if ( j + miss < nodeNum)  {
-                qDebug ()<<"MW There are "<< j << " nodes but this node has number "<< nodeNum
-                        <<"Creating node at "<< randX<<","<< randY;
+                qDebug ()<<"There are "<< j << " nodes but this node has number"<< nodeNum;
                 for (int num=j; num< nodeNum; num++) {
-                    //qDebug()<< "Creating dummy node number num = "<< num;
-                    //qDebug()<<"Creating node at "<< randX<<","<< randY;
-
-                    emit createNode( num,
+                    qDebug()<<"Signaling to create new dummy node"<< num
+                           << "at"<< QPointF(randX,randY);
+                    emit signalCreateNode( num,
                                      initNodeSize,
                                      nodeColor,
                                      initNodeNumberColor,
@@ -1310,8 +1308,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
                                     initNodeLabelSize,
                                     QPointF(randX, randY),
                                     nodeShape,
-                                    QString(),
-                                    false
+                                    QString()
                                     );
 
                     listDummiesPajek.push_back(num);
@@ -1324,13 +1321,14 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
                                   "nodeNumber smaller than previous nodes.");
                 return false;
             }
-            qDebug ()<<"emitting createNode()";
-            emit createNode(
+            qDebug()<<"Signaling to create new node"<< nodeNum
+                   << "at"<< QPointF(randX,randY);
+            emit signalCreateNode(
                         nodeNum,initNodeSize, nodeColor,
                         initNodeNumberColor, initNodeNumberSize,
                         label, initNodeLabelColor, initNodeLabelSize,
                         QPointF(randX, randY),
-                        nodeShape, QString(), false
+                        nodeShape, QString()
                         );
             initNodeColor=nodeColor;
         }
@@ -1344,10 +1342,11 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
             else if (j==0) {  //if there were no nodes at all, we need to create them now.
                 qDebug()<< "The Pajek file declares "<< totalNodes<< " but I didn't found any nodes. I will create them....";
                 for (int num=j+1; num<= totalNodes; num++) {
-                    qDebug() << "Creating node number i = "<< num;
                     randX=rand()%gwWidth;
                     randY=rand()%gwHeight;
-                    emit createNode(
+                    qDebug()<<"Signaling to create new node"<< num
+                           << "at random pos:"<< QPointF(randX,randY);
+                    emit signalCreateNode(
                                 num,
                                 initNodeSize,
                                 initNodeColor,
@@ -1716,10 +1715,10 @@ bool Parser::parseAsAdjacency(const QByteArray &rawData){
                 randX=rand()%gwWidth;
                 randY=rand()%gwHeight;
 
-                qDebug()<<"Calling createNode() for node "<< j
-                       <<" using random position:"<<randX <<", " << randY;
+                qDebug()<<"Signaling to create new node"<< j
+                       << "at random pos"<< QPointF(randX,randY);
 
-                emit createNode( j,
+                emit signalCreateNode( j,
                                  initNodeSize,
                                  initNodeColor,
                                  initNodeNumberColor,
@@ -1729,8 +1728,7 @@ bool Parser::parseAsAdjacency(const QByteArray &rawData){
                                  initNodeLabelSize,
                                  QPointF(randX, randY),
                                  initNodeShape,
-                                 QString(),
-                                 false
+                                 QString()
                                  );
             }
             qDebug() << "Finished creating nodes";
@@ -1739,7 +1737,7 @@ bool Parser::parseAsAdjacency(const QByteArray &rawData){
 
         // Check if this actual line is over the expected total nodes
         if ( i > totalNodes ) {
-            emit createNode( i,
+            emit signalCreateNode( i,
                              initNodeSize,
                              initNodeColor,
                              initNodeNumberColor,
@@ -1749,8 +1747,7 @@ bool Parser::parseAsAdjacency(const QByteArray &rawData){
                              initNodeLabelSize,
                              QPointF(randX, randY),
                              initNodeShape,
-                             QString(),
-                             false
+                             QString()
                              );
         }
 
@@ -1881,13 +1878,13 @@ bool Parser::parseAsTwoModeSociomatrix(const QByteArray &rawData){
         lastCount=newCount;
         randX=rand()%gwWidth;
         randY=rand()%gwHeight;
-        qDebug()<< "Calling createNode() for node "
-                << i << " at random x,y: "<<randX << randY;
-        emit createNode( i,initNodeSize, initNodeColor,
+        qDebug()<< "Signaling to create new node"
+                << i << "at random pos:"<<randX << "x" << randY;
+        emit signalCreateNode( i,initNodeSize, initNodeColor,
                          initNodeNumberColor, initNodeNumberSize,
                          QString::number(i), initNodeLabelColor, initNodeLabelSize,
                          QPointF(randX, randY),
-                         initNodeShape, QString(), false
+                         initNodeShape, QString()
                          );
         j=1;
         qDebug()<< "reading actor affiliations...";
@@ -2379,12 +2376,12 @@ void Parser::endGraphMLElementNode(QXmlStreamReader &xml){
         return;
     }
 
-    qDebug()<<"Parser::endGraphMLElementNode() - signal to create node "
-           << totalNodes  << " id " << node_id
-           << " label " << nodeLabel << " coords " <<randX << ", " <<randY;
+    qDebug()<<"signaling to create a new node"
+           << totalNodes  << "id " << node_id
+           << " label " << nodeLabel << "at pos:" << QPointF(randX,randY);
 
     if ( nodeShape == "custom") {
-        emit createNode( totalNodes,
+        emit signalCreateNode( totalNodes,
                          nodeSize,
                          nodeColor,
                          nodeNumberColor,
@@ -2394,12 +2391,11 @@ void Parser::endGraphMLElementNode(QXmlStreamReader &xml){
                          nodeLabelSize,
                          QPointF(randX,randY),
                          nodeShape,
-                         ( nodeIconPath.isEmpty() ? initNodeCustomIcon: nodeIconPath),
-                         false
+                         ( nodeIconPath.isEmpty() ? initNodeCustomIcon: nodeIconPath)
                          );
     }
     else {
-        emit createNode( totalNodes,
+        emit signalCreateNode( totalNodes,
                          nodeSize,
                          nodeColor,
                          nodeNumberColor,
@@ -2409,8 +2405,7 @@ void Parser::endGraphMLElementNode(QXmlStreamReader &xml){
                          nodeLabelSize,
                          QPointF(randX,randY),
                          nodeShape,
-                         QString(),
-                         false
+                         QString()
                          );
     }
 
@@ -2444,7 +2439,7 @@ void Parser::readGraphMLElementEdge(QXmlStreamAttributes &xmlStreamAttr){
     edgeLabel = "";
     bool_edge= true;
 
-    if ( edge_directed=="false" || (edge_directed.contains("false"),Qt::CaseInsensitive) ) {
+    if ( edge_directed=="false" || edge_directed.contains("false",Qt::CaseInsensitive) ) {
         edgeDirType=EdgeType::Undirected;
         qDebug()<< "Parser::readGraphMLElementEdge() - UNDIRECTED";
     }
@@ -3188,15 +3183,15 @@ bool Parser::parseAsGML(const QByteArray &rawData){
                     randX=rand()%gwWidth;
                     randY=rand()%gwHeight;
                 }
-                qDebug()<<" *** Creating node "<< node_id
+                qDebug()<<" *** Signaling to create new node "<< node_id
                        << " at "<< randX <<","<< randY
                        <<" label "<<nodeLabel;
-                emit createNode(
+                emit signalCreateNode(
                             node_id.toInt(0), initNodeSize, nodeColor,
                             initNodeNumberColor, initNodeNumberSize,
                             nodeLabel , initNodeLabelColor, initNodeLabelSize,
                             QPointF(randX,randY),
-                            nodeShape, QString(), false
+                            nodeShape, QString()
                             );
 
             }
@@ -3413,8 +3408,8 @@ bool Parser::parseAsDot(const QByteArray &rawData){
                 totalNodes++;
                 randX=rand()%gwWidth;
                 randY=rand()%gwHeight;
-                qDebug()<<" *** Creating node "<< totalNodes
-                       << " at "<< randX <<","<< randY
+                qDebug()<<" *** Signaling to create new node "<< totalNodes
+                       << "at "<< randX <<","<< randY
                        <<" label "<<node.toLatin1()
                       << " colored "<< initNodeColor
                       << "initNodeSize " << initNodeSize
@@ -3422,12 +3417,12 @@ bool Parser::parseAsDot(const QByteArray &rawData){
                       << "initNodeNumberSize " << initNodeNumberSize
                       << "initNodeLabelColor " << initNodeLabelColor
                       << "nodeShape" <<  initNodeShape;
-                emit createNode(
+                emit signalCreateNode(
                             totalNodes, initNodeSize, initNodeColor,
                             initNodeNumberColor, initNodeNumberSize,
                             nodeLabel , initNodeLabelColor, initNodeLabelSize,
                             QPointF(randX,randY),
-                            initNodeShape,QString(),  false
+                            initNodeShape,QString()
                             );
                 // Note that we push the numbered nodelabel whereas we create
                 // the node with its file specified node label.
@@ -3465,7 +3460,7 @@ bool Parser::parseAsDot(const QByteArray &rawData){
                 totalNodes++;
                 randX=rand()%gwWidth;
                 randY=rand()%gwHeight;
-                qDebug()<<" *** Creating node "<< totalNodes
+                qDebug()<<" *** Signaling to create new node "<< totalNodes
                        << " at "<< randX <<","<< randY
                        <<" label "<<node.toLatin1()
                       << " colored "<< initNodeColor
@@ -3474,12 +3469,12 @@ bool Parser::parseAsDot(const QByteArray &rawData){
                       << "initNodeNumberSize " << initNodeNumberSize
                       << "initNodeLabelColor " << initNodeLabelColor
                       << "nodeShape" <<  initNodeShape;
-                emit createNode(
+                emit signalCreateNode(
                             totalNodes, initNodeSize, initNodeColor,
                             initNodeNumberColor, initNodeNumberSize,
                             nodeLabel , initNodeLabelColor, initNodeLabelSize,
                             QPointF(randX,randY),
-                            initNodeShape,QString(),  false
+                            initNodeShape,QString()
                             );
                 nodesDiscovered.push_back( node  );			// Note that we push the numbered nodelabel whereas we create the node with its file specified node label.
                 qDebug()<<" * Total nodes" << totalNodes<< " nodesDiscovered  "<< nodesDiscovered.size() ;
@@ -3537,21 +3532,21 @@ bool Parser::parseAsDot(const QByteArray &rawData){
                     totalNodes++;
                     randX=rand()%gwWidth;
                     randY=rand()%gwHeight;
-                    qDebug()<<" *** Creating node "<< totalNodes
-                           << " at "<< randX <<","<< randY
-                           <<" label "<<node.toLatin1()
-                          << " colored "<< nodeColor
+                    qDebug()<<" *** Signaling to create new node"<< totalNodes
+                           << "at"<< QPointF(randX,randY)
+                           <<"label"<<node.toLatin1()
+                          << "colored "<< nodeColor
                           << "initNodeSize " << initNodeSize
                           << "initNodeNumberColor " <<initNodeNumberColor
                           << "initNodeNumberSize " << initNodeNumberSize
                           << "initNodeLabelColor " << initNodeLabelColor
                           << "nodeShape" <<  initNodeShape;
-                    emit createNode(
+                    emit signalCreateNode(
                                 totalNodes, initNodeSize, nodeColor,
                                 initNodeNumberColor, initNodeNumberSize,
                                 node , initNodeLabelColor, initNodeLabelSize,
                                 QPointF(randX,randY),
-                                initNodeShape, QString(), false
+                                initNodeShape, QString()
                                 );
                     nodesDiscovered.push_back( node  );
                     qDebug()<<" * Total totalNodes "
@@ -3603,13 +3598,15 @@ bool Parser::parseAsDot(const QByteArray &rawData){
                     totalNodes++;
                     randX=rand()%gwWidth;
                     randY=rand()%gwHeight;
-                    qDebug()<<"***  Creating node at "<<  randX << " "<< randY<< " label "<<node.toLatin1() << " colored "<< nodeColor;
-                    emit createNode(
+                    qDebug()<<"*** Signaling to create new node at"
+                            <<  randX << ","<< randY<< "label"<<node.toLatin1()
+                             << " colored "<< nodeColor;
+                    emit signalCreateNode(
                                 totalNodes, initNodeSize, nodeColor,
                                 initNodeNumberColor, initNodeNumberSize,
                                 label, initNodeLabelColor, initNodeLabelSize,
                                 QPointF(randX,randY),
-                                nodeShape, QString(), false
+                                nodeShape, QString()
                                 );
                     aNum=totalNodes;
                     nodesDiscovered.push_back( node);
@@ -4003,10 +4000,10 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
         randY=rand()%gwHeight;
 
         if (nodesWithLabels) {
-            qDebug() << " creating node named"
-                     << node.key << "numbered" << node.value
-                     << "at position" << QPointF(randX, randY);
-            emit createNode( node.value,
+            qDebug() << "signaling to create new node" << node.value
+                     << "label" << node.key
+                     << "at pos" << QPointF(randX, randY);
+            emit signalCreateNode( node.value,
                              initNodeSize,
                              initNodeColor,
                              initNodeNumberColor,
@@ -4014,16 +4011,15 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
                              node.key,
                              initNodeLabelColor, initNodeLabelSize,
                              QPointF(randX, randY),
-                             initNodeShape,QString(),
-                             false
+                             initNodeShape,QString()
                              );
         }
         else {
 
-            qDebug() << " creating node named"
-                     << node.key << "numbered" << node.key.toInt()
-                     << "at position" << QPointF(randX, randY);
-            emit createNode( node.key.toInt(),
+            qDebug() << "signaling to create new node" << node.key.toInt()
+                     << "label" << node.key
+                     << "at pos" << QPointF(randX, randY);
+            emit signalCreateNode( node.key.toInt(),
                              initNodeSize,
                              initNodeColor,
                              initNodeNumberColor,
@@ -4031,8 +4027,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
                              node.key,
                              initNodeLabelColor, initNodeLabelSize,
                              QPointF(randX, randY),
-                             initNodeShape,QString(),
-                             false
+                             initNodeShape,QString()
                              );
 
         }
@@ -4305,10 +4300,10 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
          randY=rand()%gwHeight;
 
          if (nodesWithLabels) {
-             qDebug() << " creating node named"
-                      << node.key << "numbered" << node.value
-                      << "at position" << QPointF(randX, randY);
-             emit createNode( node.value,
+             qDebug() << "signaling to create new node" << node.value
+                      << "label" << node.key
+                      << "at pos" << QPointF(randX, randY);
+             emit signalCreateNode( node.value,
                               initNodeSize,
                               initNodeColor,
                               initNodeNumberColor,
@@ -4316,16 +4311,16 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
                               node.key,
                               initNodeLabelColor, initNodeLabelSize,
                               QPointF(randX, randY),
-                              initNodeShape,QString(),
-                              false
+                              initNodeShape,QString()
                               );
          }
          else {
 
-             qDebug() << " creating node named"
-                      << node.key << "numbered" << node.key.toInt()
-                      << "at position" << QPointF(randX, randY);
-             emit createNode( node.key.toInt(),
+             qDebug() << "signaling to create new node"
+                      << node.key.toInt()
+                      << "label" << node.key
+                      << "at pos" << QPointF(randX, randY);
+             emit signalCreateNode( node.key.toInt(),
                               initNodeSize,
                               initNodeColor,
                               initNodeNumberColor,
@@ -4333,8 +4328,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
                               node.key,
                               initNodeLabelColor, initNodeLabelSize,
                               QPointF(randX, randY),
-                              initNodeShape,QString(),
-                              false
+                              initNodeShape,QString()
                               );
 
          }

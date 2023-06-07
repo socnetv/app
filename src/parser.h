@@ -127,7 +127,7 @@ signals:
 
     void addRelation( const QString & relName, const bool &changeRelation=false);
     void relationSet( int );
-    void createNode( const int &num,
+    void signalCreateNode( const int &num,
                      const int &size,
                      const QString &color,
                      const QString &numColor,
@@ -150,7 +150,7 @@ signals:
                      const bool &arrows, const bool &bezier,
                      const QString &edgeLabel=QString(),
                      const bool &signalMW=false);
-    void networkFileLoaded(int fileType,
+    void signalFileLoaded(int fileType,
                            QString fileName,
                            QString netName,
                            int totalNodes,

@@ -7435,7 +7435,7 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
         break;
     }
 
-    // Update LCDs (TODO/TOFIX, this is a workaround or a final solution ?)
+    // Update LCDs (TODO: Update density)
     rightPanelNodesLCD->setText (QString::number(totalNodes));
     rightPanelEdgesLCD->setText(QString::number(totalEdges));
 

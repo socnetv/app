@@ -15573,7 +15573,7 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW){
     }
     else if ( graphNewStatus == ModStatus::Unchanged ) {
 
-        // this is called after successful saving
+        // this is called after loading a file or saving
 
         qCritical()<<"Setting graph as unchanged...";
 
@@ -15748,7 +15748,7 @@ void Graph::loadFile (	const QString fileName,
 
     connect (file_parser, SIGNAL( relationSet (int) ), this, SLOT( relationSet (int) ) ) ;
 
-    connect ( file_parser, &Parser::createNode, this, &Graph::vertexCreate );
+    connect ( file_parser, &Parser::signalCreateNode, this, &Graph::vertexCreate );
 
     connect (
             file_parser, SIGNAL (createNodeAtPosRandom(const bool &)),
@@ -15767,7 +15767,7 @@ void Graph::loadFile (	const QString fileName,
 
 
     connect (
-            file_parser, SIGNAL(networkFileLoaded(int,
+            file_parser, SIGNAL(signalFileLoaded(int,
                                                   QString,
                                                   QString,
                                                   int,
