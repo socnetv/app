@@ -262,6 +262,7 @@ signals:
                             const QString &netName=QString(),
                             const int &totalNodes=0,
                             const int &totalLinks=0,
+                            const qreal &density=0,
                             const qint64 &elapsedTime=0,
                             const QString &message=QString() );
 

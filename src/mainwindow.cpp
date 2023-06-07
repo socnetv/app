@@ -7341,6 +7341,7 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
                                         const QString &netName,
                                         const int &totalNodes,
                                         const int &totalEdges,
+                                        const qreal &density,
                                         const qint64 &elapsedTime,
                                         const QString &message)
 {
@@ -7435,11 +7436,18 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
         break;
     }
 
-    // Update LCDs (TODO: Update density)
+    // Update LCDs
     rightPanelNodesLCD->setText (QString::number(totalNodes));
     rightPanelEdgesLCD->setText(QString::number(totalEdges));
+    rightPanelDensityLCD->setText(QString::number(density));
 
-    statusMessage( tr("%1 formatted network, named '%2', loaded. Nodes: %3, Edges: %4. Elapsed time: %5 ms").arg(fileFormatHuman).arg( netName ).arg( totalNodes ).arg(totalEdges).arg(elapsedTime) );
+    statusMessage( tr("%1 formatted network, named '%2', loaded. Nodes: %3, Edges: %4, Density: %5. Elapsed time: %6 ms")
+                   .arg(fileFormatHuman)
+                   .arg( netName)
+                   .arg( totalNodes )
+                   .arg(totalEdges)
+                   .arg(density)
+                   .arg(elapsedTime) );
 
     networkSaveAct->setIcon(QIcon(":/images/file_download_48px.svg"));
     networkSaveAct->setEnabled(false);
@@ -7630,7 +7638,7 @@ void MainWindow::slotEditRelationAdd(const QString &newRelationName){
  *
  * @param relIndex
  */
-void MainWindow::slotEditRelationChange(const int relIndex) {
+void MainWindow::slotEditRelationChange(const int &relIndex) {
     if ( relIndex == RAND_MAX){
         qDebug() << "relIndex==RANDMAX. Changing relation combo to last relation...";
         editRelationChangeCombo->setCurrentIndex(

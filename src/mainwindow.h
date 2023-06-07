@@ -168,6 +168,7 @@ public slots:
                                const QString &netName=QString(),
                                const int &totalNodes=0,
                                const int &totalEdges=0,
+                               const qreal &density=0,
                                const qint64 &elapsedTime=0,
                                const QString &message=QString());
     void slotNetworkFileLoadRecent();
@@ -283,7 +284,7 @@ public slots:
     void slotEditRelationAddPrompt();
 
     void slotEditRelationAdd(const QString &newRelationName);
-    void slotEditRelationChange(const int relIndex=RAND_MAX);
+    void slotEditRelationChange(const int &relIndex=RAND_MAX);
     void slotEditRelationRename();
 
     void slotEditOpenContextMenu(const QPointF & mPos);
