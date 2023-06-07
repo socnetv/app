@@ -769,9 +769,9 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                                      << " found edge from "
                                      << source << " to " << target
                                      << " weight " << edgeWeight
-                                     << " emitting edgeCreate() to parent" ;
+                                     << " emitting signalEdgeCreate() to parent" ;
 
-                            emit edgeCreate( source, target, edgeWeight, initEdgeColor,
+                            emit signalEdgeCreate( source, target, edgeWeight, initEdgeColor,
                                              EdgeType::Directed, arrows, bezier);
                             totalLinks++;
                             qDebug() << "TotalLinks= " << totalLinks;
@@ -816,9 +816,9 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                                      << " found edge from "
                                      << source << " to " << target
                                      << " weight " << edgeWeight
-                                     << " emitting edgeCreate() to parent" ;
+                                     << " emitting signalEdgeCreate() to parent" ;
 
-                            emit edgeCreate( source, target, edgeWeight, initEdgeColor,
+                            emit signalEdgeCreate( source, target, edgeWeight, initEdgeColor,
                                              EdgeType::Directed, arrows, bezier);
                             totalLinks++;
                             qDebug() << "TotalLinks= " << totalLinks;
@@ -870,7 +870,7 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                 qDebug() << "Creating link "
                          << source << "->"<< target << " weight= "<< edgeWeight
                          <<  " TotalLinks=  " << totalLinks+1;
-                emit edgeCreate(source, target, edgeWeight, initEdgeColor, EdgeType::Directed,
+                emit signalEdgeCreate(source, target, edgeWeight, initEdgeColor, EdgeType::Directed,
                                 arrows, bezier);
                 totalLinks++;
             } // END edgelist1 format reading.
@@ -1431,7 +1431,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
                 arrows=false;
                 bezier=false;
                 qDebug()<< "EDGES: Create edge between " << source << " - "<< target;
-                emit edgeCreate(source, target, edgeWeight, edgeColor,
+                emit signalEdgeCreate(source, target, edgeWeight, edgeColor,
                                 EdgeType::Undirected, arrows, bezier, edgeLabel);
                 totalLinks=totalLinks+2;
 
@@ -1495,7 +1495,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
                 bezier=false;
                 has_arcs=true;
                 qDebug()<<"ARCS: Creating arc from node "<< source << " to node "<< target << " with weight "<< weight;
-                emit edgeCreate(source, target, edgeWeight , edgeColor,
+                emit signalEdgeCreate(source, target, edgeWeight , edgeColor,
                                 EdgeType::Directed, arrows, bezier, edgeLabel);
                 totalLinks++;
             } //else if ARCS
@@ -1511,7 +1511,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
                 for (int index = 1; index < lineElement.size(); index++) {
                     target = lineElement.at(index).toInt(&ok,10);
                     qDebug()<<"ARCS LIST: Creating ARC source "<< source << " target "<< target << " with weight "<< weight;
-                    emit edgeCreate(source, target, edgeWeight, edgeColor,
+                    emit signalEdgeCreate(source, target, edgeWeight, edgeColor,
                                     EdgeType::Directed, arrows, bezier);
                     totalLinks++;
                 }
@@ -1531,7 +1531,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
                         qDebug()<<" MATRIX: Creating arc source "
                                << source << " target "<< target +1
                                << " with weight "<< weight;
-                        emit edgeCreate(source, target+1, edgeWeight, edgeColor,
+                        emit signalEdgeCreate(source, target+1, edgeWeight, edgeColor,
                                         EdgeType::Directed, arrows, bezier);
                         totalLinks++;
                     }
@@ -1787,7 +1787,7 @@ bool Parser::parseAsAdjacency(const QByteArray &rawData){
                 qDebug() << "New edge: " << i << "->" <<  j
                          << "has weight" << edgeWeight << "TotalLinks: " << totalLinks+1;
 
-                emit edgeCreate(i, j, edgeWeight, initEdgeColor, EdgeType::Directed, arrows, bezier);
+                emit signalEdgeCreate(i, j, edgeWeight, initEdgeColor, EdgeType::Directed, arrows, bezier);
 
                 totalLinks++;
 
@@ -1900,7 +1900,7 @@ bool Parser::parseAsTwoModeSociomatrix(const QByteArray &rawData){
                         bezier=false;
                         edgeWeight = 1;
                         qDebug() << " Actor " << i << " on the same event as actor " << k << ". Creating edge ";
-                        emit edgeCreate(i, k, edgeWeight, initEdgeColor,
+                        emit signalEdgeCreate(i, k, edgeWeight, initEdgeColor,
                                         EdgeType::Undirected, arrows, bezier);
                         totalLinks++;
                     }
@@ -2494,9 +2494,9 @@ void Parser::endGraphMLElementEdge(QXmlStreamReader &xml){
                << " postponing edge creation signal";
         return;
     }
-    qDebug()<<"Parser::endGraphMLElementEdge() - signal edgeCreate "
+    qDebug()<<"Parser::endGraphMLElementEdge() - signal signalEdgeCreate "
            << source << "->" << target << " edgeDirType value " << edgeDirType;
-    emit edgeCreate(source, target, edgeWeight, edgeColor, edgeDirType,
+    emit signalEdgeCreate(source, target, edgeWeight, edgeColor, edgeDirType,
                     arrows, bezier, edgeLabel);
     totalLinks++;
     bool_edge= false;
@@ -2887,10 +2887,10 @@ void Parser::createMissingNodeEdges(){
                         edgeDirType=EdgeType::Undirected;
 
                 }
-                qDebug()<<"signal edgeCreate "
+                qDebug()<<"signal signalEdgeCreate "
                        << source << "->" << target << " edgeDirType value " << edgeDirType;
 
-                emit edgeCreate(source, target, edgeWeight, edgeColor, edgeDirType, arrows, bezier, edgeLabel);
+                emit signalEdgeCreate(source, target, edgeWeight, edgeColor, edgeDirType, arrows, bezier, edgeLabel);
 
             }
             ++it;
@@ -3203,7 +3203,7 @@ bool Parser::parseAsGML(const QByteArray &rawData){
                 if (edgeLabel==QString()) {
                     edgeLabel = edge_source + "->" + edge_target;
                 }
-                emit edgeCreate(source,target, edgeWeight, edgeColor,
+                emit signalEdgeCreate(source,target, edgeWeight, edgeColor,
                                 edgeDirType, arrows, bezier, edgeLabel);
             }
 
@@ -3555,7 +3555,7 @@ bool Parser::parseAsDot(const QByteArray &rawData){
                     if (it!=nodeSequence.begin()) {
                         qDebug()<<"-- Drawing Link between node "
                                << source<< " and node " <<target;
-                        emit edgeCreate(source,target, edgeWeight, edgeColor,
+                        emit signalEdgeCreate(source,target, edgeWeight, edgeColor,
                                         edgeDirType, arrows, bezier);
                     }
                 }
@@ -3566,7 +3566,7 @@ bool Parser::parseAsDot(const QByteArray &rawData){
                     if (it!=nodeSequence.begin()) {
                         qDebug()<<"-- Drawing Link between node "
                                <<source<<" and node " << target;
-                        emit edgeCreate(source,target, edgeWeight , edgeColor,
+                        emit signalEdgeCreate(source,target, edgeWeight , edgeColor,
                                         edgeDirType, arrows, bezier);
                     }
                 }
@@ -4051,7 +4051,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
             target = edgeElement[1].toInt() ;
         }
         edgeWeight = edge.value();
-        emit edgeCreate(source,
+        emit signalEdgeCreate(source,
                         target,
                         edgeWeight,
                         initEdgeColor,
@@ -4353,7 +4353,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
              target = edgeElement[1].toInt() ;
          }
          edgeWeight = edge.value();
-         emit edgeCreate(source,
+         emit signalEdgeCreate(source,
                          target,
                          edgeWeight,
                          initEdgeColor,

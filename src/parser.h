@@ -145,7 +145,7 @@ signals:
                                          const bool &signalMW=false
                                          );
 
-    void edgeCreate (const int &source, const int &target, const qreal &weight,
+    void signalEdgeCreate (const int &source, const int &target, const qreal &weight,
                      const QString &color, const int &edgeDirType,
                      const bool &arrows, const bool &bezier,
                      const QString &edgeLabel=QString(),

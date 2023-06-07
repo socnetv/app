@@ -15754,7 +15754,7 @@ void Graph::loadFile (	const QString fileName,
 
     connect (file_parser, &Parser::signalCreateNodeAtPosRandomWithLabel, this, &Graph::vertexCreateAtPosRandomWithLabel);
 
-    connect (file_parser, &Parser::edgeCreate,this,&Graph::edgeCreate);
+    connect (file_parser, &Parser::signalEdgeCreate,this,&Graph::edgeCreate);
 
 
     connect (
