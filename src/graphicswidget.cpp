@@ -660,7 +660,8 @@ bool GraphicsWidget::setNodeShape(const int &nodeNum,
 
 
 /**
- * @brief GraphicsWidget::setNodeLabelsVisibility
+ * @brief Toggles the visibility of all node labels.
+ *
  * @param toggle
  */
 void GraphicsWidget::setNodeLabelsVisibility (const bool &toggle){
@@ -689,11 +690,11 @@ bool GraphicsWidget::setNodeLabel(const int &nodeNumber, const QString &label){
 
 
 /**
- * @brief Toggles node numbers displayed inside or out of nodes
+ * @brief Toggles displaying node numbers in or out of nodes
  *
  * @param numIn
  */
-void   GraphicsWidget::setNumbersInsideNodes(const bool &toggle){
+void GraphicsWidget::setNumbersInsideNodes(const bool &toggle){
     qDebug()<< "Toggling node numbers inside:" << toggle;
     foreach ( GraphicsNode *m_node, nodeHash) {
         m_node->setNumberInside(toggle);
@@ -1183,7 +1184,7 @@ void GraphicsWidget::setEdgeLabelsVisibility (const bool &toggle){
  *
  * @param toggle
  */
-void   GraphicsWidget::setEdgeHighlighting(const bool &toggle){
+void GraphicsWidget::setEdgeHighlighting(const bool &toggle){
     qDebug()<< "GW::setEdgeHighlighting" << toggle;
     foreach ( GraphicsNode *m_node, nodeHash) {
         m_node->setEdgeHighLighting(toggle);
