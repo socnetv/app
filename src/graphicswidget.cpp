@@ -1206,6 +1206,7 @@ void GraphicsWidget::setEdgeHighlighting(const bool &toggle){
  * @param sourceNum
  * @param targetNum
  * @param visible
+ * @param checkInverse
  */
 void GraphicsWidget::setEdgeVisibility(const int &relation, const int &sourceNum, const int &targetNum, const bool &visible, const bool &checkInverse){
     edgeName = createEdgeName( sourceNum, targetNum, relation );
