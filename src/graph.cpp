@@ -7399,6 +7399,11 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
 
     qDebug() << "Graph::prominenceDistributionSpline()";
 
+    if (distImageFileName.isEmpty() ) {
+        // No image filename given.
+        return;
+    }
+
     QLineSeries *series = new QLineSeries();
     series->setName (seriesName);
     QValueAxis *axisX = new QValueAxis ();
@@ -7478,60 +7483,56 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
     series->setBrush(sBrush);
     series->setPen(sPen);
 
-    if (!distImageFileName.isEmpty() ) {
+    qDebug() << "Graph::prominenceDistributionSpline() - "
+             << "saving distribution image to" << distImageFileName ;
 
-        qDebug() << "Graph::prominenceDistributionSpline() - "
-                 << "saving distribution image to" << distImageFileName ;
+    axisX1->setMin(min);
+    axisX1->setMax(max);
 
-        axisX1->setMin(min);
-        axisX1->setMax(max);
+    axisY1->setMin(minF);
+    axisY1->setMax(maxF+1.0);
 
-        axisY1->setMin(minF);
-        axisY1->setMax(maxF+1.0);
+    QChart *chart = new QChart();
+    QChartView *chartView = new QChartView( chart );
 
-        QChart *chart = new QChart();
-        QChartView *chartView = new QChartView( chart );
+    // Not needed?
+    // If we do show it, then it will show a brief flash of the window to the user!
+    // chartView->show();
 
-        // Not needed?
-        // If we do show it, then it will show a brief flash of the window to the user!
-        // chartView->show();
+    chart->addSeries(series1);
 
-        chart->addSeries(series1);
+    chart->setTitle(series1->name() + " distribution");
+    chart->setTitleFont(QFont("Times",12));
 
-        chart->setTitle(series1->name() + " distribution");
-        chart->setTitleFont(QFont("Times",12));
+    chart->legend()->hide();
 
-        chart->legend()->hide();
+    //chart->createDefaultAxes();
 
-        //chart->createDefaultAxes();
+    chart->addAxis(axisX1, Qt::AlignBottom);
+    series1->attachAxis(axisX1);
+    chart->addAxis(axisY1, Qt::AlignLeft);
+    series1->attachAxis(axisY1);
 
-        chart->addAxis(axisX1, Qt::AlignBottom);
-        series1->attachAxis(axisX1);
-        chart->addAxis(axisY1, Qt::AlignLeft);
-        series1->attachAxis(axisY1);
+    chart->axes(Qt::Vertical).first()->setMin(0);
+    chart->axes(Qt::Horizontal).first()->setMin(0);
+    chart->axes(Qt::Horizontal).first()->setLabelsAngle(-90);
 
-        chart->axes(Qt::Vertical).first()->setMin(0);
-        chart->axes(Qt::Horizontal).first()->setMin(0);
-        chart->axes(Qt::Horizontal).first()->setLabelsAngle(-90);
+    //        m_chart->axes(Qt::Horizontal).first()->setShadesVisible(false);
 
-        //        m_chart->axes(Qt::Horizontal).first()->setShadesVisible(false);
+    chart->resize(2560,1440);
+    chartView->resize(2561,1441);
 
-        chart->resize(2560,1440);
-        chartView->resize(2561,1441);
+    QPixmap p = chartView->grab();
 
-        QPixmap p = chartView->grab();
+    p.save( distImageFileName, "PNG");
 
-        p.save( distImageFileName, "PNG");
-
-        chartView->hide();
-        // Do not delete the ChartView
-        // If we do delete it, then it will also delete the axes
-        // which we have sent to MW to be displayed on the miniChart.
-        // The result will be app crash...
-        //        chartView->deleteLater();
-        delete chartView;
-
-    }
+    chartView->hide();
+    // Do not delete the ChartView
+    // If we do delete it, then it will also delete the axes
+    // which we have sent to MW to be displayed on the miniChart.
+    // The result will be app crash...
+    //        chartView->deleteLater();
+    delete chartView;
 
     qDebug() << "Graph::prominenceDistributionSpline() - emitting signal to update";
     emit signalPromininenceDistributionChartUpdate(series, axisX, min, max, axisY, minF, maxF);
