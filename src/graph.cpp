@@ -1019,7 +1019,7 @@ int Graph::vertexExists(const QString &label){
  * @return
  */
 bool Graph::vertexFindByNumber (const QStringList &numList) {
-    qDebug() << "Graph::vertexFindByNumber() - searchList:" << numList;
+    qDebug() << "Finding vertices by number - searchList:" << numList;
     QString vStr;
     QList<int> foundList;
     QStringList notFound;
@@ -1031,12 +1031,12 @@ bool Graph::vertexFindByNumber (const QStringList &numList) {
         v = vStr.toInt(&intOk);
         if (intOk) {
             if ( vertexExists(v) != -1 ) {
-                qDebug() << "Graph::vertexFindByNumber() - v" << v
-                         << "exists. Adding it to list";
+                qDebug() << "vertex number" << v
+                         << "exists. Adding it to found list";
                 foundList << v;
             }
             else {
-                qDebug() << "Graph::vertexFindByNumber() - v" << v
+                qDebug() << "vertex number" << v
                          << "does not exist. Adding it to notFound list";
                 notFound << vStr;
             }
@@ -1049,10 +1049,13 @@ bool Graph::vertexFindByNumber (const QStringList &numList) {
 
     if ( !foundList.isEmpty() ) {
         searchResult = true;
+        qDebug() << "One or more matching nodes found. Signaling to GW to highlight them...";
+        emit statusMessage ( tr("Found %1 matching nodes. Ready.").arg(foundList.count()) );
         emit signalNodesFound(foundList);
     }
-    if ( !notFound.isEmpty() ){
-        //emit signalNodesNotFound(notFound);
+    else {
+        qDebug() << "No matching nodes found. Return.";
+        emit statusMessage ( tr("Could not find any nodes matching your choices. Ready.") );
     }
 
     return searchResult;
@@ -1066,7 +1069,7 @@ bool Graph::vertexFindByNumber (const QStringList &numList) {
  * @return
  */
 bool Graph::vertexFindByLabel (const QStringList &labelList) {
-    qDebug() << "Graph::vertexFindByLabel() - list:" << labelList;
+    qDebug() << "Finding vertices by label - searchList:" << labelList;
 
     QString vLabel;
     QList<int> foundList;
@@ -1077,12 +1080,12 @@ bool Graph::vertexFindByLabel (const QStringList &labelList) {
         vLabel = labelList.at(i);
 
         if ( ( vFoundPos = vertexExists(vLabel) ) != -1 ) {
-            qDebug() << "Graph::vertexFindByNumber() - vertex with label" << vLabel
-                     << "exists. Adding it to list";
+            qDebug() << "vertex with label" << vLabel
+                     << "exists. Adding it to found list";
             foundList << m_graph[ vFoundPos ]->number();
         }
         else {
-            qDebug() << "Graph::vertexFindByNumber() - vertex with label" << vLabel
+            qDebug() << "vertex with label" << vLabel
                      << "does not exist. Adding it to notFound list ";
             notFound << vLabel;
         }
@@ -1091,10 +1094,13 @@ bool Graph::vertexFindByLabel (const QStringList &labelList) {
 
     if ( !foundList.isEmpty() ) {
         searchResult = true;
+        qDebug() << "One or more matchin nodes found. Signaling to GW to highlight them...";
+        emit statusMessage ( tr("Found %1 matching nodes. Ready.").arg(foundList.count()) );
         emit signalNodesFound(foundList);
     }
-    if ( !notFound.isEmpty() ){
-        //emit signalNodesNotFound(notFound);
+    else {
+        qDebug() << "No matching nodes found. Return.";
+        emit statusMessage ( tr("Could not find any nodes matching your choices. Ready.") );
     }
 
     return searchResult;
@@ -1108,10 +1114,14 @@ bool Graph::vertexFindByLabel (const QStringList &labelList) {
  * @param QStringList
  * @return
  */
-bool Graph::vertexFindByIndexScore(const int &index, const QStringList &thresholds) {
+bool Graph::vertexFindByIndexScore(const int &index, const QStringList &thresholds,
+                                   const bool &considerWeights, const bool &inverseWeights, const bool &dropIsolates) {
 
-    qDebug()<<"Graph::vertexFindByIndexScore() - index"<< index
-           << "threshold list" << thresholds;
+    qDebug()<<"Finding vertices by index"<< index
+           << "threshold list" << thresholds
+           << "considerWeights"<<considerWeights
+           << "inverseWeights" << inverseWeights
+           << "dropIsolates" <<dropIsolates;
 
     QList<int> foundList;
 
@@ -1129,18 +1139,13 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
     qreal threshold=0;
     qreal score=0;
 
-    //FIXME
-    bool dropIsolates=false;
-    bool considerWeights = true;
-    bool inverseWeights = true;
-
     switch (index) {
     case 0: {
         // do nothing
         break;
     }
     case IndexType::DC : {
-        centralityDegree(true, dropIsolates);
+        centralityDegree(considerWeights, dropIsolates);
         break;
     }
     case IndexType::IRCC : {
@@ -1152,11 +1157,11 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
         break;
     }
     case IndexType::EVC : {
-        centralityEigenvector(true, dropIsolates);
+        centralityEigenvector(considerWeights, dropIsolates);
         break;
     }
     case IndexType::DP : {
-        prestigeDegree(true, dropIsolates);
+        prestigeDegree(considerWeights, dropIsolates);
         break;
     }
     case IndexType::PRP : {
@@ -1173,6 +1178,7 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
         break;
     }
 
+    // Parse threshold user input
     for (int i = 0; i < thresholds.size(); ++i) {
 
         thresholdStr = thresholds.at(i);
@@ -1185,45 +1191,43 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
 
         convertedOk=false;
 
-        threshold=0;
-
-        if (thresholdStr.startsWith(">=")) {
+        if (thresholdStr.startsWith(">=") || thresholdStr.startsWith("=>")) {
             gtEqual = true;
             thresholdStr.remove(">=");
-            qDebug()<< "Graph::vertexFindByIndexScore() - thresholdStr starts with >=";
+            qDebug()<< "thresholdStr starts with >=";
         }
         else if (thresholdStr.startsWith(">")) {
             gtThan = true;
             thresholdStr.remove(">");
-            qDebug()<< "Graph::vertexFindByIndexScore() - thresholdStr starts with > ";
+            qDebug()<< "thresholdStr starts with > ";
         }
-        else if (thresholdStr.startsWith("<=")) {
+        else if (thresholdStr.startsWith("<=") || thresholdStr.startsWith("=<")) {
             lsEqual = true;
             thresholdStr.remove("<=");
-            qDebug()<< "Graph::vertexFindByIndexScore() - thresholdStr starts with >=";
+            qDebug()<< "thresholdStr starts with <=";
         }
         else if (thresholdStr.startsWith("<"))  {
             lsThan = true;
             thresholdStr.remove("<");
-            qDebug()<< "Graph::vertexFindByIndexScore() - thresholdStr starts with < ";
+            qDebug()<< "thresholdStr starts with < ";
         }
         else {
-            qDebug()<< "Graph::vertexFindByIndexScore() - thresholdStr does not start with > or <";
+            qDebug()<< "thresholdStr does not start with > or <";
             continue;
         }
 
+        // Parse score threshold
         threshold = thresholdStr.toDouble(&convertedOk);
 
         if (!convertedOk) {
-            qDebug()<< "Graph::vertexFindByIndexScore() - "
-                       "cannot convert thresholdStr to float";
+            qDebug()<< "cannot convert thresholdStr to float";
             continue;
         }
         else {
-            qDebug()<< "Graph::vertexFindByIndexScore() - "
-                       "threshold"<<threshold;
+            qDebug()<< "threshold"<<threshold;
         }
 
+        // Iterate over all vertices and get their scores
         for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
 
             switch (index) {
@@ -1283,15 +1287,21 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
 
             if (gtThan) {
                 if ( score > threshold ) {
-                    qDebug() << "Graph::vertexFindByIndexScore() - vertex" << (*it)->number()
-                             << "matches. Adding it to foundList";
                     foundList << (*it)->number();
                 }
             }
-            else {
+            else if (gtEqual) {
+                if ( score >= threshold ) {
+                    foundList << (*it)->number();
+                }
+            }
+            else if (lsThan){
                 if ( score < threshold ) {
-                    qDebug() << "Graph::vertexFindByIndexScore() - vertex" << (*it)->number()
-                             << "matches. Adding it to foundList";
+                    foundList << (*it)->number();
+                }
+            }
+            else if (lsEqual){
+                if ( score <= threshold ) {
                     foundList << (*it)->number();
                 }
             }
@@ -1302,7 +1312,13 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
 
     if ( !foundList.isEmpty() ) {
         searchResult = true;
+        qDebug() << "One or more matching nodes found. Signaling to GW to highlight them...";
+        emit statusMessage ( tr("Found %1 matching nodes. Ready.").arg(foundList.count()) );
         emit signalNodesFound(foundList);
+    }
+    else {
+        qDebug() << "No matching nodes found. Return.";
+        emit statusMessage ( tr("Could not find any nodes matching your choices. Ready.") );
     }
 
     return searchResult;
@@ -2366,31 +2382,29 @@ MyEdge Graph::edgeClicked() {
 
 
 /**
- * @brief Checks if there is an edge (arc) from v1 to v2
+ * @brief Checks if there is an edge from v1 to v2 and returns the weight, if the edge exists.
+ *
    Complexity:  O(logN) for vpos retrieval + O(1) for QList index retrieval + O(logN) for checking edge(v2)
+
  * @param v1
  * @param v2
- * @param reciprocated: if true, checks if the edge is reciprocated (v1<->v2)
- * @return zero if arc or reciprocated edge does not exist or non-zero if arc /reciprocated edge exists
+ * @param reciprocated: if true, checks if the edge is reciprocated (v1<->v2) with the same weight
+ * @return zero if edge or reciprocated edge does not exist or non-zero if arc /reciprocated edge exists
  */
 qreal Graph::edgeExists (const int &v1, const int &v2, const bool &checkReciprocal) {
 
     edgeWeightTemp = 0;
     edgeWeightTemp = m_graph[ vpos[v1] ]->hasEdgeTo(v2);
     qDebug() << "Checking if edge exists:" << v1 << "->" << v2 << "=" << edgeWeightTemp  ;
-    if (!checkReciprocal) {
-        return edgeWeightTemp;
-    }
-    else { //check if edge is reciprocal
-        if  ( edgeWeightTemp!=0 ) {
-            edgeReverseWeightTemp = m_graph[ vpos[v2] ]->hasEdgeTo(v1);
-            qDebug() << "Checking if reverse edge exists: " << v2 << "->" << v1 << "=" << edgeWeightTemp  ;
-            if  ( edgeWeightTemp == edgeReverseWeightTemp  ){
-                return edgeWeightTemp;
-            }
+    if (edgeWeightTemp!=0 && checkReciprocal) {
+        edgeReverseWeightTemp = m_graph[ vpos[v2] ]->hasEdgeTo(v1);
+        qDebug() << "Checking if reverse edge exists: " << v2 << "->" << v1 << "=" << edgeWeightTemp  ;
+        if  ( edgeWeightTemp == edgeReverseWeightTemp  ){
+            return edgeWeightTemp;
         }
     }
-    return 0;
+    return  edgeWeightTemp;
+
 }
 
 
@@ -7056,13 +7070,12 @@ void Graph::centralityEigenvector(const bool &considerWeights,
 
 /**
  * @brief Calculates the degree (outDegree) centrality of each vertex - diagonal included
- * @param weights
+ * @param considerWeights
  * @param dropIsolates
  */
-void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
-    qDebug("Graph::centralityDegree()");
+void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolates){
     if ( calculatedDC ) {
-        qDebug() << "Graph::centralityDegree() - graph not changed - returning";
+        qDebug() << "Graph not changed - no need to compute degree centralities again. Returning...";
         return;
     }
     qreal DC=0, nom=0, denom=0,  SDC=0;
@@ -7079,7 +7092,8 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
 
     VList::const_iterator it, it1;
 
-    QString pMsg =  tr("Computing out-Degree Centralities. \nPlease wait...");
+    QString pMsg =  tr("Computing out-Degree Centralities for %1 nodes. \nPlease wait...").arg(N);
+    qDebug() << pMsg;
     emit statusMessage( pMsg );
     emit signalProgressBoxCreate(N,pMsg);
 
@@ -7088,35 +7102,45 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
 
         DC=0;
-        if (!(*it)->isIsolated()) {
-            for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
-                if ( (weight=edgeExists( (*it)->number(), (*it1)->number() ) ) != 0.0  )   {
-                    //                    qDebug() << "Graph::centralityDegree() - vertex "
-                    //                             <<  (*it)->number()
-                    //                             << " has edge to = " <<  (*it1)->number();
-                    if (weights)
-                        DC+=weight;
-                    else
-                        DC++;
 
-                    //check here if the matrix is symmetric - we need this below
-                    if (  edgeExists ( (*it1)->number(), (*it)->number() , true ) == 0   )
-                        m_graphIsSymmetric = false;
-                }
+        if ( (*it)->isIsolated() ) {
+            continue;
+        }
+        if ( ! (*it)->isEnabled() ) {
+            continue;
+        }
+        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
+
+            if ( (*it1)->isIsolated() ) {
+                continue;
+            }
+            if ( ! (*it1)->isEnabled() ) {
+                continue;
+            }
+
+            if ( (weight=edgeExists( (*it)->number(), (*it1)->number() ) ) != 0.0  )   {
+                if (considerWeights)
+                    DC+=weight;
+                else
+                    DC++;
+
+                //check here if the matrix is symmetric - we need this below
+                if (  weight != edgeExists ( (*it1)->number(), (*it)->number()) )
+                    m_graphIsSymmetric = false;
             }
         }
 
         (*it)->setDC ( DC ) ;	//Set OutDegree
+
         sumDC += DC;          // store sumDC (for std calc below)
-        qDebug() << "Graph:centralityDegree() - vertex "
-                 <<  (*it)->number() << " has DC = " << DC ;
     }
 
     emit signalProgressBoxUpdate(2*N/3);
+
     // Calculate std Out-Degree, min, max, classes and sumSDC
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         DC= (*it)->DC();
-        if (!weights) {
+        if (!considerWeights) {
             SDC = ( DC / (N-1.0) );
         }
         else {
@@ -7124,14 +7148,10 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
         }
         (*it)->setSDC( SDC );		//Set Standard DC
 
-        //        qDebug() << "Graph::centralityDegree() - vertex "
-        //                 <<  (*it)->number() << " SDC " << (*it)->SDC ();
-
+        qDebug() << "vertex"<<  (*it)->number() << "-- DC=" << DC << "SDC=" << SDC ;
         sumSDC+=SDC;
 
         resolveClasses(SDC, discreteSDCs, classesSDC );
-
-        //qDebug() << "DC classes =  " << classesSDC;
 
         if (maxSDC < SDC ) {
             maxSDC = SDC ;
@@ -7147,8 +7167,6 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
         maxNodeSDC=-1;
 
     meanSDC = sumSDC / (qreal) N;
-    //    qDebug() << "Graph::centralityDegree() - sumSDC  " << sumSDC
-    //             << " vertices " << N << " meanSDC = sumSDC / N = " << meanSDC;
 
     // Calculate Variance and the Degree Centralization of the whole graph.
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -7163,7 +7181,6 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
     }
     varianceSDC=varianceSDC/(qreal) N;
 
-    //    qDebug() << "Graph::centralityDegree() - variance = " << varianceSDC;
     if (m_graphIsSymmetric) {
         // we divide by N-1 because we use std C values
         denom= (N-1.0)*(N-2.0)  / (N-1.0);
@@ -7176,8 +7193,7 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
         denom = N-1.0;
     }
 
-    //    qDebug () << "*** N is " << N << " nom " << nom << " denom is " << denom;
-    if (!weights) {
+    if (!considerWeights) {
         groupDC=nom/denom;
     }
 
@@ -7196,7 +7212,7 @@ void Graph::centralityDegree(const bool &weights, const bool &dropIsolates){
  */
 int Graph::getProminenceIndexByName(const QString &prominenceIndexName) {
 
-    qDebug()<< "Graph::getProminenceIndexByName() : " << prominenceIndexName;
+    qDebug()<< "Returning index type for index named: " << prominenceIndexName;
 
     if ( prominenceIndexName.contains("Degree Centr") ){
         return IndexType::DC;
@@ -9778,7 +9794,7 @@ void Graph::writeCentralityPower(const QString fileName,
  * @param weights
  * @param dropIsolates
  */
-void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
+void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates){
 
     qDebug()<< "Computing Degree Prestige ...";
 
@@ -9857,7 +9873,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
 
             weight = hit.value();
 
-            if (weights) {
+            if (considerWeights) {
                 DP+=weight;
             }
             else {
@@ -9883,7 +9899,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
 
         DP= (*it)->DP();
 
-        if (!weights) {
+        if (!considerWeights) {
             SDP=( DP / (N-1.0) );		//Set Standard InDegree
         }
         else {
@@ -9936,7 +9952,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
         denom = N-1.0;
 
 
-    if (!weights) {
+    if (!considerWeights) {
         groupDP=nom/denom;
         qDebug("Graph: varianceSDP = %f, groupDP = %f", varianceSDP, groupDP);
     }
@@ -15553,7 +15569,7 @@ bool Graph::isFileFormatExportSupported(const int &fileFormat) const {
 void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW){
 
     if ( m_graphModStatus == ModStatus::NewNet && isEmpty()) {
-        qDebug()<<"This is a new empty network. Will not change status.";
+        qDebug()<<"This is a empty new network. Will not change status.";
        // No vertex exists, this is a new network. Don't change status.
         emit signalGraphSavedStatus(true);
         return;
@@ -15631,7 +15647,8 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW){
             emit signalGraphModified(isDirected(),
                                      m_totalVertices,
                                      edgesEnabled(),
-                                     graphDensity());
+                                     graphDensity(),
+                                     true);
             return;
         }
 
@@ -21632,9 +21649,9 @@ void Graph::layoutVertexSizeByIndegree() {
  * @param dropIsolates
  */
 void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
-                                     const bool considerWeights,
-                                     const bool inverseWeights,
-                                     const bool dropIsolates) {
+                                     const bool &considerWeights,
+                                     const bool &inverseWeights,
+                                     const bool &dropIsolates) {
     qDebug() << "Graph::layoutByProminenceIndex - "
                 << "index = " << prominenceIndex
                 << "type = " << layoutType;
@@ -21678,7 +21695,7 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
         // do nothing
     }
     else if ( prominenceIndex == IndexType::DC ) {
-        centralityDegree(true, dropIsolates);
+        centralityDegree(considerWeights, dropIsolates);
     }
     else if ( prominenceIndex == IndexType::IRCC ){
         centralityClosenessIR();
@@ -21687,10 +21704,10 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
         centralityInformation();
     }
     else if ( prominenceIndex == IndexType::EVC ){
-        centralityEigenvector(true, dropIsolates);
+        centralityEigenvector(considerWeights, dropIsolates);
     }
     else if ( prominenceIndex == IndexType::DP ){
-        prestigeDegree(true, dropIsolates);
+        prestigeDegree(considerWeights, dropIsolates);
     }
     else if ( prominenceIndex == IndexType::PRP ) {
         prestigePageRank();

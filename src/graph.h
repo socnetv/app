@@ -255,7 +255,8 @@ signals:
     void signalGraphModified(const bool &undirected,
                              const int &vertices,
                              const int &edges,
-                             const qreal &density);
+                             const qreal &density,
+                             const bool &notSaved=true);
 
     void signalGraphLoaded (const int &fileType,
                             const QString &fileName=QString(),
@@ -497,7 +498,12 @@ public:
 
     bool vertexFindByLabel (const QStringList &labelList);
 
-    bool vertexFindByIndexScore(const int &index, const QStringList &thresholds);
+    bool vertexFindByIndexScore(const int &index,
+                                const QStringList &thresholds,
+                                const bool &considerWeights,
+                                const bool &inverseWeights=false,
+                                const bool &dropIsolates=false
+                                );
 
     void vertexRemove (const int &v1);
 
@@ -930,7 +936,7 @@ public:
                                       const QString &seriesName,
                                       const QString &distImageFileName);
 
-    void centralityDegree(const bool &weights=true,
+    void centralityDegree(const bool &considerWeights=true,
                           const bool &dropIsolates=false);
 
     void centralityInformation(const bool considerWeights=false,
@@ -944,7 +950,7 @@ public:
                                const bool inverseWeights=false,
                                const bool dropIsolates=false);
 
-    void prestigeDegree(const bool &weights, const bool &dropIsolates=false);
+    void prestigeDegree(const bool &considerWeights, const bool &dropIsolates=false);
 
     void prestigePageRank(const bool &dropIsolates=false);
 
@@ -1023,9 +1029,9 @@ public:
 
     void layoutByProminenceIndex ( int prominenceIndex,
                                    int layoutType,
-                                   const bool considerWeights=false,
-                                   const bool inverseWeights=false,
-                                   const bool dropIsolates=false);
+                                   const bool &considerWeights=false,
+                                   const bool &inverseWeights=false,
+                                   const bool &dropIsolates=false);
 
 
     void layoutVertexSizeByIndegree();
