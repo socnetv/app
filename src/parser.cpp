@@ -620,7 +620,7 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                 }
 
                 // check if we have found row labels
-                if ( rowLabels.count() == 0 ) {
+                if ( rowLabels.size() == 0 ) {
                     // no labels found
                     qDebug() << "Nodes have not been created yet."
                              << "No node labels found."
@@ -629,7 +629,7 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                     nodeSum = totalNodes;
 
                 }
-                else if ( rowLabels.count() == 1 ) {
+                else if ( rowLabels.size() == 1 ) {
                     // only one label line was found
                     // probably contains a comma to separate labels
                     // split it
@@ -660,7 +660,7 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                 if (twoMode_flag) {
 
                     // check if we have found col labels
-                    if ( colLabels.count() == 0 ) {
+                    if ( colLabels.size() == 0 ) {
                         // no  col labels found
                         qDebug() << "Nodes have not been created yet."
                                  << "No node labels found."
@@ -668,7 +668,7 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                         createRandomNodes(totalNodes, QString(), NC);
 
                     }
-                    else if ( colLabels.count() == 1 ) {
+                    else if ( colLabels.size() == 1 ) {
                         // only one col label line was found
                         // probably contains a comma to separate labels
                         // split it
@@ -715,10 +715,10 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                     }
                     qDebug() << "splitting str to elements ";
                     lineElement=str.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
-                    qDebug() << "line elements " << lineElement.count();
-                    if (lineElement.count() < totalNodes ) {
+                    qDebug() << "line elements " << lineElement.size();
+                    if (lineElement.size() < totalNodes ) {
                         qDebug() << "This line has "
-                                 << lineElement.count()
+                                 << lineElement.size()
                                  << " elements, expected "
                                  << totalNodes << " - appending next line";
                         prevLineStr=str;
@@ -788,12 +788,12 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                                 "Splitting str to elements:";
                     lineElement=str.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
                     qDebug()<< "lineElement:" << lineElement;
-                    if (lineElement.count() != NC) {
+                    if (lineElement.size() != NC) {
                         qDebug() << "Not a two-mode fullmatrix UCINET "
                                     "formatted file. Aborting!!";
                         //emit something...
                         errorMessage = tr("Problem interpreting UCINET two-mode fullmatrix-formatted file. The file declared ") + QString::number(NC) + tr(" columns initially, "
-                                          "but I found a different number ") + QString::number(lineElement.count()) + tr(" of matrix columns");
+                                          "but I found a different number ") + QString::number(lineElement.size()) + tr(" of matrix columns");
                         return false;
 
                     }
@@ -838,7 +838,7 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                 lineElement=str.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
                 qDebug() << "edgelist str line:"<< str;
                 qDebug() << "edgelist data element:"<< lineElement;
-                if ( lineElement.count() != 3 ) {
+                if ( lineElement.size() != 3 ) {
                     qDebug() << "Not an edgelist1 UCINET "
                                 "formatted file. Aborting!!";
                     //emit something...
@@ -886,7 +886,7 @@ bool Parser::parseAsDL(const QByteArray &rawData){
         return false;
     }
 
-    if (relationsList.count() == 0) {
+    if (relationsList.size() == 0) {
         emit signalAddNewRelation("unnamed");
     }
 
@@ -934,7 +934,7 @@ bool Parser::readDLKeywords(QStringList &strList,
         }
 
         // check if this element contains a "="
-        if ( tempStr.count() > 0  ) {
+        if ( tempStr.size() > 0  ) {
 
             if (tempStr.contains("=",Qt::CaseInsensitive)) {
                 qDebug() << "splitting element at = sign";
@@ -1148,7 +1148,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
                 qDebug() << "added new relation"<< relation
                          << "to relationsList - signaling to add new relation";
                 emit signalAddNewRelation( relation );
-                lastRelationIndex = relationsList.count() - 1;
+                lastRelationIndex = relationsList.size() - 1;
                 if ( lastRelationIndex > 0) {
                     qDebug () << "last relation index:"
                               << lastRelationIndex
@@ -1178,7 +1178,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
                 qDebug() << "added new relation"<< relation
                          << "to relationsList - signaling to add new relation";
                 emit signalAddNewRelation( relation );
-                lastRelationIndex = relationsList.count()-1;
+                lastRelationIndex = relationsList.size()-1;
                 if ( lastRelationIndex > 0) {
                     qDebug () << "last relation index:"
                               << lastRelationIndex
@@ -1229,7 +1229,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
                 /** NODECOLORS */
                 //if there is an "ic" tag, a specific NodeColor for this node follows...
                 if (str.contains("ic",Qt::CaseInsensitive)) {
-                    for (int c=0; c< lineElement.count(); c++) {
+                    for (int c=0; c< lineElement.size(); c++) {
                         if (lineElement[c] == "ic") {
                             //the colourname is at c+1 position.
                             nodeColor=lineElement[c+1];
@@ -1250,13 +1250,13 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
                 }
                 /**READ NODE COORDINATES */
                 if ( str.contains(".",Qt::CaseInsensitive) ) {
-                    for (int c=0; c< lineElement.count(); c++)   {
+                    for (int c=0; c< lineElement.size(); c++)   {
                         temp=lineElement.at(c);
                         //		qDebug()<< temp.toLatin1();
                         if ((coordIndex=temp.indexOf(".", Qt::CaseInsensitive)) != -1 ){
                             if (lineElement.at(c-1) == "ic" ) continue;  //pajek declares colors with numbers!
                             if ( !temp[coordIndex-1].isDigit()) continue;  //needs 0.XX
-                            if (c+1 == lineElement.count() ) {//first coord zero, i.e: 0  0.455
+                            if (c+1 == lineElement.size() ) {//first coord zero, i.e: 0  0.455
                                 //qDebug ()<<"coords: " <<lineElement.at(c-1).toLatin1() << " " <<temp.toLatin1() ;
                                 randX=lineElement.at(c-1).toDouble(&check1);
                                 randY=temp.toDouble(&check2);
@@ -1382,7 +1382,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
 
                     source=  lineElement[1].toInt(&ok, 10);
 
-                    if (lineElement.count()>2) {
+                    if (lineElement.size()>2) {
                         target = lineElement[2].toInt(&ok,10);
                     }
                     else {
@@ -1390,7 +1390,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
                     }
 
                 }
-                else if (lineElement.count()>2) {
+                else if (lineElement.size()>2) {
                     edgeWeight =lineElement[2].toDouble(&ok);
                 }
                 else {
@@ -1403,7 +1403,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
                     //qDebug("file with link colours");
                     fileContainsLinkColors=true;
                     colorIndex=lineElement.indexOf( QRegularExpression("[c]"), 0 ) + 1;
-                    if (colorIndex >= lineElement.count()) edgeColor=initEdgeColor;
+                    if (colorIndex >= lineElement.size()) edgeColor=initEdgeColor;
                     else 	edgeColor=lineElement [ colorIndex ];
                     if (edgeColor.contains (".") )  edgeColor=initEdgeColor;
                     //qDebug()<< " current color "<< edgeColor;
@@ -1417,7 +1417,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
                     qDebug("file with link labels");
                     fileContainsLinkLabels=true;
                     labelIndex=lineElement.indexOf( QRegularExpression("[l]"), 0 ) + 1;
-                    if (labelIndex >= lineElement.count()) edgeLabel=initEdgeLabel;
+                    if (labelIndex >= lineElement.size()) edgeLabel=initEdgeLabel;
                     else 	edgeLabel=lineElement [ labelIndex ];
                     if (edgeLabel.contains (".") )  edgeLabel=initEdgeLabel;
                     qDebug()<< " edge label "<< edgeLabel;
@@ -1452,7 +1452,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
                     edgeWeight  = lineElement[0].toDouble(&ok);
                     source=  lineElement[1].toInt(&ok, 10);
 
-                    if (lineElement.count()>2) {
+                    if (lineElement.size()>2) {
                         target = lineElement[2].toInt(&ok,10);
                     }
                     else {
@@ -1460,7 +1460,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
                     }
 
                 }
-                else if (lineElement.count()>2) {
+                else if (lineElement.size()>2) {
                     edgeWeight  =lineElement[2].toDouble(&ok);
                 }
                 else {
@@ -1481,7 +1481,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
                     qDebug("file with link labels");
                     fileContainsLinkLabels=true;
                     labelIndex=lineElement.indexOf( QRegularExpression("[l]"), 0 ) + 1;
-                    if (labelIndex >= lineElement.count()) edgeLabel=initEdgeLabel;
+                    if (labelIndex >= lineElement.size()) edgeLabel=initEdgeLabel;
                     else 	edgeLabel=lineElement.at ( labelIndex );
                     //if (edgeLabel.contains (".") )  edgeLabel=initEdgeLabel;
                     qDebug()<< " edge label "<< edgeLabel;
@@ -1552,7 +1552,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
         }
     }
 
-    if (relationsList.count() == 0) {
+    if (relationsList.size() == 0) {
         emit signalAddNewRelation(networkName);
     }
 
@@ -1642,10 +1642,10 @@ bool Parser::parseAsAdjacency(const QByteArray &rawData){
 
         // Check the delimiter and split the row -- we support comma or space(s)
         if ( str.contains (",")) {
-            colCount = (str.split(",")).count();
+            colCount = (str.split(",")).size();
         }
         else {
-            colCount = (str.split(" ")).count();
+            colCount = (str.split(" ")).size();
         }
 
         qDebug() << "non-comment row:" << actualLineNumber << ":"<< str << "colCount:"<<colCount ;
@@ -1702,7 +1702,7 @@ bool Parser::parseAsAdjacency(const QByteArray &rawData){
             // Since a sociomatrix is NxN matrix,
             // the number of items in the first row
             // is the total nodes declared in this file.
-            totalNodes=currentRow.count();
+            totalNodes=currentRow.size();
 
             qDebug()<< "Nodes to be created:"<< totalNodes;
 
@@ -1752,9 +1752,9 @@ bool Parser::parseAsAdjacency(const QByteArray &rawData){
         }
 
         // Check the number of items in this line
-        if ( (int) currentRow.count() > totalNodes )  {
+        if ( (int) currentRow.size() > totalNodes )  {
             errorMessage = tr("Invalid Adjacency-formatted file.  "
-                              "Not a NxN matrix. Row %1 declares %2 edges. Expected: %3").arg(actualLineNumber).arg((int) currentRow.count()).arg(totalNodes);
+                              "Not a NxN matrix. Row %1 declares %2 edges. Expected: %3").arg(actualLineNumber).arg((int) currentRow.size()).arg(totalNodes);
             return false;
         }
 
@@ -1799,7 +1799,7 @@ bool Parser::parseAsAdjacency(const QByteArray &rawData){
     }  // end full while
 
 
-    if (relationsList.count() == 0 ) {
+    if (relationsList.size() == 0 ) {
         emit signalAddNewRelation( "unnamed" );
     }
 
@@ -1860,11 +1860,11 @@ bool Parser::parseAsTwoModeSociomatrix(const QByteArray &rawData){
         }
         if ( str.contains (",")){
             lineElement=str.split(",");
-            newCount = lineElement.count();
+            newCount = lineElement.size();
         }
         else {
             lineElement=str.split(" ");
-            newCount = lineElement.count();
+            newCount = lineElement.size();
         }
         qDebug() << str;
         qDebug() << "newCount "<<newCount << " nodes. We are at i = " << i;
@@ -1911,7 +1911,7 @@ bool Parser::parseAsTwoModeSociomatrix(const QByteArray &rawData){
     }
 
 
-    if (relationsList.count() == 0) {
+    if (relationsList.size() == 0) {
         emit signalAddNewRelation("unnamed");
     }
 
@@ -2189,7 +2189,7 @@ void Parser::readGraphMLElementGraph(QXmlStreamReader &xml){
     relationsList << networkName;
     qDebug()<< "Signaling to add new relation:" <<networkName;
     emit signalAddNewRelation( networkName);
-    int lastRelationIndex = relationsList.count() - 1;
+    int lastRelationIndex = relationsList.size() - 1;
     if (lastRelationIndex > 0) {
         totalNodes=0;
         qDebug () << "last relation index:"
@@ -2356,7 +2356,7 @@ void Parser::readGraphMLElementNode(QXmlStreamReader &xml){
 void Parser::endGraphMLElementNode(QXmlStreamReader &xml){
     Q_UNUSED(xml);
     //@todo this check means we cannot have different nodes between relations.
-    if (relationsList.count() > 1 ) {
+    if (relationsList.size() > 1 ) {
         qDebug()<<"multirelational data"
                   "skipping node creation. Node should have been created in earlier relation";
         bool_node = false;
@@ -3207,7 +3207,7 @@ bool Parser::parseAsGML(const QByteArray &rawData){
 
     }
 
-    if (relationsList.count() == 0 ) {
+    if (relationsList.size() == 0 ) {
         emit signalAddNewRelation( "unnamed" );
     }
 
@@ -3328,7 +3328,7 @@ bool Parser::parseAsDot(const QByteArray &rawData){
             qDebug("Found next = at %i. Start is at %i", next, 1);
             prop=str.mid(0, next).simplified();
             qDebug()<<"Prop: "<<prop.toLatin1() ;
-            value=str.right(str.count()-next-1).simplified();
+            value=str.right(str.size()-next-1).simplified();
             qDebug() << "Value "<< value;
             if ( prop == "label" || prop == "name"){
                 networkLabel= value;
@@ -3358,7 +3358,7 @@ bool Parser::parseAsDot(const QByteArray &rawData){
             str=str.simplified();
             qDebug()<<str.toLatin1();
             start=0;
-            end=str.count();
+            end=str.size();
             readDotProperties(str, nodeValue, nodeLabel, initNodeShape, initNodeColor, fontName, fontColor );
             qDebug ("* Finished NODE PROPERTIES");
         }
@@ -3373,10 +3373,10 @@ bool Parser::parseAsDot(const QByteArray &rawData){
             str=str.simplified();
             qDebug()<<str.toLatin1();
             start=0;
-            end=str.count();
+            end=str.size();
             qDebug ("* Finished EDGE PROPERTIES!");
         }
-        //ti ginetai an exeis mesa sxolia ? p.x. sto telos tis grammis //
+        // TODO What about comments inside ? ie. in the end of the line //
         else if ( !str.startsWith('[', Qt::CaseInsensitive)
                   && !str.contains("--",Qt::CaseInsensitive)
                   && !str.contains("->",Qt::CaseInsensitive)
@@ -3615,7 +3615,7 @@ bool Parser::parseAsDot(const QByteArray &rawData){
         }
     }
 
-    if (relationsList.count() == 0) {
+    if (relationsList.size() == 0) {
         emit signalAddNewRelation( (!networkName.isEmpty()) ? networkName :"unnamed");
     }
 
@@ -3649,9 +3649,9 @@ void Parser::readDotProperties(QString str, qreal &nValue, QString &label,
         qDebug("Found next = at %i. Start is at %i", next, 1);
         prop=str.mid(0, next).simplified();
         qDebug()<<"Prop: "<<prop.toLatin1() ;
-        str=str.right(str.count()-next-1).simplified();
+        str=str.right(str.size()-next-1).simplified();
         if (str.startsWith(","))
-            str=str.right(str.count()-1).simplified();
+            str=str.right(str.size()-1).simplified();
 
         qDebug()<<"whatsleft: "<<str.toLatin1() ;
 
@@ -3669,7 +3669,7 @@ void Parser::readDotProperties(QString str, qreal &nValue, QString &label,
                 qDebug()<<"Found fontname"<<value.toLatin1();
                 fontName=value.trimmed();
             }
-            str=str.right(str.count()-next-1).simplified();
+            str=str.right(str.size()-next-1).simplified();
             qDebug()<<"whatsleft: "<<str.toLatin1() <<".";
         }
         else {
@@ -3714,8 +3714,8 @@ void Parser::readDotProperties(QString str, qreal &nValue, QString &label,
                 shape=value.trimmed();
                 qDebug()<<"Found node shape "<<shape.toLatin1();
             }
-            qDebug()<<"count"<< str.count()<<  " next "<< next;
-            str=str.right(str.count()-next-1).simplified();
+            qDebug()<<"count"<< str.size()<<  " next "<< next;
+            str=str.right(str.size()-next-1).simplified();
             qDebug()<<"whatsleft: "<<str.toLatin1()<<".";
             if ( (next=str.indexOf('=', 1))==-1) break;
         }
@@ -3836,7 +3836,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
 
         lineElement=str.split(delimiter);
 
-        if ( lineElement.count()  != 3 ) {
+        if ( lineElement.size()  != 3 ) {
             qDebug()<< "*** Not a Weighted list-formatted file. Aborting!!";
 
             errorMessage = tr("Not a properly EdgeList-formatted file. "
@@ -3921,7 +3921,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
                     << edge_source
                     << "totalNodes" << totalNodes
                     << "nodeMap.count"
-                    << nodeMap.count();
+                    << nodeMap.size();
 
         }
         else {
@@ -3947,7 +3947,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
                     << edge_target
                     << "totalNodes" << totalNodes
                     << "nodeMap.count"
-                    << nodeMap.count();
+                    << nodeMap.size();
 
         }
         else {
@@ -4056,7 +4056,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
 
 
 
-    if (relationsList.count() == 0) {
+    if (relationsList.size() == 0) {
         emit signalAddNewRelation("unnamed");
     }
 
@@ -4215,7 +4215,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
                             << edge_source
                             << "totalNodes" << totalNodes
                             << "nodeMap.count"
-                            << nodeMap.count();
+                            << nodeMap.size();
 
                 }
                 else {
@@ -4249,7 +4249,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
                             << edge_target
                             << "totalNodes" << totalNodes
                             << "nodeMap.count"
-                            << nodeMap.count();
+                            << nodeMap.size();
 
                 }
                 else {
@@ -4357,7 +4357,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
      }
 
 
-     if (relationsList.count() == 0) {
+     if (relationsList.size() == 0) {
          emit signalAddNewRelation("unnamed");
      }
 
