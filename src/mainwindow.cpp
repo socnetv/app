@@ -14585,7 +14585,7 @@ void MainWindow::slotOptionsWindowRightPanelVisibility(bool toggle) {
 *  Displays a random tip
 */
 void MainWindow::slotHelpTips() {
-    int randomTip=rand() % (tips.count()); //Pick a tip.
+    int randomTip=rand() % (tips.size()); //Pick a tip.
     QMessageBox::about( this, tr("Tip Of The Day"), tips[randomTip]);
 }
 
@@ -14851,7 +14851,7 @@ void MainWindow::slotHelpSystemInfo() {
     Displays the following message!!
 */
 void MainWindow::slotHelpAbout(){
-    int randomCookie=rand()%fortuneCookie.count();
+    int randomCookie=rand()%fortuneCookie.size();
 QString BUILD="Thu Jun 08 10:33:16 PM EEST 2023";
     QMessageBox::about(
                 this, tr("About SocNetV"),
