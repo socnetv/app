@@ -1157,11 +1157,11 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
         break;
     }
     case IndexType::IC : {
-        centralityInformation();
+        centralityInformation(considerWeights, inverseWeights);
         break;
     }
     case IndexType::EVC : {
-        centralityEigenvector(considerWeights, dropIsolates);
+        centralityEigenvector(considerWeights, inverseWeights, dropIsolates);
         break;
     }
     case IndexType::DP : {
@@ -1169,7 +1169,7 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
         break;
     }
     case IndexType::PRP : {
-        prestigePageRank();
+        prestigePageRank(dropIsolates);
         break;
     }
     case IndexType::PP : {
@@ -1198,6 +1198,7 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
         if (thresholdStr.startsWith(">=") || thresholdStr.startsWith("=>")) {
             gtEqual = true;
             thresholdStr.remove(">=");
+            thresholdStr.remove("=>");
             qDebug()<< "thresholdStr starts with >=";
         }
         else if (thresholdStr.startsWith(">")) {
@@ -1208,6 +1209,7 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
         else if (thresholdStr.startsWith("<=") || thresholdStr.startsWith("=<")) {
             lsEqual = true;
             thresholdStr.remove("<=");
+            thresholdStr.remove("=<");
             qDebug()<< "thresholdStr starts with <=";
         }
         else if (thresholdStr.startsWith("<"))  {
@@ -1291,21 +1293,25 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
 
             if (gtThan) {
                 if ( score > threshold ) {
+                    qDebug() << "matching vertex"<< (*it)->number() << "score"<< score;
                     foundList << (*it)->number();
                 }
             }
             else if (gtEqual) {
                 if ( score >= threshold ) {
+                    qDebug() << "matching vertex"<< (*it)->number() << "score"<< score;
                     foundList << (*it)->number();
                 }
             }
             else if (lsThan){
                 if ( score < threshold ) {
+                    qDebug() << "matching vertex"<< (*it)->number() << "score"<< score;
                     foundList << (*it)->number();
                 }
             }
             else if (lsEqual){
                 if ( score <= threshold ) {
+                    qDebug() << "matching vertex"<< (*it)->number() << "score"<< score;
                     foundList << (*it)->number();
                 }
             }
@@ -6955,12 +6961,12 @@ void Graph::centralityEigenvector(const bool &considerWeights,
                                   const bool &inverseWeights,
                                   const bool &dropIsolates) {
 
-    qDebug() << "Graph::centralityEigenvector()";
-
     if ( calculatedEVC ) {
-        qDebug() << "Graph::centralityEigenvector() - Already computed. Return.";
+        qDebug() << "Graph not changed - EVC already computed. Return.";
         return;
     }
+
+    qDebug()<< "(Re)Computing Eigenvector centrality scores...";
 
     emit statusMessage ( (tr("Calculating EVC scores...")) );
 
@@ -6993,7 +6999,7 @@ void Graph::centralityEigenvector(const bool &considerWeights,
 
     if (useDegrees) {
 
-        qDebug() << "Graph::centralityEigenvector() - Using outDegree for initial EVC vector";
+        qDebug() << "Using outDegree for initial EVC vector";
 
         emit statusMessage(tr("Computing outDegrees. Please wait..."));
 
@@ -7010,7 +7016,7 @@ void Graph::centralityEigenvector(const bool &considerWeights,
 
     }
     else {
-        qDebug() << "Graph::centralityEigenvector() - Using unit initial EVC vector";
+        qDebug() << "Using unit initial EVC vector";
         for (int i = 0 ; i < N ; i++) {
             EVC[i] = 1;
         }
@@ -7082,8 +7088,9 @@ void Graph::centralityEigenvector(const bool &considerWeights,
  * @param dropIsolates
  */
 void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolates){
+
     if ( calculatedDC ) {
-        qDebug() << "Graph not changed - no need to compute degree centralities again. Returning...";
+        qDebug() << "Graph not changed - no need to recompute degree centralities. Returning.";
         return;
     }
     qreal DC=0, nom=0, denom=0,  SDC=0;
@@ -8446,12 +8453,13 @@ void Graph::writeCentralityCloseness( const QString fileName,
 void Graph::centralityClosenessIR(const bool considerWeights,
                                   const bool inverseWeights,
                                   const bool dropIsolates){
-    qDebug()<< "Graph::centralityClosenessIR()";
+
     if ( calculatedIRCC ) {
-        qDebug() << "Graph::centralityClosenessIR() - "
-                    " graph not changed - returning";
+        qDebug() << "Graph not changed - no need to recompute IRCC. Returning";
         return;
     }
+
+    qDebug()<< "(Re)Computing IRCC closeness centrality...";
 
     graphDistancesGeodesic(false,considerWeights,inverseWeights,dropIsolates);
 
@@ -8477,8 +8485,8 @@ void Graph::centralityClosenessIR(const bool considerWeights,
     emit statusMessage( pMsg );
     emit signalProgressBoxCreate(N,pMsg);
 
-    qDebug()<< "Graph::centralityClosenessIR() - dropIsolates"<< dropIsolates;
-    qDebug()<< "Graph::centralityClosenessIR() - computing scores for actors: " << N;
+    qDebug()<< "dropIsolates"<< dropIsolates;
+    qDebug()<< "computing scores for actors: " << N;
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
 
@@ -8505,22 +8513,22 @@ void Graph::centralityClosenessIR(const bool considerWeights,
                 sumD += dist;
                 Ji ++; // compute |Ji|
             }
-            qDebug()<< "Graph::centralityClosenessIR() - dist(" << (*it)->number()
+            qDebug()<< "dist(" << (*it)->number()
                     << ","<< (*jt)->number() << ") =" << dist << "sumD" << sumD << " Ji"<<Ji;
 
         }
 
-        qDebug()<< "Graph::centralityClosenessIR() - " << (*it)->number()
+        qDebug()<< "" << (*it)->number()
                 << " sumD"<< sumD
                 << "distanceSum" << (*it)->distanceSum();
 
         // sanity check for sumD=0 (=> node is disconnected)
         if (sumD != 0)  {
             averageD = sumD / Ji;
-            qDebug()<< "Graph::centralityClosenessIR() - averageD = sumD /  Ji"<<averageD ;
-            qDebug()<< "Graph::centralityClosenessIR() - Ji / (N-1)"<< Ji << "/" << N-1;
+            qDebug()<< "averageD = sumD /  Ji"<<averageD ;
+            qDebug()<< "Ji / (N-1)"<< Ji << "/" << N-1;
             IRCC =  ( Ji / (qreal) (N-1) ) / averageD;
-            qDebug()<< "Graph::centralityClosenessIR() - [ Ji / (N-1) ] / [ sumD / Ji]" << IRCC ;
+            qDebug()<< "[ Ji / (N-1) ] / [ sumD / Ji]" << IRCC ;
         }
 
         sumIRCC += IRCC;
@@ -9804,12 +9812,12 @@ void Graph::writeCentralityPower(const QString fileName,
  */
 void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates){
 
-    qDebug()<< "Computing Degree Prestige ...";
-
     if ( calculatedDP ) {
-        qDebug() << "Graph not changed - returning";
+        qDebug() << "Graph not changed - no need to recompute Degree Prestige scores. Returning";
         return;
     }
+
+    qDebug()<< "(Re)Computing Degree Prestige scores...";
 
     int N=vertices(dropIsolates);
     int v2=0, v1=0;
@@ -10264,12 +10272,12 @@ void Graph::writePrestigeDegree (const QString fileName,
 void Graph::prestigeProximity( const bool considerWeights,
                                const bool inverseWeights,
                                const bool dropIsolates){
-    qDebug()<< "Graph::prestigeProximity()";
     if ( calculatedPP ) {
-        qDebug() << "Graph::prestigeProximity() - "
-                    " graph not changed - returning";
+        qDebug() << "Graph not changed - no need to recompute proximity prestige. Returning";
         return;
     }
+
+    qDebug()<< "(Re)Computing Proximity prestige scores...";
 
     graphDistancesGeodesic(false,considerWeights, inverseWeights,inverseWeights);
 
@@ -10321,7 +10329,7 @@ void Graph::prestigeProximity( const bool considerWeights,
             }
         }
 
-        qDebug()<< "Graph::prestigeProximity() -  vertex"
+        qDebug()<< "vertex"
                 << (*it)->number()
                 << "actors in influence domain Ii" << Ii
                 << "actors in network"<< (V-1)
@@ -10371,7 +10379,7 @@ void Graph::prestigeProximity( const bool considerWeights,
 
     variancePP=variancePP/ V;
 
-    qDebug() << "Graph::prestigeProximity - sumPP = " << sumPP
+    qDebug() << "sumPP = " << sumPP
              << " meanPP = " << meanPP
              << " variancePP " << variancePP;
 
@@ -10617,12 +10625,12 @@ void Graph::writePrestigeProximity( const QString fileName,
  */
 void Graph::prestigePageRank(const bool &dropIsolates){
 
-    qDebug()<< "Graph::prestigePageRank()";
-
     if ( calculatedPRP ) {
-        qDebug() << " graph not changed - return ";
+        qDebug() << "Graph not changed - no need to recompute Pagerank scores. Return ";
         return;
     }
+
+    qDebug()<< "(Re)Computing PageRank prestige scores...";
 
     discretePRPs.clear();
     sumPRP=0;
@@ -10669,15 +10677,14 @@ void Graph::prestigePageRank(const bool &dropIsolates){
         // compute inEdgesCount() to warm up inEdgesConst for everyone
         inLinks = (*it)->inEdgesCount();
         outLinks = (*it)->outEdgesCount();
-        qDebug() << "Graph::prestigePageRank() - node "
+        qDebug() << "node "
                  << (*it)->number() << " PR = " << (*it)->PRP()
                  << " inLinks (set const): " << inLinks
                  << " outLinks (set const): " << outLinks;
     }
 
     if ( edgesEnabled() == 0 ) {
-        qDebug()<< "Graph::prestigePageRank() "
-                <<" - all vertices are isolated and of equal PR. Stop";
+        qDebug()<< "all vertices are isolated and of equal PR. Stop";
         return;
     }
 
@@ -10686,7 +10693,7 @@ void Graph::prestigePageRank(const bool &dropIsolates){
     // begin iteration - continue until we reach our desired delta
     while (maxDelta > delta) {
 
-        qDebug()<< "Graph::prestigePageRank() - ITERATION : " << iterations;
+        qDebug()<< "ITERATION : " << iterations;
 
         sumPRP=0;
         maxDelta = 0;
@@ -10700,18 +10707,18 @@ void Graph::prestigePageRank(const bool &dropIsolates){
             sumInLinksPR = 0;
             oldPRP = (*it)->PRP();
 
-            qDebug() << "Graph::prestigePageRank() - computing PR for node: "
+            qDebug() << "computing PR for node: "
                      << (*it)->number()  << " current PR " << oldPRP;
 
             if ( (*it)->isIsolated() ) {
                 // isolates have constant PR = 1/N
-                qDebug() << "Graph::prestigePageRank() - isolated - CONTINUE ";
+                qDebug() << "isolated - CONTINUE ";
                 continue;
             }
 
             jt=(*it)->m_inEdges.cbegin();
 
-            qDebug() << "Graph::prestigePageRank() - Iterate over inEdges of "
+            qDebug() << "Iterate over inEdges of "
                      << (*it)->number() ;
 
             while ( jt != (*it)->m_inEdges.cend() )
@@ -10729,7 +10736,7 @@ void Graph::prestigePageRank(const bool &dropIsolates){
 
                 referrer = jt.key();
 
-                qDebug() << "Graph::prestigePageRank() - Node " << (*it)->number()
+                qDebug() << "Node " << (*it)->number()
                          << " inLinked from neighbor " << referrer  << " vpos "
                          << vpos[referrer];
 
@@ -10742,7 +10749,7 @@ void Graph::prestigePageRank(const bool &dropIsolates){
 
                     transferedPRP = (outLinks != 0 ) ? ( PRP / outLinks ) : PRP;
 
-                    qDebug()<< "Graph::prestigePageRank() - neighbor " << referrer
+                    qDebug()<< "neighbor " << referrer
                             << " has PR = " << PRP
                             << " and outLinks = " << outLinks
                             << "  will transfer " << transferedPRP ;
@@ -10759,7 +10766,7 @@ void Graph::prestigePageRank(const bool &dropIsolates){
 
             sumPRP+=PRP;
 
-            qDebug() << "Graph::prestigePageRank() - Node "
+            qDebug() << "Node "
                      << (*it)->number()
                      << " new PR = " << PRP
                      << " old PR was = " << oldPRP
@@ -10770,7 +10777,7 @@ void Graph::prestigePageRank(const bool &dropIsolates){
 
             if ( maxDelta < fabs(PRP - oldPRP) ) {
                 maxDelta = fabs(PRP - oldPRP);
-                qDebug()<< "Graph::prestigePageRank() - Setting new maxDelta = "
+                qDebug()<< "Setting new maxDelta = "
                         <<  maxDelta;
             }
 
@@ -10778,7 +10785,7 @@ void Graph::prestigePageRank(const bool &dropIsolates){
 
         // normalize in every iteration
 
-        qDebug() << "Graph::prestigePageRank() - sumPRP for this iteration " <<
+        qDebug() << "sumPRP for this iteration " <<
                     sumPRP;
 
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
@@ -10824,7 +10831,7 @@ void Graph::prestigePageRank(const bool &dropIsolates){
         SPRP = PRP / maxPRP ;
         (*it)->setSPRP( SPRP );
 
-        qDebug()<< "Graph::prestigePageRank() vertex: " <<  (*it)->number()
+        qDebug()<< "vertex: " <<  (*it)->number()
                 << " PR = " << PRP << " standard PR = " << SPRP
                 << " t_sumPRP " << t_sumPRP;
 
@@ -16822,21 +16829,21 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
 
     else if (fileName == "Padgett_Florentine_Families.paj"){
         datasetDescription = tr("Padgett's Florentine_Families\n\n"
-                                "This famous data set includes 16 families who were fighting \n"
-                                "each other to gain political control of the city of Florence \n"
-                                "circa 1430. Among the 16 families, the Medicis and the Strozzis \n"
+                                "This famous data set includes 16 families who were fighting "
+                                "each other to gain political control of the city of Florence "
+                                "circa 1430. Among the 16 families, the Medicis and the Strozzis "
                                 "were the two most prominent with factions formed around them.\n\n"
 
-                                "The data set is actually a subset of the original data on social \n"
-                                "relations among 116 Renaissance Florentine Families collected \n"
-                                "by John Padgett. This subset was used by Breiger & Pattison (1986)\n"
+                                "The data set is actually a subset of the original data on social "
+                                "relations among 116 Renaissance Florentine Families collected "
+                                "by John Padgett. This subset was used by Breiger & Pattison (1986) "
                                 "in their paper about local role analysis.\n\n"
 
-                                "Padgett researched historical documents to code two relations: \n"
+                                "Padgett researched historical documents to code two relations: "
                                 "Business ties (loans, credits, partnerships)\n"
                                 "Marrital ties (marriage alliances).\n\n"
 
-                                "Breiger R. and Pattison P. (1986). Cumulated social roles: The \n"
+                                "Breiger R. and Pattison P. (1986). Cumulated social roles: The "
                                 "duality of persons and their algebras. Social Networks, 8, 215-256. "
                              "");
         outText<< "*Network Padgett's Florentine Families" << "\n" <<
@@ -21713,10 +21720,10 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
         centralityDegree(considerWeights, dropIsolates);
     }
     else if ( prominenceIndex == IndexType::IRCC ){
-        centralityClosenessIR();
+        centralityClosenessIR(considerWeights,inverseWeights, dropIsolates);
     }
     else if ( prominenceIndex == IndexType::IC ) {
-        centralityInformation();
+        centralityInformation(considerWeights,inverseWeights);
     }
     else if ( prominenceIndex == IndexType::EVC ){
         centralityEigenvector(considerWeights, dropIsolates);
@@ -21725,10 +21732,10 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
         prestigeDegree(considerWeights, dropIsolates);
     }
     else if ( prominenceIndex == IndexType::PRP ) {
-        prestigePageRank();
+        prestigePageRank(dropIsolates);
     }
     else if ( prominenceIndex == IndexType::PP ){
-        prestigeProximity(considerWeights, inverseWeights);
+        prestigeProximity(considerWeights, inverseWeights, dropIsolates);
     }
     else{
         graphDistancesGeodesic(true, considerWeights,
