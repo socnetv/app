@@ -724,8 +724,8 @@ void Graph::relationCurrentRename(const QString &newName) {
  * @return int
  */
 int Graph::relations(){
-    //qDebug () << " relations count " << m_relationsList.count();
-    return m_relationsList.count();
+    //qDebug () << " relations count " << m_relationsList.size();
+    return m_relationsList.size();
 }
 
 
@@ -734,7 +734,7 @@ int Graph::relations(){
  * @brief Clears relationships in this Graph
  */
 void Graph::relationsClear(){
-    int oldRelationsCounter = m_relationsList.count();
+    int oldRelationsCounter = m_relationsList.size();
     m_relationsList.clear();
     m_curRelation=0;
     qDebug () << "Cleared" << oldRelationsCounter << "relation(s)"
@@ -1054,7 +1054,7 @@ bool Graph::vertexFindByNumber (const QStringList &numList) {
     if ( !foundList.isEmpty() ) {
         searchResult = true;
         qDebug() << "One or more matching nodes found. Signaling to GW to highlight them...";
-        emit statusMessage ( tr("Found %1 matching nodes.").arg(foundList.count()) );
+        emit statusMessage ( tr("Found %1 matching nodes.").arg(foundList.size()) );
         emit signalNodesFound(foundList);
     }
     else {
@@ -1099,7 +1099,7 @@ bool Graph::vertexFindByLabel (const QStringList &labelList) {
     if ( !foundList.isEmpty() ) {
         searchResult = true;
         qDebug() << "One or more matchin nodes found. Signaling to GW to highlight them...";
-        emit statusMessage ( tr("Found %1 matching nodes.").arg(foundList.count()) );
+        emit statusMessage ( tr("Found %1 matching nodes.").arg(foundList.size()) );
         emit signalNodesFound(foundList);
     }
     else {
@@ -1323,7 +1323,7 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
     if ( !foundList.isEmpty() ) {
         searchResult = true;
         qDebug() << "One or more matching nodes found. Signaling to GW to highlight them...";
-        emit statusMessage ( tr("Found %1 matching nodes.").arg(foundList.count()) );
+        emit statusMessage ( tr("Found %1 matching nodes.").arg(foundList.size()) );
         emit signalNodesFound(foundList);
     }
     else {
@@ -3558,7 +3558,7 @@ qreal Graph::graphReciprocity(){
 
             qDebug() << pair
                      << "totalTies" << m_graphReciprocityTiesTotal
-                     << "totalDyads" << totalDyads.count();
+                     << "totalDyads" << totalDyads.size();
 
             if (  (reciprocalWeight = edgeExists(v2, v1) ) == weight) {
 
@@ -3576,7 +3576,7 @@ qreal Graph::graphReciprocity(){
 
                 qDebug() << pair << "reciprocal!"
                           << "reciprocatedTies" << m_graphReciprocityTiesReciprocated
-                          << "reciprocatedDyads" << reciprocatedDyads.count();
+                          << "reciprocatedDyads" << reciprocatedDyads.size();
 
             }
             else {
@@ -3592,8 +3592,8 @@ qreal Graph::graphReciprocity(){
 
     m_graphReciprocityArc = (qreal) m_graphReciprocityTiesReciprocated / (qreal) m_graphReciprocityTiesTotal;
 
-    m_graphReciprocityPairsReciprocated = reciprocatedDyads.count();
-    m_graphReciprocityPairsTotal = totalDyads.count();
+    m_graphReciprocityPairsReciprocated = reciprocatedDyads.size();
+    m_graphReciprocityPairsTotal = totalDyads.size();
 
     m_graphReciprocityDyad = (qreal) m_graphReciprocityPairsReciprocated / (qreal) m_graphReciprocityPairsTotal;
 
@@ -5287,7 +5287,7 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
         } // end for disconnected checking
 
         // Compute average path length...
-        if (m_vertexPairsNotConnected.count()==0) {
+        if (m_vertexPairsNotConnected.size()==0) {
 
             m_graphAverageDistance = m_graphSumDistance / ( N * ( N-1.0 ) );
             qDebug() <<"Graph::graphDistancesGeodesic() - Average distance:"
@@ -12896,7 +12896,7 @@ bool Graph::writeCliqueCensus(const QString &fileName,
             << "<span class=\"info\">"
             << tr("Maximal Cliques found: ")
             <<"</span>"
-            << m_cliques.count()
+            << m_cliques.size()
             << "</p>";
 
     outText << "<table class=\"stripes\">";
@@ -13137,14 +13137,14 @@ bool Graph::writeCliqueCensus(const QString &fileName,
  */
 void Graph:: graphCliqueAdd(const QList<int> &clique){
 
-    m_cliques.insert(clique.count(), clique);
+    m_cliques.insert(clique.size(), clique);
 
     qDebug() << "Graph::graphCliqueAdd() - Added clique:"
              << clique
              << "of size"
-             << clique.count()
+             << clique.size()
              << "Total cliques:"
-             << m_cliques.count();
+             << m_cliques.size();
     int index1=0, index2=0, cliqueCount=0;
     foreach (int actor1, clique) {
         index1 = vpos[actor1];
@@ -13276,13 +13276,13 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X) {
         v = *i;
 
         qDebug() << "Graph::graphCliques() - CURRENT v:" << v
-                 << " P:" << P << " P.count=" <<P.count()
+                 << " P:" << P << " P.count=" <<P.size()
                  << " R:" << R
                  << " X:" << X ;
 
         NBS = neighboursHash[ v ];
 
-        if (NBS.count() == 1 && NBS.contains(v)) {
+        if (NBS.size() == 1 && NBS.contains(v)) {
 
             qDebug() << "Graph::graphCliques() - v:" << v
                      << "has only a tie to itself";
@@ -13332,9 +13332,9 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X) {
                  << csRecDepth
                  << " Moved v:"<<  v
                  <<" from P to X to be excluded in the future"
-                 << " P=" << P << " P.count:" <<P.count()
-                 << " R=" << R << " R.count:" <<R.count()
-                 << " X=" << X << " X.count:" <<X.count()
+                 << " P=" << P << " P.count:" <<P.size()
+                 << " R=" << R << " R.count:" <<R.size()
+                 << " X=" << X << " X.count:" <<X.size()
                  << " Continuing with next v in P";
         //++i;
 
@@ -13379,7 +13379,7 @@ int Graph::graphCliquesContaining(const int &actor, const int &size){
 int Graph::graphCliquesOfSize(const int &size){
     qDebug() << "Graph::graphCliquesOfSize()";
 
-    return m_cliques.values(size).count();
+    return m_cliques.values(size).size();
 
 }
 
@@ -15039,16 +15039,16 @@ qreal Graph::clusteringCoefficientLocal(const int &v1){
         ++it1;
     }
 
-    nom=neighborhoodEdges.count();
+    nom=neighborhoodEdges.size();
 
     qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
-            << "neighborhoodEdges.count() =" <<  nom;
+            << "neighborhoodEdges.size() =" <<  nom;
 
     if ( nom == 0)
         return 0;	//stop if we're at a leaf.
 
     if ( isSymmetric ){
-        k=reciprocalEdges.count();  //k_{i} is the number of neighbours of a vertex
+        k=reciprocalEdges.size();  //k_{i} is the number of neighbours of a vertex
         denom =	k * (k -1.0) / 2.0;
 
         qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
@@ -15059,7 +15059,7 @@ qreal Graph::clusteringCoefficientLocal(const int &v1){
     else {
         // fixme : normally we should have a special method
         // to compute the number of vertices k_i = |N_i|, in the neighborhood N_i
-        k=reciprocalEdges.count();
+        k=reciprocalEdges.size();
         denom = k * (k -1.0);
 
         qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") - "
@@ -15678,7 +15678,7 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW){
             //  Do not change status if current status is > MajorChanges
             m_graphModStatus = graphNewStatus;
         }
-        qDebug()<<"minor changes but needs saving...";
+//        qDebug()<<"minor changes but needs saving...";
         emit signalGraphSavedStatus(false);
         return;
     }
@@ -21388,7 +21388,7 @@ void Graph::writeMatrixAdjacencyInvert(const QString &fn,
         file.close();
         return;
     }
-    int isolatedVertices = verticesListIsolated().count();
+    int isolatedVertices = verticesListIsolated().size();
     if (  isolatedVertices  > 0  )
         outText << "\n"<< "Dropped "<< isolatedVertices
                 << " isolated vertices"
