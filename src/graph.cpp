@@ -2409,18 +2409,20 @@ MyEdge Graph::edgeClicked() {
  */
 qreal Graph::edgeExists (const int &v1, const int &v2, const bool &checkReciprocal) {
 
-    edgeWeightTemp = 0;
     edgeWeightTemp = m_graph[ vpos[v1] ]->hasEdgeTo(v2);
-    qDebug() << "Checking if edge exists:" << v1 << "->" << v2 << "=" << edgeWeightTemp  ;
-    if (edgeWeightTemp!=0 && checkReciprocal) {
+//    qDebug() << "Checking if edge exists:" << v1 << "->" << v2 << "=" << edgeWeightTemp  ;
+
+    if (!checkReciprocal){
+        return edgeWeightTemp;
+    }
+    else if (edgeWeightTemp!=0) {
         edgeReverseWeightTemp = m_graph[ vpos[v2] ]->hasEdgeTo(v1);
-        qDebug() << "Checking if reverse edge exists: " << v2 << "->" << v1 << "=" << edgeWeightTemp  ;
+//        qDebug() << "Checking if reverse edge exists: " << v2 << "->" << v1 << "=" << edgeWeightTemp  ;
         if  ( edgeWeightTemp == edgeReverseWeightTemp  ){
             return edgeWeightTemp;
         }
     }
-    return  edgeWeightTemp;
-
+    return  0;
 }
 
 
@@ -7117,18 +7119,13 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
 
         DC=0;
 
-        if ( (*it)->isIsolated() ) {
+        if ( ! (*it)->isEnabled() || ( dropIsolates && (*it)->isIsolated()) ) {
             continue;
         }
-        if ( ! (*it)->isEnabled() ) {
-            continue;
-        }
+
         for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
 
-            if ( (*it1)->isIsolated() ) {
-                continue;
-            }
-            if ( ! (*it1)->isEnabled() ) {
+            if ( ! (*it1)->isEnabled() || ( dropIsolates && (*it1)->isIsolated()) ) {
                 continue;
             }
 
