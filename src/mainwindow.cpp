@@ -9104,7 +9104,7 @@ void MainWindow::slotNetworkChanged(const bool &directed,
                                     const int &edges,
                                     const qreal &density, const bool &needsSaving){
 
-    qCritical()<<"Got signal that network changed. Updating mainwindow UI (LCDs, save icon, etc). Params: "
+    qDebug()<<"Got signal that network changed. Updating mainwindow UI (LCDs, save icon, etc). Params: "
            << "directed" << directed
            << "vertices" << vertices
            << "edges" << edges
@@ -14852,7 +14852,7 @@ void MainWindow::slotHelpSystemInfo() {
 */
 void MainWindow::slotHelpAbout(){
     int randomCookie=rand()%fortuneCookie.count();
-QString BUILD="Fri Apr 21 10:33:16 PM EEST 2023";
+QString BUILD="Thu Jun 08 10:33:16 PM EEST 2023";
     QMessageBox::about(
                 this, tr("About SocNetV"),
                 tr("<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)") +

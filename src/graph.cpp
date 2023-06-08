@@ -580,7 +580,7 @@ void Graph::relationSet(int relNum, const bool &updateUI){
     // Check if we need to update the UI
     //
     if (updateUI) {
-        qCritical() << "++ Signaling to update UI and GW and setting graph mod status to edge count changed.";
+        qDebug() << "++ Signaling to update UI and GW and setting graph mod status to edge count changed.";
         // Notify MW to change combo box relation name
         emit signalRelationChangedToMW(m_curRelation);
         //notify GW to disable/enable the on screen edges.
@@ -2455,11 +2455,10 @@ int Graph::edgesEnabled() {
     int enabledEdges = 0;
     if ( calculatedEdges ) {
         enabledEdges = (( isUndirected() ) ? m_totalEdges / 2 : m_totalEdges);
-        qDebug()<< "Graph unchanged. Returning enabled edges count:" <<  enabledEdges;
+        qDebug()<< "Graph unchanged. Returning current enabled edges count:" <<  enabledEdges;
         return enabledEdges;
     }
     // Compute the edge count from scratch
-    qCritical() << "recalculating edges...";
     m_totalEdges = 0;
     VList::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -2467,7 +2466,7 @@ int Graph::edgesEnabled() {
     }
     calculatedEdges = true;
     enabledEdges = (( isUndirected() ) ? m_totalEdges / 2 : m_totalEdges);
-    qCritical()<< "Computed enabled edges new count:" <<  enabledEdges;
+    qDebug()<< "Computed enabled edges new count:" <<  enabledEdges;
     return enabledEdges;
 }
 
@@ -3154,12 +3153,12 @@ int Graph::getSelectedEdgesCount() const {
 qreal Graph::graphDensity() {
 
     if ( calculatedGraphDensity ) {
-        qCritical()<< "Graph density already computed and graph not modified. Returning last value:"
+        qDebug()<< "Graph not changed and density already computed. Returning last value:"
                 << m_graphDensity;
         return m_graphDensity;
     }
 
-    qCritical()<< "Computing graph density...";
+    qDebug()<< "Computing graph density...";
     int V=vertices();
     if (V!=0 && V!=1) {
         int enabledEdges = edgesEnabled();
@@ -15585,7 +15584,7 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW){
     if ( m_graphModStatus == ModStatus::NewNet && isEmpty()) {
         // New network, no vertices. Don't change status.
 
-        qCritical()<<"This is a empty new network. Will not change status.";
+        qDebug()<<"This is a empty new network. Will not change status.";
 
         emit signalGraphModified(isDirected(),
                                  0,
@@ -15598,7 +15597,7 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW){
 
     else if ( graphNewStatus == ModStatus::NewNet ) {
 
-        qCritical()<<"This is a new network. Setting graph as new...";
+        qDebug()<<"This is a new network. Setting graph as new...";
 
         m_graphModStatus=graphNewStatus;
 
@@ -15614,7 +15613,7 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW){
 
         // this is called after loading or saving a file
 
-        qCritical()<<"Setting graph as saved/unchanged...";
+        qDebug()<<"Setting graph as saved/unchanged...";
 
         m_graphModStatus=graphNewStatus;
 
@@ -15628,7 +15627,7 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW){
         // This is called from any method that alters the graph structure,
         // thus all prior computations are invalidated
 
-        qCritical()<<"Major changes, invalidating computations, setting graph as changed..."
+        qDebug()<<"Major changes, invalidating computations, setting graph as changed..."
                     << "m_totalVertices:" << m_totalVertices
                     << "signalMW: " << signalMW;
 
@@ -15659,7 +15658,7 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW){
 
         if (signalMW) {
 
-            qCritical() << "signaling to MW that the graph is modified...";
+            qDebug() << "signaling to MW that the graph is modified...";
 
             emit signalGraphModified(isDirected(),
                                      m_totalVertices,
@@ -15679,7 +15678,7 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW){
             //  Do not change status if current status is > MajorChanges
             m_graphModStatus = graphNewStatus;
         }
-        qCritical()<<"minor changes but needs saving...";
+        qDebug()<<"minor changes but needs saving...";
         emit signalGraphSavedStatus(false);
         return;
     }
@@ -15919,7 +15918,7 @@ void Graph::graphFileLoaded (const int &fileType,
 
     }
 
-    qCritical() << "Loaded file OK. "
+    qDebug() << "Loaded file OK. "
              << "type:" << fileType
              << "filename:" << fileName
              << "nodes:" << totalNodes
@@ -15945,7 +15944,7 @@ void Graph::graphFileLoaded (const int &fileType,
 
     setModStatus(ModStatus::SavedUnchanged);
 
-    qCritical() << "Signaling to MW...";
+    qDebug() << "Signaling to MW...";
 
     emit signalGraphLoaded (fileType,
                             fileName,
