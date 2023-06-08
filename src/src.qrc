@@ -135,5 +135,6 @@
         <file>images/socnetv_logo_trans_128px.svg</file>
         <file>images/socnetv_logo_white_bg_128px.svg</file>
         <file>images/socnetv_logo_trans_64px.svg</file>
+        <file>images/file_download_48px_notsaved.svg</file>
     </qresource>
 </RCC>

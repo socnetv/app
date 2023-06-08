@@ -443,10 +443,10 @@ void Graph::canvasSizeSet(const int w, const int h){
     }
     canvasWidth = w;
     canvasHeight= h;
-    emit statusMessage(tr("Canvas size: (%1, %2)px")
-                       .arg(QString::number(canvasWidth))
-                       .arg(QString::number(canvasHeight))
-                       );
+//    emit statusMessage(tr("Canvas size: (%1, %2)px")
+//                       .arg(QString::number(canvasWidth))
+//                       .arg(QString::number(canvasHeight))
+//                       );
 
     setModStatus(ModStatus::VertexPositions,false);
     qDebug() << "Finished resizing.";
@@ -15569,32 +15569,37 @@ bool Graph::isFileFormatExportSupported(const int &fileFormat) const {
 void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW){
 
     if ( m_graphModStatus == ModStatus::NewNet && isEmpty()) {
-        qDebug()<<"This is a empty new network. Will not change status.";
+        qCritical()<<"This is a empty new network. Will not change status.";
        // No vertex exists, this is a new network. Don't change status.
-        emit signalGraphSavedStatus(true);
+
+        emit signalGraphModified(isDirected(),
+                                 m_totalVertices,
+                                 edgesEnabled(),
+                                 graphDensity(),
+                                 false);
+
         return;
     }
 
     else if ( graphNewStatus == ModStatus::NewNet ) {
 
-        qDebug()<<"This is a new network. Setting graph as new...";
+        qCritical()<<"This is a new network. Setting graph as new...";
 
         m_graphModStatus=graphNewStatus;
 
         emit signalGraphModified(isDirected(),
                                  m_totalVertices,
                                  edgesEnabled(),
-                                 graphDensity());
-
-        emit signalGraphSavedStatus(true);
+                                 graphDensity(),
+                                 false);
 
         return;
     }
-    else if ( graphNewStatus == ModStatus::Unchanged ) {
+    else if ( graphNewStatus == ModStatus::SavedUnchanged ) {
 
-        // this is called after loading a file or saving
+        // this is called after loading or saving a file
 
-        qDebug()<<"Setting graph as unchanged...";
+        qCritical()<<"Setting graph as saved/unchanged...";
 
         m_graphModStatus=graphNewStatus;
 
@@ -15608,7 +15613,7 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW){
         // This is called from any method that alters V or E in G:
         // thus all prior computations are invalid
 
-        qDebug()<<"Major changes, invalidating computations, setting graph as changed..."
+        qCritical()<<"Major changes, invalidating computations, setting graph as changed..."
                     << "m_totalVertices:" << m_totalVertices
                     << "signalMW: " << signalMW;
 
@@ -15662,7 +15667,7 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW){
             //  Do not change status if current status is > MajorChanges
             m_graphModStatus = graphNewStatus;
         }
-        qDebug()<<"minor changes but needs saving...";
+        qCritical()<<"minor changes but needs saving...";
         emit signalGraphSavedStatus(false);
         return;
     }
@@ -15713,14 +15718,14 @@ bool Graph::isLoaded() const {
  */
 bool Graph::isSaved() const {
     if ( m_graphModStatus == ModStatus::NewNet ) {
-        qDebug() << "Graph::isSaved() - isSaved: true (new net)";
+        qDebug() << "isSaved: true (new net)";
         return true;
     }
-    else if ( m_graphModStatus == ModStatus::Unchanged  ) {
-        qDebug() << "Graph::isSaved() - isSaved: true";
+    else if ( m_graphModStatus == ModStatus::SavedUnchanged  ) {
+        qDebug() << "isSaved: true";
         return true;
     }
-    qDebug() << "Graph::isSaved() - isSaved: false";
+    qDebug() << "isSaved: false";
     return false;
 }
 
@@ -15921,7 +15926,7 @@ void Graph::graphFileLoaded (const int &fileType,
 
     m_fileFormat = fileType;
 
-    setModStatus(ModStatus::Unchanged);
+    setModStatus(ModStatus::SavedUnchanged);
 
     qCritical() << "Signaling to MW...";
 
@@ -15978,7 +15983,7 @@ void Graph::saveToFile(const QString &fileName,
     }
     };
     if (saved) {
-        setModStatus(ModStatus::Unchanged);
+        setModStatus(ModStatus::SavedUnchanged);
     }
     else {
         emit signalGraphSavedStatus(FileType::UNRECOGNIZED);

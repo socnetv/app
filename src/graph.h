@@ -383,7 +383,7 @@ public:
 
     enum ModStatus {
         NewNet          = -1,
-        Unchanged       = 0,
+        SavedUnchanged  = 0,
         MinorOptions    = 1,
         VertexMetadata  = 2,
         EdgeMetadata    = 3,

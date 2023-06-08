@@ -235,6 +235,7 @@ MainWindow::MainWindow(const QString & m_fileName, const bool &forceProgress, co
     }
 
     QString welcomeMsg = tr("Welcome to %1, version %2").arg(qApp->applicationName(), VERSION);
+
     statusMessage( welcomeMsg );
 
     qDebug() << "@@@@ MW Constructor finished, on thread:" << thread();
@@ -410,18 +411,19 @@ void MainWindow::terminateThreads(const QString &reason) {
  */
 void MainWindow::resizeEvent( QResizeEvent *e ) {
 
-    int w0=e->oldSize().width();
-    int h0=e->oldSize().height();
-    int w=width();
-    int h=height();
+    Q_UNUSED(e);
+//    int w0=e->oldSize().width();
+//    int h0=e->oldSize().height();
+//    int w=width();
+//    int h=height();
 
-    qDebug () << "MW resized:" << w0 << "x" << h0
-              << "-->" << w << "x" << h;
+//    qDebug () << "MW resized:" << w0 << "x" << h0
+//              << "-->" << w << "x" << h;
 
-    statusMessage(
-                 tr("Window resized to (%1, %2)px.")
-                .arg(w).arg(h)
-                );
+//    statusMessage(
+//                 tr("Window resized to (%1, %2)px.")
+//                .arg(w).arg(h)
+//                );
 
 }
 
@@ -980,17 +982,18 @@ void MainWindow::initView() {
     graphicsWidget->setFocusPolicy(Qt::StrongFocus);
     graphicsWidget->setFocus();
 
-    graphicsWidget->setWhatsThis(tr("The canvas of SocNetV. \n\n"
-                                    "Inside this area you create and edit networks, "
-                                    "load networks from files and visualize them \n"
-                                    "according to selected metrics. \n\n"
-                                    " - To create a new node, double-click anywhere (Ctrl+.)\n"
-                                    " - To add an arc between two nodes, double-click"
-                                    " on the first node then double-click on the second (Ctrl+/)\n"
-                                    " - To change network appearance, right click on empty space\n"
-                                    " - To change/edit the properties of a node, right-click on it\n"
-                                    " - To change/edit the properties of an edge, right-click on it."
-                                    ""));
+    graphicsWidget->setWhatsThis(tr("<p><b>The canvas of SocNetV</b></p>"
+                                    "<p>Inside this area you create and edit networks, "
+                                    "load networks from files and visualize them "
+                                    "according to the selected metrics. </p>"
+                                    "<p>To create a new node, <em>double-click</em> anywhere.</p>"
+                                    "<p>To add an edge between two nodes, <em>double-click</em>"
+                                    " on the first node (source) then double-click on the second (target) .</p>"
+                                    "<p>To move around the canvas, use the keyboard arrows.</p>"
+                                    "<p>To change network appearance, <em>right click on empty space</em>. </p>"
+                                    "<p>To edit the properties of a node, <em>right-click</em> on it. </p>"
+                                    "<p>To edit the properties of an edge, <em>right-click</em> on it.</p>")
+                                 );
 
     qDebug() << "Finished initialization of graphics widget. Dimensions:"
              << graphicsWidget->width() << "x" << graphicsWidget->height();
@@ -5655,7 +5658,7 @@ void MainWindow::initApp(){
     initTextCodecName= "UTF-8";
 
     networkSaveAct->setIcon(QIcon(":/images/file_download_48px.svg"));
-    networkSaveAct->setEnabled(true);
+    networkSaveAct->setEnabled(false);
 
     /** Clear previous network data and reset user-selected settings */
     qDebug()<<"### Clearing current graph. Please wait...";
@@ -6942,17 +6945,19 @@ void MainWindow::slotNetworkSavedStatus (const int &status) {
 
     if (status < 0) {
         statusMessage( tr("Error! Could not save this file: %1").arg (fileNameNoPath));
+        networkSaveAct->setIcon(QIcon(":/images/file_download_48px_notsaved.svg"));
         networkSaveAct->setEnabled(true);
 
     }
     else if (status == 0) {
         // Network needs saving
         // UX: Maybe change it to a more prominent color for the user to see?
-        // networkSaveAct->setIcon(QIcon(":/images/file_download_48px.svg"));
+        networkSaveAct->setIcon(QIcon(":/images/file_download_48px_notsaved.svg"));
         networkSaveAct->setEnabled(true);
     }
     else {
         // Network is saved.
+        networkSaveAct->setIcon(QIcon(":/images/file_download_48px.svg"));
         networkSaveAct->setEnabled(false);
         setWindowTitle( fileNameNoPath );
         statusMessage( tr("Network saved under filename: %1").arg (fileNameNoPath));
@@ -9089,14 +9094,13 @@ void MainWindow::slotNetworkManagerSslErrors(QNetworkReply *reply, const QList<Q
 
 
 /**
- * @brief Activates the networkSave icon and refreshes any LCD values.
- *
- * Called when the network has been modified.
+ * @brief Refreshes LCD values and toggles the networkSave icon, when the network has been modified.
  *
  * @param directed
  * @param vertices
  * @param edges
  * @param density
+ * @param needsSaving
  */
 void MainWindow::slotNetworkChanged(const bool &directed,
                                     const int &vertices,
@@ -9112,8 +9116,12 @@ void MainWindow::slotNetworkChanged(const bool &directed,
 
 
     if ( needsSaving ) {
-        // networkSaveAct->setIcon(QIcon(":/images/file_download_48px.svg"));
+        networkSaveAct->setIcon(QIcon(":/images/file_download_48px_notsaved.svg"));
         networkSaveAct->setEnabled(true);
+    }
+    else {
+        networkSaveAct->setIcon(QIcon(":/images/file_download_48px.svg"));
+        networkSaveAct->setEnabled(false);
     }
 
     rightPanelNodesLCD->setText (QString::number(vertices));
