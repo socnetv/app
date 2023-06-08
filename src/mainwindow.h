@@ -185,7 +185,8 @@ public slots:
 
     void slotNetworkChanged(const bool &directed,
                             const int &vertices, const int &edges,
-                            const qreal &density);
+                            const qreal &density,
+                            const bool &needsSaving=true);
     void slotNetworkSave(const int &fileFormat=-1);
     void slotNetworkSaveAs();
     void slotNetworkClose();
@@ -301,7 +302,7 @@ public slots:
     void slotEditNodeAdd();
 
     void slotEditNodeFindDialog();
-    void slotEditNodeFind(const QStringList &list,
+    void slotEditNodeFind(const QStringList &nodeList,
                           const QString &searchType,
                           const QString &indexStr=QString());
     void slotEditNodeRemove();

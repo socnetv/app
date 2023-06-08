@@ -9098,21 +9098,23 @@ void MainWindow::slotNetworkManagerSslErrors(QNetworkReply *reply, const QList<Q
  * @param edges
  * @param density
  */
-void MainWindow::slotNetworkChanged(
-                                    const bool &directed,
+void MainWindow::slotNetworkChanged(const bool &directed,
                                     const int &vertices,
                                     const int &edges,
-                                    const qreal &density){
+                                    const qreal &density, const bool &needsSaving){
 
     qCritical()<<"Got signal that network changed. Updating mainwindow UI (LCDs, save icon, etc). Params: "
            << "directed" << directed
            << "vertices" << vertices
            << "edges" << edges
-           << "density"<< density;
+           << "density"<< density
+           << "needsSaving" << needsSaving;
 
 
-    // networkSaveAct->setIcon(QIcon(":/images/file_download_48px.svg"));
-    networkSaveAct->setEnabled(true);
+    if ( needsSaving ) {
+        // networkSaveAct->setIcon(QIcon(":/images/file_download_48px.svg"));
+        networkSaveAct->setEnabled(true);
+    }
 
     rightPanelNodesLCD->setText (QString::number(vertices));
     if ( !directed ) {
@@ -9323,7 +9325,7 @@ void MainWindow::slotEditNodeFindDialog(){
 
     m_nodeFindDialog->exec();
 
-    statusMessage( tr("Node properties dialog opened. Ready. ") );
+    statusMessage( tr("Node find dialog opened. Enter your choices. ") );
 
     return;
 
@@ -9338,28 +9340,32 @@ void MainWindow::slotEditNodeFindDialog(){
  * @param searchType
  * @param indexStr
  */
-void MainWindow::slotEditNodeFind(const QStringList &list,
+void MainWindow::slotEditNodeFind(const QStringList &nodeList,
                                   const QString &searchType,
                                   const QString &indexStr)
 {
 
-    qDebug() << "Request to find nodes:" << list
+    qDebug() << "Request to find nodes:" << nodeList
              << "search type:"<< searchType
              << "indexStr"<<indexStr;
 
     int indexType = 0;
 
     if (searchType == "numbers"){
-        activeGraph->vertexFindByNumber(list);
+        activeGraph->vertexFindByNumber(nodeList);
     }
     else if (searchType == "labels"){
-        activeGraph->vertexFindByLabel(list);
+        activeGraph->vertexFindByLabel(nodeList);
     }
     else if (searchType == "score"){
 
         indexType = activeGraph->getProminenceIndexByName(indexStr);
 
-        activeGraph->vertexFindByIndexScore(indexType, list);
+        activeGraph->vertexFindByIndexScore(indexType,
+                                            nodeList,
+                                            optionsEdgeWeightConsiderAct->isChecked(),
+                                            inverseWeights,
+                                            editFilterNodesIsolatesAct->isChecked() );
 
     }
 
@@ -9447,7 +9453,7 @@ void MainWindow::slotEditNodeRemove() {
  */
 void MainWindow::slotEditNodePropertiesDialog() {
 
-    qDebug() << "MW::slotEditNodePropertiesDialog()";
+    qDebug() << "Request to open the node properties dialog...";
 
     if ( !activeNodes() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -9468,7 +9474,7 @@ void MainWindow::slotEditNodePropertiesDialog() {
         min = activeGraph->vertexNumberMin();
         max = activeGraph->vertexNumberMax();
 
-        qDebug() << "MW::slotEditNodePropertiesDialog() - no node selected"
+        qDebug() << "no node selected"
                  << "min node number " << min
                  << "max node number " << max
                  << "opening inputdialog";
@@ -9497,12 +9503,11 @@ void MainWindow::slotEditNodePropertiesDialog() {
 
     }
     else   {
-        qDebug() << "MW::slotEditNodePropertiesDialog() - "
+        qDebug() << ""
                     "selectedNodesCount" << selectedNodesCount;
 
         foreach (nodeNumber, activeGraph->getSelectedVertices() ) {
-            qDebug() << "MW::slotEditNodePropertiesDialog() "
-                        "reading properties of selected node"
+            qDebug() << "reading properties of selected node"
                      << nodeNumber;
             if ( selectedNodesCount > 1 ) {
                 color = activeGraph->vertexColor( nodeNumber );
@@ -9522,7 +9527,7 @@ void MainWindow::slotEditNodePropertiesDialog() {
 
     //@todo add some grouping function here?
 
-    qDebug() << "MW::slotEditNodePropertiesDialog() - opening DialogNodeEdit."
+    qDebug() << "opening DialogNodeEdit."
              << "label"<<label
              << "size"<<size
              << "color"<<color
