@@ -1144,9 +1144,9 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
             if ( (pos = str.indexOf(":")) != -1 ) {
                 relation = str.right(str.size() - pos -1) ;
                 relation = relation.simplified();
-                qDebug() << "adding relation"<< relation
-                         << " to relationsList and signaling to add new relation";
                 relationsList << relation;
+                qDebug() << "added new relation"<< relation
+                         << "to relationsList - signaling to add new relation";
                 emit signalAddNewRelation( relation );
                 lastRelationIndex = relationsList.count() - 1;
                 if ( lastRelationIndex > 0) {
@@ -1174,9 +1174,10 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
             if ( (pos = str.indexOf(":")) != -1 ) {
                 relation = str.right(str.size() - pos -1) ;
                 relation = relation.simplified();
-                qDebug() << "adding new relation "<< relation
-                         << " to relationsList and signaling to create new relation";
                 relationsList << relation;
+                qDebug() << "added new relation"<< relation
+                         << "to relationsList - signaling to add new relation";
+                emit signalAddNewRelation( relation );
                 lastRelationIndex = relationsList.count()-1;
                 if ( lastRelationIndex > 0) {
                     qDebug () << "last relation index:"
@@ -2188,7 +2189,6 @@ void Parser::readGraphMLElementGraph(QXmlStreamReader &xml){
     relationsList << networkName;
     qDebug()<< "Signaling to add new relation:" <<networkName;
     emit signalAddNewRelation( networkName);
-
     int lastRelationIndex = relationsList.count() - 1;
     if (lastRelationIndex > 0) {
         totalNodes=0;
