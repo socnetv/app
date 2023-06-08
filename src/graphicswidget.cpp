@@ -962,7 +962,7 @@ GraphicsNode* GraphicsWidget::hasNode( QString text ){
  * @param list
  */
 void GraphicsWidget::setSelectedNodes(QList<int> list){
-    qDebug() << "Marking" << list.count() << "nodes as selected";
+    qDebug() << "Marking" << list.size() << "nodes as selected";
     foreach ( int nodeNum, list) {
         if  ( nodeHash.contains (nodeNum) ) {
             qDebug() << "Selecting node"<< nodeNum;
@@ -1167,7 +1167,7 @@ void GraphicsWidget::setEdgeWeightNumbersVisibility (const bool &toggle){
  */
 void GraphicsWidget::setEdgeLabelsVisibility (const bool &toggle){
     qDebug()<< "GW::setEdgeLabelsVisibility() " << toggle
-               << "for edgesHash.count: " << edgesHash.count();
+               << "for edgesHash.count: " << edgesHash.size();
     foreach ( GraphicsEdge *m_edge, edgesHash) {
         m_edge->setLabelVisibility(toggle);
     }
@@ -1320,7 +1320,7 @@ void GraphicsWidget::selectAll(){
     path.addRect(0, 0, width(),height());
     scene()->setSelectionArea(path);
     emit userClickedNode(0, QPointF(0,0));
-    qDebug() << "Selected scene items now: " << selectedItems().count();
+    qDebug() << "Selected scene items now: " << selectedItems().size();
 }
 
 
@@ -1375,7 +1375,7 @@ QList<int> GraphicsWidget::selectedNodes() {
             m_selectedNodes.append(node->nodeNumber());
         }
     }
-    qDebug() <<"Selected nodes count:" << m_selectedNodes.count();
+    qDebug() <<"Selected nodes count:" << m_selectedNodes.size();
     return m_selectedNodes;
 }
 
@@ -1394,7 +1394,7 @@ QList<SelectedEdge> GraphicsWidget::selectedEdges() {
             m_selectedEdges << selEdge;
         }
     }
-    qDebug() <<"Selected edges count:" << m_selectedEdges.count();
+    qDebug() <<"Selected edges count:" << m_selectedEdges.size();
     return m_selectedEdges;
 }
 
