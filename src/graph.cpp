@@ -345,8 +345,11 @@ void Graph::clear(const QString &reason) {
 
     //clear relations
     relationsClear();
-    // add a default relation
-    relationAdd(tr(("unnamed")));
+
+    // add a default relation, only if we are not closing
+    if ( reason != "exit") {
+        relationAdd(tr(("unnamed")));
+    }
 
     m_fileFormat=FileType::NOT_SAVED;
     m_graphName="";
@@ -410,6 +413,7 @@ void Graph::clear(const QString &reason) {
     //    }
 
     if ( reason != "exit") {
+        qDebug()<< "Finished clearing graph data. Changing graph modification status to" << m_graphModStatus;
         setModStatus(m_graphModStatus,true);
     }
     qDebug()<< "Finished clearing graph data and structures.";
@@ -420,18 +424,18 @@ void Graph::clear(const QString &reason) {
 /**
  * @brief Sets the size of the canvas
  *
- * Called when the MW is resized to update node positions and canvasWidth and canvasHeight
+ * Called when the MW is resized to update canvasWidth/canvasHeight, and node positions
  *
  * @param w
  * @param h
  */
-void Graph::canvasSizeSet(const int w, const int h){
+void Graph::canvasSizeSet(const int &width, const int &height){
 
-    qreal fX =  (static_cast <qreal> (w)) / canvasWidth;
-    qreal fY =  (static_cast <qreal> (h)) / canvasHeight;
+    qreal fX =  (static_cast <qreal> (width)) / canvasWidth;
+    qreal fY =  (static_cast <qreal> (height)) / canvasHeight;
     qreal newX, newY;
 
-    qDebug() << "Canvas was resized: " << w << "x" << h
+    qDebug() << "Canvas was resized: " << width << "x" << height
              << "Adjusting node positions, if any. Please wait...";
     VList::const_iterator it;
     for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -441,8 +445,8 @@ void Graph::canvasSizeSet(const int w, const int h){
         (*it)->setY( newY );
         emit setNodePos((*it)->number(), newX , newY);
     }
-    canvasWidth = w;
-    canvasHeight= h;
+    canvasWidth = width;
+    canvasHeight= height;
 //    emit statusMessage(tr("Canvas size: (%1, %2)px")
 //                       .arg(QString::number(canvasWidth))
 //                       .arg(QString::number(canvasHeight))
@@ -1050,12 +1054,12 @@ bool Graph::vertexFindByNumber (const QStringList &numList) {
     if ( !foundList.isEmpty() ) {
         searchResult = true;
         qDebug() << "One or more matching nodes found. Signaling to GW to highlight them...";
-        emit statusMessage ( tr("Found %1 matching nodes. Ready.").arg(foundList.count()) );
+        emit statusMessage ( tr("Found %1 matching nodes.").arg(foundList.count()) );
         emit signalNodesFound(foundList);
     }
     else {
         qDebug() << "No matching nodes found. Return.";
-        emit statusMessage ( tr("Could not find any nodes matching your choices. Ready.") );
+        emit statusMessage ( tr("Could not find any nodes matching your choices.") );
     }
 
     return searchResult;
@@ -1095,12 +1099,12 @@ bool Graph::vertexFindByLabel (const QStringList &labelList) {
     if ( !foundList.isEmpty() ) {
         searchResult = true;
         qDebug() << "One or more matchin nodes found. Signaling to GW to highlight them...";
-        emit statusMessage ( tr("Found %1 matching nodes. Ready.").arg(foundList.count()) );
+        emit statusMessage ( tr("Found %1 matching nodes.").arg(foundList.count()) );
         emit signalNodesFound(foundList);
     }
     else {
         qDebug() << "No matching nodes found. Return.";
-        emit statusMessage ( tr("Could not find any nodes matching your choices. Ready.") );
+        emit statusMessage ( tr("Could not find any nodes matching your choices.") );
     }
 
     return searchResult;
@@ -1313,12 +1317,12 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
     if ( !foundList.isEmpty() ) {
         searchResult = true;
         qDebug() << "One or more matching nodes found. Signaling to GW to highlight them...";
-        emit statusMessage ( tr("Found %1 matching nodes. Ready.").arg(foundList.count()) );
+        emit statusMessage ( tr("Found %1 matching nodes.").arg(foundList.count()) );
         emit signalNodesFound(foundList);
     }
     else {
         qDebug() << "No matching nodes found. Return.";
-        emit statusMessage ( tr("Could not find any nodes matching your choices. Ready.") );
+        emit statusMessage ( tr("Could not find any nodes matching your choices.") );
     }
 
     return searchResult;
@@ -2044,7 +2048,7 @@ void Graph::vertexLabelDistanceInit(const int &distance) {
  * @param drawArrows
  * @param bezier
  */
-void Graph::edgeCreate(const int &v1,
+bool Graph::edgeCreate(const int &v1,
                        const int &v2,
                        const qreal &weight,
                        const QString &color,
@@ -2062,61 +2066,66 @@ void Graph::edgeCreate(const int &v1,
 
     // check whether there is already such an edge
     // (see #713617 - https://bugs.launchpad.net/socnetv/+bug/713617)
-    if (!edgeExists(v1,v2)){
-        if ( type == EdgeType::Undirected ) {
 
-            qDebug()<< "-- New edge UNDIRECTED. Signaling to GW";
-
-            edgeAdd ( v1, v2,
-                      weight,
-                      type,
-                      label,
-                      ( (weight==0) ? "blue" :  color  )
-                      );
-
-
-            emit signalDrawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), type,
-                                drawArrows, bezier, initEdgeWeightNumbers);
-        }
-        else if ( edgeExists( v2, v1 ) )  {
-
-            qDebug()<<"-- New edge RECIPROCAL. Signaling to GW";
-
-            edgeAdd ( v1,
-                      v2,
-                      weight,
-                      EdgeType::Reciprocated ,
-                      label,
-                      color);
-
-
-            emit signalDrawEdge(v1, v2, weight, label, color, EdgeType::Reciprocated,
-                                drawArrows, bezier, initEdgeWeightNumbers);
-            m_graphIsDirected = true;
-        }
-        else {
-
-            qDebug()<< "-- New edge DIRECTED. Reverse arc does not exist. Signaling to GW...";
-
-            edgeAdd ( v1,
-                      v2,
-                      weight,
-                      EdgeType::Directed,
-                      label,
-                      ( (weight==0) ? "blue" :  color  )
-                      );
-
-            emit signalDrawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), EdgeType::Directed,
-                                drawArrows, bezier, initEdgeWeightNumbers);
-
-            m_graphIsDirected = true;
-            m_graphIsSymmetric=false;
-        }
-    }
-
-    else {
+    if (edgeExists(v1,v2)){
         qDebug() << "-- Edge " << v1 << "->" << v2
                     << " declared previously (already exists) - nothing to do \n\n";
+
+        return false;
+
+    }
+
+    if ( type == EdgeType::Undirected ) {
+
+        qDebug()<< "-- New edge UNDIRECTED. Signaling to GW";
+
+        edgeAdd ( v1, v2,
+                  weight,
+                  type,
+                  label,
+                  ( (weight==0) ? "blue" :  color  )
+                  );
+
+
+        emit signalDrawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), type,
+                            drawArrows, bezier, initEdgeWeightNumbers);
+
+    }
+    else if ( edgeExists( v2, v1 ) )  {
+
+        qDebug()<<"-- New edge RECIPROCAL. Signaling to GW";
+
+        edgeAdd ( v1,
+                  v2,
+                  weight,
+                  EdgeType::Reciprocated ,
+                  label,
+                  color);
+
+
+        emit signalDrawEdge(v1, v2, weight, label, color, EdgeType::Reciprocated,
+                            drawArrows, bezier, initEdgeWeightNumbers);
+        m_graphIsDirected = true;
+
+    }
+    else {
+
+        qDebug()<< "-- New edge DIRECTED. Reverse arc does not exist. Signaling to GW...";
+
+        edgeAdd ( v1,
+                  v2,
+                  weight,
+                  EdgeType::Directed,
+                  label,
+                  ( (weight==0) ? "blue" :  color  )
+                  );
+
+        emit signalDrawEdge(v1, v2, weight, label, ( (weight==0) ? "blue" :  color  ), EdgeType::Directed,
+                            drawArrows, bezier, initEdgeWeightNumbers);
+
+        m_graphIsDirected = true;
+        m_graphIsSymmetric=false;
+
     }
 
     // save the edge color so that new edges created when user clicks on the canvas
@@ -2125,6 +2134,7 @@ void Graph::edgeCreate(const int &v1,
 
     setModStatus(ModStatus::EdgeCount, signalMW);
 
+    return true;
 }
 
 
@@ -4351,8 +4361,6 @@ void Graph::edgeTypeSet(const int &v1,
         }
         emit signalEdgeType( v1, v2, dirType );
     }
-
-    //setModStatus(ModStatus::EdgeCount);
 }
 
 
@@ -15560,8 +15568,7 @@ bool Graph::isFileFormatExportSupported(const int &fileFormat) const {
 /**
  * @brief Sets the graph modification status.
  *
- * If there are major changes, then it signals to MW to update the UI.
- * In any case, it signals to MW to update the save icon status
+ * If there are major changes or new network, it signals to MW to update the UI.
  *
  * @param int graphNewStatus
  * @param bool signalMW
@@ -15569,13 +15576,14 @@ bool Graph::isFileFormatExportSupported(const int &fileFormat) const {
 void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW){
 
     if ( m_graphModStatus == ModStatus::NewNet && isEmpty()) {
+        // New network, no vertices. Don't change status.
+
         qCritical()<<"This is a empty new network. Will not change status.";
-       // No vertex exists, this is a new network. Don't change status.
 
         emit signalGraphModified(isDirected(),
-                                 m_totalVertices,
-                                 edgesEnabled(),
-                                 graphDensity(),
+                                 0,
+                                 0,
+                                 0,
                                  false);
 
         return;
@@ -15610,8 +15618,8 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW){
     }
     else if ( graphNewStatus > ModStatus::MajorChanges ) {
 
-        // This is called from any method that alters V or E in G:
-        // thus all prior computations are invalid
+        // This is called from any method that alters the graph structure,
+        // thus all prior computations are invalidated
 
         qCritical()<<"Major changes, invalidating computations, setting graph as changed..."
                     << "m_totalVertices:" << m_totalVertices
@@ -15619,8 +15627,8 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW){
 
         m_graphModStatus=graphNewStatus;
 
-        // Init all calculated* flags to false, as all prior computations
-        // are now invalid and we need to recompute any of them
+        // Init all calculated* flags to false,
+        // to force all relevant methods to recompute
         calculatedGraphReciprocity = false;
         calculatedGraphSymmetry = false;
         calculatedGraphWeighted = false;
@@ -15644,10 +15652,7 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW){
 
         if (signalMW) {
 
-            qCritical()<<"Major changes, invalidating computations, setting graph as changed..."
-                        << "m_totalVertices:" << m_totalVertices
-                        << "signalMW: " << signalMW
-                         <<"signaling to MW that the graph is modified...";
+            qCritical() << "signaling to MW that the graph is modified...";
 
             emit signalGraphModified(isDirected(),
                                      m_totalVertices,
@@ -15771,18 +15776,23 @@ void Graph::loadFile (	const QString fileName,
     connect(&file_parserThread, &QThread::finished,
             file_parser, &QObject::deleteLater);
 
-    connect(file_parser, &Parser::signalAddNewRelation,this, &Graph::relationAdd);
+    connect(file_parser, &Parser::signalAddNewRelation,
+            this, &Graph::relationAdd);
 
-    connect (file_parser, &Parser::signalSetRelation, this, &Graph::relationSet) ;
+    connect (file_parser, &Parser::signalSetRelation,
+             this, &Graph::relationSet) ;
 
-    connect (file_parser, &Parser::signalCreateNode, this, &Graph::vertexCreate );
+    connect (file_parser, &Parser::signalCreateNode,
+             this, &Graph::vertexCreate );
 
-    connect (file_parser, &Parser::signalCreateNodeAtPosRandom, this, &Graph::vertexCreateAtPosRandom);
+    connect (file_parser, &Parser::signalCreateNodeAtPosRandom,
+             this, &Graph::vertexCreateAtPosRandom);
 
-    connect (file_parser, &Parser::signalCreateNodeAtPosRandomWithLabel, this, &Graph::vertexCreateAtPosRandomWithLabel);
+    connect (file_parser, &Parser::signalCreateNodeAtPosRandomWithLabel,
+             this, &Graph::vertexCreateAtPosRandomWithLabel);
 
-    connect (file_parser, &Parser::signalCreateEdge,this,&Graph::edgeCreate);
-
+    connect (file_parser, &Parser::signalCreateEdge,
+             this, &Graph::edgeCreate);
 
     connect (
             file_parser, SIGNAL(signalFileLoaded(int,

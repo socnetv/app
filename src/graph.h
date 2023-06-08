@@ -159,7 +159,7 @@ public slots:
     void graphClickedEmptySpace( const QPointF &p);
 
     /** Slots to signals from GraphicsWidget and Parser*/
-    void edgeCreate  (const int &v1, const int &v2, const qreal &weight,
+    bool edgeCreate  (const int &v1, const int &v2, const qreal &weight,
                       const QString &color ,
                       const int &type=0,
                       const bool &drawArrows=true, const bool &bezier=false,
@@ -186,7 +186,7 @@ public slots:
 
     void relationPrev();
 
-    void canvasSizeSet(const int w, const int h);
+    void canvasSizeSet(const int &width, const int &height);
 
     double canvasMaxRadius() const;
 
