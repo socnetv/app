@@ -5731,8 +5731,6 @@ void MainWindow::initApp(){
     /** Clear LCDs **/
     qDebug()<<"### Clearing Statistics panel LCDs. Please wait...";
 
-    slotNetworkChanged(0, 0, 0, 0);
-
     rightPanelClickedNodeInDegreeLCD->setText("-");
     rightPanelClickedNodeOutDegreeLCD->setText("-");
     rightPanelClickedNodeLCD->setText("-");
@@ -6991,7 +6989,6 @@ void MainWindow::slotNetworkClose() {
         case QMessageBox::Cancel: return; break;
         }
     }
-    statusMessage( tr("Erasing old network data...."));
     qDebug()<<"Closing network file. Calling initApp ...";
     initApp();
     qDebug()<<"Network file closed...";
@@ -8458,7 +8455,7 @@ void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
     if ( (eprob ) > threshold )
         slotHelpMessageToUser (
                     USER_MSG_INFO,
-                    tr("Erdős–Rényi random network created. Ready."),
+                    tr("Erdős–Rényi random network created."),
                     tr("Random network created. \n"
                        "A new random network has been created according to the Erdős–Rényi model."),
                     tr("On average, edges should be %1. This graph is almost surely connected because: \n"
@@ -8471,7 +8468,7 @@ void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
     else
         slotHelpMessageToUser (
                     USER_MSG_INFO,
-                    tr("Erdős–Rényi random network created. Ready."),
+                    tr("Erdős–Rényi random network created."),
                     tr("Random network created. \n"
                        "A new random network has been created according to the Erdős–Rényi model."),
                     tr("On average, edges should be %1. This graph is almost surely not connected because: \n"
@@ -8536,7 +8533,7 @@ void MainWindow::slotNetworkRandomScaleFree ( const int &newNodes,
 
     slotHelpMessageToUser (
                 USER_MSG_INFO,
-                tr("Scale-free random network created. Ready."),
+                tr("Scale-free random network created."),
                 tr("Random network created. \n"
                    "A new scale-free random network with %1 nodes has been created according to the Barabási–Albert model.").arg(newNodes),
                 tr("A scale-free network is a network whose degree distribution follows a power law.")
@@ -8593,7 +8590,7 @@ void MainWindow::slotNetworkRandomSmallWorld(const int &newNodes,
 
     slotHelpMessageToUser (
                 USER_MSG_INFO,
-                tr("Small-World random network created. Ready."),
+                tr("Small-World random network created."),
                 tr("Random network created. \n"
                    "A new random network with %1 nodes has been created according to the Watts & Strogatz model.").arg(newNodes),
                 tr("A small-world network has short average path lengths and high clustering coefficient.")
@@ -8647,7 +8644,7 @@ void MainWindow::slotNetworkRandomRegular(const int &newNodes, const int &degree
 
     slotHelpMessageToUser (
                 USER_MSG_INFO,
-                tr("d-regular network created. Ready."),
+                tr("d-regular network created."),
                 tr("Random network created. \n"
                    "A new d-regular random network with %1 nodes has been created.").arg(newNodes),
                 tr("Each node has the same number <em>%1</em> of neighbours, aka the same degree d.")
@@ -8720,7 +8717,7 @@ void MainWindow::slotNetworkRandomRingLattice(){
 
     slotHelpMessageToUser (
                 USER_MSG_INFO,
-                tr("Ring lattice random network created. Ready."),
+                tr("Ring lattice random network created."),
                 tr("Random network created. \n"
                    "A new ring-lattice random network with %1 nodes has been created.").arg(newNodes),
                 tr("A ring lattice is a graph with N vertices each connected to d neighbors, d / 2 on each side.")
@@ -8780,7 +8777,7 @@ void MainWindow::slotNetworkRandomLattice(const int &newNodes,
 
     slotHelpMessageToUser (
                 USER_MSG_INFO,
-                tr("Lattice random network created. Ready."),
+                tr("Lattice random network created."),
                 tr("Random network created. \n"
                    "A new lattice random network with %1 nodes has been created.").arg(newNodes),
                 tr("A lattice is a network whose drawing forms a regular tiling. "
@@ -9414,13 +9411,13 @@ void MainWindow::slotEditNodeRemove() {
     if ( nodesSelected > 0) {
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
         int removeCounter = 0;
-        qDebug() << "MW::slotEditNodeRemove() multiple selected to remove";
+        qDebug() << "multiple nodes selected to be removed";
         foreach (int nodeNumber, activeGraph->getSelectedVertices() ) {
             activeGraph->vertexRemove(nodeNumber);
             ++removeCounter ;
         }
         editNodeRemoveAct->setText(tr("Remove Node"));
-        statusMessage( tr("Removed %1 nodes. Ready.").arg(nodesSelected) );
+        statusMessage( tr("Removed %1 nodes.").arg(nodesSelected) );
         QApplication::restoreOverrideCursor();
     }
 
@@ -9429,7 +9426,7 @@ void MainWindow::slotEditNodeRemove() {
         bool ok=false;
         min = activeGraph->vertexNumberMin();
         max = activeGraph->vertexNumberMax();
-        qDebug("MW: min is %i and max is %i", min, max);
+
         if (min==-1 || max==-1 ) {
             qDebug("ERROR in finding min max nodeNumbers. Abort");
             return;
@@ -9446,10 +9443,10 @@ void MainWindow::slotEditNodeRemove() {
                 return;
             }
         }
-        qDebug ("MW::slotEditNodeRemove() - removing vertex with number %i from Graph", nodeNumber);
+        qDebug ("removing vertex with number %i from Graph", nodeNumber);
         activeGraph->vertexRemove(nodeNumber);
-        qDebug("MW::slotEditNodeRemove() - Completed. Node %i removed completely.",nodeNumber);
-        statusMessage( tr("Node removed completely. Ready. ") );
+        qDebug("Completed. Node %i removed completely.",nodeNumber);
+        statusMessage( tr("Node removed completely.") );
     }
 }
 
@@ -9556,7 +9553,6 @@ void MainWindow::slotEditNodePropertiesDialog() {
 
     m_nodeEditDialog->exec();
 
-    statusMessage( tr("Node properties dialog opened. Ready. ") );
 }
 
 
@@ -9578,7 +9574,7 @@ void MainWindow::slotEditNodeProperties(const QString &label,
 
     int selectedNodesCount = activeGraph->getSelectedVerticesCount();
 
-    qDebug()<< "MW::slotEditNodeProperties() - new properties: "
+    qDebug()<< "Request to update node properties - new properties: "
             << " label " << label
             << " size " << size
             << "value " << value
@@ -9591,22 +9587,20 @@ void MainWindow::slotEditNodeProperties(const QString &label,
         // no node selected but user entered a node number in a dialog
         if ( label !="" && appSettings["initNodeLabelsVisibility"] != "true")
             slotOptionsNodeLabelsVisibility(true);
-        qDebug()<< "MW::slotEditNodeProperties() - updating label ";
         activeGraph->vertexLabelSet( activeGraph->vertexClicked(), label );
-        qDebug()<< "MW::slotEditNodeProperties() - updating color ";
         activeGraph->vertexColorSet( activeGraph->vertexClicked(), color.name());
-        qDebug()<< "MW::slotEditNodeProperties() - updating size ";
         activeGraph->vertexSizeSet( activeGraph->vertexClicked(), size);
-        qDebug()<< "MW::slotEditNodeProperties() - updating shape ";
         activeGraph->vertexShapeSet( activeGraph->vertexClicked(), shape, iconPath );
+
+        statusMessage( tr("Updated the properties of node %1. ").arg(activeGraph->vertexClicked()));
+
     }
     else {
         //some nodes are selected
         int nodeNumber = 0;
         foreach (nodeNumber, activeGraph->getSelectedVertices() ) {
-            qDebug()<< "MW::slotEditNodeProperties() - node " << nodeNumber;
+            qDebug()<< "node " << nodeNumber;
             if ( !label.isEmpty() ) {
-                qDebug()<< "MW::slotEditNodeProperties() - updating label ";
                 if ( selectedNodesCount > 1 )
                 {
                     activeGraph->vertexLabelSet(
@@ -9622,17 +9616,13 @@ void MainWindow::slotEditNodeProperties(const QString &label,
                     slotOptionsNodeLabelsVisibility(true);
                 }
             }
-
-            qDebug()<< "MW::slotEditNodeProperties() - updating color ";
             activeGraph->vertexColorSet( nodeNumber, color.name());
-            qDebug()<< "MW::slotEditNodeProperties() - updating size ";
             activeGraph->vertexSizeSet(nodeNumber,size);
-            qDebug()<< "MW::slotEditNodeProperties() - updating shape ";
             activeGraph->vertexShapeSet( nodeNumber, shape, iconPath);
         }
+        statusMessage( tr("Updated the properties of %1 nodes. ").arg(selectedNodesCount));
     }
 
-    statusMessage( tr("Ready. "));
 }
 
 
@@ -9815,7 +9805,7 @@ void MainWindow::slotEditNodeColorAll(QColor color){
                  << appSettings["initNodeColor"];
         activeGraph->vertexColorSet(0, appSettings["initNodeColor"]);
         QApplication::restoreOverrideCursor();
-        statusMessage( tr("Ready. ")  );
+        statusMessage( tr("Change all nodes' color. ")  );
     }
     else {
         // user pressed Cancel
@@ -9921,11 +9911,11 @@ void MainWindow::slotEditNodeShape(const int &vertex, QString shape,
         activeGraph->vertexShapeSet(-1, shape, nodeIconPath);
         appSettings["initNodeShape"] = shape;
         appSettings["initNodeIconPath"] = nodeIconPath;
-        statusMessage(tr("All shapes have been changed. Ready."));
+        statusMessage(tr("All shapes have been changed."));
     }
     else { //only one
         activeGraph->vertexShapeSet( vertex, shape, nodeIconPath);
-        statusMessage(tr("Node shape has been changed. Ready."));
+        statusMessage(tr("Node shape has been changed."));
     }
 }
 
@@ -9959,7 +9949,7 @@ void MainWindow::slotEditNodeNumberSize(int v1, int newSize, const bool prompt) 
         appSettings["initNodeNumberSize"] = QString::number(newSize);
         activeGraph->vertexNumberSizeSet(0, newSize);
     }
-    statusMessage( tr("Changed node numbers size. Ready.") );
+    statusMessage( tr("Changed node numbers size.") );
 }
 
 
@@ -9992,7 +9982,7 @@ void MainWindow::slotEditNodeNumbersColor(const int &v1, QColor color){
         }
 
         QApplication::restoreOverrideCursor();
-        statusMessage( tr("Node number color changed. Ready. ")  );
+        statusMessage( tr("Node number color changed. ")  );
     }
     else {
         // user pressed Cancel
@@ -10030,7 +10020,7 @@ void MainWindow::slotEditNodeNumberDistance(int v1, int newDistance) {
         appSettings["initNodeNumberDistance"] = QString::number(newDistance);
         activeGraph->vertexNumberDistanceSet(0, newDistance);
     }
-    statusMessage( tr("Changed node number distance. Ready.") );
+    statusMessage( tr("Changed node number distance.") );
 }
 
 
@@ -10062,7 +10052,7 @@ void MainWindow::slotEditNodeLabelSize(const int v1, int newSize) {
         appSettings["initNodeLabelSize"] = QString::number(newSize);
         activeGraph->vertexLabelSizeSet(0, newSize);
     }
-    statusMessage( tr("Changed node label size. Ready.") );
+    statusMessage( tr("Changed node label size.") );
 }
 
 
@@ -10088,7 +10078,7 @@ void MainWindow::slotEditNodeLabelsColor(QColor color){
         appSettings["initNodeLabelColor"] = color.name();
         optionsNodeLabelsVisibilityAct->setChecked(true);
         QApplication::restoreOverrideCursor();
-        statusMessage( tr("Label colors changed. Ready. ")  );
+        statusMessage( tr("Label colors changed. ")  );
     }
     else {
         // user pressed Cancel
@@ -10128,7 +10118,7 @@ void MainWindow::slotEditNodeLabelDistance(int v1, int newDistance) {
         appSettings["initNodeLabelDistance"] = QString::number(newDistance);
         activeGraph->vertexLabelDistanceAllSet(newDistance);
     }
-    statusMessage( tr("Changed node label distance. Ready.") );
+    statusMessage( tr("Changed node label distance.") );
 }
 
 
@@ -10397,11 +10387,13 @@ void MainWindow::slotEditEdgeOpenContextMenu(const QString &str) {
 
 
 /**
- * @brief Adds a new edge between two nodes specified by the user.
+ * @brief Opens dialogs for the user to specify the source and the target node of a new edge
+ *
  * Called when user clicks on the MW button/menu item "Add edge"
+ *
  */
 void MainWindow::slotEditEdgeAdd(){
-    qDebug()<<"Request to add a new edge...";
+    qDebug()<<"Request to add a new edge through UI. Opening source/target node dialogs...";
     if ( !activeNodes() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -10484,27 +10476,25 @@ void MainWindow::slotEditEdgeAdd(){
     }
 
     slotEditEdgeCreate(sourceNode, targetNode, weight);
-    statusMessage( tr("Ready. ")  );
+
 }
 
 
 
 /**
- * @brief Helper to slotEditEdgeAdd() above
- * Also called from GW::userMiddleClicked() signal when user creates edges with middle-clicks
- * Calls Graph::edgeCreate method to add the new edge to the active Graph
-  * @param source
+ * @brief Handles UI requests to create new edges, when the user clicks the menu item or doubles-clicks two nodes
+ *
+ * @param source
  * @param target
  * @param weight
  */
-void MainWindow::slotEditEdgeCreate (const int &source, const int &target,
-                                     const qreal &weight) {
-    qDebug()<< "MW::slotEditEdgeCreate() - edge"
+void MainWindow::slotEditEdgeCreate (const int &source, const int &target, const qreal &weight) {
+    qDebug()<< "User requested to create a new edge"
             << source << "->" << target << "weight" << weight
-            << "Setting user settings and calling Graph::edgeCreate(...)";
-    //int reciprocal=0;
+            << "Setting user settings and calling Graph to to do the job...";
+
     bool bezier = false;
-    activeGraph->edgeCreate(
+    bool result = activeGraph->edgeCreate(
                 source, target, weight,
                 appSettings["initEdgeColor"] ,
             ( editEdgeUndirectedAllAct->isChecked() ) ? 2:0,
@@ -10512,6 +10502,9 @@ void MainWindow::slotEditEdgeCreate (const int &source, const int &target,
                                                         ( (appSettings["initEdgeArrows"] == "true") ? true: false)
             , bezier);
 
+    if (result) {
+        statusMessage(tr("New edge %1 -> %2 created.").arg(source).arg(target));
+    }
 }
 
 
@@ -10718,7 +10711,7 @@ void MainWindow::slotEditEdgeLabel(){
                  << targetNode << " new label " << label;
         activeGraph->edgeLabelSet( sourceNode, targetNode, label);
         slotOptionsEdgeLabelsVisibility(true);
-        statusMessage( tr("Ready. ")  );
+        statusMessage( tr("Changed edge label. ")  );
     }
     else {
         statusMessage( tr("Change edge label aborted. ") );
@@ -10753,7 +10746,7 @@ void MainWindow::slotEditEdgeColorAll(QColor color, const int threshold){
                 text);
     }
     if (color.isValid()) {
-        qDebug() << "MainWindow::slotEditEdgeColorAll() - new edge color: " << color.name() << " threshold " << threshold;
+        qDebug() << "new edge color: " << color.name() << " threshold " << threshold;
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
         if (threshold < 0 ) {
             appSettings["initEdgeColorNegative"]=color.name();
@@ -10766,7 +10759,7 @@ void MainWindow::slotEditEdgeColorAll(QColor color, const int threshold){
         }
         activeGraph->edgeColorAllSet(color.name(), threshold );
         QApplication::restoreOverrideCursor();
-        statusMessage( tr("Ready. ")  );
+        statusMessage( tr("Changed edges color. ")  );
     }
     else {
         // user pressed Cancel
@@ -10847,7 +10840,7 @@ void MainWindow::slotEditEdgeColor(){
                  << targetNode << " newColor "
                  << newColor;
         activeGraph->edgeColorSet( sourceNode, targetNode, newColor);
-        statusMessage( tr("Ready. ")  );
+        statusMessage( tr("Edge color changed.")  );
     }
     else {
         statusMessage( tr("Change edge color aborted. ") );
@@ -11002,7 +10995,7 @@ void MainWindow::slotEditEdgeSymmetrizeAll(){
     qDebug() << "Request to symmetrize all edges...";
     activeGraph->setSymmetric();
     slotHelpMessageToUser(USER_MSG_INFO,
-                          tr("All ties have been symmetrized. Ready."),
+                          tr("All ties have been symmetrized."),
                           tr("All ties between nodes have been symmetrized."),
                           tr("The network is now symmetric. ")
                           );
@@ -11054,8 +11047,6 @@ void MainWindow::slotEditEdgeDichotomizationDialog(){
 
     m_edgeDichotomizationDialog->exec();
 
-    statusMessage( tr("Edge dichotomization dialog opened. Ready. ") );
-
 }
 
 
@@ -11078,7 +11069,7 @@ void MainWindow::slotEditEdgeDichotomization(const qreal threshold){
                           arg("Binary"));
 
 
-    statusMessage( tr("Edge dichotomization finished. Ready. ") );
+    statusMessage( tr("Edge dichotomization finished. ") );
 
 }
 
@@ -11167,7 +11158,9 @@ void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
 
 /**
  * @brief Toggles between directed (mode=0) and undirected edges (mode=1)
-  */
+ *
+ * @param mode
+ */
 void MainWindow::slotEditEdgeMode(const int &mode){
     if (mode==1) {
         qDebug()<<"Changing edge mode to undirected. Informing Graph...";
@@ -11195,12 +11188,12 @@ void MainWindow::slotEditEdgeMode(const int &mode){
         if (activeEdges() !=0 ) {
             statusMessage ( tr("Directed data mode. "
                                "All existing undirected edges transformed to "
-                               "directed. Ready")) ;
+                               "directed.")) ;
 
         }
         else {
             statusMessage ( tr("Directed data mode. "
-                               "Any new edge you add will be directed. Ready")) ;
+                               "Any new edge you add will be directed.")) ;
         }
     }
 
@@ -12331,7 +12324,7 @@ void MainWindow::slotAnalyzeDiameter() {
         if (optionsEdgeWeightConsiderAct->isChecked()) {
             slotHelpMessageToUser (
                         USER_MSG_INFO,
-                        tr("Network diameter computed. Ready."),
+                        tr("Network diameter computed."),
                         tr("Network diameter computed. \n\n"
                             "D = %1").arg(netDiameter),
                         tr("The diameter of a network is the maximum geodesic distance "
@@ -12344,7 +12337,7 @@ void MainWindow::slotAnalyzeDiameter() {
         else {
             slotHelpMessageToUser (
                         USER_MSG_INFO,
-                        tr("Network diameter computed. Ready."),
+                        tr("Network diameter computed."),
                         tr("Network diameter computed. \n\n"
                             "D = %1").arg(netDiameter),
                         tr("The diameter of a network is the maximum geodesic distance "
@@ -12357,7 +12350,7 @@ void MainWindow::slotAnalyzeDiameter() {
     else
         slotHelpMessageToUser (
                     USER_MSG_INFO,
-                    tr("Network diameter computed. Ready."),
+                    tr("Network diameter computed."),
                     tr("Network diameter computed. \n\n"
                         "D = %1").arg(netDiameter),
                     tr("The diameter of a network is the maximum geodesic distance "
@@ -12395,7 +12388,7 @@ void MainWindow::slotAnalyzeDistanceAverage() {
     if ( isConnected ) {
         slotHelpMessageToUser (
                     USER_MSG_INFO,
-                    tr("Average graph distance computed. Ready."),
+                    tr("Average graph distance computed."),
                     tr("Average graph distance computed. \n\n"
                         "d = %1").arg(averGraphDistance),
                     tr("The average graph distance is the average length of shortest paths (geodesics) "
@@ -12407,7 +12400,7 @@ void MainWindow::slotAnalyzeDistanceAverage() {
     else {
         slotHelpMessageToUser (
                     USER_MSG_INFO,
-                    tr("Average distance computed. Ready."),
+                    tr("Average distance computed."),
                     tr("Average distance computed. \n\n"
                         "<em>d</em> = %1").arg(averGraphDistance),
                     tr("The average graph distance is the average length of shortest paths (geodesics) "
@@ -13863,19 +13856,23 @@ void MainWindow::slotOptionsEdgesVisibility(bool toggle){
 
 
 /**
- * @brief MainWindow::slotOptionsEdgeArrowsVisibility
- * Turns on/off the arrows of edges
+ * @brief Turns on/off the arrows of edges
  * @param toggle
  */
 void MainWindow::slotOptionsEdgeArrowsVisibility(bool toggle){
-    qDebug()<<"MW::slotOptionsEdgeArrowsVisibility() - toggle" << toggle;
+    qDebug()<<"Request to toggle edges arrows to:" << toggle;
 
-    statusMessage( tr("Toggle Edges Arrows. Please wait...") );
+    statusMessage( tr("Toggling Edges' Arrows. Please wait...") );
     appSettings["initEdgeArrows"]= (toggle) ? "true":"false";
 
     graphicsWidget->setEdgeArrowsVisibility(toggle);
+    if (toggle) {
+        statusMessage( tr("Arrows in edges: on."));
+    }
+    else {
+        statusMessage( tr("Arrows in edges: off."));
+    }
 
-    statusMessage( tr("Ready."));
 }
 
 
@@ -13883,7 +13880,7 @@ void MainWindow::slotOptionsEdgeArrowsVisibility(bool toggle){
 
 
 /**
- * @brief MainWindow::slotOptionsEdgeWeightsDuringComputation
+ * @brief Toggles edge weights during computations
  * @param toggle
  */
 void MainWindow::slotOptionsEdgeWeightsDuringComputation(bool toggle) {
@@ -13989,7 +13986,7 @@ void MainWindow::slotOptionsEdgeOffsetFromNode(const int &offset, const int &v1,
 
     QApplication::restoreOverrideCursor();
 
-    statusMessage( tr("Changed edge offset from nodes. Ready.") );
+    statusMessage( tr("Changed edge offset from nodes.") );
 }
 
 
@@ -14419,7 +14416,7 @@ void MainWindow::slotOptionsBackgroundColor (QColor color){
                     QBrush(QColor (appSettings["initBackgroundColor"]))
                 );
         QApplication::restoreOverrideCursor();
-        statusMessage( tr("Ready. ")  );
+        statusMessage( tr("Background changed.")  );
     }
     else {
         // user pressed Cancel
