@@ -665,7 +665,7 @@ private:
     QAction *networkRandomLatticeAct;
     QAction *networkWebCrawlerAct;
 
-    QAction *editDragModeScrollAct, *editDragModeSelectAct;
+    QAction *editMouseModeScrollAct, *editMouseModeInteractiveAct;
     QAction *editNodeSelectNoneAct, *editNodeSelectAllAct;
     QAction *editNodeSelectedToStarAct, *editNodeSelectedToCycleAct;
     QAction *editNodeSelectedToLineAct, *editNodeSelectedToCliqueAct;

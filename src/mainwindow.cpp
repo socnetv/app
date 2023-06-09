@@ -1411,26 +1411,35 @@ void MainWindow::initActions(){
     */
 
 
-    editDragModeSelectAct = new QAction(QIcon(":/images/cursor-pointer.svg"),
+    editMouseModeInteractiveAct = new QAction(QIcon(":/images/cursor-pointer.svg"),
                                   tr("Select/Move"),  this);
-    editDragModeSelectAct->setCheckable(true);
-    editDragModeSelectAct->setChecked(true);
-//    editDragModeSelectAct->setShortcut(Qt::ALT + Qt::Key_Right);
-    editDragModeSelectAct->setToolTip(tr("Toggle the Select/Move mode. Enable this to be able to click and move items and also select them with a rubber band"));
-    editDragModeSelectAct->setStatusTip(tr("Enable this to be able to click and move items and also select them with a rubber band"));
-    editDragModeSelectAct->setWhatsThis(tr("Drag Mode: Select/Move\n\n "
-        "In this mode, you can interact with the canvas: a) left-click or right-click on items (i.e. nodes, edges), b) move them by dragging them with your mouse and c) select multiple items with a rubber band."));
+    editMouseModeInteractiveAct->setCheckable(true);
+    editMouseModeInteractiveAct->setChecked(true);
+    editMouseModeInteractiveAct->setToolTip(tr("<p><b>Mouse mode: Interactive</b></p> "
+                                          "<p>In this interactive mode, you can click on nodes/edges and move them around with your mouse. </p>"
+                                           "<p>Also, you can select multiple items with a rubber band selection area. To move the canvas, use the keyboard arrows.</p>"));
+    editMouseModeInteractiveAct->setStatusTip(tr("Enable the interactive mouse mode to be able to click and move items and select them with a rubber band."));
+    editMouseModeInteractiveAct->setWhatsThis(tr("<p><b>Mouse Mode: Interactive</b></p>"
+                                    "<p>In this mode, you can interact with the items on the canvas using the mouse: </p>"
+                                    "<p>a) double-click to create new nodes, "
+                                    "<p>b) left-click or right-click on items (i.e. nodes, edges) to edit their properties</p>"
+                                    "<p>c) move nodes by dragging them with your mouse.  </p>"
+                                    "<p>d) select multiple items with a rubber band.</p>"
+                                    "<p>To move the canvas (up/down, left/right), use the keyboard arrows."));
 
 
-    editDragModeScrollAct = new QAction(QIcon(":/images/cursor-hand-drag.svg"),
+    editMouseModeScrollAct = new QAction(QIcon(":/images/cursor-hand-drag.svg"),
                                   tr("Scroll/Pan"),  this);
-    editDragModeScrollAct->setCheckable(true);
-    editDragModeScrollAct->setChecked(false);
-//    editDragModeScrollAct->setShortcut(Qt::ALT + Qt::Key_Right);
-    editDragModeScrollAct->setToolTip(tr("Toggle the Scrolling mode. Enable this to easily scroll the canvas by dragging the mouse around"));
-    editDragModeScrollAct->setStatusTip(tr("Enable this to easily scroll the canvas by dragging the mouse around."));
-    editDragModeScrollAct->setWhatsThis(tr("Drag Mode: Scrolling\n\n "
-            "The cursor changes into a pointing hand, and dragging the mouse around will scroll the scrolbars. You will not be able to select any items or move them around."));
+    editMouseModeScrollAct->setCheckable(true);
+    editMouseModeScrollAct->setChecked(false);
+    editMouseModeScrollAct->setToolTip(tr("<p><b>Mouse mode: Scrolling</b></p> "
+                                         "<p>In this non-interactive mode, you can easily scroll the canvas by dragging the mouse around. All mouse actions are disabled.</p>"));
+    editMouseModeScrollAct->setStatusTip(tr("Enable this non-interactive mode to easily scroll the canvas by dragging the mouse around."));
+    editMouseModeScrollAct->setWhatsThis(tr("<p><b>Mouse mode: Scrolling</b></p>"
+                                        "<p>In this mode, you cannot interact with the canvas using the mouse.</p>"
+                                        "<p>The cursor changes into a pointing hand, and dragging the mouse around will only scroll the scrolbars.</p> "
+                                        "<p>You will not be able to select any items or move them around with the mouse.</p>"
+                                        "<p>Note: You will still be able to edit the network using the menu or the toolbar actions and icons.</p>"));
 
 
 
@@ -1476,14 +1485,14 @@ void MainWindow::initActions(){
 
     zoomInAct = new QAction(QIcon(":/images/zoom_in_24px.svg"), tr("Zoom In"), this);
     zoomInAct->setShortcut(Qt::CTRL | Qt::Key_Plus);
-    zoomInAct->setStatusTip(tr("Zoom in the network. Alternatives: use the canvas button, or press Ctrl++, or use mouse wheel while pressing Ctrl."));
-    zoomInAct->setWhatsThis(tr("Zoom In.\n\nZooms in the network"));
+    zoomInAct->setStatusTip(tr("Zoom In.\n\nZooms in the network")) ;
+    zoomInAct->setWhatsThis(tr("Zoom in the network. Alternatives: use the canvas button, or press Ctrl++, or use mouse wheel while pressing Ctrl."));
 
 
     zoomOutAct = new QAction(QIcon(":/images/zoom_in_24px.svg"), tr("Zoom Out"), this);
     zoomOutAct->setShortcut(Qt::CTRL | Qt::Key_Minus);
-    zoomOutAct->setStatusTip(tr("Zoom out the network. Alternatives: use the canvas button, or press Ctrl+-, or use mouse wheel while pressing Ctrl."));
-    zoomOutAct->setWhatsThis(tr("Zoom Out.\n\nZooms out of the actual network"));
+    zoomOutAct->setStatusTip(tr("Zoom Out.\n\nZooms out of the actual network"));
+    zoomOutAct->setWhatsThis(tr("Zoom out the network. Alternatives: use the canvas button, or press Ctrl+-, or use mouse wheel while pressing Ctrl."));
 
 
     editRotateLeftAct = new QAction(QIcon(":/images/rotate_left_48px.svg"), tr("Rotate counterclockwise"), this);
@@ -4128,8 +4137,8 @@ void MainWindow::initToolBar(){
 
     toolBar->addSeparator();
 
-    toolBar->addAction (editDragModeSelectAct);
-    toolBar->addAction (editDragModeScrollAct);
+    toolBar->addAction (editMouseModeInteractiveAct);
+    toolBar->addAction (editMouseModeScrollAct);
 
     toolBar->addSeparator();
 
@@ -5202,12 +5211,11 @@ void MainWindow::initWindowLayout(const bool &maximized, const bool &fullscreen)
     // Zoom slider
     //
     zoomInBtn = new QToolButton;
-    zoomInBtn->setShortcut(Qt::CTRL | Qt::Key_Plus);
-    zoomInBtn->setToolTip(tr("Zoom in (Ctrl++)"));
-    zoomInBtn->setStatusTip(tr("Zoom inside the actual network. Or press Cltr and use mouse wheel."));
+    zoomInBtn->setToolTip(tr("Zoom in the network."));
+    zoomInBtn->setStatusTip(tr("Zoom in the network. Or press Cltr and use mouse wheel."));
     zoomInBtn->setWhatsThis(tr("Zoom In.\n\n"
-                               "Zooms in the actual network"
-                               "You can also press Cltr and use mouse wheel."));
+                               "Zooms in the network (Ctrl++)."
+                               "You can also press Cltr and use the mouse wheel."));
     zoomInBtn->setAutoRepeat(true);
     zoomInBtn->setAutoRepeatInterval(33);
     zoomInBtn->setAutoRepeatDelay(0);
@@ -5216,12 +5224,11 @@ void MainWindow::initWindowLayout(const bool &maximized, const bool &fullscreen)
 
     zoomOutBtn = new QToolButton;
     zoomOutBtn->setAutoRepeat(true);
-    zoomOutBtn->setShortcut(Qt::CTRL | Qt::Key_Minus);
-    zoomOutBtn->setToolTip(tr("Zoom out (Ctrl+-)"));
+    zoomOutBtn->setToolTip(tr("Zoom out."));
     zoomOutBtn->setStatusTip(tr("Zoom out of the actual network. Or press Cltr and use mouse wheel."));
     zoomOutBtn->setWhatsThis(tr("Zoom out.\n\n"
-                                "Zooms out the actual network"
-                                "You can also press Cltr and use mouse wheel."));
+                                "Zooms out of the actual network. (Ctrl+-)"
+                                "You can also press Cltr and use the mouse wheel."));
     zoomOutBtn->setAutoRepeat(true);
     zoomOutBtn->setAutoRepeatInterval(33);
     zoomOutBtn->setAutoRepeatDelay(0);
@@ -5250,18 +5257,18 @@ void MainWindow::initWindowLayout(const bool &maximized, const bool &fullscreen)
     rotateLeftBtn->setAutoRepeat(true);
     rotateLeftBtn->setShortcut(Qt::SHIFT | Qt::CTRL | Qt::Key_Left);
     rotateLeftBtn->setIcon(QPixmap(":/images/rotate_left_48px.svg"));
-    rotateLeftBtn->setToolTip(tr("Rotate counterclockwise (Shift+Ctrl+Left Arrow)"));
-    rotateLeftBtn->setStatusTip(tr("Rotate counterclockwise (Shift+Ctrl+Left Arrow)"));
-    rotateLeftBtn->setWhatsThis(tr("Rotates counterclockwise (Shift+Ctrl+Left Arrow)"));
+    rotateLeftBtn->setToolTip(tr("Rotates the canvas counterclockwise"));
+    rotateLeftBtn->setStatusTip(tr("Rotate counterclockwise"));
+    rotateLeftBtn->setWhatsThis(tr("Rotates the canvas counterclockwise."));
     rotateLeftBtn->setIconSize(iconSize);
 
     rotateRightBtn = new QToolButton;
     rotateRightBtn->setAutoRepeat(true);
     rotateRightBtn->setShortcut(Qt::SHIFT | Qt::CTRL | Qt::Key_Right);
     rotateRightBtn->setIcon(QPixmap(":/images/rotate_right_48px.svg"));
-    rotateRightBtn->setToolTip(tr("Rotate clockwise (Shift+Ctrl+Right Arrow)"));
-    rotateRightBtn->setStatusTip(tr("Rotate clockwise (Shift+Ctrl+Right Arrow)"));
-    rotateRightBtn->setWhatsThis(tr("Rotates clockwise (Shift+Ctrl+Right Arrow)"));
+    rotateRightBtn->setToolTip(tr("Rotates the canvas clockwise."));
+    rotateRightBtn->setStatusTip(tr("Rotate clockwise"));
+    rotateRightBtn->setWhatsThis(tr("Rotates the canvas clockwise."));
     rotateRightBtn->setIconSize(iconSize);
 
     rotateSlider = new QSlider;
@@ -5567,10 +5574,10 @@ void MainWindow::initSignalSlots() {
             this, &MainWindow::slotNetworkManagerSslErrors);
 #endif
 
-    connect( editDragModeSelectAct, &QAction::triggered,
+    connect( editMouseModeInteractiveAct, &QAction::triggered,
              this, &MainWindow::slotEditDragModeSelection );
 
-    connect( editDragModeScrollAct, &QAction::triggered,
+    connect( editMouseModeScrollAct, &QAction::triggered,
              this, &MainWindow::slotEditDragModeScroll );
 
 
@@ -7460,14 +7467,15 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
 
 
 /**
- * @brief Toggles the drag mode (select or scroll).
+ * @brief Toggles the interactive/selection mouse drag mode
+ * @param checked
  */
 void MainWindow::slotEditDragModeSelection(bool checked){
     qDebug() << "User changed drag mode, checked" << checked;
 
-    editDragModeScrollAct->setChecked(false);
+    editMouseModeScrollAct->setChecked(false);
 
-    if (editDragModeSelectAct->isChecked()) {
+    if (editMouseModeInteractiveAct->isChecked()) {
 
         graphicsWidget->setDragMode(QGraphicsView::RubberBandDrag);
         graphicsWidget->setInteractive(true);
@@ -7484,16 +7492,17 @@ void MainWindow::slotEditDragModeSelection(bool checked){
 
 
 /**
- * @brief Toggles the drag mode (select or scroll).
+ * @brief Toggles the non-interactive scrollhand drag mode.
+ * @param checked
  */
 void MainWindow::slotEditDragModeScroll(bool checked){
 
     qDebug() << "User changed scroll mode, checked" << checked;
 
-    editDragModeSelectAct->setChecked(false);
+    editMouseModeInteractiveAct->setChecked(false);
     graphicsWidget->setInteractive(false);
 
-    if ( editDragModeScrollAct->isChecked() ) {
+    if ( editMouseModeScrollAct->isChecked() ) {
 
         graphicsWidget->setDragMode(QGraphicsView::ScrollHandDrag);
 
