@@ -859,7 +859,7 @@ void Graph::vertexCreateAtPos(const QPointF &p){
                   true
                   );
 
-    emit statusMessage(  tr("New node (numbered %1) added at position (%2,%3)")
+    emit statusMessage(  tr("New node (numbered %1) added at position (%2,%3). Double-click on it to start a new edge from it.")
                          .arg(vertexNumberMax())
                          .arg( p.x() )
                          .arg( p.y() )
