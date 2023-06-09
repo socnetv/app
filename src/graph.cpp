@@ -86,6 +86,7 @@ Graph::Graph(const int &reserveVerticesSize, const int &reserveEdgesPerVertexSiz
     order=true;		//returns true if the indexes of the list is ordered.
 
     // Use the given vertices estimate to allocate memory
+    // to prevent reallocations and memory fragmentation.
     if ( reserveVerticesSize > 0 ) {
         qDebug() << "Graph reserving this vertices estimate:" << reserveVerticesSize;
         m_graph.reserve(reserveVerticesSize);
