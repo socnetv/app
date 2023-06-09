@@ -451,6 +451,8 @@ QMap<QString,QString> MainWindow::initSettings(const int &debugLevel, const bool
 
     // hard-coded default settings to use only on first app load,
     // when there are no user defined values
+    appSettings["initNodesEstimatedSize"] = "5000";
+    appSettings["initEdgesPerNodeEstimatedSize"] = "500";
     appSettings["initNodeSize"]= "10";
     appSettings["initNodeColor"]="red";
     appSettings["initNodeShape"]="circle";
@@ -1009,7 +1011,19 @@ void MainWindow::initGraph() {
 
     qDebug() << "creating activeGraph object...";
 
-    activeGraph = new Graph();
+    bool ok1;
+    nodesEstimatedSize = (appSettings["initNodesEstimatedSize"]).toInt(&ok1, 10);
+    if ( !ok1 ) {
+        nodesEstimatedSize = 0;
+    }
+
+    bool ok2;
+    edgesPerNodeEstimatedSize  = (appSettings["initEdgesPerNodeEstimatedSize"]).toInt(&ok2, 10);
+    if ( !ok2 ) {
+        edgesPerNodeEstimatedSize = 0;
+    }
+
+    activeGraph = new Graph(nodesEstimatedSize, edgesPerNodeEstimatedSize);
 
     qDebug() << "activeGraph created on thread:" << activeGraph->thread()
              << "moving it to new thread ";

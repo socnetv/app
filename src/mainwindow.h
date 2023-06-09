@@ -563,6 +563,8 @@ private:
 
     int progressCounter;
     int fileType;
+    int nodesEstimatedSize;
+    int edgesPerNodeEstimatedSize;
     int maxRandomlyCreatedNodes;
     int fortuneCookiesCounter;
     int initZoomIndex, maxZoomIndex;
