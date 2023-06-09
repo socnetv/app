@@ -1381,7 +1381,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
         N = rows() ;
 
-        QVector<qreal> mean (N,0); // holds mean values
+        QList<qreal> mean (N,0); // holds mean values
 
         qDebug()<< "Matrix::distancesMatrix() - input matrix:";
         //this->printMatrixConsole();
@@ -1491,7 +1491,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
         N = rows() ;
 
-        QVector<qreal> mean (N,0); // holds mean values
+        QList<qreal> mean (N,0); // holds mean values
 
         qDebug()<< "Matrix::distancesMatrix() -"
                 <<"input matrix";
@@ -1602,7 +1602,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
         CM.zeroMatrix(M,N);
 
-        QVector<qreal> mean (N,0); // holds mean values
+        QList<qreal> mean (N,0); // holds mean values
 
         //create augmented matrix (concatenated rows and columns) from input matrix
         for (int i = 0 ; i < N  ; i++ ) {
@@ -1765,7 +1765,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
 
         this->zeroMatrix(N,N);
 
-        QVector<qreal> mean (N,0); // holds mean values
+        QList<qreal> mean (N,0); // holds mean values
 
         qDebug()<< "Matrix::similarityMatrix() -"
                 <<"input matrix";
@@ -1866,7 +1866,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
 
         this->zeroMatrix(N,N);
 
-        QVector<qreal> mean (N,0); // holds mean values
+        QList<qreal> mean (N,0); // holds mean values
 
         qDebug()<< "Matrix::similarityMatrix() -"
                 <<"input matrix";
@@ -1969,7 +1969,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
         this->zeroMatrix(N,N);
         CM.zeroMatrix(M,N);
 
-        QVector<qreal> mean (N,0); // holds mean values
+        QList<qreal> mean (N,0); // holds mean values
 
 
         //create augmented matrix (concatenated rows and columns) from input matrix
@@ -2115,8 +2115,8 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
 
         this->zeroMatrix(N,N);
 
-        QVector<qreal> mean (N,0); // holds mean values
-        QVector<qreal> sigma(N,0);
+        QList<qreal> mean (N,0); // holds mean values
+        QList<qreal> sigma(N,0);
         qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
                 <<"input matrix";
         //AM.printMatrixConsole(true);
@@ -2198,8 +2198,8 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
 
         this->zeroMatrix(N,N);
 
-        QVector<qreal> mean (N,0); // holds mean values
-        QVector<qreal> sigma(N,0);
+        QList<qreal> mean (N,0); // holds mean values
+        QList<qreal> sigma(N,0);
 
         qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
                 <<"input matrix";
@@ -2276,8 +2276,8 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
 
         CM.zeroMatrix(M,N);
 
-        QVector<qreal> mean (N,0); // holds mean values
-        QVector<qreal> sigma(N,0);
+        QList<qreal> mean (N,0); // holds mean values
+        QList<qreal> sigma(N,0);
 
 
         //create augmented matrix (concatenated rows and columns) from input matrix
