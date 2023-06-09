@@ -11540,7 +11540,7 @@ void Graph::randomNetRegularCreate(const int &N,
     qreal progressFraction =(isUndirected()) ? 2/(qreal) degree : 1/(qreal) degree;
 
     int target = 0;
-    int edgeCount = 0;
+
     QList<QString> m_edges;
     QStringList firstEdgeVertices, secondEdgeVertices, m_edge;
     QString firstEdge, secondEdge;
@@ -11585,7 +11585,7 @@ void Graph::randomNetRegularCreate(const int &N,
                 qDebug()<< " undirected edge "
                         << i+1 << "<->"<< target+1;
                 m_edges.append(QString::number(i+1)+"->"+QString::number(target+1));
-                edgeCount ++;
+
             }
         }
 
@@ -11599,19 +11599,18 @@ void Graph::randomNetRegularCreate(const int &N,
                     target = target-N;
 //                qDebug()<< " directed edge "<< i+1 << "->"<< target+1;
                 m_edges.append(QString::number(i+1)+"->"+QString::number(target+1));
-                edgeCount ++;
+
             }
         }
 
     }
-    qDebug()<< " Edges created:" << edgeCount
-            << "Edge list count:" << m_edges.size()
+    qDebug()<< "Edge list count:" << m_edges.size()
             << "Now reordering all edges in pairs...";
 
     //take randomly two edges, of different vertices and combine their source
     //and target vertices to two different edges
     for (int i = 1 ; i< m_edges.size(); ++i) {
-        edgeCount = 0;
+
         firstEdgeVertices.clear();
         secondEdgeVertices.clear();
         firstEdgeVertices << "";
@@ -11657,7 +11656,6 @@ void Graph::randomNetRegularCreate(const int &N,
 //                << "final edge list count:" << m_edges.size();
     }
 
-    edgeCount = 1;
 
     //
     // draw edges
@@ -11666,7 +11664,7 @@ void Graph::randomNetRegularCreate(const int &N,
 
         m_edge = m_edges.at(i).split("->");
 
-//        qDebug() << "Drawing undirected Edge no" << edgeCount << ":"
+//        qDebug() << "Drawing undirected Edge" <<
 //                 << m_edge[0].toInt(0) << "<->" << m_edge[1].toInt(0);
 
         edgeCreate(m_edge[0].toInt(0), m_edge[1].toInt(0), 1,
@@ -11676,7 +11674,6 @@ void Graph::randomNetRegularCreate(const int &N,
                 false,
                 QString(), false);
 
-        edgeCount++;
         progressCounter +=progressFraction;
 
         if ( fmod ( progressCounter, 1.0) == 0) {
@@ -13613,8 +13610,6 @@ void Graph::writeClusteringHierarchicalResultsToStream(QTextStream& outText,
 
         QMap<int, V_str>::const_iterator pit; //cluster names pair iterator
 
-        QVector<int> clusterVector;
-
         int actorNumber;
 
         qreal maxLevelValue;
@@ -13625,8 +13620,6 @@ void Graph::writeClusteringHierarchicalResultsToStream(QTextStream& outText,
         it--;
 
         maxLevelValue = m_clusteringLevel.last() ;
-
-        clusterVector.reserve(N);
 
         qDebug() << "m_clustersPerSequence"<<m_clustersPerSequence
                << "\n"
