@@ -11116,7 +11116,7 @@ void Graph::randomizeThings()   {
 
 
 /**
- * @brief Create an erdos-renyi random network according to the given model
+ * @brief Creates an erdos-renyi random network according to the given model
  * @param vert
  * @param model
  * @param edges
@@ -11131,7 +11131,7 @@ void Graph::randomNetErdosCreate(const int &N,
                                  const QString &mode,
                                  const bool &diag)
 {
-    qDebug() << "Graph::randomNetErdosCreate() - vertices " << N
+    qDebug() << "Creating an erdos-renyi random network, vertices " << N
              << " model " << model
              << " edges " << m
              << " edge probability " << p
@@ -11148,7 +11148,7 @@ void Graph::randomNetErdosCreate(const int &N,
     int progressCounter=0;
     int edgeCount = 0;
 
-    qDebug() << "Graph::randomNetErdosCreate() - Creating nodes...";
+    qDebug() << "Creating nodes...";
 
     QString pMsg  = tr( "Creating Erdos-Renyi Random Network. \n"
                                " Please wait..." );
@@ -11159,7 +11159,9 @@ void Graph::randomNetErdosCreate(const int &N,
     {
         int x=canvasRandomX();
         int y=canvasRandomY();
-        qDebug("Graph: randomNetErdosCreate, new node i=%i, at x=%i, y=%i", i+1, x,y);
+
+//        qDebug() << "creating new node" << i+1 << "at" << x << y;
+
         vertexCreate(
                     i+1, initVertexSize, initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
@@ -11168,43 +11170,39 @@ void Graph::randomNetErdosCreate(const int &N,
                     );
     }
 
-    qDebug() << "Graph::randomNetErdosCreate() - Creating edges...";
+    qDebug() << "Creating edges...";
+
     if ( model == "G(n,p)")
     {
-        qDebug() << "Graph::randomNetErdosCreate() - G(n,p) model...";
+        qDebug() << "G(n,p) model...";
         for (int i=0;i<N; i++) {
             for (int j=0; j<N; j++) {
-                //                qDebug() << "Graph::randomNetErdosCreate() - Bernoulli trial "
+
+                //                qDebug() << "Bernoulli trial "
                 //                       << "for edge " <<  i+1 << "->" << j+1;
+
                 if (!diag && i==j) {
-                    qDebug()<< " Graph::randomNetErdosCreate() - skip because "
-                            << i+1 << " = " << j+1
-                            << " and diag " << diag;
+//                    qDebug()<< " skip because " << i+1 << " = " << j+1 << " and diag " << diag;
                     continue;
                 }
                 if ( ( rand() % 100 + 1 ) / 100.0 < p )    {
                     edgeCount ++ ;
 
                     if (mode == "graph") {
-                        qDebug() << "Graph::randomNetErdosCreate() - "
-                                    <<" create undirected Edge no "
-                                    << edgeCount;
+//                        qDebug() << " create undirected Edge no " << edgeCount;
                         edgeCreate(i+1, j+1, 1, initEdgeColor,
                                    EdgeType::Undirected, false, false,
                                    QString(), false);
                     }
                     else {
-                        qDebug() << "Graph::randomNetErdosCreate() - "
-                                    <<" create directed Edge no "
-                                    << edgeCount;
-
+//                        qDebug() << " create directed Edge no "<< edgeCount;
                         edgeCreate(i+1, j+1, 1, initEdgeColor,
                                    EdgeType::Directed, true, false,
                                    QString(), false);
                     }
                 }
                 //                else
-                //                    qDebug() << "Graph::randomNetErdosCreate() - do not create Edge";
+                //                    qDebug() << "do not create Edge";
             }
 
             emit signalProgressBoxUpdate(++progressCounter );
@@ -11214,33 +11212,29 @@ void Graph::randomNetErdosCreate(const int &N,
     }
     else
     {
-        qDebug() << "Graph::randomNetErdosCreate() - G(n,M) model...";
+        qDebug() << "G(n,M) model...";
         int source = 0, target = 0 ;
         do {
             source =  rand() % N + 1;
             target =  rand() % N + 1;
-            qDebug() << "Graph::randomNetErdosCreate() - random pair "
-                        << " " << source
-                        << " , " << target ;
+//            qDebug() << "random pair " << " " << source << " , " << target ;
             if (!diag && source == target ) {
-                qDebug() << "Graph::randomNetErdosCreate() - skip self loop pair ";
+//                qDebug() << "skip self loop pair ";
                 continue;
             }
             if ( edgeExists(source, target) ) {
-                qDebug() << "Graph::randomNetErdosCreate() - skip pair - exists";
+//                qDebug() << "skip pair - exists";
                 continue;
             }
             edgeCount ++;
             if (mode == "graph") {
-                qDebug() << "Graph::randomNetErdosCreate() - create "
-                            << " undirected Edge no " << edgeCount;
+//                qDebug() << "create " << " undirected Edge no " << edgeCount;
                 edgeCreate(source, target, 1, initEdgeColor,
                            EdgeType::Undirected, false, false,
                            QString(), false);
             }
             else {
-                qDebug() << "Graph::randomNetErdosCreate() - create "
-                            << " directed Edge no " << edgeCount;
+//                qDebug() << "create " << " directed Edge no " << edgeCount;
                 edgeCreate(source, target, 1, initEdgeColor,
                            EdgeType::Directed, true, false,
                            QString(), false);
@@ -11534,7 +11528,7 @@ void Graph::randomNetSmallWorldCreate (const int &N, const int &degree,
 void Graph::randomNetRegularCreate(const int &N,
                                    const int &degree,
                                    const QString &mode, const bool &diag){
-    qDebug() << "Graph::randomNetRegularCreate()";
+    qDebug() << "Creating d-regular random network...";
     Q_UNUSED(diag);
 
     if (mode=="graph") {
@@ -11560,13 +11554,14 @@ void Graph::randomNetRegularCreate(const int &N,
     emit statusMessage( pMsg );
     emit signalProgressBoxCreate (N, pMsg );
 
-    qDebug()<< "Graph::randomNetRegularCreate() - creating vertices";
+    qDebug()<< " creating vertices";
 
     for (int i=0; i< N ; i++) {
         x=canvasRandomX();
         y=canvasRandomY();
-        qDebug() << "Graph::randomNetRegularCreate() - creating new vertex at "
-                    << x << "," << y;
+
+//        qDebug() << " creating new vertex at "
+//                    << x << "," << y;
 
         vertexCreate(
                     i+1, initVertexSize,initVertexColor,
@@ -11577,16 +11572,17 @@ void Graph::randomNetRegularCreate(const int &N,
     }
 
 
-    qDebug()<< "Graph::randomNetRegularCreate() - Creating initial edges";
+    qDebug()<< " Creating initial edges";
+
     if (mode=="graph") {
         for (int i=0;i<N; i++){
-            qDebug()<< "Graph::randomNetRegularCreate() - "
+            qDebug()<< " "
                        "Creating undirected edges for node  "<< i+1;
             for (int j=0; j< degree/2 ; j++) {
                 target = i + j+1 ;
                 if ( target > (N-1))
                     target = target-N;
-                qDebug()<< "Graph::randomNetRegularCreate() - undirected edge "
+                qDebug()<< " undirected edge "
                         << i+1 << "<->"<< target+1;
                 m_edges.append(QString::number(i+1)+"->"+QString::number(target+1));
                 edgeCount ++;
@@ -11596,22 +11592,19 @@ void Graph::randomNetRegularCreate(const int &N,
     }
     else {
         for (int i=0;i<N; i++){
-            qDebug()<< "Graph::randomNetRegularCreate() - "
-                       "Creating directed edges for node  "
-                    << i+1;
+//            qDebug()<< "Creating directed edges for node  "<< i+1;
             for (int j=0; j< degree ; j++) {
                 target = i + j+1 ;
                 if ( target > (N-1))
                     target = target-N;
-                qDebug()<< "Graph::randomNetRegularCreate() - directed edge "
-                        << i+1 << "->"<< target+1;
+//                qDebug()<< " directed edge "<< i+1 << "->"<< target+1;
                 m_edges.append(QString::number(i+1)+"->"+QString::number(target+1));
                 edgeCount ++;
             }
         }
 
     }
-    qDebug()<< "Graph::randomNetRegularCreate() - Edges created:" << edgeCount
+    qDebug()<< " Edges created:" << edgeCount
             << "Edge list count:" << m_edges.size()
             << "Now reordering all edges in pairs...";
 
@@ -11640,38 +11633,41 @@ void Graph::randomNetRegularCreate(const int &N,
             firstEdgeVertices = firstEdge.split("->");
             secondEdge = m_edges.at(rand() % m_edges.size()) ;
             secondEdgeVertices = secondEdge.split("->");
-            qDebug()<< "Graph::randomNetRegularCreate() - firstEdgeVertices:"
-                    << firstEdgeVertices
-                    << " secondEdgeVertices:" << secondEdgeVertices;
+//            qDebug()<< " firstEdgeVertices:"
+//                    << firstEdgeVertices
+//                    << " secondEdgeVertices:" << secondEdgeVertices;
         }
-        qDebug()<< "Graph::randomNetRegularCreate() - removing edges:"
-                <<firstEdge << secondEdge;
+//        qDebug()<< " removing edges:" <<firstEdge << secondEdge;
         m_edges.removeAll(firstEdge);
         m_edges.removeAll(secondEdge);
-        qDebug()<< "Graph::randomNetRegularCreate() - 2 edges deleted for reordering:"
-                << firstEdgeVertices[0] << "->" << firstEdgeVertices[1]
-                << "and"
-                << secondEdgeVertices[0] << "->" << secondEdgeVertices[1]
-                << "edge list count:" << m_edges.size();
+
+//        qDebug()<< " 2 edges deleted for reordering:"
+//                << firstEdgeVertices[0] << "->" << firstEdgeVertices[1]
+//                << "and"
+//                << secondEdgeVertices[0] << "->" << secondEdgeVertices[1]
+//                << "edge list count:" << m_edges.size();
 
         m_edges.append( firstEdgeVertices[0]+"->"+secondEdgeVertices[1]);
         m_edges.append(secondEdgeVertices[0]+"->"+firstEdgeVertices[1]);
-        qDebug()<< "Graph::randomNetRegularCreate() - 2 new edges added:"
-                << firstEdgeVertices[0] << "->" << secondEdgeVertices[1]
-                <<"and"
-                << secondEdgeVertices[0]<<"->"<<firstEdgeVertices[1]
-                << "final edge list count:" << m_edges.size();
+
+//        qDebug()<< " 2 new edges added:"
+//                << firstEdgeVertices[0] << "->" << secondEdgeVertices[1]
+//                <<"and"
+//                << secondEdgeVertices[0]<<"->"<<firstEdgeVertices[1]
+//                << "final edge list count:" << m_edges.size();
     }
 
     edgeCount = 1;
 
+    //
     // draw edges
+    //
     for (int i = 0; i < m_edges.size(); ++i) {
 
         m_edge = m_edges.at(i).split("->");
-        qDebug() << "Graph::randomNetRegularCreate() -"
-                 << "Drawing undirected Edge no" << edgeCount << ":"
-                 << m_edge[0].toInt(0) << "<->" << m_edge[1].toInt(0);
+
+//        qDebug() << "Drawing undirected Edge no" << edgeCount << ":"
+//                 << m_edge[0].toInt(0) << "<->" << m_edge[1].toInt(0);
 
         edgeCreate(m_edge[0].toInt(0), m_edge[1].toInt(0), 1,
                 initEdgeColor,
@@ -11679,12 +11675,10 @@ void Graph::randomNetRegularCreate(const int &N,
                 (isUndirected()) ? false:true,
                 false,
                 QString(), false);
+
         edgeCount++;
         progressCounter +=progressFraction;
-        qDebug() << "Graph::randomNetRegularCreate() -"
-                    << "progressCounter " << progressCounter
-                    << "fmod ( progressCounter, 1.0) = "
-                 << fmod ( progressCounter, 1.0);
+
         if ( fmod ( progressCounter, 1.0) == 0) {
             emit signalProgressBoxUpdate( (int) progressCounter );
         }
@@ -11714,7 +11708,7 @@ void Graph::randomNetRegularCreate(const int &N,
 void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
                                        const bool updateProgress)
 {
-    qDebug()<< "Graph::createRingLatticeNetwork()";
+    qDebug()<< "Creating ring lattice random network...";
     int x=0;
     int y=0;
     int progressCounter=0;
@@ -11738,20 +11732,21 @@ void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
     for (int i=0; i< N ; i++) {
         x=x0 + radius * cos(i * rad);
         y=y0 + radius * sin(i * rad);
+//        qDebug() << "creating new vertex " << i+1;
         vertexCreate( i+1,initVertexSize,initVertexColor,
                       initVertexNumberColor, initVertexNumberSize,
                       QString::number (i+1), initVertexLabelColor,  initVertexLabelSize,
                       QPoint(x, y), initVertexShape, initVertexIconPath, false);
-        qDebug("Graph::createRingLatticeNetwork(): new node i=%i, at x=%i, y=%i", i+1, x,y);
+
     }
     int target = 0;
     for (int i=0;i<N; i++){
-        qDebug("Creating links for node %i = ", i+1);
+//        qDebug("Creating links for node %i = ", i+1);
         for (int j=0; j< degree/2 ; j++) {
             target = i + j+1 ;
             if ( target > (N-1))
                 target = target-N;
-            qDebug("Creating Link between %i  and %i", i+1, target+1);
+//            qDebug("Creating Link between %i  and %i", i+1, target+1);
             edgeCreate(i+1, target+1, 1, initEdgeColor,
                        EdgeType::Undirected, false, false,
                        QString(), false);
@@ -11791,7 +11786,7 @@ void Graph::randomNetLatticeCreate(const int &N,
                                    const int &neighborhoodLength,
                                    const QString &mode,
                                    const bool &circular){
-    qDebug() << "Graph::randomNetLatticeCreate()";
+    qDebug() << "Creating lattice network...";
     Q_UNUSED(circular);
     Q_UNUSED(dimension);
     if (mode=="graph") {
@@ -11808,7 +11803,7 @@ void Graph::randomNetLatticeCreate(const int &N,
     qreal progressFraction =0;
 
     int target = 0;
-    int edgeCount = 0;
+
     QList<QString> latticeEdges;
     QStringList m_edge;
     QString edge;
@@ -11827,15 +11822,16 @@ void Graph::randomNetLatticeCreate(const int &N,
 
     // create vertices
 
-    qDebug()<< "Graph::randomNetLatticeCreate() - creating vertices";
+    qDebug()<< "creating vertices";
 
     nCount = 0;
     canvasPadding = 20;
     nodeHPadding= ( canvasWidth )  / (double) ( length + 2);
     nodeVPadding= ( canvasHeight ) / (double) ( length + 2);
-    qDebug()<< "Graph::randomNetLatticeCreate() - "
-               "canvasPadding" << canvasPadding
+
+    qDebug()<< "canvasPadding" << canvasPadding
             << "nodeHPadding"<<nodeHPadding;
+
     for (int i=0; i < length ; i++) {
 
         // compute vertical pos
@@ -11846,8 +11842,8 @@ void Graph::randomNetLatticeCreate(const int &N,
             // compute horizontal pos
             x = canvasPadding + nodeHPadding * (j+1) ;
 
-            qDebug() << "Graph::randomNetLatticeCreate() - creating new vertex at"
-                     << x << "," << y;
+//            qDebug() << "creating new vertex at"
+//                     << x << "," << y;
 
             // create vertex
             vertexCreate(
@@ -11866,9 +11862,11 @@ void Graph::randomNetLatticeCreate(const int &N,
         }
     }
 
-    // create edges
+    //
+    // compute and then draw edges
+    //
 
-    qDebug()<< "Graph::randomNetLatticeCreate() - Creating edges";
+    qDebug()<< "Computing edges";
 
     if (mode=="graph") {
 
@@ -11876,8 +11874,7 @@ void Graph::randomNetLatticeCreate(const int &N,
 
         for (int i=1;i<=N; i++){
 
-            qDebug()<< "Graph::randomNetLatticeCreate() - "
-                       "Creating undirected edges for node  "<< i;
+//            qDebug()<< "Creating undirected edges for node  "<< i;
 
             for (int j=1; j< neighborhoodLength+1 ; j++) {
 
@@ -11890,37 +11887,31 @@ void Graph::randomNetLatticeCreate(const int &N,
 
 
                         if ( i % length == 0  && target == i + 1) {
-                            qDebug()<< "Graph::randomNetLatticeCreate() - "
-                                    << i << "<->"<< target << "OOB RIGHT";
-
+//                            qDebug()<< i << "<->"<< target << "OOB RIGHT";
                             continue;
                         }
                         if ( i % length == 1  && target == i - 1) {
-                            qDebug()<< "Graph::randomNetLatticeCreate() - "
-                                    << i << "<->"<< target << "OOB LEFT";
-
+//                            qDebug()<< i << "<->"<< target << "OOB LEFT";
                             continue;
                         }
                         if ( target > N  ) {
-                            qDebug()<< "Graph::randomNetLatticeCreate() - "
-                                    << i << "<->"<< target << "OOB DOWN";
+//                            qDebug()<< i << "<->"<< target << "OOB DOWN";
                             target = target % N ;
                             continue;
                         }
 
                         if ( target < 1 ) {
-                            qDebug()<< "Graph::randomNetLatticeCreate() - "
-                                    << i << "<->"<< target << "OOB UP";
+//                            qDebug()<< i << "<->"<< target << "OOB UP";
                             target =  N - target ;
                             continue;
                         }
-                        qDebug()<< "Graph::randomNetLatticeCreate() - "
-                                << i << "<->"<< target << "OK";
+//                        qDebug()<< i << "<->"<< target << "OK";
+
                         edge = QString::number(i)+"<->"+QString::number(target);
                         oppEdge = QString::number(i)+"<->"+QString::number(target);
+
                         if ( !latticeEdges.contains(edge) && !latticeEdges.contains(oppEdge) ) {
                             latticeEdges.append(QString::number(i)+"<->"+QString::number(target));
-                            edgeCount ++;
                         }
 
                     }
@@ -11953,16 +11944,18 @@ void Graph::randomNetLatticeCreate(const int &N,
 
     }
 
-
-
+    //
     // draw edges
+    //
+
+    qDebug()<< "drawing edges";
 
     for (int i = 0; i < latticeEdges.size(); ++i) {
 
         m_edge = latticeEdges.at(i).split("<->");
-        qDebug() << "Graph::randomNetLatticeCreate() -"
-                 << "Drawing undirected Edge no" << i + 1 << ":"
-                 << m_edge[0].toInt(0) << "<->" << m_edge[1].toInt(0);
+
+//        qDebug() << "Drawing undirected Edge no" << i + 1 << ":"
+//                 << m_edge[0].toInt(0) << "<->" << m_edge[1].toInt(0);
 
         edgeCreate(m_edge[0].toInt(0), m_edge[1].toInt(0), 1,
                 initEdgeColor,
@@ -11970,15 +11963,8 @@ void Graph::randomNetLatticeCreate(const int &N,
                 (isUndirected()) ? false:true,
                 false,
                 QString(), false);
-        //        edgeCount++;
+
         progressCounter +=progressFraction;
-        //        qDebug() << "Graph::randomNetLatticeCreate() -"
-        //                    << "progressCounter " << progressCounter
-        //                    << "fmod ( progressCounter, 1.0) = "
-        //                 << fmod ( progressCounter, 1.0);
-        //        if ( fmod ( progressCounter, 1.0) == 0) {
-        //            emit signalProgressBoxUpdate( (int) progressCounter );
-        //        }
 
     }
 
