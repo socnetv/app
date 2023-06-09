@@ -43,8 +43,8 @@
 // Allows to use QT_CHARTS namespace directives (see below)
 #include <QtCharts/QChartGlobal>
 
-
-//FYI: stack is a wrapper around <deque> in C++, see: www.cplusplus.com/reference/stl/stack
+// stack is a wrapper around <deque> in C++
+// see: www.cplusplus.com/reference/stl/stack
 #include <stack>
 #include <map>
 
@@ -83,20 +83,17 @@ typedef QPair <int, pair_f_b > pair_i_fb;
 typedef QMultiHash <int, pair_i_fb > H_edges;
 typedef QHash<QString, bool> H_StrToBool;
 typedef QList<int> L_int;
-typedef QVector<int> V_int;
-typedef QVector<QString> V_str;
+typedef QList<int> V_int;
+typedef QList<QString> V_str;
 
 
 /**
   KNOWN BUGS:
-  \todo Group edge editing: i.e. change weight or color.
-  \todo - CHECK isWeighted corner case results, when !graphIsModified.
 
-  \bug Create d-regular, undirected, ask for closeness, it says we are on a disconnected graph
-  \bug Cannot read Graphml files where nodes are not declared before edges (i.e. nets/killer.graphml)
+  \bug wontfix Cannot read Graphml files where nodes are not declared before edges (i.e. nets/killer.graphml)
   \bug wontfix Pajek files with no ic / labels without quotes are displayed without colors
-  \bug wrong default edge colors (not the ones used by Settings) after loading GraphML files.
 
+  \todo Group edge editing: i.e. change weight or color.
   \todo Subgroups / Communities: clans, path distance MDS, Components, Blocks and Cutpoints.
   \todo Structural Equivalence: MDS, Block modelling, CONCOR
   */
@@ -404,7 +401,7 @@ public:
     };
 
     /* INIT AND CLEAR*/
-    Graph();
+    Graph(const int &reserveVerticesSize = 5000, const int &reserveEdgesPerVertexSize = 500);
     ~Graph();
 
 
@@ -1285,6 +1282,7 @@ private:
     /** General & initialisation variables */
 
     int m_graphModStatus;
+    int m_reserveEdgesPerVertexSize;
     int m_totalVertices, m_totalEdges, m_graphDiameter, initVertexSize;
     int initVertexLabelSize, initVertexNumberSize;
     int initVertexNumberDistance, initVertexLabelDistance;

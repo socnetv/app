@@ -46,9 +46,10 @@ GraphVertex::GraphVertex(Graph* parentGraph,
                          const int &labelSize,
                          const QPointF &p,
                          const QString &shape,
-                         const QString &iconPath ): m_graph (parentGraph)
+                         const QString &iconPath,
+                         const int &edgesEstimate): m_graph (parentGraph)
 { 
-    qDebug() << "vertex:"<< name << "initializing...";
+    qDebug() << "vertex:"<< name << "initializing...edgesEstimate:" << edgesEstimate;
 
     m_number=name;
 	m_value=val;
@@ -63,12 +64,16 @@ GraphVertex::GraphVertex(Graph* parentGraph,
     m_iconPath=iconPath;
 	m_x=p.x();
 	m_y=p.y();
-    //FIXME m_outLinkColors list need update when we remove vertices/edges
-    //m_outLinkColors.reserve(2000);
-    m_outEdgeLabels.reserve(2000);
-    m_outEdges.reserve(2000);
-    m_inEdges.reserve(2000);
-    m_neighborhoodList.reserve(1000);
+    // Use the given edges estimate to allocate memory
+    // to prevent reallocations and memory fragmentation.
+    if (edgesEstimate > 0) {
+        //FIXME m_outLinkColors list need update when we remove vertices/edges
+        //m_outLinkColors.reserve(edgesEstimate);
+        m_outEdgeLabels.reserve(edgesEstimate);
+        m_outEdges.reserve(edgesEstimate);
+        m_inEdges.reserve(edgesEstimate);
+        m_neighborhoodList.reserve(edgesEstimate);
+    }
 
     m_outEdgesCounter = 0;
     m_inEdgesCounter = 0;

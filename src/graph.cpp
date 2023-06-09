@@ -67,7 +67,7 @@
 /**
  * @brief Constructs a Graph
  */
-Graph::Graph() {
+Graph::Graph(const int &reserveVerticesSize, const int &reserveEdgesPerVertexSize) {
 
     qRegisterMetaType<MyEdge>("MyEdge");
 
@@ -84,6 +84,14 @@ Graph::Graph() {
     canvasHeight = 600;
 
     order=true;		//returns true if the indexes of the list is ordered.
+
+    // Use the given vertices estimate to allocate memory
+    if ( reserveVerticesSize > 0 ) {
+        qDebug() << "Graph reserving this vertices estimate:" << reserveVerticesSize;
+        m_graph.reserve(reserveVerticesSize);
+    }
+    // Store the
+    m_reserveEdgesPerVertexSize = reserveEdgesPerVertexSize;
 
     m_graphModStatus=ModStatus::NewNet;
     m_graphName="";
@@ -802,7 +810,8 @@ void Graph::vertexCreate(const int &number,
                     labelSize,
                     p,
                     shape,
-                    iconPath
+                    iconPath,
+                    m_reserveEdgesPerVertexSize
                     )
                 );
 

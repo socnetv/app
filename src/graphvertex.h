@@ -78,7 +78,8 @@ public:
            const int &labelSize,
            const QPointF &p,
            const QString &shape,
-                const QString &iconPath);
+           const QString &iconPath,
+           const int &edgesEstimate = 2000);
 
     GraphVertex(const int &name);
 
