@@ -13804,8 +13804,8 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
     int imin, jmin, imax, jmax, mergedClusterIndex, deletedClusterIndex ;
     qreal distanceNewCluster;
 
-    // temporary vector stores cluster members at each clustering level
-    QVector<int> clusteredItems;
+    // temporarily stores cluster members at each clustering level
+    QList<int> clusteredItems;
 
     // maps original and clustered items per their DSM matrix index
     // so that we know that at Level X the matrix index 0 corresponds to the cluster i.e. { 1,2,4}
@@ -13816,7 +13816,7 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
     QMap<QString,V_int>::const_iterator sit;
 
     // variables for diagram computation
-    QVector<QString> clusterPairNames;
+    QList<QString> clusterPairNames;
     QString cluster1, cluster2;
 
     Matrix DSM;  //dissimilarities matrix. Note: will be destroyed in the end.
@@ -13913,14 +13913,6 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
 
     }
 
-    //    for (int i = 0 ; i< N ; i ++ ) {
-    //        clusteredItems.clear();
-    //        clusteredItems << i+1;
-    //        m_clustersIndex[i] = clusteredItems;
-    //        if (diagram) {
-    //            m_clustersByName.insert(QString::number(i+1),clusteredItems );
-    //        }
-    //    }
 
     QString pMsg=tr("Computing Hierarchical Clustering. \nPlease wait...");
     emit statusMessage(pMsg);
