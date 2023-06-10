@@ -2071,7 +2071,7 @@ bool Parser::parseAsGraphML(const QByteArray &rawData){
  * @return bool
  */
 bool Parser::readGraphML(QXmlStreamReader &xml){
-    qDebug()<< " Parser::readGraphML() " ;
+    qDebug()<< "Reading graphml token/element..." ;
     bool_node=false;
     bool_edge=false;
     bool_key=false;
@@ -2320,10 +2320,11 @@ void Parser::readGraphMLElementNode(QXmlStreamReader &xml){
     QXmlStreamAttributes xmlStreamAttr = xml.attributes();
     node_id = (xmlStreamAttr.value("id")).toString();
     totalNodes++;
-    qDebug()<< "reading node id"<<  node_id
-           << "index" << totalNodes
-           << "added to nodeHash"
-           << "gwWidth, gwHeight "<< gwWidth<< "," <<gwHeight;
+
+//    qDebug()<< "reading node id"<<  node_id
+//           << "index" << totalNodes
+//           << "added to nodeHash"
+//           << "gwWidth, gwHeight "<< gwWidth<< "," <<gwHeight;
 
     nodeHash[node_id]=totalNodes;
 
@@ -2414,11 +2415,12 @@ void Parser::readGraphMLElementEdge(QXmlStreamAttributes &xmlStreamAttr){
     edge_source = xmlStreamAttr.value("source").toString();
     edge_target = xmlStreamAttr.value("target").toString();
     edge_directed = xmlStreamAttr.value("directed").toString();
-    qDebug()<< "Parsing edge id: "
-            <<	xmlStreamAttr.value("id").toString()
-                << "edge_source " << edge_source
-                << "edge_target " << edge_target
-                << "directed " << edge_directed;
+
+//    qDebug()<< "Parsing edge id: "
+//            <<	xmlStreamAttr.value("id").toString()
+//                << "edge_source " << edge_source
+//                << "edge_target " << edge_target
+//                << "directed " << edge_directed;
 
     missingNode=false;
     edgeWeight=initEdgeWeight;
