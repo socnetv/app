@@ -15694,10 +15694,10 @@ bool Graph::isModified() const {
  */
 bool Graph::isLoaded() const {
     if ( !getFileName().isEmpty() && getFileFormat() != FileType::UNRECOGNIZED ) {
-        qDebug() << "Graph::isLoaded() - isLoaded: true ";
+        qDebug() << "isLoaded: true ";
         return true;
     }
-    qDebug() << "Graph::isLoaded() - isLoaded: false ";
+    qDebug() << "isLoaded: false ";
     return false;
 }
 
@@ -15952,7 +15952,7 @@ void Graph::saveToFile(const QString &fileName,
                       const int &fileType ,
                       const bool &saveEdgeWeights)
 {
-    qDebug() << "Graph::saveToFile()";
+    qDebug() << "Saving current graph to file named:" << fileName;
     bool saved = false;
     m_fileFormat = fileType;
     switch (fileType) {
@@ -16164,26 +16164,27 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
     QString iconsDirPath = saveDirPath + "/" + iconsSubDir;
 
     QDir saveDir(saveDirPath);
+    qreal rel_coord_x = 0;
+    qreal rel_coord_y = 0;
 
     // Check if there are nodes with custom icons in the network
     if ( graphHasVertexCustomIcons()) {
-        qDebug () << "Graph::saveToGraphMLFormat() - Custom node icons exist."
+        qDebug () << "Custom node icons exist."
                   <<  "Creating images subdir" << iconsDirPath;
         // There are custom node icons in this net.
         // We need to save these custom icons to a folder
         // Create a subdir inside the directory where the actual network file
         // is about to be saved. All custom icons will be copied one-by-one there.
         if ( saveDir.mkpath( iconsDirPath ) ){
-            qDebug () << "Graph::saveToGraphMLFormat() - created icons subdir"
+            qDebug () << "created icons subdir"
                       << iconsDirPath;
         }
         else {
-            qDebug () << "Graph::saveToGraphMLFormat() - ERROR creating subdir!";
+            qDebug () << "ERROR creating subdir!";
         }
     }
     else {
-        qDebug () << "Graph::saveToGraphMLFormat() - No custom node icons."
-                     << "Nothing to do";
+        qDebug () << "No custom node icons. Nothing to do";
     }
 
     QString iconPath = QString();
@@ -16192,8 +16193,7 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
 
     networkName  = (networkName == "") ? getName().toHtmlEscaped(): networkName;
     networkName  = (networkName == "unnamed") ? fileNameNoPath.toHtmlEscaped().left(fileNameNoPath.lastIndexOf('.')): networkName;
-    qDebug () << "Graph::saveToGraphMLFormat() - file:" << fileName.toUtf8()
-              << "networkName"<< networkName;
+    qDebug () << "file:" << fileName.toUtf8() << "networkName"<< networkName;
 
     maxWidth = (maxWidth == 0) ? (int)canvasWidth:maxWidth ;
     maxHeight= (maxHeight== 0) ? (int)canvasHeight:maxHeight;
@@ -16207,10 +16207,9 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
     QTextStream outText( &f );
     QString outTextEncoding = QStringEncoder(outText.encoding()).name();
 
-    qDebug () << "Graph::saveToGraphMLFormat() - Using default codec for saving stream: "
-             << outTextEncoding;
+    qDebug () << "Using default codec for saving stream:"<< outTextEncoding;
 
-    qDebug()<< "Graph::saveToGraphMLFormat() -  writing xml version";
+    qDebug()<< " writing xml version...";
     outText << "<?xml version=\"1.0\" encoding=\"" << outTextEncoding << "\"?> \n";
     outText << " <!-- Created by SocNetV "<<  VERSION << " -->\n" ;
     outText << "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" "
@@ -16219,7 +16218,7 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
                "      http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">"
                "\n";
 
-    qDebug()<< "Graph::saveToGraphMLFormat() - writing keys ";
+    qDebug()<< "writing keys...";
 
     outText <<	"  <key id=\"d0\" for=\"node\" attr.name=\"label\" attr.type=\"string\"> \n"
                 "    <default>" "</default> \n"
@@ -16253,15 +16252,15 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
         copyIconFileNamePath = iconsDirPath + "/" + iconFileName;
         if ( ! QFile(copyIconFileNamePath).exists() ) {
             if  ( QFile::copy(iconPath, copyIconFileNamePath) )  {
-                qDebug () << "Graph::saveToGraphMLFormat() - default iconFile saved to: " << copyIconFileNamePath;
+                qDebug () << "default iconFile saved to:" << copyIconFileNamePath;
             }
             else {
-                qDebug () << "Graph::saveToGraphMLFormat() - ERROR saving default iconFile to: " << copyIconFileNamePath;
+                qDebug () << "ERROR saving default iconFile to:" << copyIconFileNamePath;
             }
 
         }
         else {
-            qDebug () << "Graph::saveToGraphMLFormat() - default iconFile already exists in: " << copyIconFileNamePath;
+            qDebug () << "default iconFile already exists in:" << copyIconFileNamePath;
         }
         // And we write a new key (id 51) in our graphml for this default custom icon
         outText <<	"  <key id=\"d51\" for=\"node\" attr.name=\"custom-icon\" attr.type=\"string\"> \n"
@@ -16294,7 +16293,7 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
     for (int i = 0; i < relations(); ++i) {
         relationName = (m_relationsList.at(i).simplified()).remove("\"");
         relationSet( i , false);
-        qDebug()<< "Graph::saveToGraphMLFormat() - writing graph tag. Relation" << relationName ;
+        qDebug()<< "writing graph tag. Relation:" << relationName ;
 
         if (isUndirected())
             outText << "  <graph id=\""
@@ -16305,12 +16304,11 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
                     << (( relations()==1) ? networkName : relationName )
                     << "\" edgedefault=\"directed\"> \n";
 
-        qDebug()<< "Graph::saveToGraphMLFormat() - writing nodes data";
+        qDebug()<< "writing nodes data...";
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
             if ( ! (*it)->isEnabled () )
                 continue;
-            qDebug() << "Graph::saveToGraphMLFormat() - Node id: "
-                     <<  (*it)->number()  ;
+            qDebug() << "Node id:" <<  (*it)->number()  ;
             outText << "    <node id=\"" << (*it)->number() << "\"> \n";
             m_color = (*it)->color();
             m_size = (*it)->size() ;
@@ -16322,12 +16320,15 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
 
             outText << "      <data key=\"d0\">" << m_label <<"</data>\n";
 
-            qDebug()<<"Graph::saveToGraphMLFormat() - Coordinates x "
-                   << (*it)->x()<< " "<<maxWidth
-                   <<" y " << (*it)->y()<< " "<<maxHeight;
+            rel_coord_x = (*it)->x()/(maxWidth);
+            rel_coord_y = (*it)->y()/(maxHeight);
+            qDebug()<<"Rel coordinates: "
+                   << rel_coord_x
+                   << ","
+                   << rel_coord_y;
 
-            outText << "      <data key=\"d1\">" << (*it)->x()/(maxWidth) <<"</data>\n";
-            outText << "      <data key=\"d2\">" << (*it)->y()/(maxHeight) <<"</data>\n";
+            outText << "      <data key=\"d1\">" << rel_coord_x <<"</data>\n";
+            outText << "      <data key=\"d2\">" << rel_coord_y <<"</data>\n";
 
             if (  initVertexSize != m_size ) {
                 outText << "      <data key=\"d3\">" << m_size  <<"</data>\n";
@@ -16345,17 +16346,17 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
                 copyIconFileNamePath = iconsDirPath + "/" + iconFileName;
                 if ( ! QFile(copyIconFileNamePath).exists() ) {
                     if  ( QFile::copy(iconPath, copyIconFileNamePath) )  {
-                        qDebug () << "Graph::saveToGraphMLFormat() - iconFile for" << (*it)->number()
-                                  << "saved to: " << copyIconFileNamePath;
+                        qDebug () << "iconFile for node:" << (*it)->number()
+                                  << "saved to:" << copyIconFileNamePath;
                     }
                     else {
-                        qDebug () << "Graph::saveToGraphMLFormat() - ERROR saving iconFile for" << (*it)->number()
+                        qDebug () << "ERROR saving iconFile for" << (*it)->number()
                                   << "saved to: " << copyIconFileNamePath;
                     }
 
                 }
                 else {
-                    qDebug () << "Graph::saveToGraphMLFormat() - iconFile for" << (*it)->number()
+                    qDebug () << "iconFile for node:" << (*it)->number()
                               << "already exists in:" << copyIconFileNamePath;
                 }
                 outText << "      <data key=\"d51\">" << iconsSubDir + "/"+ iconFileName <<"</data>\n";
@@ -16373,7 +16374,7 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
 
         }
 
-        qDebug() << "Graph::saveToGraphMLFormat() - writing edges data";
+        qDebug() << "writing edges data...";
         edgeCount=0;
         if (isDirected()) {
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
@@ -16390,11 +16391,11 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
                         m_color = (*it)->outLinkColor( target );
                         m_label = edgeLabel(source, target);
                         m_label=htmlEscaped(m_label);
-                        qDebug()<< "Graph::saveToGraphMLFormat() - edge no "
+                        qDebug()<< "edge no:"
                                 << edgeCount
-                                << " from n1=" << source << " to n2=" << target
-                                << " with weight " << weight
-                                << " and color " << m_color.toUtf8() ;
+                                << "from n1=" << source << "to n2=" << target
+                                << "with weight" << weight
+                                << "and color" << m_color.toUtf8() ;
                         outText << "    <edge id=\""<< "e"+QString::number(edgeCount)
                                 << "\" directed=\"" << "true" << "\" source=\"" << source
                                 << "\" target=\"" << target << "\"";
@@ -16443,11 +16444,11 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
                         m_color = (*it)->outLinkColor( target );
                         m_label = edgeLabel(source, target);
                         m_label=htmlEscaped(m_label);
-                        qDebug()<< "Graph::saveToGraphMLFormat() - edge no "
+                        qDebug()<< "edge no"
                                 << edgeCount
-                                << " from n1=" << source << " to n2=" << target
-                                << " with weight " << weight
-                                << " and color " << m_color.toUtf8() ;
+                                << "from n1=" << source << "to n2=" << target
+                                << "with weight" << weight
+                                << "and color" << m_color.toUtf8() ;
                         outText << "    <edge id=\""<< "e"+QString::number(edgeCount)
                                 << "\" directed=\"" << "false" << "\" source=\"" << source
                                 << "\" target=\"" << target << "\"";

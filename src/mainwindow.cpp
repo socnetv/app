@@ -7994,7 +7994,7 @@ void MainWindow::slotNetworkExportPajek()
 
 
 /**
- * @brief Exports the network to a adjacency matrix-formatted file
+ * @brief Exports the network to an adjacency matrix-formatted file
  * Calls the relevant Graph method.
  */
 void MainWindow::slotNetworkExportSM(){
@@ -8172,7 +8172,10 @@ void MainWindow::slotNetworkFileView(){
      * 6. The app says there is no network loaded!
      */
 
-    qDebug() << "Request to display current network file. Filaname:" << fileName.toLatin1();
+    qDebug() << "Request to display current network file. Filename:" << fileName.toLatin1()
+             << "isLoaded:" << activeGraph->isLoaded()
+             << "isSaved:" << activeGraph->isSaved()
+             << "graph filename:" << activeGraph->getFileName();
 
     if ( activeGraph->isLoaded() && activeGraph->isSaved()  ) {
         //network unmodified, read loaded file again.
