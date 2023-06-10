@@ -66,7 +66,7 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         qRegisterMetaType<QList<int> >();
 
         // Set defaults
-        secondDoubleClick=false;
+        hasDoubleClickedNode=false;
         m_isTransformationActive = false;
         m_nodeLabel="";
 
@@ -195,8 +195,9 @@ void GraphicsWidget::clear() {
     scene()->clear();
     m_curRelation=0;
     clickedEdge=0;
-    firstNode=0;
-    secondDoubleClick=false;
+    firstDoubleClickedNode=0;
+    secondDoubleClickedNode=0;
+    hasDoubleClickedNode=false;
     qDebug() << "Finished clearing graphics widget";
 }
 
@@ -346,27 +347,27 @@ void GraphicsWidget::drawEdge(const int &sourceNum, const int &targetNum,
 
 
 /**
- * @brief Creates a new edge, when the user middle-clicks on two nodes consecutively
+ * @brief Handles double-clicks (or middle-clicks) on the given node, creating a new edge if needed.
  *
- * On the first middle-click, it saves the first node (source).
- * On the second middle-click, it saves the second node as target and signals MW which will notify activeGraph,
- * which in turn will signal back to drawEdge().
+ * If it is the first double/middle-click on a node, it saves the first node as source.
+ * On a second double/middle-click on a node, it saves the second node as target and signals MW to notify activeGraph,
+ * which will create a new edge from source to target and will signal back to GW to draw the edge on the canvas.
  *
  * @param node
  */
-void GraphicsWidget::startEdge(GraphicsNode *node){
-    if (secondDoubleClick){
+void GraphicsWidget::handleDoubleClickOnNode(GraphicsNode *node){
+    if (hasDoubleClickedNode){
         qDebug()<< "Got second consecutive double click. "
                    "signaling to MW to create a new edge...";
-        secondNode=node;
-        emit userMiddleClicked(firstNode->nodeNumber(), secondNode->nodeNumber() );
+        secondDoubleClickedNode=node;
+        emit userMiddleClicked(firstDoubleClickedNode->nodeNumber(), secondDoubleClickedNode->nodeNumber() );
         emit setCursor(Qt::ArrowCursor);
-        secondDoubleClick=false;
+        hasDoubleClickedNode=false;
     }
     else{
         qDebug()<<"Got first double click to create a new edge...";
-        firstNode=node;
-        secondDoubleClick=true;
+        firstDoubleClickedNode=node;
+        hasDoubleClickedNode=true;
         emit setCursor( Qt::PointingHandCursor );
     }
 }
@@ -530,10 +531,10 @@ void GraphicsWidget::removeEdge(const int &sourceNum,
 void GraphicsWidget::removeItem( GraphicsNode *node){
     int i=node->nodeNumber();
     qDebug() << "Removing node with number: " <<  i;
-    if (firstNode == node) {
+    if (firstDoubleClickedNode == node) {
         qDebug() << "Node" <<  i
                  << "previously set as source node for a new edge. Unsetting.";
-        secondDoubleClick = false;
+        hasDoubleClickedNode = false;
         emit setCursor(Qt::ArrowCursor);
     }
     nodeHash.remove(i);
@@ -1404,7 +1405,7 @@ QList<SelectedEdge> GraphicsWidget::selectedEdges() {
  * @brief Handles user double-clicks.
  *
  * If the double-click was on empty space, it initiates the new node creation process.
- * Otherwise, it the user double-clicks on a node, starts the edge creation process.
+ * Otherwise, it the user double-clicks on a node, starts the new edge creation process.
  *
  * @param QMouseEvent
  */
@@ -1415,7 +1416,7 @@ void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
         if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
             if (GraphicsNode *node = qgraphicsitem_cast<GraphicsNode *>(item)) {
                 qDebug() << "Double-click on a node. Starting new edge...";
-                startEdge(node);
+                handleDoubleClickOnNode(node);
                 QGraphicsView::mouseDoubleClickEvent(e);
                 return;
             }
@@ -1470,7 +1471,7 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
                 }
                 if ( e->button()==Qt::MiddleButton) {
                     qDebug() << "This was a middle-click on node. Calling to start or conclude a new edge...";
-                    startEdge(node);
+                    handleDoubleClickOnNode(node);
                 }
                 QGraphicsView::mousePressEvent(e);
                 return;

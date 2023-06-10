@@ -140,7 +140,6 @@ protected:
 signals: 
 
     void nodeClicked(GraphicsNode*);
-    void startEdge(GraphicsNode *);
 
 
 private:

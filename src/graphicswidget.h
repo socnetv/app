@@ -184,7 +184,7 @@ public slots:
 
     void setEdgeHighlighting(const bool &toggle);
 
-    void startEdge(GraphicsNode *node);
+    void handleDoubleClickOnNode(GraphicsNode *node);
 
     void clearGuides();
     void addGuideCircle( const double&x0, const double&y0, const double&radius);
@@ -236,10 +236,10 @@ private:
     QString m_nodeLabel, m_numberColor, m_labelColor;
     QString edgeName;
     bool m_isTransformationActive;
-    bool secondDoubleClick, clickedEdgeExists;
+    bool hasDoubleClickedNode, clickedEdgeExists;
     bool m_nodeNumbersInside, m_nodeNumberVisibility, m_nodeLabelVisibility;
     bool m_edgeHighlighting;
-    GraphicsNode *firstNode, *secondNode;
+    GraphicsNode *firstDoubleClickedNode, *secondDoubleClickedNode;
     GraphicsNode *markedEdgeSource;
     GraphicsNode *markedEdgeTarget;
     GraphicsEdge *clickedEdge;

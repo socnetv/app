@@ -5378,9 +5378,6 @@ void MainWindow::initSignalSlots() {
     connect( graphicsWidget, &GraphicsWidget::userMiddleClicked,
             this,&MainWindow::slotEditEdgeCreate);
 
-//    connect( graphicsWidget, SIGNAL( userMiddleClicked(const int &, const int &) ),
-//             this, SLOT( slotEditEdgeCreate(const int &, const int &) ) 	);
-
     connect( graphicsWidget, SIGNAL( openNodeMenu() ),
              this, SLOT( slotEditNodeOpenContextMenu() ) ) ;
 
