@@ -5374,8 +5374,12 @@ void MainWindow::initSignalSlots() {
     connect( graphicsWidget, &GraphicsWidget::setCursor,
              this,&MainWindow::setCursor);
 
-    connect( graphicsWidget, SIGNAL( userMiddleClicked(const int &, const int &) ),
-             this, SLOT( slotEditEdgeCreate(const int &, const int &) ) 	);
+
+    connect( graphicsWidget, &GraphicsWidget::userMiddleClicked,
+            this,&MainWindow::slotEditEdgeCreate);
+
+//    connect( graphicsWidget, SIGNAL( userMiddleClicked(const int &, const int &) ),
+//             this, SLOT( slotEditEdgeCreate(const int &, const int &) ) 	);
 
     connect( graphicsWidget, SIGNAL( openNodeMenu() ),
              this, SLOT( slotEditNodeOpenContextMenu() ) ) ;
@@ -10526,7 +10530,7 @@ void MainWindow::slotEditEdgeCreate (const int &source, const int &target, const
             , bezier);
 
     if (result) {
-        statusMessage(tr("New edge %1 -> %2 created.").arg(source).arg(target));
+        statusMessage(tr("New edge %1 -> %2 created, weight %3.").arg(source).arg(target).arg(weight));
     }
 }
 

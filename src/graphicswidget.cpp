@@ -349,8 +349,7 @@ void GraphicsWidget::drawEdge(const int &sourceNum, const int &targetNum,
  * @brief Creates a new edge, when the user middle-clicks on two nodes consecutively
  *
  * On the first middle-click, it saves the first node (source).
- * On the second middle-click, it saves the second node as target and emits the signal
- * userMiddleClicked() to MW which will notify activeGraph,
+ * On the second middle-click, it saves the second node as target and signals MW which will notify activeGraph,
  * which in turn will signal back to drawEdge().
  *
  * @param node
@@ -358,7 +357,7 @@ void GraphicsWidget::drawEdge(const int &sourceNum, const int &targetNum,
 void GraphicsWidget::startEdge(GraphicsNode *node){
     if (secondDoubleClick){
         qDebug()<< "Got second consecutive double click. "
-                   "Emitting userMiddleClicked() to create edge";
+                   "signaling to MW to create a new edge...";
         secondNode=node;
         emit userMiddleClicked(firstNode->nodeNumber(), secondNode->nodeNumber() );
         emit setCursor(Qt::ArrowCursor);
