@@ -781,7 +781,7 @@ void GraphVertex::setIsolated(bool isolated) {
  * @return bool
  */
 bool GraphVertex::isIsolated() {
-    return !(isOutLinked() | isInLinked()) ;
+    return !(isOutLinked() || isInLinked()) ;
 }
 
 
