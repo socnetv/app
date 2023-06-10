@@ -842,7 +842,7 @@ void MainWindow::slotOpenSettingsDialog() {
 
 
 /**
- * @brief Toggles the use of SocNetV default Qt StyleSheet
+ * @brief Toggles the use of our own Qt StyleSheet
  *
  * The .qss file is defined in project resources
  *
@@ -5799,9 +5799,12 @@ void MainWindow::initApp(){
     m_textEditors.clear();
 
     QApplication::restoreOverrideCursor();
+    // Do it again, to catch any older overriden cursor
     QApplication::restoreOverrideCursor();
 
     setCursor(Qt::ArrowCursor);
+
+    setWindowTitle("SocNetV");
 
     statusMessage( tr("Ready"));
 
@@ -7415,7 +7418,7 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
 
     Q_ASSERT_X( !fileNameNoPath.isEmpty(),  "not empty filename ", "empty filename " );
 
-    setWindowTitle("SocNetV "+ VERSION +" - "+fileNameNoPath);
+    setWindowTitle(fileNameNoPath);
     setLastPath(fileName); // store this path and file
 
     QString fileFormatHuman;
