@@ -541,9 +541,7 @@ void GraphicsWidget::removeItem( GraphicsNode *node){
     nodeHash.remove(i);
     scene()->removeItem(node);
     node->deleteLater ();
-    qDebug() << "Node removed. "
-             << "scene items now: " << scene()->items().size()
-             << "view items: " << items().size();
+    qDebug() << "Node removed. ";
 }
 
 
@@ -568,6 +566,7 @@ void GraphicsWidget::removeItem( GraphicsEdge * edge){
     scene()->removeItem(edge);
     qDebug() << "Calling edge->deleteLater()" ;
     edge->deleteLater();
+    qDebug() << "Finished";
 }
 
 
@@ -599,6 +598,7 @@ void GraphicsWidget::removeItem( GraphicsEdgeLabel *edgeLabel){
 
 /**
  * @brief Removes a node label item from the scene.
+ *
  * @param nodeLabel
  */
 void GraphicsWidget::removeItem( GraphicsNodeLabel *nodeLabel){
