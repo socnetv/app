@@ -4002,7 +4002,7 @@ void Graph::setSymmetric(){
  */
 void Graph::addRelationSymmetricStrongTies(const bool &allRelations){
 
-    qDebug()<< "Graph::addRelationSymmetricStrongTies()"
+    qDebug()<< "Creating new relation using strong ties only."
             << "initial relations"<<relations();
 
     int y=0, v2=0, v1=0, weight;
@@ -4025,23 +4025,20 @@ void Graph::addRelationSymmetricStrongTies(const bool &allRelations){
             v2 = it1.key();
             weight = it1.value();
             y=vpos[ v2 ];
-            qDebug() << "Graph::addRelationSymmetricStrongTies() - "
+            qDebug() << ""
                      << v1 << "->" << v2 << "=" << weight << "Checking opposite.";
             invertWeight = m_graph[y]->hasEdgeTo( v1,allRelations ) ;
             if ( invertWeight == 0 ) {
-                qDebug() << "Graph::addRelationSymmetricStrongTies() - " << v1
-                         << "<-" <<  v2 << " does not exist. Weak tie. Continue." ;
+                qDebug() << v1 << "<-" <<  v2 << " does not exist. Weak tie. Continue." ;
             }
             else {
                 if (!strongTies->contains(QString::number(v1)+"--"+QString::number(v2)) &&
                         !strongTies->contains(QString::number(v2)+"--"+QString::number(v1)) ){
-                    qDebug() << "Graph::addRelationSymmetricStrongTies() - " << v1
-                             << "--" << v2 << " exists. Strong Tie. Adding";
+                    qDebug() << v1 << "--" << v2 << " exists. Strong Tie. Adding";
                     strongTies->insert(QString::number(v1)+"--"+QString::number(v2), 1);
                 }
                 else {
-                    qDebug() << "Graph::addRelationSymmetricStrongTies() - " << v1
-                             << "--" << v2 << " exists. Strong Tie already found. Continue";
+                    qDebug() << v1 << "--" << v2 << " exists. Strong Tie already found. Continue";
                 }
             }
             ++it1;
@@ -4054,16 +4051,15 @@ void Graph::addRelationSymmetricStrongTies(const bool &allRelations){
     QHash<QString,qreal>::const_iterator it2;
     it2=strongTies->constBegin();
     QStringList vertices;
-    qDebug() << "Graph::addRelationSymmetricStrongTies() - creating strong tie edges";
+    qDebug() << "creating strong tie edges...";
     while ( it2!=strongTies->constEnd() ){
         vertices = it2.key().split("--");
-        qDebug() << "Graph::addRelationSymmetricStrongTies() - tie " <<it2.key()
-                 << "vertices.at(0)" << vertices.at(0)
-                 << "vertices.at(1)" << vertices.at(1);
+//        qDebug() << "tie " <<it2.key()
+//                 << "vertices.at(0)" << vertices.at(0)
+//                 << "vertices.at(1)" << vertices.at(1);
         v1 = (vertices.at(0)).toInt();
         v2 = (vertices.at(1)).toInt();
-        qDebug() << "Graph::addRelationSymmetricStrongTies() - calling edgeCreate for"
-                 << v1 << "--"<<v2;
+//        qDebug() << "calling edgeCreate for" << v1 << "--"<<v2;
         edgeCreate( v1, v2, 1, initEdgeColor, EdgeType::Undirected, true, false,
                     QString(), false);
         ++it2;
@@ -4074,8 +4070,7 @@ void Graph::addRelationSymmetricStrongTies(const bool &allRelations){
     m_graphIsSymmetric=true;
 
     setModStatus(ModStatus::EdgeCount);
-    qDebug()<< "Graph::addRelationSymmetricStrongTies()"
-            << "final relations"<<relations();
+
 }
 
 
