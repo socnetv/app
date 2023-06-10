@@ -92,10 +92,10 @@ public:
 
     int nodeNumber() {return m_num;}
 
-    void addInLink( GraphicsEdge *edge ) ;
-    void deleteInLink(GraphicsEdge*);
-    void addOutLink( GraphicsEdge *edge ) ;
-    void deleteOutLink(GraphicsEdge*);
+    void addInEdge( GraphicsEdge *edge ) ;
+    void removeInEdge(GraphicsEdge*);
+    void addOutEdge( GraphicsEdge *edge ) ;
+    void removeOutEdge(GraphicsEdge*);
 
     void setSize(const int &);
     int size() const;

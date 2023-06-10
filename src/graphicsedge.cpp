@@ -59,8 +59,8 @@ GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
 
     graphicsWidget->scene()->addItem(this);  //add edge to scene to be displayed
 
-    from->addOutLink( this );       // adds this new edge to sourceNode
-    to->addInLink( this );          // adds this new edge to targetNode
+    from->addOutEdge( this );       // adds this new edge to sourceNode
+    to->addInEdge( this );          // adds this new edge to targetNode
 
     source=from;                    // saves the source node
     target=to;                      // saves the target node
@@ -97,13 +97,13 @@ GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
 
     m_drawWeightNumber = weightNumbers;     // controls if weight number will be shown
 
-    qDebug()<< "GraphicsEdge::GraphicsEdge():  "
-            << source->nodeNumber()
-            << "->"
-            << target->nodeNumber()
-            <<" = " << m_weight
-           <<" label " << m_label
-          <<" edgeType " << m_edgeDirType;
+//    qDebug()<< "Constructed graphics edge:"
+//            << source->nodeNumber()
+//            << "->"
+//            << target->nodeNumber()
+//            <<" = " << m_weight
+//           <<" label " << m_label
+//          <<" edgeType " << m_edgeDirType;
 
     if (m_drawWeightNumber) {
         addWeightNumber();
@@ -139,9 +139,9 @@ void GraphicsEdge::showArrows(const bool &drawArrows){
 
 
 void GraphicsEdge::removeRefs(){
-    qDebug("GraphicsEdge: removeRefs()");
-    source->deleteOutLink(this);
-    target->deleteInLink(this);
+//    qDebug() << "Removing edge refs...";
+    source->removeOutEdge(this);
+    target->removeInEdge(this);
 }
 
 
@@ -175,7 +175,7 @@ QString GraphicsEdge::colorToPajek() {
  * @param w
  */
 void GraphicsEdge::setWeight(const qreal &w) {
-    qDebug() << "GraphicsEdge::setWeight() " << w;
+    qDebug() << "Setting edge weight:" << w;
     prepareGeometryChange();
     m_weight = w;
     if ( fabs(m_weight) > 1  )  {
@@ -194,7 +194,6 @@ void GraphicsEdge::setWeight(const qreal &w) {
  * @return
  */
 qreal GraphicsEdge::weight() const {
-    qDebug() << "GraphicsEdge::weight() " << m_weight;
     return m_weight;
 }
 
@@ -236,7 +235,7 @@ void GraphicsEdge::setWeightNumberVisibility (const bool &toggle) {
  * @param label
  */
 void GraphicsEdge::setLabel(const QString &label) {
-    qDebug() << "GraphicsEdge::setLabel() " << label;
+//    qDebug() << "Setting graphics edge label:" << label;
     prepareGeometryChange();
     m_label = label;
     if (m_drawLabel)
@@ -275,12 +274,19 @@ void GraphicsEdge::setLabelVisibility (const bool &toggle) {
 
 
 
-
+/**
+ * @brief Returns the source node of this graphics edge
+ * @return
+ */
 GraphicsNode *GraphicsEdge::sourceNode() const {
     return source;
 }
 
 
+/**
+ * @brief Sets the source node of this graphics edge
+ * @param node
+ */
 void GraphicsEdge::setSourceNode(GraphicsNode *node) {
     source = node;
     adjust();
@@ -304,11 +310,19 @@ int GraphicsEdge::sourceNodeNumber () {
 }
 
 
+/**
+ * @brief Returns the target node.
+ * @return
+ */
 GraphicsNode *GraphicsEdge::targetNode() const {
     return target;
 }
 
 
+/**
+ * @brief Sets the target node.s
+ * @param node
+ */
 void GraphicsEdge::setTargetNode(GraphicsNode *node){
     target = node;
     adjust();
@@ -343,17 +357,29 @@ void GraphicsEdge::setMinimumOffsetFromNode(const int &offset) {
 }
 
 
-
+/**
+ * @brief Returns the horizontal difference between target and source nodes.
+ * @return
+ */
 qreal GraphicsEdge::dx() const
 {
     return target->x() - source->x();
 }
 
+/**
+ * @brief Returns the vertical difference between target and source nodes.
+ * @return
+ */
 qreal GraphicsEdge::dy() const
 {
     return target->y() - source->y();
 }
 
+
+/**
+ * @brief Returns the euclidean length of the edge
+ * @return
+ */
 qreal GraphicsEdge::length() const
 { return sqrt ( dx() * dx()  + dy() * dy() ) ; }
 
@@ -535,12 +561,12 @@ QRectF GraphicsEdge::boundingRect() const {
  * @brief Changes the direction type of edge A->B
   */
 void GraphicsEdge::setDirectionType(const int &dirType){
-    qDebug()<< "Edge"
-            << source->nodeNumber()
-            << "->"
-            << target->nodeNumber()
-            << "new direction type"
-            << dirType;
+//    qDebug()<< "Edge"
+//            << source->nodeNumber()
+//            << "->"
+//            << target->nodeNumber()
+//            << "new direction type"
+//            << dirType;
     prepareGeometryChange();
     m_edgeDirType = dirType;
     m_drawArrows = true;
@@ -698,10 +724,6 @@ QVariant GraphicsEdge::itemChange(GraphicsItemChange change, const QVariant &val
  * @return
  */
 qreal GraphicsEdge::width() const{
-    //    if ( fabs(m_weight) > 1  )  {
-    //        return 1+log ( 1+ log(fabs(m_weight) )) ;
-    //    }
-    //    return fabs(m_weight) ;
     return m_width;
 }
 
@@ -751,16 +773,19 @@ void GraphicsEdge::setHighlighting(const bool &toggle) {
 
 
 GraphicsEdge::~GraphicsEdge(){
-    qDebug() << "GraphicsEdge::~GraphicsEdge() - self-destructing edge " << sourceNodeNumber()<< "->" << targetNodeNumber();
+    qDebug() << "self-destructing edge " << sourceNodeNumber()<< "->" << targetNodeNumber();
 
     removeRefs();
+    qDebug() << "removing edge weight number, if any...";
     if (m_drawWeightNumber)
         graphicsWidget->removeItem(weightNumber);
+    qDebug() << "removing edge label, if any...";
     if (m_drawLabel)
         graphicsWidget->removeItem(edgeLabel);
 
     this->hide();
 
+    qDebug() << "calling GW removeItem for this edge";
     graphicsWidget->removeItem(this);
 
 

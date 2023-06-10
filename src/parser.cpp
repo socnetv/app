@@ -376,7 +376,7 @@ bool Parser::parseAsDL(const QByteArray &rawData){
         if ( actualLineNumber == 1) {
             if (!str.startsWith("DL",Qt::CaseInsensitive)  )  {
                 qDebug() << "Not a DL file. Aborting!";
-                errorMessage = tr("Invalid UCINET-formatted file. The file does not start with DL in line 1");
+                errorMessage = tr("Invalid UCINET-formatted file. The file does not start with DL in first non-comment line %1").arg(fileLineNumber);
                 return false;
             }
         } // end if actualLineNumber == 1
@@ -444,7 +444,7 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                     if (!intOK) {
                         qDebug() << "N conversion error..." ;
                         //emit something here...
-                        errorMessage = tr("Problem interpreting UCINET-formatted file. Cannot convert N value to integer. ");
+                        errorMessage = tr("Problem interpreting UCINET-formatted file. Cannot convert N value to integer at line %1.").arg(fileLineNumber);
                         return false;
                     }
                 }
@@ -455,7 +455,7 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                     if (!intOK) {
                         qDebug() << "NM conversion error..." ;
                         //emit something here...
-                        errorMessage = tr("Problem interpreting UCINET-formatted file. Cannot convert NM value to integer");
+                        errorMessage = tr("Problem interpreting UCINET-formatted file. Cannot convert NM value to integer at line %1").arg(fileLineNumber);
                         return false;
                     }
                 }
@@ -466,7 +466,7 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                     if (!intOK) {
                         qDebug() << "NR conversion error..." ;
                         //emit something here...
-                        errorMessage = tr("Problem interpreting UCINET-formatted file. Cannot convert NR value to integer");
+                        errorMessage = tr("Problem interpreting UCINET-formatted file. Cannot convert NR value to integer at line %1").arg(fileLineNumber);
                         return false;
                     }
                 }
@@ -477,7 +477,7 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                     if (!intOK) {
                         qDebug() << "NC conversion error..." ;
                         //emit something here...
-                        errorMessage = tr("Problem interpreting UCINET-formatted file. Cannot convert NC value to integer");
+                        errorMessage = tr("Problem interpreting UCINET-formatted file. Cannot convert NC value to integer at line %1").arg(fileLineNumber);
                         return false;
                     }
                 }
@@ -756,7 +756,11 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                         edgeWeight=(*it1).toDouble(&conversionOK);
                         if ( !conversionOK )  {
                             errorMessage = tr("Problem interpreting UCINET fullmatrix-formatted file. "
-                                              "In edge (%1->%2), the weight (%3) could not be converted to number.").arg(source).arg(target).arg(edgeWeight);
+                                              "In edge (%1->%2), the weight (%3) could not be converted to number, at line %4.")
+                                               .arg(source)
+                                               .arg(target)
+                                               .arg(edgeWeight)
+                                               .arg(fileLineNumber);
                             return false;
                         }
 
@@ -792,8 +796,11 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                         qDebug() << "Not a two-mode fullmatrix UCINET "
                                     "formatted file. Aborting!!";
                         //emit something...
-                        errorMessage = tr("Problem interpreting UCINET two-mode fullmatrix-formatted file. The file declared ") + QString::number(NC) + tr(" columns initially, "
-                                          "but I found a different number ") + QString::number(lineElement.size()) + tr(" of matrix columns");
+                        errorMessage = tr("Problem interpreting UCINET two-mode fullmatrix-formatted file. The file declared %1 columns initially, "
+                                          "but I found a different number %2 of matrix columns, at line %3.")
+                                          .arg(QString::number(NC))
+                                          .arg(QString::number(lineElement.size()))
+                                          .arg(fileLineNumber);
                         return false;
 
                     }
@@ -803,7 +810,11 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                         edgeWeight=(*it1).toDouble(&conversionOK);
                         if ( !conversionOK )  {
                             errorMessage = tr("Problem interpreting UCINET two-mode file. "
-                                              "In edge (%1->%2), the weight (%3) cannot be converted to number.").arg(source).arg(target).arg(edgeWeight);
+                                              "In edge (%1->%2), the weight (%3) cannot be converted to number, at line %4.")
+                                               .arg(source)
+                                               .arg(target)
+                                               .arg(edgeWeight)
+                                               .arg(fileLineNumber);
                             return false;
                         }
 
@@ -844,7 +855,8 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                     //emit something...
                     errorMessage = tr("Problem interpreting UCINET-formatted file. "
                                       "The file was declared as edgelist but I found "
-                                      "a line which did not have 3 elements (source, target, weight)");
+                                      "a line which did not have 3 elements (source, target, weight), at line %1")
+                                       .arg(fileLineNumber);
                     return false;
                 }
 
@@ -881,8 +893,11 @@ bool Parser::parseAsDL(const QByteArray &rawData){
     if (!twoMode_flag && nodeSum != totalNodes) {
         qDebug()<< "Error: aborting";
         //emit something
-        errorMessage = tr("Problem interpreting UCINET-formatted file. The file declared ") + QString::number(totalNodes) + tr(" actors initially, "
-                          "but I found a different number ") + QString::number(nodeSum) + tr(" of node labels");
+        errorMessage = tr("Problem interpreting UCINET-formatted file. The file declared %1 actors initially, "
+                          "but I found a different number %2 of node labels, at line %3.")
+                            .arg(QString::number(totalNodes))
+                            .arg(QString::number(nodeSum))
+                            .arg(fileLineNumber);
         return false;
     }
 

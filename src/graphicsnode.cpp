@@ -190,11 +190,11 @@ void GraphicsNode::setSize(const int &size){
     qDebug()<< "Changing the node size to:" << size;
     prepareGeometryChange();
     m_size=size;
-    foreach (GraphicsEdge *edge, inEdgeList) {
+    for (GraphicsEdge *edge: inEdgeList) {
         qDebug()<< "Informing inbound edges";
         edge->setTargetNodeSize(size);
     }
-    foreach (GraphicsEdge *edge, outEdgeList) {
+    for (GraphicsEdge *edge: outEdgeList) {
         qDebug()<< "Informing oubound edges";
         edge->setSourceNodeSize(size);
     }
@@ -449,9 +449,9 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
     switch (change) {
     case ItemPositionHasChanged: {
         //setCacheMode( QGraphicsItem::ItemCoordinateCache );
-        foreach (GraphicsEdge *edge, inEdgeList)  //Move each inEdge of this node
+        for (GraphicsEdge *edge: inEdgeList)  //Move each inEdge of this node
             edge->adjust();
-        foreach (GraphicsEdge *edge, outEdgeList) //Move each outEdge of this node
+        for (GraphicsEdge *edge: outEdgeList) //Move each outEdge of this node
             edge->adjust();
         //Move its graphic number
         if ( m_hasNumber )
@@ -479,9 +479,9 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
             setColor(m_col.darker(120));
 
             if (m_edgeHighLighting) {
-                foreach (GraphicsEdge *edge, inEdgeList)
+                for (GraphicsEdge *edge: inEdgeList)
                     edge->setHighlighted(true);
-                foreach (GraphicsEdge *edge, outEdgeList)
+                for (GraphicsEdge *edge: outEdgeList)
                     edge->setHighlighted(true);
             }
 
@@ -492,9 +492,9 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
             setColor(m_col_orig);
 
             if (m_edgeHighLighting) {
-                    foreach (GraphicsEdge *edge, inEdgeList)
+                    for (GraphicsEdge *edge: inEdgeList)
                         edge->setHighlighted(false);
-                    foreach (GraphicsEdge *edge, outEdgeList)
+                    for (GraphicsEdge *edge: outEdgeList)
                         edge->setHighlighted(false);
             }
         }
@@ -551,41 +551,50 @@ void GraphicsNode::setEdgeHighLighting(const bool &toggle) {
 }
 
 /**
- * @brief GraphicsNode::addInLink
+ * @brief Adds an inbound edge to this node
+ *
  * Called from a new connected in-link to acknowloedge itself to this node.
+ *
  * @param edge
  */
-void GraphicsNode::addInLink( GraphicsEdge *edge ) {
-    qDebug() << "GraphicsNode:  addInLink() for "<<  m_num;
+void GraphicsNode::addInEdge( GraphicsEdge *edge ) {
+//    qDebug() << "adding inEdge"<< nodeNumber() << "<-" << edge->sourceNodeNumber();
     inEdgeList.push_back( edge);
-    //qDebug ("GraphicsNode:  %i inEdgeList has now %i edges", m_num, inEdgeList.size());
 }
 
 
-void GraphicsNode::deleteInLink( GraphicsEdge *link ){
-    qDebug () << "GraphicsNode::deleteInLink() - to " <<  m_num
+/**
+ * @brief Removes the inbound edge from this node
+ * @param link
+ */
+void GraphicsNode::removeInEdge( GraphicsEdge *edge ){
+    qDebug() << "removing inEdge"<< nodeNumber() << "<-" << edge->sourceNodeNumber()
               << " inEdgeList size: " << inEdgeList.size();
-    inEdgeList.remove( link );
-    qDebug () << "GraphicsNode::deleteInLink() - deleted to " <<  m_num
-              << " inEdgeList size: " << inEdgeList.size();
+    inEdgeList.remove( edge );
 }
 
 
-
-void GraphicsNode::addOutLink( GraphicsEdge *edge ) {
-    qDebug("GraphicsNode: addOutLink()");
+/**
+ * @brief Adds a outbound edge to this node
+ *
+ * Called from the edge itself.
+ *
+ * @param edge
+ */
+void GraphicsNode::addOutEdge( GraphicsEdge *edge ) {
+//    qDebug() << "adding outEdge"<< nodeNumber() << "->" << edge->targetNodeNumber();
     outEdgeList.push_back(edge);
-    //	qDebug ("GraphicsNode: outEdgeList has now %i edges", outEdgeList.size());
 }
 
 
-
-void GraphicsNode::deleteOutLink(GraphicsEdge *link){
-    qDebug () << "GraphicsNode::deleteOutLink() - from " <<  m_num
-              << " outEdgeList size: " << outEdgeList.size();
-    outEdgeList.remove( link);
-    qDebug () << "GraphicsNode::deleteOutLink() - deleted from " <<  m_num
-              << " outEdgeList size now: " << outEdgeList.size();
+/**
+ * @brief Removes an outbound edge from this node
+ * @param link
+ */
+void GraphicsNode::removeOutEdge(GraphicsEdge *edge){
+    qDebug () << "Removing outEdge"<< nodeNumber() << "->" << edge->targetNodeNumber()
+              << "outEdgeList size: " << outEdgeList.size();
+    outEdgeList.remove(edge);
 }
 
 
@@ -817,25 +826,32 @@ void GraphicsNode::setNumberDistance(const int &distance) {
 
 GraphicsNode::~GraphicsNode(){
     qDebug() << "Destructing node "<< nodeNumber()
-                << "inEdgeList.size = " << inEdgeList.size()
-                << "outEdgeList.size = " << outEdgeList.size();
+                << "inEdges:" << inEdgeList.size()
+                << "outEdges: " << outEdgeList.size();
 
-    qDebug()<< "Removing edges in inEdgeList";
-    foreach (GraphicsEdge *edge, inEdgeList) {  // same as using qDeleteAll
+    qDebug() << "node" << nodeNumber()<< "Deleting edges in inEdgeList";
+    foreach (GraphicsEdge *edge, inEdgeList) {
+        qDebug() << "deleting inedge" << edge->targetNodeNumber() << "<-" << edge->sourceNodeNumber();
         delete edge;
     }
-    qDebug()<< "Removing edges in outEdgeList";
-    foreach (GraphicsEdge *edge, outEdgeList) { // same as using qDeleteAll
+    qDebug() << "node" << nodeNumber() << "Deleting edges in outEdgeList";
+    foreach (GraphicsEdge *edge, outEdgeList) {
+        qDebug() << "deleting outedge" << edge->sourceNodeNumber() << "->" << edge->targetNodeNumber();
         delete edge;
     }
+    qDebug() << "node" << nodeNumber() << "deleting node number...";
     if ( m_hasNumber )
         deleteNumber();
+    qDebug() << "node" << nodeNumber() << "deleting node label...";
     if ( m_hasLabel )
         deleteLabel();
+    qDebug() << "node" << nodeNumber()<< "clearing inEdges...";
     inEdgeList.clear();
+    qDebug() << "node" << nodeNumber() << "clearing outEdges...";
     outEdgeList.clear();
+    qDebug() << "node" << nodeNumber() << "hiding node...";
     this->hide();
-
+    qDebug() << "node" << nodeNumber() << "calling GW removeItem...";
     graphicsWidget->removeItem(this);
 
 }

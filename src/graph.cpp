@@ -12022,7 +12022,7 @@ void Graph::graphWalksMatrixCreate(const int &N,
         QString pMsg = tr("Computing walks of length %1. \nPlease wait...").arg(length) ;
         emit statusMessage( pMsg  );
         if (updateProgress) {
-            signalProgressBoxCreate(length,pMsg);
+            emit signalProgressBoxCreate(length,pMsg);
         }
 
         XM = AM.pow(length, false);
@@ -12045,7 +12045,7 @@ void Graph::graphWalksMatrixCreate(const int &N,
         QString pMsg = tr("Computing sociomatrix powers up to %1. \nPlease wait...").arg(N-1) ;
         emit statusMessage( pMsg  );
         if (updateProgress) {
-            signalProgressBoxCreate(N-1,pMsg);
+            emit signalProgressBoxCreate(N-1,pMsg);
         }
 
 
@@ -14035,8 +14035,6 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
 
             }
 
-            distanceNewCluster = 0;
-
             switch (method) {
             case Clustering::Single_Linkage: //"single-linkage":
                 if (i==j) {
@@ -15333,7 +15331,7 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
             triadTypeFreqs[2] ++;
             break;
         case 1:
-            isDown=false; isUp=false;
+            isUp=false;
             //qDebug() << "triad vertices: ( "<< vert1->number() << ", "<< vert2->number()<< ", "<< vert3->number()<< " ) = ("	<<mut<<","<< asy<<","<<nul<<")";
             foreach (GraphVertex *source, m_triad)  {
                 //	qDebug() << "  vertex " << source->number() ;
@@ -15773,27 +15771,8 @@ void Graph::loadFile (	const QString fileName,
     connect (file_parser, &Parser::signalCreateEdge,
              this, &Graph::edgeCreate);
 
-    connect (
-            file_parser, SIGNAL(signalFileLoaded(int,
-                                                  QString,
-                                                  QString,
-                                                  int,
-                                                  int,
-                                                  int,
-                                                  const qint64 &,
-                                                  const QString &)
-                                ),
-            this, SLOT(graphFileLoaded( const int &,
-                                        const QString &,
-                                        const QString &,
-                                        const int &,
-                                        const int &,
-                                        const int &,
-                                        const qint64 &,
-                                        const QString &)
-                       )
-            );
-
+    connect(file_parser, &Parser::signalFileLoaded,
+            this, &Graph::graphFileLoaded);
 
     connect (
             file_parser, SIGNAL(removeDummyNode(int)),

@@ -150,14 +150,14 @@ signals:
                      const bool &arrows, const bool &bezier,
                      const QString &edgeLabel=QString(),
                      const bool &signalMW=false);
-    void signalFileLoaded(int fileType,
-                           QString fileName,
-                           QString netName,
-                           int totalNodes,
-                           int totalLinks,
-                           int edgeDirType,
-                           const qint64 &elapsedTime,
-                           const QString &message=QString());
+    void signalFileLoaded(const int &fileType,
+                          const QString &fileName,
+                          const QString &netName,
+                          const int &totalNodes,
+                          const int &totalLinks,
+                          const int &edgeDirType,
+                          const qint64 &elapsedTime,
+                          const QString &message=QString());
 
 
 	void removeDummyNode (int);

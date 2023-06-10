@@ -187,11 +187,12 @@ QString GraphicsWidget::createEdgeName(const int &v1, const int &v2, const int &
  * @brief Clears the scene and all hashes, lists, var etc
  */
 void GraphicsWidget::clear() {
-    qDebug() << "Clearing graphics widget data and resetting scene bounding rect to zero...";
+    qDebug() << "Clearing graphics widget data...";
     nodeHash.clear();
     edgesHash.clear();
     m_selectedNodes.clear();
     m_selectedEdges.clear();
+    qDebug() << "Clearing GW scene...";
     scene()->clear();
     m_curRelation=0;
     clickedEdge=0;
@@ -1287,12 +1288,12 @@ void GraphicsWidget::addGuideHLine(const double &y0){
  * @param type
  */
 void GraphicsWidget::removeAllItems(int type){
-    qDebug()<< "GW: removeAllItems";
+    qDebug()<< "Removing all GW items...";
     QList<QGraphicsItem *> list = scene()->items();
     for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
         if ( (*item)->type() == type){
             GraphicsGuide *guide = qgraphicsitem_cast<GraphicsGuide *>  (*item);
-            qDebug()<< "GW: removeAllItems - located element";
+            qDebug()<< "located element";
             guide->die();
             guide->deleteLater ();
             delete *item;
@@ -1303,7 +1304,7 @@ void GraphicsWidget::removeAllItems(int type){
 
 
 void GraphicsWidget::clearGuides(){
-    qDebug()<< "GW: clearGuides";
+    qDebug()<< "Clearing/Removing guides...";
     this->removeAllItems(TypeGuide);
 }
 
