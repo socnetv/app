@@ -139,6 +139,8 @@ QToolTip {
     min-width: 300px;
     max-width: 600px;
     font-size: 100%;
+    background: #ffff65;
+    color: #333;
 }
 
 QProgressDialog {
