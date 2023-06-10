@@ -1464,10 +1464,10 @@ void Graph::vertexIsolatedAllToggle(const bool &toggle){
  */
 bool Graph::vertexIsolated(const int &v1) const{
     if (  m_graph[ vpos[v1] ]->isIsolated() ) {
-        qDebug()<<"Graph::vertexIsolated() - vertex:"<< v1 << "isolated";
+        qDebug()<<"vertex:"<< v1 << "is isolated";
         return true;
     }
-    qDebug()<<"Graph::vertexIsolated() - vertex:"<< v1 << "not isolated";
+    qDebug()<<"vertex:"<< v1 << "not isolated";
     return false;
 }
 
@@ -1559,12 +1559,12 @@ void Graph::vertexSizeInit (const int size) {
  */
 void Graph::vertexSizeSet(const int &v, const int &size) {
     if (v) {
-        qDebug()<< "Graph::vertexSizeSet() - for vertex" << v <<"new size" << size;
+        qDebug()<< "Changing size of vertex" << v <<"new size" << size;
         m_graph[ vpos[v] ]->setSize(size);
         emit setNodeSize(v, size);
     }
     else {
-        qDebug()<< "Graph::vertexSizeSet() - for all vertices, new size" << size;
+        qDebug()<< "Changing size of all vertices, new size" << size;
         vertexSizeInit(size);
         VList::const_iterator it;
         for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -1622,8 +1622,7 @@ void Graph::vertexShapeSetDefault(const QString shape, const QString &iconPath) 
 void Graph::vertexShapeSet(const int &v1, const QString &shape, const QString &iconPath){
 
     if ( v1 == -1 ) {
-        qDebug() << "Graph::vertexShapeSet() for all vertices"
-                 << "new shape:" << shape
+        qDebug() << "Changing shape for all vertices, new shape:" << shape
                  << "iconPath:" << iconPath;
         vertexShapeSetDefault(shape, iconPath);
         VList::const_iterator it;
@@ -1638,7 +1637,7 @@ void Graph::vertexShapeSet(const int &v1, const QString &shape, const QString &i
         }
     }
     else {
-        qDebug() << "Graph::vertexShapeSet() for vertex:" << v1
+        qDebug() << "Changing shape for vertex:" << v1
                  << "new shape:" << shape
                  << "iconPath:" <<iconPath;
         m_graph[ vpos[v1] ]->setShape(shape, iconPath);
@@ -1830,7 +1829,7 @@ void Graph::vertexNumberDistanceInit(const int &distance) {
  */
 void Graph::vertexNumberDistanceSet(const int &v, const int &newDistance) {
     if (v) {
-        qDebug() << "Graph::vertexNumberDistanceSet() - for vertex" << v
+        qDebug() << "Changing number distance for vertex" << v
                  << "new number distance"
                  << newDistance;
 
@@ -1838,7 +1837,7 @@ void Graph::vertexNumberDistanceSet(const int &v, const int &newDistance) {
         emit setNodeNumberDistance(v, newDistance);
     }
     else {
-        qDebug() << "Graph::vertexNumberDistanceSet() - for all vertices, "
+        qDebug() << "Changing number distance for all vertices, "
                     "new number distance"
                  << newDistance;
         vertexNumberDistanceInit(newDistance);
@@ -1848,9 +1847,6 @@ void Graph::vertexNumberDistanceSet(const int &v, const int &newDistance) {
                 continue;
             }
             else {
-                qDebug() << "Graph::vertexNumberDistanceSet() - for all, setting vertex"
-                         << (*it)->number()
-                         << "new number distance" << newDistance;
                 (*it)->setNumberDistance(newDistance) ;
                 emit setNodeNumberDistance ( (*it)->number(), newDistance);
             }
@@ -2074,11 +2070,6 @@ bool Graph::edgeCreate(const int &v1,
                        const QString &label,
                        const bool &signalMW){
 
-    qDebug() <<"-- Creating new edge:" << v1 << "->" << v2
-            << "weight" << weight
-            << "type" << type
-            << "label" << label
-            << "signalMW" << signalMW;
 
     // check whether there is already such an edge
     // (see #713617 - https://bugs.launchpad.net/socnetv/+bug/713617)
@@ -2093,7 +2084,12 @@ bool Graph::edgeCreate(const int &v1,
 
     if ( type == EdgeType::Undirected ) {
 
-        qDebug()<< "-- New edge UNDIRECTED. Signaling to GW";
+        qDebug() <<"-- Creating new UNDIRECTED edge:" << v1 << "-" << v2
+                 << "weight" << weight
+                 << "type" << type
+                 << "label" << label
+                 << "signalMW" << signalMW
+                 << "Signaling to GW...";
 
         edgeAdd ( v1, v2,
                   weight,
@@ -2109,7 +2105,13 @@ bool Graph::edgeCreate(const int &v1,
     }
     else if ( edgeExists( v2, v1 ) )  {
 
-        qDebug()<<"-- New edge RECIPROCAL. Signaling to GW";
+        qDebug() <<"-- Creating new RECIPROCAL edge:" << v1 << "->" << v2
+                 << "weight" << weight
+                 << "type" << type
+                 << "label" << label
+                 << "signalMW" << signalMW
+                 << "Reverse edge exists"
+                 << "Signaling to GW...";
 
         edgeAdd ( v1,
                   v2,
@@ -2126,7 +2128,12 @@ bool Graph::edgeCreate(const int &v1,
     }
     else {
 
-        qDebug()<< "-- New edge DIRECTED. Reverse arc does not exist. Signaling to GW...";
+        qDebug() <<"-- Creating new DIRECTED edge:" << v1 << "->" << v2
+                 << "weight" << weight
+                 << "type" << type
+                 << "label" << label
+                 << "signalMW" << signalMW
+                 << "Signaling to GW...";
 
         edgeAdd ( v1,
                   v2,
@@ -2194,7 +2201,7 @@ void Graph::edgeAdd (const int &v1, const int &v2,
     int source=vpos[v1];
     int target=vpos[v2];
 
-    qDebug()<< "Graph: edgeAdd() - new edge from vertex "<< v1 << "["<< source
+    qDebug()<< "Adding new edge from vertex "<< v1 << "["<< source
             << "] to vertex "<< v2 << "["<< target << "] of weight "<<weight
             << " and label " << label;
 
@@ -2343,7 +2350,7 @@ void Graph::edgeFilterByRelation(int relation, bool status){
  * @param toggle
  */
 void Graph::edgeFilterUnilateral(const bool &toggle) {
-    qDebug() << "Graph::edgeFilterUnilateral() " ;
+    qDebug() << "Toggling unilateral edges:" << toggle ;
     VList::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         (*it)->setEnabledUnilateralEdges ( toggle );
@@ -3196,7 +3203,7 @@ qreal Graph::graphDensity() {
 bool Graph::isWeighted(){
 
     if ( calculatedGraphWeighted ) {
-        qDebug()<< "Graph::isWeighted() - graph not modified. Returning: "
+        qDebug()<< "graph not modified. Returning isWeighted: "
                 << m_graphIsWeighted;
         return m_graphIsWeighted;
     }
@@ -3217,7 +3224,6 @@ bool Graph::isWeighted(){
         for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
             m_weight = edgeExists ( (*it1)->number(), (*it)->number() ) ;
             if ( m_weight  != 1  && m_weight  != 0 )   {
-                qDebug()<< "Graph: isWeighted() - found valued edge > 1. Setting graph edge-weighted...";
                 setWeighted(true);
                 break;
             }
@@ -3228,7 +3234,7 @@ bool Graph::isWeighted(){
 
     }
     calculatedGraphWeighted = true;
-    qDebug()<< "Graph::isWeighted() - returning: " << m_graphIsWeighted;
+    qDebug()<< "graph is weighted:" << m_graphIsWeighted;
 
     emit signalProgressBoxKill();
 
