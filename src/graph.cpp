@@ -49,18 +49,15 @@
 #include <QPixmap>
 #include <QElapsedTimer>
 #include <QStringEncoder>
-
+#include <QtCharts/QChart>
+#include <QtCharts/QChartGlobal>
+#include <QtCharts/QChartView>
 #include <QNetworkReply>
 
 #include <cstdlib>		//allows the use of RAND_MAX macro 
 
 #include <queue>		//for BFS queue Q
 #include <ctime>        // for randomizeThings
-
-#include "chart.h"
-
-#include "graphicsnode.h"
-#include "graphicsedge.h"
 
 
 
@@ -2171,7 +2168,7 @@ bool Graph::edgeCreate(const int &v1,
  * @param target
  */
 void Graph::edgeCreateWebCrawler (const int &source, const int &target){
-    qDebug()<< " Graph::edgeCreateWebCrawler() - from " << source << " to " << target ;
+//    qDebug()<< " will create edge from" << source << "to" << target ;
     qreal weight = 1.0;
     bool drawArrows=true;
     bool bezier=false;
@@ -3958,7 +3955,7 @@ bool Graph::isSymmetric(){
  * @brief Transforms the graph to symmetric (all edges reciprocal)
  */
 void Graph::setSymmetric(){
-    qDebug()<< "Graph::setSymmetric";
+    qDebug()<< "Tranforming graph to symmetric...";
     VList::const_iterator it;
     int v2=0, v1=0, weight;
     qreal invertWeight=0;
@@ -3966,25 +3963,21 @@ void Graph::setSymmetric(){
     QHash<int,qreal>::const_iterator it1;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         v1 = (*it)->number();
-        qDebug() << "Graph:setSymmetric() - iterate over edges of v1 " << v1;
+//        qDebug() << "iterate over edges of v1 " << v1;
         enabledOutEdges=(*it)->outEdgesEnabledHash();
         it1=enabledOutEdges.cbegin();
         while ( it1!=enabledOutEdges.cend() ){
             v2 = it1.key();
             weight = it1.value();
-            qDebug() << "Graph:setSymmetric() - "
-                     << " v1 " << v1
-                     << " outLinked to " << v2 << " weight " << weight;
+//            qDebug() << "v1" << v1 << "outLinked to" << v2 << ", weight:" << weight;
             invertWeight = edgeExists(v2,v1);
             if ( invertWeight == 0 ) {
-                qDebug() << "Graph:setSymmetric(): s = " << v1
-                         << " is NOT inLinked from y = " <<  v2  ;
+//                qDebug() << "v1" << v1 << "is NOT inLinked from v2" <<  v2  ;
                 edgeCreate( v2, v1, weight, initEdgeColor, false, true, false,
                             QString(), false);
             }
             else {
-                qDebug() << "Graph: setSymmetric(): v1 = " << v1
-                         << " is already inLinked from v2 = " << v2 ;
+//                qDebug() << "v1" << v1 << "is inLinked from v2" <<  v2  ;
                 if (weight!= invertWeight )
                     edgeWeightSet(v2,v1,weight);
             }
@@ -4185,17 +4178,14 @@ void Graph::graphDichotomization(const qreal threshold) {
             v2 = it1.key();
             weight = it1.value();
 
-            qDebug() << "Graph::graphDichotomization() - "
-                     << v1 << "->" << v2 << "=" << weight << "Checking opposite.";
+            qDebug() << v1 << "->" << v2 << "=" << weight << "Checking opposite.";
             if (weight>threshold) {
                 if (!binaryTies->contains(QString::number(v1)+"--"+QString::number(v2) ) ) {
-                    qDebug() << "Graph::graphDichotomization() - " << v1
-                             << "--" << v2 << " over threshold. Adding";
+                    qDebug() << v1 << "--" << v2 << " over threshold. Adding";
                     binaryTies->insert(QString::number(v1)+"--"+QString::number(v2), 1);
                 }
                 else {
-                    qDebug() << "Graph::graphDichotomization() - " << v1
-                             << "--" << v2 << " exists. Binary Tie already found. Continue";
+                    qDebug() << v1 << "--" << v2 << " exists. Binary Tie already found. Continue";
                 }
             }
             ++it1;
@@ -4207,15 +4197,15 @@ void Graph::graphDichotomization(const qreal threshold) {
     QHash<QString,qreal>::const_iterator it2;
     it2=binaryTies->constBegin();
     QStringList vertices;
-    qDebug() << "Graph::graphDichotomization() - creating binary tie edges";
+    qDebug() << "creating binary tie edges";
     while ( it2!=binaryTies->constEnd() ){
         vertices = it2.key().split("--");
-        qDebug() << "Graph::graphDichotomization() - binary tie " <<it2.key()
+        qDebug() << "binary tie " <<it2.key()
                  << "vertices.at(0)" << vertices.at(0)
                  << "vertices.at(1)" << vertices.at(1);
         v1 = (vertices.at(0)).toInt();
         v2 = (vertices.at(1)).toInt();
-        qDebug() << "Graph::graphDichotomization() - calling edgeCreate for"
+        qDebug() << "calling edgeCreate for"
                  << v1 << "--"<<v2;
         edgeCreate( v1, v2, 1, initEdgeColor, EdgeType::Undirected, true, false,
                     QString(), false);
@@ -4227,8 +4217,7 @@ void Graph::graphDichotomization(const qreal threshold) {
     m_graphIsSymmetric=true;
 
     setModStatus(ModStatus::EdgeCount);
-    qDebug()<< "Graph::graphDichotomization()"
-            << "final relations"<<relations();
+    qDebug()<< "final relations"<<relations();
 
 }
 
@@ -11465,8 +11454,7 @@ void Graph::randomNetScaleFreeCreate (const int &N,
 void Graph::randomNetSmallWorldCreate (const int &N, const int &degree,
                                        const double &beta, const QString &mode)
 {
-    qDebug() << "Graph:randomNetSmallWorldCreate() -. "
-             << "vertices: " << N
+    qDebug() << "Creating small-world randome network. Vertices: " << N
              << "degree: " << degree
              << "beta: " << beta
              << "mode: " << mode
@@ -11490,24 +11478,25 @@ void Graph::randomNetSmallWorldCreate (const int &N, const int &degree,
 
     for (int i=1;i<N; i++) {
         for (int j=i+1;j<N; j++) {
-            qDebug()<<">>>>> REWIRING: Check if  "<< i << " is linked to " << j;
+//            qDebug()<<">>>>> REWIRING: Check if  "<< i << " is linked to " << j;
             if ( edgeExists(i, j) ) {
-                qDebug()<<">>>>> REWIRING: They're linked. Do a random REWIRING "
-                          "Experiment between "<< i<< " and " << j
-                       << " Beta parameter is " << beta;
+//                qDebug()<<">>>>> REWIRING: They're linked. Do a random REWIRING "
+//                          "Experiment between "<< i<< " and " << j
+//                       << " Beta parameter is " << beta;
                 if (rand() % 100 < (beta * 100))  {
-                    qDebug(">>>>> REWIRING: We'l break this edge!");
+//                    qDebug(">>>>> REWIRING: We'l break this edge!");
                     edgeRemove(i, j, true);
-                    qDebug()<<">>>>> REWIRING: OK. Let's create a new edge!";
+//                    qDebug()<<">>>>> REWIRING: OK. Let's create a new edge!";
                     for (;;) {	//do until we create a new edge
                         candidate=rand() % (N+1) ;		//pick another vertex.
                         if (candidate == 0 || candidate == i) continue;
-                        qDebug()<<">>>>> REWIRING: Candidate: "<< candidate;
+//                        qDebug()<<">>>>> REWIRING: Candidate: "<< candidate;
                         //Only if differs from i and hasnot edge with it
-                        if (  edgeExists(i, candidate) == 0)
-                            qDebug("<---->Random New Edge Experiment between %i and %i:", i, candidate);
+//                        qDebug("<---->Random New Edge Experiment between %i and %i:", i, candidate);
+                        if (  edgeExists(i, candidate) != 0)
+                            continue;
                         if (rand() % 100 > 0.5) {
-                            qDebug("Creating new link!");
+//                            qDebug() << "Creating new edge";
                             edgeCreate(i, candidate, 1, initEdgeColor,
                                        EdgeType::Undirected, false, false,
                                        QString(), false);
