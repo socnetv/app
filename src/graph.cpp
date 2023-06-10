@@ -15497,7 +15497,8 @@ QString Graph::getName() const {
  *
  * @param graphName
  */
-void Graph::setName(QString &graphName){
+void Graph::setName(const QString &graphName){
+    qDebug()<< "Setting graph name to:" << graphName;
     m_graphName = graphName;
 }
 
@@ -15505,7 +15506,7 @@ void Graph::setName(QString &graphName){
 
 
 /**
- * @brief Returns the filename of the current graph, if any.
+ * @brief Returns the file name of the current graph, if any.
  *
  * @return QString
  */
@@ -15520,7 +15521,8 @@ QString Graph::getFileName() const {
  *
  * @param fileName
  */
-void Graph::setFileName(QString &fileName){
+void Graph::setFileName(const QString &fileName){
+    qDebug()<< "Setting graph filename to:" << fileName;
     m_fileName = fileName;
 }
 
@@ -15534,8 +15536,10 @@ int Graph::getFileFormat() const {
     return m_fileFormat;
 }
 
-
-
+void Graph::setFileFormat(const int &fileFormat) {
+    qDebug()<< "Setting graph file format to:" << fileFormat;
+    m_fileFormat = fileFormat;
+}
 
 /**
  * @brief Returns true if the fileFormat is supported for saving
@@ -15905,12 +15909,12 @@ void Graph::graphFileLoaded (const int &fileType,
              << "edgeDirType:" << edgeDirType
              << "setting graph as saved/unchanged...";
 
-    m_fileName= fileName;
+    setFileName(fileName);
 
     if (!netName.isEmpty())
-        m_graphName=netName ;
+        setName(netName);
     else
-        m_graphName=(fileName.split("/").last()).split("/").first();
+        setName((fileName.split("/").last()).split("/").first());
 
     if ( edgeDirType == EdgeType::Directed ) {
         this->setDirected(true);
@@ -15919,7 +15923,7 @@ void Graph::graphFileLoaded (const int &fileType,
         this->setDirected(false);
     }
 
-    m_fileFormat = fileType;
+    setFileFormat(fileType);
 
     setModStatus(ModStatus::SavedUnchanged);
 
@@ -15954,7 +15958,6 @@ void Graph::saveToFile(const QString &fileName,
 {
     qDebug() << "Saving current graph to file named:" << fileName;
     bool saved = false;
-    m_fileFormat = fileType;
     switch (fileType) {
     case FileType::PAJEK : {
         saved=saveToPajekFormat(fileName, getName(), canvasWidth, canvasHeight) ;
@@ -15973,7 +15976,7 @@ void Graph::saveToFile(const QString &fileName,
         break;
     }
     default: {
-        m_fileFormat = FileType::UNRECOGNIZED;
+        setFileFormat(FileType::UNRECOGNIZED);
         break;
     }
     };
@@ -16081,6 +16084,12 @@ bool Graph::saveToPajekFormat (const QString &fileName, \
     }
     f.close();
 
+    // Store the filename
+    setFileName(fileName);
+
+    // Store the file format
+    setFileFormat(FileType::PAJEK);
+
     emit statusMessage (tr( "File %1 saved" ).arg( fileNameNoPath ));
     return true;
 
@@ -16112,6 +16121,13 @@ bool Graph::saveToAdjacencyFormat (const QString &fileName,
     writeMatrixAdjacencyTo(outText, saveEdgeWeights);
 
     file.close();
+
+    // Store the filename
+    setFileName(fileName);
+
+    // Store the file format
+    setFileFormat(FileType::ADJACENCY);
+
     QString fileNameNoPath=fileName.split("/").last();
     emit statusMessage (QString( tr("Adjacency matrix-formatted network saved into file %1") ).arg( fileNameNoPath ));
     return true;
@@ -16308,7 +16324,7 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
             if ( ! (*it)->isEnabled () )
                 continue;
-            qDebug() << "Node id:" <<  (*it)->number()  ;
+//            qDebug() << "Node id:" <<  (*it)->number();
             outText << "    <node id=\"" << (*it)->number() << "\"> \n";
             m_color = (*it)->color();
             m_size = (*it)->size() ;
@@ -16322,10 +16338,11 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
 
             rel_coord_x = (*it)->x()/(maxWidth);
             rel_coord_y = (*it)->y()/(maxHeight);
-            qDebug()<<"Rel coordinates: "
-                   << rel_coord_x
-                   << ","
-                   << rel_coord_y;
+
+//            qDebug()<<"Rel coordinates: "
+//                   << rel_coord_x
+//                   << ","
+//                   << rel_coord_y;
 
             outText << "      <data key=\"d1\">" << rel_coord_x <<"</data>\n";
             outText << "      <data key=\"d2\">" << rel_coord_y <<"</data>\n";
@@ -16391,11 +16408,11 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
                         m_color = (*it)->outLinkColor( target );
                         m_label = edgeLabel(source, target);
                         m_label=htmlEscaped(m_label);
-                        qDebug()<< "edge no:"
-                                << edgeCount
-                                << "from n1=" << source << "to n2=" << target
-                                << "with weight" << weight
-                                << "and color" << m_color.toUtf8() ;
+//                        qDebug()<< "edge no:"
+//                                << edgeCount
+//                                << "from n1=" << source << "to n2=" << target
+//                                << "with weight" << weight
+//                                << "and color" << m_color.toUtf8() ;
                         outText << "    <edge id=\""<< "e"+QString::number(edgeCount)
                                 << "\" directed=\"" << "true" << "\" source=\"" << source
                                 << "\" target=\"" << target << "\"";
@@ -16444,11 +16461,11 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
                         m_color = (*it)->outLinkColor( target );
                         m_label = edgeLabel(source, target);
                         m_label=htmlEscaped(m_label);
-                        qDebug()<< "edge no"
-                                << edgeCount
-                                << "from n1=" << source << "to n2=" << target
-                                << "with weight" << weight
-                                << "and color" << m_color.toUtf8() ;
+//                        qDebug()<< "edge no"
+//                                << edgeCount
+//                                << "from n1=" << source << "to n2=" << target
+//                                << "with weight" << weight
+//                                << "and color" << m_color.toUtf8() ;
                         outText << "    <edge id=\""<< "e"+QString::number(edgeCount)
                                 << "\" directed=\"" << "false" << "\" source=\"" << source
                                 << "\" target=\"" << target << "\"";
@@ -16488,6 +16505,12 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
 
     f.close();
     relationSet(relationPrevious, false);
+
+    // Store the filename
+    setFileName(fileName);
+
+    // Store the file format
+    setFileFormat(FileType::GRAPHML);
 
     emit statusMessage( tr( "File %1 saved" ).arg( fileNameNoPath ) );
 

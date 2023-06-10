@@ -411,17 +411,19 @@ public:
 
     QString getFileName() const;
 
-    void setFileName(QString &fileName);
+    void setFileName(const QString &fileName);
 
     QString getName() const;
 
-    void setName(QString &graphName);
+    void setName(const QString &graphName);
 
     bool isSaved() const;
 
     bool isLoaded() const;
 
     int getFileFormat() const;
+
+    void setFileFormat(const int &fileFormat);
 
     bool isFileFormatExportSupported(const int &fileFormat) const;
 
