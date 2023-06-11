@@ -778,23 +778,23 @@ void GraphicsEdge::setHighlighting(const bool &toggle) {
 
 
 GraphicsEdge::~GraphicsEdge(){
-    qDebug() << "self-destructing edge:"
-             << sourceNodeNumber()<< "->" << targetNodeNumber()
-             << "will remove refs first...";
+//    qDebug() << "self-destructing edge:"
+//             << sourceNodeNumber()<< "->" << targetNodeNumber()
+//             << "will remove refs first...";
 
     removeRefs();
 
-    qDebug() << "removing edge weight number, if any...";
+//    qDebug() << "removing edge weight number, if any...";
     if (m_drawWeightNumber)
         graphicsWidget->removeItem(weightNumber);
 
-    qDebug() << "removing edge label, if any...";
+//    qDebug() << "removing edge label, if any...";
     if (m_drawLabel)
         graphicsWidget->removeItem(edgeLabel);
 
     this->hide();
 
-    qDebug() << "calling GW removeItem for this edge";
+//    qDebug() << "calling GW removeItem for this edge";
     graphicsWidget->removeItem(this);
 
 
