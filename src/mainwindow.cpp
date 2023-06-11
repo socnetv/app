@@ -1308,7 +1308,7 @@ void MainWindow::initActions(){
 
     networkRandomSmallWorldAct = new QAction(QIcon(":/images/sw.png"), tr("Small World"),	this);
     networkRandomSmallWorldAct->setShortcut(
-                QKeySequence(Qt::CTRL | Qt::Key_R, Qt::CTRL | Qt::Key_W)
+                QKeySequence(Qt::CTRL | Qt::Key_R, Qt::CTRL | Qt::Key_M)
                 );
     networkRandomSmallWorldAct->setStatusTip(tr("Create a small-world random network, according to the Watts & Strogatz model."));
     networkRandomSmallWorldAct->setWhatsThis(
