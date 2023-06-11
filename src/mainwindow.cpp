@@ -9429,11 +9429,9 @@ void MainWindow::slotEditNodeRemove() {
     int nodesSelected = activeGraph->getSelectedVerticesCount();
     if ( nodesSelected > 0) {
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        int removeCounter = 0;
         qDebug() << "multiple nodes selected to be removed";
         foreach (int nodeNumber, activeGraph->getSelectedVertices() ) {
             activeGraph->vertexRemove(nodeNumber);
-            ++removeCounter ;
         }
         editNodeRemoveAct->setText(tr("Remove Node"));
         statusMessage( tr("Removed %1 nodes.").arg(nodesSelected) );
