@@ -462,9 +462,13 @@ void GraphicsWidget::moveNode(const int &nodeNum, const qreal &x, const qreal &y
  */
 void GraphicsWidget::removeNode(const int &nodeNum){
     if ( nodeHash.contains(nodeNum) ) {
+        qDebug() << "nodeHash size:" << nodeHash.size();
         delete nodeHash.value(nodeNum);
-//        qDebug() << "Removed node with number:" << nodeNum;
+        qDebug() << "Removed node with number:" << nodeNum;
     }
+    qDebug() << "nodeHash size now:" << nodeHash.size()
+             << "nodeHash contains node?" << nodeHash.contains(nodeNum);
+
 }
 
 

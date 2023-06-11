@@ -9401,13 +9401,13 @@ void MainWindow::slotEditNodeFind(const QStringList &nodeList,
 
 
 /**
- * @brief Deletes a node and the attached objects (edges, etc).
+ * @brief Handles requests to delete a node and the attached objects (edges, etc).
  *
  * If the user has clicked on a node, it deletes it
  * Else it asks for a nodeNumber to remove.
  */
 void MainWindow::slotEditNodeRemove() {
-    qDebug() << "MW::slotEditNodeRemove()";
+    qDebug() << "Request to remove a node...";
     if ( !activeNodes() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;

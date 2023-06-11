@@ -1353,7 +1353,7 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
 void Graph::vertexRemove(const int &v1){
     qDebug() << "Removing vertex:"
              << m_graph[ vpos[v1] ]->number()
-             << "  vpos:" << vpos[v1]
+             << "vpos:" << vpos[v1]
                 << "Removing all inbound and outbound edges ";
     int doomedPos=vpos[v1];
 
@@ -1361,12 +1361,12 @@ void Graph::vertexRemove(const int &v1){
     VList::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if  ( qAbs((*it)->hasEdgeTo(v1) ) > 0) {
-            qDebug()<< "vertex" << (*it)->number()
+            qDebug()<< "another vertex" << (*it)->number()
                     << " has outbound Edge to "<< v1 << ". Removing it.";
             (*it)->removeOutEdge(v1);
         }
         if (  qAbs((*it)->hasEdgeFrom(v1)) > 0 ) {
-            qDebug()<< "vertex" << (*it)->number()
+            qDebug()<< "another vertex" << (*it)->number()
                     << " has inbound Edge from "<< v1 << ". Removing it.";
             (*it)->removeInEdge(v1);
         }
@@ -1382,18 +1382,18 @@ void Graph::vertexRemove(const int &v1){
         if ( it1.value() > doomedPos ) {
             prevIndex = it1.value();
             qDebug() << "vertex" << it1.key()
-                     << " had prevIndex: " << prevIndex
-                     << " > doomedPos " << doomedPos
-                     << " Setting new vpos. vpos size was: "<< vpos.size();
+                     << "had prevIndex:" << prevIndex
+                     << " > doomedPos" << doomedPos
+                     << "Setting new vpos. vpos size was: "<< vpos.size();
             vpos.insert( it1.key(), --prevIndex)  ;
-            qDebug() << "vertex " << it1.key()
-                     << " new vpos: " << vpos.value( it1.key(), -666)
-                     << " vpos size now: "<< vpos.size();
+            qDebug() << "vertex" << it1.key()
+                     << "new vpos:" << vpos.value( it1.key(), -666)
+                     << "vpos size now:"<< vpos.size();
 
         }
         else {
-            qDebug() << "vertex" << it1.key() << " with vpos "
-                     << it1.value() << " < doomedPos. CONTINUE";
+            qDebug() << "vertex" << it1.key() << "with vpos"
+                     << it1.value() << " =< doomedPos. CONTINUE";
 
         }
         ++it1;
