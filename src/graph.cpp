@@ -7282,7 +7282,7 @@ void Graph::prominenceDistribution(const int &index,
                                    const ChartType &type,
                                    const QString &distImageFileName) {
 
-    qDebug() << "Graph::prominenceDistribution() - "
+    qDebug() << "Request to compute prominence distribution. "
              << "index" << index
              << "chart type: " << type
              << "distImageFileName" << distImageFileName;
@@ -7294,6 +7294,7 @@ void Graph::prominenceDistribution(const int &index,
 
     QString seriesName;
 
+    qDebug() << "setting prominence distribution series name and classes...";
     switch (index) {
     case 0: {
         break;
@@ -7360,7 +7361,7 @@ void Graph::prominenceDistribution(const int &index,
     }
     }
 
-
+    qDebug() << "calling the relevant prominence distribution computation method...";
     switch (type) {
     case ChartType::None:
         emit signalPromininenceDistributionChartUpdate(Q_NULLPTR, Q_NULLPTR);
@@ -7397,12 +7398,7 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
                                          const QString &seriesName,
                                          const QString &distImageFileName) {
 
-    qDebug() << "Graph::prominenceDistributionSpline()";
-
-    if (distImageFileName.isEmpty() ) {
-        // No image filename given.
-        return;
-    }
+    qDebug() << "Computing prominence distribution as spline chart...";
 
     QLineSeries *series = new QLineSeries();
     series->setName (seriesName);
@@ -7424,7 +7420,7 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
 
     for (i = discreteClasses.constBegin(); i != discreteClasses.constEnd(); ++i) {
 
-        qDebug() << "Graph::prominenceDistributionSpline() - discreteClasses: "
+        qDebug() << "discreteClasses: "
                  << i.key() << ": " << i.value() ;
 
         seriesPQ.push(PairVF(i.key().toDouble(), i.value()));
@@ -7441,7 +7437,7 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
     qreal maxF = 0;
 
     while (!seriesPQ.empty()) {
-        qDebug() << "Graph::prominenceDistributionSpline() - seriesPQ top is:"
+        qDebug() << "seriesPQ top is:"
                  << seriesPQ.top().value << " : "
                  << seriesPQ.top().frequency;
 
@@ -7483,58 +7479,61 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
     series->setBrush(sBrush);
     series->setPen(sPen);
 
-    qDebug() << "Graph::prominenceDistributionSpline() - "
-             << "saving distribution image to" << distImageFileName ;
+    if (!distImageFileName.isEmpty() ) {
+        // Filename given. Need to save the chart to an image file.
 
-    axisX1->setMin(min);
-    axisX1->setMax(max);
+        qDebug() << "saving prominence distribution image to" << distImageFileName ;
 
-    axisY1->setMin(minF);
-    axisY1->setMax(maxF+1.0);
+        axisX1->setMin(min);
+        axisX1->setMax(max);
 
-    QChart *chart = new QChart();
-    QChartView *chartView = new QChartView( chart );
+        axisY1->setMin(minF);
+        axisY1->setMax(maxF+1.0);
 
-    // Not needed?
-    // If we do show it, then it will show a brief flash of the window to the user!
-    // chartView->show();
+        QChart *chart = new QChart();
+        QChartView *chartView = new QChartView( chart );
 
-    chart->addSeries(series1);
+        // Not needed?
+        // If we do show it, then it will show a brief flash of the window to the user!
+        // chartView->show();
 
-    chart->setTitle(series1->name() + " distribution");
-    chart->setTitleFont(QFont("Times",12));
+        chart->addSeries(series1);
 
-    chart->legend()->hide();
+        chart->setTitle(series1->name() + " distribution");
+        chart->setTitleFont(QFont("Times",12));
 
-    //chart->createDefaultAxes();
+        chart->legend()->hide();
 
-    chart->addAxis(axisX1, Qt::AlignBottom);
-    series1->attachAxis(axisX1);
-    chart->addAxis(axisY1, Qt::AlignLeft);
-    series1->attachAxis(axisY1);
+        //chart->createDefaultAxes();
 
-    chart->axes(Qt::Vertical).first()->setMin(0);
-    chart->axes(Qt::Horizontal).first()->setMin(0);
-    chart->axes(Qt::Horizontal).first()->setLabelsAngle(-90);
+        chart->addAxis(axisX1, Qt::AlignBottom);
+        series1->attachAxis(axisX1);
+        chart->addAxis(axisY1, Qt::AlignLeft);
+        series1->attachAxis(axisY1);
 
-    //        m_chart->axes(Qt::Horizontal).first()->setShadesVisible(false);
+        chart->axes(Qt::Vertical).first()->setMin(0);
+        chart->axes(Qt::Horizontal).first()->setMin(0);
+        chart->axes(Qt::Horizontal).first()->setLabelsAngle(-90);
 
-    chart->resize(2560,1440);
-    chartView->resize(2561,1441);
+        //        m_chart->axes(Qt::Horizontal).first()->setShadesVisible(false);
 
-    QPixmap p = chartView->grab();
+        chart->resize(2560,1440);
+        chartView->resize(2561,1441);
 
-    p.save( distImageFileName, "PNG");
+        QPixmap p = chartView->grab();
 
-    chartView->hide();
-    // Do not delete the ChartView
-    // If we do delete it, then it will also delete the axes
-    // which we have sent to MW to be displayed on the miniChart.
-    // The result will be app crash...
-    //        chartView->deleteLater();
-    delete chartView;
+        p.save( distImageFileName, "PNG");
 
-    qDebug() << "Graph::prominenceDistributionSpline() - emitting signal to update";
+        chartView->hide();
+        // Do not delete the ChartView
+        // If we do delete it, then it will also delete the axes
+        // which we have sent to MW to be displayed on the miniChart.
+        // The result will be app crash...
+        //        chartView->deleteLater();
+        delete chartView;
+    }
+
+    qDebug() << "emitting signal to MW update the prominence distribution spline chart";
     emit signalPromininenceDistributionChartUpdate(series, axisX, min, max, axisY, minF, maxF);
 }
 
@@ -7551,7 +7550,7 @@ void Graph::prominenceDistributionArea(const H_StrToInt &discreteClasses,
                                        const QString &name,
                                        const QString &distImageFileName) {
 
-    qDebug() << "Graph::prominenceDistributionArea()";
+    qDebug() << "Computing prominence distribution as area chart...";
 
     QAreaSeries *series = new QAreaSeries ();
     series->setName (name);
@@ -7633,10 +7632,10 @@ void Graph::prominenceDistributionArea(const H_StrToInt &discreteClasses,
     series->setPen(sPen);
 
 
-    if (!distImageFileName.isEmpty()) {
+    if (!distImageFileName.isEmpty() ) {
+        // Filename given. Need to save the chart to an image file.
 
-        qDebug() << "Graph::prominenceDistributionArea() - "
-                 << "saving distribution image to" << distImageFileName ;
+        qDebug() << "saving distribution image to" << distImageFileName ;
 
         axisX1->setMin(min);
         axisX1->setMax(max);
@@ -7691,6 +7690,7 @@ void Graph::prominenceDistributionArea(const H_StrToInt &discreteClasses,
 
     }
 
+    qDebug() << "emitting signal to MW update the prominence distribution area chart";
     emit signalPromininenceDistributionChartUpdate(series, axisX, min, max, axisY, minF, maxF);
 }
 
@@ -7709,7 +7709,7 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
                                        const QString &name,
                                        const QString &distImageFileName) {
 
-    qDebug() << "Graph::prominenceDistributionBars() - Creating chart type: bars";
+    qDebug() << "Computing prominence distribution as bar chart...";
 
     QBarSeries *series = new QBarSeries();
     series->setName (name);
@@ -7801,10 +7801,11 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
     barSet->setBrush(sBrush);
     barSet->setPen(sPen);
 
-    if (!distImageFileName.isEmpty()) {
 
-        qDebug() << "Graph::prominenceDistributionBars() - "
-                 << "saving distribution image to" << distImageFileName ;
+    if (!distImageFileName.isEmpty() ) {
+        // Filename given. Need to save the chart to an image file.
+
+        qDebug() << "saving distribution image to" << distImageFileName ;
 
         series1->append( barSet1 );
 
@@ -7826,7 +7827,6 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
 
         chart->setTitle(series->name() + " distribution");
         chart->setTitleFont(QFont("Times",12));
-
 
         chart->legend()->hide();
 
@@ -7856,6 +7856,7 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
         delete chartView;
     }
 
+    qDebug() << "emitting signal to MW update the prominence distribution bar chart";
     emit signalPromininenceDistributionChartUpdate(series,
                                                    axisX, min.toDouble(), max.toDouble(),
                                                    axisY, minF, maxF);
@@ -21645,9 +21646,9 @@ void Graph::layoutByProminenceIndex (int prominenceIndex, int layoutType,
                                      const bool &considerWeights,
                                      const bool &inverseWeights,
                                      const bool &dropIsolates) {
-    qDebug() << "Graph::layoutByProminenceIndex - "
-                << "index = " << prominenceIndex
-                << "type = " << layoutType;
+    qDebug() << "Applying layout by prominence index:"
+                << prominenceIndex
+                << "type:" << layoutType;
 
     double  i=0, std=0, norm=0;
     double new_x=0, new_y=0;

@@ -11569,7 +11569,7 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString prominenceIndexName=""
 
     qDebug() << "indexType" << indexType ;
 
-    toolBoxLayoutByIndexSelect->setCurrentIndex(indexType +1);
+    toolBoxLayoutByIndexSelect->setCurrentIndex(indexType+1);
     toolBoxLayoutByIndexTypeSelect->setCurrentIndex(1);
 
     bool dropIsolates=false;
@@ -13567,9 +13567,8 @@ void MainWindow::slotAnalyzeCentralityEccentricity(){
 
 
 /**
- * @brief Updates the distribution miniChart
- * Called from Graph::signalPromininenceDistributionChartUpdate after computing
- * the prominence index distribution.
+ * @brief Updates the prominence distribution miniChart
+ * Called from Graph after computing the prominence index distribution.
  * @param series
  * @param axisX
  * @param min
@@ -13585,11 +13584,10 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
 
     Q_UNUSED(minF);
 
-    qDebug() << "MW::slotAnalyzeProminenceDistributionChartUpdate()";
+    qDebug() << "Updating the prominence distribution miniChart";
 
     if (series == Q_NULLPTR) {
-        qDebug() << "MW::slotAnalyzeProminenceDistributionChartUpdate() - "
-                    "series is null! Resetting to trivial";
+        qDebug() << "series is null! Resetting to trivial";
         miniChart->resetToTrivial();
         return;
     }
@@ -13598,12 +13596,10 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
     // Set the style of the lines and bars
     switch (series->type()) {
     case QAbstractSeries::SeriesTypeBar	:
-        qDebug() << "MW::slotAnalyzeProminenceDistributionChartUpdate() - "
-                    "this an BarSeries";
+        qDebug() << "this an BarSeries";
         break;
     case QAbstractSeries::SeriesTypeArea :
-        qDebug() << "MW::slotAnalyzeProminenceDistributionChartUpdate() - "
-                    "this an AreaSeries";
+        qDebug() << "this an AreaSeries";
 
         break;
     default:
