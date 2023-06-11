@@ -1178,7 +1178,7 @@ void GraphicsWidget::setEdgeLabelsVisibility (const bool &toggle){
 
 
 /**
- * @brief Toggles edge highlighting
+ * @brief Toggles edge highlighting on or off.
  *
  * If enabled, an edge will be highlighted on mouse hover and edges
  * connected to a node will be highlighted when the user selects that node.

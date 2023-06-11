@@ -730,8 +730,10 @@ qreal GraphicsEdge::width() const{
 
 
 /**
- * @brief Called from GraphicsNode to change the edge state and highlight it.
- * This is done, when the user hovers over the node.
+ * @brief Toggles the highlighted state of the the edge, if highlighting is allowed.
+ *
+ * Called from GraphicsNode when the user hovers over the node.
+ *
  * @param flag
  */
 void GraphicsEdge::setHighlighted(const bool &flag) {
@@ -749,6 +751,9 @@ void GraphicsEdge::setHighlighted(const bool &flag) {
 
 /**
  * @brief Toggles edge highlighting on or off
+ *
+ * If enabled, the edge can be highlighted.
+ *
  * @param toggle
  */
 void GraphicsEdge::setHighlighting(const bool &toggle) {
@@ -773,12 +778,16 @@ void GraphicsEdge::setHighlighting(const bool &toggle) {
 
 
 GraphicsEdge::~GraphicsEdge(){
-    qDebug() << "self-destructing edge " << sourceNodeNumber()<< "->" << targetNodeNumber();
+    qDebug() << "self-destructing edge:"
+             << sourceNodeNumber()<< "->" << targetNodeNumber()
+             << "will remove refs first...";
 
     removeRefs();
+
     qDebug() << "removing edge weight number, if any...";
     if (m_drawWeightNumber)
         graphicsWidget->removeItem(weightNumber);
+
     qDebug() << "removing edge label, if any...";
     if (m_drawLabel)
         graphicsWidget->removeItem(edgeLabel);

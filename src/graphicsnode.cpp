@@ -831,12 +831,14 @@ GraphicsNode::~GraphicsNode(){
 
     qDebug() << "node" << nodeNumber()<< "Deleting edges in inEdgeList";
     foreach (GraphicsEdge *edge, inEdgeList) {
-        qDebug() << "deleting inedge" << edge->targetNodeNumber() << "<-" << edge->sourceNodeNumber();
+        qDebug() << "deleting inedge"
+                 << edge->targetNodeNumber() << "<-" << edge->sourceNodeNumber();
         delete edge;
     }
     qDebug() << "node" << nodeNumber() << "Deleting edges in outEdgeList";
     foreach (GraphicsEdge *edge, outEdgeList) {
-        qDebug() << "deleting outedge" << edge->sourceNodeNumber() << "->" << edge->targetNodeNumber();
+        qDebug() << "deleting outedge"
+                 << edge->sourceNodeNumber() << "->" << edge->targetNodeNumber();
         delete edge;
     }
     qDebug() << "node" << nodeNumber() << "deleting node number...";
