@@ -189,7 +189,7 @@ public slots:
                             const bool &needsSaving=true);
     void slotNetworkSave(const int &fileFormat=-1);
     void slotNetworkSaveAs();
-    void slotNetworkClose();
+    bool slotNetworkClose();
     void slotNetworkPrint();
     void slotNetworkViewSociomatrix();
     void slotNetworkViewSociomatrixPlotText();

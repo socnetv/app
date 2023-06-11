@@ -6994,7 +6994,7 @@ void MainWindow::slotNetworkSavedStatus (const int &status) {
 /**
  * @brief Closes the current network, saving it if needed.
  */
-void MainWindow::slotNetworkClose() {
+bool MainWindow::slotNetworkClose() {
 
     qDebug()<<"Request to close current network file. Check if it is saved...";
 
@@ -7012,13 +7012,14 @@ void MainWindow::slotNetworkClose() {
         {
         case QMessageBox::Yes: slotNetworkSave(); break;
         case QMessageBox::No: break;
-        case QMessageBox::Cancel: return; break;
+        case QMessageBox::Cancel: return false; break;
         }
     }
     qDebug()<<"Closing network file. Calling initApp ...";
     initApp();
     qDebug()<<"Network file closed...";
     statusMessage( tr("Ready."));
+    return true;
 }
 
 
@@ -8353,7 +8354,10 @@ void MainWindow::slotNetworkDataSetSelect(){
     qDebug()<< "MW::slotNetworkDataSetSelect()";
 
     // Close the current network
-    this->slotNetworkClose();
+    if ( !this->slotNetworkClose() ) {
+        // User cancelled. Do not proceed.
+        return;
+    }
 
     m_datasetSelectDialog = new DialogDataSetSelect(this);
     connect( m_datasetSelectDialog, SIGNAL( userChoices(QString) ),
@@ -8421,7 +8425,10 @@ void MainWindow::slotNetworkRandomErdosRenyiDialog(){
     qDebug() << "Showing the dialog to create a random Erdos-Renyi network ";
 
     // Close the current network
-    this->slotNetworkClose();
+    if ( !this->slotNetworkClose() ) {
+        // User cancelled. Do not proceed.
+        return;
+    }
 
     statusMessage( tr("Generate a random Erdos-Renyi network. "));
 
@@ -8510,7 +8517,10 @@ void MainWindow::slotNetworkRandomScaleFreeDialog() {
      qDebug() << "Showing the dialog to create a random scale-free network ";
 
     // Close the current network
-    this->slotNetworkClose();
+    if ( !this->slotNetworkClose() ) {
+        // User cancelled. Do not proceed.
+        return;
+    }
 
     statusMessage( tr("Generate a random Scale-Free network. "));
     m_randScaleFreeDialog = new DialogRandScaleFree(this);
@@ -8572,7 +8582,10 @@ void MainWindow::slotNetworkRandomSmallWorldDialog()
     qDebug() << "Showing the dialog to create a random small-world network ";
 
     // Close the current network
-    this->slotNetworkClose();
+    if ( !this->slotNetworkClose() ) {
+        // User cancelled. Do not proceed.
+        return;
+    }
 
     statusMessage( tr("Generate a random Small-World network. "));
     m_randSmallWorldDialog = new DialogRandSmallWorld(this);
@@ -8629,7 +8642,10 @@ void MainWindow::slotNetworkRandomRegularDialog()
     qDebug() << "Showing the dialog to create a random d-regular network ";
 
     // Close the current network
-    this->slotNetworkClose();
+    if ( !this->slotNetworkClose() ) {
+        // User cancelled. Do not proceed.
+        return;
+    }
 
     statusMessage( tr("Generate a d-regular random network. "));
     m_randRegularDialog = new DialogRandRegular(this);
@@ -8692,7 +8708,10 @@ void MainWindow::slotNetworkRandomGaussian(){
 void MainWindow::slotNetworkRandomRingLattice(){
 
     // Close the current network
-    this->slotNetworkClose();
+    if ( !this->slotNetworkClose() ) {
+        // User cancelled. Do not proceed.
+        return;
+    }
 
     bool ok;
     statusMessage( "You have selected to create a ring lattice network. ");
@@ -8874,7 +8893,10 @@ void MainWindow::slotNetworkWebCrawler (const QUrl &startUrl,
     }
 
     // Close the current network
-    this->slotNetworkClose();
+    if ( !this->slotNetworkClose() ) {
+        // User cancelled. Do not proceed.
+        return;
+    }
 
     // Start the web crawler
     qDebug() << "Calling Graph::startWebCrawler() to start the crawler process.";
