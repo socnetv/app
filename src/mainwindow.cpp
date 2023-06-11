@@ -217,9 +217,20 @@ MainWindow::MainWindow(const QString & m_fileName, const bool &forceProgress, co
 
     initPanels();       // Build the toolbox
 
-    initWindowLayout(maximized, fullscreen); // Init the application window, set layout etc
+    initWindowLayout(); // Init the application window, set layout etc
 
     initSignalSlots();  // Connect signals and slots between app components
+
+
+    if (maximized) {
+        qDebug() << "maximizing window as per user request.";
+        showMaximized();
+    }
+    if (fullscreen) {
+        showFullScreen();
+    }
+
+
 
     initApp();          // Load and initialise default app parameters
 
@@ -5212,7 +5223,7 @@ void MainWindow::initPanels(){
  *
  * Creates helper widgets and sets the main layout of the MainWindow
  */
-void MainWindow::initWindowLayout(const bool &maximized, const bool &fullscreen) {
+void MainWindow::initWindowLayout() {
 
     qDebug() << "Initializing window layout...";
 
@@ -5338,16 +5349,6 @@ void MainWindow::initWindowLayout(const bool &maximized, const bool &fullscreen)
     if ( appSettings["showLeftPanel"] == "false") {
         slotOptionsWindowLeftPanelVisibility(false);
     }
-
-
-    if (maximized) {
-        qDebug() << "maximizing window as per user request.";
-        showMaximized();
-    }
-    if (fullscreen) {
-        showFullScreen();
-    }
-
 
     qDebug() << "Finished window layout init.";
 

@@ -134,7 +134,7 @@ public:
     void initMenuBar();
     void initToolBar();
     void initPanels();
-    void initWindowLayout(const bool &maximized=false, const bool &fullscreen=false);
+    void initWindowLayout();
     void initSignalSlots();
     QMap<QString, QString> initSettings(const int &debugLevel=0, const bool &forceProgress=false);
     void initNetworkAvailableTextCodecs();

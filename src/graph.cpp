@@ -1593,8 +1593,9 @@ int Graph::vertexSize( const int &v ) const {
 
 /**
  * @brief Sets the default vertex shape and iconPath
- * Called by MW::initApp()
+ *
  * @param shape
+ * @param iconPath
  */
 void Graph::vertexShapeSetDefault(const QString shape, const QString &iconPath) {
     initVertexShape=shape;
