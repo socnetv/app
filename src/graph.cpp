@@ -2222,6 +2222,33 @@ void Graph::edgeAdd (const int &v1, const int &v2,
 }
 
 
+/**
+ * @brief Toggles the status of outbound edge source -> target at source vertex
+ * @param v1
+ * @param v2
+ * @param toggle
+ * @return
+ */
+void Graph::edgeOutboundStatusSet(const int &v1, const int &v2,const bool &toggle) {
+
+    m_graph [ vpos[v1] ]->setOutEdgeEnabled(v2, toggle);
+}
+
+
+
+/**
+ * @brief Toggles the status of inbound edge target <- source at target vertex
+ * @param v1
+ * @param v2
+ * @param toggle
+ * @return
+ */
+void Graph::edgeInboundStatusSet(const int &target, const int &source, const bool &toggle){
+
+    m_graph [ vpos[target] ]->setInEdgeEnabled(source, toggle);
+
+}
+
 
 
 
@@ -2305,10 +2332,104 @@ void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold
         qDebug() << "Filtering edges with weight below or equal" << m_threshold ;
         words = "equal or under";
     }
-    // Loop over all vertices
+
     VList::const_iterator it;
+
+    int source, target=0;
+    qreal weight=0, reverseEdgeWeight=0;
+    bool preserveReverseEdge=false;
+    H_edges::const_iterator  ed;
+
+    // Loop over all vertices
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        (*it)->setDisabledEdgesByWeight ( m_threshold, overThreshold );
+//        (*it)->setDisabledEdgesByWeight ( m_threshold, overThreshold );
+
+        source = (*it)->number();
+
+        if (overThreshold) {
+            qDebug() << "vertex" << source << "disabling outedges with weights >=" << m_threshold;
+        }
+        else {
+            qDebug() << "vertex" << source << "disabling outedges with weights <=" << m_threshold;
+        }
+
+        // Loop over all out edges of source
+        for ( ed = (*it)->m_outEdges.cbegin(); ed != (*it)->m_outEdges.cend(); ++ed) {
+
+            // Init preserve reserve edge status to false
+            preserveReverseEdge = false;
+
+            if ( ed.value().first != m_curRelation ) {
+                // This edge does not belong to this relation
+                continue;
+            }
+
+            target=ed.key();
+            weight = ed.value().second.first;
+
+            // Check the filtering type: over or under
+            if (overThreshold) {
+                // We should disable all edges with weights >= threshold
+                if ( weight >= m_threshold ) {
+                    // this outedge must be disabled - check reverse edge
+                    reverseEdgeWeight = (*it)->hasEdgeFrom(target);
+                    if ( reverseEdgeWeight != 0 && reverseEdgeWeight < m_threshold ) {
+                        // reverse edge must be preserved.
+                        preserveReverseEdge = true;
+                    }
+                    qDebug() << source << "outedge to:" << target << "weight:" << weight << "will be disabled - preserveReverseEdge:" << preserveReverseEdge << ". Emitting signal...";
+
+                    ed.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
+                    emit signalSetEdgeVisibility (m_curRelation, source, target, false, preserveReverseEdge);
+                    if ( !preserveReverseEdge ) {
+                        // update the inedge of the target too
+                        qDebug() << "disabling the inedge of the target" << target << "<-" << source;
+                        this->edgeInboundStatusSet(target, source, false);
+                    }
+                }
+                else {
+                    qDebug() << source << "outedge to:" << target << "weight:" << weight << "will be enabled. Emitting signal...";
+                    ed.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true) );
+                    emit signalSetEdgeVisibility (m_curRelation, source, target, true,preserveReverseEdge);
+                    // update the inedge of the target
+                    qDebug() << "updating / enabling the inedge of the target" << target << "<-" << source;
+                    this->edgeInboundStatusSet(target, source, true);
+                }
+
+            }
+            else {
+                // We should disable all edges <= the threshold
+                 if ( weight <= m_threshold ) {
+                     // this outedge must be disabled - check reverse edge
+                     reverseEdgeWeight = (*it)->hasEdgeFrom(target);
+                     if ( reverseEdgeWeight !=0 && reverseEdgeWeight > m_threshold ) {
+                         // reverse edge must be preserved.
+                         preserveReverseEdge = true;
+                     }
+                    qDebug() << source << "outedge to:" << target << "weight:" << weight << "will be disabled - preserveReverseEdge:" << preserveReverseEdge << ". Emitting signal...";
+                    ed.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
+                    emit signalSetEdgeVisibility (m_curRelation, source, target, false,preserveReverseEdge);
+                    if ( !preserveReverseEdge ) {
+                        // update the inedge of the target too
+                        qDebug() << "disabling the inedge of the target" << target << "<-" << source;
+                        this->edgeInboundStatusSet(target, source, false);
+                    }
+
+                }
+                else {
+                    qDebug() << source << "outedge to:" << target << "weight:" << weight << "will be enabled. Emitting signal...";
+                    ed.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true) );
+                    emit signalSetEdgeVisibility (m_curRelation, source, target, true, preserveReverseEdge);
+                    // update the inedge of the target
+                    qDebug() << "updating / enabling the inedge of the target" << target << "<-" << source;
+                    this->edgeInboundStatusSet(target, source, true);
+                }
+
+            }
+
+        }
+
+
     }
     // Update graph mod status
     setModStatus(ModStatus::EdgeCount);

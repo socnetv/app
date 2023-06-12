@@ -310,7 +310,6 @@ void GraphicsEdge::setLabelVisibility (const bool &toggle) {
 }
 
 
-
 /**
  * @brief Returns the source node of this graphics edge
  * @return
@@ -329,6 +328,7 @@ void GraphicsEdge::setSourceNode(GraphicsNode *node) {
     adjust();
 }
 
+
 /**
  * @brief Called from graphicsNode to update edge offset from source node (i.e. when node size changes)
  * @param offset
@@ -337,6 +337,7 @@ void GraphicsEdge::setSourceNodeSize(const int &size){
     m_offsetFromSourceNode=size + m_minOffsetFromNode;
     adjust();
 }
+
 
 /**
  * Returns the source node number
