@@ -8834,6 +8834,12 @@ void MainWindow::slotNetworkRandomLattice(const int &newNodes,
  */
 void MainWindow::slotNetworkWebCrawlerDialog() {
 
+    // Close the current network
+    if ( !this->slotNetworkClose() ) {
+        // User cancelled. Do not proceed.
+        return;
+    }
+
     qDebug() << "Opening web crawler dialog...";
 
     m_WebCrawlerDialog = new DialogWebCrawler(this);
@@ -8892,11 +8898,6 @@ void MainWindow::slotNetworkWebCrawler (const QUrl &startUrl,
         return;
     }
 
-    // Close the current network
-    if ( !this->slotNetworkClose() ) {
-        // User cancelled. Do not proceed.
-        return;
-    }
 
     // Start the web crawler
     qDebug() << "Calling Graph::startWebCrawler() to start the crawler process.";
