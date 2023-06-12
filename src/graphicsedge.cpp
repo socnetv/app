@@ -175,7 +175,7 @@ QString GraphicsEdge::colorToPajek() {
  * @param w
  */
 void GraphicsEdge::setWeight(const qreal &w) {
-    qDebug() << "Setting edge weight:" << w;
+//    qDebug() << "Setting edge weight:" << w;
     prepareGeometryChange();
     m_weight = w;
     if ( fabs(m_weight) > 1  )  {
@@ -243,11 +243,18 @@ void GraphicsEdge::setLabel(const QString &label) {
 }
 
 
+/**
+ * @brief Returns the edge label text
+ * @return QString
+ */
 QString GraphicsEdge::label() const {
     return m_label;
 }
 
 
+/**
+ * @brief Adds a graphics edge label to this edge
+ */
 void GraphicsEdge::addLabel (){
     // create edge label item
     double x =  5+ ( source->x() + target->x() ) / 2.0;
@@ -258,6 +265,10 @@ void GraphicsEdge::addLabel (){
     m_drawLabel = true;
 }
 
+/**
+ * @brief Toggles the graphics edge label visibility
+ * @param toggle
+ */
 void GraphicsEdge::setLabelVisibility (const bool &toggle) {
     if (m_drawLabel) {
         if (toggle)
@@ -587,18 +598,26 @@ int GraphicsEdge::directionType() {
 
 
 
-
+/**
+ * @brief Sets the PenStyle of this edge
+ * @param style
+ */
 void GraphicsEdge::setStyle( const Qt::PenStyle  &style ) {
     m_style = style;
 }
 
+
+/**
+ * @brief Returns the PenStyle of this edge
+ * @return
+ */
 Qt::PenStyle GraphicsEdge::style() const{
     return m_style;
 
 }
 
 /**
- * @brief GraphicsEdge::pen
+ * @brief Returns the QPen for this edge -- the pen changes when the edge state changes/
  * @return
  */
 QPen GraphicsEdge::pen() const {
@@ -626,7 +645,7 @@ QPen GraphicsEdge::pen() const {
 
 
 /**
- * @brief GraphicsEdge::setState
+ * @brief Sets the edge state
  * @param state
  */
 void GraphicsEdge::setState(const int &state) {
@@ -636,7 +655,8 @@ void GraphicsEdge::setState(const int &state) {
 
 
 /**
- * @brief GraphicsEdge::paint
+ * @brief Pains the edge
+ *
  * @param painter
  * @param option
  */
