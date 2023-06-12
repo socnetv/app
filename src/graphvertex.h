@@ -178,8 +178,6 @@ public:
     int inDegreeConst();
     int localDegree();
 
-    void setDisabledEdgesByWeight(const qreal m_threshold, const bool overThreshold);
-    //	void filterEdgesByColor(qreal m_threshold, bool overThreshold);
     void setEnabledEdgesByRelation(const int relation, const bool status);
     void setEnabledUnilateralEdges(const bool &status=false);
 
