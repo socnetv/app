@@ -43,19 +43,19 @@ branches:
 # skip_non_tags: true
 
 
-# Skipping commits affecting specific files (GitHub only).
-skip_commits:
-  files:
-   - socnetv.spec
-   - debian/**/*
-   - socnetv.appdata.xml
-   - changelog.gz
-   - README.md
-   - TODO
-   - AUTHORS
-   - COPYING
-   - NEWS
-#   - .travis*.yml
+## Skipping commits affecting specific files (GitHub only).
+#skip_commits:
+#  files:
+#   - socnetv.spec
+#   - debian/**/*
+#   - socnetv.appdata.xml
+#   - changelog.gz
+#   - README.md
+#   - TODO
+#   - AUTHORS
+#   - COPYING
+#   - NEWS
+##   - .travis*.yml
 
 
 # Including commits with particular message or from specific user
