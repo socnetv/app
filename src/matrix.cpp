@@ -1323,12 +1323,15 @@ bool Matrix::solve(qreal b[])
 
     *A = *this;
 
-
     int n=rows();
     qreal d;
 
 //    int indx[n];
     int *indx = new  (nothrow) int [ n ];
+    if (!indx) {
+        delete A;
+        return false;
+    }
     Q_CHECK_PTR(indx);
 
     qDebug () << "Matrix::solve() - solving A x  - size " << n;
@@ -1337,13 +1340,15 @@ bool Matrix::solve(qreal b[])
     }
     if ( ! ludcmp(*A,n,indx,d) )
     { //  Decompose the matrix just once.
-        qDebug () << "Matrix::solve() - matrix a singular - RETURN";
+        delete A;
+        delete[] indx;
+        qDebug() << "Matrix::solve() - matrix a singular - RETURN";
         return false ;
     }
 
-    qDebug () << "Matrix::solve() - call lubksb";
+//    qDebug () << "Matrix::solve() - call lubksb";
     lubksb(*A, n, indx, b);
-    qDebug () << "Matrix::solve() - finished!";
+//    qDebug () << "Matrix::solve() - finished!";
 
     return true;
 }
