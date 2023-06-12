@@ -7,6 +7,11 @@ SocNetV News
 June 2023
 ========
 - Version 3.1 release. The first Qt6 only version.
+  Improved large file loading and responsivess with large nets (>20000 edges), while having less memory footprint.
+  Fixed Edge filtering (see issue #140).
+  Find Node by index score dialog has been fixed and allows more meaningful comparisons.
+  Fixed many other bugs, improved usability and help messages.
+
 
 Jul 2021
 ========

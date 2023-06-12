@@ -296,7 +296,14 @@ public:
     H_shortestPaths m_shortestPaths;
 
 signals:
-    void signalSetEdgeVisibility (const int &relation, const int &name, const int &target, const bool &visible, const bool &preserveReverseEdge=false);
+    void signalSetEdgeVisibility (const int &relation,
+                                  const int &name,
+                                  const int &target,
+                                  const bool &visible,
+                                  const bool &preserveReverseEdge=false,
+                                  const int &edgeWeight=1,
+                                  const int &reverseEdgeWeight=1
+                                  );
 
 protected:
 

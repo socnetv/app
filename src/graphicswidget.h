@@ -161,7 +161,9 @@ public slots:
                             const int &sourceNum,
                             const int &targetNum,
                             const bool &visible,
-                            const bool &checkInverse=false);
+                            const bool &preserveReverseEdge=false,
+                            const int &edgeWeight=1,
+                            const int &reverseEdgeWeight=1);
 
     bool setEdgeDirectionType(const int &source,
                               const int &target,

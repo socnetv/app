@@ -510,7 +510,7 @@ void GraphVertex::removeOutEdge (const int v2) {
  * @param status
  */
 void GraphVertex::setOutEdgeEnabled (const int &target, bool status){
-    qDebug() << "vertex" << number() << "setting outEdge to" << target << "new status" << status;
+//    qDebug() << "vertex" << number() << "setting outEdge to" << target << "new status" << status;
     int linkTarget=0;
     qreal weight =0;
     int relation = 0;
@@ -685,7 +685,7 @@ void GraphVertex::removeInEdge(const int v2){
  * @param status
  */
 void GraphVertex::setInEdgeEnabled (const int &source, bool status){
-    qDebug() << "vertex" << number() << "setting inEdge from" << source << "new status" << status;
+//    qDebug() << "vertex" << number() << ", toggling status of inEdge:" << number() << "<-" << source << "new status:" << status;
     int linkTarget=0;
     qreal weight =0;
     int relation = 0;
@@ -1362,7 +1362,7 @@ void GraphVertex::cliqueAdd (const QList<int> &clique) {
 
 
 GraphVertex::~GraphVertex() {
-    qDebug()<<"vertex"<< number()<< "destroying...";
+//    qDebug()<<"vertex"<< number()<< "destroying...";
     m_outEdges.clear();
     m_outEdges.squeeze();
     m_inEdges.clear();

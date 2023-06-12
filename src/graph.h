@@ -332,7 +332,13 @@ signals:
     //signal to GW
     void signalRemoveEdge(const int &v1, const int &v2, const bool &removeReverse);
 
-    void signalSetEdgeVisibility (const int &relation, const int &source, const int &target, const bool &toggle, const bool &preserveReverseEdge=false);
+    void signalSetEdgeVisibility (const int &relation,
+                                  const int &source,
+                                  const int &target,
+                                  const bool &toggle,
+                                  const bool &preserveReverseEdge=false,
+                                  const int &edgeWeight= 1,
+                                  const int &reverseEdgeWeight = 1);    // The last two are used only if we need to draw the edge
 
     void setVertexVisibility(const int &number, const bool &toggle);
 
@@ -606,8 +612,8 @@ public:
                      const int &v2,
                      const bool &checkReciprocal=false);
 
-    void edgeOutboundStatusSet (const int &v1,
-                     const int &v2,
+    void edgeOutboundStatusSet (const int &source,
+                     const int &target,
                      const bool &toggle=false);
 
     void edgeInboundStatusSet (const int &target,
