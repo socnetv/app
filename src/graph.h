@@ -332,7 +332,7 @@ signals:
     //signal to GW
     void signalRemoveEdge(const int &v1, const int &v2, const bool &removeReverse);
 
-    void signalSetEdgeVisibility (const int &relation, const int &source, const int &target, const bool &toggle, const bool &checkInverse=false);
+    void signalSetEdgeVisibility (const int &relation, const int &source, const int &target, const bool &toggle, const bool &preserveReverseEdge=false);
 
     void setVertexVisibility(const int &number, const bool &toggle);
 
@@ -605,6 +605,14 @@ public:
     qreal edgeExists(const int &v1,
                      const int &v2,
                      const bool &checkReciprocal=false);
+
+    void edgeOutboundStatusSet (const int &v1,
+                     const int &v2,
+                     const bool &toggle=false);
+
+    void edgeInboundStatusSet (const int &target,
+                     const int &source,
+                     const bool &toggle=false);
 
     void edgeRemove (const int &v1,
                      const int &v2,
