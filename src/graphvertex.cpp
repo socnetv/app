@@ -509,12 +509,12 @@ void GraphVertex::removeOutEdge (const int v2) {
  * @param target
  * @param status
  */
-void GraphVertex::setOutEdgeEnabled (const int target, bool status){
-//    qDebug() << "vertex" << number() << "setting outEdge to" << target << "new status" << status;
+void GraphVertex::setOutEdgeEnabled (const int &target, bool status){
+    qDebug() << "vertex" << number() << "setting outEdge to" << target << "new status" << status;
     int linkTarget=0;
     qreal weight =0;
     int relation = 0;
-    QMultiHash<int, pair_i_fb >::iterator it1;
+    H_edges::iterator it1;
     for ( it1 = m_outEdges.begin(); it1 != m_outEdges.end(); ++ it1) {
         relation = it1.value().first;
         if ( relation == m_curRelation ) {
@@ -672,6 +672,65 @@ void GraphVertex::removeInEdge(const int v2){
     }
 
 }
+
+
+
+
+
+
+/**
+ * @brief Sets the status of an inbound edge from the given source vertex
+ *
+ * @param source
+ * @param status
+ */
+void GraphVertex::setInEdgeEnabled (const int &source, bool status){
+    qDebug() << "vertex" << number() << "setting inEdge from" << source << "new status" << status;
+    int linkTarget=0;
+    qreal weight =0;
+    int relation = 0;
+    H_edges::iterator it1;
+    for ( it1 = m_inEdges.begin(); it1 != m_inEdges.end(); ++ it1) {
+        relation = it1.value().first;
+        if ( relation == m_curRelation ) {
+            linkTarget=it1.key();
+            if ( linkTarget == source ) {
+                weight = it1.value().second.first;
+//                qDebug() << " *** vertex " << m_number << " connected to "
+//                         << linkTarget << " relation " << relation
+//                         << " weight " << weight
+//                         << " status " << it1.value().second.second;
+                it1.value() = pair_i_fb(m_curRelation, pair_f_b(weight, status) );
+                emit signalSetEdgeVisibility (m_curRelation, source, m_number, status );
+                break;
+            }
+        }
+    }
+}
+
+
+/**
+ * @brief Sets the weight of the inbound edge from the given vertex
+ *
+ * @param source
+ * @param weight
+ */
+void GraphVertex::setInEdgeWeight(const int &source, const qreal &weight){
+//    qDebug() << "vertex" << number() << "changing weight of inEdge from" << source << "new weight" << weight;
+    H_edges::const_iterator it1=m_inEdges.constFind(source);
+    // Find the current edge, remove it and add an updated one.
+    while (it1 != m_inEdges.constEnd() ) {
+        if ( it1.key() == source && it1.value().first == m_curRelation ) {
+            m_inEdges.erase(it1);
+            break;
+        }
+        ++it1;
+    }
+    // Insert the updated edge
+    m_inEdges.insert(
+                source, pair_i_fb(m_curRelation, pair_f_b(weight, true) ) );
+}
+
 
 
 
@@ -1051,57 +1110,6 @@ int GraphVertex::localDegree(){  int v2=0;
 
 
 
-/**
- * @brief Disables outbound edges over or under a specified threshold weight
- *
- * @param qreal m_threshold
- * @param bool overThreshold
- */
-void GraphVertex::setDisabledEdgesByWeight(const qreal m_threshold, const bool overThreshold){
-//    if (overThreshold) {
-//        qDebug() << "vertex" << number() << "disabling edges with weights >=" << m_threshold;
-//    }
-//    else {
-//        qDebug() << "vertex" << number() << "disabling edges with weights <=" << m_threshold;
-//    }
-    int target=0;
-    qreal weight=0;
-    bool checkInverse=true;
-    QMultiHash<int, pair_i_fb >::iterator it;
-    for ( it = m_outEdges.begin(); it != m_outEdges.end(); ++ it) {
-        if ( it.value().first == m_curRelation ) {
-            target=it.key();
-            weight = it.value().second.first;
-            if (overThreshold) {
-                // Disable all edges with weights >= threshold
-                if ( weight >= m_threshold ) {
-                    qDebug() << "edge to:" << target << "weight:" << weight << "will be disabled. Emitting signal...";
-                    it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
-                    emit signalSetEdgeVisibility (m_curRelation, m_number, target, false, checkInverse);
-                }
-                else {
-                    qDebug() << "edge to:" << target << "weight:" << weight << "will be enabled. Emitting signal...";
-                    it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true) );
-                    emit signalSetEdgeVisibility (m_curRelation, m_number, target, true,checkInverse);
-                }
-            }
-            else {
-                // Disable all edges <= the threshold
-                 if ( weight <= m_threshold ) {
-                    qDebug() << "edge to:" << target << "weight:" << weight << "will be disabled. Emitting signal...";
-                    it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false) );
-                    emit signalSetEdgeVisibility (m_curRelation, m_number, target, false,checkInverse);
-                }
-                else {
-                    qDebug() << "edge to:" << target << "weight:" << weight << "will be enabled. Emitting signal...";
-                    it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true) );
-                    emit signalSetEdgeVisibility (m_curRelation, m_number, target, true,checkInverse);
-                }
-            }
-        }
-    }
-}
-
 
 
 
@@ -1115,7 +1123,7 @@ void GraphVertex::setEnabledUnilateralEdges(const bool &status){
 //    qDebug() << "vertex:" << number() << "setting unilateral edges of relation" << relation << "to" << status;
     int target=0;
     qreal weight=0;
-    QMultiHash<int, pair_i_fb >::iterator it;
+    H_edges::iterator it;
     for ( it = m_outEdges.begin(); it != m_outEdges.end(); ++it) {
         if ( it.value().first == m_curRelation ) {
             target=it.key();
@@ -1142,7 +1150,7 @@ void GraphVertex::setEnabledEdgesByRelation(const int relation, const bool statu
     int target=0;
     qreal weight =0;
     int edgeRelation=0;
-    QMultiHash<int, pair_i_fb >::iterator it1;
+    H_edges::iterator it1;
     for ( it1 = m_outEdges.begin(); it1 != m_outEdges.end(); ++ it1) {
         edgeRelation = it1.value().first;
         if ( edgeRelation == relation ) {

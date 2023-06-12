@@ -142,7 +142,7 @@ public:
     qreal hasEdgeTo(const int &v, const bool &allRelations=false);
     void removeOutEdge (const int target);
     void setOutEdgeWeight (const int &target, const qreal &weight);
-    void setOutEdgeEnabled (const int, bool);
+    void setOutEdgeEnabled (const int &target, bool);
     void setOutLinkColor(const int &v2, const QString &color);
     QString outLinkColor(const int &v2);
     void setOutEdgeLabel(const int &v2, const QString &label);
@@ -151,7 +151,8 @@ public:
     void addInEdge(const int &v1, const qreal &weight);
     qreal hasEdgeFrom (const int &v, const bool &allRelations=false);
     void removeInEdge(const int source);
-
+    void setInEdgeWeight (const int &source, const qreal &weight);
+    void setInEdgeEnabled (const int &source, bool);
 
     int outEdgesCount();
     int outEdgesCountConst() const ;
@@ -297,7 +298,7 @@ public:
     H_shortestPaths m_shortestPaths;
 
 signals:
-    void signalSetEdgeVisibility (const int &relation, const int &name, const int &target, const bool &visible, const bool &checkInverse=false);
+    void signalSetEdgeVisibility (const int &relation, const int &name, const int &target, const bool &visible, const bool &preserveReverseEdge=false);
 
 protected:
 
