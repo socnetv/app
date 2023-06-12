@@ -103,7 +103,7 @@ public:
     void setShape (const QString, const QString &iconPath=QString());
     QString nodeShape() {return m_shape;}
 
-    void setColor(const QString &colorStr);
+    void setColor(const QString &colorName);
     void setColor(QColor color);
     QString color ();
 
@@ -155,8 +155,8 @@ private:
     int m_labelSize;
     int m_numberDistance;
     int m_labelDistance;
-    QString  m_shape, m_iconPath;
-    QString m_col_str, m_numColor;
+    QString m_shape, m_iconPath;
+    QString m_numColor;
     QColor m_col, m_col_orig;
     QColor m_col_outline;
     QString m_labelText, m_labelColor;

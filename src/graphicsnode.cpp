@@ -98,7 +98,6 @@ GraphicsNode::GraphicsNode ( GraphicsWidget* gw,
     m_shape=shape;
     m_iconPath = iconPath;
 
-    m_col_str=color;
     m_col_orig=m_col=QColor(color);
 
     m_col_outline = QColor(0,0,0,50);
@@ -139,14 +138,26 @@ GraphicsNode::GraphicsNode ( GraphicsWidget* gw,
 
 
 /**
- * @brief Changes the color of the node
+ * @brief Changes the color of the node. The new color name can be in one of these formats:
+ *
+ * - #RGB (each of R, G, and B is a single hex digit)
+ * - #RRGGBB
+ * - #AARRGGBB (Since 5.2)
+ * - #RRRGGGBBB
+ * - #RRRRGGGGBBBB
+ * - A name from the list of colors defined in the list of SVG color keyword names provided by the WWW Consortium;
+ *   for example, "steelblue" or "gainsboro". These color names work on all platforms.
+ *   Note that these color names are not the same as defined by the Qt::GlobalColor enums, e.g. "green" and Qt::green
+ *   does not refer to the same color.
+ * - transparent - representing the absence of a color.
  *
  * @param colorStr
  */
-void GraphicsNode::setColor(const QString &colorStr) {
-    qDebug()<< "Changing the node color to:" << colorStr;
+void GraphicsNode::setColor(const QString &colorName) {
+//    qDebug()<< "Changing the node color to named color:" << colorName << "setting mcol:" << QColor(colorName);
     prepareGeometryChange();
-    m_col=QColor(colorStr);
+    m_col_orig=m_col=QColor(colorName);
+//    qDebug()<< "Calling update()";
     update();
 }
 
@@ -159,11 +170,10 @@ void GraphicsNode::setColor(const QString &colorStr) {
  * @param color
  */
 void GraphicsNode::setColor(QColor color){
-    qDebug()<< "Changing the node color to:" << color;
+//    qDebug()<< "Changing the node Qcolor to:" << color;
     prepareGeometryChange();
     m_col=color;
-    // Store the name of the color (format "#RRGGBB").
-    m_col_str = m_col.name();
+//    qDebug()<< "Calling update()";
     update();
 }
 
@@ -174,7 +184,7 @@ void GraphicsNode::setColor(QColor color){
  * @return QString
  */
 QString GraphicsNode::color() {
-    return m_col_str;
+    return m_col.name();
 }
 
 
@@ -189,13 +199,14 @@ void GraphicsNode::setSize(const int &size){
     prepareGeometryChange();
     m_size=size;
     for (GraphicsEdge *edge: inEdgeList) {
-        qDebug()<< "Informing inbound edges";
+//        qDebug()<< "Informing inbound edges";
         edge->setTargetNodeSize(size);
     }
     for (GraphicsEdge *edge: outEdgeList) {
-        qDebug()<< "Informing oubound edges";
+//        qDebug()<< "Informing oubound edges";
         edge->setSourceNodeSize(size);
     }
+//    qDebug()<< "calling setShape()";
     setShape(m_shape);
 }
 
@@ -368,7 +379,7 @@ QRectF GraphicsNode::boundingRect() const {
 void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) {
     //	painter->setClipRect( option->exposedRect );
 
-    //qDebug()<< "GraphicsNode::paint() " << m_col;
+//    qDebug()<< "GraphicsNode::paint() - m_col:" << m_col << "color name:" << m_col.name();
 
     if (option->state & QStyle::State_MouseOver) {
 //        qDebug()<< "Highlighting node because of mouse hover ";
@@ -440,6 +451,8 @@ void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
  */
 QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &value) {
 
+//    qDebug()<<"GraphicsNode::itemChange - change:" << change<< "value:" << value << "m_col" << m_col.name();
+
     switch (change) {
     case ItemPositionHasChanged: {
         //setCacheMode( QGraphicsItem::ItemCoordinateCache );
@@ -461,10 +474,11 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
         break;
     }
     case ItemEnabledHasChanged:{
-        qDebug() << "Node item has been enabled";
+//        qDebug() << "Node item has been enabled";
         break;
     }
     case ItemSelectedHasChanged:{
+//         qDebug() << "Node ItemSelectedHasChanged";
         if (value.toBool()) {
             setZValue(ZValueNodeHighlighted);
             m_size_orig = m_size;
