@@ -868,17 +868,19 @@ void GraphicsNode::setNumberDistance(const int &distance) {
 
 GraphicsNode::~GraphicsNode(){
 //    qDebug() << "Destructing node "<< nodeNumber()
-//                << "- inEdges:" << inEdgeList.size()
-//                << "- outEdges: " << outEdgeList.size();
+//                << "- inEdgeList:" << inEdgeList.size()
+//                << "- outEdgeList: " << outEdgeList.size();
 
-    // Temp copy edges
+    // Temp copy in edges
     list<GraphicsEdge*> temp_inEdgeList = inEdgeList;
-    list<GraphicsEdge*> temp_outEdgeList = outEdgeList;
-
+    // Loop over the temp list and call delete for each edge
+    // that will call the edge destructor
     for (GraphicsEdge *edge: temp_inEdgeList) {
         delete edge;
     }
 
+    // Temp copy out edges
+    list<GraphicsEdge*> temp_outEdgeList = outEdgeList;
     for (GraphicsEdge *edge: temp_outEdgeList) {
         delete edge;
     }
