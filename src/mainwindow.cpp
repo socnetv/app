@@ -10310,7 +10310,7 @@ void MainWindow::slotEditNodeInfoStatusBar (const int &number,
 /**
  * @brief Displays information about the clicked edge on the statusbar
  *
- * Called by Graph::signalEdgeClicked when the user clicks on an edge
+ * Called by Graph when the user clicks on an edge or when we need to init the LCDs (i.e. clearing the graph).
  *
  * @param edge
  * @param openMenu
@@ -10324,13 +10324,13 @@ void MainWindow::slotEditEdgeClicked (const MyEdge &edge,
     qreal reverseWeight = edge.rWeight;
     int type = edge.type;
 
-    qDebug()<<"clicked edge"
-           << v1
-           << "->"
-           << v2
-           << "=" << weight
-           << "type" << type
-           << "openMenu"<<openMenu;
+//    qDebug()<<"clicked edge"
+//           << v1
+//           << "->"
+//           << v2
+//           << "=" << weight
+//           << "type" << type
+//           << "openMenu"<<openMenu;
 
 
     if (v1 ==0 || v2 == 0) {
