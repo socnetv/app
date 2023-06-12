@@ -10463,7 +10463,7 @@ void MainWindow::slotEditEdgeAdd(){
     else
         sourceNode=activeGraph->vertexClicked();
 
-    qDebug()<<"MW::slotEditEdgeAdd() - sourceNode:" << sourceNode;
+    qDebug()<<"sourceNode:" << sourceNode;
 
     if ( activeGraph->vertexExists(sourceNode) ==-1 ) {
         qDebug()<< "Cannot find sourceNode"<<sourceNode;

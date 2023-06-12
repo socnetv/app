@@ -267,7 +267,7 @@ Graph::Graph(const int &reserveVerticesSize, const int &reserveEdgesPerVertexSiz
  * @brief Destroys the Graph object
  */
 Graph::~Graph() {
-    qDebug()<<"Graph::~Graph() - Calling clear()";
+    qDebug()<<"Graph destructing (because app exit?)...Calling clear()";
     this->clear("exit");
     delete file_parser;
 }
@@ -601,7 +601,7 @@ void Graph::relationSet(int relNum, const bool &updateUI){
  * @brief Changes graph to previous relation
  */
 void Graph::relationPrev(){
-    qDebug() << "Graph::relationPrev()";
+    qDebug() << "Changing to the previous relation...";
     int relNum=m_curRelation;
     if (m_curRelation>0){
         --relNum;
@@ -614,7 +614,7 @@ void Graph::relationPrev(){
  * @brief Changes graph to next relation
  */
 void Graph::relationNext(){
-    qDebug() << "Graph::relationNext()";
+    qDebug() << "Changing to the next relation...";
     int relNum=m_curRelation;
     if ( relations() >0 && relNum < relations() ){
         ++relNum;
@@ -667,7 +667,7 @@ int Graph::relationCurrent(){
  * @return string
  */
 QString Graph::relationCurrentName() const{
-    qDebug() << "Graph::relationCurrentName()";
+//    qDebug() << "Returning the current relation name...";
     return m_relationsList.value(m_curRelation);
 }
 
@@ -683,7 +683,7 @@ void Graph::relationCurrentRename(const QString &newName, const bool &signalMW) 
     // Check if new name is the same
     //
     if ( !m_relationsList.isEmpty() && newName == m_relationsList[m_curRelation] ) {
-        qDebug()<< "Graph::relationCurrentRename() - newName same as current. Nothing to do. Returning.";
+        qDebug()<< "The new name of the relation is the same as the current name. Nothing to do. Returning.";
         return;
     }
 
@@ -691,14 +691,14 @@ void Graph::relationCurrentRename(const QString &newName, const bool &signalMW) 
     // Check if new name is empty
     //
     if (newName.isEmpty()) {
-        qDebug()<< "Graph::relationCurrentRename() - newName is empty. Nothing to do. Returning.";
+        qDebug()<< "The new name of the relation is empty. Nothing to do. Returning.";
         return;
     }
 
     //
     // Rename current relation to newName
     //
-    qDebug()<< "Graph::relationCurrentRename() - Renaming current relation:"
+    qDebug()<< "Renaming current relation:"
                <<m_curRelation<< "to:"<<newName
               << " - signalMW:" <<signalMW;
 
@@ -985,13 +985,13 @@ int Graph::vertexNumberMin() {
  * @return vertex pos or -1
  */
 int Graph::vertexExists(const int &v1){
-    qDebug () << "Checking if vertex exists, with number:" << v1;
+//    qDebug () << "Checking if vertex exists, with number:" << v1;
     if ( vpos.contains(v1) ) {
         if (  m_graph[ vpos[v1] ]->number() == v1 ) {
             return vpos[v1];
         }
         else{
-            qDebug () << "Error in vpos for vertex number v:" << v1;
+            qCritical () << "Error in vpos for vertex number v:" << v1;
         }
     }
 
@@ -1910,13 +1910,13 @@ void Graph::vertexLabelSizeInit(int newSize) {
  */
 void Graph::vertexLabelSizeSet(const int &v1, const int &labelSize) {
     if (v1) {
-        qDebug()<< "Graph::vertexLabelSizeSet() - vertex"<< v1
-                << "new label size "<< labelSize;
+        qDebug()<< "Changing the label size of vertex"<< v1
+                << "new label size:"<< labelSize;
         m_graph[ vpos[v1] ]->setLabelSize ( labelSize );
         emit setNodeLabelSize ( v1, labelSize);
     }
     else {
-        qDebug() << "Graph::vertexLabelSizeSet() - for all vertices, new label size"
+        qDebug() << "Changing the label size of all vertices, new label size"
                  << labelSize;
         vertexLabelSizeInit(labelSize);
         VList::const_iterator it;
@@ -1925,7 +1925,7 @@ void Graph::vertexLabelSizeSet(const int &v1, const int &labelSize) {
                 continue;
             }
             else {
-                qDebug() << "Graph::vertexLabelSizeSet() - for all, set vertex"
+                qDebug() << "Changing label size of all vertices, set vertex"
                             << (*it)->number()
                             << "new label size"
                             << labelSize;
@@ -1950,13 +1950,13 @@ void Graph::vertexLabelSizeSet(const int &v1, const int &labelSize) {
  */
 void Graph::vertexLabelColorSet(const int &v1, const QString &color){
     if (v1) {
-        qDebug() << "Graph::vertexLabelColorSet() - for vertex" << v1
+        qDebug() << "Changing the label color of vertex" << v1
                  << "new label color" << color;
         m_graph[ vpos[v1] ]->setLabelColor(color);
         emit setNodeLabelColor(v1, color);
     }
     else {
-        qDebug() << "Graph::vertexLabelColorSet() - for all vertices, "
+        qDebug() << "Changing the label color of all vertices, "
                     "new label color" << color;
         vertexLabelColorInit(color);
         VList::const_iterator it;
@@ -1965,7 +1965,7 @@ void Graph::vertexLabelColorSet(const int &v1, const QString &color){
                 continue;
             }
             else {
-                qDebug() << "Graph::vertexLabelColorSet() - for all, set vertex"
+                qDebug() << "Changing the label color of all, set vertex"
                          << v1
                          << "new label color"
                          << color;
@@ -2006,12 +2006,11 @@ void Graph::vertexLabelDistanceSet(const int &v, const int &newDistance) {
 
 
 /**
- * @brief Changes the distance.of all vertex labels from their vertices
+ * @brief Changes the distance of all vertex labels from their vertices
  * @param size
  */
 void Graph::vertexLabelDistanceAllSet(const int &newDistance) {
-    qDebug() << "*** Graph::vertexLabelDistanceAllSet() "
-                << " to " << newDistance;
+    qDebug() << "Changing the label distance of all vertices to:" << newDistance;
     vertexLabelDistanceInit(newDistance);
     VList::const_iterator it;
     for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -2019,8 +2018,8 @@ void Graph::vertexLabelDistanceAllSet(const int &newDistance) {
             continue;
         }
         else {
-            qDebug() << "Graph::vertexLabelDistanceAllSet() vertex " << (*it)->number()
-                     << " new size " << newDistance;
+            qDebug() << "vertex" << (*it)->number()
+                     << " new label distance:" << newDistance;
             (*it)->setLabelDistance(newDistance) ;
             emit setNodeLabelDistance ( (*it)->number(), newDistance);
         }
@@ -2073,8 +2072,8 @@ bool Graph::edgeCreate(const int &v1,
     // (see #713617 - https://bugs.launchpad.net/socnetv/+bug/713617)
 
     if (edgeExists(v1,v2)){
-        qDebug() << "-- Edge " << v1 << "->" << v2
-                    << " declared previously (already exists) - nothing to do \n\n";
+//        qDebug() << "-- Edge " << v1 << "->" << v2
+//                    << " declared previously (already exists) - nothing to do \n\n";
 
         return false;
 
@@ -2082,12 +2081,12 @@ bool Graph::edgeCreate(const int &v1,
 
     if ( type == EdgeType::Undirected ) {
 
-        qDebug() <<"-- Creating new UNDIRECTED edge:" << v1 << "-" << v2
-                 << "weight" << weight
-                 << "type" << type
-                 << "label" << label
-                 << "signalMW" << signalMW
-                 << "Signaling to GW...";
+//        qDebug() <<"-- Creating new UNDIRECTED edge:" << v1 << "-" << v2
+//                 << "weight" << weight
+//                 << "type" << type
+//                 << "label" << label
+//                 << "signalMW" << signalMW
+//                 << "Signaling to GW...";
 
         edgeAdd ( v1, v2,
                   weight,
@@ -2103,13 +2102,13 @@ bool Graph::edgeCreate(const int &v1,
     }
     else if ( edgeExists( v2, v1 ) )  {
 
-        qDebug() <<"-- Creating new RECIPROCAL edge:" << v1 << "->" << v2
-                 << "weight" << weight
-                 << "type" << type
-                 << "label" << label
-                 << "signalMW" << signalMW
-                 << "Reverse edge exists"
-                 << "Signaling to GW...";
+//        qDebug() <<"-- Creating new RECIPROCAL edge:" << v1 << "->" << v2
+//                 << "weight" << weight
+//                 << "type" << type
+//                 << "label" << label
+//                 << "signalMW" << signalMW
+//                 << "Reverse edge exists"
+//                 << "Signaling to GW...";
 
         edgeAdd ( v1,
                   v2,
@@ -2126,12 +2125,12 @@ bool Graph::edgeCreate(const int &v1,
     }
     else {
 
-        qDebug() <<"-- Creating new DIRECTED edge:" << v1 << "->" << v2
-                 << "weight" << weight
-                 << "type" << type
-                 << "label" << label
-                 << "signalMW" << signalMW
-                 << "Signaling to GW...";
+//        qDebug() <<"-- Creating new DIRECTED edge:" << v1 << "->" << v2
+//                 << "weight" << weight
+//                 << "type" << type
+//                 << "label" << label
+//                 << "signalMW" << signalMW
+//                 << "Signaling to GW...";
 
         edgeAdd ( v1,
                   v2,
@@ -2199,9 +2198,9 @@ void Graph::edgeAdd (const int &v1, const int &v2,
     int source=vpos[v1];
     int target=vpos[v2];
 
-    qDebug()<< "Adding new edge from vertex "<< v1 << "["<< source
-            << "] to vertex "<< v2 << "["<< target << "] of weight "<<weight
-            << " and label " << label;
+//    qDebug()<< "Adding new edge from vertex "<< v1 << "["<< source
+//            << "] to vertex "<< v2 << "["<< target << "] of weight "<<weight
+//            << " and label " << label;
 
     m_graph [ source ]->addOutEdge(v2, weight, color, label );
     m_graph [ target ]->addInEdge(v1, weight);
@@ -15721,9 +15720,7 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW){
         // This is called from any method that alters the graph structure,
         // thus all prior computations are invalidated
 
-        qDebug()<<"Major changes, invalidating computations, setting graph as changed..."
-                    << "m_totalVertices:" << m_totalVertices
-                    << "signalMW: " << signalMW;
+//        qDebug()<<"Major changes, invalidating computations, setting graph as changed...";
 
         m_graphModStatus=graphNewStatus;
 
@@ -15752,7 +15749,7 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW){
 
         if (signalMW) {
 
-            qDebug() << "signaling to MW that the graph is modified...";
+//            qDebug() << "signaling to MW that the graph is modified...";
 
             emit signalGraphModified(isDirected(),
                                      m_totalVertices,
