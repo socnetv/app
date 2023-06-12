@@ -130,6 +130,10 @@ GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
 
 
 
+/**
+ * @brief Toggles displaying edge arrow
+ * @param drawArrows
+ */
 void GraphicsEdge::showArrows(const bool &drawArrows){
     prepareGeometryChange();
     m_drawArrows=drawArrows;
@@ -138,6 +142,9 @@ void GraphicsEdge::showArrows(const bool &drawArrows){
 
 
 
+/**
+ * @brief Removes any references to this edge in source and target nodes.
+ */
 void GraphicsEdge::removeRefs(){
 //    qDebug() << "Removing edge refs...";
     source->removeOutEdge(this);
@@ -145,20 +152,30 @@ void GraphicsEdge::removeRefs(){
 }
 
 
+/**
+ * @brief Sets the edge color
+ * @param str
+ */
 void GraphicsEdge::setColor( const QString &str) {
     m_color=QColor(str);
     prepareGeometryChange();
 }
 
 
-
+/**
+ * @brief Returns the edge QColor.
+ * @return
+ */
 QColor GraphicsEdge::color() const{
     return m_color;
 }
 
 
 /**
- * @brief Called from Graph::SaveToPajekFormat()
+ * @brief Returns the edge color in pajek-accepted format
+ *
+ * Called from Graph
+ *
  * @return
  */
 QString GraphicsEdge::colorToPajek() {
@@ -169,9 +186,12 @@ QString GraphicsEdge::colorToPajek() {
     return m_colorStr;
 }
 
+
 /**
- * @brief Called from MW when user wants to change an edge's weight.
-    Updates both the width and the weightNumber
+ * @brief Changes the edge weight - Updates both the width and the weightNumber
+ *
+ * Called from MW when user wants to change an edge's weight.
+
  * @param w
  */
 void GraphicsEdge::setWeight(const qreal &w) {
@@ -198,6 +218,9 @@ qreal GraphicsEdge::weight() const {
 }
 
 
+/**
+ * @brief Adds a graphics edge weight to this edge
+ */
 void GraphicsEdge::addWeightNumber (){
     // create edge weight item
     double x = -20 + ( source->x() + target->x() ) / 2.0;
@@ -231,7 +254,10 @@ void GraphicsEdge::setWeightNumberVisibility (const bool &toggle) {
 
 
 /**
- * @brief Called from MW when user wants to change an edge's label
+ * @brief Changes the edge label.
+ *
+ * Called from MW when user wants to change an edge's label
+ *
  * @param label
  */
 void GraphicsEdge::setLabel(const QString &label) {
