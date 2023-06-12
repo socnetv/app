@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 3.1.0-dev
+ version: 3.1-dev
  Written in Qt
 
 -                           mainwindow.cpp  -  description
@@ -14888,7 +14888,7 @@ void MainWindow::slotHelpSystemInfo() {
 */
 void MainWindow::slotHelpAbout(){
     int randomCookie=rand()%fortuneCookie.size();
-QString BUILD="Thu Jun 08 10:33:16 PM EEST 2023";
+QString BUILD="Mon Jun 12 08:32:21 PM EEST 2023";
     QMessageBox::about(
                 this, tr("About SocNetV"),
                 tr("<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)") +
