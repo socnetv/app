@@ -12206,62 +12206,74 @@ void MainWindow::slotAnalyzeDistance(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    bool ok=false;
-    int  min=1, max=1, i=-1, j=-1;
+    bool ok1=false, ok2=false;
+    int  min=1, max=1, sourceNum=-1, targetNum=-1;
+
     min=activeGraph->vertexNumberMin();
     max=activeGraph->vertexNumberMax();
-    i=QInputDialog::getInt(this, tr("Distance between two nodes"),
-                           tr("Select source node:  ("
-                              +QString::number(min).toLatin1()
-                              +"..."+QString::number(max).toLatin1()
-                              +"):"), min, 1, max , 1, &ok )   ;
-    if (!ok) {
+
+
+    sourceNum=QInputDialog::getInt(
+        this,
+        tr("Distance between two nodes"),
+        tr("Select source node (%1..%2):")
+            .arg(QString::number(min),QString::number(max)),
+        min, min, max, 1, &ok1
+        )   ;
+
+    if (!ok1) {
         statusMessage( "Distance calculation operation cancelled." );
         return;
     }
 
-    j=QInputDialog::getInt(this, tr("Distance between two nodes"),
-                           tr("Select target node:  ("
-                              +QString::number(min).toLatin1()+"..."
-                              +QString::number(max).toLatin1()
-                              +"):"),min, 1, max , 1, &ok )   ;
-    if (!ok) {
+    targetNum=QInputDialog::getInt(
+        this,
+        tr("Distance between two nodes"),
+        tr("Select target node (%1..%2):")
+            .arg(QString::number(min),QString::number(max)),
+        min, min, max, 1, &ok2
+       );
+
+    if (!ok2) {
         statusMessage( tr("Distance calculation operation cancelled.") );
         return;
     }
 
-    qDebug() << "Computing geodesic distance:" << i  << "->" <<  j;
+    qDebug() << "Computing geodesic distance:" << sourceNum  << "->" <<  targetNum;
 
-    if (activeGraph->isSymmetric() && i>j) {
-        qSwap(i,j);
+    if (activeGraph->isSymmetric() && sourceNum>targetNum) {
+        qSwap(sourceNum,targetNum);
     }
 
     askAboutEdgeWeights();
 
-    int distanceGeodesic = activeGraph->graphDistanceGeodesic(i,j,
-                                                              optionsEdgeWeightConsiderAct->isChecked(),
-                                                              inverseWeights);
-
+    int distanceGeodesic = activeGraph->graphDistanceGeodesic(
+        sourceNum, targetNum,
+        optionsEdgeWeightConsiderAct->isChecked(),
+        inverseWeights);
 
     if ( distanceGeodesic > 0 && distanceGeodesic < RAND_MAX) {
-        qDebug() << "geodesic distance" << i  << "->" <<  j << "=" << distanceGeodesic;
+
+        qDebug() << "geodesic distance" << sourceNum  << "->" <<  targetNum << "=" << distanceGeodesic;
+
         slotHelpMessageToUser (
                     USER_MSG_INFO,
                     tr("Geodesic Distance: %1").arg(distanceGeodesic),
                     tr("Geodesic Distance: %1").arg(distanceGeodesic),
                     tr("Nodes %1 and %2 are connected through at least one path. "
-                       "The length of the shortest path is %3.").arg(i).arg(j).arg(distanceGeodesic)
+                       "The length of the shortest path is %3.")
+                        .arg(sourceNum, targetNum, distanceGeodesic)
                     );
     }
     else {
-        qDebug() << "geodesic distance" << i  << "->" <<  j << "is infinite.";
+        qDebug() << "geodesic distance" << sourceNum  << "->" <<  targetNum << "is infinite.";
         slotHelpMessageToUser (
                     USER_MSG_INFO,
                     tr("Geodesic Distance: %1").arg(QString("\xE2\x88\x9E")),
                     tr("Geodesic Distance: %1").arg(QString("\xE2\x88\x9E")),
                     tr("Nodes %1 and %2 are not connected. "
                        "In this case, their geodesic distance is considered to be infinite.")
-                    .arg(i).arg(j)
+                    .arg(sourceNum, targetNum)
                     );
     }
 
@@ -12445,7 +12457,7 @@ void MainWindow::slotAnalyzeDistanceAverage() {
                     USER_MSG_INFO,
                     tr("Average distance computed."),
                     tr("Average distance computed. \n\n"
-                        "<em>d</em> = %1").arg(averGraphDistance),
+                        "d = %1").arg(averGraphDistance),
                     tr("The average graph distance is the average length of shortest paths (geodesics) "
                         "for all possible pairs of nodes.\n\n"
                         "The average distance in this disconnected network "
