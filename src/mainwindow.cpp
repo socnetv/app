@@ -12196,9 +12196,10 @@ void MainWindow::askAboutEdgeWeights(const bool userTriggered){
 
 
 /**
- * @brief Displays the graph distance (geodesic distance) between two user-specified nodes
-    This is the length of the shortest path between them.
-
+ * @brief Handles requests to compute the graph/geodesic distance between two user-specified nodes
+ *
+ * The geodesic distance of two nodes is the length of the shortest path between them.
+ *
  */
 void MainWindow::slotAnalyzeDistance(){
     if ( !activeNodes() || !activeEdges()  )  {
@@ -12229,37 +12230,38 @@ void MainWindow::slotAnalyzeDistance(){
         return;
     }
 
-    qDebug() << "source " << i  << " target" <<  j;
+    qDebug() << "Computing geodesic distance:" << i  << "->" <<  j;
 
     if (activeGraph->isSymmetric() && i>j) {
         qSwap(i,j);
     }
 
-
     askAboutEdgeWeights();
-
 
     int distanceGeodesic = activeGraph->graphDistanceGeodesic(i,j,
                                                               optionsEdgeWeightConsiderAct->isChecked(),
                                                               inverseWeights);
 
+
     if ( distanceGeodesic > 0 && distanceGeodesic < RAND_MAX) {
+        qDebug() << "geodesic distance" << i  << "->" <<  j << "=" << distanceGeodesic;
         slotHelpMessageToUser (
                     USER_MSG_INFO,
                     tr("Geodesic Distance: %1").arg(distanceGeodesic),
-                    tr("These nodes are connected."),
-                    tr("Nodes %1 and %2 are connected through at least one path. \n"
-                       "Geodesic distance: %3.").arg(i).arg(j).arg(distanceGeodesic)
+                    tr("Geodesic Distance: %1").arg(distanceGeodesic),
+                    tr("Nodes %1 and %2 are connected through at least one path. "
+                       "The length of the shortest path is %3.").arg(i).arg(j).arg(distanceGeodesic)
                     );
     }
     else {
+        qDebug() << "geodesic distance" << i  << "->" <<  j << "is infinite.";
         slotHelpMessageToUser (
                     USER_MSG_INFO,
                     tr("Geodesic Distance: %1").arg(QString("\xE2\x88\x9E")),
-                    tr("These nodes are not connected."),
-                    tr("Nodes %1 and %2 are not connected. \n"
-                       "Geodesic distance: +%3.")
-                    .arg(i).arg(j).arg(QString("\xE2\x88\x9E"))
+                    tr("Geodesic Distance: %1").arg(QString("\xE2\x88\x9E")),
+                    tr("Nodes %1 and %2 are not connected. "
+                       "In this case, their geodesic distance is considered to be infinite.")
+                    .arg(i).arg(j)
                     );
     }
 
