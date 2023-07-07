@@ -4,6 +4,9 @@ Developer:
 
   See my blog at: https://dimitris.apeiro.gr
 
+MacPorts packager:
+  - Szabolcs Horvát
+
 Debian packagers:
   - Adrià García-Alzórriz
   - Caitlin Matos
@@ -20,8 +23,8 @@ Arch packager:
   - Tom Tryfonidis  
 
 Translators:
-  - Greek:      None
-  - German:     Daniel Pinto dos Santos
+  - Greek:  None
+  - German: Daniel Pinto dos Santos
 
 Donators:
   - Robert Butscher
