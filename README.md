@@ -142,6 +142,7 @@ Please press Cancel, not Move to Bin! Then, right-click again on SocNetV app and
 
 After that, in order to permanently install SocNetV in your macOS, you can simply drag the SocNetV executable icon into your Applications.
 
+Alternatively, there is a SocNetV port in MacPorts (thanks to Szabolcs Horvát!). It can be installed with `port install socnetv`.
 
 ### Install in Linux
 
