@@ -79,7 +79,7 @@ Parser::~Parser () {
 
 
 /**
- * @brief Loads the network calling one of the load* methods
+ * @brief Loads the data of the given network file, and calls the relevant method to parse it.
  *
  * @param fileName
  * @param codecName
