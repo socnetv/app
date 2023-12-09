@@ -350,6 +350,8 @@ bool Parser::parseAsDL(const QByteArray &rawData){
     QStringList rowLabels;
     QStringList colLabels;
 
+    QRegularExpression myRegExp;
+
     relationsList.clear();
 
     totalLinks=0;
@@ -714,7 +716,8 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                         str=str.simplified();
                     }
                     qDebug() << "splitting str to elements ";
-                    lineElement=str.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+                    myRegExp.setPattern("\\s+");
+                    lineElement=str.split(myRegExp, Qt::SkipEmptyParts);
                     qDebug() << "line elements " << lineElement.size();
                     if (lineElement.size() < totalNodes ) {
                         qDebug() << "This line has "
@@ -790,7 +793,8 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                     target=NR+1;
                     qDebug() << "this is a two-mode fullmatrix file. "
                                 "Splitting str to elements:";
-                    lineElement=str.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+                    myRegExp.setPattern("\\s+");
+                    lineElement=str.split(myRegExp, Qt::SkipEmptyParts);
                     qDebug()<< "lineElement:" << lineElement;
                     if (lineElement.size() != NC) {
                         qDebug() << "Not a two-mode fullmatrix UCINET "
@@ -845,8 +849,8 @@ bool Parser::parseAsDL(const QByteArray &rawData){
 
             if (edgelist1Format) {
                 // read edges in edgelist1 format
-
-                lineElement=str.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+                myRegExp.setPattern("\\s+");
+                lineElement=str.split(myRegExp, Qt::SkipEmptyParts);
                 qDebug() << "edgelist str line:"<< str;
                 qDebug() << "edgelist data element:"<< lineElement;
                 if ( lineElement.size() != 3 ) {
@@ -1077,6 +1081,8 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
     //if j + miss < nodeNum, it creates (nodeNum-miss) dummy nodes which are deleted in the end.
     relationsList.clear();
 
+    QRegularExpression myRegExp;
+
     while ( !ts.atEnd() )   {
 
         fileLineNumber++;
@@ -1137,7 +1143,8 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
                 continue;
             }
             if (str.contains( "vertices", Qt::CaseInsensitive) )  {
-                lineElement=str.split(QRegularExpression("\\s+"));
+                myRegExp.setPattern("\\s+");
+                lineElement=str.split(myRegExp);
                 if (!lineElement[1].isEmpty()) 	totalNodes=lineElement[1].toInt(&intOk,10);
                 qDebug ("Vertices %i.",totalNodes);
                 continue;
@@ -1145,7 +1152,8 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
             qDebug("headlines end here");
         }
         /**SPLIT EACH LINE (ON EMPTY SPACE CHARACTERS) IN SEVERAL ELEMENTS*/
-        lineElement=str.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+        myRegExp.setPattern("\\s+");
+        lineElement=str.split(myRegExp, Qt::SkipEmptyParts);
 
         if ( str.contains( "*edges", Qt::CaseInsensitive) ) {
             edges_flag=true; arcs_flag=false; arcslist_flag=false; matrix_flag=false;
@@ -1417,7 +1425,8 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
                 if (lineElement.contains("c", Qt::CaseSensitive ) ) {
                     //qDebug("file with link colours");
                     fileContainsLinkColors=true;
-                    colorIndex=lineElement.indexOf( QRegularExpression("[c]"), 0 ) + 1;
+                    myRegExp.setPattern("[c]");
+                    colorIndex=lineElement.indexOf( myRegExp, 0 ) + 1;
                     if (colorIndex >= lineElement.size()) edgeColor=initEdgeColor;
                     else 	edgeColor=lineElement [ colorIndex ];
                     if (edgeColor.contains (".") )  edgeColor=initEdgeColor;
@@ -1431,7 +1440,8 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
                 if (lineElement.contains("l", Qt::CaseSensitive ) ) {
                     qDebug("file with link labels");
                     fileContainsLinkLabels=true;
-                    labelIndex=lineElement.indexOf( QRegularExpression("[l]"), 0 ) + 1;
+                    myRegExp.setPattern("[l]");
+                    labelIndex=lineElement.indexOf( myRegExp, 0 ) + 1;
                     if (labelIndex >= lineElement.size()) edgeLabel=initEdgeLabel;
                     else 	edgeLabel=lineElement [ labelIndex ];
                     if (edgeLabel.contains (".") )  edgeLabel=initEdgeLabel;
@@ -1484,7 +1494,8 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
 
                 if (lineElement.contains("c", Qt::CaseSensitive ) ) {
                     //qDebug("file with link colours");
-                    edgeColor=lineElement.at ( lineElement.indexOf( QRegularExpression("[c]"), 0 ) + 1 );
+                    myRegExp.setPattern("[c]");
+                    edgeColor=lineElement.at ( lineElement.indexOf( myRegExp, 0 ) + 1 );
                     fileContainsLinkColors=true;
                 }
                 else  {
@@ -1495,7 +1506,8 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
                 if (lineElement.contains("l", Qt::CaseSensitive ) ) {
                     qDebug("file with link labels");
                     fileContainsLinkLabels=true;
-                    labelIndex=lineElement.indexOf( QRegularExpression("[l]"), 0 ) + 1;
+                    myRegExp.setPattern("[l]");
+                    labelIndex=lineElement.indexOf( myRegExp, 0 ) + 1;
                     if (labelIndex >= lineElement.size()) edgeLabel=initEdgeLabel;
                     else 	edgeLabel=lineElement.at ( labelIndex );
                     //if (edgeLabel.contains (".") )  edgeLabel=initEdgeLabel;
