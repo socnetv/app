@@ -15840,10 +15840,10 @@ bool Graph::isSaved() const {
 
 
 /**
- * @brief Loads a graph from a file.
+ * @brief Loads a graph from a given file.
  *
  * It creates a new Parser object, moves it to a another thread,
- * connects signals and slots and  calls its run() method.
+ * connects signals and slots and calls its run() method.
  *
  * @param fileName
  * @param codecName
@@ -15900,15 +15900,11 @@ void Graph::loadFile (	const QString fileName,
     connect(file_parser, &Parser::signalFileLoaded,
             this, &Graph::graphFileLoaded);
 
-    connect (
-            file_parser, SIGNAL(removeDummyNode(int)),
-            this, SLOT (vertexRemoveDummyNode(int))
-            );
+    connect (file_parser, SIGNAL(removeDummyNode(int)),
+            this, SLOT (vertexRemoveDummyNode(int)));
 
-    connect (
-            file_parser, &Parser::finished,
-            this, &Graph::graphLoadedTerminateParserThreads
-            );
+    connect (file_parser, &Parser::finished,
+            this, &Graph::graphLoadedTerminateParserThreads);
 
     qDebug() << "Starting parser thread...";
     file_parserThread.start();
