@@ -35,9 +35,9 @@
 #include <QObject>
 #include <QMultiMap>
 #include <QDebug>
+
 class QXmlStreamReader;
 class QXmlStreamAttributes;
-
 
 
 
@@ -160,7 +160,7 @@ signals:
                           const QString &message=QString());
 
 
-	void removeDummyNode (int);
+    void removeDummyNode (int);
     void finished(QString);
 	
 protected:
