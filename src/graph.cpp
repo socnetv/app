@@ -15854,12 +15854,11 @@ bool Graph::isSaved() const {
  * @param two_sm_mode
  * @return
  */
-void Graph::loadFile (	const QString fileName,
-                        const QString codecName,
-                        const int fileFormat,
-                        const int two_sm_mode,
-                        const QString delimiter){
-
+void Graph::loadFile(const QString fileName,
+                     const QString codecName,
+                     const int fileFormat,
+                     const int two_sm_mode,
+                     const QString delimiter){
 
     qDebug() << "Loading the file:" << fileName;
 
