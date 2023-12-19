@@ -96,7 +96,7 @@ install:
 
   - cmd: echo "Setting SocNetV current version..."
   # NOTE: This is changed by our update version bash script
-  - cmd: set SOCNETV_VERSION=3.1
+  - cmd: set SOCNETV_VERSION=3.2
   - cmd: echo %SOCNETV_VERSION%
 
   - cmd: echo "Setting build type"

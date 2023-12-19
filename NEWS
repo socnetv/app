@@ -4,6 +4,11 @@ Social Network Visualizer (SocNetV)
 SocNetV News
 -==========-
 
+Jan 2024
+========
+- Version 3.2 release. 
+  Support node labels in matrix formatted files.
+
 June 2023
 ========
 - Version 3.1 release. The first Qt6 only version.

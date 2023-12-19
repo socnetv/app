@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 3.1
+ version: 3.2
  Written in Qt
  
                          graphicswidget.h  -  description
