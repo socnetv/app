@@ -110,8 +110,10 @@ void Parser::load(const QString &fileName,
                   const int &canvasWidth,
                   const int &canvasHeight,
                   const int &format,
+                  const QString &delim,
                   const int &sm_mode,
-                  const QString &delim)  {
+                  const bool &sm_has_labels
+                  )  {
 
 
     qDebug()<< "Parser loading file:" << fileName
@@ -202,7 +204,7 @@ void Parser::load(const QString &fileName,
         }
         break;
     case FileType::ADJACENCY:
-        if (parseAsAdjacency(rawData) ) {
+        if (parseAsAdjacency(rawData, delimiter, sm_has_labels) ) {
             fileLoaded = true;
         }
         break;
@@ -1611,7 +1613,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
  *
  * @return bool
  */
-bool Parser::parseAsAdjacency(const QByteArray &rawData){
+bool Parser::parseAsAdjacency(const QByteArray &rawData, const QString &delimiter, const bool &sm_has_labels){
 
     qDebug() << "Parsing data as adjacency formatted...";
 
@@ -1622,6 +1624,8 @@ bool Parser::parseAsAdjacency(const QByteArray &rawData){
     QString str;
     QString edgeStr;
     QStringList currentRow;
+    QStringList nodeLabels;
+    QString nodeLabel;
     int fileLine=0;
     int actualLineNumber=0;
     int i=0, j=0, colCount=0, lastCount=0;
@@ -1638,12 +1642,7 @@ bool Parser::parseAsAdjacency(const QByteArray &rawData){
 
         fileLine ++ ;
 
-        str= ts.readLine().simplified() ; // transforms "/t", "  ", etc to plain " ".
-
-        if ( isComment(str) )
-            continue;
-
-        actualLineNumber ++;
+        str= ts.readLine().simplified().trimmed(); // transforms "/t", "  ", etc to plain " ".
 
         if (
              str.contains("vertices",Qt::CaseInsensitive)
@@ -1667,13 +1666,21 @@ bool Parser::parseAsAdjacency(const QByteArray &rawData){
             return false;
         }
 
-        // Check the delimiter and split the row -- we support comma or space(s)
-        if ( str.contains (",")) {
-            colCount = (str.split(",")).size();
+        if ( isComment(str) ) {
+            // Try to read node labels from the first comment line
+            if ( fileLine == 1 ) {
+                // This is a comment and the first line.
+                // Split the row at the delimiter
+                nodeLabels = str.split(delimiter);
+            }
+            continue;
         }
-        else {
-            colCount = (str.split(" ")).size();
-        }
+
+        actualLineNumber ++;
+
+
+        // Split the row to count the columns
+        colCount = (str.split(delimiter)).size();
 
         qDebug() << "non-comment row:" << actualLineNumber << ":"<< str << "colCount:"<<colCount ;
 
@@ -1702,13 +1709,10 @@ bool Parser::parseAsAdjacency(const QByteArray &rawData){
 
         fileLine ++ ;
 
-        str= ts.readLine().simplified();
+        str= ts.readLine().simplified().trimmed(); // transforms "/t", "  ", etc to plain " ".
 
         if ( isComment(str) ) {
             qDebug()<< tr("fileLine: %1 is comment...").arg(fileLine);
-            if ( fileLine == 0 ) {
-                // TOTHINK: Should we read node labels from the first line?
-            }
             continue;
         }
 
@@ -1717,12 +1721,7 @@ bool Parser::parseAsAdjacency(const QByteArray &rawData){
         qDebug()<<"fileLine: " << fileLine << "i: " <<i;
 
         // Split the current row
-        if ( str.contains (",")) {
-            currentRow=str.split(",");
-        }
-        else {
-            currentRow=str.split(" ");
-        }
+        currentRow=str.split(delimiter);
 
         if ( actualLineNumber == 1 ) {
 
@@ -1742,15 +1741,18 @@ bool Parser::parseAsAdjacency(const QByteArray &rawData){
                 randX=rand()%gwWidth;
                 randY=rand()%gwHeight;
 
+                nodeLabel = ! nodeLabels.isEmpty() ? nodeLabels.at(j-1) : QString::number(j);
+
                 qDebug()<<"Signaling to create new node"<< j
                        << "at random pos"<< QPointF(randX,randY);
+\
 
                 emit signalCreateNode( j,
                                  initNodeSize,
                                  initNodeColor,
                                  initNodeNumberColor,
                                  initNodeNumberSize,
-                                 QString::number(j),
+                                 nodeLabel,
                                  initNodeLabelColor,
                                  initNodeLabelSize,
                                  QPointF(randX, randY),
@@ -4405,7 +4407,8 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
  * @param str
  * @return  bool
  */
-bool Parser::isComment(QString str){
+bool Parser::
+    isComment(QString str){
     if ( str.startsWith("#", Qt::CaseInsensitive)
          || str.startsWith("/*", Qt::CaseInsensitive)
          || str.startsWith("%", Qt::CaseInsensitive)

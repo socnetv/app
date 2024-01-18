@@ -7283,7 +7283,8 @@ void MainWindow::slotNetworkFileLoad(const QString &fileNameToLoad,
 
     userSelectedCodecName = codecName; // var for future use in a Settings dialog
     QString delimiter=QString();
-    int two_sm_mode = 0;
+    int sm_two_mode = 0;
+    int sm_has_labels = 0;
 
     if ( fileFormat == FileType::TWOMODE ) {
         switch(
@@ -7302,22 +7303,50 @@ void MainWindow::slotNetworkFileLoad(const QString &fileNameToLoad,
                    )
                ) {
         case 1:
-            two_sm_mode = 1;
+            sm_two_mode = 1;
             break;
         case 2:
-            two_sm_mode = 2;
+            sm_two_mode = 2;
             break;
         }
     }
+    else if ( fileFormat == FileType::ADJACENCY ) {
+        // Ask if there are labels defined on the first line of the ADJACENCY file
+        switch(
+               slotHelpMessageToUser (
+                   USER_MSG_QUESTION_CUSTOM,
+                   tr("Opt for labels"),
+                   tr("Node labels?"),
+                   tr("This file contains an adjacency matrix (sociomatrix). "
+                      "Please specify whether there are node labels defined "
+                      "on the first (comment) line. \n"),
+                   QMessageBox::NoButton,
+                   QMessageBox::Ok,
+                   tr("Yes"),tr("No")
 
-    if ( fileFormat == FileType::EDGELIST_SIMPLE ||
+                   )
+               ) {
+        case 1:
+            sm_has_labels = 1;
+            break;
+        case 2:
+            sm_has_labels = 0;
+            break;
+        }
+
+    }
+
+
+    // Ask for data delimiter
+    if ( fileFormat == FileType::ADJACENCY ||
+         fileFormat == FileType::EDGELIST_SIMPLE ||
          fileFormat == FileType::EDGELIST_WEIGHTED ) {
         bool ok;
         QString delimiter =
                 QInputDialog::getText(
-                    this, tr("Column delimiter in Edgelist file "),
-                    tr("SocNetV supports edge list formatted files "
-                       "with arbitrary column delimiters. \n"
+                    this, tr("Column delimiter in file "),
+                    tr("SocNetV supports edge list and adjacency "
+                       "files with arbitrary column delimiters. \n"
                        "The default delimiter is one or more spaces.\n\n"
                        "If the column delimiter in this file is "
                        "other than simple space or TAB, \n"
@@ -7342,8 +7371,9 @@ void MainWindow::slotNetworkFileLoad(const QString &fileNameToLoad,
                 fileNameToLoad,
                 codecName,
                 fileFormat,
-                two_sm_mode,
-                delimiter
+                delimiter,
+                sm_two_mode,
+                sm_has_labels
                 );
 
 }

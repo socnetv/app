@@ -440,8 +440,9 @@ public:
     void loadFile (const QString fileName,
                     const QString codecName,
                     const int format,
-                    const int two_sm_mode,
-                    const QString delimiter=QString());
+                    const QString delimiter=QString(),
+                    const int sm_two_mode = 1,
+                    const bool sm_has_labels=false);
 
     void saveToFile(const QString &fileName,
                    const int &fileType,

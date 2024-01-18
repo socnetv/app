@@ -86,10 +86,10 @@ public:
               const QString &defNodeColor, const QString &defNodeShape, const QString &defNodeNumberColor,
               const int &defNodeNumberSize, const QString &defNodeLabelColor, const int &defNodeLabelSize ,
               const QString &defEdgeColor, const int &canvasWidth, const int &canvasHeight, const int &format,
-              const int &sm_mode, const QString &delim=QString());
+              const QString &delim=QString(), const int &sm_mode=1, const bool &sm_has_labels=false);
 
     bool parseAsPajek(const QByteArray &rawData);
-    bool parseAsAdjacency(const QByteArray &rawData);
+    bool parseAsAdjacency(const QByteArray &rawData, const QString &delimiter=",", const bool &sm_has_labels=false);
     bool parseAsDot(const QByteArray &rawData);
     bool parseAsGraphML(const QByteArray &rawData);
     bool parseAsGML(const QByteArray &rawData);

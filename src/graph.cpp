@@ -15851,14 +15851,15 @@ bool Graph::isSaved() const {
  * @param maxWidth
  * @param maxHeight
  * @param fileFormat
- * @param two_sm_mode
+ * @param sm_two_mode
  * @return
  */
 void Graph::loadFile(const QString fileName,
                      const QString codecName,
                      const int fileFormat,
-                     const int two_sm_mode,
-                     const QString delimiter){
+                     const QString delimiter,
+                     const int sm_two_mode,
+                     const bool sm_has_labels){
 
     qDebug() << "Loading the file:" << fileName;
 
@@ -15923,8 +15924,9 @@ void Graph::loadFile(const QString fileName,
                 canvasWidth,
                 canvasHeight,
                 fileFormat,
-                two_sm_mode,
-                delimiter
+                delimiter,
+                sm_two_mode,
+                sm_has_labels
                 );
 
 
