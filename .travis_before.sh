@@ -41,6 +41,9 @@ elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
     #
     # Update brew, we will use it later to install Qt6
     #
+    echo "Untapping core and cask as per homebrew instructions..."
+    brew untap homebrew/core
+    brew untap homebrew/cask
     echo "Updating brew..."
     brew update
     echo "Finished updating brew."
