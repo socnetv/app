@@ -63,7 +63,6 @@
 #include "graphicswidget.h"
 #include "graphicsnode.h"
 #include "graphicsedge.h"
-#include "graphicsnodenumber.h"
 #include "chart.h"
 
 #include "forms/dialogpreviewfile.h"

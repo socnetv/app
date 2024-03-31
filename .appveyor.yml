@@ -190,7 +190,7 @@ artifacts:
 
 deploy: 
   - provider: GitHub
-    tag: $(APPVEYOR_REPO_TAG_NAME)
+    tag: continuous 
     description: 'SocNetV continuous integration prereleases from commit ${APPVEYOR_REPO_COMMIT}'
     artifact: /SocNetV.*installer\.exe/
     auth_token:
@@ -200,7 +200,7 @@ deploy:
     force_update: true
     on:
       branch: $(APPVEYOR_REPO_BRANCH)        # deploy on same branch
-      APPVEYOR_REPO_TAG: true                # deploy on tag push only -- omitted for annotated tags, see https://www.appveyor.com/docs/branches/#build-on-tags-github-bitbucket-gitlab-gitea
+      # APPVEYOR_REPO_TAG: true                # deploy on tag push only -- omitted for annotated tags, see https://www.appveyor.com/docs/branches/#build-on-tags-github-bitbucket-gitlab-gitea
       SOCNETV_PRERELEASE: true               # deploy only if continuous
   - provider: GitHub
     tag: $(APPVEYOR_REPO_TAG_NAME)
