@@ -46,7 +46,6 @@
 // stack is a wrapper around <deque> in C++
 // see: www.cplusplus.com/reference/stl/stack
 #include <stack>
-#include <map>
 
 #include "global.h"
 #include "graphvertex.h"
