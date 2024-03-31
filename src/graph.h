@@ -446,7 +446,8 @@ public:
 
     void saveToFile(const QString &fileName,
                    const int &fileType,
-                   const bool &saveEdgeWeights=true);
+                   const bool &saveEdgeWeights=true,
+                   const bool &saveZeroWeightEdges=false);
 
     bool saveToPajekFormat (const QString &fileName,
                                  QString networkName="",
@@ -456,6 +457,7 @@ public:
                                      const bool &saveEdgeWeights=true);
 
     bool saveToGraphMLFormat (const QString &fileName,
+                             const bool &saveZeroWeightEdges=false,
                                    QString networkName="",
                                    int maxWidth=0, int maxHeight=0);
 
@@ -612,6 +614,8 @@ public:
     qreal edgeExists(const int &v1,
                      const int &v2,
                      const bool &checkReciprocal=false);
+
+    qreal edgeExistsVirtual(const int &v1, const int &v2);
 
     void edgeOutboundStatusSet (const int &source,
                      const int &target,

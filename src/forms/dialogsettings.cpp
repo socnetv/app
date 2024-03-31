@@ -128,6 +128,19 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
                 );
 
 
+
+
+
+
+    /**
+     *  Options (saving, etc)
+     **/
+    ui->saveZeroWeightEdgesChkBox->setChecked(
+        (appSettings["saveZeroWeightEdges"] == "true") ? true:false
+        );
+
+
+
     /**
      * GraphicsWidget (canvas) options
      */
@@ -355,6 +368,9 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
     ui->edgeLabelsChkBox->setChecked(
                 (m_appSettings["initEdgeLabelsVisibility"] == "true") ? true: false
                                                                         );
+
+
+
     /**
      * dialog signals to slots
      */
@@ -498,6 +514,11 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
 
     connect (ui->edgeLabelsChkBox, &QCheckBox::stateChanged,
                      this, &DialogSettings::getEdgeLabelsVisibility);
+
+
+    connect (ui->saveZeroWeightEdgesChkBox, &QCheckBox::stateChanged,
+            this, &DialogSettings::getSaveZeroWeightEdges);
+
 
     connect ( ui->buttonBox, &QDialogButtonBox::accepted,
               this, &DialogSettings::validateSettings );
@@ -989,6 +1010,16 @@ void DialogSettings::getEdgeWeightNumbersVisibility(const bool &toggle){
 void DialogSettings::getEdgeLabelsVisibility(const bool &toggle){
     m_appSettings["initEdgeLabelsVisibility"]= (toggle) ? "true" : "false";
     emit setEdgeLabelsVisibility(toggle);
+}
+
+
+/**
+ * @brief Gets the value of saveZeroWeightEdgesChkBox
+ * @param toggle
+ */
+void DialogSettings::getSaveZeroWeightEdges(const bool &toggle){
+    m_appSettings["saveZeroWeightEdges"]= (toggle) ? "true" : "false";
+    emit setSaveZeroWeightEdges(toggle);
 }
 
 

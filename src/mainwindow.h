@@ -478,6 +478,8 @@ public slots:
     void slotOptionsEdgesBezier(bool toggle);
     void slotOptionsEdgeArrowsVisibility(bool toggle);
 
+    void slotOptionsSaveZeroWeightEdges(bool toggle);
+
     void slotOptionsEmbedLogoExporting(bool toggle);
     void slotOptionsProgressDialogVisibility(bool toggle);
 

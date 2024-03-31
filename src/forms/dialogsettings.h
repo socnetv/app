@@ -83,6 +83,8 @@ public slots:
     void getEdgeWeightNumbersVisibility(const bool &toggle);
     void getEdgeLabelsVisibility(const bool &toggle);
 
+    void getSaveZeroWeightEdges(const bool &toggle);
+
 signals:
     void setReportsDataDir (const QString &dir);
 
@@ -132,6 +134,7 @@ signals:
     void setEdgeOffsetFromNode(const int&offset, const int &v1=0, const int &v2=0);
     void setEdgeWeightNumbersVisibility(const bool &toggle);
     void setEdgeLabelsVisibility(const bool &toggle);
+    void setSaveZeroWeightEdges(const bool &toggle);
     void saveSettings();
 private:
      QMap<QString, QString> &m_appSettings ;

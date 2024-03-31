@@ -521,6 +521,8 @@ QMap<QString,QString> MainWindow::initSettings(const int &debugLevel, const bool
     appSettings["initReportsLabelsLength"] = "16";
     appSettings["initReportsChartType"] = "0";
 
+    appSettings["saveZeroWeightEdges"] = "false";
+
     // Try to load settings from previously-saved file
     // First check if our settings folder exist
     QDir socnetvDir(settingsDir);
@@ -843,6 +845,8 @@ void MainWindow::slotOpenSettingsDialog() {
     connect( m_settingsDialog, &DialogSettings::setEdgeLabelsVisibility,
              this, &MainWindow::slotOptionsEdgeLabelsVisibility);
 
+    connect( m_settingsDialog, &DialogSettings::setSaveZeroWeightEdges,
+             this, &MainWindow::slotOptionsSaveZeroWeightEdges);
 
     // show settings dialog
     m_settingsDialog->exec();
@@ -6849,24 +6853,28 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
 
     fileNameNoPath = fileInfo.fileName();
 
+    bool saveZeroWeightEdges = appSettings["saveZeroWeightEdges"] == "true" ? true:false;
+
+    bool saveEdgeWeights = true;
+
     // if the specified format is one of the supported ones, just save it.
     if ( activeGraph->isFileFormatExportSupported( fileFormat ) )
     {
-        activeGraph->saveToFile(fileName, fileFormat ) ;
+        activeGraph->saveToFile(fileName, fileFormat, saveEdgeWeights, saveZeroWeightEdges );
     }
     // else if it is GraphML or new file not saved yet, just save it.
     else if (activeGraph->getFileFormat()==FileType::GRAPHML ||
              ( activeGraph->isSaved() && !activeGraph->isLoaded() )
              )
     {
-        activeGraph->saveToFile(fileName, FileType::GRAPHML);
+        activeGraph->saveToFile(fileName, FileType::GRAPHML, saveEdgeWeights, saveZeroWeightEdges);
     }
     // else check whether Graph thinks this is supported and save it
     else if ( activeGraph->isFileFormatExportSupported(
                   activeGraph->getFileFormat()
                   ) )
     {
-        activeGraph->saveToFile(fileName, activeGraph->getFileFormat() ) ;
+        activeGraph->saveToFile(fileName, activeGraph->getFileFormat(), saveEdgeWeights, saveZeroWeightEdges );
     }
     // In any other case, save in GraphML.
     // First, inform the user that we will save in that format.
@@ -6889,7 +6897,7 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
             fileName.append(".graphml");
             fileNameNoPath = QFileInfo (fileName).fileName();
             setLastPath(fileName); // store this path
-            activeGraph->saveToFile(fileName, FileType::GRAPHML);
+            activeGraph->saveToFile(fileName, FileType::GRAPHML, saveEdgeWeights, saveZeroWeightEdges);
             break;
         case QMessageBox::Cancel:
         case QMessageBox::No:
@@ -8092,7 +8100,7 @@ void MainWindow::slotNetworkExportSM(){
 
     }
 
-    activeGraph->saveToFile(fileName, FileType::ADJACENCY,  saveEdgeWeights ) ;
+    activeGraph->saveToFile(fileName, FileType::ADJACENCY, saveEdgeWeights ) ;
 
 }
 
@@ -14129,7 +14137,26 @@ void MainWindow::slotOptionsEdgeLabelsVisibility(bool toggle) {
 }
 
 
+/**
+ * @brief Turns on/off saving zero-edge edge weights (only for GraphML at the moment)
+ * @param toggle
+ */
+void MainWindow::slotOptionsSaveZeroWeightEdges(bool toggle) {
+    qDebug() << "MW::slotOptionsSaveZeroWeightEdges - Toggling saving zero weight edges";
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+    statusMessage( tr("Toggle zero-weight edges saving. Please wait...") );
 
+    appSettings["saveZeroWeightEdges"] = (toggle) ? "true":"false";
+
+    if (toggle) {
+        statusMessage( tr("Zero-weight edges will be saved to graphml files. ") );
+    }
+    else{
+        statusMessage( tr("Zero-weight edges will NOT be saved to graphml files.") );
+    }
+    QApplication::restoreOverrideCursor();
+
+}
 
 
 /**

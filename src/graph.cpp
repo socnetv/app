@@ -2567,7 +2567,38 @@ qreal Graph::edgeExists (const int &v1, const int &v2, const bool &checkReciproc
 }
 
 
+/**
+ * @brief Checks if there is an edge from v1 to v2, even weight = 0 and returns the weight, if the edge exists
+ * or RAND_MAX if the edge does not exist at all.
+ *
+ * This is only used in GraphML saving if the user has selected the Settings option to save zero-weight edges
+ *
+ * @see https://github.com/socnetv/app/issues/151
+ *
+ * @param v1
+ * @param v2
+ */
+qreal Graph::edgeExistsVirtual (const int &v1, const int &v2) {
 
+    qreal m_weight=RAND_MAX;
+    bool edgeStatus=false;
+    H_edges::const_iterator it1;
+    GraphVertex *source = m_graph[ vpos[v1] ];
+    H_edges source_outEdges = source ->m_outEdges;
+
+    it1= source_outEdges.constFind(v2);
+    while (it1 != source_outEdges.constEnd() && it1.key() == v2 ) {
+        if ( it1.value().first == m_curRelation  ) {
+            edgeStatus=it1.value().second.second;
+            if ( edgeStatus == true) {
+                m_weight=it1.value().second.first;
+            }
+        }
+        ++it1;
+    }
+
+    return  m_weight;
+}
 
 /**
  * @brief Returns TRUE if edge(v1, v2) is symmetric, i.e. (v1,v2) == (v2,v1).
@@ -16046,7 +16077,8 @@ void Graph::graphFileLoaded (const int &fileType,
  */
 void Graph::saveToFile(const QString &fileName,
                       const int &fileType ,
-                      const bool &saveEdgeWeights)
+                      const bool &saveEdgeWeights,
+                      const bool &saveZeroWeightEdges)
 {
     qDebug() << "Saving current graph to file named:" << fileName;
     bool saved = false;
@@ -16064,7 +16096,7 @@ void Graph::saveToFile(const QString &fileName,
         break;
     }
     case FileType::GRAPHML: {
-        saved=saveToGraphMLFormat(fileName);
+        saved=saveToGraphMLFormat(fileName, saveZeroWeightEdges);
         break;
     }
     default: {
@@ -16252,7 +16284,8 @@ bool Graph::saveToDotFormat (QString fileName){
  * @return bool
  */
 bool Graph::saveToGraphMLFormat (const QString &fileName,
-                                      QString networkName,
+                                 const bool &saveZeroWeightEdges,
+                                 QString networkName,
                                       int maxWidth,
                                       int maxHeight) {
 
@@ -16488,13 +16521,21 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
         if (isDirected()) {
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
             {
-                for (jt=m_graph.begin(); jt!=m_graph.end(); jt++)
+                for (jt=m_graph.cbegin(); jt!=m_graph.cend(); jt++)
                 {
                     source=(*it)->number();
                     target=(*jt)->number();
                     m_label = "";
-                    weight= edgeExists( source,target ) ;
-                    if  (  weight !=0 )
+
+                    // Check if user opted to save zero-weight edges
+                    if (saveZeroWeightEdges) {
+                        weight= this->edgeExistsVirtual( source,target ) ;
+                    }
+                    else {
+                        weight= this->edgeExists( source,target ) ;
+                    }
+
+                    if  ( ( !saveZeroWeightEdges && weight != 0 ) || (saveZeroWeightEdges && weight != RAND_MAX) )
                     {
                         ++edgeCount;
                         m_color = (*it)->outLinkColor( target );
@@ -16510,7 +16551,7 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
                                 << "\" target=\"" << target << "\"";
 
                         openToken = true;
-                        if ( weight != 0 ) {
+                        if ( weight != 0 ||  (saveZeroWeightEdges && weight != RAND_MAX) ) {
                             outText << "> \n";
                             outText << "      <data key=\"d8\">" << weight<<"</data>" <<" \n";
                             openToken=false;
@@ -16545,9 +16586,17 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
                 {
                     source=(*it)->number();
                     target=(*jt)->number();
-                    weight= edgeExists( source,target );
                     m_label = "";
-                    if  (  weight  !=0 )
+
+                    // Check if user opted to save zero-weight edges
+                    if (saveZeroWeightEdges) {
+                        weight= this->edgeExistsVirtual( source,target ) ;
+                    }
+                    else {
+                        weight= this->edgeExists( source,target ) ;
+                    }
+
+                    if  ( ( !saveZeroWeightEdges && weight != 0 ) || (saveZeroWeightEdges && weight != RAND_MAX) )
                     {
                         ++edgeCount;
                         m_color = (*it)->outLinkColor( target );
@@ -16563,7 +16612,7 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
                                 << "\" target=\"" << target << "\"";
 
                         openToken = true;
-                        if ( weight !=0 ) {
+                        if ( weight !=0  || (saveZeroWeightEdges && weight != RAND_MAX)  ) {
                             outText << "> \n";
                             outText << "      <data key=\"d8\">" << weight<<"</data>" <<" \n";
                             openToken=false;
