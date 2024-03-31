@@ -14081,7 +14081,7 @@ void MainWindow::slotOptionsEdgeOffsetFromNode(const int &offset, const int &v1,
 
 
 /**
- * @brief MainWindow::slotOptionsEdgeWeightNumbersVisibility
+ * @brief
  * Turns on/off displaying edge weight numbers
  * @param toggle
  */
@@ -14940,8 +14940,7 @@ void MainWindow::slotHelpCheckUpdateParse() {
 
 
 /**
- * @brief MainWindow::slotHelpSystemInfo
- * Shows a dialog with system information for bug reporting purposes
+ * @brief Shows a dialog with system information for bug reporting purposes
  */
 void MainWindow::slotHelpSystemInfo() {
     qDebug() << "MW: slotHelpSystemInfo()";
