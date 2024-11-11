@@ -132,7 +132,7 @@ void DialogWebCrawler::checkErrors(){
 
     qDebug()<< "seed url:" << seedUrlInputStr << "Sanitizing...";
 
-    seedUrlInputStr = seedUrlInputStr.simplified().toLower() ;
+    seedUrlInputStr = seedUrlInputStr.simplified();
 
     seedUrl = QUrl(seedUrlInputStr);
 
