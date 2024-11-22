@@ -67,7 +67,6 @@ public:
 
     GraphVertex(Graph* parentGraph,
            const int &name,
-           const int &val,
            const int &relation,
            const int &size,
            const QString &color,
@@ -79,7 +78,9 @@ public:
            const QPointF &p,
            const QString &shape,
            const QString &iconPath,
-           const int &edgesEstimate = 2000);
+           const int &edgesEstimate = 2000,
+                const QHash<QString,QString> &nodeAttr = QHash<QString,QString>()
+    );
 
     GraphVertex(const int &name);
 
@@ -311,7 +312,7 @@ private:
     Graph *m_graph;
     int m_number,  m_outEdgesCounter, m_inEdgesCounter, m_outDegree, m_inDegree, m_localDegree;
     int m_outEdgesNonSym, m_inEdgesNonSym, m_outEdgesSym;
-    int m_value, m_size, m_labelSize, m_numberSize, m_numberDistance, m_labelDistance;
+    int m_size, m_labelSize, m_numberSize, m_numberDistance, m_labelDistance;
     int m_curRelation;
     bool m_reciprocalLinked, m_enabled, m_hasCLC, m_isolated;
     double m_x, m_y;
@@ -325,6 +326,7 @@ private:
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape, m_iconPath;
     QPointF m_disp;
 
+    QHash<QString,QString> m_nodeAttributes;
     QHash<int,qreal> m_reciprocalEdges;
     L_int myPs;
     QMultiHash <int, L_int> m_cliques;

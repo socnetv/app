@@ -780,8 +780,6 @@ void Graph::vertexCreate(const int &number,
                          const QString &iconPath,
                          const bool &signalMW) {
 
-    int value = 1;
-
     qDebug() << "Creating a new vertex:" << number
              << "shape:" << shape
              << "icon:" << iconPath
@@ -797,7 +795,6 @@ void Graph::vertexCreate(const int &number,
                 new GraphVertex (
                     this,
                     number,
-                    value,
                     m_curRelation ,
                     size,
                     color,

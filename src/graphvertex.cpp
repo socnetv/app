@@ -35,7 +35,6 @@
 
 GraphVertex::GraphVertex(Graph* parentGraph,
                          const int &name,
-                         const int &val,
                          const int &relation,
                          const int &size,
                          const QString &color,
@@ -47,12 +46,13 @@ GraphVertex::GraphVertex(Graph* parentGraph,
                          const QPointF &p,
                          const QString &shape,
                          const QString &iconPath,
-                         const int &edgesEstimate): m_graph (parentGraph)
+                         const int &edgesEstimate,
+                         const QHash<QString,QString> &nodeAttr
+                         ): m_graph (parentGraph)
 { 
     qDebug() << "vertex:"<< name << "initializing...edgesEstimate:" << edgesEstimate;
 
     m_number=name;
-	m_value=val;
 	m_size=size;
 	m_color=color;
 	m_numberColor=numColor;
@@ -74,6 +74,8 @@ GraphVertex::GraphVertex(Graph* parentGraph,
         m_inEdges.reserve(edgesEstimate);
         m_neighborhoodList.reserve(edgesEstimate);
     }
+
+    m_nodeAttributes = nodeAttr;
 
     m_outEdgesCounter = 0;
     m_inEdgesCounter = 0;
@@ -102,7 +104,6 @@ GraphVertex::GraphVertex(Graph* parentGraph,
 GraphVertex::GraphVertex(const int &name) {
     qDebug() << "name"<<  name << "initializing with default values";
     m_number=name;
-	m_value=1;
 	m_size=9;
 	m_color="black";
 	m_label="";
@@ -114,6 +115,7 @@ GraphVertex::GraphVertex(const int &name) {
     m_DC=0; m_SDC=0; m_DP=0; m_SDP=0; m_CC=0; m_SCC=0; m_BC=0; m_SBC=0;
     m_IRCC=0; m_SIRCC=0; m_SC=0; m_SSC=0;
     m_curRelation=0;
+    m_nodeAttributes = QHash<QString,QString>();
 }
 
 
