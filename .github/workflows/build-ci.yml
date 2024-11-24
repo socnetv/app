@@ -85,7 +85,6 @@ jobs:
           which qmake6
           echo "Check qmake6 -v:"
           qmake6 -v
-        run: |
           qmake6 CONFIG+=debug && make -s -j 8
           echo "Building finished! "
           echo "Files in current directory: "
@@ -105,6 +104,5 @@ jobs:
           mingw32-make
           make
           dir
-  #          windeployqt --debug tests.exe
 
-     - run: echo "🍏 This job's status is ${{ job.status }}."
+      - run: echo "🍏 This job's status is ${{ job.status }}."
