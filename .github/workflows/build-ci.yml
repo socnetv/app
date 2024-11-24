@@ -3,9 +3,7 @@ run-name: ${{ github.actor }} testing latest SocNetV build with GitHub Actions �
 on: [push]
 jobs:
   CI-GitHub-Actions:
-    runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-2019]
         qt-version: [ '6.5.3', '6.6.3']
@@ -37,76 +35,77 @@ jobs:
           - os: ubuntu-22.04
             qt-version: '6.5.3'
             experimental: false
-      steps:
-        - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-        - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-        - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-        - name: Check out repository code
-          uses: actions/checkout@v4
-        - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-        - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-        - name: List files in the repository
-          run: |
-            ls ${{ github.workspace }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+      - name: List files in the repository
+        run: |
+          ls ${{ github.workspace }}
 
 
-        #
-        # Install Qt
-        #
+      #
+      # Install Qt
+      #
 
-        - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
-          name: Install Qt 6 on Windows
-          uses: jurplel/install-qt-action@v4
-          with:
-              aqtversion: '==2.1.*'
-              version: ${{ matrix.qt-version }}
-              arch: win64_mingw
-              modules: qtwebsockets core5compat xml network widgets printsupport charts svg
-          cache: true
+      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
+        name: Install Qt 6 on Windows
+        uses: jurplel/install-qt-action@v4
+        with:
+            aqtversion: '==2.1.*'
+            version: ${{ matrix.qt-version }}
+            arch: win64_mingw
+            modules: qtwebsockets core5compat xml network widgets printsupport charts svg
+        cache: true
 
-        - if: false == contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' )
-          name: Install Qt 6 on Linux/macOS
-          uses: jurplel/install-qt-action@v4
-          with:
-              aqtversion: '==2.0.0'
-              version: ${{ matrix.qt-version }}
-              modules: qtwebsockets core5compat xml network widgets printsupport charts svg
-              cache: true
+      - if: false == contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' )
+        name: Install Qt 6 on Linux/macOS
+        uses: jurplel/install-qt-action@v4
+        with:
+            aqtversion: '==2.0.0'
+            version: ${{ matrix.qt-version }}
+            modules: qtwebsockets core5compat xml network widgets printsupport charts svg
+            cache: true
 
 
 
-        #
-        # Build SocNetV
-        #
-        - if: contains( matrix.os, 'ubuntu-latest')
-          name: Do Linux tests
-          run: |
-             echo "openssl version:"
-             echo `openssl version`
-             echo "Check output of 'which qmake6':"
-             which qmake6
-             echo "Check qmake6 -v:"
-             qmake6 -v
-          run: |
-             qmake6 CONFIG+=debug && make -s -j 8
-             echo "Building finished! "
-             echo "Files in current directory: "
-             find .
-    # qmake workaround: https://bugreports.qt.io/browse/QTBUG-117225?focusedId=754625&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-754625
-    # See https://github.com/pbek/QOwnNotes/issues/3018
-        - if: contains( matrix.os, 'macos')
-          name: Do macOS tests
-          run: |
+      #
+      # Build SocNetV
+      #
+      - if: contains( matrix.os, 'ubuntu-latest')
+        name: Do Linux tests
+        run: |
+           echo "openssl version:"
+           echo `openssl version`
+           echo "Check output of 'which qmake6':"
+           which qmake6
+           echo "Check qmake6 -v:"
+           qmake6 -v
+        run: |
+           qmake6 CONFIG+=debug && make -s -j 8
+           echo "Building finished! "
+           echo "Files in current directory: "
+           find .
+  # qmake workaround: https://bugreports.qt.io/browse/QTBUG-117225?focusedId=754625&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-754625
+  # See https://github.com/pbek/QOwnNotes/issues/3018
+      - if: contains( matrix.os, 'macos')
+        name: Do macOS tests
+        run: |
+          qmake CONFIG+=debug socnetv.pro
+          mingw32-make
+
+      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
+        name: Do Qt 6.3+ Windows tests
+        run: |
             qmake CONFIG+=debug socnetv.pro
             mingw32-make
+            make
+            dir
+  #          windeployqt --debug tests.exe
 
-        - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
-          name: Do Qt 6.3+ Windows tests
-          run: |
-              qmake CONFIG+=debug socnetv.pro
-              mingw32-make
-              make
-              dir
-    #          windeployqt --debug tests.exe
-
-       - run: echo "🍏 This job's status is ${{ job.status }}."
+     - run: echo "🍏 This job's status is ${{ job.status }}."
