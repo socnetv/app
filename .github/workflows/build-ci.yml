@@ -48,22 +48,24 @@ jobs:
         run: |
           pip install aqtinstall
           aqt list-qt linux desktop
-          aqt list-qt windows desktop --modules ${{ matrix.qt-version }} win64_mingw
+          aqt list-qt windows desktop --long-modules ${{ matrix.qt-version }} win64_mingw8
       - if: contains( matrix.os, 'ubuntu')
         name: Install dependencies
         run: |
-          pip install aqtinstall
-          aqt list-qt linux desktop
-          aqt list-qt linux desktop --modules ${{ matrix.qt-version }}
+          ls
+          # pip install aqtinstall
+          # aqt list-qt linux desktop
+          # aqt list-qt linux desktop --long-modules ${{ matrix.qt-version }} win64_mingw8
           sudo apt install build-essential libssl-dev \
              cmake ninja-build \
              libssl-dev libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev
       - if: contains( matrix.os, 'macos')
         name: Install for macOS
         run: |
-          pip install aqtinstall
-          aqt list-qt mac desktop
-          aqt list-qt mac desktop --modules ${{ matrix.qt-version }}
+          ls
+          # pip install aqtinstall
+          # aqt list-qt mac desktop
+          # aqt list-qt mac desktop --modules ${{ matrix.qt-version }}
 
       #
       # Install Qt
@@ -75,7 +77,7 @@ jobs:
           aqtversion: '==2.0.0'
           version: ${{ matrix.qt-version }}
           arch: win64_mingw
-          modules: qtwebsockets
+          modules: qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d
           cache: true
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
         name: Install Qt 6.3+ on Windows
@@ -84,7 +86,7 @@ jobs:
           aqtversion: '==2.1.*'
           version: ${{ matrix.qt-version }}
           arch: win64_mingw
-          modules: qtwebsockets core5compat xml network widgets printsupport charts svg
+          modules: qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d
           cache: true
       - if: contains( matrix.os, 'ubuntu') && startsWith( matrix.qt-version, '6.' )
         name: Install Qt 6 on Linux
@@ -92,7 +94,7 @@ jobs:
         with:
           aqtversion: '==2.0.0'
           version: ${{ matrix.qt-version }}
-          modules: qtwebsockets core5compat xml network widgets printsupport charts svg
+          modules: qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d
           cache: true
       - if: contains( matrix.os, 'macos') && startsWith( matrix.qt-version, '6.' )
         name: Install Qt 6 on macOS
@@ -100,7 +102,7 @@ jobs:
         with:
           aqtversion: '==2.0.0'
           version: ${{ matrix.qt-version }}
-          modules: qtwebsockets core5compat xml network widgets printsupport charts svg
+          modules: qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d
           cache: true
 
 
