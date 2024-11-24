@@ -6,7 +6,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-2019]
-        qt-version: [ '6.5.3', '6.6.3']
+        qt-version: ['6.5.3', '6.6.3']
         exclude:
           # some reason
           - os: ubuntu-latest
@@ -15,8 +15,9 @@ jobs:
           - os: windows-2019
             qt-version: '6.5.3'
             experimental: false
-          # Qt6 builds of macOS are currently breaking because of the workaround for https://bugreports.qt.io/browse/QTBUG-117225
-          # See https://github.com/pbek/QOwnNotes/issues/3018
+          # Qt6 builds of macOS are currently breaking
+          # because
+          # https://bugreports.qt.io/browse/QTBUG-117225
           - os: macos-latest
             qt-version: '6.5.3'
             experimental: false
@@ -56,20 +57,20 @@ jobs:
         name: Install Qt 6 on Windows
         uses: jurplel/install-qt-action@v4
         with:
-            aqtversion: '==2.1.*'
-            version: ${{ matrix.qt-version }}
-            arch: win64_mingw
-            modules: qtwebsockets core5compat xml network widgets printsupport charts svg
+          aqtversion: '==2.1.*'
+          version: ${{ matrix.qt-version }}
+          arch: win64_mingw
+          modules: qtwebsockets core5compat xml network widgets printsupport charts svg
         cache: true
 
       - if: false == contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' )
         name: Install Qt 6 on Linux/macOS
         uses: jurplel/install-qt-action@v4
         with:
-            aqtversion: '==2.0.0'
-            version: ${{ matrix.qt-version }}
-            modules: qtwebsockets core5compat xml network widgets printsupport charts svg
-            cache: true
+          aqtversion: '==2.0.0'
+          version: ${{ matrix.qt-version }}
+          modules: qtwebsockets core5compat xml network widgets printsupport charts svg
+          cache: true
 
 
 
@@ -79,17 +80,17 @@ jobs:
       - if: contains( matrix.os, 'ubuntu-latest')
         name: Do Linux tests
         run: |
-           echo "openssl version:"
-           echo `openssl version`
-           echo "Check output of 'which qmake6':"
-           which qmake6
-           echo "Check qmake6 -v:"
-           qmake6 -v
+          echo "openssl version:"
+          echo `openssl version`
+          echo "Check output of 'which qmake6':"
+          which qmake6
+          echo "Check qmake6 -v:"
+          qmake6 -v
         run: |
-           qmake6 CONFIG+=debug && make -s -j 8
-           echo "Building finished! "
-           echo "Files in current directory: "
-           find .
+          qmake6 CONFIG+=debug && make -s -j 8
+          echo "Building finished! "
+          echo "Files in current directory: "
+          find .
   # qmake workaround: https://bugreports.qt.io/browse/QTBUG-117225?focusedId=754625&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-754625
   # See https://github.com/pbek/QOwnNotes/issues/3018
       - if: contains( matrix.os, 'macos')
@@ -101,10 +102,10 @@ jobs:
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
         name: Do Qt 6.3+ Windows tests
         run: |
-            qmake CONFIG+=debug socnetv.pro
-            mingw32-make
-            make
-            dir
+          qmake CONFIG+=debug socnetv.pro
+          mingw32-make
+          make
+          dir
   #          windeployqt --debug tests.exe
 
      - run: echo "🍏 This job's status is ${{ job.status }}."
