@@ -136,10 +136,12 @@ jobs:
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.2.4'
         name: Build for Windows
         run: |
+          dir D:\a\app\Qt\
           dir D:\a\app\Qt\6.2.4
+          dir D:\a\app\Qt\6.2.4\mingw_64
           dir D:\a\app\Qt\6.2.4\mingw_64\bin
           qmake6 CONFIG+=debug socnetv.pro
-          nmake
-          dir
+          # make
+          # dir
 
       - run: echo "🍏 This job's status is ${{ job.status }}."
