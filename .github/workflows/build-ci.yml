@@ -138,7 +138,7 @@ jobs:
         run: |
           dir D:\a\app\Qt\6.2.4
           dir D:\a\app\Qt\6.2.4\mingw_64\bin
-          qmake CONFIG+=debug socnetv.pro
+          qmake6 CONFIG+=debug socnetv.pro
           make
           dir
 
