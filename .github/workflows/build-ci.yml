@@ -2,8 +2,7 @@ name: Build SocNetV CI
 run-name: ${{ github.actor }} testing latest SocNetV build with GitHub Actions 🚀
 on: [push]
 jobs:
-  Explore-GitHub-Actions:
-    # runs-on: ubuntu-latest
+  CI-GitHub-Actions:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
