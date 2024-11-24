@@ -2,113 +2,110 @@ name: Build SocNetV CI
 run-name: ${{ github.actor }} testing latest SocNetV build with GitHub Actions 🚀
 on: [push]
 jobs:
-  CI-GitHub-Actions:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-2019]
-        # Linux:   https://download.qt.io/online/qtsdkrepository/linux_x64/desktop/
-        # macOS:   https://download.qt.io/online/qtsdkrepository/mac_x64/desktop/
-        # Windows: https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/
-        qt-version: [ '6.5.3', '6.6.3']
-        experimental: [false]
-        exclude:
-          # some reason
-          - os: ubuntu-latest
-            qt-version: '6.5.3'
-          # some reason
-          - os: windows-2019
-            qt-version: '6.5.3'
-            experimental: false
-          # Qt6 builds of macOS are currently breaking because of the workaround for https://bugreports.qt.io/browse/QTBUG-117225
-          # See https://github.com/pbek/QOwnNotes/issues/3018
-          - os: macos-latest
-            qt-version: '6.5.3'
-            experimental: false
-        include:
-          - os: ubuntu-latest
-            qt-version: '6.6.3'
-            experimental: true
-          - os: windows-2019
-            qt-version: '6.6.3'
-            experimental: true
-          - os: macos-latest
-            qt-version: '6.6.3'
-            experimental: true
-          # Snapcraft
-          - os: ubuntu-22.04
-            qt-version: '6.5.3'
-            experimental: false
-    steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-      - name: Check out repository code
-        uses: actions/checkout@v4
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: List files in the repository
-        run: |
-          ls ${{ github.workspace }}
+    CI-GitHub-Actions:
+        runs-on: ${{ matrix.os }}
+        strategy:
+          fail-fast: false
+          matrix:
+            os: [ubuntu-latest, macos-latest, windows-2019]
+            qt-version: [ '6.5.3', '6.6.3']
+            experimental: [false]
+            exclude:
+              # some reason
+              - os: ubuntu-latest
+                qt-version: '6.5.3'
+              # some reason
+              - os: windows-2019
+                qt-version: '6.5.3'
+                experimental: false
+              # Qt6 builds of macOS are currently breaking because of the workaround for https://bugreports.qt.io/browse/QTBUG-117225
+              # See https://github.com/pbek/QOwnNotes/issues/3018
+              - os: macos-latest
+                qt-version: '6.5.3'
+                experimental: false
+            include:
+              - os: ubuntu-latest
+                qt-version: '6.6.3'
+                experimental: true
+              - os: windows-2019
+                qt-version: '6.6.3'
+                experimental: true
+              - os: macos-latest
+                qt-version: '6.6.3'
+                experimental: true
+              # Snapcraft
+              - os: ubuntu-22.04
+                qt-version: '6.5.3'
+                experimental: false
+        steps:
+            - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+            - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+            - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+            - name: Check out repository code
+              uses: actions/checkout@v4
+            - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+            - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+            - name: List files in the repository
+              run: |
+                ls ${{ github.workspace }}
 
 
-        #
-        # Install Qt
-        #
+            #
+            # Install Qt
+            #
 
-      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
-        name: Install Qt 6 on Windows
-        uses: jurplel/install-qt-action@v4
-        with:
-          aqtversion: '==2.1.*'
-          version: ${{ matrix.qt-version }}
-          arch: win64_mingw
-          modules: qtwebsockets core5compat xml network widgets printsupport charts svg
-          cache: true
-      - if: false == contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' )
-        name: Install Qt 6 on Linux/macOS
-        uses: jurplel/install-qt-action@v4
-        with:
-          aqtversion: '==2.0.0'
-          version: ${{ matrix.qt-version }}
-          modules: qtwebsockets core5compat xml network widgets printsupport charts svg
-          cache: true
+            - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
+            name: Install Qt 6 on Windows
+            uses: jurplel/install-qt-action@v4
+            with:
+              aqtversion: '==2.1.*'
+              version: ${{ matrix.qt-version }}
+              arch: win64_mingw
+              modules: qtwebsockets core5compat xml network widgets printsupport charts svg
+              cache: true
+            - if: false == contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' )
+            name: Install Qt 6 on Linux/macOS
+            uses: jurplel/install-qt-action@v4
+            with:
+              aqtversion: '==2.0.0'
+              version: ${{ matrix.qt-version }}
+              modules: qtwebsockets core5compat xml network widgets printsupport charts svg
+              cache: true
 
 
 
-        #
-        # Build SocNetV
-        #
-     - if: contains( matrix.os, 'ubuntu-latest')
-       name: Do Linux tests
-       run: |
-         echo "openssl version:"
-         echo `openssl version`
-         echo "Check output of 'which qmake6':"
-         which qmake6
-         echo "Check qmake6 -v:"
-         qmake6 -v
-       run: |
-         qmake6 CONFIG+=debug && make -s -j 8
-         echo "Building finished! "
-         echo "Files in current directory: "
-         find .
-    # qmake workaround: https://bugreports.qt.io/browse/QTBUG-117225?focusedId=754625&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-754625
-    # See https://github.com/pbek/QOwnNotes/issues/3018
-     - if: contains( matrix.os, 'macos')
-       name: Do macOS tests
-       run: |
-        qmake CONFIG+=debug socnetv.pro
-        mingw32-make
+            #
+            # Build SocNetV
+            #
+         - if: contains( matrix.os, 'ubuntu-latest')
+           name: Do Linux tests
+           run: |
+             echo "openssl version:"
+             echo `openssl version`
+             echo "Check output of 'which qmake6':"
+             which qmake6
+             echo "Check qmake6 -v:"
+             qmake6 -v
+           run: |
+             qmake6 CONFIG+=debug && make -s -j 8
+             echo "Building finished! "
+             echo "Files in current directory: "
+             find .
+        # qmake workaround: https://bugreports.qt.io/browse/QTBUG-117225?focusedId=754625&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-754625
+        # See https://github.com/pbek/QOwnNotes/issues/3018
+         - if: contains( matrix.os, 'macos')
+           name: Do macOS tests
+           run: |
+            qmake CONFIG+=debug socnetv.pro
+            mingw32-make
 
-      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
-        name: Do Qt 6.3+ Windows tests
-        run: |
-          qmake CONFIG+=debug socnetv.pro
-          mingw32-make
-          make
-          dir
-#          windeployqt --debug tests.exe
+          - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
+            name: Do Qt 6.3+ Windows tests
+            run: |
+              qmake CONFIG+=debug socnetv.pro
+              mingw32-make
+              make
+              dir
+    #          windeployqt --debug tests.exe
 
-   - run: echo "🍏 This job's status is ${{ job.status }}."
+       - run: echo "🍏 This job's status is ${{ job.status }}."
