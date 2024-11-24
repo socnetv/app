@@ -49,6 +49,7 @@ jobs:
 
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
         name: Prepare for Windows
+        run: dir
       - if: contains( matrix.os, 'ubuntu') && startsWith( matrix.qt-version, '6.' )
         name: Install dependencies
         run: |
@@ -58,7 +59,7 @@ jobs:
             libssl-dev libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev
       - if: contains( matrix.os, 'macos') && startsWith( matrix.qt-version, '6.' )
         name: Install for macOS
-
+        run: ls
 
       #
       # Install Qt
