@@ -2,12 +2,23 @@ name: Build SocNetV CI
 run-name: ${{ github.actor }} testing latest SocNetV build with GitHub Actions 🚀
 on: [push]
 jobs:
+  example_matrix:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-20.04]
+        version: [10, 12, 14]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.version }}
+
+jobs:
   build_matrix:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-2019]
         qt-version: [ '6.5.3', '6.6.3']
-        experimental: [false]
         exclude:
           # some reason
           - os: ubuntu-latest
