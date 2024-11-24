@@ -61,7 +61,6 @@ jobs:
           version: ${{ matrix.qt-version }}
           arch: win64_mingw
           modules: qtwebsockets core5compat xml network widgets printsupport charts svg
-        cache: true
 
       - if: false == contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' )
         name: Install Qt 6 on Linux/macOS
@@ -70,7 +69,6 @@ jobs:
           aqtversion: '==2.0.0'
           version: ${{ matrix.qt-version }}
           modules: qtwebsockets core5compat xml network widgets printsupport charts svg
-          cache: true
 
 
       #

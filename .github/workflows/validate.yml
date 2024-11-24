@@ -2,7 +2,7 @@ name: Validate-YAMLs
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 jobs:
   validate-yaml:
@@ -12,4 +12,3 @@ jobs:
       - name: Validate YAML file
         run:
           yamllint -c ${{ github.workspace }}/.github/workflows/yamlint.conf  ${{ github.workspace }}/.github/workflows/*.yml
-
