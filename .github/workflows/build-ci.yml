@@ -7,29 +7,24 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-2019]
-        qt-version: ['6.5.3', '6.6.3']
-        exclude:
-          # some reason
-          - os: ubuntu-latest
-            qt-version: '6.5.3'
-          # some reason
-          - os: windows-2019
-            qt-version: '6.5.3'
-          # Qt6 builds of macOS are currently bre aking
-          # because
-          # https://bugreports.qt.io/browse/QTBUG-117225
-          - os: macos-latest
-            qt-version: '6.5.3'
-        include:
-          - os: ubuntu-latest
-            qt-version: '6.6.3'
-          - os: windows-2019
-            qt-version: '6.6.3'
-          - os: macos-latest
-            qt-version: '6.6.3'
-          # Snapcraft
-          - os: ubuntu-22.04
-            qt-version: '6.5.3'
+        qt-version: ['6.2.8', '6.5.2']
+        # exclude:
+        #   - os: ubuntu-latest
+        #     qt-version: '6.5.3'
+        #   - os: windows-2019
+        #     qt-version: '6.5.3'
+        #   - os: macos-latest
+        #     qt-version: '6.5.3'
+        # include:
+        #   - os: ubuntu-latest
+        #     qt-version: '6.6.3'
+        #   - os: windows-2019
+        #     qt-version: '6.6.3'
+        #   - os: macos-latest
+        #     qt-version: '6.6.3'
+        #   # Snapcraft
+        #   - os: ubuntu-22.04
+        #     qt-version: '6.5.3'
     runs-on: ${{ matrix.os }}
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event, by actor ${{ github.actor }}."
@@ -73,6 +68,7 @@ jobs:
           version: ${{ matrix.qt-version }}
           arch: win64_mingw
           modules: qtwebsockets core5compat xml network widgets printsupport charts svg
+          cache: true
       - if: contains( matrix.os, 'ubuntu') && startsWith( matrix.qt-version, '6.' )
         name: Install Qt 6 on Linux
         uses: jurplel/install-qt-action@v4
@@ -80,6 +76,7 @@ jobs:
           aqtversion: '==2.0.0'
           version: ${{ matrix.qt-version }}
           modules: qtwebsockets core5compat xml network widgets printsupport charts svg
+          cache: true
 
       - if: contains( matrix.os, 'macos') && startsWith( matrix.qt-version, '6.' )
         name: Install Qt 6 on macOS
@@ -88,6 +85,7 @@ jobs:
           aqtversion: '==2.0.0'
           version: ${{ matrix.qt-version }}
           modules: qtwebsockets core5compat xml network widgets printsupport charts svg
+          cache: true
 
 
       #
