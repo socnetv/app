@@ -10,4 +10,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Validate YAML file
-        run: yamllint *.yml
+        run:
+          yamllint ${{ github.workspace }}/.github/workflows/*.yml
