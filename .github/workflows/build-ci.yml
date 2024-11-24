@@ -53,10 +53,9 @@ jobs:
       - if: contains( matrix.os, 'ubuntu') && startsWith( matrix.qt-version, '6.' )
         name: Install dependencies
         run: |
-          sudo apt update
-          sudo apt install \
-            build-essential cmake ninja-build \
-            libssl-dev libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev
+          sudo apt installbuild-essential libssl-dev
+            # cmake ninja-build \
+            # libssl-dev libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev
       - if: contains( matrix.os, 'macos') && startsWith( matrix.qt-version, '6.' )
         name: Install for macOS
         run: ls
