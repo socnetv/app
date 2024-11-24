@@ -48,14 +48,16 @@ jobs:
         run: |
           pip install aqtinstall
           aqt list-qt linux desktop
-          aqt list-qt windows desktop --long-modules ${{ matrix.qt-version }} win64_mingw8
+          aqt list-qt windows desktop
+          aqt list-qt macos desktop
+          aqt list-qt windows desktop --modules ${{ matrix.qt-version }} win64_mingw
       - if: contains( matrix.os, 'ubuntu')
         name: Install dependencies
         run: |
           ls
           # pip install aqtinstall
           # aqt list-qt linux desktop
-          # aqt list-qt linux desktop --long-modules ${{ matrix.qt-version }} win64_mingw8
+          # aqt list-qt linux desktop --long-modules ${{ matrix.qt-version }} win64_mingw
           sudo apt install build-essential libssl-dev \
              cmake ninja-build \
              libssl-dev libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev
@@ -110,7 +112,7 @@ jobs:
       # Build SocNetV
       #
       - if: contains( matrix.os, 'ubuntu-latest')
-        name: Do Linux tests
+        name: Build for Linux
         run: |
           echo "openssl version:"
           echo `openssl version`
@@ -122,16 +124,16 @@ jobs:
           echo "Building finished! "
           echo "Files in current directory: "
           find .
-  # qmake workaround: https://bugreports.qt.io/browse/QTBUG-117225?focusedId=754625&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-754625
-  # See https://github.com/pbek/QOwnNotes/issues/3018
+      # BUILD FOR MACOS
       - if: contains( matrix.os, 'macos')
-        name: Do macOS tests
+        name: Build for macOS
         run: |
           qmake CONFIG+=debug socnetv.pro
-          mingw32-make
-
-      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
-        name: Do Qt 6.3+ Windows tests
+          make -s -j 8
+          find .
+      # BUILD FOR WINDOWS
+      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.5'
+        name: Build for Windows
         run: |
           qmake CONFIG+=debug socnetv.pro
           mingw32-make
