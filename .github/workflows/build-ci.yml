@@ -1,9 +1,10 @@
-name: Build SocNetV CI
-run-name: ${{ github.actor }} testing latest SocNetV build with GitHub Actions 🚀
+name: Build SocNetV (CI) with GitHub Actions 🚀
+# run-name: ${{ github.actor }} testing latest SocNetV build with
 on: [push]
 jobs:
-  example_matrix:
+  build:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-2019]
         qt-version: ['6.5.3', '6.6.3']
@@ -14,7 +15,7 @@ jobs:
           # some reason
           - os: windows-2019
             qt-version: '6.5.3'
-          # Qt6 builds of macOS are currently breaking
+          # Qt6 builds of macOS are currently bre aking
           # because
           # https://bugreports.qt.io/browse/QTBUG-117225
           - os: macos-latest
@@ -31,7 +32,7 @@ jobs:
             qt-version: '6.5.3'
     runs-on: ${{ matrix.os }}
     steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event, by actor ${{ github.actor }}."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
       - name: Check out repository code
@@ -53,7 +54,7 @@ jobs:
       - if: contains( matrix.os, 'ubuntu') && startsWith( matrix.qt-version, '6.' )
         name: Install dependencies
         run: |
-          sudo apt installbuild-essential libssl-dev
+          sudo apt install build-essential libssl-dev
             # cmake ninja-build \
             # libssl-dev libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev
       - if: contains( matrix.os, 'macos') && startsWith( matrix.qt-version, '6.' )
