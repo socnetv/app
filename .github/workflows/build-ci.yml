@@ -7,7 +7,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-2019]
-        qt-version: ['6.2.8', '6.5.2']
+        qt-version: ['6.2.4', '6.4.3', '6.5.3', '6.6.3']
         # exclude:
         #   - os: ubuntu-latest
         #     qt-version: '6.5.3'
@@ -43,25 +43,33 @@ jobs:
       # Install Qt
       #
 
-      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
+      - if: contains( matrix.os, 'windows')
         name: Prepare for Windows
-        run: dir
-      - if: contains( matrix.os, 'ubuntu') && startsWith( matrix.qt-version, '6.' )
+        run: aqt list-qt linux desktop
+      - if: contains( matrix.os, 'ubuntu')
         name: Install dependencies
         run: |
           sudo apt install build-essential libssl-dev
-            # cmake ninja-build \
-            # libssl-dev libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev
-      - if: contains( matrix.os, 'macos') && startsWith( matrix.qt-version, '6.' )
+             cmake ninja-build \
+             libssl-dev libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev
+      - if: contains( matrix.os, 'macos')
         name: Install for macOS
-        run: ls
+        run: aqt list-qt linux desktop
 
       #
       # Install Qt
       #
-
+      - if: contains( matrix.os, 'windows') && matrix.qt-version == '6.2.4'
+        name: Install Qt Qt 6.2.4 on Windows
+        uses: jurplel/install-qt-action@v4
+        with:
+          aqtversion: '==2.0.0'
+          version: ${{ matrix.qt-version }}
+          arch: win64_mingw
+          modules: qtwebsockets
+          cache: true
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
-        name: Install Qt 6 on Windows
+        name: Install Qt 6.3+ on Windows
         uses: jurplel/install-qt-action@v4
         with:
           aqtversion: '==2.1.*'
@@ -77,7 +85,6 @@ jobs:
           version: ${{ matrix.qt-version }}
           modules: qtwebsockets core5compat xml network widgets printsupport charts svg
           cache: true
-
       - if: contains( matrix.os, 'macos') && startsWith( matrix.qt-version, '6.' )
         name: Install Qt 6 on macOS
         uses: jurplel/install-qt-action@v4
