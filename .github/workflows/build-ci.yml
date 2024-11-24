@@ -55,18 +55,19 @@ jobs:
             #
 
             - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
-                name: Install Qt 6 on Windows
-                uses: jurplel/install-qt-action@v4
-                with:
+              name: Install Qt 6 on Windows
+              uses: jurplel/install-qt-action@v4
+              with:
                   aqtversion: '==2.1.*'
                   version: ${{ matrix.qt-version }}
                   arch: win64_mingw
                   modules: qtwebsockets core5compat xml network widgets printsupport charts svg
               cache: true
+
             - if: false == contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' )
-                name: Install Qt 6 on Linux/macOS
-                uses: jurplel/install-qt-action@v4
-                with:
+              name: Install Qt 6 on Linux/macOS
+              uses: jurplel/install-qt-action@v4
+              with:
                   aqtversion: '==2.0.0'
                   version: ${{ matrix.qt-version }}
                   modules: qtwebsockets core5compat xml network widgets printsupport charts svg
@@ -77,31 +78,31 @@ jobs:
             #
             # Build SocNetV
             #
-             - if: contains( matrix.os, 'ubuntu-latest')
-               name: Do Linux tests
-               run: |
+            - if: contains( matrix.os, 'ubuntu-latest')
+              name: Do Linux tests
+              run: |
                  echo "openssl version:"
                  echo `openssl version`
                  echo "Check output of 'which qmake6':"
                  which qmake6
                  echo "Check qmake6 -v:"
                  qmake6 -v
-               run: |
+              run: |
                  qmake6 CONFIG+=debug && make -s -j 8
                  echo "Building finished! "
                  echo "Files in current directory: "
                  find .
         # qmake workaround: https://bugreports.qt.io/browse/QTBUG-117225?focusedId=754625&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-754625
         # See https://github.com/pbek/QOwnNotes/issues/3018
-             - if: contains( matrix.os, 'macos')
-               name: Do macOS tests
-               run: |
+            - if: contains( matrix.os, 'macos')
+              name: Do macOS tests
+              run: |
                 qmake CONFIG+=debug socnetv.pro
                 mingw32-make
 
-              - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
-                name: Do Qt 6.3+ Windows tests
-                run: |
+            - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
+              name: Do Qt 6.3+ Windows tests
+              run: |
                   qmake CONFIG+=debug socnetv.pro
                   mingw32-make
                   make
