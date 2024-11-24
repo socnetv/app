@@ -2,7 +2,7 @@ name: Build SocNetV CI
 run-name: ${{ github.actor }} testing latest SocNetV build with GitHub Actions 🚀
 on: [push]
 jobs:
-  CI-GitHub-Actions:
+  build_matrix:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-2019]
