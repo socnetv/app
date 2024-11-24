@@ -37,7 +37,7 @@ jobs:
               - os: ubuntu-22.04
                 qt-version: '6.5.3'
                 experimental: false
-        steps:
+          steps:
             - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
             - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
             - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
@@ -55,57 +55,57 @@ jobs:
             #
 
             - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
-            name: Install Qt 6 on Windows
-            uses: jurplel/install-qt-action@v4
-            with:
-              aqtversion: '==2.1.*'
-              version: ${{ matrix.qt-version }}
-              arch: win64_mingw
-              modules: qtwebsockets core5compat xml network widgets printsupport charts svg
+                name: Install Qt 6 on Windows
+                uses: jurplel/install-qt-action@v4
+                with:
+                  aqtversion: '==2.1.*'
+                  version: ${{ matrix.qt-version }}
+                  arch: win64_mingw
+                  modules: qtwebsockets core5compat xml network widgets printsupport charts svg
               cache: true
             - if: false == contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' )
-            name: Install Qt 6 on Linux/macOS
-            uses: jurplel/install-qt-action@v4
-            with:
-              aqtversion: '==2.0.0'
-              version: ${{ matrix.qt-version }}
-              modules: qtwebsockets core5compat xml network widgets printsupport charts svg
-              cache: true
+                name: Install Qt 6 on Linux/macOS
+                uses: jurplel/install-qt-action@v4
+                with:
+                  aqtversion: '==2.0.0'
+                  version: ${{ matrix.qt-version }}
+                  modules: qtwebsockets core5compat xml network widgets printsupport charts svg
+                  cache: true
 
 
 
             #
             # Build SocNetV
             #
-         - if: contains( matrix.os, 'ubuntu-latest')
-           name: Do Linux tests
-           run: |
-             echo "openssl version:"
-             echo `openssl version`
-             echo "Check output of 'which qmake6':"
-             which qmake6
-             echo "Check qmake6 -v:"
-             qmake6 -v
-           run: |
-             qmake6 CONFIG+=debug && make -s -j 8
-             echo "Building finished! "
-             echo "Files in current directory: "
-             find .
+             - if: contains( matrix.os, 'ubuntu-latest')
+               name: Do Linux tests
+               run: |
+                 echo "openssl version:"
+                 echo `openssl version`
+                 echo "Check output of 'which qmake6':"
+                 which qmake6
+                 echo "Check qmake6 -v:"
+                 qmake6 -v
+               run: |
+                 qmake6 CONFIG+=debug && make -s -j 8
+                 echo "Building finished! "
+                 echo "Files in current directory: "
+                 find .
         # qmake workaround: https://bugreports.qt.io/browse/QTBUG-117225?focusedId=754625&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-754625
         # See https://github.com/pbek/QOwnNotes/issues/3018
-         - if: contains( matrix.os, 'macos')
-           name: Do macOS tests
-           run: |
-            qmake CONFIG+=debug socnetv.pro
-            mingw32-make
+             - if: contains( matrix.os, 'macos')
+               name: Do macOS tests
+               run: |
+                qmake CONFIG+=debug socnetv.pro
+                mingw32-make
 
-          - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
-            name: Do Qt 6.3+ Windows tests
-            run: |
-              qmake CONFIG+=debug socnetv.pro
-              mingw32-make
-              make
-              dir
-    #          windeployqt --debug tests.exe
+              - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
+                name: Do Qt 6.3+ Windows tests
+                run: |
+                  qmake CONFIG+=debug socnetv.pro
+                  mingw32-make
+                  make
+                  dir
+        #          windeployqt --debug tests.exe
 
-       - run: echo "🍏 This job's status is ${{ job.status }}."
+           - run: echo "🍏 This job's status is ${{ job.status }}."
