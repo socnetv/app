@@ -14,27 +14,21 @@ jobs:
           # some reason
           - os: windows-2019
             qt-version: '6.5.3'
-            experimental: false
           # Qt6 builds of macOS are currently breaking
           # because
           # https://bugreports.qt.io/browse/QTBUG-117225
           - os: macos-latest
             qt-version: '6.5.3'
-            experimental: false
         include:
           - os: ubuntu-latest
             qt-version: '6.6.3'
-            experimental: true
           - os: windows-2019
             qt-version: '6.6.3'
-            experimental: true
           - os: macos-latest
             qt-version: '6.6.3'
-            experimental: true
           # Snapcraft
           - os: ubuntu-22.04
             qt-version: '6.5.3'
-            experimental: false
     runs-on: ${{ matrix.os }}
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
